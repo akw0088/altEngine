@@ -3,27 +3,59 @@
 void Sound::init()
 {
 	device = alcOpenDevice(NULL);
+
+	if (device == NULL)
+		throw "No sound device/driver has been found.";
+
 	context = alcCreateContext(device, NULL);
-	alcMakeContextCurrent(context);
-	alGetError();
+	if (context == NULL)
+		throw "alcCreateContext failed.";
+
+	if ( alcMakeContextCurrent(context) == ALC_FALSE )
+	{
+		ALCenum error = alcGetError(device);
+
+		switch (error)
+		{
+		case ALC_NO_ERROR:
+			throw "alcMakeContextCurrent failed: No error.";
+			break;
+		case ALC_INVALID_DEVICE:
+			throw "alcMakeContextCurrent failed: Invalid device.";
+			break;
+		case ALC_INVALID_CONTEXT:
+			throw "alcMakeContextCurrent failed: Invalid context.";
+			break;
+		case ALC_INVALID_ENUM:
+			throw "alcMakeContextCurrent failed: Invalid enum.";
+			break;
+		case ALC_INVALID_VALUE:
+			throw "alcMakeContextCurrent failed: Invalid value.";
+			break;
+		case ALC_OUT_OF_MEMORY:
+			throw "alcMakeContextCurrent failed: Out of memory.";
+			break;
+		}
+	}
 }
 
 void Sound::load(char *file, wave_t *wave)
 {
+	char	err[80];
 	char	*end;
 
 	wave->file = getFile(file);
 
 	if (wave->file == NULL)
 	{
-		printf("Couldnt load wave file.");
-		return;
+		snprintf(err, 80, "Couldnt load wave file %s.", file);
+		throw err;
 	}
 
 	if ( checkFormat(wave->file, "WAVE") )
 	{
-		printf("Not a wave file.\n");
-		return;
+		snprintf(err, 80, "%s is not a wave file.\n", file);
+		throw err;
 	}
 
 	end = wave->file + 4 + *((int *)(wave->file + 4));

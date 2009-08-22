@@ -8,7 +8,7 @@ public:
 		forward = vec3(0.0f, 0.0f, 1.0f);
 	}
 
-	void update();
+	void update(Keyboard &keyboard);
 	void update(const vec2 &mouse);
 	void set();
 	vec3 pos, up, forward;

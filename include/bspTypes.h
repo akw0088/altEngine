@@ -1,4 +1,6 @@
-typedef char byte;
+#ifndef WIN32
+	typedef char byte;
+#endif
 
 typedef enum
 {

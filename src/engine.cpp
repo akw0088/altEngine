@@ -4,14 +4,19 @@ void Engine::init(void *param1, void *param2)
 {
 	wave_t	wave;
 
-	audio.init();
-	if (wave.file)
+	try
 	{
-		audio.load("Media/Sound/MWmusic.wav", &wave);
+		audio.init();
+		audio.load("media/sound/mwmusic.wav", &wave);
 		audio.play(&wave);
 	}
+	catch (char *error)
+	{
+		printf("%s\n", error);
+	}
+
 	gfx.init(param1, param2);
-	map.load("Media/Maps/q3tourney3.bsp");
+	map.load("media/maps/q3tourney3.bsp");
 	map.loadTextures(gfx);
 	initialized = true;
 
@@ -26,10 +31,10 @@ void Engine::render()
 		return;
 
 	gfx.clear();
-	camera.update();
+	camera.update(keyboard);
 	camera.set();
 
-//	gfx.drawText("Media/Maps/q3tourney3.bsp", 0.01f, 0.01f);
+//	gfx.drawText("media/maps/q3tourney3.bsp", 0.01f, 0.01f);
 	map.render(camera.pos, gfx);
 //	entities[0].render(gfx);
 	gfx.swap();
@@ -79,6 +84,22 @@ void Engine::mousepos(int x, int y)
 	camera.update(vec2((float)x,(float)y));
 	// apply force to player entity
 	//entities[0].add_torque(force);
+}
+
+void Engine::keystroke(char *key, bool pressed)
+{
+	if (strcmp("enter", key) == 0)
+		keyboard.enter = pressed;
+	else if (strcmp("shift", key) == 0)
+		keyboard.shift = pressed;
+	else if (strcmp("up", key) == 0)
+		keyboard.up = pressed;
+	else if (strcmp("left", key) == 0)
+		keyboard.left = pressed;
+	else if (strcmp("down", key) == 0)
+		keyboard.down = pressed;
+	else if (strcmp("right", key) == 0)
+		keyboard.right = pressed;
 }
 
 void Engine::resize(int width, int height)

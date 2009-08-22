@@ -159,7 +159,7 @@ void Bsp::loadTextures(Graphics &gfx)
 		int			width, height, components, format;
 		char	buffer[120];
 
-		sprintf(buffer, "Media/%s.tga", texture->name);
+		sprintf(buffer, "media/%s.tga", texture->name);
 		bytes = gltLoadTGA(buffer, &width, &height, &components, &format);
 		gfx.LoadTexture(i, width, height, components, format, bytes);
 		free((void *)bytes);

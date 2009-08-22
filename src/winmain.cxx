@@ -116,6 +116,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+		{
+			bool pressed = (message == WM_KEYDOWN) ? true : false;
+
+			switch (wParam)
+			{
+			case VK_RETURN:
+				altEngine.keystroke("enter", pressed);
+				break;
+			case VK_SHIFT:
+				altEngine.keystroke("shift", pressed);
+				break;
+			case VK_UP:
+				altEngine.keystroke("up", pressed);
+				break;
+			case VK_LEFT:
+				altEngine.keystroke("left", pressed);
+				break;
+			case VK_DOWN:
+				altEngine.keystroke("down", pressed);
+				break;
+			case VK_RIGHT:
+				altEngine.keystroke("right", pressed);
+				break;
+			}
+			return 0;
+		}
 	case WM_SIZE:
 		{
 			int	width, height;

@@ -15,6 +15,7 @@ public:
 	void render();
 	void step();
 	void mousepos(int x, int y);
+	void keystroke(char *key, bool pressed);
 	void resize(int width, int height);
 	void destroy();
 	~Engine()
@@ -29,6 +30,7 @@ private:
 	Entity		*entities;
 	int			num_entities;
 	Frame		camera;
+	Keyboard	keyboard;
 };
 
 #endif

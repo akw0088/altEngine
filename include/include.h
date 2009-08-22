@@ -7,6 +7,7 @@
 	#define _CRT_SECURE_NO_DEPRECATE
 	#define NOMINMAX
 	#include <windows.h>
+	#define snprintf sprintf_s
 
 #ifdef DIRECTX
 	#include <d3d9.h>
@@ -21,6 +22,7 @@
 	#include <GL/glx.h>
 	#include <X11/Xlib.h>
 	#include <X11/Xatom.h>
+	#include <X11/keysym.h>
 	#include <sys/select.h>
 	#include <sys/types.h>
 	#include <sys/time.h>
@@ -44,6 +46,7 @@ using namespace std;
 #include "plane.h"
 #include "types.h"
 
+#include "keyboard.h"
 #include "graphics.h"
 #include "bspTypes.h"
 #include "voxel.h"

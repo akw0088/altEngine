@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
 //	memset(winattrs, 0, sizeof(XSetWindowAttributes));
 	winattrs.colormap	= XCreateColormap(display, DefaultRootWindow(display), vinfo->visual, AllocNone);
-	winattrs.event_mask	= ExposureMask | StructureNotifyMask | KeyPressMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
+	winattrs.event_mask	= ExposureMask | StructureNotifyMask | KeyPressMask | KeyReleaseMask | PointerMotionMask | ButtonPressMask | ButtonReleaseMask;
 	winattrs.border_pixel	= 0;
 
 	window = XCreateWindow(display, DefaultRootWindow(display), 0, 0, 640, 480, 0, vinfo->depth, InputOutput, vinfo->visual,
@@ -107,19 +107,35 @@ int EventProc(Display *display, Window window, GLXContext context)
 			altEngine.mousepos(event.xmotion.x, event.xmotion.y);
 		break;
 	case KeyPress:
+	case KeyRelease:
 		printf("KeyPress\n");
 		{
+			bool pressed = (event.type == KeyPress) ? true : false;
 			KeySym keysym = XKeycodeToKeysym(display, event.xkey.keycode, 0);
 
-		        switch (keysym)
+	        switch (keysym)
 			{
-//			case XK_Delete:
+			case XK_Return:
+				altEngine.keystroke("enter", pressed);
+				break;
+			case XK_Shift_L:
+			case XK_Shift_R:
+				altEngine.keystroke("shift", pressed);
+				break;
+			case XK_Up:
+				altEngine.keystroke("up", pressed);
+				break;
+			case XK_Left:
+				altEngine.keystroke("left", pressed);
+				break;
+			case XK_Down:
+				altEngine.keystroke("down", pressed);
+				break;
+			case XK_Right:
+				altEngine.keystroke("right", pressed);
 				break;
 			}
 		}
-		break;
-	case KeyRelease:
-		printf("KeyRelease\n");
 		break;
 	case UnmapNotify:
 		printf("UnmapNotify\n");

@@ -58,39 +58,24 @@ void Frame::set()
 	glLoadMatrixf(matrix);
 }
 
-void Frame::update()
+void Frame::update(Keyboard &keyboard)
 {
 	vec3	right;
 
-	#ifdef WIN32
-	// temp key handler for windows
 #define SPEED 4.0f
 	right = vec3::crossproduct(up, forward);
-	if (GetAsyncKeyState(VK_UP))
-	{
+	if (keyboard.up)
 		pos -= forward * SPEED;
-	}
-	if (GetAsyncKeyState(VK_DOWN))
-	{
+	if (keyboard.down)
 		pos += forward * SPEED;
-	}
-	if (GetAsyncKeyState(VK_LEFT))
-	{
+	if (keyboard.left)
 		pos -= right * SPEED;
-	}
-	if (GetAsyncKeyState(VK_RIGHT))
-	{
+	if (keyboard.right)
 		pos += right * SPEED;
-	}
-	if (GetAsyncKeyState(VK_RETURN))
-	{
+	if (keyboard.enter)
 		pos.y += SPEED;
-	}
-	if (GetAsyncKeyState(VK_SHIFT))
-	{
+	if (keyboard.shift)
 		pos.y -= SPEED;
-	}
-#endif
 }
 
 void Frame::update(const vec2 &mouse)
