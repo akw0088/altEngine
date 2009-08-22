@@ -65,6 +65,12 @@ vec3 vec3::operator-(const vec3 &vector)
 	return temp;
 }
 
+vec3 vec3::operator-() const
+{
+	vec3 temp(-this->x, -this->y, -this->z);
+	return temp;
+}
+
 float vec3::operator*(const vec3 &vector)
 {
 	return (x * vector.x + y * vector.y + z * vector.z);

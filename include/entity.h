@@ -33,7 +33,7 @@ public:
 	vec3			net_torque;
 
 	//Visual
-	vertex_t		*vertex_array;
+	vertex_t	*vertex_array;
 	int			num_vertex;
 	int			*index_array;
 	int			num_index;

@@ -1,5 +1,43 @@
 #include "include.h"
 
+void Bsp::drawBox(int *min, int *max)
+{
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glBegin(GL_LINES);
+	//bottom square
+	glVertex3i(min[0], min[2], -min[1]);
+	glVertex3i(max[0], min[2], -min[1]);
+	glVertex3i(min[0], min[2], -min[1]);
+	glVertex3i(min[0], max[2], -min[1]);
+	glVertex3i(max[0], max[2], -min[1]);
+	glVertex3i(max[0], min[2], -min[1]);
+	glVertex3i(max[0], max[2], -min[1]);
+	glVertex3i(min[0], max[2], -min[1]);
+	//top square                     
+	glVertex3i(min[0], min[2], -max[1]);
+	glVertex3i(max[0], min[2], -max[1]);
+	glVertex3i(min[0], min[2], -max[1]);
+	glVertex3i(min[0], max[2], -max[1]);
+	glVertex3i(max[0], max[2], -max[1]);
+	glVertex3i(max[0], min[2], -max[1]);
+	glVertex3i(max[0], max[2], -max[1]);
+	glVertex3i(min[0], max[2], -max[1]);
+	//remaining legs                 
+	glVertex3i(min[0], min[2], -min[1]);
+	glVertex3i(min[0], min[2], -max[1]);
+	glVertex3i(min[0], max[2], -max[1]);
+	glVertex3i(min[0], max[2], -min[1]);
+                                         
+	glVertex3i(max[0], min[2], -min[1]);
+	glVertex3i(max[0], min[2], -max[1]);
+	glVertex3i(max[0], max[2], -max[1]);
+	glVertex3i(max[0], max[2], -min[1]);
+	glEnd();
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+}
+
 void Bsp::load(char *map)
 {
 	tBsp = (bsp_t *)getFile(map);
@@ -72,7 +110,7 @@ int Bsp::findLeaf(const vec3 &position)
 		node_t *node = &data.Node[i];
 		plane_t *plane = &data.Plane[node->plane];
 
-		distance = plane->vNormal * position;
+		distance = (plane->vNormal * position) - plane->d;
 
 		if(distance >= 0)	
 			i = data.Node[i].front;
@@ -86,6 +124,8 @@ int Bsp::findLeaf(const vec3 &position)
 void Bsp::render(vec3 &position, Graphics &gfx)
 {
 	int frameIndex = findLeaf(position);
+	int numTriangles = 0;
+	char count[80];
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
@@ -127,9 +167,21 @@ void Bsp::render(vec3 &position, Graphics &gfx)
 				gfx.SelectTexture(face->textureID);
 				gfx.DrawArray(&data.Indexes[face->indexes], face->numIndexes);
 				gfx.DeselectTexture();
+				numTriangles += face->numIndexes / 3;
 			}
 		}
+		if (frameIndex == i)
+		{
+			glColor3f(0.0f, 1.0f, 0.0f);
+			drawBox(leaf->mins, leaf->maxs);
+		} else {
+			glColor3f(1.0f, 0.0f, 0.0f);
+			drawBox(leaf->mins, leaf->maxs);
+		}
 	}
+	
+	snprintf(count, 80, "%d Triangles rendered %f %f %f", numTriangles, position.x, position.y, position.z);
+	gfx.drawText(count, 0.01f, 0.02f);
 }
 
 

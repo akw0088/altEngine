@@ -100,7 +100,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case TICK_TIMER:
-			altEngine.step();
+			//altEngine.step();
 			break;
 		}
 		return 0;
@@ -128,6 +128,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case VK_SHIFT:
 				altEngine.keystroke("shift", pressed);
+				break;
+			case VK_CONTROL:
+				altEngine.keystroke("control", pressed);
 				break;
 			case VK_UP:
 				altEngine.keystroke("up", pressed);

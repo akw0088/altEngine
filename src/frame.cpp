@@ -62,7 +62,7 @@ void Frame::update(Keyboard &keyboard)
 {
 	vec3	right;
 
-#define SPEED 4.0f
+#define SPEED 16.0f
 	right = vec3::crossproduct(up, forward);
 	if (keyboard.up)
 		pos -= forward * SPEED;

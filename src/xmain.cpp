@@ -122,6 +122,10 @@ int EventProc(Display *display, Window window, GLXContext context)
 			case XK_Shift_R:
 				altEngine.keystroke("shift", pressed);
 				break;
+			case XK_Control_L:
+			case XK_Control_R:
+				altEngine.keystroke("control", pressed);
+				break;
 			case XK_Up:
 				altEngine.keystroke("up", pressed);
 				break;

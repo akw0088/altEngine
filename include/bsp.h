@@ -9,6 +9,7 @@ public:
 	Bsp()
 	{
 	}
+	void drawBox(int *min, int *max);
 	void render(vec3 &position, Graphics &graphics);
 	void load(char *map);
 	void loadTextures(Graphics &graphics);

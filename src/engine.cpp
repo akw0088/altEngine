@@ -20,7 +20,7 @@ void Engine::init(void *param1, void *param2)
 	map.loadTextures(gfx);
 	initialized = true;
 
-	Entity *box = new Entity(10.0f, vec3(0.0f, 50.0f, 0.0f));
+	Entity *box = new Entity(10.0f, vec3(1.0f, 1.0f, 1.0f));
 	entities = box;
 	num_entities = 1;
 }
@@ -35,8 +35,10 @@ void Engine::render()
 	camera.set();
 
 //	gfx.drawText("media/maps/q3tourney3.bsp", 0.01f, 0.01f);
-	map.render(camera.pos, gfx);
-//	entities[0].render(gfx);
+	map.render(entities[0].position, gfx);
+	if (!keyboard.control)
+		entities[0].position = camera.pos;
+	entities[0].render(gfx);
 	gfx.swap();
 }
 
@@ -92,6 +94,8 @@ void Engine::keystroke(char *key, bool pressed)
 		keyboard.enter = pressed;
 	else if (strcmp("shift", key) == 0)
 		keyboard.shift = pressed;
+	else if (strcmp("control", key) == 0)
+		keyboard.control = pressed;
 	else if (strcmp("up", key) == 0)
 		keyboard.up = pressed;
 	else if (strcmp("left", key) == 0)
@@ -110,7 +114,7 @@ void Engine::resize(int width, int height)
 void Engine::destroy()
 {
 	initialized = false;
-//	map.unload();
+	map.unload();
 	gfx.destroy();
 	audio.destroy();
 }
