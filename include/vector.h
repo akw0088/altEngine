@@ -1,0 +1,40 @@
+#ifndef VECTOR_H
+#define VECTOR_H
+
+class vec3
+{
+public:
+	vec3();
+	vec3(float x, float y, float z);
+	vec3 &normalize();
+	float magnitude();
+
+	vec3 &operator=(const vec3 &vector);
+	vec3 operator+(const vec3 &vector);
+	vec3 operator-(const vec3 &vector);
+	float operator*(const vec3 &vector);
+	vec3 operator*(const float scalar);
+	vec3 &operator+=(const vec3 &vec);
+	vec3 &operator-=(const vec3 &vec);
+
+	static vec3 crossproduct(const vec3 &VecA, const vec3 &VecB);
+
+	float x;
+	float y;
+	float z;
+};
+
+class vec2
+{
+public:
+	vec2();
+	vec2(float x, float y);
+	vec2 &operator=(const vec2 &vector);
+	vec2 operator+(const vec2 &vector);
+	vec2 operator-(const vec2 &vector);
+
+	float x, y;
+};
+
+#endif
+
