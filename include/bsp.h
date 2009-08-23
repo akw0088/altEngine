@@ -9,7 +9,7 @@ public:
 	Bsp()
 	{
 	}
-	void tessellate(int level, vertex_t control[], int nControls, vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
+	void tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
 	void drawBox(int *min, int *max);
 	void render(vec3 &position, Graphics &gfx, Keyboard &keyboard);
 	void load(char *map);
@@ -22,5 +22,14 @@ public:
 private:
 	bsp_t		*tBsp;
 	bspData_t	data;
+
+	//for bezier patches
+	int			mesh_level;
+	int			*mesh_index2face;
+	vertex_t	**mesh_vertex_array;
+	int			**mesh_index_array;
+	int			*mesh_numVerts;
+	int			*mesh_numIndexes;
+	int			num_meshes;
 };
 

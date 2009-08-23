@@ -1,47 +1,12 @@
 #include "include.h"
 
-void Bsp::drawBox(int *min, int *max)
-{
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	glBegin(GL_LINES);
-	//bottom square
-	glVertex3i(min[0], min[2], -min[1]);
-	glVertex3i(max[0], min[2], -min[1]);
-	glVertex3i(min[0], min[2], -min[1]);
-	glVertex3i(min[0], max[2], -min[1]);
-	glVertex3i(max[0], max[2], -min[1]);
-	glVertex3i(max[0], min[2], -min[1]);
-	glVertex3i(max[0], max[2], -min[1]);
-	glVertex3i(min[0], max[2], -min[1]);
-	//top square                     
-	glVertex3i(min[0], min[2], -max[1]);
-	glVertex3i(max[0], min[2], -max[1]);
-	glVertex3i(min[0], min[2], -max[1]);
-	glVertex3i(min[0], max[2], -max[1]);
-	glVertex3i(max[0], max[2], -max[1]);
-	glVertex3i(max[0], min[2], -max[1]);
-	glVertex3i(max[0], max[2], -max[1]);
-	glVertex3i(min[0], max[2], -max[1]);
-	//remaining legs                 
-	glVertex3i(min[0], min[2], -min[1]);
-	glVertex3i(min[0], min[2], -max[1]);
-	glVertex3i(min[0], max[2], -max[1]);
-	glVertex3i(min[0], max[2], -min[1]);
-                                         
-	glVertex3i(max[0], min[2], -min[1]);
-	glVertex3i(max[0], min[2], -max[1]);
-	glVertex3i(max[0], max[2], -max[1]);
-	glVertex3i(max[0], max[2], -min[1]);
-	glEnd();
-	glEnable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
-}
-
 void Bsp::load(char *map)
 {
 	tBsp = (bsp_t *)getFile(map);
 	byte *pBsp = (byte *)tBsp;
+	int mesh_index = 0;
+
+	num_meshes = 0;
 
 	// init data
 	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
@@ -69,6 +34,34 @@ void Bsp::load(char *map)
 	data.numVis = tBsp->directory[VisData].length / sizeof(visData_t);
 
 	changeAxis();
+
+	// generate verticies from bezier patches
+	mesh_level = 16;
+	for (int i = 0; i < data.numFaces; i++)
+	{
+		face_t *face = &data.Face[i];
+
+		if (face->type == 2)
+			num_meshes++;
+	}
+
+	mesh_index2face = new int [num_meshes];
+	mesh_vertex_array = new vertex_t *[num_meshes];
+	mesh_index_array = new int *[num_meshes];
+	mesh_numVerts = new int [num_meshes];
+	mesh_numIndexes = new int [num_meshes];
+
+	for (int i = 0; i < data.numFaces; i++)
+	{
+		face_t *face = &data.Face[i];
+
+		if (face->type == 2)
+		{
+			tessellate(mesh_level, &(data.Vert[face->vertexIndex]), &mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index], &mesh_index_array[mesh_index], mesh_numIndexes[mesh_index]);
+			mesh_index2face[mesh_index] = face->vertexIndex;
+			mesh_index++;
+		}
+	}
 }
 
 void Bsp::changeAxis()
@@ -97,6 +90,8 @@ void Bsp::changeAxis()
 
 void Bsp::unload()
 {
+	// free mesh crap
+
 	free((void *)tBsp);
 }
 
@@ -127,6 +122,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, Keyboard &keyboard)
 	int numTriangles = 0;
 	char count[80];
 
+
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
 	for (int i = data.numLeafs - 1; i >= 0; i--)		// loop through all leaves, checking if leaf visible from current leaf
@@ -146,31 +142,34 @@ void Bsp::render(vec3 &position, Graphics &gfx, Keyboard &keyboard)
 			face_t *face = &data.Face[faceIndex];
 
 			// bezier patch
-			if ((face->type == 2) && (keyboard.control == true))
+			if ((face->type == 2))
 			{
-				int *index_array;
-				vertex_t *vertex_array;
-				int numVerts, numIndexes;
-				int level = 16;
+				int mesh_index = -1;
 
-				tessellate(level, &(data.Vert[face->vertexIndex]), face->size[0] * face->size[1], &vertex_array, numVerts, &index_array, numIndexes);
+				for( int k = 0; k < num_meshes; k++)
+				{
+					if (mesh_index2face[k] == face->vertexIndex)
+					{
+						mesh_index = k;
+						break;
+					}
+				}
 
-				gfx.VertexArray(vertex_array, numVerts);
-				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), numVerts);
+				if (mesh_index == -1)
+					throw -1;
+
+				gfx.VertexArray(mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index]);
+				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), mesh_numVerts[mesh_index]);
 //				gfx.NormalArray(  &(data.Vert[face->vertexIndex].vNormal), data.numVerts);
 
-				for( int row = 0; row < level; row++)
+				for( int row = 0; row < mesh_level; row++)
 				{
 					gfx.SelectTexture(face->textureID);
 					glDrawElements(GL_TRIANGLE_STRIP,
-						2 * (level + 1), GL_UNSIGNED_INT,
-						&index_array[row * 2 * (level + 1)]);
+						2 * (mesh_level + 1), GL_UNSIGNED_INT,
+						&mesh_index_array[mesh_index][row * 2 * (mesh_level + 1)]);
 					gfx.DeselectTexture();
 				}
-				delete vertex_array;
-				delete index_array;
-
-				numTriangles += face->numIndexes / 3;
 			}
 			else if (face->type == 4)
 			{
@@ -243,7 +242,7 @@ void Bsp::loadTextures(Graphics &gfx)
 	}
 }
 
-void Bsp::tessellate(int level, vertex_t control[], int nControls, vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes)
+void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes)
 {
 	int i, j;
 
@@ -295,4 +294,42 @@ void Bsp::tessellate(int level, vertex_t control[], int nControls, vertex_t **ve
 			(*index_array)[(i * numVerts + j) * 2] = (i + 1) * numVerts + j;
 		}
 	}
+}
+
+void Bsp::drawBox(int *min, int *max)
+{
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+	glBegin(GL_LINES);
+	//bottom square
+	glVertex3i(min[0], min[2], -min[1]);
+	glVertex3i(max[0], min[2], -min[1]);
+	glVertex3i(min[0], min[2], -min[1]);
+	glVertex3i(min[0], max[2], -min[1]);
+	glVertex3i(max[0], max[2], -min[1]);
+	glVertex3i(max[0], min[2], -min[1]);
+	glVertex3i(max[0], max[2], -min[1]);
+	glVertex3i(min[0], max[2], -min[1]);
+	//top square                     
+	glVertex3i(min[0], min[2], -max[1]);
+	glVertex3i(max[0], min[2], -max[1]);
+	glVertex3i(min[0], min[2], -max[1]);
+	glVertex3i(min[0], max[2], -max[1]);
+	glVertex3i(max[0], max[2], -max[1]);
+	glVertex3i(max[0], min[2], -max[1]);
+	glVertex3i(max[0], max[2], -max[1]);
+	glVertex3i(min[0], max[2], -max[1]);
+	//remaining legs                 
+	glVertex3i(min[0], min[2], -min[1]);
+	glVertex3i(min[0], min[2], -max[1]);
+	glVertex3i(min[0], max[2], -max[1]);
+	glVertex3i(min[0], max[2], -min[1]);
+                                         
+	glVertex3i(max[0], min[2], -min[1]);
+	glVertex3i(max[0], min[2], -max[1]);
+	glVertex3i(max[0], max[2], -max[1]);
+	glVertex3i(max[0], max[2], -min[1]);
+	glEnd();
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
 }
