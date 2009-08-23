@@ -35,7 +35,7 @@ void Engine::render()
 	camera.set();
 
 //	gfx.drawText("media/maps/q3tourney3.bsp", 0.01f, 0.01f);
-	map.render(entities[0].position, gfx);
+	map.render(entities[0].position, gfx, keyboard);
 	if (!keyboard.control)
 		entities[0].position = camera.pos;
 	entities[0].render(gfx);

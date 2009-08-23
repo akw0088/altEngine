@@ -11,7 +11,7 @@ public:
 	}
 	void tessellate(int level, vertex_t control[], int nControls, vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
 	void drawBox(int *min, int *max);
-	void render(vec3 &position, Graphics &graphics);
+	void render(vec3 &position, Graphics &gfx, Keyboard &keyboard);
 	void load(char *map);
 	void loadTextures(Graphics &graphics);
 	void unload();

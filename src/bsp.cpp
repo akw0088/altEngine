@@ -121,7 +121,7 @@ int Bsp::findLeaf(const vec3 &position)
 }
 
 
-void Bsp::render(vec3 &position, Graphics &gfx)
+void Bsp::render(vec3 &position, Graphics &gfx, Keyboard &keyboard)
 {
 	int frameIndex = findLeaf(position);
 	int numTriangles = 0;
@@ -146,7 +146,7 @@ void Bsp::render(vec3 &position, Graphics &gfx)
 			face_t *face = &data.Face[faceIndex];
 
 			// bezier patch
-			if (face->type == 2)
+			if ((face->type == 2) && (keyboard.control == true))
 			{
 				int *index_array;
 				vertex_t *vertex_array;
@@ -156,16 +156,16 @@ void Bsp::render(vec3 &position, Graphics &gfx)
 				tessellate(level, &(data.Vert[face->vertexIndex]), face->size[0] * face->size[1], &vertex_array, numVerts, &index_array, numIndexes);
 
 				gfx.VertexArray(vertex_array, numVerts);
-//				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), numVerts);
+				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), numVerts);
 //				gfx.NormalArray(  &(data.Vert[face->vertexIndex].vNormal), data.numVerts);
 
 				for( int row = 0; row < level; row++)
 				{
-//					gfx.SelectTexture(face->textureID);
-					glDrawElements(GL_LINE_STRIP,
+					gfx.SelectTexture(face->textureID);
+					glDrawElements(GL_TRIANGLE_STRIP,
 						2 * (level + 1), GL_UNSIGNED_INT,
 						&index_array[row * 2 * (level + 1)]);
-//					gfx.DeselectTexture();
+					gfx.DeselectTexture();
 				}
 				delete vertex_array;
 				delete index_array;
@@ -269,10 +269,9 @@ void Bsp::tessellate(int level, vertex_t control[], int nControls, vertex_t **ve
 
 		vertex_t temp[3];
 
-		for ( j = 0; j < 3; j++)
-		temp[j].vPosition = control[j].vPosition * (b * b) + 
-				control[j + 1].vPosition * (2 * b * a) +
-				control[j + 2].vPosition * (a * a);
+		temp[0].vPosition = control[0].vPosition * (b * b) + control[1].vPosition * (2 * b * a) + control[2].vPosition * (a * a);
+		temp[1].vPosition = control[3].vPosition * (b * b) + control[4].vPosition * (2 * b * a) + control[5].vPosition * (a * a);
+		temp[2].vPosition = control[6].vPosition * (b * b) + control[7].vPosition * (2 * b * a) + control[8].vPosition * (a * a);
 
 		for(j = 0; j <= level; j++)
 		{
