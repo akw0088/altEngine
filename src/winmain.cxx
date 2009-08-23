@@ -79,6 +79,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static HDC		hdc;
 	static HGLRC	hglrc;
 	static Engine	altEngine;
+	static POINT	center;
 
 	switch (message)
 	{
@@ -111,8 +112,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			x = LOWORD(lParam);
 			y = HIWORD(lParam);
-			if (wParam & MK_LBUTTON)
-				altEngine.mousepos(x, y);
+
+			if ((x == center.x) && (y == center.y))
+				return 0;
+
+			if ( altEngine.mousepos(x, y, x - center.x, y - center.y) )
+			{
+				POINT screen = center;
+				ClientToScreen(hwnd, &screen);
+				SetCursorPos(screen.x, screen.y);
+			}
 		}
 		return 0;
 
@@ -131,6 +140,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case VK_CONTROL:
 				altEngine.keystroke("control", pressed);
+				break;
+			case VK_ESCAPE:
+				altEngine.keystroke("escape", pressed);
 				break;
 			case VK_UP:
 				altEngine.keystroke("up", pressed);
@@ -153,6 +165,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			width	= LOWORD(lParam);
 			height	= HIWORD(lParam);
+			center.x = width / 2;
+			center.y = height / 2;
 			altEngine.resize(width, height);
 		}
 		return 0;

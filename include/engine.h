@@ -14,7 +14,7 @@ public:
 	void init(void *param1, void *param2);
 	void render();
 	void step();
-	void mousepos(int x, int y);
+	bool mousepos(int x, int y, int deltax, int deltay);
 	void keystroke(char *key, bool pressed);
 	void resize(int width, int height);
 	void destroy();

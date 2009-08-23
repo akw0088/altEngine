@@ -72,9 +72,10 @@ int main(int argc, char *argv[])
 
 int EventProc(Display *display, Window window, GLXContext context)
 {
-	XEvent		event;
+	XEvent			event;
 	static Engine	altEngine;
-	static bool init = false;
+	static bool		init = false;
+	static int		xcenter, ycenter;
 
 	if (display == NULL)
 	{
@@ -90,21 +91,30 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case ConfigureNotify:
 		printf("ConfigureNotify\n");
+		xcenter = event.xconfigure.width / 2;
+		ycenter = event.xconfigure.height / 2;
 		altEngine.resize(event.xconfigure.width, event.xconfigure.height);
 		break;
 	case MapNotify:
 		printf("MapNotify\n");
 		break;
-        case ButtonPress:
+	case ButtonPress:
 		printf("ButtonPress\n");
 		break;
-        case ButtonRelease:
+	case ButtonRelease:
 		printf("ButtonRelease\n");
 		break;
-        case MotionNotify:
+	case MotionNotify:
 		printf("MotionNotify\n");
-		if (event.xmotion.state & (Button1Mask | Button2Mask | Button3Mask))
-			altEngine.mousepos(event.xmotion.x, event.xmotion.y);
+
+		if ((event.xmotion.x == xcenter) && (event.xmotion.y == ycenter))
+			break;
+
+		if ( altEngine.mousepos(event.xmotion.x, event.xmotion.y,
+			 event.xmotion.x - xcenter, event.xmotion.y - ycenter) )
+		{
+			XWarpPointer(display, None, window, 0, 0, 0, 0, xcenter, ycenter);
+		}
 		break;
 	case KeyPress:
 	case KeyRelease:
@@ -125,6 +135,9 @@ int EventProc(Display *display, Window window, GLXContext context)
 			case XK_Control_L:
 			case XK_Control_R:
 				altEngine.keystroke("control", pressed);
+				break;
+			case XK_Escape:
+				altEngine.keystroke("escape", pressed);
 				break;
 			case XK_Up:
 				altEngine.keystroke("up", pressed);
@@ -149,9 +162,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 		if (!init)
 			altEngine.init((void *)display, (void *)&window);
-		init = true;	
-		if (event.xexpose.count != 0)
-			break;
+		init = true;
 		break;
 	case DestroyNotify:
 		printf("DestroyNotify\n");

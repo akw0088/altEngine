@@ -170,6 +170,7 @@ void Bsp::render(vec3 &position, Graphics &gfx)
 				numTriangles += face->numIndexes / 3;
 			}
 		}
+/*
 		if (frameIndex == i)
 		{
 			glColor3f(0.0f, 1.0f, 0.0f);
@@ -178,6 +179,7 @@ void Bsp::render(vec3 &position, Graphics &gfx)
 			glColor3f(1.0f, 0.0f, 0.0f);
 			drawBox(leaf->mins, leaf->maxs);
 		}
+*/
 	}
 	
 	snprintf(count, 80, "%d Triangles rendered %f %f %f", numTriangles, position.x, position.y, position.z);

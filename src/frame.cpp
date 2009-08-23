@@ -62,7 +62,7 @@ void Frame::update(Keyboard &keyboard)
 {
 	vec3	right;
 
-#define SPEED 16.0f
+#define SPEED 8.0f
 	right = vec3::crossproduct(up, forward);
 	if (keyboard.up)
 		pos -= forward * SPEED;
@@ -78,18 +78,11 @@ void Frame::update(Keyboard &keyboard)
 		pos.y -= SPEED;
 }
 
-void Frame::update(const vec2 &mouse)
+void Frame::update(const vec2 &delta)
 {
-	static vec2	old;
-	vec2		delta;
 	vec3		right;
 
-	if (mouse.x == old.x && mouse.y == old.y)
-		return;
 
-	delta.x = mouse.x - old.x;
-	delta.y = mouse.y - old.y;
-	old = mouse;
 
 //"camera"
 	// Left / Right

@@ -49,7 +49,6 @@ using namespace std;
 #include "keyboard.h"
 #include "graphics.h"
 #include "bspTypes.h"
-#include "voxel.h"
 #include "entity.h"
 #include "frame.h"
 #include "bsp.h"

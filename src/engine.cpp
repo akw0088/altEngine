@@ -69,23 +69,13 @@ void Engine::step()
 	}
 }
 
-void Engine::mousepos(int x, int y)
+bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
-	static int old_x = 0;
-	static int old_y = 0;
+	if (keyboard.escape)
+		return false;
 
-	vec3 force;
-
-	force.x = x - old_x;
-	force.y = y - old_y;
-	force.z = 0;
-
-	old_x = x;
-	old_y = y;
-
-	camera.update(vec2((float)x,(float)y));
-	// apply force to player entity
-	//entities[0].add_torque(force);
+	camera.update(vec2(deltax, deltay));
+	return true;
 }
 
 void Engine::keystroke(char *key, bool pressed)
@@ -96,6 +86,8 @@ void Engine::keystroke(char *key, bool pressed)
 		keyboard.shift = pressed;
 	else if (strcmp("control", key) == 0)
 		keyboard.control = pressed;
+	else if (strcmp("escape", key) == 0)
+		keyboard.escape = pressed;
 	else if (strcmp("up", key) == 0)
 		keyboard.up = pressed;
 	else if (strcmp("left", key) == 0)
