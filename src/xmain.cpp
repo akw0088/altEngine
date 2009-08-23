@@ -110,8 +110,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 		if ((event.xmotion.x == xcenter) && (event.xmotion.y == ycenter))
 			break;
 
-		if ( altEngine.mousepos(event.xmotion.x, event.xmotion.y,
-			 event.xmotion.x - xcenter, event.xmotion.y - ycenter) )
+		if ( altEngine.mousepos(event.xmotion.x, event.xmotion.y, event.xmotion.x - xcenter, event.xmotion.y - ycenter) )
 		{
 			XWarpPointer(display, None, window, 0, 0, 0, 0, xcenter, ycenter);
 		}

@@ -145,9 +145,32 @@ void Bsp::render(vec3 &position, Graphics &gfx)
 			int faceIndex = data.LeafFace[leaf->leafface + j];
 			face_t *face = &data.Face[faceIndex];
 
+			// bezier patch
 			if (face->type == 2)
 			{
-				// bezier patch
+				int *index_array;
+				vertex_t *vertex_array;
+				int numVerts, numIndexes;
+				int level = 16;
+
+				tessellate(level, &(data.Vert[face->vertexIndex]), face->size[0] * face->size[1], &vertex_array, numVerts, &index_array, numIndexes);
+
+				gfx.VertexArray(vertex_array, numVerts);
+//				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), numVerts);
+//				gfx.NormalArray(  &(data.Vert[face->vertexIndex].vNormal), data.numVerts);
+
+				for( int row = 0; row < level; row++)
+				{
+//					gfx.SelectTexture(face->textureID);
+					glDrawElements(GL_LINE_STRIP,
+						2 * (level + 1), GL_UNSIGNED_INT,
+						&index_array[row * 2 * (level + 1)]);
+//					gfx.DeselectTexture();
+				}
+				delete vertex_array;
+				delete index_array;
+
+				numTriangles += face->numIndexes / 3;
 			}
 			else if (face->type == 4)
 			{
@@ -220,3 +243,57 @@ void Bsp::loadTextures(Graphics &gfx)
 	}
 }
 
+void Bsp::tessellate(int level, vertex_t control[], int nControls, vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes)
+{
+	int i, j;
+
+	numVerts = level + 1;
+
+//	allocate nVerts * nVerts verticies
+	*vertex_array = new vertex_t[numVerts * numVerts];
+
+
+	for (i = 0; i <= level; i++)
+	{
+		float a = (float) i / level;
+		float b = 1.0f - a;
+		(*vertex_array)[i].vPosition = control[0].vPosition * (b * b) +
+			control[3].vPosition * (2 * b * a) +
+			control[6].vPosition * (a * a);
+	}
+
+	for ( i = 1; i <= level; i++)
+	{
+		float a = (float)i / level;
+		float b = 1.0f - a;
+
+		vertex_t temp[3];
+
+		for ( j = 0; j < 3; j++)
+		temp[j].vPosition = control[j].vPosition * (b * b) + 
+				control[j + 1].vPosition * (2 * b * a) +
+				control[j + 2].vPosition * (a * a);
+
+		for(j = 0; j <= level; j++)
+		{
+			float a = (float) j / level;
+			float b = 1.0f - a;
+
+			(*vertex_array)[i * numVerts + j].vPosition =
+				temp[0].vPosition * (b * b) +
+				temp[1].vPosition * (2 * b * a) +
+				temp[2].vPosition * (a * a);
+		}
+	}
+	
+	numIndexes = level * numVerts * 2;
+	*index_array = new int[numIndexes];
+	for (i = 0; i < level; i++)
+	{
+		for(j = 0; j <= level; j++)
+		{
+			(*index_array)[(i * numVerts + j) * 2 + 1] = i * numVerts + j;
+			(*index_array)[(i * numVerts + j) * 2] = (i + 1) * numVerts + j;
+		}
+	}
+}

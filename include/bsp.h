@@ -9,6 +9,7 @@ public:
 	Bsp()
 	{
 	}
+	void tessellate(int level, vertex_t control[], int nControls, vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
 	void drawBox(int *min, int *max);
 	void render(vec3 &position, Graphics &graphics);
 	void load(char *map);
