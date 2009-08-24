@@ -10,8 +10,9 @@ public:
 	{
 	}
 	void tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
+	void generateMeshes();
 	void drawBox(int *min, int *max);
-	void render(vec3 &position, Graphics &gfx, Keyboard &keyboard);
+	void render(Entity &entity, Graphics &gfx, Keyboard &keyboard);
 	void load(char *map);
 	void loadTextures(Graphics &graphics);
 	void unload();

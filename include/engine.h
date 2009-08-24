@@ -8,7 +8,6 @@ class Engine
 public:
 	Engine()
 	{
-		initialized = false;
 	}
 
 	void init(void *param1, void *param2);
@@ -17,17 +16,16 @@ public:
 	bool mousepos(int x, int y, int deltax, int deltay);
 	void keystroke(char *key, bool pressed);
 	void resize(int width, int height);
+	void addEntity(Entity &entity);
 	void destroy();
 	~Engine()
 	{
 	}
 private:
-	bool		initialized;
 	Bsp			map;
-//	voxel		map;
 	Graphics	gfx;
 	Sound		audio;
-	Entity		*entities;
+	Entity		**entity_list;
 	int			num_entities;
 	Frame		camera;
 	Keyboard	keyboard;

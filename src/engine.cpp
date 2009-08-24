@@ -16,29 +16,33 @@ void Engine::init(void *param1, void *param2)
 	}
 
 	gfx.init(param1, param2);
-	map.load("media/maps/q3tourney3.bsp");
-	map.loadTextures(gfx);
-	initialized = true;
+	try
+	{
+		map.load("media/maps/q3tourney3.bsp");
+	}
+	catch (char *error)
+	{
+		printf("%s\n", error);
+		throw error;
+	}
 
+	map.loadTextures(gfx);
 	Entity *box = new Entity(10.0f, vec3(1.0f, 1.0f, 1.0f));
-	entities = box;
-	num_entities = 1;
+	addEntity(*box);
 }
 
 void Engine::render()
 {
-	if (!initialized)
-		return;
-
 	gfx.clear();
+
 	camera.update(keyboard);
+	if (!keyboard.control)
+		entity_list[0]->position = camera.pos;
 	camera.set();
 
 //	gfx.drawText("media/maps/q3tourney3.bsp", 0.01f, 0.01f);
-	map.render(entities[0].position, gfx, keyboard);
-	if (!keyboard.control)
-		entities[0].position = camera.pos;
-	entities[0].render(gfx);
+	map.render(*entity_list[0], gfx, keyboard);
+	entity_list[0]->render(gfx);
 	gfx.swap();
 }
 
@@ -48,25 +52,40 @@ void Engine::step()
 
 	for(int i = 0; i < num_entities; i++)
 	{
-		entities[i].net_force = vec3(0.0f, -9.8f, 0.0f);
-		entities[i].integrate(0.016f);
+		//entity[i].net_force = vec3(0.0f, -9.8f, 0.0f);
+		entity_list[i]->integrate(0.016f);
 	}
 
 	for(int i = 0; i < num_entities; i++)
 	{
 		for(int j = 1; j < num_entities; j++)
 		{
-			if ( entities[i].collision_detect(entities[j]) )
+			if ( entity_list[i]->collision_detect(*entity_list[j]) )
 			{
 				// collision detected
 			}
 		}
 
-		if ( entities[i].collision_detect(p) )
+		if ( entity_list[i]->collision_detect(p) )
 		{
 			// collision with ground plane
 		}
 	}
+}
+
+void Engine::addEntity(Entity &entity)
+{
+	Entity	**old = entity_list;
+	int		i;
+
+	num_entities++;
+	entity_list = new Entity *[num_entities];
+
+	for (i = 0; i < num_entities - 1; i++)
+		entity_list[i] = old[i];
+
+	entity_list[i] = &entity;
+	delete [] old;
 }
 
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
@@ -74,7 +93,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 	if (keyboard.escape)
 		return false;
 
-	camera.update(vec2(deltax, deltay));
+	camera.update(vec2((float)deltax, (float)deltay));
 	return true;
 }
 
@@ -105,7 +124,6 @@ void Engine::resize(int width, int height)
 
 void Engine::destroy()
 {
-	initialized = false;
 	map.unload();
 	gfx.destroy();
 	audio.destroy();

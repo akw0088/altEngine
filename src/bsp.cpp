@@ -4,9 +4,14 @@ void Bsp::load(char *map)
 {
 	tBsp = (bsp_t *)getFile(map);
 	byte *pBsp = (byte *)tBsp;
-	int mesh_index = 0;
 
-	num_meshes = 0;
+	if (tBsp == NULL)
+	{
+		char err[80];
+
+		snprintf(err, 80, "Unable to load bsp %s.\n", map);
+		throw err;
+	}
 
 	// init data
 	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
@@ -34,9 +39,16 @@ void Bsp::load(char *map)
 	data.numVis = tBsp->directory[VisData].length / sizeof(visData_t);
 
 	changeAxis();
+	generateMeshes();
+}
 
-	// generate verticies from bezier patches
-	mesh_level = 16;
+void Bsp::generateMeshes()
+{
+	int mesh_index = 0;
+
+	num_meshes = 0;
+	mesh_level = 8;
+
 	for (int i = 0; i < data.numFaces; i++)
 	{
 		face_t *face = &data.Face[i];
@@ -90,8 +102,11 @@ void Bsp::changeAxis()
 
 void Bsp::unload()
 {
-	// free mesh crap
-
+	delete [] mesh_index2face;
+	delete [] mesh_vertex_array;
+	delete [] mesh_index_array;
+	delete [] mesh_numVerts;
+	delete [] mesh_numIndexes;
 	free((void *)tBsp);
 }
 
@@ -116,11 +131,11 @@ int Bsp::findLeaf(const vec3 &position)
 }
 
 
-void Bsp::render(vec3 &position, Graphics &gfx, Keyboard &keyboard)
+void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 {
-	int frameIndex = findLeaf(position);
+	int frameIndex = findLeaf(entity.position);
 	int numTriangles = 0;
-	char count[80];
+	char msg[80];
 
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
@@ -131,9 +146,6 @@ void Bsp::render(vec3 &position, Graphics &gfx, Keyboard &keyboard)
 
 		if ( !isClusterVisible(frameLeaf->cluster, leaf->cluster) )
 			continue;
-
-//		if ( !isFrustumVisible() )
-//			continue;
 
 		int numFaces = leaf->numOfLeafFaces;
 		for (int j = numFaces - 1; j >= 0; j--) 	// draw faces within visible leaf's
@@ -192,22 +204,11 @@ void Bsp::render(vec3 &position, Graphics &gfx, Keyboard &keyboard)
 				numTriangles += face->numIndexes / 3;
 			}
 		}
-/*
-		if (frameIndex == i)
-		{
-			glColor3f(0.0f, 1.0f, 0.0f);
-			drawBox(leaf->mins, leaf->maxs);
-		} else {
-			glColor3f(1.0f, 0.0f, 0.0f);
-			drawBox(leaf->mins, leaf->maxs);
-		}
-*/
 	}
 	
-	snprintf(count, 80, "%d Triangles rendered %f %f %f", numTriangles, position.x, position.y, position.z);
-	gfx.drawText(count, 0.01f, 0.02f);
+	snprintf(msg, 80, "%d Triangles rendered %f %f %f", numTriangles, entity.position.x, entity.position.y, entity.position.z);
+	gfx.drawText(msg, 0.01f, 0.02f);
 }
-
 
 int Bsp::isClusterVisible(int visCluster, int testCluster)
 {
@@ -235,8 +236,11 @@ void Bsp::loadTextures(Graphics &gfx)
 		int			width, height, components, format;
 		char	buffer[120];
 
-		sprintf(buffer, "media/%s.tga", texture->name);
+		snprintf(buffer, 120, "media/%s.tga", texture->name);
 		bytes = gltLoadTGA(buffer, &width, &height, &components, &format);
+		if (bytes == NULL)
+			printf("Unable to load texture %s\n", buffer);
+
 		gfx.LoadTexture(i, width, height, components, format, bytes);
 		free((void *)bytes);
 	}
@@ -248,9 +252,7 @@ void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int
 
 	numVerts = level + 1;
 
-//	allocate nVerts * nVerts verticies
 	*vertex_array = new vertex_t[numVerts * numVerts];
-
 
 	for (i = 0; i <= level; i++)
 	{
