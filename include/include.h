@@ -50,6 +50,7 @@ using namespace std;
 #include "graphics.h"
 #include "bspTypes.h"
 #include "entity.h"
+#include "parse.h"
 #include "frame.h"
 #include "bsp.h"
 #include "sound.h"

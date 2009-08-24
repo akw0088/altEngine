@@ -1,5 +1,25 @@
 #include "entity.h"
 
+void Entity_list::addEntity(Entity *entity)
+{
+	Entity	**old = entity_list;
+	int		i;
+
+	num_entities++;
+	entity_list = new Entity *[num_entities];
+
+	for (i = 0; i < num_entities - 1; i++)
+		entity_list[i] = old[i];
+
+	entity_list[i] = entity;
+	delete [] old;
+}
+
+Entity &Entity_list::operator[](int index)
+{
+	return *entity_list[index];
+}
+
 Entity::Entity(const Entity &entity)
 {
 	memcpy(this, &entity, sizeof(Entity));

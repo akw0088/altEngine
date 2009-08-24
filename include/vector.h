@@ -10,6 +10,7 @@ public:
 	float magnitude();
 
 	vec3 &operator=(const vec3 &vector);
+	bool operator==(const vec3 &vector);
 	vec3 operator+(const vec3 &vector);
 	vec3 operator-(const vec3 &vector);
 	vec3 operator-() const;

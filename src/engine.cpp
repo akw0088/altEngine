@@ -3,6 +3,7 @@
 void Engine::init(void *param1, void *param2)
 {
 	wave_t	wave;
+	Parse parse;
 
 	try
 	{
@@ -27,22 +28,37 @@ void Engine::init(void *param1, void *param2)
 	}
 
 	map.loadTextures(gfx);
-	Entity *box = new Entity(10.0f, vec3(1.0f, 1.0f, 1.0f));
-	addEntity(*box);
+	Entity *box = new Entity(10.0f, vec3(0.0f, 0.0f, 0.0f));
+	entity_list.addEntity(box);
+	parse.parse_entity(map.getEnts(), entity_list);
 }
 
 void Engine::render()
 {
+	char msg[80];
+	int i, j;
+
 	gfx.clear();
 
 	camera.update(keyboard);
 	if (!keyboard.control)
-		entity_list[0]->position = camera.pos;
-	camera.set();
+	{
+		entity_list[0].position = camera.pos;
+	}
 
-//	gfx.drawText("media/maps/q3tourney3.bsp", 0.01f, 0.01f);
-	map.render(*entity_list[0], gfx, keyboard);
-	entity_list[0]->render(gfx);
+	camera.set();
+	map.render(entity_list[0], gfx, keyboard);
+	for (i = 0, j = 0; i < entity_list.num_entities; i++)
+	{
+		if (entity_list[i].position == vec3(0.0f, 0.0f, 0.0f))
+			continue;
+		entity_list[i].render(gfx);
+		camera.set();
+		j++;
+	}
+
+	snprintf(msg, 80, "Rendered %d entities %f %f %f", j, entity_list[12].position.x, entity_list[12].position.y, entity_list[12].position.z);
+	gfx.drawText(msg, 0.01f, 0.05f);
 	gfx.swap();
 }
 
@@ -50,42 +66,27 @@ void Engine::step()
 {
 	plane	p = {0.0f, 1.0f, 0.0f, -1.0f};
 
-	for(int i = 0; i < num_entities; i++)
+	for(int i = 0; i < entity_list.num_entities; i++)
 	{
 		//entity[i].net_force = vec3(0.0f, -9.8f, 0.0f);
-		entity_list[i]->integrate(0.016f);
+		entity_list[i].integrate(0.016f);
 	}
 
-	for(int i = 0; i < num_entities; i++)
+	for(int i = 0; i < entity_list.num_entities; i++)
 	{
-		for(int j = 1; j < num_entities; j++)
+		for(int j = 1; j < entity_list.num_entities; j++)
 		{
-			if ( entity_list[i]->collision_detect(*entity_list[j]) )
+			if ( entity_list[i].collision_detect(entity_list[j]) )
 			{
 				// collision detected
 			}
 		}
 
-		if ( entity_list[i]->collision_detect(p) )
+		if ( entity_list[i].collision_detect(p) )
 		{
 			// collision with ground plane
 		}
 	}
-}
-
-void Engine::addEntity(Entity &entity)
-{
-	Entity	**old = entity_list;
-	int		i;
-
-	num_entities++;
-	entity_list = new Entity *[num_entities];
-
-	for (i = 0; i < num_entities - 1; i++)
-		entity_list[i] = old[i];
-
-	entity_list[i] = &entity;
-	delete [] old;
 }
 
 bool Engine::mousepos(int x, int y, int deltax, int deltay)

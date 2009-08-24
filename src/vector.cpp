@@ -147,3 +147,11 @@ vec2 vec2::operator-(const vec2 &vector)
 	return temp;
 }
 
+bool vec3::operator==(const vec3 &vector)
+{
+	if ((x == vector.x) && (y == vector.y) && (z == vector.z))
+		return true;
+	else
+		return false;
+}
+

@@ -16,7 +16,6 @@ public:
 	bool mousepos(int x, int y, int deltax, int deltay);
 	void keystroke(char *key, bool pressed);
 	void resize(int width, int height);
-	void addEntity(Entity &entity);
 	void destroy();
 	~Engine()
 	{
@@ -25,8 +24,7 @@ private:
 	Bsp			map;
 	Graphics	gfx;
 	Sound		audio;
-	Entity		**entity_list;
-	int			num_entities;
+	Entity_list	entity_list;
 	Frame		camera;
 	Keyboard	keyboard;
 };

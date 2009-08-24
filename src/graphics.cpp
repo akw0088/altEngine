@@ -195,7 +195,6 @@ void Graphics::resize(int width, int height)
 void Graphics::clear()
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	glLoadIdentity();
 }
 
 void Graphics::loadMatrix(const float *matrix)

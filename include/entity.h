@@ -9,6 +9,9 @@ public:
 	Entity(const Entity &entity);
 
 	Entity(float mass, const vec3 &position);
+	~Entity()
+	{
+	}
 
 	vec3 velocity();
 	void render(Graphics &gfx);
@@ -40,6 +43,19 @@ public:
 
 	//Virtual
 	vec3			aabb[2];
+};
+
+class Entity_list
+{
+public:
+	void addEntity(Entity *entity);
+	void removeEntity(Entity *entity);
+	Entity &operator[](int index);
+
+	int		num_entities;
+private:
+	Entity	**entity_list;
+
 };
 
 #endif

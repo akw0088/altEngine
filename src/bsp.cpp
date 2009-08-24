@@ -99,6 +99,11 @@ void Bsp::changeAxis()
 	}
 }
 
+const char *Bsp::getEnts()
+{
+	return (const char *)data.Ent;
+}
+
 
 void Bsp::unload()
 {
@@ -166,9 +171,6 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 						break;
 					}
 				}
-
-				if (mesh_index == -1)
-					throw -1;
 
 				gfx.VertexArray(mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index]);
 				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), mesh_numVerts[mesh_index]);
