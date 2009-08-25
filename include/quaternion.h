@@ -1,6 +1,9 @@
 #include "vector.h"
 #include "matrix.h"
 
+#ifndef QUATERNION_H
+#define QUATERNION_H
+
 class quaternion
 {
 public:
@@ -22,3 +25,4 @@ public:
 	float z;
 };
 
+#endif

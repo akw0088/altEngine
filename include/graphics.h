@@ -1,5 +1,8 @@
 #include "include.h"
 
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
+
 class Graphics
 {
 public:
@@ -15,7 +18,7 @@ public:
 	void VertexArray(void *vert, int numVerts);
 	void TextureArray(void *tex, int numTexs);
 	void NormalArray(void *normal, int numNormals);
-	void DrawArray(void *Indexes, int numIndexes );
+	void DrawArray(char *type, void *Indexes, int numIndexes );
 
 	void InitTextures(int numTextures);
 	void SelectTexture(int index);
@@ -45,3 +48,4 @@ private:
 #endif
 };
 
+#endif

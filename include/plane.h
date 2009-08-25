@@ -1,15 +1,30 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-class plane
+class Plane
 {
 public:
+	void draw_plane();
 
-	float a;
-	float b;
-	float c;
-	float d;
+	vec3	normal;
+	float	d;
 };
 
 #endif
+
+/*
+unsigned getTimeStamp(void)
+{
+	unsigned timestamp = 0;
+
+	_asm
+	{
+		// rdtsc returns 64bit "timestamp" in edx:eax, timestamp is really a count of clock cycles
+		rdtsc
+		// we are only interested in small time intervals, so highword is worthless,
+		mov	DWORD PTR timestamp, eax
+	}
+	return timestamp;
+}
+*/
 

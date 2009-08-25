@@ -1,24 +1,40 @@
 #include "include.h"
 
-Parse::Parse()
+void addKey(Entity &entity, char *key, char *val)
 {
-	memset(stack, 0, 80);
-	sp = 0;
+	if (strcmp(key, "origin") == 0)
+	{
+		int x, y, z;
+
+		sscanf(val, "%d %d %d", &x, &y, &z);
+		entity.position.x = (float)x;
+		entity.position.y = (float)z;
+		entity.position.z = (float)-y;
+	}
+	else if (strcmp(key, "classname") == 0)
+	{
+		if (strcmp(val, "light") == 0)
+		{
+			entity.angular_momentum.x = 10.0;
+			entity.angular_momentum.y = 10.0;
+		}
+	}
 }
 
-bool Parse::parse_entity(const char *input, Entity_list &entity_list)
+bool parse_entity(const char *input, Entity_list &entity_list)
 {
 	Entity *entity;
 	char state = 'S';
 	char prevstate = 'S';
-	char key[80];
-	char val[80];
+	char key[80], val[80];
+	char stack[80] = {0};
+	int sp = 0;
 	int i, j;
 
 	for(i = 0; state != 'F' && state != '\0' && i < strlen(input); i++)
 	{		
 		prevstate = state;
-		state = machine(state, input[i]);
+		state = machine(state, input[i], stack, sp);
 
 		switch (state)
 		{
@@ -49,26 +65,7 @@ bool Parse::parse_entity(const char *input, Entity_list &entity_list)
 			break;
 		case 'R':
 			i--;
-//			printf("%s = %s\n", key, val);
-			if (strcmp(key, "origin") == 0)
-			{
-				int x, y, z;
-
-				sscanf(val, "%d %d %d", &x, &y, &z);
-				// change axis
-				//y = z;
-				//z = -y;
-				entity->position.x = (float)x;
-				entity->position.y = (float)z;
-				entity->position.z = (float)-y;
-			}
-			else if (strcmp(key, "classname") == 0)
-			{
-				if (strcmp(val, "light") == 0)
-				{
-					entity->angular_momentum.x = 100.0;
-				}
-			}
+			addKey(*entity, key, val);
 			break;
 		}
 	}
@@ -79,7 +76,7 @@ bool Parse::parse_entity(const char *input, Entity_list &entity_list)
 		return false;
 }
 
-char Parse::machine(char state, char input)
+char machine(char state, char input, char *stack, int &sp)
 {
 	switch (state)
 	{
@@ -87,7 +84,7 @@ char Parse::machine(char state, char input)
 		switch (input)
 		{
 		case '{':
-			push('}');
+			push('}', stack, sp);
 			return 'A';
 		case '\n':
 			return 'S';
@@ -100,10 +97,10 @@ char Parse::machine(char state, char input)
 		switch (input)
 		{
 		case '"':
-			push('"');
+			push('"', stack, sp);
 			return 'K';
 		case '}':
-			pop('}');
+			pop('}', stack, sp);
 			return 'S';
 		case ' ':
 			return 'A';
@@ -116,7 +113,7 @@ char Parse::machine(char state, char input)
 		switch (input)
 		{
 		case '"':
-			push('"');
+			push('"', stack, sp);
 			return 'V';
 		case ' ':
 			return 'B';
@@ -129,7 +126,7 @@ char Parse::machine(char state, char input)
 		switch (input)
 		{
 		case '"':
-			pop('"');
+			pop('"', stack, sp);
 			return 'B';
 		}
 		return 'K';
@@ -138,7 +135,7 @@ char Parse::machine(char state, char input)
 		switch (input)
 		{
 		case '"':
-			pop('"');
+			pop('"', stack, sp);
 			return 'R';
 
 		}
@@ -153,13 +150,13 @@ char Parse::machine(char state, char input)
 	return '\0';
 }
 
-void Parse::push(char input)
+void push(char input, char *stack, int &sp)
 {
 	stack[sp] = input;
 	sp++;
 }
 
-void Parse::pop(char input)
+void pop(char input, char *stack, int &sp)
 {
 	if (stack[sp - 1] == input)
 		sp--;

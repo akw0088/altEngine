@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	XMapWindow(display, window);
 	glXMakeCurrent(display, window, context);
 
-	printf("GL Version: %f\n", glGetString(GL_VERSION));
+	printf("GL Version: %s\n", glGetString(GL_VERSION));
 
 	while (True)
 	{

@@ -229,9 +229,17 @@ void Graphics::NormalArray(void *normal_array, int num_normal)
 	glNormalPointer(GL_FLOAT, sizeof(vertex_t), normal_array );
 }
 
-void Graphics::DrawArray(void *index_array, int num_index)
+void Graphics::DrawArray(char *type, void *index_array, int num_index)
 {
-	glDrawElements(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, index_array);
+	/* Branches in rendering loop are slow, find faster portable method */
+	if ( strcmp(type, "triangle") == 0 )
+		glDrawElements(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, index_array);
+	else if (strcmp(type, "triangle_strip") == 0)
+		glDrawElements(GL_TRIANGLE_STRIP, num_index, GL_UNSIGNED_INT, index_array);
+	else if (strcmp(type, "line_strip") == 0)
+		glDrawElements(GL_LINE_STRIP, num_index, GL_UNSIGNED_INT, index_array);
+	else if (strcmp(type, "points") == 0)
+		glDrawElements(GL_POINTS, num_index, GL_UNSIGNED_INT, index_array);
 }
 
 void Graphics::SelectTexture(int index)

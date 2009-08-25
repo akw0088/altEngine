@@ -179,9 +179,7 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 				for( int row = 0; row < mesh_level; row++)
 				{
 					gfx.SelectTexture(face->textureID);
-					glDrawElements(GL_TRIANGLE_STRIP,
-						2 * (mesh_level + 1), GL_UNSIGNED_INT,
-						&mesh_index_array[mesh_index][row * 2 * (mesh_level + 1)]);
+					gfx.DrawArray("triangle_strip", &mesh_index_array[mesh_index][row * 2 * (mesh_level + 1)], 2 * (mesh_level + 1));
 					gfx.DeselectTexture();
 				}
 			}
@@ -201,7 +199,7 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 					glColor3f(0.0f, 0.0f, 0.0f);
 
 				gfx.SelectTexture(face->textureID);
-				gfx.DrawArray(&data.Indexes[face->indexes], face->numIndexes);
+				gfx.DrawArray("triangle", &data.Indexes[face->indexes], face->numIndexes);
 				gfx.DeselectTexture();
 				numTriangles += face->numIndexes / 3;
 			}

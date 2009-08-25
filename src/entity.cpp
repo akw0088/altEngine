@@ -2,22 +2,43 @@
 
 void Entity_list::addEntity(Entity *entity)
 {
-	Entity	**old = entity_list;
-	int		i;
-
 	num_entities++;
-	entity_list = new Entity *[num_entities];
+	list_size++;
 
-	for (i = 0; i < num_entities - 1; i++)
-		entity_list[i] = old[i];
+	if (list_size == num_entities)
+	{
+		Entity	**old = entity_list;
 
-	entity_list[i] = entity;
-	delete [] old;
+		entity_list = new Entity *[list_size];
+
+		for (int i = 0; i < num_entities - 1; i++)
+			entity_list[i] = old[i];
+
+		delete [] old;
+	}
+
+	entity_list[list_size - 1] = entity;
+}
+
+void Entity_list::removeEntity()
+{
+	num_entities--;
+	delete entity_list[num_entities];
 }
 
 Entity &Entity_list::operator[](int index)
 {
 	return *entity_list[index];
+}
+
+Entity_list::~Entity_list()
+{
+	while (num_entities != 0)
+	{
+		removeEntity();
+	}
+	delete [] entity_list;
+	list_size = 0;
 }
 
 Entity::Entity(const Entity &entity)
@@ -52,7 +73,7 @@ Entity::Entity(float mass, const vec3 &position)
 
 	vertex_array = new vertex_t[8];
 
-#define SCALAR 40.0f
+#define SCALAR 20.0f
 	// Its a box! ?:)
 	vertex_array[0].vPosition = vec3(-0.5f, -0.5f, -0.5f) * SCALAR;
 	vertex_array[1].vPosition = vec3(-0.5f, -0.5f, 0.5f)  * SCALAR;
@@ -118,6 +139,12 @@ Entity::Entity(float mass, const vec3 &position)
 	num_index = 36;
 }
 
+Entity::~Entity()
+{
+	delete [] vertex_array;
+	delete [] index_array;
+}
+
 
 vec3 Entity::velocity()
 {
@@ -154,7 +181,7 @@ void Entity::render(Graphics &gfx)
 
 	glMultMatrixf(get_matrix(matrix));
 	gfx.VertexArray(vertex_array, num_vertex);
-	gfx.DrawArray(index_array, num_index);
+	gfx.DrawArray("triangle", index_array, num_index);
 }
 
 void Entity::integrate(float time)
@@ -210,11 +237,11 @@ bool Entity::collision_detect(Entity &entity)
 	return false;
 }
 
-bool Entity::collision_detect(plane &p)
+bool Entity::collision_detect(Plane &p)
 {
 	for( int i = 0;	i < num_vertex; i++)
 	{
-		float d = vertex_array[i].vPosition * vec3(p.a, p.b, p.c) + p.d;
+		float d = vertex_array[i].vPosition * p.normal + p.d;
 
 		if ( d < -0.001f )
 		{
@@ -228,5 +255,107 @@ bool Entity::collision_detect(plane &p)
 		}
 	}
 	return false;	
+}
+
+bool Entity::in_frustum(Entity &entity)
+{
+	Plane	left_plane, right_plane, bottom_plane, top_plane, near_plane, far_plane;
+	float	m[16], p[16], r[16];
+	int		i,j,k;
+
+	get_matrix(m);
+	glGetFloatv(GL_PROJECTION_MATRIX, p);
+
+	for( i = 0; i < 4; i++)
+	{
+		for( j = 0; j < 4; j++)
+		{
+			r[i*4+j] = 0.0f;
+			for(k = 0; k < 4; k++)
+			{
+				r[i*4+j] += m[i*4+k] * p[k*4+j];
+			}
+		}
+	}
+
+	left_plane.normal.x = r[12] + r[0];
+	left_plane.normal.y = r[13] + r[1];
+	left_plane.normal.z = r[14] + r[2];
+	left_plane.normal.normalize();
+	left_plane.d = r[15] + r[3];
+
+	right_plane.normal.x = r[12] - r[0];
+	right_plane.normal.y = r[13] - r[1];
+	right_plane.normal.z = r[14] - r[2];
+	right_plane.normal.normalize();
+	right_plane.d = r[15] - r[3];
+
+	bottom_plane.normal.x = r[12] + r[4];
+	bottom_plane.normal.y = r[13] + r[5];
+	bottom_plane.normal.z = r[14] + r[6];
+	bottom_plane.normal.normalize();
+	bottom_plane.d = r[15] + r[7];
+
+	top_plane.normal.x = r[12] - r[4];
+	top_plane.normal.y = r[13] - r[5];
+	top_plane.normal.z = r[14] - r[6];
+	top_plane.normal.normalize();
+	top_plane.d = r[15] - r[7];
+
+	near_plane.normal.x = r[12] + r[8];
+	near_plane.normal.y = r[13] + r[9];
+	near_plane.normal.z = r[14] + r[10];
+	near_plane.normal.normalize();
+	near_plane.d = r[15] + r[11];
+
+	far_plane.normal.x = r[12] - r[8];
+	far_plane.normal.y = r[13] - r[9];
+	far_plane.normal.z = r[14] - r[10];
+	far_plane.normal.normalize();
+	far_plane.d = r[15] - r[11];
+
+	glColor3f(0.0f, 1.0f, 0.0f);
+	left_plane.draw_plane();
+	glColor3f(1.0f, 0.0f, 0.0f);
+	right_plane.draw_plane();
+
+	glColor3f(0.0f, 0.0f, 0.0f);
+	top_plane.draw_plane();
+	glColor3f(0.0f, 0.0f, 1.0f);
+	bottom_plane.draw_plane();
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+	near_plane.draw_plane();
+	glColor3f(1.0f, 1.0f, 0.0f);
+	far_plane.draw_plane();
+
+	float result = left_plane.normal * entity.position - left_plane.d;
+
+	if (result > 0)
+	{
+		result = right_plane.normal * entity.position - right_plane.d;
+		if (result > 0)
+		{
+			result = top_plane.normal * entity.position - top_plane.d;
+			if (result > 0)
+			{
+				result = bottom_plane.normal * entity.position - bottom_plane.d;
+				if (result > 0)
+				{
+					result = near_plane.normal * entity.position - near_plane.d;
+					if (result > 0)
+					{
+						result = far_plane.normal * entity.position - far_plane.d;
+						if (result > 0)
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
 }
 

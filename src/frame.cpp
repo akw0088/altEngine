@@ -82,8 +82,6 @@ void Frame::update(const vec2 &delta)
 {
 	vec3		right;
 
-
-
 //"camera"
 	// Left / Right
 	rotateVector(-delta.x / 50.0f, forward, 0.0f, 1.0f, 0.0f);

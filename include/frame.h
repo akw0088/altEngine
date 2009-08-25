@@ -1,3 +1,6 @@
+#ifndef FRAME_H
+#define FRAME_H
+
 class Frame
 {
 public:
@@ -14,3 +17,4 @@ public:
 	vec3 pos, up, forward;
 };
 
+#endif

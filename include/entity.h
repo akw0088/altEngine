@@ -9,9 +9,7 @@ public:
 	Entity(const Entity &entity);
 
 	Entity(float mass, const vec3 &position);
-	~Entity()
-	{
-	}
+	~Entity();
 
 	vec3 velocity();
 	void render(Graphics &gfx);
@@ -19,9 +17,10 @@ public:
 
 	void integrate(float time);
 	bool collision_detect(vec3 &v);
-	bool collision_detect(plane &p);
+	bool collision_detect(Plane &p);
 	bool collision_detect(Entity &entitiy);
 	bool collision_resolve(Entity &entity);
+	bool in_frustum(Entity &entity);
 
 
 	//Physical
@@ -49,14 +48,14 @@ class Entity_list
 {
 public:
 	void addEntity(Entity *entity);
-	void removeEntity(Entity *entity);
+	void removeEntity();
+	~Entity_list();
 	Entity &operator[](int index);
 
 	int		num_entities;
 private:
 	Entity	**entity_list;
-
+	int		list_size;
 };
 
 #endif
-

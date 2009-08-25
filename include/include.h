@@ -56,11 +56,6 @@ using namespace std;
 #include "sound.h"
 #include "engine.h"
 
-
-
 byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, int *eFormat);
 char *getFile(char *fileName);
-
-
-
 #endif

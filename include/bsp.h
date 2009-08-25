@@ -1,5 +1,8 @@
 #include "include.h"
 
+#ifndef BSP_H
+#define BSP_H
+
 class Bsp
 {
 	void changeAxis();
@@ -35,3 +38,4 @@ private:
 	int			num_meshes;
 };
 
+#endif
