@@ -263,6 +263,7 @@ bool Entity::in_frustum(Entity &entity)
 	float	m[16], p[16], r[16];
 	int		i,j,k;
 
+	/*
 	get_matrix(m);
 	glGetFloatv(GL_PROJECTION_MATRIX, p);
 
@@ -313,13 +314,29 @@ bool Entity::in_frustum(Entity &entity)
 	far_plane.normal.z = r[14] - r[10];
 	far_plane.normal.normalize();
 	far_plane.d = r[15] - r[11];
+	*/
+
+	left_plane.normal = vec3(-1.0f, 0.0f, 0.0f);
+	left_plane.d = 50.0f;
+	right_plane.normal = vec3(1.0f, 0.0f, 0.0f);
+	right_plane.d = 50.0f;
+	top_plane.normal = vec3(0.0f, -1.0f, 0.0f);
+	top_plane.d = 50.0f;
+	bottom_plane.normal = vec3(0.0f, 1.0f, 0.0f);
+	bottom_plane.d = 50.0f;
+
+	far_plane.normal = vec3(0.0f, 0.0f, -1.0f);
+	far_plane.d = 100.0f;
+	near_plane.normal = vec3(0.0f, 0.0f, 1.0f);
+	near_plane.d = 0.0f;
+
 
 	glColor3f(0.0f, 1.0f, 0.0f);
 	left_plane.draw_plane();
 	glColor3f(1.0f, 0.0f, 0.0f);
 	right_plane.draw_plane();
 
-	glColor3f(0.0f, 0.0f, 0.0f);
+	glColor3f(0.0f, 1.0f, 1.0f);
 	top_plane.draw_plane();
 	glColor3f(0.0f, 0.0f, 1.0f);
 	bottom_plane.draw_plane();

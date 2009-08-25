@@ -73,12 +73,9 @@ void Engine::render()
 	entity_list[0].render(gfx);
 	for (i = 1, j = 0; i < entity_list.num_entities; i++)
 	{
-		/*
-		// Needs work =(
 		if (entity_list[0].in_frustum(entity_list[i]) == false)
 			continue;
-		*/
-		
+	
 		entity_list[i].render(gfx);
 		camera.set();
 		j++;
