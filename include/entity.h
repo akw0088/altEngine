@@ -11,26 +11,29 @@ public:
 	Entity(float mass, const vec3 &position);
 	~Entity();
 
-	vec3 velocity();
 	void render(Graphics &gfx);
 	float *get_matrix(float *matrix);
 
 	void integrate(float time);
 	bool collision_detect(vec3 &v);
 	bool collision_detect(Plane &p);
-	bool collision_detect(Entity &entitiy);
-	bool collision_resolve(Entity &entity);
+	bool collision_detect(Entity &entity);
+	void impulse(Plane &plane, vec3 &vertex);
 	bool in_frustum(Entity &entity);
 
 
+	float			restitution;
+	float			kfriction;
 	//Physical
 	float			mass;
-	matrix3			inertial_tensor;
+	matrix3			inverse_tensor;
+	matrix3			world_tensor;
 	vec3			position;
-	vec3			linear_momentum;
-	vec3			angular_momentum;
-	quaternion		orientation;
+	vec3			velocity;
+	vec3			angular_velocity;
+//	quaternion		orientation;
 	matrix3			morientation;
+
 	vec3			net_force;
 	vec3			net_torque;
 
@@ -42,20 +45,6 @@ public:
 
 	//Virtual
 	vec3			aabb[2];
+	bool			sleep;
 };
-
-class Entity_list
-{
-public:
-	void addEntity(Entity *entity);
-	void removeEntity();
-	~Entity_list();
-	Entity &operator[](int index);
-
-	int		num_entities;
-private:
-	Entity	**entity_list;
-	int		list_size;
-};
-
 #endif

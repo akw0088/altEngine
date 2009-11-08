@@ -1,9 +1,14 @@
 #ifndef PLANE_H
 #define PLANE_H
 
+class Entity;
+
 class Plane
 {
 public:
+	Plane();
+	Plane(vec4 vector);
+	Plane(vec3 normal, float d);
 	void draw_plane();
 
 	vec3	normal;

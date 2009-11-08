@@ -1,6 +1,41 @@
 #include "math.h"
 #include "vector.h"
 
+vec4::vec4()
+{
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+	w = 0.0f;
+}
+
+vec4::vec4(float x, float y, float z, float w)
+{
+	vec4::x = x;
+	vec4::y = y;
+	vec4::z = z;
+	vec4::w = w;
+}
+
+float vec4::magnitude()
+{
+	return sqrt(x * x + y * y + z * z);
+}
+
+vec4 &vec4::normalize()
+{
+	float mag;
+
+	mag = this->magnitude();
+	if (mag)
+	{
+		x /= mag;
+		y /= mag;
+		z /= mag;
+	}
+	return *this;
+}
+
 vec3::vec3()
 {
 	x = 0.0f;
@@ -13,6 +48,13 @@ vec3::vec3(float x, float y, float z)
 	vec3::x = x;
 	vec3::y = y;
 	vec3::z = z;
+}
+
+vec3::vec3(vec4 vector)
+{
+	x = vector.x;
+	y = vector.y;
+	z = vector.z;
 }
 
 float vec3::magnitude()

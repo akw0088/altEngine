@@ -15,6 +15,8 @@ public:
 	void tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
 	void generateMeshes();
 	const char *getEnts();
+	void get_visible_planes(Entity &entity, Plane *plane, int &num_planes);
+	void get_collision_planes(Plane **plane, int &num_planes);
 	void drawBox(int *min, int *max);
 	void render(Entity &entity, Graphics &gfx, Keyboard &keyboard);
 	void load(char *map);

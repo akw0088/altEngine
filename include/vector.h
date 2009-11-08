@@ -1,11 +1,27 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+class vec4
+{
+public:
+	vec4();
+	vec4(float x, float y, float z, float w);
+
+	float magnitude();
+	vec4 &normalize();
+
+	float x;
+	float y;
+	float z;
+	float w;
+};
+
 class vec3
 {
 public:
 	vec3();
 	vec3(float x, float y, float z);
+	vec3(vec4 vector);
 	vec3 &normalize();
 	float magnitude();
 

@@ -4,9 +4,9 @@
 #pragma pack(1)
 typedef struct
 {
-	GLbyte		identsize;		// Size of ID field that follows header (0)
-	GLbyte		colorMapType;		// 0 = None, 1 = paletted
-	GLbyte		imageType;		// 0 = none, 1 = indexed, 2 = rgb, 3 = grey, +8=rle
+	byte		identsize;		// Size of ID field that follows header (0)
+	byte		colorMapType;		// 0 = None, 1 = paletted
+	byte		imageType;		// 0 = none, 1 = indexed, 2 = rgb, 3 = grey, +8=rle
 	unsigned short	colorMapStart;		// First colour map entry
 	unsigned short	colorMapLength;		// Number of colors
 	unsigned char 	colorMapBits;		// bits per palette entry
@@ -14,8 +14,8 @@ typedef struct
 	unsigned short	ystart;			// image y origin
 	unsigned short	width;			// width in pixels
 	unsigned short	height;			// height in pixels
-	GLbyte		bits;			// bits per pixel (8 16, 24, 32)
-	GLbyte		descriptor;		// image descriptor
+	byte		bits;			// bits per pixel (8 16, 24, 32)
+	byte		descriptor;		// image descriptor
 } TGAHEADER;
 #pragma pack(8)
 
@@ -30,8 +30,10 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 	// Default/Failed values
 	*iWidth = 0;
 	*iHeight = 0;
+#ifndef DIRECTX
 	*eFormat = GL_BGR_EXT;
 	*iComponents = GL_RGB8;
+#endif
 
 	// Attempt to open the file
 	pFile = fopen(file, "rb");
@@ -65,7 +67,7 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 	// Calculate size of image buffer
 	lImageSize = tgaHeader.width * tgaHeader.height * sDepth;
 
-	pBits = (byte *)malloc(lImageSize * sizeof(GLbyte));
+	pBits = (byte *)malloc(lImageSize * sizeof(byte));
 	if(pBits == NULL)
 		return NULL;
 
@@ -79,6 +81,7 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 	}
     
 	// Set OpenGL format expected
+#ifndef DIRECTX
 	switch(sDepth)
 	{
 	case 3:     // Most likely case
@@ -94,6 +97,7 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 		*iComponents = GL_LUMINANCE8;
 		break;
 	};
+#endif
 
 	fclose(pFile);
 	return pBits;

@@ -1,63 +1,286 @@
 #include "entity.h"
 
-void Entity_list::addEntity(Entity *entity)
-{
-	num_entities++;
-	list_size++;
-
-	if (list_size == num_entities)
-	{
-		Entity	**old = entity_list;
-
-		entity_list = new Entity *[list_size];
-
-		for (int i = 0; i < num_entities - 1; i++)
-			entity_list[i] = old[i];
-
-		delete [] old;
-	}
-
-	entity_list[list_size - 1] = entity;
-}
-
-void Entity_list::removeEntity()
-{
-	num_entities--;
-	delete entity_list[num_entities];
-}
-
-Entity &Entity_list::operator[](int index)
-{
-	return *entity_list[index];
-}
-
-Entity_list::~Entity_list()
-{
-	while (num_entities != 0)
-	{
-		removeEntity();
-	}
-	delete [] entity_list;
-	list_size = 0;
-}
-
 Entity::Entity(const Entity &entity)
 {
 	memcpy(this, &entity, sizeof(Entity));
 }
 
+Entity::~Entity()
+{
+	if (vertex_array != NULL)
+		delete [] vertex_array;
+	if (index_array != NULL)
+		delete [] index_array;
+}
+
+/*
+	Integrate physical quantaties over time by a fixed time step
+*/
+void Entity::integrate(float time)
+{
+	matrix3 rotation;
+	vec3 acceleration, angular_acceleration;
+
+	if (sleep)
+		return;
+
+	acceleration = net_force * (1.0f / mass);
+	angular_acceleration = world_tensor * net_torque;
+	angular_velocity = angular_velocity + angular_acceleration * time;
+
+	rotation.star(angular_velocity);
+
+	//v = v0 + at
+	velocity = velocity + acceleration * time;
+	//x = x0 + vt + (1/2)at^2
+	position = position + (velocity * time) * UNITS_TO_METERS;
+
+	morientation = morientation + morientation * rotation * time;
+	morientation.normalize();
+	world_tensor = morientation * inverse_tensor * morientation.transpose();
+}
+
+/*
+	Detects a collision with a plane and applys physical impulse response
+	Friction forces shouldnt be in here, but rely on the same plane calculations.
+*/
+bool Entity::collision_detect(Plane &p)
+{
+	for( int i = 0;	i < num_vertex; i++)
+	{
+		vec3 point = morientation * vertex_array[i].vPosition;
+		float d = (point + position) * p.normal + p.d;
+		net_force = vec3(0.0f, -9.8f, 0.0f);
+
+		if (d < 0.25f && d > 0.0f)
+		{
+			// Really close, add friction to CM
+			vec3	vertex_velocity = velocity + vec3::crossproduct(angular_velocity, point * (1.0f / UNITS_TO_METERS));
+			float	pdotv = abs(p.normal * vertex_velocity);
+			float	friction_force = pdotv * mass * 1;
+			vec3	friction_vector = -((p.normal * pdotv) + velocity);
+
+			friction_vector.normalize();
+			net_force += friction_vector * friction_force;
+		}
+
+		if ( d < -0.25f )
+		{
+			// Simulated too far
+			return true;
+		}
+		else if ( d < 0.0f )
+		{
+			// Colliding
+			// To handle multiple collision we need to store temp velocities
+			impulse(p, point * (1.0f / UNITS_TO_METERS) );
+			break;
+		}
+	}
+	return false;
+}
+
+/*
+	Applys collision impulse to a vertex
+	radius must be in units of meters from CM
+*/
+void Entity::impulse(Plane &plane, vec3 &radius)
+{
+	float	impulse_numerator;
+	float	impulse_denominator;
+	vec3	impulse_force;
+
+	vec3	vertex_vel_ang = vec3::crossproduct(angular_velocity, radius);
+	vec3	vertex_velocity = velocity + vertex_vel_ang;
+
+	// coefficient of resistution * -relative velocity
+	impulse_numerator = -(1.0f + restitution) * (vertex_velocity * plane.normal);
+
+	// 1/mass + N dot [((1/I)(radius cross normal)) cross radius] -- units of momentum p = mv
+	impulse_denominator = (1.0f / mass) + plane.normal *
+		vec3::crossproduct(world_tensor * vec3::crossproduct(radius, plane.normal), radius);
+    
+    impulse_force = plane.normal * (impulse_numerator/impulse_denominator);
+
+	// apply impulse to primary quantities
+    velocity += impulse_force * (1.0f / mass);
+    angular_velocity = world_tensor * vec3::crossproduct(radius, -impulse_force);
+}
+
+/*
+	Detects a collision between current entity and a point
+*/
+bool Entity::collision_detect(vec3 &v)
+{
+	vec3 a, b;
+
+	a = aabb[0] + position;
+	b = aabb[1] + position;
+
+	if ( (v.x > a.x) && (v.x < b.x) )
+	{
+		if ( (v.y > a.y) && (v.y < b.y) )
+		{
+			if ( (v.z > a.z) && (v.z < b.z) )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+/*
+	Detects a collision between current entity and another
+	(Should use aabb, but is using vertices)
+*/
+bool Entity::collision_detect(Entity &entity)
+{
+	for( int i = 0;	i < entity.num_vertex; i++)
+	{
+		if ( collision_detect(entity.vertex_array[i].vPosition) )
+			return true;
+	}
+	return false;
+}
+
+/*
+	Frustum culling code that extracts frustum from the projection matrix
+	doesnt work, dont know why, I need to write a specification for this
+*/
+bool Entity::in_frustum(Entity &entity)
+{
+	vec4	left_plane, right_plane, bottom_plane, top_plane, near_plane, far_plane;
+	matrix4	p, m;
+
+	get_matrix((float *)&m);
+	glGetFloatv(GL_PROJECTION_MATRIX, (float *)&p);
+
+	p = p * m;
+	p.normalize();
+	
+	left_plane.x = p.m[12] + p.m[0];
+	left_plane.y = p.m[13] + p.m[1];
+	left_plane.z = p.m[14] + p.m[2];
+	left_plane.w = p.m[15] + p.m[3];
+	left_plane.normalize();
+
+	right_plane.x = p.m[12] - p.m[0];
+	right_plane.y = p.m[13] - p.m[1];
+	right_plane.z = p.m[14] - p.m[2];
+	right_plane.w = p.m[15] - p.m[3];
+	right_plane.normalize();
+
+	bottom_plane.x = p.m[12] + p.m[4];
+	bottom_plane.y = p.m[13] + p.m[5];
+	bottom_plane.z = p.m[14] + p.m[6];
+	bottom_plane.w = p.m[15] + p.m[7];
+	bottom_plane.normalize();
+
+	top_plane.x = p.m[12] - p.m[4];
+	top_plane.y = p.m[13] - p.m[5];
+	top_plane.z = p.m[14] - p.m[6];
+	top_plane.w = p.m[15] - p.m[7];
+	top_plane.normalize();
+
+	near_plane.x = p.m[12] + p.m[8];
+	near_plane.y = p.m[13] + p.m[9];
+	near_plane.z = p.m[14] + p.m[10];
+	near_plane.w = p.m[15] + p.m[11];
+	near_plane.normalize();
+
+	far_plane.x = p.m[12] - p.m[8];
+	far_plane.y = p.m[13] - p.m[9];
+	far_plane.z = p.m[14] - p.m[10];
+	far_plane.w = p.m[15] - p.m[11];
+	far_plane.normalize();
+
+	glColor3f(0.0f, 1.0f, 0.0f);
+	((Plane)left_plane).draw_plane();
+	glColor3f(1.0f, 0.0f, 0.0f);
+	((Plane)right_plane).draw_plane();
+
+
+	glColor3f(0.0f, 1.0f, 1.0f);
+	((Plane)top_plane).draw_plane();
+	glColor3f(0.0f, 0.0f, 1.0f);
+	((Plane)bottom_plane).draw_plane();
+
+
+	glColor3f(1.0f, 1.0f, 0.0f);
+	((Plane)near_plane).draw_plane();
+	glColor3f(1.0f, 1.0f, 1.0f);
+	((Plane)far_plane).draw_plane();
+	glColor3f(0.0f, 0.0f, 0.0f);
+
+	float result = (vec3)left_plane * entity.position - left_plane.w;
+
+	if (result > 0)
+	{
+//		glColor3f(0.0f, 1.0f, 0.0f);
+		result = (vec3)right_plane * entity.position - right_plane.w;
+		if (result > 0)
+		{
+//			glColor3f(1.0f, 0.0f, 0.0f);
+			result = (vec3)top_plane * entity.position - top_plane.w;
+			if (result > 0)
+			{
+//				glColor3f(0.0f, 1.0f, 1.0f);
+				result = (vec3)bottom_plane * entity.position - bottom_plane.w;
+				if (result > 0)
+				{
+//					glColor3f(0.0f, 0.0f, 1.0f);
+					result = (vec3)near_plane * entity.position - near_plane.w;
+					if (result > 0)
+					{
+//						glColor3f(1.0f, 1.0f, 0.0f);
+						result = (vec3)far_plane * entity.position - far_plane.w;
+						if (result > 0)
+						{
+//							glColor3f(1.0f, 1.0f, 1.0f);
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 Entity::Entity(float mass, const vec3 &position)
 {
+	sleep = false;
 	Entity::mass = mass;
 	Entity::position = position;
+	restitution = 0.5f;
+	kfriction = 0.5f;
+	float height = 10.0f / UNITS_TO_METERS;
+	float width = 10.0f / UNITS_TO_METERS;
+	float depth = 10.0f / UNITS_TO_METERS;
 
-	linear_momentum.x = 0.0f;
-	linear_momentum.y = 0.0f;
-	linear_momentum.z = 0.0f;
+	world_tensor.m[0] = 0.0f;
+	world_tensor.m[1] = 0.0f;
+	world_tensor.m[2] = 0.0f;
+	world_tensor.m[3] = 0.0f;
+	world_tensor.m[4] = 0.0f;
+	world_tensor.m[5] = 0.0f;
+	world_tensor.m[6] = 0.0f;
+	world_tensor.m[7] = 0.0f;
+	world_tensor.m[8] = 0.0f;
 
-	angular_momentum.x = 0.0f;
-	angular_momentum.y = 0.0f;
-	angular_momentum.z = 0.0f;
+	inverse_tensor.m[0] = 3.0f / (mass *  (height * height + depth * depth));
+	inverse_tensor.m[1] = 0;
+	inverse_tensor.m[2] = 0;
+
+	inverse_tensor.m[3] = 0;
+	inverse_tensor.m[4] = 3.0f / (mass *  (width * width + depth * depth));
+	inverse_tensor.m[5] = 0;
+	
+	inverse_tensor.m[6] = 0;
+	inverse_tensor.m[7] = 0;
+	inverse_tensor.m[8] = 3.0f / (mass *  (width * width + height * height));
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;
@@ -139,18 +362,6 @@ Entity::Entity(float mass, const vec3 &position)
 	num_index = 36;
 }
 
-Entity::~Entity()
-{
-	delete [] vertex_array;
-	delete [] index_array;
-}
-
-
-vec3 Entity::velocity()
-{
-	return linear_momentum * (1.0f / mass);
-}
-
 float *Entity::get_matrix(float *matrix)
 {
 	matrix[0] = morientation.m[0];
@@ -179,200 +390,7 @@ void Entity::render(Graphics &gfx)
 {
 	float matrix[16];
 
-	glMultMatrixf(get_matrix(matrix));
+	gfx.MultMatrix(get_matrix(matrix));
 	gfx.VertexArray(vertex_array, num_vertex);
-	gfx.DrawArray("triangle", index_array, num_index);
+	gfx.DrawArray("triangle", index_array, num_index, num_vertex);
 }
-
-void Entity::integrate(float time)
-{
-	matrix3 rotation;
-
-	rotation.m[0] = 0.0f;
-	rotation.m[1] = -angular_momentum.z;
-	rotation.m[2] = angular_momentum.y;
-
-	rotation.m[3] = angular_momentum.z;
-	rotation.m[4] = 0.0f;
-	rotation.m[5] = -angular_momentum.x;
-
-	rotation.m[6] = -angular_momentum.y;
-	rotation.m[7] = angular_momentum.x;
-	rotation.m[8] = 0.0f;
-
-	position = position + velocity() * time;
-	linear_momentum = linear_momentum + (net_force * time) * mass;
-	morientation = morientation + morientation * rotation * time;
-	morientation.normalize();
-	orientation = orientation + (orientation * (angular_momentum * 0.5f)) * time;
-}
-
-bool Entity::collision_detect(vec3 &v)
-{
-	vec3 a, b;
-
-	a = aabb[0] + position;
-	b = aabb[1] + position;
-
-	if ( (v.x > a.x) && (v.x < b.x) )
-	{
-		if ( (v.y > a.y) && (v.y < b.y) )
-		{
-			if ( (v.z > a.z) && (v.z < b.z) )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-bool Entity::collision_detect(Entity &entity)
-{
-	for( int i = 0;	i < entity.num_vertex; i++)
-	{
-		if ( collision_detect(entity.vertex_array[i].vPosition) )
-			return true;
-	}
-	return false;
-}
-
-bool Entity::collision_detect(Plane &p)
-{
-	for( int i = 0;	i < num_vertex; i++)
-	{
-		float d = vertex_array[i].vPosition * p.normal + p.d;
-
-		if ( d < -0.001f )
-		{
-			// Penetrating
-			return true;
-		}
-		else if ( d < 0.001f)
-		{
-			// colliding
-			return true;
-		}
-	}
-	return false;	
-}
-
-bool Entity::in_frustum(Entity &entity)
-{
-	Plane	left_plane, right_plane, bottom_plane, top_plane, near_plane, far_plane;
-	float	m[16], p[16], r[16];
-	int		i,j,k;
-
-	/*
-	get_matrix(m);
-	glGetFloatv(GL_PROJECTION_MATRIX, p);
-
-	for( i = 0; i < 4; i++)
-	{
-		for( j = 0; j < 4; j++)
-		{
-			r[i*4+j] = 0.0f;
-			for(k = 0; k < 4; k++)
-			{
-				r[i*4+j] += m[i*4+k] * p[k*4+j];
-			}
-		}
-	}
-
-	left_plane.normal.x = r[12] + r[0];
-	left_plane.normal.y = r[13] + r[1];
-	left_plane.normal.z = r[14] + r[2];
-	left_plane.normal.normalize();
-	left_plane.d = r[15] + r[3];
-
-	right_plane.normal.x = r[12] - r[0];
-	right_plane.normal.y = r[13] - r[1];
-	right_plane.normal.z = r[14] - r[2];
-	right_plane.normal.normalize();
-	right_plane.d = r[15] - r[3];
-
-	bottom_plane.normal.x = r[12] + r[4];
-	bottom_plane.normal.y = r[13] + r[5];
-	bottom_plane.normal.z = r[14] + r[6];
-	bottom_plane.normal.normalize();
-	bottom_plane.d = r[15] + r[7];
-
-	top_plane.normal.x = r[12] - r[4];
-	top_plane.normal.y = r[13] - r[5];
-	top_plane.normal.z = r[14] - r[6];
-	top_plane.normal.normalize();
-	top_plane.d = r[15] - r[7];
-
-	near_plane.normal.x = r[12] + r[8];
-	near_plane.normal.y = r[13] + r[9];
-	near_plane.normal.z = r[14] + r[10];
-	near_plane.normal.normalize();
-	near_plane.d = r[15] + r[11];
-
-	far_plane.normal.x = r[12] - r[8];
-	far_plane.normal.y = r[13] - r[9];
-	far_plane.normal.z = r[14] - r[10];
-	far_plane.normal.normalize();
-	far_plane.d = r[15] - r[11];
-	*/
-
-	left_plane.normal = vec3(-1.0f, 0.0f, 0.0f);
-	left_plane.d = 50.0f;
-	right_plane.normal = vec3(1.0f, 0.0f, 0.0f);
-	right_plane.d = 50.0f;
-	top_plane.normal = vec3(0.0f, -1.0f, 0.0f);
-	top_plane.d = 50.0f;
-	bottom_plane.normal = vec3(0.0f, 1.0f, 0.0f);
-	bottom_plane.d = 50.0f;
-
-	far_plane.normal = vec3(0.0f, 0.0f, -1.0f);
-	far_plane.d = 100.0f;
-	near_plane.normal = vec3(0.0f, 0.0f, 1.0f);
-	near_plane.d = 0.0f;
-
-
-	glColor3f(0.0f, 1.0f, 0.0f);
-	left_plane.draw_plane();
-	glColor3f(1.0f, 0.0f, 0.0f);
-	right_plane.draw_plane();
-
-	glColor3f(0.0f, 1.0f, 1.0f);
-	top_plane.draw_plane();
-	glColor3f(0.0f, 0.0f, 1.0f);
-	bottom_plane.draw_plane();
-
-	glColor3f(1.0f, 1.0f, 1.0f);
-	near_plane.draw_plane();
-	glColor3f(1.0f, 1.0f, 0.0f);
-	far_plane.draw_plane();
-
-	float result = left_plane.normal * entity.position - left_plane.d;
-
-	if (result > 0)
-	{
-		result = right_plane.normal * entity.position - right_plane.d;
-		if (result > 0)
-		{
-			result = top_plane.normal * entity.position - top_plane.d;
-			if (result > 0)
-			{
-				result = bottom_plane.normal * entity.position - bottom_plane.d;
-				if (result > 0)
-				{
-					result = near_plane.normal * entity.position - near_plane.d;
-					if (result > 0)
-					{
-						result = far_plane.normal * entity.position - far_plane.d;
-						if (result > 0)
-						{
-							return true;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return false;
-}
-

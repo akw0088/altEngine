@@ -15,16 +15,18 @@ void Bsp::load(char *map)
 
 	// init data
 	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
-	data.Ent = (byte *)		&pBsp[tBsp->directory[Entities].offset];
-	data.Texture = (texture_t *)	&pBsp[tBsp->directory[Textures].offset];
+	data.Ent = (byte *)			&pBsp[tBsp->directory[Entities].offset];
+	data.Texture = (texture_t *)&pBsp[tBsp->directory[Textures].offset];
 	data.Plane = (plane_t *)	&pBsp[tBsp->directory[Planes].offset];
 	data.Node = (node_t *)		&pBsp[tBsp->directory[Nodes].offset];
 	data.Leaf = (leaf_t *)		&pBsp[tBsp->directory[Leafs].offset];
 	data.LeafFace = (int *)		&pBsp[tBsp->directory[LeafFaces].offset];
 	data.LeafBrush = (int *)	&pBsp[tBsp->directory[LeafBrushes].offset];
+	data.Brushes = (brush_t *)	&pBsp[tBsp->directory[Brushes].offset];
+	data.BrushSides = (brushSide_t *)	&pBsp[tBsp->directory[BrushSides].offset];
 	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
 	data.Face = (face_t *)		&pBsp[tBsp->directory[Faces].offset];
-	data.VisData = (visData_t *)	&pBsp[tBsp->directory[VisData].offset];
+	data.VisData = (visData_t *)&pBsp[tBsp->directory[VisData].offset];
 	data.Indexes = (int *)		&pBsp[tBsp->directory[Indexes].offset];
 
 	data.numVerts = tBsp->directory[Vertices].length / sizeof(vertex_t);
@@ -35,6 +37,8 @@ void Bsp::load(char *map)
 	data.numLeafs = tBsp->directory[Leafs].length / sizeof(leaf_t);
 	data.numLeafFaces = tBsp->directory[LeafFaces].length / sizeof(int);
 	data.numLeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
+	data.numBrushes = tBsp->directory[Brushes].length / sizeof(brush_t);
+	data.numBrushSides = tBsp->directory[BrushSides].length / sizeof(brushSide_t);
 	data.numFaces = tBsp->directory[Faces].length / sizeof(face_t);
 	data.numVis = tBsp->directory[VisData].length / sizeof(visData_t);
 
@@ -42,6 +46,9 @@ void Bsp::load(char *map)
 	generateMeshes();
 }
 
+/*
+	Loops through map data to find bezeir patches to tesselate into verticies
+*/
 void Bsp::generateMeshes()
 {
 	int mesh_index = 0;
@@ -76,6 +83,9 @@ void Bsp::generateMeshes()
 	}
 }
 
+/*
+	Converts axis from quake3 to opengl format
+*/
 void Bsp::changeAxis()
 {
 	for(int i = 0; i < data.numVerts; i++)
@@ -99,12 +109,17 @@ void Bsp::changeAxis()
 	}
 }
 
+/*
+	Returns entity string for parsing
+*/
 const char *Bsp::getEnts()
 {
 	return (const char *)data.Ent;
 }
 
-
+/*
+	Should cleanly unload a map
+*/
 void Bsp::unload()
 {
 	delete [] mesh_index2face;
@@ -115,6 +130,9 @@ void Bsp::unload()
 	free((void *)tBsp);
 }
 
+/*
+	Given a position return the bsp leaf node containing that point
+*/
 int Bsp::findLeaf(const vec3 &position)
 {
 	float		distance;
@@ -135,6 +153,59 @@ int Bsp::findLeaf(const vec3 &position)
 	return -(i + 1);
 }
 
+/*
+	Should return a set collision planes within the entities leaf node
+*/
+void Bsp::get_visible_planes(Entity &entity, Plane *plane, int &num_planes)
+{
+	int frameIndex = findLeaf(entity.position);
+	leaf_t *frameLeaf = &data.Leaf[frameIndex];
+
+	num_planes = 0;
+	for (int i = 0; i < data.numLeafs; i++)
+	{
+		leaf_t *leaf = &data.Leaf[i];
+
+		if ( !isClusterVisible(frameLeaf->cluster, leaf->cluster) )
+			continue;
+
+		for (int j = 0; j < leaf->numOfLeafBrushes; j++)
+		{
+			brush_t	*brush = &data.Brushes[leaf->leafBrush + j];
+			int brush_index = brush->brushSide;
+			int num_brushes = brush->numOfBrushSides;
+
+			for( int k = 0; k < num_brushes; k++)
+			{
+				brushSide_t *brushSide = &data.BrushSides[brush_index + k];
+				int plane_index = brushSide->plane;
+				plane[num_planes++] = Plane::Plane(data.Plane[plane_index].vNormal, data.Plane[plane_index].d);
+			}
+		}
+	}
+}
+
+/*
+	Gets all collision planes
+*/
+void Bsp::get_collision_planes(Plane **rplane, int &num_planes)
+{
+	Plane *plane = new Plane [data.numBrushSides];
+	num_planes = 0;
+
+	for (int i = 0; i < data.numBrushes; i++)
+	{
+		int brush_index = data.Brushes[i].brushSide;
+		int num_brushes = data.Brushes[i].numOfBrushSides;
+
+		for( int j = 0; j < num_brushes; j++)
+		{
+			int plane_index = data.BrushSides[brush_index + j].plane;
+			plane[num_planes++] = Plane::Plane(data.Plane[plane_index].vNormal, data.Plane[plane_index].d);
+		}
+	}
+	*rplane = plane;
+}
 
 void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 {
@@ -145,15 +216,17 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
-	for (int i = data.numLeafs - 1; i >= 0; i--)		// loop through all leaves, checking if leaf visible from current leaf
+	// loop through all leaves, checking if leaf visible from current leaf
+	for (int i = data.numLeafs - 1; i >= 0; i--)
 	{
 		leaf_t *leaf = &data.Leaf[i];
 
 		if ( !isClusterVisible(frameLeaf->cluster, leaf->cluster) )
 			continue;
 
+		// draw faces within visible leaf's
 		int numFaces = leaf->numOfLeafFaces;
-		for (int j = numFaces - 1; j >= 0; j--) 	// draw faces within visible leaf's
+		for (int j = numFaces - 1; j >= 0; j--)
 		{
 			int faceIndex = data.LeafFace[leaf->leafface + j];
 			face_t *face = &data.Face[faceIndex];
@@ -179,9 +252,10 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 				for( int row = 0; row < mesh_level; row++)
 				{
 					gfx.SelectTexture(face->textureID);
-					gfx.DrawArray("triangle_strip", &mesh_index_array[mesh_index][row * 2 * (mesh_level + 1)], 2 * (mesh_level + 1));
+					gfx.DrawArray("triangle_strip", &mesh_index_array[mesh_index][row * 2 * (mesh_level + 1)], 2 * (mesh_level + 1), mesh_numVerts[mesh_index]);
 					gfx.DeselectTexture();
 				}
+
 			}
 			else if (face->type == 4)
 			{
@@ -193,13 +267,8 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), data.numVerts);
 				gfx.NormalArray(  &(data.Vert[face->vertexIndex].vNormal), data.numVerts);
 
-				if (face->type == 1)
-					glColor3f(1.0f, 1.0f, 1.0f);
-				else
-					glColor3f(0.0f, 0.0f, 0.0f);
-
 				gfx.SelectTexture(face->textureID);
-				gfx.DrawArray("triangle", &data.Indexes[face->indexes], face->numIndexes);
+				gfx.DrawArray("triangle", &data.Indexes[face->indexes], face->numIndexes, data.numVerts);
 				gfx.DeselectTexture();
 				numTriangles += face->numIndexes / 3;
 			}
@@ -207,9 +276,12 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 	}
 	
 	snprintf(msg, 80, "%d Triangles rendered %f %f %f", numTriangles, entity.position.x, entity.position.y, entity.position.z);
-	gfx.drawText(msg, 0.01f, 0.02f);
+	gfx.DrawText(msg, 0.01f, 0.02f);
 }
 
+/*
+	Determines set of visible leafs from current leaf
+*/
 int Bsp::isClusterVisible(int visCluster, int testCluster)
 {
 	int byteOffset, bitOffset;
@@ -246,6 +318,13 @@ void Bsp::loadTextures(Graphics &gfx)
 	}
 }
 
+/*
+	This function does not work for cylindrical patches and 'U' patches
+
+		I need to move away from bsp to my own map format so I dont
+	feel like sitting down and writing a specification for something
+	that will be replaced.
+*/
 void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes)
 {
 	int i, j;
@@ -298,6 +377,7 @@ void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int
 	}
 }
 
+/*
 void Bsp::drawBox(int *min, int *max)
 {
 	glDisable(GL_LIGHTING);
@@ -335,3 +415,4 @@ void Bsp::drawBox(int *min, int *max)
 	glEnable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
 }
+*/

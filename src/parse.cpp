@@ -15,13 +15,13 @@ void addKey(Entity &entity, char *key, char *val)
 	{
 		if (strcmp(val, "light") == 0)
 		{
-			entity.angular_momentum.x = 10.0;
-			entity.angular_momentum.y = 10.0;
+			entity.angular_velocity.x = 10.0;
+			entity.angular_velocity.y = 10.0;
 		}
 	}
 }
 
-bool parse_entity(const char *input, Entity_list &entity_list)
+bool parse_entity(const char *input, List<Entity> &entity_list)
 {
 	Entity *entity;
 	char state = 'S';
@@ -56,7 +56,7 @@ bool parse_entity(const char *input, Entity_list &entity_list)
 			if (prevstate == 'S')
 			{
 				entity = new Entity(10.0f, vec3(0.0f, 0.0f, 0.0f));
-				entity_list.addEntity(entity);
+				entity_list.add(entity);
 			}
 			j = 0;
 			break;

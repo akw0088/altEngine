@@ -1,11 +1,15 @@
 #include "include.h"
 
+/*
+	DirectX support requires formatting q3bsp for usage with vertex buffer objects,
+	which simply wont ever happen. It will work when I move away from bsps to my own format.
+*/
 #ifdef DIRECTX
-Graphics::gfx()
+Graphics::Graphics()
 {
 }
 
-Graphics::~gfx() 
+Graphics::~Graphics() 
 {
 }
 
@@ -15,15 +19,22 @@ void Graphics::init(void *param1, void *param2)
 	hdc = *((HDC *)param2);
 	HRESULT		ret;
 
+
+	memset(&d3dpp, sizeof(d3dpp), 0);
+    d3dpp.Windowed = TRUE;
+    d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+    d3dpp.hDeviceWindow = hwnd;
+
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	if (d3d == NULL)
 		return;
-	ret = d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, d3dpp, &device);
+
+	ret = d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &device);
 	if (ret != D3D_OK)
 		return;
 }
 
-void Graphics::drawText(const char *str, float x, float y)
+void Graphics::DrawText(const char *str, float x, float y)
 {
 
 }
@@ -52,35 +63,93 @@ void Graphics::destroy()
 
 }
 
-void Graphics::VertexArray(int numVerts, void *vert)
+void Graphics::VertexArray(void *vert, int numVerts)
 {
-	device->CreateVertexBuffer(numVerts * sizeof(vertex_t), 0, D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE, D3DPOOL_SYSTEMMEM, vertexBuffer, NULL);
-	vertexBuffer->Lock(0, data->numVerts * sizeof(vertex_t), &pVert, 0);
+	void *pVert = NULL;
+
+	device->CreateVertexBuffer(numVerts * sizeof(vertex_t), 0, D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE, D3DPOOL_SYSTEMMEM, &vertexBuffer, NULL);
+	vertexBuffer->Lock(0, numVerts * sizeof(vertex_t), &pVert, 0);
 	memcpy(pVert, vert, numVerts * sizeof(vertex_t));
 	vertexBuffer->Unlock();
 	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE);
 	device->SetStreamSource(0, vertexBuffer, 0, sizeof(vertex_t));
 }
 
-void Graphics::TextureArray(void *tex)
+void Graphics::TextureArray(void *tex, int numTexs)
 {
 }
 
-void Graphics::NormalArray(void *normal)
+void Graphics::NormalArray(void *normal, int numNormals)
 {
 }
 
-void Graphics::DrawArray(const int numIndexes, void *Indexes)
+void Graphics::DrawArray(char *type, void *Indexes, int numIndexes, int numVerts)
 {
-	int *pIndex = NULL;
+	void *pIndex = NULL;
 
-	device->CreateIndexBuffer(numIndexes * sizeof(int), 0, D3DFMT_INDEX16,  D3DPOOL_DEFAULT, indexBuffer, NULL);
-	indexBuffer->Lock(0, indexBufferSize * sizeof(int), &pIndex, 0);
+	device->CreateIndexBuffer(numIndexes * sizeof(int), 0, D3DFMT_INDEX16,  D3DPOOL_DEFAULT, &indexBuffer, NULL);
+	indexBuffer->Lock(0, numIndexes * sizeof(int), &pIndex, 0);
 	memcpy(pIndex, Indexes, numIndexes * sizeof(int));
 	indexBuffer->Unlock();
 	device->SetIndices(indexBuffer);
 
 	device->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, 0, 0, numVerts, 0, numIndexes);
+}
+
+void Graphics::MultMatrix(const float *matrix)
+{
+		D3DXMATRIX	mTransform, mOld;
+
+		mTransform.m[0][0] = matrix[0];
+		mTransform.m[0][1] = matrix[1];
+		mTransform.m[0][2] = matrix[2];
+		mTransform.m[0][3] = matrix[3];
+
+		mTransform.m[1][0] = matrix[4];
+		mTransform.m[1][1] = matrix[5];
+		mTransform.m[1][2] = matrix[6];
+		mTransform.m[1][3] = matrix[7];
+
+		mTransform.m[2][0] = matrix[8];
+		mTransform.m[2][1] = matrix[9];
+		mTransform.m[2][2] = matrix[10];
+		mTransform.m[2][3] = matrix[11];
+
+		mTransform.m[3][0] = matrix[12];
+		mTransform.m[3][1] = matrix[13];
+		mTransform.m[3][2] = matrix[14];
+		mTransform.m[3][3] = matrix[15];
+
+		device->GetTransform(D3DTS_WORLD, &mOld);
+		mTransform = mTransform * mOld;
+		device->SetTransform(D3DTS_WORLD, &mTransform);
+}
+
+void Graphics::LoadMatrix(const float *matrix)
+{
+		D3DMATRIX	mTransform;
+
+		mTransform.m[0][0] = matrix[0];
+		mTransform.m[0][1] = matrix[1];
+		mTransform.m[0][2] = matrix[2];
+		mTransform.m[0][3] = matrix[3];
+
+		mTransform.m[1][0] = matrix[4];
+		mTransform.m[1][1] = matrix[5];
+		mTransform.m[1][2] = matrix[6];
+		mTransform.m[1][3] = matrix[7];
+
+		mTransform.m[2][0] = matrix[8];
+		mTransform.m[2][1] = matrix[9];
+		mTransform.m[2][2] = matrix[10];
+		mTransform.m[2][3] = matrix[11];
+
+		mTransform.m[3][0] = matrix[12];
+		mTransform.m[3][1] = matrix[13];
+		mTransform.m[3][2] = matrix[14];
+		mTransform.m[3][3] = matrix[15];
+
+		device->SetTransform(D3DTS_WORLD, &mTransform);
 }
 
 void Graphics::SelectTexture(int index)
@@ -102,7 +171,9 @@ void Graphics::LoadTexture(int index, int width, int height, int components, int
 }
 
 #else
-
+/*
+	Opengl support while still easy to cheat and use functions directly for rapid dev
+*/
 Graphics::Graphics()
 {
 	texObject = NULL;
@@ -140,7 +211,7 @@ void Graphics::init(void *param1, void *param2)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glEnable(GL_DEPTH_TEST);
-	glColor3f(1.0f, 1.0f, 1.0f);
+//	glColor3f(1.0f, 1.0f, 1.0f);
 	glPointSize(5.0);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
@@ -150,11 +221,9 @@ void Graphics::init(void *param1, void *param2)
 	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
 	glShadeModel(GL_SMOOTH);
-
-
 }
 
-void Graphics::drawText(const char *str, float x, float y)
+void Graphics::DrawText(const char *str, float x, float y)
 {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -197,7 +266,12 @@ void Graphics::clear()
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
-void Graphics::loadMatrix(const float *matrix)
+void Graphics::MultMatrix(const float *matrix)
+{
+	glMultMatrixf(matrix);
+}
+
+void Graphics::LoadMatrix(const float *matrix)
 {
 	glLoadMatrixf(matrix);
 }
@@ -229,7 +303,7 @@ void Graphics::NormalArray(void *normal_array, int num_normal)
 	glNormalPointer(GL_FLOAT, sizeof(vertex_t), normal_array );
 }
 
-void Graphics::DrawArray(char *type, void *index_array, int num_index)
+void Graphics::DrawArray(char *type, void *index_array, int num_index, int num_verts)
 {
 	/* Branches in rendering loop are slow, find faster portable method */
 	if ( strcmp(type, "triangle") == 0 )

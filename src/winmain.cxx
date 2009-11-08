@@ -19,7 +19,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	wndclass.cbClsExtra	= 0;
 	wndclass.cbWndExtra	= 0;
 	wndclass.hInstance	= hInstance;
-	wndclass.hIcon		= LoadIcon(hInstance, "engine");
+	wndclass.hIcon		= LoadIcon(hInstance, "opengl");
 	wndclass.hCursor	= LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground	= NULL;
 	wndclass.lpszMenuName	= NULL;
@@ -87,9 +87,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		SetTimer ( hwnd, TICK_TIMER, 16, NULL );
 		hdc = GetDC(hwnd);
 		setupPixelFormat(hdc);
+#ifndef DIRECTX
 		hglrc = wglCreateContext(hdc);
 		wglMakeCurrent(hdc, hglrc);
 		glewInit();
+#endif
 		altEngine.init(&hwnd, &hdc);
 		return 0;
 

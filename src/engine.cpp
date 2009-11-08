@@ -10,51 +10,32 @@ void Engine::init(void *param1, void *param2)
 		audio.load("media/sound/mwmusic.wav", &wave);
 		audio.play(&wave);
 	}
-	catch (char *error)
+	catch (const char *error)
 	{
 		printf("%s\n", error);
 	}
+
 
 	gfx.init(param1, param2);
 	try
 	{
 		map.load("media/maps/q3tourney3.bsp");
 	}
-	catch (char *error)
+	catch (const char *error)
 	{
 		printf("%s\n", error);
 		throw error;
 	}
 
 	map.loadTextures(gfx);
-	Entity *box = new Entity(10.0f, vec3(0.0f, 0.0f, 0.0f));
-	entity_list.addEntity(box);
+	
+	map.get_collision_planes(&collision_plane, num_planes);
+	num_planes = 1;
+	collision_plane[0].normal = vec3(0.25f, 1.0f, 0.0f).normalize();
+	collision_plane[0].d = 500.0f;
+	Entity *box = new Entity(10.0f, vec3(0.0f, 20.0f, 0.0f));
+	entity_list.add(box);
 	parse_entity(map.getEnts(), entity_list);
-}
-
-void frame2ent(Frame *camera, Entity &entity, Keyboard &keyboard)
-{
-	vec3		right;
-
-	right = vec3::crossproduct(camera->up, camera->forward);
-	right.normalize();
-
-	if (keyboard.control)
-	{
-	entity.position = camera->pos;
-
-	entity.morientation.m[0] = right.x;
-	entity.morientation.m[1] = right.y;
-	entity.morientation.m[2] = right.z;
-
-	entity.morientation.m[3] = camera->up.x;
-	entity.morientation.m[4] = camera->up.y;
-	entity.morientation.m[5] = camera->up.z;
-
-	entity.morientation.m[6] = camera->forward.x;
-	entity.morientation.m[7] = camera->forward.y;
-	entity.morientation.m[8] = camera->forward.z;
-	}
 }
 
 void Engine::render()
@@ -63,53 +44,73 @@ void Engine::render()
 	int i, j;
 
 	gfx.clear();
-
-	camera.update(keyboard);
-	frame2ent(&camera, entity_list[0], keyboard);
-
-	camera.set();
+	glColor3f(1.0f, 1.0f, 1.0f);
+	camera.set(gfx);
+	collision_plane[0].draw_plane();
 	map.render(entity_list[0], gfx, keyboard);
-
+	frame2ent(&camera, entity_list[0], keyboard);
+	glColor3f(1.0f, 0.0f, 0.0f);
 	entity_list[0].render(gfx);
-	for (i = 1, j = 0; i < entity_list.num_entities; i++)
+//	entity_list[0].in_frustum(entity_list[1]);
+	for (i = 1, j = 0; i < entity_list.num; i++)
 	{
-		if (entity_list[0].in_frustum(entity_list[i]) == false)
-			continue;
-	
+		camera.set(gfx);
+		glColor3f(0.0f, 0.0f, 0.0f);
 		entity_list[i].render(gfx);
-		camera.set();
 		j++;
 	}
-
-	snprintf(msg, 80, "Rendered %d entities", j);
-	gfx.drawText(msg, 0.01f, 0.05f);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	snprintf(msg, 80, "velocity: %3.3f %3.3f %3.3f", entity_list[0].velocity.x, entity_list[0].velocity.y, entity_list[0].velocity.z);
+	gfx.DrawText(msg, 0.01f, 0.1f);
+	snprintf(msg, 80, "net_force: %3.3f %3.3f %3.3f", entity_list[0].net_force.x, entity_list[0].net_force.y, entity_list[0].net_force.z);
+	gfx.DrawText(msg, 0.01f, 0.15f);
+	snprintf(msg, 80, "angular_velocity: %3.3f %3.3f %3.3f", entity_list[0].angular_velocity.x, entity_list[0].angular_velocity.y, entity_list[0].angular_velocity.z);
+	gfx.DrawText(msg, 0.01f, 0.2f);
 	gfx.swap();
 }
 
 void Engine::step()
 {
-	for(int i = 0; i < entity_list.num_entities; i++)
-	{
-		//entity[i].net_force = vec3(0.0f, -9.8f, 0.0f);
-		entity_list[i].integrate(0.016f);
-	}
-/*
-	for(int i = 0; i < entity_list.num_entities; i++)
-	{
-		for(int j = 1; j < entity_list.num_entities; j++)
-		{
-			if ( entity_list[i].collision_detect(entity_list[j]) )
-			{
-				// collision detected
-			}
-		}
+	camera.update(keyboard);
 
-		if ( entity_list[i].collision_detect(p) )
+	// this is dog slow
+	for(int i = 0; i < entity_list.num; i++)
+	{
+		float delta_time = 0.016f;
+		float target_time = delta_time;
+		float current_time = 0.0f;
+		int divisions = 0;
+
+		while (current_time < delta_time)
 		{
-			// collision with ground plane
+			Entity new_entity(entity_list[i]);
+
+			new_entity.integrate(target_time - current_time);
+			if ( new_entity.collision_detect(collision_plane[0]) )
+			{
+				new_entity.vertex_array = NULL;
+				new_entity.index_array = NULL;
+				target_time = (current_time + target_time) / 2.0f;
+				divisions++;
+
+				if (divisions > 200)
+				{
+					new_entity.sleep = true;
+					break;
+//					throw "integration overflow";
+				}
+				continue;
+			}
+			entity_list[i] = new_entity;
+			new_entity.vertex_array = NULL;
+			new_entity.index_array = NULL;
+
+
+			current_time = target_time;
+			target_time = delta_time;
 		}
 	}
-	*/
+
 }
 
 bool Engine::mousepos(int x, int y, int deltax, int deltay)

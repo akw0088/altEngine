@@ -11,14 +11,15 @@ public:
 	void clear();
 	void swap();
 	void resize(const int width, const int height);
-	void drawText(const char *str, float x, float y);
-	void loadMatrix(const float *matrix);
+	void DrawText(const char *str, float x, float y);
+	void LoadMatrix(const float *matrix);
+	void MultMatrix(const float *matrix);
 	void destroy();
 
 	void VertexArray(void *vert, int numVerts);
 	void TextureArray(void *tex, int numTexs);
 	void NormalArray(void *normal, int numNormals);
-	void DrawArray(char *type, void *Indexes, int numIndexes );
+	void DrawArray(char *type, void *Indexes, int numIndexes, int numVerts);
 
 	void InitTextures(int numTextures);
 	void SelectTexture(int index);
@@ -40,8 +41,8 @@ private:
 	IDirect3D9				*d3d;
 	IDirect3DDevice9		*device;
 	D3DPRESENT_PARAMETERS	d3dpp;
-	LPDIRECT3DVERTEXBUFFER9	vertexBuffer = NULL;
-	IDirect3DIndexBuffer9	*indexBuffer = NULL;
+	LPDIRECT3DVERTEXBUFFER9	vertexBuffer;
+	IDirect3DIndexBuffer9	*indexBuffer;
 #else
 	unsigned int *texObject;
 	int numTextures;

@@ -160,6 +160,8 @@ typedef struct
 	face_t		*Face;
 	visData_t	*VisData;
 	int		*Indexes;
+	brush_t *Brushes;
+	brushSide_t *BrushSides;
 
 	int	numEnts;
 	int	numTextures;
@@ -168,6 +170,8 @@ typedef struct
 	int	numLeafs;
 	int	numLeafFaces;
 	int	numLeafBrushes;
+	int	numBrushes;
+	int	numBrushSides;
 	int	numVerts;
 	int	numFaces;
 	int	numVis;
