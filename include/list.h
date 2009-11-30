@@ -1,11 +1,17 @@
 #ifndef LIST_H
 #define LIST_H
 
+/*
+	This list class stores POINTERS to objects and not the objects themselves
+	used originally for entities
+	secondly used for d3d9 abstract classes
+*/
+
 template <typename dtype>
 class List
 {
 public:
-	void add(dtype *item);
+	int add(dtype *item);	// does not make copy
 	void remove();
 	~List();
 	dtype &operator[](int index);
@@ -17,7 +23,7 @@ private:
 };
 
 template <typename dtype>
-void List<dtype>::add(dtype *item)
+int List<dtype>::add(dtype *item)
 {
 	num++;
 	size++;
@@ -34,7 +40,8 @@ void List<dtype>::add(dtype *item)
 		delete [] old;
 	}
 
-	list[size - 1] = item;
+	list[num - 1] = item;
+	return num - 1;
 }
 
 template <typename dtype>

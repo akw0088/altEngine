@@ -27,36 +27,37 @@ void Bsp::load(char *map)
 	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
 	data.Face = (face_t *)		&pBsp[tBsp->directory[Faces].offset];
 	data.VisData = (visData_t *)&pBsp[tBsp->directory[VisData].offset];
-	data.Indexes = (int *)		&pBsp[tBsp->directory[Indexes].offset];
+	data.Index = (int *)		&pBsp[tBsp->directory[Indexes].offset];
 
-	data.numVerts = tBsp->directory[Vertices].length / sizeof(vertex_t);
-	data.numEnts = tBsp->directory[Entities].length;
-	data.numTextures = tBsp->directory[Textures].length / sizeof(texture_t);
-	data.numPlanes = tBsp->directory[Planes].length / sizeof(plane_t);
-	data.numNodes = tBsp->directory[Nodes].length / sizeof(node_t);
-	data.numLeafs = tBsp->directory[Leafs].length / sizeof(leaf_t);
-	data.numLeafFaces = tBsp->directory[LeafFaces].length / sizeof(int);
-	data.numLeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
-	data.numBrushes = tBsp->directory[Brushes].length / sizeof(brush_t);
-	data.numBrushSides = tBsp->directory[BrushSides].length / sizeof(brushSide_t);
-	data.numFaces = tBsp->directory[Faces].length / sizeof(face_t);
-	data.numVis = tBsp->directory[VisData].length / sizeof(visData_t);
+	data.num_verts = tBsp->directory[Vertices].length / sizeof(vertex_t);
+	data.num_ents = tBsp->directory[Entities].length;
+	data.num_textures = tBsp->directory[Textures].length / sizeof(texture_t);
+	data.num_planes = tBsp->directory[Planes].length / sizeof(plane_t);
+	data.num_nodes = tBsp->directory[Nodes].length / sizeof(node_t);
+	data.num_leafs = tBsp->directory[Leafs].length / sizeof(leaf_t);
+	data.num_LeafFaces = tBsp->directory[LeafFaces].length / sizeof(int);
+	data.num_LeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
+	data.num_brushes = tBsp->directory[Brushes].length / sizeof(brush_t);
+	data.num_BrushSides = tBsp->directory[BrushSides].length / sizeof(brushSide_t);
+	data.num_faces = tBsp->directory[Faces].length / sizeof(face_t);
+	data.num_vis = tBsp->directory[VisData].length / sizeof(visData_t);
+	data.num_index = tBsp->directory[Indexes].length / sizeof(int);
 
 	changeAxis();
-	generateMeshes();
 }
 
 /*
-	Loops through map data to find bezeir patches to tesselate into verticies
+	Loops through map data to find bezeir patches to tessellate into verticies
+	And now also creates vbos for map and meshes
 */
-void Bsp::generateMeshes()
+void Bsp::generate_meshes(Graphics &gfx)
 {
 	int mesh_index = 0;
 
 	num_meshes = 0;
 	mesh_level = 8;
 
-	for (int i = 0; i < data.numFaces; i++)
+	for (int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
 
@@ -70,7 +71,10 @@ void Bsp::generateMeshes()
 	mesh_numVerts = new int [num_meshes];
 	mesh_numIndexes = new int [num_meshes];
 
-	for (int i = 0; i < data.numFaces; i++)
+	mesh_vertex_vbo = new unsigned int [num_meshes];
+	mesh_index_vbo = new unsigned int [num_meshes];
+
+	for (int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
 
@@ -78,9 +82,15 @@ void Bsp::generateMeshes()
 		{
 			tessellate(mesh_level, &(data.Vert[face->vertexIndex]), &mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index], &mesh_index_array[mesh_index], mesh_numIndexes[mesh_index]);
 			mesh_index2face[mesh_index] = face->vertexIndex;
+			mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index]);
+			mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_numIndexes[mesh_index]);
 			mesh_index++;
 		}
 	}
+
+
+	map_vertex_vbo = gfx.CreateVertexBuffer(data.Vert, data.num_verts);
+	map_index_vbo = gfx.CreateIndexBuffer(data.Index, data.num_index);
 }
 
 /*
@@ -88,7 +98,7 @@ void Bsp::generateMeshes()
 */
 void Bsp::changeAxis()
 {
-	for(int i = 0; i < data.numVerts; i++)
+	for(int i = 0; i < data.num_verts; i++)
 	{
 		vertex_t *vert = &data.Vert[i];
 		float temp;
@@ -98,7 +108,7 @@ void Bsp::changeAxis()
 		vert->vPosition.z =  -temp;
 	}
 
-	for(int i = 0; i < data.numPlanes; i++)
+	for(int i = 0; i < data.num_planes; i++)
 	{
 		plane_t *plane = &data.Plane[i];
 		float	temp;
@@ -127,6 +137,7 @@ void Bsp::unload()
 	delete [] mesh_index_array;
 	delete [] mesh_numVerts;
 	delete [] mesh_numIndexes;
+	delete [] tex_object; // need to unload from gfx card first
 	free((void *)tBsp);
 }
 
@@ -162,7 +173,7 @@ void Bsp::get_visible_planes(Entity &entity, Plane *plane, int &num_planes)
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
 	num_planes = 0;
-	for (int i = 0; i < data.numLeafs; i++)
+	for (int i = 0; i < data.num_leafs; i++)
 	{
 		leaf_t *leaf = &data.Leaf[i];
 
@@ -190,10 +201,10 @@ void Bsp::get_visible_planes(Entity &entity, Plane *plane, int &num_planes)
 */
 void Bsp::get_collision_planes(Plane **rplane, int &num_planes)
 {
-	Plane *plane = new Plane [data.numBrushSides];
+	Plane *plane = new Plane [data.num_BrushSides];
 	num_planes = 0;
 
-	for (int i = 0; i < data.numBrushes; i++)
+	for (int i = 0; i < data.num_brushes; i++)
 	{
 		int brush_index = data.Brushes[i].brushSide;
 		int num_brushes = data.Brushes[i].numOfBrushSides;
@@ -207,17 +218,97 @@ void Bsp::get_collision_planes(Plane **rplane, int &num_planes)
 	*rplane = plane;
 }
 
+void Bsp::render_face(face_t *face, Graphics &gfx)
+{
+	int vertex_offset = (int)((char *)&(data.Vert[face->vertexIndex].vPosition) - (char *)data.Vert);
+	int texture_offset = (int)((char *)&(data.Vert[face->vertexIndex].vTextureCoord) - (char *)data.Vert);
+	int normal_offset = (int)((char *)&(data.Vert[face->vertexIndex].vNormal) - (char *)data.Vert);
+	int index_offset = (int)((char *)&data.Index[face->index] - (char *)data.Index);
+
+	gfx.SelectVertexBuffer(map_vertex_vbo);
+	gfx.SelectIndexBuffer(map_index_vbo);
+
+	gfx.VertexArray( (void *)vertex_offset);
+	gfx.TextureArray( (void *)texture_offset);
+	gfx.NormalArray( (void *)normal_offset);
+//	glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t),  (void *)((char *)&(data.Vert[face->vertexIndex].color) - (char *)data.Vert));
+
+	gfx.SelectTexture(tex_object[face->textureID]);
+	gfx.DrawArray("triangle", (void *)index_offset, face->num_index, face->num_verts);
+	gfx.DeselectTexture();
+	gfx.SelectVertexBuffer(0);
+	gfx.SelectIndexBuffer(0);
+}
+
+void Bsp::render_patch(face_t *face, Graphics &gfx, Keyboard &keyboard)
+{
+	int mesh_index = -1;
+	int index_per_row = 2 * (mesh_level + 1);
+
+	// Find pre-generated vertex data for patch O(n)
+	for( int i = 0; i < num_meshes; i++)
+	{
+		if (mesh_index2face[i] == face->vertexIndex)
+		{
+			mesh_index = i;
+			break;
+		}
+	}
+
+	if (keyboard.control)
+	{
+		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index]);
+		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index]);
+
+		gfx.VertexArray( (void *)((char *)&(mesh_vertex_array[mesh_index]->vPosition) - (char *)mesh_vertex_array[mesh_index]));
+		gfx.TextureArray( (void *)((char *)&(mesh_vertex_array[mesh_index]->vTextureCoord) - (char *)mesh_vertex_array[mesh_index]));
+		gfx.NormalArray(  (void *)((char *)&(mesh_vertex_array[mesh_index]->vNormal) - (char *)mesh_vertex_array[mesh_index]));
+//		glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t),  (void *)((char *)&(mesh_vertex_array[mesh_index]->color) - (char *)mesh_vertex_array[mesh_index]));
+	}
+	else
+	{
+		gfx.SelectVertexBuffer(0);
+		gfx.SelectIndexBuffer(0);
+
+		gfx.VertexArray(&(mesh_vertex_array[mesh_index]->vPosition));
+		gfx.TextureArray( &(mesh_vertex_array[mesh_index]->vTextureCoord));
+		gfx.NormalArray(  &(mesh_vertex_array[mesh_index]->vNormal));
+//		glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t), &(mesh_vertex_array[mesh_index]->color) );
+	}
+	// Render each row
+	gfx.SelectTexture(tex_object[face->textureID]);
+	for( int row = 0; row < mesh_level; row++)
+	{
+		//VBOs arent rendering entire patch, I see no problem code wise, sticking with indexed arrays.
+		if (keyboard.control)
+		{
+			gfx.DrawArray("triangle_strip",
+				(void *)(row * index_per_row),
+				index_per_row, mesh_numVerts[mesh_index]);
+		}
+		else
+		{
+#ifndef DIRECTX
+			gfx.DrawArray("triangle_strip",
+				&mesh_index_array[mesh_index][row * index_per_row],
+				index_per_row, mesh_numVerts[mesh_index]);
+#endif
+		}
+
+	}
+	gfx.DeselectTexture();
+}
+
 void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 {
 	int frameIndex = findLeaf(entity.position);
 	int numTriangles = 0;
 	char msg[80];
 
-
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
 	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = data.numLeafs - 1; i >= 0; i--)
+	for (int i = 0; i < data.num_leafs; i++)
 	{
 		leaf_t *leaf = &data.Leaf[i];
 
@@ -225,64 +316,32 @@ void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
 			continue;
 
 		// draw faces within visible leaf's
-		int numFaces = leaf->numOfLeafFaces;
-		for (int j = numFaces - 1; j >= 0; j--)
+		for (int j = 0; j < leaf->numOfLeafFaces; j++)
 		{
 			int faceIndex = data.LeafFace[leaf->leafface + j];
 			face_t *face = &data.Face[faceIndex];
 
-			// bezier patch
-			if ((face->type == 2))
+			if (face->type == 1 || face->type == 3)
 			{
-				int mesh_index = -1;
-
-				for( int k = 0; k < num_meshes; k++)
-				{
-					if (mesh_index2face[k] == face->vertexIndex)
-					{
-						mesh_index = k;
-						break;
-					}
-				}
-
-				gfx.VertexArray(mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index]);
-				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), mesh_numVerts[mesh_index]);
-//				gfx.NormalArray(  &(data.Vert[face->vertexIndex].vNormal), data.numVerts);
-
-				for( int row = 0; row < mesh_level; row++)
-				{
-					gfx.SelectTexture(face->textureID);
-					gfx.DrawArray("triangle_strip", &mesh_index_array[mesh_index][row * 2 * (mesh_level + 1)], 2 * (mesh_level + 1), mesh_numVerts[mesh_index]);
-					gfx.DeselectTexture();
-				}
-
+				render_face(face, gfx);
+				numTriangles += face->num_index / 3;
 			}
-			else if (face->type == 4)
+			else if (face->type == 2)
 			{
-				// billboard
-			}
-			else
-			{
-				gfx.VertexArray(  &(data.Vert[face->vertexIndex].vPosition), data.numVerts);
-				gfx.TextureArray( &(data.Vert[face->vertexIndex].vTextureCoord), data.numVerts);
-				gfx.NormalArray(  &(data.Vert[face->vertexIndex].vNormal), data.numVerts);
-
-				gfx.SelectTexture(face->textureID);
-				gfx.DrawArray("triangle", &data.Indexes[face->indexes], face->numIndexes, data.numVerts);
-				gfx.DeselectTexture();
-				numTriangles += face->numIndexes / 3;
+				render_patch(face, gfx, keyboard);
+				numTriangles += face->num_index / 3;
 			}
 		}
 	}
 	
-	snprintf(msg, 80, "%d Triangles rendered %f %f %f", numTriangles, entity.position.x, entity.position.y, entity.position.z);
+	snprintf(msg, 80, "%d Triangles rendered", numTriangles);
 	gfx.DrawText(msg, 0.01f, 0.02f);
 }
 
 /*
 	Determines set of visible leafs from current leaf
 */
-int Bsp::isClusterVisible(int visCluster, int testCluster)
+inline int Bsp::isClusterVisible(int visCluster, int testCluster)
 {
 	int byteOffset, bitOffset;
 	char testByte;
@@ -298,10 +357,10 @@ int Bsp::isClusterVisible(int visCluster, int testCluster)
 	return 	(&data.VisData->pVecs)[byteOffset] & testByte;
 }
 
-void Bsp::loadTextures(Graphics &gfx)
+void Bsp::load_textures(Graphics &gfx)
 {
-	gfx.InitTextures(data.numTextures);
-	for (int i = 0; i < data.numTextures; i++)
+	tex_object = new unsigned int [data.num_textures];
+	for (int i = 0; i < data.num_textures; i++)
 	{
 		texture_t	*texture = &data.Texture[i];
 		byte		*bytes;
@@ -313,7 +372,7 @@ void Bsp::loadTextures(Graphics &gfx)
 		if (bytes == NULL)
 			printf("Unable to load texture %s\n", buffer);
 
-		gfx.LoadTexture(i, width, height, components, format, bytes);
+		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
 		free((void *)bytes);
 	}
 }
@@ -327,21 +386,25 @@ void Bsp::loadTextures(Graphics &gfx)
 */
 void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes)
 {
+	vec3 a, b;
 	int i, j;
 
 	numVerts = level + 1;
 
 	*vertex_array = new vertex_t[numVerts * numVerts];
 
+	// calculate first set of verts
 	for (i = 0; i <= level; i++)
 	{
 		float a = (float) i / level;
 		float b = 1.0f - a;
-		(*vertex_array)[i].vPosition = control[0].vPosition * (b * b) +
+		(*vertex_array)[i].vPosition =
+			control[0].vPosition * (b * b) +
 			control[3].vPosition * (2 * b * a) +
 			control[6].vPosition * (a * a);
 	}
 
+	// calculate rest of verts
 	for ( i = 1; i <= level; i++)
 	{
 		float a = (float)i / level;
@@ -349,9 +412,18 @@ void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int
 
 		vertex_t temp[3];
 
-		temp[0].vPosition = control[0].vPosition * (b * b) + control[1].vPosition * (2 * b * a) + control[2].vPosition * (a * a);
-		temp[1].vPosition = control[3].vPosition * (b * b) + control[4].vPosition * (2 * b * a) + control[5].vPosition * (a * a);
-		temp[2].vPosition = control[6].vPosition * (b * b) + control[7].vPosition * (2 * b * a) + control[8].vPosition * (a * a);
+		temp[0].vPosition = 
+			control[0].vPosition * (b * b) + 
+			control[1].vPosition * (2 * b * a) + 
+			control[2].vPosition * (a * a);
+		temp[1].vPosition = 
+			control[3].vPosition * (b * b) + 
+			control[4].vPosition * (2 * b * a) + 
+			control[5].vPosition * (a * a);
+		temp[2].vPosition = 
+			control[6].vPosition * (b * b) + 
+			control[7].vPosition * (2 * b * a) + 
+			control[8].vPosition * (a * a);
 
 		for(j = 0; j <= level; j++)
 		{
@@ -365,6 +437,7 @@ void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int
 		}
 	}
 	
+	//Create index array
 	numIndexes = level * numVerts * 2;
 	*index_array = new int[numIndexes];
 	for (i = 0; i < level; i++)
@@ -375,6 +448,30 @@ void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int
 			(*index_array)[(i * numVerts + j) * 2] = (i + 1) * numVerts + j;
 		}
 	}
+
+	// Generate normals
+	for(i = 0; i <= level; i++)
+	{
+		for(j = 0; j <= level; j++)
+		{
+			if (j != level)
+				a = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[i * numVerts + (j + 1)].vPosition;
+			else
+				b = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[i * numVerts + (j - 1)].vPosition;
+				
+			if ( i != level)
+				b = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[(i + 1) * numVerts + j].vPosition;
+			else
+				b = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[(i - 1) * numVerts + j].vPosition;
+
+			(*vertex_array)[i * numVerts + j].color = ~0;
+			(*vertex_array)[i * numVerts + j].vTextureCoord = vec2((float)(i % 2), (float)(j % 2));
+			(*vertex_array)[i * numVerts + j].vNormal = vec3::crossproduct(a,b).normalize();
+		}
+	}
+
+	// correct numVerts size
+	numVerts = numVerts * numVerts;
 }
 
 /*

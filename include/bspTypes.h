@@ -30,7 +30,7 @@ typedef struct
 	vec2	vTextureCoord;	// (u, v) texture coordinate
 	vec2	vLightmapCoord;	// (u, v) lightmap coordinate
 	vec3	vNormal;		// (x, y, z) normal vector
-	byte	color[4];		// RGBA color for the vertex 
+	int		color;		// RGBA color for the vertex 
 } vertex_t;
 
 typedef struct
@@ -39,9 +39,9 @@ typedef struct
 	int	effect;			// The index for the effects (or -1 = n/a) 
 	int	type;			// 1=polygon, 2=patch, 3=mesh, 4=billboard 
 	int	vertexIndex;		// The index into this face's first vertex 
-	int	numOfVerts;		// The number of vertices for this face 
-	int	indexes;		// The index into the first meshvertex 
-	int	numIndexes;		// The number of mesh vertices -- Indexes
+	int	num_verts;		// The number of vertices for this face 
+	int	index;		// The index into the first meshvertex 
+	int	num_index;		// The number of mesh vertices -- Indexes
 	int	lightmapID;		// The texture index for the lightmap 
 	int	lMapCorner[2];		// The face's lightmap corner in the image 
 	int	lMapSize[2];		// The size of the lightmap section 
@@ -159,21 +159,21 @@ typedef struct
 	vertex_t	*Vert;
 	face_t		*Face;
 	visData_t	*VisData;
-	int		*Indexes;
+	int		*Index;
 	brush_t *Brushes;
 	brushSide_t *BrushSides;
 
-	int	numEnts;
-	int	numTextures;
-	int	numPlanes;
-	int	numNodes;
-	int	numLeafs;
-	int	numLeafFaces;
-	int	numLeafBrushes;
-	int	numBrushes;
-	int	numBrushSides;
-	int	numVerts;
-	int	numFaces;
-	int	numVis;
-	int	numIndexes;
+	int	num_ents;
+	int	num_textures;
+	int	num_planes;
+	int	num_nodes;
+	int	num_leafs;
+	int	num_LeafFaces;
+	int	num_LeafBrushes;
+	int	num_brushes;
+	int	num_BrushSides;
+	int	num_verts;
+	int	num_faces;
+	int	num_vis;
+	int	num_index;
 } bspData_t;

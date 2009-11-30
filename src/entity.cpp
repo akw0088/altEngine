@@ -148,6 +148,7 @@ bool Entity::collision_detect(Entity &entity)
 	Frustum culling code that extracts frustum from the projection matrix
 	doesnt work, dont know why, I need to write a specification for this
 */
+/*
 bool Entity::in_frustum(Entity &entity)
 {
 	vec4	left_plane, right_plane, bottom_plane, top_plane, near_plane, far_plane;
@@ -248,6 +249,7 @@ bool Entity::in_frustum(Entity &entity)
 
 	return false;
 }
+*/
 
 Entity::Entity(float mass, const vec3 &position)
 {
@@ -299,13 +301,45 @@ Entity::Entity(float mass, const vec3 &position)
 #define SCALAR 20.0f
 	// Its a box! ?:)
 	vertex_array[0].vPosition = vec3(-0.5f, -0.5f, -0.5f) * SCALAR;
+	vertex_array[0].vNormal = vertex_array[0].vPosition;
+	vertex_array[0].vTextureCoord = vec2();
+	vertex_array[0].color = 0;
+
 	vertex_array[1].vPosition = vec3(-0.5f, -0.5f, 0.5f)  * SCALAR;
+	vertex_array[1].vNormal = vertex_array[0].vPosition;
+	vertex_array[1].vTextureCoord = vec2();
+	vertex_array[1].color = 0;
+
 	vertex_array[2].vPosition = vec3(-0.5f, 0.5f, -0.5f)  * SCALAR;
+	vertex_array[2].vNormal = vertex_array[0].vPosition;
+	vertex_array[2].vTextureCoord = vec2();
+	vertex_array[2].color = 0;
+
 	vertex_array[3].vPosition = vec3(-0.5f, 0.5f, 0.5f)   * SCALAR;
+	vertex_array[3].vNormal = vertex_array[0].vPosition;
+	vertex_array[3].vTextureCoord = vec2();
+	vertex_array[3].color = 0;
+
 	vertex_array[4].vPosition = vec3(0.5f, -0.5f, -0.5f)  * SCALAR;
+	vertex_array[4].vNormal = vertex_array[0].vPosition;
+	vertex_array[4].vTextureCoord = vec2();
+	vertex_array[4].color = 0;
+
 	vertex_array[5].vPosition = vec3(0.5f, -0.5f, 0.5f)   * SCALAR;
+	vertex_array[5].vNormal = vertex_array[0].vPosition;
+	vertex_array[5].vTextureCoord = vec2();
+	vertex_array[5].color = 0;
+
 	vertex_array[6].vPosition = vec3(0.5f, 0.5f, -0.5f)   * SCALAR;
+	vertex_array[6].vNormal = vertex_array[0].vPosition;
+	vertex_array[6].vTextureCoord = vec2();
+	vertex_array[6].color = 0;
+
 	vertex_array[7].vPosition = vec3(0.5f, 0.5f, 0.5f)    * SCALAR;
+	vertex_array[7].vNormal = vertex_array[0].vPosition;
+	vertex_array[7].vTextureCoord = vec2();
+	vertex_array[7].color = 0;
+
 	num_vertex = 8;
 	aabb[0] = vertex_array[0].vPosition;
 	aabb[1] = vertex_array[7].vPosition;
@@ -391,6 +425,11 @@ void Entity::render(Graphics &gfx)
 	float matrix[16];
 
 	gfx.MultMatrix(get_matrix(matrix));
-	gfx.VertexArray(vertex_array, num_vertex);
+	gfx.VertexArray(&vertex_array->vPosition);
+	gfx.NormalArray(&vertex_array->vNormal);
+	gfx.TextureArray(&vertex_array->vTextureCoord);
+//	glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t), &vertex_array->color);
+	gfx.SelectIndexBuffer(0);
+	gfx.SelectVertexBuffer(0);
 	gfx.DrawArray("triangle", index_array, num_index, num_vertex);
 }

@@ -13,9 +13,7 @@ public:
 	void keystroke(char *key, bool pressed);
 	void resize(int width, int height);
 	void destroy();
-	~Engine()
-	{
-	}
+
 private:
 	Graphics		gfx;
 	Sound			audio;

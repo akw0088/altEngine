@@ -29,7 +29,7 @@ void Graphics::init(void *param1, void *param2)
 	if (d3d == NULL)
 		return;
 
-	ret = d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &device);
+	ret = d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &device);
 	if (ret != D3D_OK)
 		return;
 }
@@ -63,37 +63,82 @@ void Graphics::destroy()
 
 }
 
-void Graphics::VertexArray(void *vert, int numVerts)
-{
-	void *pVert = NULL;
-
-	device->CreateVertexBuffer(numVerts * sizeof(vertex_t), 0, D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE, D3DPOOL_SYSTEMMEM, &vertexBuffer, NULL);
-	vertexBuffer->Lock(0, numVerts * sizeof(vertex_t), &pVert, 0);
-	memcpy(pVert, vert, numVerts * sizeof(vertex_t));
-	vertexBuffer->Unlock();
-	device->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE);
-	device->SetStreamSource(0, vertexBuffer, 0, sizeof(vertex_t));
-}
-
-void Graphics::TextureArray(void *tex, int numTexs)
+void Graphics::VertexArray(void *vert)
 {
 }
 
-void Graphics::NormalArray(void *normal, int numNormals)
+void Graphics::TextureArray(void *tex)
 {
 }
 
-void Graphics::DrawArray(char *type, void *Indexes, int numIndexes, int numVerts)
+void Graphics::NormalArray(void *normal)
 {
+}
+
+/*
+	Creates a d3d9_buffer
+	 gets pointer pIndex to created buffer
+	 copies index_array to pIndex
+	 unlocks buffer.
+*/
+int Graphics::CreateIndexBuffer(void *index_array, int num_index)
+{
+	IDirect3DIndexBuffer9	*d3d9_buffer;
 	void *pIndex = NULL;
 
-	device->CreateIndexBuffer(numIndexes * sizeof(int), 0, D3DFMT_INDEX16,  D3DPOOL_DEFAULT, &indexBuffer, NULL);
-	indexBuffer->Lock(0, numIndexes * sizeof(int), &pIndex, 0);
-	memcpy(pIndex, Indexes, numIndexes * sizeof(int));
-	indexBuffer->Unlock();
-	device->SetIndices(indexBuffer);
+	device->CreateIndexBuffer(num_index * sizeof(int), 0, D3DFMT_INDEX16,  D3DPOOL_DEFAULT, &d3d9_buffer, NULL);
+	d3d9_buffer->Lock(0, num_index * sizeof(int), &pIndex, 0);
+	memcpy(pIndex, index_array, num_index * sizeof(int));
+	d3d9_buffer->Unlock();
+	return index_buffers.add(d3d9_buffer);
+}
 
-	device->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, 0, 0, numVerts, 0, numIndexes);
+void Graphics::SelectIndexBuffer(int handle)
+{
+	IDirect3DIndexBuffer9	*d3d9_buffer = &index_buffers[handle];
+
+	device->SetIndices(d3d9_buffer);
+}
+
+void Graphics::DeleteIndexBuffer(int handle)
+{
+	IDirect3DIndexBuffer9	*d3d9_buffer = &index_buffers[handle];
+
+	d3d9_buffer->Release();
+}
+
+void Graphics::DrawArray(char *type, void *index_array, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, 0, 0, num_verts, (int)index_array, num_index);
+}
+
+int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
+{
+	void *pVert = NULL;
+	LPDIRECT3DVERTEXBUFFER9 d3d9_buffer;
+
+	device->CreateVertexBuffer(num_verts * sizeof(vertex_t), D3DUSAGE_WRITEONLY, D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_NORMAL | D3DFVF_DIFFUSE, D3DPOOL_DEFAULT, &d3d9_buffer, NULL);
+	d3d9_buffer->Lock(0, num_verts * sizeof(vertex_t), &pVert, 0);
+	memcpy(pVert, vertex_array, num_verts * sizeof(vertex_t));
+	d3d9_buffer->Unlock();
+
+	return vertex_buffers.add(&d3d9_buffer);
+}
+
+void Graphics::SelectVertexBuffer(int handle)
+{
+	LPDIRECT3DVERTEXBUFFER9 d3d9_buffer = vertex_buffers[handle];
+
+	if (handle != 0)
+		device->SetStreamSource(0, d3d9_buffer, 0, sizeof(vertex_t));
+	device->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_NORMAL | D3DFVF_DIFFUSE);
+}
+
+void Graphics::DeleteVertexBuffer(int handle)
+{
+	LPDIRECT3DVERTEXBUFFER9 d3d9_buffer = vertex_buffers[handle];
+
+	d3d9_buffer->Release();
 }
 
 void Graphics::MultMatrix(const float *matrix)
@@ -152,22 +197,28 @@ void Graphics::LoadMatrix(const float *matrix)
 		device->SetTransform(D3DTS_WORLD, &mTransform);
 }
 
-void Graphics::SelectTexture(int index)
+void Graphics::SelectTexture(int handle)
 {
+	device->SetTexture(0, &texture[handle]);
 }
 
 void Graphics::DeselectTexture()
 {
 }
 
-void Graphics::InitTextures(int numTextures)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
 {
+	IDirect3DTexture9	*d3d9_buffer;
+	void	*pTex = NULL;
 
-}
+	device->CreateTexture(width, height, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &d3d9_buffer, NULL);
+	/*
+	d3d9_buffer->Lock(0, width * height * sizeof(int), pTex, 0);
+	memcpy(pTex, bytes, width * height * sizeof(int));
+	d3d9_buffer->Unlock();
+	*/
 
-void Graphics::LoadTexture(int index, int width, int height, int components, int format, void *bytes)
-{
-
+	return texture.add(d3d9_buffer);
 }
 
 #else
@@ -176,13 +227,10 @@ void Graphics::LoadTexture(int index, int width, int height, int components, int
 */
 Graphics::Graphics()
 {
-	texObject = NULL;
 }
 
 Graphics::~Graphics()
 {
-	if (texObject)
-		delete [] texObject;
 }
 
 void Graphics::init(void *param1, void *param2)
@@ -204,23 +252,19 @@ void Graphics::init(void *param1, void *param2)
 	else
 		printf("Unable to load font!\n");
 #endif
-
+	glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
 	glMatrixMode(GL_TEXTURE);
 	glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
-	glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glEnable(GL_DEPTH_TEST);
-//	glColor3f(1.0f, 1.0f, 1.0f);
 	glPointSize(5.0);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
-	glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
-	glShadeModel(GL_SMOOTH);
+//	glEnableClientState(GL_COLOR_ARRAY);
 }
 
 void Graphics::DrawText(const char *str, float x, float y)
@@ -285,25 +329,25 @@ void Graphics::destroy()
 		XUnloadFont(display, font->fid);
 #endif
 	glDeleteLists(1000, '~' - ' ');
-	glDeleteTextures(numTextures, texObject);
+//	glDeleteTextures(numTextures, texObject);
 }
 
-void Graphics::VertexArray(void *vert, int numVerts)
+void Graphics::VertexArray(void *vert)
 {
 	glVertexPointer(3, GL_FLOAT, sizeof(vertex_t), vert);
 }
 
-void Graphics::TextureArray(void *tex, int numTexs)
+void Graphics::TextureArray(void *tex)
 {
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex_t), tex );
 }
 
-void Graphics::NormalArray(void *normal_array, int num_normal)
+void Graphics::NormalArray(void *normal_array)
 {
 	glNormalPointer(GL_FLOAT, sizeof(vertex_t), normal_array );
 }
 
-void Graphics::DrawArray(char *type, void *index_array, int num_index, int num_verts)
+void Graphics::DrawArray(char *type, void *index_array, unsigned int num_index, int num_verts)
 {
 	/* Branches in rendering loop are slow, find faster portable method */
 	if ( strcmp(type, "triangle") == 0 )
@@ -316,9 +360,52 @@ void Graphics::DrawArray(char *type, void *index_array, int num_index, int num_v
 		glDrawElements(GL_POINTS, num_index, GL_UNSIGNED_INT, index_array);
 }
 
-void Graphics::SelectTexture(int index)
+int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 {
-	glBindTexture(GL_TEXTURE_2D, texObject[index]);
+	unsigned int	vbo;
+
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, num_index * sizeof(int), index_buffer, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return vbo;
+
+}
+
+void Graphics::SelectIndexBuffer(int handle)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
+}
+
+void Graphics::DeleteIndexBuffer(int handle)
+{
+
+}
+
+int  Graphics::CreateVertexBuffer(void *vertex_buffer, int num_index)
+{
+	unsigned int	vbo;
+
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, num_index * sizeof(vertex_t), vertex_buffer, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return vbo;
+}
+
+void Graphics::SelectVertexBuffer(int handle)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, handle);
+}
+
+void Graphics::DeleteVertexBuffer(int handle)
+{
+}
+
+
+void Graphics::SelectTexture(int texObject)
+{
+	glBindTexture(GL_TEXTURE_2D, texObject);
 	glEnable(GL_TEXTURE_2D);
 }
 
@@ -327,16 +414,12 @@ void Graphics::DeselectTexture()
 	glDisable(GL_TEXTURE_2D);
 }
 
-void Graphics::InitTextures(int numTextures)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
 {
-	texObject = new unsigned int [numTextures];
-	glGenTextures(numTextures, texObject);
-	Graphics::numTextures = numTextures;
-}
+	unsigned int texObject;
 
-void Graphics::LoadTexture(int index, int width, int height, int components, int format, void *bytes)
-{
-	glBindTexture(GL_TEXTURE_2D, texObject[index]);
+	glGenTextures(1, &texObject);
+	glBindTexture(GL_TEXTURE_2D, texObject);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -344,6 +427,7 @@ void Graphics::LoadTexture(int index, int width, int height, int components, int
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);
+	return texObject;
 }
 #endif
 

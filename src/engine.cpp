@@ -15,7 +15,6 @@ void Engine::init(void *param1, void *param2)
 		printf("%s\n", error);
 	}
 
-
 	gfx.init(param1, param2);
 	try
 	{
@@ -26,12 +25,12 @@ void Engine::init(void *param1, void *param2)
 		printf("%s\n", error);
 		throw error;
 	}
-
-	map.loadTextures(gfx);
+	map.generate_meshes(gfx);
+	map.load_textures(gfx);
 	
 	map.get_collision_planes(&collision_plane, num_planes);
 	num_planes = 1;
-	collision_plane[0].normal = vec3(0.25f, 1.0f, 0.0f).normalize();
+	collision_plane[0].normal = vec3(0.0f, 1.0f, 0.0f).normalize();
 	collision_plane[0].d = 500.0f;
 	Entity *box = new Entity(10.0f, vec3(0.0f, 20.0f, 0.0f));
 	entity_list.add(box);
@@ -44,28 +43,29 @@ void Engine::render()
 	int i, j;
 
 	gfx.clear();
-	glColor3f(1.0f, 1.0f, 1.0f);
 	camera.set(gfx);
-	collision_plane[0].draw_plane();
+//	collision_plane[0].draw_plane();
 	map.render(entity_list[0], gfx, keyboard);
 	frame2ent(&camera, entity_list[0], keyboard);
-	glColor3f(1.0f, 0.0f, 0.0f);
 	entity_list[0].render(gfx);
 //	entity_list[0].in_frustum(entity_list[1]);
 	for (i = 1, j = 0; i < entity_list.num; i++)
 	{
 		camera.set(gfx);
-		glColor3f(0.0f, 0.0f, 0.0f);
 		entity_list[i].render(gfx);
 		j++;
 	}
-	glColor3f(1.0f, 1.0f, 1.0f);
-	snprintf(msg, 80, "velocity: %3.3f %3.3f %3.3f", entity_list[0].velocity.x, entity_list[0].velocity.y, entity_list[0].velocity.z);
-	gfx.DrawText(msg, 0.01f, 0.1f);
+//	glColor3f(1.0f, 1.0f, 1.0f);
+	snprintf(msg, 80, "rendered %d entities", j);
+	gfx.DrawText(msg, 0.01f, 0.06f);
 	snprintf(msg, 80, "net_force: %3.3f %3.3f %3.3f", entity_list[0].net_force.x, entity_list[0].net_force.y, entity_list[0].net_force.z);
-	gfx.DrawText(msg, 0.01f, 0.15f);
+	gfx.DrawText(msg, 0.01f, 0.10f);
 	snprintf(msg, 80, "angular_velocity: %3.3f %3.3f %3.3f", entity_list[0].angular_velocity.x, entity_list[0].angular_velocity.y, entity_list[0].angular_velocity.z);
-	gfx.DrawText(msg, 0.01f, 0.2f);
+	gfx.DrawText(msg, 0.01f, 0.14f);
+	snprintf(msg, 80, "velocity: %3.3f %3.3f %3.3f", entity_list[0].velocity.x, entity_list[0].velocity.y, entity_list[0].velocity.z);
+	gfx.DrawText(msg, 0.01f, 0.18f);
+	snprintf(msg, 80, "position: %3.3f %3.3f %3.3f", entity_list[0].position.x, entity_list[0].position.y, entity_list[0].position.z);
+	gfx.DrawText(msg, 0.01f, 0.22f);
 	gfx.swap();
 }
 

@@ -6,21 +6,23 @@
 class Bsp
 {
 	void changeAxis();
-	int findLeaf(const vec3 &position);
-	int isClusterVisible(int visCluster, int testCluster);
+	inline int findLeaf(const vec3 &position);
+	inline int isClusterVisible(int visCluster, int testCluster);
 public:
 	Bsp()
 	{
 	}
 	void tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
-	void generateMeshes();
+	void generate_meshes(Graphics &gfx);
 	const char *getEnts();
 	void get_visible_planes(Entity &entity, Plane *plane, int &num_planes);
 	void get_collision_planes(Plane **plane, int &num_planes);
 	void drawBox(int *min, int *max);
+	void render_face(face_t *face, Graphics &gfx);
+	void render_patch(face_t *face, Graphics &gfx, Keyboard &keyboard);
 	void render(Entity &entity, Graphics &gfx, Keyboard &keyboard);
 	void load(char *map);
-	void loadTextures(Graphics &graphics);
+	void load_textures(Graphics &gfx);
 	void unload();
 	~Bsp()
 	{
@@ -38,6 +40,12 @@ private:
 	int			*mesh_numVerts;
 	int			*mesh_numIndexes;
 	int			num_meshes;
+	unsigned int	map_index_vbo;
+	unsigned int	map_vertex_vbo;
+	unsigned int	*mesh_index_vbo;
+	unsigned int	*mesh_vertex_vbo;
+
+	unsigned int	*tex_object;
 };
 
 #endif
