@@ -1,6 +1,9 @@
 #include "vector.h"
 #include "matrix.h"
-#include <cmath>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 void matrix3::normalize()
 {
@@ -165,6 +168,7 @@ matrix3 matrix3::operator*(const float scalar)
 	return result;
 }
 
+
 vec3 matrix3::operator*(const vec3 &vec)
 {
 	vec3 result;
@@ -214,6 +218,30 @@ matrix4 &matrix4::operator=(const matrix4 &mat)
 	m[13] = mat.m[13];
 	m[14] = mat.m[14];
 	m[15] = mat.m[15];
+	return *this;
+}
+
+matrix4 &matrix4::operator=(const float *mat)
+{
+	m[0]  = mat[0];
+	m[1]  = mat[1];
+	m[2]  = mat[2];
+	m[3]  = mat[3];
+
+	m[4]  = mat[4];
+	m[5]  = mat[5];
+	m[6]  = mat[6];
+	m[7]  = mat[7];
+
+	m[8]  = mat[8];
+	m[9]  = mat[9];
+	m[10] = mat[10];
+	m[11] = mat[11];
+	
+	m[12] = mat[12];
+	m[13] = mat[13];
+	m[14] = mat[14];
+	m[15] = mat[15];
 	return *this;
 }
 
@@ -336,6 +364,61 @@ matrix4 matrix4::operator*(const matrix4 &mat)
 	return result;
 }
 
+matrix4 matrix4::operator*(const float *mat)
+{
+	matrix4 result;
+
+	result.m[0]  = m[0] *  mat[0] + m[1] *  mat[4] + m[2]  * mat[8] +  m[3] *  mat[12];
+	result.m[1]  = m[0] *  mat[1] + m[1] *  mat[5] + m[2]  * mat[9] +  m[3] *  mat[13];
+	result.m[2]  = m[0] *  mat[2] + m[1] *  mat[6] + m[2]  * mat[10] + m[3] *  mat[14];
+	result.m[3]  = m[0] *  mat[3] + m[1] *  mat[7] + m[2]  * mat[11] + m[3] *  mat[15];
+
+	result.m[4]  = m[4] *  mat[0] + m[5] *  mat[4] + m[6]  * mat[8] +  m[7] *  mat[12];
+	result.m[5]  = m[4] *  mat[1] + m[5] *  mat[5] + m[6]  * mat[9] +  m[7] *  mat[13];
+	result.m[6]  = m[4] *  mat[2] + m[5] *  mat[6] + m[6]  * mat[10] + m[7] *  mat[14];
+	result.m[7]  = m[4] *  mat[3] + m[5] *  mat[7] + m[6]  * mat[11] + m[7] *  mat[15];
+
+	result.m[8]  = m[8] *  mat[0] + m[9] *  mat[4] + m[10] * mat[8] +  m[11] * mat[12];
+	result.m[9]  = m[8] *  mat[1] + m[9] *  mat[5] + m[10] * mat[9] +  m[11] * mat[13];
+	result.m[10] = m[8] *  mat[2] + m[9] *  mat[6] + m[10] * mat[10] + m[11] * mat[14];
+	result.m[11] = m[8] *  mat[3] + m[9] *  mat[7] + m[10] * mat[11] + m[11] * mat[15];
+
+	result.m[12] = m[12] * mat[0] + m[13] * mat[4] + m[14] * mat[8] +  m[15] * mat[12];
+	result.m[13] = m[12] * mat[1] + m[13] * mat[5] + m[14] * mat[9] +  m[15] * mat[13];
+	result.m[14] = m[12] * mat[2] + m[13] * mat[6] + m[14] * mat[10] + m[15] * mat[14];
+	result.m[15] = m[12] * mat[3] + m[13] * mat[7] + m[14] * mat[11] + m[15] * mat[15];
+
+	return result;
+}
+
+
+matrix4 matrix4::premultiply(const float *mat)
+{
+	matrix4 result;
+
+	result.m[0]  = mat[0] *  m[0] + mat[1] *  m[4] + mat[2]  * m[8] +  mat[3] *  m[12];
+	result.m[1]  = mat[0] *  m[1] + mat[1] *  m[5] + mat[2]  * m[9] +  mat[3] *  m[13];
+	result.m[2]  = mat[0] *  m[2] + mat[1] *  m[6] + mat[2]  * m[10] + mat[3] *  m[14];
+	result.m[3]  = mat[0] *  m[3] + mat[1] *  m[7] + mat[2]  * m[11] + mat[3] *  m[15];
+
+	result.m[4]  = mat[4] *  m[0] + mat[5] *  m[4] + mat[6]  * m[8] +  mat[7] *  m[12];
+	result.m[5]  = mat[4] *  m[1] + mat[5] *  m[5] + mat[6]  * m[9] +  mat[7] *  m[13];
+	result.m[6]  = mat[4] *  m[2] + mat[5] *  m[6] + mat[6]  * m[10] + mat[7] *  m[14];
+	result.m[7]  = mat[4] *  m[3] + mat[5] *  m[7] + mat[6]  * m[11] + mat[7] *  m[15];
+
+	result.m[8]  = mat[8] *  m[0] + mat[9] *  m[4] + mat[10] * m[8] +  mat[11] * m[12];
+	result.m[9]  = mat[8] *  m[1] + mat[9] *  m[5] + mat[10] * m[9] +  mat[11] * m[13];
+	result.m[10] = mat[8] *  m[2] + mat[9] *  m[6] + mat[10] * m[10] + mat[11] * m[14];
+	result.m[11] = mat[8] *  m[3] + mat[9] *  m[7] + mat[10] * m[11] + mat[11] * m[15];
+
+	result.m[12] = mat[12] * m[0] + mat[13] * m[4] + mat[14] * m[8] +  mat[15] * m[12];
+	result.m[13] = mat[12] * m[1] + mat[13] * m[5] + mat[14] * m[9] +  mat[15] * m[13];
+	result.m[14] = mat[12] * m[2] + mat[13] * m[6] + mat[14] * m[10] + mat[15] * m[14];
+	result.m[15] = mat[12] * m[3] + mat[13] * m[7] + mat[14] * m[11] + mat[15] * m[15];
+
+	return result;
+}
+
 matrix4 matrix4::transpose()
 {
 	matrix4 trans;
@@ -361,4 +444,60 @@ matrix4 matrix4::transpose()
 	trans.m[15] = m[15];
 
 	return trans;
+}
+
+void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, bool infinite)
+{
+    double radians = fovy / 2 * (3.14159265358979323846) / 180;
+    double cotangent = fcos(radians) / fsin(radians);
+	float deltaZ = zFar - zNear;
+
+	m[0] = (float)(cotangent / aspect);
+	m[1] = 0.0f;
+	m[2] = 0.0f;
+	m[3] = 0.0f;
+
+	m[4] = 0.0f;
+	m[5] = (float)cotangent;
+	m[6] = 0.0f;
+	m[7] = 0.0f;
+	
+	m[8] = 0.0f;
+	m[9] = 0.0f;
+	m[10] = -(zFar + zNear) / deltaZ;
+	m[11] = -1.0f;
+	
+	m[12] = 0.0f;
+	m[13] = 0.0f;
+	m[14] = -2 * zNear * zFar / deltaZ;
+	m[15] = 0.0f;
+
+	if (infinite)
+	{
+		m[10] = -1.0f;
+		m[14] = -2.0f;
+	}
+}
+
+void matrix4::ortho(float left, float right, float bottom, float top, float nearval, float farval)
+{
+	m[0] = 2.0f / (right - left);
+	m[1] = 0.0f;
+	m[2] = 0.0f;
+	m[3] = 0.0f;
+
+	m[4] = 0.0f;
+	m[5] = 2.0f / (top - bottom);
+	m[6] = 0.0f;
+	m[7] = 0.0f;
+
+	m[8] = 0.0f;
+	m[9] = 0.0f;
+	m[10] = -2.0f / (farval - nearval);
+	m[11] = 0.0f;
+
+	m[12] = -(right + left) / (right - left);
+	m[13] = -(top + bottom) / (top - bottom);
+	m[14] = -(farval + nearval) / (farval - nearval);
+	m[15] = 1.0f;
 }

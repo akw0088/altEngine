@@ -1,5 +1,9 @@
 #include "include.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 // Define targa header.
 #pragma pack(1)
 typedef struct
@@ -17,6 +21,7 @@ typedef struct
 	byte		bits;			// bits per pixel (8 16, 24, 32)
 	byte		descriptor;		// image descriptor
 } TGAHEADER;
+
 #pragma pack(8)
 
 byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, int *eFormat)
@@ -59,27 +64,22 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 	*iHeight = tgaHeader.height;
 	sDepth = tgaHeader.bits / 8;
     
-	// Put some validity checks here. Very simply, I only understand
-	// or care about 8, 24, or 32 bit targa's.
 	if(tgaHeader.bits != 8 && tgaHeader.bits != 24 && tgaHeader.bits != 32)
 		return NULL;
 
-	// Calculate size of image buffer
 	lImageSize = tgaHeader.width * tgaHeader.height * sDepth;
 
-	pBits = (byte *)malloc(lImageSize * sizeof(byte));
+	pBits = new byte [lImageSize * sizeof(byte)];
 	if(pBits == NULL)
 		return NULL;
 
-	// Read in the bits
-	// Check for read error. This should catch RLE or other 
-	// weird formats that I don't want to recognize
 	if(fread(pBits, lImageSize, 1, pFile) != 1)
 	{
-		free(pBits);
+		delete [] pBits;
 		return NULL;
 	}
-    
+	fclose(pFile);
+
 	// Set OpenGL format expected
 #ifndef DIRECTX
 	switch(sDepth)
@@ -97,8 +97,50 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 		*iComponents = GL_LUMINANCE8;
 		break;
 	};
-#endif
+#else
+	switch(sDepth)
+	{
+	case 3:
+		*eFormat = 3;
+		*iComponents = 3;
+		break;
+	case 4:
+		*eFormat = 4;
+		*iComponents = 4;
+		break;
+	case 1:
+		*eFormat = 1;
+		*iComponents = 1;
+		break;
+	};
 
-	fclose(pFile);
+	//directx does not support 24 bit bitmaps conver to 32bit
+	if (*eFormat == 3)
+	{
+		byte *pNewBits;
+
+		*eFormat = 4;
+		*iComponents = 4;
+		pNewBits = tga_24to32(tgaHeader.width, tgaHeader.height, pBits);
+		delete [] pBits;
+		return pNewBits;
+	}
+#endif
 	return pBits;
+}
+
+
+byte *tga_24to32(int width, int height, byte *pBits)
+{
+	int lImageSize = width * height * 4;
+	byte *pNewBits = new byte [lImageSize * sizeof(byte)];
+
+	for(int i = 0, j = 0; i < lImageSize; i += 4)
+	{
+		pNewBits[i] = pBits[j++];
+		pNewBits[i+1] = pBits[j++];
+		pNewBits[i+2] = pBits[j++];
+		pNewBits[i+3] = 0;
+	}
+	return pNewBits;
 }

@@ -1,6 +1,10 @@
 #include "include.h"
 
-void rotateVector(float rad, vec3 &vec, vec3 &axis)
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+void rotate_vector(float rad, vec3 &vec, vec3 &axis)
 {
 	matrix3	m;
 	float	sinVal, cosVal, minusVal;
@@ -24,72 +28,40 @@ void rotateVector(float rad, vec3 &vec, vec3 &axis)
 	vec = m * vec;
 }
 
-void Frame::set(Graphics &gfx)
+void Frame::set(matrix4 &trans)
 {
-	float	matrix[16];
 	vec3	right;
 
 	right = vec3::crossproduct(this->up, this->forward);
 	right.normalize();
 
 	// opengl - 12,13,14 are position
-	matrix[0] = right.x;
-	matrix[1] = up.x;
-	matrix[2] = forward.x;
-	matrix[3] = 0.0f;
+	trans.m[0] = right.x;
+	trans.m[1] = up.x;
+	trans.m[2] = forward.x;
+	trans.m[3] = 0.0f;
 
-	matrix[4] = right.y;
-	matrix[5] = up.y;
-	matrix[6] = forward.y;
-	matrix[7] = 0.0f;
+	trans.m[4] = right.y;
+	trans.m[5] = up.y;
+	trans.m[6] = forward.y;
+	trans.m[7] = 0.0f;
 
-	matrix[8] = right.z;
-	matrix[9] = up.z;
-	matrix[10] = forward.z;
-	matrix[11] = 0.0f;
+	trans.m[8] = right.z;
+	trans.m[9] = up.z;
+	trans.m[10] = forward.z;
+	trans.m[11] = 0.0f;
 
-	matrix[12] = -(right * pos);
-	matrix[13] = -(up * pos);
-	matrix[14] = -(forward * pos);
-	matrix[15] = 1.0f;
-	gfx.LoadMatrix(matrix);
+	trans.m[12] = -(right * pos);
+	trans.m[13] = -(up * pos);
+	trans.m[14] = -(forward * pos);
+	trans.m[15] = 1.0f;
 }
 
-void frame2ent(Frame *camera, Entity &entity, Keyboard &keyboard)
+void Frame::update(button_t &keyboard)
 {
-	if (keyboard.control == false)
-	{
-		vec3		right;
+	vec3	right = vec3::crossproduct(up, forward);
 
-		right = vec3::crossproduct(camera->up, camera->forward);
-		right.normalize();
-
-		entity.morientation.m[0] = camera->forward.x;
-		entity.morientation.m[1] = camera->forward.y;
-		entity.morientation.m[2] = camera->forward.z;
-
-		entity.morientation.m[3] = camera->up.x;
-		entity.morientation.m[4] = camera->up.y;
-		entity.morientation.m[5] = camera->up.z;
-
-		entity.morientation.m[6] = right.x;
-		entity.morientation.m[7] = right.y;
-		entity.morientation.m[8] = right.z;
-
-		entity.position = camera->pos - camera->forward * 100.0f - camera->up * 20.0f;
-		entity.angular_velocity = vec3();
-		entity.velocity = vec3();
-		entity.sleep = false;
-	}
-
-}
-
-void Frame::update(Keyboard &keyboard)
-{
-	vec3	right;
-
-#define SPEED 8.0f
-	right = vec3::crossproduct(up, forward);
+#define SPEED (8.0f) // meters per second
 	if (keyboard.up)
 		pos -= forward * SPEED;
 	if (keyboard.down)
@@ -106,12 +78,13 @@ void Frame::update(Keyboard &keyboard)
 
 void Frame::update(const vec2 &delta)
 {
+	vec3		vup = vec3(0.0f, 1.0f, 0.0f);
 	vec3		right;
 
 //"camera"
 	// Left / Right
-	rotateVector(delta.x / 50.0f, forward, vec3(0.0f, 1.0f, 0.0f));
-	rotateVector(delta.x / 50.0f, up, vec3(0.0f, 1.0f, 0.0f));
+	rotate_vector(delta.x / 50.0f, forward, vup );
+	rotate_vector(delta.x / 50.0f, up, vup);
 	forward.normalize();
 	up.normalize();
 
@@ -119,8 +92,15 @@ void Frame::update(const vec2 &delta)
 	right = vec3::crossproduct(up, forward);
 	right.normalize();
 
-	rotateVector(delta.y / 50.0f, forward, right);
-	rotateVector(delta.y / 50.0f, up, right);
+	rotate_vector(delta.y / 50.0f, forward, right);
+	rotate_vector(delta.y / 50.0f, up, right);
 	forward.normalize();
 	up.normalize();
+}
+
+void Frame::reset()
+{
+	pos = vec3(0.0f, 0.0f, 0.0f);
+	up = vec3(0.0f, 1.0f, 0.0f);
+	forward = vec3(0.0f, 0.0f, 1.0f);
 }

@@ -1,5 +1,6 @@
 #include "include.h"
 
+#ifdef _LINUX
 int EventProc(Display *display, Window window, GLXContext context);
 
 int main(int argc, char *argv[])
@@ -73,7 +74,7 @@ int main(int argc, char *argv[])
 int EventProc(Display *display, Window window, GLXContext context)
 {
 	XEvent			event;
-	static Engine	altEngine;
+	static Engine		altEngine;
 	static bool		init = false;
 	static int		xcenter, ycenter;
 
@@ -191,3 +192,4 @@ char *getFile(char *fileName)
 	buffer[fSize] = '\0';
 	return buffer;
 }
+#endif

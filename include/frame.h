@@ -6,17 +6,14 @@ class Frame
 public:
 	Frame()
 	{
-		pos = vec3(0.0f, 20.0f, 0.0f);
-		up = vec3(0.0f, 1.0f, 0.0f);
-		forward = vec3(0.0f, 0.0f, 1.0f);
+		reset();
 	}
 
-	void update(Keyboard &keyboard);
+	void reset();
+	void update(button_t &keyboard);
 	void update(const vec2 &mouse);
-	void set(Graphics &gfx);
+	void set(matrix4 &trans);
 	vec3 pos, up, forward;
 };
-
-void frame2ent(Frame *camera, Entity &entity, Keyboard &keyboard);
 
 #endif

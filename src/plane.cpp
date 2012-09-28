@@ -1,5 +1,9 @@
 #include "include.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
 Plane::Plane()
 {
 	normal.x = 0.0f;
@@ -20,9 +24,9 @@ Plane::Plane(vec3 normal, float d)
 	Plane::d = d;
 }
 
-#ifndef DIRECTX
-void Plane::draw_plane()
+void Plane::draw_plane(Global &global, matrix4 &transformation, matrix4 &projection)
 {
+#ifndef DIRECTX
 	float	fExtent = 500.0f;
 	float	fStep = 20.0f;
 	float	iLine;
@@ -61,8 +65,10 @@ void Plane::draw_plane()
 	matrix[14] = 0.0f;
 	matrix[15] = 1.0f;
 
-	glPushMatrix();
-	glMultMatrixf(matrix);
+	transformation = transformation * matrix;
+	matrix4 mvp = transformation * projection;
+	global.Select();
+	global.Params(mvp, 0);
 
 	glBegin(GL_LINES);
 	for(iLine = -fExtent; iLine <= fExtent; iLine += fStep)
@@ -73,6 +79,5 @@ void Plane::draw_plane()
 		glVertex3f(-fExtent, -d, iLine);
 	}
 	glEnd();
-	glPopMatrix();
-}
 #endif
+}

@@ -5,47 +5,70 @@
 
 class Bsp
 {
-	void changeAxis();
-	inline int findLeaf(const vec3 &position);
-	inline int isClusterVisible(int visCluster, int testCluster);
+	void change_axis();
+	inline int find_leaf(const vec3 &position);
+	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
+	inline int cluster_visible(int visCluster, int testCluster);
+	bool leaf_visible(leaf_t *leaf, Plane *frustum);
+	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
+	inline void render_face(face_t *face, Graphics &gfx);
+	inline void render_patch(face_t *face, Graphics &gfx);
+	inline void render_billboard(face_t *face, Graphics &gfx);
+	void draw_line_box(int *min, int *max);
+	void draw_box(int *min, int *max);
 public:
-	Bsp()
-	{
-	}
-	void tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
+	Bsp();
+	bool vis_test(vec3 &x, vec3 &y);
+	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
-	const char *getEnts();
-	void get_visible_planes(Entity &entity, Plane *plane, int &num_planes);
-	void get_collision_planes(Plane **plane, int &num_planes);
-	void drawBox(int *min, int *max);
-	void render_face(face_t *face, Graphics &gfx);
-	void render_patch(face_t *face, Graphics &gfx, Keyboard &keyboard);
-	void render(Entity &entity, Graphics &gfx, Keyboard &keyboard);
+	const char *get_entities();
+	void render(vec3 &position, Plane *frustum, Graphics &gfx);
 	void load(char *map);
 	void load_textures(Graphics &gfx);
-	void unload();
+	void unload(Graphics &gfx);
+	void find_edges(vec3 &position, Edge &edge_list);
+	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
+	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
 	~Bsp()
 	{
 	}
 
+//	bool collision_detect(const vec3 &old_point, const vec3 &velocity, float &time);
+	bool collision_detect(vec3 &new_point, plane_t *plane, float *depth);
+
+	bool loaded;
+	bspData_t	data;
 private:
 	bsp_t		*tBsp;
-	bspData_t	data;
+
+	vec4		*tangent;
+	vector<int> face_list;
+	vector<int> blend_list;
+	int last_leaf;
+
+	// keeping this around because it seems like data.vertex is getting corrupted.
+	vertex_t *vertex;
 
 	//for bezier patches
-	int			mesh_level;
-	int			*mesh_index2face;
-	vertex_t	**mesh_vertex_array;
-	int			**mesh_index_array;
-	int			*mesh_numVerts;
-	int			*mesh_numIndexes;
-	int			num_meshes;
-	unsigned int	map_index_vbo;
-	unsigned int	map_vertex_vbo;
+	int				mesh_level;
+	int				*mesh_index2face;
+	vertex_t		**mesh_vertex_array;
+	int				**mesh_index_array;
+	int				*mesh_num_verts;
+	int				*mesh_num_indexes;
+	int				num_meshes;
+	unsigned int	*mesh_vao;
 	unsigned int	*mesh_index_vbo;
 	unsigned int	*mesh_vertex_vbo;
 
-	unsigned int	*tex_object;
+	//objects
+	unsigned int	map_vao;
+	unsigned int	map_index_vbo;
+	unsigned int	map_vertex_vbo;
+
+	int	*tex_object;
+	unsigned int	*normal_object;
+	unsigned int	*lightmap_object;
 };
 
 #endif

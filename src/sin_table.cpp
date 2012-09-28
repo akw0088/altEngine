@@ -1,3 +1,6 @@
+#define MY_PI 3.14159265359
+#define MY_HALF_PI 1.5707963268
+
 // table of sines in 0.01 radian increments
 extern const double sin_table[629] = { 
 	0.0000000e+000, 
@@ -635,11 +638,11 @@ double fsin(double rad)
 {
 	int index;
 
-	while (rad > 2 * 3.14159265359)
-		rad -= 2 * 3.14159265359;
+	while (rad > 2 * MY_PI)
+		rad -= 2 * MY_PI;
 
 	while (rad < 0)
-		rad += 2 * 3.14159265359;
+		rad += 2 * MY_PI;
 
 	index = (int)(rad * 100);
 
@@ -650,15 +653,36 @@ double fcos(double rad)
 {
 	int index;
 
-	rad = 1.5707963268 - rad;
+	rad = MY_HALF_PI - rad;
 
-	while (rad > 2 * 3.14159265359)
-		rad -= 2 * 3.14159265359;
+	while (rad > 2 * MY_PI)
+		rad -= 2 * MY_PI;
 
 	while (rad < 0)
-		rad += 2 * 3.14159265359;
+		rad += 2 * MY_PI;
 
 	index = (int)(rad * 100);
 
 	return sin_table[index];
+}
+
+float InvSqrt(float x)
+{
+    float xhalf = 0.5f * x;
+	int i = *(int*)&x;
+    i = 0x5f3759df - (i >> 1);
+    x = *(float *)&i;
+    x = x * (1.5f - xhalf * x * x);
+    return x;
+}
+
+float abs32(float val)
+{
+	int ival = (*(int*)&val & 0x7FFFFFFF);
+	return *(float *)&ival;
+}
+
+int abs32(int val)
+{
+	return val & 0x7FFFFFFF;
 }

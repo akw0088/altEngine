@@ -1,7 +1,10 @@
 #include "include.h"
+#include <io.h>
+#include <fcntl.h>
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL setupPixelFormat(HDC);
+void RedirectIOToConsole();
 
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
@@ -19,7 +22,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	wndclass.cbClsExtra	= 0;
 	wndclass.cbWndExtra	= 0;
 	wndclass.hInstance	= hInstance;
-	wndclass.hIcon		= LoadIcon(hInstance, "opengl");
+	wndclass.hIcon		= LoadIcon(hInstance, "altEngine");
 	wndclass.hCursor	= LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground	= NULL;
 	wndclass.lpszMenuName	= NULL;
@@ -31,7 +34,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		return 0;
 	}
 	hwnd = CreateWindow(	szAppName,			// window class name
-				TEXT("WinMain"),		// window caption
+				TEXT("altEngine2"),		// window caption
 				WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,		// window style
 				CW_USEDEFAULT,			// initial x position
 				CW_USEDEFAULT,			// initial y position
@@ -60,7 +63,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 			} else {
 				break;
 			}
-		} else {
+		}
+		else
+		{
 			SendMessage(hwnd, WMU_RENDER, 0, 0);
 		}
 	}
@@ -76,23 +81,67 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static HWND		shwnd;
 	static HDC		hdc;
-	static HGLRC	hglrc;
+	static HGLRC	hglrc, hglrc_legacy;
 	static Engine	altEngine;
 	static POINT	center;
+	static WSADATA	wsadata;
 
 	switch (message)
 	{
 	case WM_CREATE:
+		WSAStartup(MAKEWORD(2, 2), &wsadata);
+		AllocConsole();
+		RedirectIOToConsole();
 		SetTimer ( hwnd, TICK_TIMER, 16, NULL );
 		hdc = GetDC(hwnd);
 		setupPixelFormat(hdc);
 #ifndef DIRECTX
-		hglrc = wglCreateContext(hdc);
-		wglMakeCurrent(hdc, hglrc);
+		hglrc_legacy = wglCreateContext(hdc);
+		wglMakeCurrent(hdc, hglrc_legacy);
 		glewInit();
+
+		if(wglewIsSupported("WGL_ARB_create_context") == TRUE)
+		{
+			const int context[] =
+			{
+				WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+				WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+//				WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+				0
+			};
+
+			const int pixelformat[] =
+			{
+				WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+				WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+				WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+				WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
+				WGL_COLOR_BITS_ARB, 32,
+				WGL_DEPTH_BITS_ARB, 24,
+				WGL_STENCIL_BITS_ARB, 8,
+				0,
+			};
+
+			int pixelFormat;
+			unsigned int numFormats;
+
+			wglChoosePixelFormatARB(hdc, (int *)pixelformat, NULL, 1, &pixelFormat, &numFormats);
+			hglrc = wglCreateContextAttribsARB(hdc, 0, context);
+			wglMakeCurrent(NULL,NULL);
+			wglDeleteContext(hglrc_legacy);
+			wglMakeCurrent(hdc, hglrc);
+		}
+		else
+		{
+			//opengl 2.0
+			hglrc = hglrc_legacy;
+		}
+
 #endif
-		altEngine.init(&hwnd, &hdc);
+		shwnd = hwnd;
+		altEngine.init(&shwnd, &hdc);
 		return 0;
 
 	case WMU_RENDER:
@@ -126,6 +175,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return 0;
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+		{
+			bool pressed = (message == WM_LBUTTONDOWN) ? true : false;
+			altEngine.keypress("leftbutton", pressed);
+			return 0;
+		}
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+		{
+			bool pressed = (message == WM_MBUTTONDOWN) ? true : false;
+			altEngine.keypress("middlebutton", pressed);
+			return 0;
+		}
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+		{
+			bool pressed = (message == WM_RBUTTONDOWN) ? true : false;
+			altEngine.keypress("rightbutton", pressed);
+			return 0;
+		}
 
 	case WM_KEYDOWN:
 	case WM_KEYUP:
@@ -134,33 +204,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			switch (wParam)
 			{
+			case VK_PAUSE:
+				break;
+			case VK_TAB:
+				break;
 			case VK_RETURN:
-				altEngine.keystroke("enter", pressed);
+				altEngine.keypress("enter", pressed);
 				break;
 			case VK_SHIFT:
-				altEngine.keystroke("shift", pressed);
+				altEngine.keypress("shift", pressed);
 				break;
 			case VK_CONTROL:
-				altEngine.keystroke("control", pressed);
+				altEngine.keypress("control", pressed);
 				break;
 			case VK_ESCAPE:
-				altEngine.keystroke("escape", pressed);
+				altEngine.keypress("escape", pressed);
 				break;
 			case VK_UP:
-				altEngine.keystroke("up", pressed);
+				altEngine.keypress("up", pressed);
 				break;
 			case VK_LEFT:
-				altEngine.keystroke("left", pressed);
+				altEngine.keypress("left", pressed);
 				break;
 			case VK_DOWN:
-				altEngine.keystroke("down", pressed);
+				altEngine.keypress("down", pressed);
 				break;
 			case VK_RIGHT:
-				altEngine.keystroke("right", pressed);
+				altEngine.keypress("right", pressed);
 				break;
 			}
 			return 0;
 		}
+	case WM_CHAR:
+		altEngine.keystroke((char)wParam);
+		return 0;
 	case WM_SIZE:
 		{
 			int	width, height;
@@ -183,13 +260,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
+#ifndef DIRECTX
 		if (hglrc)
 		{
-			altEngine.destroy();
 			wglMakeCurrent(NULL, NULL);
 			wglDeleteContext(hglrc);
 			ReleaseDC(hwnd, hdc);
 		}
+#endif
+		altEngine.destroy();
+		WSACleanup();
 		PostQuitMessage(0);
 		return 0;
 	}
@@ -201,9 +281,9 @@ BOOL setupPixelFormat(HDC hdc)
 	PIXELFORMATDESCRIPTOR pfd;
 	INT pixelformat;
 
-	pfd.nSize		= sizeof(PIXELFORMATDESCRIPTOR);
+	pfd.nSize			= sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion		= 1;
-	pfd.dwFlags		= PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
+	pfd.dwFlags			= PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
 	pfd.dwLayerMask		= PFD_MAIN_PLANE;
 	pfd.iPixelType		= PFD_TYPE_RGBA;
 	pfd.cColorBits		= 32;
@@ -237,11 +317,53 @@ char *getFile(char *fileName)
 	fseek(file, 0, SEEK_END);
 	fSize = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	buffer = (char *) malloc( fSize * sizeof(char) + 1 );
+	buffer = (char *) new char [fSize * sizeof(char) + 1];
 	bRead = (int)fread(buffer, sizeof(char), fSize, file);
 	if (bRead != fSize)
 		return 0;
 	fclose(file);
 	buffer[fSize] = '\0';
 	return buffer;
+}
+
+void RedirectIOToConsole()
+{
+	int	hConHandle;
+	long	lStdHandle;
+	FILE	*fp;
+	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
+
+	AllocConsole();
+
+	// set the screen buffer to be big enough to let us scroll text
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+
+	coninfo.dwSize.Y = 512;
+	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+
+	// redirect unbuffered STDOUT to the console
+	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+
+	fp = _fdopen( hConHandle, "w" );
+	*stdout = *fp;
+	setvbuf( stdout, NULL, _IONBF, 0 );
+
+	// redirect unbuffered STDIN to the console
+	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+
+	fp = _fdopen( hConHandle, "r" );
+	*stdin = *fp;
+	setvbuf( stdin, NULL, _IONBF, 0 );
+
+	// redirect unbuffered STDERR to the console
+	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+	fp = _fdopen( hConHandle, "w" );
+	*stderr = *fp;
+	setvbuf( stderr, NULL, _IONBF, 0 );
+
+	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well
+	//ios::sync_with_stdio();
 }

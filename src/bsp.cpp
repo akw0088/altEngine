@@ -1,22 +1,31 @@
 #include "include.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+Bsp::Bsp()
+{
+	loaded = false;
+}
+
 void Bsp::load(char *map)
 {
-	tBsp = (bsp_t *)getFile(map);
+	tBsp = (bsp_t *)get_file(map);
 	byte *pBsp = (byte *)tBsp;
 
 	if (tBsp == NULL)
 	{
-		char err[80];
+		char err[LINE_SIZE];
 
-		snprintf(err, 80, "Unable to load bsp %s.\n", map);
+		snprintf(err, LINE_SIZE, "Unable to load bsp %s.\n", map);
 		throw err;
 	}
 
 	// init data
-	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
+	data.Vert = (bspvertex_t *)	&pBsp[tBsp->directory[VertexArray].offset];
 	data.Ent = (byte *)			&pBsp[tBsp->directory[Entities].offset];
-	data.Texture = (texture_t *)&pBsp[tBsp->directory[Textures].offset];
+	data.Material = (material_t *)&pBsp[tBsp->directory[Materials].offset];
 	data.Plane = (plane_t *)	&pBsp[tBsp->directory[Planes].offset];
 	data.Node = (node_t *)		&pBsp[tBsp->directory[Nodes].offset];
 	data.Leaf = (leaf_t *)		&pBsp[tBsp->directory[Leafs].offset];
@@ -24,14 +33,15 @@ void Bsp::load(char *map)
 	data.LeafBrush = (int *)	&pBsp[tBsp->directory[LeafBrushes].offset];
 	data.Brushes = (brush_t *)	&pBsp[tBsp->directory[Brushes].offset];
 	data.BrushSides = (brushSide_t *)	&pBsp[tBsp->directory[BrushSides].offset];
-	data.Vert = (vertex_t *)	&pBsp[tBsp->directory[Vertices].offset];
 	data.Face = (face_t *)		&pBsp[tBsp->directory[Faces].offset];
 	data.VisData = (visData_t *)&pBsp[tBsp->directory[VisData].offset];
-	data.Index = (int *)		&pBsp[tBsp->directory[Indexes].offset];
+	data.IndexArray = (int *)		&pBsp[tBsp->directory[IndexArray].offset];
+	data.LightMaps = (lightmap_t *)	&pBsp[tBsp->directory[LightMaps].offset];
+	data.Fog = (fog_t *) &pBsp[tBsp->directory[Fog].offset];
 
-	data.num_verts = tBsp->directory[Vertices].length / sizeof(vertex_t);
+	data.num_verts = tBsp->directory[VertexArray].length / sizeof(bspvertex_t);
 	data.num_ents = tBsp->directory[Entities].length;
-	data.num_textures = tBsp->directory[Textures].length / sizeof(texture_t);
+	data.num_materials = tBsp->directory[Materials].length / sizeof(material_t);
 	data.num_planes = tBsp->directory[Planes].length / sizeof(plane_t);
 	data.num_nodes = tBsp->directory[Nodes].length / sizeof(node_t);
 	data.num_leafs = tBsp->directory[Leafs].length / sizeof(leaf_t);
@@ -41,9 +51,29 @@ void Bsp::load(char *map)
 	data.num_BrushSides = tBsp->directory[BrushSides].length / sizeof(brushSide_t);
 	data.num_faces = tBsp->directory[Faces].length / sizeof(face_t);
 	data.num_vis = tBsp->directory[VisData].length / sizeof(visData_t);
-	data.num_index = tBsp->directory[Indexes].length / sizeof(int);
+	data.num_index = tBsp->directory[IndexArray].length / sizeof(int);
+	data.num_lightmaps = tBsp->directory[LightMaps].length / sizeof(lightmap_t);
+	data.num_fog = tBsp->directory[Fog].length / sizeof(fog_t);
 
-	changeAxis();
+	change_axis();
+
+
+	tangent = new vec4 [data.num_verts];
+	memset(tangent, 0, sizeof(vec4) * data.num_verts);
+	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+
+	tex_object = new int [data.num_materials];
+	lightmap_object = new unsigned int [data.num_lightmaps];
+	normal_object = new unsigned int [data.num_materials];
+
+	for(int i = 0; i < data.num_materials; i++)
+		tex_object[i] = (unsigned int)-1;
+	for(int i = 0; i < data.num_lightmaps; i++)
+		lightmap_object[i] = (unsigned int)-1;
+	for(int i = 0; i < data.num_materials; i++)
+		normal_object[i] = (unsigned int)-1;
+
+	loaded = true;
 }
 
 /*
@@ -62,15 +92,29 @@ void Bsp::generate_meshes(Graphics &gfx)
 		face_t *face = &data.Face[i];
 
 		if (face->type == 2)
-			num_meshes++;
+		{
+			if (face->patchWidth == 9)
+			{
+				num_meshes += 4;
+			}
+			else if (face->patchWidth == 5)
+			{
+				num_meshes += 2;
+			}
+			else
+			{
+				num_meshes++;
+			}
+		}
 	}
 
 	mesh_index2face = new int [num_meshes];
 	mesh_vertex_array = new vertex_t *[num_meshes];
 	mesh_index_array = new int *[num_meshes];
-	mesh_numVerts = new int [num_meshes];
-	mesh_numIndexes = new int [num_meshes];
+	mesh_num_verts = new int [num_meshes];
+	mesh_num_indexes = new int [num_meshes];
 
+	mesh_vao = new unsigned int [num_meshes];
 	mesh_vertex_vbo = new unsigned int [num_meshes];
 	mesh_index_vbo = new unsigned int [num_meshes];
 
@@ -80,32 +124,183 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 		if (face->type == 2)
 		{
-			tessellate(mesh_level, &(data.Vert[face->vertexIndex]), &mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index], &mesh_index_array[mesh_index], mesh_numIndexes[mesh_index]);
-			mesh_index2face[mesh_index] = face->vertexIndex;
-			mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_numVerts[mesh_index]);
-			mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_numIndexes[mesh_index]);
-			mesh_index++;
+			if (face->patchHeight == 3 && face->patchWidth == 3)
+			{
+				tessellate(mesh_level, &(data.Vert[face->vertex]), &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index2face[mesh_index] = face->vertex;
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+			}
+			else if (face->patchWidth == 5)
+			{
+				bspvertex_t controlpoint[9];
+
+				controlpoint[0] = data.Vert[face->vertex];
+				controlpoint[1] = data.Vert[face->vertex + 1];
+				controlpoint[2] = data.Vert[face->vertex + 2];
+
+				controlpoint[3] = data.Vert[face->vertex + 5];
+				controlpoint[4] = data.Vert[face->vertex + 6];
+				controlpoint[5] = data.Vert[face->vertex + 7];
+
+				controlpoint[6] = data.Vert[face->vertex + 10];
+				controlpoint[7] = data.Vert[face->vertex + 11];
+				controlpoint[8] = data.Vert[face->vertex + 12];
+
+				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index2face[mesh_index] = face->vertex;
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 2];
+				controlpoint[1] = data.Vert[face->vertex + 3];
+				controlpoint[2] = data.Vert[face->vertex + 4];
+
+				controlpoint[3] = data.Vert[face->vertex + 7];
+				controlpoint[4] = data.Vert[face->vertex + 8];
+				controlpoint[5] = data.Vert[face->vertex + 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 12];
+				controlpoint[7] = data.Vert[face->vertex + 13];
+				controlpoint[8] = data.Vert[face->vertex + 14];
+
+				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+			}
+			else if (face->patchWidth == 9)
+			{
+				bspvertex_t controlpoint[9];
+
+				controlpoint[0] = data.Vert[face->vertex];
+				controlpoint[1] = data.Vert[face->vertex + 1];
+				controlpoint[2] = data.Vert[face->vertex + 2];
+
+				controlpoint[3] = data.Vert[face->vertex + 9];
+				controlpoint[4] = data.Vert[face->vertex + 10];
+				controlpoint[5] = data.Vert[face->vertex + 11];
+
+				controlpoint[6] = data.Vert[face->vertex + 18];
+				controlpoint[7] = data.Vert[face->vertex + 19];
+				controlpoint[8] = data.Vert[face->vertex + 20];
+
+				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index2face[mesh_index] = face->vertex;
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 2];
+				controlpoint[1] = data.Vert[face->vertex + 3];
+				controlpoint[2] = data.Vert[face->vertex + 4];
+
+				controlpoint[3] = data.Vert[face->vertex + 11];
+				controlpoint[4] = data.Vert[face->vertex + 12];
+				controlpoint[5] = data.Vert[face->vertex + 13];
+
+				controlpoint[6] = data.Vert[face->vertex + 20];
+				controlpoint[7] = data.Vert[face->vertex + 21];
+				controlpoint[8] = data.Vert[face->vertex + 22];
+
+				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+
+
+				controlpoint[0] = data.Vert[face->vertex + 4];
+				controlpoint[1] = data.Vert[face->vertex + 5];
+				controlpoint[2] = data.Vert[face->vertex + 6];
+
+				controlpoint[3] = data.Vert[face->vertex + 13];
+				controlpoint[4] = data.Vert[face->vertex + 14];
+				controlpoint[5] = data.Vert[face->vertex + 15];
+
+				controlpoint[6] = data.Vert[face->vertex + 22];
+				controlpoint[7] = data.Vert[face->vertex + 23];
+				controlpoint[8] = data.Vert[face->vertex + 24];
+
+				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+
+
+				controlpoint[0] = data.Vert[face->vertex + 6];
+				controlpoint[1] = data.Vert[face->vertex + 7];
+				controlpoint[2] = data.Vert[face->vertex + 8];
+
+				controlpoint[3] = data.Vert[face->vertex + 15];
+				controlpoint[4] = data.Vert[face->vertex + 16];
+				controlpoint[5] = data.Vert[face->vertex + 17];
+
+				controlpoint[6] = data.Vert[face->vertex + 24];
+				controlpoint[7] = data.Vert[face->vertex + 25];
+				controlpoint[8] = data.Vert[face->vertex + 26];
+
+				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
+				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
+				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				mesh_index++;
+			}
 		}
 	}
 
+	vertex = new vertex_t [data.num_verts];
+	CreateTangentArray(vertex, data.Vert, data.num_verts, tangent);
+//	map_vao = gfx.CreateVertexArrayObject();
+	map_vertex_vbo = gfx.CreateVertexBuffer(vertex, data.num_verts);
+	map_index_vbo = gfx.CreateIndexBuffer(data.IndexArray, data.num_index);
+}
 
-	map_vertex_vbo = gfx.CreateVertexBuffer(data.Vert, data.num_verts);
-	map_index_vbo = gfx.CreateIndexBuffer(data.Index, data.num_index);
+/*
+	We need to stick tangent vector into old bsp datatype
+*/
+void Bsp::CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent)
+{
+	for(int i = 0; i < num_vert; i++)
+	{
+		vertex[i].color = bsp_vertex[i].color;
+		vertex[i].normal = bsp_vertex[i].normal;
+		vertex[i].position = bsp_vertex[i].position;
+		vertex[i].texCoord0 = bsp_vertex[i].texCoord0;
+		vertex[i].texCoord1 = bsp_vertex[i].texCoord1;
+		vertex[i].tangent = tangent[i];
+	}
 }
 
 /*
 	Converts axis from quake3 to opengl format
 */
-void Bsp::changeAxis()
+void Bsp::change_axis()
 {
 	for(int i = 0; i < data.num_verts; i++)
 	{
-		vertex_t *vert = &data.Vert[i];
+		bspvertex_t *vert = &data.Vert[i];
 		float temp;
 
-		temp = vert->vPosition.y;
-		vert->vPosition.y = vert->vPosition.z;
-		vert->vPosition.z =  -temp;
+		temp = vert->position.y;
+		vert->position.y = vert->position.z;
+		vert->position.z =  -temp;
+
+		temp = vert->normal.y;
+		vert->normal.y =  vert->normal.z;
+		vert->normal.z =  -temp;
+		vert->texCoord0.y = -vert->texCoord0.y;
+		vert->texCoord1.y = -vert->texCoord1.y;
+
+
+//		vert->vPosition *= (1.0f / UNITS_TO_METERS);
 	}
 
 	for(int i = 0; i < data.num_planes; i++)
@@ -113,16 +308,32 @@ void Bsp::changeAxis()
 		plane_t *plane = &data.Plane[i];
 		float	temp;
 
-		temp = plane->vNormal.y;
-		plane->vNormal.y = plane->vNormal.z;
-		plane->vNormal.z =  -temp;
+		temp = plane->normal.y;
+		plane->normal.y = plane->normal.z;
+		plane->normal.z =  -temp;
+
+//		plane->d *= (1.0f / UNITS_TO_METERS);
+	}
+
+	for(int i = 0; i < data.num_leafs; i++)
+	{
+		int temp = data.Leaf[i].min[1];
+		data.Leaf[i].min[1] = data.Leaf[i].min[2];
+		data.Leaf[i].min[2] = -temp;
+	}
+
+	for(int i = 0; i < data.num_nodes; i++)
+	{
+		int temp = data.Node[i].min[1];
+		data.Node[i].min[1] = data.Node[i].min[2];
+		data.Node[i].min[2] = -temp;
 	}
 }
 
 /*
 	Returns entity string for parsing
 */
-const char *Bsp::getEnts()
+const char *Bsp::get_entities()
 {
 	return (const char *)data.Ent;
 }
@@ -130,33 +341,126 @@ const char *Bsp::getEnts()
 /*
 	Should cleanly unload a map
 */
-void Bsp::unload()
+void Bsp::unload(Graphics &gfx)
 {
+	int mesh_index = 0;
+
+	delete vertex;
+	for(int i = 0; i < data.num_faces; i++)
+	{
+		face_t *face = &data.Face[i];
+
+		if (face->type == 2)
+		{
+			if (face->patchHeight == 3 && face->patchWidth == 3)
+			{
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+			}
+			else if (face->patchWidth == 5)
+			{
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+			}
+			else if (face->patchWidth == 9)
+			{
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+				delete [] mesh_vertex_array[mesh_index];
+				delete [] mesh_index_array[mesh_index];
+				mesh_index++;
+			}
+		}
+	}
+
 	delete [] mesh_index2face;
 	delete [] mesh_vertex_array;
 	delete [] mesh_index_array;
-	delete [] mesh_numVerts;
-	delete [] mesh_numIndexes;
-	delete [] tex_object; // need to unload from gfx card first
-	free((void *)tBsp);
+	delete [] mesh_num_verts;
+	delete [] mesh_num_indexes;
+
+	mesh_index2face = NULL;
+	mesh_vertex_array = NULL;
+	mesh_index_array = NULL;
+	mesh_num_verts = NULL;
+	mesh_num_indexes = NULL;
+	gfx.DeleteIndexBuffer(map_index_vbo);
+	map_index_vbo = 0;
+	gfx.DeleteVertexBuffer(map_vertex_vbo);
+	map_vertex_vbo = 0;
+	mesh_level = 0;
+
+	for(int i = 0; i < num_meshes; i++)
+	{
+		gfx.DeleteVertexArrayObject(mesh_vao[i]);
+		gfx.DeleteIndexBuffer(mesh_index_vbo[i]);
+		gfx.DeleteVertexBuffer(mesh_vertex_vbo[i]);
+	}
+	delete [] mesh_vao;
+	delete [] mesh_index_vbo;
+	delete [] mesh_vertex_vbo;
+	num_meshes = 0;
+	mesh_index_vbo = NULL;
+	mesh_vertex_vbo = NULL;
+
+	//Todo, try to find a way to keep loaded textures between map loads
+	for(int i = 0; i < data.num_materials; i++)
+	{
+		gfx.DeleteTexture(tex_object[i]);
+		gfx.DeleteTexture(normal_object[i]);
+	}
+	delete [] tex_object;
+	delete [] normal_object;
+	tex_object = NULL;
+	normal_object = NULL;
+
+	for(int i = 0; i < data.num_lightmaps; i++)
+	{
+		gfx.DeleteTexture(lightmap_object[i]);
+	}
+	delete [] lightmap_object;
+	lightmap_object = NULL;
+
+	// raw lump file structure
+	delete [] tBsp;
+	tBsp = NULL;
+
+	// high level data pointers into lump
+	memset((void *)&data, NULL, sizeof(bspData_t));
+
+	delete [] tangent;
+
+	loaded = false;
 }
 
 /*
 	Given a position return the bsp leaf node containing that point
 */
-int Bsp::findLeaf(const vec3 &position)
+inline int Bsp::find_leaf(const vec3 &position)
 {
-	float		distance;
+	float	distance;
 	int		i = 0;
 
-	while(i >= 0)
+	while (i >= 0)
 	{
 		node_t *node = &data.Node[i];
 		plane_t *plane = &data.Plane[node->plane];
 
-		distance = (plane->vNormal * position) - plane->d;
+		distance = (plane->normal * position) - plane->d;
 
-		if(distance >= 0)	
+		if (distance >= 0)	
 			i = data.Node[i].front;
 		else
 			i = data.Node[i].back;
@@ -164,83 +468,115 @@ int Bsp::findLeaf(const vec3 &position)
 	return -(i + 1);
 }
 
-/*
-	Should return a set collision planes within the entities leaf node
-*/
-void Bsp::get_visible_planes(Entity &entity, Plane *plane, int &num_planes)
+void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position)
 {
-	int frameIndex = findLeaf(entity.position);
-	leaf_t *frameLeaf = &data.Leaf[frameIndex];
-
-	num_planes = 0;
-	for (int i = 0; i < data.num_leafs; i++)
+	if (node_index < 0)
 	{
-		leaf_t *leaf = &data.Leaf[i];
+		leaf_list->push_back( -(node_index + 1) );
+		return;
+	}
 
-		if ( !isClusterVisible(frameLeaf->cluster, leaf->cluster) )
+	node_t *node = &data.Node[node_index];
+	plane_t *plane = &data.Plane[node->plane];
+
+	float	distance = (plane->normal * position) - plane->d;
+	if (distance >= 0)
+	{
+		sort_leaf(leaf_list, data.Node[node_index].front, position);
+		sort_leaf(leaf_list, data.Node[node_index].back, position);
+	}
+	else
+	{
+		sort_leaf(leaf_list, data.Node[node_index].back, position);
+		sort_leaf(leaf_list, data.Node[node_index].front, position);
+	}
+}
+
+bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
+{
+	int leaf_index = find_leaf(point);
+	leaf_t *leaf = &data.Leaf[leaf_index];
+	float max_depth = 2048.0f;
+
+	for (int i = 0; i < leaf->num_brushes; i++)
+	{
+		int *index = &data.LeafBrush[leaf->leaf_brush + i];
+		brush_t	*brush = &data.Brushes[*index];
+		int brush_index = brush->first_side;
+		int num_sides = brush->num_sides;
+
+		if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
 			continue;
 
-		for (int j = 0; j < leaf->numOfLeafBrushes; j++)
+		for( int j = 0; j < num_sides; j++)
 		{
-			brush_t	*brush = &data.Brushes[leaf->leafBrush + j];
-			int brush_index = brush->brushSide;
-			int num_brushes = brush->numOfBrushSides;
+			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
+			int plane_index = brushSide->plane;
 
-			for( int k = 0; k < num_brushes; k++)
+			float d = point * data.Plane[plane_index].normal + data.Plane[plane_index].d ;
+
+			if (d > 0.0f)
+				continue;
+
+			if (d <= max_depth)
 			{
-				brushSide_t *brushSide = &data.BrushSides[brush_index + k];
-				int plane_index = brushSide->plane;
-				plane[num_planes++] = Plane::Plane(data.Plane[plane_index].vNormal, data.Plane[plane_index].d);
+				plane->normal = data.Plane[plane_index].normal;
+				plane->d = data.Plane[plane_index].d;
+				max_depth = d;
 			}
 		}
 	}
+	*depth = max_depth;
+
+	if (max_depth != 2048.0f)
+		return true;
+	else
+		return false;
 }
 
-/*
-	Gets all collision planes
-*/
-void Bsp::get_collision_planes(Plane **rplane, int &num_planes)
+
+inline void Bsp::render_face(face_t *face, Graphics &gfx)
 {
-	Plane *plane = new Plane [data.num_BrushSides];
-	num_planes = 0;
-
-	for (int i = 0; i < data.num_brushes; i++)
-	{
-		int brush_index = data.Brushes[i].brushSide;
-		int num_brushes = data.Brushes[i].numOfBrushSides;
-
-		for( int j = 0; j < num_brushes; j++)
-		{
-			int plane_index = data.BrushSides[brush_index + j].plane;
-			plane[num_planes++] = Plane::Plane(data.Plane[plane_index].vNormal, data.Plane[plane_index].d);
-		}
-	}
-	*rplane = plane;
-}
-
-void Bsp::render_face(face_t *face, Graphics &gfx)
-{
-	int vertex_offset = (int)((char *)&(data.Vert[face->vertexIndex].vPosition) - (char *)data.Vert);
-	int texture_offset = (int)((char *)&(data.Vert[face->vertexIndex].vTextureCoord) - (char *)data.Vert);
-	int normal_offset = (int)((char *)&(data.Vert[face->vertexIndex].vNormal) - (char *)data.Vert);
-	int index_offset = (int)((char *)&data.Index[face->index] - (char *)data.Index);
-
+//	gfx.SelectVertexArrayObject(map_vao);
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
 
-	gfx.VertexArray( (void *)vertex_offset);
-	gfx.TextureArray( (void *)texture_offset);
-	gfx.NormalArray( (void *)normal_offset);
-//	glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t),  (void *)((char *)&(data.Vert[face->vertexIndex].color) - (char *)data.Vert));
+/*
+	if (data.Texture[face->textureID].contents == CONTENTS_FOG)
+	{
+		//select fog shader
+	}
+*/
 
-	gfx.SelectTexture(tex_object[face->textureID]);
-	gfx.DrawArray("triangle", (void *)index_offset, face->num_index, face->num_verts);
-	gfx.DeselectTexture();
+	gfx.SelectTexture(0, tex_object[face->material]);
+	// surfaces that arent lit with lightmaps eg: skies
+	if (face->lightmap != -1)
+		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+	gfx.SelectTexture(2, normal_object[face->material]);
+	gfx.DrawArray("triangles", face->index, face->vertex, face->num_index, face->num_verts);
+	gfx.DeselectTexture(2);
+	gfx.DeselectTexture(1);
+	gfx.DeselectTexture(0);
+//	gfx.SelectVertexArrayObject(0);
 	gfx.SelectVertexBuffer(0);
 	gfx.SelectIndexBuffer(0);
+
+	/*
+	glBegin(GL_LINES);
+	for(int i = 0; i < face->num_index; i++)
+	{
+		int index = data.IndexArray[face->index + i];
+		glLineWidth(2.0f);
+//		data.Vert[index].normal.normalize();
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glVertex3f(vertex[index].position.x, vertex[index].position.y, vertex[index].position.z);
+		glVertex3f(vertex[index].position.x + vertex[index].normal.x, vertex[index].position.y + vertex[index].normal.y, vertex[index].position.z + vertex[index].normal.z);
+	}
+	glEnd();
+	*/
 }
 
-void Bsp::render_patch(face_t *face, Graphics &gfx, Keyboard &keyboard)
+inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 {
 	int mesh_index = -1;
 	int index_per_row = 2 * (mesh_level + 1);
@@ -248,160 +584,227 @@ void Bsp::render_patch(face_t *face, Graphics &gfx, Keyboard &keyboard)
 	// Find pre-generated vertex data for patch O(n)
 	for( int i = 0; i < num_meshes; i++)
 	{
-		if (mesh_index2face[i] == face->vertexIndex)
+		if (mesh_index2face[i] == face->vertex)
 		{
 			mesh_index = i;
 			break;
 		}
 	}
 
-	if (keyboard.control)
+	for(int i = 0; i < 4; i++)
 	{
-		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index]);
-		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index]);
+//		gfx.SelectVertexArrayObject(mesh_vao[mesh_index + i]);
+		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index + i]);
+		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index + i]);
 
-		gfx.VertexArray( (void *)((char *)&(mesh_vertex_array[mesh_index]->vPosition) - (char *)mesh_vertex_array[mesh_index]));
-		gfx.TextureArray( (void *)((char *)&(mesh_vertex_array[mesh_index]->vTextureCoord) - (char *)mesh_vertex_array[mesh_index]));
-		gfx.NormalArray(  (void *)((char *)&(mesh_vertex_array[mesh_index]->vNormal) - (char *)mesh_vertex_array[mesh_index]));
-//		glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t),  (void *)((char *)&(mesh_vertex_array[mesh_index]->color) - (char *)mesh_vertex_array[mesh_index]));
-	}
-	else
-	{
-		gfx.SelectVertexBuffer(0);
-		gfx.SelectIndexBuffer(0);
-
-		gfx.VertexArray(&(mesh_vertex_array[mesh_index]->vPosition));
-		gfx.TextureArray( &(mesh_vertex_array[mesh_index]->vTextureCoord));
-		gfx.NormalArray(  &(mesh_vertex_array[mesh_index]->vNormal));
-//		glColorPointer(sizeof(int), GL_BYTE, sizeof(vertex_t), &(mesh_vertex_array[mesh_index]->color) );
-	}
-	// Render each row
-	gfx.SelectTexture(tex_object[face->textureID]);
-	for( int row = 0; row < mesh_level; row++)
-	{
-		//VBOs arent rendering entire patch, I see no problem code wise, sticking with indexed arrays.
-		if (keyboard.control)
+		// Render each row
+		gfx.SelectTexture(0, tex_object[face->material]);
+		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+		gfx.SelectTexture(2, normal_object[face->material]);
+		for( int row = 0; row < mesh_level; row++)
 		{
 			gfx.DrawArray("triangle_strip",
-				(void *)(row * index_per_row),
-				index_per_row, mesh_numVerts[mesh_index]);
+				row * index_per_row, 0,
+				index_per_row, mesh_num_verts[mesh_index + i]);
 		}
-		else
-		{
-#ifndef DIRECTX
-			gfx.DrawArray("triangle_strip",
-				&mesh_index_array[mesh_index][row * index_per_row],
-				index_per_row, mesh_numVerts[mesh_index]);
-#endif
-		}
+		gfx.DeselectTexture(2);
+		gfx.DeselectTexture(1);
+		gfx.DeselectTexture(0);
 
+		if (face->patchWidth == 5 && i == 1)
+			break;
+
+		if (face->patchWidth == 3)
+			break;
 	}
-	gfx.DeselectTexture();
 }
 
-void Bsp::render(Entity &entity, Graphics &gfx, Keyboard &keyboard)
+inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 {
-	int frameIndex = findLeaf(entity.position);
-	int numTriangles = 0;
-	char msg[80];
+	gfx.SelectTexture(0, tex_object[face->material]);
+	gfx.SelectTexture(1, normal_object[face->material]);
+//	gfx.SelectVertexArrayObject(Model::quad_vao);
+	gfx.SelectIndexBuffer(Model::quad_index);
+	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.DrawArray("triangles", 0, 0, 6, 4);
+//	gfx.SelectVertexArrayObject(0);
+	gfx.SelectVertexBuffer(0);
+	gfx.SelectIndexBuffer(0);
+	gfx.DeselectTexture(1);
+	gfx.DeselectTexture(0);
+}
+
+void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
+{
+	int frameIndex = find_leaf(position);
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
-	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = 0; i < data.num_leafs; i++)
-	{
-		leaf_t *leaf = &data.Leaf[i];
+	blend_list.clear();
+	face_list.clear();
 
-		if ( !isClusterVisible(frameLeaf->cluster, leaf->cluster) )
+	// walk bsp tree, sort leafs front to back
+	vector<int> leaf_list;
+	sort_leaf(&leaf_list, 0, position);
+
+	// loop through all leaves, checking if leaf visible from current leaf
+	for (int i = 0; i < leaf_list.size(); i++)
+	{
+		leaf_t *leaf = &data.Leaf[leaf_list[i]];
+
+		if ( cluster_visible(frameLeaf->cluster, leaf->cluster) == false )
 			continue;
 
-		// draw faces within visible leaf's
-		for (int j = 0; j < leaf->numOfLeafFaces; j++)
-		{
-			int faceIndex = data.LeafFace[leaf->leafface + j];
-			face_t *face = &data.Face[faceIndex];
+		if ( leaf_visible(leaf, frustum) == false)
+			continue;
 
-			if (face->type == 1 || face->type == 3)
-			{
-				render_face(face, gfx);
-				numTriangles += face->num_index / 3;
-			}
-			else if (face->type == 2)
-			{
-				render_patch(face, gfx, keyboard);
-				numTriangles += face->num_index / 3;
-			}
+		// generate face lists
+		for (int j = 0; j < leaf->num_faces; j++)
+		{
+			int face_index = data.LeafFace[leaf->leaf_face + j];
+			face_t *face = &data.Face[face_index];
+
+			// need a way to tell if a face should be blended
+			if (tex_object[face->material] < 0)
+				blend_list.push_back(face_index);
+			else
+				face_list.push_back(face_index);
 		}
 	}
-	
-	snprintf(msg, 80, "%d Triangles rendered", numTriangles);
-	gfx.DrawText(msg, 0.01f, 0.02f);
+	leaf_list.clear();
+
+	for (int i = 0; i < face_list.size(); i++)
+	{
+		face_t *face = &data.Face[face_list[i]];
+
+		if (face->type == 1 || face->type == 3)
+		{
+			render_face(face, gfx);
+		}
+		else if (face->type == 2)
+		{
+			render_patch(face, gfx);
+		}
+		else// (face->type == 4)
+		{
+			render_billboard(face, gfx);
+		}
+	}
+
+	gfx.Blend(true);
+	for (int i = 0; i < blend_list.size(); i++)
+	{
+		face_t *face = &data.Face[blend_list[i]];
+
+		if (face->type == 1 || face->type == 3)
+		{
+			render_face(face, gfx);
+		}
+		else if (face->type == 2)
+		{
+			render_patch(face, gfx);
+		}
+		else// (face->type == 4)
+		{
+			render_billboard(face, gfx);
+		}
+	}
+	gfx.Blend(false);
+//	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 
 /*
 	Determines set of visible leafs from current leaf
 */
-inline int Bsp::isClusterVisible(int visCluster, int testCluster)
+inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 {
-	int byteOffset, bitOffset;
-	char testByte;
+	int byte_offset, bit_offset;
+	char test_byte;
 
-	// if no vis data or if camera leaf invalid (outside map) draw regardless
-	if (visCluster < 0)
+	// if no vis data or if camera leaf invalid (outside map) draw everything
+	if (vis_cluster < 0 || data.num_vis == 0)
 		return 1;
 
 	// bit of pVecs we need to return
-	bitOffset = visCluster + testCluster * data.VisData->vectorSize * 8; 
-	byteOffset = bitOffset / 8;
-	testByte = 1 << (bitOffset - byteOffset * 8);
-	return 	(&data.VisData->pVecs)[byteOffset] & testByte;
+	bit_offset = vis_cluster + test_cluster * data.VisData->vector_size * 8; 
+	byte_offset = bit_offset / 8;
+	test_byte = 1 << (bit_offset - byte_offset * 8);
+	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
+}
+
+/*
+	Needs frustum in world space
+*/
+bool Bsp::leaf_visible(leaf_t *leaf, Plane *frustum)
+{
+	vec3 max(leaf->max[0], leaf->max[1], leaf->max[2]);
+	vec3 min(leaf->min[0], leaf->min[1], leaf->min[2]);
+
+	if (frustum == NULL)
+		return true;
+
+	for(int i = 0; i < 5; i++)
+	{
+		if ( frustum[i].normal * max + frustum[i].d < 0 )
+		{
+			if ( frustum[i].normal * min + frustum[i].d < 0 )
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void Bsp::load_textures(Graphics &gfx)
 {
-	tex_object = new unsigned int [data.num_textures];
-	for (int i = 0; i < data.num_textures; i++)
+	for (int i = 0; i < data.num_lightmaps; i++)
 	{
-		texture_t	*texture = &data.Texture[i];
-		byte		*bytes;
-		int			width, height, components, format;
-		char	buffer[120];
+#ifndef DIRECTX
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
+#else
+		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image);
+		delete [] pBits;
+#endif
+	}
 
-		snprintf(buffer, 120, "media/%s.tga", texture->name);
-		bytes = gltLoadTGA(buffer, &width, &height, &components, &format);
-		if (bytes == NULL)
-			printf("Unable to load texture %s\n", buffer);
+	for (int i = 0; i < data.num_materials; i++)
+	{
+		material_t	*material = &data.Material[i];
+		char		buffer[LINE_SIZE];
 
-		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
-		free((void *)bytes);
+		snprintf(buffer, LINE_SIZE, "media/%s.tga", material->name);
+		tex_object[i] = load_texture(gfx, buffer);
+		snprintf(buffer, LINE_SIZE, "media/%s_normal.tga", material->name);
+		normal_object[i] = load_texture(gfx, buffer);
 	}
 }
 
 /*
-	This function does not work for cylindrical patches and 'U' patches
-
-		I need to move away from bsp to my own map format so I dont
-	feel like sitting down and writing a specification for something
-	that will be replaced.
+	cylindrical patches are a 3x9 set of control points
+	U patches are a 3x5 set of control points
+	This function assumes it's given 3x3 set of control points
+	hacky fix for cylindrical patches and U patches in calling function
 */
-void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes)
+void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts, int **index_array, int &num_indexes)
 {
 	vec3 a, b;
 	int i, j;
 
-	numVerts = level + 1;
+	num_verts = level + 1;
 
-	*vertex_array = new vertex_t[numVerts * numVerts];
+	*vertex_array = new vertex_t[num_verts * num_verts];
 
 	// calculate first set of verts
 	for (i = 0; i <= level; i++)
 	{
 		float a = (float) i / level;
 		float b = 1.0f - a;
-		(*vertex_array)[i].vPosition =
-			control[0].vPosition * (b * b) +
-			control[3].vPosition * (2 * b * a) +
-			control[6].vPosition * (a * a);
+		(*vertex_array)[i].position =
+			control[0].position * (b * b) +
+			control[3].position * (2 * b * a) +
+			control[6].position * (a * a);
 	}
 
 	// calculate rest of verts
@@ -412,104 +815,411 @@ void Bsp::tessellate(int level, vertex_t control[], vertex_t **vertex_array, int
 
 		vertex_t temp[3];
 
-		temp[0].vPosition = 
-			control[0].vPosition * (b * b) + 
-			control[1].vPosition * (2 * b * a) + 
-			control[2].vPosition * (a * a);
-		temp[1].vPosition = 
-			control[3].vPosition * (b * b) + 
-			control[4].vPosition * (2 * b * a) + 
-			control[5].vPosition * (a * a);
-		temp[2].vPosition = 
-			control[6].vPosition * (b * b) + 
-			control[7].vPosition * (2 * b * a) + 
-			control[8].vPosition * (a * a);
+		temp[0].position = 
+			control[0].position * (b * b) + 
+			control[1].position * (2 * b * a) + 
+			control[2].position * (a * a);
+		temp[1].position = 
+			control[3].position * (b * b) + 
+			control[4].position * (2 * b * a) + 
+			control[5].position * (a * a);
+		temp[2].position = 
+			control[6].position * (b * b) + 
+			control[7].position * (2 * b * a) + 
+			control[8].position * (a * a);
 
 		for(j = 0; j <= level; j++)
 		{
 			float a = (float) j / level;
 			float b = 1.0f - a;
 
-			(*vertex_array)[i * numVerts + j].vPosition =
-				temp[0].vPosition * (b * b) +
-				temp[1].vPosition * (2 * b * a) +
-				temp[2].vPosition * (a * a);
+			(*vertex_array)[i * num_verts + j].position =
+				temp[0].position * (b * b) +
+				temp[1].position * (2 * b * a) +
+				temp[2].position * (a * a);
 		}
 	}
 	
 	//Create index array
-	numIndexes = level * numVerts * 2;
-	*index_array = new int[numIndexes];
+	num_indexes = level * num_verts * 2;
+	*index_array = new int[num_indexes];
 	for (i = 0; i < level; i++)
 	{
 		for(j = 0; j <= level; j++)
 		{
-			(*index_array)[(i * numVerts + j) * 2 + 1] = i * numVerts + j;
-			(*index_array)[(i * numVerts + j) * 2] = (i + 1) * numVerts + j;
+			(*index_array)[(i * num_verts + j) * 2 + 1] = i * num_verts + j;
+			(*index_array)[(i * num_verts + j) * 2] = (i + 1) * num_verts + j;
 		}
 	}
 
-	// Generate normals
+	// Generate normals and tangent
 	for(i = 0; i <= level; i++)
 	{
 		for(j = 0; j <= level; j++)
 		{
 			if (j != level)
-				a = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[i * numVerts + (j + 1)].vPosition;
+				a = (*vertex_array)[i * num_verts + j].position - (*vertex_array)[i * num_verts + (j + 1)].position;
 			else
-				b = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[i * numVerts + (j - 1)].vPosition;
+				a = (*vertex_array)[i * num_verts + j].position - (*vertex_array)[i * num_verts + (j - 1)].position;
 				
 			if ( i != level)
-				b = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[(i + 1) * numVerts + j].vPosition;
+				b = (*vertex_array)[i * num_verts + j].position - (*vertex_array)[(i + 1) * num_verts + j].position;
 			else
-				b = (*vertex_array)[i * numVerts + j].vPosition - (*vertex_array)[(i - 1) * numVerts + j].vPosition;
+				b = (*vertex_array)[i * num_verts + j].position - (*vertex_array)[(i - 1) * num_verts + j].position;
 
-			(*vertex_array)[i * numVerts + j].color = ~0;
-			(*vertex_array)[i * numVerts + j].vTextureCoord = vec2((float)(i % 2), (float)(j % 2));
-			(*vertex_array)[i * numVerts + j].vNormal = vec3::crossproduct(a,b).normalize();
+			(*vertex_array)[i * num_verts + j].color = -1;
+			(*vertex_array)[i * num_verts + j].texCoord0 = vec2((float)(i % 2), (float)(j % 2));
+			(*vertex_array)[i * num_verts + j].texCoord0 *= (1.0f/8.0f);
+			(*vertex_array)[i * num_verts + j].tangent.x = a.x;
+			(*vertex_array)[i * num_verts + j].tangent.y = a.y;
+			(*vertex_array)[i * num_verts + j].tangent.z = a.z;
+			(*vertex_array)[i * num_verts + j].tangent.w = 0.0f;
+
+			if (j == level || i == level)
+			{
+				(*vertex_array)[i * num_verts + j].normal = vec3::crossproduct(a,b).normalize();
+			}
+			else
+			{
+				(*vertex_array)[i * num_verts + j].normal = vec3::crossproduct(b,a).normalize();
+				(*vertex_array)[i * num_verts + j].tangent.x = b.x;
+				(*vertex_array)[i * num_verts + j].tangent.y = b.y;
+				(*vertex_array)[i * num_verts + j].tangent.z = b.z;
+				(*vertex_array)[i * num_verts + j].tangent.w = 0.0f;
+			}
+
+			if (j == level && i == level)
+			{
+				(*vertex_array)[i * num_verts + j].normal = vec3::crossproduct(b,a).normalize();
+				(*vertex_array)[i * num_verts + j].tangent.x = b.x;
+				(*vertex_array)[i * num_verts + j].tangent.y = b.y;
+				(*vertex_array)[i * num_verts + j].tangent.z = b.z;
+				(*vertex_array)[i * num_verts + j].tangent.w = 0.0f;
+			}
 		}
 	}
 
 	// correct numVerts size
-	numVerts = numVerts * numVerts;
+	num_verts = num_verts * num_verts;
 }
 
 /*
-void Bsp::drawBox(int *min, int *max)
+Loop through all the model's triangles 
+If triangle faces the light source (dot product > 0) 
+Insert the three edges (pair of vertices), into an edge stack 
+Check for previous occurrence of each edges or it's reverse in the stack 
+If an edge or its reverse is found in the stack, remove both edges 
+Start with new triangle 
+*/
+void Bsp::find_edges(vec3 &position, Edge &edge_list)
 {
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
+	int leaf_index = find_leaf(position);
+
+	leaf_t *light_Leaf = &data.Leaf[leaf_index];
+
+	// loop through all leaves, checking if leaf visible from current leaf
+	for (int i = 0; i < data.num_leafs; i++)
+	{
+		leaf_t *leaf = &data.Leaf[i];
+
+		if ( !cluster_visible(light_Leaf->cluster, leaf->cluster) )
+			continue;
+
+		for (int j = 0; j < leaf->num_faces; j++)
+		{
+			int face_index = data.LeafFace[leaf->leaf_face + j];
+			face_t *face = &data.Face[face_index];
+
+			for(int k = 0; k < face->num_index; k += 3)
+			{
+				int index = data.IndexArray[face->index + k];
+				vec3 x = data.Vert[index].position;
+				vec3 y = data.Vert[index + 1].position;
+				vec3 z = data.Vert[index + 2].position;
+
+				vec3 a = x - y;
+				vec3 b = x - z;
+				vec3 normal = vec3::crossproduct(a,b);
+
+				vec3 lightdir1 = x - position;
+				vec3 lightdir2 = y - position;
+				vec3 lightdir3 = z - position;
+				vec3 lightdir;
+				
+				if (lightdir1.magnitude() < lightdir2.magnitude() && lightdir1.magnitude() < lightdir3.magnitude())
+					lightdir = lightdir1;
+				else if (lightdir2.magnitude() < lightdir1.magnitude() && lightdir2.magnitude() < lightdir3.magnitude())
+					lightdir = lightdir2;
+				else
+					lightdir = lightdir3;
+
+				normal.normalize();
+				if (lightdir.magnitude() > 400.0f)
+					continue;
+
+				if ( lightdir * normal  )
+				{
+					vec3 triple[3][2];
+
+					if (x.x < y.x)
+					{
+						triple[0][0] = x;
+						triple[0][1] = y;
+					}
+					else
+					{
+						triple[0][1] = x;
+						triple[0][0] = y;
+					}
+
+					if (x.x < z.x)
+					{
+						triple[1][0] = x;
+						triple[1][1] = z;
+					}
+					else
+					{
+						triple[1][1] = x;
+						triple[1][0] = z;
+					}
+
+					if ( y.x < z.x )
+					{
+						triple[2][0] = y;
+						triple[2][1] = z;
+					}
+					else
+					{
+						triple[2][1] = y;
+						triple[2][0] = z;
+					}
+					edge_list.insert(&triple[0][0]);
+					edge_list.insert(&triple[1][0]);
+					edge_list.insert(&triple[2][0]);
+				}
+			}
+		}
+	}
+}
+
+bool Bsp::vis_test(vec3 &x, vec3 &y)
+{
+		int a = find_leaf(x);
+		int b = find_leaf(y);
+
+		if (a == b)
+			return true;
+
+		leaf_t *a_leaf = &data.Leaf[a];
+		leaf_t *b_leaf = &data.Leaf[b];
+
+		if ( !cluster_visible(a_leaf->cluster, b_leaf->cluster) )
+			return false;
+		else
+			return true;
+}
+
+bool Bsp::leaf_test(vec3 &x, vec3 &y)
+{
+		int a = find_leaf(x);
+		int b = find_leaf(y);
+
+		if (a == b)
+			return true;
+		else
+			return false;
+}
+
+/*
+	Can be done in a geometry shader
+*/
+void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
+{
+	vec3 *temp_tan = new vec3 [num_vert];
+	vec3 *temp_btan = new vec3 [num_vert];
+
+	memset(temp_tan, 0, num_vert * sizeof(vec3));
+	memset(temp_btan, 0, num_vert * sizeof(vec3));
+	for (int i = 0; i < num_index;)
+	{
+		int a = index[i];
+		int b = index[i + 1];
+		int c = index[i + 2];
+        
+		const vec3 p0 = vertex[a].position;
+		const vec3 p1 = vertex[b].position;
+		const vec3 p2 = vertex[c].position;
+
+		const vec2 tex0 = vertex[a].texCoord0;
+		const vec2 tex1 = vertex[b].texCoord0;
+		const vec2 tex2 = vertex[c].texCoord0;
+
+		vec3 q1 = p1 - p0;
+		vec3 q2 = p2 - p0;
+
+		float s1 = tex1.x - tex0.x;
+		float t1 = tex1.y - tex0.y;
+		float s2 = tex2.x - tex0.x;
+		float t2 = tex2.y - tex0.y;
+        
+		float denom = s1 * t2 - s2 * t1;
+
+		// singular triangle
+		if (denom == 0)
+		{
+			vec3 f(1.0f, 0.0f, 0.0f);
+			vec3 r = vec3::crossproduct(f, vertex[a].normal);
+			f = vec3::crossproduct(r, vertex[a].normal);
+
+			temp_tan[a] += f;
+			temp_tan[b] += f;
+			temp_tan[c] += f;
+        
+			temp_btan[a] += r;
+			temp_btan[b] += r;
+			temp_btan[c] += r;
+			i += 3;
+			continue;
+		}
+
+		float r = 1.0f / denom;
+
+		vec3 sdir((t2 * q1.x - t1 * q2.x) * r, (t2 * q1.y - t1 * q2.y) * r, (t2 * q1.z - t1 * q2.z) * r);
+		vec3 tdir((s1 * q2.x - s2 * q1.x) * r, (s1 * q2.y - s2 * q1.y) * r, (s1 * q2.z - s2 * q1.z) * r);
+		sdir.normalize();
+		tdir.normalize();
+        
+		// adding so vectors are averaged for shared verticies
+		temp_tan[a] += sdir;
+		temp_tan[b] += sdir;
+		temp_tan[c] += sdir;
+        
+		temp_btan[a] += tdir;
+		temp_btan[b] += tdir;
+		temp_btan[c] += tdir;
+        
+		i += 3;
+//		vec3 n = vec3::crossproduct(q2,q1).normalize();
+//		printf("n = %f %f %f   = %f %f %f\n", n.x, n.y, n.z, vertex[a].normal.x, vertex[a].normal.y, vertex[a].normal.z);
+//		printf("t = %f %f %f b = %f %f %f\n", sdir.x, sdir.y, sdir.z, tdir.x, tdir.y, tdir.z);
+	}
+    
+	for (int i = 0; i < num_vert; i++)
+	{
+		vec3 n = vertex[i].normal;
+		vec3 t = temp_tan[i];
+		vec3 b = temp_btan[i];
+		vec3 vtan;
+		vec3 vbtan;
+        
+		// Gram-Schmidt orthogonalize
+		vtan = (t - n * (n * t)).normalize();
+		vbtan = (b - n * (n * b)) - vtan * (vtan * b);
+        
+		// Calculate handedness
+		tangent[i].x = vtan.x;
+		tangent[i].y = vtan.y;
+		tangent[i].z = vtan.z;
+		tangent[i].w = (vec3::crossproduct(n, t) * temp_btan[i] < 0.0f) ? -1.0f : 1.0f;
+	}
+
+	delete[] temp_tan;
+	delete[] temp_btan;
+}
+
+void Bsp::draw_box(int *min, int *max)
+{
+#ifndef DIRECTX
+	glEnable(GL_BLEND);
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glLineWidth(5.0f);
+	glBegin(GL_TRIANGLES);
+	glVertex3i(min[0], min[1], min[2]); // 0
+	glVertex3i(min[0], min[1], max[2]); // 1
+	glVertex3i(min[0], max[1], min[2]); // 2
+
+	glVertex3i(min[0], min[1], max[2]); // 1
+	glVertex3i(min[0], max[1], max[2]); // 3
+	glVertex3i(min[0], max[1], min[2]); // 2
+
+	glVertex3i(max[0], max[1], max[2]); // 7
+	glVertex3i(min[0], min[1], max[2]); // 1
+	glVertex3i(max[0], min[1], max[2]); // 5
+
+	glVertex3i(max[0], max[1], max[2]); // 7
+	glVertex3i(min[0], max[1], max[2]); // 3
+	glVertex3i(min[0], min[1], max[2]); // 1
+
+	glVertex3i(max[0], min[1], max[2]); // 5
+	glVertex3i(max[0], max[1], min[2]); // 6
+	glVertex3i(max[0], max[1], max[2]); // 7
+
+	glVertex3i(max[0], min[1], max[2]); // 5
+	glVertex3i(max[0], min[1], min[2]); // 4
+	glVertex3i(max[0], max[1], min[2]); // 6
+
+	glVertex3i(min[0], min[1], min[2]); // 0
+	glVertex3i(min[0], max[1], min[2]); // 2
+	glVertex3i(max[0], max[1], min[2]); // 6
+
+	glVertex3i(min[0], min[1], min[2]); // 0
+	glVertex3i(max[0], max[1], min[2]); // 6
+	glVertex3i(max[0], min[1], min[2]); // 4
+
+	glVertex3i(min[0], min[1], min[2]); // 0
+	glVertex3i(max[0], min[1], min[2]); // 4
+	glVertex3i(min[0], min[1], max[2]); // 1
+
+	glVertex3i(min[0], min[1], max[2]); // 1
+	glVertex3i(max[0], min[1], min[2]); // 4
+	glVertex3i(max[0], min[1], max[2]); // 5
+
+	glVertex3i(min[0], max[1], min[2]); // 2
+	glVertex3i(min[0], max[1], max[2]); // 3
+	glVertex3i(max[0], max[1], min[2]); // 6
+
+	glVertex3i(min[0], max[1], max[2]); // 3
+	glVertex3i(max[0], max[1], max[2]); // 7
+	glVertex3i(max[0], max[1], min[2]); // 6
+	glEnd();
+	glDisable(GL_BLEND);
+#endif
+}
+
+void Bsp::draw_line_box(int *min, int *max)
+{
+#ifndef DIRECTX
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glLineWidth(5.0f);
 	glBegin(GL_LINES);
 	//bottom square
-	glVertex3i(min[0], min[2], -min[1]);
-	glVertex3i(max[0], min[2], -min[1]);
-	glVertex3i(min[0], min[2], -min[1]);
-	glVertex3i(min[0], max[2], -min[1]);
-	glVertex3i(max[0], max[2], -min[1]);
-	glVertex3i(max[0], min[2], -min[1]);
-	glVertex3i(max[0], max[2], -min[1]);
-	glVertex3i(min[0], max[2], -min[1]);
+	glVertex3i(min[0], min[1], min[2]);
+	glVertex3i(max[0], min[1], min[2]);
+	glVertex3i(min[0], min[1], min[2]);
+	glVertex3i(min[0], min[1], max[2]);
+	glVertex3i(max[0], min[1], max[2]);
+	glVertex3i(max[0], min[1], min[2]);
+	glVertex3i(max[0], min[1], max[2]);
+	glVertex3i(min[0], min[1], max[2]);
 	//top square                     
-	glVertex3i(min[0], min[2], -max[1]);
-	glVertex3i(max[0], min[2], -max[1]);
-	glVertex3i(min[0], min[2], -max[1]);
-	glVertex3i(min[0], max[2], -max[1]);
-	glVertex3i(max[0], max[2], -max[1]);
-	glVertex3i(max[0], min[2], -max[1]);
-	glVertex3i(max[0], max[2], -max[1]);
-	glVertex3i(min[0], max[2], -max[1]);
+	glVertex3i(min[0], max[1], min[2]);
+	glVertex3i(max[0], max[1], min[2]);
+	glVertex3i(min[0], max[1], min[2]);
+	glVertex3i(min[0], max[1], max[2]);
+	glVertex3i(max[0], max[1], max[2]);
+	glVertex3i(max[0], max[1], min[2]);
+	glVertex3i(max[0], max[1], max[2]);
+	glVertex3i(min[0], max[1], max[2]);
 	//remaining legs                 
-	glVertex3i(min[0], min[2], -min[1]);
-	glVertex3i(min[0], min[2], -max[1]);
-	glVertex3i(min[0], max[2], -max[1]);
-	glVertex3i(min[0], max[2], -min[1]);
+	glVertex3i(min[0], min[1], min[2]);
+	glVertex3i(min[0], max[1], min[2]);
+	glVertex3i(min[0], max[1], max[2]);
+	glVertex3i(min[0], min[1], max[2]);
                                          
-	glVertex3i(max[0], min[2], -min[1]);
-	glVertex3i(max[0], min[2], -max[1]);
-	glVertex3i(max[0], max[2], -max[1]);
-	glVertex3i(max[0], max[2], -min[1]);
+	glVertex3i(max[0], min[1], min[2]);
+	glVertex3i(max[0], max[1], min[2]);
+	glVertex3i(max[0], max[1], max[2]);
+	glVertex3i(max[0], min[1], max[2]);
 	glEnd();
-	glEnable(GL_LIGHTING);
-	glEnable(GL_TEXTURE_2D);
+#endif
 }
-*/

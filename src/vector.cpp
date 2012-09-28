@@ -1,5 +1,9 @@
-#include "math.h"
 #include "vector.h"
+float InvSqrt(float x);
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
 
 vec4::vec4()
 {
@@ -19,22 +23,45 @@ vec4::vec4(float x, float y, float z, float w)
 
 float vec4::magnitude()
 {
-	return sqrt(x * x + y * y + z * z);
+	return (1.0f / InvSqrt(x * x + y * y + z * z));
 }
 
 vec4 &vec4::normalize()
 {
-	float mag;
-
-	mag = this->magnitude();
-	if (mag)
-	{
-		x /= mag;
-		y /= mag;
-		z /= mag;
-	}
+	float invmag = InvSqrt(x * x + y * y + z * z);
+	x *= invmag;
+	y *= invmag;
+	z *= invmag;
 	return *this;
 }
+
+vec4 &vec4::operator*=(const float scalar)
+{
+	x *= scalar;
+	y *= scalar;
+	z *= scalar;
+	w *= scalar;
+	return *this;
+}
+
+vec4 &vec4::operator+=(const vec4 &vec)
+{
+	x += vec.x;
+	y += vec.y;
+	z += vec.z;
+	w += vec.w;
+	return *this;
+}
+
+vec4 &vec4::operator+=(const float scalar)
+{
+	x += scalar;
+	y += scalar;
+	z += scalar;
+	w += scalar;
+	return *this;
+}
+
 
 vec3::vec3()
 {
@@ -59,20 +86,15 @@ vec3::vec3(vec4 vector)
 
 float vec3::magnitude()
 {
-	return sqrt(x * x + y * y + z * z);
+	return (1.0f / InvSqrt(x * x + y * y + z * z));
 }
 
 vec3 &vec3::normalize()
 {
-	float mag;
-
-	mag = this->magnitude();
-	if (mag)
-	{
-		x /= mag;
-		y /= mag;
-		z /= mag;
-	}
+	float invmag = InvSqrt(x * x + y * y + z * z);
+	x *= invmag;
+	y *= invmag;
+	z *= invmag;
 	return *this;
 }
 
@@ -85,7 +107,7 @@ vec3 &vec3::operator=(const vec3 &vector)
 	return *this;
 }
 
-vec3 vec3::operator+(const vec3 &vector)
+vec3 vec3::operator+(const vec3 &vector) const
 {
 	vec3 temp(this->x, this->y, this->z);
 
@@ -96,7 +118,7 @@ vec3 vec3::operator+(const vec3 &vector)
 	return temp;
 }
 
-vec3 vec3::operator-(const vec3 &vector)
+vec3 vec3::operator-(const vec3 &vector) const
 {
 	vec3 temp(this->x, this->y, this->z);
 
@@ -118,9 +140,19 @@ float vec3::operator*(const vec3 &vector)
 	return (x * vector.x + y * vector.y + z * vector.z);
 }
 
+float vec3::operator/(const vec3 &vector)
+{
+	return (x / vector.x + y / vector.y + z / vector.z);
+}
+
 vec3 vec3::operator*(const float scalar)
 {
 	return vec3(x * scalar, y * scalar, z * scalar);
+}
+
+vec3 vec3::operator/(const float scalar)
+{
+	return vec3(x / scalar, y / scalar, z / scalar);
 }
 
 vec3 &vec3::operator+=(const vec3 &vec)
@@ -148,6 +180,23 @@ vec3 vec3::crossproduct(const vec3 &VecA, const vec3 &VecB)
 	result.z = VecA.x * VecB.y - VecA.y * VecB.x;
 	return result;
 }
+
+bool vec3::operator==(const vec3 &vector)
+{
+	if ((x == vector.x) && (y == vector.y) && (z == vector.z))
+		return true;
+	else
+		return false;
+}
+
+vec3 &vec3::operator*=(const float scalar)
+{
+	x *= scalar;
+	y *= scalar;
+	z *= scalar;
+	return *this;
+}
+
 
 vec2::vec2()
 {
@@ -189,11 +238,9 @@ vec2 vec2::operator-(const vec2 &vector)
 	return temp;
 }
 
-bool vec3::operator==(const vec3 &vector)
+vec2 &vec2::operator*=(const float scalar)
 {
-	if ((x == vector.x) && (y == vector.y) && (z == vector.z))
-		return true;
-	else
-		return false;
+	x *= scalar;
+	y *= scalar;
+	return *this;
 }
-

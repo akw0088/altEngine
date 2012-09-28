@@ -1,99 +1,156 @@
 #include "net.h"
 
-void Net::listen(char *address, int port)
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+void Net::bind(char *address, int port)
 {
-	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (listenfd == -1)
+	int sndbuf;
+	int rcvbuf;
+	struct sockaddr_in	servaddr;
+	socklen_t arglen = sizeof(int);
+
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sockfd == -1)
 	{
 		throw("socket error");
 	}
 
+	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
+	printf("SO_SNDBUF = %d\n", sndbuf);
+
+	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
+	printf("SO_RCVBUF = %d\n", rcvbuf);
+
+	sndbuf = 8192; //default 8192
+	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, sizeof(sndbuf));
+	printf("Setting SO_SNDBUF to %d\n", sndbuf);
+
+	rcvbuf = 8192; //default 8192
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, sizeof(rcvbuf));
+	printf("Setting SO_RCVBUF to %d\n", rcvbuf);
+
+	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
+	printf("SO_SNDBUF = %d\n", sndbuf);
+
+	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
+	printf("SO_RCVBUF = %d\n", rcvbuf);
+
+#ifdef _WINDOWS_
+	unsigned long nonblock = 1;
+	ioctlsocket(sockfd, FIONBIO, &nonblock);
+#else
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
+#endif
+
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family      = AF_INET;
 	servaddr.sin_port        = htons(port);
-	if (address == NULL)
+	if (address != NULL)
 		servaddr.sin_addr.s_addr = inet_addr(address);
 	else
 		servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 
-	if ( (bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) == -1 )
+	if ( (::bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) == -1 )
 	{
 		throw("bind error");
 	}
-	printf("listening on: %s:%d\n", inet_ntoa(servaddr.sin_addr), htons(servaddr.sin_port));
-
-	if ( ::listen(listenfd, 3) == -1 )
-	{
-		throw("listen error");
-	}
-}
-
-void Net::accept()
-{
-	socklen_t size = sizeof(struct sockaddr_in);
-
-	sockfd = ::accept(listenfd, (struct sockaddr *)&client, &size);
-	if (sockfd == INVALID_SOCKET)
-		return;
-
-	printf("Accept: %s\n", inet_ntoa(client.sin_addr));
+	printf("bound on: %s:%d\n", inet_ntoa(servaddr.sin_addr), htons(servaddr.sin_port));
 }
 
 int Net::send(char *buffer, int size)
 {
-	int n = 0;
-	int nSent = 0;
-
-	do
-	{
-		n = ::send(sockfd, buffer + nSent, size - nSent, 0);
-		nSent += n;
-		printf("Sent %d of %d bytes\r", nSent, size);
-	} while ( n > 0);
-
-	if (n < 0)
-	{
-		throw("send error");
-	}
-
-	return nSent;
+	return ::send(sockfd, buffer, size, 0);
 }
 
 int Net::recv(char *buff, int size)
 {
+	return ::recv(sockfd, buff, size, 0);
+}
+
+int Net::recv(char *buff, int size, int delay)
+{
+	int ret;
+	struct timeval	timeout = { 0, 0 };
+	fd_set		readfds;
+
+	timeout.tv_sec = delay;
+
+	FD_ZERO(&readfds);
+	FD_SET(sockfd, &readfds);
+	ret = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
+
+	if (ret == -1 || ret == 0)
+		return 0;
+
+	if ( FD_ISSET(sockfd, &readfds) )
+		return ::recv(sockfd, buff, size, 0);
+	else
+		return 0;
+}
+
+int Net::recvfrom(char *buff, int size, char *from, int length)
+{
+	sockaddr_in		addr;
+	socklen_t		sock_length = sizeof(sockaddr_in);
+	int ret;
 	int n = 0;
-	int nRecv = 0;
+	struct timeval	timeout = { 0, 0 };
+	fd_set		readfds;
 
-	do
-	{
-		n = ::recv(sockfd, buff + nRecv, size - nRecv, 0);
-		nRecv += n;
-		printf("Received %d of %d bytes\t", nRecv, size);
-	} while ( n > 0);
+	FD_ZERO(&readfds);
+	FD_SET(sockfd, &readfds);
+	ret = select(sockfd + 1, &readfds, NULL, NULL, &timeout);
+	
+	if (ret == -1 || ret == 0)
+		return 0;
 
-	if (n < 0)
+	if ( FD_ISSET(sockfd, &readfds) )
 	{
-		throw("read error");
+		n = ::recvfrom(sockfd, buff, size, 0, (sockaddr *)&addr, &sock_length);
+
+		snprintf(from, length, "%s:%d", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
+		return n;
 	}
-
-	return nRecv;
+	return 0;
 }
 
-void Net::drop()
+int Net::sendto(char *buff, int size, char *to)
 {
-	shutdown(sockfd, 1);
-	closesocket(sockfd);
+	sockaddr_in		addr;
+	socklen_t		sock_length = sizeof(sockaddr_in);
+
+	strtoaddr(to, addr);
+	return ::sendto(sockfd, buff, size, 0, (sockaddr *)&addr, sock_length); 
 }
 
-void Net::unbind()
+void Net::strtoaddr(char *str, sockaddr_in &addr)
 {
-	time_t timeout = time(NULL);
+	char ip[80];
+	int a,b,c,d;
+	int port;
 
-	printf("\nShutting down...\n");
-	shutdown(listenfd, 1);
-	while ( ::recv(listenfd, buff, MAXLINE, 0) != SOCKET_ERROR || time(NULL) > timeout + 5 );
-	closesocket(listenfd);
+	memset(&addr, 0, sizeof(sockaddr_in));
+	addr.sin_family	= AF_INET;
+	if (sscanf(str, "%d.%d.%d.%d:%d", &a, &b, &c, &d, &port) == 5)
+	{
+		sprintf(ip, "%d.%d.%d.%d", a,b,c,d);
+		addr.sin_addr.s_addr = inet_addr(ip);
+	}
+	else if (sscanf(str, "%s:%d", ip, &port) == 2)
+	{
+		addr.sin_addr.s_addr = inet_addr(ip);
+	}
+	else
+	{
+		char err[LINE_SIZE];
+
+		snprintf(err, LINE_SIZE, "strtoaddr() invalid address %s", str);
+		throw err;
+	}
+	addr.sin_port = htons(port);
 }
 
 void Net::connect(char *server, int port)
@@ -103,17 +160,37 @@ void Net::connect(char *server, int port)
 	int ret;
 	socklen_t arglen = sizeof(int);
 
-	if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
 		throw("socket error");
 	}
-
 
 	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
 	printf("SO_SNDBUF = %d\n", sndbuf);
 
 	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
-	printf("SO_RCVBUF = %d\n", sndbuf);
+	printf("SO_RCVBUF = %d\n", rcvbuf);
+
+	sndbuf = 8192; //default 8192
+	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, sizeof(sndbuf));
+	printf("Setting SO_SNDBUF to %d\n", sndbuf);
+
+	rcvbuf = 8192; //default 8192
+	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, sizeof(rcvbuf));
+	printf("Setting SO_RCVBUF to %d\n", rcvbuf);
+
+	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
+	printf("SO_SNDBUF = %d\n", sndbuf);
+
+	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
+	printf("SO_RCVBUF = %d\n", rcvbuf);
+
+#ifdef _WINDOWS_
+	unsigned long nonblock = 1;
+	ioctlsocket(sockfd, FIONBIO, &nonblock);
+#else
+	fcntl(sockfd, F_SETFL, O_NONBLOCK);
+#endif
 
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
@@ -133,27 +210,15 @@ void Net::connect(char *server, int port)
 	{
 		throw("connect error");
 	}
-
 }
 
-void Net::disconnect()
-{
-	int n;
-
-	shutdown(sockfd, 1);
-	while ( (n = ::recv(sockfd, buff, MAXLINE, 0) ) > 0);
-
-	if (n < 0)
-	{
-		throw("read error");
-	}
-
-	closesocket(sockfd);
-}
 
 #ifdef _WIN32
-int inet_pton(int af, const char *src, void *dst)
+int inet_pton(int af, const char *server, in_addr *addr)
 {
+	struct hostent *host = gethostbyname(server);
+	if (host)
+	*addr = *((struct in_addr *)*host->h_addr_list);
 	return 1;
 }
 #endif
