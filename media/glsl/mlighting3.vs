@@ -12,12 +12,12 @@ in vec3	attr_tangent;
 
 // interpolated output
 out VertexData {
-	out vec4	vary_position;
-	out vec2	vary_TexCoord;
-	out vec2	vary_LightCoord;
-	out vec3	vary_normal;
-	out int		vary_color;
-	out vec3	vary_tangent;
+	vec4		vary_position;
+	vec2		vary_TexCoord;
+	vec2		vary_LightCoord;
+	vec3		vary_normal;
+	flat int	vary_color;
+	vec3		vary_tangent;
 } Vertex;
 
 // uniform primitive constant input

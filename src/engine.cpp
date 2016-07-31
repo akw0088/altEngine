@@ -31,6 +31,7 @@ void Engine::init(void *param1, void *param2)
 	menu.init(&gfx, &audio);
 	menu.load("media/newmenu.txt", "media/newstate.txt");
 	printf("altEngine2 Version %s\n", "1.0.0");
+	fflush(stdout);
 	GLenum err = glGetError();
 	if ( err != GL_NO_ERROR)
 	{
@@ -293,8 +294,8 @@ void Engine::render()
 	gfx.Stencil(false);
 #endif
 
-//	if (keyboard.control)
-//		post_process(5);
+	if (keyboard.control)
+		post_process(5);
 	gfx.cleardepth();
 	debug_messages();
 

@@ -8,12 +8,12 @@ layout (triangle_strip, max_vertices=3) out;
 
 
 in VertexData {
-	vec4	vary_position;
-	vec2	vary_TexCoord;
-	vec2	vary_LightCoord;
-	vec3	vary_normal;
-	int	vary_color;
-	vec3	vary_tangent;
+	vec4		vary_position;
+	vec2		vary_TexCoord;
+	vec2		vary_LightCoord;
+	vec3		vary_normal;
+	flat int	vary_color;
+	vec3		vary_tangent;
 } VertexIn[3];
 
  
@@ -22,7 +22,7 @@ out VertexDataOut {
     vec2 vary_TexCoord;
     vec2 vary_LightCoord;
     vec3 vary_normal;
-    int vary_color;
+    flat int vary_color;
     vec3 vary_tangent;
 } VertexOut;
  
