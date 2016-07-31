@@ -97,7 +97,7 @@ void mLight2::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/glsl/mlighting3.vsh", NULL, "media/glsl/mlighting3.psh");
 #else
-	if (Shader::init(gfx, "media/glsl/mlighting3.vs", NULL, "media/glsl/mlighting3.fs"))
+	if (Shader::init(gfx, "media/glsl/mlighting3.vs", "media/glsl/mlighting3.gs", "media/glsl/mlighting3.fs"))
 	{
 		program_handle = -1;
 		return;
@@ -135,15 +135,17 @@ void mLight2::Params(matrix4 &mvp, int tex0, int tex1, int tex2, vector<Light *>
 {
 	vec3 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
+	int i, j;
 
-	if (num_lights > MAX_LIGHTS)
-		num_lights = MAX_LIGHTS;
 
-	for(int i = 0; i < num_lights; i++)
+	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
-		position[i] = light_list[i]->entity->position;
-		color[i] = vec4(light_list[i]->color.x, light_list[i]->color.y,
-			light_list[i]->color.z, (float)light_list[i]->intensity);
+		if (light_list[i]->entity->light->active)
+		{
+			position[j] = light_list[i]->entity->position;
+			color[j] = vec4(light_list[i]->color.x, light_list[i]->color.y,
+				light_list[i]->color.z, (float)(light_list[i]->intensity / 1000.0f ));
+		}
 	}
 #ifdef DIRECTX
 	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);

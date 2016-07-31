@@ -30,7 +30,8 @@ private:
 	int	texture0;
 };
 
-#define MAX_LIGHTS 24
+// Max lights hardware can pass through shaders, gfx card specfic
+#define MAX_LIGHTS 16
 
 class mLight2 : public Shader
 {

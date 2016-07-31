@@ -2,7 +2,7 @@
 
 // Per vertex interpolated program input
 in vec4 vary_position;
-in int vary_color;
+flat in int vary_color;
 in vec2 vary_TexCoord;
 
 // Final fragment color output

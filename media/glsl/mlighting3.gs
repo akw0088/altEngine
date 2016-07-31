@@ -1,51 +1,62 @@
-#version 150 
-#extension GL_EXT_geometry_shader4 : enable
-#define MAX_LIGHTS 24
+#version 150
+ 
+#define	MAX_LIGHTS 16
+
+layout(triangles) in;
+layout (triangle_strip, max_vertices=3) out;
+ 
 
 
-// constant program input
-uniform vec3		u_position[MAX_LIGHTS];
-uniform vec4		u_color[MAX_LIGHTS];
-uniform int		u_lights;
-uniform mat4		mvp;
-uniform sampler2D	texture0, texture1, texture2;
+in VertexData {
+	vec4	vary_position;
+	vec2	vary_TexCoord;
+	vec2	vary_LightCoord;
+	vec3	vary_normal;
+	int	vary_color;
+	vec3	vary_tangent;
+} VertexIn[3];
 
-//input
-inout vec4		vary_position[gl_VerticesIn];
-inout vec2		vary_TexCoord[gl_VerticesIn];
-inout vec2		vary_LightCoord[gl_VerticesIn];
-inout int		vary_color[gl_VerticesIn];
-inout vec3		vary_normal[gl_VerticesIn];
-//inout vec4		vary_light[MAX_LIGHTS][gl_VerticesIn];
-
-
-
-void main(void)
+ 
+out VertexDataOut {
+    vec4 vary_position;
+    vec2 vary_TexCoord;
+    vec2 vary_LightCoord;
+    vec3 vary_normal;
+    int vary_color;
+    vec3 vary_tangent;
+} VertexOut;
+ 
+void main()
 {
-	for(int i = 0;i < gl_VerticesIn; i++)
+	//calculate normal
+	vec3 a = gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz;
+	vec3 b = gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz;
+	vec3 normal = cross(a,b);
+
+	//calculate tangent, these values are just constants
+	float s1 = VertexIn[1].vary_TexCoord.x - VertexIn[0].vary_TexCoord.x; 
+	float s2 = VertexIn[2].vary_TexCoord.x - VertexIn[0].vary_TexCoord.x; 
+
+	float t1 = VertexIn[1].vary_TexCoord.y - VertexIn[0].vary_TexCoord.y; 
+	float t2 = VertexIn[2].vary_TexCoord.y - VertexIn[0].vary_TexCoord.y; 
+
+	vec3 tangent = (a*t2 - b*t1) / (s1*t2 - s2*t1);
+	
+
+	for(int i = 0; i < gl_in.length(); i++)
 	{
+		// copy attributes
 		gl_Position = gl_in[i].gl_Position;
+		VertexOut.vary_position = VertexIn[i].vary_position;
+		VertexOut.vary_TexCoord = VertexIn[i].vary_TexCoord;
+		VertexOut.vary_LightCoord = VertexIn[i].vary_LightCoord;
+		VertexOut.vary_color = VertexIn[i].vary_color;
+//		VertexOut.vary_normal = VertexIn[i].vary_normal; // I dont trust the artists ;)
+//		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // I dont trust the artists ;)
+		VertexOut.vary_normal = normal;
+		VertexOut.vary_tangent = tangent;
+
+		// done with the vertex
 		EmitVertex();
 	}
-	EndPrimitive();
 }
-
-/*
-in gl_PerVertex
-{
-	vec4 gl_Position;
-	float gl_PointSize;
-	float gl_ClipDistance[];
-} gl_in[];
-
-in int gl_PrimitiveIDIn;
-
-out gl_PerVertex
-{
-	vec4 gl_Position;
-	float gl_PointSize;
-	float gl_ClipDistance[];
-};
-out int gl_PrimitiveID;
-out int gl_Layer;
-*/

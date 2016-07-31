@@ -317,6 +317,7 @@ void Engine::render_scene(bool lights)
 	camera.set(transformation);
 	mlight2.Select();
 	mvp = transformation * projection;
+
 	if (lights)
 		mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
 	else
@@ -1304,6 +1305,9 @@ void Engine::handle_game(char key)
 	case '~':
 	case '`':
 		menu.console = !menu.console;
+		break;
+	case 'r':
+		camera.reset();
 		break;
 	case 27:
 		menu.ingame = !menu.ingame;

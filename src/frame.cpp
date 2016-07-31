@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void rotate_vector(float rad, vec3 &vec, vec3 &axis)
+void rotate_vector(float rad, vec3 &vec, const vec3 &axis)
 {
 	matrix3	m;
 	float	sinVal, cosVal, minusVal;
@@ -78,7 +78,7 @@ void Frame::update(button_t &keyboard)
 
 void Frame::update(const vec2 &delta)
 {
-	vec3		vup = vec3(0.0f, 1.0f, 0.0f);
+	const vec3		vup = vec3(0.0f, 1.0f, 0.0f);
 	vec3		right;
 
 //"camera"

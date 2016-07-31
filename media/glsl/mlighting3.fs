@@ -1,14 +1,15 @@
 #version 150
-#define	MAX_LIGHTS 24
+#define	MAX_LIGHTS 16
 
 // per vertex interpolated program input
-in vec4		vary_position;
-flat in int		vary_color;
-in vec2		vary_TexCoord;
-in vec2		vary_LightCoord;
-in vec3		vary_normal;
-in vec4		vary_light[MAX_LIGHTS];
-in vec3		vary_tangent;
+in VertexDataOut {
+    vec4 vary_position; // light position
+    vec2 vary_TexCoord;
+    vec2 vary_LightCoord;
+    vec3 vary_normal;
+    flat int vary_color;
+    vec3 vary_tangent;
+} Vertex;
 
 // Final fragment color output
 out vec4 Fragment;
@@ -20,31 +21,42 @@ uniform int		u_num_lights;
 uniform mat4		mvp;
 uniform sampler2D	texture0, texture1, texture2;
 
+// was originally varying, but couldnt pass through geometry shader
+vec4 vary_light;
+
 void main(void)
 {
-	vec3 normal = normalize(vary_normal);
-	vec3 tangent = normalize(vary_tangent);
+	vec3 normal = normalize(Vertex.vary_normal);
+	vec3 tangent = normalize(Vertex.vary_tangent);
 	vec3 bitangent = normalize(cross(normal, tangent));
 	mat3 tangent_space = mat3(tangent, bitangent, normal);
-	vec3 eye = tangent_space * -normalize(vary_position.xyz);
-	vec3 intensity = vec3(1.0, 1.0, 1.0);
+	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
+	vec3 ambient = vec3(0.125f, 0.125f, 0.125f);
+	vec3 light = vec3(0.0f, 0.0f, 0.0f);
 
 	// scale and bias parallax effect
-//	float height = texture2D(texture2, vary_TexCoord).a * 0.16 + -0.08;
-//	Fragment = texture2D(texture0, vary_TexCoord + height * eye.xy);
-//	vec3 normal_map = normalize(texture2D(texture2, vary_TexCoord + height * eye.xy).xyz);
+//	float height = texture2D(texture2, Vertex.vary_TexCoord).a * 0.16 + -0.08;
+//	Fragment = texture2D(texture0, Vertex.vary_TexCoord + height * eye.xy);
+//	vec3 normal_map = normalize(texture2D(texture2, Vertex.vary_TexCoord + height * eye.xy).xyz);
 
-	vec3 normal_map = normalize(texture2D(texture2, vary_TexCoord).xyz);
-	Fragment = texture2D(texture0, vary_TexCoord);
+	vec3 normal_map = normalize(texture2D(texture2, Vertex.vary_TexCoord).xyz);
+	Fragment = texture2D(texture0, Vertex.vary_TexCoord);
+
 
 	for(int i = 0; i < u_num_lights; i++)
 	{
-		vec3 v_light = tangent_space * normalize(vec3(vary_light[i]));
-		vec3 v_reflect = reflect(v_light, normal_map);
-		float diffuse = max(dot(v_light, normal_map), 0.0) * 0.5;
-		float specular = pow(max(dot(v_reflect, eye), 0.0), 25.0) * 0.5;
-		float atten = min(40000.0 / pow(vary_light[i].a, 1.75), 0.75);
-		intensity = intensity + atten * (diffuse + specular + vec3(u_color[i]) * 0.25);
+		vec4 lightPosEye = mvp * vec4(u_position[i], 1.0);
+		vary_light.rgb = normalize(vec3(lightPosEye - Vertex.vary_position)); // light vector to fragment
+		vary_light.a = length(vec3(lightPosEye - Vertex.vary_position)); // distance from light
+
+		vec3 v_light = tangent_space * normalize(vec3(vary_light[i]));	// light vector in tangent space
+		vec3 v_reflect = reflect(v_light, normal_map);			// normal map reflection vector
+		float diffuse = max(dot(v_light, normal_map), 0.5);		// directional light factor for fragment
+		float specular = pow(max(dot(v_reflect, eye), 0.0), 25.0);	// specular relection for fragment
+		float atten = min(40000.0 / pow(vary_light.a, 2.0), 1.0);	// light distance from fragment 1/(r^2) falloff
+		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.25); // combine everything
 	}
-	Fragment.rgb *= intensity;
+
+	Fragment.rgb *= max(light, ambient);
+
 }

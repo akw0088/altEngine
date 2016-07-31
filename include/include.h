@@ -15,7 +15,7 @@
 
 	#pragma comment(lib, "wsock32.lib")
 
-	#define snprintf sprintf_s
+//	#define snprintf sprintf_s
 
 	typedef int socklen_t;
 	int inet_pton(int af, const char *src, void *dst);

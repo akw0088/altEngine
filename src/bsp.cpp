@@ -1040,7 +1040,7 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 
 	memset(temp_tan, 0, num_vert * sizeof(vec3));
 	memset(temp_btan, 0, num_vert * sizeof(vec3));
-	for (int i = 0; i < num_index;)
+	for (int i = 0; i < num_index - 2;)
 	{
 		int a = index[i];
 		int b = index[i + 1];
