@@ -26,6 +26,7 @@ void Md5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
 {
 	int i;
 
+#ifdef OPENGL
 	// Draw each joint
 	glPointSize (5.0f);
 	glColor3f (1.0f, 0.0f, 0.0f);
@@ -47,6 +48,7 @@ void Md5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
 		}
 	}
 	glEnd();
+#endif
 }
 
 void Md5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex)

@@ -404,7 +404,9 @@ void Bsp::unload(Graphics &gfx)
 
 	for(int i = 0; i < num_meshes; i++)
 	{
+#ifdef OPENGL
 		gfx.DeleteVertexArrayObject(mesh_vao[i]);
+#endif
 		gfx.DeleteIndexBuffer(mesh_index_vbo[i]);
 		gfx.DeleteVertexBuffer(mesh_vertex_vbo[i]);
 	}

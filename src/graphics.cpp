@@ -273,7 +273,7 @@ void Graphics::DeleteVertexBuffer(int handle)
 
 void Graphics::SelectTexture(int level, int handle)
 {
-	if (handle == -1)
+	if (handle < 0)
 		return;
 	device->SetTexture(level, texture[handle]);
 }
@@ -299,7 +299,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 
 void Graphics::DeleteTexture(int handle)
 {
-	if (handle == -1)
+	if (handle < 0)
 		return;
 
 	IDirect3DTexture9	*d3d9_buffer = texture[handle];
@@ -323,7 +323,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	if (vertex_file)
 	{
 		LPD3DXBUFFER vertex_binary;
-		vertex_src = (char *)getFile(vertex_file);
+		vertex_src = (char *)get_file(vertex_file);
 		if (vertex_src == NULL)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n", vertex_file);
@@ -332,7 +332,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		}
 
 		D3DXCompileShader(vertex_src, strlen(vertex_src) + 1,
-			NULL, NULL, "main", "vs_3_0", D3DXSHADER_SKIPOPTIMIZATION, &vertex_binary, &err, &uniform);
+			NULL, NULL, "main", "vs_3_0", D3DXSHADER_USE_LEGACY_D3DX9_31_DLL, &vertex_binary, &err, &uniform);
 		if (err)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n%s\n", vertex_file, err->GetBufferPointer());
@@ -360,7 +360,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	if (fragment_file)
 	{
 		LPD3DXBUFFER pixel_binary;
-		fragment_src = (char *)getFile(fragment_file);
+		fragment_src = (char *)get_file(fragment_file);
 		if (fragment_src == NULL)
 		{
 			fprintf(fLog, "Unable to load fragment shader %s\n", fragment_file);

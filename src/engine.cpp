@@ -32,12 +32,15 @@ void Engine::init(void *param1, void *param2)
 	menu.load("media/newmenu.txt", "media/newstate.txt");
 	printf("altEngine2 Version %s\n", "1.0.0");
 	fflush(stdout);
+
+#ifdef OPENGL
 	GLenum err = glGetError();
 	if ( err != GL_NO_ERROR)
 	{
 		printf("Fatal GL_ERROR %d after setting up opengl context\n", err);
 		return;
 	}
+#endif
 
 	menu.render(global);
 
@@ -134,7 +137,9 @@ void Engine::destroy_buffers()
 	{
 		for (int i = 0; i < md5.model->num_mesh; i++)
 		{
+#ifdef OPENGL
 			gfx.DeleteVertexArrayObject(frame_vao[j][i]);
+#endif
 			gfx.DeleteVertexBuffer(frame_vertex[j][i]);
 			gfx.DeleteIndexBuffer(frame_index[j][i]);
 		}
@@ -209,6 +214,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
+#ifdef OPENGL
 	GLenum err;
 
 	err = glGetError();
@@ -217,6 +223,7 @@ void Engine::load(char *level)
 		printf("DrawArray GL_ERROR %d: attempting to draw will likely blow things up...\n", err);
 		return;
 	}
+#endif
 
 	map.render(camera.pos, NULL, gfx);
 	render_entities();
@@ -293,9 +300,10 @@ void Engine::render()
 	gfx.DepthFunc("<");
 	gfx.Stencil(false);
 #endif
-
+/*
 	if (keyboard.control)
 		post_process(5);
+		*/
 	gfx.cleardepth();
 	debug_messages();
 
@@ -1648,11 +1656,14 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
 	delete [] bytes;
+
+#ifdef OPENGL
 	if (format == GL_BGRA_EXT)
 	{
 		// negative means it has an alpha channel
 		return -tex_object;
 	}
+#endif
 	return tex_object;
 }
 

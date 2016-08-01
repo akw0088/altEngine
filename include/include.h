@@ -20,6 +20,8 @@
 	typedef int socklen_t;
 	int inet_pton(int af, const char *src, void *dst);
 
+#define DIRECTX
+
 #ifdef DIRECTX
 	#include <d3d9.h>
 	#include <d3dx9.h>

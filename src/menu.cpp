@@ -38,12 +38,14 @@ void Menu::init(Graphics *gfx, Sound *audio)
 
 void Menu::render(Global &global)
 {
+#ifdef OPENGL
 	GLenum err = glGetError();
 	if ( err != GL_NO_ERROR)
 	{
 		printf("Fatal GL_ERROR %d after setting up opengl context\n", err);
 		return;
 	}
+#endif
 
 	gfx->SelectTexture(0, menu_object);
 //	gfx->SelectVertexArrayObject(Model::quad_vao);
@@ -307,7 +309,9 @@ void Menu::render_console(Global &global)
 	gfx->DrawArray("triangles", 0, 0, 6, 4);
 	gfx->SelectShader(0);
 	gfx->DeselectTexture(0);
+#ifdef OPENGL
 	gfx->SelectVertexArrayObject(0);
+#endif
 	gfx->cleardepth();
 	for(int i = 0; i < console_buffer.size(); i++)
 		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i), 0.025f, color);

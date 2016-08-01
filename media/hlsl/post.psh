@@ -1,0 +1,39 @@
+struct attr_t
+{
+	float4 position		: POSITION;
+	float4 color		: COLOR0; 
+	float2 texCoord0	: TEXCOORD0;
+	float2 texCoord1	: TEXCOORD1;
+};
+
+struct vary_t
+{
+	float4 position		: POSITION;
+	float4 color		: COLOR0;
+	float2 texCoord0	: TEXCOORD0;
+	float2 texCoord1	: TEXCOORD1;
+};
+
+uniform sampler tex0;
+uniform float2 tc_offset[9];
+
+float4 main( in vary_t vary ) : COLOR0
+{
+	float4 Fragment;
+	float4 sample[9];
+
+	for (int i = 0; i < 9; i++)
+	{
+		sample[i] = tex2D(tex0, vary.texCoord0 + tc_offset[i]);
+	}
+
+	Fragment =  (sample[4] * 8.0) - 
+		(sample[0] + sample[1] + sample[2] + 
+		sample[3] + sample[5] + 
+		sample[6] + sample[7] + sample[8]);
+
+	return Fragment;
+}
+
+
+

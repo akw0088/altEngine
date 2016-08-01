@@ -1,0 +1,29 @@
+struct attr_t
+{
+	float4 position		: POSITION;
+	float4 color		: COLOR0; 
+	float4 Normal		: NORMAL;
+	float2 texCoord0	: TEXCOORD0;
+	float2 texCoord1	: TEXCOORD1;
+};
+
+struct vary_t
+{
+	float4 position		: POSITION;
+	float4 color		: COLOR0;
+	float2 texCoord0	: TEXCOORD0;
+	float2 texCoord1	: TEXCOORD1;
+};
+
+uniform sampler tex0;
+
+float4 main( in vary_t vary ) : COLOR0
+{
+	float4 color;
+
+	color = tex2D( tex0, vary.texCoord0 );
+	return color;
+}
+
+
+

@@ -162,10 +162,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_TIMER:
+#ifdef OPENGL
 		if (glGetError() != GL_NO_ERROR)
 		{
 			printf("GL_ERROR\n");
 		}
+#endif
 
 		switch(wParam)
 		{

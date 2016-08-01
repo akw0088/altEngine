@@ -95,7 +95,7 @@ void mLight2::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"
 #ifdef DIRECTX
-	Shader::init(gfx, "media/glsl/mlighting3.vsh", NULL, "media/glsl/mlighting3.psh");
+	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
 	if (Shader::init(gfx, "media/glsl/mlighting3.vs", "media/glsl/mlighting3.gs", "media/glsl/mlighting3.fs"))
 	{
