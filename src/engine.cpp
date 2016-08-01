@@ -33,7 +33,7 @@ void Engine::init(void *param1, void *param2)
 	printf("altEngine2 Version %s\n", "1.0.0");
 	fflush(stdout);
 
-#ifdef OPENGL
+#ifndef DIRECTX
 	GLenum err = glGetError();
 	if ( err != GL_NO_ERROR)
 	{
@@ -137,7 +137,7 @@ void Engine::destroy_buffers()
 	{
 		for (int i = 0; i < md5.model->num_mesh; i++)
 		{
-#ifdef OPENGL
+#ifndef DIRECTX
 			gfx.DeleteVertexArrayObject(frame_vao[j][i]);
 #endif
 			gfx.DeleteVertexBuffer(frame_vertex[j][i]);
@@ -214,7 +214,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-#ifdef OPENGL
+#ifndef DIRECTX
 	GLenum err;
 
 	err = glGetError();
@@ -1657,7 +1657,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
 	delete [] bytes;
 
-#ifdef OPENGL
+#ifndef DIRECTX
 	if (format == GL_BGRA_EXT)
 	{
 		// negative means it has an alpha channel

@@ -24,9 +24,9 @@ void Md5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skel
 
 void Md5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
 {
+#ifndef DIRECTX
 	int i;
 
-#ifdef OPENGL
 	// Draw each joint
 	glPointSize (5.0f);
 	glColor3f (1.0f, 0.0f, 0.0f);

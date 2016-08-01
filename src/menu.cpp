@@ -38,7 +38,7 @@ void Menu::init(Graphics *gfx, Sound *audio)
 
 void Menu::render(Global &global)
 {
-#ifdef OPENGL
+#ifndef DIRECTX
 	GLenum err = glGetError();
 	if ( err != GL_NO_ERROR)
 	{
@@ -309,7 +309,7 @@ void Menu::render_console(Global &global)
 	gfx->DrawArray("triangles", 0, 0, 6, 4);
 	gfx->SelectShader(0);
 	gfx->DeselectTexture(0);
-#ifdef OPENGL
+#ifndef DIRECTX
 	gfx->SelectVertexArrayObject(0);
 #endif
 	gfx->cleardepth();
