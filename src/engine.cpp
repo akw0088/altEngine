@@ -342,7 +342,7 @@ void Engine::render_entities()
 {
 	matrix4 mvp;
 
-	mlight2.Select();
+	global.Select();
 	for(int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->visible == false)
@@ -350,7 +350,7 @@ void Engine::render_entities()
 
 		camera.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
-		mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
+		global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
 		entity_list[i]->rigid->render(gfx);
 		entity_list[i]->rigid->render_box(gfx);
 		if (spawn == i)
@@ -366,10 +366,10 @@ void Engine::render_entities()
 	}
 	gfx.SelectShader(0);
 
-	mlight2.Select();
+	global.Select();
 	camera.set(transformation);
 	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-	mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
+	global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
@@ -378,7 +378,7 @@ void Engine::render_entities()
 		gfx.SelectTexture(2, normal_object[i]);
 		gfx.SelectIndexBuffer(frame_index[frame_step][i]);
 		gfx.SelectVertexBuffer(frame_vertex[frame_step][i]);
-		gfx.DrawArray("triangles", 0, 0, count_index[frame_step][i], count_vertex[frame_step][i]);
+		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, count_index[frame_step][i], count_vertex[frame_step][i]);
 //		gfx.SelectVertexArrayObject(0);
 		gfx.SelectVertexBuffer(0);
 		gfx.SelectIndexBuffer(0);
@@ -426,7 +426,7 @@ void Engine::post_process(int num_passes)
 //		gfx.SelectVertexArrayObject(Model::quad_vao);
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
-		gfx.DrawArray("triangles", 0, 0, 6, 4);
+		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 		gfx.SelectShader(0);
 		gfx.DeselectTexture(1);
 //		gfx.SelectVertexArrayObject(0);
@@ -461,7 +461,6 @@ void Engine::debug_messages()
 
 	snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
 	menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
-
 	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
 }
 
@@ -787,7 +786,7 @@ void Engine::check_triggers()
 
 		if (entity_list[i]->trigger->timeout > 0)
 		{
-			entity_list[i]->trigger->timeout -= 0.016;
+			entity_list[i]->trigger->timeout -= 0.016f;
 		}
 		else
 		{

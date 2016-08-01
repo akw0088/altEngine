@@ -15,8 +15,6 @@
 
 	#pragma comment(lib, "wsock32.lib")
 
-//	#define snprintf sprintf_s
-
 	typedef int socklen_t;
 	int inet_pton(int af, const char *src, void *dst);
 
@@ -63,6 +61,15 @@
 
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
+
+typedef enum
+{
+	PRIM_TRIANGLES,
+	PRIM_TRIANGLE_STRIP,
+	PRIM_LINE_STRIP,
+	PRIM_LINES,
+	PRIM_POINTS
+} primitive_t;
 
 //audio
 #include <al.h>
@@ -126,6 +133,7 @@ double fcos(double rad);
 #define MY_PI 3.14159265359f
 #define MY_HALF_PI 1.5707963268f
 #define MAXLINE 4096
+
 
 //quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)
 #define UNITS_TO_METERS (8.0f * 8.0f * 3.3f)

@@ -225,16 +225,16 @@ void Graphics::DeleteIndexBuffer(int handle)
 //	delete d3d9_buffer;
 }
 
-void Graphics::DrawArray(char *type, int start_index, int start_vertex, unsigned int num_index, int num_verts)
+void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	/* Branches in rendering loop are slow, find faster portable method */
-	if ( strcmp(type, "triangles") == 0 )
+	if (primitive == PRIM_TRIANGLES)
 		device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, start_vertex, 0, num_verts, start_index, num_index / 3);
-	else if (strcmp(type, "triangle_strip") == 0)
+	else if (primitive == PRIM_TRIANGLE_STRIP)
 		device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, start_vertex, 0, num_verts, start_index, num_index - 2);
-	else if (strcmp(type, "line_strip") == 0)
+	else if (primitive == PRIM_LINE_STRIP)
 		device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
-	else if (strcmp(type, "points") == 0)
+	else if (primitive == PRIM_POINTS)
 		device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
 
 }
@@ -314,6 +314,14 @@ void Graphics::SelectShader(int handle)
 	device->SetPixelShader(NULL);
 }
 
+Shader::Shader()
+{
+	vertex_src = NULL;
+	geometry_src = NULL;
+	fragment_src = NULL;
+	gfx = NULL;
+}
+
 int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *fragment_file)
 {
 	Shader::gfx = gfx;
@@ -335,7 +343,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			NULL, NULL, "main", "vs_3_0", D3DXSHADER_USE_LEGACY_D3DX9_31_DLL, &vertex_binary, &err, &uniform);
 		if (err)
 		{
-			fprintf(fLog, "Unable to load vertex shader %s\n%s\n", vertex_file, err->GetBufferPointer());
+			fprintf(fLog, "Unable to load vertex shader %s\n%s\n", vertex_file, (char  *)err->GetBufferPointer());
 			fclose(fLog);
 			return -1;
 		}
@@ -372,7 +380,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			NULL, NULL, "main", "ps_3_0", D3DXSHADER_SKIPOPTIMIZATION, &pixel_binary, &err, &uniform);
 		if (err)
 		{
-			fprintf(fLog, "Unable to load fragment shader %s\n%s\n", fragment_file, err->GetBufferPointer());
+			fprintf(fLog, "Unable to load fragment shader %s\n%s\n", fragment_file, (char  *)err->GetBufferPointer());
 			fclose(fLog);
 			return -1;
 		}
@@ -533,7 +541,7 @@ void Graphics::destroy()
 */
 }
 
-void Graphics::DrawArray(char *type, int start_index, int start_vertex, unsigned int num_index, int num_verts)
+void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	GLenum err;
 
@@ -554,15 +562,15 @@ void Graphics::DrawArray(char *type, int start_index, int start_vertex, unsigned
 
 
 	// Branches in rendering loop are slow, find faster portable method
-	if ( strcmp(type, "triangles") == 0 )
+	if (primitive == PRIM_TRIANGLES)
 		glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
-	else if (strcmp(type, "triangle_strip") == 0)
+	else if (primitive == PRIM_TRIANGLE_STRIP)
 		glDrawElementsBaseVertex(GL_TRIANGLE_STRIP, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
-	else if (strcmp(type, "line_strip") == 0)
+	else if (primitive == PRIM_LINE_STRIP)
 		glDrawElementsBaseVertex(GL_LINE_STRIP, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
-	else if (strcmp(type, "lines") == 0)
+	else if (primitive == PRIM_LINES)
 		glDrawElementsBaseVertex(GL_LINES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
-	else if (strcmp(type, "points") == 0)
+	else if (primitive == PRIM_POINTS)
 		glDrawElementsBaseVertex(GL_POINTS, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 

@@ -25,7 +25,7 @@ public:
 	void resize(const int width, const int height);
 	void destroy();
 
-	void DrawArray(char *type, int start_index, int start_vertex, unsigned int num_index, int num_verts);
+	void DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts);
 
 	//Need to fix dx9 support cause of these guys
 	int  CreateVertexArrayObject();
