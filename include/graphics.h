@@ -8,6 +8,7 @@ class Graphics
 public:
 	Graphics();
 	void init(void *param1, void *param2);
+	bool error_check();
 	void clear();
 	void cleardepth();
 	void Depth(bool flag);

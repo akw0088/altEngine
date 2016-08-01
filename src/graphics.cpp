@@ -40,6 +40,10 @@ void Graphics::DepthFunc(char *op)
 {
 }
 
+bool Graphics::error_check()
+{
+}
+
 void Graphics::Blend(bool flag)
 {
 	if (flag)
@@ -543,12 +547,8 @@ void Graphics::destroy()
 
 void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	GLenum err;
-
-	err = glGetError();
-	if ( err != GL_NO_ERROR)
+	if ( error_check() )
 	{
-		printf("DrawArray GL_ERROR %d: attempting to draw will likely blow things up...\n", err);
 		return;
 	}
 
@@ -677,6 +677,21 @@ void Graphics::DeselectTexture(int level)
 	glBindTexture(GL_TEXTURE_2D, 0);
 //	glDisable(GL_TEXTURE_2D);
 }
+
+
+bool Graphics::error_check()
+{
+	GLenum err;
+
+	err = glGetError();
+	if ( err != GL_NO_ERROR)
+	{
+		printf("GL_ERROR %d\n", err);
+		return true;
+	}
+	return false;
+}
+
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
 {
@@ -930,7 +945,7 @@ void Shader::destroy()
 	}
 	if (geometry_src)
 	{
-//		delete [] geometry_src;
+		delete [] geometry_src;
 	}
 	if (fragment_src)
 	{
@@ -939,6 +954,7 @@ void Shader::destroy()
 
 
 	vertex_src = NULL;
+	geometry_src = NULL;
 	fragment_src = NULL;
 
 	glDeleteProgram(program_handle);

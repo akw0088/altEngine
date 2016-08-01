@@ -33,15 +33,7 @@ void Engine::init(void *param1, void *param2)
 	printf("altEngine2 Version %s\n", "1.0.0");
 	fflush(stdout);
 
-#ifndef DIRECTX
-	GLenum err = glGetError();
-	if ( err != GL_NO_ERROR)
-	{
-		printf("Fatal GL_ERROR %d after setting up opengl context\n", err);
-		return;
-	}
-#endif
-
+	gfx.error_check();
 	menu.render(global);
 
 	//net crap
@@ -214,16 +206,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-#ifndef DIRECTX
-	GLenum err;
-
-	err = glGetError();
-	if ( err != GL_NO_ERROR)
-	{
-		printf("DrawArray GL_ERROR %d: attempting to draw will likely blow things up...\n", err);
-		return;
-	}
-#endif
+	gfx.error_check();
 
 	map.render(camera.pos, NULL, gfx);
 	render_entities();
@@ -360,7 +343,7 @@ void Engine::render_entities()
 			mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
 			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
 			mvp = transformation.premultiply(mvp.m) * projection;
-			mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
+			global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
 			entity_list[spawn]->player->weapon_model.render(gfx);
 		}
 	}

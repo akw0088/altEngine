@@ -52,7 +52,7 @@ void Font::Params(char c, float x, float y, float scale, vec3 &color)
 	glUniform1f(u_row, row * offset);
 	glUniform1f(u_xpos, (2.0f * x - 1.0f));
 	glUniform1f(u_ypos, (2.0f * (1.0f - y) - 1.0f));
-	glUniform3fv(u_color, 3, (float *)&color);
+	glUniform3fv(u_color, 1, (float *)&color);
 	glUniform1i(texture0, 0);
 #endif
 }

@@ -246,7 +246,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 	float xpos = 0.0f;
 	float ypos = 0.0f;
 
-	gfx->Blend(false);
+	gfx->Blend(true);
 	gfx->Depth(false);
 	gfx->BlendFunc(NULL, NULL);
 	gfx->SelectTexture(0, font_object);
