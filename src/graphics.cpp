@@ -743,6 +743,13 @@ void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
+Shader::Shader()
+{
+	vertex_src = NULL;
+	geometry_src = NULL;
+	fragment_src = NULL;
+	gfx = NULL;
+}
 
 
 int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fragment_file)
@@ -750,7 +757,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 	FILE		*fLog;
 	int			success;
 	int			max_attrib = 0;
-	
+
 	Shader::gfx = gfx;
 	fLog = fopen("infolog.txt", "a");
 	fprintf(fLog, "OpenGL Version %s\n", glGetString(GL_VERSION));
@@ -772,6 +779,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 			fprintf(fLog, "Loaded vertex shader %s\n", vertex_file);
 		}
 
+
 		vertex_handle = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex_handle, 1, &vertex_src, NULL);
 		glCompileShader(vertex_handle);
@@ -790,6 +798,8 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 			delete [] info_log;
 			return -1;
 		}
+		delete[] vertex_src;
+		vertex_src = NULL;
 	}
 
 	if (geometry_file)
@@ -824,6 +834,8 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 			delete [] info_log;
 			return -1;
 		}
+		delete[] geometry_src;
+		geometry_src = NULL;
 	}
 
 	if (fragment_file)
@@ -858,6 +870,8 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 			delete [] info_log;
 			return -1;
 		}
+		delete[] fragment_src;
+		fragment_src = NULL;
 	}
 
 	program_handle = glCreateProgram();
@@ -906,10 +920,15 @@ void Shader::destroy()
 	{
 		delete [] vertex_src;
 	}
+	if (geometry_src)
+	{
+//		delete [] geometry_src;
+	}
 	if (fragment_src)
 	{
 		delete [] fragment_src;
 	}
+
 
 	vertex_src = NULL;
 	fragment_src = NULL;

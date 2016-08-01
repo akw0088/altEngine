@@ -78,6 +78,8 @@ public:
 class Shader
 {
 public:
+	Shader();
+
 	int init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *fragment_file);
 	void Select();
 	void destroy();

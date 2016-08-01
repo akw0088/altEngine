@@ -157,9 +157,9 @@ void mLight2::Params(matrix4 &mvp, int tex0, int tex1, int tex2, vector<Light *>
 	glUniform1i(texture0, tex0);
 	glUniform1i(texture1, tex1);
 	glUniform1i(texture2, tex2);
-	glUniform1i(u_num_lights, (int)num_lights);
-	glUniform3fv(u_position, MAX_LIGHTS, (float *)&position);
-	glUniform4fv(u_color, MAX_LIGHTS, (float *)&color);
+	glUniform1i(u_num_lights, j);
+	glUniform3fv(u_position, j, (float *)&position);
+	glUniform4fv(u_color, j, (float *)&color);
 #endif
 }
 

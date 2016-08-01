@@ -76,6 +76,9 @@ void Model::load(Graphics &gfx, char *file)
 	model_vertex = gfx.CreateVertexBuffer(model_array, num_vertex);
 	model_index = gfx.CreateIndexBuffer(index_file + 4, num_index);
 	delete [] index_file;
+	index_file = NULL;
+	delete [] model_file;
+	model_file = NULL;
 
 	model_tex = load_texture(gfx, tga_file);
 	normal_tex = load_texture(gfx, normal_file);
