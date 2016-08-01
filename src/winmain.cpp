@@ -100,6 +100,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static Engine	altEngine;
 	static POINT	center;
 	static WSADATA	wsadata;
+	static unsigned int		tick_count;
+	static unsigned int		last_tick;
 
 	switch (message)
 	{
@@ -173,6 +175,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case TICK_TIMER:
 			altEngine.step();
+			tick_count++;
 			break;
 		}
 		return 0;
@@ -186,6 +189,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if ((x == center.x) && (y == center.y))
 				return 0;
+
+
+			if (tick_count == last_tick)
+				return 0;
+
+			last_tick = tick_count;
 
 			if ( altEngine.mousepos(x, y, x - center.x, y - center.y) )
 			{
@@ -341,6 +350,7 @@ char *get_file(char *filename)
 	bytes_read = (int)fread(buffer, sizeof(char), file_size, file);
 	if (bytes_read != file_size)
 		return 0;
+
 	fclose(file);
 	buffer[file_size] = '\0';
 	return buffer;
