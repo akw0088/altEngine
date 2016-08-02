@@ -732,20 +732,10 @@ void Engine::check_triggers()
 		if (entity_list[i]->trigger == NULL)
 			continue;
 
-		for ( int j = 0; j < 8; j++)
-		{
-			vec3 point = entity_list[i]->model->aabb[j] + entity_list[i]->position - entity_list[i]->rigid->center;
-			inside = entity_list[spawn]->rigid->collision_detect(point);
+		float distance = (entity_list[i]->position - entity_list[spawn]->position).magnitude();
 
-			if (inside)
-				break;
-
-			point = entity_list[spawn]->model->aabb[j] + entity_list[spawn]->position  - entity_list[spawn]->rigid->center;
-			inside = entity_list[i]->rigid->collision_detect(point);
-
-			if (inside)
-				break;
-		}
+		if ( distance < 75.0f)
+			inside = true;
 
 		if (inside == true && entity_list[i]->trigger->active == false)
 		{
