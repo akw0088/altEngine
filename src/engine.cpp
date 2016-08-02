@@ -573,6 +573,7 @@ void Engine::dynamics()
 			if ( collision_detect(*body) )
 			{
 				body->load_config(config);
+
 				target_time = (current_time + target_time) / 2.0f;
 				divisions++;
 
@@ -615,7 +616,7 @@ bool Engine::map_collision(RigidBody &body)
 {
 	Plane plane;
 	float depth;
-	vec3 stairstep(0.0f, 12.0f, 0.0f);
+	vec3 staircheck(0.0f, 20.0f, 0.0f);
 
 	// Check bounding box against map
 	for(int i = 0; i < 8; i++)
@@ -634,12 +635,11 @@ bool Engine::map_collision(RigidBody &body)
 			}
 			else
 			{
-				// make sure we dont try to stairstep the ground plane
-				if (body.velocity.normalize() * vec3(0.0f, 1.0f, 0.0f) >= 0.9f)
+				if (abs(body.velocity.y) < 0.1f)
 				{
-					if (map.collision_detect(point + stairstep, (plane_t *)&plane, &depth) == false)
+					if (map.collision_detect(point + staircheck, (plane_t *)&plane, &depth) == false)
 					{
-						body.entity->rigid->velocity += (vec3(0.0f, 0.35f, 0.0f));
+						body.entity->position += vec3(0.0f, 2.0f, 0.0f);
 						return false;
 					}
 				}
