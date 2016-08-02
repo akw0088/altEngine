@@ -11,7 +11,7 @@
 	#define NOMINMAX
 	#include <windows.h>
 	#include <winsock.h>
-#include <omp.h>
+	#include <omp.h>
 
 	#pragma comment(lib, "wsock32.lib")
 
