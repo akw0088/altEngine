@@ -57,6 +57,25 @@ void Frame::set(matrix4 &trans)
 	trans.m[15] = 1.0f;
 }
 
+void Frame::set(matrix3 &trans)
+{
+	vec3	right;
+
+	right = vec3::crossproduct(this->up, this->forward);
+	right.normalize();
+
+	trans.m[0] = -forward.x;
+	trans.m[1] = -forward.y;
+	trans.m[2] = -forward.z;
+	trans.m[3] = up.x;
+	trans.m[4] = up.y;
+	trans.m[5] = up.z;
+	trans.m[6] = right.x;
+	trans.m[7] = right.y;
+	trans.m[8] = right.z;
+}
+
+
 void Frame::update(button_t &keyboard)
 {
 	vec3	right = vec3::crossproduct(up, forward);

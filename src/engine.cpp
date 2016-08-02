@@ -333,12 +333,16 @@ void Engine::render_entities()
 
 		camera.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
-		global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
+		global.Params(mvp, 0);//, 1, 2, light_list, light_list.size());
 		entity_list[i]->rigid->render(gfx);
 		entity_list[i]->rigid->render_box(gfx);
+		
+		//render weapon
 		if (spawn == i)
 		{
 			entity_list[i]->rigid->get_matrix(mvp.m);
+
+			//set weapon coordinates
 			mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
 			mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
 			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
@@ -349,10 +353,12 @@ void Engine::render_entities()
 	}
 	gfx.SelectShader(0);
 
-	global.Select();
+
+	//render md5 as last entity
+	mlight2.Select();
 	camera.set(transformation);
 	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-	global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
+	mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
@@ -683,6 +689,7 @@ void Engine::step()
 		entity->rigid->angular_velocity = vec3();
 		entity->rigid->gravity = true;
 		entity->model = entity->rigid;
+		camera.set(entity->model->morientation);
 		entity_list.push_back(entity);
 	}
 	
