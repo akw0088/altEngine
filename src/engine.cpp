@@ -348,7 +348,8 @@ void Engine::render_entities()
 			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
 			mvp = transformation.premultiply(mvp.m) * projection;
 			global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
-			entity_list[spawn]->player->weapon_model.render(gfx);
+
+			entity_list[i]->player->render_weapon(gfx);
 		}
 	}
 	gfx.SelectShader(0);
@@ -1300,6 +1301,12 @@ void Engine::handle_game(char key)
 	case 27:
 		menu.ingame = !menu.ingame;
 		break;
+	case '[':
+		entity_list[spawn]->player->change_weapon_down();
+		break;
+	case ']':
+		entity_list[spawn]->player->change_weapon_up();
+		break;
 	}
 }
 
@@ -1692,6 +1699,10 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
 		menu.print(msg);
+
+		if (entity_list[spawn]->player->current_weapon == wp_none)
+			entity_list[spawn]->player->current_weapon = wp_rocket;
+
 		entity_list[spawn]->player->weapon |= WEAPON_ROCKET;
 		entity_list[spawn]->player->ammo_rockets = MAX(10, entity_list[spawn]->player->ammo_rockets);
 		return;
@@ -1701,6 +1712,10 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
 		menu.print(msg);
+
+		if (entity_list[spawn]->player->current_weapon == wp_none)
+			entity_list[spawn]->player->current_weapon = wp_shotgun;
+
 		entity_list[spawn]->player->weapon |= WEAPON_SHOTGUN;
 		entity_list[spawn]->player->ammo_shells = MAX(10, entity_list[spawn]->player->ammo_shells);
 		return;
@@ -1710,8 +1725,25 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
 		menu.print(msg);
+
+		if (entity_list[spawn]->player->current_weapon == wp_none)
+			entity_list[spawn]->player->current_weapon = wp_lightning;
+
 		entity_list[spawn]->player->weapon |= WEAPON_LIGHTNING;
 		entity_list[spawn]->player->ammo_lightning = MAX(100, entity_list[spawn]->player->ammo_lightning);
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_railgun") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_railgun\n");
+		menu.print(msg);
+
+		if (entity_list[spawn]->player->current_weapon == wp_none)
+			entity_list[spawn]->player->current_weapon = wp_railgun;
+
+		entity_list[spawn]->player->weapon |= WEAPON_RAILGUN;
+		entity_list[spawn]->player->ammo_slugs = MAX(10, entity_list[spawn]->player->ammo_slugs);
 		return;
 	}
 

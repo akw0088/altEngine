@@ -3,6 +3,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#define WEAPON_NONE				0
 #define WEAPON_MELEE			1
 #define WEAPON_MACHINEGUN		2
 #define WEAPON_SHOTGUN			4
@@ -12,12 +13,27 @@
 #define WEAPON_BFG				64
 #define WEAPON_LIGHTNING		128
 
+
+//multiple types exist because I forgot above code existed D:
+enum wp_weapon {
+	wp_none = WEAPON_NONE,
+	wp_shotgun = WEAPON_SHOTGUN,
+	wp_rocket = WEAPON_ROCKET,
+	wp_lightning = WEAPON_LIGHTNING,
+	wp_railgun = WEAPON_RAILGUN
+};
+
+
 class Player
 {
 public:
 	Player(Entity *entity, Graphics &gfx);
 	~Player();
 	Entity	*entity;
+
+	void render_weapon(Graphics &gfx);
+	void change_weapon_up();
+	void change_weapon_down();
 
 	int health;
 	int armor;
@@ -32,7 +48,11 @@ public:
 	int ammo_plasma;
 	int ammo_bfg;
 
-	Model weapon_model;
+private:
+	Model weapon_shotgun;
+	Model weapon_rocket;
+	Model weapon_lightning;
+	Model weapon_railgun;
 };
 
 #endif
