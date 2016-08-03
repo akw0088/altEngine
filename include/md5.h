@@ -3,16 +3,16 @@
 #ifndef MD5_H
 #define MD5_H
 
-class Md5
+class MD5
 {
 public:
-	Md5()
+	MD5()
 	{
 		model = new md5_model_t;
 		anim = new md5_anim_t;
 	}
 
-	~Md5()
+	~MD5()
 	{
 		delete [] model->joint;
 		for(int i = 0; i < model->num_mesh; i++)

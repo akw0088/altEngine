@@ -37,7 +37,7 @@ public:
 
 	int health;
 	int armor;
-	int	weapon;
+	int	weapon_flags;
 
 	int current_weapon;
 	int ammo_rockets;

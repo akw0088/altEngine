@@ -5,7 +5,7 @@
 #endif
 
 
-void Md5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out)
+void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out)
 {
 	int i;
 
@@ -22,7 +22,7 @@ void Md5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skel
 	}
 }
 
-void Md5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
+void MD5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
 {
 #ifndef DIRECTX
 	int i;
@@ -51,7 +51,7 @@ void Md5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
 #endif
 }
 
-void Md5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex)
+void MD5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex)
 {
 	md5_mesh_t *mesh = &model->mesh[mesh_index];
 	int i, j, k = 0;
@@ -71,8 +71,8 @@ void Md5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int
 	for (i = 0; i < mesh->num_vertex; ++i)
 	{
 		vec3 position( 0.0f, 0.0f, 0.0f );
-		vec3 normal = Md5::vertex_array[mesh_index][i].normal;
-		vec3 tangent = Md5::vertex_array[mesh_index][i].tangent;
+		vec3 normal = MD5::vertex_array[mesh_index][i].normal;
+		vec3 tangent = MD5::vertex_array[mesh_index][i].tangent;
 
 		// Calculate final vertex to draw with weights
 		for (j = 0; j < mesh->vertex[i].count; ++j)
@@ -122,7 +122,7 @@ void Md5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int
 }
 
 
-int Md5::load_md5(char *file)
+int MD5::load_md5(char *file)
 {
 	char *data = get_file(file);
 	char *pdata;
@@ -137,6 +137,11 @@ int Md5::load_md5(char *file)
 	md5_mesh_t	*mesh;
 	int i;
 
+	if (data == NULL)
+	{
+		printf("failed to load md5 file %s", file);
+		return -1;
+	}
 
 	pdata = strstr(data, "MD5Version");
 	sscanf(pdata, "MD5Version %d", &version);
@@ -155,30 +160,30 @@ int Md5::load_md5(char *file)
 	if (joint == NULL)
 	{
 		perror("malloc() failed");
-		return 1;
+		return -1;
 	}
 
 	mesh = new md5_mesh_t [num_mesh];
 	if (mesh == NULL)
 	{
 		perror("malloc() failed");
-		return 1;
+		return -1;
 	}
 
 
 	if ( parse_joint(pjoint, joint, num_joint) )
-		return 1;
+		return -1;
 
 	for(i = 0; i < num_mesh; i++)
 	{
 		if ( parse_mesh(pmesh, &mesh[i]) )
-			return 1;
+			return -1;
 
 		pmesh = strstr(pmesh + 6, "mesh {");
 		if (pmesh == NULL && i + 1 < num_mesh)
 		{
 			printf("Error: Unexpected end of mesh data\n");
-			return 1;
+			return -1;
 		}
 	}
 
@@ -190,7 +195,7 @@ int Md5::load_md5(char *file)
 	return 0;
 }
 
-int Md5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
+int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 {
 	char *pdata;
 	char name[256];
@@ -231,7 +236,7 @@ int Md5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 	return 0;
 }
 
-int Md5::parse_mesh(char *data, md5_mesh_t *mesh)
+int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 {
 	char *pdata;
 	int num_vertex;
@@ -407,7 +412,7 @@ int Md5::parse_mesh(char *data, md5_mesh_t *mesh)
 	return 0;
 }
 
-int Md5::load_md5_animation(char *file)
+int MD5::load_md5_animation(char *file)
 {
 	char *data = get_file(file);
 	char *pdata;
@@ -482,7 +487,6 @@ int Md5::load_md5_animation(char *file)
 
 
 	
-
 	pdata = strstr(data, "bounds {");
 	if ( parse_bounds(pdata, num_frame, aabb) )
 	{
@@ -523,7 +527,7 @@ int Md5::load_md5_animation(char *file)
 	return 0;
 }
 
-int Md5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
+int MD5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
 {
 	char name[64];
 	char *pdata;
@@ -563,7 +567,7 @@ int Md5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
 	return 0;
 }
 
-int Md5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
+int MD5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
 {
 	char *pdata;
 	int i = 0;
@@ -601,7 +605,7 @@ int Md5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
 	return 0;
 }
 
-int Md5::parse_base(char *data, int num_base, md5_base_t *base)
+int MD5::parse_base(char *data, int num_base, md5_base_t *base)
 {
 	char *pdata;
 	float x, y, z;
@@ -633,7 +637,7 @@ int Md5::parse_base(char *data, int num_base, md5_base_t *base)
 	return 0;
 }
 
-int Md5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
+int MD5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 {
 	char *pdata = data;
 	float	f;
@@ -674,7 +678,7 @@ int Md5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 }
 
 
-void Md5::build_frame(md5_joint_t *joint, float *frame)
+void MD5::build_frame(md5_joint_t *joint, float *frame)
 {
 	int i;
 
@@ -737,7 +741,7 @@ void Md5::build_frame(md5_joint_t *joint, float *frame)
 	}
 }
 
-void Md5::calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c)
+void MD5::calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c)
 {
 	vec3 p = b.position - a.position;
 	vec3 q = c.position - a.position;
@@ -775,7 +779,7 @@ void Md5::calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c)
 	c.tangent += vec4(t.x, t.y, t.z, 0);
 }
 
-void Md5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_array, int num_vertex)
+void MD5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_array, int num_vertex)
 {
 	for(int i = 0; i < num_index; i++)
 	{
@@ -799,7 +803,7 @@ void Md5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_arr
 }
 
 
-void Md5::generate_animation(md5_joint_t **&frame)
+void MD5::generate_animation(md5_joint_t **&frame)
 {
 	frame = new md5_joint_t *[anim->num_frame];
 	for(int i = 0; i < anim->num_frame; i++)
@@ -809,7 +813,7 @@ void Md5::generate_animation(md5_joint_t **&frame)
 	}
 }
 
-void Md5::destroy_animation(md5_joint_t **&frame)
+void MD5::destroy_animation(md5_joint_t **&frame)
 {
 	for(int i = 0; i < anim->num_frame; i++)
 	{

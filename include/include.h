@@ -59,6 +59,9 @@
 	#include <AGL/agl.h>
 #endif
 
+//#define SHADOWVOL
+
+
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
 
@@ -107,6 +110,7 @@ using namespace std;
 #include "light.h"
 #include "speaker.h"
 #include "model.h"
+#include "md5model.h"
 #include "rigidbody.h"
 #include "vehicle.h"
 #include "player.h"

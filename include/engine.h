@@ -86,18 +86,9 @@ private:
 	int				spawn;
 	int				reload;
 
-	Md5			md5;
-	md5_joint_t	**frame;
-	int			index_array[8192];
-	vertex_t	vertex_array[8192];
-	int			**frame_vao;
-	int			**frame_index;
-	int			**count_index;
-	int			**frame_vertex;
-	int			**count_vertex;
-	int			*tex_object;
-	int			*normal_object;
-	int			frame_step;
+	// md5 stuff
+	int				frame_step;
+	MD5Model		zcc;
 
 	//server
 	bool	server;

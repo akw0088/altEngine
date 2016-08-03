@@ -47,118 +47,21 @@ void Engine::init(void *param1, void *param2)
 
 	//md5 crap
 	frame_step = 0;
-	printf("Loading md5\n");
-	md5.load_md5("zcc.md5mesh");
-	md5.load_md5_animation("chaingun_idle.md5anim");
-	// get bind pose vertex positions
 
-	for(int i = 0; i < md5.model->num_mesh; i++)
-	{
-		md5.PrepareMesh(i, md5.model->joint, md5.num_index[i], md5.index_array[i], md5.vertex_array[i], md5.num_vertex[i]);
-		md5.generate_tangent(md5.index_array[i], md5.num_index[i], md5.vertex_array[i], md5.num_vertex[i]);
-	}
-
-	md5.generate_animation(frame);
-	generate_buffers();
-	md5.destroy_animation(frame);
-
-	printf("Done\n");
+	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 }
 
-void Engine::generate_buffers()
-{
-	frame_index = new int *[md5.anim->num_frame];
-	frame_vao = new int *[md5.anim->num_frame];
-	count_index = new int *[md5.anim->num_frame];
-	frame_vertex = new int *[md5.anim->num_frame];
-	count_vertex = new int *[md5.anim->num_frame];
-	for (int j = 0; j < md5.anim->num_frame; j++)
-	{
-		frame_vao[j] = new int [md5.model->num_mesh];
-		frame_index[j] = new int [md5.model->num_mesh];
-		count_index[j] = new int [md5.model->num_mesh];
-		frame_vertex[j] = new int [md5.model->num_mesh];
-		count_vertex[j] = new int [md5.model->num_mesh];
 
-		for (int i = 0; i < md5.model->num_mesh; i++)
-		{
-			int num_index, num_vertex;
-
-			md5.PrepareMesh(i, frame[j], num_index, index_array, vertex_array, num_vertex);
-//			frame_vao[j][i] = gfx.CreateVertexArrayObject();
-			frame_index[j][i] = gfx.CreateIndexBuffer(index_array, num_index);
-			count_index[j][i] = num_index;
-			frame_vertex[j][i] = gfx.CreateVertexBuffer(vertex_array, num_vertex);
-			count_vertex[j][i] = num_vertex;
-		}
-	}
-
-	tex_object = new int [md5.model->num_mesh];
-	normal_object = new int [md5.model->num_mesh];
-	for(int i = 0; i < md5.model->num_mesh; i++)
-	{
-		char buffer[256];
-		int width, height, components, format;
-		char *bytes;
-
-		sprintf(buffer, "media/%s.tga", md5.model->mesh[i].shader);
-		bytes = (char *)gltLoadTGA(buffer, &width, &height, &components, &format);
-		if (bytes == NULL)
-		{
-			printf("Unable to load texture %s\n", buffer);
-			continue;
-		}
-		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
-		delete [] bytes;
-
-		sprintf(buffer, "media/%s_normal.tga", md5.model->mesh[i].shader);
-		bytes = (char *)gltLoadTGA(buffer, &width, &height, &components, &format);
-		if (bytes == NULL)
-		{
-			printf("Unable to load texture %s\n", buffer);
-			continue;
-		}
-		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
-		delete [] bytes;
-	}
-}
 
 void Engine::destroy_buffers()
 {
-	for (int j = 0; j < md5.anim->num_frame; j++)
-	{
-		for (int i = 0; i < md5.model->num_mesh; i++)
-		{
-#ifndef DIRECTX
-			gfx.DeleteVertexArrayObject(frame_vao[j][i]);
-#endif
-			gfx.DeleteVertexBuffer(frame_vertex[j][i]);
-			gfx.DeleteIndexBuffer(frame_index[j][i]);
-		}
-		delete [] frame_vao[j];
-		delete [] frame_index[j];
-		delete [] count_index[j];
-		delete [] frame_vertex[j];
-		delete [] count_vertex[j];
-	}
-	delete frame_vao;
-	delete frame_index;
-	delete count_index;
-	delete frame_vertex;
-	delete count_vertex;
+
+	zcc.destroy_buffers(gfx);
 
 	for(int i = 0; i < snd_wave.size(); i++)
 	{
 		delete snd_wave[i].data;
 	}
-
-	for(int i = 0; i < md5.model->num_mesh; i++)
-	{
-		gfx.DeleteTexture(tex_object[i]);
-		gfx.DeleteTexture(normal_object[i]);
-	}
-	delete [] tex_object;
-	delete [] normal_object;
 }
 
 void Engine::load(char *level)
@@ -231,7 +134,7 @@ void Engine::load(char *level)
 			vec3(1.0f, 1.0f, 1.0f));
 	}
 
-	/*
+#ifdef SHADOWVOL
 	for(int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light)
@@ -240,7 +143,7 @@ void Engine::load(char *level)
 			entity_list[i]->rigid->angular_velocity = vec3();
 		}
 	}
-	*/
+#endif
 }
 
 void Engine::render()
@@ -305,7 +208,9 @@ void Engine::render_scene(bool lights)
 	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
 
 	render_entities();
-//	render_shadows();
+#ifdef SHADOWVOL
+	render_shadows();
+#endif
 	camera.set(transformation);
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -360,20 +265,7 @@ void Engine::render_entities()
 	camera.set(transformation);
 	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
 	mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
-
-	for (int i = 0; i < md5.model->num_mesh; ++i)
-	{
-//		gfx.SelectVertexArrayObject(frame_vao[frame_step][i]);
-		gfx.SelectTexture(0, tex_object[i]);
-		gfx.SelectTexture(2, normal_object[i]);
-		gfx.SelectIndexBuffer(frame_index[frame_step][i]);
-		gfx.SelectVertexBuffer(frame_vertex[frame_step][i]);
-		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, count_index[frame_step][i], count_vertex[frame_step][i]);
-//		gfx.SelectVertexArrayObject(0);
-		gfx.SelectVertexBuffer(0);
-		gfx.SelectIndexBuffer(0);
-	}
-
+	zcc.render(gfx, frame_step);
 	gfx.SelectShader(0);
 
 }
@@ -670,8 +562,6 @@ bool Engine::body_collision(RigidBody &body)
 void Engine::step()
 {
 	frame_step++;
-	if (frame_step == md5.anim->num_frame)
-		frame_step = 0;
 
 	if (map.loaded == false)
 		return;
@@ -746,7 +636,7 @@ void Engine::check_triggers()
 			console(entity_list[i]->trigger->action);
 
 			printf("%d health\n%d armor\n%d weapons\n%d rockets\n %d slugs\n %d plasma\n %d shells\n %d bullets\n %d lightning\n",
-				player->health, player->armor, 	player->weapon, player->ammo_rockets,
+				player->health, player->armor, 	player->weapon_flags, player->ammo_rockets,
 				player->ammo_slugs, player->ammo_plasma, player->ammo_shells,
 				player->ammo_bullets, player->ammo_lightning );
 
@@ -1528,6 +1418,7 @@ void Engine::load_entities()
 			entity_list[i]->rigid->gravity = false;
 	}
 
+
 	entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
 //	entity_list[spawn]->rigid->load(gfx, "media/models/box");
 	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
@@ -1703,7 +1594,7 @@ void Engine::console(char *cmd)
 		if (entity_list[spawn]->player->current_weapon == wp_none)
 			entity_list[spawn]->player->current_weapon = wp_rocket;
 
-		entity_list[spawn]->player->weapon |= WEAPON_ROCKET;
+		entity_list[spawn]->player->weapon_flags |= wp_rocket;
 		entity_list[spawn]->player->ammo_rockets = MAX(10, entity_list[spawn]->player->ammo_rockets);
 		return;
 	}
@@ -1716,7 +1607,7 @@ void Engine::console(char *cmd)
 		if (entity_list[spawn]->player->current_weapon == wp_none)
 			entity_list[spawn]->player->current_weapon = wp_shotgun;
 
-		entity_list[spawn]->player->weapon |= WEAPON_SHOTGUN;
+		entity_list[spawn]->player->weapon_flags |= wp_shotgun;
 		entity_list[spawn]->player->ammo_shells = MAX(10, entity_list[spawn]->player->ammo_shells);
 		return;
 	}
@@ -1729,7 +1620,7 @@ void Engine::console(char *cmd)
 		if (entity_list[spawn]->player->current_weapon == wp_none)
 			entity_list[spawn]->player->current_weapon = wp_lightning;
 
-		entity_list[spawn]->player->weapon |= WEAPON_LIGHTNING;
+		entity_list[spawn]->player->weapon_flags |= wp_lightning;
 		entity_list[spawn]->player->ammo_lightning = MAX(100, entity_list[spawn]->player->ammo_lightning);
 		return;
 	}
@@ -1742,7 +1633,7 @@ void Engine::console(char *cmd)
 		if (entity_list[spawn]->player->current_weapon == wp_none)
 			entity_list[spawn]->player->current_weapon = wp_railgun;
 
-		entity_list[spawn]->player->weapon |= WEAPON_RAILGUN;
+		entity_list[spawn]->player->weapon_flags |= wp_railgun;
 		entity_list[spawn]->player->ammo_slugs = MAX(10, entity_list[spawn]->player->ammo_slugs);
 		return;
 	}

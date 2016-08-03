@@ -10,7 +10,7 @@ Player::Player(Entity *entity, Graphics &gfx)
 	Player::entity = entity;
 	health = 100;
 	armor = 0;
-	weapon = 0;
+	weapon_flags = 0;
 	current_weapon = wp_none;
 	ammo_rockets = 0;
 	ammo_slugs = 0;
@@ -53,31 +53,31 @@ void Player::change_weapon_up()
 	switch (current_weapon)
 	{
 	case wp_none:
-		if (weapon & WEAPON_SHOTGUN)
+		if (weapon_flags & WEAPON_SHOTGUN)
 			current_weapon = wp_shotgun;
-		else if (weapon & WEAPON_ROCKET)
+		else if (weapon_flags & WEAPON_ROCKET)
 			current_weapon = wp_rocket;
-		else if (weapon & WEAPON_LIGHTNING)
+		else if (weapon_flags & WEAPON_LIGHTNING)
 			current_weapon = wp_lightning;
-		else if (weapon & WEAPON_RAILGUN)
+		else if (weapon_flags & WEAPON_RAILGUN)
 			current_weapon = wp_railgun;
 		break;
 	case wp_shotgun:
-		if (weapon & WEAPON_SHOTGUN)
+		if (weapon_flags & WEAPON_ROCKET)
 			current_weapon = wp_rocket;
-		else if (weapon & WEAPON_LIGHTNING)
+		else if (weapon_flags & WEAPON_LIGHTNING)
 			current_weapon = wp_lightning;
-		else if (weapon & WEAPON_RAILGUN)
+		else if (weapon_flags & WEAPON_RAILGUN)
 			current_weapon = wp_railgun;
 		break;
 	case wp_rocket:
-		if (weapon & WEAPON_LIGHTNING)
+		if (weapon_flags & WEAPON_LIGHTNING)
 			current_weapon = wp_lightning;
-		else if (weapon & WEAPON_RAILGUN)
+		else if (weapon_flags & WEAPON_RAILGUN)
 			current_weapon = wp_railgun;
 		break;
 	case wp_lightning:
-		if (weapon & WEAPON_RAILGUN)
+		if (weapon_flags & WEAPON_RAILGUN)
 			current_weapon = wp_railgun;
 		break;
 	case wp_railgun:
@@ -90,33 +90,33 @@ void Player::change_weapon_down()
 	switch (current_weapon)
 	{
 	case wp_none:
-		if (weapon & WEAPON_RAILGUN)
+		if (weapon_flags & WEAPON_RAILGUN)
 			current_weapon = wp_railgun;
-		else if (weapon & WEAPON_LIGHTNING)
+		else if (weapon_flags & WEAPON_LIGHTNING)
 			current_weapon = wp_lightning;
-		else if (weapon & WEAPON_ROCKET)
+		else if (weapon_flags & WEAPON_ROCKET)
 			current_weapon = wp_rocket;
-		else if (weapon & WEAPON_SHOTGUN)
+		else if (weapon_flags & WEAPON_SHOTGUN)
 			current_weapon = wp_shotgun;
 		break;
 	case wp_shotgun:
 		break;
 	case wp_rocket:
-		if (weapon & WEAPON_SHOTGUN)
+		if (weapon_flags & WEAPON_SHOTGUN)
 			current_weapon = wp_shotgun;
 		break;
 	case wp_lightning:
-		if (weapon & WEAPON_ROCKET)
+		if (weapon_flags & WEAPON_ROCKET)
 			current_weapon = wp_rocket;
-		else if (weapon & WEAPON_SHOTGUN)
+		else if (weapon_flags & WEAPON_SHOTGUN)
 			current_weapon = wp_shotgun;
 		break;
 	case wp_railgun:
-		if (weapon & WEAPON_LIGHTNING)
+		if (weapon_flags & WEAPON_LIGHTNING)
 			current_weapon = wp_lightning;
-		else if (weapon & WEAPON_ROCKET)
+		else if (weapon_flags & WEAPON_ROCKET)
 			current_weapon = wp_rocket;
-		else if (weapon & WEAPON_SHOTGUN)
+		else if (weapon_flags & WEAPON_SHOTGUN)
 			current_weapon = wp_shotgun;
 		break;
 	}
