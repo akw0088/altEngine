@@ -3,9 +3,9 @@
 #ifndef NET_H
 #define NET_H
 
-//#ifdef LINUX
-#define SOCKET int
-//#endif
+#ifdef __linux__
+#define SOCKET unsigned int
+#endif
 
 int inet_pton(int af, const char *server, struct in_addr *addr);
 

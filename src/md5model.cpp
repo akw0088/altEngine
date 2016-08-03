@@ -1,7 +1,5 @@
 #include "include.h"
 
-
-
 void MD5Model::load(char *md5file, char *animationfile, Graphics &gfx)
 {
 	printf("Loading md5 %s animation %s\n", md5file, animationfile);

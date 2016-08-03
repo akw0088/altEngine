@@ -4,7 +4,8 @@
 #define LINE_SIZE 512
 
 #ifdef _WIN32
-#define _CRTDBG_MAP_ALLOC
+	#define _CRTDBG_MAP_ALLOC
+	#define EFXUTIL
 	#define _USE_MATH_DEFINES
 	#define WIN32_EXTRA_LEAN
 	#define _CRT_SECURE_NO_DEPRECATE
@@ -79,19 +80,20 @@ typedef enum
 #include <al.h>
 #include <alc.h>
 #include <efx.h>
-#ifndef LINUX
-//#include <EFX-Util.h>
+
+#ifndef __linux__
+	#include <EFX-Util.h>
+	#include <efx-creative.h>
 #endif
-#include <efx-creative.h>
 
 //std
 #include <cstdio>
 #include <cstdlib>
-#ifndef LINUX
-//#include <crtdbg.h>
-#endif
 #include <cstring>
 #include <vector>
+#ifndef __linux__
+	#include <crtdbg.h>
+#endif
 
 using namespace std;
 

@@ -1,6 +1,9 @@
 typedef unsigned int uint;
 
+#ifdef __linux__
 typedef char byte;
+#endif 
+
 typedef struct
 {
 	vec3	position;		// (x, y, z) position. 
