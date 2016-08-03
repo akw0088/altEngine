@@ -32,7 +32,7 @@
 
 #endif
 
-#ifdef LINUX
+#ifdef __linux__
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 	#include <GL/glx.h>
@@ -40,13 +40,14 @@
 	#include <X11/Xatom.h>
 	#include <X11/keysym.h>
 	#include <unistd.h>
+	#include <fcntl.h>
 	#include <sys/select.h>
 	#include <sys/types.h>
 	#include <sys/time.h>
 	#include <sys/socket.h>
 	#include <netinet/in.h>
 	#include <arpa/inet.h>
-
+	#include <linux/in.h>
 	#define closesocket close
 
 	typedef	int SOCKET;
@@ -78,13 +79,17 @@ typedef enum
 #include <al.h>
 #include <alc.h>
 #include <efx.h>
-#include <EFX-Util.h>
+#ifndef LINUX
+//#include <EFX-Util.h>
+#endif
 #include <efx-creative.h>
 
 //std
 #include <cstdio>
 #include <cstdlib>
-#include <crtdbg.h>
+#ifndef LINUX
+//#include <crtdbg.h>
+#endif
 #include <cstring>
 #include <vector>
 

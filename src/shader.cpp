@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void Font::init(Graphics *gfx)
+void mFont::init(Graphics *gfx)
 {
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/font.vsh", NULL, NULL);
@@ -24,7 +24,7 @@ void Font::init(Graphics *gfx)
 #endif
 }
 
-void Font::prelink()
+void mFont::prelink()
 {
 #ifndef DIRECTX
 	glBindAttribLocation(program_handle, 0, "attr_position");
@@ -33,7 +33,7 @@ void Font::prelink()
 #endif
 }
 
-void Font::Params(char c, float x, float y, float scale, vec3 &color)
+void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 {
 	int col = c % 16;
 	int row = 15 - c / 16;
@@ -137,16 +137,16 @@ void mLight2::Params(matrix4 &mvp, int tex0, int tex1, int tex2, vector<Light *>
 	vec4 color[MAX_LIGHTS];
 	int i, j;
 
-
 	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
 		if (light_list[i]->entity->light->active)
 		{
 			position[j] = light_list[i]->entity->position;
 			color[j] = vec4(light_list[i]->color.x, light_list[i]->color.y,
-				light_list[i]->color.z, (float)(light_list[i]->intensity / 1000.0f ));
+				light_list[i]->color.z, (float)(light_list[i]->intensity / 1000.0f));
 		}
 	}
+
 #ifdef DIRECTX
 	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
 	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);

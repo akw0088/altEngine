@@ -20,7 +20,7 @@ public:
 	quaternion &operator=(const quaternion &q);
 	quaternion operator+(const quaternion &q) const ;
 	quaternion operator-(const quaternion &q) const;
-	quaternion quaternion::operator-() const;
+	quaternion operator-() const;
 	quaternion operator*(const float scalar) const;
 	quaternion operator/(const float scalar) const;
 	quaternion operator*(const vec3 &vec) const;

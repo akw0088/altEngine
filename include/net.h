@@ -3,7 +3,11 @@
 #ifndef NET_H
 #define NET_H
 
-int inet_pton(int af, const char *server, in_addr *addr);
+//#ifdef LINUX
+#define SOCKET int
+//#endif
+
+int inet_pton(int af, const char *server, struct in_addr *addr);
 
 /*
 	UDP non blocking
@@ -19,9 +23,9 @@ public:
 	int recv(char *buff, int size);
 	int recv(char *buffer, int size, int delay);
 	int recvfrom(char *buff, int size, char *from, int length);
-	void strtoaddr(char *str, sockaddr_in &addr);
+	void strtoaddr(char *str, struct sockaddr_in &addr);
 
-	sockaddr_in		servaddr;
+	struct sockaddr_in	servaddr;
 	SOCKET			sockfd;
 private:
 

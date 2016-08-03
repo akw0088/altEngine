@@ -1,5 +1,6 @@
 typedef unsigned int uint;
 
+typedef char byte;
 typedef struct
 {
 	vec3	position;		// (x, y, z) position. 
@@ -94,6 +95,10 @@ typedef struct
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
 #define HEADER_SIZE 13 
+
+#ifdef LINUX
+typedef unsigned char byte;
+#endif
 
 /*
 	Variable length client msg

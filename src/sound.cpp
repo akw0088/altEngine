@@ -60,7 +60,7 @@ char *GetALErrorString(ALenum err)
 
 
 // Imported EFX functions
-
+#ifdef EFXUTIL
 // Effect objects
 LPALGENEFFECTS alGenEffects = NULL;
 LPALDELETEEFFECTS alDeleteEffects = NULL;
@@ -207,7 +207,8 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 
 	return bReturn;
 }
-
+#else
+#endif
 
 void Sound::init()
 {

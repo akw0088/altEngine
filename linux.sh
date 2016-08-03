@@ -1,0 +1,33 @@
+-rwxr-xr-x 1 ec2-user ec2-user 36238 Aug  2 06:37 src/bsp.cpp
+-rwxr-xr-x 1 ec2-user ec2-user   999 Jul 30 16:52 src/edge.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 44503 Aug  3 16:46 src/engine.cpp
+-rwxr-xr-x 1 ec2-user ec2-user   544 Jul 30 16:52 src/entity.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  2735 Aug  2 04:18 src/frame.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  3370 Jul 30 16:52 src/gltLoadTGA.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 25500 Aug  2 04:18 src/graphics.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  1850 Jul 30 16:52 src/light.cpp
+-rwxr-xr-x 1 ec2-user ec2-user   620 Jul 27 22:05 src/list.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 12907 Jul 30 16:52 src/matrix.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 17556 Aug  3 16:25 src/md5.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  4030 Aug  3 16:45 src/md5model.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  9292 Aug  2 04:18 src/menu.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  9495 Aug  1 17:49 src/model.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  5460 Jul 30 16:52 src/net.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  5203 Jul 30 16:52 src/osxmain.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  7697 Jul 30 16:52 src/parse.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  1641 Jul 30 16:52 src/plane.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  3102 Aug  2 19:04 src/player.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  5154 Jul 30 16:52 src/quaternion.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 14563 Aug  2 16:56 src/rigidbody.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  7066 Aug  3 20:22 src/shader.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 13177 Jul 30 16:52 src/sin_table.cpp
+-rwxr-xr-x 1 ec2-user ec2-user 16383 Aug  3 20:25 src/sound.cpp
+-rwxr-xr-x 1 ec2-user ec2-user   327 Jul 30 16:52 src/speaker.cpp
+-rwxr-xr-x 1 ec2-user ec2-user   320 Jul 30 16:52 src/trigger.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  3660 Jul 30 16:52 src/vector.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  2994 Jul 30 16:52 src/vehicle.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  9207 Aug  2 06:27 src/winmain.cpp
+-rwxr-xr-x 1 ec2-user ec2-user  4712 Jul 30 16:52 src/xmain.cpp
+
+
+g++ -I/usr/X11/include -I/usr/X11/include/X11 -L/usr/X11/lib  -I/usr/include/GL -I/usr/include/X11 -I/usr/local/include/AL/ -I./include/ src/xmain.cpp -lopenal -fpermissive -c

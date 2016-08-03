@@ -3,7 +3,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-class Font : public Shader
+class mFont : public Shader
 {
 public:
 	void init(Graphics *gfx);

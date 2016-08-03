@@ -85,7 +85,7 @@ public:
 	void Select();
 	void destroy();
 	~Shader();
-	virtual void prelink() = NULL;
+	virtual void prelink() = 0;
 protected:
 	const char	*vertex_src, *geometry_src, *fragment_src;
 	Graphics *gfx;

@@ -40,7 +40,7 @@ private:
 	char key_buffer[1024];
 	int history_index;
 
-	Font	font;
+	mFont	font;
 	int		menu_object;
 	int		console_object;
 	int		font_object;
