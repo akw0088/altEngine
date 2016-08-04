@@ -46,13 +46,13 @@ void main(void)
 	for(int i = 0; i < u_num_lights; i++)
 	{
 		vec4 lightPosEye = normalize(mvp * vec4(u_position[i], 1.0));
-		vary_light.rgb = vec3(lightPosEye - Vertex.vary_position); // light vector to fragment
+		vary_light.rgb = vec3(Vertex.vary_position - lightPosEye); // light vector to fragment
 		vary_light.a = length(vary_light.rgb); // distance from light
 
 		vec3 v_light = tangent_space * normalize(vec3(vary_light));	// light vector in tangent space
 		vec3 v_reflect = reflect(v_light, normal_map);			// normal map reflection vector
-		float diffuse = max(dot(v_light, normal_map), 0.5);		// directional light factor for fragment
-		float specular = max(pow(dot(v_reflect, eye), 25.0), 0.25);	// specular relection for fragment
+		float diffuse = max(dot(v_light, normal_map), 0.25);		// directional light factor for fragment
+		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
 		float atten = min( 40000.0 / pow(vary_light.a, 1.75), 0.25);	// light distance from fragment 1/(r^2) falloff
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.1); // combine everything
 	}

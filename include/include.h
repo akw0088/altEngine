@@ -61,20 +61,11 @@
 	#include <AGL/agl.h>
 #endif
 
-//#define SHADOWVOL
+#define SHADOWVOL
 
 
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
-
-typedef enum
-{
-	PRIM_TRIANGLES,
-	PRIM_TRIANGLE_STRIP,
-	PRIM_LINE_STRIP,
-	PRIM_LINES,
-	PRIM_POINTS
-} primitive_t;
 
 //audio
 #include <al.h>

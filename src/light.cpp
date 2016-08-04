@@ -19,13 +19,12 @@ void Light::render_shadows()
 
 void Light::generate_volumes(Bsp &map)
 {
-	map.find_backfaces(entity->position, backface_list);
+	map.find_backfaces(entity->position, shadow_list);
 }
 
 void Light::extend(vec3 position)
 {
 #ifndef DIRECTX
-	float t = 500.0f;
 
 	if(false)
 	{
@@ -36,11 +35,14 @@ void Light::extend(vec3 position)
 		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
 	}
 
-	for(int i = 0; i < backface_list.size(); i++)
+	for(int i = 0; i < shadow_list.size(); i++)
 	{
-		vec3 a = backface_list[i].a;
-		vec3 b = backface_list[i].b;
-		vec3 c = backface_list[i].c;
+		vec3 a = shadow_list[i].a;
+		vec3 b = shadow_list[i].b;
+		vec3 c = shadow_list[i].c;
+		vec3 v1 = shadow_list[i].lightdir1;
+		vec3 v2 = shadow_list[i].lightdir2;
+		vec3 v3 = shadow_list[i].lightdir3;
 
 			glBegin(GL_TRIANGLES);
 
@@ -48,42 +50,42 @@ void Light::extend(vec3 position)
 				glVertex4f(a.x, a.y, a.z, 1.0f);
 				glVertex4f(b.x, b.y, b.z, 1.0f);
 				glVertex4f(c.x, c.y, c.z, 1.0f);
-/*
-				//render infinity face
-				glVertex4f(a.x, a.y, a.z, 0.0f);
-				glVertex4f(b.x, b.y, b.z, 0.0f);
-				glVertex4f(c.x, c.y, c.z, 0.0f);
+
+				//render backcap
+				glVertex4f(v1.x, v1.y, v1.z, 0.0f);
+				glVertex4f(v2.x, v2.y, v2.z, 0.0f);
+				glVertex4f(v3.x, v3.y, v3.z, 0.0f);
 
 				//render volume sides
 				glVertex4f(a.x, a.y, a.z, 1.0f);
-				glVertex4f(a.x, a.y, a.z, 0.0f);
-				glVertex4f(c.x, c.y, c.z, 0.0f);
+				glVertex4f(v1.x, v1.y, v1.z, 0.0f);
+				glVertex4f(v3.x, v3.y, v3.z, 0.0f);
 
 				//render volume sides
 				glVertex4f(c.x, c.y, c.z, 1.0f);
 				glVertex4f(a.x, a.y, a.z, 1.0f);
-				glVertex4f(c.x, c.y, c.z, 0.0f);
+				glVertex4f(v3.x, v3.y, v3.z, 0.0f);
 
 				//render volume sides
 				glVertex4f(a.x, a.y, a.z, 1.0f);
-				glVertex4f(b.x, b.y, b.z, 0.0f);
-				glVertex4f(a.x, a.y, a.z, 0.0f);
+				glVertex4f(v2.x, v2.y, v2.z, 0.0f);
+				glVertex4f(v1.x, v1.y, v1.z, 0.0f);
 
 				//render volume sides
 				glVertex4f(b.x, b.y, b.z, 1.0f);
-				glVertex4f(b.x, b.y, b.z, 0.0f);
+				glVertex4f(v2.x, v2.y, v2.z, 0.0f);
 				glVertex4f(a.x, a.y, a.z, 1.0f);
 
 				//render volume sides
 				glVertex4f(c.x, c.y, c.z, 1.0f);
-				glVertex4f(b.x, b.y, b.z, 0.0f);
+				glVertex4f(v2.x, v2.y, v2.z, 0.0f);
 				glVertex4f(b.x, b.y, b.z, 1.0f);
 
 				//render volume sides
 				glVertex4f(c.x, c.y, c.z, 1.0f);
-				glVertex4f(b.x, b.y, b.z, 0.0f);
-				glVertex4f(c.x, c.y, c.z, 0.0f);
-				*/
+				glVertex4f(v2.x, v2.y, v2.z, 0.0f);
+				glVertex4f(v3.x, v3.y, v3.z, 0.0f);
+				
 			glEnd();
 	}
 	if (false)

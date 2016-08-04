@@ -17,7 +17,7 @@ public:
 	vec3	color;
 	int		intensity;
 	bool	active;
-	vector<triangle_t>	backface_list;
+	vector<shadowvol_t>	shadow_list;
 };
 
 #endif

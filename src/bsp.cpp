@@ -910,7 +910,7 @@ Loop through all the BSP's traingles
 If triangle faces away from the light source (dot product < 0) 
 Insert the face into the backfast list 
 */
-void Bsp::find_backfaces(vec3 &light_position, vector<triangle_t> &backface_list)
+void Bsp::find_backfaces(vec3 &light_position, vector<shadowvol_t> &shadow_list)
 {
 	int leaf_index = find_leaf(light_position);
 
@@ -941,9 +941,10 @@ void Bsp::find_backfaces(vec3 &light_position, vector<triangle_t> &backface_list
 				vec3 normal = vec3::crossproduct(a,b);
 
 				// find vectors between light position and each vertex of the face
-				vec3 lightdir1 = light_position - x;
-				vec3 lightdir2 = light_position - y;
-				vec3 lightdir3 = light_position - z;
+				// origin - position
+				vec3 lightdir1 = x - light_position;
+				vec3 lightdir2 = y - light_position;
+				vec3 lightdir3 = z - light_position;
 				
 				normal.normalize();
 
@@ -954,12 +955,15 @@ void Bsp::find_backfaces(vec3 &light_position, vector<triangle_t> &backface_list
 				// if backface
 				if (normal * lightdir1 < 0.0f )
 				{
-					triangle_t tri;
+					shadowvol_t tri;
 
 					tri.a = x;
 					tri.b = y;
 					tri.c = z;
-					backface_list.push_back(tri);
+					tri.lightdir1 = lightdir1;
+					tri.lightdir2 = lightdir2;
+					tri.lightdir3 = lightdir3;
+					shadow_list.push_back(tri);
 				}
 			}
 		}

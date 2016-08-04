@@ -4,6 +4,15 @@ typedef unsigned int uint;
 typedef char byte;
 #endif 
 
+typedef enum
+{
+	PRIM_TRIANGLES,
+	PRIM_TRIANGLE_STRIP,
+	PRIM_LINE_STRIP,
+	PRIM_LINES,
+	PRIM_POINTS
+} primitive_t;
+
 typedef struct
 {
 	vec3	position;		// (x, y, z) position. 
@@ -39,7 +48,10 @@ typedef struct {
 	vec3 a;
 	vec3 b;
 	vec3 c;
-} triangle_t;
+	vec3 lightdir1;
+	vec3 lightdir2;
+	vec3 lightdir3;
+} shadowvol_t;
 
 
 /*

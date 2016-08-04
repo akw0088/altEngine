@@ -151,12 +151,20 @@ void Engine::render()
 	if (map.loaded == false)
 		return;
 
+#ifndef SHADOWVOL
+	gfx.clear();
+	gfx.Blend(true);
+	render_scene(true);
+	gfx.Blend(false);
+#else
+	matrix4 mvp;
+
 	gfx.clear();
 //	gfx.Blend(true);
-	render_scene(true);
+	render_scene(false); // render without lights, fill stencil mask, render with lights
 //	gfx.Blend(false);
-#ifdef SHADOWVOL
-	matrix4 mvp;
+
+
 	gfx.Color(false);
 	gfx.Stencil(true);
 	gfx.Depth(false);
@@ -209,7 +217,7 @@ void Engine::render_scene(bool lights)
 
 	render_entities();
 #ifdef SHADOWVOL
-	render_shadows();
+//	render_shadows(); // for debugging shadowvols only
 #endif
 	camera.set(transformation);
 	mlight2.Select();
@@ -276,10 +284,7 @@ void Engine::render_shadows()
 
 	for (int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->visible == false)
-			continue;
-
-		if (entity_list[i]->light && entity_list[i]->visible)
+		if (entity_list[i]->light)
 		{
 			camera.set(transformation);
 			mvp = transformation * projection;

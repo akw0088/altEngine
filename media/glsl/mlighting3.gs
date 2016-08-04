@@ -29,16 +29,16 @@ out VertexDataOut {
 void main()
 {
 	//calculate normal
-	vec3 a = gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz;
-	vec3 b = gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz;
+	vec3 a = gl_in[0].gl_Position.xyz - gl_in[1].gl_Position.xyz;
+	vec3 b = gl_in[0].gl_Position.xyz - gl_in[2].gl_Position.xyz;
 	vec3 normal = cross(a,b);
 
 	//calculate tangent, these values are just constants
-	float s1 = VertexIn[1].vary_TexCoord.x - VertexIn[0].vary_TexCoord.x; 
-	float s2 = VertexIn[2].vary_TexCoord.x - VertexIn[0].vary_TexCoord.x; 
+	float s1 = VertexIn[0].vary_TexCoord.x - VertexIn[1].vary_TexCoord.x; 
+	float s2 = VertexIn[0].vary_TexCoord.x - VertexIn[2].vary_TexCoord.x; 
 
-	float t1 = VertexIn[1].vary_TexCoord.y - VertexIn[0].vary_TexCoord.y; 
-	float t2 = VertexIn[2].vary_TexCoord.y - VertexIn[0].vary_TexCoord.y; 
+	float t1 = VertexIn[0].vary_TexCoord.y - VertexIn[1].vary_TexCoord.y; 
+	float t2 = VertexIn[0].vary_TexCoord.y - VertexIn[2].vary_TexCoord.y; 
 
 	vec3 tangent = (a*t2 - b*t1) / (s1*t2 - s2*t1);
 	
