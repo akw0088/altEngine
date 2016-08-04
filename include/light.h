@@ -9,7 +9,7 @@ public:
 	Light(Entity *entity);
 	void render_shadows();
 	void generate_volumes(Bsp &map);
-	void extend(Edge &edge_list, vec3 pos);
+	void extend(vec3 position);
 
 
 	Entity	*entity;
@@ -17,7 +17,7 @@ public:
 	vec3	color;
 	int		intensity;
 	bool	active;
-	Edge	edge_list;
+	vector<triangle_t>	backface_list;
 };
 
 #endif

@@ -906,16 +906,13 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 }
 
 /*
-Loop through all the model's triangles 
-If triangle faces the light source (dot product > 0) 
-Insert the three edges (pair of vertices), into an edge stack 
-Check for previous occurrence of each edges or it's reverse in the stack 
-If an edge or its reverse is found in the stack, remove both edges 
-Start with new triangle 
+Loop through all the BSP's traingles
+If triangle faces away from the light source (dot product < 0) 
+Insert the face into the backfast list 
 */
-void Bsp::find_edges(vec3 &position, Edge &edge_list)
+void Bsp::find_backfaces(vec3 &light_position, vector<triangle_t> &backface_list)
 {
-	int leaf_index = find_leaf(position);
+	int leaf_index = find_leaf(light_position);
 
 	leaf_t *light_Leaf = &data.Leaf[leaf_index];
 
@@ -943,61 +940,26 @@ void Bsp::find_edges(vec3 &position, Edge &edge_list)
 				vec3 b = x - z;
 				vec3 normal = vec3::crossproduct(a,b);
 
-				vec3 lightdir1 = x - position;
-				vec3 lightdir2 = y - position;
-				vec3 lightdir3 = z - position;
-				vec3 lightdir;
+				// find vectors between light position and each vertex of the face
+				vec3 lightdir1 = light_position - x;
+				vec3 lightdir2 = light_position - y;
+				vec3 lightdir3 = light_position - z;
 				
-				if (lightdir1.magnitude() < lightdir2.magnitude() && lightdir1.magnitude() < lightdir3.magnitude())
-					lightdir = lightdir1;
-				else if (lightdir2.magnitude() < lightdir1.magnitude() && lightdir2.magnitude() < lightdir3.magnitude())
-					lightdir = lightdir2;
-				else
-					lightdir = lightdir3;
-
 				normal.normalize();
-				if (lightdir.magnitude() > 400.0f)
-					continue;
 
-				if ( lightdir * normal  )
+				// Limit distance light will generate shadow volumes
+//				if (lightdir1.magnitude() > 800.0f || lightdir2.magnitude() > 800.0f || lightdir3.magnitude() > 800.0f )
+	//				continue;
+
+				// if backface
+				if (normal * lightdir1 < 0.0f )
 				{
-					vec3 triple[3][2];
+					triangle_t tri;
 
-					if (x.x < y.x)
-					{
-						triple[0][0] = x;
-						triple[0][1] = y;
-					}
-					else
-					{
-						triple[0][1] = x;
-						triple[0][0] = y;
-					}
-
-					if (x.x < z.x)
-					{
-						triple[1][0] = x;
-						triple[1][1] = z;
-					}
-					else
-					{
-						triple[1][1] = x;
-						triple[1][0] = z;
-					}
-
-					if ( y.x < z.x )
-					{
-						triple[2][0] = y;
-						triple[2][1] = z;
-					}
-					else
-					{
-						triple[2][1] = y;
-						triple[2][0] = z;
-					}
-					edge_list.insert(&triple[0][0]);
-					edge_list.insert(&triple[1][0]);
-					edge_list.insert(&triple[2][0]);
+					tri.a = x;
+					tri.b = y;
+					tri.c = z;
+					backface_list.push_back(tri);
 				}
 			}
 		}

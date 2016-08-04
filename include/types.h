@@ -35,6 +35,12 @@ typedef struct
 	int				buffer;
 } wave_t;
 
+typedef struct {
+	vec3 a;
+	vec3 b;
+	vec3 c;
+} triangle_t;
+
 
 /*
 	Temporarily saves original entity position
