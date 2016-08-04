@@ -22,16 +22,19 @@ public:
 	void load_config(cfg_t &config);
 
 	//AI
-	void seek(vec3 &position);
-	void flee(vec3 &position);
-	void arrive(vec3 &position);
-	void pursue(Entity &target);
-	void evade(Entity &target);
+	void seek(vec3 position);
+	void flee(vec3 position);
+	void arrive(vec3 position);
+	void pursue();
+	void evade();
+	void set_target(Entity &target);
+
 
 	void move(Frame &camera, button_t &keyboard);
 	void move(button_t &keyboard);
 
-
+	bool			pursue_flag;
+	Entity			*target;
 	float			restitution;
 	float			kfriction;
 	bool			sleep;

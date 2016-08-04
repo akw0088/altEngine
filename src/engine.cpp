@@ -260,7 +260,7 @@ void Engine::render_entities()
 	gfx.SelectShader(0);
 
 
-	//render md5 as last entity
+	//render md5 as second to last entity
 	mlight2.Select();
 	camera.set(transformation);
 	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
@@ -274,7 +274,7 @@ void Engine::render_shadows()
 {
 	matrix4 mvp;
 
-	for(int i = 0; i < entity_list.size(); i++)
+	for (int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->visible == false)
 			continue;
@@ -296,7 +296,7 @@ void Engine::post_process(int num_passes)
 	int temp;
 
 	gfx.SelectTexture(0, post.image);
-	for(int pass = 0; pass < num_passes; pass++)
+	for (int pass = 0; pass < num_passes; pass++)
 	{
 #ifndef DIRECTX
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, gfx.width, gfx.height, 0);
@@ -305,13 +305,13 @@ void Engine::post_process(int num_passes)
 		post.Select();
 		post.Params(0, 1);
 		gfx.clear();
-//		gfx.SelectVertexArrayObject(Model::quad_vao);
+		//		gfx.SelectVertexArrayObject(Model::quad_vao);
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
 		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 		gfx.SelectShader(0);
 		gfx.DeselectTexture(1);
-//		gfx.SelectVertexArrayObject(0);
+		//		gfx.SelectVertexArrayObject(0);
 	}
 	temp = post.swap;
 	post.swap = post.image;
@@ -348,8 +348,25 @@ void Engine::debug_messages()
 
 void Engine::spatial_testing()
 {
-	for(int i = 0; i < entity_list.size(); i++)
+	for (int i = 0; i < entity_list.size(); i++)
 	{
+		if (entity_list[i]->rigid)
+		{
+			if (entity_list[i]->rigid->target)
+			{
+				if (entity_list[i]->rigid->pursue_flag == true)
+				{
+					entity_list[i]->rigid->pursue();
+				}
+				else
+				{
+					entity_list[i]->rigid->evade();
+				}
+			}
+		}
+
+
+
 		if (entity_list[i]->model)
 		{
 			bool ent_visible = false;
@@ -566,24 +583,10 @@ void Engine::step()
 	if (map.loaded == false)
 		return;
 
-	if (reload > 0)
-		reload--;
-
-	if (keyboard.leftbutton && reload == 0)
-	{
-		reload = 120;
-		Entity *entity = new Entity();
-		entity->position = camera.pos;
-		entity->rigid = new RigidBody(entity);
-		entity->rigid->load(gfx, "media/models/box");
-		entity->rigid->velocity = camera.forward * -10.0f;
-		entity->rigid->angular_velocity = vec3();
-		entity->rigid->gravity = true;
-		entity->model = entity->rigid;
-		camera.set(entity->model->morientation);
-		entity_list.push_back(entity);
-	}
+	//This function is ugly, will cleanup later
+	entity_list[spawn]->player->handle_weapons(keyboard, camera, entity_list, spawn, gfx);
 	
+
 
 	//entity test movement
 	if (menu.ingame == false && menu.console == false)
@@ -1733,6 +1736,25 @@ void Engine::console(char *cmd)
 		bind(port);
 		return;
 	}
+
+	ret = strcmp(cmd, "give all");
+	if (ret == 0)
+	{
+		snprintf(msg, LINE_SIZE, "give all\n");
+		menu.print(msg);
+		entity_list[spawn]->player->ammo_bfg = 999;
+		entity_list[spawn]->player->ammo_bullets = 999;
+		entity_list[spawn]->player->ammo_lightning= 999;
+		entity_list[spawn]->player->ammo_plasma = 999;
+		entity_list[spawn]->player->ammo_rockets = 999;
+		entity_list[spawn]->player->ammo_shells = 999;
+		entity_list[spawn]->player->ammo_slugs = 999;
+		entity_list[spawn]->player->armor = 200;
+		entity_list[spawn]->player->health = 100;
+		entity_list[spawn]->player->weapon_flags = ~0;
+		return;
+	}
+
 
 	if (strcmp(cmd, "disconnect") == 0)
 	{

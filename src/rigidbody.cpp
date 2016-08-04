@@ -9,6 +9,8 @@ RigidBody::RigidBody(Entity *entity)
 {
 	sleep = false;
 	gravity = true;
+	pursue_flag = true;
+	target = NULL;
 	mass = 10.0f;
 	restitution = 1.0f; // boxes should never rest
 	kfriction = 0.5f;
@@ -394,7 +396,7 @@ void RigidBody::load_config(cfg_t &config)
 }
 
 
-void RigidBody::seek(vec3 &position)
+void RigidBody::seek(vec3 position)
 {
 	vec3 direction = position - entity->position;
 	direction.normalize();
@@ -402,7 +404,7 @@ void RigidBody::seek(vec3 &position)
 	net_force += direction - velocity;
 }
 
-void RigidBody::flee(vec3 &position)
+void RigidBody::flee(vec3 position)
 {
 	vec3 direction = entity->position - position;
 	direction.normalize();
@@ -411,7 +413,7 @@ void RigidBody::flee(vec3 &position)
 }
 
 //not quite right yet
-void RigidBody::arrive(vec3 &position)
+void RigidBody::arrive(vec3 position)
 {
 	vec3 direction = position - entity->position;
 	float distance = direction.magnitude();
@@ -435,22 +437,29 @@ void RigidBody::arrive(vec3 &position)
 	morientation.m[9] = direction.z;
 }
 
-void RigidBody::pursue(Entity &target)
+void RigidBody::pursue()
 {
-	vec3 direction = target.position - entity->position;
+	vec3 direction = target->position - entity->position;
 	float predict_time = direction.magnitude() / ( 8.0f + 8.0f );
-	vec3 position = target.position + target.rigid->velocity * predict_time;
+	vec3 position = target->position + target->rigid->velocity * predict_time;
+
 	seek(position);
 }
 
-void RigidBody::evade(Entity &target)
+void RigidBody::evade()
 {
-	vec3 direction = target.position - entity->position;
-	float predict_time = direction.magnitude() / ( 8.0f + 8.0f );
-	vec3 position = target.position + target.rigid->velocity * predict_time;
+	vec3 direction = target->position - entity->position;
+	float predict_time = direction.magnitude() / (8.0f + 8.0f);
+	vec3 position = target->position + target->rigid->velocity * predict_time;
 
 	flee(position);
 }
+
+void RigidBody::set_target(Entity &entity)
+{
+	target = &entity;
+}
+
 
 void RigidBody::move(Frame &camera, button_t &keyboard)
 {

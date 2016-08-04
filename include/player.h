@@ -31,6 +31,7 @@ public:
 	~Player();
 	Entity	*entity;
 
+	void handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> &entity_list, int spawn, Graphics &gfx);
 	void render_weapon(Graphics &gfx);
 	void change_weapon_up();
 	void change_weapon_down();
@@ -47,6 +48,8 @@ public:
 	int ammo_lightning;
 	int ammo_plasma;
 	int ammo_bfg;
+
+	int reload_timer;
 
 private:
 	Model weapon_shotgun;
