@@ -52,6 +52,39 @@ void Player::handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> 
 			entity_list.push_back(entity);
 			ammo_rockets--;
 		}
+		else if (current_weapon == wp_lightning && ammo_lightning > 0)
+		{
+			reload_timer = 10;
+
+			Entity *entity = new Entity();
+			entity->rigid = new RigidBody(entity);
+			entity->position = camera.pos;
+			entity->rigid->load(gfx, "media/models/ball");
+			entity->rigid->velocity = camera.forward * -125.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->model = entity->rigid;
+//			entity->rigid->set_target(*(entity_list[spawn]));
+			camera.set(entity->model->morientation);
+			entity_list.push_back(entity);
+			ammo_lightning--;
+		}
+		else if (current_weapon == wp_railgun && ammo_slugs > 0)
+		{
+			reload_timer = 120; // two seconds
+
+			Entity *entity = new Entity();
+			entity->rigid = new RigidBody(entity);
+			entity->position = camera.pos;
+			entity->rigid->clone(*(entity_list[1]->model));
+			entity->rigid->velocity = camera.forward * -100.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->model = entity->rigid;
+			camera.set(entity->model->morientation);
+			entity_list.push_back(entity);
+			ammo_slugs--;
+		}
 	}
 }
 
