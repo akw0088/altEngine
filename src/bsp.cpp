@@ -921,7 +921,7 @@ void Bsp::find_backfaces(vec3 &light_position, vector<shadowvol_t> &shadow_list)
 	{
 		leaf_t *leaf = &data.Leaf[i];
 
-		if ( !cluster_visible(light_Leaf->cluster, leaf->cluster) )
+		if ( cluster_visible(light_Leaf->cluster, leaf->cluster) == false )
 			continue;
 
 		for (int j = 0; j < leaf->num_faces; j++)
@@ -932,6 +932,7 @@ void Bsp::find_backfaces(vec3 &light_position, vector<shadowvol_t> &shadow_list)
 			for(int k = 0; k < face->num_index; k += 3)
 			{
 				int index = data.IndexArray[face->index + k];
+
 				vec3 x = data.Vert[index].position;
 				vec3 y = data.Vert[index + 1].position;
 				vec3 z = data.Vert[index + 2].position;

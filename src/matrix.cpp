@@ -475,7 +475,7 @@ void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, boo
 	if (infinite)
 	{
 		m[10] = -1.0f;
-		m[14] = -2.0f;
+		m[14] = -2.0f * zNear;
 	}
 }
 
