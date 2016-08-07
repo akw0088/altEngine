@@ -102,29 +102,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static WSADATA	wsadata;
 	static unsigned int		tick_count;
 	static unsigned int		last_tick;
+	static unsigned int		last_resize = 0;
+	static int	old_style = 0;
+	static int	new_style = WS_CHILD | WS_VISIBLE;
+	static int	xres, yres;
 
 	switch (message)
 	{
 	case WM_CREATE:
+	{
+		HMONITOR hmon;
+		MONITORINFO mi = { sizeof(MONITORINFO) };
+
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
 		AllocConsole();
 		RedirectIOToConsole();
-		SetTimer ( hwnd, TICK_TIMER, 16, NULL );
+		SetTimer(hwnd, TICK_TIMER, 16, NULL);
 		hdc = GetDC(hwnd);
+
+		hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+		GetMonitorInfo(hmon, &mi);
+
+		xres = abs(mi.rcMonitor.right - mi.rcMonitor.left);
+		yres = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
+
 		setupPixelFormat(hdc);
 #ifndef DIRECTX
 		hglrc_legacy = wglCreateContext(hdc);
 		wglMakeCurrent(hdc, hglrc_legacy);
 		glewInit();
 
-		if(wglewIsSupported("WGL_ARB_create_context") == TRUE)
+		if (wglewIsSupported("WGL_ARB_create_context") == TRUE)
 		{
 			const int context[] =
 			{
 				WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
 				WGL_CONTEXT_MINOR_VERSION_ARB, 1,
-//				WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-				0
+				//				WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+								0
 			};
 
 			const int pixelformat[] =
@@ -144,7 +159,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			wglChoosePixelFormatARB(hdc, (int *)pixelformat, NULL, 1, &format, &num_formats);
 			hglrc = wglCreateContextAttribsARB(hdc, 0, context);
-			wglMakeCurrent(NULL,NULL);
+			wglMakeCurrent(NULL, NULL);
 			wglDeleteContext(hglrc_legacy);
 			wglMakeCurrent(hdc, hglrc);
 		}
@@ -157,7 +172,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 		shwnd = hwnd;
 		altEngine.init(&shwnd, &hdc);
-		return 0;
+	}
+	return 0;
 
 	case WMU_RENDER:
 		altEngine.render();
@@ -261,6 +277,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_RIGHT:
 				altEngine.keypress("right", pressed);
 				break;
+			case VK_F1:
+				if (tick_count > 60 + last_resize)
+				{
+					last_resize = tick_count;
+					old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
+					new_style = old_style;
+					SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, xres, yres, 0);
+					break;
+				}
 			}
 			return 0;
 		}
