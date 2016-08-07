@@ -35,12 +35,12 @@ void main(void)
 	vec3 light = vec3(0.0f, 0.0f, 0.0f);
 
 	// scale and bias parallax effect
-//	float height = texture2D(texture2, Vertex.vary_TexCoord).a * 0.16 + -0.08;
-//	Fragment = texture2D(texture0, Vertex.vary_TexCoord + height * eye.xy);
-//	vec3 normal_map = normalize(texture2D(texture2, Vertex.vary_TexCoord + height * eye.xy).xyz);
+//	float height = texture(texture2, Vertex.vary_TexCoord).a * 0.16 + -0.08;
+//	Fragment = texture(texture0, Vertex.vary_TexCoord + height * eye.xy);
+//	vec3 normal_map = normalize(texture(texture2, Vertex.vary_TexCoord + height * eye.xy).xyz);
 
-	vec3 normal_map = normalize(texture2D(texture2, Vertex.vary_TexCoord).xyz);
-	Fragment = texture2D(texture0, Vertex.vary_TexCoord);
+	vec3 normal_map = normalize(texture(texture2, Vertex.vary_TexCoord).xyz);
+	Fragment = texture(texture0, Vertex.vary_TexCoord);
 
 
 	for(int i = 0; i < u_num_lights; i++)
