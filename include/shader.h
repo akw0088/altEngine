@@ -30,6 +30,17 @@ private:
 	int	texture0;
 };
 
+class ShadowMap : public Shader
+{
+public:
+	void init(Graphics *gfx);
+	void Params(float *cube, int tex0);
+	virtual void prelink(void);
+private:
+	int matrix;
+	int	texture0;
+};
+
 // Max lights hardware can pass through shaders, gfx card specfic
 #define MAX_LIGHTS 16
 

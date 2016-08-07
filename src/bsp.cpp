@@ -906,6 +906,107 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 }
 
 /*
+Loop through all the model's triangles
+If triangle faces the light source (dot product > 0)
+Insert the three edges (pair of vertices), into an edge stack
+Check for previous occurrence of each edges or it's reverse in the stack
+If an edge or its reverse is found in the stack, remove both edges
+Start with new triangle
+*/
+void Bsp::find_edges(vec3 &position, Edge &edge_list)
+{
+	int leaf_index = find_leaf(position);
+
+	leaf_t *light_Leaf = &data.Leaf[leaf_index];
+
+	// loop through all leaves, checking if leaf visible from current leaf
+	for (int i = 0; i < data.num_leafs; i++)
+	{
+		leaf_t *leaf = &data.Leaf[i];
+
+		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
+			continue;
+
+		for (int j = 0; j < leaf->num_faces; j++)
+		{
+			int face_index = data.LeafFace[leaf->leaf_face + j];
+			face_t *face = &data.Face[face_index];
+
+			for (int k = 0; k < face->num_index; k += 3)
+			{
+				int index = data.IndexArray[face->index + k];
+				vec3 x = data.Vert[index].position;
+				vec3 y = data.Vert[index + 1].position;
+				vec3 z = data.Vert[index + 2].position;
+
+				vec3 a = x - y;
+				vec3 b = x - z;
+				vec3 normal = vec3::crossproduct(a, b);
+
+				vec3 lightdir1 = x - position;
+				vec3 lightdir2 = y - position;
+				vec3 lightdir3 = z - position;
+				vec3 lightdir;
+
+				if (lightdir1.magnitude() < lightdir2.magnitude() && lightdir1.magnitude() < lightdir3.magnitude())
+					lightdir = lightdir1;
+				else if (lightdir2.magnitude() < lightdir1.magnitude() && lightdir2.magnitude() < lightdir3.magnitude())
+					lightdir = lightdir2;
+				else
+					lightdir = lightdir3;
+
+				normal.normalize();
+				if (lightdir.magnitude() > 400.0f)
+					continue;
+
+				if (lightdir * normal)
+				{
+					vec3 triple[3][2];
+
+					if (x.x < y.x)
+					{
+						triple[0][0] = x;
+						triple[0][1] = y;
+					}
+					else
+					{
+						triple[0][1] = x;
+						triple[0][0] = y;
+					}
+
+					if (x.x < z.x)
+					{
+						triple[1][0] = x;
+						triple[1][1] = z;
+					}
+					else
+					{
+						triple[1][1] = x;
+						triple[1][0] = z;
+					}
+
+					if (y.x < z.x)
+					{
+						triple[2][0] = y;
+						triple[2][1] = z;
+					}
+					else
+					{
+						triple[2][1] = y;
+						triple[2][0] = z;
+					}
+					edge_list.insert(&triple[0][0]);
+					edge_list.insert(&triple[1][0]);
+					edge_list.insert(&triple[2][0]);
+				}
+			}
+		}
+	}
+}
+
+
+
+/*
 Loop through all the BSP's traingles
 If triangle faces away from the light source (dot product < 0) 
 Insert the face into the backfast list 

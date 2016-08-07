@@ -140,7 +140,7 @@ void Engine::load(char *level)
 		if (entity_list[i]->light)
 		{
 			entity_list[i]->light->generate_volumes(map);
-			entity_list[i]->rigid->angular_velocity = vec3();
+//			entity_list[i]->rigid->angular_velocity = vec3();
 		}
 	}
 #endif
@@ -154,6 +154,7 @@ void Engine::render()
 #ifndef SHADOWVOL
 	gfx.clear();
 	gfx.Blend(true);
+//	render_shadows(); // for debugging
 	render_scene(true);
 	gfx.Blend(false);
 #else
@@ -194,10 +195,76 @@ void Engine::render()
 	gfx.DepthFunc("<");
 	gfx.Stencil(false);
 #endif
-/*
-	if (keyboard.control)
-		post_process(5);
-		*/
+
+	if (keyboard.numpad2)
+	{
+		vec3 right(-1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, 1.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad3)
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, 1.0f);
+		vec3 forward(0.0f, 1.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad6)
+	{
+		vec3 right(0.0f, 0.0f, 1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(1.0f, 0.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+
+	if (keyboard.numpad4)
+	{
+		vec3 right(0.0f, 0.0f, -1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(-1.0f, 0.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad8)
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, -1.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad9)
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, -1.0f);
+		vec3 forward(0.0f, -1.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+
+		
 	gfx.cleardepth();
 	debug_messages();
 
@@ -209,6 +276,16 @@ void Engine::render()
 	gfx.swap();
 }
 
+
+void Engine::render_shadowmaps()
+{
+	for (int i = 0; i < light_list.size(); i++)
+	{
+		light_list[i]->render_shadowmap(gfx, 4096, map, shadowmap);
+		gfx.resize(xres, yres);
+	}
+}
+
 void Engine::render_scene(bool lights)
 {
 	matrix4 mvp;
@@ -216,9 +293,6 @@ void Engine::render_scene(bool lights)
 	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
 
 	render_entities();
-#ifdef SHADOWVOL
-//	render_shadows(); // for debugging shadowvols only
-#endif
 	camera.set(transformation);
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -228,8 +302,6 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, 0, 1, 2, light_list, 0);
 
-//	entity_list[spawn]->rigid->calc_frustum(mvp);
-	//map.render(camera.pos, (Plane *)&(entity_list[spawn]->model->frustum[0]), gfx);
 	map.render(camera.pos, NULL, gfx);
 	gfx.SelectShader(0);
 }
@@ -278,18 +350,22 @@ void Engine::render_entities()
 
 }
 
+
 void Engine::render_shadows()
 {
 	matrix4 mvp;
+	int j = 0;
 
 	for (int i = 0; i < entity_list.size(); i++)
 	{
+
 		if (entity_list[i]->light)
 		{
 			camera.set(transformation);
 			mvp = transformation * projection;
 			global.Select();
 			global.Params(mvp, 0);
+			entity_list[i]->light->set_debuglight(j++);
 			entity_list[i]->light->render_shadows();
 			gfx.SelectShader(0);
 		}
@@ -1143,6 +1219,46 @@ void Engine::keypress(char *key, bool pressed)
 		keyboard.right = pressed;
 		k = 6;
 	}
+	else if (strcmp("numpad0", key) == 0)
+	{
+		keyboard.numpad0 = pressed;
+	}
+	else if (strcmp("numpad1", key) == 0)
+	{
+		keyboard.numpad1 = pressed;
+	}
+	else if (strcmp("numpad2", key) == 0)
+	{
+		keyboard.numpad2 = pressed;
+	}
+	else if (strcmp("numpad3", key) == 0)
+	{
+		keyboard.numpad3 = pressed;
+	}
+	else if (strcmp("numpad4", key) == 0)
+	{
+		keyboard.numpad4 = pressed;
+	}
+	else if (strcmp("numpad5", key) == 0)
+	{
+		keyboard.numpad5 = pressed;
+	}
+	else if (strcmp("numpad6", key) == 0)
+	{
+		keyboard.numpad6 = pressed;
+	}
+	else if (strcmp("numpad7", key) == 0)
+	{
+		keyboard.numpad7 = pressed;
+	}
+	else if (strcmp("numpad8", key) == 0)
+	{
+		keyboard.numpad8 = pressed;
+	}
+	else if (strcmp("numpad9", key) == 0)
+	{
+		keyboard.numpad9 = pressed;
+	}
 
 	if (pressed)
 		keystroke(k);
@@ -1210,6 +1326,8 @@ void Engine::handle_game(char key)
 
 void Engine::resize(int width, int height)
 {
+	xres = width;
+	yres = height;
 	gfx.resize(width, height);
 	post.resize(width, height);
 	if (map.loaded == false)

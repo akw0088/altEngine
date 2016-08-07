@@ -50,6 +50,7 @@ public:
 	int ammo_bfg;
 
 	int reload_timer;
+	int current_light; // debugging light sources, selected same as weapon
 
 private:
 	Model weapon_shotgun;

@@ -61,7 +61,7 @@
 	#include <AGL/agl.h>
 #endif
 
-#define SHADOWVOL
+//#define SHADOWVOL
 
 
 #define MAX(x,y) (x) > (y) ? (x) : (y)

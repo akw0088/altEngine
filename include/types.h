@@ -172,4 +172,15 @@ typedef struct
 	bool left;
 	bool down;
 	bool right;
+
+	bool numpad0;
+	bool numpad1;
+	bool numpad2;
+	bool numpad3;
+	bool numpad4;
+	bool numpad5;
+	bool numpad6;
+	bool numpad7;
+	bool numpad8;
+	bool numpad9;
 }  button_t;

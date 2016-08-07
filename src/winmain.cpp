@@ -277,6 +277,36 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_RIGHT:
 				altEngine.keypress("right", pressed);
 				break;
+			case VK_NUMPAD0:
+				altEngine.keypress("numpad0", pressed);
+				break;
+			case VK_NUMPAD1:
+				altEngine.keypress("numpad1", pressed);
+				break;
+			case VK_NUMPAD2:
+				altEngine.keypress("numpad2", pressed);
+				break;
+			case VK_NUMPAD3:
+				altEngine.keypress("numpad3", pressed);
+				break;
+			case VK_NUMPAD4:
+				altEngine.keypress("numpad4", pressed);
+				break;
+			case VK_NUMPAD5:
+				altEngine.keypress("numpad5", pressed);
+				break;
+			case VK_NUMPAD6:
+				altEngine.keypress("numpad6", pressed);
+				break;
+			case VK_NUMPAD7:
+				altEngine.keypress("numpad7", pressed);
+				break;
+			case VK_NUMPAD8:
+				altEngine.keypress("numpad8", pressed);
+				break;
+			case VK_NUMPAD9:
+				altEngine.keypress("numpad9", pressed);
+				break;
 			case VK_F1:
 				if (tick_count > 60 + last_resize)
 				{

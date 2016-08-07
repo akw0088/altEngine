@@ -16,6 +16,9 @@ public:
 	void render_scene(bool lights);
 	void render_entities();
 	void render_shadows();
+
+
+	void render_shadowmaps();
 	void post_process(int num_passes);
 	void resize(int width, int height);
 	void debug_messages();
@@ -71,7 +74,7 @@ private:
 	Menu				menu;
 	Frame				camera;
 
-	char				*weapon_name[8];
+	int xres, yres;
 
 	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;
@@ -101,6 +104,7 @@ private:
 	Post	post;
 	mLight2	mlight2;
 	Global	global;
+	ShadowMap shadowmap;
 	void	*param1;
 	void	*param2;
 };

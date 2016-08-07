@@ -10,19 +10,108 @@ Light::Light(Entity *entity)
 	color = vec3(1.0f, 1.0f, 1.0f);
 	intensity = 0;
 	active = false;
+
+#ifdef LIGHTMAP
+	glGenTextures(1, &shadowcube);
+#endif
+
 }
 
 void Light::render_shadows()
 {
-	extend(entity->position);
+	float ident[9] = { 1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f};
+
+		entity->rigid->angular_velocity = vec3();
+		entity->rigid->morientation.m[0] = ident[0];
+		entity->rigid->morientation.m[1] = ident[1];
+		entity->rigid->morientation.m[2] = ident[2];
+		entity->rigid->morientation.m[3] = ident[3];
+		entity->rigid->morientation.m[4] = ident[4];
+		entity->rigid->morientation.m[5] = ident[5];
+		entity->rigid->morientation.m[6] = ident[6];
+		entity->rigid->morientation.m[7] = ident[7];
+		entity->rigid->morientation.m[8] = ident[8];
+
+
+		extend(entity->position);
 }
 
 void Light::generate_volumes(Bsp &map)
 {
-	map.find_backfaces(entity->position, shadow_list);
+	map.find_edges(entity->position, edge_list);
+}
+
+void Light::set_debuglight(int i)
+{
+	light_num = i;
 }
 
 void Light::extend(vec3 position)
+{
+#ifndef DIRECTX
+	float t = 500.0f;
+
+	if (false)
+	{
+		glEnable(GL_BLEND);
+		glColor3f(0.0f, 1.0f, 0.0f);
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR);
+	}
+
+	for (int i = 0; i < edge_list.num_edges; i++)
+	{
+		vec3 delta_a = edge_list.edge_list[2 * i] - position;
+		vec3 delta_b = edge_list.edge_list[2 * i + 1] - position;
+		vec3 a = edge_list.edge_list[2 * i];
+		vec3 b = edge_list.edge_list[2 * i + 1];
+		vec3 c = b + delta_b.normalize() * t;
+		vec3 d = a + delta_a.normalize() * t;
+
+		if (vec3::crossproduct(a - c, a - b) * (entity->position - a) > 0)
+		{
+			glBegin(GL_TRIANGLES);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(a.x, a.y, a.z);
+			glVertex3f(b.x, b.y, b.z);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(c.x, c.y, c.z);
+
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(a.x, a.y, a.z);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(c.x, c.y, c.z);
+			glVertex3f(d.x, d.y, d.z);
+			glEnd();
+		}
+		else
+		{
+			glBegin(GL_TRIANGLES);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(a.x, a.y, a.z);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(c.x, c.y, c.z);
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(b.x, b.y, b.z);
+
+			glColor3f(1.0f, 1.0f, 1.0f);
+			glVertex3f(a.x, a.y, a.z);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(d.x, d.y, d.z);
+			glVertex3f(c.x, c.y, c.z);
+			glEnd();
+		}
+	}
+	if (false)
+	{
+		glColor3f(1.0f, 1.0f, 1.0f);
+		glDisable(GL_BLEND);
+	}
+#endif
+}
+
+void Light::extrude(vec3 position)
 {
 #ifndef DIRECTX
 
@@ -40,22 +129,28 @@ void Light::extend(vec3 position)
 		vec3 a = shadow_list[i].a;
 		vec3 b = shadow_list[i].b;
 		vec3 c = shadow_list[i].c;
-		vec3 v1 = shadow_list[i].lightdir1;
-		vec3 v2 = shadow_list[i].lightdir2;
-		vec3 v3 = shadow_list[i].lightdir3;
+//		vec3 v1 = shadow_list[i].lightdir1;
+//		vec3 v2 = shadow_list[i].lightdir2;
+//		vec3 v3 = shadow_list[i].lightdir3;
+
+		vec3 v1 = shadow_list[i].a;
+		vec3 v2 = shadow_list[i].b;
+		vec3 v3 = shadow_list[i].c;
+
 
 			glBegin(GL_TRIANGLES);
-
 				//render backface
 				glVertex4f(a.x, a.y, a.z, 1.0f);
 				glVertex4f(b.x, b.y, b.z, 1.0f);
 				glVertex4f(c.x, c.y, c.z, 1.0f);
 
 				//render backcap
+				glColor3f(0.0f, 1.0f, 0.1f);
 				glVertex4f(v1.x, v1.y, v1.z, 0.0f);
 				glVertex4f(v2.x, v2.y, v2.z, 0.0f);
 				glVertex4f(v3.x, v3.y, v3.z, 0.0f);
 
+				glColor3f(0.0f, 0.0f, 1.0f);
 				//render volume sides
 				glVertex4f(a.x, a.y, a.z, 1.0f);
 				glVertex4f(v1.x, v1.y, v1.z, 0.0f);
@@ -94,4 +189,213 @@ void Light::extend(vec3 position)
 		glDisable(GL_BLEND);
 	}
 #endif
+}
+
+
+void Light::mat_forward(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(0.0f, 0.0f, -1.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8]  = forward.x;
+	mvp.m[9]  = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = right * position;
+	mvp.m[13] = up * position;
+	mvp.m[14] = forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void Light::mat_left(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(0.0f, 0.0f, -1.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(-1.0f, 0.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = right * position;
+	mvp.m[13] = up * position;
+	mvp.m[14] = forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void Light::mat_backward(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(-1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(0.0f, 0.0f, 1.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = right * position;
+	mvp.m[13] = up * position;
+	mvp.m[14] = forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void Light::mat_right(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(0.0f, 0.0f, 1.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(1.0f, 0.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = right * position;
+	mvp.m[13] = up * position;
+	mvp.m[14] = forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void Light::mat_top(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 0.0f, -1.0f);
+	vec3 forward(0.0f, -1.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = right * position;
+	mvp.m[13] = up * position;
+	mvp.m[14] = forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void Light::mat_bottom(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 0.0f, 1.0f);
+	vec3 forward(0.0f, 1.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = right * position;
+	mvp.m[13] = up * position;
+	mvp.m[14] = forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+
+void Light::mat_cube(float *cube, vec3 &position)
+{
+	matrix4 mvp[6];
+	int j = 0;
+
+	// Generate matrices
+	mat_top(mvp[0], position);
+	mat_bottom(mvp[1], position);
+	mat_left(mvp[2], position);
+	mat_right(mvp[3], position);
+	mat_forward(mvp[4], position);
+	mat_backward(mvp[5], position);
+
+	// Combine them, could probably generate them directly
+	for (int i = 0; i < 96; i++)
+	{
+		cube[i] = mvp[j++].m[i];
+		if (j == 16)
+			j = 0;
+	}
+}
+
+void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap)
+{
+	matrix4 mvp[6];
+	float cube[96];
+
+	gfx.resize(shadow_res, shadow_res);
+	gfx.Color(false);
+
+	// We render once, and inside the geometry shader transform the triangle 6 times
+	gfx.SelectCubemap(shadowcube);
+
+	mat_cube(cube, entity->position);
+	gfx.cleardepth();
+	shadowmap.Select();
+	shadowmap.Params(cube, 0);
+	bsp.render(entity->position, NULL, gfx);
+	gfx.SelectShader(0);
+	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+		0, 0, shadow_res, shadow_res, 0);
+
+
 }

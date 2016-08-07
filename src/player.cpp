@@ -7,6 +7,7 @@
 Player::Player(Entity *entity, Graphics &gfx)
 : weapon_rocket(entity), weapon_shotgun(entity), weapon_lightning(entity), weapon_railgun(entity)
 {
+	current_light = 0;
 	Player::entity = entity;
 	health = 100;
 	armor = 0;
@@ -111,6 +112,8 @@ void Player::render_weapon(Graphics &gfx)
 
 void Player::change_weapon_up()
 {
+
+	current_light++;
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -148,6 +151,7 @@ void Player::change_weapon_up()
 
 void Player::change_weapon_down()
 {
+	current_light--;
 	switch (current_weapon)
 	{
 	case wp_none:

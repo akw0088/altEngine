@@ -43,6 +43,8 @@ public:
 
 	void SelectTexture(int level, int index);
 	void DeselectTexture(int level);
+	int CreateCubeMap();
+	void SelectCubemap(int texObject);
 	int LoadTexture(int width, int height, int components, int format, void *bytes);
 	void DeleteTexture(int handle);
 

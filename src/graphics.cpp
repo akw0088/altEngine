@@ -312,6 +312,19 @@ void Graphics::DeleteTexture(int handle)
 //	delete d3d9_buffer;
 }
 
+int Graphics::CreateCubeMap()
+{
+	//TBD
+	return 0;
+}
+
+void SelectCubemap(int texObject)
+{
+	//TDB
+	return;
+}
+
+
 void Graphics::SelectShader(int handle)
 {
 	device->SetVertexShader(NULL);
@@ -657,6 +670,12 @@ void Graphics::DeleteVertexBuffer(int handle)
 }
 
 
+void Graphics::SelectCubemap(int texObject)
+{
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texObject);
+}
+
+
 void Graphics::SelectTexture(int level, int texObject)
 {
 //	if (texObject == -1)
@@ -692,6 +711,21 @@ bool Graphics::error_check()
 	return false;
 }
 
+
+int Graphics::CreateCubeMap()
+{
+	unsigned int texObject;
+
+	glGenTextures(1, &texObject);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texObject);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	return texObject;
+}
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
 {

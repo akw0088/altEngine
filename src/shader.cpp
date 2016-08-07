@@ -91,6 +91,41 @@ void Global::Params(matrix4 &mvp, int tex0)
 #endif
 }
 
+void ShadowMap::init(Graphics *gfx)
+{
+#ifdef DIRECTX
+	Shader::init(gfx, "media/hlsl/basic.vsh", NULL, "media/hlsl/basic.psh");
+#else
+	if (Shader::init(gfx, "media/glsl/shadowmap.vs", "media/glsl/shadowmap.gs", "media/glsl/shadowmap.fs"))
+	{
+		program_handle = -1;
+		return;
+	}
+	matrix = glGetUniformLocation(program_handle, "mvp");
+	texture0 = glGetUniformLocation(program_handle, "texture0");
+#endif
+}
+
+void ShadowMap::prelink()
+{
+#ifndef DIRECTX
+	glBindAttribLocation(program_handle, 0, "attr_position");
+	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
+	glBindAttribLocation(program_handle, 4, "attr_color");
+#endif
+}
+
+void ShadowMap::Params(float *cube, int tex0)
+{
+#ifdef DIRECTX
+	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+#else
+	//96 floats
+	glUniformMatrix4fv(matrix, 6, GL_FALSE, cube);
+	glUniform1i(texture0, tex0);
+#endif
+}
+
 void mLight2::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"

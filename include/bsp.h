@@ -26,6 +26,7 @@ public:
 	void load(char *map);
 	void load_textures(Graphics &gfx);
 	void unload(Graphics &gfx);
+	void find_edges(vec3 &position, Edge &edge_list);
 	void find_backfaces(vec3 &light_position, vector<shadowvol_t> &shadow_list);
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
