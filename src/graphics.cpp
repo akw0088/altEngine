@@ -454,8 +454,6 @@ Graphics::~Graphics()
 
 void Graphics::init(void *param1, void *param2)
 {
-	int gl_error;
-
 #ifdef _WIN32
 	hwnd = *((HWND *)param1);
 	hdc = *((HDC *)param2);
@@ -489,13 +487,9 @@ void Graphics::init(void *param1, void *param2)
 	glEnableVertexAttribArray(4);
 	glEnableVertexAttribArray(5);
 
-
-
-	gl_error = glGetError();
-	if (gl_error != GL_NO_ERROR)
-	{
-		printf("GL_ERROR %d\n", gl_error);
-	}
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 // requires hand creation of font image and indexing/drawing quad for each glyph
@@ -516,16 +510,28 @@ void Graphics::swap()
 #else
 	glXSwapBuffers(display, window);
 #endif
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::clear()
 {
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::cleardepth()
 {
 	glClear( GL_DEPTH_BUFFER_BIT );
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::Depth(bool flag)
@@ -534,6 +540,10 @@ void Graphics::Depth(bool flag)
 		glDepthMask(GL_TRUE);
 	else
 		glDepthMask(GL_FALSE);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::Blend(bool flag)
@@ -542,11 +552,19 @@ void Graphics::Blend(bool flag)
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::BlendFunc(char *src, char *dst)
 {
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::destroy()
@@ -585,6 +603,10 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 		glDrawElementsBaseVertex(GL_LINES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 	else if (primitive == PRIM_POINTS)
 		glDrawElementsBaseVertex(GL_POINTS, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
@@ -596,16 +618,28 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_index * sizeof(int), index_buffer, GL_STATIC_DRAW);
 	return ibo;
 
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::SelectIndexBuffer(int handle)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::DeleteIndexBuffer(int handle)
 {
 	glDeleteBuffers(1, (unsigned int *)&handle);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 
@@ -627,17 +661,30 @@ int Graphics::CreateVertexArrayObject()
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
 	glEnableVertexAttribArray(5);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 	return vao;
 }
 
 void Graphics::SelectVertexArrayObject(unsigned int vao)
 {
 		glBindVertexArray(vao);
+
+#ifdef ERROR_CHECK
+		error_check();
+#endif
 }
 
 void Graphics::DeleteVertexArrayObject(unsigned int vao)
 {
 		glDeleteVertexArrays(1, &vao);
+
+#ifdef ERROR_CHECK
+		error_check();
+#endif
 }
 
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
@@ -655,24 +702,40 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
 	glVertexAttribPointer(4, 1, GL_INT,   GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3)));
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3) + sizeof(int)));
 
-
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 	return vbo;
 }
 
 void Graphics::SelectVertexBuffer(int handle)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, handle);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::DeleteVertexBuffer(int handle)
 {
 	glDeleteBuffers(1, (unsigned int *)&handle);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 
 void Graphics::SelectCubemap(int texObject)
 {
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texObject);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 
@@ -688,6 +751,10 @@ void Graphics::SelectTexture(int level, int texObject)
 	glActiveTexture(GL_TEXTURE0 + level);
 //	glEnable(GL_TEXTURE_2D);  -- this bastard is deprecated and cause my engine to crash and burn
 	glBindTexture(GL_TEXTURE_2D, texObject);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 void Graphics::DeselectTexture(int level)
@@ -695,6 +762,10 @@ void Graphics::DeselectTexture(int level)
 	glActiveTexture(GL_TEXTURE0 + level);
 	glBindTexture(GL_TEXTURE_2D, 0);
 //	glDisable(GL_TEXTURE_2D);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 }
 
 
@@ -723,6 +794,12 @@ int Graphics::CreateCubeMap()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
 
 	return texObject;
 }
@@ -737,17 +814,32 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);
 	glGenerateMipmap(GL_TEXTURE_2D);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 	return texObject;
 }
 
 void Graphics::DeleteTexture(int handle)
 {
 	glDeleteTextures(1, (unsigned int *)&handle);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::SelectShader(int program)
 {
 	glUseProgram(program);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::CullFace(char *face)
@@ -756,6 +848,11 @@ void Graphics::CullFace(char *face)
 		glCullFace(GL_BACK);
 	else
 		glCullFace(GL_FRONT);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::Color(bool flag)
@@ -764,6 +861,11 @@ void Graphics::Color(bool flag)
 		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	else
 		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::Stencil(bool flag)
@@ -772,6 +874,11 @@ void Graphics::Stencil(bool flag)
 		glEnable(GL_STENCIL_TEST);
 	else
 		glDisable(GL_STENCIL_TEST);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::StencilFunc(char *op, int ref, int mask)
@@ -780,6 +887,11 @@ void Graphics::StencilFunc(char *op, int ref, int mask)
 		glStencilFunc(GL_ALWAYS, ref, mask);
 	else if (strcmp(op, "equal") == 0)
 		glStencilFunc(GL_EQUAL, ref, mask);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::DepthFunc(char *op)
@@ -788,6 +900,11 @@ void Graphics::DepthFunc(char *op)
 		glDepthFunc(GL_LEQUAL);
 	else if (strcmp(op, "<") == 0)
 		glDepthFunc(GL_LESS);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
@@ -798,6 +915,11 @@ void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
 	else if (strcmp(zpass, "keep") == 0)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
 }
 
 Shader::Shader()

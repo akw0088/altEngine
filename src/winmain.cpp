@@ -106,6 +106,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static int	old_style = 0;
 	static int	new_style = WS_CHILD | WS_VISIBLE;
 	static int	xres, yres;
+	static bool show_cursor = true;
+
 
 	switch (message)
 	{
@@ -149,7 +151,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
 				WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
 				WGL_COLOR_BITS_ARB, 32,
-				WGL_DEPTH_BITS_ARB, 24,
+				WGL_DEPTH_BITS_ARB, 32,
 				WGL_STENCIL_BITS_ARB, 8,
 				0,
 			};
@@ -176,17 +178,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 
 	case WMU_RENDER:
+	{
 		altEngine.render();
 		return 0;
-
+	}
 	case WM_TIMER:
-#ifndef DIRECTX
-		if (glGetError() != GL_NO_ERROR)
-		{
-			printf("GL_ERROR\n");
-		}
-#endif
-
 		switch(wParam)
 		{
 		case TICK_TIMER:
@@ -217,6 +213,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				POINT screen = center;
 				ClientToScreen(hwnd, &screen);
 				SetCursorPos(screen.x, screen.y);
+				if (show_cursor == true)
+				{
+					show_cursor = false;
+					ShowCursor(FALSE);
+				}
+			}
+			else
+			{
+				if (show_cursor == false)
+				{
+					show_cursor = true;
+					ShowCursor(TRUE);
+				}
 			}
 		}
 		return 0;
@@ -409,6 +418,28 @@ char *get_file(char *filename)
 	fclose(file);
 	buffer[file_size] = '\0';
 	return buffer;
+}
+
+int write_file(char *filename, char *bytes, int size)
+{
+	FILE *fp = fopen(filename, "wb");
+	int ret;
+
+	if (fp == NULL)
+	{
+		perror("Unable to open file for writing");
+		return -1;
+	}
+
+	ret = fwrite(bytes, 1, size, fp);
+
+	if (ret != size)
+	{
+		printf("fwrite didnt write all data\n");
+		return -1;
+	}
+	fclose(fp);
+	return 0;
 }
 
 void RedirectIOToConsole()

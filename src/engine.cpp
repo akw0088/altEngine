@@ -5,6 +5,38 @@
 #endif
 
 
+
+void Engine::setup_fbo()
+{
+	glGenFramebuffers(1, &fbo);
+	glGenRenderbuffers(3, &rbo[0]);
+	glGenRenderbuffers(1, &depth);
+
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo[0]);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
+	glBindRenderbuffer(GL_RENDERBUFFER, depth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, 1024, 1024);
+
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+		GL_RENDERBUFFER, depth);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		GL_RENDERBUFFER, rbo[0]);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
+		GL_RENDERBUFFER, rbo[1]);
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2,
+		GL_RENDERBUFFER, rbo[2]);
+
+	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+
+	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+	{
+		printf("Render to texture failed");
+	}
+
+	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+}
+
+
 void Engine::init(void *param1, void *param2)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
@@ -25,6 +57,8 @@ void Engine::init(void *param1, void *param2)
 	no_tex = load_texture(gfx, "media/notexture.tga");
 	Model::CreateObjects(gfx);
 	global.init(&gfx);
+	shadowmap.init(&gfx);
+
 
 	//audio
 	audio.init();
@@ -49,6 +83,9 @@ void Engine::init(void *param1, void *param2)
 	frame_step = 0;
 
 	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
+
+	setup_fbo();
+	initialized = true;
 }
 
 
@@ -90,7 +127,7 @@ void Engine::load(char *level)
 	}
 
 	map.generate_meshes(gfx);
-	parse_entity(map.get_entities(), entity_list);
+	parse_entity(map.get_entities(), entity_list, gfx);
 	menu.delta("entities", *this);
 	gfx.clear();
 	menu.render(global);
@@ -143,6 +180,10 @@ void Engine::load(char *level)
 //			entity_list[i]->rigid->angular_velocity = vec3();
 		}
 	}
+#endif
+
+#ifdef SHADOWMAPS
+	render_shadowmaps();
 #endif
 }
 
@@ -262,8 +303,6 @@ void Engine::render()
 		camera.up = up;
 		//		post_process(5);
 	}
-
-
 		
 	gfx.cleardepth();
 	debug_messages();
@@ -279,11 +318,13 @@ void Engine::render()
 
 void Engine::render_shadowmaps()
 {
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 	for (int i = 0; i < light_list.size(); i++)
 	{
-		light_list[i]->render_shadowmap(gfx, 4096, map, shadowmap);
-		gfx.resize(xres, yres);
+		light_list[i]->render_shadowmap(gfx, 1024, map, global);
 	}
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	gfx.resize(xres, yres);
 }
 
 void Engine::render_scene(bool lights)
@@ -365,8 +406,7 @@ void Engine::render_shadows()
 			mvp = transformation * projection;
 			global.Select();
 			global.Params(mvp, 0);
-			entity_list[i]->light->set_debuglight(j++);
-			entity_list[i]->light->render_shadows();
+//			entity_list[i]->light->render_shadows();
 			gfx.SelectShader(0);
 		}
 	}
@@ -1328,8 +1368,17 @@ void Engine::resize(int width, int height)
 {
 	xres = width;
 	yres = height;
+
+
 	gfx.resize(width, height);
 	post.resize(width, height);
+
+
+	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
+
+	if (initialized == false)
+		return;
+
 	if (map.loaded == false)
 	{
 		gfx.clear();
@@ -1338,7 +1387,6 @@ void Engine::resize(int width, int height)
 			menu.render_console(global);
 		gfx.swap();
 	}
-	projection.perspective( 45.0, (float) width / height, 1.0f, 2001.0f, true );
 }
 
 void Engine::load_sounds()

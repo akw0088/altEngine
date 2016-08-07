@@ -4,15 +4,26 @@
 #define new DEBUG_NEW
 #endif
 
-Light::Light(Entity *entity)
+Light::Light(Entity *entity, Graphics &gfx, int num)
 {
 	Light::entity = entity;
 	color = vec3(1.0f, 1.0f, 1.0f);
 	intensity = 0;
 	active = false;
+	light_num = num;
 
-#ifdef LIGHTMAP
-	glGenTextures(1, &shadowcube);
+#if 0
+	glGenTextures(6, &texObjCube[0]);
+	for (int i = 0; i < 6; i++)
+	{
+		glGenTextures(1, &texObjCube[i]);
+		glBindTexture(GL_TEXTURE_2D, texObjCube[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
 #endif
 
 }
@@ -43,14 +54,9 @@ void Light::generate_volumes(Bsp &map)
 	map.find_edges(entity->position, edge_list);
 }
 
-void Light::set_debuglight(int i)
-{
-	light_num = i;
-}
-
 void Light::extend(vec3 position)
 {
-#ifndef DIRECTX
+#ifdef OPENGL_OLD
 	float t = 500.0f;
 
 	if (false)
@@ -113,7 +119,7 @@ void Light::extend(vec3 position)
 
 void Light::extrude(vec3 position)
 {
-#ifndef DIRECTX
+#ifdef OPENGL_OLD
 
 	if(false)
 	{
@@ -377,25 +383,56 @@ void Light::mat_cube(float *cube, vec3 &position)
 	}
 }
 
-void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap)
+void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &global)
 {
+#if 0
 	matrix4 mvp[6];
-	float cube[96];
+	char filename[80] = { 0 };
+	char *pixel = new char[shadow_res * shadow_res * 4];
+
+
+	// Generate matrices
+	mat_right(mvp[0], entity->position);
+	mat_left(mvp[1], entity->position);
+	mat_top(mvp[2], entity->position);
+	mat_bottom(mvp[3], entity->position);
+	mat_forward(mvp[4], entity->position);
+	mat_backward(mvp[5], entity->position);
+
 
 	gfx.resize(shadow_res, shadow_res);
-	gfx.Color(false);
+//	gfx.Color(false);
+	gfx.clear();
+//	gfx.cleardepth();
 
-	// We render once, and inside the geometry shader transform the triangle 6 times
-	gfx.SelectCubemap(shadowcube);
+	
+	for (int i = 0; i < 6; i++)
+	{
+		global.Select();
+		global.Params(mvp[i], 0);
+		bsp.render(entity->position, NULL, gfx);
+		gfx.SelectShader(0);
 
-	mat_cube(cube, entity->position);
-	gfx.cleardepth();
-	shadowmap.Select();
-	shadowmap.Params(cube, 0);
-	bsp.render(entity->position, NULL, gfx);
-	gfx.SelectShader(0);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-		0, 0, shadow_res, shadow_res, 0);
+		//writing just for sanity check
+		glReadPixels(0, 0, shadow_res, shadow_res, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);//GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, &pixel);
+		sprintf(filename, "light%d.bin", light_num);
+		write_file(filename, pixel, shadow_res * shadow_res * 4);
+	}
+	
+	delete[] pixel;
 
 
+	// Pass generated cubemap to shaders for rendering
+	/*
+	for (i = 0; i < 6; i++)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+			shadow_res, shadow_res, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+	}
+	*/
+
+
+//	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+//		0, 0, shadow_res, shadow_res, 0);
+#endif
 }

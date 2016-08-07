@@ -1,6 +1,7 @@
 #include "include.h"
 
 class ShadowMap;
+class Global;
 
 #ifndef LIGHT_H
 #define LIGHT_H
@@ -8,14 +9,14 @@ class ShadowMap;
 class Light
 {
 public:
-	Light(Entity *entity);
+	Light(Entity *entity, Graphics &gfx, int num);
 	void render_shadows();
 	void generate_volumes(Bsp &map);
 	void extrude(vec3 position);
 	void extend(vec3 position);
-	void set_debuglight(int i);
 
-	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap);
+//	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap);
+	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &shadowmap);
 
 	// Generate matrices for point light shadow map/cubemap
 	static void mat_forward(matrix4 &mvp, vec3 &position);
@@ -28,7 +29,7 @@ public:
 
 
 	Entity	*entity;
-	unsigned int shadowcube;
+	unsigned int texObjCube[6];
 	vec3	color;
 	int		intensity;
 	bool	active;

@@ -26,7 +26,7 @@ Plane::Plane(vec3 normal, float d)
 
 void Plane::draw_plane(Global &global, matrix4 &transformation, matrix4 &projection)
 {
-#ifndef DIRECTX
+#ifdef OPENGL_OLD
 	float	fExtent = 500.0f;
 	float	fStep = 20.0f;
 	float	iLine;

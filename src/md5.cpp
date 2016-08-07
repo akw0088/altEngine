@@ -24,7 +24,7 @@ void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skel
 
 void MD5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
 {
-#ifndef DIRECTX
+#ifdef OPENGL_OLD
 	int i;
 
 	// Draw each joint

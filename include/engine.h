@@ -6,6 +6,11 @@
 class Engine
 {
 public:
+	Engine()
+	{
+		initialized = false;
+	}
+
 	void init(void *param1, void *param2);
 	void load(char *level);
 	void unload();
@@ -61,6 +66,7 @@ public:
 
 	void generate_buffers();
 	void destroy_buffers();
+	void setup_fbo();
 
 private:
 	matrix4				transformation;
@@ -73,6 +79,7 @@ private:
 	button_t			keyboard;
 	Menu				menu;
 	Frame				camera;
+	bool				initialized;
 
 	int xres, yres;
 
@@ -88,6 +95,12 @@ private:
 	reliablemsg_t	reliable;
 	int				spawn;
 	int				reload;
+
+
+	//fbo stuff
+	unsigned int fbo;
+	unsigned int rbo[3];
+	unsigned int depth;
 
 	// md5 stuff
 	int				frame_step;

@@ -4,8 +4,10 @@
 #define new DEBUG_NEW
 #endif
 
-void add_key(Entity &entity, char *key, char *value)
+void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 {
+	static int light_num = 0;
+
 	if (strcmp(key, "origin") == 0)
 	{
 		int x, y, z;
@@ -131,7 +133,7 @@ void add_key(Entity &entity, char *key, char *value)
 			int intensity;
 
 			if (entity.light == NULL)
-				entity.light = new Light(&entity);
+				entity.light = new Light(&entity, gfx, light_num++);
 			sscanf(value, "%d", &intensity);
 			entity.light->intensity = intensity;
 	}
@@ -140,7 +142,7 @@ void add_key(Entity &entity, char *key, char *value)
 		float r, g, b;
 
 		if (entity.light == NULL)
-			entity.light = new Light(&entity);
+			entity.light = new Light(&entity, gfx, light_num++);
 		sscanf(value, "%f %f %f", &r, &g, &b);
 		entity.light->color = vec3(r,g,b);
 	}
@@ -152,7 +154,7 @@ void add_key(Entity &entity, char *key, char *value)
 	}
 }
 
-bool parse_entity(const char *input, vector<Entity *> &entity_list)
+bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gfx)
 {
 	Entity *entity;
 	char state = 'S';
@@ -199,7 +201,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list)
 			break;
 		case 'R':
 			i--;
-			add_key(*entity, key, val);
+			add_key(*entity, key, val, gfx);
 			break;
 		}
 	}

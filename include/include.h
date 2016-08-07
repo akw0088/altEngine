@@ -21,6 +21,8 @@
 
 //#define DIRECTX
 
+#define SHADOWMAPS
+
 #ifdef DIRECTX
 	#include <d3d9.h>
 	#include <d3dx9.h>
@@ -129,6 +131,8 @@ float abs32(float val);
 int abs32(int val);
 
 char *get_file(char *filename);
+int write_file(char *filename, char *bytes, int size);
+
 double fsin(double rad);
 double fcos(double rad);
 

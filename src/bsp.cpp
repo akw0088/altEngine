@@ -562,20 +562,6 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 //	gfx.SelectVertexArrayObject(0);
 	gfx.SelectVertexBuffer(0);
 	gfx.SelectIndexBuffer(0);
-
-	/*
-	glBegin(GL_LINES);
-	for(int i = 0; i < face->num_index; i++)
-	{
-		int index = data.IndexArray[face->index + i];
-		glLineWidth(2.0f);
-//		data.Vert[index].normal.normalize();
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glVertex3f(vertex[index].position.x, vertex[index].position.y, vertex[index].position.z);
-		glVertex3f(vertex[index].position.x + vertex[index].normal.x, vertex[index].position.y + vertex[index].normal.y, vertex[index].position.z + vertex[index].normal.z);
-	}
-	glEnd();
-	*/
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx)
@@ -1199,7 +1185,7 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 
 void Bsp::draw_box(int *min, int *max)
 {
-#ifndef DIRECTX
+#ifdef OPENGL_OLD
 	glEnable(GL_BLEND);
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glLineWidth(5.0f);
@@ -1258,7 +1244,7 @@ void Bsp::draw_box(int *min, int *max)
 
 void Bsp::draw_line_box(int *min, int *max)
 {
-#ifndef DIRECTX
+#ifdef OPENGL_OLD
 	glColor3f(1.0f, 0.0f, 0.0f);
 	glLineWidth(5.0f);
 	glBegin(GL_LINES);

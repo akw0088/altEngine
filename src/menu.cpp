@@ -38,15 +38,6 @@ void Menu::init(Graphics *gfx, Sound *audio)
 
 void Menu::render(Global &global)
 {
-#ifndef DIRECTX
-	GLenum err = glGetError();
-	if ( err != GL_NO_ERROR)
-	{
-		printf("Fatal GL_ERROR %d after setting up opengl context\n", err);
-		return;
-	}
-#endif
-
 	gfx->SelectTexture(0, menu_object);
 //	gfx->SelectVertexArrayObject(Model::quad_vao);
 	gfx->SelectVertexBuffer(Model::quad_vertex);

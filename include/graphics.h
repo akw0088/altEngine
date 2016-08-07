@@ -3,6 +3,8 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#define ERROR_CHECK
+
 class Graphics
 {
 public:
