@@ -145,7 +145,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 //				WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 				0
 			};
-			//Note: For OpenGL 3.2+ we need to convert to vertex array objects on everything
 
 			const int pixelformat[] =
 			{
@@ -434,7 +433,7 @@ int write_file(char *filename, char *bytes, int size)
 		return -1;
 	}
 
-	ret = fwrite(bytes, 1, size, fp);
+	ret = fwrite(bytes, sizeof(char), size, fp);
 
 	if (ret != size)
 	{

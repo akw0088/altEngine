@@ -15,10 +15,11 @@ public:
 	void render();
 	void render_scene(bool lights);
 	void render_entities();
-	void render_shadows();
+	void render_shadow_volumes();
 
 
 	void render_shadowmaps();
+	void render_texture();
 	void post_process(int num_passes);
 	void resize(int width, int height);
 	void debug_messages();
@@ -75,9 +76,11 @@ private:
 	Menu				menu;
 	Frame				camera;
 	int					global_vao;
+	unsigned int		quad_tex;
 
+public:
 	int xres, yres;
-
+private:
 	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;

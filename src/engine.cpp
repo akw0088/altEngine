@@ -42,18 +42,30 @@ void GetDebugLog()
 void Engine::setup_fbo()
 {
 	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
 	glGenRenderbuffers(1, &rbo);
 	glGenRenderbuffers(1, &depth);
 
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
+
+	glGenTextures(1, &quad_tex);
+	glBindTexture(GL_TEXTURE_2D, quad_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xres, yres, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
 	glBindRenderbuffer(GL_RENDERBUFFER, depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, 1024, 1024);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
 
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 		GL_RENDERBUFFER, depth);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 		GL_RENDERBUFFER, rbo);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, quad_tex, 0);
+
 
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
 
@@ -61,6 +73,7 @@ void Engine::setup_fbo()
 	{
 		printf("Render to texture failed");
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 }
@@ -214,10 +227,6 @@ void Engine::load(char *level)
 #endif
 
 
-#ifdef SHADOWMAPS
-	render();
-	render_shadowmaps();
-#endif
 }
 
 void Engine::render()
@@ -228,9 +237,10 @@ void Engine::render()
 #ifndef SHADOWVOL
 	gfx.clear();
 	gfx.Blend(true);
-//	render_shadows(); // for debugging
+//	render_shadow_volumes(); // for debugging
 	render_scene(true);
 	gfx.Blend(false);
+
 #else
 	matrix4 mvp;
 
@@ -246,11 +256,11 @@ void Engine::render()
 	gfx.StencilFunc("always", 0, 0);
 
 	gfx.StencilOp("keep", "keep", "incr"); // increment shadows that pass depth
-	render_shadows();
+	render_shadow_volumes();
 
 	gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
 	gfx.CullFace("front");
-	render_shadows();
+	render_shadow_volumes();
 
 	gfx.Depth(true);
 	gfx.Color(true);
@@ -351,13 +361,48 @@ void Engine::render()
 
 void Engine::render_shadowmaps()
 {
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-	for (int i = 0; i < light_list.size(); i++)
+//	for (int i = 0; i < light_list.size(); i++)
 	{
-		light_list[i]->render_shadowmap(gfx, 1024, map, global);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+		//light_list[0]->render_shadowmap(gfx, 1024, map, global);
+		gfx.clear();
+		render_scene(true);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+		render_texture();
 	}
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	gfx.resize(xres, yres);
+}
+
+void Engine::render_texture()
+{
+	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f };
+
+	matrix4 matrix;
+
+	for (int i = 0; i < 16; i++)
+	{
+		matrix.m[i] = ident[i];
+	}
+	gfx.clear();
+
+	gfx.SelectTexture(0, quad_tex);
+	gfx.SelectIndexBuffer(Model::quad_index);
+	gfx.SelectVertexBuffer(Model::quad_vertex);
+
+	// copy the framebuffer pixels to a texture
+//	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, xres, yres);
+
+	global.Select();
+	matrix.m[13] = 1.0f;
+	global.Params(matrix, 0);
+	matrix.m[13] = 0.0f;
+	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+	gfx.SelectShader(0);
+	gfx.DeselectTexture(0);
+	gfx.swap();
 }
 
 void Engine::render_scene(bool lights)
@@ -425,7 +470,7 @@ void Engine::render_entities()
 }
 
 
-void Engine::render_shadows()
+void Engine::render_shadow_volumes()
 {
 	matrix4 mvp;
 	int j = 0;
@@ -439,7 +484,7 @@ void Engine::render_shadows()
 			mvp = transformation * projection;
 			global.Select();
 			global.Params(mvp, 0);
-//			entity_list[i]->light->render_shadows();
+//			entity_list[i]->light->render_shadow_volumes();
 			gfx.SelectShader(0);
 		}
 	}

@@ -2,6 +2,7 @@
 
 class ShadowMap;
 class Global;
+class Engine;
 
 #ifndef LIGHT_H
 #define LIGHT_H
@@ -10,13 +11,13 @@ class Light
 {
 public:
 	Light(Entity *entity, Graphics &gfx, int num);
-	void render_shadows();
+	void render_shadow_volumes();
 	void generate_volumes(Bsp &map);
 	void extrude(vec3 position);
 	void extend(vec3 position);
 
 //	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap);
-	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &shadowmap);
+	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &map, Global &global);
 
 	// Generate matrices for point light shadow map/cubemap
 	static void mat_forward(matrix4 &mvp, vec3 &position);
