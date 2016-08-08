@@ -62,7 +62,8 @@ public:
 
 	void generate_buffers();
 	void destroy_buffers();
-	void setup_fbo();
+	void setup_framebuffer(int width, int height);
+	void render_framebuffer();
 
 private:
 	matrix4				transformation;
@@ -77,6 +78,9 @@ private:
 	Frame				camera;
 	int					global_vao;
 	unsigned int		quad_tex;
+	unsigned int		depth_tex;
+	unsigned int		fb_width;
+	unsigned int		fb_height;
 
 public:
 	int xres, yres;

@@ -39,32 +39,47 @@ void GetDebugLog()
 }
 
 
-void Engine::setup_fbo()
+void Engine::setup_framebuffer(int width, int height)
 {
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
-	glGenRenderbuffers(1, &rbo);
-	glGenRenderbuffers(1, &depth);
+	//glGenRenderbuffers(1, &rbo);
+	//glGenRenderbuffers(1, &depth);
 
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
+	//glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
+
+	//glBindRenderbuffer(GL_RENDERBUFFER, depth);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+
+	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, quad_tex, 0);
 
 	glGenTextures(1, &quad_tex);
 	glBindTexture(GL_TEXTURE_2D, quad_tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, xres, yres, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-	glBindRenderbuffer(GL_RENDERBUFFER, depth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+	glGenTextures(1, &depth_tex);
+	glBindTexture(GL_TEXTURE_2D, depth_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-		GL_RENDERBUFFER, depth);
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-		GL_RENDERBUFFER, rbo);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, quad_tex, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
 
 
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
@@ -72,10 +87,35 @@ void Engine::setup_fbo()
 	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
 		printf("Render to texture failed");
+		switch (fboStatus)
+		{
+		case GL_FRAMEBUFFER_UNDEFINED:
+			printf("GL_FRAMEBUFFER_UNDEFINED");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+			break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			printf("GL_FRAMEBUFFER_UNSUPPORTED");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+			break;
+		}
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 
@@ -129,7 +169,9 @@ void Engine::init(void *param1, void *param2)
 
 	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 
-	setup_fbo();
+	fb_width = 1024;
+	fb_height = 1024;
+	setup_framebuffer(fb_width, fb_height);
 }
 
 
@@ -234,12 +276,17 @@ void Engine::render()
 	if (map.loaded == false)
 		return;
 
-#ifndef SHADOWVOL
+
+	render_framebuffer();
 	gfx.clear();
-	gfx.Blend(true);
+	render_texture();
+
+#ifndef SHADOWVOL
+//	gfx.clear();
+//	gfx.Blend(true);
 //	render_shadow_volumes(); // for debugging
-	render_scene(true);
-	gfx.Blend(false);
+//	render_scene(true);
+//	gfx.Blend(false);
 
 #else
 	matrix4 mvp;
@@ -359,23 +406,29 @@ void Engine::render()
 }
 
 
-void Engine::render_shadowmaps()
+void Engine::render_framebuffer()
 {
-//	for (int i = 0; i < light_list.size(); i++)
-	{
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-		//light_list[0]->render_shadowmap(gfx, 1024, map, global);
-		gfx.clear();
-		render_scene(true);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
 
-		render_texture();
-	}
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+	glDrawBuffers(1, &attachments[0]);
+	glViewport(0, 0, fb_width, fb_height);
+
+	gfx.clear();
+	render_scene(true);
+
+	// copy the framebuffer pixels to a texture
+//	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 512, 512);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+	gfx.resize(xres, yres);
 }
 
 void Engine::render_texture()
 {
-	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+	float ident[16] = {
+		1.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f };
@@ -386,23 +439,16 @@ void Engine::render_texture()
 	{
 		matrix.m[i] = ident[i];
 	}
-	gfx.clear();
-
 	gfx.SelectTexture(0, quad_tex);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 
-	// copy the framebuffer pixels to a texture
-//	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, xres, yres);
 
 	global.Select();
-	matrix.m[13] = 1.0f;
 	global.Params(matrix, 0);
-	matrix.m[13] = 0.0f;
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 	gfx.SelectShader(0);
 	gfx.DeselectTexture(0);
-	gfx.swap();
 }
 
 void Engine::render_scene(bool lights)
