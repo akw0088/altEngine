@@ -5,6 +5,39 @@
 #endif
 
 
+void GetDebugLog()
+{
+	GLint maxMsgLen = 0;
+	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
+
+
+	char buffer[4096] = { 0 };
+	GLenum	source[1000];
+	GLenum	type[1000];
+	GLenum	severity[1000];
+	GLuint	id[1000];
+	GLsizei	length[1000];
+
+
+	GLuint numFound = glGetDebugMessageLog(1000, 4096, &source[0], &type[0], &id[0], &severity[0], &length[0], &buffer[0]);
+
+	FILE *fp = fopen("error.log", "w+");
+	if (fp == NULL)
+	{
+		printf("Unable to open error.log\n");
+		return;
+	}
+
+
+	int buf_length = 0;
+	for (int i = 0; i < numFound; i++)
+	{
+		fprintf(fp, "source %d type %d id %d severity %d msg [%s]\n", source[i], type[i], id[i], severity[i], &buffer[buf_length]);
+		buf_length += length[i];
+	}
+	fclose(fp);
+}
+
 
 void Engine::setup_fbo()
 {
@@ -1683,6 +1716,8 @@ void Engine::destroy()
 
 void Engine::quit()
 {
+	GetDebugLog();
+
 #ifdef _WINDOWS_
 	HWND hwnd = *((HWND *)param1);
 	PostMessage(hwnd, WM_CLOSE, 0, 0);
