@@ -290,7 +290,6 @@ void Menu::render_console(Global &global)
 	vec3 color(1.0f, 1.0f, 1.0f);
 
 	gfx->SelectTexture(0, console_object);
-//	gfx->SelectVertexArrayObject(Model::quad_vao);
 	gfx->SelectIndexBuffer(Model::quad_index);
 	gfx->SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
@@ -300,9 +299,7 @@ void Menu::render_console(Global &global)
 	gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 	gfx->SelectShader(0);
 	gfx->DeselectTexture(0);
-#ifndef DIRECTX
-	gfx->SelectVertexArrayObject(0);
-#endif
+
 	gfx->cleardepth();
 	for(int i = 0; i < console_buffer.size(); i++)
 		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i), 0.025f, color);

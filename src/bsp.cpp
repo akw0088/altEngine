@@ -258,7 +258,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 	vertex = new vertex_t [data.num_verts];
 	CreateTangentArray(vertex, data.Vert, data.num_verts, tangent);
-//	map_vao = gfx.CreateVertexArrayObject();
+
 	map_vertex_vbo = gfx.CreateVertexBuffer(vertex, data.num_verts);
 	map_index_vbo = gfx.CreateIndexBuffer(data.IndexArray, data.num_index);
 }
@@ -539,7 +539,6 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
 
 inline void Bsp::render_face(face_t *face, Graphics &gfx)
 {
-//	gfx.SelectVertexArrayObject(map_vao);
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
 
@@ -559,7 +558,6 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	gfx.DeselectTexture(2);
 	gfx.DeselectTexture(1);
 	gfx.DeselectTexture(0);
-//	gfx.SelectVertexArrayObject(0);
 	gfx.SelectVertexBuffer(0);
 	gfx.SelectIndexBuffer(0);
 }
@@ -581,7 +579,6 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 	for(int i = 0; i < 4; i++)
 	{
-//		gfx.SelectVertexArrayObject(mesh_vao[mesh_index + i]);
 		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index + i]);
 		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index + i]);
 
@@ -599,6 +596,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 		gfx.DeselectTexture(1);
 		gfx.DeselectTexture(0);
 
+
 		if (face->patchWidth == 5 && i == 1)
 			break;
 
@@ -611,11 +609,9 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 {
 	gfx.SelectTexture(0, tex_object[face->material]);
 	gfx.SelectTexture(1, normal_object[face->material]);
-//	gfx.SelectVertexArrayObject(Model::quad_vao);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
-//	gfx.SelectVertexArrayObject(0);
 	gfx.SelectVertexBuffer(0);
 	gfx.SelectIndexBuffer(0);
 	gfx.DeselectTexture(1);

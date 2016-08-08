@@ -6,11 +6,6 @@
 class Engine
 {
 public:
-	Engine()
-	{
-		initialized = false;
-	}
-
 	void init(void *param1, void *param2);
 	void load(char *level);
 	void unload();
@@ -79,7 +74,7 @@ private:
 	button_t			keyboard;
 	Menu				menu;
 	Frame				camera;
-	bool				initialized;
+	int					global_vao;
 
 	int xres, yres;
 
@@ -99,7 +94,7 @@ private:
 
 	//fbo stuff
 	unsigned int fbo;
-	unsigned int rbo[3];
+	unsigned int rbo;
 	unsigned int depth;
 
 	// md5 stuff

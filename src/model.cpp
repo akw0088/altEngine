@@ -72,7 +72,6 @@ void Model::load(Graphics &gfx, char *file)
 
 	num_index = *((int *)index_file);
 
-//	model_vao = gfx.CreateVertexArrayObject();
 	model_vertex = gfx.CreateVertexBuffer(model_array, num_vertex);
 	model_index = gfx.CreateIndexBuffer(index_file + 4, num_index);
 	delete [] index_file;
@@ -349,7 +348,6 @@ void Model::create_box(Graphics &gfx, vec3 *aabb)
 						2, 6,
 						3, 7};
 
-//	box_vao = gfx.CreateVertexArrayObject();
 	box_vertex = gfx.CreateVertexBuffer(vert, 8);
 	box_index = gfx.CreateIndexBuffer(index, 24);
 }

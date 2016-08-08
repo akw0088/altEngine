@@ -9,10 +9,10 @@
 void Engine::setup_fbo()
 {
 	glGenFramebuffers(1, &fbo);
-	glGenRenderbuffers(3, &rbo[0]);
+	glGenRenderbuffers(1, &rbo);
 	glGenRenderbuffers(1, &depth);
 
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo[0]);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
 	glBindRenderbuffer(GL_RENDERBUFFER, depth);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, 1024, 1024);
@@ -20,11 +20,7 @@ void Engine::setup_fbo()
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 		GL_RENDERBUFFER, depth);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-		GL_RENDERBUFFER, rbo[0]);
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1,
-		GL_RENDERBUFFER, rbo[1]);
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2,
-		GL_RENDERBUFFER, rbo[2]);
+		GL_RENDERBUFFER, rbo);
 
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
 
@@ -54,6 +50,9 @@ void Engine::init(void *param1, void *param2)
 
 	//visual
 	gfx.init(param1, param2);
+	global_vao = gfx.CreateVertexArrayObject();
+	gfx.SelectVertexArrayObject(global_vao);
+
 	no_tex = load_texture(gfx, "media/notexture.tga");
 	Model::CreateObjects(gfx);
 	global.init(&gfx);
@@ -85,7 +84,6 @@ void Engine::init(void *param1, void *param2)
 	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 
 	setup_fbo();
-	initialized = true;
 }
 
 
@@ -182,7 +180,9 @@ void Engine::load(char *level)
 	}
 #endif
 
+
 #ifdef SHADOWMAPS
+	render();
 	render_shadowmaps();
 #endif
 }
@@ -1375,9 +1375,6 @@ void Engine::resize(int width, int height)
 
 
 	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
-
-	if (initialized == false)
-		return;
 
 	if (map.loaded == false)
 	{

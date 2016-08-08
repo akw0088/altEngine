@@ -12,7 +12,6 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 	active = false;
 	light_num = num;
 
-#if 0
 	glGenTextures(6, &texObjCube[0]);
 	for (int i = 0; i < 6; i++)
 	{
@@ -24,7 +23,6 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
-#endif
 
 }
 
@@ -385,7 +383,6 @@ void Light::mat_cube(float *cube, vec3 &position)
 
 void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &global)
 {
-#if 0
 	matrix4 mvp[6];
 	char filename[80] = { 0 };
 	char *pixel = new char[shadow_res * shadow_res * 4];
@@ -402,21 +399,27 @@ void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &gl
 
 	gfx.resize(shadow_res, shadow_res);
 //	gfx.Color(false);
-	gfx.clear();
 //	gfx.cleardepth();
 
 	
 	for (int i = 0; i < 6; i++)
 	{
+		gfx.clear();
 		global.Select();
 		global.Params(mvp[i], 0);
 		bsp.render(entity->position, NULL, gfx);
 		gfx.SelectShader(0);
 
 		//writing just for sanity check
-		glReadPixels(0, 0, shadow_res, shadow_res, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);//GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, &pixel);
-		sprintf(filename, "light%d.bin", light_num);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glReadPixels(0, 0, shadow_res, shadow_res, GL_RGBA, GL_UNSIGNED_BYTE, &pixel[0]);
+		sprintf(filename, "lightcolor%d_%d.bin", light_num, i);
 		write_file(filename, pixel, shadow_res * shadow_res * 4);
+		glReadBuffer(GL_DEPTH_ATTACHMENT);
+		glReadPixels(0, 0, shadow_res, shadow_res, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, &pixel[0]);
+		sprintf(filename, "lightdepth%d_%d.bin", light_num, i);
+		write_file(filename, pixel, shadow_res * shadow_res * 4);
+
 	}
 	
 	delete[] pixel;
@@ -434,5 +437,4 @@ void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &gl
 
 //	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
 //		0, 0, shadow_res, shadow_res, 0);
-#endif
 }
