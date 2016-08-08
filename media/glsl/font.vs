@@ -1,4 +1,4 @@
-#version 150
+#version 440 core
 
 // Per vertex attribute input
 in vec3 attr_position;

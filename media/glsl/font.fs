@@ -1,4 +1,4 @@
-#version 150
+#version 440 core
 
 // Per vertex interpolated program input
 in vec4 vary_position;
@@ -14,10 +14,12 @@ uniform float	u_col;
 uniform float	u_row;
 uniform float	u_xpos;
 uniform float	u_ypos;
-uniform sampler2D	texture0;
+
+layout(binding=0) uniform sampler2D texture0;
+
 
 void main(void)
 {
-	Fragment = texture2D(texture0, vary_TexCoord);
+	Fragment = texture(texture0, vary_TexCoord);
 	Fragment.rgb = u_color * Fragment.rgb * Fragment.a;
 }

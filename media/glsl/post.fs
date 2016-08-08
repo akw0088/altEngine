@@ -1,4 +1,4 @@
-#version 150
+#version 440 core
 
 // Per vertex interpolated program input
 in vec4 vary_position;
@@ -9,23 +9,24 @@ in vec2 vary_TexCoord;
 out vec4 Fragment;
 
 // constant program input
-uniform sampler2D	texture0;
-uniform sampler2D	texture1;
+layout(binding=0) uniform sampler2D texture0;
+layout(binding=1) uniform sampler2D texture1;
+
 uniform vec2 tc_offset[9];
 
 void main(void)
 {
-	vec4 sample[9];
+	vec4 texsample[9];
 
 	for (int i = 0; i < 9; i++)
 	{
-		sample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
+		texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
 	}
 
-	Fragment =  (sample[4] * 8.0) - 
-		(sample[0] + sample[1] + sample[2] + 
-		sample[3] + sample[5] + 
-		sample[6] + sample[7] + sample[8]);
+	Fragment =  (texsample[4] * 8.0) - 
+		(texsample[0] + texsample[1] + texsample[2] + 
+		texsample[3] + texsample[5] + 
+		texsample[6] + texsample[7] + texsample[8]);
 //	Fragment = (
 //		2.0 * sample[1] + 
 //		2.0 * sample[3] + 4.0 * sample[4] + 2.0 * sample[5] + 

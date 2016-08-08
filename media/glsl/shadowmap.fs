@@ -1,4 +1,4 @@
-#version 150
+#version 440 core
 #define	MAX_LIGHTS 16
 
 // per vertex interpolated program input
@@ -19,7 +19,9 @@ uniform vec3		u_position[MAX_LIGHTS]; // light position, world coordinates
 uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform mat4		mvp[6];
-uniform sampler2D	texture0, texture1, texture2;
+layout(binding=0) uniform sampler2D texture0;
+layout(binding=1) uniform sampler2D texture1;
+layout(binding=2) uniform sampler2D texture2;
 uniform int		far_plane;
 
 
