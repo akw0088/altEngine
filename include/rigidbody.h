@@ -10,7 +10,6 @@ public:
 	void recalc();
 	virtual void integrate(float time);
 	bool collision_detect(vec3 &v);
-	bool collision_detect();
 	bool collision_detect(Plane &p);
 	bool collision_detect_simple(RigidBody &body);
 	bool collision_detect(RigidBody &body);
@@ -33,6 +32,7 @@ public:
 	void move(Frame &camera, button_t &keyboard);
 	void move(button_t &keyboard);
 
+	bool			map_collision;
 	bool			pursue_flag;
 	Entity			*target;
 	float			restitution;

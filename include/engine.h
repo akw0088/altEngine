@@ -63,6 +63,8 @@ public:
 	void render_framebuffer();
 	void handle_input();
 
+	void handle_weapons(Player &player);
+
 private:
 	matrix4				transformation;
 	matrix4				projection;

@@ -55,8 +55,8 @@ void Engine::init(void *param1, void *param2)
 	frame_step = 0;
 	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 
-	fb_width = 1024;
-	fb_height = 1024;
+	fb_width = 1280;
+	fb_height = 1280;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 }
 
@@ -431,6 +431,8 @@ void Engine::debug_messages(int last_frametime)
 	menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
 	snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
 	menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
+	snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+	menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
 
 	snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
 	menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
@@ -646,7 +648,7 @@ void Engine::dynamics()
 		int divisions = 0;
 
 		if (body->gravity)
-			body->net_force = vec3(0.0f, -9.8f * body->mass, 0.0f);
+			body->net_force = vec3(0.0f, 2 * -9.8f * body->mass, 0.0f);
 
 		while (current_time < delta_time)
 		{
@@ -685,11 +687,14 @@ bool Engine::collision_detect(RigidBody &body)
 //	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);
 
 	if (map_collision(body))
+	{
+		body.map_collision = true;
 		return true;
-	else if (body_collision(body))
+	}
+	body.map_collision = false;
+
+	if (body_collision(body))
 		return true;
-//	else if (body.collision_detect(plane))
-//		return true;
 	else
 		return false;
 }
@@ -714,10 +719,11 @@ bool Engine::map_collision(RigidBody &body)
 		{
 			if (depth > -0.25f && depth < 0.0f)
 			{
+				// Note this will never occur from BSP because we go from no collision to deep penetration instantly
 				point = point * (1.0f / UNITS_TO_METERS);
-				body.impulse(plane, point);
 				body.entity->position = body.old_position;
 				body.morientation = body.old_orientation;
+				body.impulse(plane, point);
 			}
 			else
 			{
@@ -725,7 +731,7 @@ bool Engine::map_collision(RigidBody &body)
 				{
 					if (map.collision_detect(point + staircheck, (plane_t *)&plane, &depth) == false)
 					{
-						body.entity->position += vec3(0.0f, 2.0f, 0.0f);
+						body.entity->position += vec3(0.0f, 2.5f, 0.0f);
 						return false;
 					}
 				}
@@ -760,9 +766,10 @@ void Engine::step()
 		return;
 
 	//This function is ugly, will cleanup later
-	entity_list[spawn]->player->handle_weapons(keyboard, camera, entity_list, spawn, gfx, audio, snd_wave);
-	
-
+	handle_weapons(*(entity_list[spawn]->player));
+	spatial_testing();
+	update_audio();
+	check_triggers();
 
 	//entity test movement
 	if (menu.ingame == false && menu.console == false)
@@ -772,14 +779,7 @@ void Engine::step()
 		else
 			entity_list[spawn]->rigid->move(camera, keyboard);
 	}
-
-	spatial_testing();
-	update_audio();
-
-
 	dynamics();
-
-	check_triggers();
 
 
 
@@ -2112,4 +2112,106 @@ void Engine::chat(char *msg)
 {
 	strcat(reliable.msg, msg);
 	reliable.sequence = sequence;
+}
+
+
+void Engine::handle_weapons(Player &player)
+{
+	if (player.reload_timer > 0)
+		player.reload_timer--;
+
+	switch (player.current_weapon)
+	{
+	case wp_railgun:
+		player.weapon_idle_sound = "media/sound/weapons/railgun/rg_hum.wav";
+		//		audio.select_buffer(entity->speaker->source, snd_wave[WP_RAILGUN_IDLE].buffer);
+		break;
+	case wp_lightning:
+		player.weapon_idle_sound = "media/sound/weapons/lightning/lg_hum.wav";
+		break;
+	default:
+		player.weapon_idle_sound = "";
+		break;
+	}
+
+	if (keyboard.leftbutton && player.reload_timer == 0)
+	{
+
+		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
+		{
+			player.reload_timer = 120; // two seconds
+
+			Entity *entity = new Entity();
+			entity->rigid = new RigidBody(entity);
+			entity->position = camera.pos;
+			entity->rigid->clone(*(entity_list[0]->model));
+			entity->rigid->velocity = camera.forward * -1.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->model = entity->rigid;
+			entity->rigid->set_target(*(entity_list[spawn]));
+			camera.set(entity->model->morientation);
+			entity_list.push_back(entity);
+			player.ammo_rockets--;
+
+			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+		}
+		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
+		{
+			player.reload_timer = 10;
+
+			Entity *entity = new Entity();
+			entity->rigid = new RigidBody(entity);
+			entity->position = camera.pos;
+			entity->rigid->load(gfx, "media/models/ball");
+			entity->rigid->velocity = camera.forward * -125.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->model = entity->rigid;
+			//			entity->rigid->set_target(*(entity_list[spawn]));
+			camera.set(entity->model->morientation);
+			entity_list.push_back(entity);
+			player.ammo_lightning--;
+
+			player.attack_sound = "media/sound/weapons/lightning/lg_fire.wav";
+		}
+		else if (player.current_weapon == wp_railgun && player.ammo_slugs > 0)
+		{
+			player.reload_timer = 120; // two seconds
+
+			Entity *entity = new Entity();
+			entity->rigid = new RigidBody(entity);
+			entity->position = camera.pos;
+			entity->rigid->clone(*(entity_list[1]->model));
+			entity->rigid->velocity = camera.forward * -100.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->model = entity->rigid;
+			camera.set(entity->model->morientation);
+			entity_list.push_back(entity);
+			player.ammo_slugs--;
+
+			player.attack_sound = "media/sound/weapons/railgun/railgf1a.wav";
+		}
+		else if (player.current_weapon == wp_shotgun && player.ammo_shells > 0)
+		{
+			player.reload_timer = 60; // one seconds
+
+			player.ammo_shells--;
+
+			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
+		}
+
+
+		for (int i = 0; i < snd_wave.size(); i++)
+		{
+			if (strcmp(snd_wave[i].file, player.attack_sound) == 0)
+			{
+				audio.select_buffer(player.entity->speaker->source, snd_wave[i].buffer);
+				break;
+			}
+		}
+		audio.play(player.entity->speaker->source);
+
+	}
 }

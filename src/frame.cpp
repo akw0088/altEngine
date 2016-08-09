@@ -76,6 +76,7 @@ void Frame::set(matrix3 &trans)
 }
 
 
+// Note: this is only used when you hold control currently
 void Frame::update(button_t &keyboard)
 {
 	vec3	right = vec3::crossproduct(up, forward);

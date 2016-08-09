@@ -467,9 +467,18 @@ void RigidBody::move(Frame &camera, button_t &keyboard)
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
 	bool	jumped = false;
+	static int jump_timer = 0;
+
+
+	//prevent walking upward
+	forward.y = 0.0f;
+	right.y = 0.0f;
+
+	if (jump_timer > 0)
+		jump_timer--;
 
 	sleep = false;
-#define SPEED (1.0f)
+#define SPEED (0.5f)
 	if (keyboard.up)
 	{
 		velocity += -forward * SPEED;
@@ -506,22 +515,34 @@ void RigidBody::move(Frame &camera, button_t &keyboard)
 	if ( speed > 6.0f)
 	{
 		velocity.x *= (6.0f / speed);
+		velocity.y *= (6.0f / speed);
 		velocity.z *= (6.0f / speed);
 	}
 
 	if (moved)
 	{
-		if (jumped)
-			velocity.y = 2.5f;
-		else
-			velocity.y = 0.1f;
-	}
+		if (map_collision)
+		{
+			//clear out gravity keeping us on the ground
+			velocity.y = -0.01f;
 
-	if (moved == false)
+			//cancel out the hop we see while moving
+			//entity->position.y -= 2.0f;
+		}
+
+		if (jumped && jump_timer == 0)
+		{
+//			this->net_force.y += 2.5f;
+			velocity.y += 3.0f;
+			jump_timer = 60;
+		}
+	}
+	else
 	{
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
 	}
+
 }
 
 void RigidBody::move(button_t &keyboard)
