@@ -27,15 +27,18 @@ enum wp_weapon {
 class Player
 {
 public:
-	Player(Entity *entity, Graphics &gfx);
+	Player(Entity *entity, Graphics &gfx, Sound &audio);
 	~Player();
 	Entity	*entity;
 
-	void handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> &entity_list, int spawn, Graphics &gfx);
+	void handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> &entity_list, int spawn, Graphics &gfx, Sound &audio, vector<wave_t> &snd_wave);
 	void render_weapon(Graphics &gfx);
 	void change_weapon_up();
 	void change_weapon_down();
 
+
+	char *attack_sound;
+	char *weapon_idle_sound;
 	int health;
 	int armor;
 	int	weapon_flags;

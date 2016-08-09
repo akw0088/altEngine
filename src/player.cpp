@@ -4,11 +4,14 @@
 #define new DEBUG_NEW
 #endif
 
-Player::Player(Entity *entity, Graphics &gfx)
+Player::Player(Entity *entity, Graphics &gfx, Sound &audio)
 : weapon_rocket(entity), weapon_shotgun(entity), weapon_lightning(entity), weapon_railgun(entity)
 {
 	current_light = 0;
 	Player::entity = entity;
+
+	attack_sound = "";
+	weapon_idle_sound = "";
 	health = 100;
 	armor = 0;
 	weapon_flags = 0;
@@ -26,20 +29,47 @@ Player::Player(Entity *entity, Graphics &gfx)
 	weapon_lightning.load(gfx,	"media/models/weapons2/lightning/lightning");
 	weapon_railgun.load(gfx,	"media/models/weapons2/railgun/railgun");
 	weapon_shotgun.load(gfx,	"media/models/weapons2/shotgun/shotgun");
+
+
+	entity->speaker = new Speaker(entity);
+
+	entity->speaker->loop = false;
+	entity->speaker->source = audio.create_source(entity->speaker->loop, false);
+	alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
+	audio.effects(entity->speaker->source);
+
 	//	weapon_model.center = entity->rigid->center;
 }
 
-void Player::handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> &entity_list, int spawn, Graphics &gfx)
+
+
+
+void Player::handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> &entity_list, int spawn, Graphics &gfx, Sound &audio, vector<wave_t> &snd_wave)
 {
 	if (reload_timer > 0)
 		reload_timer--;
 
+	switch (current_weapon)
+	{
+	case wp_railgun:
+		weapon_idle_sound = "media/sound/weapons/railgun/rg_hum.wav";
+//		audio.select_buffer(entity->speaker->source, snd_wave[WP_RAILGUN_IDLE].buffer);
+		break;
+	case wp_lightning:
+		weapon_idle_sound = "media/sound/weapons/lightning/lg_hum.wav";
+		break;
+	default:
+		weapon_idle_sound = "";
+		break;
+	}
+
 	if (keyboard.leftbutton && reload_timer == 0)
 	{
-		reload_timer = 120; // two seconds
 
 		if (current_weapon == wp_rocket && ammo_rockets > 0)
 		{
+			reload_timer = 120; // two seconds
+
 			Entity *entity = new Entity();
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera.pos;
@@ -52,6 +82,8 @@ void Player::handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> 
 			camera.set(entity->model->morientation);
 			entity_list.push_back(entity);
 			ammo_rockets--;
+
+			attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
 		}
 		else if (current_weapon == wp_lightning && ammo_lightning > 0)
 		{
@@ -69,6 +101,8 @@ void Player::handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> 
 			camera.set(entity->model->morientation);
 			entity_list.push_back(entity);
 			ammo_lightning--;
+
+			attack_sound = "media/sound/weapons/lightning/lg_fire.wav";
 		}
 		else if (current_weapon == wp_railgun && ammo_slugs > 0)
 		{
@@ -85,7 +119,29 @@ void Player::handle_weapons(button_t &keyboard, Frame &camera, vector<Entity *> 
 			camera.set(entity->model->morientation);
 			entity_list.push_back(entity);
 			ammo_slugs--;
+
+			attack_sound = "media/sound/weapons/railgun/railgf1a.wav";
 		}
+		else if (current_weapon == wp_shotgun && ammo_shells > 0)
+		{
+			reload_timer = 60; // one seconds
+
+			ammo_shells--;
+
+			attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
+		}
+
+		
+		for (int i = 0; i < snd_wave.size(); i++)
+		{
+			if (strcmp(snd_wave[i].file, attack_sound) == 0)
+			{
+				audio.select_buffer(entity->speaker->source, snd_wave[i].buffer);
+				break;
+			}
+		}
+		audio.play(entity->speaker->source);
+
 	}
 }
 

@@ -262,7 +262,7 @@ void Sound::init()
 	printf("%d sends per audio source\n", sends);
 //	alListenerf(AL_REFERENCE_DISTANCE, 100.0f);
 	alDistanceModel(AL_EXPONENT_DISTANCE);
-	alListenerf(AL_ROLLOFF_FACTOR, 0.01f);
+	alListenerf(AL_ROLLOFF_FACTOR, 0.001f);
 //	alListenerf(AL_MAX_DISTANCE, 10000.0f);
 
 	alDopplerFactor(1.0f);

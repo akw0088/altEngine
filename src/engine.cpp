@@ -60,18 +60,6 @@ void Engine::init(void *param1, void *param2)
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 }
 
-
-
-void Engine::destroy_buffers()
-{
-	zcc.destroy_buffers(gfx);
-
-	for(int i = 0; i < snd_wave.size(); i++)
-	{
-		delete snd_wave[i].data;
-	}
-}
-
 void Engine::load(char *level)
 {
 	if (map.loaded)
@@ -230,76 +218,6 @@ void Engine::render(int last_frametime)
 	if (menu.console)
 		menu.render_console(global);
 	gfx.swap();
-}
-
-void Engine::handle_input()
-{
-	if (keyboard.numpad2)
-	{
-		vec3 right(-1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(0.0f, 0.0f, 1.0f);
-
-		camera.forward = forward;
-		camera.up = up;
-		//		post_process(5);
-	}
-
-	if (keyboard.numpad3)
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 0.0f, 1.0f);
-		vec3 forward(0.0f, 1.0f, 0.0f);
-
-		camera.forward = forward;
-		camera.up = up;
-		//		post_process(5);
-	}
-
-	if (keyboard.numpad6)
-	{
-		vec3 right(0.0f, 0.0f, 1.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(1.0f, 0.0f, 0.0f);
-
-		camera.forward = forward;
-		camera.up = up;
-		//		post_process(5);
-	}
-
-
-	if (keyboard.numpad4)
-	{
-		vec3 right(0.0f, 0.0f, -1.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(-1.0f, 0.0f, 0.0f);
-
-		camera.forward = forward;
-		camera.up = up;
-		//		post_process(5);
-	}
-
-	if (keyboard.numpad8)
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(0.0f, 0.0f, -1.0f);
-
-		camera.forward = forward;
-		camera.up = up;
-		//		post_process(5);
-	}
-
-	if (keyboard.numpad9)
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 0.0f, -1.0f);
-		vec3 forward(0.0f, -1.0f, 0.0f);
-
-		camera.forward = forward;
-		camera.up = up;
-		//		post_process(5);
-	}
 }
 
 
@@ -517,6 +435,87 @@ void Engine::debug_messages(int last_frametime)
 	snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
 	menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
 	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
+}
+
+void Engine::destroy_buffers()
+{
+	zcc.destroy_buffers(gfx);
+
+	for (int i = 0; i < snd_wave.size(); i++)
+	{
+		delete snd_wave[i].data;
+	}
+}
+
+
+void Engine::handle_input()
+{
+	if (keyboard.numpad2)
+	{
+		vec3 right(-1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, 1.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad3)
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, 1.0f);
+		vec3 forward(0.0f, 1.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad6)
+	{
+		vec3 right(0.0f, 0.0f, 1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(1.0f, 0.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+
+	if (keyboard.numpad4)
+	{
+		vec3 right(0.0f, 0.0f, -1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(-1.0f, 0.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad8)
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, -1.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
+
+	if (keyboard.numpad9)
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, -1.0f);
+		vec3 forward(0.0f, -1.0f, 0.0f);
+
+		camera.forward = forward;
+		camera.up = up;
+		//		post_process(5);
+	}
 }
 
 void Engine::spatial_testing()
@@ -761,7 +760,7 @@ void Engine::step()
 		return;
 
 	//This function is ugly, will cleanup later
-	entity_list[spawn]->player->handle_weapons(keyboard, camera, entity_list, spawn, gfx);
+	entity_list[spawn]->player->handle_weapons(keyboard, camera, entity_list, spawn, gfx, audio, snd_wave);
 	
 
 
@@ -1446,6 +1445,35 @@ void Engine::load_sounds()
 {
 	wave_t wave[8];
 
+
+	//load player sounds
+	strcpy(wave[0].file, "media/sound/weapons/railgun/rg_hum.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+	strcpy(wave[0].file, "media/sound/weapons/lightning/lg_hum.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+	strcpy(wave[0].file, "media/sound/weapons/shotgun/sshotf1b.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+	strcpy(wave[0].file, "media/sound/weapons/railgun/railgf1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+	strcpy(wave[0].file, "media/sound/weapons/lightning/lg_fire.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+	strcpy(wave[0].file, "media/sound/weapons/rocket/rocklf1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	snd_wave.push_back(wave[5]);
+
 	for(int i = 0; i < entity_list.size(); i++)
 	{
 		int		num_wave = 0;
@@ -1624,7 +1652,7 @@ void Engine::init_camera()
 		{
 			camera.pos = entity_list[i]->position;
 			spawn = i;
-			entity_list[spawn]->player = new Player(entity_list[i], gfx);
+			entity_list[spawn]->player = new Player(entity_list[i], gfx, audio);
 			break;
 		}
 	}
@@ -1664,7 +1692,7 @@ void Engine::create_sources()
 				if (strcmp(snd_wave[j].file, entity_list[i]->speaker->file) == 0)
 				{
 					entity_list[i]->speaker->source = audio.create_source(entity_list[i]->speaker->loop, false);
-					//alSourcef(entity_list[i]->speaker->source, AL_GAIN, 30.0f);
+					alSourcef(entity_list[i]->speaker->source, AL_GAIN, 4.0f);
 					audio.select_buffer(entity_list[i]->speaker->source, snd_wave[j].buffer);
 					audio.effects(entity_list[i]->speaker->source);
 
