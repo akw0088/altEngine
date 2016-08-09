@@ -27,7 +27,7 @@ enum wp_weapon {
 class Player
 {
 public:
-	Player(Entity *entity, Graphics &gfx, Sound &audio);
+	Player(Entity *entity, Graphics &gfx, Audio &audio);
 	~Player();
 	Entity	*entity;
 

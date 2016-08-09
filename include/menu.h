@@ -8,7 +8,7 @@ class Engine;
 class Menu
 {
 public:
-	void init(Graphics *gfx, Sound *audio);
+	void init(Graphics *gfx, Audio *audio);
 	void render(Global &global);
 	void load(char *menu_file, char *state_file);
 	void delta(char *delta, Engine &altEngine);
@@ -29,7 +29,7 @@ public:
 private:
 	matrix4 matrix;
 	Graphics *gfx;
-	Sound *audio;
+	Audio *audio;
 
 	vector<char *> console_buffer;
 	vector<char *> cmd_buffer;

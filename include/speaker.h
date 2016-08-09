@@ -8,7 +8,7 @@ class Speaker
 public:
 	Speaker(Entity *entity);
 	~Speaker();
-	void destroy(Sound &audio);
+	void destroy(Audio &audio);
 	Entity			*entity;
 
 	char			file[LINE_SIZE];

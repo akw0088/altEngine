@@ -321,7 +321,7 @@ void Engine::render_entities()
 {
 	matrix4 mvp;
 
-	global.Select();
+	mlight2.Select();
 	for(int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->visible == false)
@@ -329,9 +329,9 @@ void Engine::render_entities()
 
 		camera.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
-		global.Params(mvp, 0);//, 1, 2, light_list, light_list.size());
+		mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
 		entity_list[i]->rigid->render(gfx);
-		entity_list[i]->rigid->render_box(gfx);
+//		entity_list[i]->rigid->render_box(gfx); // bounding box lines
 		
 		//render weapon
 		if (spawn == i)
@@ -390,19 +390,21 @@ void Engine::post_process(int num_passes)
 	for (int pass = 0; pass < num_passes; pass++)
 	{
 #ifndef DIRECTX
+	#ifdef FORWARD
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, gfx.width, gfx.height, 0);
+	#else
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, fb_width, fb_height, 0);
+	#endif
 #endif
 		gfx.SelectTexture(1, post.swap);
 		post.Select();
 		post.Params(0, 1);
 		gfx.clear();
-		//		gfx.SelectVertexArrayObject(Model::quad_vao);
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
 		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 		gfx.SelectShader(0);
 		gfx.DeselectTexture(1);
-		//		gfx.SelectVertexArrayObject(0);
 	}
 	temp = post.swap;
 	post.swap = post.image;
@@ -452,6 +454,11 @@ void Engine::destroy_buffers()
 
 void Engine::handle_input()
 {
+	if (keyboard.numpad0)
+	{
+		post_process(5);
+	}
+
 	if (keyboard.numpad2)
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
@@ -460,7 +467,6 @@ void Engine::handle_input()
 
 		camera.forward = forward;
 		camera.up = up;
-		//		post_process(5);
 	}
 
 	if (keyboard.numpad3)
@@ -471,7 +477,6 @@ void Engine::handle_input()
 
 		camera.forward = forward;
 		camera.up = up;
-		//		post_process(5);
 	}
 
 	if (keyboard.numpad6)
@@ -482,7 +487,6 @@ void Engine::handle_input()
 
 		camera.forward = forward;
 		camera.up = up;
-		//		post_process(5);
 	}
 
 
@@ -494,7 +498,6 @@ void Engine::handle_input()
 
 		camera.forward = forward;
 		camera.up = up;
-		//		post_process(5);
 	}
 
 	if (keyboard.numpad8)
@@ -505,7 +508,6 @@ void Engine::handle_input()
 
 		camera.forward = forward;
 		camera.up = up;
-		//		post_process(5);
 	}
 
 	if (keyboard.numpad9)
@@ -516,7 +518,6 @@ void Engine::handle_input()
 
 		camera.forward = forward;
 		camera.up = up;
-		//		post_process(5);
 	}
 }
 

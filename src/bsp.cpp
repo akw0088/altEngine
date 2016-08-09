@@ -680,7 +680,9 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 	}
 
 	gfx.Blend(true);
-	for (int i = 0; i < blend_list.size(); i++)
+//	gfx.Depth(false);
+	// leaves sorted front to back, render blends back to front
+	for (int i = blend_list.size() - 1; i >= 0; i--)
 	{
 		face_t *face = &data.Face[blend_list[i]];
 
@@ -697,6 +699,7 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 			render_billboard(face, gfx);
 		}
 	}
+//	gfx.Depth(true);
 	gfx.Blend(false);
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }

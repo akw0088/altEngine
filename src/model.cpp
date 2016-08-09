@@ -141,7 +141,6 @@ void Model::clone(Model &model)
 
 void Model::render(Graphics &gfx)
 {
-//	gfx.SelectVertexArrayObject(model_vao);
 	gfx.SelectIndexBuffer(model_index);
 	gfx.SelectVertexBuffer(model_vertex);
 	gfx.SelectTexture(0, model_tex);
@@ -149,18 +148,15 @@ void Model::render(Graphics &gfx)
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, num_index, num_vertex);
 	gfx.DeselectTexture(2);
 	gfx.DeselectTexture(0);
-//	gfx.SelectVertexArrayObject(0);
 }
 
 void Model::render_box(Graphics &gfx)
 {
-//	gfx.SelectVertexArrayObject(box_vao);
 	gfx.SelectIndexBuffer(box_index);
 	gfx.SelectVertexBuffer(box_vertex);
 	gfx.SelectTexture(0, model_tex);
 	gfx.DrawArray(PRIM_LINES, 0, 0, 24, 24);
 	gfx.DeselectTexture(0);
-//	gfx.SelectVertexArrayObject(0);
 }
 
 float *Model::get_matrix(float *matrix)

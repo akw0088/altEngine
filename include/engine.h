@@ -71,7 +71,7 @@ private:
 	matrix4				identity;
 
 	Graphics			gfx;
-	Sound				audio;
+	Audio				audio;
 	Bsp					map;
 	button_t			keyboard;
 	Menu				menu;

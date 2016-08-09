@@ -12,7 +12,7 @@ Trigger::Trigger(Entity *entity)
 	action[0] = NULL;
 }
 
-void Trigger::destroy(Sound &audio)
+void Trigger::destroy(Audio &audio)
 {
 	if (source != -1)
 		audio.delete_source(source);

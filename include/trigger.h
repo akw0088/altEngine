@@ -8,7 +8,7 @@ class Trigger
 public:
 	Trigger(Entity *entity);
 	~Trigger();
-	void destroy(Sound &audio);
+	void destroy(Audio &audio);
 	Entity	*entity;
 
 

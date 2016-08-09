@@ -101,7 +101,7 @@ using namespace std;
 #include "md5.h"
 #include "graphics.h"
 #include "bspTypes.h"
-#include "sound.h"
+#include "audio.h"
 #include "frame.h"
 
 #include "edge.h"

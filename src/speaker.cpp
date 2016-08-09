@@ -12,7 +12,7 @@ Speaker::Speaker(Entity *entity)
 	loop = true;
 }
 
-void Speaker::destroy(Sound &audio)
+void Speaker::destroy(Audio &audio)
 {
 	if (source != -1)
 		audio.delete_source(source);

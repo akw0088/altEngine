@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void Menu::init(Graphics *gfx, Sound *audio)
+void Menu::init(Graphics *gfx, Audio *audio)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
 						0.0f, 1.0f, 0.0f, 0.0f,
