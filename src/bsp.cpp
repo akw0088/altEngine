@@ -510,6 +510,10 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
 		if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
 			continue;
 
+		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
+			continue;
+
+
 		for( int j = 0; j < num_sides; j++)
 		{
 			brushSide_t *brushSide = &data.BrushSides[brush_index + j];

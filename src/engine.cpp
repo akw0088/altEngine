@@ -4,119 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-
-void GetDebugLog()
-{
-	GLint maxMsgLen = 0;
-	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
-
-
-	char buffer[4096] = { 0 };
-	GLenum	source[1000];
-	GLenum	type[1000];
-	GLenum	severity[1000];
-	GLuint	id[1000];
-	GLsizei	length[1000];
-
-
-	GLuint numFound = glGetDebugMessageLog(1000, 4096, &source[0], &type[0], &id[0], &severity[0], &length[0], &buffer[0]);
-
-	FILE *fp = fopen("error.log", "w+");
-	if (fp == NULL)
-	{
-		printf("Unable to open error.log\n");
-		return;
-	}
-
-
-	int buf_length = 0;
-	for (int i = 0; i < numFound; i++)
-	{
-		fprintf(fp, "source %d type %d id %d severity %d msg [%s]\n", source[i], type[i], id[i], severity[i], &buffer[buf_length]);
-		buf_length += length[i];
-	}
-	fclose(fp);
-}
-
-
-void Engine::setup_framebuffer(int width, int height)
-{
-	glGenFramebuffers(1, &fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-	//glGenRenderbuffers(1, &rbo);
-	//glGenRenderbuffers(1, &depth);
-
-	//glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
-
-	//glBindRenderbuffer(GL_RENDERBUFFER, depth);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
-
-	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
-	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
-
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, quad_tex, 0);
-
-	glGenTextures(1, &quad_tex);
-	glBindTexture(GL_TEXTURE_2D, quad_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-	glGenTextures(1, &depth_tex);
-	glBindTexture(GL_TEXTURE_2D, depth_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
-
-
-	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-
-	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-	{
-		printf("Render to texture failed");
-		switch (fboStatus)
-		{
-		case GL_FRAMEBUFFER_UNDEFINED:
-			printf("GL_FRAMEBUFFER_UNDEFINED");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
-			break;
-		case GL_FRAMEBUFFER_UNSUPPORTED:
-			printf("GL_FRAMEBUFFER_UNSUPPORTED");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
-			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
-			break;
-		}
-	}
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-}
+#define DEFERRED
 
 
 void Engine::init(void *param1, void *param2)
@@ -149,8 +37,7 @@ void Engine::init(void *param1, void *param2)
 	audio.init();
 	menu.init(&gfx, &audio);
 	menu.load("media/newmenu.txt", "media/newstate.txt");
-	printf("altEngine2 Version %s\n", "1.0.0");
-	fflush(stdout);
+	printf("altEngine2 Version %s\n", "1.1.0");
 
 	gfx.error_check();
 	menu.render(global);
@@ -166,19 +53,17 @@ void Engine::init(void *param1, void *param2)
 
 	//md5 crap
 	frame_step = 0;
-
 	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 
 	fb_width = 1024;
 	fb_height = 1024;
-	setup_framebuffer(fb_width, fb_height);
+	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 }
 
 
 
 void Engine::destroy_buffers()
 {
-
 	zcc.destroy_buffers(gfx);
 
 	for(int i = 0; i < snd_wave.size(); i++)
@@ -266,29 +151,36 @@ void Engine::load(char *level)
 //			entity_list[i]->rigid->angular_velocity = vec3();
 		}
 	}
+
 #endif
 
+	//Setup render to texture
+	gfx.bindFramebuffer(fbo);
+	gfx.resize(fb_width, fb_height);
 
+	// Generate depth cubemaps for each light
+	render_shadowmaps();
+	gfx.bindFramebuffer(0);
 }
 
-void Engine::render()
+void Engine::render(int last_frametime)
 {
 	if (map.loaded == false)
 		return;
 
-
+#ifdef DEFERRED
 	render_framebuffer();
 	gfx.clear();
 	render_texture();
-
-#ifndef SHADOWVOL
-//	gfx.clear();
-//	gfx.Blend(true);
+#endif
+#ifdef FORWARD
+	gfx.clear();
+	gfx.Blend(true);
 //	render_shadow_volumes(); // for debugging
-//	render_scene(true);
-//	gfx.Blend(false);
-
-#else
+	render_scene(true);
+	gfx.Blend(false);
+#endif
+#ifdef SHADOWVOL
 	matrix4 mvp;
 
 	gfx.clear();
@@ -327,6 +219,21 @@ void Engine::render()
 	gfx.Stencil(false);
 #endif
 
+	//Handle realtime keys (typing can be slower)
+	handle_input();
+
+	//render menu
+	gfx.cleardepth();
+	debug_messages(last_frametime);
+	if (menu.ingame)
+		menu.render(global);
+	if (menu.console)
+		menu.render_console(global);
+	gfx.swap();
+}
+
+void Engine::handle_input()
+{
 	if (keyboard.numpad2)
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
@@ -393,35 +300,56 @@ void Engine::render()
 		camera.up = up;
 		//		post_process(5);
 	}
-		
-	gfx.cleardepth();
-	debug_messages();
-
-	if (menu.ingame)
-		menu.render(global);
-
-	if (menu.console)
-		menu.render_console(global);
-	gfx.swap();
 }
 
 
+void Engine::render_shadowmaps()
+{
+	for (int i = 0; i < entity_list.size(); i++)
+	{
+		if (entity_list[i]->light)
+		{
+			entity_list[i]->light->render_shadowmap(gfx, map, global);
+			break;
+		}
+	}
+}
+
 void Engine::render_framebuffer()
 {
-	GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+	gfx.bindFramebuffer(fbo);
+	gfx.resize(fb_width, fb_height);
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
-	glDrawBuffers(1, &attachments[0]);
-	glViewport(0, 0, fb_width, fb_height);
+	if (entity_list[spawn]->player->current_light == 0)
+	{
+		gfx.fbAttachTexture(quad_tex);
+		gfx.fbAttachDepth(depth_tex);
 
-	gfx.clear();
-	render_scene(true);
+		gfx.clear();
+		render_scene(true);
+	}
+	else
+	{
+		static int selected_tex = 0;
 
-	// copy the framebuffer pixels to a texture
-//	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 512, 512);
+		if (selected_tex != entity_list[spawn]->player->current_light)
+		{
+			for (int i = 0; i < entity_list.size(); i++)
+			{
+				if (entity_list[i]->light)
+				{
+//					if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
+					{
+						entity_list[i]->light->select_shadowmap(gfx, 0);
+						selected_tex = entity_list[spawn]->player->current_light;
+						break;
+					}
+				}
+			}
+		}
+	}
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
+	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
 }
 
@@ -564,14 +492,14 @@ void Engine::post_process(int num_passes)
 	gfx.DeselectTexture(0);
 }
 
-void Engine::debug_messages()
+void Engine::debug_messages(int last_frametime)
 {
 	char msg[LINE_SIZE];
 	transformation = identity;
 	projection = identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
 
-	snprintf(msg, LINE_SIZE, "Debug Messages");
+	snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %d ms %.2f fps", last_frametime, 1000.0 / last_frametime);
 	menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
 	snprintf(msg, LINE_SIZE, "%d active lights.", light_list.size());
 	menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
@@ -755,14 +683,14 @@ void Engine::dynamics()
 */
 bool Engine::collision_detect(RigidBody &body)
 {
-	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);
+//	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);
 
 	if (map_collision(body))
 		return true;
 	else if (body_collision(body))
 		return true;
-	else if (body.collision_detect(plane))
-		return true;
+//	else if (body.collision_detect(plane))
+//		return true;
 	else
 		return false;
 }
@@ -777,6 +705,10 @@ bool Engine::map_collision(RigidBody &body)
 	for(int i = 0; i < 8; i++)
 	{
 		vec3 point = body.aabb[i] - body.center + body.entity->position;
+
+//		can be used to avoid checking all eight points, but checking all 8 works pretty well
+//		vec3 point = body.center + body.entity->position;
+//		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		//bsps cant really give us depth of penetration, only hit/no hit
 		if (map.collision_detect(point, (plane_t *)&plane, &depth))
@@ -1807,7 +1739,7 @@ void Engine::destroy()
 
 void Engine::quit()
 {
-	GetDebugLog();
+	gfx.GetDebugLog();
 
 #ifdef _WINDOWS_
 	HWND hwnd = *((HWND *)param1);

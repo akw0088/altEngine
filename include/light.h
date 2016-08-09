@@ -16,8 +16,11 @@ public:
 	void extrude(vec3 position);
 	void extend(vec3 position);
 
+	void Light::generate_cubemaps(int width, int height);
+
 //	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap);
-	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &map, Global &global);
+	void render_shadowmap(Graphics &gfx, Bsp &map, Global &global);
+	void select_shadowmap(Graphics &gfx, int face);
 
 	// Generate matrices for point light shadow map/cubemap
 	static void mat_forward(matrix4 &mvp, vec3 &position);
@@ -30,7 +33,8 @@ public:
 
 
 	Entity	*entity;
-	unsigned int texObjCube[6];
+	unsigned int quad_tex[6];
+	unsigned int depth_tex[6];
 	vec3	color;
 	int		intensity;
 	bool	active;

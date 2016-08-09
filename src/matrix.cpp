@@ -451,6 +451,7 @@ void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, boo
     double radians = fovy / 2 * (3.14159265358979323846) / 180;
     double cotangent = fcos(radians) / fsin(radians);
 	float deltaZ = zFar - zNear;
+	float epsilon = 0.001f;
 
 	m[0] = (float)(cotangent / aspect);
 	m[1] = 0.0f;
@@ -474,8 +475,8 @@ void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, boo
 
 	if (infinite)
 	{
-		m[10] = -1.0f;
-		m[14] = -2.0f * zNear;
+		m[10] =  epsilon - 1.0f;
+		m[14] =  zNear * (epsilon - 2.0f);
 	}
 }
 

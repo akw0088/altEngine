@@ -12,7 +12,7 @@ public:
 	void destroy();
 	void quit();
 
-	void render();
+	void render(int last_frametime);
 	void render_scene(bool lights);
 	void render_entities();
 	void render_shadow_volumes();
@@ -22,7 +22,7 @@ public:
 	void render_texture();
 	void post_process(int num_passes);
 	void resize(int width, int height);
-	void debug_messages();
+	void debug_messages(int last_frametime);
 
 	void step();
 	void dynamics();
@@ -43,7 +43,6 @@ public:
 	void create_sources();
 
 	void console(char *cmd);
-	void handle_console(char key);
 	void handle_game(char key);
 
 	bool collision_detect(RigidBody &body);
@@ -60,10 +59,9 @@ public:
 	void client_step();
 	void send_entities();
 
-	void generate_buffers();
 	void destroy_buffers();
-	void setup_framebuffer(int width, int height);
 	void render_framebuffer();
+	void handle_input();
 
 private:
 	matrix4				transformation;

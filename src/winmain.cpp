@@ -8,9 +8,11 @@
 #include <io.h>
 #include <fcntl.h>
 
+
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL setupPixelFormat(HDC);
 void RedirectIOToConsole();
+unsigned int getTimeStamp(void);
 
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
@@ -107,6 +109,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static int	new_style = WS_CHILD | WS_VISIBLE;
 	static int	xres, yres;
 	static bool show_cursor = true;
+	static int start = 0, end = 0, last_frametime = 0;
 
 
 	switch (message)
@@ -181,7 +184,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WMU_RENDER:
 	{
-		altEngine.render();
+		start = GetTickCount();
+		altEngine.render(last_frametime);
+		end = GetTickCount();
+		last_frametime = end - start;
+
 		return 0;
 	}
 	case WM_TIMER:
@@ -442,6 +449,20 @@ int write_file(char *filename, char *bytes, int size)
 	}
 	fclose(fp);
 	return 0;
+}
+
+unsigned int getTimeStamp(void)
+{
+	unsigned int timestamp = 0;
+
+	_asm
+	{
+		// rdtsc returns 64bit "timestamp" in edx:eax, timestamp is really a count of clock cycles
+		rdtsc
+		// we are only interested in small time intervals, so highword is worthless,
+		mov	DWORD PTR timestamp, eax
+	}
+	return timestamp;
 }
 
 void RedirectIOToConsole()

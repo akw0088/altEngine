@@ -1118,5 +1118,150 @@ void Shader::destroy()
 	glDeleteShader(fragment_handle);
 }
 
+
+
+void Graphics::fbAttachTexture(int texObj)
+{
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texObj, 0);
+}
+
+void Graphics::fbAttachDepth(int texObj)
+{
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj, 0);
+}
+
+void Graphics::bindFramebuffer(int fbo)
+{
+	GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+	if (fbo)
+	{
+		glDrawBuffers(1, &attachments[0]);
+	}
+}
+
+int Graphics::checkFramebuffer()
+{
+	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+
+	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+	{
+		printf("Render to texture failed");
+		switch (fboStatus)
+		{
+		case GL_FRAMEBUFFER_UNDEFINED:
+			printf("GL_FRAMEBUFFER_UNDEFINED");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+			break;
+		case GL_FRAMEBUFFER_UNSUPPORTED:
+			printf("GL_FRAMEBUFFER_UNSUPPORTED");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+			printf("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+			break;
+		}
+		return -1;
+	}
+	return 0;
+}
+
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
+{
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	//glGenRenderbuffers(1, &rbo);
+	//glGenRenderbuffers(1, &depth);
+
+	//glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 1024, 1024);
+
+	//glBindRenderbuffer(GL_RENDERBUFFER, depth);
+	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 1024, 1024);
+
+	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth);
+	//glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, quad_tex, 0);
+
+	glGenTextures(1, &quad_tex);
+	glBindTexture(GL_TEXTURE_2D, quad_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	glGenTextures(1, &depth_tex);
+	glBindTexture(GL_TEXTURE_2D, depth_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
+
+	if (checkFramebuffer() != 0)
+	{
+		return -1;
+	}
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	return 0;
+}
+
+void Graphics::GetDebugLog()
+{
+	GLint maxMsgLen = 0;
+	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
+
+	char buffer[4096] = { 0 };
+	GLenum	source[1000];
+	GLenum	type[1000];
+	GLenum	severity[1000];
+	GLuint	id[1000];
+	GLsizei	length[1000];
+
+
+	GLuint numFound = glGetDebugMessageLog(1000, 4096, &source[0], &type[0], &id[0], &severity[0], &length[0], &buffer[0]);
+
+	FILE *fp = fopen("error.log", "w+");
+	if (fp == NULL)
+	{
+		printf("Unable to open error.log\n");
+		return;
+	}
+
+	int buf_length = 0;
+	for (int i = 0; i < numFound; i++)
+	{
+		fprintf(fp, "source %d type %d id %d severity %d msg [%s]\n", source[i], type[i], id[i], severity[i], &buffer[buf_length]);
+		buf_length += length[i];
+	}
+	fclose(fp);
+}
+
+
 #endif
 

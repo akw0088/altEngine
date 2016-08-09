@@ -12,29 +12,49 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 	active = false;
 	light_num = num;
 
-	glGenTextures(6, &texObjCube[0]);
+	generate_cubemaps(1024, 1024);
+}
+
+
+
+void Light::generate_cubemaps(int width, int height)
+{
+	glGenTextures(6, &quad_tex[0]);
+	glGenTextures(6, &depth_tex[0]);
+
 	for (int i = 0; i < 6; i++)
 	{
-		glGenTextures(1, &texObjCube[i]);
-		glBindTexture(GL_TEXTURE_2D, texObjCube[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_COLOR_COMPONENTS, 1024, 1024, 0, GL_RGBA, GL_FLOAT, 0);
-		//GL_DEPTH_COMPONENT24
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE_2D, quad_tex[i]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+		glBindTexture(GL_TEXTURE_2D, depth_tex[i]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	}
 
 }
 
-void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &global)
+void Light::select_shadowmap(Graphics &gfx, int face)
+{
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex[face], 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex[face], 0);
+	gfx.checkFramebuffer();
+}
+
+void Light::render_shadowmap(Graphics &gfx, Bsp &bsp, Global &global)
 {
 	matrix4 mvp[6];
-	char filename[80] = { 0 };
-//	char *pixel = new char[shadow_res * shadow_res * 4];
-
 
 	// Generate matrices
 	mat_right(mvp[0], entity->position);
@@ -44,49 +64,18 @@ void Light::render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, Global &gl
 	mat_forward(mvp[4], entity->position);
 	mat_backward(mvp[5], entity->position);
 
-
-	//gfx.resize(shadow_res, shadow_res);
-	//	gfx.Color(false);
-	//	gfx.cleardepth();
-
-
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 1; i++)
 	{
+		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex[i], 0);
+		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex[i], 0);
+		gfx.checkFramebuffer();
+
 		gfx.clear();
 		global.Select();
 		global.Params(mvp[i], 0);
 		bsp.render(entity->position, NULL, gfx);
 		gfx.SelectShader(0);
-
-		//writing just for sanity check
-		/*
-		glReadBuffer(GL_COLOR_ATTACHMENT0);
-		glReadPixels(0, 0, shadow_res, shadow_res, GL_RGBA, GL_UNSIGNED_BYTE, &pixel[0]);
-		sprintf(filename, "lightcolor%d_%d.bin", light_num, i);
-		write_file(filename, pixel, shadow_res * shadow_res * 4);
-		glReadBuffer(GL_DEPTH_ATTACHMENT);
-		glReadPixels(0, 0, shadow_res, shadow_res, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, &pixel[0]);
-		sprintf(filename, "lightdepth%d_%d.bin", light_num, i);
-		write_file(filename, pixel, shadow_res * shadow_res * 4);
-		*/
-
 	}
-
-//	delete[] pixel;
-
-
-	// Pass generated cubemap to shaders for rendering
-	/*
-	for (i = 0; i < 6; i++)
-	{
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
-	shadow_res, shadow_res, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-	}
-	*/
-
-
-	//	glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-	//		0, 0, shadow_res, shadow_res, 0);
 }
 
 void Light::render_shadow_volumes()

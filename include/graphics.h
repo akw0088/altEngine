@@ -52,6 +52,13 @@ public:
 
 	void SelectShader(int program);
 
+	int checkFramebuffer();
+	int setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex);
+	void bindFramebuffer(int fbo);
+	void fbAttachTexture(int texObj);
+	void fbAttachDepth(int texObj);
+	void GetDebugLog();
+
 
 	~Graphics();
 
