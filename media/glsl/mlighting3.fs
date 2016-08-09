@@ -34,6 +34,7 @@ void main(void)
 	vec3 tangent = normalize(Vertex.vary_tangent);
 	vec3 bitangent = normalize(cross(normal, tangent));
 	mat3 tangent_space = mat3(tangent, bitangent, normal);
+
 	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
 	vec3 ambient = vec3(0.125f, 0.125f, 0.125f);
 	vec3 light = vec3(0.0f, 0.0f, 0.0f);
@@ -43,7 +44,8 @@ void main(void)
 //	Fragment = texture(texture0, Vertex.vary_TexCoord + height * eye.xy);
 //	vec3 normal_map = normalize(texture(texture2, Vertex.vary_TexCoord + height * eye.xy).xyz);
 
-	vec3 normal_map = normalize(texture(texture2, Vertex.vary_TexCoord).xyz);
+	vec3 normal_map = texture(texture2, Vertex.vary_TexCoord).xyz;
+
 	Fragment = texture(texture0, Vertex.vary_TexCoord);
 
 
@@ -53,7 +55,7 @@ void main(void)
 		vary_light.rgb = vec3(Vertex.vary_position - lightPosEye); // light vector to fragment
 		vary_light.a = length(vary_light.rgb); // distance from light
 
-		vec3 v_light = tangent_space * normalize(vec3(vary_light));	// light vector in tangent space
+		vec3 v_light = normalize(vec3(vary_light));	// light vector in tangent space
 		vec3 v_reflect = reflect(v_light, normal_map);			// normal map reflection vector
 		float diffuse = max(dot(v_light, normal_map), 0.25);		// directional light factor for fragment
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
