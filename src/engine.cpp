@@ -50,6 +50,7 @@ void Engine::init(void *param1, void *param2)
 	reliable.sequence = -1;
 	last_server_sequence = 0;
 	spawn = 0;
+	testObj = 0;
 
 	//md5 crap
 	frame_step = 0;
@@ -159,7 +160,26 @@ void Engine::render(int last_frametime)
 #ifdef DEFERRED
 	render_framebuffer();
 	gfx.clear();
-	render_texture();
+
+	if (entity_list[spawn]->player->current_light == 0)
+		render_texture(quad_tex);
+	else
+	{
+		for (int i = 0; i < entity_list.size(); i++)
+		{
+			if (entity_list[i]->light)
+			{
+				if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
+				{
+					testObj = entity_list[i]->light->quad_tex[0];
+					break;
+				}
+			}
+		}
+
+		render_texture(testObj);
+	}
+
 #endif
 #ifdef FORWARD
 	gfx.clear();
@@ -227,8 +247,7 @@ void Engine::render_shadowmaps()
 	{
 		if (entity_list[i]->light)
 		{
-			entity_list[i]->light->render_shadowmap(gfx, map, global);
-			break;
+			entity_list[i]->light->render_shadowmap(gfx, projection, map, mlight2);
 		}
 	}
 }
@@ -237,41 +256,17 @@ void Engine::render_framebuffer()
 {
 	gfx.bindFramebuffer(fbo);
 	gfx.resize(fb_width, fb_height);
+	gfx.fbAttachTexture(quad_tex);
+	gfx.fbAttachDepth(depth_tex);
 
-	if (entity_list[spawn]->player->current_light == 0)
-	{
-		gfx.fbAttachTexture(quad_tex);
-		gfx.fbAttachDepth(depth_tex);
-
-		gfx.clear();
-		render_scene(true);
-	}
-	else
-	{
-		static int selected_tex = 0;
-
-		if (selected_tex != entity_list[spawn]->player->current_light)
-		{
-			for (int i = 0; i < entity_list.size(); i++)
-			{
-				if (entity_list[i]->light)
-				{
-//					if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
-					{
-						entity_list[i]->light->select_shadowmap(gfx, 0);
-						selected_tex = entity_list[spawn]->player->current_light;
-						break;
-					}
-				}
-			}
-		}
-	}
+	gfx.clear();
+	render_scene(true);
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
 }
 
-void Engine::render_texture()
+void Engine::render_texture(int texObj)
 {
 	float ident[16] = {
 		1.0f, 0.0f, 0.0f, 0.0f,
@@ -285,11 +280,9 @@ void Engine::render_texture()
 	{
 		matrix.m[i] = ident[i];
 	}
-	gfx.SelectTexture(0, quad_tex);
+	gfx.SelectTexture(0, texObj);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-
-
 	global.Select();
 	global.Params(matrix, 0);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);

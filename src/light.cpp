@@ -19,11 +19,10 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 
 void Light::generate_cubemaps(int width, int height)
 {
-	glGenTextures(6, &quad_tex[0]);
-	glGenTextures(6, &depth_tex[0]);
 
 	for (int i = 0; i < 6; i++)
 	{
+		glGenTextures(1, &quad_tex[i]);
 		glBindTexture(GL_TEXTURE_2D, quad_tex[i]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
@@ -33,6 +32,7 @@ void Light::generate_cubemaps(int width, int height)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
+		glGenTextures(1, &depth_tex[i]);
 		glBindTexture(GL_TEXTURE_2D, depth_tex[i]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
@@ -47,13 +47,14 @@ void Light::generate_cubemaps(int width, int height)
 
 void Light::select_shadowmap(Graphics &gfx, int face)
 {
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex[face], 0);
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex[face], 0);
+	gfx.fbAttachTexture(quad_tex[face]);
+	gfx.fbAttachDepth(depth_tex[face]);
 	gfx.checkFramebuffer();
 }
 
-void Light::render_shadowmap(Graphics &gfx, Bsp &bsp, Global &global)
+void Light::render_shadowmap(Graphics &gfx, matrix4 projection, Bsp &map, mLight2 &mlight2)
 {
+	vector<Light *> light_list;
 	matrix4 mvp[6];
 
 	// Generate matrices
@@ -66,14 +67,14 @@ void Light::render_shadowmap(Graphics &gfx, Bsp &bsp, Global &global)
 
 	for (int i = 0; i < 1; i++)
 	{
-		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex[i], 0);
-		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex[i], 0);
-		gfx.checkFramebuffer();
-
+		gfx.fbAttachTexture(quad_tex[i]);
+		gfx.fbAttachDepth(depth_tex[i]);
 		gfx.clear();
-		global.Select();
-		global.Params(mvp[i], 0);
-		bsp.render(entity->position, NULL, gfx);
+//		gfx.Color(false);
+		mlight2.Select();
+		mlight2.Params(mvp[i] * projection, 0, 1, 2, light_list, light_list.size());
+		map.render(entity->position, NULL, gfx);
+//		gfx.Color(true);
 		gfx.SelectShader(0);
 	}
 }
@@ -101,7 +102,7 @@ void Light::render_shadow_volumes()
 
 void Light::generate_volumes(Bsp &map)
 {
-	map.find_edges(entity->position, edge_list);
+//	map.find_edges(entity->position, edge_list);
 }
 
 void Light::extend(vec3 position)
@@ -269,9 +270,9 @@ void Light::mat_forward(matrix4 &mvp, vec3 &position)
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
-	mvp.m[12] = right * position;
-	mvp.m[13] = up * position;
-	mvp.m[14] = forward * position;
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
 	mvp.m[15] = 1.0f;
 }
 
@@ -296,9 +297,9 @@ void Light::mat_left(matrix4 &mvp, vec3 &position)
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
-	mvp.m[12] = right * position;
-	mvp.m[13] = up * position;
-	mvp.m[14] = forward * position;
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
 	mvp.m[15] = 1.0f;
 }
 
@@ -323,9 +324,9 @@ void Light::mat_backward(matrix4 &mvp, vec3 &position)
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
-	mvp.m[12] = right * position;
-	mvp.m[13] = up * position;
-	mvp.m[14] = forward * position;
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
 	mvp.m[15] = 1.0f;
 }
 
@@ -350,9 +351,9 @@ void Light::mat_right(matrix4 &mvp, vec3 &position)
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
-	mvp.m[12] = right * position;
-	mvp.m[13] = up * position;
-	mvp.m[14] = forward * position;
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
 	mvp.m[15] = 1.0f;
 }
 
@@ -377,9 +378,9 @@ void Light::mat_top(matrix4 &mvp, vec3 &position)
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
-	mvp.m[12] = right * position;
-	mvp.m[13] = up * position;
-	mvp.m[14] = forward * position;
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
 	mvp.m[15] = 1.0f;
 }
 
@@ -404,9 +405,9 @@ void Light::mat_bottom(matrix4 &mvp, vec3 &position)
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
-	mvp.m[12] = right * position;
-	mvp.m[13] = up * position;
-	mvp.m[14] = forward * position;
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
 	mvp.m[15] = 1.0f;
 }
 

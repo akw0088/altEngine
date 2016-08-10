@@ -19,7 +19,7 @@ public:
 
 
 	void render_shadowmaps();
-	void render_texture();
+	void render_texture(int texObj);
 	void post_process(int num_passes);
 	void resize(int width, int height);
 	void debug_messages(int last_frametime);
@@ -64,6 +64,7 @@ public:
 	void handle_input();
 
 	void handle_weapons(Player &player);
+	int testObj;
 
 private:
 	matrix4				transformation;

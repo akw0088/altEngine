@@ -552,7 +552,7 @@ void RigidBody::move(button_t &keyboard)
 	vec3	forward(morientation.m[6], morientation.m[7], morientation.m[8]);
 
 	sleep = false;
-#define SPEED (1.0f) // meters per second
+#define SPEED (0.5f) // meters per second
 	if (keyboard.up)
 	{
 		entity->position += -forward * SPEED;

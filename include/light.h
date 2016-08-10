@@ -2,6 +2,7 @@
 
 class ShadowMap;
 class Global;
+class mLight2;
 class Engine;
 
 #ifndef LIGHT_H
@@ -16,11 +17,11 @@ public:
 	void extrude(vec3 position);
 	void extend(vec3 position);
 
-	void Light::generate_cubemaps(int width, int height);
+	void generate_cubemaps(int width, int height);
 
-//	void render_shadowmap(Graphics &gfx, int shadow_res, Bsp &bsp, ShadowMap &shadowmap);
-	void render_shadowmap(Graphics &gfx, Bsp &map, Global &global);
+	void render_shadowmap(Graphics &gfx, matrix4 projection, Bsp &map, mLight2 &mlight2);
 	void select_shadowmap(Graphics &gfx, int face);
+
 
 	// Generate matrices for point light shadow map/cubemap
 	static void mat_forward(matrix4 &mvp, vec3 &position);
