@@ -14,7 +14,8 @@ public:
 
 	void render(int last_frametime);
 	void render_scene(bool lights);
-	void render_entities();
+	void render_scene_shadowmap(bool lights);
+	void render_entities(const matrix4 transformation, bool lights);
 	void render_shadow_volumes();
 
 
@@ -66,6 +67,13 @@ public:
 	void handle_weapons(Player &player);
 	int testObj;
 
+//temp
+	int xres, yres;
+	// md5 stuff
+	int				frame_step;
+	MD5Model		zcc;
+
+
 private:
 	matrix4				transformation;
 	matrix4				projection;
@@ -83,9 +91,6 @@ private:
 	unsigned int		fb_width;
 	unsigned int		fb_height;
 
-public:
-	int xres, yres;
-private:
 	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;
@@ -105,9 +110,6 @@ private:
 	unsigned int rbo;
 	unsigned int depth;
 
-	// md5 stuff
-	int				frame_step;
-	MD5Model		zcc;
 
 	//server
 	bool	server;
@@ -119,8 +121,10 @@ private:
 
 	Post	post;
 	mLight2	mlight2;
+	mLightDepth mlight_depth;
+	mLight3	mlight3;
 	Global	global;
-	ShadowMap shadowmap;
+
 	void	*param1;
 	void	*param2;
 };

@@ -30,7 +30,6 @@ void Engine::init(void *param1, void *param2)
 	no_tex = load_texture(gfx, "media/notexture.tga");
 	Model::CreateObjects(gfx);
 	global.init(&gfx);
-	shadowmap.init(&gfx);
 
 
 	//audio
@@ -73,6 +72,8 @@ void Engine::load(char *level)
 	camera.reset();
 	post.init(&gfx);
 	mlight2.init(&gfx);
+	mlight_depth.init(&gfx);
+	mlight3.init(&gfx);
 
 	try
 	{
@@ -109,7 +110,8 @@ void Engine::load(char *level)
 	gfx.error_check();
 
 	map.render(camera.pos, NULL, gfx);
-	render_entities();
+	camera.set(transformation);
+	render_entities(transformation, true);
 
 	menu.delta("textures", *this);
 	menu.render(global);
@@ -131,6 +133,15 @@ void Engine::load(char *level)
 			vec3(1.0f, 1.0f, 1.0f));
 	}
 
+	//Setup render to texture
+	gfx.bindFramebuffer(fbo);
+	gfx.resize(fb_width, fb_height);
+
+	// Generate depth cubemaps for each light
+	render_shadowmaps();
+	gfx.bindFramebuffer(0);
+
+
 #ifdef SHADOWVOL
 	for(int i = 0; i < entity_list.size(); i++)
 	{
@@ -143,13 +154,6 @@ void Engine::load(char *level)
 
 #endif
 
-	//Setup render to texture
-	gfx.bindFramebuffer(fbo);
-	gfx.resize(fb_width, fb_height);
-
-	// Generate depth cubemaps for each light
-	render_shadowmaps();
-	gfx.bindFramebuffer(0);
 }
 
 void Engine::render(int last_frametime)
@@ -158,6 +162,17 @@ void Engine::render(int last_frametime)
 		return;
 
 #ifdef DEFERRED
+
+	//Setup render to texture
+	gfx.bindFramebuffer(fbo);
+	gfx.resize(fb_width, fb_height);
+
+	// Generate depth cubemaps for each light
+	render_shadowmaps();
+	gfx.bindFramebuffer(0);
+
+
+
 	render_framebuffer();
 	gfx.clear();
 
@@ -171,7 +186,7 @@ void Engine::render(int last_frametime)
 			{
 				if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
 				{
-					testObj = entity_list[i]->light->quad_tex[0];
+					testObj = entity_list[i]->light->quad_tex[5];
 					break;
 				}
 			}
@@ -243,14 +258,51 @@ void Engine::render(int last_frametime)
 
 void Engine::render_shadowmaps()
 {
+
+	// set zFar closer to maximize depth buffer percision
+	projection.perspective(45.0, (float)fb_width / fb_height, 1.0f, 1201.0f, false);
 	for (int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light)
+		if (entity_list[i]->visible && entity_list[i]->light)
 		{
-			entity_list[i]->light->render_shadowmap(gfx, projection, map, mlight2);
+			Light *light = entity_list[i]->light;
+
+			matrix4 mvp[6];
+
+			// Generate matrices
+			matrix4::mat_right(mvp[0], light->entity->position);
+			matrix4::mat_left(mvp[1], light->entity->position);
+			matrix4::mat_top(mvp[2], light->entity->position);
+			matrix4::mat_bottom(mvp[3], light->entity->position);
+			matrix4::mat_forward(mvp[4], light->entity->position);
+			matrix4::mat_backward(mvp[5], light->entity->position);
+
+			for (int i = 5; i < 6; i++)
+			{
+				gfx.fbAttachTexture(light->quad_tex[i]);
+				gfx.fbAttachDepth(light->depth_tex[i]);
+				gfx.clear();
+				//		gfx.Color(false);
+				//		glDrawBuffer(GL_NONE);
+				//		glReadBuffer(GL_NONE);
+				//gfx.CullFace("front");
+				render_entities(mvp[i], false);
+				//gfx.CullFace("back");
+
+				mlight_depth.Select();
+				mlight_depth.Params(mvp[i] * projection);
+				map.render(light->entity->position, NULL, gfx);
+				gfx.SelectShader(0);
+				//		gfx.Color(true);
+			}
+
+
 		}
 	}
+	projection.perspective(45.0, (float)xres / yres, 1.0f, 2001.0f, true);
+
 }
+
 
 void Engine::render_framebuffer()
 {
@@ -260,7 +312,7 @@ void Engine::render_framebuffer()
 	gfx.fbAttachDepth(depth_tex);
 
 	gfx.clear();
-	render_scene(true);
+	render_scene_shadowmap(true);
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
@@ -296,21 +348,55 @@ void Engine::render_scene(bool lights)
 
 	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
 
-	render_entities();
+
 	camera.set(transformation);
+	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
 
 	if (lights)
-		mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
+		mlight2.Params(mvp, light_list, light_list.size());
 	else
-		mlight2.Params(mvp, 0, 1, 2, light_list, 0);
+		mlight2.Params(mvp, light_list, 0);
 
 	map.render(camera.pos, NULL, gfx);
 	gfx.SelectShader(0);
 }
 
-void Engine::render_entities()
+
+// Looks like we will be limited by texture units
+//53 on geforce 960m
+//128 on HD 7970
+//160 NVIDIA GeForce GTX 1080
+// target 8 shadow cube maps seems reasonable
+// looks like packing multiple cubemaps into a single texture
+// and sizing them based on impact is what research is doing
+void Engine::render_scene_shadowmap(bool lights)
+{
+	matrix4 mvp;
+
+	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
+
+	camera.set(transformation);
+	render_entities(transformation, lights);
+	mlight3.Select();
+	mvp = transformation * projection;
+
+
+	gfx.SelectTexture(3, light_list[0]->depth_tex[0]);
+	gfx.SelectTexture(4, light_list[1]->depth_tex[1]);
+	gfx.SelectTexture(5, light_list[2]->depth_tex[2]);
+	gfx.SelectTexture(6, light_list[3]->depth_tex[3]);
+	gfx.SelectTexture(7, light_list[4]->depth_tex[4]);
+	gfx.SelectTexture(8, light_list[5]->depth_tex[5]);
+
+	mlight3.Params(mvp, light_list, light_list.size());
+
+	map.render(camera.pos, NULL, gfx);
+	gfx.SelectShader(0);
+}
+
+void Engine::render_entities(const matrix4 transformation, bool lights)
 {
 	matrix4 mvp;
 
@@ -320,10 +406,18 @@ void Engine::render_entities()
 		if (entity_list[i]->visible == false)
 			continue;
 
-		camera.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
-		mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
-		entity_list[i]->rigid->render(gfx);
+		if (lights)
+		{
+			mlight2.Params(mvp, light_list, light_list.size());
+		}
+		else
+		{
+			mlight2.Params(mvp, light_list, 0);
+		}
+
+		if (entity_list[i]->light == NULL)
+			entity_list[i]->rigid->render(gfx);
 //		entity_list[i]->rigid->render_box(gfx); // bounding box lines
 		
 		//render weapon
@@ -336,21 +430,32 @@ void Engine::render_entities()
 			mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
 			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
 			mvp = transformation.premultiply(mvp.m) * projection;
-			global.Params(mvp, 0);// , 1, 2, light_list, light_list.size());
+			if (lights)
+			{
+				mlight2.Params(mvp, light_list, light_list.size());
+			}
+			else
+			{
+				mlight2.Params(mvp, light_list, 0);
+			}
 
 			entity_list[i]->player->render_weapon(gfx);
 		}
 	}
-	gfx.SelectShader(0);
 
 
 	//render md5 as second to last entity
-	mlight2.Select();
-	camera.set(transformation);
 	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-	mlight2.Params(mvp, 0, 1, 2, light_list, light_list.size());
+
+	if (lights)
+	{
+		mlight2.Params(mvp, light_list, light_list.size());
+	}
+	else
+	{
+		mlight2.Params(mvp, light_list, 0);
+	}
 	zcc.render(gfx, frame_step);
-	gfx.SelectShader(0);
 
 }
 
@@ -588,8 +693,8 @@ void Engine::activate_light(float distance, Light *light)
 		{
 			light_list.push_back(light);
 			light->active = true;
-			light->entity->rigid->angular_velocity.x = 10.0;
-			light->entity->rigid->angular_velocity.y = 10.0;
+//			light->entity->rigid->angular_velocity.x = 10.0;
+//			light->entity->rigid->angular_velocity.y = 10.0;
 		}
 	}
 	else
@@ -605,8 +710,8 @@ void Engine::activate_light(float distance, Light *light)
 				}
 			}
 			light->active = false;
-			light->entity->rigid->angular_velocity.x = 0.0;
-			light->entity->rigid->angular_velocity.y = 0.0;
+//			light->entity->rigid->angular_velocity.x = 0.0;
+//			light->entity->rigid->angular_velocity.y = 0.0;
 		}
 	}
 }
@@ -1445,28 +1550,32 @@ void Engine::load_sounds()
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
+
 	strcpy(wave[0].file, "media/sound/weapons/lightning/lg_hum.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
+
 	strcpy(wave[0].file, "media/sound/weapons/shotgun/sshotf1b.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
+
 	strcpy(wave[0].file, "media/sound/weapons/railgun/railgf1a.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
+
 	strcpy(wave[0].file, "media/sound/weapons/lightning/lg_fire.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
+
 	strcpy(wave[0].file, "media/sound/weapons/rocket/rocklf1a.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	snd_wave.push_back(wave[5]);
 
 	for(int i = 0; i < entity_list.size(); i++)
 	{
@@ -1744,6 +1853,8 @@ void Engine::unload()
 
 	post.destroy();
 	mlight2.destroy();
+	mlight_depth.destroy();
+	mlight3.destroy();
 	map.unload(gfx);
 	menu.play();
 	menu.delta("unload", *this);

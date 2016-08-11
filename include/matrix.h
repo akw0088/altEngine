@@ -31,13 +31,22 @@ public:
 	matrix4 operator-(const matrix4 &q);
 	matrix4 operator*(const float scalar);
 	matrix4 operator*(const float *matrix);
-	matrix4 premultiply(const float *mat);
+	matrix4 premultiply(const float *mat) const;
 	vec4 operator*(const vec4 &vec);
 	matrix4 operator*(const matrix4 &q);
 	void normalize();
 	matrix4 transpose();
 	void perspective(float fovy, float aspect, float zNear, float zFar, bool infinite);
 	void ortho(float left, float right, float bottom, float top, float near, float far);
+
+	// Generate matrices for point light shadow map/cubemap
+	static void mat_forward(matrix4 &mvp, vec3 &position);
+	static void mat_right(matrix4 &mvp, vec3 &position);
+	static void mat_backward(matrix4 &mvp, vec3 &position);
+	static void mat_left(matrix4 &mvp, vec3 &position);
+	static void mat_top(matrix4 &mvp, vec3 &position);
+	static void mat_bottom(matrix4 &mvp, vec3 &position);
+	static void mat_cube(float *cube, vec3 &position);
 
 
 	float m[16];

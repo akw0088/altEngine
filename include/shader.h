@@ -30,16 +30,7 @@ private:
 	int	texture0;
 };
 
-class ShadowMap : public Shader
-{
-public:
-	void init(Graphics *gfx);
-	void Params(float *cube, int tex0);
-	virtual void prelink(void);
-private:
-	int matrix;
-	int	texture0;
-};
+
 
 // Max lights hardware can pass through shaders, gfx card specfic
 #define MAX_LIGHTS 16
@@ -48,7 +39,7 @@ class mLight2 : public Shader
 {
 public:
 	void init(Graphics *gfx);
-	void Params(matrix4 &mvp, int tex0, int tex1, int tex2, vector<Light *> &light_list, size_t num_lights);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
 	virtual void prelink(void);
 
 private:
@@ -56,6 +47,45 @@ private:
 	int	texture0;
 	int texture1;
 	int texture2;
+	int u_num_lights;
+	int u_position;
+	int u_color;
+	int u_intensity;
+};
+
+class mLightDepth : public Shader
+{
+public:
+	void init(Graphics *gfx);
+	void Params(matrix4 &mvp);
+	virtual void prelink(void);
+
+private:
+	int matrix;
+};
+
+class mLight3 : public Shader
+{
+public:
+	void init(Graphics *gfx);
+	void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
+	virtual void prelink(void);
+
+private:
+	int matrix;
+	int	texture0;
+	int texture1;
+	int texture2;
+
+	int texture3;
+	int texture4;
+	int texture5;
+	int texture6;
+	int texture7;
+	int texture8;
+
+
+
 	int u_num_lights;
 	int u_position;
 	int u_color;

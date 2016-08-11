@@ -1,10 +1,5 @@
 #include "include.h"
 
-class ShadowMap;
-class Global;
-class mLight2;
-class Engine;
-
 #ifndef LIGHT_H
 #define LIGHT_H
 
@@ -19,19 +14,7 @@ public:
 
 	void generate_cubemaps(int width, int height);
 
-	void render_shadowmap(Graphics &gfx, matrix4 projection, Bsp &map, mLight2 &mlight2);
 	void select_shadowmap(Graphics &gfx, int face);
-
-
-	// Generate matrices for point light shadow map/cubemap
-	static void mat_forward(matrix4 &mvp, vec3 &position);
-	static void mat_right(matrix4 &mvp, vec3 &position);
-	static void mat_backward(matrix4 &mvp, vec3 &position);
-	static void mat_left(matrix4 &mvp, vec3 &position);
-	static void mat_top(matrix4 &mvp, vec3 &position);
-	static void mat_bottom(matrix4 &mvp, vec3 &position);
-	static void mat_cube(float *cube, vec3 &position);
-
 
 	Entity	*entity;
 	unsigned int quad_tex[6];

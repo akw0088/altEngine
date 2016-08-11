@@ -392,7 +392,7 @@ matrix4 matrix4::operator*(const float *mat)
 }
 
 
-matrix4 matrix4::premultiply(const float *mat)
+matrix4 matrix4::premultiply(const float *mat) const
 {
 	matrix4 result;
 
@@ -501,4 +501,190 @@ void matrix4::ortho(float left, float right, float bottom, float top, float near
 	m[13] = -(top + bottom) / (top - bottom);
 	m[14] = -(farval + nearval) / (farval - nearval);
 	m[15] = 1.0f;
+}
+
+
+void matrix4::mat_forward(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(0.0f, 0.0f, -1.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void matrix4::mat_left(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(0.0f, 0.0f, -1.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(-1.0f, 0.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void matrix4::mat_backward(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(-1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(0.0f, 0.0f, 1.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void matrix4::mat_right(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(0.0f, 0.0f, 1.0f);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 forward(1.0f, 0.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void matrix4::mat_top(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 0.0f, -1.0f);
+	vec3 forward(0.0f, -1.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+void matrix4::mat_bottom(matrix4 &mvp, vec3 &position)
+{
+	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 up(0.0f, 0.0f, 1.0f);
+	vec3 forward(0.0f, 1.0f, 0.0f);
+
+	mvp.m[0] = right.x;
+	mvp.m[1] = right.y;
+	mvp.m[2] = right.z;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = up.x;
+	mvp.m[5] = up.y;
+	mvp.m[6] = up.z;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = forward.x;
+	mvp.m[9] = forward.y;
+	mvp.m[10] = forward.z;
+	mvp.m[11] = 0.0f;
+
+	mvp.m[12] = -right * position;
+	mvp.m[13] = -up * position;
+	mvp.m[14] = -forward * position;
+	mvp.m[15] = 1.0f;
+}
+
+
+void matrix4::mat_cube(float *cube, vec3 &position)
+{
+	matrix4 mvp[6];
+	int j = 0;
+
+	// Generate matrices
+	mat_top(mvp[0], position);
+	mat_bottom(mvp[1], position);
+	mat_left(mvp[2], position);
+	mat_right(mvp[3], position);
+	mat_forward(mvp[4], position);
+	mat_backward(mvp[5], position);
+
+	// Combine them, could probably generate them directly
+	for (int i = 0; i < 96; i++)
+	{
+		cube[i] = mvp[j++].m[i];
+		if (j == 16)
+			j = 0;
+	}
 }
