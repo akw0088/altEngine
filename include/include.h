@@ -36,6 +36,7 @@
 #endif
 
 #ifdef __linux__
+	#include <errno.h>
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 	#include <GL/glx.h>
@@ -70,9 +71,9 @@
 #define MIN(x,y) (x) < (y) ? (x) : (y)
 
 //audio
-#include <al.h>
-#include <alc.h>
-#include <efx.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/efx.h>
 
 #ifndef __linux__
 	#include <EFX-Util.h>
