@@ -41,6 +41,9 @@ all: altEngine
 altEngine: $(OBJS)
 	$(CPP) $(CFLAGS) -o altEngine $(OBJS) $(LFLAGS) $(LIBS)
 
+clean:
+	rm -f ./src/*.o
+
 
 %.o:%.cpp
 	$(CPP) $(CFLAGS) -c $(INCLUDES) -o $@ $<

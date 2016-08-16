@@ -6,6 +6,7 @@
 class Engine
 {
 public:
+	Engine();
 	void init(void *param1, void *param2);
 	void load(char *level);
 	void unload();
@@ -127,6 +128,7 @@ private:
 
 	void	*param1;
 	void	*param2;
+	bool	initialized;
 };
 
 #endif

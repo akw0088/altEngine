@@ -385,10 +385,12 @@ int Audio::create_source(bool loop, bool global)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
+/*
 		char err[LINE_SIZE];
 
-		snprintf(err, LINE_SIZE, "Unable to generate audio source: %s", GetALErrorString(al_err));
+		snprintf(err, LINE_SIZE, "Unable to generate audio source: %s\n", GetALErrorString(al_err));
 		throw err;
+*/
 	}
 
 	if (loop)

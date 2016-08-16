@@ -508,7 +508,9 @@ void Graphics::swap()
 #ifdef _WIN32
 	SwapBuffers(hdc);
 #else
+printf("swapping %x %x", display, window);
 	glXSwapBuffers(display, window);
+printf("done swapping %x %x", display, window);
 #endif
 
 #ifdef ERROR_CHECK
@@ -1147,32 +1149,32 @@ int Graphics::checkFramebuffer()
 
 	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
-		printf("Render to texture failed");
+		printf("Render to texture failed\n");
 		switch (fboStatus)
 		{
 		case GL_FRAMEBUFFER_UNDEFINED:
-			printf("GL_FRAMEBUFFER_UNDEFINED");
+			printf("GL_FRAMEBUFFER_UNDEFINED\n");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+			printf("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT\n");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+			printf("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT\n");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+			printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER\n");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+			printf("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER\n");
 			break;
 		case GL_FRAMEBUFFER_UNSUPPORTED:
-			printf("GL_FRAMEBUFFER_UNSUPPORTED");
+			printf("GL_FRAMEBUFFER_UNSUPPORTED\n");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+			printf("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE\n");
 			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-			printf("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+			printf("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS\n");
 			break;
 		}
 		return -1;

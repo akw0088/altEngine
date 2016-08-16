@@ -7,6 +7,12 @@
 #define DEFERRED
 
 
+Engine::Engine()
+{
+	initialized = false;
+}
+
+
 void Engine::init(void *param1, void *param2)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
@@ -16,6 +22,7 @@ void Engine::init(void *param1, void *param2)
 
 	Engine::param1 = param1;
 	Engine::param2 = param2;
+	initialized = true;
 
 	identity = ident;
 	projection = ident;
@@ -1545,7 +1552,9 @@ void Engine::resize(int width, int height)
 
 	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
 
-	if (map.loaded == false)
+	// This should probably be in render
+/*
+	if (initialized && map.loaded == false)
 	{
 		gfx.clear();
 		menu.render(global);
@@ -1553,6 +1562,7 @@ void Engine::resize(int width, int height)
 			menu.render_console(global);
 		gfx.swap();
 	}
+*/
 }
 
 void Engine::load_sounds()
