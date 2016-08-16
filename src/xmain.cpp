@@ -1,6 +1,7 @@
 #include "include.h"
 
-#ifdef _LINUX
+#ifdef __linux__
+
 int EventProc(Display *display, Window window, GLXContext context);
 
 int main(int argc, char *argv[])
@@ -80,7 +81,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 	if (display == NULL)
 	{
-		altEngine.render();
+		altEngine.render(16);
 		return 0;
 	}
 
@@ -126,30 +127,30 @@ int EventProc(Display *display, Window window, GLXContext context)
 	        switch (keysym)
 			{
 			case XK_Return:
-				altEngine.keystroke("enter", pressed);
+				altEngine.keypress("enter", pressed);
 				break;
 			case XK_Shift_L:
 			case XK_Shift_R:
-				altEngine.keystroke("shift", pressed);
+				altEngine.keypress("shift", pressed);
 				break;
 			case XK_Control_L:
 			case XK_Control_R:
-				altEngine.keystroke("control", pressed);
+				altEngine.keypress("control", pressed);
 				break;
 			case XK_Escape:
-				altEngine.keystroke("escape", pressed);
+				altEngine.keypress("escape", pressed);
 				break;
 			case XK_Up:
-				altEngine.keystroke("up", pressed);
+				altEngine.keypress("up", pressed);
 				break;
 			case XK_Left:
-				altEngine.keystroke("left", pressed);
+				altEngine.keypress("left", pressed);
 				break;
 			case XK_Down:
-				altEngine.keystroke("down", pressed);
+				altEngine.keypress("down", pressed);
 				break;
 			case XK_Right:
-				altEngine.keystroke("right", pressed);
+				altEngine.keypress("right", pressed);
 				break;
 			}
 		}
@@ -172,24 +173,48 @@ int EventProc(Display *display, Window window, GLXContext context)
 	return 0;
 }
 
-char *getFile(char *fileName)
+char *get_file(char *filename)
 {
-	FILE	*file;
-	char	*buffer;
-	int	fSize, bRead;
+        FILE    *file;
+        char    *buffer;
+        int     file_size, bytes_read;
 
-	file = fopen(fileName, "rb");
-	if (file == NULL)
-		return 0;
-	fseek(file, 0, SEEK_END);
-	fSize = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	buffer = (char *) malloc( fSize * sizeof(char) + 1 );
-	bRead = fread(buffer, sizeof(char), fSize, file);
-	if (bRead != fSize)
-		return 0;
-	fclose(file);
-	buffer[fSize] = '\0';
-	return buffer;
+        file = fopen(filename, "rb");
+        if (file == NULL)
+                return 0;
+        fseek(file, 0, SEEK_END);
+        file_size = ftell(file);
+        fseek(file, 0, SEEK_SET);
+        buffer = new char [file_size + 1];
+        bytes_read = (int)fread(buffer, sizeof(char), file_size, file);
+        if (bytes_read != file_size)
+                return 0;
+
+        fclose(file);
+        buffer[file_size] = '\0';
+        return buffer;
 }
+
+int write_file(char *filename, char *bytes, int size)
+{
+        FILE *fp = fopen(filename, "wb");
+        int ret;
+
+        if (fp == NULL)
+        {
+                perror("Unable to open file for writing");
+                return -1;
+        }
+
+        ret = fwrite(bytes, sizeof(char), size, fp);
+
+        if (ret != size)
+        {
+                printf("fwrite didnt write all data\n");
+                return -1;
+        }
+        fclose(fp);
+        return 0;
+}
+
 #endif

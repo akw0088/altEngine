@@ -1,5 +1,5 @@
-
-SOURCES :=	src/audio.cpp \
+SOURCES := 	src/xmain.cpp \
+		src/audio.cpp \
 		src/bsp.cpp \
 		src/edge.cpp \
 		src/engine.cpp \
@@ -19,12 +19,12 @@ SOURCES :=	src/audio.cpp \
 		src/player.cpp \
 		src/quaternion.cpp \
 		src/rigidbody.cpp \
+		src/shader.cpp \
 		src/sin_table.cpp \
 		src/speaker.cpp \
 		src/trigger.cpp \
 		src/vector.cpp \
 		src/vehicle.cpp \
-		src/xmain.cpp
 
 
 OBJS := $(SOURCES:.cpp=.o)
@@ -32,8 +32,8 @@ OBJS := $(SOURCES:.cpp=.o)
 
 INCLUDES = -I./include/
 CPP := g++
-CFLAGS := 
-LFLAGS := -lGL -lGLU
+CFLAGS := -DGL_GLEXT_PROTOTYPES
+LFLAGS := -lGL -lGLU -lopenal -lX11
 LIBS := 
 
 all: altEngine

@@ -122,9 +122,9 @@ void mLight2::prelink()
 	glBindAttribLocation(program_handle, 3, "attr_normal");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-	glProgramParameteriEXT(program_handle, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-	glProgramParameteriEXT(program_handle, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
-	glProgramParameteriEXT(program_handle, GL_GEOMETRY_VERTICES_OUT_EXT, 1024);
+//	glProgramParameteriEXT(program_handle, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+//	glProgramParameteriEXT(program_handle, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+//	glProgramParameteriEXT(program_handle, GL_GEOMETRY_VERTICES_OUT_EXT, 1024);
 //	int n;
 //	glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
 #endif
@@ -313,9 +313,9 @@ void mLight3::prelink()
 	glBindAttribLocation(program_handle, 3, "attr_normal");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-	glProgramParameteriEXT(program_handle, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-	glProgramParameteriEXT(program_handle, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
-	glProgramParameteriEXT(program_handle, GL_GEOMETRY_VERTICES_OUT_EXT, 1024);
+//	glProgramParameteriEXT(program_handle, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
+//	glProgramParameteriEXT(program_handle, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+//	glProgramParameteriEXT(program_handle, GL_GEOMETRY_VERTICES_OUT_EXT, 1024);
 	//	int n;
 	//	glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &n);
 #endif
