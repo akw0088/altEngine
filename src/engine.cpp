@@ -137,7 +137,7 @@ void Engine::load(char *level)
 	{
 		vec3 color(1.0f, 1.0f, 1.0f);
 
-		camera.set(transformation);
+		camera_frame.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		vec3 pos = mvp * vec4(entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z, 0.0f);
 
@@ -304,7 +304,7 @@ void Engine::render_shadowmaps()
 				//gfx.CullFace("back");
 
 				mlight2.Select();
-				mlight2.Params(mvp[i] * projection, light_list, 0);
+				mlight2.Params(mvp * projection, light_list, 0);
 				map.render(light->entity->position, NULL, gfx);
 				gfx.SelectShader(0);
 //				gfx.Color(true);
@@ -2370,7 +2370,7 @@ void Engine::handle_weapons(Player &player)
 			float distance;
 			player.entity->model->getForwardVector(forward);
 
-			distance = map.hitscan(player.entity->position, forward );
+			map.hitscan(player.entity->position, forward, distance);
 			vec3 end = player.entity->position + forward * distance;
 
 

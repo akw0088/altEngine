@@ -1256,7 +1256,7 @@ void Graphics::GetDebugLog()
 	}
 
 	int buf_length = 0;
-	for (int i = 0; i < numFound; i++)
+	for (unsigned int i = 0; i < numFound; i++)
 	{
 		fprintf(fp, "source %d type %d id %d severity %d msg [%s]\n", source[i], type[i], id[i], severity[i], &buffer[buf_length]);
 		buf_length += length[i];

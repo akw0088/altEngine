@@ -32,7 +32,7 @@ public:
 	{
 	}
 
-	float hitscan(vec3 &origin, vec3 &dir);
+	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 
 //	bool collision_detect(const vec3 &old_point, const vec3 &velocity, float &time);
 	bool collision_detect(vec3 &new_point, plane_t *plane, float *depth);

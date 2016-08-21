@@ -75,7 +75,11 @@
 #include <AL/alc.h>
 #include <AL/efx.h>
 
+
 #ifndef __linux__
+	#include <al.h>
+	#include <alc.h>
+	#include <efx.h>
 	#include <EFX-Util.h>
 	#include <efx-creative.h>
 #endif

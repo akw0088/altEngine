@@ -138,7 +138,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 {
 	vec3 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
-	int i, j;
+	unsigned int i, j;
 
 	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
@@ -332,7 +332,7 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 {
 	vec3 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
-	int i, j;
+	unsigned int i, j;
 
 	for (i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{

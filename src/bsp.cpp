@@ -636,7 +636,7 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 	sort_leaf(&leaf_list, 0, position);
 
 	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = 0; i < leaf_list.size(); i++)
+	for (unsigned int i = 0; i < leaf_list.size(); i++)
 	{
 		leaf_t *leaf = &data.Leaf[leaf_list[i]];
 
@@ -661,7 +661,7 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 	}
 	leaf_list.clear();
 
-	for (int i = 0; i < face_list.size(); i++)
+	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
 		face_t *face = &data.Face[face_list[i]];
 
@@ -728,8 +728,8 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 */
 bool Bsp::leaf_visible(leaf_t *leaf, Plane *frustum)
 {
-	vec3 max(leaf->max[0], leaf->max[1], leaf->max[2]);
-	vec3 min(leaf->min[0], leaf->min[1], leaf->min[2]);
+	vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
+	vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
 
 	if (frustum == NULL)
 		return true;
@@ -1184,18 +1184,13 @@ bool Bsp::RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &dista
 }
 
 
-float Bsp::hitscan(vec3 &origin, vec3 &dir)
+void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 {
-	float distance = 0.0f;
-
 	for (int i = 0; i < data.num_leafs; i++)
 	{
-		vec3 min(data.Leaf[i].min[0], data.Leaf[i].min[1], data.Leaf[i].min[2]);
-		vec3 max(data.Leaf[i].max[0], data.Leaf[i].max[1], data.Leaf[i].max[2]);
+		vec3 min((float)data.Leaf[i].min[0], (float)data.Leaf[i].min[1], (float)data.Leaf[i].min[2]);
+		vec3 max((float)data.Leaf[i].max[0], (float)data.Leaf[i].max[1], (float)data.Leaf[i].max[2]);
 
-		if ( RayBoxSlab(origin, dir, min, max, distance) )
-		{
-			return distance;
-		}
+		RayBoxSlab(origin, dir, min, max, distance);
 	}
 }

@@ -38,7 +38,7 @@ private:
 	int menu_state;
 
 	char key_buffer[1024];
-	int history_index;
+	unsigned int history_index;
 
 	mFont	font;
 	int		menu_object;
