@@ -32,7 +32,7 @@ void Frame::set(matrix4 &trans)
 {
 	vec3	right;
 
-	right = vec3::crossproduct(this->up, this->forward);
+	right = vec3::crossproduct(up, forward);
 	right.normalize();
 
 	// opengl - 12,13,14 are position
@@ -61,7 +61,7 @@ void Frame::set(matrix3 &trans)
 {
 	vec3	right;
 
-	right = vec3::crossproduct(this->up, this->forward);
+	right = vec3::crossproduct(up, forward);
 	right.normalize();
 
 	trans.m[0] = -forward.x;

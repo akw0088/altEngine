@@ -42,7 +42,6 @@ void Engine::init(void *param1, void *param2)
 	printf("altEngine2 Version %s\n", "1.1.0");
 
 
-	gfx.error_check();
 	menu.render(global);
 
 	//net crap
@@ -52,7 +51,7 @@ void Engine::init(void *param1, void *param2)
 	memset(reliable.msg, 0, LINE_SIZE);
 	reliable.sequence = -1;
 	last_server_sequence = 0;
-	spawn = 0;
+	spawn = -1;
 	testObj = 0;
 
 	//md5 crap
@@ -116,8 +115,6 @@ void Engine::load(char *level)
 	global.Select();
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
-
-	gfx.error_check();
 
 	map.render(camera_frame.pos, NULL, gfx);
 	camera_frame.set(transformation);
@@ -188,7 +185,9 @@ void Engine::render(int last_frametime)
 	render_framebuffer();
 	gfx.clear();
 
-	if (entity_list[spawn]->player->current_light == 0)
+
+
+	if (spawn != -1 && entity_list[spawn]->player->current_light == 0)
 		render_texture(quad_tex);
 	else
 	{
@@ -375,11 +374,12 @@ void Engine::render_scene_shadowmap(bool lights)
 {
 	matrix4 mvp;
 
-
-
 	if (keyboard.control == false)
 	{
-		entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+		if (spawn != -1)
+		{
+			entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+		}
 
 		camera_frame.set(transformation);
 	}
@@ -398,14 +398,17 @@ void Engine::render_scene_shadowmap(bool lights)
 
 
 //	shadowmap.Params(mvp, shadowmvp);
-	gfx.SelectTexture(3, light_list[0]->depth_tex[0]);
-	gfx.SelectTexture(4, light_list[0]->depth_tex[1]);
-	gfx.SelectTexture(5, light_list[0]->depth_tex[2]);
-	gfx.SelectTexture(6, light_list[0]->depth_tex[3]);
-	gfx.SelectTexture(7, light_list[0]->depth_tex[4]);
-	gfx.SelectTexture(8, light_list[0]->depth_tex[5]);
+	if (light_list.size())
+	{
+		gfx.SelectTexture(3, light_list[0]->depth_tex[0]);
+		gfx.SelectTexture(4, light_list[0]->depth_tex[1]);
+		gfx.SelectTexture(5, light_list[0]->depth_tex[2]);
+		gfx.SelectTexture(6, light_list[0]->depth_tex[3]);
+		gfx.SelectTexture(7, light_list[0]->depth_tex[4]);
+		gfx.SelectTexture(8, light_list[0]->depth_tex[5]);
 
-	mlight3.Params(mvp, light_list, light_list.size());
+		mlight3.Params(mvp, light_list, light_list.size());
+	}
 
 	if (keyboard.control)
 	{
@@ -467,18 +470,20 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 
 
 	//render md5 as second to last entity
-	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-
-	if (lights)
+	if (entity_list.size())
 	{
-		mlight2.Params(mvp, light_list, light_list.size());
-	}
-	else
-	{
-		mlight2.Params(mvp, light_list, 0);
-	}
-	zcc.render(gfx, frame_step);
+		mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
 
+		if (lights)
+		{
+			mlight2.Params(mvp, light_list, light_list.size());
+		}
+		else
+		{
+			mlight2.Params(mvp, light_list, 0);
+		}
+		zcc.render(gfx, frame_step);
+	}
 }
 
 
@@ -543,21 +548,24 @@ void Engine::debug_messages(int last_frametime)
 	menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
 	snprintf(msg, LINE_SIZE, "%d active lights.", light_list.size());
 	menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
-	menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
-	menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
-	menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
-	menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
-	menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
-	menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
+	if (spawn != -1)
+	{
+		snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
+		menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
+		menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
+		menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
+		menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
+		menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+		menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
 
-	snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
-	menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+		snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+		menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+	}
 	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
 }
 
@@ -894,7 +902,10 @@ void Engine::step()
 	if (map.loaded == false)
 		return;
 
-	handle_weapons(*(entity_list[spawn]->player));
+	if (spawn != -1)
+	{
+		handle_weapons(*(entity_list[spawn]->player));
+	}
 	spatial_testing();
 	update_audio();
 	check_triggers();
@@ -904,7 +915,7 @@ void Engine::step()
 	{
 		if (keyboard.control == true)
 			light_frame.update(keyboard);
-		else
+		else if (spawn != -1)
 			entity_list[spawn]->rigid->move(camera_frame, keyboard);
 	}
 	dynamics();
@@ -1631,8 +1642,11 @@ void Engine::load_sounds()
 
 		if (entity_list[i]->speaker)
 		{
-			strcpy(wave[0].file, entity_list[i]->speaker->file);
-			num_wave++;
+			if (!strcmp(entity_list[i]->speaker->file, "info_player_deathmatch") == 0)
+			{
+				strcpy(wave[0].file, entity_list[i]->speaker->file);
+				num_wave++;
+			}
 		}
 		else if (entity_list[i]->trigger)
 		{
@@ -1672,6 +1686,9 @@ void Engine::load_sounds()
 // I will search previous entities for models that are already loaded
 void Engine::load_models()
 {
+	if (entity_list.size() == 0)
+		return;
+
 	entity_list[0]->model->load(gfx, "media/models/box");
 	for(unsigned int i = 1; i < entity_list.size(); i++)
 	{
@@ -1824,9 +1841,12 @@ void Engine::load_entities()
 	}
 
 
-	entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
-//	entity_list[spawn]->rigid->load(gfx, "media/models/box");
-	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+	if (spawn != -1)
+	{
+		entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+		//		entity_list[spawn]->rigid->load(gfx, "media/models/box");
+		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+	}
 }
 
 void Engine::create_sources()
@@ -1868,8 +1888,12 @@ void Engine::create_sources()
 void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos));
-	audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
-	audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
+
+	if (spawn != -1)
+	{
+		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
+		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
+	}
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)

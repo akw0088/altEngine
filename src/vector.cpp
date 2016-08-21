@@ -109,7 +109,7 @@ vec3 &vec3::operator=(const vec3 &vector)
 
 vec3 vec3::operator+(const vec3 &vector) const
 {
-	vec3 temp(this->x, this->y, this->z);
+	vec3 temp(x, y, z);
 
 	temp.x += vector.x;
 	temp.y += vector.y;
@@ -120,7 +120,7 @@ vec3 vec3::operator+(const vec3 &vector) const
 
 vec3 vec3::operator-(const vec3 &vector) const
 {
-	vec3 temp(this->x, this->y, this->z);
+	vec3 temp(x, y, z);
 
 	temp.x -= vector.x;
 	temp.y -= vector.y;
@@ -131,7 +131,7 @@ vec3 vec3::operator-(const vec3 &vector) const
 
 vec3 vec3::operator-() const
 {
-	vec3 temp(-this->x, -this->y, -this->z);
+	vec3 temp(-x, -y, -z);
 	return temp;
 }
 
@@ -220,7 +220,7 @@ vec2 &vec2::operator=(const vec2 &vector)
 
 vec2 vec2::operator+(const vec2 &vector)
 {
-	vec2 temp(this->x, this->y);
+	vec2 temp(x, y);
 
 	temp.x += vector.x;
 	temp.y += vector.y;
@@ -230,7 +230,7 @@ vec2 vec2::operator+(const vec2 &vector)
 
 vec2 vec2::operator-(const vec2 &vector)
 {
-	vec2 temp(this->x, this->y);
+	vec2 temp(x, y);
 
 	temp.x -= vector.x;
 	temp.y -= vector.y;
