@@ -1127,20 +1127,6 @@ bool Bsp::RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &dista
 {
 	float tmin = -10000, tmax = 10000;
 
-	// check for a miss first
-	if (origin.x <= min.x || origin.x >= max.x)
-	{
-		return false;
-	}
-	else if (origin.y <= min.y || origin.y >= max.y)
-	{
-		return false;
-	}
-	else if (origin.z <= min.z || origin.z >= max.z)
-	{
-		return false;
-	}
-
 	// X coordinate
 	if (dir.x != 0.0)
 	{
