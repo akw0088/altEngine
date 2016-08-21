@@ -120,7 +120,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MONITORINFO mi = { sizeof(MONITORINFO) };
 
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
-		AllocConsole();
 		RedirectIOToConsole();
 		SetTimer(hwnd, TICK_TIMER, 16, NULL);
 		hdc = GetDC(hwnd);
@@ -473,7 +472,6 @@ void RedirectIOToConsole()
 	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
 
 	AllocConsole();
-
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
@@ -505,5 +503,8 @@ void RedirectIOToConsole()
 
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well
 	//ios::sync_with_stdio();
+
+	//Fix issue on windows 10
+	freopen("CONOUT$", "w", stdout);
 }
 #endif

@@ -98,7 +98,7 @@ void Frame::update(button_t &keyboard)
 
 void Frame::update(const vec2 &delta)
 {
-	const vec3		vup = vec3(0.0f, 1.0f, 0.0f);
+	const vec3		vup(0.0f, 1.0f, 0.0f);
 	vec3		right;
 
 //"camera"

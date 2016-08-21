@@ -41,6 +41,7 @@ void Engine::init(void *param1, void *param2)
 	menu.load("media/newmenu.txt", "media/newstate.txt");
 	printf("altEngine2 Version %s\n", "1.1.0");
 
+
 	gfx.error_check();
 	menu.render(global);
 
@@ -1367,6 +1368,8 @@ button_t Engine::GetKeyState(int keystate)
 
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
+	static bool once = false;
+
 	if (map.loaded == false || menu.ingame == true || menu.console == true)
 	{
 		float devicex = (float)x / gfx.width;
@@ -1383,9 +1386,17 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 			gfx.swap();
 		}
 
+		once = true;
+
 		return false;
 	}
 
+	if (once)
+	{
+		//recenter on game load so view doesnt spin too much
+		once = false;
+		return true;
+	}
 
 	if (keyboard.control == false)
 		camera_frame.update(vec2((float)deltax, (float)deltay));
