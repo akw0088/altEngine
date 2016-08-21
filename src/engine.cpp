@@ -107,8 +107,6 @@ void Engine::load(char *level)
 	load_entities();
 
 	// This renders map before loading textures
-	// need to add vertex color to rendering
-	vec3 color(1.0f, 1.0f, 1.0f);
 	camera_frame.set(transformation);
 	matrix4 mvp = transformation * projection;
 //	entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
@@ -333,23 +331,11 @@ void Engine::render_framebuffer()
 
 void Engine::render_texture(int texObj)
 {
-	float ident[16] = {
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f };
-
-	matrix4 matrix;
-
-	for (int i = 0; i < 16; i++)
-	{
-		matrix.m[i] = ident[i];
-	}
 	gfx.SelectTexture(0, texObj);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
-	global.Params(matrix, 0);
+	global.Params(identity, 0);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 	gfx.SelectShader(0);
 	gfx.DeselectTexture(0);

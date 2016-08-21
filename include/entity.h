@@ -7,7 +7,6 @@ class Entity
 {
 public:
 	Entity();
-	Entity(const Entity &entity);
 	~Entity();
 
 	vec3			position;
