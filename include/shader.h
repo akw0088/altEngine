@@ -68,7 +68,7 @@ class mLight3 : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
 	virtual void prelink(void);
 
 private:

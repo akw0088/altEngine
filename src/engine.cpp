@@ -135,13 +135,15 @@ void Engine::load(char *level)
 
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		camera_frame.set(transformation);
+		vec3 color(1.0f, 1.0f, 1.0f);
+
+		camera.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		vec3 pos = mvp * vec4(entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z, 0.0f);
 
 		menu.draw_text(entity_list[i]->type, pos.x,
 			pos.y, pos.z, 1000.0f,
-			vec3(1.0f, 1.0f, 1.0f));
+			color);
 	}
 
 	//Setup render to texture
@@ -277,19 +279,19 @@ void Engine::render_shadowmaps()
 		{
 			Light *light = entity_list[i]->light;
 
-			matrix4 mvp[6];
+			matrix4 cube[6];
 
 			// Generate matrices
-			matrix4::mat_right(mvp[0], light->entity->position);
-			matrix4::mat_left(mvp[1], light->entity->position);
-			matrix4::mat_top(mvp[2], light->entity->position);
-			matrix4::mat_bottom(mvp[3], light->entity->position);
-			matrix4::mat_forward(mvp[4], light->entity->position);
-			matrix4::mat_backward(mvp[5], light->entity->position);
-						
-			// Result is depthmap z distance in each texture from light
+			matrix4::mat_right(cube[0], light->entity->position);
+			matrix4::mat_left(cube[1], light->entity->position);
+			matrix4::mat_top(cube[2], light->entity->position);
+			matrix4::mat_bottom(cube[3], light->entity->position);
+			matrix4::mat_forward(cube[4], light->entity->position);
+			matrix4::mat_backward(cube[5], light->entity->position);
 			for (int i = 5; i < 6; i++)
 			{
+				matrix4 mvp = cube[i] * projection;
+
 				gfx.fbAttachTexture(light->quad_tex[i]);
 //				gfx.fbAttachTexture(0);
 				gfx.fbAttachDepth(light->depth_tex[i]);
@@ -298,7 +300,7 @@ void Engine::render_shadowmaps()
 				//		glDrawBuffer(GL_NONE);
 				//		glReadBuffer(GL_NONE);
 				//gfx.CullFace("front");
-				render_entities(mvp[i], false);
+				render_entities(mvp, false);
 				//gfx.CullFace("back");
 
 				mlight2.Select();
@@ -860,9 +862,16 @@ bool Engine::map_collision(RigidBody &body)
 			}
 			else
 			{
-				if (abs(body.velocity.y) < 0.1f)
+				float dist = body.velocity.y;
+
+				if (dist < 0)
+					dist *= -1;
+
+				if (dist < 0.1f)
 				{
-					if (map.collision_detect(point + staircheck, (plane_t *)&plane, &depth) == false)
+					vec3 p = point + staircheck;
+
+					if (map.collision_detect(p, (plane_t *)&plane, &depth) == false)
 					{
 						body.entity->position += vec3(0.0f, 2.5f, 0.0f);
 						return false;
@@ -1207,7 +1216,11 @@ void Engine::client_step()
 	printf("client keystate %d\n", keystate);
 
 	// get entity information
+#ifndef __linux__
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), &socksize);
+#else
+	int size = 0;
+#endif
 	if ( size > 0)
 	{
 		if (size != servermsg.length)

@@ -212,8 +212,10 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 
 void Audio::init()
 {
+#ifndef __linux__
 	EFXEAXREVERBPROPERTIES efxReverb;
 	int attrib[] = {ALC_MAX_AUXILIARY_SENDS, 4};
+#endif
 	int sends;
 	ALenum al_err;
 
@@ -225,7 +227,11 @@ void Audio::init()
 		return;
 	}
 
+#ifdef __linux__
+	context = alcCreateContext(device, NULL);
+#else
 	context = alcCreateContext(device, attrib);
+#endif
 	if (context == NULL)
 	{
 		printf("alcCreateContext failed.\n");
@@ -258,8 +264,10 @@ void Audio::init()
 		}
 		return;
 	}
+#ifndef __linux__
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
 	printf("%d sends per audio source\n", sends);
+#endif
 //	alListenerf(AL_REFERENCE_DISTANCE, 100.0f);
 	alDistanceModel(AL_EXPONENT_DISTANCE);
 	alListenerf(AL_ROLLOFF_FACTOR, 0.001f);
@@ -268,6 +276,7 @@ void Audio::init()
 	alDopplerFactor(1.0f);
 //	alDopplerVelocity(8.0f);
 //	alSpeedOfSound(343.3f * UNITS_TO_METERS);
+#ifndef __linux__
 	alListenerf(AL_METERS_PER_UNIT, 0.3f);
 
 	ALFWIsEFXSupported();
@@ -311,10 +320,12 @@ void Audio::init()
 	alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
 	alFilterf(filter, AL_LOWPASS_GAIN, 0.5f);
 	alFilterf(filter, AL_LOWPASS_GAINHF, 0.5f);
+#endif
 }
 
 void Audio::effects(int source)
 {
+#ifndef __linux__
 	ALenum al_err;
 
 	alAuxiliaryEffectSloti(slot, AL_EFFECTSLOT_EFFECT, effect);
@@ -331,6 +342,7 @@ void Audio::effects(int source)
 	{
 		printf("Unable to associate slot: %s\n", GetALErrorString(al_err));
 	}
+#endif
 
 }
 
