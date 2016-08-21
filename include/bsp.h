@@ -26,13 +26,13 @@ public:
 	void load(char *map);
 	void load_textures(Graphics &gfx);
 	void unload(Graphics &gfx);
-	void find_edges(vec3 &position, Edge &edge_list);
-	void find_backfaces(vec3 &light_position, vector<shadowvol_t> &shadow_list);
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
 	~Bsp()
 	{
 	}
+
+	float hitscan(vec3 &origin, vec3 &dir);
 
 //	bool collision_detect(const vec3 &old_point, const vec3 &velocity, float &time);
 	bool collision_detect(vec3 &new_point, plane_t *plane, float *depth);
@@ -40,6 +40,10 @@ public:
 	bool loaded;
 	bspData_t	data;
 private:
+
+	// Will move into a ray class eventually
+	bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
+
 	bsp_t		*tBsp;
 
 	vec4		*tangent;

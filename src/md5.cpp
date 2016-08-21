@@ -22,35 +22,6 @@ void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skel
 	}
 }
 
-void MD5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
-{
-#ifdef OPENGL_OLD
-	int i;
-
-	// Draw each joint
-	glPointSize (5.0f);
-	glColor3f (1.0f, 0.0f, 0.0f);
-	glBegin(GL_POINTS);
-	for (i = 0; i < num_joints; ++i)
-		glVertex3f(skeleton[i].pos.x, skeleton[i].pos.y, skeleton[i].pos.z);
-	glEnd();
-	glPointSize (1.0f);
-
-	// Draw each bone
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glBegin(GL_LINES);
-	for (i = 0; i < num_joints; ++i)
-	{
-		if (skeleton[i].parent != -1)
-		{
-			glVertex3f(skeleton[skeleton[i].parent].pos.x, skeleton[skeleton[i].parent].pos.y, skeleton[skeleton[i].parent].pos.z);
-			glVertex3f(skeleton[i].pos.x, skeleton[i].pos.y, skeleton[i].pos.z);
-		}
-	}
-	glEnd();
-#endif
-}
-
 void MD5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex)
 {
 	md5_mesh_t *mesh = &model->mesh[mesh_index];

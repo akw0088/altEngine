@@ -16,7 +16,7 @@ public:
 	void impulse(Plane &plane, vec3 &vertex);
 	void impulse(RigidBody &rigid, vec3 &point);
 	void impulse(RigidBody &rigid, vec3 &point, Plane &plane);
-	void frame2ent(Frame *camera, button_t &keyboard);
+	void frame2ent(Frame *camera_frame, button_t &keyboard);
 	void save_config(cfg_t &config);
 	void load_config(cfg_t &config);
 
@@ -29,7 +29,7 @@ public:
 	void set_target(Entity &target);
 
 
-	void move(Frame &camera, button_t &keyboard);
+	void move(Frame &camera_frame, button_t &keyboard);
 	void move(button_t &keyboard);
 
 	bool			map_collision;

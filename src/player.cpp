@@ -140,6 +140,31 @@ void Player::change_weapon_down()
 	}
 }
 
+
+float Player::DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point)
+{
+	return vec3::crossproduct(direction, point - origin).magnitude();
+}
+
+int Player::FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints)
+{
+	int index = -1;
+	float min = FLT_MAX;
+
+	for (int i = 0; i < numPoints; i++)
+	{
+		float distance = DistanceToLine(cameraDir, cameraOrigin, points[i]);
+
+		if (distance < min)
+		{
+			min = distance;
+			index = i;
+		}
+	}
+	return index;
+}
+
+
 Player::~Player()
 {
 }

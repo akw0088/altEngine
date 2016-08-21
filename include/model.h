@@ -16,6 +16,7 @@ public:
 	void render(Graphics &gfx);
 	void render_box(Graphics &gfx);
 	void clone(Model &model);
+	void getForwardVector(vec3 &forward);
 
 	Entity			*entity;
 

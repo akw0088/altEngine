@@ -1,6 +1,6 @@
 #version 440 core
 
-#define	MAX_LIGHTS 16
+#define	MAX_LIGHTS 32
 
 // per vertex interpolated program input
 in VertexDataOut {
@@ -63,6 +63,6 @@ void main(void)
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.1); // combine everything
 	}
 
-	Fragment.rgb *= max(light, ambient);
+//	Fragment.rgb *= max(light, ambient);
 
 }

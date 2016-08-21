@@ -347,3 +347,11 @@ void Model::create_box(Graphics &gfx, vec3 *aabb)
 	box_vertex = gfx.CreateVertexBuffer(vert, 8);
 	box_index = gfx.CreateIndexBuffer(index, 24);
 }
+
+
+void Model::getForwardVector(vec3 &forward)
+{
+	forward.x = entity->model->morientation.m[6];
+	forward.y = entity->model->morientation.m[7];
+	forward.z = entity->model->morientation.m[8];
+}

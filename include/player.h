@@ -36,6 +36,9 @@ public:
 	void change_weapon_down();
 
 
+	int FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints);
+	float DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point);
+
 	char *attack_sound;
 	char *weapon_idle_sound;
 	int health;

@@ -1,6 +1,6 @@
 #version 440 core
 
-#define	MAX_LIGHTS 16
+#define	MAX_LIGHTS 32
 
 layout(triangles) in;
 layout (triangle_strip, max_vertices=3) out;
