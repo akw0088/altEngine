@@ -59,7 +59,7 @@ void MD5Model::generate_buffers(Graphics &gfx)
 		bytes = (char *)gltLoadTGA(buffer, &width, &height, &components, &format);
 		if (bytes == NULL)
 		{
-			printf("Unable to load texture %s\n", buffer);
+			debugf("Unable to load texture %s\n", buffer);
 			continue;
 		}
 		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
@@ -69,7 +69,7 @@ void MD5Model::generate_buffers(Graphics &gfx)
 		bytes = (char *)gltLoadTGA(buffer, &width, &height, &components, &format);
 		if (bytes == NULL)
 		{
-			printf("Unable to load texture %s\n", buffer);
+			debugf("Unable to load texture %s\n", buffer);
 			continue;
 		}
 		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);

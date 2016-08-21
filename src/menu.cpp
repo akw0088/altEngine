@@ -4,6 +4,9 @@
 #define new DEBUG_NEW
 #endif
 
+vector<char *> Menu::console_buffer;
+
+
 void Menu::init(Graphics *gfx, Audio *audio)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
@@ -40,8 +43,13 @@ void Menu::render(Global &global)
 {
 	gfx->SelectTexture(0, menu_object);
 //	gfx->SelectVertexArrayObject(Model::quad_vao);
+	gfx->error_check();
+
 	gfx->SelectVertexBuffer(Model::quad_vertex);
+	gfx->error_check();
+
 	gfx->SelectIndexBuffer(Model::quad_index);
+	gfx->error_check();
 	for(unsigned int i = 0; i < menu_list.size(); i++)
 	{
 		menu_t *item = menu_list[i];

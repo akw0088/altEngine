@@ -200,7 +200,7 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 		al_err = alGetError();
 		if (al_err != AL_NO_ERROR)
 		{
-			printf("Unable to set effect: %s", GetALErrorString(al_err));
+			debugf("Unable to set effect: %s", GetALErrorString(al_err));
 		}
 		return 1;
 	}
@@ -219,11 +219,11 @@ void Audio::init()
 	int sends;
 	ALenum al_err;
 
-	printf("Using default audio device: %s\n", alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER));
+	debugf("Using default audio device: %s\n", alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER));
 	device = alcOpenDevice(NULL);
 	if (device == NULL)
 	{
-		printf("No sound device/driver has been found.\n");
+		debugf("No sound device/driver has been found.\n");
 		return;
 	}
 
@@ -234,7 +234,7 @@ void Audio::init()
 #endif
 	if (context == NULL)
 	{
-		printf("alcCreateContext failed.\n");
+		debugf("alcCreateContext failed.\n");
 	}
 
 	if ( alcMakeContextCurrent(context) == ALC_FALSE )
@@ -244,29 +244,29 @@ void Audio::init()
 		switch (error)
 		{
 		case ALC_NO_ERROR:
-			printf("alcMakeContextCurrent failed: No error.\n");
+			debugf("alcMakeContextCurrent failed: No error.\n");
 			break;
 		case ALC_INVALID_DEVICE:
-			printf("alcMakeContextCurrent failed: Invalid device.\n");
+			debugf("alcMakeContextCurrent failed: Invalid device.\n");
 			break;
 		case ALC_INVALID_CONTEXT:
-			printf("alcMakeContextCurrent failed: Invalid context.\n");
+			debugf("alcMakeContextCurrent failed: Invalid context.\n");
 			break;
 		case ALC_INVALID_ENUM:
-			printf("alcMakeContextCurrent failed: Invalid enum.\n");
+			debugf("alcMakeContextCurrent failed: Invalid enum.\n");
 			break;
 		case ALC_INVALID_VALUE:
-			printf("alcMakeContextCurrent failed: Invalid value.\n");
+			debugf("alcMakeContextCurrent failed: Invalid value.\n");
 			break;
 		case ALC_OUT_OF_MEMORY:
-			printf("alcMakeContextCurrent failed: Out of memory.\n");
+			debugf("alcMakeContextCurrent failed: Out of memory.\n");
 			break;
 		}
 		return;
 	}
 #ifndef __linux__
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
-	printf("%d sends per audio source\n", sends);
+	debugf("%d sends per audio source\n", sends);
 #endif
 //	alListenerf(AL_REFERENCE_DISTANCE, 100.0f);
 	alDistanceModel(AL_EXPONENT_DISTANCE);
@@ -284,7 +284,7 @@ void Audio::init()
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to generate slot: %s\n", GetALErrorString(al_err));
+		debugf("Unable to generate slot: %s\n", GetALErrorString(al_err));
 		return;
 	}
 
@@ -292,14 +292,14 @@ void Audio::init()
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to generate effect: %s\n", GetALErrorString(al_err));
+		debugf("Unable to generate effect: %s\n", GetALErrorString(al_err));
 		return;
 	}
 	alEffecti(effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to set effect: %s\n", GetALErrorString(al_err));
+		debugf("Unable to set effect: %s\n", GetALErrorString(al_err));
 		return;
 	}
 	ConvertReverbParameters(&eaxBathroom, &efxReverb);
@@ -313,7 +313,7 @@ void Audio::init()
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to generate filter: %s\n", GetALErrorString(al_err));
+		debugf("Unable to generate filter: %s\n", GetALErrorString(al_err));
 		return;
 	}
 
@@ -332,7 +332,7 @@ void Audio::effects(int source)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to associate effect: %s\n", GetALErrorString(al_err));
+		debugf("Unable to associate effect: %s\n", GetALErrorString(al_err));
 		return;
 	}
 
@@ -340,7 +340,7 @@ void Audio::effects(int source)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to associate slot: %s\n", GetALErrorString(al_err));
+		debugf("Unable to associate slot: %s\n", GetALErrorString(al_err));
 	}
 #endif
 
@@ -353,14 +353,14 @@ void Audio::load(wave_t &wave)
 	wave.data = get_file(wave.file);
 	if (wave.data == NULL)
 	{
-		printf("Unable to load wave file %s.\n", wave.file);
+		debugf("Unable to load wave file %s.\n", wave.file);
 		memset(&wave, 0, sizeof(wave_t));
 		return;
 	}
 
 	if ( checkFormat(wave.data, "WAVE") )
 	{
-		printf("%s is not a wave file.\n", wave.file);
+		debugf("%s is not a wave file.\n", wave.file);
 		memset(&wave, 0, sizeof(wave_t));
 		return;
 	}
@@ -437,7 +437,7 @@ void Audio::delete_source(int hSource)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to delete audio source: %s\n", GetALErrorString(al_err));
+		debugf("Unable to delete audio source: %s\n", GetALErrorString(al_err));
 	}
 }
 
@@ -449,7 +449,7 @@ void Audio::select_buffer(int hSource, int hBuffer)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to add buffer to source: %s\n", GetALErrorString(al_err));
+		debugf("Unable to add buffer to source: %s\n", GetALErrorString(al_err));
 		return;
 	}
 }
@@ -462,7 +462,7 @@ void Audio::delete_buffer(int hBuffer)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-		printf("Unable to delete buffer: %s\n", GetALErrorString(al_err));
+		debugf("Unable to delete buffer: %s\n", GetALErrorString(al_err));
 	}
 }
 

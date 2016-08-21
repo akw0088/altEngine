@@ -141,6 +141,8 @@ int write_file(char *filename, char *bytes, int size);
 double fsin(double rad);
 double fcos(double rad);
 
+int debugf(const char *format, ...);
+
 #define MY_PI 3.14159265359f
 #define MY_HALF_PI 1.5707963268f
 #define MAXLINE 4096

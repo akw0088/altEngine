@@ -17,6 +17,8 @@ void Engine::init(void *param1, void *param2)
 	Engine::param1 = param1;
 	Engine::param2 = param2;
 
+	debugf("altEngine2 Version %s\n", "1.1.0");
+
 	identity = ident;
 	projection = ident;
 	transformation = ident;
@@ -39,7 +41,6 @@ void Engine::init(void *param1, void *param2)
 	audio.init();
 	menu.init(&gfx, &audio);
 	menu.load("media/newmenu.txt", "media/newstate.txt");
-	printf("altEngine2 Version %s\n", "1.1.0");
 
 
 	menu.render(global);
@@ -92,8 +93,7 @@ void Engine::load(char *level)
 	}
 	catch (const char *error)
 	{
-		printf("%s\n", error);
-		menu.print(error);
+		debugf("%s\n", error);
 		menu.delta("unload", *this);
 		return;
 	}
@@ -953,11 +953,6 @@ void Engine::check_triggers()
 			entity_list[i]->trigger->active = true;
 			console(entity_list[i]->trigger->action);
 
-			printf("%d health\n%d armor\n%d weapons\n%d rockets\n %d slugs\n %d plasma\n %d shells\n %d bullets\n %d lightning\n",
-				player->health, player->armor, 	player->weapon_flags, player->ammo_rockets,
-				player->ammo_slugs, player->ammo_plasma, player->ammo_shells,
-				player->ammo_bullets, player->ammo_lightning );
-
 			entity_list[i]->visible = false;
 			entity_list[i]->trigger->timeout = 30.0f;
 
@@ -1016,7 +1011,7 @@ void Engine::server_step()
 
 	if (clientmsg.length != size)
 	{
-		printf("Packet size mismatch\n");
+		debugf("Packet size mismatch\n");
 		return;
 	}
 
@@ -1031,7 +1026,7 @@ void Engine::server_step()
 		}
 		else
 		{
-			printf("%s != %s\n", socketname, client_list[i]->socketname);
+			debugf("%s != %s\n", socketname, client_list[i]->socketname);
 		}
 	}
 
@@ -1044,7 +1039,7 @@ void Engine::server_step()
 
 		if (clientmsg.sequence <= client_list[index]->client_sequence)
 		{
-			printf("Got old packet\n");
+			debugf("Got old packet\n");
 			return;
 		}
 
@@ -1057,7 +1052,7 @@ void Engine::server_step()
 
 		if (client_list[index]->entity > entity_list.size())
 		{
-			printf("Invalid Entity\n");
+			debugf("Invalid Entity\n");
 			return;
 		}
 		entity_list[ client_list[index]->entity ]->rigid->move(clientkeys);
@@ -1082,7 +1077,7 @@ void Engine::server_step()
 			{
 				char msg[LINE_SIZE];
 
-				printf("client msg: %s\n", reliablemsg->msg);
+				debugf("client msg: %s\n", reliablemsg->msg);
 				sprintf(msg, "%s: %s\n", client_list[index]->socketname, reliablemsg->msg);
 				menu.print(msg);
 				chat(msg);
@@ -1095,7 +1090,7 @@ void Engine::server_step()
 	reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[clientmsg.num_cmds * sizeof(int)];
 	if ( strcmp(reliablemsg->msg, "connect") == 0 )
 	{
-		printf("client %s connected\n", socketname);
+		debugf("client %s connected\n", socketname);
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
@@ -1107,7 +1102,7 @@ void Engine::server_step()
 		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
-		printf("sent client map data\n");
+		debugf("sent client map data\n");
 	}
 	else if ( strcmp(reliablemsg->msg, "spawn") == 0 )
 	{
@@ -1116,7 +1111,7 @@ void Engine::server_step()
 
 		strcpy(client->socketname, socketname);
 		client_list.push_back(client);
-		printf("client %s spawned\n", client->socketname);
+		debugf("client %s spawned\n", client->socketname);
 		client->client_sequence = clientmsg.sequence;
 
 		// assign entity to client
@@ -1129,7 +1124,7 @@ void Engine::server_step()
 			{
 				if (count == client_list.size())
 				{
-					printf("client %s got entity %d\n", socketname, i);
+					debugf("client %s got entity %d\n", socketname, i);
 					client->entity = i;
 					break;
 				}
@@ -1149,7 +1144,7 @@ void Engine::server_step()
 		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
-		printf("sent client spawn data\n");
+		debugf("sent client spawn data\n");
 	}
 }
 
@@ -1211,7 +1206,7 @@ void Engine::client_step()
 	int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(keyboard);
 
-	printf("client keystate %d\n", keystate);
+	debugf("client keystate %d\n", keystate);
 
 	// get entity information
 #ifndef __linux__
@@ -1223,13 +1218,13 @@ void Engine::client_step()
 	{
 		if (size != servermsg.length)
 		{
-			printf("Packet size mismatch: %d %d\n", size, servermsg.length);
+			debugf("Packet size mismatch: %d %d\n", size, servermsg.length);
 			return;
 		}
 
 		if (servermsg.sequence <= last_server_sequence)
 		{
-			printf("Got old packet\n");
+			debugf("Got old packet\n");
 			return;
 		}
 
@@ -1247,7 +1242,7 @@ void Engine::client_step()
 			// dont let bad data cause an exception
 			if (ent[i].id > entity_list.size())
 			{
-				printf("Invalid entity index, bad packet\n");
+				debugf("Invalid entity index, bad packet\n");
 				break;
 			}
 
@@ -1277,7 +1272,7 @@ void Engine::client_step()
 			{
 				int entity;
 
-				printf("server msg: %s\n", reliablemsg->msg);
+				debugf("server msg: %s\n", reliablemsg->msg);
 				menu.print(reliablemsg->msg);
 
 				int ret = sscanf(reliablemsg->msg, "spawn %d", &entity);
@@ -1670,7 +1665,7 @@ void Engine::load_sounds()
 			if (add == false)
 				continue;
 
-			printf("Loading wave file %s\n", wave[k].file);
+			debugf("Loading wave file %s\n", wave[k].file);
 			audio.load(wave[k]);
 			if (wave[k].data == NULL)
 				continue;
@@ -1722,84 +1717,84 @@ void Engine::load_model(Entity &ent)
 {
 	if (strcmp(ent.type, "item_armor_shard") == 0)
 	{
-		printf("Loading item_armor_shard\n");
+		debugf("Loading item_armor_shard\n");
 		ent.model->load(gfx, "media/models/powerups/armor/shard");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_rocketlauncher") == 0)
 	{
-		printf("Loading weapon_rocketlauncher\n");
+		debugf("Loading weapon_rocketlauncher\n");
 		ent.model->load(gfx, "media/models/weapons2/rocketl/rocketl");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_shells") == 0)
 	{
-		printf("Loading ammo_shells\n");
+		debugf("Loading ammo_shells\n");
 		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_rockets") == 0)
 	{
-		printf("Loading ammo_rockets\n");
+		debugf("Loading ammo_rockets\n");
 		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_lightning") == 0)
 	{
-		printf("Loading ammo_rockets\n");
+		debugf("Loading ammo_rockets\n");
 		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_armor_combat") == 0)
 	{
-		printf("Loading item_armor_combat\n");
+		debugf("Loading item_armor_combat\n");
 		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_lightning") == 0)
 	{
-		printf("Loading weapon_lightning\n");
+		debugf("Loading weapon_lightning\n");
 		ent.model->load(gfx, "media/models/weapons2/lightning/lightning");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_shotgun") == 0)
 	{
-		printf("Loading weapon_shotgun\n");
+		debugf("Loading weapon_shotgun\n");
 		ent.model->load(gfx, "media/models/weapons2/shotgun/shotgun");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_railgun") == 0)
 	{
-		printf("Loading weapon_railgun\n");
+		debugf("Loading weapon_railgun\n");
 		ent.model->load(gfx, "media/models/weapons2/railgun/railgun");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_health") == 0)
 	{
-		printf("Loading item_health\n");
+		debugf("Loading item_health\n");
 		ent.model->load(gfx, "media/models/powerups/health/health");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_health_large") == 0)
 	{
-		printf("Loading item_health_large\n");
+		debugf("Loading item_health_large\n");
 		ent.model->load(gfx, "media/models/powerups/health/health");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "info_player_deathmatch") == 0)
 	{
-		printf("Loading info_player_deathmatch\n");
+		debugf("Loading info_player_deathmatch\n");
 		ent.rigid->load(gfx, "media/models/ball");
 		ent.rigid->gravity = false;
 	}
@@ -1933,7 +1928,7 @@ void Engine::unload()
 
 void Engine::destroy()
 {
-	printf("Shutting down.\n");
+	debugf("Shutting down.\n");
 	destroy_buffers();
 	unload();
 	gfx.destroy();
@@ -1960,7 +1955,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	byte *bytes = gltLoadTGA(file_name, &width, &height, &components, &format);
 	if (bytes == NULL)
 	{
-		printf("Unable to load texture %s\n", file_name);
+		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
@@ -1983,7 +1978,7 @@ void Engine::console(char *cmd)
 	int port;
 	int ret;
 
-	printf("Console: %s\n", cmd);
+	debugf("Console: %s\n", cmd);
 
 	ret = sscanf(cmd, "log %s", data);
 	if (ret == 1)
@@ -2215,7 +2210,7 @@ void Engine::bind(int port)
 {
 	if (server)
 	{
-		printf("Server already bound to port\n");
+		debugf("Server already bound to port\n");
 		return;
 	}
 
@@ -2225,7 +2220,7 @@ void Engine::bind(int port)
 	}
 	catch (const char *err)
 	{
-		printf("Net Error: %s\n", err);
+		debugf("Net Error: %s\n", err);
 	}
 	server = true;
 }
@@ -2255,20 +2250,20 @@ void Engine::connect(char *server)
 			+ sizeof(int) + strlen(reliable.msg) + 1;
 
 		net.connect(server, 65535);
-		printf("Sending map request\n");
+		debugf("Sending map request\n");
 		net.send((char *)&clientmsg, clientmsg.length);
-		printf("Waiting for server info\n");
+		debugf("Waiting for server info\n");
 
 		if ( net.recv((char *)&servermsg, 8192, 5) )
 		{
 			char level[LINE_SIZE];
 
 			client = true;
-			printf("Connected\n");
+			debugf("Connected\n");
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 			if (sscanf(reliablemsg->msg, "map %s", level) == 1)
 			{
-				printf("Loading %s\n", level);
+				debugf("Loading %s\n", level);
 				load((char *)level);
 				strcpy(reliable.msg, "spawn");
 				reliable.sequence = sequence;
@@ -2276,17 +2271,17 @@ void Engine::connect(char *server)
 			}
 			else
 			{
-				printf("Invalid response\n");
+				debugf("Invalid response\n");
 			}
 		}
 		else
 		{
-			printf("Connection timed out\n");
+			debugf("Connection timed out\n");
 		}
 	}
 	catch (const char *err)
 	{
-		printf("Net Error: %d %s\n", errno, err);
+		debugf("Net Error: %d %s\n", errno, err);
 		perror("error");
 	}
 }

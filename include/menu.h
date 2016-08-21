@@ -26,12 +26,15 @@ public:
 
 	bool console;
 	bool ingame;
+
+	//making static so I can use it like printf
+	static vector<char *> console_buffer;
+
 private:
 	matrix4 matrix;
 	Graphics *gfx;
 	Audio *audio;
 
-	vector<char *> console_buffer;
 	vector<char *> cmd_buffer;
 	vector<menu_t *> menu_list;
 	vector<state_t *> state_list;
