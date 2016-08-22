@@ -102,7 +102,7 @@ void Menu::load(char *menu_file, char *state_file)
 
 		ret = sscanf(line, "menu %d %f %f %f %f %f %f %f %d %d \"%[^\"]s", &item->state,
 			&item->position[0], &item->position[1], &item->position[2], &item->scale,
-			&item->color[0], &item->color[1], &item->color[2], &item->flag, &item->mouse_state, &item->msg);
+			&item->color[0], &item->color[1], &item->color[2], &item->flag, &item->mouse_state, item->msg);
 
 		if (ret != 11)
 		{
@@ -129,7 +129,7 @@ void Menu::load(char *menu_file, char *state_file)
 		state_t *item = new state_t;
 
 		ret = sscanf(line, "state %d %s %d \"%[^\"]s", &item->start,
-			&item->delta, &item->end, &item->cmd);
+			item->delta, &item->end, item->cmd);
 
 		if (ret != 4)
 		{

@@ -530,7 +530,7 @@ void Engine::debug_messages(int last_frametime)
 
 	snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %d ms %.2f fps", last_frametime, 1000.0 / last_frametime);
 	menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "%d active lights.", light_list.size());
+	snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
 	menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
 	snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
 	menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);

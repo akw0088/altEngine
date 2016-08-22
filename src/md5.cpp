@@ -250,7 +250,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 
 	pdata = strstr(data, "shader");
-	sscanf(pdata, "shader %s", &shader);
+	sscanf(pdata, "shader %s", shader);
 
 	// Read in counts
 	pdata = strstr(data, "numverts");

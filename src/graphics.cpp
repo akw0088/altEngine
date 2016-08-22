@@ -508,9 +508,7 @@ void Graphics::swap()
 #ifdef _WIN32
 	SwapBuffers(hdc);
 #else
-printf("swapping %x %x", display, window);
 	glXSwapBuffers(display, window);
-printf("done swapping %x %x", display, window);
 #endif
 
 #ifdef ERROR_CHECK

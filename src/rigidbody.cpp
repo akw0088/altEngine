@@ -432,9 +432,10 @@ void RigidBody::arrive(vec3 position)
 	morientation.m[0] = right.x;
 	morientation.m[1] = right.y;
 	morientation.m[2] = right.z;
-	morientation.m[7] = direction.x;
-	morientation.m[8] = 0.0f;
-	morientation.m[9] = direction.z;
+
+	morientation.m[6] = direction.x;
+	morientation.m[7] = 0.0f;
+	morientation.m[8] = direction.z;
 }
 
 void RigidBody::pursue()

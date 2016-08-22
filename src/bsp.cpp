@@ -440,7 +440,7 @@ void Bsp::unload(Graphics &gfx)
 	tBsp = NULL;
 
 	// high level data pointers into lump
-	memset((void *)&data, NULL, sizeof(bspData_t));
+	memset((void *)&data, 0, sizeof(bspData_t));
 
 	delete [] tangent;
 
