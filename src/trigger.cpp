@@ -9,7 +9,7 @@ Trigger::Trigger(Entity *entity)
 	Trigger::entity = entity;
 	active = false;
 	timeout = 0.0f;
-	action[0] = NULL;
+	action[0] = '\0';
 }
 
 void Trigger::destroy(Audio &audio)
