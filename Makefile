@@ -31,8 +31,9 @@ OBJS := $(SOURCES:.cpp=.o)
 
 
 INCLUDES = -I./include/
-CPP := g++
-CFLAGS := -DGL_GLEXT_PROTOTYPES
+#CPP := g++
+CPP := clang++
+CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings
 LFLAGS := -lGL -lGLU -lopenal -lX11
 LIBS := 
 
