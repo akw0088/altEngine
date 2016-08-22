@@ -1149,6 +1149,32 @@ bool Bsp::RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, floa
 	return true;
 }
 
+bool Bsp::RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius,  float &t)
+{
+	vec3 dist = sphere - origin;
+	float B = dir * dist;
+	float D = B * B - dist * dist + radius * radius;
+
+	if (D < 0.0f)
+		return false;
+
+	float t0 = B - sqrtf(D);
+	float t1 = B + sqrtf(D);
+
+	bool ret = false;
+
+	if ((t0 > 0.1f) && (t0 < t))
+	{
+		t = t0;
+		ret = true;
+	}
+	if ((t1 > 0.1f) && (t1 < t))
+	{
+		t = t1;
+		ret = true;
+	}
+	return ret;
+}
 
 //intersect ray plane
 bool Bsp::RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point)

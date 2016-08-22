@@ -43,6 +43,7 @@ private:
 
 	// Will move into a ray class eventually
 	bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v);
+	bool RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius, float &t);
 	bool RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point);
 	bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
 
