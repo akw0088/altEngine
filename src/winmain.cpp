@@ -200,6 +200,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
+	case WM_MOUSEWHEEL:
+	{
+		short int zDelta = (short)HIWORD(wParam);
+
+		if (zDelta > 0)
+		{
+			altEngine.keypress("mousewheelup", true);
+		}
+		else
+		{
+			altEngine.keypress("mousewheeldown", true);
+		}
+		return 0;
+	}
 	case WM_MOUSEMOVE:
 		{
 			int	x, y;

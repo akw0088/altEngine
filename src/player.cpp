@@ -65,8 +65,7 @@ void Player::render_weapon(Graphics &gfx)
 
 void Player::change_weapon_up()
 {
-
-	current_light++;
+//	current_light++;
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -104,7 +103,7 @@ void Player::change_weapon_up()
 
 void Player::change_weapon_down()
 {
-	current_light--;
+//	current_light--;
 	switch (current_weapon)
 	{
 	case wp_none:

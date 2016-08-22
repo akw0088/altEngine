@@ -183,4 +183,7 @@ typedef struct
 	bool numpad7;
 	bool numpad8;
 	bool numpad9;
+
+	bool mousewheelup;
+	bool mousewheeldown;
 }  button_t;

@@ -587,6 +587,24 @@ void Engine::handle_input()
 		post_process(5);
 	}
 
+	if (keyboard.mousewheelup)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_up();
+		}
+		keyboard.mousewheelup = false;
+	}
+
+	if (keyboard.mousewheeldown)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_down();
+		}
+		keyboard.mousewheeldown = false;
+	}
+
 	if (keyboard.numpad2)
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
@@ -1434,6 +1452,14 @@ void Engine::keypress(char *key, bool pressed)
 		keyboard.rightbutton = pressed;
 		k = 16;
 	}
+	else if (strcmp("mousewheelup", key) == 0)
+	{
+		keyboard.mousewheelup = pressed;
+	}
+	else if (strcmp("mousewheeldown", key) == 0)
+	{
+		keyboard.mousewheeldown = pressed;
+	}
 	else if (strcmp("shift", key) == 0)
 	{
 		keyboard.shift = pressed;
@@ -1563,10 +1589,16 @@ void Engine::handle_game(char key)
 		menu.ingame = !menu.ingame;
 		break;
 	case '[':
-		entity_list[spawn]->player->change_weapon_down();
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_down();
+		}
 		break;
 	case ']':
-		entity_list[spawn]->player->change_weapon_up();
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_up();
+		}
 		break;
 	}
 }
