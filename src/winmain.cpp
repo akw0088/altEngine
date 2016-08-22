@@ -472,6 +472,9 @@ void RedirectIOToConsole()
 	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
 
 	AllocConsole();
+	HWND hwndConsole = GetConsoleWindow();
+
+	ShowWindow(hwndConsole, SW_MAXIMIZE);
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
@@ -520,10 +523,10 @@ int debugf(const char *format, ...)
 	va_start(args, format);
 	vsprintf(str, format, args);
 	va_end(args);
-	printf(str);
+	printf("%s", str);
 
 
-	int width = 60;
+	unsigned int width = 60;
 
 	char *pstr = str;
 	while (1)
