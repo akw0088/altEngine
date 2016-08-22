@@ -8,6 +8,7 @@ Entity::Entity()
 {
 	position = vec3(0.0f, 0.0f, 0.0f);
 	visible = false;
+	network = false;
 	type = NULL;
 	rigid = NULL;
 	vehicle = NULL;

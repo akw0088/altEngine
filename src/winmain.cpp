@@ -120,7 +120,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MONITORINFO mi = { sizeof(MONITORINFO) };
 
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
-		AllocConsole();
 		RedirectIOToConsole();
 		SetTimer(hwnd, TICK_TIMER, 16, NULL);
 		hdc = GetDC(hwnd);
@@ -201,6 +200,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		return 0;
 
+	case WM_MOUSEWHEEL:
+	{
+		short int zDelta = (short)HIWORD(wParam);
+
+		if (zDelta > 0)
+		{
+			altEngine.keypress("mousewheelup", true);
+		}
+		else
+		{
+			altEngine.keypress("mousewheeldown", true);
+		}
+		return 0;
+	}
 	case WM_MOUSEMOVE:
 		{
 			int	x, y;
@@ -473,7 +486,9 @@ void RedirectIOToConsole()
 	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
 
 	AllocConsole();
+	HWND hwndConsole = GetConsoleWindow();
 
+	ShowWindow(hwndConsole, SW_MAXIMIZE);
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
@@ -505,5 +520,50 @@ void RedirectIOToConsole()
 
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well
 	//ios::sync_with_stdio();
+
+	//Fix issue on windows 10
+	freopen("CONOUT$", "w", stdout);
 }
+
+
+//TODO, make this a ring buffer instead of using malloc
+int debugf(const char *format, ...)
+{
+	va_list args;
+	char str[512] = { 0 };
+
+
+	va_start(args, format);
+	vsprintf(str, format, args);
+	va_end(args);
+	printf("%s", str);
+
+
+	unsigned int width = 60;
+
+	char *pstr = str;
+	while (1)
+	{
+		if (strlen(pstr) < width)
+		{
+			int size = strlen(pstr) + 1;
+			char *line = new char[size];
+			memcpy(line, pstr, size);
+			Menu::console_buffer.push_back(line);
+			break;
+		}
+		else
+		{
+			int size = width + 1;
+			char *line = new char[size];
+			memcpy(line, pstr, size);
+			line[width] = '\0';
+			Menu::console_buffer.push_back(line);
+			pstr += width;
+		}
+	}
+
+	return 0;
+}
+
 #endif

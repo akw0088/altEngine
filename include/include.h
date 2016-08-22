@@ -75,7 +75,11 @@
 #include <AL/alc.h>
 #include <AL/efx.h>
 
+
 #ifndef __linux__
+	#include <al.h>
+	#include <alc.h>
+	#include <efx.h>
 	#include <EFX-Util.h>
 	#include <efx-creative.h>
 #endif
@@ -115,6 +119,7 @@ using namespace std;
 #include "rigidbody.h"
 #include "vehicle.h"
 #include "player.h"
+#include "decal.h"
 
 #include "entity.h"
 #include "shader.h"
@@ -136,6 +141,8 @@ int write_file(char *filename, char *bytes, int size);
 
 double fsin(double rad);
 double fcos(double rad);
+
+int debugf(const char *format, ...);
 
 #define MY_PI 3.14159265359f
 #define MY_HALF_PI 1.5707963268f

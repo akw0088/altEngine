@@ -24,14 +24,15 @@ void Engine::init(void *param1, void *param2)
 	Engine::param2 = param2;
 	initialized = true;
 
+	debugf("altEngine2 Version %s\n", "1.1.0");
+
 	identity = ident;
 	projection = ident;
 	transformation = ident;
 
-
 	//visual
 	gfx.init(param1, param2);
-	global_vao = gfx.CreateVertexArrayObject();
+	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 
 	no_tex = load_texture(gfx, "media/notexture.tga");
@@ -43,9 +44,8 @@ void Engine::init(void *param1, void *param2)
 	audio.init();
 	menu.init(&gfx, &audio);
 	menu.load("media/newmenu.txt", "media/newstate.txt");
-	printf("altEngine2 Version %s\n", "1.1.0");
 
-	gfx.error_check();
+
 	menu.render(global);
 
 	//net crap
@@ -55,7 +55,7 @@ void Engine::init(void *param1, void *param2)
 	memset(reliable.msg, 0, LINE_SIZE);
 	reliable.sequence = -1;
 	last_server_sequence = 0;
-	spawn = 0;
+	spawn = -1;
 	testObj = 0;
 
 	//md5 crap
@@ -65,6 +65,10 @@ void Engine::init(void *param1, void *param2)
 	fb_width = 1280;
 	fb_height = 1280;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+
+
+	shadowmap.init(&gfx);
+
 }
 
 void Engine::load(char *level)
@@ -76,11 +80,17 @@ void Engine::load(char *level)
 	gfx.clear();
 	menu.render(global);
 	gfx.swap();
-	camera.reset();
-	post.init(&gfx);
-	mlight2.init(&gfx);
-	mlight_depth.init(&gfx);
-	mlight3.init(&gfx);
+	camera_frame.reset();
+	light_frame.reset();
+
+
+	if (post.init(&gfx))
+		menu.print("Failed to load post shader");
+	if (mlight2.init(&gfx))
+		menu.print("Failed to load mlight2 shader");
+	if (mlight3.init(&gfx))
+		menu.print("Failed to load mlight3 shader");
+
 
 	try
 	{
@@ -88,8 +98,7 @@ void Engine::load(char *level)
 	}
 	catch (const char *error)
 	{
-		printf("%s\n", error);
-		menu.print(error);
+		debugf("%s\n", error);
 		menu.delta("unload", *this);
 		return;
 	}
@@ -103,21 +112,17 @@ void Engine::load(char *level)
 	load_entities();
 
 	// This renders map before loading textures
-	// need to add vertex color to rendering
-	vec3 color(1.0f, 1.0f, 1.0f);
-	camera.set(transformation);
+	camera_frame.set(transformation);
 	matrix4 mvp = transformation * projection;
-//	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
+//	entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
 	spatial_testing();
 	gfx.clear();
 	global.Select();
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-	gfx.error_check();
-
-	map.render(camera.pos, NULL, gfx);
-	camera.set(transformation);
+	map.render(camera_frame.pos, NULL, gfx);
+	camera_frame.set(transformation);
 	render_entities(transformation, true);
 
 	menu.delta("textures", *this);
@@ -129,17 +134,15 @@ void Engine::load(char *level)
 	menu.ingame = false;
 	menu.console = false;
 
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		vec3 color(1.0f, 1.0f, 1.0f);
 
-		camera.set(transformation);
+		camera_frame.set(transformation);
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		vec3 pos = mvp * vec4(entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z, 0.0f);
 
-		menu.draw_text(entity_list[i]->type, pos.x,
-			pos.y, pos.z, 1000.0f,
-			color);
+		menu.draw_text(entity_list[i]->type, pos.x, pos.y, pos.z, 1000.0f, color);
 	}
 
 	//Setup render to texture
@@ -185,11 +188,13 @@ void Engine::render(int last_frametime)
 	render_framebuffer();
 	gfx.clear();
 
-	if (entity_list[spawn]->player->current_light == 0)
+
+
+	if (spawn != -1 && entity_list[spawn]->player->current_light == 0)
 		render_texture(quad_tex);
 	else
 	{
-		for (int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
 			{
@@ -267,12 +272,11 @@ void Engine::render(int last_frametime)
 
 void Engine::render_shadowmaps()
 {
-
 	// set zFar closer to maximize depth buffer percision
 	projection.perspective(45.0, (float)fb_width / fb_height, 1.0f, 1201.0f, false);
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->visible && entity_list[i]->light)
+		if (entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
 
@@ -285,29 +289,28 @@ void Engine::render_shadowmaps()
 			matrix4::mat_bottom(cube[3], light->entity->position);
 			matrix4::mat_forward(cube[4], light->entity->position);
 			matrix4::mat_backward(cube[5], light->entity->position);
-
-			for (int i = 5; i < 6; i++)
+			for (int j = 5; j < 6; j++)
 			{
-				matrix4 mvp = cube[i] * projection;
+				matrix4 mvp = cube[j] * projection;
 
-				gfx.fbAttachTexture(light->quad_tex[i]);
-				gfx.fbAttachDepth(light->depth_tex[i]);
+				gfx.fbAttachTexture(light->quad_tex[j]);
+//				gfx.fbAttachTexture(0);
+				gfx.fbAttachDepth(light->depth_tex[j]);
 				gfx.clear();
-				//		gfx.Color(false);
+//				gfx.Color(false);
 				//		glDrawBuffer(GL_NONE);
 				//		glReadBuffer(GL_NONE);
 				//gfx.CullFace("front");
 				render_entities(mvp, false);
 				//gfx.CullFace("back");
 
-				mlight_depth.Select();
-				mlight_depth.Params(mvp);
+				mlight2.Select();
+				mlight2.Params(mvp, light_list, 0);
 				map.render(light->entity->position, NULL, gfx);
 				gfx.SelectShader(0);
-				//		gfx.Color(true);
+//				gfx.Color(true);
 			}
-
-
+			break;
 		}
 	}
 	projection.perspective(45.0, (float)xres / yres, 1.0f, 2001.0f, true);
@@ -331,23 +334,11 @@ void Engine::render_framebuffer()
 
 void Engine::render_texture(int texObj)
 {
-	float ident[16] = {
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f };
-
-	matrix4 matrix;
-
-	for (int i = 0; i < 16; i++)
-	{
-		matrix.m[i] = ident[i];
-	}
 	gfx.SelectTexture(0, texObj);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
-	global.Params(matrix, 0);
+	global.Params(identity, 0);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 	gfx.SelectShader(0);
 	gfx.DeselectTexture(0);
@@ -357,10 +348,10 @@ void Engine::render_scene(bool lights)
 {
 	matrix4 mvp;
 
-	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
+	entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
 
 
-	camera.set(transformation);
+	camera_frame.set(transformation);
 	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -370,7 +361,7 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0);
 
-	map.render(camera.pos, NULL, gfx);
+	map.render(camera_frame.pos, NULL, gfx);
 	gfx.SelectShader(0);
 }
 
@@ -386,38 +377,70 @@ void Engine::render_scene_shadowmap(bool lights)
 {
 	matrix4 mvp;
 
-	entity_list[spawn]->rigid->frame2ent(&camera, keyboard);
+	if (keyboard.control == false)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+		}
 
-	camera.set(transformation);
+		camera_frame.set(transformation);
+	}
+	else
+	{
+		light_frame.set(transformation);
+	}
+
+
+	shadowmap.Select();
+	set_shadow_matrix(light_frame.pos);
+		
 	render_entities(transformation, lights);
 	mlight3.Select();
 	mvp = transformation * projection;
 
 
-	gfx.SelectTexture(3, light_list[0]->depth_tex[0]);
-	gfx.SelectTexture(4, light_list[1]->depth_tex[1]);
-	gfx.SelectTexture(5, light_list[2]->depth_tex[2]);
-	gfx.SelectTexture(6, light_list[3]->depth_tex[3]);
-	gfx.SelectTexture(7, light_list[4]->depth_tex[4]);
-	gfx.SelectTexture(8, light_list[5]->depth_tex[5]);
+//	shadowmap.Params(mvp, shadowmvp);
+	if (light_list.size())
+	{
+		gfx.SelectTexture(3, light_list[0]->depth_tex[0]);
+		gfx.SelectTexture(4, light_list[0]->depth_tex[1]);
+		gfx.SelectTexture(5, light_list[0]->depth_tex[2]);
+		gfx.SelectTexture(6, light_list[0]->depth_tex[3]);
+		gfx.SelectTexture(7, light_list[0]->depth_tex[4]);
+		gfx.SelectTexture(8, light_list[0]->depth_tex[5]);
 
-	mlight3.Params(mvp, light_list, light_list.size());
+		mlight3.Params(mvp, light_list, light_list.size());
+	}
 
-	map.render(camera.pos, NULL, gfx);
+	if (keyboard.control)
+	{
+		map.render(light_frame.pos, NULL, gfx);
+		gfx.SelectShader(0);
+		return;
+	}
+
+	map.render(camera_frame.pos, NULL, gfx);
 	gfx.SelectShader(0);
 }
 
-void Engine::render_entities(const matrix4 transformation, bool lights)
+void Engine::render_entities(const matrix4 trans, bool lights)
 {
 	matrix4 mvp;
 
 	mlight2.Select();
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->visible == false)
 			continue;
 
-		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+		if (entity_list[i]->rigid == NULL)
+		{
+			entity_list[i]->decal->render(gfx, global);
+			continue;
+		}
+
+		mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		if (lights)
 		{
 			mlight2.Params(mvp, light_list, light_list.size());
@@ -440,7 +463,7 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 			mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
 			mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
 			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
-			mvp = transformation.premultiply(mvp.m) * projection;
+			mvp = trans.premultiply(mvp.m) * projection;
 			if (lights)
 			{
 				mlight2.Params(mvp, light_list, light_list.size());
@@ -456,32 +479,36 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 
 
 	//render md5 as second to last entity
-	mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-
-	if (lights)
+	if (entity_list.size())
 	{
-		mlight2.Params(mvp, light_list, light_list.size());
-	}
-	else
-	{
-		mlight2.Params(mvp, light_list, 0);
-	}
-	zcc.render(gfx, frame_step);
+		if (entity_list[entity_list.size() - 1]->rigid == NULL)
+			return;
 
+		mvp = trans.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
+
+		if (lights)
+		{
+			mlight2.Params(mvp, light_list, light_list.size());
+		}
+		else
+		{
+			mlight2.Params(mvp, light_list, 0);
+		}
+		zcc.render(gfx, frame_step);
+	}
 }
 
 
 void Engine::render_shadow_volumes()
 {
 	matrix4 mvp;
-	int j = 0;
 
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 
 		if (entity_list[i]->light)
 		{
-			camera.set(transformation);
+			camera_frame.set(transformation);
 			mvp = transformation * projection;
 			global.Select();
 			global.Params(mvp, 0);
@@ -532,21 +559,24 @@ void Engine::debug_messages(int last_frametime)
 	menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
 	snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
 	menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
-	menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
-	menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
-	menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
-	menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
-	menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
-	menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
+	if (spawn != -1)
+	{
+		snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
+		menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
+		menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
+		menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
+		menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
+		menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+		menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
 
-	snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
-	menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+		snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+		menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+	}
 	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
 }
 
@@ -554,7 +584,7 @@ void Engine::destroy_buffers()
 {
 	zcc.destroy_buffers(gfx);
 
-	for (int i = 0; i < snd_wave.size(); i++)
+	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
 		delete snd_wave[i].data;
 	}
@@ -568,14 +598,32 @@ void Engine::handle_input()
 		post_process(5);
 	}
 
+	if (keyboard.mousewheelup)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_up();
+		}
+		keyboard.mousewheelup = false;
+	}
+
+	if (keyboard.mousewheeldown)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_down();
+		}
+		keyboard.mousewheeldown = false;
+	}
+
 	if (keyboard.numpad2)
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
 		vec3 forward(0.0f, 0.0f, 1.0f);
 
-		camera.forward = forward;
-		camera.up = up;
+		camera_frame.forward = forward;
+		camera_frame.up = up;
 	}
 
 	if (keyboard.numpad3)
@@ -584,8 +632,8 @@ void Engine::handle_input()
 		vec3 up(0.0f, 0.0f, 1.0f);
 		vec3 forward(0.0f, 1.0f, 0.0f);
 
-		camera.forward = forward;
-		camera.up = up;
+		camera_frame.forward = forward;
+		camera_frame.up = up;
 	}
 
 	if (keyboard.numpad6)
@@ -594,8 +642,8 @@ void Engine::handle_input()
 		vec3 up(0.0f, 1.0f, 0.0f);
 		vec3 forward(1.0f, 0.0f, 0.0f);
 
-		camera.forward = forward;
-		camera.up = up;
+		camera_frame.forward = forward;
+		camera_frame.up = up;
 	}
 
 
@@ -605,8 +653,8 @@ void Engine::handle_input()
 		vec3 up(0.0f, 1.0f, 0.0f);
 		vec3 forward(-1.0f, 0.0f, 0.0f);
 
-		camera.forward = forward;
-		camera.up = up;
+		camera_frame.forward = forward;
+		camera_frame.up = up;
 	}
 
 	if (keyboard.numpad8)
@@ -615,8 +663,8 @@ void Engine::handle_input()
 		vec3 up(0.0f, 1.0f, 0.0f);
 		vec3 forward(0.0f, 0.0f, -1.0f);
 
-		camera.forward = forward;
-		camera.up = up;
+		camera_frame.forward = forward;
+		camera_frame.up = up;
 	}
 
 	if (keyboard.numpad9)
@@ -625,14 +673,15 @@ void Engine::handle_input()
 		vec3 up(0.0f, 0.0f, -1.0f);
 		vec3 forward(0.0f, -1.0f, 0.0f);
 
-		camera.forward = forward;
-		camera.up = up;
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
 	}
 }
 
 void Engine::spatial_testing()
 {
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->rigid)
 		{
@@ -658,7 +707,7 @@ void Engine::spatial_testing()
 			for(int j = 0; j < 8; j++)
 			{
 				vec3 position = entity_list[i]->position + entity_list[i]->model->aabb[j];
-				bool vert_visible = map.vis_test(camera.pos, position);
+				bool vert_visible = map.vis_test(camera_frame.pos, position);
 
 				if (vert_visible)
 				{
@@ -681,13 +730,13 @@ void Engine::spatial_testing()
 		}
 		else
 		{
-			entity_list[i]->visible = map.vis_test(camera.pos, entity_list[i]->position);
+			entity_list[i]->visible = map.vis_test(camera_frame.pos, entity_list[i]->position);
 		}
 
 		if (entity_list[i]->visible == false)
 			continue;
 
-		vec3 dist_vec = entity_list[i]->position - camera.pos;
+		vec3 dist_vec = entity_list[i]->position - camera_frame.pos;
 		float distance = dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y + dist_vec.z * dist_vec.z;
 
 		if (entity_list[i]->light)
@@ -712,7 +761,7 @@ void Engine::activate_light(float distance, Light *light)
 	{
 		if (light->active == true )
 		{
-			for( int i = 0; i < light_list.size(); i++)
+			for(unsigned int i = 0; i < light_list.size(); i++)
 			{
 				if (light_list[i] == light)
 				{
@@ -744,8 +793,11 @@ void Engine::dynamics()
 	cfg_t	config;
 
 	#pragma omp parallel for
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
+		if (entity_list[i]->rigid == NULL)
+			continue;
+
 		if (entity_list[i]->visible == false || entity_list[i]->rigid->sleep == true )
 			continue;
 
@@ -882,8 +934,10 @@ void Engine::step()
 	if (map.loaded == false)
 		return;
 
-	//This function is ugly, will cleanup later
-	handle_weapons(*(entity_list[spawn]->player));
+	if (spawn != -1)
+	{
+		handle_weapons(*(entity_list[spawn]->player));
+	}
 	spatial_testing();
 	update_audio();
 	check_triggers();
@@ -892,9 +946,9 @@ void Engine::step()
 	if (menu.ingame == false && menu.console == false)
 	{
 		if (keyboard.control == true)
-			camera.update(keyboard);
-		else
-			entity_list[spawn]->rigid->move(camera, keyboard);
+			light_frame.update(keyboard);
+		else if (spawn != -1)
+			entity_list[spawn]->rigid->move(camera_frame, keyboard);
 	}
 	dynamics();
 
@@ -912,7 +966,7 @@ void Engine::step()
 
 void Engine::check_triggers()
 {
-	for(int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		bool inside = false;
 
@@ -926,20 +980,13 @@ void Engine::check_triggers()
 
 		if (inside == true && entity_list[i]->trigger->active == false)
 		{
-			Player *player = entity_list[spawn]->player;
-
 			entity_list[i]->trigger->active = true;
 			console(entity_list[i]->trigger->action);
-
-			printf("%d health\n%d armor\n%d weapons\n%d rockets\n %d slugs\n %d plasma\n %d shells\n %d bullets\n %d lightning\n",
-				player->health, player->armor, 	player->weapon_flags, player->ammo_rockets,
-				player->ammo_slugs, player->ammo_plasma, player->ammo_shells,
-				player->ammo_bullets, player->ammo_lightning );
 
 			entity_list[i]->visible = false;
 			entity_list[i]->trigger->timeout = 30.0f;
 
-			for(int j = 0; j < snd_wave.size(); j++)
+			for (unsigned int j = 0; j < snd_wave.size(); j++)
 			{
 				if (strcmp(snd_wave[j].file, entity_list[i]->trigger->pickup_snd) == 0)
 				{
@@ -959,7 +1006,7 @@ void Engine::check_triggers()
 		{
 			if (entity_list[i]->trigger->active)
 			{
-				for(int j = 0; j < snd_wave.size(); j++)
+				for (unsigned int j = 0; j < snd_wave.size(); j++)
 				{
 					if (strcmp(snd_wave[j].file, entity_list[i]->trigger->respawn_snd) == 0)
 					{
@@ -982,7 +1029,7 @@ void Engine::server_step()
 	clientmsg_t clientmsg;
 	char socketname[LINE_SIZE];
 	bool connected = false;
-	int index;
+	int index = -1;
 
 	// send entities to clients
 	send_entities();
@@ -999,7 +1046,7 @@ void Engine::server_step()
 	}
 
 	// see if this ip/port combo already connected to server
-	for(int i = 0; i < client_list.size(); i++)
+	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
 		if (strcmp(client_list[i]->socketname, socketname) == 0)
 		{
@@ -1073,7 +1120,7 @@ void Engine::server_step()
 	reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[clientmsg.num_cmds * sizeof(int)];
 	if ( strcmp(reliablemsg->msg, "connect") == 0 )
 	{
-		printf("client %s connected\n", socketname);
+		debugf("client %s connected\n", socketname);
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
@@ -1085,7 +1132,7 @@ void Engine::server_step()
 		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
-		printf("sent client map data\n");
+		debugf("sent client map data\n");
 	}
 	else if ( strcmp(reliablemsg->msg, "spawn") == 0 )
 	{
@@ -1094,14 +1141,14 @@ void Engine::server_step()
 
 		strcpy(client->socketname, socketname);
 		client_list.push_back(client);
-		printf("client %s spawned\n", client->socketname);
+		debugf("client %s spawned\n", client->socketname);
 		client->client_sequence = clientmsg.sequence;
 
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
 		client->entity = 0;
 		int count = 0;
-		for(int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0)
 			{
@@ -1127,7 +1174,7 @@ void Engine::server_step()
 		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
-		printf("sent client spawn data\n");
+		debugf("sent client spawn data\n");
 	}
 }
 
@@ -1138,9 +1185,9 @@ void Engine::send_entities()
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
-	for(int i = 0; i < client_list.size(); i++)
+	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
-		for(int j = 0; j < entity_list.size(); j++)
+		for (unsigned int j = 0; j < entity_list.size(); j++)
 		{
 			entity_t ent;
 
@@ -1255,7 +1302,7 @@ void Engine::client_step()
 			{
 				int entity;
 
-				printf("server msg: %s\n", reliablemsg->msg);
+				debugf("server msg: %s\n", reliablemsg->msg);
 				menu.print(reliablemsg->msg);
 
 				int ret = sscanf(reliablemsg->msg, "spawn %d", &entity);
@@ -1357,6 +1404,8 @@ button_t Engine::GetKeyState(int keystate)
 
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
+	static bool once = false;
+
 	if (map.loaded == false || menu.ingame == true || menu.console == true)
 	{
 		float devicex = (float)x / gfx.width;
@@ -1373,10 +1422,22 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 			gfx.swap();
 		}
 
+		once = true;
+
 		return false;
 	}
 
-	camera.update(vec2((float)deltax, (float)deltay));
+	if (once)
+	{
+		//recenter on game load so view doesnt spin too much
+		once = false;
+		return true;
+	}
+
+	if (keyboard.control == false)
+		camera_frame.update(vec2((float)deltax, (float)deltay));
+	else
+		light_frame.update(vec2((float)deltax, (float)deltay));
 	return true;
 }
 
@@ -1402,6 +1463,14 @@ void Engine::keypress(char *key, bool pressed)
 	{
 		keyboard.rightbutton = pressed;
 		k = 16;
+	}
+	else if (strcmp("mousewheelup", key) == 0)
+	{
+		keyboard.mousewheelup = pressed;
+	}
+	else if (strcmp("mousewheeldown", key) == 0)
+	{
+		keyboard.mousewheeldown = pressed;
 	}
 	else if (strcmp("shift", key) == 0)
 	{
@@ -1526,16 +1595,22 @@ void Engine::handle_game(char key)
 		menu.console = !menu.console;
 		break;
 	case 'r':
-		camera.reset();
+		camera_frame.reset();
 		break;
 	case 27:
 		menu.ingame = !menu.ingame;
 		break;
 	case '[':
-		entity_list[spawn]->player->change_weapon_down();
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_down();
+		}
 		break;
 	case ']':
-		entity_list[spawn]->player->change_weapon_up();
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->change_weapon_up();
+		}
 		break;
 	}
 }
@@ -1602,15 +1677,18 @@ void Engine::load_sounds()
 		snd_wave.push_back(wave[0]);
 
 
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		int		num_wave = 0;
-		bool	add = true;
+		unsigned int	num_wave = 0;
+		bool			add = true;
 
 		if (entity_list[i]->speaker)
 		{
-			strcpy(wave[0].file, entity_list[i]->speaker->file);
-			num_wave++;
+			if (!strcmp(entity_list[i]->speaker->file, "info_player_deathmatch") == 0)
+			{
+				strcpy(wave[0].file, entity_list[i]->speaker->file);
+				num_wave++;
+			}
 		}
 		else if (entity_list[i]->trigger)
 		{
@@ -1619,9 +1697,9 @@ void Engine::load_sounds()
 			num_wave += 2;
 		}
 
-		for(int k = 0; k < num_wave; k++)
+		for(unsigned int k = 0; k < num_wave; k++)
 		{
-			for(int j = 0; j < snd_wave.size(); j++)
+			for(unsigned int j = 0; j < snd_wave.size(); j++)
 			{
 				char *file = snd_wave[j].file;
 				if (strcmp(wave[k].file, file) == 0)
@@ -1634,7 +1712,7 @@ void Engine::load_sounds()
 			if (add == false)
 				continue;
 
-			printf("Loading wave file %s\n", wave[k].file);
+			debugf("Loading wave file %s\n", wave[k].file);
 			audio.load(wave[k]);
 			if (wave[k].data == NULL)
 				continue;
@@ -1650,15 +1728,18 @@ void Engine::load_sounds()
 // I will search previous entities for models that are already loaded
 void Engine::load_models()
 {
+	if (entity_list.size() == 0)
+		return;
+
 	entity_list[0]->model->load(gfx, "media/models/box");
-	for(int i = 1; i < entity_list.size(); i++)
+	for(unsigned int i = 1; i < entity_list.size(); i++)
 	{
 		bool loaded = false;
 
 		if (entity_list[i]->model == NULL)
 			continue;
 
-		for(int j = 0; j < i; j++)
+		for(unsigned int j = 0; j < i; j++)
 		{
 			if (entity_list[j]->model == NULL)
 				continue;
@@ -1683,84 +1764,84 @@ void Engine::load_model(Entity &ent)
 {
 	if (strcmp(ent.type, "item_armor_shard") == 0)
 	{
-		printf("Loading item_armor_shard\n");
+		debugf("Loading item_armor_shard\n");
 		ent.model->load(gfx, "media/models/powerups/armor/shard");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_rocketlauncher") == 0)
 	{
-		printf("Loading weapon_rocketlauncher\n");
+		debugf("Loading weapon_rocketlauncher\n");
 		ent.model->load(gfx, "media/models/weapons2/rocketl/rocketl");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_shells") == 0)
 	{
-		printf("Loading ammo_shells\n");
+		debugf("Loading ammo_shells\n");
 		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_rockets") == 0)
 	{
-		printf("Loading ammo_rockets\n");
+		debugf("Loading ammo_rockets\n");
 		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_lightning") == 0)
 	{
-		printf("Loading ammo_rockets\n");
+		debugf("Loading ammo_rockets\n");
 		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_armor_combat") == 0)
 	{
-		printf("Loading item_armor_combat\n");
+		debugf("Loading item_armor_combat\n");
 		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_lightning") == 0)
 	{
-		printf("Loading weapon_lightning\n");
+		debugf("Loading weapon_lightning\n");
 		ent.model->load(gfx, "media/models/weapons2/lightning/lightning");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_shotgun") == 0)
 	{
-		printf("Loading weapon_shotgun\n");
+		debugf("Loading weapon_shotgun\n");
 		ent.model->load(gfx, "media/models/weapons2/shotgun/shotgun");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "weapon_railgun") == 0)
 	{
-		printf("Loading weapon_railgun\n");
+		debugf("Loading weapon_railgun\n");
 		ent.model->load(gfx, "media/models/weapons2/railgun/railgun");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_health") == 0)
 	{
-		printf("Loading item_health\n");
+		debugf("Loading item_health\n");
 		ent.model->load(gfx, "media/models/powerups/health/health");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_health_large") == 0)
 	{
-		printf("Loading item_health_large\n");
+		debugf("Loading item_health_large\n");
 		ent.model->load(gfx, "media/models/powerups/health/health");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "info_player_deathmatch") == 0)
 	{
-		printf("Loading info_player_deathmatch\n");
+		debugf("Loading info_player_deathmatch\n");
 		ent.rigid->load(gfx, "media/models/ball");
 		ent.rigid->gravity = false;
 	}
@@ -1769,7 +1850,7 @@ void Engine::load_model(Entity &ent)
 
 void Engine::init_camera()
 {
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		char *type = entity_list[i]->type;
 
@@ -1778,13 +1859,13 @@ void Engine::init_camera()
 
 		if ( strcmp(type, "info_player_deathmatch") == 0 )
 		{
-			camera.pos = entity_list[i]->position;
+			camera_frame.pos = entity_list[i]->position;
 			spawn = i;
 			entity_list[spawn]->player = new Player(entity_list[i], gfx, audio);
 			break;
 		}
 	}
-	audio.listener_position((float *)&(camera.pos));
+	audio.listener_position((float *)&(camera_frame.pos));
 }
 
 // Loads media that may be shared with multiple entities
@@ -1795,27 +1876,30 @@ void Engine::load_entities()
 	create_sources();
 	load_models();
 
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light)
 			entity_list[i]->rigid->gravity = false;
 	}
 
 
-	entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
-//	entity_list[spawn]->rigid->load(gfx, "media/models/box");
-	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+	if (spawn != -1)
+	{
+		entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+		//entity_list[spawn]->rigid->load(gfx, "media/models/box");
+		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+	}
 }
 
 void Engine::create_sources()
 {
 	// create and associate sources
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker != NULL)
 		{
 			entity_list[i]->rigid->gravity = false;
-			for(int j = 0; j < snd_wave.size(); j++)
+			for(unsigned int j = 0; j < snd_wave.size(); j++)
 			{
 				if (strcmp(snd_wave[j].file, entity_list[i]->speaker->file) == 0)
 				{
@@ -1845,10 +1929,14 @@ void Engine::create_sources()
 
 void Engine::update_audio()
 {
-	audio.listener_position((float *)&(camera.pos));
-	audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
-	audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
-	for(int i = 0; i < entity_list.size(); i++)
+	audio.listener_position((float *)&(camera_frame.pos));
+
+	if (spawn != -1)
+	{
+		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
+		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
+	}
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)
 		{
@@ -1864,7 +1952,7 @@ void Engine::unload()
 		return;
 
 	menu.ingame = false;
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)
 			entity_list[i]->speaker->destroy(audio);
@@ -1878,17 +1966,17 @@ void Engine::unload()
 
 	post.destroy();
 	mlight2.destroy();
-	mlight_depth.destroy();
 	mlight3.destroy();
 	map.unload(gfx);
 	menu.play();
 	menu.delta("unload", *this);
 	menu.render(global);
+	gfx.swap();
 }
 
 void Engine::destroy()
 {
-	printf("Shutting down.\n");
+	debugf("Shutting down.\n");
 	destroy_buffers();
 	unload();
 	gfx.destroy();
@@ -1915,7 +2003,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	byte *bytes = gltLoadTGA(file_name, &width, &height, &components, &format);
 	if (bytes == NULL)
 	{
-		printf("Unable to load texture %s\n", file_name);
+		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
@@ -1938,7 +2026,15 @@ void Engine::console(char *cmd)
 	int port;
 	int ret;
 
-	printf("Console: %s\n", cmd);
+	debugf("Console: %s\n", cmd);
+
+	ret = sscanf(cmd, "log %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "%s\n", data);
+		menu.print(msg);
+		return;
+	}
 	menu.print(cmd);
 
 	ret = sscanf(cmd, "map %s", data);
@@ -2162,7 +2258,7 @@ void Engine::bind(int port)
 {
 	if (server)
 	{
-		printf("Server already bound to port\n");
+		debugf("Server already bound to port\n");
 		return;
 	}
 
@@ -2172,7 +2268,7 @@ void Engine::bind(int port)
 	}
 	catch (const char *err)
 	{
-		printf("Net Error: %s\n", err);
+		debugf("Net Error: %s\n", err);
 	}
 	server = true;
 }
@@ -2180,7 +2276,7 @@ void Engine::bind(int port)
 /*
 	network will use control tcp connection and udp streaming of gamestate
 */
-void Engine::connect(char *server)
+void Engine::connect(char *serverip)
 {
 	clientmsg_t	clientmsg;
 	servermsg_t servermsg;
@@ -2201,21 +2297,21 @@ void Engine::connect(char *server)
 		clientmsg.length = HEADER_SIZE + clientmsg.num_cmds * sizeof(int)
 			+ sizeof(int) + strlen(reliable.msg) + 1;
 
-		net.connect(server, 65535);
-		printf("Sending map request\n");
+		net.connect(serverip, 65535);
+		debugf("Sending map request\n");
 		net.send((char *)&clientmsg, clientmsg.length);
-		printf("Waiting for server info\n");
+		debugf("Waiting for server info\n");
 
 		if ( net.recv((char *)&servermsg, 8192, 5) )
 		{
 			char level[LINE_SIZE];
 
 			client = true;
-			printf("Connected\n");
+			debugf("Connected\n");
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 			if (sscanf(reliablemsg->msg, "map %s", level) == 1)
 			{
-				printf("Loading %s\n", level);
+				debugf("Loading %s\n", level);
 				load((char *)level);
 				strcpy(reliable.msg, "spawn");
 				reliable.sequence = sequence;
@@ -2223,12 +2319,12 @@ void Engine::connect(char *server)
 			}
 			else
 			{
-				printf("Invalid response\n");
+				debugf("Invalid response\n");
 			}
 		}
 		else
 		{
-			printf("Connection timed out\n");
+			debugf("Connection timed out\n");
 		}
 	}
 	catch (const char *err)
@@ -2247,6 +2343,7 @@ void Engine::chat(char *msg)
 
 void Engine::handle_weapons(Player &player)
 {
+	bool fired = false;
 	if (player.reload_timer > 0)
 		player.reload_timer--;
 
@@ -2271,16 +2368,17 @@ void Engine::handle_weapons(Player &player)
 		{
 			player.reload_timer = 120; // two seconds
 
+			fired = true;
 			Entity *entity = new Entity();
 			entity->rigid = new RigidBody(entity);
-			entity->position = camera.pos;
+			entity->position = camera_frame.pos;
 			entity->rigid->clone(*(entity_list[0]->model));
-			entity->rigid->velocity = camera.forward * -1.0f;
+			entity->rigid->velocity = camera_frame.forward * -1.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
 			entity->model = entity->rigid;
 			entity->rigid->set_target(*(entity_list[spawn]));
-			camera.set(entity->model->morientation);
+			camera_frame.set(entity->model->morientation);
 			entity_list.push_back(entity);
 			player.ammo_rockets--;
 
@@ -2290,16 +2388,17 @@ void Engine::handle_weapons(Player &player)
 		{
 			player.reload_timer = 10;
 
+			fired = true;
 			Entity *entity = new Entity();
 			entity->rigid = new RigidBody(entity);
-			entity->position = camera.pos;
+			entity->position = camera_frame.pos;
 			entity->rigid->load(gfx, "media/models/ball");
-			entity->rigid->velocity = camera.forward * -125.0f;
+			entity->rigid->velocity = camera_frame.forward * -125.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
 			entity->model = entity->rigid;
 			//			entity->rigid->set_target(*(entity_list[spawn]));
-			camera.set(entity->model->morientation);
+			camera_frame.set(entity->model->morientation);
 			entity_list.push_back(entity);
 			player.ammo_lightning--;
 
@@ -2309,15 +2408,16 @@ void Engine::handle_weapons(Player &player)
 		{
 			player.reload_timer = 120; // two seconds
 
+			fired = true;
 			Entity *entity = new Entity();
 			entity->rigid = new RigidBody(entity);
-			entity->position = camera.pos;
+			entity->position = camera_frame.pos;
 			entity->rigid->clone(*(entity_list[1]->model));
-			entity->rigid->velocity = camera.forward * -100.0f;
+			entity->rigid->velocity = camera_frame.forward * -100.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
 			entity->model = entity->rigid;
-			camera.set(entity->model->morientation);
+			camera_frame.set(entity->model->morientation);
 			entity_list.push_back(entity);
 			player.ammo_slugs--;
 
@@ -2329,19 +2429,54 @@ void Engine::handle_weapons(Player &player)
 
 			player.ammo_shells--;
 
+			fired = true;
+			vec3 forward;
+			float distance;
+			player.entity->model->getForwardVector(forward);
+
+			map.hitscan(player.entity->position, forward, distance);
+			vec3 end = player.entity->position + forward * distance;
+
+
+			Entity *entity = new Entity();
+			entity->decal = new Decal(entity);
+			entity->position = end;
+//			entity->decal->normal = normal;
+			entity_list.push_back(entity);
+
 			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
 		}
 
 
-		for (int i = 0; i < snd_wave.size(); i++)
+		if (fired)
 		{
-			if (strcmp(snd_wave[i].file, player.attack_sound) == 0)
+			for (unsigned int i = 0; i < snd_wave.size(); i++)
 			{
-				audio.select_buffer(player.entity->speaker->source, snd_wave[i].buffer);
-				break;
+				if (strcmp(snd_wave[i].file, player.attack_sound) == 0)
+				{
+					audio.select_buffer(player.entity->speaker->source, snd_wave[i].buffer);
+					break;
+				}
 			}
+			audio.play(player.entity->speaker->source);
 		}
-		audio.play(player.entity->speaker->source);
 
 	}
+}
+
+
+void Engine::set_shadow_matrix(vec3 position)
+{
+	matrix4 trans;
+
+
+	float bias[16] = {
+		0.5, 0.0, 0.0, 0.0,
+		0.0, 0.5, 0.0, 0.0,
+		0.0, 0.0, 0.5, 0.0,
+		0.5, 0.5, 0.5, 1.0 };
+
+	light_frame.set(trans);
+
+	shadowmvp = (trans * projection) * bias;
 }

@@ -23,7 +23,7 @@ void Model::load(Graphics &gfx, char *file)
 	model_file = get_file(vbo_file);
 	if (model_file == NULL)
 	{
-		printf("Unable to load vertex array %s\n", vbo_file);
+		debugf("Unable to load vertex array %s\n", vbo_file);
 		return;
 	}
 
@@ -65,7 +65,7 @@ void Model::load(Graphics &gfx, char *file)
 	char *index_file = get_file(ibo_file);
 	if (index_file == NULL)
 	{
-		printf("Unable to load index array %s\n", index_file);
+		debugf("Unable to load index array %s\n", index_file);
 		delete [] model_file;
 		return;
 	}
@@ -324,13 +324,13 @@ bool Model::in_frustum(Global &global, vec3 &position, matrix4 &transformation, 
 }
 */
 
-void Model::create_box(Graphics &gfx, vec3 *aabb)
+void Model::create_box(Graphics &gfx, vec3 *box)
 {
 	vertex_t	vert[8];
 
 	memset(&vert, 0, sizeof(vert));
 	for(int i = 0; i < 8; i++)
-		vert[i].position = aabb[i];
+		vert[i].position = box[i];
 	int	index[24] = {	0, 1,
 						0, 2,
 						1, 3,
@@ -346,4 +346,12 @@ void Model::create_box(Graphics &gfx, vec3 *aabb)
 
 	box_vertex = gfx.CreateVertexBuffer(vert, 8);
 	box_index = gfx.CreateIndexBuffer(index, 24);
+}
+
+
+void Model::getForwardVector(vec3 &forward)
+{
+	forward.x = entity->model->morientation.m[6];
+	forward.y = entity->model->morientation.m[7];
+	forward.z = entity->model->morientation.m[8];
 }

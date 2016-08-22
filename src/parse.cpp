@@ -162,7 +162,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 	char key[LINE_SIZE], val[LINE_SIZE];
 	char stack[LINE_SIZE] = {0};
 	int sp = 0;
-	int i, j;
+	unsigned int i, j = 0;
 
 	for(i = 0; state != 'F' && state != '\0' && i < strlen(input); i++)
 	{		

@@ -22,13 +22,11 @@ void MD5Model::load(char *md5file, char *animationfile, Graphics &gfx)
 void MD5Model::generate_buffers(Graphics &gfx)
 {
 	frame_index = new int *[md5.anim->num_frame];
-	frame_vao = new int *[md5.anim->num_frame];
 	count_index = new int *[md5.anim->num_frame];
 	frame_vertex = new int *[md5.anim->num_frame];
 	count_vertex = new int *[md5.anim->num_frame];
 	for (int j = 0; j < md5.anim->num_frame; j++)
 	{
-		frame_vao[j] = new int[md5.model->num_mesh];
 		frame_index[j] = new int[md5.model->num_mesh];
 		count_index[j] = new int[md5.model->num_mesh];
 		frame_vertex[j] = new int[md5.model->num_mesh];
@@ -39,7 +37,6 @@ void MD5Model::generate_buffers(Graphics &gfx)
 			int num_index, num_vertex;
 
 			md5.PrepareMesh(i, frame[j], num_index, index_array, vertex_array, num_vertex);
-//			frame_vao[j][i] = gfx.CreateVertexArrayObject();
 			frame_index[j][i] = gfx.CreateIndexBuffer(index_array, num_index);
 			count_index[j][i] = num_index;
 			frame_vertex[j][i] = gfx.CreateVertexBuffer(vertex_array, num_vertex);
@@ -59,7 +56,7 @@ void MD5Model::generate_buffers(Graphics &gfx)
 		bytes = (char *)gltLoadTGA(buffer, &width, &height, &components, &format);
 		if (bytes == NULL)
 		{
-			printf("Unable to load texture %s\n", buffer);
+			debugf("Unable to load texture %s\n", buffer);
 			continue;
 		}
 		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
@@ -69,7 +66,7 @@ void MD5Model::generate_buffers(Graphics &gfx)
 		bytes = (char *)gltLoadTGA(buffer, &width, &height, &components, &format);
 		if (bytes == NULL)
 		{
-			printf("Unable to load texture %s\n", buffer);
+			debugf("Unable to load texture %s\n", buffer);
 			continue;
 		}
 		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
@@ -83,19 +80,14 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	{
 		for (int i = 0; i < md5.model->num_mesh; i++)
 		{
-#ifndef DIRECTX
-			gfx.DeleteVertexArrayObject(frame_vao[j][i]);
-#endif
 			gfx.DeleteVertexBuffer(frame_vertex[j][i]);
 			gfx.DeleteIndexBuffer(frame_index[j][i]);
 		}
-		delete[] frame_vao[j];
 		delete[] frame_index[j];
 		delete[] count_index[j];
 		delete[] frame_vertex[j];
 		delete[] count_vertex[j];
 	}
-	delete frame_vao;
 	delete frame_index;
 	delete count_index;
 	delete frame_vertex;
@@ -118,13 +110,11 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
-		//		gfx.SelectVertexArrayObject(frame_vao[frame_step][i]);
 		gfx.SelectTexture(0, tex_object[i]);
 		gfx.SelectTexture(2, normal_object[i]);
 		gfx.SelectIndexBuffer(frame_index[frame_step][i]);
 		gfx.SelectVertexBuffer(frame_vertex[frame_step][i]);
 		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, count_index[frame_step][i], count_vertex[frame_step][i]);
-		//		gfx.SelectVertexArrayObject(0);
 		gfx.SelectVertexBuffer(0);
 		gfx.SelectIndexBuffer(0);
 	}

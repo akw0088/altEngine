@@ -1,5 +1,5 @@
 #version 440 core
-#define	MAX_LIGHTS 16
+#define	MAX_LIGHTS 32
 
 
 // Per vertex attribute input

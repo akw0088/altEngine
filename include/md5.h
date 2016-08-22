@@ -43,7 +43,6 @@ public:
 
 
 	void InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out);
-	void DrawSkeleton(const struct md5_joint_t *skeleton, int num_joints);
 	void PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex);
 
 	void generate_animation(md5_joint_t **&frame);

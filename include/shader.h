@@ -6,7 +6,7 @@
 class mFont : public Shader
 {
 public:
-	void init(Graphics *gfx);
+	int init(Graphics *gfx);
 	void Params(char c, float x, float y, float scale, vec3 &color);
 	virtual void prelink(void);
 private:
@@ -22,7 +22,7 @@ private:
 class Global : public Shader
 {
 public:
-	void init(Graphics *gfx);
+	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, int tex0);
 	virtual void prelink(void);
 private:
@@ -33,12 +33,12 @@ private:
 
 
 // Max lights hardware can pass through shaders, gfx card specfic
-#define MAX_LIGHTS 16
+#define MAX_LIGHTS 32
 
 class mLight2 : public Shader
 {
 public:
-	void init(Graphics *gfx);
+	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
 	virtual void prelink(void);
 
@@ -56,7 +56,7 @@ private:
 class mLightDepth : public Shader
 {
 public:
-	void init(Graphics *gfx);
+	int init(Graphics *gfx);
 	void Params(matrix4 &mvp);
 	virtual void prelink(void);
 
@@ -67,7 +67,7 @@ private:
 class mLight3 : public Shader
 {
 public:
-	void init(Graphics *gfx);
+	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
 	virtual void prelink(void);
 
@@ -95,7 +95,7 @@ private:
 class Post : public Shader
 {
 public:
-	void init(Graphics *gfx);
+	int init(Graphics *gfx);
 	void resize(int width, int height);
 	void Params(int tex0, int tex1);
 
@@ -107,6 +107,20 @@ private:
 	int texture1;
 	int tc_offset;
 	float texCoordOffsets[18];
+};
+
+class ShadowMap : public Shader
+{
+public:
+	int init(Graphics *gfx);
+	void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp);
+	virtual void prelink(void);
+
+private:
+	int matrix;
+	int shadowmatrix;
+	int u_color;
+	int shadowmap;
 };
 
 #endif

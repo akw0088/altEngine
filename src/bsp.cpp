@@ -128,7 +128,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 			{
 				tessellate(mesh_level, &(data.Vert[face->vertex]), &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index2face[mesh_index] = face->vertex;
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -151,7 +150,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index2face[mesh_index] = face->vertex;
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -169,7 +167,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 14];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -192,7 +189,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index2face[mesh_index] = face->vertex;
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -210,7 +206,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 22];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -229,7 +224,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 24];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -248,7 +242,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 26];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -266,16 +259,16 @@ void Bsp::generate_meshes(Graphics &gfx)
 /*
 	We need to stick tangent vector into old bsp datatype
 */
-void Bsp::CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent)
+void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent_in)
 {
 	for(int i = 0; i < num_vert; i++)
 	{
-		vertex[i].color = bsp_vertex[i].color;
-		vertex[i].normal = bsp_vertex[i].normal;
-		vertex[i].position = bsp_vertex[i].position;
-		vertex[i].texCoord0 = bsp_vertex[i].texCoord0;
-		vertex[i].texCoord1 = bsp_vertex[i].texCoord1;
-		vertex[i].tangent = tangent[i];
+		vertex_out[i].color = bsp_vertex[i].color;
+		vertex_out[i].normal = bsp_vertex[i].normal;
+		vertex_out[i].position = bsp_vertex[i].position;
+		vertex_out[i].texCoord0 = bsp_vertex[i].texCoord0;
+		vertex_out[i].texCoord1 = bsp_vertex[i].texCoord1;
+		vertex_out[i].tangent = tangent_in[i];
 	}
 }
 
@@ -636,7 +629,7 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 	sort_leaf(&leaf_list, 0, position);
 
 	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = 0; i < leaf_list.size(); i++)
+	for (unsigned int i = 0; i < leaf_list.size(); i++)
 	{
 		leaf_t *leaf = &data.Leaf[leaf_list[i]];
 
@@ -661,7 +654,7 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 	}
 	leaf_list.clear();
 
-	for (int i = 0; i < face_list.size(); i++)
+	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
 		face_t *face = &data.Face[face_list[i]];
 
@@ -728,8 +721,8 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 */
 bool Bsp::leaf_visible(leaf_t *leaf, Plane *frustum)
 {
-	vec3 max(leaf->max[0], leaf->max[1], leaf->max[2]);
-	vec3 min(leaf->min[0], leaf->min[1], leaf->min[2]);
+	vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
+	vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
 
 	if (frustum == NULL)
 		return true;
@@ -790,44 +783,44 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 	// calculate first set of verts
 	for (i = 0; i <= level; i++)
 	{
-		float a = (float) i / level;
-		float b = 1.0f - a;
+		float a2 = (float) i / level;
+		float b2 = 1.0f - a2;
 		(*vertex_array)[i].position =
-			control[0].position * (b * b) +
-			control[3].position * (2 * b * a) +
-			control[6].position * (a * a);
+			control[0].position * (b2 * b2) +
+			control[3].position * (2 * b2 * a2) +
+			control[6].position * (a2 * a2);
 	}
 
 	// calculate rest of verts
 	for ( i = 1; i <= level; i++)
 	{
-		float a = (float)i / level;
-		float b = 1.0f - a;
+		float a2 = (float)i / level;
+		float b2 = 1.0f - a2;
 
 		vertex_t temp[3];
 
 		temp[0].position = 
-			control[0].position * (b * b) + 
-			control[1].position * (2 * b * a) + 
-			control[2].position * (a * a);
+			control[0].position * (b2 * b2) + 
+			control[1].position * (2 * b2 * a2) + 
+			control[2].position * (a2 * a2);
 		temp[1].position = 
-			control[3].position * (b * b) + 
-			control[4].position * (2 * b * a) + 
-			control[5].position * (a * a);
+			control[3].position * (b2 * b2) + 
+			control[4].position * (2 * b2 * a2) + 
+			control[5].position * (a2 * a2);
 		temp[2].position = 
-			control[6].position * (b * b) + 
-			control[7].position * (2 * b * a) + 
-			control[8].position * (a * a);
+			control[6].position * (b2 * b2) + 
+			control[7].position * (2 * b2 * a2) + 
+			control[8].position * (a2 * a2);
 
 		for(j = 0; j <= level; j++)
 		{
-			float a = (float) j / level;
-			float b = 1.0f - a;
+			float a3 = (float) j / level;
+			float b3 = 1.0f - a3;
 
 			(*vertex_array)[i * num_verts + j].position =
-				temp[0].position * (b * b) +
-				temp[1].position * (2 * b * a) +
-				temp[2].position * (a * a);
+				temp[0].position * (b3 * b3) +
+				temp[1].position * (2 * b3 * a3) +
+				temp[2].position * (a3 * a3);
 		}
 	}
 	
@@ -892,173 +885,6 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 
 	// correct numVerts size
 	num_verts = num_verts * num_verts;
-}
-
-/*
-Loop through all the model's triangles
-If triangle faces the light source (dot product > 0)
-Insert the three edges (pair of vertices), into an edge stack
-Check for previous occurrence of each edges or it's reverse in the stack
-If an edge or its reverse is found in the stack, remove both edges
-Start with new triangle
-*/
-void Bsp::find_edges(vec3 &position, Edge &edge_list)
-{
-	int leaf_index = find_leaf(position);
-
-	leaf_t *light_Leaf = &data.Leaf[leaf_index];
-
-	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = 0; i < data.num_leafs; i++)
-	{
-		leaf_t *leaf = &data.Leaf[i];
-
-		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
-			continue;
-
-		for (int j = 0; j < leaf->num_faces; j++)
-		{
-			int face_index = data.LeafFace[leaf->leaf_face + j];
-			face_t *face = &data.Face[face_index];
-
-			for (int k = 0; k < face->num_index; k += 3)
-			{
-				int index = data.IndexArray[face->index + k];
-				vec3 x = data.Vert[index].position;
-				vec3 y = data.Vert[index + 1].position;
-				vec3 z = data.Vert[index + 2].position;
-
-				vec3 a = x - y;
-				vec3 b = x - z;
-				vec3 normal = vec3::crossproduct(a, b);
-
-				vec3 lightdir1 = x - position;
-				vec3 lightdir2 = y - position;
-				vec3 lightdir3 = z - position;
-				vec3 lightdir;
-
-				if (lightdir1.magnitude() < lightdir2.magnitude() && lightdir1.magnitude() < lightdir3.magnitude())
-					lightdir = lightdir1;
-				else if (lightdir2.magnitude() < lightdir1.magnitude() && lightdir2.magnitude() < lightdir3.magnitude())
-					lightdir = lightdir2;
-				else
-					lightdir = lightdir3;
-
-				normal.normalize();
-				if (lightdir.magnitude() > 400.0f)
-					continue;
-
-				if (lightdir * normal)
-				{
-					vec3 triple[3][2];
-
-					if (x.x < y.x)
-					{
-						triple[0][0] = x;
-						triple[0][1] = y;
-					}
-					else
-					{
-						triple[0][1] = x;
-						triple[0][0] = y;
-					}
-
-					if (x.x < z.x)
-					{
-						triple[1][0] = x;
-						triple[1][1] = z;
-					}
-					else
-					{
-						triple[1][1] = x;
-						triple[1][0] = z;
-					}
-
-					if (y.x < z.x)
-					{
-						triple[2][0] = y;
-						triple[2][1] = z;
-					}
-					else
-					{
-						triple[2][1] = y;
-						triple[2][0] = z;
-					}
-					edge_list.insert(&triple[0][0]);
-					edge_list.insert(&triple[1][0]);
-					edge_list.insert(&triple[2][0]);
-				}
-			}
-		}
-	}
-}
-
-
-
-/*
-Loop through all the BSP's traingles
-If triangle faces away from the light source (dot product < 0) 
-Insert the face into the backfast list 
-*/
-void Bsp::find_backfaces(vec3 &light_position, vector<shadowvol_t> &shadow_list)
-{
-	int leaf_index = find_leaf(light_position);
-
-	leaf_t *light_Leaf = &data.Leaf[leaf_index];
-
-	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = 0; i < data.num_leafs; i++)
-	{
-		leaf_t *leaf = &data.Leaf[i];
-
-		if ( cluster_visible(light_Leaf->cluster, leaf->cluster) == false )
-			continue;
-
-		for (int j = 0; j < leaf->num_faces; j++)
-		{
-			int face_index = data.LeafFace[leaf->leaf_face + j];
-			face_t *face = &data.Face[face_index];
-
-			for(int k = 0; k < face->num_index; k += 3)
-			{
-				int index = data.IndexArray[face->index + k];
-
-				vec3 x = data.Vert[index].position;
-				vec3 y = data.Vert[index + 1].position;
-				vec3 z = data.Vert[index + 2].position;
-
-				vec3 a = x - y;
-				vec3 b = x - z;
-				vec3 normal = vec3::crossproduct(a,b);
-
-				// find vectors between light position and each vertex of the face
-				// origin - position
-				vec3 lightdir1 = x - light_position;
-				vec3 lightdir2 = y - light_position;
-				vec3 lightdir3 = z - light_position;
-				
-				normal.normalize();
-
-				// Limit distance light will generate shadow volumes
-//				if (lightdir1.magnitude() > 800.0f || lightdir2.magnitude() > 800.0f || lightdir3.magnitude() > 800.0f )
-	//				continue;
-
-				// if backface
-				if (normal * lightdir1 < 0.0f )
-				{
-					shadowvol_t tri;
-
-					tri.a = x;
-					tri.b = y;
-					tri.c = z;
-					tri.lightdir1 = lightdir1;
-					tri.lightdir2 = lightdir2;
-					tri.lightdir3 = lightdir3;
-					shadow_list.push_back(tri);
-				}
-			}
-		}
-	}
 }
 
 bool Bsp::vis_test(vec3 &x, vec3 &y)
@@ -1186,99 +1012,141 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	delete[] temp_btan;
 }
 
-void Bsp::draw_box(int *min, int *max)
+bool Bsp::RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v)
 {
-#ifdef OPENGL_OLD
-	glEnable(GL_BLEND);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glLineWidth(5.0f);
-	glBegin(GL_TRIANGLES);
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(min[0], max[1], min[2]); // 2
+	vec3 ab = b - a;
+	vec3 ac = c - a;
+	vec3 pvec = vec3::crossproduct(dir, ac);
 
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(min[0], max[1], min[2]); // 2
+	float det = ab * pvec;
 
-	glVertex3i(max[0], max[1], max[2]); // 7
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(max[0], min[1], max[2]); // 5
+	// ray and triangle are parallel if det is close to 0
+	if (abs(det) < 0.001f)
+		return false;
 
-	glVertex3i(max[0], max[1], max[2]); // 7
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(min[0], min[1], max[2]); // 1
+	float invDet = 1 / det;
 
-	glVertex3i(max[0], min[1], max[2]); // 5
-	glVertex3i(max[0], max[1], min[2]); // 6
-	glVertex3i(max[0], max[1], max[2]); // 7
+	vec3 tvec = origin - a;
 
-	glVertex3i(max[0], min[1], max[2]); // 5
-	glVertex3i(max[0], min[1], min[2]); // 4
-	glVertex3i(max[0], max[1], min[2]); // 6
+	u = (tvec * pvec) * invDet;
+	
+	if (u < 0 || u > 1)
+		return false;
 
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(min[0], max[1], min[2]); // 2
-	glVertex3i(max[0], max[1], min[2]); // 6
+	vec3 qvec = vec3::crossproduct(tvec, ab);
+	v = (dir * qvec) * invDet;
 
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(max[0], max[1], min[2]); // 6
-	glVertex3i(max[0], min[1], min[2]); // 4
+	if (v < 0 || u + v > 1)
+		return false;
 
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(max[0], min[1], min[2]); // 4
-	glVertex3i(min[0], min[1], max[2]); // 1
+	t = (ac * qvec) * invDet;
 
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(max[0], min[1], min[2]); // 4
-	glVertex3i(max[0], min[1], max[2]); // 5
-
-	glVertex3i(min[0], max[1], min[2]); // 2
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(max[0], max[1], min[2]); // 6
-
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(max[0], max[1], max[2]); // 7
-	glVertex3i(max[0], max[1], min[2]); // 6
-	glEnd();
-	glDisable(GL_BLEND);
-#endif
+	return true;
 }
 
-void Bsp::draw_line_box(int *min, int *max)
+bool Bsp::RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius,  float &t)
 {
-#ifdef OPENGL_OLD
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glLineWidth(5.0f);
-	glBegin(GL_LINES);
-	//bottom square
-	glVertex3i(min[0], min[1], min[2]);
-	glVertex3i(max[0], min[1], min[2]);
-	glVertex3i(min[0], min[1], min[2]);
-	glVertex3i(min[0], min[1], max[2]);
-	glVertex3i(max[0], min[1], max[2]);
-	glVertex3i(max[0], min[1], min[2]);
-	glVertex3i(max[0], min[1], max[2]);
-	glVertex3i(min[0], min[1], max[2]);
-	//top square                     
-	glVertex3i(min[0], max[1], min[2]);
-	glVertex3i(max[0], max[1], min[2]);
-	glVertex3i(min[0], max[1], min[2]);
-	glVertex3i(min[0], max[1], max[2]);
-	glVertex3i(max[0], max[1], max[2]);
-	glVertex3i(max[0], max[1], min[2]);
-	glVertex3i(max[0], max[1], max[2]);
-	glVertex3i(min[0], max[1], max[2]);
-	//remaining legs                 
-	glVertex3i(min[0], min[1], min[2]);
-	glVertex3i(min[0], max[1], min[2]);
-	glVertex3i(min[0], max[1], max[2]);
-	glVertex3i(min[0], min[1], max[2]);
-                                         
-	glVertex3i(max[0], min[1], min[2]);
-	glVertex3i(max[0], max[1], min[2]);
-	glVertex3i(max[0], max[1], max[2]);
-	glVertex3i(max[0], min[1], max[2]);
-	glEnd();
-#endif
+	vec3 dist = sphere - origin;
+	float B = dir * dist;
+	float D = B * B - dist * dist + radius * radius;
+
+	if (D < 0.0f)
+		return false;
+
+	float t0 = B - sqrtf(D);
+	float t1 = B + sqrtf(D);
+
+	bool ret = false;
+
+	if ((t0 > 0.1f) && (t0 < t))
+	{
+		t = t0;
+		ret = true;
+	}
+	if ((t1 > 0.1f) && (t1 < t))
+	{
+		t = t1;
+		ret = true;
+	}
+	return ret;
+}
+
+//intersect ray plane
+bool Bsp::RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point)
+{
+	float denom = dir * normal;
+	float time;
+	
+	if (denom == 0.0f)
+	{
+		return false;
+	}
+
+	time = -(origin * normal + d) / denom;
+	point = origin + dir * time;
+	return true;
+}
+
+/*
+Intersect ray with aabb planes
+get tmin and tmax values for each pair
+can compare interval with other pairs and determine
+if hit or miss occurs
+*/
+bool Bsp::RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
+{
+	float tmin = -10000, tmax = 10000;
+
+	// X coordinate
+	if (dir.x != 0.0)
+	{
+		float t1 = (min.x - origin.x) / dir.x;
+		float t2 = (max.x - origin.x) / dir.x;
+
+		tmin = MAX(tmin, MIN(t1, t2));
+		tmax = MIN(tmax, MAX(t1, t2));
+	}
+
+	// Y coordinate
+	if (dir.y != 0.0)
+	{
+		float t1 = (min.y - origin.y) / dir.y;
+		float t2 = (max.y - origin.y) / dir.y;
+
+		tmin = MAX(tmin, MIN(t1, t2));
+		tmax = MIN(tmax, MAX(t1, t2));
+	}
+
+	// Z coordinate
+	if (dir.z != 0.0)
+	{
+		float t1 = (min.z - origin.z) / dir.z;
+		float t2 = (max.z - origin.z) / dir.z;
+
+		tmin = MAX(tmin, MIN(t1, t2));
+		tmax = MIN(tmax, MAX(t1, t2));
+	}
+
+
+	if (tmax > tmin && tmax > 0.0)
+	{
+		distance = tmax;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
+{
+	for (int i = 0; i < data.num_leafs; i++)
+	{
+		vec3 min((float)data.Leaf[i].min[0], (float)data.Leaf[i].min[1], (float)data.Leaf[i].min[2]);
+		vec3 max((float)data.Leaf[i].max[0], (float)data.Leaf[i].max[1], (float)data.Leaf[i].max[2]);
+
+		RayBoxSlab(origin, dir, min, max, distance);
+	}
 }

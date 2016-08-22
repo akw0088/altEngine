@@ -650,7 +650,7 @@ void Graphics::DeleteIndexBuffer(int handle)
 	glEnableVertexAttribArray() state
 	glVertexAttribPointer() state
 */
-int Graphics::CreateVertexArrayObject()
+void Graphics::CreateVertexArrayObject(unsigned int &vao)
 {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -665,8 +665,6 @@ int Graphics::CreateVertexArrayObject()
 #ifdef ERROR_CHECK
 	error_check();
 #endif
-
-	return vao;
 }
 
 void Graphics::SelectVertexArrayObject(unsigned int vao)
@@ -776,7 +774,9 @@ bool Graphics::error_check()
 	err = glGetError();
 	if ( err != GL_NO_ERROR)
 	{
-		printf("GL_ERROR %d\n", err);
+		//1281 invalid enum
+		//1281 bad value
+//		printf("GL_ERROR %d\n", err);
 		return true;
 	}
 	return false;
@@ -927,7 +927,6 @@ Shader::Shader()
 	vertex_src = NULL;
 	geometry_src = NULL;
 	fragment_src = NULL;
-	gfx = NULL;
 }
 
 
@@ -937,8 +936,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 	int			success;
 	int			max_attrib = 0;
 
-	Shader::gfx = gfx;
-	fLog = fopen("infolog.txt", "a");
+	fLog = fopen("infolog.txt", "w");
 	fprintf(fLog, "OpenGL Version %s\n", glGetString(GL_VERSION));
 	fprintf(fLog, "OpenGL Renderer %s\n", glGetString(GL_RENDERER));
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_attrib);
@@ -1208,16 +1206,18 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glGenTextures(1, &depth_tex);
 	glBindTexture(GL_TEXTURE_2D, depth_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear seems to work too
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
@@ -1254,7 +1254,7 @@ void Graphics::GetDebugLog()
 	}
 
 	int buf_length = 0;
-	for (int i = 0; i < numFound; i++)
+	for (unsigned int i = 0; i < numFound; i++)
 	{
 		fprintf(fp, "source %d type %d id %d severity %d msg [%s]\n", source[i], type[i], id[i], severity[i], &buffer[buf_length]);
 		buf_length += length[i];

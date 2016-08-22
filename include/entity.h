@@ -7,11 +7,11 @@ class Entity
 {
 public:
 	Entity();
-	Entity(const Entity &entity);
 	~Entity();
 
 	vec3			position;
 	bool			visible;
+	bool			network;
 	char			*type;
 	RigidBody		*rigid;
 	Vehicle			*vehicle;
@@ -20,5 +20,6 @@ public:
 	Speaker			*speaker;
 	Trigger			*trigger;
 	Player			*player;
+	Decal			*decal;
 };
 #endif

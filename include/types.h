@@ -98,7 +98,7 @@ typedef struct
 */
 typedef struct
 {
-	int		id;
+	unsigned int		id;
 	matrix3 morientation;
 	vec3	velocity;
 	vec3	angular_velocity;
@@ -107,10 +107,10 @@ typedef struct
 
 typedef struct
 {
-	char	*socketname;
-	int		entity;
-	int		client_sequence;
-	int		server_sequence;
+	char			*socketname;
+	unsigned int	entity;
+	unsigned int	client_sequence;
+	unsigned int	server_sequence;
 } client_t;
 
 // size of fixed part of network packets
@@ -183,4 +183,7 @@ typedef struct
 	bool numpad7;
 	bool numpad8;
 	bool numpad9;
+
+	bool mousewheelup;
+	bool mousewheeldown;
 }  button_t;

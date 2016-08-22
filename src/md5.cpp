@@ -22,35 +22,6 @@ void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skel
 	}
 }
 
-void MD5::DrawSkeleton(const md5_joint_t *skeleton, int num_joints)
-{
-#ifdef OPENGL_OLD
-	int i;
-
-	// Draw each joint
-	glPointSize (5.0f);
-	glColor3f (1.0f, 0.0f, 0.0f);
-	glBegin(GL_POINTS);
-	for (i = 0; i < num_joints; ++i)
-		glVertex3f(skeleton[i].pos.x, skeleton[i].pos.y, skeleton[i].pos.z);
-	glEnd();
-	glPointSize (1.0f);
-
-	// Draw each bone
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glBegin(GL_LINES);
-	for (i = 0; i < num_joints; ++i)
-	{
-		if (skeleton[i].parent != -1)
-		{
-			glVertex3f(skeleton[skeleton[i].parent].pos.x, skeleton[skeleton[i].parent].pos.y, skeleton[skeleton[i].parent].pos.z);
-			glVertex3f(skeleton[i].pos.x, skeleton[i].pos.y, skeleton[i].pos.z);
-		}
-	}
-	glEnd();
-#endif
-}
-
 void MD5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex)
 {
 	md5_mesh_t *mesh = &model->mesh[mesh_index];
@@ -139,7 +110,7 @@ int MD5::load_md5(char *file)
 
 	if (data == NULL)
 	{
-		printf("failed to load md5 file %s", file);
+		debugf("failed to load md5 file %s", file);
 		return -1;
 	}
 
@@ -182,7 +153,7 @@ int MD5::load_md5(char *file)
 		pmesh = strstr(pmesh + 6, "mesh {");
 		if (pmesh == NULL && i + 1 < num_mesh)
 		{
-			printf("Error: Unexpected end of mesh data\n");
+			debugf("Error: Unexpected end of mesh data\n");
 			return -1;
 		}
 	}
@@ -223,7 +194,7 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 		}
 		else
 		{
-			printf("Error: Couldnt read joint %d\n", i);
+			debugf("Error: Couldnt read joint %d\n", i);
 			return 1;
 		}
 
@@ -298,7 +269,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 		if (pdata == NULL)
 		{
-			printf("Error: unexpected end of vert data\n");
+			debugf("Error: unexpected end of vert data\n");
 			return 1;
 		}
 
@@ -307,7 +278,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		{
 			if (index != i)
 			{
-				printf("Error: vertex not in expected order\n");
+				debugf("Error: vertex not in expected order\n");
 				return 1;
 			}
 
@@ -318,7 +289,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		}
 		else
 		{
-			printf("Error reading vertex %d\n", i);
+			debugf("Error reading vertex %d\n", i);
 			return 1;
 		}
 		pdata = strstr(pdata + 5, "vert ");
@@ -334,7 +305,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 		if (pdata == NULL)
 		{
-			printf("Error: unexpected end of tri data\n");
+			debugf("Error: unexpected end of tri data\n");
 			return 1;
 		}
 
@@ -343,7 +314,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		{
 			if (index != i)
 			{
-				printf("Error: triangle not in expected order\n");
+				debugf("Error: triangle not in expected order\n");
 				return 1;
 			}
 
@@ -353,7 +324,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		}
 		else
 		{
-			printf("Error reading triangle %d\n", i);
+			debugf("Error reading triangle %d\n", i);
 			return 1;
 		}
 		pdata = strstr(pdata + 4, "tri ");
@@ -372,7 +343,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 		if (pdata == NULL)
 		{
-			printf("Error: unexpected end of weight data\n");
+			debugf("Error: unexpected end of weight data\n");
 			return 1;
 		}
 
@@ -381,7 +352,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		{
 			if (index != i)
 			{
-				printf("Error: weight not in expected order\n");
+				debugf("Error: weight not in expected order\n");
 				return 1;
 			}
 
@@ -393,7 +364,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		}
 		else
 		{
-			printf("Error reading weight %d\n", i);
+			debugf("Error reading weight %d\n", i);
 			return 1;
 		}
 		pdata = strstr(pdata + 7, "weight ");

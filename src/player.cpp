@@ -32,7 +32,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 
 	entity->speaker = new Speaker(entity);
-
+	strcpy(entity->speaker->file, "info_player_deathmatch");
 	entity->speaker->loop = false;
 	entity->speaker->source = audio.create_source(entity->speaker->loop, false);
 	alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
@@ -65,8 +65,7 @@ void Player::render_weapon(Graphics &gfx)
 
 void Player::change_weapon_up()
 {
-
-	current_light++;
+//	current_light++;
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -104,7 +103,7 @@ void Player::change_weapon_up()
 
 void Player::change_weapon_down()
 {
-	current_light--;
+//	current_light--;
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -139,6 +138,31 @@ void Player::change_weapon_down()
 		break;
 	}
 }
+
+
+float Player::DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point)
+{
+	return vec3::crossproduct(direction, point - origin).magnitude();
+}
+
+int Player::FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints)
+{
+	int index = -1;
+	float min = FLT_MAX;
+
+	for (int i = 0; i < numPoints; i++)
+	{
+		float distance = DistanceToLine(cameraDir, cameraOrigin, points[i]);
+
+		if (distance < min)
+		{
+			min = distance;
+			index = i;
+		}
+	}
+	return index;
+}
+
 
 Player::~Player()
 {

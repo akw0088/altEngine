@@ -4,6 +4,9 @@
 #define new DEBUG_NEW
 #endif
 
+vector<char *> Menu::console_buffer;
+
+
 void Menu::init(Graphics *gfx, Audio *audio)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
@@ -39,10 +42,9 @@ void Menu::init(Graphics *gfx, Audio *audio)
 void Menu::render(Global &global)
 {
 	gfx->SelectTexture(0, menu_object);
-//	gfx->SelectVertexArrayObject(Model::quad_vao);
 	gfx->SelectVertexBuffer(Model::quad_vertex);
 	gfx->SelectIndexBuffer(Model::quad_index);
-	for(int i = 0; i < menu_list.size(); i++)
+	for(unsigned int i = 0; i < menu_list.size(); i++)
 	{
 		menu_t *item = menu_list[i];
 		if (item->state == menu_state)
@@ -61,7 +63,7 @@ void Menu::render(Global &global)
 		}
 	}
 
-	for(int i = 0; i < menu_list.size(); i++)
+	for(unsigned int i = 0; i < menu_list.size(); i++)
 	{
 		menu_t *item = menu_list[i];
 		if (item->state == menu_state)
@@ -92,7 +94,7 @@ void Menu::load(char *menu_file, char *state_file)
 
 	if (menu == NULL)
 	{
-		printf("Unable to open %s\n", menu_file);
+		debugf("Unable to open %s\n", menu_file);
 		return;
 	}
 
@@ -120,7 +122,7 @@ void Menu::load(char *menu_file, char *state_file)
 
 	if (state == NULL)
 	{
-		printf("Unable to open %s\n", state_file);
+		debugf("Unable to open %s\n", state_file);
 		return;
 	}
 
@@ -156,7 +158,7 @@ void Menu::stop()
 
 void Menu::delta(char *delta, Engine &altEngine)
 {
-	for(int i = 0; i < state_list.size(); i++)
+	for(unsigned int i = 0; i < state_list.size(); i++)
 	{
 		state_t *item = state_list[i];
 		if (item->start == menu_state)
@@ -178,7 +180,7 @@ bool Menu::delta(float x, float y)
 	float	min_dist = 2.0f;
 	int		nearest = -1;
 
-	for(int i = 0; i < menu_list.size(); i++)
+	for(unsigned int i = 0; i < menu_list.size(); i++)
 	{
 		menu_t *item = menu_list[i];
 		if (item->state == menu_state)
@@ -244,7 +246,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 //	gfx->SelectVertexArrayObject(Model::quad_vao);
 	gfx->SelectIndexBuffer(Model::quad_index);
 	gfx->SelectVertexBuffer(Model::quad_vertex);
-	for(int i = 0; i < strlen(str); i++)
+	for(unsigned int i = 0; i < strlen(str); i++)
 	{
 		font.Select();
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
@@ -273,7 +275,7 @@ void Menu::draw_text(char *str, float x, float y, float z, float scale, vec3 &co
 //	gfx->SelectVertexArrayObject(Model::quad_vao);
 	gfx->SelectIndexBuffer(Model::quad_index);
 	gfx->SelectVertexBuffer(Model::quad_vertex);
-	for(int i = 0; i < strlen(str); i++)
+	for(unsigned int i = 0; i < strlen(str); i++)
 	{
 		font.Select();
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
@@ -301,7 +303,7 @@ void Menu::render_console(Global &global)
 	gfx->DeselectTexture(0);
 
 	gfx->cleardepth();
-	for(int i = 0; i < console_buffer.size(); i++)
+	for(unsigned int i = 0; i < console_buffer.size(); i++)
 		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i), 0.025f, color);
 	strcat(key_buffer, "\4");
 	draw_text(key_buffer, 0.0125f, 0.5f - 0.05f, 0.025f, color);
@@ -411,22 +413,22 @@ void Menu::handle_console(char key, Engine *altEngine)
 
 Menu::~Menu()
 {
-	for(int i = 0; i < console_buffer.size(); i++)
+	for(unsigned int i = 0; i < console_buffer.size(); i++)
 	{
 		delete [] console_buffer[i];
 	}
 
-	for(int i = 0; i < cmd_buffer.size(); i++)
+	for(unsigned int i = 0; i < cmd_buffer.size(); i++)
 	{
 		delete [] cmd_buffer[i];
 	}
 
-	for(int i = 0; i < state_list.size(); i++)
+	for(unsigned int i = 0; i < state_list.size(); i++)
 	{
 		delete state_list[i];
 	}
 
-	for(int i = 0; i < menu_list.size(); i++)
+	for(unsigned int i = 0; i < menu_list.size(); i++)
 	{
 		delete menu_list[i];
 	}

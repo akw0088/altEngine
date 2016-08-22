@@ -66,6 +66,7 @@ public:
 	void handle_input();
 
 	void handle_weapons(Player &player);
+	void set_shadow_matrix(vec3 position);
 	int testObj;
 
 //temp
@@ -85,16 +86,14 @@ private:
 	Bsp					map;
 	button_t			keyboard;
 	Menu				menu;
-	Frame				camera;
-	int					global_vao;
+	Frame				camera_frame;
+	Frame				light_frame;
+
+	unsigned int		global_vao;
 	unsigned int		quad_tex;
 	unsigned int		depth_tex;
 	unsigned int		fb_width;
 	unsigned int		fb_height;
-
-	vector<Entity *>	entity_list;
-	vector<Light *>		light_list;
-	vector<wave_t>		snd_wave;
 
 	// temp section
 	int				no_tex;
@@ -118,17 +117,21 @@ private:
 	
 	//client
 	bool	client;
-	int		last_server_sequence;
+	unsigned int	last_server_sequence;
 
 	Post	post;
 	mLight2	mlight2;
-	mLightDepth mlight_depth;
 	mLight3	mlight3;
 	Global	global;
+	ShadowMap shadowmap;
+	matrix4 shadowmvp;
 
 	void	*param1;
 	void	*param2;
-	bool	initialized;
+
+	vector<Entity *>	entity_list;
+	vector<Light *>		light_list;
+	vector<wave_t>		snd_wave;
 };
 
 #endif

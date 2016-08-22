@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void mFont::init(Graphics *gfx)
+int mFont::init(Graphics *gfx)
 {
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/font.vsh", NULL, NULL);
@@ -12,7 +12,7 @@ void mFont::init(Graphics *gfx)
 	if (Shader::init(gfx, "media/glsl/font.vs", NULL, "media/glsl/font.fs"))
 	{
 		program_handle = -1;
-		return;
+		return -1;
 	}
 	u_scale = glGetUniformLocation(program_handle, "u_scale");
 	u_row = glGetUniformLocation(program_handle, "u_row");
@@ -22,6 +22,7 @@ void mFont::init(Graphics *gfx)
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 #endif
+	return 0;
 }
 
 void mFont::prelink()
@@ -57,7 +58,7 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 #endif
 }
 
-void Global::init(Graphics *gfx)
+int Global::init(Graphics *gfx)
 {
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/basic.vsh", NULL, "media/hlsl/basic.psh");
@@ -65,11 +66,12 @@ void Global::init(Graphics *gfx)
 	if (Shader::init(gfx, "media/glsl/global.vs", NULL, "media/glsl/global.fs"))
 	{
 		program_handle = -1;
-		return;
+		return -1;
 	}
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 #endif
+	return 0;
 }
 
 void Global::prelink()
@@ -91,7 +93,7 @@ void Global::Params(matrix4 &mvp, int tex0)
 #endif
 }
 
-void mLight2::init(Graphics *gfx)
+int mLight2::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"
 #ifdef DIRECTX
@@ -100,7 +102,7 @@ void mLight2::init(Graphics *gfx)
 	if (Shader::init(gfx, "media/glsl/mlighting3.vs", "media/glsl/mlighting3.gs", "media/glsl/mlighting3.fs"))
 	{
 		program_handle = -1;
-		return;
+		return -1;
 	}
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
@@ -111,6 +113,7 @@ void mLight2::init(Graphics *gfx)
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 #endif
+	return 0;
 }
 
 void mLight2::prelink()
@@ -135,7 +138,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 {
 	vec3 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
-	int i, j;
+	unsigned int i, j;
 
 	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
@@ -164,7 +167,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 }
 
 
-void mLightDepth::init(Graphics *gfx)
+int mLightDepth::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"
 #ifdef DIRECTX
@@ -173,11 +176,12 @@ void mLightDepth::init(Graphics *gfx)
 	if (Shader::init(gfx, "media/glsl/mlighting3_depthonly.vs", NULL, "media/glsl/mlighting3_depthonly.fs"))
 	{
 		program_handle = -1;
-		return;
+		return -1;
 	}
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
 #endif
+	return 0;
 }
 
 void mLightDepth::prelink()
@@ -205,13 +209,13 @@ void mLightDepth::Params(matrix4 &mvp)
 #endif
 }
 
-void Post::init(Graphics *gfx)
+int Post::init(Graphics *gfx)
 {
 #ifndef DIRECTX
 	if (Shader::init(gfx, "media/glsl/post.vs", NULL, "media/glsl/post.fs"))
 	{
 		program_handle = -1;
-		return;
+		return -1;
 	}
 #else
 	Shader::init(gfx, "media/hlsl/post.vsh", NULL, "media/hlsl/post.psh");
@@ -231,6 +235,7 @@ void Post::init(Graphics *gfx)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 #endif
+	return 0;
 }
 
 
@@ -272,7 +277,7 @@ void Post::Params(int tex0, int tex1)
 }
 
 
-void mLight3::init(Graphics *gfx)
+int mLight3::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"
 #ifdef DIRECTX
@@ -281,7 +286,7 @@ void mLight3::init(Graphics *gfx)
 	if (Shader::init(gfx, "media/glsl/mlight3.vs", "media/glsl/mlight3.gs", "media/glsl/mlight3.fs"))
 	{
 		program_handle = -1;
-		return;
+		return -1;
 	}
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
@@ -289,12 +294,12 @@ void mLight3::init(Graphics *gfx)
 	texture1 = glGetUniformLocation(program_handle, "texture1");
 	texture2 = glGetUniformLocation(program_handle, "texture2");
 
-	texture3 = glGetUniformLocation(program_handle, "shadow0");
-	texture4 = glGetUniformLocation(program_handle, "shadow1");
-	texture5 = glGetUniformLocation(program_handle, "shadow2");
-	texture6 = glGetUniformLocation(program_handle, "shadow3");
-	texture7 = glGetUniformLocation(program_handle, "shadow4");
-	texture8 = glGetUniformLocation(program_handle, "shadow5");
+	texture3 = glGetUniformLocation(program_handle, "shadowtex0");
+	texture4 = glGetUniformLocation(program_handle, "shadowtex1");
+	texture5 = glGetUniformLocation(program_handle, "shadowtex2");
+	texture6 = glGetUniformLocation(program_handle, "shadowtex3");
+	texture7 = glGetUniformLocation(program_handle, "shadowtex4");
+	texture8 = glGetUniformLocation(program_handle, "shadowtex5");
 
 
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
@@ -302,6 +307,7 @@ void mLight3::init(Graphics *gfx)
 	u_color = glGetUniformLocation(program_handle, "u_color");
 
 #endif
+	return 0;
 }
 
 void mLight3::prelink()
@@ -326,7 +332,7 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 {
 	vec3 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
-	int i, j;
+	unsigned int i, j;
 
 	for (i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
@@ -360,5 +366,48 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(u_num_lights, j);
 	glUniform3fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
+#endif
+}
+
+int ShadowMap::init(Graphics *gfx)
+{
+	if (Shader::init(gfx, "shadow.vs", NULL, "shadow.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+
+	matrix = glGetUniformLocation(program_handle, "mvp");
+	shadowmatrix = glGetUniformLocation(program_handle, "shadowmvp");
+	shadowmap = glGetUniformLocation(program_handle, "ShadowMap");
+	u_color = glGetUniformLocation(program_handle, "color");
+
+	return 0;
+}
+
+void ShadowMap::prelink()
+{
+#ifndef DIRECTX
+	glBindAttribLocation(program_handle, 0, "attr_position");
+	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
+	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
+	glBindAttribLocation(program_handle, 3, "attr_normal");
+	glBindAttribLocation(program_handle, 4, "attr_color");
+	glBindAttribLocation(program_handle, 5, "attr_tangent");
+#endif
+}
+
+
+void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp)
+{
+#ifdef DIRECTX
+	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
+	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
+	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
+#else
+	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
+	glUniformMatrix4fv(shadowmatrix, 1, GL_FALSE, shadowmvp.m);
+	glUniform1i(shadowmap, 4);
 #endif
 }
