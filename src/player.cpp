@@ -3,9 +3,10 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include <float.h>
 
 Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
-: weapon_rocket(entity), weapon_shotgun(entity), weapon_lightning(entity), weapon_railgun(entity)
+: weapon_shotgun(entity), weapon_rocket(entity), weapon_lightning(entity), weapon_railgun(entity)
 {
 	current_light = 0;
 	Player::entity = entity;

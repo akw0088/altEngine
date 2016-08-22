@@ -28,7 +28,9 @@ private:
 
 	ALCdevice		*device;
 	ALCcontext		*context;
+#ifndef __linux__
 	unsigned int	slot, effect, filter;
+#endif
 
 };
 

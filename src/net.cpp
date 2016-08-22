@@ -156,7 +156,7 @@ void Net::connect(char *server, int port)
 {
 	int sndbuf;
 	int rcvbuf;
-	int ret;
+	int ret = 0;
 	socklen_t arglen = sizeof(int);
 
 	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)

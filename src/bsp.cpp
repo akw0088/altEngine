@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#include <cmath>
+
 Bsp::Bsp()
 {
 	loaded = false;
@@ -1021,7 +1023,7 @@ bool Bsp::RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, floa
 	float det = ab * pvec;
 
 	// ray and triangle are parallel if det is close to 0
-	if (abs(det) < 0.001f)
+	if (abs32(det) < 0.001f)
 		return false;
 
 	float invDet = 1 / det;

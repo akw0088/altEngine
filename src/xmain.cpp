@@ -217,4 +217,44 @@ int write_file(char *filename, char *bytes, int size)
         return 0;
 }
 
+int debugf(const char *format, ...)
+{
+        va_list args;
+        char str[512] = { 0 };
+
+
+        va_start(args, format);
+        vsprintf(str, format, args);
+        va_end(args);
+        printf("%s", str);
+
+
+        unsigned int width = 60;
+
+        char *pstr = str;
+        while (1)
+        {
+                if (strlen(pstr) < width)
+                {
+                        int size = strlen(pstr) + 1;
+                        char *line = new char[size];
+                        memcpy(line, pstr, size);
+                        Menu::console_buffer.push_back(line);
+                        break;
+                }
+                else
+                {
+                        int size = width + 1;
+                        char *line = new char[size];
+                        memcpy(line, pstr, size);
+                        line[width] = '\0';
+                        Menu::console_buffer.push_back(line);
+                        pstr += width;
+                }
+        }
+
+        return 0;
+}
+
+
 #endif

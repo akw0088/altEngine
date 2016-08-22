@@ -1684,7 +1684,7 @@ void Engine::load_sounds()
 
 		if (entity_list[i]->speaker)
 		{
-			if (!strcmp(entity_list[i]->speaker->file, "info_player_deathmatch") == 0)
+			if (!strcmp(entity_list[i]->speaker->file, "info_player_deathmatch"))
 			{
 				strcpy(wave[0].file, entity_list[i]->speaker->file);
 				num_wave++;

@@ -215,9 +215,9 @@ void Audio::init()
 #ifndef __linux__
 	EFXEAXREVERBPROPERTIES efxReverb;
 	int attrib[] = {ALC_MAX_AUXILIARY_SENDS, 4};
-#endif
 	int sends;
 	ALenum al_err;
+#endif
 
 	debugf("Using default audio device: %s\n", alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER));
 	device = alcOpenDevice(NULL);

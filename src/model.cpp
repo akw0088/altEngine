@@ -306,20 +306,19 @@ bool Model::in_frustum(Global &global, vec3 &position, matrix4 &transformation, 
 		}
 	}
 
-/*
 	// skipping farplane due to infinite projection
-	if ((vec3)left_plane * position - left_plane.w > 0 && 
-	(vec3)right_plane * position - right_plane.w > 0 &&
-	(vec3)top_plane * position - top_plane.w > 0 &&
-	(vec3)bottom_plane * position - bottom_plane.w > 0 &&
-	(vec3)near_plane * position - near_plane.w > 0)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+//	if ((vec3)left_plane * position - left_plane.w > 0 && 
+//	(vec3)right_plane * position - right_plane.w > 0 &&
+//	(vec3)top_plane * position - top_plane.w > 0 &&
+//	(vec3)bottom_plane * position - bottom_plane.w > 0 &&
+//	(vec3)near_plane * position - near_plane.w > 0)
+//	{
+//		return true;
+//	}
+//	else
+//	{
+//		return false;
+//	}
 	return false;
 }
 */

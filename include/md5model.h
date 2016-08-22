@@ -13,10 +13,9 @@ public:
 
 private:
 	MD5			md5;
-	md5_joint_t	**frame;
+	md5_joint_t		**frame;
 	int			index_array[8192];
-	vertex_t	vertex_array[8192];
-	int			**frame_vao;
+	vertex_t		vertex_array[8192];
 	int			**frame_index;
 	int			**count_index;
 	int			**frame_vertex;

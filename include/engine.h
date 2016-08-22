@@ -72,43 +72,37 @@ public:
 //temp
 	int xres, yres;
 	// md5 stuff
-	int				frame_step;
-	MD5Model		zcc;
+	int		frame_step;
+	MD5Model	zcc;
 
 
 private:
-	matrix4				transformation;
-	matrix4				projection;
-	matrix4				identity;
+	matrix4		transformation;
+	matrix4		projection;
+	matrix4		identity;
 
-	Graphics			gfx;
-	Audio				audio;
-	Bsp					map;
-	button_t			keyboard;
-	Menu				menu;
-	Frame				camera_frame;
-	Frame				light_frame;
+	Graphics	gfx;
+	Audio		audio;
+	Bsp		map;
+	button_t	keyboard;
+	Menu		menu;
+	Frame		camera_frame;
+	Frame		light_frame;
 
-	unsigned int		global_vao;
-	unsigned int		quad_tex;
-	unsigned int		depth_tex;
-	unsigned int		fb_width;
-	unsigned int		fb_height;
+	unsigned int	fbo;
+	unsigned int	global_vao;
+	unsigned int	quad_tex;
+	unsigned int	depth_tex;
+	unsigned int	fb_width;
+	unsigned int	fb_height;
 
 	// temp section
-	int				no_tex;
-	char			key_buffer[1024];
-	int				sequence;
-	Net				net;
+	int		no_tex;
+	int		sequence;
+	Net		net;
 	reliablemsg_t	reliable;
-	int				spawn;
-	int				reload;
+	int		spawn;
 
-
-	//fbo stuff
-	unsigned int fbo;
-	unsigned int rbo;
-	unsigned int depth;
 
 
 	//server
@@ -119,13 +113,15 @@ private:
 	bool	client;
 	unsigned int	last_server_sequence;
 
-	Post	post;
-	mLight2	mlight2;
-	mLight3	mlight3;
-	Global	global;
-	ShadowMap shadowmap;
-	matrix4 shadowmvp;
+	//Shaders
+	Post		post;
+	mLight2		mlight2;
+	mLight3		mlight3;
+	Global		global;
+	ShadowMap	shadowmap;
+	matrix4		shadowmvp;
 
+	bool	initialized;
 	void	*param1;
 	void	*param2;
 

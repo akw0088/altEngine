@@ -50,7 +50,6 @@ private:
 	int u_num_lights;
 	int u_position;
 	int u_color;
-	int u_intensity;
 };
 
 class mLightDepth : public Shader
@@ -89,7 +88,6 @@ private:
 	int u_num_lights;
 	int u_position;
 	int u_color;
-	int u_intensity;
 };
 
 class Post : public Shader
@@ -113,7 +111,7 @@ class ShadowMap : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp);
+	void Params(matrix4 &mvp, matrix4 &shadowmvp);
 	virtual void prelink(void);
 
 private:

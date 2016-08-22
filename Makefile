@@ -1,6 +1,7 @@
 SOURCES := 	src/xmain.cpp \
 		src/audio.cpp \
 		src/bsp.cpp \
+		src/decal.cpp \
 		src/edge.cpp \
 		src/engine.cpp \
 		src/entity.cpp \
@@ -33,7 +34,7 @@ OBJS := $(SOURCES:.cpp=.o)
 INCLUDES = -I./include/
 #CPP := g++
 CPP := clang++
-CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings
+CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall
 LFLAGS := -lGL -lGLU -lopenal -lX11
 LIBS := 
 
