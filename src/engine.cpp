@@ -1011,7 +1011,7 @@ void Engine::server_step()
 
 	if (clientmsg.length != size)
 	{
-		debugf("Packet size mismatch\n");
+		printf("Packet size mismatch\n");
 		return;
 	}
 
@@ -1026,7 +1026,7 @@ void Engine::server_step()
 		}
 		else
 		{
-			debugf("%s != %s\n", socketname, client_list[i]->socketname);
+			printf("%s != %s\n", socketname, client_list[i]->socketname);
 		}
 	}
 
@@ -1039,7 +1039,7 @@ void Engine::server_step()
 
 		if (clientmsg.sequence <= client_list[index]->client_sequence)
 		{
-			debugf("Got old packet\n");
+			printf("Got old packet\n");
 			return;
 		}
 
@@ -1052,7 +1052,7 @@ void Engine::server_step()
 
 		if (client_list[index]->entity > entity_list.size())
 		{
-			debugf("Invalid Entity\n");
+			printf("Invalid Entity\n");
 			return;
 		}
 		entity_list[ client_list[index]->entity ]->rigid->move(clientkeys);
@@ -1077,7 +1077,7 @@ void Engine::server_step()
 			{
 				char msg[LINE_SIZE];
 
-				debugf("client msg: %s\n", reliablemsg->msg);
+				printf("client msg: %s\n", reliablemsg->msg);
 				sprintf(msg, "%s: %s\n", client_list[index]->socketname, reliablemsg->msg);
 				menu.print(msg);
 				chat(msg);
@@ -1124,7 +1124,7 @@ void Engine::server_step()
 			{
 				if (count == client_list.size())
 				{
-					debugf("client %s got entity %d\n", socketname, i);
+					printf("client %s got entity %d\n", socketname, i);
 					client->entity = i;
 					break;
 				}
@@ -1206,7 +1206,7 @@ void Engine::client_step()
 	int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(keyboard);
 
-	debugf("client keystate %d\n", keystate);
+	printf("client keystate %d\n", keystate);
 
 	// get entity information
 #ifndef __linux__
@@ -1218,13 +1218,13 @@ void Engine::client_step()
 	{
 		if (size != servermsg.length)
 		{
-			debugf("Packet size mismatch: %d %d\n", size, servermsg.length);
+			printf("Packet size mismatch: %d %d\n", size, servermsg.length);
 			return;
 		}
 
 		if (servermsg.sequence <= last_server_sequence)
 		{
-			debugf("Got old packet\n");
+			printf("Got old packet\n");
 			return;
 		}
 
@@ -1242,7 +1242,7 @@ void Engine::client_step()
 			// dont let bad data cause an exception
 			if (ent[i].id > entity_list.size())
 			{
-				debugf("Invalid entity index, bad packet\n");
+				printf("Invalid entity index, bad packet\n");
 				break;
 			}
 
@@ -2281,7 +2281,7 @@ void Engine::connect(char *server)
 	}
 	catch (const char *err)
 	{
-		debugf("Net Error: %d %s\n", errno, err);
+		printf("Net Error: %d %s\n", errno, err);
 		perror("error");
 	}
 }

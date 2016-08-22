@@ -100,7 +100,7 @@ void Menu::load(char *menu_file, char *state_file)
 
 	if (menu == NULL)
 	{
-		printf("Unable to open %s\n", menu_file);
+		debugf("Unable to open %s\n", menu_file);
 		return;
 	}
 
@@ -128,7 +128,7 @@ void Menu::load(char *menu_file, char *state_file)
 
 	if (state == NULL)
 	{
-		printf("Unable to open %s\n", state_file);
+		debugf("Unable to open %s\n", state_file);
 		return;
 	}
 

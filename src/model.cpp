@@ -23,7 +23,7 @@ void Model::load(Graphics &gfx, char *file)
 	model_file = get_file(vbo_file);
 	if (model_file == NULL)
 	{
-		printf("Unable to load vertex array %s\n", vbo_file);
+		debugf("Unable to load vertex array %s\n", vbo_file);
 		return;
 	}
 
@@ -65,7 +65,7 @@ void Model::load(Graphics &gfx, char *file)
 	char *index_file = get_file(ibo_file);
 	if (index_file == NULL)
 	{
-		printf("Unable to load index array %s\n", index_file);
+		debugf("Unable to load index array %s\n", index_file);
 		delete [] model_file;
 		return;
 	}
