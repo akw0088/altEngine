@@ -324,13 +324,13 @@ bool Model::in_frustum(Global &global, vec3 &position, matrix4 &transformation, 
 }
 */
 
-void Model::create_box(Graphics &gfx, vec3 *aabb)
+void Model::create_box(Graphics &gfx, vec3 *box)
 {
 	vertex_t	vert[8];
 
 	memset(&vert, 0, sizeof(vert));
 	for(int i = 0; i < 8; i++)
-		vert[i].position = aabb[i];
+		vert[i].position = box[i];
 	int	index[24] = {	0, 1,
 						0, 2,
 						1, 3,

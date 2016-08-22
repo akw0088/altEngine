@@ -531,7 +531,6 @@ int debugf(const char *format, ...)
 {
 	va_list args;
 	char str[512] = { 0 };
-	char line[80] = { 0 };
 
 
 	va_start(args, format);

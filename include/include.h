@@ -119,6 +119,7 @@ using namespace std;
 #include "rigidbody.h"
 #include "vehicle.h"
 #include "player.h"
+#include "decal.h"
 
 #include "entity.h"
 #include "shader.h"

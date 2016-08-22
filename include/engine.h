@@ -88,15 +88,11 @@ private:
 	Frame				camera_frame;
 	Frame				light_frame;
 
-	int					global_vao;
+	unsigned int		global_vao;
 	unsigned int		quad_tex;
 	unsigned int		depth_tex;
 	unsigned int		fb_width;
 	unsigned int		fb_height;
-
-	vector<Entity *>	entity_list;
-	vector<Light *>		light_list;
-	vector<wave_t>		snd_wave;
 
 	// temp section
 	int				no_tex;
@@ -131,6 +127,10 @@ private:
 
 	void	*param1;
 	void	*param2;
+
+	vector<Entity *>	entity_list;
+	vector<Light *>		light_list;
+	vector<wave_t>		snd_wave;
 };
 
 #endif

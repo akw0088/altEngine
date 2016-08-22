@@ -455,9 +455,9 @@ void RigidBody::evade()
 	flee(position);
 }
 
-void RigidBody::set_target(Entity &entity)
+void RigidBody::set_target(Entity &ent)
 {
-	target = &entity;
+	target = &ent;
 }
 
 

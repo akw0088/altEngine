@@ -8,7 +8,6 @@ void Net::bind(char *address, int port)
 {
 	int sndbuf;
 	int rcvbuf;
-	struct sockaddr_in	servaddr;
 	socklen_t arglen = sizeof(int);
 
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);

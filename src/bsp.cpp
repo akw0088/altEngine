@@ -128,7 +128,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 			{
 				tessellate(mesh_level, &(data.Vert[face->vertex]), &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index2face[mesh_index] = face->vertex;
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -151,7 +150,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index2face[mesh_index] = face->vertex;
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -169,7 +167,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 14];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -192,7 +189,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index2face[mesh_index] = face->vertex;
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -210,7 +206,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 22];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -229,7 +224,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 24];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -248,7 +242,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 26];
 
 				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-//				mesh_vao[mesh_index] = gfx.CreateVertexArrayObject();
 				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
 				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
 				mesh_index++;
@@ -266,16 +259,16 @@ void Bsp::generate_meshes(Graphics &gfx)
 /*
 	We need to stick tangent vector into old bsp datatype
 */
-void Bsp::CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent)
+void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent_in)
 {
 	for(int i = 0; i < num_vert; i++)
 	{
-		vertex[i].color = bsp_vertex[i].color;
-		vertex[i].normal = bsp_vertex[i].normal;
-		vertex[i].position = bsp_vertex[i].position;
-		vertex[i].texCoord0 = bsp_vertex[i].texCoord0;
-		vertex[i].texCoord1 = bsp_vertex[i].texCoord1;
-		vertex[i].tangent = tangent[i];
+		vertex_out[i].color = bsp_vertex[i].color;
+		vertex_out[i].normal = bsp_vertex[i].normal;
+		vertex_out[i].position = bsp_vertex[i].position;
+		vertex_out[i].texCoord0 = bsp_vertex[i].texCoord0;
+		vertex_out[i].texCoord1 = bsp_vertex[i].texCoord1;
+		vertex_out[i].tangent = tangent_in[i];
 	}
 }
 
@@ -790,44 +783,44 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 	// calculate first set of verts
 	for (i = 0; i <= level; i++)
 	{
-		float a = (float) i / level;
-		float b = 1.0f - a;
+		float a2 = (float) i / level;
+		float b2 = 1.0f - a2;
 		(*vertex_array)[i].position =
-			control[0].position * (b * b) +
-			control[3].position * (2 * b * a) +
-			control[6].position * (a * a);
+			control[0].position * (b2 * b2) +
+			control[3].position * (2 * b2 * a2) +
+			control[6].position * (a2 * a2);
 	}
 
 	// calculate rest of verts
 	for ( i = 1; i <= level; i++)
 	{
-		float a = (float)i / level;
-		float b = 1.0f - a;
+		float a2 = (float)i / level;
+		float b2 = 1.0f - a2;
 
 		vertex_t temp[3];
 
 		temp[0].position = 
-			control[0].position * (b * b) + 
-			control[1].position * (2 * b * a) + 
-			control[2].position * (a * a);
+			control[0].position * (b2 * b2) + 
+			control[1].position * (2 * b2 * a2) + 
+			control[2].position * (a2 * a2);
 		temp[1].position = 
-			control[3].position * (b * b) + 
-			control[4].position * (2 * b * a) + 
-			control[5].position * (a * a);
+			control[3].position * (b2 * b2) + 
+			control[4].position * (2 * b2 * a2) + 
+			control[5].position * (a2 * a2);
 		temp[2].position = 
-			control[6].position * (b * b) + 
-			control[7].position * (2 * b * a) + 
-			control[8].position * (a * a);
+			control[6].position * (b2 * b2) + 
+			control[7].position * (2 * b2 * a2) + 
+			control[8].position * (a2 * a2);
 
 		for(j = 0; j <= level; j++)
 		{
-			float a = (float) j / level;
-			float b = 1.0f - a;
+			float a3 = (float) j / level;
+			float b3 = 1.0f - a3;
 
 			(*vertex_array)[i * num_verts + j].position =
-				temp[0].position * (b * b) +
-				temp[1].position * (2 * b * a) +
-				temp[2].position * (a * a);
+				temp[0].position * (b3 * b3) +
+				temp[1].position * (2 * b3 * a3) +
+				temp[2].position * (a3 * a3);
 		}
 	}
 	
@@ -1018,104 +1011,6 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	delete[] temp_tan;
 	delete[] temp_btan;
 }
-
-void Bsp::draw_box(int *min, int *max)
-{
-#ifdef OPENGL_OLD
-	glEnable(GL_BLEND);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glLineWidth(5.0f);
-	glBegin(GL_TRIANGLES);
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(min[0], max[1], min[2]); // 2
-
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(min[0], max[1], min[2]); // 2
-
-	glVertex3i(max[0], max[1], max[2]); // 7
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(max[0], min[1], max[2]); // 5
-
-	glVertex3i(max[0], max[1], max[2]); // 7
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(min[0], min[1], max[2]); // 1
-
-	glVertex3i(max[0], min[1], max[2]); // 5
-	glVertex3i(max[0], max[1], min[2]); // 6
-	glVertex3i(max[0], max[1], max[2]); // 7
-
-	glVertex3i(max[0], min[1], max[2]); // 5
-	glVertex3i(max[0], min[1], min[2]); // 4
-	glVertex3i(max[0], max[1], min[2]); // 6
-
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(min[0], max[1], min[2]); // 2
-	glVertex3i(max[0], max[1], min[2]); // 6
-
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(max[0], max[1], min[2]); // 6
-	glVertex3i(max[0], min[1], min[2]); // 4
-
-	glVertex3i(min[0], min[1], min[2]); // 0
-	glVertex3i(max[0], min[1], min[2]); // 4
-	glVertex3i(min[0], min[1], max[2]); // 1
-
-	glVertex3i(min[0], min[1], max[2]); // 1
-	glVertex3i(max[0], min[1], min[2]); // 4
-	glVertex3i(max[0], min[1], max[2]); // 5
-
-	glVertex3i(min[0], max[1], min[2]); // 2
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(max[0], max[1], min[2]); // 6
-
-	glVertex3i(min[0], max[1], max[2]); // 3
-	glVertex3i(max[0], max[1], max[2]); // 7
-	glVertex3i(max[0], max[1], min[2]); // 6
-	glEnd();
-	glDisable(GL_BLEND);
-#endif
-}
-
-void Bsp::draw_line_box(int *min, int *max)
-{
-#ifdef OPENGL_OLD
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glLineWidth(5.0f);
-	glBegin(GL_LINES);
-	//bottom square
-	glVertex3i(min[0], min[1], min[2]);
-	glVertex3i(max[0], min[1], min[2]);
-	glVertex3i(min[0], min[1], min[2]);
-	glVertex3i(min[0], min[1], max[2]);
-	glVertex3i(max[0], min[1], max[2]);
-	glVertex3i(max[0], min[1], min[2]);
-	glVertex3i(max[0], min[1], max[2]);
-	glVertex3i(min[0], min[1], max[2]);
-	//top square                     
-	glVertex3i(min[0], max[1], min[2]);
-	glVertex3i(max[0], max[1], min[2]);
-	glVertex3i(min[0], max[1], min[2]);
-	glVertex3i(min[0], max[1], max[2]);
-	glVertex3i(max[0], max[1], max[2]);
-	glVertex3i(max[0], max[1], min[2]);
-	glVertex3i(max[0], max[1], max[2]);
-	glVertex3i(min[0], max[1], max[2]);
-	//remaining legs                 
-	glVertex3i(min[0], min[1], min[2]);
-	glVertex3i(min[0], max[1], min[2]);
-	glVertex3i(min[0], max[1], max[2]);
-	glVertex3i(min[0], min[1], max[2]);
-                                         
-	glVertex3i(max[0], min[1], min[2]);
-	glVertex3i(max[0], max[1], min[2]);
-	glVertex3i(max[0], max[1], max[2]);
-	glVertex3i(max[0], min[1], max[2]);
-	glEnd();
-#endif
-}
-
 
 bool Bsp::RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v)
 {

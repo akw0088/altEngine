@@ -3,7 +3,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
-#define ERROR_CHECK
+//#define ERROR_CHECK
 
 class Graphics
 {
@@ -31,7 +31,7 @@ public:
 	void DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts);
 
 	//Need to fix dx9 support cause of these guys
-	int  CreateVertexArrayObject();
+	void CreateVertexArrayObject(unsigned int &vao);
 	void SelectVertexArrayObject(unsigned int vao);
 	void DeleteVertexArrayObject(unsigned int vao);
 
@@ -83,7 +83,7 @@ public:
 	vector<IDirect3DTexture9 *> texture;
 	ID3DXFont *font;
 #else
-	unsigned int vao;
+//	unsigned int vao;
 #endif
 };
 
@@ -99,7 +99,6 @@ public:
 	virtual void prelink() = 0;
 protected:
 	const char	*vertex_src, *geometry_src, *fragment_src;
-	Graphics *gfx;
 #ifdef DIRECTX
 	IDirect3DVertexShader9		*vertex_shader;
 	IDirect3DPixelShader9		*pixel_shader;

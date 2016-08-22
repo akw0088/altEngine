@@ -23,13 +23,9 @@ void Engine::init(void *param1, void *param2)
 	projection = ident;
 	transformation = ident;
 
-
-	light_frame.reset();
-
-
 	//visual
 	gfx.init(param1, param2);
-	global_vao = gfx.CreateVertexArrayObject();
+	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 
 	no_tex = load_texture(gfx, "media/notexture.tga");
@@ -78,6 +74,8 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 	camera_frame.reset();
+	light_frame.reset();
+
 
 	if (post.init(&gfx))
 		menu.print("Failed to load post shader");
@@ -137,9 +135,7 @@ void Engine::load(char *level)
 		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		vec3 pos = mvp * vec4(entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z, 0.0f);
 
-		menu.draw_text(entity_list[i]->type, pos.x,
-			pos.y, pos.z, 1000.0f,
-			color);
+		menu.draw_text(entity_list[i]->type, pos.x, pos.y, pos.z, 1000.0f, color);
 	}
 
 	//Setup render to texture
@@ -286,13 +282,13 @@ void Engine::render_shadowmaps()
 			matrix4::mat_bottom(cube[3], light->entity->position);
 			matrix4::mat_forward(cube[4], light->entity->position);
 			matrix4::mat_backward(cube[5], light->entity->position);
-			for (int i = 5; i < 6; i++)
+			for (int j = 5; j < 6; j++)
 			{
-				matrix4 mvp = cube[i] * projection;
+				matrix4 mvp = cube[j] * projection;
 
-				gfx.fbAttachTexture(light->quad_tex[i]);
+				gfx.fbAttachTexture(light->quad_tex[j]);
 //				gfx.fbAttachTexture(0);
-				gfx.fbAttachDepth(light->depth_tex[i]);
+				gfx.fbAttachDepth(light->depth_tex[j]);
 				gfx.clear();
 //				gfx.Color(false);
 				//		glDrawBuffer(GL_NONE);
@@ -302,7 +298,7 @@ void Engine::render_shadowmaps()
 				//gfx.CullFace("back");
 
 				mlight2.Select();
-				mlight2.Params(mvp * projection, light_list, 0);
+				mlight2.Params(mvp, light_list, 0);
 				map.render(light->entity->position, NULL, gfx);
 				gfx.SelectShader(0);
 //				gfx.Color(true);
@@ -421,7 +417,7 @@ void Engine::render_scene_shadowmap(bool lights)
 	gfx.SelectShader(0);
 }
 
-void Engine::render_entities(const matrix4 transformation, bool lights)
+void Engine::render_entities(const matrix4 trans, bool lights)
 {
 	matrix4 mvp;
 
@@ -431,7 +427,13 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 		if (entity_list[i]->visible == false)
 			continue;
 
-		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+		if (entity_list[i]->rigid == NULL)
+		{
+			entity_list[i]->decal->render(gfx, global);
+			continue;
+		}
+
+		mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		if (lights)
 		{
 			mlight2.Params(mvp, light_list, light_list.size());
@@ -454,7 +456,7 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 			mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
 			mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
 			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
-			mvp = transformation.premultiply(mvp.m) * projection;
+			mvp = trans.premultiply(mvp.m) * projection;
 			if (lights)
 			{
 				mlight2.Params(mvp, light_list, light_list.size());
@@ -472,7 +474,10 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 	//render md5 as second to last entity
 	if (entity_list.size())
 	{
-		mvp = transformation.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
+		if (entity_list[entity_list.size() - 1]->rigid == NULL)
+			return;
+
+		mvp = trans.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
 
 		if (lights)
 		{
@@ -490,7 +495,6 @@ void Engine::render_entities(const matrix4 transformation, bool lights)
 void Engine::render_shadow_volumes()
 {
 	matrix4 mvp;
-	int j = 0;
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -784,6 +788,9 @@ void Engine::dynamics()
 	#pragma omp parallel for
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
+		if (entity_list[i]->rigid == NULL)
+			continue;
+
 		if (entity_list[i]->visible == false || entity_list[i]->rigid->sleep == true )
 			continue;
 
@@ -966,8 +973,6 @@ void Engine::check_triggers()
 
 		if (inside == true && entity_list[i]->trigger->active == false)
 		{
-			Player *player = entity_list[spawn]->player;
-
 			entity_list[i]->trigger->active = true;
 			console(entity_list[i]->trigger->action);
 
@@ -1017,7 +1022,7 @@ void Engine::server_step()
 	clientmsg_t clientmsg;
 	char socketname[LINE_SIZE];
 	bool connected = false;
-	int index;
+	int index = -1;
 
 	// send entities to clients
 	send_entities();
@@ -1871,7 +1876,7 @@ void Engine::load_entities()
 	if (spawn != -1)
 	{
 		entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
-		//		entity_list[spawn]->rigid->load(gfx, "media/models/box");
+		//entity_list[spawn]->rigid->load(gfx, "media/models/box");
 		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 	}
 }
@@ -1956,6 +1961,7 @@ void Engine::unload()
 	menu.play();
 	menu.delta("unload", *this);
 	menu.render(global);
+	gfx.swap();
 }
 
 void Engine::destroy()
@@ -2260,7 +2266,7 @@ void Engine::bind(int port)
 /*
 	network will use control tcp connection and udp streaming of gamestate
 */
-void Engine::connect(char *server)
+void Engine::connect(char *serverip)
 {
 	clientmsg_t	clientmsg;
 	servermsg_t servermsg;
@@ -2281,7 +2287,7 @@ void Engine::connect(char *server)
 		clientmsg.length = HEADER_SIZE + clientmsg.num_cmds * sizeof(int)
 			+ sizeof(int) + strlen(reliable.msg) + 1;
 
-		net.connect(server, 65535);
+		net.connect(serverip, 65535);
 		debugf("Sending map request\n");
 		net.send((char *)&clientmsg, clientmsg.length);
 		debugf("Waiting for server info\n");
@@ -2423,13 +2429,9 @@ void Engine::handle_weapons(Player &player)
 
 
 			Entity *entity = new Entity();
-			entity->rigid = new RigidBody(entity);
+			entity->decal = new Decal(entity);
 			entity->position = end;
-			entity->rigid->clone(*(entity_list[1]->model));
-			entity->rigid->velocity = vec3();
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
-			entity->model = entity->rigid;
+//			entity->decal->normal = normal;
 			entity_list.push_back(entity);
 
 			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
