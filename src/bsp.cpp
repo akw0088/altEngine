@@ -1117,6 +1117,55 @@ void Bsp::draw_line_box(int *min, int *max)
 }
 
 
+bool Bsp::RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v)
+{
+	vec3 ab = b - a;
+	vec3 ac = c - a;
+	vec3 pvec = vec3::crossproduct(dir, ac);
+
+	float det = ab * pvec;
+
+	// ray and triangle are parallel if det is close to 0
+	if (abs(det) < 0.001f)
+		return false;
+
+	float invDet = 1 / det;
+
+	vec3 tvec = origin - a;
+
+	u = (tvec * pvec) * invDet;
+	
+	if (u < 0 || u > 1)
+		return false;
+
+	vec3 qvec = vec3::crossproduct(tvec, ab);
+	v = (dir * qvec) * invDet;
+
+	if (v < 0 || u + v > 1)
+		return false;
+
+	t = (ac * qvec) * invDet;
+
+	return true;
+}
+
+
+//intersect ray plane
+bool Bsp::RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point)
+{
+	float denom = dir * normal;
+	float time;
+	
+	if (denom == 0.0f)
+	{
+		return false;
+	}
+
+	time = -(origin * normal + d) / denom;
+	point = origin + dir * time;
+	return true;
+}
+
 /*
 Intersect ray with aabb planes
 get tmin and tmax values for each pair
