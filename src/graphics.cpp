@@ -936,7 +936,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 	int			success;
 	int			max_attrib = 0;
 
-	fLog = fopen("infolog.txt", "w");
+	fLog = fopen("infolog.txt", "a");
 	fprintf(fLog, "OpenGL Version %s\n", glGetString(GL_VERSION));
 	fprintf(fLog, "OpenGL Renderer %s\n", glGetString(GL_RENDERER));
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_attrib);

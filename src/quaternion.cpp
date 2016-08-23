@@ -98,8 +98,8 @@ vec3 quaternion::rotate(float delta, vec3 axis, vec3 vector)
 	quaternion	v(0.0f, vector);
 	quaternion	result_quaternion;
 	vec3		result_vector;
-	float		cosval = (float)cos(delta / 2);
-	float		sinval = (float)sin(delta / 2);
+	float		cosval = (float)fcos(delta / 2);
+	float		sinval = (float)fsin(delta / 2);
 
 	s = cosval;
 	x = sinval * axis.x;

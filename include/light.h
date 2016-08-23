@@ -9,8 +9,6 @@ public:
 	Light(Entity *entity, Graphics &gfx, int num);
 	void render_shadow_volumes();
 	void generate_volumes(Bsp &map);
-	void extrude(vec3 position);
-	void extend(vec3 position);
 
 	void generate_cubemaps(int width, int height);
 

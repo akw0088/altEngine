@@ -56,6 +56,7 @@ public:
 
 	int reload_timer;
 	int current_light; // debugging light sources, selected same as weapon
+	int current_face; // debugging light sources, selected same as weapon
 
 private:
 	Model weapon_shotgun;

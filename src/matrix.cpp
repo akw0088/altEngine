@@ -535,24 +535,24 @@ void matrix4::ortho(float left, float right, float bottom, float top, float near
 }
 
 
-void matrix4::mat_forward(matrix4 &mvp, vec3 &position)
+void matrix4::mat_backward(matrix4 &mvp, vec3 &position)
 {
-	vec3 right(1.0f, 0.0f, 0.0f);
+	vec3 right(-1.0f, 0.0f, 0.0f);
 	vec3 up(0.0f, 1.0f, 0.0f);
 	vec3 forward(0.0f, 0.0f, -1.0f);
 
 	mvp.m[0] = right.x;
-	mvp.m[1] = right.y;
-	mvp.m[2] = right.z;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
 	mvp.m[3] = 0.0f;
 
-	mvp.m[4] = up.x;
+	mvp.m[4] = right.y;
 	mvp.m[5] = up.y;
-	mvp.m[6] = up.z;
+	mvp.m[6] = forward.y;
 	mvp.m[7] = 0.0f;
 
-	mvp.m[8] = forward.x;
-	mvp.m[9] = forward.y;
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
@@ -566,20 +566,20 @@ void matrix4::mat_left(matrix4 &mvp, vec3 &position)
 {
 	vec3 right(0.0f, 0.0f, -1.0f);
 	vec3 up(0.0f, 1.0f, 0.0f);
-	vec3 forward(-1.0f, 0.0f, 0.0f);
+	vec3 forward(1.0f, 0.0f, 0.0f);
 
 	mvp.m[0] = right.x;
-	mvp.m[1] = right.y;
-	mvp.m[2] = right.z;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
 	mvp.m[3] = 0.0f;
 
-	mvp.m[4] = up.x;
+	mvp.m[4] = right.y;
 	mvp.m[5] = up.y;
-	mvp.m[6] = up.z;
+	mvp.m[6] = forward.y;
 	mvp.m[7] = 0.0f;
 
-	mvp.m[8] = forward.x;
-	mvp.m[9] = forward.y;
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
@@ -589,24 +589,24 @@ void matrix4::mat_left(matrix4 &mvp, vec3 &position)
 	mvp.m[15] = 1.0f;
 }
 
-void matrix4::mat_backward(matrix4 &mvp, vec3 &position)
+void matrix4::mat_forward(matrix4 &mvp, vec3 &position)
 {
-	vec3 right(-1.0f, 0.0f, 0.0f);
+	vec3 right(1.0f, 0.0f, 0.0f);
 	vec3 up(0.0f, 1.0f, 0.0f);
 	vec3 forward(0.0f, 0.0f, 1.0f);
 
 	mvp.m[0] = right.x;
-	mvp.m[1] = right.y;
-	mvp.m[2] = right.z;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
 	mvp.m[3] = 0.0f;
 
-	mvp.m[4] = up.x;
+	mvp.m[4] = right.y;
 	mvp.m[5] = up.y;
-	mvp.m[6] = up.z;
+	mvp.m[6] = forward.y;
 	mvp.m[7] = 0.0f;
 
-	mvp.m[8] = forward.x;
-	mvp.m[9] = forward.y;
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
@@ -620,20 +620,20 @@ void matrix4::mat_right(matrix4 &mvp, vec3 &position)
 {
 	vec3 right(0.0f, 0.0f, 1.0f);
 	vec3 up(0.0f, 1.0f, 0.0f);
-	vec3 forward(1.0f, 0.0f, 0.0f);
+	vec3 forward(-1.0f, 0.0f, 0.0f);
 
 	mvp.m[0] = right.x;
-	mvp.m[1] = right.y;
-	mvp.m[2] = right.z;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
 	mvp.m[3] = 0.0f;
 
-	mvp.m[4] = up.x;
+	mvp.m[4] = right.y;
 	mvp.m[5] = up.y;
-	mvp.m[6] = up.z;
+	mvp.m[6] = forward.y;
 	mvp.m[7] = 0.0f;
 
-	mvp.m[8] = forward.x;
-	mvp.m[9] = forward.y;
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
@@ -646,21 +646,21 @@ void matrix4::mat_right(matrix4 &mvp, vec3 &position)
 void matrix4::mat_top(matrix4 &mvp, vec3 &position)
 {
 	vec3 right(1.0f, 0.0f, 0.0f);
-	vec3 up(0.0f, 0.0f, -1.0f);
+	vec3 up(0.0f, 0.0f, 1.0f);
 	vec3 forward(0.0f, -1.0f, 0.0f);
 
 	mvp.m[0] = right.x;
-	mvp.m[1] = right.y;
-	mvp.m[2] = right.z;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
 	mvp.m[3] = 0.0f;
 
-	mvp.m[4] = up.x;
+	mvp.m[4] = right.y;
 	mvp.m[5] = up.y;
-	mvp.m[6] = up.z;
+	mvp.m[6] = forward.y;
 	mvp.m[7] = 0.0f;
 
-	mvp.m[8] = forward.x;
-	mvp.m[9] = forward.y;
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 
@@ -673,21 +673,22 @@ void matrix4::mat_top(matrix4 &mvp, vec3 &position)
 void matrix4::mat_bottom(matrix4 &mvp, vec3 &position)
 {
 	vec3 right(1.0f, 0.0f, 0.0f);
-	vec3 up(0.0f, 0.0f, 1.0f);
+	vec3 up(0.0f, 0.0f, -1.0f);
 	vec3 forward(0.0f, 1.0f, 0.0f);
 
+
 	mvp.m[0] = right.x;
-	mvp.m[1] = right.y;
-	mvp.m[2] = right.z;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
 	mvp.m[3] = 0.0f;
 
-	mvp.m[4] = up.x;
+	mvp.m[4] = right.y;
 	mvp.m[5] = up.y;
-	mvp.m[6] = up.z;
+	mvp.m[6] = forward.y;
 	mvp.m[7] = 0.0f;
 
-	mvp.m[8] = forward.x;
-	mvp.m[9] = forward.y;
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
 	mvp.m[10] = forward.z;
 	mvp.m[11] = 0.0f;
 

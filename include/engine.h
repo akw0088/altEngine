@@ -15,7 +15,7 @@ public:
 
 	void render(double last_frametime);
 	void render_scene(bool lights);
-	void render_scene_shadowmap(bool lights);
+	void render_scene_using_shadowmap(bool lights);
 	void render_entities(const matrix4 transformation, bool lights);
 	void render_shadow_volumes();
 
@@ -62,7 +62,7 @@ public:
 	void send_entities();
 
 	void destroy_buffers();
-	void render_framebuffer();
+	void render_to_framebuffer();
 	void handle_input();
 
 	void handle_weapons(Player &player);
@@ -77,7 +77,6 @@ public:
 
 
 private:
-	matrix4		transformation;
 	matrix4		projection;
 	matrix4		identity;
 
@@ -106,11 +105,11 @@ private:
 
 
 	//server
-	bool	server;
+	bool	server_flag;
 	vector <client_t *> client_list;
 	
 	//client
-	bool	client;
+	bool	client_flag;
 	unsigned int	last_server_sequence;
 
 	//Shaders

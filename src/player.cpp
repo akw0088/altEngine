@@ -8,7 +8,6 @@
 Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 : weapon_shotgun(entity), weapon_rocket(entity), weapon_lightning(entity), weapon_railgun(entity)
 {
-	current_light = 0;
 	Player::entity = entity;
 
 	attack_sound = "";
@@ -40,6 +39,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	audio.effects(entity->speaker->source);
 
 	//	weapon_model.center = entity->rigid->center;
+
+	current_light = 0;
+	current_face = 0;
 }
 
 
@@ -66,7 +68,6 @@ void Player::render_weapon(Graphics &gfx)
 
 void Player::change_weapon_up()
 {
-//	current_light++;
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -104,7 +105,6 @@ void Player::change_weapon_up()
 
 void Player::change_weapon_down()
 {
-//	current_light--;
 	switch (current_weapon)
 	{
 	case wp_none:

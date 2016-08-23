@@ -13,22 +13,21 @@ Engine::Engine()
 }
 
 
-void Engine::init(void *param1, void *param2)
+void Engine::init(void *p1, void *p2)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
 						0.0f, 1.0f, 0.0f, 0.0f,
 						0.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 1.0f};
 
-	Engine::param1 = param1;
-	Engine::param2 = param2;
+	Engine::param1 = p1;
+	Engine::param2 = p2;
 	initialized = true;
 
 	debugf("altEngine2 Version %s\n", "1.1.0");
 
 	identity = ident;
 	projection = ident;
-	transformation = ident;
 
 	//visual
 	gfx.init(param1, param2);
@@ -47,8 +46,8 @@ void Engine::init(void *param1, void *param2)
 
 	//net crap
 	sequence = 0;
-	server = false;
-	client = false;
+	server_flag = false;
+	client_flag = false;
 	memset(reliable.msg, 0, LINE_SIZE);
 	reliable.sequence = -1;
 	last_server_sequence = 0;
@@ -73,6 +72,8 @@ void Engine::init(void *param1, void *param2)
 
 void Engine::load(char *level)
 {
+	matrix4 transformation;
+
 	if (map.loaded)
 		return;
 
@@ -183,12 +184,8 @@ void Engine::render(double last_frametime)
 	render_shadowmaps();
 	gfx.bindFramebuffer(0);
 
-
-
-	render_framebuffer();
+	render_to_framebuffer();
 	gfx.clear();
-
-
 
 	if (spawn != -1 && entity_list[spawn]->player->current_light == 0)
 		render_texture(quad_tex);
@@ -200,7 +197,7 @@ void Engine::render(double last_frametime)
 			{
 				if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
 				{
-					testObj = entity_list[i]->light->quad_tex[5];
+					testObj = entity_list[i]->light->quad_tex[entity_list[spawn]->player->current_face];
 					break;
 				}
 			}
@@ -208,7 +205,6 @@ void Engine::render(double last_frametime)
 
 		render_texture(testObj);
 	}
-
 #endif
 #ifdef FORWARD
 	gfx.clear();
@@ -270,26 +266,34 @@ void Engine::render(double last_frametime)
 }
 
 
+/*
+camera_frame.set(transformation);
+render_entities(transformation, true);
+mlight2.Select();
+mvp = transformation * projection;
+
+*/
+
 void Engine::render_shadowmaps()
 {
 	// set zFar closer to maximize depth buffer percision
 	projection.perspective(45.0, (float)fb_width / fb_height, 1.0f, 1201.0f, false);
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light)
+		if (entity_list[i]->light && entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
 		{
 			Light *light = entity_list[i]->light;
 
 			matrix4 cube[6];
 
 			// Generate matrices
-			matrix4::mat_right(cube[0], light->entity->position);
-			matrix4::mat_left(cube[1], light->entity->position);
-			matrix4::mat_top(cube[2], light->entity->position);
-			matrix4::mat_bottom(cube[3], light->entity->position);
-			matrix4::mat_forward(cube[4], light->entity->position);
-			matrix4::mat_backward(cube[5], light->entity->position);
-			for (int j = 5; j < 6; j++)
+			matrix4::mat_right(cube[0], entity_list[i]->position);
+			matrix4::mat_left(cube[1], entity_list[i]->position);
+			matrix4::mat_top(cube[2], entity_list[i]->position);
+			matrix4::mat_bottom(cube[3], entity_list[i]->position);
+			matrix4::mat_forward(cube[4], entity_list[i]->position);
+			matrix4::mat_backward(cube[5], entity_list[i]->position);
+			for (int j = 0; j < 6; j++)
 			{
 				matrix4 mvp = cube[j] * projection;
 
@@ -301,12 +305,12 @@ void Engine::render_shadowmaps()
 				//		glDrawBuffer(GL_NONE);
 				//		glReadBuffer(GL_NONE);
 				//gfx.CullFace("front");
-				render_entities(mvp, false);
+				render_entities(mvp, true);
 				//gfx.CullFace("back");
 
 				mlight2.Select();
 				mlight2.Params(mvp, light_list, 0);
-				map.render(light->entity->position, NULL, gfx);
+				map.render(entity_list[i]->position, NULL, gfx);
 				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
@@ -318,7 +322,7 @@ void Engine::render_shadowmaps()
 }
 
 
-void Engine::render_framebuffer()
+void Engine::render_to_framebuffer()
 {
 	gfx.bindFramebuffer(fbo);
 	gfx.resize(fb_width, fb_height);
@@ -326,7 +330,7 @@ void Engine::render_framebuffer()
 	gfx.fbAttachDepth(depth_tex);
 
 	gfx.clear();
-	render_scene_shadowmap(true);
+	render_scene_using_shadowmap(true);
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
@@ -346,6 +350,7 @@ void Engine::render_texture(int texObj)
 
 void Engine::render_scene(bool lights)
 {
+	matrix4 transformation;
 	matrix4 mvp;
 
 	entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
@@ -373,9 +378,10 @@ void Engine::render_scene(bool lights)
 // target 8 shadow cube maps seems reasonable
 // looks like packing multiple cubemaps into a single texture
 // and sizing them based on impact is what research is doing
-void Engine::render_scene_shadowmap(bool lights)
+void Engine::render_scene_using_shadowmap(bool lights)
 {
 	matrix4 mvp;
+	matrix4 transformation;
 
 	if (keyboard.control == false)
 	{
@@ -403,14 +409,24 @@ void Engine::render_scene_shadowmap(bool lights)
 //	shadowmap.Params(mvp, shadowmvp);
 	if (light_list.size())
 	{
-		gfx.SelectTexture(3, light_list[0]->depth_tex[0]);
-		gfx.SelectTexture(4, light_list[0]->depth_tex[1]);
-		gfx.SelectTexture(5, light_list[0]->depth_tex[2]);
-		gfx.SelectTexture(6, light_list[0]->depth_tex[3]);
-		gfx.SelectTexture(7, light_list[0]->depth_tex[4]);
-		gfx.SelectTexture(8, light_list[0]->depth_tex[5]);
 
-		mlight3.Params(mvp, light_list, light_list.size());
+		for (int i = 0; i < entity_list.size(); i++)
+		{
+			if (entity_list[i]->light)
+			{
+				if (entity_list[i]->light->light_num ==  entity_list[spawn]->player->current_light)
+				{
+					gfx.SelectTexture(3, entity_list[i]->light->depth_tex[0]);
+					gfx.SelectTexture(4, entity_list[i]->light->depth_tex[1]);
+					gfx.SelectTexture(5, entity_list[i]->light->depth_tex[2]);
+					gfx.SelectTexture(6, entity_list[i]->light->depth_tex[3]);
+					gfx.SelectTexture(7, entity_list[i]->light->depth_tex[4]);
+					gfx.SelectTexture(8, entity_list[i]->light->depth_tex[5]);
+
+					mlight3.Params(mvp, light_list, light_list.size());
+				}
+			}
+		}
 	}
 
 	if (keyboard.control)
@@ -502,6 +518,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 void Engine::render_shadow_volumes()
 {
 	matrix4 mvp;
+	matrix4 transformation;
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -551,7 +568,6 @@ void Engine::post_process(int num_passes)
 void Engine::debug_messages(double last_frametime)
 {
 	char msg[LINE_SIZE];
-	transformation = identity;
 	projection = identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
 
@@ -855,10 +871,11 @@ bool Engine::collision_detect(RigidBody &body)
 	}
 	body.map_collision = false;
 
+	/*
 	if (body_collision(body))
 		return true;
-	else
-		return false;
+		*/
+	return false;
 }
 
 bool Engine::map_collision(RigidBody &body)
@@ -914,16 +931,14 @@ bool Engine::map_collision(RigidBody &body)
 //O(N^2)
 bool Engine::body_collision(RigidBody &body)
 {
-	/*
 	for(int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i] == body.entity)
 			continue;
 
-		if (map.leaf_test(body.entity->position, entity_list[i]->position));
+		if (map.leaf_test(body.entity->position, entity_list[i]->position))
 			body.collision_detect(*entity_list[i]->rigid);
 	}
-	*/
 	return false;
 }
 
@@ -1597,6 +1612,64 @@ void Engine::handle_game(char key)
 	case 'r':
 		camera_frame.reset();
 		break;
+
+	case '0':
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->current_face = 0;
+		}
+		break;
+	case '1':
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->current_face = 1;
+		}
+		break;
+	case '2':
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->current_face = 2;
+		}
+		break;
+	case '3':
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->current_face = 3;
+		}
+		break;
+	case '4':
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->current_face = 4;
+		}
+		break;
+	case '5':
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->current_face = 5;
+		}
+		break;
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		break;
+
+	case '-':
+		if (spawn != -1)
+		{
+			if (entity_list[spawn]->player->current_light > 0)
+				entity_list[spawn]->player->current_light--;
+		}
+		break;
+	case '=':
+		if (spawn != -1)
+		{
+			if (entity_list[spawn]->player->current_light < light_list.size())
+				entity_list[spawn]->player->current_light++;
+		}
+		break;
+
 	case 27:
 		menu.ingame = !menu.ingame;
 		break;
@@ -2256,7 +2329,7 @@ void Engine::console(char *cmd)
 
 void Engine::bind(int port)
 {
-	if (server)
+	if (server_flag)
 	{
 		debugf("Server already bound to port\n");
 		return;
@@ -2270,7 +2343,7 @@ void Engine::bind(int port)
 	{
 		debugf("Net Error: %s\n", err);
 	}
-	server = true;
+	server_flag = true;
 }
 
 /*
@@ -2281,7 +2354,7 @@ void Engine::connect(char *serverip)
 	clientmsg_t	clientmsg;
 	servermsg_t servermsg;
 
-	client = false;
+	client_flag = false;
 
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
 	try
@@ -2306,7 +2379,7 @@ void Engine::connect(char *serverip)
 		{
 			char level[LINE_SIZE];
 
-			client = true;
+			client_flag = true;
 			debugf("Connected\n");
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 			if (sscanf(reliablemsg->msg, "map %s", level) == 1)
