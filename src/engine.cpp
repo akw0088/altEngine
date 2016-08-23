@@ -2258,8 +2258,6 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "teleport %s", data);
 	if (ret == 1)
 	{
-		bool teleported = false;
-
 		snprintf(msg, LINE_SIZE, "target %s\n", data);
 		menu.print(msg);
 
@@ -2270,9 +2268,30 @@ void Engine::console(char *cmd)
 				
 			if (!strcmp(entity_list[i]->target_name, data))
 			{
-				teleported = true;
+				matrix4 matrix;
 				entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+
+				switch (entity_list[i]->angle)
+				{
+				case 0:
+					matrix4::mat_left(matrix, entity_list[spawn]->position);
+					break;
+				case 90:
+					matrix4::mat_forward(matrix, entity_list[spawn]->position);
+					break;
+				case 180:
+					matrix4::mat_right(matrix, entity_list[spawn]->position);
+					break;
+				case 270:
+					matrix4::mat_backward(matrix, entity_list[spawn]->position);
+					break;
+				}
+				camera_frame.forward.x = matrix.m[8];
+				camera_frame.forward.y = matrix.m[9];
+				camera_frame.forward.z = matrix.m[10];
+				camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 				break;
+
 			}
 		}
 		return;
