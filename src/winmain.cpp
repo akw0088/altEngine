@@ -13,6 +13,9 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL setupPixelFormat(HDC);
 void RedirectIOToConsole();
 unsigned int getTimeStamp(void);
+double GetCounter(double freq);
+void GetFreq(double &freq);
+
 
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
@@ -109,7 +112,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static int	new_style = WS_CHILD | WS_VISIBLE;
 	static int	xres, yres;
 	static bool show_cursor = true;
-	static int start = 0, end = 0, last_frametime = 0;
+	static double start = 0.0, end = 0.0, last_frametime = 0.0;
+	static double min_frametime = 0.0;
+	static double max_frametime = 0.0;
+	static double freq = 0.0;
 
 
 	switch (message)
@@ -129,7 +135,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		xres = abs(mi.rcMonitor.right - mi.rcMonitor.left);
 		yres = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
-
+		GetFreq(freq);
 		setupPixelFormat(hdc);
 #ifndef DIRECTX
 		hglrc_legacy = wglCreateContext(hdc);
@@ -183,10 +189,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WMU_RENDER:
 	{
-		start = GetTickCount();
+		start = GetCounter(freq);
 		altEngine.render(last_frametime);
-		end = GetTickCount();
+		end = GetCounter(freq);
 		last_frametime = end - start;
+		min_frametime = MIN(min_frametime, last_frametime);
+		max_frametime = MIN(max_frametime, last_frametime);
 
 		return 0;
 	}
@@ -564,6 +572,24 @@ int debugf(const char *format, ...)
 	}
 
 	return 0;
+}
+
+void GetFreq(double &freq)
+{
+	LARGE_INTEGER li;
+	if (!QueryPerformanceFrequency(&li))
+	{
+		printf("QueryPerformanceFrequency() failed\n");
+		return;
+	}
+
+	freq = double(li.QuadPart) / 1000.0;
+}
+double GetCounter(double freq)
+{
+	LARGE_INTEGER li;
+	QueryPerformanceCounter(&li);
+	return (double)li.QuadPart / freq;
 }
 
 #endif

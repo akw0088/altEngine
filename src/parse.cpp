@@ -156,7 +156,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 
 bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gfx)
 {
-	Entity *entity;
+	Entity *entity = NULL;
 	char state = 'S';
 	char prevstate = 'S';
 	char key[LINE_SIZE], val[LINE_SIZE];

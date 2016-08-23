@@ -45,9 +45,6 @@ void Engine::init(void *param1, void *param2)
 	menu.init(&gfx, &audio);
 	menu.load("media/newmenu.txt", "media/newstate.txt");
 
-
-	menu.render(global);
-
 	//net crap
 	sequence = 0;
 	server = false;
@@ -69,6 +66,9 @@ void Engine::init(void *param1, void *param2)
 
 	shadowmap.init(&gfx);
 
+	gfx.clear();
+	menu.render(global);
+	gfx.swap();
 }
 
 void Engine::load(char *level)
@@ -168,7 +168,7 @@ void Engine::load(char *level)
 
 }
 
-void Engine::render(int last_frametime)
+void Engine::render(double last_frametime)
 {
 	if (map.loaded == false)
 		return;
@@ -548,14 +548,14 @@ void Engine::post_process(int num_passes)
 	gfx.DeselectTexture(0);
 }
 
-void Engine::debug_messages(int last_frametime)
+void Engine::debug_messages(double last_frametime)
 {
 	char msg[LINE_SIZE];
 	transformation = identity;
 	projection = identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
 
-	snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %d ms %.2f fps", last_frametime, 1000.0 / last_frametime);
+	snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
 	menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
 	snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
 	menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);

@@ -13,7 +13,7 @@ public:
 	void destroy();
 	void quit();
 
-	void render(int last_frametime);
+	void render(double last_frametime);
 	void render_scene(bool lights);
 	void render_scene_shadowmap(bool lights);
 	void render_entities(const matrix4 transformation, bool lights);
@@ -24,7 +24,7 @@ public:
 	void render_texture(int texObj);
 	void post_process(int num_passes);
 	void resize(int width, int height);
-	void debug_messages(int last_frametime);
+	void debug_messages(double last_frametime);
 
 	void step();
 	void dynamics();

@@ -371,7 +371,7 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 int ShadowMap::init(Graphics *gfx)
 {
-	if (Shader::init(gfx, "shadow.vs", NULL, "shadow.fs"))
+	if (Shader::init(gfx, "media/glsl/shadow.vs", NULL, "media/glsl/shadow.fs"))
 	{
 		program_handle = -1;
 		return -1;
