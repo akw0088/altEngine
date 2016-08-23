@@ -10,6 +10,9 @@ public:
 	~Entity();
 
 	vec3			position;
+	char			target[64];
+	char			target_name[64];
+	int				angle;
 	bool			visible;
 	bool			network;
 	char			*type;

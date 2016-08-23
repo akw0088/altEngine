@@ -1755,9 +1755,17 @@ void Engine::load_sounds()
 		}
 		else if (entity_list[i]->trigger)
 		{
-			strcpy(wave[0].file, entity_list[i]->trigger->pickup_snd);
-			strcpy(wave[1].file, entity_list[i]->trigger->respawn_snd);
-			num_wave += 2;
+			if (entity_list[i]->trigger->pickup_snd[0] != '\0')
+			{
+				strcpy(wave[num_wave].file, entity_list[i]->trigger->pickup_snd);
+				num_wave++;
+			}
+
+			if (entity_list[i]->trigger->respawn_snd[0] != '\0')
+			{
+				strcpy(wave[num_wave].file, entity_list[i]->trigger->respawn_snd);
+				num_wave++;
+			}
 		}
 
 		for(unsigned int k = 0; k < num_wave; k++)
@@ -2244,6 +2252,29 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "ammo_bfg %s\n", data);
 		menu.print(msg);
 		entity_list[spawn]->player->ammo_bfg += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "teleport %s", data);
+	if (ret == 1)
+	{
+		bool teleported = false;
+
+		snprintf(msg, LINE_SIZE, "target %s\n", data);
+		menu.print(msg);
+
+		for (int i = 0; i < entity_list.size(); i++)
+		{
+			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
+				continue;
+				
+			if (!strcmp(entity_list[i]->target_name, data))
+			{
+				teleported = true;
+				entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+				break;
+			}
+		}
 		return;
 	}
 

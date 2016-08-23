@@ -127,6 +127,14 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 			snprintf(entity.trigger->respawn_snd, LINE_SIZE, "media/sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
 		}
+
+		if (strcmp(value, "trigger_teleport") == 0)
+		{
+			if (entity.trigger == NULL)
+				entity.trigger = new Trigger(&entity);
+
+			sprintf(entity.trigger->action, "teleport %s", entity.target);
+		}
 	}
 	else if (strcmp(key, "light") == 0)
 	{
@@ -151,6 +159,18 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 		entity.speaker = new Speaker(&entity);
 		snprintf(entity.speaker->file, LINE_SIZE, "media/%s", value);
 		entity.rigid->angular_velocity.x = 10.0f;
+	}
+	else if (strcmp(key, "target") == 0)
+	{
+		strcpy(entity.target, value);
+	}
+	else if (strcmp(key, "angle") == 0)
+	{
+		entity.angle = atoi(value);
+	}
+	else if (strcmp(key, "targetname") == 0)
+	{
+		strcpy(entity.target_name, value);
 	}
 }
 
@@ -192,6 +212,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 				entity = new Entity();
 				entity->rigid = new RigidBody(entity);
 				entity->model = entity->rigid;
+
 				entity_list.push_back(entity);
 			}
 			j = 0;
