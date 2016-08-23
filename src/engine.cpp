@@ -2297,6 +2297,27 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "push %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "push %s\n", data);
+		menu.print(msg);
+
+		for (int i = 0; i < entity_list.size(); i++)
+		{
+			if (!strcmp(entity_list[i]->target_name, data))
+			{
+				//target - origin
+				vec3 dir = entity_list[i]->position - entity_list[spawn]->position;
+
+				//add velocity towards target
+				entity_list[spawn]->rigid->velocity += dir;
+				break;
+			}
+		}
+		return;
+	}
+
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
 	{

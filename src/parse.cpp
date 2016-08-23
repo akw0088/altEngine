@@ -135,6 +135,15 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 
 			sprintf(entity.trigger->action, "teleport %s", entity.target);
 		}
+
+		if (strcmp(value, "trigger_push") == 0)
+		{
+			if (entity.trigger == NULL)
+				entity.trigger = new Trigger(&entity);
+
+			sprintf(entity.trigger->action, "push %s", entity.target);
+		}
+
 	}
 	else if (strcmp(key, "light") == 0)
 	{
