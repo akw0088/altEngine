@@ -16,7 +16,7 @@ public:
 	void render(double last_frametime);
 	void render_scene(bool lights);
 	void render_scene_using_shadowmap(bool lights);
-	void render_entities(const matrix4 transformation, bool lights);
+	void render_entities(const matrix4 trans, bool lights);
 	void render_shadow_volumes();
 
 
@@ -66,14 +66,14 @@ public:
 	void handle_input();
 
 	void handle_weapons(Player &player);
-	void set_shadow_matrix(vec3 position);
-	int testObj;
+	void set_shadow_matrix(matrix4 &mvp);
 
 //temp
 	int xres, yres;
 	// md5 stuff
 	int		frame_step;
 	MD5Model	zcc;
+	int testObj;
 
 
 private:

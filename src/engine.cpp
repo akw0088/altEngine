@@ -64,10 +64,6 @@ void Engine::init(void *p1, void *p2)
 
 
 	shadowmap.init(&gfx);
-
-	gfx.clear();
-	menu.render(global);
-	gfx.swap();
 }
 
 void Engine::load(char *level)
@@ -305,7 +301,9 @@ void Engine::render_shadowmaps()
 				//		glDrawBuffer(GL_NONE);
 				//		glReadBuffer(GL_NONE);
 				//gfx.CullFace("front");
-				render_entities(mvp, true);
+
+				set_shadow_matrix(mvp);
+				render_entities(cube[j], true);
 				//gfx.CullFace("back");
 
 				mlight2.Select();
@@ -371,13 +369,9 @@ void Engine::render_scene(bool lights)
 }
 
 
-// Looks like we will be limited by texture units
-//53 on geforce 960m
-//128 on HD 7970
-//160 NVIDIA GeForce GTX 1080
-// target 8 shadow cube maps seems reasonable
-// looks like packing multiple cubemaps into a single texture
-// and sizing them based on impact is what research is doing
+// Texture arrays let me pass all the depthmaps
+// Next problem is the transformed interpolated fragment per face, per light
+// Right now I can only get four shadow omni-lights with this limit
 void Engine::render_scene_using_shadowmap(bool lights)
 {
 	matrix4 mvp;
@@ -399,32 +393,28 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 
 	shadowmap.Select();
-	set_shadow_matrix(light_frame.pos);
 		
 	render_entities(transformation, lights);
 	mlight3.Select();
 	mvp = transformation * projection;
+	mlight3.Params(mvp, light_list, light_list.size());
 
 
 //	shadowmap.Params(mvp, shadowmvp);
 	if (light_list.size())
 	{
-
+		int num_shadow_cube = 0;
 		for (int i = 0; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
 			{
-				if (entity_list[i]->light->light_num ==  entity_list[spawn]->player->current_light)
-				{
-					gfx.SelectTexture(3, entity_list[i]->light->depth_tex[0]);
-					gfx.SelectTexture(4, entity_list[i]->light->depth_tex[1]);
-					gfx.SelectTexture(5, entity_list[i]->light->depth_tex[2]);
-					gfx.SelectTexture(6, entity_list[i]->light->depth_tex[3]);
-					gfx.SelectTexture(7, entity_list[i]->light->depth_tex[4]);
-					gfx.SelectTexture(8, entity_list[i]->light->depth_tex[5]);
-
-					mlight3.Params(mvp, light_list, light_list.size());
-				}
+				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[0]);
+				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[1]);
+				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[2]);
+				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[3]);
+				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[4]);
+				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[5]);
+				num_shadow_cube++;
 			}
 		}
 	}
@@ -1700,8 +1690,8 @@ void Engine::resize(int width, int height)
 
 	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
 
+#ifndef __linux__
 	// This should probably be in render
-/*
 	if (initialized && map.loaded == false)
 	{
 		gfx.clear();
@@ -1710,7 +1700,7 @@ void Engine::resize(int width, int height)
 			menu.render_console(global);
 		gfx.swap();
 	}
-*/
+#endif
 }
 
 void Engine::load_sounds()
@@ -2538,18 +2528,13 @@ void Engine::handle_weapons(Player &player)
 }
 
 
-void Engine::set_shadow_matrix(vec3 position)
+void Engine::set_shadow_matrix(matrix4 &mvp)
 {
-	matrix4 trans;
-
-
 	float bias[16] = {
 		0.5, 0.0, 0.0, 0.0,
 		0.0, 0.5, 0.0, 0.0,
 		0.0, 0.0, 0.5, 0.0,
 		0.5, 0.5, 0.5, 1.0 };
 
-	light_frame.set(trans);
-
-	shadowmvp = (trans * projection) * bias;
+	shadowmvp = mvp * bias;
 }
