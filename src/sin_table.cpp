@@ -684,5 +684,6 @@ float abs32(float val)
 
 int abs32(int val)
 {
-	return val & 0x7FFFFFFF;
+	int mask = (val >> 31);
+	return (val + mask) ^ mask;
 }
