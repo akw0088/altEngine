@@ -753,7 +753,7 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
-	if (distance < 800.0f * 800.0f && light->entity->visible)
+	if (distance < 2.0f * 800.0f * 800.0f && light->entity->visible)
 	{
 		if (light->active == false)
 		{

@@ -1,6 +1,7 @@
 #version 440 core
+
 #define	MAX_LIGHTS 32
-#define MAX_OMNI_SHADOW 4
+#define MAX_SHADOW 4
 
 // Per vertex attribute input
 in vec3 attr_position;
@@ -109,7 +110,7 @@ void main(void)
 
 
 
-	for(int i = 0; i < min(MAX_OMNI_SHADOW, u_num_lights); i++)
+	for(int i = 0; i < min(MAX_SHADOW, u_num_lights); i++)
 	{
 		mright(u_position[i], right, up, forward, translation);
 		mat4 mat_right = mat4(		right.x, up.x, forward.x, 0.0f,
