@@ -144,6 +144,15 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 			sprintf(entity.trigger->action, "push %s", entity.target);
 		}
 
+		if (strcmp(value, "trigger_hurt") == 0)
+		{
+			if (entity.trigger == NULL)
+				entity.trigger = new Trigger(&entity);
+
+			snprintf(entity.trigger->pickup_snd, LINE_SIZE, "media/sound/player/ranger/death1.wav");
+		}
+
+
 	}
 	else if (strcmp(key, "light") == 0)
 	{
@@ -181,6 +190,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 	{
 		strcpy(entity.target_name, value);
 	}
+	else if (strcmp(key, "dmg") == 0)
+	{
+		if (entity.trigger == NULL)
+			entity.trigger = new Trigger(&entity);
+		sprintf(entity.trigger->action, "hurt %s", value);
+	}
+
 }
 
 bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gfx)

@@ -941,6 +941,10 @@ void Engine::step()
 
 	if (spawn != -1)
 	{
+		if (entity_list[spawn]->player->health <= 0)
+		{
+			entity_list[spawn]->model->clone(*(entity_list[0]->model));
+		}
 		handle_weapons(*(entity_list[spawn]->player));
 	}
 	spatial_testing();
@@ -953,7 +957,12 @@ void Engine::step()
 		if (keyboard.control == true)
 			light_frame.update(keyboard);
 		else if (spawn != -1)
-			entity_list[spawn]->rigid->move(camera_frame, keyboard);
+		{
+			if (entity_list[spawn]->player->health > 0)
+			{
+				entity_list[spawn]->rigid->move(camera_frame, keyboard);
+			}
+		}
 	}
 	dynamics();
 
@@ -2317,6 +2326,17 @@ void Engine::console(char *cmd)
 		}
 		return;
 	}
+
+	ret = sscanf(cmd, "hurt %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "hurt %s\n", data);
+		menu.print(msg);
+
+		entity_list[spawn]->player->health -= atoi(data);
+		return;
+	}
+
 
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
