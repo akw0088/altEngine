@@ -688,12 +688,24 @@ int abs32(int val)
 	return (val + mask) ^ mask;
 }
 
+inline float guessSqrt(float x)
+{
+	unsigned int i = *(unsigned int*)&x;
+
+	// adjust bias
+	i += 127 << 23;
+	// approximation of square root
+	i >>= 1;
+	return *(float*)&i;
+}
+
 float newtonSqrt(float x)
 {
 	int i = 0;
-	float z = 1.0f;
 
-	for (i = 0; i < 5; i++)
+	float z = guessSqrt(x);
+	
+	for (i = 0; i < 10; i++)
 	{
 		z = z - (z * z - x) / (2 * z);
 	}
