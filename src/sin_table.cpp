@@ -688,12 +688,12 @@ int abs32(int val)
 	return (val + mask) ^ mask;
 }
 
-float newtonSqrt(float x, int iterations)
+float newtonSqrt(float x)
 {
 	int i = 0;
 	float z = 1.0f;
 
-	for (i = 0; i < iterations; i++)
+	for (i = 0; i < 5; i++)
 	{
 		z = z - (z * z - x) / (2 * z);
 	}

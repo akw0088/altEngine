@@ -4,8 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-#include <cmath>
-
 Bsp::Bsp()
 {
 	loaded = false;

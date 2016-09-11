@@ -1,5 +1,6 @@
 #include "vector.h"
 float InvSqrt(float x);
+float newtonSqrt(float x);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,7 +24,7 @@ vec4::vec4(float x, float y, float z, float w)
 
 float vec4::magnitude()
 {
-	return (1.0f / InvSqrt(x * x + y * y + z * z));
+	return newtonSqrt(x * x + y * y + z * z);
 }
 
 vec4 &vec4::normalize()
@@ -86,7 +87,7 @@ vec3::vec3(vec4 vector)
 
 float vec3::magnitude()
 {
-	return (1.0f / InvSqrt(x * x + y * y + z * z));
+	return newtonSqrt(x * x + y * y + z * z);
 }
 
 vec3 &vec3::normalize()

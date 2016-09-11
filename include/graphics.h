@@ -82,8 +82,6 @@ public:
 	vector<IDirect3DIndexBuffer9 *> index_buffers;
 	vector<IDirect3DTexture9 *> texture;
 	ID3DXFont *font;
-#else
-//	unsigned int vao;
 #endif
 };
 

@@ -1,7 +1,8 @@
 #include "quaternion.h"
-#include <cmath> // for sqrt
+#include <cmath> // for acos
 double fsin(double rad);
 double fcos(double rad);
+float newtonSqrt(float x);
 
 
 #ifdef _DEBUG
@@ -53,7 +54,7 @@ quaternion &quaternion::compute_w()
 	}
 	else
 	{
-		s = -sqrt(t);
+		s = -newtonSqrt(t);
 	}
 
 	return *this;
@@ -71,7 +72,7 @@ quaternion &quaternion::normalize()
 
 float quaternion::magnitude() const
 {
-	return sqrt(s*s + x*x + y*y + z*z);
+	return newtonSqrt(s*s + x*x + y*y + z*z);
 }
 
 matrix3 quaternion::to_matrix()
@@ -266,5 +267,5 @@ void quaternion::slerp(const quaternion &p, const quaternion &q, float time, qua
 
 	float omega = acos(p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z);
 
-	result = ((p * (sin(omega * (1.0f - time))) + (q * sin(omega*time)))) / sin(omega);
+	result = ((p * (fsin(omega * (1.0f - time))) + (q * fsin(omega*time)))) / fsin(omega);
 }

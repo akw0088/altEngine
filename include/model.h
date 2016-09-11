@@ -24,7 +24,6 @@ public:
 	int				num_index;
 	vertex_t		*model_array;
 	char			*model_file;
-	int				model_vao;
 	int				model_vertex;
 	int				model_index;
 	int				model_tex;

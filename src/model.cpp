@@ -6,7 +6,6 @@
 
 int Model::quad_index = 0;
 int Model::quad_vertex = 0;
-int Model::quad_vao = 0;
 
 void Model::load(Graphics &gfx, char *file)
 {
@@ -95,8 +94,6 @@ Model::Model(Entity *entity)
 	model_vertex = 0;
 	model_index = 0;
 	model_tex = 0;
-	model_vao = 0;
-	box_vao = 0;
 	box_vertex = 0;
 	box_index = 0;
 	model_file = NULL;
@@ -126,7 +123,6 @@ void Model::clone(Model &model)
 	center = model.center;
 	box_index = model.box_index;
 	box_vertex = model.box_vertex;
-	model_vao = model.model_vao;
 	model_array = model.model_array;
 	model_index = model.model_index;
 	model_tex = model.model_tex;
@@ -135,8 +131,11 @@ void Model::clone(Model &model)
 	num_vertex = model.num_vertex;
 
 	//hacks
-	entity->rigid->gravity = model.entity->rigid->gravity;
-	entity->rigid->angular_velocity = model.entity->rigid->angular_velocity;
+	if (entity->rigid)
+	{
+		entity->rigid->gravity = model.entity->rigid->gravity;
+		entity->rigid->angular_velocity = model.entity->rigid->angular_velocity;
+	}
 }
 
 void Model::render(Graphics &gfx)
@@ -205,7 +204,6 @@ void Model::CreateObjects(Graphics &gfx)
 	quad[3].texCoord0 = vec2(1.0f, 1.0f);
 	quad[3].color = ~0;
 
-//	quad_vao = gfx.CreateVertexArrayObject();
 	quad_index = gfx.CreateIndexBuffer(qindex, 6);
 	quad_vertex = gfx.CreateVertexBuffer(quad, 4);
 }
