@@ -699,13 +699,14 @@ inline float guessSqrt(float x)
 	return *(float*)&i;
 }
 
+#define NUM_ITERATIONS 2
 float newtonSqrt(float x)
 {
 	int i = 0;
 
 	float z = guessSqrt(x);
 	
-	for (i = 0; i < 10; i++)
+	for (i = 0; i < NUM_ITERATIONS; i++)
 	{
 		z = z - (z * z - x) / (2 * z);
 	}
