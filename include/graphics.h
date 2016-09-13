@@ -67,7 +67,8 @@ public:
 #ifdef _WIN32
 	HWND	hwnd;
 	HDC	hdc;
-#else
+#endif
+#ifndef WIN32
 	Display	*display;
 	Window	window;	
 	XFontStruct	*font;

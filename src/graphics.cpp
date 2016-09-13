@@ -1233,6 +1233,7 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 
 void Graphics::GetDebugLog()
 {
+#ifndef MAC
 	GLint maxMsgLen = 0;
 	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
 
@@ -1260,6 +1261,7 @@ void Graphics::GetDebugLog()
 		buf_length += length[i];
 	}
 	fclose(fp);
+#endif
 }
 
 

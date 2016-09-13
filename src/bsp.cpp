@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+float newtonSqrt(float x);
+
 Bsp::Bsp()
 {
 	loaded = false;
@@ -1053,8 +1055,8 @@ bool Bsp::RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius,  float &
 	if (D < 0.0f)
 		return false;
 
-	float t0 = B - sqrtf(D);
-	float t1 = B + sqrtf(D);
+	float t0 = B - newtonSqrt(D);
+	float t1 = B + newtonSqrt(D);
 
 	bool ret = false;
 

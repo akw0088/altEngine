@@ -49,13 +49,17 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 	fread(&tgaHeader, 18/* sizeof(TGAHEADER)*/, 1, pFile);
 
 	// Do byte swap for big vs little endian
+	// new intel mac's use intel little endian cpu's
+	// (doubt an older ppc mac could even run this)
 	#ifdef __APPLE__
+	/*
 		BYTE_SWAP(tgaHeader.colorMapStart);
 		BYTE_SWAP(tgaHeader.colorMapLength);
 		BYTE_SWAP(tgaHeader.xstart);
 		BYTE_SWAP(tgaHeader.ystart);
 		BYTE_SWAP(tgaHeader.width);
 		BYTE_SWAP(tgaHeader.height);
+	*/
 	#endif
 
 

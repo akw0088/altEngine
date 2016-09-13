@@ -1,6 +1,6 @@
 typedef unsigned int uint;
 
-#ifdef __linux__
+#ifndef WIN32
 typedef char byte;
 #endif 
 

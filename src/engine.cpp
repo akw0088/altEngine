@@ -1247,7 +1247,7 @@ void Engine::client_step()
 {
 	servermsg_t	servermsg;
 	clientmsg_t clientmsg;
-	int socksize = sizeof(sockaddr_in);
+	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(keyboard);
 
 	printf("client keystate %d\n", keystate);

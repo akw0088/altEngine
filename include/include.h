@@ -35,11 +35,18 @@
 
 #endif
 
-#ifdef __linux__
+#ifndef WIN32
 	#include <errno.h>
-	#include <GL/gl.h>
-	#include <GL/glu.h>
-	#include <GL/glx.h>
+	#ifdef __linux__
+		#include <GL/gl.h>
+		#include <GL/glu.h>
+		#include <GL/glx.h>
+	#else
+		#include <OpenGL/gl.h>
+		#include <OpenGL/glu.h>
+	#endif
+
+	//max has xquartz and can run xwindow apps
 	#include <X11/Xlib.h>
 	#include <X11/Xatom.h>
 	#include <X11/keysym.h>
@@ -51,12 +58,15 @@
 	#include <sys/socket.h>
 	#include <netinet/in.h>
 	#include <arpa/inet.h>
-	#include <linux/in.h>
 	#define closesocket close
 
 	typedef	int SOCKET;
 	#define SOCKET_ERROR	-1
 	#define INVALID_SOCKET	-1
+#endif
+
+#ifdef __linux__
+	#include <linux/in.h>
 #endif
 
 #ifdef MAC
@@ -76,7 +86,7 @@
 #include <AL/efx.h>
 
 
-#ifndef __linux__
+#ifdef WIN32
 	#include <al.h>
 	#include <alc.h>
 	#include <efx.h>
@@ -89,7 +99,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
-#ifndef __linux__
+#ifdef WIN32
 	#include <crtdbg.h>
 #endif
 

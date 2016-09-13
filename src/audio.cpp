@@ -212,7 +212,7 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 
 void Audio::init()
 {
-#ifndef __linux__
+#ifdef WIN32
 	EFXEAXREVERBPROPERTIES efxReverb;
 	int attrib[] = {ALC_MAX_AUXILIARY_SENDS, 4};
 	int sends;
@@ -227,7 +227,7 @@ void Audio::init()
 		return;
 	}
 
-#ifdef __linux__
+#ifndef WIN32
 	context = alcCreateContext(device, NULL);
 #else
 	context = alcCreateContext(device, attrib);
@@ -264,7 +264,7 @@ void Audio::init()
 		}
 		return;
 	}
-#ifndef __linux__
+#ifdef WIN32
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
 	debugf("%d sends per audio source\n", sends);
 #endif
@@ -276,7 +276,7 @@ void Audio::init()
 	alDopplerFactor(1.0f);
 //	alDopplerVelocity(8.0f);
 //	alSpeedOfSound(343.3f * UNITS_TO_METERS);
-#ifndef __linux__
+#ifdef WIN32
 	alListenerf(AL_METERS_PER_UNIT, 0.3f);
 
 	ALFWIsEFXSupported();
@@ -325,7 +325,7 @@ void Audio::init()
 
 void Audio::effects(int source)
 {
-#ifndef __linux__
+#ifdef WIN32
 	ALenum al_err;
 
 	alAuxiliaryEffectSloti(slot, AL_EFFECTSLOT_EFFECT, effect);

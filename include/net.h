@@ -3,9 +3,10 @@
 #ifndef NET_H
 #define NET_H
 
-#ifdef __linux__
+#ifndef WIN32
 #define SOCKET int
 #endif
+
 
 int inet_pton(int af, const char *server, struct in_addr *addr);
 

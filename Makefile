@@ -31,7 +31,7 @@ SOURCES := 	src/xmain.cpp \
 OBJS := $(SOURCES:.cpp=.o)
 
 
-INCLUDES = -I./include/
+INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
 #CPP := g++
 CPP := clang++
 CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall
