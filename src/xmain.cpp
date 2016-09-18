@@ -103,9 +103,37 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case ButtonPress:
 		printf("ButtonPress\n");
-		break;
+		switch(event.xbutton.button)
+		{
+		case Button1:
+			altEngine.keypress("leftbutton", true);
+			break;
+		case Button2:
+			altEngine.keypress("rightbutton", true);
+			break;
+		case Button3:
+			altEngine.keypress("middlebutton", true);
+			break;
+		default:
+			break;
+        	}
+        break;
 	case ButtonRelease:
 		printf("ButtonRelease\n");
+		switch(event.xbutton.button)
+		{
+		case Button1:
+			altEngine.keypress("leftbutton", false);
+			break;
+		case Button2:
+			altEngine.keypress("rightbutton", false);
+			break;
+		case Button3:
+			altEngine.keypress("middlebutton", false);
+			break;
+		default:
+			break;
+        	}
 		break;
 	case MotionNotify:
 		printf("MotionNotify\n");
@@ -125,7 +153,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 			bool pressed = (event.type == KeyPress) ? true : false;
 			KeySym keysym = XKeycodeToKeysym(display, event.xkey.keycode, 0);
 
-	        switch (keysym)
+			switch (keysym)
 			{
 			case XK_Return:
 				altEngine.keypress("enter", pressed);
