@@ -24,10 +24,12 @@ public:
 private:
 	int checkFormat(char *data, char *format);
 	char *findChunk(char *chunk, char *id, int *size, char *end);
-	ALenum alFormat(wave_t *wave);
+
+    ALenum alFormat(wave_t *wave);
 
 	ALCdevice		*device;
 	ALCcontext		*context;
+
 #ifndef __linux__
 	unsigned int	slot, effect, filter;
 #endif

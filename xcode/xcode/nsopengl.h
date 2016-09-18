@@ -7,6 +7,9 @@
 {
 }
 - (void) drawRect: (NSRect) bounds;
+- (void) reshape;
+- (void) render;
+- (void) awakeFromNib;
 @end
 
 #endif /* nsopengl_h */

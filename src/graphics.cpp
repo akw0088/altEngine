@@ -457,7 +457,8 @@ void Graphics::init(void *param1, void *param2)
 #ifdef _WIN32
 	hwnd = *((HWND *)param1);
 	hdc = *((HDC *)param2);
-#else
+#endif
+#ifdef __linux__
 	display = (Display *)param1;
 	window = *((Window *)param2);
 #endif
@@ -507,7 +508,8 @@ void Graphics::swap()
 {
 #ifdef _WIN32
 	SwapBuffers(hdc);
-#else
+#endif
+#ifdef __linux__
 	glXSwapBuffers(display, window);
 #endif
 
@@ -652,8 +654,8 @@ void Graphics::DeleteIndexBuffer(int handle)
 */
 void Graphics::CreateVertexArrayObject(unsigned int &vao)
 {
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	glGenVertexArraysAPPLE(1, &vao);
+	glBindVertexArrayAPPLE(vao);
 	// This is all cached in a vertex array object
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -669,7 +671,7 @@ void Graphics::CreateVertexArrayObject(unsigned int &vao)
 
 void Graphics::SelectVertexArrayObject(unsigned int vao)
 {
-		glBindVertexArray(vao);
+		glBindVertexArrayAPPLE(vao);
 
 #ifdef ERROR_CHECK
 		error_check();
@@ -678,7 +680,7 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 
 void Graphics::DeleteVertexArrayObject(unsigned int vao)
 {
-		glDeleteVertexArrays(1, &vao);
+		glDeleteVertexArraysAPPLE(1, &vao);
 
 #ifdef ERROR_CHECK
 		error_check();
@@ -1120,12 +1122,12 @@ void Shader::destroy()
 
 void Graphics::fbAttachTexture(int texObj)
 {
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texObj, 0);
+	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texObj, 0);
 }
 
 void Graphics::fbAttachDepth(int texObj)
 {
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj, 0);
+	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj, 0);
 }
 
 void Graphics::bindFramebuffer(int fbo)
@@ -1143,6 +1145,7 @@ int Graphics::checkFramebuffer()
 {
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
 #ifndef MACOS
+#ifndef __OBJC__
 	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
 		printf("Render to texture failed\n");
@@ -1175,6 +1178,7 @@ int Graphics::checkFramebuffer()
 		}
 		return -1;
 	}
+#endif
 #endif
 	return 0;
 }
@@ -1220,8 +1224,8 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
-	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
+	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
+	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
 
 	if (checkFramebuffer() != 0)
 	{

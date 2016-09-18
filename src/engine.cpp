@@ -56,7 +56,7 @@ void Engine::init(void *p1, void *p2)
 
 	//md5 crap
 	frame_step = 0;
-	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
+	//zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 
 	fb_width = 1280;
 	fb_height = 1280;
@@ -500,7 +500,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		zcc.render(gfx, frame_step);
+		//zcc.render(gfx, frame_step);
 	}
 }
 
@@ -588,7 +588,7 @@ void Engine::debug_messages(double last_frametime)
 
 void Engine::destroy_buffers()
 {
-	zcc.destroy_buffers(gfx);
+	//zcc.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -1984,7 +1984,9 @@ void Engine::create_sources()
 				if (strcmp(snd_wave[j].file, entity_list[i]->speaker->file) == 0)
 				{
 					entity_list[i]->speaker->source = audio.create_source(entity_list[i]->speaker->loop, false);
+#ifndef __OBJC__
 					alSourcef(entity_list[i]->speaker->source, AL_GAIN, 4.0f);
+#endif
 					audio.select_buffer(entity_list[i]->speaker->source, snd_wave[j].buffer);
 					audio.effects(entity_list[i]->speaker->source);
 
@@ -1998,7 +2000,9 @@ void Engine::create_sources()
 		{
 			entity_list[i]->rigid->gravity = false;
 			entity_list[i]->trigger->source = audio.create_source(false, false);
-			alSourcef(entity_list[i]->trigger->source, AL_GAIN, 30.0f);
+#ifndef __OBJC__
+            alSourcef(entity_list[i]->trigger->source, AL_GAIN, 30.0f);
+#endif
 			audio.effects(entity_list[i]->trigger->source);
 		}
 	}

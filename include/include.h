@@ -35,6 +35,8 @@
 
 #endif
 
+#define __OBJC__
+
 #ifndef WIN32
 	#include <errno.h>
 	#ifdef __linux__
@@ -43,18 +45,23 @@
 		#include <GL/glx.h>
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
-		//#include <OpenGL/glext.h>
-		//#include <OpenGL/gl.h>
-		//#include <OpenGL/glu.h>
-		#include <GL/gl.h>
-		#include <GL/glu.h>
-		#include <GL/glx.h>
+		#ifdef __OBJC__
+			#include <OpenGL/glext.h>
+			#include <OpenGL/gl.h>
+			#include <OpenGL/glu.h>
+		#else
+			#include <GL/gl.h>
+			#include <GL/glu.h>
+			#include <GL/glx.h>
+		#endif
 #endif
 
+#ifndef __OBJC__
 	//mac has xquartz and can run xwindow apps
 	#include <X11/Xlib.h>
 	#include <X11/Xatom.h>
 	#include <X11/keysym.h>
+#endif
 	#include <unistd.h>
 	#include <fcntl.h>
 	#include <sys/select.h>
@@ -81,15 +88,18 @@
 
 //#define SHADOWVOL
 
-
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
 
+#ifndef __OBJC__
 //audio
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <AL/efx.h>
-
+#else
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+#endif
 
 #ifdef WIN32
 	#include <al.h>

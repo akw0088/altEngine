@@ -35,7 +35,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	strcpy(entity->speaker->file, "info_player_deathmatch");
 	entity->speaker->loop = false;
 	entity->speaker->source = audio.create_source(entity->speaker->loop, false);
-	alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
+#ifndef __OBJC__
+    alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
+#endif
 	audio.effects(entity->speaker->source);
 
 	//	weapon_model.center = entity->rigid->center;

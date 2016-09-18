@@ -69,9 +69,11 @@ public:
 	HDC	hdc;
 #endif
 #ifndef WIN32
+#ifndef __OBJC__
 	Display	*display;
 	Window	window;	
 	XFontStruct	*font;
+#endif
 #endif
 
 #ifdef DIRECTX

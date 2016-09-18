@@ -4,6 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
+
 /*
 	Sound occulsion filters out high frequency sounds based on angle of indirect path
 between src and listener. We must calculate this angle using pathfinding and set filter
@@ -207,8 +208,8 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 
 	return bReturn;
 }
-#else
 #endif
+
 
 void Audio::init()
 {
@@ -227,10 +228,10 @@ void Audio::init()
 		return;
 	}
 
-#ifndef WIN32
-	context = alcCreateContext(device, NULL);
+#ifdef WIN32
+    context = alcCreateContext(device, attrib);
 #else
-	context = alcCreateContext(device, attrib);
+    context = alcCreateContext(device, NULL);
 #endif
 	if (context == NULL)
 	{
@@ -523,4 +524,89 @@ ALenum Audio::alFormat(wave_t *wave)
 			return AL_FORMAT_MONO8;
 	}
 }
+
+//TODO, make this a ring buffer instead of using malloc
+int debugf(const char *format, ...)
+{
+    va_list args;
+    char str[512] = { 0 };
+    
+    
+    va_start(args, format);
+    vsprintf(str, format, args);
+    va_end(args);
+    printf("%s", str);
+    
+    
+    unsigned int width = 60;
+    
+    char *pstr = str;
+    while (1)
+    {
+        if (strlen(pstr) < width)
+        {
+            int size = strlen(pstr) + 1;
+            char *line = new char[size];
+            memcpy(line, pstr, size);
+            Menu::console_buffer.push_back(line);
+            break;
+        }
+        else
+        {
+            int size = width + 1;
+            char *line = new char[size];
+            memcpy(line, pstr, size);
+            line[width] = '\0';
+            Menu::console_buffer.push_back(line);
+            pstr += width;
+        }
+    }
+    
+    return 0;
+}
+
+char *get_file(char *filename)
+{
+    FILE	*file;
+    char	*buffer;
+    int	file_size, bytes_read;
+    
+    file = fopen(filename, "rb");
+    if (file == NULL)
+        return 0;
+    fseek(file, 0, SEEK_END);
+    file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    buffer = new char [file_size + 1];
+    bytes_read = (int)fread(buffer, sizeof(char), file_size, file);
+    if (bytes_read != file_size)
+        return 0;
+    
+    fclose(file);
+    buffer[file_size] = '\0';
+    return buffer;
+}
+
+int write_file(char *filename, char *bytes, int size)
+{
+    FILE *fp = fopen(filename, "wb");
+    int ret;
+    
+    if (fp == NULL)
+    {
+        perror("Unable to open file for writing");
+        return -1;
+    }
+    
+    ret = fwrite(bytes, sizeof(char), size, fp);
+    
+    if (ret != size)
+    {
+        printf("fwrite didnt write all data\n");
+        return -1;
+    }
+    fclose(fp);
+    return 0;
+}
+
 
