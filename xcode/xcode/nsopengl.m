@@ -1,17 +1,9 @@
-//
-//  opengl.m
-//  altEngine
-//
-//  Created by Wright, Alexander (CONT) on 9/18/16.
-//  Copyright © 2016 Wright, Alexander (CONT). All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
-#import "opengl.h"
+#import "nsopengl.h"
 #include <OpenGL/gl.h>
 
-@implementation OpenGLView
+@implementation opengl
 
 -(void) drawRect: (NSRect) bounds
 {
@@ -32,5 +24,7 @@ static void drawAnObject ()
     }
     glEnd();
 }
+
+
 
 @end
