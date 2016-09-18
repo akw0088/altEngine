@@ -7,25 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2DF7010F1D8F38CC004FF9D0 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DF7010E1D8F38CC004FF9D0 /* AppDelegate.m */; };
-		2DF701121D8F38CC004FF9D0 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DF701111D8F38CC004FF9D0 /* main.m */; };
-		2DF701141D8F38CC004FF9D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2DF701131D8F38CC004FF9D0 /* Assets.xcassets */; };
-		2DF701171D8F38CC004FF9D0 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2DF701151D8F38CC004FF9D0 /* MainMenu.xib */; };
 		2DF7011F1D8F38DB004FF9D0 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2DF7011E1D8F38DB004FF9D0 /* OpenGL.framework */; };
-		2DF701221D8F3999004FF9D0 /* opengl.m in Sources */ = {isa = PBXBuildFile; fileRef = 2DF701211D8F3999004FF9D0 /* opengl.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2DF7010A1D8F38CC004FF9D0 /* altEngine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = altEngine.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		2DF7010D1D8F38CC004FF9D0 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		2DF7010E1D8F38CC004FF9D0 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		2DF701111D8F38CC004FF9D0 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		2DF701131D8F38CC004FF9D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		2DF701161D8F38CC004FF9D0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		2DF701181D8F38CC004FF9D0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2DF7011E1D8F38DB004FF9D0 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		2DF701201D8F391D004FF9D0 /* opengl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = opengl.h; sourceTree = "<group>"; };
-		2DF701211D8F3999004FF9D0 /* opengl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = opengl.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,7 +31,6 @@
 			isa = PBXGroup;
 			children = (
 				2DF7011E1D8F38DB004FF9D0 /* OpenGL.framework */,
-				2DF7010C1D8F38CC004FF9D0 /* altEngine */,
 				2DF7010B1D8F38CC004FF9D0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,29 +41,6 @@
 				2DF7010A1D8F38CC004FF9D0 /* altEngine.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		2DF7010C1D8F38CC004FF9D0 /* altEngine */ = {
-			isa = PBXGroup;
-			children = (
-				2DF7010D1D8F38CC004FF9D0 /* AppDelegate.h */,
-				2DF7010E1D8F38CC004FF9D0 /* AppDelegate.m */,
-				2DF701131D8F38CC004FF9D0 /* Assets.xcassets */,
-				2DF701151D8F38CC004FF9D0 /* MainMenu.xib */,
-				2DF701181D8F38CC004FF9D0 /* Info.plist */,
-				2DF701101D8F38CC004FF9D0 /* Supporting Files */,
-				2DF701201D8F391D004FF9D0 /* opengl.h */,
-				2DF701211D8F3999004FF9D0 /* opengl.m */,
-			);
-			path = altEngine;
-			sourceTree = "<group>";
-		};
-		2DF701101D8F38CC004FF9D0 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				2DF701111D8F38CC004FF9D0 /* main.m */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,8 +100,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DF701141D8F38CC004FF9D0 /* Assets.xcassets in Resources */,
-				2DF701171D8F38CC004FF9D0 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,24 +110,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2DF701121D8F38CC004FF9D0 /* main.m in Sources */,
-				2DF7010F1D8F38CC004FF9D0 /* AppDelegate.m in Sources */,
-				2DF701221D8F3999004FF9D0 /* opengl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		2DF701151D8F38CC004FF9D0 /* MainMenu.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2DF701161D8F38CC004FF9D0 /* Base */,
-			);
-			name = MainMenu.xib;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		2DF701191D8F38CC004FF9D0 /* Debug */ = {
@@ -293,6 +240,7 @@
 				2DF7011D1D8F38CC004FF9D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
