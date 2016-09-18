@@ -195,7 +195,7 @@ void Net::connect(char *server, int port)
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port   = htons(port);
 	servaddr.sin_addr.s_addr = inet_addr(server);
-#ifndef __linux__
+#ifdef WIN32
 	ret = inet_pton(AF_INET, server, &servaddr.sin_addr); //linux giving me linker errors?
 #endif
 	if ( ret == 0)

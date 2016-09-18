@@ -1142,7 +1142,7 @@ void Graphics::bindFramebuffer(int fbo)
 int Graphics::checkFramebuffer()
 {
 	GLenum fboStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-
+#ifndef MACOS
 	if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
 	{
 		printf("Render to texture failed\n");
@@ -1175,6 +1175,7 @@ int Graphics::checkFramebuffer()
 		}
 		return -1;
 	}
+#endif
 	return 0;
 }
 
@@ -1233,7 +1234,7 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 
 void Graphics::GetDebugLog()
 {
-#ifndef MAC
+#ifdef WIN32
 	GLint maxMsgLen = 0;
 	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
 

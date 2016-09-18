@@ -42,11 +42,16 @@
 		#include <GL/glu.h>
 		#include <GL/glx.h>
 	#else
-		#include <OpenGL/gl.h>
-		#include <OpenGL/glu.h>
-	#endif
+	   	#define GLX_GLXEXT_PROTOTYPES
+		//#include <OpenGL/glext.h>
+		//#include <OpenGL/gl.h>
+		//#include <OpenGL/glu.h>
+		#include <GL/gl.h>
+		#include <GL/glu.h>
+		#include <GL/glx.h>
+#endif
 
-	//max has xquartz and can run xwindow apps
+	//mac has xquartz and can run xwindow apps
 	#include <X11/Xlib.h>
 	#include <X11/Xatom.h>
 	#include <X11/keysym.h>

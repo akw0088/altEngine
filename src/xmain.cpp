@@ -1,6 +1,6 @@
 #include "include.h"
 
-#ifdef __linux__
+#ifndef WIN32
 #include <stdarg.h>
 
 int EventProc(Display *display, Window window, GLXContext context);
