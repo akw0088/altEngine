@@ -35,7 +35,13 @@
 
 #endif
 
-#define __OBJC__
+#ifdef __OBJC__
+	#define glGenVertexArrays glGenVertexArraysAPPLE
+	#define glBindVertexArray glBindVertexArrayAPPLE
+	#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
+	#define glFramebufferTexture glFramebufferTextureEXT
+	#define glFramebufferTexture glFramebufferTextureEXT
+#endif
 
 #ifndef WIN32
 	#include <errno.h>

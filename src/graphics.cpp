@@ -654,8 +654,8 @@ void Graphics::DeleteIndexBuffer(int handle)
 */
 void Graphics::CreateVertexArrayObject(unsigned int &vao)
 {
-	glGenVertexArraysAPPLE(1, &vao);
-	glBindVertexArrayAPPLE(vao);
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 	// This is all cached in a vertex array object
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -671,7 +671,7 @@ void Graphics::CreateVertexArrayObject(unsigned int &vao)
 
 void Graphics::SelectVertexArrayObject(unsigned int vao)
 {
-		glBindVertexArrayAPPLE(vao);
+		glBindVertexArray(vao);
 
 #ifdef ERROR_CHECK
 		error_check();
@@ -680,7 +680,7 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 
 void Graphics::DeleteVertexArrayObject(unsigned int vao)
 {
-		glDeleteVertexArraysAPPLE(1, &vao);
+		glDeleteVertexArrays(1, &vao);
 
 #ifdef ERROR_CHECK
 		error_check();
@@ -1122,12 +1122,12 @@ void Shader::destroy()
 
 void Graphics::fbAttachTexture(int texObj)
 {
-	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texObj, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texObj, 0);
 }
 
 void Graphics::fbAttachDepth(int texObj)
 {
-	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj, 0);
 }
 
 void Graphics::bindFramebuffer(int fbo)
@@ -1224,8 +1224,8 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
-	glFramebufferTextureEXT(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
 
 	if (checkFramebuffer() != 0)
 	{
