@@ -100,4 +100,54 @@ EngineInterface *altEngine = [EngineInterface alloc];
     [altEngine keypress: "mouse1" pressed:false];
 }
 
+- (void)keyDown:(NSEvent *)theEvent
+{
+    // Arrow keys are associated with the numeric keypad
+    if ([theEvent modifierFlags] & NSNumericPadKeyMask)
+    {
+        [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+    }
+    else
+    {
+        [super keyDown:theEvent];
+    }
+}
+
+/*
+- (void)keyUp:(NSEvent *)theEvent
+{
+    // Arrow keys are associated with the numeric keypad
+    if ([theEvent modifierFlags] & NSNumericPadKeyMask)
+    {
+        [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+    }
+    else
+    {
+        [super keyDown:theEvent];
+    }
+}
+*/
+
+
+-(IBAction)moveUp:(id)sender
+{
+    [altEngine keypress: "up" pressed:true];
+}
+
+-(IBAction)moveDown:(id)sender
+{
+    [altEngine keypress: "down" pressed:true];
+}
+
+-(IBAction)moveLeft:(id)sender
+{
+    [altEngine keypress: "left" pressed:true];
+}
+
+-(IBAction)moveRight:(id)sender
+{
+    [altEngine keypress: "right" pressed:true];
+}
+
+
 @end
