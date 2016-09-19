@@ -4,6 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
+#include <stdarg.h>
 
 /*
 	Sound occulsion filters out high frequency sounds based on angle of indirect path
