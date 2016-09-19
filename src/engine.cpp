@@ -1254,7 +1254,7 @@ void Engine::client_step()
 
 	// get entity information
 #ifndef __linux__
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), &socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
 #else
 	int size = 0;
 #endif

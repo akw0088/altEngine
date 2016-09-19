@@ -95,6 +95,11 @@ private:
 	unsigned int	fb_width;
 	unsigned int	fb_height;
 
+	vector<Entity *>	entity_list;
+	vector<Light *>		light_list;
+	vector<wave_t>		snd_wave;
+
+
 	// temp section
 	int		no_tex;
 	int		sequence;
@@ -124,9 +129,6 @@ private:
 	void	*param1;
 	void	*param2;
 
-	vector<Entity *>	entity_list;
-	vector<Light *>		light_list;
-	vector<wave_t>		snd_wave;
 };
 
 #endif
