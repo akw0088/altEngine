@@ -2,8 +2,8 @@
 
 #import "nsopengl.h"
 #include <OpenGL/gl.h>
-#define XCODE
-#include "../../include/include.h"
+
+#include "include.h"
 #import "EngineInterface.h"
 
 
@@ -12,7 +12,7 @@
 
 EngineInterface *altEngine = [EngineInterface alloc];
 
--(void) drawRect
+- (void) drawRect: (NSRect) bounds;
 {
     [[self openGLContext] makeCurrentContext];
     //Perform drawing here
@@ -32,9 +32,12 @@ EngineInterface *altEngine = [EngineInterface alloc];
     NSOpenGLPixelFormatAttribute pixelFormatAttributes[] =
     {
         NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
-        NSOpenGLPFAColorSize    , 32,
-        NSOpenGLPFAAlphaSize    , 8,
+        NSOpenGLPFAColorSize    , 24,
+        NSOpenGLPFADepthSize    , 24,
+        NSOpenGLPFAStencilSize  ,  8,
+        NSOpenGLPFAAlphaSize    ,  8,
         NSOpenGLPFADoubleBuffer ,
+        NSOpenGLPFASupersample  ,
         NSOpenGLPFAAccelerated  ,
         0
     };
@@ -77,16 +80,24 @@ EngineInterface *altEngine = [EngineInterface alloc];
 }
 
 
-- (void)reshape
+- (void) reshape
 {
     float width = [self frame].size.width;
     float height = [self frame].size.height;
     
     //Why God
     [altEngine resize: width height: height];
-    
 }
 
 
+- (void)mouseDown:(NSEvent *)theEvent
+{
+    [altEngine keypress: "mouse1" pressed:true];
+}
+
+- (void)mouseUp:(NSEvent *)theEvent
+{
+    [altEngine keypress: "mouse1" pressed:false];
+}
 
 @end

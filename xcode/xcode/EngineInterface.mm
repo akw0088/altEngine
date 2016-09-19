@@ -44,4 +44,12 @@
 {
     altEngine->render(16.0);
 }
+
+- (void)keypress:(char *)key pressed:(bool)press
+{
+    altEngine->keypress(key, press);
+}
+
+
+
 @end

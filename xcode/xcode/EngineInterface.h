@@ -23,6 +23,7 @@
 - (void)step;
 - (void)render;
 - (void)resize:(int)x height:(int)y;
+- (void)keypress:(char *)key pressed:(bool)press;
 @end
 
 

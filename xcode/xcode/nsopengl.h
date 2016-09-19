@@ -12,6 +12,8 @@
 - (void) step;
 - (void) viewDidMoveToWindow;
 - (void) awakeFromNib;
+- (void)mouseDown:(NSEvent *)theEvent;
+- (void)mouseUp:(NSEvent *)theEvent;
 @end
 
 #endif /* nsopengl_h */
