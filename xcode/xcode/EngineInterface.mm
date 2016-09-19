@@ -50,6 +50,10 @@
     altEngine->keypress(key, press);
 }
 
+- (void)keystroke:(char)key
+{
+    altEngine->keystroke(key);
+}
 
 
 @end

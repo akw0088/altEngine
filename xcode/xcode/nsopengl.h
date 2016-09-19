@@ -15,10 +15,12 @@
 - (void)mouseDown:(NSEvent *)theEvent;
 - (void)mouseUp:(NSEvent *)theEvent;
 - (void)keyDown:(NSEvent *)theEvent;
+- (void)keyUp:(NSEvent *)theEvent;
 -(IBAction)moveUp:(id)sender;
 -(IBAction)moveDown:(id)sender;
 -(IBAction)moveLeft:(id)sender;
 -(IBAction)moveRight:(id)sender;
+- (void)insertText:(char *) str;
 @end
 
 #endif /* nsopengl_h */

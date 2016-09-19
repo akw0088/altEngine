@@ -102,31 +102,21 @@ EngineInterface *altEngine = [EngineInterface alloc];
 
 - (void)keyDown:(NSEvent *)theEvent
 {
-    // Arrow keys are associated with the numeric keypad
-    if ([theEvent modifierFlags] & NSNumericPadKeyMask)
-    {
-        [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
-    }
-    else
-    {
-        [super keyDown:theEvent];
-    }
+    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 }
 
-/*
+
 - (void)keyUp:(NSEvent *)theEvent
 {
-    // Arrow keys are associated with the numeric keypad
-    if ([theEvent modifierFlags] & NSNumericPadKeyMask)
-    {
-        [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
-    }
-    else
-    {
-        [super keyDown:theEvent];
-    }
+
+    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 }
-*/
+
+- (void)insertText:(char *) str
+{
+    [altEngine keystroke: str[0]];
+}
+
 
 
 -(IBAction)moveUp:(id)sender

@@ -24,6 +24,8 @@
 - (void)render;
 - (void)resize:(int)x height:(int)y;
 - (void)keypress:(char *)key pressed:(bool)press;
+- (void)keystroke:(char)key;
+
 @end
 
 
