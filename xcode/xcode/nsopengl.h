@@ -10,6 +10,7 @@
 - (void) reshape;
 - (void) render;
 - (void) step;
+- (void) viewDidMoveToWindow;
 - (void) awakeFromNib;
 @end
 

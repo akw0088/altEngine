@@ -93,10 +93,16 @@
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <openGLView fixedFrame="YES" useAuxiliaryDepthBufferStencil="NO" allowOffline="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zuk-q9-hdW" customClass="opengl">
+                    <openGLView useAuxiliaryDepthBufferStencil="NO" allowOffline="YES" translatesAutoresizingMaskIntoConstraints="NO" id="zuk-q9-hdW" customClass="opengl">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                     </openGLView>
                 </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="zuk-q9-hdW" secondAttribute="trailing" id="10W-wN-cR3"/>
+                    <constraint firstItem="zuk-q9-hdW" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" id="5jN-ar-cVy"/>
+                    <constraint firstItem="zuk-q9-hdW" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" id="BDz-Hn-8rk"/>
+                    <constraint firstAttribute="bottom" secondItem="zuk-q9-hdW" secondAttribute="bottom" id="b1B-HR-KbI"/>
+                </constraints>
             </view>
         </window>
     </objects>

@@ -12,30 +12,18 @@
 
 EngineInterface *altEngine = [EngineInterface alloc];
 
-
--(void) drawRect: (NSRect) bounds
+-(void) drawRect
 {
-    float width = [self frame].size.width;
-    float height = [self frame].size.height;
-    
-    glViewport(0, 0, width, height);
-    
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawAnObject();
-    glFlush();
+    [[self openGLContext] makeCurrentContext];
+    //Perform drawing here
+    [[self openGLContext] flushBuffer];
 }
 
-static void drawAnObject ()
+-(void) viewDidMoveToWindow
 {
-    glColor3f(1.0f, 0.85f, 0.35f);
-    glBegin(GL_TRIANGLES);
-    {
-        glVertex3f(  0.0,  0.6, 0.0);
-        glVertex3f( -0.2, -0.3, 0.0);
-        glVertex3f(  0.2, -0.3 ,0.0);
-    }
-    glEnd();
+    [super viewDidMoveToWindow];
+    if ([self window] == nil)
+        [[self openGLContext] clearDrawable];
 }
 
 - (void)awakeFromNib
