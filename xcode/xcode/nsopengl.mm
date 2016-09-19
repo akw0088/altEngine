@@ -58,38 +58,33 @@ static void drawAnObject ()
  
     
     
-    altEngine.init; // gets pointer to implementation
-    altEngine.engine_init;
-    altEngine.step;
+    id ret = [altEngine init]; // gets pointer to implementation (pimpl)
     
-    
-    
+    [altEngine engine_init];
     
     NSTimer *timer;
-    timer = [NSTimer scheduledTimerWithTimeInterval:1
-                                             target:self
-                                           selector:@selector(render)
-                                           userInfo:nil repeats:YES];
     
+    //create 16ms timer for time step
+    timer = [NSTimer scheduledTimerWithTimeInterval:0.016
+                     target:self
+                     selector:@selector(step)
+                     userInfo:nil
+                     repeats:YES];
     
-    
-    glClearColor(0.5, 0.5, 0.5, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
-    [[self openGLContext] flushBuffer];
-    
-    
+    // still need proper render loop
 }
 
 -(void) render
 {
-    float width = [self frame].size.width;
-    float height = [self frame].size.height;
-    
-    glViewport(0, 0, width, height);
-    
-    altEngine.step;
-    altEngine.render;
-    
+    [altEngine render];
+    [[self openGLContext] flushBuffer];
+}
+
+-(void) step
+{
+    [altEngine step];
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    [altEngine render];
     [[self openGLContext] flushBuffer];
 }
 
@@ -98,8 +93,6 @@ static void drawAnObject ()
 {
     float width = [self frame].size.width;
     float height = [self frame].size.height;
-    
-    glViewport(0, 0, width, height);
     
     //Why God
     [altEngine resize: width height: height];

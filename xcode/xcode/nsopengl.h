@@ -9,6 +9,7 @@
 - (void) drawRect: (NSRect) bounds;
 - (void) reshape;
 - (void) render;
+- (void) step;
 - (void) awakeFromNib;
 @end
 
