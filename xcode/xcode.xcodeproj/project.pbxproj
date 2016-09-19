@@ -76,6 +76,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2D39CE331D8F595A00F8CBE6 /* EngineInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EngineInterface.h; sourceTree = "<group>"; };
 		2D752F3B1D8F476000AD1C5F /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = /Users/cpf596/temp/altEngine/src; sourceTree = "<absolute>"; };
 		2D752F3F1D8F49AF00AD1C5F /* EngineInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EngineInterface.mm; sourceTree = "<group>"; };
 		2D752F431D8F521500AD1C5F /* audio.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = audio.cpp; path = ../src/audio.cpp; sourceTree = "<group>"; };
@@ -248,6 +249,7 @@
 				2DA52C711D8F400200B6DE44 /* nsopengl.h */,
 				2DA52C721D8F401400B6DE44 /* nsopengl.mm */,
 				2D752F3F1D8F49AF00AD1C5F /* EngineInterface.mm */,
+				2D39CE331D8F595A00F8CBE6 /* EngineInterface.h */,
 			);
 			path = xcode;
 			sourceTree = "<group>";

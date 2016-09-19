@@ -4,10 +4,14 @@
 #include <OpenGL/gl.h>
 #define XCODE
 #include "../../include/include.h"
-
+#import "EngineInterface.h"
 
 
 @implementation opengl
+
+
+EngineInterface *altEngine = [EngineInterface alloc];
+
 
 -(void) drawRect: (NSRect) bounds
 {
@@ -39,7 +43,7 @@ static void drawAnObject ()
     // 1. Create a context with opengl pixel format
     NSOpenGLPixelFormatAttribute pixelFormatAttributes[] =
     {
-        NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy,
+        NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion4_1Core,
         NSOpenGLPFAColorSize    , 32,
         NSOpenGLPFAAlphaSize    , 8,
         NSOpenGLPFADoubleBuffer ,
@@ -51,6 +55,15 @@ static void drawAnObject ()
     
     // 2. Make the context current
     [[self openGLContext] makeCurrentContext];
+ 
+    
+    
+    altEngine.init; // gets pointer to implementation
+    altEngine.engine_init;
+    altEngine.step;
+    
+    
+    
     
     NSTimer *timer;
     timer = [NSTimer scheduledTimerWithTimeInterval:1
@@ -58,10 +71,7 @@ static void drawAnObject ()
                                            selector:@selector(render)
                                            userInfo:nil repeats:YES];
     
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    
     
     glClearColor(0.5, 0.5, 0.5, 0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -77,9 +87,8 @@ static void drawAnObject ()
     
     glViewport(0, 0, width, height);
     
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawAnObject();
-    glFlush();
+    altEngine.step;
+    altEngine.render;
     
     [[self openGLContext] flushBuffer];
 }
@@ -91,6 +100,10 @@ static void drawAnObject ()
     float height = [self frame].size.height;
     
     glViewport(0, 0, width, height);
+    
+    //Why God
+    [altEngine resize: width height: height];
+    
 }
 
 

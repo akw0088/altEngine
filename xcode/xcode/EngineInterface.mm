@@ -7,33 +7,41 @@
 //
 
 #import <Foundation/Foundation.h>
-#define XCODE
-#import <OpenAL/al.h>
-#include "../../include/include.h"
-
-@interface EngineInterface : NSObject {
-    Engine *altEngine;
-}
-@end
+#import "EngineInterface.h"
 
 @implementation EngineInterface
-- (id)init {
-    if(self = [super init]) {
+- (id)init
+{
+    if(self = [super init])
+    {
         altEngine = new Engine();
     }
     return self;
 }
-- (void) dealloc {
+- (void) dealloc
+{
 //    if(altEngine != NULL) delete altEngine;
 //    [super dealloc];
 }
 
-- (void)step {
+- (void)engine_init
+{
+    altEngine->init(NULL, NULL);
+}
+
+- (void)step
+{
     altEngine->step();
 }
 
+- (void)resize:(int)x height:(int)y
+{
+    altEngine->resize(x,y);
+}
 
-- (void)render {
+
+- (void)render
+{
     altEngine->render(16.0);
 }
 @end
