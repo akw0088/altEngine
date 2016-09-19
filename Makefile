@@ -35,7 +35,8 @@ INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/includ
 #CPP := g++
 CPP := clang++
 CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall
-LFLAGS := -lX11 -lGL -lGLU -lc -framework OpenAL
+LFLAGS_OSX := -lX11 -lGL -lGLU -lc -framework OpenAL
+LFLAGS := -lX11 -lGL -lGLU -lopenal
 LIBS := -L/usr/X11R6/lib/ 
 
 all: altEngine
