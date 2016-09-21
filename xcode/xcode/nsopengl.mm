@@ -2,6 +2,7 @@
 
 #import "nsopengl.h"
 #include <OpenGL/gl.h>
+#include <Carbon/Carbon.h>
 
 #include "include.h"
 #import "EngineInterface.h"
@@ -48,7 +49,6 @@ EngineInterface *altEngine = [EngineInterface alloc];
     [[self openGLContext] makeCurrentContext];
  
     
-    
     id ret = [altEngine init]; // gets pointer to implementation (pimpl)
     
     [altEngine engine_init];
@@ -63,6 +63,11 @@ EngineInterface *altEngine = [EngineInterface alloc];
                      repeats:YES];
     
     // still need proper render loop
+}
+
+-(BOOL) acceptsFirstResponder
+{
+    return YES;
 }
 
 -(void) render
@@ -102,12 +107,124 @@ EngineInterface *altEngine = [EngineInterface alloc];
 
 - (void)keyDown:(NSEvent *)theEvent
 {
+    switch (theEvent.keyCode)
+    {
+        case kVK_Return:
+            [altEngine keypress: "enter" pressed:true];
+            break;
+        case kVK_Shift:
+            [altEngine keypress: "shift" pressed:true];
+            break;
+        case kVK_UpArrow:
+            [altEngine keypress: "up" pressed:true];
+            break;
+        case kVK_DownArrow:
+            [altEngine keypress: "down" pressed:true];
+            break;
+        case kVK_LeftArrow:
+            [altEngine keypress: "left" pressed:true];
+            break;
+        case kVK_RightArrow:
+            [altEngine keypress: "right" pressed:true];
+            break;
+        case kVK_ANSI_Keypad0:
+            [altEngine keypress: "num0" pressed:true];
+            break;
+        case kVK_ANSI_Keypad1:
+            [altEngine keypress: "num1" pressed:true];
+            break;
+        case kVK_ANSI_Keypad2:
+            [altEngine keypress: "num2" pressed:true];
+            break;
+        case kVK_ANSI_Keypad3:
+            [altEngine keypress: "num3" pressed:true];
+            break;
+        case kVK_ANSI_Keypad4:
+            [altEngine keypress: "num4" pressed:true];
+            break;
+        case kVK_ANSI_Keypad5:
+            [altEngine keypress: "num5" pressed:true];
+            break;
+        case kVK_ANSI_Keypad6:
+            [altEngine keypress: "num6" pressed:true];
+            break;
+        case kVK_ANSI_Keypad7:
+            [altEngine keypress: "num7" pressed:true];
+            break;
+        case kVK_ANSI_Keypad8:
+            [altEngine keypress: "num8" pressed:true];
+            break;
+        case kVK_ANSI_Keypad9:
+            [altEngine keypress: "num9" pressed:true];
+            break;
+            
+        default:
+            // ignore unsupported keys
+            break;
+    }
+    
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 }
 
 
 - (void)keyUp:(NSEvent *)theEvent
 {
+    switch (theEvent.keyCode)
+    {
+        case kVK_Return:
+            [altEngine keypress: "enter" pressed:false];
+            break;
+        case kVK_Shift:
+            [altEngine keypress: "shift" pressed:false];
+            break;
+        case kVK_UpArrow:
+            [altEngine keypress: "up" pressed:false];
+            break;
+        case kVK_DownArrow:
+            [altEngine keypress: "down" pressed:false];
+            break;
+        case kVK_LeftArrow:
+            [altEngine keypress: "left" pressed:false];
+            break;
+        case kVK_RightArrow:
+            [altEngine keypress: "right" pressed:false];
+            break;
+        case kVK_ANSI_Keypad0:
+            [altEngine keypress: "num0" pressed:false];
+            break;
+        case kVK_ANSI_Keypad1:
+            [altEngine keypress: "num1" pressed:false];
+            break;
+        case kVK_ANSI_Keypad2:
+            [altEngine keypress: "num2" pressed:false];
+            break;
+        case kVK_ANSI_Keypad3:
+            [altEngine keypress: "num3" pressed:false];
+            break;
+        case kVK_ANSI_Keypad4:
+            [altEngine keypress: "num4" pressed:false];
+            break;
+        case kVK_ANSI_Keypad5:
+            [altEngine keypress: "num5" pressed:false];
+            break;
+        case kVK_ANSI_Keypad6:
+            [altEngine keypress: "num6" pressed:false];
+            break;
+        case kVK_ANSI_Keypad7:
+            [altEngine keypress: "num7" pressed:false];
+            break;
+        case kVK_ANSI_Keypad8:
+            [altEngine keypress: "num8" pressed:false];
+            break;
+        case kVK_ANSI_Keypad9:
+            [altEngine keypress: "num9" pressed:false];
+            break;
+            
+        default:
+            // ignore unsupported keys
+            break;
+    }
+
 
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 }

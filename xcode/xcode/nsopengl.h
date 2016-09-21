@@ -20,6 +20,7 @@
 -(IBAction)moveDown:(id)sender;
 -(IBAction)moveLeft:(id)sender;
 -(IBAction)moveRight:(id)sender;
+- (BOOL) acceptsFirstResponder;
 - (void)insertText:(char *) str;
 @end
 
