@@ -9,7 +9,7 @@ int mFont::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/font.vsh", NULL, NULL);
 #else
-	if (Shader::init(gfx, "media/glsl/font.vs", NULL, "media/glsl/font.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/font.vs", NULL, "media/glsl/ver440/font.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -63,7 +63,7 @@ int Global::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/basic.vsh", NULL, "media/hlsl/basic.psh");
 #else
-	if (Shader::init(gfx, "media/glsl/global.vs", NULL, "media/glsl/global.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/global.vs", NULL, "media/glsl/ver440/global.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -99,7 +99,7 @@ int mLight2::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
-	if (Shader::init(gfx, "media/glsl/mlighting3.vs", "media/glsl/mlighting3.gs", "media/glsl/mlighting3.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -168,7 +168,7 @@ int mLightDepth::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
-	if (Shader::init(gfx, "media/glsl/mlighting3_depthonly.vs", NULL, "media/glsl/mlighting3_depthonly.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/mlighting3_depthonly.vs", NULL, "media/glsl/ver440/mlighting3_depthonly.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -207,7 +207,7 @@ void mLightDepth::Params(matrix4 &mvp)
 int Post::init(Graphics *gfx)
 {
 #ifndef DIRECTX
-	if (Shader::init(gfx, "media/glsl/post.vs", NULL, "media/glsl/post.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/post.vs", NULL, "media/glsl/ver440/post.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -278,7 +278,7 @@ int mLight3::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
-	if (Shader::init(gfx, "media/glsl/mlight3.vs", "media/glsl/mlight3.gs", "media/glsl/mlight3.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/mlight3.vs", "media/glsl/ver440/mlight3.gs", "media/glsl/ver440/mlight3.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -361,7 +361,7 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 int ShadowMap::init(Graphics *gfx)
 {
-	if (Shader::init(gfx, "media/glsl/shadow.vs", NULL, "media/glsl/shadow.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/shadow.vs", NULL, "media/glsl/ver440/shadow.fs"))
 	{
 		program_handle = -1;
 		return -1;
