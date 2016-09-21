@@ -18,9 +18,6 @@
     <ClCompile Include="src\bsp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\edge.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,9 +72,6 @@
     <ClCompile Include="src\sin_table.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\sound.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\speaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,15 +87,24 @@
     <ClCompile Include="src\winmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\edge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\md5model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\decal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\bsp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\bspTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\edge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\engine.h">
@@ -114,9 +117,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\include.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\keyboard.h">
@@ -167,9 +167,6 @@
     <ClInclude Include="include\sin_table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\sound.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\speaker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -183,6 +180,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\vehicle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\edge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\include.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\decal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
