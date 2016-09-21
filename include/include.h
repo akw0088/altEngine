@@ -65,6 +65,9 @@
 #ifndef __OBJC__
 	//mac has xquartz and can run xwindow apps
 	#include <X11/Xlib.h>
+	#include <X11/Xutil.h>
+	#include <X11/Xos.h>
+
 	#include <X11/Xatom.h>
 	#include <X11/keysym.h>
 #endif
@@ -84,7 +87,7 @@
 #endif
 
 #ifdef __linux__
-	#include <linux/in.h>
+	//#include <linux/in.h>
 #endif
 
 #ifdef MAC

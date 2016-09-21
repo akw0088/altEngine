@@ -56,7 +56,7 @@ void Engine::init(void *p1, void *p2)
 
 	//md5 crap
 	frame_step = 0;
-	//zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
+	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
 
 	fb_width = 1280;
 	fb_height = 1280;
@@ -500,7 +500,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		//zcc.render(gfx, frame_step);
+		zcc.render(gfx, frame_step);
 	}
 }
 
@@ -588,7 +588,7 @@ void Engine::debug_messages(double last_frametime)
 
 void Engine::destroy_buffers()
 {
-	//zcc.destroy_buffers(gfx);
+	zcc.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -2373,6 +2373,12 @@ void Engine::console(char *cmd)
 		load("media/maps/q3tourney2.bsp");
 		bind(port);
 		return;
+	}
+
+	ret = strcmp(cmd, "quit");
+	if (ret == 0)
+	{
+		exit(0);
 	}
 
 	ret = strcmp(cmd, "give all");
