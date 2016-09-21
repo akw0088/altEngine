@@ -173,8 +173,22 @@ int EventProc(Display *display, Window window, GLXContext context)
 	case KeyRelease:
 		printf("KeyPress\n");
 		{
-			bool pressed = (event.type == KeyPress) ? true : false;
+			XComposeStatus compose;
+			int count;
+			char buffer[128] = {0};
+
+			bool pressed = false;
 			KeySym keysym = XKeycodeToKeysym(display, event.xkey.keycode, 0);
+
+			if (event.type == KeyPress)
+			{
+				pressed = true;
+				count = XLookupString((XKeyEvent *)&event, buffer, 128, &keysym, &compose);
+				for(int i = 0; i < count; i++)
+				{
+					altEngine.keystroke(buffer[i]);
+				}
+			}
 
 			switch (keysym)
 			{
