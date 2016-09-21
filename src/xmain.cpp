@@ -125,7 +125,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 		printf("MapNotify\n");
 		break;
 	case ButtonPress:
-		printf("ButtonPress\n");
 		switch(event.xbutton.button)
 		{
 		case Button1:
@@ -142,7 +141,6 @@ int EventProc(Display *display, Window window, GLXContext context)
         	}
         break;
 	case ButtonRelease:
-		printf("ButtonRelease\n");
 		switch(event.xbutton.button)
 		{
 		case Button1:
@@ -159,8 +157,6 @@ int EventProc(Display *display, Window window, GLXContext context)
         	}
 		break;
 	case MotionNotify:
-		printf("MotionNotify\n");
-
 		if ((event.xmotion.x == xcenter) && (event.xmotion.y == ycenter))
 			break;
 
@@ -171,7 +167,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case KeyPress:
 	case KeyRelease:
-		printf("KeyPress\n");
 		{
 			XComposeStatus compose;
 			int count;
