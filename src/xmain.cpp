@@ -1,9 +1,17 @@
 #include "include.h"
 
 #ifndef WIN32
-#include <stdarg.h>
 
 int EventProc(Display *display, Window window, GLXContext context);
+
+long long mstime()
+{
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
+    return milliseconds;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -12,6 +20,8 @@ int main(int argc, char *argv[])
 	XSetWindowAttributes	winattrs;
 	Window			window;
 	GLXContext		context;
+	long long		last_time = mstime();
+
 	int visual[] = {	GLX_RGBA, GLX_DOUBLEBUFFER,
 					GLX_RED_SIZE, 8,
 					GLX_GREEN_SIZE, 8,
@@ -55,6 +65,7 @@ int main(int argc, char *argv[])
 
 	printf("GL Version: %s\n", glGetString(GL_VERSION));
 
+
 	while (True)
 	{
 		if ( XPending(display) )
@@ -64,6 +75,12 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			if (mstime() - last_time >= 16)
+			{
+				last_time = mstime();
+				EventProc((Display *)1, window, context);
+			}
+
 			EventProc(NULL, window, context);
 		}
 	}
@@ -85,6 +102,12 @@ int EventProc(Display *display, Window window, GLXContext context)
 		altEngine.render(16);
 		return 0;
 	}
+	else if (display == (void *)1)
+	{
+		altEngine.step();
+		return 0;
+	}
+
 
 	XNextEvent(display, &event);
 	switch(event.type)
@@ -156,6 +179,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 			switch (keysym)
 			{
 			case XK_Return:
+			case XK_KP_Enter:
 				altEngine.keypress("enter", pressed);
 				break;
 			case XK_Shift_L:
