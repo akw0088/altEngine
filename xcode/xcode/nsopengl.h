@@ -12,16 +12,17 @@
 - (void) step;
 - (void) viewDidMoveToWindow;
 - (void) awakeFromNib;
-- (void)mouseDown:(NSEvent *)theEvent;
-- (void)mouseUp:(NSEvent *)theEvent;
-- (void)keyDown:(NSEvent *)theEvent;
-- (void)keyUp:(NSEvent *)theEvent;
--(IBAction)moveUp:(id)sender;
--(IBAction)moveDown:(id)sender;
--(IBAction)moveLeft:(id)sender;
--(IBAction)moveRight:(id)sender;
+- (void) mouseDown:(NSEvent *)theEvent;
+- (void) mouseUp:(NSEvent *)theEvent;
+- (void) mouseMoved:(NSEvent *)theEvent;
+- (void) keyDown:(NSEvent *)theEvent;
+- (void) keyUp:(NSEvent *)theEvent;
 - (BOOL) acceptsFirstResponder;
-- (void)insertText:(char *) str;
+- (void) insertText:(char *) str;
+- (IBAction) moveUp:(id)sender;
+- (IBAction) moveDown:(id)sender;
+- (IBAction) moveLeft:(id)sender;
+- (IBAction) moveRight:(id)sender;
 @end
 
 #endif /* nsopengl_h */

@@ -18,13 +18,47 @@ EngineInterface *altEngine = [EngineInterface alloc];
     [[self openGLContext] makeCurrentContext];
     //Perform drawing here
     [[self openGLContext] flushBuffer];
+/*
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawAnObject();
+    glFlush();
+ */
 }
+
+//Basic triangle test
+static void drawAnObject ()
+{
+    glColor3f(1.0f, 0.85f, 0.35f);
+    glBegin(GL_TRIANGLES);
+    {
+        glVertex3f(  0.0,  0.6, 0.0);
+        glVertex3f( -0.2, -0.3, 0.0);
+        glVertex3f(  0.2, -0.3 ,0.0);
+    }
+    glEnd();
+}
+
+
 
 -(void) viewDidMoveToWindow
 {
     [super viewDidMoveToWindow];
     if ([self window] == nil)
         [[self openGLContext] clearDrawable];
+}
+
+- (void)mouseMoved:(NSEvent *)theEvent
+{
+    NSPoint pos;
+    NSPoint delta;
+
+    //Origin is lower left, we get mouse messages outside of NSView bounds
+    pos = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    delta.x = [self bounds].size.width / 2 - pos.x;
+    delta.y = [self bounds].size.height / 2 - pos.y;
+    [altEngine mousepos: pos.x y: pos.y deltax: pos.x deltay: delta.y];
+//  printf("%3.3lf %3.3lf %3.3lf %3.3lf\n", pos.x, pos.y, delta.x, delta.y);
 }
 
 - (void)awakeFromNib
@@ -47,7 +81,7 @@ EngineInterface *altEngine = [EngineInterface alloc];
     
     // 2. Make the context current
     [[self openGLContext] makeCurrentContext];
- 
+    [[self window] setAcceptsMouseMovedEvents:YES];
     
     id ret = [altEngine init]; // gets pointer to implementation (pimpl)
     
@@ -79,7 +113,6 @@ EngineInterface *altEngine = [EngineInterface alloc];
 -(void) step
 {
     [altEngine step];
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     [altEngine render];
     [[self openGLContext] flushBuffer];
 }
@@ -97,6 +130,7 @@ EngineInterface *altEngine = [EngineInterface alloc];
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    //CGWarpMouseCursorPosition(center);
     [altEngine keypress: "mouse1" pressed:true];
 }
 
@@ -111,6 +145,7 @@ EngineInterface *altEngine = [EngineInterface alloc];
     {
         case kVK_Return:
             [altEngine keypress: "enter" pressed:true];
+            [altEngine keystroke: '\r'];
             break;
         case kVK_Shift:
             [altEngine keypress: "shift" pressed:true];
@@ -231,7 +266,7 @@ EngineInterface *altEngine = [EngineInterface alloc];
 
 - (void)insertText:(char *) str
 {
-    [altEngine keystroke: str[0]];
+    [altEngine keystroke: *str];
 }
 
 
