@@ -127,7 +127,7 @@ int Net::sendto(char *buff, int size, char *to)
 
 void Net::strtoaddr(char *str, sockaddr_in &addr)
 {
-	char ip[80];
+	char ip[80] = { 0 };
 	int a,b,c,d;
 	int port;
 

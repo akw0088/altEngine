@@ -1257,7 +1257,7 @@ void Engine::client_step()
 
 	// get entity information
 #ifndef __linux__
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
 #else
 	int size = 0;
 #endif
@@ -1717,7 +1717,7 @@ void Engine::resize(int width, int height)
 
 void Engine::load_sounds()
 {
-	wave_t wave[8];
+	wave_t wave[8] = { 0 };
 
 
 	//load player sounds
@@ -2108,8 +2108,8 @@ int load_texture(Graphics &gfx, char *file_name)
 
 void Engine::console(char *cmd)
 {
-	char msg[LINE_SIZE];
-	char data[LINE_SIZE];
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
 	int port;
 	int ret;
 
@@ -2381,8 +2381,20 @@ void Engine::console(char *cmd)
 	ret = strcmp(cmd, "quit");
 	if (ret == 0)
 	{
+		if (map.loaded)
+		{
+			unload();
+		}
+		destroy();
 		exit(0);
 	}
+
+	ret = strcmp(cmd, "exit");
+	if (ret == 0)
+	{
+		exit(0);
+	}
+
 
 	ret = strcmp(cmd, "give all");
 	if (ret == 0)
