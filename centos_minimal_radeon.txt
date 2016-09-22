@@ -67,5 +67,5 @@ LD_LIBRARY_PATH=/usr/local/lib;/usr/local/lib64/"
 export LD_LIBRARY_PATH="/usr/local/lib;/usr/local/lib64/"
 ./altEngine 
 clear
-scp awright@server.awright2009.com:./media.tgz ./
+scp user@domain.com:./media.tgz ./
 tar xzvf ./media.tgz
