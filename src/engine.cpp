@@ -4,7 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
-#define DEFERRED
+#define FORWARD
+//#define DEFERRED
 
 
 Engine::Engine()
@@ -144,7 +145,9 @@ void Engine::load(char *level)
 
 	//Setup render to texture
 	gfx.bindFramebuffer(fbo);
+#ifdef DEFERRED
 	gfx.resize(fb_width, fb_height);
+#endif
 
 	// Generate depth cubemaps for each light
 	render_shadowmaps();
