@@ -1,0 +1,71 @@
+yum -y groups install "GNOME Desktop"
+startx
+cat /usr/share/ati/fglrx-install.log 
+yum install kernel-headers.x86_64 
+yum install gcc
+yum install g++
+yum install clang
+cat /usr/share/ati/fglrx-install.log 
+yum install ncurses-devel newt-devel numactl-devel pciutils-devel python-devel zlib-devel audit-libs-devel binutils-devel elfutils-devel elfutils-libelf-devel  rpm-build redhat-rpm-config asciidoc hmaccalc perl-ExtUtils-Embed pesign xmlto
+yum --enablerepo elrepo-testing install fglrx-x11-drv
+rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org 
+glxinfo | grep -i version
+unzip radeon-crimson-15.12-15.302-151217a-297685e.zip 
+cd fglrx-15.302/
+./amd-driver-installer-15.302-x86.x86_64.run 
+yum install kernel-devel
+./amd-driver-installer-15.302-x86.x86_64.run 
+rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+yum-plugin-fastestmirror
+yum install yum-plugin-fastestmirror
+yum install fglrx-x11-drv
+./amd-driver-installer-15.302-x86.x86_64.run 
+yum install kernel-devel
+./amd-driver-installer-15.302-x86.x86_64.run 
+rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+yum-plugin-fastestmirror
+yum install yum-plugin-fastestmirror
+yum install fglrx-x11-drv
+./amd-driver-installer-15.302-x86.x86_64.run 
+yum install kernel-devel
+./amd-driver-installer-15.302-x86.x86_64.run 
+rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-2.el7.elrepo.noarch.rpm
+yum-plugin-fastestmirror
+yum install yum-plugin-fastestmirror
+yum install fglrx-x11-drv
+
+yum install glx
+yum install mesa-libGL-devel mesa-libGLU-devel
+yum install openal-soft-devel
+yum install openal
+yum install alut3d
+yum install freealut
+make
+wget http://kcat.strangesoft.net/openal-releases/openal-soft-1.17.2.tar.bz2
+tar xjvf openal-soft-1.17.2.tar.bz2 
+cd build/
+cmake ..
+yum install cmake
+cmake ..
+yum install stdc++
+yum install libstdc++
+yum group install "Development Tools" 
+cmake ..
+make
+make install
+cd ..
+ls
+cd altEngine/
+ls
+make
+ls
+./altEngine 
+find /usr/ -iname  "libopenal.so*"
+env | grep -i LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib;/usr/local/lib64/
+LD_LIBRARY_PATH=/usr/local/lib;/usr/local/lib64/"
+export LD_LIBRARY_PATH="/usr/local/lib;/usr/local/lib64/"
+./altEngine 
+clear
+scp awright@server.awright2009.com:./media.tgz ./
+tar xzvf ./media.tgz
