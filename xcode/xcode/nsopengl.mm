@@ -142,6 +142,27 @@ static void drawAnObject ()
     [altEngine keypress: "mouse1" pressed:false];
 }
 
+- (void)rightMouseDown:(NSEvent *)theEvent
+{
+    [altEngine keypress: "mouse2" pressed:true];
+}
+
+- (void)rightMouseUp:(NSEvent *)theEvent
+{
+    [altEngine keypress: "mouse2" pressed:false];
+}
+
+- (void)otherMouseDown:(NSEvent *)theEvent
+{
+    [altEngine keypress: "mouse3" pressed:true];
+}
+
+- (void)otherMouseUp:(NSEvent *)theEvent
+{
+    [altEngine keypress: "mouse3" pressed:false];
+}
+
+
 - (void)keyDown:(NSEvent *)theEvent
 {
     switch (theEvent.keyCode)

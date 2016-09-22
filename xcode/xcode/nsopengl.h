@@ -14,6 +14,10 @@
 - (void) awakeFromNib;
 - (void) mouseDown:(NSEvent *)theEvent;
 - (void) mouseUp:(NSEvent *)theEvent;
+- (void) rightMouseDown:(NSEvent *)theEvent;
+- (void) rightMouseUp:(NSEvent *)theEvent;
+- (void) otherMouseDown:(NSEvent *)theEvent;
+- (void) otherMouseUp:(NSEvent *)theEvent;
 - (void) mouseMoved:(NSEvent *)theEvent;
 - (void) keyDown:(NSEvent *)theEvent;
 - (void) keyUp:(NSEvent *)theEvent;
