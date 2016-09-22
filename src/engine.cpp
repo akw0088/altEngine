@@ -102,7 +102,9 @@ void Engine::load(char *level)
 	}
 
 	map.generate_meshes(gfx);
+
 	parse_entity(map.get_entities(), entity_list, gfx);
+
 	menu.delta("entities", *this);
 	gfx.clear();
 	menu.render(global);
@@ -354,7 +356,8 @@ void Engine::render_scene(bool lights)
 	matrix4 transformation;
 	matrix4 mvp;
 
-	entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+	if (spawn != -1)
+		entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
 
 
 	camera_frame.set(transformation);

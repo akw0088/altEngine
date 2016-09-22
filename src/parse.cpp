@@ -138,21 +138,28 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 	}
 	else if (strcmp(key, "light") == 0)
 	{
-			int intensity;
+		int intensity;
 
-			if (entity.light == NULL)
-				entity.light = new Light(&entity, gfx, light_num++);
-			sscanf(value, "%d", &intensity);
+		if (entity.light == NULL && light_num < 100)
+		{
+			entity.light = new Light(&entity, gfx, light_num++);
+		}
+		sscanf(value, "%d", &intensity);
+		if (entity.light)
 			entity.light->intensity = intensity;
 	}
 	else if (strcmp(key, "_color") == 0)
 	{
 		float r, g, b;
 
-		if (entity.light == NULL)
+		if (entity.light == NULL && light_num < 100)
+		{
+			// generates cubemaps for light, this sucks up memory on large maps
 			entity.light = new Light(&entity, gfx, light_num++);
+		}
 		sscanf(value, "%f %f %f", &r, &g, &b);
-		entity.light->color = vec3(r,g,b);
+		if (entity.light)
+			entity.light->color = vec3(r,g,b);
 	}
 	else if (strcmp(key, "noise") == 0)
 	{
@@ -198,14 +205,14 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 
 		switch (state)
 		{
-		case 'K':
+		case 'K': //key
 			if (prevstate == 'K')
 			{
 				key[j++] = input[i];
 				key[j] = '\0';
 				break;
 			}
-		case 'V':
+		case 'V': //value
 			if (prevstate == 'V')
 			{
 				val[j++] = input[i];

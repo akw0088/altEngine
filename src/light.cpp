@@ -12,7 +12,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 	active = false;
 	light_num = num;
 
-	generate_cubemaps(1280, 1280);
+	generate_cubemaps(512, 512);
 }
 
 
