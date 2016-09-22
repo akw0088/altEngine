@@ -52,20 +52,15 @@ static void drawAnObject ()
 {
     NSPoint pos;
     NSPoint delta;
-    CGPoint center;
 
     //Origin is lower left, we get mouse messages outside of NSView bounds
-    pos = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+    pos = [theEvent locationInWindow];
     delta.x = [self bounds].size.width / 2 - pos.x;
     delta.y = [self bounds].size.height / 2 - pos.y;
     [altEngine mousepos: pos.x y: pos.y deltax: pos.x deltay: delta.y];
-//  printf("%3.3lf %3.3lf %3.3lf %3.3lf\n", pos.x, pos.y, delta.x, delta.y);
-    center.x = [self bounds].size.width / 2;
-    center.y = [self bounds].size.height / 2;
-    printf("%3.3lf %3.3lf\n", center.x, center.y);
-//  [convertPoint:center toView:[self NSView]];
-    CGWarpMouseCursorPosition(center);
     
+    //center = [self convertPoint: center fromView: nil];
+    //CGWarpMouseCursorPosition(center);
 }
 
 - (void)awakeFromNib
@@ -127,17 +122,18 @@ static void drawAnObject ()
 
 - (void) reshape
 {
-    float width = [self frame].size.width;
-    float height = [self frame].size.height;
+//    float width = [self frame].size.width;
+//    float height = [self frame].size.height;
+    NSRect pixelsize = [self convertRect:[self bounds] toView:nil];
+    
     
     //Why God
-    [altEngine resize: width height: height];
+    [altEngine resize: pixelsize.size.width height: pixelsize.size.height];
 }
 
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    //CGWarpMouseCursorPosition(center);
     [altEngine keypress: "mouse1" pressed:true];
 }
 
