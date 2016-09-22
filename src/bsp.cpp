@@ -14,6 +14,12 @@ Bsp::Bsp()
 void Bsp::load(char *map)
 {
 	tBsp = (bsp_t *)get_file(map);
+	if (tBsp == NULL)
+	{
+		printf("Unable to open map %s\n", map);
+		return;
+	}
+
 	byte *pBsp = (byte *)tBsp;
 
 	if (tBsp == NULL)
@@ -347,35 +353,38 @@ void Bsp::unload(Graphics &gfx)
 
 		if (face->type == 2)
 		{
-			if (face->patchHeight == 3 && face->patchWidth == 3)
+			if (!(mesh_vertex_array == NULL && mesh_index_array == NULL))
 			{
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
-			}
-			else if (face->patchWidth == 5)
-			{
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
-			}
-			else if (face->patchWidth == 9)
-			{
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
-				delete [] mesh_vertex_array[mesh_index];
-				delete [] mesh_index_array[mesh_index];
-				mesh_index++;
+				if (face->patchHeight == 3 && face->patchWidth == 3)
+				{
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+				}
+				else if (face->patchWidth == 5)
+				{
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+				}
+				else if (face->patchWidth == 9)
+				{
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+					delete[] mesh_vertex_array[mesh_index];
+					delete[] mesh_index_array[mesh_index];
+					mesh_index++;
+				}
 			}
 		}
 	}

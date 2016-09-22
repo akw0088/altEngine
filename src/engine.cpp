@@ -1948,6 +1948,7 @@ void Engine::init_camera()
 			camera_frame.pos = entity_list[i]->position;
 			spawn = i;
 			entity_list[spawn]->player = new Player(entity_list[i], gfx, audio);
+			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
 			break;
 		}
 	}
@@ -2381,6 +2382,74 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = strcmp(cmd, "unit_test_maps");
+	if (ret == 0)
+	{
+		if (map.loaded)
+		{
+			map.unload(gfx);
+		}
+		map.load("media/maps/q3dm1.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm2.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm3.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm4.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm5.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm6.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm7.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm8.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm9.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm10.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm11.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm12.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm13.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm14.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm15.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm16.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm17.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm18.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3dm19.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3tourney1.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3tourney2.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3tourney3.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3tourney4.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3tourney5.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3tourney6.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3ctf1.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3ctf2.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3ctf3.bsp");
+		map.unload(gfx);
+		map.load("media/maps/q3ctf4.bsp");
+		map.unload(gfx);
+		return;
+	}
+
 	ret = strcmp(cmd, "quit");
 	if (ret == 0)
 	{
@@ -2397,6 +2466,17 @@ void Engine::console(char *cmd)
 	{
 		exit(0);
 	}
+
+	ret = strcmp(cmd, "noclip");
+	if (ret == 0)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->rigid->sleep = true;
+		}
+		return;
+	}
+
 
 
 	ret = strcmp(cmd, "give all");
