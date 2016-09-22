@@ -9,11 +9,19 @@ int mFont::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/font.vsh", NULL, NULL);
 #else
+#ifdef __OBJC__
+	if (Shader::init(gfx, "media/glsl/ver410/font.vs", NULL, "media/glsl/ver410/font.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+#else
 	if (Shader::init(gfx, "media/glsl/ver440/font.vs", NULL, "media/glsl/ver440/font.fs"))
 	{
 		program_handle = -1;
 		return -1;
 	}
+#endif
 	u_scale = glGetUniformLocation(program_handle, "u_scale");
 	u_row = glGetUniformLocation(program_handle, "u_row");
 	u_col = glGetUniformLocation(program_handle, "u_col");
@@ -63,11 +71,19 @@ int Global::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/basic.vsh", NULL, "media/hlsl/basic.psh");
 #else
+#ifdef __OBJC__
+	if (Shader::init(gfx, "media/glsl/ver410/global.vs", NULL, "media/glsl/ver410/global.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+#else
 	if (Shader::init(gfx, "media/glsl/ver440/global.vs", NULL, "media/glsl/ver440/global.fs"))
 	{
 		program_handle = -1;
 		return -1;
 	}
+#endif
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 #endif
@@ -99,11 +115,19 @@ int mLight2::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
+#ifdef __OBJC__
+	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+#else
 	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
 	{
 		program_handle = -1;
 		return -1;
 	}
+#endif
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
@@ -207,11 +231,19 @@ void mLightDepth::Params(matrix4 &mvp)
 int Post::init(Graphics *gfx)
 {
 #ifndef DIRECTX
-	if (Shader::init(gfx, "media/glsl/ver440/post.vs", NULL, "media/glsl/ver440/post.fs"))
-	{
-		program_handle = -1;
-		return -1;
-	}
+#ifdef __OBJC__
+    if (Shader::init(gfx, "media/glsl/ver410/post.vs", NULL, "media/glsl/ver410/post.fs"))
+    {
+        program_handle = -1;
+        return -1;
+    }
+#else
+    if (Shader::init(gfx, "media/glsl/ver440/post.vs", NULL, "media/glsl/ver440/post.fs"))
+    {
+        program_handle = -1;
+        return -1;
+    }
+#endif
 #else
 	Shader::init(gfx, "media/hlsl/post.vsh", NULL, "media/hlsl/post.psh");
 #endif
@@ -278,11 +310,19 @@ int mLight3::init(Graphics *gfx)
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 #else
+#ifdef __OBJC__
+	if (Shader::init(gfx, "media/glsl/ver410/mlight3.vs", "media/glsl/ver410/mlight3.gs", "media/glsl/ver410/mlight3.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+#else
 	if (Shader::init(gfx, "media/glsl/ver440/mlight3.vs", "media/glsl/ver440/mlight3.gs", "media/glsl/ver440/mlight3.fs"))
 	{
 		program_handle = -1;
 		return -1;
 	}
+#endif
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
@@ -361,11 +401,19 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 int ShadowMap::init(Graphics *gfx)
 {
+#ifdef __OBJC__
+	if (Shader::init(gfx, "media/glsl/ver410/shadow.vs", NULL, "media/glsl/ver410/shadow.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+#else
 	if (Shader::init(gfx, "media/glsl/ver440/shadow.vs", NULL, "media/glsl/ver440/shadow.fs"))
 	{
 		program_handle = -1;
 		return -1;
 	}
+#endif
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	shadowmatrix = glGetUniformLocation(program_handle, "shadowmvp");
