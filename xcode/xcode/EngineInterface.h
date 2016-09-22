@@ -17,6 +17,7 @@
 - (void)resize:(int)x height:(int)y;
 - (void)keypress:(char *)key pressed:(bool)press;
 - (void)keystroke:(char)key;
+- (void)mousepos:(int)xpos y:(bool)ypos deltax:(int)xd deltay:(int)yd;
 
 @end
 

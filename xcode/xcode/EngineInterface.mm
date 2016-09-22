@@ -47,5 +47,10 @@
     altEngine->keystroke(key);
 }
 
+- (void)mousepos:(int)xpos y:(bool)ypos deltax:(int)xd deltay:(int)yd;
+{
+    altEngine->mousepos(xpos, ypos, xd, yd);
+}
+
 
 @end

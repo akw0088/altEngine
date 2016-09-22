@@ -52,6 +52,7 @@ static void drawAnObject ()
 {
     NSPoint pos;
     NSPoint delta;
+    CGPoint center;
 
     //Origin is lower left, we get mouse messages outside of NSView bounds
     pos = [self convertPoint:[theEvent locationInWindow] fromView:nil];
@@ -59,6 +60,12 @@ static void drawAnObject ()
     delta.y = [self bounds].size.height / 2 - pos.y;
     [altEngine mousepos: pos.x y: pos.y deltax: pos.x deltay: delta.y];
 //  printf("%3.3lf %3.3lf %3.3lf %3.3lf\n", pos.x, pos.y, delta.x, delta.y);
+    center.x = [self bounds].size.width / 2;
+    center.y = [self bounds].size.height / 2;
+    printf("%3.3lf %3.3lf\n", center.x, center.y);
+//  [convertPoint:center toView:[self NSView]];
+    CGWarpMouseCursorPosition(center);
+    
 }
 
 - (void)awakeFromNib
