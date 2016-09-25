@@ -57,7 +57,16 @@ void Engine::init(void *p1, void *p2)
 
 	//md5 crap
 	frame_step = 0;
-	zcc.load("media/md5/zcc.md5mesh", "media/md5/chaingun_idle.md5anim", gfx);
+	char **animation = NULL;
+	char *anim1 = "media/md5/chaingun_idle.md5anim";
+	char *anim2 = "media/md5/chaingun_walk.md5anim";
+	animation = new char *[2];
+	animation[0] = anim1;
+	animation[1] = anim2;
+
+	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
+
+
 
 	fb_width = 1280;
 	fb_height = 1280;
@@ -2477,9 +2486,16 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "animation %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "%s\n", cmd);
+		menu.print(msg);
+		zcc.select_animation(atoi(data));
+		return;
+	}
 
-
-	ret = strcmp(cmd, "give all");
+		ret = strcmp(cmd, "give all");
 	if (ret == 0)
 	{
 		snprintf(msg, LINE_SIZE, "give all\n");

@@ -4,6 +4,9 @@
 #define new DEBUG_NEW
 #endif
 
+//#define ERROR_CHECK
+
+
 void Graphics::resize(int width, int height)
 {
 	Graphics::width = width;
@@ -481,13 +484,14 @@ void Graphics::init(void *param1, void *param2)
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+/*
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
 	glEnableVertexAttribArray(5);
-
+	*/
 #ifdef ERROR_CHECK
 	error_check();
 #endif
@@ -580,11 +584,6 @@ void Graphics::destroy()
 
 void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	if ( error_check() )
-	{
-		return;
-	}
-
 	// This is cached into the current vao
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), NULL);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3)));
@@ -778,7 +777,7 @@ bool Graphics::error_check()
 	{
 		//1281 invalid enum
 		//1281 bad value
-//		printf("GL_ERROR %d\n", err);
+		printf("GL_ERROR %d\n", err);
 		return true;
 	}
 	return false;

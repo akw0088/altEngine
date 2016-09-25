@@ -3,13 +3,19 @@
 #ifndef MD5_H
 #define MD5_H
 
+typedef struct anim_list_s
+{
+	char name[128];
+	struct md5_anim_t *anim;
+	struct anim_list_s *next;
+} anim_list_t;
+
 class MD5
 {
 public:
 	MD5()
 	{
 		model = new md5_model_t;
-		anim = new md5_anim_t;
 	}
 
 	~MD5()
@@ -23,16 +29,10 @@ public:
 		}
 		delete [] model->mesh;
 		delete model;
-		delete anim->aabb;
-		delete anim->base;
-		delete anim->frame;
-		delete anim->hierarchy;
-		delete anim;
-
 	}
 
 	int load_md5(char *file);
-	int load_md5_animation(char *file);
+	int load_md5_animation(char *file, anim_list_t *plist);
 
 	int parse_joint(char *data, md5_joint_t *joint, int num_joint);
 	int parse_mesh(char *data, md5_mesh_t *mesh);
@@ -45,11 +45,11 @@ public:
 	void InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out);
 	void PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex);
 
-	void generate_animation(md5_joint_t **&frame);
-	void destroy_animation(md5_joint_t **&frame);
+	void generate_animation(md5_joint_t **&frame, md5_anim_t *anim);
+	void destroy_animation(md5_joint_t **&frame, md5_anim_t *anim);
 	void generate_tangent(int *index_array, int num_index, vertex_t *vertex_array, int num_vertex);
 	void calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c);
-	void build_frame(md5_joint_t *joint, float *frame);
+	void build_frame(md5_joint_t *joint, float *frame, md5_anim_t *anim);
 
 	vertex_t	vertex_array[7][2048];
 	int			index_array[7][2048];
@@ -57,7 +57,6 @@ public:
 	int			num_vertex[7];
 
 	md5_model_t *model;
-	md5_anim_t *anim;
 private:
 };
 

@@ -383,10 +383,10 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 	return 0;
 }
 
-int MD5::load_md5_animation(char *file)
+int MD5::load_md5_animation(char *file, anim_list_t *plist)
 {
 	char *data = get_file(file);
-	char *pdata;
+	char *pdata = NULL;
 
 	int version;
 	int num_frame;
@@ -399,6 +399,11 @@ int MD5::load_md5_animation(char *file)
 	md5_base_t	*base;
 	float		*frame;
 
+	if (data == NULL)
+	{
+		printf("Unable to open %s\n", file);
+		return -1;
+	}
 
 	pdata = strstr(data, "MD5Version");
 	sscanf(pdata, "MD5Version %d", &version);
@@ -416,7 +421,7 @@ int MD5::load_md5_animation(char *file)
 	sscanf(pdata, "numAnimatedComponents %d", &num_ani);
 
 
-	hierarchy = new md5_hierarchy_t [num_joint];
+	hierarchy = new md5_hierarchy_t[num_joint];
 	if (hierarchy == NULL)
 	{
 		perror("malloc() failed");
@@ -424,21 +429,21 @@ int MD5::load_md5_animation(char *file)
 	}
 
 
-	aabb = new md5_aabb_t [num_frame];
+	aabb = new md5_aabb_t[num_frame];
 	if (aabb == NULL)
 	{
 		perror("malloc() failed");
 		return 1;
 	}
 
-	base = new md5_base_t [num_joint];
+	base = new md5_base_t[num_joint];
 	if (base == NULL)
 	{
 		perror("malloc() failed");
 		return 1;
 	}
 
-	frame = new float [num_frame * num_ani];
+	frame = new float[num_frame * num_ani];
 	if (frame == NULL)
 	{
 		perror("malloc() failed");
@@ -447,53 +452,74 @@ int MD5::load_md5_animation(char *file)
 
 
 	pdata = strstr(data, "hierarchy {");
-	if ( parse_hierarchy(pdata, num_joint, hierarchy) )
+	if (parse_hierarchy(pdata, num_joint, hierarchy))
 	{
 		return 1;
 	}
 
-//	FILE *out = fopen("hierarchy.bin", "wb");
-//	fwrite(hierarchy, sizeof(md5_hierarchy_t), num_joint, out);
-//	fclose(out);
+	//	FILE *out = fopen("hierarchy.bin", "wb");
+	//	fwrite(hierarchy, sizeof(md5_hierarchy_t), num_joint, out);
+	//	fclose(out);
 
 
-	
+
 	pdata = strstr(data, "bounds {");
-	if ( parse_bounds(pdata, num_frame, aabb) )
+	if (parse_bounds(pdata, num_frame, aabb))
 	{
 		return 1;
 	}
 
-//	out = fopen("aabb.bin", "wb");
-//	fwrite(aabb, sizeof(md5_aabb_t), num_frame, out);
-//	fclose(out);
+	//	out = fopen("aabb.bin", "wb");
+	//	fwrite(aabb, sizeof(md5_aabb_t), num_frame, out);
+	//	fclose(out);
 
 	pdata = strstr(data, "baseframe {");
-	if ( parse_base(pdata, num_joint, base) )
+	if (parse_base(pdata, num_joint, base))
 	{
 		return 1;
 	}
 
-//	out = fopen("base.bin", "wb");
-//	fwrite(base, sizeof(md5_base_t), num_joint, out);
-//	fclose(out);
+	//	out = fopen("base.bin", "wb");
+	//	fwrite(base, sizeof(md5_base_t), num_joint, out);
+	//	fclose(out);
 
 	pdata = strstr(data, "frame 0 {");
-	if ( parse_frame(pdata, num_frame, num_ani, frame) )
+	if (parse_frame(pdata, num_frame, num_ani, frame))
 	{
 		return 1;
 	}
 
+	while (1)
+	{
+		if (plist->anim == NULL)
+		{
+			break;
+		}
+		if (plist->next)
+		{
+			plist = plist->next;
+		}
+		else
+		{
+			plist->next = new anim_list_t;
+			memset(plist->next, 0, sizeof(anim_list_t));
+			plist = plist->next;
+			break;
+		}
+	}
 
-	anim->num_frame = num_frame;
-	anim->num_joint = num_joint;
-	anim->frame_rate = frame_rate;
+	plist->anim = new md5_anim_t;
 
-	anim->aabb = aabb;
-	anim->base = base;
-	anim->num_ani = num_ani;
-	anim->hierarchy = hierarchy;
-	anim->frame = frame;
+	memcpy(plist->name, file, strlen(file) + 1);
+	plist->anim->num_frame = num_frame;
+	plist->anim->num_joint = num_joint;
+	plist->anim->frame_rate = frame_rate;
+
+	plist->anim->aabb = aabb;
+	plist->anim->base = base;
+	plist->anim->num_ani = num_ani;
+	plist->anim->hierarchy = hierarchy;
+	plist->anim->frame = frame;
 	delete [] data;
 	return 0;
 }
@@ -649,7 +675,7 @@ int MD5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 }
 
 
-void MD5::build_frame(md5_joint_t *joint, float *frame)
+void MD5::build_frame(md5_joint_t *joint, float *frame, md5_anim_t *anim)
 {
 	int i;
 
@@ -774,17 +800,17 @@ void MD5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_arr
 }
 
 
-void MD5::generate_animation(md5_joint_t **&frame)
+void MD5::generate_animation(md5_joint_t **&frame, md5_anim_t *anim)
 {
 	frame = new md5_joint_t *[anim->num_frame];
 	for(int i = 0; i < anim->num_frame; i++)
 	{
 		frame[i] = new md5_joint_t [anim->num_joint];
-		build_frame(frame[i], &anim->frame[i * anim->num_ani]);
+		build_frame(frame[i], &anim->frame[i * anim->num_ani], anim);
 	}
 }
 
-void MD5::destroy_animation(md5_joint_t **&frame)
+void MD5::destroy_animation(md5_joint_t **&frame, md5_anim_t *anim)
 {
 	for(int i = 0; i < anim->num_frame; i++)
 	{

@@ -86,5 +86,4 @@ struct md5_anim_t
 	md5_aabb_t *aabb;
 	md5_hierarchy_t *hierarchy;
 	float *frame;
-	
 };
