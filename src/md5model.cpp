@@ -1,5 +1,28 @@
 #include "include.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+MD5Model::MD5Model()
+{
+
+}
+
+MD5Model::~MD5Model() 
+{
+	anim_list_t *plist = &anim_list;
+	for (; plist != NULL;)
+	{
+		delete plist->anim->aabb;
+		delete plist->anim->base;
+		delete plist->anim->frame;
+		delete plist->anim->hierarchy;
+		delete plist->anim;
+		plist = plist->next;
+	}
+}
+
 void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx)
 {
 	anim_list_t *plist = &anim_list;
@@ -14,7 +37,7 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 		md5.generate_tangent(md5.index_array[i], md5.num_index[i], md5.vertex_array[i], md5.num_vertex[i]);
 	}
 
-
+	load_textures(gfx);
 	for (int i = 0; i < num_anim; i++)
 	{
 		printf("Loading animation %s\n", animation[i]);
@@ -63,9 +86,12 @@ void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *b
 			buffer->count_vertex[j][i] = num_vertex;
 		}
 	}
+}
 
-	buffer->tex_object = new int[md5.model->num_mesh];
-	buffer->normal_object = new int[md5.model->num_mesh];
+void MD5Model::load_textures(Graphics &gfx)
+{
+	tex_object = new int[md5.model->num_mesh];
+	normal_object = new int[md5.model->num_mesh];
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
 		char file[256];
@@ -79,7 +105,7 @@ void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *b
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		buffer->tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
+		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
 		delete[] bytes;
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
@@ -89,7 +115,7 @@ void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *b
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		buffer->normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
+		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
 		delete[] bytes;
 	}
 }
@@ -143,18 +169,15 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 		plist = plist->next;
 		k++;
 	}
-
-	for (int k = 0; k < num_buffer; k++)
+	
+	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
-		for (int i = 0; i < md5.model->num_mesh; i++)
-		{
-			gfx.DeleteTexture(buffer[k]->tex_object[i]);
-			gfx.DeleteTexture(buffer[k]->normal_object[i]);
-		}
-
-		delete[] buffer[k]->tex_object;
-		delete[] buffer[k]->normal_object;
+		gfx.DeleteTexture(tex_object[i]);
+		gfx.DeleteTexture(normal_object[i]);
 	}
+
+	delete[] tex_object;
+	delete[] normal_object;
 
 }
 
@@ -165,8 +188,8 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
-		gfx.SelectTexture(0, current_buffer->tex_object[i]);
-		gfx.SelectTexture(2, current_buffer->normal_object[i]);
+		gfx.SelectTexture(0, tex_object[i]);
+		gfx.SelectTexture(2, normal_object[i]);
 		gfx.SelectIndexBuffer(current_buffer->frame_index[frame_step][i]);
 		gfx.SelectVertexBuffer(current_buffer->frame_vertex[frame_step][i]);
 		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, current_buffer->count_index[frame_step][i], current_buffer->count_vertex[frame_step][i]);
