@@ -90,16 +90,8 @@ void Engine::load(char *level)
 		menu.print("Failed to load mlight3 shader");
 
 
-	try
-	{
-		map.load(level);
-	}
-	catch (const char *error)
-	{
-		debugf("%s\n", error);
-		menu.delta("unload", *this);
+	if ( map.load(level) == false)
 		return;
-	}
 
 	map.generate_meshes(gfx);
 

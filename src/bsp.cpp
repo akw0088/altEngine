@@ -11,24 +11,16 @@ Bsp::Bsp()
 	loaded = false;
 }
 
-void Bsp::load(char *map)
+bool Bsp::load(char *map)
 {
 	tBsp = (bsp_t *)get_file(map);
 	if (tBsp == NULL)
 	{
 		printf("Unable to open map %s\n", map);
-		return;
+		return false;
 	}
 
 	byte *pBsp = (byte *)tBsp;
-
-	if (tBsp == NULL)
-	{
-		char err[LINE_SIZE];
-
-		snprintf(err, LINE_SIZE, "Unable to load bsp %s.\n", map);
-		throw err;
-	}
 
 	// init data
 	data.Vert = (bspvertex_t *)	&pBsp[tBsp->directory[VertexArray].offset];
@@ -82,6 +74,7 @@ void Bsp::load(char *map)
 		normal_object[i] = (unsigned int)-1;
 
 	loaded = true;
+	return true;
 }
 
 /*
@@ -345,7 +338,11 @@ void Bsp::unload(Graphics &gfx)
 {
 	int mesh_index = 0;
 
-	delete [] vertex;
+	if (vertex != NULL)
+	{
+		delete [] vertex;
+		vertex = NULL;
+	}
 	for(int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
@@ -580,6 +577,9 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 		}
 	}
 
+	if (mesh_index == -1)
+		return;
+
 	for(int i = 0; i < 4; i++)
 	{
 		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index + i]);
@@ -587,7 +587,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 		// Render each row
 		gfx.SelectTexture(0, tex_object[face->material]);
-		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+//		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 		gfx.SelectTexture(2, normal_object[face->material]);
 		for( int row = 0; row < mesh_level; row++)
 		{
@@ -596,7 +596,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 				index_per_row, mesh_num_verts[mesh_index + i]);
 		}
 		gfx.DeselectTexture(2);
-		gfx.DeselectTexture(1);
+//		gfx.DeselectTexture(1);
 		gfx.DeselectTexture(0);
 
 
