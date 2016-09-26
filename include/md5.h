@@ -51,10 +51,10 @@ public:
 	void calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c);
 	void build_frame(md5_joint_t *joint, float *frame, md5_anim_t *anim);
 
-	vertex_t	vertex_array[7][2048];
-	int			index_array[7][2048];
-	int			num_index[7];
-	int			num_vertex[7];
+	vertex_t	vertex_array[16][2048];
+	int			index_array[16][2048];
+	int			num_index[16];
+	int			num_vertex[16];
 
 	md5_model_t *model;
 private:

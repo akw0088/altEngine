@@ -14,11 +14,14 @@ MD5Model::~MD5Model()
 	anim_list_t *plist = &anim_list;
 	for (; plist != NULL;)
 	{
-		delete plist->anim->aabb;
-		delete plist->anim->base;
-		delete plist->anim->frame;
-		delete plist->anim->hierarchy;
-		delete plist->anim;
+		if (plist->anim)
+		{
+			delete plist->anim->aabb;
+			delete plist->anim->base;
+			delete plist->anim->frame;
+			delete plist->anim->hierarchy;
+			delete plist->anim;
+		}
 		plist = plist->next;
 	}
 }
@@ -28,7 +31,8 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 	anim_list_t *plist = &anim_list;
 
 	printf("Loading md5 %s\n", md5file);
-	md5.load_md5(md5file);
+	if (md5.load_md5(md5file) != 0)
+		return;
 
 	// get bind pose vertex positions
 	for (int i = 0; i < md5.model->num_mesh; i++)

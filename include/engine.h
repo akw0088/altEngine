@@ -74,6 +74,8 @@ public:
 	int		frame_step;
 	MD5Model	zcc;
 	int testObj;
+	MD5Model	sentry;
+
 
 
 private:

@@ -58,13 +58,24 @@ void Engine::init(void *p1, void *p2)
 	//md5 crap
 	frame_step = 0;
 	char **animation = NULL;
-	char *anim1 = "media/md5/chaingun_idle.md5anim";
-	char *anim2 = "media/md5/chaingun_walk.md5anim";
-	animation = new char *[2];
-	animation[0] = anim1;
-	animation[1] = anim2;
-
-	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
+	animation = new char *[13];
+	animation[0] = "media/md5/chaingun_idle.md5anim";
+	animation[1] = "media/md5/chaingun_walk.md5anim";
+//	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
+	animation[0] = "media/md5/sentry/initial.md5anim";
+	animation[1] = "media/md5/sentry/fold.md5anim";
+	animation[2] = "media/md5/sentry/folded.md5anim";
+	animation[3] = "media/md5/sentry/idle_stand1.md5anim";
+	animation[4] = "media/md5/sentry/range_attack1.md5anim";
+	animation[5] = "media/md5/sentry/range_attackend.md5anim";
+	animation[6] = "media/md5/sentry/range_attackstart.md5anim";
+	animation[7] = "media/md5/sentry/talk_primary.md5anim";
+	animation[8] = "media/md5/sentry/turn_left.md5anim";
+	animation[9] = "media/md5/sentry/turn_right.md5anim";
+	animation[10] = "media/md5/sentry/unfold.md5anim";
+	animation[11] = "media/md5/sentry/walk1.md5anim";
+	animation[12] = "media/md5/sentry/walk1_pain.md5anim";
+	sentry.load("media/md5/sentry/sentry.md5mesh", (char **)animation, 13, gfx);
 
 
 
@@ -515,7 +526,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		zcc.render(gfx, frame_step);
+		sentry.render(gfx, frame_step);
 	}
 }
 
@@ -603,7 +614,7 @@ void Engine::debug_messages(double last_frametime)
 
 void Engine::destroy_buffers()
 {
-	zcc.destroy_buffers(gfx);
+	sentry.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -2491,7 +2502,7 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
-		zcc.select_animation(atoi(data));
+		sentry.select_animation(atoi(data));
 		return;
 	}
 
