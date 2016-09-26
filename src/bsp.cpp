@@ -122,7 +122,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 	mesh_num_verts = new int [num_meshes];
 	mesh_num_indexes = new int [num_meshes];
 
-	mesh_vao = new unsigned int [num_meshes];
 	mesh_vertex_vbo = new unsigned int [num_meshes];
 	mesh_index_vbo = new unsigned int [num_meshes];
 
@@ -408,13 +407,9 @@ void Bsp::unload(Graphics &gfx)
 
 	for(int i = 0; i < num_meshes; i++)
 	{
-#ifndef DIRECTX
-		gfx.DeleteVertexArrayObject(mesh_vao[i]);
-#endif
 		gfx.DeleteIndexBuffer(mesh_index_vbo[i]);
 		gfx.DeleteVertexBuffer(mesh_vertex_vbo[i]);
 	}
-	delete [] mesh_vao;
 	delete [] mesh_index_vbo;
 	delete [] mesh_vertex_vbo;
 	num_meshes = 0;
