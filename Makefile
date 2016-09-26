@@ -34,9 +34,18 @@ OBJS := $(SOURCES:.cpp=.o)
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
 #CPP := g++
 CPP := clang++
-CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall
-LFLAGS_OSX := -lX11 -lGL -lGLU -lc -framework OpenAL
-LFLAGS := -lX11 -lGL -lGLU -lopenal
+
+#AddressSanitizer
+#-O1 -g -fsanitize=address -fno-omit-frame-pointer
+
+# clang memory sanitizer -- ie the slow one
+#-fsanitize=memory -fno-omit-frame-pointer
+#-fsanitize-memory-track-origins
+#-fsanitize-memory-use-after-dtor
+
+CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall -O1 -g -fsanitize=address -fno-omit-frame-pointer
+LFLAGS := -lX11 -lGL -lGLU -lc -framework OpenAL
+LFLAGS_LINUX := -lX11 -lGL -lGLU -lopenal
 LIBS := -L/usr/X11R6/lib/ 
 
 all: altEngine

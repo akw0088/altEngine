@@ -36,9 +36,10 @@
 #endif
 
 #ifdef __OBJC__
-	#define glGenVertexArrays glGenVertexArraysAPPLE
-	#define glBindVertexArray glBindVertexArrayAPPLE
-	#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
+
+//	#define glGenVertexArrays glGenVertexArraysAPPLE
+//	#define glBindVertexArray glBindVertexArrayAPPLE
+//	#define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 	#define glFramebufferTexture glFramebufferTextureEXT
 	#define glFramebufferTexture glFramebufferTextureEXT
 #endif
@@ -52,8 +53,10 @@
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
 		#ifdef __OBJC__
-			#include <OpenGL/glext.h>
-			#include <OpenGL/gl.h>
+            #define __gl_h_
+            #include <OpenGL/gl3.h>
+            #include <OpenGL/glext.h>
+            //#include <OpenGL/gl.h>
 			#include <OpenGL/glu.h>
 		#else
 			#include <GL/gl.h>
@@ -84,15 +87,6 @@
 	typedef	int SOCKET;
 	#define SOCKET_ERROR	-1
 	#define INVALID_SOCKET	-1
-#endif
-
-#ifdef __linux__
-	//#include <linux/in.h>
-#endif
-
-#ifdef MAC
-	#include <Carbon/Carbon.h>
-	#include <AGL/agl.h>
 #endif
 
 //#define SHADOWVOL

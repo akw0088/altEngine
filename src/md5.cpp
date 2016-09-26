@@ -163,6 +163,7 @@ int MD5::load_md5(char *file)
 	model->num_joint = num_joint;
 	model->num_mesh = num_mesh;
 	delete [] data;
+	loaded = true;
 	return 0;
 }
 

@@ -1347,7 +1347,7 @@ void Engine::client_step()
 
 	// get entity information
 #ifndef __linux__
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #else
 	int size = 0;
 #endif
@@ -1807,7 +1807,7 @@ void Engine::resize(int width, int height)
 
 void Engine::load_sounds()
 {
-	wave_t wave[8] = { 0 };
+	wave_t wave[8] = { {0} };
 
 
 	//load player sounds

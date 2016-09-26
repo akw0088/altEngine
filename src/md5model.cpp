@@ -159,6 +159,9 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	anim_list_t *plist = &anim_list;
 	int k = 0;
 
+	if (loaded == false)
+		return;
+
 	for (; plist != NULL;)
 	{
 		md5_anim_t *anim;

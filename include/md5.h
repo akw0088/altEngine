@@ -15,11 +15,16 @@ class MD5
 public:
 	MD5()
 	{
+		loaded = false;
 		model = new md5_model_t;
 	}
 
 	~MD5()
 	{
+		if (loaded == false)
+		{
+			return;
+		}
 		delete [] model->joint;
 		for(int i = 0; i < model->num_mesh; i++)
 		{
@@ -55,7 +60,7 @@ public:
 	int			index_array[32][8196];
 	int			num_index[32];
 	int			num_vertex[32];
-
+	bool			loaded;
 	md5_model_t *model;
 private:
 };

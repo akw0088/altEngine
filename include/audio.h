@@ -30,7 +30,7 @@ private:
 	ALCdevice		*device;
 	ALCcontext		*context;
 
-#ifndef __linux__
+#ifdef WIN32
 	unsigned int	slot, effect, filter;
 #endif
 

@@ -97,8 +97,8 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 		*iComponents = GL_RGBA8;
 		break;
 	case 1:
-		*eFormat = GL_LUMINANCE;
-		*iComponents = GL_LUMINANCE8;
+//		*eFormat = GL_LUMINANCE;
+//		*iComponents = GL_LUMINANCE8;
 		break;
 	};
 #else
