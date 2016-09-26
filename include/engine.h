@@ -67,14 +67,16 @@ public:
 
 	void handle_weapons(Player &player);
 	void set_shadow_matrix(matrix4 &mvp);
+	void load_md5();
 
 //temp
 	int xres, yres;
-	// md5 stuff
+	int testObj;
+
 	int		frame_step;
 	MD5Model	zcc;
-	int testObj;
 	MD5Model	sentry;
+	MD5Model	zsec_shotgun;
 
 
 

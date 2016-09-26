@@ -28,12 +28,14 @@ public:
 private:
 	MD5			md5;
 	md5_buffer_t *buffer[16];
-	int num_buffer;
 	md5_buffer_t *current_buffer;
 	anim_list_t anim_list;
 	md5_anim_t *current_anim;
 	int			*tex_object;
 	int			*normal_object;
+	bool		loaded;
+	int num_buffer;
+
 };
 
 #endif

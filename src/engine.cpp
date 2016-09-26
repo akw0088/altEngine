@@ -55,27 +55,7 @@ void Engine::init(void *p1, void *p2)
 	spawn = -1;
 	testObj = 0;
 
-	//md5 crap
-	frame_step = 0;
-	char **animation = NULL;
-	animation = new char *[13];
-	animation[0] = "media/md5/chaingun_idle.md5anim";
-	animation[1] = "media/md5/chaingun_walk.md5anim";
-//	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
-	animation[0] = "media/md5/sentry/initial.md5anim";
-	animation[1] = "media/md5/sentry/fold.md5anim";
-	animation[2] = "media/md5/sentry/folded.md5anim";
-	animation[3] = "media/md5/sentry/idle_stand1.md5anim";
-	animation[4] = "media/md5/sentry/range_attack1.md5anim";
-	animation[5] = "media/md5/sentry/range_attackend.md5anim";
-	animation[6] = "media/md5/sentry/range_attackstart.md5anim";
-	animation[7] = "media/md5/sentry/talk_primary.md5anim";
-	animation[8] = "media/md5/sentry/turn_left.md5anim";
-	animation[9] = "media/md5/sentry/turn_right.md5anim";
-	animation[10] = "media/md5/sentry/unfold.md5anim";
-	animation[11] = "media/md5/sentry/walk1.md5anim";
-	animation[12] = "media/md5/sentry/walk1_pain.md5anim";
-	sentry.load("media/md5/sentry/sentry.md5mesh", (char **)animation, 13, gfx);
+	load_md5();
 
 
 
@@ -188,6 +168,93 @@ void Engine::load(char *level)
 
 #endif
 
+}
+
+void Engine::load_md5()
+{
+	char **animation = NULL;
+
+	frame_step = 0;
+	animation = new char *[50];
+	animation[0] = "media/md5/chaingun_idle.md5anim";
+	animation[1] = "media/md5/chaingun_walk.md5anim";
+	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
+
+	animation[0] = "media/md5/sentry/initial.md5anim";
+	animation[1] = "media/md5/sentry/fold.md5anim";
+	animation[2] = "media/md5/sentry/folded.md5anim";
+	animation[3] = "media/md5/sentry/idle_stand1.md5anim";
+	animation[4] = "media/md5/sentry/range_attack1.md5anim";
+	animation[5] = "media/md5/sentry/range_attackend.md5anim";
+	animation[6] = "media/md5/sentry/range_attackstart.md5anim";
+	animation[7] = "media/md5/sentry/talk_primary.md5anim";
+	animation[8] = "media/md5/sentry/turn_left.md5anim";
+	animation[9] = "media/md5/sentry/turn_right.md5anim";
+	animation[10] = "media/md5/sentry/unfold.md5anim";
+	animation[11] = "media/md5/sentry/walk1.md5anim";
+	animation[12] = "media/md5/sentry/walk1_pain.md5anim";
+	sentry.load("media/md5/sentry/sentry.md5mesh", (char **)animation, 13, gfx);
+
+	animation[0] = "media/md5/sentry/initial.md5anim";
+	animation[1] = "media/md5/sentry/fold.md5anim";
+	animation[2] = "media/md5/sentry/folded.md5anim";
+	animation[3] = "media/md5/sentry/idle_stand1.md5anim";
+	animation[4] = "media/md5/sentry/range_attack1.md5anim";
+	animation[5] = "media/md5/sentry/range_attackend.md5anim";
+	animation[6] = "media/md5/sentry/range_attackstart.md5anim";
+	animation[7] = "media/md5/sentry/talk_primary.md5anim";
+	animation[8] = "media/md5/sentry/turn_left.md5anim";
+	animation[9] = "media/md5/sentry/turn_right.md5anim";
+	animation[10] = "media/md5/sentry/unfold.md5anim";
+	animation[11] = "media/md5/sentry/walk1.md5anim";
+	animation[12] = "media/md5/sentry/walk1_pain.md5anim";
+
+	int i = 0;
+	animation[i++] = "media/md5/zsec_shotgun/af_pose.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crate_up_A.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crate_up_B.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crate_up_C.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crate_up_D.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack_aim.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack_end.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack_loop.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/evade_left.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/evade_right.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/leftarmpain.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/lower.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/raise.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/rightarmpain.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/run.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/shotgun_activate_step_right.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/shotgun_crouch_left_pain.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/shotgun_crouch_right_pain.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/shotgun_step_left.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/shotgun_step_right.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/sight.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/stand.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/stand_aim.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/stand_fire.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/walk.md5anim";
+	/*
+	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_A.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_B.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_C.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_D.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_A.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_B.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_C.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_D.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_A.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_B.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_C.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_D.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_A.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_B.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_C.md5anim";
+	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_D.md5anim";
+*/
+	zsec_shotgun.load("media/md5/zsec_shotgun/zsecshotgun.md5mesh", (char **)animation, i - 1, gfx);
 }
 
 void Engine::render(double last_frametime)
@@ -526,7 +593,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		sentry.render(gfx, frame_step);
+		zsec_shotgun.render(gfx, frame_step);
 	}
 }
 
@@ -614,7 +681,7 @@ void Engine::debug_messages(double last_frametime)
 
 void Engine::destroy_buffers()
 {
-	sentry.destroy_buffers(gfx);
+	zsec_shotgun.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -2502,7 +2569,7 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
-		sentry.select_animation(atoi(data));
+		zsec_shotgun.select_animation(atoi(data));
 		return;
 	}
 

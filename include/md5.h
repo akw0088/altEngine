@@ -5,7 +5,7 @@
 
 typedef struct anim_list_s
 {
-	char name[128];
+	char name[256];
 	struct md5_anim_t *anim;
 	struct anim_list_s *next;
 } anim_list_t;
@@ -51,10 +51,10 @@ public:
 	void calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c);
 	void build_frame(md5_joint_t *joint, float *frame, md5_anim_t *anim);
 
-	vertex_t	vertex_array[16][2048];
-	int			index_array[16][2048];
-	int			num_index[16];
-	int			num_vertex[16];
+	vertex_t	vertex_array[32][8196];
+	int			index_array[32][8196];
+	int			num_index[32];
+	int			num_vertex[32];
 
 	md5_model_t *model;
 private:

@@ -6,11 +6,14 @@
 
 MD5Model::MD5Model()
 {
-
+	loaded = false;
 }
 
 MD5Model::~MD5Model() 
 {
+	if (loaded == false)
+		return;
+
 	anim_list_t *plist = &anim_list;
 	for (; plist != NULL;)
 	{
@@ -52,6 +55,7 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 		}
 	}
 
+	num_buffer = 0;
 	for (;plist != NULL;)
 	{
 		buffer[num_buffer++] = new md5_buffer_t;
@@ -63,6 +67,7 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 		plist = plist->next;
 	}
 	current_buffer = buffer[num_buffer-1];
+	loaded = true;
 	printf("Done\n");
 }
 
@@ -131,6 +136,9 @@ void MD5Model::select_animation(int index)
 {
 	anim_list_t *plist = &anim_list;
 
+	if (loaded == false)
+		return;
+
 
 	if (index > num_buffer - 1)
 	{
@@ -191,6 +199,8 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 
 void MD5Model::render(Graphics &gfx, int frame_step)
 {
+	if (loaded == false)
+		return;
 	frame_step = frame_step % current_anim->num_frame;
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
