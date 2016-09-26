@@ -64,6 +64,9 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 
 void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *buffer)
 {
+	static int			temp_index[8192];
+	static vertex_t		temp_vertex[8192];
+
 	buffer->frame_index = new int *[anim->num_frame];
 	buffer->count_index = new int *[anim->num_frame];
 	buffer->frame_vertex = new int *[anim->num_frame];
@@ -79,10 +82,10 @@ void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *b
 		{
 			int num_index, num_vertex;
 
-			md5.PrepareMesh(i, buffer->frame[j], num_index, buffer->index_array, buffer->vertex_array, num_vertex);
-			buffer->frame_index[j][i] = gfx.CreateIndexBuffer(buffer->index_array, num_index);
+			md5.PrepareMesh(i, buffer->frame[j], num_index, temp_index, temp_vertex, num_vertex);
+			buffer->frame_index[j][i] = gfx.CreateIndexBuffer(temp_index, num_index);
 			buffer->count_index[j][i] = num_index;
-			buffer->frame_vertex[j][i] = gfx.CreateVertexBuffer(buffer->vertex_array, num_vertex);
+			buffer->frame_vertex[j][i] = gfx.CreateVertexBuffer(temp_vertex, num_vertex);
 			buffer->count_vertex[j][i] = num_vertex;
 		}
 	}
