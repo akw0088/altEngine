@@ -497,7 +497,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	if (light_list.size())
 	{
 		int num_shadow_cube = 0;
-		for (int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
 			{
@@ -685,7 +685,7 @@ void Engine::destroy_buffers()
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
-		delete snd_wave[i].data;
+		delete [] snd_wave[i].data;
 	}
 }
 
@@ -1014,7 +1014,7 @@ bool Engine::map_collision(RigidBody &body)
 //O(N^2)
 bool Engine::body_collision(RigidBody &body)
 {
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i] == body.entity)
 			continue;
@@ -2368,7 +2368,7 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "target %s\n", data);
 		menu.print(msg);
 
-		for (int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
 				continue;
@@ -2410,7 +2410,7 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "push %s\n", data);
 		menu.print(msg);
 
-		for (int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (!strcmp(entity_list[i]->target_name, data))
 			{
@@ -2794,11 +2794,11 @@ void Engine::handle_weapons(Player &player)
 			vec3 end = player.entity->position + forward * distance;
 
 
-			Entity *entity = new Entity();
-			entity->decal = new Decal(entity);
-			entity->position = end;
+//			Entity *entity = new Entity();
+//			entity->decal = new Decal(entity);
+//			entity->position = end;
 //			entity->decal->normal = normal;
-			entity_list.push_back(entity);
+//			entity_list.push_back(entity);
 
 			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
 		}

@@ -19,10 +19,10 @@ MD5Model::~MD5Model()
 	{
 		if (plist->anim)
 		{
-			delete plist->anim->aabb;
-			delete plist->anim->base;
-			delete plist->anim->frame;
-			delete plist->anim->hierarchy;
+			delete [] plist->anim->aabb;
+			delete [] plist->anim->base;
+			delete [] plist->anim->frame;
+			delete [] plist->anim->hierarchy;
 			delete plist->anim;
 		}
 		plist = plist->next;

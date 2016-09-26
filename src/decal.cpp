@@ -14,11 +14,12 @@ Decal::Decal(Entity *entity)
 
 void Decal::init(Graphics &gfx)
 {
-	decal_tex = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)"media/bullethole.tga");
+//	decal_tex = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)"media/bullethole.tga");
 }
 
 void Decal::render(Graphics &gfx, Global &global)
 {
+/*
 	if (decal_tex == -1)
 		init(gfx);
 
@@ -29,5 +30,6 @@ void Decal::render(Graphics &gfx, Global &global)
 	gfx.SelectTexture(0, decal_tex);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 	gfx.DeselectTexture(0);
+*/
 }
 

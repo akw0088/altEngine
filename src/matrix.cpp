@@ -698,25 +698,3 @@ void matrix4::mat_bottom(matrix4 &mvp, vec3 &position)
 	mvp.m[15] = 1.0f;
 }
 
-
-void matrix4::mat_cube(float *cube, vec3 &position)
-{
-	matrix4 mvp[6];
-	int j = 0;
-
-	// Generate matrices
-	mat_right(mvp[0], position);
-	mat_left(mvp[1], position);
-	mat_forward(mvp[2], position);
-	mat_backward(mvp[3], position);
-	mat_top(mvp[4], position);
-	mat_bottom(mvp[5], position);
-
-	// Combine them, could probably generate them directly
-	for (int i = 0; i < 96; i++)
-	{
-		cube[i] = mvp[j++].m[i];
-		if (j == 16)
-			j = 0;
-	}
-}

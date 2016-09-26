@@ -345,7 +345,7 @@ void Bsp::unload(Graphics &gfx)
 {
 	int mesh_index = 0;
 
-	delete vertex;
+	delete [] vertex;
 	for(int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
