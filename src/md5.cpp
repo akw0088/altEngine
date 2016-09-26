@@ -138,22 +138,33 @@ int MD5::load_md5(char *file)
 	if (mesh == NULL)
 	{
 		perror("malloc() failed");
+		delete [] joint;
 		return -1;
 	}
 
 
 	if ( parse_joint(pjoint, joint, num_joint) )
+	{
+		delete [] joint;
+		delete [] mesh;
 		return -1;
+	}
 
 	for(i = 0; i < num_mesh; i++)
 	{
 		if ( parse_mesh(pmesh, &mesh[i]) )
+		{
+			delete [] joint;
+			delete [] mesh;
 			return -1;
+		}
 
 		pmesh = strstr(pmesh + 6, "mesh {");
 		if (pmesh == NULL && i + 1 < num_mesh)
 		{
 			debugf("Error: Unexpected end of mesh data\n");
+			delete [] joint;
+			delete [] mesh;
 			return -1;
 		}
 	}
@@ -246,6 +257,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 	if (triangle == NULL)
 	{
 		perror("malloc failed");
+		delete [] vertex;
 		return 1;
 	}
 
@@ -253,6 +265,8 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 	if (weight == NULL)
 	{
 		perror("malloc failed");
+		delete [] vertex;
+		delete [] triangle;
 		return 1;
 	}
 
@@ -271,6 +285,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		if (pdata == NULL)
 		{
 			debugf("Error: unexpected end of vert data\n");
+			delete [] vertex;
+			delete [] triangle;
+			delete [] weight;
 			return 1;
 		}
 
@@ -280,6 +297,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 			if (index != i)
 			{
 				debugf("Error: vertex not in expected order\n");
+				delete [] vertex;
+				delete [] triangle;
+				delete [] weight;
 				return 1;
 			}
 
@@ -291,6 +311,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		else
 		{
 			debugf("Error reading vertex %d\n", i);
+			delete [] vertex;
+			delete [] triangle;
+			delete [] weight;
 			return 1;
 		}
 		pdata = strstr(pdata + 5, "vert ");
@@ -307,6 +330,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		if (pdata == NULL)
 		{
 			debugf("Error: unexpected end of tri data\n");
+			delete [] vertex;
+			delete [] triangle;
+			delete [] weight;
 			return 1;
 		}
 
@@ -316,6 +342,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 			if (index != i)
 			{
 				debugf("Error: triangle not in expected order\n");
+				delete [] vertex;
+				delete [] triangle;
+				delete [] weight;
 				return 1;
 			}
 
@@ -326,6 +355,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		else
 		{
 			debugf("Error reading triangle %d\n", i);
+			delete [] vertex;
+			delete [] triangle;
+			delete [] weight;
 			return 1;
 		}
 		pdata = strstr(pdata + 4, "tri ");
@@ -345,6 +377,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		if (pdata == NULL)
 		{
 			debugf("Error: unexpected end of weight data\n");
+			delete [] vertex;
+			delete [] triangle;
+			delete [] weight;
 			return 1;
 		}
 
@@ -354,6 +389,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 			if (index != i)
 			{
 				debugf("Error: weight not in expected order\n");
+				delete [] vertex;
+				delete [] triangle;
+				delete [] weight;
 				return 1;
 			}
 
@@ -366,6 +404,9 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 		else
 		{
 			debugf("Error reading weight %d\n", i);
+			delete [] vertex;
+			delete [] triangle;
+			delete [] weight;
 			return 1;
 		}
 		pdata = strstr(pdata + 7, "weight ");
@@ -434,6 +475,7 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	if (aabb == NULL)
 	{
 		perror("malloc() failed");
+		delete [] hierarchy;
 		return 1;
 	}
 
@@ -441,6 +483,8 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	if (base == NULL)
 	{
 		perror("malloc() failed");
+		delete [] hierarchy;
+		delete [] aabb;
 		return 1;
 	}
 
@@ -448,6 +492,9 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	if (frame == NULL)
 	{
 		perror("malloc() failed");
+		delete [] hierarchy;
+		delete [] aabb;
+		delete [] base;
 		return 1;
 	}
 
@@ -455,6 +502,10 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	pdata = strstr(data, "hierarchy {");
 	if (parse_hierarchy(pdata, num_joint, hierarchy))
 	{
+		delete [] hierarchy;
+		delete [] aabb;
+		delete [] base;
+		delete [] frame;
 		return 1;
 	}
 
@@ -467,6 +518,10 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	pdata = strstr(data, "bounds {");
 	if (parse_bounds(pdata, num_frame, aabb))
 	{
+		delete [] hierarchy;
+		delete [] aabb;
+		delete [] base;
+		delete [] frame;
 		return 1;
 	}
 
@@ -477,6 +532,10 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	pdata = strstr(data, "baseframe {");
 	if (parse_base(pdata, num_joint, base))
 	{
+		delete [] hierarchy;
+		delete [] aabb;
+		delete [] base;
+		delete [] frame;
 		return 1;
 	}
 
@@ -487,6 +546,10 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	pdata = strstr(data, "frame 0 {");
 	if (parse_frame(pdata, num_frame, num_ani, frame))
 	{
+		delete [] hierarchy;
+		delete [] aabb;
+		delete [] base;
+		delete [] frame;
 		return 1;
 	}
 

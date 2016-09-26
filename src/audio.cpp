@@ -581,8 +581,11 @@ char *get_file(char *filename)
     buffer = new char [file_size + 1];
     bytes_read = (int)fread(buffer, sizeof(char), file_size, file);
     if (bytes_read != file_size)
-        return 0;
-    
+    {
+	delete [] buffer;
+	fclose(file);
+	return 0;
+    }
     fclose(file);
     buffer[file_size] = '\0';
     return buffer;
@@ -596,6 +599,7 @@ int write_file(char *filename, char *bytes, int size)
     if (fp == NULL)
     {
         perror("Unable to open file for writing");
+	fclose(fp);
         return -1;
     }
     
@@ -604,6 +608,7 @@ int write_file(char *filename, char *bytes, int size)
     if (ret != size)
     {
         printf("fwrite didnt write all data\n");
+	fclose(fp);
         return -1;
     }
     fclose(fp);

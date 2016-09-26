@@ -69,17 +69,24 @@ byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, 
 	sDepth = tgaHeader.bits / 8;
     
 	if(tgaHeader.bits != 8 && tgaHeader.bits != 24 && tgaHeader.bits != 32)
+	{
+		fclose(pFile);
 		return NULL;
+	}
 
 	lImageSize = tgaHeader.width * tgaHeader.height * sDepth;
 
 	pBits = new byte [lImageSize * sizeof(byte)];
 	if(pBits == NULL)
+	{
+		fclose(pFile);
 		return NULL;
+	}
 
 	if(fread(pBits, lImageSize, 1, pFile) != 1)
 	{
 		delete [] pBits;
+		fclose(pFile);
 		return NULL;
 	}
 	fclose(pFile);
