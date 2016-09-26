@@ -39,6 +39,10 @@ INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/includ
 CPP := g++
 #CPP := clang++
 
+#coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
+#cov-configure --comptype gcc --compiler [path to compiler]
+#cov-build --dir cov-int make
+
 #AddressSanitizer
 #-O1 -g -fsanitize=address -fno-omit-frame-pointer
 
