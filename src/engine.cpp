@@ -2785,7 +2785,7 @@ void Engine::handle_weapons(Player &player)
 			player.entity->model->getForwardVector(forward);
 
 			map.hitscan(player.entity->position, forward, distance);
-			vec3 end = player.entity->position + forward * distance;
+			//vec3 end = player.entity->position + forward * distance;
 
 
 //			Entity *entity = new Entity();

@@ -940,7 +940,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 	fLog = fopen("infolog.txt", "a");
 	fprintf(fLog, "OpenGL Version %s\n", glGetString(GL_VERSION));
 	fprintf(fLog, "OpenGL Renderer %s\n", glGetString(GL_RENDERER));
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_attrib);
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_attrib);
 	fprintf(fLog, "Max vertex attribs %d\n", max_attrib);
 
 	if (vertex_file)
@@ -994,7 +994,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 			fprintf(fLog, "Loaded geometry shader %s\n", geometry_file);
 		}
 
-		geometry_handle = glCreateShader(GL_GEOMETRY_SHADER_EXT);
+		geometry_handle = glCreateShader(GL_GEOMETRY_SHADER);
 		glShaderSource(geometry_handle, 1, &geometry_src, NULL);
 		glCompileShader(geometry_handle);
 		glGetShaderiv(geometry_handle, GL_COMPILE_STATUS, &success);

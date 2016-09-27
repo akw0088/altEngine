@@ -27,7 +27,7 @@ public:
 
 private:
 	MD5			md5;
-	md5_buffer_t *buffer[16];
+	md5_buffer_t *buffer[32];
 	md5_buffer_t *current_buffer;
 	anim_list_t anim_list;
 	md5_anim_t *current_anim;
