@@ -247,6 +247,7 @@ void Engine::load_md5()
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_D.md5anim";
 */
 	zsec_shotgun.load("media/md5/zsec_shotgun/zsecshotgun.md5mesh", (char **)animation, i - 1, gfx);
+	delete [] animation;
 }
 
 void Engine::render(double last_frametime)
@@ -1458,6 +1459,7 @@ button_t Engine::GetKeyState(int keystate)
 {
 	button_t kb;
 
+	memset((void *)&kb, 0, sizeof(button_t));
 	if (keystate & 1)
 		kb.leftbutton = true;
 	else

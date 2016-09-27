@@ -599,7 +599,6 @@ int write_file(char *filename, char *bytes, int size)
     if (fp == NULL)
     {
         perror("Unable to open file for writing");
-	fclose(fp);
         return -1;
     }
     

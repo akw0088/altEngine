@@ -1,6 +1,6 @@
 struct md5_joint_t
 {
-	char		name[64];
+	char		name[256];
 	int		parent;
 
 	vec3		pos;

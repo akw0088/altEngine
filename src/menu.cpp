@@ -437,5 +437,5 @@ Menu::~Menu()
 	delete [] menu_wave.data;
 	delete [] delta_wave.data;
 
-	state_list.empty();
+	state_list.clear();
 }
