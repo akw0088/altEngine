@@ -431,7 +431,7 @@ BOOL setupPixelFormat(HDC hdc)
 unsigned int getTimeStamp(void)
 {
 	unsigned int timestamp = 0;
-
+#ifndef _WIN64
 	_asm
 	{
 		// rdtsc returns 64bit "timestamp" in edx:eax, timestamp is really a count of clock cycles
@@ -439,13 +439,17 @@ unsigned int getTimeStamp(void)
 		// we are only interested in small time intervals, so highword is worthless,
 		mov	DWORD PTR timestamp, eax
 	}
+#endif
 	return timestamp;
 }
 
 void RedirectIOToConsole()
 {
-	int	hConHandle;
-	long	lStdHandle;
+#ifndef _WIN64
+
+	HANDLE	hConHandle;
+	HANDLE	lStdHandle;
+	intptr_t ipt;
 	FILE	*fp;
 	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
 
@@ -460,15 +464,16 @@ void RedirectIOToConsole()
 	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
 	// redirect unbuffered STDOUT to the console
-	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+	lStdHandle = (HANDLE)GetStdHandle(STD_OUTPUT_HANDLE);
 	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+
 
 	fp = _fdopen( hConHandle, "w" );
 	*stdout = *fp;
 	setvbuf( stdout, NULL, _IONBF, 0 );
 
 	// redirect unbuffered STDIN to the console
-	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+	lStdHandle = (HANDLE)GetStdHandle(STD_INPUT_HANDLE);
 	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
 	fp = _fdopen( hConHandle, "r" );
@@ -476,7 +481,7 @@ void RedirectIOToConsole()
 	setvbuf( stdin, NULL, _IONBF, 0 );
 
 	// redirect unbuffered STDERR to the console
-	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+	lStdHandle = (HANDLE)GetStdHandle(STD_ERROR_HANDLE);
 	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 	fp = _fdopen( hConHandle, "w" );
 	*stderr = *fp;
@@ -487,6 +492,7 @@ void RedirectIOToConsole()
 
 	//Fix issue on windows 10
 	freopen("CONOUT$", "w", stdout);
+#endif
 }
 
 
