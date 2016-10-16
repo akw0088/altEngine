@@ -13,28 +13,8 @@ typedef struct anim_list_s
 class MD5
 {
 public:
-	MD5()
-	{
-		loaded = false;
-		model = new md5_model_t;
-	}
-
-	~MD5()
-	{
-		if (loaded == false)
-		{
-			return;
-		}
-		delete [] model->joint;
-		for(int i = 0; i < model->num_mesh; i++)
-		{
-			delete [] model->mesh[i].triangle;
-			delete [] model->mesh[i].vertex;
-			delete [] model->mesh[i].weight;
-		}
-		delete [] model->mesh;
-		delete model;
-	}
+	MD5();
+	~MD5();
 
 	int load_md5(char *file);
 	int load_md5_animation(char *file, anim_list_t *plist);

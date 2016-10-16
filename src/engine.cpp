@@ -171,7 +171,7 @@ void Engine::load_md5()
 	animation[0] = "media/md5/chaingun_idle.md5anim";
 	animation[1] = "media/md5/chaingun_walk.md5anim";
 	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
-
+/*
 	animation[0] = "media/md5/sentry/initial.md5anim";
 	animation[1] = "media/md5/sentry/fold.md5anim";
 	animation[2] = "media/md5/sentry/folded.md5anim";
@@ -228,7 +228,7 @@ void Engine::load_md5()
 	animation[i++] = "media/md5/zsec_shotgun/stand_aim.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/stand_fire.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/walk.md5anim";
-	/*
+
 	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_A.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_B.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_C.md5anim";
@@ -245,8 +245,9 @@ void Engine::load_md5()
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_B.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_C.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_D.md5anim";
-*/
+
 	zsec_shotgun.load("media/md5/zsec_shotgun/zsecshotgun.md5mesh", (char **)animation, i - 1, gfx);
+	*/
 	delete [] animation;
 }
 
@@ -674,7 +675,7 @@ void Engine::debug_messages(double last_frametime)
 
 void Engine::destroy_buffers()
 {
-	zsec_shotgun.destroy_buffers(gfx);
+	zcc.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -1340,7 +1341,7 @@ void Engine::client_step()
 
 	// get entity information
 #ifndef __linux__
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), ( int *)&socksize);
 #else
 	int size = 0;
 #endif
