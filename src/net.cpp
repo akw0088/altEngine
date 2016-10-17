@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void Net::bind(char *address, int port)
+int Net::bind(char *address, int port)
 {
 	int sndbuf;
 	int rcvbuf;
@@ -13,7 +13,8 @@ void Net::bind(char *address, int port)
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sockfd == -1)
 	{
-		throw("socket error");
+		debugf("socket error");
+		return -1;
 	}
 
 	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
@@ -54,9 +55,11 @@ void Net::bind(char *address, int port)
 
 	if ( (::bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) == -1 )
 	{
-		throw("bind error");
+		debugf("bind error");
+		return -1;
 	}
 	printf("bound on: %s:%d\n", inet_ntoa(servaddr.sin_addr), htons(servaddr.sin_port));
+	return 0;
 }
 
 int Net::send(char *buffer, int size)
@@ -125,7 +128,7 @@ int Net::sendto(char *buff, int size, char *to)
 	return ::sendto(sockfd, buff, size, 0, (sockaddr *)&addr, sock_length); 
 }
 
-void Net::strtoaddr(char *str, sockaddr_in &addr)
+int Net::strtoaddr(char *str, sockaddr_in &addr)
 {
 	char ip[80] = { 0 };
 	int a,b,c,d;
@@ -144,15 +147,14 @@ void Net::strtoaddr(char *str, sockaddr_in &addr)
 	}
 	else
 	{
-		char err[LINE_SIZE];
-
-		snprintf(err, LINE_SIZE, "strtoaddr() invalid address %s", str);
-		throw err;
+		debugf("strtoaddr() invalid address %s", str);
+		return -1;
 	}
 	addr.sin_port = htons(port);
+	return 0;
 }
 
-void Net::connect(char *server, int port)
+int Net::connect(char *server, int port)
 {
 	int sndbuf;
 	int rcvbuf;
@@ -161,7 +163,8 @@ void Net::connect(char *server, int port)
 
 	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
-		throw("socket error");
+		debugf("socket error");
+		return -1;
 	}
 
 	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
@@ -200,17 +203,21 @@ void Net::connect(char *server, int port)
 #endif
 	if ( ret == 0)
 	{
-		throw("inet_pton invalid server.");
+		debugf("inet_pton invalid server");
+		return -1;
 	}
 	else if (ret == -1)
 	{
-		throw("inet_pton error.");
+		debugf("inet_pton error");
+		return -1;
 	}
 
 	if (::connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) == -1)
 	{
-		throw("connect error");
+		debugf("connect error");
+		return -1;
 	}
+	return 0;
 }
 
 
