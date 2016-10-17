@@ -4,6 +4,28 @@
 #define new DEBUG_NEW
 #endif
 
+MD5::MD5()
+{
+	loaded = false;
+	model = new md5_model_t;
+}
+
+MD5::~MD5()
+{
+	if (loaded == false)
+	{
+		return;
+	}
+	delete[] model->joint;
+	for (int i = 0; i < model->num_mesh; i++)
+	{
+		delete[] model->mesh[i].triangle;
+		delete[] model->mesh[i].vertex;
+		delete[] model->mesh[i].weight;
+	}
+	delete[] model->mesh;
+	delete model;
+}
 
 void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out)
 {

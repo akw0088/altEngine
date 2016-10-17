@@ -1,4 +1,5 @@
 #include "include.h"
+#include <stack>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,6 +12,8 @@ MD5Model::MD5Model()
 
 MD5Model::~MD5Model() 
 {
+	stack<anim_list_t *> plist_stack;
+
 	if (loaded == false)
 		return;
 
@@ -25,7 +28,14 @@ MD5Model::~MD5Model()
 			delete [] plist->anim->hierarchy;
 			delete plist->anim;
 		}
+		plist_stack.push(plist);
 		plist = plist->next;
+	}
+
+	while (plist_stack.size())
+	{
+		delete plist_stack.top();
+		plist_stack.pop();
 	}
 }
 
@@ -184,9 +194,16 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 		delete [] buffer[k]->frame_vertex;
 		delete [] buffer[k]->count_vertex;
 
+		delete[] plist->anim->hierarchy;
+		delete[] plist->anim->aabb;
+		delete[] plist->anim->base;
+		delete[] plist->anim->frame;
+
+		delete plist->anim;
 		plist = plist->next;
 		k++;
 	}
+
 	
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
@@ -197,6 +214,11 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	delete[] tex_object;
 	delete[] normal_object;
 
+	for (int i = 0; i < num_buffer; i++)
+	{
+		delete buffer[i];
+	}
+	loaded = false;
 }
 
 

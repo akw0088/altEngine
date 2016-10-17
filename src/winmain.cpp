@@ -446,10 +446,8 @@ unsigned int getTimeStamp(void)
 void RedirectIOToConsole()
 {
 #ifndef _WIN64
-
-	HANDLE	hConHandle;
-	HANDLE	lStdHandle;
-	intptr_t ipt;
+	int	hConHandle;
+	long	lStdHandle;
 	FILE	*fp;
 	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
 
@@ -464,16 +462,15 @@ void RedirectIOToConsole()
 	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
 	// redirect unbuffered STDOUT to the console
-	lStdHandle = (HANDLE)GetStdHandle(STD_OUTPUT_HANDLE);
+	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
 	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-
 
 	fp = _fdopen( hConHandle, "w" );
 	*stdout = *fp;
 	setvbuf( stdout, NULL, _IONBF, 0 );
 
 	// redirect unbuffered STDIN to the console
-	lStdHandle = (HANDLE)GetStdHandle(STD_INPUT_HANDLE);
+	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
 	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
 	fp = _fdopen( hConHandle, "r" );
@@ -481,7 +478,7 @@ void RedirectIOToConsole()
 	setvbuf( stdin, NULL, _IONBF, 0 );
 
 	// redirect unbuffered STDERR to the console
-	lStdHandle = (HANDLE)GetStdHandle(STD_ERROR_HANDLE);
+	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
 	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 	fp = _fdopen( hConHandle, "w" );
 	*stderr = *fp;

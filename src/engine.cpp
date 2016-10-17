@@ -171,7 +171,7 @@ void Engine::load_md5()
 	animation[0] = "media/md5/chaingun_idle.md5anim";
 	animation[1] = "media/md5/chaingun_walk.md5anim";
 	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
-
+/*
 	animation[0] = "media/md5/sentry/initial.md5anim";
 	animation[1] = "media/md5/sentry/fold.md5anim";
 	animation[2] = "media/md5/sentry/folded.md5anim";
@@ -228,7 +228,7 @@ void Engine::load_md5()
 	animation[i++] = "media/md5/zsec_shotgun/stand_aim.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/stand_fire.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/walk.md5anim";
-	/*
+
 	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_A.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_B.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_C.md5anim";
@@ -245,8 +245,9 @@ void Engine::load_md5()
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_B.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_C.md5anim";
 	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_D.md5anim";
-*/
+
 	zsec_shotgun.load("media/md5/zsec_shotgun/zsecshotgun.md5mesh", (char **)animation, i - 1, gfx);
+	*/
 	delete [] animation;
 }
 
@@ -674,7 +675,7 @@ void Engine::debug_messages(double last_frametime)
 
 void Engine::destroy_buffers()
 {
-	zsec_shotgun.destroy_buffers(gfx);
+	zcc.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -1339,10 +1340,14 @@ void Engine::client_step()
 	printf("client keystate %d\n", keystate);
 
 	// get entity information
-#ifndef __linux__
+#ifdef WIN32
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), ( int *)&socksize);
+#else
+#ifdef  MACOS
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #else
 	int size = 0;
+#endif
 #endif
 	if ( size > 0)
 	{
@@ -2623,9 +2628,6 @@ void Engine::bind(int port)
 	server_flag = true;
 }
 
-/*
-	network will use control tcp connection and udp streaming of gamestate
-*/
 void Engine::connect(char *serverip)
 {
 	clientmsg_t	clientmsg;
@@ -2634,53 +2636,46 @@ void Engine::connect(char *serverip)
 	client_flag = false;
 
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
-	try
+
+	clientmsg.sequence = sequence;
+	clientmsg.server_sequence = 0;
+	clientmsg.num_cmds = 0;
+	strcpy(reliable.msg, "connect");
+	reliable.sequence = sequence;
+	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],
+		&reliable,
+		sizeof(int) + strlen(reliable.msg) + 1);
+	clientmsg.length = HEADER_SIZE + clientmsg.num_cmds * sizeof(int)
+		+ sizeof(int) + strlen(reliable.msg) + 1;
+
+	net.connect(serverip, 65535);
+	debugf("Sending map request\n");
+	net.send((char *)&clientmsg, clientmsg.length);
+	debugf("Waiting for server info\n");
+
+	if ( net.recv((char *)&servermsg, 8192, 5) )
 	{
-		clientmsg.sequence = sequence;
-		clientmsg.server_sequence = 0;
-		clientmsg.num_cmds = 0;
-		strcpy(reliable.msg, "connect");
-		reliable.sequence = sequence;
-		memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],
-			&reliable,
-			sizeof(int) + strlen(reliable.msg) + 1);
-		clientmsg.length = HEADER_SIZE + clientmsg.num_cmds * sizeof(int)
-			+ sizeof(int) + strlen(reliable.msg) + 1;
+		char level[LINE_SIZE];
 
-		net.connect(serverip, 65535);
-		debugf("Sending map request\n");
-		net.send((char *)&clientmsg, clientmsg.length);
-		debugf("Waiting for server info\n");
-
-		if ( net.recv((char *)&servermsg, 8192, 5) )
+		client_flag = true;
+		debugf("Connected\n");
+		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
+		if (sscanf(reliablemsg->msg, "map %s", level) == 1)
 		{
-			char level[LINE_SIZE];
-
-			client_flag = true;
-			debugf("Connected\n");
-			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
-			if (sscanf(reliablemsg->msg, "map %s", level) == 1)
-			{
-				debugf("Loading %s\n", level);
-				load((char *)level);
-				strcpy(reliable.msg, "spawn");
-				reliable.sequence = sequence;
-				last_server_sequence = servermsg.sequence;
-			}
-			else
-			{
-				debugf("Invalid response\n");
-			}
+			debugf("Loading %s\n", level);
+			load((char *)level);
+			strcpy(reliable.msg, "spawn");
+			reliable.sequence = sequence;
+			last_server_sequence = servermsg.sequence;
 		}
 		else
 		{
-			debugf("Connection timed out\n");
+			debugf("Invalid response\n");
 		}
 	}
-	catch (const char *err)
+	else
 	{
-		printf("Net Error: %d %s\n", errno, err);
-		perror("error");
+		debugf("Connection timed out\n");
 	}
 }
 
