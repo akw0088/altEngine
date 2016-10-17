@@ -198,9 +198,8 @@ int Net::connect(char *server, int port)
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port   = htons(port);
 	servaddr.sin_addr.s_addr = inet_addr(server);
-#ifdef WIN32
-	ret = inet_pton(AF_INET, server, &servaddr.sin_addr); //linux giving me linker errors?
-#endif
+	ret = inet_pton(AF_INET, server, &servaddr.sin_addr);
+
 	if ( ret == 0)
 	{
 		debugf("inet_pton invalid server");

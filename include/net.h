@@ -7,8 +7,9 @@
 #define SOCKET int
 #endif
 
-
+#ifndef linux
 int inet_pton(int af, const char *server, struct in_addr *addr);
+#endif
 
 /*
 	UDP non blocking
