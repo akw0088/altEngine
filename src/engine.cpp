@@ -1340,10 +1340,14 @@ void Engine::client_step()
 	printf("client keystate %d\n", keystate);
 
 	// get entity information
-#ifndef __linux__
+#ifdef WIN32
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), ( int *)&socksize);
 #else
+#ifdef  MACOS
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
+#else
 	int size = 0;
+#endif
 #endif
 	if ( size > 0)
 	{
