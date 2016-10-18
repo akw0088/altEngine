@@ -1055,14 +1055,14 @@ void Engine::step()
 
 
 
-/*
+
 	//network
 	sequence++;
-	if (server && sequence)
+	if (server_flag && sequence)
 		server_step();
-	else if (client && sequence)
+	else if (client_flag && sequence)
 		client_step();
-*/
+
 }
 
 void Engine::check_triggers()
@@ -1346,7 +1346,7 @@ void Engine::client_step()
 #ifdef  MACOS
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #else
-	int size = 0;
+	int size = 0; //FIXME test on linux to see why recvfrom was borked
 #endif
 #endif
 	if ( size > 0)
@@ -2617,15 +2617,16 @@ void Engine::bind(int port)
 		return;
 	}
 
-	try
+	if (net.bind(NULL, port) == 0)
 	{
-		net.bind(NULL, port);
+		server_flag = true;
 	}
-	catch (const char *err)
+	else
 	{
-		debugf("Net Error: %s\n", err);
+		map.unload(gfx);
 	}
-	server_flag = true;
+
+
 }
 
 void Engine::connect(char *serverip)
