@@ -1132,6 +1132,7 @@ void Engine::server_step()
 	bool connected = false;
 	int index = -1;
 
+
 	// send entities to clients
 	send_entities();
 
@@ -1186,6 +1187,8 @@ void Engine::server_step()
 			printf("Invalid Entity\n");
 			return;
 		}
+
+		client_list[index]->last_time = (unsigned int)time(NULL);
 
 		Frame client_frame;
 
@@ -1265,6 +1268,7 @@ void Engine::server_step()
 		bool found = false;
 		client_t *client = (client_t *)malloc(sizeof(client_t));
 
+		client->last_time = (unsigned int)time(NULL);
 		strcpy(client->socketname, socketname);
 
 		for (unsigned int i = 0; i < client_list.size(); i++)
@@ -1330,6 +1334,16 @@ void Engine::send_entities()
 	servermsg.num_ents = 0;
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
+
+		// idle client timeout
+		if (time(NULL) - client_list[i]->last_time > 90)
+		{
+			debugf("client %s timed out\n", client_list[i]->socketname);
+			client_list.erase(client_list.begin() + i);
+			i--;
+			continue;
+		}
+
 		for (unsigned int j = 0; j < entity_list.size(); j++)
 		{
 			entity_t ent;
@@ -1356,19 +1370,6 @@ void Engine::send_entities()
 			sizeof(int) + strlen(reliable.msg) + 1;
 		servermsg.client_sequence = client_list[i]->client_sequence;
 		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
-
-/*
-		// ~15 second timeout
-		if (sequence - client_list[i]->server_sequence > 900)
-		{
-			printf("client %s timed out\n"
-				"sequence %d packet sequence %d", client_list[i]->socketname,
-				sequence, client_list[i]->server_sequence);
-			client_list.erase(client_list.begin() + i);
-			i--;
-			continue;
-		}
-*/
 	}
 }
 
@@ -2231,6 +2232,7 @@ void Engine::unload()
 		net.close();
 	}
 
+	menu.console = false;
 	client_flag = 0;
 	server_flag = 0;
 }
@@ -2535,7 +2537,23 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "res") == 0)
+	ret = strcmp(cmd, "sv_list");
+	if (ret == 0)
+	{
+		unsigned int current = (unsigned int)time(NULL);
+
+		snprintf(msg, LINE_SIZE, "Client list\n");
+		menu.print(msg);
+		for (unsigned int i = 0; i < client_list.size(); i++)
+		{
+			snprintf(msg, LINE_SIZE, "%d: %s %d\n", i, client_list[i]->socketname,
+				current - client_list[i]->last_time);
+			menu.print(msg);
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "r_res") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "%dx%d\n", gfx.width, gfx.height);
 		menu.print(msg);

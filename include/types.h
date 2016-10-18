@@ -111,6 +111,7 @@ typedef struct
 	unsigned int	entity;
 	unsigned int	client_sequence;
 	unsigned int	server_sequence;
+	unsigned int	last_time;
 } client_t;
 
 // size of fixed part of network packets

@@ -116,6 +116,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <vector>
 #ifdef WIN32
 	#include <crtdbg.h>
