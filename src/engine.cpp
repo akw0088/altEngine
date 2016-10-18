@@ -1186,7 +1186,17 @@ void Engine::server_step()
 			printf("Invalid Entity\n");
 			return;
 		}
-		entity_list[ client_list[index]->entity ]->rigid->move(clientkeys);
+
+		Frame client_frame;
+
+		client_frame.up.x = clientmsg.up[0];
+		client_frame.up.y = clientmsg.up[1];
+		client_frame.up.z = clientmsg.up[2];
+		client_frame.forward.x = clientmsg.forward[0];
+		client_frame.forward.y = clientmsg.forward[1];
+		client_frame.forward.z = clientmsg.forward[2];
+		client_frame.pos = entity_list[client_list[index]->entity]->position;
+		entity_list[ client_list[index]->entity ]->rigid->move(client_frame, clientkeys);
 
 
 		/*
@@ -1379,7 +1389,7 @@ void Engine::client_step()
 			entity_t	*ent = (entity_t *)servermsg.data;
 
 			// dont let bad data cause an exception
-			if (ent[i].id > entity_list.size())
+			if (ent[i].id >= entity_list.size())
 			{
 				printf("Invalid entity index, bad packet\n");
 				break;
@@ -1432,6 +1442,12 @@ void Engine::client_step()
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
 	clientmsg.sequence = sequence;
 	clientmsg.server_sequence = last_server_sequence;
+	clientmsg.up[0] = entity_list[spawn]->rigid->morientation.m[3];
+	clientmsg.up[1] = entity_list[spawn]->rigid->morientation.m[4];
+	clientmsg.up[2] = entity_list[spawn]->rigid->morientation.m[5];
+	clientmsg.forward[0] = entity_list[spawn]->rigid->morientation.m[6];
+	clientmsg.forward[1] = entity_list[spawn]->rigid->morientation.m[7];
+	clientmsg.forward[2] = entity_list[spawn]->rigid->morientation.m[8];
 	clientmsg.num_cmds = 1;
 	memcpy(clientmsg.data, &keystate, sizeof(int));
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],

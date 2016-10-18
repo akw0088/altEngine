@@ -545,33 +545,3 @@ void RigidBody::move(Frame &camera, button_t &keyboard)
 	}
 
 }
-
-void RigidBody::move(button_t &keyboard)
-{
-	vec3	right(morientation.m[0], morientation.m[1], morientation.m[2]);
-	vec3	up(morientation.m[3], morientation.m[4], morientation.m[5]);
-	vec3	forward(morientation.m[6], morientation.m[7], morientation.m[8]);
-
-	sleep = false;
-#define SPEED (0.5f) // meters per second
-	if (keyboard.up)
-	{
-		entity->position += -forward * SPEED;
-	}
-	if (keyboard.down)
-	{
-		entity->position += forward * SPEED;
-	}
-	if (keyboard.left)
-	{
-		entity->position += -right * SPEED;
-	}
-	if (keyboard.right)
-	{
-		entity->position += right * SPEED;
-	}
-	if (keyboard.enter)
-		entity->position += up * SPEED;
-	if (keyboard.shift)
-		entity->position += -up * SPEED;
-}

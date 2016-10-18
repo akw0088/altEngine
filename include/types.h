@@ -132,6 +132,8 @@ typedef struct
 	unsigned int	length;
 	unsigned int	sequence;
 	unsigned int	server_sequence;
+	float			up[3];
+	float			forward[3];
 	byte			num_cmds;
 	char			data[16834];
 } clientmsg_t;
