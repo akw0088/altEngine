@@ -1257,6 +1257,10 @@ void Engine::server_step()
 				{
 					printf("client %s got entity %d\n", socketname, i);
 					client->entity = i;
+					entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
+					entity_list[client->entity]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio);
+					entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
 					break;
 				}
 				count++;
@@ -1414,6 +1418,10 @@ void Engine::client_step()
 				if ( ret )
 				{
 					spawn = entity;
+					entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
+					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
 				}
 			}
 		}
