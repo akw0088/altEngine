@@ -23,19 +23,24 @@ int Net::bind(char *address, int port)
 	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
 	printf("SO_RCVBUF = %d\n", rcvbuf);
 
-	sndbuf = 8192; //default 8192
-	setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, sizeof(sndbuf));
-	printf("Setting SO_SNDBUF to %d\n", sndbuf);
+	if (sndbuf < 8192)
+	{
+		sndbuf = 8192; //default 8192
+		setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, sizeof(sndbuf));
+		printf("Setting SO_SNDBUF to %d\n", sndbuf);
+		getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
+		printf("SO_SNDBUF = %d\n", sndbuf);
+	}
 
-	rcvbuf = 8192; //default 8192
-	setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, sizeof(rcvbuf));
-	printf("Setting SO_RCVBUF to %d\n", rcvbuf);
+	if (rcvbuf < 8192)
+	{
+		rcvbuf = 8192; //default 8192
+		setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, sizeof(rcvbuf));
+		printf("Setting SO_RCVBUF to %d\n", rcvbuf);
+		getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
+		printf("SO_RCVBUF = %d\n", rcvbuf);
+	}
 
-	getsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, &arglen);
-	printf("SO_SNDBUF = %d\n", sndbuf);
-
-	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
-	printf("SO_RCVBUF = %d\n", rcvbuf);
 
 #ifdef _WINDOWS_
 	unsigned long nonblock = 1;
