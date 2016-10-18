@@ -55,6 +55,7 @@ public:
 	int bind(int port);
 	void connect(char *server);
 	void chat(char *msg);
+	void kick(int i);
 	int GetKeyState(button_t &keyboard);
 	button_t GetKeyState(int keystate);
 	void server_step();

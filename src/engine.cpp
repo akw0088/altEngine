@@ -1339,6 +1339,9 @@ void Engine::send_entities()
 		if (time(NULL) - client_list[i]->last_time > 90)
 		{
 			debugf("client %s timed out\n", client_list[i]->socketname);
+			delete entity_list[client_list[i]->entity]->rigid;
+			entity_list[client_list[i]->entity]->rigid = NULL;
+			entity_list[client_list[i]->entity]->model = NULL;
 			client_list.erase(client_list.begin() + i);
 			i--;
 			continue;
@@ -2182,6 +2185,34 @@ void Engine::update_audio()
 	}
 }
 
+void Engine::kick(int i)
+{
+	if (server_flag == false)
+		return;
+
+	if (i < 0 || i >= client_list.size())
+	{
+		debugf("kick() invalid index %d", i);
+		return;
+	}
+
+	servermsg_t servermsg = { 0 };
+
+	servermsg.sequence = sequence + 1;
+	servermsg.client_sequence = reliable.sequence;
+	servermsg.num_ents = 0;
+
+	sprintf(reliable.msg, "disconnect");
+	reliable.sequence = sequence + 1;
+	servermsg.length = SERVER_HEADER +
+		sizeof(int) + strlen(reliable.msg) + 1;
+	memcpy(servermsg.data, &reliable, sizeof(int) + strlen(reliable.msg) + 1);
+	net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+	debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
+	free((void *)client_list[i]);
+	client_list.erase(client_list.begin() + i);
+}
+
 void Engine::unload()
 {
 	if (map.loaded == false)
@@ -2211,22 +2242,9 @@ void Engine::unload()
 
 	if (server_flag)
 	{
-		for (unsigned int i = 0; i < client_list.size(); i++)
+		while (client_list.size())
 		{
-			servermsg_t servermsg = { 0 };
-
-			servermsg.sequence = sequence + 1;
-			servermsg.client_sequence = reliable.sequence;
-			servermsg.num_ents = 0;
-
-			sprintf(reliable.msg, "disconnect");
-			reliable.sequence = sequence + 1;
-			servermsg.length = SERVER_HEADER +
-				sizeof(int) + strlen(reliable.msg) + 1;
-			memcpy(servermsg.data, &reliable, sizeof(int) + strlen(reliable.msg) + 1);
-			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
-			debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
-			free((void *)client_list[i]);
+			kick(0);
 		}
 		client_list.clear();
 		net.close();
@@ -2550,6 +2568,13 @@ void Engine::console(char *cmd)
 				current - client_list[i]->last_time);
 			menu.print(msg);
 		}
+		return;
+	}
+
+	ret = sscanf(cmd, "kick %s", data);
+	if (ret == 1)
+	{
+		kick(atoi(data));
 		return;
 	}
 
