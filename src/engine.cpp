@@ -1195,8 +1195,23 @@ void Engine::server_step()
 		client_frame.forward.x = clientmsg.forward[0];
 		client_frame.forward.y = clientmsg.forward[1];
 		client_frame.forward.z = clientmsg.forward[2];
-		client_frame.pos = entity_list[client_list[index]->entity]->position;
-		entity_list[ client_list[index]->entity ]->rigid->move(client_frame, clientkeys);
+		vec3 right = vec3::crossproduct(client_frame.up, client_frame.forward);
+		right.normalize();
+
+		Entity *client = entity_list[client_list[index]->entity];
+
+
+		client->model->morientation.m[0] = right.x;
+		client->model->morientation.m[1] = right.y;
+		client->model->morientation.m[2] = right.z;
+		client->model->morientation.m[3] = client_frame.up.x;
+		client->model->morientation.m[4] = client_frame.up.y;
+		client->model->morientation.m[5] = client_frame.up.z;
+		client->model->morientation.m[6] = client_frame.forward.x;
+		client->model->morientation.m[7] = client_frame.forward.y;
+		client->model->morientation.m[8] = client_frame.forward.z;
+		client_frame.pos = client->position;
+		client->rigid->move(client_frame, clientkeys);
 
 
 		/*
@@ -1442,12 +1457,12 @@ void Engine::client_step()
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
 	clientmsg.sequence = sequence;
 	clientmsg.server_sequence = last_server_sequence;
-	clientmsg.up[0] = entity_list[spawn]->rigid->morientation.m[3];
-	clientmsg.up[1] = entity_list[spawn]->rigid->morientation.m[4];
-	clientmsg.up[2] = entity_list[spawn]->rigid->morientation.m[5];
-	clientmsg.forward[0] = entity_list[spawn]->rigid->morientation.m[6];
-	clientmsg.forward[1] = entity_list[spawn]->rigid->morientation.m[7];
-	clientmsg.forward[2] = entity_list[spawn]->rigid->morientation.m[8];
+	clientmsg.up[0] = camera_frame.up.x;
+	clientmsg.up[1] = camera_frame.up.y;
+	clientmsg.up[2] = camera_frame.up.z;
+	clientmsg.forward[0] = camera_frame.forward.x;
+	clientmsg.forward[1] = camera_frame.forward.y;
+	clientmsg.forward[2] = camera_frame.forward.z;
 	clientmsg.num_cmds = 1;
 	memcpy(clientmsg.data, &keystate, sizeof(int));
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],

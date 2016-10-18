@@ -42,21 +42,21 @@ public:
 	char *attack_sound;
 	char *weapon_idle_sound;
 	int health;
-	int armor;
-	int	weapon_flags;
+	unsigned int armor;
+	unsigned int weapon_flags;
 
-	int current_weapon;
-	int ammo_rockets;
-	int ammo_slugs;
-	int ammo_shells;
-	int ammo_bullets;
-	int ammo_lightning;
-	int ammo_plasma;
-	int ammo_bfg;
+	unsigned int current_weapon;
+	unsigned int ammo_rockets;
+	unsigned int ammo_slugs;
+	unsigned int ammo_shells;
+	unsigned int ammo_bullets;
+	unsigned int ammo_lightning;
+	unsigned int ammo_plasma;
+	unsigned int ammo_bfg;
 
-	int reload_timer;
-	int current_light; // debugging light sources, selected same as weapon
-	int current_face; // debugging light sources, selected same as weapon
+	unsigned int reload_timer;
+	unsigned int current_light; // debugging light sources, selected same as weapon
+	unsigned int current_face; // debugging light sources, selected same as weapon
 
 private:
 	Model weapon_shotgun;

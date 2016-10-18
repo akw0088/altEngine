@@ -115,7 +115,7 @@ typedef struct
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
-#define HEADER_SIZE 13 
+#define HEADER_SIZE 37
 
 #ifdef LINUX
 typedef unsigned char byte;
