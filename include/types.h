@@ -107,7 +107,7 @@ typedef struct
 
 typedef struct
 {
-	char			*socketname;
+	char			socketname[80];
 	unsigned int	entity;
 	unsigned int	client_sequence;
 	unsigned int	server_sequence;
@@ -115,7 +115,7 @@ typedef struct
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
-#define HEADER_SIZE 37
+#define CLIENT_HEADER 37
 
 #ifdef LINUX
 typedef unsigned char byte;
@@ -138,6 +138,8 @@ typedef struct
 	char			data[16834];
 } clientmsg_t;
 
+
+#define SERVER_HEADER 13
 /*
 	Variable length server msg
 	after num_ents is a variable number of entity states

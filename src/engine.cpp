@@ -1170,7 +1170,7 @@ void Engine::server_step()
 
 		if (clientmsg.sequence <= client_list[index]->client_sequence)
 		{
-			printf("Got old packet\n");
+			printf("Got old client packet\n");
 			return;
 		}
 
@@ -1225,7 +1225,7 @@ void Engine::server_step()
 			reliable.msg);
 		*/
 
-		if (clientmsg.length > HEADER_SIZE + sizeof(int) + sizeof(int) + 1)
+		if (clientmsg.length > CLIENT_HEADER + sizeof(int) + sizeof(int) + 1)
 		{
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[4];
 
@@ -1255,7 +1255,7 @@ void Engine::server_step()
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
 			sizeof(int) + strlen(reliable.msg) + 1);
-		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
@@ -1264,7 +1264,6 @@ void Engine::server_step()
 	{
 		bool found = false;
 		client_t *client = (client_t *)malloc(sizeof(client_t));
-		client->socketname = (char *)malloc(strlen(socketname) + 1);
 
 		strcpy(client->socketname, socketname);
 
@@ -1315,7 +1314,7 @@ void Engine::server_step()
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
 			sizeof(int) + strlen(reliable.msg) + 1);
-		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("sent client spawn data\n");
@@ -1353,7 +1352,7 @@ void Engine::send_entities()
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			(void *)&reliable,
 			sizeof(int) + strlen(reliable.msg) + 1);
-		servermsg.length = HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) +
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		servermsg.client_sequence = client_list[i]->client_sequence;
 		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
@@ -1402,7 +1401,7 @@ void Engine::client_step()
 
 		if (servermsg.sequence <= last_server_sequence)
 		{
-			printf("Got old packet\n");
+			printf("Got old server packet\n");
 			return;
 		}
 
@@ -1442,7 +1441,7 @@ void Engine::client_step()
 			reliable.msg);
 		*/
 
-		if ( servermsg.length > HEADER_SIZE + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
+		if ( servermsg.length > SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
 		{
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 
@@ -1488,7 +1487,7 @@ void Engine::client_step()
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],
 		(void *)&reliable,
 		sizeof(int) + strlen(reliable.msg) + 1);
-	clientmsg.length = HEADER_SIZE + clientmsg.num_cmds * sizeof(int)
+	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
 		+ sizeof(int) + strlen(reliable.msg) + 1;
 	::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
 }
@@ -2213,19 +2212,22 @@ void Engine::unload()
 	{
 		for (int i = 0; i < client_list.size(); i++)
 		{
-			servermsg_t servermsg;
+			servermsg_t servermsg = { 0 };
 
-			servermsg.sequence = sequence;
+			servermsg.sequence = sequence + 1;
 			servermsg.client_sequence = 0;
 			servermsg.num_ents = 0;
 
 			sprintf(reliable.msg, "disconnect");
 			reliable.sequence = sequence;
-			servermsg.length = HEADER_SIZE +
+			servermsg.length = SERVER_HEADER +
 				sizeof(int) + strlen(reliable.msg) + 1;
+			memcpy(servermsg.data, &reliable, sizeof(int) + strlen(reliable.msg) + 1);
 			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 			debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
+			free((void *)client_list[i]);
 		}
+		client_list.clear();
 		net.close();
 	}
 
@@ -2730,7 +2732,7 @@ void Engine::connect(char *serverip)
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],
 		&reliable,
 		sizeof(int) + strlen(reliable.msg) + 1);
-	clientmsg.length = HEADER_SIZE + clientmsg.num_cmds * sizeof(int)
+	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
 		+ sizeof(int) + strlen(reliable.msg) + 1;
 
 	net.connect(serverip, 65535);
