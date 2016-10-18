@@ -172,7 +172,7 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	if (loaded == false)
 		return;
 
-	for (; plist != NULL;)
+	for (; plist != NULL && k < num_buffer;)
 	{
 		md5_anim_t *anim;
 
@@ -189,10 +189,10 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 			delete[] buffer[k]->frame_vertex[j];
 			delete[] buffer[k]->count_vertex[j];
 		}
-		delete buffer[k]->frame_index;
-		delete buffer[k]->count_index;
-		delete buffer[k]->frame_vertex;
-		delete buffer[k]->count_vertex;
+		delete [] buffer[k]->frame_index;
+		delete [] buffer[k]->count_index;
+		delete [] buffer[k]->frame_vertex;
+		delete [] buffer[k]->count_vertex;
 
 		delete[] plist->anim->hierarchy;
 		delete[] plist->anim->aabb;

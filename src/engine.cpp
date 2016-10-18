@@ -1055,14 +1055,14 @@ void Engine::step()
 
 
 
-/*
+
 	//network
 	sequence++;
-	if (server && sequence)
+	if (server_flag && sequence)
 		server_step();
-	else if (client && sequence)
+	else if (client_flag && sequence)
 		client_step();
-*/
+
 }
 
 void Engine::check_triggers()
@@ -1257,6 +1257,10 @@ void Engine::server_step()
 				{
 					printf("client %s got entity %d\n", socketname, i);
 					client->entity = i;
+					entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
+					entity_list[client->entity]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio);
+					entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
 					break;
 				}
 				count++;
@@ -1346,7 +1350,7 @@ void Engine::client_step()
 #ifdef  MACOS
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #else
-	int size = 0;
+	int size = 0; //FIXME test on linux to see why recvfrom was borked
 #endif
 #endif
 	if ( size > 0)
@@ -1414,6 +1418,10 @@ void Engine::client_step()
 				if ( ret )
 				{
 					spawn = entity;
+					entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
+					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
 				}
 			}
 		}
@@ -2617,15 +2625,16 @@ void Engine::bind(int port)
 		return;
 	}
 
-	try
+	if (net.bind(NULL, port) == 0)
 	{
-		net.bind(NULL, port);
+		server_flag = true;
 	}
-	catch (const char *err)
+	else
 	{
-		debugf("Net Error: %s\n", err);
+		map.unload(gfx);
 	}
-	server_flag = true;
+
+
 }
 
 void Engine::connect(char *serverip)
@@ -2780,7 +2789,7 @@ void Engine::handle_weapons(Player &player)
 			player.entity->model->getForwardVector(forward);
 
 			map.hitscan(player.entity->position, forward, distance);
-			vec3 end = player.entity->position + forward * distance;
+			//vec3 end = player.entity->position + forward * distance;
 
 
 //			Entity *entity = new Entity();

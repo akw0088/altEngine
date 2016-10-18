@@ -148,13 +148,13 @@ typedef struct
 	unsigned int	sequence;
 	unsigned int	client_sequence;
 	byte			num_ents;
-	char			data[16834];
+	char			data[10 * 16834];
 } servermsg_t;
 
 typedef struct
 {
 	unsigned int	sequence;
-	char			msg[16834];
+	char			msg[10 * 16834];
 }
 reliablemsg_t;
 
