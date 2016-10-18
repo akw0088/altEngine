@@ -1250,7 +1250,7 @@ void Engine::server_step()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
-		strcpy(reliable.msg, "map media/maps/q3tourney2.bsp");
+		sprintf(reliable.msg, "map %s", map.map_name);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
@@ -2188,6 +2188,29 @@ void Engine::unload()
 	menu.delta("unload", *this);
 	menu.render(global);
 	gfx.swap();
+
+	if (server_flag)
+	{
+		for (int i = 0; i < client_list.size(); i++)
+		{
+			servermsg_t servermsg;
+
+			servermsg.sequence = sequence;
+			servermsg.client_sequence = 0;
+			servermsg.num_ents = 0;
+
+			sprintf(reliable.msg, "quit");
+			reliable.sequence = sequence;
+			servermsg.length = HEADER_SIZE +
+				sizeof(int) + strlen(reliable.msg) + 1;
+			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+			debugf("sent disconnect to client %d\n", i);
+		}
+		net.close();
+	}
+
+	client_flag = 0;
+	server_flag = 0;
 }
 
 void Engine::destroy()
@@ -2648,21 +2671,23 @@ void Engine::console(char *cmd)
 	menu.print(msg);
 }
 
-void Engine::bind(int port)
+int Engine::bind(int port)
 {
 	if (server_flag)
 	{
 		debugf("Server already bound to port\n");
-		return;
+		return -1;
 	}
 
 	if (net.bind(NULL, port) == 0)
 	{
 		server_flag = true;
+		return 0;
 	}
 	else
 	{
 		map.unload(gfx);
+		return -1;
 	}
 
 

@@ -52,7 +52,7 @@ public:
 	bool body_collision(RigidBody &body);
 
 	//temp section
-	void bind(int port);
+	int bind(int port);
 	void connect(char *server);
 	void chat(char *msg);
 	int GetKeyState(button_t &keyboard);

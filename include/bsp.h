@@ -39,6 +39,7 @@ public:
 
 	bool loaded;
 	bspData_t	data;
+	char map_name[80];
 private:
 
 	// Will move into a ray class eventually

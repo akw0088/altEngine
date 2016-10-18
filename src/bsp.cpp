@@ -9,6 +9,7 @@ float newtonSqrt(float x);
 Bsp::Bsp()
 {
 	loaded = false;
+	memset(map_name, 0, 80);
 }
 
 bool Bsp::load(char *map)
@@ -74,6 +75,7 @@ bool Bsp::load(char *map)
 		normal_object[i] = (unsigned int)-1;
 
 	loaded = true;
+	memcpy(map_name, map, strlen(map) + 1);
 	return true;
 }
 

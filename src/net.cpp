@@ -228,6 +228,11 @@ int Net::connect(char *server, int port)
 	return 0;
 }
 
+void Net::close()
+{
+	closesocket(sockfd);
+}
+
 
 #ifdef _WIN32
 int inet_pton(int af, const char *server, in_addr *addr)
