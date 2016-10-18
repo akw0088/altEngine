@@ -1267,7 +1267,7 @@ void Engine::server_step()
 
 		strcpy(client->socketname, socketname);
 
-		for (int i = 0; i < client_list.size(); i++)
+		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
 			if (strcmp(client_list[i]->socketname, client->socketname) == 0)
 			{
@@ -1379,7 +1379,7 @@ void Engine::client_step()
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(keyboard);
 
-	printf("client keystate %d\n", keystate);
+	//printf("client keystate %d\n", keystate);
 
 	// get entity information
 #ifdef WIN32
@@ -2210,16 +2210,16 @@ void Engine::unload()
 
 	if (server_flag)
 	{
-		for (int i = 0; i < client_list.size(); i++)
+		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
 			servermsg_t servermsg = { 0 };
 
 			servermsg.sequence = sequence + 1;
-			servermsg.client_sequence = 0;
+			servermsg.client_sequence = reliable.sequence;
 			servermsg.num_ents = 0;
 
 			sprintf(reliable.msg, "disconnect");
-			reliable.sequence = sequence;
+			reliable.sequence = sequence + 1;
 			servermsg.length = SERVER_HEADER +
 				sizeof(int) + strlen(reliable.msg) + 1;
 			memcpy(servermsg.data, &reliable, sizeof(int) + strlen(reliable.msg) + 1);
