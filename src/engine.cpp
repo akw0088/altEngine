@@ -1262,11 +1262,25 @@ void Engine::server_step()
 	}
 	else if ( strcmp(reliablemsg->msg, "spawn") == 0 )
 	{
+		bool found = false;
 		client_t *client = (client_t *)malloc(sizeof(client_t));
 		client->socketname = (char *)malloc(strlen(socketname) + 1);
 
 		strcpy(client->socketname, socketname);
-		client_list.push_back(client);
+
+		for (int i = 0; i < client_list.size(); i++)
+		{
+			if (strcmp(client_list[i]->socketname, client->socketname) == 0)
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			client_list.push_back(client);
+		}
 		debugf("client %s spawned\n", client->socketname);
 		client->client_sequence = clientmsg.sequence;
 
@@ -1447,6 +1461,12 @@ void Engine::client_step()
 					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
+				}
+
+				ret = strcmp(reliablemsg->msg, "disconnect");
+				if (ret == 0)
+				{
+					unload();
 				}
 			}
 		}
@@ -2199,12 +2219,12 @@ void Engine::unload()
 			servermsg.client_sequence = 0;
 			servermsg.num_ents = 0;
 
-			sprintf(reliable.msg, "quit");
+			sprintf(reliable.msg, "disconnect");
 			reliable.sequence = sequence;
 			servermsg.length = HEADER_SIZE +
 				sizeof(int) + strlen(reliable.msg) + 1;
 			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
-			debugf("sent disconnect to client %d\n", i);
+			debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
 		}
 		net.close();
 	}
