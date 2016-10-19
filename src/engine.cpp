@@ -891,8 +891,11 @@ void Engine::dynamics()
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (entity_list[i]->visible == false || entity_list[i]->rigid->sleep == true )
-			continue;
+		if (server_flag == false)
+		{
+			if (entity_list[i]->visible == false || entity_list[i]->rigid->sleep == true)
+				continue;
+		}
 
 		RigidBody *body = entity_list[i]->rigid;
 		if (entity_list[i]->vehicle != NULL)
