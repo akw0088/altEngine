@@ -438,7 +438,7 @@ void Engine::render_scene(bool lights)
 	matrix4 mvp;
 
 	if (spawn != -1)
-		entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+		entity_list[spawn]->rigid->frame2ent(&camera_frame, input);
 
 
 	camera_frame.set(transformation);
@@ -464,11 +464,11 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	matrix4 mvp;
 	matrix4 transformation;
 
-	if (keyboard.control == false)
+	if (input.control == false)
 	{
 		if (spawn != -1)
 		{
-			entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+			entity_list[spawn]->rigid->frame2ent(&camera_frame, input);
 		}
 
 		camera_frame.set(transformation);
@@ -506,7 +506,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		}
 	}
 
-	if (keyboard.control)
+	if (input.control)
 	{
 		map.render(light_frame.pos, NULL, gfx);
 		gfx.SelectShader(0);
@@ -587,7 +587,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		zsec_shotgun.render(gfx, frame_step);
+		zcc.render(gfx, frame_step);
 	}
 }
 
@@ -686,30 +686,30 @@ void Engine::destroy_buffers()
 
 void Engine::handle_input()
 {
-	if (keyboard.numpad0)
+	if (input.numpad0)
 	{
 		post_process(5);
 	}
 
-	if (keyboard.mousewheelup)
+	if (input.mousewheelup)
 	{
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->change_weapon_up();
 		}
-		keyboard.mousewheelup = false;
+		input.mousewheelup = false;
 	}
 
-	if (keyboard.mousewheeldown)
+	if (input.mousewheeldown)
 	{
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->change_weapon_down();
 		}
-		keyboard.mousewheeldown = false;
+		input.mousewheeldown = false;
 	}
 
-	if (keyboard.numpad2)
+	if (input.numpad2)
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
@@ -719,7 +719,7 @@ void Engine::handle_input()
 		camera_frame.up = up;
 	}
 
-	if (keyboard.numpad3)
+	if (input.numpad3)
 	{
 		vec3 right(1.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 0.0f, 1.0f);
@@ -729,7 +729,7 @@ void Engine::handle_input()
 		camera_frame.up = up;
 	}
 
-	if (keyboard.numpad6)
+	if (input.numpad6)
 	{
 		vec3 right(0.0f, 0.0f, 1.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
@@ -740,7 +740,7 @@ void Engine::handle_input()
 	}
 
 
-	if (keyboard.numpad4)
+	if (input.numpad4)
 	{
 		vec3 right(0.0f, 0.0f, -1.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
@@ -750,7 +750,7 @@ void Engine::handle_input()
 		camera_frame.up = up;
 	}
 
-	if (keyboard.numpad8)
+	if (input.numpad8)
 	{
 		vec3 right(1.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 1.0f, 0.0f);
@@ -760,7 +760,7 @@ void Engine::handle_input()
 		camera_frame.up = up;
 	}
 
-	if (keyboard.numpad9)
+	if (input.numpad9)
 	{
 		vec3 right(1.0f, 0.0f, 0.0f);
 		vec3 up(0.0f, 0.0f, -1.0f);
@@ -1044,13 +1044,13 @@ void Engine::step()
 	//entity test movement
 	if (menu.ingame == false && menu.console == false)
 	{
-		if (keyboard.control == true)
-			light_frame.update(keyboard);
+		if (input.control == true)
+			light_frame.update(input);
 		else if (spawn != -1)
 		{
 			if (entity_list[spawn]->player->health > 0)
 			{
-				entity_list[spawn]->rigid->move(camera_frame, keyboard);
+				entity_list[spawn]->rigid->move(camera_frame, input);
 			}
 		}
 	}
@@ -1207,15 +1207,7 @@ void Engine::server_step()
 		Entity *client = entity_list[client_list[index]->entity];
 
 
-		client->model->morientation.m[0] = right.x;
-		client->model->morientation.m[1] = right.y;
-		client->model->morientation.m[2] = right.z;
-		client->model->morientation.m[3] = client_frame.up.x;
-		client->model->morientation.m[4] = client_frame.up.y;
-		client->model->morientation.m[5] = client_frame.up.z;
-		client->model->morientation.m[6] = client_frame.forward.x;
-		client->model->morientation.m[7] = client_frame.forward.y;
-		client->model->morientation.m[8] = client_frame.forward.z;
+		client_frame.set(entity_list[client_list[index]->entity]->rigid->morientation);
 		client_frame.pos = client->position;
 		client->rigid->move(client_frame, clientkeys);
 
@@ -1384,7 +1376,7 @@ void Engine::client_step()
 	servermsg_t	servermsg;
 	clientmsg_t clientmsg;
 	unsigned int socksize = sizeof(sockaddr_in);
-	int keystate = GetKeyState(keyboard);
+	int keystate = GetKeyState(input);
 
 	//printf("client keystate %d\n", keystate);
 
@@ -1605,7 +1597,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 		return true;
 	}
 
-	if (keyboard.control == false)
+	if (input.control == false)
 		camera_frame.update(vec2((float)deltax, (float)deltay));
 	else
 		light_frame.update(vec2((float)deltax, (float)deltay));
@@ -1618,102 +1610,102 @@ void Engine::keypress(char *key, bool pressed)
 
 	if (strcmp("enter", key) == 0)
 	{
-		keyboard.enter = pressed;
+		input.enter = pressed;
 	}
 	else if (strcmp("leftbutton", key) == 0)
 	{
-		keyboard.leftbutton = pressed;
+		input.leftbutton = pressed;
 		k = 14;
 	}
 	else if (strcmp("middlebutton", key) == 0)
 	{
-		keyboard.middlebutton = pressed;
+		input.middlebutton = pressed;
 		k = 15;
 	}
 	else if (strcmp("rightbutton", key) == 0)
 	{
-		keyboard.rightbutton = pressed;
+		input.rightbutton = pressed;
 		k = 16;
 	}
 	else if (strcmp("mousewheelup", key) == 0)
 	{
-		keyboard.mousewheelup = pressed;
+		input.mousewheelup = pressed;
 	}
 	else if (strcmp("mousewheeldown", key) == 0)
 	{
-		keyboard.mousewheeldown = pressed;
+		input.mousewheeldown = pressed;
 	}
 	else if (strcmp("shift", key) == 0)
 	{
-		keyboard.shift = pressed;
+		input.shift = pressed;
 	}
 	else if (strcmp("control", key) == 0)
 	{
-		keyboard.control = pressed;
+		input.control = pressed;
 	}
 	else if (strcmp("escape", key) == 0)
 	{
-		keyboard.escape = pressed;
+		input.escape = pressed;
 	}
 	else if (strcmp("up", key) == 0)
 	{
-		keyboard.up = pressed;
+		input.up = pressed;
 		k = 3;
 	}
 	else if (strcmp("left", key) == 0)
 	{
-		keyboard.left = pressed;
+		input.left = pressed;
 		k = 4;
 	}
 	else if (strcmp("down", key) == 0)
 	{
-		keyboard.down = pressed;
+		input.down = pressed;
 		k = 5;
 	}
 	else if (strcmp("right", key) == 0)
 	{
-		keyboard.right = pressed;
+		input.right = pressed;
 		k = 6;
 	}
 	else if (strcmp("numpad0", key) == 0)
 	{
-		keyboard.numpad0 = pressed;
+		input.numpad0 = pressed;
 	}
 	else if (strcmp("numpad1", key) == 0)
 	{
-		keyboard.numpad1 = pressed;
+		input.numpad1 = pressed;
 	}
 	else if (strcmp("numpad2", key) == 0)
 	{
-		keyboard.numpad2 = pressed;
+		input.numpad2 = pressed;
 	}
 	else if (strcmp("numpad3", key) == 0)
 	{
-		keyboard.numpad3 = pressed;
+		input.numpad3 = pressed;
 	}
 	else if (strcmp("numpad4", key) == 0)
 	{
-		keyboard.numpad4 = pressed;
+		input.numpad4 = pressed;
 	}
 	else if (strcmp("numpad5", key) == 0)
 	{
-		keyboard.numpad5 = pressed;
+		input.numpad5 = pressed;
 	}
 	else if (strcmp("numpad6", key) == 0)
 	{
-		keyboard.numpad6 = pressed;
+		input.numpad6 = pressed;
 	}
 	else if (strcmp("numpad7", key) == 0)
 	{
-		keyboard.numpad7 = pressed;
+		input.numpad7 = pressed;
 	}
 	else if (strcmp("numpad8", key) == 0)
 	{
-		keyboard.numpad8 = pressed;
+		input.numpad8 = pressed;
 	}
 	else if (strcmp("numpad9", key) == 0)
 	{
-		keyboard.numpad9 = pressed;
+		input.numpad9 = pressed;
 	}
 
 	if (pressed)
@@ -2188,12 +2180,12 @@ void Engine::update_audio()
 	}
 }
 
-void Engine::kick(int i)
+void Engine::kick(unsigned int i)
 {
 	if (server_flag == false)
 		return;
 
-	if (i < 0 || i >= client_list.size())
+	if (i >= client_list.size())
 	{
 		debugf("kick() invalid index %d", i);
 		return;
@@ -2698,7 +2690,7 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
-		zsec_shotgun.select_animation(atoi(data));
+		zcc.select_animation(atoi(data));
 		return;
 	}
 
@@ -2839,7 +2831,7 @@ void Engine::handle_weapons(Player &player)
 		break;
 	}
 
-	if (keyboard.leftbutton && player.reload_timer == 0)
+	if (input.leftbutton && player.reload_timer == 0)
 	{
 
 		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)

@@ -55,7 +55,7 @@ public:
 	int bind(int port);
 	void connect(char *server);
 	void chat(char *msg);
-	void kick(int i);
+	void kick(unsigned int i);
 	int GetKeyState(button_t &keyboard);
 	button_t GetKeyState(int keystate);
 	void server_step();
@@ -88,7 +88,7 @@ private:
 	Graphics	gfx;
 	Audio		audio;
 	Bsp		map;
-	button_t	keyboard;
+	button_t	input;
 	Menu		menu;
 	Frame		camera_frame;
 	Frame		light_frame;
