@@ -168,8 +168,8 @@ void Engine::load_md5()
 
 	frame_step = 0;
 	animation = new char *[50];
-	animation[0] = "media/md5/chaingun_idle.md5anim";
-	animation[1] = "media/md5/chaingun_walk.md5anim";
+	animation[0] = "media/md5/chaingun_walk.md5anim";
+	animation[1] = "media/md5/chaingun_idle.md5anim";
 	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
 /*
 	animation[0] = "media/md5/sentry/initial.md5anim";
@@ -544,7 +544,58 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		}
 
 		if (entity_list[i]->light == NULL)
+		{
+			int j = 0;
+
+			if (spawn == i)
+			{
+				continue;
+			}
+
+			for (j = 0; j < client_list.size(); j++)
+			{
+				if (i == client_list[j]->entity)
+				{
+					vec4 temp;
+					entity_list[i]->rigid->get_matrix(mvp.m);
+					//hack to rotate model 90 degrees
+					/*
+					temp.x = mvp.m[0];
+					temp.y = mvp.m[1];
+					temp.z = mvp.m[2];
+					temp.w = mvp.m[3];
+					mvp.m[0] = mvp.m[8];
+					mvp.m[1] = mvp.m[9];
+					mvp.m[2] = mvp.m[10];
+					mvp.m[3] = mvp.m[11];
+					mvp.m[8] = -temp.x;
+					mvp.m[9] = -temp.y;
+					mvp.m[10] = -temp.z;
+					mvp.m[11] = temp.w;
+					*/
+
+
+
+					mvp = trans.premultiply(mvp.m) * projection;
+
+					if (lights)
+					{
+						mlight2.Params(mvp, light_list, light_list.size());
+					}
+					else
+					{
+						mlight2.Params(mvp, light_list, 0);
+					}
+					zcc.render(gfx, frame_step);
+					break;
+				}
+			}
+
+			if (client_list.size() && j < client_list.size() && i == client_list[j]->entity)
+				continue;
+
 			entity_list[i]->rigid->render(gfx);
+		}
 //		entity_list[i]->rigid->render_box(gfx); // bounding box lines
 		
 		//render weapon
@@ -572,6 +623,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 
 
 	//render md5 as second to last entity
+	/*
 	if (entity_list.size())
 	{
 		if (entity_list[entity_list.size() - 1]->rigid == NULL)
@@ -589,6 +641,7 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 		}
 		zcc.render(gfx, frame_step);
 	}
+	*/
 }
 
 
@@ -1203,6 +1256,14 @@ void Engine::server_step()
 		client_frame.forward.z = clientmsg.forward[2];
 		vec3 right = vec3::crossproduct(client_frame.up, client_frame.forward);
 		right.normalize();
+
+		//hack, models are 90 degrees to the right, so make right forward
+		/*
+		client_frame.forward.x = right.x;
+		client_frame.forward.y = right.y;
+		client_frame.forward.z = right.z;
+		*/
+
 
 		Entity *client = entity_list[client_list[index]->entity];
 
