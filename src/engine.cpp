@@ -586,6 +586,23 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (spawn == i)
 			{
+				entity_list[i]->rigid->get_matrix(mvp.m);
+
+				//set weapon coordinates
+				mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
+				mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
+				mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
+				mvp = trans.premultiply(mvp.m) * projection;
+				if (lights)
+				{
+					mlight2.Params(mvp, light_list, light_list.size());
+				}
+				else
+				{
+					mlight2.Params(mvp, light_list, 0);
+				}
+
+				entity_list[i]->player->render_weapon(gfx);
 				continue;
 			}
 
@@ -612,27 +629,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		}
 //		entity_list[i]->rigid->render_box(gfx); // bounding box lines
 		
-		//render weapon
-		if (spawn == i)
-		{
-			entity_list[i]->rigid->get_matrix(mvp.m);
-
-			//set weapon coordinates
-			mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
-			mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
-			mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
-			mvp = trans.premultiply(mvp.m) * projection;
-			if (lights)
-			{
-				mlight2.Params(mvp, light_list, light_list.size());
-			}
-			else
-			{
-				mlight2.Params(mvp, light_list, 0);
-			}
-
-			entity_list[i]->player->render_weapon(gfx);
-		}
 	}
 
 
@@ -1452,6 +1448,13 @@ void Engine::client_step()
 	clientmsg_t clientmsg;
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(input);
+	static int rate_skip = 0;
+	int cl_skip = 4;
+
+	rate_skip++;
+
+	if (rate_skip % cl_skip == 0)
+		return;
 
 	//printf("client keystate %d\n", keystate);
 
