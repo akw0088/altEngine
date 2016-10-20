@@ -25,7 +25,7 @@ public:
 	int recv(char *buffer, int size, int delay);
 	int recvfrom(char *buff, int size, char *from, int length);
 	int strtoaddr(char *str, struct sockaddr_in &addr);
-	void close();
+	void closesock();
 
 	struct sockaddr_in	servaddr;
 	SOCKET			sockfd;

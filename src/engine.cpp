@@ -2320,7 +2320,7 @@ void Engine::unload()
 			kick(0);
 		}
 		client_list.clear();
-		net.close();
+		net.closesock();
 	}
 
 	menu.console = false;

@@ -228,7 +228,7 @@ int Net::connect(char *server, int port)
 	return 0;
 }
 
-void Net::close()
+void Net::closesock()
 {
 	closesocket(sockfd);
 }
