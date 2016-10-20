@@ -1465,7 +1465,7 @@ void Engine::client_step()
 #ifdef  MACOS
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #else
-	int size = 0; //FIXME test on linux to see why recvfrom was borked
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #endif
 #endif
 	if ( size > 0)
