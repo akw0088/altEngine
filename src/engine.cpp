@@ -517,7 +517,21 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	gfx.SelectShader(0);
 }
 
-void Engine::render_entities(const matrix4 trans, bool lights)
+void Engine::render_client(int i, const matrix4 &trans, bool lights)
+{
+	matrix4 mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+	if (lights)
+	{
+		mlight2.Params(mvp, light_list, light_list.size());
+	}
+	else
+	{
+		mlight2.Params(mvp, light_list, 0);
+	}
+	zcc.render(gfx, frame_step);
+}
+
+void Engine::render_entities(const matrix4 &trans, bool lights)
 {
 	matrix4 mvp;
 
@@ -552,41 +566,18 @@ void Engine::render_entities(const matrix4 trans, bool lights)
 				continue;
 			}
 
+
+			if (i == server_spawn)
+			{
+				render_client(i, trans, lights);
+				continue;
+			}
+
 			for (j = 0; j < client_list.size(); j++)
 			{
 				if (i == client_list[j]->entity)
 				{
-					vec4 temp;
-					entity_list[i]->rigid->get_matrix(mvp.m);
-					//hack to rotate model 90 degrees
-					/*
-					temp.x = mvp.m[0];
-					temp.y = mvp.m[1];
-					temp.z = mvp.m[2];
-					temp.w = mvp.m[3];
-					mvp.m[0] = mvp.m[8];
-					mvp.m[1] = mvp.m[9];
-					mvp.m[2] = mvp.m[10];
-					mvp.m[3] = mvp.m[11];
-					mvp.m[8] = -temp.x;
-					mvp.m[9] = -temp.y;
-					mvp.m[10] = -temp.z;
-					mvp.m[11] = temp.w;
-					*/
-
-
-
-					mvp = trans.premultiply(mvp.m) * projection;
-
-					if (lights)
-					{
-						mlight2.Params(mvp, light_list, light_list.size());
-					}
-					else
-					{
-						mlight2.Params(mvp, light_list, 0);
-					}
-					zcc.render(gfx, frame_step);
+					render_client(i, trans, lights);
 					break;
 				}
 			}
@@ -1369,7 +1360,7 @@ void Engine::server_step()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		
-		sprintf(reliable.msg, "spawn %d", client->entity);
+		sprintf(reliable.msg, "spawn %d %d", client->entity, spawn);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
@@ -1512,7 +1503,7 @@ void Engine::client_step()
 				debugf("server msg: %s\n", reliablemsg->msg);
 				menu.print(reliablemsg->msg);
 
-				int ret = sscanf(reliablemsg->msg, "spawn %d", &entity);
+				int ret = sscanf(reliablemsg->msg, "spawn %d %d", &entity, &server_spawn);
 				if ( ret )
 				{
 					spawn = entity;

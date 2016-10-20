@@ -16,7 +16,7 @@ public:
 	void render(double last_frametime);
 	void render_scene(bool lights);
 	void render_scene_using_shadowmap(bool lights);
-	void render_entities(const matrix4 trans, bool lights);
+	void render_entities(const matrix4 &trans, bool lights);
 	void render_shadow_volumes();
 
 
@@ -61,6 +61,7 @@ public:
 	void server_step();
 	void client_step();
 	void send_entities();
+	void render_client(int i, const matrix4 &trans, bool lights);
 
 	void destroy_buffers();
 	void render_to_framebuffer();
@@ -99,18 +100,19 @@ private:
 	unsigned int	depth_tex;
 	unsigned int	fb_width;
 	unsigned int	fb_height;
+	unsigned int	no_tex;
 
 	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;
 
 
-	// temp section
-	int		no_tex;
+	//net stuff
 	int		sequence;
 	Net		net;
 	reliablemsg_t	reliable;
-	int		spawn;
+	int		spawn;			// entity index of self
+	int		server_spawn;	// entity index of hosting player
 
 
 
