@@ -52,7 +52,7 @@ CPP := clang++
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
+CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall -O3 -march=native -mfpmath=sse -msse2 #-fsanitize=address -fno-omit-frame-pointer
 LFLAGS_OSX := -lX11 -lGL -lGLU -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lGLU -lopenal
 LIBS := -L/usr/X11R6/lib/ 
