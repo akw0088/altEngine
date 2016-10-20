@@ -517,9 +517,32 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	gfx.SelectShader(0);
 }
 
-void Engine::render_client(int i, const matrix4 &trans, bool lights)
+void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 {
-	matrix4 mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+	matrix4 mvp;
+
+	entity_list[i]->rigid->get_matrix(mvp.m);
+
+	if (hack)
+	{
+		vec4 temp;
+		temp.x = mvp.m[0];
+		temp.y = mvp.m[1];
+		temp.z = mvp.m[2];
+		temp.w = mvp.m[3];
+		mvp.m[0] = mvp.m[8];
+		mvp.m[1] = mvp.m[9];
+		mvp.m[2] = mvp.m[10];
+		mvp.m[3] = mvp.m[11];
+		mvp.m[8] = -temp.x;
+		mvp.m[9] = -temp.y;
+		mvp.m[10] = -temp.z;
+		mvp.m[11] = temp.w;
+	}
+
+	 mvp = trans.premultiply(mvp.m) * projection;
+
+
 	if (lights)
 	{
 		mlight2.Params(mvp, light_list, light_list.size());
@@ -559,7 +582,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 		if (entity_list[i]->light == NULL)
 		{
-			int j = 0;
+			unsigned int j = 0;
 
 			if (spawn == i)
 			{
@@ -569,7 +592,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (i == server_spawn)
 			{
-				render_client(i, trans, lights);
+				render_client(i, trans, lights, true);
 				continue;
 			}
 
@@ -577,7 +600,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			{
 				if (i == client_list[j]->entity)
 				{
-					render_client(i, trans, lights);
+					render_client(i, trans, lights, false);
 					break;
 				}
 			}

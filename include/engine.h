@@ -61,7 +61,7 @@ public:
 	void server_step();
 	void client_step();
 	void send_entities();
-	void render_client(int i, const matrix4 &trans, bool lights);
+	void render_client(int i, const matrix4 &trans, bool lights, bool hack);
 
 	void destroy_buffers();
 	void render_to_framebuffer();
