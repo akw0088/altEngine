@@ -226,7 +226,7 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 		gfx.SelectIndexBuffer(current_buffer->frame_index[frame_step][i]);
 		gfx.SelectVertexBuffer(current_buffer->frame_vertex[frame_step][i]);
 		gfx.DrawArrayTri(0, 0, current_buffer->count_index[frame_step][i], current_buffer->count_vertex[frame_step][i]);
-		gfx.SelectVertexBuffer(0);
-		gfx.SelectIndexBuffer(0);
+//		gfx.SelectVertexBuffer(0);
+//		gfx.SelectIndexBuffer(0);
 	}
 }

@@ -826,7 +826,7 @@ int Graphics::CreateCubeMap()
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
 {
-	unsigned int texObject;
+	unsigned int texObject = -1;
 
 	glGenTextures(1, &texObject);
 	glBindTexture(GL_TEXTURE_2D, texObject);
