@@ -386,7 +386,7 @@ void Engine::render_shadowmaps()
 				mlight2.Select();
 				mlight2.Params(mvp, light_list, 0);
 				map.render(entity_list[i]->position, NULL, gfx);
-				gfx.SelectShader(0);
+//				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
 			break;
@@ -419,8 +419,8 @@ void Engine::render_texture(int texObj)
 	global.Select();
 	global.Params(identity, 0);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
-	gfx.SelectShader(0);
-	gfx.DeselectTexture(0);
+//	gfx.SelectShader(0);
+//	gfx.DeselectTexture(0);
 }
 
 void Engine::render_scene(bool lights)
@@ -443,7 +443,7 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0);
 
 	map.render(camera_frame.pos, NULL, gfx);
-	gfx.SelectShader(0);
+//	gfx.SelectShader(0);
 }
 
 
@@ -500,12 +500,12 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	if (input.control)
 	{
 		map.render(light_frame.pos, NULL, gfx);
-		gfx.SelectShader(0);
+//		gfx.SelectShader(0);
 		return;
 	}
 
 	map.render(camera_frame.pos, NULL, gfx);
-	gfx.SelectShader(0);
+//	gfx.SelectShader(0);
 }
 
 void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
@@ -661,7 +661,7 @@ void Engine::render_shadow_volumes()
 			global.Select();
 			global.Params(mvp, 0);
 //			entity_list[i]->light->render_shadow_volumes();
-			gfx.SelectShader(0);
+//			gfx.SelectShader(0);
 		}
 	}
 }
@@ -687,13 +687,13 @@ void Engine::post_process(int num_passes)
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
 		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
-		gfx.SelectShader(0);
-		gfx.DeselectTexture(1);
+//		gfx.SelectShader(0);
+//		gfx.DeselectTexture(1);
 	}
 	temp = post.swap;
 	post.swap = post.image;
 	post.image = temp;
-	gfx.DeselectTexture(0);
+//	gfx.DeselectTexture(0);
 }
 
 void Engine::debug_messages(double last_frametime)

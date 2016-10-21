@@ -55,8 +55,8 @@ void Menu::render(Global &global)
 				global.Select();
 				global.Params(matrix, 0);
 				gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
-				gfx->SelectShader(0);
-				gfx->DeselectTexture(0);
+//				gfx->SelectShader(0);
+//				gfx->DeselectTexture(0);
 				gfx->cleardepth();
 			}
 			break;
@@ -253,7 +253,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 		gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 		movepos(str[i], xpos, ypos, scale);
 	}
-	gfx->DeselectTexture(0);
+//	gfx->DeselectTexture(0);
 //	gfx->SelectVertexArrayObject(0);
 	gfx->Depth(true);
 	gfx->Blend(false);
@@ -282,7 +282,7 @@ void Menu::draw_text(char *str, float x, float y, float z, float scale, vec3 &co
 		gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
 		movepos(str[i], xpos, ypos, scale);
 	}
-	gfx->DeselectTexture(0);
+//	gfx->DeselectTexture(0);
 	gfx->Depth(true);
 	gfx->Blend(false);
 }
@@ -299,8 +299,8 @@ void Menu::render_console(Global &global)
 	global.Params(matrix, 0);
 	matrix.m[13] = 0.0f;
 	gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
-	gfx->SelectShader(0);
-	gfx->DeselectTexture(0);
+//	gfx->SelectShader(0);
+//	gfx->DeselectTexture(0);
 
 	gfx->cleardepth();
 	for(unsigned int i = 0; i < console_buffer.size(); i++)
