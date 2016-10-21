@@ -24,6 +24,12 @@ MD5::~MD5()
 	}
 	delete[] model->mesh;
 	delete model;
+
+	while (plist_stack.size())
+	{
+		delete plist_stack.top();
+		plist_stack.pop();
+	}
 }
 
 void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out)
@@ -589,6 +595,7 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 		else
 		{
 			plist->next = new anim_list_t;
+			plist_stack.push(plist->next);
 			memset(plist->next, 0, sizeof(anim_list_t));
 			strcpy(plist->next->name, "empty");
 			plist = plist->next;

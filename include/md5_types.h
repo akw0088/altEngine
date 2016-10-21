@@ -88,3 +88,10 @@ struct md5_anim_t
 	md5_hierarchy_t *hierarchy;
 	float *frame;
 };
+
+typedef struct anim_list_s
+{
+	char name[256];
+	struct md5_anim_t *anim;
+	struct anim_list_s *next;
+} anim_list_t;

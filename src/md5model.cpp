@@ -12,8 +12,6 @@ MD5Model::MD5Model()
 
 MD5Model::~MD5Model() 
 {
-	stack<anim_list_t *> plist_stack;
-
 	if (loaded == false)
 		return;
 
@@ -28,14 +26,7 @@ MD5Model::~MD5Model()
 			delete [] plist->anim->hierarchy;
 			delete plist->anim;
 		}
-		plist_stack.push(plist);
 		plist = plist->next;
-	}
-
-	while (plist_stack.size())
-	{
-		delete plist_stack.top();
-		plist_stack.pop();
 	}
 }
 

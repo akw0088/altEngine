@@ -3,12 +3,7 @@
 #ifndef MD5_H
 #define MD5_H
 
-typedef struct anim_list_s
-{
-	char name[256];
-	struct md5_anim_t *anim;
-	struct anim_list_s *next;
-} anim_list_t;
+#include <stack>
 
 class MD5
 {
@@ -43,6 +38,7 @@ public:
 	bool			loaded;
 	md5_model_t *model;
 private:
+	stack<anim_list_t *> plist_stack;
 };
 
 #endif
