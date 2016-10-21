@@ -746,6 +746,7 @@ void Engine::destroy_buffers()
 	{
 		delete [] snd_wave[i].data;
 	}
+	snd_wave.clear();
 }
 
 
@@ -2335,17 +2336,19 @@ void Engine::destroy()
 	debugf("Shutting down.\n");
 	destroy_buffers();
 	unload();
+	gfx.GetDebugLog();
 	gfx.destroy();
 	audio.destroy();
+	quit();
 }
 
 void Engine::quit()
 {
-	gfx.GetDebugLog();
-
 #ifdef _WINDOWS_
 	HWND hwnd = *((HWND *)param1);
 	PostMessage(hwnd, WM_CLOSE, 0, 0);
+#else
+	exit(0);
 #endif
 }
 
@@ -2746,6 +2749,7 @@ void Engine::console(char *cmd)
 			unload();
 		}
 		destroy();
+		return;
 	}
 
 	ret = strcmp(cmd, "exit");

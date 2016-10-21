@@ -7,7 +7,6 @@
 MD5::MD5()
 {
 	loaded = false;
-	model = new md5_model_t;
 }
 
 MD5::~MD5()
@@ -190,7 +189,9 @@ int MD5::load_md5(char *file)
 			return -1;
 		}
 	}
-
+	model = new md5_model_t;
+	memset(model, 0, sizeof(md5_model_t));
+	strcpy(model->name, file);
 	model->joint = joint;
 	model->mesh = mesh;
 	model->num_joint = num_joint;
@@ -589,6 +590,7 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 		{
 			plist->next = new anim_list_t;
 			memset(plist->next, 0, sizeof(anim_list_t));
+			strcpy(plist->next->name, "empty");
 			plist = plist->next;
 			break;
 		}

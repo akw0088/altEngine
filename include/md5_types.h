@@ -53,6 +53,7 @@ struct md5_mesh_t
 
 struct md5_model_t
 {
+	char name[128];
 	struct md5_joint_t *joint;
 	struct md5_mesh_t *mesh;
 

@@ -391,7 +391,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ReleaseDC(hwnd, hdc);
 		}
 #endif
-		altEngine.destroy();
 		WSACleanup();
 		PostQuitMessage(0);
 		return 0;
