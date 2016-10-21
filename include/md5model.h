@@ -3,16 +3,6 @@
 #ifndef MD5MODEL_H
 #define MD5MODEL_H
 
-typedef struct
-{
-	md5_joint_t	**frame;
-	int			**frame_index;
-	int			**count_index;
-	int			**frame_vertex;
-	int			**count_vertex;
-} md5_buffer_t;
-
-
 class MD5Model
 {
 public:
@@ -34,8 +24,7 @@ private:
 	int			*tex_object;
 	int			*normal_object;
 	bool		loaded;
-	int num_buffer;
-
+	int			num_buffer;
 };
 
 #endif

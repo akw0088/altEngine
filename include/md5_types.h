@@ -95,3 +95,12 @@ typedef struct anim_list_s
 	struct md5_anim_t *anim;
 	struct anim_list_s *next;
 } anim_list_t;
+
+typedef struct
+{
+	md5_joint_t	**frame;
+	int			**frame_index;
+	int			**count_index;
+	int			**frame_vertex;
+	int			**count_vertex;
+} md5_buffer_t;
