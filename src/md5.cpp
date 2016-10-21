@@ -746,7 +746,7 @@ int MD5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 			
 		for(i = 0; i < num_ani; i++)
 		{
-			sscanf(pdata, "%f", &f);
+			f = (float)atof(pdata);
 			frame[num_ani * j + i] = f;
 
 			//find whitespace
