@@ -54,7 +54,7 @@ void Menu::render(Global &global)
 				gfx->clear();
 				global.Select();
 				global.Params(matrix, 0);
-				gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+				gfx->DrawArrayTri(0, 0, 6, 4);
 //				gfx->SelectShader(0);
 //				gfx->DeselectTexture(0);
 				gfx->cleardepth();
@@ -250,7 +250,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 	{
 		font.Select();
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
-		gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+		gfx->DrawArrayTri(0, 0, 6, 4);
 		movepos(str[i], xpos, ypos, scale);
 	}
 //	gfx->DeselectTexture(0);
@@ -279,7 +279,7 @@ void Menu::draw_text(char *str, float x, float y, float z, float scale, vec3 &co
 	{
 		font.Select();
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
-		gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+		gfx->DrawArrayTri(0, 0, 6, 4);
 		movepos(str[i], xpos, ypos, scale);
 	}
 //	gfx->DeselectTexture(0);
@@ -298,7 +298,7 @@ void Menu::render_console(Global &global)
 	matrix.m[13] = 1.0f;
 	global.Params(matrix, 0);
 	matrix.m[13] = 0.0f;
-	gfx->DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+	gfx->DrawArrayTri(0, 0, 6, 4);
 //	gfx->SelectShader(0);
 //	gfx->DeselectTexture(0);
 

@@ -418,7 +418,7 @@ void Engine::render_texture(int texObj)
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
 	global.Params(identity, 0);
-	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+	gfx.DrawArrayTri(0, 0, 6, 4);
 //	gfx.SelectShader(0);
 //	gfx.DeselectTexture(0);
 }
@@ -686,7 +686,7 @@ void Engine::post_process(int num_passes)
 		gfx.clear();
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
-		gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+		gfx.DrawArrayTri(0, 0, 6, 4);
 //		gfx.SelectShader(0);
 //		gfx.DeselectTexture(1);
 	}

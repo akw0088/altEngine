@@ -594,6 +594,31 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 #endif
 }
 
+void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+}
+
+void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	glDrawElementsBaseVertex(GL_TRIANGLE_STRIP, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+}
+
+void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	glDrawElementsBaseVertex(GL_LINE_STRIP, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+}
+
+void Graphics::DrawArrayLine(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	glDrawElementsBaseVertex(GL_LINES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+}
+
+void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	glDrawElementsBaseVertex(GL_POINTS, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+}
+
 int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 {
 	unsigned int	ibo;

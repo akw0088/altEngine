@@ -29,6 +29,11 @@ public:
 	void destroy();
 
 	void DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts);
+	void DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts);
+	void DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts);
+	void DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts);
+	void DrawArrayLine(int start_index, int start_vertex, unsigned int num_index, int num_verts);
+	void DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts);
 
 	//Need to fix dx9 support cause of these guys
 	void CreateVertexArrayObject(unsigned int &vao);

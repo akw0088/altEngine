@@ -558,7 +558,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 //	if (face->lightmap != -1)
 //		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 	gfx.SelectTexture(2, normal_object[face->material]);
-	gfx.DrawArray(PRIM_TRIANGLES, face->index, face->vertex, face->num_index, face->num_verts);
+	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 //	gfx.DeselectTexture(2);
 //	gfx.DeselectTexture(1);
 //	gfx.DeselectTexture(0);
@@ -595,8 +595,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 		gfx.SelectTexture(2, normal_object[face->material]);
 		for( int row = 0; row < mesh_level; row++)
 		{
-			gfx.DrawArray(PRIM_TRIANGLE_STRIP,
-				row * index_per_row, 0,
+			gfx.DrawArrayTriStrip(row * index_per_row, 0,
 				index_per_row, mesh_num_verts[mesh_index + i]);
 		}
 //		gfx.DeselectTexture(2);
@@ -618,7 +617,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 	gfx.SelectTexture(1, normal_object[face->material]);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
+	gfx.DrawArrayTri(0, 0, 6, 4);
 //	gfx.SelectVertexBuffer(0);
 //	gfx.SelectIndexBuffer(0);
 //	gfx.DeselectTexture(1);
