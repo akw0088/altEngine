@@ -553,15 +553,15 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 
 	gfx.SelectTexture(0, tex_object[face->material]);
 	// surfaces that arent lit with lightmaps eg: skies
-	if (face->lightmap != -1)
-		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+//	if (face->lightmap != -1)
+//		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 	gfx.SelectTexture(2, normal_object[face->material]);
 	gfx.DrawArray(PRIM_TRIANGLES, face->index, face->vertex, face->num_index, face->num_verts);
-	gfx.DeselectTexture(2);
-	gfx.DeselectTexture(1);
-	gfx.DeselectTexture(0);
-	gfx.SelectVertexBuffer(0);
-	gfx.SelectIndexBuffer(0);
+//	gfx.DeselectTexture(2);
+//	gfx.DeselectTexture(1);
+//	gfx.DeselectTexture(0);
+//	gfx.SelectVertexBuffer(0);
+//	gfx.SelectIndexBuffer(0);
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx)
@@ -597,9 +597,9 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 				row * index_per_row, 0,
 				index_per_row, mesh_num_verts[mesh_index + i]);
 		}
-		gfx.DeselectTexture(2);
+//		gfx.DeselectTexture(2);
 //		gfx.DeselectTexture(1);
-		gfx.DeselectTexture(0);
+//		gfx.DeselectTexture(0);
 
 
 		if (face->patchWidth == 5 && i == 1)
@@ -617,50 +617,55 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, 6, 4);
-	gfx.SelectVertexBuffer(0);
-	gfx.SelectIndexBuffer(0);
-	gfx.DeselectTexture(1);
-	gfx.DeselectTexture(0);
+//	gfx.SelectVertexBuffer(0);
+//	gfx.SelectIndexBuffer(0);
+//	gfx.DeselectTexture(1);
+//	gfx.DeselectTexture(0);
 }
 
 void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 {
 	int frameIndex = find_leaf(position);
+	static int lastIndex = -1;
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
-	blend_list.clear();
-	face_list.clear();
-
-	// walk bsp tree, sort leafs front to back
-	vector<int> leaf_list;
-	sort_leaf(&leaf_list, 0, position);
-
-	// loop through all leaves, checking if leaf visible from current leaf
-	for (unsigned int i = 0; i < leaf_list.size(); i++)
+	if (frameIndex != lastIndex)
 	{
-		leaf_t *leaf = &data.Leaf[leaf_list[i]];
+		lastIndex = frameIndex;
+		blend_list.clear();
+		face_list.clear();
 
-		if ( cluster_visible(frameLeaf->cluster, leaf->cluster) == false )
-			continue;
+		// walk bsp tree, sort leafs front to back
+		vector<int> leaf_list;
+		sort_leaf(&leaf_list, 0, position);
 
-		if ( leaf_visible(leaf, frustum) == false)
-			continue;
-
-		// generate face lists
-		for (int j = 0; j < leaf->num_faces; j++)
+		// loop through all leaves, checking if leaf visible from current leaf
+		for (unsigned int i = 0; i < leaf_list.size(); i++)
 		{
-			int face_index = data.LeafFace[leaf->leaf_face + j];
-			face_t *face = &data.Face[face_index];
+			leaf_t *leaf = &data.Leaf[leaf_list[i]];
 
-			// need a way to tell if a face should be blended
-			if (tex_object[face->material] < 0)
-				blend_list.push_back(face_index);
-			else
-				face_list.push_back(face_index);
+			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
+				continue;
+
+			if (leaf_visible(leaf, frustum) == false)
+				continue;
+
+			// generate face lists
+			for (int j = 0; j < leaf->num_faces; j++)
+			{
+				int face_index = data.LeafFace[leaf->leaf_face + j];
+				face_t *face = &data.Face[face_index];
+
+				// need a way to tell if a face should be blended
+				if (tex_object[face->material] < 0)
+					blend_list.push_back(face_index);
+				else
+					face_list.push_back(face_index);
+			}
 		}
+		leaf_list.clear();
 	}
-	leaf_list.clear();
 
 	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
@@ -680,8 +685,11 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 		}
 	}
 
-	gfx.Blend(true);
-//	gfx.Depth(false);
+	if (blend_list.size())
+	{
+		//	gfx.Depth(false);
+		gfx.Blend(true);
+	}
 	// leaves sorted front to back, render blends back to front
 	for (int i = blend_list.size() - 1; i >= 0; i--)
 	{
@@ -700,8 +708,11 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 			render_billboard(face, gfx);
 		}
 	}
-//	gfx.Depth(true);
-	gfx.Blend(false);
+	if (blend_list.size())
+	{
+		//	gfx.Depth(true);
+		gfx.Blend(false);
+	}
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 

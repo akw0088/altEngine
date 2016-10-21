@@ -145,8 +145,8 @@ void Model::render(Graphics &gfx)
 	gfx.SelectTexture(0, model_tex);
 	gfx.SelectTexture(2, normal_tex);
 	gfx.DrawArray(PRIM_TRIANGLES, 0, 0, num_index, num_vertex);
-	gfx.DeselectTexture(2);
-	gfx.DeselectTexture(0);
+//	gfx.DeselectTexture(2);
+//	gfx.DeselectTexture(0);
 }
 
 void Model::render_box(Graphics &gfx)
@@ -155,7 +155,7 @@ void Model::render_box(Graphics &gfx)
 	gfx.SelectVertexBuffer(box_vertex);
 	gfx.SelectTexture(0, model_tex);
 	gfx.DrawArray(PRIM_LINES, 0, 0, 24, 24);
-	gfx.DeselectTexture(0);
+//	gfx.DeselectTexture(0);
 }
 
 float *Model::get_matrix(float *matrix)

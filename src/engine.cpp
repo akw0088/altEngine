@@ -347,15 +347,6 @@ void Engine::render(double last_frametime)
 	gfx.swap();
 }
 
-
-/*
-camera_frame.set(transformation);
-render_entities(transformation, true);
-mlight2.Select();
-mvp = transformation * projection;
-
-*/
-
 void Engine::render_shadowmaps()
 {
 	// set zFar closer to maximize depth buffer percision
@@ -951,8 +942,8 @@ void Engine::dynamics()
 {
 	cfg_t	config;
 
-	#pragma omp parallel for
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	#pragma omp parallel for num_threads(8)
+	for(int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->rigid == NULL)
 			continue;
