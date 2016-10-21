@@ -739,6 +739,8 @@ void Engine::debug_messages(double last_frametime)
 void Engine::destroy_buffers()
 {
 	zcc.destroy_buffers(gfx);
+	sentry.destroy_buffers(gfx);
+	zsec_shotgun.destroy_buffers(gfx);
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -2744,7 +2746,6 @@ void Engine::console(char *cmd)
 			unload();
 		}
 		destroy();
-		exit(0);
 	}
 
 	ret = strcmp(cmd, "exit");
@@ -2799,12 +2800,6 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "quit") == 0)
-	{
-		snprintf(msg, LINE_SIZE, "Exiting\n");
-		menu.print(msg);
-		quit();
-	}
 	snprintf(msg, LINE_SIZE, "Unknown command: %s\n", cmd);
 	menu.print(msg);
 }

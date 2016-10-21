@@ -265,7 +265,7 @@ void quaternion::slerp(const quaternion &p, const quaternion &q, float time, qua
 	result = p * k0 + temp * k1;
 	*/
 
-	float omega = acos(p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z);
+	float omega = (float)acos(p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z);
 
-	result = ((p * (fsin(omega * (1.0f - time))) + (q * fsin(omega*time)))) / fsin(omega);
+	result = ((p * ((float)fsin(omega * (1.0f - time))) + (q * (float)fsin(omega*time)))) / (float)fsin(omega);
 }
