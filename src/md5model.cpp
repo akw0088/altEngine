@@ -105,6 +105,12 @@ void MD5Model::load_textures(Graphics &gfx)
 {
 	tex_object = new int[md5.model->num_mesh];
 	normal_object = new int[md5.model->num_mesh];
+
+	for (int i = 0; i < md5.model->num_mesh; i++)
+		tex_object[i] = (int)-1;
+	for (int i = 0; i < md5.model->num_mesh; i++)
+		normal_object[i] = (int)-1;
+
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
 		char file[256];
@@ -198,8 +204,10 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
-		gfx.DeleteTexture(tex_object[i]);
-		gfx.DeleteTexture(normal_object[i]);
+		if (tex_object[i] != -1)
+			gfx.DeleteTexture(tex_object[i]);
+		if (normal_object[i] != -1)
+			gfx.DeleteTexture(normal_object[i]);
 	}
 
 	delete[] tex_object;

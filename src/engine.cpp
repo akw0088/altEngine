@@ -733,6 +733,8 @@ void Engine::destroy_buffers()
 	sentry.destroy_buffers(gfx);
 	zsec_shotgun.destroy_buffers(gfx);
 
+	gfx.DeleteFrameBuffer(fbo);
+
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
 		delete [] snd_wave[i].data;

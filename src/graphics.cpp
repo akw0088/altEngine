@@ -1254,6 +1254,11 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	return 0;
 }
 
+void Graphics::DeleteFrameBuffer(unsigned int fbo)
+{
+	glDeleteFramebuffers(1, &fbo);
+}
+
 void Graphics::GetDebugLog()
 {
 #ifdef WIN32
