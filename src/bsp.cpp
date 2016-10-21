@@ -418,8 +418,10 @@ void Bsp::unload(Graphics &gfx)
 	//Todo, try to find a way to keep loaded textures between map loads
 	for(int i = 0; i < data.num_materials; i++)
 	{
-		gfx.DeleteTexture(tex_object[i]);
-		gfx.DeleteTexture(normal_object[i]);
+		if (tex_object[i])
+			gfx.DeleteTexture(tex_object[i]);
+		if (normal_object[i])
+			gfx.DeleteTexture(normal_object[i]);
 	}
 	delete [] tex_object;
 	delete [] normal_object;

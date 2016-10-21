@@ -484,14 +484,7 @@ void Graphics::init(void *param1, void *param2)
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-/*
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
-	*/
+
 #ifdef ERROR_CHECK
 	error_check();
 #endif
@@ -584,15 +577,6 @@ void Graphics::destroy()
 
 void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	// This is cached into the current vao
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), NULL);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2)));
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2)));
-	glVertexAttribPointer(4, 1, GL_INT,   GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3)));
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3) + sizeof(int)));
-
-
 	// Branches in rendering loop are slow, find faster portable method
 	if (primitive == PRIM_TRIANGLES)
 		glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
@@ -691,15 +675,16 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
 	unsigned int	vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_STATIC_DRAW);
 
-	// This is cached into the current vao
+	// This is cached into the current vbo
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), NULL);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3)));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2)));
 	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2)));
 	glVertexAttribPointer(4, 1, GL_INT,   GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3)));
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3) + sizeof(int)));
+
+	glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_STATIC_DRAW);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -710,6 +695,15 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
 void Graphics::SelectVertexBuffer(int handle)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, handle);
+
+	// This is cached into the current vbo
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), NULL);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2)));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2)));
+	glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3) + sizeof(int)));
+
 
 #ifdef ERROR_CHECK
 	error_check();
