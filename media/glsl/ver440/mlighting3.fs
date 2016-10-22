@@ -51,7 +51,7 @@ void main(void)
 
 	for(int i = 0; i < u_num_lights; i++)
 	{
-		vec4 lightPosEye = normalize(mvp * vec4(u_position[i], 1.0));
+		vec4 lightPosEye = mvp * vec4(u_position[i], 1.0);
 		vary_light.rgb = vec3(Vertex.vary_position - lightPosEye); // light vector to fragment
 		vary_light.a = length(vary_light.rgb); // distance from light
 
@@ -63,6 +63,6 @@ void main(void)
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.1); // combine everything
 	}
 
-//	Fragment.rgb *= max(light, ambient);
+	Fragment.rgb *= max(light, ambient);
 
 }

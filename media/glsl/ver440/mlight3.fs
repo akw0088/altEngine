@@ -122,7 +122,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 
 void calc_light(in vec3 eye, in vec3 normal, out vec3 lighti, in int light_num)
 {
-	vec4 lightPosEye = normalize(mvp * vec4(u_position[light_num], 1.0));
+	vec4 lightPosEye = mvp * vec4(u_position[light_num], 1.0);
 	vary_light.rgb = vec3(Vertex.vary_position - lightPosEye); // light vector to fragment
 	vary_light.a = length(vary_light.rgb); // distance from light
 	
