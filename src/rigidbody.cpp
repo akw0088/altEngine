@@ -343,7 +343,7 @@ bool RigidBody::collision_detect(RigidBody &body)
 	return false;
 }
 
-void RigidBody::frame2ent(Frame *camera, button_t &keyboard)
+void RigidBody::frame2ent(Frame *camera, button_t &input)
 {
 	vec3		forward = camera->forward;
 	vec3		up(0.0f, 1.0f, 0.0f);
@@ -353,9 +353,9 @@ void RigidBody::frame2ent(Frame *camera, button_t &keyboard)
 //	forward.normalize();
 	right = vec3::crossproduct(forward, up);
 	right.normalize();
-	if (keyboard.control == false)
+	if (input.control == false)
 	{
-		entity->rigid->sleep = false;
+//		entity->rigid->sleep = false;
 		entity->rigid->gravity = true;
 		camera->pos = entity->position;
 

@@ -4,6 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
+//#define SHADOWVOL
 #define FORWARD
 //#define DEFERRED
 
@@ -113,7 +114,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-	map.render(camera_frame.pos, NULL, gfx);
+	map.render(camera_frame.pos, mvp, gfx);
 	camera_frame.set(transformation);
 	render_entities(transformation, true);
 
@@ -264,9 +265,11 @@ void Engine::render(double last_frametime)
 
 	// Generate depth cubemaps for each light
 	render_shadowmaps();
+
 	gfx.bindFramebuffer(0);
 
 	render_to_framebuffer();
+
 	gfx.clear();
 
 	if (spawn != -1 && entity_list[spawn]->player->current_light == 0)
@@ -291,7 +294,7 @@ void Engine::render(double last_frametime)
 #ifdef FORWARD
 	gfx.clear();
 	gfx.Blend(true);
-//	render_shadow_volumes(); // for debugging
+	render_shadow_volumes(0); // for debugging
 	render_scene(true);
 	gfx.Blend(false);
 #endif
@@ -299,10 +302,9 @@ void Engine::render(double last_frametime)
 	matrix4 mvp;
 
 	gfx.clear();
-//	gfx.Blend(true);
+	gfx.Blend(true);
 	render_scene(false); // render without lights, fill stencil mask, render with lights
-//	gfx.Blend(false);
-
+	gfx.Blend(false);
 
 	gfx.Color(false);
 	gfx.Stencil(true);
@@ -310,11 +312,11 @@ void Engine::render(double last_frametime)
 	gfx.StencilFunc("always", 0, 0);
 
 	gfx.StencilOp("keep", "keep", "incr"); // increment shadows that pass depth
-	render_shadow_volumes();
+	render_shadow_volumes(0);
 
 	gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
 	gfx.CullFace("front");
-	render_shadow_volumes();
+	render_shadow_volumes(0);
 
 	gfx.Depth(true);
 	gfx.Color(true);
@@ -329,10 +331,12 @@ void Engine::render(double last_frametime)
 	// render with lights
 	gfx.cleardepth();
 	render_scene(true);
+	
 
 	gfx.DepthFunc("<");
 	gfx.Stencil(false);
 #endif
+
 
 	//Handle realtime keys (typing can be slower)
 	handle_input();
@@ -349,8 +353,6 @@ void Engine::render(double last_frametime)
 
 void Engine::render_shadowmaps()
 {
-	// set zFar closer to maximize depth buffer percision
-	projection.perspective(45.0, (float)fb_width / fb_height, 1.0f, 1201.0f, false);
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light && entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
@@ -385,15 +387,13 @@ void Engine::render_shadowmaps()
 
 				mlight2.Select();
 				mlight2.Params(mvp, light_list, 0);
-				map.render(entity_list[i]->position, NULL, gfx);
+				map.render(entity_list[i]->position, mvp, gfx);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
 			break;
 		}
 	}
-	projection.perspective(45.0, (float)xres / yres, 1.0f, 2001.0f, true);
-
 }
 
 
@@ -406,6 +406,8 @@ void Engine::render_to_framebuffer()
 
 	gfx.clear();
 	render_scene_using_shadowmap(true);
+	render_shadow_volumes(entity_list[spawn]->player->current_light);
+
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
@@ -442,7 +444,7 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0);
 
-	map.render(camera_frame.pos, NULL, gfx);
+	map.render(camera_frame.pos, mvp, gfx);
 //	gfx.SelectShader(0);
 }
 
@@ -499,12 +501,13 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (input.control)
 	{
-		map.render(light_frame.pos, NULL, gfx);
+		map.render(light_frame.pos, mvp, gfx);
+		render_shadow_volumes(entity_list[spawn]->player->current_light);
 //		gfx.SelectShader(0);
 		return;
 	}
 
-	map.render(camera_frame.pos, NULL, gfx);
+	map.render(camera_frame.pos, mvp, gfx);
 //	gfx.SelectShader(0);
 }
 
@@ -646,21 +649,34 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 }
 
 
-void Engine::render_shadow_volumes()
+void Engine::render_shadow_volumes(int current_light)
 {
 	matrix4 mvp;
 	matrix4 transformation;
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-
 		if (entity_list[i]->light)
 		{
-			camera_frame.set(transformation);
+			if (input.control)
+			{
+				light_frame.set(transformation);
+			}
+			else
+			{
+				camera_frame.set(transformation);
+			}
+
+			glMatrixMode(GL_PROJECTION_MATRIX);
+			glLoadMatrixf(projection.m);
+			glMatrixMode(GL_MODELVIEW_MATRIX);
+			glLoadMatrixf(transformation.m);
+
+
 			mvp = transformation * projection;
 			global.Select();
 			global.Params(mvp, 0);
-//			entity_list[i]->light->render_shadow_volumes();
+			entity_list[i]->light->render_shadow_volumes(current_light);
 //			gfx.SelectShader(0);
 		}
 	}
@@ -899,7 +915,7 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
-	if (distance < 2.0f * 800.0f * 800.0f && light->entity->visible)
+	if (distance < 800.0f * 800.0f && light->entity->visible)
 	{
 		if (light->active == false)
 		{
@@ -950,11 +966,8 @@ void Engine::dynamics()
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (server_flag == false)
-		{
-			if (entity_list[i]->visible == false || entity_list[i]->rigid->sleep == true)
-				continue;
-		}
+		if ( (server_flag == false && entity_list[i]->visible == false) || entity_list[i]->rigid->sleep == true)
+			continue;
 
 		RigidBody *body = entity_list[i]->rigid;
 		if (entity_list[i]->vehicle != NULL)

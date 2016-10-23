@@ -9,7 +9,7 @@ class Bsp
 	inline int find_leaf(const vec3 &position);
 	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
 	inline int cluster_visible(int visCluster, int testCluster);
-	bool leaf_visible(leaf_t *leaf, Plane *frustum);
+	bool leaf_visible(leaf_t *leaf, matrix4 &mvp);
 	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
 	inline void render_face(face_t *face, Graphics &gfx);
 	inline void render_patch(face_t *face, Graphics &gfx);
@@ -17,12 +17,14 @@ class Bsp
 	void draw_line_box(int *min, int *max);
 	void draw_box(int *min, int *max);
 public:
+	void Bsp::find_edges(vec3 &position, Edge &edge_list);
+
 	Bsp();
 	bool vis_test(vec3 &x, vec3 &y);
 	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
-	void render(vec3 &position, Plane *frustum, Graphics &gfx);
+	void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
 	bool load(char *map);
 	void load_textures(Graphics &gfx);
 	void unload(Graphics &gfx);

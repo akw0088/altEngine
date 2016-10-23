@@ -634,7 +634,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 //	gfx.DeselectTexture(0);
 }
 
-void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
+void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx)
 {
 	int frameIndex = find_leaf(position);
 	static int lastIndex = -1;
@@ -659,8 +659,8 @@ void Bsp::render(vec3 &position, Plane *frustum, Graphics &gfx)
 			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				continue;
 
-			if (leaf_visible(leaf, frustum) == false)
-				continue;
+//			if (leaf_visible(leaf, mvp) == false)
+//				continue;
 
 			// generate face lists
 			for (int j = 0; j < leaf->num_faces; j++)
@@ -747,27 +747,53 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 }
 
 /*
-	Needs frustum in world space
+	Transforms leaf aabb to clip space
+	if any point within clip [-1,1] box
+	then visible
+	(might need to trace lines for odd cases of partially in
+	but vertex outside scenarios)
+
+	1. So view frustum converted to a regular square pyramid by
+	aspect ratio encoded in projection matrix
+
+	2. Square pyramid converted to a box by m[10] and m[14]
+	of projection matrix
+
+	3. Divide by w scales box to [-1,1] range for clip testing
 */
-bool Bsp::leaf_visible(leaf_t *leaf, Plane *frustum)
+bool Bsp::leaf_visible(leaf_t *leaf, matrix4 &mvp)
 {
-	vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
 	vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
+	vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
 
-	if (frustum == NULL)
-		return true;
+	vec4 aabb[8];
 
-	for(int i = 0; i < 5; i++)
+	//binary counting
+	aabb[0] = mvp * vec4(min.x, min.y, min.z, 1.0f);
+	aabb[1] = mvp * vec4(min.x, min.y, max.z, 1.0f);
+	aabb[2] = mvp * vec4(min.x, max.y, min.z, 1.0f);
+	aabb[3] = mvp * vec4(min.x, max.y, max.z, 1.0f);
+	aabb[4] = mvp * vec4(max.x, min.y, min.z, 1.0f);
+	aabb[5] = mvp * vec4(max.x, min.y, max.z, 1.0f);
+	aabb[6] = mvp * vec4(max.x, max.y, min.z, 1.0f);
+	aabb[7] = mvp * vec4(max.x, max.y, max.z, 1.0f);
+
+	for(int i = 0; i < 8; i++)
 	{
-		if ( frustum[i].normal * max + frustum[i].d < 0 )
+		if (aabb[i].x <= aabb[i].w && aabb[i].x >= -aabb[i].w)
 		{
-			if ( frustum[i].normal * min + frustum[i].d < 0 )
-			{
-				return false;
-			}
+			return true;
+		}
+		if (aabb[i].y <= aabb[i].w && aabb[i].y >= -aabb[i].w)
+		{
+			return true;
+		}
+		if (aabb[i].z <= aabb[i].w && aabb[i].z >= -aabb[i].w)
+		{
+			return true;
 		}
 	}
-	return true;
+	return false;
 }
 
 void Bsp::load_textures(Graphics &gfx)
@@ -1178,5 +1204,131 @@ void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 		vec3 max((float)data.Leaf[i].max[0], (float)data.Leaf[i].max[1], (float)data.Leaf[i].max[2]);
 
 		RayBoxSlab(origin, dir, min, max, distance);
+	}
+}
+
+
+
+/*
+Loop through all the model's triangles
+If triangle faces the light source (dot product > 0)
+Insert the three edges (pair of vertices), into an edge stack
+Check for previous occurrence of each edges or it's reverse in the stack
+If an edge or its reverse is found in the stack, remove both edges
+Start with new triangle
+*/
+
+
+/*
+// generate face lists
+for (int j = 0; j < leaf->num_faces; j++)
+{
+int face_index = data.LeafFace[leaf->leaf_face + j];
+face_t *face = &data.Face[face_index];
+
+// need a way to tell if a face should be blended
+if (tex_object[face->material] < 0)
+blend_list.push_back(face_index);
+else
+face_list.push_back(face_index);
+}
+*/
+void Bsp::find_edges(vec3 &position, Edge &edge_list)
+{
+	int leaf_index = find_leaf(position);
+
+	leaf_t *light_Leaf = &data.Leaf[leaf_index];
+
+	// loop through all leaves, checking if leaf visible from current leaf
+	for (int i = 0; i < data.num_leafs; i++)
+	{
+		leaf_t *leaf = &data.Leaf[i];
+
+		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
+			continue;
+
+		for (int j = 0; j < leaf->num_faces; j++)
+		{
+			vector<vec3> vertex_list;
+			int face_index = data.LeafFace[leaf->leaf_face + j];
+			face_t *face = &data.Face[face_index];
+
+			for (int k = 0; k < face->num_index; k++)
+			{
+				int index = data.IndexArray[face->index + k];
+				vec3 x = data.Vert[face->vertex + index].position;
+				vertex_list.push_back(x);
+			}
+
+			for(int k = 0; k < vertex_list.size(); k += 3)
+			{
+				vec3 x = vertex_list[k];
+				vec3 y = vertex_list[k + 1];
+				vec3 z = vertex_list[k + 2];
+
+				
+				vec3 a = y - x;
+				vec3 b = z - x;
+				vec3 normal = vec3::crossproduct(a, b);
+
+				vec3 lightdir1 = x - position;
+				vec3 lightdir2 = y - position;
+				vec3 lightdir3 = z - position;
+				vec3 lightdir;
+
+				if (lightdir1.magnitude() < lightdir2.magnitude() && lightdir1.magnitude() < lightdir3.magnitude())
+					lightdir = lightdir1;
+				else if (lightdir2.magnitude() < lightdir1.magnitude() && lightdir2.magnitude() < lightdir3.magnitude())
+					lightdir = lightdir2;
+				else
+					lightdir = lightdir3;
+
+				normal.normalize();
+//				if (lightdir.magnitude() > 400.0f)
+//					continue;
+
+
+				if (lightdir * normal > 0)
+				{
+					vec3 triple[3][2];
+
+					if (x.x < y.x)
+					{
+						triple[0][0] = x;
+						triple[0][1] = y;
+					}
+					else
+					{
+						triple[0][1] = x;
+						triple[0][0] = y;
+					}
+
+					if (x.x < z.x)
+					{
+						triple[1][0] = x;
+						triple[1][1] = z;
+					}
+					else
+					{
+						triple[1][1] = x;
+						triple[1][0] = z;
+					}
+
+					if (y.x < z.x)
+					{
+						triple[2][0] = y;
+						triple[2][1] = z;
+					}
+					else
+					{
+						triple[2][1] = y;
+						triple[2][0] = z;
+					}
+					edge_list.insert(&triple[0][0]);
+					edge_list.insert(&triple[1][0]);
+					edge_list.insert(&triple[2][0]);
+				}
+			}
+		}
 	}
 }

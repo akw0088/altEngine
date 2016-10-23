@@ -7,12 +7,13 @@ class Light
 {
 public:
 	Light(Entity *entity, Graphics &gfx, int num);
-	void render_shadow_volumes();
+	void render_shadow_volumes(int current_light);
 	void generate_volumes(Bsp &map);
 
 	void generate_cubemaps(int width, int height);
 
 	void select_shadowmap(Graphics &gfx, int face);
+	void extend(Edge &edge_list, vec3 position, int current_light);
 
 	Entity	*entity;
 	unsigned int quad_tex[6];
