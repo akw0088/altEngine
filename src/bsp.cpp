@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-float newtonSqrt(float x);
+bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
 
 Bsp::Bsp()
 {
@@ -659,8 +659,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx)
 			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				continue;
 
-//			if (leaf_visible(leaf, mvp) == false)
-//				continue;
+			/*
+			vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
+			vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
+			if (aabb_visible(min, max, mvp) == false)
+				continue;
+			*/
 
 			// generate face lists
 			for (int j = 0; j < leaf->num_faces; j++)
@@ -744,56 +748,6 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	byte_offset = bit_offset / 8;
 	test_byte = 1 << (bit_offset - byte_offset * 8);
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
-}
-
-/*
-	Transforms leaf aabb to clip space
-	if any point within clip [-1,1] box
-	then visible
-	(might need to trace lines for odd cases of partially in
-	but vertex outside scenarios)
-
-	1. So view frustum converted to a regular square pyramid by
-	aspect ratio encoded in projection matrix
-
-	2. Square pyramid converted to a box by m[10] and m[14]
-	of projection matrix
-
-	3. Divide by w scales box to [-1,1] range for clip testing
-*/
-bool Bsp::leaf_visible(leaf_t *leaf, matrix4 &mvp)
-{
-	vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
-	vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
-
-	vec4 aabb[8];
-
-	//binary counting
-	aabb[0] = mvp * vec4(min.x, min.y, min.z, 1.0f);
-	aabb[1] = mvp * vec4(min.x, min.y, max.z, 1.0f);
-	aabb[2] = mvp * vec4(min.x, max.y, min.z, 1.0f);
-	aabb[3] = mvp * vec4(min.x, max.y, max.z, 1.0f);
-	aabb[4] = mvp * vec4(max.x, min.y, min.z, 1.0f);
-	aabb[5] = mvp * vec4(max.x, min.y, max.z, 1.0f);
-	aabb[6] = mvp * vec4(max.x, max.y, min.z, 1.0f);
-	aabb[7] = mvp * vec4(max.x, max.y, max.z, 1.0f);
-
-	for(int i = 0; i < 8; i++)
-	{
-		if (aabb[i].x <= aabb[i].w && aabb[i].x >= -aabb[i].w)
-		{
-			return true;
-		}
-		if (aabb[i].y <= aabb[i].w && aabb[i].y >= -aabb[i].w)
-		{
-			return true;
-		}
-		if (aabb[i].z <= aabb[i].w && aabb[i].z >= -aabb[i].w)
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 void Bsp::load_textures(Graphics &gfx)
@@ -1068,147 +1022,6 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	delete[] temp_btan;
 }
 
-bool Bsp::RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v)
-{
-	vec3 ab = b - a;
-	vec3 ac = c - a;
-	vec3 pvec = vec3::crossproduct(dir, ac);
-
-	float det = ab * pvec;
-
-	// ray and triangle are parallel if det is close to 0
-	if (abs32(det) < 0.001f)
-		return false;
-
-	float invDet = 1 / det;
-
-	vec3 tvec = origin - a;
-
-	u = (tvec * pvec) * invDet;
-	
-	if (u < 0 || u > 1)
-		return false;
-
-	vec3 qvec = vec3::crossproduct(tvec, ab);
-	v = (dir * qvec) * invDet;
-
-	if (v < 0 || u + v > 1)
-		return false;
-
-	t = (ac * qvec) * invDet;
-
-	return true;
-}
-
-bool Bsp::RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius,  float &t)
-{
-	vec3 dist = sphere - origin;
-	float B = dir * dist;
-	float D = B * B - dist * dist + radius * radius;
-
-	if (D < 0.0f)
-		return false;
-
-	float t0 = B - newtonSqrt(D);
-	float t1 = B + newtonSqrt(D);
-
-	bool ret = false;
-
-	if ((t0 > 0.1f) && (t0 < t))
-	{
-		t = t0;
-		ret = true;
-	}
-	if ((t1 > 0.1f) && (t1 < t))
-	{
-		t = t1;
-		ret = true;
-	}
-	return ret;
-}
-
-//intersect ray plane
-bool Bsp::RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point)
-{
-	float denom = dir * normal;
-	float time;
-	
-	if (denom == 0.0f)
-	{
-		return false;
-	}
-
-	time = -(origin * normal + d) / denom;
-	point = origin + dir * time;
-	return true;
-}
-
-/*
-Intersect ray with aabb planes
-get tmin and tmax values for each pair
-can compare interval with other pairs and determine
-if hit or miss occurs
-*/
-bool Bsp::RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
-{
-	float tmin = -10000, tmax = 10000;
-
-	// X coordinate
-	if (dir.x != 0.0)
-	{
-		float t1 = (min.x - origin.x) / dir.x;
-		float t2 = (max.x - origin.x) / dir.x;
-
-		tmin = MAX(tmin, MIN(t1, t2));
-		tmax = MIN(tmax, MAX(t1, t2));
-	}
-
-	// Y coordinate
-	if (dir.y != 0.0)
-	{
-		float t1 = (min.y - origin.y) / dir.y;
-		float t2 = (max.y - origin.y) / dir.y;
-
-		tmin = MAX(tmin, MIN(t1, t2));
-		tmax = MIN(tmax, MAX(t1, t2));
-	}
-
-	// Z coordinate
-	if (dir.z != 0.0)
-	{
-		float t1 = (min.z - origin.z) / dir.z;
-		float t2 = (max.z - origin.z) / dir.z;
-
-		tmin = MAX(tmin, MIN(t1, t2));
-		tmax = MIN(tmax, MAX(t1, t2));
-	}
-
-
-	if (tmax > tmin && tmax > 0.0)
-	{
-		distance = tmax;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-
-void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
-{
-	for (int i = 0; i < data.num_leafs; i++)
-	{
-		vec3 min((float)data.Leaf[i].min[0], (float)data.Leaf[i].min[1], (float)data.Leaf[i].min[2]);
-		vec3 max((float)data.Leaf[i].max[0], (float)data.Leaf[i].max[1], (float)data.Leaf[i].max[2]);
-
-		RayBoxSlab(origin, dir, min, max, distance);
-	}
-}
-
-
-
 /*
 Loop through all the model's triangles
 If triangle faces the light source (dot product > 0)
@@ -1331,4 +1144,18 @@ void Bsp::find_edges(vec3 &position, Edge &edge_list)
 			}
 		}
 	}
+}
+
+
+void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
+{
+	// Really need to test brush planes not leaf aabbs
+	for (int i = 0; i < data.num_leafs; i++)
+	{
+		vec3 min((float)data.Leaf[i].min[0], (float)data.Leaf[i].min[1], (float)data.Leaf[i].min[2]);
+		vec3 max((float)data.Leaf[i].max[0], (float)data.Leaf[i].max[1], (float)data.Leaf[i].max[2]);
+
+		RayBoxSlab(origin, dir, min, max, distance);
+	}
+	
 }

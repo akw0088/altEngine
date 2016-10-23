@@ -9,7 +9,6 @@ class Bsp
 	inline int find_leaf(const vec3 &position);
 	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
 	inline int cluster_visible(int visCluster, int testCluster);
-	bool leaf_visible(leaf_t *leaf, matrix4 &mvp);
 	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
 	inline void render_face(face_t *face, Graphics &gfx);
 	inline void render_patch(face_t *face, Graphics &gfx);
@@ -17,8 +16,8 @@ class Bsp
 	void draw_line_box(int *min, int *max);
 	void draw_box(int *min, int *max);
 public:
-	void Bsp::find_edges(vec3 &position, Edge &edge_list);
-
+	void find_edges(vec3 &position, Edge &edge_list);
+	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
 	bool vis_test(vec3 &x, vec3 &y);
 	bool leaf_test(vec3 &x, vec3 &y);
@@ -34,8 +33,6 @@ public:
 	{
 	}
 
-	void hitscan(vec3 &origin, vec3 &dir, float &distance);
-
 //	bool collision_detect(const vec3 &old_point, const vec3 &velocity, float &time);
 	bool collision_detect(vec3 &new_point, plane_t *plane, float *depth);
 
@@ -43,13 +40,6 @@ public:
 	bspData_t	data;
 	char map_name[80];
 private:
-
-	// Will move into a ray class eventually
-	bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v);
-	bool RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius, float &t);
-	bool RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point);
-	bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
-
 	bsp_t		*tBsp;
 
 	vec4		*tangent;

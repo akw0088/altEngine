@@ -8,6 +8,8 @@
 #define FORWARD
 //#define DEFERRED
 
+bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
+
 
 Engine::Engine()
 {
@@ -851,6 +853,8 @@ void Engine::spatial_testing()
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
+		// set pursue / evade
+		// (really need to move elsewhere, but had an entity loop here)
 		if (entity_list[i]->rigid)
 		{
 			if (entity_list[i]->rigid->target)
@@ -870,7 +874,19 @@ void Engine::spatial_testing()
 
 		if (entity_list[i]->model)
 		{
-			bool ent_visible = false;
+			bool bsp_visible = false;
+			bool frustum_visible = false;
+			bool visible = false;
+
+
+			matrix4 transformation;
+
+			camera_frame.set(transformation);
+			matrix4 mvp = transformation * projection;
+			vec3 min = entity_list[i]->model->morientation * entity_list[i]->model->aabb[0];
+			vec3 max = entity_list[i]->model->morientation * entity_list[i]->model->aabb[7];
+
+			frustum_visible = aabb_visible(min, max, mvp);
 
 			for(int j = 0; j < 8; j++)
 			{
@@ -879,25 +895,33 @@ void Engine::spatial_testing()
 
 				if (vert_visible)
 				{
-					ent_visible = true;
+					bsp_visible = true;
 					break;
 				}
 			}
 
+			if ((bsp_visible && frustum_visible) || i == spawn)
+			{
+				visible = true;
+			}
+
+
+			// make triggered entities disappear
 			if (entity_list[i]->trigger)
 			{
 				if (entity_list[i]->trigger->active == false)
 				{
-					entity_list[i]->visible = ent_visible;
+					entity_list[i]->visible = visible;
 				}
 			}
 			else
 			{
-				entity_list[i]->visible = ent_visible;
+				entity_list[i]->visible = visible;
 			}
 		}
 		else
 		{
+			// Lights? what else?
 			entity_list[i]->visible = map.vis_test(camera_frame.pos, entity_list[i]->position);
 		}
 
@@ -927,6 +951,7 @@ void Engine::activate_light(float distance, Light *light)
 	}
 	else
 	{
+		// remove active lights that fail distance check
 		if (light->active == true )
 		{
 			for(unsigned int i = 0; i < light_list.size(); i++)
