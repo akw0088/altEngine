@@ -27,6 +27,14 @@ of projection matrix
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 {
 	vec4 aabb[8];
+	bool visible = true;
+	int xp = 0;
+	int xn = 0;
+	int yp = 0;
+	int yn = 0;
+	int zp = 0;
+	int zn = 0;
+
 
 	//binary counting
 	aabb[0] = mvp * vec4(min.x, min.y, min.z, 1.0f);
@@ -38,22 +46,42 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 	aabb[6] = mvp * vec4(max.x, max.y, min.z, 1.0f);
 	aabb[7] = mvp * vec4(max.x, max.y, max.z, 1.0f);
 
+	// Assume visible, if all points lay outside one plane, not visible
 	for (int i = 0; i < 8; i++)
 	{
-		if (aabb[i].x <= aabb[i].w && aabb[i].x >= -aabb[i].w)
+		if (aabb[i].x <= aabb[i].w)
 		{
-			return true;
+			xn = 1;
 		}
-		if (aabb[i].y <= aabb[i].w && aabb[i].y >= -aabb[i].w)
+		if (aabb[i].x >= -aabb[i].w)
 		{
-			return true;
+			xp = 1;
 		}
-		if (aabb[i].z <= aabb[i].w && aabb[i].z >= -aabb[i].w)
+		if (aabb[i].y <= aabb[i].w)
 		{
-			return true;
+			yn = 1;
+		}
+		if (aabb[i].y >= -aabb[i].w)
+		{
+			yp = 1;
+		}
+		if (aabb[i].z <= aabb[i].w)
+		{
+			zn = 1;
+		}
+		if (aabb[i].z >= -aabb[i].w)
+		{
+			zp = 1;
 		}
 	}
-	return false;
+
+	// all points were outside of one plane
+	if (xp + xn + yp + yn + zp + zn == 1)
+	{
+		visible = false;
+	}	
+
+	return visible;
 }
 
 bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v)
