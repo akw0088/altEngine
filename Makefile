@@ -1,6 +1,7 @@
 SOURCES := 	xmain.cpp \
 		audio.cpp \
 		bsp.cpp \
+		common.cpp \
 		decal.cpp \
 		edge.cpp \
 		engine.cpp \
