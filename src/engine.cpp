@@ -629,7 +629,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 
 	//render md5 as second to last entity
-	/*
+	
 	if (entity_list.size())
 	{
 		if (entity_list[entity_list.size() - 1]->rigid == NULL)
@@ -647,7 +647,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		}
 		zcc.render(gfx, frame_step);
 	}
-	*/
+	
 }
 
 
@@ -1732,12 +1732,10 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("middlebutton", key) == 0)
 	{
 		input.middlebutton = pressed;
-		k = 15;
 	}
 	else if (strcmp("rightbutton", key) == 0)
 	{
 		input.rightbutton = pressed;
-		k = 16;
 	}
 	else if (strcmp("mousewheelup", key) == 0)
 	{
@@ -1762,22 +1760,18 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("up", key) == 0)
 	{
 		input.up = pressed;
-		k = 3;
 	}
 	else if (strcmp("left", key) == 0)
 	{
 		input.left = pressed;
-		k = 4;
 	}
 	else if (strcmp("down", key) == 0)
 	{
 		input.down = pressed;
-		k = 5;
 	}
 	else if (strcmp("right", key) == 0)
 	{
 		input.right = pressed;
-		k = 6;
 	}
 	else if (strcmp("numpad0", key) == 0)
 	{
@@ -2582,7 +2576,7 @@ void Engine::console(char *cmd)
 
 		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
-			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
+			if (entity_list[i]->type && strcmp(entity_list[i]->type, "misc_teleporter_dest"))
 				continue;
 				
 			if (!strcmp(entity_list[i]->target_name, data))
@@ -2611,6 +2605,68 @@ void Engine::console(char *cmd)
 				camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 				break;
 
+			}
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "respawn");
+	if (ret == 0)
+	{
+		static int last_spawn = 0;
+		unsigned int i = last_spawn;
+		bool spawned = false;
+
+
+		while (spawned == false)
+		{
+			for (i = last_spawn; i < entity_list.size(); i++)
+			{
+				if (entity_list[i]->type && strcmp(entity_list[i]->type, "info_player_deathmatch"))
+					continue;
+
+				{
+					matrix4 matrix;
+					entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+
+					switch (entity_list[i]->angle)
+					{
+					case 0:
+						matrix4::mat_left(matrix, entity_list[spawn]->position);
+						break;
+					case 90:
+						matrix4::mat_forward(matrix, entity_list[spawn]->position);
+						break;
+					case 180:
+						matrix4::mat_right(matrix, entity_list[spawn]->position);
+						break;
+					case 270:
+						matrix4::mat_backward(matrix, entity_list[spawn]->position);
+						break;
+					}
+//					camera_frame.forward.x = matrix.m[8];
+//					camera_frame.forward.y = matrix.m[9];
+//					camera_frame.forward.z = matrix.m[10];
+//					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+					last_spawn = i + 1;
+					debugf("Spawning on entity %d", i);
+					spawned = true;
+					break;
+
+				}
+			}
+
+			if (i == entity_list.size())
+			{
+				if (last_spawn != 0)
+				{
+					last_spawn = 0;
+				}
+				else
+				{
+					debugf("Failed to find a spawn point");
+					break;
+				}
 			}
 		}
 		return;
@@ -2960,6 +3016,12 @@ void Engine::handle_weapons(Player &player)
 			entity_list.push_back(entity);
 			player.ammo_rockets--;
 
+
+			entity->light = new Light(entity, gfx, 999);
+			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
+			entity->light->intensity = 1000.0f;
+
+
 			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
 		}
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
@@ -2980,7 +3042,7 @@ void Engine::handle_weapons(Player &player)
 
 
 			entity->light = new Light(entity, gfx, 999);
-			entity->light->color = vec3(1.0f, 0.0f, 0.0f);
+			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
 
 			entity_list.push_back(entity);
