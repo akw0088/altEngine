@@ -2977,6 +2977,12 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			//			entity->rigid->set_target(*(entity_list[spawn]));
 			camera_frame.set(entity->model->morientation);
+
+
+			entity->light = new Light(entity, gfx, 999);
+			entity->light->color = vec3(1.0f, 0.0f, 0.0f);
+			entity->light->intensity = 1000.0f;
+
 			entity_list.push_back(entity);
 			player.ammo_lightning--;
 

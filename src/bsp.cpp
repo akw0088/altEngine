@@ -5,6 +5,7 @@
 #endif
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
+bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 
 Bsp::Bsp()
 {
@@ -659,12 +660,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx)
 			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				continue;
 
-			/*
+			
 			vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
 			vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
-			if (aabb_visible(min, max, mvp) == false)
-				continue;
-			*/
+//			if (aabb_visible(min, max, mvp) == false)
+//				continue;
+			
 
 			// generate face lists
 			for (int j = 0; j < leaf->num_faces; j++)

@@ -8,6 +8,7 @@ layout (triangle_strip, max_vertices=3) out;
 
 
 in VertexData {
+	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
 	vec2		vary_LightCoord;
@@ -18,6 +19,7 @@ in VertexData {
 
  
 out VertexDataOut {
+    vec3 att_position;
     vec4 vary_position;
     vec2 vary_TexCoord;
     vec2 vary_LightCoord;
@@ -47,14 +49,15 @@ void main()
 	{
 		// copy attributes
 		gl_Position = gl_in[i].gl_Position;
+		VertexOut.att_position = VertexIn[i].att_position;
 		VertexOut.vary_position = VertexIn[i].vary_position;
 		VertexOut.vary_TexCoord = VertexIn[i].vary_TexCoord;
 		VertexOut.vary_LightCoord = VertexIn[i].vary_LightCoord;
 		VertexOut.vary_color = VertexIn[i].vary_color;
-//		VertexOut.vary_normal = VertexIn[i].vary_normal; // I dont trust the artists ;)
-//		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // I dont trust the artists ;)
-		VertexOut.vary_normal = normal;
-		VertexOut.vary_tangent = tangent;
+		VertexOut.vary_normal = VertexIn[i].vary_normal; // I dont trust the artists ;)
+		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // I dont trust the artists ;)
+//		VertexOut.vary_normal = normal;
+//		VertexOut.vary_tangent = tangent;
 
 		// done with the vertex
 		EmitVertex();

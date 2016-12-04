@@ -49,34 +49,34 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 	// Assume visible, if all points lay outside one plane, not visible
 	for (int i = 0; i < 8; i++)
 	{
-		if (aabb[i].x >= aabb[i].w)
+		if (aabb[i].x > aabb[i].w)
 		{
 			xp = 1;
 		}
-		if (aabb[i].x <= -aabb[i].w)
+		if (aabb[i].x < -aabb[i].w)
 		{
 			xn = 1;
 		}
-		if (aabb[i].y >= aabb[i].w)
+		if (aabb[i].y > aabb[i].w)
 		{
 			yp = 1;
 		}
-		if (aabb[i].y <= -aabb[i].w)
+		if (aabb[i].y < -aabb[i].w)
 		{
 			yn = 1;
 		}
-		if (aabb[i].z >= aabb[i].w)
+		if (aabb[i].z > aabb[i].w)
 		{
 			zp = 1;
 		}
-		if (aabb[i].z <= -aabb[i].w)
+		if (aabb[i].z < -aabb[i].w)
 		{
 			zn = 1;
 		}
 	}
 
 	// all points were outside of one plane
-	if (xp + xn + yp + yn + zp + zn == 1)
+	if ((xp + xn + yp + yn + zp + zn) == 6)
 	{
 		visible = false;
 	}	

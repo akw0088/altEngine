@@ -12,6 +12,7 @@ in vec3	attr_tangent;
 
 // interpolated output
 out VertexData {
+	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
 	vec2		vary_LightCoord;
@@ -26,6 +27,7 @@ uniform vec4	u_color[MAX_LIGHTS];
 uniform int	u_num_lights;
 uniform mat4	mvp;
 
+
 void main(void)
 {
 	//pass through to fragment shader
@@ -36,5 +38,6 @@ void main(void)
 	Vertex.vary_tangent = attr_tangent;
 
 	gl_Position = mvp * vec4(attr_position, 1.0);
+	Vertex.att_position = attr_position;
 	Vertex.vary_position = gl_Position;
 }
