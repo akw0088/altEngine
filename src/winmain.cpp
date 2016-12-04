@@ -293,6 +293,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_TAB:
 				break;
 			case VK_RETURN:
+			case VK_SPACE:
 				altEngine.keypress("enter", pressed);
 				break;
 			case VK_SHIFT:
@@ -305,15 +306,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				altEngine.keypress("escape", pressed);
 				break;
 			case VK_UP:
+			case 'W':
 				altEngine.keypress("up", pressed);
 				break;
 			case VK_LEFT:
+			case 'A':
 				altEngine.keypress("left", pressed);
 				break;
 			case VK_DOWN:
+			case 'S':
 				altEngine.keypress("down", pressed);
 				break;
 			case VK_RIGHT:
+			case 'D':
 				altEngine.keypress("right", pressed);
 				break;
 			case VK_NUMPAD0:
