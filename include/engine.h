@@ -39,6 +39,7 @@ public:
 
 	void init_camera();
 	void load_entities();
+	int get_entity();
 	void load_sounds();
 	void load_models();
 	void load_model(Entity &ent);
@@ -51,7 +52,6 @@ public:
 	bool map_collision(RigidBody &body);
 	bool body_collision(RigidBody &body);
 
-	//temp section
 	int bind(int port);
 	void connect(char *server);
 	void chat(char *msg);
@@ -101,6 +101,7 @@ private:
 	unsigned int	fb_width;
 	unsigned int	fb_height;
 	unsigned int	no_tex;
+	unsigned int	num_dynamic;
 
 	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;

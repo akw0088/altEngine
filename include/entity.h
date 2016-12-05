@@ -15,7 +15,7 @@ public:
 	int				angle;
 	bool			visible;
 	bool			network;
-	char			*type;
+	char			type[64];
 	RigidBody		*rigid;
 	Vehicle			*vehicle;
 	Model			*model;

@@ -12,7 +12,7 @@ Entity::Entity()
 	target[0] = '\0';
 	target_name[0] = '\0';
 	angle = 0;
-	type = NULL;
+	type[0] = '\0';
 	rigid = NULL;
 	vehicle = NULL;
 	model = NULL;
@@ -25,8 +25,7 @@ Entity::Entity()
 
 Entity::~Entity()
 {
-	if (type)
-		delete [] type;
+	memcpy(type, "free", 5);
 
 	if (light)
 		delete light;
@@ -41,5 +40,19 @@ Entity::~Entity()
 	if (player)
 		delete player;
 
+	position = vec3(0.0f, 0.0f, 0.0f);
+	visible = false;
+	network = false;
+	target[0] = '\0';
+	target_name[0] = '\0';
+	angle = 0;
+	rigid = NULL;
+	vehicle = NULL;
+	model = NULL;
+	light = NULL;
+	speaker = NULL;
+	trigger = NULL;
+	player = NULL;
+	decal = NULL;
 }
 

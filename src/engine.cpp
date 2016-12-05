@@ -14,6 +14,7 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 Engine::Engine()
 {
 	initialized = false;
+	num_dynamic = 100;
 }
 
 
@@ -85,6 +86,15 @@ void Engine::load(char *level)
 	light_frame.reset();
 
 
+
+	//First n Entities for dynamic items (Dont allocate any at runtime)
+	for (int i = 0; i < num_dynamic; i++)
+	{
+		Entity *entity = new Entity();
+		memcpy(entity->type, "free", strlen("free") + 1);
+		entity_list.push_back(entity);
+	}
+
 	if (post.init(&gfx))
 		menu.print("Failed to load post shader");
 	if (mlight2.init(&gfx))
@@ -129,6 +139,7 @@ void Engine::load(char *level)
 	menu.ingame = false;
 	menu.console = false;
 
+	/*
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		vec3 color(1.0f, 1.0f, 1.0f);
@@ -139,6 +150,7 @@ void Engine::load(char *level)
 
 		menu.draw_text(entity_list[i]->type, pos.x, pos.y, pos.z, 1000.0f, color);
 	}
+	*/
 
 	//Setup render to texture
 	gfx.bindFramebuffer(fbo);
@@ -1563,7 +1575,10 @@ void Engine::client_step()
 				int ret = sscanf(reliablemsg->msg, "spawn %d %d", &entity, &server_spawn);
 				if ( ret )
 				{
-					spawn = entity;
+					spawn = get_entity();
+
+					memcpy(entity_list[spawn]->type, "client", strlen("client") + 1);
+					entity_list[spawn]->position = entity_list[entity]->position;
 					entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
@@ -2063,20 +2078,20 @@ void Engine::load_models()
 	if (entity_list.size() == 0)
 		return;
 
-	entity_list[0]->model->load(gfx, "media/models/box");
-	for(unsigned int i = 1; i < entity_list.size(); i++)
+	entity_list[num_dynamic]->model->load(gfx, "media/models/box");
+	for(unsigned int i = num_dynamic; i < entity_list.size(); i++)
 	{
 		bool loaded = false;
 
 		if (entity_list[i]->model == NULL)
 			continue;
 
-		for(unsigned int j = 0; j < i; j++)
+		for(unsigned int j = num_dynamic; j < i; j++)
 		{
 			if (entity_list[j]->model == NULL)
 				continue;
 
-			entity_list[i]->model->clone(*entity_list[0]->model);
+			entity_list[i]->model->clone(*entity_list[num_dynamic]->model);
 			if (strcmp(entity_list[i]->type, entity_list[j]->type) == 0)
 			{
 				entity_list[i]->model->clone(*entity_list[j]->model);
@@ -2192,7 +2207,14 @@ void Engine::init_camera()
 		if ( strcmp(type, "info_player_deathmatch") == 0 )
 		{
 			camera_frame.pos = entity_list[i]->position;
-			spawn = i;
+
+			spawn = get_entity();
+
+			memcpy(entity_list[spawn]->type, "player", strlen("player") + 1);
+			entity_list[spawn]->position = entity_list[i]->position;
+			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
+			entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->player = new Player(entity_list[i], gfx, audio);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
 			break;
@@ -2222,6 +2244,49 @@ void Engine::load_entities()
 		//entity_list[spawn]->rigid->load(gfx, "media/models/box");
 		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 	}
+}
+
+int Engine::get_entity()
+{
+	static unsigned int index = 0;
+	int looped = 0;
+
+	while (1)
+	{
+
+		if (index == num_dynamic)
+		{
+			index = 0;
+			looped++;
+
+			if (looped == 2)
+			{
+				debugf("Unable to find free dynamic entity\n");
+				break;
+			}
+		}
+
+		if (strcmp(entity_list[index]->type, "free") == 0)
+		{
+			// Light list wont be updated until the next step, so manually delete
+			if (entity_list[index]->light)
+			{
+				for (int i = 0; i < light_list.size(); i++)
+				{
+					if (light_list[i]->entity == entity_list[index])
+					{
+						light_list.erase(light_list.begin() + i);
+					}
+				}
+			}
+
+			entity_list[index]->~Entity();
+			return index++;
+		}
+		index++;
+	}
+
+	return num_dynamic - 1;
 }
 
 void Engine::create_sources()
@@ -3004,7 +3069,7 @@ void Engine::handle_weapons(Player &player)
 			player.reload_timer = 120; // two seconds
 
 			fired = true;
-			Entity *entity = new Entity();
+			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
 			entity->rigid->clone(*(entity_list[0]->model));
@@ -3030,7 +3095,7 @@ void Engine::handle_weapons(Player &player)
 			player.reload_timer = 10;
 
 			fired = true;
-			Entity *entity = new Entity();
+			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
 			entity->rigid->load(gfx, "media/models/ball");
@@ -3056,7 +3121,7 @@ void Engine::handle_weapons(Player &player)
 			player.reload_timer = 120; // two seconds
 
 			fired = true;
-			Entity *entity = new Entity();
+			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
 			entity->rigid->clone(*(entity_list[1]->model));

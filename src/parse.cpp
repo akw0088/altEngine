@@ -20,7 +20,6 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 	else if (strcmp(key, "classname") == 0)
 	{
 		size_t size = strlen(value) + 1;
-		entity.type = new char [size];
 		memcpy(entity.type, value, size);
 
 		if (strcmp(value, "item_armor_shard") == 0)
