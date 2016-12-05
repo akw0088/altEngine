@@ -18,7 +18,10 @@ public:
 	unsigned int	source;
 	unsigned int	pickup_buf;
 	unsigned int	respawn_buf;
-	bool	active;
+	bool	hide;	// whether it should disappear when active
+	bool	active; // active when picked up
+	bool	self;	// whether current player can pick it up
+	bool	idle;
 	float	timeout;
 };
 

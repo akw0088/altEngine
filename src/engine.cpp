@@ -588,7 +588,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			mlight2.Params(mvp, light_list, 0);
 		}
 
-		if (entity_list[i]->light == NULL)
+//		if (entity_list[i]->light == NULL)
 		{
 			unsigned int j = 0;
 
@@ -921,8 +921,14 @@ void Engine::spatial_testing()
 			// make triggered entities disappear
 			if (entity_list[i]->trigger)
 			{
-				if (entity_list[i]->trigger->active == false)
+				if (entity_list[i]->trigger->hide == false)
 				{
+					//Always show with hide flag false
+					entity_list[i]->visible = visible;
+				}
+				else if (entity_list[i]->trigger->active == false)
+				{
+					//Only show when not triggered
 					entity_list[i]->visible = visible;
 				}
 			}
@@ -1180,7 +1186,29 @@ void Engine::check_triggers()
 	{
 		bool inside = false;
 
+		// Not a trigger
 		if (entity_list[i]->trigger == NULL)
+			continue;
+
+		// Delete when not moving
+		if (entity_list[i]->trigger->idle == true)
+		{
+			if (entity_list[i]->rigid)
+			{
+				// Seems to work, but the collision detect flag should work
+				if (entity_list[i]->rigid->old_position == entity_list[i]->position)
+				{
+					// Light list wont be updated until the next step, so manually delete
+					remove_light(i);
+					entity_list[i]->~Entity();
+					continue;
+				}
+			}
+		}
+
+
+		// Only other players can pick up
+		if (entity_list[i]->trigger->self == false)
 			continue;
 
 		float distance = (entity_list[i]->position - entity_list[spawn]->position).magnitude();
@@ -2246,6 +2274,21 @@ void Engine::load_entities()
 	}
 }
 
+void Engine::remove_light(int index)
+{
+	// Light list wont be updated until the next step, so manually delete
+	if (entity_list[index]->light)
+	{
+		for (int i = 0; i < light_list.size(); i++)
+		{
+			if (light_list[i]->entity == entity_list[index])
+			{
+				light_list.erase(light_list.begin() + i);
+			}
+		}
+	}
+}
+
 int Engine::get_entity()
 {
 	static unsigned int index = 0;
@@ -2268,17 +2311,7 @@ int Engine::get_entity()
 
 		if (strcmp(entity_list[index]->type, "free") == 0)
 		{
-			// Light list wont be updated until the next step, so manually delete
-			if (entity_list[index]->light)
-			{
-				for (int i = 0; i < light_list.size(); i++)
-				{
-					if (light_list[i]->entity == entity_list[index])
-					{
-						light_list.erase(light_list.begin() + i);
-					}
-				}
-			}
+			remove_light(index);
 
 			entity_list[index]->~Entity();
 			return index++;
@@ -2711,7 +2744,7 @@ void Engine::console(char *cmd)
 //					camera_frame.forward.z = matrix.m[10];
 //					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 					last_spawn = i + 1;
-					debugf("Spawning on entity %d", i);
+					debugf("Spawning on entity %d\n", i);
 					entity_list[spawn]->player->respawn();
 					spawned = true;
 					break;
@@ -3072,7 +3105,34 @@ void Engine::handle_weapons(Player &player)
 
 		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
 		{
-			player.reload_timer = 120; // two seconds
+			player.reload_timer = 30;
+
+			fired = true;
+			Entity *entity = entity_list[get_entity()];
+			entity->rigid = new RigidBody(entity);
+			entity->model = entity->rigid;
+			entity->position = camera_frame.pos;
+			entity->rigid->load(gfx, "media/models/ball");
+			entity->rigid->velocity = camera_frame.forward * -125.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->trigger = new Trigger(entity);
+			entity->trigger->hide = false;
+			entity->trigger->self = false;
+			entity->trigger->idle = true;
+			memcpy(entity->trigger->action, "health -15", 11);
+			//			entity->rigid->set_target(*(entity_list[spawn]));
+			camera_frame.set(entity->model->morientation);
+
+			entity->light = new Light(entity, gfx, 999);
+			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
+			entity->light->intensity = 1000.0f;
+
+			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+		}
+		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
+		{
+			player.reload_timer = 10;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3085,41 +3145,12 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			entity->rigid->set_target(*(entity_list[spawn]));
 			camera_frame.set(entity->model->morientation);
-			entity_list.push_back(entity);
 			player.ammo_rockets--;
 
 
 			entity->light = new Light(entity, gfx, 999);
 			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
-
-
-			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
-		}
-		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
-		{
-			player.reload_timer = 10;
-
-			fired = true;
-			Entity *entity = entity_list[get_entity()];
-			entity->rigid = new RigidBody(entity);
-			entity->position = camera_frame.pos;
-			entity->rigid->load(gfx, "media/models/ball");
-			entity->rigid->velocity = camera_frame.forward * -125.0f;
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
-			entity->trigger = new Trigger(entity);
-			memcpy(entity->trigger->action, "health -15", 11);
-			entity->model = entity->rigid;
-			//			entity->rigid->set_target(*(entity_list[spawn]));
-			camera_frame.set(entity->model->morientation);
-
-
-			entity->light = new Light(entity, gfx, 999);
-			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
-			entity->light->intensity = 1000.0f;
-
-			entity_list.push_back(entity);
 			player.ammo_lightning--;
 
 			player.attack_sound = "media/sound/weapons/lightning/lg_fire.wav";
@@ -3138,7 +3169,6 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid->gravity = false;
 			entity->model = entity->rigid;
 			camera_frame.set(entity->model->morientation);
-			entity_list.push_back(entity);
 			player.ammo_slugs--;
 
 			player.attack_sound = "media/sound/weapons/railgun/railgf1a.wav";
@@ -3162,7 +3192,6 @@ void Engine::handle_weapons(Player &player)
 //			entity->decal = new Decal(entity);
 //			entity->position = end;
 //			entity->decal->normal = normal;
-//			entity_list.push_back(entity);
 
 			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
 		}

@@ -12,7 +12,9 @@ Trigger::Trigger(Entity *entity)
 	action[0] = '\0';
 	pickup_snd[0] = '\0';
 	respawn_snd[0] = '\0';
-
+	hide = true;
+	self = true;
+	idle = false;
 }
 
 void Trigger::destroy(Audio &audio)
