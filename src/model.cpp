@@ -29,35 +29,7 @@ void Model::load(Graphics &gfx, char *file)
 	num_vertex = *((int *)model_file);
 	model_array = (vertex_t *)(model_file + 4);
 
-	aabb[0] = vec3(2048.0f, 2048.0f, 2048.0f);
-	aabb[7] = vec3(-2048.0f, -2048.0f, -2048.0f);
-	vec3 sum = vec3();
-	for(int i = 0; i < num_vertex; i++)
-	{
-		sum += model_array[i].position;
-
-		if (model_array[i].position.x < aabb[0].x)
-			aabb[0].x = model_array[i].position.x;
-		else if (model_array[i].position.y < aabb[0].y)
-			aabb[0].y = model_array[i].position.y;
-		else if (model_array[i].position.z < aabb[0].z)
-			aabb[0].z = model_array[i].position.z;
-
-		if (model_array[i].position.x > aabb[7].x)
-			aabb[7].x = model_array[i].position.x;
-		else if (model_array[i].position.y > aabb[7].y)
-			aabb[7].y = model_array[i].position.y;
-		else if (model_array[i].position.z > aabb[7].z)
-			aabb[7].z = model_array[i].position.z;
-	}
-	center = sum / (float)num_vertex;
-	// binary order
-	aabb[1] = vec3(aabb[0].x, aabb[0].y, aabb[7].z);
-	aabb[2] = vec3(aabb[0].x, aabb[7].y, aabb[0].z);
-	aabb[3] = vec3(aabb[0].x, aabb[7].y, aabb[7].z);
-	aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
-	aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
-	aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
+	make_aabb();
 
 	create_box(gfx, aabb);
 
@@ -136,6 +108,39 @@ void Model::clone(Model &model)
 		entity->rigid->gravity = model.entity->rigid->gravity;
 		entity->rigid->angular_velocity = model.entity->rigid->angular_velocity;
 	}
+}
+
+void Model::make_aabb()
+{
+	aabb[0] = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	aabb[7] = vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	vec3 sum = vec3();
+	for (int i = 0; i < num_vertex; i++)
+	{
+		sum += model_array[i].position;
+
+		if (model_array[i].position.x < aabb[0].x)
+			aabb[0].x = model_array[i].position.x;
+		else if (model_array[i].position.y < aabb[0].y)
+			aabb[0].y = model_array[i].position.y;
+		else if (model_array[i].position.z < aabb[0].z)
+			aabb[0].z = model_array[i].position.z;
+
+		if (model_array[i].position.x > aabb[7].x)
+			aabb[7].x = model_array[i].position.x;
+		else if (model_array[i].position.y > aabb[7].y)
+			aabb[7].y = model_array[i].position.y;
+		else if (model_array[i].position.z > aabb[7].z)
+			aabb[7].z = model_array[i].position.z;
+	}
+	center = sum / (float)num_vertex;
+	// binary order
+	aabb[1] = vec3(aabb[0].x, aabb[0].y, aabb[7].z);
+	aabb[2] = vec3(aabb[0].x, aabb[7].y, aabb[0].z);
+	aabb[3] = vec3(aabb[0].x, aabb[7].y, aabb[7].z);
+	aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
+	aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
+	aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
 }
 
 void Model::render(Graphics &gfx)

@@ -79,6 +79,11 @@ void RigidBody::integrate(float time)
 
 	//translational
 	acceleration = net_force / mass;
+	if (gravity)
+	{
+		acceleration.y -= 9.8f;
+	}
+
 	velocity = velocity + acceleration * time;
 	old_position = entity->position;
 	entity->position = entity->position + velocity * time * UNITS_TO_METERS;
@@ -522,7 +527,7 @@ void RigidBody::move(Frame &camera, button_t &keyboard)
 
 	if (moved)
 	{
-		if (map_collision)
+		if (map_collision && !jumped)
 		{
 			//clear out gravity keeping us on the ground
 			velocity.y = -0.01f;
@@ -533,7 +538,6 @@ void RigidBody::move(Frame &camera, button_t &keyboard)
 
 		if (jumped && jump_timer == 0)
 		{
-//			this->net_force.y += 2.5f;
 			velocity.y += 3.0f;
 			jump_timer = 60;
 		}

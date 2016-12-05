@@ -24,6 +24,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	ammo_plasma = 0;
 	ammo_bfg = 0;
 	reload_timer = 0;
+	memcpy(name, "UnnamedPlayer", strlen("UnnamedPlayer") + 1);
+	memset(&stats, 0, sizeof(stats_t));
+	dead = false;
 
 	weapon_rocket.load(gfx,		"media/models/weapons2/rocketl/rocketl");
 	weapon_lightning.load(gfx,	"media/models/weapons2/lightning/lightning");
@@ -46,6 +49,44 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	current_face = 0;
 }
 
+
+void Player::respawn()
+{
+	attack_sound = "";
+	weapon_idle_sound = "";
+	health = 100;
+	armor = 0;
+	weapon_flags = 0;
+	current_weapon = wp_none;
+	ammo_rockets = 0;
+	ammo_slugs = 0;
+	ammo_shells = 0;
+	ammo_bullets = 50;
+	ammo_lightning = 0;
+	ammo_plasma = 0;
+	ammo_bfg = 0;
+	reload_timer = 0;
+	dead = false;
+
+
+//	entity->model->make_aabb();
+}
+
+void Player::kill()
+{
+	entity->model->aabb[0] = vec3(-10.0f, -10.0f, -10.0f);
+	entity->model->aabb[1] = vec3(-10.0f, -10.0f, 10.0f);
+	entity->model->aabb[2] = vec3(-10.0f, 10.0f, 0.0f);
+	entity->model->aabb[3] = vec3(-10.0f, 10.0f, 10.0f);
+	entity->model->aabb[4] = vec3(10.0f, -10.0f, -10.0f);
+	entity->model->aabb[5] = vec3(10.0f, -10.0f, 10.0f);
+	entity->model->aabb[6] = vec3(10.0f, 10.0f, -10.0f);
+	entity->model->aabb[7] = vec3(10.0f, 10.0f, 10.0f);
+	stats.deaths++;
+	weapon_flags = 0;
+	current_weapon = wp_none;
+	dead = true;
+}
 
 void Player::render_weapon(Graphics &gfx)
 {

@@ -1002,9 +1002,6 @@ void Engine::dynamics()
 		float current_time = 0.0f;
 		int divisions = 0;
 
-		if (body->gravity)
-			body->net_force = vec3(0.0f, 2 * -9.8f * body->mass, 0.0f);
-
 		while (current_time < delta_time)
 		{
 			body->save_config(config);
@@ -1128,9 +1125,9 @@ void Engine::step()
 
 	if (spawn != -1)
 	{
-		if (entity_list[spawn]->player->health <= 0)
+		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
-			entity_list[spawn]->model->clone(*(entity_list[0]->model));
+			entity_list[spawn]->player->kill();
 		}
 		handle_weapons(*(entity_list[spawn]->player));
 	}
@@ -2650,6 +2647,7 @@ void Engine::console(char *cmd)
 //					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d", i);
+					entity_list[spawn]->player->respawn();
 					spawned = true;
 					break;
 
@@ -2980,6 +2978,9 @@ void Engine::handle_weapons(Player &player)
 	bool fired = false;
 	if (player.reload_timer > 0)
 		player.reload_timer--;
+
+	if (player.dead)
+		return;
 
 	switch (player.current_weapon)
 	{

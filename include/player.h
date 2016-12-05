@@ -23,6 +23,13 @@ enum wp_weapon {
 	wp_railgun = WEAPON_RAILGUN
 };
 
+typedef struct
+{
+	int kills;
+	int deaths;
+	float accuracy;
+} stats_t;
+
 
 class Player
 {
@@ -31,6 +38,8 @@ public:
 	~Player();
 	Entity	*entity;
 
+	void respawn();
+	void kill();
 	void render_weapon(Graphics &gfx);
 	void change_weapon_up();
 	void change_weapon_down();
@@ -57,6 +66,11 @@ public:
 	unsigned int reload_timer;
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
+
+
+	char name[128];
+	stats_t stats;
+	bool dead;
 
 private:
 	Model weapon_shotgun;
