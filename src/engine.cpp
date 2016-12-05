@@ -3037,7 +3037,6 @@ void Engine::chat(char *msg)
 	reliable.sequence = sequence;
 }
 
-
 void Engine::handle_weapons(Player &player)
 {
 	bool fired = false;
@@ -3045,7 +3044,14 @@ void Engine::handle_weapons(Player &player)
 		player.reload_timer--;
 
 	if (player.dead)
+	{
+		if (input.leftbutton && player.reload_timer == 0)
+		{
+			console("respawn");
+		}
+
 		return;
+	}
 
 	switch (player.current_weapon)
 	{
@@ -3102,6 +3108,8 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid->velocity = camera_frame.forward * -125.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
+			entity->trigger = new Trigger(entity);
+			memcpy(entity->trigger->action, "health -15", 11);
 			entity->model = entity->rigid;
 			//			entity->rigid->set_target(*(entity_list[spawn]));
 			camera_frame.set(entity->model->morientation);

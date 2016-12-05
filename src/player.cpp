@@ -84,6 +84,7 @@ void Player::kill()
 	entity->model->aabb[7] = vec3(10.0f, 10.0f, 10.0f);
 	stats.deaths++;
 	weapon_flags = 0;
+	reload_timer = 120;
 	current_weapon = wp_none;
 	dead = true;
 }

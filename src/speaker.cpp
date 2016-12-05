@@ -20,4 +20,5 @@ void Speaker::destroy(Audio &audio)
 
 Speaker::~Speaker()
 {
+	source = -1;
 }
