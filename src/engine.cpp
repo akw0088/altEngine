@@ -5,8 +5,8 @@
 #endif
 
 //#define SHADOWVOL
-#define FORWARD
-//#define DEFERRED
+//#define FORWARD
+#define DEFERRED
 
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 
@@ -2771,12 +2771,51 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	ret = strcmp(cmd, "respawn");
-	if (ret == 0)
+	ret = (int)strstr(cmd, "respawn");
+	if (ret)
 	{
 		static int last_spawn = 0;
 		unsigned int i = last_spawn;
 		bool spawned = false;
+
+		ret = sscanf(cmd, "respawn %s", data);
+		if (ret == 1)
+		{
+			int index = atoi(data);
+
+			if (index < 0 || index > entity_list.size())
+			{
+				debugf("respawn given invalid entity index\n");
+				return;
+			}
+
+			matrix4 matrix;
+
+			camera_frame.set(matrix);
+			entity_list[spawn]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
+
+			switch (entity_list[i]->angle)
+			{
+			case 0:
+				matrix4::mat_left(matrix, entity_list[spawn]->position);
+				break;
+			case 90:
+				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				break;
+			case 180:
+				matrix4::mat_right(matrix, entity_list[spawn]->position);
+				break;
+			case 270:
+				matrix4::mat_backward(matrix, entity_list[spawn]->position);
+				break;
+			}
+			camera_frame.forward.x = matrix.m[8];
+			camera_frame.forward.y = matrix.m[9];
+			camera_frame.forward.z = matrix.m[10];
+			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+			debugf("Spawning on entity %d\n", index);
+			return;
+		}
 
 
 		while (spawned == false)
@@ -2788,6 +2827,8 @@ void Engine::console(char *cmd)
 
 				{
 					matrix4 matrix;
+
+					camera_frame.set(matrix);
 					entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
 					switch (entity_list[i]->angle)
@@ -2805,10 +2846,10 @@ void Engine::console(char *cmd)
 						matrix4::mat_backward(matrix, entity_list[spawn]->position);
 						break;
 					}
-//					camera_frame.forward.x = matrix.m[8];
-//					camera_frame.forward.y = matrix.m[9];
-//					camera_frame.forward.z = matrix.m[10];
-//					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+					camera_frame.forward.x = matrix.m[8];
+					camera_frame.forward.y = matrix.m[9];
+					camera_frame.forward.z = matrix.m[10];
+					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[spawn]->player->respawn();
