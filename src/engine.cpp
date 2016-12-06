@@ -2995,6 +2995,7 @@ void Engine::console(char *cmd)
 		entity_list[spawn]->player->ammo_bullets = 999;
 		entity_list[spawn]->player->ammo_lightning= 999;
 		entity_list[spawn]->player->ammo_plasma = 999;
+		entity_list[spawn]->player->ammo_grenades = 999;
 		entity_list[spawn]->player->ammo_rockets = 999;
 		entity_list[spawn]->player->ammo_shells = 999;
 		entity_list[spawn]->player->ammo_slugs = 999;
@@ -3137,9 +3138,11 @@ void Engine::handle_weapons(Player &player)
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->model = entity->rigid;
+
 			entity->position = camera_frame.pos;
-			entity->rigid->load(gfx, "media/models/ball");
-			entity->rigid->velocity = camera_frame.forward * -125.0f;
+			entity->rigid->load(gfx, "media/models/rocket/rocket");
+			camera_frame.set(entity->model->morientation);
+			entity->rigid->velocity = camera_frame.forward * -0.5f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
 			entity->trigger = new Trigger(entity);
@@ -3147,8 +3150,6 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
 			memcpy(entity->trigger->action, "health -100", 11);
-
-			camera_frame.set(entity->model->morientation);
 
 			entity->light = new Light(entity, gfx, 999);
 			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
@@ -3192,15 +3193,15 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid = new RigidBody(entity);
 			entity->model = entity->rigid;
 			entity->position = camera_frame.pos;
-			entity->rigid->load(gfx, "media/models/ball");
-			entity->rigid->velocity = camera_frame.forward * -125.0f;
+			entity->rigid->load(gfx, "media/models/pineapple/pineapple");
+			entity->rigid->velocity = camera_frame.forward * -25.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = true;
 			entity->trigger = new Trigger(entity);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = false;
-			memcpy(entity->trigger->action, "health -15", 11);
+			memcpy(entity->trigger->action, "health -60", 11);
 
 			camera_frame.set(entity->model->morientation);
 

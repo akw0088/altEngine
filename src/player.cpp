@@ -169,6 +169,7 @@ void Player::change_weapon_up()
 			current_weapon = wp_railgun;
 		else if (weapon_flags & WEAPON_PLASMA)
 			current_weapon = wp_plasma;
+		break;
 	case wp_grenade:
 		if (weapon_flags & WEAPON_ROCKET)
 			current_weapon = wp_rocket;
