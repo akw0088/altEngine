@@ -1198,10 +1198,36 @@ void Engine::check_triggers()
 				// Seems to work, but the collision detect flag should work
 				if (entity_list[i]->rigid->old_position == entity_list[i]->position)
 				{
-					// Light list wont be updated until the next step, so manually delete
-					remove_light(i);
-					entity_list[i]->~Entity();
-					continue;
+
+					if (entity_list[i]->trigger->explode == false)
+					{
+
+						if (entity_list[i]->trigger->explode_timer == 0)
+						{
+							// Light list wont be updated until the next step, so manually delete
+							remove_light(i);
+							entity_list[i]->~Entity();
+							continue;
+						}
+						else
+						{
+							entity_list[i]->trigger->explode_timer--;
+						}
+					}
+					else
+					{
+						entity_list[i]->trigger->radius = 250.0f;
+						memcpy(entity_list[i]->trigger->action, "health -50", strlen("health -50") + 1);
+						if (entity_list[i]->light == NULL)
+						{
+							entity_list[i]->light = new Light(entity_list[i], gfx, 999);
+							entity_list[i]->light->intensity = 1000.0f;
+						}
+						entity_list[i]->light->color = vec3(1.0f, 0.0f, 0.0f);
+						entity_list[i]->trigger->explode = false;
+						entity_list[i]->trigger->self = true;
+						continue;
+					}
 				}
 			}
 		}
@@ -1213,7 +1239,7 @@ void Engine::check_triggers()
 
 		float distance = (entity_list[i]->position - entity_list[spawn]->position).magnitude();
 
-		if ( distance < 75.0f)
+		if ( distance < entity_list[i]->trigger->radius)
 			inside = true;
 
 		if (inside == true && entity_list[i]->trigger->active == false)
@@ -1223,6 +1249,14 @@ void Engine::check_triggers()
 
 			entity_list[i]->visible = false;
 			entity_list[i]->trigger->timeout = 30.0f;
+
+			if (entity_list[i]->trigger->explode_timer)
+			{
+				vec3 distance = entity_list[spawn]->position - entity_list[i]->position;
+				float mag = MIN(distance.magnitude(), 50.0f);
+				//add knockback to explosions
+				entity_list[spawn]->rigid->velocity +=  (distance.normalize() * 750.0f) / mag;
+			}
 
 			for (unsigned int j = 0; j < snd_wave.size(); j++)
 			{
@@ -3149,6 +3183,8 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
+			entity->trigger->explode = true;
+			entity->trigger->explode_timer = 10;
 			memcpy(entity->trigger->action, "health -100", 11);
 
 			entity->light = new Light(entity, gfx, 999);
@@ -3200,8 +3236,12 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger = new Trigger(entity);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
-			entity->trigger->idle = false;
-			memcpy(entity->trigger->action, "health -60", 11);
+			entity->trigger->idle = true;
+			entity->trigger->explode = true;
+			entity->trigger->explode_timer = 10;
+
+
+			memcpy(entity->trigger->action, "health -100", 12);
 
 			camera_frame.set(entity->model->morientation);
 
