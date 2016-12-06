@@ -599,7 +599,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				//set weapon coordinates
 				mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
 				mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
-				mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 5.0f;
+				mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 7.0f;
 				mvp = trans.premultiply(mvp.m) * projection;
 				if (lights)
 				{
@@ -2548,6 +2548,19 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strcmp(cmd, "weapon_grenadelauncher") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
+		menu.print(msg);
+
+		if (entity_list[spawn]->player->current_weapon == wp_none)
+			entity_list[spawn]->player->current_weapon = wp_grenade;
+
+		entity_list[spawn]->player->weapon_flags |= wp_grenade;
+		entity_list[spawn]->player->ammo_rockets = MAX(10, entity_list[spawn]->player->ammo_grenades);
+		return;
+	}
+
 	if (strcmp(cmd, "weapon_rocketlauncher") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
@@ -2597,6 +2610,19 @@ void Engine::console(char *cmd)
 
 		entity_list[spawn]->player->weapon_flags |= wp_railgun;
 		entity_list[spawn]->player->ammo_slugs = MAX(10, entity_list[spawn]->player->ammo_slugs);
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_plasma") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_plasma\n");
+		menu.print(msg);
+
+		if (entity_list[spawn]->player->current_weapon == wp_none)
+			entity_list[spawn]->player->current_weapon = wp_plasma;
+
+		entity_list[spawn]->player->weapon_flags |= wp_plasma;
+		entity_list[spawn]->player->ammo_slugs = MAX(10, entity_list[spawn]->player->ammo_plasma);
 		return;
 	}
 
@@ -3120,8 +3146,8 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
-			memcpy(entity->trigger->action, "health -15", 11);
-			//			entity->rigid->set_target(*(entity_list[spawn]));
+			memcpy(entity->trigger->action, "health -100", 11);
+
 			camera_frame.set(entity->model->morientation);
 
 			entity->light = new Light(entity, gfx, 999);
@@ -3129,6 +3155,56 @@ void Engine::handle_weapons(Player &player)
 			entity->light->intensity = 1000.0f;
 
 			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+		}
+		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
+		{
+			player.reload_timer = 5;
+
+			fired = true;
+			Entity *entity = entity_list[get_entity()];
+			entity->rigid = new RigidBody(entity);
+			entity->model = entity->rigid;
+			entity->position = camera_frame.pos;
+			entity->rigid->load(gfx, "media/models/ball");
+			entity->rigid->velocity = camera_frame.forward * -125.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+			entity->trigger = new Trigger(entity);
+			entity->trigger->hide = false;
+			entity->trigger->self = false;
+			entity->trigger->idle = true;
+			memcpy(entity->trigger->action, "health -15", 11);
+
+			camera_frame.set(entity->model->morientation);
+
+			entity->light = new Light(entity, gfx, 999);
+			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
+			entity->light->intensity = 1000.0f;
+
+//			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+		}
+		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
+		{
+			player.reload_timer = 30;
+
+			fired = true;
+			Entity *entity = entity_list[get_entity()];
+			entity->rigid = new RigidBody(entity);
+			entity->model = entity->rigid;
+			entity->position = camera_frame.pos;
+			entity->rigid->load(gfx, "media/models/ball");
+			entity->rigid->velocity = camera_frame.forward * -125.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = true;
+			entity->trigger = new Trigger(entity);
+			entity->trigger->hide = false;
+			entity->trigger->self = false;
+			entity->trigger->idle = false;
+			memcpy(entity->trigger->action, "health -15", 11);
+
+			camera_frame.set(entity->model->morientation);
+
+			//			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
 		}
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
 		{
@@ -3138,7 +3214,7 @@ void Engine::handle_weapons(Player &player)
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(entity_list[0]->model));
+			entity->rigid->clone(*(entity_list[num_dynamic + 0]->model));
 			entity->rigid->velocity = camera_frame.forward * -1.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
@@ -3163,7 +3239,7 @@ void Engine::handle_weapons(Player &player)
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(entity_list[1]->model));
+			entity->rigid->clone(*(entity_list[num_dynamic + 1]->model));
 			entity->rigid->velocity = camera_frame.forward * -100.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;

@@ -7,20 +7,24 @@
 #define WEAPON_MELEE			1
 #define WEAPON_MACHINEGUN		2
 #define WEAPON_SHOTGUN			4
-#define WEAPON_PLASMAGUN		8
+#define WEAPON_GRENADE			8
 #define WEAPON_ROCKET			16
 #define WEAPON_RAILGUN			32
-#define WEAPON_BFG				64
-#define WEAPON_LIGHTNING		128
+#define WEAPON_LIGHTNING		64
+#define WEAPON_PLASMA			128
 
 
 //multiple types exist because I forgot above code existed D:
 enum wp_weapon {
 	wp_none = WEAPON_NONE,
+	wp_melee = WEAPON_MELEE,
+	wp_machinegun = WEAPON_MACHINEGUN,
 	wp_shotgun = WEAPON_SHOTGUN,
+	wp_grenade = WEAPON_GRENADE,
 	wp_rocket = WEAPON_ROCKET,
+	wp_railgun = WEAPON_RAILGUN,
 	wp_lightning = WEAPON_LIGHTNING,
-	wp_railgun = WEAPON_RAILGUN
+	wp_plasma = WEAPON_PLASMA
 };
 
 typedef struct
@@ -56,6 +60,7 @@ public:
 
 	unsigned int current_weapon;
 	unsigned int ammo_rockets;
+	unsigned int ammo_grenades;
 	unsigned int ammo_slugs;
 	unsigned int ammo_shells;
 	unsigned int ammo_bullets;
@@ -73,10 +78,13 @@ public:
 	bool dead;
 
 private:
+	Model weapon_machinegun;
 	Model weapon_shotgun;
 	Model weapon_rocket;
+	Model weapon_grenade;
 	Model weapon_lightning;
 	Model weapon_railgun;
+	Model weapon_plasma;
 };
 
 #endif

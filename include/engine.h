@@ -40,6 +40,7 @@ public:
 	void init_camera();
 	void load_entities();
 	int get_entity();
+	void remove_light(int index);
 	void load_sounds();
 	void load_models();
 	void load_model(Entity &ent);
