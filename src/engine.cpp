@@ -1145,6 +1145,7 @@ void Engine::step()
 	{
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
+			debugf("%s died\n", entity_list[spawn]->player->name);
 			entity_list[spawn]->player->kill();
 		}
 		handle_weapons(*(entity_list[spawn]->player));
@@ -2883,9 +2884,21 @@ void Engine::console(char *cmd)
 
 		snprintf(msg, LINE_SIZE, "Client list\n");
 		menu.print(msg);
+
+		snprintf(msg, LINE_SIZE, "s: %s %d kills %d deaths %s %d idle\n", entity_list[spawn]->player->name,
+			entity_list[spawn]->player->stats.kills,
+			entity_list[spawn]->player->stats.deaths,
+			"127.0.0.1:65535",
+			0);
+		menu.print(msg);
+
+
 		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
-			snprintf(msg, LINE_SIZE, "%d: %s %d\n", i, client_list[i]->socketname,
+			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, entity_list[client_list[i]->entity]->player->name,
+				entity_list[client_list[i]->entity]->player->stats.kills, 
+				entity_list[client_list[i]->entity]->player->stats.deaths,
+				client_list[i]->socketname,
 				current - client_list[i]->last_time);
 			menu.print(msg);
 		}
