@@ -1098,19 +1098,22 @@ bool Engine::map_collision(RigidBody &body)
 			}
 			else
 			{
-				float dist = body.velocity.y;
-
-				if (dist < 0)
-					dist *= -1;
-
-				if (dist < 0.1f)
+				if (body.step_flag)
 				{
-					vec3 p = point + staircheck;
+					float dist = body.velocity.y;
 
-					if (map.collision_detect(p, (plane_t *)&plane, &depth) == false)
+					if (dist < 0)
+						dist *= -1;
+
+					if (dist < 0.1f)
 					{
-						body.entity->position += vec3(0.0f, 2.5f, 0.0f);
-						return false;
+						vec3 p = point + staircheck;
+
+						if (map.collision_detect(p, (plane_t *)&plane, &depth) == false)
+						{
+							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
+							return false;
+						}
 					}
 				}
 				return true;
@@ -1150,9 +1153,11 @@ void Engine::step()
 		}
 		handle_weapons(*(entity_list[spawn]->player));
 	}
-	spatial_testing();
-	update_audio();
-	check_triggers();
+
+
+	// These two funcs loop through all entities, should probably combine
+	spatial_testing(); // mostly sets visible flag
+	check_triggers();  // handles triggers and the projectile as trigger stuff
 
 	//entity test movement
 	if (menu.ingame == false && menu.console == false)
@@ -1168,9 +1173,7 @@ void Engine::step()
 		}
 	}
 	dynamics();
-
-
-
+	update_audio();
 
 	//network
 	sequence++;
@@ -1644,6 +1647,7 @@ void Engine::client_step()
 					entity_list[spawn]->position = entity_list[entity]->position;
 					entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[spawn]->rigid->step_flag = true;
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
 				}
@@ -2277,6 +2281,7 @@ void Engine::init_camera()
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 			entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+			entity_list[spawn]->rigid->step_flag = true;
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->player = new Player(entity_list[i], gfx, audio);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height

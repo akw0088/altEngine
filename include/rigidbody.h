@@ -34,6 +34,7 @@ public:
 
 	bool			map_collision;
 	bool			pursue_flag;
+	bool			step_flag;
 	Entity			*target;
 	float			restitution;
 	float			kfriction;

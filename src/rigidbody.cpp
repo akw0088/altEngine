@@ -10,6 +10,7 @@ RigidBody::RigidBody(Entity *entity)
 	sleep = false;
 	gravity = true;
 	pursue_flag = true;
+	step_flag = false;
 	target = NULL;
 	mass = 10.0f;
 	restitution = 1.0f; // boxes should never rest
