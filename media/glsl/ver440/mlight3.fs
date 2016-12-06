@@ -5,6 +5,7 @@
 
 // per vertex interpolated program input
 in VertexDataOut {
+    vec3 att_position;
     vec4 vary_position; // vertex position
     vec2 vary_TexCoord;
     vec2 vary_LightCoord;
@@ -36,16 +37,6 @@ layout(binding=5) uniform sampler2DArray shadowtex2;
 layout(binding=6) uniform sampler2DArray shadowtex3;
 layout(binding=7) uniform sampler2DArray shadowtex4;
 layout(binding=8) uniform sampler2DArray shadowtex5;
-
-
-
-
-
-
-
-
-// was originally varying, but couldnt pass through geometry shader
-vec4 vary_light;
 
 
 
@@ -123,20 +114,24 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 void calc_light(in vec3 eye, in vec3 normal, out vec3 lighti, in int light_num)
 {
 	vec4 lightPosEye = mvp * vec4(u_position[light_num], 1.0);
-	vary_light.rgb = vec3(Vertex.vary_position - lightPosEye); // light vector to fragment
-	vary_light.a = length(vary_light.rgb); // distance from light
+
+	vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
+
+
+	lightDir.rgb = vec3(Vertex.att_position - lightPosEye); // light vector to fragment
+	lightDir.a = length(vary_light.rgb); // distance from light
 	
-	vec3 v_light = normalize(vec3(vary_light));			// light vector
+	vec3 v_light = normalize(vec3(lightDir));			// light vector
 	vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 
 
 	float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
 	float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular reflection for fragment
-	float atten = min( 80000.0 / pow(vary_light.a, 1.75), 0.25);	// light distance from fragment 1/(r^2) falloff
+	float atten = min( 80000.0 / pow(lightDir.a, 1.75), 0.25);	// light distance from fragment 1/(r^2) falloff
 	vec3 color = vec3(u_color[light_num]) ;			// light color from bsp
 	float intensity = u_color[light_num].a;			// light intensity from bsp
 
-	lighti = color * intensity  * (diffuse * 0.5 + specular * 0.5); // combine everything
+	lighti = color * intensity  * (diffuse * 0.5 + specular * 0.0); // combine everything
 }
 
 
@@ -174,14 +169,14 @@ void main(void)
 			vec3 lighti;
 			calc_light(eye, normal_map, lighti, i);
 
-			light = light + (shadowFlagCombined * lighti / u_num_lights);
+			light = light + (shadowFlagCombined * 1.0 / u_num_lights);
 		}
 		else
 		{
 			vec3 lighti;
 
 			calc_light(eye, normal_map, lighti, i);
-			light = light + (lighti / u_num_lights);
+			light = light + (1.0 / u_num_lights);
 		}
 
 	}

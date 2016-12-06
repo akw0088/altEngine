@@ -13,6 +13,7 @@ in vec3	attr_tangent;
 
 // interpolated output
 out VertexData {
+	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
 	vec2		vary_LightCoord;
@@ -90,6 +91,8 @@ void main(void)
 
 	gl_Position = mvp * vec4(attr_position, 1.0);
 	Vertex.vary_position = gl_Position;
+	Vertex.att_position = attr_position;
+
 
 	vec4 bias_right;
 	vec4 bias_up;

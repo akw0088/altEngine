@@ -9,6 +9,7 @@ layout (triangle_strip, max_vertices=3) out;
 
 
 in VertexData {
+	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
 	vec2		vary_LightCoord;
@@ -50,6 +51,7 @@ void main()
 	{
 		// copy attributes
 		gl_Position = gl_in[i].gl_Position;
+		VertexOut.att_position = VertexIn[i].att_position;
 		VertexOut.vary_position = VertexIn[i].vary_position;
 		VertexOut.vary_TexCoord = VertexIn[i].vary_TexCoord;
 		VertexOut.vary_LightCoord = VertexIn[i].vary_LightCoord;
