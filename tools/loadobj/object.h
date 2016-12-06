@@ -8,6 +8,15 @@ typedef struct
 	float x;
 	float y;
 	float z;
+	float w;
+} vec4_t;
+
+
+typedef struct
+{
+	float x;
+	float y;
+	float z;
 } vec3_t;
 
 typedef struct
@@ -30,6 +39,7 @@ typedef struct
 	vec2_t	texCoord1;
 	vec3_t	normal;
 	int		color;
+	vec4_t  tangent;
 } vertex_t;
 
 using namespace std;

@@ -154,7 +154,11 @@ void Object::create_vertex(vertex_t **vertex_array, int &num_vertex)
 				(*vertex_array)[ vec_index ].texCoord0.x = vec_texture[ tex_index ].x;
 				(*vertex_array)[ vec_index ].texCoord0.y = vec_texture[ tex_index ].y;
 			}
-			(*vertex_array)[ vec_index ].normal = vec_normal[ norm_index ];
+			(*vertex_array)[vec_index].normal = vec_normal[norm_index];
+			(*vertex_array)[vec_index].tangent.x = 0.0f;
+			(*vertex_array)[vec_index].tangent.y = 0.0f;
+			(*vertex_array)[vec_index].tangent.z = 0.0f;
+			(*vertex_array)[vec_index].tangent.w = 0.0f;
 		}
 	}
 }
