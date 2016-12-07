@@ -211,11 +211,59 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 }
 
+
+// Watch this for the lerps to make sense
+// https://acko.net/tv/wdcode/
+
 // Lerp between A and B where time is within [0,1]
 void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
 {
 	out = a * (1 - time) + b * time;
 }
+
+// Lerp between A and C, curving towards B
+void quadratic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, float time, vec3 &out)
+{
+	vec3 temp1, temp2;
+
+	lerp(a, b, time, temp1);
+	lerp(b, c, time, temp2);
+	lerp(temp1, temp2, time, out);
+}
+
+// Lerp between A and D, curving towards B and C
+void cubic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float time, vec3 &out)
+{
+	vec3 temp1, temp2, temp3;
+	vec3 intermediate1, intermediate2;
+
+	lerp(a, b, time, temp1);
+	lerp(b, c, time, temp2);
+	lerp(c, d, time, temp3);
+
+	lerp(temp1, temp2, time, intermediate1);
+	lerp(temp2, temp3, time, intermediate2);
+	lerp(intermediate1, intermediate2, time, out);
+}
+
+// Create surface given 12 control points
+// ie: four curves with 4 points each trace X
+// output from those four points create new curve
+// New curve used to generate Y
+// Four corner points, rest control curvature
+void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out)
+{
+	vec3 temp1, temp2, temp3, temp4;
+
+	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp1);
+	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp2);
+	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp3);
+	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp4);
+
+	cubic_bezier_curve(temp1, temp2, temp3, temp4, time_y, out);
+}
+
+
 
 
 //TODO, make this a ring buffer instead of using malloc
