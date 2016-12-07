@@ -182,7 +182,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 	{
 		if (entity.trigger == NULL)
 			entity.trigger = new Trigger(&entity);
-		sprintf(entity.trigger->action, "hurt %s", value);
+		sprintf(entity.trigger->action, "damage %s", value);
 	}
 
 }

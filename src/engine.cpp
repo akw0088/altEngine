@@ -1230,7 +1230,7 @@ void Engine::check_triggers()
 					else
 					{
 						entity_list[i]->trigger->radius = 250.0f;
-						memcpy(entity_list[i]->trigger->action, "health -50", strlen("health -50") + 1);
+						memcpy(entity_list[i]->trigger->action, "damage 50", strlen("damage 50") + 1);
 						if (entity_list[i]->light == NULL)
 						{
 							entity_list[i]->light = new Light(entity_list[i], gfx, 999);
@@ -2575,6 +2575,32 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "damage %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "damage %s\n", data);
+		menu.print(msg);
+
+		int damage = abs32(atoi(data));
+		int health_damage = damage / 3;
+		int armor_damage = 2 * health_damage;
+
+		if (armor_damage > entity_list[spawn]->player->armor)
+		{
+			armor_damage -= entity_list[spawn]->player->armor;
+			entity_list[spawn]->player->armor = 0;
+			health_damage += armor_damage;
+		}
+		else
+		{
+			entity_list[spawn]->player->armor -= armor_damage;
+		}
+
+		entity_list[spawn]->player->health -= health_damage;
+
+		return;
+	}
+
 	ret = sscanf(cmd, "health %s", data);
 	if (ret == 1)
 	{
@@ -2904,17 +2930,6 @@ void Engine::console(char *cmd)
 		}
 		return;
 	}
-
-	ret = sscanf(cmd, "hurt %s", data);
-	if (ret == 1)
-	{
-		snprintf(msg, LINE_SIZE, "hurt %s\n", data);
-		menu.print(msg);
-
-		entity_list[spawn]->player->health -= atoi(data);
-		return;
-	}
-
 
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
@@ -3246,7 +3261,7 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->idle = true;
 			entity->trigger->explode = true;
 			entity->trigger->explode_timer = 10;
-			memcpy(entity->trigger->action, "health -100", strlen("health -100") + 1);
+			memcpy(entity->trigger->action, "damage 100", strlen("damage 100") + 1);
 
 			entity->light = new Light(entity, gfx, 999);
 			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
@@ -3282,7 +3297,7 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
-			memcpy(entity->trigger->action, "health -15", 11);
+			memcpy(entity->trigger->action, "damage 15", 11);
 
 			camera_frame.set(entity->model->morientation);
 
@@ -3313,7 +3328,7 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->explode_timer = 10;
 
 
-			memcpy(entity->trigger->action, "health -100", 12);
+			memcpy(entity->trigger->action, "damage 100", 12);
 
 			camera_frame.set(entity->model->morientation);
 
