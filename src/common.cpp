@@ -279,18 +279,61 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 }
 
 
-// Need normals, tangents, index array, etc
-void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index)
+// Not perfect yet, generates rows under surface, but close
+void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, float level)
 {
-	int i = 0;
-	int tri = 0;
+	int num_row = 1.0 / level;
 
-	for (float y = 0.; y < 1; y += 0.1f)
+	int x = 0;
+	int y = 0;
+	int i = 0;
+
+
+	// generate all vertices
+	for (y = 0; y < num_row; y++)
 	{
-		for (float x = 0.; x < 1; x += 0.1f)
+		for (x = 0; x < num_row; x++)
 		{
-			quadratic_bezier_surface(control, x, y, vertex[i++].position);
+			quadratic_bezier_surface(control, x * level, y * level, vertex[i++].position);
 		}
+	}
+
+	// generate index array
+	int j = 0;
+	for (i = 0; i < num_row * num_row;)
+	{
+		// Dont connect top of row to bottom of next row
+		if (num_row - 1 == i % num_row)
+		{
+			j++;
+			continue;
+		}
+
+		index[i + 0] = j;
+		index[i + 1] = num_row + j;
+		index[i + 2] = j + 1;
+
+		index[i + 3] = num_row + j;
+		index[i + 4] = num_row + j + 1;
+		index[i + 5] = j + 1;
+
+
+		j++;
+		i += 6;
+	}
+
+	// generate normals
+	for (i = 0; i < num_row * num_row;)
+	{
+		vec3 a = vertex[i + 1].position - vertex[i].position;
+		vec3 b = vertex[i + 2].position - vertex[i].position;
+		vec3 normal = vec3::crossproduct(a, b);
+
+		vertex[i].normal = normal;
+		vertex[i + 1].normal = normal;
+		vertex[i + 2].normal = normal;
+
+		i += 3;
 	}
 }
 
