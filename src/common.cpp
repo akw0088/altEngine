@@ -211,6 +211,12 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 }
 
+// Lerp between A and B where time is within [0,1]
+void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
+{
+	out = a * (1 - time) + b * time;
+}
+
 
 //TODO, make this a ring buffer instead of using malloc
 int debugf(const char *format, ...)

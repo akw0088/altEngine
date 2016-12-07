@@ -5,7 +5,7 @@
 #endif
 
 //#define SHADOWVOL
-//#define FORWARD
+#define FORWARD
 #define DEFERRED
 
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
@@ -278,7 +278,7 @@ void Engine::render(double last_frametime)
 	gfx.resize(fb_width, fb_height);
 
 	// Generate depth cubemaps for each light
-	render_shadowmaps();
+	render_shadowmaps(); // done at load time
 
 	gfx.bindFramebuffer(0);
 
@@ -296,7 +296,14 @@ void Engine::render(double last_frametime)
 			{
 				if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
 				{
-					testObj = entity_list[i]->light->quad_tex[entity_list[spawn]->player->current_face];
+					if (input.control)
+					{
+						testObj = entity_list[i]->light->depth_tex[entity_list[spawn]->player->current_face];
+					}
+					else
+					{
+						testObj = entity_list[i]->light->quad_tex[entity_list[spawn]->player->current_face];
+					}
 					break;
 				}
 			}
@@ -369,7 +376,7 @@ void Engine::render_shadowmaps()
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light && entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
+		if (entity_list[i]->light && light_list[entity_list[spawn]->player->current_light] == entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
 
@@ -395,17 +402,15 @@ void Engine::render_shadowmaps()
 				//		glReadBuffer(GL_NONE);
 				//gfx.CullFace("front");
 
-				set_shadow_matrix(mvp);
 				render_entities(cube[j], true);
 				//gfx.CullFace("back");
 
 				mlight2.Select();
-				mlight2.Params(mvp, light_list, 0);
+				mlight2.Params(mvp, light_list, light_list.size());
 				map.render(entity_list[i]->position, mvp, gfx);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
-			break;
 		}
 	}
 }
@@ -489,9 +494,9 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	shadowmap.Select();
 		
 	render_entities(transformation, lights);
-	mlight3.Select();
+	mlight2.Select();
 	mvp = transformation * projection;
-	mlight3.Params(mvp, light_list, light_list.size());
+	mlight2.Params(mvp, light_list, light_list.size());
 
 
 //	shadowmap.Params(mvp, shadowmvp);
@@ -516,7 +521,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	if (input.control)
 	{
 		map.render(light_frame.pos, mvp, gfx);
-		render_shadow_volumes(entity_list[spawn]->player->current_light);
+//		render_shadow_volumes(entity_list[spawn]->player->current_light);
 //		gfx.SelectShader(0);
 		return;
 	}
@@ -754,7 +759,7 @@ void Engine::debug_messages(double last_frametime)
 		snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
 		menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
 	}
-	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
+	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, false);
 }
 
 void Engine::destroy_buffers()
@@ -1186,9 +1191,13 @@ void Engine::step()
 
 void Engine::check_triggers()
 {
+	num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		bool inside = false;
+
+		if (entity_list[i]->light)
+			num_light++;
 
 		// Not a trigger
 		if (entity_list[i]->trigger == NULL)
@@ -1998,7 +2007,7 @@ void Engine::handle_game(char key)
 	case '=':
 		if (spawn != -1)
 		{
-			if (entity_list[spawn]->player->current_light < light_list.size())
+			if (entity_list[spawn]->player->current_light < num_light)
 				entity_list[spawn]->player->current_light++;
 		}
 		break;
@@ -2031,7 +2040,7 @@ void Engine::resize(int width, int height)
 	post.resize(width, height);
 
 
-	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
+	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, false);
 
 #ifndef __linux__
 	// This should probably be in render
@@ -2469,7 +2478,7 @@ void Engine::unload()
 
 	post.destroy();
 	mlight2.destroy();
-	mlight3.destroy();
+//	mlight3.destroy();
 	map.unload(gfx);
 	menu.play();
 	menu.delta("unload", *this);
@@ -3389,14 +3398,3 @@ void Engine::handle_weapons(Player &player)
 	}
 }
 
-
-void Engine::set_shadow_matrix(matrix4 &mvp)
-{
-	float bias[16] = {
-		0.5, 0.0, 0.0, 0.0,
-		0.0, 0.5, 0.0, 0.0,
-		0.0, 0.0, 0.5, 0.0,
-		0.5, 0.5, 0.5, 1.0 };
-
-	shadowmvp = mvp * bias;
-}
