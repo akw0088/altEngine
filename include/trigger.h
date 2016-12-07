@@ -19,7 +19,12 @@ public:
 	unsigned int	source;
 	unsigned int	pickup_buf;
 	unsigned int	respawn_buf;
+	vec3			explode_color;
+	float			explode_intensity;
 	unsigned int	explode_timer;
+	unsigned int	splash_damage;
+	float			splash_radius;
+	float			knockback;
 	bool	hide;	// whether it should disappear when active
 	bool	active; // active when picked up
 	bool	self;	// whether current player can pick it up

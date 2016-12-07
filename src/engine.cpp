@@ -1229,14 +1229,14 @@ void Engine::check_triggers()
 					}
 					else
 					{
-						entity_list[i]->trigger->radius = 250.0f;
-						memcpy(entity_list[i]->trigger->action, "damage 50", strlen("damage 50") + 1);
+						entity_list[i]->trigger->radius = entity_list[i]->trigger->splash_radius;
+						sprintf(entity_list[i]->trigger->action, "damage %d", entity_list[i]->trigger->splash_damage);
 						if (entity_list[i]->light == NULL)
 						{
 							entity_list[i]->light = new Light(entity_list[i], gfx, 999);
-							entity_list[i]->light->intensity = 1000.0f;
 						}
-						entity_list[i]->light->color = vec3(1.0f, 0.0f, 0.0f);
+						entity_list[i]->light->intensity = entity_list[i]->trigger->explode_intensity;
+						entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
 						entity_list[i]->trigger->explode = false;
 						entity_list[i]->trigger->self = true;
 						continue;
@@ -1268,7 +1268,7 @@ void Engine::check_triggers()
 				vec3 distance = entity_list[spawn]->position - entity_list[i]->position;
 				float mag = MIN(distance.magnitude(), 50.0f);
 				//add knockback to explosions
-				entity_list[spawn]->rigid->velocity +=  (distance.normalize() * 750.0f) / mag;
+				entity_list[spawn]->rigid->velocity +=  (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 			}
 
 			for (unsigned int j = 0; j < snd_wave.size(); j++)
@@ -3261,6 +3261,12 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->idle = true;
 			entity->trigger->explode = true;
 			entity->trigger->explode_timer = 10;
+			entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+			entity->trigger->explode_intensity = 500.0f;
+			entity->trigger->splash_damage = 50;
+			entity->trigger->splash_radius = 250.0f;
+			entity->trigger->knockback = 750.0f;
+
 			memcpy(entity->trigger->action, "damage 100", strlen("damage 100") + 1);
 
 			entity->light = new Light(entity, gfx, 999);
@@ -3290,13 +3296,23 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			entity->position = camera_frame.pos;
 			entity->rigid->load(gfx, "media/models/ball");
-			entity->rigid->velocity = camera_frame.forward * -125.0f;
+			entity->rigid->velocity = camera_frame.forward * -100.0f;
+			entity->rigid->net_force = camera_frame.forward * -10.0f;
+
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
 			entity->trigger = new Trigger(entity);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
+			entity->trigger->explode = true;
+			entity->trigger->explode_timer = 10;
+			entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
+			entity->trigger->explode_intensity = 200.0f;
+			entity->trigger->splash_damage = 5;
+			entity->trigger->splash_radius = 75.0f;
+			entity->trigger->knockback = 75.0f;
+
 			memcpy(entity->trigger->action, "damage 15", 11);
 
 			camera_frame.set(entity->model->morientation);
