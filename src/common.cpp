@@ -264,7 +264,7 @@ void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out
 }
 
 
-// Same as above, but using 9 control points and cubic lines
+// Same as above, but using 9 control points and quadratic lines
 void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out)
 {
 	vec3 temp1, temp2, temp3;
@@ -279,10 +279,10 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 }
 
 
-// Not perfect yet, generates rows under surface, but close
-void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, float level)
+// Seems to work, should probably be <= num_row though on loops
+void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, int &num_index, float level)
 {
-	int num_row = 1.0 / level;
+	int num_row = ceil(1.0 / level);
 
 	int x = 0;
 	int y = 0;
@@ -300,10 +300,10 @@ void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *in
 
 	// generate index array
 	int j = 0;
-	for (i = 0; i < num_row * num_row;)
+	for (i = 0; j < num_row * (num_row - 1);)
 	{
 		// Dont connect top of row to bottom of next row
-		if (num_row - 1 == i % num_row)
+		if ((j + 1) % (num_row) == 0)
 		{
 			j++;
 			continue;
@@ -317,24 +317,23 @@ void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *in
 		index[i + 4] = num_row + j + 1;
 		index[i + 5] = j + 1;
 
+		// generate normals
+		vec3 a = vertex[index[i + 1]].position - vertex[index[i + 0]].position;
+		vec3 b = vertex[index[i + 2]].position - vertex[index[i + 0]].position;
+		vec3 normal = vec3::crossproduct(a, b);
+
+		vertex[index[i + 0]].normal = normal;
+		vertex[index[i + 1]].normal = normal;
+		vertex[index[i + 2]].normal = normal;
+
+		vertex[index[i + 3]].normal = normal;
+		vertex[index[i + 4]].normal = normal;
+		vertex[index[i + 5]].normal = normal;
 
 		j++;
 		i += 6;
 	}
-
-	// generate normals
-	for (i = 0; i < num_row * num_row;)
-	{
-		vec3 a = vertex[i + 1].position - vertex[i].position;
-		vec3 b = vertex[i + 2].position - vertex[i].position;
-		vec3 normal = vec3::crossproduct(a, b);
-
-		vertex[i].normal = normal;
-		vertex[i + 1].normal = normal;
-		vertex[i + 2].normal = normal;
-
-		i += 3;
-	}
+	num_index = i;
 }
 
 
