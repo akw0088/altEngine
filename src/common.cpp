@@ -246,19 +246,19 @@ void cubic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float time, vec3 &ou
 	lerp(intermediate1, intermediate2, time, out);
 }
 
-// Create surface given 12 control points
+// Create surface given 16 control points
 // ie: four curves with 4 points each trace X
 // output from those four points create new curve
 // New curve used to generate Y
-// Four corner points, rest control curvature
+// Four corner points (0, 3, 12, 15), rest control curvature
 void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out)
 {
 	vec3 temp1, temp2, temp3, temp4;
 
 	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp1);
-	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp2);
-	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp3);
-	cubic_bezier_curve(control[0], control[1], control[2], control[3], time_x, temp4);
+	cubic_bezier_curve(control[4], control[5], control[6], control[7], time_x, temp2);
+	cubic_bezier_curve(control[8], control[9], control[10], control[11], time_x, temp3);
+	cubic_bezier_curve(control[12], control[13], control[14], control[15], time_x, temp4);
 
 	cubic_bezier_curve(temp1, temp2, temp3, temp4, time_y, out);
 }
