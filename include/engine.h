@@ -69,6 +69,7 @@ public:
 	void handle_input();
 
 	void handle_weapons(Player &player);
+	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();
 
 //temp

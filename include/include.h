@@ -156,6 +156,8 @@ using namespace std;
 #include "menu.h"
 #include "engine.h"
 
+bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
+
 #define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
 
 

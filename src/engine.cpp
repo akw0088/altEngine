@@ -2551,6 +2551,7 @@ void Engine::console(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
+	char data2[LINE_SIZE] = { 0 };
 	int port;
 	int ret;
 
@@ -2572,6 +2573,48 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
 		menu.print(msg);
 		load(data);
+		return;
+	}
+
+
+	ret = sscanf(cmd, "hurt %s %s", data, data2);
+	if (ret == 2)
+	{
+		snprintf(msg, LINE_SIZE, "hurt %s %s\n", data, data2);
+		menu.print(msg);
+
+		int index = atoi(data);
+
+		if (index > entity_list.size() || index < 0)
+		{
+			debugf("hurt given invalid index\n");
+			return;
+		}
+
+		if (entity_list[index]->player == NULL)
+		{
+			debugf("hurt given invalid index\n");
+			return;
+		}
+
+
+		int damage = abs32(atoi(data2));
+		int health_damage = damage / 3;
+		int armor_damage = 2 * health_damage;
+
+		if (armor_damage > entity_list[index]->player->armor)
+		{
+			armor_damage -= entity_list[index]->player->armor;
+			entity_list[index]->player->armor = 0;
+			health_damage += armor_damage;
+		}
+		else
+		{
+			entity_list[index]->player->armor -= armor_damage;
+		}
+
+		entity_list[index]->player->health -= health_damage;
+
 		return;
 	}
 
@@ -3244,12 +3287,27 @@ void Engine::handle_weapons(Player &player)
 		break;
 	}
 
+	/*
+	Weapon notes:
+	MG 10  rps 5/7 dmg						[6 ticks]
+	SG 1   rps 10 pellets, 10 dmg each		[60 ticks]
+	GL 0.8 spr 100dmg larger SD than RL		[48 ticks]
+	RL 0.8 spr 100dmg						[48 ticks]
+	LG  20 rps 8 dmg (160dmg per second)	[3 ticks]
+	RG 1.5 rps 100dmg						[90 ticks]
+	PG  10 rps 20dmg 15 splash				[6 ticks]
+
+	// reload delay in ticks/steps (1/60th of a second)
+	ticks = 60 * spr
+	ticks = 60 * (1 / rps) -- railgun didnt seem right
+	*/
+
 	if (input.leftbutton && player.reload_timer == 0)
 	{
 
 		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
 		{
-			player.reload_timer = 30;
+			player.reload_timer = 48;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3288,7 +3346,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
 		{
-			player.reload_timer = 5;
+			player.reload_timer = 6;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3309,11 +3367,11 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->explode_timer = 10;
 			entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
 			entity->trigger->explode_intensity = 200.0f;
-			entity->trigger->splash_damage = 5;
+			entity->trigger->splash_damage = 15;
 			entity->trigger->splash_radius = 75.0f;
 			entity->trigger->knockback = 75.0f;
 
-			memcpy(entity->trigger->action, "damage 15", 11);
+			memcpy(entity->trigger->action, "damage 20", 11);
 
 			camera_frame.set(entity->model->morientation);
 
@@ -3325,7 +3383,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
 		{
-			player.reload_timer = 30;
+			player.reload_timer = 48;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3352,7 +3410,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
 		{
-			player.reload_timer = 10;
+			player.reload_timer = 3;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3377,7 +3435,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_railgun && player.ammo_slugs > 0)
 		{
-			player.reload_timer = 120; // two seconds
+			player.reload_timer = 90;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3395,7 +3453,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_shotgun && player.ammo_shells > 0)
 		{
-			player.reload_timer = 60; // one seconds
+			player.reload_timer = 60;
 
 			player.ammo_shells--;
 
@@ -3415,6 +3473,44 @@ void Engine::handle_weapons(Player &player)
 
 			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
 		}
+		else if (player.current_weapon == wp_machinegun && player.ammo_bullets > 0)
+		{
+			int index[8];
+			int num_index = 0;
+
+			player.reload_timer = 6;
+
+			player.ammo_bullets--;
+
+			fired = true;
+			vec3 forward;
+			float distance;
+			player.entity->model->getForwardVector(forward);
+
+			hitscan(player.entity->position, forward, index, num_index, spawn);
+			for(int i = 0; i < num_index; i++)
+			{
+				char cmd[80] = { 0 };
+
+				if (entity_list[index[i]]->player == NULL)
+					continue;
+
+				debugf("Player %s hit %s for %d damage\n", player.name, entity_list[index[i]]->player->name, 7);
+				sprintf(cmd, "hurt %d %d", index[i], 7);
+				console(cmd);
+			}
+
+			map.hitscan(player.entity->position, forward, distance);
+			//vec3 end = player.entity->position + forward * distance;
+
+
+			//			Entity *entity = new Entity();
+			//			entity->decal = new Decal(entity);
+			//			entity->position = end;
+			//			entity->decal->normal = normal;
+
+			player.attack_sound = "media/sound/weapons/lightning/lg_fire.wav";
+		}
 
 
 		if (fired)
@@ -3433,3 +3529,28 @@ void Engine::handle_weapons(Player &player)
 	}
 }
 
+
+// We are only checking for hitting of entities
+void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self)
+{
+	int j = 0;
+	num_index = 0;
+
+	for (int i = 0; i < entity_list.size(); i++)
+	{
+		if (i == self)
+			continue;
+
+		if (entity_list[i]->player && entity_list[i]->rigid)
+		{
+			float distance = FLT_MAX;
+
+			if (RayBoxSlab(origin, dir, entity_list[i]->rigid->aabb[0], entity_list[i]->rigid->aabb[8], distance))
+			{
+				index_list[j++] = i;
+				num_index++;
+			}
+		}
+	}
+
+}
