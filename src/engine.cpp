@@ -6,7 +6,7 @@
 
 //#define SHADOWVOL
 #define FORWARD
-#define DEFERRED
+//#define DEFERRED
 
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 
@@ -315,7 +315,7 @@ void Engine::render(double last_frametime)
 #ifdef FORWARD
 	gfx.clear();
 	gfx.Blend(true);
-	render_shadow_volumes(0); // for debugging
+//	render_shadow_volumes(0); // for debugging
 	render_scene(true);
 	gfx.Blend(false);
 #endif
@@ -3238,26 +3238,30 @@ void Engine::handle_weapons(Player &player)
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
-			entity->rigid = new RigidBody(entity);
-			entity->model = entity->rigid;
-
 			entity->position = camera_frame.pos;
-			entity->rigid->load(gfx, "media/models/rocket/rocket");
-			camera_frame.set(entity->model->morientation);
-			entity->rigid->velocity = camera_frame.forward * -0.5f;
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
+
 			entity->trigger = new Trigger(entity);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
 			entity->trigger->explode = true;
 			entity->trigger->explode_timer = 10;
-			memcpy(entity->trigger->action, "health -100", 11);
+			memcpy(entity->trigger->action, "health -100", strlen("health -100") + 1);
 
 			entity->light = new Light(entity, gfx, 999);
 			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
+
+			entity->rigid = new RigidBody(entity);
+			entity->model = entity->rigid;
+			camera_frame.set(entity->rigid->morientation);
+
+			entity->rigid->load(gfx, "media/models/rocket/rocket");
+			entity->rigid->velocity = camera_frame.forward * -6.25f;
+			entity->rigid->net_force = camera_frame.forward * -10.0f;
+			entity->rigid->angular_velocity = vec3();
+			entity->rigid->gravity = false;
+
 
 			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
 		}
