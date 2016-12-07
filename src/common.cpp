@@ -216,7 +216,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 // https://acko.net/tv/wdcode/
 
 // Lerp between A and B where time is within [0,1]
-void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
+inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
 {
 	out = a * (1 - time) + b * time;
 }
@@ -261,6 +261,37 @@ void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out
 	cubic_bezier_curve(control[12], control[13], control[14], control[15], time_x, temp4);
 
 	cubic_bezier_curve(temp1, temp2, temp3, temp4, time_y, out);
+}
+
+
+// Same as above, but using 9 control points and cubic lines
+void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out)
+{
+	vec3 temp1, temp2, temp3;
+	vec3 intermediate1, intermediate2;
+
+
+	quadratic_bezier_curve(control[0], control[1], control[2], time_x, temp1);
+	quadratic_bezier_curve(control[3], control[4], control[5], time_x, temp2);
+	quadratic_bezier_curve(control[6], control[7], control[8], time_x, temp3);
+
+	quadratic_bezier_curve(temp1, temp2, temp3, time_y, out);
+}
+
+
+// Need normals, tangents, index array, etc
+void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index)
+{
+	int i = 0;
+	int tri = 0;
+
+	for (float y = 0.; y < 1; y += 0.1f)
+	{
+		for (float x = 0.; x < 1; x += 0.1f)
+		{
+			quadratic_bezier_surface(control, x, y, vertex[i++].position);
+		}
+	}
 }
 
 
