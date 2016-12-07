@@ -3435,6 +3435,9 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_railgun && player.ammo_slugs > 0)
 		{
+			int index[8];
+			int num_index = 0;
+
 			player.reload_timer = 90;
 
 			fired = true;
@@ -3448,6 +3451,25 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			camera_frame.set(entity->model->morientation);
 			player.ammo_slugs--;
+
+			vec3 forward;
+			float distance;
+			player.entity->model->getForwardVector(forward);
+
+			hitscan(player.entity->position, forward, index, num_index, spawn);
+			for (int i = 0; i < num_index; i++)
+			{
+				char cmd[80] = { 0 };
+
+				if (entity_list[index[i]]->player == NULL)
+					continue;
+
+				debugf("Player %s hit %s with the railgun for %d damage\n", player.name, entity_list[index[i]]->player->name, 100);
+				sprintf(cmd, "hurt %d %d", index[i], 100);
+				console(cmd);
+			}
+
+
 
 			player.attack_sound = "media/sound/weapons/railgun/railgf1a.wav";
 		}
@@ -3495,7 +3517,7 @@ void Engine::handle_weapons(Player &player)
 				if (entity_list[index[i]]->player == NULL)
 					continue;
 
-				debugf("Player %s hit %s for %d damage\n", player.name, entity_list[index[i]]->player->name, 7);
+				debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, entity_list[index[i]]->player->name, 7);
 				sprintf(cmd, "hurt %d %d", index[i], 7);
 				console(cmd);
 			}
