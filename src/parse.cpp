@@ -35,6 +35,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 			snprintf(entity.trigger->pickup_snd, LINE_SIZE, "media/sound/items/n_health.wav");
 			snprintf(entity.trigger->respawn_snd, LINE_SIZE, "media/sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 25");
+			entity.trigger->health = true;
 		}
 		else if (strcmp(value, "item_health_large") == 0)
 		{
@@ -42,6 +43,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 			snprintf(entity.trigger->pickup_snd, LINE_SIZE, "media/sound/items/l_health.wav");
 			snprintf(entity.trigger->respawn_snd, LINE_SIZE, "media/sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 50");
+			entity.trigger->health = true;
 		}
 		else if (strcmp(value, "ammo_bullets") == 0)
 		{
@@ -112,6 +114,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 			snprintf(entity.trigger->pickup_snd, LINE_SIZE, "media/sound/misc/ar2_pkup.wav");
 			snprintf(entity.trigger->respawn_snd, LINE_SIZE, "media/sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
+			entity.trigger->armor = true;
 		}
 		else if (strcmp(value, "trigger_teleport") == 0)
 		{

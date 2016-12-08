@@ -17,6 +17,8 @@ Trigger::Trigger(Entity *entity)
 	self = true;
 	idle = false;
 	explode = false;
+	health = false;
+	armor = false;
 	explode_timer = 0;
 }
 

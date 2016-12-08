@@ -1151,6 +1151,17 @@ void Engine::step()
 
 	if (spawn != -1)
 	{
+		if ((frame_step % 60 == 0) && entity_list[spawn]->player->health > 100)
+		{
+			entity_list[spawn]->player->health -= 5;
+		}
+
+		if ((frame_step % 60 == 0) &&  entity_list[spawn]->player->armor > 200)
+		{
+			entity_list[spawn]->player->armor -= 5;
+		}
+
+
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
 			debugf("%s died\n", entity_list[spawn]->player->name);
@@ -1289,29 +1300,40 @@ void Engine::check_triggers()
 
 		if (inside == true && entity_list[i]->trigger->active == false)
 		{
-			entity_list[i]->trigger->active = true;
-			console(entity_list[i]->trigger->action);
+			int pickup = true;
 
-			entity_list[i]->visible = false;
-			entity_list[i]->trigger->timeout = 30.0f;
+			if (entity_list[i]->trigger->armor && entity_list[spawn]->player->armor >= 200)
+				pickup = false;
 
-			if (entity_list[i]->trigger->explode_timer)
+			if (entity_list[i]->trigger->health && entity_list[spawn]->player->health >= 100)
+				pickup = false;
+
+			if (pickup)
 			{
-				vec3 distance = entity_list[spawn]->position - entity_list[i]->position;
-				float mag = MIN(distance.magnitude(), 50.0f);
-				//add knockback to explosions
-				entity_list[spawn]->rigid->velocity +=  (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
-			}
+				entity_list[i]->trigger->active = true;
+				console(entity_list[i]->trigger->action);
 
-			for (unsigned int j = 0; j < snd_wave.size(); j++)
-			{
-				if (strcmp(snd_wave[j].file, entity_list[i]->trigger->pickup_snd) == 0)
+				entity_list[i]->visible = false;
+				entity_list[i]->trigger->timeout = 30.0f;
+
+				if (entity_list[i]->trigger->explode_timer)
 				{
-					audio.select_buffer(entity_list[i]->trigger->source, snd_wave[j].buffer);
-					break;
+					vec3 distance = entity_list[spawn]->position - entity_list[i]->position;
+					float mag = MIN(distance.magnitude(), 50.0f);
+					//add knockback to explosions
+					entity_list[spawn]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
+
+				for (unsigned int j = 0; j < snd_wave.size(); j++)
+				{
+					if (strcmp(snd_wave[j].file, entity_list[i]->trigger->pickup_snd) == 0)
+					{
+						audio.select_buffer(entity_list[i]->trigger->source, snd_wave[j].buffer);
+						break;
+					}
+				}
+				audio.play(entity_list[i]->trigger->source);
 			}
-			audio.play(entity_list[i]->trigger->source);
 		}
 
 
@@ -2766,8 +2788,6 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
 		entity_list[spawn]->player->health += atoi(data);
-		if (entity_list[spawn]->player->health > 100)
-			entity_list[spawn]->player->health = 100;
 		return;
 	}
 
@@ -2777,8 +2797,6 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "armor %s\n", data);
 		menu.print(msg);
 		entity_list[spawn]->player->armor += atoi(data);
-		if (entity_list[spawn]->player->armor > 200)
-			entity_list[spawn]->player->armor = 200;
 		return;
 	}
 

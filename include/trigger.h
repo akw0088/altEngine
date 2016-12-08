@@ -30,6 +30,8 @@ public:
 	bool	self;	// whether current player can pick it up
 	bool	idle;
 	bool	explode;
+	bool	health;
+	bool	armor;
 	float	timeout;
 };
 
