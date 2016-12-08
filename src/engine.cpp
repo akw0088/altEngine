@@ -15,6 +15,7 @@ Engine::Engine()
 {
 	initialized = false;
 	num_dynamic = 100;
+	blink = false;
 }
 
 
@@ -756,8 +757,24 @@ void Engine::debug_messages(double last_frametime)
 		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
 		menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
 
-		snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
-		menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+
+		if (entity_list[spawn]->player->health > 50)
+		{
+			snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+			menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+		}
+		else if (entity_list[spawn]->player->health <= 50 && blink)
+		{
+			snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+			menu.draw_text(msg, 0.15f, 0.95f, 0.050f, vec3(1.0f, 0.0f, 0.0f));
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+			menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+		}
+
+
 	}
 	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, false);
 }
@@ -1148,6 +1165,12 @@ void Engine::step()
 
 	if (map.loaded == false)
 		return;
+
+	if (frame_step % 60 == 0)
+	{
+		blink = !blink;
+	}
+
 
 	if (spawn != -1)
 	{

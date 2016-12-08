@@ -78,6 +78,7 @@ public:
 	int xres, yres;
 	int testObj;
 	int num_light;
+	bool blink;
 
 	int		frame_step;
 	MD5Model	zcc;
