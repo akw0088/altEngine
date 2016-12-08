@@ -1174,16 +1174,18 @@ void Engine::step()
 
 	if (spawn != -1)
 	{
-		if ((frame_step % 60 == 0) && entity_list[spawn]->player->health > 100)
+		if (frame_step % 50 == 0)
 		{
-			entity_list[spawn]->player->health -= 5;
-		}
+			if (entity_list[spawn]->player->health > 100)
+			{
+				entity_list[spawn]->player->health--;
+			}
 
-		if ((frame_step % 60 == 0) &&  entity_list[spawn]->player->armor > 200)
-		{
-			entity_list[spawn]->player->armor -= 5;
+			if (entity_list[spawn]->player->armor > 100)
+			{
+				entity_list[spawn]->player->armor--;
+			}
 		}
-
 
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
@@ -2836,7 +2838,10 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "armor %s\n", data);
 		menu.print(msg);
-		entity_list[spawn]->player->armor += atoi(data);
+		if (entity_list[spawn]->player->armor + atoi(data) <= 200)
+		{
+			entity_list[spawn]->player->armor += atoi(data);
+		}
 		return;
 	}
 
@@ -3498,7 +3503,7 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->explode_intensity = 500.0f;
 			entity->trigger->splash_damage = 50;
 			entity->trigger->splash_radius = 250.0f;
-			entity->trigger->knockback = 750.0f;
+			entity->trigger->knockback = 250.0f;
 
 			memcpy(entity->trigger->action, "damage 100", strlen("damage 100") + 1);
 
