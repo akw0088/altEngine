@@ -1189,7 +1189,13 @@ void Engine::step()
 		{
 			if (entity_list[spawn]->player->health > 0)
 			{
-				entity_list[spawn]->rigid->move(camera_frame, input);
+				// True if jumped
+				if (entity_list[spawn]->rigid->move(camera_frame, input))
+				{
+					select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->jump_sound);
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+
 			}
 			else
 			{
@@ -2149,6 +2155,16 @@ void Engine::load_sounds()
 		snd_wave.push_back(wave[0]);
 
 	strcpy(wave[0].file, "media/sound/player/ranger/pain100_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/jump1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/fall1.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);

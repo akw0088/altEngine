@@ -22,6 +22,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	pain75_sound = "media/sound/player/ranger/pain75_1.wav";
 	pain100_sound = "media/sound/player/ranger/pain100_1.wav";
 
+	jump_sound = "media/sound/player/ranger/jump1.wav";
+	land_sound = "media/sound/player/ranger/fall1.wav";
+
 
 	health = 100;
 	armor = 0;

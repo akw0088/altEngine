@@ -29,7 +29,7 @@ public:
 	void set_target(Entity &target);
 
 
-	void move(Frame &camera_frame, button_t &keyboard);
+	bool move(Frame &camera_frame, button_t &keyboard);
 //	void move(button_t &keyboard);
 
 	bool			map_collision;

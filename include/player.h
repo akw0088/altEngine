@@ -63,6 +63,9 @@ public:
 	char *pain75_sound;
 	char *pain100_sound;
 
+	char *jump_sound;
+	char *land_sound;
+
 	int health;
 
 	unsigned int armor;

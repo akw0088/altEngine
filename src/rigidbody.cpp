@@ -468,7 +468,7 @@ void RigidBody::set_target(Entity &ent)
 }
 
 
-void RigidBody::move(Frame &camera, button_t &keyboard)
+bool RigidBody::move(Frame &camera, button_t &keyboard)
 {
 	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
@@ -549,4 +549,5 @@ void RigidBody::move(Frame &camera, button_t &keyboard)
 		velocity.z *= 0.5f;
 	}
 
+	return (jump_timer == 60);
 }
