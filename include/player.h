@@ -54,7 +54,17 @@ public:
 
 	char *attack_sound;
 	char *weapon_idle_sound;
+	char *death1_sound;
+	char *death2_sound;
+	char *death3_sound;
+
+	char *pain25_sound;
+	char *pain50_sound;
+	char *pain75_sound;
+	char *pain100_sound;
+
 	int health;
+
 	unsigned int armor;
 	unsigned int weapon_flags;
 
@@ -78,6 +88,7 @@ public:
 	bool dead;
 
 private:
+
 	Model weapon_machinegun;
 	Model weapon_shotgun;
 	Model weapon_rocket;

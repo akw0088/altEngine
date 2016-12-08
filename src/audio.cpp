@@ -447,6 +447,7 @@ void Audio::select_buffer(int hSource, int hBuffer)
 {
 	ALenum		al_err;
 
+	alSourceStop(hSource);
 	alSourcei(hSource, AL_BUFFER, hBuffer);
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)

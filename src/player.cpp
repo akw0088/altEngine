@@ -13,6 +13,16 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 	attack_sound = "";
 	weapon_idle_sound = "";
+	death1_sound = "media/sound/player/ranger/death1.wav";
+	death2_sound = "media/sound/player/ranger/death2.wav";
+	death3_sound = "media/sound/player/ranger/death3.wav";
+
+	pain25_sound = "media/sound/player/ranger/pain25_1.wav";
+	pain50_sound = "media/sound/player/ranger/pain50_1.wav";
+	pain75_sound = "media/sound/player/ranger/pain75_1.wav";
+	pain100_sound = "media/sound/player/ranger/pain100_1.wav";
+
+
 	health = 100;
 	armor = 0;
 	weapon_flags = 0;
@@ -71,6 +81,8 @@ void Player::respawn()
 	ammo_plasma = 0;
 	ammo_bfg = 0;
 	reload_timer = 0;
+	entity->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+	entity->rigid->net_force = vec3(0.0f, 0.0f, 0.0f);
 	dead = false;
 
 
@@ -79,14 +91,6 @@ void Player::respawn()
 
 void Player::kill()
 {
-	entity->model->aabb[0] = vec3(-10.0f, -10.0f, -10.0f);
-	entity->model->aabb[1] = vec3(-10.0f, -10.0f, 10.0f);
-	entity->model->aabb[2] = vec3(-10.0f, 10.0f, 0.0f);
-	entity->model->aabb[3] = vec3(-10.0f, 10.0f, 10.0f);
-	entity->model->aabb[4] = vec3(10.0f, -10.0f, -10.0f);
-	entity->model->aabb[5] = vec3(10.0f, -10.0f, 10.0f);
-	entity->model->aabb[6] = vec3(10.0f, 10.0f, -10.0f);
-	entity->model->aabb[7] = vec3(10.0f, 10.0f, 10.0f);
 	stats.deaths++;
 	weapon_flags = 0;
 	reload_timer = 120;

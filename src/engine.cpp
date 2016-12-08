@@ -1154,7 +1154,23 @@ void Engine::step()
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
 			debugf("%s died\n", entity_list[spawn]->player->name);
+
+			switch (frame_step % 3)
+			{
+			case 0:
+				select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death1_sound);
+				break;
+			case 1:
+				select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death2_sound);
+				break;
+			case 2:
+				select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death3_sound);
+				break;
+			}
+			audio.play(entity_list[spawn]->speaker->source);
+
 			entity_list[spawn]->player->kill();
+			entity_list[spawn]->model->clone(*(entity_list[num_dynamic]->model));
 		}
 		handle_weapons(*(entity_list[spawn]->player));
 	}
@@ -1174,6 +1190,16 @@ void Engine::step()
 			if (entity_list[spawn]->player->health > 0)
 			{
 				entity_list[spawn]->rigid->move(camera_frame, input);
+			}
+			else
+			{
+				button_t noinput;
+
+				//Makes body hit the floor, need to explore why this hack is needed
+				if (entity_list[spawn]->player->reload_timer)
+				{
+					entity_list[spawn]->rigid->move(camera_frame, noinput);
+				}
 			}
 		}
 	}
@@ -2091,6 +2117,42 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "media/sound/player/ranger/death1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/death2.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/death3.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+
+	strcpy(wave[0].file, "media/sound/player/ranger/pain25_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/pain50_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/pain75_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/player/ranger/pain100_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
 
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -2292,7 +2354,7 @@ void Engine::init_camera()
 			entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
 			entity_list[spawn]->rigid->step_flag = true;
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
-			entity_list[spawn]->player = new Player(entity_list[i], gfx, audio);
+			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
 			break;
 		}
@@ -2415,11 +2477,6 @@ void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos));
 
-	if (spawn != -1)
-	{
-		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
-		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
-	}
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)
@@ -2428,6 +2485,13 @@ void Engine::update_audio()
 			audio.source_velocity(entity_list[i]->speaker->source, (float *)(&entity_list[i]->rigid->velocity));
 		}
 	}
+
+	if (spawn != -1)
+	{
+		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
+		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
+	}
+
 }
 
 void Engine::kick(unsigned int i)
@@ -2615,6 +2679,24 @@ void Engine::console(char *cmd)
 
 		entity_list[index]->player->health -= health_damage;
 
+		switch (frame_step % 4)
+		{
+		case 0:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain25_sound);
+			break;
+		case 1:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain50_sound);
+			break;
+		case 2:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain75_sound);
+			break;
+		case 3:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain100_sound);
+			break;
+		}
+		audio.play(entity_list[spawn]->speaker->source);
+
+
 		return;
 	}
 
@@ -2640,6 +2722,24 @@ void Engine::console(char *cmd)
 		}
 
 		entity_list[spawn]->player->health -= health_damage;
+
+
+		switch (frame_step % 4)
+		{
+		case 0:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain25_sound);
+			break;
+		case 1:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain50_sound);
+			break;
+		case 2:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain75_sound);
+			break;
+		case 3:
+			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain100_sound);
+			break;
+		}
+		audio.play(entity_list[spawn]->speaker->source);
 
 		return;
 	}
@@ -2931,6 +3031,7 @@ void Engine::console(char *cmd)
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[spawn]->player->respawn();
+					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
 					spawned = true;
 					break;
 
@@ -3537,17 +3638,23 @@ void Engine::handle_weapons(Player &player)
 
 		if (fired)
 		{
-			for (unsigned int i = 0; i < snd_wave.size(); i++)
-			{
-				if (strcmp(snd_wave[i].file, player.attack_sound) == 0)
-				{
-					audio.select_buffer(player.entity->speaker->source, snd_wave[i].buffer);
-					break;
-				}
-			}
+			select_wave(player.entity->speaker->source, player.attack_sound);
 			audio.play(player.entity->speaker->source);
 		}
 
+	}
+}
+
+
+void Engine::select_wave(int source, char *file)
+{
+	for (unsigned int i = 0; i < snd_wave.size(); i++)
+	{
+		if (strcmp(snd_wave[i].file, file) == 0)
+		{
+			audio.select_buffer(source, snd_wave[i].buffer);
+			break;
+		}
 	}
 }
 
