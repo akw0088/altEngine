@@ -2168,6 +2168,23 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "media/sound/weapons/grenade/grenlf1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/weapons/plasma/hyprbf1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/weapons/machinegun/machgf1b.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+
+
 	strcpy(wave[0].file, "media/sound/player/ranger/death1.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
@@ -3504,7 +3521,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
 		{
-			player.reload_timer = 6;
+			player.reload_timer = 4;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3537,7 +3554,7 @@ void Engine::handle_weapons(Player &player)
 			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
 
-//			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+			player.attack_sound = "media/sound/weapons/plasma/hyprbf1a.wav";
 		}
 		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
 		{
@@ -3564,7 +3581,7 @@ void Engine::handle_weapons(Player &player)
 
 			camera_frame.set(entity->model->morientation);
 
-			//			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+			player.attack_sound = "media/sound/weapons/grenade/grenlf1a.wav";
 		}
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
 		{
@@ -3658,7 +3675,7 @@ void Engine::handle_weapons(Player &player)
 			int index[8];
 			int num_index = 0;
 
-			player.reload_timer = 6;
+			player.reload_timer = 4;
 
 			player.ammo_bullets--;
 
@@ -3689,7 +3706,7 @@ void Engine::handle_weapons(Player &player)
 			//			entity->position = end;
 			//			entity->decal->normal = normal;
 
-			player.attack_sound = "media/sound/weapons/lightning/lg_fire.wav";
+			player.attack_sound = "media/sound/weapons/machinegun/machgf1b.wav";
 		}
 
 
