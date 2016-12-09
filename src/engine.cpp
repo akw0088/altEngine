@@ -4,6 +4,10 @@
 #define new DEBUG_NEW
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+
+#include "stb_image.h"
+
 //#define SHADOWVOL
 #define FORWARD
 //#define DEFERRED
@@ -2728,6 +2732,9 @@ void Engine::unload()
 
 void Engine::destroy()
 {
+	delete box;
+	delete ball;
+
 	debugf("Shutting down.\n");
 	destroy_buffers();
 	unload();
@@ -2754,14 +2761,19 @@ int load_texture(Graphics &gfx, char *file_name)
 	int width, height, components, format;
 	int tex_object;
 
-	byte *bytes = gltLoadTGA(file_name, &width, &height, &components, &format);
+//	byte *bytes2 = gltLoadTGA(file_name, &width, &height, &components, &format);
+	unsigned char *bytes = stbi_load(file_name, &width, &height, &components, STBI_rgb_alpha);
+	format = GL_RGBA;
+	components = GL_RGBA8;
+
 	if (bytes == NULL)
 	{
 		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
-	delete [] bytes;
+//	stbi_image_free(bytes);
+//	delete [] bytes;
 
 #ifndef DIRECTX
 	if (format == GL_BGRA_EXT)

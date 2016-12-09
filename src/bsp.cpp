@@ -17,7 +17,8 @@ Bsp::Bsp()
 bool Bsp::load(char *map)
 {
 //	tBsp = (bsp_t *)get_file(map);
-//	get_zipfile("media/q3f2_pak0.pk3", map, (unsigned char **)&tBsp);
+//	get_zipfile("media/q3f2_pak0.pk3", map, (unsigned char **)&tBsp); //q3f_forts q3f_cathedrals
+//	get_zipfile("media/zpak000_assets.pk3", map, (unsigned char **)&tBsp); //ut4_swim ut4_uptown ut4_abbey ut4_casa 
 	get_zipfile("media/pak0.pk3", map, (unsigned char **)&tBsp);
 
 	if (tBsp == NULL)
@@ -773,8 +774,15 @@ void Bsp::load_textures(Graphics &gfx)
 		material_t	*material = &data.Material[i];
 		char		buffer[LINE_SIZE];
 
+
 		snprintf(buffer, LINE_SIZE, "media/%s.tga", material->name);
 		tex_object[i] = load_texture(gfx, buffer);
+		if (tex_object[i] == 0)
+		{
+			snprintf(buffer, LINE_SIZE, "media/%s.jpg", material->name);
+			tex_object[i] = load_texture(gfx, buffer);
+		}
+
 		snprintf(buffer, LINE_SIZE, "media/%s_normal.tga", material->name);
 		normal_object[i] = load_texture(gfx, buffer);
 	}
