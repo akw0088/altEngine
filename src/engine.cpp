@@ -2275,6 +2275,11 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "media/sound/weapons/change.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		unsigned int	num_wave = 0;
@@ -3538,7 +3543,18 @@ void Engine::handle_weapons(Player &player)
 				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
 			}
 		}
+
+		bool ret = select_wave(player.entity->speaker->source, player.weapon_swap_sound);
+		if (ret)
+		{
+			audio.play(player.entity->speaker->source);
+		}
+		else
+		{
+			debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
+		}
 		player.last_weapon = player.current_weapon;
+
 	}
 
 	/*

@@ -24,6 +24,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 	jump_sound = "media/sound/player/ranger/jump1.wav";
 	land_sound = "media/sound/player/ranger/fall1.wav";
+	weapon_swap_sound = "media/sound/weapons/change.wav";
 
 
 	health = 100;

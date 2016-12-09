@@ -65,6 +65,7 @@ public:
 
 	char *jump_sound;
 	char *land_sound;
+	char *weapon_swap_sound;
 
 	int health;
 
