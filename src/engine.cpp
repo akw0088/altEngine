@@ -2264,6 +2264,16 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "media/sound/weapons/plasma/lasfly.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+
+	strcpy(wave[0].file, "media/sound/weapons/plasma/plasmx1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
 
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -3624,6 +3634,8 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->explode_timer = 10;
 			entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
 			entity->trigger->explode_intensity = 200.0f;
+			sprintf(entity->trigger->explode_sound, "media/sound/weapons/plasma/plasmx1a.wav");
+			sprintf(entity->trigger->idle_sound, "media/sound/weapons/plasma/lasfly.wav");
 			entity->trigger->splash_damage = 15;
 			entity->trigger->splash_radius = 75.0f;
 			entity->trigger->knockback = 75.0f;
