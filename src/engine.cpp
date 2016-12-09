@@ -1316,6 +1316,17 @@ void Engine::check_triggers()
 						entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
 						entity_list[i]->trigger->explode = false;
 						entity_list[i]->trigger->self = true;
+
+						bool ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->explode_sound);
+						if (ret)
+						{
+							audio.stop(entity_list[i]->trigger->loop_source);
+							audio.play(entity_list[i]->trigger->source);
+						}
+						else
+						{
+							debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->explode_sound);
+						}
 						continue;
 					}
 				}
@@ -1359,14 +1370,14 @@ void Engine::check_triggers()
 				}
 
 				bool ret = false;
-				ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_snd);
+				ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
 				if (ret)
 				{
 					audio.play(entity_list[i]->trigger->source);
 				}
 				else
 				{
-					debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_snd);
+					debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_sound);
 				}
 			}
 		}
@@ -1382,7 +1393,7 @@ void Engine::check_triggers()
 			{
 				for (unsigned int j = 0; j < snd_wave.size(); j++)
 				{
-					if (strcmp(snd_wave[j].file, entity_list[i]->trigger->respawn_snd) == 0)
+					if (strcmp(snd_wave[j].file, entity_list[i]->trigger->respawn_sound) == 0)
 					{
 						audio.select_buffer(entity_list[i]->trigger->source, snd_wave[j].buffer);
 						break;
@@ -2243,6 +2254,16 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "media/sound/weapons/rocket/rockfly.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "media/sound/weapons/rocket/rocklx1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
 
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -2256,15 +2277,15 @@ void Engine::load_sounds()
 		}
 		else if (entity_list[i]->trigger)
 		{
-			if (entity_list[i]->trigger->pickup_snd[0] != '\0')
+			if (entity_list[i]->trigger->pickup_sound[0] != '\0')
 			{
-				strcpy(wave[num_wave].file, entity_list[i]->trigger->pickup_snd);
+				strcpy(wave[num_wave].file, entity_list[i]->trigger->pickup_sound);
 				num_wave++;
 			}
 
-			if (entity_list[i]->trigger->respawn_snd[0] != '\0')
+			if (entity_list[i]->trigger->respawn_sound[0] != '\0')
 			{
-				strcpy(wave[num_wave].file, entity_list[i]->trigger->respawn_snd);
+				strcpy(wave[num_wave].file, entity_list[i]->trigger->respawn_sound);
 				num_wave++;
 			}
 		}
@@ -2532,15 +2553,8 @@ void Engine::create_sources()
 			{
 				if (strcmp(snd_wave[j].file, entity_list[i]->speaker->file) == 0)
 				{
-//					entity_list[i]->speaker->source = audio.create_source(entity_list[i]->speaker->loop, false);
-#ifndef __OBJC__
-					alSourcef(entity_list[i]->speaker->source, AL_GAIN, 4.0f);
-#endif
-					audio.select_buffer(entity_list[i]->speaker->source, snd_wave[j].buffer);
-					audio.effects(entity_list[i]->speaker->source);
-
-					if (entity_list[i]->speaker->loop)
-						audio.play(entity_list[i]->speaker->source);
+					audio.select_buffer(entity_list[i]->speaker->loop_source, snd_wave[j].buffer);
+					audio.play(entity_list[i]->speaker->loop_source);
 					break;
 				}
 			}
@@ -2548,11 +2562,6 @@ void Engine::create_sources()
 		else if (entity_list[i]->trigger != NULL)
 		{
 			entity_list[i]->rigid->gravity = false;
-//			entity_list[i]->trigger->source = audio.create_source(false, false);
-#ifndef __OBJC__
-            alSourcef(entity_list[i]->trigger->source, AL_GAIN, 30.0f);
-#endif
-			audio.effects(entity_list[i]->trigger->source);
 		}
 	}
 
@@ -2570,6 +2579,16 @@ void Engine::update_audio()
 		{
 			audio.source_position(entity_list[i]->speaker->source, (float *)(&entity_list[i]->position));
 			audio.source_velocity(entity_list[i]->speaker->source, (float *)(&entity_list[i]->rigid->velocity));
+			audio.source_position(entity_list[i]->speaker->loop_source, (float *)(&entity_list[i]->position));
+			audio.source_velocity(entity_list[i]->speaker->loop_source, (float *)(&entity_list[i]->rigid->velocity));
+		}
+
+		if (entity_list[i]->trigger)
+		{
+			audio.source_position(entity_list[i]->trigger->source, (float *)(&entity_list[i]->position));
+			audio.source_velocity(entity_list[i]->trigger->source, (float *)(&entity_list[i]->rigid->velocity));
+			audio.source_position(entity_list[i]->trigger->loop_source, (float *)(&entity_list[i]->position));
+			audio.source_velocity(entity_list[i]->trigger->loop_source, (float *)(&entity_list[i]->rigid->velocity));
 		}
 	}
 
@@ -3526,9 +3545,22 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->splash_damage = 50;
 			entity->trigger->splash_radius = 250.0f;
 			entity->trigger->knockback = 250.0f;
+			sprintf(entity->trigger->explode_sound, "media/sound/weapons/rocket/rocklx1a.wav");
+			sprintf(entity->trigger->idle_sound, "media/sound/weapons/rocket/rockfly.wav");
 
-			memcpy(entity->trigger->action, "damage 100", strlen("damage 100") + 1);
+			bool ret = select_wave(entity->trigger->loop_source, entity->trigger->idle_sound);
+			if (ret)
+			{
+				audio.play(entity->trigger->loop_source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity->trigger->idle_sound);
+			}
 
+
+			sprintf(entity->trigger->action, "damage 100");
+			
 			entity->light = new Light(entity, gfx, 999);
 			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
@@ -3655,7 +3687,6 @@ void Engine::handle_weapons(Player &player)
 			player.ammo_slugs--;
 
 			vec3 forward;
-			float distance;
 			player.entity->model->getForwardVector(forward);
 
 			hitscan(player.entity->position, forward, index, num_index, spawn);

@@ -52,9 +52,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	weapon_plasma.load(gfx, "media/models/plasma/plasma");
 
 
-	entity->speaker = new Speaker(entity, audio, false);
+	entity->speaker = new Speaker(entity, audio);
 	strcpy(entity->speaker->file, "info_player_deathmatch");
-	entity->speaker->loop = false;
 #ifndef __OBJC__
     alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
 #endif

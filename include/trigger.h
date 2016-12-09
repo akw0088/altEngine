@@ -12,11 +12,14 @@ public:
 	Entity	*entity;
 
 
-	char	pickup_snd[LINE_SIZE];
-	char	respawn_snd[LINE_SIZE];
+	char	pickup_sound[LINE_SIZE];
+	char	respawn_sound[LINE_SIZE];
+	char	explode_sound[LINE_SIZE];
+	char	idle_sound[LINE_SIZE];
 	char	action[LINE_SIZE];
 	float	radius;
 	unsigned int	source;
+	unsigned int	loop_source;
 	unsigned int	pickup_buf;
 	unsigned int	respawn_buf;
 	vec3			explode_color;

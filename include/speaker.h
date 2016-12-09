@@ -6,15 +6,14 @@
 class Speaker
 {
 public:
-	Speaker(Entity *entity, Audio &audio, bool looping);
+	Speaker(Entity *entity, Audio &audio);
 	~Speaker();
 	void destroy(Audio &audio);
 	Entity			*entity;
 
 	char			file[LINE_SIZE];
 	unsigned int	source;
-	bool			playing;
-	bool			loop;
+	unsigned int	loop_source;
 };
 
 #endif
