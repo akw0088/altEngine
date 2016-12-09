@@ -2241,11 +2241,8 @@ void Engine::load_sounds()
 
 		if (entity_list[i]->speaker)
 		{
-			if (!strcmp(entity_list[i]->speaker->file, "info_player_deathmatch"))
-			{
-				strcpy(wave[0].file, entity_list[i]->speaker->file);
-				num_wave++;
-			}
+			strcpy(wave[0].file, entity_list[i]->speaker->file);
+			num_wave++;
 		}
 		else if (entity_list[i]->trigger)
 		{
@@ -3487,7 +3484,7 @@ void Engine::handle_weapons(Player &player)
 
 		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
 		{
-			player.reload_timer = 48;
+			player.reload_timer = 50;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3563,7 +3560,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
 		{
-			player.reload_timer = 48;
+			player.reload_timer = 50;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3618,7 +3615,7 @@ void Engine::handle_weapons(Player &player)
 			int index[8];
 			int num_index = 0;
 
-			player.reload_timer = 90;
+			player.reload_timer = 94;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];

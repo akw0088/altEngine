@@ -505,6 +505,29 @@ void RedirectIOToConsole()
 }
 
 
+void set_resolution(int width, int height, int bpp)
+{
+	DEVMODE dm;
+
+	memset(&dm, 0, sizeof(dm));
+	dm.dmSize = sizeof(dm);
+	dm.dmPelsWidth = width;
+	dm.dmPelsHeight = height;
+	dm.dmBitsPerPel = bpp;
+	dm.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+
+	debugf("Attempting to set Video mode to %dx%d:%dbpp\n", dm.dmPelsWidth, dm.dmPelsHeight, dm.dmBitsPerPel);
+
+	int ret = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+	if (ret == DISP_CHANGE_SUCCESSFUL)
+	{
+		debugf("video mode set\n");
+	}
+	else
+	{
+		debugf("*** Failed to set fullscreen mode: Error %d\n", ret);
+	}
+}
 
 void GetFreq(double &freq)
 {

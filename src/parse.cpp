@@ -167,7 +167,6 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx)
 	{
 		entity.speaker = new Speaker(&entity);
 		snprintf(entity.speaker->file, LINE_SIZE, "media/%s", value);
-		entity.rigid->angular_velocity.x = 10.0f;
 	}
 	else if (strcmp(key, "target") == 0)
 	{
