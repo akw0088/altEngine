@@ -17,6 +17,7 @@ Bsp::Bsp()
 bool Bsp::load(char *map)
 {
 //	tBsp = (bsp_t *)get_file(map);
+//	get_zipfile("media/q3f2_pak0.pk3", map, (unsigned char **)&tBsp);
 	get_zipfile("media/pak0.pk3", map, (unsigned char **)&tBsp);
 
 	if (tBsp == NULL)
@@ -65,7 +66,7 @@ bool Bsp::load(char *map)
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
-	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+//	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new int [data.num_materials];
 	lightmap_object = new unsigned int [data.num_lightmaps];

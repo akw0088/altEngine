@@ -8,8 +8,6 @@
 #define FORWARD
 //#define DEFERRED
 
-bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
-
 
 Engine::Engine()
 {
@@ -120,7 +118,7 @@ void Engine::load(char *level)
 	// This renders map before loading textures
 	camera_frame.set(transformation);
 	matrix4 mvp = transformation * projection;
-//	entity_list[spawn]->rigid->frame2ent(&camera_frame, keyboard);
+
 	spatial_testing();
 	gfx.clear();
 	global.Select();
@@ -153,15 +151,15 @@ void Engine::load(char *level)
 	}
 	*/
 
+#ifdef DEFERRED
 	//Setup render to texture
 	gfx.bindFramebuffer(fbo);
-#ifdef DEFERRED
 	gfx.resize(fb_width, fb_height);
-#endif
 
 	// Generate depth cubemaps for each light
 	render_shadowmaps();
 	gfx.bindFramebuffer(0);
+#endif
 
 
 #ifdef SHADOWVOL
@@ -426,8 +424,12 @@ void Engine::render_to_framebuffer()
 
 	gfx.clear();
 	render_scene_using_shadowmap(true);
-	render_shadow_volumes(entity_list[spawn]->player->current_light);
-
+/*
+	if (spawn != -1)
+	{
+		render_shadow_volumes(entity_list[spawn]->player->current_light);
+	}
+	*/
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
@@ -776,7 +778,7 @@ void Engine::debug_messages(double last_frametime)
 
 
 	}
-	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, false);
+	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
 }
 
 void Engine::destroy_buffers()
@@ -1215,7 +1217,7 @@ void Engine::step()
 			}
 
 			entity_list[spawn]->player->kill();
-			entity_list[spawn]->model->clone(*(entity_list[num_dynamic]->model));
+			entity_list[spawn]->model->clone(*(box->model));
 		}
 		handle_weapons(*(entity_list[spawn]->player));
 	}
@@ -1223,13 +1225,15 @@ void Engine::step()
 
 	// These two funcs loop through all entities, should probably combine
 	spatial_testing(); // mostly sets visible flag
-	check_triggers();  // handles triggers and the projectile as trigger stuff
+
+	if (spawn != -1)
+		check_triggers();  // handles triggers and the projectile as trigger stuff
 
 	//entity test movement
 	if (menu.ingame == false && menu.console == false)
 	{
 		if (input.control == true)
-			light_frame.update(input);
+			camera_frame.update(input);
 		else if (spawn != -1)
 		{
 			if (entity_list[spawn]->player->health > 0)
@@ -1900,7 +1904,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 	if (input.control == false)
 		camera_frame.update(vec2((float)deltax, (float)deltay));
 	else
-		light_frame.update(vec2((float)deltax, (float)deltay));
+		camera_frame.update(vec2((float)deltax, (float)deltay));
 	return true;
 }
 
@@ -2140,7 +2144,7 @@ void Engine::resize(int width, int height)
 	post.resize(width, height);
 
 
-	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, false);
+	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
 
 #ifndef __linux__
 	// This should probably be in render
@@ -2364,7 +2368,17 @@ void Engine::load_models()
 	if (entity_list.size() == 0)
 		return;
 
-	entity_list[num_dynamic]->model->load(gfx, "media/models/box");
+
+	box = new Entity();
+	box->rigid = new RigidBody(box);
+	box->model = box->rigid;
+	box->model->load(gfx, "media/models/box");
+
+	ball = new Entity();
+	ball->rigid = new RigidBody(box);
+	ball->model = ball->rigid;
+	ball->model->load(gfx, "media/models/ball");
+
 	for(unsigned int i = num_dynamic; i < entity_list.size(); i++)
 	{
 		bool loaded = false;
@@ -2377,7 +2391,7 @@ void Engine::load_models()
 			if (entity_list[j]->model == NULL)
 				continue;
 
-			entity_list[i]->model->clone(*entity_list[num_dynamic]->model);
+			entity_list[i]->model->clone(*(box->model));
 			if (strcmp(entity_list[i]->type, entity_list[j]->type) == 0)
 			{
 				entity_list[i]->model->clone(*entity_list[j]->model);
@@ -2490,7 +2504,9 @@ void Engine::init_camera()
 		if (type == NULL)
 			continue;
 
-		if ( strcmp(type, "info_player_deathmatch") == 0 )
+		if ( strcmp(type, "info_player_deathmatch") == 0  || 
+			strcmp(type, "team_ctf_redplayer") == 0 || 
+			strcmp(type, "info_player_start") == 0 )
 		{
 			camera_frame.pos = entity_list[i]->position;
 
@@ -3160,9 +3176,8 @@ void Engine::console(char *cmd)
 		{
 			for (i = last_spawn; i < entity_list.size(); i++)
 			{
-				if (entity_list[i]->type && strcmp(entity_list[i]->type, "info_player_deathmatch"))
-					continue;
-
+				if (entity_list[i]->type && (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
+					strcmp(entity_list[i]->type, "info_player_start") == 0) )
 				{
 					matrix4 matrix;
 
@@ -3726,7 +3741,7 @@ void Engine::handle_weapons(Player &player)
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(entity_list[num_dynamic + 0]->model));
+			entity->rigid->clone(*(box->model));
 			entity->rigid->velocity = camera_frame.forward * -1.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
@@ -3754,7 +3769,7 @@ void Engine::handle_weapons(Player &player)
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(entity_list[num_dynamic + 1]->model));
+			entity->rigid->clone(*(ball->model));
 			entity->rigid->velocity = camera_frame.forward * -100.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
