@@ -150,6 +150,7 @@ using namespace std;
 #include "player.h"
 #include "decal.h"
 
+#include "common.h"
 #include "entity.h"
 #include "shader.h"
 #include "parse.h"

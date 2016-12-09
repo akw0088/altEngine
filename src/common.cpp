@@ -428,12 +428,6 @@ int write_file(char *filename, char *bytes, int size)
     return 0;
 }
 
-
-
-
-
-
-
 int processFile(JZFile *zip, userdata_t *user)
 {
 	JZFileHeader header;
@@ -452,7 +446,7 @@ int processFile(JZFile *zip, userdata_t *user)
 		return -1;
 	}
 
-	printf("%s, %d / %d bytes at offset %08X\n", filename, header.compressedSize, header.uncompressedSize, header.offset);
+	//printf("%s, %d / %d bytes at offset %08X\n", filename, header.compressedSize, header.uncompressedSize, header.offset);
 
 	if (jzReadData(zip, &header, data) != Z_OK)
 	{
@@ -476,7 +470,7 @@ int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, v
 		return 1;
 	}
 
-	printf("Found file %s\n", filename);
+	//printf("Found file %s\n", filename);
 	offset = zip->tell(zip); // store current position
 
 	if (zip->seek(zip, header->offset, SEEK_SET))
@@ -531,16 +525,3 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data)
 	return retval;
 }
 
-
-
-/*
-int main(void)
-{
-	unsigned char *data = NULL;
-
-	int ret = get_zipfile("test.zip", "file.txt", &data);
-
-	printf("returned %d %s\n", ret, data);
-	return 0;
-}
-*/

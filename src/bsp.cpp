@@ -17,7 +17,7 @@ Bsp::Bsp()
 bool Bsp::load(char *map)
 {
 //	tBsp = (bsp_t *)get_file(map);
-	get_zipfile("pak0.pk3", "maps/q3tourney2.bsp", (unsigned char **)&tBsp);
+	get_zipfile("media/pak0.pk3", map, (unsigned char **)&tBsp);
 
 	if (tBsp == NULL)
 	{

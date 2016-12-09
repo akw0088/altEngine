@@ -2161,121 +2161,121 @@ void Engine::load_sounds()
 
 
 	//load player sounds
-	strcpy(wave[0].file, "media/sound/weapons/railgun/rg_hum.wav");
+	strcpy(wave[0].file, "sound/weapons/railgun/rg_hum.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/lightning/lg_hum.wav");
+	strcpy(wave[0].file, "sound/weapons/lightning/lg_hum.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/shotgun/sshotf1b.wav");
+	strcpy(wave[0].file, "sound/weapons/shotgun/sshotf1b.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/railgun/railgf1a.wav");
+	strcpy(wave[0].file, "sound/weapons/railgun/railgf1a.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/lightning/lg_fire.wav");
+	strcpy(wave[0].file, "sound/weapons/lightning/lg_fire.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/rocket/rocklf1a.wav");
+	strcpy(wave[0].file, "sound/weapons/rocket/rocklf1a.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/grenade/grenlf1a.wav");
+	strcpy(wave[0].file, "sound/weapons/grenade/grenlf1a.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/plasma/hyprbf1a.wav");
+	strcpy(wave[0].file, "sound/weapons/plasma/hyprbf1a.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/machinegun/machgf1b.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-
-
-	strcpy(wave[0].file, "media/sound/player/ranger/death1.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/player/ranger/death2.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/player/ranger/death3.wav");
+	strcpy(wave[0].file, "sound/weapons/machinegun/machgf1b.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
 
-	strcpy(wave[0].file, "media/sound/player/ranger/pain25_1.wav");
+
+	strcpy(wave[0].file, "sound/player/ranger/death1.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/player/ranger/pain50_1.wav");
+	strcpy(wave[0].file, "sound/player/ranger/death2.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/player/ranger/pain75_1.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/player/ranger/pain100_1.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/player/ranger/jump1.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/player/ranger/fall1.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/weapons/rocket/rockfly.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/weapons/rocket/rocklx1a.wav");
-	audio.load(wave[0]);
-	if (wave[0].data != NULL)
-		snd_wave.push_back(wave[0]);
-
-	strcpy(wave[0].file, "media/sound/weapons/plasma/lasfly.wav");
+	strcpy(wave[0].file, "sound/player/ranger/death3.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
 
-	strcpy(wave[0].file, "media/sound/weapons/plasma/plasmx1a.wav");
+	strcpy(wave[0].file, "sound/player/ranger/pain25_1.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "media/sound/weapons/change.wav");
+	strcpy(wave[0].file, "sound/player/ranger/pain50_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/ranger/pain75_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/ranger/pain100_1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/ranger/jump1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/ranger/fall1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/weapons/rocket/rockfly.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/weapons/rocket/rocklx1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/weapons/plasma/lasfly.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+
+	strcpy(wave[0].file, "sound/weapons/plasma/plasmx1a.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/weapons/change.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
@@ -3273,7 +3273,7 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
 		menu.print(msg);
-		load("media/maps/q3tourney2.bsp");
+		load("maps/q3tourney2.bsp");
 		bind(port);
 		return;
 	}
@@ -3285,63 +3285,63 @@ void Engine::console(char *cmd)
 		{
 			map.unload(gfx);
 		}
-		map.load("media/maps/q3dm1.bsp");
+		map.load("maps/q3dm1.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm2.bsp");
+		map.load("maps/q3dm2.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm3.bsp");
+		map.load("maps/q3dm3.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm4.bsp");
+		map.load("maps/q3dm4.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm5.bsp");
+		map.load("maps/q3dm5.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm6.bsp");
+		map.load("maps/q3dm6.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm7.bsp");
+		map.load("maps/q3dm7.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm8.bsp");
+		map.load("maps/q3dm8.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm9.bsp");
+		map.load("maps/q3dm9.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm10.bsp");
+		map.load("maps/q3dm10.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm11.bsp");
+		map.load("maps/q3dm11.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm12.bsp");
+		map.load("maps/q3dm12.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm13.bsp");
+		map.load("maps/q3dm13.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm14.bsp");
+		map.load("maps/q3dm14.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm15.bsp");
+		map.load("maps/q3dm15.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm16.bsp");
+		map.load("maps/q3dm16.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm17.bsp");
+		map.load("maps/q3dm17.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm18.bsp");
+		map.load("maps/q3dm18.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3dm19.bsp");
+		map.load("maps/q3dm19.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3tourney1.bsp");
+		map.load("maps/q3tourney1.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3tourney2.bsp");
+		map.load("maps/q3tourney2.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3tourney3.bsp");
+		map.load("maps/q3tourney3.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3tourney4.bsp");
+		map.load("maps/q3tourney4.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3tourney5.bsp");
+		map.load("maps/q3tourney5.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3tourney6.bsp");
+		map.load("maps/q3tourney6.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3ctf1.bsp");
+		map.load("maps/q3ctf1.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3ctf2.bsp");
+		map.load("maps/q3ctf2.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3ctf3.bsp");
+		map.load("maps/q3ctf3.bsp");
 		map.unload(gfx);
-		map.load("media/maps/q3ctf4.bsp");
+		map.load("maps/q3ctf4.bsp");
 		map.unload(gfx);
 		return;
 	}
@@ -3518,11 +3518,11 @@ void Engine::handle_weapons(Player &player)
 		switch (player.current_weapon)
 		{
 		case wp_railgun:
-			player.weapon_idle_sound = "media/sound/weapons/railgun/rg_hum.wav";
+			player.weapon_idle_sound = "sound/weapons/railgun/rg_hum.wav";
 			//		audio.select_buffer(entity->speaker->source, snd_wave[WP_RAILGUN_IDLE].buffer);
 			break;
 		case wp_lightning:
-//			player.weapon_idle_sound = "media/sound/weapons/lightning/lg_hum.wav";
+//			player.weapon_idle_sound = "sound/weapons/lightning/lg_hum.wav";
 			player.weapon_idle_sound = "";
 			break;
 		default:
@@ -3594,8 +3594,8 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->splash_damage = 50;
 			entity->trigger->splash_radius = 250.0f;
 			entity->trigger->knockback = 250.0f;
-			sprintf(entity->trigger->explode_sound, "media/sound/weapons/rocket/rocklx1a.wav");
-			sprintf(entity->trigger->idle_sound, "media/sound/weapons/rocket/rockfly.wav");
+			sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+			sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
 
 			bool ret = select_wave(entity->trigger->loop_source, entity->trigger->idle_sound);
 			if (ret)
@@ -3625,7 +3625,7 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid->gravity = false;
 
 
-			player.attack_sound = "media/sound/weapons/rocket/rocklf1a.wav";
+			player.attack_sound = "sound/weapons/rocket/rocklf1a.wav";
 		}
 		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
 		{
@@ -3650,8 +3650,8 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->explode_timer = 10;
 			entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
 			entity->trigger->explode_intensity = 200.0f;
-			sprintf(entity->trigger->explode_sound, "media/sound/weapons/plasma/plasmx1a.wav");
-			sprintf(entity->trigger->idle_sound, "media/sound/weapons/plasma/lasfly.wav");
+			sprintf(entity->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
+			sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
 			entity->trigger->splash_damage = 15;
 			entity->trigger->splash_radius = 75.0f;
 			entity->trigger->knockback = 75.0f;
@@ -3664,7 +3664,7 @@ void Engine::handle_weapons(Player &player)
 			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
 
-			player.attack_sound = "media/sound/weapons/plasma/hyprbf1a.wav";
+			player.attack_sound = "sound/weapons/plasma/hyprbf1a.wav";
 		}
 		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
 		{
@@ -3691,7 +3691,7 @@ void Engine::handle_weapons(Player &player)
 
 			camera_frame.set(entity->model->morientation);
 
-			player.attack_sound = "media/sound/weapons/grenade/grenlf1a.wav";
+			player.attack_sound = "sound/weapons/grenade/grenlf1a.wav";
 		}
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
 		{
@@ -3716,7 +3716,7 @@ void Engine::handle_weapons(Player &player)
 			entity->light->intensity = 1000.0f;
 			player.ammo_lightning--;
 
-			player.attack_sound = "media/sound/weapons/lightning/lg_fire.wav";
+			player.attack_sound = "sound/weapons/lightning/lg_fire.wav";
 		}
 		else if (player.current_weapon == wp_railgun && player.ammo_slugs > 0)
 		{
@@ -3755,7 +3755,7 @@ void Engine::handle_weapons(Player &player)
 
 
 
-			player.attack_sound = "media/sound/weapons/railgun/railgf1a.wav";
+			player.attack_sound = "sound/weapons/railgun/railgf1a.wav";
 		}
 		else if (player.current_weapon == wp_shotgun && player.ammo_shells > 0)
 		{
@@ -3777,7 +3777,7 @@ void Engine::handle_weapons(Player &player)
 //			entity->position = end;
 //			entity->decal->normal = normal;
 
-			player.attack_sound = "media/sound/weapons/shotgun/sshotf1b.wav";
+			player.attack_sound = "sound/weapons/shotgun/sshotf1b.wav";
 		}
 		else if (player.current_weapon == wp_machinegun && player.ammo_bullets > 0)
 		{
@@ -3815,7 +3815,7 @@ void Engine::handle_weapons(Player &player)
 			//			entity->position = end;
 			//			entity->decal->normal = normal;
 
-			player.attack_sound = "media/sound/weapons/machinegun/machgf1b.wav";
+			player.attack_sound = "sound/weapons/machinegun/machgf1b.wav";
 		}
 
 

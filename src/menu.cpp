@@ -31,7 +31,7 @@ void Menu::init(Graphics *gfx, Audio *audio)
 	menu_source = audio->create_source(false, true);
 	audio->select_buffer(menu_source, menu_wave.buffer);
 	audio->play(menu_source);
-	strcpy(delta_wave.file, "media/sound/click.wav");
+	strcpy(delta_wave.file, "sound/misc/menu1.wav");
 	audio->load(delta_wave);
 	delta_source = audio->create_source(false, true);
 	audio->select_buffer(delta_source, delta_wave.buffer);

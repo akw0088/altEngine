@@ -13,18 +13,18 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 	attack_sound = "";
 	weapon_idle_sound = "";
-	death1_sound = "media/sound/player/ranger/death1.wav";
-	death2_sound = "media/sound/player/ranger/death2.wav";
-	death3_sound = "media/sound/player/ranger/death3.wav";
+	death1_sound = "sound/player/ranger/death1.wav";
+	death2_sound = "sound/player/ranger/death2.wav";
+	death3_sound = "sound/player/ranger/death3.wav";
 
-	pain25_sound = "media/sound/player/ranger/pain25_1.wav";
-	pain50_sound = "media/sound/player/ranger/pain50_1.wav";
-	pain75_sound = "media/sound/player/ranger/pain75_1.wav";
-	pain100_sound = "media/sound/player/ranger/pain100_1.wav";
+	pain25_sound = "sound/player/ranger/pain25_1.wav";
+	pain50_sound = "sound/player/ranger/pain50_1.wav";
+	pain75_sound = "sound/player/ranger/pain75_1.wav";
+	pain100_sound = "sound/player/ranger/pain100_1.wav";
 
-	jump_sound = "media/sound/player/ranger/jump1.wav";
-	land_sound = "media/sound/player/ranger/fall1.wav";
-	weapon_swap_sound = "media/sound/weapons/change.wav";
+	jump_sound = "sound/player/ranger/jump1.wav";
+	land_sound = "sound/player/ranger/fall1.wav";
+	weapon_swap_sound = "sound/weapons/change.wav";
 
 
 	health = 100;
