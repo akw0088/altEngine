@@ -443,18 +443,20 @@ void Audio::delete_source(int hSource)
 	}
 }
 
-void Audio::select_buffer(int hSource, int hBuffer)
+bool Audio::select_buffer(int hSource, int hBuffer)
 {
 	ALenum		al_err;
 
+	al_err = alGetError(); // Clear older errors
 	alSourceStop(hSource);
 	alSourcei(hSource, AL_BUFFER, hBuffer);
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
 		debugf("Unable to add buffer to source: %s\n", GetALErrorString(al_err));
-		return;
+		return true;
 	}
+	return true;
 }
 
 void Audio::delete_buffer(int hBuffer)

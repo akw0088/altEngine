@@ -109,7 +109,7 @@ void Engine::load(char *level)
 
 	map.generate_meshes(gfx);
 
-	parse_entity(map.get_entities(), entity_list, gfx);
+	parse_entity(map.get_entities(), entity_list, gfx, audio);
 
 	menu.delta("entities", *this);
 	gfx.clear();
@@ -1189,21 +1189,30 @@ void Engine::step()
 
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
+			bool ret = false;
 			debugf("%s died\n", entity_list[spawn]->player->name);
 
 			switch (frame_step % 3)
 			{
 			case 0:
-				select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death1_sound);
+				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death1_sound);
 				break;
 			case 1:
-				select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death2_sound);
+				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death2_sound);
 				break;
 			case 2:
-				select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death3_sound);
+				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death3_sound);
 				break;
 			}
-			audio.play(entity_list[spawn]->speaker->source);
+
+			if (ret)
+			{
+				audio.play(entity_list[spawn]->speaker->source);
+			}
+			else
+			{
+				debugf("Failed to find PCM data for death sound\n");
+			}
 
 			entity_list[spawn]->player->kill();
 			entity_list[spawn]->model->clone(*(entity_list[num_dynamic]->model));
@@ -1349,15 +1358,16 @@ void Engine::check_triggers()
 					entity_list[spawn]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
 
-				for (unsigned int j = 0; j < snd_wave.size(); j++)
+				bool ret = false;
+				ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_snd);
+				if (ret)
 				{
-					if (strcmp(snd_wave[j].file, entity_list[i]->trigger->pickup_snd) == 0)
-					{
-						audio.select_buffer(entity_list[i]->trigger->source, snd_wave[j].buffer);
-						break;
-					}
+					audio.play(entity_list[i]->trigger->source);
 				}
-				audio.play(entity_list[i]->trigger->source);
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_snd);
+				}
 			}
 		}
 
@@ -2241,8 +2251,8 @@ void Engine::load_sounds()
 
 		if (entity_list[i]->speaker)
 		{
-			strcpy(wave[0].file, entity_list[i]->speaker->file);
-			num_wave++;
+				strcpy(wave[0].file, entity_list[i]->speaker->file);
+				num_wave++;
 		}
 		else if (entity_list[i]->trigger)
 		{
@@ -2756,22 +2766,30 @@ void Engine::console(char *cmd)
 
 		entity_list[index]->player->health -= health_damage;
 
+		bool ret = false;
 		switch (frame_step % 4)
 		{
 		case 0:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain25_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain25_sound);
 			break;
 		case 1:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain50_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain50_sound);
 			break;
 		case 2:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain75_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain75_sound);
 			break;
 		case 3:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain100_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain100_sound);
 			break;
 		}
-		audio.play(entity_list[spawn]->speaker->source);
+		if (ret)
+		{
+			audio.play(entity_list[spawn]->speaker->source);
+		}
+		else
+		{
+			debugf("Failed to find PCM data for pain sound\n");
+		}
 
 
 		return;
@@ -2800,23 +2818,30 @@ void Engine::console(char *cmd)
 
 		entity_list[spawn]->player->health -= health_damage;
 
-
+		bool ret = false;
 		switch (frame_step % 4)
 		{
 		case 0:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain25_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain25_sound);
 			break;
 		case 1:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain50_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain50_sound);
 			break;
 		case 2:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain75_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain75_sound);
 			break;
 		case 3:
-			select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain100_sound);
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain100_sound);
 			break;
 		}
-		audio.play(entity_list[spawn]->speaker->source);
+		if (ret)
+		{
+			audio.play(entity_list[spawn]->speaker->source);
+		}
+		else
+		{
+			debugf("Failed to find PCM data for pain sound\n");
+		}
 
 		return;
 	}
@@ -3490,7 +3515,7 @@ void Engine::handle_weapons(Player &player)
 			Entity *entity = entity_list[get_entity()];
 			entity->position = camera_frame.pos;
 
-			entity->trigger = new Trigger(entity);
+			entity->trigger = new Trigger(entity, audio);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
@@ -3536,7 +3561,7 @@ void Engine::handle_weapons(Player &player)
 
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
-			entity->trigger = new Trigger(entity);
+			entity->trigger = new Trigger(entity, audio);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
@@ -3571,7 +3596,7 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid->velocity = camera_frame.forward * -25.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = true;
-			entity->trigger = new Trigger(entity);
+			entity->trigger = new Trigger(entity, audio);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
@@ -3714,24 +3739,37 @@ void Engine::handle_weapons(Player &player)
 
 		if (fired)
 		{
-			select_wave(player.entity->speaker->source, player.attack_sound);
-			audio.play(player.entity->speaker->source);
+			bool ret = false;
+
+			ret = select_wave(player.entity->speaker->source, player.attack_sound);
+
+			if (ret)
+			{
+				audio.play(player.entity->speaker->source);
+			}
+			else
+			{
+				debugf("Failed to find PCM data for %s\n", player.attack_sound);
+			}
 		}
 
 	}
 }
 
 
-void Engine::select_wave(int source, char *file)
+bool Engine::select_wave(int source, char *file)
 {
+	if (file == NULL || file[0] == '\0')
+		return true;
+
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
 		if (strcmp(snd_wave[i].file, file) == 0)
 		{
-			audio.select_buffer(source, snd_wave[i].buffer);
-			break;
+			return audio.select_buffer(source, snd_wave[i].buffer);
 		}
 	}
+	return false;
 }
 
 

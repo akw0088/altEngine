@@ -17,7 +17,7 @@ public:
 	void listener_velocity(float *velocity);
 	void listener_orientation(float *orientation);
 	void delete_source(int hSource);
-	void select_buffer(int hSource, int hBuffer);
+	bool select_buffer(int hSource, int hBuffer);
 	void delete_buffer(int hBuffer);
 	void destroy();
 	void effects(int source);

@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-Trigger::Trigger(Entity *entity)
+Trigger::Trigger(Entity *entity, Audio &audio)
 {
 	Trigger::entity = entity;
 	active = false;
@@ -20,6 +20,8 @@ Trigger::Trigger(Entity *entity)
 	health = false;
 	armor = false;
 	explode_timer = 0;
+
+	source = audio.create_source(false, false);
 }
 
 void Trigger::destroy(Audio &audio)

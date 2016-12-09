@@ -6,7 +6,7 @@
 class Trigger
 {
 public:
-	Trigger(Entity *entity);
+	Trigger(Entity *entity, Audio &audio);
 	~Trigger();
 	void destroy(Audio &audio);
 	Entity	*entity;
