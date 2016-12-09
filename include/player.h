@@ -67,6 +67,11 @@ public:
 	char *land_sound;
 	char *weapon_swap_sound;
 
+	char *step1_sound;
+	char *step2_sound;
+	char *step3_sound;
+	char *step4_sound;
+
 	int health;
 
 	unsigned int armor;

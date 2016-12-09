@@ -26,6 +26,49 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	land_sound = "sound/player/ranger/fall1.wav";
 	weapon_swap_sound = "sound/weapons/change.wav";
 
+	step1_sound = "sound/player/footsteps/step1.wav";
+	step2_sound = "sound/player/footsteps/step2.wav";
+	step3_sound = "sound/player/footsteps/step3.wav";
+	step4_sound = "sound/player/footsteps/step4.wav";
+
+	//sounds/player/watr_in.wav
+	//sounds/player/watr_out.wav
+	//sounds/player/watr_un.wav
+	//sounds/player/gurp1.wav
+	//sounds/player/gurp2.wav
+	//sounds/player/talk.wav
+
+	//sound/player/gibsplt1.wav
+	//sound/player/gibimp1.wav
+	//sound/player/gibimp2.wav
+	//sound/player/gibimp3.wav
+	//sound/player/fry.wav
+
+	/*
+	// Player sound sets
+	anarki
+	biker
+	bitterman
+	bones
+	crash
+	doom
+	grunt
+	hunter
+	keel
+	klesk
+	lucy
+	major
+	mynx
+	orbb
+	ranger
+	razor
+	sarge
+	slash
+	sorlag
+	tankjr
+	uriel
+	visor
+	*/
 
 	health = 100;
 	armor = 0;
