@@ -485,7 +485,7 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 		jump_timer--;
 
 	sleep = false;
-#define SPEED (0.5f)
+#define SPEED (0.25f)
 	if (keyboard.up)
 	{
 		velocity += -forward * SPEED;
@@ -540,7 +540,7 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 		if (jumped && jump_timer == 0)
 		{
 			velocity.y += 3.0f;
-			jump_timer = 60;
+			jump_timer = 120;
 		}
 	}
 	else
@@ -549,5 +549,5 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 		velocity.z *= 0.5f;
 	}
 
-	return (jump_timer == 60);
+	return (jump_timer == 120);
 }

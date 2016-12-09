@@ -60,6 +60,21 @@ void Engine::init(void *p1, void *p2)
 	Model::CreateObjects(gfx);
 	global.init(&gfx);
 
+	box = new Entity();
+	box->rigid = new RigidBody(box);
+	box->model = box->rigid;
+	box->model->load(gfx, "media/models/box");
+
+	ball = new Entity();
+	ball->rigid = new RigidBody(ball);
+	ball->model = ball->rigid;
+	ball->model->load(gfx, "media/models/ball");
+
+	thug22 = new Entity();
+	thug22->rigid = new RigidBody(thug22);
+	thug22->model = thug22->rigid;
+	thug22->model->load(gfx, "media/models/thug22/thug22");
+
 
 	//audio
 	audio.init();
@@ -1186,7 +1201,7 @@ void Engine::step()
 	if (map.loaded == false)
 		return;
 
-	if (frame_step % 60 == 0)
+	if (frame_step % TICK_RATE == 0)
 	{
 		blink = !blink;
 	}
@@ -1194,7 +1209,7 @@ void Engine::step()
 
 	if (spawn != -1)
 	{
-		if (frame_step % 50 == 0)
+		if (frame_step % TICK_RATE == 0)
 		{
 			if (entity_list[spawn]->player->health > 100)
 			{
@@ -1606,7 +1621,8 @@ void Engine::server_step()
 					printf("client %s got entity %d\n", socketname, i);
 					client->entity = i;
 					entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
-					entity_list[client->entity]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[client->entity]->model = entity_list[client->entity]->rigid;
+					entity_list[client->entity]->rigid->clone(*(box->model));
 					entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio);
 					entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
 					break;
@@ -1689,7 +1705,7 @@ void Engine::client_step()
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(input);
 	static int rate_skip = 0;
-	int cl_skip = 4;
+	int cl_skip = 8;
 
 	rate_skip++;
 
@@ -1777,7 +1793,8 @@ void Engine::client_step()
 					memcpy(entity_list[spawn]->type, "client", strlen("client") + 1);
 					entity_list[spawn]->position = entity_list[entity]->position;
 					entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
-					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[spawn]->model = entity_list[spawn]->rigid;
+					entity_list[spawn]->rigid->clone(*(box->model));
 					entity_list[spawn]->rigid->step_flag = true;
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
@@ -2387,16 +2404,6 @@ void Engine::load_models()
 		return;
 
 
-	box = new Entity();
-	box->rigid = new RigidBody(box);
-	box->model = box->rigid;
-	box->model->load(gfx, "media/models/box");
-
-	ball = new Entity();
-	ball->rigid = new RigidBody(box);
-	ball->model = ball->rigid;
-	ball->model->load(gfx, "media/models/ball");
-
 	for(unsigned int i = num_dynamic; i < entity_list.size(); i++)
 	{
 		bool loaded = false;
@@ -2533,7 +2540,8 @@ void Engine::init_camera()
 			memcpy(entity_list[spawn]->type, "player", strlen("player") + 1);
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
-			entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+			entity_list[spawn]->model = entity_list[spawn]->rigid;
+			entity_list[spawn]->rigid->clone(*(box->model));
 			entity_list[spawn]->rigid->step_flag = true;
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
@@ -2748,6 +2756,7 @@ void Engine::destroy()
 {
 	delete box;
 	delete ball;
+	delete thug22;
 
 	debugf("Shutting down.\n");
 	destroy_buffers();
@@ -2800,7 +2809,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	else
 	{
-		debugf("Loaded %s\n", file_name);
+		debugf("Loaded %s from disk\n", file_name);
 	}
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, STBI_rgb_alpha);
@@ -3255,7 +3264,7 @@ void Engine::console(char *cmd)
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[spawn]->player->respawn();
-					entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
+					entity_list[spawn]->rigid->clone(*(box->model));
 					spawned = true;
 					break;
 
@@ -3668,7 +3677,7 @@ void Engine::handle_weapons(Player &player)
 
 		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
 		{
-			player.reload_timer = 50;
+			player.reload_timer = 100;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3720,7 +3729,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
 		{
-			player.reload_timer = 4;
+			player.reload_timer = 8;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3759,7 +3768,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
 		{
-			player.reload_timer = 50;
+			player.reload_timer = 100;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3786,7 +3795,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
 		{
-			player.reload_timer = 3;
+			player.reload_timer = 6;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3814,7 +3823,7 @@ void Engine::handle_weapons(Player &player)
 			int index[8];
 			int num_index = 0;
 
-			player.reload_timer = 94;
+			player.reload_timer = 188;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3850,7 +3859,7 @@ void Engine::handle_weapons(Player &player)
 		}
 		else if (player.current_weapon == wp_shotgun && player.ammo_shells > 0)
 		{
-			player.reload_timer = 60;
+			player.reload_timer = 120;
 
 			player.ammo_shells--;
 
@@ -3875,7 +3884,7 @@ void Engine::handle_weapons(Player &player)
 			int index[8];
 			int num_index = 0;
 
-			player.reload_timer = 4;
+			player.reload_timer = 8;
 
 			player.ammo_bullets--;
 

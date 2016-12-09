@@ -88,6 +88,7 @@ public:
 	// for cloning
 	Entity *box;
 	Entity *ball;
+	Entity *thug22;
 
 private:
 	matrix4		projection;

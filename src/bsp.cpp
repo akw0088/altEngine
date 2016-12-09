@@ -787,6 +787,12 @@ void Bsp::load_textures(Graphics &gfx)
 			tex_object[i] = load_texture(gfx, buffer);
 		}
 
+		if (tex_object[i] == 0)
+		{
+			tex_object[i] = 1; // no_tex
+		}
+
+
 		snprintf(buffer, LINE_SIZE, "media/%s_normal.tga", material->name);
 		normal_object[i] = load_texture(gfx, buffer);
 	}

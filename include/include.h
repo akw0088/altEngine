@@ -3,6 +3,11 @@
 
 #define LINE_SIZE 512
 
+#define TICK_MS		8		// 125hz
+#define TICK_RATE	125
+//#define TICK_MS 16		// 62.5hz
+//#define TICK_RATE 60
+
 #ifdef _WIN32
 	#define _CRTDBG_MAP_ALLOC
 	#define EFXUTIL
@@ -168,8 +173,6 @@ int load_texture(Graphics &gfx, char *file_name);
 float abs32(float val);
 int abs32(int val);
 
-char *get_file(char *filename);
-int write_file(char *filename, char *bytes, int size);
 
 double fsin(double rad);
 double fcos(double rad);

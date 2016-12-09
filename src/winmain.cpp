@@ -127,7 +127,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
 		RedirectIOToConsole();
-		SetTimer(hwnd, TICK_TIMER, 16, NULL);
+
+		SetTimer(hwnd, TICK_TIMER, TICK_MS, NULL);
 		hdc = GetDC(hwnd);
 
 		hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
