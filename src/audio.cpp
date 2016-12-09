@@ -385,12 +385,7 @@ int Audio::create_source(bool loop, bool global)
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
-/*
-		char err[LINE_SIZE];
-
-		snprintf(err, LINE_SIZE, "Unable to generate audio source: %s\n", GetALErrorString(al_err));
-		throw err;
-*/
+		debugf("Unable to generate audio source: %s\n", GetALErrorString(al_err));
 	}
 
 	if (loop)
@@ -408,27 +403,73 @@ int Audio::create_source(bool loop, bool global)
 
 void Audio::source_position(int hSource, float *position)
 {
+	if (hSource == -1)
+	{
+		debugf("Attempting to position unallocated source\n");
+		return;
+	}
+
 	alSourcefv(hSource, AL_POSITION, position);
+	ALenum al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Error alSourcefv position : %s\n", GetALErrorString(al_err));
+	}
 }
 
 void Audio::source_velocity(int hSource, float *velocity)
 {
+
+	if (hSource == -1)
+	{
+		debugf("Attempting to add velocity to unallocated source\n");
+		return;
+	}
+
 	alSourcefv(hSource, AL_VELOCITY, velocity);
+	ALenum al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Error alSourcefv velocity : %s\n", GetALErrorString(al_err));
+	}
 }
 
 void Audio::listener_position(float *position)
 {
+	ALenum al_err;
+
 	alListenerfv(AL_POSITION, position);
+	al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Error alListenerfv : %s\n", GetALErrorString(al_err));
+	}
 }
 
 void Audio::listener_velocity(float *velocity)
 {
+	ALenum al_err;
+
 	alListenerfv(AL_VELOCITY, velocity);
+
+	al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Error alListenerfv velocity: %s\n", GetALErrorString(al_err));
+	}
 }
 
 void Audio::listener_orientation(float *orientation)
 {
+	ALenum al_err;
+
 	alListenerfv(AL_ORIENTATION, orientation);
+
+	al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Error alListenerfv orientation: %s\n", GetALErrorString(al_err));
+	}
 }
 
 void Audio::delete_source(int hSource)
@@ -447,7 +488,6 @@ bool Audio::select_buffer(int hSource, int hBuffer)
 {
 	ALenum		al_err;
 
-	al_err = alGetError(); // Clear older errors
 	alSourceStop(hSource);
 	alSourcei(hSource, AL_BUFFER, hBuffer);
 	al_err = alGetError();
@@ -473,7 +513,15 @@ void Audio::delete_buffer(int hBuffer)
 
 void Audio::play(int hSource)
 {
+	ALenum		al_err;
+
+	al_err = alGetError();
 	alSourcePlay(hSource);
+	al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Play error: %s\n", GetALErrorString(al_err));
+	}
 }
 
 void Audio::stop(int hSource)

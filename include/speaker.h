@@ -6,7 +6,7 @@
 class Speaker
 {
 public:
-	Speaker(Entity *entity);
+	Speaker(Entity *entity, Audio &audio, bool looping);
 	~Speaker();
 	void destroy(Audio &audio);
 	Entity			*entity;

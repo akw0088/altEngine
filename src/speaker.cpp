@@ -4,12 +4,13 @@
 #define new DEBUG_NEW
 #endif
 
-Speaker::Speaker(Entity *entity)
+Speaker::Speaker(Entity *entity, Audio &audio, bool looping)
 {
 	Speaker::entity = entity;
-	source = (unsigned int)-1;
+
+	source = audio.create_source(looping, false);
 	playing = false;
-	loop = true;
+	loop = looping;
 }
 
 void Speaker::destroy(Audio &audio)

@@ -2532,7 +2532,7 @@ void Engine::create_sources()
 			{
 				if (strcmp(snd_wave[j].file, entity_list[i]->speaker->file) == 0)
 				{
-					entity_list[i]->speaker->source = audio.create_source(entity_list[i]->speaker->loop, false);
+//					entity_list[i]->speaker->source = audio.create_source(entity_list[i]->speaker->loop, false);
 #ifndef __OBJC__
 					alSourcef(entity_list[i]->speaker->source, AL_GAIN, 4.0f);
 #endif
@@ -2548,7 +2548,7 @@ void Engine::create_sources()
 		else if (entity_list[i]->trigger != NULL)
 		{
 			entity_list[i]->rigid->gravity = false;
-			entity_list[i]->trigger->source = audio.create_source(false, false);
+//			entity_list[i]->trigger->source = audio.create_source(false, false);
 #ifndef __OBJC__
             alSourcef(entity_list[i]->trigger->source, AL_GAIN, 30.0f);
 #endif
