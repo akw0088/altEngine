@@ -21,6 +21,16 @@ Speaker::Speaker(Entity *entity, Audio &audio)
 	audio.play(loop_source);
 }
 
+void Speaker::gain(float value)
+{
+	alSourcef(source, AL_GAIN, value);
+}
+
+void Speaker::loop_gain(float value)
+{
+	alSourcef(loop_source, AL_GAIN, value);
+}
+
 void Speaker::destroy(Audio &audio)
 {
 	if (source != -1)

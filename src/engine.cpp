@@ -3372,17 +3372,20 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "give all\n");
 		menu.print(msg);
-		entity_list[spawn]->player->ammo_bfg = 999;
-		entity_list[spawn]->player->ammo_bullets = 999;
-		entity_list[spawn]->player->ammo_lightning= 999;
-		entity_list[spawn]->player->ammo_plasma = 999;
-		entity_list[spawn]->player->ammo_grenades = 999;
-		entity_list[spawn]->player->ammo_rockets = 999;
-		entity_list[spawn]->player->ammo_shells = 999;
-		entity_list[spawn]->player->ammo_slugs = 999;
-		entity_list[spawn]->player->armor = 200;
-		entity_list[spawn]->player->health = 100;
-		entity_list[spawn]->player->weapon_flags = ~0;
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->ammo_bfg = 999;
+			entity_list[spawn]->player->ammo_bullets = 999;
+			entity_list[spawn]->player->ammo_lightning = 999;
+			entity_list[spawn]->player->ammo_plasma = 999;
+			entity_list[spawn]->player->ammo_grenades = 999;
+			entity_list[spawn]->player->ammo_rockets = 999;
+			entity_list[spawn]->player->ammo_shells = 999;
+			entity_list[spawn]->player->ammo_slugs = 999;
+			entity_list[spawn]->player->armor = 200;
+			entity_list[spawn]->player->health = 100;
+			entity_list[spawn]->player->weapon_flags = ~0;
+		}
 		return;
 	}
 
@@ -3494,18 +3497,38 @@ void Engine::handle_weapons(Player &player)
 		return;
 	}
 
-	switch (player.current_weapon)
+
+	if (player.current_weapon != player.last_weapon)
 	{
-	case wp_railgun:
-		player.weapon_idle_sound = "media/sound/weapons/railgun/rg_hum.wav";
-		//		audio.select_buffer(entity->speaker->source, snd_wave[WP_RAILGUN_IDLE].buffer);
-		break;
-	case wp_lightning:
-		player.weapon_idle_sound = "media/sound/weapons/lightning/lg_hum.wav";
-		break;
-	default:
-		player.weapon_idle_sound = "";
-		break;
+		switch (player.current_weapon)
+		{
+		case wp_railgun:
+			player.weapon_idle_sound = "media/sound/weapons/railgun/rg_hum.wav";
+			//		audio.select_buffer(entity->speaker->source, snd_wave[WP_RAILGUN_IDLE].buffer);
+			break;
+		case wp_lightning:
+//			player.weapon_idle_sound = "media/sound/weapons/lightning/lg_hum.wav";
+			player.weapon_idle_sound = "";
+			break;
+		default:
+			player.weapon_idle_sound = "";
+			break;
+		}
+		audio.stop(player.entity->speaker->loop_source);
+		player.entity->speaker->loop_gain(0.25f);
+		if (player.weapon_idle_sound[0] != '\0')
+		{
+			bool ret = select_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
+			if (ret)
+			{
+				audio.play(player.entity->speaker->loop_source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
+			}
+		}
+		player.last_weapon = player.current_weapon;
 	}
 
 	/*

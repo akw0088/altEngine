@@ -72,6 +72,7 @@ public:
 	unsigned int weapon_flags;
 
 	unsigned int current_weapon;
+	unsigned int last_weapon;
 	unsigned int ammo_rockets;
 	unsigned int ammo_grenades;
 	unsigned int ammo_slugs;
