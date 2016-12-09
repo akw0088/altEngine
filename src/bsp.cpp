@@ -6,6 +6,7 @@
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
+int get_zipfile(char *zipfile, char *file, unsigned char **data);
 
 Bsp::Bsp()
 {
@@ -15,7 +16,9 @@ Bsp::Bsp()
 
 bool Bsp::load(char *map)
 {
-	tBsp = (bsp_t *)get_file(map);
+//	tBsp = (bsp_t *)get_file(map);
+	get_zipfile("pak0.pk3", "maps/q3tourney2.bsp", (unsigned char **)&tBsp);
+
 	if (tBsp == NULL)
 	{
 		printf("Unable to open map %s\n", map);

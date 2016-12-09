@@ -4,6 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
+#include "junzip.h"
 #include <stdarg.h>
 
 float newtonSqrt(float x);
@@ -429,3 +430,117 @@ int write_file(char *filename, char *bytes, int size)
 
 
 
+
+
+
+
+int processFile(JZFile *zip, userdata_t *user)
+{
+	JZFileHeader header;
+	char filename[1024];
+	unsigned char *data;
+
+	if (jzReadLocalFileHeader(zip, &header, filename, sizeof(filename)))
+	{
+		printf("Couldn't read local file header!");
+		return -1;
+	}
+
+	if ((data = (unsigned char *)malloc(header.uncompressedSize + 1)) == NULL)
+	{
+		printf("Couldn't allocate memory!");
+		return -1;
+	}
+
+	printf("%s, %d / %d bytes at offset %08X\n", filename, header.compressedSize, header.uncompressedSize, header.offset);
+
+	if (jzReadData(zip, &header, data) != Z_OK)
+	{
+		printf("Couldn't read file data!");
+		free(data);
+		return -1;
+	}
+
+	user->data = (unsigned char *)data;
+
+	return 0;
+}
+
+int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, void *user_data)
+{
+	long offset;
+	userdata_t *user = (userdata_t *)user_data;
+
+	if (strcmp(filename, user->file) != 0)
+	{
+		return 1;
+	}
+
+	printf("Found file %s\n", filename);
+	offset = zip->tell(zip); // store current position
+
+	if (zip->seek(zip, header->offset, SEEK_SET))
+	{
+		printf("Cannot seek in zip file!");
+		return 0; // abort
+	}
+
+	processFile(zip, user); // alters file offset
+	zip->seek(zip, offset, SEEK_SET); // return to position
+
+	return 0; // continue
+}
+
+int get_zipfile(char *zipfile, char *file, unsigned char **data)
+{
+	FILE *fp;
+	JZEndRecord endRecord;
+	JZFile *zip;
+	int retval = -1;
+	userdata_t user;
+
+	user.file = file;
+	user.data = NULL;
+
+	fp = fopen(zipfile, "rb");
+	if (fp == NULL)
+	{
+		printf("Couldn't open zip file %s\n", zipfile);
+		return -1;
+	}
+
+	zip = jzfile_from_stdio_file(fp);
+
+	if (jzReadEndRecord(zip, &endRecord))
+	{
+		printf("Couldn't read ZIP file end record.");
+		zip->close(zip);
+		return retval;
+	}
+
+	if (jzReadCentralDirectory(zip, &endRecord, recordCallback, (void *)&user))
+	{
+		printf("Couldn't read ZIP file central record.");
+		zip->close(zip);
+		return retval;
+	}
+
+	*data = user.data;
+	retval = 0;
+	zip->close(zip);
+	return retval;
+}
+
+
+
+/*
+int main(void)
+{
+	unsigned char *data = NULL;
+
+	int ret = get_zipfile("test.zip", "file.txt", &data);
+
+	printf("returned %d %s\n", ret, data);
+	return 0;
+}
+*/
