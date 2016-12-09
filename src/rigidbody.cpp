@@ -485,25 +485,26 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 		jump_timer--;
 
 	sleep = false;
-#define SPEED (0.25f)
+#define ACCEL (0.25f)
+#define MAX_SPEED 3.0
 	if (keyboard.up)
 	{
-		velocity += -forward * SPEED;
+		velocity += -forward * ACCEL;
 		moved = true;
 	}
 	if (keyboard.down)
 	{
-		velocity += forward * SPEED;
+		velocity += forward * ACCEL;
 		moved = true;
 	}
 	if (keyboard.left)
 	{
-		velocity += -right * SPEED;
+		velocity += -right * ACCEL;
 		moved = true;
 	}
 	if (keyboard.right)
 	{
-		velocity += right * SPEED;
+		velocity += right * ACCEL;
 		moved = true;
 	}
 	if (keyboard.enter)
@@ -513,17 +514,17 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 	}
 	if (keyboard.shift)
 	{
-		velocity.y += -SPEED;
+		velocity.y += -ACCEL;
 		moved = true;
 	}
 
 	float speed = velocity.magnitude();
 
-	if ( speed > 6.0f)
+	if ( speed > MAX_SPEED)
 	{
-		velocity.x *= (6.0f / speed);
-		velocity.y *= (6.0f / speed);
-		velocity.z *= (6.0f / speed);
+		velocity.x *= (MAX_SPEED / speed);
+		velocity.y *= (MAX_SPEED / speed);
+		velocity.z *= (MAX_SPEED / speed);
 	}
 
 	if (moved)

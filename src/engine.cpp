@@ -600,7 +600,7 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 	{
 		mlight2.Params(mvp, light_list, 0);
 	}
-	zcc.render(gfx, frame_step);
+	zcc.render(gfx, frame_step >> 1);
 }
 
 void Engine::render_entities(const matrix4 &trans, bool lights)
@@ -698,7 +698,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		zcc.render(gfx, frame_step);
+		zcc.render(gfx, frame_step >> 1);
 	}
 	
 }

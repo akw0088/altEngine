@@ -56,11 +56,14 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 		}
 	}
 
+
 	num_buffer = 0;
 	for (;plist != NULL;)
 	{
 		buffer[num_buffer++] = new md5_buffer_t;
 
+		//TODO: Interpolate between frames for smoother animation
+		//TBH: animation looks fine as is
 		md5.generate_animation(buffer[num_buffer-1]->frame, plist->anim);
 		generate_buffers(gfx, plist->anim, buffer[num_buffer - 1]);
 		md5.destroy_animation(buffer[num_buffer - 1]->frame, plist->anim);

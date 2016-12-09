@@ -3,6 +3,8 @@
 
 #define LINE_SIZE 512
 
+#define LIGHTMAP
+
 #define TICK_MS		8		// 125hz
 #define TICK_RATE	125
 //#define TICK_MS 16		// 62.5hz

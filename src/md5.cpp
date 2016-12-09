@@ -485,6 +485,7 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	pdata = strstr(data, "numJoints");
 	sscanf(pdata, "numJoints %d", &num_joint);
 
+	// Usually 24 frames, need to interpolate for higher rates
 	pdata = strstr(data, "frameRate");
 	sscanf(pdata, "frameRate %d", &frame_rate);
 

@@ -574,9 +574,11 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 */
 
 	gfx.SelectTexture(0, tex_object[face->material]);
+#ifdef LIGHTMAP
 	// surfaces that arent lit with lightmaps eg: skies
-//	if (face->lightmap != -1)
-//		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+	if (face->lightmap != -1)
+		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+#endif
 	gfx.SelectTexture(2, normal_object[face->material]);
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 //	gfx.DeselectTexture(2);
@@ -611,7 +613,9 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 		// Render each row
 		gfx.SelectTexture(0, tex_object[face->material]);
-//		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+#ifdef LIGHTMAP
+		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
+#endif
 		gfx.SelectTexture(2, normal_object[face->material]);
 		for( int row = 0; row < mesh_level; row++)
 		{
@@ -764,13 +768,13 @@ void Bsp::load_textures(Graphics &gfx)
 {
 	for (int i = 0; i < data.num_lightmaps; i++)
 	{
-#ifndef DIRECTX
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
-#else
+//#ifndef DIRECTX
+//		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
+//#else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image);
 		delete [] pBits;
-#endif
+//#endif
 	}
 
 	for (int i = 0; i < data.num_materials; i++)
