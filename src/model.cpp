@@ -19,7 +19,7 @@ void Model::load(Graphics &gfx, char *file)
 	snprintf(tga_file, LINE_SIZE, "%s.tga", file);
 	snprintf(normal_file, LINE_SIZE, "%s_normal.tga", file);
 
-	model_file = get_file(vbo_file);
+	model_file = get_file(vbo_file, NULL);
 	if (model_file == NULL)
 	{
 		debugf("Unable to load vertex array %s\n", vbo_file);
@@ -33,7 +33,7 @@ void Model::load(Graphics &gfx, char *file)
 
 	create_box(gfx, aabb);
 
-	char *index_file = get_file(ibo_file);
+	char *index_file = get_file(ibo_file, NULL);
 	if (index_file == NULL)
 	{
 		debugf("Unable to load index array %s\n", index_file);

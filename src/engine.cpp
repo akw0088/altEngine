@@ -13,6 +13,20 @@
 //#define DEFERRED
 
 
+char *pk3list[] = { "media/pak0.pk3",
+//				"media/pak1.pk3",
+//				"media/pak2.pk3",
+//				"media/pak3.pk3",
+//				"media/pak4.pk3",
+//				"media/pak5.pk3",
+//				"media/pak6.pk3",
+//				"media/pak7.pk3",
+//				"media/pak8.pk3",
+				"media/q3f2_pak0.pk3",
+				"media/zpak000_assets.pk3"
+};
+int num_pk3 = 3;
+
 Engine::Engine()
 {
 	initialized = false;
@@ -106,7 +120,7 @@ void Engine::load(char *level)
 		menu.print("Failed to load mlight3 shader");
 
 
-	if ( map.load(level) == false)
+	if ( map.load(level, pk3list, num_pk3) == false)
 		return;
 
 	map.generate_meshes(gfx);
@@ -2762,18 +2776,41 @@ int load_texture(Graphics &gfx, char *file_name)
 	int tex_object;
 
 //	byte *bytes2 = gltLoadTGA(file_name, &width, &height, &components, &format);
-	unsigned char *bytes = stbi_load(file_name, &width, &height, &components, STBI_rgb_alpha);
-	format = GL_RGBA;
-	components = GL_RGBA8;
+//	unsigned char *bytes = stbi_load(file_name, &width, &height, &components, STBI_rgb_alpha);
+	int size = 0;
+	unsigned char *data = (unsigned char *)get_file(file_name, &size);
 
-	if (bytes == NULL)
+	if (data == NULL)
+	{
+		char pk3_name[80] = { 0 };
+
+		sprintf(pk3_name, "%s", file_name + strlen("media/"));
+
+		for (int i = 0; i < num_pk3; i++)
+		{
+			get_zipfile(pk3list[i], pk3_name, &data, NULL);
+			if (data != NULL)
+				break;
+		}
+	}
+	if (data == NULL)
 	{
 		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
+	else
+	{
+		debugf("Loaded %s\n", file_name);
+	}
+
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, STBI_rgb_alpha);
+
+	format = GL_RGBA;
+	components = GL_RGBA8;
+
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
-//	stbi_image_free(bytes);
-//	delete [] bytes;
+	stbi_image_free(bytes);
+	free((void *)data);
 
 #ifndef DIRECTX
 	if (format == GL_BGRA_EXT)
@@ -3333,6 +3370,7 @@ void Engine::console(char *cmd)
 	ret = strcmp(cmd, "unit_test_maps");
 	if (ret == 0)
 	{
+		/*
 		if (map.loaded)
 		{
 			map.unload(gfx);
@@ -3395,6 +3433,7 @@ void Engine::console(char *cmd)
 		map.unload(gfx);
 		map.load("maps/q3ctf4.bsp");
 		map.unload(gfx);
+		*/
 		return;
 	}
 

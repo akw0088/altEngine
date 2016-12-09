@@ -122,7 +122,7 @@ void MD5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int
 
 int MD5::load_md5(char *file)
 {
-	char *data = get_file(file);
+	char *data = get_file(file, NULL);
 	char *pdata;
 	char *pjoint;
 	char *pmesh;
@@ -456,7 +456,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 int MD5::load_md5_animation(char *file, anim_list_t *plist)
 {
-	char *data = get_file(file);
+	char *data = get_file(file, NULL);
 	char *pdata = NULL;
 
 	int version;
@@ -888,7 +888,7 @@ void MD5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_arr
 	{
 		vertex_array[i].normal *= (1.0f / 3.0f);
 		vertex_array[i].tangent *= (1.0f / 3.0f);
-		vertex_array[i].tangent.w = 1.0f;
+//		vertex_array[i].tangent.w = 1.0f;
 	}
 
 

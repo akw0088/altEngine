@@ -21,6 +21,7 @@ extern "C" {
 	{
 		char *file;
 		unsigned char *data;
+		int size;
 	} userdata_t;
 
 	// If you don't have stdint.h, the following two lines should work for most 32/64 bit systems

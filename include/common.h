@@ -14,8 +14,8 @@ void cubic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float time, vec3 &ou
 void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, int &num_index, float level);
-char *get_file(char *filename);
-int get_zipfile(char *zipfile, char *file, unsigned char **data);
+char *get_file(char *filename, int *size);
+int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int write_file(char *filename, char *bytes, int size);
 
 int get_zipfile(char *zipfile, char *file, unsigned char **data);

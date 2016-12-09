@@ -964,7 +964,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 
 	if (vertex_file)
 	{
-		vertex_src = get_file(vertex_file);
+		vertex_src = get_file(vertex_file, NULL);
 		if (vertex_src == NULL)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n", vertex_file);
@@ -1001,7 +1001,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 
 	if (geometry_file)
 	{
-		geometry_src = get_file(geometry_file);
+		geometry_src = get_file(geometry_file, NULL);
 		if (geometry_src == NULL)
 		{
 			fprintf(fLog, "Unable to load geometry shader %s\n", geometry_file);
@@ -1037,7 +1037,7 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 
 	if (fragment_file)
 	{
-		fragment_src = get_file(fragment_file);
+		fragment_src = get_file(fragment_file, NULL);
 		if (fragment_src == NULL)
 		{
 			fprintf(fLog, "Unable to load fragment shader %s\n", fragment_file);

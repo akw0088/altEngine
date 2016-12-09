@@ -352,11 +352,11 @@ void Audio::load(wave_t &wave)
 
 	if (strstr(wave.file, "media/"))
 	{
-		wave.data = get_file(wave.file);
+		wave.data = get_file(wave.file, NULL);
 	}
 	else
 	{
-		get_zipfile("media/pak0.pk3", wave.file, (unsigned char **)&wave.data);
+		get_zipfile("media/pak0.pk3", wave.file, (unsigned char **)&wave.data, NULL);
 	}
 	if (wave.data == NULL)
 	{

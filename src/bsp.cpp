@@ -4,22 +4,26 @@
 #define new DEBUG_NEW
 #endif
 
-bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
-bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
-int get_zipfile(char *zipfile, char *file, unsigned char **data);
-
 Bsp::Bsp()
 {
 	loaded = false;
 	memset(map_name, 0, 80);
 }
 
-bool Bsp::load(char *map)
+
+bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 //	tBsp = (bsp_t *)get_file(map);
 //	get_zipfile("media/q3f2_pak0.pk3", map, (unsigned char **)&tBsp); //q3f_forts q3f_cathedrals
-//	get_zipfile("media/zpak000_assets.pk3", map, (unsigned char **)&tBsp); //ut4_swim ut4_uptown ut4_abbey ut4_casa 
-	get_zipfile("media/pak0.pk3", map, (unsigned char **)&tBsp);
+//	get_zipfile("media/zpak000_assets.pk3", map, (unsigned char **)&tBsp, NULL); //ut4_swim ut4_uptown ut4_abbey ut4_casa 
+//	get_zipfile("media/pak0.pk3", map, (unsigned char **)&tBsp, NULL);
+
+	for (int i = 0; i < num_pk3; i++)
+	{
+		get_zipfile(pk3list[i], map, (unsigned char **)&tBsp, NULL);
+		if (tBsp != NULL)
+			break;
+	}
 
 	if (tBsp == NULL)
 	{

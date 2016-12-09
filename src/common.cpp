@@ -380,7 +380,7 @@ int debugf(const char *format, ...)
     return 0;
 }
 
-char *get_file(char *filename)
+char *get_file(char *filename, int *size)
 {
     FILE	*file;
     char	*buffer;
@@ -402,6 +402,12 @@ char *get_file(char *filename)
     }
     fclose(file);
     buffer[file_size] = '\0';
+
+	if (size != NULL)
+	{
+		*size = file_size;
+	}
+
     return buffer;
 }
 
@@ -456,6 +462,7 @@ int processFile(JZFile *zip, userdata_t *user)
 	}
 
 	user->data = (unsigned char *)data;
+	user->size = header.uncompressedSize;
 
 	return 0;
 }
@@ -485,7 +492,7 @@ int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, v
 	return 0; // continue
 }
 
-int get_zipfile(char *zipfile, char *file, unsigned char **data)
+int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 {
 	FILE *fp;
 	JZEndRecord endRecord;
@@ -495,6 +502,7 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data)
 
 	user.file = file;
 	user.data = NULL;
+	user.size = 0;
 
 	fp = fopen(zipfile, "rb");
 	if (fp == NULL)
@@ -520,6 +528,10 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data)
 	}
 
 	*data = user.data;
+	if (size != NULL)
+	{
+		*size = user.size;
+	}
 	retval = 0;
 	zip->close(zip);
 	return retval;
