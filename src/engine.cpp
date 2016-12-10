@@ -791,6 +791,9 @@ void Engine::debug_messages(double last_frametime)
 		menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
 		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
 		menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
+		menu.draw_text(msg, 0.01f, 0.225f, 0.025f, color);
+
 
 
 		if (entity_list[spawn]->player->health > 50)
@@ -1152,7 +1155,7 @@ bool Engine::map_collision(RigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		//bsps cant really give us depth of penetration, only hit/no hit
-		if (map.collision_detect(point, (plane_t *)&plane, &depth))
+		if (map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth))
 		{
 			if (depth > -0.25f && depth < 0.0f)
 			{
@@ -1175,7 +1178,7 @@ bool Engine::map_collision(RigidBody &body)
 					{
 						vec3 p = point + staircheck;
 
-						if (map.collision_detect(p, (plane_t *)&plane, &depth) == false)
+						if (map.collision_detect(p, (plane_t *)&plane, &depth, body.water, body.water_depth) == false)
 						{
 							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
 							continue;

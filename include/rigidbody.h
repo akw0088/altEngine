@@ -41,6 +41,8 @@ public:
 	bool			sleep;
 	bool			gravity;
 	bool			noclip;
+	bool			water;
+	float			water_depth;
 	//Physical
 	float			mass;
 	matrix3			inverse_tensor;

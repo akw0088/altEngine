@@ -516,11 +516,15 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	}
 }
 
-bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
+bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
 	float max_depth = 2048.0f;
+
+
+	water = false;
+	water_depth = 2048.0f;
 
 
 	// A leaf is a convex volume of open space divided from the other leafs by brushes and bsp planes
@@ -568,6 +572,8 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
 				if (data.Material[brush->material].contents & CONTENTS_WATER)
 				{
 					// Set underwater flag + depth
+					water = true;
+					water_depth = d;
 //					printf("underwater depth = %f\n", d);
 					continue;
 				}

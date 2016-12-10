@@ -34,8 +34,8 @@ public:
 	{
 	}
 
-//	bool collision_detect(const vec3 &old_point, const vec3 &velocity, float &time);
-	bool collision_detect(vec3 &new_point, plane_t *plane, float *depth);
+
+	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth);
 
 	bool loaded;
 	bspData_t	data;
