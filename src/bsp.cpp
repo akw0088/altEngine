@@ -520,7 +520,6 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
-	float max_depth = 2048.0f;
 
 
 	water = false;
@@ -560,50 +559,41 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
 			int plane_index = brushSide->plane;
 
-			float d = point * data.Plane[plane_index].normal + data.Plane[plane_index].d ;
+			float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
 
 			// outside of brush plane
 			if (d > 0.0f)
 				continue;
 
 			// Inside a brush
-			if (d <= max_depth)
+			if (data.Material[brush->material].contents & CONTENTS_WATER)
 			{
-				if (data.Material[brush->material].contents & CONTENTS_WATER)
-				{
-					// Set underwater flag + depth
-					water = true;
-					water_depth = -d;
+				// Set underwater flag + depth
+				water = true;
+				water_depth = -d;
 //					printf("underwater depth = %f\n", d);
-					continue;
-				}
-
-				// Ignore individual non solid surfaces (had to move lower to allow water)
-				if (data.Material[brush->material].surface & SURF_NONSOLID)
-					continue;
-
-				if (data.Material[brush->material].surface & SURF_NODRAW)
-					continue;
-
-
-				plane->normal = data.Plane[plane_index].normal;
-				plane->d = data.Plane[plane_index].d;
-				max_depth = d;
-				/*
-				printf("Inside brush %d with texture %s and flags %X surf %X\nDepth is %3.3f\n", i,
-					data.Material[brush->material].name,
-					data.Material[brush->material].contents,
-					data.Material[brush->material].surface,
-					d);
-					*/
-				*depth = max_depth;
-
-
-				if (max_depth != 2048.0f)
-					return true;
-				else
-					return false;
+				continue;
 			}
+
+			// Ignore individual non solid surfaces (had to move lower to allow water)
+			if (data.Material[brush->material].surface & SURF_NONSOLID)
+				continue;
+
+//			if (data.Material[brush->material].surface & SURF_NODRAW)
+//s				continue;
+
+
+			plane->normal = data.Plane[plane_index].normal;
+			plane->d = data.Plane[plane_index].d;
+			*depth = d;
+			/*
+			printf("Inside brush %d with texture %s and flags %X surf %X\nDepth is %3.3f\n", i,
+				data.Material[brush->material].name,
+				data.Material[brush->material].contents,
+				data.Material[brush->material].surface,
+				d);
+				*/	
+			return true;
 		}
 	}
 

@@ -1157,13 +1157,14 @@ bool Engine::map_collision(RigidBody &body)
 		//bsps cant really give us depth of penetration, only hit/no hit
 		if (map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth))
 		{
-			if (depth > -0.25f && depth < 0.0f)
+			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
 				// Note this will never occur from BSP because we go from no collision to deep penetration instantly
+				// barely touching is about ~200 units away it seems
 				point = point * (1.0f / UNITS_TO_METERS);
 				body.entity->position = body.old_position;
 				body.morientation = body.old_orientation;
-//				body.impulse(plane, point);
+				body.impulse(plane, point);
 			}
 			else
 			{
@@ -3759,7 +3760,7 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			entity->position = camera_frame.pos;
 			entity->rigid->load(gfx, "media/models/ball");
-			entity->rigid->velocity = camera_frame.forward * -100.0f;
+			entity->rigid->velocity = camera_frame.forward * -10.0f;
 			entity->rigid->net_force = camera_frame.forward * -10.0f;
 
 			entity->rigid->angular_velocity = vec3();
@@ -3768,7 +3769,7 @@ void Engine::handle_weapons(Player &player)
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
-			entity->trigger->explode = true;
+			entity->trigger->explode = false;
 			entity->trigger->explode_timer = 10;
 			entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
 			entity->trigger->explode_intensity = 200.0f;

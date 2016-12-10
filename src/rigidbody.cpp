@@ -14,7 +14,7 @@ RigidBody::RigidBody(Entity *entity)
 	step_flag = false;
 	target = NULL;
 	mass = 10.0f;
-	restitution = 1.0f; // boxes should never rest
+	restitution = 0.5f; // boxes should never rest
 	kfriction = 0.5f;
 	float height = 10.0f / UNITS_TO_METERS;
 	float width = 10.0f / UNITS_TO_METERS;
