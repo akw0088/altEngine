@@ -308,6 +308,8 @@ void Bsp::change_axis()
 //		vert->vPosition *= (1.0f / UNITS_TO_METERS);
 	}
 
+
+//	data.Plane[plane_index].normal
 	for(int i = 0; i < data.num_planes; i++)
 	{
 		plane_t *plane = &data.Plane[i];
@@ -520,6 +522,14 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
 	leaf_t *leaf = &data.Leaf[leaf_index];
 	float max_depth = 2048.0f;
 
+
+	// A leaf is a convex volume of open space divided from the other leafs by brushes and bsp planes
+
+	// A brush is usually a solid block usually defined by 6 planes, but can have more / less planes
+	// (can be any shape really, but think floors walls etc, must be convex)
+	// Can be non solid if majority of planes are non solid (eg: water/fog are nonsolid brushes
+	// Each face of the brush has a texture, non visible faces (common/caulk etc) are removed for rendering
+
 	for (int i = 0; i < leaf->num_brushes; i++)
 	{
 		int *index = &data.LeafBrush[leaf->leaf_brush + i];
@@ -527,12 +537,19 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
 		int brush_index = brush->first_side;
 		int num_sides = brush->num_sides;
 
-		if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
-			continue;
 
-		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
-			continue;
+		// Let water pass through for water flag
+		if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
+		{
+			// Ignore non solid brushes
+			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
+			{
+				continue;
+			}
+		}
 
+//		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
+//			continue;
 
 		for( int j = 0; j < num_sides; j++)
 		{
@@ -541,23 +558,53 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth)
 
 			float d = point * data.Plane[plane_index].normal + data.Plane[plane_index].d ;
 
+			// outside of brush plane
 			if (d > 0.0f)
 				continue;
 
+			// Inside a brush
 			if (d <= max_depth)
 			{
+				if (data.Material[brush->material].contents & CONTENTS_WATER)
+				{
+					// Set underwater flag + depth
+//					printf("underwater depth = %f\n", d);
+					continue;
+				}
+
+				// Ignore individual non solid surfaces (had to move lower to allow water)
+				if (data.Material[brush->material].surface & SURF_NONSOLID)
+					continue;
+
+				if (data.Material[brush->material].surface & SURF_NODRAW)
+					continue;
+
+
 				plane->normal = data.Plane[plane_index].normal;
 				plane->d = data.Plane[plane_index].d;
 				max_depth = d;
+				/*
+				printf("Inside brush %d with texture %s and flags %X surf %X\nDepth is %3.3f\n", i,
+					data.Material[brush->material].name,
+					data.Material[brush->material].contents,
+					data.Material[brush->material].surface,
+					d);
+					*/
+				*depth = max_depth;
+
+
+				if (max_depth != 2048.0f)
+					return true;
+				else
+					return false;
 			}
 		}
 	}
-	*depth = max_depth;
 
-	if (max_depth != 2048.0f)
-		return true;
-	else
-		return false;
+
+
+
+	return false;
 }
 
 

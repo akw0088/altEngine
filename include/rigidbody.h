@@ -40,6 +40,7 @@ public:
 	float			kfriction;
 	bool			sleep;
 	bool			gravity;
+	bool			noclip;
 	//Physical
 	float			mass;
 	matrix3			inverse_tensor;

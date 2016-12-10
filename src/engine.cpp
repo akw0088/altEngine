@@ -1083,7 +1083,11 @@ void Engine::dynamics()
 			body->integrate(target_time - current_time);
 			if ( collision_detect(*body) )
 			{
+				// Keeping clipped velocity to prevent "sticking"
+				vec3 clip = body->velocity;
 				body->load_config(config);
+//				printf("%3.3f %3.3f %3.3f clip\n", clip.x, clip.y, clip.z);
+				body->velocity += clip * 0.5;
 
 				target_time = (current_time + target_time) / 2.0f;
 				divisions++;
@@ -1132,6 +1136,11 @@ bool Engine::map_collision(RigidBody &body)
 	Plane plane;
 	float depth;
 	vec3 staircheck(0.0f, 20.0f, 0.0f);
+	vec3 clip = vec3(0.0f, 0.0f, 0.0f);
+	int collision = 0;
+
+	if (body.noclip)
+		return false;
 
 	// Check bounding box against map
 	for(int i = 0; i < 8; i++)
@@ -1151,33 +1160,43 @@ bool Engine::map_collision(RigidBody &body)
 				point = point * (1.0f / UNITS_TO_METERS);
 				body.entity->position = body.old_position;
 				body.morientation = body.old_orientation;
-				body.impulse(plane, point);
+//				body.impulse(plane, point);
 			}
 			else
 			{
 				if (body.step_flag)
 				{
-					float dist = body.velocity.y;
+					float yvel = body.velocity.y;
 
-					if (dist < 0)
-						dist *= -1;
+					if (yvel < 0)
+						yvel *= -1;
 
-					if (dist < 0.1f)
+					if (yvel < 0.1f)
 					{
 						vec3 p = point + staircheck;
 
 						if (map.collision_detect(p, (plane_t *)&plane, &depth) == false)
 						{
 							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
-							return false;
+							continue;
 						}
 					}
 				}
-				return true;
+
+				// Colliding, going to clip velocity so you dont 'stick'
+				// Projecting Velocity onto normal
+				// http://www.falstad.com/dotproduct/
+//				clip += plane.normal * -(body.velocity * plane.normal.normalize() );
+				collision++;
 			}
 		}
 	}
-	return false;
+	if (collision)
+	{
+		body.velocity = clip / collision;
+	}
+
+	return collision;
 }
 
 //O(N^2)
@@ -1794,7 +1813,7 @@ void Engine::client_step()
 					entity_list[spawn]->position = entity_list[entity]->position;
 					entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 					entity_list[spawn]->model = entity_list[spawn]->rigid;
-					entity_list[spawn]->rigid->clone(*(box->model));
+					entity_list[spawn]->rigid->clone(*(thug22->model));
 					entity_list[spawn]->rigid->step_flag = true;
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
@@ -2541,7 +2560,7 @@ void Engine::init_camera()
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
-			entity_list[spawn]->rigid->clone(*(box->model));
+			entity_list[spawn]->rigid->clone(*(thug22->model));
 			entity_list[spawn]->rigid->step_flag = true;
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
@@ -3264,7 +3283,7 @@ void Engine::console(char *cmd)
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[spawn]->player->respawn();
-					entity_list[spawn]->rigid->clone(*(box->model));
+					entity_list[spawn]->rigid->clone(*(thug22->model));
 					spawned = true;
 					break;
 
@@ -3468,7 +3487,7 @@ void Engine::console(char *cmd)
 	{
 		if (spawn != -1)
 		{
-			entity_list[spawn]->rigid->sleep = true;
+			entity_list[spawn]->rigid->noclip = !entity_list[spawn]->rigid->noclip;
 		}
 		return;
 	}

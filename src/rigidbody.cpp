@@ -9,6 +9,7 @@ RigidBody::RigidBody(Entity *entity)
 {
 	sleep = false;
 	gravity = true;
+	noclip = false;
 	pursue_flag = true;
 	step_flag = false;
 	target = NULL;
@@ -80,7 +81,7 @@ void RigidBody::integrate(float time)
 
 	//translational
 	acceleration = net_force / mass;
-	if (gravity)
+	if (gravity && noclip == false)
 	{
 		acceleration.y -= 9.8f;
 	}
@@ -532,7 +533,7 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 		if (map_collision && !jumped)
 		{
 			//clear out gravity keeping us on the ground
-			velocity.y = -0.01f;
+			velocity.y = -0.02f;
 
 			//cancel out the hop we see while moving
 			//entity->position.y -= 2.0f;
