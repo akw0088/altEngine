@@ -5,6 +5,8 @@
 #define new DEBUG_NEW
 #endif
 
+#include "stb_image.h"
+
 MD5Model::MD5Model()
 {
 	loaded = false;
@@ -118,10 +120,16 @@ void MD5Model::load_textures(Graphics &gfx)
 	{
 		char file[256];
 		int width, height, components, format;
-		char *bytes;
+		unsigned char *bytes;
 
 		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
-		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
+
+		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
+		//		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
+
+		format = GL_RGBA;
+		components = GL_RGBA8;
+
 		if (bytes == NULL)
 		{
 			debugf("Unable to load texture %s\n", file);
@@ -131,7 +139,11 @@ void MD5Model::load_textures(Graphics &gfx)
 		delete[] bytes;
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
-		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
+//		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
+		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
+		format = GL_RGBA;
+		components = GL_RGBA8;
+
 		if (bytes == NULL)
 		{
 			debugf("Unable to load texture %s\n", file);

@@ -573,7 +573,7 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 				{
 					// Set underwater flag + depth
 					water = true;
-					water_depth = d;
+					water_depth = -d;
 //					printf("underwater depth = %f\n", d);
 					continue;
 				}
@@ -821,13 +821,13 @@ void Bsp::load_textures(Graphics &gfx)
 {
 	for (int i = 0; i < data.num_lightmaps; i++)
 	{
-//#ifndef DIRECTX
-//		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
-//#else
+#ifndef DIRECTX
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
+#else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image);
 		delete [] pBits;
-//#endif
+#endif
 	}
 
 	for (int i = 0; i < data.num_materials; i++)

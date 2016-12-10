@@ -3,7 +3,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
-
+#if 0
 // Define targa header.
 #pragma pack(1)
 typedef struct
@@ -155,3 +155,5 @@ byte *tga_24to32(int width, int height, byte *pBits)
 	}
 	return pNewBits;
 }
+
+#endif

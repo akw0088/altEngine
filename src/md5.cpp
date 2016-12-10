@@ -889,7 +889,7 @@ void MD5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_arr
 	{
 		vertex_array[i].normal *= (1.0f / 3.0f);
 		vertex_array[i].tangent *= (1.0f / 3.0f);
-//		vertex_array[i].tangent.w = 1.0f;
+		vertex_array[i].tangent.w = 1.0f;
 	}
 
 
