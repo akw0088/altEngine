@@ -32,8 +32,9 @@ Engine::Engine()
 	initialized = false;
 	num_dynamic = 100;
 	blink = false;
-	show_names = true;
-	show_debug_messages = false;
+	show_names = false;
+	show_debug = false;
+	show_hud = true;
 }
 
 
@@ -398,7 +399,7 @@ void Engine::render(double last_frametime)
 
 	//render menu
 	gfx.cleardepth();
-	debug_messages(last_frametime);
+	render_hud(last_frametime);
 	if (menu.ingame)
 		menu.render(global);
 	if (menu.console)
@@ -766,7 +767,7 @@ void Engine::post_process(int num_passes)
 //	gfx.DeselectTexture(0);
 }
 
-void Engine::debug_messages(double last_frametime)
+void Engine::render_hud(double last_frametime)
 {
 	matrix4 real_projection = projection;
 	char msg[LINE_SIZE];
@@ -774,36 +775,10 @@ void Engine::debug_messages(double last_frametime)
 	projection = identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
 
-	if (show_debug_messages)
+	if (show_hud)
 	{
-		snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
-		menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
-		menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
 		if (spawn != -1)
 		{
-			snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
-			menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
-			menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
-			menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "Grenades: %d", entity_list[spawn]->player->ammo_grenades);
-			menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
-			menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "Plasma: %d", entity_list[spawn]->player->ammo_plasma);
-			menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
-
-			snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
-			menu.draw_text(msg, 0.01f, 0.225f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
-			menu.draw_text(msg, 0.01f, 0.25f, 0.025f, color);
-			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
-			menu.draw_text(msg, 0.01f, 0.275f, 0.025f, color);
-
-
-
 			if (entity_list[spawn]->player->health > 50)
 			{
 				snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
@@ -819,6 +794,58 @@ void Engine::debug_messages(double last_frametime)
 				snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
 				menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
 			}
+
+			switch (entity_list[spawn]->player->current_weapon)
+			{
+			case wp_machinegun:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_bullets);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_shotgun:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_shells);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_grenade:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_grenades);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_rocket:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_rockets);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_railgun:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_slugs);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_lightning:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_lightning);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_plasma:
+				snprintf(msg, LINE_SIZE, "%d", entity_list[spawn]->player->ammo_plasma);
+				menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			}
+		}
+	}
+
+	if (show_debug)
+	{
+		int line = 1;
+
+		snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
+		menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
+		menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		if (spawn != -1)
+		{
+			line++;
+			snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
+			menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+			menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
+			menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
 		}
 	}
 
@@ -864,13 +891,27 @@ void Engine::debug_messages(double last_frametime)
 
 					if (strcmp(entity_list[i]->type, "free") == 0)
 					{
+						int line = 1;
+
 						sprintf(data, "Pos %.3f %.3f %.3f", entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * 1, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
 						sprintf(data, "Vel %.3f %.3f %.3f", entity_list[i]->rigid->velocity.x, entity_list[i]->rigid->velocity.y, entity_list[i]->rigid->velocity.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * 2, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
 						sprintf(data, "State %d", entity_list[i]->rigid->sleep);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * 3, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
 					}
+
+					if (strcmp(entity_list[i]->type, "light") == 0)
+					{
+						int line = 1;
+
+						sprintf(data, "intensity %f", entity_list[i]->light->intensity);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+
+						sprintf(data, "color %.3f %.3f %.3f", entity_list[i]->light->color.x, entity_list[i]->light->color.y, entity_list[i]->light->color.z);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+					}
+
 				}
 			}
 		}
@@ -1079,7 +1120,7 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
-	if (distance < 800.0f * 800.0f && light->entity->visible)
+	if (distance < 2 * 800.0f * 800.0f && light->entity->visible)
 	{
 		if (light->active == false)
 		{
@@ -3568,6 +3609,30 @@ void Engine::console(char *cmd)
 		}
 		return;
 	}
+
+	ret = strcmp(cmd, "shownames");
+	if (ret == 0)
+	{
+		show_names = !show_names;
+		return;
+	}
+
+	ret = strcmp(cmd, "showdebug");
+	if (ret == 0)
+	{
+		show_debug = !show_debug;
+		return;
+	}
+
+	ret = strcmp(cmd, "showhud");
+	if (ret == 0)
+	{
+		show_hud = !show_hud;
+		return;
+	}
+
+
+
 
 	ret = sscanf(cmd, "animation %s", data);
 	if (ret == 1)

@@ -8,7 +8,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 {
 	Light::entity = entity;
 	color = vec3(1.0f, 1.0f, 1.0f);
-	intensity = 0;
+	intensity = 300.0f;
 	active = false;
 	light_num = num;
 
@@ -42,7 +42,7 @@ void Light::generate_cubemaps(int width, int height)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 //		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
 	}
 
@@ -89,8 +89,6 @@ void Light::extend(Edge &edge_list, vec3 position, int current_light)
 #ifndef DIRECTX
 	float t = 10.0f;
 	bool debug = true;
-
-//	if (light_num == current_light)
 
 
 	if (debug)

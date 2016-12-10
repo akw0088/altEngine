@@ -158,6 +158,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.light = new Light(&entity, gfx, light_num++);
 		}
 		sscanf(value, "%d", &intensity);
+
+		while (intensity < 750.0f)
+			intensity *= 2.0f;
+
+		while (intensity > 1750.0f)
+			intensity /= 2.0f;
+
 		if (entity.light)
 			entity.light->intensity = intensity;
 	}
@@ -172,7 +179,12 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		}
 		sscanf(value, "%f %f %f", &r, &g, &b);
 		if (entity.light)
-			entity.light->color = vec3(r,g,b);
+		{
+			vec3 color_temp = vec3(r, g, b);
+
+			color_temp.normalize();
+			entity.light->color = color_temp;
+		}
 	}
 	else if (strcmp(key, "noise") == 0)
 	{

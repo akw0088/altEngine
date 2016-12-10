@@ -163,12 +163,13 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	{
 		if (light_list[i]->entity->light->active)
 		{
-			if (light_list[i]->intensity < 1000.0f)
-				light_list[i]->intensity = 1000.0f;
 
 			position[j] = light_list[i]->entity->position;
-			color[j] = vec4(light_list[i]->color.x, light_list[i]->color.y,
-				light_list[i]->color.z, (float)(light_list[i]->intensity / 500.0f));
+
+			color[j] = vec4(light_list[i]->color.x,
+							light_list[i]->color.y,
+							light_list[i]->color.z,
+					(float)(light_list[i]->intensity / 500.0f));
 		}
 	}
 

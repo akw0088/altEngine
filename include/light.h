@@ -19,7 +19,7 @@ public:
 	unsigned int quad_tex[6];
 	unsigned int depth_tex[6];
 	vec3	color;
-	int		intensity;
+	float	intensity;
 	bool	active;
 	int		light_num;
 	vector<shadowvol_t>	shadow_list;

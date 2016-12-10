@@ -24,7 +24,7 @@ public:
 	void render_texture(int texObj);
 	void post_process(int num_passes);
 	void resize(int width, int height);
-	void debug_messages(double last_frametime);
+	void render_hud(double last_frametime);
 
 	void step();
 	void dynamics();
@@ -80,7 +80,8 @@ public:
 	int num_light;
 	bool blink;
 	bool show_names;
-	bool show_debug_messages;
+	bool show_debug;
+	bool show_hud;
 
 	int		frame_step;
 	MD5Model	zcc;
