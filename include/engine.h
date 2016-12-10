@@ -79,6 +79,8 @@ public:
 	int testObj;
 	int num_light;
 	bool blink;
+	bool show_names;
+	bool show_debug_messages;
 
 	int		frame_step;
 	MD5Model	zcc;

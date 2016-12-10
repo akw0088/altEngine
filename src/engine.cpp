@@ -32,6 +32,8 @@ Engine::Engine()
 	initialized = false;
 	num_dynamic = 100;
 	blink = false;
+	show_names = true;
+	show_debug_messages = false;
 }
 
 
@@ -182,18 +184,7 @@ void Engine::load(char *level)
 	menu.ingame = false;
 	menu.console = false;
 
-	/*
-	for(unsigned int i = 0; i < entity_list.size(); i++)
-	{
-		vec3 color(1.0f, 1.0f, 1.0f);
 
-		camera_frame.set(transformation);
-		mvp = transformation.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
-		vec3 pos = mvp * vec4(entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z, 0.0f);
-
-		menu.draw_text(entity_list[i]->type, pos.x, pos.y, pos.z, 1000.0f, color);
-	}
-	*/
 
 #ifdef DEFERRED
 	//Setup render to texture
@@ -625,10 +616,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			continue;
 
 		if (entity_list[i]->rigid == NULL)
-		{
-			entity_list[i]->decal->render(gfx, global);
 			continue;
-		}
 
 		mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		if (lights)
@@ -780,57 +768,102 @@ void Engine::post_process(int num_passes)
 
 void Engine::debug_messages(double last_frametime)
 {
+	matrix4 real_projection = projection;
 	char msg[LINE_SIZE];
+
 	projection = identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
 
-	snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
-	menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
-	snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
-	menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
-	if (spawn != -1)
+	if (show_debug_messages)
 	{
-		snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
-		menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
-		menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
-		menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Grenades: %d", entity_list[spawn]->player->ammo_grenades);
-		menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
-		menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Plasma: %d", entity_list[spawn]->player->ammo_plasma);
-		menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
-
-		snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
-		menu.draw_text(msg, 0.01f, 0.225f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
-		menu.draw_text(msg, 0.01f, 0.25f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
-		menu.draw_text(msg, 0.01f, 0.275f, 0.025f, color);
-
-
-
-		if (entity_list[spawn]->player->health > 50)
+		snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
+		menu.draw_text(msg, 0.01f, 0.025f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "%d active lights.", (int)light_list.size());
+		menu.draw_text(msg, 0.01f, 0.05f, 0.025f, color);
+		if (spawn != -1)
 		{
-			snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
-			menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
-		}
-		else if (entity_list[spawn]->player->health <= 50 && blink)
-		{
-			snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
-			menu.draw_text(msg, 0.15f, 0.95f, 0.050f, vec3(1.0f, 0.0f, 0.0f));
-		}
-		else
-		{
-			snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
-			menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
-		}
+			snprintf(msg, LINE_SIZE, "Bullets: %d", entity_list[spawn]->player->ammo_bullets);
+			menu.draw_text(msg, 0.01f, 0.075f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Shells: %d", entity_list[spawn]->player->ammo_shells);
+			menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
+			menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Grenades: %d", entity_list[spawn]->player->ammo_grenades);
+			menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
+			menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Plasma: %d", entity_list[spawn]->player->ammo_plasma);
+			menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
+
+			snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
+			menu.draw_text(msg, 0.01f, 0.225f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+			menu.draw_text(msg, 0.01f, 0.25f, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
+			menu.draw_text(msg, 0.01f, 0.275f, 0.025f, color);
 
 
+
+			if (entity_list[spawn]->player->health > 50)
+			{
+				snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+				menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+			}
+			else if (entity_list[spawn]->player->health <= 50 && blink)
+			{
+				snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+				menu.draw_text(msg, 0.15f, 0.95f, 0.050f, vec3(1.0f, 0.0f, 0.0f));
+			}
+			else
+			{
+				snprintf(msg, LINE_SIZE, "%d/%d", entity_list[spawn]->player->health, entity_list[spawn]->player->armor);
+				menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+			}
+		}
 	}
-	projection.perspective(45.0, (float)gfx.width / gfx.height, 1.0f, 2001.0f, true);
+
+	if (show_names)
+	{
+		for (int i = 0; i < entity_list.size(); i++)
+		{
+			vec3 color = vec3(1.0f, 1.0f, 1.0f);
+			matrix4 trans2;
+			matrix4 mvp2;
+			matrix4 model;
+
+			camera_frame.set(trans2);
+			
+			if (i == spawn)
+			{
+				color = vec3(1.0f, 0.0f, 0.0f);
+			}
+
+			if (entity_list[i]->rigid == NULL)
+				continue;
+
+
+			mvp2 = trans2.premultiply(entity_list[i]->rigid->get_matrix(model.m)) * real_projection;
+			vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
+
+			pos.x = pos.x / pos.w;
+			pos.y = -pos.y / pos.w; // negative y? Hey it works
+			pos.z = pos.z / pos.w;
+
+			pos.x = 0.5f + (pos.x * 0.5f);
+			pos.y = 0.5f + (pos.y * 0.5f);
+//			pos.z = 0.5f + (pos.z * 0.5f);
+
+			if (entity_list[i]->visible)
+			{
+				if (pos.z >= -1.0 && pos.z <= 1.0)
+				{
+					menu.draw_text(entity_list[i]->type, pos.x, pos.y, 0.02f, color);
+				}
+			}
+		}
+	}
+
+	projection = real_projection;
 }
 
 void Engine::destroy_buffers()

@@ -243,7 +243,6 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 	gfx->Depth(false);
 	gfx->BlendFunc(NULL, NULL);
 	gfx->SelectTexture(0, font_object);
-//	gfx->SelectVertexArrayObject(Model::quad_vao);
 	gfx->SelectIndexBuffer(Model::quad_index);
 	gfx->SelectVertexBuffer(Model::quad_vertex);
 	for(unsigned int i = 0; i < strlen(str); i++)
@@ -254,7 +253,6 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 		movepos(str[i], xpos, ypos, scale);
 	}
 //	gfx->DeselectTexture(0);
-//	gfx->SelectVertexArrayObject(0);
 	gfx->Depth(true);
 	gfx->Blend(false);
 }
@@ -264,10 +262,6 @@ void Menu::draw_text(char *str, float x, float y, float z, float scale, vec3 &co
 	float xpos = 0.0f;
 	float ypos = 0.0f;
 
-	if (z != 0)
-		scale = 1.0f / z;
-	else
-		scale = 1.0f;
 	gfx->Blend(true);
 	gfx->Depth(false);
 	gfx->BlendFunc(NULL, NULL);
@@ -278,7 +272,7 @@ void Menu::draw_text(char *str, float x, float y, float z, float scale, vec3 &co
 	for(unsigned int i = 0; i < strlen(str); i++)
 	{
 		font.Select();
-		font.Params(str[i], x + xpos, y + ypos, scale, color);
+		font.Params(str[i], x + xpos, y + ypos, z * scale, color);
 		gfx->DrawArrayTri(0, 0, 6, 4);
 		movepos(str[i], xpos, ypos, scale);
 	}
