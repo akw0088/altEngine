@@ -857,7 +857,20 @@ void Engine::debug_messages(double last_frametime)
 			{
 				if (pos.z >= -1.0 && pos.z <= 1.0)
 				{
+					char data[512];
+
+
 					menu.draw_text(entity_list[i]->type, pos.x, pos.y, 0.02f, color);
+
+					if (strcmp(entity_list[i]->type, "free") == 0)
+					{
+						sprintf(data, "Pos %.3f %.3f %.3f", entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * 1, 0.02f, color);
+						sprintf(data, "Vel %.3f %.3f %.3f", entity_list[i]->rigid->velocity.x, entity_list[i]->rigid->velocity.y, entity_list[i]->rigid->velocity.z);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * 2, 0.02f, color);
+						sprintf(data, "State %d", entity_list[i]->rigid->sleep);
+						menu.draw_text(data, pos.x, pos.y + 0.0625 * 3, 0.02f, color);
+					}
 				}
 			}
 		}
@@ -1208,7 +1221,7 @@ bool Engine::map_collision(RigidBody &body)
 			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
 				// barely touching is about ~200 units away it seems, scaling to make sense above
-				point = point * (1.0f / UNITS_TO_METERS);
+				point = point * (1.0f / UNITS_TO_METERS) * 0.000001;
 				body.entity->position = body.old_position;
 				body.morientation = body.old_orientation;
 				body.impulse(plane, point);
