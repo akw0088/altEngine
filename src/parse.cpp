@@ -148,10 +148,6 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/player/ranger/death1.wav");
 		}
-		else if (strcmp(value, "misc_model") == 0)
-		{
-			entity.model_ref = model_num++;
-		}
 	}
 	else if (strcmp(key, "light") == 0)
 	{

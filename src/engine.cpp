@@ -152,23 +152,6 @@ void Engine::load(char *level)
 	map.generate_meshes(gfx);
 
 	parse_entity(map.get_entities(), entity_list, gfx, audio);
-	/*
-	for (int i = 0; i < entity_list.size(); i++)
-	{
-		if (strcmp(entity_list[i]->type, "trigger_teleport") == 0 && entity_list[i]->model_ref != -1)
-		{
-			for (int j = 0; j < entity_list.size(); j++)
-			{
-				if (strcmp(entity_list[j]->type, "misc_model") == 0 && entity_list[i]->model_ref == entity_list[j]->model_ref)
-				{
-					entity_list[i]->position = entity_list[j]->position;
-					entity_list[i]->angle = entity_list[j]->angle;
-				}
-
-			}
-		}
-	}
-	*/
 
 	menu.delta("entities", *this);
 	gfx.clear();
