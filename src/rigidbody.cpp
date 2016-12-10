@@ -15,10 +15,14 @@ RigidBody::RigidBody(Entity *entity)
 	target = NULL;
 	mass = 10.0f;
 	restitution = 0.5f; // boxes should never rest
-	kfriction = 0.5f;
 	float height = 10.0f / UNITS_TO_METERS;
 	float width = 10.0f / UNITS_TO_METERS;
 	float depth = 10.0f / UNITS_TO_METERS;
+
+	rotational_friction_flag = false;
+	rotational_friction = 0.99;
+	translational_friction_flag = false;
+	translational_friction = 0.99f;
 
 	world_tensor.m[0] = 0.0f;
 	world_tensor.m[1] = 0.0f;
@@ -93,10 +97,20 @@ void RigidBody::integrate(float time)
 	//rotational
 	angular_acceleration = world_tensor * net_torque;
 	angular_velocity = angular_velocity + angular_acceleration * time;
+
+	if (translational_friction_flag)
+	{
+		velocity *= translational_friction; // added rotational "friction"
+	}
+
+	if (rotational_friction_flag)
+	{
+		angular_velocity *= rotational_friction; // added rotational "friction"
+	}
 	rotation.star(angular_velocity);
 
 	old_orientation = morientation;
-	morientation = morientation + morientation * rotation * time;
+	morientation = morientation + morientation * rotation * time; 
 	morientation.normalize();
 	world_tensor = morientation * inverse_tensor * morientation.transpose();
 }

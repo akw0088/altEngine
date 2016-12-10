@@ -13,6 +13,7 @@ public:
 	char			target[64];
 	char			target_name[64];
 	int				angle;
+	int				model_ref;
 	bool			visible;
 	bool			network;
 	char			type[64];

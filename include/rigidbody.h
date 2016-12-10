@@ -37,11 +37,14 @@ public:
 	bool			step_flag;
 	Entity			*target;
 	float			restitution;
-	float			kfriction;
 	bool			sleep;
 	bool			gravity;
 	bool			noclip;
 	bool			water;
+	bool			rotational_friction_flag;
+	bool			translational_friction_flag;
+	float			rotational_friction;
+	float			translational_friction;
 	float			water_depth;
 	//Physical
 	float			mass;

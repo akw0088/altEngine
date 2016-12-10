@@ -14,10 +14,6 @@ Bsp::Bsp()
 bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 //	tBsp = (bsp_t *)get_file(map);
-//	get_zipfile("media/q3f2_pak0.pk3", map, (unsigned char **)&tBsp); //q3f_forts q3f_cathedrals
-//	get_zipfile("media/zpak000_assets.pk3", map, (unsigned char **)&tBsp, NULL); //ut4_swim ut4_uptown ut4_abbey ut4_casa 
-//	get_zipfile("media/pak0.pk3", map, (unsigned char **)&tBsp, NULL);
-
 	for (int i = 0; i < num_pk3; i++)
 	{
 		get_zipfile(pk3list[i], map, (unsigned char **)&tBsp, NULL);
@@ -521,9 +517,15 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
 
-
 	water = false;
 	water_depth = 2048.0f;
+
+	if (leaf_index == -1)
+	{
+		// Outside of map
+		return true;
+	}
+
 
 
 	// A leaf is a convex volume of open space divided from the other leafs by brushes and bsp planes
@@ -551,8 +553,8 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 			}
 		}
 
-//		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
-//			continue;
+		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
+			continue;
 
 		for( int j = 0; j < num_sides; j++)
 		{

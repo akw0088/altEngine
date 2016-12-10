@@ -22,10 +22,10 @@ char *pk3list[] = { "media/pak0.pk3",
 //				"media/pak6.pk3",
 //				"media/pak7.pk3",
 //				"media/pak8.pk3",
-				"media/q3f2_pak0.pk3",
-				"media/zpak000_assets.pk3"
+//				"media/q3f2_pak0.pk3",
+//				"media/zpak000_assets.pk3"
 };
-int num_pk3 = 3;
+int num_pk3 = 1;
 
 Engine::Engine()
 {
@@ -78,12 +78,12 @@ void Engine::init(void *p1, void *p2)
 	rocket = new Entity();
 	rocket->rigid = new RigidBody(rocket);
 	rocket->model = rocket->rigid;
-	rocket->rigid->load(gfx, "media/models/rocket/rocket");
+	rocket->rigid->load(gfx, "media/models/weapons2/rocketl/rocket");
 
 	pineapple = new Entity();
 	pineapple->rigid = new RigidBody(pineapple);
 	pineapple->model = pineapple->rigid;
-	pineapple->rigid->load(gfx, "media/models/pineapple/pineapple");
+	pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
 
 
 
@@ -152,6 +152,23 @@ void Engine::load(char *level)
 	map.generate_meshes(gfx);
 
 	parse_entity(map.get_entities(), entity_list, gfx, audio);
+	/*
+	for (int i = 0; i < entity_list.size(); i++)
+	{
+		if (strcmp(entity_list[i]->type, "trigger_teleport") == 0 && entity_list[i]->model_ref != -1)
+		{
+			for (int j = 0; j < entity_list.size(); j++)
+			{
+				if (strcmp(entity_list[j]->type, "misc_model") == 0 && entity_list[i]->model_ref == entity_list[j]->model_ref)
+				{
+					entity_list[i]->position = entity_list[j]->position;
+					entity_list[i]->angle = entity_list[j]->angle;
+				}
+
+			}
+		}
+	}
+	*/
 
 	menu.delta("entities", *this);
 	gfx.clear();
@@ -1091,7 +1108,7 @@ void Engine::dynamics()
 		RigidBody *body = entity_list[i]->rigid;
 		if (entity_list[i]->vehicle != NULL)
 			body = entity_list[i]->vehicle;
-		float delta_time = 0.016f;
+		float delta_time = 2.0f * TICK_MS / 1000.0f;
 		float target_time = delta_time;
 		float current_time = 0.0f;
 		int divisions = 0;
@@ -1170,13 +1187,11 @@ bool Engine::map_collision(RigidBody &body)
 //		vec3 point = body.center + body.entity->position;
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
-		//bsps cant really give us depth of penetration, only hit/no hit
 		if (map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth))
 		{
 			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
-				// Note this will never occur from BSP because we go from no collision to deep penetration instantly
-				// barely touching is about ~200 units away it seems
+				// barely touching is about ~200 units away it seems, scaling to make sense above
 				point = point * (1.0f / UNITS_TO_METERS);
 				body.entity->position = body.old_position;
 				body.morientation = body.old_orientation;
@@ -1364,13 +1379,11 @@ void Engine::check_triggers()
 				// Seems to work, but the collision detect flag should work
 				if (entity_list[i]->rigid->old_position == entity_list[i]->position)
 				{
-
 					if (entity_list[i]->trigger->explode == false)
 					{
 
-						if (entity_list[i]->trigger->explode_timer == 0)
+						if (entity_list[i]->trigger->explode_timer <= 0)
 						{
-							// Light list wont be updated until the next step, so manually delete
 							clean_entity(i);
 							entity_list[i]->~Entity();
 							continue;
@@ -1382,28 +1395,36 @@ void Engine::check_triggers()
 					}
 					else
 					{
-						entity_list[i]->trigger->radius = entity_list[i]->trigger->splash_radius;
-						sprintf(entity_list[i]->trigger->action, "damage %d", entity_list[i]->trigger->splash_damage);
-						if (entity_list[i]->light == NULL)
+						// Explode after being idle for idle_timer time (usually zero)
+						if (entity_list[i]->trigger->idle_timer <= 0)
 						{
-							entity_list[i]->light = new Light(entity_list[i], gfx, 999);
-						}
-						entity_list[i]->light->intensity = entity_list[i]->trigger->explode_intensity;
-						entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
-						entity_list[i]->trigger->explode = false;
-						entity_list[i]->trigger->self = true;
+							entity_list[i]->trigger->radius = entity_list[i]->trigger->splash_radius;
+							sprintf(entity_list[i]->trigger->action, "damage %d", entity_list[i]->trigger->splash_damage);
+							if (entity_list[i]->light == NULL)
+							{
+								entity_list[i]->light = new Light(entity_list[i], gfx, 999);
+							}
+							entity_list[i]->light->intensity = entity_list[i]->trigger->explode_intensity;
+							entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
+							entity_list[i]->trigger->explode = false;
+							entity_list[i]->trigger->self = true;
 
-						bool ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->explode_sound);
-						if (ret)
-						{
-							audio.stop(entity_list[i]->trigger->loop_source);
-							audio.play(entity_list[i]->trigger->source);
+							bool ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->explode_sound);
+							if (ret)
+							{
+								audio.stop(entity_list[i]->trigger->loop_source);
+								audio.play(entity_list[i]->trigger->source);
+							}
+							else
+							{
+								debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->explode_sound);
+							}
+							continue;
 						}
 						else
 						{
-							debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->explode_sound);
+							entity_list[i]->trigger->idle_timer--;
 						}
-						continue;
 					}
 				}
 			}
@@ -2608,8 +2629,7 @@ void Engine::load_entities()
 
 	if (spawn != -1)
 	{
-		entity_list[spawn]->rigid->load(gfx, "media/models/thug22/thug22");
-		//entity_list[spawn]->rigid->load(gfx, "media/models/box");
+		entity_list[spawn]->rigid->clone(*(thug22->model));
 		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 	}
 }
@@ -3821,27 +3841,40 @@ void Engine::handle_weapons(Player &player)
 		{
 			player.reload_timer = 100;
 			player.ammo_grenades--;
-
 			fired = true;
+
+
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
-			entity->model = entity->rigid;
 			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(pineapple->model));
-			entity->rigid->velocity = camera_frame.forward * -25.0f;
-			entity->rigid->angular_velocity = vec3();
+			entity->rigid->clone(*(box->model));
+//			entity->rigid->clone(*(pineapple->model));
+			entity->rigid->velocity = camera_frame.forward * -5.0f;
+			entity->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
 			entity->rigid->gravity = true;
+			entity->rigid->rotational_friction_flag = true;
+			entity->model = entity->rigid;
+//			entity->rigid->set_target(*(entity_list[spawn]));
+			camera_frame.set(entity->model->morientation);
+
 			entity->trigger = new Trigger(entity, audio);
 			entity->trigger->hide = false;
 			entity->trigger->self = false;
 			entity->trigger->idle = true;
+			entity->trigger->idle_timer = 120;
 			entity->trigger->explode = true;
 			entity->trigger->explode_timer = 10;
-
-
+			entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+			entity->trigger->explode_intensity = 500.0f;
+			entity->trigger->splash_damage = 50;
+			entity->trigger->splash_radius = 250.0f;
+			entity->trigger->knockback = 250.0f;
+			sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
 			memcpy(entity->trigger->action, "damage 100", 12);
 
-			camera_frame.set(entity->model->morientation);
+
+
+
 
 			player.attack_sound = "sound/weapons/grenade/grenlf1a.wav";
 		}
@@ -3858,6 +3891,7 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid->velocity = camera_frame.forward * -1.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = false;
+			entity->rigid->rotational_friction_flag = true;
 			entity->model = entity->rigid;
 			entity->rigid->set_target(*(entity_list[spawn]));
 			camera_frame.set(entity->model->morientation);

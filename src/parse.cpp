@@ -7,6 +7,7 @@
 void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio)
 {
 	static int light_num = 0;
+	static int model_num = 0;
 
 	if (strcmp(key, "origin") == 0)
 	{
@@ -16,6 +17,15 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		entity.position.x = (float)x;
 		entity.position.y = (float)z;
 		entity.position.z = (float)-y;
+	}
+	else if (strcmp(key, "model") == 0)
+	{
+		int num;
+
+		// Reference into BSP model lump for triggers / movers
+		int ret = sscanf(value+1, "%d", &num);
+		if (ret == 1)
+			entity.model_ref = num;
 	}
 	else if (strcmp(key, "classname") == 0)
 	{
@@ -121,6 +131,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			if (entity.trigger == NULL)
 				entity.trigger = new Trigger(&entity, audio);
 
+			sprintf(entity.type, "trigger_teleport");
 			sprintf(entity.trigger->action, "teleport %s", entity.target);
 		}
 		else if (strcmp(value, "trigger_push") == 0)
@@ -136,6 +147,10 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.trigger = new Trigger(&entity, audio);
 
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/player/ranger/death1.wav");
+		}
+		else if (strcmp(value, "misc_model") == 0)
+		{
+			entity.model_ref = model_num++;
 		}
 	}
 	else if (strcmp(key, "light") == 0)

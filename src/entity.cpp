@@ -12,6 +12,7 @@ Entity::Entity()
 	target[0] = '\0';
 	target_name[0] = '\0';
 	angle = 0;
+	model_ref = -1;
 	memcpy(type, "free", 5);
 	rigid = NULL;
 	vehicle = NULL;
@@ -46,6 +47,7 @@ Entity::~Entity()
 	target[0] = '\0';
 	target_name[0] = '\0';
 	angle = 0;
+	model_ref = -1;
 	rigid = NULL;
 	vehicle = NULL;
 	model = NULL;

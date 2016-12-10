@@ -22,20 +22,23 @@ public:
 	unsigned int	loop_source;
 	unsigned int	pickup_buf;
 	unsigned int	respawn_buf;
+
+	// I should probably split item pickups from projectiles as it's starting to get complex
 	vec3			explode_color;
 	float			explode_intensity;
-	unsigned int	explode_timer;
-	unsigned int	splash_damage;
-	float			splash_radius;
-	float			knockback;
-	bool	hide;	// whether it should disappear when active
-	bool	active; // active when picked up
-	bool	self;	// whether current player can pick it up
-	bool	idle;
-	bool	explode;
-	bool	health;
-	bool	armor;
-	float	timeout;
+	unsigned int	explode_timer;	// How long an explosion lasts (light effect, damage trigger time)
+	unsigned int	idle_timer;		// How long after stopping something sits before exploding (should probaably be from when fired)
+	unsigned int	splash_damage;	// Damage given when exploding
+	float			splash_radius;	// Trigger pickup radius when exploding
+	float			knockback;		// Amount to knock people back when exploding (scaled by radius)
+	bool	hide;		// whether it should disappear when active
+	bool	active;		// active when picked up
+	bool	self;		// whether current player can pick it up
+	bool	idle;		// Delete when it stops moving
+	bool	explode;	// Does it explode
+	bool	health;		// For health items, prevents giving over 100
+	bool	armor;		// For armor items, prevents giving over 200
+	float	timeout;	// Timeout between pickups respawning
 };
 
 #endif
