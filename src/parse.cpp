@@ -166,7 +166,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 	else if (strcmp(key, "noise") == 0)
 	{
 		entity.speaker = new Speaker(&entity, audio);
-		snprintf(entity.speaker->file, LINE_SIZE, "media/%s", value);
+		snprintf(entity.speaker->file, LINE_SIZE, "%s", value);
 	}
 	else if (strcmp(key, "target") == 0)
 	{

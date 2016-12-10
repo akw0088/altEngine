@@ -87,13 +87,13 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	memset(&stats, 0, sizeof(stats_t));
 	dead = false;
 
-	weapon_machinegun.load(gfx, "media/models/machinegun/machinegun");
-	weapon_shotgun.load(gfx, "media/models/weapons2/shotgun/shotgun");
-	weapon_grenade.load(gfx, "media/models/grenade/grenade");
+	weapon_machinegun.load(gfx, "media/models/weapons2/machinegun/machinegun");
+	weapon_shotgun.load(gfx,	"media/models/weapons2/shotgun/shotgun");
+	weapon_grenade.load(gfx,	"media/models/weapons2/grenadel/grenade");
 	weapon_rocket.load(gfx,		"media/models/weapons2/rocketl/rocketl");
 	weapon_lightning.load(gfx,	"media/models/weapons2/lightning/lightning");
 	weapon_railgun.load(gfx,	"media/models/weapons2/railgun/railgun");
-	weapon_plasma.load(gfx, "media/models/plasma/plasma");
+	weapon_plasma.load(gfx,		"media/models/weapons2/plasma/plasma");
 
 
 	entity->speaker = new Speaker(entity, audio);
