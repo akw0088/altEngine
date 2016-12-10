@@ -40,7 +40,7 @@ public:
 	void init_camera();
 	void load_entities();
 	int get_entity();
-	void remove_light(int index);
+	void clean_entity(int index);
 	void load_sounds();
 	void load_models();
 	void load_model(Entity &ent);
@@ -89,6 +89,9 @@ public:
 	Entity *box;
 	Entity *ball;
 	Entity *thug22;
+	Entity *rocket;
+	Entity *pineapple;
+
 
 private:
 	matrix4		projection;

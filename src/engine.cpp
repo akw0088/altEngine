@@ -75,6 +75,17 @@ void Engine::init(void *p1, void *p2)
 	thug22->model = thug22->rigid;
 	thug22->model->load(gfx, "media/models/thug22/thug22");
 
+	rocket = new Entity();
+	rocket->rigid = new RigidBody(rocket);
+	rocket->model = rocket->rigid;
+	rocket->rigid->load(gfx, "media/models/rocket/rocket");
+
+	pineapple = new Entity();
+	pineapple->rigid = new RigidBody(pineapple);
+	pineapple->model = pineapple->rigid;
+	pineapple->rigid->load(gfx, "media/models/pineapple/pineapple");
+
+
 
 	//audio
 	audio.init();
@@ -785,14 +796,19 @@ void Engine::debug_messages(double last_frametime)
 		menu.draw_text(msg, 0.01f, 0.1f, 0.025f, color);
 		snprintf(msg, LINE_SIZE, "Rockets: %d", entity_list[spawn]->player->ammo_rockets);
 		menu.draw_text(msg, 0.01f, 0.125f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
+		snprintf(msg, LINE_SIZE, "Grenades: %d", entity_list[spawn]->player->ammo_grenades);
 		menu.draw_text(msg, 0.01f, 0.15f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
+		snprintf(msg, LINE_SIZE, "Bolts: %d", entity_list[spawn]->player->ammo_lightning);
 		menu.draw_text(msg, 0.01f, 0.175f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+		snprintf(msg, LINE_SIZE, "Plasma: %d", entity_list[spawn]->player->ammo_plasma);
 		menu.draw_text(msg, 0.01f, 0.2f, 0.025f, color);
-		snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
+
+		snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity_list[spawn]->position.x, entity_list[spawn]->position.y, entity_list[spawn]->position.z);
 		menu.draw_text(msg, 0.01f, 0.225f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity_list[spawn]->rigid->velocity.x, entity_list[spawn]->rigid->velocity.y, entity_list[spawn]->rigid->velocity.z);
+		menu.draw_text(msg, 0.01f, 0.25f, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity_list[spawn]->rigid->water, entity_list[spawn]->rigid->water_depth);
+		menu.draw_text(msg, 0.01f, 0.275f, 0.025f, color);
 
 
 
@@ -1355,7 +1371,7 @@ void Engine::check_triggers()
 						if (entity_list[i]->trigger->explode_timer == 0)
 						{
 							// Light list wont be updated until the next step, so manually delete
-							remove_light(i);
+							clean_entity(i);
 							entity_list[i]->~Entity();
 							continue;
 						}
@@ -2598,8 +2614,15 @@ void Engine::load_entities()
 	}
 }
 
-void Engine::remove_light(int index)
+void Engine::clean_entity(int index)
 {
+	//free audio sources
+	if (entity_list[index]->trigger)
+		entity_list[index]->trigger->destroy(audio);
+
+	if (entity_list[index]->speaker)
+		entity_list[index]->speaker->destroy(audio);
+
 	// Light list wont be updated until the next step, so manually delete
 	if (entity_list[index]->light)
 	{
@@ -2635,8 +2658,7 @@ int Engine::get_entity()
 
 		if (strcmp(entity_list[index]->type, "free") == 0)
 		{
-			remove_light(index);
-
+			clean_entity(index);
 			entity_list[index]->~Entity();
 			return index++;
 		}
@@ -2780,6 +2802,8 @@ void Engine::destroy()
 	delete box;
 	delete ball;
 	delete thug22;
+	delete rocket;
+	delete pineapple;
 
 	debugf("Shutting down.\n");
 	destroy_buffers();
@@ -3701,6 +3725,8 @@ void Engine::handle_weapons(Player &player)
 		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
 		{
 			player.reload_timer = 100;
+			player.ammo_rockets--;
+
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3741,7 +3767,7 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			camera_frame.set(entity->rigid->morientation);
 
-			entity->rigid->load(gfx, "media/models/rocket/rocket");
+			entity->rigid->clone(*(rocket->model));
 			entity->rigid->velocity = camera_frame.forward * -6.25f;
 			entity->rigid->net_force = camera_frame.forward * -10.0f;
 			entity->rigid->angular_velocity = vec3();
@@ -3753,13 +3779,15 @@ void Engine::handle_weapons(Player &player)
 		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
 		{
 			player.reload_timer = 8;
+			player.ammo_plasma--;
+
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->model = entity->rigid;
 			entity->position = camera_frame.pos;
-			entity->rigid->load(gfx, "media/models/ball");
+			entity->rigid->clone(*(ball->model));
 			entity->rigid->velocity = camera_frame.forward * -10.0f;
 			entity->rigid->net_force = camera_frame.forward * -10.0f;
 
@@ -3792,13 +3820,14 @@ void Engine::handle_weapons(Player &player)
 		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
 		{
 			player.reload_timer = 100;
+			player.ammo_grenades--;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
 			entity->rigid = new RigidBody(entity);
 			entity->model = entity->rigid;
 			entity->position = camera_frame.pos;
-			entity->rigid->load(gfx, "media/models/pineapple/pineapple");
+			entity->rigid->clone(*(pineapple->model));
 			entity->rigid->velocity = camera_frame.forward * -25.0f;
 			entity->rigid->angular_velocity = vec3();
 			entity->rigid->gravity = true;
@@ -3819,6 +3848,7 @@ void Engine::handle_weapons(Player &player)
 		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
 		{
 			player.reload_timer = 6;
+			player.ammo_lightning--;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3831,13 +3861,10 @@ void Engine::handle_weapons(Player &player)
 			entity->model = entity->rigid;
 			entity->rigid->set_target(*(entity_list[spawn]));
 			camera_frame.set(entity->model->morientation);
-			player.ammo_rockets--;
-
 
 			entity->light = new Light(entity, gfx, 999);
 			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 			entity->light->intensity = 1000.0f;
-			player.ammo_lightning--;
 
 			player.attack_sound = "sound/weapons/lightning/lg_fire.wav";
 		}
@@ -3847,6 +3874,7 @@ void Engine::handle_weapons(Player &player)
 			int num_index = 0;
 
 			player.reload_timer = 188;
+			player.ammo_slugs--;
 
 			fired = true;
 			Entity *entity = entity_list[get_entity()];
@@ -3858,7 +3886,6 @@ void Engine::handle_weapons(Player &player)
 			entity->rigid->gravity = false;
 			entity->model = entity->rigid;
 			camera_frame.set(entity->model->morientation);
-			player.ammo_slugs--;
 
 			vec3 forward;
 			player.entity->model->getForwardVector(forward);
@@ -3883,7 +3910,6 @@ void Engine::handle_weapons(Player &player)
 		else if (player.current_weapon == wp_shotgun && player.ammo_shells > 0)
 		{
 			player.reload_timer = 120;
-
 			player.ammo_shells--;
 
 			fired = true;
@@ -3908,7 +3934,6 @@ void Engine::handle_weapons(Player &player)
 			int num_index = 0;
 
 			player.reload_timer = 8;
-
 			player.ammo_bullets--;
 
 			fired = true;

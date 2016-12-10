@@ -12,7 +12,7 @@ Entity::Entity()
 	target[0] = '\0';
 	target_name[0] = '\0';
 	angle = 0;
-	type[0] = '\0';
+	memcpy(type, "free", 5);
 	rigid = NULL;
 	vehicle = NULL;
 	model = NULL;
