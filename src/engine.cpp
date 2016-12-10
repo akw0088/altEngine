@@ -2469,6 +2469,11 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "sound/weapons/noammo.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
 
 	
 
@@ -3760,8 +3765,12 @@ void Engine::chat(char *msg)
 void Engine::handle_weapons(Player &player)
 {
 	bool fired = false;
+	bool empty = false;
+
 	if (player.reload_timer > 0)
+	{
 		player.reload_timer--;
+	}
 
 	if (player.dead)
 	{
@@ -3835,265 +3844,318 @@ void Engine::handle_weapons(Player &player)
 
 	if (input.leftbutton && player.reload_timer == 0)
 	{
-
-		if (player.current_weapon == wp_rocket && player.ammo_rockets > 0)
+		if (player.current_weapon == wp_rocket)
 		{
-			player.reload_timer = 100;
-			player.ammo_rockets--;
-
-
-			fired = true;
-			Entity *entity = entity_list[get_entity()];
-			entity->position = camera_frame.pos;
-
-			entity->trigger = new Trigger(entity, audio);
-			entity->trigger->hide = false;
-			entity->trigger->self = false;
-			entity->trigger->idle = true;
-			entity->trigger->explode = true;
-			entity->trigger->explode_timer = 10;
-			entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-			entity->trigger->explode_intensity = 500.0f;
-			entity->trigger->splash_damage = 50;
-			entity->trigger->splash_radius = 250.0f;
-			entity->trigger->knockback = 250.0f;
-			sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-			sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
-
-			bool ret = select_wave(entity->trigger->loop_source, entity->trigger->idle_sound);
-			if (ret)
+			if (player.ammo_rockets > 0)
 			{
-				audio.play(entity->trigger->loop_source);
+				player.reload_timer = 100;
+				player.ammo_rockets--;
+
+
+				fired = true;
+				Entity *entity = entity_list[get_entity()];
+				entity->position = camera_frame.pos;
+
+				entity->trigger = new Trigger(entity, audio);
+				entity->trigger->hide = false;
+				entity->trigger->self = false;
+				entity->trigger->idle = true;
+				entity->trigger->explode = true;
+				entity->trigger->explode_timer = 10;
+				entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+				entity->trigger->explode_intensity = 500.0f;
+				entity->trigger->splash_damage = 50;
+				entity->trigger->splash_radius = 250.0f;
+				entity->trigger->knockback = 250.0f;
+				sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+				sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
+
+				bool ret = select_wave(entity->trigger->loop_source, entity->trigger->idle_sound);
+				if (ret)
+				{
+					audio.play(entity->trigger->loop_source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity->trigger->idle_sound);
+				}
+
+
+				sprintf(entity->trigger->action, "damage 100");
+
+				entity->light = new Light(entity, gfx, 999);
+				entity->light->color = vec3(1.0f, 1.0f, 1.0f);
+				entity->light->intensity = 1000.0f;
+
+				entity->rigid = new RigidBody(entity);
+				entity->model = entity->rigid;
+				camera_frame.set(entity->rigid->morientation);
+
+				entity->rigid->clone(*(rocket->model));
+				entity->rigid->velocity = camera_frame.forward * -6.25f;
+				entity->rigid->net_force = camera_frame.forward * -10.0f;
+				entity->rigid->angular_velocity = vec3();
+				entity->rigid->gravity = false;
+
+
+				player.attack_sound = "sound/weapons/rocket/rocklf1a.wav";
 			}
 			else
 			{
-				debugf("Unable to find PCM data for %s\n", entity->trigger->idle_sound);
+				empty = true;
 			}
-
-
-			sprintf(entity->trigger->action, "damage 100");
-			
-			entity->light = new Light(entity, gfx, 999);
-			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
-			entity->light->intensity = 1000.0f;
-
-			entity->rigid = new RigidBody(entity);
-			entity->model = entity->rigid;
-			camera_frame.set(entity->rigid->morientation);
-
-			entity->rigid->clone(*(rocket->model));
-			entity->rigid->velocity = camera_frame.forward * -6.25f;
-			entity->rigid->net_force = camera_frame.forward * -10.0f;
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
-
-
-			player.attack_sound = "sound/weapons/rocket/rocklf1a.wav";
 		}
-		else if (player.current_weapon == wp_plasma && player.ammo_plasma > 0)
+		else if (player.current_weapon == wp_plasma)
 		{
-			player.reload_timer = 8;
-			player.ammo_plasma--;
-
-
-			fired = true;
-			Entity *entity = entity_list[get_entity()];
-			entity->rigid = new RigidBody(entity);
-			entity->model = entity->rigid;
-			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(ball->model));
-			entity->rigid->velocity = camera_frame.forward * -10.0f;
-			entity->rigid->net_force = camera_frame.forward * -10.0f;
-
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
-			entity->trigger = new Trigger(entity, audio);
-			entity->trigger->hide = false;
-			entity->trigger->self = false;
-			entity->trigger->idle = true;
-			entity->trigger->explode = false;
-			entity->trigger->explode_timer = 10;
-			entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
-			entity->trigger->explode_intensity = 200.0f;
-			sprintf(entity->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
-			sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
-			entity->trigger->splash_damage = 15;
-			entity->trigger->splash_radius = 75.0f;
-			entity->trigger->knockback = 75.0f;
-
-			memcpy(entity->trigger->action, "damage 20", 11);
-
-			camera_frame.set(entity->model->morientation);
-
-			entity->light = new Light(entity, gfx, 999);
-			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
-			entity->light->intensity = 1000.0f;
-
-			player.attack_sound = "sound/weapons/plasma/hyprbf1a.wav";
-		}
-		else if (player.current_weapon == wp_grenade && player.ammo_grenades > 0)
-		{
-			player.reload_timer = 100;
-			player.ammo_grenades--;
-			fired = true;
-
-
-			Entity *entity = entity_list[get_entity()];
-			entity->rigid = new RigidBody(entity);
-			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(box->model));
-//			entity->rigid->clone(*(pineapple->model));
-			entity->rigid->velocity = camera_frame.forward * -5.0f;
-			entity->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
-			entity->rigid->gravity = true;
-			entity->rigid->rotational_friction_flag = true;
-			entity->model = entity->rigid;
-//			entity->rigid->set_target(*(entity_list[spawn]));
-			camera_frame.set(entity->model->morientation);
-
-			entity->trigger = new Trigger(entity, audio);
-			entity->trigger->hide = false;
-			entity->trigger->self = false;
-			entity->trigger->idle = true;
-			entity->trigger->idle_timer = 120;
-			entity->trigger->explode = true;
-			entity->trigger->explode_timer = 10;
-			entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-			entity->trigger->explode_intensity = 500.0f;
-			entity->trigger->splash_damage = 50;
-			entity->trigger->splash_radius = 250.0f;
-			entity->trigger->knockback = 250.0f;
-			sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-			memcpy(entity->trigger->action, "damage 100", 12);
-
-
-
-
-
-			player.attack_sound = "sound/weapons/grenade/grenlf1a.wav";
-		}
-		else if (player.current_weapon == wp_lightning && player.ammo_lightning > 0)
-		{
-			player.reload_timer = 6;
-			player.ammo_lightning--;
-
-			fired = true;
-			Entity *entity = entity_list[get_entity()];
-			entity->rigid = new RigidBody(entity);
-			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(box->model));
-			entity->rigid->velocity = camera_frame.forward * -1.0f;
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
-			entity->rigid->rotational_friction_flag = true;
-			entity->model = entity->rigid;
-			entity->rigid->set_target(*(entity_list[spawn]));
-			camera_frame.set(entity->model->morientation);
-
-			entity->light = new Light(entity, gfx, 999);
-			entity->light->color = vec3(1.0f, 1.0f, 1.0f);
-			entity->light->intensity = 1000.0f;
-
-			player.attack_sound = "sound/weapons/lightning/lg_fire.wav";
-		}
-		else if (player.current_weapon == wp_railgun && player.ammo_slugs > 0)
-		{
-			int index[8];
-			int num_index = 0;
-
-			player.reload_timer = 188;
-			player.ammo_slugs--;
-
-			fired = true;
-			Entity *entity = entity_list[get_entity()];
-			entity->rigid = new RigidBody(entity);
-			entity->position = camera_frame.pos;
-			entity->rigid->clone(*(ball->model));
-			entity->rigid->velocity = camera_frame.forward * -100.0f;
-			entity->rigid->angular_velocity = vec3();
-			entity->rigid->gravity = false;
-			entity->model = entity->rigid;
-			camera_frame.set(entity->model->morientation);
-
-			vec3 forward;
-			player.entity->model->getForwardVector(forward);
-
-			hitscan(player.entity->position, forward, index, num_index, spawn);
-			for (int i = 0; i < num_index; i++)
+			if (player.ammo_plasma > 0)
 			{
-				char cmd[80] = { 0 };
 
-				if (entity_list[index[i]]->player == NULL)
-					continue;
+				player.reload_timer = 8;
+				player.ammo_plasma--;
 
-				debugf("Player %s hit %s with the railgun for %d damage\n", player.name, entity_list[index[i]]->player->name, 100);
-				sprintf(cmd, "hurt %d %d", index[i], 100);
-				console(cmd);
+
+				fired = true;
+				Entity *entity = entity_list[get_entity()];
+				entity->rigid = new RigidBody(entity);
+				entity->model = entity->rigid;
+				entity->position = camera_frame.pos;
+				entity->rigid->clone(*(ball->model));
+				entity->rigid->velocity = camera_frame.forward * -10.0f;
+				entity->rigid->net_force = camera_frame.forward * -10.0f;
+
+				entity->rigid->angular_velocity = vec3();
+				entity->rigid->gravity = false;
+				entity->trigger = new Trigger(entity, audio);
+				entity->trigger->hide = false;
+				entity->trigger->self = false;
+				entity->trigger->idle = true;
+				entity->trigger->explode = false;
+				entity->trigger->explode_timer = 10;
+				entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
+				entity->trigger->explode_intensity = 200.0f;
+				sprintf(entity->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
+				sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
+				entity->trigger->splash_damage = 15;
+				entity->trigger->splash_radius = 75.0f;
+				entity->trigger->knockback = 75.0f;
+
+				memcpy(entity->trigger->action, "damage 20", 11);
+
+				camera_frame.set(entity->model->morientation);
+
+				entity->light = new Light(entity, gfx, 999);
+				entity->light->color = vec3(0.0f, 0.0f, 1.0f);
+				entity->light->intensity = 1000.0f;
+
+				player.attack_sound = "sound/weapons/plasma/hyprbf1a.wav";
 			}
-
-
-
-			player.attack_sound = "sound/weapons/railgun/railgf1a.wav";
-		}
-		else if (player.current_weapon == wp_shotgun && player.ammo_shells > 0)
-		{
-			player.reload_timer = 120;
-			player.ammo_shells--;
-
-			fired = true;
-			vec3 forward;
-			float distance;
-			player.entity->model->getForwardVector(forward);
-
-			map.hitscan(player.entity->position, forward, distance);
-			//vec3 end = player.entity->position + forward * distance;
-
-
-//			Entity *entity = new Entity();
-//			entity->decal = new Decal(entity);
-//			entity->position = end;
-//			entity->decal->normal = normal;
-
-			player.attack_sound = "sound/weapons/shotgun/sshotf1b.wav";
-		}
-		else if (player.current_weapon == wp_machinegun && player.ammo_bullets > 0)
-		{
-			int index[8];
-			int num_index = 0;
-
-			player.reload_timer = 8;
-			player.ammo_bullets--;
-
-			fired = true;
-			vec3 forward;
-			float distance;
-			player.entity->model->getForwardVector(forward);
-
-			hitscan(player.entity->position, forward, index, num_index, spawn);
-			for(int i = 0; i < num_index; i++)
+			else
 			{
-				char cmd[80] = { 0 };
+				empty = true;
+			}
+		}
+		else if (player.current_weapon == wp_grenade)
+		{
+			if (player.ammo_grenades > 0)
+			{
+				player.reload_timer = 100;
+				player.ammo_grenades--;
+				fired = true;
 
-				if (entity_list[index[i]]->player == NULL)
-					continue;
 
-				debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, entity_list[index[i]]->player->name, 7);
-				sprintf(cmd, "hurt %d %d", index[i], 7);
-				console(cmd);
+				Entity *entity = entity_list[get_entity()];
+				entity->rigid = new RigidBody(entity);
+				entity->position = camera_frame.pos;
+				entity->rigid->clone(*(box->model));
+				//			entity->rigid->clone(*(pineapple->model));
+				entity->rigid->velocity = camera_frame.forward * -5.0f;
+				entity->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
+				entity->rigid->gravity = true;
+				entity->rigid->rotational_friction_flag = true;
+				entity->model = entity->rigid;
+				//			entity->rigid->set_target(*(entity_list[spawn]));
+				camera_frame.set(entity->model->morientation);
+
+				entity->trigger = new Trigger(entity, audio);
+				entity->trigger->hide = false;
+				entity->trigger->self = false;
+				entity->trigger->idle = true;
+				entity->trigger->idle_timer = 120;
+				entity->trigger->explode = true;
+				entity->trigger->explode_timer = 10;
+				entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+				entity->trigger->explode_intensity = 500.0f;
+				entity->trigger->splash_damage = 50;
+				entity->trigger->splash_radius = 250.0f;
+				entity->trigger->knockback = 250.0f;
+				sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+				memcpy(entity->trigger->action, "damage 100", 12);
+
+
+
+
+
+				player.attack_sound = "sound/weapons/grenade/grenlf1a.wav";
+			}
+			else
+			{
+				empty = true;
 			}
 
-			map.hitscan(player.entity->position, forward, distance);
-			//vec3 end = player.entity->position + forward * distance;
-
-
-			//			Entity *entity = new Entity();
-			//			entity->decal = new Decal(entity);
-			//			entity->position = end;
-			//			entity->decal->normal = normal;
-
-			player.attack_sound = "sound/weapons/machinegun/machgf1b.wav";
 		}
+		else if (player.current_weapon == wp_lightning)
+		{
+			if (player.ammo_lightning > 0)
+			{
+				player.reload_timer = 6;
+				player.ammo_lightning--;
 
+				fired = true;
+				Entity *entity = entity_list[get_entity()];
+				entity->rigid = new RigidBody(entity);
+				entity->position = camera_frame.pos;
+				entity->rigid->clone(*(box->model));
+				entity->rigid->velocity = camera_frame.forward * -1.0f;
+				entity->rigid->angular_velocity = vec3();
+				entity->rigid->gravity = false;
+				entity->rigid->rotational_friction_flag = true;
+				entity->model = entity->rigid;
+				entity->rigid->set_target(*(entity_list[spawn]));
+				camera_frame.set(entity->model->morientation);
+
+				entity->light = new Light(entity, gfx, 999);
+				entity->light->color = vec3(1.0f, 1.0f, 1.0f);
+				entity->light->intensity = 1000.0f;
+
+				player.attack_sound = "sound/weapons/lightning/lg_fire.wav";
+			}
+			else
+			{
+				empty = true;
+			}
+
+		}
+		else if (player.current_weapon == wp_railgun)
+		{
+			if (player.ammo_slugs > 0)
+			{
+				int index[8];
+				int num_index = 0;
+
+				player.reload_timer = 188;
+				player.ammo_slugs--;
+
+				fired = true;
+				Entity *entity = entity_list[get_entity()];
+				entity->rigid = new RigidBody(entity);
+				entity->position = camera_frame.pos;
+				entity->rigid->clone(*(ball->model));
+				entity->rigid->velocity = camera_frame.forward * -100.0f;
+				entity->rigid->angular_velocity = vec3();
+				entity->rigid->gravity = false;
+				entity->model = entity->rigid;
+				camera_frame.set(entity->model->morientation);
+
+				vec3 forward;
+				player.entity->model->getForwardVector(forward);
+
+				hitscan(player.entity->position, forward, index, num_index, spawn);
+				for (int i = 0; i < num_index; i++)
+				{
+					char cmd[80] = { 0 };
+
+					if (entity_list[index[i]]->player == NULL)
+						continue;
+
+					debugf("Player %s hit %s with the railgun for %d damage\n", player.name, entity_list[index[i]]->player->name, 100);
+					sprintf(cmd, "hurt %d %d", index[i], 100);
+					console(cmd);
+				}
+
+
+
+				player.attack_sound = "sound/weapons/railgun/railgf1a.wav";
+			}
+			else
+			{
+				empty = true;
+			}
+
+		}
+		else if (player.current_weapon == wp_shotgun)
+		{
+			if (player.ammo_shells > 0)
+			{
+				player.reload_timer = 60;
+				player.ammo_shells--;
+
+				fired = true;
+				vec3 forward;
+				float distance;
+				player.entity->model->getForwardVector(forward);
+
+				map.hitscan(player.entity->position, forward, distance);
+				//vec3 end = player.entity->position + forward * distance;
+
+
+	//			Entity *entity = new Entity();
+	//			entity->decal = new Decal(entity);
+	//			entity->position = end;
+	//			entity->decal->normal = normal;
+
+				player.attack_sound = "sound/weapons/shotgun/sshotf1b.wav";
+			}
+			else
+			{
+				empty = true;
+			}
+
+		}
+		else if (player.current_weapon == wp_machinegun)
+		{
+			if (player.ammo_bullets > 0)
+			{
+				int index[8];
+				int num_index = 0;
+
+				player.reload_timer = 8;
+				player.ammo_bullets--;
+
+				fired = true;
+				vec3 forward;
+				float distance;
+				player.entity->model->getForwardVector(forward);
+
+				hitscan(player.entity->position, forward, index, num_index, spawn);
+				for (int i = 0; i < num_index; i++)
+				{
+					char cmd[80] = { 0 };
+
+					if (entity_list[index[i]]->player == NULL)
+						continue;
+
+					debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, entity_list[index[i]]->player->name, 7);
+					sprintf(cmd, "hurt %d %d", index[i], 7);
+					console(cmd);
+				}
+
+				map.hitscan(player.entity->position, forward, distance);
+				//vec3 end = player.entity->position + forward * distance;
+
+
+				//			Entity *entity = new Entity();
+				//			entity->decal = new Decal(entity);
+				//			entity->position = end;
+				//			entity->decal->normal = normal;
+
+				player.attack_sound = "sound/weapons/machinegun/machgf1b.wav";
+			}
+			else
+			{
+				empty = true;
+			}
+
+		}
 
 		if (fired)
 		{
@@ -4110,6 +4172,23 @@ void Engine::handle_weapons(Player &player)
 				debugf("Failed to find PCM data for %s\n", player.attack_sound);
 			}
 		}
+		else if (empty)
+		{
+			bool ret = false;
+
+			player.reload_timer = 30;
+			ret = select_wave(player.entity->speaker->source, player.empty_sound);
+
+			if (ret)
+			{
+				audio.play(player.entity->speaker->source);
+			}
+			else
+			{
+				debugf("Failed to find PCM data for %s\n", player.empty_sound);
+			}
+		}
+
 
 	}
 }

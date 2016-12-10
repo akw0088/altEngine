@@ -12,6 +12,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	Player::entity = entity;
 
 	attack_sound = "";
+	empty_sound = "sound/weapons/noammo.wav";
 	weapon_idle_sound = "";
 	death1_sound = "sound/player/ranger/death1.wav";
 	death2_sound = "sound/player/ranger/death2.wav";
@@ -175,6 +176,9 @@ void Player::render_weapon(Graphics &gfx)
 
 void Player::change_weapon_up()
 {
+	if (reload_timer != 0)
+		return;
+
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -254,6 +258,9 @@ void Player::change_weapon_up()
 
 void Player::change_weapon_down()
 {
+	if (reload_timer != 0)
+		return;
+
 	switch (current_weapon)
 	{
 	case wp_none:

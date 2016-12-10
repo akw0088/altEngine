@@ -53,6 +53,7 @@ public:
 	float DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point);
 
 	char *attack_sound;
+	char *empty_sound;
 	char *weapon_idle_sound;
 	char *death1_sound;
 	char *death2_sound;
