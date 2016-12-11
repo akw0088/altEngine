@@ -73,6 +73,10 @@ public:
 	char step3_sound[128];
 	char step4_sound[128];
 
+	char waterin_sound[128];
+	char waterout_sound[128];
+
+
 	int health;
 
 	unsigned int armor;
@@ -90,6 +94,7 @@ public:
 	unsigned int ammo_bfg;
 
 	unsigned int reload_timer;
+	unsigned int drown_timer;
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
 

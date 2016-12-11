@@ -31,6 +31,7 @@ public:
 
 	bool move(Frame &camera_frame, button_t &keyboard);
 	float get_volume();
+	float get_height();
 
 	bool			map_collision;
 	bool			pursue_flag;
@@ -41,6 +42,7 @@ public:
 	bool			gravity;
 	bool			noclip;
 	bool			water;
+	bool			last_water;
 	bool			rotational_friction_flag;
 	bool			translational_friction_flag;
 	float			rotational_friction;

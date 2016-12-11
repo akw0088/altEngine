@@ -32,9 +32,12 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(step3_sound, "sound/player/footsteps/step3.wav");
 	sprintf(step4_sound, "sound/player/footsteps/step4.wav");
 
-	//sounds/player/watr_in.wav
-	//sounds/player/watr_out.wav
-	//sounds/player/watr_un.wav
+	sprintf(waterin_sound,  "sound/player/watr_in.wav");
+	sprintf(waterout_sound, "sound/player/watr_out.wav");
+
+	//
+	//
+	//sounds/player/watr_un.wav // another water in?
 	//sounds/player/gurp1.wav
 	//sounds/player/gurp2.wav
 	//sounds/player/talk.wav
@@ -84,6 +87,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	ammo_plasma = 0;
 	ammo_bfg = 0;
 	reload_timer = 0;
+	drown_timer++;
 	memcpy(name, "UnnamedPlayer", strlen("UnnamedPlayer") + 1);
 	memset(&stats, 0, sizeof(stats_t));
 	dead = false;

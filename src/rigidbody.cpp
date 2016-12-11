@@ -13,6 +13,7 @@ RigidBody::RigidBody(Entity *entity)
 	pursue_flag = true;
 	step_flag = false;
 	water = false;
+	last_water = false;
 	target = NULL;
 	mass = 10.0f;
 	restitution = 0.5f; // boxes should never rest
@@ -493,6 +494,14 @@ float RigidBody::get_volume()
 
 	return width * length * height;
 }
+
+float RigidBody::get_height()
+{
+	// max should always be bigger than min, but abs anyway
+	return fabs(aabb[7].z - aabb[0].z);
+}
+
+
 
 
 bool RigidBody::move(Frame &camera, button_t &keyboard)

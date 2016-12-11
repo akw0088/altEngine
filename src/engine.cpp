@@ -1375,6 +1375,47 @@ void Engine::step()
 			}
 		}
 
+
+		if (entity_list[spawn]->rigid->water && entity_list[spawn]->rigid->water_depth < entity_list[spawn]->rigid->get_height())
+		{
+			if (entity_list[spawn]->rigid->water != entity_list[spawn]->rigid->last_water)
+			{
+				bool ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->waterin_sound);
+
+				if (ret)
+				{
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+				else
+				{
+					debugf("Failed to find PCM data for water entry sound\n");
+				}
+				entity_list[spawn]->rigid->last_water = entity_list[spawn]->rigid->water;
+			}
+		}
+		else if (entity_list[spawn]->rigid->water == false)
+		{
+			if (entity_list[spawn]->rigid->water != entity_list[spawn]->rigid->last_water)
+			{
+				bool ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->waterout_sound);
+
+				if (ret)
+				{
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+				else
+				{
+					debugf("Failed to find PCM data for water exit sound\n");
+				}
+				entity_list[spawn]->rigid->last_water = entity_list[spawn]->rigid->water;
+				entity_list[spawn]->player->drown_timer == 0;
+			}
+		}
+		else
+		{
+			entity_list[spawn]->player->drown_timer++;
+		}
+
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
 			bool ret = false;
@@ -2503,9 +2544,15 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
+	strcpy(wave[0].file, "sound/player/watr_in.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
 
-	
-
+	strcpy(wave[0].file, "sound/player/watr_out.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
 
 
 	for(unsigned int i = 0; i < entity_list.size(); i++)
