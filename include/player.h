@@ -89,7 +89,7 @@ public:
 
 	char chat_sound[128];
 	char model_name[128];
-
+	int model_index;
 
 	int health;
 

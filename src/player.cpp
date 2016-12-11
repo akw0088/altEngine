@@ -38,7 +38,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 							//xaero?
 	};
 
-	sprintf(model_name, models[14]);
+	model_index = 14; // default to ranger
+
+	sprintf(model_name, models[model_index]);
 	attack_sound[0] = '\0';
 	weapon_idle_sound[0] = '\0';
 	sprintf(death1_sound, "sound/player/%s/death1.wav", model_name);
@@ -123,6 +125,35 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 {
 	wave_t wave;
 
+	// Player sound sets
+	char *models[]
+	{
+		"anarki",			//0
+		"biker",			//1
+		"bitterman",		//2
+		"bones",			//3
+		"crash",			//4
+		"doom",				//5
+		"grunt",			//6
+		"hunter",			//7
+		"keel",				//8
+		"klesk",			//9
+		"lucy",				//10
+		"major",			//11
+		"mynx",				//12
+		"orbb",				//13
+		"ranger",			//14
+		"razor",			//15
+		"sarge",			//16
+		"slash",			//17
+		"sorlag",			//18
+		"tankjr",			//19
+		"uriel",			//20
+		"visor"				//21
+							//xaero?
+	};
+
+
 	//load player sounds
 	strcpy(wave.file, "sound/weapons/railgun/rg_hum.wav");
 	audio.load(wave);
@@ -171,51 +202,54 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 
 
 
-	strcpy(wave.file, "sound/player/ranger/death1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+	for (unsigned int i = 0; i < 22; i++)
+	{
+		sprintf(wave.file, "sound/player/%s/death1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/death2.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/death2.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/death3.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/death3.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
 
-	strcpy(wave.file, "sound/player/ranger/pain25_1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/pain25_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/pain50_1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/pain50_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/pain75_1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/pain75_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/pain100_1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/pain100_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/jump1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/jump1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/player/ranger/fall1.wav");
-	audio.load(wave);
-	if (wave.data != NULL)
-		snd_wave.push_back(wave);
+		sprintf(wave.file, "sound/player/%s/fall1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+	}
 
 	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
 	audio.load(wave);
