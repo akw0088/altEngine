@@ -25,6 +25,7 @@ public:
 	void post_process(int num_passes);
 	void resize(int width, int height);
 	void render_hud(double last_frametime);
+	void draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color);
 
 	void step();
 	void dynamics();
