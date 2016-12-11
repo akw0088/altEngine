@@ -3765,9 +3765,6 @@ void Engine::chat(char *msg)
 void Engine::handle_plasma(Entity *entity, Player &player)
 {
 	sprintf(player.attack_sound, "sound/weapons/plasma/hyprbf1a.wav");
-	sprintf(entity->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
-	sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
-	sprintf(entity->trigger->action, "damage 20");
 
 	player.reload_timer = 8;
 	player.ammo_plasma--;
@@ -3784,6 +3781,10 @@ void Engine::handle_plasma(Entity *entity, Player &player)
 	entity->rigid->angular_velocity = vec3();
 	entity->rigid->gravity = false;
 	entity->trigger = new Trigger(entity, audio);
+	sprintf(entity->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
+	sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
+	sprintf(entity->trigger->action, "damage 20");
+
 	entity->trigger->hide = false;
 	entity->trigger->self = false;
 	entity->trigger->idle = true;
@@ -3804,10 +3805,6 @@ void Engine::handle_plasma(Entity *entity, Player &player)
 void Engine::handle_rocketlauncher(Entity *entity, Player &player)
 {
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
-	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-	sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
-	sprintf(entity->trigger->action, "damage 100");
-
 
 	player.reload_timer = 100;
 	player.ammo_rockets--;
@@ -3816,6 +3813,10 @@ void Engine::handle_rocketlauncher(Entity *entity, Player &player)
 	camera_frame.set(entity->rigid->morientation);
 
 	entity->trigger = new Trigger(entity, audio);
+	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+	sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
+	sprintf(entity->trigger->action, "damage 100");
+
 	entity->trigger->hide = false;
 	entity->trigger->self = false;
 	entity->trigger->idle = true;
@@ -3853,8 +3854,6 @@ void Engine::handle_rocketlauncher(Entity *entity, Player &player)
 
 void Engine::handle_grenade(Entity *entity, Player &player)
 {
-	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-	sprintf(entity->trigger->action, "damage 100");
 	sprintf(player.attack_sound, "sound/weapons/grenade/grenlf1a.wav");
 
 	player.reload_timer = 100;
@@ -3874,6 +3873,9 @@ void Engine::handle_grenade(Entity *entity, Player &player)
 	//entity->rigid->set_target(*(entity_list[spawn]));
 
 	entity->trigger = new Trigger(entity, audio);
+	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+	sprintf(entity->trigger->action, "damage 100");
+
 	entity->trigger->hide = false;
 	entity->trigger->self = false;
 	entity->trigger->idle = true;
@@ -4214,9 +4216,9 @@ void Engine::handle_weapons(Player &player)
 				debugf("Failed to find PCM data for %s\n", player.empty_sound);
 			}
 		}
-
-
 	}
+
+
 }
 
 
