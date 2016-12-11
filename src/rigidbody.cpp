@@ -501,7 +501,7 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 
 	sleep = false;
 #define ACCEL (0.25f)
-#define MAX_SPEED 3.0
+#define MAX_SPEED 3.0f
 	if (keyboard.up)
 	{
 		velocity += -forward * ACCEL;

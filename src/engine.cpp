@@ -134,7 +134,7 @@ void Engine::load(char *level)
 
 
 	//First n Entities for dynamic items (Dont allocate any at runtime)
-	for (int i = 0; i < num_dynamic; i++)
+	for (unsigned int i = 0; i < num_dynamic; i++)
 	{
 		Entity *entity = new Entity();
 		memcpy(entity->type, "free", strlen("free") + 1);
@@ -851,7 +851,7 @@ void Engine::render_hud(double last_frametime)
 
 	if (show_names)
 	{
-		for (int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			vec3 color = vec3(1.0f, 1.0f, 1.0f);
 			matrix4 trans2;
@@ -894,11 +894,11 @@ void Engine::render_hud(double last_frametime)
 						int line = 1;
 
 						sprintf(data, "Pos %.3f %.3f %.3f", entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 						sprintf(data, "Vel %.3f %.3f %.3f", entity_list[i]->rigid->velocity.x, entity_list[i]->rigid->velocity.y, entity_list[i]->rigid->velocity.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 						sprintf(data, "State %d", entity_list[i]->rigid->sleep);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 					}
 
 					if (strcmp(entity_list[i]->type, "light") == 0)
@@ -906,10 +906,10 @@ void Engine::render_hud(double last_frametime)
 						int line = 1;
 
 						sprintf(data, "intensity %f", entity_list[i]->light->intensity);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 
 						sprintf(data, "color %.3f %.3f %.3f", entity_list[i]->light->color.x, entity_list[i]->light->color.y, entity_list[i]->light->color.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625 * line++, 0.02f, color);
+						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 					}
 
 				}
@@ -1167,7 +1167,7 @@ void Engine::dynamics()
 	cfg_t	config;
 
 	#pragma omp parallel for num_threads(8)
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->rigid == NULL)
 			continue;
@@ -1243,7 +1243,7 @@ bool Engine::map_collision(RigidBody &body)
 	float depth;
 	vec3 staircheck(0.0f, 20.0f, 0.0f);
 	vec3 clip = vec3(0.0f, 0.0f, 0.0f);
-	int collision = 0;
+	bool collision = false;
 
 	if (body.noclip)
 		return false;
@@ -1292,13 +1292,13 @@ bool Engine::map_collision(RigidBody &body)
 				// Projecting Velocity onto normal
 				// http://www.falstad.com/dotproduct/
 //				clip += plane.normal * -(body.velocity * plane.normal.normalize() );
-				collision++;
+				collision = true;
 			}
 		}
 	}
 	if (collision)
 	{
-		body.velocity = clip / collision;
+		body.velocity = clip;
 	}
 
 	return collision;
@@ -2721,7 +2721,7 @@ void Engine::clean_entity(int index)
 	// Light list wont be updated until the next step, so manually delete
 	if (entity_list[index]->light)
 	{
-		for (int i = 0; i < light_list.size(); i++)
+		for (unsigned int i = 0; i < light_list.size(); i++)
 		{
 			if (light_list[i]->entity == entity_list[index])
 			{
@@ -3009,9 +3009,9 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "hurt %s %s\n", data, data2);
 		menu.print(msg);
 
-		int index = atoi(data);
+		unsigned int index = atoi(data);
 
-		if (index > entity_list.size() || index < 0)
+		if (index >= entity_list.size())
 		{
 			debugf("hurt given invalid index\n");
 			return;
@@ -3024,9 +3024,9 @@ void Engine::console(char *cmd)
 		}
 
 
-		int damage = abs32(atoi(data2));
-		int health_damage = damage / 3;
-		int armor_damage = 2 * health_damage;
+		unsigned int damage = abs32(atoi(data2));
+		unsigned int health_damage = damage / 3;
+		unsigned int armor_damage = 2 * health_damage;
 
 		if (armor_damage > entity_list[index]->player->armor)
 		{
@@ -3076,9 +3076,9 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "damage %s\n", data);
 		menu.print(msg);
 
-		int damage = abs32(atoi(data));
-		int health_damage = damage / 3;
-		int armor_damage = 2 * health_damage;
+		unsigned int damage = abs32(atoi(data));
+		unsigned int health_damage = damage / 3;
+		unsigned int armor_damage = 2 * health_damage;
 
 		if (armor_damage > entity_list[spawn]->player->armor)
 		{
@@ -3335,9 +3335,9 @@ void Engine::console(char *cmd)
 		ret = sscanf(cmd, "respawn %s", data);
 		if (ret == 1)
 		{
-			int index = atoi(data);
+			unsigned int index = atoi(data);
 
-			if (index < 0 || index > entity_list.size())
+			if (index >= entity_list.size())
 			{
 				debugf("respawn given invalid entity index\n");
 				return;
@@ -3990,8 +3990,8 @@ void Engine::handle_shotgun(Player &player)
 {
 	vec3 forward;
 	float distance;
-	int index[8];
-	int num_index;
+//	int index[8];
+//	int num_index;
 
 
 	player.reload_timer = 60;
@@ -4244,7 +4244,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 	int j = 0;
 	num_index = 0;
 
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (i == self)
 			continue;

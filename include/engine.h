@@ -84,9 +84,9 @@ public:
 	void load_md5();
 
 //temp
-	int xres, yres;
-	int testObj;
-	int num_light;
+	unsigned int xres, yres;
+	unsigned int testObj;
+	unsigned int num_light;
 	bool blink;
 	bool show_names;
 	bool show_debug;

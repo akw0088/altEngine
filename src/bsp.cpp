@@ -1145,7 +1145,7 @@ void Bsp::find_edges(vec3 &position, Edge &edge_list)
 				vertex_list.push_back(x);
 			}
 
-			for(int k = 0; k < vertex_list.size(); k += 3)
+			for(unsigned int k = 0; k < vertex_list.size(); k += 3)
 			{
 				vec3 x = vertex_list[k];
 				vec3 y = vertex_list[k + 1];

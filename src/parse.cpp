@@ -151,13 +151,15 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 	}
 	else if (strcmp(key, "light") == 0)
 	{
-		int intensity;
+		int inten;
+		float intensity;
 
 		if (entity.light == NULL && light_num < 100)
 		{
 			entity.light = new Light(&entity, gfx, light_num++);
 		}
-		sscanf(value, "%d", &intensity);
+		sscanf(value, "%d", &inten);
+		intensity = (float)inten;
 
 		while (intensity < 750.0f)
 			intensity *= 2.0f;
