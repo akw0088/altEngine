@@ -540,6 +540,11 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	}
 
 	map.render(camera_frame.pos, mvp, gfx);
+
+	for (int i = 0; i < 20; i++)
+	{
+		map.render_model(i, gfx);
+	}
 //	gfx.SelectShader(0);
 }
 

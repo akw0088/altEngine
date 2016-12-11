@@ -34,7 +34,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 		"sorlag",			//18
 		"tankjr",			//19
 		"uriel",			//20
-		"visor"				//21
+		"visor",			//21
 		"xaero"				//22
 	};
 
@@ -149,7 +149,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 		"sorlag",			//18
 		"tankjr",			//19
 		"uriel",			//20
-		"visor"				//21
+		"visor",			//21
 		"xaero"				//22
 	};
 

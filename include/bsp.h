@@ -24,6 +24,7 @@ public:
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
 	void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
+	void render_model(unsigned int index, Graphics &gfx);
 //	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
 	void load_textures(Graphics &gfx);
@@ -46,6 +47,10 @@ private:
 	vec4		*tangent;
 	vector<int> face_list;
 	vector<int> blend_list;
+
+	vector<int> model_list;
+	vector<int> model_blend_list;
+	
 	int last_leaf;
 
 	// keeping this around because it seems like data.vertex is getting corrupted.

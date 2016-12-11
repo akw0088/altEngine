@@ -173,10 +173,10 @@ typedef struct
 {
 	float	min[3];		// The min position for the bounding box
 	float	max[3];		// The max position for the bounding box. 
-	int	faceIndex;	// The first face index in the model 
-	int	numOfFaces;	// The number of faces in the model 
-	int	brushIndex;	// The first brush index in the model 
-	int	numOfBrushes;	// The number brushes for the model
+	int	face_index;	// The first face index in the model 
+	int	num_faces;	// The number of faces in the model 
+	int	brush_index;	// The first brush index in the model 
+	int	num_brushes;	// The number brushes for the model
 } model_t;
 
 typedef struct
@@ -216,6 +216,7 @@ typedef struct
 	brush_t		*Brushes;
 	brushSide_t *BrushSides;
 	lightmap_t	*LightMaps;
+	model_t		*Model;
 
 	int	num_ents;
 	int	num_materials;
@@ -224,6 +225,7 @@ typedef struct
 	int	num_leafs;
 	int	num_LeafFaces;
 	int	num_LeafBrushes;
+	int num_model;
 	int	num_brushes;
 	int	num_BrushSides;
 	int	num_verts;

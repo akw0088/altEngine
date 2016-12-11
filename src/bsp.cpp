@@ -38,6 +38,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	data.Leaf = (leaf_t *)		&pBsp[tBsp->directory[Leafs].offset];
 	data.LeafFace = (int *)		&pBsp[tBsp->directory[LeafFaces].offset];
 	data.LeafBrush = (int *)	&pBsp[tBsp->directory[LeafBrushes].offset];
+	data.Model = (model_t *)&pBsp[tBsp->directory[Models].offset];
 	data.Brushes = (brush_t *)	&pBsp[tBsp->directory[Brushes].offset];
 	data.BrushSides = (brushSide_t *)	&pBsp[tBsp->directory[BrushSides].offset];
 	data.Face = (face_t *)		&pBsp[tBsp->directory[Faces].offset];
@@ -54,6 +55,8 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	data.num_leafs = tBsp->directory[Leafs].length / sizeof(leaf_t);
 	data.num_LeafFaces = tBsp->directory[LeafFaces].length / sizeof(int);
 	data.num_LeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
+	data.num_LeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
+	data.num_model = tBsp->directory[Models].length / sizeof(model_t);
 	data.num_brushes = tBsp->directory[Brushes].length / sizeof(brush_t);
 	data.num_BrushSides = tBsp->directory[BrushSides].length / sizeof(brushSide_t);
 	data.num_faces = tBsp->directory[Faces].length / sizeof(face_t);
@@ -788,6 +791,87 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx)
 		gfx.Blend(false);
 	}
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
+}
+
+
+/*
+	This has func_door's, func_bobbing, trigger's etc
+*/
+void Bsp::render_model(unsigned int index, Graphics &gfx)
+{
+	if (index >= data.num_model)
+	{
+		debugf("Invalid model index\n");
+		return;
+	}
+	model_t *model = &data.Model[index];
+
+	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
+	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
+
+	// generate face lists
+	for (int j = 0; j < model->num_faces; j++)
+	{
+		int face_index = model->face_index;
+		face_t *face = &data.Face[face_index];
+
+		// need a way to tell if a face should be blended
+		// using negative texObj's
+		if (tex_object[face->material] < 0)
+			model_blend_list.push_back(face_index);
+		else
+			model_list.push_back(face_index);
+	}
+
+	for (unsigned int i = 0; i < model_list.size(); i++)
+	{
+		int face_index = model->face_index;
+		face_t *face = &data.Face[face_index];
+
+		if (face->type == 1 || face->type == 3)
+		{
+			render_face(face, gfx);
+		}
+		else if (face->type == 2)
+		{
+			render_patch(face, gfx);
+		}
+		else// (face->type == 4)
+		{
+			render_billboard(face, gfx);
+		}
+	}
+
+	if (model_blend_list.size())
+	{
+		//	gfx.Depth(false);
+		gfx.Blend(true);
+	}
+	// leaves sorted front to back, render blends back to front
+	for (int i = model_blend_list.size() - 1; i >= 0; i--)
+	{
+		int face_index = model->face_index;
+		face_t *face = &data.Face[face_index];
+
+		if (face->type == 1 || face->type == 3)
+		{
+			render_face(face, gfx);
+		}
+		else if (face->type == 2)
+		{
+			render_patch(face, gfx);
+		}
+		else// (face->type == 4)
+		{
+			render_billboard(face, gfx);
+		}
+	}
+	if (model_blend_list.size())
+	{
+		//	gfx.Depth(true);
+		gfx.Blend(false);
+	}
+	//	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 
 /*
