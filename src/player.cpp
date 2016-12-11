@@ -55,7 +55,10 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(pain100_sound, "sound/player/%s/pain100_1.wav", model_name);
 
 	sprintf(jump_sound, "sound/player/%s/jump1.wav", model_name);
-	sprintf(land_sound, "sound/player/%s/fall1.wav", model_name);
+	sprintf(fall_sound, "sound/player/%s/fall1.wav", model_name);
+	sprintf(pit_sound, "sound/player/%s/falling1.wav", model_name);
+	sprintf(land_sound, "sound/player/land1.wav");
+	sprintf(pad_sound, "sound/world/jumppad.wav");
 
 	sprintf(empty_sound, "sound/weapons/noammo.wav");
 	sprintf(weapon_swap_sound, "sound/weapons/change.wav");
@@ -86,7 +89,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(chat_sound, "sound/player/talk.wav");
 	
 
-	// jumppad sound?
+	// "sound/world/jumppad.wav"
 	// fall damage umph sound?
 	// powerups (parse item type, sound, effects, models)
 	//sounds/player/watr_un.wav // another water in?
@@ -125,6 +128,13 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
     alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
 #endif
 	audio.effects(entity->speaker->source);
+
+	footstep_source = audio.create_source(false, true);
+#ifndef __OBJC__
+	alSourcef(footstep_source, AL_GAIN, 4.0f);
+#endif
+	audio.effects(footstep_source);
+
 
 	//	weapon_model.center = entity->rigid->center;
 
@@ -269,6 +279,11 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 		audio.load(wave);
 		if (wave.data != NULL)
 			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/falling1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
 	}
 
 	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
@@ -316,6 +331,17 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
+
+	sprintf(wave.file, "sound/player/land1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	sprintf(wave.file, "sound/world/jumppad.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
 
 	strcpy(wave.file, "sound/weapons/noammo.wav");
 	audio.load(wave);
@@ -366,6 +392,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
+
 }
 
 

@@ -68,6 +68,9 @@ public:
 	char pain100_sound[128];
 
 	char jump_sound[128];
+	char pad_sound[128];
+	char pit_sound[128];
+	char fall_sound[128];
 	char land_sound[128];
 	char weapon_swap_sound[128];
 
@@ -95,6 +98,7 @@ public:
 	int model_index;
 
 	int health;
+	unsigned int footstep_source;
 
 	unsigned int armor;
 	unsigned int weapon_flags;

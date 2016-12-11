@@ -87,22 +87,22 @@ void Quake3::step(int frame_step)
 				switch (footstep_num++ % 4)
 				{
 				case 0:
-					ret = engine->select_wave(entity->speaker->source, entity->player->step1_sound);
+					ret = engine->select_wave(entity->player->footstep_source, entity->player->step1_sound);
 					break;
 				case 1:
-					ret = engine->select_wave(entity->speaker->source, entity->player->step2_sound);
+					ret = engine->select_wave(entity->player->footstep_source, entity->player->step2_sound);
 					break;
 				case 2:
-					ret = engine->select_wave(entity->speaker->source, entity->player->step3_sound);
+					ret = engine->select_wave(entity->player->footstep_source, entity->player->step3_sound);
 					break;
 				case 3:
-					ret = engine->select_wave(entity->speaker->source, entity->player->step4_sound);
+					ret = engine->select_wave(entity->player->footstep_source, entity->player->step4_sound);
 					break;
 				}
 
 				if (ret)
 				{
-					engine->audio.play(entity->speaker->source);
+					engine->audio.play(entity->player->footstep_source);
 				}
 				else
 				{

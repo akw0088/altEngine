@@ -3181,6 +3181,17 @@ void Engine::console(char *cmd)
 
 				//add velocity towards target
 				entity_list[spawn]->rigid->velocity += dir;
+
+				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pad_sound);
+				if (ret)
+				{
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->pad_sound);
+				}
+
 				break;
 			}
 		}
