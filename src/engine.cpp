@@ -167,6 +167,9 @@ void Engine::load(char *level)
 	menu.ingame = false;
 	menu.console = false;
 
+	// Do respawn (init_camera handles pre map loading positioning)
+	console("respawn");
+
 
 
 #ifdef DEFERRED
@@ -2343,6 +2346,30 @@ void Engine::init_camera()
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
+
+			matrix4 matrix;
+			
+			//set spawn angle
+			switch (entity_list[i]->angle)
+			{
+			case 0:
+				matrix4::mat_left(matrix, entity_list[spawn]->position);
+				break;
+			case 90:
+				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				break;
+			case 180:
+				matrix4::mat_right(matrix, entity_list[spawn]->position);
+				break;
+			case 270:
+				matrix4::mat_backward(matrix, entity_list[spawn]->position);
+				break;
+			}
+			camera_frame.forward.x = matrix.m[8];
+			camera_frame.forward.y = matrix.m[9];
+			camera_frame.forward.z = matrix.m[10];
+			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+
 			break;
 		}
 	}
@@ -2352,8 +2379,8 @@ void Engine::init_camera()
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
-	init_camera();
 	load_sounds();
+	init_camera();
 	create_sources();
 	load_models();
 
@@ -3055,6 +3082,19 @@ void Engine::console(char *cmd)
 			camera_frame.forward.z = matrix.m[10];
 			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 			debugf("Spawning on entity %d\n", index);
+			entity_list[spawn]->player->respawn();
+			entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->telein_sound);
+			if (ret)
+			{
+				audio.play(entity_list[spawn]->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->telein_sound);
+			}
+
 			return;
 		}
 
@@ -3094,6 +3134,16 @@ void Engine::console(char *cmd)
 					debugf("Spawning on entity %d\n", i);
 					entity_list[spawn]->player->respawn();
 					entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->telein_sound);
+					if (ret)
+					{
+						audio.play(entity_list[spawn]->speaker->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->telein_sound);
+					}
 					spawned = true;
 					break;
 

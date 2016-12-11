@@ -119,6 +119,7 @@ public:
 	char name[128];
 	stats_t stats;
 	bool dead;
+	bool spawned;
 
 private:
 

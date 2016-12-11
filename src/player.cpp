@@ -11,6 +11,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 {
 	Player::entity = entity;
 
+	spawned = false;
+
 	// Player sound sets
 	char *models[]{
 		"anarki",			//0

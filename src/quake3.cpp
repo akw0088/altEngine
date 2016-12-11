@@ -597,15 +597,19 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			}
 		}
 
-		bool ret = engine->select_wave(player.entity->speaker->source, player.weapon_swap_sound);
-		if (ret)
+		if (player.spawned)
 		{
-			engine->audio.play(player.entity->speaker->source);
+			bool ret = engine->select_wave(player.entity->speaker->source, player.weapon_swap_sound);
+			if (ret)
+			{
+				engine->audio.play(player.entity->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
+			}
 		}
-		else
-		{
-			debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-		}
+		player.spawned = true;
 		player.last_weapon = player.current_weapon;
 	}
 
