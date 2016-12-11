@@ -71,6 +71,15 @@ public:
 	void handle_input();
 
 	void handle_weapons(Player &player);
+
+	void handle_plasma(Entity *entity, Player &player);
+	void handle_rocketlauncher(Entity *entity, Player &player);
+	void handle_grenade(Entity *entity, Player &player);
+	void handle_lightning(Entity *entity, Player &player);
+	void handle_railgun(Entity *entity, Player &player);
+	void handle_machinegun(Player &player);
+	void handle_shotgun(Player &player);
+
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();
 

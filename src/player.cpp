@@ -11,26 +11,26 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 {
 	Player::entity = entity;
 
-	attack_sound = "";
-	empty_sound = "sound/weapons/noammo.wav";
-	weapon_idle_sound = "";
-	death1_sound = "sound/player/ranger/death1.wav";
-	death2_sound = "sound/player/ranger/death2.wav";
-	death3_sound = "sound/player/ranger/death3.wav";
+	attack_sound[0] = '\0';
+	weapon_idle_sound[0] = '\0';
+	sprintf(empty_sound, "sound/weapons/noammo.wav");
+	sprintf(death1_sound, "sound/player/ranger/death1.wav");
+	sprintf(death2_sound, "sound/player/ranger/death2.wav");
+	sprintf(death3_sound, "sound/player/ranger/death3.wav");
 
-	pain25_sound = "sound/player/ranger/pain25_1.wav";
-	pain50_sound = "sound/player/ranger/pain50_1.wav";
-	pain75_sound = "sound/player/ranger/pain75_1.wav";
-	pain100_sound = "sound/player/ranger/pain100_1.wav";
+	sprintf(pain25_sound, "sound/player/ranger/pain25_1.wav");
+	sprintf(pain50_sound, "sound/player/ranger/pain50_1.wav");
+	sprintf(pain75_sound, "sound/player/ranger/pain75_1.wav");
+	sprintf(pain100_sound, "sound/player/ranger/pain100_1.wav");
 
-	jump_sound = "sound/player/ranger/jump1.wav";
-	land_sound = "sound/player/ranger/fall1.wav";
-	weapon_swap_sound = "sound/weapons/change.wav";
+	sprintf(jump_sound, "sound/player/ranger/jump1.wav");
+	sprintf(land_sound, "sound/player/ranger/fall1.wav");
+	sprintf(weapon_swap_sound, "sound/weapons/change.wav");
 
-	step1_sound = "sound/player/footsteps/step1.wav";
-	step2_sound = "sound/player/footsteps/step2.wav";
-	step3_sound = "sound/player/footsteps/step3.wav";
-	step4_sound = "sound/player/footsteps/step4.wav";
+	sprintf(step1_sound, "sound/player/footsteps/step1.wav");
+	sprintf(step2_sound, "sound/player/footsteps/step2.wav");
+	sprintf(step3_sound, "sound/player/footsteps/step3.wav");
+	sprintf(step4_sound, "sound/player/footsteps/step4.wav");
 
 	//sounds/player/watr_in.wav
 	//sounds/player/watr_out.wav
@@ -113,8 +113,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 void Player::respawn()
 {
-	attack_sound = "";
-	weapon_idle_sound = "";
+	attack_sound[0] = '\0';
+	weapon_idle_sound[0] = '\0';
 	health = 100;
 	armor = 0;
 	weapon_flags = 0;

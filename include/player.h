@@ -52,26 +52,26 @@ public:
 	int FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints);
 	float DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point);
 
-	char *attack_sound;
-	char *empty_sound;
-	char *weapon_idle_sound;
-	char *death1_sound;
-	char *death2_sound;
-	char *death3_sound;
+	char attack_sound[128];
+	char empty_sound[128];
+	char weapon_idle_sound[128];
+	char death1_sound[128];
+	char death2_sound[128];
+	char death3_sound[128];
 
-	char *pain25_sound;
-	char *pain50_sound;
-	char *pain75_sound;
-	char *pain100_sound;
+	char pain25_sound[128];
+	char pain50_sound[128];
+	char pain75_sound[128];
+	char pain100_sound[128];
 
-	char *jump_sound;
-	char *land_sound;
-	char *weapon_swap_sound;
+	char jump_sound[128];
+	char land_sound[128];
+	char weapon_swap_sound[128];
 
-	char *step1_sound;
-	char *step2_sound;
-	char *step3_sound;
-	char *step4_sound;
+	char step1_sound[128];
+	char step2_sound[128];
+	char step3_sound[128];
+	char step4_sound[128];
 
 	int health;
 
