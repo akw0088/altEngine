@@ -5,6 +5,9 @@
 
 class Quake3
 {
+	//Remove this when things seem settled
+	friend class Engine;
+
 public:
 	Quake3();
 
@@ -23,10 +26,19 @@ public:
 	void handle_shotgun(Player &player, Frame &camera_frame);
 	void handle_gibs(Player &player, Frame &camera_frame);
 
+protected:
 	bool blink;
+	// for cloning
+	Entity *box;
+	Entity *ball;
+	Entity *thug22;
+	Entity *rocket;
+	Entity *pineapple;
 
 private:
 	Engine *engine;
+
+
 };
 
 #endif

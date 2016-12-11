@@ -91,14 +91,6 @@ public:
 	MD5Model	sentry;
 	MD5Model	zsec_shotgun;
 
-	// for cloning
-	Entity *box;
-	Entity *ball;
-	Entity *thug22;
-	Entity *rocket;
-	Entity *pineapple;
-
-
 protected:
 	matrix4		projection;
 	matrix4		identity;
