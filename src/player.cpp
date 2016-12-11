@@ -86,6 +86,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(chat_sound, "sound/player/talk.wav");
 	
 
+	// jumppad sound?
+	// fall damage umph sound?
+	// powerups (parse item type, sound, effects, models)
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
 

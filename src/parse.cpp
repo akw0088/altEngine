@@ -40,6 +40,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			//snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/respawn1.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 5");
 		}
 		else if (strcmp(value, "item_health") == 0)
@@ -57,6 +58,82 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 50");
 			entity.trigger->health = true;
+		}
+		else if (strcmp(value, "item_health_mega") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/m_health.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "health 100");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "item_quad") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "quad");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "holdable_medkit") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "medkit");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "holdable_teleporter") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "teleporter");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "item_enviro") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "bodysuit");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "item_flight") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "flight");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "item_haste") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "haste");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "item_invis") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "invisibility");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "item_regen") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "regeneration");
+			entity.trigger->health = false;
+		}
+		else if (strcmp(value, "worldspawn") == 0)
+		{
+			//yeap
 		}
 		else if (strcmp(value, "ammo_bullets") == 0)
 		{
@@ -129,6 +206,14 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
 			entity.trigger->armor = true;
 		}
+		else if (strcmp(value, "item_armor_body") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/ar2_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
+			entity.trigger->armor = true;
+		}
 		else if (strcmp(value, "trigger_teleport") == 0)
 		{
 			if (entity.trigger == NULL)
@@ -137,6 +222,11 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 
 			sprintf(entity.type, "trigger_teleport");
 			sprintf(entity.trigger->action, "teleport %s %d", entity.target, entity_num);
+		}
+		else if (strcmp(value, "target_teleporter") == 0)
+		{
+			//trigger targets this guy, this guy targets destination
+			// useless middleman?
 		}
 		else if (strcmp(value, "trigger_push") == 0)
 		{
@@ -191,6 +281,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			color_temp.normalize();
 			entity.light->color = color_temp;
 		}
+	}
+	else if (strcmp(key, "music") == 0)
+	{
+		entity.speaker = new Speaker(&entity, audio);
+		entity.speaker->gain(0.3f);
+		entity.speaker->loop_gain(0.3f);
+		snprintf(entity.speaker->file, LINE_SIZE, "%s", value);
 	}
 	else if (strcmp(key, "noise") == 0)
 	{
