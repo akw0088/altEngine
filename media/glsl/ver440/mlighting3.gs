@@ -1,6 +1,6 @@
 #version 440 core
 
-#define	MAX_LIGHTS 32
+#define	MAX_LIGHTS 64
 
 layout(triangles) in;
 layout (triangle_strip, max_vertices=3) out;
@@ -14,7 +14,7 @@ in VertexData {
 	vec2		vary_LightCoord;
 	vec3		vary_normal;
 	flat int	vary_color;
-	vec3		vary_tangent;
+	vec4		vary_tangent;
 } VertexIn[3];
 
  
@@ -25,7 +25,7 @@ out VertexDataOut {
     vec2 vary_LightCoord;
     vec3 vary_normal;
     flat int vary_color;
-    vec3 vary_tangent;
+    vec4 vary_tangent;
 } VertexOut;
  
 void main()
@@ -57,7 +57,7 @@ void main()
 		VertexOut.vary_normal = VertexIn[i].vary_normal; // I dont trust the artists ;)
 		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // I dont trust the artists ;)
 //		VertexOut.vary_normal = normal;
-//		VertexOut.vary_tangent = tangent;
+//		VertexOut.vary_tangent = vec4(tangent, 0.0f);
 
 		// done with the vertex
 		EmitVertex();

@@ -905,11 +905,14 @@ void Engine::render_hud(double last_frametime)
 					{
 						int line = 1;
 
-						sprintf(data, "intensity %f", entity_list[i]->light->intensity);
-						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+						if (entity_list[i]->light != NULL)
+						{
+							sprintf(data, "intensity %f", entity_list[i]->light->intensity);
+							menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 
-						sprintf(data, "color %.3f %.3f %.3f", entity_list[i]->light->color.x, entity_list[i]->light->color.y, entity_list[i]->light->color.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+							sprintf(data, "color %.3f %.3f %.3f", entity_list[i]->light->color.x, entity_list[i]->light->color.y, entity_list[i]->light->color.z);
+							menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+						}
 					}
 
 				}

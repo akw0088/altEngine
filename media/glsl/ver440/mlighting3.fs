@@ -1,6 +1,6 @@
 #version 440 core
 
-#define	MAX_LIGHTS 32
+#define	MAX_LIGHTS 64
 
 // per vertex interpolated program input
 in VertexDataOut {
@@ -10,7 +10,7 @@ in VertexDataOut {
     vec2 vary_LightCoord;
     vec3 vary_normal;
     flat int vary_color;
-    vec3 vary_tangent;
+    vec4 vary_tangent;
 } Vertex;
 
 // Final fragment color output
@@ -31,8 +31,8 @@ vec4 lightDir;
 
 void main(void)
 {
-	vec3 normal = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
-	vec3 tangent = normalize(Vertex.vary_tangent);
+	vec3 normal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
+	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
 	vec3 bitangent = normalize(cross(normal, tangent));
 	mat3 tangent_space = mat3(normal, bitangent,  tangent);
 
@@ -53,7 +53,9 @@ void main(void)
 
 
 	Fragment = texture(texture0, Vertex.vary_TexCoord);
-
+	Fragment = Fragment + texture(texture1, Vertex.vary_LightCoord);
+//	Fragment.xyz = vec3(0.5,0.5,0.5);
+//	Fragment.xyz = tangent;
 
 	for(int i = 0; i < u_num_lights; i++)
 	{
@@ -62,14 +64,15 @@ void main(void)
 		vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
 		lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
-		vec3 v_light = normalize(vec3(lightDir.rgb));	// light vector in tangent space
+
+		vec3 v_light = normalize(vec3(lightDir.rgb));	
+		vec3 n_light = tangent_space * v_light; // light vector in tangent space
 
 		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
 		float atten = min( 80000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
-		vec3 v_reflect = reflect(v_light, normal_map);			// normal map reflection vector
+		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
-		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.25); // combine everything
-//		Fragment.rgb *= max(light, ambient);
+		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
 	Fragment.rgb *= max(light, ambient);
