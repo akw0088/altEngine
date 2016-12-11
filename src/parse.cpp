@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio)
+void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
 {
 	static int light_num = 0;
 	static int model_num = 0;
@@ -23,9 +23,12 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		int num;
 
 		// Reference into BSP model lump for triggers / movers
-		int ret = sscanf(value+1, "%d", &num);
-		if (ret == 1)
-			entity.model_ref = num;
+		if (strstr(value, "*") != NULL)
+		{
+			int ret = sscanf(value + 1, "%d", &num);
+			if (ret == 1)
+				entity.model_ref = num;
+		}
 	}
 	else if (strcmp(key, "classname") == 0)
 	{
@@ -131,8 +134,9 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			if (entity.trigger == NULL)
 				entity.trigger = new Trigger(&entity, audio);
 
+
 			sprintf(entity.type, "trigger_teleport");
-			sprintf(entity.trigger->action, "teleport %s", entity.target);
+			sprintf(entity.trigger->action, "teleport %s %d", entity.target, entity_num);
 		}
 		else if (strcmp(value, "trigger_push") == 0)
 		{
@@ -262,7 +266,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 			break;
 		case 'R':
 			i--;
-			add_key(*entity, key, val, gfx, audio);
+			add_key(*entity, key, val, gfx, audio, entity_list.size() - 1);
 			break;
 		}
 	}

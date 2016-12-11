@@ -76,11 +76,11 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	lightmap_object = new unsigned int [data.num_lightmaps];
 	normal_object = new unsigned int [data.num_materials];
 
-	for(int i = 0; i < data.num_materials; i++)
+	for(unsigned int i = 0; i < data.num_materials; i++)
 		tex_object[i] = (unsigned int)-1;
-	for(int i = 0; i < data.num_lightmaps; i++)
+	for(unsigned int i = 0; i < data.num_lightmaps; i++)
 		lightmap_object[i] = (unsigned int)-1;
-	for(int i = 0; i < data.num_materials; i++)
+	for(unsigned int i = 0; i < data.num_materials; i++)
 		normal_object[i] = (unsigned int)-1;
 
 	loaded = true;
@@ -99,7 +99,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 	num_meshes = 0;
 	mesh_level = 8;
 
-	for (int i = 0; i < data.num_faces; i++)
+	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
 
@@ -129,7 +129,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 	mesh_vertex_vbo = new unsigned int [num_meshes];
 	mesh_index_vbo = new unsigned int [num_meshes];
 
-	for (int i = 0; i < data.num_faces; i++)
+	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
 
@@ -288,7 +288,7 @@ void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int 
 */
 void Bsp::change_axis()
 {
-	for(int i = 0; i < data.num_verts; i++)
+	for(unsigned int i = 0; i < data.num_verts; i++)
 	{
 		bspvertex_t *vert = &data.Vert[i];
 		float temp;
@@ -309,7 +309,7 @@ void Bsp::change_axis()
 
 
 //	data.Plane[plane_index].normal
-	for(int i = 0; i < data.num_planes; i++)
+	for(unsigned int i = 0; i < data.num_planes; i++)
 	{
 		plane_t *plane = &data.Plane[i];
 		float	temp;
@@ -321,18 +321,25 @@ void Bsp::change_axis()
 //		plane->d *= (1.0f / UNITS_TO_METERS);
 	}
 
-	for(int i = 0; i < data.num_leafs; i++)
+	for(unsigned int i = 0; i < data.num_leafs; i++)
 	{
 		int temp = data.Leaf[i].min[1];
 		data.Leaf[i].min[1] = data.Leaf[i].min[2];
 		data.Leaf[i].min[2] = -temp;
 	}
 
-	for(int i = 0; i < data.num_nodes; i++)
+	for(unsigned int i = 0; i < data.num_nodes; i++)
 	{
 		int temp = data.Node[i].min[1];
 		data.Node[i].min[1] = data.Node[i].min[2];
 		data.Node[i].min[2] = -temp;
+	}
+
+	for (unsigned int i = 0; i < data.num_model; i++)
+	{
+		float temp = data.Model[i].min[1];
+		data.Model[i].min[1] = data.Model[i].min[2];
+		data.Model[i].min[2] = -temp;
 	}
 }
 
@@ -356,7 +363,7 @@ void Bsp::unload(Graphics &gfx)
 		delete [] vertex;
 		vertex = NULL;
 	}
-	for(int i = 0; i < data.num_faces; i++)
+	for(unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
 
@@ -427,7 +434,7 @@ void Bsp::unload(Graphics &gfx)
 	mesh_vertex_vbo = NULL;
 
 	//Todo, try to find a way to keep loaded textures between map loads
-	for(int i = 0; i < data.num_materials; i++)
+	for(unsigned int i = 0; i < data.num_materials; i++)
 	{
 		if (tex_object[i] != -1)
 		{
@@ -445,7 +452,7 @@ void Bsp::unload(Graphics &gfx)
 	tex_object = NULL;
 	normal_object = NULL;
 
-	for(int i = 0; i < data.num_lightmaps; i++)
+	for(unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 		if (lightmap_object[i] != -1)
 		{
@@ -797,6 +804,25 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx)
 /*
 	This has func_door's, func_bobbing, trigger's etc
 */
+
+vec3 Bsp::model_origin(unsigned int index)
+{
+	if (index >= data.num_model)
+	{
+		debugf("Invalid model index\n");
+		return vec3();
+	}
+	model_t *model = &data.Model[index];
+
+	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
+	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
+	vec3 origin = vec3((max.x - min.x) / 2.0f + min.x,
+		(max.y - min.y) / 2.0f + min.y,
+		(max.z - min.z) / 2.0f + min.z);
+
+	return origin;
+}
+
 void Bsp::render_model(unsigned int index, Graphics &gfx)
 {
 	if (index >= data.num_model)
@@ -808,20 +834,6 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
-
-	// generate face lists
-	for (int j = 0; j < model->num_faces; j++)
-	{
-		int face_index = model->face_index;
-		face_t *face = &data.Face[face_index];
-
-		// need a way to tell if a face should be blended
-		// using negative texObj's
-		if (tex_object[face->material] < 0)
-			model_blend_list.push_back(face_index);
-		else
-			model_list.push_back(face_index);
-	}
 
 	for (unsigned int i = 0; i < model_list.size(); i++)
 	{
@@ -841,37 +853,6 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 			render_billboard(face, gfx);
 		}
 	}
-
-	if (model_blend_list.size())
-	{
-		//	gfx.Depth(false);
-		gfx.Blend(true);
-	}
-	// leaves sorted front to back, render blends back to front
-	for (int i = model_blend_list.size() - 1; i >= 0; i--)
-	{
-		int face_index = model->face_index;
-		face_t *face = &data.Face[face_index];
-
-		if (face->type == 1 || face->type == 3)
-		{
-			render_face(face, gfx);
-		}
-		else if (face->type == 2)
-		{
-			render_patch(face, gfx);
-		}
-		else// (face->type == 4)
-		{
-			render_billboard(face, gfx);
-		}
-	}
-	if (model_blend_list.size())
-	{
-		//	gfx.Depth(true);
-		gfx.Blend(false);
-	}
-	//	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 
 /*
@@ -895,7 +876,7 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 
 void Bsp::load_textures(Graphics &gfx)
 {
-	for (int i = 0; i < data.num_lightmaps; i++)
+	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
@@ -906,7 +887,7 @@ void Bsp::load_textures(Graphics &gfx)
 #endif
 	}
 
-	for (int i = 0; i < data.num_materials; i++)
+	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
 		char		buffer[LINE_SIZE];
@@ -1209,7 +1190,7 @@ void Bsp::find_edges(vec3 &position, Edge &edge_list)
 	leaf_t *light_Leaf = &data.Leaf[leaf_index];
 
 	// loop through all leaves, checking if leaf visible from current leaf
-	for (int i = 0; i < data.num_leafs; i++)
+	for (unsigned int i = 0; i < data.num_leafs; i++)
 	{
 		leaf_t *leaf = &data.Leaf[i];
 
@@ -1306,7 +1287,7 @@ void Bsp::find_edges(vec3 &position, Edge &edge_list)
 void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 {
 	// Really need to test brush planes not leaf aabbs
-	for (int i = 0; i < data.num_leafs; i++)
+	for (unsigned int i = 0; i < data.num_leafs; i++)
 	{
 		vec3 min((float)data.Leaf[i].min[0], (float)data.Leaf[i].min[1], (float)data.Leaf[i].min[2]);
 		vec3 max((float)data.Leaf[i].max[0], (float)data.Leaf[i].max[1], (float)data.Leaf[i].max[2]);

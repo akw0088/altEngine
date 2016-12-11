@@ -74,6 +74,12 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(gibimpact2_sound, "sound/player/gibimp2.wav");
 	sprintf(gibimpact3_sound, "sound/player/gibimp3.wav");
 
+
+	sprintf(telein_sound, "sound/world/telein.wav");
+	sprintf(teleout_sound, "sound/world/teleout.wav");
+	
+
+
 	// Probably should be global and not tied to player entity
 	sprintf(chat_sound, "sound/player/talk.wav");
 	
@@ -200,6 +206,15 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
+	strcpy(wave.file, "sound/world/telein.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/world/teleout.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
 
 
 	for (unsigned int i = 0; i < 23; i++)

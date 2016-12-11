@@ -130,6 +130,13 @@ void Engine::load(char *level)
 	map.generate_meshes(gfx);
 
 	parse_entity(map.get_entities(), entity_list, gfx, audio);
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		if (entity_list[i]->model_ref != -1)
+		{
+			entity_list[i]->position = map.model_origin(entity_list[i]->model_ref);
+		}
+	}
 
 	menu.delta("entities", *this);
 	gfx.clear();
@@ -540,11 +547,11 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	}
 
 	map.render(camera_frame.pos, mvp, gfx);
+	map.render_model(0, gfx);
 
-	for (int i = 0; i < 20; i++)
-	{
-		map.render_model(i, gfx);
-	}
+//	for (int i = 0; i < map.data.num_model; i++)
+//	{
+//	}
 //	gfx.SelectShader(0);
 }
 
@@ -654,6 +661,12 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				continue;
 
 			entity_list[i]->rigid->render(gfx);
+			if (entity_list[i]->model_ref != -1)
+			{
+				if (strstr(entity_list[i]->type, "func_") != NULL)
+					map.render_model(entity_list[i]->model_ref, gfx);
+			}
+
 		}
 //		entity_list[i]->rigid->render_box(gfx); // bounding box lines
 		
@@ -2927,8 +2940,8 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	ret = sscanf(cmd, "teleport %s", data);
-	if (ret == 1)
+	ret = sscanf(cmd, "teleport %s %s", data, data2);
+	if (ret == 2)
 	{
 		snprintf(msg, LINE_SIZE, "target %s\n", data);
 		menu.print(msg);
@@ -2941,7 +2954,37 @@ void Engine::console(char *cmd)
 			if (!strcmp(entity_list[i]->target_name, data))
 			{
 				matrix4 matrix;
+				unsigned int index = atoi(data2);
+
 				entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+
+
+				bool ret = false;
+
+				if (index < entity_list.size())
+				{
+					ret = select_wave(entity_list[index]->trigger->source, entity_list[spawn]->player->teleout_sound);
+					if (ret)
+					{
+						audio.play(entity_list[index]->trigger->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->teleout_sound);
+					}
+				}
+
+				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->telein_sound);
+				if (ret)
+				{
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->telein_sound);
+				}
+
+
 
 				switch (entity_list[i]->angle)
 				{
