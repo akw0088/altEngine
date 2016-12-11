@@ -11,20 +11,49 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 {
 	Player::entity = entity;
 
+	// Player sound sets
+	char *models[]{
+		"anarki",			//0
+		"biker",			//1
+		"bitterman",		//2
+		"bones",			//3
+		"crash",			//4
+		"doom",				//5
+		"grunt",			//6
+		"hunter",			//7
+		"keel",				//8
+		"klesk",			//9
+		"lucy",				//10
+		"major",			//11
+		"mynx",				//12
+		"orbb",				//13
+		"ranger",			//14
+		"razor",			//15
+		"sarge",			//16
+		"slash",			//17
+		"sorlag",			//18
+		"tankjr",			//19
+		"uriel",			//20
+		"visor"				//21
+							//xaero?
+	};
+
+	sprintf(model_name, models[14]);
 	attack_sound[0] = '\0';
 	weapon_idle_sound[0] = '\0';
+	sprintf(death1_sound, "sound/player/%s/death1.wav", model_name);
+	sprintf(death2_sound, "sound/player/%s/death2.wav", model_name);
+	sprintf(death3_sound, "sound/player/%s/death3.wav", model_name);
+
+	sprintf(pain25_sound, "sound/player/%s/pain25_1.wav", model_name);
+	sprintf(pain50_sound, "sound/player/%s/pain50_1.wav", model_name);
+	sprintf(pain75_sound, "sound/player/%s/pain75_1.wav", model_name);
+	sprintf(pain100_sound, "sound/player/%s/pain100_1.wav", model_name);
+
+	sprintf(jump_sound, "sound/player/%s/jump1.wav", model_name);
+	sprintf(land_sound, "sound/player/%s/fall1.wav", model_name);
+
 	sprintf(empty_sound, "sound/weapons/noammo.wav");
-	sprintf(death1_sound, "sound/player/ranger/death1.wav");
-	sprintf(death2_sound, "sound/player/ranger/death2.wav");
-	sprintf(death3_sound, "sound/player/ranger/death3.wav");
-
-	sprintf(pain25_sound, "sound/player/ranger/pain25_1.wav");
-	sprintf(pain50_sound, "sound/player/ranger/pain50_1.wav");
-	sprintf(pain75_sound, "sound/player/ranger/pain75_1.wav");
-	sprintf(pain100_sound, "sound/player/ranger/pain100_1.wav");
-
-	sprintf(jump_sound, "sound/player/ranger/jump1.wav");
-	sprintf(land_sound, "sound/player/ranger/fall1.wav");
 	sprintf(weapon_swap_sound, "sound/weapons/change.wav");
 
 	sprintf(step1_sound, "sound/player/footsteps/step1.wav");
@@ -48,36 +77,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	
 
 	//sounds/player/watr_un.wav // another water in?
-
-	//
-
 	//sound/player/fry.wav
-
-	/*
-	// Player sound sets
-	anarki
-	biker
-	bitterman
-	bones
-	crash
-	doom
-	grunt
-	hunter
-	keel
-	klesk
-	lucy
-	major
-	mynx
-	orbb
-	ranger
-	razor
-	sarge
-	slash
-	sorlag
-	tankjr
-	uriel
-	visor
-	*/
 
 	health = 100;
 	armor = 0;
@@ -117,6 +117,201 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 	current_light = 0;
 	current_face = 0;
+}
+
+void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
+{
+	wave_t wave;
+
+	//load player sounds
+	strcpy(wave.file, "sound/weapons/railgun/rg_hum.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/lightning/lg_hum.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/shotgun/sshotf1b.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/railgun/railgf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/lightning/lg_fire.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/rocket/rocklf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/grenade/grenlf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/plasma/hyprbf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/machinegun/machgf1b.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+
+	strcpy(wave.file, "sound/player/ranger/death1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/death2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/death3.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/player/ranger/pain25_1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/pain50_1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/pain75_1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/pain100_1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/jump1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/ranger/fall1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/rocket/rocklx1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/plasma/lasfly.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/weapons/plasma/plasmx1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/change.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step3.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step4.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/noammo.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/watr_in.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/watr_out.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gurp1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gurp2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibsplt1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibimp1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibimp2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibimp3.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/talk.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
 }
 
 

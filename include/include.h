@@ -162,6 +162,7 @@ using namespace std;
 #include "shader.h"
 #include "parse.h"
 #include "menu.h"
+#include "quake3.h"
 #include "engine.h"
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);

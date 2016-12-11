@@ -42,6 +42,9 @@ public:
 	~Player();
 	Entity	*entity;
 
+
+	static void load_sounds(Audio &audio, std::vector<wave_t> &snd_wave);
+
 	void respawn();
 	void kill();
 	void render_weapon(Graphics &gfx);
@@ -85,6 +88,7 @@ public:
 	char gibimpact3_sound[128];
 
 	char chat_sound[128];
+	char model_name[128];
 
 
 	int health;

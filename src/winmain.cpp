@@ -203,8 +203,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case TICK_TIMER:
-			altEngine.step();
-			tick_count++;
+			altEngine.step(tick_count++);
 			break;
 		}
 		return 0;

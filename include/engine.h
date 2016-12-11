@@ -5,6 +5,8 @@
 
 class Engine
 {
+	friend class Quake3;
+
 public:
 	Engine();
 	void init(void *param1, void *param2);
@@ -27,7 +29,7 @@ public:
 	void render_hud(double last_frametime);
 	void draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color);
 
-	void step();
+	void step(int frame_step);
 	void dynamics();
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
@@ -71,17 +73,6 @@ public:
 	void render_to_framebuffer();
 	void handle_input();
 
-	void handle_weapons(Player &player);
-
-	void handle_plasma(Entity *entity, Player &player);
-	void handle_rocketlauncher(Entity *entity, Player &player);
-	void handle_grenade(Entity *entity, Player &player);
-	void handle_lightning(Entity *entity, Player &player);
-	void handle_railgun(Entity *entity, Player &player);
-	void handle_machinegun(Player &player);
-	void handle_shotgun(Player &player);
-	void handle_gibs(Player &player);
-
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();
 
@@ -89,10 +80,11 @@ public:
 	unsigned int xres, yres;
 	unsigned int testObj;
 	unsigned int num_light;
-	bool blink;
 	bool show_names;
 	bool show_debug;
 	bool show_hud;
+
+	Quake3 q3;
 
 	int		frame_step;
 	MD5Model	zcc;
@@ -107,7 +99,7 @@ public:
 	Entity *pineapple;
 
 
-private:
+protected:
 	matrix4		projection;
 	matrix4		identity;
 
