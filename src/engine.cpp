@@ -1376,7 +1376,7 @@ void Engine::step()
 			}
 		}
 
-		if (entity_list[spawn]->rigid->velocity.y > -1.0f && entity_list[spawn]->rigid->velocity.y < 1.0f)
+		if (entity_list[spawn]->rigid->velocity.y > -1.0f && entity_list[spawn]->rigid->velocity.y < 1.0f && entity_list[spawn]->rigid->water == false)
 		{
 
 			if ((entity_list[spawn]->position - entity_list[spawn]->rigid->old_position).magnitude() > 1.0f && frame_step % 20 == 0)
@@ -1442,12 +1442,36 @@ void Engine::step()
 					debugf("Failed to find PCM data for water exit sound\n");
 				}
 				entity_list[spawn]->rigid->last_water = entity_list[spawn]->rigid->water;
-				entity_list[spawn]->player->drown_timer == 0;
+				entity_list[spawn]->player->drown_timer = 0;
 			}
 		}
 		else
 		{
 			entity_list[spawn]->player->drown_timer++;
+
+			if (entity_list[spawn]->player->drown_timer % 125 * 30 == 0)
+			{
+				bool ret;
+
+				switch (footstep_num++ % 2)
+				{
+				case 0:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->gurp1_sound);
+					break;
+				case 1:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->gurp2_sound);
+					break;
+				}
+
+				if (ret)
+				{
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+				else
+				{
+					debugf("Failed to find PCM data for water exit sound\n");
+				}
+			}
 		}
 
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
@@ -2584,6 +2608,16 @@ void Engine::load_sounds()
 		snd_wave.push_back(wave[0]);
 
 	strcpy(wave[0].file, "sound/player/watr_out.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/gurp1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/gurp2.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);

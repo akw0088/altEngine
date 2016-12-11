@@ -76,6 +76,9 @@ public:
 	char waterin_sound[128];
 	char waterout_sound[128];
 
+	char gurp1_sound[128];
+	char gurp2_sound[128];
+
 
 	int health;
 

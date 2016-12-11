@@ -35,11 +35,11 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(waterin_sound,  "sound/player/watr_in.wav");
 	sprintf(waterout_sound, "sound/player/watr_out.wav");
 
-	//
-	//
+	sprintf(gurp1_sound, "sound/player/gurp1.wav");
+	sprintf(gurp2_sound, "sound/player/gurp2.wav");
+
 	//sounds/player/watr_un.wav // another water in?
-	//sounds/player/gurp1.wav
-	//sounds/player/gurp2.wav
+
 	//sounds/player/talk.wav
 
 	//sound/player/gibsplt1.wav
