@@ -1053,7 +1053,7 @@ void Engine::spatial_testing()
 		if (entity_list[i]->model)
 		{
 			bool bsp_visible = false;
-			bool frustum_visible = false;
+			bool frustum_visible = true;// false;
 			bool visible = false;
 
 
@@ -1064,7 +1064,7 @@ void Engine::spatial_testing()
 			vec3 min = entity_list[i]->model->morientation * entity_list[i]->model->aabb[0];
 			vec3 max = entity_list[i]->model->morientation * entity_list[i]->model->aabb[7];
 
-			frustum_visible = aabb_visible(min, max, mvp);
+//			frustum_visible = aabb_visible(min, max, mvp);
 
 			for(int j = 0; j < 8; j++)
 			{
@@ -1123,14 +1123,12 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
-	if (distance < 2 * 800.0f * 800.0f && light->entity->visible)
+	if (/*distance < 2 * 800.0f * 800.0f && */light->entity->visible)
 	{
 		if (light->active == false)
 		{
 			light_list.push_back(light);
 			light->active = true;
-//			light->entity->rigid->angular_velocity.x = 10.0;
-//			light->entity->rigid->angular_velocity.y = 10.0;
 		}
 	}
 	else
