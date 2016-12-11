@@ -3769,6 +3769,9 @@ void Engine::handle_plasma(Entity *entity, Player &player)
 	sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
 	sprintf(entity->trigger->action, "damage 20");
 
+	player.reload_timer = 8;
+	player.ammo_plasma--;
+
 	entity->rigid = new RigidBody(entity);
 	entity->model = entity->rigid;
 	entity->position = camera_frame.pos;
@@ -3805,6 +3808,9 @@ void Engine::handle_rocketlauncher(Entity *entity, Player &player)
 	sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
 	sprintf(entity->trigger->action, "damage 100");
 
+
+	player.reload_timer = 100;
+	player.ammo_rockets--;
 
 	entity->position = camera_frame.pos;
 	camera_frame.set(entity->rigid->morientation);
@@ -3851,6 +3857,9 @@ void Engine::handle_grenade(Entity *entity, Player &player)
 	sprintf(entity->trigger->action, "damage 100");
 	sprintf(player.attack_sound, "sound/weapons/grenade/grenlf1a.wav");
 
+	player.reload_timer = 100;
+	player.ammo_grenades--;
+
 	entity->rigid = new RigidBody(entity);
 	entity->position = camera_frame.pos;
 	camera_frame.set(entity->model->morientation);
@@ -3882,6 +3891,9 @@ void Engine::handle_lightning(Entity *entity, Player &player)
 {
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
 
+	player.reload_timer = 6;
+	player.ammo_lightning--;
+
 	entity->rigid = new RigidBody(entity);
 	entity->position = camera_frame.pos;
 	entity->rigid->clone(*(box->model));
@@ -3904,6 +3916,9 @@ void Engine::handle_railgun(Entity *entity, Player &player)
 	int num_index;
 
 	sprintf(player.attack_sound, "sound/weapons/railgun/railgf1a.wav");
+
+	player.reload_timer = 188;
+	player.ammo_slugs--;
 
 	entity->rigid = new RigidBody(entity);
 	entity->position = camera_frame.pos;
@@ -3935,13 +3950,14 @@ void Engine::handle_machinegun(Player &player)
 {
 	int index[8];
 	int num_index;
-
-
 	vec3 forward;
 	float distance;
 
+
 	sprintf(player.attack_sound, "sound/weapons/machinegun/machgf1b.wav");
 
+	player.reload_timer = 8;
+	player.ammo_bullets--;
 	player.entity->model->getForwardVector(forward);
 
 	hitscan(player.entity->position, forward, index, num_index, spawn);
@@ -3976,6 +3992,8 @@ void Engine::handle_shotgun(Player &player)
 	int num_index;
 
 
+	player.reload_timer = 60;
+	player.ammo_shells--;
 	player.entity->model->getForwardVector(forward);
 
 	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
@@ -4008,10 +4026,8 @@ void Engine::handle_weapons(Player &player)
 		{
 			console("respawn");
 		}
-
 		return;
 	}
-
 
 	if (player.current_weapon != player.last_weapon)
 	{
@@ -4054,7 +4070,6 @@ void Engine::handle_weapons(Player &player)
 			debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
 		}
 		player.last_weapon = player.current_weapon;
-
 	}
 
 	/*
@@ -4078,8 +4093,6 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_rockets > 0)
 			{
-				player.reload_timer = 100;
-				player.ammo_rockets--;
 				fired = true;
 				Entity *entity = entity_list[get_entity()];
 				handle_rocketlauncher(entity, player);
@@ -4093,8 +4106,6 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_plasma > 0)
 			{
-				player.reload_timer = 8;
-				player.ammo_plasma--;
 				fired = true;
 				Entity *entity = entity_list[get_entity()];
 				handle_plasma(entity, player);
@@ -4108,11 +4119,7 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_grenades > 0)
 			{
-				player.reload_timer = 100;
-				player.ammo_grenades--;
 				fired = true;
-
-
 				Entity *entity = entity_list[get_entity()];
 				handle_grenade(entity, player);
 			}
@@ -4126,9 +4133,6 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_lightning > 0)
 			{
-				player.reload_timer = 6;
-				player.ammo_lightning--;
-
 				fired = true;
 				Entity *entity = entity_list[get_entity()];
 				handle_lightning(entity, player);
@@ -4143,12 +4147,6 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_slugs > 0)
 			{
-				int index[8];
-				int num_index = 0;
-
-				player.reload_timer = 188;
-				player.ammo_slugs--;
-
 				fired = true;
 				Entity *entity = entity_list[get_entity()];
 				handle_railgun(entity, player);
@@ -4163,9 +4161,6 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_shells > 0)
 			{
-				player.reload_timer = 60;
-				player.ammo_shells--;
-
 				fired = true;
 				handle_shotgun(player);
 			}
@@ -4179,12 +4174,6 @@ void Engine::handle_weapons(Player &player)
 		{
 			if (player.ammo_bullets > 0)
 			{
-				int index[8];
-				int num_index = 0;
-
-				player.reload_timer = 8;
-				player.ammo_bullets--;
-
 				fired = true;
 				handle_machinegun(player);
 			}
@@ -4192,7 +4181,6 @@ void Engine::handle_weapons(Player &player)
 			{
 				empty = true;
 			}
-
 		}
 
 		if (fired)
