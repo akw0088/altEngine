@@ -3810,7 +3810,6 @@ void Engine::handle_rocketlauncher(Entity *entity, Player &player)
 	player.ammo_rockets--;
 
 	entity->position = camera_frame.pos;
-	camera_frame.set(entity->rigid->morientation);
 
 	entity->trigger = new Trigger(entity, audio);
 	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
@@ -3834,7 +3833,7 @@ void Engine::handle_rocketlauncher(Entity *entity, Player &player)
 
 	entity->rigid = new RigidBody(entity);
 	entity->model = entity->rigid;
-
+	camera_frame.set(entity->rigid->morientation);
 	entity->rigid->clone(*(rocket->model));
 	entity->rigid->velocity = camera_frame.forward * -6.25f;
 	entity->rigid->net_force = camera_frame.forward * -10.0f;
@@ -3860,6 +3859,7 @@ void Engine::handle_grenade(Entity *entity, Player &player)
 	player.ammo_grenades--;
 
 	entity->rigid = new RigidBody(entity);
+	entity->model = entity->rigid;
 	entity->position = camera_frame.pos;
 	camera_frame.set(entity->model->morientation);
 
@@ -3869,7 +3869,6 @@ void Engine::handle_grenade(Entity *entity, Player &player)
 	entity->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
 	entity->rigid->gravity = true;
 	entity->rigid->rotational_friction_flag = true;
-	entity->model = entity->rigid;
 	//entity->rigid->set_target(*(entity_list[spawn]));
 
 	entity->trigger = new Trigger(entity, audio);
