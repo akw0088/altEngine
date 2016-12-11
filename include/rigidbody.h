@@ -30,7 +30,7 @@ public:
 
 
 	bool move(Frame &camera_frame, button_t &keyboard);
-//	void move(button_t &keyboard);
+	float get_volume();
 
 	bool			map_collision;
 	bool			pursue_flag;

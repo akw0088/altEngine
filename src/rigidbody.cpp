@@ -12,6 +12,7 @@ RigidBody::RigidBody(Entity *entity)
 	noclip = false;
 	pursue_flag = true;
 	step_flag = false;
+	water = false;
 	target = NULL;
 	mass = 10.0f;
 	restitution = 0.5f; // boxes should never rest
@@ -98,12 +99,12 @@ void RigidBody::integrate(float time)
 	angular_acceleration = world_tensor * net_torque;
 	angular_velocity = angular_velocity + angular_acceleration * time;
 
-	if (translational_friction_flag)
+	if (translational_friction_flag || water == true || noclip == true)
 	{
 		velocity *= translational_friction; // added rotational "friction"
 	}
 
-	if (rotational_friction_flag)
+	if (rotational_friction_flag || water == true || noclip == true)
 	{
 		angular_velocity *= rotational_friction; // added rotational "friction"
 	}
@@ -480,6 +481,17 @@ void RigidBody::evade()
 void RigidBody::set_target(Entity &ent)
 {
 	target = &ent;
+}
+
+float RigidBody::get_volume()
+{
+	//water_density = 1000.0f; // kg/m3
+	//Force_buoyant = volume * density of water * gravity // upward force of displaced water
+	float width = fabs(aabb[0].x - aabb[7].x);
+	float length = fabs(aabb[0].y - aabb[7].y);
+	float height = fabs(aabb[0].z - aabb[7].z);
+
+	return width * length * height;
 }
 
 

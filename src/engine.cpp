@@ -1176,13 +1176,41 @@ void Engine::dynamics()
 		if ( (server_flag == false && entity_list[i]->visible == false) || entity_list[i]->rigid->sleep == true)
 			continue;
 
+
 		RigidBody *body = entity_list[i]->rigid;
-		if (entity_list[i]->vehicle != NULL)
-			body = entity_list[i]->vehicle;
-		float delta_time = 2.0f * TICK_MS / 1000.0f;
+
+		float delta_time = 1.0f * TICK_MS / 1000.0f;
 		float target_time = delta_time;
 		float current_time = 0.0f;
 		int divisions = 0;
+
+		if (body->water)
+		{
+			float submerged_percent = 1.0f;
+			float volume = body->get_volume();
+			float height = 0.5f * fabs(body->aabb[0].z - body->aabb[7].z);
+
+			if (body->water_depth < height)
+			{
+				submerged_percent = body->water_depth / height;
+			}
+
+			submerged_percent += 0.95; // prevent floating just below surface
+
+			// clamp
+			if (submerged_percent > 1.0f)
+				submerged_percent = 1.0f;
+			if (submerged_percent < 0.0f)
+				submerged_percent = 0.0f;
+
+			//Force_bouyant = volume * density of water * 9.8
+			// density of water is 10000 kg/m3, but fudging as a scale factor
+			float force_bouyant = volume * 0.0015f * 9.8f * submerged_percent;
+
+			body->net_force += vec3(0.0f, force_bouyant, 0.0f);
+		}
+
+
 
 		while (current_time < delta_time)
 		{
