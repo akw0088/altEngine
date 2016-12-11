@@ -3198,6 +3198,37 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "name \"%[^\"]s", data);
+	if (ret == 1)
+	{
+		bool valid = true;
+
+		for (unsigned int i = 0; i < strlen(data); i++)
+		{
+			if (data[i] >= 'A' && data[i] <= 'Z')
+				continue;
+			if (data[i] >= 'a' && data[i] <= 'z')
+				continue;
+			if (data[i] >= '0' && data[i] <= '9')
+				continue;
+			if (data[i] == ' ')
+				continue;
+
+			valid = false;
+		}
+		if (valid)
+		{
+			snprintf(entity_list[spawn]->player->name, 127, "%s", data);
+			debugf("Player name: %s\n", data);
+		}
+		else
+		{
+			debugf("Invalid name, must be alphanumeric + space\n");
+		}
+		return;
+	}
+
+
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
 	{

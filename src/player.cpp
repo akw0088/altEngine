@@ -88,10 +88,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	// Probably should be global and not tied to player entity
 	sprintf(chat_sound, "sound/player/talk.wav");
 	
-
-	// "sound/world/jumppad.wav"
-	// fall damage umph sound?
-	// powerups (parse item type, sound, effects, models)
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
 
