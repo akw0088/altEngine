@@ -89,7 +89,7 @@ void Engine::init(void *p1, void *p2)
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 
 
-	shadowmap.init(&gfx);
+//	shadowmap.init(&gfx);
 }
 
 void Engine::load(char *level)
@@ -120,8 +120,8 @@ void Engine::load(char *level)
 		menu.print("Failed to load post shader");
 	if (mlight2.init(&gfx))
 		menu.print("Failed to load mlight2 shader");
-	if (mlight3.init(&gfx))
-		menu.print("Failed to load mlight3 shader");
+//	if (mlight3.init(&gfx))
+//		menu.print("Failed to load mlight3 shader");
 
 
 	if ( map.load(level, pk3list, num_pk3) == false)
@@ -191,7 +191,6 @@ void Engine::load_md5()
 {
 	char **animation = NULL;
 
-	frame_step = 0;
 	animation = new char *[50];
 	animation[0] = "media/md5/chaingun_walk.md5anim";
 	animation[1] = "media/md5/chaingun_idle.md5anim";
@@ -505,7 +504,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	}
 
 
-	shadowmap.Select();
+	//shadowmap.Select();
 		
 	render_entities(transformation, lights);
 	mlight2.Select();
@@ -578,7 +577,7 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 	{
 		mlight2.Params(mvp, light_list, 0);
 	}
-	zcc.render(gfx, frame_step >> 1);
+	zcc.render(gfx, tick_num >> 1);
 }
 
 void Engine::render_entities(const matrix4 &trans, bool lights)
@@ -673,7 +672,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		{
 			mlight2.Params(mvp, light_list, 0);
 		}
-		zcc.render(gfx, frame_step >> 1);
+		zcc.render(gfx, tick_num >> 1);
 	}
 	
 }
@@ -1166,12 +1165,13 @@ bool Engine::body_collision(RigidBody &body)
 	return false;
 }
 
-void Engine::step(int frame_step)
+void Engine::step(int tick)
 {
+	tick_num = tick;
 	if (map.loaded == false)
 		return;
 
-	q3.step(frame_step);
+	q3.step(tick);
 
 	// These two funcs loop through all entities, should probably combine
 	spatial_testing(); // mostly sets visible flag
@@ -2681,7 +2681,7 @@ void Engine::console(char *cmd)
 		entity_list[index]->player->health -= health_damage;
 
 		bool ret = false;
-		switch (frame_step % 4)
+		switch (tick_num % 4)
 		{
 		case 0:
 			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain25_sound);
@@ -2733,7 +2733,7 @@ void Engine::console(char *cmd)
 		entity_list[spawn]->player->health -= health_damage;
 
 		bool ret = false;
-		switch (frame_step % 4)
+		switch (tick_num % 4)
 		{
 		case 0:
 			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pain25_sound);

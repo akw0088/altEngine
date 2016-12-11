@@ -27,7 +27,7 @@ public:
 	void post_process(int num_passes);
 	void resize(int width, int height);
 
-	void step(int frame_step);
+	void step(int tick_num);
 	void dynamics();
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
@@ -38,7 +38,7 @@ public:
 	void keypress(char *key, bool pressed);
 	void keystroke(char key);
 
-	void init_camera();
+	void init_camera(); //TODO: combine this with console("respawn") command
 	void load_entities();
 	int get_entity();
 	void clean_entity(int index);
@@ -74,17 +74,22 @@ public:
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();
 
-//temp
 	unsigned int xres, yres;
+	unsigned int tick_num;
+
+//temp
 	unsigned int testObj;
 	unsigned int num_light;
+
+
+//console flags
 	bool show_names;
 	bool show_debug;
 	bool show_hud;
 
+//Game logic
 	Quake3 q3;
 
-	int		frame_step;
 	MD5Model	zcc;
 	MD5Model	sentry;
 	MD5Model	zsec_shotgun;
@@ -95,7 +100,7 @@ protected:
 
 	Graphics	gfx;
 	Audio		audio;
-	Bsp		map;
+	Bsp			map;
 	button_t	input;
 	Menu		menu;
 	Frame		camera_frame;
@@ -133,17 +138,14 @@ protected:
 	unsigned int	last_server_sequence;
 
 	//Shaders
+	Global		global; // basic shader for menu's etc
 	Post		post;
-	mLight2		mlight2;
-	mLight3		mlight3;
-	Global		global;
-	ShadowMap	shadowmap;
-	matrix4		shadowmvp;
+	mLight2		mlight2;	// main shader for lighting
+//	mLight3		mlight3;	// hack shader for shadows
 
 	bool	initialized;
 	void	*param1;
 	void	*param2;
-
 };
 
 #endif
