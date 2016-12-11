@@ -2644,20 +2644,27 @@ void Engine::load_sounds()
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "sound/player/sound/player/gibimp1.wav");
+	strcpy(wave[0].file, "sound/player/gibimp1.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "sound/player/sound/player/gibimp2.wav");
+	strcpy(wave[0].file, "sound/player/gibimp2.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
 
-	strcpy(wave[0].file, "sound/player/sound/player/gibimp3.wav");
+	strcpy(wave[0].file, "sound/player/gibimp3.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/talk.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	
 
 
 	for(unsigned int i = 0; i < entity_list.size(); i++)
@@ -3644,6 +3651,21 @@ void Engine::console(char *cmd)
 	if (ret == 1)
 	{
 		chat(cmd);
+
+		if (spawn != -1)
+		{
+			bool ret = false;
+			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->chat_sound);
+			if (ret)
+			{
+				audio.play(entity_list[spawn]->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->chat_sound);
+			}
+		}
+
 		return;
 	}
 

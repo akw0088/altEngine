@@ -84,6 +84,8 @@ public:
 	char gibimpact2_sound[128];
 	char gibimpact3_sound[128];
 
+	char chat_sound[128];
+
 
 	int health;
 

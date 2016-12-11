@@ -43,9 +43,13 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(gibimpact2_sound, "sound/player/gibimp2.wav");
 	sprintf(gibimpact3_sound, "sound/player/gibimp3.wav");
 
+	// Probably should be global and not tied to player entity
+	sprintf(chat_sound, "sound/player/talk.wav");
+	
+
 	//sounds/player/watr_un.wav // another water in?
 
-	//sounds/player/talk.wav
+	//
 
 	//sound/player/fry.wav
 
