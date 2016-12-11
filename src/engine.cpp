@@ -882,45 +882,48 @@ void Engine::render_hud(double last_frametime)
 
 			if (entity_list[i]->visible)
 			{
-				if (pos.z >= -1.0 && pos.z <= 1.0)
-				{
-					char data[512];
-
-
-					menu.draw_text(entity_list[i]->type, pos.x, pos.y, 0.02f, color);
-
-					if (strcmp(entity_list[i]->type, "free") == 0)
-					{
-						int line = 1;
-
-						sprintf(data, "Pos %.3f %.3f %.3f", entity_list[i]->position.x, entity_list[i]->position.y, entity_list[i]->position.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
-						sprintf(data, "Vel %.3f %.3f %.3f", entity_list[i]->rigid->velocity.x, entity_list[i]->rigid->velocity.y, entity_list[i]->rigid->velocity.z);
-						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
-						sprintf(data, "State %d", entity_list[i]->rigid->sleep);
-						menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
-					}
-
-					if (strcmp(entity_list[i]->type, "light") == 0)
-					{
-						int line = 1;
-
-						if (entity_list[i]->light != NULL)
-						{
-							sprintf(data, "intensity %f", entity_list[i]->light->intensity);
-							menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
-
-							sprintf(data, "color %.3f %.3f %.3f", entity_list[i]->light->color.x, entity_list[i]->light->color.y, entity_list[i]->light->color.z);
-							menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
-						}
-					}
-
-				}
+				draw_name(pos, entity_list[i], menu, color);
 			}
 		}
 	}
 
 	projection = real_projection;
+}
+
+void Engine::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
+{
+	if (pos.z >= -1.0 && pos.z <= 1.0)
+	{
+		char data[512];
+
+		menu.draw_text(entity->type, pos.x, pos.y, 0.02f, color);
+
+		if (strcmp(entity->type, "free") == 0)
+		{
+			int line = 1;
+
+			sprintf(data, "Pos %.3f %.3f %.3f", entity->position.x, entity->position.y, entity->position.z);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			sprintf(data, "Vel %.3f %.3f %.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			sprintf(data, "State %d", entity->rigid->sleep);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+		}
+
+		if (strcmp(entity->type, "light") == 0)
+		{
+			int line = 1;
+
+			if (entity->light != NULL)
+			{
+				sprintf(data, "intensity %f", entity->light->intensity);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+
+				sprintf(data, "color %.3f %.3f %.3f", entity->light->color.x, entity->light->color.y, entity->light->color.z);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			}
+		}
+	}
 }
 
 void Engine::destroy_buffers()
