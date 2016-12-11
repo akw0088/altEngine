@@ -15,6 +15,9 @@ public:
 	void step(int frame_step);
 	void destroy();
 
+	void render_hud(double last_frametime);
+	void draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color);
+
 	void handle_weapons(Player &player, Frame &camera_frame, button_t &input);
 
 	void handle_plasma(Entity *entity, Player &player, Frame &camera_frame);

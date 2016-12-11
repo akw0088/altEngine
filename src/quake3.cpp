@@ -755,3 +755,165 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 
 
 }
+
+void Quake3::render_hud(double last_frametime)
+{
+	matrix4 real_projection = engine->projection;
+	char msg[LINE_SIZE];
+
+	int spawn = engine->spawn;
+	Entity *entity = engine->entity_list[spawn];
+
+	engine->projection = engine->identity;
+	vec3 color(1.0f, 1.0f, 1.0f);
+
+	if (engine->show_hud)
+	{
+		if (spawn != -1)
+		{
+			if (entity->player->health > 50)
+			{
+				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+			}
+			else if (entity->player->health <= 50 && blink)
+			{
+				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, vec3(1.0f, 0.0f, 0.0f));
+			}
+			else
+			{
+				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+			}
+
+			switch (entity->player->current_weapon)
+			{
+			case wp_machinegun:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_bullets);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_shotgun:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_shells);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_grenade:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_grenades);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_rocket:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_rockets);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_railgun:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_slugs);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_lightning:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_lightning);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			case wp_plasma:
+				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_plasma);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				break;
+			}
+		}
+	}
+
+	if (engine->show_debug)
+	{
+		int line = 1;
+
+		snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		snprintf(msg, LINE_SIZE, "%d active lights.", (int)engine->light_list.size());
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		if (spawn != -1)
+		{
+			line++;
+			snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity->position.x, entity->position.y, entity->position.z);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity->rigid->water, entity->rigid->water_depth);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		}
+	}
+
+	if (engine->show_names)
+	{
+		for (unsigned int i = 0; i < engine->entity_list.size(); i++)
+		{
+			vec3 color = vec3(1.0f, 1.0f, 1.0f);
+			matrix4 trans2;
+			matrix4 mvp2;
+			matrix4 model;
+
+			engine->camera_frame.set(trans2);
+
+			if (i == spawn)
+			{
+				color = vec3(1.0f, 0.0f, 0.0f);
+			}
+
+			if (engine->entity_list[i]->rigid == NULL)
+				continue;
+
+
+			mvp2 = trans2.premultiply(engine->entity_list[i]->rigid->get_matrix(model.m)) * real_projection;
+			vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
+
+			pos.x = pos.x / pos.w;
+			pos.y = -pos.y / pos.w; // negative y? Hey it works
+			pos.z = pos.z / pos.w;
+
+			pos.x = 0.5f + (pos.x * 0.5f);
+			pos.y = 0.5f + (pos.y * 0.5f);
+			//			pos.z = 0.5f + (pos.z * 0.5f);
+
+			if (engine->entity_list[i]->visible)
+			{
+				draw_name(pos, engine->entity_list[i], engine->menu, color);
+			}
+		}
+	}
+
+	engine->projection = real_projection;
+}
+
+void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
+{
+	if (pos.z >= -1.0 && pos.z <= 1.0)
+	{
+		char data[512];
+
+		menu.draw_text(entity->type, pos.x, pos.y, 0.02f, color);
+
+		if (strcmp(entity->type, "free") == 0)
+		{
+			int line = 1;
+
+			sprintf(data, "Pos %.3f %.3f %.3f", entity->position.x, entity->position.y, entity->position.z);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			sprintf(data, "Vel %.3f %.3f %.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			sprintf(data, "State %d", entity->rigid->sleep);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+		}
+
+		if (strcmp(entity->type, "light") == 0)
+		{
+			int line = 1;
+
+			if (entity->light != NULL)
+			{
+				sprintf(data, "intensity %f", entity->light->intensity);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+
+				sprintf(data, "color %.3f %.3f %.3f", entity->light->color.x, entity->light->color.y, entity->light->color.z);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			}
+		}
+	}
+}
