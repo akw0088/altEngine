@@ -38,14 +38,15 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	sprintf(gurp1_sound, "sound/player/gurp1.wav");
 	sprintf(gurp2_sound, "sound/player/gurp2.wav");
 
+	sprintf(gibbed_sound, "sound/player/gibsplt1.wav");
+	sprintf(gibimpact1_sound, "sound/player/gibimp1.wav");
+	sprintf(gibimpact2_sound, "sound/player/gibimp2.wav");
+	sprintf(gibimpact3_sound, "sound/player/gibimp3.wav");
+
 	//sounds/player/watr_un.wav // another water in?
 
 	//sounds/player/talk.wav
 
-	//sound/player/gibsplt1.wav
-	//sound/player/gibimp1.wav
-	//sound/player/gibimp2.wav
-	//sound/player/gibimp3.wav
 	//sound/player/fry.wav
 
 	/*

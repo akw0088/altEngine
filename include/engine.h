@@ -79,6 +79,7 @@ public:
 	void handle_railgun(Entity *entity, Player &player);
 	void handle_machinegun(Player &player);
 	void handle_shotgun(Player &player);
+	void handle_gibs(Player &player);
 
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();

@@ -79,6 +79,11 @@ public:
 	char gurp1_sound[128];
 	char gurp2_sound[128];
 
+	char gibbed_sound[128];
+	char gibimpact1_sound[128];
+	char gibimpact2_sound[128];
+	char gibimpact3_sound[128];
+
 
 	int health;
 

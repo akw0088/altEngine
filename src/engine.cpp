@@ -1376,7 +1376,8 @@ void Engine::step()
 			}
 		}
 
-		if (entity_list[spawn]->rigid->velocity.y > -1.0f && entity_list[spawn]->rigid->velocity.y < 1.0f && entity_list[spawn]->rigid->water == false)
+		if (entity_list[spawn]->rigid->velocity.y > -1.0f && entity_list[spawn]->rigid->velocity.y < 1.0f &&
+			entity_list[spawn]->rigid->water == false && entity_list[spawn]->player->dead == false)
 		{
 
 			if ((entity_list[spawn]->position - entity_list[spawn]->rigid->old_position).magnitude() > 1.0f && frame_step % 20 == 0)
@@ -1466,6 +1467,7 @@ void Engine::step()
 				if (ret)
 				{
 					audio.play(entity_list[spawn]->speaker->source);
+					entity_list[spawn]->player->health -= 15;
 				}
 				else
 				{
@@ -1477,19 +1479,31 @@ void Engine::step()
 		if (entity_list[spawn]->player->health <= 0 && entity_list[spawn]->player->dead == false)
 		{
 			bool ret = false;
-			debugf("%s died\n", entity_list[spawn]->player->name);
 
-			switch (frame_step % 3)
+			if (entity_list[spawn]->player->health <= -50)
 			{
-			case 0:
-				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death1_sound);
-				break;
-			case 1:
-				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death2_sound);
-				break;
-			case 2:
-				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death3_sound);
-				break;
+				debugf("%s was gibbed\n", entity_list[spawn]->player->name);
+
+				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->gibbed_sound);
+
+				handle_gibs(*(entity_list[spawn]->player));
+			}
+			else
+			{
+				debugf("%s died\n", entity_list[spawn]->player->name);
+
+				switch (frame_step % 3)
+				{
+				case 0:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death1_sound);
+					break;
+				case 1:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death2_sound);
+					break;
+				case 2:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->death3_sound);
+					break;
+				}
 			}
 
 			if (ret)
@@ -2618,6 +2632,26 @@ void Engine::load_sounds()
 		snd_wave.push_back(wave[0]);
 
 	strcpy(wave[0].file, "sound/player/gurp2.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/gibsplt1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/sound/player/gibimp1.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/sound/player/gibimp2.wav");
+	audio.load(wave[0]);
+	if (wave[0].data != NULL)
+		snd_wave.push_back(wave[0]);
+
+	strcpy(wave[0].file, "sound/player/sound/player/gibimp3.wav");
 	audio.load(wave[0]);
 	if (wave[0].data != NULL)
 		snd_wave.push_back(wave[0]);
@@ -4126,6 +4160,82 @@ void Engine::handle_machinegun(Player &player)
 	//			entity->decal = new Decal(entity);
 	//			entity->position = end;
 	//			entity->decal->normal = normal;
+
+}
+
+void Engine::handle_gibs(Player &player)
+{
+
+	player.entity->rigid->velocity += vec3(0.5f, 3.0f, 1.2f);
+
+	{
+		Entity *entity1 = entity_list[get_entity()];
+		entity1->rigid = new RigidBody(entity1);
+		entity1->model = entity1->rigid;
+		entity1->position = camera_frame.pos;
+		camera_frame.set(entity1->model->morientation);
+
+		entity1->rigid->clone(*(box->model));
+		//entity->rigid->clone(*(pineapple->model));
+		entity1->rigid->velocity = vec3(2.0f, 1.2f, -1.2f);
+		entity1->rigid->angular_velocity = vec3(5.0f, 3.0f, 2.f);
+		entity1->rigid->gravity = true;
+		entity1->rigid->rotational_friction_flag = true;
+
+		entity1->trigger = new Trigger(entity1, audio);
+		sprintf(entity1->trigger->explode_sound, "sound/player/gibimp1.wav");
+		sprintf(entity1->trigger->action, "gib1 impact");
+		entity1->trigger->idle = true;
+		entity1->trigger->idle_timer = 0;
+		entity1->trigger->explode = false;
+	}
+
+	{
+		Entity *entity2 = entity_list[get_entity()];
+
+		entity2->rigid = new RigidBody(entity2);
+		entity2->model = entity2->rigid;
+		entity2->position = camera_frame.pos;
+		camera_frame.set(entity2->model->morientation);
+
+		entity2->rigid->clone(*(box->model));
+		//entity->rigid->clone(*(pineapple->model));
+		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
+		entity2->rigid->angular_velocity = vec3(-5.0f, -1.0f, 6.0f);
+		entity2->rigid->gravity = true;
+		entity2->rigid->rotational_friction_flag = true;
+
+		entity2->trigger = new Trigger(entity2, audio);
+		sprintf(entity2->trigger->explode_sound, "sound/player/gibimp2.wav");
+		sprintf(entity2->trigger->action, "gib2 impact");
+		entity2->trigger->idle = true;
+		entity2->trigger->idle_timer = 0;
+		entity2->trigger->explode = false;
+	}
+
+	{
+		Entity *entity3 = entity_list[get_entity()];
+
+		entity3->rigid = new RigidBody(entity3);
+		entity3->model = entity3->rigid;
+		entity3->position = camera_frame.pos;
+		camera_frame.set(entity3->model->morientation);
+
+		entity3->rigid->clone(*(box->model));
+		//entity->rigid->clone(*(pineapple->model));
+		entity3->rigid->velocity = vec3(-2.0f, 3.2f, 1.2f);
+		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity3->rigid->gravity = true;
+		entity3->rigid->rotational_friction_flag = true;
+
+		entity3->trigger = new Trigger(entity3, audio);
+		sprintf(entity3->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity3->trigger->action, "gib3 impact");
+		entity3->trigger->idle = true;
+		entity3->trigger->idle_timer = 0;
+		entity3->trigger->explode = false;
+	}
+
 
 }
 
