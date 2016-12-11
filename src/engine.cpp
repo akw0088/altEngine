@@ -1349,6 +1349,7 @@ bool Engine::body_collision(RigidBody &body)
 
 void Engine::step()
 {
+	static int footstep_num = 0;
 	frame_step++;
 
 	if (map.loaded == false)
@@ -1375,6 +1376,39 @@ void Engine::step()
 			}
 		}
 
+		if (entity_list[spawn]->rigid->velocity.y > -1.0f && entity_list[spawn]->rigid->velocity.y < 1.0f)
+		{
+
+			if ((entity_list[spawn]->position - entity_list[spawn]->rigid->old_position).magnitude() > 1.0f && frame_step % 20 == 0)
+			{
+				bool ret;
+
+				switch (footstep_num++ % 4)
+				{
+				case 0:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->step1_sound);
+					break;
+				case 1:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->step2_sound);
+					break;
+				case 2:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->step3_sound);
+					break;
+				case 3:
+					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->step4_sound);
+					break;
+				}
+
+				if (ret)
+				{
+					audio.play(entity_list[spawn]->speaker->source);
+				}
+				else
+				{
+					debugf("Failed to find PCM data for footstep sound\n");
+				}
+			}
+		}
 
 		if (entity_list[spawn]->rigid->water && entity_list[spawn]->rigid->water_depth < entity_list[spawn]->rigid->get_height())
 		{
