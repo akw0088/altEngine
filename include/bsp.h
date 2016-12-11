@@ -3,6 +3,15 @@
 #ifndef BSP_H
 #define BSP_H
 
+class Surface
+{
+public:
+	char name[512];
+	char *cmd[512];
+	int num_cmd;
+private:
+};
+
 class Bsp
 {
 	void change_axis();
@@ -28,7 +37,7 @@ public:
 	vec3 model_origin(unsigned int index);
 //	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
-	void load_textures(Graphics &gfx);
+	void load_textures(Graphics &gfx, vector<Surface *> &surface_list);
 	void unload(Graphics &gfx);
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);

@@ -12,6 +12,37 @@
 #define FORWARD
 //#define DEFERRED
 
+char *shader_list[] = {
+	"scripts/test.shader",
+	"scripts/base.shader",
+	"scripts/base_button.shader",
+	"scripts/base_floor.shader",
+	"scripts/base_light.shader",
+	"scripts/base_object.shader",
+	"scripts/base_support.shader",
+	"scripts/base_trim.shader",
+	"scripts/base_wall.shader",
+	"scripts/common.shader",
+	"scripts/ctf.shader",
+	"scripts/eerie.shader",
+	"scripts/gfx.shader",
+	"scripts/gothic_block.shader",
+	"scripts/gothic_floor.shader",
+	"scripts/gothic_light.shader",
+	"scripts/gothic_trim.shader",
+	"scripts/gothic_wall.shader",
+	"scripts/hell.shader",
+	"scripts/liquid.shader",
+	"scripts/menu.shader",
+	"scripts/models.shader",
+	"scripts/organics.shader",
+	"scripts/sfx.shader",
+	"scripts/shrine.shader",
+	"scripts/skin.shader",
+	"scripts/sky.shader"
+};
+int num_shader = 27;
+
 
 char *pk3list[] = { "media/pak0.pk3",
 //				"media/pak1.pk3",
@@ -138,6 +169,18 @@ void Engine::load(char *level)
 		}
 	}
 
+	// quick and dirty shader parser
+	for (int i = 0; i < num_shader; i++)
+	{
+		char *shader_file = get_file(shader_list[i], NULL);
+
+		if (shader_file)
+		{
+			parse_shader(shader_file, surface_list);
+			free((void *)shader_file);
+		}
+	}
+
 	menu.delta("entities", *this);
 	gfx.clear();
 	menu.render(global);
@@ -161,7 +204,7 @@ void Engine::load(char *level)
 	menu.delta("textures", *this);
 	menu.render(global);
 	gfx.swap();
-	map.load_textures(gfx);
+	map.load_textures(gfx, surface_list);
 	menu.delta("loaded", *this);
 	menu.stop();
 	menu.ingame = false;
@@ -2630,12 +2673,12 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	if (data == NULL)
 	{
-		debugf("Unable to load texture %s\n", file_name);
+//		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
 	else
 	{
-		debugf("Loaded %s from disk\n", file_name);
+//		debugf("Loaded %s from disk\n", file_name);
 	}
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, STBI_rgb_alpha);

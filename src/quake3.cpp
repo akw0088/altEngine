@@ -52,6 +52,10 @@ void Quake3::step(int frame_step)
 {
 	static int footstep_num = 0;
 	int spawn = engine->spawn;
+
+	if (spawn == -1)
+		return;
+
 	Entity *entity = engine->entity_list[spawn];
 
 	if (frame_step % TICK_RATE == 0)

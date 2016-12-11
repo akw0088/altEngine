@@ -93,6 +93,8 @@ public:
 	MD5Model	zcc;
 	MD5Model	sentry;
 	MD5Model	zsec_shotgun;
+	vector<Surface *> surface_list;
+
 
 protected:
 	matrix4		projection;

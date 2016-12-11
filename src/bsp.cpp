@@ -874,7 +874,7 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
-void Bsp::load_textures(Graphics &gfx)
+void Bsp::load_textures(Graphics &gfx, vector<Surface *> &surface_list)
 {
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
@@ -890,25 +890,43 @@ void Bsp::load_textures(Graphics &gfx)
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
-		char		buffer[LINE_SIZE];
+		char		texture_name[LINE_SIZE];
 
 
-		snprintf(buffer, LINE_SIZE, "media/%s.tga", material->name);
-		tex_object[i] = load_texture(gfx, buffer);
+//		printf("Attempting to load %s, trying .tga\n", material->name);
+		snprintf(texture_name, LINE_SIZE, "media/%s.tga", material->name);
+		tex_object[i] = load_texture(gfx, texture_name);
 		if (tex_object[i] == 0)
 		{
-			snprintf(buffer, LINE_SIZE, "media/%s.jpg", material->name);
-			tex_object[i] = load_texture(gfx, buffer);
+//			printf("Attempting to load %s, trying .jpg\n", material->name);
+			snprintf(texture_name, LINE_SIZE, "media/%s.jpg", material->name);
+			tex_object[i] = load_texture(gfx, texture_name);
 		}
 
 		if (tex_object[i] == 0)
 		{
+//			printf("Attempting to load %s, trying surface_list\n", material->name);
+			for (unsigned int i = 0; i < surface_list.size(); i++)
+			{
+				if (strcmp(material->name, surface_list[i]->name) == 0)
+				{
+//					printf("Found shader, trying stage1 %s\n", surface_list[i]->cmd[0]);
+
+					snprintf(texture_name, LINE_SIZE, "%s", surface_list[i]->cmd[0]);
+					tex_object[i] = load_texture(gfx, texture_name);
+				}
+			}
+		}
+
+		if (tex_object[i] == 0)
+		{
+			printf("******* Failed to find shader for %s\n", material->name);
 			tex_object[i] = 1; // no_tex
 		}
 
 
-		snprintf(buffer, LINE_SIZE, "media/%s_normal.tga", material->name);
-		normal_object[i] = load_texture(gfx, buffer);
+		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
+		normal_object[i] = load_texture(gfx, texture_name);
 	}
 }
 

@@ -328,7 +328,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 	for(i = 0; state != 'F' && state != '\0' && i < strlen(input); i++)
 	{		
 		prevstate = state;
-		state = machine(state, input[i], stack, sp);
+		state = machine_entity(state, input[i], stack, sp);
 
 		switch (state)
 		{
@@ -374,7 +374,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 		return false;
 }
 
-char machine(char state, char input, char *stack, int &sp)
+char machine_entity(char state, char input, char *stack, int &sp)
 {
 	switch (state)
 	{
@@ -447,6 +447,180 @@ char machine(char state, char input, char *stack, int &sp)
 	}
 	return '\0';
 }
+
+
+void compress_spaces(char *str)
+{
+	char *dst = str;
+
+	for (; *str; ++str) {
+		*dst++ = *str;
+
+		if (isspace(*str)) {
+			do ++str;
+
+			while (isspace(*str));
+
+			--str;
+		}
+	}
+
+	*dst = 0;
+}
+
+bool parse_shader(const char *input, vector<Surface *> &surface_list)
+{
+	char state = 'S';
+	char prevstate = 'S';
+	char name[LINE_SIZE] = { 0 }, cmd[LINE_SIZE] = { 0 };
+	char stack[LINE_SIZE] = { 0 };
+	int sp = 0;
+	unsigned int i, j = 0;
+	vector<char *> cmds;
+
+	// Need to remake the pushdown automata, just hacked it together quickly
+	for (i = 0; state != 'F' && state != '\0' && i < strlen(input); i++)
+	{
+		prevstate = state;
+		state = machine_shader(state, input[i], stack, sp);
+
+		switch (state)
+		{
+		case 'S':
+			if (prevstate == 'C')
+			{
+				Surface *surface = new Surface;
+
+				strcpy(surface->name, name);
+				surface->num_cmd = cmds.size();
+				for (int j = 0; j < surface->num_cmd; j++)
+				{
+					surface->cmd[j] = cmds[j];
+					compress_spaces(surface->cmd[j]);
+					surface->cmd[j] = strstr(surface->cmd[j], "textures/");
+					if (surface->cmd[j] != NULL)
+					{
+						char *pdata = strstr(surface->cmd[j], ".tga");
+						if (pdata != NULL && strlen(pdata) > 4)
+						{
+							pdata[4] = '\0';
+						}
+
+						pdata = strstr(surface->cmd[j], ".jpg");
+						if (pdata != NULL && strlen(pdata) > 4)
+						{
+							pdata[4] = '\0';
+						}
+					}
+
+
+				}
+				surface_list.push_back(surface);
+			}
+			name[j++] = input[i];
+			name[j] = '\0';
+			break;
+		case 'C': //name
+			if (j > 0)
+			{
+				j = 0;
+			}
+			if (prevstate == 'E')
+			{
+				char *data = new char[512];
+				memset(data, 0, 512);
+				strcpy(data, cmd);
+				cmds.push_back(data);
+				j = 0;
+			}
+			break;
+
+		case 'E':
+			if (input[i] != '\r' && input[i] != '\n' && input[i] != '\t' && input[i] != '{')
+				cmd[j++] = input[i];
+			break;
+		case 'K': //command
+			if (prevstate == 'K')
+			{
+				cmd[j++] = input[i];
+				cmd[j] = '\0';
+				break;
+			}
+		case 'B':
+			j = 0;
+			break;
+		}
+	}
+
+	if (state == 'F' && sp == 0)
+		return true;
+	else
+		return false;
+}
+
+char machine_shader(char state, char input, char *stack, int &sp)
+{
+	/*
+
+	S:
+	'\n' -> B
+	B->C
+
+	C:
+	'\n' -> D
+	'{' ->E
+	D ->C
+
+	E
+	'\n' ->F
+	'}' ->C
+	*/
+
+	switch (state)
+	{
+	case 'S':
+		switch (input)
+		{
+		case '{':
+			push('}', stack, sp);
+			return 'E';
+		case '\r':
+			return 'C';
+		case '\n':
+			return 'C';
+		case '\0':
+			return 'F';
+		}
+		return 'S';
+
+	case 'C':
+		switch (input)
+		{
+		case '{':
+			push('}', stack, sp);
+			return 'E';
+		case '}':
+			pop('}', stack, sp);
+			return 'S';
+		}
+		return 'C';
+
+	case 'E':
+		switch (input)
+		{
+		case '}':
+			pop('}', stack, sp);
+			return 'C';
+		case '\n':
+			return 'E';
+		}
+		return 'E';
+	case 'F':
+		return 'F';
+	}
+	return '\0';
+}
+
 
 void push(char input, char *stack, int &sp)
 {
