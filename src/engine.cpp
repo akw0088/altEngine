@@ -1380,7 +1380,8 @@ void Engine::step()
 		}
 
 		if (entity_list[spawn]->rigid->velocity.y > -1.0f && entity_list[spawn]->rigid->velocity.y < 1.0f &&
-			entity_list[spawn]->rigid->water == false && entity_list[spawn]->player->dead == false)
+			entity_list[spawn]->rigid->water == false && entity_list[spawn]->player->dead == false &&
+			entity_list[spawn]->rigid->noclip == false)
 		{
 
 			if ((entity_list[spawn]->position - entity_list[spawn]->rigid->old_position).magnitude() > 1.0f && frame_step % 20 == 0)

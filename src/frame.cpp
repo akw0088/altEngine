@@ -112,10 +112,21 @@ void Frame::update(const vec2 &delta)
 	right = vec3::crossproduct(up, forward);
 	right.normalize();
 
-	rotate_vector(delta.y / 50.0f, forward, right);
-	rotate_vector(delta.y / 50.0f, up, right);
+	vec3 old_forward = forward;
+	vec3 old_up = up;
+	float deltad = 50.0f;
+
+	rotate_vector(delta.y / deltad, forward, right);
+	rotate_vector(delta.y / deltad, up, right);
 	forward.normalize();
 	up.normalize();
+
+	if (up * vup < 0)
+	{
+		forward = old_forward;
+		up = old_up;
+	}
+
 }
 
 void Frame::reset()
