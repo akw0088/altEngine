@@ -45,18 +45,18 @@ int num_shader = 27;
 
 
 char *pk3list[] = { "media/pak0.pk3",
-//				"media/pak1.pk3",
-//				"media/pak2.pk3",
-//				"media/pak3.pk3",
-//				"media/pak4.pk3",
-//				"media/pak5.pk3",
-//				"media/pak6.pk3",
-//				"media/pak7.pk3",
-//				"media/pak8.pk3",
+				"media/pak1.pk3",
+				"media/pak2.pk3",
+				"media/pak3.pk3",
+				"media/pak4.pk3",
+				"media/pak5.pk3",
+				"media/pak6.pk3",
+				"media/pak7.pk3",
+				"media/pak8.pk3",
 //				"media/q3f2_pak0.pk3",
 //				"media/zpak000_assets.pk3"
 };
-int num_pk3 = 1;
+int num_pk3 = 9;
 
 Engine::Engine()
 {
@@ -1061,7 +1061,7 @@ void Engine::dynamics()
 
 		RigidBody *body = entity_list[i]->rigid;
 
-		float delta_time = 1.0f * TICK_MS / 1000.0f;
+		float delta_time = 2.0f * TICK_MS / 1000.0f;
 		float target_time = delta_time;
 		float current_time = 0.0f;
 		int divisions = 0;
@@ -2666,7 +2666,7 @@ int load_texture(Graphics &gfx, char *file_name)
 
 		for (int i = 0; i < num_pk3; i++)
 		{
-			get_zipfile(pk3list[i], pk3_name, &data, NULL);
+			get_zipfile(pk3list[i], pk3_name, &data, &size);
 			if (data != NULL)
 				break;
 		}

@@ -23,8 +23,8 @@ void Menu::init(Graphics *gfx, Audio *audio)
 	ingame = false;
 
 	menu_object = load_texture(*gfx, "media/menu.tga");
-	console_object = load_texture(*gfx, "media/console.tga");
-	font_object = load_texture(*gfx, "media/bigchars.tga");
+	console_object = load_texture(*gfx, "media/gfx/misc/console01.tga");
+	font_object = load_texture(*gfx, "media/gfx/2d/bigchars.tga");
 	font.init(gfx);
 	strcpy(menu_wave.file, "media/sound/mwmusic.wav");
 	audio->load(menu_wave);

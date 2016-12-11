@@ -507,7 +507,7 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 	fp = fopen(zipfile, "rb");
 	if (fp == NULL)
 	{
-		printf("Couldn't open zip file %s\n", zipfile);
+//		printf("Couldn't open zip file %s\n", zipfile);
 		return -1;
 	}
 

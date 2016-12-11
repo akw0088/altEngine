@@ -912,7 +912,7 @@ void Bsp::load_textures(Graphics &gfx, vector<Surface *> &surface_list)
 				{
 //					printf("Found shader, trying stage1 %s\n", surface_list[i]->cmd[0]);
 
-					snprintf(texture_name, LINE_SIZE, "%s", surface_list[i]->cmd[0]);
+					snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[i]->cmd[0]);
 					tex_object[i] = load_texture(gfx, texture_name);
 				}
 			}
