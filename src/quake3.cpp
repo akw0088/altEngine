@@ -284,6 +284,7 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player, Frame &camera
 	entity->trigger->self = false;
 	entity->trigger->idle = true;
 	entity->trigger->explode = true;
+	entity->trigger->idle_timer = 0;
 	entity->trigger->explode_timer = 10;
 	entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
 	entity->trigger->explode_intensity = 500.0f;
@@ -303,6 +304,9 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player, Frame &camera
 	entity->rigid->net_force = camera_frame.forward * -10.0f;
 	entity->rigid->angular_velocity = vec3();
 	entity->rigid->gravity = false;
+
+
+
 
 	bool ret = engine->select_wave(entity->trigger->loop_source, entity->trigger->idle_sound);
 	if (ret)
