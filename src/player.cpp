@@ -35,7 +35,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 		"tankjr",			//19
 		"uriel",			//20
 		"visor"				//21
-							//xaero?
+		"xaero"				//22
 	};
 
 	model_index = 14; // default to ranger
@@ -150,7 +150,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 		"tankjr",			//19
 		"uriel",			//20
 		"visor"				//21
-							//xaero?
+		"xaero"				//22
 	};
 
 
@@ -202,7 +202,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 
 
 
-	for (unsigned int i = 0; i < 22; i++)
+	for (unsigned int i = 0; i < 23; i++)
 	{
 		sprintf(wave.file, "sound/player/%s/death1.wav", models[i]);
 		audio.load(wave);

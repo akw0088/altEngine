@@ -146,7 +146,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			if (entity.trigger == NULL)
 				entity.trigger = new Trigger(&entity, audio);
 
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/player/ranger/death1.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
 		}
 	}
 	else if (strcmp(key, "light") == 0)
