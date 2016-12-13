@@ -920,7 +920,7 @@ void Bsp::load_textures(Graphics &gfx, vector<Surface *> &surface_list)
 
 		if (tex_object[i] == 0)
 		{
-			printf("******* Failed to find shader for %s\n", material->name);
+			printf("******* Failed to find texture for shader %s\n", material->name);
 			tex_object[i] = 1; // no_tex
 		}
 

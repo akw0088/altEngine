@@ -22,7 +22,7 @@ RigidBody::RigidBody(Entity *entity)
 	float depth = 10.0f / UNITS_TO_METERS;
 
 	rotational_friction_flag = false;
-	rotational_friction = 0.99;
+	rotational_friction = 0.99f;
 	translational_friction_flag = false;
 	translational_friction = 0.99f;
 

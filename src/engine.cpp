@@ -706,12 +706,16 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			if (client_list.size() && j < client_list.size() && i == client_list[j]->entity)
 				continue;
 
+
+			// kind of a fps killer, still in work
+			/*
 			entity_list[i]->rigid->render(gfx);
 			if (entity_list[i]->model_ref != -1)
 			{
 				if (strstr(entity_list[i]->type, "func_") != NULL)
 					map.render_model(entity_list[i]->model_ref, gfx);
 			}
+			*/
 
 		}
 //		entity_list[i]->rigid->render_box(gfx); // bounding box lines
@@ -1077,7 +1081,7 @@ void Engine::dynamics()
 				submerged_percent = body->water_depth / height;
 			}
 
-			submerged_percent += 0.95; // prevent floating just below surface
+			submerged_percent += 0.95f; // prevent floating just below surface
 
 			// clamp
 			if (submerged_percent > 1.0f)
@@ -1173,7 +1177,7 @@ bool Engine::map_collision(RigidBody &body)
 			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
 				// barely touching is about ~200 units away it seems, scaling to make sense above
-				point = point * (1.0f / UNITS_TO_METERS) * 0.000001;
+				point = point * (1.0f / UNITS_TO_METERS) * 0.000001f;
 				body.entity->position = body.old_position;
 				body.morientation = body.old_orientation;
 				body.impulse(plane, point);

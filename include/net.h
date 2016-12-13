@@ -8,7 +8,7 @@
 #endif
 
 #ifndef linux
-int inet_pton(int af, const char *server, struct in_addr *addr);
+int inet_pton(int af, const char *server, in_addr *addr);
 #endif
 
 /*

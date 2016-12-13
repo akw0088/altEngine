@@ -40,7 +40,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 		"xaero"				//22
 	};
 
-	model_index = 14; // default to ranger
+	model_index = 21; // default to visor -- ranger isnt in demo files :'( 
 
 	sprintf(model_name, models[model_index]);
 	attack_sound[0] = '\0';
