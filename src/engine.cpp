@@ -7,6 +7,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "stb_image.h"
+#include <float.h> // for FLT_MAX
 
 //#define SHADOWVOL
 #define FORWARD
@@ -946,9 +947,9 @@ void Engine::spatial_testing()
 			matrix4 transformation;
 
 			camera_frame.set(transformation);
-			matrix4 mvp = transformation * projection;
-			vec3 min = entity_list[i]->model->morientation * entity_list[i]->model->aabb[0];
-			vec3 max = entity_list[i]->model->morientation * entity_list[i]->model->aabb[7];
+			//matrix4 mvp = transformation * projection;
+			//vec3 min = entity_list[i]->model->morientation * entity_list[i]->model->aabb[0];
+			//vec3 max = entity_list[i]->model->morientation * entity_list[i]->model->aabb[7];
 
 //			frustum_visible = aabb_visible(min, max, mvp);
 
@@ -3086,8 +3087,9 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	ret = (int)strstr(cmd, "respawn");
-	if (ret)
+	char *pret = NULL; // linux didnt like pointer to int cast
+	pret = strstr(cmd, "respawn");
+	if (pret)
 	{
 		static int last_spawn = 0;
 		unsigned int i = last_spawn;
@@ -3637,7 +3639,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 		{
 			float distance = FLT_MAX;
 
-			if (RayBoxSlab(origin, dir, entity_list[i]->rigid->aabb[0], entity_list[i]->rigid->aabb[8], distance))
+			if (RayBoxSlab(origin, dir, entity_list[i]->rigid->aabb[0], entity_list[i]->rigid->aabb[7], distance))
 			{
 				index_list[j++] = i;
 				num_index++;

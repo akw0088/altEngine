@@ -5,7 +5,8 @@
 #endif
 
 #include "junzip.h"
-#include <stdarg.h>
+#include <stdarg.h> // for vargs
+#include <math.h> // for ceil
 
 float newtonSqrt(float x);
 

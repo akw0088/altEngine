@@ -86,7 +86,7 @@ void Quake3::step(int frame_step)
 
 			if ((entity->position - entity->rigid->old_position).magnitude() > 1.0f && frame_step % 20 == 0)
 			{
-				bool ret;
+				bool ret = false;
 
 				switch (footstep_num++ % 4)
 				{
@@ -156,7 +156,7 @@ void Quake3::step(int frame_step)
 
 			if (entity->player->drown_timer % 125 * 30 == 0)
 			{
-				bool ret;
+				bool ret = false;
 
 				switch (footstep_num++ % 2)
 				{
@@ -790,8 +790,9 @@ void Quake3::render_hud(double last_frametime)
 			}
 			else if (entity->player->health <= 50 && blink)
 			{
+				vec3 red = vec3(1.0f, 0.0f, 0.0f);
 				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
-				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, vec3(1.0f, 0.0f, 0.0f));
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, red);
 			}
 			else
 			{

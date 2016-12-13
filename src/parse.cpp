@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#include <ctype.h> // for isspace (crappy space compression function)
+
 void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
 {
 	static int light_num = 0;

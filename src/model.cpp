@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#include <float.h> // for FLT_MAX
+
 int Model::quad_index = 0;
 int Model::quad_vertex = 0;
 

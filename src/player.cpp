@@ -14,7 +14,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	spawned = false;
 
 	// Player sound sets
-	char *models[]{
+	char *models[23] = {
 		"anarki",			//0
 		"biker",			//1
 		"bitterman",		//2
@@ -42,7 +42,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 	model_index = 21; // default to visor -- ranger isnt in demo files :'( 
 
-	sprintf(model_name, models[model_index]);
+	strcpy(model_name, models[model_index]);
 	attack_sound[0] = '\0';
 	weapon_idle_sound[0] = '\0';
 	sprintf(death1_sound, "sound/player/%s/death1.wav", model_name);
@@ -143,7 +143,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	wave_t wave;
 
 	// Player sound sets
-	char *models[]
+	char *models[23] = 
 	{
 		"anarki",			//0
 		"biker",			//1

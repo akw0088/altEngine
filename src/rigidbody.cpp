@@ -488,9 +488,9 @@ float RigidBody::get_volume()
 {
 	//water_density = 1000.0f; // kg/m3
 	//Force_buoyant = volume * density of water * gravity // upward force of displaced water
-	float width = fabs(aabb[0].x - aabb[7].x);
-	float length = fabs(aabb[0].y - aabb[7].y);
-	float height = fabs(aabb[0].z - aabb[7].z);
+	float width = abs32(aabb[0].x - aabb[7].x);
+	float length = abs32(aabb[0].y - aabb[7].y);
+	float height = abs32(aabb[0].z - aabb[7].z);
 
 	return width * length * height;
 }
@@ -498,7 +498,7 @@ float RigidBody::get_volume()
 float RigidBody::get_height()
 {
 	// max should always be bigger than min, but abs anyway
-	return fabs(aabb[7].z - aabb[0].z);
+	return abs32(aabb[7].z - aabb[0].z);
 }
 
 

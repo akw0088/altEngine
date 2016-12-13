@@ -6,6 +6,7 @@ SOURCES := 	xmain.cpp \
 		edge.cpp \
 		engine.cpp \
 		entity.cpp \
+		junzip.cpp \
 		frame.cpp \
 		graphics.cpp \
 		gltLoadTGA.cpp \
@@ -19,6 +20,7 @@ SOURCES := 	xmain.cpp \
 		parse.cpp \
 		plane.cpp \
 		player.cpp \
+		quake3.cpp \
 		quaternion.cpp \
 		rigidbody.cpp \
 		shader.cpp \

@@ -13,7 +13,8 @@ unsigned char jzBuffer[JZ_BUFFER_SIZE]; // limits maximum zip descriptor size
 
 										// Read ZIP file end record. Will move within file.
 int jzReadEndRecord(JZFile *zip, JZEndRecord *endRecord) {
-	size_t fileSize, readBytes, i;
+	size_t fileSize, readBytes;
+	int i;
 	JZEndRecord *er = NULL;
 
 	if (zip->seek(zip, 0, SEEK_END)) {
@@ -165,8 +166,6 @@ int jzReadLocalFileHeader(JZFile *zip, JZFileHeader *header,
 // Read data from file stream, described by header, to preallocated buffer
 int jzReadData(JZFile *zip, JZFileHeader *header, void *buffer)
 {
-	unsigned char *bytes = (unsigned char *)buffer; // cast
-
 	if (header->compressionMethod == 0) { // Store - just read it
 		if (zip->read(zip, buffer, header->uncompressedSize) <
 			header->uncompressedSize || zip->error(zip))

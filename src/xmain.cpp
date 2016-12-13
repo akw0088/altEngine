@@ -96,6 +96,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 	static Engine		altEngine;
 	static bool		init = false;
 	static int		xcenter, ycenter;
+	static int		frame_step;
 
 	if (display == NULL)
 	{
@@ -104,7 +105,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 	}
 	else if (display == (void *)1)
 	{
-		altEngine.step();
+		altEngine.step(frame_step++);
 		return 0;
 	}
 
