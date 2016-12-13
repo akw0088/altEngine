@@ -129,8 +129,8 @@ private:
 
 	Model weapon_machinegun;
 	Model weapon_shotgun;
-	Model weapon_rocket;
 	Model weapon_grenade;
+	Model weapon_rocket;
 	Model weapon_lightning;
 	Model weapon_railgun;
 	Model weapon_plasma;
