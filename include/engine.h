@@ -41,6 +41,7 @@ public:
 	void init_camera(); //TODO: combine this with console("respawn") command
 	void load_entities();
 	int get_entity();
+	int get_player();
 	void clean_entity(int index);
 	void load_sounds();
 	void load_models();
@@ -116,6 +117,7 @@ protected:
 	unsigned int	fb_height;
 	unsigned int	no_tex;
 	unsigned int	num_dynamic;
+	unsigned int	num_player;
 
 	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;

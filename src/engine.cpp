@@ -63,6 +63,7 @@ Engine::Engine()
 {
 	initialized = false;
 	num_dynamic = 100;
+	num_player = 8;
 	show_names = false;
 	show_debug = false;
 	show_hud = true;
@@ -146,6 +147,12 @@ void Engine::load(char *level)
 		Entity *entity = new Entity();
 		memcpy(entity->type, "free", strlen("free") + 1);
 		entity_list.push_back(entity);
+
+		if (i < num_player && server_flag)
+		{
+			// Forces server to expect player rigid bodies
+			entity->rigid = new RigidBody(entity);
+		}
 	}
 
 	if (post.init(&gfx))
@@ -2478,7 +2485,7 @@ int Engine::get_entity()
 
 		if (index == num_dynamic)
 		{
-			index = 0;
+			index = num_player;
 			looped++;
 
 			if (looped == 2)
@@ -2498,6 +2505,38 @@ int Engine::get_entity()
 	}
 
 	return num_dynamic - 1;
+}
+
+int Engine::get_player()
+{
+	static unsigned int index = 0;
+	int looped = 0;
+
+	while (1)
+	{
+
+		if (index == num_player)
+		{
+			index = 0;
+			looped++;
+
+			if (looped == 2)
+			{
+				debugf("Unable to find free dynamic entity\n");
+				break;
+			}
+		}
+
+		if (strcmp(entity_list[index]->type, "free") == 0)
+		{
+			clean_entity(index);
+			entity_list[index]->~Entity();
+			return index++;
+		}
+		index++;
+	}
+
+	return num_player - 1;
 }
 
 void Engine::create_sources()
