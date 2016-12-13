@@ -1609,26 +1609,15 @@ void Engine::server_step()
 
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
-		client->entity = 0;
-		int count = 0;
-		for (unsigned int i = 0; i < entity_list.size(); i++)
-		{
-			if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0)
-			{
-				if (count == client_list.size())
-				{
-					printf("client %s got entity %d\n", socketname, i);
-					client->entity = i;
-					entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
-					entity_list[client->entity]->model = entity_list[client->entity]->rigid;
-					entity_list[client->entity]->rigid->clone(*(q3.box->model));
-					entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio);
-					entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
-					break;
-				}
-				count++;
-			}
-		}
+		client->entity = get_player();
+		printf("client %s got entity %d\n", socketname, client->entity);
+		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
+		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
+		entity_list[client->entity]->rigid->clone(*(q3.box->model));
+		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio);
+		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
+		entity_list[client->entity]->player->respawn();
+
 
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
@@ -1790,7 +1779,7 @@ void Engine::client_step()
 				int ret = sscanf(reliablemsg->msg, "spawn %d %d", &entity, &server_spawn);
 				if ( ret )
 				{
-					spawn = get_entity();
+					spawn = get_player();
 
 					memcpy(entity_list[spawn]->type, "client", strlen("client") + 1);
 					entity_list[spawn]->position = entity_list[entity]->position;
@@ -1800,6 +1789,7 @@ void Engine::client_step()
 					entity_list[spawn]->rigid->step_flag = true;
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
+//					entity_list[spawn]->player->respawn();
 				}
 
 				ret = strcmp(reliablemsg->msg, "disconnect");
