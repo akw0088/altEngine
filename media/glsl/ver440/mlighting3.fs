@@ -53,7 +53,7 @@ void main(void)
 
 
 	Fragment = texture(texture0, Vertex.vary_TexCoord);
-	Fragment = Fragment + texture(texture1, Vertex.vary_LightCoord);
+//	Fragment = Fragment + texture(texture1, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 

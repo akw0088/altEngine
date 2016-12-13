@@ -1678,10 +1678,13 @@ void Engine::send_entities()
 				continue;
 
 			ent.id = j;
-			ent.morientation = entity_list[j]->rigid->morientation;
-			ent.angular_velocity = entity_list[j]->rigid->angular_velocity;
-			ent.velocity = entity_list[j]->rigid->velocity;
-			ent.position = entity_list[j]->position;
+			if (entity_list[j]->rigid)
+			{
+				ent.morientation = entity_list[j]->rigid->morientation;
+				ent.angular_velocity = entity_list[j]->rigid->angular_velocity;
+				ent.velocity = entity_list[j]->rigid->velocity;
+				ent.position = entity_list[j]->position;
+			}
 
 			memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 				&ent, sizeof(entity_t));
