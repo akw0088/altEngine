@@ -709,8 +709,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 
 			// kind of a fps killer, still in work
-			/*
 			entity_list[i]->rigid->render(gfx);
+			/*
 			if (entity_list[i]->model_ref != -1)
 			{
 				if (strstr(entity_list[i]->type, "func_") != NULL)
