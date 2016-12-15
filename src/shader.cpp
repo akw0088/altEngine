@@ -153,7 +153,7 @@ void mLight2::prelink()
 }
 
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights)
+void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset)
 {
 	vec3 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
@@ -164,7 +164,8 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		if (light_list[i]->entity->light->active)
 		{
 
-			position[j] = light_list[i]->entity->position;
+			position[j] = light_list[i]->entity->position - offset;
+
 
 			color[j] = vec4(light_list[i]->color.x,
 							light_list[i]->color.y,

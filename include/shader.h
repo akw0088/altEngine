@@ -39,7 +39,7 @@ class mLight2 : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset);
 	virtual void prelink(void);
 
 private:

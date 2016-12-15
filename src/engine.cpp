@@ -476,7 +476,7 @@ void Engine::render_shadowmaps()
 				//gfx.CullFace("back");
 
 				mlight2.Select();
-				mlight2.Params(mvp, light_list, light_list.size());
+				mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
 				map.render(entity_list[i]->position, mvp, gfx);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
@@ -533,9 +533,9 @@ void Engine::render_scene(bool lights)
 	mvp = transformation * projection;
 
 	if (lights)
-		mlight2.Params(mvp, light_list, light_list.size());
+		mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
 	else
-		mlight2.Params(mvp, light_list, 0);
+		mlight2.Params(mvp, light_list, 0, vec3(0.0f, 0.0f, 0.0f));
 
 	map.render(camera_frame.pos, mvp, gfx);
 //	gfx.SelectShader(0);
@@ -570,7 +570,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	render_entities(transformation, lights);
 	mlight2.Select();
 	mvp = transformation * projection;
-	mlight2.Params(mvp, light_list, light_list.size());
+	mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
 
 
 //	shadowmap.Params(mvp, shadowmvp);
@@ -637,11 +637,11 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 
 	if (lights)
 	{
-		mlight2.Params(mvp, light_list, light_list.size());
+		mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
 	}
 	else
 	{
-		mlight2.Params(mvp, light_list, 0);
+		mlight2.Params(mvp, light_list, 0, vec3(0.0f, 0.0f, 0.0f));
 	}
 	zcc.render(gfx, tick_num >> 1);
 }
@@ -651,7 +651,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	matrix4 mvp;
 
 	mlight2.Select();
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->visible == false)
 			continue;
@@ -659,17 +659,19 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
+		vec3 offset = entity_list[i]->position;
+
 		mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 		if (lights)
 		{
-			mlight2.Params(mvp, light_list, light_list.size());
+			mlight2.Params(mvp, light_list, light_list.size(), offset);
 		}
 		else
 		{
-			mlight2.Params(mvp, light_list, 0);
+			mlight2.Params(mvp, light_list, 0, offset);
 		}
 
-//		if (entity_list[i]->light == NULL)
+		//		if (entity_list[i]->light == NULL)
 		{
 			unsigned int j = 0;
 
@@ -684,11 +686,11 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				mvp = trans.premultiply(mvp.m) * projection;
 				if (lights)
 				{
-					mlight2.Params(mvp, light_list, light_list.size());
+					mlight2.Params(mvp, light_list, light_list.size(), offset);
 				}
 				else
 				{
-					mlight2.Params(mvp, light_list, 0);
+					mlight2.Params(mvp, light_list, 0, offset);
 				}
 
 				entity_list[i]->player->render_weapon(gfx);
@@ -720,19 +722,19 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			/*
 			if (entity_list[i]->model_ref != -1)
 			{
-				if (strstr(entity_list[i]->type, "func_") != NULL)
-					map.render_model(entity_list[i]->model_ref, gfx);
+			if (strstr(entity_list[i]->type, "func_") != NULL)
+			map.render_model(entity_list[i]->model_ref, gfx);
 			}
 			*/
 
 		}
-//		entity_list[i]->rigid->render_box(gfx); // bounding box lines
-		
+		//		entity_list[i]->rigid->render_box(gfx); // bounding box lines
+
 	}
 
 
 	//render md5 as second to last entity
-	
+
 	if (entity_list.size())
 	{
 		if (entity_list[entity_list.size() - 1]->rigid == NULL)
@@ -742,15 +744,15 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 		if (lights)
 		{
-			mlight2.Params(mvp, light_list, light_list.size());
+			mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
 		}
 		else
 		{
-			mlight2.Params(mvp, light_list, 0);
+			mlight2.Params(mvp, light_list, 0, vec3(0.0f, 0.0f, 0.0f));
 		}
 		zcc.render(gfx, tick_num >> 1);
 	}
-	
+
 }
 
 
