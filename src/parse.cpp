@@ -615,6 +615,7 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 	char stagecmd[512] = { 0 };
 	int j = 0;
 	bool first = true;
+	bool first_stage = true;
 
 	//        printf("%s\n", input);
 
@@ -665,9 +666,11 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 			{
 				if (first == false)
 				{
+					surface->stage.stage[0] = NULL;
 					surface_list.push_back(surface);
 				}
 				first = false;
+
 				surface = new Surface;
 				memcpy(surface->file, filename, strlen(filename) + 1);
 				// bad naming, mixed lines in a stage from number of texture stages, will fix
@@ -705,19 +708,19 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 			{
 				j = 0;
 			}
-			if (input[i] != '\n' && input[i] != '{')
+			if (input[i] != '\n' && input[i] != '{' && input[i-1] != '{' && input[i] != '\t')
 				basecmd[j++] = input[i];
 			break;
 		case 'I':
 			if (input[i] == '\n' && input[i - 1] != '{')
 			{
 				int size = strlen(stagecmd) + 1;
-
 //				printf("stagecmd is [%s] stage_num is %d\n", stagecmd, stage_num);
 				surface->stage.stage[stage_num] = new char[size];
 				memset(surface->stage.stage[stage_num], 0, size);
-				memcpy(surface->stage.stage[stage_num], stagecmd, size);
-//				memcpy(surface->stage.stage[stage_num], &input[old_pos + 1], i - old_pos - 1);
+//				memcpy(surface->stage.stage[stage_num], stagecmd, size);
+				memcpy(surface->stage.stage[stage_num], &input[old_pos + 1], i - old_pos - 1);
+				surface->stage.stage[stage_num][i - old_pos - 2] = '\0';
 				old_pos = i;
 				stage_num++;
 				surface->num_stage++;
