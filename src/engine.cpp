@@ -177,18 +177,20 @@ void Engine::load(char *level)
 		}
 	}
 
-	// quick and dirty shader parser
+
+	/*
 	for (int i = 0; i < num_shader; i++)
 	{
-		char *shader_file = get_file(shader_list[i], NULL);
+		char *shader_file = NULL;
+		get_zipfile("media/pak0.pk3", shader_list[i] , (unsigned char **)&shader_file, NULL);
 
 		if (shader_file)
 		{
-			parse_shader(shader_file, surface_list);
+			parse_shader(shader_file, surface_list, shader_list[i]);
 			free((void *)shader_file);
 		}
 	}
-
+*/
 	menu.delta("entities", *this);
 	gfx.clear();
 	menu.render(global);
@@ -2717,7 +2719,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	else
 	{
-//		debugf("Loaded %s from disk\n", file_name);
+		debugf("Loaded %s from disk\n", file_name);
 	}
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, STBI_rgb_alpha);

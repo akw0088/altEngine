@@ -893,16 +893,17 @@ void Bsp::load_textures(Graphics &gfx, vector<Surface *> &surface_list)
 		char		texture_name[LINE_SIZE];
 
 
-//		printf("Attempting to load %s, trying .tga\n", material->name);
+		printf("Attempting to load %s, trying .tga\n", material->name);
+		
 		snprintf(texture_name, LINE_SIZE, "media/%s.tga", material->name);
 		tex_object[i] = load_texture(gfx, texture_name);
 		if (tex_object[i] == 0)
 		{
-//			printf("Attempting to load %s, trying .jpg\n", material->name);
+			printf("Attempting to load %s, trying .jpg\n", material->name);
 			snprintf(texture_name, LINE_SIZE, "media/%s.jpg", material->name);
 			tex_object[i] = load_texture(gfx, texture_name);
 		}
-
+		
 		if (tex_object[i] == 0)
 		{
 //			printf("Attempting to load %s, trying surface_list\n", material->name);
@@ -910,10 +911,41 @@ void Bsp::load_textures(Graphics &gfx, vector<Surface *> &surface_list)
 			{
 				if (strcmp(material->name, surface_list[i]->name) == 0)
 				{
-//					printf("Found shader, trying stage1 %s\n", surface_list[i]->cmd[0]);
+					printf("Found shader [%s], trying stages\n", surface_list[i]->name);
 
-					snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[i]->cmd[0]);
-					tex_object[i] = load_texture(gfx, texture_name);
+
+					for (int j = 0; j < surface_list[i]->num_stage; j++)
+					{
+						char texture[512] = { 0 };
+						char *begin = strstr(surface_list[i]->stage.stage[j], "textures");
+						char *end = NULL;
+						if (begin)
+						{
+							end = strstr(begin, ".tga");
+							if (end == NULL)
+							{
+								end = strstr(begin, ".jpg");
+							}
+							if (end == NULL)
+								continue;
+						}
+						else
+						{
+							continue;
+						}
+
+						memcpy(texture, begin, end - begin + 4);
+
+						printf("Trying texture [%s]\n", texture);
+
+						snprintf(texture_name, LINE_SIZE, "media/%s", texture);
+						tex_object[i] = load_texture(gfx, texture_name);
+						if (tex_object[i] != 0)
+						{
+							printf("Loaded texture stage %d for shader with texture %s\n", j, texture_name);
+						}
+
+					}
 				}
 			}
 		}

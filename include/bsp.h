@@ -3,12 +3,23 @@
 #ifndef BSP_H
 #define BSP_H
 
+typedef struct
+{
+	int stage_num;
+	char *stage[64];
+} stage_t;
+
+
+// Keeping size small, because there are a lot of these
 class Surface
 {
 public:
-	char name[512];
-	char *cmd[512];
+	char file[128];
+	char name[128];
+	char *cmd[64];
+	stage_t stage;
 	int num_cmd;
+	int num_stage;
 private:
 };
 

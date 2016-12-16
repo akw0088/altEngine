@@ -470,160 +470,271 @@ void compress_spaces(char *str)
 	*dst = 0;
 }
 
-bool parse_shader(const char *input, vector<Surface *> &surface_list)
+// These are state machines from a piece of paper, pretty hard to decipher without the state diagram
+char machine_shader(char input, char state)
 {
-	char state = 'S';
-	char prevstate = 'S';
-	char name[LINE_SIZE] = { 0 }, cmd[LINE_SIZE] = { 0 };
-	char stack[LINE_SIZE] = { 0 };
-	int sp = 0;
-	unsigned int i, j = 0;
-	vector<char *> cmds;
-
-	// Need to remake the pushdown automata, just hacked it together quickly
-	for (i = 0; state != 'F' && state != '\0' && i < strlen(input); i++)
-	{
-		prevstate = state;
-		state = machine_shader(state, input[i], stack, sp);
-
-		switch (state)
-		{
-		case 'S':
-			if (prevstate == 'C')
-			{
-				Surface *surface = new Surface;
-
-				strcpy(surface->name, name);
-				surface->num_cmd = cmds.size();
-				for (int j = 0; j < surface->num_cmd; j++)
-				{
-					surface->cmd[j] = cmds[j];
-					compress_spaces(surface->cmd[j]);
-					surface->cmd[j] = strstr(surface->cmd[j], "textures/");
-					if (surface->cmd[j] != NULL)
-					{
-						char *pdata = strstr(surface->cmd[j], ".tga");
-						if (pdata != NULL && strlen(pdata) > 4)
-						{
-							pdata[4] = '\0';
-						}
-
-						pdata = strstr(surface->cmd[j], ".jpg");
-						if (pdata != NULL && strlen(pdata) > 4)
-						{
-							pdata[4] = '\0';
-						}
-					}
-
-
-				}
-				surface_list.push_back(surface);
-			}
-			name[j++] = input[i];
-			name[j] = '\0';
-			break;
-		case 'C': //name
-			if (j > 0)
-			{
-				j = 0;
-			}
-			if (prevstate == 'E')
-			{
-				char *data = new char[512];
-				memset(data, 0, 512);
-				strcpy(data, cmd);
-				cmds.push_back(data);
-				j = 0;
-			}
-			break;
-
-		case 'E':
-			if (input[i] != '\r' && input[i] != '\n' && input[i] != '\t' && input[i] != '{')
-				cmd[j++] = input[i];
-			break;
-		case 'K': //command
-			if (prevstate == 'K')
-			{
-				cmd[j++] = input[i];
-				cmd[j] = '\0';
-				break;
-			}
-		case 'B':
-			j = 0;
-			break;
-		}
-	}
-
-	if (state == 'F' && sp == 0)
-		return true;
-	else
-		return false;
-}
-
-char machine_shader(char state, char input, char *stack, int &sp)
-{
-	/*
-
-	S:
-	'\n' -> B
-	B->C
-
-	C:
-	'\n' -> D
-	'{' ->E
-	D ->C
-
-	E
-	'\n' ->F
-	'}' ->C
-	*/
+//	printf("State: %c Input: %c\n", state, input);
 
 	switch (state)
 	{
-	case 'S':
+	case 'Y':
 		switch (input)
 		{
-		case '{':
-			push('}', stack, sp);
-			return 'E';
-		case '\r':
-			return 'C';
+		case '/':
+			return 'A';
 		case '\n':
-			return 'C';
-		case '\0':
-			return 'F';
+			return 'Y';
 		}
 		return 'S';
+	case 'S':
 
+		switch (input)
+		{
+		case '/':
+			return 'A';
+		case '\n':
+			return 'C';
+		}
+		return 'S';
+	case 'A':
+		switch (input)
+		{
+		case '/':
+			return 'B';
+		}
+		return 'S';
+	case 'B':
+		switch (input)
+		{
+		case '\n':
+			return 'Z';
+		}
+		return 'B';
+	case 'Z':
+		switch (input)
+		{
+		case '\n':
+			return 'Z';
+		case ' ':
+			return 'Z';
+		case '\t':
+			return 'Z';
+		case '/':
+			return 'A';
+		default:
+			return 'S';
+		}
+		return 'Z';
 	case 'C':
 		switch (input)
 		{
+		case '/':
+			return 'D';
 		case '{':
-			push('}', stack, sp);
-			return 'E';
+			return 'F';
 		case '}':
-			pop('}', stack, sp);
 			return 'S';
 		}
 		return 'C';
-
+	case 'D':
+		switch (input)
+		{
+		case '/':
+			return 'E';
+		}
+		return 'C';
 	case 'E':
 		switch (input)
 		{
-		case '}':
-			pop('}', stack, sp);
-			return 'C';
 		case '\n':
-			return 'E';
+			return 'C';
 		}
 		return 'E';
 	case 'F':
+		switch (input)
+		{
+		case '/':
+			return 'G';
+		case '}':
+			return 'Y';
+		case '{':
+			return 'I';
+		}
 		return 'F';
+	case 'G':
+		switch (input)
+		{
+		case '/':
+			return 'H';
+		}
+		return 'F';
+	case 'H':
+		switch (input)
+		{
+		case '\n':
+			return 'F';
+		}
+		return 'H';
+	case 'I':
+		switch (input)
+		{
+		case '}':
+			return 'F';
+		case '/':
+			return 'J';
+		}
+		return 'I';
+	case 'J':
+		switch (input)
+		{
+		case '/':
+			return 'K';
+		}
+		return 'I';
+	case 'K':
+		switch (input)
+		{
+		case '\n':
+			return 'I';
+		}
+		return 'K';
 	}
-	return '\0';
+
+	return 'Z';
 }
 
+void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
+{
+	char state = 'S';
+	char prevstate = 'S';
+	int old_pos = 0;
+	int stage_num = 0;
+	char name[512] = { 0 };
+	char basecmd[512] = { 0 };
+	int num_cmd = 0;
+	char stagecmd[512] = { 0 };
+	int j = 0;
+	bool first = true;
 
+	//        printf("%s\n", input);
+
+	Surface *surface = new Surface;
+	surface->num_cmd = 0;
+	surface->num_stage = 0;
+	memcpy(surface->file, filename, strlen(filename) + 1);
+
+	for (int i = 0; i < strlen(input); i++)
+	{
+		prevstate = state;
+
+		//completely skip line returns
+		if (input[i] == '\r')
+		{
+			input[i] = '\n';
+			continue;
+		}
+
+		state = machine_shader(input[i], state);
+		//            printf("basecmd %s\n", basecmd);
+
+		switch (state)
+		{
+		case 'B':
+		case 'E':
+		case 'H':
+		case 'K':
+			old_pos = i;
+			break;
+		case 'Z':
+			old_pos = i;
+			break;
+
+		case 'S':
+			if (prevstate == 'F' || prevstate == 'B' || prevstate == 'E' || prevstate == 'H' || prevstate == 'K')
+			{
+				old_pos = i;
+			}
+			if (prevstate == 'Z' || prevstate == 'Y')
+			{
+				old_pos = i - 1;
+				i--;
+			}
+			break;
+		case 'C':
+			if (prevstate == 'S')
+			{
+				if (first == false)
+				{
+					surface_list.push_back(surface);
+				}
+				first = false;
+				surface = new Surface;
+				memcpy(surface->file, filename, strlen(filename) + 1);
+				// bad naming, mixed lines in a stage from number of texture stages, will fix
+				surface->stage.stage_num = 0;
+				surface->num_cmd = 0;
+				surface->num_stage = 0;
+				num_cmd = 0;
+				stage_num = 0;
+
+				memset(surface->name, 0, sizeof(surface->name));
+//				memcpy(name, &input[old_pos + 1], i - old_pos - 1);
+				memcpy(surface->name, &input[old_pos + 1], i - old_pos - 1);
+				surface->name[i - old_pos - 2] = '\0';
+				//printf("name is [%s]\n", name);
+				old_pos = i;
+				stage_num = 0;
+				num_cmd = 0;
+				j = 0;
+			}
+			break;
+		case 'F':
+			if (input[i] == '\n' && input[i - 1] != '{')
+			{
+				int size = strlen(basecmd) + 1;
+				basecmd[j++] = '\0';
+//				printf("basecmd is [%s]\n", basecmd);
+				surface->cmd[num_cmd] = new char[size];
+				memset(surface->cmd[num_cmd], 0, size);
+				memcpy(surface->cmd[num_cmd++], basecmd, size);
+				surface->num_cmd++;
+				old_pos = i;
+				j = 0;
+			}
+			if (input[i - 1] == '{')
+			{
+				j = 0;
+			}
+			if (input[i] != '\n' && input[i] != '{')
+				basecmd[j++] = input[i];
+			break;
+		case 'I':
+			if (input[i] == '\n' && input[i - 1] != '{')
+			{
+				int size = strlen(stagecmd) + 1;
+
+//				printf("stagecmd is [%s] stage_num is %d\n", stagecmd, stage_num);
+				surface->stage.stage[stage_num] = new char[size];
+				memset(surface->stage.stage[stage_num], 0, size);
+				memcpy(surface->stage.stage[stage_num], stagecmd, size);
+//				memcpy(surface->stage.stage[stage_num], &input[old_pos + 1], i - old_pos - 1);
+				old_pos = i;
+				stage_num++;
+				surface->num_stage++;
+				j = 0;
+			}
+			if (input[i - 1] == '{')
+			{
+				j = 0;
+			}
+			if (prevstate == 'J')
+				stagecmd[j++] = '/';
+			if (input[i] != '\n' && input[i] != '{')
+				stagecmd[j++] = input[i];
+			break;
+		}
+	}
+}
 void push(char input, char *stack, int &sp)
 {
 	stack[sp] = input;
