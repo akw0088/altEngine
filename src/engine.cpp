@@ -178,7 +178,7 @@ void Engine::load(char *level)
 	}
 
 
-	/*
+	
 	for (int i = 0; i < num_shader; i++)
 	{
 		char *shader_file = NULL;
@@ -190,7 +190,7 @@ void Engine::load(char *level)
 			free((void *)shader_file);
 		}
 	}
-*/
+
 	menu.delta("entities", *this);
 	gfx.clear();
 	menu.render(global);
@@ -2714,12 +2714,12 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	if (data == NULL)
 	{
-//		debugf("Unable to load texture %s\n", file_name);
+		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
 	else
 	{
-		debugf("Loaded %s from disk\n", file_name);
+//		debugf("Loaded %s from disk\n", file_name);
 	}
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, STBI_rgb_alpha);
