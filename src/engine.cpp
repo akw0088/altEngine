@@ -478,7 +478,8 @@ void Engine::render_shadowmaps()
 				//gfx.CullFace("back");
 
 				mlight2.Select();
-				mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
+				vec3 offset = vec3(0.0f, 0.0f, 0.0f);
+				mlight2.Params(mvp, light_list, light_list.size(), offset);
 				map.render(entity_list[i]->position, mvp, gfx);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
@@ -533,11 +534,12 @@ void Engine::render_scene(bool lights)
 	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
+	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 
 	if (lights)
-		mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
+		mlight2.Params(mvp, light_list, light_list.size(), offset);
 	else
-		mlight2.Params(mvp, light_list, 0, vec3(0.0f, 0.0f, 0.0f));
+		mlight2.Params(mvp, light_list, 0, offset);
 
 	map.render(camera_frame.pos, mvp, gfx);
 //	gfx.SelectShader(0);
@@ -570,9 +572,10 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	//shadowmap.Select();
 		
 	render_entities(transformation, lights);
+	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 	mlight2.Select();
 	mvp = transformation * projection;
-	mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
+	mlight2.Params(mvp, light_list, light_list.size(), offset);
 
 
 //	shadowmap.Params(mvp, shadowmvp);
@@ -634,16 +637,17 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 		mvp.m[11] = temp.w;
 	}
 
-	 mvp = trans.premultiply(mvp.m) * projection;
+	mvp = trans.premultiply(mvp.m) * projection;
+	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 
 
 	if (lights)
 	{
-		mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
+		mlight2.Params(mvp, light_list, light_list.size(), offset);
 	}
 	else
 	{
-		mlight2.Params(mvp, light_list, 0, vec3(0.0f, 0.0f, 0.0f));
+		mlight2.Params(mvp, light_list, 0, offset);
 	}
 	zcc.render(gfx, tick_num >> 1);
 }
@@ -743,14 +747,15 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			return;
 
 		mvp = trans.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
+		vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 
 		if (lights)
 		{
-			mlight2.Params(mvp, light_list, light_list.size(), vec3(0.0f, 0.0f, 0.0f));
+			mlight2.Params(mvp, light_list, light_list.size(), offset);
 		}
 		else
 		{
-			mlight2.Params(mvp, light_list, 0, vec3(0.0f, 0.0f, 0.0f));
+			mlight2.Params(mvp, light_list, 0, offset);
 		}
 		zcc.render(gfx, tick_num >> 1);
 	}

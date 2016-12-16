@@ -9,7 +9,6 @@
 void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
 {
 	static int light_num = 0;
-	static int model_num = 0;
 
 	if (strcmp(key, "origin") == 0)
 	{
@@ -609,13 +608,11 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 	char prevstate = 'S';
 	int old_pos = 0;
 	int stage_num = 0;
-	char name[512] = { 0 };
 	char basecmd[512] = { 0 };
 	int num_cmd = 0;
 	char stagecmd[512] = { 0 };
 	int j = 0;
 	bool first = true;
-	bool first_stage = true;
 
 	//        printf("%s\n", input);
 
