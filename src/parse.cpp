@@ -218,6 +218,8 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			if (entity.trigger == NULL)
 				entity.trigger = new Trigger(&entity, audio);
 
+			if (entity.rigid)
+				entity.rigid->gravity = false;
 
 			sprintf(entity.type, "trigger_teleport");
 			sprintf(entity.trigger->action, "teleport %s %d", entity.target, entity_num);
@@ -231,6 +233,9 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		{
 			if (entity.trigger == NULL)
 				entity.trigger = new Trigger(&entity, audio);
+
+			if (entity.rigid)
+				entity.rigid->gravity = false;
 
 			sprintf(entity.trigger->action, "push %s", entity.target);
 		}

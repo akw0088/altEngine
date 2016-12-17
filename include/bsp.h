@@ -42,7 +42,8 @@ public:
 	}
 
 
-	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth);
+//	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth);
+	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug);
 
 	bool loaded;
 	bspData_t	data;

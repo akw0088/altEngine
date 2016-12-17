@@ -528,7 +528,7 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	}
 }
 
-bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth)
+bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -557,20 +557,21 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 		brush_t	*brush = &data.Brushes[*index];
 		int brush_index = brush->first_side;
 		int num_sides = brush->num_sides;
+		int count = 0;
 
 
 		// Let water pass through for water flag
 		if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
 		{
 			// Ignore non solid brushes
-			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
+			if ((data.Material[brush->material].contents & ~CONTENTS_PLAYERCLIP) == 0)
 			{
 				continue;
 			}
 		}
 
-		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
-			continue;
+//		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
+//			continue;
 
 		for( int j = 0; j < num_sides; j++)
 		{
@@ -589,7 +590,7 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 				// Set underwater flag + depth
 				water = true;
 				water_depth = -d;
-//					printf("underwater depth = %f\n", d);
+//				printf("underwater depth = %f\n", d);
 				continue;
 			}
 
@@ -597,22 +598,35 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 			if (data.Material[brush->material].surface & SURF_NONSOLID)
 				continue;
 
-//			if (data.Material[brush->material].surface & SURF_NODRAW)
-//s				continue;
 
 
 			plane->normal = data.Plane[plane_index].normal;
 			plane->d = data.Plane[plane_index].d;
 			*depth = d;
+			count++;
+
+			if (debug)
+			{
+				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\n", i,
+					data.Material[brush->material].name,
+					data.Material[brush->material].contents,
+					data.Material[brush->material].surface,
+					d, count);
 			/*
-			printf("Inside brush %d with texture %s and flags %X surf %X\nDepth is %3.3f\n", i,
-				data.Material[brush->material].name,
-				data.Material[brush->material].contents,
-				data.Material[brush->material].surface,
-				d);
-				*/	
-			return true;
+				for (unsigned int k = 0; k < surface_list.size(); k++)
+				{
+					if (strcmp(data.Material[brush->material].name, surface_list[k]->name))
+					{
+						printf("surfaceparm_noimpact %d\n", (int)surface_list[k]->surfaceparm_noimpact);
+						break;
+					}
+				}
+				*/
+			}
 		}
+
+		if (count == num_sides)
+			return true;
 	}
 
 
@@ -947,7 +961,7 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
 		//printf("Trying texture [%s]\n", texture);
-		if (surface_list[j]->stage[k].map)
+		if (surface_list[j]->stage[k].map && surface_list[j]->stage[k].tcgen_env == false)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
 			tex_object->texObj = load_texture(gfx, texture_name);
@@ -1021,17 +1035,19 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 			printf("******* Failed to find texture for shader %s\n", material->name);
 			tex_object[i].texObj = 1; // no_tex image
 
-			for (int j = 0; j < surface_list.size(); j++)
+			/*
+			for (unsigned int j = 0; j < surface_list.size(); j++)
 			{
 				if (strcmp(material->name, surface_list[j]->name) == 0)
 				{
-					for (int k = 0; j < surface_list[j]->num_stage; j++)
+					for (unsigned int k = 0; k < surface_list[k]->num_stage; k++)
 					{
 						printf("debug here\n");
 					}
 
 				}
 			}
+			*/
 
 
 		}
