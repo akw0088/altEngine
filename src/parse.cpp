@@ -604,15 +604,16 @@ char machine_shader(char input, char state)
 
 void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 {
-	char state = 'S';
-	char prevstate = 'S';
-	int old_pos = 0;
-	int stage_num = 0;
-	char basecmd[512] = { 0 };
-	int num_cmd = 0;
-	char stagecmd[512] = { 0 };
-	int j = 0;
-	bool first = true;
+	char	basecmd[512] = { 0 };
+	char	stagecmd[512] = { 0 };
+	int		old_pos = 0;
+	int		stage_num = 0;
+	int		num_cmd = 0;
+	int		j = 0;
+	int		length = strlen(input);
+	char	state = 'S';
+	char	prevstate = 'S';
+	bool	first = true;
 
 	//        printf("%s\n", input);
 
@@ -621,7 +622,7 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 	surface->num_stage = 0;
 	memcpy(surface->file, filename, strlen(filename) + 1);
 
-	for (int i = 0; i < strlen(input); i++)
+	for (int i = 0; i < length; i++)
 	{
 		prevstate = state;
 
@@ -735,6 +736,7 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 		}
 	}
 }
+
 void push(char input, char *stack, int &sp)
 {
 	stack[sp] = input;

@@ -14,7 +14,7 @@
 //#define DEFERRED
 
 char *shader_list[] = {
-	"scripts/test.shader",
+//	"scripts/test.shader",
 	"scripts/base.shader",
 	"scripts/base_button.shader",
 	"scripts/base_floor.shader",
@@ -42,7 +42,7 @@ char *shader_list[] = {
 	"scripts/skin.shader",
 	"scripts/sky.shader"
 };
-int num_shader = 27;
+int num_shader = 26;
 
 
 char *pk3list[] = { "media/pak0.pk3",
@@ -113,13 +113,32 @@ void Engine::init(void *p1, void *p2)
 	spawn = -1;
 	testObj = 0;
 
+	printf("Loading md5 models...\n");
 	load_md5();
+	printf("done\n");
 
 
 
 	fb_width = 1280;
 	fb_height = 1280;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+
+	//parse shaders -- kinda slow, likely from surface allocation
+	printf("Loading quake3 shaders...\n");
+	for (int i = 0; i < num_shader; i++)
+	{
+		char *shader_file = NULL;
+		get_zipfile("media/pak0.pk3", shader_list[i], (unsigned char **)&shader_file, NULL);
+
+		printf("Parsing %s...\n", shader_list[i]);
+		if (shader_file)
+		{
+			parse_shader(shader_file, surface_list, shader_list[i]);
+			free((void *)shader_file);
+		}
+	}
+	printf("done\n");
+
 
 
 //	shadowmap.init(&gfx);
@@ -174,20 +193,6 @@ void Engine::load(char *level)
 		if (entity_list[i]->model_ref != -1)
 		{
 			entity_list[i]->position = map.model_origin(entity_list[i]->model_ref);
-		}
-	}
-
-
-	
-	for (int i = 0; i < num_shader; i++)
-	{
-		char *shader_file = NULL;
-		get_zipfile("media/pak0.pk3", shader_list[i] , (unsigned char **)&shader_file, NULL);
-
-		if (shader_file)
-		{
-			parse_shader(shader_file, surface_list, shader_list[i]);
-			free((void *)shader_file);
 		}
 	}
 
