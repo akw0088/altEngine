@@ -602,6 +602,18 @@ char machine_shader(char input, char state)
 	return 'Z';
 }
 
+
+void handle_command(char *basecmd, Surface *surface)
+{
+	if (basecmd == NULL || surface == NULL)
+		return;
+
+	if (strstr(basecmd, "nomipmaps"))
+	{
+		surface->nomipmaps = true;
+	}
+}
+
 void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 {
 	char	basecmd[512] = { 0 };
@@ -698,6 +710,7 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 				surface->cmd[num_cmd] = new char[size];
 				memset(surface->cmd[num_cmd], 0, size);
 				memcpy(surface->cmd[num_cmd++], basecmd, size);
+				handle_command(basecmd, surface);
 				surface->num_cmd++;
 				old_pos = i;
 				j = 0;

@@ -7,6 +7,30 @@ typedef struct
 {
 	int stage_num;
 	char *stage[64];
+
+	bool blendfunc_blend;
+	bool blendfunc_add;
+	bool blendfunc_filter;
+	bool blend_zero_one;
+	bool blend_one_zero;
+	bool blend_one_one;
+	bool blend_one_srccolor;
+	bool blend_dstcolor_one;
+	bool blend_dstcolor_zero;
+	bool alpha_func_gt0;
+	bool depth_write;
+	bool depthfunc_equal;
+	bool rgbgen_identity;
+	bool tcmod_rotate;
+	float tcmod_rotate_value;
+	bool tcmod_scale;
+	vec2 tcmod_scale_value;
+	bool tcmod_scroll;
+	vec2 tcmod_scroll_value;
+	bool tcmod_turb;
+	vec2 tcmod_turb_value;
+	bool tcgen_env;
+
 } stage_t;
 
 
@@ -19,6 +43,30 @@ struct Surface
 	stage_t stage;
 	int num_cmd;
 	int num_stage;
+
+	bool nomipmaps;
+	bool nopicmip;
+	bool surfaceparm_trans;
+	bool surfaceparm_nonsolid;
+	bool surfaceparm_water;
+	bool surfaceparm_fog;
+	bool surfaceparm_sky;
+	bool surfaceparm_nolightmap;
+	bool surfaceparm_nodamage;
+	bool surfaceparm_noimpact;
+	bool surfaceparm_nomarks;
+	bool surfaceparm_metalsteps;
+	bool surfaceparm_alphashadow;
+	bool q3map_surfacelight;
+	int q3map_surfacelight_value;
+	bool q3map_sun;
+	vec4 q3map_sun_value;
+	bool cull_disable;
+	bool cull_none;
+	bool cull_backside;
+	bool cull_twosided;
+	bool deformVertexes;
+
 };
 
 class Bsp
