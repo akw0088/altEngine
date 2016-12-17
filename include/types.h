@@ -225,6 +225,7 @@ typedef struct
 	bool anim_map;
 	char anim_map_tex[512]; // frequency, tex1-tex8
 	float anim_map_freq;
+	bool lightmap;
 
 	bool blendfunc_add;
 	bool blendfunc_filter;

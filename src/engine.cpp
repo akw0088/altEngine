@@ -2729,7 +2729,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	if (data == NULL)
 	{
-		debugf("Unable to load texture %s\n", file_name);
+//		debugf("Unable to load texture %s\n", file_name);
 		return 0;
 	}
 	else

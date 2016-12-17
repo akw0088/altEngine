@@ -723,7 +723,14 @@ void handle_stage(char *stagecmd, stage_t *stage)
 {
 	char *ret = NULL;
 
-	if ((ret = strstr(stagecmd, "animmap ")))
+
+	
+
+	if (strstr(stagecmd, "$lightmap"))
+	{
+		stage->lightmap = true;
+	}
+	else if ((ret = strstr(stagecmd, "animmap ")))
 	{
 		int match = 0;
 		char tex[512] = { 0 };

@@ -907,12 +907,12 @@ int Bsp::load_from_file(char *filename, Graphics &gfx)
 	char	texture_name[LINE_SIZE] = { 0 };
 	int tex_obj;
 
-	printf("Attempting to load %s, trying .tga\n", filename);
+//	printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
 	tex_obj = load_texture(gfx, texture_name);
 	if (tex_obj == 0)
 	{
-		printf("Attempting to load %s, trying .jpg\n", filename);
+//		printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
 		tex_obj = load_texture(gfx, texture_name);
 	}
@@ -929,7 +929,7 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 	{
 		if (strcmp(name, surface_list[j]->name) == 0)
 		{
-			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
+//			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
 			tex_object->index = j;
 			break;
 		}
@@ -938,11 +938,12 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 
 	if (j == surface_list.size())
 	{
+		tex_object->texObj = 0;
 		return 0;
 	}
 
 	//First stage is NULL
-	for (unsigned int k = 1; k < surface_list[j]->num_stage; k++)
+	for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
 		//printf("Trying texture [%s]\n", texture);
@@ -963,9 +964,9 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 		}
 
 
-		if (tex_object->texObj != 0)
+		if (tex_object->texObj != 0 && tex_object->texObj != -1)
 		{
-			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
+//			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
 			tex_object->stage = k;
 			return tex_object->texObj;
 		}
@@ -980,11 +981,13 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 		tex_object->texObj = load_texture(gfx, texture_name);
 		if (tex_object->texObj != 0)
 		{
-			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
+//			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
 			tex_object->stage = k;
 			return tex_object->texObj;
 		}
 	}
+
+	tex_object->texObj = 0;
 	return 0;
 }
 
@@ -1007,17 +1010,30 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 	{
 		material_t	*material = &data.Material[i];
 		
-		tex_object[i].texObj = load_from_file(material->name, gfx);
+		load_from_shader(material->name, surface_list, &tex_object[i], gfx);
 		if (tex_object[i].texObj == 0)
 		{
-			load_from_shader(material->name, surface_list, &tex_object[i], gfx);
+			tex_object[i].texObj = load_from_file(material->name, gfx);
 		}
 		
-
 		if (tex_object[i].texObj == 0)
 		{
 			printf("******* Failed to find texture for shader %s\n", material->name);
 			tex_object[i].texObj = 1; // no_tex image
+
+			for (int j = 0; j < surface_list.size(); j++)
+			{
+				if (strcmp(material->name, surface_list[j]->name) == 0)
+				{
+					for (int k = 0; j < surface_list[j]->num_stage; j++)
+					{
+						printf("debug here\n");
+					}
+
+				}
+			}
+
+
 		}
 
 
