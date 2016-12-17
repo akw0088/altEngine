@@ -269,7 +269,7 @@ struct surface_t
 	char name[128];
 	//	char *cmd[64];	//raw parser output
 	stage_t stage[64];
-	unsigned int num_cmd;
+//	unsigned int num_cmd;
 	unsigned int num_stage;
 
 	bool nomipmaps;
@@ -318,7 +318,8 @@ struct surface_t
 // Maps opengl texture object to q3shader index and stage (if available)
 typedef struct
 {
-	int texObj;
+	int texObj[MAX_TEXTURES];
 	int index; // index into surface list (if it exists)
 	int stage; // stage texture was loaded from
+	int num_tex;
 } texture_t;

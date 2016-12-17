@@ -47,6 +47,15 @@ private:
 	int	texture0;
 	int texture1;
 	int texture2;
+	int	texture3;
+	int texture4;
+	int texture5;
+	int	texture6;
+	int texture7;
+
+	int texture_normalmap;
+	int texture_lightmap;
+
 	int u_num_lights;
 	int u_position;
 	int u_color;

@@ -30,8 +30,8 @@ public:
 //	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
 	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list);
-	int load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *tex_object, Graphics &gfx);
-	int load_from_file(char *filename, Graphics &gfx);
+	void load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *tex_object, Graphics &gfx);
+	void load_from_file(char *filename, texture_t &texObj, Graphics &gfx);
 
 
 	void unload(Graphics &gfx);

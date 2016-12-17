@@ -78,7 +78,9 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
-		tex_object[i].texObj = (unsigned int)-1;
+		for (int j = 0; j < 8; j++)
+			tex_object[i].texObj[j] = (unsigned int)0; // zero deselects a texture
+		tex_object[i].num_tex = 0;
 		tex_object[i].index = (unsigned int)-1;
 		tex_object[i].stage = (unsigned int)-1;
 	}
@@ -440,10 +442,13 @@ void Bsp::unload(Graphics &gfx)
 	//Todo, try to find a way to keep loaded textures between map loads
 	for(unsigned int i = 0; i < data.num_materials; i++)
 	{
-		if (tex_object[i].texObj != -1)
+		if (tex_object[i].texObj[tex_object->num_tex] != -1)
 		{
-			gfx.DeleteTexture(tex_object[i].texObj);
-			tex_object[i].texObj = -1;
+			for(int j = 0; j > tex_object->num_tex; j++)
+			{
+				gfx.DeleteTexture(tex_object[i].texObj[j]);
+				tex_object[i].texObj[j] = -1;
+			}
 			tex_object[i].index = -1;
 			tex_object[i].stage = -1;
 		}
@@ -564,14 +569,9 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 		if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
 		{
 			// Ignore non solid brushes
-			if ((data.Material[brush->material].contents & ~CONTENTS_PLAYERCLIP) == 0)
-			{
+			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
 				continue;
-			}
 		}
-
-//		if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") == 0)
-//			continue;
 
 		for( int j = 0; j < num_sides; j++)
 		{
@@ -598,13 +598,25 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 			if (data.Material[brush->material].surface & SURF_NONSOLID)
 				continue;
 
-
-
 			plane->normal = data.Plane[plane_index].normal;
 			plane->d = data.Plane[plane_index].d;
 			*depth = d;
 			count++;
 
+
+			if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") != 0)
+			{
+				//one is enough for almost everything except for some weird brushes
+				if (debug)
+				{
+					printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\n", i,
+						data.Material[brush->material].name,
+						data.Material[brush->material].contents,
+						data.Material[brush->material].surface,
+						*depth, count);
+				}
+				return true;
+			}
 		}
 
 		if (count == num_sides)
@@ -650,7 +662,10 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	}
 */
 
-	gfx.SelectTexture(0, tex_object[face->material].texObj);
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		gfx.SelectTexture(i+3, tex_object[face->material].texObj[i]);
+	}
 #ifdef LIGHTMAP
 	// surfaces that arent lit with lightmaps eg: skies
 	if (face->lightmap != -1)
@@ -689,7 +704,8 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index + i]);
 
 		// Render each row
-		gfx.SelectTexture(0, tex_object[face->material].texObj);
+		for(int j = 0; j < MAX_TEXTURES; j++)
+			gfx.SelectTexture(j+3, tex_object[face->material].texObj[j]);
 #ifdef LIGHTMAP
 		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 #endif
@@ -714,7 +730,10 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 {
-	gfx.SelectTexture(0, tex_object[face->material].texObj);
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		gfx.SelectTexture(i + 3, tex_object[face->material].texObj[i]);
+	}
 	gfx.SelectTexture(1, normal_object[face->material]);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -774,7 +793,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 						surface->stage[stage].blendfunc_filter )
 					{
 						blend = true;
-						break;
 					}
 
 					if (blend)
@@ -918,35 +936,43 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
-int Bsp::load_from_file(char *filename, Graphics &gfx)
+void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx)
 {
 	char	texture_name[LINE_SIZE] = { 0 };
-	int tex_obj;
+	int		tex_object = 0;
 
-//	printf("Attempting to load %s, trying .tga\n", filename);
+	printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
-	tex_obj = load_texture(gfx, texture_name);
-	if (tex_obj == 0)
+	tex_object = load_texture(gfx, texture_name);
+
+	if (tex_object == 0)
 	{
-//		printf("Attempting to load %s, trying .jpg\n", filename);
+		printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
-		tex_obj = load_texture(gfx, texture_name);
+		tex_object = load_texture(gfx, texture_name);
 	}
-	return tex_obj;
+	if (tex_object != 0)
+	{
+		printf("loaded %s into unit %d\n", filename, texObj.num_tex);
+		texObj.texObj[texObj.num_tex] = tex_object;
+		texObj.num_tex++;
+	}
+
 }
 
-int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *tex_object, Graphics &gfx)
+void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx)
 {
 	char			texture_name[LINE_SIZE] = { 0 };
+	int				tex_object = 0;
 	unsigned int	j = 0;
 
-	//printf("Attempting to load %s, trying surface_list\n", material->name);
+	printf("Attempting to load %s, trying surface_list\n", name);
 	for (j = 0; j < surface_list.size(); j++)
 	{
 		if (strcmp(name, surface_list[j]->name) == 0)
 		{
-//			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
-			tex_object->index = j;
+			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
+			texObj->index = j;
 			break;
 		}
 	}
@@ -954,24 +980,23 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 
 	if (j == surface_list.size())
 	{
-		tex_object->texObj = 0;
-		return 0;
+		return;
 	}
 
 	//First stage is NULL
 	for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
-		//printf("Trying texture [%s]\n", texture);
 		if (surface_list[j]->stage[k].map && surface_list[j]->stage[k].tcgen_env == false)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
-			tex_object->texObj = load_texture(gfx, texture_name);
+			printf("Trying texture [%s]\n", texture_name);
+			tex_object = load_texture(gfx, texture_name);
 		}
 		else if (surface_list[j]->stage[k].clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
-			tex_object->texObj = load_texture(gfx, texture_name);
+			tex_object = load_texture(gfx, texture_name);
 		}
 		else if (surface_list[j]->stage[k].anim_map)
 		{
@@ -980,31 +1005,31 @@ int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture
 		}
 
 
-		if (tex_object->texObj != 0 && tex_object->texObj != -1)
+		if (tex_object != 0 && tex_object != -1)
 		{
-//			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
-			tex_object->stage = k;
-			return tex_object->texObj;
+			printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
+			texObj->texObj[texObj->num_tex++] = tex_object;
+			texObj->stage = k;
+			continue;
 		}
 
 		if (strlen(texture_name) > 4)
 		{
-			//printf("Trying jpeg texture [%s]\n", texture_name);
 			texture_name[strlen(texture_name) - 4] = '\0';
 			strcat(texture_name, ".jpg");
+			printf("Trying jpeg texture [%s]\n", texture_name);
 		}
 
-		tex_object->texObj = load_texture(gfx, texture_name);
-		if (tex_object->texObj != 0)
+		tex_object = load_texture(gfx, texture_name);
+		if (tex_object != 0)
 		{
-//			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
-			tex_object->stage = k;
-			return tex_object->texObj;
+			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
+			texObj->stage = k;
+			texObj->texObj[texObj->num_tex++] = tex_object;
 		}
 	}
 
-	tex_object->texObj = 0;
-	return 0;
+	return;
 }
 
 
@@ -1027,31 +1052,16 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 		material_t	*material = &data.Material[i];
 		
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx);
-		if (tex_object[i].texObj == 0)
+		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
 		{
-			tex_object[i].texObj = load_from_file(material->name, gfx);
+			load_from_file(material->name, tex_object[i], gfx);
 		}
 		
-		if (tex_object[i].texObj == 0)
+		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
 		{
 			printf("******* Failed to find texture for shader %s\n", material->name);
-			tex_object[i].texObj = 1; // no_tex image
-
-			/*
-			for (unsigned int j = 0; j < surface_list.size(); j++)
-			{
-				if (strcmp(material->name, surface_list[j]->name) == 0)
-				{
-					for (unsigned int k = 0; k < surface_list[k]->num_stage; k++)
-					{
-						printf("debug here\n");
-					}
-
-				}
-			}
-			*/
-
-
+//			tex_object[i].texObj[tex_object[i].num_tex] = 1; // no_tex image
+//			tex_object->num_tex++;
 		}
 
 

@@ -128,6 +128,7 @@ void Engine::init(void *p1, void *p2)
 	{
 		char *shader_file = NULL;
 		get_zipfile("media/pak0.pk3", shader_list[i], (unsigned char **)&shader_file, NULL);
+		//shader_file = get_file(shader_list[i], NULL);
 
 		printf("Parsing %s...\n", shader_list[i]);
 		if (shader_file)
@@ -640,7 +641,7 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 	}
 
 	mvp = trans.premultiply(mvp.m) * projection;
-	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
+	vec3 offset = entity_list[i]->position;
 
 
 	if (lights)
@@ -749,7 +750,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			return;
 
 		mvp = trans.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-		vec3 offset = vec3(0.0f, 0.0f, 0.0f);
+		vec3 offset = entity_list[entity_list.size() - 1]->position;
 
 		if (lights)
 		{

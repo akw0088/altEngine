@@ -872,7 +872,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 	char		stagecmd[512] = { 0 };
 	int			old_pos = 0;
 	int			num_stage = 0;
-	int			num_cmd = 0;
+//	int			num_cmd = 0;
 	int			j = 0;
 	const int	length = strlen(input);
 	char		state = 'S';
@@ -929,6 +929,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'C':
 			if (prevstate == 'S')
 			{
+				surface->num_stage++;
 				surface = new surface_t;
 				memset(surface, 0, sizeof(surface_t));
 				memcpy(surface->file, filename, strlen(filename) + 1);
@@ -941,7 +942,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				//printf("name is [%s]\n", name);
 				old_pos = i;
 				num_stage = 0;
-				num_cmd = 0;
+//				num_cmd = 0;
 				j = 0;
 			}
 			break;
@@ -955,8 +956,8 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 //				memset(surface->cmd[num_cmd], 0, size);
 //				memcpy(surface->cmd[num_cmd], basecmd, size);
 				handle_command(basecmd, surface);
-				surface->num_cmd++;
-				num_cmd++;
+//				surface->num_cmd++;
+//				num_cmd++;
 				old_pos = i;
 				j = 0;
 			}
@@ -964,6 +965,12 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 			{
 				j = 0;
 			}
+			if (input[i - 1] == '}')
+			{
+				surface->num_stage++;
+				num_stage++;
+			}
+
 			if (input[i] != '\n' && input[i] != '{' && input[i-1] != '{' && input[i] != '\t')
 				basecmd[j++] = input[i];
 			break;
@@ -978,8 +985,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				memcpy(stagecmd, &input[old_pos + 1], i - old_pos - 1);
 				stagecmd[i - old_pos - 2] = '\0';
 
-				handle_stage(stagecmd, &(surface->stage[num_stage++]));
-				surface->num_stage++;
+				handle_stage(stagecmd, &(surface->stage[num_stage]));
 				old_pos = i;
 				j = 0;
 			}

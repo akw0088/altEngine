@@ -181,9 +181,18 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
-	glUniform1i(texture0, 0);
-	glUniform1i(texture1, 1);
-	glUniform1i(texture2, 2);
+	glUniform1i(texture0, 3);
+	glUniform1i(texture1, 4);
+	glUniform1i(texture3, 5);
+	glUniform1i(texture4, 6);
+	glUniform1i(texture5, 7);
+	glUniform1i(texture6, 8);
+	glUniform1i(texture7, 9);
+
+	glUniform1i(texture_lightmap, 1);
+	glUniform1i(texture_normalmap, 2);
+
+
 	glUniform1i(u_num_lights, j);
 	glUniform3fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);

@@ -247,6 +247,9 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
 	gfx->SelectVertexBuffer(Model::quad_vertex);
 	for(unsigned int i = 0; i < strlen(str); i++)
 	{
+		if (str[i] == '\n')
+			continue;
+
 		font.Select();
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
 		gfx->DrawArrayTri(0, 0, 6, 4);

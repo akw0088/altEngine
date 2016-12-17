@@ -244,7 +244,7 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
-		gfx.SelectTexture(0, tex_object[i]);
+		gfx.SelectTexture(3, tex_object[i]);
 		gfx.SelectTexture(2, normal_object[i]);
 		gfx.SelectIndexBuffer(current_buffer->frame_index[frame_step][i]);
 		gfx.SelectVertexBuffer(current_buffer->frame_vertex[frame_step][i]);

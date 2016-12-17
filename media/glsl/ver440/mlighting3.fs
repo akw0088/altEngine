@@ -22,9 +22,19 @@ uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform mat4		mvp;
 
-layout(binding=0) uniform sampler2D texture0;
-layout(binding=1) uniform sampler2D texture1;
-layout(binding=2) uniform sampler2D texture2;
+layout(binding=1) uniform sampler2D texture_lightmap; //lightmap
+layout(binding=2) uniform sampler2D texture_normalmap; //normalmap
+
+layout(binding=3) uniform sampler2D texture0;// 8 possible textures
+layout(binding=4) uniform sampler2D texture1;
+layout(binding=5) uniform sampler2D texture2;
+layout(binding=6) uniform sampler2D texture3;
+layout(binding=7) uniform sampler2D texture4;
+layout(binding=8) uniform sampler2D texture5;
+layout(binding=9) uniform sampler2D texture6;
+layout(binding=10) uniform sampler2D texture7;
+
+
 
 // was originally varying, but couldnt pass through geometry shader
 vec4 lightDir;
@@ -43,17 +53,26 @@ void main(void)
 	// scale and bias parallax effect
 //	float height = texture(texture2, Vertex.vary_TexCoord).a * 0.16 + -0.08;
 //	Fragment = texture(texture0, Vertex.vary_TexCoord + height * eye.xy);
-//	vec3 normal_map = normalize(texture(texture2, Vertex.vary_TexCoord + height * eye.xy).xyz);
+//	vec3 normal_map = normalize(texture(texture_normalmap, Vertex.vary_TexCoord + height * eye.xy).xyz);
 
 	vec3 normal_map;
 
-	normal_map.x = 2 * texture(texture2, Vertex.vary_TexCoord).r - 1; 
-	normal_map.z = 2 * texture(texture2, Vertex.vary_TexCoord).g - 1; 
-	normal_map.y = 2 * texture(texture2, Vertex.vary_TexCoord).b - 1; 
+	normal_map.x = 2 * texture(texture_normalmap, Vertex.vary_TexCoord).r - 1; 
+	normal_map.z = 2 * texture(texture_normalmap, Vertex.vary_TexCoord).g - 1; 
+	normal_map.y = 2 * texture(texture_normalmap, Vertex.vary_TexCoord).b - 1; 
 
 
 	Fragment = texture(texture0, Vertex.vary_TexCoord);
-//	Fragment = Fragment + texture(texture1, Vertex.vary_LightCoord);
+	Fragment += texture(texture1, Vertex.vary_TexCoord);
+	Fragment += texture(texture2, Vertex.vary_TexCoord) * 0.25;
+//	Fragment += texture(texture3, Vertex.vary_TexCoord) * 0.1;
+//	Fragment += texture(texture4, Vertex.vary_TexCoord) * 0.1;
+//	Fragment += texture(texture5, Vertex.vary_TexCoord) * 0.1;
+//	Fragment += texture(texture6, Vertex.vary_TexCoord) * 0.1;
+//	Fragment += texture(texture7, Vertex.vary_TexCoord) * 0.1;
+
+
+//	Fragment = Fragment + texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 
