@@ -3,14 +3,48 @@
 #ifndef BSP_H
 #define BSP_H
 
+//8 units equal 1 foot
+//sin -1,1
+//triangle 0,1
+//square -1,1
+//sawtooth 0,1,0
+//inverse 0,1,0
+//sawtooth 0,1,0
+//base amp phase frequency
+
 typedef struct
 {
-	int stage_num;
-	char *stage[64];
+	char wave[64];
+	float div;
+	float func;
+	float base;
+	float amplitude;
+	float phase;
+	float freq;
+} deform_t;
 
-	bool blendfunc_blend;
+typedef struct
+{
+	char *stage; //raw parser output
+
+	bool map;
+	char map_tex[128];
+	bool clampmap;
+	char clampmap_tex[128];
+	bool anim_map;
+	char anim_map_tex[512]; // frequency, tex1-tex8
+	float anim_map_freq;
+
 	bool blendfunc_add;
 	bool blendfunc_filter;
+	bool blendfunc_blend;//source * srccoef + dest * destcoef
+	/*
+	bool blend_one;
+	bool blend_zero;
+	bool blend_dst_color;
+	bool blend_one_minus_dst_color;
+	bool blend_one_minus_src_alpha;
+	*/
 	bool blend_zero_one;
 	bool blend_one_zero;
 	bool blend_one_one;
@@ -22,11 +56,13 @@ typedef struct
 	bool depthfunc_equal;
 	bool rgbgen_identity;
 	bool tcmod_rotate;
-	float tcmod_rotate_value;
+	float tcmod_rotate_value; // deg/sec
 	bool tcmod_scale;
 	vec2 tcmod_scale_value;
+	bool tcmod_stretch;
+	vec4 tcmod_stretch_value;
 	bool tcmod_scroll;
-	vec2 tcmod_scroll_value;
+	vec4 tcmod_scroll_value;
 	bool tcmod_turb;
 	vec2 tcmod_turb_value;
 	bool tcgen_env;
@@ -39,16 +75,33 @@ struct Surface
 {
 	char file[128];
 	char name[128];
-	char *cmd[64];
-	stage_t stage;
+	char *cmd[64];	//raw parser output
+	stage_t stage[64];
 	int num_cmd;
 	int num_stage;
 
 	bool nomipmaps;
 	bool nopicmip;
+	bool polygon_offset;
+	bool portal;
+	//sort value 1:portal,2:sky,3:opaque,6:banner,8:underwater,9:additive,16:nearest
 	bool surfaceparm_trans;
 	bool surfaceparm_nonsolid;
+	bool surfaceparm_noclip;
+	bool surfaceparm_nodraw;
+	bool surfaceparm_nodrop;
+	bool surfaceparm_nodlight;
+	bool surfaceparm_areaportal;
+	bool surfaceparm_clusterportal;
+	bool surfaceparm_donotenter;
+	bool surfaceparm_origin;
+	bool surfaceparm_detail;
+	bool surfaceparm_playerclip;
 	bool surfaceparm_water;
+	bool surfaceparm_slime;
+	bool surfaceparm_lava;
+	bool surfaceparm_slick;
+	bool surfaceparm_structural;
 	bool surfaceparm_fog;
 	bool surfaceparm_sky;
 	bool surfaceparm_nolightmap;
@@ -60,12 +113,13 @@ struct Surface
 	bool q3map_surfacelight;
 	int q3map_surfacelight_value;
 	bool q3map_sun;
-	vec4 q3map_sun_value;
+	vec3 q3map_sun_value[2]; //rgb + intensity degrees elevation
 	bool cull_disable;
 	bool cull_none;
 	bool cull_backside;
 	bool cull_twosided;
 	bool deformVertexes;
+	deform_t deform;
 
 };
 

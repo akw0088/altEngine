@@ -4,8 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-#include <ctype.h> // for isspace (crappy space compression function)
-
 void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
 {
 	static int light_num = 0;
@@ -449,26 +447,6 @@ char machine_entity(char state, char input, char *stack, int &sp)
 	return '\0';
 }
 
-
-void compress_spaces(char *str)
-{
-	char *dst = str;
-
-	for (; *str; ++str) {
-		*dst++ = *str;
-
-		if (isspace(*str)) {
-			do ++str;
-
-			while (isspace(*str));
-
-			--str;
-		}
-	}
-
-	*dst = 0;
-}
-
 // These are state machines from a piece of paper, pretty hard to decipher without the state diagram
 char machine_shader(char input, char state)
 {
@@ -602,9 +580,10 @@ char machine_shader(char input, char state)
 	return 'Z';
 }
 
-
 void handle_command(char *basecmd, Surface *surface)
 {
+	char *ret = NULL;
+
 	if (basecmd == NULL || surface == NULL)
 		return;
 
@@ -612,7 +591,268 @@ void handle_command(char *basecmd, Surface *surface)
 	{
 		surface->nomipmaps = true;
 	}
+	else if (strstr(basecmd, "nopicmip"))
+	{
+		surface->nopicmip = true;
+	}
+	else if (strstr(basecmd, "polygonOffset"))
+	{
+		surface->polygon_offset = true;
+	}
+	else if (strstr(basecmd, "surfaceparm"))
+	{
+		if (strstr(basecmd, "trans"))
+			surface->surfaceparm_trans = true;
+		else if (strstr(basecmd, "nonsolid"))
+			surface->surfaceparm_nonsolid = true;
+		else if (strstr(basecmd, "water"))
+			surface->surfaceparm_water = true;
+		else if (strstr(basecmd, "slime"))
+			surface->surfaceparm_slime = true;
+		else if (strstr(basecmd, "lava"))
+			surface->surfaceparm_lava = true;
+		else if (strstr(basecmd, "slick"))
+			surface->surfaceparm_slick = true;
+		else if (strstr(basecmd, "structural"))
+			surface->surfaceparm_structural = true;
+		else if (strstr(basecmd, "fog"))
+			surface->surfaceparm_fog = true;
+		else if (strstr(basecmd, "sky"))
+			surface->surfaceparm_sky = true;
+		else if (strstr(basecmd, "nolightmap"))
+			surface->surfaceparm_nolightmap = true;
+		else if (strstr(basecmd, "nodamage"))
+			surface->surfaceparm_nodamage = true;
+		else if (strstr(basecmd, "noimpact"))
+			surface->surfaceparm_noimpact = true;
+		else if (strstr(basecmd, "nomarks"))
+			surface->surfaceparm_nomarks = true;
+		else if (strstr(basecmd, "nodraw"))
+			surface->surfaceparm_nodraw = true;
+		else if (strstr(basecmd, "nodrop"))
+			surface->surfaceparm_nodrop = true;
+		else if (strstr(basecmd, "nodlight"))
+			surface->surfaceparm_nodlight = true;
+		else if (strstr(basecmd, "clusterportal"))
+			surface->surfaceparm_clusterportal = true;
+		else if (strstr(basecmd, "donotenter"))
+			surface->surfaceparm_donotenter = true;
+		else if (strstr(basecmd, "origin"))
+			surface->surfaceparm_clusterportal = true;
+		else if (strstr(basecmd, "areaportal"))
+			surface->surfaceparm_areaportal = true;
+		else if (strstr(basecmd, "detail"))
+			surface->surfaceparm_detail = true;
+		else if (strstr(basecmd, "playerclip"))
+			surface->surfaceparm_playerclip = true;
+		else if (strstr(basecmd, "metalsteps"))
+			surface->surfaceparm_metalsteps = true;
+		else if (strstr(basecmd, "alphashadow"))
+			surface->surfaceparm_alphashadow = true;
+		else
+			printf("Unknown surfaceparm [%s]\n", basecmd);
+	}
+	else if ( (ret = strstr(basecmd, "q3map_surfacelight")) )
+	{
+		surface->q3map_surfacelight = true;
+		surface->q3map_surfacelight_value = atoi(ret + 18);
+	}
+	else if ((ret = strstr(basecmd, "q3map_sun")))
+	{
+		int match = 0;
+		float r, g, b;
+		float intensity;
+		float degrees;
+		float elevation;
+
+//		surface->q3map_surfacelight_value = atoi(ret + 18);
+		match = sscanf(ret, "q3map_sun %f %f %f %f %f %f",
+			&r, &g, &b, &intensity, &degrees, &elevation);
+
+		if (match == 6)
+		{
+			surface->q3map_sun = true;
+			surface->q3map_sun_value[0].x = r;
+			surface->q3map_sun_value[0].y = g;
+			surface->q3map_sun_value[0].z = b;
+			surface->q3map_sun_value[1].x = intensity;
+			surface->q3map_sun_value[1].y = degrees;
+			surface->q3map_sun_value[1].z = elevation;
+		}
+	}
+	else if (strstr(basecmd, "cull"))
+	{
+		if (strstr(basecmd, "disable"))
+			surface->cull_disable = true;
+		else if (strstr(basecmd, "none"))
+			surface->cull_none = true;
+		else if (strstr(basecmd, "backside"))
+			surface->cull_backside = true;
+		else if (strstr(basecmd, "twosided"))
+			surface->cull_twosided = true;
+	}
+	else if ( (ret = strstr(basecmd, "deformVertexes") ))
+	{
+		char wave[32] = { 0 };
+		float div, func, base, amplitude, phase, freq;
+		int match = 0;
+		//deformVertexes wave <div> <func> <base> <amplitude> <phase> <freq>
+
+		match = sscanf(ret, "deformVertexes %s %f %f %f %f %f %f",
+			&wave, &div, &func, &base, &amplitude, &phase, &freq);
+		if (match == 7)
+		{
+			surface->deformVertexes = true;
+			strcpy(surface->deform.wave, wave);
+			surface->deform.div = div;
+			surface->deform.func = func;
+			surface->deform.base = base;
+			surface->deform.amplitude = amplitude;
+			surface->deform.phase = phase;
+			surface->deform.freq = freq;
+		}
+	}
 }
+/*
+vec3 q3map_sun_value[2]; //rgb + intensity degrees elevation
+bool deformVertexes;
+*/
+
+
+void handle_stage(char *stagecmd, stage_t *stage)
+{
+	char *ret = NULL;
+
+	if ( (ret = strstr(stagecmd, "map ")) )
+	{
+		stage->map = true;
+		strcpy(stage->map_tex, ret + 4);
+	}
+	else if ( (ret = strstr(stagecmd, "animmap ")) )
+	{
+		int match = 0;
+		char tex[512] = { 0 };
+		float freq;
+
+		match = sscanf(ret, "animmap %f %s", &freq, tex);
+
+		if (match == 2)
+		{
+			stage->anim_map = true;
+			stage->anim_map_freq = freq;
+			strcpy(stage->anim_map_tex, tex);
+		}
+	}
+	else if ((ret = strstr(stagecmd, "clampmap ")))
+	{
+		stage->clampmap = true;
+		strcpy(stage->clampmap_tex, ret + 9);
+	}
+	else if ((ret = strstr(stagecmd, "blendfunc")))
+	{
+		if (strstr(ret, "add"))
+		{
+			stage->blendfunc_add = true;
+		}
+		else if (strstr(ret, "filter"))
+		{
+			stage->blendfunc_filter = true;
+		}
+		else if (strstr(ret, "blend"))
+		{
+			stage->blendfunc_blend = true;
+		}
+		else if (strstr(ret, "zero one"))
+		{
+			stage->blend_zero_one = true;
+		}
+		else if (strstr(ret, "one zero"))
+		{
+			stage->blend_one_zero = true;
+		}
+		else if (strstr(ret, "one one"))
+		{
+			stage->blend_one_one = true;
+		}
+		else if (strstr(ret, "one srccolor"))
+		{
+			stage->blend_one_srccolor = true;
+		}
+		else if (strstr(ret, "dstcolor one"))
+		{
+			stage->blend_dstcolor_one = true;
+		}
+		else if (strstr(ret, "dstcolor zero"))
+		{
+			stage->blend_dstcolor_zero = true;
+		}
+	}
+	else if (strstr(stagecmd, "depthwrite"))
+	{
+		stage->depth_write = true;
+	}
+	else if ( (ret = strstr(stagecmd, "tcmod")) )
+	{
+		int match = 0;
+		float value;
+		float x, y;
+		float base, amplitude, phase, freq;
+
+		match = sscanf(ret, "tcmod rotate %f", &value);
+		if (match == 1)
+		{
+			stage->tcmod_rotate = true;
+			stage->tcmod_rotate_value = value;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod scale %f %f", &x, &y);
+		if (match == 2)
+		{
+			stage->tcmod_scale = true;
+			stage->tcmod_scale_value.x = x;
+			stage->tcmod_scale_value.y = y;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod scroll %f %f", &x, &y);
+		if (match == 2)
+		{
+			stage->tcmod_scroll = true;
+			stage->tcmod_scroll_value.x = x;
+			stage->tcmod_scroll_value.y = y;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod turb %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->tcmod_turb = true;
+			stage->tcmod_scroll_value.x = base;
+			stage->tcmod_scroll_value.y = amplitude;
+			stage->tcmod_scroll_value.z = phase;
+			stage->tcmod_scroll_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod stretch %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->tcmod_stretch = true;
+			stage->tcmod_stretch_value.x = base;
+			stage->tcmod_stretch_value.y = amplitude;
+			stage->tcmod_stretch_value.z = phase;
+			stage->tcmod_stretch_value.w = freq;
+			return;
+		}
+
+	}
+	else if (strstr(stagecmd, "tcgen environment"))
+	{
+		stage->tcgen_env = true;
+	}
+}
+
 
 void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 {
@@ -643,6 +883,10 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 			input[i] = '\n';
 			continue;
 		}
+
+		// Force lower case
+		input[i] = tolower(input[i]);
+
 
 		state = machine_shader(input[i], state);
 		//            printf("basecmd %s\n", basecmd);
@@ -675,7 +919,6 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 			{
 				if (first == false)
 				{
-					surface->stage.stage[0] = NULL;
 					surface_list.push_back(surface);
 				}
 				first = false;
@@ -683,12 +926,6 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 				surface = new Surface;
 				memset(surface, 0, sizeof(Surface));
 				memcpy(surface->file, filename, strlen(filename) + 1);
-				// bad naming, mixed lines in a stage from number of texture stages, will fix
-				surface->stage.stage_num = 0;
-				surface->num_cmd = 0;
-				surface->num_stage = 0;
-				num_cmd = 0;
-				stage_num = 0;
 
 				memset(surface->name, 0, sizeof(surface->name));
 //				memcpy(name, &input[old_pos + 1], i - old_pos - 1);
@@ -727,11 +964,12 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 			{
 				int size = strlen(stagecmd) + 1;
 //				printf("stagecmd is [%s] stage_num is %d\n", stagecmd, stage_num);
-				surface->stage.stage[stage_num] = new char[size];
-				memset(surface->stage.stage[stage_num], 0, size);
+				surface->stage[stage_num].stage = new char[size];
+				memset(surface->stage[stage_num].stage, 0, size);
 //				memcpy(surface->stage.stage[stage_num], stagecmd, size);
-				memcpy(surface->stage.stage[stage_num], &input[old_pos + 1], i - old_pos - 1);
-				surface->stage.stage[stage_num][i - old_pos - 2] = '\0';
+				memcpy(surface->stage[stage_num].stage, &input[old_pos + 1], i - old_pos - 1);
+				surface->stage[stage_num].stage[i - old_pos - 2] = '\0';
+				handle_stage(surface->stage[stage_num].stage, &(surface->stage[stage_num]));
 				old_pos = i;
 				stage_num++;
 				surface->num_stage++;

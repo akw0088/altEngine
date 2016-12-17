@@ -925,7 +925,7 @@ void Bsp::load_textures(Graphics &gfx, vector<Surface *> &surface_list)
 				{
 					//						printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
 					char texture[512] = { 0 };
-					char *begin = strstr(surface_list[j]->stage.stage[k], "map");
+					char *begin = strstr(surface_list[j]->stage[k].stage, "map");
 					char *end = NULL;
 					if (begin)
 					{
