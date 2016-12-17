@@ -14,7 +14,7 @@
 //#define DEFERRED
 
 char *shader_list[] = {
-//	"scripts/test.shader",
+	"scripts/test.shader",
 	"scripts/base.shader",
 	"scripts/base_button.shader",
 	"scripts/base_floor.shader",
@@ -42,7 +42,7 @@ char *shader_list[] = {
 	"scripts/skin.shader",
 	"scripts/sky.shader"
 };
-int num_shader = 26;
+int num_shader = 27;
 
 
 char *pk3list[] = { "media/pak0.pk3",
@@ -115,7 +115,6 @@ void Engine::init(void *p1, void *p2)
 
 	printf("Loading md5 models...\n");
 	load_md5();
-	printf("done\n");
 
 
 
@@ -124,7 +123,7 @@ void Engine::init(void *p1, void *p2)
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 
 	//parse shaders -- kinda slow, likely from surface allocation
-	printf("Loading quake3 shaders...\n");
+	printf("Loading Quake3 shaders...\n");
 	for (int i = 0; i < num_shader; i++)
 	{
 		char *shader_file = NULL;
@@ -137,7 +136,7 @@ void Engine::init(void *p1, void *p2)
 			free((void *)shader_file);
 		}
 	}
-	printf("done\n");
+	printf("Done\n");
 
 
 

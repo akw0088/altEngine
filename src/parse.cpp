@@ -618,8 +618,7 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 	//        printf("%s\n", input);
 
 	Surface *surface = new Surface;
-	surface->num_cmd = 0;
-	surface->num_stage = 0;
+	memset(surface, 0, sizeof(Surface));
 	memcpy(surface->file, filename, strlen(filename) + 1);
 
 	for (int i = 0; i < length; i++)
@@ -670,6 +669,7 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 				first = false;
 
 				surface = new Surface;
+				memset(surface, 0, sizeof(Surface));
 				memcpy(surface->file, filename, strlen(filename) + 1);
 				// bad naming, mixed lines in a stage from number of texture stages, will fix
 				surface->stage.stage_num = 0;

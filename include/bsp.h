@@ -11,16 +11,14 @@ typedef struct
 
 
 // Keeping size small, because there are a lot of these
-class Surface
+struct Surface
 {
-public:
 	char file[128];
 	char name[128];
 	char *cmd[64];
 	stage_t stage;
 	int num_cmd;
 	int num_stage;
-private:
 };
 
 class Bsp
