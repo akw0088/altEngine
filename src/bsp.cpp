@@ -605,14 +605,18 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 			*depth = d;
 			count++;
 
+		}
+
+		if (count == num_sides)
+		{
 			if (debug)
 			{
 				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\n", i,
 					data.Material[brush->material].name,
 					data.Material[brush->material].contents,
 					data.Material[brush->material].surface,
-					d, count);
-			/*
+					*depth, count);
+				/*
 				for (unsigned int k = 0; k < surface_list.size(); k++)
 				{
 					if (strcmp(data.Material[brush->material].name, surface_list[k]->name))
@@ -623,10 +627,8 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 				}
 				*/
 			}
-		}
-
-		if (count == num_sides)
 			return true;
+		}
 	}
 
 
