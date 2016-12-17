@@ -902,6 +902,94 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
+int Bsp::load_from_file(char *filename, Graphics &gfx)
+{
+	char	texture_name[LINE_SIZE] = { 0 };
+	int tex_obj;
+
+	printf("Attempting to load %s, trying .tga\n", filename);
+	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
+	tex_obj = load_texture(gfx, texture_name);
+	if (tex_obj == 0)
+	{
+		printf("Attempting to load %s, trying .jpg\n", filename);
+		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
+		tex_obj = load_texture(gfx, texture_name);
+	}
+	return tex_obj;
+}
+
+int Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *tex_object, Graphics &gfx)
+{
+	char			texture_name[LINE_SIZE] = { 0 };
+	unsigned int	j = 0;
+
+	//printf("Attempting to load %s, trying surface_list\n", material->name);
+	for (j = 0; j < surface_list.size(); j++)
+	{
+		if (strcmp(name, surface_list[j]->name) == 0)
+		{
+			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
+			tex_object->index = j;
+			break;
+		}
+	}
+
+
+	if (j == surface_list.size())
+	{
+		return 0;
+	}
+
+	//First stage is NULL
+	for (unsigned int k = 1; k < surface_list[j]->num_stage; k++)
+	{
+		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
+		//printf("Trying texture [%s]\n", texture);
+		if (surface_list[j]->stage[k].map)
+		{
+			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
+			tex_object->texObj = load_texture(gfx, texture_name);
+		}
+		else if (surface_list[j]->stage[k].clampmap)
+		{
+			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
+			tex_object->texObj = load_texture(gfx, texture_name);
+		}
+		else if (surface_list[j]->stage[k].anim_map)
+		{
+			//snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].anim_map_tex);
+			//tex_object[i].texObj = load_texture(gfx, texture_name);
+		}
+
+
+		if (tex_object->texObj != 0)
+		{
+			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
+			tex_object->stage = k;
+			return tex_object->texObj;
+		}
+
+		if (strlen(texture_name) > 4)
+		{
+			//printf("Trying jpeg texture [%s]\n", texture_name);
+			texture_name[strlen(texture_name) - 4] = '\0';
+			strcat(texture_name, ".jpg");
+		}
+
+		tex_object->texObj = load_texture(gfx, texture_name);
+		if (tex_object->texObj != 0)
+		{
+			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
+			tex_object->stage = k;
+			return tex_object->texObj;
+		}
+	}
+	return 0;
+}
+
+
+
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 {
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
@@ -918,89 +1006,13 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
-		char		texture_name[LINE_SIZE];
-		unsigned int j;
-
 		
-		printf("Attempting to load %s, trying .tga\n", material->name);
-		
-		snprintf(texture_name, LINE_SIZE, "media/%s.tga", material->name);
-		tex_object[i].texObj = load_texture(gfx, texture_name);
+		tex_object[i].texObj = load_from_file(material->name, gfx);
 		if (tex_object[i].texObj == 0)
 		{
-			printf("Attempting to load %s, trying .jpg\n", material->name);
-			snprintf(texture_name, LINE_SIZE, "media/%s.jpg", material->name);
-			tex_object[i].texObj = load_texture(gfx, texture_name);
+			load_from_shader(material->name, surface_list, &tex_object[i], gfx);
 		}
-
-		if (tex_object[i].texObj == 0)
-		{
-//			printf("Attempting to load %s, trying surface_list\n", material->name);
-			for (j = 0; j < surface_list.size(); j++)
-			{
-				if (strcmp(material->name, surface_list[j]->name) == 0)
-				{
-					printf("Found shader [%s], trying stages\n", surface_list[j]->name);
-					tex_object[i].index = j;
-					break;
-				}
-			}
-
-
-			if (j < surface_list.size())
-			{
-				//First stage is NULL
-				for (int k = 1; k < surface_list[j]->num_stage; k++)
-				{
-					//						printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
-					char texture[512] = { 0 };
-					char *begin = strstr(surface_list[j]->stage[k].stage, "map");
-					char *end = NULL;
-					if (begin)
-					{
-						begin += 4;
-						end = strstr(begin, ".tga");
-						if (end == NULL)
-						{
-							end = strstr(begin, ".jpg");
-						}
-						if (end == NULL)
-							continue;
-					}
-					else
-					{
-						continue;
-					}
-
-					memcpy(texture, begin, end - begin + 4);
-
-					//						printf("Trying texture [%s]\n", texture);
-
-					snprintf(texture_name, LINE_SIZE, "media/%s", texture);
-					tex_object[i].texObj = load_texture(gfx, texture_name);
-
-					if (tex_object[i].texObj != 0)
-					{
-						printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
-						tex_object[i].stage = k;
-						break;
-					}
-
-					texture[strlen(texture) - 4] = '\0';
-					snprintf(texture_name, LINE_SIZE, "media/%s.jpg", texture);
-					//						printf("Trying jpeg texture [%s]\n", texture_name);
-
-
-					tex_object[i].texObj = load_texture(gfx, texture_name);
-					if (tex_object[i].texObj != 0)
-					{
-						printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
-						break;
-					}
-
-				}
-			}
-		}
+		
 
 		if (tex_object[i].texObj == 0)
 		{

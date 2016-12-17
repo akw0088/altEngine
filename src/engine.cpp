@@ -122,7 +122,7 @@ void Engine::init(void *p1, void *p2)
 	fb_height = 1280;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 
-	//parse shaders, need to deallocate on cleanup still
+	//parse shaders
 	printf("Loading Quake3 shaders...\n");
 	for (int i = 0; i < num_shader; i++)
 	{
@@ -2676,20 +2676,11 @@ void Engine::destroy()
 {
 	q3.destroy();
 	debugf("Shutting down.\n");
-	/*
+	
 	for (unsigned int i = 0; i < surface_list.size(); i++)
 	{
-		for (unsigned int j = 1; j < surface_list[i]->num_stage; j++)
-		{
-			delete [] surface_list[i]->stage[j].stage;
-		}
-		for (unsigned int j = 0; j < surface_list[i]->num_cmd; i++)
-		{
-			delete [] surface_list[i]->cmd[j];
-		}
 		delete surface_list[i];
 	}
-	*/
 	surface_list.clear();
 
 
@@ -2725,7 +2716,7 @@ int load_texture(Graphics &gfx, char *file_name)
 
 	if (data == NULL)
 	{
-		char pk3_name[80] = { 0 };
+		char pk3_name[512] = { 0 };
 
 		sprintf(pk3_name, "%s", file_name + strlen("media/"));
 

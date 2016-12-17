@@ -723,12 +723,7 @@ void handle_stage(char *stagecmd, stage_t *stage)
 {
 	char *ret = NULL;
 
-	if ( (ret = strstr(stagecmd, "map ")) )
-	{
-		stage->map = true;
-		strcpy(stage->map_tex, ret + 4);
-	}
-	else if ( (ret = strstr(stagecmd, "animmap ")) )
+	if ((ret = strstr(stagecmd, "animmap ")))
 	{
 		int match = 0;
 		char tex[512] = { 0 };
@@ -747,6 +742,11 @@ void handle_stage(char *stagecmd, stage_t *stage)
 	{
 		stage->clampmap = true;
 		strcpy(stage->clampmap_tex, ret + 9);
+	}
+	else if ( (ret = strstr(stagecmd, "map ")) )
+	{
+		stage->map = true;
+		strcpy(stage->map_tex, ret + 4);
 	}
 	else if ((ret = strstr(stagecmd, "blendfunc")))
 	{
@@ -856,22 +856,23 @@ void handle_stage(char *stagecmd, stage_t *stage)
 
 void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename)
 {
-	char	basecmd[512] = { 0 };
-	char	stagecmd[512] = { 0 };
-	int		old_pos = 0;
-	int		stage_num = 0;
-	int		num_cmd = 0;
-	int		j = 0;
-	int		length = strlen(input);
-	char	state = 'S';
-	char	prevstate = 'S';
-	bool	first = true;
+	char		basecmd[512] = { 0 };
+	char		stagecmd[512] = { 0 };
+	int			old_pos = 0;
+	int			num_stage = 0;
+	int			num_cmd = 0;
+	int			j = 0;
+	const int	length = strlen(input);
+	char		state = 'S';
+	char		prevstate = 'S';
 
 	//        printf("%s\n", input);
 
 	surface_t *surface = new surface_t;
 	memset(surface, 0, sizeof(surface_t));
 	memcpy(surface->file, filename, strlen(filename) + 1);
+	surface_list.push_back(surface);
+
 
 	for (int i = 0; i < length; i++)
 	{
@@ -889,7 +890,6 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 
 
 		state = machine_shader(input[i], state);
-		//            printf("basecmd %s\n", basecmd);
 
 		switch (state)
 		{
@@ -917,23 +917,18 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'C':
 			if (prevstate == 'S')
 			{
-				if (first == false)
-				{
-					surface_list.push_back(surface);
-				}
-				first = false;
-
 				surface = new surface_t;
 				memset(surface, 0, sizeof(surface_t));
 				memcpy(surface->file, filename, strlen(filename) + 1);
+				surface_list.push_back(surface);
+
 
 				memset(surface->name, 0, sizeof(surface->name));
-//				memcpy(name, &input[old_pos + 1], i - old_pos - 1);
 				memcpy(surface->name, &input[old_pos + 1], i - old_pos - 1);
 				surface->name[i - old_pos - 2] = '\0';
 				//printf("name is [%s]\n", name);
 				old_pos = i;
-				stage_num = 0;
+				num_stage = 0;
 				num_cmd = 0;
 				j = 0;
 			}
@@ -944,11 +939,12 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				int size = strlen(basecmd) + 1;
 				basecmd[j++] = '\0';
 //				printf("basecmd is [%s]\n", basecmd);
-				surface->cmd[num_cmd] = new char[size];
-				memset(surface->cmd[num_cmd], 0, size);
-				memcpy(surface->cmd[num_cmd++], basecmd, size);
+//				surface->cmd[num_cmd] = new char[size];
+//				memset(surface->cmd[num_cmd], 0, size);
+//				memcpy(surface->cmd[num_cmd], basecmd, size);
 				handle_command(basecmd, surface);
 				surface->num_cmd++;
+				num_cmd++;
 				old_pos = i;
 				j = 0;
 			}
@@ -964,15 +960,15 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 			{
 				int size = strlen(stagecmd) + 1;
 //				printf("stagecmd is [%s] stage_num is %d\n", stagecmd, stage_num);
-				surface->stage[stage_num].stage = new char[size];
-				memset(surface->stage[stage_num].stage, 0, size);
-//				memcpy(surface->stage.stage[stage_num], stagecmd, size);
-				memcpy(surface->stage[stage_num].stage, &input[old_pos + 1], i - old_pos - 1);
-				surface->stage[stage_num].stage[i - old_pos - 2] = '\0';
-				handle_stage(surface->stage[stage_num].stage, &(surface->stage[stage_num]));
-				old_pos = i;
-				stage_num++;
+//				surface->stage[stage_num].stage = new char[size];
+//				memset(surface->stage[stage_num].stage, 0, size);
+//				memcpy(surface->stage[stage_num].stage, &input[old_pos + 1], i - old_pos - 1);
+				memcpy(stagecmd, &input[old_pos + 1], i - old_pos - 1);
+				stagecmd[i - old_pos - 2] = '\0';
+
+				handle_stage(stagecmd, &(surface->stage[num_stage++]));
 				surface->num_stage++;
+				old_pos = i;
 				j = 0;
 			}
 			if (input[i - 1] == '{')
