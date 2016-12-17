@@ -133,6 +133,19 @@ int mLight2::init(Graphics *gfx)
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 	texture1 = glGetUniformLocation(program_handle, "texture1");
 	texture2 = glGetUniformLocation(program_handle, "texture2");
+	texture3 = glGetUniformLocation(program_handle, "texture3");
+	texture4 = glGetUniformLocation(program_handle, "texture4");
+	texture5 = glGetUniformLocation(program_handle, "texture5");
+	texture6 = glGetUniformLocation(program_handle, "texture6");
+	texture7 = glGetUniformLocation(program_handle, "texture7");
+
+	texture_lightmap = glGetUniformLocation(program_handle, "texture_lightmap");
+	texture_normalmap = glGetUniformLocation(program_handle, "texture_normalmap");
+
+	u_tcmod_scroll = glGetUniformLocation(program_handle, "u_tcmod_scroll");
+	u_tcmod_scale = glGetUniformLocation(program_handle, "u_tcmod_scale");
+	u_tcmod_rotate = glGetUniformLocation(program_handle, "u_tcmod_rotate");
+
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
@@ -192,11 +205,40 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(texture_lightmap, 1);
 	glUniform1i(texture_normalmap, 2);
 
+	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
+	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
+	float tcmod_rotate = 25.0f;
+	tcmod_rotate = (M_PI * tcmod_rotate / 180.0f);
+
+
+	glUniform2fv(u_tcmod_scroll, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scale, 1, (float *)&tcmod_scale);
+	glUniform1fv(u_tcmod_rotate, 1, &tcmod_rotate);
+
+
 
 	glUniform1i(u_num_lights, j);
 	glUniform3fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 #endif
+}
+
+void mLight2::tcmod_scroll(vec2 &scroll)
+{
+	glUniform2fv(u_tcmod_scroll, 1, (float *)&scroll);
+}
+
+void mLight2::tcmod_scale(vec2 &scale)
+{
+	glUniform2fv(u_tcmod_scale, 1, (float *)&scale);
+}
+
+void mLight2::tcmod_rotate(float deg)
+{
+	//convert to radians
+	deg = (M_PI * deg / 180.0f);
+
+	glUniform1fv(u_tcmod_rotate, 1, &deg);
 }
 
 

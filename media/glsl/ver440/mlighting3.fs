@@ -22,6 +22,11 @@ uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform mat4		mvp;
 
+uniform vec2		u_tcmod_scroll;
+uniform vec2		u_tcmod_scale;
+uniform float		u_tcmod_rotate;
+
+
 layout(binding=1) uniform sampler2D texture_lightmap; //lightmap
 layout(binding=2) uniform sampler2D texture_normalmap; //normalmap
 
@@ -62,7 +67,19 @@ void main(void)
 	normal_map.y = 2 * texture(texture_normalmap, Vertex.vary_TexCoord).b - 1; 
 
 
-	Fragment = texture(texture0, Vertex.vary_TexCoord);
+
+	vec2 texcoord;
+
+	texcoord.x = Vertex.vary_TexCoord.x * cos(u_tcmod_rotate) - Vertex.vary_TexCoord.y * sin(u_tcmod_rotate);
+	texcoord.y = Vertex.vary_TexCoord.y * cos(u_tcmod_rotate) + Vertex.vary_TexCoord.x * sin(u_tcmod_rotate);
+
+	mat2 mRot = mat2(	cos(u_tcmod_rotate), -sin(u_tcmod_rotate),
+				sin(u_tcmod_rotate),  cos(u_tcmod_rotate));
+
+	Fragment = texture(texture0, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+
+
+
 	Fragment += texture(texture1, Vertex.vary_TexCoord);
 	Fragment += texture(texture2, Vertex.vary_TexCoord) * 0.25;
 //	Fragment += texture(texture3, Vertex.vary_TexCoord) * 0.1;

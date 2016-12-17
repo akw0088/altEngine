@@ -149,6 +149,10 @@ void Model::render(Graphics &gfx)
 {
 	gfx.SelectIndexBuffer(model_index);
 	gfx.SelectVertexBuffer(model_vertex);
+	for (int i = 1; i < MAX_TEXTURES; i++)
+	{
+		gfx.SelectTexture(3+i, 0);
+	}
 	gfx.SelectTexture(3, model_tex);
 	gfx.SelectTexture(2, normal_tex);
 	gfx.DrawArrayTri(0, 0, num_index, num_vertex);

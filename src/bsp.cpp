@@ -744,7 +744,8 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 //	gfx.DeselectTexture(0);
 }
 
-void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list)
+
+void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
 	int frameIndex = find_leaf(position);
 	static int lastIndex = -1;
@@ -819,6 +820,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 		if (face->type == 1 || face->type == 3)
 		{
+//			mlight2.tcmod_rotate(360.0f * tick_num / 125.0f);
 			render_face(face, gfx);
 		}
 		else if (face->type == 2)

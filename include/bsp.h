@@ -3,6 +3,9 @@
 #ifndef BSP_H
 #define BSP_H
 
+class mLight2;
+
+
 class Bsp
 {
 	void change_axis();
@@ -24,7 +27,8 @@ public:
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
 	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
-	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list);
+	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list);
+	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
 //	bool load(char *map);

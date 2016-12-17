@@ -149,6 +149,8 @@ void Engine::load(char *level)
 	if (map.loaded)
 		return;
 
+	last_spawn = 0;
+
 	menu.delta("load", *this);
 	gfx.clear();
 	menu.render(global);
@@ -210,7 +212,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list);
+	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	camera_frame.set(transformation);
 	render_entities(transformation, true);
 
@@ -483,7 +485,7 @@ void Engine::render_shadowmaps()
 				mlight2.Select();
 				vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 				mlight2.Params(mvp, light_list, light_list.size(), offset);
-				map.render(entity_list[i]->position, mvp, gfx, surface_list);
+				map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
@@ -544,7 +546,7 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0, offset);
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list);
+	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
 }
 
@@ -602,13 +604,13 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (input.control)
 	{
-		map.render(light_frame.pos, mvp, gfx, surface_list);
+		map.render(light_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //		render_shadow_volumes(entity_list[spawn]->player->current_light);
 //		gfx.SelectShader(0);
 		return;
 	}
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list);
+	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	map.render_model(0, gfx);
 
 //	for (int i = 0; i < map.data.num_model; i++)
@@ -3143,7 +3145,6 @@ void Engine::console(char *cmd)
 	pret = strstr(cmd, "respawn");
 	if (pret)
 	{
-		static int last_spawn = 0;
 		unsigned int i = last_spawn;
 		bool spawned = false;
 

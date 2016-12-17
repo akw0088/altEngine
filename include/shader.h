@@ -42,6 +42,11 @@ public:
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset);
 	virtual void prelink(void);
 
+	void tcmod_scroll(vec2 &scroll);
+	void tcmod_scale(vec2 &scale);
+	void tcmod_rotate(float deg);
+
+
 private:
 	int matrix;
 	int	texture0;
@@ -55,6 +60,10 @@ private:
 
 	int texture_normalmap;
 	int texture_lightmap;
+
+	int u_tcmod_scroll;
+	int u_tcmod_scale;
+	int u_tcmod_rotate;
 
 	int u_num_lights;
 	int u_position;

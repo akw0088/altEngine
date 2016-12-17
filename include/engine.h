@@ -81,6 +81,7 @@ public:
 //temp
 	unsigned int testObj;
 	unsigned int num_light;
+	int last_spawn;
 
 
 //console flags
