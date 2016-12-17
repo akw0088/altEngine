@@ -122,7 +122,7 @@ void Engine::init(void *p1, void *p2)
 	fb_height = 1280;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 
-	//parse shaders -- kinda slow, likely from surface allocation
+	//parse shaders, need to deallocate on cleanup still
 	printf("Loading Quake3 shaders...\n");
 	for (int i = 0; i < num_shader; i++)
 	{
@@ -137,8 +137,6 @@ void Engine::init(void *p1, void *p2)
 		}
 	}
 	printf("Done\n");
-
-
 
 //	shadowmap.init(&gfx);
 }
@@ -211,7 +209,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-	map.render(camera_frame.pos, mvp, gfx);
+	map.render(camera_frame.pos, mvp, gfx, surface_list);
 	camera_frame.set(transformation);
 	render_entities(transformation, true);
 
@@ -484,7 +482,7 @@ void Engine::render_shadowmaps()
 				mlight2.Select();
 				vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 				mlight2.Params(mvp, light_list, light_list.size(), offset);
-				map.render(entity_list[i]->position, mvp, gfx);
+				map.render(entity_list[i]->position, mvp, gfx, surface_list);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
@@ -545,7 +543,7 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0, offset);
 
-	map.render(camera_frame.pos, mvp, gfx);
+	map.render(camera_frame.pos, mvp, gfx, surface_list);
 //	gfx.SelectShader(0);
 }
 
@@ -603,13 +601,13 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (input.control)
 	{
-		map.render(light_frame.pos, mvp, gfx);
+		map.render(light_frame.pos, mvp, gfx, surface_list);
 //		render_shadow_volumes(entity_list[spawn]->player->current_light);
 //		gfx.SelectShader(0);
 		return;
 	}
 
-	map.render(camera_frame.pos, mvp, gfx);
+	map.render(camera_frame.pos, mvp, gfx, surface_list);
 	map.render_model(0, gfx);
 
 //	for (int i = 0; i < map.data.num_model; i++)
@@ -2678,6 +2676,23 @@ void Engine::destroy()
 {
 	q3.destroy();
 	debugf("Shutting down.\n");
+	/*
+	for (unsigned int i = 0; i < surface_list.size(); i++)
+	{
+		for (unsigned int j = 1; j < surface_list[i]->num_stage; j++)
+		{
+			delete [] surface_list[i]->stage[j].stage;
+		}
+		for (unsigned int j = 0; j < surface_list[i]->num_cmd; i++)
+		{
+			delete [] surface_list[i]->cmd[j];
+		}
+		delete surface_list[i];
+	}
+	*/
+	surface_list.clear();
+
+
 	destroy_buffers();
 	unload();
 	gfx.GetDebugLog();

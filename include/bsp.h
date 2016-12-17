@@ -71,14 +71,14 @@ typedef struct
 
 
 // Keeping size small, because there are a lot of these
-struct Surface
+struct surface_t
 {
 	char file[128];
 	char name[128];
 	char *cmd[64];	//raw parser output
 	stage_t stage[64];
-	int num_cmd;
-	int num_stage;
+	unsigned int num_cmd;
+	unsigned int num_stage;
 
 	bool nomipmaps;
 	bool nopicmip;
@@ -120,8 +120,16 @@ struct Surface
 	bool cull_twosided;
 	bool deformVertexes;
 	deform_t deform;
-
 };
+
+
+// Maps opengl texture object to q3shader index and stage (if available)
+typedef struct
+{
+	int texObj;
+	int index; // index into surface list (if it exists)
+	int stage; // stage texture was loaded from
+} texture_t;
 
 class Bsp
 {
@@ -143,12 +151,13 @@ public:
 	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
-	void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
+	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
+	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list);
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
 //	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
-	void load_textures(Graphics &gfx, vector<Surface *> &surface_list);
+	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list);
 	void unload(Graphics &gfx);
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
@@ -192,7 +201,7 @@ private:
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;
 
-	int	*tex_object;
+	texture_t	*tex_object;
 	unsigned int	*normal_object;
 	unsigned int	*lightmap_object;
 };

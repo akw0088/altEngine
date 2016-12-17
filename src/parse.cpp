@@ -580,7 +580,7 @@ char machine_shader(char input, char state)
 	return 'Z';
 }
 
-void handle_command(char *basecmd, Surface *surface)
+void handle_command(char *basecmd, surface_t *surface)
 {
 	char *ret = NULL;
 
@@ -854,7 +854,7 @@ void handle_stage(char *stagecmd, stage_t *stage)
 }
 
 
-void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
+void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename)
 {
 	char	basecmd[512] = { 0 };
 	char	stagecmd[512] = { 0 };
@@ -869,8 +869,8 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 
 	//        printf("%s\n", input);
 
-	Surface *surface = new Surface;
-	memset(surface, 0, sizeof(Surface));
+	surface_t *surface = new surface_t;
+	memset(surface, 0, sizeof(surface_t));
 	memcpy(surface->file, filename, strlen(filename) + 1);
 
 	for (int i = 0; i < length; i++)
@@ -923,8 +923,8 @@ void parse_shader(char *input, vector<Surface *> &surface_list, char *filename)
 				}
 				first = false;
 
-				surface = new Surface;
-				memset(surface, 0, sizeof(Surface));
+				surface = new surface_t;
+				memset(surface, 0, sizeof(surface_t));
 				memcpy(surface->file, filename, strlen(filename) + 1);
 
 				memset(surface->name, 0, sizeof(surface->name));
