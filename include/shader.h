@@ -42,6 +42,14 @@ public:
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset);
 	virtual void prelink(void);
 
+	//sin tri square saw inverse saw
+	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
+	void tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num);
+	void tcmod_stretch_sawtooth(float amplitude, float phase, float freq, int tick_num);
+	void tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num);
+	void tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num);
+	void tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num);
+
 	void tcmod_scroll(vec2 &scroll);
 	void tcmod_scale(vec2 &scale);
 	void tcmod_rotate(float deg);

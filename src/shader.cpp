@@ -208,7 +208,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
 	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
 	float tcmod_rotate = 25.0f;
-	tcmod_rotate = (M_PI * tcmod_rotate / 180.0f);
+	tcmod_rotate = (float)(M_PI * tcmod_rotate / 180.0f);
 
 
 	glUniform2fv(u_tcmod_scroll, 1, (float *)&tcmod_scroll);
@@ -236,10 +236,70 @@ void mLight2::tcmod_scale(vec2 &scale)
 void mLight2::tcmod_rotate(float deg)
 {
 	//convert to radians
-	deg = (M_PI * deg / 180.0f);
+	deg = (float)(M_PI * deg / 180.0f);
 
 	glUniform1fv(u_tcmod_rotate, 1, &deg);
 }
+
+void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num)
+{
+	vec2 value;
+
+	value.x = (float)( amplitude * fsin(freq * tick_num + phase) );
+	value.y = value.x;
+
+	tcmod_scale(value);
+}
+
+void mLight2::tcmod_stretch_sawtooth(float amplitude, float phase, float freq, int tick_num)
+{
+	vec2 value;
+
+	//cot(x)=1/tan(x)
+	value.x = (float) ( amplitude * ( -0.5 * atan(1.0 / tan(freq * tick_num / M_PI + phase)) ) );
+	value.y = value.x;
+
+	tcmod_scale(value);
+}
+
+void mLight2::tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num)
+{
+	tcmod_stretch_sawtooth(amplitude, phase, freq, -tick_num);
+}
+
+int nearval(float x)
+{
+	if (x > 0.5)
+	{
+		return (int)(x + 0.5);
+	}
+	else
+	{
+		return (int)x;
+	}
+}
+
+
+void mLight2::tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num)
+{
+	vec2 value;
+	float x = (float)(0.5 * tick_num * freq + phase);
+	value.x = (float)( amplitude * (1.0 - 2.0 * abs(nearval(x) - x)) );
+	value.y = value.x;
+
+	tcmod_scale(value);
+}
+
+void mLight2::tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num)
+{
+	vec2 value;
+
+	value.x = (float)( amplitude * (4.0 / ((int)(freq * tick_num + phase) % 2 * M_PI)) );
+	value.y = value.x;
+
+	tcmod_scale(value);
+}
+
 
 
 int mLightDepth::init(Graphics *gfx)
