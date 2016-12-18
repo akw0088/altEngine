@@ -881,6 +881,11 @@ void handle_stage(char *stagecmd, stage_t *stage)
 			stage->blend_dstcolor_zero = true;
 		}
 	}
+	else if (strstr(stagecmd, "alphafunc"))
+	{
+		//alphaFunc GE128
+		stage->blend_one_one = true;
+	}
 	else if (strstr(stagecmd, "depthwrite"))
 	{
 		stage->depth_write = true;

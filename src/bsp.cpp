@@ -808,7 +808,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 						surface->stage[stage].blendfunc_add ||
 						surface->stage[stage].blendfunc_filter ||
 						surface->stage[stage].blend_one_one ||
-						surface->surfaceparm_fog)
+						surface->stage[stage].blend_one_zero //||
+						/*surface->surfaceparm_fog*/)
 					{
 						blend = true;
 					}
@@ -821,7 +822,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				else
 				{
 					// need a way to tell if a face should be blended
-					if (tex_object[face->material].texObj < 0)
+					if (tex_object[face->material].texObj[0] < 0)
 						blend_list.push_back(face_index);
 					else
 						face_list.push_back(face_index);

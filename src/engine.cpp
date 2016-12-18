@@ -422,10 +422,10 @@ void Engine::render(double last_frametime)
 #endif
 #ifdef FORWARD
 	gfx.clear();
-	gfx.Blend(true);
+	//gfx.Blend(true);
 //	render_shadow_volumes(0); // for debugging
 	render_scene(true);
-	gfx.Blend(false);
+//	gfx.Blend(false);
 #endif
 #ifdef SHADOWVOL
 	matrix4 mvp;
@@ -2794,17 +2794,26 @@ int load_texture(Graphics &gfx, char *file_name)
 //		debugf("Loaded %s from disk\n", file_name);
 	}
 
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, STBI_rgb_alpha);
+	//tex_object[face->material].texObj[0]
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
-	format = GL_RGBA;
-	components = GL_RGBA8;
+	if (components == 4)
+	{
+		format = GL_RGBA;
+		components = GL_RGBA8;
+	}
+	else
+	{
+		format = GL_RGB;
+		components = GL_RGB8;
+	}
 
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
 	stbi_image_free(bytes);
 	free((void *)data);
 
 #ifndef DIRECTX
-	if (format == GL_BGRA_EXT)
+	if (format != GL_RGBA)
 	{
 		// negative means it has an alpha channel
 		return -tex_object;
