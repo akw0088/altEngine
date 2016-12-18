@@ -3,14 +3,14 @@
 
 #define LINE_SIZE 512
 
-#define LIGHTMAP
+//#define LIGHTMAP
 
 #define TICK_MS		8		// 125hz
 #define TICK_RATE	125
 //#define TICK_MS 16		// 62.5hz
 //#define TICK_RATE 60
 
-#define MAX_TEXTURES 8
+#define MAX_TEXTURES 8 // multi texture limits
 
 #ifdef _WIN32
 	#define _CRTDBG_MAP_ALLOC

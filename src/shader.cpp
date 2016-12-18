@@ -207,9 +207,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
 	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
-	float tcmod_rotate = 25.0f;
-	tcmod_rotate = (float)(M_PI * tcmod_rotate / 180.0f);
-
+	float tcmod_rotate = 0.0f;
 
 	glUniform2fv(u_tcmod_scroll, 1, (float *)&tcmod_scroll);
 	glUniform2fv(u_tcmod_scale, 1, (float *)&tcmod_scale);

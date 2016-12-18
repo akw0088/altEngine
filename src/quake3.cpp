@@ -56,6 +56,9 @@ void Quake3::step(int frame_step)
 	if (spawn == -1)
 		return;
 
+	if (engine->entity_list.size() == 0)
+		return;
+
 	Entity *entity = engine->entity_list[spawn];
 
 	if (frame_step % TICK_RATE == 0)
@@ -84,7 +87,7 @@ void Quake3::step(int frame_step)
 			entity->rigid->noclip == false)
 		{
 
-			if ((entity->position - entity->rigid->old_position).magnitude() > 1.0f && frame_step % 20 == 0)
+			if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && frame_step % 20 == 0)
 			{
 				bool ret = false;
 
