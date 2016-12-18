@@ -61,6 +61,38 @@ void Quake3::step(int frame_step)
 
 	Entity *entity = engine->entity_list[spawn];
 
+
+	//player movement
+	if (engine->menu.ingame == false && engine->menu.console == false)
+	{
+		if (engine->input.control == true)
+			engine->camera_frame.update(engine->input);
+		else if (spawn != -1)
+		{
+			if (engine->entity_list[spawn]->player->health > 0)
+			{
+				// True if jumped
+				if (entity->rigid->move(engine->camera_frame, engine->input))
+				{
+					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
+					engine->audio.play(entity->speaker->source);
+				}
+
+			}
+			else
+			{
+				button_t noinput;
+
+				//Makes body hit the floor, need to explore why this hack is needed
+				if (entity->player->reload_timer)
+				{
+					entity->rigid->move(engine->camera_frame, noinput);
+				}
+			}
+		}
+	}
+
+
 	if (frame_step % TICK_RATE == 0)
 	{
 		blink = !blink;

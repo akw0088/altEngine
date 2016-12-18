@@ -223,20 +223,13 @@ typedef struct
 	bool clampmap;
 	char clampmap_tex[128];
 	bool anim_map;
-	char anim_map_tex[512]; // frequency, tex1-tex8
+	char anim_map_tex[512];
 	float anim_map_freq;
 	bool lightmap;
 
 	bool blendfunc_add;
 	bool blendfunc_filter;
-	bool blendfunc_blend;//source * srccoef + dest * destcoef
-						 /*
-						 bool blend_one;
-						 bool blend_zero;
-						 bool blend_dst_color;
-						 bool blend_one_minus_dst_color;
-						 bool blend_one_minus_src_alpha;
-						 */
+	bool blendfunc_blend;	//source * srccoef + dest * destcoef
 	bool blend_zero_one;
 	bool blend_one_zero;
 	bool blend_one_one;
@@ -258,8 +251,6 @@ typedef struct
 	bool tcmod_turb;
 	vec2 tcmod_turb_value;
 	bool tcgen_env;
-
-	int tex_obj_index;
 } stage_t;
 
 
@@ -269,8 +260,7 @@ struct surface_t
 	char file[128];
 	char name[128];
 	//	char *cmd[64];	//raw parser output
-	stage_t stage[64];
-//	unsigned int num_cmd;
+	stage_t stage[8]; //looks like it quake3 maxes out at 4, but doing 8
 	unsigned int num_stage;
 
 	bool nomipmaps;

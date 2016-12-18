@@ -45,15 +45,16 @@ char *shader_list[] = {
 int num_shader = 27;
 
 
-char *pk3list[] = { "media/pak0.pk3",
-				"media/pak1.pk3",
-				"media/pak2.pk3",
-				"media/pak3.pk3",
-				"media/pak4.pk3",
-				"media/pak5.pk3",
-				"media/pak6.pk3",
-				"media/pak7.pk3",
+char *pk3list[] = {
 				"media/pak8.pk3",
+				"media/pak7.pk3",
+				"media/pak6.pk3",
+				"media/pak5.pk3",
+				"media/pak4.pk3",
+				"media/pak3.pk3",
+				"media/pak2.pk3",
+				"media/pak1.pk3",
+				"media/pak0.pk3",
 //				"media/q3f2_pak0.pk3",
 //				"media/zpak000_assets.pk3"
 };
@@ -1306,35 +1307,6 @@ void Engine::step(int tick)
 	if (spawn != -1)
 		check_triggers();  // handles triggers and the projectile as trigger stuff
 
-	//entity test movement
-	if (menu.ingame == false && menu.console == false)
-	{
-		if (input.control == true)
-			camera_frame.update(input);
-		else if (spawn != -1)
-		{
-			if (entity_list[spawn]->player->health > 0)
-			{
-				// True if jumped
-				if (entity_list[spawn]->rigid->move(camera_frame, input))
-				{
-					select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->jump_sound);
-					audio.play(entity_list[spawn]->speaker->source);
-				}
-
-			}
-			else
-			{
-				button_t noinput;
-
-				//Makes body hit the floor, need to explore why this hack is needed
-				if (entity_list[spawn]->player->reload_timer)
-				{
-					entity_list[spawn]->rigid->move(camera_frame, noinput);
-				}
-			}
-		}
-	}
 	dynamics();
 	update_audio();
 
@@ -1361,8 +1333,8 @@ void Engine::check_triggers()
 		if (strstr(entity_list[i]->type, "func_"))
 		{
 			float period = 2200.0f; // manually setting for q3tourney6 plat
-			float sin_wave = fsin(M_PI * tick_num / period);
-			float square_wave = sign(fsin(2 * M_PI * tick_num / period));
+			float sin_wave = (float)fsin(M_PI * tick_num / period);
+			float square_wave = (float)sign(fsin(2 * M_PI * tick_num / period));
 			float amount = sin_wave * square_wave;
 
 			if (strstr(entity_list[i]->type, "func_static"))
@@ -1370,7 +1342,7 @@ void Engine::check_triggers()
 
 			if (strstr(entity_list[i]->type, "func_door"))
 			{
-				amount = 25.0 * amount;
+				amount = 25.0f * amount;
 			}
 			static int count;
 			{

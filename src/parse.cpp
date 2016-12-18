@@ -393,7 +393,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 	else if (strcmp(key, "height") == 0)
 	{
 		if (atoi(value) != 0)
-			entity.height = atoi(value);
+			entity.height = (float)atoi(value);
 		else
 			entity.height = 1.0f;
 //		entity.rigid->velocity = vec3(0.0f, atoi(value), 0.0f);
@@ -852,7 +852,7 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blendfunc_filter = true;
 		}
-		else if (strstr(ret, "blend"))
+		else if (strstr(ret, "blendfunc blend"))
 		{
 			stage->blendfunc_blend = true;
 		}
@@ -959,6 +959,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 	const int	length = strlen(input);
 	char		state = 'S';
 	char		prevstate = 'S';
+//	static int max_stage = 0;
 
 	//        printf("%s\n", input);
 
@@ -1023,6 +1024,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				surface->name[i - old_pos - 2] = '\0';
 				//printf("name is [%s]\n", name);
 				old_pos = i;
+				//max_stage = MAX(max_stage, num_stage);
 				num_stage = 0;
 //				num_cmd = 0;
 				j = 0;
@@ -1082,6 +1084,8 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 			break;
 		}
 	}
+
+//	printf("max_stage is %d\n", max_stage);
 }
 
 void push(char input, char *stack, int &sp)

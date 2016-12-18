@@ -81,9 +81,9 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 		for (int j = 0; j < 8; j++)
 		{
 			tex_object[i].texObj[j] = (unsigned int)0; // zero deselects a texture
-//			tex_object[i].enable[j] = true;
+			tex_object[i].texObjAnim[j] = 0;
 		}
-
+		tex_object[i].num_anim = 0;
 		tex_object[i].num_tex = 0;
 		tex_object[i].index = (unsigned int)-1;
 		tex_object[i].stage = (unsigned int)-1;
@@ -803,6 +803,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					surface_t *surface = surface_list[tex_object[face->material].index];
 					bool blend = false;
 
+
 					if (surface->stage[stage].blendfunc_blend ||
 						surface->stage[stage].blendfunc_add ||
 						surface->stage[stage].blendfunc_filter ||
@@ -1010,6 +1011,11 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		if (surface_list[j]->stage[k].map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
+
+			if (strstr(texture_name, "pewter_shiney"))
+			{
+//				surface_list[j]->stage[k].blendfunc_add = true;
+			}
 //			printf("Trying texture [%s]\n", texture_name);
 			tex_object = load_texture(gfx, texture_name);
 		}
