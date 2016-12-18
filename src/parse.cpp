@@ -392,6 +392,10 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 	}
 	else if (strcmp(key, "height") == 0)
 	{
+		if (atoi(value) != 0)
+			entity.height = atoi(value);
+		else
+			entity.height = 1.0f;
 //		entity.rigid->velocity = vec3(0.0f, atoi(value), 0.0f);
 	}
 

@@ -14,7 +14,7 @@ state 6 up		5 "null"
 state 6 enter		0 "null"
 state 4 enter		4 "map maps/q3tourney2.bsp"
 state 4 next		7 "null"
-state 5 enter		5 "map maps/testmap2.bsp"
+state 5 enter		5 "map maps/q3tourney6.bsp"
 
 state 7 entities	8 "null"
 state 8 textures	9 "null"

@@ -16,6 +16,7 @@ public:
 	int				model_ref;
 	bool			visible;
 	bool			network;
+	float			height; // for movers will make own class later
 	char			type[64];
 	RigidBody		*rigid;
 	Vehicle			*vehicle;

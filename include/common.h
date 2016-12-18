@@ -17,7 +17,7 @@ void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *in
 char *get_file(char *filename, int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int write_file(char *filename, char *bytes, int size);
+float sign(float x);
 
-int get_zipfile(char *zipfile, char *file, unsigned char **data);
 
 #endif

@@ -153,7 +153,7 @@ void Engine::setup_func()
 		}
 
 
-		if (strstr(entity_list[i]->type, "func_plat") ||
+		if (strstr(entity_list[i]->type, "func_") ||
 			strstr(entity_list[i]->type, "func_train"))
 		{
 			for (unsigned int j = 0; j < entity_list.size(); j++)
@@ -161,10 +161,16 @@ void Engine::setup_func()
 				if (i == j)
 					continue;
 
+				if (strlen(entity_list[i]->target) == 0)
+					continue;
+
 				if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
 				{
+					printf("Entity %d type %s pursuing %d type %s\n", i, entity_list[i]->type,
+						j, entity_list[j]->type);
 					entity_list[i]->rigid->pursue_flag = true;
 					entity_list[i]->rigid->target = entity_list[j];
+					break;
 				}
 			}
 		}
@@ -753,7 +759,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			entity_list[i]->rigid->render(gfx);
 
-			// kind of a fps killer, still in work
+
+			// render func_ items (doors, moving platforms, etc)
 			if (entity_list[i]->model_ref != -1)
 			{
 				if (strstr(entity_list[i]->type, "func_") != NULL)
@@ -762,11 +769,9 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					map.render_model(entity_list[i]->model_ref, gfx);
 				}
 			}
-			
 
 		}
 		//		entity_list[i]->rigid->render_box(gfx); // bounding box lines
-
 	}
 
 
@@ -1343,32 +1348,44 @@ void Engine::check_triggers()
 
 		if (strstr(entity_list[i]->type, "func_"))
 		{
-			float distance = (entity_list[i]->position - entity_list[spawn]->position).magnitude();
+			float period = 2200.0f; // manually setting for q3tourney6 plat
+			float sin_wave = fsin(M_PI * tick_num / period);
+			float square_wave = sign(fsin(2 * M_PI * tick_num / period));
+			float amount = sin_wave * square_wave;
 
-			if (distance < 100.0f)
+			if (strstr(entity_list[i]->type, "func_static"))
+				continue;
+
+			if (strstr(entity_list[i]->type, "func_door"))
 			{
+				amount = 25.0 * amount;
+			}
+			static int count;
+			{
+				count++;
+				amount *= entity_list[i]->height / 800.0f;
+		
 				switch (entity_list[i]->angle)
 				{
 				case 0:
-					entity_list[i]->rigid->velocity = vec3(  0.0f,   0.0f, 10.0f);
+					entity_list[i]->position += vec3(amount, 0.0f, 0.0f);
 					break;
 				case 90:
-					entity_list[i]->rigid->velocity = vec3( 10.0f,   0.0f,  0.0f);
+					entity_list[i]->position += vec3(0.0f, 0.0f, -amount);
 					break;
 				case 180:
-					entity_list[i]->rigid->velocity = vec3(  0.0f,   0.0f, -10.0f);
+					entity_list[i]->position += vec3(-amount, 0.0f, 0.0f);
 					break;
 				case 270:
-					entity_list[i]->rigid->velocity = vec3(-10.0f,   0.0f,   0.0f);
+					entity_list[i]->position += vec3(0.0f, 0.0f, amount);
 					break;
 				case -1://up
-					entity_list[i]->rigid->velocity = vec3(  0.0f,  10.0f,   0.0f);
+					entity_list[i]->position += vec3(0.0f, amount, 0.0f);
 					break;
 				case -2://down
-					entity_list[i]->rigid->velocity = vec3(  0.0f, -10.0f,   0.0f);
+					entity_list[i]->position += vec3(0.0f, -amount, 0.0f);
 					break;
 				}
-
 			}
 		}
 
@@ -3231,6 +3248,9 @@ void Engine::console(char *cmd)
 			case 270:
 				matrix4::mat_backward(matrix, entity_list[spawn]->position);
 				break;
+			default:
+				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				break;
 			}
 			camera_frame.forward.x = matrix.m[8];
 			camera_frame.forward.y = matrix.m[9];
@@ -3279,6 +3299,9 @@ void Engine::console(char *cmd)
 						break;
 					case 270:
 						matrix4::mat_backward(matrix, entity_list[spawn]->position);
+						break;
+					default:
+						matrix4::mat_forward(matrix, entity_list[spawn]->position);
 						break;
 					}
 					camera_frame.forward.x = matrix.m[8];
