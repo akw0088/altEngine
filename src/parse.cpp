@@ -829,7 +829,7 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->anim_map = true;
 			stage->anim_map_freq = freq;
-			strcpy(stage->anim_map_tex, tex);
+			strcpy(stage->anim_map_tex, ret + 8);
 		}
 	}
 	else if ((ret = strstr(stagecmd, "clampmap ")))

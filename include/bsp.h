@@ -31,10 +31,12 @@ public:
 	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
-//	bool load(char *map);
+
+
+	//	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
 	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list);
-	void load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *tex_object, Graphics &gfx);
+	void load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx);
 	void load_from_file(char *filename, texture_t &texObj, Graphics &gfx);
 
 
@@ -53,6 +55,9 @@ public:
 	bool loaded;
 	bspData_t	data;
 	char map_name[80];
+	vector<texture_t *> anim_list;
+	texture_t	*tex_object;
+
 private:
 	bsp_t		*tBsp;
 
@@ -60,8 +65,6 @@ private:
 	vector<int> face_list;
 	vector<int> blend_list;
 
-	vector<int> model_list;
-	vector<int> model_blend_list;
 	
 	int last_leaf;
 
@@ -83,7 +86,6 @@ private:
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;
 
-	texture_t	*tex_object;
 	unsigned int	*normal_object;
 	unsigned int	*lightmap_object;
 };

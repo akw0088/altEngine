@@ -259,6 +259,7 @@ typedef struct
 	vec2 tcmod_turb_value;
 	bool tcgen_env;
 
+	int tex_obj_index;
 } stage_t;
 
 
@@ -319,6 +320,10 @@ struct surface_t
 typedef struct
 {
 	int texObj[MAX_TEXTURES];
+	int texObjAnim[8];
+	int anim_unit;
+	int freq;
+	int num_anim;
 	int index; // index into surface list (if it exists)
 	int stage; // stage texture was loaded from
 	int num_tex;

@@ -10,7 +10,7 @@
 //#define TICK_MS 16		// 62.5hz
 //#define TICK_RATE 60
 
-#define MAX_TEXTURES 8 // multi texture limits
+#define MAX_TEXTURES 8 // multi texture limits (quake 3 shader stages)
 
 #ifdef _WIN32
 	#define _CRTDBG_MAP_ALLOC

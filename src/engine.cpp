@@ -137,6 +137,7 @@ void Engine::init(void *p1, void *p2)
 			free((void *)shader_file);
 		}
 	}
+
 	printf("Done\n");
 
 //	shadowmap.init(&gfx);
@@ -1285,6 +1286,17 @@ void Engine::step(int tick)
 	tick_num = tick;
 	if (map.loaded == false)
 		return;
+
+	// Animate animated textures
+	for (int i = 0; i < map.anim_list.size(); i++)
+	{
+		texture_t  *tex = map.anim_list[i];
+
+		int texunit = tex->anim_unit;
+		int ani_index = (tick_num % (TICK_RATE / tex->freq)) % tex->num_anim;
+
+		tex->texObj[texunit] = tex->texObjAnim[ani_index];
+	}
 
 	q3.step(tick);
 

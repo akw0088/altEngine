@@ -79,7 +79,11 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		for (int j = 0; j < 8; j++)
+		{
 			tex_object[i].texObj[j] = (unsigned int)0; // zero deselects a texture
+//			tex_object[i].enable[j] = true;
+		}
+
 		tex_object[i].num_tex = 0;
 		tex_object[i].index = (unsigned int)-1;
 		tex_object[i].stage = (unsigned int)-1;
@@ -660,7 +664,6 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 	return false;
 }
 
-
 inline void Bsp::render_face(face_t *face, Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
@@ -803,6 +806,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					if (surface->stage[stage].blendfunc_blend ||
 						surface->stage[stage].blendfunc_add ||
 						surface->stage[stage].blendfunc_filter ||
+						surface->stage[stage].blend_one_one ||
 						surface->surfaceparm_fog)
 					{
 						blend = true;
@@ -980,6 +984,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	char			texture_name[LINE_SIZE] = { 0 };
 	int				tex_object = 0;
 	unsigned int	j = 0;
+	int				aindex = 0;
 
 //	printf("Attempting to load %s, trying surface_list\n", name);
 	for (j = 0; j < surface_list.size(); j++)
@@ -1002,7 +1007,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
-		if (surface_list[j]->stage[k].map && surface_list[j]->stage[k].tcgen_env == false)
+		if (surface_list[j]->stage[k].map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
 //			printf("Trying texture [%s]\n", texture_name);
@@ -1015,8 +1020,25 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		}
 		else if (surface_list[j]->stage[k].anim_map)
 		{
-			//snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].anim_map_tex);
-			//tex_object[i].texObj = load_texture(gfx, texture_name);
+			char *tex = strtok(surface_list[j]->stage[k].anim_map_tex, " ");
+			anim_list.push_back(texObj);
+			int n = 0;
+
+			int freq = atoi(tex);
+			texObj->freq = freq;
+
+//			printf("animmap freq %d\n", freq);
+			tex = strtok(NULL, " ");
+			while (tex != NULL)
+			{
+//				printf("animmap tex %s\n", tex);
+				snprintf(texture_name, LINE_SIZE, "media/%s", tex);
+				texObj->texObjAnim[n++] = load_texture(gfx, texture_name);
+				tex = strtok(NULL, " ");
+			}
+			texObj->texObj[texObj->num_tex] = texObj->texObjAnim[0];
+			texObj->anim_unit = texObj->num_tex;
+			texObj->num_anim = n;
 		}
 
 
