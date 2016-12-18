@@ -766,7 +766,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
-	if (frameIndex != lastIndex)
+	if (frameIndex != lastIndex || tick_num < TICK_RATE)
 	{
 		lastIndex = frameIndex;
 		blend_list.clear();
