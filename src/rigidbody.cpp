@@ -87,7 +87,7 @@ void RigidBody::integrate(float time)
 
 	//translational
 	acceleration = net_force / mass;
-	if (gravity && noclip == false)
+	if (gravity == true && noclip == false)
 	{
 		acceleration.y -= 9.8f;
 	}

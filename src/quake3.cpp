@@ -931,5 +931,19 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 			}
 		}
+
+		if (strcmp(entity->type, "func_plat") == 0 || strcmp(entity->type, "func_bobbing") == 0 ||
+			strcmp(entity->type, "func_train") == 0)
+		{
+			int line = 1;
+
+			if (entity->light != NULL)
+			{
+				sprintf(data, "target %s", entity->target);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+				sprintf(data, "target_name %s", entity->target_name);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			}
+		}
 	}
 }

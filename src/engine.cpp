@@ -142,6 +142,35 @@ void Engine::init(void *p1, void *p2)
 //	shadowmap.init(&gfx);
 }
 
+void Engine::setup_func()
+{
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
+			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull"))
+		{
+			entity_list[i]->rigid->gravity = false;
+		}
+
+
+		if (strstr(entity_list[i]->type, "func_plat") ||
+			strstr(entity_list[i]->type, "func_train"))
+		{
+			for (unsigned int j = 0; j < entity_list.size(); j++)
+			{
+				if (i == j)
+					continue;
+
+				if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
+				{
+					entity_list[i]->rigid->pursue_flag = true;
+					entity_list[i]->rigid->target = entity_list[j];
+				}
+			}
+		}
+	}
+}
+
 void Engine::load(char *level)
 {
 	matrix4 transformation;
@@ -188,13 +217,7 @@ void Engine::load(char *level)
 	map.generate_meshes(gfx);
 
 	parse_entity(map.get_entities(), entity_list, gfx, audio);
-	for (unsigned int i = 0; i < entity_list.size(); i++)
-	{
-		if (entity_list[i]->model_ref != -1)
-		{
-			entity_list[i]->position = map.model_origin(entity_list[i]->model_ref);
-		}
-	}
+	setup_func();
 
 	menu.delta("entities", *this);
 	gfx.clear();
@@ -728,15 +751,18 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				continue;
 
 
-			// kind of a fps killer, still in work
 			entity_list[i]->rigid->render(gfx);
-			/*
+
+			// kind of a fps killer, still in work
 			if (entity_list[i]->model_ref != -1)
 			{
-			if (strstr(entity_list[i]->type, "func_") != NULL)
-			map.render_model(entity_list[i]->model_ref, gfx);
+				if (strstr(entity_list[i]->type, "func_") != NULL)
+				{
+					entity_list[i]->rigid->gravity = false;
+					map.render_model(entity_list[i]->model_ref, gfx);
+				}
 			}
-			*/
+			
 
 		}
 		//		entity_list[i]->rigid->render_box(gfx); // bounding box lines
@@ -955,8 +981,6 @@ void Engine::spatial_testing()
 				}
 			}
 		}
-
-
 
 		if (entity_list[i]->model)
 		{
@@ -1194,7 +1218,7 @@ bool Engine::map_collision(RigidBody &body)
 //		vec3 point = body.center + body.entity->position;
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
-		if (map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1))
+		if (map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
 		{
 			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
@@ -1217,7 +1241,7 @@ bool Engine::map_collision(RigidBody &body)
 					{
 						vec3 p = point + staircheck;
 
-						if (map.collision_detect(p, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1) == false)
+						if (map.collision_detect(p, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
 						{
 							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
 							continue;
@@ -1225,10 +1249,6 @@ bool Engine::map_collision(RigidBody &body)
 					}
 				}
 
-				// Colliding, going to clip velocity so you dont 'stick'
-				// Projecting Velocity onto normal
-				// http://www.falstad.com/dotproduct/
-//				clip += plane.normal * -(body.velocity * plane.normal.normalize() );
 				collision = true;
 			}
 		}
@@ -1319,6 +1339,39 @@ void Engine::check_triggers()
 
 		if (entity_list[i]->light)
 			num_light++;
+
+
+		if (strstr(entity_list[i]->type, "func_"))
+		{
+			float distance = (entity_list[i]->position - entity_list[spawn]->position).magnitude();
+
+			if (distance < 100.0f)
+			{
+				switch (entity_list[i]->angle)
+				{
+				case 0:
+					entity_list[i]->rigid->velocity = vec3(  0.0f,   0.0f, 10.0f);
+					break;
+				case 90:
+					entity_list[i]->rigid->velocity = vec3( 10.0f,   0.0f,  0.0f);
+					break;
+				case 180:
+					entity_list[i]->rigid->velocity = vec3(  0.0f,   0.0f, -10.0f);
+					break;
+				case 270:
+					entity_list[i]->rigid->velocity = vec3(-10.0f,   0.0f,   0.0f);
+					break;
+				case -1://up
+					entity_list[i]->rigid->velocity = vec3(  0.0f,  10.0f,   0.0f);
+					break;
+				case -2://down
+					entity_list[i]->rigid->velocity = vec3(  0.0f, -10.0f,   0.0f);
+					break;
+				}
+
+			}
+		}
+
 
 		// Not a trigger
 		if (entity_list[i]->trigger == NULL)

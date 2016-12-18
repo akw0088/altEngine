@@ -27,6 +27,9 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			int ret = sscanf(value + 1, "%d", &num);
 			if (ret == 1)
 				entity.model_ref = num;
+
+			if (entity.rigid)
+				entity.rigid->gravity = false;
 		}
 	}
 	else if (strcmp(key, "classname") == 0)
@@ -213,6 +216,73 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
 			entity.trigger->armor = true;
 		}
+		else if (strcmp(value, "func_bobbing") == 0)
+		{
+			/*
+			speed : amount of time in seconds for one complete oscillation cycle (default 4).
+			height : sets the amount of travel of the oscillation movement (default 32).
+			phase : sets the start offset of the oscillation cycle. Values must be 0 < phase < 1. Any integer phase value is the same as no offset (default 0).
+			noise : path/name of .wav file to play. Use looping sounds only (eg. sound/world/drone6.wav - See Notes).
+			*/
+		}
+		else if (strcmp(value, "func_button") == 0)
+		{
+			/*
+			angle : determines the direction in which the button will move (up = -1, down = -2).
+			target : all entities with a matching targetname will be triggered.
+			speed : speed of button's displacement (default 40).
+			wait : number of seconds button stays pressed (default 1, -1 = return immediately).
+			lip : lip remaining at end of move (default 4 units).
+			health : if set to a non-zero value, the button must be damaged by "health" amount of points to operate.
+			*/
+		}
+		else if (strcmp(value, "func_door") == 0)
+		{
+			/*
+			angle : determines the opening direction of door (up = -1, down = -2).
+			speed : determines how fast the door moves (default 100).
+			wait : number of seconds before door returns (default 2, -1 = return immediately)
+			lip : lip remaining at end of move (default 8)
+			targetname : if set, a func_button or trigger is required to activate the door.
+			health : if set to a non-zero value, the door must be damaged by "health" amount of points to activate (default 0).
+			dmg : damage to inflict on player when he blocks operation of door (default 4). Door will reverse direction when blocked unless CRUSHER spawnflag is set.
+			team: assign the same team name to multiple doors that should operate together (see Notes).
+			*/
+		}
+		else if (strcmp(value, "func_plat") == 0)
+		{
+			/*
+			speed : determines how fast the plat moves (default 150).
+			lip : lip remaining at end of move (default 16). Has no effect if "height" is set.
+			height : if set, this will determine the total amount of vertical travel of the plat.
+			dmg : damage to inflict on player when he blocks operation of plat (default 4). Plat will reverse direction when blocked.
+			*/
+		}
+		else if (strcmp(value, "func_pendulum") == 0)
+		{
+			/*
+			angle: angle offset of axis of rotation from default X axis(default 0).
+			speed : angle of swing arc in either direction from initial position(default 30).
+			phase : sets the start offset of the swinging cycle.Values must be 0 < phase < 1. Any integer phase value is the same as no offset(default 0).
+			noise : path / name of.wav file to play.Use looping sounds only(eg.sound / world / drone6.wav).
+			*/
+		}
+		else if (strcmp(value, "func_rotating") == 0)
+		{
+			entity.rigid->angular_velocity.y = 1.0f;
+			/*
+			speed: determines how fast entity rotates(default 100).
+			noise : path / name of.wav file to play.Use looping sounds only(eg.sound / world / drone6.wav).
+			*/
+		}
+		else if (strcmp(value, "func_train") == 0)
+		{
+			/*
+			speed : speed of displacement of train (default 100 or overridden by speed value of path).
+			target : this points to the first path_corner of the path which is also the spawn location of the train's origin.
+			model2 : path/name of model to include (eg: models/mapobjects/pipe/pipe02.md3).
+			*/
+		}
 		else if (strcmp(value, "trigger_teleport") == 0)
 		{
 			if (entity.trigger == NULL)
@@ -315,6 +385,14 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		if (entity.trigger == NULL)
 			entity.trigger = new Trigger(&entity, audio);
 		sprintf(entity.trigger->action, "damage %s", value);
+	}
+	else if (strcmp(key, "speed") == 0)
+	{
+		// Need to loop through all entities after parsing and set func_train targets and will use pursue()
+	}
+	else if (strcmp(key, "height") == 0)
+	{
+//		entity.rigid->velocity = vec3(0.0f, atoi(value), 0.0f);
 	}
 
 }

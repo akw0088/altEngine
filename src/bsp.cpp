@@ -343,9 +343,9 @@ void Bsp::change_axis()
 
 	for (unsigned int i = 0; i < data.num_model; i++)
 	{
-		float temp = data.Model[i].min[1];
-		data.Model[i].min[1] = data.Model[i].min[2];
-		data.Model[i].min[2] = -temp;
+//		float temp = data.Model[i].min[1];
+//		data.Model[i].min[1] = data.Model[i].min[2];
+//		data.Model[i].min[2] = -temp;
 	}
 }
 
@@ -538,7 +538,7 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	}
 }
 
-bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug)
+bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -619,7 +619,13 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 						data.Material[brush->material].contents,
 						data.Material[brush->material].surface,
 						*depth, count);
+					printf("Normal %f %f %f\nVelocity %f %f %f\nClip %f %f %f\n", plane->normal.x, plane->normal.y, plane->normal.z,
+						velocity.x, velocity.y, velocity.z, clip.x, clip.y, clip.z);
+
 				}
+
+
+//				clip = (plane->normal.normalize() * -(velocity * plane->normal.normalize())) * 0.01;
 				return true;
 			}
 		}
@@ -875,6 +881,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	This has func_door's, func_bobbing, trigger's etc
 */
 
+// Dont use this ;o)
 vec3 Bsp::model_origin(unsigned int index)
 {
 	if (index >= data.num_model)
@@ -886,7 +893,8 @@ vec3 Bsp::model_origin(unsigned int index)
 
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
-	vec3 origin = vec3((max.x - min.x) / 2.0f + min.x,
+	vec3 origin = vec3(
+		(max.x - min.x) / 2.0f + min.x,
 		(max.y - min.y) / 2.0f + min.y,
 		(max.z - min.z) / 2.0f + min.z);
 
@@ -905,9 +913,9 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
 
-	for (unsigned int i = 0; i < model_list.size(); i++)
+	for (unsigned int i = 0; i < model->num_faces; i++)
 	{
-		int face_index = model->face_index;
+		int face_index = model->face_index + i;
 		face_t *face = &data.Face[face_index];
 
 		if (face->type == 1 || face->type == 3)
@@ -1331,22 +1339,6 @@ Insert the three edges (pair of vertices), into an edge stack
 Check for previous occurrence of each edges or it's reverse in the stack
 If an edge or its reverse is found in the stack, remove both edges
 Start with new triangle
-*/
-
-
-/*
-// generate face lists
-for (int j = 0; j < leaf->num_faces; j++)
-{
-int face_index = data.LeafFace[leaf->leaf_face + j];
-face_t *face = &data.Face[face_index];
-
-// need a way to tell if a face should be blended
-if (tex_object[face->material] < 0)
-blend_list.push_back(face_index);
-else
-face_list.push_back(face_index);
-}
 */
 void Bsp::find_edges(vec3 &position, Edge &edge_list)
 {
