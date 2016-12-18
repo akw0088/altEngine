@@ -76,18 +76,27 @@ void main(void)
 	mat2 mRot = mat2(	cos(u_tcmod_rotate), -sin(u_tcmod_rotate),
 				sin(u_tcmod_rotate),  cos(u_tcmod_rotate));
 
-	Fragment = texture(texture0, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment0 = texture(texture0, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment1 = texture(texture1, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment2 = texture(texture2, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment3 = texture(texture3, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment4 = texture(texture4, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment5 = texture(texture5, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment6 = texture(texture6, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
+	vec4 Fragment7 = texture(texture7, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
 
 
 
-	Fragment += texture(texture1, Vertex.vary_TexCoord);
-	Fragment += texture(texture2, Vertex.vary_TexCoord) * 0.25;
-//	Fragment += texture(texture3, Vertex.vary_TexCoord) * 0.1;
-//	Fragment += texture(texture4, Vertex.vary_TexCoord) * 0.1;
-//	Fragment += texture(texture5, Vertex.vary_TexCoord) * 0.1;
-//	Fragment += texture(texture6, Vertex.vary_TexCoord) * 0.1;
-//	Fragment += texture(texture7, Vertex.vary_TexCoord) * 0.1;
-
+	Fragment = Fragment0;
+/*
+	Fragment.xyz += Fragment1.xyz;
+	Fragment.xyz += Fragment2.xyz;
+	Fragment.xyz += Fragment3.xyz;
+	Fragment.xyz += Fragment4.xyz;
+	Fragment.xyz += Fragment5.xyz;
+	Fragment.xyz += Fragment6.xyz;
+	Fragment.xyz += Fragment7.xyz;
+*/
 
 //	Fragment = Fragment + texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
