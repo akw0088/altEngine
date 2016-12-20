@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			if (mstime() - last_time >= 16)
+			if (mstime() - last_time >= TICK_MS)
 			{
 				last_time = mstime();
 				EventProc((Display *)1, window, context);
@@ -100,7 +100,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 	if (display == NULL)
 	{
-		altEngine.render(16);
+		altEngine.render(TICK_MS);
 		return 0;
 	}
 	else if (display == (void *)1)
