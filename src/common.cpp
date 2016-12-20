@@ -365,10 +365,10 @@ int debugf(const char *format, ...)
         if (strlen(pstr) < width)
         {
             char *line = dmesg[dmesg_index++];
-	    if (dmesg_index >= DMESG_SIZE]
+	    if (dmesg_index >= DMESG_SIZE)
 		dmesg_index  = 0;
             sprintf(line, "%s", pstr);
-	    line[size] = '\0';
+	    //line[size] = '\0';
             Menu::console_buffer.push_back(line);
             break;
         }
@@ -381,7 +381,7 @@ int debugf(const char *format, ...)
             Menu::console_buffer.push_back(line);
             pstr += width;
         }
-	if (dmesg_index >= DMESG_SIZE]
+	if (dmesg_index >= DMESG_SIZE)
 		dmesg_index  = 0;
     }
     

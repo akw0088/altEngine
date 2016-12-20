@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#include <ctype.h>
+
 void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
 {
 	static int light_num = 0;
@@ -1038,7 +1040,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'F':
 			if (input[i] == '\n' && input[i - 1] != '{')
 			{
-				int size = strlen(basecmd) + 1;
+//				int size = strlen(basecmd) + 1;
 				basecmd[j++] = '\0';
 //				printf("basecmd is [%s]\n", basecmd);
 //				surface->cmd[num_cmd] = new char[size];
@@ -1066,7 +1068,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'I':
 			if (input[i] == '\n' && input[i - 1] != '{')
 			{
-				int size = strlen(stagecmd) + 1;
+//				int size = strlen(stagecmd) + 1;
 //				printf("stagecmd is [%s] stage_num is %d\n", stagecmd, stage_num);
 //				surface->stage[stage_num].stage = new char[size];
 //				memset(surface->stage[stage_num].stage, 0, size);

@@ -9,7 +9,6 @@ SOURCES := 	xmain.cpp \
 		junzip.cpp \
 		frame.cpp \
 		graphics.cpp \
-		gltLoadTGA.cpp \
 		light.cpp \
 		matrix.cpp \
 		md5.cpp \
@@ -39,8 +38,8 @@ OBJDIR := $(SOURCES:%.cpp=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++
-CPP := clang++
+CPP := g++
+#CPP := clang++
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]

@@ -1,4 +1,6 @@
 #include "shader.h"
+#include <cmath>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -423,7 +425,7 @@ void mLight2::tcmod_stretch_triangle(float amplitude, float phase, float freq, i
 {
 	vec2 value;
 	float x = (float)(0.5 * tick_num * freq + phase);
-	value.x = (float)( amplitude * (1.0 - 2.0 * abs(sign(x) - x)) );
+	value.x = (float)( amplitude * (1.0 - 2.0 * abs32(sign(x) - x)) );
 	value.y = value.x;
 
 	tcmod_scale(value, index);
