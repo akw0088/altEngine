@@ -142,9 +142,41 @@ int mLight2::init(Graphics *gfx)
 	texture_lightmap = glGetUniformLocation(program_handle, "texture_lightmap");
 	texture_normalmap = glGetUniformLocation(program_handle, "texture_normalmap");
 
-	u_tcmod_scroll = glGetUniformLocation(program_handle, "u_tcmod_scroll");
-	u_tcmod_scale = glGetUniformLocation(program_handle, "u_tcmod_scale");
-	u_tcmod_rotate = glGetUniformLocation(program_handle, "u_tcmod_rotate");
+	u_tcmod_scroll0 = glGetUniformLocation(program_handle, "u_tcmod_scroll0");
+	u_tcmod_scroll1 = glGetUniformLocation(program_handle, "u_tcmod_scroll1");
+	u_tcmod_scroll2 = glGetUniformLocation(program_handle, "u_tcmod_scroll2");
+	u_tcmod_scroll3 = glGetUniformLocation(program_handle, "u_tcmod_scroll3");
+	u_tcmod_scroll4 = glGetUniformLocation(program_handle, "u_tcmod_scroll4");
+	u_tcmod_scroll5 = glGetUniformLocation(program_handle, "u_tcmod_scroll5");
+	u_tcmod_scroll6 = glGetUniformLocation(program_handle, "u_tcmod_scroll6");
+	u_tcmod_scroll7 = glGetUniformLocation(program_handle, "u_tcmod_scroll7");
+
+	u_tcmod_scale0 = glGetUniformLocation(program_handle, "u_tcmod_scale0");
+	u_tcmod_scale1 = glGetUniformLocation(program_handle, "u_tcmod_scale1");
+	u_tcmod_scale2 = glGetUniformLocation(program_handle, "u_tcmod_scale2");
+	u_tcmod_scale3 = glGetUniformLocation(program_handle, "u_tcmod_scale3");
+	u_tcmod_scale4 = glGetUniformLocation(program_handle, "u_tcmod_scale4");
+	u_tcmod_scale5 = glGetUniformLocation(program_handle, "u_tcmod_scale5");
+	u_tcmod_scale6 = glGetUniformLocation(program_handle, "u_tcmod_scale6");
+	u_tcmod_scale7 = glGetUniformLocation(program_handle, "u_tcmod_scale7");
+
+	u_tcmod_sin0 = glGetUniformLocation(program_handle, "u_tcmod_sin0");
+	u_tcmod_sin1 = glGetUniformLocation(program_handle, "u_tcmod_sin1");
+	u_tcmod_sin2 = glGetUniformLocation(program_handle, "u_tcmod_sin2");
+	u_tcmod_sin3 = glGetUniformLocation(program_handle, "u_tcmod_sin3");
+	u_tcmod_sin4 = glGetUniformLocation(program_handle, "u_tcmod_sin4");
+	u_tcmod_sin5 = glGetUniformLocation(program_handle, "u_tcmod_sin5");
+	u_tcmod_sin6 = glGetUniformLocation(program_handle, "u_tcmod_sin6");
+	u_tcmod_sin7 = glGetUniformLocation(program_handle, "u_tcmod_sin7");
+
+	u_tcmod_cos0 = glGetUniformLocation(program_handle, "u_tcmod_cos0");
+	u_tcmod_cos1 = glGetUniformLocation(program_handle, "u_tcmod_cos1");
+	u_tcmod_cos2 = glGetUniformLocation(program_handle, "u_tcmod_cos2");
+	u_tcmod_cos3 = glGetUniformLocation(program_handle, "u_tcmod_cos3");
+	u_tcmod_cos4 = glGetUniformLocation(program_handle, "u_tcmod_cos4");
+	u_tcmod_cos5 = glGetUniformLocation(program_handle, "u_tcmod_cos5");
+	u_tcmod_cos6 = glGetUniformLocation(program_handle, "u_tcmod_cos6");
+	u_tcmod_cos7 = glGetUniformLocation(program_handle, "u_tcmod_cos7");
 
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
 	u_position = glGetUniformLocation(program_handle, "u_position");
@@ -207,49 +239,170 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
 	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
-	float tcmod_rotate = 0.0f;
+	float tcmod_sin = 0.0f;
+	float tcmod_cos = 1.0f;
 
-	glUniform2fv(u_tcmod_scroll, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scale, 1, (float *)&tcmod_scale);
-	glUniform1fv(u_tcmod_rotate, 1, &tcmod_rotate);
+	glUniform2fv(u_tcmod_scroll0, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll1, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll2, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll3, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll4, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll5, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll6, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll7, 1, (float *)&tcmod_scroll);
 
+	glUniform2fv(u_tcmod_scale0, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale1, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale2, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale3, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale4, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale5, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale6, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale7, 1, (float *)&tcmod_scale);
 
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
 
+	glUniform1fv(u_tcmod_cos0, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos1, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos2, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos3, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
+	
 	glUniform1i(u_num_lights, j);
 	glUniform3fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 #endif
 }
 
-void mLight2::tcmod_scroll(vec2 &scroll)
+void mLight2::tcmod_scroll(vec2 &scroll, int index)
 {
-	glUniform2fv(u_tcmod_scroll, 1, (float *)&scroll);
+	switch (index)
+	{
+	case 0:
+		glUniform2fv(u_tcmod_scroll0, 1, (float *)&scroll);
+		break;
+	case 1:
+		glUniform2fv(u_tcmod_scroll1, 1, (float *)&scroll);
+		break;
+	case 2:
+		glUniform2fv(u_tcmod_scroll2, 1, (float *)&scroll);
+		break;
+	case 3:
+		glUniform2fv(u_tcmod_scroll3, 1, (float *)&scroll);
+		break;
+	case 4:
+		glUniform2fv(u_tcmod_scroll4, 1, (float *)&scroll);
+		break;
+	case 5:
+		glUniform2fv(u_tcmod_scroll5, 1, (float *)&scroll);
+		break;
+	case 6:
+		glUniform2fv(u_tcmod_scroll6, 1, (float *)&scroll);
+		break;
+	case 7:
+		glUniform2fv(u_tcmod_scroll7, 1, (float *)&scroll);
+		break;
+	}
 }
 
-void mLight2::tcmod_scale(vec2 &scale)
+void mLight2::tcmod_scale(vec2 &scale, int index)
 {
-	glUniform2fv(u_tcmod_scale, 1, (float *)&scale);
+	switch (index)
+	{
+	case 0:
+		glUniform2fv(u_tcmod_scale0, 1, (float *)&scale);
+		break;
+	case 1:
+		glUniform2fv(u_tcmod_scale1, 1, (float *)&scale);
+		break;
+	case 2:
+		glUniform2fv(u_tcmod_scale2, 1, (float *)&scale);
+		break;
+	case 3:
+		glUniform2fv(u_tcmod_scale3, 1, (float *)&scale);
+		break;
+	case 4:
+		glUniform2fv(u_tcmod_scale4, 1, (float *)&scale);
+		break;
+	case 5:
+		glUniform2fv(u_tcmod_scale5, 1, (float *)&scale);
+		break;
+	case 6:
+		glUniform2fv(u_tcmod_scale6, 1, (float *)&scale);
+		break;
+	case 7:
+		glUniform2fv(u_tcmod_scale7, 1, (float *)&scale);
+		break;
+	}
 }
 
-void mLight2::tcmod_rotate(float deg)
+void mLight2::tcmod_rotate(float deg, int index)
 {
 	//convert to radians
 	deg = (float)(M_PI * deg / 180.0f);
+	
+	float sinval = fsin(deg);
+	float cosval = fcos(deg);
 
-	glUniform1fv(u_tcmod_rotate, 1, &deg);
+	switch (index)
+	{
+	case 0:
+		glUniform1fv(u_tcmod_sin0, 1, &sinval);
+		glUniform1fv(u_tcmod_cos0, 1, &cosval);
+		break;
+	case 1:
+		glUniform1fv(u_tcmod_sin1, 1, &sinval);
+		glUniform1fv(u_tcmod_cos1, 1, &cosval);
+		break;
+	case 2:
+		glUniform1fv(u_tcmod_sin2, 1, &sinval);
+		glUniform1fv(u_tcmod_cos2, 1, &cosval);
+		break;
+	case 3:
+		glUniform1fv(u_tcmod_sin3, 1, &sinval);
+		glUniform1fv(u_tcmod_cos3, 1, &cosval);
+		break;
+	case 4:
+		glUniform1fv(u_tcmod_sin4, 1, &sinval);
+		glUniform1fv(u_tcmod_cos4, 1, &cosval);
+		break;
+	case 5:
+		glUniform1fv(u_tcmod_sin5, 1, &sinval);
+		glUniform1fv(u_tcmod_cos5, 1, &cosval);
+		break;
+	case 6:
+		glUniform1fv(u_tcmod_sin6, 1, &sinval);
+		glUniform1fv(u_tcmod_cos6, 1, &cosval);
+		break;
+	case 7:
+		glUniform1fv(u_tcmod_sin7, 1, &sinval);
+		glUniform1fv(u_tcmod_cos7, 1, &cosval);
+		break;
+	
+	}
 }
 
-void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num)
+void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	vec2 value;
 
 	value.x = (float)( amplitude * fsin(freq * tick_num + phase) );
 	value.y = value.x;
 
-	tcmod_scale(value);
+	tcmod_scale(value, index);
 }
 
-void mLight2::tcmod_stretch_sawtooth(float amplitude, float phase, float freq, int tick_num)
+void mLight2::tcmod_stretch_sawtooth(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	vec2 value;
 
@@ -257,48 +410,33 @@ void mLight2::tcmod_stretch_sawtooth(float amplitude, float phase, float freq, i
 	value.x = (float) ( amplitude * ( -0.5 * atan(1.0 / tan(freq * tick_num / M_PI + phase)) ) );
 	value.y = value.x;
 
-	tcmod_scale(value);
+	tcmod_scale(value, index);
 }
 
-void mLight2::tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num)
+void mLight2::tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num, int index)
 {
-	tcmod_stretch_sawtooth(amplitude, phase, freq, -tick_num);
+	tcmod_stretch_sawtooth(amplitude, phase, freq, -tick_num, index);
 }
 
-int nearval(float x)
-{
-	if (x > 0.5)
-	{
-		return (int)(x + 0.5);
-	}
-	else
-	{
-		return (int)x;
-	}
-}
-
-
-void mLight2::tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num)
+void mLight2::tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	vec2 value;
 	float x = (float)(0.5 * tick_num * freq + phase);
-	value.x = (float)( amplitude * (1.0 - 2.0 * abs(nearval(x) - x)) );
+	value.x = (float)( amplitude * (1.0 - 2.0 * abs(sign(x) - x)) );
 	value.y = value.x;
 
-	tcmod_scale(value);
+	tcmod_scale(value, index);
 }
 
-void mLight2::tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num)
+void mLight2::tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	vec2 value;
 
 	value.x = (float)( amplitude * (4.0 / ((int)(freq * tick_num + phase) % 2 * M_PI)) );
 	value.y = value.x;
 
-	tcmod_scale(value);
+	tcmod_scale(value, index);
 }
-
-
 
 int mLightDepth::init(Graphics *gfx)
 {
