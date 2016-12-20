@@ -247,9 +247,9 @@ typedef struct
 	bool tcmod_stretch;
 	vec4 tcmod_stretch_value;
 	bool tcmod_scroll;
-	vec4 tcmod_scroll_value;
+	vec2 tcmod_scroll_value;
 	bool tcmod_turb;
-	vec2 tcmod_turb_value;
+	vec4 tcmod_turb_value;
 	bool tcgen_env;
 } stage_t;
 
@@ -318,3 +318,15 @@ typedef struct
 	int stage; // stage texture was loaded from
 	int num_tex;
 } texture_t;
+
+typedef struct
+{
+	int face;
+	int stage;
+	bool tcmod_rotate;
+	bool tcmod_scroll;
+	bool tcmod_scale;
+	float deg;
+	vec2 scroll;
+	vec2 scale;
+} renderinfo_t;

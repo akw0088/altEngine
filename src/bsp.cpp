@@ -802,6 +802,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					surface_t *surface = surface_list[tex_object[face->material].index];
 					bool blend = false;
+					renderinfo_t render;
+
+					memset(&render, 0, sizeof(renderinfo_t));
+					render.face = face_index;
+					render.stage = stage;
+					render.tcmod_rotate = surface->stage[stage].tcmod_rotate;
+					render.deg = surface->stage[stage].tcmod_rotate_value;
+					render.tcmod_scroll = surface->stage[stage].tcmod_scroll;
+					render.scroll = surface->stage[stage].tcmod_scroll_value;
+					render.tcmod_scale = surface->stage[stage].tcmod_scale;
+					render.scale = surface->stage[stage].tcmod_scale_value;
 
 
 					if (surface->stage[stage].blendfunc_blend ||
@@ -815,17 +826,23 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					}
 
 					if (blend)
-						blend_list.push_back(face_index);
+						blend_list.push_back(render);
 					else
-						face_list.push_back(face_index);
+						face_list.push_back(render);
 				}
 				else
 				{
+					renderinfo_t render;
+
+					memset(&render, 0, sizeof(renderinfo_t));
+					render.face = face_index;
+					render.stage = 0;
+					
 					// need a way to tell if a face should be blended
 					if (tex_object[face->material].texObj[0] < 0)
-						blend_list.push_back(face_index);
+						blend_list.push_back(render);
 					else
-						face_list.push_back(face_index);
+						face_list.push_back(render);
 				}
 			}
 		}
@@ -834,11 +851,23 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
-		face_t *face = &data.Face[face_list[i]];
+		face_t *face = &data.Face[face_list[i].face];
+
+		if (face_list[i].tcmod_rotate)
+		{
+			mlight2.tcmod_rotate(face_list[i].deg * tick_num / TICK_RATE, face_list[i].stage);
+		}
+		if (face_list[i].tcmod_scroll)
+		{
+			mlight2.tcmod_scroll(face_list[i].scroll, face_list[i].stage);
+		}
+		if (face_list[i].tcmod_scale)
+		{
+			mlight2.tcmod_scale(face_list[i].scale, face_list[i].stage);
+		}
 
 		if (face->type == 1 || face->type == 3)
 		{
-//			mlight2.tcmod_rotate(360.0f * tick_num / 125.0f);
 			render_face(face, gfx);
 		}
 		else if (face->type == 2)
@@ -859,7 +888,20 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	// leaves sorted front to back, render blends back to front
 	for (int i = blend_list.size() - 1; i >= 0; i--)
 	{
-		face_t *face = &data.Face[blend_list[i]];
+		face_t *face = &data.Face[blend_list[i].face];
+
+		if (face_list[i].tcmod_rotate)
+		{
+			mlight2.tcmod_rotate(face_list[i].deg * tick_num / TICK_RATE, face_list[i].stage);
+		}
+		if (face_list[i].tcmod_scroll)
+		{
+			mlight2.tcmod_scroll(face_list[i].scroll, face_list[i].stage);
+		}
+		if (face_list[i].tcmod_scale)
+		{
+			mlight2.tcmod_scale(face_list[i].scale, face_list[i].stage);
+		}
 
 		if (face->type == 1 || face->type == 3)
 		{

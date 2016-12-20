@@ -929,10 +929,10 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		if (match == 4)
 		{
 			stage->tcmod_turb = true;
-			stage->tcmod_scroll_value.x = base;
-			stage->tcmod_scroll_value.y = amplitude;
-			stage->tcmod_scroll_value.z = phase;
-			stage->tcmod_scroll_value.w = freq;
+			stage->tcmod_turb_value.x = base;
+			stage->tcmod_turb_value.y = amplitude;
+			stage->tcmod_turb_value.z = phase;
+			stage->tcmod_turb_value.w = freq;
 			return;
 		}
 

@@ -5,7 +5,6 @@
 
 class mLight2;
 
-
 class Bsp
 {
 	void change_axis();
@@ -62,8 +61,8 @@ private:
 	bsp_t		*tBsp;
 
 	vec4		*tangent;
-	vector<int> face_list;
-	vector<int> blend_list;
+	vector<renderinfo_t> face_list;
+	vector<renderinfo_t> blend_list;
 
 	
 	int last_leaf;
