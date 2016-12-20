@@ -22,9 +22,42 @@ uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform mat4		mvp;
 
-uniform vec2		u_tcmod_scroll;
-uniform vec2		u_tcmod_scale;
-uniform float		u_tcmod_rotate;
+uniform vec2		u_tcmod_scroll0;
+uniform vec2		u_tcmod_scroll1;
+uniform vec2		u_tcmod_scroll2;
+uniform vec2		u_tcmod_scroll3;
+uniform vec2		u_tcmod_scroll4;
+uniform vec2		u_tcmod_scroll5;
+uniform vec2		u_tcmod_scroll6;
+uniform vec2		u_tcmod_scroll7;
+
+uniform vec2		u_tcmod_scale0;
+uniform vec2		u_tcmod_scale1;
+uniform vec2		u_tcmod_scale2;
+uniform vec2		u_tcmod_scale3;
+uniform vec2		u_tcmod_scale4;
+uniform vec2		u_tcmod_scale5;
+uniform vec2		u_tcmod_scale6;
+uniform vec2		u_tcmod_scale7;
+
+uniform float	tcmod_sin0;
+uniform float	tcmod_sin1;
+uniform float	tcmod_sin2;
+uniform float	tcmod_sin3;
+uniform float	tcmod_sin4;
+uniform float	tcmod_sin5;
+uniform float	tcmod_sin6;
+uniform float	tcmod_sin7;
+
+
+uniform float	tcmod_cos0;
+uniform float	tcmod_cos1;
+uniform float	tcmod_cos2;
+uniform float	tcmod_cos3;
+uniform float	tcmod_cos4;
+uniform float	tcmod_cos5;
+uniform float	tcmod_cos6;
+uniform float	tcmod_cos7;
 
 
 layout(binding=1) uniform sampler2D texture_lightmap; //lightmap
@@ -67,28 +100,25 @@ void main(void)
 	normal_map.y = 2 * texture(texture_normalmap, Vertex.vary_TexCoord).b - 1; 
 
 
+	mat2 mRot0 = mat2( cos0, -sin0, sin0,  cos0);
+	mat2 mRot1 = mat2( cos1, -sin1, sin1,  cos1);
+	mat2 mRot2 = mat2( cos2, -sin2, sin2,  cos2);
+	mat2 mRot3 = mat2( cos3, -sin3, sin3,  cos3);
+	mat2 mRot4 = mat2( cos4, -sin4, sin4,  cos4);
+	mat2 mRot5 = mat2( cos5, -sin5, sin5,  cos5);
+	mat2 mRot6 = mat2( cos6, -sin6, sin6,  cos6);
+	mat2 mRot7 = mat2( cos7, -sin7, sin7,  cos7);
 
-	vec2 texcoord;
-
-	texcoord.x = Vertex.vary_TexCoord.x * cos(u_tcmod_rotate) - Vertex.vary_TexCoord.y * sin(u_tcmod_rotate);
-	texcoord.y = Vertex.vary_TexCoord.y * cos(u_tcmod_rotate) + Vertex.vary_TexCoord.x * sin(u_tcmod_rotate);
-
-	mat2 mRot = mat2(	cos(u_tcmod_rotate), -sin(u_tcmod_rotate),
-				sin(u_tcmod_rotate),  cos(u_tcmod_rotate));
-
-	vec4 Fragment0 = texture(texture0, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment1 = texture(texture1, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment2 = texture(texture2, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment3 = texture(texture3, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment4 = texture(texture4, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment5 = texture(texture5, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment6 = texture(texture6, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-	vec4 Fragment7 = texture(texture7, u_tcmod_scale * (Vertex.vary_TexCoord * mRot) + u_tcmod_scroll);
-
-
+	vec4 Fragment0 = texture(texture0, u_tcmod_scale0 * (Vertex.vary_TexCoord * mRot0) + u_tcmod_scroll0);
+	vec4 Fragment1 = texture(texture1, u_tcmod_scale1 * (Vertex.vary_TexCoord * mRot1) + u_tcmod_scroll1);
+	vec4 Fragment2 = texture(texture2, u_tcmod_scale2 * (Vertex.vary_TexCoord * mRot2) + u_tcmod_scroll2);
+	vec4 Fragment3 = texture(texture3, u_tcmod_scale3 * (Vertex.vary_TexCoord * mRot3) + u_tcmod_scroll3);
+	vec4 Fragment4 = texture(texture4, u_tcmod_scale4 * (Vertex.vary_TexCoord * mRot4) + u_tcmod_scroll4);
+	vec4 Fragment5 = texture(texture5, u_tcmod_scale5 * (Vertex.vary_TexCoord * mRot5) + u_tcmod_scroll5);
+	vec4 Fragment6 = texture(texture6, u_tcmod_scale6 * (Vertex.vary_TexCoord * mRot6) + u_tcmod_scroll6);
+	vec4 Fragment7 = texture(texture7, u_tcmod_scale7 * (Vertex.vary_TexCoord * mRot7) + u_tcmod_scroll7);
 
 	Fragment = Fragment0;
-/*
 	Fragment.xyz += Fragment1.xyz;
 	Fragment.xyz += Fragment2.xyz;
 	Fragment.xyz += Fragment3.xyz;
@@ -96,7 +126,6 @@ void main(void)
 	Fragment.xyz += Fragment5.xyz;
 	Fragment.xyz += Fragment6.xyz;
 	Fragment.xyz += Fragment7.xyz;
-*/
 
 //	Fragment = Fragment + texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
