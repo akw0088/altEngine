@@ -919,7 +919,7 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
 
-	for (unsigned int i = 0; i < model->num_faces; i++)
+	for (int i = 0; i < model->num_faces; i++)
 	{
 		int face_index = model->face_index + i;
 		face_t *face = &data.Face[face_index];
@@ -1266,7 +1266,6 @@ bool Bsp::leaf_test(vec3 &x, vec3 &y)
 /*
 	Can be done in a geometry shader
 */
-/*
 void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
 {
 	vec3 *temp_tan = new vec3 [num_vert];
@@ -1276,17 +1275,17 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	memset(temp_btan, 0, num_vert * sizeof(vec3));
 	for (int i = 0; i < num_index - 2;)
 	{
-		int a = index[i];
-		int b = index[i + 1];
-		int c = index[i + 2];
+		int ai = index[i];
+		int bi = index[i + 1];
+		int ci = index[i + 2];
         
-		const vec3 p0 = vertex[a].position;
-		const vec3 p1 = vertex[b].position;
-		const vec3 p2 = vertex[c].position;
+		const vec3 p0 = vertex[ai].position;
+		const vec3 p1 = vertex[bi].position;
+		const vec3 p2 = vertex[ci].position;
 
-		const vec2 tex0 = vertex[a].texCoord0;
-		const vec2 tex1 = vertex[b].texCoord0;
-		const vec2 tex2 = vertex[c].texCoord0;
+		const vec2 tex0 = vertex[ai].texCoord0;
+		const vec2 tex1 = vertex[bi].texCoord0;
+		const vec2 tex2 = vertex[ci].texCoord0;
 		
 		
 		vec3 p, q, n;
@@ -1344,7 +1343,7 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	delete[] temp_tan;
 	delete[] temp_btan;
 }
-*/
+/*
 void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
 {
 	vec3 *temp_tan = new vec3 [num_vert];
@@ -1438,6 +1437,7 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	delete[] temp_tan;
 	delete[] temp_btan;
 }
+*/
 
 /*
 Loop through all the model's triangles
