@@ -228,11 +228,12 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, 3);
 	glUniform1i(texture1, 4);
-	glUniform1i(texture3, 5);
-	glUniform1i(texture4, 6);
-	glUniform1i(texture5, 7);
-	glUniform1i(texture6, 8);
-	glUniform1i(texture7, 9);
+	glUniform1i(texture2, 5);
+	glUniform1i(texture3, 6);
+	glUniform1i(texture4, 7);
+	glUniform1i(texture5, 8);
+	glUniform1i(texture6, 9);
+	glUniform1i(texture7, 10);
 
 	glUniform1i(texture_lightmap, 1);
 	glUniform1i(texture_normalmap, 2);
