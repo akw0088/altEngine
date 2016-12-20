@@ -131,6 +131,74 @@ void Object::create_index(int **index_array, int &num_index)
 	}
 }
 
+/*
+typedef struct
+{
+	int vindex[3];
+	int tindex[3];
+	int nindex[3];
+} face_t;
+*/
+
+// really dont remember why I didnt want to include my vector classes in here
+void create_tangent(face_t &face, vertex_t *vertex_array)
+{
+	vec3_t p, q, n;
+	vec3_t t, b;
+	float s1, s2, t1, t2;
+	float denom;
+
+
+	// triangle span vectors
+	p.x = vertex_array[face.vindex[1] - 1].position.x - vertex_array[face.vindex[0] - 1].position.x;
+	p.y = vertex_array[face.vindex[1] - 1].position.y - vertex_array[face.vindex[0] - 1].position.y;
+	p.z = vertex_array[face.vindex[1] - 1].position.z - vertex_array[face.vindex[0] - 1].position.z;
+
+	q.x = vertex_array[face.vindex[2] - 1].position.x - vertex_array[face.vindex[0] - 1].position.x;
+	q.y = vertex_array[face.vindex[2] - 1].position.y - vertex_array[face.vindex[0] - 1].position.y;
+	q.z = vertex_array[face.vindex[2] - 1].position.z - vertex_array[face.vindex[0] - 1].position.z;
+
+	//cross product for normal
+	n.x = p.y * q.z - p.z * q.y;
+	n.y = p.z * q.x - p.x * q.x;
+	n.z = p.x * q.z - p.z * q.x;
+
+	// texture coordinate vectors
+	s1 = vertex_array[face.vindex[1] - 1].texCoord0.x - vertex_array[face.vindex[0] - 1].texCoord0.x;
+	t1 = vertex_array[face.vindex[1] - 1].texCoord0.y - vertex_array[face.vindex[0] - 1].texCoord0.y;
+
+	s2 = vertex_array[face.vindex[2] - 1].texCoord0.x - vertex_array[face.vindex[0] - 1].texCoord0.x;
+	t2 = vertex_array[face.vindex[2] - 1].texCoord0.y - vertex_array[face.vindex[0] - 1].texCoord0.y;
+
+	// tangent and bitangent
+	denom = (s1 * t2 - s2 * t1);
+	if (denom != 0)
+	{
+		t.x = (p.x * t2 - q.x * t1) / denom;
+		t.y = (p.y * t2 - q.y * t1) / denom;
+		t.z = (p.z * t2 - q.z * t1) / denom;
+		
+		b.x = (q.x * s1 - p.x * s2) / denom;
+		b.y = (q.y * s1 - p.y * s2) / denom;
+		t.z = (q.z * s1 - p.z * s2) / denom;
+	}
+	else
+	{
+		t.x = 1.0f;
+		t.y = 0.0f;
+		t.z = 0.0f;
+		b.x = 0.0f;
+		b.y = 0.0f;
+		b.z = 1.0f;
+	}
+
+	
+	vertex_array[face.vindex[0] - 1].tangent.x = t.x;
+	vertex_array[face.vindex[0] - 1].tangent.y = t.y;
+	vertex_array[face.vindex[0] - 1].tangent.z = t.z;
+	vertex_array[face.vindex[0] - 1].tangent.w = 1.0f;
+}
+
 void Object::create_vertex(vertex_t **vertex_array, int &num_vertex)
 {
 	num_vertex = vec_vertex.size();
@@ -154,11 +222,8 @@ void Object::create_vertex(vertex_t **vertex_array, int &num_vertex)
 				(*vertex_array)[ vec_index ].texCoord0.x = vec_texture[ tex_index ].x;
 				(*vertex_array)[ vec_index ].texCoord0.y = vec_texture[ tex_index ].y;
 			}
-			(*vertex_array)[vec_index].normal = vec_normal[norm_index];
-			(*vertex_array)[vec_index].tangent.x = 0.0f;
-			(*vertex_array)[vec_index].tangent.y = 0.0f;
-			(*vertex_array)[vec_index].tangent.z = 0.0f;
-			(*vertex_array)[vec_index].tangent.w = 0.0f;
+			(*vertex_array)[ vec_index ].normal = vec_normal[ norm_index ];
 		}
+		create_tangent(vec_face[i], (*vertex_array));
 	}
 }

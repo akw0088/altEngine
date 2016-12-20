@@ -38,8 +38,8 @@ typedef struct
 	vec2_t	texCoord0;
 	vec2_t	texCoord1;
 	vec3_t	normal;
-	int		color;
-	vec4_t  tangent;
+	int	color;
+	vec4_t	tangent;
 } vertex_t;
 
 using namespace std;
