@@ -22,6 +22,7 @@ public:
 	void print(const char *str);
 	void stop();
 	void play();
+	void clear_console();
 	~Menu();
 
 	bool console;
