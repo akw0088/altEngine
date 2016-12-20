@@ -14,7 +14,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 
 	memset(quad_tex, 0, sizeof(unsigned int) * 6);
 	memset(depth_tex, 0, sizeof(unsigned int) * 6);
-	generate_cubemaps(1024, 1024);
+//	generate_cubemaps(1024, 1024);
 }
 
 
