@@ -339,7 +339,9 @@ void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *in
 }
 
 
+#define DMESG_SIZE 256
 
+char dmesg[DMESG_SIZE][512];
 
 //TODO, make this a ring buffer instead of using malloc
 int debugf(const char *format, ...)
@@ -357,25 +359,30 @@ int debugf(const char *format, ...)
     unsigned int width = 60;
     
     char *pstr = str;
+    static int dmesg_index = 0;
     while (1)
     {
         if (strlen(pstr) < width)
         {
-            int size = strlen(pstr) + 1;
-            char *line = new char[size];
-            memcpy(line, pstr, size);
+            char *line = dmesg[dmesg_index++];
+	    if (dmesg_index >= DMESG_SIZE]
+		dmesg_index  = 0;
+            sprintf(line, "%s", pstr);
+	    line[size] = '\0';
             Menu::console_buffer.push_back(line);
             break;
         }
         else
         {
             int size = width + 1;
-            char *line = new char[size];
+            char *line = dmesg[dmesg_index++];;
             memcpy(line, pstr, size);
             line[width] = '\0';
             Menu::console_buffer.push_back(line);
             pstr += width;
         }
+	if (dmesg_index >= DMESG_SIZE]
+		dmesg_index  = 0;
     }
     
     return 0;

@@ -2991,6 +2991,11 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strcmp(cmd, "clear") == 0)
+	{
+		menu.clear_console();
+	}
+
 	if (strcmp(cmd, "weapon_grenadelauncher") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");

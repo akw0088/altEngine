@@ -6,6 +6,10 @@
 
 vector<char *> Menu::console_buffer;
 
+void Menu::clear_console()
+{
+	console_buffer.clear();
+}
 
 void Menu::init(Graphics *gfx, Audio *audio)
 {
