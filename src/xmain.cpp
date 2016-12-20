@@ -204,15 +204,19 @@ int EventProc(Display *display, Window window, GLXContext context)
 				altEngine.keypress("escape", pressed);
 				break;
 			case XK_Up:
+			case XK_w:
 				altEngine.keypress("up", pressed);
 				break;
 			case XK_Left:
+			case XK_a:
 				altEngine.keypress("left", pressed);
 				break;
 			case XK_Down:
+			case XK_s:
 				altEngine.keypress("down", pressed);
 				break;
 			case XK_Right:
+			case XK_d:
 				altEngine.keypress("right", pressed);
 				break;
 			}

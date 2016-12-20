@@ -1267,6 +1267,85 @@ bool Bsp::leaf_test(vec3 &x, vec3 &y)
 /*
 	Can be done in a geometry shader
 */
+/*
+void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
+{
+	vec3 *temp_tan = new vec3 [num_vert];
+	vec3 *temp_btan = new vec3 [num_vert];
+
+	memset(temp_tan, 0, num_vert * sizeof(vec3));
+	memset(temp_btan, 0, num_vert * sizeof(vec3));
+	for (int i = 0; i < num_index - 2;)
+	{
+		int a = index[i];
+		int b = index[i + 1];
+		int c = index[i + 2];
+        
+		const vec3 p0 = vertex[a].position;
+		const vec3 p1 = vertex[b].position;
+		const vec3 p2 = vertex[c].position;
+
+		const vec2 tex0 = vertex[a].texCoord0;
+		const vec2 tex1 = vertex[b].texCoord0;
+		const vec2 tex2 = vertex[c].texCoord0;
+		
+		
+		vec3 p, q, n;
+		vec3 t, b;
+		float s1, s2, t1, t2;
+		float denom;
+
+
+		// triangle span vectors
+		p = p1 - p0;
+		q = p2 - p0;
+
+		//cross product for normal
+		n = vec3::crossproduct(p,q);
+
+		// texture coordinate vectors
+		s1 = tex1.x - tex0.x;
+		t1 = tex1.y - tex0.y;
+
+		s2 = tex2.x - tex0.x;
+		t2 = tex2.y - tex0.y;
+
+		// tangent and bitangent
+		denom = (s1 * t2 - s2 * t1);
+		if (denom != 0)
+		{
+			t = (p * t2 - q * t1) / denom;
+			b = (q * s1 - p * s2) / denom;
+		}
+		else
+		{
+			t.x = 1.0f;
+			t.y = 0.0f;
+			t.z = 0.0f;
+			b.x = 0.0f;
+			b.y = 0.0f;
+			b.z = 1.0f;
+		}
+		temp_tan[i]    = t;
+		temp_tan[i+1]  = t;
+		temp_tan[i+2]  = t;
+		temp_btan[i]   = b;
+		temp_btan[i+1] = b;
+		temp_btan[i+2] = b;
+	}
+
+	for (int i = 0; i < num_vert; i++)
+	{
+		tangent[i].x = temp_tan[i].x;
+		tangent[i].y = temp_tan[i].y;
+		tangent[i].z = temp_tan[i].z;
+		tangent[i].w = 1.0f;
+	}
+
+	delete[] temp_tan;
+	delete[] temp_btan;
+}
+*/
 void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
 {
 	vec3 *temp_tan = new vec3 [num_vert];
