@@ -986,7 +986,6 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	char			texture_name[LINE_SIZE] = { 0 };
 	int				tex_object = 0;
 	unsigned int	j = 0;
-	int				aindex = 0;
 
 //	printf("Attempting to load %s, trying surface_list\n", name);
 	for (j = 0; j < surface_list.size(); j++)
