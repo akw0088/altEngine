@@ -1,3 +1,4 @@
+
 #include "include.h"
 
 #ifndef SHADER_H
@@ -44,15 +45,15 @@ public:
 
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
-	void tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num);
-	void tcmod_stretch_sawtooth(float amplitude, float phase, float freq, int tick_num);
-	void tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num);
-	void tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num);
-	void tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num);
+	void tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index);
+	void tcmod_stretch_sawtooth(float amplitude, float phase, float freq, int tick_num, int index);
+	void tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num, int index);
+	void tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num, int index);
+	void tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num, int index);
 
-	void tcmod_scroll(vec2 &scroll);
-	void tcmod_scale(vec2 &scale);
-	void tcmod_rotate(float deg);
+	void tcmod_scroll(vec2 &scroll, int index);
+	void tcmod_scale(vec2 &scale, int index);
+	void tcmod_rotate(float deg, int index);
 
 
 private:
@@ -69,9 +70,42 @@ private:
 	int texture_normalmap;
 	int texture_lightmap;
 
-	int u_tcmod_scroll;
-	int u_tcmod_scale;
-	int u_tcmod_rotate;
+	int u_tcmod_scroll0;
+	int u_tcmod_scroll1;
+	int u_tcmod_scroll2;
+	int u_tcmod_scroll3;
+	int u_tcmod_scroll4;
+	int u_tcmod_scroll5;
+	int u_tcmod_scroll6;
+	int u_tcmod_scroll7;
+
+	int u_tcmod_scale0;
+	int u_tcmod_scale1;
+	int u_tcmod_scale2;
+	int u_tcmod_scale3;
+	int u_tcmod_scale4;
+	int u_tcmod_scale5;
+	int u_tcmod_scale6;
+	int u_tcmod_scale7;
+
+	int u_tcmod_sin0;
+	int u_tcmod_sin1;
+	int u_tcmod_sin2;
+	int u_tcmod_sin3;
+	int u_tcmod_sin4;
+	int u_tcmod_sin5;
+	int u_tcmod_sin6;
+	int u_tcmod_sin7;
+	
+	int u_tcmod_cos0;
+	int u_tcmod_cos1;
+	int u_tcmod_cos2;
+	int u_tcmod_cos3;
+	int u_tcmod_cos4;
+	int u_tcmod_cos5;
+	int u_tcmod_cos6;
+	int u_tcmod_cos7;
+
 
 	int u_num_lights;
 	int u_position;
