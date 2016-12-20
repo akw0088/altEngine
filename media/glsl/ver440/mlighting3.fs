@@ -40,24 +40,24 @@ uniform vec2		u_tcmod_scale5;
 uniform vec2		u_tcmod_scale6;
 uniform vec2		u_tcmod_scale7;
 
-uniform float	tcmod_sin0;
-uniform float	tcmod_sin1;
-uniform float	tcmod_sin2;
-uniform float	tcmod_sin3;
-uniform float	tcmod_sin4;
-uniform float	tcmod_sin5;
-uniform float	tcmod_sin6;
-uniform float	tcmod_sin7;
+uniform float	u_tcmod_sin0;
+uniform float	u_tcmod_sin1;
+uniform float	u_tcmod_sin2;
+uniform float	u_tcmod_sin3;
+uniform float	u_tcmod_sin4;
+uniform float	u_tcmod_sin5;
+uniform float	u_tcmod_sin6;
+uniform float	u_tcmod_sin7;
 
 
-uniform float	tcmod_cos0;
-uniform float	tcmod_cos1;
-uniform float	tcmod_cos2;
-uniform float	tcmod_cos3;
-uniform float	tcmod_cos4;
-uniform float	tcmod_cos5;
-uniform float	tcmod_cos6;
-uniform float	tcmod_cos7;
+uniform float	u_tcmod_cos0;
+uniform float	u_tcmod_cos1;
+uniform float	u_tcmod_cos2;
+uniform float	u_tcmod_cos3;
+uniform float	u_tcmod_cos4;
+uniform float	u_tcmod_cos5;
+uniform float	u_tcmod_cos6;
+uniform float	u_tcmod_cos7;
 
 
 layout(binding=1) uniform sampler2D texture_lightmap; //lightmap
