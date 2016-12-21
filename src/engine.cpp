@@ -1295,6 +1295,9 @@ void Engine::step(int tick)
 	{
 		texture_t  *tex = map.anim_list[i];
 
+		if (tex->num_anim == 0)
+			break;
+
 		int texunit = tex->anim_unit;
 		int ani_index = (tick_num % (TICK_RATE / tex->freq)) % tex->num_anim;
 

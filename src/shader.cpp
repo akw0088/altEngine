@@ -228,17 +228,18 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
-	glUniform1i(texture0, 3);
-	glUniform1i(texture1, 4);
-	glUniform1i(texture2, 5);
-	glUniform1i(texture3, 6);
-	glUniform1i(texture4, 7);
-	glUniform1i(texture5, 8);
-	glUniform1i(texture6, 9);
-	glUniform1i(texture7, 10);
+	glUniform1i(texture0, 0);
+	glUniform1i(texture1, 1);
+	glUniform1i(texture2, 2);
+	glUniform1i(texture3, 3);
+	glUniform1i(texture4, 4);
+	glUniform1i(texture5, 5);
+	glUniform1i(texture6, 6);
+	glUniform1i(texture7, 7);
 
-	glUniform1i(texture_lightmap, 1);
-	glUniform1i(texture_normalmap, 2);
+// Going to treat normals and lightmaps like normal textures
+//	glUniform1i(texture_lightmap, 1);
+//	glUniform1i(texture_normalmap, 2);
 
 	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
 	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size

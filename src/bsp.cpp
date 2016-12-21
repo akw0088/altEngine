@@ -680,14 +680,14 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
-		gfx.SelectTexture(i+3, tex_object[face->material].texObj[i]);
+		gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
 	}
 #ifdef LIGHTMAP
 	// surfaces that arent lit with lightmaps eg: skies
 	if (face->lightmap != -1)
 		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 #endif
-	gfx.SelectTexture(2, normal_object[face->material]);
+//	gfx.SelectTexture(2, normal_object[face->material]);
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 //	gfx.DeselectTexture(2);
 //	gfx.DeselectTexture(1);
@@ -721,11 +721,11 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 		// Render each row
 		for(int j = 0; j < MAX_TEXTURES; j++)
-			gfx.SelectTexture(j+3, tex_object[face->material].texObj[j]);
+			gfx.SelectTexture(j, tex_object[face->material].texObj[j]);
 #ifdef LIGHTMAP
 		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 #endif
-		gfx.SelectTexture(2, normal_object[face->material]);
+//		gfx.SelectTexture(2, normal_object[face->material]);
 		for( int row = 0; row < mesh_level; row++)
 		{
 			gfx.DrawArrayTriStrip(row * index_per_row, 0,
@@ -748,9 +748,9 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 {
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
-		gfx.SelectTexture(i + 3, tex_object[face->material].texObj[i]);
+		gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
 	}
-	gfx.SelectTexture(1, normal_object[face->material]);
+//	gfx.SelectTexture(1, normal_object[face->material]);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
