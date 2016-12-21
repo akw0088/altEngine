@@ -568,7 +568,12 @@ void newlinelist(char *filename, char **list, int &num)
 	while (line)
 	{
 		if (strlen(line) >= 2 && line[0] != '/' && line[1] != '/')
+		{
+			int last = strlen(line) - 1;
+			if (line[last] == '\r')
+				line[last] = '\0';
 			list[num++] = line;
+		}
 		line = strtok(NULL, "\n");
 	}	
 }
@@ -675,14 +680,16 @@ int load_texture(Graphics &gfx, char *file_name)
 	return tex_object;
 }
 
-bool check_hash(char *filename, char *md5match)
+bool check_hash(char *filename, char *md5match, char *hash)
 {
-	char hash[512];
 	int size = 0;
 
 	char *data = get_file(filename, &size);
 	if (data == NULL)
+	{
+		sprintf(hash, "missing file");
 		return false;
+	}
 
 	memset(hash, 0, sizeof(hash));
 	md5sum(data, size, hash);

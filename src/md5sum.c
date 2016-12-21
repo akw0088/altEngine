@@ -12,13 +12,16 @@ void md5sum(char *data, unsigned int size, char *hash)
 	md5_byte_t	digest[16];
 	int		di;
 
+	md5_init(&state);
 	md5_append(&state, (const md5_byte_t *)data, size);
 	md5_finish(&state, digest);
 
-	for (di = 0; di < 16; ++di)
-		sprintf(&hash[di * 2], "%02x", digest[di]);
-
-	printf("md5: %s\n", hash);
+	sprintf(hash, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+		digest[0], digest[1], digest[2], digest[3],
+		digest[4], digest[5], digest[6], digest[7],
+		digest[8], digest[9], digest[10], digest[11],
+		digest[12], digest[13], digest[14], digest[15]
+	);
 }
 
 

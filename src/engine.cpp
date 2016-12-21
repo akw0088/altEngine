@@ -91,6 +91,23 @@ void Engine::init(void *p1, void *p2)
 		}
 	}
 
+	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
+	newlinelist("media/pk3hash.txt", hash_list, num_hash);
+
+	char hash[512];
+	for (int i = 0; i < num_pk3 && i < num_hash; i++)
+	{
+		printf("Checking hash for %s...", pk3_list[i]);
+		if (check_hash(pk3_list[i], hash_list[i], hash) == false)
+		{
+			printf("%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+		}
+		else
+		{
+			printf("Good!\n");
+		}
+	}
+
 	printf("Done\n");
 
 //	shadowmap.init(&gfx);
@@ -172,18 +189,6 @@ void Engine::load(char *level)
 //	if (mlight3.init(&gfx))
 //		menu.print("Failed to load mlight3 shader");
 
-
-	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
-	newlinelist("media/pk3hash.txt", hash_list, num_hash);
-
-	for (int i = 0; i < num_pk3 && i < num_hash; i++)
-	{
-		printf("Checking hash for %s\n", pk3_list[i]);
-		if ( check_hash(pk3_list[i], hash_list[i]) == false)
-		{
-			printf("%s failed hash check, expeted [%s]\n", pk3_list[i], hash_list[i]);
-		}
-	}
 
 	if ( map.load(level, pk3_list, num_pk3) == false)
 		return;
