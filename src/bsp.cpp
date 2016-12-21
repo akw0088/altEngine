@@ -370,6 +370,8 @@ void Bsp::unload(Graphics &gfx)
 
 	loaded = false;
 
+	anim_list.clear();
+
 	if (vertex != NULL)
 	{
 		delete [] vertex;
@@ -765,6 +767,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	static int lastIndex = -1;
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
+	float time = (float)(tick_num / TICK_RATE);
+
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
@@ -869,11 +873,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				if (face_list[i].tcmod_rotate[j])
 				{
-					mlight2.tcmod_rotate(face_list[i].deg[j] * tick_num / TICK_RATE, j);
+					mlight2.tcmod_rotate(face_list[i].deg[j] * time, j);
 				}
 				if (face_list[i].tcmod_scroll[j])
 				{
-					mlight2.tcmod_scroll(face_list[i].scroll[j], j);
+					face_list[i].scroll_value[j].x += face_list[i].scroll[j].x * time * 0.01f;
+					face_list[i].scroll_value[j].y += face_list[i].scroll[j].y * time * 0.01f;
+					mlight2.tcmod_scroll(face_list[i].scroll_value[j], j);
 				}
 				if (face_list[i].tcmod_scale[j])
 				{
@@ -929,7 +935,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 				if (blend_list[i].tcmod_scroll)
 				{
-					mlight2.tcmod_scroll(blend_list[i].scroll[j], j);
+					blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time;
+					blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time;
+					mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
 				}
 				if (blend_list[i].tcmod_scale)
 				{
@@ -1072,9 +1080,11 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx)
 
 void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx)
 {
-	char			texture_name[LINE_SIZE + 1] = { 0 };
+	char			texture_name[LINE_SIZE + 1];
 	int				tex_object = 0;
 	unsigned int	j = 0;
+
+	memset(texture_name, 0, sizeof(texture_name));
 
 //	printf("Attempting to load %s, trying surface_list\n", name);
 	for (j = 0; j < surface_list.size(); j++)
@@ -1094,7 +1104,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	}
 
 	//First stage is NULL
-	for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
+	for (unsigned int k = 0; k < surface_list[j]->num_stage && k < 4; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
 		if (surface_list[j]->stage[k].map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
@@ -1149,6 +1159,10 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			texture_name[strlen(texture_name) - 4] = '\0';
 			strcat(texture_name, ".jpg");
 //			printf("Trying jpeg texture [%s]\n", texture_name);
+		}
+		else
+		{
+			continue;
 		}
 
 		tex_object = load_texture(gfx, texture_name);

@@ -186,6 +186,8 @@ void Engine::load(char *level)
 	if (map.loaded)
 		return;
 
+	map.anim_list.clear();
+
 	last_spawn = 0;
 
 	menu.delta("load", *this);

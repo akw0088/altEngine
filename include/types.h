@@ -329,4 +329,5 @@ typedef struct
 	float deg[MAX_TEXTURES];
 	vec2 scroll[MAX_TEXTURES];
 	vec2 scale[MAX_TEXTURES];
+	vec2 scroll_value[MAX_TEXTURES]; // integrated with time
 } faceinfo_t;
