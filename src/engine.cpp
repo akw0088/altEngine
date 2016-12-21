@@ -3147,7 +3147,7 @@ void Engine::console(char *cmd)
 
 		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
-			if (entity_list[i]->type && strcmp(entity_list[i]->type, "misc_teleporter_dest"))
+			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
 				continue;
 				
 			if (!strcmp(entity_list[i]->target_name, data))
@@ -3278,8 +3278,8 @@ void Engine::console(char *cmd)
 		{
 			for (i = last_spawn; i < entity_list.size(); i++)
 			{
-				if (entity_list[i]->type && (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
-					strcmp(entity_list[i]->type, "info_player_start") == 0) )
+				if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
+					strcmp(entity_list[i]->type, "info_player_start") == 0)
 				{
 					matrix4 matrix;
 

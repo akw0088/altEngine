@@ -933,13 +933,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					mlight2.tcmod_rotate(blend_list[i].deg[j] * tick_num / TICK_RATE, j);
 				}
-				if (blend_list[i].tcmod_scroll)
+				if (blend_list[i].tcmod_scroll[j])
 				{
 					blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time;
 					blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time;
 					mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
 				}
-				if (blend_list[i].tcmod_scale)
+				if (blend_list[i].tcmod_scale[j])
 				{
 					mlight2.tcmod_scale(blend_list[i].scale[j], j);
 				}
