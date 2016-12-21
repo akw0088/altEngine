@@ -13,47 +13,6 @@
 #define FORWARD
 //#define DEFERRED
 
-/*
-	"scripts/test.shader",
-	"scripts/base.shader",
-	"scripts/base_button.shader",
-	"scripts/base_floor.shader",
-	"scripts/base_light.shader",
-	"scripts/base_object.shader",
-	"scripts/base_support.shader",
-	"scripts/base_trim.shader",
-	"scripts/base_wall.shader",
-	"scripts/common.shader",
-	"scripts/ctf.shader",
-	"scripts/eerie.shader",
-	"scripts/gfx.shader",
-	"scripts/gothic_block.shader",
-	"scripts/gothic_floor.shader",
-	"scripts/gothic_light.shader",
-	"scripts/gothic_trim.shader",
-	"scripts/gothic_wall.shader",
-	"scripts/hell.shader",
-	"scripts/liquid.shader",
-	"scripts/menu.shader",
-	"scripts/models.shader",
-	"scripts/organics.shader",
-	"scripts/sfx.shader",
-	"scripts/shrine.shader",
-	"scripts/skin.shader",
-	"scripts/sky.shader"
-				"media/pak8.pk3",
-				"media/pak7.pk3",
-				"media/pak6.pk3",
-				"media/pak5.pk3",
-				"media/pak4.pk3",
-				"media/pak3.pk3",
-				"media/pak2.pk3",
-				"media/pak1.pk3",
-				"media/pak0.pk3",
-//				"media/q3f2_pak0.pk3",
-//				"media/zpak000_assets.pk3"
-*/
-
 Engine::Engine()
 {
 	initialized = false;
