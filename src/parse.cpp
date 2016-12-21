@@ -202,6 +202,27 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_shotgun");
 		}
+		else if (strstr(value, "weapon_railgun"))
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_railgun");
+		}
+		else if (strstr(value, "weapon_plasma"))
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_plasma");
+		}
+		else if (strstr(value, "weapon_grenadelauncher"))
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_grenadelauncher");
+		}
 		else if (strcmp(value, "item_armor_combat") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
