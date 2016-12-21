@@ -57,7 +57,7 @@
 	#include <errno.h>
 	#ifdef __linux__
 		#include <GL/gl.h>
-		#include <GL/glu.h>
+		//#include <GL/glu.h> -- really not needed, gluPerspective replaced
 		#include <GL/glx.h>
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
