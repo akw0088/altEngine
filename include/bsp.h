@@ -52,6 +52,7 @@ public:
 		vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity);
 
 	bool loaded;
+	bool textures_loaded;
 	bspData_t	data;
 	char map_name[80];
 	vector<texture_t *> anim_list;

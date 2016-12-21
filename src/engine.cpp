@@ -43,6 +43,24 @@ void Engine::init(void *p1, void *p2)
 	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 
+	// hash check data files
+	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
+	newlinelist("media/pk3hash.txt", hash_list, num_hash);
+
+	char hash[512];
+	for (int i = 0; i < num_pk3 && i < num_hash; i++)
+	{
+		printf("Checking hash for %s...", pk3_list[i]);
+		if (check_hash(pk3_list[i], hash_list[i], hash) == false)
+		{
+			printf("%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+		}
+		else
+		{
+			printf("Good!\n");
+		}
+	}
+
 	no_tex = load_texture(gfx, "media/notexture.tga");
 	Model::CreateObjects(gfx);
 	global.init(&gfx);
@@ -88,23 +106,6 @@ void Engine::init(void *p1, void *p2)
 		{
 			parse_shader(shader_file, surface_list, shader_list[i]);
 			free((void *)shader_file);
-		}
-	}
-
-	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
-	newlinelist("media/pk3hash.txt", hash_list, num_hash);
-
-	char hash[512];
-	for (int i = 0; i < num_pk3 && i < num_hash; i++)
-	{
-		printf("Checking hash for %s...", pk3_list[i]);
-		if (check_hash(pk3_list[i], hash_list[i], hash) == false)
-		{
-			printf("%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
-		}
-		else
-		{
-			printf("Good!\n");
 		}
 	}
 

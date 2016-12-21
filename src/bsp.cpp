@@ -7,6 +7,7 @@
 Bsp::Bsp()
 {
 	loaded = false;
+	textures_loaded = false;
 	memset(map_name, 0, 80);
 }
 
@@ -369,6 +370,7 @@ void Bsp::unload(Graphics &gfx)
 	int mesh_index = 0;
 
 	loaded = false;
+	textures_loaded = false;
 
 	anim_list.clear();
 
@@ -678,9 +680,12 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	}
 */
 
-	for (int i = 0; i < MAX_TEXTURES; i++)
+	if (textures_loaded)
 	{
-		gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
+		for (int i = 0; i < MAX_TEXTURES; i++)
+		{
+			gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
+		}
 	}
 #ifdef LIGHTMAP
 	// surfaces that arent lit with lightmaps eg: skies
@@ -714,14 +719,17 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	if (mesh_index == -1)
 		return;
 
-	for(int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index + i]);
 		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index + i]);
 
 		// Render each row
-		for(int j = 0; j < MAX_TEXTURES; j++)
-			gfx.SelectTexture(j, tex_object[face->material].texObj[j]);
+		if (textures_loaded)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+				gfx.SelectTexture(j, tex_object[face->material].texObj[j]);
+		}
 #ifdef LIGHTMAP
 		gfx.SelectTexture(1, lightmap_object[face->lightmap]);
 #endif
@@ -746,9 +754,12 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 {
-	for (int i = 0; i < MAX_TEXTURES; i++)
+	if (textures_loaded)
 	{
-		gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
+		for (int i = 0; i < MAX_TEXTURES; i++)
+		{
+			gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
+		}
 	}
 //	gfx.SelectTexture(1, normal_object[face->material]);
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -1181,6 +1192,8 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
 {
+	textures_loaded = true;
+
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
