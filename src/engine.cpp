@@ -76,7 +76,7 @@ void Engine::init(void *p1, void *p2)
 
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
-	newlinelist(shader_list, num_shader);
+	newlinelist("media/shaderlist.txt", shader_list, num_shader);
 	for (int i = 0; i < num_shader; i++)
 	{
 		char *shader_file = NULL;
@@ -173,7 +173,7 @@ void Engine::load(char *level)
 //		menu.print("Failed to load mlight3 shader");
 
 
-	newlinelist(pk3_list, num_pk3);
+	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
 	if ( map.load(level, pk3_list, num_pk3) == false)
 		return;
 

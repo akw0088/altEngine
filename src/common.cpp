@@ -548,9 +548,9 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 	return retval;
 }
 
-void newlinelist(char **list, int &num)
+void newlinelist(char *filename, char **list, int &num)
 {
-	char *file = get_file("media/shaderlist.txt", NULL);
+	char *file = get_file(filename, NULL);
 	num = 0;
 
 	char *line = strtok(file, "\n");
