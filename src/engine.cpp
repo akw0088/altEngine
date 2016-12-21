@@ -2394,7 +2394,7 @@ void Engine::load_model(Entity &ent)
 	else if (strcmp(ent.type, "weapon_plasmagun") == 0)
 	{
 		debugf("Loading weapon_plasmagun\n");
-		ent.model->load(gfx, "media/models/weapons2/plasmagun/plasmagun");
+		ent.model->load(gfx, "media/models/weapons2/plasmagun/plasma");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
@@ -2927,7 +2927,7 @@ void Engine::console(char *cmd)
 			entity_list[spawn]->player->current_weapon = wp_grenade;
 
 		entity_list[spawn]->player->weapon_flags |= wp_grenade;
-		entity_list[spawn]->player->ammo_rockets = MAX(10, entity_list[spawn]->player->ammo_grenades);
+		entity_list[spawn]->player->ammo_grenades = MAX(10, entity_list[spawn]->player->ammo_grenades);
 		return;
 	}
 
@@ -2992,7 +2992,7 @@ void Engine::console(char *cmd)
 			entity_list[spawn]->player->current_weapon = wp_plasma;
 
 		entity_list[spawn]->player->weapon_flags |= wp_plasma;
-		entity_list[spawn]->player->ammo_slugs = MAX(10, entity_list[spawn]->player->ammo_plasma);
+		entity_list[spawn]->player->ammo_plasma = MAX(50, entity_list[spawn]->player->ammo_plasma);
 		return;
 	}
 
