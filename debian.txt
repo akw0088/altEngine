@@ -1,0 +1,3 @@
+apt-get install libgl1-mesa-dev
+apt-get install libglu1-mesa-dev #might not be needed, but including
+sudo apt-get install libalut-dev
