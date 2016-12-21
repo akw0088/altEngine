@@ -83,6 +83,10 @@ public:
 	unsigned int testObj;
 	unsigned int num_light;
 	int last_spawn;
+	char *pk3_list[32];
+	int num_pk3;
+	char *shader_list[32];
+	int num_shader;
 
 
 //console flags

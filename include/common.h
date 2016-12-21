@@ -18,6 +18,7 @@ char *get_file(char *filename, int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int write_file(char *filename, char *bytes, int size);
 float sign(float x);
+void newlinelist(char **list, int &num);
 
 
 #endif

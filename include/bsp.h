@@ -34,9 +34,9 @@ public:
 
 	//	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
-	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list);
-	void load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx);
-	void load_from_file(char *filename, texture_t &texObj, Graphics &gfx);
+	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3);
+	void load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx, char **pk3_list, int num_pk3);
+	void load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char **pk3_list, int num_pk3);
 
 
 	void unload(Graphics &gfx);

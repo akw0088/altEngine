@@ -4,6 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
+#include "common.h"
 #include "junzip.h"
 #include <stdarg.h> // for vargs
 #include <math.h> // for ceil
@@ -545,3 +546,15 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 	return retval;
 }
 
+void newlinelist(char **list, int &num)
+{
+	char *file = get_file("media/shaderlist.txt", NULL);
+	num = 0;
+
+	char *line = strtok(file, "\n");
+	while (line)
+	{
+		list[num++] = line;
+		line = strtok(NULL, "\n");
+	}	
+}

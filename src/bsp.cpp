@@ -1055,20 +1055,20 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
-void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx)
+void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char **pk3_list, int num_pk3)
 {
 	char	texture_name[LINE_SIZE] = { 0 };
 	int		tex_object = 0;
 
 //	printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
-	tex_object = load_texture(gfx, texture_name);
+	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 
 	if (tex_object == 0)
 	{
 //		printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
-		tex_object = load_texture(gfx, texture_name);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 	}
 	if (tex_object != 0)
 	{
@@ -1078,7 +1078,7 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx)
 
 }
 
-void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx)
+void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx, char **pk3_list, int num_pk3)
 {
 	char			texture_name[LINE_SIZE + 1];
 	int				tex_object = 0;
@@ -1116,12 +1116,12 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 //				surface_list[j]->stage[k].blendfunc_add = true;
 			}
 //			printf("Trying texture [%s]\n", texture_name);
-			tex_object = load_texture(gfx, texture_name);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 		}
 		else if (surface_list[j]->stage[k].clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
-			tex_object = load_texture(gfx, texture_name);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 		}
 		else if (surface_list[j]->stage[k].anim_map)
 		{
@@ -1138,7 +1138,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			{
 //				printf("animmap tex %s\n", tex);
 				snprintf(texture_name, LINE_SIZE, "media/%s", tex);
-				texObj->texObjAnim[n++] = load_texture(gfx, texture_name);
+				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 				tex = strtok(NULL, " ");
 			}
 			texObj->texObj[texObj->num_tex] = texObj->texObjAnim[0];
@@ -1165,7 +1165,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			continue;
 		}
 
-		tex_object = load_texture(gfx, texture_name);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 		if (tex_object != 0)
 		{
 //			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
@@ -1179,7 +1179,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 
 
-void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
+void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
 {
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
@@ -1196,10 +1196,10 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 	{
 		material_t	*material = &data.Material[i];
 		
-		load_from_shader(material->name, surface_list, &tex_object[i], gfx);
+		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);
 		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
 		{
-			load_from_file(material->name, tex_object[i], gfx);
+			load_from_file(material->name, tex_object[i], gfx, pk3_list, num_pk3);
 		}
 		
 		if (tex_object[i].texObj[tex_object[i].num_tex - 1] == 0)
@@ -1212,7 +1212,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list)
 		tex_object[i].num_tex++;
 
 //		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
-//		normal_object[i] = load_texture(gfx, texture_name);
+//		normal_object[i] = load_texture(gfx, texture_name, pk3_list, num_pk3);
 	}
 }
 

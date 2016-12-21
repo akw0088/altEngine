@@ -13,7 +13,7 @@
 #define FORWARD
 //#define DEFERRED
 
-char *shader_list[] = {
+/*
 	"scripts/test.shader",
 	"scripts/base.shader",
 	"scripts/base_button.shader",
@@ -41,11 +41,6 @@ char *shader_list[] = {
 	"scripts/shrine.shader",
 	"scripts/skin.shader",
 	"scripts/sky.shader"
-};
-int num_shader = 27;
-
-
-char *pk3list[] = {
 				"media/pak8.pk3",
 				"media/pak7.pk3",
 				"media/pak6.pk3",
@@ -57,8 +52,7 @@ char *pk3list[] = {
 				"media/pak0.pk3",
 //				"media/q3f2_pak0.pk3",
 //				"media/zpak000_assets.pk3"
-};
-int num_pk3 = 9;
+*/
 
 Engine::Engine()
 {
@@ -125,6 +119,7 @@ void Engine::init(void *p1, void *p2)
 
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
+	newlinelist(shader_list, num_shader);
 	for (int i = 0; i < num_shader; i++)
 	{
 		char *shader_file = NULL;
@@ -221,7 +216,8 @@ void Engine::load(char *level)
 //		menu.print("Failed to load mlight3 shader");
 
 
-	if ( map.load(level, pk3list, num_pk3) == false)
+	newlinelist(pk3_list, num_pk3);
+	if ( map.load(level, pk3_list, num_pk3) == false)
 		return;
 
 	map.generate_meshes(gfx);
@@ -252,7 +248,7 @@ void Engine::load(char *level)
 	menu.delta("textures", *this);
 	menu.render(global);
 	gfx.swap();
-	map.load_textures(gfx, surface_list);
+	map.load_textures(gfx, surface_list, pk3_list, num_pk3);
 	menu.delta("loaded", *this);
 	menu.stop();
 	menu.ingame = false;
@@ -2760,6 +2756,60 @@ void Engine::quit()
 #endif
 }
 
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3)
+{
+	int width, height, components, format;
+	int tex_object;
+
+	int size = 0;
+	unsigned char *data = NULL;
+	char pk3_name[1024];
+
+	memset(pk3_name, 0, sizeof(pk3_name));
+	sprintf(pk3_name, "%s", file_name + strlen("media/"));
+
+	for (int i = 0; i < num_pk3; i++)
+	{
+		get_zipfile(pk3_list[i], pk3_name, &data, &size);
+		if (data != NULL)
+			break;
+	}
+	if (data == NULL)
+	{
+//		debugf("Unable to load texture %s\n", file_name);
+		return load_texture(gfx, file_name);
+	}
+	else
+	{
+//		debugf("Loaded %s from disk\n", file_name);
+	}
+
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+
+	if (components == 4)
+	{
+		format = GL_RGBA;
+		components = GL_RGBA8;
+	}
+	else
+	{
+		format = GL_RGB;
+		components = GL_RGB8;
+	}
+
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
+	stbi_image_free(bytes);
+	free((void *)data);
+
+#ifndef DIRECTX
+	if (format != GL_RGBA)
+	{
+		// negative means it has an alpha channel
+		return -tex_object;
+	}
+#endif
+	return tex_object;
+}
 
 // Need asset manager class so things arent doubly loaded
 int load_texture(Graphics &gfx, char *file_name)
@@ -2767,25 +2817,9 @@ int load_texture(Graphics &gfx, char *file_name)
 	int width, height, components, format;
 	int tex_object;
 
-//	byte *bytes2 = gltLoadTGA(file_name, &width, &height, &components, &format);
-//	unsigned char *bytes = stbi_load(file_name, &width, &height, &components, STBI_rgb_alpha);
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(file_name, &size);
 
-	if (data == NULL)
-	{
-		char pk3_name[1024];
-
-		memset(pk3_name, 0, sizeof(pk3_name));
-		sprintf(pk3_name, "%s", file_name + strlen("media/"));
-
-		for (int i = 0; i < num_pk3; i++)
-		{
-			get_zipfile(pk3list[i], pk3_name, &data, &size);
-			if (data != NULL)
-				break;
-		}
-	}
 	if (data == NULL)
 	{
 //		debugf("Unable to load texture %s\n", file_name);
