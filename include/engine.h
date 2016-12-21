@@ -84,7 +84,9 @@ public:
 	unsigned int num_light;
 	int last_spawn;
 	char *pk3_list[32];
+	char *hash_list[32];
 	int num_pk3;
+	int num_hash;
 	char *shader_list[32];
 	int num_shader;
 

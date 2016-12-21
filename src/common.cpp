@@ -6,12 +6,17 @@
 
 #include "common.h"
 #include "junzip.h"
+#include "md5sum.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <stdarg.h> // for vargs
 #include <math.h> // for ceil
 
 float newtonSqrt(float x);
+
+extern "C" {
+	void md5sum(char *data, int size, char *hash);
+}
 
 
 /*
@@ -550,6 +555,12 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 
 void newlinelist(char *filename, char **list, int &num)
 {
+	if (filename == NULL || list == NULL)
+	{
+		printf("newlinelist given null values\n");
+		return;
+	}
+
 	char *file = get_file(filename, NULL);
 	num = 0;
 
@@ -661,4 +672,22 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 #endif
 	return tex_object;
+}
+
+bool check_hash(char *filename, char *md5match)
+{
+	char hash[512];
+	int size = 0;
+
+	char *data = get_file(filename, &size);
+	if (data == NULL)
+		return false;
+
+	memset(hash, 0, sizeof(hash));
+	md5sum(data, size, hash);
+	free((void *)data);
+	if (strcmp(hash, md5match) == 0)
+		return true;
+	else
+		return false;
 }

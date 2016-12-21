@@ -1,4 +1,4 @@
-SOURCES := 	xmain.cpp \
+SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
 		bsp.cpp \
 		common.cpp \
@@ -29,17 +29,26 @@ SOURCES := 	xmain.cpp \
 		vector.cpp \
 		vehicle.cpp \
 
+SOURCES_CC :=	md5sum.c \
 
-OBJS  := $(SOURCES:%.cpp=%.o)
-OBJDIR := $(SOURCES:%.cpp=obj/%.o)
+
+OBJS_CPP  := $(SOURCES_CPP:%.cpp=%.o)
+OBJDIR_CPP := $(SOURCES_CPP:%.cpp=obj/%.o)
+OBJS_C  := $(SOURCES_CC:%.c=%.o)
+OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 %.o: src/%.cpp
 	$(CPP) $(CFLAGS) -c $(INCLUDES) -o obj/$@ $<
 
+%.o: src/%.c
+	$(CC) $(CFLAGS) -c $(INCLUDES) -o obj/$@ $<
+
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-CPP := g++
-#CPP := clang++
+#CPP := g++
+#CC := gcc
+CPP := clang++
+CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]
@@ -61,8 +70,8 @@ LIBS := -L/usr/X11R6/lib/
 
 all: altEngine
 
-altEngine: $(OBJS)
-	$(CPP) $(CFLAGS) -o altEngine $(OBJDIR) $(LIBS) $(LFLAGS)
+altEngine: $(OBJS_CPP) $(OBJS_C)
+	$(CPP) $(CFLAGS) -o altEngine $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
 
 clean:
 	rm -f ./obj/*.o

@@ -1,4 +1,4 @@
-#include "md5.h"
+#include "md5sum.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -8,7 +8,6 @@ typedef unsigned long long uint64;
 
 void md5sum(char *data, unsigned int size, char *hash)
 {
-	uint64	i;
 	md5_state_t	state;
 	md5_byte_t	digest[16];
 	int		di;
@@ -20,7 +19,6 @@ void md5sum(char *data, unsigned int size, char *hash)
 		sprintf(&hash[di * 2], "%02x", digest[di]);
 
 	printf("md5: %s\n", hash);
-	return 0;
 }
 
 

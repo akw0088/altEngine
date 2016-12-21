@@ -174,6 +174,13 @@ void Engine::load(char *level)
 
 
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
+	newlinelist("media/pk3hash.txt", hash_list, num_hash);
+
+	for (int i = 0; i < num_pk3 && i < num_hash; i++)
+	{
+		check_hash(pk3_list[i], hash_list[i]);
+	}
+
 	if ( map.load(level, pk3_list, num_pk3) == false)
 		return;
 
