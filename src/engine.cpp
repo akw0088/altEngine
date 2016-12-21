@@ -2394,7 +2394,7 @@ void Engine::load_model(Entity &ent)
 	else if (strcmp(ent.type, "weapon_plasmagun") == 0)
 	{
 		debugf("Loading weapon_plasmagun\n");
-		ent.model->load(gfx, "media/models/weapons2/plasmagun/plasma");
+		ent.model->load(gfx, "media/models/weapons2/plasma/plasma");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
