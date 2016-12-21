@@ -52,7 +52,7 @@ void Engine::init(void *p1, void *p2)
 
 	//audio
 	audio.init();
-	menu.init(&gfx, &audio);
+	menu.init(&gfx, &audio, pk3_list, num_pk3);
 	menu.load("media/newmenu.txt", "media/newstate.txt");
 
 	//net crap
@@ -1308,7 +1308,7 @@ void Engine::check_triggers()
 		{
 			float period = 2200.0f; // manually setting for q3tourney6 plat
 			float sin_wave = (float)fsin(M_PI * tick_num / period);
-			float square_wave = (float)sign(fsin(2 * M_PI * tick_num / period));
+			float square_wave = (float)sign((float)fsin(2 * M_PI * tick_num / period));
 			float amount = sin_wave * square_wave;
 
 			if (strstr(entity_list[i]->type, "func_static"))

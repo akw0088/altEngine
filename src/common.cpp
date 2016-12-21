@@ -660,10 +660,22 @@ int load_texture(Graphics &gfx, char *file_name)
 		format = GL_RGBA;
 		components = GL_RGBA8;
 	}
-	else
+	else if (components == 3)
 	{
 		format = GL_RGB;
 		components = GL_RGB8;
+	}
+	else if (components == 1)
+	{
+		format = GL_RED;
+		components =  GL_RED;
+	}
+	else
+	{
+		printf("Unknown component: %s %d\n", file_name, components);
+		stbi_image_free(bytes);
+		free((void *)data);
+		return 0;
 	}
 
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);

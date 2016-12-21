@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "md5sum.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,11 +7,13 @@
 
 typedef unsigned long long uint64;
 
+
+
+
 void md5sum(char *data, unsigned int size, char *hash)
 {
 	md5_state_t	state;
 	md5_byte_t	digest[16];
-	int		di;
 
 	md5_init(&state);
 	md5_append(&state, (const md5_byte_t *)data, size);
