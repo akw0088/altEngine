@@ -14,8 +14,8 @@ public:
 	Entity			*entity;
 
 	char			file[LINE_SIZE];
-	unsigned int	source;
-	unsigned int	loop_source;
+	int	source;
+	int	loop_source;
 };
 
 #endif

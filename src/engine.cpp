@@ -719,7 +719,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		{
 			unsigned int j = 0;
 
-			if (spawn == i)
+			if ((unsigned int)spawn == i)
 			{
 				entity_list[i]->rigid->get_matrix(mvp.m);
 
@@ -742,7 +742,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			}
 
 
-			if (i == server_spawn)
+			if (i == (unsigned int)server_spawn)
 			{
 				render_client(i, trans, lights, true);
 				continue;
@@ -1019,7 +1019,7 @@ void Engine::spatial_testing()
 				}
 			}
 
-			if ((bsp_visible && frustum_visible) || i == spawn)
+			if ((bsp_visible && frustum_visible) || i == (unsigned int)spawn)
 			{
 				visible = true;
 			}
@@ -1291,7 +1291,7 @@ void Engine::step(int tick)
 		return;
 
 	// Animate animated textures
-	for (int i = 0; i < map.anim_list.size(); i++)
+	for (unsigned int i = 0; i < map.anim_list.size(); i++)
 	{
 		texture_t  *tex = map.anim_list[i];
 
@@ -1621,7 +1621,7 @@ void Engine::server_step()
 			reliable.msg);
 		*/
 
-		if (clientmsg.length > CLIENT_HEADER + sizeof(int) + sizeof(int) + 1)
+		if ((unsigned int)clientmsg.length > CLIENT_HEADER + sizeof(int) + sizeof(int) + 1)
 		{
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[4];
 
@@ -1782,11 +1782,7 @@ void Engine::client_step()
 #ifdef WIN32
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), ( int *)&socksize);
 #else
-#ifdef  MACOS
 	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
-#else
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
-#endif
 #endif
 	if ( size > 0)
 	{
@@ -1838,7 +1834,7 @@ void Engine::client_step()
 			reliable.msg);
 		*/
 
-		if ( servermsg.length > SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
+		if ( (unsigned int)servermsg.length > SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
 		{
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 
@@ -3765,7 +3761,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (i == self)
+		if (i == (unsigned int)self)
 			continue;
 
 		if (entity_list[i]->player && entity_list[i]->rigid)

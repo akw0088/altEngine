@@ -788,7 +788,7 @@ void handle_command(char *basecmd, surface_t *surface)
 		//deformVertexes wave <div> <func> <base> <amplitude> <phase> <freq>
 
 		match = sscanf(ret, "deformVertexes %s %f %f %f %f %f %f",
-			&wave, &div, &func, &base, &amplitude, &phase, &freq);
+			&wave[0], &div, &func, &base, &amplitude, &phase, &freq);
 		if (match == 7)
 		{
 			surface->deformVertexes = true;

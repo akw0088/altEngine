@@ -73,8 +73,8 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 //	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
-	lightmap_object = new unsigned int [data.num_lightmaps];
-	normal_object = new unsigned int [data.num_materials];
+	lightmap_object = new int [data.num_lightmaps];
+	normal_object = new int [data.num_materials];
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
@@ -816,7 +816,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					render.face = face_index;
 					render.shader = true;
 
-					for (int k = 0; k < surface->num_stage; k++)
+					for (unsigned int k = 0; k < surface->num_stage; k++)
 					{
 						render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
 						render.deg[k] = surface->stage[k].tcmod_rotate_value;

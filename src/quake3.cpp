@@ -900,7 +900,7 @@ void Quake3::render_hud(double last_frametime)
 
 			engine->camera_frame.set(trans2);
 
-			if (i == spawn)
+			if (i == (unsigned int)spawn)
 			{
 				color = vec3(1.0f, 0.0f, 0.0f);
 			}

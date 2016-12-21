@@ -85,8 +85,8 @@ private:
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;
 
-	unsigned int	*normal_object;
-	unsigned int	*lightmap_object;
+	int	*normal_object;
+	int	*lightmap_object;
 };
 
 #endif

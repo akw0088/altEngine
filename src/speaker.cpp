@@ -33,7 +33,7 @@ void Speaker::loop_gain(float value)
 
 void Speaker::destroy(Audio &audio)
 {
-	if (source != -1)
+	if (source >= 0)
 		audio.delete_source(source);
 }
 

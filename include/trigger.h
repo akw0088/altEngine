@@ -18,8 +18,8 @@ public:
 	char	idle_sound[LINE_SIZE];
 	char	action[LINE_SIZE];
 	float	radius;
-	unsigned int	source;
-	unsigned int	loop_source;
+	int	source;
+	int	loop_source;
 	unsigned int	pickup_buf;
 	unsigned int	respawn_buf;
 

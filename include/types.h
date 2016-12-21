@@ -130,7 +130,7 @@ typedef unsigned char byte;
 */
 typedef struct
 {
-	unsigned int	length;
+	int	length;
 	unsigned int	sequence;
 	unsigned int	server_sequence;
 	float			up[3];
@@ -149,7 +149,7 @@ typedef struct
 */
 typedef struct
 {
-	unsigned int	length;
+	int		length;
 	unsigned int	sequence;
 	unsigned int	client_sequence;
 	byte			num_ents;
