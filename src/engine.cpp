@@ -4,10 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
-#define STB_IMAGE_IMPLEMENTATION
-
-#include "stb_image.h"
 #include <float.h> // for FLT_MAX
+#include <cmath> // for M_PI
 
 //#define SHADOWVOL
 #define FORWARD
@@ -1084,7 +1082,7 @@ void Engine::dynamics()
 		{
 			float submerged_percent = 1.0f;
 			float volume = body->get_volume();
-			float height = 0.5f * fabs(body->aabb[0].z - body->aabb[7].z);
+			float height = 0.5f * abs32(body->aabb[0].z - body->aabb[7].z);
 
 			if (body->water_depth < height)
 			{
@@ -2713,108 +2711,6 @@ void Engine::quit()
 #else
 	exit(0);
 #endif
-}
-
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3)
-{
-	int width, height, components, format;
-	int tex_object;
-
-	int size = 0;
-	unsigned char *data = NULL;
-	char pk3_name[1024];
-
-	memset(pk3_name, 0, sizeof(pk3_name));
-	sprintf(pk3_name, "%s", file_name + strlen("media/"));
-
-	for (int i = 0; i < num_pk3; i++)
-	{
-		get_zipfile(pk3_list[i], pk3_name, &data, &size);
-		if (data != NULL)
-			break;
-	}
-	if (data == NULL)
-	{
-//		debugf("Unable to load texture %s\n", file_name);
-		return load_texture(gfx, file_name);
-	}
-	else
-	{
-//		debugf("Loaded %s from disk\n", file_name);
-	}
-
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
-
-	if (components == 4)
-	{
-		format = GL_RGBA;
-		components = GL_RGBA8;
-	}
-	else
-	{
-		format = GL_RGB;
-		components = GL_RGB8;
-	}
-
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
-	stbi_image_free(bytes);
-	free((void *)data);
-
-#ifndef DIRECTX
-	if (format != GL_RGBA)
-	{
-		// negative means it has an alpha channel
-		return -tex_object;
-	}
-#endif
-	return tex_object;
-}
-
-// Need asset manager class so things arent doubly loaded
-int load_texture(Graphics &gfx, char *file_name)
-{
-	int width, height, components, format;
-	int tex_object;
-
-	int size = 0;
-	unsigned char *data = (unsigned char *)get_file(file_name, &size);
-
-	if (data == NULL)
-	{
-//		debugf("Unable to load texture %s\n", file_name);
-		return 0;
-	}
-	else
-	{
-//		debugf("Loaded %s from disk\n", file_name);
-	}
-
-	//tex_object[face->material].texObj[0]
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
-
-	if (components == 4)
-	{
-		format = GL_RGBA;
-		components = GL_RGBA8;
-	}
-	else
-	{
-		format = GL_RGB;
-		components = GL_RGB8;
-	}
-
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
-	stbi_image_free(bytes);
-	free((void *)data);
-
-#ifndef DIRECTX
-	if (format != GL_RGBA)
-	{
-		// negative means it has an alpha channel
-		return -tex_object;
-	}
-#endif
-	return tex_object;
 }
 
 void Engine::console(char *cmd)
