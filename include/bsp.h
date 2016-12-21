@@ -61,8 +61,8 @@ private:
 	bsp_t		*tBsp;
 
 	vec4		*tangent;
-	vector<renderinfo_t> face_list;
-	vector<renderinfo_t> blend_list;
+	vector<faceinfo_t> face_list;
+	vector<faceinfo_t> blend_list;
 
 	
 	int last_leaf;

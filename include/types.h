@@ -315,18 +315,18 @@ typedef struct
 	int freq;
 	int num_anim;
 	int index; // index into surface list (if it exists)
-	int stage; // stage texture was loaded from
+//	int stage; // stage texture was loaded from
 	int num_tex;
 } texture_t;
 
 typedef struct
 {
 	int face;
-	int stage;
-	bool tcmod_rotate;
-	bool tcmod_scroll;
-	bool tcmod_scale;
-	float deg;
-	vec2 scroll;
-	vec2 scale;
-} renderinfo_t;
+	bool shader;
+	bool tcmod_rotate[MAX_TEXTURES];
+	bool tcmod_scroll[MAX_TEXTURES];
+	bool tcmod_scale[MAX_TEXTURES];
+	float deg[MAX_TEXTURES];
+	vec2 scroll[MAX_TEXTURES];
+	vec2 scale[MAX_TEXTURES];
+} faceinfo_t;

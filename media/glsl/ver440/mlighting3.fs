@@ -100,14 +100,14 @@ void main(void)
 	normal_map.y = 2 * texture(texture_normalmap, Vertex.vary_TexCoord).b - 1; 
 
 
-	mat2 mRot0 = mat2( cos0, -sin0, sin0,  cos0);
-	mat2 mRot1 = mat2( cos1, -sin1, sin1,  cos1);
-	mat2 mRot2 = mat2( cos2, -sin2, sin2,  cos2);
-	mat2 mRot3 = mat2( cos3, -sin3, sin3,  cos3);
-	mat2 mRot4 = mat2( cos4, -sin4, sin4,  cos4);
-	mat2 mRot5 = mat2( cos5, -sin5, sin5,  cos5);
-	mat2 mRot6 = mat2( cos6, -sin6, sin6,  cos6);
-	mat2 mRot7 = mat2( cos7, -sin7, sin7,  cos7);
+	mat2 mRot0 = mat2( u_tcmod_cos0, -u_tcmod_sin0, u_tcmod_sin0,  u_tcmod_cos0);
+	mat2 mRot1 = mat2( u_tcmod_cos1, -u_tcmod_sin1, u_tcmod_sin1,  u_tcmod_cos1);
+	mat2 mRot2 = mat2( u_tcmod_cos2, -u_tcmod_sin2, u_tcmod_sin2,  u_tcmod_cos2);
+	mat2 mRot3 = mat2( u_tcmod_cos3, -u_tcmod_sin3, u_tcmod_sin3,  u_tcmod_cos3);
+	mat2 mRot4 = mat2( u_tcmod_cos4, -u_tcmod_sin4, u_tcmod_sin4,  u_tcmod_cos4);
+	mat2 mRot5 = mat2( u_tcmod_cos5, -u_tcmod_sin5, u_tcmod_sin5,  u_tcmod_cos5);
+	mat2 mRot6 = mat2( u_tcmod_cos6, -u_tcmod_sin6, u_tcmod_sin6,  u_tcmod_cos6);
+	mat2 mRot7 = mat2( u_tcmod_cos7, -u_tcmod_sin7, u_tcmod_sin7,  u_tcmod_cos7);
 
 	vec4 Fragment0 = texture(texture0, u_tcmod_scale0 * (Vertex.vary_TexCoord * mRot0) + u_tcmod_scroll0);
 	vec4 Fragment1 = texture(texture1, u_tcmod_scale1 * (Vertex.vary_TexCoord * mRot1) + u_tcmod_scroll1);

@@ -86,7 +86,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 		tex_object[i].num_anim = 0;
 		tex_object[i].num_tex = 0;
 		tex_object[i].index = (unsigned int)-1;
-		tex_object[i].stage = (unsigned int)-1;
+//		tex_object[i].stage = (unsigned int)-1;
 	}
 	for(unsigned int i = 0; i < data.num_lightmaps; i++)
 		lightmap_object[i] = (unsigned int)-1;
@@ -458,7 +458,7 @@ void Bsp::unload(Graphics &gfx)
 			}
 		}
 		tex_object[i].index = -1;
-		tex_object[i].stage = -1;
+//		tex_object[i].stage = -1;
 		
 
 		if (normal_object[i] != -1)
@@ -763,6 +763,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 {
 	int frameIndex = find_leaf(position);
 	static int lastIndex = -1;
+	vec2 zero(0.0f, 0.0f);
+	vec2 one(1.0f, 1.0f);
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
@@ -796,34 +798,41 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				int face_index = data.LeafFace[leaf->leaf_face + j];
 				face_t *face = &data.Face[face_index];
-				int stage = tex_object[face->material].stage;
 
-				if (tex_object[face->material].index != -1 && stage != -1)
+//				int stage = tex_object[face->material].stage;
+
+				if (tex_object[face->material].index != -1)
 				{
+					// Texture with a shader
 					surface_t *surface = surface_list[tex_object[face->material].index];
 					bool blend = false;
-					renderinfo_t render;
+					faceinfo_t render;
 
-					memset(&render, 0, sizeof(renderinfo_t));
+					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
-					render.stage = stage;
-					render.tcmod_rotate = surface->stage[stage].tcmod_rotate;
-					render.deg = surface->stage[stage].tcmod_rotate_value;
-					render.tcmod_scroll = surface->stage[stage].tcmod_scroll;
-					render.scroll = surface->stage[stage].tcmod_scroll_value;
-					render.tcmod_scale = surface->stage[stage].tcmod_scale;
-					render.scale = surface->stage[stage].tcmod_scale_value;
+					render.shader = true;
 
-
-					if (surface->stage[stage].blendfunc_blend ||
-						surface->stage[stage].blendfunc_add ||
-						surface->stage[stage].blendfunc_filter ||
-						surface->stage[stage].blend_one_one ||
-						surface->stage[stage].blend_one_zero //||
-						/*surface->surfaceparm_fog*/)
+					for (int k = 0; k < surface->num_stage; k++)
 					{
-						blend = true;
+						render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
+						render.deg[k] = surface->stage[k].tcmod_rotate_value;
+						render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
+						render.scroll[k] = surface->stage[k].tcmod_scroll_value;
+						render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
+						render.scale[k] = surface->stage[k].tcmod_scale_value;
+
+
+						if (surface->stage[k].blendfunc_blend ||
+							surface->stage[k].blendfunc_add ||
+							surface->stage[k].blendfunc_filter ||
+							surface->stage[k].blend_one_one ||
+							surface->stage[k].blend_one_zero //||
+							/*surface->surfaceparm_fog*/)
+						{
+							blend = false;
+						}
 					}
+
 
 					if (blend)
 						blend_list.push_back(render);
@@ -832,11 +841,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 				else
 				{
-					renderinfo_t render;
+					// Texture without a shader
+					faceinfo_t render;
 
-					memset(&render, 0, sizeof(renderinfo_t));
+					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
-					render.stage = 0;
+					render.shader = false;
 					
 					// need a way to tell if a face should be blended
 					if (tex_object[face->material].texObj[0] < 0)
@@ -853,17 +863,23 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	{
 		face_t *face = &data.Face[face_list[i].face];
 
-		if (face_list[i].tcmod_rotate)
+		if (face_list[i].shader)
 		{
-			mlight2.tcmod_rotate(face_list[i].deg * tick_num / TICK_RATE, face_list[i].stage);
-		}
-		if (face_list[i].tcmod_scroll)
-		{
-			mlight2.tcmod_scroll(face_list[i].scroll, face_list[i].stage);
-		}
-		if (face_list[i].tcmod_scale)
-		{
-			mlight2.tcmod_scale(face_list[i].scale, face_list[i].stage);
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				if (face_list[i].tcmod_rotate[j])
+				{
+					mlight2.tcmod_rotate(face_list[i].deg[j] * tick_num / TICK_RATE, j);
+				}
+				if (face_list[i].tcmod_scroll[j])
+				{
+					mlight2.tcmod_scroll(face_list[i].scroll[j], j);
+				}
+				if (face_list[i].tcmod_scale[j])
+				{
+					mlight2.tcmod_scale(face_list[i].scale[j], j);
+				}
+			}
 		}
 
 		if (face->type == 1 || face->type == 3)
@@ -877,6 +893,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		else// (face->type == 4)
 		{
 			render_billboard(face, gfx);
+		}
+
+		if (face_list[i].shader)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
+			}
 		}
 	}
 
@@ -890,18 +917,27 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	{
 		face_t *face = &data.Face[blend_list[i].face];
 
-		if (face_list[i].tcmod_rotate)
+
+
+		if (blend_list[i].shader)
 		{
-			mlight2.tcmod_rotate(face_list[i].deg * tick_num / TICK_RATE, face_list[i].stage);
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				if (blend_list[i].tcmod_rotate[j])
+				{
+					mlight2.tcmod_rotate(blend_list[i].deg[j] * tick_num / TICK_RATE, j);
+				}
+				if (blend_list[i].tcmod_scroll)
+				{
+					mlight2.tcmod_scroll(blend_list[i].scroll[j], j);
+				}
+				if (blend_list[i].tcmod_scale)
+				{
+					mlight2.tcmod_scale(blend_list[i].scale[j], j);
+				}
+			}
 		}
-		if (face_list[i].tcmod_scroll)
-		{
-			mlight2.tcmod_scroll(face_list[i].scroll, face_list[i].stage);
-		}
-		if (face_list[i].tcmod_scale)
-		{
-			mlight2.tcmod_scale(face_list[i].scale, face_list[i].stage);
-		}
+
 
 		if (face->type == 1 || face->type == 3)
 		{
@@ -914,6 +950,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		else// (face->type == 4)
 		{
 			render_billboard(face, gfx);
+		}
+
+		if (blend_list[i].shader)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
+			}
 		}
 	}
 	if (blend_list.size())
@@ -1025,7 +1072,7 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx)
 
 void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx)
 {
-	char			texture_name[LINE_SIZE] = { 0 };
+	char			texture_name[LINE_SIZE + 1] = { 0 };
 	int				tex_object = 0;
 	unsigned int	j = 0;
 
@@ -1054,7 +1101,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
 
-			if (strstr(texture_name, "pewter_shiney"))
+//			if (strstr(texture_name, "pewter_shiney"))
 			{
 //				surface_list[j]->stage[k].blendfunc_add = true;
 			}
@@ -1093,7 +1140,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		if (tex_object != 0 && tex_object != -1)
 		{
 //			printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
-			texObj->stage = k;
+			//texObj->stage = k;
 			continue;
 		}
 
@@ -1108,7 +1155,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		if (tex_object != 0)
 		{
 //			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
-			texObj->stage = k;
+			//texObj->stage = k;
 			texObj->texObj[texObj->num_tex] = tex_object;
 		}
 	}

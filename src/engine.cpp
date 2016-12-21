@@ -2773,8 +2773,9 @@ int load_texture(Graphics &gfx, char *file_name)
 
 	if (data == NULL)
 	{
-		char pk3_name[512] = { 0 };
+		char pk3_name[1024];
 
+		memset(pk3_name, 0, sizeof(pk3_name));
 		sprintf(pk3_name, "%s", file_name + strlen("media/"));
 
 		for (int i = 0; i < num_pk3; i++)
