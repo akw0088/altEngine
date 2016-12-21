@@ -1,6 +1,7 @@
 #include "include.h"
 
 #ifndef WIN32
+#include <X11/XKBlib.h>
 
 int EventProc(Display *display, Window window, GLXContext context);
 
@@ -174,7 +175,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 			char buffer[128] = {0};
 
 			bool pressed = false;
-			KeySym keysym = XKeycodeToKeysym(display, event.xkey.keycode, 0);
+			KeySym keysym = XkbKeycodeToKeysym(display, event.xkey.keycode, 0, 0);
 
 			if (event.type == KeyPress)
 			{
