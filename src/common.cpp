@@ -567,7 +567,8 @@ void newlinelist(char *filename, char **list, int &num)
 	char *line = strtok(file, "\n");
 	while (line)
 	{
-		list[num++] = line;
+		if (strlen(line) >= 2 && line[0] != '/' && line[1] != '/')
+			list[num++] = line;
 		line = strtok(NULL, "\n");
 	}	
 }

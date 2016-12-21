@@ -178,7 +178,11 @@ void Engine::load(char *level)
 
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
-		check_hash(pk3_list[i], hash_list[i]);
+		printf("Checking hash for %s\n", pk3_list[i]);
+		if ( check_hash(pk3_list[i], hash_list[i]) == false)
+		{
+			printf("%s failed hash check, expeted [%s]\n", pk3_list[i], hash_list[i]);
+		}
 	}
 
 	if ( map.load(level, pk3_list, num_pk3) == false)
