@@ -1,6 +1,5 @@
 #include "shader.h"
-#include <cmath>
-
+#include <cmath> // for some sin/cos/tan funcs
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -353,7 +352,7 @@ void mLight2::tcmod_scale(vec2 &scale, int index)
 void mLight2::tcmod_rotate(float deg, int index)
 {
 	//convert to radians
-	deg = (float)(M_PI * deg / 180.0f);
+	deg = (float)(MY_PI * deg / 180.0f);
 	
 	float sinval = sin(deg);
 	float cosval = cos(deg);
@@ -411,7 +410,7 @@ void mLight2::tcmod_stretch_sawtooth(float amplitude, float phase, float freq, i
 	vec2 value;
 
 	//cot(x)=1/tan(x)
-	value.x = (float) ( amplitude * ( -0.5 * atan(1.0 / tan(freq * tick_num / M_PI + phase)) ) );
+	value.x = (float) ( amplitude * ( -0.5 * atan(1.0 / tan(freq * tick_num / MY_PI + phase)) ) );
 	value.y = value.x;
 
 	tcmod_scale(value, index);
@@ -436,7 +435,7 @@ void mLight2::tcmod_stretch_square(float amplitude, float phase, float freq, int
 {
 	vec2 value;
 
-	value.x = (float)( amplitude * (4.0 / ((int)(freq * tick_num + phase) % 2 * M_PI)) );
+	value.x = (float)( amplitude * (4.0 / ((int)(freq * tick_num + phase) % 2 * MY_PI)) );
 	value.y = value.x;
 
 	tcmod_scale(value, index);

@@ -1,5 +1,5 @@
-#define MY_PI 3.14159265359
-#define MY_HALF_PI 1.5707963268
+#define MY_PI		3.14159265358979323846
+#define MY_HALF_PI		1.57079632679489661923
 
 // table of sines in 0.01 radian increments
 extern const double sin_table[629] = { 

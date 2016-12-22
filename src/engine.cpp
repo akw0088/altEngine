@@ -5,7 +5,6 @@
 #endif
 
 #include <float.h> // for FLT_MAX
-#include <cmath> // for M_PI
 
 //#define SHADOWVOL
 #define FORWARD
@@ -1334,8 +1333,8 @@ void Engine::check_triggers()
 		if (strstr(entity_list[i]->type, "func_"))
 		{
 			float period = 2200.0f; // manually setting for q3tourney6 plat
-			float sin_wave = (float)fsin(M_PI * tick_num / period);
-			float square_wave = (float)sign((float)fsin(2 * M_PI * tick_num / period));
+			float sin_wave = (float)fsin(MY_PI * tick_num / period);
+			float square_wave = (float)sign((float)fsin(2 * MY_PI * tick_num / period));
 			float amount = sin_wave * square_wave;
 
 			if (strstr(entity_list[i]->type, "func_static"))
