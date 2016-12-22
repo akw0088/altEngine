@@ -47,13 +47,27 @@ void Engine::init(void *p1, void *p2)
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
 	newlinelist("media/pk3hash.txt", hash_list, num_hash);
 
-	char hash[512];
+	char hash[17];
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		printf("Checking hash for %s...", pk3_list[i]);
 		if (check_hash(pk3_list[i], hash_list[i], hash) == false)
 		{
-			printf("%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+			if (strcmp(pk3_list[i], "media/pak0.pk3") == 0)
+			{
+				if (strcmp(hash, "0613b3d4ef05e613a2b470571498690f") == 0)
+				{
+					printf("pak0.pk3 is from Q3A Demo\n");
+				}
+				else
+				{
+					printf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+				}
+			}
+			else
+			{
+				printf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+			}
 		}
 		else
 		{
@@ -110,6 +124,10 @@ void Engine::init(void *p1, void *p2)
 	}
 
 	printf("Done\n");
+
+	//render menu again for linux
+	menu.render(global);
+	gfx.swap();
 
 //	shadowmap.init(&gfx);
 }
@@ -2726,11 +2744,16 @@ void Engine::destroy()
 	surface_list.clear();
 
 
+	printf("destroying buffers\n");
 	destroy_buffers();
+	printf("unloading\n");
 	unload();
 	gfx.GetDebugLog();
+	printf("Destroying gfx\n");
 	gfx.destroy();
+	printf("Destroying audio\n");
 	audio.destroy();
+	printf("quit\n\n");
 	quit();
 }
 
