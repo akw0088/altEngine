@@ -79,7 +79,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
-		for (int j = 0; j < 8; j++)
+		for (int j = 0; j < MAX_TEXTURES; j++)
 		{
 			tex_object[i].texObj[j] = (unsigned int)0; // zero deselects a texture
 			tex_object[i].texObjAnim[j] = 0;
