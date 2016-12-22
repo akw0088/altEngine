@@ -2284,6 +2284,13 @@ void Engine::load_sounds()
 
 		for(unsigned int k = 0; k < num_wave; k++)
 		{
+			if ( strcmp(wave[k].file, "*falling1.wav") == 0 )
+			{
+				if (spawn >= 0)
+				{
+					sprintf(wave[k].file, "%s", entity_list[spawn]->player->fall_sound);
+				}
+			}
 			for(unsigned int j = 0; j < snd_wave.size(); j++)
 			{
 				char *file = snd_wave[j].file;
@@ -2506,8 +2513,8 @@ void Engine::init_camera()
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
-	load_sounds();
 	init_camera();
+	load_sounds();
 	create_sources();
 	load_models();
 
@@ -2516,7 +2523,6 @@ void Engine::load_entities()
 		if (entity_list[i]->light)
 			entity_list[i]->rigid->gravity = false;
 	}
-
 
 	if (spawn != -1)
 	{

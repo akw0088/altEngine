@@ -844,7 +844,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 							surface->stage[k].blend_one_zero //||
 							/*surface->surfaceparm_fog*/)
 						{
-							blend = false;
+							blend = true;
 						}
 					}
 

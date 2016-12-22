@@ -345,7 +345,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		int inten;
 		float intensity;
 
-		if (entity.light == NULL && light_num < 100)
+		if (entity.light == NULL)
 		{
 			entity.light = new Light(&entity, gfx, light_num++);
 		}
@@ -365,7 +365,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 	{
 		float r, g, b;
 
-		if (entity.light == NULL && light_num < 100)
+		if (entity.light == NULL)
 		{
 			// generates cubemaps for light, this sucks up memory on large maps
 			entity.light = new Light(&entity, gfx, light_num++);
