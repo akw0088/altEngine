@@ -6,6 +6,10 @@
 
 vector<char *> Menu::console_buffer;
 
+#define DMESG_SIZE 256
+char dmesg[DMESG_SIZE][1024];
+int dmesg_index = 0;
+
 void Menu::clear_console()
 {
 	console_buffer.clear();
@@ -315,7 +319,10 @@ void Menu::render_console(Global &global)
 void Menu::print(const char *str)
 {
 	int size = strlen(str) + 1;
-	char *line = new char [size];
+	char *line = dmesg[dmesg_index++];
+
+	if (dmesg_index == DMESG_SIZE)
+		dmesg_index = 0;
 
 	memcpy(line, str, size);
 	console_buffer.push_back(line);
@@ -390,7 +397,10 @@ void Menu::handle_console(char key, Engine *altEngine)
 		break;
 	case '\r':
 		{
-		char *line = new char [1024];
+		char *line = dmesg[dmesg_index++];
+
+		if (dmesg_index == DMESG_SIZE)
+			dmesg_index = 0;
 		memcpy(line, key_buffer, strlen(key_buffer) + 1);
 		cmd_buffer.push_back(line);
 		altEngine->console(key_buffer);

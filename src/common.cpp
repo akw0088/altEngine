@@ -12,6 +12,11 @@
 #include <stdarg.h> // for vargs
 #include <math.h> // for ceil
 
+
+#define DMESG_SIZE 256
+extern char dmesg[DMESG_SIZE][1024];
+extern int dmesg_index;
+
 float newtonSqrt(float x);
 
 extern "C" {
@@ -347,10 +352,6 @@ void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *in
 }
 
 
-#define DMESG_SIZE 256
-
-char dmesg[DMESG_SIZE][512];
-
 //TODO, make this a ring buffer instead of using malloc
 int debugf(const char *format, ...)
 {
@@ -367,7 +368,6 @@ int debugf(const char *format, ...)
     unsigned int width = 60;
     
     char *pstr = str;
-    static int dmesg_index = 0;
     while (1)
     {
         if (strlen(pstr) < width)
