@@ -53,6 +53,15 @@ void Engine::init(void *p1, void *p2)
 	}
 
 	char hash[512];
+
+#ifdef RELEASE
+	if ( check_hash(BINARY_NAME, BINARY_HASH, hash) == false)
+	{
+		printf("Program code failed hash check!\n");
+		exit(0);
+	}
+#endif
+
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		printf("Checking hash for %s...", pk3_list[i]);

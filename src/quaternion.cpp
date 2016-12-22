@@ -1,7 +1,9 @@
 #include "quaternion.h"
-#include <cmath> // for acos
+//#include <cmath> // for acos
 double fsin(double rad);
+double fasin(double rad);
 double fcos(double rad);
+double facos(double rad);
 float newtonSqrt(float x);
 
 
@@ -265,7 +267,7 @@ void quaternion::slerp(const quaternion &p, const quaternion &q, float time, qua
 	result = p * k0 + temp * k1;
 	*/
 
-	float omega = (float)acos(p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z);
+	float omega = (float)facos(p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z);
 
 	result = ((p * ((float)fsin(omega * (1.0f - time))) + (q * (float)fsin(omega*time)))) / (float)fsin(omega);
 }
