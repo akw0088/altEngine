@@ -639,8 +639,6 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(texture0, 0);
 	glUniform1i(texture1, 1);
 	glUniform1i(texture2, 2);
-
-
 	glUniform1i(texture3, 3);
 	glUniform1i(texture4, 4);
 	glUniform1i(texture5, 5);
