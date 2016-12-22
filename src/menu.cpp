@@ -414,11 +414,6 @@ void Menu::handle_console(char key, Engine *altEngine)
 
 Menu::~Menu()
 {
-	for(unsigned int i = 0; i < console_buffer.size(); i++)
-	{
-		delete [] console_buffer[i];
-	}
-
 	for(unsigned int i = 0; i < cmd_buffer.size(); i++)
 	{
 		delete [] cmd_buffer[i];
