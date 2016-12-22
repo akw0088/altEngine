@@ -2,6 +2,7 @@
 
 #ifndef WIN32
 #include <X11/XKBlib.h>
+#include <X11/cursorfont.h>
 
 int EventProc(Display *display, Window window, GLXContext context);
 
@@ -96,8 +97,12 @@ int EventProc(Display *display, Window window, GLXContext context)
 	XEvent			event;
 	static Engine		altEngine;
 	static bool		init = false;
+	static bool		once = false;
 	static int		xcenter, ycenter;
 	static int		frame_step;
+	static Cursor invisibleCursor;
+	static Cursor cursor;
+	static Pixmap bitmapNoData;
 
 	if (display == NULL)
 	{
@@ -162,9 +167,21 @@ int EventProc(Display *display, Window window, GLXContext context)
 		if ((event.xmotion.x == xcenter) && (event.xmotion.y == ycenter))
 			break;
 
+		if (once == false)
+		{
+			once = true;
+			//resize fixes opengl context rendering for some reason
+			XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
+		}
+
 		if ( altEngine.mousepos(event.xmotion.x, event.xmotion.y, event.xmotion.x - xcenter, event.xmotion.y - ycenter) )
 		{
 			XWarpPointer(display, None, window, 0, 0, 0, 0, xcenter, ycenter);
+			XDefineCursor(display, window, invisibleCursor);
+		}
+		else
+		{
+			XDefineCursor(display, window, cursor);
 		}
 		break;
 	case KeyPress:
@@ -231,12 +248,26 @@ int EventProc(Display *display, Window window, GLXContext context)
 		printf("Expose %d\n", event.xexpose.count);
 
 		if (!init)
+		{
 			altEngine.init((void *)display, (void *)&window);
-		init = true;
+			// Hide the cursor
+			XColor black;
+			static char noData[] = { 0,0,0,0,0,0,0,0 };
+			black.red = black.green = black.blue = 0;
+
+			bitmapNoData = XCreateBitmapFromData(display, window, noData, 8, 8);
+			invisibleCursor = XCreatePixmapCursor(display, bitmapNoData, bitmapNoData, 
+                                     &black, &black, 0, 0);
+			cursor = XCreateFontCursor(display,XC_left_ptr);
+			init = true;
+		}
 		break;
 	case DestroyNotify:
 		printf("DestroyNotify\n");
 		altEngine.destroy();
+		XFreeCursor(display, cursor);
+		XFreeCursor(display, invisibleCursor);
+		XFreePixmap(display, bitmapNoData);
 		return 1;
 	}
 	return 0;
