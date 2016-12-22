@@ -268,9 +268,11 @@ void Audio::init()
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
 	debugf("%d sends per audio source\n", sends);
 #endif
-//	alListenerf(AL_REFERENCE_DISTANCE, 100.0f);
+	alListenerf(AL_REFERENCE_DISTANCE, 100.0f);
+
+	//gain = 	(distance / AL_REFERENCE_DISTANCE) ^ (-AL_ROLLOFF_FACTOR
 	alDistanceModel(AL_EXPONENT_DISTANCE);
-	alListenerf(AL_ROLLOFF_FACTOR, 0.001f);
+	alListenerf(AL_ROLLOFF_FACTOR, 0.000001f);
 //	alListenerf(AL_MAX_DISTANCE, 10000.0f);
 
 	alDopplerFactor(1.0f);
@@ -385,7 +387,7 @@ void Audio::load(wave_t &wave)
 
 int Audio::create_source(bool loop, bool global)
 {
-	ALuint hSource;
+	ALuint hSource = -1;
 	ALenum		al_err;
 
 	alGenSources(1, &hSource);
@@ -393,6 +395,7 @@ int Audio::create_source(bool loop, bool global)
 	if (al_err != AL_NO_ERROR)
 	{
 		debugf("Unable to generate audio source: %s\n", GetALErrorString(al_err));
+		return hSource;
 	}
 
 	if (loop)
@@ -412,7 +415,7 @@ void Audio::source_position(int hSource, float *position)
 {
 	if (hSource == -1)
 	{
-		debugf("Attempting to position unallocated source\n");
+		//debugf("Attempting to position unallocated source\n");
 		return;
 	}
 
@@ -421,6 +424,7 @@ void Audio::source_position(int hSource, float *position)
 	if (al_err != AL_NO_ERROR)
 	{
 		debugf("Error alSourcefv position : %s\n", GetALErrorString(al_err));
+		hSource = -1;
 	}
 }
 
@@ -429,7 +433,7 @@ void Audio::source_velocity(int hSource, float *velocity)
 
 	if (hSource == -1)
 	{
-		debugf("Attempting to add velocity to unallocated source\n");
+		//debugf("Attempting to add velocity to unallocated source\n");
 		return;
 	}
 
@@ -438,6 +442,7 @@ void Audio::source_velocity(int hSource, float *velocity)
 	if (al_err != AL_NO_ERROR)
 	{
 		debugf("Error alSourcefv velocity : %s\n", GetALErrorString(al_err));
+		hSource = -1;
 	}
 }
 

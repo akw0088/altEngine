@@ -2649,7 +2649,7 @@ void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos));
 
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = num_dynamic; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)
 		{
