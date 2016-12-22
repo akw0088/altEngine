@@ -45,10 +45,10 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++
-#CC := gcc
-CPP := clang++
-CC := clang
+CPP := g++
+CC := gcc
+#CPP := clang++
+#CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]
@@ -63,7 +63,7 @@ CC := clang
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall -O3 -march=native -mfpmath=sse -msse2 #-fsanitize=address -fno-omit-frame-pointer
+CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal
 LIBS := -L/usr/X11R6/lib/ 
