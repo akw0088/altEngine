@@ -1071,19 +1071,19 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char 
 	char	texture_name[LINE_SIZE] = { 0 };
 	int		tex_object = 0;
 
-//	printf("Attempting to load %s, trying .tga\n", filename);
+	printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
 	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 
 	if (tex_object == 0)
 	{
-//		printf("Attempting to load %s, trying .jpg\n", filename);
+		printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
 		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 	}
 	if (tex_object != 0)
 	{
-//		printf("loaded %s into unit %d\n", filename, texObj.num_tex);
+		printf("loaded %s into unit %d\n", filename, texObj.num_tex);
 		texObj.texObj[texObj.num_tex] = tex_object;
 	}
 
@@ -1097,12 +1097,12 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 	memset(texture_name, 0, sizeof(texture_name));
 
-//	printf("Attempting to load %s, trying surface_list\n", name);
+	printf("Attempting to load %s, trying surface_list\n", name);
 	for (j = 0; j < surface_list.size(); j++)
 	{
 		if (strcmp(name, surface_list[j]->name) == 0)
 		{
-//			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
+			printf("Found shader [%s], trying stages\n", surface_list[j]->name);
 			texObj->index = j;
 			break;
 		}
@@ -1126,7 +1126,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			{
 //				surface_list[j]->stage[k].blendfunc_add = true;
 			}
-//			printf("Trying texture [%s]\n", texture_name);
+			printf("Trying texture [%s]\n", texture_name);
 			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 		}
 		else if (surface_list[j]->stage[k].clampmap)
@@ -1160,7 +1160,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 		if (tex_object != 0 && tex_object != -1)
 		{
-//			printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
+			printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
 			//texObj->stage = k;
 			continue;
 		}
@@ -1169,7 +1169,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		{
 			texture_name[strlen(texture_name) - 4] = '\0';
 			strcat(texture_name, ".jpg");
-//			printf("Trying jpeg texture [%s]\n", texture_name);
+			printf("Trying jpeg texture [%s]\n", texture_name);
 		}
 		else
 		{
@@ -1179,7 +1179,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
 		if (tex_object != 0)
 		{
-//			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
+			printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
 			//texObj->stage = k;
 			texObj->texObj[texObj->num_tex] = tex_object;
 		}
@@ -1215,12 +1215,12 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 			load_from_file(material->name, tex_object[i], gfx, pk3_list, num_pk3);
 		}
 		
-		if (tex_object[i].texObj[tex_object[i].num_tex - 1] == 0)
+		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
 		{
 			printf("******* Failed to find texture for shader %s texunit %d\n", material->name, tex_object[i].num_tex);
 //			tex_object[i].texObj[tex_object[i].num_tex] = 1; // no_tex image
 //			tex_object->num_tex++;
-			return;
+			continue;
 		}
 		tex_object[i].num_tex++;
 

@@ -47,7 +47,8 @@ void Engine::init(void *p1, void *p2)
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
 	newlinelist("media/pk3hash.txt", hash_list, num_hash);
 
-	char hash[17];
+	printf("num_pk3 %d num_hash %d\n", num_pk3, num_hash);
+	char hash[512];
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		printf("Checking hash for %s...", pk3_list[i]);
@@ -126,6 +127,7 @@ void Engine::init(void *p1, void *p2)
 	printf("Done\n");
 
 	//render menu again for linux
+	gfx.resize(xres,yres);
 	menu.render(global);
 	gfx.swap();
 
@@ -173,7 +175,7 @@ void Engine::load(char *level)
 
 	if (map.loaded)
 		return;
-
+	
 	map.anim_list.clear();
 
 	last_spawn = 0;

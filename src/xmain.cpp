@@ -191,6 +191,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 			{
 			case XK_Return:
 			case XK_KP_Enter:
+			case XK_space:
 				altEngine.keypress("enter", pressed);
 				break;
 			case XK_Shift_L:

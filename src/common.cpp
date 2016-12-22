@@ -603,7 +603,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	}
 	else
 	{
-//		debugf("Loaded %s from disk\n", file_name);
+		debugf("Loaded %s from disk\n", file_name);
 	}
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
@@ -613,10 +613,17 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		format = GL_RGBA;
 		components = GL_RGBA8;
 	}
+	else if (components == 1)
+	{
+		format = GL_RED;
+		components =  GL_RED;
+	}
 	else
 	{
-		format = GL_RGB;
-		components = GL_RGB8;
+		printf("Unknown component: %s %d\n", file_name, components);
+		stbi_image_free(bytes);
+		free((void *)data);
+		return 0;
 	}
 
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
@@ -649,7 +656,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 	else
 	{
-//		debugf("Loaded %s from disk\n", file_name);
+		debugf("Loaded %s from pk3\n", file_name);
 	}
 
 	//tex_object[face->material].texObj[0]
@@ -703,7 +710,7 @@ bool check_hash(char *filename, char *md5match, char *hash)
 		return false;
 	}
 
-	memset(hash, 0, sizeof(hash));
+	memset(hash, 0, 17);
 	md5sum(data, size, hash);
 	free((void *)data);
 	if (strcmp(hash, md5match) == 0)
