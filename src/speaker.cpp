@@ -35,6 +35,10 @@ void Speaker::destroy(Audio &audio)
 {
 	if (source >= 0)
 		audio.delete_source(source);
+
+	if (loop_source >= 0)
+		audio.delete_source(loop_source);
+
 }
 
 Speaker::~Speaker()

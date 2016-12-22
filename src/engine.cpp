@@ -47,7 +47,12 @@ void Engine::init(void *p1, void *p2)
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
 	newlinelist("media/pk3hash.txt", hash_list, num_hash);
 
-	printf("num_pk3 %d num_hash %d\n", num_pk3, num_hash);
+	if (num_pk3 != num_hash)
+	{
+		printf("Error: num_pk3 %d num_hash %d, should match\n", num_pk3, num_hash);
+		exit(0);
+	}
+
 	char hash[512];
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
@@ -63,6 +68,7 @@ void Engine::init(void *p1, void *p2)
 				else
 				{
 					printf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+					exit(0);
 				}
 			}
 			else
@@ -2702,6 +2708,10 @@ void Engine::unload()
 	{
 		if (entity_list[i]->speaker)
 			entity_list[i]->speaker->destroy(audio);
+
+		if (entity_list[i]->trigger)
+			entity_list[i]->trigger->destroy(audio);
+
 		delete entity_list[i];
 	}
 	entity_list.clear();

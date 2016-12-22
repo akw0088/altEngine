@@ -10,7 +10,7 @@
 //#define TICK_MS 16		// 62.5hz
 //#define TICK_RATE 60
 
-#define MAX_TEXTURES 8 // multi texture limits (quake 3 shader stages)
+#define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
 
 #ifdef _WIN32
 	#define _CRTDBG_MAP_ALLOC
@@ -26,7 +26,7 @@
 	#pragma comment(lib, "wsock32.lib")
 
 	typedef int socklen_t;
-	int inet_pton(int af, const char *src, void *dst);
+
 
 //#define DIRECTX
 
