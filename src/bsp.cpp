@@ -1209,6 +1209,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	{
 		material_t	*material = &data.Material[i];
 		
+		strcpy(tex_object[i].name, data.Material[i].name);
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);
 		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
 		{
