@@ -73,15 +73,23 @@ private:
 
 	//for bezier patches
 	int				mesh_level;
+
+
+
+	patch_t *patchdata;
+
+/*
 	int				*mesh_index2face;
 	vertex_t		**mesh_vertex_array;
 	int				**mesh_index_array;
 	int				*mesh_num_verts;
 	int				*mesh_num_indexes;
+*/
 	int				num_meshes;
+/*
 	unsigned int	*mesh_index_vbo;
 	unsigned int	*mesh_vertex_vbo;
-
+	*/
 	//objects
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;

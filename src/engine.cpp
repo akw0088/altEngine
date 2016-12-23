@@ -126,7 +126,8 @@ void Engine::init(void *p1, void *p2)
 	newlinelist("media/shaderlist.txt", shader_list, num_shader);
 	if (num_shader == 0)
 	{
-		printf("****************8Unable to load shaderlist.txt\n");
+		printf("****************Unable to load shaderlist.txt\n");
+		exit(0);
 	}
 
 	for (int i = 0; i < num_shader; i++)

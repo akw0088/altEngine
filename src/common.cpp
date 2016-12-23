@@ -562,6 +562,12 @@ void newlinelist(char *filename, char **list, int &num)
 	}
 
 	char *file = get_file(filename, NULL);
+	if (file == NULL)
+	{
+		printf("Unable to open %s\n", filename);
+		return;
+	}
+
 	num = 0;
 
 	char *line = strtok(file, "\n");

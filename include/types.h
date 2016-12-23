@@ -333,3 +333,17 @@ typedef struct
 	vec2 scale[MAX_TEXTURES];
 	vec2 scroll_value[MAX_TEXTURES]; // integrated with time
 } faceinfo_t;
+
+
+typedef struct
+{
+	vertex_t		*vertex_array;
+	int				*index_array;
+	int				num_verts;
+	int				num_indexes;
+
+	int facevert;
+	unsigned int vbo;
+	unsigned int ibo;
+	int num_mesh;
+} patch_t;
