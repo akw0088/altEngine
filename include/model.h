@@ -39,9 +39,11 @@ public:
 	vec3			center;
 	vec4			frustum[6];
 
-	static			int quad_vao;
 	static			int quad_vertex;
 	static			int quad_index;
+
+	static			int cube_vertex;
+	static			int cube_index;
 };
 
 #endif

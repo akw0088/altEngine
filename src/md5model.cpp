@@ -135,7 +135,7 @@ void MD5Model::load_textures(Graphics &gfx)
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
+		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
 		delete[] bytes;
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
@@ -149,7 +149,7 @@ void MD5Model::load_textures(Graphics &gfx)
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
+		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
 		delete[] bytes;
 	}
 }

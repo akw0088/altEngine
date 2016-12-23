@@ -321,8 +321,10 @@ typedef struct
 
 typedef struct
 {
+	int name;
 	int face;
 	bool shader;
+	bool sky;
 	bool tcmod_rotate[MAX_TEXTURES];
 	bool tcmod_scroll[MAX_TEXTURES];
 	bool tcmod_scale[MAX_TEXTURES];

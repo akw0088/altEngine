@@ -15,9 +15,10 @@ class Bsp
 	inline void render_face(face_t *face, Graphics &gfx);
 	inline void render_patch(face_t *face, Graphics &gfx);
 	inline void render_billboard(face_t *face, Graphics &gfx);
-	void draw_line_box(int *min, int *max);
-	void draw_box(int *min, int *max);
+	//void draw_line_box(int *min, int *max);
+	//void draw_box(int *min, int *max);
 public:
+//	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
 	void find_edges(vec3 &position, Edge &edge_list);
 	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
@@ -25,8 +26,6 @@ public:
 	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
-	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
-	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list);
 	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
@@ -89,6 +88,7 @@ private:
 
 	int	*normal_object;
 	int	*lightmap_object;
+	int sky_face;
 };
 
 #endif

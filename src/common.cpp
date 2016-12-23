@@ -578,7 +578,7 @@ void newlinelist(char *filename, char **list, int &num)
 	}
 }
 
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3)
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp)
 {
 	int width, height, components, format;
 	int tex_object;
@@ -599,7 +599,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	if (data == NULL)
 	{
 //		debugf("Unable to load texture %s\n", file_name);
-		return load_texture(gfx, file_name);
+		return load_texture(gfx, file_name, clamp);
 	}
 	else
 	{
@@ -631,7 +631,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		return 0;
 	}
 
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	stbi_image_free(bytes);
 	free((void *)data);
 
@@ -646,7 +646,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 }
 
 // Need asset manager class so things arent doubly loaded
-int load_texture(Graphics &gfx, char *file_name)
+int load_texture(Graphics &gfx, char *file_name, bool clamp)
 {
 	int width, height, components, format;
 	int tex_object;
@@ -690,7 +690,7 @@ int load_texture(Graphics &gfx, char *file_name)
 		return 0;
 	}
 
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	stbi_image_free(bytes);
 	free((void *)data);
 

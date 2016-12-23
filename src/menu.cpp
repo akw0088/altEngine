@@ -30,9 +30,9 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	console = false;
 	ingame = false;
 
-	menu_object = load_texture(*gfx, "media/menu.tga");
-	console_object = load_texture_pk3(*gfx, "media/gfx/misc/console01.tga", pk3_list, num_pk3);
-	font_object = load_texture_pk3(*gfx, "media/gfx/2d/bigchars.tga", pk3_list, num_pk3);
+	menu_object = load_texture(*gfx, "media/menu.tga", false);
+	console_object = load_texture_pk3(*gfx, "media/gfx/misc/console01.tga", pk3_list, num_pk3, false);
+	font_object = load_texture_pk3(*gfx, "media/gfx/2d/bigchars.tga", pk3_list, num_pk3, false);
 	font.init(gfx);
 	strcpy(menu_wave.file, "media/sound/mwmusic.wav");
 	audio->load(menu_wave);

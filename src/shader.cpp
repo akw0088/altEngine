@@ -354,8 +354,8 @@ void mLight2::tcmod_rotate(float deg, int index)
 	//convert to radians
 	deg = (float)(MY_PI * deg / 180.0f);
 	
-	float sinval = sin(deg);
-	float cosval = cos(deg);
+	float sinval = sinf(deg);
+	float cosval = cosf(deg);
 
 	switch (index)
 	{

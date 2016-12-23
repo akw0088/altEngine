@@ -178,8 +178,8 @@ using namespace std;
 #include "engine.h"
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
-int load_texture(Graphics &gfx, char *file_name);
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3);
+int load_texture(Graphics &gfx, char *file_name, bool clamp);
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp);
 
 #define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
 

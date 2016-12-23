@@ -52,7 +52,7 @@ public:
 	void DeselectTexture(int level);
 	int CreateCubeMap();
 	void SelectCubemap(int texObject);
-	int LoadTexture(int width, int height, int components, int format, void *bytes);
+	int LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp);
 	void DeleteTexture(int handle);
 
 	void SelectShader(int program);

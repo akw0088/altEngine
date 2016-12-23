@@ -4,11 +4,14 @@
 #define new DEBUG_NEW
 #endif
 
+#include <algorithm>
+
 Bsp::Bsp()
 {
 	loaded = false;
 	textures_loaded = false;
 	memset(map_name, 0, 80);
+	sky_face = -1;
 }
 
 
@@ -662,23 +665,56 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 		}
 	}
 
-
-
-
 	return false;
 }
+
+/*
+void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list)
+{
+	float time = tick_num / TICK_RATE;
+
+	if (sky_face == -1)
+		return;
+
+	gfx.SelectVertexBuffer(Model::cube_vertex);
+	gfx.SelectIndexBuffer(Model::cube_index);
+
+
+	if (textures_loaded)
+	{
+		static vec2 scroll(0.0f, 0.0f);
+		for (int i = 0; i < MAX_TEXTURES; i++)
+		{
+			int surface_index = tex_object[data.Face[sky_face].material].index;
+
+			if (surface_list[surface_index]->stage[i].tcmod_rotate)
+			{
+				mlight2.tcmod_rotate(surface_list[surface_index]->stage[i].tcmod_rotate_value * time, i);
+			}
+			if (surface_list[surface_index]->stage[i].tcmod_scroll)
+			{
+				scroll.x += surface_list[surface_index]->stage[i].tcmod_scroll_value.x * time * 0.01f;
+				scroll.y += surface_list[surface_index]->stage[i].tcmod_scroll_value.y * time * 0.01f;
+				mlight2.tcmod_scroll(scroll, i);
+			}
+			if (surface_list[surface_index]->stage[i].tcmod_scale)
+			{
+				mlight2.tcmod_scale(surface_list[surface_index]->stage[i].tcmod_scale_value, i);
+			}
+			
+			gfx.SelectTexture(i, tex_object[data.Face[sky_face].material].texObj[i]);
+		}
+	}
+
+	gfx.DrawArrayTri(0, 0, 36, 36);
+}
+*/
+
 
 inline void Bsp::render_face(face_t *face, Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
-
-/*
-	if (data.Texture[face->textureID].contents == CONTENTS_FOG)
-	{
-		//select fog shader
-	}
-*/
 
 	if (textures_loaded)
 	{
@@ -694,11 +730,6 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 #endif
 //	gfx.SelectTexture(9, normal_object[face->material]);
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
-//	gfx.DeselectTexture(2);
-//	gfx.DeselectTexture(1);
-//	gfx.DeselectTexture(0);
-//	gfx.SelectVertexBuffer(0);
-//	gfx.SelectIndexBuffer(0);
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx)
@@ -772,6 +803,11 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 }
 
 
+bool compare(const faceinfo_t &a, const faceinfo_t &b)
+{
+	return a.name < b.name;
+}
+
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
 	int frameIndex = find_leaf(position);
@@ -779,7 +815,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
 	float time = (float)(tick_num / TICK_RATE);
-
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
@@ -790,13 +825,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		face_list.clear();
 
 		// walk bsp tree, sort leafs front to back
-		vector<int> leaf_list;
-		sort_leaf(&leaf_list, 0, position);
+//		vector<int> leaf_list;
+//		sort_leaf(&leaf_list, 0, position);
 
 		// loop through all leaves, checking if leaf visible from current leaf
-		for (unsigned int i = 0; i < leaf_list.size(); i++)
+		for (unsigned int i = 0; i < data.num_leafs; i++)
 		{
-			leaf_t *leaf = &data.Leaf[leaf_list[i]];
+			leaf_t *leaf = &data.Leaf[i];
 
 			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				continue;
@@ -826,6 +861,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
 					render.shader = true;
+					render.name = face->material;
+
+					if (surface->surfaceparm_sky)
+					{
+						render.sky = true;
+						sky_face = face_index;
+					}
 
 					for (unsigned int k = 0; k < surface->num_stage; k++)
 					{
@@ -871,8 +913,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 			}
 		}
-		leaf_list.clear();
+//		leaf_list.clear();
 	}
+
+//	std::sort(face_list.begin(), face_list.end(), compare);
+//	std::sort(blend_list.begin(), blend_list.end(), compare);
+
 
 	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
@@ -898,6 +944,20 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 			}
 		}
+
+		/*
+		if (face_list[i].sky)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
+			}
+			continue;
+		}
+		*/
 
 		if (face->type == 1 || face->type == 3)
 		{
@@ -935,7 +995,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		face_t *face = &data.Face[blend_list[i].face];
 
 
-
 		if (blend_list[i].shader)
 		{
 			for (int j = 0; j < MAX_TEXTURES; j++)
@@ -957,6 +1016,19 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			}
 		}
 
+		/*
+		if (blend_list[i].sky)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
+			}
+			continue;
+		}
+		*/
 
 		if (face->type == 1 || face->type == 3)
 		{
@@ -987,6 +1059,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		//	gfx.Depth(true);
 		gfx.Blend(false);
 	}
+
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 
@@ -1073,13 +1146,13 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char 
 
 	//printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
-	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 
 	if (tex_object == 0)
 	{
 		//printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 	}
 	if (tex_object != 0)
 	{
@@ -1114,7 +1187,6 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		return;
 	}
 
-	//First stage is NULL
 	for (unsigned int k = 0; k < surface_list[j]->num_stage && k < 4; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
@@ -1122,17 +1194,13 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
 
-//			if (strstr(texture_name, "pewter_shiney"))
-			{
-//				surface_list[j]->stage[k].blendfunc_add = true;
-			}
 			//printf("Trying texture [%s]\n", texture_name);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 		}
 		else if (surface_list[j]->stage[k].clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true);
 		}
 		else if (surface_list[j]->stage[k].anim_map)
 		{
@@ -1149,19 +1217,20 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			{
 //				printf("animmap tex %s\n", tex);
 				snprintf(texture_name, LINE_SIZE, "media/%s", tex);
-				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 				tex = strtok(NULL, " ");
 			}
-			texObj->texObj[texObj->num_tex] = texObj->texObjAnim[0];
-			texObj->anim_unit = texObj->num_tex;
+			texObj->texObj[k] = texObj->texObjAnim[0];
+			texObj->anim_unit = k;
 			texObj->num_anim = n;
 		}
 
 
-		if (tex_object != 0 && tex_object != -1)
+		if (tex_object != 0 && tex_object != -1 && surface_list[j]->stage[k].anim_map == false)
 		{
 			//printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
 			//texObj->stage = k;
+			texObj->texObj[k] = tex_object;
 			continue;
 		}
 
@@ -1176,12 +1245,13 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			continue;
 		}
 
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 		if (tex_object != 0)
 		{
 			//printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
 			//texObj->stage = k;
-			texObj->texObj[texObj->num_tex] = tex_object;
+			texObj->texObj[k] = tex_object;
+			continue;
 		}
 	}
 
@@ -1197,7 +1267,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image, false);
 #else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image);

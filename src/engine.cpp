@@ -90,7 +90,7 @@ void Engine::init(void *p1, void *p2)
 		}
 	}
 
-	no_tex = load_texture(gfx, "media/notexture.tga");
+	no_tex = load_texture(gfx, "media/notexture.tga", false);
 	Model::CreateObjects(gfx);
 	global.init(&gfx);
 

@@ -34,7 +34,7 @@ private:
 
 
 // Max lights hardware can pass through shaders, gfx card specfic
-#define MAX_LIGHTS 32
+#define MAX_LIGHTS 64
 
 class mLight2 : public Shader
 {

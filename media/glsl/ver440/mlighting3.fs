@@ -60,8 +60,6 @@ uniform float	u_tcmod_cos6;
 uniform float	u_tcmod_cos7;
 
 
-layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
-layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
 layout(binding=0) uniform sampler2D texture0;// 8 possible textures
 layout(binding=1) uniform sampler2D texture1;
@@ -71,6 +69,8 @@ layout(binding=4) uniform sampler2D texture4;
 layout(binding=5) uniform sampler2D texture5;
 layout(binding=6) uniform sampler2D texture6;
 layout(binding=7) uniform sampler2D texture7;
+layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
+layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
 
 
@@ -104,28 +104,30 @@ void main(void)
 	mat2 mRot1 = mat2( u_tcmod_cos1, -u_tcmod_sin1, u_tcmod_sin1,  u_tcmod_cos1);
 	mat2 mRot2 = mat2( u_tcmod_cos2, -u_tcmod_sin2, u_tcmod_sin2,  u_tcmod_cos2);
 	mat2 mRot3 = mat2( u_tcmod_cos3, -u_tcmod_sin3, u_tcmod_sin3,  u_tcmod_cos3);
-	mat2 mRot4 = mat2( u_tcmod_cos4, -u_tcmod_sin4, u_tcmod_sin4,  u_tcmod_cos4);
-	mat2 mRot5 = mat2( u_tcmod_cos5, -u_tcmod_sin5, u_tcmod_sin5,  u_tcmod_cos5);
-	mat2 mRot6 = mat2( u_tcmod_cos6, -u_tcmod_sin6, u_tcmod_sin6,  u_tcmod_cos6);
-	mat2 mRot7 = mat2( u_tcmod_cos7, -u_tcmod_sin7, u_tcmod_sin7,  u_tcmod_cos7);
+//	mat2 mRot4 = mat2( u_tcmod_cos4, -u_tcmod_sin4, u_tcmod_sin4,  u_tcmod_cos4);
+//	mat2 mRot5 = mat2( u_tcmod_cos5, -u_tcmod_sin5, u_tcmod_sin5,  u_tcmod_cos5);
+//	mat2 mRot6 = mat2( u_tcmod_cos6, -u_tcmod_sin6, u_tcmod_sin6,  u_tcmod_cos6);
+//	mat2 mRot7 = mat2( u_tcmod_cos7, -u_tcmod_sin7, u_tcmod_sin7,  u_tcmod_cos7);
 
-	vec4 Fragment0 = texture(texture0, u_tcmod_scale0 * (Vertex.vary_TexCoord * mRot0) + u_tcmod_scroll0);
-	vec4 Fragment1 = texture(texture1, u_tcmod_scale1 * (Vertex.vary_TexCoord * mRot1) + u_tcmod_scroll1);
-	vec4 Fragment2 = texture(texture2, u_tcmod_scale2 * (Vertex.vary_TexCoord * mRot2) + u_tcmod_scroll2);
-	vec4 Fragment3 = texture(texture3, u_tcmod_scale3 * (Vertex.vary_TexCoord * mRot3) + u_tcmod_scroll3);
-	vec4 Fragment4 = texture(texture4, u_tcmod_scale4 * (Vertex.vary_TexCoord * mRot4) + u_tcmod_scroll4);
-	vec4 Fragment5 = texture(texture5, u_tcmod_scale5 * (Vertex.vary_TexCoord * mRot5) + u_tcmod_scroll5);
-	vec4 Fragment6 = texture(texture6, u_tcmod_scale6 * (Vertex.vary_TexCoord * mRot6) + u_tcmod_scroll6);
-	vec4 Fragment7 = texture(texture7, u_tcmod_scale7 * (Vertex.vary_TexCoord * mRot7) + u_tcmod_scroll7);
+
+	vec2 bias = vec2(0.5, -0.5);
+	vec4 Fragment0 = texture(texture0, ((u_tcmod_scale0 * Vertex.vary_TexCoord - u_tcmod_scale0 * bias) * mRot0 + u_tcmod_scale0 * bias) + u_tcmod_scroll0);
+	vec4 Fragment1 = texture(texture1, ((u_tcmod_scale1 * Vertex.vary_TexCoord - u_tcmod_scale1 * bias) * mRot1 + u_tcmod_scale1 * bias) + u_tcmod_scroll1);
+	vec4 Fragment2 = texture(texture2, ((u_tcmod_scale2 * Vertex.vary_TexCoord - u_tcmod_scale2 * bias) * mRot2 + u_tcmod_scale2 * bias) + u_tcmod_scroll2);
+	vec4 Fragment3 = texture(texture3, ((u_tcmod_scale3 * Vertex.vary_TexCoord - u_tcmod_scale3 * bias) * mRot3 + u_tcmod_scale3 * bias) + u_tcmod_scroll3);
+//	vec4 Fragment4 = texture(texture4, ((u_tcmod_scale4 * Vertex.vary_TexCoord - u_tcmod_scale4 * bias) * mRot4 + u_tcmod_scale4 * bias) + u_tcmod_scroll4);
+//	vec4 Fragment5 = texture(texture5, ((u_tcmod_scale5 * Vertex.vary_TexCoord - u_tcmod_scale5 * bias) * mRot5 + u_tcmod_scale5 * bias) + u_tcmod_scroll5);
+//	vec4 Fragment6 = texture(texture6, ((u_tcmod_scale6 * Vertex.vary_TexCoord - u_tcmod_scale6 * bias) * mRot6 + u_tcmod_scale6 * bias) + u_tcmod_scroll6);
+//	vec4 Fragment7 = texture(texture7, ((u_tcmod_scale7 * Vertex.vary_TexCoord - u_tcmod_scale7 * bias) * mRot7 + u_tcmod_scale7 * bias) + u_tcmod_scroll7);
 
 	Fragment = Fragment0;
 	Fragment.xyz += Fragment1.xyz;
 	Fragment.xyz += Fragment2.xyz;
 	Fragment.xyz += Fragment3.xyz;
-	Fragment.xyz += Fragment4.xyz;
-	Fragment.xyz += Fragment5.xyz;
-	Fragment.xyz += Fragment6.xyz;
-	Fragment.xyz += Fragment7.xyz;
+//	Fragment.xyz += Fragment4.xyz;
+//	Fragment.xyz += Fragment5.xyz;
+//	Fragment.xyz += Fragment6.xyz;
+//	Fragment.xyz += Fragment7.xyz;
 
 //	Fragment = Fragment + texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
