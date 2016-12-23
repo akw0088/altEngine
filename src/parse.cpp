@@ -932,8 +932,8 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		if (match == 2)
 		{
 			stage->tcmod_scale = true;
-			stage->tcmod_scale_value.x = x;
-			stage->tcmod_scale_value.y = y;
+			stage->tcmod_scale_value.x = 1.0f / x;
+			stage->tcmod_scale_value.y = 1.0f / y;
 			return;
 		}
 

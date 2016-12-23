@@ -583,10 +583,15 @@ void Engine::render_scene(bool lights)
 	mvp = transformation * projection;
 	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
 
+
+//	mlight2.Params(projection, light_list, light_list.size(), offset);
+//	map.render_sky(gfx, mlight2, tick_num, surface_list);
+
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);
 	else
 		mlight2.Params(mvp, light_list, 0, offset);
+
 
 	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
@@ -2662,7 +2667,7 @@ void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos));
 
-	for(unsigned int i = num_dynamic; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)
 		{
