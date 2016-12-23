@@ -55,7 +55,7 @@ void Engine::init(void *p1, void *p2)
 	char hash[512];
 
 #ifdef RELEASE
-	if ( check_hash(BINARY_NAME, BINARY_HASH, hash) == false)
+	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
 	{
 		printf("Program code failed hash check!\n");
 		exit(0);
@@ -124,6 +124,11 @@ void Engine::init(void *p1, void *p2)
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
 	newlinelist("media/shaderlist.txt", shader_list, num_shader);
+	if (num_shader == 0)
+	{
+		printf("****************8Unable to load shaderlist.txt\n");
+	}
+
 	for (int i = 0; i < num_shader; i++)
 	{
 		char *shader_file = NULL;
@@ -2760,6 +2765,9 @@ void Engine::unload()
 
 void Engine::destroy()
 {
+	free((void *)shader_list[0]);
+	free((void *)hash_list[0]);
+	free((void *)pk3_list[0]);
 	q3.destroy();
 	debugf("Shutting down.\n");
 	

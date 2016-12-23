@@ -13,12 +13,12 @@
 #define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
 
 
-#if _WIN32
-	#define BINARY_NAME altEngine.exe
-	#define BINARY_HASH "fac891919c0d02efdcf76b8c300ec63f"
-else
-	#define BINARY_NAME altEngine
-	#define BINARY_HASH "fac891919c0d02efdcf76b8c300ec63f"
+#ifdef _WIN32
+	#define APP_NAME "altEngine.exe"
+	#define APP_HASH "fac891919c0d02efdcf76b8c300ec63f"
+#else
+	#define APP_NAME "altEngine"
+	#define APP_HASH "fac891919c0d02efdcf76b8c300ec63f"
 #endif
 
 

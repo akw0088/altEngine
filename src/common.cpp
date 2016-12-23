@@ -412,9 +412,9 @@ char *get_file(char *filename, int *size)
     bytes_read = (int)fread(buffer, sizeof(char), file_size, file);
     if (bytes_read != file_size)
     {
-	delete [] buffer;
-	fclose(file);
-	return 0;
+		delete [] buffer;
+		fclose(file);
+		return 0;
     }
     fclose(file);
     buffer[file_size] = '\0';
@@ -575,7 +575,7 @@ void newlinelist(char *filename, char **list, int &num)
 			list[num++] = line;
 		}
 		line = strtok(NULL, "\n");
-	}	
+	}
 }
 
 int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3)

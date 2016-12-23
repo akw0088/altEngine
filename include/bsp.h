@@ -58,12 +58,13 @@ public:
 	vector<texture_t *> anim_list;
 	texture_t	*tex_object;
 
+	vector<faceinfo_t> face_list;
+	vector<faceinfo_t> blend_list;
+
 private:
 	bsp_t		*tBsp;
 
 	vec4		*tangent;
-	vector<faceinfo_t> face_list;
-	vector<faceinfo_t> blend_list;
 
 	
 	int last_leaf;
