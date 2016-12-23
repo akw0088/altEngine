@@ -139,6 +139,11 @@ void Bsp::generate_meshes(Graphics &gfx)
 				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
 				num_meshes += 12;
 			}
+			else if (face->patchWidth == 9 && face->patchHeight == 9)
+			{
+				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
+				num_meshes += 16;
+			}
 			else if (face->patchWidth == 7 && face->patchHeight == 3)
 			{
 				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
@@ -948,6 +953,191 @@ void Bsp::generate_meshes(Graphics &gfx)
 				mesh_index++;
 
 				//second half
+				controlpoint[0] = data.Vert[face->vertex + 0 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 1 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 2 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 0 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 1 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 2 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 0 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 1 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 2 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 2 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 3 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 4 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 2 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 3 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 4 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 2 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 3 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 4 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 4 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 5 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 6 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 4 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 5 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 6 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 4 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 5 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 6 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 6 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 7 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 8 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 6 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 7 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 8 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 6 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 7 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 8 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+			}
+			else if (face->patchWidth == 9 && face->patchHeight == 9)
+			{
+				bspvertex_t controlpoint[9];
+				// 9x7 patches sharing mid points (sixteen 3x3 patches)
+				//Ordered as 9x7 matrix rowsxcolumns means add 9 between sets
+
+
+				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 4 + 0 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 5 + 0 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 6 + 0 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 4 + 1 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 5 + 1 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 6 + 1 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 4 + 2 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 5 + 2 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 6 + 2 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 6 + 0 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 7 + 0 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 8 + 0 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 6 + 1 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 7 + 1 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 8 + 1 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 6 + 2 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 7 + 2 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 8 + 2 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+
+				//second half
 				controlpoint[0] = data.Vert[face->vertex + 0 + 2 * 9];
 				controlpoint[1] = data.Vert[face->vertex + 1 + 2 * 9];
 				controlpoint[2] = data.Vert[face->vertex + 2 + 2 * 9];
@@ -961,7 +1151,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 2 + 4 * 9];
 
 
-				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].num_mesh = 16;
 				patchdata[mesh_index].facevert = face->vertex;
 				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
@@ -983,7 +1173,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 4 + 4 * 9];
 
 
-				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].num_mesh = 16;
 				patchdata[mesh_index].facevert = face->vertex;
 				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
@@ -1005,7 +1195,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 6 + 4 * 9];
 
 
-				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].num_mesh = 16;
 				patchdata[mesh_index].facevert = face->vertex;
 				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
@@ -1027,7 +1217,184 @@ void Bsp::generate_meshes(Graphics &gfx)
 				controlpoint[8] = data.Vert[face->vertex + 8 + 4 * 9];
 
 
-				patchdata[mesh_index].num_mesh = 12;
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				//second half
+				controlpoint[0] = data.Vert[face->vertex + 0 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 1 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 2 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 0 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 1 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 2 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 0 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 1 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 2 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 2 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 3 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 4 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 2 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 3 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 4 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 2 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 3 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 4 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 4 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 5 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 6 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 4 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 5 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 6 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 4 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 5 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 6 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 6 + 4 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 7 + 4 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 8 + 4 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 6 + 5 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 7 + 5 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 8 + 5 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 6 + 6 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 7 + 6 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 8 + 6 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 0 + 6 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 1 + 6 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 2 + 6 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 0 + 7 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 1 + 7 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 2 + 7 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 0 + 8 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 1 + 8 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 2 + 8 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 2 + 6 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 3 + 6 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 4 + 6 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 2 + 7 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 3 + 7 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 4 + 7 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 2 + 8 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 3 + 8 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 4 + 8 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 4 + 6 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 5 + 6 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 6 + 6 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 4 + 7 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 5 + 7 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 6 + 7 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 4 + 8 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 5 + 8 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 6 + 8 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
+				patchdata[mesh_index].facevert = face->vertex;
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
+				mesh_index++;
+
+				controlpoint[0] = data.Vert[face->vertex + 6 + 6 * 9];
+				controlpoint[1] = data.Vert[face->vertex + 7 + 6 * 9];
+				controlpoint[2] = data.Vert[face->vertex + 8 + 6 * 9];
+
+				controlpoint[3] = data.Vert[face->vertex + 6 + 7 * 9];
+				controlpoint[4] = data.Vert[face->vertex + 7 + 7 * 9];
+				controlpoint[5] = data.Vert[face->vertex + 8 + 7 * 9];
+
+				controlpoint[6] = data.Vert[face->vertex + 6 + 8 * 9];
+				controlpoint[7] = data.Vert[face->vertex + 7 + 8 * 9];
+				controlpoint[8] = data.Vert[face->vertex + 8 + 8 * 9];
+
+
+				patchdata[mesh_index].num_mesh = 16;
 				patchdata[mesh_index].facevert = face->vertex;
 				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
