@@ -102,6 +102,36 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	return true;
 }
 
+
+void get_control_points(bspvertex_t *cp, const bspvertex_t *data, int set, int width, int height)
+{
+	int x = 0;
+	int y = 0;
+
+	for (y = 0; y * 3 <= height; y += 1)
+	{
+		for (x = 0; x * 3 <= width; x += 1)
+		{
+			const bspvertex_t *box = &data[x + y * width];
+
+			cp[0] = box[x + 0 + (y + 0) * width];
+			cp[1] = box[x + 1 + (y + 0) * width];
+			cp[2] = box[x + 2 + (y + 0) * width];
+			cp[3] = box[x + 0 + (y + 1) * width];
+			cp[4] = box[x + 1 + (y + 1) * width];
+			cp[5] = box[x + 2 + (y + 1) * width];
+			cp[6] = box[x + 0 + (y + 2) * width];
+			cp[7] = box[x + 1 + (y + 2) * width];
+			cp[8] = box[x + 2 + (y + 2) * width];
+			set--;
+
+			if (set <= 0)
+				return;
+		}
+		x = 0;
+	}
+}
+
 /*
 	Loops through map data to find bezeir patches to tessellate into verticies
 	And now also creates vbos for map and meshes
@@ -202,17 +232,8 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//two 3x3 patches sharing mid points
 				//Ordered as 3x3 matrix rowsxcolumns means add 3 between sets
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 5];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 5];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 5];
 
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 5];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 5];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 5];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 5];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 5];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 5];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 2;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -223,17 +244,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 5];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 5];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 5];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 5];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 5];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 5];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 5];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 5];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 5];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 2;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -253,17 +264,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//two 3x3 patches sharing mid points
 				//Ordered as 3x3 matrix rowsxcolumns means add 3 between sets
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 7];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 7];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 7];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 7];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 7];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 7];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 7];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 7];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 7];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 3;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -274,17 +275,8 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 7];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 7];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 7];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 7];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 7];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 7];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 7];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 7];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 7];
 
 				patchdata[mesh_index].num_mesh = 3;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -295,17 +287,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 0 * 7];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 0 * 7];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 0 * 7];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 1 * 7];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 1 * 7];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 1 * 7];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 2 * 7];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 2 * 7];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 2 * 7];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 3;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -325,17 +307,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//two 3x3 patches sharing mid points
 				//Ordered as 3x3 matrix rowsxcolumns means add 3 between sets
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 3];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 3];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 3];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 3];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 3];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 3];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 3];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 3];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 3];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 3;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -346,17 +318,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 2 * 3];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 2 * 3];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 2 * 3];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 3 * 3];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 3 * 3];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 3 * 3];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 4 * 3];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 4 * 3];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 4 * 3];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 3;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -367,17 +329,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 4 * 3];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 4 * 3];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 4 * 3];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 5 * 3];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 5 * 3];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 5 * 3];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 6 * 3];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 6 * 3];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 6 * 3];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 				patchdata[mesh_index].num_mesh = 3;
 				patchdata[mesh_index].facevert = face->vertex;
@@ -398,17 +350,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				// get 9 points, keep last column, get 6 points, keep last column, get 6 points...
 				//Ordered as 9x3 matrix rowsxcolumns means add 9 between sets
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -420,17 +362,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -442,17 +374,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -464,17 +386,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 4, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -494,17 +406,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//Ordered as 5x5 matrix rowsxcolumns means add 5 between sets
 
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 5];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 5];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 5];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 5];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 5];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 5];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 5];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 5];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 5];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -516,17 +418,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 5];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 5];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 5];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 5];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 5];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 5];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 5];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 5];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 5];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -538,17 +430,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 2 * 5];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 2 * 5];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 2 * 5];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 3 * 5];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 3 * 5];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 3 * 5];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 4 * 5];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 4 * 5];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 4 * 5];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -560,17 +442,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 2 * 5];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 2 * 5];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 2 * 5];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 3 * 5];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 3 * 5];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 3 * 5];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 4 * 5];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 4 * 5];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 4 * 5];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 4, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 4;
@@ -589,17 +461,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//Ordered as 9x5 matrix rowsxcolumns means add 9 between sets, add 18 for second half
 
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -611,17 +473,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -633,17 +485,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -655,17 +497,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 4, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -679,17 +511,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 
 //second half
-				controlpoint[0] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 5, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -701,17 +523,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 6, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -723,17 +535,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 7, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -745,17 +547,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 8, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 8;
@@ -774,17 +566,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//Ordered as 9x7 matrix rowsxcolumns means add 9 between sets
 
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -796,17 +578,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -818,17 +590,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -840,17 +602,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 4, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -864,17 +616,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 
 				//second half
-				controlpoint[0] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 5, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -886,17 +628,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 6, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -908,17 +640,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 7, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -930,17 +652,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 8, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -953,17 +665,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				mesh_index++;
 
 				//second half
-				controlpoint[0] = data.Vert[face->vertex + 0 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 9, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -975,17 +677,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 10, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -997,17 +689,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 11, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -1019,17 +701,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 12, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 12;
@@ -1048,17 +720,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				//Ordered as 9x7 matrix rowsxcolumns means add 9 between sets
 
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 1, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1070,17 +732,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 2, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1092,17 +744,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 3, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1114,17 +756,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 0 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 0 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 0 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 1 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 1 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 1 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 2 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 4, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1138,17 +770,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 
 				//second half
-				controlpoint[0] = data.Vert[face->vertex + 0 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 5, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1160,17 +782,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 6, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1182,17 +794,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 7, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1204,17 +806,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 2 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 2 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 2 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 3 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 3 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 3 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 4 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 4 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 4 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 8, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1227,17 +819,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				mesh_index++;
 
 				//second half
-				controlpoint[0] = data.Vert[face->vertex + 0 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 9, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1249,17 +831,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 10, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1271,17 +843,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 11, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1293,17 +855,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 4 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 4 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 4 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 5 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 5 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 5 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 6 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 6 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 6 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 12, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1315,17 +867,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 0 + 6 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 1 + 6 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 2 + 6 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 0 + 7 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 1 + 7 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 2 + 7 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 0 + 8 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 1 + 8 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 2 + 8 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 13, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1337,17 +879,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 2 + 6 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 3 + 6 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 4 + 6 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 2 + 7 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 3 + 7 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 4 + 7 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 2 + 8 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 3 + 8 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 4 + 8 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 14, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1359,17 +891,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 4 + 6 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 5 + 6 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 6 + 6 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 4 + 7 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 5 + 7 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 6 + 7 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 4 + 8 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 5 + 8 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 6 + 8 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 15, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -1381,17 +903,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 
-				controlpoint[0] = data.Vert[face->vertex + 6 + 6 * 9];
-				controlpoint[1] = data.Vert[face->vertex + 7 + 6 * 9];
-				controlpoint[2] = data.Vert[face->vertex + 8 + 6 * 9];
-
-				controlpoint[3] = data.Vert[face->vertex + 6 + 7 * 9];
-				controlpoint[4] = data.Vert[face->vertex + 7 + 7 * 9];
-				controlpoint[5] = data.Vert[face->vertex + 8 + 7 * 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 6 + 8 * 9];
-				controlpoint[7] = data.Vert[face->vertex + 7 + 8 * 9];
-				controlpoint[8] = data.Vert[face->vertex + 8 + 8 * 9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], 16, face->patchWidth, face->patchHeight);
 
 
 				patchdata[mesh_index].num_mesh = 16;
@@ -2453,8 +1965,10 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 		tex_object[i].num_tex++;
 
+#ifdef NORMALMAP
 		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
 		normal_object[i] = load_texture(gfx, texture_name, false);
+#endif
 	}
 }
 
