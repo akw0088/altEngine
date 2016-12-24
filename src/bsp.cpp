@@ -102,15 +102,43 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	return true;
 }
 
-
+//3x7 issue?
 void get_control_points(bspvertex_t *cp, const bspvertex_t *data, int set, int width, int height)
 {
 	int x = 0;
 	int y = 0;
 
-	for (y = 0; y * 3 <= height; y += 1)
+	//Hacky fix
+	if (width == 3 && height == 7)
 	{
-		for (x = 0; x * 3 <= width; x += 1)
+		for (y = 0; y * 3 <= height; y++)
+		{
+			for (x = 0; x * 3 < width; x++)
+			{
+				const bspvertex_t *box = &data[x + y * width];
+
+				cp[0] = box[x + 0 + (y + 0) * width];
+				cp[1] = box[x + 1 + (y + 0) * width];
+				cp[2] = box[x + 2 + (y + 0) * width];
+				cp[3] = box[x + 0 + (y + 1) * width];
+				cp[4] = box[x + 1 + (y + 1) * width];
+				cp[5] = box[x + 2 + (y + 1) * width];
+				cp[6] = box[x + 0 + (y + 2) * width];
+				cp[7] = box[x + 1 + (y + 2) * width];
+				cp[8] = box[x + 2 + (y + 2) * width];
+				set--;
+
+				if (set <= 0)
+					return;
+			}
+			x = 0;
+		}
+		return;
+	}
+
+	for (y = 0; y * 3 <= height; y++)
+	{
+		for (x = 0; x * 3 <= width; x++)
 		{
 			const bspvertex_t *box = &data[x + y * width];
 
@@ -144,6 +172,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 	mesh_level = 8;
 
 	// Find number  of 3x3 patches
+	printf("quadratic_bezier_surface dimensions for %s: ", map_name);
 	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
@@ -152,8 +181,10 @@ void Bsp::generate_meshes(Graphics &gfx)
 		{
 			int num_patch = (1 + (face->patchWidth - 3) / 2) * (1 + (face->patchHeight - 3) / 2);
 			num_meshes += num_patch; // number of 3x3 meshes
+			printf("%dx%d, ", face->patchWidth, face->patchHeight);
 		}
 	}
+	printf("\n");
 
 	patchdata = new patch_t[num_meshes];
 
