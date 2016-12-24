@@ -143,7 +143,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 	num_meshes = 0;
 	mesh_level = 8;
 
-
 	// Find number  of 3x3 patches
 	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
@@ -151,59 +150,10 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 		if (face->type == 2)
 		{
-			if (face->patchWidth == 9 && face->patchHeight == 3)
-			{
-				num_meshes += 4; // number of 3x3 meshes
-			}
-			else if (face->patchWidth == 5 && face->patchHeight == 5)
-			{
-				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
-				num_meshes += 4;
-			}
-			else if (face->patchWidth == 9 && face->patchHeight == 5)
-			{
-				num_meshes += 8;
-			}
-			else if (face->patchWidth == 9 && face->patchHeight == 7)
-			{
-				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
-				num_meshes += 12;
-			}
-			else if (face->patchWidth == 9 && face->patchHeight == 9)
-			{
-				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
-				num_meshes += 16;
-			}
-			else if (face->patchWidth == 7 && face->patchHeight == 3)
-			{
-				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
-				num_meshes += 3;
-			}
-			else if (face->patchWidth == 3 && face->patchHeight == 7)
-			{
-				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
-				num_meshes += 3;
-			}
-			else if (face->patchWidth == 5 && face->patchHeight == 3)
-			{
-				printf("Generating patch %d %dx%d\n", i, face->patchWidth, face->patchHeight);
-				num_meshes += 2;
-			}
-			else if (face->patchWidth == 3 && face->patchHeight == 3)
-			{
-				num_meshes++;
-			}
-			else
-			{
-				printf("Unexpect patch width %dx%d\n", face->patchWidth, face->patchHeight);
-				//5x5
-				//3x7
-			}
+			int num_patch = (1 + (face->patchWidth - 3) / 2) * (1 + (face->patchHeight - 3) / 2);
+			num_meshes += num_patch; // number of 3x3 meshes
 		}
 	}
-
-
-
 
 	patchdata = new patch_t[num_meshes];
 
@@ -213,7 +163,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 	{
 		face_t *face = &data.Face[i];
 		bspvertex_t controlpoint[9];
-
 
 		if (face->type == 2)
 		{
@@ -231,7 +180,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 			}
-
 		}
 	}
 
