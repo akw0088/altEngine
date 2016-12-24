@@ -1949,6 +1949,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 						render.scroll[k] = surface->stage[k].tcmod_scroll_value;
 						render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
 						render.scale[k] = surface->stage[k].tcmod_scale_value;
+						render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
+						render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
+						render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
+						render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
+						render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
+						render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
 
 
 						if (surface->stage[k].blendfunc_blend ||
@@ -2014,6 +2020,41 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					mlight2.tcmod_scale(face_list[i].scale[j], j);
 				}
+				if (face_list[i].tcmod_stretch_sin[j])
+				{
+					mlight2.tcmod_stretch_sin(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_square[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_triangle[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_inverse_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
 			}
 		}
 
@@ -2073,7 +2114,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				if (blend_list[i].tcmod_rotate[j])
 				{
-					mlight2.tcmod_rotate(blend_list[i].deg[j] * tick_num / TICK_RATE, j);
+					mlight2.tcmod_rotate(blend_list[i].deg[j] * time, j);
 				}
 				if (blend_list[i].tcmod_scroll[j])
 				{
@@ -2084,6 +2125,41 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].tcmod_scale[j])
 				{
 					mlight2.tcmod_scale(blend_list[i].scale[j], j);
+				}
+				if (blend_list[i].tcmod_stretch_sin[j])
+				{
+					mlight2.tcmod_stretch_sin(	blend_list[i].stretch_value[j].x,
+												blend_list[i].stretch_value[j].y,
+												blend_list[i].stretch_value[j].z,
+												tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_square[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_triangle[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_inverse_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
 				}
 			}
 		}
@@ -2292,6 +2368,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 				tex = strtok(NULL, " ");
 			}
+
 			texObj->texObj[k] = texObj->texObjAnim[0];
 			texObj->anim_unit = k;
 			texObj->num_anim = n;

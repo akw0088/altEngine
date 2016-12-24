@@ -244,7 +244,11 @@ typedef struct
 	float tcmod_rotate_value; // deg/sec
 	bool tcmod_scale;
 	vec2 tcmod_scale_value;
-	bool tcmod_stretch;
+	bool tcmod_stretch_sin;
+	bool tcmod_stretch_sawtooth;
+	bool tcmod_stretch_inverse_sawtooth;
+	bool tcmod_stretch_square;
+	bool tcmod_stretch_triangle;
 	vec4 tcmod_stretch_value;
 	bool tcmod_scroll;
 	vec2 tcmod_scroll_value;
@@ -328,6 +332,12 @@ typedef struct
 	bool tcmod_rotate[MAX_TEXTURES];
 	bool tcmod_scroll[MAX_TEXTURES];
 	bool tcmod_scale[MAX_TEXTURES];
+	bool tcmod_stretch_sin[MAX_TEXTURES];
+	bool tcmod_stretch_square[MAX_TEXTURES];
+	bool tcmod_stretch_triangle[MAX_TEXTURES];
+	bool tcmod_stretch_sawtooth[MAX_TEXTURES];
+	bool tcmod_stretch_inverse_sawtooth[MAX_TEXTURES];
+	vec4 stretch_value[MAX_TEXTURES];
 	float deg[MAX_TEXTURES];
 	vec2 scroll[MAX_TEXTURES];
 	vec2 scale[MAX_TEXTURES];
