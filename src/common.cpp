@@ -294,15 +294,16 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 }
 
 
+
+
 // Seems to work, should probably be <= num_row though on loops
-void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, int &num_index, float level)
+void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level)
 {
 	int num_row = (int)ceil(1.0 / level);
 
 	int x = 0;
 	int y = 0;
 	int i = 0;
-
 
 	// generate all vertices
 	for (y = 0; y < num_row; y++)
@@ -312,6 +313,7 @@ void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *i
 			quadratic_bezier_surface(control, x * level, y * level, vertex[i++].position);
 		}
 	}
+	num_vertex = i;
 
 	// generate index array
 	int j = 0;

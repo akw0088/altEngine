@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+
 Bsp::Bsp()
 {
 	loaded = false;
@@ -202,8 +203,10 @@ void Bsp::generate_meshes(Graphics &gfx)
 			for (int j = 0; j < num_patch; j++)
 			{
 				get_control_points(controlpoint, &data.Vert[face->vertex], j + 1, face->patchWidth, face->patchHeight);
+
 				patchdata[mesh_index].num_mesh = num_patch;
 				patchdata[mesh_index].facevert = face->vertex;
+				//tessellate_quadratic_bezier_surface(control, patchdata[mesh_index].vertex_array, patchdata[mesh_index].index_array, patchdata[mesh_index].num_verts, patchdata[mesh_index].num_indexes, mesh_level);
 				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
 				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
@@ -664,10 +667,11 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 		/*
 		tessellate_quadratic_bezier_surface could do 3x3 rendering in one pass
 		Then we could probably put all the 3x3 patches for a mesh into a single ibo/vbo
-		gfx.DrawArrayTriStrip(0, 0,
-		patchdata[mesh_index + i].num_indexes,
-		patchdata[mesh_index + i].num_verts);
 		*/
+		//gfx.DrawArrayTri(0, 0,
+		//patchdata[mesh_index + i].num_indexes,
+		//patchdata[mesh_index + i].num_verts);
+		
 	}
 }
 
