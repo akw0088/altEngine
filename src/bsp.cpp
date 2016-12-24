@@ -170,7 +170,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 	int mesh_index = 0;
 
 	num_meshes = 0;
-	mesh_level = 8;
+	mesh_level = 16;
 
 	// Find number  of 3x3 patches
 	printf("quadratic_bezier_surface dimensions for %s: ", map_name);
@@ -206,8 +206,9 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 				patchdata[mesh_index].num_mesh = num_patch;
 				patchdata[mesh_index].facevert = face->vertex;
+
 				//tessellate_quadratic_bezier_surface(control, patchdata[mesh_index].vertex_array, patchdata[mesh_index].index_array, patchdata[mesh_index].num_verts, patchdata[mesh_index].num_indexes, mesh_level);
-				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes, data.Vert[face->vertex].texCoord0);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
 				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				delete[] patchdata[mesh_index].vertex_array;
@@ -1277,7 +1278,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	This function assumes it's given 3x3 set of control points
 	hacky fix for cylindrical patches and U patches in calling function
 */
-void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts, int **index_array, int &num_indexes)
+void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts, int **index_array, int &num_indexes, vec2 &texcoord)
 {
 	vec3 a, b;
 	int i, j;
@@ -1359,7 +1360,8 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 
 			(*vertex_array)[i * num_verts + j].color = -1;
 			(*vertex_array)[i * num_verts + j].texCoord0 = vec2((float)(i % 2), (float)(j % 2));
-			(*vertex_array)[i * num_verts + j].texCoord0 *= (1.0f/8.0f);
+			(*vertex_array)[i * num_verts + j].texCoord0.x = i * (1.0f / level) + texcoord.x;
+			(*vertex_array)[i * num_verts + j].texCoord0.y = j * (-1.0f / level) + texcoord.y;
 			(*vertex_array)[i * num_verts + j].tangent.x = a.x;
 			(*vertex_array)[i * num_verts + j].tangent.y = a.y;
 			(*vertex_array)[i * num_verts + j].tangent.z = a.z;

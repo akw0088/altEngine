@@ -11,7 +11,7 @@ class Bsp
 	inline int find_leaf(const vec3 &position);
 	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
 	inline int cluster_visible(int visCluster, int testCluster);
-	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
+	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes, vec2 &texcoord);
 	inline void render_face(face_t *face, Graphics &gfx);
 	inline void render_patch(face_t *face, Graphics &gfx);
 	inline void render_billboard(face_t *face, Graphics &gfx);
