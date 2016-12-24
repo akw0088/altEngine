@@ -1886,7 +1886,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	static int lastIndex = -1;
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
-	float time = (float)(tick_num / TICK_RATE);
+	float time = ((float)tick_num / TICK_RATE);
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
@@ -1930,7 +1930,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					bool blend = false;
 					faceinfo_t render;
 
-					memset(&render, 0, sizeof(faceinfo_t));
+					//dont memset, forces restart of scrolling shaders between pvs updates
+//					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
 					render.shader = true;
 					render.name = face->material;
@@ -1979,7 +1980,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					// Texture without a shader
 					faceinfo_t render;
 
-					memset(&render, 0, sizeof(faceinfo_t));
+//					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
 					render.shader = false;
 					
@@ -2118,6 +2119,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 				if (blend_list[i].tcmod_scroll[j])
 				{
+					// Note scrolling restarts when index changes due to pvs update
 					blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time;
 					blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time;
 					mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
