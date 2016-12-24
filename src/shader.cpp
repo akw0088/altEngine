@@ -237,8 +237,8 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(texture7, 7);
 
 // Going to treat normals and lightmaps like normal textures
-//	glUniform1i(texture_lightmap, 1);
-//	glUniform1i(texture_normalmap, 2);
+	glUniform1i(texture_lightmap, 8);
+	glUniform1i(texture_normalmap, 9);
 
 	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
 	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size

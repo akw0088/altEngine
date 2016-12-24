@@ -1804,7 +1804,9 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	if (face->lightmap != -1)
 		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
-//	gfx.SelectTexture(9, normal_object[face->material]);
+#ifdef NORMALMAP
+	gfx.SelectTexture(9, normal_object[face->material]);
+#endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 }
 
@@ -1814,6 +1816,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	int index_per_row = 2 * (mesh_level + 1);
 
 	// Find pre-generated vertex data for patch O(n)
+	// Should probably build a map for this
 	for( int i = 0; i < num_meshes; i++)
 	{
 		if (patchdata[i].facevert == face->vertex)
@@ -1840,18 +1843,24 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 #ifdef LIGHTMAP
 		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
-//		gfx.SelectTexture(9, normal_object[face->material]);
+#ifdef NORMALMAP
+		gfx.SelectTexture(9, normal_object[face->material]);
+#endif
+
+		// Rendered row by row because tessellate leaves a degenerate triangles at row ends
 		for( int row = 0; row < mesh_level; row++)
 		{
 			gfx.DrawArrayTriStrip(row * index_per_row, 0,
 				index_per_row, patchdata[mesh_index + i].num_verts);
 		}
-
-		if (face->patchWidth == 5 && i == 1)
-			break;
-
-		if (face->patchWidth == 3)
-			break;
+		
+		/*
+		tessellate_quadratic_bezier_surface could do 3x3 rendering in one pass
+		Then we could probably put all the 3x3 patches for a mesh into a single ibo/vbo
+		gfx.DrawArrayTriStrip(0, 0,
+		patchdata[mesh_index + i].num_indexes,
+		patchdata[mesh_index + i].num_verts);
+		*/
 	}
 }
 
@@ -1864,14 +1873,12 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 			gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
 		}
 	}
-//	gfx.SelectTexture(9, normal_object[face->material]);
+#ifdef NORMALMAP
+	gfx.SelectTexture(9, normal_object[face->material]);
+#endif
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
-//	gfx.SelectVertexBuffer(0);
-//	gfx.SelectIndexBuffer(0);
-//	gfx.DeselectTexture(1);
-//	gfx.DeselectTexture(0);
 }
 
 
@@ -2429,6 +2436,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
+		char texture_name[512] = { 0 };
 		
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);
 		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
@@ -2445,8 +2453,8 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 		tex_object[i].num_tex++;
 
-//		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
-//		normal_object[i] = load_texture(gfx, texture_name, pk3_list, num_pk3);
+		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
+		normal_object[i] = load_texture(gfx, texture_name, false);
 	}
 }
 
