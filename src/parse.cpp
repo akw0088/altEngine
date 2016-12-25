@@ -932,8 +932,8 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		if (match == 2)
 		{
 			stage->tcmod_scale = true;
-			stage->tcmod_scale_value.x = 1.0f / x;
-			stage->tcmod_scale_value.y = 1.0f / y;
+			stage->tcmod_scale_value.x = x;
+			stage->tcmod_scale_value.y = y;
 			return;
 		}
 
@@ -1143,7 +1143,10 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 
 
 				if (strstr(stagecmd, "{") != NULL)
+				{
+					surface->num_stage++;
 					num_stage++;
+				}
 				handle_stage(stagecmd, &(surface->stage[num_stage - 1]));
 				old_pos = i;
 				j = 0;

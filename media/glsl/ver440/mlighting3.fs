@@ -120,16 +120,18 @@ void main(void)
 //	vec4 Fragment6 = texture(texture6, ((u_tcmod_scale6 * Vertex.vary_TexCoord - u_tcmod_scale6 * bias) * mRot6 + u_tcmod_scale6 * bias) + u_tcmod_scroll6);
 //	vec4 Fragment7 = texture(texture7, ((u_tcmod_scale7 * Vertex.vary_TexCoord - u_tcmod_scale7 * bias) * mRot7 + u_tcmod_scale7 * bias) + u_tcmod_scroll7);
 
-	Fragment = Fragment0;
-	Fragment.xyz += Fragment1.xyz;
-	Fragment.xyz += Fragment2.xyz;
-	Fragment.xyz += Fragment3.xyz;
+	Fragment.a = Fragment0.a;
+	Fragment.a += (Fragment1.r + Fragment2.r + Fragment3.r) / 3.0 ;
+	Fragment.xyz += Fragment0.xyz * 0.75;
+	Fragment.xyz += Fragment1.xyz * 0.5;
+	Fragment.xyz += Fragment2.xyz * 0.5;
+	Fragment.xyz += Fragment3.xyz * 0.5;
 //	Fragment.xyz += Fragment4.xyz;
 //	Fragment.xyz += Fragment5.xyz;
 //	Fragment.xyz += Fragment6.xyz;
 //	Fragment.xyz += Fragment7.xyz;
 
-//	Fragment = Fragment + texture(texture_lightmap, Vertex.vary_LightCoord);
+//	Fragment += 2 * texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 

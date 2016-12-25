@@ -434,10 +434,10 @@ void Engine::render(double last_frametime)
 #endif
 #ifdef FORWARD
 	gfx.clear();
-	gfx.Blend(true);
+//	gfx.Blend(true);
 //	render_shadow_volumes(0); // for debugging
 	render_scene(true);
-	gfx.Blend(false);
+//	gfx.Blend(false);
 #endif
 #ifdef SHADOWVOL
 	matrix4 mvp;
