@@ -1141,7 +1141,10 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				memcpy(stagecmd, &input[old_pos + 1], i - old_pos - 1);
 				stagecmd[i - old_pos - 2] = '\0';
 
-				handle_stage(stagecmd, &(surface->stage[num_stage]));
+
+				if (strstr(stagecmd, "{") != NULL)
+					num_stage++;
+				handle_stage(stagecmd, &(surface->stage[num_stage - 1]));
 				old_pos = i;
 				j = 0;
 			}

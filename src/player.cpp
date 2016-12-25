@@ -93,8 +93,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 
 	health = 100;
 	armor = 0;
-	weapon_flags = 0;
-	current_weapon = wp_none;
+	weapon_flags = WEAPON_MACHINEGUN;
+	current_weapon = wp_machinegun;
 	ammo_rockets = 0;
 	ammo_grenades = 0;
 	ammo_slugs = 0;
@@ -109,6 +109,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 	memset(&stats, 0, sizeof(stats_t));
 	dead = false;
 
+//	weapon_machinegun.load(gfx, "media/models/weapons2/m4/m4s");
 	weapon_machinegun.load(gfx, "media/models/weapons2/machinegun/machinegun");
 	weapon_shotgun.load(gfx,	"media/models/weapons2/shotgun/shotgun");
 	weapon_grenade.load(gfx,	"media/models/weapons2/grenadel/grenade");
@@ -398,8 +399,8 @@ void Player::respawn()
 	weapon_idle_sound[0] = '\0';
 	health = 100;
 	armor = 0;
-	weapon_flags = 0;
-	current_weapon = wp_none;
+	weapon_flags = WEAPON_MACHINEGUN;
+	current_weapon = wp_machinegun;
 	ammo_rockets = 0;
 	ammo_slugs = 0;
 	ammo_shells = 0;

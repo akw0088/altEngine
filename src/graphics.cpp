@@ -559,7 +559,7 @@ void Graphics::Blend(bool flag)
 
 void Graphics::BlendFunc(char *src, char *dst)
 {
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef ERROR_CHECK
 	error_check();

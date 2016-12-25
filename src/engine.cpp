@@ -32,7 +32,7 @@ void Engine::init(void *p1, void *p2)
 	Engine::param2 = p2;
 	initialized = true;
 
-	debugf("altEngine2 Version %s\n", "1.1.0");
+	debugf("altEngine2 built %s\n", __DATE__);
 
 	identity = ident;
 	projection = ident;
@@ -434,10 +434,10 @@ void Engine::render(double last_frametime)
 #endif
 #ifdef FORWARD
 	gfx.clear();
-	//gfx.Blend(true);
+	gfx.Blend(true);
 //	render_shadow_volumes(0); // for debugging
 	render_scene(true);
-//	gfx.Blend(false);
+	gfx.Blend(false);
 #endif
 #ifdef SHADOWVOL
 	matrix4 mvp;
