@@ -1,28 +1,43 @@
 state 0 down		1 "null"
+state 0 enter		4 "null"
+
 state 1 up		0 "null"
 state 1 enter		14 "null"
 state 1 down		2 "null"
+
 state 2 up		1 "null"
 state 2 down		3 "null"
+
 state 3 up		2 "null"
 state 3 enter		3 "quit"
-state 0 enter		4 "null"
-state 4 down		5 "null"
-state 5 up		4 "null"
-state 5 down		6 "null"
-state 6 up		5 "null"
-state 6 down		17 "null"
-state 6 enter		0 "map maps/q3dm17.bsp"
-state 6 next		7 "null"
 
+
+state 4 down		5 "null"
 state 4 enter		4 "map maps/q3tourney2.bsp"
 state 4 next		7 "null"
-state 5 enter		5 "map maps/q3dm7.bsp"
+
+state 5 enter		5 "map maps/q3dm1.bsp"
+state 5 up		4 "null"
+state 5 down		6 "null"
+state 5 next		7 "null"
+
+
+state 6 up		5 "null"
+state 6 down		17 "null"
+state 6 enter		0 "map maps/q3dm7.bsp"
+state 6 next		7 "null"
+
+
 state 17 up		6 "null"
-state 17 down		17 "null"
-state 17 enter		0 "null"
+state 17 down		18 "null"
+state 17 enter		0 "map maps/q3dm17.bsp"
+state 17 next		7 "null"
 
 
+state 18 up		17 "null"
+state 18 down		18 "null"
+state 18 enter		0 "null"
+state 18 next		7 "null"
 
 state 7 entities	8 "null"
 state 8 textures	9 "null"
@@ -62,6 +77,7 @@ state 14 load		7 "null"
 state 15 load		7 "null"
 state 16 load		7 "null"
 state 17 load		7 "null"
+state 18 load		7 "null"
 
 state 1 unload		7 "null"
 state 2 unload		7 "null"
@@ -80,3 +96,4 @@ state 14 unload		0 "null"
 state 15 unload		0 "null"
 state 16 unload		0 "null"
 state 17 unload		0 "null"
+state 18 unload		0 "null"
