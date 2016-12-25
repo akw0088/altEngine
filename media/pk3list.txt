@@ -7,6 +7,8 @@ media/pak3.pk3
 media/pak2.pk3
 media/pak1.pk3
 media/pak0.pk3
-//media/q3f2_pak0.pk3
-//media/zpak000_assets.pk3
-
+media/q3f2_pak0.pk3
+media/zpak000_assets.pk3
+media/teamarenafull.pk3
+media/teamarenademo.pk3
+media/rtcwdemo.pk3
