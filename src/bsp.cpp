@@ -103,43 +103,18 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	return true;
 }
 
-//3x7 issue?
 void get_control_points(bspvertex_t *cp, const bspvertex_t *data, int set, int width, int height)
 {
 	int x = 0;
 	int y = 0;
 
-	//Hacky fix
-	if (width == 3 && height == 7)
+	int x_shift = (1 + (width - 3) / 2);
+	int y_shift = (1 + (height - 3) / 2);
+
+
+	for (y = 0; y < y_shift; y++)
 	{
-		for (y = 0; y * 3 <= height; y++)
-		{
-			for (x = 0; x * 3 < width; x++)
-			{
-				const bspvertex_t *box = &data[x + y * width];
-
-				cp[0] = box[x + 0 + (y + 0) * width];
-				cp[1] = box[x + 1 + (y + 0) * width];
-				cp[2] = box[x + 2 + (y + 0) * width];
-				cp[3] = box[x + 0 + (y + 1) * width];
-				cp[4] = box[x + 1 + (y + 1) * width];
-				cp[5] = box[x + 2 + (y + 1) * width];
-				cp[6] = box[x + 0 + (y + 2) * width];
-				cp[7] = box[x + 1 + (y + 2) * width];
-				cp[8] = box[x + 2 + (y + 2) * width];
-				set--;
-
-				if (set <= 0)
-					return;
-			}
-			x = 0;
-		}
-		return;
-	}
-
-	for (y = 0; y * 3 <= height; y++)
-	{
-		for (x = 0; x * 3 <= width; x++)
+		for (x = 0; x < x_shift; x += 1)
 		{
 			const bspvertex_t *box = &data[x + y * width];
 
