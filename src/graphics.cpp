@@ -166,6 +166,7 @@ void Graphics::init(void *param1, void *param2)
 		{0, sizeof(vec3) + sizeof(vec2), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 		{0, sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
+		{ 0, sizeof(vec3) + 2 * sizeof(vec2) + sizeof(vec3), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
 		D3DDECL_END()
 	};
 	device->CreateVertexDeclaration(decl, &vertex_decl);
