@@ -277,15 +277,17 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 	return;
 }
 
-
-
-void Graphics::bindFramebuffer(int fbo)
+void Graphics::bindFramebuffer(int index)
 {
+	device->SetRenderTarget(0, surface[index]);
+	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1, 0);
 	return;
 }
 
-void Graphics::DeleteFrameBuffer(unsigned int fbo)
+void Graphics::DeleteFrameBuffer(unsigned int index)
 {
+	surface[index]->Release();
+	surface.erase(surface.begin() + index);
 	return;
 }
 
@@ -296,7 +298,13 @@ int Graphics::checkFramebuffer()
 
 int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
 {
-	return 0;
+	IDirect3DSurface9* surf = NULL;
+
+	HRESULT ret = device->CreateRenderTarget(width, height,
+		D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &surf, NULL);
+
+	surface.push_back(surf);
+	return surface.size() - 1;
 }
 
 void Graphics::fbAttachTexture(int fbo)

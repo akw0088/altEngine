@@ -90,6 +90,7 @@ public:
 	vector<IDirect3DVertexBuffer9 *>	vertex_buffers;
 	vector<IDirect3DIndexBuffer9 *> index_buffers;
 	vector<IDirect3DTexture9 *> texture;
+	vector<IDirect3DSurface9 *> surface;
 	ID3DXFont *font;
 #endif
 };
