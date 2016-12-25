@@ -616,6 +616,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
+#ifndef DIRECTX
 	if (components == 4)
 	{
 		format = GL_RGBA;
@@ -638,6 +639,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		free((void *)data);
 		return 0;
 	}
+#endif
 
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	stbi_image_free(bytes);
@@ -674,7 +676,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp)
 
 	//tex_object[face->material].texObj[0]
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
-
+#ifndef DIRECTX
 	if (components == 4)
 	{
 		format = GL_RGBA;
@@ -697,6 +699,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp)
 		free((void *)data);
 		return 0;
 	}
+#endif
 
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	stbi_image_free(bytes);
@@ -730,4 +733,19 @@ bool check_hash(char *filename, char *md5match, char *hash)
 		return true;
 	else
 		return false;
+}
+
+byte *tga_24to32(int width, int height, byte *pBits)
+{
+	int lImageSize = width * height * 4;
+	byte *pNewBits = new byte[lImageSize * sizeof(byte)];
+
+	for (int i = 0, j = 0; i < lImageSize; i += 4)
+	{
+		pNewBits[i] = pBits[j++];
+		pNewBits[i + 1] = pBits[j++];
+		pNewBits[i + 2] = pBits[j++];
+		pNewBits[i + 3] = 0;
+	}
+	return pNewBits;
 }

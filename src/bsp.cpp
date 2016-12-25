@@ -1168,6 +1168,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			texObj->texObj[k] = texObj->texObjAnim[0];
 			texObj->anim_unit = k;
 			texObj->num_anim = n;
+			continue;
 		}
 
 
@@ -1215,7 +1216,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image, false);
 #else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);
 		delete [] pBits;
 #endif
 	}

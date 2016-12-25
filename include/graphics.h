@@ -107,6 +107,7 @@ public:
 protected:
 	const char	*vertex_src, *geometry_src, *fragment_src;
 #ifdef DIRECTX
+	Graphics *gfx;
 	IDirect3DVertexShader9		*vertex_shader;
 	IDirect3DPixelShader9		*pixel_shader;
 //	IDirect3DGeometryShader9	*geometry_shader;

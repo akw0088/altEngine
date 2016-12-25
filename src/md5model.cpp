@@ -127,9 +127,10 @@ void MD5Model::load_textures(Graphics &gfx)
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
 		//		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 
+#ifndef DIRECTX
 		format = GL_RGBA;
 		components = GL_RGBA8;
-
+#endif
 		if (bytes == NULL)
 		{
 			debugf("Unable to load texture %s\n", file);
@@ -141,9 +142,10 @@ void MD5Model::load_textures(Graphics &gfx)
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
 //		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
+#ifndef DIRECTX
 		format = GL_RGBA;
 		components = GL_RGBA8;
-
+#endif
 		if (bytes == NULL)
 		{
 			debugf("Unable to load texture %s\n", file);

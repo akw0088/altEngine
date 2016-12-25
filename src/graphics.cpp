@@ -45,6 +45,7 @@ void Graphics::DepthFunc(char *op)
 
 bool Graphics::error_check()
 {
+	return false;
 }
 
 void Graphics::Blend(bool flag)
@@ -243,8 +244,76 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 		device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
 	else if (primitive == PRIM_POINTS)
 		device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
-
 }
+
+void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, start_vertex, 0, num_verts, start_index, num_index / 3);
+}
+
+void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, start_vertex, 0, num_verts, start_index, num_index - 2);
+}
+
+void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
+}
+
+void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
+}
+
+
+void Graphics::CreateVertexArrayObject(unsigned int &vao)
+{
+	return;
+}
+
+void Graphics::SelectVertexArrayObject(unsigned int vao)
+{
+	return;
+}
+
+
+
+void Graphics::bindFramebuffer(int fbo)
+{
+	return;
+}
+
+void Graphics::DeleteFrameBuffer(unsigned int fbo)
+{
+	return;
+}
+
+int Graphics::checkFramebuffer()
+{
+	return 0;
+}
+
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
+{
+	return 0;
+}
+
+void Graphics::fbAttachTexture(int fbo)
+{
+	return;
+}
+
+void Graphics::fbAttachDepth(int fbo)
+{
+	return;
+}
+
+void Graphics::GetDebugLog(void)
+{
+	return;
+}
+
 
 int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 {
@@ -290,7 +359,7 @@ void Graphics::DeselectTexture(int level)
 	device->SetTexture(level, NULL);
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
 {
 	IDirect3DTexture9	**d3d9_buffer = new IDirect3DTexture9 *;
 	D3DLOCKED_RECT		rect;
@@ -351,7 +420,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	if (vertex_file)
 	{
 		LPD3DXBUFFER vertex_binary;
-		vertex_src = (char *)get_file(vertex_file);
+		vertex_src = (char *)get_file(vertex_file, NULL);
 		if (vertex_src == NULL)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n", vertex_file);
@@ -388,7 +457,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	if (fragment_file)
 	{
 		LPD3DXBUFFER pixel_binary;
-		fragment_src = (char *)get_file(fragment_file);
+		fragment_src = (char *)get_file(fragment_file, NULL);
 		if (fragment_src == NULL)
 		{
 			fprintf(fLog, "Unable to load fragment shader %s\n", fragment_file);

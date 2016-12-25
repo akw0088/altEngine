@@ -836,12 +836,6 @@ void Engine::render_shadow_volumes(int current_light)
 				camera_frame.set(transformation);
 			}
 
-			glMatrixMode(GL_PROJECTION_MATRIX);
-			glLoadMatrixf(projection.m);
-			glMatrixMode(GL_MODELVIEW_MATRIX);
-			glLoadMatrixf(transformation.m);
-
-
 			mvp = transformation * projection;
 			global.Select();
 			global.Params(mvp, 0);

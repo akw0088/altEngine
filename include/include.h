@@ -39,7 +39,7 @@
 	typedef int socklen_t;
 
 
-//#define DIRECTX
+#define DIRECTX
 
 #define SHADOWMAPS
 

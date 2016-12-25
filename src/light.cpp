@@ -21,7 +21,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 
 void Light::generate_cubemaps(int width, int height)
 {
-
+#ifndef DIRECTX
 	for (int i = 0; i < 6; i++)
 	{
 		glGenTextures(1, &quad_tex[i]);
@@ -45,7 +45,7 @@ void Light::generate_cubemaps(int width, int height)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 //		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
 	}
-
+#endif
 }
 
 void Light::select_shadowmap(Graphics &gfx, int face)

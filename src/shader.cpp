@@ -289,6 +289,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
 {
+#ifndef DIRECTX
 	switch (index)
 	{
 	case 0:
@@ -316,10 +317,12 @@ void mLight2::tcmod_scroll(vec2 &scroll, int index)
 		glUniform2fv(u_tcmod_scroll7, 1, (float *)&scroll);
 		break;
 	}
+#endif
 }
 
 void mLight2::tcmod_scale(vec2 &scale, int index)
 {
+#ifndef DIRECTX
 	switch (index)
 	{
 	case 0:
@@ -347,10 +350,13 @@ void mLight2::tcmod_scale(vec2 &scale, int index)
 		glUniform2fv(u_tcmod_scale7, 1, (float *)&scale);
 		break;
 	}
+#endif
 }
 
 void mLight2::tcmod_rotate(float deg, int index)
 {
+#ifndef DIRECTX
+
 	//convert to radians
 	deg = (float)(MY_PI * deg / 180.0f);
 	
@@ -391,8 +397,8 @@ void mLight2::tcmod_rotate(float deg, int index)
 		glUniform1fv(u_tcmod_sin7, 1, &sinval);
 		glUniform1fv(u_tcmod_cos7, 1, &cosval);
 		break;
-	
 	}
+#endif
 }
 
 void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index)
@@ -474,10 +480,10 @@ void mLightDepth::prelink()
 void mLightDepth::Params(matrix4 &mvp)
 {
 #ifdef DIRECTX
-	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
-	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
-	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
+//	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+//	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
+//	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
+//	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 #endif
@@ -654,6 +660,8 @@ void mLight3::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 int ShadowMap::init(Graphics *gfx)
 {
+#ifndef DIRECTX
+
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/shadow.vs", NULL, "media/glsl/ver410/shadow.fs"))
 	{
@@ -672,7 +680,7 @@ int ShadowMap::init(Graphics *gfx)
 	shadowmatrix = glGetUniformLocation(program_handle, "shadowmvp");
 	shadowmap = glGetUniformLocation(program_handle, "ShadowMap");
 	u_color = glGetUniformLocation(program_handle, "color");
-
+#endif
 	return 0;
 }
 
@@ -692,10 +700,10 @@ void ShadowMap::prelink()
 void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp)
 {
 #ifdef DIRECTX
-	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
-	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
-	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
+//	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+//	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
+//	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
+//	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniformMatrix4fv(shadowmatrix, 1, GL_FALSE, shadowmvp.m);
