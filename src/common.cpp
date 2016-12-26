@@ -339,13 +339,13 @@ void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *
 		vec3 b = vertex[index[i + 2]].position - vertex[index[i + 0]].position;
 		vec3 normal = vec3::crossproduct(a, b);
 
-//		vertex[index[i + 0]].normal = normal;
-//		vertex[index[i + 1]].normal = normal;
-//		vertex[index[i + 2]].normal = normal;
+		vertex[index[i + 0]].normal = normal;
+		vertex[index[i + 1]].normal = normal;
+		vertex[index[i + 2]].normal = normal;
 
-//		vertex[index[i + 3]].normal = normal;
-//		vertex[index[i + 4]].normal = normal;
-//		vertex[index[i + 5]].normal = normal;
+		vertex[index[i + 3]].normal = normal;
+		vertex[index[i + 4]].normal = normal;
+		vertex[index[i + 5]].normal = normal;
 
 		j++;
 		i += 6;
