@@ -16,6 +16,17 @@ void Graphics::resize(int width, int height)
 		height = 1;
 #ifndef DIRECTX
 	glViewport(0, 0, width, height);
+#else
+	D3DVIEWPORT9 viewport;
+
+	viewport.Width = width;
+	viewport.Height = height;
+	HRESULT ret = device->SetViewport(&viewport);
+	if (ret != D3D_OK)
+	{
+		printf("resize error!!!\n");
+	}
+
 #endif
 }
 
@@ -281,7 +292,7 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 void Graphics::bindFramebuffer(int index)
 {
 	device->SetRenderTarget(0, surface[index]);
-	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1, 0);
+	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1, 0);
 	return;
 }
 

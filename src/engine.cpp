@@ -60,7 +60,6 @@ void Engine::init(void *p1, void *p2)
 		printf("Program code failed hash check!\n");
 		exit(0);
 	}
-#endif
 
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
@@ -89,6 +88,7 @@ void Engine::init(void *p1, void *p2)
 			printf("Good!\n");
 		}
 	}
+#endif
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false);
 	Model::CreateObjects(gfx);
@@ -146,10 +146,12 @@ void Engine::init(void *p1, void *p2)
 
 	printf("Done\n");
 
+#ifndef DIRECTX
 	//render menu again for linux
 	gfx.resize(xres,yres);
 	menu.render(global);
 	gfx.swap();
+#endif
 
 //	shadowmap.init(&gfx);
 }
