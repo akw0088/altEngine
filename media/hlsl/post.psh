@@ -1,19 +1,22 @@
 struct attr_t
 {
-	float4 position		: POSITION;
-	float4 color		: COLOR0; 
+	float3 position		: POSITION;
 	float2 texCoord0	: TEXCOORD0;
 	float2 texCoord1	: TEXCOORD1;
+	float3 normal		: NORMAL;
+	int color		: COLOR;
+	float4 tangent		: TANGENT;
 };
 
 struct vary_t
 {
-	float4 position		: POSITION;
-	float4 color		: COLOR0;
-	float2 texCoord0	: TEXCOORD0;
-	float2 texCoord1	: TEXCOORD1;
+	float4 position			: POSITION;
+	float2 texCoord0		: TEXCOORD0;
+	float2 texCoord1		: TEXCOORD1;
+	float3 normal			: NORMAL;
+	int color			: COLOR;
+	float4 tangent			: TANGENT;
 };
-
 uniform sampler tex0;
 uniform float2 tc_offset[9];
 
@@ -22,10 +25,16 @@ float4 main( in vary_t vary ) : COLOR0
 	float4 Fragment;
 	float4 sample[9];
 
-	for (int i = 0; i < 9; i++)
-	{
-		sample[i] = tex2D(tex0, vary.texCoord0 + tc_offset[i]);
-	}
+	sample[0] = tex2D(tex0, vary.texCoord0 + tc_offset[0]);
+	sample[1] = tex2D(tex0, vary.texCoord0 + tc_offset[1]);
+	sample[2] = tex2D(tex0, vary.texCoord0 + tc_offset[2]);
+	sample[3] = tex2D(tex0, vary.texCoord0 + tc_offset[3]);
+	sample[4] = tex2D(tex0, vary.texCoord0 + tc_offset[4]);
+	sample[5] = tex2D(tex0, vary.texCoord0 + tc_offset[5]);
+	sample[6] = tex2D(tex0, vary.texCoord0 + tc_offset[6]);
+	sample[7] = tex2D(tex0, vary.texCoord0 + tc_offset[7]);
+	sample[8] = tex2D(tex0, vary.texCoord0 + tc_offset[8]);
+
 
 	Fragment =  (sample[4] * 8.0) - 
 		(sample[0] + sample[1] + sample[2] + 

@@ -52,9 +52,10 @@ void Engine::init(void *p1, void *p2)
 		exit(0);
 	}
 
-	char hash[512];
 
 #ifdef RELEASE
+	char hash[32];
+
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
 	{
 		printf("Program code failed hash check!\n");
@@ -249,6 +250,7 @@ void Engine::load(char *level)
 
 	// This renders map before loading textures
 	camera_frame.set(transformation);
+//	projection.convert_d3d(gfx.width, gfx.height);
 	matrix4 mvp = transformation * projection;
 
 	spatial_testing();
@@ -256,6 +258,7 @@ void Engine::load(char *level)
 	global.Select();
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
+	map.load_textures(gfx, surface_list, pk3_list, num_pk3);
 
 	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	camera_frame.set(transformation);
@@ -264,6 +267,8 @@ void Engine::load(char *level)
 	menu.delta("textures", *this);
 	menu.render(global);
 	gfx.swap();
+	//for (int i = 0;; i++);
+
 	map.load_textures(gfx, surface_list, pk3_list, num_pk3);
 	menu.delta("loaded", *this);
 	menu.stop();
@@ -2252,6 +2257,7 @@ void Engine::resize(int width, int height)
 
 
 	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
+//	projection.convert_d3d(width, height);
 
 #ifndef __linux__
 	// This should probably be in render

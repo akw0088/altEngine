@@ -153,7 +153,7 @@ void Graphics::init(void *param1, void *param2)
 
 	// Render States
     device->SetRenderState(D3DRS_ZENABLE, TRUE);
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); // d3d and opengl will have opposite winding
 	device->SetRenderState(D3DRS_LIGHTING, FALSE);
 //	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -170,6 +170,7 @@ void Graphics::init(void *param1, void *param2)
 	D3DXCreateFont( device, 8, 0, FW_THIN, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "System", &font );
 
+
 	D3DVERTEXELEMENT9 decl[] =
 	{
 		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -177,10 +178,10 @@ void Graphics::init(void *param1, void *param2)
 		{0, sizeof(vec3) + sizeof(vec2), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 		{0, sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
-		{ 0, sizeof(vec3) + 2 * sizeof(vec2) + sizeof(vec3), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2) + sizeof(int), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
 		D3DDECL_END()
 	};
-	device->CreateVertexDeclaration(decl, &vertex_decl);
+	ret = device->CreateVertexDeclaration(decl, &vertex_decl);
 }
 
 void Graphics::DrawText(const char *str, float x, float y)
@@ -219,9 +220,10 @@ void Graphics::destroy()
 int Graphics::CreateIndexBuffer(void *index_array, int num_index)
 {
 	IDirect3DIndexBuffer9	**d3d9_buffer = new IDirect3DIndexBuffer9 *;
+	HRESULT ret;
 	void *pIndex = NULL;
 
-	device->CreateIndexBuffer(num_index * sizeof(int), 0, D3DFMT_INDEX32,  D3DPOOL_DEFAULT, d3d9_buffer, NULL);
+	ret = device->CreateIndexBuffer(num_index * sizeof(int), 0, D3DFMT_INDEX32,  D3DPOOL_DEFAULT, d3d9_buffer, NULL);
 	(*d3d9_buffer)->Lock(0, num_index * sizeof(int), &pIndex, 0);
 	memcpy(pIndex, index_array, num_index * sizeof(int));
 	(*d3d9_buffer)->Unlock();
@@ -337,10 +339,11 @@ void Graphics::GetDebugLog(void)
 
 int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 {
-	void *pVert = NULL;
 	LPDIRECT3DVERTEXBUFFER9 *d3d9_buffer = new LPDIRECT3DVERTEXBUFFER9;
+	HRESULT ret;
+	void *pVert = NULL;
 
-	device->CreateVertexBuffer(num_verts * sizeof(vertex_t), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, d3d9_buffer, NULL);
+	ret = device->CreateVertexBuffer(num_verts * sizeof(vertex_t), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, d3d9_buffer, NULL);
 	(*d3d9_buffer)->Lock(0, num_verts * sizeof(vertex_t), &pVert, 0);
 	memcpy(pVert, vertex_array, num_verts * sizeof(vertex_t));
 	(*d3d9_buffer)->Unlock();
@@ -436,6 +439,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	Shader::gfx = gfx;
 	LPD3DXBUFFER err;
 	FILE *fLog = fopen("infolog.txt", "a");
+	HRESULT ret;
 
 	if (vertex_file)
 	{
@@ -456,7 +460,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			fclose(fLog);
 			return -1;
 		}
-		gfx->device->CreateVertexShader((DWORD *)vertex_binary->GetBufferPointer(), &vertex_shader);
+		ret = gfx->device->CreateVertexShader((DWORD *)vertex_binary->GetBufferPointer(), &vertex_shader);
 		vertex_binary->Release();
 		fprintf(fLog, "Loaded vertex shader %s\n", vertex_file);
 	}
@@ -493,7 +497,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			fclose(fLog);
 			return -1;
 		}
-		gfx->device->CreatePixelShader((DWORD *)pixel_binary->GetBufferPointer(), &pixel_shader);
+		ret = gfx->device->CreatePixelShader((DWORD *)pixel_binary->GetBufferPointer(), &pixel_shader);
 		pixel_binary->Release();
 		fprintf(fLog, "Loaded fragment shader %s\n", fragment_file);
 	}

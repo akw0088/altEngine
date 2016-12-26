@@ -511,6 +511,15 @@ void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, boo
 	}
 }
 
+void matrix4::convert_d3d(int width, int height)
+{
+	m[5] *= -1.0f;
+	m[10] *= 2.0f;
+	m[12] += 0.5f / width;
+	m[13] += 0.5f / height;
+	m[14] += -0.5f;
+}
+
 void matrix4::ortho(float left, float right, float bottom, float top, float nearval, float farval)
 {
 	m[0] = 2.0f / (right - left);

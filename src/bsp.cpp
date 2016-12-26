@@ -207,11 +207,12 @@ void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int 
 {
 	for(int i = 0; i < num_vert; i++)
 	{
-		vertex_out[i].color = bsp_vertex[i].color;
-		vertex_out[i].normal = bsp_vertex[i].normal;
+
 		vertex_out[i].position = bsp_vertex[i].position;
 		vertex_out[i].texCoord0 = bsp_vertex[i].texCoord0;
 		vertex_out[i].texCoord1 = bsp_vertex[i].texCoord1;
+		vertex_out[i].normal = bsp_vertex[i].normal;
+		vertex_out[i].color = bsp_vertex[i].color;
 		vertex_out[i].tangent = tangent_in[i];
 	}
 }
@@ -1209,7 +1210,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
 {
 	textures_loaded = true;
-
+#ifdef LIGHTMAP
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
@@ -1220,6 +1221,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		delete [] pBits;
 #endif
 	}
+#endif
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{

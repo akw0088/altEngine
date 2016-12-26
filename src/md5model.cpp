@@ -130,6 +130,9 @@ void MD5Model::load_textures(Graphics &gfx)
 #ifndef DIRECTX
 		format = GL_RGBA;
 		components = GL_RGBA8;
+#else
+		format = 4;
+		components = 4;
 #endif
 		if (bytes == NULL)
 		{
