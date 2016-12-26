@@ -39,9 +39,9 @@
 	typedef int socklen_t;
 
 
-#define DIRECTX
+//#define DIRECTX
 
-#define SHADOWMAPS
+//#define SHADOWMAPS
 
 #ifdef DIRECTX
 	#include <d3d9.h>
@@ -68,7 +68,6 @@
 	#include <errno.h>
 	#ifdef __linux__
 		#include <GL/gl.h>
-		//#include <GL/glu.h> -- really not needed, gluPerspective replaced
 		#include <GL/glx.h>
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
@@ -185,7 +184,6 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 #define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
 
 
-byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, int *eFormat);
 byte *tga_24to32(int width, int height, byte *pBits);
 float abs32(float val);
 int abs32(int val);

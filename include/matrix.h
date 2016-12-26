@@ -44,7 +44,6 @@ public:
 	matrix4 transpose();
 	void perspective(float fovy, float aspect, float zNear, float zFar, bool infinite);
 	void ortho(float left, float right, float bottom, float top, float near, float far);
-	void convert_d3d(int width, int height);
 
 	// Generate matrices for point light shadow map/cubemap
 	static void mat_forward(matrix4 &mvp, vec3 &position);
