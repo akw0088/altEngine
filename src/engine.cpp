@@ -801,7 +801,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 	//render md5 as enemy
 
-	for(int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (strcmp(entity_list[i]->type, "NPC") == 0)
 		{
@@ -3784,10 +3784,10 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 		if (entity_list[i]->player && entity_list[i]->rigid)
 		{
 			float distance = FLT_MAX;
+			vec3 min = entity_list[i]->rigid->aabb[0] + entity_list[i]->position - entity_list[i]->rigid->center;
+			vec3 max = entity_list[i]->rigid->aabb[7] + entity_list[i]->position - entity_list[i]->rigid->center;
 
-			if (RayBoxSlab(origin, dir,
-				entity_list[i]->rigid->aabb[0] + entity_list[i]->position - entity_list[i]->rigid->center,
-				entity_list[i]->rigid->aabb[7] + entity_list[i]->position - entity_list[i]->rigid->center, distance))
+			if (RayBoxSlab(origin, dir, min, max, distance))
 			{
 				index_list[j++] = i;
 				num_index++;
