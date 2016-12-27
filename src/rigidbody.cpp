@@ -93,6 +93,10 @@ void RigidBody::integrate(float time)
 	}
 
 	velocity = velocity + acceleration * time;
+	if (velocity.magnitude() > MAX_VELOCITY)
+		velocity = velocity.normalize() * MAX_VELOCITY;
+
+
 	old_position = entity->position;
 	entity->position = entity->position + velocity * time * UNITS_TO_METERS;
 

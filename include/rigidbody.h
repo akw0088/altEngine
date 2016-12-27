@@ -3,6 +3,8 @@
 #ifndef RIGIDBODY_H
 #define RIGIDBODY_H
 
+#define MAX_VELOCITY 800.0f
+
 class RigidBody : public Model
 {
 public:
