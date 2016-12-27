@@ -5,7 +5,7 @@
 #endif
 #include <float.h>
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
+Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 : weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {
@@ -40,7 +40,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio)
 		"xaero"				//22
 	};
 
-	model_index = 21; // default to visor -- ranger isnt in demo files :'( 
+	model_index = model; // default to visor -- ranger isnt in demo files :'( 
 
 	strcpy(model_name, models[model_index]);
 	attack_sound[0] = '\0';

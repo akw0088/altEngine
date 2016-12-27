@@ -779,8 +779,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			if (client_list.size() && j < client_list.size() && i == client_list[j]->entity)
 				continue;
 
-
-			entity_list[i]->rigid->render(gfx);
+			if (strcmp(entity_list[i]->type, "NPC") != 0)
+				entity_list[i]->rigid->render(gfx);
 
 
 			// render func_ items (doors, moving platforms, etc)
@@ -798,25 +798,25 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	}
 
 
-	//render md5 as second to last entity
+	//render md5 as enemy
 
-	if (entity_list.size())
+	for(int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[entity_list.size() - 1]->rigid == NULL)
-			return;
-
-		mvp = trans.premultiply(entity_list[entity_list.size() - 1]->rigid->get_matrix(mvp.m)) * projection;
-		vec3 offset = entity_list[entity_list.size() - 1]->position;
-
-		if (lights)
+		if (strcmp(entity_list[i]->type, "NPC") == 0)
 		{
-			mlight2.Params(mvp, light_list, light_list.size(), offset);
+			mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+			vec3 offset = entity_list[i]->position;
+
+			if (lights)
+			{
+				mlight2.Params(mvp, light_list, light_list.size(), offset);
+			}
+			else
+			{
+				mlight2.Params(mvp, light_list, 0, offset);
+			}
+			zcc.render(gfx, tick_num >> 1);
 		}
-		else
-		{
-			mlight2.Params(mvp, light_list, 0, offset);
-		}
-		zcc.render(gfx, tick_num >> 1);
 	}
 
 }
@@ -1077,7 +1077,7 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
-	if (distance < 3 * 800.0f * 800.0f && light->entity->visible)
+	if (distance < 9 * 800.0f * 800.0f && light->entity->visible)
 	{
 		if (light->active == false)
 		{
@@ -1700,7 +1700,7 @@ void Engine::server_step()
 		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
 		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
 		entity_list[client->entity]->rigid->clone(*(q3.box->model));
-		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio);
+		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio, 21);
 		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
 		entity_list[client->entity]->player->respawn();
 
@@ -1870,7 +1870,7 @@ void Engine::client_step()
 					entity_list[spawn]->rigid->clone(*(q3.thug22->model));
 					entity_list[spawn]->rigid->step_flag = true;
 					entity_list[spawn]->position += entity_list[spawn]->rigid->center;
-					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
+					entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio, 21);
 //					entity_list[spawn]->player->respawn();
 				}
 
@@ -2495,7 +2495,7 @@ void Engine::init_camera()
 			entity_list[spawn]->rigid->clone(*(q3.thug22->model));
 			entity_list[spawn]->rigid->step_flag = true;
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
-			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio);
+			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio, 21);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
 
 			matrix4 matrix;
@@ -2877,21 +2877,21 @@ void Engine::console(char *cmd)
 		switch (tick_num % 4)
 		{
 		case 0:
-			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain25_sound);
+			ret = select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
 			break;
 		case 1:
-			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain50_sound);
+			ret = select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
 			break;
 		case 2:
-			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain75_sound);
+			ret = select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
 			break;
 		case 3:
-			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[index]->player->pain100_sound);
+			ret = select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
 			break;
 		}
 		if (ret)
 		{
-			audio.play(entity_list[spawn]->speaker->source);
+			audio.play(entity_list[index]->speaker->source);
 		}
 		else
 		{
@@ -3198,39 +3198,54 @@ void Engine::console(char *cmd)
 	{
 		unsigned int i = last_spawn;
 		bool spawned = false;
+		unsigned int index = i;
+		unsigned int player = spawn;
 
-		ret = sscanf(cmd, "respawn %s", data);
-		if (ret == 1)
+		ret = sscanf(cmd, "respawn %s %s", data, data2);
+		if (ret == 2)
 		{
-			unsigned int index = atoi(data);
+			player = atoi(data2);
+			if (player >= entity_list.size() || entity_list[player]->player == NULL)
+			{
+				debugf("respawn given invalid player index\n");
+				return;
+			}
+		}
+		else if (ret == 1)
+		{
+			index = atoi(data);
 
 			if (index >= entity_list.size())
 			{
 				debugf("respawn given invalid entity index\n");
 				return;
 			}
+			i = index;
+		}
 
+		if (ret >= 0 && index != i)
+		{
 			matrix4 matrix;
 
 			camera_frame.set(matrix);
-			entity_list[spawn]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
+			entity_list[player]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
 
 			switch (entity_list[i]->angle)
 			{
 			case 0:
-				matrix4::mat_left(matrix, entity_list[spawn]->position);
+				matrix4::mat_left(matrix, entity_list[player]->position);
 				break;
 			case 90:
-				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				matrix4::mat_forward(matrix, entity_list[player]->position);
 				break;
 			case 180:
-				matrix4::mat_right(matrix, entity_list[spawn]->position);
+				matrix4::mat_right(matrix, entity_list[player]->position);
 				break;
 			case 270:
-				matrix4::mat_backward(matrix, entity_list[spawn]->position);
+				matrix4::mat_backward(matrix, entity_list[player]->position);
 				break;
 			default:
-				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				matrix4::mat_forward(matrix, entity_list[player]->position);
 				break;
 			}
 			camera_frame.forward.x = matrix.m[8];
@@ -3238,22 +3253,21 @@ void Engine::console(char *cmd)
 			camera_frame.forward.z = matrix.m[10];
 			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 			debugf("Spawning on entity %d\n", index);
-			entity_list[spawn]->player->respawn();
-			entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+			entity_list[player]->player->respawn();
+			entity_list[player]->rigid->clone(*(q3.thug22->model));
 
-			ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->telein_sound);
+			ret = select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 			if (ret)
 			{
-				audio.play(entity_list[spawn]->speaker->source);
+				audio.play(entity_list[player]->speaker->source);
 			}
 			else
 			{
-				debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->telein_sound);
+				debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
 			}
 
 			return;
 		}
-
 
 		while (spawned == false)
 		{
@@ -3264,44 +3278,56 @@ void Engine::console(char *cmd)
 				{
 					matrix4 matrix;
 
-					camera_frame.set(matrix);
-					entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+//					camera_frame.set(matrix);
+					entity_list[player]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
 					switch (entity_list[i]->angle)
 					{
 					case 0:
-						matrix4::mat_left(matrix, entity_list[spawn]->position);
+						matrix4::mat_left(matrix, entity_list[player]->position);
 						break;
 					case 90:
-						matrix4::mat_forward(matrix, entity_list[spawn]->position);
+						matrix4::mat_forward(matrix, entity_list[player]->position);
 						break;
 					case 180:
-						matrix4::mat_right(matrix, entity_list[spawn]->position);
+						matrix4::mat_right(matrix, entity_list[player]->position);
 						break;
 					case 270:
-						matrix4::mat_backward(matrix, entity_list[spawn]->position);
+						matrix4::mat_backward(matrix, entity_list[player]->position);
 						break;
 					default:
-						matrix4::mat_forward(matrix, entity_list[spawn]->position);
+						matrix4::mat_forward(matrix, entity_list[player]->position);
 						break;
 					}
-					camera_frame.forward.x = matrix.m[8];
-					camera_frame.forward.y = matrix.m[9];
-					camera_frame.forward.z = matrix.m[10];
-					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+					entity_list[player]->model->morientation.m[0] = matrix.m[0];
+					entity_list[player]->model->morientation.m[1] = matrix.m[1];
+					entity_list[player]->model->morientation.m[2] = matrix.m[2];
+
+					entity_list[player]->model->morientation.m[3] = matrix.m[4];
+					entity_list[player]->model->morientation.m[4] = matrix.m[5];
+					entity_list[player]->model->morientation.m[5] = matrix.m[6];
+
+					entity_list[player]->model->morientation.m[6] = matrix.m[8];
+					entity_list[player]->model->morientation.m[7] = matrix.m[9];
+					entity_list[player]->model->morientation.m[8] = matrix.m[10];
+
+//					camera_frame.forward.x = matrix.m[8];
+	//				camera_frame.forward.y = matrix.m[9];
+	//				camera_frame.forward.z = matrix.m[10];
+	//				camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
-					entity_list[spawn]->player->respawn();
-					entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+					entity_list[player]->player->respawn();
+					entity_list[player]->rigid->clone(*(q3.thug22->model));
 
-					ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->telein_sound);
+					ret = select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 					if (ret)
 					{
-						audio.play(entity_list[spawn]->speaker->source);
+						audio.play(entity_list[player]->speaker->source);
 					}
 					else
 					{
-						debugf("Unable to find PCM data for %s\n", entity_list[spawn]->player->telein_sound);
+						debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
 					}
 					spawned = true;
 					break;
@@ -3749,7 +3775,9 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 		{
 			float distance = FLT_MAX;
 
-			if (RayBoxSlab(origin, dir, entity_list[i]->rigid->aabb[0], entity_list[i]->rigid->aabb[7], distance))
+			if (RayBoxSlab(origin, dir,
+				entity_list[i]->rigid->aabb[0] + entity_list[i]->position - entity_list[i]->rigid->center,
+				entity_list[i]->rigid->aabb[7] + entity_list[i]->position - entity_list[i]->rigid->center, distance))
 			{
 				index_list[j++] = i;
 				num_index++;

@@ -51,7 +51,9 @@ void Quake3::destroy()
 void Quake3::step(int frame_step)
 {
 	static int footstep_num = 0;
+	static bool once = false;
 	int spawn = engine->spawn;
+	static int enemy = -1;
 
 	if (spawn == -1)
 		return;
@@ -60,6 +62,27 @@ void Quake3::step(int frame_step)
 		return;
 
 	Entity *entity = engine->entity_list[spawn];
+
+	if (engine->server_flag == false && engine->client_flag == false && once == false)
+	{
+		once = true;
+		enemy = engine->get_player();
+		Entity *entity = engine->entity_list[enemy];
+		debugf("Adding an enemy player\n");
+		entity->rigid = new RigidBody(entity);
+		entity->model = entity->rigid;
+		entity->rigid->clone(*(thug22->model));
+		sprintf(entity->type, "NPC");
+		entity->player = new Player(entity, engine->gfx, engine->audio, 16);
+		entity->speaker->gain(5.0f);
+		sprintf(entity->player->name, "thug22");
+		entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
+		char cmd[80];
+		sprintf(cmd, "respawn %d %d", -1, enemy);
+		engine->console(cmd);
+		entity->rigid->pursue_flag = true;
+		entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
+	}
 
 
 	//player movement
@@ -88,6 +111,30 @@ void Quake3::step(int frame_step)
 				{
 					entity->rigid->move(engine->camera_frame, noinput);
 				}
+			}
+		}
+
+		if (enemy != -1)
+		{
+			if (engine->entity_list[enemy]->player->health > 0)
+			{
+				engine->entity_list[enemy]->rigid->velocity.y = 0.1;
+			}
+			else
+			{
+				engine->entity_list[enemy]->model->clone(*(box->model));
+				engine->select_wave(engine->entity_list[enemy]->speaker->source,
+					engine->entity_list[enemy]->player->death1_sound);
+				engine->audio.play(engine->entity_list[enemy]->speaker->source);
+
+				engine->entity_list[enemy]->player->respawn();
+
+				char cmd[80];
+				sprintf(cmd, "respawn -1 %d", enemy);
+				engine->console(cmd);
+
+
+//				once = false;
 			}
 		}
 	}
@@ -444,7 +491,11 @@ void Quake3::handle_railgun(Entity *entity, Player &player, Frame &camera_frame)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		debugf("Player %s hit %s with the railgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 100);
+		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, 100);
+
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
 		sprintf(cmd, "hurt %d %d", index[i], 100);
 		engine->console(cmd);
 	}
@@ -474,6 +525,8 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame)
 
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 7);
 		sprintf(cmd, "hurt %d %d", index[i], 7);
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
 		engine->console(cmd);
 	}
 
@@ -568,8 +621,8 @@ void Quake3::handle_shotgun(Player &player, Frame &camera_frame)
 {
 	vec3 forward;
 	float distance;
-	//	int index[8];
-	//	int num_index;
+	int index[8];
+	int num_index;
 
 
 	player.reload_timer = 60;
@@ -578,7 +631,26 @@ void Quake3::handle_shotgun(Player &player, Frame &camera_frame)
 
 	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
 
-	engine->map.hitscan(player.entity->position, forward, distance);
+//	engine->map.hitscan(player.entity->position, forward, distance);
+
+	player.entity->model->getForwardVector(forward);
+
+	engine->hitscan(player.entity->position, forward, index, num_index, engine->spawn);
+	for (int i = 0; i < num_index; i++)
+	{
+		char cmd[80] = { 0 };
+
+		if (engine->entity_list[index[i]]->player == NULL)
+			continue;
+
+		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 50);
+		sprintf(cmd, "hurt %d %d", index[i], 50);
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
+
+		engine->console(cmd);
+	}
+
 	//vec3 end = player.entity->position + forward * distance;
 
 
