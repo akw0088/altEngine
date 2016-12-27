@@ -48,6 +48,39 @@ void Quake3::destroy()
 	delete pineapple;
 }
 
+/*
+item_health
+item_health_large
+item_armor_shard
+item_health_mega
+item_quad
+holdable_medkit
+holdable_teleporter
+item_enviro
+item_flight
+item_haste
+item_invis
+item_regen
+
+ammo_bullets
+ammo_rockets
+ammo_slugs
+ammo_shells
+ammo_lightning
+ammo_plasma
+
+weapon_rocketlauncher
+weapon_lightning
+weapon_shotgun
+weapon_railgun
+weapon_plasma
+weapon_grenadelauncher
+item_armor_combat
+item_armor_body
+trigger_teleport
+*/
+
+
 void Quake3::step(int frame_step)
 {
 	static int footstep_num = 0;
@@ -113,7 +146,6 @@ void Quake3::step(int frame_step)
 
 		if (engine->enemy != -1)
 		{
-
 			Entity *enemy_ent = engine->entity_list[engine->enemy];
 
 			if (enemy_ent->player->health > 0)
@@ -121,17 +153,23 @@ void Quake3::step(int frame_step)
 				Frame frame;
 				float distance = (entity->position - enemy_ent->position).magnitude();
 
-				enemy_ent->rigid->move_left();
-
 				if (distance < 500.0f)
 				{
-					enemy_ent->rigid->lookat(entity);
+					enemy_ent->rigid->lookat(entity->position);
+					enemy_ent->player->bot_state = BOT_ALERT;
+				}
+				else
+				{
+					enemy_ent->rigid->lookat(-entity->position);
+					enemy_ent->player->bot_state = BOT_IDLE;
+					enemy_ent->player->bot_search_for_items(engine->entity_list, engine->enemy);
 				}
 
 				if (distance < 400.0f)
 				{
 					if (enemy_ent->player->reload_timer <= 0 && entity->player->health > -15)
 					{
+						enemy_ent->player->bot_state = BOT_ATTACK;
 						engine->zcc.select_animation(0);
 						handle_machinegun(*(enemy_ent->player), frame, engine->enemy);
 						enemy_ent->player->reload_timer = 1;
@@ -139,7 +177,10 @@ void Quake3::step(int frame_step)
 					else
 					{
 						if (entity->player->health <= -15)
+						{
+							enemy_ent->player->bot_state = BOT_IDLE;
 							engine->zcc.select_animation(1);
+						}
 						enemy_ent->player->reload_timer--;
 					}
 				}
@@ -1069,6 +1110,15 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 				sprintf(data, "color %.3f %.3f %.3f", entity->light->color.x, entity->light->color.y, entity->light->color.z);
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 			}
+		}
+
+		if (strcmp(entity->type, "NPC") == 0)
+		{
+			int line = 1;
+			vec3 red(1.0f, 0.0f, 0.0f);
+
+			sprintf(data, "Health %d", entity->player->health);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
 		}
 
 		if (strcmp(entity->type, "func_plat") == 0 || strcmp(entity->type, "func_bobbing") == 0 ||

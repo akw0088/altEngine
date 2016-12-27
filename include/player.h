@@ -15,7 +15,7 @@
 
 
 //multiple types exist because I forgot above code existed D:
-enum wp_weapon {
+typedef enum {
 	wp_none = WEAPON_NONE,
 	wp_melee = WEAPON_MELEE,
 	wp_machinegun = WEAPON_MACHINEGUN,
@@ -25,7 +25,15 @@ enum wp_weapon {
 	wp_railgun = WEAPON_RAILGUN,
 	wp_lightning = WEAPON_LIGHTNING,
 	wp_plasma = WEAPON_PLASMA
-};
+} weapon_t;
+
+typedef enum {
+	BOT_IDLE,
+	BOT_ALERT,
+	BOT_GET_ITEM,
+	BOT_ATTACK
+} bot_state_t;
+
 
 typedef struct
 {
@@ -50,6 +58,9 @@ public:
 	void render_weapon(Graphics &gfx);
 	void change_weapon_up();
 	void change_weapon_down();
+	void best_weapon();
+
+	void bot_search_for_items(vector<Entity *> &entity_list, int self);
 
 
 	int FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints);
@@ -124,6 +135,8 @@ public:
 	stats_t stats;
 	bool dead;
 	bool spawned;
+
+	bot_state_t bot_state;
 
 private:
 

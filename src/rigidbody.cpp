@@ -688,13 +688,13 @@ void RigidBody::move_down()
 	move(frame, input);
 }
 
-void RigidBody::lookat(Entity *ent)
+void RigidBody::lookat(vec3 &target)
 {
 	Frame frame;
 	vec3 right;
 
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
-	frame.forward = (entity->position - ent->position).normalize();
+	frame.forward = (entity->position - target).normalize();
 
 	right = vec3::crossproduct(frame.forward, frame.up);
 	right.normalize();

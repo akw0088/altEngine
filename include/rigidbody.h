@@ -39,7 +39,7 @@ public:
 	void move_right();
 	void move_up(); // jump
 	void move_down();
-	void lookat(Entity *ent);
+	void lookat(vec3 &target);
 
 
 	float get_volume();

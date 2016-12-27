@@ -137,6 +137,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 
 	current_light = 0;
 	current_face = 0;
+	bot_state = BOT_IDLE;
+
 }
 
 void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
@@ -615,6 +617,26 @@ void Player::change_weapon_down()
 }
 
 
+void Player::best_weapon()
+{
+	if (weapon_flags & wp_railgun && ammo_slugs > 0)
+		current_weapon = wp_railgun;
+	else if (weapon_flags & wp_rocket  && ammo_rockets > 0)
+		current_weapon = wp_rocket;
+	else if (weapon_flags & wp_plasma && ammo_plasma > 0)
+		current_weapon = wp_plasma;
+	else if (weapon_flags & wp_lightning && ammo_lightning > 0)
+		current_weapon = wp_lightning;
+	else if (weapon_flags & wp_grenade && ammo_grenades > 0)
+		current_weapon = wp_grenade;
+	else if (weapon_flags & wp_shotgun && ammo_shells > 0)
+		current_weapon = wp_shotgun;
+	else if (weapon_flags & wp_machinegun && ammo_bullets > 0)
+		current_weapon = wp_machinegun;
+
+}
+
+
 float Player::DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point)
 {
 	return vec3::crossproduct(direction, point - origin).magnitude();
@@ -641,4 +663,125 @@ int Player::FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int nu
 
 Player::~Player()
 {
+}
+
+
+void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
+{
+	best_weapon();
+
+	if (bot_state == BOT_ALERT || bot_state == BOT_ATTACK)
+		return;
+
+	bool need_health =			(health < 100);
+	bool need_armor =			(armor < 100);
+	bool need_shotgun =			((weapon_flags & wp_shotgun) == 0);
+	bool need_rocketlauncher =	((weapon_flags & wp_shotgun) == 0);
+	bool need_lightning =		((weapon_flags & wp_shotgun) == 0);
+	bool need_railgun =			((weapon_flags & wp_shotgun) == 0);
+	bool need_plasma =			((weapon_flags & wp_shotgun) == 0);
+	bool need_grenadelauncher = ((weapon_flags & wp_shotgun) == 0);
+	bool need_ammo =			(current_weapon == wp_machinegun);
+
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		if (i == self)
+			continue;
+
+		float distance = (entity_list[i]->position - entity->position).magnitude();
+
+		if (distance > 1500.0f)
+			continue;
+
+		if (strcmp(entity_list[i]->type, "item_quad") == 0)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if (strcmp(entity_list[i]->type, "item_health_mega") == 0)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if (need_health)
+		{
+			if (strcmp(entity_list[i]->type, "item_health_large") == 0)
+			{
+				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->move_forward();
+				bot_state = BOT_GET_ITEM;
+			}
+			else if (strcmp(entity_list[i]->type, "item_health_large") == 0)
+			{
+				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->move_forward();
+				bot_state = BOT_GET_ITEM;
+			}
+		}
+		else if ((strcmp(entity_list[i]->type, "weapon_rocketlauncher") == 0) && need_rocketlauncher)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if ((strcmp(entity_list[i]->type, "weapon_lightning") == 0) && need_lightning)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if ((strcmp(entity_list[i]->type, "weapon_railgun") == 0) && need_railgun)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if ((strcmp(entity_list[i]->type, "weapon_plasma") == 0) && need_plasma)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if ((strcmp(entity_list[i]->type, "weapon_grenadelauncher") == 0) && need_grenadelauncher)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if ((strcmp(entity_list[i]->type, "weapon_shotgun") == 0) && need_shotgun)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+		else if (need_armor)
+		{
+			if (strcmp(entity_list[i]->type, "item_armor_body") == 0)
+			{
+				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->move_forward();
+				bot_state = BOT_GET_ITEM;
+			}
+			else if (strcmp(entity_list[i]->type, "item_armor_combat") == 0)
+			{
+				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->move_forward();
+				bot_state = BOT_GET_ITEM;
+			}
+			else if (strcmp(entity_list[i]->type, "item_armor_shard") == 0)
+			{
+				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->move_forward();
+				bot_state = BOT_GET_ITEM;
+			}
+		}
+		else if ((strstr(entity_list[i]->type, "ammo_") != NULL) && need_ammo)
+		{
+			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+	}
 }
