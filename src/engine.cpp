@@ -781,7 +781,21 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				continue;
 
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
+			{
+				bool draw_wander_target = true;
 				entity_list[i]->rigid->render(gfx);
+				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
+
+				if (draw_wander_target)
+				{
+					mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+					mlight2.Params(mvp, light_list, light_list.size(), offset);
+					q3.ball->rigid->render(gfx);
+					entity_list[i]->position -= entity_list[i]->rigid->sphere_target;
+					mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+					mlight2.Params(mvp, light_list, light_list.size(), offset);
+				}
+			}
 
 
 			// render func_ items (doors, moving platforms, etc)
@@ -800,7 +814,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 
 	//render md5 as enemy
-
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (strcmp(entity_list[i]->type, "NPC") == 0)
@@ -996,7 +1009,7 @@ void Engine::spatial_testing()
 			{
 				if (entity_list[i]->rigid->pursue_flag == true)
 				{
-					entity_list[i]->rigid->pursue();
+					entity_list[i]->rigid->Wander(20.0f, 1.0f, 5.0f);
 				}
 				else
 				{
@@ -3787,8 +3800,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 			vec3 min = entity_list[i]->rigid->aabb[0] + entity_list[i]->position - entity_list[i]->rigid->center;
 			vec3 max = entity_list[i]->rigid->aabb[7] + entity_list[i]->position - entity_list[i]->rigid->center;
 
-			if (RayBoxSlab(origin, dir, min, max, distance))
-			{
+			if (RayBoxSlab(origin, dir, min, max, distance))			{
 				index_list[j++] = i;
 				num_index++;
 			}

@@ -28,6 +28,7 @@ public:
 	void arrive(vec3 position);
 	void pursue();
 	void evade();
+	void Wander(float radius, float distance, float jitter);
 	void set_target(Entity &target);
 
 
@@ -39,6 +40,8 @@ public:
 	bool			pursue_flag;
 	bool			step_flag;
 	Entity			*target;
+	vec3			sphere_target;
+
 	float			restitution;
 	bool			sleep;
 	bool			gravity;

@@ -16,6 +16,7 @@ RigidBody::RigidBody(Entity *entity)
 	last_water = false;
 	target = NULL;
 	mass = 10.0f;
+	sphere_target = vec3(0.0f, 0.0f, 0.0f);
 	restitution = 0.5f; // boxes should never rest
 	float height = 10.0f / UNITS_TO_METERS;
 	float width = 10.0f / UNITS_TO_METERS;
@@ -487,6 +488,32 @@ void RigidBody::set_target(Entity &ent)
 {
 	target = &ent;
 }
+
+
+void RigidBody::Wander(float radius, float distance, float jitter)
+{
+	// make random point on sphere
+	float x = ((rand() % 1000) / 1000.0f) * jitter;
+	float y = ((rand() % 1000) / 1000.0f) * jitter;
+	float z = ((rand() % 1000) / 1000.0f) * jitter;
+
+	sphere_target += vec3(x, y, z);
+	sphere_target = sphere_target.normalize() * radius;
+
+	// Move sphere infront of us
+	vec3 forward;
+
+	// Right was forward coming out of the lightning gun for some reason
+	// fix this ;)
+	getForwardVector(forward);
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 right = vec3::crossproduct(up, forward);
+	sphere_target += right * distance;
+
+	// Move towards the random point on sphere
+	seek(sphere_target + entity->position);
+}
+
 
 float RigidBody::get_volume()
 {
