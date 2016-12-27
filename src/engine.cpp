@@ -307,7 +307,7 @@ void Engine::load_md5()
 	char **animation = NULL;
 
 	animation = new char *[50];
-	animation[0] = "media/md5/chaingun_walk.md5anim";
+	animation[0] = "media/md5/chaingun_stand_fire.md5anim";
 	animation[1] = "media/md5/chaingun_idle.md5anim";
 	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
 /*

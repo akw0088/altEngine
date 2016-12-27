@@ -118,7 +118,36 @@ void Quake3::step(int frame_step)
 		{
 			if (engine->entity_list[enemy]->player->health > 0)
 			{
-				engine->entity_list[enemy]->rigid->velocity.y = 0.1;
+				Frame frame;
+				float distance = (entity->position - engine->entity_list[enemy]->position).magnitude();
+
+
+				if (distance < 500.0f)
+				{
+					frame.up = vec3(0.0f, 1.0f, 0.0f);
+					frame.forward = -(entity->position - engine->entity_list[enemy]->position).normalize();
+					frame.set(engine->entity_list[enemy]->model->morientation);
+				}
+
+				if (distance < 400.0f)
+				{
+					if (engine->entity_list[enemy]->player->reload_timer <= 0 && engine->entity_list[spawn]->player->health > -15)
+					{
+						engine->zcc.select_animation(0);
+						handle_machinegun(*(engine->entity_list[enemy]->player), frame, enemy);
+						engine->entity_list[enemy]->player->reload_timer = 1;
+					}
+					else
+					{
+						if (engine->entity_list[spawn]->player->health <= -15)
+							engine->zcc.select_animation(1);
+						engine->entity_list[enemy]->player->reload_timer--;
+					}
+				}
+				else
+				{
+					engine->zcc.select_animation(1);
+				}
 			}
 			else
 			{
@@ -501,8 +530,9 @@ void Quake3::handle_railgun(Entity *entity, Player &player, Frame &camera_frame)
 	}
 }
 
-void Quake3::handle_machinegun(Player &player, Frame &camera_frame)
+void Quake3::handle_machinegun(Player &player, Frame &camera_frame, int self)
 {
+	char cmd[80] = { 0 };
 	int index[8];
 	int num_index;
 	vec3 forward;
@@ -515,10 +545,16 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame)
 	player.ammo_bullets--;
 	player.entity->model->getForwardVector(forward);
 
-	engine->hitscan(player.entity->position, forward, index, num_index, engine->spawn);
+	if (self == 1)
+	{
+		debugf("Player %s hit %s with the machinegun for %d damage\n", engine->entity_list[self]->player->name, player.name, 7);
+		sprintf(cmd, "hurt %d %d", engine->spawn, 7);
+		engine->console(cmd);
+	}
+
+	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
-		char cmd[80] = { 0 };
 
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
@@ -530,7 +566,7 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame)
 		engine->console(cmd);
 	}
 
-	engine->map.hitscan(player.entity->position, forward, distance);
+//	engine->map.hitscan(player.entity->position, forward, distance);
 	//vec3 end = player.entity->position + forward * distance;
 
 
@@ -831,7 +867,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				handle_machinegun(player, frame);
+				handle_machinegun(player, frame, engine->spawn);
 			}
 			else
 			{
