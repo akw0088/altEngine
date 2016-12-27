@@ -51,9 +51,7 @@ void Quake3::destroy()
 void Quake3::step(int frame_step)
 {
 	static int footstep_num = 0;
-	static bool once = false;
 	int spawn = engine->spawn;
-	static int enemy = -1;
 
 	if (spawn == -1)
 		return;
@@ -63,11 +61,10 @@ void Quake3::step(int frame_step)
 
 	Entity *entity = engine->entity_list[spawn];
 
-	if (engine->server_flag == false && engine->client_flag == false && once == false)
+	if (engine->server_flag == false && engine->client_flag == false && engine->enemy == -1)
 	{
-		once = true;
-		enemy = engine->get_player();
-		Entity *entity = engine->entity_list[enemy];
+		engine->enemy = engine->get_player();
+		Entity *entity = engine->entity_list[engine->enemy];
 		debugf("Adding an enemy player\n");
 		entity->rigid = new RigidBody(entity);
 		entity->model = entity->rigid;
@@ -78,7 +75,7 @@ void Quake3::step(int frame_step)
 		sprintf(entity->player->name, "thug22");
 		entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
 		char cmd[80];
-		sprintf(cmd, "respawn %d %d", -1, enemy);
+		sprintf(cmd, "respawn %d %d", -1, engine->enemy);
 		engine->console(cmd);
 		entity->rigid->pursue_flag = true;
 		entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
@@ -114,34 +111,34 @@ void Quake3::step(int frame_step)
 			}
 		}
 
-		if (enemy != -1)
+		if (engine->enemy != -1)
 		{
-			if (engine->entity_list[enemy]->player->health > 0)
+			if (engine->entity_list[engine->enemy]->player->health > 0)
 			{
 				Frame frame;
-				float distance = (entity->position - engine->entity_list[enemy]->position).magnitude();
+				float distance = (entity->position - engine->entity_list[engine->enemy]->position).magnitude();
 
 
 				if (distance < 500.0f)
 				{
 					frame.up = vec3(0.0f, 1.0f, 0.0f);
-					frame.forward = -(entity->position - engine->entity_list[enemy]->position).normalize();
-					frame.set(engine->entity_list[enemy]->model->morientation);
+					frame.forward = -(entity->position - engine->entity_list[engine->enemy]->position).normalize();
+					frame.set(engine->entity_list[engine->enemy]->model->morientation);
 				}
 
 				if (distance < 400.0f)
 				{
-					if (engine->entity_list[enemy]->player->reload_timer <= 0 && engine->entity_list[spawn]->player->health > -15)
+					if (engine->entity_list[engine->enemy]->player->reload_timer <= 0 && engine->entity_list[spawn]->player->health > -15)
 					{
 						engine->zcc.select_animation(0);
-						handle_machinegun(*(engine->entity_list[enemy]->player), frame, enemy);
-						engine->entity_list[enemy]->player->reload_timer = 1;
+						handle_machinegun(*(engine->entity_list[engine->enemy]->player), frame, engine->enemy);
+						engine->entity_list[engine->enemy]->player->reload_timer = 1;
 					}
 					else
 					{
 						if (engine->entity_list[spawn]->player->health <= -15)
 							engine->zcc.select_animation(1);
-						engine->entity_list[enemy]->player->reload_timer--;
+						engine->entity_list[engine->enemy]->player->reload_timer--;
 					}
 				}
 				else
@@ -151,15 +148,15 @@ void Quake3::step(int frame_step)
 			}
 			else
 			{
-				engine->entity_list[enemy]->model->clone(*(box->model));
-				engine->select_wave(engine->entity_list[enemy]->speaker->source,
-					engine->entity_list[enemy]->player->death1_sound);
-				engine->audio.play(engine->entity_list[enemy]->speaker->source);
+				engine->entity_list[engine->enemy]->model->clone(*(box->model));
+				engine->select_wave(engine->entity_list[engine->enemy]->speaker->source,
+					engine->entity_list[engine->enemy]->player->death1_sound);
+				engine->audio.play(engine->entity_list[engine->enemy]->speaker->source);
 
-				engine->entity_list[enemy]->player->respawn();
+				engine->entity_list[engine->enemy]->player->respawn();
 
 				char cmd[80];
-				sprintf(cmd, "respawn -1 %d", enemy);
+				sprintf(cmd, "respawn -1 %d", engine->enemy);
 				engine->console(cmd);
 
 

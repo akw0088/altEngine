@@ -138,6 +138,7 @@ protected:
 	reliablemsg_t	reliable;
 	int		spawn;			// entity index of self
 	int		server_spawn;	// entity index of hosting player
+	int enemy;
 
 
 

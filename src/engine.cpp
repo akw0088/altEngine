@@ -18,6 +18,7 @@ Engine::Engine()
 	show_names = false;
 	show_debug = false;
 	show_hud = true;
+	enemy = -1;
 }
 
 
@@ -2726,6 +2727,8 @@ void Engine::unload()
 	if (map.loaded == false)
 		return;
 
+	enemy = -1;
+
 	menu.ingame = false;
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -3298,6 +3301,13 @@ void Engine::console(char *cmd)
 					default:
 						matrix4::mat_forward(matrix, entity_list[player]->position);
 						break;
+					}
+					if (player == spawn)
+					{
+						camera_frame.forward.x = -matrix.m[8];
+						camera_frame.forward.y = -matrix.m[9];
+						camera_frame.forward.z = -matrix.m[10];
+						camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 					}
 					entity_list[player]->model->morientation.m[0] = matrix.m[0];
 					entity_list[player]->model->morientation.m[1] = matrix.m[1];
