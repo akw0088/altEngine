@@ -294,15 +294,16 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 }
 
 
+
+
 // Seems to work, should probably be <= num_row though on loops
-void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, int &num_index, float level)
+void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level)
 {
 	int num_row = (int)ceil(1.0 / level);
 
 	int x = 0;
 	int y = 0;
 	int i = 0;
-
 
 	// generate all vertices
 	for (y = 0; y < num_row; y++)
@@ -312,6 +313,7 @@ void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *in
 			quadratic_bezier_surface(control, x * level, y * level, vertex[i++].position);
 		}
 	}
+	num_vertex = i;
 
 	// generate index array
 	int j = 0;
@@ -412,9 +414,9 @@ char *get_file(char *filename, int *size)
     bytes_read = (int)fread(buffer, sizeof(char), file_size, file);
     if (bytes_read != file_size)
     {
-	delete [] buffer;
-	fclose(file);
-	return 0;
+		delete [] buffer;
+		fclose(file);
+		return 0;
     }
     fclose(file);
     buffer[file_size] = '\0';
@@ -562,6 +564,12 @@ void newlinelist(char *filename, char **list, int &num)
 	}
 
 	char *file = get_file(filename, NULL);
+	if (file == NULL)
+	{
+		printf("Unable to open %s\n", filename);
+		return;
+	}
+
 	num = 0;
 
 	char *line = strtok(file, "\n");
@@ -575,10 +583,10 @@ void newlinelist(char *filename, char **list, int &num)
 			list[num++] = line;
 		}
 		line = strtok(NULL, "\n");
-	}	
+	}
 }
 
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3)
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp)
 {
 	int width, height, components, format;
 	int tex_object;
@@ -599,7 +607,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	if (data == NULL)
 	{
 //		debugf("Unable to load texture %s\n", file_name);
-		return load_texture(gfx, file_name);
+		return load_texture(gfx, file_name, clamp);
 	}
 	else
 	{
@@ -608,6 +616,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
+#ifndef DIRECTX
 	if (components == 4)
 	{
 		format = GL_RGBA;
@@ -630,8 +639,11 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		free((void *)data);
 		return 0;
 	}
+#else
+	format = 4;
+#endif
 
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	stbi_image_free(bytes);
 	free((void *)data);
 
@@ -646,7 +658,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 }
 
 // Need asset manager class so things arent doubly loaded
-int load_texture(Graphics &gfx, char *file_name)
+int load_texture(Graphics &gfx, char *file_name, bool clamp)
 {
 	int width, height, components, format;
 	int tex_object;
@@ -665,6 +677,7 @@ int load_texture(Graphics &gfx, char *file_name)
 	}
 
 	//tex_object[face->material].texObj[0]
+#ifndef DIRECTX
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 	if (components == 4)
@@ -689,8 +702,13 @@ int load_texture(Graphics &gfx, char *file_name)
 		free((void *)data);
 		return 0;
 	}
+#else
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 4);
+	format = 4;
+	components = 4;
+#endif
 
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes);
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	stbi_image_free(bytes);
 	free((void *)data);
 
@@ -722,4 +740,19 @@ bool check_hash(char *filename, char *md5match, char *hash)
 		return true;
 	else
 		return false;
+}
+
+byte *tga_24to32(int width, int height, byte *pBits)
+{
+	int lImageSize = width * height * 4;
+	byte *pNewBits = new byte[lImageSize * sizeof(byte)];
+
+	for (int i = 0, j = 0; i < lImageSize; i += 4)
+	{
+		pNewBits[i] = pBits[j++];
+		pNewBits[i + 1] = pBits[j++];
+		pNewBits[i + 2] = pBits[j++];
+		pNewBits[i + 3] = 0;
+	}
+	return pNewBits;
 }

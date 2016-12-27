@@ -52,7 +52,6 @@ public:
 	static void mat_left(matrix4 &mvp, vec3 &position);
 	static void mat_top(matrix4 &mvp, vec3 &position);
 	static void mat_bottom(matrix4 &mvp, vec3 &position);
-	static void mat_cube(float *cube, vec3 &position);
 
 
 	float m[16];

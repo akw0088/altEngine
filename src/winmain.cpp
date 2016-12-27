@@ -33,7 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	wndclass.cbClsExtra	= 0;
 	wndclass.cbWndExtra	= 0;
 	wndclass.hInstance	= hInstance;
-	wndclass.hIcon		= LoadIcon(hInstance, "altEngine");
+	wndclass.hIcon		= LoadIcon(hInstance, "WinMain");
 	wndclass.hCursor	= LoadCursor(NULL, IDC_ARROW);
 	wndclass.hbrBackground	= NULL;
 	wndclass.lpszMenuName	= NULL;

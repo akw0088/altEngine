@@ -4,6 +4,7 @@
 #define LINE_SIZE 512
 
 //#define LIGHTMAP
+//#define NORMALMAP
 
 #define TICK_MS		8		// 125hz
 #define TICK_RATE	125
@@ -13,12 +14,12 @@
 #define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
 
 
-#if _WIN32
-	#define BINARY_NAME altEngine.exe
-	#define BINARY_HASH "fac891919c0d02efdcf76b8c300ec63f"
-else
-	#define BINARY_NAME altEngine
-	#define BINARY_HASH "fac891919c0d02efdcf76b8c300ec63f"
+#ifdef _WIN32
+	#define APP_NAME "altEngine.exe"
+	#define APP_HASH "fac891919c0d02efdcf76b8c300ec63f"
+#else
+	#define APP_NAME "altEngine"
+	#define APP_HASH "fac891919c0d02efdcf76b8c300ec63f"
 #endif
 
 
@@ -40,7 +41,7 @@ else
 
 //#define DIRECTX
 
-#define SHADOWMAPS
+//#define SHADOWMAPS
 
 #ifdef DIRECTX
 	#include <d3d9.h>
@@ -67,7 +68,6 @@ else
 	#include <errno.h>
 	#ifdef __linux__
 		#include <GL/gl.h>
-		//#include <GL/glu.h> -- really not needed, gluPerspective replaced
 		#include <GL/glx.h>
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
@@ -178,13 +178,12 @@ using namespace std;
 #include "engine.h"
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
-int load_texture(Graphics &gfx, char *file_name);
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3);
+int load_texture(Graphics &gfx, char *file_name, bool clamp);
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp);
 
 #define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
 
 
-byte *gltLoadTGA(const char *file, int *iWidth, int *iHeight, int *iComponents, int *eFormat);
 byte *tga_24to32(int width, int height, byte *pBits);
 float abs32(float val);
 int abs32(int val);

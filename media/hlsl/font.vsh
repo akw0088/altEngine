@@ -1,18 +1,21 @@
 struct attr_t
 {
-	float4 position		: POSITION;
-	float4 color		: COLOR0; 
-	float4 Normal		: NORMAL;
+	float3 position		: POSITION;
 	float2 texCoord0	: TEXCOORD0;
 	float2 texCoord1	: TEXCOORD1;
+	float3 normal		: NORMAL;
+	int color		: COLOR;
+	float4 tangent		: TANGENT;
 };
 
 struct vary_t
 {
 	float4 position		: POSITION;
-	float4 color		: COLOR0;
 	float2 texCoord0	: TEXCOORD0;
 	float2 texCoord1	: TEXCOORD1;
+	float3 normal		: NORMAL;
+	int color		: COLOR0;
+	float4 tangent		: TANGENT;
 };
 
 uniform float	u_col;
@@ -24,8 +27,9 @@ uniform float	u_scale;
 vary_t main(in attr_t attr)
 {
 	vary_t output;
+	float4 vpos = float4(attr.position, 1.0);
 
-	output.position = attr.position * u_scale;
+	output.position = vpos * u_scale;
 	output.position.x = u_xpos;
 	output.position.y = u_ypos;
 	output.position.z = 0.0;
@@ -36,6 +40,8 @@ vary_t main(in attr_t attr)
 	output.texCoord1 = attr.texCoord0 * (16.0 / 256.0);
 	output.texCoord1.x += u_col;
 	output.texCoord1.y += u_row;
+	output.normal = attr.normal;
+	output.tangent = attr.tangent;
 	output.color = attr.color;
 	return output;
 }

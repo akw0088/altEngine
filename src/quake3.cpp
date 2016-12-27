@@ -51,7 +51,9 @@ void Quake3::destroy()
 void Quake3::step(int frame_step)
 {
 	static int footstep_num = 0;
+	static bool once = false;
 	int spawn = engine->spawn;
+	static int enemy = -1;
 
 	if (spawn == -1)
 		return;
@@ -60,6 +62,27 @@ void Quake3::step(int frame_step)
 		return;
 
 	Entity *entity = engine->entity_list[spawn];
+
+	if (engine->server_flag == false && engine->client_flag == false && once == false)
+	{
+		once = true;
+		enemy = engine->get_player();
+		Entity *entity = engine->entity_list[enemy];
+		debugf("Adding an enemy player\n");
+		entity->rigid = new RigidBody(entity);
+		entity->model = entity->rigid;
+		entity->rigid->clone(*(thug22->model));
+		sprintf(entity->type, "NPC");
+		entity->player = new Player(entity, engine->gfx, engine->audio, 16);
+		entity->speaker->gain(5.0f);
+		sprintf(entity->player->name, "thug22");
+		entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
+		char cmd[80];
+		sprintf(cmd, "respawn %d %d", -1, enemy);
+		engine->console(cmd);
+		entity->rigid->pursue_flag = true;
+		entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
+	}
 
 
 	//player movement
@@ -88,6 +111,59 @@ void Quake3::step(int frame_step)
 				{
 					entity->rigid->move(engine->camera_frame, noinput);
 				}
+			}
+		}
+
+		if (enemy != -1)
+		{
+			if (engine->entity_list[enemy]->player->health > 0)
+			{
+				Frame frame;
+				float distance = (entity->position - engine->entity_list[enemy]->position).magnitude();
+
+
+				if (distance < 500.0f)
+				{
+					frame.up = vec3(0.0f, 1.0f, 0.0f);
+					frame.forward = -(entity->position - engine->entity_list[enemy]->position).normalize();
+					frame.set(engine->entity_list[enemy]->model->morientation);
+				}
+
+				if (distance < 400.0f)
+				{
+					if (engine->entity_list[enemy]->player->reload_timer <= 0 && engine->entity_list[spawn]->player->health > -15)
+					{
+						engine->zcc.select_animation(0);
+						handle_machinegun(*(engine->entity_list[enemy]->player), frame, enemy);
+						engine->entity_list[enemy]->player->reload_timer = 1;
+					}
+					else
+					{
+						if (engine->entity_list[spawn]->player->health <= -15)
+							engine->zcc.select_animation(1);
+						engine->entity_list[enemy]->player->reload_timer--;
+					}
+				}
+				else
+				{
+					engine->zcc.select_animation(1);
+				}
+			}
+			else
+			{
+				engine->entity_list[enemy]->model->clone(*(box->model));
+				engine->select_wave(engine->entity_list[enemy]->speaker->source,
+					engine->entity_list[enemy]->player->death1_sound);
+				engine->audio.play(engine->entity_list[enemy]->speaker->source);
+
+				engine->entity_list[enemy]->player->respawn();
+
+				char cmd[80];
+				sprintf(cmd, "respawn -1 %d", enemy);
+				engine->console(cmd);
+
+
+//				once = false;
 			}
 		}
 	}
@@ -444,14 +520,19 @@ void Quake3::handle_railgun(Entity *entity, Player &player, Frame &camera_frame)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		debugf("Player %s hit %s with the railgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 100);
+		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, 100);
+
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
 		sprintf(cmd, "hurt %d %d", index[i], 100);
 		engine->console(cmd);
 	}
 }
 
-void Quake3::handle_machinegun(Player &player, Frame &camera_frame)
+void Quake3::handle_machinegun(Player &player, Frame &camera_frame, int self)
 {
+	char cmd[80] = { 0 };
 	int index[8];
 	int num_index;
 	vec3 forward;
@@ -464,20 +545,28 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame)
 	player.ammo_bullets--;
 	player.entity->model->getForwardVector(forward);
 
-	engine->hitscan(player.entity->position, forward, index, num_index, engine->spawn);
+	if (self == 1)
+	{
+		debugf("Player %s hit %s with the machinegun for %d damage\n", engine->entity_list[self]->player->name, player.name, 7);
+		sprintf(cmd, "hurt %d %d", engine->spawn, 7);
+		engine->console(cmd);
+	}
+
+	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
-		char cmd[80] = { 0 };
 
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 7);
 		sprintf(cmd, "hurt %d %d", index[i], 7);
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
 		engine->console(cmd);
 	}
 
-	engine->map.hitscan(player.entity->position, forward, distance);
+//	engine->map.hitscan(player.entity->position, forward, distance);
 	//vec3 end = player.entity->position + forward * distance;
 
 
@@ -568,8 +657,8 @@ void Quake3::handle_shotgun(Player &player, Frame &camera_frame)
 {
 	vec3 forward;
 	float distance;
-	//	int index[8];
-	//	int num_index;
+	int index[8];
+	int num_index;
 
 
 	player.reload_timer = 60;
@@ -578,7 +667,26 @@ void Quake3::handle_shotgun(Player &player, Frame &camera_frame)
 
 	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
 
-	engine->map.hitscan(player.entity->position, forward, distance);
+//	engine->map.hitscan(player.entity->position, forward, distance);
+
+	player.entity->model->getForwardVector(forward);
+
+	engine->hitscan(player.entity->position, forward, index, num_index, engine->spawn);
+	for (int i = 0; i < num_index; i++)
+	{
+		char cmd[80] = { 0 };
+
+		if (engine->entity_list[index[i]]->player == NULL)
+			continue;
+
+		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 50);
+		sprintf(cmd, "hurt %d %d", index[i], 50);
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
+
+		engine->console(cmd);
+	}
+
 	//vec3 end = player.entity->position + forward * distance;
 
 
@@ -759,7 +867,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				handle_machinegun(player, frame);
+				handle_machinegun(player, frame, engine->spawn);
 			}
 			else
 			{

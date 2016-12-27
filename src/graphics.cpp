@@ -16,6 +16,17 @@ void Graphics::resize(int width, int height)
 		height = 1;
 #ifndef DIRECTX
 	glViewport(0, 0, width, height);
+#else
+	D3DVIEWPORT9 viewport;
+
+	viewport.Width = width;
+	viewport.Height = height;
+	HRESULT ret = device->SetViewport(&viewport);
+	if (ret != D3D_OK)
+	{
+		printf("resize error!!!\n");
+	}
+
 #endif
 }
 
@@ -45,6 +56,7 @@ void Graphics::DepthFunc(char *op)
 
 bool Graphics::error_check()
 {
+	return false;
 }
 
 void Graphics::Blend(bool flag)
@@ -141,7 +153,7 @@ void Graphics::init(void *param1, void *param2)
 
 	// Render States
     device->SetRenderState(D3DRS_ZENABLE, TRUE);
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); // d3d and opengl will have opposite winding
 	device->SetRenderState(D3DRS_LIGHTING, FALSE);
 //	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -158,6 +170,7 @@ void Graphics::init(void *param1, void *param2)
 	D3DXCreateFont( device, 8, 0, FW_THIN, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "System", &font );
 
+
 	D3DVERTEXELEMENT9 decl[] =
 	{
 		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -165,9 +178,10 @@ void Graphics::init(void *param1, void *param2)
 		{0, sizeof(vec3) + sizeof(vec2), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 		{0, sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
+		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2) + sizeof(int), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
 		D3DDECL_END()
 	};
-	device->CreateVertexDeclaration(decl, &vertex_decl);
+	ret = device->CreateVertexDeclaration(decl, &vertex_decl);
 }
 
 void Graphics::DrawText(const char *str, float x, float y)
@@ -206,9 +220,10 @@ void Graphics::destroy()
 int Graphics::CreateIndexBuffer(void *index_array, int num_index)
 {
 	IDirect3DIndexBuffer9	**d3d9_buffer = new IDirect3DIndexBuffer9 *;
+	HRESULT ret;
 	void *pIndex = NULL;
 
-	device->CreateIndexBuffer(num_index * sizeof(int), 0, D3DFMT_INDEX32,  D3DPOOL_DEFAULT, d3d9_buffer, NULL);
+	ret = device->CreateIndexBuffer(num_index * sizeof(int), 0, D3DFMT_INDEX32,  D3DPOOL_DEFAULT, d3d9_buffer, NULL);
 	(*d3d9_buffer)->Lock(0, num_index * sizeof(int), &pIndex, 0);
 	memcpy(pIndex, index_array, num_index * sizeof(int));
 	(*d3d9_buffer)->Unlock();
@@ -243,15 +258,92 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 		device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
 	else if (primitive == PRIM_POINTS)
 		device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
-
 }
+
+void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, start_vertex, 0, num_verts, start_index, num_index / 3);
+}
+
+void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, start_vertex, 0, num_verts, start_index, num_index - 2);
+}
+
+void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
+}
+
+void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
+}
+
+
+void Graphics::CreateVertexArrayObject(unsigned int &vao)
+{
+	return;
+}
+
+void Graphics::SelectVertexArrayObject(unsigned int vao)
+{
+	return;
+}
+
+void Graphics::bindFramebuffer(int index)
+{
+	device->SetRenderTarget(0, surface[index]);
+	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1, 0);
+	return;
+}
+
+void Graphics::DeleteFrameBuffer(unsigned int index)
+{
+	surface[index]->Release();
+	surface.erase(surface.begin() + index);
+	return;
+}
+
+int Graphics::checkFramebuffer()
+{
+	return 0;
+}
+
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
+{
+	IDirect3DSurface9* surf = NULL;
+
+	HRESULT ret = device->CreateRenderTarget(width, height,
+		D3DFMT_X8R8G8B8, D3DMULTISAMPLE_NONE, 0, false, &surf, NULL);
+
+	surface.push_back(surf);
+	return surface.size() - 1;
+}
+
+void Graphics::fbAttachTexture(int fbo)
+{
+	return;
+}
+
+void Graphics::fbAttachDepth(int fbo)
+{
+	return;
+}
+
+void Graphics::GetDebugLog(void)
+{
+	return;
+}
+
 
 int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 {
-	void *pVert = NULL;
 	LPDIRECT3DVERTEXBUFFER9 *d3d9_buffer = new LPDIRECT3DVERTEXBUFFER9;
+	HRESULT ret;
+	void *pVert = NULL;
 
-	device->CreateVertexBuffer(num_verts * sizeof(vertex_t), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, d3d9_buffer, NULL);
+	ret = device->CreateVertexBuffer(num_verts * sizeof(vertex_t), D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, d3d9_buffer, NULL);
 	(*d3d9_buffer)->Lock(0, num_verts * sizeof(vertex_t), &pVert, 0);
 	memcpy(pVert, vertex_array, num_verts * sizeof(vertex_t));
 	(*d3d9_buffer)->Unlock();
@@ -290,7 +382,7 @@ void Graphics::DeselectTexture(int level)
 	device->SetTexture(level, NULL);
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
 {
 	IDirect3DTexture9	**d3d9_buffer = new IDirect3DTexture9 *;
 	D3DLOCKED_RECT		rect;
@@ -347,11 +439,12 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	Shader::gfx = gfx;
 	LPD3DXBUFFER err;
 	FILE *fLog = fopen("infolog.txt", "a");
+	HRESULT ret;
 
 	if (vertex_file)
 	{
 		LPD3DXBUFFER vertex_binary;
-		vertex_src = (char *)get_file(vertex_file);
+		vertex_src = (char *)get_file(vertex_file, NULL);
 		if (vertex_src == NULL)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n", vertex_file);
@@ -367,7 +460,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			fclose(fLog);
 			return -1;
 		}
-		gfx->device->CreateVertexShader((DWORD *)vertex_binary->GetBufferPointer(), &vertex_shader);
+		ret = gfx->device->CreateVertexShader((DWORD *)vertex_binary->GetBufferPointer(), &vertex_shader);
 		vertex_binary->Release();
 		fprintf(fLog, "Loaded vertex shader %s\n", vertex_file);
 	}
@@ -388,7 +481,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	if (fragment_file)
 	{
 		LPD3DXBUFFER pixel_binary;
-		fragment_src = (char *)get_file(fragment_file);
+		fragment_src = (char *)get_file(fragment_file, NULL);
 		if (fragment_src == NULL)
 		{
 			fprintf(fLog, "Unable to load fragment shader %s\n", fragment_file);
@@ -404,7 +497,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			fclose(fLog);
 			return -1;
 		}
-		gfx->device->CreatePixelShader((DWORD *)pixel_binary->GetBufferPointer(), &pixel_shader);
+		ret = gfx->device->CreatePixelShader((DWORD *)pixel_binary->GetBufferPointer(), &pixel_shader);
 		pixel_binary->Release();
 		fprintf(fLog, "Loaded fragment shader %s\n", fragment_file);
 	}
@@ -559,7 +652,7 @@ void Graphics::Blend(bool flag)
 
 void Graphics::BlendFunc(char *src, char *dst)
 {
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -824,7 +917,7 @@ int Graphics::CreateCubeMap()
 	return texObject;
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
 {
 	unsigned int texObject = -1;
 
@@ -832,6 +925,12 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	glBindTexture(GL_TEXTURE_2D, texObject);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if (clamp)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	}
+
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);
 	glGenerateMipmap(GL_TEXTURE_2D);
 

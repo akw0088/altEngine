@@ -25,7 +25,7 @@ public:
 	void handle_grenade(Entity *entity, Player &player, Frame &camera_frame);
 	void handle_lightning(Entity *entity, Player &player, Frame &camera_frame);
 	void handle_railgun(Entity *entity, Player &player, Frame &camera_frame);
-	void handle_machinegun(Player &player, Frame &camera_frame);
+	void handle_machinegun(Player &player, Frame &camera_frame, int self);
 	void handle_shotgun(Player &player, Frame &camera_frame);
 	void handle_gibs(Player &player, Frame &camera_frame);
 

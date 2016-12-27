@@ -52,7 +52,7 @@ public:
 	void DeselectTexture(int level);
 	int CreateCubeMap();
 	void SelectCubemap(int texObject);
-	int LoadTexture(int width, int height, int components, int format, void *bytes);
+	int LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp);
 	void DeleteTexture(int handle);
 
 	void SelectShader(int program);
@@ -90,6 +90,7 @@ public:
 	vector<IDirect3DVertexBuffer9 *>	vertex_buffers;
 	vector<IDirect3DIndexBuffer9 *> index_buffers;
 	vector<IDirect3DTexture9 *> texture;
+	vector<IDirect3DSurface9 *> surface;
 	ID3DXFont *font;
 #endif
 };
@@ -107,6 +108,7 @@ public:
 protected:
 	const char	*vertex_src, *geometry_src, *fragment_src;
 #ifdef DIRECTX
+	Graphics *gfx;
 	IDirect3DVertexShader9		*vertex_shader;
 	IDirect3DPixelShader9		*pixel_shader;
 //	IDirect3DGeometryShader9	*geometry_shader;

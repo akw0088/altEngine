@@ -11,13 +11,14 @@ class Bsp
 	inline int find_leaf(const vec3 &position);
 	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
 	inline int cluster_visible(int visCluster, int testCluster);
-	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes);
+	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes, vec2 &texcoord);
 	inline void render_face(face_t *face, Graphics &gfx);
 	inline void render_patch(face_t *face, Graphics &gfx);
 	inline void render_billboard(face_t *face, Graphics &gfx);
-	void draw_line_box(int *min, int *max);
-	void draw_box(int *min, int *max);
+	//void draw_line_box(int *min, int *max);
+	//void draw_box(int *min, int *max);
 public:
+//	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
 	void find_edges(vec3 &position, Edge &edge_list);
 	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
@@ -25,8 +26,6 @@ public:
 	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
-	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx);
-	//void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list);
 	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
@@ -58,12 +57,13 @@ public:
 	vector<texture_t *> anim_list;
 	texture_t	*tex_object;
 
+	vector<faceinfo_t> face_list;
+	vector<faceinfo_t> blend_list;
+
 private:
 	bsp_t		*tBsp;
 
 	vec4		*tangent;
-	vector<faceinfo_t> face_list;
-	vector<faceinfo_t> blend_list;
 
 	
 	int last_leaf;
@@ -73,21 +73,30 @@ private:
 
 	//for bezier patches
 	int				mesh_level;
+
+
+
+	patch_t *patchdata;
+
+/*
 	int				*mesh_index2face;
 	vertex_t		**mesh_vertex_array;
 	int				**mesh_index_array;
 	int				*mesh_num_verts;
 	int				*mesh_num_indexes;
+*/
 	int				num_meshes;
+/*
 	unsigned int	*mesh_index_vbo;
 	unsigned int	*mesh_vertex_vbo;
-
+	*/
 	//objects
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;
 
 	int	*normal_object;
 	int	*lightmap_object;
+	int sky_face;
 };
 
 #endif

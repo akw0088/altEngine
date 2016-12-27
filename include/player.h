@@ -38,7 +38,7 @@ typedef struct
 class Player
 {
 public:
-	Player(Entity *entity, Graphics &gfx, Audio &audio);
+	Player(Entity *entity, Graphics &gfx, Audio &audio, int model);
 	~Player();
 	Entity	*entity;
 

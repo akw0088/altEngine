@@ -4,11 +4,15 @@
 #define new DEBUG_NEW
 #endif
 
+#include <algorithm>
+
+
 Bsp::Bsp()
 {
 	loaded = false;
 	textures_loaded = false;
 	memset(map_name, 0, 80);
+	sky_face = -1;
 }
 
 
@@ -99,6 +103,39 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	return true;
 }
 
+void get_control_points(bspvertex_t *cp, const bspvertex_t *data, int set, int width, int height)
+{
+	int x = 0;
+	int y = 0;
+
+	int x_shift = (1 + (width - 3) / 2);
+	int y_shift = (1 + (height - 3) / 2);
+
+
+	for (y = 0; y < y_shift; y++)
+	{
+		for (x = 0; x < x_shift; x += 1)
+		{
+			const bspvertex_t *box = &data[x + y * width];
+
+			cp[0] = box[x + 0 + (y + 0) * width];
+			cp[1] = box[x + 1 + (y + 0) * width];
+			cp[2] = box[x + 2 + (y + 0) * width];
+			cp[3] = box[x + 0 + (y + 1) * width];
+			cp[4] = box[x + 1 + (y + 1) * width];
+			cp[5] = box[x + 2 + (y + 1) * width];
+			cp[6] = box[x + 0 + (y + 2) * width];
+			cp[7] = box[x + 1 + (y + 2) * width];
+			cp[8] = box[x + 2 + (y + 2) * width];
+			set--;
+
+			if (set <= 0)
+				return;
+		}
+		x = 0;
+	}
+}
+
 /*
 	Loops through map data to find bezeir patches to tessellate into verticies
 	And now also creates vbos for map and meshes
@@ -108,164 +145,49 @@ void Bsp::generate_meshes(Graphics &gfx)
 	int mesh_index = 0;
 
 	num_meshes = 0;
-	mesh_level = 8;
+	mesh_level = 16;
 
+	// Find number  of 3x3 patches
+	printf("quadratic_bezier_surface dimensions for %s: ", map_name);
 	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
 
 		if (face->type == 2)
 		{
-			if (face->patchWidth == 9)
-			{
-				num_meshes += 4;
-			}
-			else if (face->patchWidth == 5)
-			{
-				num_meshes += 2;
-			}
-			else
-			{
-				num_meshes++;
-			}
+			int num_patch = (1 + (face->patchWidth - 3) / 2) * (1 + (face->patchHeight - 3) / 2);
+			num_meshes += num_patch; // number of 3x3 meshes
+			printf("%dx%d, ", face->patchWidth, face->patchHeight);
 		}
 	}
+	printf("\n");
 
-	mesh_index2face = new int [num_meshes];
-	mesh_vertex_array = new vertex_t *[num_meshes];
-	mesh_index_array = new int *[num_meshes];
-	mesh_num_verts = new int [num_meshes];
-	mesh_num_indexes = new int [num_meshes];
+	patchdata = new patch_t[num_meshes];
 
-	mesh_vertex_vbo = new unsigned int [num_meshes];
-	mesh_index_vbo = new unsigned int [num_meshes];
 
+	// Generate buffer objects for 3x3 patches given NxN control points
 	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_t *face = &data.Face[i];
+		bspvertex_t controlpoint[9];
 
 		if (face->type == 2)
 		{
-			if (face->patchHeight == 3 && face->patchWidth == 3)
+			int num_patch = (1 + (face->patchWidth - 3) / 2) * (1 + (face->patchHeight - 3) / 2);
+
+			for (int j = 0; j < num_patch; j++)
 			{
-				tessellate(mesh_level, &(data.Vert[face->vertex]), &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index2face[mesh_index] = face->vertex;
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index++;
-			}
-			else if (face->patchWidth == 5)
-			{
-				bspvertex_t controlpoint[9];
+				get_control_points(controlpoint, &data.Vert[face->vertex], j + 1, face->patchWidth, face->patchHeight);
 
-				controlpoint[0] = data.Vert[face->vertex];
-				controlpoint[1] = data.Vert[face->vertex + 1];
-				controlpoint[2] = data.Vert[face->vertex + 2];
+				patchdata[mesh_index].num_mesh = num_patch;
+				patchdata[mesh_index].facevert = face->vertex;
 
-				controlpoint[3] = data.Vert[face->vertex + 5];
-				controlpoint[4] = data.Vert[face->vertex + 6];
-				controlpoint[5] = data.Vert[face->vertex + 7];
-
-				controlpoint[6] = data.Vert[face->vertex + 10];
-				controlpoint[7] = data.Vert[face->vertex + 11];
-				controlpoint[8] = data.Vert[face->vertex + 12];
-
-				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index2face[mesh_index] = face->vertex;
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index++;
-
-				controlpoint[0] = data.Vert[face->vertex + 2];
-				controlpoint[1] = data.Vert[face->vertex + 3];
-				controlpoint[2] = data.Vert[face->vertex + 4];
-
-				controlpoint[3] = data.Vert[face->vertex + 7];
-				controlpoint[4] = data.Vert[face->vertex + 8];
-				controlpoint[5] = data.Vert[face->vertex + 9];
-
-				controlpoint[6] = data.Vert[face->vertex + 12];
-				controlpoint[7] = data.Vert[face->vertex + 13];
-				controlpoint[8] = data.Vert[face->vertex + 14];
-
-				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index++;
-			}
-			else if (face->patchWidth == 9)
-			{
-				bspvertex_t controlpoint[9];
-
-				controlpoint[0] = data.Vert[face->vertex];
-				controlpoint[1] = data.Vert[face->vertex + 1];
-				controlpoint[2] = data.Vert[face->vertex + 2];
-
-				controlpoint[3] = data.Vert[face->vertex + 9];
-				controlpoint[4] = data.Vert[face->vertex + 10];
-				controlpoint[5] = data.Vert[face->vertex + 11];
-
-				controlpoint[6] = data.Vert[face->vertex + 18];
-				controlpoint[7] = data.Vert[face->vertex + 19];
-				controlpoint[8] = data.Vert[face->vertex + 20];
-
-				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index2face[mesh_index] = face->vertex;
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index++;
-
-				controlpoint[0] = data.Vert[face->vertex + 2];
-				controlpoint[1] = data.Vert[face->vertex + 3];
-				controlpoint[2] = data.Vert[face->vertex + 4];
-
-				controlpoint[3] = data.Vert[face->vertex + 11];
-				controlpoint[4] = data.Vert[face->vertex + 12];
-				controlpoint[5] = data.Vert[face->vertex + 13];
-
-				controlpoint[6] = data.Vert[face->vertex + 20];
-				controlpoint[7] = data.Vert[face->vertex + 21];
-				controlpoint[8] = data.Vert[face->vertex + 22];
-
-				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index++;
-
-
-				controlpoint[0] = data.Vert[face->vertex + 4];
-				controlpoint[1] = data.Vert[face->vertex + 5];
-				controlpoint[2] = data.Vert[face->vertex + 6];
-
-				controlpoint[3] = data.Vert[face->vertex + 13];
-				controlpoint[4] = data.Vert[face->vertex + 14];
-				controlpoint[5] = data.Vert[face->vertex + 15];
-
-				controlpoint[6] = data.Vert[face->vertex + 22];
-				controlpoint[7] = data.Vert[face->vertex + 23];
-				controlpoint[8] = data.Vert[face->vertex + 24];
-
-				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_index++;
-
-
-				controlpoint[0] = data.Vert[face->vertex + 6];
-				controlpoint[1] = data.Vert[face->vertex + 7];
-				controlpoint[2] = data.Vert[face->vertex + 8];
-
-				controlpoint[3] = data.Vert[face->vertex + 15];
-				controlpoint[4] = data.Vert[face->vertex + 16];
-				controlpoint[5] = data.Vert[face->vertex + 17];
-
-				controlpoint[6] = data.Vert[face->vertex + 24];
-				controlpoint[7] = data.Vert[face->vertex + 25];
-				controlpoint[8] = data.Vert[face->vertex + 26];
-
-				tessellate(mesh_level, controlpoint, &mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index], &mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
-				mesh_vertex_vbo[mesh_index] = gfx.CreateVertexBuffer(mesh_vertex_array[mesh_index], mesh_num_verts[mesh_index]);
-				mesh_index_vbo[mesh_index] = gfx.CreateIndexBuffer(mesh_index_array[mesh_index], mesh_num_indexes[mesh_index]);
+				//tessellate_quadratic_bezier_surface(control, patchdata[mesh_index].vertex_array, patchdata[mesh_index].index_array, patchdata[mesh_index].num_verts, patchdata[mesh_index].num_indexes, mesh_level);
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes, data.Vert[face->vertex].texCoord0);
+				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
+				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
+				delete[] patchdata[mesh_index].vertex_array;
+				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 			}
 		}
@@ -285,11 +207,12 @@ void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int 
 {
 	for(int i = 0; i < num_vert; i++)
 	{
-		vertex_out[i].color = bsp_vertex[i].color;
-		vertex_out[i].normal = bsp_vertex[i].normal;
+
 		vertex_out[i].position = bsp_vertex[i].position;
 		vertex_out[i].texCoord0 = bsp_vertex[i].texCoord0;
 		vertex_out[i].texCoord1 = bsp_vertex[i].texCoord1;
+		vertex_out[i].normal = bsp_vertex[i].normal;
+		vertex_out[i].color = bsp_vertex[i].color;
 		vertex_out[i].tangent = tangent_in[i];
 	}
 }
@@ -379,75 +302,18 @@ void Bsp::unload(Graphics &gfx)
 		delete [] vertex;
 		vertex = NULL;
 	}
-	for(unsigned int i = 0; i < data.num_faces; i++)
-	{
-		face_t *face = &data.Face[i];
 
-		if (face->type == 2)
-		{
-			if (!(mesh_vertex_array == NULL && mesh_index_array == NULL))
-			{
-				if (face->patchHeight == 3 && face->patchWidth == 3)
-				{
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-				}
-				else if (face->patchWidth == 5)
-				{
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-				}
-				else if (face->patchWidth == 9)
-				{
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-					delete[] mesh_vertex_array[mesh_index];
-					delete[] mesh_index_array[mesh_index];
-					mesh_index++;
-				}
-			}
-		}
-	}
 
-	delete [] mesh_index2face;
-	delete [] mesh_vertex_array;
-	delete [] mesh_index_array;
-	delete [] mesh_num_verts;
-	delete [] mesh_num_indexes;
+	delete[] patchdata;
 
-	mesh_index2face = NULL;
-	mesh_vertex_array = NULL;
-	mesh_index_array = NULL;
-	mesh_num_verts = NULL;
-	mesh_num_indexes = NULL;
+
 	gfx.DeleteIndexBuffer(map_index_vbo);
 	map_index_vbo = 0;
 	gfx.DeleteVertexBuffer(map_vertex_vbo);
 	map_vertex_vbo = 0;
 	mesh_level = 0;
 
-	for(int i = 0; i < num_meshes; i++)
-	{
-		gfx.DeleteIndexBuffer(mesh_index_vbo[i]);
-		gfx.DeleteVertexBuffer(mesh_vertex_vbo[i]);
-	}
-	delete [] mesh_index_vbo;
-	delete [] mesh_vertex_vbo;
 	num_meshes = 0;
-	mesh_index_vbo = NULL;
-	mesh_vertex_vbo = NULL;
 
 	//Todo, try to find a way to keep loaded textures between map loads
 
@@ -662,23 +528,56 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 		}
 	}
 
-
-
-
 	return false;
 }
+
+/*
+void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list)
+{
+	float time = tick_num / TICK_RATE;
+
+	if (sky_face == -1)
+		return;
+
+	gfx.SelectVertexBuffer(Model::cube_vertex);
+	gfx.SelectIndexBuffer(Model::cube_index);
+
+
+	if (textures_loaded)
+	{
+		static vec2 scroll(0.0f, 0.0f);
+		for (int i = 0; i < MAX_TEXTURES; i++)
+		{
+			int surface_index = tex_object[data.Face[sky_face].material].index;
+
+			if (surface_list[surface_index]->stage[i].tcmod_rotate)
+			{
+				mlight2.tcmod_rotate(surface_list[surface_index]->stage[i].tcmod_rotate_value * time, i);
+			}
+			if (surface_list[surface_index]->stage[i].tcmod_scroll)
+			{
+				scroll.x += surface_list[surface_index]->stage[i].tcmod_scroll_value.x * time * 0.01f;
+				scroll.y += surface_list[surface_index]->stage[i].tcmod_scroll_value.y * time * 0.01f;
+				mlight2.tcmod_scroll(scroll, i);
+			}
+			if (surface_list[surface_index]->stage[i].tcmod_scale)
+			{
+				mlight2.tcmod_scale(surface_list[surface_index]->stage[i].tcmod_scale_value, i);
+			}
+			
+			gfx.SelectTexture(i, tex_object[data.Face[sky_face].material].texObj[i]);
+		}
+	}
+
+	gfx.DrawArrayTri(0, 0, 36, 36);
+}
+*/
+
 
 inline void Bsp::render_face(face_t *face, Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
-
-/*
-	if (data.Texture[face->textureID].contents == CONTENTS_FOG)
-	{
-		//select fog shader
-	}
-*/
 
 	if (textures_loaded)
 	{
@@ -692,13 +591,10 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	if (face->lightmap != -1)
 		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
-//	gfx.SelectTexture(9, normal_object[face->material]);
+#ifdef NORMALMAP
+	gfx.SelectTexture(9, normal_object[face->material]);
+#endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
-//	gfx.DeselectTexture(2);
-//	gfx.DeselectTexture(1);
-//	gfx.DeselectTexture(0);
-//	gfx.SelectVertexBuffer(0);
-//	gfx.SelectIndexBuffer(0);
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx)
@@ -707,9 +603,10 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	int index_per_row = 2 * (mesh_level + 1);
 
 	// Find pre-generated vertex data for patch O(n)
+	// Should probably build a map for this
 	for( int i = 0; i < num_meshes; i++)
 	{
-		if (mesh_index2face[i] == face->vertex)
+		if (patchdata[i].facevert == face->vertex)
 		{
 			mesh_index = i;
 			break;
@@ -719,12 +616,12 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	if (mesh_index == -1)
 		return;
 
-	for (int i = 0; i < 4; i++)
-	{
-		gfx.SelectVertexBuffer(mesh_vertex_vbo[mesh_index + i]);
-		gfx.SelectIndexBuffer(mesh_index_vbo[mesh_index + i]);
 
-		// Render each row
+	for (int i = 0; i < patchdata[mesh_index].num_mesh; i++)
+	{
+		gfx.SelectVertexBuffer(patchdata[mesh_index + i].vbo);
+		gfx.SelectIndexBuffer(patchdata[mesh_index + i].ibo);
+
 		if (textures_loaded)
 		{
 			for (int j = 0; j < MAX_TEXTURES; j++)
@@ -733,22 +630,25 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 #ifdef LIGHTMAP
 		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
-//		gfx.SelectTexture(9, normal_object[face->material]);
+#ifdef NORMALMAP
+		gfx.SelectTexture(9, normal_object[face->material]);
+#endif
+
+		// Rendered row by row because tessellate leaves a degenerate triangles at row ends
 		for( int row = 0; row < mesh_level; row++)
 		{
 			gfx.DrawArrayTriStrip(row * index_per_row, 0,
-				index_per_row, mesh_num_verts[mesh_index + i]);
+				index_per_row, patchdata[mesh_index + i].num_verts);
 		}
-//		gfx.DeselectTexture(2);
-//		gfx.DeselectTexture(1);
-//		gfx.DeselectTexture(0);
-
-
-		if (face->patchWidth == 5 && i == 1)
-			break;
-
-		if (face->patchWidth == 3)
-			break;
+		
+		/*
+		tessellate_quadratic_bezier_surface could do 3x3 rendering in one pass
+		Then we could probably put all the 3x3 patches for a mesh into a single ibo/vbo
+		*/
+		//gfx.DrawArrayTri(0, 0,
+		//patchdata[mesh_index + i].num_indexes,
+		//patchdata[mesh_index + i].num_verts);
+		
 	}
 }
 
@@ -761,16 +661,19 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
 			gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
 		}
 	}
-//	gfx.SelectTexture(9, normal_object[face->material]);
+#ifdef NORMALMAP
+	gfx.SelectTexture(9, normal_object[face->material]);
+#endif
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
-//	gfx.SelectVertexBuffer(0);
-//	gfx.SelectIndexBuffer(0);
-//	gfx.DeselectTexture(1);
-//	gfx.DeselectTexture(0);
 }
 
+
+bool compare(const faceinfo_t &a, const faceinfo_t &b)
+{
+	return a.name < b.name;
+}
 
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
@@ -778,8 +681,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	static int lastIndex = -1;
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
-	float time = (float)(tick_num / TICK_RATE);
-
+	float time = ((float)tick_num / TICK_RATE);
 
 	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
@@ -790,13 +692,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		face_list.clear();
 
 		// walk bsp tree, sort leafs front to back
-		vector<int> leaf_list;
-		sort_leaf(&leaf_list, 0, position);
+//		vector<int> leaf_list;
+//		sort_leaf(&leaf_list, 0, position);
 
 		// loop through all leaves, checking if leaf visible from current leaf
-		for (unsigned int i = 0; i < leaf_list.size(); i++)
+		for (unsigned int i = 0; i < data.num_leafs; i++)
 		{
-			leaf_t *leaf = &data.Leaf[leaf_list[i]];
+			leaf_t *leaf = &data.Leaf[i];
 
 			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				continue;
@@ -823,9 +725,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					bool blend = false;
 					faceinfo_t render;
 
-					memset(&render, 0, sizeof(faceinfo_t));
+					//dont memset, forces restart of scrolling shaders between pvs updates
+//					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
 					render.shader = true;
+					render.name = face->material;
+
+					if (surface->surfaceparm_sky)
+					{
+						render.sky = true;
+						sky_face = face_index;
+					}
 
 					for (unsigned int k = 0; k < surface->num_stage; k++)
 					{
@@ -835,6 +745,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 						render.scroll[k] = surface->stage[k].tcmod_scroll_value;
 						render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
 						render.scale[k] = surface->stage[k].tcmod_scale_value;
+						render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
+						render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
+						render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
+						render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
+						render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
+						render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
 
 
 						if (surface->stage[k].blendfunc_blend ||
@@ -859,7 +775,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 					// Texture without a shader
 					faceinfo_t render;
 
-					memset(&render, 0, sizeof(faceinfo_t));
+//					memset(&render, 0, sizeof(faceinfo_t));
 					render.face = face_index;
 					render.shader = false;
 					
@@ -871,8 +787,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 			}
 		}
-		leaf_list.clear();
+//		leaf_list.clear();
 	}
+
+//	std::sort(face_list.begin(), face_list.end(), compare);
+//	std::sort(blend_list.begin(), blend_list.end(), compare);
+
 
 	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
@@ -896,8 +816,57 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					mlight2.tcmod_scale(face_list[i].scale[j], j);
 				}
+				if (face_list[i].tcmod_stretch_sin[j])
+				{
+					mlight2.tcmod_stretch_sin(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_square[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_triangle[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (face_list[i].tcmod_stretch_inverse_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
+						face_list[i].stretch_value[j].y,
+						face_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
 			}
 		}
+
+		/*
+		if (face_list[i].sky)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
+			}
+			continue;
+		}
+		*/
 
 		if (face->type == 1 || face->type == 3)
 		{
@@ -935,17 +904,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		face_t *face = &data.Face[blend_list[i].face];
 
 
-
 		if (blend_list[i].shader)
 		{
 			for (int j = 0; j < MAX_TEXTURES; j++)
 			{
 				if (blend_list[i].tcmod_rotate[j])
 				{
-					mlight2.tcmod_rotate(blend_list[i].deg[j] * tick_num / TICK_RATE, j);
+					mlight2.tcmod_rotate(blend_list[i].deg[j] * time, j);
 				}
 				if (blend_list[i].tcmod_scroll[j])
 				{
+					// Note scrolling restarts when index changes due to pvs update
 					blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time;
 					blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time;
 					mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
@@ -954,9 +923,57 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					mlight2.tcmod_scale(blend_list[i].scale[j], j);
 				}
+				if (blend_list[i].tcmod_stretch_sin[j])
+				{
+					mlight2.tcmod_stretch_sin(	blend_list[i].stretch_value[j].x,
+												blend_list[i].stretch_value[j].y,
+												blend_list[i].stretch_value[j].z,
+												tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_square[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_triangle[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
+				if (blend_list[i].tcmod_stretch_inverse_sawtooth[j])
+				{
+					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+						blend_list[i].stretch_value[j].y,
+						blend_list[i].stretch_value[j].z,
+						tick_num, j);
+				}
 			}
 		}
 
+		/*
+		if (blend_list[i].sky)
+		{
+			for (int j = 0; j < MAX_TEXTURES; j++)
+			{
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
+			}
+			continue;
+		}
+		*/
 
 		if (face->type == 1 || face->type == 3)
 		{
@@ -987,6 +1004,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		//	gfx.Depth(true);
 		gfx.Blend(false);
 	}
+
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 
@@ -1073,13 +1091,13 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char 
 
 	//printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
-	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 
 	if (tex_object == 0)
 	{
 		//printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 	}
 	if (tex_object != 0)
 	{
@@ -1114,7 +1132,6 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		return;
 	}
 
-	//First stage is NULL
 	for (unsigned int k = 0; k < surface_list[j]->num_stage && k < 4; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
@@ -1122,17 +1139,13 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
 
-//			if (strstr(texture_name, "pewter_shiney"))
-			{
-//				surface_list[j]->stage[k].blendfunc_add = true;
-			}
 			//printf("Trying texture [%s]\n", texture_name);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 		}
 		else if (surface_list[j]->stage[k].clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true);
 		}
 		else if (surface_list[j]->stage[k].anim_map)
 		{
@@ -1149,19 +1162,22 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			{
 //				printf("animmap tex %s\n", tex);
 				snprintf(texture_name, LINE_SIZE, "media/%s", tex);
-				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 				tex = strtok(NULL, " ");
 			}
-			texObj->texObj[texObj->num_tex] = texObj->texObjAnim[0];
-			texObj->anim_unit = texObj->num_tex;
+
+			texObj->texObj[k] = texObj->texObjAnim[0];
+			texObj->anim_unit = k;
 			texObj->num_anim = n;
+			continue;
 		}
 
 
-		if (tex_object != 0 && tex_object != -1)
+		if (tex_object != 0 && tex_object != -1 && surface_list[j]->stage[k].anim_map == false)
 		{
 			//printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
 			//texObj->stage = k;
+			texObj->texObj[k] = tex_object;
 			continue;
 		}
 
@@ -1176,12 +1192,13 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			continue;
 		}
 
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
 		if (tex_object != 0)
 		{
 			//printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
 			//texObj->stage = k;
-			texObj->texObj[texObj->num_tex] = tex_object;
+			texObj->texObj[k] = tex_object;
+			continue;
 		}
 	}
 
@@ -1193,21 +1210,23 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
 {
 	textures_loaded = true;
-
+#ifdef LIGHTMAP
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image, false);
 #else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);
 		delete [] pBits;
 #endif
 	}
+#endif
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
+		char texture_name[512] = { 0 };
 		
 		strcpy(tex_object[i].name, data.Material[i].name);
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);
@@ -1225,8 +1244,10 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 		tex_object[i].num_tex++;
 
-//		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
-//		normal_object[i] = load_texture(gfx, texture_name, pk3_list, num_pk3);
+#ifdef NORMALMAP
+		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
+		normal_object[i] = load_texture(gfx, texture_name, false);
+#endif
 	}
 }
 
@@ -1236,7 +1257,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	This function assumes it's given 3x3 set of control points
 	hacky fix for cylindrical patches and U patches in calling function
 */
-void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts, int **index_array, int &num_indexes)
+void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts, int **index_array, int &num_indexes, vec2 &texcoord)
 {
 	vec3 a, b;
 	int i, j;
@@ -1318,7 +1339,8 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 
 			(*vertex_array)[i * num_verts + j].color = -1;
 			(*vertex_array)[i * num_verts + j].texCoord0 = vec2((float)(i % 2), (float)(j % 2));
-			(*vertex_array)[i * num_verts + j].texCoord0 *= (1.0f/8.0f);
+			(*vertex_array)[i * num_verts + j].texCoord0.x = i * (1.0f / level) + texcoord.x;
+			(*vertex_array)[i * num_verts + j].texCoord0.y = j * (-1.0f / level) + texcoord.y;
 			(*vertex_array)[i * num_verts + j].tangent.x = a.x;
 			(*vertex_array)[i * num_verts + j].tangent.y = a.y;
 			(*vertex_array)[i * num_verts + j].tangent.z = a.z;

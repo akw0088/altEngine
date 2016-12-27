@@ -2,24 +2,22 @@
 
 struct attr_t
 {
-	float4 position		: POSITION1;
-	float4 color		: COLOR0; 
-	float4 normal		: NORMAL;
+	float3 position		: POSITION;
 	float2 texCoord0	: TEXCOORD0;
 	float2 texCoord1	: TEXCOORD1;
-	float2 texCoord2	: TEXCOORD2;
+	float3 normal		: NORMAL;
+	int color		: COLOR;
+	float4 tangent		: TANGENT;
 };
 
 struct vary_t
 {
-	float4 position			: TEXCOORD5;
-	float4 color			: COLOR0;
+	float4 position			: POSITION;
 	float2 texCoord0		: TEXCOORD0;
 	float2 texCoord1		: TEXCOORD1;
-	float2 texCoord2		: TEXCOORD2;
-
-	float4 normal			: TEXCOORD3;
-	float4 light[MAX_LIGHTS]	: TEXCOORD4;
+	float3 normal			: NORMAL;
+	int color			: COLOR;
+	float4 tangent			: TANGENT;
 };
 
 uniform float3		u_position[MAX_LIGHTS];
@@ -35,24 +33,27 @@ float4 main(in vary_t vary) : COLOR0
 
 	texColor[0] = tex2D(tex0, vary.texCoord0);
 	texColor[1] = tex2D(tex1, vary.texCoord1);
-	texColor[2] = tex2D(tex2, vary.texCoord0);
+//	texColor[2] = tex2D(tex2, vary.texCoord0);
 
-	Fragment = (texColor[0] * 0.7) + (texColor[1] * 0.20);
+//	Fragment += (texColor[0] * 0.7) + (texColor[1] * 0.20);
+//	Fragment.a = 0.0;
 	float3 normal = normalize(vary.normal.xyz);
 
 	float3 intensity = 0.5;
-	for(int i = 0; i < u_num_lights; i++)
-	{
-		float3 v_light = normalize(vary.light[i].xyz);
-		float3 v_reflect = reflect(v_light, normal);
-		float diffuse = max(dot(v_light, normal), 0.0) * 0.25;
-		float specular = pow(max(dot(v_reflect, float3(0.0,0.0,-1.0f)), 0.0), 10.0) * 0.25;
-		float atten = min(40000.0 / pow(abs(vary.light[i].w), 1.75), 0.75);
-		atten = 0.0;
 
-		intensity = intensity + atten * (diffuse + specular + u_color[i].xyz * 0.25);
-	}
-	Fragment.xyz *= intensity;
+//	for(int i = 0; i < u_num_lights; i++)
+//	{
+//		float3 v_light = normalize(vary.light[i].xyz);
+//		float3 v_reflect = reflect(v_light, normal);
+//		float diffuse = max(dot(v_light, normal), 0.0) * 0.25;
+//		float specular = pow(max(dot(v_reflect, float3(0.0,0.0,-1.0f)), 0.0), 10.0) * 0.25;
+//		float atten = min(40000.0 / pow(abs(vary.light[i].w), 1.75), 0.75);
+//		atten = 0.0;
+//
+//		intensity = intensity + atten * (diffuse + specular + u_color[i].xyz * 0.25);
+//	}
+//	Fragment.xyz *= intensity;
 
-	return tex2D(tex0, vary.texCoord0);
+	return Fragment;
+//	return tex2D(tex0, vary.texCoord0);
 }

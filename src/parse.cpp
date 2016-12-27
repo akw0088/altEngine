@@ -957,10 +957,54 @@ void handle_stage(char *stagecmd, stage_t *stage)
 			return;
 		}
 
-		match = sscanf(ret, "tcmod stretch %f %f %f %f", &base, &amplitude, &phase, &freq);
+		match = sscanf(ret, "tcmod stretch sin %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_stretch = true;
+			stage->tcmod_stretch_sin = true;
+			stage->tcmod_stretch_value.x = base;
+			stage->tcmod_stretch_value.y = amplitude;
+			stage->tcmod_stretch_value.z = phase;
+			stage->tcmod_stretch_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod stretch square  %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->tcmod_stretch_square = true;
+			stage->tcmod_stretch_value.x = base;
+			stage->tcmod_stretch_value.y = amplitude;
+			stage->tcmod_stretch_value.z = phase;
+			stage->tcmod_stretch_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod stretch triangle %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->tcmod_stretch_triangle = true;
+			stage->tcmod_stretch_value.x = base;
+			stage->tcmod_stretch_value.y = amplitude;
+			stage->tcmod_stretch_value.z = phase;
+			stage->tcmod_stretch_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod stretch sawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->tcmod_stretch_sawtooth = true;
+			stage->tcmod_stretch_value.x = base;
+			stage->tcmod_stretch_value.y = amplitude;
+			stage->tcmod_stretch_value.z = phase;
+			stage->tcmod_stretch_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "tcmod stretch inversesawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->tcmod_stretch_inverse_sawtooth = true;
 			stage->tcmod_stretch_value.x = base;
 			stage->tcmod_stretch_value.y = amplitude;
 			stage->tcmod_stretch_value.z = phase;
@@ -1097,7 +1141,13 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				memcpy(stagecmd, &input[old_pos + 1], i - old_pos - 1);
 				stagecmd[i - old_pos - 2] = '\0';
 
-				handle_stage(stagecmd, &(surface->stage[num_stage]));
+
+				if (strstr(stagecmd, "{") != NULL)
+				{
+					surface->num_stage++;
+					num_stage++;
+				}
+				handle_stage(stagecmd, &(surface->stage[num_stage - 1]));
 				old_pos = i;
 				j = 0;
 			}

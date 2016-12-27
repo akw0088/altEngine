@@ -268,7 +268,7 @@ void Audio::init()
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
 	debugf("%d sends per audio source\n", sends);
 #endif
-	alListenerf(AL_REFERENCE_DISTANCE, 100.0f);
+	alListenerf(AL_REFERENCE_DISTANCE, 8 * 800.0f);
 
 	//gain = 	(distance / AL_REFERENCE_DISTANCE) ^ (-AL_ROLLOFF_FACTOR
 	alDistanceModel(AL_EXPONENT_DISTANCE);

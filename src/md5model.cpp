@@ -127,29 +127,34 @@ void MD5Model::load_textures(Graphics &gfx)
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
 		//		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 
+#ifndef DIRECTX
 		format = GL_RGBA;
 		components = GL_RGBA8;
-
+#else
+		format = 4;
+		components = 4;
+#endif
 		if (bytes == NULL)
 		{
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
+		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
 		delete[] bytes;
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
 //		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
+#ifndef DIRECTX
 		format = GL_RGBA;
 		components = GL_RGBA8;
-
+#endif
 		if (bytes == NULL)
 		{
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes);
+		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
 		delete[] bytes;
 	}
 }
