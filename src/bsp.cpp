@@ -290,8 +290,6 @@ const char *Bsp::get_entities()
 */
 void Bsp::unload(Graphics &gfx)
 {
-	int mesh_index = 0;
-
 	loaded = false;
 	textures_loaded = false;
 
@@ -1226,7 +1224,6 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
-		char texture_name[512] = { 0 };
 		
 		strcpy(tex_object[i].name, data.Material[i].name);
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);

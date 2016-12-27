@@ -536,7 +536,7 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame, int self)
 	int index[8];
 	int num_index;
 	vec3 forward;
-	float distance;
+//	float distance;
 
 
 	sprintf(player.attack_sound, "sound/weapons/machinegun/machgf1b.wav");
@@ -656,7 +656,7 @@ void Quake3::handle_gibs(Player &player, Frame &camera_frame)
 void Quake3::handle_shotgun(Player &player, Frame &camera_frame)
 {
 	vec3 forward;
-	float distance;
+	//float distance;
 	int index[8];
 	int num_index;
 
