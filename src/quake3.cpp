@@ -113,32 +113,34 @@ void Quake3::step(int frame_step)
 
 		if (engine->enemy != -1)
 		{
-			if (engine->entity_list[engine->enemy]->player->health > 0)
+
+			Entity *enemy_ent = engine->entity_list[engine->enemy];
+
+			if (enemy_ent->player->health > 0)
 			{
 				Frame frame;
-				float distance = (entity->position - engine->entity_list[engine->enemy]->position).magnitude();
+				float distance = (entity->position - enemy_ent->position).magnitude();
 
+				enemy_ent->rigid->move_left();
 
 				if (distance < 500.0f)
 				{
-					frame.up = vec3(0.0f, 1.0f, 0.0f);
-					frame.forward = -(entity->position - engine->entity_list[engine->enemy]->position).normalize();
-					frame.set(engine->entity_list[engine->enemy]->model->morientation);
+					enemy_ent->rigid->lookat(entity);
 				}
 
 				if (distance < 400.0f)
 				{
-					if (engine->entity_list[engine->enemy]->player->reload_timer <= 0 && engine->entity_list[spawn]->player->health > -15)
+					if (enemy_ent->player->reload_timer <= 0 && entity->player->health > -15)
 					{
 						engine->zcc.select_animation(0);
-						handle_machinegun(*(engine->entity_list[engine->enemy]->player), frame, engine->enemy);
-						engine->entity_list[engine->enemy]->player->reload_timer = 1;
+						handle_machinegun(*(enemy_ent->player), frame, engine->enemy);
+						enemy_ent->player->reload_timer = 1;
 					}
 					else
 					{
-						if (engine->entity_list[spawn]->player->health <= -15)
+						if (entity->player->health <= -15)
 							engine->zcc.select_animation(1);
-						engine->entity_list[engine->enemy]->player->reload_timer--;
+						enemy_ent->player->reload_timer--;
 					}
 				}
 				else
@@ -148,12 +150,12 @@ void Quake3::step(int frame_step)
 			}
 			else
 			{
-				engine->entity_list[engine->enemy]->model->clone(*(box->model));
-				engine->select_wave(engine->entity_list[engine->enemy]->speaker->source,
-					engine->entity_list[engine->enemy]->player->death1_sound);
-				engine->audio.play(engine->entity_list[engine->enemy]->speaker->source);
+				enemy_ent->model->clone(*(box->model));
+				engine->select_wave(enemy_ent->speaker->source,
+					enemy_ent->player->death1_sound);
+				engine->audio.play(enemy_ent->speaker->source);
 
-				engine->entity_list[engine->enemy]->player->respawn();
+				enemy_ent->player->respawn();
 
 				char cmd[80];
 				sprintf(cmd, "respawn -1 %d", engine->enemy);
@@ -533,7 +535,7 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame, int self)
 	int index[8];
 	int num_index;
 	vec3 forward;
-//	float distance;
+	//float distance;
 
 
 	sprintf(player.attack_sound, "sound/weapons/machinegun/machgf1b.wav");

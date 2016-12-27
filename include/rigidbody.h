@@ -28,11 +28,20 @@ public:
 	void arrive(vec3 position);
 	void pursue();
 	void evade();
-	void Wander(float radius, float distance, float jitter);
+	void wander(float radius, float distance, float jitter);
 	void set_target(Entity &target);
 
 
 	bool move(Frame &camera_frame, button_t &keyboard);
+	void move_forward();
+	void move_backward();
+	void move_left();
+	void move_right();
+	void move_up(); // jump
+	void move_down();
+	void lookat(Entity *ent);
+
+
 	float get_volume();
 	float get_height();
 
@@ -41,6 +50,8 @@ public:
 	bool			step_flag;
 	Entity			*target;
 	vec3			sphere_target;
+	int				jump_timer;
+
 
 	float			restitution;
 	bool			sleep;

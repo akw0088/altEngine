@@ -17,6 +17,8 @@ RigidBody::RigidBody(Entity *entity)
 	target = NULL;
 	mass = 10.0f;
 	sphere_target = vec3(0.0f, 0.0f, 0.0f);
+	jump_timer = 0;
+
 	restitution = 0.5f; // boxes should never rest
 	float height = 10.0f / UNITS_TO_METERS;
 	float width = 10.0f / UNITS_TO_METERS;
@@ -490,7 +492,7 @@ void RigidBody::set_target(Entity &ent)
 }
 
 
-void RigidBody::Wander(float radius, float distance, float jitter)
+void RigidBody::wander(float radius, float distance, float jitter)
 {
 	// make random point on sphere
 	float x = ((rand() % 1000) / 1000.0f) * jitter;
@@ -541,7 +543,6 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
 	bool	jumped = false;
-	static int jump_timer = 0;
 
 
 	//prevent walking upward
@@ -618,4 +619,87 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 	}
 
 	return (jump_timer == 120);
+}
+
+
+void RigidBody::move_forward()
+{
+	Frame frame;
+	button_t input;
+
+	getForwardVector(frame.forward);
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	input.up = true;
+	move(frame, input);
+}
+
+void RigidBody::move_backward()
+{
+	Frame frame;
+	button_t input;
+
+	getForwardVector(frame.forward);
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	input.down = true;
+	move(frame, input);
+}
+
+void RigidBody::move_left()
+{
+	Frame frame;
+	button_t input;
+
+	getForwardVector(frame.forward);
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	input.left = true;
+	move(frame, input);
+}
+
+void RigidBody::move_right()
+{
+	Frame frame;
+	button_t input;
+
+	getForwardVector(frame.forward);
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	input.right = true;
+	move(frame, input);
+}
+
+void RigidBody::move_up()
+{
+	Frame frame;
+	button_t input;
+
+	getForwardVector(frame.forward);
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	input.enter = true;
+	move(frame, input);
+}
+
+void RigidBody::move_down()
+{
+	Frame frame;
+	button_t input;
+
+	getForwardVector(frame.forward);
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	input.shift = true;
+	move(frame, input);
+}
+
+void RigidBody::lookat(Entity *ent)
+{
+	Frame frame;
+	vec3 right;
+
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	frame.forward = (entity->position - ent->position).normalize();
+
+	right = vec3::crossproduct(frame.forward, frame.up);
+	right.normalize();
+	frame.up = vec3::crossproduct(right, frame.forward);
+	frame.up.normalize();
+
+	frame.set(entity->model->morientation);
 }

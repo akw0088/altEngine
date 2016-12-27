@@ -1009,7 +1009,7 @@ void Engine::spatial_testing()
 			{
 				if (entity_list[i]->rigid->pursue_flag == true)
 				{
-					entity_list[i]->rigid->Wander(20.0f, 1.0f, 5.0f);
+					entity_list[i]->rigid->wander(20.0f, 1.0f, 5.0f);
 				}
 				else
 				{
@@ -3800,7 +3800,8 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 			vec3 min = entity_list[i]->rigid->aabb[0] + entity_list[i]->position - entity_list[i]->rigid->center;
 			vec3 max = entity_list[i]->rigid->aabb[7] + entity_list[i]->position - entity_list[i]->rigid->center;
 
-			if (RayBoxSlab(origin, dir, min, max, distance))			{
+			if (RayBoxSlab(origin, dir, min, max, distance))
+			{
 				index_list[j++] = i;
 				num_index++;
 			}
