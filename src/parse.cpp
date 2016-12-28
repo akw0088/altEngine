@@ -108,7 +108,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/holdable.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "flight");
+			snprintf(entity.trigger->action, LINE_SIZE, "flight 30");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_haste") == 0)

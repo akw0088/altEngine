@@ -57,6 +57,7 @@ public:
 	bool			sleep;
 	bool			gravity;
 	bool			noclip;
+	bool			flight;
 	bool			water;
 	bool			last_water;
 	bool			rotational_friction_flag;

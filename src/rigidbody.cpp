@@ -13,6 +13,7 @@ RigidBody::RigidBody(Entity *entity)
 	pursue_flag = true;
 	step_flag = false;
 	water = false;
+	flight = false;
 	last_water = false;
 	target = NULL;
 	mass = 10.0f;
@@ -90,7 +91,7 @@ void RigidBody::integrate(float time)
 
 	//translational
 	acceleration = net_force / mass;
-	if (gravity == true && noclip == false)
+	if (gravity == true && noclip == false && flight == false)
 	{
 		acceleration.y -= 9.8f;
 	}
@@ -107,7 +108,7 @@ void RigidBody::integrate(float time)
 	angular_acceleration = world_tensor * net_torque;
 	angular_velocity = angular_velocity + angular_acceleration * time;
 
-	if (translational_friction_flag || water == true || noclip == true)
+	if (translational_friction_flag || water == true || noclip == true || flight == true)
 	{
 		velocity *= translational_friction; // added rotational "friction"
 	}
@@ -546,8 +547,11 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 
 
 	//prevent walking upward
-	forward.y = 0.0f;
-	right.y = 0.0f;
+	if (noclip == false && flight == false)
+	{
+		forward.y = 0.0f;
+		right.y = 0.0f;
+	}
 
 	if (jump_timer > 0)
 		jump_timer--;

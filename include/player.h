@@ -127,6 +127,7 @@ public:
 
 	unsigned int reload_timer;
 	unsigned int drown_timer;
+	unsigned int flight_timer;
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
 

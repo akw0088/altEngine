@@ -3613,6 +3613,28 @@ void Engine::console(char *cmd)
 		if (spawn != -1)
 		{
 			entity_list[spawn]->rigid->noclip = !entity_list[spawn]->rigid->noclip;
+			entity_list[spawn]->rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
+			entity_list[spawn]->rigid->translational_friction = 0.9f;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "flight");
+	if (ret == 0)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->flight_timer = 60 * 60 * 24 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "flight %s", data);
+	if (ret == 1)
+	{
+		if (spawn != -1)
+		{
+			entity_list[spawn]->player->flight_timer = atoi(data) * TICK_RATE;
 		}
 		return;
 	}

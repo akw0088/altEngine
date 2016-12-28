@@ -142,6 +142,18 @@ void Quake3::step(int frame_step)
 					entity->rigid->move(engine->camera_frame, noinput);
 				}
 			}
+
+			if (engine->entity_list[spawn]->player->flight_timer > 0)
+			{
+				engine->entity_list[spawn]->player->flight_timer--;
+				engine->entity_list[spawn]->rigid->flight = true;
+				engine->entity_list[spawn]->rigid->translational_friction = 0.9f;
+			}
+			else
+			{
+				engine->entity_list[spawn]->rigid->flight = false;
+				engine->entity_list[spawn]->rigid->translational_friction = 0.0f;
+			}
 		}
 
 		if (engine->enemy != -1)
@@ -232,7 +244,7 @@ void Quake3::step(int frame_step)
 
 		if (entity->rigid->velocity.y > -1.0f && entity->rigid->velocity.y < 1.0f &&
 			entity->rigid->water == false && entity->player->dead == false &&
-			entity->rigid->noclip == false)
+			entity->rigid->noclip == false && entity->rigid->gravity == true )
 		{
 
 			if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && frame_step % 20 == 0)
