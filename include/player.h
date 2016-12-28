@@ -139,7 +139,6 @@ public:
 
 	bot_state_t bot_state;
 
-private:
 
 	Model weapon_machinegun;
 	Model weapon_shotgun;
@@ -148,6 +147,7 @@ private:
 	Model weapon_lightning;
 	Model weapon_railgun;
 	Model weapon_plasma;
+private:
 };
 
 #endif

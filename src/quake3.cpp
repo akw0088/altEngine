@@ -382,6 +382,77 @@ void Quake3::step(int frame_step)
 				debugf("Failed to find PCM data for death sound\n");
 			}
 
+			Entity *drop_weapon = engine->entity_list[engine->get_entity()];
+			char *weapon_str = NULL;
+
+
+			drop_weapon->rigid = new RigidBody(drop_weapon);
+			drop_weapon->position = entity->position;
+			drop_weapon->model = drop_weapon->rigid;
+
+			switch (entity->player->current_weapon)
+			{
+			case wp_machinegun:
+				weapon_str = "weapon_machinegun";
+				drop_weapon->model->clone(entity->player->weapon_machinegun);
+				break;
+			case wp_shotgun:
+				weapon_str = "weapon_shotgun";
+				drop_weapon->model->clone(entity->player->weapon_shotgun);
+				break;
+			case wp_grenade:
+				weapon_str = "weapon_grenadelauncher";
+				drop_weapon->model->clone(entity->player->weapon_grenade);
+				break;
+			case wp_rocket:
+				weapon_str = "weapon_rocketlauncher";
+				drop_weapon->model->clone(entity->player->weapon_rocket);
+				break;
+			case wp_plasma:
+				weapon_str = "weapon_plasmagun";
+				drop_weapon->model->clone(entity->player->weapon_plasma);
+				break;
+			case wp_lightning:
+				weapon_str = "weapon_lightning";
+				drop_weapon->model->clone(entity->player->weapon_lightning);
+				break;
+			case wp_railgun:
+				weapon_str = "weapon_railgun";
+				drop_weapon->model->clone(entity->player->weapon_railgun);
+				break;
+			}
+
+			// it will have the players view direction, resetting
+			drop_weapon->model->morientation.m[0] = 1.0f;
+			drop_weapon->model->morientation.m[1] = 0.0f;
+			drop_weapon->model->morientation.m[2] = 0.0f;
+
+			drop_weapon->model->morientation.m[3] = 0.0f;
+			drop_weapon->model->morientation.m[4] = 1.0f;
+			drop_weapon->model->morientation.m[5] = 0.0f;
+
+			drop_weapon->model->morientation.m[6] = 0.0f;
+			drop_weapon->model->morientation.m[7] = 0.0f;
+			drop_weapon->model->morientation.m[8] = 1.0f;
+
+			drop_weapon->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
+//			drop_weapon->position += vec3(0.0f, 20.0f, 0.0);
+
+
+			drop_weapon->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+
+
+			vec3 forward;
+			entity->model->getForwardVector(forward);
+			drop_weapon->rigid->velocity = forward *-1.0f;
+			drop_weapon->rigid->angular_velocity.x = 10.0f;
+
+			entity->player->dead = true;
+			drop_weapon->trigger = new Trigger(drop_weapon, engine->audio);
+			snprintf(drop_weapon->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+			snprintf(drop_weapon->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			sprintf(drop_weapon->trigger->action, "%s", weapon_str);
+
 			entity->player->kill();
 			entity->model->clone(*(box->model));
 		}

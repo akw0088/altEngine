@@ -1489,6 +1489,9 @@ void Engine::check_triggers()
 			if (entity_list[i]->trigger->health && entity_list[spawn]->player->health >= 100)
 				pickup = false;
 
+			if (entity_list[spawn]->player->dead)
+				pickup = false;
+
 			if (pickup)
 			{
 				entity_list[i]->trigger->active = true;
