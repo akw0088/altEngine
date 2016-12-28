@@ -9,6 +9,7 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	Trigger::entity = entity;
 	active = false;
 	timeout = 0.0f;
+	timeout_value = 30.0f;
 	radius = 75.0f;
 	action[0] = '\0';
 	pickup_sound[0] = '\0';

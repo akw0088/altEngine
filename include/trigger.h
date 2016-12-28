@@ -39,6 +39,7 @@ public:
 	bool	health;		// For health items, prevents giving over 100
 	bool	armor;		// For armor items, prevents giving over 200
 	float	timeout;	// Timeout between pickups respawning
+	float	timeout_value;
 };
 
 #endif

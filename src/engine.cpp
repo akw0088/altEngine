@@ -1506,7 +1506,7 @@ void Engine::check_triggers()
 				console(entity_list[i]->trigger->action);
 
 				entity_list[i]->visible = false;
-				entity_list[i]->trigger->timeout = 30.0f;
+				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
 
 				if (entity_list[i]->trigger->explode_timer)
 				{
@@ -3166,8 +3166,9 @@ void Engine::console(char *cmd)
 				if (entity_list[spawn]->player->teleport_timer > 0)
 					return;
 
-				entity_list[spawn]->player->teleport_timer = 2 * TICK_RATE;
+				entity_list[spawn]->player->teleport_timer = 0.5f * TICK_RATE;
 				entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+				entity_list[spawn]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 
 
 				bool ret = false;

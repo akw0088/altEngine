@@ -315,6 +315,8 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.rigid->gravity = false;
 
 			sprintf(entity.type, "trigger_teleport");
+			entity.trigger->timeout = 1.0f;
+			entity.trigger->timeout_value = 1.0f;
 			sprintf(entity.trigger->action, "teleport %s %d", entity.target, entity_num);
 		}
 		else if (strcmp(value, "target_teleporter") == 0)
@@ -331,6 +333,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.rigid->gravity = false;
 
 			sprintf(entity.trigger->action, "push %s", entity.target);
+			entity.trigger->timeout = 1.0f;
 		}
 		else if (strcmp(value, "trigger_hurt") == 0)
 		{
