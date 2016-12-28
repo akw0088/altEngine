@@ -671,6 +671,12 @@ Player::~Player()
 //#define DEBUG_BOT
 void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 {
+	if (health <= 0)
+	{
+		bot_state = BOT_DEAD;
+		return;
+	}
+
 	best_weapon();
 
 	if (bot_state == BOT_ALERT || bot_state == BOT_ATTACK)
@@ -699,6 +705,41 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 	{
 		if (i == self)
 			continue;
+
+
+		if (strcmp(entity_list[i]->type, "player") == 0)
+		{
+			float distance = (entity_list[i]->position - entity->position).magnitude();
+
+			if (distance < 500.0f)
+			{
+				entity->rigid->lookat(entity->position);
+				bot_state = BOT_ALERT;
+			}
+			else
+			{
+				entity->rigid->lookat(-entity->position);
+				bot_state = BOT_IDLE;
+			}
+
+			if (distance < 400.0f)
+			{
+				if (reload_timer <= 0 && entity_list[i]->player->health > -15)
+				{
+					bot_state = BOT_ATTACK;
+					reload_timer = 1;
+				}
+				else
+				{
+					if (entity->player->health <= -15)
+					{
+						bot_state = BOT_IDLE;
+					}
+					reload_timer--;
+				}
+			}
+			continue;
+		}
 
 		if (entity_list[i]->trigger == NULL)
 			continue;

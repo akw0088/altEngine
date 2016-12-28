@@ -20,14 +20,14 @@ public:
 
 	void handle_weapons(Player &player, Frame &camera_frame, button_t &input);
 
-	void handle_plasma(Entity *entity, Player &player, Frame &camera_frame);
-	void handle_rocketlauncher(Entity *entity, Player &player, Frame &camera_frame);
-	void handle_grenade(Entity *entity, Player &player, Frame &camera_frame);
-	void handle_lightning(Entity *entity, Player &player, Frame &camera_frame);
-	void handle_railgun(Entity *entity, Player &player, Frame &camera_frame);
-	void handle_machinegun(Player &player, Frame &camera_frame, int self);
-	void handle_shotgun(Player &player, Frame &camera_frame);
-	void handle_gibs(Player &player, Frame &camera_frame);
+	void handle_plasma(Entity *entity, Player &player);
+	void handle_rocketlauncher(Entity *entity, Player &player);
+	void handle_grenade(Entity *entity, Player &player);
+	void handle_lightning(Entity *entity, Player &player);
+	void handle_railgun(Entity *entity, Player &player);
+	void handle_machinegun(Player &player, int self);
+	void handle_shotgun(Player &player);
+	void handle_gibs(Player &player);
 
 protected:
 	bool blink;

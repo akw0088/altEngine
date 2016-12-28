@@ -31,7 +31,8 @@ typedef enum {
 	BOT_IDLE,
 	BOT_ALERT,
 	BOT_GET_ITEM,
-	BOT_ATTACK
+	BOT_ATTACK,
+	BOT_DEAD
 } bot_state_t;
 
 

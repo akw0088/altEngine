@@ -478,3 +478,14 @@ void Model::getForwardVector(vec3 &forward)
 	forward.y = entity->model->morientation.m[7];
 	forward.z = entity->model->morientation.m[8];
 }
+
+void Model::get_frame(Frame &frame)
+{
+	frame.up.x = morientation.m[3];
+	frame.up.y = morientation.m[4];
+	frame.up.z = morientation.m[5];
+	frame.forward.x = -morientation.m[6];
+	frame.forward.y = -morientation.m[7];
+	frame.forward.z = -morientation.m[8];
+	frame.pos = entity->position;
+}

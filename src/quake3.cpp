@@ -110,8 +110,8 @@ void Quake3::step(int frame_step)
 		char cmd[80];
 		sprintf(cmd, "respawn %d %d", -1, engine->enemy);
 		engine->console(cmd);
-		entity->rigid->pursue_flag = true;
-		entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
+//		entity->rigid->pursue_flag = true;
+//		entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
 	}
 
 
@@ -166,62 +166,28 @@ void Quake3::step(int frame_step)
 		{
 			Entity *enemy_ent = engine->entity_list[engine->enemy];
 
-			if (enemy_ent->player->health > 0)
-			{
-				Frame frame;
-				float distance = (entity->position - enemy_ent->position).magnitude();
+			enemy_ent->player->bot_search_for_items(engine->entity_list, engine->enemy);
 
-				if (distance < 500.0f)
-				{
-					enemy_ent->rigid->lookat(entity->position);
-					enemy_ent->player->bot_state = BOT_ALERT;
-				}
-				else
-				{
-					enemy_ent->rigid->lookat(-entity->position);
-					enemy_ent->player->bot_state = BOT_IDLE;
-					enemy_ent->player->bot_search_for_items(engine->entity_list, engine->enemy);
-				}
-
-				if (distance < 400.0f)
-				{
-					if (enemy_ent->player->reload_timer <= 0 && entity->player->health > -15)
-					{
-						enemy_ent->player->bot_state = BOT_ATTACK;
-						engine->zcc.select_animation(0);
-						handle_machinegun(*(enemy_ent->player), frame, engine->enemy);
-						enemy_ent->player->reload_timer = 1;
-					}
-					else
-					{
-						if (entity->player->health <= -15)
-						{
-							enemy_ent->player->bot_state = BOT_IDLE;
-							engine->zcc.select_animation(1);
-						}
-						enemy_ent->player->reload_timer--;
-					}
-				}
-				else
-				{
-					engine->zcc.select_animation(1);
-				}
-			}
-			else
+			switch (enemy_ent->player->bot_state)
 			{
+			case BOT_ATTACK:
+				engine->zcc.select_animation(0);
+				handle_machinegun(*(enemy_ent->player), engine->enemy);
+				break;
+			case BOT_DEAD:
+				engine->zcc.select_animation(1);
 				enemy_ent->model->clone(*(box->model));
-				engine->select_wave(enemy_ent->speaker->source,
-					enemy_ent->player->death1_sound);
+				engine->select_wave(enemy_ent->speaker->source, enemy_ent->player->death1_sound);
 				engine->audio.play(enemy_ent->speaker->source);
 
 				enemy_ent->player->respawn();
-
 				char cmd[80];
 				sprintf(cmd, "respawn -1 %d", engine->enemy);
 				engine->console(cmd);
-
-
-//				once = false;
+				break;
+			case BOT_IDLE:
+				engine->zcc.select_animation(1);
+				break;
 			}
 		}
 	}
@@ -359,7 +325,7 @@ void Quake3::step(int frame_step)
 
 				ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
 
-				handle_gibs(*(entity->player), engine->camera_frame);
+				handle_gibs(*(entity->player));
 			}
 			else
 			{
@@ -466,8 +432,12 @@ void Quake3::step(int frame_step)
 	}
 }
 
-void Quake3::handle_plasma(Entity *entity, Player &player, Frame &camera_frame)
+void Quake3::handle_plasma(Entity *entity, Player &player)
 {
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
 	sprintf(player.attack_sound, "sound/weapons/plasma/hyprbf1a.wav");
 
 	player.reload_timer = 8;
@@ -506,8 +476,13 @@ void Quake3::handle_plasma(Entity *entity, Player &player, Frame &camera_frame)
 
 }
 
-void Quake3::handle_rocketlauncher(Entity *entity, Player &player, Frame &camera_frame)
+void Quake3::handle_rocketlauncher(Entity *entity, Player &player)
 {
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
+
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
 
 	player.reload_timer = 100;
@@ -559,8 +534,13 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player, Frame &camera
 	}
 }
 
-void Quake3::handle_grenade(Entity *entity, Player &player, Frame &camera_frame)
+void Quake3::handle_grenade(Entity *entity, Player &player)
 {
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
+
 	sprintf(player.attack_sound, "sound/weapons/grenade/grenlf1a.wav");
 
 	player.reload_timer = 100;
@@ -596,8 +576,13 @@ void Quake3::handle_grenade(Entity *entity, Player &player, Frame &camera_frame)
 	entity->trigger->knockback = 250.0f;
 }
 
-void Quake3::handle_lightning(Entity *entity, Player &player, Frame &camera_frame)
+void Quake3::handle_lightning(Entity *entity, Player &player)
 {
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
+
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
 
 	player.reload_timer = 6;
@@ -619,10 +604,15 @@ void Quake3::handle_lightning(Entity *entity, Player &player, Frame &camera_fram
 	entity->light->intensity = 1000.0f;
 }
 
-void Quake3::handle_railgun(Entity *entity, Player &player, Frame &camera_frame)
+void Quake3::handle_railgun(Entity *entity, Player &player)
 {
 	int index[8];
 	int num_index;
+
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
 
 	sprintf(player.attack_sound, "sound/weapons/railgun/railgf1a.wav");
 
@@ -659,13 +649,18 @@ void Quake3::handle_railgun(Entity *entity, Player &player, Frame &camera_frame)
 	}
 }
 
-void Quake3::handle_machinegun(Player &player, Frame &camera_frame, int self)
+void Quake3::handle_machinegun(Player &player, int self)
 {
 	char cmd[80] = { 0 };
 	int index[8];
 	int num_index;
 	vec3 forward;
 	//float distance;
+
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
 
 
 	sprintf(player.attack_sound, "sound/weapons/machinegun/machgf1b.wav");
@@ -706,8 +701,13 @@ void Quake3::handle_machinegun(Player &player, Frame &camera_frame, int self)
 
 }
 
-void Quake3::handle_gibs(Player &player, Frame &camera_frame)
+void Quake3::handle_gibs(Player &player)
 {
+
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
 
 	player.entity->rigid->velocity += vec3(0.5f, 3.0f, 1.2f);
 
@@ -782,8 +782,13 @@ void Quake3::handle_gibs(Player &player, Frame &camera_frame)
 
 }
 
-void Quake3::handle_shotgun(Player &player, Frame &camera_frame)
+void Quake3::handle_shotgun(Player &player)
 {
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
+
 	vec3 forward;
 	//float distance;
 	int index[8];
@@ -916,7 +921,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_rocketlauncher(entity, player, frame);
+				handle_rocketlauncher(entity, player);
 			}
 			else
 			{
@@ -929,7 +934,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_plasma(entity, player, frame);
+				handle_plasma(entity, player);
 			}
 			else
 			{
@@ -942,7 +947,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_grenade(entity, player, frame);
+				handle_grenade(entity, player);
 			}
 			else
 			{
@@ -956,7 +961,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_lightning(entity, player, frame);
+				handle_lightning(entity, player);
 			}
 			else
 			{
@@ -970,7 +975,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_railgun(entity, player, frame);
+				handle_railgun(entity, player);
 			}
 			else
 			{
@@ -983,7 +988,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			if (player.ammo_shells > 0)
 			{
 				fired = true;
-				handle_shotgun(player, frame);
+				handle_shotgun(player);
 			}
 			else
 			{
@@ -996,7 +1001,7 @@ void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				handle_machinegun(player, frame, engine->spawn);
+				handle_machinegun(player, engine->spawn);
 			}
 			else
 			{
