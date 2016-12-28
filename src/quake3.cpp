@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+extern char bot_state_name[16][80];
+
 Quake3::Quake3()
 {
 	blink = false;
@@ -182,6 +184,7 @@ void Quake3::step(int frame_step)
 			button_t input;
 
 
+			enemy_ent->player->avoid_walls(engine->map);
 			enemy_ent->player->bot_search_for_items(engine->entity_list, engine->enemy);
 
 			switch (enemy_ent->player->bot_state)
@@ -204,6 +207,7 @@ void Quake3::step(int frame_step)
 				engine->console(cmd);
 				break;
 			case BOT_IDLE:
+			case BOT_ALERT:
 				engine->zcc.select_animation(1);
 				break;
 			}
@@ -1232,6 +1236,9 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 			vec3 red(1.0f, 0.0f, 0.0f);
 
 			sprintf(data, "Health %d", entity->player->health);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
+
+			sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
 		}
 

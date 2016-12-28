@@ -5,6 +5,15 @@
 #endif
 #include <float.h>
 
+char bot_state_name[16][80]{
+	"BOT_IDLE",
+	"BOT_ALERT",
+	"BOT_ATTACK",
+	"BOT_GET_ITEM",
+	"BOT_EXPLORE",
+	"BOT_DEAD",
+};
+
 Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 : weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
@@ -668,6 +677,61 @@ Player::~Player()
 }
 
 
+void Player::avoid_walls(Bsp &map)
+{
+	Frame frame;
+	vec3 rightv;
+
+	entity->model->get_frame(frame);
+
+	vec3 forward = entity->position + frame.forward * 50.0f;
+	vec3 backward = entity->position + frame.forward * -50.0f;
+
+	rightv = vec3::crossproduct(frame.up, forward);
+
+	vec3 right = entity->position + rightv * 50.0f;
+	vec3 left = entity->position + rightv * -50.0f;
+
+	plane_t plane;
+	float depth;
+	bool water;
+	float water_depth;
+	vector<surface_t *> surface_list;
+	vec3 clip;
+	vec3 vel;
+
+	button_t input;
+
+
+	map.collision_detect(forward, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
+	if ( depth < 0 )
+	{
+		input.down = true;
+	}
+
+	map.collision_detect(backward, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
+	if (depth < 0)
+	{
+		input.up = true;
+	}
+
+	map.collision_detect(left, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
+	if (depth < 0)
+	{
+		input.right = true;
+	}
+
+	map.collision_detect(right, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
+	if (depth < 0)
+	{
+		input.left = true;
+	}
+
+	entity->rigid->move(input);
+
+}
+
+
 //#define DEBUG_BOT
 void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 {
@@ -716,6 +780,11 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 				entity->rigid->lookat(entity_list[i]->position);
 				bot_state = BOT_ALERT;
 			}
+			else
+			{
+				if (bot_state == BOT_ALERT)
+					bot_state = BOT_IDLE;
+			}
 
 			if (distance < 400.0f)
 			{
@@ -727,7 +796,6 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 				}
 				else
 				{
-					bot_state = BOT_ALERT;
 					reload_timer--;
 				}
 
@@ -736,8 +804,16 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 					bot_state = BOT_IDLE;
 				}
 			}
+			else
+			{
+				if (bot_state == BOT_ATTACK)
+					bot_state = BOT_ALERT;
+			}
+
 			continue;
 		}
+
+		last_state = bot_state;
 
 		if (entity_list[i]->trigger == NULL)
 			continue;
@@ -745,12 +821,13 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 		if (entity_list[i]->trigger->active == true)
 			continue;
 
-		if (last_state != BOT_IDLE && entity_list[i]->bsp_leaf != entity_list[self]->bsp_leaf)
+		if (last_state != BOT_IDLE && last_state != BOT_GET_ITEM && last_state != BOT_EXPLORE &&
+			entity_list[i]->bsp_leaf != entity_list[self]->bsp_leaf)
 			continue;
 
 		float distance = (entity_list[i]->position - entity->position).magnitude();
 
-		if (distance > 1500.0f)
+		if (distance > 1500.0f && bot_state != BOT_EXPLORE)
 			continue;
 
 
@@ -760,107 +837,126 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 		if (strcmp(entity_list[i]->type, "item_quad") == 0)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if (strcmp(entity_list[i]->type, "item_health_mega") == 0)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if (need_health)
 		{
 			if (strcmp(entity_list[i]->type, "item_health_large") == 0)
 			{
 				printf("bot wants %s()\n", entity_list[i]->type);
-				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
+				break;
 			}
 			else if (strcmp(entity_list[i]->type, "item_health_large") == 0)
 			{
 				printf("bot wants %s()\n", entity_list[i]->type);
-				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
+				break;
 			}
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_rocketlauncher") == 0) && need_rocketlauncher)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_lightning") == 0) && need_lightning)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_railgun") == 0) && need_railgun)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_plasma") == 0) && need_plasma)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_grenadelauncher") == 0) && need_grenadelauncher)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_shotgun") == 0) && need_shotgun)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		else if (need_armor)
 		{
 			if (strcmp(entity_list[i]->type, "item_armor_body") == 0)
 			{
 				printf("bot wants %s()\n", entity_list[i]->type);
-				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
+				break;
 			}
 			else if (strcmp(entity_list[i]->type, "item_armor_combat") == 0)
 			{
 				printf("bot wants %s()\n", entity_list[i]->type);
-				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
+				break;
 			}
 			else if (strcmp(entity_list[i]->type, "item_armor_shard") == 0)
 			{
 				printf("bot wants %s()\n", entity_list[i]->type);
-				entity->rigid->lookat(entity_list[i]->position);
+				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
+				break;
 			}
 		}
 		if ((strstr(entity_list[i]->type, "ammo_") != NULL) && need_ammo)
 		{
 			printf("bot wants %s()\n", entity_list[i]->type);
-			entity->rigid->lookat(entity_list[i]->position);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
+			break;
 		}
 		last_state = bot_state;
 	}
+
+	// Exhausted items in current leaf
+	if (bot_state == BOT_IDLE)
+		bot_state = BOT_EXPLORE;
+
 }

@@ -1353,7 +1353,10 @@ void Engine::step(int tick)
 	spatial_testing(); // mostly sets visible flag
 
 	if (spawn != -1)
-		check_triggers();  // handles triggers and the projectile as trigger stuff
+		check_triggers(spawn);  // handles triggers and the projectile as trigger stuff
+	if (enemy != -1)
+		check_triggers(enemy);  // handles triggers and the projectile as trigger stuff
+
 
 	dynamics();
 	update_audio();
@@ -1367,7 +1370,7 @@ void Engine::step(int tick)
 
 }
 
-void Engine::check_triggers()
+void Engine::check_triggers(int player_index)
 {
 	num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -1491,7 +1494,7 @@ void Engine::check_triggers()
 		if (entity_list[i]->trigger->self == false)
 			continue;
 
-		float distance = (entity_list[i]->position - entity_list[spawn]->position).magnitude();
+		float distance = (entity_list[i]->position - entity_list[player_index]->position).magnitude();
 
 		if ( distance < entity_list[i]->trigger->radius)
 			inside = true;
@@ -1500,16 +1503,16 @@ void Engine::check_triggers()
 		{
 			int pickup = true;
 
-			if (entity_list[i]->trigger->armor && entity_list[spawn]->player->armor >= 200)
+			if (entity_list[i]->trigger->armor && entity_list[player_index]->player->armor >= 200)
 				pickup = false;
 
-			if (entity_list[i]->trigger->health && entity_list[spawn]->player->health >= 100)
+			if (entity_list[i]->trigger->health && entity_list[player_index]->player->health >= 100)
 				pickup = false;
 
-			if (entity_list[spawn]->player->state == PLAYER_DEAD)
+			if (entity_list[player_index]->player->state == PLAYER_DEAD)
 				pickup = false;
 
-			if (entity_list[spawn]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
+			if (entity_list[player_index]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
 				pickup = false;
 
 
@@ -1523,10 +1526,10 @@ void Engine::check_triggers()
 
 				if (entity_list[i]->trigger->explode_timer)
 				{
-					vec3 distance = entity_list[spawn]->position - entity_list[i]->position;
+					vec3 distance = entity_list[player_index]->position - entity_list[i]->position;
 					float mag = MIN(distance.magnitude(), 50.0f);
 					//add knockback to explosions
-					entity_list[spawn]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
+					entity_list[player_index]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
 
 				bool ret = false;

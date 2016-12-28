@@ -40,6 +40,7 @@ public:
 	void move_up(); // jump
 	void move_down();
 	void lookat(vec3 &target);
+	void lookat_yaw(vec3 &target);
 
 
 	float get_volume();

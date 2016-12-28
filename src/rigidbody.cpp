@@ -607,7 +607,7 @@ bool RigidBody::move(button_t &keyboard)
 		if (map_collision && !jumped)
 		{
 			//clear out gravity keeping us on the ground
-			velocity.y = -0.02f;
+			velocity.y = 0.08f;
 
 			//cancel out the hop we see while moving
 			//entity->position.y -= 2.0f;
@@ -634,7 +634,7 @@ void RigidBody::move_forward()
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.up = true;
+	input.left = true;
 	move(input);
 }
 
@@ -690,6 +690,24 @@ void RigidBody::lookat(vec3 &target)
 
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	frame.forward = (entity->position - target).normalize();
+
+	right = vec3::crossproduct(frame.forward, frame.up);
+	right.normalize();
+	frame.up = vec3::crossproduct(right, frame.forward);
+	frame.up.normalize();
+
+	frame.set(entity->model->morientation);
+}
+
+void RigidBody::lookat_yaw(vec3 &target)
+{
+	Frame frame;
+	vec3 right;
+
+	frame.up = vec3(0.0f, 1.0f, 0.0f);
+	frame.forward = (entity->position - target);
+	frame.forward.y = 0.0f;
+	frame.forward.normalize();
 
 	right = vec3::crossproduct(frame.forward, frame.up);
 	right.normalize();

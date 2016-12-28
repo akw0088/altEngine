@@ -31,7 +31,7 @@ public:
 	void dynamics();
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
-	void check_triggers();
+	void check_triggers(int player_index);
 	void setup_func();
 	void update_audio();
 

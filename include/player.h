@@ -29,11 +29,14 @@ typedef enum {
 
 typedef enum {
 	BOT_IDLE,
-	BOT_ALERT,
-	BOT_GET_ITEM,
-	BOT_ATTACK,
-	BOT_DEAD
+	BOT_ALERT,		// 1
+	BOT_ATTACK,		// 2
+	BOT_GET_ITEM,	// 3
+	BOT_EXPLORE,	// 4
+	BOT_DEAD		// 5
 } bot_state_t;
+
+
 
 
 // Seems like a good idea to handle animations
@@ -73,6 +76,7 @@ public:
 	void best_weapon();
 
 	void bot_search_for_items(vector<Entity *> &entity_list, int self);
+	void avoid_walls(Bsp &map);
 
 
 	int FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints);
