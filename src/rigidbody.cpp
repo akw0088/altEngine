@@ -538,8 +538,11 @@ float RigidBody::get_height()
 
 
 // Move negative relative to the forward vector
-bool RigidBody::move(Frame &camera, button_t &keyboard)
+bool RigidBody::move(button_t &keyboard)
 {
+	Frame camera;
+
+	get_frame(camera);
 	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
@@ -628,81 +631,56 @@ bool RigidBody::move(Frame &camera, button_t &keyboard)
 
 void RigidBody::move_forward()
 {
-	Frame frame;
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	getForwardVector(frame.forward);
-	frame.forward *= -1;
-	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.up = true;
-
-	move(frame, input);
+	move(input);
 }
 
 void RigidBody::move_backward()
 {
-	Frame frame;
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	getForwardVector(frame.forward);
-	frame.forward *= -1;
-	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.down = true;
-	move(frame, input);
+	move(input);
 }
 
 void RigidBody::move_left()
 {
-	Frame frame;
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	getForwardVector(frame.forward);
-	frame.forward *= -1;
-	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.left = true;
-	move(frame, input);
+	move(input);
 }
 
 void RigidBody::move_right()
 {
-	Frame frame;
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	getForwardVector(frame.forward);
-	frame.forward *= -1;
-	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.right = true;
-	move(frame, input);
+	move(input);
 }
 
 void RigidBody::move_up()
 {
-	Frame frame;
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	getForwardVector(frame.forward);
-	frame.forward *= -1;
-	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.enter = true;
-	move(frame, input);
+	move(input);
 }
 
 void RigidBody::move_down()
 {
-	Frame frame;
 	button_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	getForwardVector(frame.forward);
-	frame.forward *= -1;
-	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.shift = true;
-	move(frame, input);
+	move(input);
 }
 
 void RigidBody::lookat(vec3 &target)

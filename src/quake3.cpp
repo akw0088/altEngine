@@ -126,7 +126,7 @@ void Quake3::step(int frame_step)
 			{
 
 				// True if jumped
-				if (entity->rigid->move(engine->camera_frame, engine->input))
+				if (entity->rigid->move(engine->input))
 				{
 					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
 					engine->audio.play(entity->speaker->source);
@@ -140,7 +140,7 @@ void Quake3::step(int frame_step)
 				//Makes body hit the floor, need to explore why this hack is needed
 				if (entity->player->reload_timer)
 				{
-					entity->rigid->move(engine->camera_frame, noinput);
+					entity->rigid->move(noinput);
 				}
 			}
 

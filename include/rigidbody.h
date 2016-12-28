@@ -32,7 +32,7 @@ public:
 	void set_target(Entity &target);
 
 
-	bool move(Frame &camera_frame, button_t &keyboard);
+	bool move(button_t &keyboard);
 	void move_forward();
 	void move_backward();
 	void move_left();

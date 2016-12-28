@@ -14,7 +14,7 @@ Entity::Entity()
 	target_name[0] = '\0';
 	angle = 0;
 	model_ref = -1;
-	memcpy(type, "free", 5);
+	sprintf(type, "free");
 	rigid = NULL;
 	vehicle = NULL;
 	model = NULL;
@@ -27,7 +27,7 @@ Entity::Entity()
 
 Entity::~Entity()
 {
-	memcpy(type, "free", 5);
+	sprintf(type, "free");
 
 	if (light)
 		delete light;

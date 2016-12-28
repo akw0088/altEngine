@@ -536,7 +536,7 @@ void Engine::render_shadowmaps()
 				//gfx.CullFace("back");
 
 				mlight2.Select();
-				vec3 offset = vec3(0.0f, 0.0f, 0.0f);
+				vec3 offset(0.0f, 0.0f, 0.0f);
 				mlight2.Params(mvp, light_list, light_list.size(), offset);
 				map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 //				gfx.SelectShader(0);
@@ -592,7 +592,7 @@ void Engine::render_scene(bool lights)
 	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
-	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
+	vec3 offset(0.0f, 0.0f, 0.0f);
 
 
 //	mlight2.Params(projection, light_list, light_list.size(), offset);
@@ -635,7 +635,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	//shadowmap.Select();
 		
 	render_entities(transformation, lights);
-	vec3 offset = vec3(0.0f, 0.0f, 0.0f);
+	vec3 offset(0.0f, 0.0f, 0.0f);
 	mlight2.Select();
 	mvp = transformation * projection;
 	mlight2.Params(mvp, light_list, light_list.size(), offset);
@@ -1255,7 +1255,7 @@ bool Engine::map_collision(RigidBody &body)
 	Plane plane;
 	float depth;
 	vec3 staircheck(0.0f, 20.0f, 0.0f);
-	vec3 clip = vec3(0.0f, 0.0f, 0.0f);
+	vec3 clip(0.0f, 0.0f, 0.0f);
 	bool collision = false;
 
 	if (body.noclip)
@@ -1658,7 +1658,7 @@ void Engine::server_step()
 
 		client_frame.set(entity_list[client_list[index]->entity]->rigid->morientation);
 		client_frame.pos = client->position;
-		client->rigid->move(client_frame, clientkeys);
+		client->rigid->move(clientkeys);
 
 
 		/*

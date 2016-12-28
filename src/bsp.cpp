@@ -1038,7 +1038,7 @@ vec3 Bsp::model_origin(unsigned int index)
 
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
-	vec3 origin = vec3(
+	vec3 origin(
 		(max.x - min.x) * 0.5f + min.x,
 		(max.y - min.y) * 0.5f + min.y,
 		(max.z - min.z) * 0.5f + min.z);

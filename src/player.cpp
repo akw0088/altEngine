@@ -107,7 +107,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	ammo_bfg = 0;
 	reload_timer = 0;
 	drown_timer++;
-	memcpy(name, "UnnamedPlayer", strlen("UnnamedPlayer") + 1);
+	sprintf(name, "UnnamedPlayer");
 	memset(&stats, 0, sizeof(stats_t));
 	dead = false;
 
@@ -679,8 +679,8 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 
 	best_weapon();
 
-	if (bot_state == BOT_ALERT || bot_state == BOT_ATTACK)
-		return;
+//	entity_list[self]->rigid->move_forward();
+//	return;
 
 #ifdef DEBUG_BOT
 	printf("bot_search_for_items() state is %d\n", bot_state);
