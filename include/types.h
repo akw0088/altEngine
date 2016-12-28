@@ -313,14 +313,13 @@ struct surface_t
 // Maps opengl texture object to q3shader index and stage (if available)
 typedef struct
 {
-	char name[512]; // shader and/or texture name
+	char name[128];
 	int texObj[MAX_TEXTURES];
 	int texObjAnim[8];
 	int anim_unit;
 	int freq;
 	int num_anim;
 	int index; // index into surface list (if it exists)
-//	int stage; // stage texture was loaded from
 	int num_tex;
 } texture_t;
 

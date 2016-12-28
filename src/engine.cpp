@@ -162,6 +162,10 @@ void Engine::setup_func()
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
+		if (entity_list[i]->model_ref != -1)
+			entity_list[i]->position = map.model_origin(entity_list[i]->model_ref);
+
+
 		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
 			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull"))
 		{

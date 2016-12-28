@@ -271,9 +271,13 @@ void Bsp::change_axis()
 
 	for (unsigned int i = 0; i < data.num_model; i++)
 	{
-//		float temp = data.Model[i].min[1];
-//		data.Model[i].min[1] = data.Model[i].min[2];
-//		data.Model[i].min[2] = -temp;
+		float temp = data.Model[i].min[1];
+		data.Model[i].min[1] = data.Model[i].min[2];
+		data.Model[i].min[2] = -temp;
+
+		temp = data.Model[i].max[1];
+		data.Model[i].max[1] = data.Model[i].max[2];
+		data.Model[i].max[2] = -temp;
 	}
 }
 
@@ -290,6 +294,8 @@ const char *Bsp::get_entities()
 */
 void Bsp::unload(Graphics &gfx)
 {
+	int mesh_index = 0;
+
 	loaded = false;
 	textures_loaded = false;
 
@@ -1024,9 +1030,9 @@ vec3 Bsp::model_origin(unsigned int index)
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
 	vec3 origin = vec3(
-		(max.x - min.x) / 2.0f + min.x,
-		(max.y - min.y) / 2.0f + min.y,
-		(max.z - min.z) / 2.0f + min.z);
+		(max.x - min.x) * 0.5f + min.x,
+		(max.y - min.y) * 0.5f + min.y,
+		(max.z - min.z) * 0.5f + min.z);
 
 	return origin;
 }
