@@ -139,6 +139,8 @@ public:
 	bool spawned;
 
 	bot_state_t bot_state;
+	bot_state_t last_state;
+
 
 
 	Model weapon_machinegun;

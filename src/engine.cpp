@@ -1004,6 +1004,9 @@ void Engine::handle_input()
 
 void Engine::spatial_testing()
 {
+	int leaf_a = -1;
+	int leaf_b = -1;
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		// set pursue / evade
@@ -1044,7 +1047,7 @@ void Engine::spatial_testing()
 			for(int j = 0; j < 8; j++)
 			{
 				vec3 position = entity_list[i]->position + entity_list[i]->model->aabb[j];
-				bool vert_visible = map.vis_test(camera_frame.pos, position);
+				bool vert_visible = map.vis_test(camera_frame.pos, position, leaf_a, leaf_b);
 
 				if (vert_visible)
 				{
@@ -1052,6 +1055,10 @@ void Engine::spatial_testing()
 					break;
 				}
 			}
+
+			entity_list[i]->bsp_visible = bsp_visible;
+			entity_list[spawn]->bsp_leaf = leaf_a;
+			entity_list[i]->bsp_leaf = leaf_b;
 
 			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)spawn)
 			{
@@ -1081,7 +1088,9 @@ void Engine::spatial_testing()
 		else
 		{
 			// Lights? what else?
-			entity_list[i]->visible = map.vis_test(camera_frame.pos, entity_list[i]->position);
+			entity_list[i]->visible = map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
+			entity_list[spawn]->bsp_leaf = leaf_a;
+			entity_list[i]->bsp_leaf = leaf_b;
 		}
 
 		if (entity_list[i]->visible == false)
@@ -1775,9 +1784,11 @@ void Engine::send_entities()
 		for (unsigned int j = 0; j < entity_list.size(); j++)
 		{
 			entity_t ent;
+			int leaf_a;
+			int leaf_b;
 
 			bool visible = map.vis_test(entity_list[j]->position,
-				entity_list[client_list[i]->entity]->position);
+				entity_list[client_list[i]->entity]->position, leaf_a, leaf_b);
 			if ( visible == false )
 				continue;
 
@@ -3170,7 +3181,7 @@ void Engine::console(char *cmd)
 				if (entity_list[spawn]->player->teleport_timer > 0)
 					return;
 
-				entity_list[spawn]->player->teleport_timer = 0.5f * TICK_RATE;
+				entity_list[spawn]->player->teleport_timer = TICK_RATE >> 1;
 				entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 				entity_list[spawn]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 

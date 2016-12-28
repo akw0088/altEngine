@@ -1386,13 +1386,19 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 	num_verts = num_verts * num_verts;
 }
 
-bool Bsp::vis_test(vec3 &x, vec3 &y)
+bool Bsp::vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b)
 {
 		int a = find_leaf(x);
 		int b = find_leaf(y);
 
+		leaf_a = a;
+		leaf_b = b;
+
+
 		if (a == b)
+		{
 			return true;
+		}
 
 		leaf_t *a_leaf = &data.Leaf[a];
 		leaf_t *b_leaf = &data.Leaf[b];

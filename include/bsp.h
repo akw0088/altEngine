@@ -22,7 +22,7 @@ public:
 	void find_edges(vec3 &position, Edge &edge_list);
 	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
-	bool vis_test(vec3 &x, vec3 &y);
+	bool vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b);
 	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();

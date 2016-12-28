@@ -537,7 +537,7 @@ float RigidBody::get_height()
 
 
 
-
+// Move negative relative to the forward vector
 bool RigidBody::move(Frame &camera, button_t &keyboard)
 {
 	vec3	forward = camera.forward;
@@ -631,9 +631,12 @@ void RigidBody::move_forward()
 	Frame frame;
 	button_t input;
 
+	memset(&input, 0, sizeof(button_t));
 	getForwardVector(frame.forward);
+	frame.forward *= -1;
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.up = true;
+
 	move(frame, input);
 }
 
@@ -642,7 +645,9 @@ void RigidBody::move_backward()
 	Frame frame;
 	button_t input;
 
+	memset(&input, 0, sizeof(button_t));
 	getForwardVector(frame.forward);
+	frame.forward *= -1;
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.down = true;
 	move(frame, input);
@@ -653,7 +658,9 @@ void RigidBody::move_left()
 	Frame frame;
 	button_t input;
 
+	memset(&input, 0, sizeof(button_t));
 	getForwardVector(frame.forward);
+	frame.forward *= -1;
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.left = true;
 	move(frame, input);
@@ -664,7 +671,9 @@ void RigidBody::move_right()
 	Frame frame;
 	button_t input;
 
+	memset(&input, 0, sizeof(button_t));
 	getForwardVector(frame.forward);
+	frame.forward *= -1;
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.right = true;
 	move(frame, input);
@@ -675,7 +684,9 @@ void RigidBody::move_up()
 	Frame frame;
 	button_t input;
 
+	memset(&input, 0, sizeof(button_t));
 	getForwardVector(frame.forward);
+	frame.forward *= -1;
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.enter = true;
 	move(frame, input);
@@ -686,7 +697,9 @@ void RigidBody::move_down()
 	Frame frame;
 	button_t input;
 
+	memset(&input, 0, sizeof(button_t));
 	getForwardVector(frame.forward);
+	frame.forward *= -1;
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	input.shift = true;
 	move(frame, input);

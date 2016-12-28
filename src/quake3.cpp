@@ -124,6 +124,7 @@ void Quake3::step(int frame_step)
 		{
 			if (engine->entity_list[spawn]->player->health > 0)
 			{
+
 				// True if jumped
 				if (entity->rigid->move(engine->camera_frame, engine->input))
 				{
@@ -1172,9 +1173,9 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 	{
 		char data[512];
 
-		sprintf(data, "visible: %d", entity->frustum_visible);
-		menu.draw_text(entity->type, pos.x, pos.y, 0.02f, color);
-		menu.draw_text(data, pos.x, pos.y - 0.0625f, 0.02f, color);
+		menu.draw_text(entity->type, pos.x, pos.y - 0.0625f, 0.02f, color);
+		sprintf(data, "bsp_leaf: %d", entity->bsp_leaf);
+		menu.draw_text(data, pos.x, pos.y, 0.02f, color);
 
 		if (strcmp(entity->type, "free") == 0)
 		{
@@ -1185,7 +1186,7 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 			sprintf(data, "Vel %.3f %.3f %.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 			sprintf(data, "State %d", entity->rigid->sleep);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color );
 		}
 
 		if (strcmp(entity->type, "light") == 0)

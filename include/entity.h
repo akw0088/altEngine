@@ -10,15 +10,11 @@ public:
 	~Entity();
 
 	vec3			position;
-	char			target[64];
-	char			target_name[64];
-	int				angle;
-	int				model_ref;
 	bool			visible;
 	bool			frustum_visible;
+	bool			bsp_visible;
+	int				bsp_leaf;
 	bool			network;
-	float			height; // for movers will make own class later
-	char			type[64];
 	RigidBody		*rigid;
 	Vehicle			*vehicle;
 	Model			*model;
@@ -27,5 +23,14 @@ public:
 	Trigger			*trigger;
 	Player			*player;
 	Decal			*decal;
+
+	//Really bsp related items
+	char			type[64];
+	char			target[64];
+	char			target_name[64];
+	int				angle;
+	int				model_ref;
+	float			height; // for movers will make own class later
+
 };
 #endif
