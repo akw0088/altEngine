@@ -428,7 +428,7 @@ void Quake3::step(int frame_step)
 			entity->player->kill();
 			entity->model->clone(*(box->model));
 		}
-		handle_weapons(*(entity->player), engine->camera_frame, engine->input);
+		handle_weapons(*(entity->player), engine->input);
 	}
 }
 
@@ -832,7 +832,7 @@ void Quake3::handle_shotgun(Player &player)
 }
 
 
-void Quake3::handle_weapons(Player &player, Frame &frame, button_t &input)
+void Quake3::handle_weapons(Player &player, button_t &input)
 {
 	bool fired = false;
 	bool empty = false;

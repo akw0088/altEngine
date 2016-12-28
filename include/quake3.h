@@ -18,7 +18,7 @@ public:
 	void render_hud(double last_frametime);
 	void draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color);
 
-	void handle_weapons(Player &player, Frame &camera_frame, button_t &input);
+	void handle_weapons(Player &player, button_t &input);
 
 	void handle_plasma(Entity *entity, Player &player);
 	void handle_rocketlauncher(Entity *entity, Player &player);
