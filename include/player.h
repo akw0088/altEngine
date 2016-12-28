@@ -36,6 +36,17 @@ typedef enum {
 } bot_state_t;
 
 
+// Seems like a good idea to handle animations
+typedef enum {
+	PLAYER_IDLE,
+	PLAYER_MOVED,
+	PLAYER_JUMPED,
+	PLAYER_DUCKED,
+	PLAYER_ATTACK,
+	PLAYER_DEAD
+} player_state_t;
+
+
 typedef struct
 {
 	int kills;
@@ -136,11 +147,11 @@ public:
 
 	char name[128];
 	stats_t stats;
-	bool dead;
 	bool spawned;
 
 	bot_state_t bot_state;
 	bot_state_t last_state;
+	player_state_t state;
 
 
 

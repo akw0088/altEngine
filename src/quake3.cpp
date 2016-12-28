@@ -126,8 +126,20 @@ void Quake3::step(int frame_step)
 			{
 
 				// True if jumped
+				if (engine->input.up || engine->input.down || engine->input.left || engine->input.right)
+				{
+					entity->player->state = PLAYER_MOVED;
+				}
+
+				if (engine->input.shift)
+				{
+					entity->player->state = PLAYER_DUCKED;
+				}
+
+
 				if (entity->rigid->move(engine->input))
 				{
+					entity->player->state = PLAYER_JUMPED;
 					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
 					engine->audio.play(entity->speaker->source);
 				}
@@ -137,6 +149,8 @@ void Quake3::step(int frame_step)
 			{
 				button_t noinput;
 
+				memset(&noinput, 0, sizeof(button_t));
+				entity->player->state = PLAYER_DEAD;
 				//Makes body hit the floor, need to explore why this hack is needed
 				if (entity->player->reload_timer)
 				{
@@ -165,6 +179,8 @@ void Quake3::step(int frame_step)
 		if (engine->enemy != -1)
 		{
 			Entity *enemy_ent = engine->entity_list[engine->enemy];
+			button_t input;
+
 
 			enemy_ent->player->bot_search_for_items(engine->entity_list, engine->enemy);
 
@@ -172,7 +188,9 @@ void Quake3::step(int frame_step)
 			{
 			case BOT_ATTACK:
 				engine->zcc.select_animation(0);
-				handle_machinegun(*(enemy_ent->player), engine->enemy);
+				memset(&input, 0, sizeof(button_t));
+				input.leftbutton = true;
+				handle_weapons(*(enemy_ent->player), input, engine->enemy);
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
@@ -215,7 +233,7 @@ void Quake3::step(int frame_step)
 		}
 
 		if (entity->rigid->velocity.y > -1.0f && entity->rigid->velocity.y < 1.0f &&
-			entity->rigid->water == false && entity->player->dead == false &&
+			entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
 			entity->rigid->noclip == false && entity->rigid->gravity == true )
 		{
 
@@ -315,7 +333,7 @@ void Quake3::step(int frame_step)
 			}
 		}
 
-		if (entity->player->health <= 0 && entity->player->dead == false)
+		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 		{
 			bool ret = false;
 
@@ -419,7 +437,7 @@ void Quake3::step(int frame_step)
 			drop_weapon->rigid->velocity = forward *-1.0f;
 			drop_weapon->rigid->angular_velocity.x = 10.0f;
 
-			entity->player->dead = true;
+			entity->player->state = PLAYER_DEAD;
 			drop_weapon->trigger = new Trigger(drop_weapon, engine->audio);
 			snprintf(drop_weapon->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
 			snprintf(drop_weapon->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
@@ -428,7 +446,7 @@ void Quake3::step(int frame_step)
 			entity->player->kill();
 			entity->model->clone(*(box->model));
 		}
-		handle_weapons(*(entity->player), engine->input);
+		handle_weapons(*(entity->player), engine->input, engine->spawn);
 	}
 }
 
@@ -662,7 +680,6 @@ void Quake3::handle_machinegun(Player &player, int self)
 	player.entity->model->get_frame(camera_frame);
 
 
-
 	sprintf(player.attack_sound, "sound/weapons/machinegun/machgf1b.wav");
 
 	player.reload_timer = 8;
@@ -832,7 +849,7 @@ void Quake3::handle_shotgun(Player &player)
 }
 
 
-void Quake3::handle_weapons(Player &player, button_t &input)
+void Quake3::handle_weapons(Player &player, button_t &input, int self)
 {
 	bool fired = false;
 	bool empty = false;
@@ -842,7 +859,7 @@ void Quake3::handle_weapons(Player &player, button_t &input)
 		player.reload_timer--;
 	}
 
-	if (player.dead)
+	if (player.state == PLAYER_DEAD)
 	{
 		if (input.leftbutton && player.reload_timer == 0)
 		{
@@ -1001,7 +1018,7 @@ void Quake3::handle_weapons(Player &player, button_t &input)
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				handle_machinegun(player, engine->spawn);
+				handle_machinegun(player, self);
 			}
 			else
 			{
@@ -1013,6 +1030,7 @@ void Quake3::handle_weapons(Player &player, button_t &input)
 		{
 			bool ret = false;
 
+			player.state = PLAYER_ATTACK;
 			ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
 
 			if (ret)

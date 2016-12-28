@@ -1506,7 +1506,7 @@ void Engine::check_triggers()
 			if (entity_list[i]->trigger->health && entity_list[spawn]->player->health >= 100)
 				pickup = false;
 
-			if (entity_list[spawn]->player->dead)
+			if (entity_list[spawn]->player->state == PLAYER_DEAD)
 				pickup = false;
 
 			if (entity_list[spawn]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
@@ -2528,7 +2528,7 @@ void Engine::init_camera()
 
 			spawn = get_entity();
 
-			memcpy(entity_list[spawn]->type, "player", strlen("player") + 1);
+			sprintf(entity_list[spawn]->type, "player");
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 			entity_list[spawn]->model = entity_list[spawn]->rigid;

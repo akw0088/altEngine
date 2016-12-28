@@ -109,7 +109,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	drown_timer++;
 	sprintf(name, "UnnamedPlayer");
 	memset(&stats, 0, sizeof(stats_t));
-	dead = false;
 
 //	weapon_machinegun.load(gfx, "media/models/weapons2/m4/m4s");
 	weapon_machinegun.load(gfx, "media/models/weapons2/machinegun/machinegun");
@@ -415,7 +414,8 @@ void Player::respawn()
 	reload_timer = 0;
 	entity->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 	entity->rigid->net_force = vec3(0.0f, 0.0f, 0.0f);
-	dead = false;
+	state = PLAYER_IDLE;
+	bot_state = BOT_IDLE;
 
 
 //	entity->model->make_aabb();
@@ -427,7 +427,7 @@ void Player::kill()
 	weapon_flags = 0;
 	reload_timer = 120;
 	current_weapon = wp_none;
-	dead = true;
+	state = PLAYER_DEAD;
 }
 
 void Player::render_weapon(Graphics &gfx)
@@ -713,29 +713,27 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 
 			if (distance < 500.0f)
 			{
-				entity->rigid->lookat(entity->position);
+				entity->rigid->lookat(entity_list[i]->position);
 				bot_state = BOT_ALERT;
-			}
-			else
-			{
-				entity->rigid->lookat(-entity->position);
-				bot_state = BOT_IDLE;
 			}
 
 			if (distance < 400.0f)
 			{
-				if (reload_timer <= 0 && entity_list[i]->player->health > -15)
+				if (reload_timer <= 0 && entity_list[i]->player->state != PLAYER_DEAD)
 				{
+					entity->rigid->lookat(entity_list[i]->position);
 					bot_state = BOT_ATTACK;
 					reload_timer = 1;
 				}
 				else
 				{
-					if (entity->player->health <= -15)
-					{
-						bot_state = BOT_IDLE;
-					}
+					bot_state = BOT_ALERT;
 					reload_timer--;
+				}
+
+				if (entity_list[i]->player->state == PLAYER_DEAD)
+				{
+					bot_state = BOT_IDLE;
 				}
 			}
 			continue;
