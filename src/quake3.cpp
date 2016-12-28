@@ -185,7 +185,7 @@ void Quake3::step(int frame_step)
 
 
 			enemy_ent->player->avoid_walls(engine->map);
-			enemy_ent->player->bot_search_for_items(engine->entity_list, engine->enemy);
+			enemy_ent->player->handle_bot(engine->entity_list, engine->enemy);
 
 			switch (enemy_ent->player->bot_state)
 			{

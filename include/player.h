@@ -75,7 +75,7 @@ public:
 	void change_weapon_down();
 	void best_weapon();
 
-	void bot_search_for_items(vector<Entity *> &entity_list, int self);
+	void handle_bot(vector<Entity *> &entity_list, int self);
 	void avoid_walls(Bsp &map);
 
 

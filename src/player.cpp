@@ -692,6 +692,9 @@ void Player::avoid_walls(Bsp &map)
 	vec3 right = entity->position + rightv * 50.0f;
 	vec3 left = entity->position + rightv * -50.0f;
 
+	vec3 down = entity->position + frame.up * -10.0f + frame.forward * 25.0f;
+
+
 	plane_t plane;
 	float depth;
 	bool water;
@@ -727,13 +730,19 @@ void Player::avoid_walls(Bsp &map)
 		input.left = true;
 	}
 
+	map.collision_detect(down, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
+	if (depth > 0)
+	{
+		input.enter = true;
+	}
+
 	entity->rigid->move(input);
 
 }
 
 
 //#define DEBUG_BOT
-void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
+void Player::handle_bot(vector<Entity *> &entity_list, int self)
 {
 	if (health <= 0)
 	{
@@ -770,7 +779,7 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 		if (i == self)
 			continue;
 
-
+#ifdef BLAH
 		if (strcmp(entity_list[i]->type, "player") == 0)
 		{
 			float distance = (entity_list[i]->position - entity->position).magnitude();
@@ -812,6 +821,7 @@ void Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 
 			continue;
 		}
+#endif
 
 		last_state = bot_state;
 
