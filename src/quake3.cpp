@@ -1172,7 +1172,9 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 	{
 		char data[512];
 
+		sprintf(data, "visible: %d", entity->frustum_visible);
 		menu.draw_text(entity->type, pos.x, pos.y, 0.02f, color);
+		menu.draw_text(data, pos.x, pos.y - 0.0625f, 0.02f, color);
 
 		if (strcmp(entity->type, "free") == 0)
 		{

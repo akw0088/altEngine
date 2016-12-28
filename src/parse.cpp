@@ -334,6 +334,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 
 			sprintf(entity.trigger->action, "push %s", entity.target);
 			entity.trigger->timeout = 1.0f;
+			entity.trigger->timeout_value = 1.0f;
 		}
 		else if (strcmp(value, "trigger_hurt") == 0)
 		{

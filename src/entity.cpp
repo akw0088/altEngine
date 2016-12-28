@@ -8,6 +8,7 @@ Entity::Entity()
 {
 	position = vec3(0.0f, 0.0f, 0.0f);
 	visible = false;
+	frustum_visible = false;
 	network = false;
 	target[0] = '\0';
 	target_name[0] = '\0';

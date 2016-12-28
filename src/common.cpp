@@ -43,13 +43,7 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 {
 	vec4 aabb[8];
 	bool visible = true;
-	int xp = 0;
-	int xn = 0;
-	int yp = 0;
-	int yn = 0;
-	int zp = 0;
-	int zn = 0;
-
+	int point_visible = 0;
 
 	//binary counting
 	aabb[0] = mvp * vec4(min.x, min.y, min.z, 1.0f);
@@ -64,22 +58,40 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 	// Assume visible, if all points lay outside one plane, not visible
 	for (int i = 0; i < 8; i++)
 	{
-		if (aabb[i].x > aabb[i].w)
+		int xp = 0;
+		int xn = 0;
+		int yp = 0;
+		int yn = 0;
+		int zp = 0;
+		int zn = 0;
+
+		// Going to NDC as I was having issues with clipspace
+		aabb[i].x = aabb[i].x / aabb[i].w;
+		aabb[i].y = -aabb[i].y / aabb[i].w;
+		aabb[i].z = aabb[i].z / aabb[i].w;
+
+		aabb[i].x = 0.5f + (aabb[i].x * 0.5f);
+		aabb[i].y = 0.5f + (aabb[i].y * 0.5f);
+
+
+
+		if (aabb[i].x > 1.0)
 		{
 			xp = 1;
 		}
-		if (aabb[i].x < -aabb[i].w)
+		if (aabb[i].x < -1.0)
 		{
 			xn = 1;
 		}
-		if (aabb[i].y > aabb[i].w)
+		if (aabb[i].y > 1.0)
 		{
 			yp = 1;
 		}
-		if (aabb[i].y < -aabb[i].w)
+		if (aabb[i].y < -1.0)
 		{
 			yn = 1;
 		}
+		/*
 		if (aabb[i].z > aabb[i].w)
 		{
 			zp = 1;
@@ -88,13 +100,18 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 		{
 			zn = 1;
 		}
+		*/
+
+		// point weas outside of view
+		if ((xp + xn + yp + yn + zp + zn) > 0)
+		{
+			point_visible++;
+		}
 	}
 
-	// all points were outside of one plane
-	if ((xp + xn + yp + yn + zp + zn) == 6)
-	{
+
+	if (point_visible == 8)
 		visible = false;
-	}	
 
 	return visible;
 }
@@ -353,13 +370,12 @@ void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *
 	num_index = i;
 }
 
-
-//TODO, make this a ring buffer instead of using malloc
 int debugf(const char *format, ...)
 {
     va_list args;
     char str[512] = { 0 };
-    
+	unsigned int width = 60;
+
     
     va_start(args, format);
     vsprintf(str, format, args);
@@ -367,18 +383,17 @@ int debugf(const char *format, ...)
     printf("%s", str);
     
     
-    unsigned int width = 60;
-    
     char *pstr = str;
     while (1)
     {
         if (strlen(pstr) < width)
         {
             char *line = dmesg[dmesg_index++];
-	    if (dmesg_index >= DMESG_SIZE)
-		dmesg_index  = 0;
-            sprintf(line, "%s", pstr);
-	    //line[size] = '\0';
+		    if (dmesg_index >= DMESG_SIZE)
+				dmesg_index  = 0;
+
+			sprintf(line, "%s", pstr);
+		    //line[size] = '\0';
             Menu::console_buffer.push_back(line);
             break;
         }
@@ -386,14 +401,15 @@ int debugf(const char *format, ...)
         {
             int size = width + 1;
             char *line = dmesg[dmesg_index++];;
-            memcpy(line, pstr, size);
+			if (dmesg_index >= DMESG_SIZE)
+				dmesg_index = 0;
+
+			memcpy(line, pstr, size);
             line[width] = '\0';
             Menu::console_buffer.push_back(line);
             pstr += width;
-        }
-	if (dmesg_index >= DMESG_SIZE)
-		dmesg_index  = 0;
-    }
+        }	
+	}
     
     return 0;
 }

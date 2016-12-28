@@ -260,6 +260,10 @@ void Bsp::change_axis()
 		int temp = data.Leaf[i].min[1];
 		data.Leaf[i].min[1] = data.Leaf[i].min[2];
 		data.Leaf[i].min[2] = -temp;
+
+		temp = data.Leaf[i].max[1];
+		data.Leaf[i].max[1] = data.Leaf[i].max[2];
+		data.Leaf[i].max[2] = -temp;
 	}
 
 	for(unsigned int i = 0; i < data.num_nodes; i++)
@@ -267,6 +271,10 @@ void Bsp::change_axis()
 		int temp = data.Node[i].min[1];
 		data.Node[i].min[1] = data.Node[i].min[2];
 		data.Node[i].min[2] = -temp;
+
+		temp = data.Node[i].max[1];
+		data.Node[i].max[1] = data.Node[i].max[2];
+		data.Node[i].max[2] = -temp;
 	}
 
 	for (unsigned int i = 0; i < data.num_model; i++)
@@ -708,10 +716,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				continue;
 
 			
+
+			/*
 			vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
 			vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
-//			if (aabb_visible(min, max, mvp) == false)
-//				continue;
+			if (aabb_visible(min, max, mvp) == false)
+				continue;
+			*/
 			
 
 			// generate face lists
@@ -1014,10 +1025,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 
 /*
-	This has func_door's, func_bobbing, trigger's etc
+	This fixes origin for func_door's, func_bobbing, trigger's etc
 */
-
-// Dont use this ;o)
 vec3 Bsp::model_origin(unsigned int index)
 {
 	if (index >= data.num_model)

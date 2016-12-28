@@ -167,7 +167,8 @@ void Engine::setup_func()
 
 
 		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
-			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull"))
+			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull") ||
+			strstr(entity_list[i]->type, "trigger_push"))
 		{
 			entity_list[i]->rigid->gravity = false;
 		}
@@ -805,7 +806,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			// render func_ items (doors, moving platforms, etc)
 			if (entity_list[i]->model_ref != -1)
 			{
-				if (strstr(entity_list[i]->type, "func_") != NULL)
+//				if (strstr(entity_list[i]->type, "func_") != NULL)
 				{
 					entity_list[i]->rigid->gravity = false;
 					map.render_model(entity_list[i]->model_ref, gfx);
@@ -1025,18 +1026,20 @@ void Engine::spatial_testing()
 		if (entity_list[i]->model)
 		{
 			bool bsp_visible = false;
-			bool frustum_visible = true;// false;
+			bool frustum_visible = false;
 			bool visible = false;
 
 
-			matrix4 transformation;
+			matrix4 trans;
 
-			camera_frame.set(transformation);
-			//matrix4 mvp = transformation * projection;
-			//vec3 min = entity_list[i]->model->morientation * entity_list[i]->model->aabb[0];
-			//vec3 max = entity_list[i]->model->morientation * entity_list[i]->model->aabb[7];
+			camera_frame.set(trans);
+			matrix4 mvp;
+			mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+			vec3 min = entity_list[i]->model->aabb[0];
+			vec3 max = entity_list[i]->model->aabb[7];
 
-//			frustum_visible = aabb_visible(min, max, mvp);
+
+			entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
 
 			for(int j = 0; j < 8; j++)
 			{
@@ -1050,7 +1053,7 @@ void Engine::spatial_testing()
 				}
 			}
 
-			if ((bsp_visible && frustum_visible) || i == (unsigned int)spawn)
+			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)spawn)
 			{
 				visible = true;
 			}
@@ -1388,6 +1391,7 @@ void Engine::check_triggers()
 				switch (entity_list[i]->angle)
 				{
 				case 0:
+				case 360:
 					entity_list[i]->position += vec3(amount, 0.0f, 0.0f);
 					break;
 				case 90:

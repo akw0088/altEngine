@@ -15,6 +15,7 @@ public:
 	int				angle;
 	int				model_ref;
 	bool			visible;
+	bool			frustum_visible;
 	bool			network;
 	float			height; // for movers will make own class later
 	char			type[64];
