@@ -1496,6 +1496,10 @@ void Engine::check_triggers()
 			if (entity_list[spawn]->player->dead)
 				pickup = false;
 
+			if (entity_list[spawn]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
+				pickup = false;
+
+
 			if (pickup)
 			{
 				entity_list[i]->trigger->active = true;
@@ -3159,6 +3163,10 @@ void Engine::console(char *cmd)
 				matrix4 matrix;
 				unsigned int index = atoi(data2);
 
+				if (entity_list[spawn]->player->teleport_timer > 0)
+					return;
+
+				entity_list[spawn]->player->teleport_timer = 2 * TICK_RATE;
 				entity_list[spawn]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
 
@@ -3395,7 +3403,7 @@ void Engine::console(char *cmd)
 				vec3 dir = entity_list[i]->position - entity_list[spawn]->position;
 
 				//add velocity towards target
-				entity_list[spawn]->rigid->velocity += dir;
+				entity_list[spawn]->rigid->velocity += dir * 0.7f;
 
 				ret = select_wave(entity_list[spawn]->speaker->source, entity_list[spawn]->player->pad_sound);
 				if (ret)

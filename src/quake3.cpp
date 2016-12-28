@@ -143,6 +143,11 @@ void Quake3::step(int frame_step)
 				}
 			}
 
+			if (engine->entity_list[spawn]->player->teleport_timer > 0)
+			{
+				engine->entity_list[spawn]->player->teleport_timer--;
+			}
+
 			if (engine->entity_list[spawn]->player->flight_timer > 0)
 			{
 				engine->entity_list[spawn]->player->flight_timer--;

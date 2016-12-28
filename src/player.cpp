@@ -94,6 +94,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	health = 100;
 	armor = 0;
 	flight_timer = 0;
+	teleport_timer = 0;
 	weapon_flags = WEAPON_MACHINEGUN;
 	current_weapon = wp_machinegun;
 	ammo_rockets = 0;
