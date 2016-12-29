@@ -357,3 +357,24 @@ typedef struct
 	unsigned int ibo;
 	int num_mesh;
 } patch_t;
+
+
+
+typedef struct
+{
+	int	a;
+	int	b;
+	float	weight;
+} graph_arc_t;
+
+typedef struct
+{
+	graph_arc_t	arc[8];
+	int	num_arcs;
+} graph_node_t;
+
+typedef struct
+{
+	int x;
+	int y;
+} ref_t;

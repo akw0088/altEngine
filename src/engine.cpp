@@ -254,7 +254,20 @@ void Engine::load(char *level)
 		parse_entity(navdata, entity_list, gfx, audio);
 		free((void *)navdata);
 	}
+/*
+	Graph graph;
+	
+	static		int *path = NULL;
+	static		int start = 0;
+	static		int end = 286;
+	static		int path_length = 0;
 
+	ref_t ref;
+
+	ref.x = 0;
+	ref.y = 0;
+	path = graph.astar_path(&ref, start, end, &path_length);
+	*/
 
 	setup_func();
 

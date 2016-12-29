@@ -143,6 +143,7 @@
 
 using namespace std;
 
+
 #include "net.h"
 #include "vector.h"
 #include "matrix.h"
@@ -151,6 +152,8 @@ using namespace std;
 #include "types.h"
 #include "md5_types.h"
 
+
+#include "graph.h"
 #include "md5.h"
 #include "graphics.h"
 #include "bspTypes.h"
