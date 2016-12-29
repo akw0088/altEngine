@@ -29,7 +29,7 @@
 "classname" "navpoint"
 "origin" "-955 313 -1063"
 "targetname" "nav7"
-"target" "nav7 "
+"target" "nav6 nav9"
 }
 {
 "classname" "navpoint"
@@ -41,25 +41,32 @@
 "classname" "navpoint"
 "origin" "-485 313 -1117"
 "targetname" "nav9"
-"target" "nav9 "
+"target" "nav7 nav10"
 }
 {
 "classname" "navpoint"
 "origin" "-81 321 -1360"
 "targetname" "nav10"
-"target" "nav10 "
+"target" "nav9 nav11"
 }
 {
 "classname" "navpoint"
 "origin" "340 313 -1137"
 "targetname" "nav11"
-"target" "nav11 "
+"target" "nav12 nav23 nav10"
 }
 {
 "classname" "navpoint"
 "origin" "733 313 -1125"
 "targetname" "nav12"
-"target" "nav12 "
+"target" "nav0 nav11"
+}
+{
+"classname" "navpoint"
+"origin" "828 185 -688"
+"targetname" "nav0"
+"target" "nav0 nav13 nav12"
+"done" "done"
 }
 {
 "classname" "navpoint"

@@ -427,6 +427,8 @@ void Quake3::add_bot(int &index)
 	entity->speaker->gain(5.0f);
 	sprintf(entity->player->name, "Bot %d", index);
 	entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
+	entity->rigid->step_flag = true;
+
 
 	char cmd[80];
 	sprintf(cmd, "respawn %d %d", -1, index);
@@ -436,7 +438,7 @@ void Quake3::add_bot(int &index)
 
 void Quake3::step(int frame_step)
 {
-	unsigned int num_bot = 5;
+	unsigned int num_bot = 3;
 
 	if (engine->entity_list.size() == 0)
 		return;
@@ -703,7 +705,7 @@ void Quake3::handle_lightning(Entity *entity, Player &player, int self)
 	entity->light = new Light(entity, engine->gfx, 999);
 	entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 	entity->light->intensity = 1000.0f;
-	entity->trigger->owner = self;
+//	entity->trigger->owner = self;
 
 }
 

@@ -779,7 +779,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		if (i == self)
 			continue;
 
-#ifdef BLAH
+#ifdef blah
 		if (strcmp(entity_list[i]->type, "player") == 0)
 		{
 			float distance = (entity_list[i]->position - entity->position).magnitude();
@@ -821,6 +821,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 
 			continue;
 		}
+#endif
 
 		last_state = bot_state;
 
@@ -839,13 +840,21 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		if (distance > 1500.0f && bot_state != BOT_EXPLORE)
 			continue;
 
+		if (strcmp(entity_list[i]->type, "navpoint") == 0 && distance > 100.0f)
+		{
+			printf("bot wants %s()\n", entity_list[i]->type);
+			entity->rigid->lookat_yaw(entity_list[i]->position);
+			entity->rigid->move_forward();
+			bot_state = BOT_GET_ITEM;
+		}
+
 
 #ifdef DEBUG_BOT
 		printf("Bot is near entity %d type %s distance %3.3f\n", i, entity_list[i]->type, distance);
 #endif
 		if (strcmp(entity_list[i]->type, "item_quad") == 0)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -853,7 +862,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if (strcmp(entity_list[i]->type, "item_health_mega") == 0)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -863,7 +872,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		{
 			if (strcmp(entity_list[i]->type, "item_health_large") == 0)
 			{
-				printf("bot wants %s()\n", entity_list[i]->type);
+				printf("bot %d wants %s()\n", i, entity_list[i]->type);
 				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
@@ -871,7 +880,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 			}
 			else if (strcmp(entity_list[i]->type, "item_health_large") == 0)
 			{
-				printf("bot wants %s()\n", entity_list[i]->type);
+				printf("bot %d wants %s()\n", i, entity_list[i]->type);
 				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
@@ -880,7 +889,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_rocketlauncher") == 0) && need_rocketlauncher)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -888,7 +897,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_lightning") == 0) && need_lightning)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -896,7 +905,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_railgun") == 0) && need_railgun)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -904,7 +913,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_plasma") == 0) && need_plasma)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -912,7 +921,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_grenadelauncher") == 0) && need_grenadelauncher)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -920,7 +929,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_shotgun") == 0) && need_shotgun)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
@@ -930,7 +939,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		{
 			if (strcmp(entity_list[i]->type, "item_armor_body") == 0)
 			{
-				printf("bot wants %s()\n", entity_list[i]->type);
+				printf("bot %d wants %s()\n", i, entity_list[i]->type);
 				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
@@ -938,7 +947,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 			}
 			else if (strcmp(entity_list[i]->type, "item_armor_combat") == 0)
 			{
-				printf("bot wants %s()\n", entity_list[i]->type);
+				printf("bot %d wants %s()\n", i, entity_list[i]->type);
 				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
@@ -946,7 +955,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 			}
 			else if (strcmp(entity_list[i]->type, "item_armor_shard") == 0)
 			{
-				printf("bot wants %s()\n", entity_list[i]->type);
+				printf("bot %d wants %s()\n", i, entity_list[i]->type);
 				entity->rigid->lookat_yaw(entity_list[i]->position);
 				entity->rigid->move_forward();
 				bot_state = BOT_GET_ITEM;
@@ -955,14 +964,13 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		}
 		if ((strstr(entity_list[i]->type, "ammo_") != NULL) && need_ammo)
 		{
-			printf("bot wants %s()\n", entity_list[i]->type);
+			printf("bot %d wants %s()\n", i, entity_list[i]->type);
 			entity->rigid->lookat_yaw(entity_list[i]->position);
 			entity->rigid->move_forward();
 			bot_state = BOT_GET_ITEM;
 			break;
 		}
 		last_state = bot_state;
-#endif
 
 	}
 
