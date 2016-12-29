@@ -201,9 +201,9 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 {
 	Heap		heap;
 	heapkey_t	key;
-	float		*distance_table;
-	int		*predecessor_table;
-	int		*path_table;
+	float		*distance_table = NULL;
+	int		*predecessor_table = NULL;
+	int		*path_table = NULL;
 	int		i, j;
 
 	distance_table = (float *)malloc(num_nodes * sizeof(float));
@@ -280,6 +280,12 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 
 	for(i = end, j = 0; i != start; j++)
 	{
+		if (j >= num_nodes)
+		{
+			printf("Fatal error: Path longer than available nodes\n");
+			return NULL;
+		}
+
 		path_table[j] = i;
 		i = predecessor_table[i];
 	}

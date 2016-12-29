@@ -13,12 +13,17 @@ void quadratic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, float time, vec3 &out);
 void cubic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float time, vec3 &out);
 void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
-void tesselate_quadratic_bezier_surface(vec3 *control, vertex_t *vertex, int *index, int &num_index, float level);
+void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level);
 char *get_file(char *filename, int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int write_file(char *filename, char *bytes, int size);
 float sign(float x);
 void newlinelist(char *filename, char **list, int &num);
 bool check_hash(char *filename, char *checkhash, char *hash);
+
+void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity_list, int start);
+void print_graph(graph_node_t *node, int num_node);
+void print_path(int *path, int path_length, graph_node_t *node);
+
 
 #endif

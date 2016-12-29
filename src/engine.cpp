@@ -246,6 +246,8 @@ void Engine::load(char *level)
 	printf("%s\n", map.get_entities());
 	parse_entity(map.get_entities(), entity_list, gfx, audio);
 
+	int start = entity_list.size();
+
 	char navfile[80] = { 0 };
 	sprintf(navfile, "media/%s.nav", map.map_name);
 	char *navdata = get_file(navfile, NULL);
@@ -254,20 +256,28 @@ void Engine::load(char *level)
 		parse_entity(navdata, entity_list, gfx, audio);
 		free((void *)navdata);
 	}
-/*
+
 	Graph graph;
 	
 	static		int *path = NULL;
-	static		int start = 0;
-	static		int end = 286;
+	static		int start_path = 8; // nav 5
+	static		int end_path = 16; // nav 14 -- really need to ensure nav index matches node index
 	static		int path_length = 0;
 
-	ref_t ref;
 
-	ref.x = 0;
-	ref.y = 0;
-	path = graph.astar_path(&ref, start, end, &path_length);
-	*/
+	graph_node_t *node = NULL;
+	ref_t *ref = NULL;
+	int num_node = entity_list.size() - start;
+
+	navdata_to_graph(ref, node, entity_list, start);
+	print_graph(node, num_node);
+
+	graph.load(node, num_node);
+
+	printf("Searching for path from node%d to node%d\n", start_path, end_path);
+	path = graph.astar_path(ref, start_path, end_path, &path_length);
+	print_path(path, path_length, node);
+
 
 	setup_func();
 

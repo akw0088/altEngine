@@ -100,7 +100,7 @@ void Quake3::handle_player(int index)
 	{
 		if (last_tick == 0)
 		{
-			for (int i = 0; i < navmesh.size(); i++)
+			for (unsigned int i = 0; i < navmesh.size(); i++)
 			{
 				printf("{\n");
 				printf("\"classname\" \"navpoint\"\n");

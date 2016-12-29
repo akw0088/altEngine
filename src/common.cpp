@@ -772,3 +772,66 @@ byte *tga_24to32(int width, int height, byte *pBits)
 	}
 	return pNewBits;
 }
+
+void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity_list, int start)
+{
+	int num_node = entity_list.size() - start;
+	char data[512] = { 0 };
+	int j = 0;
+
+	node = new graph_node_t[num_node];
+	ref = new ref_t[num_node];
+
+	for (unsigned int i = start; i < entity_list.size(); i++)
+	{
+		if (strcmp(entity_list[i]->type, "navpoint") == 0)
+		{
+			int k = 0;
+			int targetname = atoi(entity_list[i]->target_name + 3);
+
+			// Manhattan distance table
+			ref[k].x = entity_list[i]->position.x;
+			ref[k].y = entity_list[i]->position.y;
+//			ref[k].z = entity_list[i]->position.z;
+
+			strcpy(data, entity_list[i]->target);
+			char *target = strtok(data, " ");
+			while (target != NULL)
+			{
+				//skip past characters eg: "nav0"
+				node[j].arc[k].a = targetname;
+				node[j].arc[k].b = atoi(target + 3);
+				node[j].arc[k].weight = 1.0f;
+				node[j].num_arcs = ++k;
+				target = strtok(NULL, " ");
+				if (k == 8)
+					break;
+			}
+			j++;
+		}
+	}
+}
+
+void print_graph(graph_node_t *node, int num_node)
+{
+	for (int i = 0; i < num_node; i++)
+	{
+		if (node[i].num_arcs == 0)
+			continue;
+
+		printf("node %d: nav%d\n", i, node[i].arc[0].a);
+		for (int j = 0; j < node[i].num_arcs; j++)
+		{
+			printf("\tPath from nav%d to nav%d weight %3.3f\n",
+				node[i].arc[j].a, node[i].arc[j].b, node[i].arc[j].weight);
+		}
+	}
+}
+
+void print_path(int *path, int path_length, graph_node_t *node)
+{
+	for (int i = 0; i < path_length; i++)
+	{
+		printf("go to node %d nav%d\n", path[i], node[path[i]].arc[0].a);
+	}
+}
