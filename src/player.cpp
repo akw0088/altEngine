@@ -821,7 +821,6 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 
 			continue;
 		}
-#endif
 
 		last_state = bot_state;
 
@@ -963,6 +962,8 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 			break;
 		}
 		last_state = bot_state;
+#endif
+
 	}
 
 	// Exhausted items in current leaf

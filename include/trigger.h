@@ -40,6 +40,7 @@ public:
 	bool	armor;		// For armor items, prevents giving over 200
 	float	timeout;	// Timeout between pickups respawning
 	float	timeout_value;
+	int		owner;
 };
 
 #endif

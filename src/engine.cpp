@@ -1345,7 +1345,7 @@ void Engine::step(int tick)
 	spatial_testing(); // mostly sets visible flag
 
    // handles triggers and the projectile as trigger stuff
-	for (int i = 0; i < player_list.size(); i++)
+	for (unsigned int i = 0; i < player_list.size(); i++)
 	{
 		check_triggers(player_list[i]);
 	}
@@ -1363,7 +1363,7 @@ void Engine::step(int tick)
 
 }
 
-void Engine::check_triggers(int player_index)
+void Engine::check_triggers(int self)
 {
 	num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -1487,7 +1487,7 @@ void Engine::check_triggers(int player_index)
 		if (entity_list[i]->trigger->self == false)
 			continue;
 
-		float distance = (entity_list[i]->position - entity_list[player_index]->position).magnitude();
+		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
 
 		if ( distance < entity_list[i]->trigger->radius)
 			inside = true;
@@ -1496,33 +1496,33 @@ void Engine::check_triggers(int player_index)
 		{
 			int pickup = true;
 
-			if (entity_list[i]->trigger->armor && entity_list[player_index]->player->armor >= 200)
+			if (entity_list[i]->trigger->armor && entity_list[self]->player->armor >= 200)
 				pickup = false;
 
-			if (entity_list[i]->trigger->health && entity_list[player_index]->player->health >= 100)
+			if (entity_list[i]->trigger->health && entity_list[self]->player->health >= 100)
 				pickup = false;
 
-			if (entity_list[player_index]->player->state == PLAYER_DEAD)
+			if (entity_list[self]->player->state == PLAYER_DEAD)
 				pickup = false;
 
-			if (entity_list[player_index]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
+			if (entity_list[self]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
 				pickup = false;
 
 
 			if (pickup)
 			{
 				entity_list[i]->trigger->active = true;
-				console(player_list[0], entity_list[i]->trigger->action);
+				console(self, entity_list[i]->trigger->action);
 
 				entity_list[i]->visible = false;
 				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
 
 				if (entity_list[i]->trigger->explode_timer)
 				{
-					vec3 distance = entity_list[player_index]->position - entity_list[i]->position;
+					vec3 distance = entity_list[self]->position - entity_list[i]->position;
 					float mag = MIN(distance.magnitude(), 50.0f);
 					//add knockback to explosions
-					entity_list[player_index]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
+					entity_list[self]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
 
 				bool ret = false;
@@ -2838,7 +2838,7 @@ void Engine::quit()
 #endif
 }
 
-void Engine::console(int invoker, char *cmd)
+void Engine::console(int self, char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
@@ -2945,38 +2945,38 @@ void Engine::console(int invoker, char *cmd)
 		unsigned int health_damage = damage / 3;
 		unsigned int armor_damage = 2 * health_damage;
 
-		if (armor_damage > entity_list[invoker]->player->armor)
+		if (armor_damage > entity_list[self]->player->armor)
 		{
-			armor_damage -= entity_list[invoker]->player->armor;
-			entity_list[invoker]->player->armor = 0;
+			armor_damage -= entity_list[self]->player->armor;
+			entity_list[self]->player->armor = 0;
 			health_damage += armor_damage;
 		}
 		else
 		{
-			entity_list[invoker]->player->armor -= armor_damage;
+			entity_list[self]->player->armor -= armor_damage;
 		}
 
-		entity_list[invoker]->player->health -= health_damage;
+		entity_list[self]->player->health -= health_damage;
 
 		bool ret = false;
 		switch (tick_num % 4)
 		{
 		case 0:
-			ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->pain25_sound);
+			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
 			break;
 		case 1:
-			ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->pain50_sound);
+			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
 			break;
 		case 2:
-			ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->pain75_sound);
+			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
 			break;
 		case 3:
-			ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->pain100_sound);
+			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
 			break;
 		}
 		if (ret)
 		{
-			audio.play(entity_list[invoker]->speaker->source);
+			audio.play(entity_list[self]->speaker->source);
 		}
 		else
 		{
@@ -2991,7 +2991,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->health += atoi(data);
+		entity_list[self]->player->health += atoi(data);
 		return;
 	}
 
@@ -3000,9 +3000,9 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "armor %s\n", data);
 		menu.print(msg);
-		if (entity_list[invoker]->player->armor + atoi(data) <= 200)
+		if (entity_list[self]->player->armor + atoi(data) <= 200)
 		{
-			entity_list[invoker]->player->armor += atoi(data);
+			entity_list[self]->player->armor += atoi(data);
 		}
 		return;
 	}
@@ -3017,11 +3017,11 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
 		menu.print(msg);
 
-		if (entity_list[invoker]->player->current_weapon == wp_none)
-			entity_list[invoker]->player->current_weapon = wp_grenade;
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_grenade;
 
-		entity_list[invoker]->player->weapon_flags |= wp_grenade;
-		entity_list[invoker]->player->ammo_grenades = MAX(10, entity_list[invoker]->player->ammo_grenades);
+		entity_list[self]->player->weapon_flags |= wp_grenade;
+		entity_list[self]->player->ammo_grenades = MAX(10, entity_list[self]->player->ammo_grenades);
 		return;
 	}
 
@@ -3030,11 +3030,11 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
 		menu.print(msg);
 
-		if (entity_list[invoker]->player->current_weapon == wp_none)
-			entity_list[invoker]->player->current_weapon = wp_rocket;
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_rocket;
 
-		entity_list[invoker]->player->weapon_flags |= wp_rocket;
-		entity_list[invoker]->player->ammo_rockets = MAX(10, entity_list[invoker]->player->ammo_rockets);
+		entity_list[self]->player->weapon_flags |= wp_rocket;
+		entity_list[self]->player->ammo_rockets = MAX(10, entity_list[self]->player->ammo_rockets);
 		return;
 	}
 
@@ -3043,11 +3043,11 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
 		menu.print(msg);
 
-		if (entity_list[invoker]->player->current_weapon == wp_none)
-			entity_list[invoker]->player->current_weapon = wp_shotgun;
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_shotgun;
 
-		entity_list[invoker]->player->weapon_flags |= wp_shotgun;
-		entity_list[invoker]->player->ammo_shells = MAX(10, entity_list[invoker]->player->ammo_shells);
+		entity_list[self]->player->weapon_flags |= wp_shotgun;
+		entity_list[self]->player->ammo_shells = MAX(10, entity_list[self]->player->ammo_shells);
 		return;
 	}
 
@@ -3056,11 +3056,11 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
 		menu.print(msg);
 
-		if (entity_list[invoker]->player->current_weapon == wp_none)
-			entity_list[invoker]->player->current_weapon = wp_lightning;
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_lightning;
 
-		entity_list[invoker]->player->weapon_flags |= wp_lightning;
-		entity_list[invoker]->player->ammo_lightning = MAX(100, entity_list[invoker]->player->ammo_lightning);
+		entity_list[self]->player->weapon_flags |= wp_lightning;
+		entity_list[self]->player->ammo_lightning = MAX(100, entity_list[self]->player->ammo_lightning);
 		return;
 	}
 
@@ -3069,11 +3069,11 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "weapon_railgun\n");
 		menu.print(msg);
 
-		if (entity_list[invoker]->player->current_weapon == wp_none)
-			entity_list[invoker]->player->current_weapon = wp_railgun;
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_railgun;
 
-		entity_list[invoker]->player->weapon_flags |= wp_railgun;
-		entity_list[invoker]->player->ammo_slugs = MAX(10, entity_list[invoker]->player->ammo_slugs);
+		entity_list[self]->player->weapon_flags |= wp_railgun;
+		entity_list[self]->player->ammo_slugs = MAX(10, entity_list[self]->player->ammo_slugs);
 		return;
 	}
 
@@ -3082,11 +3082,11 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "weapon_plasma\n");
 		menu.print(msg);
 
-		if (entity_list[invoker]->player->current_weapon == wp_none)
-			entity_list[invoker]->player->current_weapon = wp_plasma;
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_plasma;
 
-		entity_list[invoker]->player->weapon_flags |= wp_plasma;
-		entity_list[invoker]->player->ammo_plasma = MAX(50, entity_list[invoker]->player->ammo_plasma);
+		entity_list[self]->player->weapon_flags |= wp_plasma;
+		entity_list[self]->player->ammo_plasma = MAX(50, entity_list[self]->player->ammo_plasma);
 		return;
 	}
 
@@ -3095,7 +3095,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_rockets %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_rockets += atoi(data);
+		entity_list[self]->player->ammo_rockets += atoi(data);
 		return;
 	}
 
@@ -3104,7 +3104,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_slugs %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_slugs += atoi(data);
+		entity_list[self]->player->ammo_slugs += atoi(data);
 		return;
 	}
 
@@ -3113,7 +3113,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_shells %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_shells += atoi(data);
+		entity_list[self]->player->ammo_shells += atoi(data);
 		return;
 	}
 
@@ -3122,7 +3122,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_bullets %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_bullets += atoi(data);
+		entity_list[self]->player->ammo_bullets += atoi(data);
 		return;
 	}
 
@@ -3131,7 +3131,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_lightning %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_lightning += atoi(data);
+		entity_list[self]->player->ammo_lightning += atoi(data);
 		return;
 	}
 
@@ -3140,7 +3140,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_plasma %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_plasma += atoi(data);
+		entity_list[self]->player->ammo_plasma += atoi(data);
 		return;
 	}
 
@@ -3149,7 +3149,7 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "ammo_bfg %s\n", data);
 		menu.print(msg);
-		entity_list[invoker]->player->ammo_bfg += atoi(data);
+		entity_list[self]->player->ammo_bfg += atoi(data);
 		return;
 	}
 
@@ -3169,37 +3169,37 @@ void Engine::console(int invoker, char *cmd)
 				matrix4 matrix;
 				unsigned int index = atoi(data2);
 
-				if (entity_list[invoker]->player->teleport_timer > 0)
+				if (entity_list[self]->player->teleport_timer > 0)
 					return;
 
-				entity_list[invoker]->player->teleport_timer = TICK_RATE >> 1;
-				entity_list[invoker]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
-				entity_list[invoker]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+				entity_list[self]->player->teleport_timer = TICK_RATE >> 1;
+				entity_list[self]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+				entity_list[self]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 
 
 				bool ret = false;
 
 				if (index < entity_list.size())
 				{
-					ret = select_wave(entity_list[index]->trigger->source, entity_list[invoker]->player->teleout_sound);
+					ret = select_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
 					if (ret)
 					{
 						audio.play(entity_list[index]->trigger->source);
 					}
 					else
 					{
-						debugf("Unable to find PCM data for %s\n", entity_list[invoker]->player->teleout_sound);
+						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->teleout_sound);
 					}
 				}
 
-				ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->telein_sound);
+				ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
 				if (ret)
 				{
-					audio.play(entity_list[invoker]->speaker->source);
+					audio.play(entity_list[self]->speaker->source);
 				}
 				else
 				{
-					debugf("Unable to find PCM data for %s\n", entity_list[invoker]->player->telein_sound);
+					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
 				}
 
 
@@ -3207,16 +3207,16 @@ void Engine::console(int invoker, char *cmd)
 				switch (entity_list[i]->angle)
 				{
 				case 0:
-					matrix4::mat_left(matrix, entity_list[invoker]->position);
+					matrix4::mat_left(matrix, entity_list[self]->position);
 					break;
 				case 90:
-					matrix4::mat_forward(matrix, entity_list[invoker]->position);
+					matrix4::mat_forward(matrix, entity_list[self]->position);
 					break;
 				case 180:
-					matrix4::mat_right(matrix, entity_list[invoker]->position);
+					matrix4::mat_right(matrix, entity_list[self]->position);
 					break;
 				case 270:
-					matrix4::mat_backward(matrix, entity_list[invoker]->position);
+					matrix4::mat_backward(matrix, entity_list[self]->position);
 					break;
 				}
 				camera_frame.forward.x = matrix.m[8];
@@ -3237,7 +3237,7 @@ void Engine::console(int invoker, char *cmd)
 		unsigned int i = last_spawn;
 		bool spawned = false;
 		unsigned int index = i;
-		unsigned int player = invoker;
+		unsigned int player = self;
 
 		if (player == -1)
 			return;
@@ -3268,7 +3268,6 @@ void Engine::console(int invoker, char *cmd)
 		{
 			matrix4 matrix;
 
-			camera_frame.set(matrix);
 			entity_list[player]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
 
 			switch (entity_list[i]->angle)
@@ -3289,10 +3288,17 @@ void Engine::console(int invoker, char *cmd)
 				matrix4::mat_forward(matrix, entity_list[player]->position);
 				break;
 			}
-			camera_frame.forward.x = matrix.m[8];
-			camera_frame.forward.y = matrix.m[9];
-			camera_frame.forward.z = matrix.m[10];
-			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+
+			if (player == 0)
+			{
+				camera_frame.up.x = matrix.m[3];
+				camera_frame.up.y = matrix.m[4];
+				camera_frame.up.z = matrix.m[5];
+				camera_frame.forward.x = -matrix.m[6];
+				camera_frame.forward.y = -matrix.m[7];
+				camera_frame.forward.z = -matrix.m[8];
+			}
+
 			debugf("Spawning on entity %d\n", index);
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(q3.thug22->model));
@@ -3340,13 +3346,17 @@ void Engine::console(int invoker, char *cmd)
 						matrix4::mat_forward(matrix, entity_list[player]->position);
 						break;
 					}
-					if (player == invoker)
+
+					if (player == 0)
 					{
-						camera_frame.forward.x = -matrix.m[8];
-						camera_frame.forward.y = -matrix.m[9];
-						camera_frame.forward.z = -matrix.m[10];
-						camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+						camera_frame.up.x = matrix.m[3];
+						camera_frame.up.y = matrix.m[4];
+						camera_frame.up.z = matrix.m[5];
+						camera_frame.forward.x = -matrix.m[6];
+						camera_frame.forward.y = -matrix.m[7];
+						camera_frame.forward.z = -matrix.m[8];
 					}
+
 					entity_list[player]->model->morientation.m[0] = matrix.m[0];
 					entity_list[player]->model->morientation.m[1] = matrix.m[1];
 					entity_list[player]->model->morientation.m[2] = matrix.m[2];
@@ -3359,10 +3369,6 @@ void Engine::console(int invoker, char *cmd)
 					entity_list[player]->model->morientation.m[7] = matrix.m[9];
 					entity_list[player]->model->morientation.m[8] = matrix.m[10];
 
-//					camera_frame.forward.x = matrix.m[8];
-	//				camera_frame.forward.y = matrix.m[9];
-	//				camera_frame.forward.z = matrix.m[10];
-	//				camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[player]->player->respawn();
@@ -3410,19 +3416,19 @@ void Engine::console(int invoker, char *cmd)
 			if (!strcmp(entity_list[i]->target_name, data))
 			{
 				//target - origin
-				vec3 dir = entity_list[i]->position - entity_list[invoker]->position;
+				vec3 dir = entity_list[i]->position - entity_list[self]->position;
 
 				//add velocity towards target
-				entity_list[invoker]->rigid->velocity += dir * 0.7f;
+				entity_list[self]->rigid->velocity += dir * 0.7f;
 
-				ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->pad_sound);
+				ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
 				if (ret)
 				{
-					audio.play(entity_list[invoker]->speaker->source);
+					audio.play(entity_list[self]->speaker->source);
 				}
 				else
 				{
-					debugf("Unable to find PCM data for %s\n", entity_list[invoker]->player->pad_sound);
+					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->pad_sound);
 				}
 
 				break;
@@ -3451,7 +3457,7 @@ void Engine::console(int invoker, char *cmd)
 		}
 		if (valid)
 		{
-			snprintf(entity_list[invoker]->player->name, 127, "%s", data);
+			snprintf(entity_list[self]->player->name, 127, "%s", data);
 			debugf("Player name: %s\n", data);
 		}
 		else
@@ -3476,17 +3482,17 @@ void Engine::console(int invoker, char *cmd)
 	{
 		chat(cmd);
 
-		if (invoker != -1)
+		if (self != -1)
 		{
 			bool ret = false;
-			ret = select_wave(entity_list[invoker]->speaker->source, entity_list[invoker]->player->chat_sound);
+			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
 			if (ret)
 			{
-				audio.play(entity_list[invoker]->speaker->source);
+				audio.play(entity_list[self]->speaker->source);
 			}
 			else
 			{
-				debugf("Unable to find PCM data for %s\n", entity_list[invoker]->player->chat_sound);
+				debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
 			}
 		}
 
@@ -3501,9 +3507,9 @@ void Engine::console(int invoker, char *cmd)
 		snprintf(msg, LINE_SIZE, "Client list\n");
 		menu.print(msg);
 
-		snprintf(msg, LINE_SIZE, "s: %s %d kills %d deaths %s %d idle\n", entity_list[invoker]->player->name,
-			entity_list[invoker]->player->stats.kills,
-			entity_list[invoker]->player->stats.deaths,
+		snprintf(msg, LINE_SIZE, "s: %s %d kills %d deaths %s %d idle\n", entity_list[self]->player->name,
+			entity_list[self]->player->stats.kills,
+			entity_list[self]->player->stats.deaths,
 			"127.0.0.1:65535",
 			0);
 		menu.print(msg);
@@ -3635,11 +3641,11 @@ void Engine::console(int invoker, char *cmd)
 	ret = strcmp(cmd, "noclip");
 	if (ret == 0)
 	{
-		if (invoker != -1)
+		if (self != -1)
 		{
-			entity_list[invoker]->rigid->noclip = !entity_list[invoker]->rigid->noclip;
-			entity_list[invoker]->rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
-			entity_list[invoker]->rigid->translational_friction = 0.9f;
+			entity_list[self]->rigid->noclip = !entity_list[self]->rigid->noclip;
+			entity_list[self]->rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
+			entity_list[self]->rigid->translational_friction = 0.9f;
 		}
 		return;
 	}
@@ -3647,9 +3653,9 @@ void Engine::console(int invoker, char *cmd)
 	ret = strcmp(cmd, "flight");
 	if (ret == 0)
 	{
-		if (invoker != -1)
+		if (self != -1)
 		{
-			entity_list[invoker]->player->flight_timer = 60 * 60 * 24 * TICK_RATE;
+			entity_list[self]->player->flight_timer = 60 * 60 * 24 * TICK_RATE;
 		}
 		return;
 	}
@@ -3657,9 +3663,9 @@ void Engine::console(int invoker, char *cmd)
 	ret = sscanf(cmd, "flight %s", data);
 	if (ret == 1)
 	{
-		if (invoker != -1)
+		if (self != -1)
 		{
-			entity_list[invoker]->player->flight_timer = atoi(data) * TICK_RATE;
+			entity_list[self]->player->flight_timer = atoi(data) * TICK_RATE;
 		}
 		return;
 	}
@@ -3702,19 +3708,19 @@ void Engine::console(int invoker, char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "give all\n");
 		menu.print(msg);
-		if (invoker != -1)
+		if (self != -1)
 		{
-			entity_list[invoker]->player->ammo_bfg = 999;
-			entity_list[invoker]->player->ammo_bullets = 999;
-			entity_list[invoker]->player->ammo_lightning = 999;
-			entity_list[invoker]->player->ammo_plasma = 999;
-			entity_list[invoker]->player->ammo_grenades = 999;
-			entity_list[invoker]->player->ammo_rockets = 999;
-			entity_list[invoker]->player->ammo_shells = 999;
-			entity_list[invoker]->player->ammo_slugs = 999;
-			entity_list[invoker]->player->armor = 200;
-			entity_list[invoker]->player->health = 100;
-			entity_list[invoker]->player->weapon_flags = ~0;
+			entity_list[self]->player->ammo_bfg = 999;
+			entity_list[self]->player->ammo_bullets = 999;
+			entity_list[self]->player->ammo_lightning = 999;
+			entity_list[self]->player->ammo_plasma = 999;
+			entity_list[self]->player->ammo_grenades = 999;
+			entity_list[self]->player->ammo_rockets = 999;
+			entity_list[self]->player->ammo_shells = 999;
+			entity_list[self]->player->ammo_slugs = 999;
+			entity_list[self]->player->armor = 200;
+			entity_list[self]->player->health = 100;
+			entity_list[self]->player->weapon_flags = ~0;
 		}
 		return;
 	}

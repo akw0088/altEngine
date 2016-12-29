@@ -424,7 +424,7 @@ void Quake3::step(int frame_step)
 
 
 			bot->player->avoid_walls(engine->map);
-			bot->player->handle_bot(engine->entity_list, i);
+			bot->player->handle_bot(engine->entity_list, engine->player_list[i]);
 
 			switch (bot->player->bot_state)
 			{
@@ -432,7 +432,7 @@ void Quake3::step(int frame_step)
 				engine->zcc.select_animation(0);
 				memset(&input, 0, sizeof(button_t));
 				input.leftbutton = true;
-				handle_weapons(*(bot->player), input, i);
+				handle_weapons(*(bot->player), input, engine->player_list[i]);
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
@@ -442,8 +442,8 @@ void Quake3::step(int frame_step)
 
 				bot->player->respawn();
 				char cmd[80];
-				sprintf(cmd, "respawn -1 %d", i);
-				engine->console(i, cmd);
+				sprintf(cmd, "respawn -1 %d", engine->player_list[i]);
+				engine->console(engine->player_list[i], cmd);
 				break;
 			case BOT_IDLE:
 			case BOT_ALERT:
@@ -456,7 +456,7 @@ void Quake3::step(int frame_step)
 	}
 }
 
-void Quake3::handle_plasma(Entity *entity, Player &player)
+void Quake3::handle_plasma(Entity *entity, Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -493,6 +493,8 @@ void Quake3::handle_plasma(Entity *entity, Player &player)
 	entity->trigger->splash_damage = 15;
 	entity->trigger->splash_radius = 75.0f;
 	entity->trigger->knockback = 75.0f;
+	entity->trigger->owner = self;
+
 
 	entity->light = new Light(entity, engine->gfx, 999);
 	entity->light->color = vec3(0.0f, 0.0f, 1.0f);
@@ -500,7 +502,7 @@ void Quake3::handle_plasma(Entity *entity, Player &player)
 
 }
 
-void Quake3::handle_rocketlauncher(Entity *entity, Player &player)
+void Quake3::handle_rocketlauncher(Entity *entity, Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -530,6 +532,7 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player)
 	entity->trigger->splash_damage = 50;
 	entity->trigger->splash_radius = 250.0f;
 	entity->trigger->knockback = 250.0f;
+	entity->trigger->owner = self;
 
 	entity->light = new Light(entity, engine->gfx, 999);
 	entity->light->color = vec3(1.0f, 1.0f, 1.0f);
@@ -558,7 +561,7 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player)
 	}
 }
 
-void Quake3::handle_grenade(Entity *entity, Player &player)
+void Quake3::handle_grenade(Entity *entity, Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -598,9 +601,11 @@ void Quake3::handle_grenade(Entity *entity, Player &player)
 	entity->trigger->splash_damage = 50;
 	entity->trigger->splash_radius = 250.0f;
 	entity->trigger->knockback = 250.0f;
+	entity->trigger->owner = self;
+
 }
 
-void Quake3::handle_lightning(Entity *entity, Player &player)
+void Quake3::handle_lightning(Entity *entity, Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -626,9 +631,11 @@ void Quake3::handle_lightning(Entity *entity, Player &player)
 	entity->light = new Light(entity, engine->gfx, 999);
 	entity->light->color = vec3(1.0f, 1.0f, 1.0f);
 	entity->light->intensity = 1000.0f;
+	entity->trigger->owner = self;
+
 }
 
-void Quake3::handle_railgun(Entity *entity, Player &player)
+void Quake3::handle_railgun(Entity *entity, Player &player, int self)
 {
 	int index[8];
 	int num_index;
@@ -805,7 +812,7 @@ void Quake3::handle_gibs(Player &player)
 
 }
 
-void Quake3::handle_shotgun(Player &player)
+void Quake3::handle_shotgun(Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -944,7 +951,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_rocketlauncher(entity, player);
+				handle_rocketlauncher(entity, player, self);
 			}
 			else
 			{
@@ -957,7 +964,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_plasma(entity, player);
+				handle_plasma(entity, player, self);
 			}
 			else
 			{
@@ -970,7 +977,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_grenade(entity, player);
+				handle_grenade(entity, player, self);
 			}
 			else
 			{
@@ -984,7 +991,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_lightning(entity, player);
+				handle_lightning(entity, player, self);
 			}
 			else
 			{
@@ -998,7 +1005,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_railgun(entity, player);
+				handle_railgun(entity, player, self);
 			}
 			else
 			{
@@ -1011,7 +1018,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 			if (player.ammo_shells > 0)
 			{
 				fired = true;
-				handle_shotgun(player);
+				handle_shotgun(player, self);
 			}
 			else
 			{

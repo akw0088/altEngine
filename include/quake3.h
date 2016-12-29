@@ -20,13 +20,13 @@ public:
 
 	void handle_weapons(Player &player, button_t &input, int self);
 
-	void handle_plasma(Entity *entity, Player &player);
-	void handle_rocketlauncher(Entity *entity, Player &player);
-	void handle_grenade(Entity *entity, Player &player);
-	void handle_lightning(Entity *entity, Player &player);
-	void handle_railgun(Entity *entity, Player &player);
+	void handle_plasma(Entity *entity, Player &player, int self);
+	void handle_rocketlauncher(Entity *entity, Player &player, int self);
+	void handle_grenade(Entity *entity, Player &player, int self);
+	void handle_lightning(Entity *entity, Player &player, int self);
+	void handle_railgun(Entity *entity, Player &player, int self);
 	void handle_machinegun(Player &player, int self);
-	void handle_shotgun(Player &player);
+	void handle_shotgun(Player &player, int self);
 	void handle_gibs(Player &player);
 
 
