@@ -52,10 +52,71 @@ void Quake3::destroy()
 	delete pineapple;
 }
 
+typedef struct
+{
+	vec3 position;
+	char targetname[64];
+	char target[512];
+} navpoint_t;
+
+vector<navpoint_t> navmesh;
+
 void Quake3::handle_player(int index)
 {
 	Entity *entity = engine->entity_list[index];
 	static int footstep_num = 0;
+	static int last_tick = 0;
+
+
+	if (engine->input.middlebutton == true)
+	{
+		int nav_num = 0;
+
+		if (last_tick == 0)
+		{
+			printf("NavMesh point:\n");
+			printf("\t{\n");
+			printf("\t\t\"classname\" \"navpoint\"\n");
+			printf("\t\t\"origin\" \"%d %d %d\"\n", (int)entity->position.x, (int)entity->position.y, (int)entity->position.z);
+			printf("\t\t\"targetname\" \"nav%d\"\n", nav_num);
+			printf("\t\t\"target\" \"nav1 nav2 nav3\"\n");
+			printf("\t}\n");
+
+			navpoint_t navpoint;
+
+			navpoint.position.x = (int)entity->position.x;
+			navpoint.position.y = (int)entity->position.y;
+			navpoint.position.z = (int)entity->position.z;
+			sprintf(navpoint.targetname, "nav%d", nav_num);
+			if (navmesh.size() > 0)
+				sprintf(navpoint.target, "%s ", navmesh[navmesh.size() - 1].targetname);
+			navmesh.push_back(navpoint);
+			last_tick = 125;
+		}
+	}
+
+
+	if (engine->input.numpad7 == true)
+	{
+		if (last_tick == 0)
+		{
+			for (int i = 0; i < navmesh.size(); i++)
+			{
+				printf("{\n");
+				printf("\t{\n");
+				printf("\t\"classname\" \"navpoint\"\n");
+				printf("\t\"origin\" \"%d %d %d\"\n", (int)navmesh[i].position.x, (int)navmesh[i].position.y, (int)navmesh[i].position.z);
+				printf("\t\"targetname\" \"%s\"\n", navmesh[i].targetname);
+				printf("\t\"target\" \"%s\"\n", navmesh[i].target);
+				printf("\t}\n");
+				printf("}\n");
+			}
+			last_tick = 250;
+		}
+	}
+	if (last_tick > 0)
+		last_tick--;
+
 
 	if (entity->player->health > 0)
 	{
@@ -404,6 +465,19 @@ void Quake3::step(int frame_step)
 		{
 			engine->camera_frame.update(engine->input);
 		}
+
+		/*
+		{
+		"classname" "trigger_explosion"
+		"dmg" "50"
+		"radius" "150"
+		"targetname" "trigger_propane1"
+		"origin" "-170 -3160 -454"
+		"delay" ".5"
+		}
+		*/
+
+
 
 		for(unsigned int i = 0; i < engine->player_list.size(); i++)
 		{

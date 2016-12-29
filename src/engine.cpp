@@ -243,7 +243,19 @@ void Engine::load(char *level)
 
 	map.generate_meshes(gfx);
 
+	printf("%s\n", map.get_entities());
 	parse_entity(map.get_entities(), entity_list, gfx, audio);
+
+	char navfile[80] = { 0 };
+	sprintf(navfile, "media/%s.nav", map.map_name);
+	char *navdata = get_file(navfile, NULL);
+	if (navdata != NULL)
+	{
+		parse_entity(navdata, entity_list, gfx, audio);
+		free((void *)navdata);
+	}
+
+
 	setup_func();
 
 	menu.delta("entities", *this);
@@ -715,6 +727,9 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->visible == false)
+			continue;
+
+		if (entity_list[i]->nodraw == true)
 			continue;
 
 		if (entity_list[i]->rigid == NULL)

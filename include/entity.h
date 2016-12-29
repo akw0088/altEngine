@@ -14,6 +14,7 @@ public:
 	bool			frustum_visible;
 	bool			bsp_visible;
 	int				bsp_leaf;
+	bool			nodraw;
 	bool			network;
 	RigidBody		*rigid;
 	Vehicle			*vehicle;

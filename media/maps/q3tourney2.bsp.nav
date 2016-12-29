@@ -1,0 +1,168 @@
+{
+"classname" "navpoint"
+"origin" "-63 57 -166"
+"targetname" "nav0"
+"target" ""
+}
+{
+"classname" "navpoint"
+"origin" "-49 57 503"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-826 121 -116"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-827 185 -621"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-847 313 -1087"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-63 57 -166"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-46 57 504"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-846 121 -118"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-843 185 -627"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-485 313 -1117"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-81 321 -1360"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "340 313 -1137"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "733 313 -1125"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "728 185 -688"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "730 121 -114"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "238 57 -125"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "690 57 -1110"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "147 -72 -1132"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-26 -70 -1459"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-89 -70 -923"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-831 57 -1123"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-828 185 -687"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-389 249 -771"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "237 249 -755"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-51 185 -725"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "70 313 -679"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-37 313 -574"
+"targetname" "nav0"
+"target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-490 313 -691"
+"targetname" "nav0"
+"target" "nav0 "
+}

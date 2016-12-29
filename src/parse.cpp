@@ -18,6 +18,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		entity.position.x = (float)x;
 		entity.position.y = (float)z;
 		entity.position.z = (float)-y;
+
+		if (strcmp(entity.type, "navpoint") == 0)
+		{
+			entity.position.x = (float)x;
+			entity.position.y = (float)y;
+			entity.position.z = (float)z;
+		}
 	}
 	else if (strcmp(key, "model") == 0)
 	{
@@ -312,7 +319,12 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.trigger = new Trigger(&entity, audio);
 
 			if (entity.rigid)
+			{
 				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
 
 			sprintf(entity.type, "trigger_teleport");
 			entity.trigger->timeout = 1.0f;
@@ -321,8 +333,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		}
 		else if (strcmp(value, "target_teleporter") == 0)
 		{
-			//trigger targets this guy, this guy targets destination
-			// useless middleman?
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
 		}
 		else if (strcmp(value, "trigger_push") == 0)
 		{
@@ -330,7 +347,12 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.trigger = new Trigger(&entity, audio);
 
 			if (entity.rigid)
+			{
 				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
 
 			sprintf(entity.trigger->action, "push %s", entity.target);
 			entity.trigger->timeout = 1.0f;
@@ -342,6 +364,127 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.trigger = new Trigger(&entity, audio);
 
 			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
+		}
+		else if (strcmp(value, "misc_model") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_notnull") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_null") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+
+		}
+		else if (strcmp(value, "target_relay") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "target_speaker") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "trigger_always") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "info_player_intermission") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "misc_teleporter_dest") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "target_delay") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "target_speaker") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "trigger_multiple") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "navpoint") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+
 		}
 	}
 	else if (strcmp(key, "light") == 0)
@@ -361,6 +504,8 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 
 		while (intensity > 1750.0f)
 			intensity /= 2.0f;
+
+		entity.nodraw = true;
 
 		if (entity.light)
 			entity.light->intensity = intensity;
@@ -517,6 +662,10 @@ char machine_entity(char state, char input, char *stack, int &sp)
 			return 'A';
 		case '\n':
 			return 'A';
+		case '\t':
+			return 'A';
+		case '\r':
+			return 'A';
 		}
 		return '\0';
 
@@ -527,6 +676,10 @@ char machine_entity(char state, char input, char *stack, int &sp)
 			push('"', stack, sp);
 			return 'V';
 		case ' ':
+			return 'B';
+		case '\t':
+			return 'B';
+		case '\r':
 			return 'B';
 		case '\n':
 			return 'B';
