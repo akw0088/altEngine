@@ -243,8 +243,26 @@ void Engine::load(char *level)
 
 	map.generate_meshes(gfx);
 
-	printf("%s\n", map.get_entities());
-	parse_entity(map.get_entities(), entity_list, gfx, audio);
+
+	char entfile[80] = { 0 };
+	sprintf(entfile, "media/%s.ent", map.map_name);
+	char *entdata = get_file(entfile, NULL);
+	if (entdata != NULL)
+	{
+		parse_entity(entdata, entity_list, gfx, audio);
+		free((void *)entdata);
+	}
+	else
+	{
+		char filename[80];
+		const char *data = map.get_entities();
+
+		sprintf(filename, "media/%s.ent", map.map_name);
+		write_file(filename, data, strlen(data));
+		parse_entity(map.get_entities(), entity_list, gfx, audio);
+	}
+
+
 
 	int start = entity_list.size();
 
@@ -277,7 +295,8 @@ void Engine::load(char *level)
 	printf("Searching for path from node%d to node%d\n", start_path, end_path);
 	path = graph.astar_path(ref, start_path, end_path, &path_length);
 	print_path(path, path_length, node);
-
+	delete[] path;
+	delete[] ref;
 
 	setup_func();
 

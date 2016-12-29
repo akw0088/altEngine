@@ -16,7 +16,7 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level);
 char *get_file(char *filename, int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
-int write_file(char *filename, char *bytes, int size);
+int write_file(char *filename, const char *bytes, int size);
 float sign(float x);
 void newlinelist(char *filename, char **list, int &num);
 bool check_hash(char *filename, char *checkhash, char *hash);

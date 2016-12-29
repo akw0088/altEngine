@@ -445,7 +445,7 @@ char *get_file(char *filename, int *size)
     return buffer;
 }
 
-int write_file(char *filename, char *bytes, int size)
+int write_file(char *filename, const char *bytes, int size)
 {
     FILE *fp = fopen(filename, "wb");
     int ret;
