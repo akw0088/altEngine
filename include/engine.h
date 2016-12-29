@@ -49,7 +49,7 @@ public:
 	void load_model(Entity &ent);
 	void create_sources();
 
-	void console(char *cmd);
+	void console(int invoker, char *cmd);
 	void handle_game(char key);
 
 	bool collision_detect(RigidBody &body);
@@ -105,6 +105,8 @@ public:
 	vector<surface_t *> surface_list;
 
 
+	vector<int> player_list;
+
 protected:
 	matrix4		projection;
 	matrix4		identity;
@@ -136,10 +138,9 @@ protected:
 	int		sequence;
 	Net		net;
 	reliablemsg_t	reliable;
-	int		spawn;			// entity index of self
+	
+	
 	int		server_spawn;	// entity index of hosting player
-	int enemy;
-
 
 
 	//server

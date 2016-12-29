@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define BOT_ENABLE
+
 extern char bot_state_name[16][80];
 
 Quake3::Quake3()
@@ -50,322 +52,118 @@ void Quake3::destroy()
 	delete pineapple;
 }
 
-/*
-item_health
-item_health_large
-item_armor_shard
-item_health_mega
-item_quad
-holdable_medkit
-holdable_teleporter
-item_enviro
-item_flight
-item_haste
-item_invis
-item_regen
-
-ammo_bullets
-ammo_rockets
-ammo_slugs
-ammo_shells
-ammo_lightning
-ammo_plasma
-
-weapon_rocketlauncher
-weapon_lightning
-weapon_shotgun
-weapon_railgun
-weapon_plasma
-weapon_grenadelauncher
-item_armor_combat
-item_armor_body
-trigger_teleport
-*/
-
-
-void Quake3::step(int frame_step)
+void Quake3::handle_player(int index)
 {
+	Entity *entity = engine->entity_list[index];
 	static int footstep_num = 0;
-	int spawn = engine->spawn;
 
-	if (spawn == -1)
-		return;
-
-	if (engine->entity_list.size() == 0)
-		return;
-
-	Entity *entity = engine->entity_list[spawn];
-
-	if (engine->server_flag == false && engine->client_flag == false && engine->enemy == -1)
+	if (entity->player->health > 0)
 	{
-		engine->enemy = engine->get_player();
-		Entity *entity = engine->entity_list[engine->enemy];
-		debugf("Adding an enemy player\n");
-		entity->rigid = new RigidBody(entity);
-		entity->model = entity->rigid;
-		entity->rigid->clone(*(thug22->model));
-		sprintf(entity->type, "NPC");
-		entity->player = new Player(entity, engine->gfx, engine->audio, 16);
-		entity->speaker->gain(5.0f);
-		sprintf(entity->player->name, "thug22");
-		entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
-		char cmd[80];
-		sprintf(cmd, "respawn %d %d", -1, engine->enemy);
-		engine->console(cmd);
-//		entity->rigid->pursue_flag = true;
-//		entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
-	}
 
-
-	//player movement
-	if (engine->menu.ingame == false && engine->menu.console == false)
-	{
-		if (engine->input.control == true)
-			engine->camera_frame.update(engine->input);
-		else if (spawn != -1)
+		// True if jumped
+		if (engine->input.up || engine->input.down || engine->input.left || engine->input.right)
 		{
-			if (engine->entity_list[spawn]->player->health > 0)
-			{
-
-				// True if jumped
-				if (engine->input.up || engine->input.down || engine->input.left || engine->input.right)
-				{
-					entity->player->state = PLAYER_MOVED;
-				}
-
-				if (engine->input.shift)
-				{
-					entity->player->state = PLAYER_DUCKED;
-				}
-
-
-				if (entity->rigid->move(engine->input))
-				{
-					entity->player->state = PLAYER_JUMPED;
-					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
-					engine->audio.play(entity->speaker->source);
-				}
-
-			}
-			else
-			{
-				button_t noinput;
-
-				memset(&noinput, 0, sizeof(button_t));
-				entity->player->state = PLAYER_DEAD;
-				//Makes body hit the floor, need to explore why this hack is needed
-				if (entity->player->reload_timer)
-				{
-					entity->rigid->move(noinput);
-				}
-			}
-
-			if (engine->entity_list[spawn]->player->teleport_timer > 0)
-			{
-				engine->entity_list[spawn]->player->teleport_timer--;
-			}
-
-			if (engine->entity_list[spawn]->player->flight_timer > 0)
-			{
-				engine->entity_list[spawn]->player->flight_timer--;
-				engine->entity_list[spawn]->rigid->flight = true;
-				engine->entity_list[spawn]->rigid->translational_friction = 0.9f;
-			}
-			else
-			{
-				engine->entity_list[spawn]->rigid->flight = false;
-				engine->entity_list[spawn]->rigid->translational_friction = 0.0f;
-			}
+			entity->player->state = PLAYER_MOVED;
 		}
 
-		if (engine->enemy != -1)
+		if (engine->input.shift)
 		{
-			Entity *enemy_ent = engine->entity_list[engine->enemy];
-			button_t input;
+			entity->player->state = PLAYER_DUCKED;
+		}
 
 
-			enemy_ent->player->avoid_walls(engine->map);
-			enemy_ent->player->handle_bot(engine->entity_list, engine->enemy);
+		if (entity->rigid->move(engine->input))
+		{
+			entity->player->state = PLAYER_JUMPED;
+			engine->select_wave(entity->speaker->source, entity->player->jump_sound);
+			engine->audio.play(entity->speaker->source);
+		}
 
-			switch (enemy_ent->player->bot_state)
-			{
-			case BOT_ATTACK:
-				engine->zcc.select_animation(0);
-				memset(&input, 0, sizeof(button_t));
-				input.leftbutton = true;
-				handle_weapons(*(enemy_ent->player), input, engine->enemy);
-				break;
-			case BOT_DEAD:
-				engine->zcc.select_animation(1);
-				enemy_ent->model->clone(*(box->model));
-				engine->select_wave(enemy_ent->speaker->source, enemy_ent->player->death1_sound);
-				engine->audio.play(enemy_ent->speaker->source);
+	}
+	else
+	{
+		button_t noinput;
 
-				enemy_ent->player->respawn();
-				char cmd[80];
-				sprintf(cmd, "respawn -1 %d", engine->enemy);
-				engine->console(cmd);
-				break;
-			case BOT_IDLE:
-			case BOT_ALERT:
-				engine->zcc.select_animation(1);
-				break;
-			}
+		memset(&noinput, 0, sizeof(button_t));
+		entity->player->state = PLAYER_DEAD;
+		//Makes body hit the floor, need to explore why this hack is needed
+		if (entity->player->reload_timer)
+		{
+			entity->rigid->move(noinput);
 		}
 	}
 
-
-	if (frame_step % TICK_RATE == 0)
+	if (entity->player->teleport_timer > 0)
 	{
-		blink = !blink;
+		entity->player->teleport_timer--;
 	}
 
-
-	if (spawn != -1)
+	if (entity->player->flight_timer > 0)
 	{
-		if (frame_step % TICK_RATE == 0)
-		{
-			if (entity->player->health > 100)
-			{
-				entity->player->health--;
-			}
+		entity->player->flight_timer--;
+		entity->rigid->flight = true;
+		entity->rigid->translational_friction = 0.9f;
+	}
+	else
+	{
+		entity->rigid->flight = false;
+		entity->rigid->translational_friction = 0.0f;
+	}
 
-			if (entity->player->armor > 100)
-			{
-				entity->player->armor--;
-			}
+	if (engine->tick_num % TICK_RATE == 0)
+	{
+		if (entity->player->health > 100)
+		{
+			entity->player->health--;
 		}
 
-		if (entity->rigid->velocity.y > -1.0f && entity->rigid->velocity.y < 1.0f &&
-			entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
-			entity->rigid->noclip == false && entity->rigid->gravity == true )
+		if (entity->player->armor > 100)
 		{
-
-			if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && frame_step % 20 == 0)
-			{
-				bool ret = false;
-
-				switch (footstep_num++ % 4)
-				{
-				case 0:
-					ret = engine->select_wave(entity->player->footstep_source, entity->player->step1_sound);
-					break;
-				case 1:
-					ret = engine->select_wave(entity->player->footstep_source, entity->player->step2_sound);
-					break;
-				case 2:
-					ret = engine->select_wave(entity->player->footstep_source, entity->player->step3_sound);
-					break;
-				case 3:
-					ret = engine->select_wave(entity->player->footstep_source, entity->player->step4_sound);
-					break;
-				}
-
-				if (ret)
-				{
-					engine->audio.play(entity->player->footstep_source);
-				}
-				else
-				{
-					debugf("Failed to find PCM data for footstep sound\n");
-				}
-			}
+			entity->player->armor--;
 		}
+	}
 
-		if (entity->rigid->water && entity->rigid->water_depth < entity->rigid->get_height())
-		{
-			if (entity->rigid->water != entity->rigid->last_water)
-			{
-				bool ret = engine->select_wave(entity->speaker->source, entity->player->waterin_sound);
+	if (entity->rigid->velocity.y > -1.0f && entity->rigid->velocity.y < 1.0f &&
+		entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
+		entity->rigid->noclip == false && entity->rigid->gravity == true)
+	{
 
-				if (ret)
-				{
-					engine->audio.play(entity->speaker->source);
-				}
-				else
-				{
-					debugf("Failed to find PCM data for water entry sound\n");
-				}
-				entity->rigid->last_water = entity->rigid->water;
-			}
-		}
-		else if (entity->rigid->water == false)
-		{
-			if (entity->rigid->water != entity->rigid->last_water)
-			{
-				bool ret = engine->select_wave(entity->speaker->source, entity->player->waterout_sound);
-
-				if (ret)
-				{
-					engine->audio.play(entity->speaker->source);
-				}
-				else
-				{
-					debugf("Failed to find PCM data for water exit sound\n");
-				}
-				entity->rigid->last_water = entity->rigid->water;
-				entity->player->drown_timer = 0;
-			}
-		}
-		else
-		{
-			entity->player->drown_timer++;
-
-			if (entity->player->drown_timer % 125 * 30 == 0)
-			{
-				bool ret = false;
-
-				switch (footstep_num++ % 2)
-				{
-				case 0:
-					ret = engine->select_wave(entity->speaker->source, entity->player->gurp1_sound);
-					break;
-				case 1:
-					ret = engine->select_wave(entity->speaker->source, entity->player->gurp2_sound);
-					break;
-				}
-
-				if (ret)
-				{
-					engine->audio.play(entity->speaker->source);
-					entity->player->health -= 15;
-				}
-				else
-				{
-					debugf("Failed to find PCM data for water exit sound\n");
-				}
-			}
-		}
-
-		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
 		{
 			bool ret = false;
 
-			if (entity->player->health <= -50)
+			switch (footstep_num++ % 4)
 			{
-				debugf("%s was gibbed\n", entity->player->name);
+			case 0:
+				ret = engine->select_wave(entity->player->footstep_source, entity->player->step1_sound);
+				break;
+			case 1:
+				ret = engine->select_wave(entity->player->footstep_source, entity->player->step2_sound);
+				break;
+			case 2:
+				ret = engine->select_wave(entity->player->footstep_source, entity->player->step3_sound);
+				break;
+			case 3:
+				ret = engine->select_wave(entity->player->footstep_source, entity->player->step4_sound);
+				break;
+			}
 
-				ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
-
-				handle_gibs(*(entity->player));
+			if (ret)
+			{
+				engine->audio.play(entity->player->footstep_source);
 			}
 			else
 			{
-				debugf("%s died\n", entity->player->name);
-
-				switch (frame_step % 3)
-				{
-				case 0:
-					ret = engine->select_wave(entity->speaker->source, entity->player->death1_sound);
-					break;
-				case 1:
-					ret = engine->select_wave(entity->speaker->source, entity->player->death2_sound);
-					break;
-				case 2:
-					ret = engine->select_wave(entity->speaker->source, entity->player->death3_sound);
-					break;
-				}
+				debugf("Failed to find PCM data for footstep sound\n");
 			}
+		}
+	}
+
+	if (entity->rigid->water && entity->rigid->water_depth < entity->rigid->get_height())
+	{
+		if (entity->rigid->water != entity->rigid->last_water)
+		{
+			bool ret = engine->select_wave(entity->speaker->source, entity->player->waterin_sound);
 
 			if (ret)
 			{
@@ -373,84 +171,288 @@ void Quake3::step(int frame_step)
 			}
 			else
 			{
-				debugf("Failed to find PCM data for death sound\n");
+				debugf("Failed to find PCM data for water entry sound\n");
 			}
-
-			Entity *drop_weapon = engine->entity_list[engine->get_entity()];
-			char *weapon_str = NULL;
-
-
-			drop_weapon->rigid = new RigidBody(drop_weapon);
-			drop_weapon->position = entity->position;
-			drop_weapon->model = drop_weapon->rigid;
-
-			switch (entity->player->current_weapon)
-			{
-			case wp_machinegun:
-				weapon_str = "weapon_machinegun";
-				drop_weapon->model->clone(entity->player->weapon_machinegun);
-				break;
-			case wp_shotgun:
-				weapon_str = "weapon_shotgun";
-				drop_weapon->model->clone(entity->player->weapon_shotgun);
-				break;
-			case wp_grenade:
-				weapon_str = "weapon_grenadelauncher";
-				drop_weapon->model->clone(entity->player->weapon_grenade);
-				break;
-			case wp_rocket:
-				weapon_str = "weapon_rocketlauncher";
-				drop_weapon->model->clone(entity->player->weapon_rocket);
-				break;
-			case wp_plasma:
-				weapon_str = "weapon_plasmagun";
-				drop_weapon->model->clone(entity->player->weapon_plasma);
-				break;
-			case wp_lightning:
-				weapon_str = "weapon_lightning";
-				drop_weapon->model->clone(entity->player->weapon_lightning);
-				break;
-			case wp_railgun:
-				weapon_str = "weapon_railgun";
-				drop_weapon->model->clone(entity->player->weapon_railgun);
-				break;
-			}
-
-			// it will have the players view direction, resetting
-			drop_weapon->model->morientation.m[0] = 1.0f;
-			drop_weapon->model->morientation.m[1] = 0.0f;
-			drop_weapon->model->morientation.m[2] = 0.0f;
-
-			drop_weapon->model->morientation.m[3] = 0.0f;
-			drop_weapon->model->morientation.m[4] = 1.0f;
-			drop_weapon->model->morientation.m[5] = 0.0f;
-
-			drop_weapon->model->morientation.m[6] = 0.0f;
-			drop_weapon->model->morientation.m[7] = 0.0f;
-			drop_weapon->model->morientation.m[8] = 1.0f;
-
-			drop_weapon->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
-//			drop_weapon->position += vec3(0.0f, 20.0f, 0.0);
-
-
-			drop_weapon->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-
-
-			vec3 forward;
-			entity->model->getForwardVector(forward);
-			drop_weapon->rigid->velocity = forward *-1.0f;
-			drop_weapon->rigid->angular_velocity.x = 10.0f;
-
-			entity->player->state = PLAYER_DEAD;
-			drop_weapon->trigger = new Trigger(drop_weapon, engine->audio);
-			snprintf(drop_weapon->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(drop_weapon->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-			sprintf(drop_weapon->trigger->action, "%s", weapon_str);
-
-			entity->player->kill();
-			entity->model->clone(*(box->model));
+			entity->rigid->last_water = entity->rigid->water;
 		}
-		handle_weapons(*(entity->player), engine->input, engine->spawn);
+	}
+	else if (entity->rigid->water == false)
+	{
+		if (entity->rigid->water != entity->rigid->last_water)
+		{
+			bool ret = engine->select_wave(entity->speaker->source, entity->player->waterout_sound);
+
+			if (ret)
+			{
+				engine->audio.play(entity->speaker->source);
+			}
+			else
+			{
+				debugf("Failed to find PCM data for water exit sound\n");
+			}
+			entity->rigid->last_water = entity->rigid->water;
+			entity->player->drown_timer = 0;
+		}
+	}
+	else
+	{
+		entity->player->drown_timer++;
+
+		if (entity->player->drown_timer % 125 * 30 == 0)
+		{
+			bool ret = false;
+
+			switch (footstep_num++ % 2)
+			{
+			case 0:
+				ret = engine->select_wave(entity->speaker->source, entity->player->gurp1_sound);
+				break;
+			case 1:
+				ret = engine->select_wave(entity->speaker->source, entity->player->gurp2_sound);
+				break;
+			}
+
+			if (ret)
+			{
+				engine->audio.play(entity->speaker->source);
+				entity->player->health -= 15;
+			}
+			else
+			{
+				debugf("Failed to find PCM data for water exit sound\n");
+			}
+		}
+	}
+
+	if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+	{
+		player_died(index);
+	}
+	handle_weapons(*(entity->player), engine->input, engine->player_list[0]);
+}
+
+void Quake3::player_died(int index)
+{
+	Entity *entity = engine->entity_list[index];
+	bool ret = false;
+
+	if (entity->player->health <= -50)
+	{
+		debugf("%s was gibbed\n", entity->player->name);
+		ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
+		handle_gibs(*(entity->player));
+	}
+	else
+	{
+		debugf("%s died\n", entity->player->name);
+
+		switch (engine->tick_num % 3)
+		{
+		case 0:
+			ret = engine->select_wave(entity->speaker->source, entity->player->death1_sound);
+			break;
+		case 1:
+			ret = engine->select_wave(entity->speaker->source, entity->player->death2_sound);
+			break;
+		case 2:
+			ret = engine->select_wave(entity->speaker->source, entity->player->death3_sound);
+			break;
+		}
+	}
+
+	if (ret)
+	{
+		engine->audio.play(entity->speaker->source);
+	}
+	else
+	{
+		debugf("Failed to find PCM data for death sound\n");
+	}
+
+	drop_weapon(index);
+
+	entity->player->kill();
+	entity->model->clone(*(box->model));
+}
+
+void Quake3::drop_weapon(int index)
+{
+	Entity *entity = engine->entity_list[index];
+	Entity *drop_weapon = engine->entity_list[engine->get_entity()];
+	char *weapon_str = NULL;
+
+
+	drop_weapon->rigid = new RigidBody(drop_weapon);
+	drop_weapon->position = entity->position;
+	drop_weapon->model = drop_weapon->rigid;
+
+	switch (entity->player->current_weapon)
+	{
+	case wp_machinegun:
+		weapon_str = "weapon_machinegun";
+		drop_weapon->model->clone(entity->player->weapon_machinegun);
+		break;
+	case wp_shotgun:
+		weapon_str = "weapon_shotgun";
+		drop_weapon->model->clone(entity->player->weapon_shotgun);
+		break;
+	case wp_grenade:
+		weapon_str = "weapon_grenadelauncher";
+		drop_weapon->model->clone(entity->player->weapon_grenade);
+		break;
+	case wp_rocket:
+		weapon_str = "weapon_rocketlauncher";
+		drop_weapon->model->clone(entity->player->weapon_rocket);
+		break;
+	case wp_plasma:
+		weapon_str = "weapon_plasmagun";
+		drop_weapon->model->clone(entity->player->weapon_plasma);
+		break;
+	case wp_lightning:
+		weapon_str = "weapon_lightning";
+		drop_weapon->model->clone(entity->player->weapon_lightning);
+		break;
+	case wp_railgun:
+		weapon_str = "weapon_railgun";
+		drop_weapon->model->clone(entity->player->weapon_railgun);
+		break;
+	}
+
+	// it will have the players view direction, resetting
+	drop_weapon->model->morientation.m[0] = 1.0f;
+	drop_weapon->model->morientation.m[1] = 0.0f;
+	drop_weapon->model->morientation.m[2] = 0.0f;
+
+	drop_weapon->model->morientation.m[3] = 0.0f;
+	drop_weapon->model->morientation.m[4] = 1.0f;
+	drop_weapon->model->morientation.m[5] = 0.0f;
+
+	drop_weapon->model->morientation.m[6] = 0.0f;
+	drop_weapon->model->morientation.m[7] = 0.0f;
+	drop_weapon->model->morientation.m[8] = 1.0f;
+
+	drop_weapon->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
+	//			drop_weapon->position += vec3(0.0f, 20.0f, 0.0);
+
+
+	drop_weapon->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+
+
+	vec3 forward;
+	entity->model->getForwardVector(forward);
+	drop_weapon->rigid->velocity = forward *-1.0f;
+	drop_weapon->rigid->angular_velocity.x = 10.0f;
+
+	//  Prevent player from picking weapon back up
+	entity->player->state = PLAYER_DEAD;
+
+	drop_weapon->trigger = new Trigger(drop_weapon, engine->audio);
+	snprintf(drop_weapon->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+	snprintf(drop_weapon->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+	sprintf(drop_weapon->trigger->action, "%s", weapon_str);
+}
+
+
+void Quake3::add_bot(int &index)
+{
+	index = engine->get_player();
+
+	Entity *entity = engine->entity_list[index];
+
+	debugf("Adding a bot\n");
+	entity->rigid = new RigidBody(entity);
+	entity->model = entity->rigid;
+	entity->rigid->clone(*(thug22->model));
+	sprintf(entity->type, "NPC");
+	entity->player = new Player(entity, engine->gfx, engine->audio, 16);
+	entity->speaker->gain(5.0f);
+	sprintf(entity->player->name, "Bot %d", index);
+	entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
+
+	char cmd[80];
+	sprintf(cmd, "respawn %d %d", -1, index);
+	engine->console(engine->player_list[0], cmd);
+}
+
+
+void Quake3::step(int frame_step)
+{
+	unsigned int num_bot = 5;
+
+	if (engine->entity_list.size() == 0)
+		return;
+
+	if (frame_step % TICK_RATE == 0)
+	{
+		blink = !blink;
+	}
+
+	if (engine->server_flag == false && engine->client_flag == false && engine->player_list.size() < num_bot)
+	{
+		for (unsigned int i = 0; i < num_bot; i++)
+		{
+			int bot_index = engine->get_player();
+			add_bot(bot_index);
+			engine->player_list.push_back(bot_index);
+		}
+	}
+
+
+	if (engine->menu.ingame == false && engine->menu.console == false)
+	{
+		if (engine->input.control == true)
+		{
+			engine->camera_frame.update(engine->input);
+		}
+
+		for(unsigned int i = 0; i < engine->player_list.size(); i++)
+		{
+			Entity *entity = engine->entity_list[i];
+
+			if (strcmp(entity->type, "player") == 0)
+			{
+				handle_player(i);
+			}
+
+			if (strcmp(entity->type, "NPC") != 0)
+				continue;
+
+#ifdef BOT_ENABLE
+
+			Entity *bot = engine->entity_list[i];
+			button_t input;
+
+
+			bot->player->avoid_walls(engine->map);
+			bot->player->handle_bot(engine->entity_list, i);
+
+			switch (bot->player->bot_state)
+			{
+			case BOT_ATTACK:
+				engine->zcc.select_animation(0);
+				memset(&input, 0, sizeof(button_t));
+				input.leftbutton = true;
+				handle_weapons(*(bot->player), input, i);
+				break;
+			case BOT_DEAD:
+				engine->zcc.select_animation(1);
+				bot->model->clone(*(box->model));
+				engine->select_wave(bot->speaker->source, bot->player->death1_sound);
+				engine->audio.play(bot->speaker->source);
+
+				bot->player->respawn();
+				char cmd[80];
+				sprintf(cmd, "respawn -1 %d", i);
+				engine->console(i, cmd);
+				break;
+			case BOT_IDLE:
+			case BOT_ALERT:
+				engine->zcc.select_animation(1);
+				break;
+			}
+#endif
+
+		}
 	}
 }
 
@@ -618,7 +620,7 @@ void Quake3::handle_lightning(Entity *entity, Player &player)
 	entity->rigid->gravity = false;
 	entity->rigid->rotational_friction_flag = true;
 	entity->model = entity->rigid;
-	entity->rigid->set_target(*(engine->entity_list[engine->spawn]));
+	entity->rigid->set_target(*(engine->entity_list[engine->player_list[0]]));
 	camera_frame.set(entity->model->morientation);
 
 	entity->light = new Light(entity, engine->gfx, 999);
@@ -653,7 +655,7 @@ void Quake3::handle_railgun(Entity *entity, Player &player)
 	vec3 forward;
 	player.entity->model->getForwardVector(forward);
 
-	engine->hitscan(player.entity->position, forward, index, num_index, engine->spawn);
+	engine->hitscan(player.entity->position, forward, index, num_index, engine->player_list[0]);
 	for (int i = 0; i < num_index; i++)
 	{
 		char cmd[80] = { 0 };
@@ -667,7 +669,7 @@ void Quake3::handle_railgun(Entity *entity, Player &player)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 		sprintf(cmd, "hurt %d %d", index[i], 100);
-		engine->console(cmd);
+		engine->console(engine->player_list[0], cmd);
 	}
 }
 
@@ -693,8 +695,8 @@ void Quake3::handle_machinegun(Player &player, int self)
 	if (self == 1)
 	{
 		debugf("Player %s hit %s with the machinegun for %d damage\n", engine->entity_list[self]->player->name, player.name, 7);
-		sprintf(cmd, "hurt %d %d", engine->spawn, 7);
-		engine->console(cmd);
+		sprintf(cmd, "hurt %d %d", engine->player_list[0], 7);
+		engine->console(engine->player_list[0], cmd);
 	}
 
 	engine->hitscan(player.entity->position, forward, index, num_index, self);
@@ -708,7 +710,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 		sprintf(cmd, "hurt %d %d", index[i], 7);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		engine->console(cmd);
+		engine->console(engine->player_list[0], cmd);
 	}
 
 //	engine->map.hitscan(player.entity->position, forward, distance);
@@ -826,7 +828,7 @@ void Quake3::handle_shotgun(Player &player)
 
 	player.entity->model->getForwardVector(forward);
 
-	engine->hitscan(player.entity->position, forward, index, num_index, engine->spawn);
+	engine->hitscan(player.entity->position, forward, index, num_index, engine->player_list[0]);
 	for (int i = 0; i < num_index; i++)
 	{
 		char cmd[80] = { 0 };
@@ -839,7 +841,7 @@ void Quake3::handle_shotgun(Player &player)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 
-		engine->console(cmd);
+		engine->console(engine->player_list[0], cmd);
 	}
 
 	//vec3 end = player.entity->position + forward * distance;
@@ -867,7 +869,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 	{
 		if (input.leftbutton && player.reload_timer == 0)
 		{
-			engine->console("respawn");
+			engine->console(engine->player_list[0], "respawn");
 		}
 		return;
 	}
@@ -1072,7 +1074,7 @@ void Quake3::render_hud(double last_frametime)
 	matrix4 real_projection = engine->projection;
 	char msg[LINE_SIZE];
 
-	int spawn = engine->spawn;
+	int spawn = engine->player_list[0];
 	Entity *entity = engine->entity_list[spawn];
 
 	engine->projection = engine->identity;

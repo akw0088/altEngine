@@ -29,6 +29,12 @@ public:
 	void handle_shotgun(Player &player);
 	void handle_gibs(Player &player);
 
+
+	void handle_player(int index);
+	void player_died(int index);
+	void drop_weapon(int index);
+	void add_bot(int &index);
+
 protected:
 	bool blink;
 	// for cloning

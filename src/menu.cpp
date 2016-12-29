@@ -176,7 +176,7 @@ void Menu::delta(char *delta, Engine &altEngine)
 				menu_state = item->end;
 				audio->play(delta_source);
 				if (strcmp(item->cmd, "null") != 0)
-					altEngine.console(item->cmd);
+					altEngine.console(-1, item->cmd);
 				break;
 			}
 		}
@@ -304,8 +304,6 @@ void Menu::render_console(Global &global)
 	global.Params(matrix, 0);
 	matrix.m[13] = 0.0f;
 	gfx->DrawArrayTri(0, 0, 6, 4);
-//	gfx->SelectShader(0);
-//	gfx->DeselectTexture(0);
 
 	gfx->cleardepth();
 	for(unsigned int i = 0; i < console_buffer.size(); i++)
@@ -403,7 +401,7 @@ void Menu::handle_console(char key, Engine *altEngine)
 			dmesg_index = 0;
 		memcpy(line, key_buffer, strlen(key_buffer) + 1);
 		cmd_buffer.push_back(line);
-		altEngine->console(key_buffer);
+		altEngine->console(altEngine->player_list[0], key_buffer);
 		key_buffer[0] = '\0';
 		break;
 		}
