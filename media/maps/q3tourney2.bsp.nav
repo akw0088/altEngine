@@ -1,168 +1,159 @@
 {
 "classname" "navpoint"
-"origin" "-63 57 -166"
-"targetname" "nav0"
-"target" ""
-}
-{
-"classname" "navpoint"
 "origin" "-49 57 503"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav1"
+"target" "nav5 "
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "-826 121 -116"
-"targetname" "nav0"
-"target" "nav0 "
-}
-{
-"classname" "navpoint"
-"origin" "-827 185 -621"
-"targetname" "nav0"
-"target" "nav0 "
-}
-{
-"classname" "navpoint"
-"origin" "-847 313 -1087"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav2"
+"target" "nav8 nav21"
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "-63 57 -166"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav5"
+"target" "nav1 nav8 nav15"
+"done" "done"
 }
 {
 "classname" "navpoint"
-"origin" "-46 57 504"
-"targetname" "nav0"
-"target" "nav0 "
+"origin" "-950 185 -687"
+"targetname" "nav6"
+"target" "nav21 nav7 "
 }
 {
 "classname" "navpoint"
-"origin" "-846 121 -118"
-"targetname" "nav0"
-"target" "nav0 "
+"origin" "-955 313 -1063"
+"targetname" "nav7"
+"target" "nav7 "
 }
 {
 "classname" "navpoint"
-"origin" "-843 185 -627"
-"targetname" "nav0"
-"target" "nav0 "
+"origin" "-405 57 -131"
+"targetname" "nav8"
+"target" "nav8 "
 }
 {
 "classname" "navpoint"
 "origin" "-485 313 -1117"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav9"
+"target" "nav9 "
 }
 {
 "classname" "navpoint"
 "origin" "-81 321 -1360"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav10"
+"target" "nav10 "
 }
 {
 "classname" "navpoint"
 "origin" "340 313 -1137"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav11"
+"target" "nav11 "
 }
 {
 "classname" "navpoint"
 "origin" "733 313 -1125"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav12"
+"target" "nav12 "
 }
 {
 "classname" "navpoint"
 "origin" "728 185 -688"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav13"
+"target" "nav16 nav14"
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "730 121 -114"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav14"
+"target" "nav13 nav15"
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "238 57 -125"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav15"
+"target" "nav14 nav5"
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "690 57 -1110"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav16"
+"target" "nav13 nav17 "
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "147 -72 -1132"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav17"
+"target" "nav19 nav18 nav16"
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "-26 -70 -1459"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav18"
+"target" "nav18 "
 }
 {
 "classname" "navpoint"
 "origin" "-89 -70 -923"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav19"
+"target" "nav19 "
 }
 {
 "classname" "navpoint"
 "origin" "-831 57 -1123"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav20"
+"target" "nav20 "
 }
 {
 "classname" "navpoint"
 "origin" "-828 185 -687"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav21"
+"target" "nav2 nav6 nav20"
+"done" "done"
 }
 {
 "classname" "navpoint"
 "origin" "-389 249 -771"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav22"
+"target" "nav22 "
 }
 {
 "classname" "navpoint"
 "origin" "237 249 -755"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav23"
+"target" "nav23 "
 }
 {
 "classname" "navpoint"
 "origin" "-51 185 -725"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav24"
+"target" "nav24 "
 }
 {
 "classname" "navpoint"
 "origin" "70 313 -679"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav25"
+"target" "nav25 "
 }
 {
 "classname" "navpoint"
 "origin" "-37 313 -574"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav26"
+"target" "nav26 "
 }
 {
 "classname" "navpoint"
 "origin" "-490 313 -691"
-"targetname" "nav0"
-"target" "nav0 "
+"targetname" "nav27"
+"target" "nav27 "
 }

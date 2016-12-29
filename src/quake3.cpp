@@ -75,12 +75,12 @@ void Quake3::handle_player(int index)
 		if (last_tick == 0)
 		{
 			printf("NavMesh point:\n");
-			printf("\t{\n");
-			printf("\t\t\"classname\" \"navpoint\"\n");
-			printf("\t\t\"origin\" \"%d %d %d\"\n", (int)entity->position.x, (int)entity->position.y, (int)entity->position.z);
-			printf("\t\t\"targetname\" \"nav%d\"\n", nav_num);
-			printf("\t\t\"target\" \"nav1 nav2 nav3\"\n");
-			printf("\t}\n");
+			printf("{\n");
+			printf("\"classname\" \"navpoint\"\n");
+			printf("\"origin\" \"%d %d %d\"\n", (int)entity->position.x, (int)entity->position.y, (int)entity->position.z);
+			printf("\"targetname\" \"nav%d\"\n", nav_num);
+			printf("\"target\" \"nav1 nav2 nav3\"\n");
+			printf("}\n");
 
 			navpoint_t navpoint;
 
@@ -89,7 +89,7 @@ void Quake3::handle_player(int index)
 			navpoint.position.z = (int)entity->position.z;
 			sprintf(navpoint.targetname, "nav%d", nav_num);
 			if (navmesh.size() > 0)
-				sprintf(navpoint.target, "%s ", navmesh[navmesh.size() - 1].targetname);
+				sprintf(navpoint.target, "%s ", navmesh[0].targetname);
 			navmesh.push_back(navpoint);
 			last_tick = 125;
 		}
@@ -103,12 +103,10 @@ void Quake3::handle_player(int index)
 			for (int i = 0; i < navmesh.size(); i++)
 			{
 				printf("{\n");
-				printf("\t{\n");
-				printf("\t\"classname\" \"navpoint\"\n");
-				printf("\t\"origin\" \"%d %d %d\"\n", (int)navmesh[i].position.x, (int)navmesh[i].position.y, (int)navmesh[i].position.z);
-				printf("\t\"targetname\" \"%s\"\n", navmesh[i].targetname);
-				printf("\t\"target\" \"%s\"\n", navmesh[i].target);
-				printf("\t}\n");
+				printf("\"classname\" \"navpoint\"\n");
+				printf("\"origin\" \"%d %d %d\"\n", (int)navmesh[i].position.x, (int)navmesh[i].position.y, (int)navmesh[i].position.z);
+				printf("\"targetname\" \"%s\"\n", navmesh[i].targetname);
+				printf("\"target\" \"%s\"\n", navmesh[i].target);
 				printf("}\n");
 			}
 			last_tick = 250;
@@ -1297,6 +1295,18 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
 			sprintf(data, "State %d", entity->rigid->sleep);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color );
+		}
+
+		if (strcmp(entity->type, "navpoint") == 0)
+		{
+			vec3 blue(0.0f, 0.0f, 1.0f);
+			vec3 green(0.0f, 1.0f, 0.0f);
+			int line = 1;
+
+			sprintf(data, "targetname %s", entity->target_name);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.04f, blue);
+			sprintf(data, "target %s", entity->target);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.04f, green);
 		}
 
 		if (strcmp(entity->type, "light") == 0)

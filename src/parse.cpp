@@ -19,7 +19,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		entity.position.y = (float)z;
 		entity.position.z = (float)-y;
 
-		if (strcmp(entity.type, "navpoint") == 0)
+		if (strstr(entity.type, "navpoint") != NULL)
 		{
 			entity.position.x = (float)x;
 			entity.position.y = (float)y;
