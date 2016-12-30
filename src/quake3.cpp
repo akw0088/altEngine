@@ -466,18 +466,6 @@ void Quake3::step(int frame_step)
 			engine->camera_frame.update(engine->input);
 		}
 
-		/*
-		{
-		"classname" "trigger_explosion"
-		"dmg" "50"
-		"radius" "150"
-		"targetname" "trigger_propane1"
-		"origin" "-170 -3160 -454"
-		"delay" ".5"
-		}
-		*/
-
-
 
 		for (unsigned int i = 0; i < engine->player_list.size(); i++)
 		{
@@ -537,6 +525,8 @@ void Quake3::step(int frame_step)
 				{
 					//some one got the item before we did, abort
 					engine->entity_list[i]->player->bot_state = BOT_IDLE;
+					if (engine->entity_list[i]->player->path.path != (void *)1)
+						free((void *)engine->entity_list[i]->player->path.path);
 					engine->entity_list[i]->player->path.path = NULL;
 					engine->entity_list[i]->player->path.step = 0;
 					engine->entity_list[i]->player->path.length = 0;
@@ -568,9 +558,14 @@ void Quake3::step(int frame_step)
 
 					float distance = (engine->entity_list[i]->position - engine->entity_list[item]->position).magnitude();
 
-					if (distance < 75.0f)
+					// Get really close so we dont walk into walls at tight spaces
+					if (distance < 10.0f)
 					{
 						// Finally got where the item is, exit get state
+						if (engine->entity_list[i]->player->path.path != (void *)1)
+							free((void *)engine->entity_list[i]->player->path.path);
+
+
 						engine->entity_list[i]->player->bot_state = BOT_IDLE;
 						engine->entity_list[i]->player->path.path = NULL;
 						engine->entity_list[i]->player->path.step = 0;
@@ -1435,12 +1430,6 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 	int self_index = -1;
 
 
-	if ((self_pos - target_pos).magnitude() < 200.0f)
-	{
-		printf("bot_find: already in vincinity, go get it\n");
-		return -1;
-	}
-
 	int j = 0;
 
 	for (unsigned int i = 0; i < engine->entity_list.size(); i++)
@@ -1466,6 +1455,11 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 		}
 	}
 
+	if (j != 29)
+	{
+		printf("expected %d points, found %d\n", 29, j);
+	}
+
 	if (target_index == -1 || self_index == -1)
 	{
 		printf("bot_find: No nav points!\n");
@@ -1486,17 +1480,28 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 	{
 		int nav = nav_array[path.path[i]];
 
-		if ((entity->position - engine->entity_list[nav]->position).magnitude() > 50.0f)
+		if ((entity->position - engine->entity_list[nav]->position).magnitude() > 15.0f)
 		{
+			static int jitter = 0;
+
 			entity->rigid->lookat_yaw(engine->entity_list[nav]->position);
 			entity->rigid->move_forward();
+			if (rand() % 200 == 0)
+				entity->rigid->move_left();
+			if (rand() % 114 == 0)
+				entity->rigid->move_right();
+
+
 			//moving towards step
 			return 1;
 		}
 		else
 		{
-			//arrived at step 
+			printf("Bot arrived at nav point nav%d\n", path.path[i]);
 			return 0;
 		}
 	}
+
+	// Couldnt find nav node
+	return 0;
 }
