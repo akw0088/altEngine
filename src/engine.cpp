@@ -19,6 +19,7 @@ Engine::Engine()
 	show_lines = false;
 	show_debug = false;
 	show_hud = true;
+	num_bot = 0;
 }
 
 
@@ -554,7 +555,7 @@ void Engine::render_shadowmaps()
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light && light_list[entity_list[player_list[0]]->player->current_light] == entity_list[i]->light)
+		if (entity_list[i]->light && light_list[entity_list[find_player()]->player->current_light] == entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
 
@@ -630,8 +631,8 @@ void Engine::render_scene(bool lights)
 	matrix4 transformation;
 	matrix4 mvp;
 
-	if (player_list[0] != -1)
-		entity_list[player_list[0]]->rigid->frame2ent(&camera_frame, input);
+	if (find_player() != -1)
+		entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
 
 
 	camera_frame.set(transformation);
@@ -665,9 +666,9 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (input.control == false)
 	{
-		if (player_list[0] != -1)
+		if (find_player() != -1)
 		{
-			entity_list[player_list[0]]->rigid->frame2ent(&camera_frame, input);
+			entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
 		}
 
 		camera_frame.set(transformation);
@@ -793,7 +794,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		{
 			unsigned int j = 0;
 
-			if ((unsigned int)player_list[0] == i)
+			if ((unsigned int)find_player() == i)
 			{
 				entity_list[i]->rigid->get_matrix(mvp.m);
 
@@ -972,18 +973,18 @@ void Engine::handle_input()
 
 	if (input.mousewheelup)
 	{
-		if (player_list[0] != -1)
+		if (find_player() != -1)
 		{
-			entity_list[player_list[0]]->player->change_weapon_up();
+			entity_list[find_player()]->player->change_weapon_up();
 		}
 		input.mousewheelup = false;
 	}
 
 	if (input.mousewheeldown)
 	{
-		if (player_list[0] != -1)
+		if (find_player() != -1)
 		{
-			entity_list[player_list[0]]->player->change_weapon_down();
+			entity_list[find_player()]->player->change_weapon_down();
 		}
 		input.mousewheeldown = false;
 	}
@@ -1106,10 +1107,10 @@ void Engine::spatial_testing()
 			}
 
 			entity_list[i]->bsp_visible = bsp_visible;
-			entity_list[player_list[0]]->bsp_leaf = leaf_a;
+			entity_list[find_player()]->bsp_leaf = leaf_a;
 			entity_list[i]->bsp_leaf = leaf_b;
 
-			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)player_list[0])
+			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)find_player())
 			{
 				visible = true;
 			}
@@ -1138,7 +1139,7 @@ void Engine::spatial_testing()
 		{
 			// Lights? what else?
 			entity_list[i]->visible = map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
-			entity_list[player_list[0]]->bsp_leaf = leaf_a;
+			entity_list[find_player()]->bsp_leaf = leaf_a;
 			entity_list[i]->bsp_leaf = leaf_b;
 		}
 
@@ -1402,9 +1403,12 @@ void Engine::step(int tick)
 	spatial_testing(); // mostly sets visible flag
 
    // handles triggers and the projectile as trigger stuff
-	for (unsigned int i = 0; i < player_list.size(); i++)
+	for (unsigned int i = 0; i < num_player; i++)
 	{
-		check_triggers(player_list[i]);
+		if (strcmp(entity_list[i]->type, "player") == 0)
+			check_triggers(i);
+		else if (strcmp(entity_list[i]->type, "NPC") == 0)
+			check_triggers(i);
 	}
 
 
@@ -1800,7 +1804,7 @@ void Engine::server_step()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		
-		sprintf(reliable.msg, "spawn %d %d", client->entity, player_list[0]);
+		sprintf(reliable.msg, "spawn %d %d", client->entity, find_player());
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
@@ -1956,7 +1960,6 @@ void Engine::client_step()
 				{
 					int client = get_player();
 
-					player_list.push_back(client);
 					sprintf(entity_list[client]->type, "client");
 					entity_list[client]->position = entity_list[entity]->position;
 					entity_list[client]->rigid = new RigidBody(entity_list[client]);
@@ -2252,6 +2255,8 @@ void Engine::keystroke(char key)
 
 void Engine::handle_game(char key)
 {
+	int spawn = find_player();
+
 	switch (key)
 	{
 	case '~':
@@ -2263,39 +2268,39 @@ void Engine::handle_game(char key)
 		break;
 
 	case '0':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->current_face = 0;
+			entity_list[find_player()]->player->current_face = 0;
 		}
 		break;
 	case '1':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->current_face = 1;
+			entity_list[spawn]->player->current_face = 1;
 		}
 		break;
 	case '2':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->current_face = 2;
+			entity_list[spawn]->player->current_face = 2;
 		}
 		break;
 	case '3':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->current_face = 3;
+			entity_list[spawn]->player->current_face = 3;
 		}
 		break;
 	case '4':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->current_face = 4;
+			entity_list[spawn]->player->current_face = 4;
 		}
 		break;
 	case '5':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->current_face = 5;
+			entity_list[spawn]->player->current_face = 5;
 		}
 		break;
 	case '6':
@@ -2305,17 +2310,17 @@ void Engine::handle_game(char key)
 		break;
 
 	case '-':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			if (entity_list[player_list[0]]->player->current_light > 0)
-				entity_list[player_list[0]]->player->current_light--;
+			if (entity_list[spawn]->player->current_light > 0)
+				entity_list[spawn]->player->current_light--;
 		}
 		break;
 	case '=':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			if (entity_list[player_list[0]]->player->current_light < num_light)
-				entity_list[player_list[0]]->player->current_light++;
+			if (entity_list[spawn]->player->current_light < num_light)
+				entity_list[spawn]->player->current_light++;
 		}
 		break;
 
@@ -2323,15 +2328,15 @@ void Engine::handle_game(char key)
 		menu.ingame = !menu.ingame;
 		break;
 	case '[':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->change_weapon_down();
+			entity_list[spawn]->player->change_weapon_down();
 		}
 		break;
 	case ']':
-		if (player_list[0] != -1)
+		if (spawn != -1)
 		{
-			entity_list[player_list[0]]->player->change_weapon_up();
+			entity_list[spawn]->player->change_weapon_up();
 		}
 		break;
 	}
@@ -2573,19 +2578,17 @@ void Engine::init_camera()
 		{
 			camera_frame.pos = entity_list[i]->position;
 
-			int player = get_player();
+			int spawn = get_player();
 
 			// Single player player
-			player_list.push_back(player);
-			sprintf(entity_list[player]->type, "player");
-			entity_list[player]->position = entity_list[i]->position;
-			entity_list[player]->rigid = new RigidBody(entity_list[player]);
-			entity_list[player]->model = entity_list[player]->rigid;
-			entity_list[player]->rigid->clone(*(q3.thug22->model));
-			entity_list[player]->rigid->step_flag = true;
-			entity_list[player]->model = entity_list[player]->rigid;
-			entity_list[player]->player = new Player(entity_list[player], gfx, audio, 21);
-			entity_list[player]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
+			sprintf(entity_list[spawn]->type, "player");
+			entity_list[spawn]->position = entity_list[i]->position;
+			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
+			entity_list[spawn]->model = entity_list[spawn]->rigid;
+			entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+			entity_list[spawn]->rigid->step_flag = true;
+			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio, 21);
+			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
 
 			matrix4 matrix;
 			
@@ -2593,16 +2596,16 @@ void Engine::init_camera()
 			switch (entity_list[i]->angle)
 			{
 			case 0:
-				matrix4::mat_left(matrix, entity_list[player]->position);
+				matrix4::mat_left(matrix, entity_list[spawn]->position);
 				break;
 			case 90:
-				matrix4::mat_forward(matrix, entity_list[player]->position);
+				matrix4::mat_forward(matrix, entity_list[spawn]->position);
 				break;
 			case 180:
-				matrix4::mat_right(matrix, entity_list[player]->position);
+				matrix4::mat_right(matrix, entity_list[spawn]->position);
 				break;
 			case 270:
-				matrix4::mat_backward(matrix, entity_list[player]->position);
+				matrix4::mat_backward(matrix, entity_list[spawn]->position);
 				break;
 			}
 			camera_frame.forward.x = matrix.m[8];
@@ -2630,11 +2633,9 @@ void Engine::load_entities()
 			entity_list[i]->rigid->gravity = false;
 	}
 
-	if (player_list[0] != -1)
-	{
-		entity_list[player_list[0]]->rigid->clone(*(q3.thug22->model));
-		entity_list[player_list[0]]->position += entity_list[player_list[0]]->rigid->center;
-	}
+	int spawn = find_player();
+	entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 }
 
 void Engine::clean_entity(int index)
@@ -2689,6 +2690,16 @@ int Engine::get_entity()
 	}
 
 	return num_dynamic - 1;
+}
+
+int Engine::find_player()
+{
+	for (int i = 0; i < num_player; i++)
+	{
+		if (strcmp(entity_list[i]->type, "player") == 0)
+			return i;
+	}
+	return -1;
 }
 
 int Engine::get_player()
@@ -2774,10 +2785,12 @@ void Engine::update_audio()
 		}
 	}
 
-	if (player_list[0] != -1)
+	int spawn = find_player();
+
+	if (spawn != -1)
 	{
-		audio.listener_velocity((float *)&(entity_list[player_list[0]]->rigid->velocity));
-		audio.listener_orientation((float *)&(entity_list[player_list[0]]->rigid->morientation.m));
+		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
+		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
 	}
 
 }
@@ -2815,6 +2828,8 @@ void Engine::unload()
 	if (map.loaded == false)
 		return;
 
+	num_bot = 0;
+
 	menu.ingame = false;
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -2828,7 +2843,6 @@ void Engine::unload()
 	}
 	entity_list.clear();
 	light_list.clear();
-	player_list.clear();
 
 //	light_list.~List();
 //	entity_list~List();

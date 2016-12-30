@@ -118,24 +118,26 @@ void Quake3::handle_player(int index)
 
 	if (entity->player->health > 0)
 	{
-
-		// True if jumped
-		if (engine->input.up || engine->input.down || engine->input.left || engine->input.right)
+		if (engine->input.control == false)
 		{
-			entity->player->state = PLAYER_MOVED;
-		}
+			// True if jumped
+			if (engine->input.up || engine->input.down || engine->input.left || engine->input.right)
+			{
+				entity->player->state = PLAYER_MOVED;
+			}
 
-		if (engine->input.shift)
-		{
-			entity->player->state = PLAYER_DUCKED;
-		}
+			if (engine->input.shift)
+			{
+				entity->player->state = PLAYER_DUCKED;
+			}
 
 
-		if (entity->rigid->move(engine->input))
-		{
-			entity->player->state = PLAYER_JUMPED;
-			engine->select_wave(entity->speaker->source, entity->player->jump_sound);
-			engine->audio.play(entity->speaker->source);
+			if (entity->rigid->move(engine->input))
+			{
+				entity->player->state = PLAYER_JUMPED;
+				engine->select_wave(entity->speaker->source, entity->player->jump_sound);
+				engine->audio.play(entity->speaker->source);
+			}
 		}
 
 	}
@@ -287,7 +289,7 @@ void Quake3::handle_player(int index)
 	{
 		player_died(index);
 	}
-	handle_weapons(*(entity->player), engine->input, engine->player_list[0]);
+	handle_weapons(*(entity->player), engine->input, engine->find_player());
 }
 
 void Quake3::player_died(int index)
@@ -432,7 +434,7 @@ void Quake3::add_bot(int &index)
 
 	char cmd[80];
 	sprintf(cmd, "respawn %d %d", -1, index);
-	engine->console(engine->player_list[0], cmd);
+	engine->console(index, cmd);
 }
 
 
@@ -448,13 +450,13 @@ void Quake3::step(int frame_step)
 		blink = !blink;
 	}
 
-	if (engine->server_flag == false && engine->client_flag == false && engine->player_list.size() < num_bot)
+	if (engine->server_flag == false && engine->client_flag == false && engine->num_bot < num_bot)
 	{
 		for (unsigned int i = 0; i < num_bot; i++)
 		{
 			int bot_index = engine->get_player();
 			add_bot(bot_index);
-			engine->player_list.push_back(bot_index);
+			engine->num_bot++;
 		}
 	}
 
@@ -467,7 +469,7 @@ void Quake3::step(int frame_step)
 		}
 
 
-		for (unsigned int i = 0; i < engine->player_list.size(); i++)
+		for (unsigned int i = 0; i < engine->num_player; i++)
 		{
 			Entity *entity = engine->entity_list[i];
 
@@ -483,8 +485,7 @@ void Quake3::step(int frame_step)
 
 			Entity *bot = engine->entity_list[i];
 			button_t input;
-			static int item;
-			static char ignore[1024] = { 0 };
+
 
 			if (bot->player->health <= 0)
 			{
@@ -495,11 +496,11 @@ void Quake3::step(int frame_step)
 
 			if (bot->player->bot_state != BOT_GET_ITEM && bot->player->bot_state != BOT_DEAD)
 			{
-				item = bot->player->handle_bot(engine->entity_list, engine->player_list[i], ignore);
+				bot->player->get_item = bot->player->handle_bot(engine->entity_list, i);
 
 				//clear path just in case
-				engine->entity_list[i]->player->path.step = 0;
-				engine->entity_list[i]->player->path.length = 0;
+				bot->player->path.step = 0;
+				bot->player->path.length = 0;
 			}
 
 			switch (bot->player->bot_state)
@@ -508,7 +509,7 @@ void Quake3::step(int frame_step)
 				engine->zcc.select_animation(0);
 				memset(&input, 0, sizeof(button_t));
 				input.leftbutton = true;
-				handle_weapons(*(bot->player), input, engine->player_list[i]);
+				handle_weapons(*(bot->player), input, i);
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
@@ -518,20 +519,20 @@ void Quake3::step(int frame_step)
 
 				bot->player->respawn();
 				char cmd[80];
-				sprintf(cmd, "respawn -1 %d", engine->player_list[i]);
-				engine->console(engine->player_list[i], cmd);
+				sprintf(cmd, "respawn -1 %d", i);
+				engine->console(i, cmd);
 				break;
 			case BOT_GET_ITEM:
 			{
 				static int nav_array[64] = { 0 };
 				int ret = 0;
 
-				if (engine->entity_list[item]->trigger->active)
+				if (engine->entity_list[bot->player->get_item]->trigger->active)
 				{
 					//some one got the item before we did, abort
-					engine->entity_list[i]->player->bot_state = BOT_IDLE;
-					engine->entity_list[i]->player->path.step = 0;
-					engine->entity_list[i]->player->path.length = 0;
+					bot->player->bot_state = BOT_IDLE;
+					bot->player->path.step = 0;
+					bot->player->path.length = 0;
 
 				}
 
@@ -539,61 +540,61 @@ void Quake3::step(int frame_step)
 				if (engine->entity_list[i]->player->path.length == 0)
 				{
 					//probably need to pass Player reference instead of each path param, or make a struct
-					ret = bot_get_path(item, i, nav_array,
+					ret = bot_get_path(engine->entity_list[i]->player->get_item, i, nav_array,
 						engine->entity_list[i]->player->path);
 
 					if (engine->entity_list[i]->player->path.length == -1)
 					{
 						// Path doesnt exist, give up
-						strncat(ignore,  engine->entity_list[item]->type, 1023);
-						strncat(ignore, " ", 1023);
+						strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, 1023);
+						strncat(bot->player->ignore, " ", 1023);
 
-						if (strlen(ignore) >= 1000)
-							ignore[0] = '\0';
+						if (strlen(bot->player->ignore) >= 1000)
+							bot->player->ignore[0] = '\0';
 
-						engine->entity_list[i]->player->bot_state = BOT_IDLE;
-						engine->entity_list[i]->player->path.step = 0;
-						engine->entity_list[i]->player->path.length = 0;
+						bot->player->bot_state = BOT_IDLE;
+						bot->player->path.step = 0;
+						bot->player->path.length = 0;
 					}
 					else
 					{
-						ignore[0] = '\0';
+						bot->player->ignore[0] = '\0';
 					}
 				}
 
 				// We are already at the closest nav point to item, fake a empty path
 				if (ret == -1)
 				{
-					engine->entity_list[i]->player->path.step = 1;
-					engine->entity_list[i]->player->path.length = 1;
+					bot->player->path.step = 1;
+					bot->player->path.length = 1;
 				}
 
 				// At last step in path list, go directly to item
-				if (engine->entity_list[i]->player->path.step == engine->entity_list[i]->player->path.length)
+				if (bot->player->path.step == bot->player->path.length)
 				{
 					vec3 delta;
-					engine->entity_list[i]->rigid->lookat_yaw(engine->entity_list[item]->position);
-					engine->entity_list[i]->rigid->move_forward();
+					bot->rigid->lookat_yaw(engine->entity_list[bot->player->get_item]->position);
+					bot->rigid->move_forward();
 
-					float distance = (engine->entity_list[i]->position - engine->entity_list[item]->position).magnitude();
+					float distance = (engine->entity_list[i]->position - engine->entity_list[bot->player->get_item]->position).magnitude();
 
 					if (distance < 10.0f)
 					{
 						// Finally got where the item is, exit get state
-						engine->entity_list[i]->player->bot_state = BOT_IDLE;
-						engine->entity_list[i]->player->path.step = 0;
-						engine->entity_list[i]->player->path.length = 0;
+						bot->player->bot_state = BOT_IDLE;
+						bot->player->path.step = 0;
+						bot->player->path.length = 0;
 					}
 				}
-				else if (engine->entity_list[i]->player->path.length != 0)
+				else if (bot->player->path.length != 0)
 				{
 					// Go through path steps until we get to navpoint where item is
-					if (bot_follow(engine->entity_list[i]->player->path,
-						nav_array, engine->entity_list[i]) == 0)
+					if (bot_follow(bot->player->path,
+						nav_array, bot) == 0)
 					{
-						(engine->entity_list[i]->player->path.step)++;
+						(bot->player->path.step)++;
 						// momentum makes him miss pretty bad
-						engine->entity_list[i]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+						bot->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 					}
 				}
 				break;
@@ -603,7 +604,7 @@ void Quake3::step(int frame_step)
 				engine->zcc.select_animation(1);
 				break;
 			case BOT_EXPLORE:
-				ignore[0] = '\0';
+				bot->player->ignore[0] = '\0';
 				break;
 			}
 #endif
@@ -781,7 +782,7 @@ void Quake3::handle_lightning(Entity *entity, Player &player, int self)
 	entity->rigid->gravity = false;
 	entity->rigid->rotational_friction_flag = true;
 	entity->model = entity->rigid;
-	entity->rigid->set_target(*(engine->entity_list[engine->player_list[0]]));
+	entity->rigid->set_target(*(engine->entity_list[engine->find_player()]));
 	camera_frame.set(entity->model->morientation);
 
 	entity->light = new Light(entity, engine->gfx, 999);
@@ -818,7 +819,7 @@ void Quake3::handle_railgun(Entity *entity, Player &player, int self)
 	vec3 forward;
 	player.entity->model->getForwardVector(forward);
 
-	engine->hitscan(player.entity->position, forward, index, num_index, engine->player_list[0]);
+	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
 		char cmd[80] = { 0 };
@@ -832,7 +833,7 @@ void Quake3::handle_railgun(Entity *entity, Player &player, int self)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 		sprintf(cmd, "hurt %d %d", index[i], 100);
-		engine->console(engine->player_list[0], cmd);
+		engine->console(self, cmd);
 	}
 }
 
@@ -858,8 +859,8 @@ void Quake3::handle_machinegun(Player &player, int self)
 	if (self == 1)
 	{
 		debugf("Player %s hit %s with the machinegun for %d damage\n", engine->entity_list[self]->player->name, player.name, 7);
-		sprintf(cmd, "hurt %d %d", engine->player_list[0], 7);
-		engine->console(engine->player_list[0], cmd);
+		sprintf(cmd, "hurt %d %d", self, 7);
+		engine->console(self, cmd);
 	}
 
 	engine->hitscan(player.entity->position, forward, index, num_index, self);
@@ -873,7 +874,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 		sprintf(cmd, "hurt %d %d", index[i], 7);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		engine->console(engine->player_list[0], cmd);
+		engine->console(self, cmd);
 	}
 
 //	engine->map.hitscan(player.entity->position, forward, distance);
@@ -991,7 +992,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 
 	player.entity->model->getForwardVector(forward);
 
-	engine->hitscan(player.entity->position, forward, index, num_index, engine->player_list[0]);
+	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
 		char cmd[80] = { 0 };
@@ -1004,7 +1005,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 
-		engine->console(engine->player_list[0], cmd);
+		engine->console(self, cmd);
 	}
 
 	//vec3 end = player.entity->position + forward * distance;
@@ -1032,7 +1033,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 	{
 		if (input.leftbutton && player.reload_timer == 0)
 		{
-			engine->console(engine->player_list[0], "respawn");
+			engine->console(self, "respawn");
 		}
 		return;
 	}
@@ -1237,7 +1238,7 @@ void Quake3::render_hud(double last_frametime)
 	matrix4 real_projection = engine->projection;
 	char msg[LINE_SIZE];
 
-	int spawn = engine->player_list[0];
+	int spawn = engine->find_player();
 	Entity *entity = engine->entity_list[spawn];
 
 	engine->projection = engine->identity;

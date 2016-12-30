@@ -43,6 +43,7 @@ public:
 	void load_entities();
 	int get_entity();
 	int get_player();
+	int find_player();
 	void clean_entity(int index);
 	void load_sounds();
 	void load_models();
@@ -107,7 +108,8 @@ public:
 	vector<surface_t *> surface_list;
 
 
-	vector<int> player_list;
+//	vector<int> player_list;
+	int num_bot;
 
 protected:
 	matrix4		projection;

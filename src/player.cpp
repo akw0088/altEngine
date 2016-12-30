@@ -14,6 +14,33 @@ char bot_state_name[16][80]{
 	"BOT_DEAD",
 };
 
+// Player sound sets
+const char *models[23] = {
+	"anarki",			//0
+	"biker",			//1
+	"bitterman",		//2
+	"bones",			//3
+	"crash",			//4
+	"doom",				//5
+	"grunt",			//6
+	"hunter",			//7
+	"keel",				//8
+	"klesk",			//9
+	"lucy",				//10
+	"major",			//11
+	"mynx",				//12
+	"orbb",				//13
+	"ranger",			//14
+	"razor",			//15
+	"sarge",			//16
+	"slash",			//17
+	"sorlag",			//18
+	"tankjr",			//19
+	"uriel",			//20
+	"visor",			//21
+	"xaero"				//22
+};
+
 #define NUM_PATH 64 // Should equal map navpoint count
 
 Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
@@ -25,33 +52,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	spawned = false;
 
 	path.path = new int[NUM_PATH];
-
-	// Player sound sets
-	char *models[23] = {
-		"anarki",			//0
-		"biker",			//1
-		"bitterman",		//2
-		"bones",			//3
-		"crash",			//4
-		"doom",				//5
-		"grunt",			//6
-		"hunter",			//7
-		"keel",				//8
-		"klesk",			//9
-		"lucy",				//10
-		"major",			//11
-		"mynx",				//12
-		"orbb",				//13
-		"ranger",			//14
-		"razor",			//15
-		"sarge",			//16
-		"slash",			//17
-		"sorlag",			//18
-		"tankjr",			//19
-		"uriel",			//20
-		"visor",			//21
-		"xaero"				//22
-	};
+	get_item = 0;
+	ignore[0] = '\0';
 
 	model_index = model; // default to visor -- ranger isnt in demo files :'( 
 
@@ -748,7 +750,7 @@ void Player::avoid_walls(Bsp &map)
 
 
 //#define DEBUG_BOT
-int Player::handle_bot(vector<Entity *> &entity_list, int self, char *ignore)
+int Player::handle_bot(vector<Entity *> &entity_list, int self)
 {
 	printf("handle_bot() ignore %s\n", ignore);
 
