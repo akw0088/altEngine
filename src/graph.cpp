@@ -290,7 +290,8 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 		path_table[j] = i;
 		i = predecessor_table[i];
 	}
-	*path_length = j;
+	path_table[j] = start; // add start node into list
+	*path_length = j + 1;
 
 	for(i = 0; i < *path_length / 2; i++)
 	{

@@ -196,7 +196,7 @@ void Engine::setup_func()
 	}
 }
 
-void Engine::find_path(int *path, int &path_length, int start_path, int end_path)
+void Engine::find_path(int *&path, int &path_length, int start_path, int end_path)
 {
 	if (graph.size() == 0)
 	{
@@ -870,7 +870,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	//render md5 as enemy
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (strcmp(entity_list[i]->type, "NPC") == 0)
+		if (strcmp(entity_list[i]->type, "NPC") == 0 && entity_list[i]->player->health > 0)
 		{
 			mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 			vec3 offset = entity_list[i]->position;

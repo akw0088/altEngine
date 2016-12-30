@@ -75,7 +75,7 @@ public:
 	void change_weapon_down();
 	void best_weapon();
 
-	void handle_bot(vector<Entity *> &entity_list, int self);
+	int handle_bot(vector<Entity *> &entity_list, int self);
 	void avoid_walls(Bsp &map);
 
 
@@ -148,6 +148,8 @@ public:
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
 
+
+	path_t path;
 
 	char name[128];
 	stats_t stats;

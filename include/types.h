@@ -379,3 +379,11 @@ typedef struct
 	int y;
 	int z;
 } ref_t;
+
+
+typedef struct
+{
+	int *path = NULL;
+	int length = 0;
+	int step = 0;
+} path_t;
