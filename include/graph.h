@@ -15,6 +15,7 @@ public:
 	int *dijkstra_path(int start, int end, int *path_length);
 	int *astar_path(ref_t *ref, int start, int end, int *path_length);
 	int modify_weight(int seq1, int seq2, float weight);
+	int size();
 	~Graph();
 private:
 	int	num_nodes;

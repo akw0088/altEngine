@@ -792,7 +792,7 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 			// Manhattan distance table
 			ref[k].x = entity_list[i]->position.x;
 			ref[k].y = entity_list[i]->position.y;
-//			ref[k].z = entity_list[i]->position.z;
+			ref[k].z = entity_list[i]->position.z;
 
 			strcpy(data, entity_list[i]->target);
 			char *target = strtok(data, " ");

@@ -198,6 +198,13 @@ void Engine::setup_func()
 
 void Engine::find_path(int *path, int &path_length, int start_path, int end_path)
 {
+	if (graph.size() == 0)
+	{
+		path = NULL;
+		path_length = 0;
+		return;
+	}
+
 	printf("Searching for path from node%d to node%d\n", start_path, end_path);
 	path = graph.astar_path(ref, start_path, end_path, &path_length);
 	print_path(path, path_length, node);
@@ -283,17 +290,10 @@ void Engine::load(char *level)
 		free((void *)navdata);
 	}
 
-	
-	int *path = NULL;
-	int start_path = 8; // nav 5
-	int end_path = 16; // nav 14 -- really need to ensure nav index matches node index
-	int path_length = 0;
-
-
 	int num_node = entity_list.size() - start;
 
 	navdata_to_graph(ref, node, entity_list, start);
-	print_graph(node, num_node);
+	//print_graph(node, num_node);
 
 	graph.load(node, num_node);
 

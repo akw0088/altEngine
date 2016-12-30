@@ -377,4 +377,5 @@ typedef struct
 {
 	int x;
 	int y;
+	int z;
 } ref_t;

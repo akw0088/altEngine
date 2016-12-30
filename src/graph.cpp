@@ -255,9 +255,10 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 		{
 			int u = key.index;
 			int v = node[ key.index ].arc[i].b;
-			float a = fabs((float)ref[u].x - ref[end].x);
-			float b = fabs((float)ref[u].y - ref[end].y);
-			float astar_weight = a * a + b * b;
+			float a = abs32((float)ref[u].x - ref[end].x);
+			float b = abs32((float)ref[u].y - ref[end].y);
+			float c = abs32((float)ref[u].z - ref[end].z);
+			float astar_weight = a * a + b * b + c * c;
 
 
 			// update distance if required
@@ -304,3 +305,7 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 	return path_table;
 }
 
+int Graph::size()
+{
+	return num_nodes;
+}
