@@ -9,12 +9,12 @@
 "classname" "navpoint"
 "origin" "-49 57 503"
 "targetname" "nav1"
-"target" "nav5 "
+"target" "nav28"
 "done" "done"
 }
 {
 "classname" "navpoint"
-"origin" "-826 121 -116"
+"origin" "-840 121 -116"
 "targetname" "nav2"
 "target" "nav8 nav21"
 "done" "done"
@@ -27,7 +27,7 @@
 }
 {
 "classname" "navpoint"
-"origin" "-826 121 -116"
+"origin" "0 0 0"
 "targetname" "nav4"
 "target" "nav0"
 }
@@ -58,7 +58,7 @@
 }
 {
 "classname" "navpoint"
-"origin" "-485 313 -1117"
+"origin" "-485 313 -1130"
 "targetname" "nav9"
 "target" "nav7 nav10"
 }
@@ -89,7 +89,7 @@
 }
 {
 "classname" "navpoint"
-"origin" "730 121 -114"
+"origin" "730 121 -130"
 "targetname" "nav14"
 "target" "nav13 nav15"
 "done" "done"
@@ -175,4 +175,10 @@
 "origin" "-490 313 -691"
 "targetname" "nav27"
 "target" "nav0 "
+}
+{
+"classname" "navpoint"
+"origin" "-67 56 51"
+"targetname" "nav28"
+"target" "nav5 nav1"
 }
