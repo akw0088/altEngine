@@ -197,13 +197,12 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 	return path_table;
 }
 
-int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
+int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *path_length)
 {
 	Heap		heap;
 	heapkey_t	key;
 	float		*distance_table = NULL;
 	int		*predecessor_table = NULL;
-	int		*path_table = NULL;
 	int		i, j;
 
 	distance_table = (float *)malloc(num_nodes * sizeof(float));
@@ -215,13 +214,6 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 
 	predecessor_table = (int *)calloc(num_nodes, sizeof(int));
 	if (predecessor_table == NULL)
-	{
-		perror("malloc() failed in dijkstra()");
-		return NULL;
-	}
-
-	path_table = (int *)calloc(num_nodes, sizeof(int));
-	if (path_table == NULL)
 	{
 		perror("malloc() failed in dijkstra()");
 		return NULL;
@@ -284,6 +276,7 @@ int *Graph::astar_path(ref_t *ref, int start, int end, int *path_length)
 		if (j >= num_nodes)
 		{
 			printf("Fatal error: Path longer than available nodes\n");
+			*path_length = -1;
 			free((void *)distance_table);
 			free((void *)predecessor_table);
 			return NULL;

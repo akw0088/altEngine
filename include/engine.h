@@ -94,6 +94,7 @@ public:
 
 //console flags
 	bool show_names;
+	bool show_lines;
 	bool show_debug;
 	bool show_hud;
 

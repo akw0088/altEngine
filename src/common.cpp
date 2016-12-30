@@ -788,6 +788,7 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 		{
 			int k = 0;
 			int targetname = atoi(entity_list[i]->target_name + 3);
+			node[j].num_arcs = 0;
 
 			// Manhattan distance table
 			ref[k].x = entity_list[i]->position.x;
@@ -795,12 +796,16 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 			ref[k].z = entity_list[i]->position.z;
 
 			strcpy(data, entity_list[i]->target);
+
+
 			char *target = strtok(data, " ");
 			while (target != NULL)
 			{
+				int target_val = atoi(target + 3);
+
 				//skip past characters eg: "nav0"
 				node[j].arc[k].a = targetname;
-				node[j].arc[k].b = atoi(target + 3);
+				node[j].arc[k].b = target_val;
 				node[j].arc[k].weight = 1.0f;
 				node[j].num_arcs = ++k;
 				target = strtok(NULL, " ");

@@ -16,6 +16,7 @@ Engine::Engine()
 	num_dynamic = 100;
 	num_player = 8;
 	show_names = false;
+	show_lines = false;
 	show_debug = false;
 	show_hud = true;
 }
@@ -200,13 +201,12 @@ void Engine::find_path(int *&path, int &path_length, int start_path, int end_pat
 {
 	if (graph.size() == 0)
 	{
-		path = NULL;
 		path_length = 0;
 		return;
 	}
 
 	printf("Searching for path from node%d to node%d\n", start_path, end_path);
-	path = graph.astar_path(ref, start_path, end_path, &path_length);
+	graph.astar_path(path, ref, start_path, end_path, &path_length);
 	print_path(path, path_length, node);
 //	delete[] path;
 }
@@ -293,7 +293,7 @@ void Engine::load(char *level)
 	int num_node = entity_list.size() - start;
 
 	navdata_to_graph(ref, node, entity_list, start);
-	//print_graph(node, num_node);
+	print_graph(node, num_node);
 
 	graph.load(node, num_node);
 
@@ -3732,6 +3732,13 @@ void Engine::console(int self, char *cmd)
 	if (ret == 0)
 	{
 		show_names = !show_names;
+		return;
+	}
+
+	ret = strcmp(cmd, "showlines");
+	if (ret == 0)
+	{
+		show_lines = !show_lines;
 		return;
 	}
 

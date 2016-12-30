@@ -484,6 +484,7 @@ void Quake3::step(int frame_step)
 			Entity *bot = engine->entity_list[i];
 			button_t input;
 			static int item;
+			static char ignore[1024] = { 0 };
 
 			if (bot->player->health <= 0)
 			{
@@ -494,7 +495,11 @@ void Quake3::step(int frame_step)
 
 			if (bot->player->bot_state != BOT_GET_ITEM && bot->player->bot_state != BOT_DEAD)
 			{
-				item = bot->player->handle_bot(engine->entity_list, engine->player_list[i]);
+				item = bot->player->handle_bot(engine->entity_list, engine->player_list[i], ignore);
+
+				//clear path just in case
+				engine->entity_list[i]->player->path.step = 0;
+				engine->entity_list[i]->player->path.length = 0;
 			}
 
 			switch (bot->player->bot_state)
@@ -519,34 +524,48 @@ void Quake3::step(int frame_step)
 			case BOT_GET_ITEM:
 			{
 				static int nav_array[64] = { 0 };
-				int ret;
+				int ret = 0;
 
 				if (engine->entity_list[item]->trigger->active)
 				{
 					//some one got the item before we did, abort
 					engine->entity_list[i]->player->bot_state = BOT_IDLE;
-					if (engine->entity_list[i]->player->path.path != (void *)1)
-						free((void *)engine->entity_list[i]->player->path.path);
-					engine->entity_list[i]->player->path.path = NULL;
 					engine->entity_list[i]->player->path.step = 0;
 					engine->entity_list[i]->player->path.length = 0;
 
 				}
 
 				// Need a path to item
-				if (engine->entity_list[i]->player->path.path == NULL)
+				if (engine->entity_list[i]->player->path.length == 0)
 				{
 					//probably need to pass Player reference instead of each path param, or make a struct
 					ret = bot_get_path(item, i, nav_array,
 						engine->entity_list[i]->player->path);
+
+					if (engine->entity_list[i]->player->path.length == -1)
+					{
+						// Path doesnt exist, give up
+						strncat(ignore,  engine->entity_list[item]->type, 1023);
+						strncat(ignore, " ", 1023);
+
+						if (strlen(ignore) >= 1000)
+							ignore[0] = '\0';
+
+						engine->entity_list[i]->player->bot_state = BOT_IDLE;
+						engine->entity_list[i]->player->path.step = 0;
+						engine->entity_list[i]->player->path.length = 0;
+					}
+					else
+					{
+						ignore[0] = '\0';
+					}
 				}
 
 				// We are already at the closest nav point to item, fake a empty path
 				if (ret == -1)
 				{
-					engine->entity_list[i]->player->path.path = (int *)1;
-					engine->entity_list[i]->player->path.step = 0;
-					engine->entity_list[i]->player->path.length = 0;
+					engine->entity_list[i]->player->path.step = 1;
+					engine->entity_list[i]->player->path.length = 1;
 				}
 
 				// At last step in path list, go directly to item
@@ -558,21 +577,15 @@ void Quake3::step(int frame_step)
 
 					float distance = (engine->entity_list[i]->position - engine->entity_list[item]->position).magnitude();
 
-					// Get really close so we dont walk into walls at tight spaces
 					if (distance < 10.0f)
 					{
 						// Finally got where the item is, exit get state
-						if (engine->entity_list[i]->player->path.path != (void *)1)
-							free((void *)engine->entity_list[i]->player->path.path);
-
-
 						engine->entity_list[i]->player->bot_state = BOT_IDLE;
-						engine->entity_list[i]->player->path.path = NULL;
 						engine->entity_list[i]->player->path.step = 0;
 						engine->entity_list[i]->player->path.length = 0;
 					}
 				}
-				else if (engine->entity_list[i]->player->path.path != NULL)
+				else if (engine->entity_list[i]->player->path.length != 0)
 				{
 					// Go through path steps until we get to navpoint where item is
 					if (bot_follow(engine->entity_list[i]->player->path,
@@ -588,6 +601,9 @@ void Quake3::step(int frame_step)
 			case BOT_IDLE:
 			case BOT_ALERT:
 				engine->zcc.select_animation(1);
+				break;
+			case BOT_EXPLORE:
+				ignore[0] = '\0';
 				break;
 			}
 #endif
@@ -1306,31 +1322,54 @@ void Quake3::render_hud(double last_frametime)
 	{
 		for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 		{
-			vec3 color = vec3(1.0f, 1.0f, 1.0f);
-
-			if (i == (unsigned int)spawn)
-			{
-				color = vec3(1.0f, 0.0f, 0.0f);
-			}
-
 			if (engine->entity_list[i]->rigid == NULL)
 				continue;
 
 			if (engine->entity_list[i]->visible && engine->entity_list[i]->nodraw == false)
 			{
-				draw_name(engine->entity_list[i], engine->menu, color, real_projection);
+				draw_name(engine->entity_list[i], engine->menu, real_projection);
 			}
+		}
+	}
+
+	if (engine->show_lines)
+	{
+		vec3 color(1.0f, 1.0f, 1.0f);
+
+		for (unsigned int i = 0; i < engine->entity_list.size(); i++)
+		{
+			if (engine->entity_list[i]->nodraw == true)
+				continue;
+
+			if ( strlen(engine->entity_list[i]->target_name) <= 1 )
+				continue;
+
+			for (unsigned int j = 0; j < engine->entity_list.size(); j++)
+			{
+				if (engine->entity_list[j]->nodraw == true)
+					continue;
+
+				if (strlen(engine->entity_list[j]->target) <= 1)
+					continue;
+
+				if (strstr(engine->entity_list[i]->target_name, engine->entity_list[j]->target) != NULL)
+				{
+					draw_line(engine->entity_list[i], engine->entity_list[j], engine->menu, color, real_projection);
+				}
+			}
+
 		}
 	}
 
 	engine->projection = real_projection;
 }
 
-void Quake3::draw_name(Entity *entity, Menu &menu, vec3 &color, matrix4 &real_projection)
+void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 {
 	matrix4 trans2;
 	matrix4 mvp2;
 	matrix4 model;
+	vec3 color(1.0f, 1.0f, 1.0f);
 
 
 	engine->camera_frame.set(trans2);
@@ -1374,9 +1413,9 @@ void Quake3::draw_name(Entity *entity, Menu &menu, vec3 &color, matrix4 &real_pr
 			int line = 1;
 
 			sprintf(data, "targetname %s", entity->target_name);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.04f, blue);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, blue);
 			sprintf(data, "target %s", entity->target);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.04f, green);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, green);
 		}
 
 		if (strcmp(entity->type, "light") == 0)
@@ -1424,6 +1463,75 @@ void Quake3::draw_name(Entity *entity, Menu &menu, vec3 &color, matrix4 &real_pr
 }
 
 
+void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, matrix4 &real_projection)
+{
+	matrix4 trans2;
+	matrix4 mvp2;
+	matrix4 model;
+
+	vec3 a;
+	vec3 b;
+	vec3 pos;
+
+
+	transform_3d_2d(ent_a->position, a, real_projection);
+	transform_3d_2d(ent_b->position, b, real_projection);
+
+	if (a.z >= -1.0 && a.z <= 1.0 || b.z >= -1.0 && b.z <= 1.0)
+	{
+		engine->projection = engine->identity;
+
+		for (int i = 0; i < 50; i++)
+		{
+			lerp(a, b, 1.0 / i, pos);
+
+			menu.draw_text("o", pos.x, pos.y, 0.02f, color);
+		}
+		engine->projection = real_projection;
+	}
+}
+
+void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)
+{
+	matrix4 matrix;
+	matrix4 trans2;
+	matrix4 mvp2;
+
+	matrix.m[0] = 1.0f;
+	matrix.m[1] = 0.0f;
+	matrix.m[2] = 0.0f;
+	matrix.m[3] = 0.0f;
+
+	matrix.m[4] = 0.0f;
+	matrix.m[5] = 1.0f;
+	matrix.m[6] = 0.0f;
+	matrix.m[7] = 0.0f;
+
+	matrix.m[8] = 0.0f;
+	matrix.m[9] = 0.0f;
+	matrix.m[10] = 1.0f;
+	matrix.m[11] = 0.0f;
+
+	matrix.m[12] = position.x;
+	matrix.m[13] = position.y;
+	matrix.m[14] = position.z;
+	matrix.m[15] = 1.0f;
+
+
+
+	engine->camera_frame.set(trans2);
+	mvp2 = trans2.premultiply(matrix.m) * projection;
+	vec4 pos_4d = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
+
+	pos2d.x = pos_4d.x / pos_4d.w;
+	pos2d.y = -pos_4d.y / pos_4d.w;
+	pos2d.z = pos_4d.z / pos_4d.w;
+
+	pos2d.x = 0.5f + (pos2d.x * 0.5f);
+	pos2d.y = 0.5f + (pos2d.y * 0.5f);
+}
+
+
 int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 {
 	vec3 target_pos = engine->entity_list[item]->position;
@@ -1459,10 +1567,6 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 		}
 	}
 
-	if (j != 29)
-	{
-		printf("expected %d points, found %d\n", 29, j);
-	}
 
 	if (target_index == -1 || self_index == -1)
 	{
@@ -1473,6 +1577,10 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 
 	int start_path = atoi(engine->entity_list[self_index]->target_name + 3);
 	int end_path = atoi(engine->entity_list[target_index]->target_name + 3);
+
+	if (start_path == end_path)
+		return -1;
+
 	engine->find_path(path.path, path.length, start_path, end_path);
 	path.step = 0;
 	return 0;
@@ -1480,6 +1588,19 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 
 int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 {
+	static int timer = 0;
+
+	timer++;
+
+	if (timer == 15 * TICK_RATE)
+	{
+		// Taking too long to follow path, force new path selection
+		printf("Giving up on path, probably stuck\n");
+		path.length = -1;
+		timer = 0;
+		return 1;
+	}
+
 	for (int i = path.step; i < path.length; i++)
 	{
 		int nav = nav_array[path.path[i]];
@@ -1487,9 +1608,20 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 		if ((entity->position - engine->entity_list[nav]->position).magnitude() > 15.0f)
 		{
 			static int jitter = 0;
+			static vec3 last_position = entity->position;
 
 			entity->rigid->lookat_yaw(engine->entity_list[nav]->position);
 			entity->rigid->move_forward();
+
+			if ((last_position - entity->position).magnitude() > 800.0f)
+			{
+				//probably teleported, give up and get new path
+				path.length = -1;
+				return 1;
+			}
+
+			last_position = entity->position;
+
 			if (rand() % 200 == 0)
 				entity->rigid->move_left();
 			if (rand() % 114 == 0)
@@ -1502,6 +1634,7 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 		else
 		{
 			printf("Bot arrived at nav point nav%d\n", path.path[i]);
+			timer = 0;
 			return 0;
 		}
 	}

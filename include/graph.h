@@ -13,7 +13,7 @@ public:
 //	int remove(int i);
 	float *dijkstra(int start);
 	int *dijkstra_path(int start, int end, int *path_length);
-	int *astar_path(ref_t *ref, int start, int end, int *path_length);
+	int *astar_path(int *path, ref_t *ref, int start, int end, int *path_length);
 	int modify_weight(int seq1, int seq2, float weight);
 	int size();
 	~Graph();
