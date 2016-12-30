@@ -302,7 +302,7 @@ const char *Bsp::get_entities()
 */
 void Bsp::unload(Graphics &gfx)
 {
-	int mesh_index = 0;
+	//int mesh_index = 0;
 
 	loaded = false;
 	textures_loaded = false;

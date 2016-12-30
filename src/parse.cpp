@@ -1202,7 +1202,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 
 	surface_t *surface = new surface_t;
 	memset(surface, 0, sizeof(surface_t));
-	sprintf(surface->file, filename);
+	sprintf(surface->file, "%s", filename);
 	surface_list.push_back(surface);
 
 
@@ -1252,7 +1252,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				surface->num_stage++;
 				surface = new surface_t;
 				memset(surface, 0, sizeof(surface_t));
-				sprintf(surface->file, filename);
+				sprintf(surface->file, "%s",  filename);
 				surface_list.push_back(surface);
 
 

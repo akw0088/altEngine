@@ -1589,7 +1589,7 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, ma
 	transform_3d_2d(ent_a->position, a, real_projection);
 	transform_3d_2d(ent_b->position, b, real_projection);
 
-	if (a.z >= -1.0 && a.z <= 1.0 || b.z >= -1.0 && b.z <= 1.0)
+	if ((a.z >= -1.0 && a.z <= 1.0) || (b.z >= -1.0 && b.z <= 1.0))
 	{
 		engine->projection = engine->identity;
 
@@ -1719,7 +1719,7 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 
 		if ((entity->position - engine->entity_list[nav]->position).magnitude() > 15.0f)
 		{
-			static int jitter = 0;
+			//static int jitter = 0;
 			static vec3 last_position = entity->position;
 
 			entity->rigid->lookat_yaw(engine->entity_list[nav]->position);

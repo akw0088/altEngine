@@ -147,9 +147,9 @@ protected:
 	int		server_spawn;	// entity index of hosting player
 
 	// pathfinding stuff
-	Graph			graph;
-	graph_node_t	*node = NULL;
-	ref_t			*ref = NULL;
+	Graph		graph;
+	graph_node_t	*node;
+	ref_t		*ref;
 
 
 	//server

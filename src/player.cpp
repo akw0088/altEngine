@@ -5,7 +5,7 @@
 #endif
 #include <float.h>
 
-char bot_state_name[16][80]{
+char bot_state_name[16][80] = {
 	"BOT_IDLE",
 	"BOT_ALERT",
 	"BOT_ATTACK",
@@ -155,41 +155,14 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	current_face = 0;
 	bot_state = BOT_IDLE;
 
-	path_t path;
+	path.path = NULL;
+	path.length = 0;
+	path.step = 0;
 }
 
 void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 {
 	wave_t wave;
-
-	// Player sound sets
-	char *models[23] = 
-	{
-		"anarki",			//0
-		"biker",			//1
-		"bitterman",		//2
-		"bones",			//3
-		"crash",			//4
-		"doom",				//5
-		"grunt",			//6
-		"hunter",			//7
-		"keel",				//8
-		"klesk",			//9
-		"lucy",				//10
-		"major",			//11
-		"mynx",				//12
-		"orbb",				//13
-		"ranger",			//14
-		"razor",			//15
-		"sarge",			//16
-		"slash",			//17
-		"sorlag",			//18
-		"tankjr",			//19
-		"uriel",			//20
-		"visor",			//21
-		"xaero"				//22
-	};
-
 
 	//load player sounds
 	strcpy(wave.file, "sound/weapons/railgun/rg_hum.wav");

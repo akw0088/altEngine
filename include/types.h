@@ -385,6 +385,6 @@ typedef struct
 {
 	// must have at least number of nodes (assume we take the longest path possible)
 	int *path;
-	int length = 0;
-	int step = 0;
+	int length;
+	int step;
 } path_t;
