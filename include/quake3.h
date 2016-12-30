@@ -16,7 +16,7 @@ public:
 	void destroy();
 
 	void render_hud(double last_frametime);
-	void draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color);
+	void draw_name(Entity *entity, Menu &menu, vec3 &color, matrix4 &real_projection);
 
 	void handle_weapons(Player &player, button_t &input, int self);
 

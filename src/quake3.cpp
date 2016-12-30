@@ -1307,11 +1307,6 @@ void Quake3::render_hud(double last_frametime)
 		for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 		{
 			vec3 color = vec3(1.0f, 1.0f, 1.0f);
-			matrix4 trans2;
-			matrix4 mvp2;
-			matrix4 model;
-
-			engine->camera_frame.set(trans2);
 
 			if (i == (unsigned int)spawn)
 			{
@@ -1321,21 +1316,9 @@ void Quake3::render_hud(double last_frametime)
 			if (engine->entity_list[i]->rigid == NULL)
 				continue;
 
-
-			mvp2 = trans2.premultiply(engine->entity_list[i]->rigid->get_matrix(model.m)) * real_projection;
-			vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
-
-			pos.x = pos.x / pos.w;
-			pos.y = -pos.y / pos.w; // negative y? Hey it works
-			pos.z = pos.z / pos.w;
-
-			pos.x = 0.5f + (pos.x * 0.5f);
-			pos.y = 0.5f + (pos.y * 0.5f);
-			//			pos.z = 0.5f + (pos.z * 0.5f);
-
-			if (engine->entity_list[i]->visible)
+			if (engine->entity_list[i]->visible && engine->entity_list[i]->nodraw == false)
 			{
-				draw_name(pos, engine->entity_list[i], engine->menu, color);
+				draw_name(engine->entity_list[i], engine->menu, color, real_projection);
 			}
 		}
 	}
@@ -1343,8 +1326,27 @@ void Quake3::render_hud(double last_frametime)
 	engine->projection = real_projection;
 }
 
-void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
+void Quake3::draw_name(Entity *entity, Menu &menu, vec3 &color, matrix4 &real_projection)
 {
+	matrix4 trans2;
+	matrix4 mvp2;
+	matrix4 model;
+
+
+	engine->camera_frame.set(trans2);
+	mvp2 = trans2.premultiply(entity->rigid->get_matrix(model.m)) * real_projection;
+	vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
+
+	pos.x = pos.x / pos.w;
+	pos.y = -pos.y / pos.w; // negative y? Hey it works
+	pos.z = pos.z / pos.w;
+
+	pos.x = 0.5f + (pos.x * 0.5f);
+	pos.y = 0.5f + (pos.y * 0.5f);
+	//			pos.z = 0.5f + (pos.z * 0.5f);
+
+	engine->projection = engine->identity;
+
 	if (pos.z >= -1.0 && pos.z <= 1.0)
 	{
 		char data[512];
@@ -1417,6 +1419,8 @@ void Quake3::draw_name(vec4 &pos, Entity *entity, Menu &menu, vec3 &color)
 			}
 		}
 	}
+
+	engine->projection = real_projection;
 }
 
 

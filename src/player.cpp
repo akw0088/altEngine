@@ -774,7 +774,7 @@ int Player::handle_bot(vector<Entity *> &entity_list, int self)
 		if (i == self)
 			continue;
 
-#ifdef dontkillme
+#ifdef _WIN32
 		if (strcmp(entity_list[i]->type, "player") == 0)
 		{
 			float distance = (entity_list[i]->position - entity->position).magnitude();
@@ -939,5 +939,5 @@ int Player::handle_bot(vector<Entity *> &entity_list, int self)
 	// Exhausted nearby items
 	if (bot_state == BOT_IDLE)
 		bot_state = BOT_EXPLORE;
-
+	return -1;
 }
