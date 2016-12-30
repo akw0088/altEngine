@@ -275,7 +275,7 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 	{
 		if (j >= num_nodes)
 		{
-			printf("Fatal error: Path longer than available nodes\n");
+//			printf("Fatal error: Path longer than available nodes\n");
 			*path_length = -1;
 			free((void *)distance_table);
 			free((void *)predecessor_table);

@@ -798,7 +798,9 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 //#define DEBUG_BOT
 int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 {
+#ifdef DEBUG_BOT
 	printf("handle_bot() ignore %s\n", ignore);
+#endif
 
 	best_weapon();
 
@@ -862,13 +864,13 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 #endif
 		if (strcmp(entity_list[i]->type, "item_quad") == 0)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 		else if (strcmp(entity_list[i]->type, "item_health_mega") == 0)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
@@ -876,50 +878,50 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 		{
 			if (strcmp(entity_list[i]->type, "item_health_large") == 0)
 			{
-				printf("bot %d wants %s\n", i, entity_list[i]->type);
+//				printf("bot %d wants %s\n", i, entity_list[i]->type);
 				bot_state = BOT_GET_ITEM;
 				return i;
 			}
 			else if (strcmp(entity_list[i]->type, "item_health_large") == 0)
 			{
-				printf("bot %d wants %s\n", i, entity_list[i]->type);
+//				printf("bot %d wants %s\n", i, entity_list[i]->type);
 				bot_state = BOT_GET_ITEM;
 				return i;
 			}
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_rocketlauncher") == 0) && need_rocketlauncher)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_lightning") == 0) && need_lightning)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_railgun") == 0) && need_railgun)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_plasma") == 0) && need_plasma)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_grenadelauncher") == 0) && need_grenadelauncher)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 		else if ((strcmp(entity_list[i]->type, "weapon_shotgun") == 0) && need_shotgun)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
@@ -927,33 +929,33 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 		{
 			if (strcmp(entity_list[i]->type, "item_armor_body") == 0)
 			{
-				printf("bot %d wants %s\n", i, entity_list[i]->type);
+//				printf("bot %d wants %s\n", i, entity_list[i]->type);
 				bot_state = BOT_GET_ITEM;
 				return i;
 			}
 			else if (strcmp(entity_list[i]->type, "item_armor_combat") == 0)
 			{
-				printf("bot %d wants %s\n", i, entity_list[i]->type);
+//				printf("bot %d wants %s\n", i, entity_list[i]->type);
 				bot_state = BOT_GET_ITEM;
 				return i;
 			}
 			else if (strcmp(entity_list[i]->type, "item_armor_shard") == 0)
 			{
-				printf("bot %d wants %s\n", i, entity_list[i]->type);
+//				printf("bot %d wants %s\n", i, entity_list[i]->type);
 				bot_state = BOT_GET_ITEM;
 				return i;
 			}
 		}
 		else if (strcmp(entity_list[i]->type, "trigger_teleport") == 0)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}
 
 		if ((strstr(entity_list[i]->type, "ammo_") != NULL) && need_ammo)
 		{
-			printf("bot %d wants %s\n", i, entity_list[i]->type);
+//			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;
 			return i;
 		}

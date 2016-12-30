@@ -948,6 +948,10 @@ void Quake3::handle_machinegun(Player &player, int self)
 		camera_frame.forward.y = player.entity->model->morientation.m[1];
 		camera_frame.forward.z = player.entity->model->morientation.m[2];
 	}
+	else
+	{
+		camera_frame.forward *= -1;
+	}
 
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
@@ -1419,6 +1423,18 @@ void Quake3::render_hud(double last_frametime)
 		}
 	}
 
+	for (unsigned int i = 0; i < engine->num_player; i++)
+	{
+		if (strcmp(engine->entity_list[i]->type, "NPC") != 0)
+			continue;
+
+		if (engine->entity_list[i]->visible && engine->entity_list[i]->nodraw == false)
+		{
+			draw_name(engine->entity_list[i], engine->menu, real_projection);
+		}
+	}
+
+
 	if (engine->show_lines)
 	{
 		vec3 color(1.0f, 1.0f, 1.0f);
@@ -1477,9 +1493,11 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 	{
 		char data[512];
 
+		/*
 		menu.draw_text(entity->type, pos.x, pos.y - 0.0625f, 0.02f, color);
 		sprintf(data, "bsp_leaf: %d", entity->bsp_leaf);
 		menu.draw_text(data, pos.x, pos.y, 0.02f, color);
+		*/
 
 		if (strcmp(entity->type, "free") == 0)
 		{
@@ -1528,14 +1546,14 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			sprintf(data, "Health %d", entity->player->health);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
 
-			sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
+//			sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
+//			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
 
-			if (entity->player->bot_state == BOT_GET_ITEM)
-			{
-				sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->type);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, white);
-			}
+//			if (entity->player->bot_state == BOT_GET_ITEM)
+//			{
+//				sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->type);
+//				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, white);
+//			}
 		}
 
 		if (strcmp(entity->type, "func_plat") == 0 || strcmp(entity->type, "func_bobbing") == 0 ||
@@ -1664,7 +1682,7 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 
 	if (target_index == -1 || self_index == -1)
 	{
-		printf("bot_find: No nav points!\n");
+//		printf("bot_find: No nav points!\n");
 		return -2;
 	}
 
@@ -1689,7 +1707,7 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 	if (timer == 15 * TICK_RATE)
 	{
 		// Taking too long to follow path, force new path selection
-		printf("Giving up on path, probably stuck\n");
+//		printf("Giving up on path, probably stuck\n");
 		path.length = -1;
 		timer = 0;
 		return 1;
@@ -1727,7 +1745,7 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 		}
 		else
 		{
-			printf("Bot arrived at nav point nav%d\n", path.path[i]);
+//			printf("Bot arrived at nav point nav%d\n", path.path[i]);
 			timer = 0;
 			return 0;
 		}

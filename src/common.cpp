@@ -247,11 +247,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 // Watch this for the lerps to make sense
 // https://acko.net/tv/wdcode/
 
-// Lerp between A and B where time is within [0,1]
-inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
-{
-	out = a * (1 - time) + b * time;
-}
+//lerp put into header due to release mode linkage issue
 
 // Lerp between A and C, curving towards B
 void quadratic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, float time, vec3 &out)

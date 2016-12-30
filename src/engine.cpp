@@ -206,10 +206,9 @@ void Engine::find_path(int *&path, int &path_length, int start_path, int end_pat
 		return;
 	}
 
-	printf("Searching for path from node%d to node%d\n", start_path, end_path);
+//	printf("Searching for path from node%d to node%d\n", start_path, end_path);
 	graph.astar_path(path, ref, start_path, end_path, &path_length);
-	print_path(path, path_length, node);
-//	delete[] path;
+//	print_path(path, path_length, node);
 }
 
 void Engine::load(char *level)
