@@ -401,7 +401,10 @@ void Menu::handle_console(char key, Engine *altEngine)
 			dmesg_index = 0;
 		memcpy(line, key_buffer, strlen(key_buffer) + 1);
 		cmd_buffer.push_back(line);
-		altEngine->console(altEngine->player_list[0], key_buffer);
+		if (altEngine->player_list.size())
+			altEngine->console(altEngine->player_list[0], key_buffer);
+		else
+			altEngine->console(-1, key_buffer);
 		key_buffer[0] = '\0';
 		break;
 		}

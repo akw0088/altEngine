@@ -75,6 +75,7 @@ public:
 
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();
+	void find_path(int *path, int &path_length, int start_path, int end_path);
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -141,6 +142,11 @@ protected:
 	
 	
 	int		server_spawn;	// entity index of hosting player
+
+	// pathfinding stuff
+	Graph			graph;
+	graph_node_t	*node = NULL;
+	ref_t			*ref = NULL;
 
 
 	//server

@@ -196,6 +196,14 @@ void Engine::setup_func()
 	}
 }
 
+void Engine::find_path(int *path, int &path_length, int start_path, int end_path)
+{
+	printf("Searching for path from node%d to node%d\n", start_path, end_path);
+	path = graph.astar_path(ref, start_path, end_path, &path_length);
+	print_path(path, path_length, node);
+//	delete[] path;
+}
+
 void Engine::load(char *level)
 {
 	matrix4 transformation;
@@ -275,16 +283,13 @@ void Engine::load(char *level)
 		free((void *)navdata);
 	}
 
-	Graph graph;
 	
-	static		int *path = NULL;
-	static		int start_path = 8; // nav 5
-	static		int end_path = 16; // nav 14 -- really need to ensure nav index matches node index
-	static		int path_length = 0;
+	int *path = NULL;
+	int start_path = 8; // nav 5
+	int end_path = 16; // nav 14 -- really need to ensure nav index matches node index
+	int path_length = 0;
 
 
-	graph_node_t *node = NULL;
-	ref_t *ref = NULL;
 	int num_node = entity_list.size() - start;
 
 	navdata_to_graph(ref, node, entity_list, start);
@@ -292,11 +297,6 @@ void Engine::load(char *level)
 
 	graph.load(node, num_node);
 
-	printf("Searching for path from node%d to node%d\n", start_path, end_path);
-	path = graph.astar_path(ref, start_path, end_path, &path_length);
-	print_path(path, path_length, node);
-	delete[] path;
-	delete[] ref;
 
 	setup_func();
 
@@ -2876,6 +2876,7 @@ void Engine::destroy()
 	destroy_buffers();
 	printf("unloading\n");
 	unload();
+	delete[] ref;
 	gfx.GetDebugLog();
 	printf("Destroying gfx\n");
 	gfx.destroy();
