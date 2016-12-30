@@ -748,9 +748,55 @@ void Player::avoid_walls(Bsp &map)
 
 }
 
+void Player::handle_bot(vector<Entity *> &entity_list, int self)
+{
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		if (i == self)
+			continue;
+
+		if (strcmp(entity_list[i]->type, "player") == 0)
+		{
+			float distance = (entity_list[i]->position - entity->position).magnitude();
+
+			if (distance < 500.0f)
+			{
+				entity->rigid->lookat(entity_list[i]->position);
+				bot_state = BOT_ALERT;
+			}
+			else
+			{
+				if (bot_state == BOT_ALERT)
+					bot_state = BOT_IDLE;
+			}
+
+			if (distance < 400.0f)
+			{
+				if (reload_timer <= 0 && entity_list[i]->player->state != PLAYER_DEAD)
+				{
+					entity->rigid->lookat(entity_list[i]->position);
+					bot_state = BOT_ATTACK;
+				}
+
+				if (entity_list[i]->player->state == PLAYER_DEAD)
+				{
+					bot_state = BOT_IDLE;
+				}
+			}
+			else
+			{
+				if (bot_state == BOT_ATTACK)
+					bot_state = BOT_ALERT;
+			}
+
+			continue;
+		}
+	}
+}
+
 
 //#define DEBUG_BOT
-int Player::handle_bot(vector<Entity *> &entity_list, int self)
+int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 {
 	printf("handle_bot() ignore %s\n", ignore);
 
@@ -789,50 +835,6 @@ int Player::handle_bot(vector<Entity *> &entity_list, int self)
 			if (strstr(ignore, entity_list[i]->type) != NULL)
 				continue;
 		}
-
-#ifdef BOT_ATTACK
-		if (strcmp(entity_list[i]->type, "player") == 0)
-		{
-			float distance = (entity_list[i]->position - entity->position).magnitude();
-
-			if (distance < 500.0f)
-			{
-				entity->rigid->lookat(entity_list[i]->position);
-				bot_state = BOT_ALERT;
-			}
-			else
-			{
-				if (bot_state == BOT_ALERT)
-					bot_state = BOT_IDLE;
-			}
-
-			if (distance < 400.0f)
-			{
-				if (reload_timer <= 0 && entity_list[i]->player->state != PLAYER_DEAD)
-				{
-					entity->rigid->lookat(entity_list[i]->position);
-					bot_state = BOT_ATTACK;
-					reload_timer = 1;
-				}
-				else
-				{
-					reload_timer--;
-				}
-
-				if (entity_list[i]->player->state == PLAYER_DEAD)
-				{
-					bot_state = BOT_IDLE;
-				}
-			}
-			else
-			{
-				if (bot_state == BOT_ATTACK)
-					bot_state = BOT_ALERT;
-			}
-
-			continue;
-		}
-#endif
 
 		last_state = bot_state;
 

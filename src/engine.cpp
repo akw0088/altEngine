@@ -297,6 +297,7 @@ void Engine::load(char *level)
 	print_graph(node, num_node);
 
 	graph.load(node, num_node);
+	free((void *)ref);
 
 
 	setup_func();
@@ -837,7 +838,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
 			{
-				bool draw_wander_target = true;
+				bool draw_wander_target = false;
 				entity_list[i]->rigid->render(gfx);
 				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
 
@@ -1067,7 +1068,8 @@ void Engine::spatial_testing()
 			{
 				if (entity_list[i]->rigid->pursue_flag == true)
 				{
-					entity_list[i]->rigid->wander(20.0f, 1.0f, 5.0f);
+//					entity_list[i]->rigid->wander(20.0f, 1.0f, 5.0f);
+					entity_list[i]->rigid->pursue();
 				}
 				else
 				{
@@ -1207,8 +1209,9 @@ void Engine::dynamics()
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if ( (server_flag == false && entity_list[i]->visible == false) || entity_list[i]->rigid->sleep == true)
-			continue;
+// Need to run all the time because of bots freezing when leaving PVS
+//		if ( (server_flag == false && entity_list[i]->visible == false) || entity_list[i]->rigid->sleep == true)
+//			continue;
 
 
 		RigidBody *body = entity_list[i]->rigid;
@@ -2612,7 +2615,7 @@ void Engine::init_camera()
 			camera_frame.forward.y = matrix.m[9];
 			camera_frame.forward.z = matrix.m[10];
 			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
-
+			last_spawn = i+1;
 			break;
 		}
 	}
@@ -2694,7 +2697,7 @@ int Engine::get_entity()
 
 int Engine::find_player()
 {
-	for (int i = 0; i < num_player; i++)
+	for (unsigned int i = 0; i < num_player; i++)
 	{
 		if (strcmp(entity_list[i]->type, "player") == 0)
 			return i;
@@ -2890,7 +2893,6 @@ void Engine::destroy()
 	destroy_buffers();
 	printf("unloading\n");
 	unload();
-	delete[] ref;
 	gfx.GetDebugLog();
 	printf("Destroying gfx\n");
 	gfx.destroy();
@@ -3093,7 +3095,14 @@ void Engine::console(int self, char *cmd)
 			entity_list[self]->player->current_weapon = wp_grenade;
 
 		entity_list[self]->player->weapon_flags |= wp_grenade;
-		entity_list[self]->player->ammo_grenades = MAX(10, entity_list[self]->player->ammo_grenades);
+		if (entity_list[self]->player->ammo_grenades > 10)
+		{
+			entity_list[self]->player->ammo_grenades++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_grenades = 10;
+		}
 		return;
 	}
 
@@ -3106,7 +3115,14 @@ void Engine::console(int self, char *cmd)
 			entity_list[self]->player->current_weapon = wp_rocket;
 
 		entity_list[self]->player->weapon_flags |= wp_rocket;
-		entity_list[self]->player->ammo_rockets = MAX(10, entity_list[self]->player->ammo_rockets);
+		if (entity_list[self]->player->ammo_rockets > 10)
+		{
+			entity_list[self]->player->ammo_rockets++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_rockets = 10;
+		}
 		return;
 	}
 
@@ -3119,7 +3135,35 @@ void Engine::console(int self, char *cmd)
 			entity_list[self]->player->current_weapon = wp_shotgun;
 
 		entity_list[self]->player->weapon_flags |= wp_shotgun;
-		entity_list[self]->player->ammo_shells = MAX(10, entity_list[self]->player->ammo_shells);
+		if (entity_list[self]->player->ammo_shells > 10)
+		{
+			entity_list[self]->player->ammo_shells++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_shells = 10;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_machinegun") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_machinegun\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_machinegun;
+
+		entity_list[self]->player->weapon_flags |= wp_machinegun;
+
+		if (entity_list[self]->player->ammo_bullets > 100)
+		{
+			entity_list[self]->player->ammo_bullets++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_bullets = 100;
+		}
 		return;
 	}
 
@@ -3132,7 +3176,14 @@ void Engine::console(int self, char *cmd)
 			entity_list[self]->player->current_weapon = wp_lightning;
 
 		entity_list[self]->player->weapon_flags |= wp_lightning;
-		entity_list[self]->player->ammo_lightning = MAX(100, entity_list[self]->player->ammo_lightning);
+		if (entity_list[self]->player->ammo_lightning > 100)
+		{
+			entity_list[self]->player->ammo_lightning++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_lightning = 100;
+		}
 		return;
 	}
 
@@ -3145,7 +3196,14 @@ void Engine::console(int self, char *cmd)
 			entity_list[self]->player->current_weapon = wp_railgun;
 
 		entity_list[self]->player->weapon_flags |= wp_railgun;
-		entity_list[self]->player->ammo_slugs = MAX(10, entity_list[self]->player->ammo_slugs);
+		if (entity_list[self]->player->ammo_slugs > 10)
+		{
+			entity_list[self]->player->ammo_slugs++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_slugs = 10;
+		}
 		return;
 	}
 
@@ -3158,7 +3216,14 @@ void Engine::console(int self, char *cmd)
 			entity_list[self]->player->current_weapon = wp_plasma;
 
 		entity_list[self]->player->weapon_flags |= wp_plasma;
-		entity_list[self]->player->ammo_plasma = MAX(50, entity_list[self]->player->ammo_plasma);
+		if (entity_list[self]->player->ammo_plasma > 50)
+		{
+			entity_list[self]->player->ammo_plasma++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_plasma = 50;
+		}
 		return;
 	}
 
@@ -3291,10 +3356,14 @@ void Engine::console(int self, char *cmd)
 					matrix4::mat_backward(matrix, entity_list[self]->position);
 					break;
 				}
-				camera_frame.forward.x = matrix.m[8];
-				camera_frame.forward.y = matrix.m[9];
-				camera_frame.forward.z = matrix.m[10];
-				camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+
+				if (find_player() == self)
+				{
+					camera_frame.forward.x = matrix.m[8];
+					camera_frame.forward.y = matrix.m[9];
+					camera_frame.forward.z = matrix.m[10];
+					camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+				}
 				break;
 
 			}
@@ -3361,14 +3430,14 @@ void Engine::console(int self, char *cmd)
 				break;
 			}
 
-			if (player == 0)
+			if (player == find_player())
 			{
-				camera_frame.up.x = matrix.m[3];
-				camera_frame.up.y = matrix.m[4];
-				camera_frame.up.z = matrix.m[5];
-				camera_frame.forward.x = -matrix.m[6];
-				camera_frame.forward.y = -matrix.m[7];
-				camera_frame.forward.z = -matrix.m[8];
+				camera_frame.up.x = matrix.m[4];
+				camera_frame.up.y = matrix.m[5];
+				camera_frame.up.z = matrix.m[6];
+				camera_frame.forward.x = matrix.m[8];
+				camera_frame.forward.y = matrix.m[9];
+				camera_frame.forward.z = matrix.m[10];
 			}
 
 			debugf("Spawning on entity %d\n", index);
@@ -3419,16 +3488,6 @@ void Engine::console(int self, char *cmd)
 						break;
 					}
 
-					if (player == 0)
-					{
-						camera_frame.up.x = matrix.m[3];
-						camera_frame.up.y = matrix.m[4];
-						camera_frame.up.z = matrix.m[5];
-						camera_frame.forward.x = -matrix.m[6];
-						camera_frame.forward.y = -matrix.m[7];
-						camera_frame.forward.z = -matrix.m[8];
-					}
-
 					entity_list[player]->model->morientation.m[0] = matrix.m[0];
 					entity_list[player]->model->morientation.m[1] = matrix.m[1];
 					entity_list[player]->model->morientation.m[2] = matrix.m[2];
@@ -3440,6 +3499,16 @@ void Engine::console(int self, char *cmd)
 					entity_list[player]->model->morientation.m[6] = matrix.m[8];
 					entity_list[player]->model->morientation.m[7] = matrix.m[9];
 					entity_list[player]->model->morientation.m[8] = matrix.m[10];
+
+					if (player == find_player())
+					{
+						camera_frame.up.x = matrix.m[4];
+						camera_frame.up.y = matrix.m[5];
+						camera_frame.up.z = matrix.m[6];
+						camera_frame.forward.x = matrix.m[8];
+						camera_frame.forward.y = matrix.m[9];
+						camera_frame.forward.z = matrix.m[10];
+					}
 
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);

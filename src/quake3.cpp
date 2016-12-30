@@ -6,6 +6,18 @@
 
 #define BOT_ENABLE
 
+#define MACHINEGUN_DAMAGE 5
+#define SHOTGUN_DAMAGE 50
+#define GRENADE_DAMAGE 100
+#define GRENADE_SPLASH_DAMAGE 50
+#define ROCKET_DAMAGE 100
+#define ROCKET_SPLASH_DAMAGE 50
+#define PLASMA_DAMAGE 
+#define LIGHTNING_DAMAGE 
+#define RAILGUN_DAMAGE 100
+
+
+
 extern char bot_state_name[16][80];
 
 Quake3::Quake3()
@@ -61,9 +73,9 @@ typedef struct
 
 vector<navpoint_t> navmesh;
 
-void Quake3::handle_player(int index)
+void Quake3::handle_player(int self)
 {
-	Entity *entity = engine->entity_list[index];
+	Entity *entity = engine->entity_list[self];
 	static int footstep_num = 0;
 	static int last_tick = 0;
 
@@ -131,12 +143,14 @@ void Quake3::handle_player(int index)
 				entity->player->state = PLAYER_DUCKED;
 			}
 
-
-			if (entity->rigid->move(engine->input))
+			if (strcmp(entity->type, "player") == 0)
 			{
-				entity->player->state = PLAYER_JUMPED;
-				engine->select_wave(entity->speaker->source, entity->player->jump_sound);
-				engine->audio.play(entity->speaker->source);
+				if (entity->rigid->move(engine->input))
+				{
+					entity->player->state = PLAYER_JUMPED;
+					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
+					engine->audio.play(entity->speaker->source);
+				}
 			}
 		}
 
@@ -146,11 +160,31 @@ void Quake3::handle_player(int index)
 		button_t noinput;
 
 		memset(&noinput, 0, sizeof(button_t));
-		entity->player->state = PLAYER_DEAD;
 		//Makes body hit the floor, need to explore why this hack is needed
 		if (entity->player->reload_timer)
 		{
 			entity->rigid->move(noinput);
+		}
+
+
+		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+		{
+			player_died(self);
+		}
+
+		if (strcmp(entity->type, "player") == 0)
+		{
+			if (engine->input.leftbutton && entity->player->reload_timer == 0)
+			{
+				engine->console(self, "respawn");
+			}
+		}
+		else
+		{
+			if (entity->player->reload_timer <= 0)
+			{
+				engine->console(self, "respawn");
+			}
 		}
 	}
 
@@ -285,11 +319,7 @@ void Quake3::handle_player(int index)
 		}
 	}
 
-	if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
-	{
-		player_died(index);
-	}
-	handle_weapons(*(entity->player), engine->input, engine->find_player());
+	handle_weapons(*(entity->player), engine->input, self);
 }
 
 void Quake3::player_died(int index)
@@ -473,7 +503,7 @@ void Quake3::step(int frame_step)
 		{
 			Entity *entity = engine->entity_list[i];
 
-			if (strcmp(entity->type, "player") == 0)
+			if (strcmp(entity->type, "player") == 0 || strcmp(entity->type, "NPC") == 0)
 			{
 				handle_player(i);
 			}
@@ -486,17 +516,28 @@ void Quake3::step(int frame_step)
 			Entity *bot = engine->entity_list[i];
 			button_t input;
 
-
+			memset(&input, 0, sizeof(button_t));
 			if (bot->player->health <= 0)
 			{
 				bot->player->bot_state = BOT_DEAD;
+				continue;
 			}
 
 			bot->player->avoid_walls(engine->map);
 
-			if (bot->player->bot_state != BOT_GET_ITEM && bot->player->bot_state != BOT_DEAD)
+			bot->player->handle_bot(engine->entity_list, i);
+
+			if (bot->player->bot_state == BOT_ALERT || bot->player->bot_state == BOT_ATTACK)
 			{
-				bot->player->get_item = bot->player->handle_bot(engine->entity_list, i);
+				//clear path
+				bot->player->path.step = 0;
+				bot->player->path.length = 0;
+			}
+
+
+			if (bot->player->bot_state == BOT_IDLE || bot->player->bot_state == BOT_EXPLORE)
+			{
+				bot->player->get_item = bot->player->bot_search_for_items(engine->entity_list, i);
 
 				//clear path just in case
 				bot->player->path.step = 0;
@@ -507,9 +548,8 @@ void Quake3::step(int frame_step)
 			{
 			case BOT_ATTACK:
 				engine->zcc.select_animation(0);
-				memset(&input, 0, sizeof(button_t));
-				input.leftbutton = true;
-				handle_weapons(*(bot->player), input, i);
+//				handle_machinegun(*(bot->player), i);
+				bot->rigid->move_backward();
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
@@ -527,6 +567,8 @@ void Quake3::step(int frame_step)
 				static int nav_array[64] = { 0 };
 				int ret = 0;
 
+				bot->player->ammo_bullets = 100; // bots cheat on reloading :)
+				engine->zcc.select_animation(1);
 				if (engine->entity_list[bot->player->get_item]->trigger->active)
 				{
 					//some one got the item before we did, abort
@@ -599,12 +641,16 @@ void Quake3::step(int frame_step)
 				}
 				break;
 			}
-			case BOT_IDLE:
 			case BOT_ALERT:
-				engine->zcc.select_animation(1);
+				engine->zcc.select_animation(0);
+				bot->rigid->move_forward();
 				break;
 			case BOT_EXPLORE:
+				engine->zcc.select_animation(1);
 				bot->player->ignore[0] = '\0';
+				break;
+			case BOT_IDLE:
+				engine->zcc.select_animation(1);
 				break;
 			}
 #endif
@@ -618,6 +664,14 @@ void Quake3::handle_plasma(Entity *entity, Player &player, int self)
 	Frame camera_frame;
 
 	player.entity->model->get_frame(camera_frame);
+
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
+	{
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
+	}
 
 	sprintf(player.attack_sound, "sound/weapons/plasma/hyprbf1a.wav");
 
@@ -664,6 +718,14 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player, int self)
 	Frame camera_frame;
 
 	player.entity->model->get_frame(camera_frame);
+
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
+	{
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
+	}
 
 
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
@@ -724,6 +786,14 @@ void Quake3::handle_grenade(Entity *entity, Player &player, int self)
 
 	player.entity->model->get_frame(camera_frame);
 
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
+	{
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
+	}
+
 
 	sprintf(player.attack_sound, "sound/weapons/grenade/grenlf1a.wav");
 
@@ -767,6 +837,14 @@ void Quake3::handle_lightning(Entity *entity, Player &player, int self)
 	Frame camera_frame;
 
 	player.entity->model->get_frame(camera_frame);
+
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
+	{
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
+	}
 
 
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
@@ -842,7 +920,6 @@ void Quake3::handle_machinegun(Player &player, int self)
 	char cmd[80] = { 0 };
 	int index[8];
 	int num_index;
-	vec3 forward;
 	//float distance;
 
 	Frame camera_frame;
@@ -852,18 +929,27 @@ void Quake3::handle_machinegun(Player &player, int self)
 
 	sprintf(player.attack_sound, "sound/weapons/machinegun/machgf1b.wav");
 
+
+
 	player.reload_timer = 8;
 	player.ammo_bullets--;
-	player.entity->model->getForwardVector(forward);
 
-	if (self == 1)
+	// Handicap bots since they dont miss
+//	if (strcmp(player.entity->type, "NPC") == 0)
+	//{
+		//player.reload_timer = TICK_RATE * 2;
+	//}
+
+
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
 	{
-		debugf("Player %s hit %s with the machinegun for %d damage\n", engine->entity_list[self]->player->name, player.name, 7);
-		sprintf(cmd, "hurt %d %d", self, 7);
-		engine->console(self, cmd);
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
 	}
 
-	engine->hitscan(player.entity->position, forward, index, num_index, self);
+	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
 
@@ -871,7 +957,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 			continue;
 
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 7);
-		sprintf(cmd, "hurt %d %d", index[i], 7);
+		sprintf(cmd, "hurt %d %d", index[i], MACHINEGUN_DAMAGE);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 		engine->console(self, cmd);
@@ -1000,8 +1086,8 @@ void Quake3::handle_shotgun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 50);
-		sprintf(cmd, "hurt %d %d", index[i], 50);
+		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, SHOTGUN_DAMAGE);
+		sprintf(cmd, "hurt %d %d", index[i], SHOTGUN_DAMAGE);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 
@@ -1029,12 +1115,9 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 		player.reload_timer--;
 	}
 
-	if (player.state == PLAYER_DEAD)
+	if (player.health <= 0)
 	{
-		if (input.leftbutton && player.reload_timer == 0)
-		{
-			engine->console(self, "respawn");
-		}
+		player.state = PLAYER_DEAD;
 		return;
 	}
 
@@ -1044,11 +1127,9 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 		{
 		case wp_railgun:
 			sprintf(player.weapon_idle_sound, "sound/weapons/railgun/rg_hum.wav");
-			//		audio.select_buffer(entity->speaker->source, snd_wave[WP_RAILGUN_IDLE].buffer);
 			break;
 		case wp_lightning:
-			//			player.weapon_idle_sound = "sound/weapons/lightning/lg_hum.wav";
-			player.weapon_idle_sound[0] = '\0';
+//			sprintf(player.weapon_idle_sound, "sound/weapons/lightning/lg_hum.wav");
 			break;
 		default:
 			player.weapon_idle_sound[0] = '\0';
@@ -1100,7 +1181,12 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 	ticks = 60 * (1 / rps) -- railgun didnt seem right
 	*/
 
-	if (input.leftbutton && player.reload_timer == 0)
+	if (player.bot_state == BOT_ATTACK)
+	{
+		player.best_weapon();
+	}
+
+	if ((input.leftbutton || player.bot_state == BOT_ATTACK) && player.reload_timer <= 0)
 	{
 		if (player.current_weapon == wp_rocket)
 		{
@@ -1437,12 +1523,19 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 		{
 			int line = 1;
 			vec3 red(1.0f, 0.0f, 0.0f);
+			vec3 white(1.0f, 1.0f, 1.0f);
 
 			sprintf(data, "Health %d", entity->player->health);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
 
 			sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
+
+			if (entity->player->bot_state == BOT_GET_ITEM)
+			{
+				sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->type);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, white);
+			}
 		}
 
 		if (strcmp(entity->type, "func_plat") == 0 || strcmp(entity->type, "func_bobbing") == 0 ||
@@ -1484,7 +1577,7 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, ma
 
 		for (int i = 0; i < 50; i++)
 		{
-			lerp(a, b, 1.0 / i, pos);
+			lerp(a, b, 1.0f / i, pos);
 
 			menu.draw_text("o", pos.x, pos.y, 0.02f, color);
 		}

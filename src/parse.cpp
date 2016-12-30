@@ -209,6 +209,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_shotgun");
 		}
+		else if (strstr(value, "weapon_machinegun"))
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_machinegun");
+		}
 		else if (strstr(value, "weapon_railgun"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
@@ -484,6 +491,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
+			entity.nodraw = true;
 
 		}
 	}
