@@ -73,7 +73,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	change_axis();
 
 	face_to_patch = new int[data.num_faces];
-	for (int i = 0; i < data.num_faces; i++)
+	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_to_patch[i] = -1;
 	}

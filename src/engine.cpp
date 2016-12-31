@@ -1182,7 +1182,21 @@ void Engine::spatial_testing()
 		float distance = dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y + dist_vec.z * dist_vec.z;
 
 		if (entity_list[i]->light)
+		{
+			if (entity_list[i]->light->timer_flag)
+			{
+				if (entity_list[i]->light->timer > 0)
+				{
+					entity_list[i]->light->timer--;
+				}
+				else
+				{
+					clean_entity(i);
+				}
+			}
+
 			activate_light(distance, entity_list[i]->light);
+		}
 
 	}
 }
@@ -1191,6 +1205,8 @@ void Engine::activate_light(float distance, Light *light)
 {
 	if (distance < 9 * 800.0f * 800.0f && light->entity->visible)
 	{
+
+
 		if (light->active == false)
 		{
 			light_list.push_back(light);

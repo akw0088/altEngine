@@ -17,7 +17,7 @@ in VertexDataOut {
 out vec4 Fragment;
 
 // constant program input
-uniform vec3		u_position[MAX_LIGHTS]; // light position, world coordinates
+uniform vec4		u_position[MAX_LIGHTS]; // light position, world coordinates
 uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform mat4		mvp;
@@ -120,12 +120,19 @@ void main(void)
 //	vec4 Fragment6 = texture(texture6, ((u_tcmod_scale6 * Vertex.vary_TexCoord - u_tcmod_scale6 * bias) * mRot6 + u_tcmod_scale6 * bias) + u_tcmod_scroll6);
 //	vec4 Fragment7 = texture(texture7, ((u_tcmod_scale7 * Vertex.vary_TexCoord - u_tcmod_scale7 * bias) * mRot7 + u_tcmod_scale7 * bias) + u_tcmod_scroll7);
 
-	Fragment.a = Fragment0.a;
-	Fragment.a += (Fragment1.r + Fragment2.r + Fragment3.r) / 3.0 ;
+
+	float frag0gs = (Fragment0.r + Fragment0.g + Fragment0.b) / 3.0;
+	float frag1gs = (Fragment1.r + Fragment1.g + Fragment1.b) / 3.0;
+	float frag2gs = (Fragment2.r + Fragment2.g + Fragment2.b) / 3.0;
+	float frag3gs = (Fragment3.r + Fragment3.g + Fragment3.b) / 3.0;
+
+//	alpha 1 = opaque, 0 equals transparent
+	Fragment.a = Fragment0.a * Fragment1.a  * Fragment2.a  * Fragment3.a;
+//	Fragment.a = 1.0;
 	Fragment.xyz += Fragment0.xyz * 0.75;
-	Fragment.xyz += Fragment1.xyz * 0.5;
-	Fragment.xyz += Fragment2.xyz * 0.5;
-	Fragment.xyz += Fragment3.xyz * 0.5;
+	Fragment.xyz += Fragment1.xyz;
+	Fragment.xyz += Fragment2.xyz;
+	Fragment.xyz += Fragment3.xyz;
 //	Fragment.xyz += Fragment4.xyz;
 //	Fragment.xyz += Fragment5.xyz;
 //	Fragment.xyz += Fragment6.xyz;
@@ -137,7 +144,7 @@ void main(void)
 
 	for(int i = 0; i < u_num_lights; i++)
 	{
-		vec3 lightPosWorld = u_position[i];
+		vec3 lightPosWorld = vec3(u_position[i]);
 
 		vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
 		lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
@@ -147,13 +154,11 @@ void main(void)
 		vec3 n_light = tangent_space * v_light; // light vector in tangent space
 
 		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
-		float atten = min( 80000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
+		float atten = min( u_position[i].a * 80000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
 		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
 	Fragment.rgb *= max(light, ambient);
-
-
 }

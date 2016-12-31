@@ -22,7 +22,7 @@ out VertexData {
 } Vertex;
 
 // uniform primitive constant input
-uniform vec3	u_position[MAX_LIGHTS];
+uniform vec4	u_position[MAX_LIGHTS]; // alph is attenuation cofactor
 uniform vec4	u_color[MAX_LIGHTS]; //alpha is intensity
 uniform int	u_num_lights;
 uniform mat4	mvp;

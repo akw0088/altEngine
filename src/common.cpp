@@ -787,9 +787,9 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 			node[j].num_arcs = 0;
 
 			// Manhattan distance table
-			ref[k].x = entity_list[i]->position.x;
-			ref[k].y = entity_list[i]->position.y;
-			ref[k].z = entity_list[i]->position.z;
+			ref[k].x = (int)entity_list[i]->position.x;
+			ref[k].y = (int)entity_list[i]->position.y;
+			ref[k].z = (int)entity_list[i]->position.z;
 
 			strcpy(data, entity_list[i]->target);
 

@@ -22,11 +22,11 @@ public:
 
 	void handle_weapons(Player &player, input_t &input, int self);
 
-	void handle_plasma(Entity *entity, Player &player, int self);
-	void handle_rocketlauncher(Entity *entity, Player &player, int self);
-	void handle_grenade(Entity *entity, Player &player, int self);
-	void handle_lightning(Entity *entity, Player &player, int self);
-	void handle_railgun(Entity *entity, Player &player, int self);
+	void handle_plasma(Player &player, int self);
+	void handle_rocketlauncher(Player &player, int self);
+	void handle_grenade(Player &player, int self);
+	void handle_lightning(Player &player, int self);
+	void handle_railgun(Player &player, int self);
 	void handle_machinegun(Player &player, int self);
 	void handle_shotgun(Player &player, int self);
 	void handle_gibs(Player &player);

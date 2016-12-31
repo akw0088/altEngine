@@ -20,7 +20,10 @@ public:
 	unsigned int depth_tex[6];
 	vec3	color;
 	float	intensity;
+	float	attenuation;
 	bool	active;
+	bool	timer_flag;
+	int		timer;
 	int		light_num;
 	vector<shadowvol_t>	shadow_list;
 	Edge	edge_list;

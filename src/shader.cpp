@@ -201,16 +201,17 @@ void mLight2::prelink()
 
 void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset)
 {
-	vec3 position[MAX_LIGHTS];
+	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
 	unsigned int i, j;
 
 	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
-		if (light_list[i]->entity->light->active)
+		if (light_list[i]->active)
 		{
+			vec3 pos = light_list[i]->entity->position - offset;
 
-			position[j] = light_list[i]->entity->position - offset;
+			position[j] = vec4(pos.x, pos.y, pos.z, light_list[i]->attenuation);
 
 
 			color[j] = vec4(light_list[i]->color.x,
@@ -282,7 +283,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
 	
 	glUniform1i(u_num_lights, j);
-	glUniform3fv(u_position, j, (float *)&position);
+	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 #endif
 }
@@ -446,7 +447,7 @@ void mLight2::tcmod_stretch_square(float amplitude, float phase, float freq, int
 
 	tcmod_scale(value, index);
 }
-
+#ifdef NOPE
 int mLightDepth::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"
@@ -488,6 +489,7 @@ void mLightDepth::Params(matrix4 &mvp)
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 #endif
 }
+#endif
 
 int Post::init(Graphics *gfx)
 {
@@ -564,7 +566,7 @@ void Post::Params(int tex0, int tex1)
 #endif
 }
 
-
+#ifdef NOPE
 int mLight3::init(Graphics *gfx)
 {
 	//"media/glsl/mlighting3.gs"
@@ -710,3 +712,4 @@ void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp)
 	glUniform1i(shadowmap, 4);
 #endif
 }
+#endif

@@ -624,7 +624,7 @@ void Quake3::step(int frame_step)
 	}
 }
 
-void Quake3::handle_plasma(Entity *entity, Player &player, int self)
+void Quake3::handle_plasma(Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -643,42 +643,53 @@ void Quake3::handle_plasma(Entity *entity, Player &player, int self)
 	player.reload_timer = 8;
 	player.ammo_plasma--;
 
-	entity->rigid = new RigidBody(entity);
-	entity->model = entity->rigid;
-	entity->position = camera_frame.pos;
-	camera_frame.set(entity->model->morientation);
+	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->rigid = new RigidBody(projectile);
+	projectile->model = projectile->rigid;
+	projectile->position = camera_frame.pos;
+	camera_frame.set(projectile->model->morientation);
 
-	entity->rigid->clone(*(engine->ball->model));
-	entity->rigid->velocity = camera_frame.forward * -10.0f;
-	entity->rigid->net_force = camera_frame.forward * -10.0f;
+	projectile->rigid->clone(*(engine->ball->model));
+	projectile->rigid->velocity = camera_frame.forward * -10.0f;
+	projectile->rigid->net_force = camera_frame.forward * -10.0f;
 
-	entity->rigid->angular_velocity = vec3();
-	entity->rigid->gravity = false;
-	entity->trigger = new Trigger(entity, engine->audio);
-	sprintf(entity->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
-	sprintf(entity->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
-	sprintf(entity->trigger->action, "damage 20");
+	projectile->rigid->angular_velocity = vec3();
+	projectile->rigid->gravity = false;
+	projectile->trigger = new Trigger(projectile, engine->audio);
+	sprintf(projectile->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
+	sprintf(projectile->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
+	sprintf(projectile->trigger->action, "damage 20");
 
-	entity->trigger->hide = false;
-	entity->trigger->self = false;
-	entity->trigger->idle = true;
-	entity->trigger->explode = false;
-	entity->trigger->explode_timer = 10;
-	entity->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
-	entity->trigger->explode_intensity = 200.0f;
-	entity->trigger->splash_damage = 15;
-	entity->trigger->splash_radius = 75.0f;
-	entity->trigger->knockback = 75.0f;
-	entity->trigger->owner = self;
+	projectile->trigger->hide = false;
+	projectile->trigger->self = false;
+	projectile->trigger->idle = true;
+	projectile->trigger->explode = false;
+	projectile->trigger->explode_timer = 10;
+	projectile->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
+	projectile->trigger->explode_intensity = 200.0f;
+	projectile->trigger->splash_damage = 15;
+	projectile->trigger->splash_radius = 75.0f;
+	projectile->trigger->knockback = 75.0f;
+	projectile->trigger->owner = self;
 
 
-	entity->light = new Light(entity, engine->gfx, 999);
-	entity->light->color = vec3(0.0f, 0.0f, 1.0f);
-	entity->light->intensity = 1000.0f;
+	projectile->light = new Light(projectile, engine->gfx, 999);
+	projectile->light->color = vec3(0.0f, 0.0f, 1.0f);
+	projectile->light->intensity = 1000.0f;
+
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
 }
 
-void Quake3::handle_rocketlauncher(Entity *entity, Player &player, int self)
+void Quake3::handle_rocketlauncher(Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -694,58 +705,68 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player, int self)
 
 
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
-
 	player.reload_timer = 100;
 	player.ammo_rockets--;
 
-	entity->position = camera_frame.pos;
 
-	entity->trigger = new Trigger(entity, engine->audio);
-	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-	sprintf(entity->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
-	sprintf(entity->trigger->action, "damage 100");
+	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->position = camera_frame.pos;
 
-	entity->trigger->hide = false;
-	entity->trigger->self = false;
-	entity->trigger->idle = true;
-	entity->trigger->explode = true;
-	entity->trigger->idle_timer = 0;
-	entity->trigger->explode_timer = 10;
-	entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-	entity->trigger->explode_intensity = 500.0f;
-	entity->trigger->splash_damage = 50;
-	entity->trigger->splash_radius = 250.0f;
-	entity->trigger->knockback = 250.0f;
-	entity->trigger->owner = self;
+	projectile->trigger = new Trigger(projectile, engine->audio);
+	sprintf(projectile->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+	sprintf(projectile->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
+	sprintf(projectile->trigger->action, "damage 100");
 
-	entity->light = new Light(entity, engine->gfx, 999);
-	entity->light->color = vec3(1.0f, 1.0f, 1.0f);
-	entity->light->intensity = 1000.0f;
+	projectile->trigger->hide = false;
+	projectile->trigger->self = false;
+	projectile->trigger->idle = true;
+	projectile->trigger->explode = true;
+	projectile->trigger->idle_timer = 0;
+	projectile->trigger->explode_timer = 10;
+	projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+	projectile->trigger->explode_intensity = 500.0f;
+	projectile->trigger->splash_damage = 50;
+	projectile->trigger->splash_radius = 250.0f;
+	projectile->trigger->knockback = 250.0f;
+	projectile->trigger->owner = self;
 
-	entity->rigid = new RigidBody(entity);
-	entity->model = entity->rigid;
-	camera_frame.set(entity->rigid->morientation);
-	entity->rigid->clone(*(engine->rocket->model));
-	entity->rigid->velocity = camera_frame.forward * -6.25f;
-	entity->rigid->net_force = camera_frame.forward * -10.0f;
-	entity->rigid->angular_velocity = vec3();
-	entity->rigid->gravity = false;
+	projectile->light = new Light(projectile, engine->gfx, 999);
+	projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
+	projectile->light->intensity = 1000.0f;
+
+	projectile->rigid = new RigidBody(projectile);
+	projectile->model = projectile->rigid;
+	camera_frame.set(projectile->rigid->morientation);
+	projectile->rigid->clone(*(engine->rocket->model));
+	projectile->rigid->velocity = camera_frame.forward * -6.25f;
+	projectile->rigid->net_force = camera_frame.forward * -10.0f;
+	projectile->rigid->angular_velocity = vec3();
+	projectile->rigid->gravity = false;
 
 
 
 
-	bool ret = engine->select_wave(entity->trigger->loop_source, entity->trigger->idle_sound);
+	bool ret = engine->select_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
 	if (ret)
 	{
-		engine->audio.play(entity->trigger->loop_source);
+		engine->audio.play(projectile->trigger->loop_source);
 	}
 	else
 	{
-		debugf("Unable to find PCM data for %s\n", entity->trigger->idle_sound);
+		debugf("Unable to find PCM data for %s\n", projectile->trigger->idle_sound);
 	}
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 }
 
-void Quake3::handle_grenade(Entity *entity, Player &player, int self)
+void Quake3::handle_grenade(Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -765,39 +786,50 @@ void Quake3::handle_grenade(Entity *entity, Player &player, int self)
 	player.reload_timer = 100;
 	player.ammo_grenades--;
 
-	entity->rigid = new RigidBody(entity);
-	entity->model = entity->rigid;
-	entity->position = camera_frame.pos;
-	camera_frame.set(entity->model->morientation);
+	Entity *projectile = engine->entity_list[engine->get_entity()];
 
-	entity->rigid->clone(*(engine->box->model));
+	projectile->rigid = new RigidBody(projectile);
+	projectile->model = projectile->rigid;
+	projectile->position = camera_frame.pos;
+	camera_frame.set(projectile->model->morientation);
+
+	projectile->rigid->clone(*(engine->box->model));
 	//entity->rigid->clone(*(pineapple->model));
-	entity->rigid->velocity = camera_frame.forward * -5.0f;
-	entity->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
-	entity->rigid->gravity = true;
-	entity->rigid->rotational_friction_flag = true;
+	projectile->rigid->velocity = camera_frame.forward * -5.0f;
+	projectile->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
+	projectile->rigid->gravity = true;
+	projectile->rigid->rotational_friction_flag = true;
 	//entity->rigid->set_target(*(entity_list[spawn]));
 
-	entity->trigger = new Trigger(entity, engine->audio);
-	sprintf(entity->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-	sprintf(entity->trigger->action, "damage 100");
+	projectile->trigger = new Trigger(projectile, engine->audio);
+	sprintf(projectile->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+	sprintf(projectile->trigger->action, "damage 100");
 
-	entity->trigger->hide = false;
-	entity->trigger->self = false;
-	entity->trigger->idle = true;
-	entity->trigger->idle_timer = 120;
-	entity->trigger->explode = true;
-	entity->trigger->explode_timer = 10;
-	entity->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-	entity->trigger->explode_intensity = 500.0f;
-	entity->trigger->splash_damage = 50;
-	entity->trigger->splash_radius = 250.0f;
-	entity->trigger->knockback = 250.0f;
-	entity->trigger->owner = self;
+	projectile->trigger->hide = false;
+	projectile->trigger->self = false;
+	projectile->trigger->idle = true;
+	projectile->trigger->idle_timer = 120;
+	projectile->trigger->explode = true;
+	projectile->trigger->explode_timer = 10;
+	projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+	projectile->trigger->explode_intensity = 500.0f;
+	projectile->trigger->splash_damage = 50;
+	projectile->trigger->splash_radius = 250.0f;
+	projectile->trigger->knockback = 250.0f;
+	projectile->trigger->owner = self;
 
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 }
 
-void Quake3::handle_lightning(Entity *entity, Player &player, int self)
+void Quake3::handle_lightning(Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -813,29 +845,40 @@ void Quake3::handle_lightning(Entity *entity, Player &player, int self)
 
 
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
-
 	player.reload_timer = 6;
 	player.ammo_lightning--;
 
-	entity->rigid = new RigidBody(entity);
-	entity->position = camera_frame.pos;
-	entity->rigid->clone(*(engine->box->model));
-	entity->rigid->velocity = camera_frame.forward * -1.0f;
-	entity->rigid->angular_velocity = vec3();
-	entity->rigid->gravity = false;
-	entity->rigid->rotational_friction_flag = true;
-	entity->model = entity->rigid;
-	entity->rigid->set_target(*(engine->entity_list[engine->find_player()]));
-	camera_frame.set(entity->model->morientation);
 
-	entity->light = new Light(entity, engine->gfx, 999);
-	entity->light->color = vec3(1.0f, 1.0f, 1.0f);
-	entity->light->intensity = 1000.0f;
+	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->rigid = new RigidBody(projectile);
+	projectile->position = camera_frame.pos;
+	projectile->rigid->clone(*(engine->box->model));
+	projectile->rigid->velocity = camera_frame.forward * -1.0f;
+	projectile->rigid->angular_velocity = vec3();
+	projectile->rigid->gravity = false;
+	projectile->rigid->rotational_friction_flag = true;
+	projectile->model = projectile->rigid;
+	projectile->rigid->set_target(*(engine->entity_list[self]));
+	camera_frame.set(projectile->model->morientation);
+
+	projectile->light = new Light(projectile, engine->gfx, 999);
+	projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
+	projectile->light->intensity = 1000.0f;
 //	entity->trigger->owner = self;
+
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
 }
 
-void Quake3::handle_railgun(Entity *entity, Player &player, int self)
+void Quake3::handle_railgun(Player &player, int self)
 {
 	int index[8];
 	int num_index;
@@ -850,14 +893,15 @@ void Quake3::handle_railgun(Entity *entity, Player &player, int self)
 	player.reload_timer = 188;
 	player.ammo_slugs--;
 
-	entity->rigid = new RigidBody(entity);
-	entity->position = camera_frame.pos;
-	entity->rigid->clone(*(engine->ball->model));
-	entity->rigid->velocity = camera_frame.forward * -100.0f;
-	entity->rigid->angular_velocity = vec3();
-	entity->rigid->gravity = false;
-	entity->model = entity->rigid;
-	camera_frame.set(entity->model->morientation);
+	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->rigid = new RigidBody(projectile);
+	projectile->position = camera_frame.pos;
+	projectile->rigid->clone(*(engine->ball->model));
+	projectile->rigid->velocity = camera_frame.forward * -100.0f;
+	projectile->rigid->angular_velocity = vec3();
+	projectile->rigid->gravity = false;
+	projectile->model = projectile->rigid;
+	camera_frame.set(projectile->model->morientation);
 
 	vec3 forward;
 	player.entity->model->getForwardVector(forward);
@@ -878,6 +922,16 @@ void Quake3::handle_railgun(Entity *entity, Player &player, int self)
 		sprintf(cmd, "hurt %d %d", index[i], 100);
 		engine->console(self, cmd);
 	}
+
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 }
 
 void Quake3::handle_machinegun(Player &player, int self)
@@ -899,13 +953,6 @@ void Quake3::handle_machinegun(Player &player, int self)
 	player.reload_timer = 8;
 	player.ammo_bullets--;
 
-	// Handicap bots since they dont miss
-//	if (strcmp(player.entity->type, "NPC") == 0)
-	//{
-		//player.reload_timer = TICK_RATE * 2;
-	//}
-
-
 	//forward is right for the bots, need to fix it as hacks are piling up
 	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
 	{
@@ -917,6 +964,16 @@ void Quake3::handle_machinegun(Player &player, int self)
 	{
 		camera_frame.forward *= -1;
 	}
+
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
@@ -1047,6 +1104,23 @@ void Quake3::handle_shotgun(Player &player, int self)
 
 	player.entity->model->getForwardVector(forward);
 
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
+	{
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
+	}
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+
 	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
@@ -1062,14 +1136,6 @@ void Quake3::handle_shotgun(Player &player, int self)
 
 		engine->console(self, cmd);
 	}
-
-	//vec3 end = player.entity->position + forward * distance;
-
-
-	//			Entity *entity = new Entity();
-	//			entity->decal = new Decal(entity);
-	//			entity->position = end;
-	//			entity->decal->normal = normal;
 
 }
 
@@ -1163,7 +1229,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_rocketlauncher(entity, player, self);
+				handle_rocketlauncher(player, self);
 			}
 			else
 			{
@@ -1176,7 +1242,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_plasma(entity, player, self);
+				handle_plasma(player, self);
 			}
 			else
 			{
@@ -1189,7 +1255,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_grenade(entity, player, self);
+				handle_grenade(player, self);
 			}
 			else
 			{
@@ -1203,7 +1269,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_lightning(entity, player, self);
+				handle_lightning(player, self);
 			}
 			else
 			{
@@ -1217,7 +1283,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			{
 				fired = true;
 				Entity *entity = engine->entity_list[engine->get_entity()];
-				handle_railgun(entity, player, self);
+				handle_railgun(player, self);
 			}
 			else
 			{

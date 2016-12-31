@@ -9,8 +9,11 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 	Light::entity = entity;
 	color = vec3(1.0f, 1.0f, 1.0f);
 	intensity = 300.0f;
+	attenuation = 1.0f; // default
 	active = false;
 	light_num = num;
+	timer_flag = false;
+	timer = 0;
 
 	memset(quad_tex, 0, sizeof(unsigned int) * 6);
 	memset(depth_tex, 0, sizeof(unsigned int) * 6);
