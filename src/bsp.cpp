@@ -639,16 +639,19 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	}
 
 
+	// will be same texture for all 3x3 patches making up this mesh
+	if (textures_loaded)
+	{
+		for (int j = 0; j < MAX_TEXTURES; j++)
+			gfx.SelectTexture(j, tex_object[face->material].texObj[j]);
+	}
+
+
 	for (int i = 0; i < patchdata[mesh_index].num_mesh; i++)
 	{
 		gfx.SelectVertexBuffer(patchdata[mesh_index + i].vbo);
 		gfx.SelectIndexBuffer(patchdata[mesh_index + i].ibo);
 
-		if (textures_loaded)
-		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
-				gfx.SelectTexture(j, tex_object[face->material].texObj[j]);
-		}
 #ifdef LIGHTMAP
 		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
