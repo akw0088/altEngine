@@ -38,7 +38,7 @@ public:
 	void add_bot(int &index);
 
 	int bot_get_path(int item, int self, int *nav_array, path_t &path);
-	int bot_follow(path_t &path, int *nav_array, Entity *entity);
+	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
 
 private:
 	Engine *engine;

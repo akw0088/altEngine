@@ -111,7 +111,12 @@ void Quake3::handle_player(int self)
 
 			if (strcmp(entity->type, "player") == 0)
 			{
-				if (entity->rigid->move(engine->input))
+				float speed_scale = 1.0f;
+
+				if (entity->player->haste_timer > 0)
+					speed_scale = 2.0f;
+
+				if (entity->rigid->move(engine->input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
 					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
@@ -129,7 +134,7 @@ void Quake3::handle_player(int self)
 		//Makes body hit the floor, need to explore why this hack is needed
 		if (entity->player->reload_timer)
 		{
-			entity->rigid->move(noinput);
+			entity->rigid->move(noinput, 1.0f);
 		}
 
 
@@ -538,12 +543,17 @@ void Quake3::step(int frame_step)
 				bot->player->path.length = 0;
 			}
 
+			float speed_scale = 1.0f;
+
+			if (bot->player->haste_timer > 0)
+				speed_scale = 2.0f;
+
 			switch (bot->player->bot_state)
 			{
 			case BOT_ATTACK:
 				engine->zcc.select_animation(0);
 //				handle_machinegun(*(bot->player), i);
-				bot->rigid->move_backward();
+				bot->rigid->move_backward(speed_scale);
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
@@ -610,7 +620,7 @@ void Quake3::step(int frame_step)
 				{
 					vec3 delta;
 					bot->rigid->lookat_yaw(engine->entity_list[bot->player->get_item]->position);
-					bot->rigid->move_forward();
+					bot->rigid->move_forward(speed_scale);
 
 					float distance = (engine->entity_list[i]->position - engine->entity_list[bot->player->get_item]->position).magnitude();
 
@@ -626,7 +636,7 @@ void Quake3::step(int frame_step)
 				{
 					// Go through path steps until we get to navpoint where item is
 					if (bot_follow(bot->player->path,
-						nav_array, bot) == 0)
+						nav_array, bot, speed_scale) == 0)
 					{
 						(bot->player->path.step)++;
 						// momentum makes him miss pretty bad
@@ -637,7 +647,7 @@ void Quake3::step(int frame_step)
 			}
 			case BOT_ALERT:
 				engine->zcc.select_animation(0);
-				bot->rigid->move_forward();
+				bot->rigid->move_forward(speed_scale);
 				break;
 			case BOT_EXPLORE:
 				engine->zcc.select_animation(1);
@@ -1782,7 +1792,7 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 	return 0;
 }
 
-int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
+int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale)
 {
 	static int timer = 0;
 
@@ -1807,7 +1817,7 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 			static vec3 last_position = entity->position;
 
 			entity->rigid->lookat_yaw(engine->entity_list[nav]->position);
-			entity->rigid->move_forward();
+			entity->rigid->move_forward(speed_scale);
 
 			if ((last_position - entity->position).magnitude() > 800.0f)
 			{
@@ -1819,9 +1829,9 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity)
 			last_position = entity->position;
 
 			if (rand() % 200 == 0)
-				entity->rigid->move_left();
+				entity->rigid->move_left(speed_scale);
 			if (rand() % 114 == 0)
-				entity->rigid->move_right();
+				entity->rigid->move_right(speed_scale);
 
 
 			//moving towards step

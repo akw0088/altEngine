@@ -538,7 +538,7 @@ float RigidBody::get_height()
 
 
 // Move negative relative to the forward vector
-bool RigidBody::move(input_t &input)
+bool RigidBody::move(input_t &input, float speed_scale)
 {
 	Frame camera;
 
@@ -564,22 +564,22 @@ bool RigidBody::move(input_t &input)
 #define MAX_SPEED 3.0f
 	if (input.moveup)
 	{
-		velocity += -forward * ACCEL;
+		velocity += -forward * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.movedown)
 	{
-		velocity += forward * ACCEL;
+		velocity += forward * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.moveleft)
 	{
-		velocity += -right * ACCEL;
+		velocity += -right * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.moveright)
 	{
-		velocity += right * ACCEL;
+		velocity += right * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.jump)
@@ -589,17 +589,17 @@ bool RigidBody::move(input_t &input)
 	}
 	if (input.duck)
 	{
-		velocity.y += -ACCEL;
+		velocity.y += -ACCEL * speed_scale;
 		moved = true;
 	}
 
 	float speed = velocity.magnitude();
 
-	if ( speed > MAX_SPEED)
+	if ( speed > MAX_SPEED * speed_scale)
 	{
-		velocity.x *= (MAX_SPEED / speed);
-		velocity.y *= (MAX_SPEED / speed);
-		velocity.z *= (MAX_SPEED / speed);
+		velocity.x *= (MAX_SPEED * speed_scale / speed);
+		velocity.y *= (MAX_SPEED * speed_scale / speed);
+		velocity.z *= (MAX_SPEED * speed_scale / speed);
 	}
 
 	if (moved)
@@ -629,58 +629,58 @@ bool RigidBody::move(input_t &input)
 }
 
 
-void RigidBody::move_forward()
+void RigidBody::move_forward(float speed_scale)
 {
 	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
 	input.moveleft = true;
-	move(input);
+	move(input, speed_scale);
 }
 
-void RigidBody::move_backward()
+void RigidBody::move_backward(float speed_scale)
 {
 	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
 	input.movedown = true;
-	move(input);
+	move(input, speed_scale);
 }
 
-void RigidBody::move_left()
+void RigidBody::move_left(float speed_scale)
 {
 	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
 	input.moveleft = true;
-	move(input);
+	move(input, speed_scale);
 }
 
-void RigidBody::move_right()
+void RigidBody::move_right(float speed_scale)
 {
 	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
 	input.moveright = true;
-	move(input);
+	move(input, speed_scale);
 }
 
-void RigidBody::move_up()
+void RigidBody::move_up(float speed_scale)
 {
 	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
 	input.jump = true;
-	move(input);
+	move(input, speed_scale);
 }
 
-void RigidBody::move_down()
+void RigidBody::move_down(float speed_scale)
 {
 	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
 	input.duck = true;
-	move(input);
+	move(input, speed_scale);
 }
 
 void RigidBody::lookat(vec3 &target)

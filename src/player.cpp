@@ -685,6 +685,11 @@ void Player::avoid_walls(Bsp &map)
 
 	input_t input;
 
+	float speed_scale = 1.0f;
+
+	if (haste_timer > 0)
+		speed_scale = 2.0f;
+
 
 	map.collision_detect(forward, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
 	if ( depth < 0 )
@@ -716,7 +721,7 @@ void Player::avoid_walls(Bsp &map)
 		input.jump = true;
 	}
 
-	entity->rigid->move(input);
+	entity->rigid->move(input, speed_scale);
 
 }
 

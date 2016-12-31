@@ -1764,7 +1764,13 @@ void Engine::server_step()
 
 		client_frame.set(entity_list[client_list[index]->entity]->rigid->morientation);
 		client_frame.pos = client->position;
-		client->rigid->move(clientkeys);
+
+		float speed_scale = 1.0f;
+
+		if (entity_list[client_list[index]->entity]->player->haste_timer > 0)
+			speed_scale = 2.0f;
+
+		client->rigid->move(clientkeys, speed_scale);
 
 
 		/*
@@ -3956,11 +3962,8 @@ void Engine::console(int self, char *cmd)
 	}
 
 	/*
-	regen 15 health per second
-	haste double rate of fire?
-	invisibility
-	quad damage
-	teleporter
+	haste tempted to double rate of fire too
+	personal teleporter - respawn without resetting player data
 	*/
 
 	ret = strcmp(cmd, "regeneration");
@@ -3969,6 +3972,16 @@ void Engine::console(int self, char *cmd)
 		if (self != -1)
 		{
 			entity_list[self]->player->regen_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "haste");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->haste_timer = 60 * TICK_RATE;
 		}
 		return;
 	}

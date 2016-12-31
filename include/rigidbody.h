@@ -32,13 +32,13 @@ public:
 	void set_target(Entity &target);
 
 
-	bool move(input_t &input);
-	void move_forward();
-	void move_backward();
-	void move_left();
-	void move_right();
-	void move_up(); // jump
-	void move_down();
+	bool move(input_t &input, float speed_scale);
+	void move_forward(float speed_scale);
+	void move_backward(float speed_scale);
+	void move_left(float speed_scale);
+	void move_right(float speed_scale);
+	void move_up(float speed_scale); // jump
+	void move_down(float speed_scale);
 	void lookat(vec3 &target);
 	void lookat_yaw(vec3 &target);
 
