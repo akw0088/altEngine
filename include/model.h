@@ -9,6 +9,7 @@ public:
 	Model(Entity *entity);
 	virtual ~Model();
 	static void CreateObjects(Graphics &gfx);
+	static void make_skybox(Graphics &gfx);
 	void calc_frustum(matrix4 &clip);
 	void load(Graphics &gfx, char *file);
 	void create_box(Graphics &gfx, vec3 *aabb);
@@ -45,6 +46,9 @@ public:
 
 	static			int cube_vertex;
 	static			int cube_index;
+
+	static			int skybox_vertex;
+	static			int skybox_index;
 };
 
 #endif

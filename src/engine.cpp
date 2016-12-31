@@ -20,8 +20,6 @@ Engine::Engine()
 	show_debug = false;
 	show_hud = true;
 	num_bot = 0;
-
-
 }
 
 
@@ -99,6 +97,7 @@ void Engine::init(void *p1, void *p2)
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false);
 	Model::CreateObjects(gfx);
+	Model::make_skybox(gfx);
 
 	box = new Entity();
 	box->rigid = new RigidBody(box);
@@ -673,8 +672,8 @@ void Engine::render_scene(bool lights)
 	vec3 offset(0.0f, 0.0f, 0.0f);
 
 
-//	mlight2.Params(projection, light_list, light_list.size(), offset);
-//	map.render_sky(gfx, mlight2, tick_num, surface_list);
+	mlight2.Params(mvp, light_list, light_list.size(), offset);
+	map.render_sky(gfx, mlight2, tick_num, surface_list);
 
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);
@@ -1126,6 +1125,7 @@ void Engine::spatial_testing()
 
 
 			entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
+
 
 			for(int j = 0; j < 8; j++)
 			{

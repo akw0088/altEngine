@@ -548,16 +548,18 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 	return false;
 }
 
-/*
+
+
+
 void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list)
 {
-	float time = tick_num / TICK_RATE;
+	float time = (float)tick_num / TICK_RATE;
 
 	if (sky_face == -1)
 		return;
 
-	gfx.SelectVertexBuffer(Model::cube_vertex);
-	gfx.SelectIndexBuffer(Model::cube_index);
+	gfx.SelectVertexBuffer(Model::skybox_vertex);
+	gfx.SelectIndexBuffer(Model::skybox_index);
 
 
 	if (textures_loaded)
@@ -588,7 +590,6 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 
 	gfx.DrawArrayTri(0, 0, 36, 36);
 }
-*/
 
 
 inline void Bsp::render_face(face_t *face, Graphics &gfx)
@@ -879,7 +880,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			}
 		}
 
-		/*
 		if (face_list[i].sky)
 		{
 			for (int j = 0; j < MAX_TEXTURES; j++)
@@ -891,7 +891,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			}
 			continue;
 		}
-		*/
 
 		if (face->type == 1 || face->type == 3)
 		{

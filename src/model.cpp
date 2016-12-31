@@ -12,6 +12,9 @@ int Model::quad_vertex = 0;
 int Model::cube_index = 0;
 int Model::cube_vertex = 0;
 
+int Model::skybox_index = 0;
+int Model::skybox_vertex = 0;
+
 
 
 void Model::load(Graphics &gfx, char *file)
@@ -37,7 +40,7 @@ void Model::load(Graphics &gfx, char *file)
 	model_array = (vertex_t *)(model_file + 4);
 
 	make_aabb();
-
+	make_skybox(gfx);
 	create_box(gfx, aabb);
 
 	char *index_file = get_file(ibo_file, NULL);
@@ -152,6 +155,103 @@ void Model::make_aabb()
 	aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
 	aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
 	aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
+}
+
+
+void Model::make_skybox(Graphics &gfx)
+{
+	vec3 verts[36] =
+	{
+		// Front face
+		vec3(-200.0f, 200.0f, 200.0f), //3
+		vec3(200.0f, -200.0f, 200.0f), //2
+		vec3(200.0f, 200.0f, 200.0f),  //1
+
+		vec3(-200.0f, -200.0f, 200.0f), //4
+		vec3(200.0f, -200.0f, 200.0f),  //2
+		vec3(-200.0f, 200.0f, 200.0f), //3
+
+
+		// Back face
+		vec3(200.0f, 200.0f, -200.0f),		//3
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(-200.0f, 200.0f, -200.0f),		//1
+
+		vec3(200.0f, -200.0f, -200.0f),		//4
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(200.0f, 200.0f, -200.0f),		//3
+
+		// Left face
+		vec3(-200.0f, 200.0f, -200.0f),		//3
+		vec3(-200.0f, -200.0f, 200.0f),		//2
+		vec3(-200.0f, 200.0f, 200.0f),		//1
+
+		vec3(-200.0f, -200.0f, -200.0f),	//4
+		vec3(-200.0f, -200.0f, 200.0f),		//2
+		vec3(-200.0f, 200.0f, -200.0f),		//3
+
+		// Right face
+		vec3(200.0f, 200.0f, 200.0f),		//3
+		vec3(200.0f, -200.0f, -200.0f),		//2
+		vec3(200.0f, 200.0f, -200.0f),		//1
+
+		vec3(200.0f, -200.0f, 200.0f),		//4
+		vec3(200.0f, -200.0f, -200.0f),		//2
+		vec3(200.0f, 200.0f, 200.0f),		//3
+
+		// Top face
+		vec3(-200.0f, 200.0f, 200.0f),		//3
+		vec3(200.0f, 200.0f, -200.0f),		//2
+		vec3(-200.0f, 200.0f, -200.0f),		//1
+
+		vec3(200.0f, 200.0f, 200.0f),		//4
+		vec3(200.0f, 200.0f, -200.0f),		//2
+		vec3(-200.0f, 200.0f, 200.0f),		//3
+
+		// Bottom face
+		vec3(200.0f, -200.0f, 200.0f),		//3
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(200.0f, -200.0f, -200.0f),		//1
+
+		vec3(-200.0f, -200.0f, 200.0f),		//4
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(200.0f, -200.0f, 200.0f)		//3
+	};
+
+	vec2 texcoords[6] =
+	{
+		vec2(0.0f, 1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 0.0f),			//4
+		vec2(1.0f, 1.0f),			//3
+	};
+
+	vec3 normals[6] =
+	{
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f)
+	};
+
+
+	vertex_t skybox[36];
+	int index[36];
+	for (int i = 0; i < 36; i++)
+	{
+		skybox[i].position = verts[i] * 1000000.0f;
+		skybox[i].texCoord0 = texcoords[i % 6];
+		skybox[i].normal = normals[i / 4];
+		index[i] = i;
+	}
+
+	skybox_vertex = gfx.CreateVertexBuffer(skybox, 36);
+	skybox_index = gfx.CreateIndexBuffer(index, 36);
 }
 
 void Model::render(Graphics &gfx)

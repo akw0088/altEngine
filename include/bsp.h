@@ -18,7 +18,7 @@ class Bsp
 	//void draw_line_box(int *min, int *max);
 	//void draw_box(int *min, int *max);
 public:
-//	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
+	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
 	void find_edges(vec3 &position, Edge &edge_list);
 	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
