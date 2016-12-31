@@ -2660,6 +2660,13 @@ void Engine::load_model(Entity &ent)
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
+	else if (strcmp(ent.type, "item_armor_body") == 0)
+	{
+		debugf("Loading item_armor_body\n");
+		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
 	else if (strcmp(ent.type, "weapon_lightning") == 0)
 	{
 		debugf("Loading weapon_lightning\n");
