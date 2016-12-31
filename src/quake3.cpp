@@ -1124,9 +1124,9 @@ void Quake3::handle_shotgun(Player &player, int self)
 	//forward is right for the bots, need to fix it as hacks are piling up
 	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
 	{
-		camera_frame.forward.x = player.entity->model->morientation.m[0];
-		camera_frame.forward.y = player.entity->model->morientation.m[1];
-		camera_frame.forward.z = player.entity->model->morientation.m[2];
+		camera_frame.forward.x = -player.entity->model->morientation.m[0];
+		camera_frame.forward.y = -player.entity->model->morientation.m[1];
+		camera_frame.forward.z = -player.entity->model->morientation.m[2];
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -1144,7 +1144,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 		quad_factor = 3.0f;
 
 
-	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
+	engine->hitscan(player.entity->position, -camera_frame.forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
 		char cmd[80] = { 0 };
