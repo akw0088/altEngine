@@ -110,6 +110,15 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	armor = 0;
 	flight_timer = 0;
 	teleport_timer = 0;
+	drown_timer = 0;
+	regen_timer = 0;
+	haste_timer = 0;
+	quad_timer = 0;
+	reload_timer = 0;
+	invisibility_timer = 0;
+	teleport_timer = 0;
+
+
 	weapon_flags = WEAPON_MACHINEGUN;
 	current_weapon = wp_machinegun;
 	ammo_rockets = 0;
@@ -404,6 +413,18 @@ void Player::respawn()
 	entity->rigid->net_force = vec3(0.0f, 0.0f, 0.0f);
 	state = PLAYER_IDLE;
 	bot_state = BOT_IDLE;
+
+
+	armor = 0;
+	flight_timer = 0;
+	teleport_timer = 0;
+	drown_timer = 0;
+	regen_timer = 0;
+	haste_timer = 0;
+	quad_timer = 0;
+	reload_timer = 0;
+	invisibility_timer = 0;
+	teleport_timer = 0;
 
 
 //	entity->model->make_aabb();

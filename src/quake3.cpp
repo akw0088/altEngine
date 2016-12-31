@@ -166,7 +166,28 @@ void Quake3::handle_player(int self)
 
 	if (entity->player->quad_timer > 0)
 	{
+		if (entity->light == NULL)
+		{
+			entity->light = new Light(entity, engine->gfx, 999);
+			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
+			entity->light->intensity = 4000.0f;
+			entity->light->attenuation = 0.125f;
+		}
 		entity->player->quad_timer--;
+	}
+	else
+	{
+		// Light list wont be updated until the next step, so manually delete
+		if (entity->light)
+		{
+			for (unsigned int i = 0; i < engine->light_list.size(); i++)
+			{
+				if (engine->light_list[i]->entity == entity)
+				{
+					engine->light_list.erase(engine->light_list.begin() + i);
+				}
+			}
+		}
 	}
 
 	if (entity->player->regen_timer > 0)
@@ -361,6 +382,9 @@ void Quake3::player_died(int index)
 
 	drop_weapon(index);
 
+	if (entity->player->quad_timer > 0)
+		drop_quaddamage(entity->position);
+
 	entity->player->kill();
 	entity->model->clone(*(engine->box->model));
 }
@@ -441,6 +465,25 @@ void Quake3::drop_weapon(int index)
 	snprintf(drop_weapon->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 	sprintf(drop_weapon->trigger->action, "%s", weapon_str);
 }
+
+void Quake3::drop_quaddamage(vec3 &position)
+{
+	Entity *drop_quad = engine->entity_list[engine->get_entity()];
+	drop_quad->position = position;
+
+
+	drop_quad->rigid = new RigidBody(drop_quad);
+	drop_quad->model = drop_quad->rigid;
+	drop_quad->model->clone((*engine->box->model));
+
+	drop_quad->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
+	drop_quad->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+	drop_quad->trigger = new Trigger(drop_quad, engine->audio);
+	snprintf(drop_quad->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+	snprintf(drop_quad->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+	sprintf(drop_quad->trigger->action, "quaddamage");
+}
+
 
 
 void Quake3::add_bot(int &index)

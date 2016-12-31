@@ -35,6 +35,7 @@ public:
 	void handle_player(int index);
 	void player_died(int index);
 	void drop_weapon(int index);
+	void drop_quaddamage(vec3 &position);
 	void add_bot(int &index);
 
 	int bot_get_path(int item, int self, int *nav_array, path_t &path);
