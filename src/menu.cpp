@@ -365,7 +365,7 @@ void Menu::render_notif(Global &global)
 
 	gfx->cleardepth();
 	for (unsigned int i = 0; i < notif_buffer.size(); i++)
-		draw_text(notif_buffer[i], 0.6f, 0.7f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color);
+		draw_text(notif_buffer[i], 0.6f, 0.2f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color);
 }
 
 void Menu::print_chat(const char *str)
