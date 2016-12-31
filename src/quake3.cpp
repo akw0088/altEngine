@@ -29,39 +29,12 @@ void Quake3::init(Engine *altEngine)
 {
 	engine = altEngine;
 
-	box = new Entity();
-	box->rigid = new RigidBody(box);
-	box->model = box->rigid;
-	box->model->load(engine->gfx, "media/models/box");
 
-	ball = new Entity();
-	ball->rigid = new RigidBody(ball);
-	ball->model = ball->rigid;
-	ball->model->load(engine->gfx, "media/models/ball");
-
-	thug22 = new Entity();
-	thug22->rigid = new RigidBody(thug22);
-	thug22->model = thug22->rigid;
-	thug22->model->load(engine->gfx, "media/models/thug22/thug22");
-
-	rocket = new Entity();
-	rocket->rigid = new RigidBody(rocket);
-	rocket->model = rocket->rigid;
-	rocket->rigid->load(engine->gfx, "media/models/weapons2/rocketl/rocket");
-
-	pineapple = new Entity();
-	pineapple->rigid = new RigidBody(pineapple);
-	pineapple->model = pineapple->rigid;
-	pineapple->rigid->load(engine->gfx, "media/models/weapons2/grenadel/pineapple");
 }
 
 void Quake3::destroy()
 {
-	delete box;
-	delete ball;
-	delete thug22;
-	delete rocket;
-	delete pineapple;
+
 }
 
 typedef struct
@@ -96,9 +69,9 @@ void Quake3::handle_player(int self)
 
 			navpoint_t navpoint;
 
-			navpoint.position.x = (int)entity->position.x;
-			navpoint.position.y = (int)entity->position.y;
-			navpoint.position.z = (int)entity->position.z;
+			navpoint.position.x = (float)entity->position.x;
+			navpoint.position.y = (float)entity->position.y;
+			navpoint.position.z = (float)entity->position.z;
 			sprintf(navpoint.targetname, "nav%d", nav_num);
 			if (navmesh.size() > 0)
 				sprintf(navpoint.target, "%s ", navmesh[0].targetname);
@@ -363,7 +336,7 @@ void Quake3::player_died(int index)
 	drop_weapon(index);
 
 	entity->player->kill();
-	entity->model->clone(*(box->model));
+	entity->model->clone(*(engine->box->model));
 }
 
 void Quake3::drop_weapon(int index)
@@ -453,7 +426,7 @@ void Quake3::add_bot(int &index)
 	debugf("Adding a bot\n");
 	entity->rigid = new RigidBody(entity);
 	entity->model = entity->rigid;
-	entity->rigid->clone(*(thug22->model));
+	entity->rigid->clone(*(engine->thug22->model));
 	sprintf(entity->type, "NPC");
 	entity->player = new Player(entity, engine->gfx, engine->audio, 16);
 	entity->speaker->gain(5.0f);
@@ -553,7 +526,7 @@ void Quake3::step(int frame_step)
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
-				bot->model->clone(*(box->model));
+				bot->model->clone(*(engine->box->model));
 				engine->select_wave(bot->speaker->source, bot->player->death1_sound);
 				engine->audio.play(bot->speaker->source);
 
@@ -683,7 +656,7 @@ void Quake3::handle_plasma(Entity *entity, Player &player, int self)
 	entity->position = camera_frame.pos;
 	camera_frame.set(entity->model->morientation);
 
-	entity->rigid->clone(*(ball->model));
+	entity->rigid->clone(*(engine->ball->model));
 	entity->rigid->velocity = camera_frame.forward * -10.0f;
 	entity->rigid->net_force = camera_frame.forward * -10.0f;
 
@@ -760,7 +733,7 @@ void Quake3::handle_rocketlauncher(Entity *entity, Player &player, int self)
 	entity->rigid = new RigidBody(entity);
 	entity->model = entity->rigid;
 	camera_frame.set(entity->rigid->morientation);
-	entity->rigid->clone(*(rocket->model));
+	entity->rigid->clone(*(engine->rocket->model));
 	entity->rigid->velocity = camera_frame.forward * -6.25f;
 	entity->rigid->net_force = camera_frame.forward * -10.0f;
 	entity->rigid->angular_velocity = vec3();
@@ -805,7 +778,7 @@ void Quake3::handle_grenade(Entity *entity, Player &player, int self)
 	entity->position = camera_frame.pos;
 	camera_frame.set(entity->model->morientation);
 
-	entity->rigid->clone(*(box->model));
+	entity->rigid->clone(*(engine->box->model));
 	//entity->rigid->clone(*(pineapple->model));
 	entity->rigid->velocity = camera_frame.forward * -5.0f;
 	entity->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
@@ -854,7 +827,7 @@ void Quake3::handle_lightning(Entity *entity, Player &player, int self)
 
 	entity->rigid = new RigidBody(entity);
 	entity->position = camera_frame.pos;
-	entity->rigid->clone(*(box->model));
+	entity->rigid->clone(*(engine->box->model));
 	entity->rigid->velocity = camera_frame.forward * -1.0f;
 	entity->rigid->angular_velocity = vec3();
 	entity->rigid->gravity = false;
@@ -887,7 +860,7 @@ void Quake3::handle_railgun(Entity *entity, Player &player, int self)
 
 	entity->rigid = new RigidBody(entity);
 	entity->position = camera_frame.pos;
-	entity->rigid->clone(*(ball->model));
+	entity->rigid->clone(*(engine->ball->model));
 	entity->rigid->velocity = camera_frame.forward * -100.0f;
 	entity->rigid->angular_velocity = vec3();
 	entity->rigid->gravity = false;
@@ -995,7 +968,7 @@ void Quake3::handle_gibs(Player &player)
 		entity1->position = camera_frame.pos;
 		camera_frame.set(entity1->model->morientation);
 
-		entity1->rigid->clone(*(box->model));
+		entity1->rigid->clone(*(engine->box->model));
 		//entity->rigid->clone(*(pineapple->model));
 		entity1->rigid->velocity = vec3(2.0f, 1.2f, -1.2f);
 		entity1->rigid->angular_velocity = vec3(5.0f, 3.0f, 2.f);
@@ -1018,7 +991,7 @@ void Quake3::handle_gibs(Player &player)
 		entity2->position = camera_frame.pos;
 		camera_frame.set(entity2->model->morientation);
 
-		entity2->rigid->clone(*(box->model));
+		entity2->rigid->clone(*(engine->box->model));
 		//entity->rigid->clone(*(pineapple->model));
 		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
 		entity2->rigid->angular_velocity = vec3(-5.0f, -1.0f, 6.0f);
@@ -1041,7 +1014,7 @@ void Quake3::handle_gibs(Player &player)
 		entity3->position = camera_frame.pos;
 		camera_frame.set(entity3->model->morientation);
 
-		entity3->rigid->clone(*(box->model));
+		entity3->rigid->clone(*(engine->box->model));
 		//entity->rigid->clone(*(pineapple->model));
 		entity3->rigid->velocity = vec3(-2.0f, 3.2f, 1.2f);
 		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);

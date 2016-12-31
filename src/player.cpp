@@ -155,7 +155,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	current_face = 0;
 	bot_state = BOT_IDLE;
 
-	path.path = NULL;
 	path.length = 0;
 	path.step = 0;
 }

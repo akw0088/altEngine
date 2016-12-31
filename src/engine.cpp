@@ -20,6 +20,31 @@ Engine::Engine()
 	show_debug = false;
 	show_hud = true;
 	num_bot = 0;
+
+	box = new Entity();
+	box->rigid = new RigidBody(box);
+	box->model = box->rigid;
+	box->model->load(gfx, "media/models/box");
+
+	ball = new Entity();
+	ball->rigid = new RigidBody(ball);
+	ball->model = ball->rigid;
+	ball->model->load(gfx, "media/models/ball");
+
+	thug22 = new Entity();
+	thug22->rigid = new RigidBody(thug22);
+	thug22->model = thug22->rigid;
+	thug22->model->load(gfx, "media/models/thug22/thug22");
+
+	rocket = new Entity();
+	rocket->rigid = new RigidBody(rocket);
+	rocket->model = rocket->rigid;
+	rocket->rigid->load(gfx, "media/models/weapons2/rocketl/rocket");
+
+	pineapple = new Entity();
+	pineapple->rigid = new RigidBody(pineapple);
+	pineapple->model = pineapple->rigid;
+	pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
 }
 
 
@@ -840,7 +865,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				bool draw_wander_target = false;
 				entity_list[i]->rigid->render(gfx);
 				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
-
+#ifdef NOPE
 				if (draw_wander_target)
 				{
 					mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
@@ -850,6 +875,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
 					mlight2.Params(mvp, light_list, light_list.size(), offset);
 				}
+#endif
 			}
 
 
@@ -1796,7 +1822,7 @@ void Engine::server_step()
 		printf("client %s got entity %d\n", socketname, client->entity);
 		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
 		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
-		entity_list[client->entity]->rigid->clone(*(q3.box->model));
+		entity_list[client->entity]->rigid->clone(*(box->model));
 		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio, 21);
 		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
 		entity_list[client->entity]->player->respawn();
@@ -1966,7 +1992,7 @@ void Engine::client_step()
 					entity_list[client]->position = entity_list[entity]->position;
 					entity_list[client]->rigid = new RigidBody(entity_list[client]);
 					entity_list[client]->model = entity_list[client]->rigid;
-					entity_list[client]->rigid->clone(*(q3.thug22->model));
+					entity_list[client]->rigid->clone(*(thug22->model));
 					entity_list[client]->rigid->step_flag = true;
 					entity_list[client]->position += entity_list[client]->rigid->center;
 					entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21);
@@ -2447,7 +2473,7 @@ void Engine::load_models()
 			if (entity_list[j]->model == NULL)
 				continue;
 
-			entity_list[i]->model->clone(*(q3.box->model));
+			entity_list[i]->model->clone(*(box->model));
 			if (strcmp(entity_list[i]->type, entity_list[j]->type) == 0)
 			{
 				entity_list[i]->model->clone(*entity_list[j]->model);
@@ -2587,7 +2613,7 @@ void Engine::init_camera()
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
-			entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+			entity_list[spawn]->rigid->clone(*(thug22->model));
 			entity_list[spawn]->rigid->step_flag = true;
 			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio, 21);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
@@ -2636,7 +2662,7 @@ void Engine::load_entities()
 	}
 
 	int spawn = find_player();
-	entity_list[spawn]->rigid->clone(*(q3.thug22->model));
+	entity_list[spawn]->rigid->clone(*(thug22->model));
 	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 }
 
@@ -2880,6 +2906,11 @@ void Engine::destroy()
 	free((void *)pk3_list[0]);
 	q3.destroy();
 	debugf("Shutting down.\n");
+	delete box;
+	delete ball;
+	delete thug22;
+	delete rocket;
+	delete pineapple;
 	
 	for (unsigned int i = 0; i < surface_list.size(); i++)
 	{
@@ -3441,7 +3472,7 @@ void Engine::console(int self, char *cmd)
 
 			debugf("Spawning on entity %d\n", index);
 			entity_list[player]->player->respawn();
-			entity_list[player]->rigid->clone(*(q3.thug22->model));
+			entity_list[player]->rigid->clone(*(thug22->model));
 
 			ret = select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 			if (ret)
@@ -3512,7 +3543,7 @@ void Engine::console(int self, char *cmd)
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[player]->player->respawn();
-					entity_list[player]->rigid->clone(*(q3.thug22->model));
+					entity_list[player]->rigid->clone(*(thug22->model));
 
 					ret = select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 					if (ret)

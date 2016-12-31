@@ -92,6 +92,13 @@ public:
 	char *shader_list[32];
 	int num_shader;
 
+	// for cloning
+	Entity *box;
+	Entity *ball;
+	Entity *thug22;
+	Entity *rocket;
+	Entity *pineapple;
+
 
 //console flags
 	bool show_names;
@@ -109,7 +116,7 @@ public:
 
 
 //	vector<int> player_list;
-	int num_bot;
+	unsigned int num_bot;
 
 protected:
 	matrix4		projection;
