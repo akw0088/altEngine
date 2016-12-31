@@ -868,7 +868,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
 			{
-				bool draw_wander_target = false;
+				//bool draw_wander_target = false;
 				entity_list[i]->rigid->render(gfx);
 				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
 #ifdef NOPE
@@ -1112,7 +1112,7 @@ void Engine::spatial_testing()
 		if (entity_list[i]->model)
 		{
 			bool bsp_visible = false;
-			bool frustum_visible = false;
+			//bool frustum_visible = false;
 			bool visible = false;
 
 
@@ -2209,7 +2209,7 @@ void Engine::bind_keys()
 
 	while (line)
 	{
-		ret = sscanf(line, "bind %s \"%s\"\r\n", &key, &value);
+		ret = sscanf(line, "bind %s \"%s\"\r\n", (char *)&key, (char *)&value);
 
 		//sscanf is grabbing ending quote
 		value[strlen(value) - 1] = '\0';
