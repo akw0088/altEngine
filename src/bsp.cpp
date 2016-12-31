@@ -332,11 +332,9 @@ void Bsp::unload(Graphics &gfx)
 	gfx.DeleteVertexBuffer(map_vertex_vbo);
 	map_vertex_vbo = 0;
 	mesh_level = 0;
-
 	num_meshes = 0;
 
 	//Todo, try to find a way to keep loaded textures between map loads
-
 	for(unsigned int i = 0; i < data.num_materials; i++)
 	{
 		for(int j = 0; j < tex_object->num_tex; j++)
@@ -348,7 +346,6 @@ void Bsp::unload(Graphics &gfx)
 			}
 		}
 		tex_object[i].index = -1;
-//		tex_object[i].stage = -1;
 		
 
 		if (normal_object[i] != -1)

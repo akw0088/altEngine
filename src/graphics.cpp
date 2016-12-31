@@ -689,6 +689,12 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	if (num_index > 100000)
+	{
+		printf("Nvidia bug bypass: memory corruption\n");
+		return;
+	}
+
 	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 

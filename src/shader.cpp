@@ -222,19 +222,19 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 #ifdef DIRECTX
 	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
-	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
-	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
+//	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
+//	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
+//	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, 0);
 	glUniform1i(texture1, 1);
 	glUniform1i(texture2, 2);
 	glUniform1i(texture3, 3);
-	glUniform1i(texture4, 4);
-	glUniform1i(texture5, 5);
-	glUniform1i(texture6, 6);
-	glUniform1i(texture7, 7);
+//	glUniform1i(texture4, 4);
+//	glUniform1i(texture5, 5);
+//	glUniform1i(texture6, 6);
+//	glUniform1i(texture7, 7);
 
 // Going to treat normals and lightmaps like normal textures
 	glUniform1i(texture_lightmap, 8);
@@ -249,37 +249,37 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform2fv(u_tcmod_scroll1, 1, (float *)&tcmod_scroll);
 	glUniform2fv(u_tcmod_scroll2, 1, (float *)&tcmod_scroll);
 	glUniform2fv(u_tcmod_scroll3, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll4, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll5, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll6, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll7, 1, (float *)&tcmod_scroll);
+//	glUniform2fv(u_tcmod_scroll4, 1, (float *)&tcmod_scroll);
+//	glUniform2fv(u_tcmod_scroll5, 1, (float *)&tcmod_scroll);
+//	glUniform2fv(u_tcmod_scroll6, 1, (float *)&tcmod_scroll);
+//	glUniform2fv(u_tcmod_scroll7, 1, (float *)&tcmod_scroll);
 
 	glUniform2fv(u_tcmod_scale0, 1, (float *)&tcmod_scale);
 	glUniform2fv(u_tcmod_scale1, 1, (float *)&tcmod_scale);
 	glUniform2fv(u_tcmod_scale2, 1, (float *)&tcmod_scale);
 	glUniform2fv(u_tcmod_scale3, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale4, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale5, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale6, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale7, 1, (float *)&tcmod_scale);
+//	glUniform2fv(u_tcmod_scale4, 1, (float *)&tcmod_scale);
+//	glUniform2fv(u_tcmod_scale5, 1, (float *)&tcmod_scale);
+//	glUniform2fv(u_tcmod_scale6, 1, (float *)&tcmod_scale);
+//	glUniform2fv(u_tcmod_scale7, 1, (float *)&tcmod_scale);
 
 	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin1, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin2, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin3, 1, &tcmod_sin);
+//	glUniform1fv(u_tcmod_sin4, 1, &tcmod_sin);
+//	glUniform1fv(u_tcmod_sin5, 1, &tcmod_sin);
+//	glUniform1fv(u_tcmod_sin6, 1, &tcmod_sin);
+//	glUniform1fv(u_tcmod_sin7, 1, &tcmod_sin);
 
 	glUniform1fv(u_tcmod_cos0, 1, &tcmod_cos);
 	glUniform1fv(u_tcmod_cos1, 1, &tcmod_cos);
 	glUniform1fv(u_tcmod_cos2, 1, &tcmod_cos);
 	glUniform1fv(u_tcmod_cos3, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
+//	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
+//	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
+//	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
+//	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
 	
 	glUniform1i(u_num_lights, j);
 	glUniform3fv(u_position, j, (float *)&position);
