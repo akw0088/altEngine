@@ -142,10 +142,6 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "regeneration");
 			entity.trigger->health = false;
 		}
-		else if (strcmp(value, "worldspawn") == 0)
-		{
-			//yeap
-		}
 		else if (strcmp(value, "ammo_bullets") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
@@ -373,6 +369,16 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
 		}
 		else if (strcmp(value, "misc_model") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "worldspawn") == 0)
 		{
 			if (entity.rigid)
 			{

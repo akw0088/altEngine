@@ -70,6 +70,10 @@ Model::Model(Entity *entity)
 {
 	Model::entity = entity;
 
+
+	num_vertex = 0;
+	num_index = 0;
+	normal_tex = 0;
 	model_vertex = 0;
 	model_index = 0;
 	model_tex = 0;

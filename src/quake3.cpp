@@ -1000,6 +1000,64 @@ void Quake3::handle_machinegun(Player &player, int self)
 
 }
 
+void Quake3::handle_shotgun(Player &player, int self)
+{
+	Frame camera_frame;
+
+	player.entity->model->get_frame(camera_frame);
+
+
+	vec3 forward;
+	//float distance;
+	int index[8];
+	int num_index;
+
+
+	player.reload_timer = 60;
+	player.ammo_shells--;
+	player.entity->model->getForwardVector(forward);
+
+	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
+
+	//	engine->map.hitscan(player.entity->position, forward, distance);
+
+	player.entity->model->getForwardVector(forward);
+
+	//forward is right for the bots, need to fix it as hacks are piling up
+	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
+	{
+		camera_frame.forward.x = player.entity->model->morientation.m[0];
+		camera_frame.forward.y = player.entity->model->morientation.m[1];
+		camera_frame.forward.z = player.entity->model->morientation.m[2];
+	}
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
+	muzzleflash->light->intensity = 3000.0f;
+	muzzleflash->light->attenuation = 0.125f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+
+	engine->hitscan(player.entity->position, forward, index, num_index, self);
+	for (int i = 0; i < num_index; i++)
+	{
+		char cmd[80] = { 0 };
+
+		if (engine->entity_list[index[i]]->player == NULL)
+			continue;
+
+		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, SHOTGUN_DAMAGE);
+		sprintf(cmd, "hurt %d %d", index[i], SHOTGUN_DAMAGE);
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
+
+		engine->console(self, cmd);
+	}
+
+}
+
 void Quake3::handle_gibs(Player &player)
 {
 
@@ -1078,64 +1136,6 @@ void Quake3::handle_gibs(Player &player)
 		entity3->trigger->explode = false;
 	}
 
-
-}
-
-void Quake3::handle_shotgun(Player &player, int self)
-{
-	Frame camera_frame;
-
-	player.entity->model->get_frame(camera_frame);
-
-
-	vec3 forward;
-	//float distance;
-	int index[8];
-	int num_index;
-
-
-	player.reload_timer = 60;
-	player.ammo_shells--;
-	player.entity->model->getForwardVector(forward);
-
-	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
-
-//	engine->map.hitscan(player.entity->position, forward, distance);
-
-	player.entity->model->getForwardVector(forward);
-
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = player.entity->model->morientation.m[0];
-		camera_frame.forward.y = player.entity->model->morientation.m[1];
-		camera_frame.forward.z = player.entity->model->morientation.m[2];
-	}
-
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
-	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-
-	engine->hitscan(player.entity->position, forward, index, num_index, self);
-	for (int i = 0; i < num_index; i++)
-	{
-		char cmd[80] = { 0 };
-
-		if (engine->entity_list[index[i]]->player == NULL)
-			continue;
-
-		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, SHOTGUN_DAMAGE);
-		sprintf(cmd, "hurt %d %d", index[i], SHOTGUN_DAMAGE);
-		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-			engine->entity_list[index[i]]->player->health);
-
-		engine->console(self, cmd);
-	}
 
 }
 
