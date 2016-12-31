@@ -558,6 +558,7 @@ void Model::create_box(Graphics &gfx, vec3 *box)
 	memset(&vert, 0, sizeof(vert));
 	for(int i = 0; i < 8; i++)
 		vert[i].position = box[i];
+
 	int	index[24] = {	0, 1,
 						0, 2,
 						1, 3,
@@ -571,8 +572,8 @@ void Model::create_box(Graphics &gfx, vec3 *box)
 						2, 6,
 						3, 7};
 
-//	box_vertex = gfx.CreateVertexBuffer(vert, 8);
-//	box_index = gfx.CreateIndexBuffer(index, 24);
+	box_vertex = gfx.CreateVertexBuffer(vert, 8);
+	box_index = gfx.CreateIndexBuffer(index, 24);
 }
 
 
