@@ -72,6 +72,12 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	change_axis();
 
+	face_to_patch = new int[data.num_faces];
+	for (int i = 0; i < data.num_faces; i++)
+	{
+		face_to_patch[i] = -1;
+	}
+
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
@@ -145,7 +151,7 @@ void Bsp::generate_meshes(Graphics &gfx)
 	int mesh_index = 0;
 
 	num_meshes = 0;
-	mesh_level = 16;
+	mesh_level = 8;
 
 	// Find number  of 3x3 patches
 	printf("quadratic_bezier_surface dimensions for %s: ", map_name);
@@ -308,6 +314,8 @@ void Bsp::unload(Graphics &gfx)
 	textures_loaded = false;
 
 	anim_list.clear();
+
+	delete[] face_to_patch;
 
 	if (vertex != NULL)
 	{
@@ -615,18 +623,20 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	int index_per_row = 2 * (mesh_level + 1);
 
 	// Find pre-generated vertex data for patch O(n)
-	// Should probably build a map for this
-	for( int i = 0; i < num_meshes; i++)
+
+	mesh_index = face_to_patch[face->vertex];
+	if (mesh_index == -1)
 	{
-		if (patchdata[i].facevert == face->vertex)
+		for (int i = 0; i < num_meshes; i++)
 		{
-			mesh_index = i;
-			break;
+			if (patchdata[i].facevert == face->vertex)
+			{
+				mesh_index = i;
+				face_to_patch[face->vertex] = i;
+				break;
+			}
 		}
 	}
-
-	if (mesh_index == -1)
-		return;
 
 
 	for (int i = 0; i < patchdata[mesh_index].num_mesh; i++)

@@ -59,6 +59,7 @@ public:
 
 	vector<faceinfo_t> face_list;
 	vector<faceinfo_t> blend_list;
+	int *face_to_patch;
 
 private:
 	bsp_t		*tBsp;

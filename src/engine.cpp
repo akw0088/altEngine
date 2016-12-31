@@ -2197,6 +2197,7 @@ void Engine::bind_keys()
 		}
 		line = strtok(NULL, "\r\n");
 	}
+	free((void *)file);
 
 	// Does little right now, eventually will load from file
 	//bind TAB "+scores"
