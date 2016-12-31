@@ -2149,37 +2149,112 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 
 void Engine::bind_keys()
 {
-	// Does little right now, eventually will load from file
-	key_bind.insert(make_pair((char *)"enter", (char *)"jump"));
-	key_bind.insert(make_pair((char *)"leftbutton", (char *)"attack"));
-	key_bind.insert(make_pair((char *)"middlebutton", (char *)"use"));
-	key_bind.insert(make_pair((char *)"rightbutton", (char *)"zoom"));
-	key_bind.insert(make_pair((char *)"mousewheelup", (char *)"weapon_up"));
-	key_bind.insert(make_pair((char *)"mousewheeldown", (char *)"weapon_down"));
-	key_bind.insert(make_pair((char *)"shift", (char *)"duck"));
-	key_bind.insert(make_pair((char *)"control", (char *)"control"));
-	key_bind.insert(make_pair((char *)"escape", (char *)"escape"));
-	key_bind.insert(make_pair((char *)"up", (char *)"moveup"));
-	key_bind.insert(make_pair((char *)"down", (char *)"movedown"));
-	key_bind.insert(make_pair((char *)"left", (char *)"moveleft"));
-	key_bind.insert(make_pair((char *)"right", (char *)"moveright"));
+	char *file = get_file("media/config.cfg", NULL);
+	if (file == NULL)
+	{
+		key_bind.insert(make_pair((char *)"enter", (char *)"jump"));
+		key_bind.insert(make_pair((char *)"leftbutton", (char *)"attack"));
+		key_bind.insert(make_pair((char *)"middlebutton", (char *)"use"));
+		key_bind.insert(make_pair((char *)"rightbutton", (char *)"zoom"));
+		key_bind.insert(make_pair((char *)"mousewheelup", (char *)"weapon_up"));
+		key_bind.insert(make_pair((char *)"mousewheeldown", (char *)"weapon_down"));
+		key_bind.insert(make_pair((char *)"shift", (char *)"duck"));
+		key_bind.insert(make_pair((char *)"control", (char *)"control"));
+		key_bind.insert(make_pair((char *)"escape", (char *)"escape"));
+		key_bind.insert(make_pair((char *)"up", (char *)"moveup"));
+		key_bind.insert(make_pair((char *)"down", (char *)"movedown"));
+		key_bind.insert(make_pair((char *)"left", (char *)"moveleft"));
+		key_bind.insert(make_pair((char *)"right", (char *)"moveright"));
 
-	key_bind.insert(make_pair((char *)"numpad0", (char *)"numpad0"));
-	key_bind.insert(make_pair((char *)"numpad1", (char *)"numpad1"));
-	key_bind.insert(make_pair((char *)"numpad2", (char *)"numpad2"));
-	key_bind.insert(make_pair((char *)"numpad3", (char *)"numpad3"));
-	key_bind.insert(make_pair((char *)"numpad4", (char *)"numpad4"));
-	key_bind.insert(make_pair((char *)"numpad5", (char *)"numpad5"));
-	key_bind.insert(make_pair((char *)"numpad6", (char *)"numpad6"));
-	key_bind.insert(make_pair((char *)"numpad7", (char *)"numpad7"));
-	key_bind.insert(make_pair((char *)"numpad8", (char *)"numpad8"));
-	key_bind.insert(make_pair((char *)"numpad9", (char *)"numpad9"));
+		key_bind.insert(make_pair((char *)"numpad0", (char *)"numpad0"));
+		key_bind.insert(make_pair((char *)"numpad1", (char *)"numpad1"));
+		key_bind.insert(make_pair((char *)"numpad2", (char *)"numpad2"));
+		key_bind.insert(make_pair((char *)"numpad3", (char *)"numpad3"));
+		key_bind.insert(make_pair((char *)"numpad4", (char *)"numpad4"));
+		key_bind.insert(make_pair((char *)"numpad5", (char *)"numpad5"));
+		key_bind.insert(make_pair((char *)"numpad6", (char *)"numpad6"));
+		key_bind.insert(make_pair((char *)"numpad7", (char *)"numpad7"));
+		key_bind.insert(make_pair((char *)"numpad8", (char *)"numpad8"));
+		key_bind.insert(make_pair((char *)"numpad9", (char *)"numpad9"));
+		return;
+	}
+
+	static char key[128];
+	static char value[128];
+
+	char *line = strtok(file, "\r\n");
+	int ret = 0;
+
+	while (line)
+	{
+		ret = sscanf(line, "bind %s \"%s\"\r\n", &key, &value);
+
+		//sscanf is grabbing ending quote
+		value[strlen(value) - 1] = '\0';
+		if (ret == 2)
+		{
+			key_bind.insert(make_pair(&key[0], &value[0]));
+		}
+		line = strtok(NULL, "\r\n");
+	}
+
+	// Does little right now, eventually will load from file
+	//bind TAB "+scores"
+
+
+	//TBD
+	/*
+	key_bind.insert(make_pair((char *)"tab", (char *)"score"));
+	key_bind.insert(make_pair((char *)"~", (char *)"console"));
+	key_bind.insert(make_pair((char *)"k", (char *)"kill"));
+	key_bind.insert(make_pair((char *)"t", (char *)"talk"));
+	key_bind.insert(make_pair((char *)"q", (char *)"walk"));
+	key_bind.insert(make_pair((char *)"F1", (char *)"voteyes"));
+	key_bind.insert(make_pair((char *)"F2", (char *)"voteno"));
+	key_bind.insert(make_pair((char *)"F11", (char *)"screenshot"));
+	*/
+
+
+	//seta com_maxfps "85"
+	//console(-1, "com_maxfps")
+	/*
+	seta sv_strictAuth "1"
+	seta sv_lanForceRate "1"
+	seta sv_master5 ""
+	seta sv_master4 ""
+	seta sv_master3 ""
+	seta sv_master2 ""
+	seta sv_floodProtect "1"
+	seta sv_maxPing "0"
+	seta sv_minPing "0"
+	seta sv_maxRate "0"
+	seta sv_punkbuster "0"
+	seta sv_maxclients "8"
+	seta sv_hostname "noname"
+	rate
+	cmdrate
+	sensitivity
+	name
+	model
+	skin
+	team red/blue
+	seta cg_autoswitch "0"
+	resolution
+	seta r_customheight "1080"
+	seta r_customwidth "1080"
+	net_port 65535
+	banip
+	*/
+
+
+
 }
 
 void Engine::keypress(char *key, bool pressed)
 {
 	char k = 0;
-	char *command = key_bind[key];
+	string cmd = key_bind[key];
+	const char *command = cmd.c_str();
 
 	if (strcmp("jump", command) == 0)
 	{

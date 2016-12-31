@@ -92,7 +92,7 @@ public:
 	int num_hash;
 	char *shader_list[32];
 	int num_shader;
-	map<char *, char *> key_bind;
+	map<string, string> key_bind;
 
 	// for cloning
 	Entity *box;
