@@ -23,13 +23,27 @@ public:
 	void stop();
 	void play();
 	void clear_console();
+
+	void print_chat(const char *str);
+	void render_chat(Global &global);
+	void clear_chat();
+
+	void print_notif(const char *str);
+	void render_notif(Global &global);
+	void clear_notif();
+
+
 	~Menu();
 
+	bool chat;
+	bool notif;
 	bool console;
 	bool ingame;
 
 	//making static so I can use it like printf
 	static vector<char *> console_buffer;
+	static vector<char *> chat_buffer;
+	static vector<char *> notif_buffer;
 
 private:
 	matrix4 matrix;

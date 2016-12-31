@@ -360,6 +360,7 @@ void Engine::load(char *level)
 	menu.stop();
 	menu.ingame = false;
 	menu.console = false;
+	menu.chat = true;
 
 
 #ifdef DEFERRED
@@ -1794,8 +1795,7 @@ void Engine::server_step()
 
 				printf("client msg: %s\n", reliablemsg->msg);
 				sprintf(msg, "%s: %s\n", client_list[index]->socketname, reliablemsg->msg);
-				menu.print(msg);
-				chat(msg);
+				chat(entity_list[client_list[index]->entity]->player->name, msg);
 			}
 		}
 		client_list[index]->client_sequence = clientmsg.sequence;
@@ -3791,7 +3791,7 @@ void Engine::console(int self, char *cmd)
 	ret = sscanf(cmd, "say \"%[^\"]s", data);
 	if (ret == 1)
 	{
-		chat(cmd);
+		chat(entity_list[self]->player->name, cmd);
 
 		if (self != -1)
 		{
@@ -4174,10 +4174,19 @@ void Engine::connect(char *serverip)
 	}
 }
 
-void Engine::chat(char *msg)
+void Engine::chat(char *name, char *msg)
 {
+	char data[512];
+
 	strcat(reliable.msg, msg);
 	reliable.sequence = sequence;
+
+	// skip past 'say "'
+	char *pmsg = msg + 5;
+	// remove ending "
+	pmsg[strlen(pmsg) - 1] = '\0';
+	sprintf(data, "%s: %s", name, pmsg);
+	menu.print_chat(data);
 }
 
 

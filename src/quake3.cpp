@@ -349,13 +349,20 @@ void Quake3::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		debugf("%s was gibbed\n", entity->player->name);
+		char msg[80];
+		sprintf(msg, "%s was gibbed\n", entity->player->name);
+		debugf(msg);
+		engine->menu.print_notif(msg);
+
 		ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
 	{
-		debugf("%s died\n", entity->player->name);
+		char msg[80];
+		sprintf(msg,"%s died\n", entity->player->name);
+		debugf(msg);
+		engine->menu.print_notif(msg);
 
 		switch (engine->tick_num % 3)
 		{
@@ -1470,6 +1477,9 @@ void Quake3::render_hud(double last_frametime)
 
 	engine->projection = engine->identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
+
+	engine->menu.render_chat(engine->global);
+	engine->menu.render_notif(engine->global);
 
 	if (engine->show_hud)
 	{

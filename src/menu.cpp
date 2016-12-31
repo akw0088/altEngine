@@ -5,14 +5,37 @@
 #endif
 
 vector<char *> Menu::console_buffer;
+vector<char *> Menu::chat_buffer;
+vector<char *> Menu::notif_buffer;
+
 
 #define DMESG_SIZE 256
 char dmesg[DMESG_SIZE][1024];
 int dmesg_index = 0;
 
+#define CHATMSG_SIZE 256
+char chatmsg[CHATMSG_SIZE][1024];
+int chatmsg_index = 0;
+
+#define NOTIF_SIZE 256
+char notifmsg[CHATMSG_SIZE][1024];
+int notif_index = 0;
+
+
+
 void Menu::clear_console()
 {
 	console_buffer.clear();
+}
+
+void Menu::clear_chat()
+{
+	chat_buffer.clear();
+}
+
+void Menu::clear_notif()
+{
+	notif_buffer.clear();
 }
 
 void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
@@ -29,6 +52,9 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 
 	console = false;
 	ingame = false;
+	chat = true;
+	notif = true;
+
 
 	menu_object = load_texture(*gfx, "media/menu.tga", false);
 	console_object = load_texture_pk3(*gfx, "media/gfx/misc/console01.tga", pk3_list, num_pk3, false);
@@ -312,6 +338,58 @@ void Menu::render_console(Global &global)
 	draw_text(key_buffer, 0.0125f, 0.5f - 0.05f, 0.025f, color);
 	key_buffer[strlen(key_buffer) - 1] = '\0';
 	draw_text("Console", 0.85f - 0.0125f, 0.5f - 0.025f, 0.025f, color);
+}
+
+void Menu::render_chat(Global &global)
+{
+	vec3 color(1.0f, 1.0f, 1.0f);
+
+	global.Select();
+	matrix.m[13] = 1.0f;
+	global.Params(matrix, 0);
+	matrix.m[13] = 0.0f;
+
+	gfx->cleardepth();
+	for (unsigned int i = 0; i < chat_buffer.size(); i++)
+		draw_text(chat_buffer[i], 0.4f, 0.7f - 0.025f * (chat_buffer.size() - 1 - i), 0.025f, color);
+}
+
+void Menu::render_notif(Global &global)
+{
+	vec3 color(1.0f, 1.0f, 1.0f);
+
+	global.Select();
+	matrix.m[13] = 1.0f;
+	global.Params(matrix, 0);
+	matrix.m[13] = 0.0f;
+
+	gfx->cleardepth();
+	for (unsigned int i = 0; i < notif_buffer.size(); i++)
+		draw_text(notif_buffer[i], 0.6f, 0.7f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color);
+}
+
+void Menu::print_chat(const char *str)
+{
+	int size = strlen(str) + 1;
+	char *line = chatmsg[chatmsg_index++];
+
+	if (chatmsg_index == DMESG_SIZE)
+		chatmsg_index = 0;
+
+	memcpy(line, str, size);
+	chat_buffer.push_back(line);
+}
+
+void Menu::print_notif(const char *str)
+{
+	int size = strlen(str) + 1;
+	char *line = notifmsg[notif_index++];
+
+	if (notif_index == DMESG_SIZE)
+		notif_index = 0;
+
+	memcpy(line, str, size);
+	notif_buffer.push_back(line);
 }
 
 void Menu::print(const char *str)
