@@ -12,7 +12,8 @@
 #define GRENADE_SPLASH_DAMAGE 50
 #define ROCKET_DAMAGE 100
 #define ROCKET_SPLASH_DAMAGE 50
-#define PLASMA_DAMAGE 
+#define PLASMA_DAMAGE 20
+#define PLASMA_SPLASH_DAMAGE 15
 #define LIGHTNING_DAMAGE 
 #define RAILGUN_DAMAGE 100
 
@@ -158,6 +159,26 @@ void Quake3::handle_player(int self)
 		entity->player->teleport_timer--;
 	}
 
+	if (entity->player->quad_timer > 0)
+	{
+		entity->player->quad_timer--;
+	}
+
+	if (entity->player->regen_timer > 0)
+	{
+		entity->player->regen_timer--;
+	}
+
+	if (entity->player->invisibility_timer > 0)
+	{
+		entity->player->invisibility_timer--;
+		entity->nodraw = true;
+	}
+	else
+	{
+		entity->nodraw = false;
+	}
+
 	if (entity->player->flight_timer > 0)
 	{
 		entity->player->flight_timer--;
@@ -174,7 +195,15 @@ void Quake3::handle_player(int self)
 	{
 		if (entity->player->health > 100)
 		{
-			entity->player->health--;
+			if (entity->player->regen_timer > 0)
+			{
+				entity->player->health += 15;
+				//play regen bump sound
+			}
+			else
+			{
+				entity->player->health--;
+			}
 		}
 
 		if (entity->player->armor > 100)
@@ -643,6 +672,12 @@ void Quake3::handle_plasma(Player &player, int self)
 	player.reload_timer = 8;
 	player.ammo_plasma--;
 
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = 3.0f;
+
+
 	Entity *projectile = engine->entity_list[engine->get_entity()];
 	projectile->rigid = new RigidBody(projectile);
 	projectile->model = projectile->rigid;
@@ -658,7 +693,7 @@ void Quake3::handle_plasma(Player &player, int self)
 	projectile->trigger = new Trigger(projectile, engine->audio);
 	sprintf(projectile->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
 	sprintf(projectile->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
-	sprintf(projectile->trigger->action, "damage 20");
+	sprintf(projectile->trigger->action, "damage %d", (int)(PLASMA_DAMAGE * quad_factor));
 
 	projectile->trigger->hide = false;
 	projectile->trigger->self = false;
@@ -667,7 +702,7 @@ void Quake3::handle_plasma(Player &player, int self)
 	projectile->trigger->explode_timer = 10;
 	projectile->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
 	projectile->trigger->explode_intensity = 200.0f;
-	projectile->trigger->splash_damage = 15;
+	projectile->trigger->splash_damage = (int)(PLASMA_SPLASH_DAMAGE * quad_factor);
 	projectile->trigger->splash_radius = 75.0f;
 	projectile->trigger->knockback = 75.0f;
 	projectile->trigger->owner = self;
@@ -708,6 +743,12 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	player.reload_timer = 100;
 	player.ammo_rockets--;
 
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = 3.0f;
+
+
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
 	projectile->position = camera_frame.pos;
@@ -715,7 +756,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	projectile->trigger = new Trigger(projectile, engine->audio);
 	sprintf(projectile->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
 	sprintf(projectile->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
-	sprintf(projectile->trigger->action, "damage 100");
+	sprintf(projectile->trigger->action, "damage %d", (int)(ROCKET_DAMAGE * quad_factor));
 
 	projectile->trigger->hide = false;
 	projectile->trigger->self = false;
@@ -725,7 +766,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	projectile->trigger->explode_timer = 10;
 	projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
 	projectile->trigger->explode_intensity = 500.0f;
-	projectile->trigger->splash_damage = 50;
+	projectile->trigger->splash_damage = (int)(ROCKET_SPLASH_DAMAGE * quad_factor);
 	projectile->trigger->splash_radius = 250.0f;
 	projectile->trigger->knockback = 250.0f;
 	projectile->trigger->owner = self;
@@ -801,9 +842,15 @@ void Quake3::handle_grenade(Player &player, int self)
 	projectile->rigid->rotational_friction_flag = true;
 	//entity->rigid->set_target(*(entity_list[spawn]));
 
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = 3.0f;
+
+
 	projectile->trigger = new Trigger(projectile, engine->audio);
 	sprintf(projectile->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
-	sprintf(projectile->trigger->action, "damage 100");
+	sprintf(projectile->trigger->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
 
 	projectile->trigger->hide = false;
 	projectile->trigger->self = false;
@@ -813,7 +860,7 @@ void Quake3::handle_grenade(Player &player, int self)
 	projectile->trigger->explode_timer = 10;
 	projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
 	projectile->trigger->explode_intensity = 500.0f;
-	projectile->trigger->splash_damage = 50;
+	projectile->trigger->splash_damage = (int)(GRENADE_SPLASH_DAMAGE * quad_factor);
 	projectile->trigger->splash_radius = 250.0f;
 	projectile->trigger->knockback = 250.0f;
 	projectile->trigger->owner = self;
@@ -906,6 +953,12 @@ void Quake3::handle_railgun(Player &player, int self)
 	vec3 forward;
 	player.entity->model->getForwardVector(forward);
 
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = 3.0f;
+
+
 	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
@@ -915,11 +968,11 @@ void Quake3::handle_railgun(Player &player, int self)
 			continue;
 
 		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
-			engine->entity_list[index[i]]->player->name, 100);
+			engine->entity_list[index[i]]->player->name, (int)(RAILGUN_DAMAGE * quad_factor));
 
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		sprintf(cmd, "hurt %d %d", index[i], 100);
+		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
 		engine->console(self, cmd);
 	}
 
@@ -976,14 +1029,21 @@ void Quake3::handle_machinegun(Player &player, int self)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
+
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = 3.0f;
+
 	for (int i = 0; i < num_index; i++)
 	{
 
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, 7);
-		sprintf(cmd, "hurt %d %d", index[i], MACHINEGUN_DAMAGE);
+		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
+		sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 		engine->console(self, cmd);
@@ -1025,6 +1085,12 @@ void Quake3::handle_shotgun(Player &player, int self)
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = 3.0f;
+
+
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
@@ -1033,8 +1099,9 @@ void Quake3::handle_shotgun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name, engine->entity_list[index[i]]->player->name, SHOTGUN_DAMAGE);
-		sprintf(cmd, "hurt %d %d", index[i], SHOTGUN_DAMAGE);
+		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, (int)(SHOTGUN_DAMAGE * quad_factor));
+		sprintf(cmd, "hurt %d %d", index[i], (int)(SHOTGUN_DAMAGE * quad_factor));
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 

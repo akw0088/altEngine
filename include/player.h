@@ -145,6 +145,9 @@ public:
 	unsigned int reload_timer;
 	unsigned int drown_timer;
 	unsigned int flight_timer;
+	unsigned int regen_timer;
+	unsigned int quad_timer;
+	unsigned int invisibility_timer;
 	unsigned int teleport_timer; // prevent teleporting out and back rapidly
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon

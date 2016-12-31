@@ -3955,6 +3955,44 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
+	/*
+	regen 15 health per second
+	haste double rate of fire?
+	invisibility
+	quad damage
+	teleporter
+	*/
+
+	ret = strcmp(cmd, "regeneration");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->regen_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "quaddamage");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->quad_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "invisibility");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->invisibility_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
 	ret = strcmp(cmd, "flight");
 	if (ret == 0)
 	{
