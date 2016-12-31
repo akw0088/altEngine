@@ -37,14 +37,6 @@ void Quake3::destroy()
 
 }
 
-typedef struct
-{
-	vec3 position;
-	char targetname[64];
-	char target[512];
-} navpoint_t;
-
-vector<navpoint_t> navmesh;
 
 void Quake3::handle_player(int self)
 {
@@ -53,7 +45,7 @@ void Quake3::handle_player(int self)
 	static int last_tick = 0;
 
 
-	if (engine->input.middlebutton == true)
+	if (engine->input.use == true)
 	{
 		int nav_num = 0;
 
@@ -106,12 +98,12 @@ void Quake3::handle_player(int self)
 		if (engine->input.control == false)
 		{
 			// True if jumped
-			if (engine->input.up || engine->input.down || engine->input.left || engine->input.right)
+			if (engine->input.moveup || engine->input.movedown || engine->input.moveleft || engine->input.moveright)
 			{
 				entity->player->state = PLAYER_MOVED;
 			}
 
-			if (engine->input.shift)
+			if (engine->input.duck)
 			{
 				entity->player->state = PLAYER_DUCKED;
 			}
@@ -130,9 +122,9 @@ void Quake3::handle_player(int self)
 	}
 	else
 	{
-		button_t noinput;
+		input_t noinput;
 
-		memset(&noinput, 0, sizeof(button_t));
+		memset(&noinput, 0, sizeof(input_t));
 		//Makes body hit the floor, need to explore why this hack is needed
 		if (entity->player->reload_timer)
 		{
@@ -147,7 +139,7 @@ void Quake3::handle_player(int self)
 
 		if (strcmp(entity->type, "player") == 0)
 		{
-			if (engine->input.leftbutton && entity->player->reload_timer == 0)
+			if (engine->input.attack && entity->player->reload_timer == 0)
 			{
 				engine->console(self, "respawn");
 			}
@@ -1082,7 +1074,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 }
 
 
-void Quake3::handle_weapons(Player &player, button_t &input, int self)
+void Quake3::handle_weapons(Player &player, input_t &input, int self)
 {
 	bool fired = false;
 	bool empty = false;
@@ -1163,7 +1155,7 @@ void Quake3::handle_weapons(Player &player, button_t &input, int self)
 		player.best_weapon();
 	}
 
-	if ((input.leftbutton || player.bot_state == BOT_ATTACK) && player.reload_timer <= 0)
+	if ((input.attack || player.bot_state == BOT_ATTACK) && player.reload_timer <= 0)
 	{
 		if (player.current_weapon == wp_rocket)
 		{

@@ -683,37 +683,37 @@ void Player::avoid_walls(Bsp &map)
 	vec3 clip;
 	vec3 vel;
 
-	button_t input;
+	input_t input;
 
 
 	map.collision_detect(forward, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
 	if ( depth < 0 )
 	{
-		input.right = true;
+		input.moveright = true;
 	}
 
 	map.collision_detect(backward, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
 	if (depth < 0)
 	{
-		input.left = true;
+		input.moveleft = true;
 	}
 
 	map.collision_detect(left, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
 	if (depth < 0)
 	{
-		input.up = true;
+		input.moveup = true;
 	}
 
 	map.collision_detect(right, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
 	if (depth < 0)
 	{
-		input.down = true;
+		input.movedown = true;
 	}
 
 	map.collision_detect(down, &plane, &depth, water, water_depth, surface_list, false, clip, vel);
 	if (depth > 0)
 	{
-		input.enter = true;
+		input.jump = true;
 	}
 
 	entity->rigid->move(input);

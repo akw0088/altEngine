@@ -21,30 +21,7 @@ Engine::Engine()
 	show_hud = true;
 	num_bot = 0;
 
-	box = new Entity();
-	box->rigid = new RigidBody(box);
-	box->model = box->rigid;
-	box->model->load(gfx, "media/models/box");
 
-	ball = new Entity();
-	ball->rigid = new RigidBody(ball);
-	ball->model = ball->rigid;
-	ball->model->load(gfx, "media/models/ball");
-
-	thug22 = new Entity();
-	thug22->rigid = new RigidBody(thug22);
-	thug22->model = thug22->rigid;
-	thug22->model->load(gfx, "media/models/thug22/thug22");
-
-	rocket = new Entity();
-	rocket->rigid = new RigidBody(rocket);
-	rocket->model = rocket->rigid;
-	rocket->rigid->load(gfx, "media/models/weapons2/rocketl/rocket");
-
-	pineapple = new Entity();
-	pineapple->rigid = new RigidBody(pineapple);
-	pineapple->model = pineapple->rigid;
-	pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
 }
 
 
@@ -59,7 +36,9 @@ void Engine::init(void *p1, void *p2)
 	Engine::param2 = p2;
 	initialized = true;
 
+
 	debugf("altEngine2 built %s\n", __DATE__);
+	bind_keys();
 
 	identity = ident;
 	projection = ident;
@@ -120,6 +99,32 @@ void Engine::init(void *p1, void *p2)
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false);
 	Model::CreateObjects(gfx);
+
+	box = new Entity();
+	box->rigid = new RigidBody(box);
+	box->model = box->rigid;
+	box->model->load(gfx, "media/models/box");
+
+	ball = new Entity();
+	ball->rigid = new RigidBody(ball);
+	ball->model = ball->rigid;
+	ball->model->load(gfx, "media/models/ball");
+
+	thug22 = new Entity();
+	thug22->rigid = new RigidBody(thug22);
+	thug22->model = thug22->rigid;
+	thug22->model->load(gfx, "media/models/thug22/thug22");
+
+	rocket = new Entity();
+	rocket->rigid = new RigidBody(rocket);
+	rocket->model = rocket->rigid;
+	rocket->rigid->load(gfx, "media/models/weapons2/rocketl/rocket");
+
+	pineapple = new Entity();
+	pineapple->rigid = new RigidBody(pineapple);
+	pineapple->model = pineapple->rigid;
+	pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
+
 	global.init(&gfx);
 
 	q3.init(this);
@@ -997,22 +1002,22 @@ void Engine::handle_input()
 		post_process(5);
 	}
 
-	if (input.mousewheelup)
+	if (input.weapon_up)
 	{
 		if (find_player() != -1)
 		{
 			entity_list[find_player()]->player->change_weapon_up();
 		}
-		input.mousewheelup = false;
+		input.weapon_up = false;
 	}
 
-	if (input.mousewheeldown)
+	if (input.weapon_down)
 	{
 		if (find_player() != -1)
 		{
 			entity_list[find_player()]->player->change_weapon_down();
 		}
-		input.mousewheeldown = false;
+		input.weapon_down = false;
 	}
 
 	if (input.numpad2)
@@ -1696,7 +1701,7 @@ void Engine::server_step()
 	{
 		int keystate;
 		memcpy(&keystate, clientmsg.data, 4);
-		button_t clientkeys = GetKeyState(keystate);
+		input_t clientkeys = GetKeyState(keystate);
 
 		if (clientmsg.sequence <= client_list[index]->client_sequence)
 		{
@@ -2030,77 +2035,77 @@ void Engine::client_step()
 }
 
 // packs keyboard input into an integer
-int Engine::GetKeyState(button_t &kb)
+int Engine::GetKeyState(input_t &input)
 {
 	int keystate = 0;
 
-	if (kb.leftbutton)
+	if (input.attack)
 		keystate |= 1;
-	if (kb.middlebutton)
+	if (input.use)
 		keystate |= 2;
-	if (kb.rightbutton)
+	if (input.zoom)
 		keystate |= 4;
-	if (kb.enter)
+	if (input.jump)
 		keystate |= 8;
-	if (kb.up)
+	if (input.moveup)
 		keystate |= 16;
-	if (kb.left)
+	if (input.moveleft)
 		keystate |= 32;
-	if (kb.down)
+	if (input.movedown)
 		keystate |= 64;
-	if (kb.right)
+	if (input.moveright)
 		keystate |= 128;
 
 	return keystate;
 }
 
 // unpacks keyboard integer into keyboard state
-button_t Engine::GetKeyState(int keystate)
+input_t Engine::GetKeyState(int keystate)
 {
-	button_t kb;
+	input_t input;
 
-	memset((void *)&kb, 0, sizeof(button_t));
+	memset((void *)&input, 0, sizeof(input_t));
 	if (keystate & 1)
-		kb.leftbutton = true;
+		input.attack = true;
 	else
-		kb.leftbutton = false;
+		input.attack = false;
 
 	if (keystate & 2)
-		kb.middlebutton = true;
+		input.use = true;
 	else
-		kb.middlebutton = false;
+		input.use = false;
 
 	if (keystate & 4)
-		kb.rightbutton = true;
+		input.zoom = true;
 	else
-		kb.rightbutton = false;
+		input.zoom = false;
 
 	if (keystate & 8)
-		kb.enter = true;
+		input.jump = true;
 	else
-		kb.enter = false;
+		input.jump = false;
 
 	if (keystate & 16)
-		kb.up = true;
+		input.moveup = true;
 	else
-		kb.up = false;
+		input.moveup = false;
 
 	if (keystate & 32)
-		kb.left = true;
+		input.moveleft = true;
 	else
-		kb.left = false;
+		input.moveleft = false;
 
 	if (keystate & 64)
-		kb.down = true;
+		input.movedown = true;
 	else
-		kb.down = false;
+		input.movedown = false;
 
 	if (keystate & 128)
-		kb.right = true;
+		input.moveright = true;
 	else
-		kb.right = false;
+		input.moveright = false;
 
-	return kb;
+	return input;
 }
 
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
@@ -2142,100 +2147,130 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 	return true;
 }
 
+void Engine::bind_keys()
+{
+	// Does little right now, eventually will load from file
+	key_bind.insert(make_pair((char *)"enter", (char *)"jump"));
+	key_bind.insert(make_pair((char *)"leftbutton", (char *)"attack"));
+	key_bind.insert(make_pair((char *)"middlebutton", (char *)"use"));
+	key_bind.insert(make_pair((char *)"rightbutton", (char *)"zoom"));
+	key_bind.insert(make_pair((char *)"mousewheelup", (char *)"weapon_up"));
+	key_bind.insert(make_pair((char *)"mousewheeldown", (char *)"weapon_down"));
+	key_bind.insert(make_pair((char *)"shift", (char *)"duck"));
+	key_bind.insert(make_pair((char *)"control", (char *)"control"));
+	key_bind.insert(make_pair((char *)"escape", (char *)"escape"));
+	key_bind.insert(make_pair((char *)"up", (char *)"moveup"));
+	key_bind.insert(make_pair((char *)"down", (char *)"movedown"));
+	key_bind.insert(make_pair((char *)"left", (char *)"moveleft"));
+	key_bind.insert(make_pair((char *)"right", (char *)"moveright"));
+
+	key_bind.insert(make_pair((char *)"numpad0", (char *)"numpad0"));
+	key_bind.insert(make_pair((char *)"numpad1", (char *)"numpad1"));
+	key_bind.insert(make_pair((char *)"numpad2", (char *)"numpad2"));
+	key_bind.insert(make_pair((char *)"numpad3", (char *)"numpad3"));
+	key_bind.insert(make_pair((char *)"numpad4", (char *)"numpad4"));
+	key_bind.insert(make_pair((char *)"numpad5", (char *)"numpad5"));
+	key_bind.insert(make_pair((char *)"numpad6", (char *)"numpad6"));
+	key_bind.insert(make_pair((char *)"numpad7", (char *)"numpad7"));
+	key_bind.insert(make_pair((char *)"numpad8", (char *)"numpad8"));
+	key_bind.insert(make_pair((char *)"numpad9", (char *)"numpad9"));
+}
+
 void Engine::keypress(char *key, bool pressed)
 {
 	char k = 0;
+	char *command = key_bind[key];
 
-	if (strcmp("enter", key) == 0)
+	if (strcmp("jump", command) == 0)
 	{
-		input.enter = pressed;
+		input.jump = pressed;
 	}
-	else if (strcmp("leftbutton", key) == 0)
+	else if (strcmp("attack", command) == 0)
 	{
-		input.leftbutton = pressed;
+		input.attack = pressed;
 		k = 14;
 	}
-	else if (strcmp("middlebutton", key) == 0)
+	else if (strcmp("use", command) == 0)
 	{
-		input.middlebutton = pressed;
+		input.use = pressed;
 	}
-	else if (strcmp("rightbutton", key) == 0)
+	else if (strcmp("zoom", command) == 0)
 	{
-		input.rightbutton = pressed;
+		input.zoom = pressed;
 	}
-	else if (strcmp("mousewheelup", key) == 0)
+	else if (strcmp("weapon_up", command) == 0)
 	{
-		input.mousewheelup = pressed;
+		input.weapon_up = pressed;
 	}
-	else if (strcmp("mousewheeldown", key) == 0)
+	else if (strcmp("weapon_down", command) == 0)
 	{
-		input.mousewheeldown = pressed;
+		input.weapon_down = pressed;
 	}
-	else if (strcmp("shift", key) == 0)
+	else if (strcmp("duck", command) == 0)
 	{
-		input.shift = pressed;
+		input.duck = pressed;
 	}
-	else if (strcmp("control", key) == 0)
+	else if (strcmp("control", command) == 0)
 	{
 		input.control = pressed;
 	}
-	else if (strcmp("escape", key) == 0)
+	else if (strcmp("escape", command) == 0)
 	{
 		input.escape = pressed;
 	}
-	else if (strcmp("up", key) == 0)
+	else if (strcmp("moveup", command) == 0)
 	{
-		input.up = pressed;
+		input.moveup = pressed;
 	}
-	else if (strcmp("left", key) == 0)
+	else if (strcmp("moveleft", command) == 0)
 	{
-		input.left = pressed;
+		input.moveleft = pressed;
 	}
-	else if (strcmp("down", key) == 0)
+	else if (strcmp("movedown", command) == 0)
 	{
-		input.down = pressed;
+		input.movedown = pressed;
 	}
-	else if (strcmp("right", key) == 0)
+	else if (strcmp("moveright", command) == 0)
 	{
-		input.right = pressed;
+		input.moveright = pressed;
 	}
-	else if (strcmp("numpad0", key) == 0)
+	else if (strcmp("numpad0", command) == 0)
 	{
 		input.numpad0 = pressed;
 	}
-	else if (strcmp("numpad1", key) == 0)
+	else if (strcmp("numpad1", command) == 0)
 	{
 		input.numpad1 = pressed;
 	}
-	else if (strcmp("numpad2", key) == 0)
+	else if (strcmp("numpad2", command) == 0)
 	{
 		input.numpad2 = pressed;
 	}
-	else if (strcmp("numpad3", key) == 0)
+	else if (strcmp("numpad3", command) == 0)
 	{
 		input.numpad3 = pressed;
 	}
-	else if (strcmp("numpad4", key) == 0)
+	else if (strcmp("numpad4", command) == 0)
 	{
 		input.numpad4 = pressed;
 	}
-	else if (strcmp("numpad5", key) == 0)
+	else if (strcmp("numpad5", command) == 0)
 	{
 		input.numpad5 = pressed;
 	}
-	else if (strcmp("numpad6", key) == 0)
+	else if (strcmp("numpad6", command) == 0)
 	{
 		input.numpad6 = pressed;
 	}
-	else if (strcmp("numpad7", key) == 0)
+	else if (strcmp("numpad7", command) == 0)
 	{
 		input.numpad7 = pressed;
 	}
-	else if (strcmp("numpad8", key) == 0)
+	else if (strcmp("numpad8", command) == 0)
 	{
 		input.numpad8 = pressed;
 	}
-	else if (strcmp("numpad9", key) == 0)
+	else if (strcmp("numpad9", command) == 0)
 	{
 		input.numpad9 = pressed;
 	}

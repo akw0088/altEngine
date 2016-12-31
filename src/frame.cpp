@@ -77,22 +77,22 @@ void Frame::set(matrix3 &trans)
 
 
 // Note: this is only used when you hold control currently
-void Frame::update(button_t &keyboard)
+void Frame::update(input_t &input)
 {
 	vec3	right = vec3::crossproduct(up, forward);
 
 #define SPEED (8.0f) // meters per second
-	if (keyboard.up)
+	if (input.moveup)
 		pos -= forward * SPEED;
-	if (keyboard.down)
+	if (input.movedown)
 		pos += forward * SPEED;
-	if (keyboard.left)
+	if (input.moveleft)
 		pos -= right * SPEED;
-	if (keyboard.right)
+	if (input.moveright)
 		pos += right * SPEED;
-	if (keyboard.enter)
+	if (input.jump)
 		pos.y += SPEED;
-	if (keyboard.shift)
+	if (input.duck)
 		pos.y -= SPEED;
 }
 

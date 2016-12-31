@@ -61,8 +61,9 @@ public:
 	void connect(char *server);
 	void chat(char *msg);
 	void kick(unsigned int i);
-	int GetKeyState(button_t &keyboard);
-	button_t GetKeyState(int keystate);
+	int GetKeyState(input_t &keyboard);
+	input_t GetKeyState(int keystate);
+	void bind_keys();
 	void server_step();
 	void client_step();
 	void send_entities();
@@ -91,6 +92,7 @@ public:
 	int num_hash;
 	char *shader_list[32];
 	int num_shader;
+	map<char *, char *> key_bind;
 
 	// for cloning
 	Entity *box;
@@ -125,7 +127,8 @@ protected:
 	Graphics	gfx;
 	Audio		audio;
 	Bsp			map;
-	button_t	input;
+	button_t	button;
+	input_t		input;
 	Menu		menu;
 	Frame		camera_frame;
 	Frame		light_frame;

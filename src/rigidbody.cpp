@@ -374,7 +374,7 @@ bool RigidBody::collision_detect(RigidBody &body)
 	return false;
 }
 
-void RigidBody::frame2ent(Frame *camera, button_t &input)
+void RigidBody::frame2ent(Frame *camera, input_t &input)
 {
 	vec3		forward = camera->forward;
 	vec3		up(0.0f, 1.0f, 0.0f);
@@ -538,7 +538,7 @@ float RigidBody::get_height()
 
 
 // Move negative relative to the forward vector
-bool RigidBody::move(button_t &keyboard)
+bool RigidBody::move(input_t &input)
 {
 	Frame camera;
 
@@ -562,32 +562,32 @@ bool RigidBody::move(button_t &keyboard)
 	sleep = false;
 #define ACCEL (0.25f)
 #define MAX_SPEED 3.0f
-	if (keyboard.up)
+	if (input.moveup)
 	{
 		velocity += -forward * ACCEL;
 		moved = true;
 	}
-	if (keyboard.down)
+	if (input.movedown)
 	{
 		velocity += forward * ACCEL;
 		moved = true;
 	}
-	if (keyboard.left)
+	if (input.moveleft)
 	{
 		velocity += -right * ACCEL;
 		moved = true;
 	}
-	if (keyboard.right)
+	if (input.moveright)
 	{
 		velocity += right * ACCEL;
 		moved = true;
 	}
-	if (keyboard.enter)
+	if (input.jump)
 	{
 		jumped = true;
 		moved = true;
 	}
-	if (keyboard.shift)
+	if (input.duck)
 	{
 		velocity.y += -ACCEL;
 		moved = true;
@@ -631,55 +631,55 @@ bool RigidBody::move(button_t &keyboard)
 
 void RigidBody::move_forward()
 {
-	button_t input;
+	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.left = true;
+	input.moveleft = true;
 	move(input);
 }
 
 void RigidBody::move_backward()
 {
-	button_t input;
+	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.down = true;
+	input.movedown = true;
 	move(input);
 }
 
 void RigidBody::move_left()
 {
-	button_t input;
+	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.left = true;
+	input.moveleft = true;
 	move(input);
 }
 
 void RigidBody::move_right()
 {
-	button_t input;
+	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.right = true;
+	input.moveright = true;
 	move(input);
 }
 
 void RigidBody::move_up()
 {
-	button_t input;
+	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.enter = true;
+	input.jump = true;
 	move(input);
 }
 
 void RigidBody::move_down()
 {
-	button_t input;
+	input_t input;
 
 	memset(&input, 0, sizeof(button_t));
-	input.shift = true;
+	input.duck = true;
 	move(input);
 }
 

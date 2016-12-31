@@ -193,6 +193,36 @@ typedef struct
 	bool mousewheeldown;
 }  button_t;
 
+// Idea is this is non key specific to allow for key binding from button_t to input_t
+typedef struct
+{
+	bool attack;
+	bool use;
+	bool zoom;
+	bool jump;
+	bool escape;
+	bool duck;
+	bool control;
+	bool moveup;
+	bool moveleft;
+	bool movedown;
+	bool moveright;
+
+	bool numpad0;
+	bool numpad1;
+	bool numpad2;
+	bool numpad3;
+	bool numpad4;
+	bool numpad5;
+	bool numpad6;
+	bool numpad7;
+	bool numpad8;
+	bool numpad9;
+
+	bool weapon_up;
+	bool weapon_down;
+} input_t;
+
 
 //8 units equal 1 foot
 //sin -1,1
@@ -388,3 +418,10 @@ typedef struct
 	int length;
 	int step;
 } path_t;
+
+typedef struct
+{
+	vec3 position;
+	char targetname[64];
+	char target[512];
+} navpoint_t;

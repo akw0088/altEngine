@@ -137,6 +137,7 @@
 #include <cstring>
 #include <ctime>
 #include <vector>
+#include <map> // for key bindings, I know, STL, gah
 #include <float.h>
 #ifdef WIN32
 	#include <crtdbg.h>
