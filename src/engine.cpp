@@ -693,11 +693,11 @@ void Engine::render_scene(bool lights)
 	mvp = transformation * projection;
 	mlight2.Select();
 	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	map.render_sky(gfx, mlight2, tick_num, surface_list);
+	//map.render_sky(gfx, mlight2, tick_num, surface_list);
 //	gfx.cleardepth();
 
 
-	render_entities(transformation, true);
+	//render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
 
@@ -707,7 +707,7 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset);
 
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+//	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
 
 
@@ -715,18 +715,25 @@ void Engine::render_scene(bool lights)
 	gen.position = vec3(0.0f, 100.0f, 0.0f);
 
 	particle_update.Select();
+	gen.seed = vec3(rand_float(0.0, 10.0),
+					rand_float(0.0, 10.0),
+					rand_float(0.0, 10.0));
 	particle_update.Params(gen);
-	particle_update.step(gfx, gen);
+	int vbo = particle_update.step(gfx, gen);
 
-	vec3 quad1 = camera_frame.up;
-	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+	vec3 quad1(0.0f, 1.0f, 0.0f); //camera_frame.up;
+	vec3 quad2(0.0f, 0.0f, 1.0f); //vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 	camera_frame.set(transformation);
 	mvp = transformation * projection;
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
 	gfx.SelectTexture(0, no_tex);
-	particle_render.render(gfx, particle_update.vbo, gen.num);
+
+
+	global.Select();
+	global.Params(mvp, 1);
+	particle_render.render(gfx, vbo, 100);
 }
 
 

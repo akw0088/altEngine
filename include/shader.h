@@ -214,10 +214,11 @@ private:
 
 	// non uniform
 
+	vertex_t	particle[MAX_PARTICLES];
+	unsigned int			num_particle;
+
 	unsigned int query;
 	generator_t generator;
-	vertex_t particle[MAX_PARTICLES];
-	unsigned int num_particle;
 };
 
 class ParticleRender : public Shader
@@ -229,6 +230,7 @@ public:
 
 	virtual void prelink(void);
 
+	int ibo;
 private:
 	int u_mvp;
 	int u_quad1;
@@ -236,7 +238,7 @@ private:
 	int u_texture0;
 
 	// non uniform
-	unsigned int particle_obj[2];
+
 	generator_t generator;
 };
 

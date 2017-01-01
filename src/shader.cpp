@@ -742,26 +742,21 @@ int ParticleUpdate::init(Graphics *gfx)
 
 	glGenQueries(1, &query);
 
-	vertex_t data[] = {
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-	};
 
+
+	vertex_t data[] = {		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },	};
 	memcpy(particle, data, sizeof(data));
 
 
 	// Create vertex buffer (input)
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, particle, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, particle, GL_DYNAMIC_DRAW);
 
 	// Create transform feedback buffer (output)
 	glGenBuffers(1, &tbo);
 	glBindBuffer(GL_ARRAY_BUFFER, tbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, nullptr, GL_STATIC_READ);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, nullptr, GL_DYNAMIC_DRAW);
 
 
 
@@ -816,21 +811,16 @@ void ParticleUpdate::Params(generator_t &gen)
 
 int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 {
-	static bool once = false;
+	// Copy input
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, &particle, GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, tbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, &particle, GL_DYNAMIC_DRAW);
 
 	// Perform feedback transform
 	glEnable(GL_RASTERIZER_DISCARD);
-
-	if (once == false)
-	{
-		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, vbo);
-		once = true;
-	}
-	else
-	{
-		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
-	}
-
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
 	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
 	glBeginTransformFeedback(GL_POINTS);
 	glDrawArrays(GL_POINTS, 0, gen.num);
@@ -844,18 +834,20 @@ int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 	// Fetch and print results
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
-	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), particle);
+	//Output data
+	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), &particle);
 
 	if (num_particle == 0)
 	{
 		printf("ParticleSystem Error: %u particles written!\n\n", num_particle);
 	}
 
-	
-	for (int i = 0; i < num_particle; i++)
+	/*
+	for (unsigned int i = 0; i < num_particle; i++)
 	{
 		printf("particle %d: x = %f y = %f z = %f\n", i, particle[i].position.x, particle[i].position.y, particle[i].position.z);
 	}
+	*/
 
 	return tbo;
 }
@@ -878,6 +870,13 @@ int ParticleRender::init(Graphics *gfx)
 	u_quad2 = glGetUniformLocation(program_handle, "u_quad2");
 	u_texture0 = glGetUniformLocation(program_handle, "u_texture0");
 #endif
+
+	int index[MAX_PARTICLES];
+	for (int i = 0; i < MAX_PARTICLES; i++)
+	{
+		index[i] = i;
+	}
+	ibo = gfx->CreateIndexBuffer(index, MAX_PARTICLES);
 	return 0;
 }
 
@@ -896,9 +895,7 @@ void ParticleRender::prelink(void)
 
 void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2)
 {
-#ifdef DIRECTX
-	uniform->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
-#else
+#ifndef DIRECTX
 	glUniformMatrix4fv(u_mvp, 1, GL_FALSE, mvp.m);
 	glUniform3fv(u_quad1, 1, (float *)&quad1);
 	glUniform3fv(u_quad2, 1, (float *)&quad2);
@@ -909,11 +906,12 @@ void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2)
 void ParticleRender::render(Graphics &gfx, int vbo, int num)
 {
 #ifndef DIRECTX
-	gfx.Blend(true);
-	gfx.Depth(false);
+//	gfx.Blend(true);
+//	gfx.Depth(false);
 	gfx.SelectVertexBuffer(vbo);
-	gfx.DrawArrayTri(0, 0, num, num);
-	gfx.Depth(true);
-	gfx.Blend(false);
+	gfx.SelectIndexBuffer(ibo);
+	gfx.DrawArrayPoint(0, 0, num, num);
+//	gfx.Depth(true);
+//	gfx.Blend(false);
 #endif
 }
