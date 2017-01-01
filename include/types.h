@@ -372,6 +372,7 @@ typedef struct
 	vec2 scroll[MAX_TEXTURES];
 	vec2 scale[MAX_TEXTURES];
 	vec2 scroll_value[MAX_TEXTURES]; // integrated with time
+	bool cull_none;
 } faceinfo_t;
 
 

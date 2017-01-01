@@ -788,6 +788,16 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 						{
 							blend = true;
 						}
+
+						
+						if (surface->cull_none || surface->cull_disable || surface->cull_twosided)
+						{
+							render.cull_none = true;
+						}
+						else
+						{
+							render.cull_none = false;
+						}
 					}
 
 
@@ -889,8 +899,14 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				mlight2.tcmod_scroll(zero, j);
 				mlight2.tcmod_scale(one, j);
 			}
+			//skip sky texture, already drawn
 			continue;
 		}
+
+		if (face_list[i].cull_none)
+			gfx.CullFace(2);
+		else
+			gfx.CullFace(3);
 
 		if (face->type == 1 || face->type == 3)
 		{

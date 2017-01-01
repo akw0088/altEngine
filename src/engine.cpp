@@ -683,16 +683,20 @@ void Engine::render_scene(bool lights)
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
 
-	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	map.render_sky(gfx, mlight2, tick_num, surface_list);
-	//gfx.cleardepth();
-
 
 	if (find_player() != -1)
 		entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
 
 
 	camera_frame.set(transformation);
+
+	mvp = transformation * projection;
+	mlight2.Select();
+	mlight2.Params(mvp, light_list, light_list.size(), offset);
+	map.render_sky(gfx, mlight2, tick_num, surface_list);
+//	gfx.cleardepth();
+
+
 	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -718,12 +722,11 @@ void Engine::render_scene(bool lights)
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 	camera_frame.set(transformation);
-	mvp = identity * projection;
+	mvp = transformation * projection;
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
 	gfx.SelectTexture(0, no_tex);
-	particle_render.render(gfx, particle_update.tbo, gen.num);
-
+	particle_render.render(gfx, particle_update.vbo, gen.num);
 }
 
 
@@ -4001,6 +4004,32 @@ void Engine::console(int self, char *cmd)
 		}
 		return;
 	}
+
+
+	ret = sscanf(cmd, "r_polygonmode %s", data);
+	if (ret == 1)
+	{
+#ifndef DIRECTX
+		if (atoi(data) == 1)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else if (atoi(data) == 2)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
+		return;
+	}
+
+	ret = sscanf(cmd, "r_frontface %s", data);
+	if (ret == 1)
+	{
+		if (atoi(data) == 1)
+			glFrontFace(GL_CCW);
+		else
+			glFrontFace(GL_CW);
+	}
+
+
 
 	/*
 	haste tempted to double rate of fire too

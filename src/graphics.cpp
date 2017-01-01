@@ -113,12 +113,14 @@ void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
 	device->SetRenderState( D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP );
 }
 
-void Graphics::CullFace(char *face)
+void Graphics::CullFace(int mode)
 {
-	if (strcmp(face, "back") == 0)
+	if (mode == 0)
 		device->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
-	else
+	else if (mode == 1)
 		device->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
+	else
+		device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 }
 
 void Graphics::Depth(bool flag)
@@ -572,11 +574,13 @@ void Graphics::init(void *param1, void *param2)
 #endif
 	glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
 	glClearStencil(0);
+	glEnable(GL_PROGRAM_POINT_SIZE);
+	glPointSize(10.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -689,12 +693,6 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	if (num_index > 100000)
-	{
-		printf("Nvidia bug bypass: memory corruption\n");
-		return;
-	}
-
 	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 
@@ -809,6 +807,28 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE,	sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3) + sizeof(int)));
 
 	glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_STATIC_DRAW);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+	return vbo;
+}
+
+int Graphics::CreateReadBuffer(void *vertex_buffer, int num_vertex)
+{
+	unsigned int	vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	// This is cached into the current vbo
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), NULL);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2)));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2)));
+	glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3)));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(vec2) + sizeof(vec3) + sizeof(int)));
+
+	glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_STATIC_READ);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -967,12 +987,16 @@ void Graphics::SelectShader(int program)
 
 }
 
-void Graphics::CullFace(char *face)
+void Graphics::CullFace(int mode)
 {
-	if (strcmp(face, "back") == 0)
+	if (mode == 0)
 		glCullFace(GL_BACK);
-	else
+	else if (mode == 1)
 		glCullFace(GL_FRONT);
+	else if (mode == 2)
+		glDisable(GL_CULL_FACE);
+	else
+		glEnable(GL_CULL_FACE);
 
 #ifdef ERROR_CHECK
 	error_check();
