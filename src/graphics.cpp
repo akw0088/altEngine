@@ -894,7 +894,7 @@ bool Graphics::error_check()
 	if ( err != GL_NO_ERROR)
 	{
 		//1281 invalid enum
-		//1281 bad value
+		//1282 bad value
 		printf("GL_ERROR %d\n", err);
 		return true;
 	}

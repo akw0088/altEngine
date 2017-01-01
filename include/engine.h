@@ -171,9 +171,11 @@ protected:
 	unsigned int	last_server_sequence;
 
 	//Shaders
-	Global		global; // basic shader for menu's etc
-	Post		post;
-	mLight2		mlight2;	// main shader for lighting
+	Global				global; // basic shader for menu's etc
+	Post				post;
+	mLight2				mlight2;	// main shader for lighting
+	ParticleUpdate		particle_update;
+	ParticleRender		particle_render;
 //	mLight3		mlight3;	// hack shader for shadows
 
 	bool	initialized;

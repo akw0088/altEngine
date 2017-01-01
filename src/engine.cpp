@@ -278,8 +278,49 @@ void Engine::load(char *level)
 		menu.print("Failed to load post shader");
 	if (mlight2.init(&gfx))
 		menu.print("Failed to load mlight2 shader");
-//	if (mlight3.init(&gfx))
-//		menu.print("Failed to load mlight3 shader");
+	if (particle_update.init(&gfx))
+		menu.print("Failed to load particle_update shader");
+	if (particle_render.init(&gfx))
+		menu.print("Failed to load particle_render shader");
+
+
+	int buf = 0;
+
+	generator_t gen;
+
+	gen.position = vec3();
+	gen.vel_min = vec3(5.0f, 5.0f, 5.0);
+	gen.vel_range = vec3(20.0f, 20.0f, 20.0f);
+	gen.color = ~0;
+	gen.size = 10.0f;
+	gen.life_min = 5.0f;
+	gen.life_range = 20.0f;
+	gen.num = 10000;
+	gen.gravity = vec3(0.0f, -9.8f, 0.0f);
+	gen.delta_time = 0.016f;
+
+
+	gen.seed = vec3(rand_float(-10, 20.0f),
+		rand_float(-10.0, 20.0f),
+		rand_float(-10.0, 20.0f));
+
+	gfx.error_check();
+
+	particle_update.Select();
+	particle_update.Params(gen);
+	int vbo = particle_update.step(gfx, buf, gen);
+
+	vec3 quad1(0.0f, 0.0f, 0.0f);
+	vec3 quad2(1.0f, 1.0f, 1.0f);
+
+
+	camera_frame.set(transformation);
+	matrix4 mvp = transformation * projection;
+
+	particle_render.Params(mvp, quad1, quad2);
+	particle_render.render(gfx, vbo, gen.num);
+
+
 
 
 	if ( map.load(level, pk3_list, num_pk3) == false)
@@ -338,7 +379,7 @@ void Engine::load(char *level)
 
 	// This renders map before loading textures
 	camera_frame.set(transformation);
-	matrix4 mvp = transformation * projection;
+	mvp = transformation * projection;
 
 	spatial_testing();
 	gfx.clear();
@@ -674,6 +715,7 @@ void Engine::render_scene(bool lights)
 
 	mlight2.Params(mvp, light_list, light_list.size(), offset);
 	map.render_sky(gfx, mlight2, tick_num, surface_list);
+	gfx.cleardepth();
 
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);
@@ -867,7 +909,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
 			{
-				//bool draw_wander_target = false;
+				bool draw_wander_target = false;
 				entity_list[i]->rigid->render(gfx);
 				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
 #ifdef NOPE
@@ -1111,7 +1153,7 @@ void Engine::spatial_testing()
 		if (entity_list[i]->model)
 		{
 			bool bsp_visible = false;
-			//bool frustum_visible = false;
+			bool frustum_visible = false;
 			bool visible = false;
 
 
@@ -2209,7 +2251,7 @@ void Engine::bind_keys()
 
 	while (line)
 	{
-		ret = sscanf(line, "bind %s \"%s\"\r\n", (char *)&key, (char *)&value);
+		ret = sscanf(line, "bind %s \"%s\"\r\n", &key, &value);
 
 		//sscanf is grabbing ending quote
 		value[strlen(value) - 1] = '\0';

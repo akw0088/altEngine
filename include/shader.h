@@ -167,6 +167,8 @@ private:
 	float texCoordOffsets[18];
 };
 
+
+
 class ShadowMap : public Shader
 {
 public:
@@ -179,6 +181,62 @@ private:
 	int shadowmatrix;
 	int u_color;
 	int shadowmap;
+};
+
+#define MAX_PARTICLES 10000
+
+class ParticleUpdate : public Shader
+{
+public:
+	int init(Graphics *gfx);
+	void Params(generator_t &gen);
+	int step(Graphics &gfx, int &buffer_index, generator_t &gen);
+
+	virtual void prelink(void);
+
+private:
+	int u_gen_position;
+	int u_gen_vel_min;
+	int u_gen_vel_range;
+	int u_gen_color;
+	int u_gen_size;
+	int u_gen_life_min;
+	int u_gen_life_range;
+	int u_gen_num;
+
+	int u_gravity;
+	int u_delta_time;
+	int u_seed;
+
+	// non uniform
+	unsigned int tfb;
+	unsigned int particle_obj[2];
+
+	unsigned int query;
+
+	vertex_t particle;
+	vertex_t particles[MAX_PARTICLES];
+	generator_t generator;
+};
+
+class ParticleRender : public Shader
+{
+public:
+	int init(Graphics *gfx);
+	void Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2);
+	void render(Graphics &gfx, int vbo, int num);
+
+	virtual void prelink(void);
+
+private:
+	int u_mvp;
+	int u_quad1;
+	int u_quad2;
+	int u_texture0;
+
+	// non uniform
+	unsigned int particle_obj[2];
+	generator_t generator;
 };
 
 #endif

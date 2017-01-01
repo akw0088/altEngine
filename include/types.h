@@ -425,3 +425,19 @@ typedef struct
 	char targetname[64];
 	char target[512];
 } navpoint_t;
+
+//Uniform data
+typedef struct
+{
+	vec3 position;
+	vec3 vel_min;
+	vec3 vel_range;
+	int color;
+	float size;
+	float life_min;
+	float life_range;
+	int num;
+	vec3 gravity;
+	float delta_time;
+	vec3 seed;
+} generator_t;

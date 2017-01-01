@@ -836,3 +836,10 @@ void print_path(int *path, int path_length, graph_node_t *node)
 		printf("go to node %d nav%d\n", path[i], node[path[i]].arc[0].a);
 	}
 }
+
+
+float rand_float(float fMin, float fAdd)
+{
+	float fRandom = float(rand() % (RAND_MAX + 1)) / float(RAND_MAX);
+	return fMin + fAdd*fRandom;
+}

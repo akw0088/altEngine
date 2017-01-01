@@ -713,3 +713,211 @@ void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp)
 #endif
 }
 #endif
+
+
+int ParticleUpdate::init(Graphics *gfx)
+{
+#ifndef DIRECTX
+	if (Shader::init(gfx,
+		"media/glsl/exp/particle_update.vs",
+		"media/glsl/exp/particle_update.gs",
+		"media/glsl/exp/particle_update.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+
+	u_gen_position = glGetUniformLocation(program_handle, "u_gen_position");
+	u_gen_vel_min = glGetUniformLocation(program_handle, "u_gen_vel_min");
+	u_gen_vel_range = glGetUniformLocation(program_handle, "u_gen_vel_range");
+	u_gen_color = glGetUniformLocation(program_handle, "u_gen_color");
+	u_gen_size = glGetUniformLocation(program_handle, "u_gen_size");
+	u_gen_life_min = glGetUniformLocation(program_handle, "u_gen_life_min");
+	u_gen_life_range = glGetUniformLocation(program_handle, "u_gen_life_range");
+	u_gen_num = glGetUniformLocation(program_handle, "u_gen_num");
+
+	u_gravity = glGetUniformLocation(program_handle, "u_gravity");
+	u_delta_time = glGetUniformLocation(program_handle, "u_delta_time");
+	u_seed = glGetUniformLocation(program_handle, "u_seed");
+
+	glGenTransformFeedbacks(1, &tfb);
+	glGenQueries(1, &query);
+
+	glGenBuffers(2, particle_obj);
+
+	// Generate double buffering buffers
+	for (int i = 0; i < 2; i++)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, particle_obj[i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particles);
+	}
+
+
+#endif
+	return 0;
+}
+
+
+void ParticleUpdate::prelink(void)
+{
+#ifndef DIRECTX
+	glBindAttribLocation(program_handle, 0, "attr_position");
+	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
+	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
+	glBindAttribLocation(program_handle, 3, "attr_velocity");
+	glBindAttribLocation(program_handle, 4, "attr_color");
+	glBindAttribLocation(program_handle, 5, "attr_tangent");
+	/*
+	in vec3 	attr_position;
+	in vec2 	attr_TexCoord;
+	in vec2 	attr_LightCoord;
+	in vec3 	attr_velocity;
+	in int		attr_color;
+	in vec4		attr_tangent;
+	*/
+#endif
+}
+
+void ParticleUpdate::Params(generator_t &gen)
+{
+#ifndef DIRECTX
+	glUniform3fv(u_gen_position, 1, (float *)&(gen.position));
+	glUniform3fv(u_gen_vel_min, 1, (float *)&(gen.vel_min));
+	glUniform3fv(u_gen_vel_range, 1, (float *)&(gen.vel_range));
+	glUniform1i(u_gen_color, gen.color);
+	glUniform1f(u_gen_size, gen.size);
+	glUniform1f(u_gen_life_min, gen.life_min);
+	glUniform1f(u_gen_life_range, gen.life_range);
+	glUniform1i(u_gen_num, gen.num);
+	glUniform3fv(u_gravity, 1, (float *)&(gen.gravity));
+
+	glUniform1f(u_delta_time, gen.delta_time);
+	glUniform3fv(u_seed, 1, (float *)&(gen.seed));
+	generator = gen;
+#endif
+}
+
+int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
+{
+	int vbo = 0;
+
+	//Set type to generate, will generate gen.num # of particles
+	memset(&particle, 0, sizeof(vertex_t));
+
+	particle.tangent.z = 1.0f; // 1 mean generator particle, -1 mean normal particle
+
+	generator.delta_time += TICK_MS;
+
+
+	glEnable(GL_RASTERIZER_DISCARD);
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfb);
+
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particle_obj[buffer_index]);
+
+	//pass one generator particle in
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particle);
+	gfx.error_check();
+
+	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
+	gfx.error_check();
+
+	glBeginTransformFeedback(GL_POINTS);
+	gfx.error_check();
+
+	glDrawArrays(GL_POINTS, 0, 1);
+	gfx.error_check();
+
+	glEndTransformFeedback();
+	gfx.error_check();
+
+	glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
+	gfx.error_check();
+
+	// Should get 40 or so out
+	glGetQueryObjectiv(query, GL_QUERY_RESULT, &generator.num);
+	gfx.error_check();
+
+	if (generator.num == 0)
+	{
+		printf("Failed to generate particles!\n");
+	}
+
+//	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feedback), feedback);
+
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+	glDisable(GL_RASTERIZER_DISCARD);
+
+	gen.num = generator.num;
+	return vbo;
+}
+
+
+int ParticleRender::init(Graphics *gfx)
+{
+#ifndef DIRECTX
+	if (Shader::init(gfx,
+		"media/glsl/exp/particle_render.vs",
+		"media/glsl/exp/particle_render.gs",
+		"media/glsl/exp/particle_render.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+
+	u_mvp = glGetUniformLocation(program_handle, "u_mvp");
+	u_quad1 = glGetUniformLocation(program_handle, "u_quad1");
+	u_quad2 = glGetUniformLocation(program_handle, "u_quad2");
+	u_texture0 = glGetUniformLocation(program_handle, "u_texture0");
+#endif
+	return 0;
+}
+
+
+void ParticleRender::prelink(void)
+{
+#ifndef DIRECTX
+	const char *feedback[4] =
+	{	"vary_position",
+		"vary_velocity",
+		"vary_color",
+		"vary_tangent"
+	};
+
+
+	glBindAttribLocation(program_handle, 0, "attr_position");
+	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
+	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
+	glBindAttribLocation(program_handle, 3, "attr_velocity");
+	glBindAttribLocation(program_handle, 4, "attr_color");
+	glBindAttribLocation(program_handle, 5, "attr_tangent");
+
+	//Removed structs from shaders as I couldnt get this to link
+	glTransformFeedbackVaryings(program_handle, 4, feedback, GL_INTERLEAVED_ATTRIBS);
+
+#endif
+}
+
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2)
+{
+#ifdef DIRECTX
+	uniform->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
+#else
+	glUniformMatrix4fv(u_mvp, 1, GL_FALSE, mvp.m);
+	glUniform3fv(u_quad1, 1, (float *)&quad1);
+	glUniform3fv(u_quad2, 1, (float *)&quad2);
+	glUniform1i(u_texture0, 0);
+#endif
+}
+
+void ParticleRender::render(Graphics &gfx, int vbo, int num)
+{
+#ifndef DIRECTX
+	gfx.Blend(true);
+	gfx.Depth(false);
+	gfx.SelectVertexBuffer(vbo);
+	gfx.DrawArrayPoint(0, 0, num, num);
+	gfx.Depth(true);
+	gfx.Blend(false);
+#endif
+}
