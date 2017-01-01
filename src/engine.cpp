@@ -286,43 +286,21 @@ void Engine::load(char *level)
 
 	int buf = 0;
 
-	generator_t gen;
-
-	gen.position = vec3();
+	gen.position = vec3(0.0f, 0.0f, 0.0f);
 	gen.vel_min = vec3(5.0f, 5.0f, 5.0);
 	gen.vel_range = vec3(20.0f, 20.0f, 20.0f);
 	gen.color = ~0;
-	gen.size = 10.0f;
-	gen.life_min = 5.0f;
-	gen.life_range = 20.0f;
-	gen.num = 10000;
+	gen.size = 100.0f;
+	gen.life_min = 500.0f;
+	gen.life_range = 2000.0f;
+	gen.num = MAX_PARTICLES;
 	gen.gravity = vec3(0.0f, -9.8f, 0.0f);
-	gen.delta_time = 0.016f;
+	gen.delta_time = TICK_MS / 1000.0f;
 
 
 	gen.seed = vec3(rand_float(-10, 20.0f),
 		rand_float(-10.0, 20.0f),
 		rand_float(-10.0, 20.0f));
-
-	gfx.error_check();
-
-	particle_update.Select();
-	particle_update.Params(gen);
-	int vbo = particle_update.step(gfx, buf, gen);
-	gfx.error_check();
-
-
-	vec3 quad1(0.0f, 0.0f, 0.0f);
-	vec3 quad2(1.0f, 1.0f, 1.0f);
-
-
-	camera_frame.set(transformation);
-	matrix4 mvp = transformation * projection;
-
-	particle_render.Params(mvp, quad1, quad2);
-	particle_render.render(gfx, vbo, gen.num);
-
-
 
 
 	if ( map.load(level, pk3_list, num_pk3) == false)
@@ -381,7 +359,7 @@ void Engine::load(char *level)
 
 	// This renders map before loading textures
 	camera_frame.set(transformation);
-	mvp = transformation * projection;
+	matrix4 mvp = transformation * projection;
 
 	spatial_testing();
 	gfx.clear();
@@ -727,6 +705,25 @@ void Engine::render_scene(bool lights)
 
 	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
+
+
+
+	gen.position = vec3(0.0f, 100.0f, 0.0f);
+
+	particle_update.Select();
+	particle_update.Params(gen);
+	particle_update.step(gfx, gen);
+
+	vec3 quad1 = camera_frame.up;
+	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
+	camera_frame.set(transformation);
+	mvp = identity * projection;
+	particle_render.Select();
+	particle_render.Params(mvp, quad1, quad2);
+	gfx.SelectTexture(0, no_tex);
+	particle_render.render(gfx, particle_update.tbo, gen.num);
+
 }
 
 

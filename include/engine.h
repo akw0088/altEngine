@@ -174,9 +174,11 @@ protected:
 	Global				global; // basic shader for menu's etc
 	Post				post;
 	mLight2				mlight2;	// main shader for lighting
+
 	ParticleUpdate		particle_update;
 	ParticleRender		particle_render;
-//	mLight3		mlight3;	// hack shader for shadows
+	generator_t			gen;
+	unsigned int particle_vbo;
 
 	bool	initialized;
 	void	*param1;

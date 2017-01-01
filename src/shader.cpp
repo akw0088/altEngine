@@ -740,18 +740,31 @@ int ParticleUpdate::init(Graphics *gfx)
 	u_delta_time = glGetUniformLocation(program_handle, "u_delta_time");
 	u_seed = glGetUniformLocation(program_handle, "u_seed");
 
-	glGenTransformFeedbacks(1, &tfb);
 	glGenQueries(1, &query);
 
 
-	vbo = gfx->CreateVertexBuffer(&particle, MAX_PARTICLES);
-	rbo = gfx->CreateReadBuffer(NULL, MAX_PARTICLES);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particle[0]);
-//		glBindBuffer(GL_ARRAY_BUFFER, particle_obj[i]);
-//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
-//		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particles);
+	// Create vertex buffer (input)
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, particle, GL_STATIC_DRAW);
+
+	// Create transform feedback buffer (output)
+	glGenBuffers(1, &tbo);
+	glBindBuffer(GL_ARRAY_BUFFER, tbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, nullptr, GL_STATIC_READ);
 
 
+
+	vertex_t data[] = {
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+	};
+
+	memcpy(particle, data, sizeof(data));
+	generator.num = 5;
 #endif
 	return 0;
 }
@@ -794,107 +807,27 @@ void ParticleUpdate::Params(generator_t &gen)
 
 	glUniform1f(u_delta_time, gen.delta_time);
 	glUniform3fv(u_seed, 1, (float *)&(gen.seed));
+	gen.num = MAX_PARTICLES;
 	generator = gen;
 #endif
 }
 
-// Shader macro
-#define GLSL(src) "#version 150 core\n" #src
-
-// Vertex shader
-const GLchar* vertexShaderSrc = GLSL(
-in vec3 attr_position;
-in vec2 attr_TexCoord;
-in vec2 attr_LightCoord;
-in vec3 attr_velocity;
-in int	attr_color;
-in vec4 attr_tangent;
-
-out vec3	ivary_position;
-out vec2	ivary_TexCoord;
-out vec2	ivary_LightCoord;
-out vec3	ivary_velocity;
-out int		ivary_color;
-out vec4	ivary_tangent;
-
-void main()
+int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 {
-	ivary_position = attr_position;
-	ivary_TexCoord = attr_TexCoord;
-	ivary_LightCoord = attr_LightCoord;
-	ivary_velocity = attr_velocity;
-	ivary_color = attr_color;
-	ivary_tangent = attr_tangent;
-}
-);
-
-// Geometry shader
-const GLchar* geoShaderSrc = GLSL(
-layout(points) in;
-layout(points, max_vertices = 40) out;
-
-in vec3[]	ivary_position;
-in vec2[]	ivary_TexCoord;
-in vec2[]	ivary_LightCoord;
-in vec3[]	ivary_velocity;
-in int[]	ivary_color;
-in vec4[]	ivary_tangent;
-
-out vec3	vary_position;
-out vec2	vary_TexCoord;
-out vec2	vary_LightCoord;
-out vec3	vary_velocity;
-out int		vary_color;
-out vec4	vary_tangent;
-
-void main()
-{
-	for (int i = 0; i < 3; i++)
-	{
-		vary_position = ivary_position[0];
-		vary_TexCoord = ivary_TexCoord[0];
-		vary_LightCoord = ivary_LightCoord[0];
-		vary_velocity = ivary_velocity[0];
-		vary_color = ivary_color[0];
-		vary_tangent = ivary_tangent[0];
-		EmitVertex();
-		EndPrimitive();
-	}
-
-}
-);
-
-int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
-{
-	// Create VAO
-
-	vertex_t data[] = {
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-	};
-
-	memcpy(particle, data, sizeof(data));
-
-	gen.num = 5;
-
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * gen.num, particle, GL_STATIC_DRAW);
-
-	// Create transform feedback buffer
-	GLuint tbo;
-	glGenBuffers(1, &tbo);
-	glBindBuffer(GL_ARRAY_BUFFER, tbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(particle) * 3, nullptr, GL_STATIC_READ);
+	static bool once = false;
 
 	// Perform feedback transform
 	glEnable(GL_RASTERIZER_DISCARD);
 
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
+	if (once == false)
+	{
+		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
+		once = true;
+	}
+	else
+	{
+		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, vbo);
+	}
 
 	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
 	glBeginTransformFeedback(GL_POINTS);
@@ -907,15 +840,22 @@ int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
 	glFlush();
 
 	// Fetch and print results
-	GLuint primitives;
-	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &primitives);
+	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
 	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), particle);
 
-	printf("%u primitives written!\n\n", primitives);
-	gen.num = primitives;
+	if (num_particle == 0)
+	{
+		printf("ParticleSystem Error: %u particles written!\n\n", num_particle);
+	}
 
-	return 0;
+	
+	for (int i = 0; i < num_particle; i++)
+	{
+		printf("particle %d: x = %f y = %f z = %f\n", i, particle[i].position.x, particle[i].position.y, particle[i].position.z);
+	}
+
+	return tbo;
 }
 
 
@@ -961,6 +901,7 @@ void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2)
 	glUniform3fv(u_quad1, 1, (float *)&quad1);
 	glUniform3fv(u_quad2, 1, (float *)&quad2);
 	glUniform1i(u_texture0, 0);
+	glPointSize(500.0f);
 #endif
 }
 

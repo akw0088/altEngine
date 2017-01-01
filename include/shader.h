@@ -183,16 +183,20 @@ private:
 	int shadowmap;
 };
 
-#define MAX_PARTICLES 10000
+#define MAX_PARTICLES 100
 
 class ParticleUpdate : public Shader
 {
 public:
 	int init(Graphics *gfx);
 	void Params(generator_t &gen);
-	int step(Graphics &gfx, int &buffer_index, generator_t &gen);
+	int step(Graphics &gfx, generator_t &gen);
 
 	virtual void prelink(void);
+
+
+	unsigned int vbo; // geometry shader input
+	unsigned int tbo; // geometry shader output
 
 private:
 	int u_gen_position;
@@ -209,14 +213,11 @@ private:
 	int u_seed;
 
 	// non uniform
-	unsigned int tfb;
-	unsigned int vbo; // geometry shader input
-	unsigned int rbo; // store geometry shader output
 
 	unsigned int query;
-
-	vertex_t particle[MAX_PARTICLES];
 	generator_t generator;
+	vertex_t particle[MAX_PARTICLES];
+	unsigned int num_particle;
 };
 
 class ParticleRender : public Shader
