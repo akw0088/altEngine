@@ -743,14 +743,6 @@ int ParticleUpdate::init(Graphics *gfx)
 	glGenTransformFeedbacks(1, &tfb);
 	glGenQueries(1, &query);
 
-//	glGenBuffers(2, particle_obj);
-
-	// Generate double buffering buffers
-	memset(&particle[0], 0, sizeof(vertex_t) * MAX_PARTICLES);
-
-	particle[0].tangent.x = 1000.0f;
-	particle[0].tangent.y = 10.0f;
-	particle[0].tangent.z = 9999999.0f; // gt0 means generator particle, lt0 mean normal particle
 
 	vbo = gfx->CreateVertexBuffer(&particle, MAX_PARTICLES);
 	rbo = gfx->CreateReadBuffer(NULL, MAX_PARTICLES);
@@ -768,6 +760,16 @@ int ParticleUpdate::init(Graphics *gfx)
 void ParticleUpdate::prelink(void)
 {
 #ifndef DIRECTX
+	const GLchar* feedbackVaryings[] = {
+		"vary_position",
+		"vary_TexCoord",
+		"vary_LightCoord",
+		"vary_velocity",
+		"vary_color",
+		"vary_tangent"
+	};
+	glTransformFeedbackVaryings(program_handle, 6, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
 	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
@@ -864,43 +866,10 @@ void main()
 
 int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
 {
-	char *vs = get_file("media/glsl/ver440/particle_update.vs", NULL);
-	char *gs = get_file("media/glsl/ver440/particle_update.gs", NULL);
-
-	// Compile shaders
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vs, nullptr);
-	glCompileShader(vertexShader);
-
-	GLuint geoShader = glCreateShader(GL_GEOMETRY_SHADER);
-	glShaderSource(geoShader, 1, &gs, nullptr);
-	glCompileShader(geoShader);
-
-	// Create program and specify transform feedback variables
-	GLuint program = glCreateProgram();
-	glAttachShader(program, vertexShader);
-	glAttachShader(program, geoShader);
-
-	const GLchar* feedbackVaryings[] = { "vary_position", "vary_TexCoord", "vary_LightCoord", "vary_velocity", "vary_color", "vary_tangent" };
-	glTransformFeedbackVaryings(program, 6, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
-
-	glLinkProgram(program);
-	glUseProgram(program);
-
 	// Create VAO
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-
-	// Create input VBO and vertex format
-	typedef struct {
-		vec3 data1;
-		vec2 data2;
-		vec2 data3;
-		vec3 data4;
-		int data5;
-		vec4 data6;
-	} fake_t;
 
 	vertex_t data[] = {
 		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
@@ -919,41 +888,24 @@ int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * gen.num, particle, GL_STATIC_DRAW);
 
-	GLint inputAttrib = glGetAttribLocation(program, "attr_position");
-	glEnableVertexAttribArray(inputAttrib);
-	glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	inputAttrib = glGetAttribLocation(program, "attr_TexCoord");
-	glEnableVertexAttribArray(inputAttrib);
-	glVertexAttribPointer(inputAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	inputAttrib = glGetAttribLocation(program, "attr_LightCoord");
-	glEnableVertexAttribArray(inputAttrib);
-	glVertexAttribPointer(inputAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-	inputAttrib = glGetAttribLocation(program, "attr_velocity");
-	glEnableVertexAttribArray(inputAttrib);
-	glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-	inputAttrib = glGetAttribLocation(program, "attr_color");
-	glEnableVertexAttribArray(inputAttrib);
-	glVertexAttribPointer(inputAttrib, 1, GL_INT, GL_FALSE, 0, 0);
-
-	inputAttrib = glGetAttribLocation(program, "attr_tangent");
-	glEnableVertexAttribArray(inputAttrib);
-	glVertexAttribPointer(inputAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// Create transform feedback buffer
 	GLuint tbo;
 	glGenBuffers(1, &tbo);
 	glBindBuffer(GL_ARRAY_BUFFER, tbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(particle) * 3, nullptr, GL_STATIC_READ);
-
-	// Create query object to collect info
-	GLuint query;
-	glGenQueries(1, &query);
 
 	// Perform feedback transform
 	glEnable(GL_RASTERIZER_DISCARD);
