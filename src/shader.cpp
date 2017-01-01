@@ -867,9 +867,6 @@ void main()
 int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
 {
 	// Create VAO
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
 
 	vertex_t data[] = {
 		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
@@ -887,19 +884,6 @@ int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * gen.num, particle, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
 	// Create transform feedback buffer
 	GLuint tbo;
