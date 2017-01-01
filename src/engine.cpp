@@ -278,10 +278,10 @@ void Engine::load(char *level)
 		menu.print("Failed to load post shader");
 	if (mlight2.init(&gfx))
 		menu.print("Failed to load mlight2 shader");
-	if (particle_update.init(&gfx))
-		menu.print("Failed to load particle_update shader");
 	if (particle_render.init(&gfx))
 		menu.print("Failed to load particle_render shader");
+	if (particle_update.init(&gfx))
+		menu.print("Failed to load particle_update shader");
 
 
 	int buf = 0;
@@ -309,6 +309,8 @@ void Engine::load(char *level)
 	particle_update.Select();
 	particle_update.Params(gen);
 	int vbo = particle_update.step(gfx, buf, gen);
+	gfx.error_check();
+
 
 	vec3 quad1(0.0f, 0.0f, 0.0f);
 	vec3 quad2(1.0f, 1.0f, 1.0f);
@@ -701,6 +703,12 @@ void Engine::render_scene(bool lights)
 {
 	matrix4 transformation;
 	matrix4 mvp;
+	vec3 offset(0.0f, 0.0f, 0.0f);
+
+	mlight2.Params(mvp, light_list, light_list.size(), offset);
+	map.render_sky(gfx, mlight2, tick_num, surface_list);
+	//gfx.cleardepth();
+
 
 	if (find_player() != -1)
 		entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
@@ -710,12 +718,6 @@ void Engine::render_scene(bool lights)
 	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
-	vec3 offset(0.0f, 0.0f, 0.0f);
-
-
-	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	map.render_sky(gfx, mlight2, tick_num, surface_list);
-	gfx.cleardepth();
 
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);

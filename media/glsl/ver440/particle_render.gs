@@ -7,24 +7,21 @@ layout(points) in;
 layout(triangle_strip) out;
 layout(max_vertices = 4) out;
 
-in VertexData {
-	vec3		att_position;
-	vec2		vary_TexCoord;
-	vec2		vary_LightCoord;
-	vec3		vary_normal;
-	flat int	vary_color;
-	vec4		vary_tangent;
-} VertexIn[];
+in	vec3[]		iatt_position;
+in	vec2[]		ivary_TexCoord;
+in	vec2[]		ivary_LightCoord;
+in	vec3[]		ivary_normal;
+in	int[]		ivary_color;
+in	vec4[]		ivary_tangent;
+
 
  
-out VertexDataOut {
-    vec3 att_position;
-    vec2 vary_TexCoord;
-    vec2 vary_LightCoord;
-    vec3 vary_normal;
-    flat int vary_color;
-    vec4 vary_tangent; // color value
-} VertexOut;
+out    vec3 att_position;
+out    vec2 vary_TexCoord;
+out    vec2 vary_LightCoord;
+out    vec3 vary_normal;
+out    int vary_color;
+out    vec4 vary_tangent; // color value
 
 
 /*
@@ -38,33 +35,33 @@ flat out vec4 vColorPart; // passsed in tangent
 
 void main()
 {
-	if(VertexIn[0].vary_normal.z != 0) // type
+	if(ivary_normal[0].z != 0) // type
 	{
 		vec3 vPosOld = gl_in[0].gl_Position.xyz;
-		float fSize = VertexIn[0].vary_normal.y;
+		float fSize = ivary_normal[0].y;
 		
-		VertexOut.vary_tangent = vec4(	VertexIn[0].vary_tangent.r,
-						VertexIn[0].vary_tangent.g,
-						VertexIn[0].vary_tangent.b,
-						VertexIn[0].vary_normal.x); // life + color
+		vary_tangent = vec4(	ivary_tangent[0].r,
+						ivary_tangent[0].g,
+						ivary_tangent[0].b,
+						ivary_normal[0].x); // life + color
 		   
 		vec3 vPos = vPosOld + (-u_quad1 - u_quad2) * fSize;
-		VertexOut.vary_TexCoord = vec2(0.0, 0.0);
+		vary_TexCoord = vec2(0.0, 0.0);
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
 		
 		vPos = vPosOld + (-u_quad1 + u_quad2) * fSize;
-		VertexOut.vary_TexCoord = vec2(0.0, 1.0);
+		vary_TexCoord = vec2(0.0, 1.0);
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
 		
 		vPos = vPosOld + (u_quad1 - u_quad2) * fSize;
-		VertexOut.vary_TexCoord = vec2(1.0, 0.0);
+		vary_TexCoord = vec2(1.0, 0.0);
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
 		
 		vPos = vPosOld + (u_quad1 + u_quad2) * fSize;
-		VertexOut.vary_TexCoord = vec2(1.0, 1.0);
+		vary_TexCoord = vec2(1.0, 1.0);
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
 		  

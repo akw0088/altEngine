@@ -3,20 +3,18 @@
 uniform sampler2D u_texture0;
 
 // per vertex interpolated program input
-in VertexDataOut {
-    vec3 att_position;
-    vec2 vary_TexCoord;
-    vec2 vary_LightCoord;
-    vec3 vary_normal;
-    flat int vary_color;
-    vec4 vary_tangent;
-} Vertex;
+in    vec3 att_position;
+in    vec2 vary_TexCoord;
+in    vec2 vary_LightCoord;
+in    vec3 vary_normal;
+in    int vary_color;
+in    vec4 vary_tangent;
 
 // Final fragment color output
 out vec4 Fragment;
 
 void main()
 {
-  vec4 vTexColor = texture2D(u_texture0, Vertex.vary_TexCoord);
-  Fragment = vec4(vTexColor.xyz, 1.0) * Vertex.vary_tangent;
+  vec4 vTexColor = texture2D(u_texture0, vary_TexCoord);
+  Fragment = vec4(vTexColor.xyz, 1.0) * vary_tangent;
 }

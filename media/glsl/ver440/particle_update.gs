@@ -1,4 +1,4 @@
-#version 330
+#version 440 core
 
 layout(points) in;
 layout(points) out;
@@ -20,7 +20,7 @@ out	vec3 vary_position;
 out	vec2 vary_TexCoord;
 out	vec2 vary_LightCoord;
 out	vec3 vary_velocity;
-out	flat vary_color;
+out	int vary_color;
 out	vec4 vary_tangent;
 //	float vary_life;
 //	float vary_size;
@@ -59,6 +59,21 @@ float rand_zero_one()
 
 void main()
 {
+	vary_position	= ivary_position[0];
+	vary_velocity	= ivary_velocity[0];	
+	vary_color	= ivary_color[0];
+	vary_tangent	= ivary_tangent[0];
+	vary_TexCoord = ivary_TexCoord[0];
+	vary_LightCoord = ivary_LightCoord[0];
+	EmitVertex();
+	EndPrimitive(); 
+	EmitVertex();
+	EndPrimitive(); 
+}
+
+/*
+void main()
+{
 	local_seed = u_seed;
 	
 	// gl_Position doesn't matter, rendering is discarded
@@ -66,7 +81,7 @@ void main()
 	vary_position = ivary_position[0];
 	vary_velocity = ivary_velocity[0];
 
-	if(ivary_tangent[0].z < 0) //type < 0
+	if(ivary_tangent[0].z < 0) //type < 0, normal particle
 	{
 		vary_position += vary_velocity * u_delta_time;
 		vary_velocity += u_gravity * u_delta_time;
@@ -86,7 +101,7 @@ void main()
 //	vary_size	= ivary_size[0];
 //	vary_type	= ivary_type[0];
 	  
-	if(vary_tangent.z > 0) // type > 0 = generate particles
+	if(vary_tangent.z > 0) // type > 0 = generating particles
 	{
 		// Keep generator particle
 		EmitVertex();
@@ -122,3 +137,4 @@ void main()
 		EndPrimitive(); 
 	}
 }
+*/

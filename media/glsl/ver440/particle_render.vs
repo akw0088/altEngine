@@ -9,23 +9,21 @@ in int	attr_color;
 in vec4	attr_tangent;
 
 // interpolated output
-out VertexData {
-	vec3		att_position;
-	vec2		vary_TexCoord;
-	vec2		vary_LightCoord;
-	vec3		vary_normal;
-	flat int	vary_color;
-	vec4		vary_tangent;
-} Vertex;
+out	vec3		iatt_position;
+out	vec2		ivary_TexCoord;
+out	vec2		ivary_LightCoord;
+out	vec3		ivary_normal;
+out	int		ivary_color;
+out	vec4		ivary_tangent;
 
 
 void main()
 {
 	gl_Position = vec4(attr_position, 1.0);
-	Vertex.att_position = gl_Position.xyz;
-	Vertex.vary_color = attr_color;
-	Vertex.vary_normal = attr_normal; 
-	Vertex.vary_tangent = attr_tangent; 
+	iatt_position = gl_Position.xyz;
+	ivary_color = attr_color;
+	ivary_normal = attr_normal; 
+	ivary_tangent = attr_tangent; 
 
 // Will pass in normal.xyz
 //	size

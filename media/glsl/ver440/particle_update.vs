@@ -13,12 +13,12 @@ in vec4		attr_tangent;
 //in float	pad0;
 
 // interpolated output
-out	vec3		vary_position;
-out	vec2		vary_TexCoord;
-out	vec2		vary_LightCoord;
-out	vec3		vary_velocity;
-out	flat int	vary_color;
-out	vec4		vary_tangent;
+out	vec3		ivary_position;
+out	vec2		ivary_TexCoord;
+out	vec2		ivary_LightCoord;
+out	vec3		ivary_velocity;
+out	flat int	ivary_color;
+out	vec4		ivary_tangent;
 //	float		vary_life;
 //	float		vary_size;
 //	float		vary_type;
@@ -29,11 +29,13 @@ out	vec4		vary_tangent;
 
 void main()
 {
-	vary_position = attr_position;
-	gl_Position = vary_position;
-	vary_velocity = attr_velocity;
-	vary_color = attr_color;
-	vary_tangent = attr_tangent;
+	ivary_position = attr_position;
+	gl_Position = vec4(ivary_position, 1.0);
+	ivary_velocity = attr_velocity;
+	ivary_TexCoord = attr_TexCoord;
+	ivary_LightCoord = attr_LightCoord;
+	ivary_color = attr_color;
+	ivary_tangent = attr_tangent;
 
 //	vary_life = attr_life;
 //	vary_size = attr_size;

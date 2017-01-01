@@ -719,9 +719,9 @@ int ParticleUpdate::init(Graphics *gfx)
 {
 #ifndef DIRECTX
 	if (Shader::init(gfx,
-		"media/glsl/exp/particle_update.vs",
-		"media/glsl/exp/particle_update.gs",
-		"media/glsl/exp/particle_update.fs"))
+		"media/glsl/ver440/particle_update.vs",
+		"media/glsl/ver440/particle_update.gs",
+		"media/glsl/ver440/particle_update.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -743,15 +743,21 @@ int ParticleUpdate::init(Graphics *gfx)
 	glGenTransformFeedbacks(1, &tfb);
 	glGenQueries(1, &query);
 
-	glGenBuffers(2, particle_obj);
+//	glGenBuffers(2, particle_obj);
 
 	// Generate double buffering buffers
-	for (int i = 0; i < 2; i++)
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, particle_obj[i]);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particles);
-	}
+	memset(&particle[0], 0, sizeof(vertex_t) * MAX_PARTICLES);
+
+	particle[0].tangent.x = 1000.0f;
+	particle[0].tangent.y = 10.0f;
+	particle[0].tangent.z = 9999999.0f; // gt0 means generator particle, lt0 mean normal particle
+
+	vbo = gfx->CreateVertexBuffer(&particle, MAX_PARTICLES);
+	rbo = gfx->CreateReadBuffer(NULL, MAX_PARTICLES);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particle[0]);
+//		glBindBuffer(GL_ARRAY_BUFFER, particle_obj[i]);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, NULL, GL_DYNAMIC_DRAW);
+//		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particles);
 
 
 #endif
@@ -768,14 +774,6 @@ void ParticleUpdate::prelink(void)
 	glBindAttribLocation(program_handle, 3, "attr_velocity");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-	/*
-	in vec3 	attr_position;
-	in vec2 	attr_TexCoord;
-	in vec2 	attr_LightCoord;
-	in vec3 	attr_velocity;
-	in int		attr_color;
-	in vec4		attr_tangent;
-	*/
 #endif
 }
 
@@ -798,58 +796,190 @@ void ParticleUpdate::Params(generator_t &gen)
 #endif
 }
 
-int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
+// Shader macro
+#define GLSL(src) "#version 150 core\n" #src
+
+// Vertex shader
+const GLchar* vertexShaderSrc = GLSL(
+in vec3 attr_position;
+in vec2 attr_TexCoord;
+in vec2 attr_LightCoord;
+in vec3 attr_velocity;
+in int	attr_color;
+in vec4 attr_tangent;
+
+out vec3	ivary_position;
+out vec2	ivary_TexCoord;
+out vec2	ivary_LightCoord;
+out vec3	ivary_velocity;
+out int		ivary_color;
+out vec4	ivary_tangent;
+
+void main()
 {
-	int vbo = 0;
+	ivary_position = attr_position;
+	ivary_TexCoord = attr_TexCoord;
+	ivary_LightCoord = attr_LightCoord;
+	ivary_velocity = attr_velocity;
+	ivary_color = attr_color;
+	ivary_tangent = attr_tangent;
+}
+);
 
-	//Set type to generate, will generate gen.num # of particles
-	memset(&particle, 0, sizeof(vertex_t));
+// Geometry shader
+const GLchar* geoShaderSrc = GLSL(
+layout(points) in;
+layout(points, max_vertices = 40) out;
 
-	particle.tangent.z = 1.0f; // 1 mean generator particle, -1 mean normal particle
+in vec3[]	ivary_position;
+in vec2[]	ivary_TexCoord;
+in vec2[]	ivary_LightCoord;
+in vec3[]	ivary_velocity;
+in int[]	ivary_color;
+in vec4[]	ivary_tangent;
 
-	generator.delta_time += TICK_MS;
+out vec3	vary_position;
+out vec2	vary_TexCoord;
+out vec2	vary_LightCoord;
+out vec3	vary_velocity;
+out int		vary_color;
+out vec4	vary_tangent;
 
-
-	glEnable(GL_RASTERIZER_DISCARD);
-	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, tfb);
-
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, particle_obj[buffer_index]);
-
-	//pass one generator particle in
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t), &particle);
-	gfx.error_check();
-
-	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
-	gfx.error_check();
-
-	glBeginTransformFeedback(GL_POINTS);
-	gfx.error_check();
-
-	glDrawArrays(GL_POINTS, 0, 1);
-	gfx.error_check();
-
-	glEndTransformFeedback();
-	gfx.error_check();
-
-	glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
-	gfx.error_check();
-
-	// Should get 40 or so out
-	glGetQueryObjectiv(query, GL_QUERY_RESULT, &generator.num);
-	gfx.error_check();
-
-	if (generator.num == 0)
+void main()
+{
+	for (int i = 0; i < 3; i++)
 	{
-		printf("Failed to generate particles!\n");
+		vary_position = ivary_position[0];
+		vary_TexCoord = ivary_TexCoord[0];
+		vary_LightCoord = ivary_LightCoord[0];
+		vary_velocity = ivary_velocity[0];
+		vary_color = ivary_color[0];
+		vary_tangent = ivary_tangent[0];
+		EmitVertex();
+		EndPrimitive();
 	}
 
-//	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feedback), feedback);
+}
+);
 
-	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+int ParticleUpdate::step(Graphics &gfx, int &buffer_index, generator_t &gen)
+{
+	char *vs = get_file("media/glsl/ver440/particle_update.vs", NULL);
+	char *gs = get_file("media/glsl/ver440/particle_update.gs", NULL);
+
+	// Compile shaders
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vs, nullptr);
+	glCompileShader(vertexShader);
+
+	GLuint geoShader = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(geoShader, 1, &gs, nullptr);
+	glCompileShader(geoShader);
+
+	// Create program and specify transform feedback variables
+	GLuint program = glCreateProgram();
+	glAttachShader(program, vertexShader);
+	glAttachShader(program, geoShader);
+
+	const GLchar* feedbackVaryings[] = { "vary_position", "vary_TexCoord", "vary_LightCoord", "vary_velocity", "vary_color", "vary_tangent" };
+	glTransformFeedbackVaryings(program, 6, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+
+	glLinkProgram(program);
+	glUseProgram(program);
+
+	// Create VAO
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	// Create input VBO and vertex format
+	typedef struct {
+		vec3 data1;
+		vec2 data2;
+		vec2 data3;
+		vec3 data4;
+		int data5;
+		vec4 data6;
+	} fake_t;
+
+	vertex_t data[] = {
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+	};
+
+	memcpy(particle, data, sizeof(data));
+
+	gen.num = 5;
+
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * gen.num, particle, GL_STATIC_DRAW);
+
+	GLint inputAttrib = glGetAttribLocation(program, "attr_position");
+	glEnableVertexAttribArray(inputAttrib);
+	glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	inputAttrib = glGetAttribLocation(program, "attr_TexCoord");
+	glEnableVertexAttribArray(inputAttrib);
+	glVertexAttribPointer(inputAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	inputAttrib = glGetAttribLocation(program, "attr_LightCoord");
+	glEnableVertexAttribArray(inputAttrib);
+	glVertexAttribPointer(inputAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+	inputAttrib = glGetAttribLocation(program, "attr_velocity");
+	glEnableVertexAttribArray(inputAttrib);
+	glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	inputAttrib = glGetAttribLocation(program, "attr_color");
+	glEnableVertexAttribArray(inputAttrib);
+	glVertexAttribPointer(inputAttrib, 1, GL_INT, GL_FALSE, 0, 0);
+
+	inputAttrib = glGetAttribLocation(program, "attr_tangent");
+	glEnableVertexAttribArray(inputAttrib);
+	glVertexAttribPointer(inputAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+
+
+	// Create transform feedback buffer
+	GLuint tbo;
+	glGenBuffers(1, &tbo);
+	glBindBuffer(GL_ARRAY_BUFFER, tbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(particle) * 3, nullptr, GL_STATIC_READ);
+
+	// Create query object to collect info
+	GLuint query;
+	glGenQueries(1, &query);
+
+	// Perform feedback transform
+	glEnable(GL_RASTERIZER_DISCARD);
+
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
+
+	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
+	glBeginTransformFeedback(GL_POINTS);
+	glDrawArrays(GL_POINTS, 0, gen.num);
+	glEndTransformFeedback();
+	glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
+
 	glDisable(GL_RASTERIZER_DISCARD);
 
-	gen.num = generator.num;
-	return vbo;
+	glFlush();
+
+	// Fetch and print results
+	GLuint primitives;
+	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &primitives);
+
+	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), particle);
+
+	printf("%u primitives written!\n\n", primitives);
+	gen.num = primitives;
+
+	return 0;
 }
 
 
@@ -857,9 +987,9 @@ int ParticleRender::init(Graphics *gfx)
 {
 #ifndef DIRECTX
 	if (Shader::init(gfx,
-		"media/glsl/exp/particle_render.vs",
-		"media/glsl/exp/particle_render.gs",
-		"media/glsl/exp/particle_render.fs"))
+		"media/glsl/ver440/particle_render.vs",
+		"media/glsl/ver440/particle_render.gs",
+		"media/glsl/ver440/particle_render.fs"))
 	{
 		program_handle = -1;
 		return -1;
@@ -877,24 +1007,12 @@ int ParticleRender::init(Graphics *gfx)
 void ParticleRender::prelink(void)
 {
 #ifndef DIRECTX
-	const char *feedback[4] =
-	{	"vary_position",
-		"vary_velocity",
-		"vary_color",
-		"vary_tangent"
-	};
-
-
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
 	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
 	glBindAttribLocation(program_handle, 3, "attr_velocity");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-
-	//Removed structs from shaders as I couldnt get this to link
-	glTransformFeedbackVaryings(program_handle, 4, feedback, GL_INTERLEAVED_ATTRIBS);
-
 #endif
 }
 

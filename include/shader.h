@@ -210,12 +210,12 @@ private:
 
 	// non uniform
 	unsigned int tfb;
-	unsigned int particle_obj[2];
+	unsigned int vbo; // geometry shader input
+	unsigned int rbo; // store geometry shader output
 
 	unsigned int query;
 
-	vertex_t particle;
-	vertex_t particles[MAX_PARTICLES];
+	vertex_t particle[MAX_PARTICLES];
 	generator_t generator;
 };
 
