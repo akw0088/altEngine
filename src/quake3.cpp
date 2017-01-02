@@ -8,14 +8,27 @@
 
 #define MACHINEGUN_DAMAGE 7
 #define SHOTGUN_DAMAGE 50
+#define SHOTGUN_RELOAD 60
 #define GRENADE_DAMAGE 100
+
 #define GRENADE_SPLASH_DAMAGE 50
+#define GRENADE_RELOAD 100
+
 #define ROCKET_DAMAGE 100
 #define ROCKET_SPLASH_DAMAGE 50
+#define ROCKET_RELOAD 100
+
 #define PLASMA_DAMAGE 20
 #define PLASMA_SPLASH_DAMAGE 15
+#define PLASMA_RELOAD 8
+
 #define LIGHTNING_DAMAGE 
+#define LIGHTNING_RELOAD 6
+
 #define RAILGUN_DAMAGE 100
+#define RAILGUN_RELOAD 188
+
+#define QUAD_FACTOR 3.0f
 
 
 
@@ -729,13 +742,13 @@ void Quake3::handle_plasma(Player &player, int self)
 
 	sprintf(player.attack_sound, "sound/weapons/plasma/hyprbf1a.wav");
 
-	player.reload_timer = 8;
+	player.reload_timer = PLASMA_RELOAD;
 	player.ammo_plasma--;
 
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
-		quad_factor = 3.0f;
+		quad_factor = QUAD_FACTOR;
 
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
@@ -799,13 +812,13 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	}
 
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
-	player.reload_timer = 100;
+	player.reload_timer = ROCKET_RELOAD;
 	player.ammo_rockets--;
 
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
-		quad_factor = 3.0f;
+		quad_factor = QUAD_FACTOR;
 
 
 
@@ -885,7 +898,7 @@ void Quake3::handle_grenade(Player &player, int self)
 
 	sprintf(player.attack_sound, "sound/weapons/grenade/grenlf1a.wav");
 
-	player.reload_timer = 100;
+	player.reload_timer = GRENADE_RELOAD;
 	player.ammo_grenades--;
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
@@ -909,7 +922,7 @@ void Quake3::handle_grenade(Player &player, int self)
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
-		quad_factor = 3.0f;
+		quad_factor = QUAD_FACTOR;
 
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
@@ -956,7 +969,7 @@ void Quake3::handle_lightning(Player &player, int self)
 
 
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
-	player.reload_timer = 6;
+	player.reload_timer = LIGHTNING_RELOAD;
 	player.ammo_lightning--;
 
 
@@ -1001,7 +1014,7 @@ void Quake3::handle_railgun(Player &player, int self)
 
 	sprintf(player.attack_sound, "sound/weapons/railgun/railgf1a.wav");
 
-	player.reload_timer = 188;
+	player.reload_timer = RAILGUN_RELOAD;
 	player.ammo_slugs--;
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
@@ -1020,7 +1033,7 @@ void Quake3::handle_railgun(Player &player, int self)
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
-		quad_factor = 3.0f;
+		quad_factor = QUAD_FACTOR;
 
 
 	engine->hitscan(player.entity->position, forward, index, num_index, self);
@@ -1097,7 +1110,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
-		quad_factor = 3.0f;
+		quad_factor = QUAD_FACTOR;
 
 	for (int i = 0; i < num_index; i++)
 	{
@@ -1125,7 +1138,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	int num_index;
 
 
-	player.reload_timer = 60;
+	player.reload_timer = SHOTGUN_RELOAD;
 	player.ammo_shells--;
 
 	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
@@ -1156,7 +1169,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
-		quad_factor = 3.0f;
+		quad_factor = QUAD_FACTOR;
 
 
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
