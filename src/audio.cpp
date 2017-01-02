@@ -350,33 +350,29 @@ void Audio::effects(int source)
 
 }
 
-int Audio::load_ogg(char *filename)
+int Audio::load_ogg(char *filename, wave_t &wave)
 {
 	short *data = NULL;
 	int channels = 0;
 	int sample_rate = 0;
 	int datasize = 0;
 	int length;
-	wave_t wave;
-	waveFormat_t format;
 
-	memset(&format, 0, sizeof(waveFormat_t));
 	length = stb_vorbis_decode_filename(filename, &channels, &sample_rate, &data);
 
-	format.channels = channels;
-	format.sampleRate = sample_rate;
-	format.sampleSize = 8 * channels;
-	format.align = 2 * channels;
+	wave.format->channels = channels;
+	wave.format->sampleRate = sample_rate;
+	wave.format->sampleSize = 8 * channels;
+	wave.format->align = 2 * channels;
 	datasize = length * 2;
 
 	//wave.buffer = data;
 	wave.pcmData = (char *)data;
-	wave.format = &format;
 	wave.data = (char *)data;
 
 	alGenBuffers(1, (unsigned int *)&wave.buffer);
 	alBufferData(wave.buffer, alFormat(&wave), wave.pcmData, datasize, wave.format->sampleRate);
-//	free((void *)wave.pcmData);
+	free((void *)wave.pcmData);
 	return wave.buffer;
 }
 

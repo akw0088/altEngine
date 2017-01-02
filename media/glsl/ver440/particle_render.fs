@@ -16,5 +16,5 @@ out vec4 Fragment;
 void main()
 {
   vec4 vTexColor = texture2D(u_texture0, vary_TexCoord);
-  Fragment = vec4(vTexColor.xyz, 1.0) * vary_tangent;
+  Fragment = vec4(vTexColor.xyz, 0.5);
 }

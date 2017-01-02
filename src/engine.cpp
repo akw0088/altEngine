@@ -716,19 +716,21 @@ void Engine::render_scene(bool lights)
 	particle_update.Params(gen);
 	int vbo = particle_update.step(gfx, gen);
 
-	vec3 quad1(0.0f, 1.0f, 0.0f); //camera_frame.up;
-	vec3 quad2(0.0f, 0.0f, 1.0f); //vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 	camera_frame.set(transformation);
 	mvp = transformation * projection;
+
+	vec3 quad1 = camera_frame.up;
+	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
 
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
 	gfx.SelectTexture(0, no_tex);
 
 
-	global.Select();
-	global.Params(mvp, 1);
+//	global.Select();
+//	global.Params(mvp, 1);
 	particle_render.render(gfx, vbo, gen.num);
 }
 
@@ -3010,7 +3012,7 @@ void Engine::update_audio()
 
 	int spawn = find_player();
 
-	if (spawn != -1)
+	if (spawn != -1 && entity_list.size())
 	{
 		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
 		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));

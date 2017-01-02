@@ -64,7 +64,14 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 //	audio->load(menu_wave);
 	menu_source = audio->create_source(false, true);
 
-	int buffer = audio->load_ogg("media/sound/menumusic.ogg");
+	wave_t wave;
+	waveFormat_t format;
+
+	memset(&format, 0, sizeof(waveFormat_t));
+	wave.format = &format;
+	int buffer = audio->load_ogg("media/sound/menumusic.ogg", wave);
+//	engine->snd_wave.push_back(wave);
+	
 
 	audio->select_buffer(menu_source, buffer);
 	audio->play(menu_source);
@@ -74,8 +81,6 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	audio->select_buffer(delta_source, delta_wave.buffer);
 	menu_state = 0;
 	history_index = 0;
-
-
 }
 
 void Menu::render(Global &global)

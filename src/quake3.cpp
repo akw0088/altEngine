@@ -858,9 +858,6 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
 
-
-
-
 	bool ret = engine->select_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
 	if (ret)
 	{
