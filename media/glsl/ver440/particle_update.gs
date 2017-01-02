@@ -59,21 +59,6 @@ float rand_zero_one()
 
 void main()
 {
-	vary_position	= ivary_position[0];
-	vary_velocity	= ivary_velocity[0];	
-	vary_color	= ivary_color[0];
-	vary_tangent	= ivary_tangent[0];
-	vary_TexCoord = ivary_TexCoord[0];
-	vary_LightCoord = ivary_LightCoord[0];
-	EmitVertex();
-	EndPrimitive(); 
-	EmitVertex();
-	EndPrimitive(); 
-}
-
-/*
-void main()
-{
 	local_seed = u_seed;
 	
 	// gl_Position doesn't matter, rendering is discarded
@@ -137,4 +122,3 @@ void main()
 		EndPrimitive(); 
 	}
 }
-*/

@@ -287,20 +287,20 @@ void Engine::load(char *level)
 	int buf = 0;
 
 	gen.position = vec3(0.0f, 0.0f, 0.0f);
-	gen.vel_min = vec3(5.0f, 5.0f, 5.0);
-	gen.vel_range = vec3(20.0f, 20.0f, 20.0f);
+	gen.vel_min = vec3(50.0f, 50.0f, 50.0);
+	gen.vel_range = vec3(200.0f, 200.0f, 200.0f);
 	gen.color = ~0;
 	gen.size = 100.0f;
-	gen.life_min = 500.0f;
-	gen.life_range = 2000.0f;
+	gen.life_min = 50000.0f;
+	gen.life_range = 200000.0f;
 	gen.num = MAX_PARTICLES;
 	gen.gravity = vec3(0.0f, -9.8f, 0.0f);
 	gen.delta_time = TICK_MS / 1000.0f;
 
 
-	gen.seed = vec3(rand_float(-10, 20.0f),
-		rand_float(-10.0, 20.0f),
-		rand_float(-10.0, 20.0f));
+	gen.seed = vec3(rand_float(-100, 200.0f),
+		rand_float(-100.0, 200.0f),
+		rand_float(-100.0, 200.0f));
 
 
 	if ( map.load(level, pk3_list, num_pk3) == false)
@@ -693,11 +693,11 @@ void Engine::render_scene(bool lights)
 	mvp = transformation * projection;
 	mlight2.Select();
 	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	//map.render_sky(gfx, mlight2, tick_num, surface_list);
+	map.render_sky(gfx, mlight2, tick_num, surface_list);
 //	gfx.cleardepth();
 
 
-	//render_entities(transformation, true);
+	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
 
@@ -707,12 +707,12 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset);
 
 
-//	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
 
 
 
-	gen.position = vec3(0.0f, 100.0f, 0.0f);
+	gen.position = entity_list[find_player()]->position + vec3(10.0f, 0.0f, 100.0f);
 
 	particle_update.Select();
 	gen.seed = vec3(rand_float(0.0, 10.0),
@@ -726,6 +726,7 @@ void Engine::render_scene(bool lights)
 
 	camera_frame.set(transformation);
 	mvp = transformation * projection;
+
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
 	gfx.SelectTexture(0, no_tex);
@@ -733,7 +734,7 @@ void Engine::render_scene(bool lights)
 
 	global.Select();
 	global.Params(mvp, 1);
-	particle_render.render(gfx, vbo, 100);
+	particle_render.render(gfx, vbo, gen.num);
 }
 
 

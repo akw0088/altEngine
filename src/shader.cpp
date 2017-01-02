@@ -744,19 +744,27 @@ int ParticleUpdate::init(Graphics *gfx)
 
 
 
-	vertex_t data[] = {		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },	};
+	vertex_t data[] = {
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
+	};
+
+	memset(particle, 0, sizeof(particle));
 	memcpy(particle, data, sizeof(data));
 
 
-	// Create vertex buffer (input)
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, particle, GL_DYNAMIC_DRAW);
+	glGenBuffers(1, &ParticleBufferA);
+	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferA);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, &particle[0], GL_STREAM_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// Create transform feedback buffer (output)
-	glGenBuffers(1, &tbo);
-	glBindBuffer(GL_ARRAY_BUFFER, tbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, nullptr, GL_DYNAMIC_DRAW);
+	glGenBuffers(1, &ParticleBufferB);
+	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferB);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, 0, GL_STREAM_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
 
@@ -811,16 +819,17 @@ void ParticleUpdate::Params(generator_t &gen)
 
 int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 {
-	// Copy input
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, &particle, GL_DYNAMIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, tbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, &particle, GL_DYNAMIC_DRAW);
+	// Source buffer
+	gfx.SelectVertexBuffer(ParticleBufferA);
+
 
 	// Perform feedback transform
 	glEnable(GL_RASTERIZER_DISCARD);
-	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
+
+	// Target Buffer
+	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, ParticleBufferB);
+
 	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
 	glBeginTransformFeedback(GL_POINTS);
 	glDrawArrays(GL_POINTS, 0, gen.num);
@@ -828,10 +837,14 @@ int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 	glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
 
 	glDisable(GL_RASTERIZER_DISCARD);
-
 	glFlush();
 
-	// Fetch and print results
+	// Swap buffers
+	int temp = ParticleBufferA;
+	ParticleBufferA = ParticleBufferB;
+	ParticleBufferB = temp;
+
+	// Get num primitives generated
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
 	//Output data
@@ -849,7 +862,7 @@ int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 	}
 	*/
 
-	return tbo;
+	return ParticleBufferA;
 }
 
 

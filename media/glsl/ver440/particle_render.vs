@@ -16,10 +16,11 @@ out	vec3		ivary_normal;
 out	int		ivary_color;
 out	vec4		ivary_tangent;
 
+uniform mat4 u_mvp;
 
 void main()
 {
-	gl_Position = vec4(attr_position, 1.0);
+	gl_Position = u_mvp * vec4(attr_position, 1.0);
 	iatt_position = gl_Position.xyz;
 	ivary_color = attr_color;
 	ivary_normal = attr_normal; 

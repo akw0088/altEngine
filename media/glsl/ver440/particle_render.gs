@@ -41,29 +41,33 @@ void main()
 		float fSize = ivary_normal[0].y;
 		
 		vary_tangent = vec4(	ivary_tangent[0].r,
-						ivary_tangent[0].g,
-						ivary_tangent[0].b,
-						ivary_normal[0].x); // life + color
-		   
-		vec3 vPos = vPosOld + (-u_quad1 - u_quad2) * fSize;
+					ivary_tangent[0].g,
+					ivary_tangent[0].b,
+					ivary_normal[0].x); // life + color
+		//0
+		vec3 vPos = vPosOld + (-u_quad1 + -u_quad2) * fSize;
 		vary_TexCoord = vec2(0.0, 0.0);
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
-		
-		vPos = vPosOld + (-u_quad1 + u_quad2) * fSize;
-		vary_TexCoord = vec2(0.0, 1.0);
-		gl_Position = u_mvp * vec4(vPos, 1.0);
-		EmitVertex();
-		
-		vPos = vPosOld + (u_quad1 - u_quad2) * fSize;
-		vary_TexCoord = vec2(1.0, 0.0);
-		gl_Position = u_mvp * vec4(vPos, 1.0);
-		EmitVertex();
-		
+
+		//3
 		vPos = vPosOld + (u_quad1 + u_quad2) * fSize;
 		vary_TexCoord = vec2(1.0, 1.0);
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
+
+		//2
+		vPos = vPosOld + (u_quad1 + -u_quad2) * fSize;
+		vary_TexCoord = vec2(1.0, 0.0);
+		gl_Position = u_mvp * vec4(vPos, 1.0);
+		EmitVertex();
+
+		//1
+		vPos = vPosOld + (-u_quad1 + u_quad2) * fSize;
+		vary_TexCoord = vec2(0.0, 1.0);
+		gl_Position = u_mvp * vec4(vPos, 1.0);
+		EmitVertex();
+
 		  
 		EndPrimitive();
 	}

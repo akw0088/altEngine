@@ -194,9 +194,8 @@ public:
 
 	virtual void prelink(void);
 
-
-	unsigned int vbo; // geometry shader input
-	unsigned int tbo; // geometry shader output
+	unsigned int ParticleBufferA;
+	unsigned int ParticleBufferB;
 
 private:
 	int u_gen_position;
