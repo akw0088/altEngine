@@ -758,7 +758,9 @@ int ParticleUpdate::init(Graphics *gfx)
 
 	glGenBuffers(1, &ParticleBufferA);
 	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferA);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, &particle[0], GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, 0, GL_STREAM_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t) * 5, &particle[0]);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &ParticleBufferB);
@@ -847,8 +849,8 @@ int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
 	// Get num primitives generated
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
-	//Output data
-	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), &particle);
+	// Copy output data
+//	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), &particle);
 
 	if (num_particle == 0)
 	{

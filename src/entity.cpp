@@ -24,6 +24,7 @@ Entity::Entity()
 	trigger = NULL;
 	player = NULL;
 	decal = NULL;
+	num_particle = 0;
 }
 
 Entity::~Entity()

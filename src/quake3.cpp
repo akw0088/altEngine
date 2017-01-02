@@ -798,7 +798,6 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 		camera_frame.forward.z = -player.entity->model->morientation.m[2];
 	}
 
-
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
 	player.reload_timer = 100;
 	player.ammo_rockets--;
@@ -830,6 +829,8 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	projectile->trigger->splash_radius = 250.0f;
 	projectile->trigger->knockback = 250.0f;
 	projectile->trigger->owner = self;
+
+	projectile->num_particle = 5000;
 
 	projectile->light = new Light(projectile, engine->gfx, 999);
 	projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
@@ -901,6 +902,9 @@ void Quake3::handle_grenade(Player &player, int self)
 	projectile->rigid->gravity = true;
 	projectile->rigid->rotational_friction_flag = true;
 	//entity->rigid->set_target(*(entity_list[spawn]));
+
+	projectile->num_particle = 5000;
+
 
 	float quad_factor = 1.0f;
 

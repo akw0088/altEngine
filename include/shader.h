@@ -183,7 +183,8 @@ private:
 	int shadowmap;
 };
 
-#define MAX_PARTICLES 100
+// 100k is a crash, 50k is slow, 10k seems good
+#define MAX_PARTICLES 10000
 
 class ParticleUpdate : public Shader
 {
@@ -213,8 +214,11 @@ private:
 
 	// non uniform
 
-	vertex_t	particle[MAX_PARTICLES];
-	unsigned int			num_particle;
+	// we dont store all particles, just generators to get it started, everything stays on GPU
+	vertex_t		particle[5];
+
+	// This count is *all* the particles
+	unsigned int	num_particle;
 
 	unsigned int query;
 	generator_t generator;

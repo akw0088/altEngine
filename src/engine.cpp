@@ -710,10 +710,6 @@ void Engine::render_scene(bool lights)
 	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
 
-
-
-	gen.position = entity_list[find_player()]->position + vec3(10.0f, 0.0f, 100.0f);
-
 	particle_update.Select();
 	gen.seed = vec3(rand_float(0.0, 10.0),
 					rand_float(0.0, 10.0),
@@ -921,6 +917,14 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			{
 				bool draw_wander_target = false;
 				entity_list[i]->rigid->render(gfx);
+				if (entity_list[i]->num_particle)
+				{
+					gen.num = entity_list[i]->num_particle;
+					gen.position = entity_list[i]->position;
+					gen.gravity = vec3(0.0f, 30.0f, 0.0f);
+				}
+
+
 				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
 #ifdef NOPE
 				if (draw_wander_target)

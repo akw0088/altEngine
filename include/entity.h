@@ -33,5 +33,8 @@ public:
 	int				model_ref;
 	float			height; // for movers will make own class later
 
+	//temp hack
+	int num_particle;
+
 };
 #endif
