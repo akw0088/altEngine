@@ -8,6 +8,7 @@ class Audio
 public:
 	void init();
 	void load(wave_t &wave);
+	int load_ogg(char *filename);
 	void play(int hSource);
 	void stop(int hSource);
 	int create_source(bool loop, bool global);

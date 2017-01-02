@@ -4,7 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-#include <float.h> // for FLT_MAX
 
 //#define SHADOWVOL
 #define FORWARD

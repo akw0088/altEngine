@@ -46,6 +46,7 @@ public:
 	int find_player();
 	void clean_entity(int index);
 	void load_sounds();
+	void load_ogg();
 	void load_models();
 	void load_model(Entity &ent);
 	void create_sources();

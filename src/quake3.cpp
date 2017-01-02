@@ -7,10 +7,12 @@
 #define BOT_ENABLE
 
 #define MACHINEGUN_DAMAGE 7
+#define MACHINEGUN_RELOAD 8
+
 #define SHOTGUN_DAMAGE 50
 #define SHOTGUN_RELOAD 60
-#define GRENADE_DAMAGE 100
 
+#define GRENADE_DAMAGE 100
 #define GRENADE_SPLASH_DAMAGE 50
 #define GRENADE_RELOAD 100
 
@@ -22,7 +24,7 @@
 #define PLASMA_SPLASH_DAMAGE 15
 #define PLASMA_RELOAD 8
 
-#define LIGHTNING_DAMAGE 
+#define LIGHTNING_DAMAGE 8
 #define LIGHTNING_RELOAD 6
 
 #define RAILGUN_DAMAGE 100
@@ -42,8 +44,6 @@ Quake3::Quake3()
 void Quake3::init(Engine *altEngine)
 {
 	engine = altEngine;
-
-
 }
 
 void Quake3::destroy()
@@ -1080,7 +1080,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 
 
 
-	player.reload_timer = 8;
+	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
 
 	//forward is right for the bots, need to fix it as hacks are piling up

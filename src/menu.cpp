@@ -60,10 +60,13 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	console_object = load_texture_pk3(*gfx, "media/gfx/misc/console01.tga", pk3_list, num_pk3, false);
 	font_object = load_texture_pk3(*gfx, "media/gfx/2d/bigchars.tga", pk3_list, num_pk3, false);
 	font.init(gfx);
-	strcpy(menu_wave.file, "media/sound/mwmusic.wav");
-	audio->load(menu_wave);
+//	strcpy(menu_wave.file, "media/sound/mwmusic.wav");
+//	audio->load(menu_wave);
 	menu_source = audio->create_source(false, true);
-	audio->select_buffer(menu_source, menu_wave.buffer);
+
+	int buffer = audio->load_ogg("media/sound/menumusic.ogg");
+
+	audio->select_buffer(menu_source, buffer);
 	audio->play(menu_source);
 	strcpy(delta_wave.file, "sound/misc/menu1.wav");
 	audio->load(delta_wave);
@@ -71,6 +74,8 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	audio->select_buffer(delta_source, delta_wave.buffer);
 	menu_state = 0;
 	history_index = 0;
+
+
 }
 
 void Menu::render(Global &global)
