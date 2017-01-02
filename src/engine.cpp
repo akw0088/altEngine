@@ -95,6 +95,7 @@ void Engine::init(void *p1, void *p2)
 #endif
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false);
+	particle_tex = load_texture(gfx, "media/flare.png", false);
 	Model::CreateObjects(gfx);
 	Model::make_skybox(gfx);
 
@@ -288,10 +289,10 @@ void Engine::load(char *level)
 	gen.position = vec3(0.0f, 0.0f, 0.0f);
 	gen.vel_min = vec3(50.0f, 50.0f, 50.0);
 	gen.vel_range = vec3(200.0f, 200.0f, 200.0f);
-	gen.color = ~0;
-	gen.size = 100.0f;
-	gen.life_min = 50000.0f;
-	gen.life_range = 200000.0f;
+	gen.color = 0xFF0000;
+	gen.size = 2.5f;
+	gen.life_min = 500.0f;
+	gen.life_range = 2000.0f;
 	gen.num = MAX_PARTICLES;
 	gen.gravity = vec3(0.0f, -9.8f, 0.0f);
 	gen.delta_time = TICK_MS / 1000.0f;
@@ -726,7 +727,7 @@ void Engine::render_scene(bool lights)
 
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
-	gfx.SelectTexture(0, no_tex);
+	gfx.SelectTexture(0, particle_tex);
 
 
 //	global.Select();

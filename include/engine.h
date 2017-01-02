@@ -141,10 +141,12 @@ protected:
 	unsigned int	fb_width;
 	unsigned int	fb_height;
 	unsigned int	no_tex;
+	unsigned int	particle_tex;
+
+	vector<Entity *>	entity_list;
 	unsigned int	num_dynamic;
 	unsigned int	num_player;
 
-	vector<Entity *>	entity_list;
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;
 

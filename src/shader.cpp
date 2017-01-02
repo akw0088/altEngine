@@ -921,12 +921,12 @@ void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2)
 void ParticleRender::render(Graphics &gfx, int vbo, int num)
 {
 #ifndef DIRECTX
-//	gfx.Blend(true);
-//	gfx.Depth(false);
+	gfx.Blend(true);
+	gfx.Depth(false);
 	gfx.SelectVertexBuffer(vbo);
 	gfx.SelectIndexBuffer(ibo);
 	gfx.DrawArrayPoint(0, 0, num, num);
-//	gfx.Depth(true);
-//	gfx.Blend(false);
+	gfx.Depth(true);
+	gfx.Blend(false);
 #endif
 }

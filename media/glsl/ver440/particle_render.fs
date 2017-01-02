@@ -15,6 +15,7 @@ out vec4 Fragment;
 
 void main()
 {
-  vec4 vTexColor = texture2D(u_texture0, vary_TexCoord);
-  Fragment = vec4(vTexColor.xyz, 0.5);
+	vec4 vTexColor = texture2D(u_texture0, vary_TexCoord);
+	Fragment = vTexColor;
+	Fragment.a *= vary_tangent.x / 2500.0; // life fade out
 }

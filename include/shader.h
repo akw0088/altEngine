@@ -240,9 +240,6 @@ private:
 	int u_quad2;
 	int u_texture0;
 
-	// non uniform
-
-	generator_t generator;
 };
 
 #endif

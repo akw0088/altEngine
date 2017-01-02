@@ -40,19 +40,13 @@ void main()
 	{
 		vec3 vPos;
 		vec3 vPosOld = gl_in[0].gl_Position.xyz; // world space
-		float fSize = 10.0f;//ivary_normal[0].y;
+		float fSize = ivary_tangent[0].y; // size = y, life = x
 		
 		vary_tangent = vec4(	ivary_tangent[0].r,
 					ivary_tangent[0].g,
 					ivary_tangent[0].b,
 					ivary_normal[0].x); // life + color
 
-
-		//2 lower left
-		vPos = vPosOld + (-u_quad1 + -u_quad2) * fSize;
-		vary_TexCoord = vec2(0.0, 0.0);
-		gl_Position = u_mvp * vec4(vPos, 1.0);
-		EmitVertex();
 
 		//0 up left
 		vPos = vPosOld + (u_quad1 + -u_quad2) * fSize;
@@ -66,6 +60,11 @@ void main()
 		gl_Position = u_mvp * vec4(vPos, 1.0);
 		EmitVertex();
 
+		//2 lower left
+		vPos = vPosOld + (-u_quad1 + -u_quad2) * fSize;
+		vary_TexCoord = vec2(0.0, 0.0);
+		gl_Position = u_mvp * vec4(vPos, 1.0);
+		EmitVertex();
 
 		//3 lower right
 		vPos = vPosOld + (-u_quad1 + u_quad2) * fSize;
