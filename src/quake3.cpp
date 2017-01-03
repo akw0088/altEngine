@@ -585,7 +585,7 @@ void Quake3::step(int frame_step)
 				continue;
 			}
 
-			bot->player->avoid_walls(engine->map);
+			bot->player->avoid_walls(engine->q3map);
 
 			bot->player->handle_bot(engine->entity_list, i);
 

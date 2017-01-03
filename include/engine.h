@@ -127,7 +127,7 @@ protected:
 
 	Graphics	gfx;
 	Audio		audio;
-	Bsp			map;
+	Bsp		q3map;
 	button_t	button;
 	input_t		input;
 	Menu		menu;

@@ -192,7 +192,7 @@ void Engine::setup_func()
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->model_ref != -1)
-			entity_list[i]->position = map.model_origin(entity_list[i]->model_ref);
+			entity_list[i]->position = q3map.model_origin(entity_list[i]->model_ref);
 
 
 		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
@@ -244,10 +244,10 @@ void Engine::load(char *level)
 {
 	matrix4 transformation;
 
-	if (map.loaded)
+	if (q3map.loaded)
 		return;
 	
-	map.anim_list.clear();
+	q3map.anim_list.clear();
 
 	last_spawn = 0;
 
@@ -303,14 +303,14 @@ void Engine::load(char *level)
 		rand_float(-100.0, 200.0f));
 
 
-	if ( map.load(level, pk3_list, num_pk3) == false)
+	if ( q3map.load(level, pk3_list, num_pk3) == false)
 		return;
 
-	map.generate_meshes(gfx);
+	q3map.generate_meshes(gfx);
 
 
 	char entfile[80] = { 0 };
-	sprintf(entfile, "media/%s.ent", map.map_name);
+	sprintf(entfile, "media/%s.ent", q3map.map_name);
 	char *entdata = get_file(entfile, NULL);
 	if (entdata != NULL)
 	{
@@ -320,11 +320,11 @@ void Engine::load(char *level)
 	else
 	{
 		char filename[80];
-		const char *data = map.get_entities();
+		const char *data = q3map.get_entities();
 
-		sprintf(filename, "media/%s.ent", map.map_name);
+		sprintf(filename, "media/%s.ent", q3map.map_name);
 		write_file(filename, data, strlen(data));
-		parse_entity(map.get_entities(), entity_list, gfx, audio);
+		parse_entity(q3map.get_entities(), entity_list, gfx, audio);
 	}
 
 
@@ -332,7 +332,7 @@ void Engine::load(char *level)
 	int start = entity_list.size();
 
 	char navfile[80] = { 0 };
-	sprintf(navfile, "media/%s.nav", map.map_name);
+	sprintf(navfile, "media/%s.nav", q3map.map_name);
 	char *navdata = get_file(navfile, NULL);
 	if (navdata != NULL)
 	{
@@ -367,7 +367,7 @@ void Engine::load(char *level)
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	camera_frame.set(transformation);
 	render_entities(transformation, true);
 
@@ -375,7 +375,7 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 
-	map.load_textures(gfx, surface_list, pk3_list, num_pk3);
+	q3map.load_textures(gfx, surface_list, pk3_list, num_pk3);
 	menu.delta("loaded", *this);
 	menu.stop();
 	menu.ingame = false;
@@ -399,7 +399,7 @@ void Engine::load(char *level)
 	{
 		if (entity_list[i]->light)
 		{
-			entity_list[i]->light->generate_volumes(map);
+			entity_list[i]->light->generate_volumes(q3map);
 //			entity_list[i]->rigid->angular_velocity = vec3();
 		}
 	}
@@ -498,7 +498,7 @@ void Engine::load_md5()
 
 void Engine::render(double last_frametime)
 {
-	if (map.loaded == false)
+	if (q3map.loaded == false)
 		return;
 
 #ifdef DEFERRED
@@ -638,7 +638,7 @@ void Engine::render_shadowmaps()
 				mlight2.Select();
 				vec3 offset(0.0f, 0.0f, 0.0f);
 				mlight2.Params(mvp, light_list, light_list.size(), offset);
-				map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+				q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
@@ -693,7 +693,7 @@ void Engine::render_scene(bool lights)
 	mvp = transformation * projection;
 	mlight2.Select();
 	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	map.render_sky(gfx, mlight2, tick_num, surface_list);
+	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
 //	gfx.cleardepth();
 
 
@@ -707,7 +707,7 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset);
 
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //	gfx.SelectShader(0);
 
 	particle_update.Select();
@@ -789,16 +789,16 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (input.control)
 	{
-		map.render(light_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+		q3map.render(light_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 //		render_shadow_volumes(entity_list[spawn]->player->current_light);
 //		gfx.SelectShader(0);
 		return;
 	}
 
-	map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
-	map.render_model(0, gfx);
+	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.render_model(0, gfx);
 
-//	for (int i = 0; i < map.data.num_model; i++)
+//	for (int i = 0; i < q3map.data.num_model; i++)
 //	{
 //	}
 //	gfx.SelectShader(0);
@@ -948,7 +948,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 //				if (strstr(entity_list[i]->type, "func_") != NULL)
 				{
 					entity_list[i]->rigid->gravity = false;
-					map.render_model(entity_list[i]->model_ref, gfx);
+					q3map.render_model(entity_list[i]->model_ref, gfx);
 				}
 			}
 
@@ -1188,7 +1188,7 @@ void Engine::spatial_testing()
 			for(int j = 0; j < 8; j++)
 			{
 				vec3 position = entity_list[i]->position + entity_list[i]->model->aabb[j];
-				bool vert_visible = map.vis_test(camera_frame.pos, position, leaf_a, leaf_b);
+				bool vert_visible = q3map.vis_test(camera_frame.pos, position, leaf_a, leaf_b);
 
 				if (vert_visible)
 				{
@@ -1229,7 +1229,7 @@ void Engine::spatial_testing()
 		else
 		{
 			// Lights? what else?
-			entity_list[i]->visible = map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
+			entity_list[i]->visible = q3map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
 			entity_list[find_player()]->bsp_leaf = leaf_a;
 			entity_list[i]->bsp_leaf = leaf_b;
 		}
@@ -1428,7 +1428,7 @@ bool Engine::map_collision(RigidBody &body)
 //		vec3 point = body.center + body.entity->position;
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
-		if (map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
+		if (q3map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
 		{
 			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
@@ -1451,7 +1451,7 @@ bool Engine::map_collision(RigidBody &body)
 					{
 						vec3 p = point + staircheck;
 
-						if (map.collision_detect(p, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
+						if (q3map.collision_detect(p, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
 						{
 							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
 							continue;
@@ -1479,7 +1479,7 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i] == body.entity)
 			continue;
 
-		if (map.leaf_test(body.entity->position, entity_list[i]->position))
+		if (q3map.leaf_test(body.entity->position, entity_list[i]->position))
 			body.collision_detect(*entity_list[i]->rigid);
 	}
 	return false;
@@ -1488,13 +1488,13 @@ bool Engine::body_collision(RigidBody &body)
 void Engine::step(int tick)
 {
 	tick_num = tick;
-	if (map.loaded == false)
+	if (q3map.loaded == false)
 		return;
 
 	// Animate animated textures
-	for (unsigned int i = 0; i < map.anim_list.size(); i++)
+	for (unsigned int i = 0; i < q3map.anim_list.size(); i++)
 	{
-		texture_t  *tex = map.anim_list[i];
+		texture_t  *tex = q3map.anim_list[i];
 
 		if (tex->num_anim == 0)
 			break;
@@ -1867,7 +1867,7 @@ void Engine::server_step()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
-		sprintf(reliable.msg, "map %s", map.map_name);
+		sprintf(reliable.msg, "map %s", q3map.map_name);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
@@ -1957,7 +1957,7 @@ void Engine::send_entities()
 			int leaf_a;
 			int leaf_b;
 
-			bool visible = map.vis_test(entity_list[j]->position,
+			bool visible = q3map.vis_test(entity_list[j]->position,
 				entity_list[client_list[i]->entity]->position, leaf_a, leaf_b);
 			if ( visible == false )
 				continue;
@@ -2192,7 +2192,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if (map.loaded == false || menu.ingame == true || menu.console == true)
+	if (q3map.loaded == false || menu.ingame == true || menu.console == true)
 	{
 		float devicex = (float)x / gfx.width;
 		float devicey = (float)y / gfx.height;
@@ -2437,7 +2437,7 @@ void Engine::keypress(char *key, bool pressed)
 
 void Engine::keystroke(char key)
 {
-	if (map.loaded == false)
+	if (q3map.loaded == false)
 	{
 		menu.ingame = false;
 
@@ -2575,7 +2575,7 @@ void Engine::resize(int width, int height)
 
 #ifndef __linux__
 	// This should probably be in render
-	if (initialized && map.loaded == false)
+	if (initialized && q3map.loaded == false)
 	{
 		gfx.clear();
 		menu.render(global);
@@ -3051,7 +3051,7 @@ void Engine::kick(unsigned int i)
 
 void Engine::unload()
 {
-	if (map.loaded == false)
+	if (q3map.loaded == false)
 		return;
 
 	num_bot = 0;
@@ -3076,7 +3076,7 @@ void Engine::unload()
 	post.destroy();
 	mlight2.destroy();
 //	mlight3.destroy();
-	map.unload(gfx);
+	q3map.unload(gfx);
 	menu.play();
 	menu.delta("unload", *this);
 	menu.render(global);
@@ -3993,7 +3993,7 @@ void Engine::console(int self, char *cmd)
 	ret = strcmp(cmd, "quit");
 	if (ret == 0)
 	{
-		if (map.loaded)
+		if (q3map.loaded)
 		{
 			unload();
 		}
@@ -4200,7 +4200,7 @@ int Engine::bind(int port)
 	}
 	else
 	{
-		map.unload(gfx);
+		q3map.unload(gfx);
 		return -1;
 	}
 
