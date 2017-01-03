@@ -840,6 +840,6 @@ void print_path(int *path, int path_length, graph_node_t *node)
 
 float rand_float(float fMin, float fAdd)
 {
-	float fRandom = float(rand() % (RAND_MAX + 1)) / float(RAND_MAX);
-	return fMin + fAdd*fRandom;
+	float fRandom = (float)(rand() % RAND_MAX) / (RAND_MAX - 1);
+	return fMin + fAdd * fRandom;
 }

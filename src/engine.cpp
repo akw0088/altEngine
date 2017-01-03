@@ -284,7 +284,7 @@ void Engine::load(char *level)
 		menu.print("Failed to load particle_update shader");
 
 
-	int buf = 0;
+//	int buf = 0;
 
 	gen.position = vec3(0.0f, 0.0f, 0.0f);
 	gen.vel_min = vec3(50.0f, 50.0f, 50.0);
@@ -917,7 +917,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
 			{
-				bool draw_wander_target = false;
+				//bool draw_wander_target = false;
 				entity_list[i]->rigid->render(gfx);
 				if (entity_list[i]->num_particle)
 				{
@@ -1169,7 +1169,7 @@ void Engine::spatial_testing()
 		if (entity_list[i]->model)
 		{
 			bool bsp_visible = false;
-			bool frustum_visible = false;
+			//bool frustum_visible = false;
 			bool visible = false;
 
 
@@ -2267,7 +2267,7 @@ void Engine::bind_keys()
 
 	while (line)
 	{
-		ret = sscanf(line, "bind %s \"%s\"\r\n", &key, &value);
+		ret = sscanf(line, "bind %s \"%s\"\r\n", &key[0], &value[0]);
 
 		//sscanf is grabbing ending quote
 		value[strlen(value) - 1] = '\0';

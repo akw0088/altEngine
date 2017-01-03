@@ -67,7 +67,7 @@ private:
 	vec4		*tangent;
 
 	
-	int last_leaf;
+//	int last_leaf;
 
 	// keeping this around because it seems like data.vertex is getting corrupted.
 	vertex_t *vertex;

@@ -571,8 +571,8 @@ void Model::create_box(Graphics &gfx, vec3 *box)
 						2, 6,
 						3, 7};
 
-//	box_vertex = gfx.CreateVertexBuffer(vert, 8);
-//	box_index = gfx.CreateIndexBuffer(index, 24);
+	box_vertex = gfx.CreateVertexBuffer(vert, 8);
+	box_index = gfx.CreateIndexBuffer(index, 24);
 }
 
 
