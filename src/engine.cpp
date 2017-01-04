@@ -1681,7 +1681,7 @@ void Engine::check_triggers(int self)
 			if (pickup)
 			{
 				entity_list[i]->trigger->active = true;
-				console(self, entity_list[i]->trigger->action);
+				gconsole(self, entity_list[i]->trigger->action);
 
 				entity_list[i]->visible = false;
 				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
@@ -3140,35 +3140,14 @@ void Engine::quit()
 #endif
 }
 
-void Engine::console(int self, char *cmd)
+void Engine::gconsole(int self, char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
 	char data2[LINE_SIZE] = { 0 };
-	int port;
 	int ret;
 
 	debugf("Console: %s\n", cmd);
-
-	ret = sscanf(cmd, "log %s", data);
-	if (ret == 1)
-	{
-		snprintf(msg, LINE_SIZE, "%s\n", data);
-		menu.print(msg);
-		return;
-	}
-	menu.print(cmd);
-
-	ret = sscanf(cmd, "map %s", data);
-	if (ret == 1)
-	{
-		unload();
-		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
-		menu.print(msg);
-		load(data);
-		return;
-	}
-
 
 	ret = sscanf(cmd, "hurt %s %s", data, data2);
 	if (ret == 2)
@@ -3309,11 +3288,6 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "clear") == 0)
-	{
-		menu.clear_console();
-	}
-
 	if (strcmp(cmd, "weapon_grenadelauncher") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
@@ -3354,7 +3328,7 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "weapon_shotgun")  == 0)
+	if (strcmp(cmd, "weapon_shotgun") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
 		menu.print(msg);
@@ -3395,7 +3369,7 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "weapon_lightning")  == 0)
+	if (strcmp(cmd, "weapon_lightning") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
 		menu.print(msg);
@@ -3528,7 +3502,7 @@ void Engine::console(int self, char *cmd)
 		{
 			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
 				continue;
-				
+
 			if (!strcmp(entity_list[i]->target_name, data))
 			{
 				matrix4 matrix;
@@ -3694,7 +3668,7 @@ void Engine::console(int self, char *cmd)
 				{
 					matrix4 matrix;
 
-//					camera_frame.set(matrix);
+					//					camera_frame.set(matrix);
 					entity_list[player]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
 					switch (entity_list[i]->angle)
@@ -3836,16 +3810,6 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
-
-	ret = sscanf(cmd, "connect %s", data);
-	if (ret == 1)
-	{
-		snprintf(msg, LINE_SIZE, "Connecting to %s\n", data);
-		menu.print(msg);
-		connect(data);
-		return;
-	}
-
 	ret = sscanf(cmd, "say \"%[^\"]s", data);
 	if (ret == 1)
 	{
@@ -3887,7 +3851,7 @@ void Engine::console(int self, char *cmd)
 		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
 			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, entity_list[client_list[i]->entity]->player->name,
-				entity_list[client_list[i]->entity]->player->stats.kills, 
+				entity_list[client_list[i]->entity]->player->stats.kills,
 				entity_list[client_list[i]->entity]->player->stats.deaths,
 				client_list[i]->socketname,
 				current - client_list[i]->last_time);
@@ -3903,110 +3867,6 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "r_res") == 0)
-	{
-		snprintf(msg, LINE_SIZE, "%dx%d\n", gfx.width, gfx.height);
-		menu.print(msg);
-		return;
-	}
-
-	ret = sscanf(cmd, "bind %d", &port);
-	if (ret == 1)
-	{
-		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
-		menu.print(msg);
-		load("maps/q3tourney2.bsp");
-		bind(port);
-		return;
-	}
-
-	ret = strcmp(cmd, "unit_test_maps");
-	if (ret == 0)
-	{
-		/*
-		if (map.loaded)
-		{
-			map.unload(gfx);
-		}
-		map.load("maps/q3dm1.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm2.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm3.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm4.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm5.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm6.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm7.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm8.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm9.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm10.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm11.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm12.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm13.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm14.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm15.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm16.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm17.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm18.bsp");
-		map.unload(gfx);
-		map.load("maps/q3dm19.bsp");
-		map.unload(gfx);
-		map.load("maps/q3tourney1.bsp");
-		map.unload(gfx);
-		map.load("maps/q3tourney2.bsp");
-		map.unload(gfx);
-		map.load("maps/q3tourney3.bsp");
-		map.unload(gfx);
-		map.load("maps/q3tourney4.bsp");
-		map.unload(gfx);
-		map.load("maps/q3tourney5.bsp");
-		map.unload(gfx);
-		map.load("maps/q3tourney6.bsp");
-		map.unload(gfx);
-		map.load("maps/q3ctf1.bsp");
-		map.unload(gfx);
-		map.load("maps/q3ctf2.bsp");
-		map.unload(gfx);
-		map.load("maps/q3ctf3.bsp");
-		map.unload(gfx);
-		map.load("maps/q3ctf4.bsp");
-		map.unload(gfx);
-		*/
-		return;
-	}
-
-	ret = strcmp(cmd, "quit");
-	if (ret == 0)
-	{
-		if (q3map.loaded)
-		{
-			unload();
-		}
-		destroy();
-		return;
-	}
-
-	ret = strcmp(cmd, "exit");
-	if (ret == 0)
-	{
-		exit(0);
-	}
-
 	ret = strcmp(cmd, "noclip");
 	if (ret == 0)
 	{
@@ -4018,32 +3878,6 @@ void Engine::console(int self, char *cmd)
 		}
 		return;
 	}
-
-
-	ret = sscanf(cmd, "r_polygonmode %s", data);
-	if (ret == 1)
-	{
-#ifndef DIRECTX
-		if (atoi(data) == 1)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		else if (atoi(data) == 2)
-			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-		else
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-#endif
-		return;
-	}
-
-	ret = sscanf(cmd, "r_frontface %s", data);
-	if (ret == 1)
-	{
-		if (atoi(data) == 1)
-			glFrontFace(GL_CCW);
-		else
-			glFrontFace(GL_CW);
-	}
-
-
 
 	/*
 	haste tempted to double rate of fire too
@@ -4150,7 +3984,7 @@ void Engine::console(int self, char *cmd)
 		return;
 	}
 
-		ret = strcmp(cmd, "give all");
+	ret = strcmp(cmd, "give all");
 	if (ret == 0)
 	{
 		snprintf(msg, LINE_SIZE, "give all\n");
@@ -4183,6 +4017,114 @@ void Engine::console(int self, char *cmd)
 
 	snprintf(msg, LINE_SIZE, "Unknown command: %s\n", cmd);
 	menu.print(msg);
+}
+
+void Engine::console(char *cmd)
+{
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
+	char data2[LINE_SIZE] = { 0 };
+	int port;
+	int ret;
+
+	debugf("Console: %s\n", cmd);
+
+	ret = sscanf(cmd, "log %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "%s\n", data);
+		menu.print(msg);
+		return;
+	}
+	menu.print(cmd);
+
+	ret = sscanf(cmd, "map %s", data);
+	if (ret == 1)
+	{
+		unload();
+		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
+		menu.print(msg);
+		load(data);
+		return;
+	}
+
+	if (strcmp(cmd, "clear") == 0)
+	{
+		menu.clear_console();
+	}
+
+
+
+
+	ret = sscanf(cmd, "connect %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "Connecting to %s\n", data);
+		menu.print(msg);
+		connect(data);
+		return;
+	}
+
+
+
+	if (strcmp(cmd, "r_res") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "%dx%d\n", gfx.width, gfx.height);
+		menu.print(msg);
+		return;
+	}
+
+	ret = sscanf(cmd, "bind %d", &port);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
+		menu.print(msg);
+		load("maps/q3tourney2.bsp");
+		bind(port);
+		return;
+	}
+
+	ret = strcmp(cmd, "quit");
+	if (ret == 0)
+	{
+		if (q3map.loaded)
+		{
+			unload();
+		}
+		destroy();
+		return;
+	}
+
+	ret = strcmp(cmd, "exit");
+	if (ret == 0)
+	{
+		exit(0);
+	}
+
+
+	ret = sscanf(cmd, "r_polygonmode %s", data);
+	if (ret == 1)
+	{
+#ifndef DIRECTX
+		if (atoi(data) == 1)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		else if (atoi(data) == 2)
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		else
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+#endif
+		return;
+	}
+
+	ret = sscanf(cmd, "r_frontface %s", data);
+	if (ret == 1)
+	{
+		if (atoi(data) == 1)
+			glFrontFace(GL_CCW);
+		else
+			glFrontFace(GL_CW);
+	}
+
 }
 
 int Engine::bind(int port)

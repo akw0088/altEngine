@@ -51,7 +51,8 @@ public:
 	void load_model(Entity &ent);
 	void create_sources();
 
-	void console(int invoker, char *cmd);
+	void gconsole(int self, char *cmd);
+	void console(char *cmd);
 	void handle_game(char key);
 
 	bool collision_detect(RigidBody &body);

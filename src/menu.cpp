@@ -212,7 +212,7 @@ void Menu::delta(char *delta, Engine &altEngine)
 				menu_state = item->end;
 				audio->play(delta_source);
 				if (strcmp(item->cmd, "null") != 0)
-					altEngine.console(-1, item->cmd);
+					altEngine.console(item->cmd);
 				break;
 			}
 		}
@@ -489,7 +489,7 @@ void Menu::handle_console(char key, Engine *altEngine)
 			dmesg_index = 0;
 		memcpy(line, key_buffer, strlen(key_buffer) + 1);
 		cmd_buffer.push_back(line);
-		altEngine->console(altEngine->find_player(), key_buffer);
+		altEngine->console(key_buffer);
 		key_buffer[0] = '\0';
 		break;
 		}

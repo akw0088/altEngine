@@ -160,14 +160,14 @@ void Quake3::handle_player(int self)
 		{
 			if (engine->input.attack && entity->player->reload_timer == 0)
 			{
-				engine->console(self, "respawn");
+				engine->gconsole(self, "respawn");
 			}
 		}
 		else
 		{
 			if (entity->player->reload_timer <= 0)
 			{
-				engine->console(self, "respawn");
+				engine->gconsole(self, "respawn");
 			}
 		}
 	}
@@ -526,7 +526,7 @@ void Quake3::add_bot(int &index)
 
 	char cmd[80];
 	sprintf(cmd, "respawn %d %d", -1, index);
-	engine->console(index, cmd);
+	engine->gconsole(index, cmd);
 }
 
 
@@ -627,7 +627,7 @@ void Quake3::step(int frame_step)
 				bot->player->respawn();
 				char cmd[80];
 				sprintf(cmd, "respawn -1 %d", i);
-				engine->console(i, cmd);
+				engine->gconsole(i, cmd);
 				break;
 			case BOT_GET_ITEM:
 			{
@@ -1047,7 +1047,7 @@ void Quake3::handle_railgun(Player &player, int self)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
-		engine->console(self, cmd);
+		engine->gconsole(self, cmd);
 	}
 
 
@@ -1120,7 +1120,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 		sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		engine->console(self, cmd);
+		engine->gconsole(self, cmd);
 	}
 
 }
@@ -1183,7 +1183,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 
-		engine->console(self, cmd);
+		engine->gconsole(self, cmd);
 	}
 
 }

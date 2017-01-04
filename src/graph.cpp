@@ -57,9 +57,9 @@ float *Graph::dijkstra(int start)
 	for (i = 0; i < num_nodes; i++)
 	{
 		if (i == start)
-			distance_table[i] = 0;
+			distance_table[i] = 0.0f;
 		else
-			distance_table[i] = INT_MAX;
+			distance_table[i] = FLT_MAX;
 
 		key.index = i;
 		key.data = distance_table[i];
@@ -134,9 +134,9 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 	for (i = 0; i < num_nodes; i++)
 	{
 		if (i == start)
-			distance_table[i] = 0;
+			distance_table[i] = 0.0f;
 		else
-			distance_table[i] = INT_MAX;
+			distance_table[i] = FLT_MAX;
 
 		key.index = i;
 		key.data = distance_table[i];
@@ -223,9 +223,9 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 	for (i = 0; i < num_nodes; i++)
 	{
 		if (i == start)
-			distance_table[i] = 0;
+			distance_table[i] = 0.0f;
 		else
-			distance_table[i] = INT_MAX;
+			distance_table[i] = FLT_MAX;
 
 		key.index = i;
 		key.data = distance_table[i];
