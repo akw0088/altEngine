@@ -13,7 +13,7 @@ out	vec3		iatt_position;
 out	vec2		ivary_TexCoord;
 out	vec2		ivary_LightCoord;
 out	vec3		ivary_normal;
-out	int		ivary_color;
+out	flat int	ivary_color;
 out	vec4		ivary_tangent;
 
 uniform mat4 u_mvp;

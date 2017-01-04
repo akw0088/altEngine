@@ -7,7 +7,7 @@ in    vec3 att_position;
 in    vec2 vary_TexCoord;
 in    vec2 vary_LightCoord;
 in    vec3 vary_normal;
-in    int vary_color;
+in    flat int vary_color;
 in    vec4 vary_tangent;
 
 // Final fragment color output

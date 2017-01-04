@@ -12,7 +12,7 @@ in	vec3[]		iatt_position;
 in	vec2[]		ivary_TexCoord;
 in	vec2[]		ivary_LightCoord;
 in	vec3[]		ivary_normal;
-in	int[]		ivary_color;
+in	flat int[]	ivary_color;
 in	vec4[]		ivary_tangent;
 
 
