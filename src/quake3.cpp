@@ -160,14 +160,14 @@ void Quake3::handle_player(int self)
 		{
 			if (engine->input.attack && entity->player->reload_timer == 0)
 			{
-				engine->gconsole(self, "respawn");
+				console(self, "respawn", engine->menu, engine->entity_list);
 			}
 		}
 		else
 		{
 			if (entity->player->reload_timer <= 0)
 			{
-				engine->gconsole(self, "respawn");
+				console(self, "respawn", engine->menu, engine->entity_list);
 			}
 		}
 	}
@@ -526,7 +526,7 @@ void Quake3::add_bot(int &index)
 
 	char cmd[80];
 	sprintf(cmd, "respawn %d %d", -1, index);
-	engine->gconsole(index, cmd);
+	console(index, cmd, engine->menu, engine->entity_list);
 }
 
 
@@ -627,7 +627,7 @@ void Quake3::step(int frame_step)
 				bot->player->respawn();
 				char cmd[80];
 				sprintf(cmd, "respawn -1 %d", i);
-				engine->gconsole(i, cmd);
+				console(i, cmd, engine->menu, engine->entity_list);
 				break;
 			case BOT_GET_ITEM:
 			{
@@ -1047,7 +1047,7 @@ void Quake3::handle_railgun(Player &player, int self)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
-		engine->gconsole(self, cmd);
+		console(self, cmd, engine->menu, engine->entity_list);
 	}
 
 
@@ -1120,7 +1120,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 		sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		engine->gconsole(self, cmd);
+		console(self, cmd, engine->menu, engine->entity_list);
 	}
 
 }
@@ -1183,7 +1183,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 
-		engine->gconsole(self, cmd);
+		console(self, cmd, engine->menu, engine->entity_list);
 	}
 
 }
@@ -1913,4 +1913,883 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed
 
 	// Couldnt find nav node
 	return 0;
+}
+
+void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list)
+{
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
+	char data2[LINE_SIZE] = { 0 };
+	int ret;
+
+	debugf("Console: %s\n", cmd);
+
+	ret = sscanf(cmd, "hurt %s %s", data, data2);
+	if (ret == 2)
+	{
+		snprintf(msg, LINE_SIZE, "hurt %s %s\n", data, data2);
+		menu.print(msg);
+
+		unsigned int index = atoi(data);
+
+		if (index >= entity_list.size())
+		{
+			debugf("hurt given invalid index\n");
+			return;
+		}
+
+		if (entity_list[index]->player == NULL)
+		{
+			debugf("hurt given invalid index\n");
+			return;
+		}
+
+
+		unsigned int damage = abs32(atoi(data2));
+		unsigned int health_damage = damage / 3;
+		unsigned int armor_damage = 2 * health_damage;
+
+		if (armor_damage > entity_list[index]->player->armor)
+		{
+			armor_damage -= entity_list[index]->player->armor;
+			entity_list[index]->player->armor = 0;
+			health_damage += armor_damage;
+		}
+		else
+		{
+			entity_list[index]->player->armor -= armor_damage;
+		}
+
+		entity_list[index]->player->health -= health_damage;
+
+		bool ret = false;
+		switch (engine->tick_num % 4)
+		{
+		case 0:
+			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
+			break;
+		case 1:
+			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
+			break;
+		case 2:
+			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
+			break;
+		case 3:
+			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
+			break;
+		}
+		if (ret)
+		{
+			engine->audio.play(entity_list[index]->speaker->source);
+		}
+		else
+		{
+			debugf("Failed to find PCM data for pain sound\n");
+		}
+
+
+		return;
+	}
+
+	ret = sscanf(cmd, "damage %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "damage %s\n", data);
+		menu.print(msg);
+
+		unsigned int damage = abs32(atoi(data));
+		unsigned int health_damage = damage / 3;
+		unsigned int armor_damage = 2 * health_damage;
+
+		if (armor_damage > entity_list[self]->player->armor)
+		{
+			armor_damage -= entity_list[self]->player->armor;
+			entity_list[self]->player->armor = 0;
+			health_damage += armor_damage;
+		}
+		else
+		{
+			entity_list[self]->player->armor -= armor_damage;
+		}
+
+		entity_list[self]->player->health -= health_damage;
+
+		bool ret = false;
+		switch (engine->tick_num % 4)
+		{
+		case 0:
+			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
+			break;
+		case 1:
+			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
+			break;
+		case 2:
+			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
+			break;
+		case 3:
+			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
+			break;
+		}
+		if (ret)
+		{
+			engine->audio.play(entity_list[self]->speaker->source);
+		}
+		else
+		{
+			debugf("Failed to find PCM data for pain sound\n");
+		}
+
+		return;
+	}
+
+	ret = sscanf(cmd, "health %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "health %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->health += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "armor %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "armor %s\n", data);
+		menu.print(msg);
+		if (entity_list[self]->player->armor + atoi(data) <= 200)
+		{
+			entity_list[self]->player->armor += atoi(data);
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_grenadelauncher") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_grenade;
+
+		entity_list[self]->player->weapon_flags |= wp_grenade;
+		if (entity_list[self]->player->ammo_grenades > 10)
+		{
+			entity_list[self]->player->ammo_grenades++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_grenades = 10;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_rocketlauncher") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_rocket;
+
+		entity_list[self]->player->weapon_flags |= wp_rocket;
+		if (entity_list[self]->player->ammo_rockets > 10)
+		{
+			entity_list[self]->player->ammo_rockets++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_rockets = 10;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_shotgun") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_shotgun;
+
+		entity_list[self]->player->weapon_flags |= wp_shotgun;
+		if (entity_list[self]->player->ammo_shells > 10)
+		{
+			entity_list[self]->player->ammo_shells++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_shells = 10;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_machinegun") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_machinegun\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_machinegun;
+
+		entity_list[self]->player->weapon_flags |= wp_machinegun;
+
+		if (entity_list[self]->player->ammo_bullets > 100)
+		{
+			entity_list[self]->player->ammo_bullets++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_bullets = 100;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_lightning") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_lightning;
+
+		entity_list[self]->player->weapon_flags |= wp_lightning;
+		if (entity_list[self]->player->ammo_lightning > 100)
+		{
+			entity_list[self]->player->ammo_lightning++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_lightning = 100;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_railgun") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_railgun\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_railgun;
+
+		entity_list[self]->player->weapon_flags |= wp_railgun;
+		if (entity_list[self]->player->ammo_slugs > 10)
+		{
+			entity_list[self]->player->ammo_slugs++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_slugs = 10;
+		}
+		return;
+	}
+
+	if (strcmp(cmd, "weapon_plasma") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_plasma\n");
+		menu.print(msg);
+
+		if (entity_list[self]->player->current_weapon == wp_none)
+			entity_list[self]->player->current_weapon = wp_plasma;
+
+		entity_list[self]->player->weapon_flags |= wp_plasma;
+		if (entity_list[self]->player->ammo_plasma > 50)
+		{
+			entity_list[self]->player->ammo_plasma++;
+		}
+		else
+		{
+			entity_list[self]->player->ammo_plasma = 50;
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_rockets %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_rockets %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_rockets += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_slugs %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_slugs %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_slugs += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_shells %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_shells %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_shells += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_bullets %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_bullets %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_bullets += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_lightning %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_lightning %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_lightning += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_plasma %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_plasma %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_plasma += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_bfg %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_bfg %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_bfg += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "teleport %s %s", data, data2);
+	if (ret == 2)
+	{
+		snprintf(msg, LINE_SIZE, "target %s\n", data);
+		menu.print(msg);
+
+		for (unsigned int i = 0; i < entity_list.size(); i++)
+		{
+			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
+				continue;
+
+			if (!strcmp(entity_list[i]->target_name, data))
+			{
+				matrix4 matrix;
+				unsigned int index = atoi(data2);
+
+				if (entity_list[self]->player->teleport_timer > 0)
+					return;
+
+				entity_list[self]->player->teleport_timer = TICK_RATE >> 1;
+				entity_list[self]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+				entity_list[self]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+
+
+				bool ret = false;
+
+				if (index < entity_list.size())
+				{
+					ret = engine->select_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
+					if (ret)
+					{
+						engine->audio.play(entity_list[index]->trigger->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->teleout_sound);
+					}
+				}
+
+				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
+				if (ret)
+				{
+					engine->audio.play(entity_list[self]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
+				}
+
+
+
+				switch (entity_list[i]->angle)
+				{
+				case 0:
+					matrix4::mat_left(matrix, entity_list[self]->position);
+					break;
+				case 90:
+					matrix4::mat_forward(matrix, entity_list[self]->position);
+					break;
+				case 180:
+					matrix4::mat_right(matrix, entity_list[self]->position);
+					break;
+				case 270:
+					matrix4::mat_backward(matrix, entity_list[self]->position);
+					break;
+				}
+
+				if (engine->find_player() == self)
+				{
+					engine->camera_frame.forward.x = matrix.m[8];
+					engine->camera_frame.forward.y = matrix.m[9];
+					engine->camera_frame.forward.z = matrix.m[10];
+					engine->camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+				}
+				break;
+
+			}
+		}
+		return;
+	}
+
+	char *pret = NULL; // linux didnt like pointer to int cast
+	pret = strstr(cmd, "respawn");
+	if (pret)
+	{
+		unsigned int i = last_spawn;
+		bool spawned = false;
+		unsigned int index = i;
+		unsigned int player = self;
+
+		if (player == -1)
+			return;
+
+		ret = sscanf(cmd, "respawn %s %s", data, data2);
+		if (ret == 2)
+		{
+			player = atoi(data2);
+			if (player >= entity_list.size() || entity_list[player]->player == NULL)
+			{
+				debugf("respawn given invalid player index\n");
+				return;
+			}
+		}
+		else if (ret == 1)
+		{
+			index = atoi(data);
+
+			if (index >= entity_list.size())
+			{
+				debugf("respawn given invalid entity index\n");
+				return;
+			}
+			i = index;
+		}
+
+		if (ret >= 0 && index != i)
+		{
+			matrix4 matrix;
+
+			entity_list[player]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
+
+			switch (entity_list[i]->angle)
+			{
+			case 0:
+				matrix4::mat_left(matrix, entity_list[player]->position);
+				break;
+			case 90:
+				matrix4::mat_forward(matrix, entity_list[player]->position);
+				break;
+			case 180:
+				matrix4::mat_right(matrix, entity_list[player]->position);
+				break;
+			case 270:
+				matrix4::mat_backward(matrix, entity_list[player]->position);
+				break;
+			default:
+				matrix4::mat_forward(matrix, entity_list[player]->position);
+				break;
+			}
+
+			if (player == engine->find_player())
+			{
+				engine->camera_frame.up.x = matrix.m[4];
+				engine->camera_frame.up.y = matrix.m[5];
+				engine->camera_frame.up.z = matrix.m[6];
+				engine->camera_frame.forward.x = matrix.m[8];
+				engine->camera_frame.forward.y = matrix.m[9];
+				engine->camera_frame.forward.z = matrix.m[10];
+			}
+
+			debugf("Spawning on entity %d\n", index);
+			entity_list[player]->player->respawn();
+			entity_list[player]->rigid->clone(*(engine->thug22->model));
+
+			ret = engine->select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
+			if (ret)
+			{
+				engine->audio.play(entity_list[player]->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
+			}
+
+			return;
+		}
+
+		while (spawned == false)
+		{
+			for (i = last_spawn; i < entity_list.size(); i++)
+			{
+				if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
+					strcmp(entity_list[i]->type, "info_player_start") == 0)
+				{
+					matrix4 matrix;
+
+					//					camera_frame.set(matrix);
+					entity_list[player]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+
+					switch (entity_list[i]->angle)
+					{
+					case 0:
+						matrix4::mat_left(matrix, entity_list[player]->position);
+						break;
+					case 90:
+						matrix4::mat_forward(matrix, entity_list[player]->position);
+						break;
+					case 180:
+						matrix4::mat_right(matrix, entity_list[player]->position);
+						break;
+					case 270:
+						matrix4::mat_backward(matrix, entity_list[player]->position);
+						break;
+					default:
+						matrix4::mat_forward(matrix, entity_list[player]->position);
+						break;
+					}
+
+					entity_list[player]->model->morientation.m[0] = matrix.m[0];
+					entity_list[player]->model->morientation.m[1] = matrix.m[1];
+					entity_list[player]->model->morientation.m[2] = matrix.m[2];
+
+					entity_list[player]->model->morientation.m[3] = matrix.m[4];
+					entity_list[player]->model->morientation.m[4] = matrix.m[5];
+					entity_list[player]->model->morientation.m[5] = matrix.m[6];
+
+					entity_list[player]->model->morientation.m[6] = matrix.m[8];
+					entity_list[player]->model->morientation.m[7] = matrix.m[9];
+					entity_list[player]->model->morientation.m[8] = matrix.m[10];
+
+					if (player == engine->find_player())
+					{
+						engine->camera_frame.up.x = matrix.m[4];
+						engine->camera_frame.up.y = matrix.m[5];
+						engine->camera_frame.up.z = matrix.m[6];
+						engine->camera_frame.forward.x = matrix.m[8];
+						engine->camera_frame.forward.y = matrix.m[9];
+						engine->camera_frame.forward.z = matrix.m[10];
+					}
+
+					last_spawn = i + 1;
+					debugf("Spawning on entity %d\n", i);
+					entity_list[player]->player->respawn();
+					entity_list[player]->rigid->clone(*(engine->thug22->model));
+
+					ret = engine->select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
+					if (ret)
+					{
+						engine->audio.play(entity_list[player]->speaker->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
+					}
+					spawned = true;
+					break;
+
+				}
+			}
+
+			if (i == entity_list.size())
+			{
+				if (last_spawn != 0)
+				{
+					last_spawn = 0;
+				}
+				else
+				{
+					debugf("Failed to find a spawn point");
+					break;
+				}
+			}
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "push %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "push %s\n", data);
+		menu.print(msg);
+
+		for (unsigned int i = 0; i < entity_list.size(); i++)
+		{
+			if (!strcmp(entity_list[i]->target_name, data))
+			{
+				//target - origin
+				vec3 dir = entity_list[i]->position - entity_list[self]->position;
+
+				//add velocity towards target
+				engine->entity_list[self]->rigid->velocity += dir * 0.7f;
+
+				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
+				if (ret)
+				{
+					engine->audio.play(entity_list[self]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->pad_sound);
+				}
+
+				break;
+			}
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "name \"%[^\"]s", data);
+	if (ret == 1)
+	{
+		bool valid = true;
+
+		for (unsigned int i = 0; i < strlen(data); i++)
+		{
+			if (data[i] >= 'A' && data[i] <= 'Z')
+				continue;
+			if (data[i] >= 'a' && data[i] <= 'z')
+				continue;
+			if (data[i] >= '0' && data[i] <= '9')
+				continue;
+			if (data[i] == ' ')
+				continue;
+
+			valid = false;
+		}
+		if (valid)
+		{
+			snprintf(entity_list[self]->player->name, 127, "%s", data);
+			debugf("Player name: %s\n", data);
+		}
+		else
+		{
+			debugf("Invalid name, must be alphanumeric + space\n");
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "say \"%[^\"]s", data);
+	if (ret == 1)
+	{
+		engine->chat(entity_list[self]->player->name, cmd);
+
+		if (self != -1)
+		{
+			bool ret = false;
+			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
+			if (ret)
+			{
+				engine->audio.play(entity_list[self]->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
+			}
+		}
+
+		return;
+	}
+
+	ret = strcmp(cmd, "sv_list");
+	if (ret == 0)
+	{
+		unsigned int current = (unsigned int)time(NULL);
+
+		snprintf(msg, LINE_SIZE, "Client list\n");
+		menu.print(msg);
+
+		snprintf(msg, LINE_SIZE, "s: %s %d kills %d deaths %s %d idle\n", entity_list[self]->player->name,
+			entity_list[self]->player->stats.kills,
+			entity_list[self]->player->stats.deaths,
+			"127.0.0.1:65535",
+			0);
+		menu.print(msg);
+
+
+		for (unsigned int i = 0; i < engine->client_list.size(); i++)
+		{
+			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, entity_list[engine->client_list[i]->entity]->player->name,
+				entity_list[engine->client_list[i]->entity]->player->stats.kills,
+				entity_list[engine->client_list[i]->entity]->player->stats.deaths,
+				engine->client_list[i]->socketname,
+				current - engine->client_list[i]->last_time);
+			menu.print(msg);
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "kick %s", data);
+	if (ret == 1)
+	{
+		engine->kick(atoi(data));
+		return;
+	}
+
+	ret = strcmp(cmd, "noclip");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->rigid->noclip = !entity_list[self]->rigid->noclip;
+			entity_list[self]->rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
+			entity_list[self]->rigid->translational_friction = 0.9f;
+		}
+		return;
+	}
+
+	/*
+	haste tempted to double rate of fire too
+	personal teleporter - respawn without resetting player data
+	*/
+
+	ret = strcmp(cmd, "regeneration");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->regen_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "haste");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->haste_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "quaddamage");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->quad_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "invisibility");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->invisibility_timer = 60 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "flight");
+	if (ret == 0)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->flight_timer = 60 * 60 * 24 * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "flight %s", data);
+	if (ret == 1)
+	{
+		if (self != -1)
+		{
+			entity_list[self]->player->flight_timer = atoi(data) * TICK_RATE;
+		}
+		return;
+	}
+
+	ret = strcmp(cmd, "shownames");
+	if (ret == 0)
+	{
+		engine->show_names = !engine->show_names;
+		return;
+	}
+
+	ret = strcmp(cmd, "showlines");
+	if (ret == 0)
+	{
+		engine->show_lines = !engine->show_lines;
+		return;
+	}
+
+	ret = strcmp(cmd, "showdebug");
+	if (ret == 0)
+	{
+		engine->show_debug = !engine->show_debug;
+		return;
+	}
+
+	ret = strcmp(cmd, "showhud");
+	if (ret == 0)
+	{
+		engine->show_hud = !engine->show_hud;
+		return;
+	}
+
+
+
+
+	ret = sscanf(cmd, "animation %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "%s\n", cmd);
+		menu.print(msg);
+		engine->zcc.select_animation(atoi(data));
+		return;
+	}
+
+	ret = strcmp(cmd, "give all");
+	if (ret == 0)
+	{
+		snprintf(msg, LINE_SIZE, "give all\n");
+		menu.print(msg);
+		if (self != -1)
+		{
+			entity_list[self]->player->ammo_bfg = 999;
+			entity_list[self]->player->ammo_bullets = 999;
+			entity_list[self]->player->ammo_lightning = 999;
+			entity_list[self]->player->ammo_plasma = 999;
+			entity_list[self]->player->ammo_grenades = 999;
+			entity_list[self]->player->ammo_rockets = 999;
+			entity_list[self]->player->ammo_shells = 999;
+			entity_list[self]->player->ammo_slugs = 999;
+			entity_list[self]->player->armor = 200;
+			entity_list[self]->player->health = 100;
+			entity_list[self]->player->weapon_flags = ~0;
+		}
+		return;
+	}
+
+
+	if (strcmp(cmd, "disconnect") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "disconnecting\n");
+		menu.print(msg);
+		engine->unload();
+		return;
+	}
+
+	snprintf(msg, LINE_SIZE, "Unknown command: %s\n", cmd);
+	menu.print(msg);
 }

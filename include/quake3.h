@@ -40,13 +40,13 @@ public:
 
 	int bot_get_path(int item, int self, int *nav_array, path_t &path);
 	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
+	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
+	int last_spawn;
 
 private:
 	Engine *engine;
 	bool blink;
 	vector<navpoint_t> navmesh;
-
-
 };
 
 #endif

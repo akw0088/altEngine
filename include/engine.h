@@ -51,7 +51,6 @@ public:
 	void load_model(Entity &ent);
 	void create_sources();
 
-	void gconsole(int self, char *cmd);
 	void console(char *cmd);
 	void handle_game(char key);
 
@@ -87,7 +86,6 @@ public:
 //temp
 	unsigned int testObj;
 	unsigned int num_light;
-	int last_spawn;
 	char *pk3_list[32];
 	char *hash_list[32];
 	int num_pk3;
