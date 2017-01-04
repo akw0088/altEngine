@@ -13,6 +13,10 @@
 
 #define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
 
+#define PARTICLES
+// 100k is a crash, 50k is slow, 10k seems good
+#define MAX_PARTICLES 5000
+
 
 #ifdef _WIN32
 	#define APP_NAME "altEngine.exe"

@@ -691,9 +691,9 @@ void Engine::render_scene(bool lights)
 	camera_frame.set(transformation);
 
 	mvp = transformation * projection;
-	mlight2.Select();
-	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
+//	mlight2.Select();
+//	mlight2.Params(mvp, light_list, light_list.size(), offset);
+//	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
 //	gfx.cleardepth();
 
 
@@ -708,14 +708,15 @@ void Engine::render_scene(bool lights)
 
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
-//	gfx.SelectShader(0);
 
+#ifdef PARTICLES
 	particle_update.Select();
 	gen.seed = vec3(rand_float(0.0, 10.0),
 					rand_float(0.0, 10.0),
 					rand_float(0.0, 10.0));
 	particle_update.Params(gen);
 	int vbo = particle_update.step(gfx, gen);
+#endif
 
 
 	camera_frame.set(transformation);
@@ -724,15 +725,12 @@ void Engine::render_scene(bool lights)
 	vec3 quad1 = camera_frame.up;
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
-
+#ifdef PARTICLES
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
 	gfx.SelectTexture(0, particle_tex);
-
-
-//	global.Select();
-//	global.Params(mvp, 1);
 	particle_render.render(gfx, vbo, gen.num);
+#endif
 }
 
 
@@ -4053,9 +4051,6 @@ void Engine::console(char *cmd)
 		menu.clear_console();
 	}
 
-
-
-
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
 	{
@@ -4064,8 +4059,6 @@ void Engine::console(char *cmd)
 		connect(data);
 		return;
 	}
-
-
 
 	if (strcmp(cmd, "r_res") == 0)
 	{
@@ -4101,7 +4094,6 @@ void Engine::console(char *cmd)
 		exit(0);
 	}
 
-
 	ret = sscanf(cmd, "r_polygonmode %s", data);
 	if (ret == 1)
 	{
@@ -4125,6 +4117,10 @@ void Engine::console(char *cmd)
 			glFrontFace(GL_CW);
 	}
 
+	if (q3map.loaded)
+	{
+		gconsole(find_player(), cmd);
+	}
 }
 
 int Engine::bind(int port)

@@ -183,9 +183,6 @@ private:
 	int shadowmap;
 };
 
-// 100k is a crash, 50k is slow, 10k seems good
-#define MAX_PARTICLES 10000
-
 class ParticleUpdate : public Shader
 {
 public:
