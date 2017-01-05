@@ -2418,7 +2418,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					break;
 				}
 
-				if (engine->find_player() == self)
+				if (engine->find_player() == (int)self)
 				{
 					engine->camera_frame.forward.x = matrix.m[8];
 					engine->camera_frame.forward.y = matrix.m[9];
@@ -2439,7 +2439,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int i = last_spawn;
 		bool spawned = false;
 		unsigned int index = i;
-		unsigned int player = self;
+		int player = self;
 
 		if (player == -1)
 			return;
@@ -2448,7 +2448,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		if (ret == 2)
 		{
 			player = atoi(data2);
-			if (player >= entity_list.size() || entity_list[player]->player == NULL)
+			if (player >= (int)entity_list.size() || entity_list[player]->player == NULL)
 			{
 				debugf("respawn given invalid player index\n");
 				return;

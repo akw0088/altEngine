@@ -246,7 +246,7 @@ void Model::make_skybox(Graphics &gfx)
 	{
 		skybox[i].position = verts[i] * 1000000.0f;
 		skybox[i].texCoord0 = texcoords[i % 6];
-		skybox[i].normal = 0.0f;
+		skybox[i].normal = vec3();
 		index[i] = i;
 	}
 

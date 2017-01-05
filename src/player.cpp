@@ -752,7 +752,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (i == self)
+		if (i == (unsigned int)self)
 			continue;
 
 		if (strcmp(entity_list[i]->type, "player") == 0)
@@ -828,7 +828,7 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (i == self)
+		if (i == (unsigned int)self)
 			continue;
 
 
