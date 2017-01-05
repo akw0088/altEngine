@@ -1839,7 +1839,7 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, ma
 
 		for (int i = 0; i < 50; i++)
 		{
-			lerp(a, b, 1.0f / i, pos);
+			lerp(a, b, i / 50.0, pos);
 
 			menu.draw_text("o", pos.x, pos.y, 0.02f, color, false, false);
 		}

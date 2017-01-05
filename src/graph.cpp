@@ -149,6 +149,7 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 		{
 			free((void *)distance_table);
 			free((void *)path_table);
+			free((void *)predecessor_table);
 			return NULL;
 		}
 	}
