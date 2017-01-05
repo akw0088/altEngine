@@ -92,7 +92,8 @@ public:
 	int num_hash;
 	char *shader_list[32];
 	int num_shader;
-	map<string, string> key_bind;
+	HashTable key_bind;
+//	map<string, string> key_bind;
 
 	// for cloning
 	Entity *box;

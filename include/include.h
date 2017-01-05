@@ -141,8 +141,6 @@
 #include <cstring>
 #include <ctime>
 #include <vector>
-#include <map> // for key bindings, I know, STL, gah
-#include <string> // only for key bindings
 #include <float.h>
 #ifdef WIN32
 	#include <crtdbg.h>
@@ -160,6 +158,7 @@ using namespace std;
 #include "md5_types.h"
 
 
+#include "hashtable.h"
 #include "graph.h"
 #include "md5.h"
 #include "graphics.h"

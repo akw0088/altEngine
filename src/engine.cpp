@@ -2230,30 +2230,31 @@ void Engine::bind_keys()
 	char *file = get_file("media/config.cfg", NULL);
 	if (file == NULL)
 	{
-		key_bind.insert(make_pair((char *)"enter", (char *)"jump"));
-		key_bind.insert(make_pair((char *)"leftbutton", (char *)"attack"));
-		key_bind.insert(make_pair((char *)"middlebutton", (char *)"use"));
-		key_bind.insert(make_pair((char *)"rightbutton", (char *)"zoom"));
-		key_bind.insert(make_pair((char *)"mousewheelup", (char *)"weapon_up"));
-		key_bind.insert(make_pair((char *)"mousewheeldown", (char *)"weapon_down"));
-		key_bind.insert(make_pair((char *)"shift", (char *)"duck"));
-		key_bind.insert(make_pair((char *)"control", (char *)"control"));
-		key_bind.insert(make_pair((char *)"escape", (char *)"escape"));
-		key_bind.insert(make_pair((char *)"up", (char *)"moveup"));
-		key_bind.insert(make_pair((char *)"down", (char *)"movedown"));
-		key_bind.insert(make_pair((char *)"left", (char *)"moveleft"));
-		key_bind.insert(make_pair((char *)"right", (char *)"moveright"));
+		key_bind.insert("enter", "jump");
+		key_bind.insert("leftbutton", "attack");
+		key_bind.insert("middlebutton", "use");
+		key_bind.insert("rightbutton", "zoom");
+		key_bind.insert("mousewheelup", "weapon_up");
+		key_bind.insert("mousewheeldown", "weapon_down");
+		key_bind.insert("shift", "duck");
+		key_bind.insert("escape", "escape");
+		key_bind.insert("control", "control");
+		key_bind.insert("up", "moveup");
+		key_bind.insert("down", "movedown");
+		key_bind.insert("left", "moveleft");
+		key_bind.insert("right", "moveright");
 
-		key_bind.insert(make_pair((char *)"numpad0", (char *)"numpad0"));
-		key_bind.insert(make_pair((char *)"numpad1", (char *)"numpad1"));
-		key_bind.insert(make_pair((char *)"numpad2", (char *)"numpad2"));
-		key_bind.insert(make_pair((char *)"numpad3", (char *)"numpad3"));
-		key_bind.insert(make_pair((char *)"numpad4", (char *)"numpad4"));
-		key_bind.insert(make_pair((char *)"numpad5", (char *)"numpad5"));
-		key_bind.insert(make_pair((char *)"numpad6", (char *)"numpad6"));
-		key_bind.insert(make_pair((char *)"numpad7", (char *)"numpad7"));
-		key_bind.insert(make_pair((char *)"numpad8", (char *)"numpad8"));
-		key_bind.insert(make_pair((char *)"numpad9", (char *)"numpad9"));
+		key_bind.insert("numpad0", "numpad0");
+		key_bind.insert("numpad1", "numpad1");
+		key_bind.insert("numpad2", "numpad2");
+		key_bind.insert("numpad3", "numpad3");
+		key_bind.insert("numpad4", "numpad4");
+		key_bind.insert("numpad5", "numpad5");
+		key_bind.insert("numpad6", "numpad6");
+		key_bind.insert("numpad7", "numpad7");
+		key_bind.insert("numpad8", "numpad8");
+		key_bind.insert("numpad9", "numpad9");
+
 		return;
 	}
 
@@ -2271,7 +2272,7 @@ void Engine::bind_keys()
 		value[strlen(value) - 1] = '\0';
 		if (ret == 2)
 		{
-			key_bind.insert(make_pair(&key[0], &value[0]));
+			key_bind.insert(key, value);
 		}
 		line = strtok(NULL, "\r\n");
 	}
@@ -2332,99 +2333,99 @@ void Engine::bind_keys()
 void Engine::keypress(char *key, bool pressed)
 {
 	char k = 0;
-	string cmd = key_bind[key];
-	const char *command = cmd.c_str();
+	char *cmd = (char *)key_bind.find(key);
 
-	if (strcmp("jump", command) == 0)
-	{
-		input.jump = pressed;
-	}
-	else if (strcmp("attack", command) == 0)
+
+	if (strcmp("attack", cmd) == 0)
 	{
 		input.attack = pressed;
 		k = 14;
 	}
-	else if (strcmp("use", command) == 0)
-	{
-		input.use = pressed;
-	}
-	else if (strcmp("zoom", command) == 0)
-	{
-		input.zoom = pressed;
-	}
-	else if (strcmp("weapon_up", command) == 0)
-	{
-		input.weapon_up = pressed;
-	}
-	else if (strcmp("weapon_down", command) == 0)
-	{
-		input.weapon_down = pressed;
-	}
-	else if (strcmp("duck", command) == 0)
-	{
-		input.duck = pressed;
-	}
-	else if (strcmp("control", command) == 0)
-	{
-		input.control = pressed;
-	}
-	else if (strcmp("escape", command) == 0)
-	{
-		input.escape = pressed;
-	}
-	else if (strcmp("moveup", command) == 0)
+	else if (strcmp("moveup", cmd) == 0)
 	{
 		input.moveup = pressed;
 	}
-	else if (strcmp("moveleft", command) == 0)
+	else if (strcmp("moveleft", cmd) == 0)
 	{
 		input.moveleft = pressed;
 	}
-	else if (strcmp("movedown", command) == 0)
+	else if (strcmp("movedown", cmd) == 0)
 	{
 		input.movedown = pressed;
 	}
-	else if (strcmp("moveright", command) == 0)
+	else if (strcmp("moveright", cmd) == 0)
 	{
 		input.moveright = pressed;
 	}
-	else if (strcmp("numpad0", command) == 0)
+	else if (strcmp("jump", cmd) == 0)
+	{
+		input.jump = pressed;
+	}
+	else if (strcmp("duck", cmd) == 0)
+	{
+		input.duck = pressed;
+	}
+	else if (strcmp("weapon_up", cmd) == 0)
+	{
+		input.weapon_up = pressed;
+	}
+	else if (strcmp("weapon_down", cmd) == 0)
+	{
+		input.weapon_down = pressed;
+	}
+	else if (strcmp("use", cmd) == 0)
+	{
+		input.use = pressed;
+	}
+	else if (strcmp("zoom", cmd) == 0)
+	{
+		input.zoom = pressed;
+	}
+	else if (strcmp("control", cmd) == 0)
+	{
+		input.control = pressed;
+	}
+	else if (strcmp("escape", cmd) == 0)
+	{
+		input.escape = pressed;
+	}
+	else if (strcmp("numpad0", cmd) == 0)
 	{
 		input.numpad0 = pressed;
 	}
-	else if (strcmp("numpad1", command) == 0)
+	else if (strcmp("numpad1", cmd) == 0)
 	{
 		input.numpad1 = pressed;
 	}
-	else if (strcmp("numpad2", command) == 0)
+	else if (strcmp("numpad2", cmd) == 0)
 	{
 		input.numpad2 = pressed;
 	}
-	else if (strcmp("numpad3", command) == 0)
+	else if (strcmp("numpad3", cmd) == 0)
 	{
 		input.numpad3 = pressed;
 	}
-	else if (strcmp("numpad4", command) == 0)
+	else if (strcmp("numpad4", cmd) == 0)
 	{
 		input.numpad4 = pressed;
 	}
-	else if (strcmp("numpad5", command) == 0)
+	else if (strcmp("numpad5", cmd) == 0)
 	{
 		input.numpad5 = pressed;
 	}
-	else if (strcmp("numpad6", command) == 0)
+	else if (strcmp("numpad6", cmd) == 0)
 	{
 		input.numpad6 = pressed;
 	}
-	else if (strcmp("numpad7", command) == 0)
+	else if (strcmp("numpad7", cmd) == 0)
 	{
 		input.numpad7 = pressed;
 	}
-	else if (strcmp("numpad8", command) == 0)
+	else if (strcmp("numpad8", cmd) == 0)
 	{
 		input.numpad8 = pressed;
 	}
-	else if (strcmp("numpad9", command) == 0)
+	else if (strcmp("numpad9", cmd) == 0)
 	{
 		input.numpad9 = pressed;
 	}
