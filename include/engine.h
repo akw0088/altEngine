@@ -39,14 +39,12 @@ public:
 	void keypress(char *key, bool pressed);
 	void keystroke(char key);
 
-	void init_camera(); //TODO: combine this with console("respawn") command
 	void load_entities();
 	int get_entity();
 	int get_player();
 	int find_player();
 	void clean_entity(int index);
 	void load_sounds();
-	void load_ogg();
 	void load_models();
 	void load_model(Entity &ent);
 	void create_sources();
@@ -117,8 +115,6 @@ public:
 	MD5Model	zsec_shotgun;
 	vector<surface_t *> surface_list;
 
-
-//	vector<int> player_list;
 	unsigned int num_bot;
 
 protected:
@@ -127,8 +123,7 @@ protected:
 
 	Graphics	gfx;
 	Audio		audio;
-	Bsp		q3map;
-	button_t	button;
+	Bsp			q3map;
 	input_t		input;
 	Menu		menu;
 	Frame		camera_frame;

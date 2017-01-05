@@ -643,9 +643,9 @@ void Quake3::step(int frame_step)
 #ifdef BOT_ENABLE
 
 			Entity *bot = engine->entity_list[i];
-			button_t input;
+			input_t input;
 
-			memset(&input, 0, sizeof(button_t));
+			memset(&input, 0, sizeof(input_t));
 			if (bot->player->health <= 0)
 			{
 				bot->player->bot_state = BOT_DEAD;

@@ -633,7 +633,7 @@ void RigidBody::move_forward(float speed_scale)
 {
 	input_t input;
 
-	memset(&input, 0, sizeof(button_t));
+	memset(&input, 0, sizeof(input_t));
 	input.moveleft = true;
 	move(input, speed_scale);
 }
@@ -642,7 +642,7 @@ void RigidBody::move_backward(float speed_scale)
 {
 	input_t input;
 
-	memset(&input, 0, sizeof(button_t));
+	memset(&input, 0, sizeof(input_t));
 	input.movedown = true;
 	move(input, speed_scale);
 }
@@ -651,7 +651,7 @@ void RigidBody::move_left(float speed_scale)
 {
 	input_t input;
 
-	memset(&input, 0, sizeof(button_t));
+	memset(&input, 0, sizeof(input_t));
 	input.moveleft = true;
 	move(input, speed_scale);
 }
@@ -660,7 +660,7 @@ void RigidBody::move_right(float speed_scale)
 {
 	input_t input;
 
-	memset(&input, 0, sizeof(button_t));
+	memset(&input, 0, sizeof(input_t));
 	input.moveright = true;
 	move(input, speed_scale);
 }
@@ -669,7 +669,7 @@ void RigidBody::move_up(float speed_scale)
 {
 	input_t input;
 
-	memset(&input, 0, sizeof(button_t));
+	memset(&input, 0, sizeof(input_t));
 	input.jump = true;
 	move(input, speed_scale);
 }
@@ -678,7 +678,7 @@ void RigidBody::move_down(float speed_scale)
 {
 	input_t input;
 
-	memset(&input, 0, sizeof(button_t));
+	memset(&input, 0, sizeof(input_t));
 	input.duck = true;
 	move(input, speed_scale);
 }

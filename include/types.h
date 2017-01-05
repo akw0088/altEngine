@@ -163,37 +163,6 @@ typedef struct
 }
 reliablemsg_t;
 
-// formally keyboard class
-typedef struct
-{
-	bool leftbutton;
-	bool middlebutton;
-	bool rightbutton;
-	bool enter;
-	bool escape;
-	bool shift;
-	bool control;
-	bool up;
-	bool left;
-	bool down;
-	bool right;
-
-	bool numpad0;
-	bool numpad1;
-	bool numpad2;
-	bool numpad3;
-	bool numpad4;
-	bool numpad5;
-	bool numpad6;
-	bool numpad7;
-	bool numpad8;
-	bool numpad9;
-
-	bool mousewheelup;
-	bool mousewheeldown;
-}  button_t;
-
-// Idea is this is non key specific to allow for key binding from button_t to input_t
 typedef struct
 {
 	bool attack;
