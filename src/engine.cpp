@@ -19,6 +19,10 @@ Engine::Engine()
 	show_debug = false;
 	show_hud = true;
 	num_bot = 0;
+
+	zNear = 1.0f;
+	zFar = 2001.0f; // zFar - zNear makes nice values
+	inf = true; // above ignored if true
 }
 
 
@@ -600,6 +604,11 @@ void Engine::render(double last_frametime)
 	if (menu.console)
 		menu.render_console(global);
 	gfx.swap();
+}
+
+void Engine::zoom(float level)
+{
+	projection.perspective(45.0f / level, (float)xres / yres, zNear, zFar, inf);
 }
 
 void Engine::render_shadowmaps()
@@ -2570,7 +2579,7 @@ void Engine::resize(int width, int height)
 	post.resize(width, height);
 
 
-	projection.perspective(45.0, (float)width / height, 1.0f, 2001.0f, true);
+	projection.perspective(45.0, (float)width / height, zNear, zFar, inf);
 
 #ifndef __linux__
 	// This should probably be in render
@@ -3131,6 +3140,14 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "%dx%d\n", gfx.width, gfx.height);
 		menu.print(msg);
+		return;
+	}
+
+	if (sscanf(cmd, "cg_fov %s", data) == 1)
+	{
+		snprintf(msg, LINE_SIZE, "Setting fov to %d\n", atoi(data));
+		menu.print(msg);
+		fov = atoi(data) * (float)xres/yres;
 		return;
 	}
 

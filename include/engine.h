@@ -77,6 +77,7 @@ public:
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
 	void load_md5();
 	void find_path(int *&path, int &path_length, int start_path, int end_path);
+	void zoom(float level);
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -120,6 +121,10 @@ public:
 protected:
 	matrix4		projection;
 	matrix4		identity;
+	float zNear;
+	float zFar;
+	bool inf;
+	float fov; // y fov, quake uses x fov (yfov * aspect)
 
 	Graphics	gfx;
 	Audio		audio;

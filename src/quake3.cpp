@@ -124,7 +124,20 @@ void Quake3::handle_player(int self)
 	Entity *entity = engine->entity_list[self];
 	static int footstep_num = 0;
 	static int last_tick = 0;
+	static bool zoomed = false;
 
+
+	if (engine->input.zoom == true && zoomed == false)
+	{
+		zoomed = true;
+		engine->zoom(entity->player->zoom_level);
+	}
+
+	if (engine->input.zoom == false && zoomed == true)
+	{
+		zoomed = false;
+		engine->zoom(1.0);
+	}
 
 	if (engine->input.use == true)
 	{

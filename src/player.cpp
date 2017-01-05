@@ -51,6 +51,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 
 	spawned = false;
 
+	zoom_level = 4.0;
+
 	path.path = new int[NUM_PATH];
 	get_item = 0;
 	ignore[0] = '\0';

@@ -166,6 +166,8 @@ public:
 	int get_item;
 	char ignore[1024];
 
+	float zoom_level;
+
 
 
 	Model weapon_machinegun;
