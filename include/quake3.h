@@ -5,9 +5,6 @@
 
 class Quake3
 {
-	//Remove this when things seem settled
-//	friend class Engine;
-
 public:
 	Quake3();
 
@@ -40,13 +37,17 @@ public:
 
 	int bot_get_path(int item, int self, int *nav_array, path_t &path);
 	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
+
+	void load();
+	void unload();
+	void init_camera(vector<Entity *> &entity_list);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
-	int last_spawn;
 
 private:
 	Engine *engine;
 	bool blink;
 	vector<navpoint_t> navmesh;
+	int last_spawn;
 };
 
 #endif

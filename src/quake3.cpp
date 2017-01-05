@@ -44,11 +44,78 @@ Quake3::Quake3()
 void Quake3::init(Engine *altEngine)
 {
 	engine = altEngine;
+	last_spawn = 0;
+}
+
+void Quake3::load()
+{
+	last_spawn = 0;
+}
+
+void Quake3::unload()
+{
+	last_spawn = 0;
 }
 
 void Quake3::destroy()
 {
 
+}
+
+void Quake3::init_camera(vector<Entity *> &entity_list)
+{
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		char *type = entity_list[i]->type;
+
+		if (type == NULL)
+			continue;
+
+		if (strcmp(type, "info_player_deathmatch") == 0 ||
+			strcmp(type, "team_ctf_redplayer") == 0 ||
+			strcmp(type, "info_player_start") == 0)
+		{
+			engine->camera_frame.pos = entity_list[i]->position;
+
+			int spawn = engine->get_player();
+
+			// Single player player
+			sprintf(entity_list[spawn]->type, "player");
+			entity_list[spawn]->position = entity_list[i]->position;
+			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
+			entity_list[spawn]->model = entity_list[spawn]->rigid;
+			entity_list[spawn]->rigid->clone(*(engine->thug22->model));
+			entity_list[spawn]->rigid->step_flag = true;
+			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21);
+			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
+
+			matrix4 matrix;
+
+			//set spawn angle
+			switch (entity_list[i]->angle)
+			{
+			case 0:
+				matrix4::mat_left(matrix, entity_list[spawn]->position);
+				break;
+			case 90:
+				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				break;
+			case 180:
+				matrix4::mat_right(matrix, entity_list[spawn]->position);
+				break;
+			case 270:
+				matrix4::mat_backward(matrix, entity_list[spawn]->position);
+				break;
+			}
+			engine->camera_frame.forward.x = matrix.m[8];
+			engine->camera_frame.forward.y = matrix.m[9];
+			engine->camera_frame.forward.z = matrix.m[10];
+			engine->camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+			last_spawn = i + 1;
+			break;
+		}
+	}
+	engine->audio.listener_position((float *)&(engine->camera_frame.pos));
 }
 
 

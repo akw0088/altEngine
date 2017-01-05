@@ -247,9 +247,9 @@ void Engine::load(char *level)
 	if (q3map.loaded)
 		return;
 	
-	q3map.anim_list.clear();
+	q3.load();
 
-	q3.last_spawn = 0;
+	q3map.anim_list.clear();
 
 	menu.delta("load", *this);
 	gfx.clear();
@@ -2788,66 +2788,10 @@ void Engine::load_model(Entity &ent)
 
 }
 
-void Engine::init_camera()
-{
-	for(unsigned int i = 0; i < entity_list.size(); i++)
-	{
-		char *type = entity_list[i]->type;
-
-		if (type == NULL)
-			continue;
-
-		if ( strcmp(type, "info_player_deathmatch") == 0  || 
-			strcmp(type, "team_ctf_redplayer") == 0 || 
-			strcmp(type, "info_player_start") == 0 )
-		{
-			camera_frame.pos = entity_list[i]->position;
-
-			int spawn = get_player();
-
-			// Single player player
-			sprintf(entity_list[spawn]->type, "player");
-			entity_list[spawn]->position = entity_list[i]->position;
-			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
-			entity_list[spawn]->model = entity_list[spawn]->rigid;
-			entity_list[spawn]->rigid->clone(*(thug22->model));
-			entity_list[spawn]->rigid->step_flag = true;
-			entity_list[spawn]->player = new Player(entity_list[spawn], gfx, audio, 21);
-			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
-
-			matrix4 matrix;
-			
-			//set spawn angle
-			switch (entity_list[i]->angle)
-			{
-			case 0:
-				matrix4::mat_left(matrix, entity_list[spawn]->position);
-				break;
-			case 90:
-				matrix4::mat_forward(matrix, entity_list[spawn]->position);
-				break;
-			case 180:
-				matrix4::mat_right(matrix, entity_list[spawn]->position);
-				break;
-			case 270:
-				matrix4::mat_backward(matrix, entity_list[spawn]->position);
-				break;
-			}
-			camera_frame.forward.x = matrix.m[8];
-			camera_frame.forward.y = matrix.m[9];
-			camera_frame.forward.z = matrix.m[10];
-			camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
-			q3.last_spawn = i+1;
-			break;
-		}
-	}
-	audio.listener_position((float *)&(camera_frame.pos));
-}
-
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
-	init_camera();
+	q3.init_camera(entity_list);
 	load_sounds();
 	create_sources();
 	load_models();
@@ -3052,6 +2996,8 @@ void Engine::unload()
 {
 	if (q3map.loaded == false)
 		return;
+
+	q3.unload();
 
 	num_bot = 0;
 
