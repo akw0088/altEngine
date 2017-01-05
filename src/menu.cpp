@@ -99,8 +99,6 @@ void Menu::render(Global &global)
 				global.Select();
 				global.Params(matrix, 0);
 				gfx->DrawArrayTri(0, 0, 6, 4);
-//				gfx->SelectShader(0);
-//				gfx->DeselectTexture(0);
 				gfx->cleardepth();
 			}
 			break;
@@ -124,7 +122,7 @@ void Menu::render(Global &global)
 			{
 				vec3 color(item->color[0], item->color[1], item->color[2]);
 				draw_text(item->msg, item->position[0],
-					item->position[1], item->scale, color);
+					item->position[1], item->scale, color, true, true);
 			}
 		}
 	}
@@ -278,54 +276,39 @@ void Menu::handle(char key, Engine *altEngine)
 	}
 }
 
-void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color)
+
+// This could use some speeding up, rendering one character at a time is slow
+void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool start, bool stop)
 {
 	float xpos = 0.0f;
 	float ypos = 0.0f;
 
-	gfx->Blend(true);
-	gfx->Depth(false);
-	gfx->BlendFunc(NULL, NULL);
-	gfx->SelectTexture(0, font_object);
-	gfx->SelectIndexBuffer(Model::quad_index);
-	gfx->SelectVertexBuffer(Model::quad_vertex);
+	if (start)
+	{
+		gfx->Blend(true);
+		gfx->Depth(false);
+		gfx->BlendFunc(NULL, NULL);
+		gfx->SelectTexture(0, font_object);
+		gfx->SelectIndexBuffer(Model::quad_index);
+		gfx->SelectVertexBuffer(Model::quad_vertex);
+		font.Select();
+	}
+
 	for(unsigned int i = 0; i < strlen(str); i++)
 	{
 		if (str[i] == '\n')
 			continue;
 
-		font.Select();
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
 		gfx->DrawArrayTri(0, 0, 6, 4);
 		movepos(str[i], xpos, ypos, scale);
 	}
-//	gfx->DeselectTexture(0);
-	gfx->Depth(true);
-	gfx->Blend(false);
-}
 
-void Menu::draw_text(char *str, float x, float y, float z, float scale, vec3 &color)
-{
-	float xpos = 0.0f;
-	float ypos = 0.0f;
-
-	gfx->Blend(true);
-	gfx->Depth(false);
-	gfx->BlendFunc(NULL, NULL);
-	gfx->SelectTexture(0, font_object);
-//	gfx->SelectVertexArrayObject(Model::quad_vao);
-	gfx->SelectIndexBuffer(Model::quad_index);
-	gfx->SelectVertexBuffer(Model::quad_vertex);
-	for(unsigned int i = 0; i < strlen(str); i++)
+	if (stop)
 	{
-		font.Select();
-		font.Params(str[i], x + xpos, y + ypos, z * scale, color);
-		gfx->DrawArrayTri(0, 0, 6, 4);
-		movepos(str[i], xpos, ypos, scale);
+		gfx->Depth(true);
+		gfx->Blend(false);
 	}
-//	gfx->DeselectTexture(0);
-	gfx->Depth(true);
-	gfx->Blend(false);
 }
 
 void Menu::render_console(Global &global)
@@ -342,12 +325,19 @@ void Menu::render_console(Global &global)
 	gfx->DrawArrayTri(0, 0, 6, 4);
 
 	gfx->cleardepth();
-	for(unsigned int i = 0; i < console_buffer.size(); i++)
-		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i), 0.025f, color);
+	for (unsigned int i = 0; i < console_buffer.size(); i++)
+	{
+		bool start = false;
+
+		if (i == 0)
+			start = true;
+
+		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i), 0.025f, color, start, false);
+	}
 	strcat(key_buffer, "\4");
-	draw_text(key_buffer, 0.0125f, 0.5f - 0.05f, 0.025f, color);
+	draw_text(key_buffer, 0.0125f, 0.5f - 0.05f, 0.025f, color, false, false);
 	key_buffer[strlen(key_buffer) - 1] = '\0';
-	draw_text("Console", 0.85f - 0.0125f, 0.5f - 0.025f, 0.025f, color);
+	draw_text("Console", 0.85f - 0.0125f, 0.5f - 0.025f, 0.025f, color, false, true);
 }
 
 void Menu::render_chat(Global &global)
@@ -361,7 +351,17 @@ void Menu::render_chat(Global &global)
 
 	gfx->cleardepth();
 	for (unsigned int i = 0; i < chat_buffer.size(); i++)
-		draw_text(chat_buffer[i], 0.4f, 0.7f - 0.025f * (chat_buffer.size() - 1 - i), 0.025f, color);
+	{
+		bool start = false;
+		bool stop = false;
+
+		if (i == 0)
+			start = true;
+		else if (i == chat_buffer.size() - 1)
+			stop = true;
+
+		draw_text(chat_buffer[i], 0.4f, 0.7f - 0.025f * (chat_buffer.size() - 1 - i), 0.025f, color, start, stop);
+	}
 }
 
 void Menu::render_notif(Global &global)
@@ -375,7 +375,16 @@ void Menu::render_notif(Global &global)
 
 	gfx->cleardepth();
 	for (unsigned int i = 0; i < notif_buffer.size(); i++)
-		draw_text(notif_buffer[i], 0.6f, 0.2f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color);
+	{
+		bool start = false;
+		bool stop = false;
+
+		if (i == 0)
+			start = true;
+		else if (i == chat_buffer.size() - 1)
+			stop = true;
+		draw_text(notif_buffer[i], 0.6f, 0.2f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color, start, stop);
+	}
 }
 
 void Menu::print_chat(const char *str)

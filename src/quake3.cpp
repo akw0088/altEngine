@@ -1561,6 +1561,8 @@ void Quake3::render_hud(double last_frametime)
 	engine->menu.render_chat(engine->global);
 	engine->menu.render_notif(engine->global);
 
+	engine->menu.draw_text("", 0.15f, 0.95f, 0.050f, color, true, false);
+
 	if (engine->show_hud)
 	{
 		if (spawn != -1)
@@ -1568,49 +1570,49 @@ void Quake3::render_hud(double last_frametime)
 			if (entity->player->health > 50)
 			{
 				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
-				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color, false, false);
 			}
 			else if (entity->player->health <= 50 && blink)
 			{
 				vec3 red = vec3(1.0f, 0.0f, 0.0f);
 				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
-				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, red);
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, red, false, false);
 			}
 			else
 			{
 				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
-				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.15f, 0.95f, 0.050f, color, false, false);
 			}
 
 			switch (entity->player->current_weapon)
 			{
 			case wp_machinegun:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_bullets);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			case wp_shotgun:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_shells);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			case wp_grenade:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_grenades);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			case wp_rocket:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_rockets);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			case wp_railgun:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_slugs);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			case wp_lightning:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_lightning);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			case wp_plasma:
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_plasma);
-				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color);
+				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
 			}
 		}
@@ -1621,18 +1623,18 @@ void Quake3::render_hud(double last_frametime)
 		int line = 1;
 
 		snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
-		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 		snprintf(msg, LINE_SIZE, "%d active lights.", (int)engine->light_list.size());
-		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 		if (spawn != -1)
 		{
 			line++;
 			snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity->position.x, entity->position.y, entity->position.z);
-			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
-			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity->rigid->water, entity->rigid->water_depth);
-			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 		}
 	}
 
@@ -1691,6 +1693,7 @@ void Quake3::render_hud(double last_frametime)
 		}
 	}
 
+	engine->menu.draw_text("", 0.01f, 0.025f, 0.025f, color, false, true);
 	engine->projection = real_projection;
 }
 
@@ -1702,6 +1705,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 	vec3 color(1.0f, 1.0f, 1.0f);
 
 
+	menu.draw_text("", 0, 0, 0.02f, color, true, false);
 	engine->camera_frame.set(trans2);
 	mvp2 = trans2.premultiply(entity->rigid->get_matrix(model.m)) * real_projection;
 	vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
@@ -1731,11 +1735,11 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			int line = 1;
 
 			sprintf(data, "Pos %.3f %.3f %.3f", entity->position.x, entity->position.y, entity->position.z);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			sprintf(data, "Vel %.3f %.3f %.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			sprintf(data, "State %d", entity->rigid->sleep);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color );
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 		}
 
 		if (strcmp(entity->type, "navpoint") == 0)
@@ -1745,9 +1749,9 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			int line = 1;
 
 			sprintf(data, "targetname %s", entity->target_name);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, blue);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, blue, false, false);
 			sprintf(data, "target %s", entity->target);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, green);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, green, false, false);
 		}
 
 		if (strcmp(entity->type, "light") == 0)
@@ -1757,10 +1761,10 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			if (entity->light != NULL)
 			{
 				sprintf(data, "intensity %f", entity->light->intensity);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 
 				sprintf(data, "color %.3f %.3f %.3f", entity->light->color.x, entity->light->color.y, entity->light->color.z);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			}
 		}
 
@@ -1771,7 +1775,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			vec3 white(1.0f, 1.0f, 1.0f);
 
 			sprintf(data, "Health %d", entity->player->health);
-			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red, false, false);
 
 //			sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
 //			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
@@ -1791,13 +1795,13 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			if (entity->light != NULL)
 			{
 				sprintf(data, "target %s", entity->target);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 				sprintf(data, "target_name %s", entity->target_name);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			}
 		}
 	}
-
+	menu.draw_text("", pos.x, pos.y + 0.0625f, 0.02f, color, false, true);
 	engine->projection = real_projection;
 }
 
@@ -1824,7 +1828,7 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, ma
 		{
 			lerp(a, b, 1.0f / i, pos);
 
-			menu.draw_text("o", pos.x, pos.y, 0.02f, color);
+			menu.draw_text("o", pos.x, pos.y, 0.02f, color, false, false);
 		}
 		engine->projection = real_projection;
 	}

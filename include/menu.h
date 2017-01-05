@@ -14,8 +14,7 @@ public:
 	void delta(char *delta, Engine &altEngine);
 	bool delta(float x, float y);
 	void handle(char key, Engine *altEngine);
-	void draw_text(char *str, float x, float y, float scale, vec3 &color);
-	void draw_text(char *str, float x, float y, float z, float scale, vec3 &color);
+	void draw_text(char *str, float x, float y, float scale, vec3 &color, bool start, bool stop);
 	void render_console(Global &global);
 	void handle_console(char key, Engine *altEngine);
 	void movepos(char c, float &xpos, float &ypos, float scale);
