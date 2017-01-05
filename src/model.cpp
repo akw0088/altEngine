@@ -228,7 +228,7 @@ void Model::make_skybox(Graphics &gfx)
 		vec2(1.0f, 0.0f),			//4
 		vec2(1.0f, 1.0f),			//3
 	};
-
+/*
 	vec3 normals[6] =
 	{
 		vec3(0.0f, 0.0f, -1.0f),
@@ -237,7 +237,7 @@ void Model::make_skybox(Graphics &gfx)
 		vec3(-1.0f, 0.0f, 0.0f),
 		vec3(0.0f, -1.0f, 0.0f),
 		vec3(0.0f, 1.0f, 0.0f)
-	};
+	};*/
 
 
 	vertex_t skybox[36];
@@ -246,7 +246,7 @@ void Model::make_skybox(Graphics &gfx)
 	{
 		skybox[i].position = verts[i] * 1000000.0f;
 		skybox[i].texCoord0 = texcoords[i % 6];
-		skybox[i].normal = normals[i / 4];
+		skybox[i].normal = 0.0f;
 		index[i] = i;
 	}
 

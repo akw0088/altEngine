@@ -120,6 +120,7 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 	if (predecessor_table == NULL)
 	{
 		perror("calloc() failed in dijkstra()");
+		free((void *)distance_table);
 		return NULL;
 	}
 
@@ -127,6 +128,8 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 	if (path_table == NULL)
 	{
 		perror("calloc() failed in dijkstra()");
+		free((void *)distance_table);
+		free((void *)predecessor_table);
 		return NULL;
 	}
 
@@ -145,6 +148,7 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 		if ( heap.insert(&key) )
 		{
 			free((void *)distance_table);
+			free((void *)path_table);
 			return NULL;
 		}
 	}
@@ -216,6 +220,7 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 	if (predecessor_table == NULL)
 	{
 		perror("malloc() failed in dijkstra()");
+		free((void *)distance_table);
 		return NULL;
 	}
 
@@ -234,6 +239,7 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 		if ( heap.insert(&key) )
 		{
 			free((void *)distance_table);
+			free((void *)predecessor_table);
 			return NULL;
 		}
 	}
