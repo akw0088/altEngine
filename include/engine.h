@@ -124,7 +124,7 @@ protected:
 	float zNear;
 	float zFar;
 	bool inf;
-	float fov; // y fov, quake uses x fov (yfov * aspect)
+	float fov; // y fov
 
 	Graphics	gfx;
 	Audio		audio;
