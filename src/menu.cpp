@@ -349,7 +349,7 @@ void Menu::render_chat(Global &global)
 	global.Params(matrix, 0);
 	matrix.m[13] = 0.0f;
 
-	gfx->cleardepth();
+//	gfx->cleardepth();
 	for (unsigned int i = 0; i < chat_buffer.size(); i++)
 	{
 		bool start = false;
@@ -373,7 +373,7 @@ void Menu::render_notif(Global &global)
 	global.Params(matrix, 0);
 	matrix.m[13] = 0.0f;
 
-	gfx->cleardepth();
+//	gfx->cleardepth();
 	for (unsigned int i = 0; i < notif_buffer.size(); i++)
 	{
 		bool start = false;

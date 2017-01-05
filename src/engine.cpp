@@ -593,7 +593,7 @@ void Engine::render(double last_frametime)
 	handle_input();
 
 	//render menu
-	gfx.cleardepth();
+	//gfx.cleardepth();
 	q3.render_hud(last_frametime);
 	if (menu.ingame)
 		menu.render(global);
