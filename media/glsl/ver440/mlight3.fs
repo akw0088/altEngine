@@ -49,6 +49,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 
 
 	//Shadowmap0
+	Vertex.shadowpos[0 + light_num * 6] * 0.5 + 0.5;
 	shadowWdivide = Vertex.shadowpos[0 + light_num * 6] / Vertex.shadowpos[0 + light_num * 6].w;
 	shadowDistFromLight = texture(shadowtex0, vec3(shadowWdivide.s, shadowWdivide.t, light_num) ).r;
 	shadowWdivide.z += 0.0005;
@@ -58,6 +59,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
 
 	//Shadowmap1
+	Vertex.shadowpos[1 + light_num * 6] * 0.5 + 0.5;
 	shadowWdivide = Vertex.shadowpos[1 + light_num * 6] / Vertex.shadowpos[1 + light_num* 6].w;
 	shadowDistFromLight = texture(shadowtex1, vec3(shadowWdivide.s, shadowWdivide.t, light_num)).r;
 	shadowWdivide.z += 0.0005;
@@ -67,6 +69,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
 
 	//Shadowmap2
+	Vertex.shadowpos[2 + light_num * 6] * 0.5 + 0.5;
 	shadowWdivide = Vertex.shadowpos[2 + light_num * 6] / Vertex.shadowpos[2 + light_num * 6].w;
 	shadowDistFromLight = texture(shadowtex2, vec3(shadowWdivide.s, shadowWdivide.t, light_num)).r;
 	shadowWdivide.z += 0.0005;
@@ -78,6 +81,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 
 
 	//Shadowmap3
+	Vertex.shadowpos[3 + light_num * 6] * 0.5 + 0.5;
 	shadowWdivide = Vertex.shadowpos[3 + light_num * 6] / Vertex.shadowpos[3 + light_num * 6].w;
 	shadowDistFromLight = texture(shadowtex3, vec3(shadowWdivide.s, shadowWdivide.t, light_num)).r;
 	shadowWdivide.z += 0.0005;
@@ -88,6 +92,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
 
 	//Shadowmap4
+	Vertex.shadowpos[4 + light_num * 6] * 0.5 + 0.5;
 	shadowWdivide = Vertex.shadowpos[4 + light_num * 6] / Vertex.shadowpos[4 + light_num * 6].w;
 	shadowDistFromLight = texture(shadowtex4, vec3(shadowWdivide.s, shadowWdivide.t, light_num)).r;
 	shadowWdivide.z += 0.0005;
@@ -98,6 +103,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
 
 	//Shadowmap5
+	Vertex.shadowpos[5 + light_num * 6] * 0.5 + 0.5;
 	shadowWdivide = Vertex.shadowpos[5 + light_num * 6] / Vertex.shadowpos[5 + light_num * 6].w;
 	shadowDistFromLight = texture(shadowtex5, vec3(shadowWdivide.s, shadowWdivide.t, light_num)).r;
 	shadowWdivide.z += 0.0005;

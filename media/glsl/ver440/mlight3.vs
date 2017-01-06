@@ -94,17 +94,6 @@ void main(void)
 	Vertex.att_position = attr_position;
 
 
-	vec4 bias_right;
-	vec4 bias_up;
-	vec4 bias_forward;
-	vec4 bias_translation;
-
-	bias_right		= vec4(0.5f, 0.0f, 0.0f, 0.0f);
-	bias_up			= vec4(0.0f, 0.5f, 0.0f, 0.0f);
-	bias_forward		= vec4(0.0f, 0.0f, 0.5f, 0.0f);
-	bias_translation	= vec4(0.5f, 0.5f, 0.5f, 1.0f);
-	mat4 bias = mat4(bias_right, bias_up, bias_forward, bias_translation);
-
 
 	vec3 right;
 	vec3 up;
@@ -152,12 +141,12 @@ void main(void)
 						translation.x, translation.y, translation.z, 1.0f);
 
 
-		Vertex.shadowpos[0 + 6 * i] = (mat_right * bias)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[1 + 6 * i] = (mat_left * bias)		* vec4(attr_position, 1.0);
-		Vertex.shadowpos[2 + 6 * i] = (mat_top * bias)		* vec4(attr_position, 1.0);
-		Vertex.shadowpos[3 + 6 * i] = (mat_bottom * bias)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[4 + 6 * i] = (mat_forward * bias)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[5 + 6 * i] = (mat_backward * bias)	* vec4(attr_position, 1.0);
+		Vertex.shadowpos[0 + 6 * i] = (mat_right)	* vec4(attr_position, 1.0);
+		Vertex.shadowpos[1 + 6 * i] = (mat_left)	* vec4(attr_position, 1.0);
+		Vertex.shadowpos[2 + 6 * i] = (mat_top)		* vec4(attr_position, 1.0);
+		Vertex.shadowpos[3 + 6 * i] = (mat_bottom)	* vec4(attr_position, 1.0);
+		Vertex.shadowpos[4 + 6 * i] = (mat_forward)	* vec4(attr_position, 1.0);
+		Vertex.shadowpos[5 + 6 * i] = (mat_backward)	* vec4(attr_position, 1.0);
 	}
 
 }
