@@ -866,3 +866,45 @@ void crc32(const void *data, unsigned int n_bytes, unsigned int* crc)
 		*crc = table[(char)*crc ^ ((char*)data)[i]] ^ *crc >> 8;
 	}
 }
+
+int spiral(float distance, vec3 &scale, float step, vec3 *point, vec3 &forward)
+{
+	int i;
+
+	for(i = 0; i * step < distance; i++)
+	{
+		float sin_val = fsin(i * step);
+		float cos_val = fcos(i * step);
+		point[i].x = scale.x * (cos_val - sin_val);
+		point[i].y = scale.y * (sin_val + cos_val);
+		point[i].z = scale.z * i * step;
+	}
+
+	return i;
+}
+
+int gen_spiral(Graphics &gfx, int &ibo, int &vbo)
+{
+	vec3 forward;
+	vec3 point[512];
+	vertex_t vert[512];
+	int index[512];
+	vec3 scale(10.0f, 10.0f, 1.0f);
+
+	forward.x = 0.0f;
+	forward.y = 0.0f;
+	forward.z = 1.0f;
+
+	int num_point = spiral(100.0f, scale, 0.25f, point, forward);
+
+	for(int i = 0; i < num_point; i++)
+	{
+		vert[i].position = point[i];
+		index[i] = i;
+	}
+
+	ibo = gfx.CreateIndexBuffer(index, num_point);
+	vbo = gfx.CreateVertexBuffer(vert, num_point);
+	return 0;
+}
+
