@@ -178,6 +178,7 @@ using namespace std;
 #include "player.h"
 #include "decal.h"
 
+#include "sin_table.h"
 #include "common.h"
 #include "entity.h"
 #include "shader.h"
