@@ -103,6 +103,7 @@ public:
 	char weapon_swap_sound[128];
 	char medikit_sound[128];
 	char noitem_sound[128];
+	char regen_bump_sound[128];
 
 	char step1_sound[128];
 	char step2_sound[128];

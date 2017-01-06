@@ -144,7 +144,7 @@ void Quake3::handle_player(int self)
 		bool click = true;
 		if (engine->entity_list[self]->player->holdable_medikit)
 		{
-			engine->entity_list[self]->player->health = 100;
+			engine->entity_list[self]->player->health = 125;
 			engine->entity_list[self]->player->holdable_medikit = false;
 			//play medikit sound
 			int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->medikit_sound);
@@ -362,14 +362,32 @@ void Quake3::handle_player(int self)
 
 	if (engine->tick_num % TICK_RATE == 0)
 	{
-		if (entity->player->health > 100)
+		if (entity->player->regen_timer > 0)
 		{
-			if (entity->player->regen_timer > 0)
+
+			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				//play regen bump sound
+				int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->regen_bump_sound);
+				if (ret)
+				{
+					engine->audio.play(engine->entity_list[self]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->regen_bump_sound);
+				}
 			}
-			else
+
+			if (entity->player->health > 200)
+			{
+				entity->player->health = 200;
+			}
+
+		}
+		else
+		{
+			if (entity->player->health > 100)
 			{
 				entity->player->health--;
 			}
@@ -2182,6 +2200,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
 		entity_list[self]->player->health += atoi(data);
+		if (entity_list[self]->player->health > 100)
+		{
+			entity_list[self]->player->health = 100;
+		}
+
 		return;
 	}
 

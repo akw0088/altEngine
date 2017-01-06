@@ -82,6 +82,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 
 	sprintf(medikit_sound, "sound/items/use_medkit.wav");
 	sprintf(noitem_sound, "sound/items/use_nothing.wav");
+	sprintf(regen_bump_sound, "sound/items/regen.wav");
+	
 
 	sprintf(step1_sound, "sound/player/footsteps/step1.wav");
 	sprintf(step2_sound, "sound/player/footsteps/step2.wav");
@@ -324,6 +326,11 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 		snd_wave.push_back(wave);
 
 	strcpy(wave.file, "sound/items/use_nothing.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/items/regen.wav");
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
