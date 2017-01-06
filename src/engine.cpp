@@ -192,46 +192,6 @@ void Engine::init(void *p1, void *p2)
 //	shadowmap.init(&gfx);
 }
 
-void Engine::setup_func()
-{
-	for (unsigned int i = 0; i < entity_list.size(); i++)
-	{
-		if (entity_list[i]->model_ref != -1)
-			entity_list[i]->position = q3map.model_origin(entity_list[i]->model_ref);
-
-
-		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
-			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull") ||
-			strstr(entity_list[i]->type, "trigger_push"))
-		{
-			entity_list[i]->rigid->gravity = false;
-		}
-
-
-		if (strstr(entity_list[i]->type, "func_") ||
-			strstr(entity_list[i]->type, "func_train"))
-		{
-			for (unsigned int j = 0; j < entity_list.size(); j++)
-			{
-				if (i == j)
-					continue;
-
-				if (strlen(entity_list[i]->target) == 0)
-					continue;
-
-				if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
-				{
-					printf("Entity %d type %s pursuing %d type %s\n", i, entity_list[i]->type,
-						j, entity_list[j]->type);
-					entity_list[i]->rigid->pursue_flag = true;
-					entity_list[i]->rigid->target = entity_list[j];
-					break;
-				}
-			}
-		}
-	}
-}
-
 void Engine::find_path(int *&path, int &path_length, int start_path, int end_path)
 {
 	if (graph.size() == 0)
@@ -354,7 +314,7 @@ void Engine::load(char *level)
 	free((void *)ref);
 
 
-	setup_func();
+	q3.setup_func(entity_list, q3map);
 
 	menu.delta("entities", *this);
 	gfx.clear();
