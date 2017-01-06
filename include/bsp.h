@@ -46,7 +46,6 @@ public:
 	}
 
 
-//	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth);
 	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth,
 		vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity);
 
@@ -73,31 +72,17 @@ private:
 	vertex_t *vertex;
 
 	//for bezier patches
-	int				mesh_level;
-
-
-
 	patch_t *patchdata;
-
-/*
-	int				*mesh_index2face;
-	vertex_t		**mesh_vertex_array;
-	int				**mesh_index_array;
-	int				*mesh_num_verts;
-	int				*mesh_num_indexes;
-*/
+	int				mesh_level;
 	int				num_meshes;
-/*
-	unsigned int	*mesh_index_vbo;
-	unsigned int	*mesh_vertex_vbo;
-	*/
-	//objects
+
+	//gpu objects
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;
 
 	int	*normal_object;
 	int	*lightmap_object;
-	int sky_face;
+	int	sky_face;
 };
 
 #endif
