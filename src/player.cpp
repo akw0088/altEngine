@@ -80,6 +80,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	sprintf(empty_sound, "sound/weapons/noammo.wav");
 	sprintf(weapon_swap_sound, "sound/weapons/change.wav");
 
+	sprintf(medikit_sound, "sound/items/use_medkit.wav");
+	sprintf(noitem_sound, "sound/items/use_nothing.wav");
+
 	sprintf(step1_sound, "sound/player/footsteps/step1.wav");
 	sprintf(step2_sound, "sound/player/footsteps/step2.wav");
 	sprintf(step3_sound, "sound/player/footsteps/step3.wav");
@@ -119,6 +122,10 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	reload_timer = 0;
 	invisibility_timer = 0;
 	teleport_timer = 0;
+	click_timer = 0;
+
+	holdable_teleporter = false;
+	holdable_medikit = false;
 
 
 	weapon_flags = WEAPON_MACHINEGUN;
@@ -311,6 +318,16 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
+	strcpy(wave.file, "sound/items/use_medkit.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/items/use_nothing.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
 	strcpy(wave.file, "sound/player/footsteps/step1.wav");
 	audio.load(wave);
 	if (wave.data != NULL)
@@ -411,6 +428,7 @@ void Player::respawn()
 	ammo_plasma = 0;
 	ammo_bfg = 0;
 	reload_timer = 0;
+	click_timer = 0;
 	entity->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 	entity->rigid->net_force = vec3(0.0f, 0.0f, 0.0f);
 	state = PLAYER_IDLE;

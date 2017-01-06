@@ -101,6 +101,8 @@ public:
 	char fall_sound[128];
 	char land_sound[128];
 	char weapon_swap_sound[128];
+	char medikit_sound[128];
+	char noitem_sound[128];
 
 	char step1_sound[128];
 	char step2_sound[128];
@@ -141,6 +143,8 @@ public:
 	unsigned int ammo_lightning;
 	unsigned int ammo_plasma;
 	unsigned int ammo_bfg;
+	bool holdable_teleporter;
+	bool holdable_medikit;
 
 	unsigned int reload_timer;
 	unsigned int drown_timer;
@@ -148,6 +152,7 @@ public:
 	unsigned int regen_timer;
 	unsigned int haste_timer;
 	unsigned int quad_timer;
+	unsigned int click_timer;
 	unsigned int invisibility_timer;
 	unsigned int teleport_timer; // prevent teleporting out and back rapidly
 	unsigned int current_light; // debugging light sources, selected same as weapon

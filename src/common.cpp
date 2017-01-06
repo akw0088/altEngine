@@ -843,3 +843,26 @@ float rand_float(float fMin, float fAdd)
 	float fRandom = (float)(rand() % RAND_MAX) / (RAND_MAX - 1);
 	return fMin + fAdd * fRandom;
 }
+
+unsigned int crc32_byte(unsigned int r)
+{
+	for (int j = 0; j < 8; ++j)
+		r = (r & 1 ? 0 : (unsigned int)0xEDB88320L) ^ r >> 1;
+	return r ^ (unsigned int)0xFF000000L;
+}
+
+void crc32(const void *data, unsigned int n_bytes, unsigned int* crc)
+{
+	static unsigned int table[0x100];
+	if (!*table)
+	{
+		for (unsigned int i = 0; i < 0x100; ++i)
+		{
+			table[i] = crc32_byte(i);
+		}
+	}
+	for (unsigned int i = 0; i < n_bytes; ++i)
+	{
+		*crc = table[(char)*crc ^ ((char*)data)[i]] ^ *crc >> 8;
+	}
+}

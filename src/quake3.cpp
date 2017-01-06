@@ -141,6 +141,55 @@ void Quake3::handle_player(int self)
 
 	if (engine->input.use == true)
 	{
+		bool click = true;
+		if (engine->entity_list[self]->player->holdable_medikit)
+		{
+			engine->entity_list[self]->player->health = 100;
+			engine->entity_list[self]->player->holdable_medikit = false;
+			//play medikit sound
+			int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->medikit_sound);
+			if (ret)
+			{
+				engine->audio.play(engine->entity_list[self]->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->medikit_sound);
+			}
+			click = false;
+		}
+		if (engine->entity_list[self]->player->holdable_teleporter)
+		{
+			console(self, "teleport", engine->menu, engine->entity_list);
+			engine->entity_list[self]->player->holdable_teleporter = false;
+			click = false;
+		}
+		if (click)
+		{
+			//play click sound
+			if (engine->entity_list[self]->player->click_timer == 0)
+			{
+				engine->entity_list[self]->player->click_timer = (int)(0.5f * TICK_RATE);
+				int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->noitem_sound);
+				if (ret)
+				{
+					engine->audio.play(engine->entity_list[self]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->noitem_sound);
+				}
+			}
+			else
+			{
+				engine->entity_list[self]->player->click_timer--;
+			}
+		}
+	}
+
+	/*
+	if (engine->input.use == true)
+	{
 		int nav_num = 0;
 
 		if (last_tick == 0)
@@ -165,6 +214,7 @@ void Quake3::handle_player(int self)
 			last_tick = 125;
 		}
 	}
+	*/
 
 
 	if (engine->input.numpad7 == true)
@@ -1839,7 +1889,7 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, ma
 
 		for (int i = 0; i < 50; i++)
 		{
-			lerp(a, b, i / 50.0, pos);
+			lerp(a, b, i / 50.0f, pos);
 
 			menu.draw_text("o", pos.x, pos.y, 0.02f, color, false, false);
 		}
@@ -2351,6 +2401,100 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	ret = strcmp(cmd, "holdable_teleporter");
+	if (ret == 0)
+	{
+		if (entity_list[self]->player->holdable_medikit == false)
+			entity_list[self]->player->holdable_teleporter = true;
+		return;
+	}
+
+	ret = strcmp(cmd, "holdable_medikit");
+	if (ret == 0)
+	{
+		if (entity_list[self]->player->holdable_teleporter == false)
+			entity_list[self]->player->holdable_medikit = true;
+		return;
+	}
+
+	ret = strcmp(cmd, "teleport");
+	if (ret == 0)
+	{
+		// Find a spawn point
+		for (unsigned int i = last_spawn; i < entity_list.size(); i++)
+		{
+			if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
+				strcmp(entity_list[i]->type, "info_player_start") == 0)
+			{
+				matrix4 matrix;
+
+				// Set position and orientation
+				entity_list[self]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+
+				switch (entity_list[i]->angle)
+				{
+				case 0:
+					matrix4::mat_left(matrix, entity_list[self]->position);
+					break;
+				case 90:
+					matrix4::mat_forward(matrix, entity_list[self]->position);
+					break;
+				case 180:
+					matrix4::mat_right(matrix, entity_list[self]->position);
+					break;
+				case 270:
+					matrix4::mat_backward(matrix, entity_list[self]->position);
+					break;
+				default:
+					matrix4::mat_forward(matrix, entity_list[self]->position);
+					break;
+				}
+
+				entity_list[self]->model->morientation.m[0] = matrix.m[0];
+				entity_list[self]->model->morientation.m[1] = matrix.m[1];
+				entity_list[self]->model->morientation.m[2] = matrix.m[2];
+
+				entity_list[self]->model->morientation.m[3] = matrix.m[4];
+				entity_list[self]->model->morientation.m[4] = matrix.m[5];
+				entity_list[self]->model->morientation.m[5] = matrix.m[6];
+
+				entity_list[self]->model->morientation.m[6] = matrix.m[8];
+				entity_list[self]->model->morientation.m[7] = matrix.m[9];
+				entity_list[self]->model->morientation.m[8] = matrix.m[10];
+
+
+				if (self == engine->find_player())
+				{
+					// Set frame if player (or else frame will override model position)
+					engine->camera_frame.up.x = matrix.m[4];
+					engine->camera_frame.up.y = matrix.m[5];
+					engine->camera_frame.up.z = matrix.m[6];
+					engine->camera_frame.forward.x = matrix.m[8];
+					engine->camera_frame.forward.y = matrix.m[9];
+					engine->camera_frame.forward.z = matrix.m[10];
+				}
+
+				// Set last spawn position so we spawn in the next point
+				last_spawn = i + 1;
+				debugf("Teleporting on entity %d\n", i);
+
+				// Play teleport sound
+				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
+				if (ret)
+				{
+					engine->audio.play(entity_list[self]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
+				}
+				break;
+			}
+		}
+		return;
+	}
+
+
 	ret = sscanf(cmd, "teleport %s %s", data, data2);
 	if (ret == 2)
 	{
@@ -2740,7 +2884,6 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	/*
 	haste tempted to double rate of fire too
-	personal teleporter - respawn without resetting player data
 	*/
 
 	ret = strcmp(cmd, "regeneration");
