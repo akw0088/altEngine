@@ -8,7 +8,7 @@ HashTable::HashTable()
 /*
 	If hashtable is full nothing is inserted.
 */
-void HashTable::insert(char *key, void *value)
+void HashTable::insert(char *key, char *value)
 {
 //	printf("HashTable::insert(%s, %p)\n", key, value);
 	int index;
@@ -38,7 +38,7 @@ void HashTable::insert(char *key, void *value)
 	}
 }
 
-bool HashTable::update(const char *key, void *value)
+bool HashTable::update(const char *key, char *value)
 {
 //	printf("HashTable::update(%s, %s)\n", key, value);
 	int index;
@@ -103,7 +103,7 @@ int HashTable::hash_djb2(const char *key) const
 	unsigned int hashval = 5381;
 	int c;
 
-	while (c = *key++)
+	while ((c = *key++))
 		hashval = ((hashval << 5) + hashval) + c;
 
 	return hashval;
@@ -115,7 +115,7 @@ int HashTable::hash_sdbm(const char *key) const
 	unsigned int hashval = 0;
 	int c;
 
-	while (c = *key++)
+	while ((c = *key++))
 		hashval = c + (hashval << 6) + (hashval << 16) - hashval;
 
 	return hashval;

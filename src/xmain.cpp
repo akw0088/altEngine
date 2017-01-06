@@ -138,10 +138,16 @@ int EventProc(Display *display, Window window, GLXContext context)
 			altEngine.keypress("leftbutton", true);
 			break;
 		case Button2:
-			altEngine.keypress("rightbutton", true);
+			altEngine.keypress("middlebutton", true);
 			break;
 		case Button3:
-			altEngine.keypress("middlebutton", true);
+			altEngine.keypress("rightbutton", true);
+			break;
+		case Button4:
+			altEngine.keypress("mousewheelup", true);
+			break;
+		case Button5:
+			altEngine.keypress("mousewheeldown", true);
 			break;
 		default:
 			break;
@@ -154,10 +160,16 @@ int EventProc(Display *display, Window window, GLXContext context)
 			altEngine.keypress("leftbutton", false);
 			break;
 		case Button2:
-			altEngine.keypress("rightbutton", false);
+			altEngine.keypress("middlebutton", false);
 			break;
 		case Button3:
-			altEngine.keypress("middlebutton", false);
+			altEngine.keypress("rightbutton", false);
+			break;
+		case Button4:
+			//altEngine.keypress("mousewheelup", false);
+			break;
+		case Button5:
+			//altEngine.keypress("mousewheeldown", false);
 			break;
 		default:
 			break;

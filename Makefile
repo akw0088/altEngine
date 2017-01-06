@@ -9,6 +9,7 @@ SOURCES_CPP := 	xmain.cpp \
 		frame.cpp \
 		graph.cpp \
 		graphics.cpp \
+		hashtable.cpp \
 		heap.cpp \
 		junzip.cpp \
 		light.cpp \

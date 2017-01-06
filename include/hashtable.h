@@ -16,9 +16,9 @@ class HashTable
 {
 public:
 	HashTable();
-	void insert(char *key, void *value);
+	void insert(char *key, char *value);
 	void *find(const char *key) const;
-	bool update(const char *key, void *value);
+	bool update(const char *key, char *value);
 private:
 	int hash(const char *key, int i) const;
 	int hash_djb2(const char *key) const;
