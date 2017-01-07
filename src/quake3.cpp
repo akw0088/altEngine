@@ -45,6 +45,8 @@ void Quake3::init(Engine *altEngine)
 {
 	engine = altEngine;
 	last_spawn = 0;
+	create_crosshair();
+	crosshair_scale = 1.0f;
 }
 
 void Quake3::load()
@@ -1742,6 +1744,7 @@ void Quake3::render_hud(double last_frametime)
 
 	engine->menu.draw_text("", 0.01f, 0.025f, 0.025f, color, false, true);
 	engine->projection = real_projection;
+	draw_crosshair();
 }
 
 void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
@@ -1948,6 +1951,51 @@ void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)
 	pos2d.y = 0.5f + (pos2d.y * 0.5f);
 }
 
+void Quake3::create_crosshair()
+{
+	vertex_t vert;
+	int index;
+	int num_crosshair = 10;
+
+	memset(&vert, 0, sizeof(vertex_t));
+	vert.position = vec3(0.0f, 0.0f, -150.0f);
+	vert.color = ~0;
+	vert.tangent.x = 2500.0f; //life
+	vert.tangent.y = 5.0f; //size
+	vert.tangent.z = -1.0f; //type
+	index = 0;
+
+	crosshair_vbo = engine->gfx.CreateVertexBuffer(&vert, 1);
+
+	for (int i = 0; i < num_crosshair; i++)
+	{
+		char filename[80];
+
+		sprintf(filename, "media/gfx/2d/crosshair%c.tga", 'a' + i);
+		crosshair_tex[i] = load_texture_pk3(engine->gfx, filename, engine->pk3_list, engine->num_pk3, true);
+	}
+	current_crosshair = 0;
+}
+
+void Quake3::draw_crosshair()
+{
+	matrix4 transformation;
+	engine->camera_frame.set(transformation);
+	matrix4 mvp = transformation * engine->projection;
+
+//	vec3 quad2(1.0f, 0.0f, 0.0f);
+
+	vec3 quad1 = vec3(0.0f, crosshair_scale, 0.0f);
+	vec3 quad2 = vec3(crosshair_scale, 0.0f, 0.0f);
+
+	
+
+	engine->particle_render.Select();
+	engine->particle_render.Params(engine->projection, quad1, quad2);
+	engine->gfx.SelectTexture(0, crosshair_tex[current_crosshair]);
+	engine->particle_render.render(engine->gfx, crosshair_vbo, 1);
+}
+
 
 int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 {
@@ -2134,6 +2182,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 
 		return;
+	}
+
+	ret = sscanf(cmd, "cg_crosshairsize %s", data);
+	if (ret == 1)
+	{
+		crosshair_scale = atof(data);
 	}
 
 	ret = sscanf(cmd, "damage %s", data);

@@ -27,6 +27,8 @@ public:
 	void handle_machinegun(Player &player, int self);
 	void handle_shotgun(Player &player, int self);
 	void handle_gibs(Player &player);
+	void create_crosshair();
+	void draw_crosshair();
 
 
 	void handle_player(int index);
@@ -49,6 +51,11 @@ private:
 	bool blink;
 	vector<navpoint_t> navmesh;
 	int last_spawn;
+
+	int crosshair_tex[10];
+	int crosshair_vbo;
+	int current_crosshair;
+	float crosshair_scale;
 };
 
 #endif
