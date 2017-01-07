@@ -1958,7 +1958,7 @@ void Quake3::create_crosshair()
 	int num_crosshair = 10;
 
 	memset(&vert, 0, sizeof(vertex_t));
-	vert.position = vec3(0.0f, 0.0f, -150.0f);
+	vert.position = vec3(0.0f, 0.0f, -1.0f);
 	vert.color = ~0;
 	vert.tangent.x = 2500.0f; //life
 	vert.tangent.y = 5.0f; //size
@@ -1981,12 +1981,14 @@ void Quake3::draw_crosshair()
 {
 	matrix4 transformation;
 	engine->camera_frame.set(transformation);
+
 	matrix4 mvp = transformation * engine->projection;
+	float scale = crosshair_scale / 150.0f;
 
 //	vec3 quad2(1.0f, 0.0f, 0.0f);
 
-	vec3 quad1 = vec3(0.0f, crosshair_scale, 0.0f);
-	vec3 quad2 = vec3(crosshair_scale, 0.0f, 0.0f);
+	vec3 quad1 = vec3(0.0f, scale, 0.0f);
+	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
 
 	
 
