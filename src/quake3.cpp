@@ -1717,23 +1717,23 @@ void Quake3::render_hud(double last_frametime)
 
 		for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 		{
-			if (engine->entity_list[i]->nodraw == true)
-				continue;
+//			if (engine->entity_list[i]->nodraw == true)
+//				continue;
 
 			if ( strlen(engine->entity_list[i]->target_name) <= 1 )
 				continue;
 
 			for (unsigned int j = 0; j < engine->entity_list.size(); j++)
 			{
-				if (engine->entity_list[j]->nodraw == true)
-					continue;
+//				if (engine->entity_list[j]->nodraw == true)
+	//				continue;
 
 				if (strlen(engine->entity_list[j]->target) <= 1)
 					continue;
 
 				if (strstr(engine->entity_list[i]->target_name, engine->entity_list[j]->target) != NULL)
 				{
-					draw_line(engine->entity_list[i], engine->entity_list[j], engine->menu, color, real_projection);
+					draw_line(engine->entity_list[i], engine->entity_list[j], engine->menu, color);
 				}
 			}
 
@@ -1856,32 +1856,55 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 }
 
 
-void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color, matrix4 &real_projection)
+void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 {
 	matrix4 trans2;
 	matrix4 mvp2;
 	matrix4 model;
+	vertex_t vertex[512];
+	int index[512];
+	int i;
 
-	vec3 a;
-	vec3 b;
+	vec3 a = ent_a->position;
+	vec3 b = ent_b->position;
 	vec3 pos;
 
-
-	transform_3d_2d(ent_a->position, a, real_projection);
-	transform_3d_2d(ent_b->position, b, real_projection);
-
-	if ((a.z >= -1.0 && a.z <= 1.0) || (b.z >= -1.0 && b.z <= 1.0))
+	for (i = 0; i < 50; i++)
 	{
-		engine->projection = engine->identity;
+		lerp(a, b, i / 50.0f, pos);
 
-		for (int i = 0; i < 50; i++)
-		{
-			lerp(a, b, i / 50.0f, pos);
-
-			menu.draw_text("o", pos.x, pos.y, 0.02f, color, false, false);
-		}
-		engine->projection = real_projection;
+		memset(&vertex[i], 0, sizeof(vertex_t));
+		vertex[i].position = pos;
+		vertex[i].color = 0x0000FF00;
+		vertex[i].tangent.x = 2500.0f; //life
+		vertex[i].tangent.y = 5.0f; //size
+		vertex[i].tangent.z = -1.0f; //type
+		index[i] = i;
 	}
+
+	int line_ibo = engine->gfx.CreateIndexBuffer(index, i);
+	int line_vbo = engine->gfx.CreateVertexBuffer(vertex, i);
+
+	matrix4 transformation;
+	engine->camera_frame.set(transformation);
+	matrix4 mvp = transformation * engine->projection;
+
+
+	vec3 quad1 = engine->camera_frame.up;
+	vec3 quad2 = vec3::crossproduct(engine->camera_frame.forward, engine->camera_frame.up);
+//	vec3 quad1 = vec3(0.0f, 1.0f, 0.0f);
+//	vec3 quad2 = vec3(0.0f, 0.0f, 1.0f);
+
+
+	engine->particle_render.Select();
+	engine->particle_render.Params(mvp, quad1, quad2);
+	engine->gfx.SelectTexture(0, engine->particle_tex);
+	engine->gfx.SelectIndexBuffer(line_ibo);
+	engine->particle_render.render(engine->gfx, line_vbo, 400);
+
+	// yeah I know
+	engine->gfx.DeleteIndexBuffer(line_ibo);
+	engine->gfx.DeleteVertexBuffer(line_vbo);
 }
 
 void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)

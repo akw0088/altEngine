@@ -313,7 +313,7 @@ void Engine::load(char *level)
 	print_graph(node, num_node);
 
 	graph.load(node, num_node);
-	free((void *)ref);
+	delete [] ref;
 
 
 	q3.setup_func(entity_list, q3map);
@@ -2984,6 +2984,10 @@ void Engine::unload()
 
 	num_bot = 0;
 
+	if (node)
+		delete[] node;
+
+
 	menu.ingame = false;
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -3037,6 +3041,7 @@ void Engine::destroy()
 	delete thug22;
 	delete rocket;
 	delete pineapple;
+
 	
 	for (unsigned int i = 0; i < surface_list.size(); i++)
 	{

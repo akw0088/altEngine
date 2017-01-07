@@ -236,7 +236,6 @@ private:
 	int u_quad1;
 	int u_quad2;
 	int u_texture0;
-
 };
 
 #endif

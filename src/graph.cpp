@@ -15,7 +15,6 @@ void Graph::load(graph_node_t *node, int num_nodes)
 
 Graph::~Graph()
 {
-	free((void *)node);
 	node = NULL;
 	num_nodes = 0;
 }

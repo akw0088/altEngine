@@ -867,10 +867,14 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &gen)
 	return ParticleBufferA;
 }
 
+#define QUAD_PARTICLES
 
 int ParticleRender::init(Graphics *gfx)
 {
 #ifndef DIRECTX
+
+#ifdef QUAD_PARTICLES
+	// quad particles
 	if (Shader::init(gfx,
 		"media/glsl/ver440/particle_render.vs",
 		"media/glsl/ver440/particle_render.gs",
@@ -879,6 +883,17 @@ int ParticleRender::init(Graphics *gfx)
 		program_handle = -1;
 		return -1;
 	}
+#else
+	// point textured particles
+	if (Shader::init(gfx,
+		"media/glsl/ver440/particle_render2.vs",
+		NULL,
+		"media/glsl/ver440/particle_render2.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+#endif
 
 	u_mvp = glGetUniformLocation(program_handle, "u_mvp");
 	u_quad1 = glGetUniformLocation(program_handle, "u_quad1");
