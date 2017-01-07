@@ -64,15 +64,15 @@ void Frame::set(matrix3 &trans)
 	right = vec3::crossproduct(up, forward);
 	right.normalize();
 
-	trans.m[0] = -forward.x;
-	trans.m[1] = -forward.y;
-	trans.m[2] = -forward.z;
+	trans.m[0] = right.x;
+	trans.m[1] = right.y;
+	trans.m[2] = right.z;
 	trans.m[3] = up.x;
 	trans.m[4] = up.y;
 	trans.m[5] = up.z;
-	trans.m[6] = right.x;
-	trans.m[7] = right.y;
-	trans.m[8] = right.z;
+	trans.m[6] = -forward.x;
+	trans.m[7] = -forward.y;
+	trans.m[8] = -forward.z;
 }
 
 

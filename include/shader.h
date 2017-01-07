@@ -187,8 +187,8 @@ class ParticleUpdate : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(generator_t &gen);
-	int step(Graphics &gfx, generator_t &gen);
+	void Params(emitter_t &emit);
+	int step(Graphics &gfx, emitter_t &emit);
 
 	virtual void prelink(void);
 
@@ -196,14 +196,14 @@ public:
 	unsigned int ParticleBufferB;
 
 private:
-	int u_gen_position;
-	int u_gen_vel_min;
-	int u_gen_vel_range;
-	int u_gen_color;
-	int u_gen_size;
-	int u_gen_life_min;
-	int u_gen_life_range;
-	int u_gen_num;
+	int u_emit_position;
+	int u_emit_vel_min;
+	int u_emit_vel_range;
+	int u_emit_color;
+	int u_emit_size;
+	int u_emit_life_min;
+	int u_emit_life_range;
+	int u_emit_num;
 
 	int u_gravity;
 	int u_delta_time;
@@ -218,7 +218,7 @@ private:
 	unsigned int	num_particle;
 
 	unsigned int query;
-	generator_t generator;
+	emitter_t emitter;
 };
 
 class ParticleRender : public Shader

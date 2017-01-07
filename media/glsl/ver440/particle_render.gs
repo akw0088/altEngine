@@ -12,7 +12,7 @@ in	vec3[]		iatt_position;
 in	vec2[]		ivary_TexCoord;
 in	vec2[]		ivary_LightCoord;
 in	vec3[]		ivary_normal;
-in	flat int[]	ivary_color;
+flat 	in	uint[]	ivary_color;
 in	vec4[]		ivary_tangent;
 
 
@@ -21,7 +21,7 @@ out    vec3 att_position;
 out    vec2 vary_TexCoord;
 out    vec2 vary_LightCoord;
 out    vec3 vary_normal;
-out    int vary_color;
+flat out    uint vary_color;
 out    vec4 vary_tangent; // color value
 
 
@@ -46,6 +46,7 @@ void main()
 					ivary_tangent[0].g,
 					ivary_tangent[0].b,
 					ivary_normal[0].x); // life + color
+		vary_color = ivary_color[0];
 
 
 		//0 up left

@@ -867,9 +867,10 @@ void crc32(const void *data, unsigned int n_bytes, unsigned int* crc)
 	}
 }
 
-int spiral(float distance, vec3 &scale, float step, vec3 *point, vec3 &forward)
+int spiral(float distance, vec3 &scale, float step, vec3 *point)
 {
 	int i;
+
 
 	for(i = 0; i * step < distance; i++)
 	{
@@ -877,29 +878,30 @@ int spiral(float distance, vec3 &scale, float step, vec3 *point, vec3 &forward)
 		float cos_val = fcos(i * step);
 		point[i].x = scale.x * (cos_val - sin_val);
 		point[i].y = scale.y * (sin_val + cos_val);
-		point[i].z = scale.z * i * step;
+		point[i].z = scale.z * -i * step;
 	}
 
 	return i;
 }
 
-int gen_spiral(Graphics &gfx, int &ibo, int &vbo)
+int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 {
-	vec3 forward;
 	vec3 point[512];
 	vertex_t vert[512];
 	int index[512];
-	vec3 scale(10.0f, 10.0f, 1.0f);
+	vec3 scale(5.0f, 5.0f, 20.0f);
+	vec3 offset(0.0f, 0.0f, 50.0f);
 
-	forward.x = 0.0f;
-	forward.y = 0.0f;
-	forward.z = 1.0f;
-
-	int num_point = spiral(100.0f, scale, 0.25f, point, forward);
+	int num_point = spiral(100.0f, scale, 0.25f, point);
 
 	for(int i = 0; i < num_point; i++)
 	{
-		vert[i].position = point[i];
+		memset(&vert[i], 0, sizeof(vertex_t));
+		vert[i].position = point[i] + offset;
+		vert[i].color = 0xFF000000;
+		vert[i].tangent.x = 2500.0f; //life
+		vert[i].tangent.y = 5.0f; //size
+		vert[i].tangent.z = -1.0f; //type
 		index[i] = i;
 	}
 

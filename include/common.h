@@ -24,6 +24,7 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 void print_graph(graph_node_t *node, int num_node);
 void print_path(int *path, int path_length, graph_node_t *node);
 float rand_float(float fMin, float fAdd);
+int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
 
 // Lerp between A and B where time is within [0,1]
 inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)

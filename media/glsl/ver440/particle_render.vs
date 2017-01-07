@@ -5,7 +5,7 @@ in vec3 attr_position;
 in vec2 attr_TexCoord;
 in vec2 attr_LightCoord;
 in vec3 attr_normal;
-in int	attr_color;
+in uint	attr_color;
 in vec4	attr_tangent;
 
 // interpolated output
@@ -13,7 +13,7 @@ out	vec3		iatt_position;
 out	vec2		ivary_TexCoord;
 out	vec2		ivary_LightCoord;
 out	vec3		ivary_normal;
-out	flat int	ivary_color;
+flat out	uint	ivary_color;
 out	vec4		ivary_tangent;
 
 uniform mat4 u_mvp;

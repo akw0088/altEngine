@@ -410,4 +410,4 @@ typedef struct
 	vec3 gravity;
 	float delta_time;
 	vec3 seed;
-} generator_t;
+} emitter_t;

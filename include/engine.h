@@ -133,6 +133,9 @@ protected:
 	Frame		camera_frame;
 	Frame		light_frame;
 
+
+	unsigned int	spiral_vbo;
+	unsigned int	spiral_ibo;
 	unsigned int	fbo;
 	unsigned int	global_vao;
 	unsigned int	quad_tex;
@@ -179,7 +182,7 @@ protected:
 
 	ParticleUpdate		particle_update;
 	ParticleRender		particle_render;
-	generator_t			gen;
+	emitter_t			emitter;
 
 	bool	initialized;
 	void	*param1;

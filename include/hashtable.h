@@ -19,6 +19,7 @@ public:
 	void insert(char *key, char *value);
 	void *find(const char *key) const;
 	bool update(const char *key, char *value);
+	void destroy();
 private:
 	int hash(const char *key, int i) const;
 	int hash_djb2(const char *key) const;

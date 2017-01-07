@@ -880,14 +880,6 @@ void Quake3::handle_plasma(Player &player, int self)
 
 	player.entity->model->get_frame(camera_frame);
 
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = -player.entity->model->morientation.m[0];
-		camera_frame.forward.y = -player.entity->model->morientation.m[1];
-		camera_frame.forward.z = -player.entity->model->morientation.m[2];
-	}
-
 	sprintf(player.attack_sound, "sound/weapons/plasma/hyprbf1a.wav");
 
 	player.reload_timer = PLASMA_RELOAD;
@@ -950,14 +942,6 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	Frame camera_frame;
 
 	player.entity->model->get_frame(camera_frame);
-
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = -player.entity->model->morientation.m[0];
-		camera_frame.forward.y = -player.entity->model->morientation.m[1];
-		camera_frame.forward.z = -player.entity->model->morientation.m[2];
-	}
 
 	sprintf(player.attack_sound, "sound/weapons/rocket/rocklf1a.wav");
 	player.reload_timer = ROCKET_RELOAD;
@@ -1032,14 +1016,6 @@ void Quake3::handle_grenade(Player &player, int self)
 
 	player.entity->model->get_frame(camera_frame);
 
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = -player.entity->model->morientation.m[0];
-		camera_frame.forward.y = -player.entity->model->morientation.m[1];
-		camera_frame.forward.z = -player.entity->model->morientation.m[2];
-	}
-
 
 	sprintf(player.attack_sound, "sound/weapons/grenade/grenlf1a.wav");
 
@@ -1104,14 +1080,6 @@ void Quake3::handle_lightning(Player &player, int self)
 
 	player.entity->model->get_frame(camera_frame);
 
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = -player.entity->model->morientation.m[0];
-		camera_frame.forward.y = -player.entity->model->morientation.m[1];
-		camera_frame.forward.z = -player.entity->model->morientation.m[2];
-	}
-
 
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
 	player.reload_timer = LIGHTNING_RELOAD;
@@ -1166,11 +1134,28 @@ void Quake3::handle_railgun(Player &player, int self)
 	projectile->rigid = new RigidBody(projectile);
 	projectile->position = camera_frame.pos;
 	projectile->rigid->clone(*(engine->ball->model));
-	projectile->rigid->velocity = camera_frame.forward * -100.0f;
+	projectile->rigid->velocity = vec3();
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
 	projectile->model = projectile->rigid;
+	projectile->model->rail_trail = true;
 	camera_frame.set(projectile->model->morientation);
+
+
+
+
+	projectile->trigger = new Trigger(projectile, engine->audio);
+	sprintf(projectile->trigger->action, "");
+
+	projectile->trigger->hide = false;
+	projectile->trigger->self = false;
+	projectile->trigger->idle = true;
+	projectile->trigger->idle_timer = (int)(10.0 * TICK_RATE);
+	projectile->trigger->explode = true;
+	projectile->trigger->explode_timer = 10;
+	projectile->trigger->owner = self;
+
+
 
 	vec3 forward;
 	player.entity->model->getForwardVector(forward);
@@ -1228,17 +1213,8 @@ void Quake3::handle_machinegun(Player &player, int self)
 	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
 
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = player.entity->model->morientation.m[0];
-		camera_frame.forward.y = player.entity->model->morientation.m[1];
-		camera_frame.forward.z = player.entity->model->morientation.m[2];
-	}
-	else
-	{
-		camera_frame.forward *= -1;
-	}
+
+	camera_frame.forward *= -1;
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -1290,17 +1266,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 
 	//	engine->map.hitscan(player.entity->position, forward, distance);
 
-	//forward is right for the bots, need to fix it as hacks are piling up
-	if (strcmp(engine->entity_list[self]->type, "NPC") == 0)
-	{
-		camera_frame.forward.x = player.entity->model->morientation.m[0];
-		camera_frame.forward.y = player.entity->model->morientation.m[1];
-		camera_frame.forward.z = player.entity->model->morientation.m[2];
-	}
-	else
-	{
-		camera_frame.forward *= -1;
-	}
+	camera_frame.forward *= -1;
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;

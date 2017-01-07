@@ -727,14 +727,14 @@ int ParticleUpdate::init(Graphics *gfx)
 		return -1;
 	}
 
-	u_gen_position = glGetUniformLocation(program_handle, "u_gen_position");
-	u_gen_vel_min = glGetUniformLocation(program_handle, "u_gen_vel_min");
-	u_gen_vel_range = glGetUniformLocation(program_handle, "u_gen_vel_range");
-	u_gen_color = glGetUniformLocation(program_handle, "u_gen_color");
-	u_gen_size = glGetUniformLocation(program_handle, "u_gen_size");
-	u_gen_life_min = glGetUniformLocation(program_handle, "u_gen_life_min");
-	u_gen_life_range = glGetUniformLocation(program_handle, "u_gen_life_range");
-	u_gen_num = glGetUniformLocation(program_handle, "u_gen_num");
+	u_emit_position = glGetUniformLocation(program_handle, "u_emit_position");
+	u_emit_vel_min = glGetUniformLocation(program_handle, "u_emit_vel_min");
+	u_emit_vel_range = glGetUniformLocation(program_handle, "u_emit_vel_range");
+	u_emit_color = glGetUniformLocation(program_handle, "u_emit_color");
+	u_emit_size = glGetUniformLocation(program_handle, "u_emit_size");
+	u_emit_life_min = glGetUniformLocation(program_handle, "u_emit_life_min");
+	u_emit_life_range = glGetUniformLocation(program_handle, "u_emit_life_range");
+	u_emit_num = glGetUniformLocation(program_handle, "u_emit_num");
 
 	u_gravity = glGetUniformLocation(program_handle, "u_gravity");
 	u_delta_time = glGetUniformLocation(program_handle, "u_delta_time");
@@ -771,7 +771,7 @@ int ParticleUpdate::init(Graphics *gfx)
 
 
 
-	generator.num = 5;
+	emitter.num = 5;
 #endif
 	return 0;
 }
@@ -799,27 +799,27 @@ void ParticleUpdate::prelink(void)
 #endif
 }
 
-void ParticleUpdate::Params(generator_t &gen)
+void ParticleUpdate::Params(emitter_t &emit)
 {
 #ifndef DIRECTX
-	glUniform3fv(u_gen_position, 1, (float *)&(gen.position));
-	glUniform3fv(u_gen_vel_min, 1, (float *)&(gen.vel_min));
-	glUniform3fv(u_gen_vel_range, 1, (float *)&(gen.vel_range));
-	glUniform1i(u_gen_color, gen.color);
-	glUniform1f(u_gen_size, gen.size);
-	glUniform1f(u_gen_life_min, gen.life_min);
-	glUniform1f(u_gen_life_range, gen.life_range);
-	glUniform1i(u_gen_num, gen.num);
-	glUniform3fv(u_gravity, 1, (float *)&(gen.gravity));
+	glUniform3fv(u_emit_position, 1, (float *)&(emit.position));
+	glUniform3fv(u_emit_vel_min, 1, (float *)&(emit.vel_min));
+	glUniform3fv(u_emit_vel_range, 1, (float *)&(emit.vel_range));
+	glUniform1i(u_emit_color, emit.color);
+	glUniform1f(u_emit_size, emit.size);
+	glUniform1f(u_emit_life_min, emit.life_min);
+	glUniform1f(u_emit_life_range, emit.life_range);
+	glUniform1i(u_emit_num, emit.num);
+	glUniform3fv(u_gravity, 1, (float *)&(emit.gravity));
 
-	glUniform1f(u_delta_time, gen.delta_time);
-	glUniform3fv(u_seed, 1, (float *)&(gen.seed));
-	gen.num = MAX_PARTICLES;
-	generator = gen;
+	glUniform1f(u_delta_time, emit.delta_time);
+	glUniform3fv(u_seed, 1, (float *)&(emit.seed));
+	emit.num = MAX_PARTICLES;
+	emitter = emit;
 #endif
 }
 
-int ParticleUpdate::step(Graphics &gfx, generator_t &gen)
+int ParticleUpdate::step(Graphics &gfx, emitter_t &gen)
 {
 
 	// Source buffer

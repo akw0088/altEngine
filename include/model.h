@@ -49,6 +49,7 @@ public:
 
 	static			int skybox_vertex;
 	static			int skybox_index;
+	bool			rail_trail;
 };
 
 #endif

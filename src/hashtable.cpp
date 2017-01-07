@@ -5,6 +5,18 @@ HashTable::HashTable()
 	memset(table, 0, sizeof(table));
 }
 
+void HashTable::destroy()
+{
+	for (int i = 0; i < TABLE_SIZE; i++)
+	{
+		if (table[i])
+		{
+			delete[] table[i]->key;
+			delete[] table[i]->value;
+		}
+	}
+}
+
 /*
 	If hashtable is full nothing is inserted.
 */

@@ -45,6 +45,8 @@ void Engine::init(void *p1, void *p2)
 	identity = ident;
 	projection = ident;
 
+	gen_spiral(gfx, spiral_ibo, spiral_vbo);
+
 	//visual
 	gfx.init(param1, param2);
 	gfx.CreateVertexArrayObject(global_vao);
@@ -251,19 +253,19 @@ void Engine::load(char *level)
 
 //	int buf = 0;
 
-	gen.position = vec3(0.0f, 0.0f, 0.0f);
-	gen.vel_min = vec3(50.0f, 50.0f, 50.0);
-	gen.vel_range = vec3(200.0f, 200.0f, 200.0f);
-	gen.color = 0xFF0000;
-	gen.size = 2.5f;
-	gen.life_min = 500.0f;
-	gen.life_range = 2000.0f;
-	gen.num = MAX_PARTICLES;
-	gen.gravity = vec3(0.0f, -9.8f, 0.0f);
-	gen.delta_time = TICK_MS / 1000.0f;
+	emitter.position = vec3(0.0f, 0.0f, 0.0f);
+	emitter.vel_min = vec3(50.0f, 50.0f, 50.0);
+	emitter.vel_range = vec3(200.0f, 200.0f, 200.0f);
+	emitter.color = 0xFF000000;
+	emitter.size = 2.5f;
+	emitter.life_min = 500.0f;
+	emitter.life_range = 2000.0f;
+	emitter.num = MAX_PARTICLES;
+	emitter.gravity = vec3(0.0f, -9.8f, 0.0f);
+	emitter.delta_time = TICK_MS / 1000.0f;
 
 
-	gen.seed = vec3(rand_float(-100, 200.0f),
+	emitter.seed = vec3(rand_float(-100, 200.0f),
 		rand_float(-100.0, 200.0f),
 		rand_float(-100.0, 200.0f));
 
@@ -658,34 +660,32 @@ void Engine::render_scene(bool lights)
 		entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
 
 
+
 	camera_frame.set(transformation);
 
-	mvp = transformation * projection;
-//	mlight2.Select();
-//	mlight2.Params(mvp, light_list, light_list.size(), offset);
-//	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
-//	gfx.cleardepth();
-
-
-	render_entities(transformation, true);
 	mlight2.Select();
 	mvp = transformation * projection;
+
+	mlight2.Params(mvp, light_list, light_list.size(), offset);
+	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
 
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);
 	else
 		mlight2.Params(mvp, light_list, 0, offset);
 
-
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+
+	render_entities(transformation, true);
+
 
 #ifdef PARTICLES
 	particle_update.Select();
-	gen.seed = vec3(rand_float(0.0, 10.0),
+	emitter.seed = vec3(rand_float(0.0, 10.0),
 					rand_float(0.0, 10.0),
 					rand_float(0.0, 10.0));
-	particle_update.Params(gen);
-	int vbo = particle_update.step(gfx, gen);
+	particle_update.Params(emitter);
+	int vbo = particle_update.step(gfx, emitter);
 #endif
 
 
@@ -699,8 +699,12 @@ void Engine::render_scene(bool lights)
 	particle_render.Select();
 	particle_render.Params(mvp, quad1, quad2);
 	gfx.SelectTexture(0, particle_tex);
-	particle_render.render(gfx, vbo, gen.num);
+	particle_render.render(gfx, vbo, emitter.num);
 #endif
+
+
+
+
 }
 
 
@@ -777,23 +781,6 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 	matrix4 mvp;
 
 	entity_list[i]->rigid->get_matrix(mvp.m);
-
-	if (hack)
-	{
-		vec4 temp;
-		temp.x = mvp.m[0];
-		temp.y = mvp.m[1];
-		temp.z = mvp.m[2];
-		temp.w = mvp.m[3];
-		mvp.m[0] = mvp.m[8];
-		mvp.m[1] = mvp.m[9];
-		mvp.m[2] = mvp.m[10];
-		mvp.m[3] = mvp.m[11];
-		mvp.m[8] = -temp.x;
-		mvp.m[9] = -temp.y;
-		mvp.m[10] = -temp.z;
-		mvp.m[11] = temp.w;
-	}
 
 	mvp = trans.premultiply(mvp.m) * projection;
 	vec3 offset = entity_list[i]->position;
@@ -886,12 +873,29 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
 			{
 				//bool draw_wander_target = false;
+
+
+				//render rail trail
+				if (entity_list[i]->model->rail_trail)
+				{
+					vec3 right = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
+					particle_render.Select();
+					particle_render.Params(mvp, -camera_frame.up, -right);
+					gfx.SelectTexture(0, particle_tex);
+					gfx.SelectIndexBuffer(spiral_ibo);
+					particle_render.render(gfx, spiral_vbo, 400);
+					continue;
+				}
 				entity_list[i]->rigid->render(gfx);
+
+
+
 				if (entity_list[i]->num_particle)
 				{
-					gen.num = entity_list[i]->num_particle;
-					gen.position = entity_list[i]->position;
-					gen.gravity = vec3(0.0f, 30.0f, 0.0f);
+					emitter.num = entity_list[i]->num_particle;
+					emitter.position = entity_list[i]->position;
+					emitter.gravity = vec3(0.0f, 30.0f, 0.0f);
 				}
 
 
@@ -1012,6 +1016,8 @@ void Engine::destroy_buffers()
 	zsec_shotgun.destroy_buffers(gfx);
 
 	gfx.DeleteFrameBuffer(fbo);
+
+	key_bind.destroy();
 
 	for (unsigned int i = 0; i < snd_wave.size(); i++)
 	{
@@ -1150,7 +1156,15 @@ void Engine::spatial_testing()
 			vec3 max = entity_list[i]->model->aabb[7];
 
 
-			entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
+
+			if (entity_list[i]->model && entity_list[i]->model->rail_trail)
+			{
+				entity_list[i]->frustum_visible = true; // trail extends past aabb
+			}
+			else
+			{
+				entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
+			}
 
 
 			for(int j = 0; j < 8; j++)
@@ -1777,14 +1791,6 @@ void Engine::server_step()
 		client_frame.forward.z = clientmsg.forward[2];
 		vec3 right = vec3::crossproduct(client_frame.up, client_frame.forward);
 		right.normalize();
-
-		//hack, models are 90 degrees to the right, so make right forward
-		/*
-		client_frame.forward.x = right.x;
-		client_frame.forward.y = right.y;
-		client_frame.forward.z = right.z;
-		*/
-
 
 		Entity *client = entity_list[client_list[index]->entity];
 

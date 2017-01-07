@@ -28,14 +28,14 @@ out	vec4 vary_tangent;
 //	float vary_pad0;
 
 
-uniform vec3	u_gen_position;
-uniform vec3	u_gen_vel_min;
-uniform vec3	u_gen_vel_range;
-uniform int	u_gen_color;
-uniform float	u_gen_size; 
-uniform float	u_gen_life_min;
-uniform float	u_gen_life_range;
-uniform int	u_gen_num; 
+uniform vec3	u_emit_position;
+uniform vec3	u_emit_vel_min;
+uniform vec3	u_emit_vel_range;
+uniform int	u_emit_color;
+uniform float	u_emit_size; 
+uniform float	u_emit_life_min;
+uniform float	u_emit_life_range;
+uniform int	u_emit_num; 
 
 uniform vec3	u_gravity;
 uniform float	u_delta_time;
@@ -93,24 +93,24 @@ void main()
 		EndPrimitive();
 		
 		// Generate partiles based on uniform count
-		for(int i = 0; i < u_gen_num; i++)
+		for(int i = 0; i < u_emit_num; i++)
 		{
-			vary_position = u_gen_position;
-			vary_velocity = u_gen_vel_min + vec3(	u_gen_vel_range.x * rand_zero_one(),
-							u_gen_vel_range.y * rand_zero_one(),
-							u_gen_vel_range.z * rand_zero_one());
-			vary_color	= u_gen_color;
+			vary_position = u_emit_position;
+			vary_velocity = u_emit_vel_min + vec3(	u_emit_vel_range.x * rand_zero_one(),
+							u_emit_vel_range.y * rand_zero_one(),
+							u_emit_vel_range.z * rand_zero_one());
+			vary_color	= u_emit_color;
 
-			vary_tangent.x = u_gen_life_min + u_gen_life_range * rand_zero_one();
-			vary_tangent.y = u_gen_size;
+			vary_tangent.x = u_emit_life_min + u_emit_life_range * rand_zero_one();
+			vary_tangent.y = u_emit_size;
 			vary_tangent.z = -1.0;
 			vary_tangent.w = 1.0f;
 
 			vary_TexCoord = vec2(0.0, 0.0);
 			vary_LightCoord = vec2(1.0, 1.0);
 
-//			vary_life	= u_gen_life_min + u_gen_life_range * rand_zero_one();
-//			vary_size	= u_gen_size;
+//			vary_life	= u_emit_life_min + u_emit_life_range * rand_zero_one();
+//			vary_size	= u_emit_size;
 //			vary_type	= 1;
 			EmitVertex();
 			EndPrimitive();

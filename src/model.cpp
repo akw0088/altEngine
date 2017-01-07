@@ -85,6 +85,7 @@ Model::Model(Entity *entity)
 	model_file = NULL;
 	model_array = NULL;
 	center = vec3();
+	rail_trail = false;
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;
