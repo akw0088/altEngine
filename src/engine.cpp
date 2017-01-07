@@ -880,10 +880,11 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				//render rail trail
 				if (entity_list[i]->model->rail_trail)
 				{
-					vec3 right = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+					vec3 quad1 = camera_frame.up;
+					vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 					particle_render.Select();
-					particle_render.Params(mvp, -camera_frame.up, -right);
+					particle_render.Params(mvp, quad1, quad2);
 					gfx.SelectTexture(0, particle_tex);
 					gfx.SelectIndexBuffer(spiral_ibo);
 					particle_render.render(gfx, spiral_vbo, 400);

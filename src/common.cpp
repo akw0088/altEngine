@@ -877,7 +877,7 @@ int spiral(float distance, vec3 &scale, float step, vec3 *point)
 		float sin_val = fsin(i * step);
 		float cos_val = fcos(i * step);
 		point[i].x = scale.x * (cos_val - sin_val);
-		point[i].y = scale.y * (sin_val + cos_val);
+		point[i].y = -scale.y * (sin_val + cos_val);
 		point[i].z = scale.z * -i * step;
 	}
 
@@ -890,7 +890,7 @@ int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 	vertex_t vert[512];
 	int index[512];
 	vec3 scale(5.0f, 5.0f, 20.0f);
-	vec3 offset(0.0f, 0.0f, 50.0f);
+	vec3 offset(0.0f, 0.0f, -12.0f);
 
 	int num_point = spiral(100.0f, scale, 0.25f, point);
 
