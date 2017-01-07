@@ -782,7 +782,7 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 
 	entity_list[i]->rigid->get_matrix(mvp.m);
 
-	mvp = trans.premultiply(mvp.m) * projection;
+	mvp = (mvp * trans) * projection;
 	vec3 offset = entity_list[i]->position;
 
 
@@ -815,7 +815,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 		vec3 offset = entity_list[i]->position;
 
-		mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+		entity_list[i]->rigid->get_matrix(mvp.m);
+		mvp = (mvp * trans) * projection;
 		if (lights)
 		{
 			mlight2.Params(mvp, light_list, light_list.size(), offset);
@@ -837,7 +838,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
 				mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
 				mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 7.0f;
-				mvp = trans.premultiply(mvp.m) * projection;
+
+				mvp = (mvp * trans) * projection;
 				if (lights)
 				{
 					mlight2.Params(mvp, light_list, light_list.size(), offset);
@@ -903,11 +905,13 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 #ifdef NOPE
 				if (draw_wander_target)
 				{
-					mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+					entity_list[i]->rigid->get_matrix(mvp.m);
+					mvp = (mvp * trans) * projection;
 					mlight2.Params(mvp, light_list, light_list.size(), offset);
 					q3.ball->rigid->render(gfx);
 					entity_list[i]->position -= entity_list[i]->rigid->sphere_target;
-					mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+					entity_list[i]->rigid->get_matrix(mvp.m);
+					mvp = (mvp * trans) * projection;
 					mlight2.Params(mvp, light_list, light_list.size(), offset);
 				}
 #endif
@@ -934,7 +938,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	{
 		if (strcmp(entity_list[i]->type, "NPC") == 0 && entity_list[i]->player->health > 0)
 		{
-			mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+			entity_list[i]->rigid->get_matrix(mvp.m);
+			mvp = (mvp * trans) * projection;
 			vec3 offset = entity_list[i]->position;
 
 			if (lights)
@@ -1151,7 +1156,8 @@ void Engine::spatial_testing()
 
 			camera_frame.set(trans);
 			matrix4 mvp;
-			mvp = trans.premultiply(entity_list[i]->rigid->get_matrix(mvp.m)) * projection;
+			entity_list[i]->rigid->get_matrix(mvp.m);
+			mvp = (mvp * trans) * projection;
 			vec3 min = entity_list[i]->model->aabb[0];
 			vec3 max = entity_list[i]->model->aabb[7];
 

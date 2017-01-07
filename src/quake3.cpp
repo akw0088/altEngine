@@ -1754,7 +1754,10 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 
 	menu.draw_text("", 0, 0, 0.02f, color, true, false);
 	engine->camera_frame.set(trans2);
-	mvp2 = trans2.premultiply(entity->rigid->get_matrix(model.m)) * real_projection;
+	entity->rigid->get_matrix(model.m);
+
+	mvp2 = (model * trans2) * real_projection;
+
 	vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
 
 	pos.x = pos.x / pos.w;
@@ -1910,7 +1913,8 @@ void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)
 
 
 	engine->camera_frame.set(trans2);
-	mvp2 = trans2.premultiply(matrix.m) * projection;
+	mvp2 = (matrix * trans2) * projection;
+
 	vec4 pos_4d = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
 
 	pos2d.x = pos_4d.x / pos_4d.w;

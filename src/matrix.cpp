@@ -368,7 +368,7 @@ vec4 matrix4::operator*(const vec4 &vec)
 	return result;
 }
 
-matrix4 matrix4::operator*(const matrix4 &mat)
+matrix4 matrix4::operator*(const matrix4 &mat) const
 {
 	matrix4 result;
 

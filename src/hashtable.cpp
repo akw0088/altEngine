@@ -13,6 +13,7 @@ void HashTable::destroy()
 		{
 			delete[] table[i]->key;
 			delete[] table[i]->value;
+			delete table[i];
 		}
 	}
 }
