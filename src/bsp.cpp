@@ -429,7 +429,8 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	}
 }
 
-bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity)
+bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -494,9 +495,16 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 			if (data.Material[brush->material].surface & SURF_NONSOLID)
 				continue;
 
-			plane->normal = data.Plane[plane_index].normal;
-			plane->d = data.Plane[plane_index].d;
-			*depth = d;
+
+			// Check old position against planes, if we werent colliding before
+			//then it is the collision plane we want to return
+			d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+			if (d > 0.0)
+			{
+				plane->normal = data.Plane[plane_index].normal;
+				plane->d = data.Plane[plane_index].d;
+				*depth = d;
+			}
 			count++;
 
 			/*
@@ -525,11 +533,12 @@ bool Bsp::collision_detect(vec3 &point, plane_t *plane, float *depth, bool &wate
 		{
 			if (debug)
 			{
-				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\n", i,
+				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
 					data.Material[brush->material].name,
 					data.Material[brush->material].contents,
 					data.Material[brush->material].surface,
-					*depth, count);
+					*depth, count,
+					plane->normal.x, plane->normal.y, plane->normal.z);
 				/*
 				for (unsigned int k = 0; k < surface_list.size(); k++)
 				{

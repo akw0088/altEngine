@@ -1428,12 +1428,13 @@ bool Engine::map_collision(RigidBody &body)
 	for(int i = 0; i < 8; i++)
 	{
 		vec3 point = body.aabb[i] - body.center + body.entity->position;
+		vec3 oldpoint = body.aabb[i] - body.center + body.old_position;
 
 //		can be used to avoid checking all eight points, but checking all 8 works pretty well
 //		vec3 point = body.center + body.entity->position;
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
-		if (q3map.collision_detect(point, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
+		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
 		{
 			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
 			{
@@ -1456,7 +1457,7 @@ bool Engine::map_collision(RigidBody &body)
 					{
 						vec3 p = point + staircheck;
 
-						if (q3map.collision_detect(p, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
+						if (q3map.collision_detect(p, body.old_position, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
 						{
 							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
 							continue;
@@ -1471,7 +1472,7 @@ bool Engine::map_collision(RigidBody &body)
 	if (collision)
 	{
 		clip = body.velocity;
-		ClipVelocity(clip, plane.normal);
+		ClipVelocity(clip, -plane.normal);
 		body.velocity = clip;
 	}
 
