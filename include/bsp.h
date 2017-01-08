@@ -43,21 +43,9 @@ public:
 	{
 	}
 
-	// My collision detection (needs to smoothly slide against walls, currently sticks)
 	bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth,
 		bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug,
 		vec3 &clip, vec3 &velocity);
-
-
-	// "Trace" Collison Detection from Digiben
-	vec3 trace(vec3 &start, vec3 &end);
-	void check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end);
-	void check_brush(brush_t *brush, vec3 &start, vec3 &nd);
-	bool on_ground;
-	bool collision;
-	vec3 collision_normal;
-	float trace_amount;
-
 
 	bool loaded;
 	bool textures_loaded;

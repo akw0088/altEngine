@@ -1384,9 +1384,10 @@ void ClipVelocity(vec3 &in, vec3 &normal)
 {
 	float	backoff;
 	vec3	change;
+	float	overbounce = 1.1;
 
 	backoff = in * normal;
-	change = (normal * backoff) * 1.001f;
+	change = (normal * backoff) * overbounce;
 	in -= change;
 }
 

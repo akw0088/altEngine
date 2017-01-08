@@ -2185,7 +2185,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "cg_crosshairsize %s", data);
 	if (ret == 1)
 	{
-		crosshair_scale = atof(data);
+		crosshair_scale = (float)atof(data);
 	}
 
 	ret = sscanf(cmd, "damage %s", data);
