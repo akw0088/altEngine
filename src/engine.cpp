@@ -1359,7 +1359,7 @@ void Engine::dynamics()
 				vec3 clip = body->velocity;
 				body->load_config(config);
 //				printf("%3.3f %3.3f %3.3f clip\n", clip.x, clip.y, clip.z);
-				body->velocity += clip * 0.5;
+				body->velocity = clip;
 
 				target_time = (current_time + target_time) / 2.0f;
 				divisions++;
@@ -1379,6 +1379,16 @@ void Engine::dynamics()
 	}
 }
 
+
+void ClipVelocity(vec3 &in, vec3 &normal)
+{
+	float	backoff;
+	vec3	change;
+
+	backoff = in * normal;
+	change = (normal * backoff) * 1.001f;
+	in -= change;
+}
 
 /*
 	Handles all collision detection
@@ -1460,6 +1470,8 @@ bool Engine::map_collision(RigidBody &body)
 	}
 	if (collision)
 	{
+		clip = body.velocity;
+		ClipVelocity(clip, plane.normal);
 		body.velocity = clip;
 	}
 

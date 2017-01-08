@@ -1960,7 +1960,7 @@ void Quake3::create_crosshair()
 	memset(&vert, 0, sizeof(vertex_t));
 	vert.position = vec3(0.0f, 0.0f, -1.0f);
 	vert.color = ~0;
-	vert.tangent.x = 2500.0f; //life
+	vert.tangent.x = 5.0f; //life
 	vert.tangent.y = 5.0f; //size
 	vert.tangent.z = -1.0f; //type
 	index = 0;

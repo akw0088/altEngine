@@ -30,8 +30,6 @@ public:
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
 
-
-	//	bool load(char *map);
 	bool load(char *map, char **pk3list, int num_pk3);
 	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3);
 	void load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx, char **pk3_list, int num_pk3);
@@ -45,9 +43,20 @@ public:
 	{
 	}
 
-
+	// My collision detection (needs to smoothly slide against walls, currently sticks)
 	bool collision_detect(vec3 &point, plane_t *plane, float *depth, bool &water, float &water_depth,
 		vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity);
+
+
+	// "Trace" Collison Detection from Digiben
+	vec3 trace(vec3 &start, vec3 &end);
+	void check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end);
+	void check_brush(brush_t *brush, vec3 &start, vec3 &nd);
+	bool on_ground;
+	bool collision;
+	vec3 collision_normal;
+	float trace_amount;
+
 
 	bool loaded;
 	bool textures_loaded;
@@ -62,7 +71,6 @@ public:
 
 private:
 	bsp_t		*tBsp;
-
 	vec4		*tangent;
 
 	

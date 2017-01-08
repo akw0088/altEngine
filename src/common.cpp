@@ -899,7 +899,7 @@ int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 		memset(&vert[i], 0, sizeof(vertex_t));
 		vert[i].position = point[i] + offset;
 		vert[i].color = 0xFF000000;
-		vert[i].tangent.x = 2500.0f; //life
+		vert[i].tangent.x = 3.5f; //life
 		vert[i].tangent.y = 5.0f; //size
 		vert[i].tangent.z = -1.0f; //type
 		index[i] = i;
