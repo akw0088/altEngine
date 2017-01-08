@@ -15,7 +15,7 @@
 // Stair position and velocity added when we step up a stair
 // Too much causes bouncing when standing still
 // Too little and we dont walk up steps :)
-#define STAIR_POS	2.25f
+#define STAIR_POS	1.00f
 // Too little and we have lots of friction on flat planes
 // Too much causes jumping up stairs
 #define STAIR_VEL	0.25f
@@ -1455,13 +1455,12 @@ bool Engine::map_collision(RigidBody &body)
 			{
 				// Moving, on ground plane, if we get clipped below velocity threshold and will fail to climb stairs
 				// So dont mess up :)
-//				if ( (fabs(body.velocity.x) > 0.25f || fabs(body.velocity.z) > 0.25f) && 
-//					fabs(body.velocity.y) < 0.11f)
-				if (true)
+				if ( (fabs(body.velocity.x) > 0.25f || fabs(body.velocity.z) > 0.25f))
 				{
 					vec3 p = point + staircheck;
+					vec3 old = oldpoint + staircheck;
 
-					if (q3map.collision_detect(p, body.old_position, (plane_t *)&plane, &depth, body.water, body.water_depth,
+					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
 						surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
@@ -1473,7 +1472,7 @@ bool Engine::map_collision(RigidBody &body)
 
 			body.entity->position = body.old_position;
 			body.morientation = body.old_orientation;
-			body.impulse(plane, point);
+//			body.impulse(plane, point);
 			collision = true;
 		}
 	}
