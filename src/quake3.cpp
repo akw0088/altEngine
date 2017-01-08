@@ -620,6 +620,9 @@ void Quake3::drop_weapon(int index)
 
 
 	drop_weapon->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+	drop_weapon->rigid->translational_friction_flag = true;
+	drop_weapon->rigid->rotational_friction_flag = true;
+
 
 
 	vec3 forward;
@@ -2833,7 +2836,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				vec3 dir = entity_list[i]->position - entity_list[self]->position;
 
 				//add velocity towards target
-				engine->entity_list[self]->rigid->velocity += dir * 0.7f;
+				engine->entity_list[self]->rigid->velocity += dir * 0.4f;
 
 				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
 				if (ret)

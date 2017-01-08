@@ -4,6 +4,9 @@
 #define new DEBUG_NEW
 #endif
 
+#define ACCEL (0.25f)
+#define MAX_SPEED 2.5f
+
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
 {
@@ -560,8 +563,6 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		jump_timer--;
 
 	sleep = false;
-#define ACCEL (0.25f)
-#define MAX_SPEED 3.0f
 	if (input.moveup)
 	{
 		velocity += -forward * ACCEL * speed_scale;
