@@ -218,7 +218,7 @@ private:
 	unsigned int	num_particle;
 
 	unsigned int query;
-	emitter_t emitter;
+//	emitter_t emitter;
 };
 
 class ParticleRender : public Shader

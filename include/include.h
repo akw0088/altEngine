@@ -14,8 +14,9 @@
 #define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
 
 #define PARTICLES
-// 100k is a crash, 50k is slow, 10k seems good
-#define MAX_PARTICLES 5000
+// Could probably increase, but we are now at a point where
+//particle count drops FPS linearly to near zero without hitting the cap
+#define MAX_PARTICLES 175000
 
 
 #ifdef _WIN32

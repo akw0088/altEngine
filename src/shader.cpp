@@ -746,15 +746,10 @@ int ParticleUpdate::init(Graphics *gfx)
 
 	vertex_t data[] = {
 		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
-		{ vec3(1.0f, 1.0f, 1.0f), vec2(1.0f, 1.0f), vec2(1.0f, 1.0f), vec3(1.0f, 0.0f, 1.0f), 1, vec4(1.0f, 1.0f, 1.0f, 1.0f) },
 	};
 
 	memset(particle, 0, sizeof(particle));
 	memcpy(particle, data, sizeof(data));
-
 
 	glGenBuffers(1, &ParticleBufferA);
 	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferA);
@@ -767,11 +762,6 @@ int ParticleUpdate::init(Graphics *gfx)
 	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferB);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, 0, GL_STREAM_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-
-
-	emitter.num = 5;
 #endif
 	return 0;
 }
@@ -814,27 +804,24 @@ void ParticleUpdate::Params(emitter_t &emit)
 
 	glUniform1f(u_delta_time, emit.delta_time);
 	glUniform3fv(u_seed, 1, (float *)&(emit.seed));
-	emit.num = MAX_PARTICLES;
-	emitter = emit;
+	//emitter = emit;
 #endif
 }
 
-int ParticleUpdate::step(Graphics &gfx, emitter_t &gen)
+int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 {
-
-	// Source buffer
+	// Source buffer (input)
 	gfx.SelectVertexBuffer(ParticleBufferA);
 
-
-	// Perform feedback transform
+	// Dont rasterize
 	glEnable(GL_RASTERIZER_DISCARD);
 
-	// Target Buffer
+	// Target Buffer (output)
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, ParticleBufferB);
 
 	glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, query);
 	glBeginTransformFeedback(GL_POINTS);
-	glDrawArrays(GL_POINTS, 0, gen.num);
+	glDrawArrays(GL_POINTS, 0, emit.num);
 	glEndTransformFeedback();
 	glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
 
@@ -849,20 +836,13 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &gen)
 	// Get num primitives generated
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
-	// Copy output data
-//	glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(particle), &particle);
-
 	if (num_particle == 0)
 	{
 		printf("ParticleSystem Error: %u particles written!\n\n", num_particle);
 	}
 
-	/*
-	for (unsigned int i = 0; i < num_particle; i++)
-	{
-		printf("particle %d: x = %f y = %f z = %f\n", i, particle[i].position.x, particle[i].position.y, particle[i].position.z);
-	}
-	*/
+	//emitter.num = num_particle;
+	emit.num = num_particle;
 
 	return ParticleBufferA;
 }

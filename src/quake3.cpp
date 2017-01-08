@@ -1985,12 +1985,8 @@ void Quake3::draw_crosshair()
 	matrix4 mvp = transformation * engine->projection;
 	float scale = crosshair_scale / 150.0f;
 
-//	vec3 quad2(1.0f, 0.0f, 0.0f);
-
 	vec3 quad1 = vec3(0.0f, scale, 0.0f);
 	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
-
-	
 
 	engine->particle_render.Select();
 	engine->particle_render.Params(engine->projection, quad1, quad2);

@@ -251,18 +251,20 @@ void Engine::load(char *level)
 		menu.print("Failed to load particle_update shader");
 
 
-//	int buf = 0;
-
 	emitter.position = vec3(0.0f, 0.0f, 0.0f);
 	emitter.vel_min = vec3(50.0f, 50.0f, 50.0);
 	emitter.vel_range = vec3(200.0f, 200.0f, 200.0f);
 	emitter.color = 0xFF000000;
 	emitter.size = 2.5f;
-	emitter.life_min = 500.0f;
-	emitter.life_range = 2000.0f;
+	emitter.life_min = 0.5f;
+	emitter.life_range = 5.0f;
+	// max particle testing
+//	emitter.life_min = 50000000000.0f;
+//	emitter.life_range = 50000000000.0f;
 	emitter.num = MAX_PARTICLES;
 	emitter.gravity = vec3(0.0f, -9.8f, 0.0f);
-	emitter.delta_time = TICK_MS / 1000.0f;
+	emitter.delta_time = 0.008f;
+	emitter.num = 1;
 
 
 	emitter.seed = vec3(rand_float(-100, 200.0f),
@@ -667,7 +669,7 @@ void Engine::render_scene(bool lights)
 	mvp = transformation * projection;
 
 	mlight2.Params(mvp, light_list, light_list.size(), offset);
-	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
+//	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
 
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);

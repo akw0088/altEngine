@@ -34,6 +34,6 @@ void main()
 
 	Fragment = vTexColor;
 	Fragment.xyz *= color.xyz;
-	Fragment.a *= vary_tangent.x / 2500.0; // life fade out
+	Fragment.a *= vary_tangent.x / 5.0; // life fade out
 
 }
