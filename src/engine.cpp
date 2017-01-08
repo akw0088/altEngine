@@ -9,6 +9,20 @@
 #define FORWARD
 //#define DEFERRED
 
+// Height above desired position we allow a step to occur
+// (Fairly large as forward velocity can put you fairly deep forward)
+#define STAIR_HEIGHT 20.0f
+// Stair position and velocity added when we step up a stair
+// Too much causes bouncing when standing still
+// Too little and we dont walk up steps :)
+#define STAIR_POS	2.25f
+// Too little and we have lots of friction on flat planes
+// Too much causes jumping up stairs
+#define STAIR_VEL	0.25f
+// When colliding with a wall, velocity towards the wall is clipped
+// This is extra clipping past what is necessary, making you stay further away from walls
+#define BOUNCE		1.1f
+
 Engine::Engine()
 {
 	initialized = false;
@@ -1384,7 +1398,7 @@ void ClipVelocity(vec3 &in, vec3 &normal)
 {
 	float	backoff;
 	vec3	change;
-	float	overbounce = 1.1;
+	float	overbounce = BOUNCE;
 
 	backoff = in * normal;
 	change = (normal * backoff) * overbounce;
@@ -1418,7 +1432,7 @@ bool Engine::map_collision(RigidBody &body)
 {
 	Plane plane;
 	float depth;
-	vec3 staircheck(0.0f, 20.0f, 0.0f);
+	vec3 staircheck(0.0f, STAIR_HEIGHT, 0.0f);
 	vec3 clip(0.0f, 0.0f, 0.0f);
 	bool collision = false;
 
@@ -1437,44 +1451,38 @@ bool Engine::map_collision(RigidBody &body)
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
 		{
-			if ((depth > -0.25f * 1000.0f && depth < 0.0f) && body.entity->player == NULL)
+			if (body.step_flag)
 			{
-				// barely touching is about ~200 units away it seems, scaling to make sense above
-				point = point * (1.0f / UNITS_TO_METERS) * 0.000001f;
-				body.entity->position = body.old_position;
-				body.morientation = body.old_orientation;
-				body.impulse(plane, point);
-			}
-			else
-			{
-				if (body.step_flag)
+				// Moving, on ground plane, if we get clipped below velocity threshold and will fail to climb stairs
+				// So dont mess up :)
+//				if ( (fabs(body.velocity.x) > 0.25f || fabs(body.velocity.z) > 0.25f) && 
+//					fabs(body.velocity.y) < 0.11f)
+				if (true)
 				{
-					float yvel = body.velocity.y;
+					vec3 p = point + staircheck;
 
-					if (yvel < 0)
-						yvel *= -1;
-
-					if (yvel < 0.1f)
+					if (q3map.collision_detect(p, body.old_position, (plane_t *)&plane, &depth, body.water, body.water_depth,
+						surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
 					{
-						vec3 p = point + staircheck;
-
-						if (q3map.collision_detect(p, body.old_position, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
-						{
-							body.entity->position += vec3(0.0f, 2.5f, 0.0f);
-							continue;
-						}
+						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
+						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
+						continue;
 					}
 				}
-
-				collision = true;
 			}
+
+			body.entity->position = body.old_position;
+			body.morientation = body.old_orientation;
+			body.impulse(plane, point);
+			collision = true;
 		}
 	}
 	if (collision)
 	{
 		clip = body.velocity;
 		ClipVelocity(clip, -plane.normal);
-		body.velocity = clip;
+		// Clip velocity, and reduce ground friction
+		body.velocity = clip + vec3(0.0f, 0.1f, 0.0f);
 	}
 
 	return collision;

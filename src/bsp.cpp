@@ -452,6 +452,8 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	// (can be any shape really, but think floors walls etc, must be convex)
 	// Can be non solid if majority of planes are non solid (eg: water/fog are nonsolid brushes
 	// Each face of the brush has a texture, non visible faces (common/caulk etc) are removed for rendering
+	// Normals point *inward*, you wont see collision planes until you are already inside the brush,
+	// so to see which plane you hit you must test with the old position
 
 	for (int i = 0; i < leaf->num_brushes; i++)
 	{
@@ -506,27 +508,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 				*depth = d;
 			}
 			count++;
-
-			/*
-			if (strcmp(data.Material[brush->material].name, "textures/common/weapclip") != 0)
-			{
-				//one is enough for almost everything except for some weird brushes
-				if (debug)
-				{
-					printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\n", i,
-						data.Material[brush->material].name,
-						data.Material[brush->material].contents,
-						data.Material[brush->material].surface,
-						*depth, count);
-					printf("Normal %f %f %f\nVelocity %f %f %f\nClip %f %f %f\n", plane->normal.x, plane->normal.y, plane->normal.z,
-						velocity.x, velocity.y, velocity.z, clip.x, clip.y, clip.z);
-
-				}
-
-
-//				clip = (plane->normal.normalize() * -(velocity * plane->normal.normalize())) * 0.01;
-				return true;
-			}*/
 		}
 
 		if (count == num_sides)
