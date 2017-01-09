@@ -17,7 +17,7 @@ out	vec3		ivary_position;
 out	vec2		ivary_TexCoord;
 out	vec2		ivary_LightCoord;
 out	vec3		ivary_velocity;
-out	flat int	ivary_color;
+flat out int		ivary_color;
 out	vec4		ivary_tangent;
 //	float		vary_life;
 //	float		vary_size;

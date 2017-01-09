@@ -721,7 +721,7 @@ int ParticleUpdate::init(Graphics *gfx)
 	if (Shader::init(gfx,
 		"media/glsl/ver440/particle_update.vs",
 		"media/glsl/ver440/particle_update.gs",
-		"media/glsl/ver440/particle_update.fs"))
+		NULL))
 	{
 		program_handle = -1;
 		return -1;
