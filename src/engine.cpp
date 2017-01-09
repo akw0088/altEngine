@@ -1541,6 +1541,7 @@ bool Engine::map_collision(RigidBody &body)
 		ClipVelocity(clip, normal);
 		// Clip velocity, and reduce ground friction
 		body.velocity = clip + vec3(0.0f, 0.1f, 0.0f);
+		body.bounce++;
 	}
 
 	return collision;
@@ -1673,7 +1674,7 @@ void Engine::check_triggers(int self)
 			if (entity_list[i]->rigid)
 			{
 				// Seems to work, but the collision detect flag should work
-				if (entity_list[i]->rigid->old_position == entity_list[i]->position)
+				if (entity_list[i]->rigid->bounce > 0)
 				{
 					if (entity_list[i]->trigger->explode == false)
 					{

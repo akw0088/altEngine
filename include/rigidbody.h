@@ -51,7 +51,8 @@ public:
 	bool			step_flag;
 	Entity			*target;
 	vec3			sphere_target;
-	int				jump_timer;
+	int			jump_timer;
+	int			bounce;
 
 
 	float			restitution;
