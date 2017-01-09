@@ -91,7 +91,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/holdable.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "medkit");
+			snprintf(entity.trigger->action, LINE_SIZE, "holdable_medkit");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "holdable_teleporter") == 0)
@@ -99,7 +99,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/holdable.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "teleporter");
+			snprintf(entity.trigger->action, LINE_SIZE, "holdable_teleporter");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_enviro") == 0)
