@@ -285,6 +285,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYUP:
 		{
 			bool pressed = (message == WM_KEYDOWN) ? true : false;
+			if ((wParam > 'A' && wParam < 'Z') || (wParam > 'a' && wParam < 'z') || (wParam > '0' && wParam < '9'))
+			{
+				char c[2];
+
+				c[0] = wParam;
+				c[1] = '\0';
+				altEngine.keypress(c, pressed);
+				return DefWindowProc(hwnd, message, wParam, lParam);;
+			}
 
 			switch (wParam)
 			{
@@ -308,27 +317,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_UP:
 				altEngine.keypress("up", pressed);
 				break;
-			case 'W':
-				altEngine.keypress("up", pressed);
-				return DefWindowProc(hwnd, message, wParam, lParam);;
 			case VK_LEFT:
 				altEngine.keypress("left", pressed);
 				break;
-			case 'A':
-				altEngine.keypress("left", pressed);
-				return DefWindowProc(hwnd, message, wParam, lParam);;
 			case VK_DOWN:
 				altEngine.keypress("down", pressed);
 				break;
-			case 'S':
-				altEngine.keypress("down", pressed);
-				return DefWindowProc(hwnd, message, wParam, lParam);;
 			case VK_RIGHT:
 				altEngine.keypress("right", pressed);
 				break;
-			case 'D':
-				altEngine.keypress("right", pressed);
-				return DefWindowProc(hwnd, message, wParam, lParam);;
 			case VK_NUMPAD0:
 				altEngine.keypress("numpad0", pressed);
 				break;
