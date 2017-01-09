@@ -878,7 +878,7 @@ int spiral(float distance, vec3 &scale, float step, vec3 *point)
 		float cos_val = (float)fcos(i * step);
 		point[i].x = scale.x * (cos_val - sin_val);
 		point[i].y = -scale.y * (sin_val + cos_val);
-		point[i].z = scale.z * -i * step;
+		point[i].z = scale.z * i * step;
 	}
 
 	return i;
