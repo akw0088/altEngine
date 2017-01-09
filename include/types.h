@@ -411,3 +411,12 @@ typedef struct
 	float delta_time;
 	vec3 seed;
 } emitter_t;
+
+typedef struct
+{
+	float x;
+	float y;
+	float scale;
+	int tex;
+	char filename[128];
+} icon_t;

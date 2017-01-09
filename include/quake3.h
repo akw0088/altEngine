@@ -31,6 +31,10 @@ public:
 	void draw_crosshair();
 
 
+	void create_icon();
+	void draw_icon(float scale, int index);
+
+
 	void handle_player(int index);
 	void player_died(int index);
 	void drop_weapon(int index);
@@ -56,6 +60,9 @@ private:
 	int crosshair_vbo;
 	int current_crosshair;
 	float crosshair_scale;
+
+	vector <icon_t> icon_list;
+	unsigned int icon_vbo;
 };
 
 #endif

@@ -47,6 +47,300 @@ void Quake3::init(Engine *altEngine)
 	last_spawn = 0;
 	create_crosshair();
 	crosshair_scale = 1.0f;
+
+	icon_t icon;
+	
+	#define ICON_SELECT 0
+	sprintf(icon.filename, "media/gfx/2d/select.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_GAUNTLET 1
+	sprintf(icon.filename, "media/icons/iconw_gauntlet.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MACHINEGUN 2
+	sprintf(icon.filename, "media/icons/iconw_machinegun.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_SHOTGUN 3
+	sprintf(icon.filename, "media/icons/iconw_shotgun.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+
+	#define ICON_GRENADE 4
+	sprintf(icon.filename, "media/icons/iconw_grenade.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_ROCKET 5
+	sprintf(icon.filename, "media/icons/iconw_rocket.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_LIGHTNING 6
+	sprintf(icon.filename, "media/icons/iconw_lightning.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_RAILGUN 7
+	sprintf(icon.filename, "media/icons/iconw_railgun.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_PLASMA 8
+	sprintf(icon.filename, "media/icons/iconw_plasma.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_BFG 9
+	sprintf(icon.filename, "media/icons/iconw_bfg.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_GRAPPLE 10
+	sprintf(icon.filename, "media/icons/iconw_grapple.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MACHINEGUN_BOX 11
+	sprintf(icon.filename, "media/icons/icona_machinegun.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_SHOTGUN_BOX 12
+	sprintf(icon.filename, "media/icons/icona_shotgun.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_GRENADE_BOX 13
+	sprintf(icon.filename, "media/icons/icona_grenade.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_ROCKET_BOX 14
+	sprintf(icon.filename, "media/icons/icona_rocket.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_PLASMA_BOX 15
+	sprintf(icon.filename, "media/icons/icona_plasma.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_LIGHTNING_BOX 16
+	sprintf(icon.filename, "media/icons/icona_lightning.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_BFG_BOX 17
+	sprintf(icon.filename, "media/icons/icona_bfg.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+
+	#define ICON_SUIT 18
+	sprintf(icon.filename, "media/icons/envirosuit.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_FLIGHT 19
+	sprintf(icon.filename, "media/icons/flight.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_HASTE 20
+	sprintf(icon.filename, "media/icons/haste.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_BLUE_FLAG 21
+	sprintf(icon.filename, "media/icons/iconf_blu.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_RED_FLAG 22
+	sprintf(icon.filename, "media/icons/iconf_red.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEGA 23
+	sprintf(icon.filename, "media/icons/iconh_mega.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_RED_HEALTH 24
+	sprintf(icon.filename, "media/icons/iconh_red.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_YELLOW_HEALTH 25
+	sprintf(icon.filename, "media/icons/iconh_yellow.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_RED_ARMOR 26
+	sprintf(icon.filename, "media/icons/iconr_red.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_ARMOR_SHARD 27
+	sprintf(icon.filename, "media/icons/iconr_shard.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_YELLOW_ARMOR 28
+	sprintf(icon.filename, "media/icons/iconr_yellow.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_INVIS 29
+	sprintf(icon.filename, "media/icons/invis.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDIKIT 30
+	sprintf(icon.filename, "media/icons/medkit.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_NOAMMO 31
+	sprintf(icon.filename, "media/icons/noammo.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_QUAD 32
+	sprintf(icon.filename, "media/icons/quad.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_REGEN 33
+	sprintf(icon.filename, "media/icons/regen.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_TELEPORTER 34
+	sprintf(icon.filename, "media/icons/teleporter.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDAL_ACCURACY 35
+	sprintf(icon.filename, "media/menu/medals/medal_accuracy.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDAL_EXCELLENT 36
+	sprintf(icon.filename, "media/menu/medals/medal_excellent.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDAL_FRAGS 37
+	sprintf(icon.filename, "media/menu/medals/medal_frags.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDAL_GAUNTLET 38
+	sprintf(icon.filename, "media/menu/medals/medal_gauntlet.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDAL_IMPRESSIVE 39
+	sprintf(icon.filename, "media/menu/medals/medal_impressive.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_MEDAL_VICTORY 40
+	sprintf(icon.filename, "media/menu/medals/medal_victory.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon.scale = 1.0f;
+	icon_list.push_back(icon);
+
+	create_icon();
+
 }
 
 void Quake3::load()
@@ -1748,6 +2042,34 @@ void Quake3::render_hud(double last_frametime)
 	engine->menu.draw_text("", 0.01f, 0.025f, 0.025f, color, false, true);
 	engine->projection = real_projection;
 	draw_crosshair();
+
+	switch (entity->player->current_weapon)
+	{
+	case wp_machinegun:
+		draw_icon(1.0, ICON_MACHINEGUN);
+		break;
+	case wp_shotgun:
+		draw_icon(1.0, ICON_SHOTGUN);
+		break;
+	case wp_grenade:
+		draw_icon(1.0, ICON_GRENADE);
+		break;
+	case wp_rocket:
+		draw_icon(1.0, ICON_ROCKET);
+		break;
+	case wp_railgun:
+		draw_icon(1.0, ICON_RAILGUN);
+		break;
+	case wp_lightning:
+		draw_icon(1.0, ICON_LIGHTNING);
+		break;
+	case wp_plasma:
+		draw_icon(1.0, ICON_PLASMA);
+		break;
+	}
+	draw_icon(1.0, ICON_SELECT);
+
+
 }
 
 void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
@@ -1903,10 +2225,10 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 
 
 	engine->particle_render.Select();
-	engine->particle_render.Params(mvp, quad1, quad2);
+	engine->particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 	engine->gfx.SelectTexture(0, engine->particle_tex);
 	engine->gfx.SelectIndexBuffer(line_ibo);
-	engine->particle_render.render(engine->gfx, line_vbo, 400);
+	engine->particle_render.render(engine->gfx, 0, line_vbo, 400);
 
 	// yeah I know
 	engine->gfx.DeleteIndexBuffer(line_ibo);
@@ -1980,6 +2302,9 @@ void Quake3::create_crosshair()
 	current_crosshair = 0;
 }
 
+
+
+
 void Quake3::draw_crosshair()
 {
 	matrix4 transformation;
@@ -1992,9 +2317,45 @@ void Quake3::draw_crosshair()
 	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
 
 	engine->particle_render.Select();
-	engine->particle_render.Params(engine->projection, quad1, quad2);
+	engine->particle_render.Params(engine->projection, quad1, quad2, 0.0f, 0.0f);
 	engine->gfx.SelectTexture(0, crosshair_tex[current_crosshair]);
-	engine->particle_render.render(engine->gfx, crosshair_vbo, 1);
+	engine->particle_render.render(engine->gfx, 0, crosshair_vbo, 1);
+}
+
+
+void Quake3::create_icon()
+{
+	vertex_t vert[512];
+
+	for (unsigned int i = 0; i < icon_list.size(); i++)
+	{
+		memset(&vert[i], 0, sizeof(vertex_t));
+		vert[i].position = vec3(icon_list[i].x, icon_list[i].y, -1.0f);
+		vert[i].color = ~0;
+		vert[i].tangent.x = 10.0f; //life
+		vert[i].tangent.y = 5.0f; //size
+		vert[i].tangent.z = -1.0f; //type
+		icon_list[i].tex = load_texture_pk3(engine->gfx, icon_list[i].filename, engine->pk3_list, engine->num_pk3, true);
+	}
+
+	icon_vbo = engine->gfx.CreateVertexBuffer(&vert, icon_list.size());
+}
+
+void Quake3::draw_icon(float scale, int index)
+{
+	matrix4 transformation;
+	engine->camera_frame.set(transformation);
+
+	matrix4 mvp = transformation * engine->projection;
+	scale = scale / 150.0f;
+
+	vec3 quad1 = vec3(0.0f, scale, 0.0f);
+	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
+
+	engine->particle_render.Select();
+	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x, icon_list[index].y);
+	engine->gfx.SelectTexture(0, icon_list[index].tex);
+	engine->particle_render.render(engine->gfx, index, icon_vbo, 1);
 }
 
 

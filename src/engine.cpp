@@ -268,7 +268,7 @@ void Engine::load(char *level)
 	emitter.position = vec3(0.0f, 0.0f, 0.0f);
 	emitter.vel_min = vec3(50.0f, 50.0f, 50.0);
 	emitter.vel_range = vec3(200.0f, 200.0f, 200.0f);
-	emitter.color = 0xFF000000;
+	emitter.color = 0x00FF00FF;
 	emitter.size = 2.5f;
 	emitter.life_min = 0.5f;
 	emitter.life_range = 5.0f;
@@ -713,9 +713,9 @@ void Engine::render_scene(bool lights)
 
 #ifdef PARTICLES
 	particle_render.Select();
-	particle_render.Params(mvp, quad1, quad2);
+	particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 	gfx.SelectTexture(0, particle_tex);
-	particle_render.render(gfx, vbo, emitter.num);
+	particle_render.render(gfx, 0, vbo, emitter.num);
 #endif
 
 
@@ -904,10 +904,10 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					quad2 = entity_list[i]->model->morientation.transpose() * quad2;
 
 					particle_render.Select();
-					particle_render.Params(mvp, quad1, quad2);
+					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 					gfx.SelectTexture(0, particle_tex);
 					gfx.SelectIndexBuffer(spiral_ibo);
-					particle_render.render(gfx, spiral_vbo, 400);
+					particle_render.render(gfx, 0, spiral_vbo, 400);
 					continue;
 				}
 				entity_list[i]->rigid->render(gfx);

@@ -879,6 +879,8 @@ int ParticleRender::init(Graphics *gfx)
 	u_quad1 = glGetUniformLocation(program_handle, "u_quad1");
 	u_quad2 = glGetUniformLocation(program_handle, "u_quad2");
 	u_texture0 = glGetUniformLocation(program_handle, "u_texture0");
+	u_xshift = glGetUniformLocation(program_handle, "u_xshift");
+	u_yshift = glGetUniformLocation(program_handle, "u_yshift");
 #endif
 
 	int index[MAX_PARTICLES];
@@ -903,24 +905,26 @@ void ParticleRender::prelink(void)
 #endif
 }
 
-void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2)
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
 {
 #ifndef DIRECTX
 	glUniformMatrix4fv(u_mvp, 1, GL_FALSE, mvp.m);
 	glUniform3fv(u_quad1, 1, (float *)&quad1);
 	glUniform3fv(u_quad2, 1, (float *)&quad2);
+	glUniform1f(u_xshift, x);
+	glUniform1f(u_yshift, y);
 	glUniform1i(u_texture0, 0);
 #endif
 }
 
-void ParticleRender::render(Graphics &gfx, int vbo, int num)
+void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 {
 #ifndef DIRECTX
 	gfx.Blend(true);
 	gfx.Depth(false);
 	gfx.SelectVertexBuffer(vbo);
 	gfx.SelectIndexBuffer(ibo);
-	gfx.DrawArrayPoint(0, 0, num, num);
+	gfx.DrawArrayPoint(start, start, num, num);
 	gfx.Depth(true);
 	gfx.Blend(false);
 #endif

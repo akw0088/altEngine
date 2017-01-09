@@ -12,7 +12,7 @@ in	vec3[]		iatt_position;
 in	vec2[]		ivary_TexCoord;
 in	vec2[]		ivary_LightCoord;
 in	vec3[]		ivary_normal;
-flat 	in	uint[]	ivary_color;
+flat 	in highp uint[]	ivary_color;
 in	vec4[]		ivary_tangent;
 
 
@@ -21,7 +21,7 @@ out    vec3 att_position;
 out    vec2 vary_TexCoord;
 out    vec2 vary_LightCoord;
 out    vec3 vary_normal;
-flat out    uint vary_color;
+flat out highp uint vary_color;
 out    vec4 vary_tangent; // color value
 
 
