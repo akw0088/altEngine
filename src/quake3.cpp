@@ -1443,7 +1443,7 @@ void Quake3::handle_railgun(Player &player, int self)
 
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
-	sprintf(projectile->trigger->action, "");
+	sprintf(projectile->trigger->action, " ");
 
 	projectile->trigger->hide = false;
 	projectile->trigger->self = false;
@@ -2315,7 +2315,6 @@ void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)
 void Quake3::create_crosshair()
 {
 	vertex_t vert;
-	int index;
 	int num_crosshair = 10;
 
 	memset(&vert, 0, sizeof(vertex_t));
@@ -2324,7 +2323,6 @@ void Quake3::create_crosshair()
 	vert.tangent.x = 5.0f; //life
 	vert.tangent.y = 5.0f; //size
 	vert.tangent.z = -1.0f; //type
-	index = 0;
 
 	crosshair_vbo = engine->gfx.CreateVertexBuffer(&vert, 1);
 
@@ -2346,7 +2344,7 @@ void Quake3::draw_crosshair()
 	matrix4 transformation;
 	engine->camera_frame.set(transformation);
 
-	matrix4 mvp = transformation * engine->projection;
+	//matrix4 mvp = transformation * engine->projection;
 	float scale = crosshair_scale / 150.0f;
 
 	vec3 quad1 = vec3(0.0f, scale, 0.0f);
@@ -2382,7 +2380,7 @@ void Quake3::draw_icon(float scale, int index)
 	matrix4 transformation;
 	engine->camera_frame.set(transformation);
 
-	matrix4 mvp = transformation * engine->projection;
+	//matrix4 mvp = transformation * engine->projection;
 	scale = icon_list[index].scale / 150.0f;
 
 	vec3 quad1 = vec3(0.0f, scale, 0.0f);

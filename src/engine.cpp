@@ -1513,10 +1513,10 @@ bool Engine::map_collision(RigidBody &body)
 			{
 				// Moving, on ground plane, if we get clipped below velocity threshold and will fail to climb stairs
 				// So dont mess up :)
-				if ( (fabs(body.velocity.x) > 0.25f || fabs(body.velocity.z) > 0.25f))
+				if ( (abs32(body.velocity.x) > 0.25f || abs32(body.velocity.z) > 0.25f))
 				{
 					vec3 p = point + staircheck;
-					vec3 old = oldpoint + staircheck;
+					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
 						surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
@@ -1536,8 +1536,9 @@ bool Engine::map_collision(RigidBody &body)
 	}
 	if (collision)
 	{
+		vec3 normal = -plane.normal;
 		clip = body.velocity;
-		ClipVelocity(clip, -plane.normal);
+		ClipVelocity(clip, normal);
 		// Clip velocity, and reduce ground friction
 		body.velocity = clip + vec3(0.0f, 0.1f, 0.0f);
 	}

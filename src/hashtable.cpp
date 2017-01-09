@@ -12,7 +12,7 @@ void HashTable::destroy()
 		if (table[i])
 		{
 			delete[] table[i]->key;
-			delete[] table[i]->value;
+			delete[] (char *)table[i]->value;
 			delete table[i];
 		}
 	}

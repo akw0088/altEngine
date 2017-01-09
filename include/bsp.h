@@ -43,7 +43,7 @@ public:
 	{
 	}
 
-	bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth,
+	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth,
 		bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug,
 		vec3 &clip, vec3 &velocity);
 
