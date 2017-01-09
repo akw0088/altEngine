@@ -180,162 +180,162 @@ void Quake3::init(Engine *altEngine)
 
 	#define ICON_SUIT 18
 	sprintf(icon.filename, "media/icons/envirosuit.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_FLIGHT 19
 	sprintf(icon.filename, "media/icons/flight.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_HASTE 20
 	sprintf(icon.filename, "media/icons/haste.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_BLUE_FLAG 21
 	sprintf(icon.filename, "media/icons/iconf_blu.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_RED_FLAG 22
 	sprintf(icon.filename, "media/icons/iconf_red.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEGA 23
 	sprintf(icon.filename, "media/icons/iconh_mega.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_RED_HEALTH 24
 	sprintf(icon.filename, "media/icons/iconh_red.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_YELLOW_HEALTH 25
 	sprintf(icon.filename, "media/icons/iconh_yellow.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_RED_ARMOR 26
 	sprintf(icon.filename, "media/icons/iconr_red.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_ARMOR_SHARD 27
 	sprintf(icon.filename, "media/icons/iconr_shard.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_YELLOW_ARMOR 28
 	sprintf(icon.filename, "media/icons/iconr_yellow.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_INVIS 29
 	sprintf(icon.filename, "media/icons/invis.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDIKIT 30
 	sprintf(icon.filename, "media/icons/medkit.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_NOAMMO 31
 	sprintf(icon.filename, "media/icons/noammo.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_QUAD 32
 	sprintf(icon.filename, "media/icons/quad.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_REGEN 33
 	sprintf(icon.filename, "media/icons/regen.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_TELEPORTER 34
 	sprintf(icon.filename, "media/icons/teleporter.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDAL_ACCURACY 35
 	sprintf(icon.filename, "media/menu/medals/medal_accuracy.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDAL_EXCELLENT 36
 	sprintf(icon.filename, "media/menu/medals/medal_excellent.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDAL_FRAGS 37
 	sprintf(icon.filename, "media/menu/medals/medal_frags.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDAL_GAUNTLET 38
 	sprintf(icon.filename, "media/menu/medals/medal_gauntlet.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDAL_IMPRESSIVE 39
 	sprintf(icon.filename, "media/menu/medals/medal_impressive.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
 	#define ICON_MEDAL_VICTORY 40
 	sprintf(icon.filename, "media/menu/medals/medal_victory.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
@@ -2045,6 +2045,9 @@ void Quake3::render_hud(double last_frametime)
 
 	switch (entity->player->current_weapon)
 	{
+	case wp_none:
+		draw_icon(1.0, ICON_NOAMMO);
+		break;
 	case wp_machinegun:
 		draw_icon(1.0, ICON_MACHINEGUN);
 		break;
@@ -2069,6 +2072,40 @@ void Quake3::render_hud(double last_frametime)
 	}
 	draw_icon(1.0, ICON_SELECT);
 
+	if (entity->player->quad_timer)
+	{
+		draw_icon(1.0, ICON_QUAD);
+	}
+
+	if (entity->player->regen_timer)
+	{
+		draw_icon(1.0, ICON_REGEN);
+	}
+
+	if (entity->player->flight_timer)
+	{
+		draw_icon(1.0, ICON_FLIGHT);
+	}
+
+	if (entity->player->invisibility_timer)
+	{
+		draw_icon(1.0, ICON_INVIS);
+	}
+
+	if (entity->player->haste_timer)
+	{
+		draw_icon(1.0, ICON_HASTE);
+	}
+
+	if (entity->player->holdable_medikit)
+	{
+		draw_icon(1.0, ICON_MEDIKIT);
+	}
+
+	if (entity->player->holdable_teleporter)
+	{
+		draw_icon(1.0, ICON_TELEPORTER);
+	}
 
 }
 
@@ -2347,14 +2384,14 @@ void Quake3::draw_icon(float scale, int index)
 	engine->camera_frame.set(transformation);
 
 	matrix4 mvp = transformation * engine->projection;
-	scale = scale / 150.0f;
+	scale = icon_list[index].scale / 150.0f;
 
 	vec3 quad1 = vec3(0.0f, scale, 0.0f);
 	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
 
+	engine->gfx.SelectTexture(0, icon_list[index].tex);
 	engine->particle_render.Select();
 	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x, icon_list[index].y);
-	engine->gfx.SelectTexture(0, icon_list[index].tex);
 	engine->particle_render.render(engine->gfx, index, icon_vbo, 1);
 }
 

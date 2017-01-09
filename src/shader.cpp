@@ -924,7 +924,7 @@ void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 	gfx.Depth(false);
 	gfx.SelectVertexBuffer(vbo);
 	gfx.SelectIndexBuffer(ibo);
-	gfx.DrawArrayPoint(start, start, num, num);
+	gfx.DrawArrayPoint(start, 0, num, num);
 	gfx.Depth(true);
 	gfx.Blend(false);
 #endif
