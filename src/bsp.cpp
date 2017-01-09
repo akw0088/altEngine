@@ -749,8 +749,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 					if (surface->surfaceparm_sky)
 					{
-						render.sky = true;
-						sky_face = face_index;
+//						render.sky = true;
+	//					sky_face = face_index;
 					}
 
 					for (unsigned int k = 0; k < surface->num_stage; k++)

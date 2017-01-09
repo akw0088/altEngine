@@ -1062,8 +1062,7 @@ void Quake3::step(int frame_step)
 			{
 			case BOT_ATTACK:
 				engine->zcc.select_animation(0);
-//				handle_machinegun(*(bot->player), i);
-				bot->rigid->move_backward(speed_scale);
+				bot->rigid->move_forward(speed_scale);
 				break;
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);

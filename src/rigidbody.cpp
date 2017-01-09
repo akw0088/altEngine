@@ -692,9 +692,9 @@ void RigidBody::lookat(vec3 &target)
 	frame.up = vec3(0.0f, 1.0f, 0.0f);
 	frame.forward = (entity->position - target).normalize();
 
-	right = vec3::crossproduct(frame.up, frame.forward);
+	right = vec3::crossproduct(frame.forward, frame.up);
 	right.normalize();
-	frame.up = vec3::crossproduct(frame.forward, right);
+	frame.up = vec3::crossproduct(right, frame.forward);
 	frame.up.normalize();
 
 	frame.set(entity->model->morientation);
@@ -710,9 +710,9 @@ void RigidBody::lookat_yaw(vec3 &target)
 	frame.forward.y = 0.0f;
 	frame.forward.normalize();
 
-	right = vec3::crossproduct(frame.up, frame.forward);
+	right = vec3::crossproduct(frame.forward, frame.up);
 	right.normalize();
-	frame.up = vec3::crossproduct(frame.forward, right);
+	frame.up = vec3::crossproduct(right, frame.forward);
 	frame.up.normalize();
 
 	frame.set(entity->model->morientation);

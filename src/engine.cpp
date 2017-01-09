@@ -798,6 +798,24 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 
 	entity_list[i]->rigid->get_matrix(mvp.m);
 
+	//md5 faces right, need to flip right and forward orientation
+	vec4 temp;
+
+	temp.x = mvp.m[0];
+	temp.y = mvp.m[1];
+	temp.z = mvp.m[2];
+	temp.w = mvp.m[3];
+
+	mvp.m[0] = mvp.m[8];
+	mvp.m[1] = mvp.m[9];
+	mvp.m[2] = mvp.m[10];
+	mvp.m[3] = mvp.m[11];
+
+	mvp.m[8] = temp.x;
+	mvp.m[9] = temp.y;
+	mvp.m[10] = temp.z;
+	mvp.m[11] = temp.w;
+
 	mvp = (mvp * trans) * projection;
 	vec3 offset = entity_list[i]->position;
 
@@ -960,6 +978,27 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		if (strcmp(entity_list[i]->type, "NPC") == 0 && entity_list[i]->player->health > 0)
 		{
 			entity_list[i]->rigid->get_matrix(mvp.m);
+
+
+			//md5 faces right, need to flip right and forward orientation
+			vec4 temp;
+
+			temp.x = mvp.m[0];
+			temp.y = mvp.m[1];
+			temp.z = mvp.m[2];
+			temp.w = mvp.m[3];
+
+			mvp.m[0] = mvp.m[8];
+			mvp.m[1] = mvp.m[9];
+			mvp.m[2] = mvp.m[10];
+			mvp.m[3] = mvp.m[11];
+
+			mvp.m[8] = -temp.x;
+			mvp.m[9] = -temp.y;
+			mvp.m[10] = -temp.z;
+			mvp.m[11] = -temp.w;
+
+
 			mvp = (mvp * trans) * projection;
 			vec3 offset = entity_list[i]->position;
 

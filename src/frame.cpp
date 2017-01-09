@@ -61,7 +61,7 @@ void Frame::set(matrix3 &trans)
 {
 	vec3	right;
 
-	right = vec3::crossproduct(up, forward);
+	right = vec3::crossproduct(forward, up);
 	right.normalize();
 
 	trans.m[0] = right.x;
