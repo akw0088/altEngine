@@ -1673,7 +1673,7 @@ void Engine::check_triggers(int self)
 			if (entity_list[i]->rigid)
 			{
 				// Seems to work, but the collision detect flag should work
-				if (entity_list[i]->rigid->bounce > 0)
+				if (entity_list[i]->rigid->bounce > entity_list[i]->trigger->num_bounce)
 				{
 					if (entity_list[i]->trigger->explode == false)
 					{

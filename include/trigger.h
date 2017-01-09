@@ -41,6 +41,7 @@ public:
 	float	timeout;	// Timeout between pickups respawning
 	float	timeout_value;
 	int		owner;
+	unsigned int	num_bounce;
 };
 
 #endif

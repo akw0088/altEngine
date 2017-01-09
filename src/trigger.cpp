@@ -24,6 +24,7 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	armor = false;
 	explode_timer = 0;
 	owner = -1;
+	num_bounce = 0;
 
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
