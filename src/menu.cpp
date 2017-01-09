@@ -17,8 +17,8 @@ int dmesg_index = 0;
 char chatmsg[CHATMSG_SIZE][1024];
 int chatmsg_index = 0;
 
-#define NOTIF_SIZE 256
-char notifmsg[CHATMSG_SIZE][1024];
+#define NOTIF_SIZE 7
+char notifmsg[NOTIF_SIZE][1024];
 int notif_index = 0;
 
 
@@ -381,9 +381,12 @@ void Menu::render_notif(Global &global)
 
 		if (i == 0)
 			start = true;
-		else if (i == chat_buffer.size() - 1)
+		else if (i == notif_buffer.size() - 1)
 			stop = true;
 		draw_text(notif_buffer[i], 0.6f, 0.2f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color, start, stop);
+
+		if (i == NOTIF_SIZE)
+			break;
 	}
 }
 
@@ -392,7 +395,7 @@ void Menu::print_chat(const char *str)
 	int size = strlen(str) + 1;
 	char *line = chatmsg[chatmsg_index++];
 
-	if (chatmsg_index == DMESG_SIZE)
+	if (chatmsg_index == CHATMSG_SIZE)
 		chatmsg_index = 0;
 
 	memcpy(line, str, size);
@@ -404,11 +407,14 @@ void Menu::print_notif(const char *str)
 	int size = strlen(str) + 1;
 	char *line = notifmsg[notif_index++];
 
-	if (notif_index == DMESG_SIZE)
+	if (notif_index == NOTIF_SIZE)
 		notif_index = 0;
 
 	memcpy(line, str, size);
 	notif_buffer.push_back(line);
+
+	if (notif_buffer.size() > NOTIF_SIZE)
+		notif_buffer.erase(notif_buffer.begin());
 }
 
 void Menu::print(const char *str)
