@@ -16,7 +16,7 @@
 #define PARTICLES
 // Could probably increase, but we are now at a point where
 //particle count drops FPS linearly to near zero without hitting the cap
-#define MAX_PARTICLES 175000
+//#define MAX_PARTICLES 175000
 
 
 #ifdef _WIN32

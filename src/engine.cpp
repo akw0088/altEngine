@@ -275,7 +275,6 @@ void Engine::load(char *level)
 	// max particle testing
 //	emitter.life_min = 50000000000.0f;
 //	emitter.life_range = 50000000000.0f;
-	emitter.num = MAX_PARTICLES;
 	emitter.gravity = vec3(0.0f, -9.8f, 0.0f);
 	emitter.delta_time = 0.008f;
 	emitter.num = 1;

@@ -194,6 +194,7 @@ public:
 
 	unsigned int ParticleBufferA;
 	unsigned int ParticleBufferB;
+	static unsigned int max_particles;
 
 private:
 	int u_emit_position;

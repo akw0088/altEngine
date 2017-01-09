@@ -5,6 +5,8 @@
 #define new DEBUG_NEW
 #endif
 
+unsigned int ParticleUpdate::max_particles = 175000;
+
 int mFont::init(Graphics *gfx)
 {
 #ifdef DIRECTX
@@ -753,14 +755,14 @@ int ParticleUpdate::init(Graphics *gfx)
 
 	glGenBuffers(1, &ParticleBufferA);
 	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferA);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, 0, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * ParticleUpdate::max_particles, 0, GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex_t) * 5, &particle[0]);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &ParticleBufferB);
 	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferB);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * MAX_PARTICLES, 0, GL_STREAM_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * ParticleUpdate::max_particles, 0, GL_STREAM_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 #endif
 	return 0;
@@ -883,12 +885,12 @@ int ParticleRender::init(Graphics *gfx)
 	u_yshift = glGetUniformLocation(program_handle, "u_yshift");
 #endif
 
-	int index[MAX_PARTICLES];
-	for (int i = 0; i < MAX_PARTICLES; i++)
+	int index[ParticleUpdate::max_particles];
+	for (int i = 0; i < ParticleUpdate::max_particles; i++)
 	{
 		index[i] = i;
 	}
-	ibo = gfx->CreateIndexBuffer(index, MAX_PARTICLES);
+	ibo = gfx->CreateIndexBuffer(index, ParticleUpdate::max_particles);
 	return 0;
 }
 
