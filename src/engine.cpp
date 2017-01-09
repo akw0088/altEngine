@@ -1459,10 +1459,9 @@ bool Engine::collision_detect(RigidBody &body)
 	}
 	body.map_collision = false;
 
-	/*
 	if (body_collision(body))
 		return true;
-		*/
+
 	return false;
 }
 
@@ -1554,7 +1553,7 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i] == body.entity)
 			continue;
 
-		if (q3map.leaf_test(body.entity->position, entity_list[i]->position))
+		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
 			body.collision_detect(*entity_list[i]->rigid);
 	}
 	return false;
