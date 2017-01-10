@@ -5,7 +5,11 @@
 #define new DEBUG_NEW
 #endif
 
-unsigned int ParticleUpdate::max_particles = 175000;
+
+//unsigned int ParticleUpdate::max_particles = 175000;
+
+// Setting to a low value to keep FPS up
+unsigned int ParticleUpdate::max_particles = 5000;
 
 int mFont::init(Graphics *gfx)
 {
@@ -885,12 +889,14 @@ int ParticleRender::init(Graphics *gfx)
 	u_yshift = glGetUniformLocation(program_handle, "u_yshift");
 #endif
 
-	int index[ParticleUpdate::max_particles];
-	for (int i = 0; i < ParticleUpdate::max_particles; i++)
+	unsigned int *index = new unsigned int [ParticleUpdate::max_particles];
+	for (unsigned int i = 0; i < ParticleUpdate::max_particles; i++)
 	{
 		index[i] = i;
 	}
 	ibo = gfx->CreateIndexBuffer(index, ParticleUpdate::max_particles);
+	delete index;
+	index = NULL;
 	return 0;
 }
 

@@ -895,10 +895,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			continue;
 		}
 
+		/*
 		if (face_list[i].cull_none)
 			gfx.CullFace(2);
 		else
 			gfx.CullFace(3);
+		*/
 
 		if (face->type == 1 || face->type == 3)
 		{

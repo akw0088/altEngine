@@ -52,7 +52,7 @@ public:
 	Entity			*target;
 	vec3			sphere_target;
 	int			jump_timer;
-	int			bounce;
+	unsigned int	bounce;
 
 
 	float			restitution;

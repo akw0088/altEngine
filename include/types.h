@@ -410,6 +410,8 @@ typedef struct
 	vec3 gravity;
 	float delta_time;
 	vec3 seed;
+	int bsp_leaf;
+	bool visible;
 } emitter_t;
 
 typedef struct

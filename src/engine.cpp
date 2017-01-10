@@ -265,7 +265,7 @@ void Engine::load(char *level)
 		menu.print("Failed to load particle_update shader");
 
 
-	emitter.position = vec3(0.0f, 0.0f, 0.0f);
+	emitter.position = vec3(0.0f, 100.0f, 0.0f);
 	emitter.vel_min = vec3(50.0f, 50.0f, 50.0);
 	emitter.vel_range = vec3(200.0f, 200.0f, 200.0f);
 	emitter.color = 0x00FF00FF;
@@ -695,12 +695,16 @@ void Engine::render_scene(bool lights)
 
 
 #ifdef PARTICLES
-	particle_update.Select();
-	emitter.seed = vec3(rand_float(0.0, 10.0),
-					rand_float(0.0, 10.0),
-					rand_float(0.0, 10.0));
-	particle_update.Params(emitter);
-	int vbo = particle_update.step(gfx, emitter);
+	int vbo = 0;
+	if (emitter.visible)
+	{
+		particle_update.Select();
+		emitter.seed = vec3(rand_float(0.0, 10.0),
+			rand_float(0.0, 10.0),
+			rand_float(0.0, 10.0));
+		particle_update.Params(emitter);
+		vbo = particle_update.step(gfx, emitter);
+	}
 #endif
 
 
@@ -711,13 +715,14 @@ void Engine::render_scene(bool lights)
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 #ifdef PARTICLES
-	particle_render.Select();
-	particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
-	gfx.SelectTexture(0, particle_tex);
-	particle_render.render(gfx, 0, vbo, emitter.num);
+	if (emitter.visible)
+	{
+		particle_render.Select();
+		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+		gfx.SelectTexture(0, particle_tex);
+		particle_render.render(gfx, 0, vbo, emitter.num);
+	}
 #endif
-
-
 
 
 }
@@ -1184,6 +1189,17 @@ void Engine::spatial_testing()
 	int leaf_a = -1;
 	int leaf_b = -1;
 
+
+	if (q3map.vis_test(emitter.position, camera_frame.pos,
+		leaf_a, leaf_b))
+	{
+		emitter.visible = true;
+	}
+	else
+	{
+		emitter.visible = false;
+	}
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		// set pursue / evade
@@ -1305,6 +1321,7 @@ void Engine::spatial_testing()
 		}
 
 	}
+
 }
 
 void Engine::activate_light(float distance, Light *light)
@@ -1548,9 +1565,11 @@ bool Engine::map_collision(RigidBody &body)
 //O(N^2)
 bool Engine::body_collision(RigidBody &body)
 {
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = 0; i < num_player; i++)
 	{
 		if (entity_list[i] == body.entity)
+			continue;
+		if (entity_list[i]->rigid == NULL)
 			continue;
 
 		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
@@ -2312,6 +2331,12 @@ void Engine::bind_keys()
 		key_bind.insert("left", "moveleft");
 		key_bind.insert("right", "moveright");
 
+		key_bind.insert("w", "moveup");
+		key_bind.insert("a", "movedown");
+		key_bind.insert("s", "moveleft");
+		key_bind.insert("d", "moveright");
+
+
 		key_bind.insert("numpad0", "numpad0");
 		key_bind.insert("numpad1", "numpad1");
 		key_bind.insert("numpad2", "numpad2");
@@ -2402,6 +2427,8 @@ void Engine::keypress(char *key, bool pressed)
 {
 	char k = 0;
 	char *cmd = (char *)key_bind.find(key);
+	if (cmd == NULL)
+		return;
 
 
 	if (strcmp("attack", cmd) == 0)
