@@ -298,8 +298,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			switch (wParam)
 			{
 			case VK_PAUSE:
+				altEngine.keypress("pause", pressed);
 				break;
 			case VK_TAB:
+				altEngine.keypress("tab", pressed);
 				break;
 			case VK_RETURN:
 				altEngine.keypress("enter", pressed);
@@ -399,6 +401,36 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case VK_F12:
 				altEngine.keypress("F12", pressed);
+				break;
+			case VK_INSERT:
+				altEngine.keypress("insert", pressed);
+				break;
+			case VK_DELETE:
+				altEngine.keypress("delete", pressed);
+				break;
+			case VK_HOME:
+				altEngine.keypress("home", pressed);
+				break;
+			case VK_END:
+				altEngine.keypress("end", pressed);
+				break;
+			case VK_MULTIPLY:
+				altEngine.keypress("numpad*", pressed);
+				break;
+			case VK_ADD:
+				altEngine.keypress("numpad+", pressed);
+				break;
+			case VK_SUBTRACT:
+				altEngine.keypress("numpad-", pressed);
+				break;
+			case VK_DIVIDE:
+				altEngine.keypress("numpad/", pressed);
+				break;
+			case VK_DECIMAL:
+				altEngine.keypress("numpad.", pressed);
+				break;
+			case VK_CAPITAL:
+				altEngine.keypress("capslock", pressed);
 				break;
 			}
 			return 0;
