@@ -302,8 +302,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_TAB:
 				break;
 			case VK_RETURN:
-			case VK_SPACE:
 				altEngine.keypress("enter", pressed);
+				break;
+			case VK_SPACE:
+				altEngine.keypress("space", pressed);
 				break;
 			case VK_SHIFT:
 				altEngine.keypress("shift", pressed);
@@ -365,6 +367,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, xres, yres, 0);
 					break;
 				}
+			case VK_F2:
+				altEngine.keypress("F2", pressed);
+				break;
+			case VK_F3:
+				altEngine.keypress("F3", pressed);
+				break;
+			case VK_F4:
+				altEngine.keypress("F4", pressed);
+				break;
+			case VK_F5:
+				altEngine.keypress("F5", pressed);
+				break;
+			case VK_F6:
+				altEngine.keypress("F6", pressed);
+				break;
+			case VK_F7:
+				altEngine.keypress("F7", pressed);
+				break;
+			case VK_F8:
+				altEngine.keypress("F8", pressed);
+				break;
+			case VK_F9:
+				altEngine.keypress("F9", pressed);
+				break;
+			case VK_F10:
+				altEngine.keypress("F10", pressed);
+				break;
+			case VK_F11:
+				altEngine.keypress("F11", pressed);
+				break;
+			case VK_F12:
+				altEngine.keypress("F12", pressed);
+				break;
 			}
 			return 0;
 		}
