@@ -432,6 +432,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_CAPITAL:
 				altEngine.keypress("capslock", pressed);
 				break;
+			case VK_PRIOR:
+				altEngine.keypress("pgup", pressed);
+				break;
+			case VK_NEXT:
+				altEngine.keypress("pgdown", pressed);
+				break;
 			}
 			return 0;
 		}
