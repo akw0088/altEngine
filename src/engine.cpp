@@ -928,7 +928,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					particle_render.Select();
 					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 					gfx.SelectTexture(0, particle_tex);
-					gfx.SelectIndexBuffer(spiral_ibo);
 					particle_render.render(gfx, 0, spiral_vbo, 400);
 					continue;
 				}
@@ -2331,10 +2330,10 @@ void Engine::bind_keys()
 		key_bind.insert("left", "moveleft");
 		key_bind.insert("right", "moveright");
 
-		key_bind.insert("w", "moveup");
-		key_bind.insert("a", "movedown");
-		key_bind.insert("s", "moveleft");
-		key_bind.insert("d", "moveright");
+		key_bind.insert("W", "moveup");
+		key_bind.insert("A", "movedown");
+		key_bind.insert("S", "moveleft");
+		key_bind.insert("D", "moveright");
 
 
 		key_bind.insert("numpad0", "numpad0");

@@ -285,7 +285,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYUP:
 		{
 			bool pressed = (message == WM_KEYDOWN) ? true : false;
-			if ((wParam > 'A' && wParam < 'Z') || (wParam > 'a' && wParam < 'z') || (wParam > '0' && wParam < '9'))
+			if ((wParam >= 'A' && wParam <= 'Z') || (wParam >= 'a' && wParam <= 'z') || (wParam >= '0' && wParam <= '9'))
 			{
 				char c[2];
 
