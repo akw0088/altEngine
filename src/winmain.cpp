@@ -315,6 +315,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case VK_CONTROL:
 				altEngine.keypress("control", pressed);
 				break;
+			case VK_MENU:
+				altEngine.keypress("alt", pressed);
+				break;
 			case VK_ESCAPE:
 				altEngine.keypress("escape", pressed);
 				break;
