@@ -1397,24 +1397,26 @@ void Quake3::handle_lightning(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
 //	projectile->rigid->rotational_friction_flag = true;
-	projectile->rigid->rail_trail = true;
+	projectile->rigid->lightning_trail = true;
 	projectile->model = projectile->rigid;
 //	projectile->rigid->set_target(*(engine->entity_list[self]));
 	camera_frame.set(projectile->model->morientation);
 
+	/*
 	projectile->light = new Light(projectile, engine->gfx, 999);
 	projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
 	projectile->light->intensity = 1000.0f;
+	*/
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
 	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->action, " ");
 
-	projectile->trigger->num_bounce = 1;
+	projectile->rigid->bounce = 5;
 	projectile->trigger->hide = false;
 	projectile->trigger->radius = 25.0f;
 	projectile->trigger->idle = true;
-	projectile->trigger->idle_timer = (int)(10.0 * TICK_RATE);
+	projectile->trigger->idle_timer = (int)(0.1 * TICK_RATE);
 	projectile->trigger->explode = true;
 	projectile->trigger->explode_timer = 10;
 	projectile->trigger->owner = self;
@@ -1498,11 +1500,11 @@ void Quake3::handle_railgun(Player &player, int self)
 	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->action, " ");
 
-	projectile->trigger->num_bounce = 1;
+	projectile->rigid->bounce = 5;
 	projectile->trigger->hide = false;
 	projectile->trigger->radius = 25.0f;
 	projectile->trigger->idle = true;
-	projectile->trigger->idle_timer = (int)(10.0 * TICK_RATE);
+	projectile->trigger->idle_timer = (int)(5.0 * TICK_RATE);
 	projectile->trigger->explode = true;
 	projectile->trigger->explode_timer = 10;
 	projectile->trigger->owner = self;

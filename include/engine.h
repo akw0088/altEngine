@@ -136,6 +136,8 @@ protected:
 
 	unsigned int	spiral_vbo;
 	unsigned int	spiral_ibo;
+	unsigned int	lightning_ibo;
+	unsigned int	lightning_vbo;
 	unsigned int	fbo;
 	unsigned int	global_vao;
 	unsigned int	quad_tex;

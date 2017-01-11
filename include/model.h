@@ -50,6 +50,7 @@ public:
 	static			int skybox_vertex;
 	static			int skybox_index;
 	bool			rail_trail;
+	bool			lightning_trail;
 };
 
 #endif

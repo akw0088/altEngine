@@ -60,6 +60,7 @@ void Engine::init(void *p1, void *p2)
 	projection = ident;
 
 	gen_spiral(gfx, spiral_ibo, spiral_vbo);
+	gen_lightning(gfx, lightning_ibo, lightning_vbo);
 
 	//visual
 	gfx.init(param1, param2);
@@ -931,6 +932,25 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					particle_render.render(gfx, 0, spiral_vbo, 400);
 					continue;
 				}
+
+
+				//render lightning trail
+				if (entity_list[i]->model->lightning_trail)
+				{
+					vec3 quad1 = camera_frame.up;
+					vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
+					// Undo model orientation
+					quad1 = entity_list[i]->model->morientation.transpose() * quad1;
+					quad2 = entity_list[i]->model->morientation.transpose() * quad2;
+
+					particle_render.Select();
+					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+					gfx.SelectTexture(0, particle_tex);
+					particle_render.render(gfx, 0, lightning_vbo, 400);
+					continue;
+				}
+
 				entity_list[i]->rigid->render(gfx);
 
 

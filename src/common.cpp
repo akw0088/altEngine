@@ -910,3 +910,46 @@ int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 	return 0;
 }
 
+
+int lightning(float distance, vec3 &scale, float step, vec3 *point)
+{
+	int i;
+
+	for (i = 0; i * step < distance; i++)
+	{
+		vec2 value;
+		float x = (float)(0.5 * fsin((i * step) * 30));
+		point[i].x = (float)(1.0 - 2.0 * abs32(sign(x) - x));
+		point[i].y = point[i].x;
+		point[i].z = scale.z * i * step;
+	}
+
+	return i;
+}
+
+int gen_lightning(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
+{
+	vec3 point[512];
+	vertex_t vert[512];
+	int index[512];
+	vec3 scale(29.0f, 20.0f, 5.0f);
+	vec3 offset(-10.0f, -10.0f, -12.0f);
+
+	int num_point = lightning(100.0f, scale, 0.25f, point);
+
+	for (int i = 0; i < num_point; i++)
+	{
+		memset(&vert[i], 0, sizeof(vertex_t));
+		vert[i].position = point[i] + offset;
+		vert[i].color = 0xFF000000;
+		vert[i].tangent.x = 3.5f; //life
+		vert[i].tangent.y = 5.0f; //size
+		vert[i].tangent.z = -1.0f; //type
+		index[i] = i;
+	}
+
+	ibo = gfx.CreateIndexBuffer(index, num_point);
+	vbo = gfx.CreateVertexBuffer(vert, num_point);
+	return 0;
+}
+
