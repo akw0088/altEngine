@@ -895,7 +895,7 @@ int ParticleRender::init(Graphics *gfx)
 		index[i] = i;
 	}
 	ibo = gfx->CreateIndexBuffer(index, ParticleUpdate::max_particles);
-	delete index;
+	delete [] index;
 	index = NULL;
 	return 0;
 }
