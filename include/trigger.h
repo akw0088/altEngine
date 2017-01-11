@@ -34,7 +34,6 @@ public:
 	float			knockback;		// Amount to knock people back when exploding (scaled by radius)
 	bool	hide;		// whether it should disappear when active
 	bool	active;		// active when picked up
-	bool	self;		// whether current player can pick it up
 	bool	idle;		// Delete when it stops moving
 	bool	explode;	// Does it explode
 	bool	health;		// For health items, prevents giving over 100

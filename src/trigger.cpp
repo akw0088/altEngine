@@ -17,7 +17,6 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	explode_sound[0] = '\0';
 	idle_sound[0] = '\0';
 	hide = true;
-	self = true;
 	idle = false;
 	explode = false;
 	health = false;

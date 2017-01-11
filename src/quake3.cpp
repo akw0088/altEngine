@@ -1199,7 +1199,7 @@ void Quake3::handle_plasma(Player &player, int self)
 	sprintf(projectile->trigger->action, "damage %d", (int)(PLASMA_DAMAGE * quad_factor));
 
 	projectile->trigger->hide = false;
-	projectile->trigger->self = false;
+	projectile->trigger->radius = 25.0f;
 	projectile->trigger->idle = true;
 	projectile->trigger->explode = false;
 	projectile->trigger->explode_timer = 10;
@@ -1207,7 +1207,7 @@ void Quake3::handle_plasma(Player &player, int self)
 	projectile->trigger->explode_intensity = 200.0f;
 	projectile->trigger->splash_damage = (int)(PLASMA_SPLASH_DAMAGE * quad_factor);
 	projectile->trigger->splash_radius = 75.0f;
-	projectile->trigger->knockback = 75.0f;
+	projectile->trigger->knockback = 10.0f;
 	projectile->trigger->owner = self;
 
 
@@ -1254,7 +1254,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	sprintf(projectile->trigger->action, "damage %d", (int)(ROCKET_DAMAGE * quad_factor));
 
 	projectile->trigger->hide = false;
-	projectile->trigger->self = false;
+	projectile->trigger->radius = 25.0f;
 	projectile->trigger->idle = true;
 	projectile->trigger->explode = true;
 	projectile->trigger->idle_timer = 0;
@@ -1343,7 +1343,7 @@ void Quake3::handle_grenade(Player &player, int self)
 	sprintf(projectile->trigger->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
 
 	projectile->trigger->hide = false;
-	projectile->trigger->self = false;
+	projectile->trigger->radius = 25.0f;
 	projectile->trigger->idle = true;
 	projectile->trigger->idle_timer = 120;
 	projectile->trigger->explode = true;
@@ -1369,6 +1369,8 @@ void Quake3::handle_grenade(Player &player, int self)
 void Quake3::handle_lightning(Player &player, int self)
 {
 	Frame camera_frame;
+	int index[8];
+	int num_index;
 
 	player.entity->model->get_frame(camera_frame);
 
@@ -1377,23 +1379,79 @@ void Quake3::handle_lightning(Player &player, int self)
 	player.reload_timer = LIGHTNING_RELOAD;
 	player.ammo_lightning--;
 
+	vec3 forward;
+	player.entity->model->getForwardVector(forward);
+
+	float quad_factor = 1.0f;
+
+	if (player.quad_timer > 0)
+		quad_factor = QUAD_FACTOR;
+
+
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
 	projectile->rigid = new RigidBody(projectile);
 	projectile->position = camera_frame.pos;
 	projectile->rigid->clone(*(engine->box->model));
-	projectile->rigid->velocity = camera_frame.forward * -1.0f;
+	projectile->rigid->velocity = vec3();
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
-	projectile->rigid->rotational_friction_flag = true;
+//	projectile->rigid->rotational_friction_flag = true;
+	projectile->rigid->rail_trail = true;
 	projectile->model = projectile->rigid;
-	projectile->rigid->set_target(*(engine->entity_list[self]));
+//	projectile->rigid->set_target(*(engine->entity_list[self]));
 	camera_frame.set(projectile->model->morientation);
 
 	projectile->light = new Light(projectile, engine->gfx, 999);
 	projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
 	projectile->light->intensity = 1000.0f;
+
+	projectile->trigger = new Trigger(projectile, engine->audio);
+	projectile->trigger->projectile = true;
+	sprintf(projectile->trigger->action, " ");
+
+	projectile->trigger->num_bounce = 1;
+	projectile->trigger->hide = false;
+	projectile->trigger->radius = 25.0f;
+	projectile->trigger->idle = true;
+	projectile->trigger->idle_timer = (int)(10.0 * TICK_RATE);
+	projectile->trigger->explode = true;
+	projectile->trigger->explode_timer = 10;
 	projectile->trigger->owner = self;
+
+
+
+	engine->hitscan(player.entity->position, forward, index, num_index, self);
+	for (int i = 0; i < num_index; i++)
+	{
+		char cmd[80] = { 0 };
+
+		if (engine->entity_list[index[i]]->player == NULL)
+			continue;
+
+		debugf("Player %s hit %s with the lightning gun for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, (int)(LIGHTNING_DAMAGE * quad_factor));
+
+		sprintf(cmd, "hurt %d %d", index[i], (int)(LIGHTNING_DAMAGE * quad_factor));
+		console(self, cmd, engine->menu, engine->entity_list);
+
+		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+			engine->entity_list[index[i]]->player->health);
+
+		player.stats.hits++;
+		if (engine->entity_list[index[i]]->player->health <= 0)
+		{
+			player.stats.kills++;
+			engine->entity_list[index[i]]->player->stats.deaths++;
+
+			char msg[80];
+			sprintf(msg, "%s killed %s with a lightning gun\n", player.name,
+				engine->entity_list[index[i]]->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+		}
+	}
+
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -1440,8 +1498,9 @@ void Quake3::handle_railgun(Player &player, int self)
 	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->action, " ");
 
+	projectile->trigger->num_bounce = 1;
 	projectile->trigger->hide = false;
-	projectile->trigger->self = false;
+	projectile->trigger->radius = 25.0f;
 	projectile->trigger->idle = true;
 	projectile->trigger->idle_timer = (int)(10.0 * TICK_RATE);
 	projectile->trigger->explode = true;
@@ -1470,10 +1529,11 @@ void Quake3::handle_railgun(Player &player, int self)
 		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
 			engine->entity_list[index[i]]->player->name, (int)(RAILGUN_DAMAGE * quad_factor));
 
+		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
+		console(self, cmd, engine->menu, engine->entity_list);
+
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		console(self, cmd, engine->menu, engine->entity_list);
-		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
 
 		player.stats.hits++;
 		if (engine->entity_list[index[i]]->player->health <= 0)

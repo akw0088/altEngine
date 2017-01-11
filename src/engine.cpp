@@ -1694,7 +1694,6 @@ void Engine::check_triggers(int self)
 				{
 					if (entity_list[i]->trigger->explode == false)
 					{
-
 						if (entity_list[i]->trigger->explode_timer <= 0)
 						{
 							clean_entity(i);
@@ -1720,7 +1719,6 @@ void Engine::check_triggers(int self)
 							entity_list[i]->light->intensity = entity_list[i]->trigger->explode_intensity;
 							entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
 							entity_list[i]->trigger->explode = false;
-							entity_list[i]->trigger->self = true;
 
 							bool ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->explode_sound);
 							if (ret)
@@ -1745,7 +1743,7 @@ void Engine::check_triggers(int self)
 
 
 		// Only other players can pick up
-		if (entity_list[i]->trigger->self == false)
+		if (entity_list[i]->trigger->owner == self && entity_list[i]->rigid->bounce == 0)
 			continue;
 
 		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
@@ -2352,6 +2350,7 @@ void Engine::bind_keys()
 	if (file == NULL)
 	{
 		key_bind.insert("enter", "jump");
+		key_bind.insert("space", "jump");
 		key_bind.insert("leftbutton", "attack");
 		key_bind.insert("middlebutton", "use");
 		key_bind.insert("rightbutton", "zoom");
