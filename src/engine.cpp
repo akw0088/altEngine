@@ -2932,6 +2932,7 @@ void Engine::load_model(Entity &ent)
 		debugf("Loading info_player_deathmatch\n");
 		ent.rigid->load(gfx, "media/models/ball");
 		ent.rigid->gravity = false;
+		ent.nodraw = true;
 	}
 
 }
