@@ -175,7 +175,7 @@ public:
 	char ignore[1024];
 
 	float zoom_level;
-	int team;
+	team_t team;
 
 
 	Model weapon_machinegun;

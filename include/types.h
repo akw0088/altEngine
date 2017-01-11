@@ -424,3 +424,19 @@ typedef struct
 	int tex;
 	char filename[128];
 } icon_t;
+
+typedef enum
+{
+	GAMETYPE_DEATHMATCH,
+	GAMETYPE_TDM,
+	GAMETYPE_CTF,
+	GAMETYPE_DUEL
+} gametype_t;
+
+
+typedef enum
+{
+	TEAM_NONE,
+	TEAM_BLUE,
+	TEAM_RED,
+} team_t;

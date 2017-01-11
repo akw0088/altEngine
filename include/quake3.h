@@ -63,7 +63,7 @@ private:
 
 	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
-	int gametype;
+	gametype_t gametype;
 };
 
 #endif
