@@ -1766,6 +1766,9 @@ void Engine::check_triggers(int self)
 		if (entity_list[i]->trigger->owner == self && entity_list[i]->rigid->bounce == 0)
 			continue;
 
+		if (entity_list[i]->trigger->owner != -1 &&  entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && q3.gametype != GAMETYPE_DEATHMATCH)
+			continue;
+
 		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
 
 		if ( distance < entity_list[i]->trigger->radius)
