@@ -39,6 +39,7 @@ extern char bot_state_name[16][80];
 Quake3::Quake3()
 {
 	blink = false;
+	gametype = 0;
 }
 
 void Quake3::init(Engine *altEngine)

@@ -50,6 +50,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	Player::entity = entity;
 
 	spawned = false;
+	team = 0;
 
 	zoom_level = 4.0;
 
