@@ -459,7 +459,6 @@ void Player::respawn()
 
 void Player::kill()
 {
-	stats.deaths++;
 	weapon_flags = 0;
 	reload_timer = 120;
 	current_weapon = wp_none;

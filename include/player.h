@@ -54,7 +54,8 @@ typedef struct
 {
 	int kills;
 	int deaths;
-	float accuracy;
+	int hits;
+	int shots;
 } stats_t;
 
 

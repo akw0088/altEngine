@@ -797,6 +797,7 @@ void Quake3::handle_player(int self)
 	}
 
 	handle_weapons(*(entity->player), engine->input, self);
+
 }
 
 void Quake3::player_died(int index)
@@ -806,21 +807,11 @@ void Quake3::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		char msg[80];
-		sprintf(msg, "%s was gibbed\n", entity->player->name);
-		debugf(msg);
-		engine->menu.print_notif(msg);
-
 		ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
 	{
-		char msg[80];
-		sprintf(msg,"%s died\n", entity->player->name);
-		debugf(msg);
-		engine->menu.print_notif(msg);
-
 		switch (engine->tick_num % 3)
 		{
 		case 0:
@@ -1202,6 +1193,7 @@ void Quake3::handle_plasma(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
 	projectile->trigger = new Trigger(projectile, engine->audio);
+	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
 	sprintf(projectile->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
 	sprintf(projectile->trigger->action, "damage %d", (int)(PLASMA_DAMAGE * quad_factor));
@@ -1256,6 +1248,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	projectile->position = camera_frame.pos;
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
+	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
 	sprintf(projectile->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
 	sprintf(projectile->trigger->action, "damage %d", (int)(ROCKET_DAMAGE * quad_factor));
@@ -1345,6 +1338,7 @@ void Quake3::handle_grenade(Player &player, int self)
 
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
+	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
 	sprintf(projectile->trigger->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
 
@@ -1399,7 +1393,7 @@ void Quake3::handle_lightning(Player &player, int self)
 	projectile->light = new Light(projectile, engine->gfx, 999);
 	projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
 	projectile->light->intensity = 1000.0f;
-//	entity->trigger->owner = self;
+	projectile->trigger->owner = self;
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -1443,6 +1437,7 @@ void Quake3::handle_railgun(Player &player, int self)
 
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
+	projectile->trigger->projectile = true;
 	sprintf(projectile->trigger->action, " ");
 
 	projectile->trigger->hide = false;
@@ -1477,8 +1472,21 @@ void Quake3::handle_railgun(Player &player, int self)
 
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
 		console(self, cmd, engine->menu, engine->entity_list);
+		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
+
+		player.stats.hits++;
+		if (engine->entity_list[index[i]]->player->health <= 0)
+		{
+			player.stats.kills++;
+			engine->entity_list[index[i]]->player->stats.deaths++;
+
+			char msg[80];
+			sprintf(msg, "%s killed %s with a railgun\n", player.name,
+				engine->entity_list[index[i]]->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+		}
 	}
 
 
@@ -1540,11 +1548,23 @@ void Quake3::handle_machinegun(Player &player, int self)
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
 			engine->entity_list[index[i]]->player->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
 		sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
+		console(self, cmd, engine->menu, engine->entity_list);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
-		console(self, cmd, engine->menu, engine->entity_list);
-	}
+		player.stats.hits++;
+	
+		if (engine->entity_list[index[i]]->player->health <= 0)
+		{
+			player.stats.kills++;
+			engine->entity_list[index[i]]->player->stats.deaths++;
 
+			char msg[80];
+			sprintf(msg, "%s killed %s with a machinegun\n", player.name,
+				engine->entity_list[index[i]]->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+		}
+	}
 }
 
 void Quake3::handle_shotgun(Player &player, int self)
@@ -1592,10 +1612,23 @@ void Quake3::handle_shotgun(Player &player, int self)
 		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,
 			engine->entity_list[index[i]]->player->name, (int)(SHOTGUN_DAMAGE * quad_factor));
 		sprintf(cmd, "hurt %d %d", index[i], (int)(SHOTGUN_DAMAGE * quad_factor));
+
+		console(self, cmd, engine->menu, engine->entity_list);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
 			engine->entity_list[index[i]]->player->health);
 
-		console(self, cmd, engine->menu, engine->entity_list);
+		player.stats.hits++;
+		if (engine->entity_list[index[i]]->player->health <= 0)
+		{
+			player.stats.kills++;
+			engine->entity_list[index[i]]->player->stats.deaths++;
+
+			char msg[80];
+			sprintf(msg, "%s killed %s with a shotgun\n", player.name,
+				engine->entity_list[index[i]]->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+		}
 	}
 
 }
@@ -1860,6 +1893,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			bool ret = false;
 
 			player.state = PLAYER_ATTACK;
+			player.stats.shots++;
 			ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
 
 			if (ret)
@@ -1961,6 +1995,18 @@ void Quake3::render_hud(double last_frametime)
 				break;
 			}
 		}
+	}
+
+	if (engine->input.scores)
+	{
+		int line = 1;
+		snprintf(msg, LINE_SIZE, "%s kills %d deaths %d hits %d shots %d", entity->player->name,
+			entity->player->stats.kills, 
+			entity->player->stats.deaths, 
+			entity->player->stats.hits,
+			entity->player->stats.shots);
+		engine->menu.draw_text(msg, 0.05f, 0.25f * line++, 0.025f, color, false, false);
+
 	}
 
 	if (engine->show_debug)

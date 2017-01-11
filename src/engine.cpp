@@ -1689,7 +1689,7 @@ void Engine::check_triggers(int self)
 		{
 			if (entity_list[i]->rigid)
 			{
-				// Seems to work, but the collision detect flag should work
+
 				if (entity_list[i]->rigid->bounce > entity_list[i]->trigger->num_bounce)
 				{
 					if (entity_list[i]->trigger->explode == false)
@@ -1770,10 +1770,45 @@ void Engine::check_triggers(int self)
 				pickup = false;
 
 
+
 			if (pickup)
 			{
 				entity_list[i]->trigger->active = true;
 				q3.console(self, entity_list[i]->trigger->action, menu, entity_list);
+
+				if (entity_list[i]->trigger->projectile)
+				{
+					if (entity_list[self]->player->health <= 0)
+					{
+						char weapon[80];
+						int owner = entity_list[i]->trigger->owner;
+
+						entity_list[self]->player->stats.deaths++;
+						entity_list[owner]->player->stats.kills++;
+						entity_list[owner]->player->stats.hits++;
+
+						if (entity_list[owner]->player->current_weapon == wp_rocket)
+						{
+							sprintf(weapon, "rocket launcher");
+						}
+						else if (entity_list[owner]->player->current_weapon == wp_grenade)
+						{
+							sprintf(weapon, "grenade launcher");
+						}
+						else if (entity_list[owner]->player->current_weapon == wp_plasma)
+						{
+							sprintf(weapon, "plasma gun");
+						}
+
+						char msg[80];
+						sprintf(msg, "%s killed %s with a %s\n",
+							entity_list[owner]->player->name,
+							entity_list[self]->player->name,
+							weapon);
+						debugf(msg);
+						menu.print_notif(msg);
+					}
+				}
 
 				entity_list[i]->visible = false;
 				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
@@ -2331,9 +2366,10 @@ void Engine::bind_keys()
 		key_bind.insert("right", "moveright");
 
 		key_bind.insert("W", "moveup");
-		key_bind.insert("A", "movedown");
-		key_bind.insert("S", "moveleft");
+		key_bind.insert("A", "moveleft");
+		key_bind.insert("S", "movedown");
 		key_bind.insert("D", "moveright");
+		key_bind.insert("tab", "scores");
 
 
 		key_bind.insert("numpad0", "numpad0");
@@ -2370,13 +2406,8 @@ void Engine::bind_keys()
 	}
 	free((void *)file);
 
-	// Does little right now, eventually will load from file
-	//bind TAB "+scores"
-
-
 	//TBD
 	/*
-	key_bind.insert(make_pair((char *)"tab", (char *)"score"));
 	key_bind.insert(make_pair((char *)"~", (char *)"console"));
 	key_bind.insert(make_pair((char *)"k", (char *)"kill"));
 	key_bind.insert(make_pair((char *)"t", (char *)"talk"));
@@ -2522,6 +2553,10 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("numpad9", cmd) == 0)
 	{
 		input.numpad9 = pressed;
+	}
+	else if (strcmp("scores", cmd) == 0)
+	{
+		input.scores = pressed;
 	}
 
 	if (pressed)
@@ -2909,6 +2944,7 @@ void Engine::clean_entity(int index)
 
 	if (entity_list[index]->speaker)
 		entity_list[index]->speaker->destroy(audio);
+
 
 	// Light list wont be updated until the next step, so manually delete
 	if (entity_list[index]->light)

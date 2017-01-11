@@ -383,7 +383,7 @@ void Menu::render_notif(Global &global)
 			start = true;
 		else if (i == notif_buffer.size() - 1)
 			stop = true;
-		draw_text(notif_buffer[i], 0.6f, 0.2f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color, start, stop);
+		draw_text(notif_buffer[i], 0.1f, 0.2f - 0.025f * (notif_buffer.size() - 1 - i), 0.025f, color, start, stop);
 
 		if (i == NOTIF_SIZE)
 			break;

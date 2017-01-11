@@ -190,6 +190,8 @@ typedef struct
 
 	bool weapon_up;
 	bool weapon_down;
+
+	bool scores;
 } input_t;
 
 

@@ -24,6 +24,7 @@ public:
 	unsigned int	respawn_buf;
 
 	// I should probably split item pickups from projectiles as it's starting to get complex
+	bool			projectile;
 	vec3			explode_color;
 	float			explode_intensity;
 	unsigned int	explode_timer;	// How long an explosion lasts (light effect, damage trigger time)
