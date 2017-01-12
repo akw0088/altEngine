@@ -39,6 +39,7 @@ extern char bot_state_name[16][80];
 Quake3::Quake3()
 {
 	blink = false;
+	gametype = GAMETYPE_DEATHMATCH;
 }
 
 void Quake3::init(Engine *altEngine)
@@ -1431,6 +1432,9 @@ void Quake3::handle_lightning(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
+		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			continue;
+
 		debugf("Player %s hit %s with the lightning gun for %d damage\n", player.name,
 			engine->entity_list[index[i]]->player->name, (int)(LIGHTNING_DAMAGE * quad_factor));
 
@@ -1528,6 +1532,9 @@ void Quake3::handle_railgun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
+		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			continue;
+
 		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
 			engine->entity_list[index[i]]->player->name, (int)(RAILGUN_DAMAGE * quad_factor));
 
@@ -1607,6 +1614,9 @@ void Quake3::handle_machinegun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
+		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			continue;
+
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
 			engine->entity_list[index[i]]->player->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
 		sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
@@ -1669,6 +1679,9 @@ void Quake3::handle_shotgun(Player &player, int self)
 		char cmd[80] = { 0 };
 
 		if (engine->entity_list[index[i]]->player == NULL)
+			continue;
+
+		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,

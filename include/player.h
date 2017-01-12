@@ -147,6 +147,7 @@ public:
 	unsigned int ammo_bfg;
 	bool holdable_teleporter;
 	bool holdable_medikit;
+	bool holdable_flag;
 
 	unsigned int reload_timer;
 	unsigned int drown_timer;
@@ -174,7 +175,7 @@ public:
 	char ignore[1024];
 
 	float zoom_level;
-
+	team_t team;
 
 
 	Model weapon_machinegun;

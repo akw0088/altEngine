@@ -50,6 +50,7 @@ public:
 	void init_camera(vector<Entity *> &entity_list);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 
+	gametype_t gametype;
 private:
 	Engine *engine;
 	bool blink;
