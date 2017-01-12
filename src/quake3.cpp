@@ -1418,7 +1418,7 @@ void Quake3::handle_lightning(Player &player, int self)
 	projectile->trigger->idle = true;
 	projectile->trigger->idle_timer = (int)(0.1 * TICK_RATE);
 	projectile->trigger->explode = true;
-	projectile->trigger->explode_timer = 10;
+	projectile->trigger->explode_timer = 20;
 	projectile->trigger->owner = self;
 
 
@@ -1781,6 +1781,18 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 {
 	bool fired = false;
 	bool empty = false;
+	static bool once = false;
+
+	// Only reset flag when they stop clicking for lightning gun
+	if (engine->input.attack == false)
+	{
+		if (once && player.current_weapon & WEAPON_LIGHTNING)
+		{
+			engine->audio.stop(player.entity->speaker->loop_source);
+		}
+
+		once = false;
+	}
 
 	if (player.reload_timer > 0)
 	{
@@ -1956,15 +1968,54 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 
 			player.state = PLAYER_ATTACK;
 			player.stats.shots++;
-			ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
+			
 
-			if (ret)
+			if (player.current_weapon & WEAPON_LIGHTNING)
 			{
-				engine->audio.play(player.entity->speaker->source);
+				if (once == false)
+				{
+					ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
+
+					if (ret)
+					{
+						engine->audio.play(player.entity->speaker->source);
+					}
+					else
+					{
+						debugf("Failed to find PCM data for %s\n", player.attack_sound);
+					}
+					sprintf(player.weapon_idle_sound, "sound/weapons/lightning/lg_hum.wav");
+
+					engine->audio.stop(player.entity->speaker->loop_source);
+//					player.entity->speaker->loop_gain(0.25f);
+					if (player.weapon_idle_sound[0] != '\0')
+					{
+						bool ret = engine->select_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
+						if (ret)
+						{
+							engine->audio.play(player.entity->speaker->loop_source);
+						}
+						else
+						{
+							debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
+						}
+					}
+
+					once = true;
+				}
 			}
 			else
 			{
-				debugf("Failed to find PCM data for %s\n", player.attack_sound);
+				ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
+
+				if (ret)
+				{
+					engine->audio.play(player.entity->speaker->source);
+				}
+				else
+				{
+					debugf("Failed to find PCM data for %s\n", player.attack_sound);
+				}
 			}
 		}
 		else if (empty)
