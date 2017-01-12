@@ -1432,7 +1432,7 @@ void Quake3::handle_lightning(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		debugf("Player %s hit %s with the lightning gun for %d damage\n", player.name,
@@ -1532,7 +1532,7 @@ void Quake3::handle_railgun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
@@ -1614,7 +1614,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
@@ -1681,7 +1681,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
 
-		if (player.team == engine->entity_list[i]->player->team && gametype != GAMETYPE_DEATHMATCH)
+		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,

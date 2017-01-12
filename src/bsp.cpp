@@ -612,7 +612,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 
 	// Find pre-generated vertex data for patch O(n)
 
-	mesh_index = face_to_patch[face->vertex];
+//	mesh_index = face_to_patch[face->vertex];
 	if (mesh_index == -1)
 	{
 		for (int i = 0; i < num_meshes; i++)
@@ -620,12 +620,14 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 			if (patchdata[i].facevert == face->vertex)
 			{
 				mesh_index = i;
-				face_to_patch[face->vertex] = i;
+//				face_to_patch[face->vertex] = i;
 				break;
 			}
 		}
 	}
 
+	if (mesh_index < 0 || mesh_index > 5000)
+		return;
 
 	// will be same texture for all 3x3 patches making up this mesh
 	if (textures_loaded)
