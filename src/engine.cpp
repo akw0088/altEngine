@@ -930,6 +930,17 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 					gfx.SelectTexture(0, particle_tex);
 					particle_render.render(gfx, 0, spiral_vbo, 400);
+
+					// restore normal shader state
+					mlight2.Select();
+					if (lights)
+					{
+						mlight2.Params(mvp, light_list, light_list.size(), offset);
+					}
+					else
+					{
+						mlight2.Params(mvp, light_list, 0, offset);
+					}
 					continue;
 				}
 
@@ -948,6 +959,18 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 					gfx.SelectTexture(0, particle_tex);
 					particle_render.render(gfx, 0, lightning_vbo, 400);
+
+
+					// restore normal shader state
+					mlight2.Select();
+					if (lights)
+					{
+						mlight2.Params(mvp, light_list, light_list.size(), offset);
+					}
+					else
+					{
+						mlight2.Params(mvp, light_list, 0, offset);
+					}
 					continue;
 				}
 
@@ -963,8 +986,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				}
 
 
-				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
 #ifdef NOPE
+				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
 				if (draw_wander_target)
 				{
 					entity_list[i]->rigid->get_matrix(mvp.m);
