@@ -1445,7 +1445,7 @@ void Quake3::handle_lightning(Player &player, int self)
 			engine->entity_list[index[i]]->player->health);
 
 		player.stats.hits++;
-		if (engine->entity_list[index[i]]->player->health <= 0)
+		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
@@ -1545,7 +1545,7 @@ void Quake3::handle_railgun(Player &player, int self)
 			engine->entity_list[index[i]]->player->health);
 
 		player.stats.hits++;
-		if (engine->entity_list[index[i]]->player->health <= 0)
+		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
@@ -1625,7 +1625,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 			engine->entity_list[index[i]]->player->health);
 		player.stats.hits++;
 	
-		if (engine->entity_list[index[i]]->player->health <= 0)
+		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
@@ -1693,7 +1693,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 			engine->entity_list[index[i]]->player->health);
 
 		player.stats.hits++;
-		if (engine->entity_list[index[i]]->player->health <= 0)
+		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
