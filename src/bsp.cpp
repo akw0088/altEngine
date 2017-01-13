@@ -13,6 +13,7 @@ Bsp::Bsp()
 	textures_loaded = false;
 	memset(map_name, 0, 80);
 	sky_face = -1;
+	lastIndex = -2;
 }
 
 
@@ -693,7 +694,6 @@ bool compare(const faceinfo_t &a, const faceinfo_t &b)
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
 	int frameIndex = find_leaf(position);
-	static int lastIndex = -2;
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
 	float time = ((float)tick_num / TICK_RATE);

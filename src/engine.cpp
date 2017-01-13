@@ -351,6 +351,7 @@ void Engine::load(char *level)
 	gfx.SelectTexture(0, no_tex);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.lastIndex = -2; // force generation of new face lists
 	camera_frame.set(transformation);
 	render_entities(transformation, true);
 
@@ -1837,6 +1838,7 @@ void Engine::check_triggers(int self)
 				{
 					if (entity_list[self]->player->health <= 0)
 					{
+						char word[32] = { 0 };
 						char weapon[80];
 						int owner = entity_list[i]->trigger->owner;
 
@@ -1857,9 +1859,15 @@ void Engine::check_triggers(int self)
 							sprintf(weapon, "plasma gun");
 						}
 
+						if (entity_list[self]->player->health <= -50)
+							sprintf(word, "%s", "gibbed");
+						else
+							sprintf(word, "%s", "killed");
+
 						char msg[80];
-						sprintf(msg, "%s killed %s with a %s\n",
+						sprintf(msg, "%s %s %s with a %s\n",
 							entity_list[owner]->player->name,
+							word,
 							entity_list[self]->player->name,
 							weapon);
 						debugf(msg);

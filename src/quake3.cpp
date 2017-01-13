@@ -1447,11 +1447,18 @@ void Quake3::handle_lightning(Player &player, int self)
 		player.stats.hits++;
 		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
+			char word[32] = { 0 };
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
 
+			if (engine->entity_list[index[i]]->player->health <= -50)
+				sprintf(word, "%s", "gibbed");
+			else
+				sprintf(word, "%s", "killed");
+
 			char msg[80];
-			sprintf(msg, "%s killed %s with a lightning gun\n", player.name,
+			sprintf(msg, "%s %s %s with a lightning gun\n", player.name,
+				word,
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
@@ -1547,11 +1554,19 @@ void Quake3::handle_railgun(Player &player, int self)
 		player.stats.hits++;
 		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
+			char msg[80];
+			char word[32] = { 0 };
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
 
-			char msg[80];
-			sprintf(msg, "%s killed %s with a railgun\n", player.name,
+			if (engine->entity_list[index[i]]->player->health <= -50)
+				sprintf(word, "%s", "gibbed");
+			else
+				sprintf(word, "%s", "killed");
+
+
+			sprintf(msg, "%s %s %s with a railgun\n", player.name,
+				word,
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
@@ -1627,10 +1642,17 @@ void Quake3::handle_machinegun(Player &player, int self)
 	
 		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
+			char msg[80];
+			char word[32] = { 0 };
+
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
 
-			char msg[80];
+			if (engine->entity_list[index[i]]->player->health <= -50)
+				sprintf(word, "%s", "gibbed");
+			else
+				sprintf(word, "%s", "killed");
+
 			sprintf(msg, "%s killed %s with a machinegun\n", player.name,
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
@@ -1695,11 +1717,19 @@ void Quake3::handle_shotgun(Player &player, int self)
 		player.stats.hits++;
 		if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 		{
+			char msg[80];
+			char word[32] = { 0 };
+
 			player.stats.kills++;
 			engine->entity_list[index[i]]->player->stats.deaths++;
 
-			char msg[80];
-			sprintf(msg, "%s killed %s with a shotgun\n", player.name,
+			if (engine->entity_list[index[i]]->player->health <= -50)
+				sprintf(word, "%s", "gibbed");
+			else
+				sprintf(word, "%s", "killed");
+
+			sprintf(msg, "%s %s %s with a shotgun\n", player.name,
+				word,
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
