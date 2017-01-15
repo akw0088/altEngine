@@ -3,7 +3,7 @@
 
 #define LINE_SIZE 512
 
-//#define LIGHTMAP
+#define LIGHTMAP
 //#define NORMALMAP
 
 #define TICK_MS		8		// 125hz

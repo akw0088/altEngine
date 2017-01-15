@@ -677,7 +677,6 @@ void Graphics::BlendFuncDstColorZero()
 	glBlendFunc(GL_DST_COLOR, GL_ZERO);
 }
 
-
 void Graphics::BlendFuncZeroOneMinusAlpha()
 {
 	glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
@@ -719,6 +718,48 @@ void Graphics::BlendFuncZeroOne()
 	error_check();
 #endif
 }
+
+void Graphics::BlendFuncDstColorOneMinusDstAlpha()
+{
+	glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_DST_ALPHA);
+}
+
+void Graphics::BlendFuncDstColorSrcAlpha()
+{
+	glBlendFunc(GL_DST_COLOR, GL_SRC_ALPHA);
+}
+
+void Graphics::BlendFuncOneMinusSrcAlphaSrcAlpha()
+{
+	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+}
+
+void Graphics::BlendFuncSrcAlphaOneMinusSrcAlpha()
+{
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+
+void Graphics::BlendFuncOneSrcAlpha()
+{
+	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+}
+
+void Graphics::BlendFuncOneMinusDstColorZero()
+{
+	glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
+}
+
+void Graphics::BlendFuncDstColorSrcColor()
+{
+	glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+}
+
+void Graphics::BlendFuncZeroSrcAlpha()
+{
+	glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
+}
+
 
 void Graphics::BlendFuncOneZero()
 {

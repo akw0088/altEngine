@@ -23,8 +23,16 @@ public:
 	void BlendFuncOneZero();
 	void BlendFuncZeroOneMinusAlpha();
 	void BlendFuncOneOneMinusAlpha();
+	void BlendFuncDstColorOneMinusDstAlpha();
+	void BlendFuncDstColorSrcAlpha();
+	void BlendFuncOneMinusSrcAlphaSrcAlpha();
+	void BlendFuncSrcAlphaOneMinusSrcAlpha();
 	void BlendFuncOneAlpha();
 	void BlendFuncZeroSrcColor();
+	void BlendFuncDstColorSrcColor();
+	void BlendFuncZeroSrcAlpha();
+	void BlendFuncOneMinusDstColorZero();
+	void BlendFuncOneSrcAlpha();
 	void CullFace(int mode);
 	void Color(bool flag);
 	void DepthFunc(char *op);

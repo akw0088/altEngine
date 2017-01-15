@@ -1060,6 +1060,10 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blendfunc_blend = true;
 		}
+		else if (strstr(ret, "blendfunc gl_src_alpha gl_one_minus_src_alpha"))
+		{
+			stage->blendfunc_blend = true;
+		}
 		else if (strstr(ret, "gl_zero gl_one"))
 		{
 			stage->blend_zero_one = true;
@@ -1072,18 +1076,66 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blend_one_one = true;
 		}
-		else if (strstr(ret, "gl_one gl_srccolor"))
+		else if (strstr(ret, "gl_one gl_src_color"))
 		{
-			stage->blend_one_srccolor = true;
+			stage->blend_one_src_color = true;
 		}
-		else if (strstr(ret, "gl_dstcolor gl_one"))
+		else if (strstr(ret, "gl_dst_color gl_one"))
 		{
-			stage->blend_dstcolor_one = true;
+			stage->blend_dst_color_one = true;
 		}
-		else if (strstr(ret, "gl_dstcolor gl_zero"))
+		else if (strstr(ret, "gl_dst_color gl_zero"))
 		{
-			stage->blend_dstcolor_zero = true;
+			stage->blend_dst_color_zero = true;
 		}
+		else if (strstr(ret, "gl_dst_color gl_one_minus_dst_alpha"))
+		{
+			stage->blend_dst_color_one_minus_dst_alpha = true;
+		}
+		else if (strstr(ret, "gl_dst_color gl_src_alpha"))
+		{
+			stage->blend_dst_color_src_alpha = true;
+		}
+		else if (strstr(ret, "gl_one_minus_src_alpha gl_src_alpha"))
+		{
+			stage->blend_one_minus_src_alpha_src_alpha = true;
+		}
+		else if (strstr(ret, "gl_src_alpha gl_one_minus_src_alpha"))
+		{
+			stage->blend_src_alpha_one_minus_src_alpha = true;
+		}
+
+		else if (strstr(ret, "gl_src_alpha gl_one_minus_src_alpha"))
+		{
+			stage->blend_src_alpha_one_minus_src_alpha = true;
+		}
+		else if (strstr(ret, "gl_one gl_src_alpha"))
+		{
+			stage->blend_one_src_alpha = true;
+		}
+		else if (strstr(ret, "gl_one_minus_dst_color gl_zero"))
+		{
+			stage->blend_one_minus_dst_color_zero = true;
+		}
+		else if (strstr(ret, "gl_zero gl_src_color"))
+		{
+			stage->blend_zero_src_color = true;
+		}
+		else if (strstr(ret, "gl_dst_color gl_src_color"))
+		{
+			stage->blend_dst_color_src_color = true;
+		}
+		else if (strstr(ret, "gl_zero gl_src_alpha"))
+		{
+			stage->blend_zero_src_alpha = true;
+		}
+
+		else
+		{
+			printf("Unsupported blendfunc %s\n", ret);
+		}
+
+
 	}
 	else if (strstr(stagecmd, "alphafunc"))
 	{

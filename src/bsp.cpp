@@ -4,9 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-#include <algorithm>
-
-
 Bsp::Bsp()
 {
 	loaded = false;
@@ -583,35 +580,43 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 	}
 
 	gfx.DrawArrayTri(0, 0, 36, 36);
+
+	for (int i = 0; i < MAX_TEXTURES; i++)
+	{
+		gfx.SelectTexture(i, 0);
+	}
+
 }
 
 
-inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage)
+inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
 
 	if (textures_loaded)
 	{
-		for (int i = 0; i < MAX_TEXTURES; i++)
+		if (lightmap)
 		{
-			gfx.SelectTexture(i, 0);
-		}
-		gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
-
-	}
 #ifdef LIGHTMAP
-	// surfaces that arent lit with lightmaps eg: skies
-	if (face->lightmap != -1)
-		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			// surfaces that arent lit with lightmaps eg: skies
+			if (face->lightmap != -1)
+				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
 #endif
+		}
+		else
+		{
+			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+		}
+	}
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
 #endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
+	gfx.SelectTexture(stage, 0);
 }
 
-inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage)
+inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
 	int mesh_index = -1;
 	int index_per_row = 2 * (mesh_level + 1);
@@ -638,9 +643,18 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage)
 	// will be same texture for all 3x3 patches making up this mesh
 	if (textures_loaded)
 	{
-		for (int j = 0; j < MAX_TEXTURES; j++)
-			gfx.SelectTexture(j, 0);
-		gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+		if (lightmap)
+		{
+#ifdef LIGHTMAP
+			// surfaces that arent lit with lightmaps eg: skies
+			if (face->lightmap != -1)
+				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+#endif
+		}
+		else
+		{
+			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+		}
 	}
 
 
@@ -650,9 +664,6 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage)
 		gfx.SelectVertexBuffer(patchdata[mesh_index + i].vbo);
 		gfx.SelectIndexBuffer(patchdata[mesh_index + i].ibo);
 
-#ifdef LIGHTMAP
-		gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-#endif
 #ifdef NORMALMAP
 		gfx.SelectTexture(9, normal_object[face->material]);
 #endif
@@ -673,17 +684,25 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage)
 		//patchdata[mesh_index + i].num_verts);
 		
 	}
+	gfx.SelectTexture(stage, 0);
 }
 
-inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage)
+inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
 	if (textures_loaded)
 	{
-		for (int i = 0; i < MAX_TEXTURES; i++)
+		if (lightmap)
 		{
-			gfx.SelectTexture(i, 0);
+#ifdef LIGHTMAP
+			// surfaces that arent lit with lightmaps eg: skies
+			if (face->lightmap != -1)
+				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+#endif
 		}
-		gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+		else
+		{
+			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+		}
 	}
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
@@ -691,14 +710,8 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage)
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
+	gfx.SelectTexture(stage, 0);
 }
-
-
-bool compare(const faceinfo_t &a, const faceinfo_t &b)
-{
-	return a.name < b.name;
-}
-
 
 void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position)
 {
@@ -765,11 +778,11 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					render.name = surface->stage[k].map_tex;
 					render.lightmap[k] = surface->stage[k].lightmap;
 
-
 					render.blend = false;
 
+
 					if (surface->stage[k].blendfunc_add ||
-						surface->stage[k].blend_one_one )
+						surface->stage[k].blend_one_one)
 					{
 						// Doing multiple passes to get the quake3 blending right
 						render.blend = true;
@@ -785,20 +798,70 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 						render.blend = true;
 						render.blend_default = true;
 					}
-					else if (surface->stage[k].blendfunc_filter)
+					else if (surface->stage[k].blendfunc_filter || surface->stage[k].lightmap)
 					{
 						render.blend = true;
 						render.blend_filter = true;
 					}
-					else if (surface->stage[k].blend_dstcolor_one)
+					else if (surface->stage[k].blend_dst_color_one)
 					{
 						render.blend = true;
 						render.blend_dstcolor_one = true;
 					}
-					else if (surface->stage[k].blend_dstcolor_zero)
+					else if (surface->stage[k].blend_dst_color_zero)
 					{
 						render.blend = true;
 						render.blend_dstcolor_zero = true;
+					}
+					else if (surface->stage[k].blend_dst_color_src_alpha)
+					{
+						render.blend = true;
+						render.blend_dst_color_src_alpha = true;
+					}
+					else if (surface->stage[k].blend_dst_color_one_minus_dst_alpha)
+					{
+						render.blend = true;
+						render.blend_dst_color_one_minus_dst_alpha = true;
+					}
+					else if (surface->stage[k].one_minus_src_alpha_src_alpha)
+					{
+						render.blend = true;
+						render.one_minus_src_alpha_src_alpha = true;
+					}
+					else if (surface->stage[k].blend_one_minus_src_alpha_src_alpha)
+					{
+						render.blend = true;
+						render.blend_one_minus_src_alpha_src_alpha = true;
+					}
+					else if (surface->stage[k].blend_src_alpha_one_minus_src_alpha)
+					{
+						render.blend = true;
+						render.blend_src_alpha_one_minus_src_alpha = true;
+					}
+					else if (surface->stage[k].blend_one_minus_dst_color_zero)
+					{
+						render.blend = true;
+						render.blend_one_minus_dst_color_zero = true;
+					}
+					else if (surface->stage[k].blend_one_src_alpha)
+					{
+						render.blend = true;
+						render.blend_one_src_alpha = true;
+					}
+					else if (surface->stage[k].blend_zero_src_color)
+					{
+						render.blend = true;
+						render.blend_zero_src_color = true;
+					}
+					else if (surface->stage[k].blend_dst_color_src_color)
+					{
+						render.blend = true;
+						render.blend_dst_color_src_color = true;
+					}
+					else if (surface->stage[k].blend_zero_src_alpha)
+					{
+						render.blend = true;
+						render.blend_zero_src_alpha = true;
 					}
 
 					if (render.blend == true)
@@ -924,21 +987,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			continue;
 		}
 
-		if (face_list[i].lightmap[face_list[i].stage])
-			continue;
-
-
 		if (face->type == 1 || face->type == 3)
 		{
-			render_face(face, gfx, face_list[i].stage);
+			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
 		else if (face->type == 2)
 		{
-			render_patch(face, gfx, face_list[i].stage);
+			render_patch(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
 		else// (face->type == 4)
 		{
-			render_billboard(face, gfx, face_list[i].stage);
+			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
 
 		if (face_list[i].shader)
@@ -1032,23 +1091,20 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				continue;
 			}
 
-
-			if (blend_list[i].lightmap[blend_list[i].stage])
-				continue;
-
 			if (blend_list[i].blend)
 			{
 				if (blend_list[i].blend_one_one)
 				{
 					gfx.BlendFuncOneOne();
 				}
-				else if (blend_list[i].blend_one_zero)
+				else if (blend_list[i].blend_default)
 				{
-					gfx.BlendFuncOneZero();
+					//src alpha, 1 - src alpha
+					gfx.BlendFunc(NULL, NULL);
 				}
 				else if (blend_list[i].blend_filter)
 				{
-					gfx.BlendFuncZeroSrcColor();
+					gfx.BlendFuncDstColorZero();
 				}
 				else if (blend_list[i].blend_dstcolor_one)
 				{
@@ -1058,11 +1114,52 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					gfx.BlendFuncDstColorZero();
 				}
-				else if (blend_list[i].blend_default)
+				else if (blend_list[i].blend_one_zero)
 				{
-					//src alpha, 1 - src alpha
-					gfx.BlendFunc(NULL, NULL);
+					gfx.BlendFuncOneZero();
 				}
+				else if (blend_list[i].blend_zero_one)
+				{
+					gfx.BlendFuncZeroOne();
+				}
+				else if (blend_list[i].blend_dst_color_one_minus_dst_alpha)
+				{
+					gfx.BlendFuncDstColorOneMinusDstAlpha();
+				}
+				else if (blend_list[i].blend_dst_color_src_alpha)
+				{
+					gfx.BlendFuncDstColorSrcAlpha();
+				}
+				else if (blend_list[i].blend_one_minus_src_alpha_src_alpha)
+				{
+					gfx.BlendFuncOneMinusSrcAlphaSrcAlpha();
+				}
+				else if (blend_list[i].blend_src_alpha_one_minus_src_alpha)
+				{
+					gfx.BlendFuncSrcAlphaOneMinusSrcAlpha();
+				}
+				else if (blend_list[i].blend_one_src_alpha)
+				{
+					gfx.BlendFuncOneSrcAlpha();
+				}
+				else if (blend_list[i].blend_one_minus_dst_color_zero)
+				{
+					gfx.BlendFuncOneMinusDstColorZero();
+				}
+				else if (blend_list[i].blend_zero_src_color)
+				{
+					gfx.BlendFuncZeroSrcColor();
+				}
+				else if (blend_list[i].blend_dst_color_src_color)
+				{
+					gfx.BlendFuncDstColorSrcColor();
+				}
+				else if (blend_list[i].blend_zero_src_alpha)
+				{
+					gfx.BlendFuncZeroSrcAlpha();
+				}
+				
+
 				else
 				{
 					gfx.BlendFunc(NULL, NULL);
@@ -1071,15 +1168,15 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (face->type == 1 || face->type == 3)
 			{
-				render_face(face, gfx, blend_list[i].stage);
+				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
 			else if (face->type == 2)
 			{
-				render_patch(face, gfx, blend_list[i].stage);
+				render_patch(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
 			else// (face->type == 4)
 			{
-				render_billboard(face, gfx, blend_list[i].stage);
+				render_billboard(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
 
 			if (blend_list[i].shader)
@@ -1142,15 +1239,15 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 
 		if (face->type == 1 || face->type == 3)
 		{
-			render_face(face, gfx, 0);
+			render_face(face, gfx, 0, false);
 		}
 		else if (face->type == 2)
 		{
-			render_patch(face, gfx, 0);
+			render_patch(face, gfx, 0, false);
 		}
 		else// (face->type == 4)
 		{
-			render_billboard(face, gfx, 0);
+			render_billboard(face, gfx, 0, false);
 		}
 	}
 }
@@ -1225,6 +1322,12 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	for (unsigned int k = 0; k < surface_list[j]->num_stage && k < 4; k++)
 	{
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
+
+		if (surface_list[j]->stage[k].lightmap)
+		{
+			continue;
+		}
+
 		if (surface_list[j]->stage[k].map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
