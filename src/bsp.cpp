@@ -901,7 +901,6 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
 	int frameIndex = find_leaf(position);
-	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
 	float time = ((float)tick_num / TICK_RATE);

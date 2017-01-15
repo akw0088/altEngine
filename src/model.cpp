@@ -173,7 +173,6 @@ void Model::make_skybox(Graphics &gfx)
 		vec3(200.0f, -200.0f, 200.0f),  //2
 		vec3(-200.0f, 200.0f, 200.0f), //3
 
-
 		// Back face
 		vec3(200.0f, 200.0f, -200.0f),		//3
 		vec3(-200.0f, -200.0f, -200.0f),	//2
@@ -220,8 +219,55 @@ void Model::make_skybox(Graphics &gfx)
 		vec3(200.0f, -200.0f, 200.0f)		//3
 	};
 
-	vec2 texcoords[6] =
+	vec2 texcoords[36] =
 	{
+		// Front face
+		vec2(0.0f, 0.0f),			//2
+		vec2(0.0f, -1.0f),			//1
+		vec2(-1.0f, -1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(-1.0f, -1.0f),			//3
+		vec2(-1.0f, 0.0f),			//4
+
+
+		// Back face
+		vec2(0.0f, 0.0f),			//2
+		vec2(0.0f, 1.0f),			//1
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+		vec2(1.0f, 0.0f),			//4
+
+		// Left face
+		vec2(0.0f, -1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(-1.0f, -1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(-1.0f, 0.0f),			//4
+		vec2(-1.0f, -1.0f),			//3
+
+		// Right face
+		vec2(0.0f, 1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 0.0f),			//4
+		vec2(1.0f, 1.0f),			//3
+
+		// Top face
+		vec2(0.0f, 1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 0.0f),			//4
+		vec2(1.0f, 1.0f),			//3
+
+		// Bottom face
 		vec2(0.0f, 1.0f),			//1
 		vec2(0.0f, 0.0f),			//2
 		vec2(1.0f, 1.0f),			//3
@@ -247,7 +293,7 @@ void Model::make_skybox(Graphics &gfx)
 	for (int i = 0; i < 36; i++)
 	{
 		skybox[i].position = verts[i] * 1000000.0f;
-		skybox[i].texCoord0 = texcoords[i % 6];
+		skybox[i].texCoord0 = texcoords[i];
 		skybox[i].normal = vec3();
 		index[i] = i;
 	}
