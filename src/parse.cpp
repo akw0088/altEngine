@@ -1035,7 +1035,7 @@ void handle_stage(char *stagecmd, stage_t *stage)
 	{
 		stage->map = true;
 		strcpy(stage->map_tex, ret + 4);
-
+		/*
 		if (strcmp(stage->map_tex, "textures/gothic_block/evil2ckillblockglow.tga") == 0)
 		{
 			printf("break point\n");
@@ -1045,6 +1045,7 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			printf("break point\n");
 		}
+		*/
 	}
 	else if ((ret = strstr(stagecmd, "blendfunc")))
 	{

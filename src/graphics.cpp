@@ -572,6 +572,7 @@ void Graphics::init(void *param1, void *param2)
 		printf("Unable to load font!\n");
 */
 #endif
+	memset(&gpustat, 0, sizeof(gpustat_t));
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glClearStencil(0);
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -604,6 +605,8 @@ void Graphics::DrawText(const char *str, float x, float y)
 
 void Graphics::swap()
 {
+	gpustat.drawcall = 0;
+	gpustat.triangle = 0;
 #ifdef _WIN32
 	SwapBuffers(hdc);
 #endif
@@ -760,7 +763,6 @@ void Graphics::BlendFuncZeroSrcAlpha()
 	glBlendFunc(GL_ZERO, GL_SRC_ALPHA);
 }
 
-
 void Graphics::BlendFuncOneZero()
 {
 	glBlendFunc(GL_ONE, GL_ZERO);
@@ -800,26 +802,33 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	gpustat.drawcall++;
+	gpustat.triangle += num_index / 3;
 	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 
 void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	gpustat.drawcall++;
+	gpustat.triangle += num_index / 2 - 1;
 	glDrawElementsBaseVertex(GL_TRIANGLE_STRIP, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 
 void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	gpustat.drawcall++;
 	glDrawElementsBaseVertex(GL_LINE_STRIP, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 
 void Graphics::DrawArrayLine(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	gpustat.drawcall++;
 	glDrawElementsBaseVertex(GL_LINES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 
 void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	gpustat.drawcall++;
 	glDrawElementsBaseVertex(GL_POINTS, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 }
 

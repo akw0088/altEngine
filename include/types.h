@@ -476,3 +476,9 @@ typedef enum
 	TEAM_BLUE,
 	TEAM_RED,
 } team_t;
+
+typedef struct
+{
+	int drawcall;
+	int triangle;
+} gpustat_t;
