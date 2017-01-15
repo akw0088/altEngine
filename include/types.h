@@ -247,7 +247,9 @@ typedef struct
 	bool blend_zero_src_color;
 	bool blend_dst_color_src_color;
 	bool blend_zero_src_alpha;
-	bool alpha_func_gt0;
+	bool alpha_gt0;
+	bool alpha_ge128;
+	bool alpha_lt128;
 	bool depth_write;
 	bool depthfunc_equal;
 	bool rgbgen_identity;
@@ -372,6 +374,9 @@ typedef struct
 	bool blend_zero_src_color;
 	bool blend_dst_color_src_color;
 	bool blend_zero_src_alpha;
+	bool alpha_gt0;
+	bool alpha_ge128;
+	bool alpha_lt128;
 
 	bool lightmap[MAX_TEXTURES];
 	int stage;

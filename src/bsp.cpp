@@ -760,7 +760,8 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					sky_face = face_index;
 				}
 
-				for (unsigned int k = 0; k < surface->num_stage; k++)
+				// Going backwards to fix render ordering
+				for (int k = surface->num_stage - 1; k >= 0; k--)
 				{
 					render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
 					render.deg[k] = surface->stage[k].tcmod_rotate_value;
@@ -777,11 +778,20 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					render.stage = k;
 					render.name = surface->stage[k].map_tex;
 					render.lightmap[k] = surface->stage[k].lightmap;
+					render.alpha_ge128 = surface->stage[k].alpha_ge128;
+					render.alpha_lt128 = surface->stage[k].alpha_lt128;
+					render.alpha_gt0 = surface->stage[k].alpha_gt0;
 
 					render.blend = false;
 
-
-					if (surface->stage[k].blendfunc_add ||
+					if (surface->stage[k].alpha_gt0 || 
+						surface->stage[k].alpha_ge128 ||
+						surface->stage[k].alpha_lt128 )
+					{
+						render.blend = true;
+						render.blend_default;
+					}
+					else if (surface->stage[k].blendfunc_add ||
 						surface->stage[k].blend_one_one)
 					{
 						// Doing multiple passes to get the quake3 blending right
@@ -986,6 +996,10 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			continue;
 		}
 
+
+
+
+
 		if (face->type == 1 || face->type == 3)
 		{
 			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
@@ -1103,7 +1117,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 				else if (blend_list[i].blend_filter)
 				{
-					gfx.BlendFuncDstColorZero();
+//					gfx.BlendFuncDstColorZero();
+					gfx.BlendFuncOneOne();
 				}
 				else if (blend_list[i].blend_dstcolor_one)
 				{
@@ -1111,7 +1126,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				}
 				else if (blend_list[i].blend_dstcolor_zero)
 				{
-					gfx.BlendFuncDstColorZero();
+//					gfx.BlendFuncDstColorZero();
+					gfx.BlendFuncOneOne();
 				}
 				else if (blend_list[i].blend_one_zero)
 				{

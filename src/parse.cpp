@@ -1140,7 +1140,15 @@ void handle_stage(char *stagecmd, stage_t *stage)
 	else if (strstr(stagecmd, "alphafunc"))
 	{
 		//alphaFunc GE128
-		stage->blend_one_one = true;
+		if (strstr(stagecmd, "gt0") != NULL)
+			stage->alpha_gt0 = true;
+		else if (strstr(stagecmd, "ge128") != NULL)
+			stage->alpha_ge128 = true;
+		else if (strstr(stagecmd, "lt128") != NULL)
+			stage->alpha_lt128 = true;
+		else
+			printf("Unsupported alpha func %s\n", stagecmd);
+
 	}
 	else if (strstr(stagecmd, "depthwrite"))
 	{
