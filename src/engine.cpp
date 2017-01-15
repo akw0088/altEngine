@@ -197,6 +197,40 @@ void Engine::init(void *p1, void *p2)
 		}
 	}
 
+	for (int i = 0; i < surface_list.size(); i++)
+	{
+		if (strcmp(surface_list[i]->name, "textures/base_floor/pjgrate1") == 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+		else if (strcmp(surface_list[i]->name, "textures/base_floor/pjgrate2") == 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+		else if (strcmp(surface_list[i]->name, "textures/sfx/beam_dusty2") == 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+		else if (strcmp(surface_list[i]->name, "models/mapobjects/teleporter/energy") == 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+		else if (strcmp(surface_list[i]->name, "models/mapobjects/flag/banner_strgg") == 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+		else if (strstr(surface_list[i]->name, "flame") != 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+		else if (strstr(surface_list[i]->name, "fire") != 0)
+		{
+			surface_list[i]->num_stage = 1;
+		}
+
+
+	}
+
 	printf("Done\n");
 
 #ifndef DIRECTX

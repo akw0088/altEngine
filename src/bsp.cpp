@@ -763,6 +763,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				// Going backwards to fix render ordering
 				for (int k = surface->num_stage - 1; k >= 0; k--)
 				{
+//					k = 0;
 					render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
 					render.deg[k] = surface->stage[k].tcmod_rotate_value;
 					render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
