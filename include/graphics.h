@@ -16,6 +16,15 @@ public:
 	void Depth(bool flag);
 	void Blend(bool flag);
 	void BlendFunc(char *src, char *dst);
+	void BlendFuncDstColorOne();
+	void BlendFuncDstColorZero();
+	void BlendFuncOneOne();
+	void BlendFuncZeroOne();
+	void BlendFuncOneZero();
+	void BlendFuncZeroOneMinusAlpha();
+	void BlendFuncOneOneMinusAlpha();
+	void BlendFuncOneAlpha();
+	void BlendFuncZeroSrcColor();
 	void CullFace(int mode);
 	void Color(bool flag);
 	void DepthFunc(char *op);
@@ -45,7 +54,6 @@ public:
 	void DeleteIndexBuffer(int handle);
 
 	int  CreateVertexBuffer(void *index_buffer, int num_verts);
-	int  CreateReadBuffer(void *index_buffer, int num_verts);
 	
 	void SelectVertexBuffer(int handle);
 	void DeleteVertexBuffer(int handle);

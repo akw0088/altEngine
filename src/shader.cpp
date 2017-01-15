@@ -930,6 +930,7 @@ void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 #ifndef DIRECTX
 	gfx.Blend(true);
 	gfx.Depth(false);
+	gfx.BlendFunc(NULL, NULL);
 	gfx.SelectVertexBuffer(vbo);
 	gfx.SelectIndexBuffer(ibo);
 	gfx.DrawArrayPoint(start, 0, num, num);

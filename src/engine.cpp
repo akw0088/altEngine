@@ -683,8 +683,6 @@ void Engine::render_scene(bool lights)
 	mlight2.Select();
 	mvp = transformation * projection;
 
-	mlight2.Params(mvp, light_list, light_list.size(), offset);
-//	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
 
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset);
@@ -692,6 +690,7 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
 
 	render_entities(transformation, true);
 

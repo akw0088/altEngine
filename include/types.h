@@ -326,7 +326,7 @@ typedef struct
 
 typedef struct
 {
-	int name;
+	char *name;
 	int face;
 	bool shader;
 	bool sky;
@@ -344,6 +344,16 @@ typedef struct
 	vec2 scale[MAX_TEXTURES];
 	vec2 scroll_value[MAX_TEXTURES]; // integrated with time
 	bool cull_none;
+	bool blend;
+	bool blend_filter;
+	bool blend_one_one;
+	bool blend_one_zero;
+	bool blend_zero_one;
+	bool blend_dstcolor_one;
+	bool blend_dstcolor_zero;
+	bool blend_default;
+	bool lightmap[MAX_TEXTURES];
+	int stage;
 } faceinfo_t;
 
 

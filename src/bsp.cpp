@@ -560,6 +560,9 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 		{
 			int surface_index = tex_object[data.Face[sky_face].material].index;
 
+			if (surface_index == -1)
+				continue;
+
 			if (surface_list[surface_index]->stage[i].tcmod_rotate)
 			{
 				mlight2.tcmod_rotate(surface_list[surface_index]->stage[i].tcmod_rotate_value * time, i);
@@ -583,7 +586,7 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 }
 
 
-inline void Bsp::render_face(face_t *face, Graphics &gfx)
+inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
@@ -592,8 +595,10 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	{
 		for (int i = 0; i < MAX_TEXTURES; i++)
 		{
-			gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
+			gfx.SelectTexture(i, 0);
 		}
+		gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+
 	}
 #ifdef LIGHTMAP
 	// surfaces that arent lit with lightmaps eg: skies
@@ -606,7 +611,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx)
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 }
 
-inline void Bsp::render_patch(face_t *face, Graphics &gfx)
+inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage)
 {
 	int mesh_index = -1;
 	int index_per_row = 2 * (mesh_level + 1);
@@ -634,8 +639,10 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	if (textures_loaded)
 	{
 		for (int j = 0; j < MAX_TEXTURES; j++)
-			gfx.SelectTexture(j, tex_object[face->material].texObj[j]);
+			gfx.SelectTexture(j, 0);
+		gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 	}
+
 
 
 	for (int i = 0; i < patchdata[mesh_index].num_mesh; i++)
@@ -668,14 +675,15 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx)
 	}
 }
 
-inline void Bsp::render_billboard(face_t *face, Graphics &gfx)
+inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage)
 {
 	if (textures_loaded)
 	{
 		for (int i = 0; i < MAX_TEXTURES; i++)
 		{
-			gfx.SelectTexture(i, tex_object[face->material].texObj[i]);
+			gfx.SelectTexture(i, 0);
 		}
+		gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 	}
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
@@ -691,139 +699,158 @@ bool compare(const faceinfo_t &a, const faceinfo_t &b)
 	return a.name < b.name;
 }
 
+
+void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position)
+{
+	leaf_t *frameLeaf = &data.Leaf[leaf];
+
+	face_list.clear();
+	blend_list.clear();
+	leaf_list.clear();
+	for (unsigned int i = 0; i < data.num_leafs; i++)
+	{
+		leaf_t *leaf = &data.Leaf[i];
+
+		if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
+			continue;
+
+		leaf_list.push_back(i);
+	}
+
+	// sort leafs front to back
+	sort_leaf(&leaf_list, leaf, position);
+
+	// loop through visible sortedd leaves, checking if leaf visible from current leaf
+	for (unsigned int i = 0; i < leaf_list.size(); i++)
+	{
+		leaf_t *leaf = &data.Leaf[leaf_list[i]];
+
+		// generate face lists
+		for (int j = 0; j < leaf->num_faces; j++)
+		{
+			int face_index = data.LeafFace[leaf->leaf_face + j];
+			face_t *face = &data.Face[face_index];
+
+			if (tex_object[face->material].index != -1)
+			{
+				// Texture with a shader
+				surface_t *surface = surface_list[tex_object[face->material].index];
+				faceinfo_t render;
+
+				memset(&render, 0, sizeof(faceinfo_t));
+				render.face = face_index;
+				render.shader = true;
+
+				if (surface->surfaceparm_sky)
+				{
+					render.sky = true;
+					sky_face = face_index;
+				}
+
+				for (unsigned int k = 0; k < surface->num_stage; k++)
+				{
+					render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
+					render.deg[k] = surface->stage[k].tcmod_rotate_value;
+					render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
+					render.scroll[k] = surface->stage[k].tcmod_scroll_value;
+					render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
+					render.scale[k] = surface->stage[k].tcmod_scale_value;
+					render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
+					render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
+					render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
+					render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
+					render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
+					render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
+					render.stage = k;
+					render.name = surface->stage[k].map_tex;
+					render.lightmap[k] = surface->stage[k].lightmap;
+
+
+					render.blend = false;
+
+					if (surface->stage[k].blendfunc_add ||
+						surface->stage[k].blend_one_one )
+					{
+						// Doing multiple passes to get the quake3 blending right
+						render.blend = true;
+						render.blend_one_one = true;
+					}
+					else if (surface->stage[k].blend_one_zero)
+					{
+						render.blend = true;
+						render.blend_one_zero = true;
+					}
+					else if (surface->stage[k].blendfunc_blend)
+					{
+						render.blend = true;
+						render.blend_default = true;
+					}
+					else if (surface->stage[k].blendfunc_filter)
+					{
+						render.blend = true;
+						render.blend_filter = true;
+					}
+					else if (surface->stage[k].blend_dstcolor_one)
+					{
+						render.blend = true;
+						render.blend_dstcolor_one = true;
+					}
+					else if (surface->stage[k].blend_dstcolor_zero)
+					{
+						render.blend = true;
+						render.blend_dstcolor_zero = true;
+					}
+
+					if (render.blend == true)
+						blend_list.push_back(render);
+					else
+						face_list.push_back(render);
+				}
+
+
+			}
+			else
+			{
+				// Texture without a shader
+				faceinfo_t render;
+
+				memset(&render, 0, sizeof(faceinfo_t));
+				render.name = data.Material[face->material].name;
+				render.face = face_index;
+
+				if (tex_object[face->material].texObj < 0)
+				{
+					// texture has alpha channel, use it as a mask
+					render.blend = true;
+					render.blend_default = true;
+				}
+
+				if (render.blend == false)
+					face_list.push_back(render);
+				else
+					blend_list.push_back(render);
+			}
+		}
+	}
+	
+}
+
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
 	int frameIndex = find_leaf(position);
+	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
 	float time = ((float)tick_num / TICK_RATE);
 
-	leaf_t *frameLeaf = &data.Leaf[frameIndex];
 
-	if (frameIndex != lastIndex || tick_num < TICK_RATE)
+	if (frameIndex != lastIndex)
 	{
+		gen_renderlists(frameIndex, surface_list, position);
 		lastIndex = frameIndex;
-		blend_list.clear();
-		face_list.clear();
-
-		// walk bsp tree, sort leafs front to back
-//		vector<int> leaf_list;
-//		sort_leaf(&leaf_list, 0, position);
-
-		// loop through all leaves, checking if leaf visible from current leaf
-		for (unsigned int i = 0; i < data.num_leafs; i++)
-		{
-			leaf_t *leaf = &data.Leaf[i];
-
-			if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
-				continue;
-
-			
-
-			/*
-			vec3 min((float)leaf->min[0], (float)leaf->min[1], (float)leaf->min[2]);
-			vec3 max((float)leaf->max[0], (float)leaf->max[1], (float)leaf->max[2]);
-			if (aabb_visible(min, max, mvp) == false)
-				continue;
-			*/
-			
-
-			// generate face lists
-			for (int j = 0; j < leaf->num_faces; j++)
-			{
-				int face_index = data.LeafFace[leaf->leaf_face + j];
-				face_t *face = &data.Face[face_index];
-
-//				int stage = tex_object[face->material].stage;
-
-				if (tex_object[face->material].index != -1)
-				{
-					// Texture with a shader
-					surface_t *surface = surface_list[tex_object[face->material].index];
-					bool blend = false;
-					faceinfo_t render;
-
-					//dont memset, forces restart of scrolling shaders between pvs updates
-//					memset(&render, 0, sizeof(faceinfo_t));
-					render.face = face_index;
-					render.shader = true;
-					render.name = face->material;
-
-					if (surface->surfaceparm_sky)
-					{
-//						render.sky = true;
-	//					sky_face = face_index;
-					}
-
-					for (unsigned int k = 0; k < surface->num_stage; k++)
-					{
-						render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
-						render.deg[k] = surface->stage[k].tcmod_rotate_value;
-						render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
-						render.scroll[k] = surface->stage[k].tcmod_scroll_value;
-						render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
-						render.scale[k] = surface->stage[k].tcmod_scale_value;
-						render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
-						render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
-						render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
-						render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
-						render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
-						render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
-
-
-						if (surface->stage[k].blendfunc_blend ||
-							surface->stage[k].blendfunc_add ||
-							surface->stage[k].blendfunc_filter ||
-							surface->stage[k].blend_one_one ||
-							surface->stage[k].blend_one_zero //||
-							/*surface->surfaceparm_fog*/)
-						{
-							blend = true;
-						}
-
-						
-						/*
-						if (surface->cull_none || surface->cull_disable || surface->cull_twosided)
-						{
-							render.cull_none = true;
-						}
-						else
-						{
-							render.cull_none = false;
-						}
-						*/
-					}
-
-
-					if (blend)
-						blend_list.push_back(render);
-					else
-						face_list.push_back(render);
-				}
-				else
-				{
-					// Texture without a shader
-					faceinfo_t render;
-
-//					memset(&render, 0, sizeof(faceinfo_t));
-					render.face = face_index;
-					render.shader = false;
-					
-					// need a way to tell if a face should be blended
-					if (tex_object[face->material].texObj[0] < 0)
-						blend_list.push_back(render);
-					else
-						face_list.push_back(render);
-				}
-			}
-		}
-//		leaf_list.clear();
 	}
 
-//	std::sort(face_list.begin(), face_list.end(), compare);
-//	std::sort(blend_list.begin(), blend_list.end(), compare);
-
-
+	gfx.Blend(false);
 	for (unsigned int i = 0; i < face_list.size(); i++)
 	{
 		face_t *face = &data.Face[face_list[i].face];
@@ -897,24 +924,21 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			continue;
 		}
 
-		/*
-		if (face_list[i].cull_none)
-			gfx.CullFace(2);
-		else
-			gfx.CullFace(3);
-		*/
+		if (face_list[i].lightmap[face_list[i].stage])
+			continue;
+
 
 		if (face->type == 1 || face->type == 3)
 		{
-			render_face(face, gfx);
+			render_face(face, gfx, face_list[i].stage);
 		}
 		else if (face->type == 2)
 		{
-			render_patch(face, gfx);
+			render_patch(face, gfx, face_list[i].stage);
 		}
 		else// (face->type == 4)
 		{
-			render_billboard(face, gfx);
+			render_billboard(face, gfx, face_list[i].stage);
 		}
 
 		if (face_list[i].shader)
@@ -929,117 +953,149 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		}
 	}
 
-	if (blend_list.size())
+
+	if (blend_list.size() > 0)
 	{
-		//	gfx.Depth(false);
+		glDepthFunc(GL_LEQUAL);
 		gfx.Blend(true);
-	}
-	// leaves sorted front to back, render blends back to front
-	for (int i = blend_list.size() - 1; i >= 0; i--)
-	{
-		face_t *face = &data.Face[blend_list[i].face];
 
-
-		if (blend_list[i].shader)
+		for (int i = blend_list.size() - 1; i >= 0; i--)
 		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
+			face_t *face = &data.Face[blend_list[i].face];
+
+			if (blend_list[i].shader)
 			{
-				if (blend_list[i].tcmod_rotate[j])
+				for (int j = 0; j < MAX_TEXTURES; j++)
 				{
-					mlight2.tcmod_rotate(blend_list[i].deg[j] * time, j);
+					if (blend_list[i].tcmod_rotate[j])
+					{
+						mlight2.tcmod_rotate(blend_list[i].deg[j] * time, j);
+					}
+					if (blend_list[i].tcmod_scroll[j])
+					{
+						blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time * 0.01f;
+						blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time * 0.01f;
+						mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
+					}
+					if (blend_list[i].tcmod_scale[j])
+					{
+						mlight2.tcmod_scale(blend_list[i].scale[j], j);
+					}
+					if (blend_list[i].tcmod_stretch_sin[j])
+					{
+						mlight2.tcmod_stretch_sin(blend_list[i].stretch_value[j].x,
+							blend_list[i].stretch_value[j].y,
+							blend_list[i].stretch_value[j].z,
+							tick_num, j);
+					}
+					if (blend_list[i].tcmod_stretch_square[j])
+					{
+						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+							blend_list[i].stretch_value[j].y,
+							blend_list[i].stretch_value[j].z,
+							tick_num, j);
+					}
+					if (blend_list[i].tcmod_stretch_triangle[j])
+					{
+						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+							blend_list[i].stretch_value[j].y,
+							blend_list[i].stretch_value[j].z,
+							tick_num, j);
+					}
+					if (blend_list[i].tcmod_stretch_sawtooth[j])
+					{
+						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+							blend_list[i].stretch_value[j].y,
+							blend_list[i].stretch_value[j].z,
+							tick_num, j);
+					}
+					if (blend_list[i].tcmod_stretch_inverse_sawtooth[j])
+					{
+						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
+							blend_list[i].stretch_value[j].y,
+							blend_list[i].stretch_value[j].z,
+							tick_num, j);
+					}
 				}
-				if (blend_list[i].tcmod_scroll[j])
+			}
+
+			if (blend_list[i].sky)
+			{
+				for (int j = 0; j < MAX_TEXTURES; j++)
 				{
-					// Note scrolling restarts when index changes due to pvs update
-					blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time;
-					blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time;
-					mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
+					//technically shouldnt need to reset
+					mlight2.tcmod_rotate(0, j);
+					mlight2.tcmod_scroll(zero, j);
+					mlight2.tcmod_scale(one, j);
 				}
-				if (blend_list[i].tcmod_scale[j])
+				//skip sky texture, already drawn
+				continue;
+			}
+
+
+			if (blend_list[i].lightmap[blend_list[i].stage])
+				continue;
+
+			if (blend_list[i].blend)
+			{
+				if (blend_list[i].blend_one_one)
 				{
-					mlight2.tcmod_scale(blend_list[i].scale[j], j);
+					gfx.BlendFuncOneOne();
 				}
-				if (blend_list[i].tcmod_stretch_sin[j])
+				else if (blend_list[i].blend_one_zero)
 				{
-					mlight2.tcmod_stretch_sin(	blend_list[i].stretch_value[j].x,
-												blend_list[i].stretch_value[j].y,
-												blend_list[i].stretch_value[j].z,
-												tick_num, j);
+					gfx.BlendFuncOneZero();
 				}
-				if (blend_list[i].tcmod_stretch_square[j])
+				else if (blend_list[i].blend_filter)
 				{
-					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-						blend_list[i].stretch_value[j].y,
-						blend_list[i].stretch_value[j].z,
-						tick_num, j);
+					gfx.BlendFuncZeroSrcColor();
 				}
-				if (blend_list[i].tcmod_stretch_triangle[j])
+				else if (blend_list[i].blend_dstcolor_one)
 				{
-					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-						blend_list[i].stretch_value[j].y,
-						blend_list[i].stretch_value[j].z,
-						tick_num, j);
+					gfx.BlendFuncDstColorOne();
 				}
-				if (blend_list[i].tcmod_stretch_sawtooth[j])
+				else if (blend_list[i].blend_dstcolor_zero)
 				{
-					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-						blend_list[i].stretch_value[j].y,
-						blend_list[i].stretch_value[j].z,
-						tick_num, j);
+					gfx.BlendFuncDstColorZero();
 				}
-				if (blend_list[i].tcmod_stretch_inverse_sawtooth[j])
+				else if (blend_list[i].blend_default)
 				{
-					mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-						blend_list[i].stretch_value[j].y,
-						blend_list[i].stretch_value[j].z,
-						tick_num, j);
+					//src alpha, 1 - src alpha
+					gfx.BlendFunc(NULL, NULL);
+				}
+				else
+				{
+					gfx.BlendFunc(NULL, NULL);
+				}
+			}
+
+			if (face->type == 1 || face->type == 3)
+			{
+				render_face(face, gfx, blend_list[i].stage);
+			}
+			else if (face->type == 2)
+			{
+				render_patch(face, gfx, blend_list[i].stage);
+			}
+			else// (face->type == 4)
+			{
+				render_billboard(face, gfx, blend_list[i].stage);
+			}
+
+			if (blend_list[i].shader)
+			{
+				for (int j = 0; j < MAX_TEXTURES; j++)
+				{
+					//technically shouldnt need to reset
+					mlight2.tcmod_rotate(0, j);
+					mlight2.tcmod_scroll(zero, j);
+					mlight2.tcmod_scale(one, j);
 				}
 			}
 		}
-
-		/*
-		if (blend_list[i].sky)
-		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
-			{
-				//technically shouldnt need to reset
-				mlight2.tcmod_rotate(0, j);
-				mlight2.tcmod_scroll(zero, j);
-				mlight2.tcmod_scale(one, j);
-			}
-			continue;
-		}
-		*/
-
-		if (face->type == 1 || face->type == 3)
-		{
-			render_face(face, gfx);
-		}
-		else if (face->type == 2)
-		{
-			render_patch(face, gfx);
-		}
-		else// (face->type == 4)
-		{
-			render_billboard(face, gfx);
-		}
-
-		if (blend_list[i].shader)
-		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
-			{
-				//technically shouldnt need to reset
-				mlight2.tcmod_rotate(0, j);
-				mlight2.tcmod_scroll(zero, j);
-				mlight2.tcmod_scale(one, j);
-			}
-		}
 	}
-	if (blend_list.size())
-	{
-		//	gfx.Depth(true);
-		gfx.Blend(false);
-	}
+	glDepthFunc(GL_LESS);
+	gfx.Blend(false);
 
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
@@ -1086,15 +1142,15 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 
 		if (face->type == 1 || face->type == 3)
 		{
-			render_face(face, gfx);
+			render_face(face, gfx, 0);
 		}
 		else if (face->type == 2)
 		{
-			render_patch(face, gfx);
+			render_patch(face, gfx, 0);
 		}
 		else// (face->type == 4)
 		{
-			render_billboard(face, gfx);
+			render_billboard(face, gfx, 0);
 		}
 	}
 }

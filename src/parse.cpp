@@ -83,7 +83,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "quad");
+			snprintf(entity.trigger->action, LINE_SIZE, "quaddamage");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "holdable_medkit") == 0)
@@ -1035,6 +1035,16 @@ void handle_stage(char *stagecmd, stage_t *stage)
 	{
 		stage->map = true;
 		strcpy(stage->map_tex, ret + 4);
+
+		if (strcmp(stage->map_tex, "textures/gothic_block/evil2ckillblockglow.tga") == 0)
+		{
+			printf("break point\n");
+		}
+
+		if (strstr(stage->map_tex, "beam") != 0)
+		{
+			printf("break point\n");
+		}
 	}
 	else if ((ret = strstr(stagecmd, "blendfunc")))
 	{
@@ -1050,27 +1060,27 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blendfunc_blend = true;
 		}
-		else if (strstr(ret, "zero one"))
+		else if (strstr(ret, "gl_zero gl_one"))
 		{
 			stage->blend_zero_one = true;
 		}
-		else if (strstr(ret, "one zero"))
+		else if (strstr(ret, "gl_one gl_zero"))
 		{
 			stage->blend_one_zero = true;
 		}
-		else if (strstr(ret, "one one"))
+		else if (strstr(ret, "gl_one gl_one"))
 		{
 			stage->blend_one_one = true;
 		}
-		else if (strstr(ret, "one srccolor"))
+		else if (strstr(ret, "gl_one gl_srccolor"))
 		{
 			stage->blend_one_srccolor = true;
 		}
-		else if (strstr(ret, "dstcolor one"))
+		else if (strstr(ret, "gl_dstcolor gl_one"))
 		{
 			stage->blend_dstcolor_one = true;
 		}
-		else if (strstr(ret, "dstcolor zero"))
+		else if (strstr(ret, "gl_dstcolor gl_zero"))
 		{
 			stage->blend_dstcolor_zero = true;
 		}

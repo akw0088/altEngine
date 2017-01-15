@@ -572,15 +572,19 @@ void Graphics::init(void *param1, void *param2)
 		printf("Unable to load font!\n");
 */
 #endif
-	glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glClearStencil(0);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glPointSize(10.0f);
 
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
+//	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+	glBlendEquation(GL_FUNC_ADD);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -654,9 +658,71 @@ void Graphics::Blend(bool flag)
 #endif
 }
 
+
 void Graphics::BlendFunc(char *src, char *dst)
 {
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+}
+
+void Graphics::BlendFuncDstColorOne()
+{
+	glBlendFunc(GL_DST_COLOR, GL_ONE);
+}
+
+void Graphics::BlendFuncDstColorZero()
+{
+	glBlendFunc(GL_DST_COLOR, GL_ZERO);
+}
+
+
+void Graphics::BlendFuncZeroOneMinusAlpha()
+{
+	glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void Graphics::BlendFuncOneAlpha()
+{
+	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
+}
+
+
+void Graphics::BlendFuncOneOneMinusAlpha()
+{
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+
+void Graphics::BlendFuncOneOne()
+{
+	glBlendFunc(GL_ONE, GL_ONE);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+}
+
+
+void Graphics::BlendFuncZeroSrcColor()
+{
+	//blendfunc gl_zero gl_src_color
+	glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+}
+
+void Graphics::BlendFuncZeroOne()
+{
+	glBlendFunc(GL_ZERO, GL_ONE);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+}
+
+void Graphics::BlendFuncOneZero()
+{
+	glBlendFunc(GL_ONE, GL_ZERO);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -856,15 +922,11 @@ void Graphics::SelectCubemap(int texObject)
 
 void Graphics::SelectTexture(int level, int texObject)
 {
-//	if (texObject == -1)
-//		return;
-
 	//hack for blended surfaces
 	if (texObject < 0)
 		texObject = -texObject;
 
 	glActiveTexture(GL_TEXTURE0 + level);
-//	glEnable(GL_TEXTURE_2D);  -- this bastard is deprecated and cause my engine to crash and burn
 	glBindTexture(GL_TEXTURE_2D, texObject);
 
 #ifdef ERROR_CHECK
@@ -876,7 +938,6 @@ void Graphics::DeselectTexture(int level)
 {
 	glActiveTexture(GL_TEXTURE0 + level);
 	glBindTexture(GL_TEXTURE_2D, 0);
-//	glDisable(GL_TEXTURE_2D);
 
 #ifdef ERROR_CHECK
 	error_check();

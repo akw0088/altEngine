@@ -12,9 +12,10 @@ class Bsp
 	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
 	inline int cluster_visible(int visCluster, int testCluster);
 	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts, int **index_array, int &numIndexes, vec2 &texcoord);
-	inline void render_face(face_t *face, Graphics &gfx);
-	inline void render_patch(face_t *face, Graphics &gfx);
-	inline void render_billboard(face_t *face, Graphics &gfx);
+	inline void render_face(face_t *face, Graphics &gfx, int stage);
+	inline void render_patch(face_t *face, Graphics &gfx, int stage);
+	inline void render_billboard(face_t *face, Graphics &gfx, int stage);
+	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position);
 	//void draw_line_box(int *min, int *max);
 	//void draw_box(int *min, int *max);
 public:
@@ -54,8 +55,9 @@ public:
 	vector<texture_t *> anim_list;
 	texture_t	*tex_object;
 
-	vector<faceinfo_t> face_list;
-	vector<faceinfo_t> blend_list;
+	vector<faceinfo_t> face_list;	// sorted front to back
+	vector<faceinfo_t> blend_list; // sorted back to front
+	vector<int> leaf_list;
 	int *face_to_patch;
 	int lastIndex;
 
