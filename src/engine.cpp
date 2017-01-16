@@ -197,7 +197,7 @@ void Engine::init(void *p1, void *p2)
 		}
 	}
 
-	for (int i = 0; i < surface_list.size(); i++)
+	for (unsigned int i = 0; i < surface_list.size(); i++)
 	{
 		if (strcmp(surface_list[i]->name, "textures/base_floor/pjgrate1") == 0)
 		{

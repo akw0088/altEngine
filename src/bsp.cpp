@@ -790,7 +790,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 						surface->stage[k].alpha_lt128 )
 					{
 						render.blend = true;
-						render.blend_default;
+						render.blend_default = true;
 					}
 					else if (surface->stage[k].blendfunc_add ||
 						surface->stage[k].blend_one_one)
