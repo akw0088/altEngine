@@ -207,28 +207,6 @@ void Engine::init(void *p1, void *p2)
 		{
 			surface_list[i]->num_stage = 1;
 		}
-		else if (strcmp(surface_list[i]->name, "textures/sfx/beam_dusty2") == 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-		else if (strcmp(surface_list[i]->name, "models/mapobjects/teleporter/energy") == 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-		else if (strcmp(surface_list[i]->name, "models/mapobjects/flag/banner_strgg") == 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-		else if (strstr(surface_list[i]->name, "flame") != 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-		else if (strstr(surface_list[i]->name, "fire") != 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-
-
 	}
 
 	printf("Done\n");

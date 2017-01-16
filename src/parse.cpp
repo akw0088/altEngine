@@ -1326,13 +1326,10 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'C':
 			if (prevstate == 'S')
 			{
-				surface->num_stage++;
+//				surface->num_stage++;
 				surface = new surface_t;
 				memset(surface, 0, sizeof(surface_t));
 				sprintf(surface->file, "%s",  filename);
-
-				if (surface->num_stage > 4)
-					surface->num_stage = 4;
 				surface_list.push_back(surface);
 
 
@@ -1368,8 +1365,8 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 			}
 			if (input[i - 1] == '}')
 			{
-				surface->num_stage++;
-				num_stage++;
+//				surface->num_stage++;
+//				num_stage++;
 			}
 
 			if (input[i] != '\n' && input[i] != '{' && input[i-1] != '{' && input[i] != '\t')
