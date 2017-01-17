@@ -239,7 +239,7 @@ void Bsp::change_axis()
 		vert->normal.y =  vert->normal.z;
 		vert->normal.z =  -temp;
 		vert->texCoord0.y = -vert->texCoord0.y;
-		vert->texCoord1.y = -vert->texCoord1.y;
+		vert->texCoord1.y = vert->texCoord1.y;
 
 
 //		vert->vPosition *= (1.0f / UNITS_TO_METERS);
@@ -596,33 +596,23 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 
 	if (textures_loaded)
 	{
-		if (lightmap)
-		{
 #ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
-				gfx.SelectTexture(10, lightmap_object[face->lightmap]);
+			{
+				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			}
 #endif
-		}
-		else
-		{
 			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
-		}
 	}
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
 #endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
-	if (lightmap)
-	{
 #ifdef LIGHTMAP
-		gfx.SelectTexture(10, 0);
+		gfx.SelectTexture(8, 0);
 #endif
-	}
-	else
-	{
 		gfx.SelectTexture(stage, 0);
-	}
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap)
@@ -657,7 +647,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 #ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
-				gfx.SelectTexture(10, lightmap_object[face->lightmap]);
+				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
 		}
 		else
@@ -696,7 +686,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 	if (lightmap)
 	{
 #ifdef LIGHTMAP
-		gfx.SelectTexture(10, 0);
+		gfx.SelectTexture(8, 0);
 #endif
 	}
 	else
@@ -714,7 +704,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 #ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
-				gfx.SelectTexture(10, lightmap_object[face->lightmap]);
+				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 #endif
 		}
 		else
@@ -731,7 +721,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	if (lightmap)
 	{
 #ifdef LIGHTMAP
-		gfx.SelectTexture(10, 0);
+		gfx.SelectTexture(8, 0);
 #endif
 	}
 	else
@@ -1450,7 +1440,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)data.LightMaps[i].image, false);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)&(data.LightMaps[i].image), false);
 #else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);

@@ -139,7 +139,7 @@ void main(void)
 //	Fragment.xyz += Fragment6.xyz;
 //	Fragment.xyz += Fragment7.xyz;
 
-//	Fragment += 2 * texture(texture_lightmap, Vertex.vary_LightCoord);
+	Fragment += texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 
