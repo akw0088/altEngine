@@ -130,6 +130,7 @@ void main(void)
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment0.a * Fragment1.a  * Fragment2.a  * Fragment3.a;
 //	Fragment.a = 1.0;
+	Fragment.xyz += texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
 	Fragment.xyz += Fragment0.xyz * 0.75;
 	Fragment.xyz += Fragment1.xyz;
 	Fragment.xyz += Fragment2.xyz;
@@ -139,7 +140,6 @@ void main(void)
 //	Fragment.xyz += Fragment6.xyz;
 //	Fragment.xyz += Fragment7.xyz;
 
-	Fragment += texture(texture_lightmap, Vertex.vary_LightCoord);
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 
