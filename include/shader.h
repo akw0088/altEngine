@@ -41,10 +41,10 @@ class mLight2 : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, float ambient = AMBIENT_LIGHT);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, float ambient = AMBIENT_LIGHT, float lightmap = 1.0f);
 	virtual void prelink(void);
 
-	void set_light(float ambient, int num_light);
+	void set_light(float ambient, float lightmap, int num_light);
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
 	void tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index);
@@ -113,6 +113,7 @@ private:
 
 
 	int u_ambient;
+	int u_lightmap;
 	int u_num_lights;
 	int u_position;
 	int u_color;

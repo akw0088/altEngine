@@ -21,6 +21,7 @@ uniform vec4		u_position[MAX_LIGHTS]; // light position, world coordinates
 uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform float		u_ambient;
+uniform float		u_lightmap;
 uniform mat4		mvp;
 
 uniform vec2		u_tcmod_scroll0;
@@ -86,7 +87,10 @@ void main(void)
 	mat3 tangent_space = mat3(normal, bitangent,  tangent);
 
 	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
-	vec3 ambient = vec3(u_ambient, u_ambient, u_ambient);
+	vec3 ambient;
+	ambient.x = max(u_lightmap, u_ambient);
+	ambient.y = max(u_lightmap, u_ambient);
+	ambient.z = max(u_lightmap, u_ambient);
 	vec3 light = vec3(0.0f, 0.0f, 0.0f);
 
 	// scale and bias parallax effect
@@ -130,7 +134,7 @@ void main(void)
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment0.a * Fragment1.a  * Fragment2.a  * Fragment3.a;
 //	Fragment.a = 1.0;
-	Fragment.xyz += texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
+	Fragment.xyz += vec3(u_lightmap * 0.5, u_lightmap * 0.5, u_lightmap * 0.5) * texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
 	Fragment.xyz += Fragment0.xyz * 0.75;
 	Fragment.xyz += Fragment1.xyz;
 	Fragment.xyz += Fragment2.xyz;
@@ -161,5 +165,6 @@ void main(void)
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
+	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
 	Fragment.rgb *= max(light, ambient);
 }
