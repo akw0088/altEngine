@@ -197,18 +197,6 @@ void Engine::init(void *p1, void *p2)
 		}
 	}
 
-	for (unsigned int i = 0; i < surface_list.size(); i++)
-	{
-		if (strcmp(surface_list[i]->name, "textures/base_floor/pjgrate1") == 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-		else if (strcmp(surface_list[i]->name, "textures/base_floor/pjgrate2") == 0)
-		{
-			surface_list[i]->num_stage = 1;
-		}
-	}
-
 	printf("Done\n");
 
 #ifndef DIRECTX
