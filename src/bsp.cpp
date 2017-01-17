@@ -601,7 +601,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 #ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
-				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+				gfx.SelectTexture(10, lightmap_object[face->lightmap]);
 #endif
 		}
 		else
@@ -613,7 +613,16 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 	gfx.SelectTexture(9, normal_object[face->material]);
 #endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
-	gfx.SelectTexture(stage, 0);
+	if (lightmap)
+	{
+#ifdef LIGHTMAP
+		gfx.SelectTexture(10, 0);
+#endif
+	}
+	else
+	{
+		gfx.SelectTexture(stage, 0);
+	}
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap)
@@ -648,7 +657,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 #ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
-				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+				gfx.SelectTexture(10, lightmap_object[face->lightmap]);
 #endif
 		}
 		else
@@ -684,7 +693,16 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		//patchdata[mesh_index + i].num_verts);
 		
 	}
-	gfx.SelectTexture(stage, 0);
+	if (lightmap)
+	{
+#ifdef LIGHTMAP
+		gfx.SelectTexture(10, 0);
+#endif
+	}
+	else
+	{
+		gfx.SelectTexture(stage, 0);
+	}
 }
 
 inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap)
@@ -696,7 +714,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 #ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
-				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+				gfx.SelectTexture(10, lightmap_object[face->lightmap]);
 #endif
 		}
 		else
@@ -710,7 +728,16 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
-	gfx.SelectTexture(stage, 0);
+	if (lightmap)
+	{
+#ifdef LIGHTMAP
+		gfx.SelectTexture(10, 0);
+#endif
+	}
+	else
+	{
+		gfx.SelectTexture(stage, 0);
+	}
 }
 
 void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position)
