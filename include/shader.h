@@ -35,14 +35,16 @@ private:
 
 // Max lights hardware can pass through shaders, gfx card specfic
 #define MAX_LIGHTS 64
+#define AMBIENT_LIGHT 0.125f
 
 class mLight2 : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, float ambient = AMBIENT_LIGHT);
 	virtual void prelink(void);
 
+	void set_light(float ambient, int num_light);
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
 	void tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index);
@@ -50,12 +52,15 @@ public:
 	void tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num, int index);
 	void tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num, int index);
 	void tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num, int index);
+	
 
 	void tcmod_scroll(vec2 &scroll, int index);
 	void tcmod_scale(vec2 &scale, int index);
 	void tcmod_rotate(float deg, int index);
 
 
+	int m_num_light;
+	float m_ambient;
 private:
 	int matrix;
 	int	texture0;
@@ -107,6 +112,7 @@ private:
 	int u_tcmod_cos7;
 
 
+	int u_ambient;
 	int u_num_lights;
 	int u_position;
 	int u_color;

@@ -20,6 +20,7 @@ out vec4 Fragment;
 uniform vec4		u_position[MAX_LIGHTS]; // light position, world coordinates
 uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
+uniform float		u_ambient;
 uniform mat4		mvp;
 
 uniform vec2		u_tcmod_scroll0;
@@ -85,7 +86,7 @@ void main(void)
 	mat3 tangent_space = mat3(normal, bitangent,  tangent);
 
 	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
-	vec3 ambient = vec3(0.125f, 0.125f, 0.125f);
+	vec3 ambient = vec3(u_ambient, u_ambient, u_ambient);
 	vec3 light = vec3(0.0f, 0.0f, 0.0f);
 
 	// scale and bias parallax effect

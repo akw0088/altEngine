@@ -185,6 +185,7 @@ int mLight2::init(Graphics *gfx)
 	u_tcmod_cos6 = glGetUniformLocation(program_handle, "u_tcmod_cos6");
 	u_tcmod_cos7 = glGetUniformLocation(program_handle, "u_tcmod_cos7");
 
+	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
@@ -205,7 +206,7 @@ void mLight2::prelink()
 }
 
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset)
+void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, float ambient)
 {
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
@@ -287,11 +288,23 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
-	
+
+	glUniform1f(u_ambient, ambient);
 	glUniform1i(u_num_lights, j);
 	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
+
+	m_num_light = j;
+	m_ambient = ambient;
 #endif
+}
+
+void mLight2::set_light(float ambient, int num_light)
+{
+	glUniform1i(u_num_lights, num_light);
+	glUniform1f(u_ambient, ambient);
+	m_num_light = num_light;
+	m_ambient = ambient;
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
