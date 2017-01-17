@@ -1440,7 +1440,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
-		lightmap_object[i] = gfx.LoadTexture(128, 128, 3, GL_RGB, (void *)&(data.LightMaps[i].image), false);
+		lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
 #else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);
