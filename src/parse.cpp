@@ -1268,14 +1268,11 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 	char		stagecmd[512] = { 0 };
 	int			old_pos = 0;
 	int			num_stage = 0;
-//	int			num_cmd = 0;
 	int			j = 0;
 	const int	length = strlen(input);
 	char		state = 'S';
 	char		prevstate = 'S';
-//	static int max_stage = 0;
 
-	//        printf("%s\n", input);
 
 	surface_t *surface = new surface_t;
 	memset(surface, 0, sizeof(surface_t));
@@ -1326,7 +1323,6 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'C':
 			if (prevstate == 'S')
 			{
-//				surface->num_stage++;
 				surface = new surface_t;
 				memset(surface, 0, sizeof(surface_t));
 				sprintf(surface->file, "%s",  filename);
@@ -1336,37 +1332,22 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				memset(surface->name, 0, sizeof(surface->name));
 				memcpy(surface->name, &input[old_pos + 1], i - old_pos - 1);
 				surface->name[i - old_pos - 2] = '\0';
-				//printf("name is [%s]\n", name);
 				old_pos = i;
-				//max_stage = MAX(max_stage, num_stage);
 				num_stage = 0;
-//				num_cmd = 0;
 				j = 0;
 			}
 			break;
 		case 'F':
 			if (input[i] == '\n' && input[i - 1] != '{')
 			{
-//				int size = strlen(basecmd) + 1;
 				basecmd[j++] = '\0';
-//				printf("basecmd is [%s]\n", basecmd);
-//				surface->cmd[num_cmd] = new char[size];
-//				memset(surface->cmd[num_cmd], 0, size);
-//				memcpy(surface->cmd[num_cmd], basecmd, size);
 				handle_command(basecmd, surface);
-//				surface->num_cmd++;
-//				num_cmd++;
 				old_pos = i;
 				j = 0;
 			}
 			if (input[i - 1] == '{')
 			{
 				j = 0;
-			}
-			if (input[i - 1] == '}')
-			{
-//				surface->num_stage++;
-//				num_stage++;
 			}
 
 			if (input[i] != '\n' && input[i] != '{' && input[i-1] != '{' && input[i] != '\t')
@@ -1375,14 +1356,8 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'I':
 			if (input[i] == '\n' && input[i - 1] != '{')
 			{
-//				int size = strlen(stagecmd) + 1;
-//				printf("stagecmd is [%s] stage_num is %d\n", stagecmd, stage_num);
-//				surface->stage[stage_num].stage = new char[size];
-//				memset(surface->stage[stage_num].stage, 0, size);
-//				memcpy(surface->stage[stage_num].stage, &input[old_pos + 1], i - old_pos - 1);
 				memcpy(stagecmd, &input[old_pos + 1], i - old_pos - 1);
 				stagecmd[i - old_pos - 2] = '\0';
-
 
 				if (strstr(stagecmd, "{") != NULL)
 				{
@@ -1405,7 +1380,6 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		}
 	}
 
-//	printf("max_stage is %d\n", max_stage);
 }
 
 void push(char input, char *stack, int &sp)
