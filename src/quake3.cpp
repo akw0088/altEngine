@@ -1371,6 +1371,7 @@ void Quake3::handle_grenade(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
 	projectile->rigid->gravity = true;
 	projectile->rigid->rotational_friction_flag = true;
+	projectile->rigid->translational_friction = 0.9f;
 	//entity->rigid->set_target(*(entity_list[spawn]));
 
 	projectile->num_particle = 5000;

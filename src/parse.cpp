@@ -1135,8 +1135,6 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			printf("Unsupported blendfunc %s\n", ret);
 		}
-
-
 	}
 	else if (strstr(stagecmd, "alphafunc"))
 	{
@@ -1150,6 +1148,13 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		else
 			printf("Unsupported alpha func %s\n", stagecmd);
 
+	}
+	else if (strstr(stagecmd, "skyparms"))
+	{
+		char farbox[256];
+		char cloudheight[64];
+		char nearbox[64];
+		sscanf(stagecmd, "skyparms %s %s %s", &farbox[0], &cloudheight[0], &nearbox[0]);
 	}
 	else if (strstr(stagecmd, "depthwrite"))
 	{
