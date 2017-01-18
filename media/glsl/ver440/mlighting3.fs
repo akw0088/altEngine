@@ -134,7 +134,6 @@ void main(void)
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment0.a * Fragment1.a  * Fragment2.a  * Fragment3.a;
 //	Fragment.a = 1.0;
-	Fragment.xyz += vec3(u_lightmap * 0.5, u_lightmap * 0.5, u_lightmap * 0.5) * texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
 	Fragment.xyz += Fragment0.xyz * 0.75;
 	Fragment.xyz += Fragment1.xyz;
 	Fragment.xyz += Fragment2.xyz;
@@ -159,12 +158,17 @@ void main(void)
 		vec3 n_light = tangent_space * v_light; // light vector in tangent space
 
 		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
-		float atten = min( u_position[i].a * 80000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
+		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
 		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
 	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
+	vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
+
+
+	if (lightmap.r + lightmap.g + lightmap.b > 0.001)
+		Fragment.xyz *= lightmap;
 	Fragment.rgb *= max(light, ambient);
 }
