@@ -354,14 +354,14 @@ void Quake3::init(Engine *altEngine)
 	icon.scale = 5.0f;
 	icon_list.push_back(icon);
 
-	#define ICON_F_GRENADEL 43
+	#define ICON_F_GRENADE 43
 	sprintf(icon.filename, "media/models/weapons2/grenadel/f_grenadel.jpg");
 	icon.x = 0.125f; // positive right from center
 	icon.y = 0.0f; // positive up from center
 	icon.scale = 5.0f;
 	icon_list.push_back(icon);
 
-	#define ICON_F_ROCKETL 44
+	#define ICON_F_ROCKET 44
 	sprintf(icon.filename, "media/models/weapons2/rocketl/f_rocketl.jpg");
 	icon.x = 0.125f; // positive right from center
 	icon.y = 0.0f; // positive up from center
@@ -2108,8 +2108,31 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 
 			player.state = PLAYER_ATTACK;
 			player.stats.shots++;
-			
 
+			switch (player.current_weapon)
+			{
+			case wp_machinegun:
+				draw_icon(1.0, ICON_F_MACHINEGUN);
+				break;
+			case wp_shotgun:
+				draw_icon(1.0, ICON_F_SHOTGUN);
+				break;
+			case wp_grenade:
+				draw_icon(1.0, ICON_F_GRENADE);
+				break;
+			case wp_rocket:
+				draw_icon(1.0, ICON_F_ROCKET);
+				break;
+			case wp_railgun:
+				draw_icon(1.0, ICON_F_RAILGUN);
+				break;
+			case wp_lightning:
+				draw_icon(1.0, ICON_F_LIGHTNING);
+				break;
+			case wp_plasma:
+				draw_icon(1.0, ICON_F_PLASMA);
+				break;
+			}
 			if (player.current_weapon & WEAPON_LIGHTNING)
 			{
 				if (once == false)
