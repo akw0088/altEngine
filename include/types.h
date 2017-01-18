@@ -172,6 +172,7 @@ typedef struct
 	bool escape;
 	bool duck;
 	bool control;
+	bool pickup;
 	bool moveup;
 	bool moveleft;
 	bool movedown;

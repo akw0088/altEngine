@@ -533,6 +533,29 @@ void Quake3::handle_player(int self)
 	if (last_tick > 0)
 		last_tick--;
 
+	if (engine->input.pickup)
+	{
+		int item = -1;
+		float min_distance = FLT_MAX;
+
+		for(int i = 0; i < engine->entity_list.size(); i++)
+		{
+			if (engine->entity_list[i]->rigid == NULL)
+				continue;
+
+
+			float distance = FLT_MAX;
+			distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
+
+			if (distance < min_distance)
+			{
+				min_distance = distance;
+				item = i;
+			}
+		}
+		engine->entity_list[item]->rigid->seek( engine->camera_frame.pos );
+	}
+
 	if (engine->input.control)
 	{
 		deselected = !deselected;

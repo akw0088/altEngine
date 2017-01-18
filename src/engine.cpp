@@ -2417,6 +2417,7 @@ void Engine::bind_keys()
 	{
 		key_bind.insert("enter", "jump");
 		key_bind.insert("space", "jump");
+		key_bind.insert("alt", "pickup");
 		key_bind.insert("leftbutton", "attack");
 		key_bind.insert("middlebutton", "use");
 		key_bind.insert("rightbutton", "zoom");
