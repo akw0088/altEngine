@@ -77,6 +77,7 @@ public:
 	void load_md5();
 	void find_path(int *&path, int &path_length, int start_path, int end_path);
 	void zoom(float level);
+	void reload_shaders();
 
 	unsigned int xres, yres;
 	unsigned int tick_num;

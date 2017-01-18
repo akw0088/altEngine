@@ -3534,3 +3534,15 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 	}
 
 }
+
+void Engine::reload_shaders()
+{
+	mlight2.destroy();
+	mlight2.init(&gfx);
+	global.destroy();
+	global.init(&gfx);
+	particle_update.destroy();
+	particle_update.init(&gfx);
+	particle_render.destroy();
+	particle_render.init(&gfx);	
+}
