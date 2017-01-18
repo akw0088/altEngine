@@ -340,6 +340,58 @@ void Quake3::init(Engine *altEngine)
 	icon.scale = 1.0f;
 	icon_list.push_back(icon);
 
+	#define ICON_F_MACHINEGUN 41
+	sprintf(icon.filename, "media/models/weapons2/machinegun/f_machinegun.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_F_SHOTGUN 42
+	sprintf(icon.filename, "media/models/weapons2/shotgun/f_shotgun.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_F_GRENADEL 43
+	sprintf(icon.filename, "media/models/weapons2/grenadel/f_grenadel.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_F_ROCKETL 44
+	sprintf(icon.filename, "media/models/weapons2/rocketl/f_rocketl.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_F_PLASMA 45
+	sprintf(icon.filename, "media/models/weapons2/plasma/f_plasma.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_F_LIGHTNING 46
+	sprintf(icon.filename, "media/models/weapons2/lightning/f_lightning.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+	#define ICON_F_RAILGUN 47
+	sprintf(icon.filename, "media/models/weapons2/railgun/f_railgun.jpg");
+	icon.x = 0.125f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon.scale = 5.0f;
+	icon_list.push_back(icon);
+
+
+
+
 	create_icon();
 
 }
