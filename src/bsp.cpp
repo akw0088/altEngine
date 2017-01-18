@@ -1517,17 +1517,17 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 		float a2 = (float)i / level;
 		float b2 = 1.0f - a2;
 
-		vertex_t temp[3];
+		vec3 temp[3];
 
-		temp[0].position = 
+		temp[0] = 
 			control[0].position * (b2 * b2) + 
 			control[1].position * (2 * b2 * a2) + 
 			control[2].position * (a2 * a2);
-		temp[1].position = 
+		temp[1] = 
 			control[3].position * (b2 * b2) + 
 			control[4].position * (2 * b2 * a2) + 
 			control[5].position * (a2 * a2);
-		temp[2].position = 
+		temp[2] = 
 			control[6].position * (b2 * b2) + 
 			control[7].position * (2 * b2 * a2) + 
 			control[8].position * (a2 * a2);
@@ -1538,9 +1538,9 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 			float b3 = 1.0f - a3;
 
 			(*vertex_array)[i * num_verts + j].position =
-				temp[0].position * (b3 * b3) +
-				temp[1].position * (2 * b3 * a3) +
-				temp[2].position * (a3 * a3);
+				temp[0] * (b3 * b3) +
+				temp[1] * (2 * b3 * a3) +
+				temp[2] * (a3 * a3);
 		}
 	}
 	
@@ -1577,7 +1577,6 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 
 			(*vertex_array)[i * num_verts + j].texCoord1.x = size.x * i * (1.0f / level) + lightcoord.x;
 			(*vertex_array)[i * num_verts + j].texCoord1.y = size.y * j * (1.0f / level) + lightcoord.y;
-
 
 			(*vertex_array)[i * num_verts + j].tangent.x = a.x;
 			(*vertex_array)[i * num_verts + j].tangent.y = a.y;
