@@ -533,10 +533,31 @@ void Quake3::handle_player(int self)
 	if (last_tick > 0)
 		last_tick--;
 
+	if (engine->input.control)
+	{
+		deselected = !deselected;
+
+		if (deselected == false)
+		{
+			float min_distance = FLT_MAX;
+			for(int i = 0; i < engine->num_player; i++)
+			{
+				float distance = FLT_MAX;
+
+				distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
+
+				if (distance < min_distance)
+				{
+					min_distance = distance;
+					self = i;
+				}
+			}
+		}
+	}
 
 	if (entity->player->health > 0)
 	{
-		if (engine->input.control == false)
+		if (deselected == false)
 		{
 			// True if jumped
 			if (engine->input.moveup || engine->input.movedown || engine->input.moveleft || engine->input.moveright)
@@ -994,7 +1015,7 @@ void Quake3::step(int frame_step)
 
 	if (engine->menu.ingame == false && engine->menu.console == false)
 	{
-		if (engine->input.control == true)
+		if (deselected == true)
 		{
 			engine->camera_frame.update(engine->input);
 		}
