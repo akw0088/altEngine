@@ -186,8 +186,15 @@ void Bsp::generate_meshes(Graphics &gfx)
 				patchdata[mesh_index].num_mesh = num_patch;
 				patchdata[mesh_index].facevert = face->vertex;
 
+				vec2 lightmap(face->lightmapX / 128.0f, face->lightmapY / 128.0f);
+				vec2 size(face->lightmapWidth / 128.0f, face->lightmapHeight / 128.0f);
+
 				//tessellate_quadratic_bezier_surface(control, patchdata[mesh_index].vertex_array, patchdata[mesh_index].index_array, patchdata[mesh_index].num_verts, patchdata[mesh_index].num_indexes, mesh_level);
-				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, &patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes, data.Vert[face->vertex].texCoord0);
+				tessellate(mesh_level, controlpoint, &patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts,
+					&patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes,
+					data.Vert[face->vertex].texCoord0,
+					lightmap,
+					size);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
 				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
 				delete[] patchdata[mesh_index].vertex_array;
@@ -645,6 +652,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		if (lightmap)
 		{
 #ifdef LIGHTMAP
+
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
 				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
@@ -1482,7 +1490,8 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	This function assumes it's given 3x3 set of control points
 	hacky fix for cylindrical patches and U patches in calling function
 */
-void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts, int **index_array, int &num_indexes, vec2 &texcoord)
+void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts,
+	int **index_array, int &num_indexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size)
 {
 	vec3 a, b;
 	int i, j;
@@ -1563,9 +1572,13 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 				b = (*vertex_array)[i * num_verts + j].position - (*vertex_array)[(i - 1) * num_verts + j].position;
 
 			(*vertex_array)[i * num_verts + j].color = -1;
-			(*vertex_array)[i * num_verts + j].texCoord0 = vec2((float)(i % 2), (float)(j % 2));
 			(*vertex_array)[i * num_verts + j].texCoord0.x = i * (1.0f / level) + texcoord.x;
-			(*vertex_array)[i * num_verts + j].texCoord0.y = j * (-1.0f / level) + texcoord.y;
+			(*vertex_array)[i * num_verts + j].texCoord0.y = -(j * (1.0f / level) + texcoord.y);
+
+			(*vertex_array)[i * num_verts + j].texCoord1.x = size.x * i * (1.0f / level) + lightcoord.x;
+			(*vertex_array)[i * num_verts + j].texCoord1.y = size.y * j * (1.0f / level) + lightcoord.y;
+
+
 			(*vertex_array)[i * num_verts + j].tangent.x = a.x;
 			(*vertex_array)[i * num_verts + j].tangent.y = a.y;
 			(*vertex_array)[i * num_verts + j].tangent.z = a.z;
