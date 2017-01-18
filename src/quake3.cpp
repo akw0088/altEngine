@@ -1665,6 +1665,17 @@ void Quake3::handle_machinegun(Player &player, int self)
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
+
+	Entity *shell = engine->entity_list[engine->get_entity()];
+	shell->rigid = new RigidBody(shell);
+	shell->position = camera_frame.pos;
+	shell->rigid->clone(*(engine->ball->model));
+	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
+	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
+	shell->rigid->gravity = true;
+	shell->model = shell->rigid;
+	camera_frame.set(shell->model->morientation);
+
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
 
 	float quad_factor = 1.0f;
@@ -1737,6 +1748,26 @@ void Quake3::handle_shotgun(Player &player, int self)
 	muzzleflash->light->attenuation = 0.125f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+
+	Entity *shell = engine->entity_list[engine->get_entity()];
+	shell->rigid = new RigidBody(shell);
+	shell->position = camera_frame.pos;
+	shell->rigid->clone(*(engine->ball->model));
+	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
+	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
+	shell->rigid->gravity = true;
+	shell->model = shell->rigid;
+	camera_frame.set(shell->model->morientation);
+
+	Entity *shell2 = engine->entity_list[engine->get_entity()];
+	shell2->rigid = new RigidBody(shell2);
+	shell2->position = camera_frame.pos;
+	shell2->rigid->clone(*(engine->ball->model));
+	shell2->rigid->velocity = vec3(0.25f, 0.5f, 0.0f);
+	shell2->rigid->angular_velocity = vec3(-1.0, 2.0, -3.0);
+	shell2->rigid->gravity = true;
+	shell2->model = shell2->rigid;
+	camera_frame.set(shell2->model->morientation);
 
 	float quad_factor = 1.0f;
 
