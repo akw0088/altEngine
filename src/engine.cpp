@@ -1872,13 +1872,13 @@ void Engine::check_triggers(int self)
 		if (entity_list[i]->trigger->owner != -1 &&  entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && q3.gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
-		if (strcmp(entity_list[i]->type, "blue_flag") == 0)
+		if (strcmp(entity_list[i]->type, "team_CTF_blue_flag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_BLUE)
 				continue;
 		}
 
-		if (strcmp(entity_list[i]->type, "red_flag") == 0)
+		if (strcmp(entity_list[i]->type, "team_CTF_red_flag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_RED)
 				continue;
