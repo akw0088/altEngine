@@ -1068,13 +1068,15 @@ void Quake3::step(int frame_step)
 			}
 			else
 			{
-				sprintf(engine->entity_list[engine->find_type("player", 0)]->type, "spectator");
+				int player = engine->find_type("player", 0);
+
+				sprintf(engine->entity_list[player]->type, "spectator");
 			}
 		}
 		else
 		{
 			if (spectator_timer > 0)
-			spectator_timer--;
+				spectator_timer--;
 		}
 
 
@@ -1703,7 +1705,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
-	shell->rigid->clone(*(engine->ball->model));
+	shell->rigid->clone(*(engine->bullet->model));
 	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
 	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
 	shell->rigid->gravity = true;
@@ -1789,7 +1791,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
-	shell->rigid->clone(*(engine->ball->model));
+	shell->rigid->clone(*(engine->shell->model));
 	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
 	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
 	shell->rigid->gravity = true;
@@ -1803,7 +1805,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
 	shell2->rigid = new RigidBody(shell2);
 	shell2->position = camera_frame.pos;
-	shell2->rigid->clone(*(engine->ball->model));
+	shell2->rigid->clone(*(engine->shell->model));
 	shell2->rigid->velocity = vec3(0.25f, 0.5f, 0.0f);
 	shell2->rigid->rotational_friction_flag = true;
 	shell2->rigid->translational_friction_flag = true;
@@ -1872,6 +1874,28 @@ void Quake3::handle_gibs(Player &player)
 
 	player.entity->rigid->velocity += vec3(0.5f, 3.0f, 1.2f);
 
+
+	{
+		Entity *entity0 = engine->entity_list[engine->get_entity()];
+		entity0->rigid = new RigidBody(entity0);
+		entity0->model = entity0->rigid;
+		entity0->position = camera_frame.pos;
+		camera_frame.set(entity0->model->morientation);
+
+		entity0->rigid->clone(*(engine->gib0->model));
+		entity0->rigid->velocity = vec3(2.0f, 1.2f, 1.6f);
+		entity0->rigid->angular_velocity = vec3(3.0f, 1.0f, 2.2f);
+		entity0->rigid->gravity = true;
+		entity0->rigid->rotational_friction_flag = true;
+
+		entity0->trigger = new Trigger(entity0, engine->audio);
+		sprintf(entity0->trigger->explode_sound, "sound/player/gibimp1.wav");
+		sprintf(entity0->trigger->action, "gib0 impact");
+		entity0->trigger->idle = true;
+		entity0->trigger->idle_timer = 3 * TICK_RATE;
+		entity0->trigger->explode = false;
+	}
+
 	{
 		Entity *entity1 = engine->entity_list[engine->get_entity()];
 		entity1->rigid = new RigidBody(entity1);
@@ -1879,10 +1903,10 @@ void Quake3::handle_gibs(Player &player)
 		entity1->position = camera_frame.pos;
 		camera_frame.set(entity1->model->morientation);
 
-		entity1->rigid->clone(*(engine->box->model));
+		entity1->rigid->clone(*(engine->gib1->model));
 		//entity->rigid->clone(*(pineapple->model));
-		entity1->rigid->velocity = vec3(2.0f, 1.2f, -1.2f);
-		entity1->rigid->angular_velocity = vec3(5.0f, 3.0f, 2.f);
+		entity1->rigid->velocity = vec3(0.8f, 1.2f, -1.2f);
+		entity1->rigid->angular_velocity = vec3(1.0f, 1.6f, 2.0f);
 		entity1->rigid->gravity = true;
 		entity1->rigid->rotational_friction_flag = true;
 
@@ -1890,7 +1914,7 @@ void Quake3::handle_gibs(Player &player)
 		sprintf(entity1->trigger->explode_sound, "sound/player/gibimp1.wav");
 		sprintf(entity1->trigger->action, "gib1 impact");
 		entity1->trigger->idle = true;
-		entity1->trigger->idle_timer = 0;
+		entity1->trigger->idle_timer = 3 * TICK_RATE;
 		entity1->trigger->explode = false;
 	}
 
@@ -1902,10 +1926,10 @@ void Quake3::handle_gibs(Player &player)
 		entity2->position = camera_frame.pos;
 		camera_frame.set(entity2->model->morientation);
 
-		entity2->rigid->clone(*(engine->box->model));
+		entity2->rigid->clone(*(engine->gib2->model));
 		//entity->rigid->clone(*(pineapple->model));
 		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
-		entity2->rigid->angular_velocity = vec3(-5.0f, -1.0f, 6.0f);
+		entity2->rigid->angular_velocity = vec3(-2.0f, 1.0f, 6.0f);
 		entity2->rigid->gravity = true;
 		entity2->rigid->rotational_friction_flag = true;
 
@@ -1913,7 +1937,7 @@ void Quake3::handle_gibs(Player &player)
 		sprintf(entity2->trigger->explode_sound, "sound/player/gibimp2.wav");
 		sprintf(entity2->trigger->action, "gib2 impact");
 		entity2->trigger->idle = true;
-		entity2->trigger->idle_timer = 0;
+		entity2->trigger->idle_timer = 3 * TICK_RATE;
 		entity2->trigger->explode = false;
 	}
 
@@ -1925,7 +1949,7 @@ void Quake3::handle_gibs(Player &player)
 		entity3->position = camera_frame.pos;
 		camera_frame.set(entity3->model->morientation);
 
-		entity3->rigid->clone(*(engine->box->model));
+		entity3->rigid->clone(*(engine->gib3->model));
 		//entity->rigid->clone(*(pineapple->model));
 		entity3->rigid->velocity = vec3(-2.0f, 3.2f, 1.2f);
 		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
@@ -1936,10 +1960,143 @@ void Quake3::handle_gibs(Player &player)
 		sprintf(entity3->trigger->explode_sound, "sound/player/gibimp3.wav");
 		sprintf(entity3->trigger->action, "gib3 impact");
 		entity3->trigger->idle = true;
-		entity3->trigger->idle_timer = 0;
+		entity3->trigger->idle_timer = 3 * TICK_RATE;
 		entity3->trigger->explode = false;
 	}
 
+	{
+		Entity *entity4 = engine->entity_list[engine->get_entity()];
+
+		entity4->rigid = new RigidBody(entity4);
+		entity4->model = entity4->rigid;
+		entity4->position = camera_frame.pos;
+		camera_frame.set(entity4->model->morientation);
+
+		entity4->rigid->clone(*(engine->gib4->model));
+		//entity->rigid->clone(*(pineapple->model));
+		entity4->rigid->velocity = vec3(-1.25f, 1.7f, 1.27f);
+		entity4->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity4->rigid->gravity = true;
+		entity4->rigid->rotational_friction_flag = true;
+
+		entity4->trigger = new Trigger(entity4, engine->audio);
+		sprintf(entity4->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity4->trigger->action, "gib4 impact");
+		entity4->trigger->idle = true;
+		entity4->trigger->idle_timer = 3 * TICK_RATE;
+		entity4->trigger->explode = false;
+	}
+
+	{
+		Entity *entity5 = engine->entity_list[engine->get_entity()];
+
+		entity5->rigid = new RigidBody(entity5);
+		entity5->model = entity5->rigid;
+		entity5->position = camera_frame.pos;
+		camera_frame.set(entity5->model->morientation);
+
+		entity5->rigid->clone(*(engine->gib5->model));
+		entity5->rigid->velocity = vec3(-1.45f, 3.7f, 1.72f);
+		entity5->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity5->rigid->gravity = true;
+		entity5->rigid->rotational_friction_flag = true;
+
+		entity5->trigger = new Trigger(entity5, engine->audio);
+		sprintf(entity5->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity5->trigger->action, "gib5 impact");
+		entity5->trigger->idle = true;
+		entity5->trigger->idle_timer = 3 * TICK_RATE;
+		entity5->trigger->explode = false;
+	}
+
+	{
+		Entity *entity6 = engine->entity_list[engine->get_entity()];
+
+		entity6->rigid = new RigidBody(entity6);
+		entity6->model = entity6->rigid;
+		entity6->position = camera_frame.pos;
+		camera_frame.set(entity6->model->morientation);
+
+		entity6->rigid->clone(*(engine->gib6->model));
+		entity6->rigid->velocity = vec3(-1.15f, 1.7f, 1.37f);
+		entity6->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity6->rigid->gravity = true;
+		entity6->rigid->rotational_friction_flag = true;
+
+		entity6->trigger = new Trigger(entity6, engine->audio);
+		sprintf(entity6->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity6->trigger->action, "gib6 impact");
+		entity6->trigger->idle = true;
+		entity6->trigger->idle_timer = 3 * TICK_RATE;
+		entity6->trigger->explode = false;
+	}
+
+	{
+		Entity *entity7 = engine->entity_list[engine->get_entity()];
+
+		entity7->rigid = new RigidBody(entity7);
+		entity7->model = entity7->rigid;
+		entity7->position = camera_frame.pos;
+		camera_frame.set(entity7->model->morientation);
+
+		entity7->rigid->clone(*(engine->gib7->model));
+		entity7->rigid->velocity = vec3(-1.45f, 2.34f, 1.27f);
+		entity7->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity7->rigid->gravity = true;
+		entity7->rigid->rotational_friction_flag = true;
+
+		entity7->trigger = new Trigger(entity7, engine->audio);
+		sprintf(entity7->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity7->trigger->action, "gib7 impact");
+		entity7->trigger->idle = true;
+		entity7->trigger->idle_timer = 3 * TICK_RATE;
+		entity7->trigger->explode = false;
+	}
+
+	{
+		Entity *entity8 = engine->entity_list[engine->get_entity()];
+
+		entity8->rigid = new RigidBody(entity8);
+		entity8->model = entity8->rigid;
+		entity8->position = camera_frame.pos;
+		camera_frame.set(entity8->model->morientation);
+
+		entity8->rigid->clone(*(engine->gib8->model));
+		//entity->rigid->clone(*(pineapple->model));
+		entity8->rigid->velocity = vec3(-1.85f, 1.73f, 2.32f);
+		entity8->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity8->rigid->gravity = true;
+		entity8->rigid->rotational_friction_flag = true;
+
+		entity8->trigger = new Trigger(entity8, engine->audio);
+		sprintf(entity8->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity8->trigger->action, "gib8 impact");
+		entity8->trigger->idle = true;
+		entity8->trigger->idle_timer = 3 * TICK_RATE;
+		entity8->trigger->explode = false;
+	}
+
+	{
+		Entity *entity9 = engine->entity_list[engine->get_entity()];
+
+		entity9->rigid = new RigidBody(entity9);
+		entity9->model = entity9->rigid;
+		entity9->position = camera_frame.pos;
+		camera_frame.set(entity9->model->morientation);
+
+		entity9->rigid->clone(*(engine->gib9->model));
+		entity9->rigid->velocity = vec3(1.45f, 1.27f, -1.2f);
+		entity9->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
+		entity9->rigid->gravity = true;
+		entity9->rigid->rotational_friction_flag = true;
+
+		entity9->trigger = new Trigger(entity9, engine->audio);
+		sprintf(entity9->trigger->explode_sound, "sound/player/gibimp3.wav");
+		sprintf(entity9->trigger->action, "gib9 impact");
+		entity9->trigger->idle = true;
+		entity9->trigger->idle_timer = 3 * TICK_RATE;
+		entity9->trigger->explode = false;
+	}
 
 }
 

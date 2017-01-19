@@ -100,6 +100,19 @@ public:
 	Entity *thug22;
 	Entity *rocket;
 	Entity *pineapple;
+	Entity *shell;
+	Entity *bullet;
+	Entity *gib0;
+	Entity *gib1;
+	Entity *gib2;
+	Entity *gib3;
+	Entity *gib4;
+	Entity *gib5;
+	Entity *gib6;
+	Entity *gib7;
+	Entity *gib8;
+	Entity *gib9;
+
 
 
 //console flags

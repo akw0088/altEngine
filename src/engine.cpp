@@ -146,6 +146,69 @@ void Engine::init(void *p1, void *p2)
 	pineapple->model = pineapple->rigid;
 	pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
 
+	shell = new Entity();
+	shell->rigid = new RigidBody(shell);
+	shell->model = shell->rigid;
+	shell->model->load(gfx, "media/models/weapons2/shells/s_shell");
+
+	bullet = new Entity();
+	bullet->rigid = new RigidBody(bullet);
+	bullet->model = bullet->rigid;
+	bullet->model->load(gfx, "media/models/weapons2/shells/s_bullet");
+
+
+	gib0 = new Entity();
+	gib0->rigid = new RigidBody(gib0);
+	gib0->model = gib0->rigid;
+	gib0->model->load(gfx, "media/models/gibs/abdomen");
+
+	gib1 = new Entity();
+	gib1->rigid = new RigidBody(gib1);
+	gib1->model = gib1->rigid;
+	gib1->model->load(gfx, "media/models/gibs/arm");
+
+	gib2 = new Entity();
+	gib2->rigid = new RigidBody(gib2);
+	gib2->model = gib2->rigid;
+	gib2->model->load(gfx, "media/models/gibs/brain");
+
+	gib3 = new Entity();
+	gib3->rigid = new RigidBody(gib3);
+	gib3->model = gib3->rigid;
+	gib3->model->load(gfx, "media/models/gibs/chest");
+
+	gib4 = new Entity();
+	gib4->rigid = new RigidBody(gib4);
+	gib4->model = gib4->rigid;
+	gib4->model->load(gfx, "media/models/gibs/fist");
+
+	gib5 = new Entity();
+	gib5->rigid = new RigidBody(gib5);
+	gib5->model = gib5->rigid;
+	gib5->model->load(gfx, "media/models/gibs/foot");
+
+	gib6 = new Entity();
+	gib6->rigid = new RigidBody(gib6);
+	gib6->model = gib6->rigid;
+	gib6->model->load(gfx, "media/models/gibs/forearm");
+
+	gib7 = new Entity();
+	gib7->rigid = new RigidBody(gib7);
+	gib7->model = gib7->rigid;
+	gib7->model->load(gfx, "media/models/gibs/intestine");
+
+	gib8 = new Entity();
+	gib8->rigid = new RigidBody(gib8);
+	gib8->model = gib8->rigid;
+	gib8->model->load(gfx, "media/models/gibs/leg");
+
+	gib9 = new Entity();
+	gib9->rigid = new RigidBody(gib9);
+	gib9->model = gib9->rigid;
+	gib9->model->load(gfx, "media/models/gibs/skull");
+
+
+
 	global.init(&gfx);
 
 	q3.init(this);
@@ -2911,21 +2974,35 @@ void Engine::load_model(Entity &ent)
 	else if (strcmp(ent.type, "ammo_shells") == 0)
 	{
 		debugf("Loading ammo_shells\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_shells");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_rockets") == 0)
 	{
 		debugf("Loading ammo_rockets\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "ammo_lightning") == 0)
 	{
-		debugf("Loading ammo_rockets\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo");
+		debugf("Loading ammo_lightning\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_slugs") == 0)
+	{
+		debugf("Loading ammo_slugs\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_bullets") == 0)
+	{
+		debugf("Loading ammo_bullets\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
@@ -2940,6 +3017,55 @@ void Engine::load_model(Entity &ent)
 	{
 		debugf("Loading item_armor_body\n");
 		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_quad") == 0)
+	{
+		debugf("Loading item_quad\n");
+		ent.model->load(gfx, "media/models/powerups/instant/quad");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_regen") == 0)
+	{
+		debugf("Loading item_regen\n");
+		ent.model->load(gfx, "media/models/powerups/instant/regen");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_invis") == 0)
+	{
+		debugf("Loading item_invis\n");
+		ent.model->load(gfx, "media/models/powerups/instant/invis");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_flight") == 0)
+	{
+		debugf("Loading item_flight\n");
+		ent.model->load(gfx, "media/models/powerups/instant/flight");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_haste") == 0)
+	{
+		debugf("Loading item_flight\n");
+		ent.model->load(gfx, "media/models/powerups/instant/flight");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "holdable_medkit") == 0)
+	{
+		debugf("Loading holdable_medkit\n");
+		ent.model->load(gfx, "media/models/powerups/holdable/medkit");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "holdable_teleporter") == 0)
+	{
+		debugf("Loading holdable_teleporter\n");
+		ent.model->load(gfx, "media/models/powerups/holdable/teleporter");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
@@ -3277,6 +3403,20 @@ void Engine::destroy()
 	delete thug22;
 	delete rocket;
 	delete pineapple;
+
+	delete bullet;
+	delete shell;
+
+	delete gib0;
+	delete gib1;
+	delete gib2;
+	delete gib3;
+	delete gib4;
+	delete gib5;
+	delete gib6;
+	delete gib7;
+	delete gib8;
+	delete gib9;
 
 	
 	for (unsigned int i = 0; i < surface_list.size(); i++)
