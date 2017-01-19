@@ -3422,6 +3422,22 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	ret = strcmp(cmd, "blueflag");
+	if (ret == 0)
+	{
+		if (entity_list[self]->player->holdable_flag == false)
+			entity_list[self]->player->holdable_flag = true;
+		return;
+	}
+
+	ret = strcmp(cmd, "redflag");
+	if (ret == 0)
+	{
+		if (entity_list[self]->player->holdable_flag == false)
+			entity_list[self]->player->holdable_flag = true;
+		return;
+	}
+
 	ret = strcmp(cmd, "holdable_teleporter");
 	if (ret == 0)
 	{
