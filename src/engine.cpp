@@ -3013,10 +3013,25 @@ void Engine::load_model(Entity &ent)
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
+	else if (strcmp(ent.type, "team_CTF_blueflag") == 0)
+	{
+		debugf("Loading team_CTF_blueflag\n");
+		ent.model->load(gfx, "media/models/flags/b_flag");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "team_CTF_redflag") == 0)
+	{
+		debugf("Loading team_CTF_redflag\n");
+		ent.model->load(gfx, "media/models/flags/r_flag");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	
 	else if (strcmp(ent.type, "item_armor_body") == 0)
 	{
 		debugf("Loading item_armor_body\n");
-		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
+		ent.model->load(gfx, "media/models/powerups/armor/item_armor_body");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
