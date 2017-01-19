@@ -8,6 +8,8 @@ Bsp::Bsp()
 {
 	loaded = false;
 	textures_loaded = false;
+	patch_enabled = true;
+	shader_enabled = true;
 	memset(map_name, 0, 80);
 	sky_face = -1;
 	lastIndex = -2;
@@ -769,7 +771,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 			int face_index = data.LeafFace[leaf->leaf_face + j];
 			face_t *face = &data.Face[face_index];
 
-			if (tex_object[face->material].index != -1)
+			if (tex_object[face->material].index != -1 && shader_enabled)
 			{
 				// Texture with a shader
 				surface_t *surface = surface_list[tex_object[face->material].index];
@@ -1030,7 +1032,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		{
 			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
-		else if (face->type == 2)
+		else if (face->type == 2 && patch_enabled)
 		{
 			render_patch(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
@@ -1052,7 +1054,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	}
 
 
-	if (blend_list.size() > 0)
+	if (blend_list.size() > 0 && blend_enabled)
 	{
 		glDepthFunc(GL_LEQUAL);
 		gfx.Blend(true);

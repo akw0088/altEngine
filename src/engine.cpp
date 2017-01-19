@@ -3513,6 +3513,27 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strcmp(cmd, "r_patch") == 0)
+	{
+		menu.print(msg);
+		q3map.patch_enabled = !q3map.patch_enabled;
+		return;
+	}
+
+	if (strcmp(cmd, "r_shader") == 0)
+	{
+		menu.print(msg);
+		q3map.shader_enabled = !q3map.shader_enabled;
+		return;
+	}
+
+	if (strcmp(cmd, "r_blend") == 0)
+	{
+		menu.print(msg);
+		q3map.blend_enabled = !q3map.blend_enabled;
+		return;
+	}
+
 	if (sscanf(cmd, "cg_fov %s", data) == 1)
 	{
 		snprintf(msg, LINE_SIZE, "Setting fov to %d\n", atoi(data));
