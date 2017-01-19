@@ -49,6 +49,8 @@ void Quake3::init(Engine *altEngine)
 	create_crosshair();
 	crosshair_scale = 1.0f;
 
+	spectator_timer = 0;
+
 	icon_t icon;
 	
 	#define ICON_SELECT 0
@@ -299,53 +301,51 @@ void Quake3::init(Engine *altEngine)
 	icon.y = 0.125f; // positive up from center
 	icon_list.push_back(icon);
 
+#define FLASH_X 0.122f
+#define FLASH_Y -0.127f
 	#define ICON_F_MACHINEGUN 41
 	sprintf(icon.filename, "media/models/weapons2/machinegun/f_machinegun.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
 	#define ICON_F_SHOTGUN 42
 	sprintf(icon.filename, "media/models/weapons2/shotgun/f_shotgun.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
 	#define ICON_F_GRENADE 43
 	sprintf(icon.filename, "media/models/weapons2/grenadel/f_grenadel.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
 	#define ICON_F_ROCKET 44
 	sprintf(icon.filename, "media/models/weapons2/rocketl/f_rocketl.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
 	#define ICON_F_PLASMA 45
 	sprintf(icon.filename, "media/models/weapons2/plasma/f_plasma.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
 	#define ICON_F_LIGHTNING 46
 	sprintf(icon.filename, "media/models/weapons2/lightning/f_lightning.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
 	#define ICON_F_RAILGUN 47
-	sprintf(icon.filename, "media/models/weapons2/railgun/f_railgun.jpg");
-	icon.x = 0.125f; // positive right from center
-	icon.y = 0.0f; // positive up from center
+	sprintf(icon.filename, "media/models/weapons2/railgun/f_railgun2.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
 
-
-
-
 	create_icon();
-
 }
 
 void Quake3::load()
@@ -542,49 +542,41 @@ void Quake3::handle_player(int self)
 		int item = -1;
 		float min_distance = FLT_MAX;
 
-		for(int i = 0; i < engine->entity_list.size(); i++)
+		for(unsigned int i = engine->num_player; i < engine->entity_list.size(); i++)
 		{
 			if (engine->entity_list[i]->rigid == NULL)
 				continue;
 
+			if (engine->entity_list[i]->visible == false)
+				continue;
 
-			float distance = FLT_MAX;
-			distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
+			// Dont grab things like trigger_teleport :)
+			if (strstr(engine->entity_list[i]->type, "item_") == NULL &&
+				strstr(engine->entity_list[i]->type, "weapon_") == NULL)
+				continue;
 
+			float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
 			if (distance < min_distance)
 			{
 				min_distance = distance;
 				item = i;
 			}
 		}
-		engine->entity_list[item]->rigid->seek( engine->camera_frame.pos );
-	}
 
-	if (engine->input.control)
-	{
-		deselected = !deselected;
-
-		if (deselected == false)
+		if (item != -1)
 		{
-			float min_distance = FLT_MAX;
-			for(int i = 0; i < engine->num_player; i++)
-			{
-				float distance = FLT_MAX;
-
-				distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
-
-				if (distance < min_distance)
-				{
-					min_distance = distance;
-					self = i;
-				}
-			}
+			printf("Grabbing %s\n", engine->entity_list[item]->type);
+			engine->entity_list[item]->rigid->seek(engine->camera_frame.pos);
+		}
+		else
+		{
+			printf("Couldnt find an item to grab\n");
 		}
 	}
 
 	if (entity->player->health > 0)
 	{
-		if (deselected == false)
+		if (spectator == false)
 		{
 			// True if jumped
 			if (engine->input.moveup || engine->input.movedown || engine->input.moveleft || engine->input.moveright)
@@ -1042,17 +1034,58 @@ void Quake3::step(int frame_step)
 
 	if (engine->menu.ingame == false && engine->menu.console == false)
 	{
-		if (deselected == true)
+		if (spectator == true)
 		{
 			engine->camera_frame.update(engine->input);
+		}
+
+
+
+		if (engine->input.control && spectator_timer <= 0)
+		{
+			spectator_timer = TICK_RATE;
+			spectator = !spectator;
+			printf("spectator is %d\n", (int)spectator);
+
+			if (spectator == false)
+			{
+				float min_distance = FLT_MAX;
+				int index = -1;
+
+				for (unsigned int i = 0; i < engine->num_player; i++)
+				{
+					float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
+
+					if (distance < min_distance)
+					{
+						min_distance = distance;
+						index = i;
+					}
+				}
+				int spectator = engine->find_type("spectator", 0);
+				sprintf(engine->entity_list[spectator]->type, "NPC");
+				sprintf(engine->entity_list[index]->type, "player");
+			}
+			else
+			{
+				sprintf(engine->entity_list[engine->find_type("player", 0)]->type, "spectator");
+			}
+		}
+		else
+		{
+			if (spectator_timer > 0)
+			spectator_timer--;
 		}
 
 
 		for (unsigned int i = 0; i < engine->num_player; i++)
 		{
 			Entity *entity = engine->entity_list[i];
+			bool isplayer = (strcmp(entity->type, "player") == 0);
+			bool isbot = (strcmp(entity->type, "NPC") == 0);
 
-			if (strcmp(entity->type, "player") == 0 || strcmp(entity->type, "NPC") == 0)
+
+			if (isplayer || isbot)
 			{
 				handle_player(i);
 			}
@@ -1375,6 +1408,7 @@ void Quake3::handle_grenade(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
 	projectile->rigid->gravity = true;
 	projectile->rigid->rotational_friction_flag = true;
+	projectile->rigid->translational_friction_flag = true;
 	projectile->rigid->translational_friction = 0.9f;
 	//entity->rigid->set_target(*(entity_list[spawn]));
 
@@ -1674,6 +1708,9 @@ void Quake3::handle_machinegun(Player &player, int self)
 	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
 	shell->rigid->gravity = true;
 	shell->model = shell->rigid;
+	shell->rigid->rotational_friction_flag = true;
+	shell->rigid->translational_friction_flag = true;
+	shell->rigid->translational_friction = 0.9f;
 	camera_frame.set(shell->model->morientation);
 
 	engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
@@ -1756,6 +1793,10 @@ void Quake3::handle_shotgun(Player &player, int self)
 	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
 	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
 	shell->rigid->gravity = true;
+	shell->rigid->rotational_friction_flag = true;
+	shell->rigid->translational_friction_flag = true;
+	shell->rigid->translational_friction = 0.9f;
+
 	shell->model = shell->rigid;
 	camera_frame.set(shell->model->morientation);
 
@@ -1764,6 +1805,9 @@ void Quake3::handle_shotgun(Player &player, int self)
 	shell2->position = camera_frame.pos;
 	shell2->rigid->clone(*(engine->ball->model));
 	shell2->rigid->velocity = vec3(0.25f, 0.5f, 0.0f);
+	shell2->rigid->rotational_friction_flag = true;
+	shell2->rigid->translational_friction_flag = true;
+	shell2->rigid->translational_friction = 0.9f;
 	shell2->rigid->angular_velocity = vec3(-1.0, 2.0, -3.0);
 	shell2->rigid->gravity = true;
 	shell2->model = shell2->rigid;
@@ -1921,6 +1965,21 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 	{
 		player.reload_timer--;
 	}
+
+	if (player.flash_machinegun > 0)
+		player.flash_machinegun--;
+	if (player.flash_shotgun > 0)
+		player.flash_shotgun--;
+	if (player.flash_grenade > 0)
+		player.flash_grenade--;
+	if (player.flash_rocket > 0)
+		player.flash_rocket--;
+	if (player.flash_railgun > 0)
+		player.flash_railgun--;
+	if (player.flash_lightning > 0)
+		player.flash_lightning--;
+	if (player.flash_plasma > 0)
+		player.flash_plasma--;
 
 	if (player.health <= 0)
 	{
@@ -2095,27 +2154,28 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			switch (player.current_weapon)
 			{
 			case wp_machinegun:
-				draw_icon(1.0, ICON_F_MACHINEGUN);
+				player.flash_machinegun = 5;
 				break;
 			case wp_shotgun:
-				draw_icon(1.0, ICON_F_SHOTGUN);
+				player.flash_shotgun = 5;
 				break;
 			case wp_grenade:
-				draw_icon(1.0, ICON_F_GRENADE);
+				player.flash_grenade = 5;
 				break;
 			case wp_rocket:
-				draw_icon(1.0, ICON_F_ROCKET);
+				player.flash_rocket = 5;
 				break;
 			case wp_railgun:
-				draw_icon(1.0, ICON_F_RAILGUN);
+				player.flash_railgun = 5;
 				break;
 			case wp_lightning:
-				draw_icon(1.0, ICON_F_LIGHTNING);
+				player.flash_lightning = 5;
 				break;
 			case wp_plasma:
-				draw_icon(1.0, ICON_F_PLASMA);
+				player.flash_plasma = 5;
 				break;
 			}
+
 			if (player.current_weapon & WEAPON_LIGHTNING)
 			{
 				if (once == false)
@@ -2185,12 +2245,39 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 
 }
 
+void Quake3::draw_flash(Player &player)
+{
+	engine->gfx.BlendFuncOneOne();
+	if (player.flash_machinegun)
+		draw_icon(15.0, ICON_F_MACHINEGUN);
+	else if (player.flash_shotgun)
+		draw_icon(15.0, ICON_F_SHOTGUN);
+	else if (player.flash_grenade)
+		draw_icon(15.0, ICON_F_GRENADE);
+	else if (player.flash_rocket)
+		draw_icon(15.0, ICON_F_ROCKET);
+	else if (player.flash_lightning)
+		draw_icon(15.0, ICON_F_LIGHTNING);
+	else if (player.flash_railgun)
+		draw_icon(15.0, ICON_F_RAILGUN);
+	else if (player.flash_plasma)
+		draw_icon(15.0, ICON_F_PLASMA);
+	engine->gfx.BlendFunc(NULL, NULL);
+
+}
+
 void Quake3::render_hud(double last_frametime)
 {
 	matrix4 real_projection = engine->projection;
 	char msg[LINE_SIZE];
 
-	int spawn = engine->find_player();
+	int spawn = engine->find_type("player", 0);
+	if (spawn == -1)
+	{
+		// player is spectating
+		return;
+	}
+
 	Entity *entity = engine->entity_list[spawn];
 
 	engine->projection = engine->identity;
@@ -2677,6 +2764,10 @@ void Quake3::create_icon()
 		vert[i].tangent.y = 5.0f; //size
 		vert[i].tangent.z = -1.0f; //type
 		icon_list[i].tex = load_texture_pk3(engine->gfx, icon_list[i].filename, engine->pk3_list, engine->num_pk3, true);
+		if (icon_list[i].tex == 0)
+		{
+			printf("Failed to load %s\n", icon_list[i].filename);
+		}
 	}
 
 	icon_vbo = engine->gfx.CreateVertexBuffer(&vert, icon_list.size());
@@ -3236,7 +3327,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				entity_list[self]->model->morientation.m[8] = matrix.m[10];
 
 
-				if (self == engine->find_player())
+				if (self == engine->find_type("player", 0))
 				{
 					// Set frame if player (or else frame will override model position)
 					engine->camera_frame.up.x = matrix.m[4];
@@ -3335,7 +3426,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					break;
 				}
 
-				if (engine->find_player() == (int)self)
+				if (engine->find_type("player", 0) == (int)self)
 				{
 					engine->camera_frame.forward.x = matrix.m[8];
 					engine->camera_frame.forward.y = matrix.m[9];
@@ -3408,7 +3499,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				break;
 			}
 
-			if (player == engine->find_player())
+			if (player == engine->find_type("player", 0))
 			{
 				engine->camera_frame.up.x = matrix.m[4];
 				engine->camera_frame.up.y = matrix.m[5];
@@ -3478,7 +3569,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					entity_list[player]->model->morientation.m[7] = matrix.m[9];
 					entity_list[player]->model->morientation.m[8] = matrix.m[10];
 
-					if (player == engine->find_player())
+					if (player == engine->find_type("player", 0))
 					{
 						engine->camera_frame.up.x = matrix.m[4];
 						engine->camera_frame.up.y = matrix.m[5];

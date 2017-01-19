@@ -29,6 +29,7 @@ public:
 	void handle_gibs(Player &player);
 	void create_crosshair();
 	void draw_crosshair();
+	void draw_flash(Player &player);
 
 
 	void create_icon();
@@ -64,7 +65,8 @@ private:
 
 	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
-	bool deselected;
+	bool spectator;
+	unsigned int spectator_timer;
 };
 
 #endif

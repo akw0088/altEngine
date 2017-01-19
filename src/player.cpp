@@ -127,6 +127,15 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 	teleport_timer = 0;
 	click_timer = 0;
 
+
+	flash_machinegun = 0;
+	flash_shotgun = 0;
+	flash_grenade = 0;
+	flash_rocket = 0;
+	flash_railgun = 0;
+	flash_lightning = 0;
+	flash_plasma = 0;
+
 	holdable_teleporter = false;
 	holdable_medikit = false;
 

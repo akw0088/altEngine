@@ -595,7 +595,7 @@ void Engine::render_shadowmaps()
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light && light_list[entity_list[find_player()]->player->current_light] == entity_list[i]->light)
+		if (entity_list[i]->light && light_list[entity_list[find_type("player", 0)]->player->current_light] == entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
 
@@ -672,9 +672,9 @@ void Engine::render_scene(bool lights)
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
 
-
-	if (find_player() != -1)
-		entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
+	int player = find_type("player", 0);
+	if (player != -1)
+		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
 
 
@@ -739,9 +739,11 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (input.control == false)
 	{
-		if (find_player() != -1)
+		int player = find_type("player", 0);
+
+		if (player != -1)
 		{
-			entity_list[find_player()]->rigid->frame2ent(&camera_frame, input);
+			entity_list[player]->rigid->frame2ent(&camera_frame, input);
 		}
 
 		camera_frame.set(transformation);
@@ -869,8 +871,12 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		{
 			unsigned int j = 0;
 
-			if ((unsigned int)find_player() == i)
+			if ((unsigned int)find_type("player", 0) == i)
 			{
+				
+				
+				q3.draw_flash(*(entity_list[i]->player));
+				mlight2.Select();
 				entity_list[i]->rigid->get_matrix(mvp.m);
 
 				//set weapon coordinates
@@ -1140,6 +1146,8 @@ void Engine::destroy_buffers()
 
 void Engine::handle_input()
 {
+	int self = find_type("player", 0);
+
 	if (input.numpad0)
 	{
 		post_process(5);
@@ -1147,18 +1155,18 @@ void Engine::handle_input()
 
 	if (input.weapon_up)
 	{
-		if (find_player() != -1)
+		if (self != -1)
 		{
-			entity_list[find_player()]->player->change_weapon_up();
+			entity_list[self]->player->change_weapon_up();
 		}
 		input.weapon_up = false;
 	}
 
 	if (input.weapon_down)
 	{
-		if (find_player() != -1)
+		if (self != -1)
 		{
-			entity_list[find_player()]->player->change_weapon_down();
+			entity_list[self]->player->change_weapon_down();
 		}
 		input.weapon_down = false;
 	}
@@ -1303,10 +1311,14 @@ void Engine::spatial_testing()
 			}
 
 			entity_list[i]->bsp_visible = bsp_visible;
-			entity_list[find_player()]->bsp_leaf = leaf_a;
+
+			int player = find_type("player", 0);
+
+			if (player != -1)
+				entity_list[player]->bsp_leaf = leaf_a;
 			entity_list[i]->bsp_leaf = leaf_b;
 
-			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)find_player())
+			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)player)
 			{
 				visible = true;
 			}
@@ -1334,8 +1346,13 @@ void Engine::spatial_testing()
 		else
 		{
 			// Lights? what else?
+
+			int player = find_type("player", 0);
+
+			if (player != -1)
+				entity_list[player]->bsp_leaf = leaf_a;
+
 			entity_list[i]->visible = q3map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
-			entity_list[find_player()]->bsp_leaf = leaf_a;
 			entity_list[i]->bsp_leaf = leaf_b;
 		}
 
@@ -2100,7 +2117,7 @@ void Engine::server_step()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		
-		sprintf(reliable.msg, "spawn %d %d", client->entity, find_player());
+		sprintf(reliable.msg, "spawn %d %d", client->entity, find_type("player", 0));
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
@@ -2403,10 +2420,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 		return true;
 	}
 
-	if (input.control == false)
-		camera_frame.update(vec2((float)deltax, (float)deltay));
-	else
-		camera_frame.update(vec2((float)deltax, (float)deltay));
+	camera_frame.update(vec2((float)deltax, (float)deltay));
 	return true;
 }
 
@@ -2417,7 +2431,7 @@ void Engine::bind_keys()
 	{
 		key_bind.insert("enter", "jump");
 		key_bind.insert("space", "jump");
-		key_bind.insert("alt", "pickup");
+		key_bind.insert("Z", "pickup");
 		key_bind.insert("leftbutton", "attack");
 		key_bind.insert("middlebutton", "use");
 		key_bind.insert("rightbutton", "zoom");
@@ -2568,6 +2582,10 @@ void Engine::keypress(char *key, bool pressed)
 	{
 		input.use = pressed;
 	}
+	else if (strcmp("pickup", cmd) == 0)
+	{
+		input.pickup = pressed;
+	}
 	else if (strcmp("zoom", cmd) == 0)
 	{
 		input.zoom = pressed;
@@ -2668,7 +2686,7 @@ void Engine::keystroke(char key)
 
 void Engine::handle_game(char key)
 {
-	int spawn = find_player();
+	int spawn = find_type("player", 0);
 
 	switch (key)
 	{
@@ -2683,7 +2701,7 @@ void Engine::handle_game(char key)
 	case '0':
 		if (spawn != -1)
 		{
-			entity_list[find_player()]->player->current_face = 0;
+			entity_list[spawn]->player->current_face = 0;
 		}
 		break;
 	case '1':
@@ -2998,7 +3016,7 @@ void Engine::load_entities()
 			entity_list[i]->rigid->gravity = false;
 	}
 
-	int spawn = find_player();
+	int spawn = find_type("player", 0);
 	entity_list[spawn]->rigid->clone(*(thug22->model));
 	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 }
@@ -3058,12 +3076,16 @@ int Engine::get_entity()
 	return num_dynamic - 1;
 }
 
-int Engine::find_player()
+int Engine::find_type(char *type, int skip)
 {
-	for (unsigned int i = 0; i < num_player; i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (strcmp(entity_list[i]->type, "player") == 0)
-			return i;
+		if (strcmp(entity_list[i]->type, type) == 0)
+		{
+			if (skip == 0)
+				return i;
+			skip--;
+		}
 	}
 	return -1;
 }
@@ -3151,7 +3173,7 @@ void Engine::update_audio()
 		}
 	}
 
-	int spawn = find_player();
+	int spawn = find_type("player", 0);
 
 	if (spawn != -1 && entity_list.size())
 	{
@@ -3397,7 +3419,11 @@ void Engine::console(char *cmd)
 
 	if (q3map.loaded)
 	{
-		q3.console(find_player(), cmd, menu, entity_list);
+		int player = find_type("player", 0);
+
+		if (player == -1)
+			return;
+		q3.console(player, cmd, menu, entity_list);
 	}
 }
 

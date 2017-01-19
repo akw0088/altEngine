@@ -162,6 +162,15 @@ public:
 	unsigned int current_face; // debugging light sources, selected same as weapon
 
 
+	unsigned int flash_machinegun;
+	unsigned int flash_shotgun;
+	unsigned int flash_grenade;
+	unsigned int flash_rocket;
+	unsigned int flash_railgun;
+	unsigned int flash_lightning;
+	unsigned int flash_plasma;
+
+
 	path_t path;
 
 	char name[128];

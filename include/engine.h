@@ -41,7 +41,7 @@ public:
 	void load_entities();
 	int get_entity();
 	int get_player();
-	int find_player();
+	int find_type(char *type, int skip);
 	void clean_entity(int index);
 	void load_sounds();
 	void load_models();
