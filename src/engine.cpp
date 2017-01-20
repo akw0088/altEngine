@@ -32,6 +32,7 @@ Engine::Engine()
 	show_lines = false;
 	show_debug = false;
 	show_hud = true;
+	entities_enabled = true;
 	num_bot = 0;
 
 	fov = 45.0f;
@@ -904,6 +905,9 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 void Engine::render_entities(const matrix4 &trans, bool lights)
 {
 	matrix4 mvp;
+
+	if (entities_enabled == false)
+		return;
 
 	mlight2.Select();
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -3513,24 +3517,99 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strcmp(cmd, "r_patch") == 0)
+	if (sscanf(cmd, "r_patch %s", data) == 1)
 	{
 		menu.print(msg);
-		q3map.patch_enabled = !q3map.patch_enabled;
+		if (atoi(data))
+		{
+			q3map.patch_enabled = true;
+		}
+		else
+		{
+			q3map.patch_enabled = false;
+		}
 		return;
 	}
 
-	if (strcmp(cmd, "r_shader") == 0)
+	if (sscanf(cmd, "r_sky %s", data) == 1)
 	{
 		menu.print(msg);
-		q3map.shader_enabled = !q3map.shader_enabled;
+		if (atoi(data))
+		{
+			q3map.sky_enabled = true;
+		}
+		else
+		{
+			q3map.sky_enabled = false;
+		}
 		return;
 	}
 
-	if (strcmp(cmd, "r_blend") == 0)
+	if (strcmp(cmd, "r_max_particles") == 0)
 	{
 		menu.print(msg);
-		q3map.blend_enabled = !q3map.blend_enabled;
+
+		sprintf(data, "max particles: %d\n", ParticleUpdate::max_particles);
+		return;
+	}
+
+	if (sscanf(cmd, "r_max_particles %s", data) == 1)
+	{
+		menu.print(msg);
+		ParticleUpdate::max_particles = atoi(data);
+		return;
+	}
+
+	if (strcmp(cmd, "r_reload_shaders") == 0)
+	{
+		menu.print(msg);
+
+		reload_shaders();
+		return;
+	}
+
+	if (sscanf(cmd, "r_shader %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (atoi(data))
+		{
+			q3map.shader_enabled = true;
+		}
+		else
+		{
+			q3map.shader_enabled = false;
+		}
+		return;
+	}
+
+	if (sscanf(cmd, "r_entities %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (atoi(data))
+		{
+			entities_enabled = true;
+		}
+		else
+		{
+			entities_enabled = false;
+		}
+		return;
+	}
+
+	if (sscanf(cmd, "r_blend %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (atoi(data))
+		{
+			q3map.blend_enabled = true;
+		}
+		else
+		{
+			q3map.blend_enabled = false;
+		}
 		return;
 	}
 

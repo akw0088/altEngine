@@ -66,6 +66,7 @@ public:
 	bool shader_enabled;
 	bool blend_enabled;
 	bool patch_enabled;
+	bool sky_enabled;
 private:
 	bsp_t		*tBsp;
 	vec4		*tangent;

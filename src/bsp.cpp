@@ -9,7 +9,9 @@ Bsp::Bsp()
 	loaded = false;
 	textures_loaded = false;
 	patch_enabled = true;
+	sky_enabled = true;
 	shader_enabled = true;
+	blend_enabled = true;
 	memset(map_name, 0, 80);
 	sky_face = -1;
 	lastIndex = -2;
@@ -552,7 +554,7 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 {
 	float time = (float)tick_num / TICK_RATE;
 
-	if (sky_face == -1)
+	if (sky_face == -1 || sky_enabled == false)
 		return;
 
 	gfx.SelectVertexBuffer(Model::skybox_vertex);
@@ -1201,8 +1203,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				{
 					gfx.BlendFuncZeroSrcAlpha();
 				}
-				
-
 				else
 				{
 					gfx.BlendFunc(NULL, NULL);
@@ -1213,7 +1213,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
-			else if (face->type == 2)
+			else if (face->type == 2 && patch_enabled)
 			{
 				render_patch(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}

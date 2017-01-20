@@ -441,14 +441,14 @@ typedef struct
 	vec3 position;
 	vec3 vel_min;
 	vec3 vel_range;
-	int color;
+	vec3 gravity;
+	vec3 seed;
 	float size;
 	float life_min;
 	float life_range;
-	int num;
-	vec3 gravity;
 	float delta_time;
-	vec3 seed;
+	int color;
+	unsigned int num;
 	int bsp_leaf;
 	bool visible;
 } emitter_t;

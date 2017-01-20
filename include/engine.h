@@ -200,6 +200,8 @@ protected:
 	ParticleRender		particle_render;
 	emitter_t			emitter;
 
+	bool entities_enabled;
+
 	bool	initialized;
 	void	*param1;
 	void	*param2;

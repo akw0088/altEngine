@@ -832,6 +832,12 @@ void ParticleUpdate::Params(emitter_t &emit)
 
 int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 {
+	if (emit.num > max_particles)
+		emit.num = max_particles;
+
+	if (max_particles == 0)
+		return 0;
+
 	// Source buffer (input)
 	gfx.SelectVertexBuffer(ParticleBufferA);
 
@@ -858,7 +864,7 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 	// Get num primitives generated
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
-	if (num_particle == 0)
+	if (num_particle == 0 && max_particles != 0)
 	{
 		printf("ParticleSystem Error: %u particles written!\n\n", num_particle);
 	}
