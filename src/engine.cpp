@@ -1876,13 +1876,13 @@ void Engine::check_triggers(int self)
 		if (entity_list[i]->trigger->owner != -1 &&  entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && q3.gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
-		if (strcmp(entity_list[i]->type, "team_CTF_blue_flag") == 0)
+		if (strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_BLUE)
 				continue;
 		}
 
-		if (strcmp(entity_list[i]->type, "team_CTF_red_flag") == 0)
+		if (strcmp(entity_list[i]->type, "team_CTF_redflag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_RED)
 				continue;
@@ -3022,6 +3022,7 @@ void Engine::load_model(Entity &ent)
 		debugf("Loading team_CTF_blueflag\n");
 		ent.model->load(gfx, "media/models/flags/b_flag");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position += vec3(0.0f, 50.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "team_CTF_redflag") == 0)
@@ -3029,6 +3030,7 @@ void Engine::load_model(Entity &ent)
 		debugf("Loading team_CTF_redflag\n");
 		ent.model->load(gfx, "media/models/flags/r_flag");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position += vec3(0.0f, 50.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	

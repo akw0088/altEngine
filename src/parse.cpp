@@ -142,18 +142,18 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "regeneration");
 			entity.trigger->health = false;
 		}
-		else if (strcmp(value, "team_CTF_blue_flag") == 0)
+		else if (strcmp(value, "team_CTF_blueflag") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/teamplay/flag/flagtk_blue.wav");
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/teamplay/flagtk_blu.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "blueflag");
 			entity.trigger->health = false;
 		}
-		else if (strcmp(value, "team_CTF_red_flag") == 0)
+		else if (strcmp(value, "team_CTF_redflag") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/teamplay/flag/flagtk_red.wav");
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/teamplay/flagtk_red.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "redflag");
 			entity.trigger->health = false;
