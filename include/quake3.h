@@ -33,7 +33,7 @@ public:
 
 
 	void create_icon();
-	void draw_icon(float scale, int index);
+	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);
 
 
 	void handle_player(int index);
@@ -50,8 +50,11 @@ public:
 	void unload();
 	void init_camera(vector<Entity *> &entity_list);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
+	void endgame();
 
 	gametype_t gametype;
+	int		fraglimit;
+	int		timelimit;
 private:
 	Engine *engine;
 	bool blink;

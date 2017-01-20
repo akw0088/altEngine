@@ -51,6 +51,9 @@ void Quake3::init(Engine *altEngine)
 
 	spectator_timer = 0;
 
+	fraglimit = 10;
+	timelimit = 0;
+
 	icon_t icon;
 	
 	#define ICON_SELECT 0
@@ -1547,6 +1550,14 @@ void Quake3::handle_lightning(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+
+
+			if (player.stats.kills >= fraglimit)
+			{
+				endgame();
+				return;
+			}
+
 		}
 	}
 
@@ -1655,6 +1666,12 @@ void Quake3::handle_railgun(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+
+			if (player.stats.kills >= fraglimit)
+			{
+				endgame();
+				return;
+			}
 		}
 	}
 
@@ -1756,6 +1773,12 @@ void Quake3::handle_machinegun(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+
+			if (player.stats.kills >= fraglimit)
+			{
+				endgame();
+				return;
+			}
 		}
 	}
 }
@@ -1859,6 +1882,12 @@ void Quake3::handle_shotgun(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+
+			if (player.stats.kills >= fraglimit)
+			{
+				endgame();
+				return;
+			}
 		}
 	}
 
@@ -2592,7 +2621,9 @@ void Quake3::render_hud(double last_frametime)
 	engine->menu.draw_text("", 0.01f, 0.025f, 0.025f, color, false, true);
 	engine->projection = real_projection;
 	draw_crosshair();
+	int i = 1;
 
+#define WEAPON_SPACING 0.1f
 	switch (entity->player->current_weapon)
 	{
 	case wp_none:
@@ -2600,23 +2631,65 @@ void Quake3::render_hud(double last_frametime)
 		break;
 	case wp_machinegun:
 		draw_icon(1.0, ICON_MACHINEGUN);
+		draw_icon(1.0, ICON_SHOTGUN,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_GRENADE,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_ROCKET,		WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
 		break;
 	case wp_shotgun:
+		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING, 0.0f);
 		draw_icon(1.0, ICON_SHOTGUN);
+		draw_icon(1.0, ICON_GRENADE,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_ROCKET,		WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
 		break;
 	case wp_grenade:
+		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING * 2, 0.0f);
+		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING, 0.0f);
 		draw_icon(1.0, ICON_GRENADE);
+		draw_icon(1.0, ICON_ROCKET,		WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
 		break;
 	case wp_rocket:
+		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING * 3, 0.0f);
+		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 2, 0.0f);
+		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING, 0.0f);
 		draw_icon(1.0, ICON_ROCKET);
-		break;
-	case wp_railgun:
-		draw_icon(1.0, ICON_RAILGUN);
+		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
 		break;
 	case wp_lightning:
+		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING * 4, 0.0f);
+		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 3, 0.0f);
+		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING * 2, 0.0f);
+		draw_icon(1.0, ICON_ROCKET,		-WEAPON_SPACING, 0.0f);
 		draw_icon(1.0, ICON_LIGHTNING);
+		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
+		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
+		break;
+	case wp_railgun:
+		draw_icon(1.0, ICON_MACHINEGUN,	-WEAPON_SPACING * 5, 0.0f);
+		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 4, 0.0f);
+		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING * 3, 0.0f);
+		draw_icon(1.0, ICON_ROCKET,		-WEAPON_SPACING * 2, 0.0f);
+		draw_icon(1.0, ICON_LIGHTNING,	-WEAPON_SPACING, 0.0f);
+		draw_icon(1.0, ICON_RAILGUN);
+		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
 		break;
 	case wp_plasma:
+		draw_icon(1.0, ICON_MACHINEGUN,	-WEAPON_SPACING * 6, 0.0f);
+		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 5, 0.0f);
+		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING * 4, 0.0f);
+		draw_icon(1.0, ICON_ROCKET,		-WEAPON_SPACING * 3, 0.0f);
+		draw_icon(1.0, ICON_LIGHTNING,	-WEAPON_SPACING * 2, 0.0f);
+		draw_icon(1.0, ICON_RAILGUN,	-WEAPON_SPACING);
 		draw_icon(1.0, ICON_PLASMA);
 		break;
 	}
@@ -2930,7 +3003,7 @@ void Quake3::create_icon()
 	icon_vbo = engine->gfx.CreateVertexBuffer(&vert, icon_list.size());
 }
 
-void Quake3::draw_icon(float scale, int index)
+void Quake3::draw_icon(float scale, int index, float x, float y)
 {
 	matrix4 transformation;
 	engine->camera_frame.set(transformation);
@@ -2943,7 +3016,7 @@ void Quake3::draw_icon(float scale, int index)
 
 	engine->gfx.SelectTexture(0, icon_list[index].tex);
 	engine->particle_render.Select();
-	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x, icon_list[index].y);
+	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x + x, icon_list[index].y + y);
 	engine->particle_render.render(engine->gfx, index, icon_vbo, 1);
 }
 
@@ -4097,4 +4170,11 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			}
 		}
 	}
+}
+
+
+
+void Quake3::endgame()
+{
+	engine->q3map.unload(engine->gfx);
 }

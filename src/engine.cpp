@@ -1955,6 +1955,12 @@ void Engine::check_triggers(int self)
 							weapon);
 						debugf(msg);
 						menu.print_notif(msg);
+
+						if (entity_list[owner]->player->stats.kills >= q3.fraglimit)
+						{
+							q3.endgame();
+							return;
+						}
 					}
 				}
 
