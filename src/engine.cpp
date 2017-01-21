@@ -1955,6 +1955,8 @@ void Engine::check_triggers(int self)
 							weapon);
 						debugf(msg);
 						menu.print_notif(msg);
+						q3.notif_timer = 3 * TICK_RATE;
+
 
 						if (entity_list[owner]->player->stats.kills >= q3.fraglimit)
 						{
@@ -3776,6 +3778,7 @@ void Engine::chat(char *name, char *msg)
 	pmsg[strlen(pmsg) - 1] = '\0';
 	sprintf(data, "%s: %s", name, pmsg);
 	menu.print_chat(data);
+	q3.chat_timer = 3 * TICK_RATE;
 }
 
 

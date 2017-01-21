@@ -40,314 +40,23 @@ Quake3::Quake3()
 {
 	blink = false;
 	gametype = GAMETYPE_DEATHMATCH;
+	last_spawn = 0;
+	spectator_timer = 0;
+	chat_timer = 0;
+	notif_timer = 0;
+	fraglimit = 10;
+	timelimit = 0;
+	capturelimit = 8;
 }
 
 void Quake3::init(Engine *altEngine)
 {
 	engine = altEngine;
-	last_spawn = 0;
 	create_crosshair();
 	crosshair_scale = 1.0f;
 
-	spectator_timer = 0;
 
-	fraglimit = 10;
-	timelimit = 0;
-
-	icon_t icon;
-	
-	#define ICON_SELECT 0
-	sprintf(icon.filename, "media/gfx/2d/select.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_GAUNTLET 1
-	sprintf(icon.filename, "media/icons/iconw_gauntlet.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MACHINEGUN 2
-	sprintf(icon.filename, "media/icons/iconw_machinegun.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_SHOTGUN 3
-	sprintf(icon.filename, "media/icons/iconw_shotgun.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-
-	#define ICON_GRENADE 4
-	sprintf(icon.filename, "media/icons/iconw_grenade.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_ROCKET 5
-	sprintf(icon.filename, "media/icons/iconw_rocket.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_LIGHTNING 6
-	sprintf(icon.filename, "media/icons/iconw_lightning.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_RAILGUN 7
-	sprintf(icon.filename, "media/icons/iconw_railgun.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_PLASMA 8
-	sprintf(icon.filename, "media/icons/iconw_plasma.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_BFG 9
-	sprintf(icon.filename, "media/icons/iconw_bfg.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_GRAPPLE 10
-	sprintf(icon.filename, "media/icons/iconw_grapple.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MACHINEGUN_BOX 11
-	sprintf(icon.filename, "media/icons/icona_machinegun.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-	#define ICON_SHOTGUN_BOX 12
-	sprintf(icon.filename, "media/icons/icona_shotgun.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-	#define ICON_GRENADE_BOX 13
-	sprintf(icon.filename, "media/icons/icona_grenade.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-	#define ICON_ROCKET_BOX 14
-	sprintf(icon.filename, "media/icons/icona_rocket.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-	#define ICON_PLASMA_BOX 15
-	sprintf(icon.filename, "media/icons/icona_plasma.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-	#define ICON_LIGHTNING_BOX 16
-	sprintf(icon.filename, "media/icons/icona_lightning.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-	#define ICON_BFG_BOX 17
-	sprintf(icon.filename, "media/icons/icona_bfg.tga");
-	icon.x = 0.0f;
-	icon.y = -10.0f;
-	icon_list.push_back(icon);
-
-
-	#define ICON_SUIT 18
-	sprintf(icon.filename, "media/icons/envirosuit.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_FLIGHT 19
-	sprintf(icon.filename, "media/icons/flight.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_HASTE 20
-	sprintf(icon.filename, "media/icons/haste.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_BLUE_FLAG 21
-	sprintf(icon.filename, "media/icons/iconf_blu.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_RED_FLAG 22
-	sprintf(icon.filename, "media/icons/iconf_red.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEGA 23
-	sprintf(icon.filename, "media/icons/iconh_mega.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_RED_HEALTH 24
-	sprintf(icon.filename, "media/icons/iconh_red.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_YELLOW_HEALTH 25
-	sprintf(icon.filename, "media/icons/iconh_yellow.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_RED_ARMOR 26
-	sprintf(icon.filename, "media/icons/iconr_red.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_ARMOR_SHARD 27
-	sprintf(icon.filename, "media/icons/iconr_shard.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_YELLOW_ARMOR 28
-	sprintf(icon.filename, "media/icons/iconr_yellow.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_INVIS 29
-	sprintf(icon.filename, "media/icons/invis.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDIKIT 30
-	sprintf(icon.filename, "media/icons/medkit.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_NOAMMO 31
-	sprintf(icon.filename, "media/icons/noammo.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = -0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_QUAD 32
-	sprintf(icon.filename, "media/icons/quad.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_REGEN 33
-	sprintf(icon.filename, "media/icons/regen.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_TELEPORTER 34
-	sprintf(icon.filename, "media/icons/teleporter.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDAL_ACCURACY 35
-	sprintf(icon.filename, "media/menu/medals/medal_accuracy.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDAL_EXCELLENT 36
-	sprintf(icon.filename, "media/menu/medals/medal_excellent.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDAL_FRAGS 37
-	sprintf(icon.filename, "media/menu/medals/medal_frags.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDAL_GAUNTLET 38
-	sprintf(icon.filename, "media/menu/medals/medal_gauntlet.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDAL_IMPRESSIVE 39
-	sprintf(icon.filename, "media/menu/medals/medal_impressive.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_MEDAL_VICTORY 40
-	sprintf(icon.filename, "media/menu/medals/medal_victory.tga");
-	icon.x = 0.0f; // positive right from center
-	icon.y = 0.125f; // positive up from center
-	icon_list.push_back(icon);
-
-#define FLASH_X 0.122f
-#define FLASH_Y -0.127f
-	#define ICON_F_MACHINEGUN 41
-	sprintf(icon.filename, "media/models/weapons2/machinegun/f_machinegun.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_F_SHOTGUN 42
-	sprintf(icon.filename, "media/models/weapons2/shotgun/f_shotgun.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_F_GRENADE 43
-	sprintf(icon.filename, "media/models/weapons2/grenadel/f_grenadel.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_F_ROCKET 44
-	sprintf(icon.filename, "media/models/weapons2/rocketl/f_rocketl.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_F_PLASMA 45
-	sprintf(icon.filename, "media/models/weapons2/plasma/f_plasma.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_F_LIGHTNING 46
-	sprintf(icon.filename, "media/models/weapons2/lightning/f_lightning.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
-	#define ICON_F_RAILGUN 47
-	sprintf(icon.filename, "media/models/weapons2/railgun/f_railgun2.jpg");
-	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
-	icon_list.push_back(icon);
-
+	load_icon();
 	create_icon();
 }
 
@@ -702,7 +411,7 @@ void Quake3::handle_player(int self)
 
 	if (engine->tick_num % TICK_RATE == 0)
 	{
-		if (entity->player->regen_timer > 0)
+		if (entity->player->regen_timer > 0 && entity->player->state != PLAYER_DEAD)
 		{
 
 			if (entity->player->health < 200)
@@ -1550,6 +1259,7 @@ void Quake3::handle_lightning(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
 
 
 			if (player.stats.kills >= fraglimit)
@@ -1666,6 +1376,7 @@ void Quake3::handle_railgun(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
 
 			if (player.stats.kills >= fraglimit)
 			{
@@ -1773,6 +1484,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
 
 			if (player.stats.kills >= fraglimit)
 			{
@@ -1882,6 +1594,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 				engine->entity_list[index[i]]->player->name);
 			debugf(msg);
 			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
 
 			if (player.stats.kills >= fraglimit)
 			{
@@ -2129,6 +1842,302 @@ void Quake3::handle_gibs(Player &player)
 
 }
 
+void Quake3::load_icon()
+{
+	icon_t icon;
+
+#define ICON_SELECT 0
+	sprintf(icon.filename, "media/gfx/2d/select.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_GAUNTLET 1
+	sprintf(icon.filename, "media/icons/iconw_gauntlet.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MACHINEGUN 2
+	sprintf(icon.filename, "media/icons/iconw_machinegun.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_SHOTGUN 3
+	sprintf(icon.filename, "media/icons/iconw_shotgun.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+
+#define ICON_GRENADE 4
+	sprintf(icon.filename, "media/icons/iconw_grenade.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_ROCKET 5
+	sprintf(icon.filename, "media/icons/iconw_rocket.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_LIGHTNING 6
+	sprintf(icon.filename, "media/icons/iconw_lightning.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RAILGUN 7
+	sprintf(icon.filename, "media/icons/iconw_railgun.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_PLASMA 8
+	sprintf(icon.filename, "media/icons/iconw_plasma.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_BFG 9
+	sprintf(icon.filename, "media/icons/iconw_bfg.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_GRAPPLE 10
+	sprintf(icon.filename, "media/icons/iconw_grapple.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MACHINEGUN_BOX 11
+	sprintf(icon.filename, "media/icons/icona_machinegun.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+#define ICON_SHOTGUN_BOX 12
+	sprintf(icon.filename, "media/icons/icona_shotgun.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+#define ICON_GRENADE_BOX 13
+	sprintf(icon.filename, "media/icons/icona_grenade.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+#define ICON_ROCKET_BOX 14
+	sprintf(icon.filename, "media/icons/icona_rocket.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+#define ICON_PLASMA_BOX 15
+	sprintf(icon.filename, "media/icons/icona_plasma.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+#define ICON_LIGHTNING_BOX 16
+	sprintf(icon.filename, "media/icons/icona_lightning.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+#define ICON_BFG_BOX 17
+	sprintf(icon.filename, "media/icons/icona_bfg.tga");
+	icon.x = 0.0f;
+	icon.y = -10.0f;
+	icon_list.push_back(icon);
+
+
+#define ICON_SUIT 18
+	sprintf(icon.filename, "media/icons/envirosuit.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FLIGHT 19
+	sprintf(icon.filename, "media/icons/flight.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_HASTE 20
+	sprintf(icon.filename, "media/icons/haste.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_BLUE_FLAG 21
+	sprintf(icon.filename, "media/icons/iconf_blu.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RED_FLAG 22
+	sprintf(icon.filename, "media/icons/iconf_red.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEGA 23
+	sprintf(icon.filename, "media/icons/iconh_mega.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RED_HEALTH 24
+	sprintf(icon.filename, "media/icons/iconh_red.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_YELLOW_HEALTH 25
+	sprintf(icon.filename, "media/icons/iconh_yellow.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RED_ARMOR 26
+	sprintf(icon.filename, "media/icons/iconr_red.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_ARMOR_SHARD 27
+	sprintf(icon.filename, "media/icons/iconr_shard.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_YELLOW_ARMOR 28
+	sprintf(icon.filename, "media/icons/iconr_yellow.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_INVIS 29
+	sprintf(icon.filename, "media/icons/invis.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDIKIT 30
+	sprintf(icon.filename, "media/icons/medkit.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_NOAMMO 31
+	sprintf(icon.filename, "media/icons/noammo.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = -0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_QUAD 32
+	sprintf(icon.filename, "media/icons/quad.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_REGEN 33
+	sprintf(icon.filename, "media/icons/regen.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_TELEPORTER 34
+	sprintf(icon.filename, "media/icons/teleporter.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDAL_ACCURACY 35
+	sprintf(icon.filename, "media/menu/medals/medal_accuracy.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDAL_EXCELLENT 36
+	sprintf(icon.filename, "media/menu/medals/medal_excellent.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDAL_FRAGS 37
+	sprintf(icon.filename, "media/menu/medals/medal_frags.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDAL_GAUNTLET 38
+	sprintf(icon.filename, "media/menu/medals/medal_gauntlet.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDAL_IMPRESSIVE 39
+	sprintf(icon.filename, "media/menu/medals/medal_impressive.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_MEDAL_VICTORY 40
+	sprintf(icon.filename, "media/menu/medals/medal_victory.tga");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.125f; // positive up from center
+	icon_list.push_back(icon);
+
+#define FLASH_X 0.122f
+#define FLASH_Y -0.127f
+#define ICON_F_MACHINEGUN 41
+	sprintf(icon.filename, "media/models/weapons2/machinegun/f_machinegun.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_F_SHOTGUN 42
+	sprintf(icon.filename, "media/models/weapons2/shotgun/f_shotgun.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_F_GRENADE 43
+	sprintf(icon.filename, "media/models/weapons2/grenadel/f_grenadel.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_F_ROCKET 44
+	sprintf(icon.filename, "media/models/weapons2/rocketl/f_rocketl.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_F_PLASMA 45
+	sprintf(icon.filename, "media/models/weapons2/plasma/f_plasma.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_F_LIGHTNING 46
+	sprintf(icon.filename, "media/models/weapons2/lightning/f_lightning.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_F_RAILGUN 47
+	sprintf(icon.filename, "media/models/weapons2/railgun/f_railgun2.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+}
 
 void Quake3::handle_weapons(Player &player, input_t &input, int self)
 {
@@ -2469,8 +2478,18 @@ void Quake3::render_hud(double last_frametime)
 	engine->projection = engine->identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
 
-	engine->menu.render_chat(engine->global);
-	engine->menu.render_notif(engine->global);
+
+	if (chat_timer > 0)
+	{
+		engine->menu.render_chat(engine->global);
+		chat_timer--;
+	}
+
+	if (notif_timer > 0)
+	{
+		engine->menu.render_notif(engine->global);
+		notif_timer--;
+	}
 
 	engine->menu.draw_text("", 0.15f, 0.95f, 0.050f, color, true, false);
 
@@ -2532,12 +2551,32 @@ void Quake3::render_hud(double last_frametime)
 	if (engine->input.scores)
 	{
 		int line = 1;
-		snprintf(msg, LINE_SIZE, "%s kills %d deaths %d hits %d shots %d", entity->player->name,
-			entity->player->stats.kills, 
-			entity->player->stats.deaths, 
-			entity->player->stats.hits,
-			entity->player->stats.shots);
-		engine->menu.draw_text(msg, 0.05f, 0.25f * line++, 0.025f, color, false, false);
+
+		snprintf(msg, LINE_SIZE, "Scores:");
+		engine->menu.draw_text(msg, 0.05f, 0.125f * line++, 0.025f, color, false, false);
+
+
+		for (int i = 0; i < engine->num_player; i++)
+		{
+			float accuracy = 0.0f;
+
+
+			bool player = strcmp(engine->entity_list[i]->type, "player") == 0;
+			bool bot = strcmp(engine->entity_list[i]->type, "NPC") == 0;
+
+			if (!(bot || player))
+				continue;
+
+			if (engine->entity_list[i]->player->stats.shots != 0)
+				accuracy = 100.0f *engine->entity_list[i]->player->stats.hits / engine->entity_list[i]->player->stats.shots;
+
+			snprintf(msg, LINE_SIZE, "%-32s %d kills, %d deaths, %3.1f%% accuracy",
+				engine->entity_list[i]->player->name,
+				engine->entity_list[i]->player->stats.kills,
+				engine->entity_list[i]->player->stats.deaths,
+				accuracy);
+			engine->menu.draw_text(msg, 0.05f, 0.125f * line++, 0.025f, color, false, false);
+		}
 
 	}
 
@@ -3019,6 +3058,8 @@ void Quake3::draw_icon(float scale, int index, float x, float y)
 	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x + x, icon_list[index].y + y);
 	engine->particle_render.render(engine->gfx, index, icon_vbo, 1);
 }
+
+
 
 
 int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)

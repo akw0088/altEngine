@@ -34,6 +34,7 @@ public:
 
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);
+	void load_icon();
 
 
 	void handle_player(int index);
@@ -55,6 +56,10 @@ public:
 	gametype_t gametype;
 	int		fraglimit;
 	int		timelimit;
+	int		capturelimit;
+	unsigned int chat_timer;
+	unsigned int notif_timer;
+
 private:
 	Engine *engine;
 	bool blink;
@@ -69,6 +74,7 @@ private:
 	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
 	bool spectator;
+
 	unsigned int spectator_timer;
 };
 
