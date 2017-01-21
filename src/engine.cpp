@@ -155,7 +155,7 @@ void Engine::init(void *p1, void *p2)
 	bullet = new Entity();
 	bullet->rigid = new RigidBody(bullet);
 	bullet->model = bullet->rigid;
-	bullet->model->load(gfx, "media/models/weapons2/shells/s_bullet");
+	bullet->model->load(gfx, "media/models/weapons2/shells/M_shell");
 
 
 	gib0 = new Entity();

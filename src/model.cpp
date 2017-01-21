@@ -61,6 +61,14 @@ void Model::load(Graphics &gfx, char *file)
 	model_file = NULL;
 
 	model_tex = load_texture(gfx, tga_file, false);
+	if (model_tex == 0)
+	{
+		char *pdata = strstr(tga_file, ".tga");
+
+		memcpy(pdata, ".jpg", 4);
+		model_tex = load_texture(gfx, tga_file, false);
+	}
+
 	normal_tex = load_texture(gfx, normal_file, false);
 
 	if (entity->rigid)
