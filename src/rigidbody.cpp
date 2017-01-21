@@ -618,7 +618,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		if (jumped && jump_timer == 0)
 		{
 			velocity.y += 3.0f;
-			jump_timer = 120;
+			jump_timer = (int)(TICK_RATE * 0.3f);
 		}
 	}
 	else
