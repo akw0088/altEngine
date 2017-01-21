@@ -47,6 +47,7 @@ Quake3::Quake3()
 	fraglimit = 10;
 	timelimit = 0;
 	capturelimit = 8;
+	weapon_switch_timer = 0;
 }
 
 void Quake3::init(Engine *altEngine)
@@ -2161,6 +2162,11 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 		player.reload_timer--;
 	}
 
+	if (weapon_switch_timer > 0)
+	{
+		weapon_switch_timer--;
+	}
+
 	if (player.flash_machinegun > 0)
 		player.flash_machinegun--;
 	if (player.flash_shotgun > 0)
@@ -2184,6 +2190,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 
 	if (player.current_weapon != player.last_weapon)
 	{
+		weapon_switch_timer = 2 * TICK_RATE;
 		switch (player.current_weapon)
 		{
 		case wp_railgun:
@@ -2553,10 +2560,10 @@ void Quake3::render_hud(double last_frametime)
 		int line = 1;
 
 		snprintf(msg, LINE_SIZE, "Scores:");
-		engine->menu.draw_text(msg, 0.05f, 0.125f * line++, 0.025f, color, false, false);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
-		for (int i = 0; i < engine->num_player; i++)
+		for (unsigned int i = 0; i < engine->num_player; i++)
 		{
 			float accuracy = 0.0f;
 
@@ -2575,7 +2582,7 @@ void Quake3::render_hud(double last_frametime)
 				engine->entity_list[i]->player->stats.kills,
 				engine->entity_list[i]->player->stats.deaths,
 				accuracy);
-			engine->menu.draw_text(msg, 0.05f, 0.125f * line++, 0.025f, color, false, false);
+			engine->menu.draw_text(msg, 0.05f, 0.025f * line++, 0.025f, color, false, false);
 		}
 
 	}
@@ -2661,78 +2668,124 @@ void Quake3::render_hud(double last_frametime)
 	engine->projection = real_projection;
 	draw_crosshair();
 	int i = 1;
+	int j = -1;
 
-#define WEAPON_SPACING 0.1f
-	switch (entity->player->current_weapon)
+	if (weapon_switch_timer > 0)
 	{
-	case wp_none:
-		draw_icon(1.0, ICON_NOAMMO);
-		break;
-	case wp_machinegun:
-		draw_icon(1.0, ICON_MACHINEGUN);
-		draw_icon(1.0, ICON_SHOTGUN,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_GRENADE,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_ROCKET,		WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
-		break;
-	case wp_shotgun:
-		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING, 0.0f);
-		draw_icon(1.0, ICON_SHOTGUN);
-		draw_icon(1.0, ICON_GRENADE,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_ROCKET,		WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
-		break;
-	case wp_grenade:
-		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING * 2, 0.0f);
-		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING, 0.0f);
-		draw_icon(1.0, ICON_GRENADE);
-		draw_icon(1.0, ICON_ROCKET,		WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
-		break;
-	case wp_rocket:
-		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING * 3, 0.0f);
-		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 2, 0.0f);
-		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING, 0.0f);
-		draw_icon(1.0, ICON_ROCKET);
-		draw_icon(1.0, ICON_LIGHTNING,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
-		break;
-	case wp_lightning:
-		draw_icon(1.0, ICON_MACHINEGUN, -WEAPON_SPACING * 4, 0.0f);
-		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 3, 0.0f);
-		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING * 2, 0.0f);
-		draw_icon(1.0, ICON_ROCKET,		-WEAPON_SPACING, 0.0f);
-		draw_icon(1.0, ICON_LIGHTNING);
-		draw_icon(1.0, ICON_RAILGUN,	WEAPON_SPACING * i++, 0.0f);
-		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
-		break;
-	case wp_railgun:
-		draw_icon(1.0, ICON_MACHINEGUN,	-WEAPON_SPACING * 5, 0.0f);
-		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 4, 0.0f);
-		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING * 3, 0.0f);
-		draw_icon(1.0, ICON_ROCKET,		-WEAPON_SPACING * 2, 0.0f);
-		draw_icon(1.0, ICON_LIGHTNING,	-WEAPON_SPACING, 0.0f);
-		draw_icon(1.0, ICON_RAILGUN);
-		draw_icon(1.0, ICON_PLASMA,		WEAPON_SPACING * i++, 0.0f);
-		break;
-	case wp_plasma:
-		draw_icon(1.0, ICON_MACHINEGUN,	-WEAPON_SPACING * 6, 0.0f);
-		draw_icon(1.0, ICON_SHOTGUN,	-WEAPON_SPACING * 5, 0.0f);
-		draw_icon(1.0, ICON_GRENADE,	-WEAPON_SPACING * 4, 0.0f);
-		draw_icon(1.0, ICON_ROCKET,		-WEAPON_SPACING * 3, 0.0f);
-		draw_icon(1.0, ICON_LIGHTNING,	-WEAPON_SPACING * 2, 0.0f);
-		draw_icon(1.0, ICON_RAILGUN,	-WEAPON_SPACING);
-		draw_icon(1.0, ICON_PLASMA);
-		break;
+#define WEAPON_SPACING 0.1f
+		switch (entity->player->current_weapon)
+		{
+		case wp_none:
+			draw_icon(1.0, ICON_NOAMMO);
+			break;
+		case wp_machinegun:
+			draw_icon(1.0, ICON_MACHINEGUN);
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+			break;
+		case wp_shotgun:
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			draw_icon(1.0, ICON_SHOTGUN);
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+			break;
+		case wp_grenade:
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			draw_icon(1.0, ICON_GRENADE);
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+			break;
+		case wp_rocket:
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			draw_icon(1.0, ICON_ROCKET);
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+			break;
+		case wp_lightning:
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			draw_icon(1.0, ICON_LIGHTNING);
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+			break;
+		case wp_railgun:
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			draw_icon(1.0, ICON_RAILGUN);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+			break;
+		case wp_plasma:
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * j--);
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			draw_icon(1.0, ICON_PLASMA);
+			break;
+		}
+		draw_icon(1.0, ICON_SELECT);
 	}
-	draw_icon(1.0, ICON_SELECT);
 
 	if (entity->player->quad_timer)
 	{
@@ -4217,5 +4270,5 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 void Quake3::endgame()
 {
-	engine->q3map.unload(engine->gfx);
+	engine->input.scores = true;
 }

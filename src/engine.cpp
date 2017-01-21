@@ -3079,8 +3079,8 @@ void Engine::load_model(Entity &ent)
 	}
 	else if (strcmp(ent.type, "item_haste") == 0)
 	{
-		debugf("Loading item_flight\n");
-		ent.model->load(gfx, "media/models/powerups/instant/flight");
+		debugf("Loading item_haste\n");
+		ent.model->load(gfx, "media/models/powerups/instant/haste");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}

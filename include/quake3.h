@@ -59,6 +59,7 @@ public:
 	int		capturelimit;
 	unsigned int chat_timer;
 	unsigned int notif_timer;
+	unsigned int weapon_switch_timer;
 
 private:
 	Engine *engine;
