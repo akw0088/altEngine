@@ -782,6 +782,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				memset(&render, 0, sizeof(faceinfo_t));
 				render.face = face_index;
 				render.shader = true;
+				render.stage = 0;
 
 				if (surface->surfaceparm_sky)
 				{
@@ -920,6 +921,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				memset(&render, 0, sizeof(faceinfo_t));
 				render.name = data.Material[face->material].name;
 				render.face = face_index;
+				render.stage = 0;
 
 				if (tex_object[face->material].texObj < 0)
 				{
@@ -936,6 +938,171 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 		}
 	}
 	
+}
+
+void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
+{
+	static int last_mode;
+
+	if (face.blend_one_one)
+	{
+		if (last_mode != 1)
+			gfx.BlendFuncOneOne();
+		last_mode = 1;
+	}
+	else if (face.blend_default)
+	{
+		if (last_mode != 2)
+			gfx.BlendFunc(NULL, NULL);
+		last_mode = 2;
+	}
+	else if (face.blend_filter)
+	{
+		if (last_mode != 1)
+			gfx.BlendFuncOneOne();
+		last_mode = 1;
+	}
+	else if (face.blend_dstcolor_one)
+	{
+		if (last_mode != 3)
+			gfx.BlendFuncDstColorOne();
+		last_mode = 3;
+	}
+	else if (face.blend_dstcolor_zero)
+	{
+		if (last_mode != 1)
+			gfx.BlendFuncOneOne();
+		last_mode = 1;
+		//gfx.BlendFuncDstColorZero();
+	}
+	else if (face.blend_one_zero)
+	{
+		if (last_mode != 4)
+			gfx.BlendFuncOneZero();
+		last_mode = 4;
+	}
+	else if (face.blend_zero_one)
+	{
+		if (last_mode != 5)
+			gfx.BlendFuncZeroOne();
+		last_mode = 5;
+	}
+	else if (face.blend_dst_color_one_minus_dst_alpha)
+	{
+		if (last_mode != 6)
+			gfx.BlendFuncDstColorOneMinusDstAlpha();
+		last_mode = 6;
+	}
+	else if (face.blend_dst_color_src_alpha)
+	{
+		if (last_mode != 7)
+			gfx.BlendFuncDstColorSrcAlpha();
+		last_mode = 7;
+	}
+	else if (face.blend_one_minus_src_alpha_src_alpha)
+	{
+		if (last_mode != 8)
+			gfx.BlendFuncOneMinusSrcAlphaSrcAlpha();
+		last_mode = 8;
+	}
+	else if (face.blend_src_alpha_one_minus_src_alpha)
+	{
+		if (last_mode != 9)
+			gfx.BlendFuncSrcAlphaOneMinusSrcAlpha();
+		last_mode = 9;
+	}
+	else if (face.blend_one_src_alpha)
+	{
+		if (last_mode != 10)
+			gfx.BlendFuncOneSrcAlpha();
+		last_mode = 10;
+	}
+	else if (face.blend_one_minus_dst_color_zero)
+	{
+		if (last_mode != 11)
+			gfx.BlendFuncOneMinusDstColorZero();
+		last_mode = 11;
+	}
+	else if (face.blend_zero_src_color)
+	{
+		if (last_mode != 12)
+			gfx.BlendFuncZeroSrcColor();
+		last_mode = 12;
+	}
+	else if (face.blend_dst_color_src_color)
+	{
+		if (last_mode != 13)
+			gfx.BlendFuncDstColorSrcColor();
+		last_mode = 13;
+	}
+	else if (face.blend_zero_src_alpha)
+	{
+		if (last_mode != 14)
+			gfx.BlendFuncZeroSrcAlpha();
+		last_mode = 14;
+	}
+	else
+	{
+		if (last_mode != 2)
+			gfx.BlendFunc(NULL, NULL);
+		last_mode = 2;
+	}
+}
+
+
+void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time)
+{
+	int j = face.stage;
+
+	if (face.tcmod_rotate[j])
+	{
+		mlight2.tcmod_rotate(face.deg[j] * time, j);
+	}
+	if (face.tcmod_scroll[j])
+	{
+		face.scroll_value[j].x += face.scroll[j].x * time * 0.01f;
+		face.scroll_value[j].y += face.scroll[j].y * time * 0.01f;
+		mlight2.tcmod_scroll(face.scroll_value[j], j);
+	}
+	if (face.tcmod_scale[j])
+	{
+		mlight2.tcmod_scale(face.scale[j], j);
+	}
+	if (face.tcmod_stretch_sin[j])
+	{
+		mlight2.tcmod_stretch_sin(face.stretch_value[j].x,
+			face.stretch_value[j].y,
+			face.stretch_value[j].z,
+			tick_num, j);
+	}
+	if (face.tcmod_stretch_square[j])
+	{
+		mlight2.tcmod_stretch_square(face.stretch_value[j].x,
+			face.stretch_value[j].y,
+			face.stretch_value[j].z,
+			tick_num, j);
+	}
+	if (face.tcmod_stretch_triangle[j])
+	{
+		mlight2.tcmod_stretch_square(face.stretch_value[j].x,
+			face.stretch_value[j].y,
+			face.stretch_value[j].z,
+			tick_num, j);
+	}
+	if (face.tcmod_stretch_sawtooth[j])
+	{
+		mlight2.tcmod_stretch_square(face.stretch_value[j].x,
+			face.stretch_value[j].y,
+			face.stretch_value[j].z,
+			tick_num, j);
+	}
+	if (face.tcmod_stretch_inverse_sawtooth[j])
+	{
+		mlight2.tcmod_stretch_square(face.stretch_value[j].x,
+			face.stretch_value[j].y,
+			face.stretch_value[j].z,
+			tick_num, j);
+	}
 }
 
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
@@ -957,78 +1124,15 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	{
 		face_t *face = &data.Face[face_list[i].face];
 
-		if (face_list[i].shader)
-		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
-			{
-				if (face_list[i].tcmod_rotate[j])
-				{
-					mlight2.tcmod_rotate(face_list[i].deg[j] * time, j);
-				}
-				if (face_list[i].tcmod_scroll[j])
-				{
-					face_list[i].scroll_value[j].x += face_list[i].scroll[j].x * time * 0.01f;
-					face_list[i].scroll_value[j].y += face_list[i].scroll[j].y * time * 0.01f;
-					mlight2.tcmod_scroll(face_list[i].scroll_value[j], j);
-				}
-				if (face_list[i].tcmod_scale[j])
-				{
-					mlight2.tcmod_scale(face_list[i].scale[j], j);
-				}
-				if (face_list[i].tcmod_stretch_sin[j])
-				{
-					mlight2.tcmod_stretch_sin(face_list[i].stretch_value[j].x,
-						face_list[i].stretch_value[j].y,
-						face_list[i].stretch_value[j].z,
-						tick_num, j);
-				}
-				if (face_list[i].tcmod_stretch_square[j])
-				{
-					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
-						face_list[i].stretch_value[j].y,
-						face_list[i].stretch_value[j].z,
-						tick_num, j);
-				}
-				if (face_list[i].tcmod_stretch_triangle[j])
-				{
-					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
-						face_list[i].stretch_value[j].y,
-						face_list[i].stretch_value[j].z,
-						tick_num, j);
-				}
-				if (face_list[i].tcmod_stretch_sawtooth[j])
-				{
-					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
-						face_list[i].stretch_value[j].y,
-						face_list[i].stretch_value[j].z,
-						tick_num, j);
-				}
-				if (face_list[i].tcmod_stretch_inverse_sawtooth[j])
-				{
-					mlight2.tcmod_stretch_square(face_list[i].stretch_value[j].x,
-						face_list[i].stretch_value[j].y,
-						face_list[i].stretch_value[j].z,
-						tick_num, j);
-				}
-			}
-		}
-
 		if (face_list[i].sky)
 		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
-			{
-				//technically shouldnt need to reset
-				mlight2.tcmod_rotate(0, j);
-				mlight2.tcmod_scroll(zero, j);
-				mlight2.tcmod_scale(one, j);
-			}
-			//skip sky texture, already drawn
 			continue;
 		}
 
-
-
-
+		if (face_list[i].shader)
+		{
+			set_tcmod(mlight2, face_list[i], tick_num, time);
+		}
 
 		if (face->type == 1 || face->type == 3)
 		{
@@ -1045,13 +1149,10 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 		if (face_list[i].shader)
 		{
-			for (int j = 0; j < MAX_TEXTURES; j++)
-			{
-				//technically shouldnt need to reset
-				mlight2.tcmod_rotate(0, j);
-				mlight2.tcmod_scroll(zero, j);
-				mlight2.tcmod_scale(one, j);
-			}
+			int j = face_list[i].stage;
+			mlight2.tcmod_rotate(0, j);
+			mlight2.tcmod_scroll(zero, j);
+			mlight2.tcmod_scale(one, j);
 		}
 	}
 
@@ -1065,148 +1166,21 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		{
 			face_t *face = &data.Face[blend_list[i].face];
 
-			if (blend_list[i].shader)
-			{
-				for (int j = 0; j < MAX_TEXTURES; j++)
-				{
-					if (blend_list[i].tcmod_rotate[j])
-					{
-						mlight2.tcmod_rotate(blend_list[i].deg[j] * time, j);
-					}
-					if (blend_list[i].tcmod_scroll[j])
-					{
-						blend_list[i].scroll_value[j].x += blend_list[i].scroll[j].x * time * 0.01f;
-						blend_list[i].scroll_value[j].y += blend_list[i].scroll[j].y * time * 0.01f;
-						mlight2.tcmod_scroll(blend_list[i].scroll_value[j], j);
-					}
-					if (blend_list[i].tcmod_scale[j])
-					{
-						mlight2.tcmod_scale(blend_list[i].scale[j], j);
-					}
-					if (blend_list[i].tcmod_stretch_sin[j])
-					{
-						mlight2.tcmod_stretch_sin(blend_list[i].stretch_value[j].x,
-							blend_list[i].stretch_value[j].y,
-							blend_list[i].stretch_value[j].z,
-							tick_num, j);
-					}
-					if (blend_list[i].tcmod_stretch_square[j])
-					{
-						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-							blend_list[i].stretch_value[j].y,
-							blend_list[i].stretch_value[j].z,
-							tick_num, j);
-					}
-					if (blend_list[i].tcmod_stretch_triangle[j])
-					{
-						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-							blend_list[i].stretch_value[j].y,
-							blend_list[i].stretch_value[j].z,
-							tick_num, j);
-					}
-					if (blend_list[i].tcmod_stretch_sawtooth[j])
-					{
-						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-							blend_list[i].stretch_value[j].y,
-							blend_list[i].stretch_value[j].z,
-							tick_num, j);
-					}
-					if (blend_list[i].tcmod_stretch_inverse_sawtooth[j])
-					{
-						mlight2.tcmod_stretch_square(blend_list[i].stretch_value[j].x,
-							blend_list[i].stretch_value[j].y,
-							blend_list[i].stretch_value[j].z,
-							tick_num, j);
-					}
-				}
-			}
-
 			if (blend_list[i].sky)
 			{
-				for (int j = 0; j < MAX_TEXTURES; j++)
-				{
-					//technically shouldnt need to reset
-					mlight2.tcmod_rotate(0, j);
-					mlight2.tcmod_scroll(zero, j);
-					mlight2.tcmod_scale(one, j);
-				}
 				//skip sky texture, already drawn
 				continue;
 			}
 
+			if (blend_list[i].shader)
+			{
+				set_tcmod(mlight2, blend_list[i], tick_num, time);
+			}
+
+
 			if (blend_list[i].blend)
 			{
-				if (blend_list[i].blend_one_one)
-				{
-					gfx.BlendFuncOneOne();
-				}
-				else if (blend_list[i].blend_default)
-				{
-					//src alpha, 1 - src alpha
-					gfx.BlendFunc(NULL, NULL);
-				}
-				else if (blend_list[i].blend_filter)
-				{
-//					gfx.BlendFuncDstColorZero();
-					gfx.BlendFuncOneOne();
-				}
-				else if (blend_list[i].blend_dstcolor_one)
-				{
-					gfx.BlendFuncDstColorOne();
-				}
-				else if (blend_list[i].blend_dstcolor_zero)
-				{
-//					gfx.BlendFuncDstColorZero();
-					gfx.BlendFuncOneOne();
-				}
-				else if (blend_list[i].blend_one_zero)
-				{
-					gfx.BlendFuncOneZero();
-				}
-				else if (blend_list[i].blend_zero_one)
-				{
-					gfx.BlendFuncZeroOne();
-				}
-				else if (blend_list[i].blend_dst_color_one_minus_dst_alpha)
-				{
-					gfx.BlendFuncDstColorOneMinusDstAlpha();
-				}
-				else if (blend_list[i].blend_dst_color_src_alpha)
-				{
-					gfx.BlendFuncDstColorSrcAlpha();
-				}
-				else if (blend_list[i].blend_one_minus_src_alpha_src_alpha)
-				{
-					gfx.BlendFuncOneMinusSrcAlphaSrcAlpha();
-				}
-				else if (blend_list[i].blend_src_alpha_one_minus_src_alpha)
-				{
-					gfx.BlendFuncSrcAlphaOneMinusSrcAlpha();
-				}
-				else if (blend_list[i].blend_one_src_alpha)
-				{
-					gfx.BlendFuncOneSrcAlpha();
-				}
-				else if (blend_list[i].blend_one_minus_dst_color_zero)
-				{
-					gfx.BlendFuncOneMinusDstColorZero();
-				}
-				else if (blend_list[i].blend_zero_src_color)
-				{
-					gfx.BlendFuncZeroSrcColor();
-				}
-				else if (blend_list[i].blend_dst_color_src_color)
-				{
-					gfx.BlendFuncDstColorSrcColor();
-				}
-				else if (blend_list[i].blend_zero_src_alpha)
-				{
-					gfx.BlendFuncZeroSrcAlpha();
-				}
-				else
-				{
-					gfx.BlendFunc(NULL, NULL);
-				}
+				set_blend_mode(gfx, blend_list[i]);
 			}
 
 			if (face->type == 1 || face->type == 3)

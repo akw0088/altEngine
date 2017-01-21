@@ -1344,6 +1344,9 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 		case 'C':
 			if (prevstate == 'S')
 			{
+				if (surface->num_stage > 4)
+					surface->num_stage = 4;
+
 				surface = new surface_t;
 				memset(surface, 0, sizeof(surface_t));
 				sprintf(surface->file, "%s",  filename);

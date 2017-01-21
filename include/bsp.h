@@ -17,6 +17,8 @@ class Bsp
 	inline void render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap);
 	inline void render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap);
 	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position);
+	void set_blend_mode(Graphics &gfx, faceinfo_t &face);
+	void set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time);
 	//void draw_line_box(int *min, int *max);
 	//void draw_box(int *min, int *max);
 public:
@@ -41,9 +43,6 @@ public:
 	void unload(Graphics &gfx);
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
-	~Bsp()
-	{
-	}
 
 	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth,
 		bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug,
@@ -52,7 +51,7 @@ public:
 	bool loaded;
 	bool textures_loaded;
 	bspData_t	data;
-	char map_name[80];
+	char map_name[64];
 	vector<texture_t *> anim_list;
 	texture_t	*tex_object;
 

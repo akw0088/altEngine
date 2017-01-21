@@ -380,7 +380,7 @@ typedef struct
 	bool alpha_lt128;
 
 	bool lightmap[MAX_TEXTURES];
-	int stage;
+	unsigned int stage;
 } faceinfo_t;
 
 

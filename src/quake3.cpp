@@ -3390,6 +3390,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_grenade;
 
@@ -3410,6 +3411,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_rocket;
 
@@ -3430,6 +3432,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_shotgun;
 
@@ -3450,6 +3453,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_machinegun\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_machinegun;
 
@@ -3471,6 +3475,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_lightning;
 
@@ -3491,6 +3496,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_railgun\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_railgun;
 
@@ -3511,6 +3517,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "weapon_plasma\n");
 		menu.print(msg);
 
+		weapon_switch_timer = 2 * TICK_RATE;
 		if (entity_list[self]->player->current_weapon == wp_none)
 			entity_list[self]->player->current_weapon = wp_plasma;
 
