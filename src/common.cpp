@@ -953,3 +953,18 @@ int gen_lightning(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 	return 0;
 }
 
+int trim(char *data, int length)
+{
+	int pos = 0;
+	for (int i = 0; i < length; i++)
+	{
+		char c = data[i];
+
+		if (c == '\r' || c == '\n' || c == ' ')
+		{
+			continue;
+		}
+		data[pos++] = c;
+	}
+	return pos;
+}

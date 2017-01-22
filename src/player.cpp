@@ -791,6 +791,9 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 
 		if (strcmp(entity_list[i]->type, "player") == 0)
 		{
+			if (entity_list[i]->player == NULL)
+				continue;
+
 			float distance = (entity_list[i]->position - entity->position).magnitude();
 
 			if (distance < 500.0f)

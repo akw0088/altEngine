@@ -140,6 +140,9 @@ void Quake3::handle_player(int self)
 	static int last_tick = 0;
 	static bool zoomed = false;
 
+	if (entity->player == NULL)
+		return;
+
 
 	if (engine->input.zoom == true && zoomed == false)
 	{

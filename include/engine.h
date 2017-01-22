@@ -66,6 +66,7 @@ public:
 	void client_step();
 	void send_entities();
 	void render_client(int i, const matrix4 &trans, bool lights, bool hack);
+	void render_weapon(const matrix4 &trans, bool lights, int i);
 
 
 	bool select_wave(int source, char *file);
@@ -81,6 +82,7 @@ public:
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
+
 
 //temp
 	unsigned int testObj;

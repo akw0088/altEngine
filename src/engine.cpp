@@ -741,21 +741,6 @@ void Engine::render_scene(bool lights)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
 
-
-	camera_frame.set(transformation);
-
-	mlight2.Select();
-	mvp = transformation * projection;
-
-
-	if (lights)
-		mlight2.Params(mvp, light_list, light_list.size(), offset);
-	else
-		mlight2.Params(mvp, light_list, 0, offset);
-
-	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
-
-
 #ifdef PARTICLES
 	gfx.Blend(true);
 	gfx.BlendFunc(NULL, NULL);
@@ -787,11 +772,20 @@ void Engine::render_scene(bool lights)
 #endif
 
 
+	// Rendering entities before map for blends
 	render_entities(transformation, true);
 
+	camera_frame.set(transformation);
+	mlight2.Select();
+	mvp = transformation * projection;
+	if (lights)
+		mlight2.Params(mvp, light_list, light_list.size(), offset);
+	else
+		mlight2.Params(mvp, light_list, 0, offset);
 
+	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
-
+	render_weapon(transformation, lights, find_type("player", 0));
 }
 
 
@@ -904,6 +898,36 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 	zcc.render(gfx, tick_num >> 1);
 }
 
+void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
+{
+	matrix4 mvp;
+	vec3 offset = entity_list[i]->position;
+
+	entity_list[i]->rigid->get_matrix(mvp.m);
+	mvp = (mvp * trans) * projection;
+
+	q3.draw_flash(*(entity_list[i]->player));
+	mlight2.Select();
+	entity_list[i]->rigid->get_matrix(mvp.m);
+
+	//set weapon coordinates
+	mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
+	mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
+	mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 7.0f;
+
+	mvp = (mvp * trans) * projection;
+	if (lights)
+	{
+		mlight2.Params(mvp, light_list, light_list.size(), offset);
+	}
+	else
+	{
+		mlight2.Params(mvp, light_list, 0, offset);
+	}
+
+	entity_list[i]->player->render_weapon(gfx);
+}
+
 void Engine::render_entities(const matrix4 &trans, bool lights)
 {
 	matrix4 mvp;
@@ -995,28 +1019,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		{
 			unsigned int j = 0;
 
-			if ((unsigned int)find_type("player", 0) == i)
-			{				
-				q3.draw_flash(*(entity_list[i]->player));
-				mlight2.Select();
-				entity_list[i]->rigid->get_matrix(mvp.m);
-
-				//set weapon coordinates
-				mvp.m[12] += mvp.m[0] * -5.0f + mvp.m[4] * 50.0f + mvp.m[8] * 5.0f;
-				mvp.m[13] += mvp.m[1] * -5.0f + mvp.m[5] * 50.0f + mvp.m[9] * 5.0f;
-				mvp.m[14] += mvp.m[2] * -5.0f + mvp.m[6] * 50.0f + mvp.m[10] * 7.0f;
-
-				mvp = (mvp * trans) * projection;
-				if (lights)
-				{
-					mlight2.Params(mvp, light_list, light_list.size(), offset);
-				}
-				else
-				{
-					mlight2.Params(mvp, light_list, 0, offset);
-				}
-
-				entity_list[i]->player->render_weapon(gfx);
+			if ( i < num_player && strcmp(entity_list[i]->type, "player") == 0)
+			{
 				continue;
 			}
 
