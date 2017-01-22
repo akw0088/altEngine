@@ -67,7 +67,7 @@ public:
 	void send_entities();
 	void render_client(int i, const matrix4 &trans, bool lights, bool hack);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
-
+	void render_trails(matrix4 &trans);
 
 	bool select_wave(int source, char *file);
 	void destroy_buffers();

@@ -740,6 +740,20 @@ void Engine::render_scene(bool lights)
 	if (player != -1)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
+	camera_frame.set(transformation);
+
+	// Rendering entities before map for blends
+	render_entities(transformation, lights);
+	render_players(transformation, lights);
+
+	mlight2.Select();
+	mvp = transformation * projection;
+	if (lights)
+		mlight2.Params(mvp, light_list, light_list.size(), offset);
+	else
+		mlight2.Params(mvp, light_list, 0, offset);
+
+	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
 #ifdef PARTICLES
 	gfx.Blend(true);
@@ -769,21 +783,9 @@ void Engine::render_scene(bool lights)
 		gfx.SelectTexture(0, particle_tex);
 		particle_render.render(gfx, 0, vbo, emitter.num);
 	}
+
+	render_trails(transformation);
 #endif
-
-
-	// Rendering entities before map for blends
-	render_entities(transformation, true);
-
-	camera_frame.set(transformation);
-	mlight2.Select();
-	mvp = transformation * projection;
-	if (lights)
-		mlight2.Params(mvp, light_list, light_list.size(), offset);
-	else
-		mlight2.Params(mvp, light_list, 0, offset);
-
-	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
 	render_weapon(transformation, lights, find_type("player", 0));
 }
@@ -901,7 +903,12 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 {
 	matrix4 mvp;
+
+	if (i == -1)
+		return;
+
 	vec3 offset = entity_list[i]->position;
+
 
 	entity_list[i]->rigid->get_matrix(mvp.m);
 	mvp = (mvp * trans) * projection;
@@ -928,15 +935,9 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	entity_list[i]->player->render_weapon(gfx);
 }
 
-void Engine::render_entities(const matrix4 &trans, bool lights)
+void Engine::render_trails(matrix4 &trans)
 {
 	matrix4 mvp;
-
-	if (entities_enabled == false)
-		return;
-
-
-
 	bool once = false;
 	vec3 quad1 = camera_frame.up;
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
@@ -951,7 +952,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 		if (once == false && (entity_list[i]->model->rail_trail || entity_list[i]->model->lightning_trail))
 		{
-//			vec3 offset = entity_list[i]->position;
+			//			vec3 offset = entity_list[i]->position;
 
 			// Undo model orientation
 			quad1 = entity_list[i]->model->morientation.transpose() * quad1;
@@ -985,26 +986,51 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			continue;
 		}
 	}
+}
+
+void Engine::render_entities(const matrix4 &trans, bool lights)
+{
+	matrix4 mvp;
+
+	if (entities_enabled == false)
+		return;
 
 	gfx.Blend(false);
 	mlight2.Select();
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->visible == false)
+		Entity *entity = entity_list[i];
+
+		if (entity->visible == false)
 			continue;
 
-		if (entity_list[i]->nodraw == true)
+		if (entity->nodraw == true)
 			continue;
 
-		if (entity_list[i]->rigid == NULL)
+		if (entity->rigid == NULL)
 			continue;
 
-		if (entity_list[i]->model->rail_trail || entity_list[i]->model->lightning_trail)
+		if (entity->model->rail_trail || entity->model->lightning_trail)
 			continue;
 
-		vec3 offset = entity_list[i]->position;
+		if (i < num_player && strcmp(entity->type, "player") == 0)
+		{
+			continue;
+		}
 
-		entity_list[i]->rigid->get_matrix(mvp.m);
+		if (i < num_player  && strcmp(entity->type, "NPC") == 0)
+		{
+			continue;
+		}
+
+		if (i < num_player  && strcmp(entity->type, "spectator") == 0)
+		{
+			continue;
+		}
+
+		vec3 offset = entity->position;
+
+		entity->rigid->get_matrix(mvp.m);
 		mvp = (mvp * trans) * projection;
 		if (lights)
 		{
@@ -1015,22 +1041,16 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			mlight2.Params(mvp, light_list, 0, offset);
 		}
 
-		//		if (entity_list[i]->light == NULL)
+		// render network clients
+		if (server_flag || client_flag)
 		{
-			unsigned int j = 0;
-
-			if ( i < num_player && strcmp(entity_list[i]->type, "player") == 0)
-			{
-				continue;
-			}
-
-
 			if (i == (unsigned int)server_spawn)
 			{
 				render_client(i, trans, lights, true);
 				continue;
 			}
 
+			unsigned int j = 0;
 			for (j = 0; j < client_list.size(); j++)
 			{
 				if (i == client_list[j]->entity)
@@ -1042,65 +1062,46 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 			if (client_list.size() && j < client_list.size() && i == client_list[j]->entity)
 				continue;
-
-			if (strcmp(entity_list[i]->type, "NPC") != 0)
-			{
-				//bool draw_wander_target = false;
-
-				entity_list[i]->rigid->render(gfx);
-
-
-
-				if (entity_list[i]->num_particle)
-				{
-					emitter.num = entity_list[i]->num_particle;
-					emitter.position = entity_list[i]->position;
-					emitter.gravity = vec3(0.0f, 30.0f, 0.0f);
-				}
-
-
-#ifdef NOPE
-				entity_list[i]->position += entity_list[i]->rigid->sphere_target;
-				if (draw_wander_target)
-				{
-					entity_list[i]->rigid->get_matrix(mvp.m);
-					mvp = (mvp * trans) * projection;
-					mlight2.Params(mvp, light_list, light_list.size(), offset);
-					q3.ball->rigid->render(gfx);
-					entity_list[i]->position -= entity_list[i]->rigid->sphere_target;
-					entity_list[i]->rigid->get_matrix(mvp.m);
-					mvp = (mvp * trans) * projection;
-					mlight2.Params(mvp, light_list, light_list.size(), offset);
-				}
-#endif
-			}
-
-
-			// render func_ items (doors, moving platforms, etc)
-			if (entity_list[i]->model_ref != -1)
-			{
-//				if (strstr(entity_list[i]->type, "func_") != NULL)
-				{
-					entity_list[i]->rigid->gravity = false;
-					q3map.render_model(entity_list[i]->model_ref, gfx);
-				}
-			}
-
 		}
-		//		entity_list[i]->rigid->render_box(gfx); // bounding box lines
-	}
 
 
-	//render md5 as enemy
-	for(unsigned int i = 0; i < entity_list.size(); i++)
-	{
-		if (strcmp(entity_list[i]->type, "NPC") == 0 && entity_list[i]->player->health > 0)
+		//render entity
+		entity->rigid->render(gfx);
+
+		//  update emitter position if this entity has particles
+		if (entity->num_particle)
 		{
-			entity_list[i]->rigid->get_matrix(mvp.m);
+			emitter.num = entity->num_particle;
+			emitter.position = entity->position;
+			emitter.gravity = vec3(0.0f, 30.0f, 0.0f);
+		}
 
+		// render func_ items (doors, moving platforms, etc)
+		if (entity->model_ref != -1)
+		{
+			entity->rigid->gravity = false;
+			q3map.render_model(entity->model_ref, gfx);
+		}
+	}
+}
+
+void Engine::render_players(matrix4 &trans, bool lights)
+{
+	matrix4 mvp;
+	//render player md5
+	for (unsigned int i = 0; i < num_player; i++)
+	{
+		Entity *entity = entity_list[i];
+
+		if ((strcmp(entity->type, "NPC") == 0 ||
+			(strcmp(entity->type, "spectator") == 0)) &&
+			entity->player->health > 0)
+		{
 
 			//md5 faces right, need to flip right and forward orientation
 			vec4 temp;
+
+			entity->rigid->get_matrix(mvp.m);
 
 			temp.x = mvp.m[0];
 			temp.y = mvp.m[1];
@@ -1119,7 +1120,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 
 
 			mvp = (mvp * trans) * projection;
-			vec3 offset = entity_list[i]->position;
+			vec3 offset = entity->position;
 
 			if (lights)
 			{
@@ -1132,7 +1133,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			zcc.render(gfx, tick_num >> 1);
 		}
 	}
-
 }
 
 
