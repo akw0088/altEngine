@@ -2449,6 +2449,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 
 void Quake3::draw_flash(Player &player)
 {
+	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
 	if (player.flash_machinegun)
 		draw_icon(15.0, ICON_F_MACHINEGUN);
@@ -2464,14 +2465,14 @@ void Quake3::draw_flash(Player &player)
 		draw_icon(15.0, ICON_F_RAILGUN);
 	else if (player.flash_plasma)
 		draw_icon(15.0, ICON_F_PLASMA);
-	engine->gfx.BlendFunc(NULL, NULL);
-
+	engine->gfx.Blend(false);
 }
 
 void Quake3::render_hud(double last_frametime)
 {
 	matrix4 real_projection = engine->projection;
 	char msg[LINE_SIZE];
+
 
 	int spawn = engine->find_type("player", 0);
 	if (spawn == -1)
@@ -2664,8 +2665,11 @@ void Quake3::render_hud(double last_frametime)
 		}
 	}
 
-	engine->menu.draw_text("", 0.01f, 0.025f, 0.025f, color, false, true);
+	engine->menu.draw_text("", 0.01f, 0.025f, 0.025f, color, false, false);
 	engine->projection = real_projection;
+
+	engine->gfx.Blend(true);
+	engine->gfx.BlendFunc(NULL, NULL);
 	draw_crosshair();
 	int i = 1;
 	int j = -1;

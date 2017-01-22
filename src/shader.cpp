@@ -950,13 +950,13 @@ void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, flo
 void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 {
 #ifndef DIRECTX
-	gfx.Blend(true);
+//	gfx.Blend(true);
 	gfx.Depth(false);
 //	gfx.BlendFunc(NULL, NULL);
 	gfx.SelectVertexBuffer(vbo);
 	gfx.SelectIndexBuffer(ibo);
 	gfx.DrawArrayPoint(start, 0, num, num);
 	gfx.Depth(true);
-	gfx.Blend(false);
+//	gfx.Blend(false);
 #endif
 }

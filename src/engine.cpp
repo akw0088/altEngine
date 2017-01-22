@@ -754,12 +754,12 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
-	q3map.render_sky(gfx, mlight2, tick_num, surface_list);
-
-	render_entities(transformation, true);
 
 
 #ifdef PARTICLES
+	gfx.Blend(true);
+	gfx.BlendFunc(NULL, NULL);
+
 	int vbo = 0;
 	if (emitter.visible)
 	{
@@ -770,8 +770,6 @@ void Engine::render_scene(bool lights)
 		particle_update.Params(emitter);
 		vbo = particle_update.step(gfx, emitter);
 	}
-#endif
-
 
 	camera_frame.set(transformation);
 	mvp = transformation * projection;
@@ -779,7 +777,6 @@ void Engine::render_scene(bool lights)
 	vec3 quad1 = camera_frame.up;
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
-#ifdef PARTICLES
 	if (emitter.visible)
 	{
 		particle_render.Select();
@@ -788,6 +785,11 @@ void Engine::render_scene(bool lights)
 		particle_render.render(gfx, 0, vbo, emitter.num);
 	}
 #endif
+
+
+	render_entities(transformation, true);
+
+
 
 
 }
@@ -909,6 +911,58 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	if (entities_enabled == false)
 		return;
 
+
+
+	bool once = false;
+	vec3 quad1 = camera_frame.up;
+	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
+
+	//render particle trails first
+	for (unsigned int i = num_player; i < num_dynamic; i++)
+	{
+		if (entity_list[i]->model == NULL)
+			continue;
+
+
+		if (once == false && (entity_list[i]->model->rail_trail || entity_list[i]->model->lightning_trail))
+		{
+//			vec3 offset = entity_list[i]->position;
+
+			// Undo model orientation
+			quad1 = entity_list[i]->model->morientation.transpose() * quad1;
+			quad2 = entity_list[i]->model->morientation.transpose() * quad2;
+
+			particle_render.Select();
+			gfx.SelectTexture(0, particle_tex);
+			once = true;
+		}
+
+
+		//render rail trail
+		if (entity_list[i]->model->rail_trail)
+		{
+			entity_list[i]->rigid->get_matrix(mvp.m);
+			mvp = (mvp * trans) * projection;
+			particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+
+			particle_render.render(gfx, 0, spiral_vbo, 400);
+			continue;
+		}
+
+		//render lightning trail
+		if (entity_list[i]->model->lightning_trail)
+		{
+			entity_list[i]->rigid->get_matrix(mvp.m);
+			mvp = (mvp * trans) * projection;
+			particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+
+			particle_render.render(gfx, 0, lightning_vbo, 400);
+			continue;
+		}
+	}
+
+	gfx.Blend(false);
 	mlight2.Select();
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -919,6 +973,9 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			continue;
 
 		if (entity_list[i]->rigid == NULL)
+			continue;
+
+		if (entity_list[i]->model->rail_trail || entity_list[i]->model->lightning_trail)
 			continue;
 
 		vec3 offset = entity_list[i]->position;
@@ -939,9 +996,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			unsigned int j = 0;
 
 			if ((unsigned int)find_type("player", 0) == i)
-			{
-				
-				
+			{				
 				q3.draw_flash(*(entity_list[i]->player));
 				mlight2.Select();
 				entity_list[i]->rigid->get_matrix(mvp.m);
@@ -987,65 +1042,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			if (strcmp(entity_list[i]->type, "NPC") != 0)
 			{
 				//bool draw_wander_target = false;
-
-
-				//render rail trail
-				if (entity_list[i]->model->rail_trail)
-				{
-					vec3 quad1 = camera_frame.up;
-					vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
-
-					// Undo model orientation
-					quad1 = entity_list[i]->model->morientation.transpose() * quad1;
-					quad2 = entity_list[i]->model->morientation.transpose() * quad2;
-
-					particle_render.Select();
-					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
-					gfx.SelectTexture(0, particle_tex);
-					particle_render.render(gfx, 0, spiral_vbo, 400);
-
-					// restore normal shader state
-					mlight2.Select();
-					if (lights)
-					{
-						mlight2.Params(mvp, light_list, light_list.size(), offset);
-					}
-					else
-					{
-						mlight2.Params(mvp, light_list, 0, offset);
-					}
-					continue;
-				}
-
-
-				//render lightning trail
-				if (entity_list[i]->model->lightning_trail)
-				{
-					vec3 quad1 = camera_frame.up;
-					vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
-
-					// Undo model orientation
-					quad1 = entity_list[i]->model->morientation.transpose() * quad1;
-					quad2 = entity_list[i]->model->morientation.transpose() * quad2;
-
-					particle_render.Select();
-					particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
-					gfx.SelectTexture(0, particle_tex);
-					particle_render.render(gfx, 0, lightning_vbo, 400);
-
-
-					// restore normal shader state
-					mlight2.Select();
-					if (lights)
-					{
-						mlight2.Params(mvp, light_list, light_list.size(), offset);
-					}
-					else
-					{
-						mlight2.Params(mvp, light_list, 0, offset);
-					}
-					continue;
-				}
 
 				entity_list[i]->rigid->render(gfx);
 

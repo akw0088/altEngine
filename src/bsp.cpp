@@ -1198,19 +1198,18 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (blend_list[i].shader)
 			{
-				for (int j = 0; j < MAX_TEXTURES; j++)
-				{
-					//technically shouldnt need to reset
-					mlight2.tcmod_rotate(0, j);
-					mlight2.tcmod_scroll(zero, j);
-					mlight2.tcmod_scale(one, j);
-				}
+				int j = blend_list[i].stage;
+				//technically shouldnt need to reset
+				mlight2.tcmod_rotate(0, j);
+				mlight2.tcmod_scroll(zero, j);
+				mlight2.tcmod_scale(one, j);
 			}
 		}
 	}
 	glDepthFunc(GL_LESS);
-	gfx.Blend(false);
 
+	gfx.Blend(false);
+	render_sky(gfx, mlight2, tick_num, surface_list);
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 
