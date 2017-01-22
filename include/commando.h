@@ -12,7 +12,6 @@ enemy:
 	stab: CUCHI.WAV
 	find dead body: MUERTO.WAV
 	whose there: QUIENVA.WAV
-	noise maker: SEGNUELO.WAV
 	distract: SOLDAT.WAV
 	alarm: VOZALARM.WAV
 
@@ -56,6 +55,8 @@ Green Beret:
 	carry barrel
 	carry body
 	shovel
+	noise maker: SEGNUELO.WAV
+
 
 Sniper:
 	pistol
@@ -110,10 +111,10 @@ public:
 	void handle_plasma(Player &player, int self);
 	void handle_rocketlauncher(Player &player, int self);
 	void handle_grenade(Player &player, int self);
-	void handle_lightning(Player &player, int self);
-	void handle_railgun(Player &player, int self);
+	void handle_knife(Player &player, int self);
+	void handle_rifle(Player &player, int self);
 	void handle_machinegun(Player &player, int self);
-	void handle_shotgun(Player &player, int self);
+	void handle_pistol(Player &player, int self);
 	void handle_gibs(Player &player);
 	void create_crosshair();
 	void draw_crosshair();

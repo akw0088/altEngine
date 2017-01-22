@@ -219,6 +219,14 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
+#ifdef G_COMMANDO
+	strcpy(wave.file, "sound/weapons/knife/knife_slash1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+#endif
+
+
 	strcpy(wave.file, "sound/weapons/rocket/rocklf1a.wav");
 	audio.load(wave);
 	if (wave.data != NULL)

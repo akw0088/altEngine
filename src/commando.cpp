@@ -9,11 +9,11 @@
 #define MACHINEGUN_DAMAGE 7
 #define MACHINEGUN_RELOAD 8
 
-#define SHOTGUN_DAMAGE 50
-#define SHOTGUN_RELOAD 60
+#define PISTOL_DAMAGE 7
+#define PISTOL_RELOAD 60
 
-#define GRENADE_DAMAGE 100
-#define GRENADE_SPLASH_DAMAGE 50
+#define GRENADE_DAMAGE 125
+#define GRENADE_SPLASH_DAMAGE 125
 #define GRENADE_RELOAD 100
 
 #define ROCKET_DAMAGE 100
@@ -24,11 +24,11 @@
 #define PLASMA_SPLASH_DAMAGE 15
 #define PLASMA_RELOAD 8
 
-#define LIGHTNING_DAMAGE 8
-#define LIGHTNING_RELOAD 6
+#define KNIFE_DAMAGE 125
+#define KNIFE_RELOAD 16
 
-#define RAILGUN_DAMAGE 100
-#define RAILGUN_RELOAD 188
+#define RIFLE_DAMAGE 100
+#define RIFLE_RELOAD 188
 
 #define QUAD_FACTOR 3.0f
 
@@ -727,7 +727,7 @@ void Commando::add_bot(int &index)
 
 void Commando::step(int frame_step)
 {
-	unsigned int num_bot = 3;
+	unsigned int num_bot = 0;
 
 	if (engine->entity_list.size() == 0)
 		return;
@@ -1168,7 +1168,7 @@ void Commando::handle_grenade(Player &player, int self)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 }
 
-void Commando::handle_lightning(Player &player, int self)
+void Commando::handle_knife(Player &player, int self)
 {
 	Frame camera_frame;
 	int index[8];
@@ -1177,8 +1177,8 @@ void Commando::handle_lightning(Player &player, int self)
 	player.entity->model->get_frame(camera_frame);
 
 
-	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
-	player.reload_timer = LIGHTNING_RELOAD;
+	sprintf(player.attack_sound, "sound/weapons/knife/knife_slash1.wav");
+	player.reload_timer = KNIFE_RELOAD;
 	player.ammo_lightning--;
 
 	vec3 forward;
@@ -1237,9 +1237,9 @@ void Commando::handle_lightning(Player &player, int self)
 			continue;
 
 		debugf("Player %s hit %s with the lightning gun for %d damage\n", player.name,
-			engine->entity_list[index[i]]->player->name, (int)(LIGHTNING_DAMAGE * quad_factor));
+			engine->entity_list[index[i]]->player->name, (int)(KNIFE_DAMAGE * quad_factor));
 
-		sprintf(cmd, "hurt %d %d", index[i], (int)(LIGHTNING_DAMAGE * quad_factor));
+		sprintf(cmd, "hurt %d %d", index[i], (int)(KNIFE_DAMAGE * quad_factor));
 		console(self, cmd, engine->menu, engine->entity_list);
 
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
@@ -1288,7 +1288,7 @@ void Commando::handle_lightning(Player &player, int self)
 
 }
 
-void Commando::handle_railgun(Player &player, int self)
+void Commando::handle_rifle(Player &player, int self)
 {
 	int index[8];
 	int num_index;
@@ -1300,7 +1300,7 @@ void Commando::handle_railgun(Player &player, int self)
 
 	sprintf(player.attack_sound, "sound/weapons/railgun/railgf1a.wav");
 
-	player.reload_timer = RAILGUN_RELOAD;
+	player.reload_timer = RIFLE_RELOAD;
 	player.ammo_slugs--;
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
@@ -1352,10 +1352,10 @@ void Commando::handle_railgun(Player &player, int self)
 		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
-		debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
-			engine->entity_list[index[i]]->player->name, (int)(RAILGUN_DAMAGE * quad_factor));
+		debugf("Player %s hit %s with the rifle for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, (int)(RIFLE_DAMAGE * quad_factor));
 
-		sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
+		sprintf(cmd, "hurt %d %d", index[i], (int)(RIFLE_DAMAGE * quad_factor));
 		console(self, cmd, engine->menu, engine->entity_list);
 
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
@@ -1499,7 +1499,7 @@ void Commando::handle_machinegun(Player &player, int self)
 	}
 }
 
-void Commando::handle_shotgun(Player &player, int self)
+void Commando::handle_pistol(Player &player, int self)
 {
 	Frame camera_frame;
 
@@ -1509,7 +1509,7 @@ void Commando::handle_shotgun(Player &player, int self)
 	int num_index;
 
 
-	player.reload_timer = SHOTGUN_RELOAD;
+	player.reload_timer = PISTOL_RELOAD;
 	player.ammo_shells--;
 
 	sprintf(player.attack_sound, "sound/weapons/shotgun/sshotf1b.wav");
@@ -1541,19 +1541,6 @@ void Commando::handle_shotgun(Player &player, int self)
 	shell->model = shell->rigid;
 	camera_frame.set(shell->model->morientation);
 
-	Entity *shell2 = engine->entity_list[engine->get_entity()];
-	shell2->rigid = new RigidBody(shell2);
-	shell2->position = camera_frame.pos;
-	shell2->rigid->clone(*(engine->shell->model));
-	shell2->rigid->velocity = vec3(0.25f, 0.5f, 0.0f);
-	shell2->rigid->rotational_friction_flag = true;
-	shell2->rigid->translational_friction_flag = true;
-	shell2->rigid->translational_friction = 0.9f;
-	shell2->rigid->angular_velocity = vec3(-1.0, 2.0, -3.0);
-	shell2->rigid->gravity = true;
-	shell2->model = shell2->rigid;
-	camera_frame.set(shell2->model->morientation);
-
 	float quad_factor = 1.0f;
 
 	if (player.quad_timer > 0)
@@ -1571,9 +1558,9 @@ void Commando::handle_shotgun(Player &player, int self)
 		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
-		debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,
-			engine->entity_list[index[i]]->player->name, (int)(SHOTGUN_DAMAGE * quad_factor));
-		sprintf(cmd, "hurt %d %d", index[i], (int)(SHOTGUN_DAMAGE * quad_factor));
+		debugf("Player %s hit %s with the pistol for %d damage\n", player.name,
+			engine->entity_list[index[i]]->player->name, (int)(PISTOL_DAMAGE * quad_factor));
+		sprintf(cmd, "hurt %d %d", index[i], (int)(PISTOL_DAMAGE * quad_factor));
 
 		console(self, cmd, engine->menu, engine->entity_list);
 		debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
@@ -2302,7 +2289,7 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_lightning > 0)
 			{
 				fired = true;
-				handle_lightning(player, self);
+				handle_knife(player, self);
 			}
 			else
 			{
@@ -2315,7 +2302,7 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_slugs > 0)
 			{
 				fired = true;
-				handle_railgun(player, self);
+				handle_rifle(player, self);
 			}
 			else
 			{
@@ -2328,7 +2315,7 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_shells > 0)
 			{
 				fired = true;
-				handle_shotgun(player, self);
+				handle_pistol(player, self);
 			}
 			else
 			{

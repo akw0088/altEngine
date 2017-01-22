@@ -1608,8 +1608,8 @@ bool Engine::collision_detect(RigidBody &body)
 	}
 	body.map_collision = false;
 
-	if (body_collision(body))
-		return true;
+//	if (body_collision(body))
+//		return true;
 
 	return false;
 }
