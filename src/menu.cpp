@@ -52,6 +52,7 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 
 	console = false;
 	ingame = false;
+	chatmode = false;
 	chat = true;
 	notif = true;
 
@@ -340,6 +341,17 @@ void Menu::render_console(Global &global)
 	draw_text("Console", 0.85f - 0.0125f, 0.5f - 0.025f, 0.025f, color, false, true);
 }
 
+void Menu::render_chatmode(Global &global)
+{
+	vec3 color(1.0f, 1.0f, 1.0f);
+
+	gfx->cleardepth();
+	strcat(key_buffer, "\4");
+	draw_text(key_buffer, 0.175f, 0.5f - 0.05f, 0.025f, color, true, false);
+	key_buffer[strlen(key_buffer) - 1] = '\0';
+	draw_text("Say:", 0.1f, 0.5f - 0.05f, 0.025f, color, false, true);
+}
+
 void Menu::render_chat(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -508,6 +520,51 @@ void Menu::handle_console(char key, Engine *altEngine)
 		key_buffer[0] = '\0';
 		break;
 		}
+	case 4:
+	case '\b':
+		if (length - 1 == -1)
+			return;
+
+		key_buffer[length - 1] = '\0';
+		break;
+	default:
+		if (length + 1 == sizeof(key_buffer))
+			return;
+		key_buffer[length] = key;
+		key_buffer[length + 1] = '\0';
+	}
+}
+
+void Menu::handle_chatmode(char key, Engine *altEngine)
+{
+	int length = strlen(key_buffer);
+
+	switch (key)
+	{
+	case 27:
+		chatmode = false;
+		break;
+	case 3:
+		if (history_index < chat_buffer.size())
+		{
+			strcpy(key_buffer, chat_buffer[chat_buffer.size() - 1 - history_index]);
+			history_index++;
+		}
+		break;
+	case 5:
+		if (history_index)
+		{
+			history_index--;
+			strcpy(key_buffer, chat_buffer[chat_buffer.size() - 1 - history_index]);
+		}
+		break;
+	case '\r':
+	{
+		altEngine->chat(NULL, key_buffer);
+		key_buffer[0] = '\0';
+		chatmode = false;
+		break;
+	}
 	case 4:
 	case '\b':
 		if (length - 1 == -1)

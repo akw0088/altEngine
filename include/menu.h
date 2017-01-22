@@ -16,7 +16,9 @@ public:
 	void handle(char key, Engine *altEngine);
 	void draw_text(char *str, float x, float y, float scale, vec3 &color, bool start, bool stop);
 	void render_console(Global &global);
+	void render_chatmode(Global &global);
 	void handle_console(char key, Engine *altEngine);
+	void handle_chatmode(char key, Engine *altEngine);
 	void movepos(char c, float &xpos, float &ypos, float scale);
 	void print(const char *str);
 	void stop();
@@ -38,6 +40,7 @@ public:
 	bool notif;
 	bool console;
 	bool ingame;
+	bool chatmode;
 
 	//making static so I can use it like printf
 	static vector<char *> console_buffer;

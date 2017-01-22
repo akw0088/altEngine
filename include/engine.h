@@ -68,6 +68,7 @@ public:
 	void render_client(int i, const matrix4 &trans, bool lights, bool hack);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
+	void render_players(matrix4 &trans, bool lights);
 
 	bool select_wave(int source, char *file);
 	void destroy_buffers();

@@ -748,7 +748,7 @@ void Quake3::step(int frame_step)
 	}
 
 
-	if (engine->menu.ingame == false && engine->menu.console == false)
+	if (engine->menu.ingame == false && engine->menu.console == false && engine->menu.chatmode == false)
 	{
 		if (spectator == true)
 		{
@@ -2490,7 +2490,7 @@ void Quake3::render_hud(double last_frametime)
 	vec3 color(1.0f, 1.0f, 1.0f);
 
 
-	if (chat_timer > 0)
+	if (chat_timer > 0 || engine->menu.chatmode)
 	{
 		engine->menu.render_chat(engine->global);
 		chat_timer--;

@@ -592,10 +592,7 @@ void Engine::render(double last_frametime)
 #endif
 #ifdef FORWARD
 	gfx.clear();
-//	gfx.Blend(true);
-//	render_shadow_volumes(0); // for debugging
 	render_scene(true);
-//	gfx.Blend(false);
 #endif
 #ifdef SHADOWVOL
 	matrix4 mvp;
@@ -641,12 +638,14 @@ void Engine::render(double last_frametime)
 	handle_input();
 
 	//render menu
-	//gfx.cleardepth();
-	q3.render_hud(last_frametime);
+	if (menu.chatmode == false)
+		q3.render_hud(last_frametime);
 	if (menu.ingame)
 		menu.render(global);
 	if (menu.console)
 		menu.render_console(global);
+	if (menu.chatmode)
+		menu.render_chatmode(global);
 	gfx.swap();
 }
 
@@ -2467,12 +2466,15 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if (q3map.loaded == false || menu.ingame == true || menu.console == true)
+	if (q3map.loaded == false || menu.ingame == true || menu.console == true || menu.chatmode == true)
 	{
 		float devicex = (float)x / gfx.width;
 		float devicey = (float)y / gfx.height;
 
 		if (menu.console == true)
+			return false;
+
+		if (menu.chatmode == true)
 			return false;
 
 		bool updated = menu.delta(devicex, devicey);
@@ -2754,6 +2756,8 @@ void Engine::keystroke(char key)
 			menu.handle_console(key, this);
 		else if (menu.ingame)
 			menu.handle(key, this);
+		else if (menu.chatmode)
+			menu.handle_chatmode(key, this);
 		else
 			handle_game(key);
 	}
@@ -2768,6 +2772,10 @@ void Engine::handle_game(char key)
 	case '~':
 	case '`':
 		menu.console = !menu.console;
+		break;
+	case 'T':
+	case 't':
+		menu.chatmode = true;
 		break;
 	case 'r':
 		camera_frame.reset();
@@ -3772,11 +3780,20 @@ void Engine::chat(char *name, char *msg)
 	strcat(reliable.msg, msg);
 	reliable.sequence = sequence;
 
-	// skip past 'say "'
-	char *pmsg = msg + 5;
-	// remove ending "
-	pmsg[strlen(pmsg) - 1] = '\0';
-	sprintf(data, "%s: %s", name, pmsg);
+	if (name == NULL)
+	{
+		//chatmode chat
+		sprintf(data, "%s: %s", entity_list[find_type("player", 0)]->player->name, msg);
+	}
+	else
+	{
+		//console chat command
+		// skip past 'say "'
+		char *pmsg = msg + 5;
+		// remove ending "
+		pmsg[strlen(pmsg) - 1] = '\0';
+		sprintf(data, "%s: %s", name, pmsg);
+	}
 	menu.print_chat(data);
 	q3.chat_timer = 3 * TICK_RATE;
 }
