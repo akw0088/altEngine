@@ -147,8 +147,9 @@
 	#include <crtdbg.h>
 #endif
 
-using namespace std;
+#define G_QUAKE3
 
+using namespace std;
 
 #include "net.h"
 #include "vector.h"
@@ -185,8 +186,11 @@ using namespace std;
 #include "shader.h"
 #include "parse.h"
 #include "menu.h"
+#include "basegame.h"
 #include "quake3.h"
+#include "commando.h"
 #include "engine.h"
+
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
 int load_texture(Graphics &gfx, char *file_name, bool clamp);

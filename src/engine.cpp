@@ -53,6 +53,14 @@ void Engine::init(void *p1, void *p2)
 	Engine::param2 = p2;
 	initialized = true;
 
+#ifdef G_QUAKE3
+	game = new Quake3();
+#endif
+
+#ifdef G_COMMANDO
+	game = new Commando();
+#endif
+
 
 	debugf("altEngine2 built %s\n", __DATE__);
 	bind_keys();
@@ -212,8 +220,7 @@ void Engine::init(void *p1, void *p2)
 
 	global.init(&gfx);
 
-	q3.init(this);
-
+	game->init(this);
 
 	//audio
 	audio.init();
@@ -293,7 +300,7 @@ void Engine::load(char *level)
 	if (q3map.loaded)
 		return;
 	
-	q3.load();
+	game->load();
 
 	q3map.anim_list.clear();
 
@@ -396,7 +403,7 @@ void Engine::load(char *level)
 	delete [] ref;
 
 
-	q3.setup_func(entity_list, q3map);
+	game->setup_func(entity_list, q3map);
 
 	menu.delta("entities", *this);
 	gfx.clear();
@@ -639,7 +646,7 @@ void Engine::render(double last_frametime)
 
 	//render menu
 	if (menu.chatmode == false)
-		q3.render_hud(last_frametime);
+		game->render_hud(last_frametime);
 	if (menu.ingame)
 		menu.render(global);
 	if (menu.console)
@@ -912,7 +919,7 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	entity_list[i]->rigid->get_matrix(mvp.m);
 	mvp = (mvp * trans) * projection;
 
-	q3.draw_flash(*(entity_list[i]->player));
+	game->draw_flash(*(entity_list[i]->player));
 	mlight2.Select();
 	entity_list[i]->rigid->get_matrix(mvp.m);
 
@@ -1723,7 +1730,7 @@ void Engine::step(int tick)
 		tex->texObj[texunit] = tex->texObjAnim[ani_index];
 	}
 
-	q3.step(tick);
+	game->step(tick);
 
 	// These two funcs loop through all entities, should probably combine
 	spatial_testing(); // mostly sets visible flag
@@ -1872,7 +1879,7 @@ void Engine::check_triggers(int self)
 		if (entity_list[i]->trigger->owner == self && entity_list[i]->rigid->bounce == 0)
 			continue;
 
-		if (entity_list[i]->trigger->owner != -1 &&  entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && q3.gametype != GAMETYPE_DEATHMATCH)
+		if (entity_list[i]->trigger->owner != -1 &&  entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && game->gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		if (strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
@@ -1914,7 +1921,7 @@ void Engine::check_triggers(int self)
 			if (pickup)
 			{
 				entity_list[i]->trigger->active = true;
-				q3.console(self, entity_list[i]->trigger->action, menu, entity_list);
+				game->console(self, entity_list[i]->trigger->action, menu, entity_list);
 
 				if (entity_list[i]->trigger->projectile)
 				{
@@ -1954,12 +1961,12 @@ void Engine::check_triggers(int self)
 							weapon);
 						debugf(msg);
 						menu.print_notif(msg);
-						q3.notif_timer = 3 * TICK_RATE;
+						game->notif_timer = 3 * TICK_RATE;
 
 
-						if (entity_list[owner]->player->stats.kills >= q3.fraglimit)
+						if (entity_list[owner]->player->stats.kills >= game->fraglimit)
 						{
-							q3.endgame();
+							game->endgame();
 							return;
 						}
 					}
@@ -3168,7 +3175,7 @@ void Engine::load_model(Entity &ent)
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
-	q3.init_camera(entity_list);
+	game->init_camera(entity_list);
 	load_sounds();
 	create_sources();
 	load_models();
@@ -3379,7 +3386,7 @@ void Engine::unload()
 	if (q3map.loaded == false)
 		return;
 
-	q3.unload();
+	game->unload();
 
 	num_bot = 0;
 
@@ -3433,7 +3440,7 @@ void Engine::destroy()
 	free((void *)shader_list[0]);
 	free((void *)hash_list[0]);
 	free((void *)pk3_list[0]);
-	q3.destroy();
+	game->destroy();
 	debugf("Shutting down.\n");
 	delete box;
 	delete ball;
@@ -3696,7 +3703,8 @@ void Engine::console(char *cmd)
 
 		if (player == -1)
 			return;
-		q3.console(player, cmd, menu, entity_list);
+
+		game->console(player, cmd, menu, entity_list);
 	}
 }
 
@@ -3795,7 +3803,7 @@ void Engine::chat(char *name, char *msg)
 		sprintf(data, "%s: %s", name, pmsg);
 	}
 	menu.print_chat(data);
-	q3.chat_timer = 3 * TICK_RATE;
+	game->chat_timer = 3 * TICK_RATE;
 }
 
 

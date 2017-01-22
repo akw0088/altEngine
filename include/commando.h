@@ -1,12 +1,100 @@
 #include "include.h"
 
-#ifndef QUAKE3_H
-#define QUAKE3_H
+#ifndef COMMANDO_H
+#define COMMANDO_H
 
-class Quake3 : public BaseGame
+/*
+Remember Commandos: Behind Enemy Lines?
+	Think that game in 3d using wolfenstein maps from rtcw and enemy territory
+
+enemy:
+	halt: ALTO.WAV
+	stab: CUCHI.WAV
+	find dead body: MUERTO.WAV
+	whose there: QUIENVA.WAV
+	noise maker: SEGNUELO.WAV
+	distract: SOLDAT.WAV
+	alarm: VOZALARM.WAV
+
+
+GB cant move:
+	ESA/GBIM01.WAV
+	ESA/GBIM02.WAV
+	ESA/GBIM03.WAV
+
+GB can move:
+	ESA/GBMV01.WAV - move 1
+	ESA/GBMV02.WAV - move 2
+	ESA/GBMV03.WAV - move 3
+	ESA/GBMV04.WAV - move 4
+
+GB okay:
+	GBNM01.WAV - okay1
+	GBNM02.WAV - okay1
+	GBNM03.WAV - okay1
+
+GB damage:
+	GBSD01.WAV - damage1
+	GBSD02.WAV - damage1
+	GBSD03.WAV - damage1
+
+
+Spy:
+	SPN
+Driver:
+	DR
+Sapper?
+	MA
+Sniper:
+	SN
+
+Green Beret:
+	pistol
+	knife
+	climb
+	decoy
+	carry barrel
+	carry body
+	shovel
+
+Sniper:
+	pistol
+	rifle scope (low ammo)
+	first aid kit
+
+Marine:
+	pistol
+	knife
+	boat
+	diving gear
+	harpoon (close range instant kill)
+Sapper:
+	pistol
+	bear trap
+	time bomb
+	remote detonate bomb
+	grenade
+	pliers
+Driver:
+	Pistol
+	submachine gun
+	first aid kit
+	driving (duh)
+	enemy fixed gun control
+Spy:
+	Pistol
+	lethal injection
+	get enemy uniform (not from bodies)
+	disguise
+	distract
+	first aid kit
+	move bodies
+*/
+
+class Commando : public BaseGame
 {
 public:
-	Quake3();
+	Commando();
 
 	void init(Engine *engine);
 	void step(int frame_step);

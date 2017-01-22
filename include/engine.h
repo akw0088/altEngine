@@ -6,6 +6,7 @@
 class Engine
 {
 	friend class Quake3;
+	friend class Commando;
 
 public:
 	Engine();
@@ -125,7 +126,7 @@ public:
 	bool show_hud;
 
 //Game logic
-	Quake3 q3;
+	BaseGame *game;
 
 	MD5Model	zcc;
 	MD5Model	sentry;
