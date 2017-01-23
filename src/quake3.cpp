@@ -109,6 +109,7 @@ void Quake3::init_camera(vector<Entity *> &entity_list)
 			switch (entity_list[i]->angle)
 			{
 			case 0:
+			case 360:
 				matrix4::mat_left(matrix, entity_list[spawn]->position);
 				break;
 			case 90:
