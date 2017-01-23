@@ -6,4 +6,8 @@
 
 BaseGame::BaseGame()
 {
+	gametype = GAMETYPE_DEATHMATCH;
+	fraglimit = 8;
+	notif_timer = 0;
+	chat_timer = 0;
 }

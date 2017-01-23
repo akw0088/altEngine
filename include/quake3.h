@@ -53,12 +53,8 @@ public:
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 	void endgame();
 
-	gametype_t gametype;
-	int		fraglimit;
 	int		timelimit;
 	int		capturelimit;
-	unsigned int chat_timer;
-	unsigned int notif_timer;
 	unsigned int weapon_switch_timer;
 
 private:
