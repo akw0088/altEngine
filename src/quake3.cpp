@@ -39,6 +39,7 @@ extern char bot_state_name[16][80];
 Quake3::Quake3()
 {
 	blink = false;
+	spectator = false;
 	gametype = GAMETYPE_DEATHMATCH;
 	last_spawn = 0;
 	spectator_timer = 0;
@@ -780,7 +781,11 @@ void Quake3::step(int frame_step)
 					}
 				}
 				int spectator = engine->find_type("spectator", 0);
-				sprintf(engine->entity_list[spectator]->type, "NPC");
+
+				if (spectator != -1)
+				{
+					sprintf(engine->entity_list[spectator]->type, "NPC");
+				}
 				sprintf(engine->entity_list[index]->type, "player");
 			}
 			else
