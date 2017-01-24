@@ -33,6 +33,7 @@ Engine::Engine()
 	show_debug = false;
 	show_hud = true;
 	entities_enabled = true;
+	collision_detect_enable = true;
 	num_bot = 0;
 
 	fov = 45.0f;
@@ -1508,6 +1509,9 @@ void Engine::dynamics()
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->rigid == NULL)
+			continue;
+
+		if (collision_detect_enable == false && i >= num_player)
 			continue;
 
 // Need to run all the time because of bots freezing when leaving PVS
@@ -3552,6 +3556,20 @@ void Engine::console(char *cmd)
 		else
 		{
 			q3map.patch_enabled = false;
+		}
+		return;
+	}
+
+	if (sscanf(cmd, "g_collision %s", data) == 1)
+	{
+		menu.print(msg);
+		if (atoi(data))
+		{
+			collision_detect_enable = true;
+		}
+		else
+		{
+			collision_detect_enable = false;
 		}
 		return;
 	}
