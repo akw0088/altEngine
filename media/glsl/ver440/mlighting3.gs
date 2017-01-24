@@ -11,6 +11,10 @@ in VertexData {
 	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
+	vec2		vary_TexCoord0;
+	vec2		vary_TexCoord1;
+	vec2		vary_TexCoord2;
+	vec2		vary_TexCoord3;
 	vec2		vary_LightCoord;
 	vec3		vary_normal;
 	flat int	vary_color;
@@ -22,6 +26,10 @@ out VertexDataOut {
     vec3 att_position;
     vec4 vary_position;
     vec2 vary_TexCoord;
+    vec2 vary_TexCoord0;
+    vec2 vary_TexCoord1;
+    vec2 vary_TexCoord2;
+    vec2 vary_TexCoord3;
     vec2 vary_LightCoord;
     vec3 vary_normal;
     flat int vary_color;

@@ -15,6 +15,10 @@ out VertexData {
 	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
+	vec2		vary_TexCoord0;
+	vec2		vary_TexCoord1;
+	vec2		vary_TexCoord2;
+	vec2		vary_TexCoord3;
 	vec2		vary_LightCoord;
 	vec3		vary_normal;
 	flat int	vary_color;
@@ -27,9 +31,58 @@ uniform vec4	u_color[MAX_LIGHTS]; //alpha is intensity
 uniform int	u_num_lights;
 uniform mat4	mvp;
 
+uniform vec2		u_tcmod_scroll0;
+uniform vec2		u_tcmod_scroll1;
+uniform vec2		u_tcmod_scroll2;
+uniform vec2		u_tcmod_scroll3;
+uniform vec2		u_tcmod_scroll4;
+uniform vec2		u_tcmod_scroll5;
+uniform vec2		u_tcmod_scroll6;
+uniform vec2		u_tcmod_scroll7;
+
+uniform vec2		u_tcmod_scale0;
+uniform vec2		u_tcmod_scale1;
+uniform vec2		u_tcmod_scale2;
+uniform vec2		u_tcmod_scale3;
+uniform vec2		u_tcmod_scale4;
+uniform vec2		u_tcmod_scale5;
+uniform vec2		u_tcmod_scale6;
+uniform vec2		u_tcmod_scale7;
+
+uniform float	u_tcmod_sin0;
+uniform float	u_tcmod_sin1;
+uniform float	u_tcmod_sin2;
+uniform float	u_tcmod_sin3;
+uniform float	u_tcmod_sin4;
+uniform float	u_tcmod_sin5;
+uniform float	u_tcmod_sin6;
+uniform float	u_tcmod_sin7;
+
+
+uniform float	u_tcmod_cos0;
+uniform float	u_tcmod_cos1;
+uniform float	u_tcmod_cos2;
+uniform float	u_tcmod_cos3;
+uniform float	u_tcmod_cos4;
+uniform float	u_tcmod_cos5;
+uniform float	u_tcmod_cos6;
+uniform float	u_tcmod_cos7;
 
 void main(void)
 {
+
+	mat2 mRot0 = mat2( u_tcmod_cos0, -u_tcmod_sin0, u_tcmod_sin0,  u_tcmod_cos0);
+	mat2 mRot1 = mat2( u_tcmod_cos1, -u_tcmod_sin1, u_tcmod_sin1,  u_tcmod_cos1);
+	mat2 mRot2 = mat2( u_tcmod_cos2, -u_tcmod_sin2, u_tcmod_sin2,  u_tcmod_cos2);
+	mat2 mRot3 = mat2( u_tcmod_cos3, -u_tcmod_sin3, u_tcmod_sin3,  u_tcmod_cos3);
+
+
+	vec2 bias = vec2(0.5, -0.5);
+	Vertex.vary_TexCoord0 = ((u_tcmod_scale0 * attr_TexCoord - u_tcmod_scale0 * bias) * mRot0 + u_tcmod_scale0 * bias) + u_tcmod_scroll0;
+	Vertex.vary_TexCoord1 = ((u_tcmod_scale1 * attr_TexCoord - u_tcmod_scale1 * bias) * mRot1 + u_tcmod_scale1 * bias) + u_tcmod_scroll1;
+	Vertex.vary_TexCoord2 = ((u_tcmod_scale2 * attr_TexCoord - u_tcmod_scale2 * bias) * mRot2 + u_tcmod_scale2 * bias) + u_tcmod_scroll2;
+	Vertex.vary_TexCoord3 = ((u_tcmod_scale3 * attr_TexCoord - u_tcmod_scale3 * bias) * mRot3 + u_tcmod_scale3 * bias) + u_tcmod_scroll3;
+
 	//pass through to fragment shader
 	Vertex.vary_normal = attr_normal;
 	Vertex.vary_TexCoord = attr_TexCoord;
