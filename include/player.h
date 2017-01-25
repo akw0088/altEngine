@@ -171,6 +171,9 @@ public:
 	unsigned int flash_plasma;
 
 
+	bool godmode;
+
+
 	path_t path;
 
 	char name[128];

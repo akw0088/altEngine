@@ -3276,6 +3276,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int health_damage = damage / 3;
 		unsigned int armor_damage = 2 * health_damage;
 
+		if (entity_list[index]->player->godmode)
+			return;
+
 		if (armor_damage > entity_list[index]->player->armor)
 		{
 			armor_damage -= entity_list[index]->player->armor;
@@ -3333,6 +3336,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int damage = abs32(atoi(data));
 		unsigned int health_damage = damage / 3;
 		unsigned int armor_damage = 2 * health_damage;
+
+		if (entity_list[self]->player->godmode)
+			return;
 
 		if (armor_damage > entity_list[self]->player->armor)
 		{
@@ -4210,6 +4216,18 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
 		engine->zcc.select_animation(atoi(data));
+		return;
+	}
+
+	ret = strcmp(cmd, "godmode");
+	if (ret == 0)
+	{
+		snprintf(msg, LINE_SIZE, "give all\n");
+		menu.print(msg);
+		if (self != -1)
+		{
+			entity_list[self]->player->godmode = true;
+		}
 		return;
 	}
 
