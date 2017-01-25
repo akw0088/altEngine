@@ -223,6 +223,7 @@ typedef struct
 
 typedef struct
 {
+	bsp_t		*header;
 	byte		*Ent;
 	material_t	*Material;
 	plane_t		*Plane;

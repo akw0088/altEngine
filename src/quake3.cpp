@@ -792,7 +792,10 @@ void Quake3::step(int frame_step)
 			{
 				int player = engine->find_type("player", 0);
 
-				sprintf(engine->entity_list[player]->type, "spectator");
+				if (player != -1)
+				{
+					sprintf(engine->entity_list[player]->type, "spectator");
+				}
 			}
 		}
 		else
@@ -829,7 +832,7 @@ void Quake3::step(int frame_step)
 				continue;
 			}
 
-			bot->player->avoid_walls(engine->q3map);
+			//bot->player->avoid_walls(engine->q3map);
 
 			bot->player->handle_bot(engine->entity_list, i);
 

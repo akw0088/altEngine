@@ -3191,8 +3191,12 @@ void Engine::load_entities()
 	}
 
 	int spawn = find_type("player", 0);
-	entity_list[spawn]->rigid->clone(*(thug22->model));
-	entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+
+	if (spawn != -1)
+	{
+		entity_list[spawn]->rigid->clone(*(thug22->model));
+		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
+	}
 }
 
 void Engine::clean_entity(int index)

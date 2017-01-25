@@ -37,6 +37,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	byte *pBsp = (byte *)tBsp;
 
 	// init data
+	data.header = (bsp_t *)tBsp;
 	data.Vert = (bspvertex_t *)	&pBsp[tBsp->directory[VertexArray].offset];
 	data.Ent = (byte *)			&pBsp[tBsp->directory[Entities].offset];
 	data.Material = (material_t *)&pBsp[tBsp->directory[Materials].offset];
@@ -86,8 +87,18 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 //	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
-	lightmap_object = new int [data.num_lightmaps];
 	normal_object = new int [data.num_materials];
+
+	if (data.num_lightmaps == 0 && data.header->version == 0x2F)
+	{
+		// assuming 32 is enough for wolfenstein maps
+		lightmap_object = new int[32];
+	}
+	else
+	{
+		lightmap_object = new int[data.num_lightmaps];
+	}
+
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
@@ -1423,13 +1434,42 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
-		lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
+		if (data.header->version == 0x2E)
+		{
+			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
+		}
+		else
+		{
+			printf("Unknown BSP Version %X, assuming Quake3 0x2E\n", data.header->version);
+			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
+		}
 #else
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);
 		delete [] pBits;
 #endif
 	}
+
+	// Wolfenstein Enemy territory has lightmap tgas outside of bsp
+	if (data.header->version == 0x2F)
+	{
+		char filename[128];
+		char name[80];
+
+		//remove .bsp
+		strcpy(name, map_name);
+		name[strlen(name) - 4] = '\0';
+
+		//mapname/lm_0000.tga
+		for (int i = 0;; i++)
+		{
+			sprintf(filename, "media/%s/lm_%04d.tga", name, i);
+			lightmap_object[i] = load_texture_pk3(gfx, filename, pk3_list, num_pk3, false);
+			if (lightmap_object[i] == 0)
+				break;
+		}
+	}
+
 #endif
 
 	for (unsigned int i = 0; i < data.num_materials; i++)
