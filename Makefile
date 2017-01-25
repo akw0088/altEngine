@@ -1,5 +1,6 @@
 SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
+		basegame.cpp \
 		bsp.cpp \
 		common.cpp \
 		decal.cpp \
