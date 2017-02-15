@@ -1889,13 +1889,35 @@ void Engine::check_triggers(int self)
 		if (strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_BLUE)
+			{
+				if (entity_list[self]->player->holdable_flag)
+				{
+					entity_list[self]->player->holdable_flag = false;
+					game->blue_flag_caps++;
+					if (game->blue_flag_caps == game->capturelimit)
+					{
+						game->endgame();
+					}
+				}
 				continue;
+			}
 		}
 
 		if (strcmp(entity_list[i]->type, "team_CTF_redflag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_RED)
+			{
+				if (entity_list[self]->player->holdable_flag)
+				{
+					entity_list[self]->player->holdable_flag = false;
+					game->red_flag_caps++;
+					if (game->red_flag_caps == game->capturelimit)
+					{
+						game->endgame();
+					}
+				}
 				continue;
+			}
 		}
 
 

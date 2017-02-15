@@ -28,6 +28,9 @@ public:
 	// Need to move these references out of Engine
 	gametype_t gametype;
 	int fraglimit;
+	int capturelimit;
+	int blue_flag_caps;
+	int red_flag_caps;
 	int notif_timer;
 	int chat_timer;
 	Engine *engine;
