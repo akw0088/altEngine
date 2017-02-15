@@ -54,7 +54,6 @@ public:
 	void endgame();
 
 	int		timelimit;
-	int		capturelimit;
 	unsigned int weapon_switch_timer;
 
 private:

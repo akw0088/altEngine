@@ -1894,6 +1894,17 @@ void Engine::check_triggers(int self)
 				{
 					entity_list[self]->player->holdable_flag = false;
 					game->blue_flag_caps++;
+
+					bool ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
+					if (ret)
+					{
+						audio.play(entity_list[i]->trigger->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_sound);
+					}
+
 					if (game->blue_flag_caps == game->capturelimit)
 					{
 						game->endgame();
@@ -1911,6 +1922,17 @@ void Engine::check_triggers(int self)
 				{
 					entity_list[self]->player->holdable_flag = false;
 					game->red_flag_caps++;
+
+					bool ret = select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
+					if (ret)
+					{
+						audio.play(entity_list[i]->trigger->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_sound);
+					}
+
 					if (game->red_flag_caps == game->capturelimit)
 					{
 						game->endgame();
