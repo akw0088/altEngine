@@ -1005,7 +1005,6 @@ void Quake3::handle_plasma(Player &player, int self)
 	if (player.quad_timer > 0)
 		quad_factor = QUAD_FACTOR;
 
-
 	Entity *projectile = engine->entity_list[engine->get_entity()];
 
 	projectile->nettype = NT_PLASMA;
@@ -1111,6 +1110,16 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
 
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_ROCKET_FLASH;
+	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+
 	bool ret = engine->select_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
 	if (ret)
 	{
@@ -1121,15 +1130,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 		debugf("Unable to find PCM data for %s\n", projectile->trigger->idle_sound);
 	}
 
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_ROCKET_FLASH;
-	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
-	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+
 }
 
 void Quake3::handle_grenade(Player &player, int self)
@@ -4350,6 +4351,269 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 	}
 }
 
+
+/*
+	Used to create entities for both player and network clients
+	Network clients are more interested in visual properties,
+	they get the position and orientation over the network
+	and let server handle damage etc
+*/
+void Quake3::make_dynamic_ent(nettype item, Entity *ent)
+{
+	switch (item)
+	{
+    case NT_ROCKET:
+		ent->nettype = NT_ROCKET;
+		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger->projectile = true;
+		sprintf(ent->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+		sprintf(ent->trigger->idle_sound, "sound/weapons/rocket/rockfly.wav");
+
+		ent->trigger->hide = false;
+		ent->trigger->radius = 25.0f;
+		ent->trigger->idle = true;
+		ent->trigger->explode = true;
+		ent->trigger->idle_timer = 0;
+		ent->trigger->explode_timer = 10;
+		ent->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+		ent->trigger->explode_intensity = 500.0f;
+		ent->trigger->splash_radius = 250.0f;
+		ent->trigger->knockback = 250.0f;
+		ent->num_particle = 5000;
+
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(1.0f, 1.0f, 1.0f);
+		ent->light->intensity = 1000.0f;
+
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->rigid->clone(*(engine->rocket->model));
+		ent->rigid->gravity = false;
+		break;
+    case NT_ROCKET_FLASH:
+		ent->nettype = NT_ROCKET_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(1.0f, 0.75f, 0.0f);
+		ent->light->intensity = 2000.0f;
+		ent->light->attenuation = 0.0625f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_ROCKET_LAUNCHER:
+		break;
+    case NT_GRENADE:
+		ent->nettype = NT_GRENADE;
+
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->rigid->clone(*(engine->box->model));
+		//entity->rigid->clone(*(pineapple->model));
+		ent->rigid->gravity = true;
+		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->translational_friction = 0.9f;
+		ent->num_particle = 5000;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger->projectile = true;
+		sprintf(ent->trigger->explode_sound, "sound/weapons/rocket/rocklx1a.wav");
+
+		ent->trigger->hide = false;
+		ent->trigger->radius = 25.0f;
+		ent->trigger->idle = true;
+		ent->trigger->idle_timer = 120;
+		ent->trigger->explode = true;
+		ent->trigger->explode_timer = 10;
+		ent->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
+		ent->trigger->explode_intensity = 500.0f;
+		ent->trigger->splash_radius = 250.0f;
+		ent->trigger->knockback = 250.0f;
+		break;
+    case NT_GRENADE_FLASH:
+		ent->nettype = NT_GRENADE_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(1.0f, 0.7f, 0.0f);
+		ent->light->intensity = 2000.0f;
+		ent->light->attenuation = 0.0625f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_GRENADE_LAUNCHER:
+		break;
+    case NT_LIGHTNING:
+		ent->nettype = NT_LIGHTNING;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(engine->box->model));
+		ent->rigid->velocity = vec3();
+		ent->rigid->angular_velocity = vec3();
+		ent->rigid->gravity = false;
+		ent->rigid->lightning_trail = true;
+		ent->model = ent->rigid;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger->projectile = true;
+		sprintf(ent->trigger->action, " ");
+
+		ent->rigid->bounce = 5;
+		ent->trigger->hide = false;
+		ent->trigger->radius = 25.0f;
+		ent->trigger->idle = true;
+		ent->trigger->idle_timer = (int)(0.1 * TICK_RATE);
+		ent->trigger->explode = true;
+		ent->trigger->explode_timer = 20;
+		break;
+    case NT_LIGHTNING_FLASH:
+		ent->nettype = NT_LIGHTNING_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(0.6f, 0.6f, 1.0f);
+		ent->light->intensity = 2000.0f;
+		ent->light->attenuation = 0.0625f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_LIGHTNINGGUN:
+		break;
+    case NT_RAIL:
+		ent->nettype = NT_RAIL;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(engine->ball->model));
+		ent->rigid->velocity = vec3();
+		ent->rigid->angular_velocity = vec3();
+		ent->rigid->gravity = false;
+		ent->model = ent->rigid;
+		ent->model->rail_trail = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger->projectile = true;
+		sprintf(ent->trigger->action, " ");
+
+		ent->rigid->bounce = 5;
+		ent->trigger->hide = false;
+		ent->trigger->radius = 25.0f;
+		ent->trigger->idle = true;
+		ent->trigger->idle_timer = (int)(5.0 * TICK_RATE);
+		ent->trigger->explode = true;
+		ent->trigger->explode_timer = 10;
+		break;
+    case NT_RAIL_FLASH:
+		ent->nettype = NT_RAIL_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(1.0f, 0.5f, 0.0f);
+		ent->light->intensity = 2000.0f;
+		ent->light->attenuation = 0.0625f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_RAILGUN:
+		break;
+    case NT_PLASMA:
+		ent->nettype = NT_PLASMA;
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+
+		ent->rigid->clone(*(engine->ball->model));
+		ent->rigid->gravity = false;
+		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger->projectile = true;
+		sprintf(ent->trigger->explode_sound, "sound/weapons/plasma/plasmx1a.wav");
+		sprintf(ent->trigger->idle_sound, "sound/weapons/plasma/lasfly.wav");
+
+		ent->trigger->hide = false;
+		ent->trigger->radius = 25.0f;
+		ent->trigger->idle = true;
+		ent->trigger->explode = false;
+		ent->trigger->explode_timer = 10;
+		ent->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
+		ent->trigger->explode_intensity = 200.0f;
+		ent->trigger->splash_radius = 75.0f;
+		ent->trigger->knockback = 10.0f;
+
+
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(0.0f, 0.0f, 1.0f);
+		ent->light->intensity = 1000.0f;
+
+		break;
+    case NT_PLASMA_FLASH:
+		ent->nettype = NT_PLASMA_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(0.6f, 0.6f, 1.0f);
+		ent->light->intensity = 2000.0f;
+		ent->light->attenuation = 0.0625f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_PLASMAGUN:
+		break;
+    case NT_SHOTGUN:
+		break;
+    case NT_SHOTGUN_FLASH:
+		ent->nettype = NT_SHOTGUN_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(1.0f, 1.0f, 0.75f);
+		ent->light->intensity = 3000.0f;
+		ent->light->attenuation = 0.125f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_MACHINEGUN:
+		ent->nettype = NT_BULLET;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(engine->bullet->model));
+		ent->rigid->gravity = true;
+		ent->model = ent->rigid;
+		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->translational_friction = 0.9f;
+		break;
+    case NT_MACHINEGUN_FLASH:
+		ent->nettype = NT_MACHINEGUN_FLASH;
+		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light->color = vec3(1.0f, 1.0f, 0.0f);
+		ent->light->intensity = 2000.0f;
+		ent->light->attenuation = 0.0625f;
+		ent->light->timer_flag = true;
+		ent->light->timer = (int)(0.125f * TICK_RATE);
+		break;
+    case NT_GIB0:
+		break;
+    case NT_GIB1:
+		break;
+    case NT_GIB2:
+		break;
+    case NT_GIB3:
+		break;
+    case NT_GIB4:
+		break;
+    case NT_GIB5:
+		break;
+    case NT_GIB6:
+		break;
+    case NT_GIB7:
+		break;
+    case NT_GIB8:
+		break;
+    case NT_GIB9:
+		break;
+    case NT_BULLET:
+		break;
+    case NT_SHELL:
+		ent->nettype = NT_SHELL;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(engine->shell->model));
+		ent->rigid->gravity = true;
+		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->translational_friction = 0.9f;
+		break;
+    case NT_QUAD:
+		break;
+    case NT_BLUE_FLAG:
+		break;
+    case NT_RED_FLAG:
+		break;
+	}
+}
 
 
 void Quake3::endgame()
