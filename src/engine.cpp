@@ -2325,6 +2325,7 @@ void Engine::client_step()
 {
 	servermsg_t	servermsg;
 	clientmsg_t clientmsg;
+	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(input);
 	static int rate_skip = 0;
@@ -2364,23 +2365,12 @@ void Engine::client_step()
 			reliable.sequence = -1;
 		}
 
-		for(int i = 0; i < servermsg.num_ents; i++)
+		if ((unsigned int)servermsg.length > SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
 		{
-			entity_t	*ent = (entity_t *)servermsg.data;
-
-			// dont let bad data cause an exception
-			if (ent[i].id >= entity_list.size())
-			{
-				printf("Invalid entity index, bad packet\n");
-				break;
-			}
-
-			// need better way to identify entities
-			entity_list[ent[i].id]->position = ent[i].position;
-			entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-			entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
-			entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+			reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		}
+
+		handle_server_message(servermsg, reliablemsg);
 
 		/*
 		printf("-> client_sequence %d\n"
@@ -2393,40 +2383,7 @@ void Engine::client_step()
 			reliable.msg);
 		*/
 
-		if ( (unsigned int)servermsg.length > SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
-		{
-			reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 
-			if (last_server_sequence < reliablemsg->sequence)
-			{
-				int entity;
-
-				debugf("server msg: %s\n", reliablemsg->msg);
-				menu.print(reliablemsg->msg);
-
-				int ret = sscanf(reliablemsg->msg, "spawn %d %d", &entity, &server_spawn);
-				if ( ret )
-				{
-					int client = get_player();
-
-					sprintf(entity_list[client]->type, "client");
-					entity_list[client]->position = entity_list[entity]->position;
-					entity_list[client]->rigid = new RigidBody(entity_list[client]);
-					entity_list[client]->model = entity_list[client]->rigid;
-					entity_list[client]->rigid->clone(*(thug22->model));
-					entity_list[client]->rigid->step_flag = true;
-					entity_list[client]->position += entity_list[client]->rigid->center;
-					entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21);
-//					entity_list[spawn]->player->respawn();
-				}
-
-				ret = strcmp(reliablemsg->msg, "disconnect");
-				if (ret == 0)
-				{
-					unload();
-				}
-			}
-		}
 		last_server_sequence = servermsg.sequence;
 	}
 
@@ -2448,6 +2405,64 @@ void Engine::client_step()
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
 		+ sizeof(int) + strlen(reliable.msg) + 1;
 	::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
+}
+
+
+int Engine::handle_server_message(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
+{
+	if (reliablemsg != NULL)
+	{
+		if (last_server_sequence < reliablemsg->sequence)
+		{
+			int client;
+
+			debugf("server msg: %s\n", reliablemsg->msg);
+			menu.print(reliablemsg->msg);
+
+			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
+			if (ret == 2)
+			{
+				sprintf(entity_list[client]->type, "client");
+				//entity_list[client]->position = entity_list[client]->position;
+				entity_list[client]->rigid = new RigidBody(entity_list[client]);
+				entity_list[client]->model = entity_list[client]->rigid;
+				entity_list[client]->rigid->clone(*(thug22->model));
+				entity_list[client]->rigid->step_flag = true;
+				entity_list[client]->position += entity_list[client]->rigid->center;
+				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21);
+				//					entity_list[spawn]->player->respawn();
+
+
+				entity_t	*ent = (entity_t *)servermsg.data;
+			}
+
+			ret = strcmp(reliablemsg->msg, "disconnect");
+			if (ret == 0)
+			{
+				unload();
+			}
+		}
+	}
+
+	for (int i = 0; i < servermsg.num_ents; i++)
+	{
+		entity_t	*ent = (entity_t *)servermsg.data;
+
+		// dont let bad data cause an exception
+		if (ent[i].id >= entity_list.size())
+		{
+			printf("Invalid entity index, bad packet\n");
+			break;
+		}
+
+		// need better way to identify entities
+		entity_list[ent[i].id]->position = ent[i].position;
+		entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+		entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
+		entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+	}
+
+	return 0;
 }
 
 // packs keyboard input into an integer
