@@ -65,7 +65,7 @@ public:
 	void bind_keys();
 	void server_step();
 	void client_step();
-	int handle_server_message(servermsg_t &servermsg, reliablemsg_t *reliablemsg);
+	int handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg);
 	void send_entities();
 	void render_client(int i, const matrix4 &trans, bool lights, bool hack);
 	void render_weapon(const matrix4 &trans, bool lights, int i);

@@ -135,7 +135,7 @@ void Quake3::init_camera(vector<Entity *> &entity_list)
 }
 
 
-void Quake3::handle_player(int self)
+void Quake3::handle_player(int self, input_t &input)
 {
 	Entity *entity = engine->entity_list[self];
 	static int footstep_num = 0;
@@ -146,19 +146,19 @@ void Quake3::handle_player(int self)
 		return;
 
 
-	if (engine->input.zoom == true && zoomed == false)
+	if (input.zoom == true && zoomed == false)
 	{
 		zoomed = true;
 		engine->zoom(entity->player->zoom_level);
 	}
 
-	if (engine->input.zoom == false && zoomed == true)
+	if (input.zoom == false && zoomed == true)
 	{
 		zoomed = false;
 		engine->zoom(1.0);
 	}
 
-	if (engine->input.use == true)
+	if (input.use == true)
 	{
 		bool click = true;
 		if (engine->entity_list[self]->player->holdable_medikit)
@@ -207,7 +207,7 @@ void Quake3::handle_player(int self)
 	}
 
 	/*
-	if (engine->input.use == true)
+	if (input.use == true)
 	{
 		int nav_num = 0;
 
@@ -236,7 +236,7 @@ void Quake3::handle_player(int self)
 	*/
 
 
-	if (engine->input.numpad7 == true)
+	if (input.numpad7 == true)
 	{
 		if (last_tick == 0)
 		{
@@ -255,7 +255,7 @@ void Quake3::handle_player(int self)
 	if (last_tick > 0)
 		last_tick--;
 
-	if (engine->input.pickup)
+	if (input.pickup)
 	{
 		int item = -1;
 		float min_distance = FLT_MAX;
@@ -297,12 +297,12 @@ void Quake3::handle_player(int self)
 		if (spectator == false)
 		{
 			// True if jumped
-			if (engine->input.moveup || engine->input.movedown || engine->input.moveleft || engine->input.moveright)
+			if (input.moveup || input.movedown || input.moveleft || input.moveright)
 			{
 				entity->player->state = PLAYER_MOVED;
 			}
 
-			if (engine->input.duck)
+			if (input.duck)
 			{
 				entity->player->state = PLAYER_DUCKED;
 			}
@@ -314,7 +314,7 @@ void Quake3::handle_player(int self)
 				if (entity->player->haste_timer > 0)
 					speed_scale = 2.0f;
 
-				if (entity->rigid->move(engine->input, speed_scale))
+				if (entity->rigid->move(input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
 					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
@@ -343,7 +343,7 @@ void Quake3::handle_player(int self)
 
 		if (strcmp(entity->type, "player") == 0)
 		{
-			if (engine->input.attack && entity->player->reload_timer == 0)
+			if (input.attack && entity->player->reload_timer == 0)
 			{
 				console(self, "respawn", engine->menu, engine->entity_list);
 			}
@@ -555,7 +555,7 @@ void Quake3::handle_player(int self)
 		}
 	}
 
-	handle_weapons(*(entity->player), engine->input, self);
+	handle_weapons(*(entity->player), input, self);
 
 }
 
@@ -810,11 +810,21 @@ void Quake3::step(int frame_step)
 			Entity *entity = engine->entity_list[i];
 			bool isplayer = (strcmp(entity->type, "player") == 0);
 			bool isbot = (strcmp(entity->type, "NPC") == 0);
+			bool isclient = (strcmp(entity->type, "client") == 0);
 
 
 			if (isplayer || isbot)
 			{
-				handle_player(i);
+				handle_player(i, engine->input);
+			}
+
+			if (isclient)
+			{
+				for(int j = 0; j < engine->client_list.size(); j++)
+				{
+					if (engine->client_list[j]->entity == i)
+						handle_player(i, engine->client_list[j]->input);
+				}
 			}
 
 			if (strcmp(entity->type, "NPC") != 0)

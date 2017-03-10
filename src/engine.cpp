@@ -2136,6 +2136,7 @@ void Engine::server_step()
 
 		client_list[index]->last_time = (unsigned int)time(NULL);
 
+/*
 		Frame client_frame;
 
 		client_frame.up.x = clientmsg.up[0];
@@ -2158,6 +2159,8 @@ void Engine::server_step()
 			speed_scale = 2.0f;
 
 		client->rigid->move(clientkeys, speed_scale);
+*/
+		client_list[index]->input = clientkeys;
 
 
 		/*
@@ -2378,7 +2381,7 @@ void Engine::client_step()
 			reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		}
 
-		handle_server_message(servermsg, reliablemsg);
+		handle_servermsg(servermsg, reliablemsg);
 
 		/*
 		printf("-> client_sequence %d\n"
@@ -2416,7 +2419,7 @@ void Engine::client_step()
 }
 
 
-int Engine::handle_server_message(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
+int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 {
 	if (reliablemsg != NULL)
 	{

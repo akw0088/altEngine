@@ -105,15 +105,6 @@ typedef struct
 	vec3	position;
 } entity_t;
 
-typedef struct
-{
-	char			socketname[80];
-	unsigned int	entity;
-	unsigned int	client_sequence;
-	unsigned int	server_sequence;
-	unsigned int	last_time;
-} client_t;
-
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
 #define CLIENT_HEADER 37
@@ -195,6 +186,15 @@ typedef struct
 	bool scores;
 } input_t;
 
+typedef struct
+{
+	char		socketname[80];
+	unsigned int	entity;
+	unsigned int	client_sequence;
+	unsigned int	server_sequence;
+	unsigned int	last_time;
+	input_t		input;
+} client_t;
 
 //8 units equal 1 foot
 //sin -1,1

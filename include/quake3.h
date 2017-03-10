@@ -37,7 +37,7 @@ public:
 	void load_icon();
 
 
-	void handle_player(int index);
+	void handle_player(int index, input_t &input);
 	void player_died(int index);
 	void drop_weapon(int index);
 	void drop_quaddamage(vec3 &position);
