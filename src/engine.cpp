@@ -2224,7 +2224,8 @@ void Engine::server_step()
 
 		if (found)
 		{
-			printf("Client already spawned");
+			printf("Client already spawned, ignoring\n");
+			free((void *)client);
 			return;
 		}
 
@@ -2240,6 +2241,7 @@ void Engine::server_step()
 		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
 		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
 		entity_list[client->entity]->rigid->clone(*(box->model));
+		entity_list[client->entity]->rigid->step_flag = true;
 		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio, 21);
 		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
 //		entity_list[client->entity]->player->respawn();
@@ -2260,7 +2262,7 @@ void Engine::server_step()
 		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
-		debugf("sent client spawn data\n");
+		debugf("Client is now entity %d\n", client->entity);
 	}
 }
 
@@ -2288,10 +2290,10 @@ void Engine::send_entities()
 		for (unsigned int j = 0; j < entity_list.size(); j++)
 		{
 			entity_t ent;
+			/*
 			int leaf_a;
 			int leaf_b;
 
-			/*
 			bool visible = q3map.vis_test(entity_list[j]->position,
 				entity_list[client_list[i]->entity]->position, leaf_a, leaf_b);
 			if ( visible == false )
@@ -2307,7 +2309,7 @@ void Engine::send_entities()
 				ent.position = entity_list[j]->position;
 			}
 
-			memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
+			memcpy(&servermsg.data[j * sizeof(entity_t)],
 				&ent, sizeof(entity_t));
 			servermsg.num_ents++;
 		}
@@ -2317,6 +2319,12 @@ void Engine::send_entities()
 		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		servermsg.client_sequence = client_list[i]->client_sequence;
+
+		if (servermsg.length > 65507)
+		{
+			printf("Server packet too big!");
+		}
+
 		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 	}
 }
