@@ -2149,13 +2149,12 @@ void Engine::server_step()
 
 		Entity *client = entity_list[client_list[index]->entity];
 
-
-		client_frame.set(entity_list[client_list[index]->entity]->rigid->morientation);
+		client_frame.set(client->rigid->morientation);
 		client_frame.pos = client->position;
 
 		float speed_scale = 1.0f;
 
-		if (entity_list[client_list[index]->entity]->player->haste_timer > 0)
+		if (client->player->haste_timer > 0)
 			speed_scale = 2.0f;
 
 		client->rigid->move(clientkeys, speed_scale);
@@ -2223,10 +2222,13 @@ void Engine::server_step()
 			}
 		}
 
-		if (!found)
+		if (found)
 		{
-			client_list.push_back(client);
+			printf("Client already spawned");
+			return;
 		}
+
+		client_list.push_back(client);
 		debugf("client %s spawned\n", client->socketname);
 		client->client_sequence = clientmsg.sequence;
 
@@ -2234,13 +2236,17 @@ void Engine::server_step()
 		//set to zero if we run out of info_player_deathmatches
 		client->entity = get_player();
 		printf("client %s got entity %d\n", socketname, client->entity);
+		sprintf(entity_list[client->entity]->type, "client");
 		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
 		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
 		entity_list[client->entity]->rigid->clone(*(box->model));
 		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio, 21);
 		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
-		entity_list[client->entity]->player->respawn();
+//		entity_list[client->entity]->player->respawn();
+		char cmd[80];
 
+		sprintf(cmd, "respawn -1 %d", client->entity);
+		console(cmd);
 
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
@@ -2267,7 +2273,6 @@ void Engine::send_entities()
 	servermsg.num_ents = 0;
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
-
 		// idle client timeout
 		if (time(NULL) - client_list[i]->last_time > 90)
 		{
@@ -2286,10 +2291,12 @@ void Engine::send_entities()
 			int leaf_a;
 			int leaf_b;
 
+			/*
 			bool visible = q3map.vis_test(entity_list[j]->position,
 				entity_list[client_list[i]->entity]->position, leaf_a, leaf_b);
 			if ( visible == false )
 				continue;
+				*/
 
 			ent.id = j;
 			if (entity_list[j]->rigid)
