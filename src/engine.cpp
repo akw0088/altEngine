@@ -2430,18 +2430,23 @@ int Engine::handle_server_message(servermsg_t &servermsg, reliablemsg_t *reliabl
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
 			if (ret == 2)
 			{
-				sprintf(entity_list[client]->type, "client");
-				//entity_list[client]->position = entity_list[client]->position;
+				sprintf(entity_list[client]->type, "player");
 				entity_list[client]->rigid = new RigidBody(entity_list[client]);
 				entity_list[client]->model = entity_list[client]->rigid;
 				entity_list[client]->rigid->clone(*(thug22->model));
 				entity_list[client]->rigid->step_flag = true;
 				entity_list[client]->position += entity_list[client]->rigid->center;
 				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21);
-				//					entity_list[spawn]->player->respawn();
+				camera_frame.pos = entity_list[client]->position;
 
 
-				entity_t	*ent = (entity_t *)servermsg.data;
+				sprintf(entity_list[server_spawn]->type, "server");
+				entity_list[server_spawn]->rigid = new RigidBody(entity_list[server_spawn]);
+				entity_list[server_spawn]->model = entity_list[server_spawn]->rigid;
+				entity_list[server_spawn]->rigid->clone(*(thug22->model));
+				entity_list[server_spawn]->rigid->step_flag = true;
+				entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
+				entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21);
 			}
 
 			ret = strcmp(reliablemsg->msg, "disconnect");
@@ -2463,12 +2468,30 @@ int Engine::handle_server_message(servermsg_t &servermsg, reliablemsg_t *reliabl
 			break;
 		}
 
-		// need better way to identify entities
-		entity_list[ent[i].id]->position = ent[i].position;
-		entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-		entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
-		entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+
+		if (entity_list[ent[i].id]->rigid)
+		{
+			if (find_type("player", 0) == ent[i].id)
+			{
+				// current entity has the clients predicted position
+				// the ent[i].position has the server (lagged) position
+				// Need to lerp between the two, but then we have time sync issues
+				entity_list[ent[i].id]->position = ent[i].position;
+			}
+			else
+			{
+				entity_list[ent[i].id]->position = ent[i].position;
+				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+				entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
+				entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+			}
+		}
+		else
+		{
+			entity_list[ent[i].id]->position = ent[i].position;
+		}
 	}
+
 
 	return 0;
 }
@@ -3253,7 +3276,8 @@ void Engine::load_model(Entity &ent)
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
-	game->init_camera(entity_list);
+	if (client_flag == false)
+		game->init_camera(entity_list);
 	load_sounds();
 	create_sources();
 	load_models();
