@@ -106,7 +106,44 @@ typedef struct
 	vec3	position;
 } entity_t;
 
-enum nettype { NT_ROCKET, NT_GRENADE, NT_LIGHTNING, NT_RAIL, NT_PLASMA};
+// Any dynamically created entity type that should be synced over network
+// dropped items, muzzle flashes, shells, projectiles etc
+enum nettype {
+	NT_ROCKET,
+	NT_ROCKET_FLASH,
+	NT_ROCKET_LAUNCHER
+	NT_GRENADE,
+	NT_GRENADE_FLASH,
+	NT_GRENADE_LAUNCHER,
+	NT_LIGHTNING,
+	NT_LIGHTNING_FLASH,
+	NT_LIGHTNINGGUN
+	NT_RAIL,
+	NT_RAIL_FLASH,
+	NT_RAILGUN
+	NT_PLASMA,
+	NT_PLASMA_FLASH,
+	NT_PLASMAGUN,
+	NT_SHOTGUN,
+	NT_SHOTGUN_FLASH,
+	NT_MACHINEGUN,
+	NT_MACHINEGUN_FLASH,
+	NT_GIB0,
+	NT_GIB1,
+	NT_GIB2,
+	NT_GIB3,
+	NT_GIB4,
+	NT_GIB5,
+	NT_GIB6,
+	NT_GIB7,
+	NT_GIB8,
+	NT_GIB9,
+	NT_GIB10,
+	NT_BULLET,
+	NT_SHELL,
+	NT_BLUE_FLAG,
+	NT_RED_FLAG
+};
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
