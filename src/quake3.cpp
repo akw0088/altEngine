@@ -4353,16 +4353,21 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 
 /*
-	Used to create entities for both player and network clients
+	Used to create entities for network clients
 	Network clients are more interested in visual properties,
 	they get the position and orientation over the network
 	and let server handle damage etc
 */
-void Quake3::make_dynamic_ent(nettype item, Entity *ent)
+void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 {
+	Entity *ent = engine->entity_list[ent_id];
+	engine->clean_entity(ent_id);
+
 	switch (item)
 	{
-    case NT_ROCKET:
+	case NT_NONE:
+		break;
+	case NT_ROCKET:
 		ent->nettype = NT_ROCKET;
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->projectile = true;
@@ -4390,7 +4395,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->rigid->clone(*(engine->rocket->model));
 		ent->rigid->gravity = false;
 		break;
-    case NT_ROCKET_FLASH:
+	case NT_ROCKET_FLASH:
 		ent->nettype = NT_ROCKET_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(1.0f, 0.75f, 0.0f);
@@ -4399,9 +4404,9 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_ROCKET_LAUNCHER:
+	case NT_ROCKET_LAUNCHER:
 		break;
-    case NT_GRENADE:
+	case NT_GRENADE:
 		ent->nettype = NT_GRENADE;
 
 		ent->rigid = new RigidBody(ent);
@@ -4429,7 +4434,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->trigger->splash_radius = 250.0f;
 		ent->trigger->knockback = 250.0f;
 		break;
-    case NT_GRENADE_FLASH:
+	case NT_GRENADE_FLASH:
 		ent->nettype = NT_GRENADE_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(1.0f, 0.7f, 0.0f);
@@ -4438,9 +4443,9 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_GRENADE_LAUNCHER:
+	case NT_GRENADE_LAUNCHER:
 		break;
-    case NT_LIGHTNING:
+	case NT_LIGHTNING:
 		ent->nettype = NT_LIGHTNING;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(engine->box->model));
@@ -4462,7 +4467,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->trigger->explode = true;
 		ent->trigger->explode_timer = 20;
 		break;
-    case NT_LIGHTNING_FLASH:
+	case NT_LIGHTNING_FLASH:
 		ent->nettype = NT_LIGHTNING_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(0.6f, 0.6f, 1.0f);
@@ -4471,9 +4476,9 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_LIGHTNINGGUN:
+	case NT_LIGHTNINGGUN:
 		break;
-    case NT_RAIL:
+	case NT_RAIL:
 		ent->nettype = NT_RAIL;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(engine->ball->model));
@@ -4495,7 +4500,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->trigger->explode = true;
 		ent->trigger->explode_timer = 10;
 		break;
-    case NT_RAIL_FLASH:
+	case NT_RAIL_FLASH:
 		ent->nettype = NT_RAIL_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(1.0f, 0.5f, 0.0f);
@@ -4504,9 +4509,9 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_RAILGUN:
+	case NT_RAILGUN:
 		break;
-    case NT_PLASMA:
+	case NT_PLASMA:
 		ent->nettype = NT_PLASMA;
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
@@ -4534,7 +4539,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->intensity = 1000.0f;
 
 		break;
-    case NT_PLASMA_FLASH:
+	case NT_PLASMA_FLASH:
 		ent->nettype = NT_PLASMA_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(0.6f, 0.6f, 1.0f);
@@ -4543,11 +4548,11 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_PLASMAGUN:
+	case NT_PLASMAGUN:
 		break;
-    case NT_SHOTGUN:
+	case NT_SHOTGUN:
 		break;
-    case NT_SHOTGUN_FLASH:
+	case NT_SHOTGUN_FLASH:
 		ent->nettype = NT_SHOTGUN_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(1.0f, 1.0f, 0.75f);
@@ -4556,7 +4561,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_MACHINEGUN:
+	case NT_MACHINEGUN:
 		ent->nettype = NT_BULLET;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(engine->bullet->model));
@@ -4566,7 +4571,7 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->translational_friction = 0.9f;
 		break;
-    case NT_MACHINEGUN_FLASH:
+	case NT_MACHINEGUN_FLASH:
 		ent->nettype = NT_MACHINEGUN_FLASH;
 		ent->light = new Light(ent, engine->gfx, 999);
 		ent->light->color = vec3(1.0f, 1.0f, 0.0f);
@@ -4575,29 +4580,29 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->light->timer_flag = true;
 		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
-    case NT_GIB0:
+	case NT_GIB0:
 		break;
-    case NT_GIB1:
+	case NT_GIB1:
 		break;
-    case NT_GIB2:
+	case NT_GIB2:
 		break;
-    case NT_GIB3:
+	case NT_GIB3:
 		break;
-    case NT_GIB4:
+	case NT_GIB4:
 		break;
-    case NT_GIB5:
+	case NT_GIB5:
 		break;
-    case NT_GIB6:
+	case NT_GIB6:
 		break;
-    case NT_GIB7:
+	case NT_GIB7:
 		break;
-    case NT_GIB8:
+	case NT_GIB8:
 		break;
-    case NT_GIB9:
+	case NT_GIB9:
 		break;
-    case NT_BULLET:
+	case NT_BULLET:
 		break;
-    case NT_SHELL:
+	case NT_SHELL:
 		ent->nettype = NT_SHELL;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(engine->shell->model));
@@ -4606,11 +4611,11 @@ void Quake3::make_dynamic_ent(nettype item, Entity *ent)
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->translational_friction = 0.9f;
 		break;
-    case NT_QUAD:
+	case NT_QUAD:
 		break;
-    case NT_BLUE_FLAG:
+	case NT_BLUE_FLAG:
 		break;
-    case NT_RED_FLAG:
+	case NT_RED_FLAG:
 		break;
 	}
 }

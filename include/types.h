@@ -93,22 +93,10 @@ typedef struct
 	char cmd[LINE_SIZE];
 } state_t;
 
-/*
-	Holds data sent across network to represent entities
-*/
-typedef struct
-{
-	unsigned int		id;
-	unsigned int		type;
-	matrix3 morientation;
-	vec3	velocity;
-	vec3	angular_velocity;
-	vec3	position;
-} entity_t;
-
 // Any dynamically created entity type that should be synced over network
 // dropped items, muzzle flashes, shells, projectiles etc
-enum nettype {
+typedef enum {
+	NT_NONE,
 	NT_ROCKET,
 	NT_ROCKET_FLASH,
 	NT_ROCKET_LAUNCHER,
@@ -143,7 +131,20 @@ enum nettype {
 	NT_QUAD,
 	NT_BLUE_FLAG,
 	NT_RED_FLAG
-};
+} nettype_t;
+
+/*
+	Holds data sent across network to represent entities
+*/
+typedef struct
+{
+	unsigned int		id;
+	nettype_t		type;
+	matrix3 morientation;
+	vec3	velocity;
+	vec3	angular_velocity;
+	vec3	position;
+} entity_t;
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds

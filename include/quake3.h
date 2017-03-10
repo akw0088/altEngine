@@ -37,7 +37,7 @@ public:
 	void load_icon();
 
 
-	void make_dynamic_ent(nettype item, Entity *ent);
+	void make_dynamic_ent(nettype_t item, int ent_id);
 	void handle_player(int index, input_t &input);
 	void player_died(int index);
 	void drop_weapon(int index);
