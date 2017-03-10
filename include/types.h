@@ -138,9 +138,9 @@ enum nettype {
 	NT_GIB7,
 	NT_GIB8,
 	NT_GIB9,
-	NT_GIB10,
 	NT_BULLET,
 	NT_SHELL,
+	NT_QUAD,
 	NT_BLUE_FLAG,
 	NT_RED_FLAG
 };

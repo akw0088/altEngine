@@ -618,30 +618,37 @@ void Quake3::drop_weapon(int index)
 	case wp_machinegun:
 		weapon_str = "weapon_machinegun";
 		drop_weapon->model->clone(entity->player->weapon_machinegun);
+		drop_weapon->nettype = NT_MACHINEGUN;
 		break;
 	case wp_shotgun:
 		weapon_str = "weapon_shotgun";
 		drop_weapon->model->clone(entity->player->weapon_shotgun);
+		drop_weapon->nettype = NT_SHOTGUN;
 		break;
 	case wp_grenade:
 		weapon_str = "weapon_grenadelauncher";
 		drop_weapon->model->clone(entity->player->weapon_grenade);
+		drop_weapon->nettype = NT_GRENADE_LAUNCHER;
 		break;
 	case wp_rocket:
 		weapon_str = "weapon_rocketlauncher";
 		drop_weapon->model->clone(entity->player->weapon_rocket);
+		drop_weapon->nettype = NT_ROCKET_LAUNCHER;
 		break;
 	case wp_plasma:
 		weapon_str = "weapon_plasmagun";
 		drop_weapon->model->clone(entity->player->weapon_plasma);
+		drop_weapon->nettype = NT_PLASMAGUN;
 		break;
 	case wp_lightning:
 		weapon_str = "weapon_lightning";
 		drop_weapon->model->clone(entity->player->weapon_lightning);
+		drop_weapon->nettype = NT_LIGHTNINGGUN;
 		break;
 	case wp_railgun:
 		weapon_str = "weapon_railgun";
 		drop_weapon->model->clone(entity->player->weapon_railgun);
+		drop_weapon->nettype = NT_RAILGUN;
 		break;
 	}
 
@@ -686,6 +693,7 @@ void Quake3::drop_quaddamage(vec3 &position)
 {
 	Entity *drop_quad = engine->entity_list[engine->get_entity()];
 	drop_quad->position = position;
+	drop_quad->nettype = NT_QUAD;
 
 
 	drop_quad->rigid = new RigidBody(drop_quad);
@@ -1037,6 +1045,7 @@ void Quake3::handle_plasma(Player &player, int self)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_PLASMA_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
@@ -1113,6 +1122,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_ROCKET_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
@@ -1181,6 +1191,7 @@ void Quake3::handle_grenade(Player &player, int self)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_GRENADE_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
@@ -1301,6 +1312,7 @@ void Quake3::handle_lightning(Player &player, int self)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_LIGHTNING_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
@@ -1416,6 +1428,7 @@ void Quake3::handle_railgun(Player &player, int self)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_RAIL_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
@@ -1449,6 +1462,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_MACHINEGUN_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
@@ -1459,6 +1473,7 @@ void Quake3::handle_machinegun(Player &player, int self)
 
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
+	shell->nettype = NT_BULLET;
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
 	shell->rigid->clone(*(engine->bullet->model));
@@ -1543,6 +1558,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	camera_frame.forward *= -1;
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->nettype = NT_SHOTGUN_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
@@ -1552,6 +1568,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
+	shell->nettype = NT_SHELL;
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
 	shell->rigid->clone(*(engine->shell->model));
@@ -1566,6 +1583,7 @@ void Quake3::handle_shotgun(Player &player, int self)
 	camera_frame.set(shell->model->morientation);
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
+	shell->nettype = NT_SHELL;
 	shell2->rigid = new RigidBody(shell2);
 	shell2->position = camera_frame.pos;
 	shell2->rigid->clone(*(engine->shell->model));
@@ -1647,6 +1665,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity0 = engine->entity_list[engine->get_entity()];
+		entity0->nettype = NT_GIB0;
 		entity0->rigid = new RigidBody(entity0);
 		entity0->model = entity0->rigid;
 		entity0->position = camera_frame.pos;
@@ -1668,6 +1687,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity1 = engine->entity_list[engine->get_entity()];
+		entity1->nettype = NT_GIB1;
 		entity1->rigid = new RigidBody(entity1);
 		entity1->model = entity1->rigid;
 		entity1->position = camera_frame.pos;
@@ -1690,6 +1710,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity2 = engine->entity_list[engine->get_entity()];
+		entity2->nettype = NT_GIB2;
 
 		entity2->rigid = new RigidBody(entity2);
 		entity2->model = entity2->rigid;
@@ -1713,6 +1734,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity3 = engine->entity_list[engine->get_entity()];
+		entity3->nettype = NT_GIB3;
 
 		entity3->rigid = new RigidBody(entity3);
 		entity3->model = entity3->rigid;
@@ -1736,6 +1758,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity4 = engine->entity_list[engine->get_entity()];
+		entity4->nettype = NT_GIB4;
 
 		entity4->rigid = new RigidBody(entity4);
 		entity4->model = entity4->rigid;
@@ -1759,6 +1782,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity5 = engine->entity_list[engine->get_entity()];
+		entity5->nettype = NT_GIB5;
 
 		entity5->rigid = new RigidBody(entity5);
 		entity5->model = entity5->rigid;
@@ -1781,6 +1805,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity6 = engine->entity_list[engine->get_entity()];
+		entity6->nettype = NT_GIB6;
 
 		entity6->rigid = new RigidBody(entity6);
 		entity6->model = entity6->rigid;
@@ -1803,6 +1828,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity7 = engine->entity_list[engine->get_entity()];
+		entity7->nettype = NT_GIB7;
 
 		entity7->rigid = new RigidBody(entity7);
 		entity7->model = entity7->rigid;
@@ -1825,6 +1851,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity8 = engine->entity_list[engine->get_entity()];
+		entity8->nettype = NT_GIB8;
 
 		entity8->rigid = new RigidBody(entity8);
 		entity8->model = entity8->rigid;
@@ -1848,6 +1875,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity9 = engine->entity_list[engine->get_entity()];
+		entity9->nettype = NT_GIB9;
 
 		entity9->rigid = new RigidBody(entity9);
 		entity9->model = entity9->rigid;
