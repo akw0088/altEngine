@@ -25,6 +25,7 @@ Entity::Entity()
 	player = NULL;
 	decal = NULL;
 	num_particle = 0;
+	nettype = 0;
 }
 
 Entity::~Entity()
@@ -59,5 +60,6 @@ Entity::~Entity()
 	trigger = NULL;
 	player = NULL;
 	decal = NULL;
+	nettype = 0;
 }
 

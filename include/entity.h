@@ -27,6 +27,7 @@ public:
 
 	//Really bsp related items
 	char			type[64];
+	int			nettype;
 	char			target[64];
 	char			target_name[64];
 	int				angle;

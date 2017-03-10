@@ -2304,6 +2304,7 @@ void Engine::send_entities()
 				*/
 
 			ent.id = j;
+			ent.type = entity_list[j]->nettype;
 			if (entity_list[j]->rigid)
 			{
 				ent.morientation = entity_list[j]->rigid->morientation;
@@ -2471,6 +2472,25 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			break;
 		}
 
+
+		// Check if an entity is a projectile that needs to be loaded
+		if (ent[i].type != entity_list[ent[i].id]->nettype)
+		{
+			switch (ent[i].type)
+			{
+			case NT_ROCKET:
+				//duplicates weapon fire code really, find way to combine
+				break;
+			case NT_GRENADE:
+				break;
+			case NT_RAIL:
+				break;
+			case NT_LIGHTNING:
+				break;
+			case NT_PLASMA:
+				break;
+			}	
+		}
 
 		if (entity_list[ent[i].id]->rigid)
 		{
@@ -3308,6 +3328,7 @@ void Engine::clean_entity(int index)
 
 	if (entity_list[index]->speaker)
 		entity_list[index]->speaker->destroy(audio);
+	entity_list[index]->nettype = 0;
 
 
 	// Light list wont be updated until the next step, so manually delete

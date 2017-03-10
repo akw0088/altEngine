@@ -99,11 +99,14 @@ typedef struct
 typedef struct
 {
 	unsigned int		id;
+	unsigned int		type;
 	matrix3 morientation;
 	vec3	velocity;
 	vec3	angular_velocity;
 	vec3	position;
 } entity_t;
+
+enum nettype { NT_ROCKET, NT_GRENADE, NT_LIGHTNING, NT_RAIL, NT_PLASMA};
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds

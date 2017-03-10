@@ -33,7 +33,6 @@
 #define QUAD_FACTOR 3.0f
 
 
-
 extern char bot_state_name[16][80];
 
 Quake3::Quake3()
@@ -1000,6 +999,8 @@ void Quake3::handle_plasma(Player &player, int self)
 
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
+
+	projectile->nettype = NT_PLASMA;
 	projectile->rigid = new RigidBody(projectile);
 	projectile->model = projectile->rigid;
 	projectile->position = camera_frame.pos;
@@ -1064,6 +1065,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->nettype = NT_ROCKET;
 	projectile->position = camera_frame.pos;
 
 	projectile->trigger = new Trigger(projectile, engine->audio);
@@ -1133,6 +1135,7 @@ void Quake3::handle_grenade(Player &player, int self)
 	player.ammo_grenades--;
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->nettype = NT_GRENADE;
 
 	projectile->rigid = new RigidBody(projectile);
 	projectile->model = projectile->rigid;
@@ -1211,6 +1214,7 @@ void Quake3::handle_lightning(Player &player, int self)
 
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->nettype = NT_LIGHTNING;
 	projectile->rigid = new RigidBody(projectile);
 	projectile->position = camera_frame.pos;
 	projectile->rigid->clone(*(engine->box->model));
@@ -1323,6 +1327,7 @@ void Quake3::handle_railgun(Player &player, int self)
 	player.ammo_slugs--;
 
 	Entity *projectile = engine->entity_list[engine->get_entity()];
+	projectile->nettype = NT_RAIL;
 	projectile->rigid = new RigidBody(projectile);
 	projectile->position = camera_frame.pos;
 	projectile->rigid->clone(*(engine->ball->model));
