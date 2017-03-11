@@ -61,8 +61,12 @@ char *GetALErrorString(ALenum err)
 }
 
 
+
+
+#ifndef DEDICATED
+
 // Imported EFX functions
-#ifdef EFXUTIL
+//#ifdef EFXUTIL
 // Effect objects
 LPALGENEFFECTS alGenEffects = NULL;
 LPALDELETEEFFECTS alDeleteEffects = NULL;
@@ -209,8 +213,7 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 
 	return bReturn;
 }
-#endif
-
+//#endf
 
 void Audio::init()
 {
@@ -615,4 +618,100 @@ ALenum Audio::alFormat(wave_t *wave)
 			return AL_FORMAT_MONO8;
 	}
 }
+#else
+bool ALFWIsEFXSupported()
+{
+	return true;
+}
 
+
+ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuint uiEffect)
+{
+	return AL_TRUE;
+}
+
+
+void Audio::init()
+{
+}
+
+void Audio::effects(int source)
+{
+}
+
+int Audio::load_ogg(char *filename, wave_t &wave)
+{
+	return 0;
+}
+
+
+void Audio::load(wave_t &wave)
+{
+}
+
+int Audio::create_source(bool loop, bool global)
+{
+	return 1;
+}
+
+void Audio::source_position(int hSource, float *position)
+{
+}
+
+void Audio::source_velocity(int hSource, float *velocity)
+{
+}
+
+void Audio::listener_position(float *position)
+{
+}
+
+void Audio::listener_velocity(float *velocity)
+{
+}
+
+void Audio::listener_orientation(float *orientation)
+{
+}
+
+void Audio::delete_source(int hSource)
+{
+}
+
+bool Audio::select_buffer(int hSource, int hBuffer)
+{
+	return true;
+}
+
+void Audio::delete_buffer(int hBuffer)
+{
+}
+
+void Audio::play(int hSource)
+{
+}
+
+void Audio::stop(int hSource)
+{
+}
+
+void Audio::destroy()
+{
+}
+
+int Audio::checkFormat(char *data, char *format)
+{
+	return 0;
+}
+
+char *Audio::findChunk(char *chunk, char *id, int *size, char *end)
+{
+	return (char *)0xDEADBEEF;
+}
+
+ALenum Audio::alFormat(wave_t *wave)
+{
+	return AL_FORMAT_STEREO16;
+}
+
+#endif

@@ -591,11 +591,6 @@ void Shader::Select()
 
 void Shader::destroy()
 {
-	if (vertex_src)
-		delete [] vertex_src;
-	if (fragment_src)
-		delete [] fragment_src;
-
 	if (vertex_shader)
 	{
 		vertex_shader->Release();
@@ -607,6 +602,10 @@ void Shader::destroy()
 		pixel_shader = NULL;
 	}
 
+	if (vertex_src)
+		delete[] vertex_src;
+	if (fragment_src)
+		delete[] fragment_src;
 }
 
 Shader::~Shader()

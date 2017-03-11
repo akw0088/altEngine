@@ -1170,7 +1170,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 	if (blend_list.size() > 0 && blend_enabled)
 	{
-		glDepthFunc(GL_LEQUAL);
+		gfx.DepthFunc("<=");
 		gfx.Blend(true);
 
 		for (int i = blend_list.size() - 1; i >= 0; i--)
@@ -1217,8 +1217,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			}
 		}
 	}
-	glDepthFunc(GL_LESS);
-
+	gfx.DepthFunc("<");
 	gfx.Blend(false);
 	render_sky(gfx, mlight2, tick_num, surface_list);
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);

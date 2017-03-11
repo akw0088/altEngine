@@ -2335,6 +2335,14 @@ void Engine::send_entities()
 
 			ent.id = j;
 			ent.type = entity_list[j]->nettype;
+			ent.active = false;
+
+			if (entity_list[j]->trigger)
+			{
+				if (entity_list[j]->trigger->active)
+					ent.active = true;
+			}
+
 			if (entity_list[j]->rigid)
 			{
 				ent.morientation = entity_list[j]->rigid->morientation;
@@ -2476,14 +2484,16 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21);
 				camera_frame.pos = entity_list[client]->position;
 
-
-				sprintf(entity_list[server_spawn]->type, "server");
-				entity_list[server_spawn]->rigid = new RigidBody(entity_list[server_spawn]);
-				entity_list[server_spawn]->model = entity_list[server_spawn]->rigid;
-				entity_list[server_spawn]->rigid->clone(*(thug22->model));
-				entity_list[server_spawn]->rigid->step_flag = true;
-				entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
-				entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21);
+				if (server_spawn != -1)
+				{
+					sprintf(entity_list[server_spawn]->type, "server");
+					entity_list[server_spawn]->rigid = new RigidBody(entity_list[server_spawn]);
+					entity_list[server_spawn]->model = entity_list[server_spawn]->rigid;
+					entity_list[server_spawn]->rigid->clone(*(thug22->model));
+					entity_list[server_spawn]->rigid->step_flag = true;
+					entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
+					entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21);
+				}
 			}
 
 			ret = strcmp(reliablemsg->msg, "disconnect");
@@ -2511,6 +2521,13 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 		{
 			game->make_dynamic_ent(ent[i].type, ent[i].id);
 		}
+
+		if (entity_list[ent[i].id]->trigger)
+		{
+			entity_list[ent[i].id]->trigger->active = ent[i].active;
+		}
+
+
 
 		if (entity_list[ent[i].id]->rigid)
 		{
@@ -3594,6 +3611,7 @@ void Engine::destroy()
 	free((void *)hash_list[0]);
 	free((void *)pk3_list[0]);
 	game->destroy();
+	delete game;
 	debugf("Shutting down.\n");
 	delete box;
 	delete ball;
@@ -3864,10 +3882,12 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "r_frontface %s", data);
 	if (ret == 1)
 	{
+#ifdef OPENGL
 		if (atoi(data) == 1)
 			glFrontFace(GL_CCW);
 		else
 			glFrontFace(GL_CW);
+#endif
 	}
 
 	if (q3map.loaded)

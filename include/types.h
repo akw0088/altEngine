@@ -138,12 +138,13 @@ typedef enum {
 */
 typedef struct
 {
-	unsigned int		id;
+	unsigned int	id;
 	nettype_t		type;
-	matrix3 morientation;
-	vec3	velocity;
-	vec3	angular_velocity;
-	vec3	position;
+	matrix3			morientation;
+	vec3			velocity;
+	vec3			angular_velocity;
+	vec3			position;
+	bool			active; // whether trigger is active
 } entity_t;
 
 // size of fixed part of network packets

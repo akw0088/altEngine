@@ -303,11 +303,13 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 void mLight2::set_light(float ambient, float lightmap, int num_light)
 {
+#ifndef DIRECTX
 	glUniform1i(u_num_lights, num_light);
 	glUniform1f(u_ambient, ambient);
 	glUniform1f(u_lightmap, lightmap);
 	m_num_light = num_light;
 	m_ambient = ambient;
+#endif
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
@@ -832,6 +834,7 @@ void ParticleUpdate::Params(emitter_t &emit)
 
 int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 {
+#ifndef DIRECTX
 	if (emit.num > max_particles)
 		emit.num = max_particles;
 
@@ -873,7 +876,7 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 
 	//emitter.num = num_particle;
 	emit.num = num_particle;
-
+#endif
 	return ParticleBufferA;
 }
 
