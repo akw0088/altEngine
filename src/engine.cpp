@@ -1734,6 +1734,13 @@ void Engine::step(int tick)
 		tex->texObj[texunit] = tex->texObjAnim[ani_index];
 	}
 
+	//network
+	sequence++;
+	if (server_flag && sequence)
+		server_step();
+	else if (client_flag && sequence)
+		client_step();
+
 	game->step(tick);
 
 	// These two funcs loop through all entities, should probably combine
@@ -1752,12 +1759,6 @@ void Engine::step(int tick)
 	dynamics();
 	update_audio();
 
-	//network
-	sequence++;
-	if (server_flag && sequence)
-		server_step();
-	else if (client_flag && sequence)
-		client_step();
 
 }
 
@@ -2136,7 +2137,7 @@ void Engine::server_step()
 
 		client_list[index]->last_time = (unsigned int)time(NULL);
 
-/*
+
 		Frame client_frame;
 
 		client_frame.up.x = clientmsg.up[0];
@@ -2152,7 +2153,7 @@ void Engine::server_step()
 
 		client_frame.set(client->rigid->morientation);
 		client_frame.pos = client->position;
-
+/*
 		float speed_scale = 1.0f;
 
 		if (client->player->haste_timer > 0)
@@ -2487,6 +2488,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				// the ent[i].position has the server (lagged) position
 				// Need to lerp between the two, but then we have time sync issues
 				entity_list[ent[i].id]->position = ent[i].position;
+				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
 			}
 			else
 			{

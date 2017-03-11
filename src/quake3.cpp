@@ -306,7 +306,7 @@ void Quake3::handle_player(int self, input_t &input)
 				entity->player->state = PLAYER_DUCKED;
 			}
 
-			if (strcmp(entity->type, "player") == 0)
+			if (strcmp(entity->type, "player") == 0 || (engine->server_flag && strcmp(entity->type, "client") == 0))
 			{
 				float speed_scale = 1.0f;
 
@@ -827,7 +827,7 @@ void Quake3::step(int frame_step)
 
 			if (isclient)
 			{
-				for(int j = 0; j < engine->client_list.size(); j++)
+				for(unsigned int j = 0; j < engine->client_list.size(); j++)
 				{
 					if (engine->client_list[j]->entity == i)
 						handle_player(i, engine->client_list[j]->input);
@@ -1129,8 +1129,6 @@ void Quake3::handle_rocketlauncher(Player &player, int self)
 	{
 		debugf("Unable to find PCM data for %s\n", projectile->trigger->idle_sound);
 	}
-
-
 }
 
 void Quake3::handle_grenade(Player &player, int self)
@@ -2318,7 +2316,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_rockets > 0)
 			{
 				fired = true;
-				handle_rocketlauncher(player, self);
+				if (engine->client_flag == false)
+					handle_rocketlauncher(player, self);
 			}
 			else
 			{
@@ -2330,7 +2329,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_plasma > 0)
 			{
 				fired = true;
-				handle_plasma(player, self);
+				if (engine->client_flag == false)
+					handle_plasma(player, self);
 			}
 			else
 			{
@@ -2342,7 +2342,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_grenades > 0)
 			{
 				fired = true;
-				handle_grenade(player, self);
+				if (engine->client_flag == false)
+					handle_grenade(player, self);
 			}
 			else
 			{
@@ -2355,7 +2356,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_lightning > 0)
 			{
 				fired = true;
-				handle_lightning(player, self);
+				if (engine->client_flag == false)
+					handle_lightning(player, self);
 			}
 			else
 			{
@@ -2368,7 +2370,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_slugs > 0)
 			{
 				fired = true;
-				handle_railgun(player, self);
+				if (engine->client_flag == false)
+					handle_railgun(player, self);
 			}
 			else
 			{
@@ -2381,7 +2384,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_shells > 0)
 			{
 				fired = true;
-				handle_shotgun(player, self);
+				if (engine->client_flag == false)
+					handle_shotgun(player, self);
 			}
 			else
 			{
@@ -2394,7 +2398,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				handle_machinegun(player, self);
+				if (engine->client_flag == false)
+					handle_machinegun(player, self);
 			}
 			else
 			{
