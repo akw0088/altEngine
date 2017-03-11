@@ -5,6 +5,15 @@
 
 //#define ERROR_CHECK
 
+
+
+/*
+	You could make this a pure virtual class and switch between OpenGL and Direct3D at runtime...
+	But then you would need to link to both d3d9 dll's and opengl3d dll's all the time
+	(not to mention the whole vtable lookup ontop of a wrapper function)
+	I think a d3d binary and an opengl binary is the better approach
+	(Although the idea of making a no operation graphics stub is nice for headless server)
+*/
 class Graphics
 {
 public:

@@ -28,6 +28,7 @@ Engine::Engine()
 	initialized = false;
 	num_dynamic = 100;
 	num_player = 8;
+	cl_skip = 8;
 	show_names = false;
 	show_lines = false;
 	show_debug = false;
@@ -43,7 +44,7 @@ Engine::Engine()
 }
 
 
-void Engine::init(void *p1, void *p2)
+void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
 						0.0f, 1.0f, 0.0f, 0.0f,
@@ -69,13 +70,14 @@ void Engine::init(void *p1, void *p2)
 	identity = ident;
 	projection = ident;
 
-	gen_spiral(gfx, spiral_ibo, spiral_vbo);
-	gen_lightning(gfx, lightning_ibo, lightning_vbo);
-
 	//visual
 	gfx.init(param1, param2);
 	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
+
+	gen_spiral(gfx, spiral_ibo, spiral_vbo);
+	gen_lightning(gfx, lightning_ibo, lightning_vbo);
+
 
 	// hash check data files
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
@@ -276,6 +278,27 @@ void Engine::init(void *p1, void *p2)
 	gfx.resize(xres,yres);
 	menu.render(global);
 	gfx.swap();
+#endif
+
+#ifdef DEDICATED
+	printf("Dedicated server mode\n");
+	printf("Sending cmdline to console\n");
+	printf("semicolon delimited example:\n;bind 65535;map media/maps/q3tourney2.bsp;\n");
+	if (p2 != NULL)
+	{
+		char *name = strtok((char *)cmdline, ";");
+		char *cmd = strtok(NULL, ";");
+
+		printf("Binary path: %s\n", name);
+
+		while (cmd != NULL)
+		{
+			printf("Command string: %s\n", cmd);
+			console(cmd);
+			cmd = strtok(NULL, ";");
+		}
+		printf("Finished processing cmdline\n");
+	}
 #endif
 
 //	shadowmap.init(&gfx);
@@ -766,6 +789,7 @@ void Engine::render_scene(bool lights)
 	gfx.Blend(true);
 	gfx.BlendFunc(NULL, NULL);
 
+#ifndef DIRECTX
 	int vbo = 0;
 	if (emitter.visible)
 	{
@@ -776,6 +800,7 @@ void Engine::render_scene(bool lights)
 		particle_update.Params(emitter);
 		vbo = particle_update.step(gfx, emitter);
 	}
+#endif
 
 	camera_frame.set(transformation);
 	mvp = transformation * projection;
@@ -783,6 +808,7 @@ void Engine::render_scene(bool lights)
 	vec3 quad1 = camera_frame.up;
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
+#ifndef DIRECTX
 	if (emitter.visible)
 	{
 		particle_render.Select();
@@ -792,6 +818,7 @@ void Engine::render_scene(bool lights)
 	}
 
 	render_trails(transformation);
+#endif
 #endif
 
 	render_weapon(transformation, lights, find_type("player", 0));
@@ -1751,6 +1778,8 @@ void Engine::step(int tick)
 	{
 		if (strcmp(entity_list[i]->type, "player") == 0)
 			check_triggers(i);
+		if (server_flag && strcmp(entity_list[i]->type, "client") == 0)
+			check_triggers(i);
 		else if (strcmp(entity_list[i]->type, "NPC") == 0)
 			check_triggers(i);
 	}
@@ -2342,12 +2371,15 @@ void Engine::client_step()
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(input);
 	static int rate_skip = 0;
-	int cl_skip = 8;
 
 	rate_skip++;
 
-	if (rate_skip % cl_skip == 0)
-		return;
+	// Dont want to skip an attack command, so fiddle with send rate
+	if (input.attack == false)
+	{
+		if (rate_skip % cl_skip == 0)
+			return;
+	}
 
 	//printf("client keystate %d\n", keystate);
 
@@ -3288,8 +3320,10 @@ void Engine::load_model(Entity &ent)
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
+#ifndef DEDICATED
 	if (client_flag == false)
 		game->init_camera(entity_list);
+#endif
 	load_sounds();
 	create_sources();
 	load_models();
@@ -3673,6 +3707,12 @@ void Engine::console(char *cmd)
 			q3map.patch_enabled = false;
 		}
 		return;
+	}
+
+	ret = sscanf(cmd, "cl_skip %s", data);
+	if (ret == 1)
+	{
+		cl_skip = atoi(data);
 	}
 
 	if (sscanf(cmd, "g_collision %s", data) == 1)

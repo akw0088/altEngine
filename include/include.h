@@ -18,6 +18,11 @@
 //particle count drops FPS linearly to near zero without hitting the cap
 //#define MAX_PARTICLES 175000
 
+#define OPENGL
+//#define DIRECTX
+//#define DEDICATED
+
+
 
 #ifdef _WIN32
 	#define APP_NAME "altEngine.exe"

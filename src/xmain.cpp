@@ -15,6 +15,8 @@ long long mstime()
 }
 
 
+char cmdline[1024] = {0};
+
 int main(int argc, char *argv[])
 {
 	Display			*display;
@@ -30,6 +32,12 @@ int main(int argc, char *argv[])
 					GLX_BLUE_SIZE, 8,
 					GLX_DEPTH_SIZE, 16,
 					None	};
+
+
+	for(int i = 0; i < argc; i++)
+	{
+		strcat(cmdline, argv[i]);
+	}
 
 	display	= XOpenDisplay(NULL);
 	if (!display)
@@ -261,7 +269,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 		if (!init)
 		{
-			altEngine.init((void *)display, (void *)&window);
+			altEngine.init((void *)display, (void *)&window, cmdline);
 			// Hide the cursor
 			XColor black;
 			static char noData[] = { 0,0,0,0,0,0,0,0 };

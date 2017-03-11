@@ -10,7 +10,7 @@ class Engine
 
 public:
 	Engine();
-	void init(void *param1, void *param2);
+	void init(void *param1, void *param2, char *cmdline);
 	void load(char *level);
 	void unload();
 	void destroy();
@@ -90,6 +90,7 @@ public:
 //temp
 	unsigned int testObj;
 	unsigned int num_light;
+
 	char *pk3_list[32];
 	char *hash_list[32];
 	int num_pk3;
@@ -97,7 +98,6 @@ public:
 	char *shader_list[32];
 	int num_shader;
 	HashTable key_bind;
-//	map<string, string> key_bind;
 
 	// for cloning
 	Entity *box;
@@ -179,6 +179,7 @@ protected:
 	int		sequence;
 	Net		net;
 	reliablemsg_t	reliable;
+	int cl_skip;
 	
 	
 	int		server_spawn;	// entity index of hosting player

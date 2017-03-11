@@ -864,10 +864,12 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 	// Get num primitives generated
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
+#ifndef DEDICATED
 	if (num_particle == 0 && max_particles != 0)
 	{
 		printf("ParticleSystem Error: %u particles written!\n\n", num_particle);
 	}
+#endif
 
 	//emitter.num = num_particle;
 	emit.num = num_particle;

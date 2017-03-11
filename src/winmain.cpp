@@ -63,7 +63,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 				NULL);				// creation parameters
 
 	hAccel = LoadAccelerators(hInstance, szAppName);
+#ifndef DEDICATED
 	ShowWindow(hwnd, iCmdShow);
+#endif
 	UpdateWindow(hwnd);
      
 	while (TRUE)
@@ -184,7 +186,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 #endif
 		shwnd = hwnd;
-		altEngine.init(&shwnd, &hdc);
+		altEngine.init(&shwnd, &hdc, (char *)GetCommandLine());
 	}
 	return 0;
 
