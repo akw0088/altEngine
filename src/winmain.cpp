@@ -87,7 +87,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		}
 		else
 		{
+#ifndef DEDICATED
 			SendMessage(hwnd, WMU_RENDER, 0, 0);
+#endif
 		}
 	}
 

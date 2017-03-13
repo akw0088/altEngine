@@ -12,6 +12,8 @@ public:
 	void step(int frame_step);
 	void destroy();
 
+
+	void check_triggers(int self, vector<Entity *> &entity_list);
 	void render_hud(double last_frametime);
 	void draw_name(Entity *entity, Menu &menu, matrix4 &real_projection);
 	void draw_line(Entity *a, Entity *b, Menu &menu, vec3 &color);

@@ -35,8 +35,8 @@ float4 main(in vary_t vary) : COLOR0
 	texColor[1] = tex2D(tex1, vary.texCoord1);
 //	texColor[2] = tex2D(tex2, vary.texCoord0);
 
-//	Fragment += (texColor[0] * 0.7) + (texColor[1] * 0.20);
-//	Fragment.a = 0.0;
+	Fragment += (texColor[0] * 0.7) + (texColor[1] * 0.20);
+	Fragment.a = 0.0;
 	float3 normal = normalize(vary.normal.xyz);
 
 	float3 intensity = 0.5;
