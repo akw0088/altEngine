@@ -144,7 +144,18 @@ typedef struct
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
-	bool			active; // whether trigger is active
+	uint8_t			active; // whether trigger is active
+	uint8_t			health;
+	uint8_t			armor;
+	uint8_t			weapon_flags;
+	uint8_t			current_weapon;
+	uint8_t			ammo_bullets;
+	uint8_t			ammo_shells;
+	uint8_t			ammo_rockets;
+	uint8_t			ammo_lightning;
+	uint8_t			ammo_slugs;
+	uint8_t			ammo_plasma;
+
 } entity_t;
 
 // size of fixed part of network packets

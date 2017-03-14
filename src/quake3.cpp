@@ -2214,6 +2214,24 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 	bool empty = false;
 	static bool once = false;
 
+	if (input.weapon_up)
+	{
+		if (self != -1)
+		{
+			player.change_weapon_up();
+		}
+		input.weapon_up = false;
+	}
+
+	if (input.weapon_down)
+	{
+		if (self != -1)
+		{
+			player.change_weapon_down();
+		}
+		input.weapon_down = false;
+	}
+
 	// Only reset flag when they stop clicking for lightning gun
 	if (engine->input.attack == false)
 	{
@@ -2322,7 +2340,9 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self)
 		player.best_weapon();
 	}
 
-	if ((input.attack && (strcmp(player.entity->type, "player") == 0) && player.reload_timer <= 0) ||
+	if ((input.attack &&
+		(strcmp(player.entity->type, "player") == 0 || strcmp(player.entity->type, "client") == 0) &&
+		player.reload_timer <= 0) ||
 		((player.bot_state == BOT_ATTACK) && (player.reload_timer <= 0)))
 	{
 		if (player.current_weapon == wp_rocket)

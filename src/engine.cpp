@@ -28,7 +28,7 @@ Engine::Engine()
 	initialized = false;
 	num_dynamic = 100;
 	num_player = 8;
-	cl_skip = 8;
+	cl_skip = 0;
 	show_names = false;
 	show_lines = false;
 	show_debug = false;
@@ -1044,10 +1044,18 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		if (entity->rigid == NULL)
 			continue;
 
-		if (entity->model->rail_trail || entity->model->lightning_trail)
-			continue;
+		if (entity->model != NULL)
+		{
+			if (entity->model->rail_trail || entity->model->lightning_trail)
+				continue;
+		}
 
 		if (i < num_player && strcmp(entity->type, "player") == 0)
+		{
+			continue;
+		}
+
+		if (i < num_player && strcmp(entity->type, "client") == 0)
 		{
 			continue;
 		}
@@ -1254,23 +1262,7 @@ void Engine::handle_input()
 		post_process(5);
 	}
 
-	if (input.weapon_up)
-	{
-		if (self != -1)
-		{
-			entity_list[self]->player->change_weapon_up();
-		}
-		input.weapon_up = false;
-	}
 
-	if (input.weapon_down)
-	{
-		if (self != -1)
-		{
-			entity_list[self]->player->change_weapon_down();
-		}
-		input.weapon_down = false;
-	}
 
 	if (input.numpad2)
 	{
@@ -1812,10 +1804,6 @@ void Engine::server_step()
 			connected = true;
 			break;
 		}
-		else
-		{
-			printf("%s != %s\n", socketname, client_list[i]->socketname);
-		}
 	}
 
 	// update client input
@@ -1861,16 +1849,10 @@ void Engine::server_step()
 		Entity *client = entity_list[client_list[index]->entity];
 
 		client_frame.set(client->rigid->morientation);
-		client_frame.pos = client->position;
-/*
-		float speed_scale = 1.0f;
-
-		if (client->player->haste_timer > 0)
-			speed_scale = 2.0f;
-
-		client->rigid->move(clientkeys, speed_scale);
-*/
+		client_frame.pos = client->position + client->rigid->center;
 		client_list[index]->input = clientkeys;
+
+
 
 
 		/*
@@ -1898,6 +1880,10 @@ void Engine::server_step()
 			}
 		}
 		client_list[index]->client_sequence = clientmsg.sequence;
+	}
+	else
+	{
+		printf("Got input packet from unconnected client\n");
 	}
 
 	// client not in list, check if it is a connect msg
@@ -1953,7 +1939,7 @@ void Engine::server_step()
 		sprintf(entity_list[client->entity]->type, "client");
 		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
 		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
-		entity_list[client->entity]->rigid->clone(*(box->model));
+		entity_list[client->entity]->rigid->clone(*(thug22->model));
 		entity_list[client->entity]->rigid->step_flag = true;
 		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio, 21);
 		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
@@ -2031,6 +2017,21 @@ void Engine::send_entities()
 				ent.position = entity_list[j]->position;
 			}
 
+
+			if (entity_list[j]->player)
+			{
+				ent.health = entity_list[j]->player->health;
+				ent.armor = entity_list[j]->player->armor;
+				ent.weapon_flags = entity_list[j]->player->weapon_flags;
+				//ent.current_weapon = entity_list[j]->player->current_weapon;
+				ent.ammo_bullets = entity_list[j]->player->ammo_bullets;
+				ent.ammo_shells = entity_list[j]->player->ammo_shells;
+				ent.ammo_rockets = entity_list[j]->player->ammo_rockets;
+				ent.ammo_lightning = entity_list[j]->player->ammo_lightning;
+				ent.ammo_slugs = entity_list[j]->player->ammo_slugs;
+				ent.ammo_plasma = entity_list[j]->player->ammo_plasma;
+			}
+
 			memcpy(&servermsg.data[j * sizeof(entity_t)],
 				&ent, sizeof(entity_t));
 			servermsg.num_ents++;
@@ -2042,7 +2043,7 @@ void Engine::send_entities()
 			sizeof(int) + strlen(reliable.msg) + 1;
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
-		if (servermsg.length > 65507)
+		if (servermsg.length > 8192)
 		{
 			printf("Server packet too big!");
 		}
@@ -2058,14 +2059,11 @@ void Engine::client_step()
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(input);
-	static int rate_skip = 0;
-
-	rate_skip++;
 
 	// Dont want to skip an attack command, so fiddle with send rate
-	if (input.attack == false)
+	if (input.attack == false && cl_skip != 0)
 	{
-		if (rate_skip % cl_skip == 0)
+		if (tick_num % cl_skip == 0)
 			return;
 	}
 
@@ -2204,7 +2202,26 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 
 		if (entity_list[ent[i].id]->trigger)
 		{
-			entity_list[ent[i].id]->trigger->active = ent[i].active;
+			if (ent[i].active)
+				entity_list[ent[i].id]->trigger->active = true;
+			else
+				entity_list[ent[i].id]->trigger->active = false;
+		}
+
+		if (entity_list[ent[i].id]->player)
+		{
+			entity_list[ent[i].id]->player->health = ent[i].health;
+			entity_list[ent[i].id]->player->armor = ent[i].armor;
+			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
+			// will force server to sync to our current weapon
+//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
+			entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
+			entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
+			entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
+			entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
+			entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
+			entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
+
 		}
 
 
@@ -2218,6 +2235,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				// Need to lerp between the two, but then we have time sync issues
 				entity_list[ent[i].id]->position = ent[i].position;
 				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+				camera_frame.pos = ent[i].position;
 			}
 			else
 			{
@@ -2246,19 +2264,21 @@ int Engine::GetKeyState(input_t &input)
 		keystate |= 1;
 	if (input.use)
 		keystate |= 2;
-	if (input.zoom)
-		keystate |= 4;
 	if (input.jump)
-		keystate |= 8;
+		keystate |= 4;
 	if (input.moveup)
-		keystate |= 16;
+		keystate |= 8;
 	if (input.moveleft)
-		keystate |= 32;
+		keystate |= 16;
 	if (input.movedown)
-		keystate |= 64;
+		keystate |= 32;
 	if (input.moveright)
+		keystate |= 64;
+	if (input.weapon_down)
 		keystate |= 128;
-
+	if (input.weapon_up)
+		keystate |= 256;
+	
 	return keystate;
 }
 
@@ -2279,34 +2299,39 @@ input_t Engine::GetKeyState(int keystate)
 		input.use = false;
 
 	if (keystate & 4)
-		input.zoom = true;
-	else
-		input.zoom = false;
-
-	if (keystate & 8)
 		input.jump = true;
 	else
 		input.jump = false;
 
-	if (keystate & 16)
+	if (keystate & 8)
 		input.moveup = true;
 	else
 		input.moveup = false;
 
-	if (keystate & 32)
+	if (keystate & 16)
 		input.moveleft = true;
 	else
 		input.moveleft = false;
 
-	if (keystate & 64)
+	if (keystate & 32)
 		input.movedown = true;
 	else
 		input.movedown = false;
 
-	if (keystate & 128)
+	if (keystate & 64)
 		input.moveright = true;
 	else
 		input.moveright = false;
+
+	if (keystate & 128)
+		input.weapon_down = true;
+	else
+		input.weapon_down = false;
+
+	if (keystate & 256)
+		input.weapon_up = true;
+	else
+		input.weapon_up = false;
 
 	return input;
 }
