@@ -114,7 +114,9 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 	if (display == NULL)
 	{
+#ifndef DEDICATED
 		altEngine.render(TICK_MS);
+#endif
 		return 0;
 	}
 	else if (display == (void *)1)
@@ -138,6 +140,9 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case MapNotify:
 		printf("MapNotify\n");
+#ifdef DEDICATED
+		XUnmapWindow(display, window);
+#endif
 		break;
 	case ButtonPress:
 		switch(event.xbutton.button)
@@ -191,7 +196,9 @@ int EventProc(Display *display, Window window, GLXContext context)
 		{
 			once = true;
 			//resize fixes opengl context rendering for some reason
+#ifndef DEDICATED
 			XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
+#endif
 		}
 
 		if ( altEngine.mousepos(event.xmotion.x, event.xmotion.y, event.xmotion.x - xcenter, event.xmotion.y - ycenter) )
