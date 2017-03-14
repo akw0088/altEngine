@@ -70,10 +70,12 @@ int main(int argc, char *argv[])
 
 	XSetStandardProperties(display, window, "altEngine", "opengl", None, argv, argc, NULL );
 
-	XMapWindow(display, window);
-	glXMakeCurrent(display, window, context);
+	if ( glXMakeCurrent(display, window, context) )
+	{
+		printf("GL Version: %s\n", glGetString(GL_VERSION));
+	}
 
-	printf("GL Version: %s\n", glGetString(GL_VERSION));
+	XMapWindow(display, window);
 
 
 	while (True)
