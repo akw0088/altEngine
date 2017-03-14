@@ -1255,8 +1255,6 @@ void Engine::destroy_buffers()
 
 void Engine::handle_input()
 {
-	int self = find_type("player", 0);
-
 	if (input.numpad0)
 	{
 		post_process(5);

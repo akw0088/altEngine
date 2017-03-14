@@ -63,10 +63,9 @@ char *GetALErrorString(ALenum err)
 
 
 
-#ifndef DEDICATED
+#ifdef EFX_UTIL
 
 // Imported EFX functions
-//#ifdef EFXUTIL
 // Effect objects
 LPALGENEFFECTS alGenEffects = NULL;
 LPALDELETEEFFECTS alDeleteEffects = NULL;
@@ -213,8 +212,9 @@ ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuin
 
 	return bReturn;
 }
-//#endf
+#endif
 
+#ifndef DEDICATED
 void Audio::init()
 {
 #ifdef WIN32
@@ -618,18 +618,13 @@ ALenum Audio::alFormat(wave_t *wave)
 			return AL_FORMAT_MONO8;
 	}
 }
-#else
+#endif
+
+#ifdef DEDICATED
 bool ALFWIsEFXSupported()
 {
 	return true;
 }
-
-
-ALboolean SetEFXEAXReverbProperties(EFXEAXREVERBPROPERTIES *pEFXEAXReverb, ALuint uiEffect)
-{
-	return AL_TRUE;
-}
-
 
 void Audio::init()
 {

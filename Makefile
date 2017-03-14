@@ -67,7 +67,8 @@ CC := clang
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-CFLAGS := -DGL_GLEXT_PROTOTYPES -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
+altEngine: CFLAGS := -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
+altEngine_dedicated: CFLAGS := -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -O3 -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal
 LIBS := -L/usr/X11R6/lib/ 
@@ -76,6 +77,9 @@ all: altEngine
 
 altEngine: $(OBJS_CPP) $(OBJS_C)
 	$(CPP) $(CFLAGS) -o altEngine $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
+
+altEngine_dedicated: $(OBJS_CPP) $(OBJS_C)
+	$(CPP) $(CFLAGS) -o altEngine_dedicated $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
 
 clean:
 	rm -f ./obj/*.o

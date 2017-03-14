@@ -36,7 +36,7 @@ Graphics::Graphics()
 }
 
 
-
+#ifndef DEDICATED
 /*==============================================================
 	DIRECTX ONLY SECTION
 ================================================================*/
@@ -1583,7 +1583,7 @@ void Graphics::GetDebugLog()
 #endif
 }
 
-
+#endif
 #endif
 
 #ifdef DEDICATED
