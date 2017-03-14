@@ -3,19 +3,52 @@
 #ifndef WIN32
 #include <X11/XKBlib.h>
 #include <X11/cursorfont.h>
+#include <signal.h>
 
 int EventProc(Display *display, Window window, GLXContext context);
 
-long long mstime()
+int timer_tick = 0;
+char cmdline[1024] = {0};
+
+void timer_handler(int sig, siginfo_t *si, void *uc)
 {
-    struct timeval te; 
-    gettimeofday(&te, NULL); // get current time
-    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
-    return milliseconds;
+	timer_t *timer_d = (timer_t *)si->si_value.sival_ptr;
+
+	timer_tick = 1;
 }
 
+int make_timer(char *name, timer_t *timer_id, int interval )
+{
+    struct sigevent         te;
+    struct itimerspec       its;
+    struct sigaction        sa;
+    int                     sigNo = SIGRTMIN;
 
-char cmdline[1024] = {0};
+    // Set up signal handler
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = timer_handler;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(sigNo, &sa, NULL) == -1)
+    {
+        fprintf(stderr, "Failed to setup signal handling for %s.\n", name);
+        return(-1);
+    }
+
+    // Set and enable alarm
+    te.sigev_notify = SIGEV_SIGNAL;
+    te.sigev_signo = sigNo;
+    te.sigev_value.sival_ptr = timer_id;
+    timer_create(CLOCK_REALTIME, &te, timer_id);
+
+    its.it_interval.tv_sec = 0;
+    its.it_interval.tv_nsec = interval * 1000000;
+    its.it_value.tv_sec = 0;
+    its.it_value.tv_nsec = interval * 1000000;
+    timer_settime(*timer_id, 0, &its, NULL);
+
+    return(0);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -24,7 +57,7 @@ int main(int argc, char *argv[])
 	XSetWindowAttributes	winattrs;
 	Window			window;
 	GLXContext		context;
-	long long		last_time = mstime();
+	timer_t time_id;
 
 	int visual[] = {	GLX_RGBA, GLX_DOUBLEBUFFER,
 					GLX_RED_SIZE, 8,
@@ -37,7 +70,9 @@ int main(int argc, char *argv[])
 	for(int i = 0; i < argc; i++)
 	{
 		strcat(cmdline, argv[i]);
+		strcat(cmdline, " ");
 	}
+	printf("commandline: %d %s\n", argc, cmdline);
 
 	display	= XOpenDisplay(NULL);
 	if (!display)
@@ -76,6 +111,7 @@ int main(int argc, char *argv[])
 	}
 
 	XMapWindow(display, window);
+	make_timer("Timer", &time_id, 8);
 
 
 	while (True)
@@ -87,10 +123,10 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			if (mstime() - last_time >= TICK_MS)
+			if (timer_tick)
 			{
-				last_time = mstime();
 				EventProc((Display *)1, window, context);
+				timer_tick = 0;
 			}
 
 			EventProc(NULL, window, context);

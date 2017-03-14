@@ -68,9 +68,9 @@ CC := clang
 #-fsanitize=safe-stack
 
 altEngine: CFLAGS := -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
-altEngine_dedicated: CFLAGS := -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -O3 -march=native
+altEngine_dedicated: CFLAGS := -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -g -pg -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
-LFLAGS := -lX11 -lGL -lopenal
+LFLAGS := -lX11 -lGL -lopenal -lrt
 LIBS := -L/usr/X11R6/lib/ 
 
 all: altEngine
