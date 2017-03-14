@@ -154,6 +154,8 @@ int EventProc(Display *display, Window window, GLXContext context)
 	{
 #ifndef DEDICATED
 		altEngine.render(TICK_MS);
+#else
+		usleep(1);
 #endif
 		return 0;
 	}
