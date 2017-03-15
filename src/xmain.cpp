@@ -12,7 +12,7 @@ char cmdline[1024] = {0};
 
 void timer_handler(int sig, siginfo_t *si, void *uc)
 {
-	timer_t *timer_d = (timer_t *)si->si_value.sival_ptr;
+//	timer_t *timer_d = (timer_t *)si->si_value.sival_ptr;
 
 	timer_tick = 1;
 }

@@ -989,7 +989,7 @@ void delta_uncompress(char *output, char *input, char *delta, int size)
         }
 }
 
-void runlength_encode(char *output, rletable_t *table, char *input, int size)
+void runlength_encode(uint8_t *output, rletable_t *table, uint8_t *input, int *size)
 {
         int i = 0;
         int j = 0;
@@ -997,7 +997,9 @@ void runlength_encode(char *output, rletable_t *table, char *input, int size)
         uint8_t item = 0;
         int length = 0;
 
-        for (i = 0; i < size; i++)
+	int input_size = *size;
+
+        for (i = 0; i < input_size; i++)
         {
                 if (input[i] == input[i + 1])
                 {
@@ -1009,7 +1011,6 @@ void runlength_encode(char *output, rletable_t *table, char *input, int size)
                 {
                         if (length > 0)
                         {
-                                table[k].item = item;
                                 table[k].length = length;
                                 table[k].pos = i - length;
                                 k++;
@@ -1019,14 +1020,16 @@ void runlength_encode(char *output, rletable_t *table, char *input, int size)
 
                 output[j++] = input[i];
         }
+	*size = j;
 }
 
-void runlength_decode(char *output, rletable_t *table, char *input, int size)
+void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, int *size)
 {
         int i = 0;
         int j = 0;
+	int input_size = *size;
 
-        for (i = 0; i < size; i++)
+        for (i = 0; i < input_size; i++)
         {
                 int t = 0;
 
@@ -1041,7 +1044,7 @@ void runlength_decode(char *output, rletable_t *table, char *input, int size)
 
                                 while (count)
                                 {
-                                        output[j++] = table[t].item;
+                                        output[j++] = input[i];
                                         count--;
                                 }
                                 break;
@@ -1050,6 +1053,7 @@ void runlength_decode(char *output, rletable_t *table, char *input, int size)
 
                 output[j++] = input[i];
         }
-}
 
+	*size = j;
+}
 

@@ -547,7 +547,6 @@ typedef struct
 
 typedef struct
 {
-        char item;
         int length;
         int pos;
 } rletable_t;
