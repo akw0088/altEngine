@@ -968,3 +968,88 @@ int trim(char *data, int length)
 	}
 	return pos;
 }
+
+void delta_compress(char *output, char *input, char *delta, int size)
+{
+        int i = 0;
+
+        for (i = 0; i < size; i++)
+        {
+                output[i] = input[i] - delta[i];
+        }
+}
+
+void delta_uncompress(char *output, char *input, char *delta, int size)
+{
+        int i = 0;
+
+        for (i = 0; i < size; i++)
+        {
+                output[i] = input[i] + delta[i];
+        }
+}
+
+void runlength_encode(char *output, rletable_t *table, char *input, int size)
+{
+        int i = 0;
+        int j = 0;
+        int k = 0;
+        uint8_t item = 0;
+        int length = 0;
+
+        for (i = 0; i < size; i++)
+        {
+                if (input[i] == input[i + 1])
+                {
+                        item = input[i];
+                        length++;
+                        continue;
+                }
+                else
+                {
+                        if (length > 0)
+                        {
+                                table[k].item = item;
+                                table[k].length = length;
+                                table[k].pos = i - length;
+                                k++;
+                        }
+                        length = 0;
+                }
+
+                output[j++] = input[i];
+        }
+}
+
+void runlength_decode(char *output, rletable_t *table, char *input, int size)
+{
+        int i = 0;
+        int j = 0;
+
+        for (i = 0; i < size; i++)
+        {
+                int t = 0;
+
+                for (t = 0; ;t++)
+                {
+                        if (table[t].length == 0)
+                                break;
+
+                        if (j == table[t].pos)
+                        {
+                                int count = table[t].length;
+
+                                while (count)
+                                {
+                                        output[j++] = table[t].item;
+                                        count--;
+                                }
+                                break;
+                        }
+                }
+
+                output[j++] = input[i];
+        }
+}
+
+

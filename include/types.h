@@ -145,6 +145,8 @@ typedef struct
 	vec3			angular_velocity;
 	vec3			position;
 	uint8_t			active; // whether trigger is active
+	//player info
+	char			name[64];
 	uint8_t			health;
 	uint8_t			armor;
 	uint8_t			weapon_flags;
@@ -155,7 +157,13 @@ typedef struct
 	uint8_t			ammo_lightning;
 	uint8_t			ammo_slugs;
 	uint8_t			ammo_plasma;
-
+        uint8_t 		holdable_teleporter;
+        uint8_t			holdable_medikit;
+        uint8_t			holdable_flag;
+        unsigned int flight_timer;
+        unsigned int regen_timer;
+        unsigned int haste_timer;
+        unsigned int quad_timer;
 } entity_t;
 
 // size of fixed part of network packets
@@ -535,3 +543,11 @@ typedef struct
 	int drawcall;
 	int triangle;
 } gpustat_t;
+
+
+typedef struct
+{
+        char item;
+        int length;
+        int pos;
+} rletable_t;
