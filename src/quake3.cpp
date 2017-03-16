@@ -2702,6 +2702,15 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "drawcalls: %d triangles %d", engine->gfx.gpustat.drawcall, engine->gfx.gpustat.triangle);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+			snprintf(msg, LINE_SIZE, "netinfo: delta %d size %d num_ents %d dropped %d",
+				engine->netinfo.sequence_delta,
+				engine->netinfo.size,
+				engine->netinfo.num_ents,
+				engine->netinfo.dropped
+				);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+
 		}
 	}
 
@@ -4886,8 +4895,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						int owner = entity_list[i]->trigger->owner;
 
 						entity_list[self]->player->stats.deaths++;
-						entity_list[owner]->player->stats.kills++;
-						entity_list[owner]->player->stats.hits++;
+						if (owner != -1)
+						{
+							entity_list[owner]->player->stats.kills++;
+							entity_list[owner]->player->stats.hits++;
+						}
 
 						if (entity_list[owner]->player->current_weapon == wp_rocket)
 						{

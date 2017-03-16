@@ -192,7 +192,7 @@ typedef struct
 } clientmsg_t;
 
 
-#define SERVER_HEADER 13
+#define SERVER_HEADER 16
 /*
 	Variable length server msg
 	after num_ents is a variable number of entity states
@@ -204,14 +204,14 @@ typedef struct
 	int		length;
 	unsigned int	sequence;
 	unsigned int	client_sequence;
-	byte			num_ents;
-	char			data[10 * 16834];
+	int 			num_ents;
+	char			data[256000];
 } servermsg_t;
 
 typedef struct
 {
 	unsigned int	sequence;
-	char			msg[10 * 16834];
+	char			msg[256000];
 }
 reliablemsg_t;
 
@@ -249,13 +249,23 @@ typedef struct
 
 typedef struct
 {
+	int sequence_delta;
+	int dropped;
+	int num_ents;
+	int size;
+} netinfo_t;
+
+typedef struct
+{
 	char		socketname[80];
 	unsigned int	entity;
 	unsigned int	client_sequence;
 	unsigned int	server_sequence;
 	unsigned int	last_time;
-	input_t		input;
+	input_t			input;
+	netinfo_t		netinfo;
 } client_t;
+
 
 //8 units equal 1 foot
 //sin -1,1

@@ -198,6 +198,8 @@ protected:
 	bool	client_flag;
 	unsigned int	last_server_sequence;
 
+	netinfo_t netinfo;
+
 	//Shaders
 	Global				global; // basic shader for menu's etc
 	Post				post;	// post process shader

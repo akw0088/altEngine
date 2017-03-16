@@ -36,7 +36,6 @@
 
 #ifdef _WIN32
 	#define _CRTDBG_MAP_ALLOC
-	#define EFXUTIL
 	#define _USE_MATH_DEFINES
 	#define WIN32_EXTRA_LEAN
 	#define _CRT_SECURE_NO_DEPRECATE

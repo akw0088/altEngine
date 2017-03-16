@@ -37,6 +37,8 @@ Engine::Engine()
 	collision_detect_enable = true;
 	num_bot = 0;
 
+	memset(&netinfo, 0, sizeof(netinfo));
+
 	fov = 45.0f;
 	zNear = 1.0f;
 	zFar = 2001.0f; // zFar - zNear makes nice values
@@ -1814,6 +1816,7 @@ void Engine::server_step()
 		if (clientmsg.sequence <= client_list[index]->client_sequence)
 		{
 			printf("Got old client packet\n");
+			client_list[index]->netinfo.dropped++;
 			return;
 		}
 
@@ -1970,6 +1973,8 @@ void Engine::send_entities()
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
+
+
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
 		// idle client timeout
@@ -1983,6 +1988,7 @@ void Engine::send_entities()
 			i--;
 			continue;
 		}
+
 
 		for (unsigned int j = 0; j < entity_list.size(); j++)
 		{
@@ -2034,6 +2040,8 @@ void Engine::send_entities()
 				&ent, sizeof(entity_t));
 			servermsg.num_ents++;
 		}
+
+
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			(void *)&reliable,
 			sizeof(int) + strlen(reliable.msg) + 1);
@@ -2041,9 +2049,13 @@ void Engine::send_entities()
 			sizeof(int) + strlen(reliable.msg) + 1;
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
+		client_list[i]->netinfo.num_ents = servermsg.num_ents;
+		client_list[i]->netinfo.sequence_delta = servermsg.sequence - servermsg.client_sequence;
+		client_list[i]->netinfo.size = servermsg.length;
+		
 		if (servermsg.length > 8192)
 		{
-			printf("Server packet too big!");
+			printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
 		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
@@ -2069,9 +2081,9 @@ void Engine::client_step()
 
 	// get entity information
 #ifdef WIN32
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), ( int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 256000, 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
 #else
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 8192, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 256000, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #endif
 	if ( size > 0)
 	{
@@ -2084,6 +2096,7 @@ void Engine::client_step()
 		if (servermsg.sequence <= last_server_sequence)
 		{
 			printf("Got old server packet\n");
+			netinfo.dropped++;
 			return;
 		}
 
@@ -2098,6 +2111,11 @@ void Engine::client_step()
 		{
 			reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		}
+
+
+		netinfo.num_ents = servermsg.num_ents;
+		netinfo.size = servermsg.length;
+		netinfo.sequence_delta = servermsg.sequence - servermsg.client_sequence;
 
 		handle_servermsg(servermsg, reliablemsg);
 
@@ -2115,6 +2133,7 @@ void Engine::client_step()
 
 		last_server_sequence = servermsg.sequence;
 	}
+
 
 	// send keyboard state
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
@@ -2179,6 +2198,8 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			}
 		}
 	}
+
+
 
 	for (int i = 0; i < servermsg.num_ents; i++)
 	{
@@ -3433,6 +3454,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "cl_skip %s", data);
 	if (ret == 1)
 	{
+		printf("Setting cl_skip to %s\n", data);
 		cl_skip = atoi(data);
 	}
 
