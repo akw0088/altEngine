@@ -989,13 +989,13 @@ void delta_uncompress(char *output, char *input, char *delta, int size)
         }
 }
 
-void runlength_encode(uint8_t *output, rletable_t *table, uint8_t *input, int *size)
+void runlength_encode(uint8_t *output, rletable_t *table, int *table_size, uint8_t *input, unsigned int *size)
 {
-        int i = 0;
-        int j = 0;
-        int k = 0;
-        uint8_t item = 0;
-        int length = 0;
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	uint8_t item = 0;
+	int length = 0;
 
 	int input_size = *size;
 
@@ -1021,9 +1021,10 @@ void runlength_encode(uint8_t *output, rletable_t *table, uint8_t *input, int *s
                 output[j++] = input[i];
         }
 	*size = j;
+	*table_size = k;
 }
 
-void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, int *size)
+void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsigned int *size)
 {
         int i = 0;
         int j = 0;

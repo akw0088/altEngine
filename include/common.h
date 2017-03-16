@@ -27,6 +27,12 @@ float rand_float(float fMin, float fAdd);
 int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
 int gen_lightning(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
 
+void delta_compress(char *output, char *input, char *delta, int size);
+void delta_uncompress(char *output, char *input, char *delta, int size);
+void runlength_encode(uint8_t *output, rletable_t *table, int *table_size, uint8_t *input, unsigned int *size);
+void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsigned int *size);
+
+
 // Lerp between A and B where time is within [0,1]
 inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
 {

@@ -63,7 +63,7 @@ char *GetALErrorString(ALenum err)
 
 
 
-#ifdef EFX_UTIL
+#ifdef EFXUTIL
 
 // Imported EFX functions
 // Effect objects
