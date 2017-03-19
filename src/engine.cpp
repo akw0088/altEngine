@@ -289,6 +289,13 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	printf("Dedicated server mode\n");
 	printf("Sending cmdline to console\n");
 	printf("semicolon delimited example:\n;bind 65535;map media/maps/q3tourney2.bsp;\n");
+
+	if (strlen(cmdline) <= 1)
+	{
+		printf("No cmdline set, using default: ;bind 65535;map media/maps/q3tourney2.bsp;\n");
+		cmdline = ";bind 65535;map media/maps/q3tourney2.bsp;";
+	}
+
 	if (p2 != NULL)
 	{
 		char *name = strtok((char *)cmdline, ";");

@@ -770,235 +770,242 @@ void Quake3::step(int frame_step)
 	}
 
 
-	if (engine->menu.ingame == false && engine->menu.console == false && engine->menu.chatmode == false)
+	if (spectator == true)
 	{
-		if (spectator == true)
+		engine->camera_frame.update(engine->input);
+	}
+
+
+
+	if (engine->input.control && spectator_timer <= 0)
+	{
+		spectator_timer = TICK_RATE;
+		spectator = !spectator;
+		printf("spectator is %d\n", (int)spectator);
+
+		if (spectator == false)
 		{
-			engine->camera_frame.update(engine->input);
-		}
+			float min_distance = FLT_MAX;
+			int index = -1;
 
-
-
-		if (engine->input.control && spectator_timer <= 0)
-		{
-			spectator_timer = TICK_RATE;
-			spectator = !spectator;
-			printf("spectator is %d\n", (int)spectator);
-
-			if (spectator == false)
+			for (unsigned int i = 0; i < engine->num_player; i++)
 			{
-				float min_distance = FLT_MAX;
-				int index = -1;
+				float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
 
-				for (unsigned int i = 0; i < engine->num_player; i++)
+				if (distance < min_distance)
 				{
-					float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
-
-					if (distance < min_distance)
-					{
-						min_distance = distance;
-						index = i;
-					}
-				}
-				int spectator = engine->find_type("spectator", 0);
-
-				if (spectator != -1)
-				{
-					sprintf(engine->entity_list[spectator]->type, "NPC");
-				}
-				sprintf(engine->entity_list[index]->type, "player");
-			}
-			else
-			{
-				int player = engine->find_type("player", 0);
-
-				if (player != -1)
-				{
-					sprintf(engine->entity_list[player]->type, "spectator");
+					min_distance = distance;
+					index = i;
 				}
 			}
+			int spectator = engine->find_type("spectator", 0);
+
+			if (spectator != -1)
+			{
+				sprintf(engine->entity_list[spectator]->type, "NPC");
+			}
+			sprintf(engine->entity_list[index]->type, "player");
 		}
 		else
 		{
-			if (spectator_timer > 0)
-				spectator_timer--;
+			int player = engine->find_type("player", 0);
+
+			if (player != -1)
+			{
+				sprintf(engine->entity_list[player]->type, "spectator");
+			}
 		}
+	}
+	else
+	{
+		if (spectator_timer > 0)
+			spectator_timer--;
+	}
 
 
-		for (unsigned int i = 0; i < engine->num_player; i++)
+	for (unsigned int i = 0; i < engine->num_player; i++)
+	{
+		Entity *entity = engine->entity_list[i];
+		bool isplayer = (strcmp(entity->type, "player") == 0);
+		bool isbot = (strcmp(entity->type, "NPC") == 0);
+		bool isclient = (strcmp(entity->type, "client") == 0);
+		bool isserver = (strcmp(entity->type, "server") == 0);
+
+		if (isplayer || isbot || isserver)
 		{
-			Entity *entity = engine->entity_list[i];
-			bool isplayer = (strcmp(entity->type, "player") == 0);
-			bool isbot = (strcmp(entity->type, "NPC") == 0);
-			bool isclient = (strcmp(entity->type, "client") == 0);
+			if (((isplayer || isserver) &&
+				(engine->menu.ingame == true || engine->menu.console == true || engine->menu.chatmode == true)))
+			{
+				input_t noinput = { 0 };
 
-
-			if (isplayer || isbot)
+				handle_player(i, noinput);
+			}
+			else
 			{
 				handle_player(i, engine->input);
 			}
+		}
 
-			if (isclient)
+		if (isclient)
+		{
+			for(unsigned int j = 0; j < engine->client_list.size(); j++)
 			{
-				for(unsigned int j = 0; j < engine->client_list.size(); j++)
-				{
-					if (engine->client_list[j]->ent_id == i)
-						handle_player(i, engine->client_list[j]->input);
-				}
+				if (engine->client_list[j]->ent_id == i)
+					handle_player(i, engine->client_list[j]->input);
 			}
+		}
 
-			if (strcmp(entity->type, "NPC") != 0)
-				continue;
+		if (strcmp(entity->type, "NPC") != 0)
+			continue;
 
 #ifdef BOT_ENABLE
 
-			Entity *bot = engine->entity_list[i];
-			input_t input;
+		Entity *bot = engine->entity_list[i];
+		input_t input;
 
-			memset(&input, 0, sizeof(input_t));
-			if (bot->player->health <= 0)
+		memset(&input, 0, sizeof(input_t));
+		if (bot->player->health <= 0)
+		{
+			bot->player->bot_state = BOT_DEAD;
+			continue;
+		}
+
+		//bot->player->avoid_walls(engine->q3map);
+
+		bot->player->handle_bot(engine->entity_list, i);
+
+		if (bot->player->bot_state == BOT_ALERT || bot->player->bot_state == BOT_ATTACK)
+		{
+			//clear path
+			bot->player->path.step = 0;
+			bot->player->path.length = 0;
+		}
+
+
+		if (bot->player->bot_state == BOT_IDLE || bot->player->bot_state == BOT_EXPLORE)
+		{
+			bot->player->get_item = bot->player->bot_search_for_items(engine->entity_list, i);
+
+			//clear path just in case
+			bot->player->path.step = 0;
+			bot->player->path.length = 0;
+		}
+
+		float speed_scale = 1.0f;
+
+		if (bot->player->haste_timer > 0)
+			speed_scale = 2.0f;
+
+		switch (bot->player->bot_state)
+		{
+		case BOT_ATTACK:
+			engine->zcc.select_animation(0);
+			bot->rigid->move_forward(speed_scale);
+			break;
+		case BOT_DEAD:
+			engine->zcc.select_animation(1);
+			bot->model->clone(*(engine->box->model));
+			engine->select_wave(bot->speaker->source, bot->player->death1_sound);
+			engine->audio.play(bot->speaker->source);
+
+			bot->player->respawn();
+			char cmd[80];
+			sprintf(cmd, "respawn -1 %d", i);
+			console(i, cmd, engine->menu, engine->entity_list);
+			break;
+		case BOT_GET_ITEM:
+		{
+			static int nav_array[64] = { 0 };
+			int ret = 0;
+
+			bot->player->ammo_bullets = 100; // bots cheat on reloading :)
+			engine->zcc.select_animation(1);
+			if (engine->entity_list[bot->player->get_item]->trigger->active)
 			{
-				bot->player->bot_state = BOT_DEAD;
-				continue;
-			}
-
-			//bot->player->avoid_walls(engine->q3map);
-
-			bot->player->handle_bot(engine->entity_list, i);
-
-			if (bot->player->bot_state == BOT_ALERT || bot->player->bot_state == BOT_ATTACK)
-			{
-				//clear path
+				//some one got the item before we did, abort
+				bot->player->bot_state = BOT_IDLE;
 				bot->player->path.step = 0;
 				bot->player->path.length = 0;
+
 			}
 
-
-			if (bot->player->bot_state == BOT_IDLE || bot->player->bot_state == BOT_EXPLORE)
+			// Need a path to item
+			if (engine->entity_list[i]->player->path.length == 0)
 			{
-				bot->player->get_item = bot->player->bot_search_for_items(engine->entity_list, i);
+				//probably need to pass Player reference instead of each path param, or make a struct
+				ret = bot_get_path(engine->entity_list[i]->player->get_item, i, nav_array,
+					engine->entity_list[i]->player->path);
 
-				//clear path just in case
-				bot->player->path.step = 0;
-				bot->player->path.length = 0;
-			}
-
-			float speed_scale = 1.0f;
-
-			if (bot->player->haste_timer > 0)
-				speed_scale = 2.0f;
-
-			switch (bot->player->bot_state)
-			{
-			case BOT_ATTACK:
-				engine->zcc.select_animation(0);
-				bot->rigid->move_forward(speed_scale);
-				break;
-			case BOT_DEAD:
-				engine->zcc.select_animation(1);
-				bot->model->clone(*(engine->box->model));
-				engine->select_wave(bot->speaker->source, bot->player->death1_sound);
-				engine->audio.play(bot->speaker->source);
-
-				bot->player->respawn();
-				char cmd[80];
-				sprintf(cmd, "respawn -1 %d", i);
-				console(i, cmd, engine->menu, engine->entity_list);
-				break;
-			case BOT_GET_ITEM:
-			{
-				static int nav_array[64] = { 0 };
-				int ret = 0;
-
-				bot->player->ammo_bullets = 100; // bots cheat on reloading :)
-				engine->zcc.select_animation(1);
-				if (engine->entity_list[bot->player->get_item]->trigger->active)
+				if (engine->entity_list[i]->player->path.length == -1)
 				{
-					//some one got the item before we did, abort
+					// Path doesnt exist, give up
+					strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, 1023);
+					strncat(bot->player->ignore, " ", 1023);
+
+					if (strlen(bot->player->ignore) >= 1000)
+						bot->player->ignore[0] = '\0';
+
 					bot->player->bot_state = BOT_IDLE;
 					bot->player->path.step = 0;
 					bot->player->path.length = 0;
-
 				}
-
-				// Need a path to item
-				if (engine->entity_list[i]->player->path.length == 0)
+				else
 				{
-					//probably need to pass Player reference instead of each path param, or make a struct
-					ret = bot_get_path(engine->entity_list[i]->player->get_item, i, nav_array,
-						engine->entity_list[i]->player->path);
-
-					if (engine->entity_list[i]->player->path.length == -1)
-					{
-						// Path doesnt exist, give up
-						strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, 1023);
-						strncat(bot->player->ignore, " ", 1023);
-
-						if (strlen(bot->player->ignore) >= 1000)
-							bot->player->ignore[0] = '\0';
-
-						bot->player->bot_state = BOT_IDLE;
-						bot->player->path.step = 0;
-						bot->player->path.length = 0;
-					}
-					else
-					{
-						bot->player->ignore[0] = '\0';
-					}
+					bot->player->ignore[0] = '\0';
 				}
-
-				// We are already at the closest nav point to item, fake a empty path
-				if (ret == -1)
-				{
-					bot->player->path.step = 1;
-					bot->player->path.length = 1;
-				}
-
-				// At last step in path list, go directly to item
-				if (bot->player->path.step == bot->player->path.length)
-				{
-					vec3 delta;
-					bot->rigid->lookat_yaw(engine->entity_list[bot->player->get_item]->position);
-					bot->rigid->move_forward(speed_scale);
-
-					float distance = (engine->entity_list[i]->position - engine->entity_list[bot->player->get_item]->position).magnitude();
-
-					if (distance < 10.0f)
-					{
-						// Finally got where the item is, exit get state
-						bot->player->bot_state = BOT_IDLE;
-						bot->player->path.step = 0;
-						bot->player->path.length = 0;
-					}
-				}
-				else if (bot->player->path.length != 0)
-				{
-					// Go through path steps until we get to navpoint where item is
-					if (bot_follow(bot->player->path,
-						nav_array, bot, speed_scale) == 0)
-					{
-						(bot->player->path.step)++;
-						// momentum makes him miss pretty bad
-						bot->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
-					}
-				}
-				break;
 			}
-			case BOT_ALERT:
-				engine->zcc.select_animation(0);
+
+			// We are already at the closest nav point to item, fake a empty path
+			if (ret == -1)
+			{
+				bot->player->path.step = 1;
+				bot->player->path.length = 1;
+			}
+
+			// At last step in path list, go directly to item
+			if (bot->player->path.step == bot->player->path.length)
+			{
+				vec3 delta;
+				bot->rigid->lookat_yaw(engine->entity_list[bot->player->get_item]->position);
 				bot->rigid->move_forward(speed_scale);
-				break;
-			case BOT_EXPLORE:
-				engine->zcc.select_animation(1);
-				bot->player->ignore[0] = '\0';
-				break;
-			case BOT_IDLE:
-				engine->zcc.select_animation(1);
-				break;
+
+				float distance = (engine->entity_list[i]->position - engine->entity_list[bot->player->get_item]->position).magnitude();
+
+				if (distance < 10.0f)
+				{
+					// Finally got where the item is, exit get state
+					bot->player->bot_state = BOT_IDLE;
+					bot->player->path.step = 0;
+					bot->player->path.length = 0;
+				}
 			}
+			else if (bot->player->path.length != 0)
+			{
+				// Go through path steps until we get to navpoint where item is
+				if (bot_follow(bot->player->path,
+					nav_array, bot, speed_scale) == 0)
+				{
+					(bot->player->path.step)++;
+					// momentum makes him miss pretty bad
+					bot->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+				}
+			}
+			break;
+		}
+		case BOT_ALERT:
+			engine->zcc.select_animation(0);
+			bot->rigid->move_forward(speed_scale);
+			break;
+		case BOT_EXPLORE:
+			engine->zcc.select_animation(1);
+			bot->player->ignore[0] = '\0';
+			break;
+		case BOT_IDLE:
+			engine->zcc.select_animation(1);
+			break;
+		}
 #endif
 
-		}
 	}
 
 
@@ -1519,10 +1526,6 @@ void Quake3::handle_machinegun(Player &player, int self)
 			continue;
 
 		if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
-			continue;
-
-		//hack to prevent self damage for now
-		if (&player == player.entity->player)
 			continue;
 
 		debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
