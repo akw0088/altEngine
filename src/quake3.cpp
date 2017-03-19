@@ -4814,7 +4814,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		if (entity_list[i]->trigger->owner == self && entity_list[i]->rigid->bounce == 0)
 			continue;
 
-		if (entity_list[i]->trigger->owner != -1 && entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && gametype != GAMETYPE_DEATHMATCH)
+		if (entity_list[i]->trigger->owner >= 0 && entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
 		if (strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
