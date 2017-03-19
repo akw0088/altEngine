@@ -241,7 +241,6 @@ void Quake3::handle_player(int self, input_t &input)
 			last_tick = 125;
 		}
 	}
-	*/
 
 
 	if (input.numpad7 == true)
@@ -260,9 +259,13 @@ void Quake3::handle_player(int self, input_t &input)
 			last_tick = 250;
 		}
 	}
+	*/
+
+
 	if (last_tick > 0)
 		last_tick--;
 
+#if 0
 	if (input.pickup)
 	{
 		int item = -1;
@@ -299,6 +302,7 @@ void Quake3::handle_player(int self, input_t &input)
 			printf("Couldnt find an item to grab\n");
 		}
 	}
+#endif
 
 	if (entity->player->health > 0)
 	{

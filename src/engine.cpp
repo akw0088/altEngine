@@ -907,22 +907,25 @@ void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
 	entity_list[i]->rigid->get_matrix(mvp.m);
 
 	//md5 faces right, need to flip right and forward orientation
-	vec4 temp;
+	if (hack)
+	{
+		vec4 temp;
 
-	temp.x = mvp.m[0];
-	temp.y = mvp.m[1];
-	temp.z = mvp.m[2];
-	temp.w = mvp.m[3];
+		temp.x = mvp.m[0];
+		temp.y = mvp.m[1];
+		temp.z = mvp.m[2];
+		temp.w = mvp.m[3];
 
-	mvp.m[0] = mvp.m[8];
-	mvp.m[1] = mvp.m[9];
-	mvp.m[2] = mvp.m[10];
-	mvp.m[3] = mvp.m[11];
+		mvp.m[0] = mvp.m[8];
+		mvp.m[1] = mvp.m[9];
+		mvp.m[2] = mvp.m[10];
+		mvp.m[3] = mvp.m[11];
 
-	mvp.m[8] = temp.x;
-	mvp.m[9] = temp.y;
-	mvp.m[10] = temp.z;
-	mvp.m[11] = temp.w;
+		mvp.m[8] = temp.x;
+		mvp.m[9] = temp.y;
+		mvp.m[10] = temp.z;
+		mvp.m[11] = temp.w;
+	}
 
 	mvp = (mvp * trans) * projection;
 	vec3 offset = entity_list[i]->position;
@@ -1060,6 +1063,11 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			continue;
 		}
 
+		if (i < num_player && strcmp(entity->type, "server") == 0)
+		{
+			continue;
+		}
+
 		if (i < num_player && strcmp(entity->type, "client") == 0)
 		{
 			continue;
@@ -1088,6 +1096,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			mlight2.Params(mvp, light_list, 0, offset);
 		}
 
+#if 0
 		// render network clients
 		if (server_flag || client_flag)
 		{
@@ -1110,6 +1119,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			if (client_list.size() && j < client_list.size() && i == client_list[j]->ent_id)
 				continue;
 		}
+#endif
 
 
 		//render entity
@@ -1141,7 +1151,9 @@ void Engine::render_players(matrix4 &trans, bool lights)
 		Entity *entity = entity_list[i];
 
 		if ((strcmp(entity->type, "NPC") == 0 ||
-			(strcmp(entity->type, "spectator") == 0)) &&
+			(strcmp(entity->type, "spectator") == 0 ||
+			strcmp(entity->type, "server") == 0 ||
+			strcmp(entity->type, "client") == 0)) &&
 			entity->player->health > 0)
 		{
 
@@ -1924,7 +1936,7 @@ void Engine::server_step()
 		{
 			if (strcmp(client_list[i]->socketname, client->socketname) == 0)
 			{
-				if (client_list[i]->qport == qport)
+				if (client_list[i]->qport == client->qport)
 				{
 					found = true;
 					break;
@@ -1940,13 +1952,13 @@ void Engine::server_step()
 		}
 
 		client_list.push_back(client);
-		debugf("client %s spawned\n", client->socketname);
+		debugf("client %s qport %d spawned\n", client->socketname, client->qport);
 		client->client_sequence = clientmsg.sequence;
 
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
 		game->add_player(entity_list, "client", client->ent_id);
-		printf("client %s got entity %d\n", socketname, client->ent_id);
+		printf("client %s  qport %d got entity %d\n", socketname, client->qport, client->ent_id);
 
 
 		servermsg.sequence = sequence;
@@ -2055,7 +2067,7 @@ void Engine::send_entities()
 		
 		if (servermsg.length > 8192)
 		{
-			printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
+			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
 		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
@@ -3219,17 +3231,24 @@ void Engine::update_audio()
 		if (entity_list[i]->speaker)
 		{
 			audio.source_position(entity_list[i]->speaker->source, (float *)(&entity_list[i]->position));
-			audio.source_velocity(entity_list[i]->speaker->source, (float *)(&entity_list[i]->rigid->velocity));
 			audio.source_position(entity_list[i]->speaker->loop_source, (float *)(&entity_list[i]->position));
-			audio.source_velocity(entity_list[i]->speaker->loop_source, (float *)(&entity_list[i]->rigid->velocity));
+
+			if (entity_list[i]->rigid)
+			{
+				audio.source_velocity(entity_list[i]->speaker->source, (float *)(&entity_list[i]->rigid->velocity));
+				audio.source_velocity(entity_list[i]->speaker->loop_source, (float *)(&entity_list[i]->rigid->velocity));
+			}
 		}
 
 		if (entity_list[i]->trigger)
 		{
 			audio.source_position(entity_list[i]->trigger->source, (float *)(&entity_list[i]->position));
-			audio.source_velocity(entity_list[i]->trigger->source, (float *)(&entity_list[i]->rigid->velocity));
 			audio.source_position(entity_list[i]->trigger->loop_source, (float *)(&entity_list[i]->position));
-			audio.source_velocity(entity_list[i]->trigger->loop_source, (float *)(&entity_list[i]->rigid->velocity));
+			if (entity_list[i]->rigid)
+			{
+				audio.source_velocity(entity_list[i]->trigger->source, (float *)(&entity_list[i]->rigid->velocity));
+				audio.source_velocity(entity_list[i]->trigger->loop_source, (float *)(&entity_list[i]->rigid->velocity));
+			}
 		}
 	}
 
