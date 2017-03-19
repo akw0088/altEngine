@@ -145,30 +145,31 @@ typedef struct
 	vec3			angular_velocity;
 	vec3			position;
 	uint8_t			active; // whether trigger is active
+	int8_t			owner;
 	//player info
 	char			name[64];
-	uint8_t			health;
-	uint8_t			armor;
+	short int		health;
+	short int		armor;
 	uint8_t			weapon_flags;
-	uint8_t			current_weapon;
-	uint8_t			ammo_bullets;
-	uint8_t			ammo_shells;
-	uint8_t			ammo_rockets;
-	uint8_t			ammo_lightning;
-	uint8_t			ammo_slugs;
-	uint8_t			ammo_plasma;
-        uint8_t 		holdable_teleporter;
-        uint8_t			holdable_medikit;
-        uint8_t			holdable_flag;
-        unsigned int flight_timer;
-        unsigned int regen_timer;
-        unsigned int haste_timer;
-        unsigned int quad_timer;
+	short int		current_weapon;
+	short int		ammo_bullets;
+	short int		ammo_shells;
+	short int		ammo_rockets;
+	short int		ammo_lightning;
+	short int		ammo_slugs;
+	short int		ammo_plasma;
+	uint8_t 		holdable_teleporter;
+	uint8_t			holdable_medikit;
+	uint8_t			holdable_flag;
+	unsigned int flight_timer;
+	unsigned int regen_timer;
+	unsigned int haste_timer;
+	unsigned int quad_timer;
 } entity_t;
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
-#define CLIENT_HEADER 37
+#define CLIENT_HEADER 41
 
 #ifdef LINUX
 typedef unsigned char byte;
@@ -182,7 +183,8 @@ typedef unsigned char byte;
 */
 typedef struct
 {
-	int	length;
+	int				length;
+	unsigned int	qport;
 	unsigned int	sequence;
 	unsigned int	server_sequence;
 	float			up[3];
@@ -257,8 +259,9 @@ typedef struct
 
 typedef struct
 {
-	char		socketname[80];
-	unsigned int	entity;
+	char			socketname[80];
+	unsigned int	qport;
+	int				ent_id;
 	unsigned int	client_sequence;
 	unsigned int	server_sequence;
 	unsigned int	last_time;

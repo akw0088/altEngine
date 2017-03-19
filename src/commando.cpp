@@ -4058,9 +4058,9 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 
 		for (unsigned int i = 0; i < engine->client_list.size(); i++)
 		{
-			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, entity_list[engine->client_list[i]->entity]->player->name,
-				entity_list[engine->client_list[i]->entity]->player->stats.kills,
-				entity_list[engine->client_list[i]->entity]->player->stats.deaths,
+			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, entity_list[engine->client_list[i]->ent_id]->player->name,
+				entity_list[engine->client_list[i]->ent_id]->player->stats.kills,
+				entity_list[engine->client_list[i]->ent_id]->player->stats.deaths,
 				engine->client_list[i]->socketname,
 				current - engine->client_list[i]->last_time);
 			menu.print(msg);

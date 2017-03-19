@@ -57,6 +57,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	Engine::param2 = p2;
 	initialized = true;
 
+	srand((unsigned int)time(NULL));
+	qport = rand();
+
 #ifdef G_QUAKE3
 	game = new Quake3();
 #endif
@@ -1097,14 +1100,14 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			unsigned int j = 0;
 			for (j = 0; j < client_list.size(); j++)
 			{
-				if (i == client_list[j]->entity)
+				if (i == client_list[j]->ent_id)
 				{
 					render_client(i, trans, lights, false);
 					break;
 				}
 			}
 
-			if (client_list.size() && j < client_list.size() && i == client_list[j]->entity)
+			if (client_list.size() && j < client_list.size() && i == client_list[j]->ent_id)
 				continue;
 		}
 
@@ -1800,9 +1803,12 @@ void Engine::server_step()
 	{
 		if (strcmp(client_list[i]->socketname, socketname) == 0)
 		{
-			index = i;
-			connected = true;
-			break;
+			if (client_list[i]->qport == clientmsg.qport)
+			{
+				index = i;
+				connected = true;
+				break;
+			}
 		}
 	}
 
@@ -1827,7 +1833,7 @@ void Engine::server_step()
 			reliable.sequence = -1;
 		}
 
-		if (client_list[index]->entity > entity_list.size())
+		if ((unsigned int)client_list[index]->ent_id > entity_list.size())
 		{
 			printf("Invalid Entity\n");
 			return;
@@ -1847,7 +1853,7 @@ void Engine::server_step()
 		vec3 right = vec3::crossproduct(client_frame.up, client_frame.forward);
 		right.normalize();
 
-		Entity *client = entity_list[client_list[index]->entity];
+		Entity *client = entity_list[client_list[index]->ent_id];
 
 		client_frame.set(client->rigid->morientation);
 		client_frame.pos = client->position + client->rigid->center;
@@ -1877,21 +1883,21 @@ void Engine::server_step()
 
 				printf("client msg: %s\n", reliablemsg->msg);
 				sprintf(msg, "%s: %s\n", client_list[index]->socketname, reliablemsg->msg);
-				chat(entity_list[client_list[index]->entity]->player->name, msg);
+				chat(entity_list[client_list[index]->ent_id]->player->name, msg);
 			}
 		}
 		client_list[index]->client_sequence = clientmsg.sequence;
 	}
 	else
 	{
-		printf("Got input packet from unconnected client\n");
+		printf("Got input packet from unconnected client %s qport %d\n", socketname, clientmsg.qport);
 	}
 
 	// client not in list, check if it is a connect msg
 	reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[clientmsg.num_cmds * sizeof(int)];
 	if ( strcmp(reliablemsg->msg, "connect") == 0 )
 	{
-		debugf("client %s connected\n", socketname);
+		debugf("client %s qport %d connected\n", socketname, clientmsg.qport);
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
@@ -1912,13 +1918,17 @@ void Engine::server_step()
 
 		client->last_time = (unsigned int)time(NULL);
 		strcpy(client->socketname, socketname);
+		client->qport = clientmsg.qport;
 
 		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
 			if (strcmp(client_list[i]->socketname, client->socketname) == 0)
 			{
-				found = true;
-				break;
+				if (client_list[i]->qport == qport)
+				{
+					found = true;
+					break;
+				}
 			}
 		}
 
@@ -1935,26 +1945,15 @@ void Engine::server_step()
 
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
-		client->entity = get_player();
-		printf("client %s got entity %d\n", socketname, client->entity);
-		sprintf(entity_list[client->entity]->type, "client");
-		entity_list[client->entity]->rigid = new RigidBody(entity_list[client->entity]);
-		entity_list[client->entity]->model = entity_list[client->entity]->rigid;
-		entity_list[client->entity]->rigid->clone(*(thug22->model));
-		entity_list[client->entity]->rigid->step_flag = true;
-		entity_list[client->entity]->player = new Player(entity_list[client->entity], gfx, audio, 21);
-		entity_list[client->entity]->position += entity_list[client->entity]->rigid->center;
-//		entity_list[client->entity]->player->respawn();
-		char cmd[80];
+		game->add_player(entity_list, "client", client->ent_id);
+		printf("client %s got entity %d\n", socketname, client->ent_id);
 
-		sprintf(cmd, "respawn -1 %d", client->entity);
-		console(cmd);
 
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		
-		sprintf(reliable.msg, "spawn %d %d", client->entity, find_type("player", 0));
+		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type("player", 0));
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
 			&reliable,
@@ -1962,7 +1961,7 @@ void Engine::server_step()
 		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
 			sizeof(int) + strlen(reliable.msg) + 1;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
-		debugf("Client is now entity %d\n", client->entity);
+		debugf("Client is now entity %d\n", client->ent_id);
 	}
 }
 
@@ -1981,9 +1980,9 @@ void Engine::send_entities()
 		if (time(NULL) - client_list[i]->last_time > 90)
 		{
 			debugf("client %s timed out\n", client_list[i]->socketname);
-			delete entity_list[client_list[i]->entity]->rigid;
-			entity_list[client_list[i]->entity]->rigid = NULL;
-			entity_list[client_list[i]->entity]->model = NULL;
+			delete entity_list[client_list[i]->ent_id]->rigid;
+			entity_list[client_list[i]->ent_id]->rigid = NULL;
+			entity_list[client_list[i]->ent_id]->model = NULL;
 			client_list.erase(client_list.begin() + i);
 			i--;
 			continue;
@@ -2011,6 +2010,7 @@ void Engine::send_entities()
 			{
 				if (entity_list[j]->trigger->active)
 					ent.active = true;
+				ent.owner = entity_list[j]->trigger->owner;
 			}
 
 			if (entity_list[j]->rigid)
@@ -2138,6 +2138,7 @@ void Engine::client_step()
 	// send keyboard state
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
 	clientmsg.sequence = sequence;
+	clientmsg.qport = qport;
 	clientmsg.server_sequence = last_server_sequence;
 	clientmsg.up[0] = camera_frame.up.x;
 	clientmsg.up[1] = camera_frame.up.y;
@@ -2225,6 +2226,8 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				entity_list[ent[i].id]->trigger->active = true;
 			else
 				entity_list[ent[i].id]->trigger->active = false;
+
+			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
 		}
 
 		if (entity_list[ent[i].id]->player)
@@ -3061,9 +3064,10 @@ void Engine::load_model(Entity &ent)
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
+	int spawn = -1;
 #ifndef DEDICATED
 	if (client_flag == false)
-		game->init_camera(entity_list);
+		game->add_player(entity_list, "player", spawn);
 #endif
 	load_sounds();
 	create_sources();
@@ -3073,14 +3077,6 @@ void Engine::load_entities()
 	{
 		if (entity_list[i]->light)
 			entity_list[i]->rigid->gravity = false;
-	}
-
-	int spawn = find_type("player", 0);
-
-	if (spawn != -1)
-	{
-		entity_list[spawn]->rigid->clone(*(thug22->model));
-		entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 	}
 }
 
@@ -3110,7 +3106,7 @@ void Engine::clean_entity(int index)
 
 int Engine::get_entity()
 {
-	static unsigned int index = 0;
+	static unsigned int index = num_player;
 	int looped = 0;
 
 	while (1)
@@ -3169,7 +3165,7 @@ int Engine::get_player()
 
 			if (looped == 2)
 			{
-				debugf("Unable to find free dynamic entity\n");
+				debugf("Unable to find free player entity\n");
 				break;
 			}
 		}
@@ -3660,6 +3656,7 @@ void Engine::connect(char *serverip)
 	clientmsg.sequence = sequence;
 	clientmsg.server_sequence = 0;
 	clientmsg.num_cmds = 0;
+	clientmsg.qport = qport;
 	strcpy(reliable.msg, "connect");
 	reliable.sequence = sequence;
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],

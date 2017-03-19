@@ -197,6 +197,7 @@ protected:
 	//client
 	bool	client_flag;
 	unsigned int	last_server_sequence;
+	unsigned int	qport;
 
 	netinfo_t netinfo;
 

@@ -52,7 +52,7 @@ public:
 	void load();
 	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
 	void unload();
-	void init_camera(vector<Entity *> &entity_list);
+	void add_player(vector<Entity *> &entity_list, char *type, int &ent_id);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 	void endgame();
 
