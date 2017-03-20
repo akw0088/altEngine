@@ -4650,6 +4650,13 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 	case NT_GIB9:
 		break;
 	case NT_BULLET:
+		ent->nettype = NT_BULLET;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(engine->bullet->model));
+		ent->rigid->gravity = true;
+		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->translational_friction = 0.9f;
 		break;
 	case NT_SHELL:
 		ent->nettype = NT_SHELL;
