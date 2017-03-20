@@ -89,7 +89,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			strcmp(type, "team_ctf_redplayer") == 0 ||
 			strcmp(type, "info_player_start") == 0)
 		{
-			if (last_spawn == i + 1)
+			if ((unsigned int)last_spawn == i + 1)
 				continue;
 
 			if ((strcmp(player_type, "player") == 0) ||
@@ -101,7 +101,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 
 			int spawn = engine->get_player();
 			ent_id = spawn;
-			sprintf(entity_list[spawn]->type, player_type);
+			strcpy(entity_list[spawn]->type, player_type);
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
@@ -850,7 +850,7 @@ void Quake3::step(int frame_step)
 		{
 			for(unsigned int j = 0; j < engine->client_list.size(); j++)
 			{
-				if (engine->client_list[j]->ent_id == i)
+				if ((unsigned int)engine->client_list[j]->ent_id == i)
 					handle_player(i, engine->client_list[j]->input);
 			}
 		}

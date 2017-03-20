@@ -2192,8 +2192,6 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 	{
 		if (last_server_sequence <= reliablemsg->sequence)
 		{
-			char name[LINE_SIZE] = { 0 };
-			char msg[LINE_SIZE] = { 0 };
 			int client;
 
 			debugf("server to client: %s\n", reliablemsg->msg);
@@ -2301,7 +2299,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 
 		if (entity_list[ent[i].id]->rigid)
 		{
-			if (find_type("player", 0) == ent[i].id)
+			if ((unsigned int)find_type("player", 0) == ent[i].id)
 			{
 				// current entity has the clients predicted position
 				// the ent[i].position has the server (lagged) position
@@ -3115,8 +3113,9 @@ void Engine::load_model(Entity &ent)
 // Loads media that may be shared with multiple entities
 void Engine::load_entities()
 {
-	int spawn = -1;
 #ifndef DEDICATED
+	int spawn = -1;
+
 	if (client_flag == false)
 		game->add_player(entity_list, "player", spawn);
 #endif

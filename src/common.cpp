@@ -994,7 +994,6 @@ void runlength_encode(uint8_t *output, rletable_t *table, int *table_size, uint8
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	uint8_t item = 0;
 	int length = 0;
 
 	int input_size = *size;
@@ -1003,7 +1002,6 @@ void runlength_encode(uint8_t *output, rletable_t *table, int *table_size, uint8
         {
                 if (input[i] == input[i + 1])
                 {
-                        item = input[i];
                         length++;
                         continue;
                 }
