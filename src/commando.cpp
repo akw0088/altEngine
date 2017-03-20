@@ -4022,21 +4022,6 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 	if (ret == 1)
 	{
 		engine->chat(entity_list[self]->player->name, cmd);
-
-		if (self != -1)
-		{
-			bool ret = false;
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
-			if (ret)
-			{
-				engine->audio.play(entity_list[self]->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
-			}
-		}
-
 		return;
 	}
 

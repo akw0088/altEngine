@@ -372,7 +372,7 @@ void Menu::render_chat(Global &global)
 		else if (i == chat_buffer.size() - 1)
 			stop = true;
 
-		draw_text(chat_buffer[i], 0.4f, 0.7f - 0.025f * (chat_buffer.size() - 1 - i), 0.025f, color, start, stop);
+		draw_text(chat_buffer[i], 0.1f, 0.7f - 0.025f * (chat_buffer.size() - 1 - i), 0.025f, color, start, stop);
 	}
 }
 

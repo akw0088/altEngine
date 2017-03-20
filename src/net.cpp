@@ -178,7 +178,7 @@ int Net::connect(char *server, int port)
 	getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
 	printf("SO_RCVBUF = %d\n", rcvbuf);
 
-	if (sndbuf < 8192)
+	if (sndbuf != 8192)
 	{
 		sndbuf = 8192; //default 8192
 		setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, (char *)&sndbuf, sizeof(sndbuf));

@@ -1896,13 +1896,23 @@ void Engine::server_step()
 		{
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[4];
 
-			if (client_list[index]->client_sequence < reliablemsg->sequence)
+			if (client_list[index]->client_sequence <= reliablemsg->sequence)
 			{
-				char msg[LINE_SIZE];
+				char name[LINE_SIZE] = { 0 };
+				char msg[LINE_SIZE] = { 0 };
 
-				printf("client msg: %s\n", reliablemsg->msg);
-				sprintf(msg, "%s: %s\n", client_list[index]->socketname, reliablemsg->msg);
-				chat(entity_list[client_list[index]->ent_id]->player->name, msg);
+				debugf("client to server: %s\n", reliablemsg->msg);
+
+				if (strstr(reliablemsg->msg, "chat"))
+				{
+					sprintf(name, "%s", reliablemsg->msg + 5);
+					char *end = strstr(name, ":");
+
+					end[0] = '\0';
+					sprintf(msg, "say \"%s\"", strstr(reliablemsg->msg, ":") + 2);
+					//  Echoes chat back to all clients
+					chat(name, msg);
+				}
 			}
 		}
 		client_list[index]->client_sequence = clientmsg.sequence;
@@ -1965,7 +1975,7 @@ void Engine::server_step()
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
 		game->add_player(entity_list, "client", client->ent_id);
-		printf("client %s  qport %d got entity %d\n", socketname, client->qport, client->ent_id);
+		printf("client %s qport %d got entity %d\n", socketname, client->qport, client->ent_id);
 
 
 		servermsg.sequence = sequence;
@@ -2180,12 +2190,34 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 {
 	if (reliablemsg != NULL)
 	{
-		if (last_server_sequence < reliablemsg->sequence)
+		if (last_server_sequence <= reliablemsg->sequence)
 		{
+			char name[LINE_SIZE] = { 0 };
+			char msg[LINE_SIZE] = { 0 };
 			int client;
 
-			debugf("server msg: %s\n", reliablemsg->msg);
-			menu.print(reliablemsg->msg);
+			debugf("server to client: %s\n", reliablemsg->msg);
+
+			if (strstr(reliablemsg->msg, "chat"))
+			{
+				menu.print_chat(reliablemsg->msg + 5);
+				game->chat_timer = 3 * TICK_RATE;
+
+				int self = find_type("player", 0);
+				if (self != -1)
+				{
+					bool ret = false;
+					ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
+					if (ret)
+					{
+						audio.play(entity_list[self]->speaker->source);
+					}
+					else
+					{
+						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
+					}
+				}
+			}
 
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
 			if (ret == 2)
@@ -3476,8 +3508,10 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "cl_skip %s", data);
 	if (ret == 1)
 	{
-		printf("Setting cl_skip to %s\n", data);
+		menu.print(msg);
+		debugf("Setting cl_skip to %s\n", data);
 		cl_skip = atoi(data);
+		return;
 	}
 
 	if (sscanf(cmd, "g_collision %s", data) == 1)
@@ -3724,15 +3758,14 @@ void Engine::connect(char *serverip)
 
 void Engine::chat(char *name, char *msg)
 {
-	char data[512];
-
-	strcat(reliable.msg, msg);
-	reliable.sequence = sequence;
+	char data[1024];
 
 	if (name == NULL)
 	{
+		int index = find_type("player", 0);
+
 		//chatmode chat
-		sprintf(data, "%s: %s", entity_list[find_type("player", 0)]->player->name, msg);
+		sprintf(data, "chat %s: %s", entity_list[index]->player->name, msg);
 	}
 	else
 	{
@@ -3741,10 +3774,34 @@ void Engine::chat(char *name, char *msg)
 		char *pmsg = msg + 5;
 		// remove ending "
 		pmsg[strlen(pmsg) - 1] = '\0';
-		sprintf(data, "%s: %s", name, pmsg);
+		sprintf(data, "chat %s: %s", name, pmsg);
 	}
-	menu.print_chat(data);
-	game->chat_timer = 3 * TICK_RATE;
+
+
+	strcat(reliable.msg, data);
+	reliable.sequence = sequence;
+
+	// Client will get message back from server
+	if (client_flag == false)
+	{
+		menu.print_chat(data + 5);
+		game->chat_timer = 3 * TICK_RATE;
+
+		int self = find_type("player", 0);
+		if (self != -1)
+		{
+			bool ret = false;
+			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
+			if (ret)
+			{
+				audio.play(entity_list[self]->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
+			}
+		}
+	}
 }
 
 
