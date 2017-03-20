@@ -2377,8 +2377,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_rockets > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_rocketlauncher(player, self, client);
+				handle_rocketlauncher(player, self, client);
 			}
 			else
 			{
@@ -2390,8 +2389,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_plasma > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_plasma(player, self, client);
+				handle_plasma(player, self, client);
 			}
 			else
 			{
@@ -2403,8 +2401,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_grenades > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_grenade(player, self, client);
+				handle_grenade(player, self, client);
 			}
 			else
 			{
@@ -2417,8 +2414,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_lightning > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_lightning(player, self, client);
+				handle_lightning(player, self, client);
 			}
 			else
 			{
@@ -2431,8 +2427,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_slugs > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_railgun(player, self, client);
+				handle_railgun(player, self, client);
 			}
 			else
 			{
@@ -2445,8 +2440,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_shells > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_shotgun(player, self, client);
+				handle_shotgun(player, self, client);
 			}
 			else
 			{
@@ -2459,8 +2453,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				if (engine->client_flag == false)
-					handle_machinegun(player, self, client);
+				handle_machinegun(player, self, client);
 			}
 			else
 			{
