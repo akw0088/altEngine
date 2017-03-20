@@ -1782,9 +1782,15 @@ void Engine::step(int tick)
 	//network
 	sequence++;
 	if (server_flag && sequence)
-		server_step();
+	{
+		server_recv();
+		server_send();
+	}
 	else if (client_flag && sequence)
-		client_step();
+	{
+		client_recv();
+		client_send();
+	}
 
 	game->step(tick);
 
@@ -1794,17 +1800,13 @@ void Engine::step(int tick)
 #endif
 }
 
-void Engine::server_step()
+void Engine::server_recv()
 {
 	servermsg_t	servermsg;
 	clientmsg_t clientmsg;
 	char socketname[LINE_SIZE];
 	bool connected = false;
 	int index = -1;
-
-
-	// send entities to clients
-	send_entities();
 
 	// get client packet
 	int size = net.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
@@ -1994,7 +1996,7 @@ void Engine::server_step()
 	}
 }
 
-void Engine::send_entities()
+void Engine::server_send()
 {
 	servermsg_t	servermsg;
 
@@ -2091,22 +2093,11 @@ void Engine::send_entities()
 	}
 }
 
-void Engine::client_step()
+void Engine::client_recv()
 {
 	servermsg_t	servermsg;
-	clientmsg_t clientmsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
-	int keystate = GetKeyState(input);
-
-	// Dont want to skip an attack command, so fiddle with send rate
-	if (input.attack == false && cl_skip != 0)
-	{
-		if (tick_num % cl_skip == 0)
-			return;
-	}
-
-	//printf("client keystate %d\n", keystate);
 
 	// get entity information
 #ifdef WIN32
@@ -2162,7 +2153,20 @@ void Engine::client_step()
 
 		last_server_sequence = servermsg.sequence;
 	}
+}
 
+void Engine::client_send()
+{
+	clientmsg_t clientmsg;
+	unsigned int socksize = sizeof(sockaddr_in);
+	int keystate = GetKeyState(input);
+
+	// Dont want to skip an attack command, so fiddle with send rate
+	if (input.attack == false && cl_skip != 0)
+	{
+		if (tick_num % cl_skip == 0)
+			return;
+	}
 
 	// send keyboard state
 	memset(&clientmsg, 0, sizeof(clientmsg_t));

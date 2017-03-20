@@ -62,10 +62,11 @@ public:
 	int GetKeyState(input_t &keyboard);
 	input_t GetKeyState(int keystate);
 	void bind_keys();
-	void server_step();
-	void client_step();
+	void server_recv();
+	void server_send();
+	void client_recv();
+	void client_send();
 	int handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg);
-	void send_entities();
 	void render_client(int i, const matrix4 &trans, bool lights, bool hack);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
