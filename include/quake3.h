@@ -19,15 +19,15 @@ public:
 	void draw_line(Entity *a, Entity *b, Menu &menu, vec3 &color);
 	void transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection);
 
-	void handle_weapons(Player &player, input_t &input, int self);
+	void handle_weapons(Player &player, input_t &input, int self, bool client);
 
-	void handle_plasma(Player &player, int self);
-	void handle_rocketlauncher(Player &player, int self);
-	void handle_grenade(Player &player, int self);
-	void handle_lightning(Player &player, int self);
-	void handle_railgun(Player &player, int self);
-	void handle_machinegun(Player &player, int self);
-	void handle_shotgun(Player &player, int self);
+	void handle_plasma(Player &player, int self, bool client);
+	void handle_rocketlauncher(Player &player, int self, bool client);
+	void handle_grenade(Player &player, int self, bool client);
+	void handle_lightning(Player &player, int self, bool client);
+	void handle_railgun(Player &player, int self, bool client);
+	void handle_machinegun(Player &player, int self, bool client);
+	void handle_shotgun(Player &player, int self, bool client);
 	void handle_gibs(Player &player);
 	void create_crosshair();
 	void draw_crosshair();
