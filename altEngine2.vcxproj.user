@@ -12,4 +12,8 @@
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dedicated Server|Win32'">
+    <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
 </Project>

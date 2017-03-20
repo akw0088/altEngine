@@ -13,6 +13,8 @@ Global
 		Debug OpenGL|x86 = Debug OpenGL|x86
 		Dedicated Server|x64 = Dedicated Server|x64
 		Dedicated Server|x86 = Dedicated Server|x86
+		Release Dedicated Server|x64 = Release Dedicated Server|x64
+		Release Dedicated Server|x86 = Release Dedicated Server|x86
 		Release OpenGL|x64 = Release OpenGL|x64
 		Release OpenGL|x86 = Release OpenGL|x86
 	EndGlobalSection
@@ -29,6 +31,10 @@ Global
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x64.Build.0 = Dedicated Server|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x86.ActiveCfg = Dedicated Server|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x86.Build.0 = Dedicated Server|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x64.ActiveCfg = Release Dedicated Server|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x64.Build.0 = Release Dedicated Server|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x86.ActiveCfg = Release Dedicated Server|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x86.Build.0 = Release Dedicated Server|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release OpenGL|x64.ActiveCfg = Release|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release OpenGL|x64.Build.0 = Release|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release OpenGL|x86.ActiveCfg = Release|Win32

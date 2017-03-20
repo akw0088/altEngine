@@ -540,16 +540,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 					data.Material[brush->material].surface,
 					*depth, count,
 					plane->normal.x, plane->normal.y, plane->normal.z);
-				/*
-				for (unsigned int k = 0; k < surface_list.size(); k++)
-				{
-					if (strcmp(data.Material[brush->material].name, surface_list[k]->name))
-					{
-						printf("surfaceparm_noimpact %d\n", (int)surface_list[k]->surfaceparm_noimpact);
-						break;
-					}
-				}
-				*/
 			}
 			return true;
 		}

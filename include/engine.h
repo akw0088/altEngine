@@ -32,7 +32,6 @@ public:
 	void dynamics();
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
-	void check_triggers(int player_index);
 	void update_audio();
 
 	bool mousepos(int x, int y, int deltax, int deltay);

@@ -143,9 +143,6 @@
     <ClInclude Include="include\graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -234,9 +231,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\stb_image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\bot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\graph.h">

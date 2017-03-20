@@ -2,9 +2,7 @@
 #define LIST_H
 
 /*
-	This list class stores POINTERS to objects and not the objects themselves
-	used originally for entities
-	secondly used for d3d9 abstract classes
+	This is really just std::vector, I should delete this
 */
 
 template <typename dtype>
