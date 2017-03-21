@@ -609,7 +609,22 @@ void Quake3::player_died(int index)
 	drop_weapon(index);
 
 	if (entity->player->quad_timer > 0)
-		drop_quaddamage(entity->position);
+		drop_powerup(entity->position, "media/models/powerups/instant/quad", "quaddamage");
+	if (entity->player->regen_timer > 0)
+		drop_powerup(entity->position, "media/models/powerups/instant/regen", "regeneration");
+	if (entity->player->haste_timer > 0)
+		drop_powerup(entity->position, "media/models/powerups/instant/haste", "haste");
+	if (entity->player->invisibility_timer > 0)
+		drop_powerup(entity->position, "media/models/powerups/instant/invis", "invisibility");
+	if (entity->player->flight_timer > 0)
+		drop_powerup(entity->position, "media/models/powerups/instant/flight", "flight");
+	if (entity->player->holdable_flag)
+	{
+		if (entity->player->team == TEAM_BLUE)
+			drop_powerup(entity->position, "media/models/flags/r_flag", "red_flag");
+		else if (entity->player->team == TEAM_RED)
+			drop_powerup(entity->position, "media/models/flags/b_flag", "blue_flag");
+	}
 
 	entity->player->kill();
 	entity->model->clone(*(engine->box->model));
@@ -702,23 +717,23 @@ void Quake3::drop_weapon(int index)
 	sprintf(drop_weapon->trigger->action, "%s", weapon_str);
 }
 
-void Quake3::drop_quaddamage(vec3 &position)
+void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 {
-	Entity *drop_quad = engine->entity_list[engine->get_entity()];
-	drop_quad->position = position;
-	drop_quad->nettype = NT_QUAD;
+	Entity *drop = engine->entity_list[engine->get_entity()];
+	drop->position = position;
+	drop->nettype = NT_QUAD;
 
 
-	drop_quad->rigid = new RigidBody(drop_quad);
-	drop_quad->model = drop_quad->rigid;
-	drop_quad->model->clone((*engine->box->model));
+	drop->rigid = new RigidBody(drop);
+	drop->model = drop->rigid;
+	drop->model->load(engine->gfx, model);
 
-	drop_quad->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
-	drop_quad->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-	drop_quad->trigger = new Trigger(drop_quad, engine->audio);
-	snprintf(drop_quad->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-	snprintf(drop_quad->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-	sprintf(drop_quad->trigger->action, "quaddamage");
+	drop->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
+	drop->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+	drop->trigger = new Trigger(drop, engine->audio);
+	snprintf(drop->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+	snprintf(drop->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+	sprintf(drop->trigger->action, action);
 }
 
 
