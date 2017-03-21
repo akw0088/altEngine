@@ -592,6 +592,15 @@ void Engine::render(double last_frametime)
 	if (q3map.loaded == false)
 		return;
 
+#ifdef DEDICATED
+	server_recv();
+	return;
+#endif
+	if (server_flag)
+		server_recv();
+	if (client_flag)
+		client_recv();
+
 #ifdef DEFERRED
 
 	//Setup render to texture
@@ -2024,14 +2033,15 @@ void Engine::server_send()
 		{
 			entity_t ent;
 			/*
+			// Vis test causing issues for some reason
 			int leaf_a;
 			int leaf_b;
 
 			bool visible = q3map.vis_test(entity_list[j]->position,
-				entity_list[client_list[i]->entity]->position, leaf_a, leaf_b);
+				entity_list[client_list[i]->ent_id]->position, leaf_a, leaf_b);
 			if ( visible == false )
 				continue;
-				*/
+			*/
 
 			ent.id = j;
 			ent.type = entity_list[j]->nettype;
@@ -2224,6 +2234,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
 			if (ret == 2)
 			{
+				clean_entity(client);
 				sprintf(entity_list[client]->type, "player");
 				entity_list[client]->rigid = new RigidBody(entity_list[client]);
 				entity_list[client]->model = entity_list[client]->rigid;
@@ -2235,6 +2246,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 
 				if (server_spawn != -1)
 				{
+					clean_entity(server_spawn);
 					sprintf(entity_list[server_spawn]->type, "server");
 					entity_list[server_spawn]->rigid = new RigidBody(entity_list[server_spawn]);
 					entity_list[server_spawn]->model = entity_list[server_spawn]->rigid;

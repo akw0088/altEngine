@@ -98,36 +98,17 @@ typedef struct
 typedef enum {
 	NT_NONE,
 	NT_ROCKET,
-	NT_ROCKET_FLASH,
 	NT_ROCKET_LAUNCHER,
 	NT_GRENADE,
-	NT_GRENADE_FLASH,
 	NT_GRENADE_LAUNCHER,
 	NT_LIGHTNING,
-	NT_LIGHTNING_FLASH,
 	NT_LIGHTNINGGUN,
 	NT_RAIL,
-	NT_RAIL_FLASH,
 	NT_RAILGUN,
 	NT_PLASMA,
-	NT_PLASMA_FLASH,
 	NT_PLASMAGUN,
 	NT_SHOTGUN,
-	NT_SHOTGUN_FLASH,
 	NT_MACHINEGUN,
-	NT_MACHINEGUN_FLASH,
-	NT_GIB0,
-	NT_GIB1,
-	NT_GIB2,
-	NT_GIB3,
-	NT_GIB4,
-	NT_GIB5,
-	NT_GIB6,
-	NT_GIB7,
-	NT_GIB8,
-	NT_GIB9,
-	NT_BULLET,
-	NT_SHELL,
 	NT_QUAD,
 	NT_BLUE_FLAG,
 	NT_RED_FLAG
@@ -145,7 +126,7 @@ typedef struct
 	vec3			angular_velocity;
 	vec3			position;
 	uint8_t			active; // whether trigger is active
-	int8_t			owner;
+	short int		owner;
 	//player info
 	char			name[64];
 	short int		health;
