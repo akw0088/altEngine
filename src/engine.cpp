@@ -2337,12 +2337,19 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
 			// will force server to sync to our current weapon
 //			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
-			entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
-			entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
-			entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
-			entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
-			entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
-			entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
+
+			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
+				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
+			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
+				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
+			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
+				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
+			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
+				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
+			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
+				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
+			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
+				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
 
 		}
 
