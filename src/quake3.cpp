@@ -2706,10 +2706,14 @@ void Quake3::render_hud(double last_frametime)
 				engine->netinfo.sequence_delta,
 				engine->netinfo.size,
 				engine->netinfo.num_ents,
-				engine->netinfo.dropped
-				);
+				engine->netinfo.dropped);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
-
+			snprintf(msg, LINE_SIZE, "send_full %d send_partial %d recv_empty %d",
+				engine->netinfo.send_full,
+				engine->netinfo.send_partial,
+				engine->netinfo.recv_empty
+			);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 		}
 	}

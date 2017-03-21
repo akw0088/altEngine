@@ -1819,8 +1819,13 @@ void Engine::server_recv()
 
 	// get client packet
 	int size = net.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
-	if ( size <= 0 )
+	if (size <= 0)
+	{
+		netinfo.recv_empty = true;
 		return;
+	}
+	netinfo.recv_empty = false;
+
 
 	if (clientmsg.length != size)
 	{
@@ -2099,7 +2104,20 @@ void Engine::server_send()
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		if (num_sent <= 0)
+			netinfo.send_full = true;
+		else
+			netinfo.send_full = false;
+
+		if (num_sent != servermsg.length)
+		{
+			netinfo.send_partial = true;
+		}
+		else
+		{
+			netinfo.send_partial = false;
+		}
 	}
 }
 
@@ -2196,7 +2214,24 @@ void Engine::client_send()
 		sizeof(int) + strlen(reliable.msg) + 1);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
 		+ sizeof(int) + strlen(reliable.msg) + 1;
-	::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
+	int num_sent = ::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
+
+	if (server_flag == false)
+	{
+		if (num_sent <= 0)
+			netinfo.send_full = true;
+		else
+			netinfo.send_full = false;
+
+		if (num_sent != clientmsg.length)
+		{
+			netinfo.send_partial = true;
+		}
+		else
+		{
+			netinfo.send_partial = false;
+		}
+	}
 }
 
 

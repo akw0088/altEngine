@@ -236,6 +236,9 @@ typedef struct
 	int dropped;
 	int num_ents;
 	int size;
+	bool send_full;
+	bool send_partial;
+	bool recv_empty;
 } netinfo_t;
 
 typedef struct
