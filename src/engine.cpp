@@ -2134,7 +2134,6 @@ void Engine::server_send()
 void Engine::client_recv()
 {
 	static char	compressed[256000];
-	int	compressed_length = 0;
 	servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);

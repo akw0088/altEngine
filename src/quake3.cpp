@@ -4435,6 +4435,17 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid->gravity = false;
 		break;
 	case NT_ROCKET_LAUNCHER:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/rocketl/rocketl");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_rocketlauncer");
 		break;
 	case NT_GRENADE:
 		ent->nettype = NT_GRENADE;
@@ -4466,6 +4477,17 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->knockback = 250.0f;
 		break;
 	case NT_GRENADE_LAUNCHER:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/grenadel/grenade");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_grenadelauncer");
 		break;
 	case NT_LIGHTNING:
 		ent->nettype = NT_LIGHTNING;
@@ -4491,6 +4513,17 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->explode_timer = 20;
 		break;
 	case NT_LIGHTNINGGUN:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/lightning/lightning");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_lightninggun");
 		break;
 	case NT_RAIL:
 		ent->nettype = NT_RAIL;
@@ -4514,6 +4547,17 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->explode_timer = 10;
 		break;
 	case NT_RAILGUN:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/railgun/railgun");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_railgun");
 		break;
 	case NT_PLASMA:
 		ent->nettype = NT_PLASMA;
@@ -4544,16 +4588,134 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 
 		break;
 	case NT_PLASMAGUN:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/plasmagun/plasmagun");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_plasmagun");
 		break;
 	case NT_SHOTGUN:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/shotgun/shotgun");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_shotgun");
 		break;
 	case NT_MACHINEGUN:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/weapons2/machinegun/machinegun");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "weapon_machinegun");
 		break;
 	case NT_QUAD:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/powerups/instant/quad");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "quaddamage");
+		break;
+	case NT_REGEN:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/powerups/instant/regen");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "regeneration");
+		break;
+	case NT_INVIS:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/powerups/instant/invis");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "invisibility");
+		break;
+	case NT_FLIGHT:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/powerups/instant/flight");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "flight");
+		break;
+	case NT_HASTE:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/powerups/instant/haste");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "haste");
 		break;
 	case NT_BLUE_FLAG:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/flags/b_flag");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "blue_flag");
 		break;
 	case NT_RED_FLAG:
+		ent->rigid = new RigidBody(ent);
+		ent->model = ent->rigid;
+		ent->model->load(engine->gfx, "media/models/flags/r_flag");
+		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->rigid->translational_friction_flag = true;
+		ent->rigid->rotational_friction_flag = true;
+
+		ent->trigger = new Trigger(ent, engine->audio);
+		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+		sprintf(ent->trigger->action, "red_flag");
 		break;
 	}
 }

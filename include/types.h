@@ -110,6 +110,10 @@ typedef enum {
 	NT_SHOTGUN,
 	NT_MACHINEGUN,
 	NT_QUAD,
+	NT_HASTE,
+	NT_REGEN,
+	NT_INVIS,
+	NT_FLIGHT,
 	NT_BLUE_FLAG,
 	NT_RED_FLAG
 } nettype_t;
