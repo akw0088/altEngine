@@ -33,7 +33,8 @@ SOURCES_CPP := 	xmain.cpp \
 		vector.cpp \
 		vehicle.cpp \
 
-SOURCES_CC :=	md5sum.c \
+SOURCES_CC :=	huffman.c \
+		md5sum.c \
 
 
 OBJS_CPP  := $(SOURCES_CPP:%.cpp=%.o)
