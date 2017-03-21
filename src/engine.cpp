@@ -2012,6 +2012,7 @@ void Engine::server_recv()
 
 void Engine::server_send()
 {
+	static entity_t old_ent[1024];
 	static char	compressed[256000];
 	int	compressed_length = 0;
 	servermsg_t	servermsg;
@@ -2085,9 +2086,13 @@ void Engine::server_send()
 				ent.ammo_plasma = entity_list[j]->player->ammo_plasma;
 			}
 
-			memcpy(&servermsg.data[j * sizeof(entity_t)],
-				&ent, sizeof(entity_t));
-			servermsg.num_ents++;
+			if (memcmp((void *)&old_ent[j], (void *)&ent, sizeof(entity_t)) != 0)
+			{
+				old_ent[j] = ent;
+				memcpy(&servermsg.data[j * sizeof(entity_t)],
+					&ent, sizeof(entity_t));
+				servermsg.num_ents++;
+			}
 		}
 
 
