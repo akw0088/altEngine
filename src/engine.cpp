@@ -2012,8 +2012,11 @@ void Engine::server_recv()
 
 void Engine::server_send()
 {
+	static char	compressed[256000];
+	int	compressed_length = 0;
 	servermsg_t	servermsg;
 
+	memset(compressed, 0, sizeof(256000));
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
@@ -2104,13 +2107,15 @@ void Engine::server_send()
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+
+		huffman_encode_memory((unsigned char *)&servermsg, servermsg.length, (unsigned char **)&compressed, (unsigned int *)&compressed_length);
+		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
 		if (num_sent <= 0)
 			netinfo.send_full = true;
 		else
 			netinfo.send_full = false;
 
-		if (num_sent != servermsg.length)
+		if (num_sent != compressed_length)
 		{
 			netinfo.send_partial = true;
 		}
@@ -2123,9 +2128,12 @@ void Engine::server_send()
 
 void Engine::client_recv()
 {
+	static char	compressed[256000];
+	int	compressed_length = 0;
 	servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
+	unsigned int dsize = 0;
 
 	// get entity information
 #ifdef WIN32
@@ -2135,6 +2143,9 @@ void Engine::client_recv()
 #endif
 	if ( size > 0)
 	{
+		huffman_decode_memory((unsigned char *)compressed, (unsigned int)size, (unsigned char **)&servermsg, &dsize);
+		size = dsize;
+
 		if (size != servermsg.length)
 		{
 			printf("Packet size mismatch: %d %d\n", size, servermsg.length);

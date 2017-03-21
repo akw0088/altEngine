@@ -10,6 +10,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 int huffman_encode_file(FILE *in, FILE *out);
 int huffman_decode_file(FILE *in, FILE *out);
 int huffman_encode_memory(const unsigned char *bufin,
@@ -20,5 +25,8 @@ int huffman_decode_memory(const unsigned char *bufin,
 						  uint32_t bufinlen,
 						  unsigned char **bufout,
 						  uint32_t *pbufoutlen);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

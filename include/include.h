@@ -148,6 +148,7 @@
 
 using namespace std;
 
+#include "huffman.h"
 #include "net.h"
 #include "vector.h"
 #include "matrix.h"
