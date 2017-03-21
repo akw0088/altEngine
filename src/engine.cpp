@@ -1931,6 +1931,7 @@ void Engine::server_recv()
 				}
 			}
 		}
+		netinfo.sequence_delta = sequence - clientmsg.sequence;
 		client_list[index]->client_sequence = clientmsg.sequence;
 	}
 	else
@@ -2104,7 +2105,6 @@ void Engine::server_send()
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
 		client_list[i]->netinfo.num_ents = servermsg.num_ents;
-		client_list[i]->netinfo.sequence_delta = servermsg.sequence - servermsg.client_sequence;
 		client_list[i]->netinfo.size = servermsg.length;
 		
 		if (servermsg.length > 8192)
@@ -2179,7 +2179,7 @@ void Engine::client_recv()
 
 		netinfo.num_ents = servermsg.num_ents;
 		netinfo.size = servermsg.length;
-		netinfo.sequence_delta = servermsg.sequence - servermsg.client_sequence;
+		netinfo.sequence_delta = sequence - servermsg.client_sequence;
 
 		handle_servermsg(servermsg, reliablemsg);
 
