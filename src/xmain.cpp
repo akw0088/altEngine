@@ -38,7 +38,7 @@ int make_timer(char *name, timer_t *timer_id, int interval )
     te.sigev_notify = SIGEV_SIGNAL;
     te.sigev_signo = sigNo;
     te.sigev_value.sival_ptr = timer_id;
-    timer_create(CLOCK_REALTIME, &te, timer_id);
+    timer_create(CLOCK_MONOTONIC, &te, timer_id);
 
     its.it_interval.tv_sec = 0;
     its.it_interval.tv_nsec = interval * 1000000;
