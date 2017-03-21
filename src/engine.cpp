@@ -592,6 +592,15 @@ void Engine::render(double last_frametime)
 	if (q3map.loaded == false)
 		return;
 
+#ifdef DEDICATED
+	server_recv();
+	return;
+#endif
+	if (server_flag)
+		server_recv();
+	if (client_flag)
+		client_recv();
+
 #ifdef DEFERRED
 
 	//Setup render to texture
@@ -1810,8 +1819,13 @@ void Engine::server_recv()
 
 	// get client packet
 	int size = net.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
-	if ( size <= 0 )
+	if (size <= 0)
+	{
+		netinfo.recv_empty = true;
 		return;
+	}
+	netinfo.recv_empty = false;
+
 
 	if (clientmsg.length != size)
 	{
@@ -2024,14 +2038,15 @@ void Engine::server_send()
 		{
 			entity_t ent;
 			/*
+			// Vis test causing issues for some reason
 			int leaf_a;
 			int leaf_b;
 
 			bool visible = q3map.vis_test(entity_list[j]->position,
-				entity_list[client_list[i]->entity]->position, leaf_a, leaf_b);
+				entity_list[client_list[i]->ent_id]->position, leaf_a, leaf_b);
 			if ( visible == false )
 				continue;
-				*/
+			*/
 
 			ent.id = j;
 			ent.type = entity_list[j]->nettype;
@@ -2089,7 +2104,20 @@ void Engine::server_send()
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		if (num_sent <= 0)
+			netinfo.send_full = true;
+		else
+			netinfo.send_full = false;
+
+		if (num_sent != servermsg.length)
+		{
+			netinfo.send_partial = true;
+		}
+		else
+		{
+			netinfo.send_partial = false;
+		}
 	}
 }
 
@@ -2186,7 +2214,24 @@ void Engine::client_send()
 		sizeof(int) + strlen(reliable.msg) + 1);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
 		+ sizeof(int) + strlen(reliable.msg) + 1;
-	::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
+	int num_sent = ::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
+
+	if (server_flag == false)
+	{
+		if (num_sent <= 0)
+			netinfo.send_full = true;
+		else
+			netinfo.send_full = false;
+
+		if (num_sent != clientmsg.length)
+		{
+			netinfo.send_partial = true;
+		}
+		else
+		{
+			netinfo.send_partial = false;
+		}
+	}
 }
 
 
@@ -2224,6 +2269,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
 			if (ret == 2)
 			{
+				clean_entity(client);
 				sprintf(entity_list[client]->type, "player");
 				entity_list[client]->rigid = new RigidBody(entity_list[client]);
 				entity_list[client]->model = entity_list[client]->rigid;
@@ -2235,6 +2281,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 
 				if (server_spawn != -1)
 				{
+					clean_entity(server_spawn);
 					sprintf(entity_list[server_spawn]->type, "server");
 					entity_list[server_spawn]->rigid = new RigidBody(entity_list[server_spawn]);
 					entity_list[server_spawn]->model = entity_list[server_spawn]->rigid;
@@ -2290,12 +2337,19 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
 			// will force server to sync to our current weapon
 //			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
-			entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
-			entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
-			entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
-			entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
-			entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
-			entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
+
+			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
+				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
+			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
+				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
+			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
+				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
+			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
+				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
+			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
+				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
+			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
+				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
 
 		}
 

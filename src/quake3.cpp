@@ -1081,7 +1081,6 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_PLASMA_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
@@ -1160,7 +1159,6 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_ROCKET_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
@@ -1232,7 +1230,6 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_GRENADE_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
@@ -1356,7 +1353,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_LIGHTNING_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
@@ -1470,7 +1466,6 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_RAIL_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
@@ -1497,7 +1492,6 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_MACHINEGUN_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
@@ -1508,7 +1502,6 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
-	shell->nettype = NT_BULLET;
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
 	shell->rigid->clone(*(engine->bullet->model));
@@ -1595,7 +1588,6 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	camera_frame.forward *= -1;
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->nettype = NT_SHOTGUN_FLASH;
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
@@ -1605,7 +1597,6 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
-	shell->nettype = NT_SHELL;
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
 	shell->rigid->clone(*(engine->shell->model));
@@ -1620,7 +1611,6 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	camera_frame.set(shell->model->morientation);
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
-	shell->nettype = NT_SHELL;
 	shell2->rigid = new RigidBody(shell2);
 	shell2->position = camera_frame.pos;
 	shell2->rigid->clone(*(engine->shell->model));
@@ -1705,7 +1695,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity0 = engine->entity_list[engine->get_entity()];
-		entity0->nettype = NT_GIB0;
 		entity0->rigid = new RigidBody(entity0);
 		entity0->model = entity0->rigid;
 		entity0->position = camera_frame.pos;
@@ -1727,7 +1716,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity1 = engine->entity_list[engine->get_entity()];
-		entity1->nettype = NT_GIB1;
 		entity1->rigid = new RigidBody(entity1);
 		entity1->model = entity1->rigid;
 		entity1->position = camera_frame.pos;
@@ -1750,7 +1738,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity2 = engine->entity_list[engine->get_entity()];
-		entity2->nettype = NT_GIB2;
 
 		entity2->rigid = new RigidBody(entity2);
 		entity2->model = entity2->rigid;
@@ -1774,7 +1761,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity3 = engine->entity_list[engine->get_entity()];
-		entity3->nettype = NT_GIB3;
 
 		entity3->rigid = new RigidBody(entity3);
 		entity3->model = entity3->rigid;
@@ -1798,7 +1784,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity4 = engine->entity_list[engine->get_entity()];
-		entity4->nettype = NT_GIB4;
 
 		entity4->rigid = new RigidBody(entity4);
 		entity4->model = entity4->rigid;
@@ -1822,7 +1807,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity5 = engine->entity_list[engine->get_entity()];
-		entity5->nettype = NT_GIB5;
 
 		entity5->rigid = new RigidBody(entity5);
 		entity5->model = entity5->rigid;
@@ -1845,7 +1829,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity6 = engine->entity_list[engine->get_entity()];
-		entity6->nettype = NT_GIB6;
 
 		entity6->rigid = new RigidBody(entity6);
 		entity6->model = entity6->rigid;
@@ -1868,7 +1851,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity7 = engine->entity_list[engine->get_entity()];
-		entity7->nettype = NT_GIB7;
 
 		entity7->rigid = new RigidBody(entity7);
 		entity7->model = entity7->rigid;
@@ -1891,7 +1873,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity8 = engine->entity_list[engine->get_entity()];
-		entity8->nettype = NT_GIB8;
 
 		entity8->rigid = new RigidBody(entity8);
 		entity8->model = entity8->rigid;
@@ -1915,7 +1896,6 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity9 = engine->entity_list[engine->get_entity()];
-		entity9->nettype = NT_GIB9;
 
 		entity9->rigid = new RigidBody(entity9);
 		entity9->model = entity9->rigid;
@@ -2726,10 +2706,14 @@ void Quake3::render_hud(double last_frametime)
 				engine->netinfo.sequence_delta,
 				engine->netinfo.size,
 				engine->netinfo.num_ents,
-				engine->netinfo.dropped
-				);
+				engine->netinfo.dropped);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
-
+			snprintf(msg, LINE_SIZE, "send_full %d send_partial %d recv_empty %d",
+				engine->netinfo.send_full,
+				engine->netinfo.send_partial,
+				engine->netinfo.recv_empty
+			);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 		}
 	}
@@ -4450,15 +4434,6 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid->clone(*(engine->rocket->model));
 		ent->rigid->gravity = false;
 		break;
-	case NT_ROCKET_FLASH:
-		ent->nettype = NT_ROCKET_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(1.0f, 0.75f, 0.0f);
-		ent->light->intensity = 2000.0f;
-		ent->light->attenuation = 0.0625f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
-		break;
 	case NT_ROCKET_LAUNCHER:
 		break;
 	case NT_GRENADE:
@@ -4490,15 +4465,6 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->splash_radius = 250.0f;
 		ent->trigger->knockback = 250.0f;
 		break;
-	case NT_GRENADE_FLASH:
-		ent->nettype = NT_GRENADE_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(1.0f, 0.7f, 0.0f);
-		ent->light->intensity = 2000.0f;
-		ent->light->attenuation = 0.0625f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
-		break;
 	case NT_GRENADE_LAUNCHER:
 		break;
 	case NT_LIGHTNING:
@@ -4524,15 +4490,6 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->explode = true;
 		ent->trigger->explode_timer = 20;
 		break;
-	case NT_LIGHTNING_FLASH:
-		ent->nettype = NT_LIGHTNING_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(0.6f, 0.6f, 1.0f);
-		ent->light->intensity = 2000.0f;
-		ent->light->attenuation = 0.0625f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
-		break;
 	case NT_LIGHTNINGGUN:
 		break;
 	case NT_RAIL:
@@ -4555,15 +4512,6 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->idle_timer = (int)(5.0 * TICK_RATE);
 		ent->trigger->explode = true;
 		ent->trigger->explode_timer = 10;
-		break;
-	case NT_RAIL_FLASH:
-		ent->nettype = NT_RAIL_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(1.0f, 0.5f, 0.0f);
-		ent->light->intensity = 2000.0f;
-		ent->light->attenuation = 0.0625f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
 		break;
 	case NT_RAILGUN:
 		break;
@@ -4595,84 +4543,11 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->light->intensity = 1000.0f;
 
 		break;
-	case NT_PLASMA_FLASH:
-		ent->nettype = NT_PLASMA_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(0.6f, 0.6f, 1.0f);
-		ent->light->intensity = 2000.0f;
-		ent->light->attenuation = 0.0625f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
-		break;
 	case NT_PLASMAGUN:
 		break;
 	case NT_SHOTGUN:
 		break;
-	case NT_SHOTGUN_FLASH:
-		ent->nettype = NT_SHOTGUN_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(1.0f, 1.0f, 0.75f);
-		ent->light->intensity = 3000.0f;
-		ent->light->attenuation = 0.125f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
-		break;
 	case NT_MACHINEGUN:
-		ent->nettype = NT_BULLET;
-		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(engine->bullet->model));
-		ent->rigid->gravity = true;
-		ent->model = ent->rigid;
-		ent->rigid->rotational_friction_flag = true;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->translational_friction = 0.9f;
-		break;
-	case NT_MACHINEGUN_FLASH:
-		ent->nettype = NT_MACHINEGUN_FLASH;
-		ent->light = new Light(ent, engine->gfx, 999);
-		ent->light->color = vec3(1.0f, 1.0f, 0.0f);
-		ent->light->intensity = 2000.0f;
-		ent->light->attenuation = 0.0625f;
-		ent->light->timer_flag = true;
-		ent->light->timer = (int)(0.125f * TICK_RATE);
-		break;
-	case NT_GIB0:
-		break;
-	case NT_GIB1:
-		break;
-	case NT_GIB2:
-		break;
-	case NT_GIB3:
-		break;
-	case NT_GIB4:
-		break;
-	case NT_GIB5:
-		break;
-	case NT_GIB6:
-		break;
-	case NT_GIB7:
-		break;
-	case NT_GIB8:
-		break;
-	case NT_GIB9:
-		break;
-	case NT_BULLET:
-		ent->nettype = NT_BULLET;
-		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(engine->bullet->model));
-		ent->rigid->gravity = true;
-		ent->rigid->rotational_friction_flag = true;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->translational_friction = 0.9f;
-		break;
-	case NT_SHELL:
-		ent->nettype = NT_SHELL;
-		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(engine->shell->model));
-		ent->rigid->gravity = true;
-		ent->rigid->rotational_friction_flag = true;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->translational_friction = 0.9f;
 		break;
 	case NT_QUAD:
 		break;
