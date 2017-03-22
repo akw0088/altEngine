@@ -58,6 +58,9 @@ public:
 
 	int		timelimit;
 	unsigned int weapon_switch_timer;
+	~Quake3()
+	{
+	};
 
 private:
 	Engine *engine;
