@@ -570,6 +570,12 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		entity.speaker = new Speaker(&entity, audio);
 		snprintf(entity.speaker->file, LINE_SIZE, "%s", value);
 	}
+	else if (strcmp(key, "wait") == 0)
+	{
+		if (entity.trigger == NULL)
+			entity.trigger = new Trigger(&entity, audio);
+		entity.trigger->timeout_value = (float)atoi(value);
+	}
 	else if (strcmp(key, "target") == 0)
 	{
 		strcpy(entity.target, value);

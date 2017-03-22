@@ -4371,6 +4371,11 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			entity_list[i]->position = q3map.model_origin(entity_list[i]->model_ref);
 
 
+		if (strstr(entity_list[i]->type, "trigger_push"))
+		{
+			sprintf(entity_list[i]->trigger->action, "push %s", entity_list[i]->target);
+		}
+
 		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
 			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull") ||
 			strstr(entity_list[i]->type, "trigger_push"))
