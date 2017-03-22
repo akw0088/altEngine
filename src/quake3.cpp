@@ -4613,7 +4613,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger = new Trigger(ent, engine->audio);
 		snprintf(ent->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
 		snprintf(ent->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-		sprintf(ent->trigger->action, "weapon_plasmagun");
+		sprintf(ent->trigger->action, "weapon_plasma");
 		break;
 	case NT_SHOTGUN:
 		ent->rigid = new RigidBody(ent);

@@ -2013,12 +2013,12 @@ void Engine::server_recv()
 
 void Engine::server_send()
 {
-	static entity_t old_ent[1024];
-	static char	compressed[256000];
-	int	compressed_length = 0;
+//	static entity_t old_ent[1024];
+	unsigned char	*compressed = NULL;
+	unsigned char	*data = NULL;
+	unsigned int	compressed_length = 0;
 	servermsg_t	servermsg;
 
-	memset(compressed, 0, sizeof(256000));
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
@@ -2087,9 +2087,10 @@ void Engine::server_send()
 				ent.ammo_plasma = entity_list[j]->player->ammo_plasma;
 			}
 
-			if (memcmp((void *)&old_ent[j], (void *)&ent, sizeof(entity_t)) != 0)
+//			if (memcmp((void *)&old_ent[j], (void *)&ent, sizeof(entity_t)) != 0)
+			if (1)
 			{
-				old_ent[j] = ent;
+			//	old_ent[j] = ent;
 				memcpy(&servermsg.data[j * sizeof(entity_t)],
 					&ent, sizeof(entity_t));
 				servermsg.num_ents++;
@@ -2112,9 +2113,11 @@ void Engine::server_send()
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-
-		huffman_encode_memory((unsigned char *)&servermsg, servermsg.length, (unsigned char **)&compressed, (unsigned int *)&compressed_length);
-		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
+		unsigned int dsize = 0;
+//		huffman_encode_memory((unsigned char *)&servermsg, servermsg.length, &compressed, &compressed_length);
+//		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
+//		free((void *)compressed);
+		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 		if (num_sent <= 0)
 			netinfo.send_full = true;
 		else
@@ -2133,22 +2136,27 @@ void Engine::server_send()
 
 void Engine::client_recv()
 {
-	static char	compressed[256000];
+//	static unsigned char	compressed[256000];
+//	unsigned char *data = NULL;
 	servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
-	unsigned int dsize = 0;
+
 
 	// get entity information
 #ifdef WIN32
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 256000, 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
 #else
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, 256000, 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
+	int size = ::recvfrom(net.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
 #endif
 	if ( size > 0)
 	{
-		huffman_decode_memory((unsigned char *)compressed, (unsigned int)size, (unsigned char **)&servermsg, &dsize);
-		size = dsize;
+// huffman_decode doesnt do too well with partial data, might need to pack into a struct
+//		unsigned int dsize = 0;
+//		memset(&compressed, 0, 256000);
+//		huffman_decode_memory((unsigned char *)compressed, (unsigned int)size, (unsigned char **)&data, &dsize);
+//		servermsg = (servermsg_t *)&data;
+//		size = dsize;
 
 		if (size != servermsg.length)
 		{
@@ -2195,6 +2203,7 @@ void Engine::client_recv()
 
 
 		last_server_sequence = servermsg.sequence;
+//		free((void *)data);
 	}
 }
 
@@ -2635,7 +2644,6 @@ void Engine::keypress(char *key, bool pressed)
 	if (cmd == NULL)
 		return;
 
-
 	if (strcmp("attack", cmd) == 0)
 	{
 		input.attack = pressed;
@@ -2667,11 +2675,17 @@ void Engine::keypress(char *key, bool pressed)
 	}
 	else if (strcmp("weapon_up", cmd) == 0)
 	{
+		int spawn = find_type("player", 0);
+
 		input.weapon_up = pressed;
+		entity_list[spawn]->player->change_weapon_up();
 	}
 	else if (strcmp("weapon_down", cmd) == 0)
 	{
+		int spawn = find_type("player", 0);
+
 		input.weapon_down = pressed;
+		entity_list[spawn]->player->change_weapon_down();
 	}
 	else if (strcmp("use", cmd) == 0)
 	{
@@ -2862,12 +2876,14 @@ void Engine::handle_game(char key)
 	case '[':
 		if (spawn != -1)
 		{
+			input.weapon_down = true;
 			entity_list[spawn]->player->change_weapon_down();
 		}
 		break;
 	case ']':
 		if (spawn != -1)
 		{
+			input.weapon_up = true;
 			entity_list[spawn]->player->change_weapon_up();
 		}
 		break;
