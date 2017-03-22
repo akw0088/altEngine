@@ -2014,9 +2014,9 @@ void Engine::server_recv()
 void Engine::server_send()
 {
 //	static entity_t old_ent[1024];
-	unsigned char	*compressed = NULL;
-	unsigned char	*data = NULL;
-	unsigned int	compressed_length = 0;
+//	unsigned char	*compressed = NULL;
+//	unsigned char	*data = NULL;
+//	unsigned int	compressed_length = 0;
 	servermsg_t	servermsg;
 
 	servermsg.sequence = sequence;
@@ -2113,7 +2113,7 @@ void Engine::server_send()
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-		unsigned int dsize = 0;
+//		unsigned int dsize = 0;
 //		huffman_encode_memory((unsigned char *)&servermsg, servermsg.length, &compressed, &compressed_length);
 //		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
 //		free((void *)compressed);
@@ -2123,7 +2123,7 @@ void Engine::server_send()
 		else
 			netinfo.send_full = false;
 
-		if (num_sent != compressed_length)
+		if (num_sent != servermsg.length)
 		{
 			netinfo.send_partial = true;
 		}

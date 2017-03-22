@@ -733,7 +733,7 @@ void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 	drop->trigger = new Trigger(drop, engine->audio);
 	snprintf(drop->trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
 	snprintf(drop->trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-	sprintf(drop->trigger->action, action);
+	strcpy(drop->trigger->action, action);
 }
 
 
