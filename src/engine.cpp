@@ -1993,7 +1993,7 @@ void Engine::server_recv()
 
 		char client_name[80];
 
-		sprintf(client_name, "client %d", client_list.size());
+		sprintf(client_name, "client %d", (int)client_list.size());
 		game->add_player(entity_list, "client", client->ent_id, client_name);
 		printf("client %s qport %d got entity %d\n", socketname, client->qport, client->ent_id);
 

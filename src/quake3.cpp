@@ -102,7 +102,6 @@ team_t Quake3::get_team()
 
 void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &ent_id, char *player_name)
 {
-	static int state = 1;
 	char *spawn_type;
 	team_t team = get_team();
 
@@ -155,7 +154,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 
-			sprintf(entity_list[spawn]->player->name, player_name);
+			strcpy(entity_list[spawn]->player->name, player_name);
 
 
 			matrix4 matrix;
