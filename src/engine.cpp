@@ -1570,11 +1570,6 @@ void Engine::dynamics()
 		if (collision_detect_enable == false && i >= num_player)
 			continue;
 
-// Need to run all the time because of bots freezing when leaving PVS
-//		if ( (server_flag == false && entity_list[i]->visible == false) || entity_list[i]->rigid->sleep == true)
-//			continue;
-
-
 		RigidBody *body = entity_list[i]->rigid;
 
 		float delta_time = 2.0f * TICK_MS / 1000.0f;
@@ -1616,10 +1611,8 @@ void Engine::dynamics()
 			body->integrate(target_time - current_time);
 			if ( collision_detect(*body) )
 			{
-				// Keeping clipped velocity to prevent "sticking"
 				vec3 clip = body->velocity;
 				body->load_config(config);
-//				printf("%3.3f %3.3f %3.3f clip\n", clip.x, clip.y, clip.z);
 				body->velocity = clip;
 
 				target_time = (current_time + target_time) / 2.0f;
@@ -1997,7 +1990,11 @@ void Engine::server_recv()
 
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
-		game->add_player(entity_list, "client", client->ent_id);
+
+		char client_name[80];
+
+		sprintf(client_name, "client %d", client_list.size());
+		game->add_player(entity_list, "client", client->ent_id, client_name);
 		printf("client %s qport %d got entity %d\n", socketname, client->qport, client->ent_id);
 
 
@@ -3212,9 +3209,8 @@ void Engine::load_entities()
 {
 #ifndef DEDICATED
 	int spawn = -1;
-
 	if (client_flag == false)
-		game->add_player(entity_list, "player", spawn);
+		game->add_player(entity_list, "player", spawn, "UnnamedPlayer");
 #endif
 	load_sounds();
 	create_sources();

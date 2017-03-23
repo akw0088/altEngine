@@ -100,7 +100,7 @@ team_t Quake3::get_team()
 	}
 }
 
-void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &ent_id)
+void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &ent_id, char *player_name)
 {
 	static int state = 1;
 	char *spawn_type;
@@ -154,6 +154,8 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team);
 			entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
+
+			sprintf(entity_list[spawn]->player->name, player_name);
 
 
 			matrix4 matrix;
@@ -806,20 +808,19 @@ void Quake3::step(int frame_step)
 	{
 		for (unsigned int i = 0; i < num_bot; i++)
 		{
+			char bot_name[80];
 			int bot_index = -1;
 
-			add_player(engine->entity_list, "NPC", bot_index);
+			sprintf(bot_name, "Bot %d", i);
+			add_player(engine->entity_list, "NPC", bot_index, bot_name);
 			engine->num_bot++;
 		}
 	}
-
 
 	if (spectator == true)
 	{
 		engine->camera_frame.update(engine->input);
 	}
-
-
 
 	if (engine->input.control && spectator_timer <= 0)
 	{
@@ -1286,8 +1287,8 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 void Quake3::handle_lightning(Player &player, int self, bool client)
 {
 	Frame camera_frame;
-	int index[8];
-	int num_index;
+	int index[16] = { -1 };
+	int num_index = 0;
 
 	player.entity->model->get_frame(camera_frame);
 
@@ -1409,8 +1410,8 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 void Quake3::handle_railgun(Player &player, int self, bool client)
 {
-	int index[8];
-	int num_index;
+	int index[16] = { -1 };
+	int num_index = 0;
 
 	Frame camera_frame;
 
@@ -1522,9 +1523,8 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 void Quake3::handle_machinegun(Player &player, int self, bool client)
 {
 	char cmd[80] = { 0 };
-	int index[8];
-	int num_index;
-	//float distance;
+	int index[16] = { -1 };
+	int num_index = 0;
 
 	Frame camera_frame;
 
@@ -1615,12 +1615,10 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 void Quake3::handle_shotgun(Player &player, int self, bool client)
 {
 	Frame camera_frame;
+	int index[16] = { -1 };
+	int num_index = 0;
 
 	player.entity->model->get_frame(camera_frame);
-
-	int index[8];
-	int num_index;
-
 
 	player.reload_timer = SHOTGUN_RELOAD;
 	player.ammo_shells--;
@@ -5017,6 +5015,27 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						{
 							sprintf(weapon, "plasma gun");
 						}
+						else if (entity_list[owner]->player->current_weapon == wp_lightning)
+						{
+							sprintf(weapon, "lightning gun");
+						}
+						else if (entity_list[owner]->player->current_weapon == wp_shotgun)
+						{
+							sprintf(weapon, "shotgun");
+						}
+						else if (entity_list[owner]->player->current_weapon == wp_machinegun)
+						{
+							sprintf(weapon, "machinegun");
+						}
+						else if (entity_list[owner]->player->current_weapon == wp_railgun)
+						{
+							sprintf(weapon, "railgun");
+						}
+						else if (entity_list[owner]->player->current_weapon == wp_melee)
+						{
+							sprintf(weapon, "gauntlet");
+						}
+
 
 						if (entity_list[self]->player->health <= -50)
 							sprintf(word, "%s", "gibbed");

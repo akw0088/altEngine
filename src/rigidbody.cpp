@@ -97,7 +97,7 @@ void RigidBody::integrate(float time)
 	acceleration = net_force / mass;
 	if (gravity == true && noclip == false && flight == false)
 	{
-		acceleration.y -= 9.8f;
+		acceleration.y -= 9.8f * 2.0f;
 	}
 
 	velocity = velocity + acceleration * time;
