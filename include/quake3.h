@@ -44,12 +44,12 @@ public:
 	void player_died(int index);
 	void drop_weapon(int index);
 	void drop_powerup(vec3 &position, char *model, char *action);
-	void add_bot(int &index);
+	team_t get_team();
 
 	int bot_get_path(int item, int self, int *nav_array, path_t &path);
 	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
 
-	void load();
+	void load(gametype_t gametype);
 	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
 	void unload();
 	void add_player(vector<Entity *> &entity_list, char *type, int &ent_id);
@@ -76,6 +76,12 @@ private:
 	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
 	bool spectator;
+
+
+
+	unsigned int num_player;
+	unsigned int num_player_blue;
+	unsigned int num_player_red;
 
 	unsigned int spectator_timer;
 };

@@ -43,7 +43,7 @@ const char *models[23] = {
 
 #define NUM_PATH 64 // Should equal map navpoint count
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
+Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team)
 : weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {
@@ -51,7 +51,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 
 	spawned = false;
 	godmode = false;
-	team = TEAM_NONE;
+
+	Player::team = team;
 
 	zoom_level = 4.0;
 
@@ -111,6 +112,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 
 	// Probably should be global and not tied to player entity
 	sprintf(chat_sound, "sound/player/talk.wav");
+
+	sprintf(capture_sound, "sound/teamplay/flagcap_blu.wav");
+	
 	
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
@@ -139,6 +143,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model)
 
 	holdable_teleporter = false;
 	holdable_medikit = false;
+	holdable_flag = false;
 
 
 	weapon_flags = WEAPON_MACHINEGUN;
@@ -258,6 +263,15 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
+	strcpy(wave.file, "sound/teamplay/flagcap_blu.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/teamplay/flagret_blu.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
 
 	for (unsigned int i = 0; i < 23; i++)
 	{
@@ -798,9 +812,13 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		if (i == (unsigned int)self)
 			continue;
 
+
 		if (strcmp(entity_list[i]->type, "player") == 0)
 		{
 			if (entity_list[i]->player == NULL)
+				continue;
+
+			if (team != TEAM_NONE && entity_list[i]->player->team == team)
 				continue;
 
 			float distance = (entity_list[i]->position - entity->position).magnitude();

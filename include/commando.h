@@ -135,7 +135,7 @@ public:
 	int bot_get_path(int item, int self, int *nav_array, path_t &path);
 	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
 
-	void load();
+	void load(gametype_t gametype);
 	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
 	void unload();
 	void init_camera(vector<Entity *> &entity_list);

@@ -332,11 +332,17 @@ void Engine::find_path(int *&path, int &path_length, int start_path, int end_pat
 void Engine::load(char *level)
 {
 	matrix4 transformation;
+	gametype_t gametype = GAMETYPE_DEATHMATCH;
 
 	if (q3map.loaded)
 		return;
+
+	if (strstr(level, "ctf"))
+	{
+		gametype = GAMETYPE_CTF;
+	}
 	
-	game->load();
+	game->load(gametype);
 
 	q3map.anim_list.clear();
 
@@ -2300,7 +2306,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				entity_list[client]->rigid->clone(*(thug22->model));
 				entity_list[client]->rigid->step_flag = true;
 				entity_list[client]->position += entity_list[client]->rigid->center;
-				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21);
+				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21, TEAM_NONE);
 				camera_frame.pos = entity_list[client]->position;
 
 				if (server_spawn != -1)
@@ -2312,7 +2318,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 					entity_list[server_spawn]->rigid->clone(*(thug22->model));
 					entity_list[server_spawn]->rigid->step_flag = true;
 					entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
-					entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21);
+					entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21, TEAM_NONE);
 				}
 			}
 
@@ -2678,14 +2684,16 @@ void Engine::keypress(char *key, bool pressed)
 		int spawn = find_type("player", 0);
 
 		input.weapon_up = pressed;
-		entity_list[spawn]->player->change_weapon_up();
+		if (client_flag)
+			entity_list[spawn]->player->change_weapon_up();
 	}
 	else if (strcmp("weapon_down", cmd) == 0)
 	{
 		int spawn = find_type("player", 0);
 
 		input.weapon_down = pressed;
-		entity_list[spawn]->player->change_weapon_down();
+		if (client_flag)
+			entity_list[spawn]->player->change_weapon_down();
 	}
 	else if (strcmp("use", cmd) == 0)
 	{

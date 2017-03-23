@@ -62,7 +62,7 @@ typedef struct
 class Player
 {
 public:
-	Player(Entity *entity, Graphics &gfx, Audio &audio, int model);
+	Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team);
 	~Player();
 	Entity	*entity;
 
@@ -127,6 +127,8 @@ public:
 
 	char chat_sound[128];
 	char model_name[128];
+	char capture_sound[128];
+
 	int model_index;
 
 	int health;

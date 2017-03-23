@@ -39,7 +39,7 @@ Quake3::Quake3()
 {
 	blink = false;
 	spectator = false;
-	gametype = GAMETYPE_DEATHMATCH;
+	gametype = GAMETYPE_CTF;
 	last_spawn = 0;
 	spectator_timer = 0;
 	chat_timer = 0;
@@ -48,6 +48,10 @@ Quake3::Quake3()
 	timelimit = 0;
 	capturelimit = 8;
 	weapon_switch_timer = 0;
+
+	num_player = 0;
+	num_player_red = 0;
+	num_player_blue = 0;
 }
 
 void Quake3::init(Engine *altEngine)
@@ -61,9 +65,10 @@ void Quake3::init(Engine *altEngine)
 	create_icon();
 }
 
-void Quake3::load()
+void Quake3::load(gametype_t type)
 {
 	last_spawn = 0;
+	gametype = type;
 }
 
 void Quake3::unload()
@@ -76,18 +81,57 @@ void Quake3::destroy()
 
 }
 
+team_t Quake3::get_team()
+{
+	if (gametype == GAMETYPE_CTF)
+	{
+		if (num_player_red >= num_player_blue)
+		{
+			return TEAM_BLUE;
+		}
+		else
+		{
+			return TEAM_RED;
+		}
+	}
+	else
+	{
+		return TEAM_NONE;
+	}
+}
+
 void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &ent_id)
 {
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	static int state = 1;
+	char *spawn_type;
+	team_t team = get_team();
+
+
+	if (team == TEAM_RED)
+	{
+		spawn_type = "team_CTF_redspawn";
+		num_player_red++;
+	}
+	else if (team == TEAM_BLUE)
+	{
+		spawn_type = "team_CTF_bluespawn";
+		num_player_blue++;
+	}
+	else if (team == TEAM_NONE)
+	{
+		spawn_type = "info_player_deathmatch";
+	}
+	num_player++;
+
+	for (unsigned int i = engine->num_dynamic; i < entity_list.size(); i++)
 	{
 		char *type = entity_list[i]->type;
 
 		if (type == NULL)
 			continue;
-
-		if (strcmp(type, "info_player_deathmatch") == 0 ||
-			strcmp(type, "team_ctf_redplayer") == 0 ||
-			strcmp(type, "info_player_start") == 0)
+		
+		if (strcmp(type, spawn_type) == 0 //||
+			/*strcmp(type, "info_player_start") == 0*/)
 		{
 			if ((unsigned int)last_spawn == i + 1)
 				continue;
@@ -107,7 +151,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->rigid->clone(*(engine->thug22->model));
 			entity_list[spawn]->rigid->step_flag = true;
-			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21);
+			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team);
 			entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 
@@ -139,6 +183,16 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			break;
 		}
 	}
+
+	if (gametype == GAMETYPE_DEATHMATCH && strcmp(player_type, "NPC") == 0)
+	{
+		char cmd[80];
+
+		// Hack to maintain same spawn behavior for bots
+		sprintf(cmd, "respawn %d %d", -1, ent_id);
+		console(ent_id, cmd, engine->menu, engine->entity_list);
+	}
+
 	engine->audio.listener_position((float *)&(engine->camera_frame.pos));
 }
 
@@ -736,32 +790,6 @@ void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 	strcpy(drop->trigger->action, action);
 }
 
-
-
-void Quake3::add_bot(int &index)
-{
-	index = engine->get_player();
-
-	Entity *entity = engine->entity_list[index];
-
-	debugf("Adding a bot\n");
-	entity->rigid = new RigidBody(entity);
-	entity->model = entity->rigid;
-	entity->rigid->clone(*(engine->thug22->model));
-	sprintf(entity->type, "NPC");
-	entity->player = new Player(entity, engine->gfx, engine->audio, 16);
-	entity->speaker->gain(5.0f);
-	sprintf(entity->player->name, "Bot %d", index);
-	entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
-	entity->rigid->step_flag = true;
-
-
-	char cmd[80];
-	sprintf(cmd, "respawn %d %d", -1, index);
-	console(index, cmd, engine->menu, engine->entity_list);
-}
-
-
 void Quake3::step(int frame_step)
 {
 	unsigned int num_bot = 3;
@@ -778,8 +806,9 @@ void Quake3::step(int frame_step)
 	{
 		for (unsigned int i = 0; i < num_bot; i++)
 		{
-			int bot_index = engine->get_player();
-			add_bot(bot_index);
+			int bot_index = -1;
+
+			add_player(engine->entity_list, "NPC", bot_index);
 			engine->num_bot++;
 		}
 	}
@@ -2670,7 +2699,13 @@ void Quake3::render_hud(double last_frametime)
 	{
 		int line = 1;
 
-		snprintf(msg, LINE_SIZE, "Scores:");
+
+		if (gametype == GAMETYPE_CTF)
+			snprintf(msg, LINE_SIZE, "Scores: Red Team Score %d/%d Blue Team Score %d/%d",
+				red_flag_caps, capturelimit,
+				blue_flag_caps, capturelimit);
+		else
+			snprintf(msg, LINE_SIZE, "Scores:");
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
@@ -3732,7 +3767,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "blueflag");
 	if (ret == 0)
 	{
-		if (entity_list[self]->player->holdable_flag == false)
+		if (entity_list[self]->player->team == TEAM_RED && entity_list[self]->player->holdable_flag == false)
 			entity_list[self]->player->holdable_flag = true;
 		return;
 	}
@@ -3740,7 +3775,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "redflag");
 	if (ret == 0)
 	{
-		if (entity_list[self]->player->holdable_flag == false)
+		if (entity_list[self]->player->team == TEAM_BLUE && entity_list[self]->player->holdable_flag == false)
 			entity_list[self]->player->holdable_flag = true;
 		return;
 	}
@@ -4873,7 +4908,12 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		if (entity_list[i]->trigger->owner >= 0 && entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && gametype != GAMETYPE_DEATHMATCH)
 			continue;
 
-		if (strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
+		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
+
+		if (distance < entity_list[i]->trigger->radius)
+			inside = true;
+
+		if (inside && strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_BLUE)
 			{
@@ -4882,14 +4922,14 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					blue_flag_caps++;
 
-					bool ret = engine->select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
+					bool ret = engine->select_wave(entity_list[i]->trigger->source, entity_list[self]->player->capture_sound);
 					if (ret)
 					{
 						engine->audio.play(entity_list[i]->trigger->source);
 					}
 					else
 					{
-						debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_sound);
+						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->capture_sound);
 					}
 
 					if (blue_flag_caps == capturelimit)
@@ -4901,7 +4941,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			}
 		}
 
-		if (strcmp(entity_list[i]->type, "team_CTF_redflag") == 0)
+		if (inside && strcmp(entity_list[i]->type, "team_CTF_redflag") == 0)
 		{
 			if (entity_list[self]->player->team == TEAM_RED)
 			{
@@ -4929,11 +4969,6 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			}
 		}
 
-
-		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
-
-		if (distance < entity_list[i]->trigger->radius)
-			inside = true;
 
 		if (inside == true && entity_list[i]->trigger->active == false)
 		{

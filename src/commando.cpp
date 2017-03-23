@@ -61,7 +61,7 @@ void Commando::init(Engine *altEngine)
 	create_icon();
 }
 
-void Commando::load()
+void Commando::load(gametype_t gametype)
 {
 	last_spawn = 0;
 }
@@ -100,7 +100,7 @@ void Commando::init_camera(vector<Entity *> &entity_list)
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
 			entity_list[spawn]->rigid->clone(*(engine->thug22->model));
 			entity_list[spawn]->rigid->step_flag = true;
-			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21);
+//			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21);
 			entity_list[spawn]->position += vec3(0.0f, 10.0f, 0.0f); //adding some height
 
 			matrix4 matrix;
@@ -703,25 +703,7 @@ void Commando::drop_quaddamage(vec3 &position)
 
 void Commando::add_bot(int &index)
 {
-	index = engine->get_player();
 
-	Entity *entity = engine->entity_list[index];
-
-	debugf("Adding a bot\n");
-	entity->rigid = new RigidBody(entity);
-	entity->model = entity->rigid;
-	entity->rigid->clone(*(engine->thug22->model));
-	sprintf(entity->type, "NPC");
-	entity->player = new Player(entity, engine->gfx, engine->audio, 16);
-	entity->speaker->gain(5.0f);
-	sprintf(entity->player->name, "Bot %d", index);
-	entity->position += entity->rigid->center + vec3(0.0f, 50.0f, 0.0f);
-	entity->rigid->step_flag = true;
-
-
-	char cmd[80];
-	sprintf(cmd, "respawn %d %d", -1, index);
-	console(index, cmd, engine->menu, engine->entity_list);
 }
 
 
