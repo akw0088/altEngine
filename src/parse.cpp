@@ -414,6 +414,16 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			}
 			entity.nodraw = true;
 		}
+		else if (strcmp(value, "target_position") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
 		else if (strcmp(value, "info_null") == 0)
 		{
 			if (entity.rigid)
