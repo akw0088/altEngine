@@ -545,12 +545,25 @@ float RigidBody::get_height()
 bool RigidBody::move(input_t &input, float speed_scale)
 {
 	Frame camera;
+	Frame yaw;
 
 	get_frame(camera);
 	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
 	bool	jumped = false;
+
+
+	vec3 yaw_right;
+	yaw.up = vec3(0.0f, 1.0f, 0.0f);
+	yaw.forward = camera.forward;
+	yaw.forward.y = 0.0f;
+	yaw.forward.normalize();
+
+	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
+	yaw_right.normalize();
+	yaw.up = vec3::crossproduct(right, yaw.forward);
+	yaw.up.normalize();
 
 
 	//prevent walking upward
@@ -566,22 +579,22 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	sleep = false;
 	if (input.moveup)
 	{
-		velocity += -forward * ACCEL * speed_scale;
+		velocity += -yaw.forward * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.movedown)
 	{
-		velocity += forward * ACCEL * speed_scale;
+		velocity += yaw.forward * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.moveleft)
 	{
-		velocity += -right * ACCEL * speed_scale;
+		velocity += -yaw_right * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.moveright)
 	{
-		velocity += right * ACCEL * speed_scale;
+		velocity += yaw_right * ACCEL * speed_scale;
 		moved = true;
 	}
 	if (input.jump)
