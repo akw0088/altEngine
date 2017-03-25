@@ -6,7 +6,7 @@
 
 #define ACCEL (0.25f)
 #define MAX_SPEED 2.5f
-#define MAX_AIR_SPEED 3.0f
+#define MAX_AIR_SPEED 4.0f
 
 
 RigidBody::RigidBody(Entity *entity)
@@ -103,8 +103,8 @@ void RigidBody::integrate(float time)
 	}
 
 	velocity = velocity + acceleration * time;
-//	if (velocity.magnitude() > MAX_VELOCITY)
-//		velocity = velocity.normalize() * MAX_VELOCITY;
+	if (velocity.magnitude() > MAX_VELOCITY)
+		velocity = velocity.normalize() * MAX_VELOCITY;
 
 
 	old_position = entity->position;
@@ -116,7 +116,7 @@ void RigidBody::integrate(float time)
 
 	if (translational_friction_flag || water == true || noclip == true || flight == true)
 	{
-		velocity *= translational_friction; // added rotational "friction"
+		velocity *= translational_friction; // added translational "friction"
 	}
 
 	if (rotational_friction_flag || water == true || noclip == true)
@@ -622,29 +622,20 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		if (jumppad == false)
 		{
 			velocity.x *= (MAX_SPEED * speed_scale / speed);
-			velocity.y *= (MAX_SPEED * speed_scale / speed);
+//			velocity.y *= (MAX_SPEED * speed_scale / speed);
 			velocity.z *= (MAX_SPEED * speed_scale / speed);
 		}
 	}
 
-	if ((on_ground == false || jumppad) && (speed > MAX_AIR_SPEED * speed_scale) )
+	if ((on_ground == false || jumppad == true) && (speed > MAX_AIR_SPEED * speed_scale) )
 	{
 		velocity.x *= (MAX_AIR_SPEED * speed_scale / speed);
-		velocity.y *= (MAX_AIR_SPEED * speed_scale / speed);
+//		velocity.y *= (MAX_AIR_SPEED * speed_scale / speed);
 		velocity.z *= (MAX_AIR_SPEED * speed_scale / speed);
 	}
 
 	if (moved)
 	{
-		if (on_ground && !jumped)
-		{
-			//clear out gravity keeping us on the ground
-			velocity.y = 0.08f;
-
-			//cancel out the hop we see while moving
-			//entity->position.y -= 2.0f;
-		}
-
 		if (jumped && jump_timer == 0)
 		{
 			velocity.y += 3.0f * GRAVITY_SCALE;

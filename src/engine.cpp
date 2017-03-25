@@ -1629,7 +1629,7 @@ void Engine::dynamics()
 			current_time = target_time;
 			target_time = delta_time;
 		}
-		if (abs32(body->velocity.y) > 0.25f)
+		if (abs32(body->velocity.y) > 1.0f)
 		{
 			// either jumping or falling
 			body->on_ground = false;
