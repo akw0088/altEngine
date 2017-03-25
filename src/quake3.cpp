@@ -466,7 +466,10 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			if (entity->player->reload_timer <= 0)
 			{
-				console(self, "respawn", engine->menu, engine->entity_list);
+				char cmd[128] = { 0 };
+
+				sprintf(cmd, "respawn %d %d", -1, self);
+				console(self, cmd, engine->menu, engine->entity_list);
 			}
 		}
 	}
@@ -485,6 +488,7 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->light == NULL)
 		{
+			entity->player->quad_damage = true;
 			entity->light = new Light(entity, engine->gfx, 999);
 			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
 			entity->light->intensity = 4000.0f;
@@ -495,8 +499,9 @@ void Quake3::handle_player(int self, input_t &input)
 	else
 	{
 		// Light list wont be updated until the next step, so manually delete
-		if (entity->light)
+		if (entity->player->quad_damage && entity->light)
 		{
+			entity->player->quad_damage = false;
 			for (unsigned int i = 0; i < engine->light_list.size(); i++)
 			{
 				if (engine->light_list[i]->entity == entity)
@@ -1398,7 +1403,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		engine->hitscan(player.entity->position, forward, index, num_index, self);
 		for (int i = 0; i < num_index; i++)
 		{
-			char cmd[80] = { 0 };
+			char cmd[512] = { 0 };
 
 			if (engine->entity_list[index[i]]->player == NULL)
 				continue;
@@ -1418,6 +1423,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 			player.stats.hits++;
 			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 			{
+				char msg[512];
 				char word[32] = { 0 };
 				player.stats.kills++;
 				engine->entity_list[index[i]]->player->stats.deaths++;
@@ -1427,7 +1433,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				else
 					sprintf(word, "%s", "killed");
 
-				char msg[80];
 				sprintf(msg, "%s %s %s with a lightning gun\n", player.name,
 					word,
 					engine->entity_list[index[i]]->player->name);
@@ -4020,6 +4025,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		if (player == -1)
 			return;
 
+
+		// Respawn command needs to be rewritten really
+		// param one spawns player on entity index given
+		// param two spawns a different player entity
+		// (give -1 as first param in thise case)
 		ret = sscanf(cmd, "respawn %s %s", data, data2);
 		if (ret == 2)
 		{
@@ -4960,7 +4970,9 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		if (entity_list[i]->trigger->owner == self && entity_list[i]->rigid->bounce == 0)
 			continue;
 
-		if (entity_list[i]->trigger->owner >= 0 && entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team && gametype != GAMETYPE_DEATHMATCH)
+		if (entity_list[i]->trigger->owner >= 0 &&
+			gametype != GAMETYPE_DEATHMATCH &&
+			entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team)
 			continue;
 
 		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
@@ -5100,11 +5112,21 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							sprintf(word, "%s", "killed");
 
 						char msg[80];
-						sprintf(msg, "%s %s %s with a %s\n",
-							entity_list[owner]->player->name,
-							word,
-							entity_list[self]->player->name,
-							weapon);
+
+						if (entity_list[owner]->player == entity_list[self]->player)
+						{
+							sprintf(msg, "%s killed themselves with a %s\n",
+								entity_list[owner]->player->name, weapon);
+						}
+						else
+						{
+							sprintf(msg, "%s %s %s with a %s\n",
+								entity_list[owner]->player->name,
+								word,
+								entity_list[self]->player->name,
+								weapon);
+						}
+
 						debugf(msg);
 						engine->menu.print_notif(msg);
 						notif_timer = 3 * TICK_RATE;

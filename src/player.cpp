@@ -145,6 +145,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	holdable_teleporter = false;
 	holdable_medikit = false;
 	holdable_flag = false;
+	quad_damage = false;
 
 
 	weapon_flags = WEAPON_MACHINEGUN;

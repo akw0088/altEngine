@@ -1572,6 +1572,12 @@ void Engine::dynamics()
 
 		RigidBody *body = entity_list[i]->rigid;
 
+		if (body->velocity.magnitude() > 100)
+		{
+			printf("Hacky for fix killed by lightning gun issue\n");
+			body->velocity = vec3(0.0f, 0.0f, 0.0f);
+		}
+
 		float delta_time = 2.0f * TICK_MS / 1000.0f;
 		float target_time = delta_time;
 		float current_time = 0.0f;
@@ -1734,10 +1740,14 @@ bool Engine::map_collision(RigidBody &body)
 
 			body.entity->position = body.old_position;
 			body.morientation = body.old_orientation;
-			body.impulse(plane, point);
+//			body.impulse(plane, point);
 			collision = true;
 		}
 	}
+
+
+
+
 	if (collision)
 	{
 		body.on_ground = true;
