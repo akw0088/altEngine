@@ -70,6 +70,14 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "health 50");
 			entity.trigger->health = true;
 		}
+		else if (strcmp(value, "item_health_small") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/n_health.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "health 5");
+			entity.trigger->health = false;
+		}
 		else if (strcmp(value, "item_health_mega") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
@@ -392,6 +400,36 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
 		}
 		else if (strcmp(value, "misc_model") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "target_location") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_camp") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "misc_portal_camera") == 0)
 		{
 			if (entity.rigid)
 			{

@@ -3227,6 +3227,13 @@ void Engine::load_model(Entity &ent)
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
+	else if (strcmp(ent.type, "item_health_small") == 0)
+	{
+		debugf("Loading item_health_large\n");
+		ent.model->load(gfx, "media/models/powerups/health/item_health_small");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
 	else if (strcmp(ent.type, "item_health_mega") == 0)
 	{
 		debugf("Loading item_health_mega\n");
