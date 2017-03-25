@@ -169,7 +169,7 @@ protected:
 
 	vector<Entity *>	entity_list;
 	unsigned int	num_dynamic;
-	unsigned int	num_player;
+	unsigned int	max_player;
 
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;

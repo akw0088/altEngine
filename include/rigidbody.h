@@ -45,6 +45,9 @@ public:
 	float get_volume();
 	float get_height();
 
+
+	char impact_sound[128];
+
 	bool			on_ground;
 	bool			hard_impact;
 	float			impact_velocity;

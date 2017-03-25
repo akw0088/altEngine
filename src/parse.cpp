@@ -77,6 +77,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 100");
 			entity.trigger->health = false;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
 		}
 		else if (strcmp(value, "item_quad") == 0)
 		{

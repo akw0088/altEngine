@@ -5,7 +5,7 @@
 #endif
 
 #define ACCEL (0.25f)
-#define MAX_SPEED 3.0f
+#define MAX_SPEED 3.5f
 #define MAX_AIR_SPEED 4.5f
 
 
@@ -57,6 +57,8 @@ RigidBody::RigidBody(Entity *entity)
 	inverse_tensor.m[6] = 0;
 	inverse_tensor.m[7] = 0;
 	inverse_tensor.m[8] = 12.0f / (mass *  (width * width + height * height));
+
+	sprintf(impact_sound, "sounds/weapons/grenade/hgrenb1a.wav");
 }
 
 void RigidBody::recalc()

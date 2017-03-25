@@ -27,7 +27,7 @@ Engine::Engine()
 {
 	initialized = false;
 	num_dynamic = 100;
-	num_player = 8;
+	max_player = 8;
 	cl_skip = 0;
 	show_names = false;
 	show_lines = false;
@@ -363,7 +363,7 @@ void Engine::load(char *level)
 		memcpy(entity->type, "free", strlen("free") + 1);
 		entity_list.push_back(entity);
 
-		if (i < num_player && server_flag)
+		if (i < max_player && server_flag)
 		{
 			// Forces server to expect player rigid bodies
 			entity->rigid = new RigidBody(entity);
@@ -1016,7 +1016,7 @@ void Engine::render_trails(matrix4 &trans)
 
 
 	//render particle trails first
-	for (unsigned int i = num_player; i < num_dynamic; i++)
+	for (unsigned int i = max_player; i < num_dynamic; i++)
 	{
 		if (entity_list[i]->model == NULL)
 			continue;
@@ -1091,27 +1091,27 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				continue;
 		}
 
-		if (i < num_player && strcmp(entity->type, "player") == 0)
+		if (i < max_player && strcmp(entity->type, "player") == 0)
 		{
 			continue;
 		}
 
-		if (i < num_player && strcmp(entity->type, "server") == 0)
+		if (i < max_player && strcmp(entity->type, "server") == 0)
 		{
 			continue;
 		}
 
-		if (i < num_player && strcmp(entity->type, "client") == 0)
+		if (i < max_player && strcmp(entity->type, "client") == 0)
 		{
 			continue;
 		}
 
-		if (i < num_player  && strcmp(entity->type, "NPC") == 0)
+		if (i < max_player  && strcmp(entity->type, "NPC") == 0)
 		{
 			continue;
 		}
 
-		if (i < num_player  && strcmp(entity->type, "spectator") == 0)
+		if (i < max_player  && strcmp(entity->type, "spectator") == 0)
 		{
 			continue;
 		}
@@ -1180,7 +1180,7 @@ void Engine::render_players(matrix4 &trans, bool lights)
 {
 	matrix4 mvp;
 	//render player md5
-	for (unsigned int i = 0; i < num_player; i++)
+	for (unsigned int i = 0; i < max_player; i++)
 	{
 		Entity *entity = entity_list[i];
 
@@ -1579,7 +1579,7 @@ void Engine::dynamics()
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (collision_detect_enable == false && i >= num_player)
+		if (collision_detect_enable == false && i >= max_player)
 			continue;
 
 		RigidBody *body = entity_list[i]->rigid;
@@ -1763,7 +1763,7 @@ bool Engine::map_collision(RigidBody &body)
 	if (collision)
 	{
 		body.on_ground = true;
-		if (body.velocity.y < -IMPACT_VELOCITY)
+		if (body.velocity.y < -1.5)
 		{
 			body.hard_impact = true;
 			body.impact_velocity = body.velocity.y;
@@ -1783,7 +1783,7 @@ bool Engine::map_collision(RigidBody &body)
 //O(N^2)
 bool Engine::body_collision(RigidBody &body)
 {
-	for(unsigned int i = 0; i < num_player; i++)
+	for(unsigned int i = 0; i < max_player; i++)
 	{
 		if (entity_list[i] == body.entity)
 			continue;
@@ -3216,14 +3216,21 @@ void Engine::load_model(Entity &ent)
 	else if (strcmp(ent.type, "item_health") == 0)
 	{
 		debugf("Loading item_health\n");
-		ent.model->load(gfx, "media/models/powerups/health/health");
+		ent.model->load(gfx, "media/models/powerups/health/item_health");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_health_large") == 0)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->load(gfx, "media/models/powerups/health/health");
+		ent.model->load(gfx, "media/models/powerups/health/item_health_large");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_health_mega") == 0)
+	{
+		debugf("Loading item_health_mega\n");
+		ent.model->load(gfx, "media/models/powerups/health/item_health_mega");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
@@ -3284,7 +3291,7 @@ void Engine::clean_entity(int index)
 
 int Engine::get_entity()
 {
-	static unsigned int index = num_player;
+	static unsigned int index = max_player;
 	int looped = 0;
 
 	while (1)
@@ -3292,7 +3299,7 @@ int Engine::get_entity()
 
 		if (index == num_dynamic)
 		{
-			index = num_player;
+			index = max_player;
 			looped++;
 
 			if (looped == 2)
@@ -3336,7 +3343,7 @@ int Engine::get_player()
 	while (1)
 	{
 
-		if (index == num_player)
+		if (index == max_player)
 		{
 			index = 0;
 			looped++;
@@ -3357,7 +3364,7 @@ int Engine::get_player()
 		index++;
 	}
 
-	return num_player - 1;
+	return max_player - 1;
 }
 
 void Engine::create_sources()

@@ -253,7 +253,7 @@ void Quake3::handle_player(int self, input_t &input)
 				debugf("Unable to find PCM data for %s\n", entity->player->fall_sound);
 			}
 		}
-		else
+		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
 			//play land sound
 			int ret = engine->select_wave(entity->speaker->source, entity->player->land_sound);
@@ -889,7 +889,7 @@ void Quake3::step(int frame_step)
 			float min_distance = FLT_MAX;
 			int index = -1;
 
-			for (unsigned int i = 0; i < engine->num_player; i++)
+			for (unsigned int i = 0; i < engine->max_player; i++)
 			{
 				float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
 
@@ -924,7 +924,7 @@ void Quake3::step(int frame_step)
 	}
 
 
-	for (unsigned int i = 0; i < engine->num_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		Entity *entity = engine->entity_list[i];
 		bool isplayer = (strcmp(entity->type, "player") == 0);
@@ -1112,7 +1112,7 @@ void Quake3::step(int frame_step)
 
 
 	// handles triggers and the projectile as trigger stuff
-	for (unsigned int i = 0; i < engine->num_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		if (strcmp(engine->entity_list[i]->type, "player") == 0)
 			check_triggers(i, engine->entity_list);
@@ -1293,13 +1293,11 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		camera_frame.set(projectile->model->morientation);
 
 		projectile->rigid->clone(*(engine->box->model));
-		//entity->rigid->clone(*(pineapple->model));
-		projectile->rigid->velocity = camera_frame.forward * -5.0f;
-		projectile->rigid->angular_velocity = vec3(0.1f, 0.1f, 0.1f);
+		projectile->rigid->clone(*(engine->pineapple->model));
+		projectile->rigid->velocity = camera_frame.forward * -25.0f;
+		projectile->rigid->angular_velocity = vec3(1.1f, 0.1f, 1.1f);
 		projectile->rigid->gravity = true;
 		projectile->rigid->rotational_friction_flag = true;
-		projectile->rigid->translational_friction_flag = true;
-		projectile->rigid->translational_friction = 0.9f;
 		//entity->rigid->set_target(*(entity_list[spawn]));
 
 		projectile->particle_on = true;
@@ -1804,14 +1802,9 @@ void Quake3::handle_gibs(Player &player)
 		entity0->rigid->velocity = vec3(2.0f, 1.2f, 1.6f);
 		entity0->rigid->angular_velocity = vec3(3.0f, 1.0f, 2.2f);
 		entity0->rigid->gravity = true;
+		entity0->rigid->translational_friction_flag = true;
 		entity0->rigid->rotational_friction_flag = true;
-
-		entity0->trigger = new Trigger(entity0, engine->audio);
-		sprintf(entity0->trigger->explode_sound, "sound/player/gibimp1.wav");
-		sprintf(entity0->trigger->action, "gib0 impact");
-		entity0->trigger->idle = true;
-		entity0->trigger->idle_timer = 3 * TICK_RATE;
-		entity0->trigger->explode = false;
+		sprintf(entity0->rigid->impact_sound, "sound/player/gibimp1.wav");
 	}
 
 	{
@@ -1826,14 +1819,9 @@ void Quake3::handle_gibs(Player &player)
 		entity1->rigid->velocity = vec3(0.8f, 1.2f, -1.2f);
 		entity1->rigid->angular_velocity = vec3(1.0f, 1.6f, 2.0f);
 		entity1->rigid->gravity = true;
+		entity1->rigid->translational_friction_flag = true;
 		entity1->rigid->rotational_friction_flag = true;
-
-		entity1->trigger = new Trigger(entity1, engine->audio);
-		sprintf(entity1->trigger->explode_sound, "sound/player/gibimp1.wav");
-		sprintf(entity1->trigger->action, "gib1 impact");
-		entity1->trigger->idle = true;
-		entity1->trigger->idle_timer = 3 * TICK_RATE;
-		entity1->trigger->explode = false;
+		sprintf(entity1->rigid->impact_sound, "sound/player/gibimp2.wav");
 	}
 
 	{
@@ -1849,14 +1837,9 @@ void Quake3::handle_gibs(Player &player)
 		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
 		entity2->rigid->angular_velocity = vec3(-2.0f, 1.0f, 6.0f);
 		entity2->rigid->gravity = true;
+		entity2->rigid->translational_friction_flag = true;
 		entity2->rigid->rotational_friction_flag = true;
-
-		entity2->trigger = new Trigger(entity2, engine->audio);
-		sprintf(entity2->trigger->explode_sound, "sound/player/gibimp2.wav");
-		sprintf(entity2->trigger->action, "gib2 impact");
-		entity2->trigger->idle = true;
-		entity2->trigger->idle_timer = 3 * TICK_RATE;
-		entity2->trigger->explode = false;
+		sprintf(entity2->rigid->impact_sound, "sound/player/gibimp3.wav");
 	}
 
 	{
@@ -1873,13 +1856,8 @@ void Quake3::handle_gibs(Player &player)
 		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity3->rigid->gravity = true;
 		entity3->rigid->rotational_friction_flag = true;
-
-		entity3->trigger = new Trigger(entity3, engine->audio);
-		sprintf(entity3->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity3->trigger->action, "gib3 impact");
-		entity3->trigger->idle = true;
-		entity3->trigger->idle_timer = 3 * TICK_RATE;
-		entity3->trigger->explode = false;
+		entity3->rigid->translational_friction_flag = true;
+		sprintf(entity3->rigid->impact_sound, "sound/player/gibimp1.wav");
 	}
 
 	{
@@ -1896,13 +1874,8 @@ void Quake3::handle_gibs(Player &player)
 		entity4->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity4->rigid->gravity = true;
 		entity4->rigid->rotational_friction_flag = true;
-
-		entity4->trigger = new Trigger(entity4, engine->audio);
-		sprintf(entity4->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity4->trigger->action, "gib4 impact");
-		entity4->trigger->idle = true;
-		entity4->trigger->idle_timer = 3 * TICK_RATE;
-		entity4->trigger->explode = false;
+		entity4->rigid->translational_friction_flag = true;
+		sprintf(entity4->rigid->impact_sound, "sound/player/gibimp2.wav");
 	}
 
 	{
@@ -1918,13 +1891,8 @@ void Quake3::handle_gibs(Player &player)
 		entity5->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity5->rigid->gravity = true;
 		entity5->rigid->rotational_friction_flag = true;
-
-		entity5->trigger = new Trigger(entity5, engine->audio);
-		sprintf(entity5->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity5->trigger->action, "gib5 impact");
-		entity5->trigger->idle = true;
-		entity5->trigger->idle_timer = 3 * TICK_RATE;
-		entity5->trigger->explode = false;
+		entity5->rigid->translational_friction_flag = true;
+		sprintf(entity5->rigid->impact_sound, "sound/player/gibimp1.wav");
 	}
 
 	{
@@ -1939,14 +1907,9 @@ void Quake3::handle_gibs(Player &player)
 		entity6->rigid->velocity = vec3(-1.15f, 1.7f, 1.37f);
 		entity6->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity6->rigid->gravity = true;
+		entity6->rigid->translational_friction_flag = true;
 		entity6->rigid->rotational_friction_flag = true;
-
-		entity6->trigger = new Trigger(entity6, engine->audio);
-		sprintf(entity6->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity6->trigger->action, "gib6 impact");
-		entity6->trigger->idle = true;
-		entity6->trigger->idle_timer = 3 * TICK_RATE;
-		entity6->trigger->explode = false;
+		sprintf(entity6->rigid->impact_sound, "sound/player/gibimp2.wav");
 	}
 
 	{
@@ -1961,14 +1924,9 @@ void Quake3::handle_gibs(Player &player)
 		entity7->rigid->velocity = vec3(-1.45f, 2.34f, 1.27f);
 		entity7->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity7->rigid->gravity = true;
+		entity7->rigid->translational_friction_flag = true;
 		entity7->rigid->rotational_friction_flag = true;
-
-		entity7->trigger = new Trigger(entity7, engine->audio);
-		sprintf(entity7->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity7->trigger->action, "gib7 impact");
-		entity7->trigger->idle = true;
-		entity7->trigger->idle_timer = 3 * TICK_RATE;
-		entity7->trigger->explode = false;
+		sprintf(entity7->rigid->impact_sound, "sound/player/gibimp3.wav");
 	}
 
 	{
@@ -1984,14 +1942,9 @@ void Quake3::handle_gibs(Player &player)
 		entity8->rigid->velocity = vec3(-1.85f, 1.73f, 2.32f);
 		entity8->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity8->rigid->gravity = true;
+		entity8->rigid->translational_friction_flag = true;
 		entity8->rigid->rotational_friction_flag = true;
-
-		entity8->trigger = new Trigger(entity8, engine->audio);
-		sprintf(entity8->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity8->trigger->action, "gib8 impact");
-		entity8->trigger->idle = true;
-		entity8->trigger->idle_timer = 3 * TICK_RATE;
-		entity8->trigger->explode = false;
+		sprintf(entity8->rigid->impact_sound, "sound/player/gibimp1.wav");
 	}
 
 	{
@@ -2006,14 +1959,9 @@ void Quake3::handle_gibs(Player &player)
 		entity9->rigid->velocity = vec3(1.45f, 1.27f, -1.2f);
 		entity9->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity9->rigid->gravity = true;
+		entity9->rigid->translational_friction_flag = true;
 		entity9->rigid->rotational_friction_flag = true;
-
-		entity9->trigger = new Trigger(entity9, engine->audio);
-		sprintf(entity9->trigger->explode_sound, "sound/player/gibimp3.wav");
-		sprintf(entity9->trigger->action, "gib9 impact");
-		entity9->trigger->idle = true;
-		entity9->trigger->idle_timer = 3 * TICK_RATE;
-		entity9->trigger->explode = false;
+		sprintf(entity9->rigid->impact_sound, "sound/player/gibimp2.wav");
 	}
 
 }
@@ -2765,7 +2713,7 @@ void Quake3::render_hud(double last_frametime)
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
-		for (unsigned int i = 0; i < engine->num_player; i++)
+		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
 			float accuracy = 0.0f;
 
@@ -2842,7 +2790,7 @@ void Quake3::render_hud(double last_frametime)
 		}
 	}
 
-	for (unsigned int i = 0; i < engine->num_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		if (strcmp(engine->entity_list[i]->type, "NPC") != 0)
 			continue;
@@ -4859,6 +4807,26 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (entity_list[i]->light)
 			engine->num_light++;
+
+
+		if (entity_list[i]->rigid && entity_list[i]->rigid->hard_impact && i >= engine->max_player)
+		{
+			if (entity_list[i]->speaker && entity_list[i]->rigid->impact_velocity < -3.0f)
+			{
+				entity_list[i]->rigid->hard_impact = false;
+				
+				bool ret = engine->select_wave(entity_list[i]->speaker->source, entity_list[i]->rigid->impact_sound);
+				if (ret)
+				{
+					engine->audio.stop(entity_list[i]->speaker->loop_source);
+					engine->audio.play(entity_list[i]->speaker->source);
+				}
+				else
+				{
+					debugf("Unable to find PCM data for %s\n", entity_list[i]->rigid->impact_sound);
+				}
+			}
+		}
 
 
 		if (strstr(entity_list[i]->type, "func_"))

@@ -329,7 +329,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 			snd_wave.push_back(wave);
 	}
 
-	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
+	strcpy(wave.file, "sound/weapons/grenade/hgrenb1a.wav");
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
@@ -338,6 +338,12 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
 
 	strcpy(wave.file, "sound/weapons/plasma/lasfly.wav");
 	audio.load(wave);
@@ -445,6 +451,7 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
+
 
 	strcpy(wave.file, "sound/player/talk.wav");
 	audio.load(wave);
