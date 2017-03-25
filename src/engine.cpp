@@ -36,6 +36,7 @@ Engine::Engine()
 	entities_enabled = true;
 	collision_detect_enable = true;
 	num_bot = 0;
+	emitter.enabled = false;
 
 	memset(&netinfo, 0, sizeof(netinfo));
 
@@ -818,6 +819,7 @@ void Engine::render_scene(bool lights)
 
 #ifndef DIRECTX
 	int vbo = 0;
+
 	if (emitter.visible)
 	{
 		particle_update.Select();
@@ -826,6 +828,11 @@ void Engine::render_scene(bool lights)
 			rand_float(0.0, 10.0));
 		particle_update.Params(emitter);
 		vbo = particle_update.step(gfx, emitter);
+	}
+
+	if (emitter.enabled == false)
+	{
+		emitter.position = vec3(0.0f, 10000.0, 0.0f);
 	}
 #endif
 
@@ -843,6 +850,7 @@ void Engine::render_scene(bool lights)
 		gfx.SelectTexture(0, particle_tex);
 		particle_render.render(gfx, 0, vbo, emitter.num);
 	}
+
 
 	render_trails(transformation);
 #endif
@@ -1059,6 +1067,9 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	if (entities_enabled == false)
 		return;
 
+	emitter.enabled = false;
+
+
 	gfx.Blend(false);
 	mlight2.Select();
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -1148,8 +1159,9 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		entity->rigid->render(gfx);
 
 		//  update emitter position if this entity has particles
-		if (entity->num_particle)
+		if (entity->particle_on)
 		{
+			emitter.enabled = true;
 			emitter.num = entity->num_particle;
 			emitter.position = entity->position;
 			emitter.gravity = vec3(0.0f, 30.0f, 0.0f);
@@ -1578,7 +1590,7 @@ void Engine::dynamics()
 			body->velocity = vec3(0.0f, 0.0f, 0.0f);
 		}
 
-		float delta_time = 2.0f * TICK_MS / 1000.0f;
+		float delta_time = TICK_MS / 1000.0f;
 		float target_time = delta_time;
 		float current_time = 0.0f;
 		int divisions = 0;
@@ -3254,6 +3266,8 @@ void Engine::clean_entity(int index)
 		entity_list[index]->speaker->destroy(audio);
 	entity_list[index]->nettype = NT_NONE;
 
+	entity_list[index]->particle_on = false;
+
 
 	// Light list wont be updated until the next step, so manually delete
 	if (entity_list[index]->light)
@@ -3737,7 +3751,6 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
 		menu.print(msg);
-		load("maps/q3tourney2.bsp");
 		bind(port);
 		return;
 	}

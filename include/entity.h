@@ -35,6 +35,7 @@ public:
 	float			height; // for movers will make own class later
 
 	//temp hack
+	bool particle_on;
 	int num_particle;
 
 };

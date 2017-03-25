@@ -5,7 +5,7 @@
 #endif
 
 #define ACCEL (0.25f)
-#define MAX_SPEED 2.5f
+#define MAX_SPEED 3.0f
 #define MAX_AIR_SPEED 4.5f
 
 
@@ -105,6 +105,13 @@ void RigidBody::integrate(float time)
 	velocity = velocity + acceleration * time;
 	if (velocity.magnitude() > MAX_VELOCITY)
 		velocity = velocity.normalize() * MAX_VELOCITY;
+
+	// Clamp velocity on Y much lower
+	// (jumppads / falling can integrate through solid objects if going too fast)
+	if (velocity.y > 10.0f)
+		velocity.y = 10.0f;
+	if (velocity.y < -10.0f)
+		velocity.y = -10.0f;
 
 
 	old_position = entity->position;
@@ -636,7 +643,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (moved)
 	{
-		if (jumped && jump_timer == 0)
+		if (on_ground && jumped && jump_timer == 0)
 		{
 			velocity.y += 3.0f * GRAVITY_SCALE;
 			jump_timer = (int)(TICK_RATE * 0.3f);

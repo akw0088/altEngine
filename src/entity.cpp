@@ -25,6 +25,7 @@ Entity::Entity()
 	player = NULL;
 	decal = NULL;
 	num_particle = 0;
+	particle_on = false;
 	nettype = NT_NONE;
 }
 
@@ -48,6 +49,7 @@ Entity::~Entity()
 	position = vec3(0.0f, 0.0f, 0.0f);
 	visible = false;
 	network = false;
+	particle_on = false;
 	target[0] = '\0';
 	target_name[0] = '\0';
 	angle = 0;

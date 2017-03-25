@@ -513,6 +513,7 @@ typedef struct
 	unsigned int num;
 	int bsp_leaf;
 	bool visible;
+	bool enabled;
 } emitter_t;
 
 typedef struct

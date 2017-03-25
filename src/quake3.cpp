@@ -578,9 +578,9 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
-	if (entity->rigid->velocity.y > -1.0f && entity->rigid->velocity.y < 1.0f &&
+	if (entity->rigid->on_ground && entity->rigid->gravity == true &&
 		entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
-		entity->rigid->noclip == false && entity->rigid->gravity == true)
+		entity->rigid->noclip == false)
 	{
 
 		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
@@ -1233,6 +1233,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->trigger->knockback = 250.0f;
 		projectile->trigger->owner = self;
 
+		projectile->particle_on = true;
 		projectile->num_particle = 5000;
 
 		projectile->light = new Light(projectile, engine->gfx, 999);
@@ -1301,6 +1302,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->rigid->translational_friction = 0.9f;
 		//entity->rigid->set_target(*(entity_list[spawn]));
 
+		projectile->particle_on = true;
 		projectile->num_particle = 5000;
 
 
@@ -4916,6 +4918,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 				if (entity_list[i]->rigid->bounce > entity_list[i]->trigger->num_bounce)
 				{
+					entity_list[i]->particle_on = false;
 					if (entity_list[i]->trigger->explode == false)
 					{
 						if (entity_list[i]->trigger->explode_timer <= 0)
