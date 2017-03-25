@@ -6,7 +6,7 @@
 
 #define ACCEL (0.25f)
 #define MAX_SPEED 2.5f
-#define MAX_AIR_SPEED 4.0f
+#define MAX_AIR_SPEED 4.5f
 
 
 RigidBody::RigidBody(Entity *entity)
