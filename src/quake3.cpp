@@ -221,55 +221,89 @@ void Quake3::handle_player(int self, input_t &input)
 		engine->zoom(1.0);
 	}
 
-	if (input.use == true)
+	if (entity->rigid->hard_impact)
 	{
-		bool click = true;
-		if (engine->entity_list[self]->player->holdable_medikit)
+		entity->rigid->hard_impact = false;
+
+
+		if (entity->rigid->impact_velocity < -FALL_DAMAGE_VELOCITY)
 		{
-			engine->entity_list[self]->player->health = 125;
-			engine->entity_list[self]->player->holdable_medikit = false;
-			//play medikit sound
-			int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->medikit_sound);
+			entity->player->health -= 10;
+			//play fall damage sound
+			int ret = engine->select_wave(entity->speaker->source, entity->player->fall_sound);
 			if (ret)
 			{
-				engine->audio.play(engine->entity_list[self]->speaker->source);
+				engine->audio.play(entity->speaker->source);
 			}
 			else
 			{
-				debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->medikit_sound);
+				debugf("Unable to find PCM data for %s\n", entity->player->fall_sound);
+			}
+		}
+		else
+		{
+			//play land sound
+			int ret = engine->select_wave(entity->speaker->source, entity->player->land_sound);
+			if (ret)
+			{
+				engine->audio.play(entity->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity->player->land_sound);
+			}
+		}
+	}
+
+	if (input.use == true)
+	{
+		bool click = true;
+		if (entity->player->holdable_medikit)
+		{
+			entity->player->health = 125;
+			entity->player->holdable_medikit = false;
+			//play medikit sound
+			int ret = engine->select_wave(entity->speaker->source, entity->player->medikit_sound);
+			if (ret)
+			{
+				engine->audio.play(entity->speaker->source);
+			}
+			else
+			{
+				debugf("Unable to find PCM data for %s\n", entity->player->medikit_sound);
 			}
 			click = false;
 		}
-		if (engine->entity_list[self]->player->holdable_teleporter)
+		if (entity->player->holdable_teleporter)
 		{
 			console(self, "teleport", engine->menu, engine->entity_list);
-			engine->entity_list[self]->player->holdable_teleporter = false;
+			entity->player->holdable_teleporter = false;
 			click = false;
 		}
 		if (click)
 		{
 			//play click sound
-			if (engine->entity_list[self]->player->click_timer == 0)
+			if (entity->player->click_timer == 0)
 			{
-				engine->entity_list[self]->player->click_timer = (int)(0.5f * TICK_RATE);
-				int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->noitem_sound);
+				entity->player->click_timer = (int)(0.5f * TICK_RATE);
+				int ret = engine->select_wave(entity->speaker->source, entity->player->noitem_sound);
 				if (ret)
 				{
-					engine->audio.play(engine->entity_list[self]->speaker->source);
+					engine->audio.play(entity->speaker->source);
 				}
 				else
 				{
-					debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->noitem_sound);
+					debugf("Unable to find PCM data for %s\n", entity->player->noitem_sound);
 				}
 			}
 			else
 			{
-				engine->entity_list[self]->player->click_timer--;
+				entity->player->click_timer--;
 			}
 		}
 	}
 
-	/*
+#if 0
 	if (input.use == true)
 	{
 		int nav_num = 0;
@@ -314,7 +348,7 @@ void Quake3::handle_player(int self, input_t &input)
 			last_tick = 250;
 		}
 	}
-	*/
+#endif
 
 
 	if (last_tick > 0)
@@ -424,6 +458,11 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
+	if (entity->player->jumppad_timer > 0)
+	{
+		entity->player->jumppad_timer--;
+	}
+
 	if (entity->player->teleport_timer > 0)
 	{
 		entity->player->teleport_timer--;
@@ -490,14 +529,14 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->regen_bump_sound);
+				int ret = engine->select_wave(entity->speaker->source, entity->player->regen_bump_sound);
 				if (ret)
 				{
-					engine->audio.play(engine->entity_list[self]->speaker->source);
+					engine->audio.play(entity->speaker->source);
 				}
 				else
 				{
-					debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->regen_bump_sound);
+					debugf("Unable to find PCM data for %s\n", entity->player->regen_bump_sound);
 				}
 			}
 
@@ -2762,6 +2801,10 @@ void Quake3::render_hud(double last_frametime)
 			);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
+			snprintf(msg, LINE_SIZE, "on_ground %d impact velocity %f", entity->rigid->on_ground, entity->rigid->impact_velocity );
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+
 		}
 	}
 
@@ -4141,8 +4184,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				vec3 dir = entity_list[i]->position - entity_list[self]->position;
 
 				//add velocity towards target
-				engine->entity_list[self]->rigid->velocity += dir * 0.4f;
+				engine->entity_list[self]->rigid->velocity += dir * JUMPPAD_SCALE * GRAVITY_SCALE;
 
+
+				entity_list[self]->player->jumppad_timer = TICK_RATE >> 1;
 				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
 				if (ret)
 				{

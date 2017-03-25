@@ -6,6 +6,8 @@
 
 #define ACCEL (0.25f)
 #define MAX_SPEED 2.5f
+#define MAX_AIR_SPEED 3.0f
+
 
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
@@ -97,12 +99,12 @@ void RigidBody::integrate(float time)
 	acceleration = net_force / mass;
 	if (gravity == true && noclip == false && flight == false)
 	{
-		acceleration.y -= 9.8f * 2.0f;
+		acceleration.y -= GRAVITY * GRAVITY_SCALE;
 	}
 
 	velocity = velocity + acceleration * time;
-	if (velocity.magnitude() > MAX_VELOCITY)
-		velocity = velocity.normalize() * MAX_VELOCITY;
+//	if (velocity.magnitude() > MAX_VELOCITY)
+//		velocity = velocity.normalize() * MAX_VELOCITY;
 
 
 	old_position = entity->position;
@@ -521,7 +523,6 @@ void RigidBody::wander(float radius, float distance, float jitter)
 	seek(sphere_target + entity->position);
 }
 
-
 float RigidBody::get_volume()
 {
 	//water_density = 1000.0f; // kg/m3
@@ -552,6 +553,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
 	bool	jumped = false;
+	bool	jumppad = false;
 
 
 	vec3 yaw_right;
@@ -608,18 +610,33 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		moved = true;
 	}
 
-	float speed = velocity.magnitude();
+	float speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 
-	if ( speed > MAX_SPEED * speed_scale)
+	if (entity->player && entity->player->jumppad_timer > 0)
 	{
-		velocity.x *= (MAX_SPEED * speed_scale / speed);
-		velocity.y *= (MAX_SPEED * speed_scale / speed);
-		velocity.z *= (MAX_SPEED * speed_scale / speed);
+		jumppad = true;
+	}
+
+	if (on_ground && (speed > MAX_SPEED * speed_scale))
+	{
+		if (jumppad == false)
+		{
+			velocity.x *= (MAX_SPEED * speed_scale / speed);
+			velocity.y *= (MAX_SPEED * speed_scale / speed);
+			velocity.z *= (MAX_SPEED * speed_scale / speed);
+		}
+	}
+
+	if ((on_ground == false || jumppad) && (speed > MAX_AIR_SPEED * speed_scale) )
+	{
+		velocity.x *= (MAX_AIR_SPEED * speed_scale / speed);
+		velocity.y *= (MAX_AIR_SPEED * speed_scale / speed);
+		velocity.z *= (MAX_AIR_SPEED * speed_scale / speed);
 	}
 
 	if (moved)
 	{
-		if (map_collision && !jumped)
+		if (on_ground && !jumped)
 		{
 			//clear out gravity keeping us on the ground
 			velocity.y = 0.08f;
@@ -630,12 +647,13 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 		if (jumped && jump_timer == 0)
 		{
-			velocity.y += 3.0f;
+			velocity.y += 3.0f * GRAVITY_SCALE;
 			jump_timer = (int)(TICK_RATE * 0.3f);
 		}
 	}
 	else
 	{
+		// deceleration
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
 	}

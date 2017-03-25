@@ -11,6 +11,15 @@
 //#define TICK_MS 16		// 62.5hz
 //#define TICK_RATE 60
 
+
+#define GRAVITY 9.8f
+
+#define GRAVITY_SCALE 2.0f
+#define JUMPPAD_SCALE 0.0125f
+
+#define IMPACT_VELOCITY 4.0f
+#define FALL_DAMAGE_VELOCITY 7.0f
+
 #define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
 
 #define PARTICLES

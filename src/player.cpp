@@ -119,7 +119,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
 
-	health = 100;
+	health = 125;
 	armor = 0;
 	flight_timer = 0;
 	teleport_timer = 0;
@@ -129,6 +129,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	quad_timer = 0;
 	reload_timer = 0;
 	invisibility_timer = 0;
+	jumppad_timer = 0;
 	teleport_timer = 0;
 	click_timer = 0;
 

@@ -42,11 +42,12 @@ public:
 	void lookat(vec3 &target);
 	void lookat_yaw(vec3 &target);
 
-
 	float get_volume();
 	float get_height();
 
-	bool			map_collision;
+	bool			on_ground;
+	bool			hard_impact;
+	float			impact_velocity;
 	bool			pursue_flag;
 	bool			step_flag;
 	Entity			*target;

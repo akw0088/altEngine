@@ -159,6 +159,7 @@ public:
 	unsigned int quad_timer;
 	unsigned int click_timer;
 	unsigned int invisibility_timer;
+	unsigned int jumppad_timer;
 	unsigned int teleport_timer; // prevent teleporting out and back rapidly
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon

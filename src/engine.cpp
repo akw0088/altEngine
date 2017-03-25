@@ -389,7 +389,7 @@ void Engine::load(char *level)
 	// max particle testing
 //	emitter.life_min = 50000000000.0f;
 //	emitter.life_range = 50000000000.0f;
-	emitter.gravity = vec3(0.0f, -9.8f, 0.0f);
+	emitter.gravity = vec3(0.0f, -GRAVITY, 0.0f);
 	emitter.delta_time = 0.008f;
 	emitter.num = 1;
 
@@ -1598,7 +1598,7 @@ void Engine::dynamics()
 
 			//Force_bouyant = volume * density of water * 9.8
 			// density of water is 10000 kg/m3, but fudging as a scale factor
-			float force_bouyant = volume * 0.0015f * 9.8f * submerged_percent;
+			float force_bouyant = volume * 0.0015f * GRAVITY * submerged_percent;
 
 			body->net_force += vec3(0.0f, force_bouyant, 0.0f);
 		}
@@ -1629,6 +1629,12 @@ void Engine::dynamics()
 			current_time = target_time;
 			target_time = delta_time;
 		}
+		if (abs32(body->velocity.y) > 0.25f)
+		{
+			// either jumping or falling
+			body->on_ground = false;
+		}
+
 		body->net_force = vec3(0.0f, 0.0f, 0.0f);
 	}
 }
@@ -1656,10 +1662,8 @@ bool Engine::collision_detect(RigidBody &body)
 
 	if (map_collision(body))
 	{
-		body.map_collision = true;
 		return true;
 	}
-	body.map_collision = false;
 
 //	if (body_collision(body))
 //		return true;
@@ -1736,6 +1740,13 @@ bool Engine::map_collision(RigidBody &body)
 	}
 	if (collision)
 	{
+		body.on_ground = true;
+		if (body.velocity.y < -IMPACT_VELOCITY)
+		{
+			body.hard_impact = true;
+			body.impact_velocity = body.velocity.y;
+		}
+
 		vec3 normal = -plane.normal;
 		clip = body.velocity;
 		ClipVelocity(clip, normal);
