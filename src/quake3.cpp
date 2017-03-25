@@ -228,7 +228,20 @@ void Quake3::handle_player(int self, input_t &input)
 
 		if (entity->rigid->impact_velocity < -FALL_DAMAGE_VELOCITY)
 		{
+
 			entity->player->health -= 10;
+			if (entity->player->health <= 0)
+			{
+				char msg[80];
+
+				entity->player->stats.deaths++;
+				sprintf(msg, "%s fell and cant get up\n", entity->player->name);
+				debugf(msg);
+				engine->menu.print_notif(msg);
+				notif_timer = 3 * TICK_RATE;
+			}
+
+
 			//play fall damage sound
 			int ret = engine->select_wave(entity->speaker->source, entity->player->fall_sound);
 			if (ret)
