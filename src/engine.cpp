@@ -1523,7 +1523,7 @@ void Engine::spatial_testing()
 			{
 				if (entity_list[i]->light->timer > 0)
 				{
-					entity_list[i]->light->timer--;
+					entity_list[i]->light->timer -= 25;
 				}
 				else
 				{

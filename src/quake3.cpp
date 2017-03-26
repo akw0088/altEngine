@@ -1109,7 +1109,9 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
 }
 
 void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
@@ -1183,6 +1185,10 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
 }
 
 void Quake3::handle_grenade(Player &player, int self, bool client)
@@ -1257,6 +1263,10 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
 }
 
 void Quake3::handle_lightning(Player &player, int self, bool client)
@@ -1383,6 +1393,10 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
 
 }
 
@@ -1499,6 +1513,10 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
 }
 
 void Quake3::handle_machinegun(Player &player, int self, bool client)
@@ -1524,6 +1542,10 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
 
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
@@ -1538,6 +1560,10 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	shell->rigid->translational_friction_flag = true;
 	shell->rigid->translational_friction = 0.9f;
 	camera_frame.set(shell->model->morientation);
+	shell->visible = true; // accomodate for low spatial testing rate
+	shell->bsp_leaf = player.entity->bsp_leaf;
+	shell->bsp_leaf = player.entity->bsp_visible = true;
+
 
 	if (client == false)
 	{
@@ -1618,6 +1644,10 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.125f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->rigid = new RigidBody(shell);
@@ -1632,6 +1662,10 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	shell->model = shell->rigid;
 	camera_frame.set(shell->model->morientation);
+	shell->visible = true; // accomodate for low spatial testing rate
+	shell->bsp_leaf = player.entity->bsp_leaf;
+	shell->bsp_leaf = player.entity->bsp_visible = true;
+
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
 	shell2->rigid = new RigidBody(shell2);
@@ -1645,6 +1679,10 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid->gravity = true;
 	shell2->model = shell2->rigid;
 	camera_frame.set(shell2->model->morientation);
+	shell2->visible = true; // accomodate for low spatial testing rate
+	shell2->bsp_leaf = player.entity->bsp_leaf;
+	shell2->bsp_leaf = player.entity->bsp_visible = true;
+
 
 
 	if (client == false)
@@ -4924,7 +4962,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (entity_list[i]->trigger->timeout > 0)
 		{
-			entity_list[i]->trigger->timeout -= 0.016f;
+			entity_list[i]->trigger->timeout -= 0.016f * 25;
 		}
 		else
 		{
