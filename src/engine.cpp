@@ -156,6 +156,18 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->model = thug22->rigid;
 	thug22->model->load(gfx, "media/models/thug22/thug22");
 
+	// Scale down so player closer match to q3 model size
+	thug22->model->aabb[0] *= 0.8f;
+	thug22->model->aabb[1] *= 0.8f;
+	thug22->model->aabb[2] *= 0.8f;
+	thug22->model->aabb[3] *= 0.8f;
+	thug22->model->aabb[4] *= 0.8f;
+	thug22->model->aabb[5] *= 0.8f;
+	thug22->model->aabb[6] *= 0.8f;
+	thug22->model->aabb[7] *= 0.8f;
+
+
+
 	rocket = new Entity();
 	rocket->rigid = new RigidBody(rocket);
 	rocket->model = rocket->rigid;
