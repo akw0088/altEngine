@@ -233,7 +233,7 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 
 			entity->player->health -= 10;
-			if (entity->player->health <= 0)
+			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 			{
 				char msg[80];
 
@@ -598,7 +598,7 @@ void Quake3::handle_player(int self, input_t &input)
 				}
 
 				entity->player->health -= 15;
-				if (entity->player->health < 0)
+				if (entity->player->health < 0 && entity->player->state != PLAYER_DEAD)
 				{
 					char msg[80];
 
