@@ -2327,16 +2327,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				int self = find_type("player", 0);
 				if (self != -1)
 				{
-					bool ret = false;
-					ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
-					if (ret)
-					{
-						audio.play(entity_list[self]->speaker->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
-					}
+					play_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
 				}
 			}
 
@@ -3952,16 +3943,7 @@ void Engine::chat(char *name, char *msg)
 		int self = find_type("player", 0);
 		if (self != -1)
 		{
-			bool ret = false;
-			ret = select_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
-			if (ret)
-			{
-				audio.play(entity_list[self]->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity_list[self]->player->chat_sound);
-			}
+			play_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
 		}
 	}
 }
@@ -3980,6 +3962,20 @@ bool Engine::select_wave(int source, char *file)
 		{
 			return audio.select_buffer(source, snd_wave[i].buffer);
 		}
+	}
+	return false;
+}
+
+bool Engine::play_wave(int source, char *file)
+{
+	bool ret = select_wave(source, file);
+	if (ret)
+	{
+		audio.play(source);
+	}
+	else
+	{
+		debugf("Unable to find PCM data for %s\n", file);
 	}
 	return false;
 }

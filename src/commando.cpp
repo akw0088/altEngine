@@ -164,15 +164,7 @@ void Commando::handle_player(int self)
 			engine->entity_list[self]->player->health = 125;
 			engine->entity_list[self]->player->holdable_medikit = false;
 			//play medikit sound
-			int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->medikit_sound);
-			if (ret)
-			{
-				engine->audio.play(engine->entity_list[self]->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->medikit_sound);
-			}
+			engine->play_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->medikit_sound);
 			click = false;
 		}
 		if (engine->entity_list[self]->player->holdable_teleporter)
@@ -187,15 +179,7 @@ void Commando::handle_player(int self)
 			if (engine->entity_list[self]->player->click_timer == 0)
 			{
 				engine->entity_list[self]->player->click_timer = (int)(0.5f * TICK_RATE);
-				int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->noitem_sound);
-				if (ret)
-				{
-					engine->audio.play(engine->entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->noitem_sound);
-				}
+				engine->play_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->noitem_sound);
 			}
 			else
 			{
@@ -258,7 +242,7 @@ void Commando::handle_player(int self)
 		int item = -1;
 		float min_distance = FLT_MAX;
 
-		for(unsigned int i = engine->num_player; i < engine->entity_list.size(); i++)
+		for(unsigned int i = engine->max_player; i < engine->entity_list.size(); i++)
 		{
 			if (engine->entity_list[i]->rigid == NULL)
 				continue;
@@ -315,8 +299,7 @@ void Commando::handle_player(int self)
 				if (entity->rigid->move(engine->input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
-					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
-					engine->audio.play(entity->speaker->source);
+					engine->play_wave(entity->speaker->source, entity->player->jump_sound);
 				}
 			}
 		}
@@ -362,13 +345,21 @@ void Commando::handle_player(int self)
 
 	if (entity->player->quad_timer > 0)
 	{
-		if (entity->light == NULL)
+		if (entity->light)
 		{
-			entity->light = new Light(entity, engine->gfx, 999);
-			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
-			entity->light->intensity = 4000.0f;
-			entity->light->attenuation = 0.125f;
+			for (unsigned int i = 0; i < engine->light_list.size(); i++)
+			{
+				if (engine->light_list[i]->entity == entity)
+				{
+					engine->light_list.erase(engine->light_list.begin() + i);
+				}
+			}
 		}
+
+		entity->light = new Light(entity, engine->gfx, 999);
+		entity->light->color = vec3(0.0f, 0.0f, 1.0f);
+		entity->light->intensity = 4000.0f;
+		entity->light->attenuation = 0.125f;
 		entity->player->quad_timer--;
 	}
 	else
@@ -421,15 +412,7 @@ void Commando::handle_player(int self)
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				int ret = engine->select_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->regen_bump_sound);
-				if (ret)
-				{
-					engine->audio.play(engine->entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", engine->entity_list[self]->player->regen_bump_sound);
-				}
+				engine->play_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->regen_bump_sound);
 			}
 
 			if (entity->player->health > 200)
@@ -452,38 +435,27 @@ void Commando::handle_player(int self)
 		}
 	}
 
-	if (entity->rigid->velocity.y > -1.0f && entity->rigid->velocity.y < 1.0f &&
+	if (entity->rigid->on_ground && entity->rigid->gravity == true &&
 		entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
-		entity->rigid->noclip == false && entity->rigid->gravity == true)
+		entity->rigid->noclip == false )
 	{
 
 		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
 		{
-			bool ret = false;
-
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step1_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step1_sound);
 				break;
 			case 1:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step2_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step2_sound);
 				break;
 			case 2:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step3_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step3_sound);
 				break;
 			case 3:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step4_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step4_sound);
 				break;
-			}
-
-			if (ret)
-			{
-				engine->audio.play(entity->player->footstep_source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for footstep sound\n");
 			}
 		}
 	}
@@ -492,16 +464,7 @@ void Commando::handle_player(int self)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			bool ret = engine->select_wave(entity->speaker->source, entity->player->waterin_sound);
-
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for water entry sound\n");
-			}
+			engine->play_wave(entity->speaker->source, entity->player->waterin_sound);
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
@@ -509,16 +472,7 @@ void Commando::handle_player(int self)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			bool ret = engine->select_wave(entity->speaker->source, entity->player->waterout_sound);
-
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for water exit sound\n");
-			}
+			engine->play_wave(entity->speaker->source, entity->player->waterout_sound);
 			entity->rigid->last_water = entity->rigid->water;
 			entity->player->drown_timer = 0;
 		}
@@ -529,27 +483,17 @@ void Commando::handle_player(int self)
 
 		if (entity->player->drown_timer % 125 * 30 == 0)
 		{
-			bool ret = false;
-
 			switch (footstep_num++ % 2)
 			{
 			case 0:
-				ret = engine->select_wave(entity->speaker->source, entity->player->gurp1_sound);
+				engine->play_wave(entity->speaker->source, entity->player->gurp1_sound);
 				break;
 			case 1:
-				ret = engine->select_wave(entity->speaker->source, entity->player->gurp2_sound);
+				engine->play_wave(entity->speaker->source, entity->player->gurp2_sound);
 				break;
 			}
 
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-				entity->player->health -= 15;
-			}
-			else
-			{
-				debugf("Failed to find PCM data for water exit sound\n");
-			}
+			entity->player->health -= 15;
 		}
 	}
 
@@ -564,7 +508,7 @@ void Commando::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
+		engine->play_wave(entity->speaker->source, entity->player->gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
@@ -572,13 +516,13 @@ void Commando::player_died(int index)
 		switch (engine->tick_num % 3)
 		{
 		case 0:
-			ret = engine->select_wave(entity->speaker->source, entity->player->death1_sound);
+			engine->play_wave(entity->speaker->source, entity->player->death1_sound);
 			break;
 		case 1:
-			ret = engine->select_wave(entity->speaker->source, entity->player->death2_sound);
+			engine->play_wave(entity->speaker->source, entity->player->death2_sound);
 			break;
 		case 2:
-			ret = engine->select_wave(entity->speaker->source, entity->player->death3_sound);
+			engine->play_wave(entity->speaker->source, entity->player->death3_sound);
 			break;
 		}
 	}
@@ -750,7 +694,7 @@ void Commando::step(int frame_step)
 				float min_distance = FLT_MAX;
 				int index = -1;
 
-				for (unsigned int i = 0; i < engine->num_player; i++)
+				for (unsigned int i = 0; i < engine->max_player; i++)
 				{
 					float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
 
@@ -778,7 +722,7 @@ void Commando::step(int frame_step)
 		}
 
 
-		for (unsigned int i = 0; i < engine->num_player; i++)
+		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
 			Entity *entity = engine->entity_list[i];
 			bool isplayer = (strcmp(entity->type, "player") == 0);
@@ -840,8 +784,7 @@ void Commando::step(int frame_step)
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
 				bot->model->clone(*(engine->box->model));
-				engine->select_wave(bot->speaker->source, bot->player->death1_sound);
-				engine->audio.play(bot->speaker->source);
+				engine->play_wave(bot->speaker->source, bot->player->death1_sound);
 
 				bot->player->respawn();
 				char cmd[80];
@@ -1045,7 +988,7 @@ void Commando::handle_rocketlauncher(Player &player, int self)
 	projectile->trigger->explode_intensity = 500.0f;
 	projectile->trigger->splash_damage = (int)(ROCKET_SPLASH_DAMAGE * quad_factor);
 	projectile->trigger->splash_radius = 250.0f;
-	projectile->trigger->knockback = 250.0f;
+	projectile->trigger->knockback = 750.0f;
 	projectile->trigger->owner = self;
 
 	projectile->num_particle = 5000;
@@ -1063,15 +1006,7 @@ void Commando::handle_rocketlauncher(Player &player, int self)
 	projectile->rigid->angular_velocity = vec3();
 	projectile->rigid->gravity = false;
 
-	bool ret = engine->select_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
-	if (ret)
-	{
-		engine->audio.play(projectile->trigger->loop_source);
-	}
-	else
-	{
-		debugf("Unable to find PCM data for %s\n", projectile->trigger->idle_sound);
-	}
+	engine->play_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
@@ -2179,28 +2114,12 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 		player.entity->speaker->loop_gain(0.25f);
 		if (player.weapon_idle_sound[0] != '\0')
 		{
-			bool ret = engine->select_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
-			if (ret)
-			{
-				engine->audio.play(player.entity->speaker->loop_source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-			}
+			engine->play_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
 		}
 
 		if (player.spawned)
 		{
-			bool ret = engine->select_wave(player.entity->speaker->source, player.weapon_swap_sound);
-			if (ret)
-			{
-				engine->audio.play(player.entity->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-			}
+			engine->play_wave(player.entity->speaker->source, player.weapon_swap_sound);
 		}
 		player.spawned = true;
 		player.last_weapon = player.current_weapon;
@@ -2354,31 +2273,14 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 			{
 				if (once == false)
 				{
-					ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
-
-					if (ret)
-					{
-						engine->audio.play(player.entity->speaker->source);
-					}
-					else
-					{
-						debugf("Failed to find PCM data for %s\n", player.attack_sound);
-					}
+					engine->play_wave(player.entity->speaker->source, player.attack_sound);
 					sprintf(player.weapon_idle_sound, "sound/weapons/lightning/lg_hum.wav");
 
 					engine->audio.stop(player.entity->speaker->loop_source);
 //					player.entity->speaker->loop_gain(0.25f);
 					if (player.weapon_idle_sound[0] != '\0')
 					{
-						bool ret = engine->select_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
-						if (ret)
-						{
-							engine->audio.play(player.entity->speaker->loop_source);
-						}
-						else
-						{
-							debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-						}
+						engine->play_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
 					}
 
 					once = true;
@@ -2386,33 +2288,13 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 			}
 			else
 			{
-				ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
-
-				if (ret)
-				{
-					engine->audio.play(player.entity->speaker->source);
-				}
-				else
-				{
-					debugf("Failed to find PCM data for %s\n", player.attack_sound);
-				}
+				engine->play_wave(player.entity->speaker->source, player.attack_sound);
 			}
 		}
 		else if (empty)
 		{
-			bool ret = false;
-
 			player.reload_timer = 30;
-			ret = engine->select_wave(player.entity->speaker->source, player.empty_sound);
-
-			if (ret)
-			{
-				engine->audio.play(player.entity->speaker->source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for %s\n", player.empty_sound);
-			}
+			engine->play_wave(player.entity->speaker->source, player.empty_sound);
 		}
 	}
 
@@ -2536,7 +2418,7 @@ void Commando::render_hud(double last_frametime)
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
-		for (unsigned int i = 0; i < engine->num_player; i++)
+		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
 			float accuracy = 0.0f;
 
@@ -2596,7 +2478,7 @@ void Commando::render_hud(double last_frametime)
 		}
 	}
 
-	for (unsigned int i = 0; i < engine->num_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		if (strcmp(engine->entity_list[i]->type, "NPC") != 0)
 			continue;
@@ -3249,31 +3131,21 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 
 		entity_list[index]->player->health -= health_damage;
 
-		bool ret = false;
 		switch (engine->tick_num % 4)
 		{
 		case 0:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
 			break;
 		case 1:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
 			break;
 		case 2:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
 			break;
 		case 3:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
 			break;
 		}
-		if (ret)
-		{
-			engine->audio.play(entity_list[index]->speaker->source);
-		}
-		else
-		{
-			debugf("Failed to find PCM data for pain sound\n");
-		}
-
 
 		return;
 	}
@@ -3307,29 +3179,20 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 
 		entity_list[self]->player->health -= health_damage;
 
-		bool ret = false;
 		switch (engine->tick_num % 4)
 		{
 		case 0:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
 			break;
 		case 1:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
 			break;
 		case 2:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
 			break;
 		case 3:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
 			break;
-		}
-		if (ret)
-		{
-			engine->audio.play(entity_list[self]->speaker->source);
-		}
-		else
-		{
-			debugf("Failed to find PCM data for pain sound\n");
 		}
 
 		return;
@@ -3666,15 +3529,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				debugf("Teleporting on entity %d\n", i);
 
 				// Play teleport sound
-				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
-				}
+				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
 				break;
 			}
 		}
@@ -3706,30 +3561,12 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				entity_list[self]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 
 
-				bool ret = false;
-
 				if (index < entity_list.size())
 				{
-					ret = engine->select_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
-					if (ret)
-					{
-						engine->audio.play(entity_list[index]->trigger->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->teleout_sound);
-					}
+					engine->play_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
 				}
 
-				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
-				}
+				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
 
 
 
@@ -3836,16 +3673,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-			ret = engine->select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
-			if (ret)
-			{
-				engine->audio.play(entity_list[player]->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
-			}
-
+			engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 			return;
 		}
 
@@ -3907,15 +3735,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 					entity_list[player]->player->respawn();
 					entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-					ret = engine->select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
-					if (ret)
-					{
-						engine->audio.play(entity_list[player]->speaker->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
-					}
+					engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 					spawned = true;
 					break;
 
@@ -3954,16 +3774,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				//add velocity towards target
 				engine->entity_list[self]->rigid->velocity += dir * 0.4f;
 
-				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->pad_sound);
-				}
-
+				ret = engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
 				break;
 			}
 		}

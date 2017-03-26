@@ -73,6 +73,8 @@ public:
 	void render_players(matrix4 &trans, bool lights);
 
 	bool select_wave(int source, char *file);
+	bool play_wave(int source, char *file);
+
 	void destroy_buffers();
 	void render_to_framebuffer();
 	void handle_input();

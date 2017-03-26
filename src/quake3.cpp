@@ -241,30 +241,11 @@ void Quake3::handle_player(int self, input_t &input)
 				notif_timer = 3 * TICK_RATE;
 			}
 
-
-			//play fall damage sound
-			int ret = engine->select_wave(entity->speaker->source, entity->player->fall_sound);
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity->player->fall_sound);
-			}
+			engine->play_wave(entity->speaker->source, entity->player->fall_sound);
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
-			//play land sound
-			int ret = engine->select_wave(entity->speaker->source, entity->player->land_sound);
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity->player->land_sound);
-			}
+			engine->play_wave(entity->speaker->source, entity->player->land_sound);
 		}
 	}
 
@@ -275,16 +256,7 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			entity->player->health = 125;
 			entity->player->holdable_medikit = false;
-			//play medikit sound
-			int ret = engine->select_wave(entity->speaker->source, entity->player->medikit_sound);
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity->player->medikit_sound);
-			}
+			engine->play_wave(entity->speaker->source, entity->player->medikit_sound);
 			click = false;
 		}
 		if (entity->player->holdable_teleporter)
@@ -299,15 +271,7 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->click_timer == 0)
 			{
 				entity->player->click_timer = (int)(0.5f * TICK_RATE);
-				int ret = engine->select_wave(entity->speaker->source, entity->player->noitem_sound);
-				if (ret)
-				{
-					engine->audio.play(entity->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity->player->noitem_sound);
-				}
+				engine->play_wave(entity->speaker->source, entity->player->noitem_sound);
 			}
 			else
 			{
@@ -431,8 +395,7 @@ void Quake3::handle_player(int self, input_t &input)
 				if (entity->rigid->move(input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
-					engine->select_wave(entity->speaker->source, entity->player->jump_sound);
-					engine->audio.play(entity->speaker->source);
+					engine->play_wave(entity->speaker->source, entity->player->jump_sound);
 				}
 			}
 		}
@@ -547,15 +510,7 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				int ret = engine->select_wave(entity->speaker->source, entity->player->regen_bump_sound);
-				if (ret)
-				{
-					engine->audio.play(entity->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity->player->regen_bump_sound);
-				}
+				engine->play_wave(entity->speaker->source, entity->player->regen_bump_sound);
 			}
 
 			if (entity->player->health > 200)
@@ -585,31 +540,20 @@ void Quake3::handle_player(int self, input_t &input)
 
 		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
 		{
-			bool ret = false;
-
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step1_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step1_sound);
 				break;
 			case 1:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step2_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step2_sound);
 				break;
 			case 2:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step3_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step3_sound);
 				break;
 			case 3:
-				ret = engine->select_wave(entity->player->footstep_source, entity->player->step4_sound);
+				engine->play_wave(entity->player->footstep_source, entity->player->step4_sound);
 				break;
-			}
-
-			if (ret)
-			{
-				engine->audio.play(entity->player->footstep_source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for footstep sound\n");
 			}
 		}
 	}
@@ -618,16 +562,7 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			bool ret = engine->select_wave(entity->speaker->source, entity->player->waterin_sound);
-
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for water entry sound\n");
-			}
+			engine->play_wave(entity->speaker->source, entity->player->waterin_sound);
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
@@ -635,16 +570,7 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			bool ret = engine->select_wave(entity->speaker->source, entity->player->waterout_sound);
-
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for water exit sound\n");
-			}
+			engine->play_wave(entity->speaker->source, entity->player->waterout_sound);
 			entity->rigid->last_water = entity->rigid->water;
 			entity->player->drown_timer = 0;
 		}
@@ -657,28 +583,17 @@ void Quake3::handle_player(int self, input_t &input)
 
 			if (entity->player->drown_timer % 125 * 30 == 0)
 			{
-				bool ret = false;
-
 				switch (footstep_num++ % 2)
 				{
 				case 0:
-					ret = engine->select_wave(entity->speaker->source, entity->player->gurp1_sound);
+					engine->play_wave(entity->speaker->source, entity->player->gurp1_sound);
 					break;
 				case 1:
-					ret = engine->select_wave(entity->speaker->source, entity->player->gurp2_sound);
+					engine->play_wave(entity->speaker->source, entity->player->gurp2_sound);
 					break;
 				}
 
-				if (ret)
-				{
-					engine->audio.play(entity->speaker->source);
-					entity->player->health -= 15;
-				}
-				else
-				{
-					debugf("Failed to find PCM data for water exit sound\n");
-				}
-
+				entity->player->health -= 15;
 				if (entity->player->health < 0)
 				{
 					char msg[80];
@@ -700,11 +615,10 @@ void Quake3::handle_player(int self, input_t &input)
 void Quake3::player_died(int index)
 {
 	Entity *entity = engine->entity_list[index];
-	bool ret = false;
 
 	if (entity->player->health <= -50)
 	{
-		ret = engine->select_wave(entity->speaker->source, entity->player->gibbed_sound);
+		engine->play_wave(entity->speaker->source, entity->player->gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
@@ -712,24 +626,15 @@ void Quake3::player_died(int index)
 		switch (engine->tick_num % 3)
 		{
 		case 0:
-			ret = engine->select_wave(entity->speaker->source, entity->player->death1_sound);
+			engine->play_wave(entity->speaker->source, entity->player->death1_sound);
 			break;
 		case 1:
-			ret = engine->select_wave(entity->speaker->source, entity->player->death2_sound);
+			engine->play_wave(entity->speaker->source, entity->player->death2_sound);
 			break;
 		case 2:
-			ret = engine->select_wave(entity->speaker->source, entity->player->death3_sound);
+			engine->play_wave(entity->speaker->source, entity->player->death3_sound);
 			break;
 		}
-	}
-
-	if (ret)
-	{
-		engine->audio.play(entity->speaker->source);
-	}
-	else
-	{
-		debugf("Failed to find PCM data for death sound\n");
 	}
 
 	drop_weapon(index);
@@ -1020,8 +925,7 @@ void Quake3::step(int frame_step)
 		case BOT_DEAD:
 			engine->zcc.select_animation(1);
 			bot->model->clone(*(engine->box->model));
-			engine->select_wave(bot->speaker->source, bot->player->death1_sound);
-			engine->audio.play(bot->speaker->source);
+			engine->play_wave(bot->speaker->source, bot->player->death1_sound);
 
 			bot->player->respawn();
 			char cmd[80];
@@ -1263,15 +1167,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
 
-		bool ret = engine->select_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
-		if (ret)
-		{
-			engine->audio.play(projectile->trigger->loop_source);
-		}
-		else
-		{
-			debugf("Unable to find PCM data for %s\n", projectile->trigger->idle_sound);
-		}
+		engine->play_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -2362,28 +2258,12 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		player.entity->speaker->loop_gain(0.25f);
 		if (player.weapon_idle_sound[0] != '\0')
 		{
-			bool ret = engine->select_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
-			if (ret)
-			{
-				engine->audio.play(player.entity->speaker->loop_source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-			}
+			engine->play_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
 		}
 
 		if (player.spawned)
 		{
-			bool ret = engine->select_wave(player.entity->speaker->source, player.weapon_swap_sound);
-			if (ret)
-			{
-				engine->audio.play(player.entity->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-			}
+			engine->play_wave(player.entity->speaker->source, player.weapon_swap_sound);
 		}
 		player.spawned = true;
 		player.last_weapon = player.current_weapon;
@@ -2539,31 +2419,14 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			{
 				if (once == false)
 				{
-					ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
-
-					if (ret)
-					{
-						engine->audio.play(player.entity->speaker->source);
-					}
-					else
-					{
-						debugf("Failed to find PCM data for %s\n", player.attack_sound);
-					}
+					engine->play_wave(player.entity->speaker->source, player.attack_sound);
 					sprintf(player.weapon_idle_sound, "sound/weapons/lightning/lg_hum.wav");
 
 					engine->audio.stop(player.entity->speaker->loop_source);
 //					player.entity->speaker->loop_gain(0.25f);
 					if (player.weapon_idle_sound[0] != '\0')
 					{
-						bool ret = engine->select_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
-						if (ret)
-						{
-							engine->audio.play(player.entity->speaker->loop_source);
-						}
-						else
-						{
-							debugf("Unable to find PCM data for %s\n", player.weapon_idle_sound);
-						}
+						engine->play_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
 					}
 
 					once = true;
@@ -2571,16 +2434,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			}
 			else
 			{
-				ret = engine->select_wave(player.entity->speaker->source, player.attack_sound);
-
-				if (ret)
-				{
-					engine->audio.play(player.entity->speaker->source);
-				}
-				else
-				{
-					debugf("Failed to find PCM data for %s\n", player.attack_sound);
-				}
+				engine->play_wave(player.entity->speaker->source, player.attack_sound);
 			}
 		}
 		else if (empty)
@@ -2588,16 +2442,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			bool ret = false;
 
 			player.reload_timer = 30;
-			ret = engine->select_wave(player.entity->speaker->source, player.empty_sound);
-
-			if (ret)
-			{
-				engine->audio.play(player.entity->speaker->source);
-			}
-			else
-			{
-				debugf("Failed to find PCM data for %s\n", player.empty_sound);
-			}
+			engine->play_wave(player.entity->speaker->source, player.empty_sound);
 		}
 	}
 
@@ -3463,31 +3308,21 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		entity_list[index]->player->health -= health_damage;
 
-		bool ret = false;
 		switch (engine->tick_num % 4)
 		{
 		case 0:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
 			break;
 		case 1:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
 			break;
 		case 2:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
 			break;
 		case 3:
-			ret = engine->select_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
+			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
 			break;
 		}
-		if (ret)
-		{
-			engine->audio.play(entity_list[index]->speaker->source);
-		}
-		else
-		{
-			debugf("Failed to find PCM data for pain sound\n");
-		}
-
 
 		return;
 	}
@@ -3524,29 +3359,20 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		entity_list[self]->player->health -= health_damage;
 
-		bool ret = false;
 		switch (engine->tick_num % 4)
 		{
 		case 0:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
 			break;
 		case 1:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
 			break;
 		case 2:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
 			break;
 		case 3:
-			ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
+			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
 			break;
-		}
-		if (ret)
-		{
-			engine->audio.play(entity_list[self]->speaker->source);
-		}
-		else
-		{
-			debugf("Failed to find PCM data for pain sound\n");
 		}
 
 		return;
@@ -3883,15 +3709,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				debugf("Teleporting on entity %d\n", i);
 
 				// Play teleport sound
-				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
-				}
+				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
 				break;
 			}
 		}
@@ -3928,28 +3746,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 				if (index < entity_list.size())
 				{
-					ret = engine->select_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
-					if (ret)
-					{
-						engine->audio.play(entity_list[index]->trigger->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->teleout_sound);
-					}
+					engine->play_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
 				}
 
-				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->telein_sound);
-				}
-
-
+				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
 
 				switch (entity_list[i]->angle)
 				{
@@ -4064,16 +3864,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-			ret = engine->select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
-			if (ret)
-			{
-				engine->audio.play(entity_list[player]->speaker->source);
-			}
-			else
-			{
-				debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
-			}
-
+			engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 			return;
 		}
 
@@ -4135,15 +3926,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					entity_list[player]->player->respawn();
 					entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-					ret = engine->select_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
-					if (ret)
-					{
-						engine->audio.play(entity_list[player]->speaker->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[player]->player->telein_sound);
-					}
+					engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
 					spawned = true;
 					break;
 
@@ -4184,16 +3967,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 
 				entity_list[self]->player->jumppad_timer = TICK_RATE >> 1;
-				ret = engine->select_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[self]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[self]->player->pad_sound);
-				}
-
+				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
 				break;
 			}
 		}
@@ -4856,17 +4630,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (entity_list[i]->speaker && entity_list[i]->rigid->impact_velocity < -3.0f)
 			{
 				entity_list[i]->rigid->hard_impact = false;
-				
-				bool ret = engine->select_wave(entity_list[i]->speaker->source, entity_list[i]->rigid->impact_sound);
-				if (ret)
-				{
-					engine->audio.stop(entity_list[i]->speaker->loop_source);
-					engine->audio.play(entity_list[i]->speaker->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[i]->rigid->impact_sound);
-				}
+				engine->play_wave(entity_list[i]->speaker->source, entity_list[i]->rigid->impact_sound);
 			}
 		}
 
@@ -5002,15 +4766,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					blue_flag_caps++;
 
-					bool ret = engine->select_wave(entity_list[i]->trigger->source, entity_list[self]->player->capture_sound);
-					if (ret)
-					{
-						engine->audio.play(entity_list[i]->trigger->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[self]->player->capture_sound);
-					}
+					bool ret = engine->play_wave(entity_list[i]->trigger->source, entity_list[self]->player->capture_sound);
 
 					if (blue_flag_caps == capturelimit)
 					{
@@ -5030,15 +4786,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					red_flag_caps++;
 
-					bool ret = engine->select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
-					if (ret)
-					{
-						engine->audio.play(entity_list[i]->trigger->source);
-					}
-					else
-					{
-						debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_sound);
-					}
+					engine->play_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
 
 					if (red_flag_caps == capturelimit)
 					{
@@ -5164,16 +4912,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
 
-				bool ret = false;
-				ret = engine->select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
-				if (ret)
-				{
-					engine->audio.play(entity_list[i]->trigger->source);
-				}
-				else
-				{
-					debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->pickup_sound);
-				}
+				engine->play_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
 			}
 		}
 
