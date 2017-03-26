@@ -842,7 +842,7 @@ void Engine::render_scene(bool lights)
 
 	if (emitter.enabled == false)
 	{
-		emitter.position = vec3(0.0f, 10000.0, 0.0f);
+		emitter.position = vec3(0.0f, -10000.0, 0.0f);
 	}
 #endif
 
@@ -2702,22 +2702,26 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("moveup", cmd) == 0)
 	{
 		input.moveup = pressed;
-		k = 3;
+		if (*key != 'w' && *key != 'W')
+			k = 3;
 	}
 	else if (strcmp("moveleft", cmd) == 0)
 	{
 		input.moveleft = pressed;
-		k = 4;
+		if (*key != 'a' && *key != 'A')
+			k = 4;
 	}
 	else if (strcmp("movedown", cmd) == 0)
 	{
 		input.movedown = pressed;
-		k = 5;
+		if (*key != 's' && *key != 'S')
+			k = 5;
 	}
 	else if (strcmp("moveright", cmd) == 0)
 	{
 		input.moveright = pressed;
-		k = 6;
+		if (*key != 'D' && *key != 'D')
+			k = 6;
 	}
 	else if (strcmp("jump", cmd) == 0)
 	{
