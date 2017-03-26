@@ -202,8 +202,11 @@ void Quake3::handle_player(int self, input_t &input)
 {
 	Entity *entity = engine->entity_list[self];
 	static int footstep_num = 0;
-	static int last_tick = 0;
 	static bool zoomed = false;
+#if 0
+	static int last_tick = 0;
+#endif
+
 
 	if (entity->player == NULL)
 		return;
@@ -325,13 +328,11 @@ void Quake3::handle_player(int self, input_t &input)
 			last_tick = 250;
 		}
 	}
-#endif
 
 
 	if (last_tick > 0)
 		last_tick--;
 
-#if 0
 	if (input.pickup)
 	{
 		int item = -1;
@@ -502,11 +503,13 @@ void Quake3::handle_player(int self, input_t &input)
 		entity->rigid->translational_friction = 0.0f;
 	}
 
+	// Stuff that updates every second
 	if (engine->tick_num % TICK_RATE == 0)
 	{
+		blink = !blink;
+
 		if (entity->player->regen_timer > 0 && entity->player->state != PLAYER_DEAD)
 		{
-
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
@@ -537,7 +540,7 @@ void Quake3::handle_player(int self, input_t &input)
 		entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
 		entity->rigid->noclip == false)
 	{
-
+		// Footstep sounds
 		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
 		{
 			switch (footstep_num++ % 4)
@@ -558,6 +561,7 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
+	//Water sounds
 	if (entity->rigid->water && entity->rigid->water_depth < entity->rigid->get_height())
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
@@ -773,11 +777,6 @@ void Quake3::step(int frame_step)
 
 	if (engine->entity_list.size() == 0)
 		return;
-
-	if (frame_step % TICK_RATE == 0)
-	{
-		blink = !blink;
-	}
 
 	if (engine->server_flag == false && engine->client_flag == false && engine->num_bot < num_bot)
 	{
@@ -2939,14 +2938,17 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			sprintf(data, "Health %d", entity->player->health);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red, false, false);
 
-//			sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
-//			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red);
+			if (engine->show_names)
+			{
+				sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red, false, false);
 
-//			if (entity->player->bot_state == BOT_GET_ITEM)
-//			{
-//				sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->type);
-//				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, white);
-//			}
+				if (entity->player->bot_state == BOT_GET_ITEM)
+				{
+					sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->type);
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, white, false, false);
+				}
+			}
 		}
 
 		if (strcmp(entity->type, "func_plat") == 0 || strcmp(entity->type, "func_bobbing") == 0 ||
@@ -3004,8 +3006,6 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 
 	vec3 quad1 = engine->camera_frame.up;
 	vec3 quad2 = vec3::crossproduct(engine->camera_frame.forward, engine->camera_frame.up);
-//	vec3 quad1 = vec3(0.0f, 1.0f, 0.0f);
-//	vec3 quad2 = vec3(0.0f, 0.0f, 1.0f);
 
 
 	engine->particle_render.Select();
@@ -3384,9 +3384,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
 		entity_list[self]->player->health += atoi(data);
-		if (entity_list[self]->player->health > 100)
+		if (entity_list[self]->player->health > 200)
 		{
-			entity_list[self]->player->health = 100;
+			entity_list[self]->player->health = 200;
 		}
 
 		return;
@@ -3741,8 +3741,6 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				entity_list[self]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 				entity_list[self]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 
-
-				bool ret = false;
 
 				if (index < entity_list.size())
 				{
@@ -4225,19 +4223,6 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 		if (strstr(entity_list[i]->type, "trigger_teleport"))
 		{
-			/*
-			int ent = -1;
-
-			for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
-			{
-				if (strstr(entity_list[j]->target_name, entity_list[i]->target))
-				{
-					ent = j;
-					break;
-				}
-			}
-			*/
-
 			// Reset action because of ordering issues
 			sprintf(entity_list[i]->trigger->action, "teleport %s %d", entity_list[i]->target, i);
 		}
