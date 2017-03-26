@@ -122,7 +122,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 	}
 	num_player++;
 
-	for (unsigned int i = engine->num_dynamic; i < entity_list.size(); i++)
+	for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 	{
 		char *type = entity_list[i]->type;
 
@@ -3905,9 +3905,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "target %s\n", data);
 		menu.print(msg);
 
-		for (unsigned int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 		{
-			if (strcmp(entity_list[i]->type, "misc_teleporter_dest"))
+			if (!((strcmp(entity_list[i]->type, "misc_teleporter_dest") == 0) ||
+				(strcmp(entity_list[i]->type, "target_position") == 0)))
 				continue;
 
 			if (!strcmp(entity_list[i]->target_name, data))
@@ -3953,6 +3954,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				switch (entity_list[i]->angle)
 				{
 				case 0:
+				case 45:
+				case 360:
 					matrix4::mat_left(matrix, entity_list[self]->position);
 					break;
 				case 90:
@@ -4441,6 +4444,25 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		if (strstr(entity_list[i]->type, "trigger_push"))
 		{
 			sprintf(entity_list[i]->trigger->action, "push %s", entity_list[i]->target);
+		}
+
+		if (strstr(entity_list[i]->type, "trigger_teleport"))
+		{
+			/*
+			int ent = -1;
+
+			for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
+			{
+				if (strstr(entity_list[j]->target_name, entity_list[i]->target))
+				{
+					ent = j;
+					break;
+				}
+			}
+			*/
+
+			// Reset action because of ordering issues
+			sprintf(entity_list[i]->trigger->action, "teleport %s %d", entity_list[i]->target, i);
 		}
 
 		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||

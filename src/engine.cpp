@@ -26,7 +26,7 @@
 Engine::Engine()
 {
 	initialized = false;
-	num_dynamic = 100;
+	max_dynamic = 100;
 	max_player = 8;
 	cl_skip = 0;
 	show_names = false;
@@ -367,7 +367,7 @@ void Engine::load(char *level)
 
 
 	//First n Entities for dynamic items (Dont allocate any at runtime)
-	for (unsigned int i = 0; i < num_dynamic; i++)
+	for (unsigned int i = 0; i < max_dynamic; i++)
 	{
 		Entity *entity = new Entity();
 		memcpy(entity->type, "free", strlen("free") + 1);
@@ -1026,7 +1026,7 @@ void Engine::render_trails(matrix4 &trans)
 
 
 	//render particle trails first
-	for (unsigned int i = max_player; i < num_dynamic; i++)
+	for (unsigned int i = max_player; i < max_dynamic; i++)
 	{
 		if (entity_list[i]->model == NULL)
 			continue;
@@ -3041,14 +3041,14 @@ void Engine::load_models()
 		return;
 
 
-	for(unsigned int i = num_dynamic; i < entity_list.size(); i++)
+	for(unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		bool loaded = false;
 
 		if (entity_list[i]->model == NULL)
 			continue;
 
-		for(unsigned int j = num_dynamic; j < i; j++)
+		for(unsigned int j = max_dynamic; j < i; j++)
 		{
 			if (entity_list[j]->model == NULL)
 				continue;
@@ -3326,7 +3326,7 @@ int Engine::get_entity()
 	while (1)
 	{
 
-		if (index == num_dynamic)
+		if (index == max_dynamic)
 		{
 			index = max_player;
 			looped++;
@@ -3347,7 +3347,7 @@ int Engine::get_entity()
 		index++;
 	}
 
-	return num_dynamic - 1;
+	return max_dynamic - 1;
 }
 
 int Engine::find_type(char *type, int skip)

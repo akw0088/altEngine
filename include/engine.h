@@ -169,7 +169,7 @@ protected:
 	unsigned int	particle_tex;
 
 	vector<Entity *>	entity_list;
-	unsigned int	num_dynamic;
+	unsigned int	max_dynamic;
 	unsigned int	max_player;
 
 	vector<Light *>		light_list;
