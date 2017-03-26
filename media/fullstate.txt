@@ -1,5 +1,5 @@
 state 0 down		1 "null"
-state 0 enter		4 "null"
+state 0 enter		133 "null"
 
 state 1 up		0 "null"
 state 1 enter		14 "null"
@@ -12,6 +12,7 @@ state 3 up		2 "null"
 state 3 enter		3 "quit"
 
 
+state 4 up		133 "null"
 state 4 down		5 "null"
 state 4 enter		4 "map maps/q3ctf1.bsp"
 state 4 next		7 "null"
@@ -157,10 +158,15 @@ state 132 down		18 "null"
 state 132 enter		0 "map maps/q3dm19.bsp"
 state 132 next		7 "null"
 
+state 133 up		18 "null"
+state 133 down		4 "null"
+state 133 enter		0 "map maps/q3dm0.bsp"
+state 133 next		7 "null"
+
 
 
 state 18 up		132 "null"
-state 18 down		18 "null"
+state 18 down		133 "null"
 state 18 enter		0 "null"
 state 18 next		7 "null"
 
