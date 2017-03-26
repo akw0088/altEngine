@@ -3264,6 +3264,42 @@ void Engine::load_model(Entity &ent)
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
+	else if (strcmp(ent.type, "info_player_deathmatch") == 0)
+	{
+		debugf("Loading info_player_deathmatch\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_bluespawn") == 0)
+	{
+		debugf("Loading team_CTF_bluespawn\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_redspawn") == 0)
+	{
+		debugf("Loading team_CTF_redspawn\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_blueplayer") == 0)
+	{
+		debugf("Loading team_CTF_blueplayer\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_redplayer") == 0)
+	{
+		debugf("Loading team_CTF_redplayer\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	
 
 }
 
