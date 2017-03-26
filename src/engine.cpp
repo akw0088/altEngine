@@ -1812,6 +1812,10 @@ void Engine::step(int tick)
 			break;
 
 		int texunit = tex->anim_unit;
+
+		if (tex->freq == 0)
+			continue;
+
 		int ani_index = (tick_num % (TICK_RATE / tex->freq)) % tex->num_anim;
 
 		tex->texObj[texunit] = tex->texObjAnim[ani_index];

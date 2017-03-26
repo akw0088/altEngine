@@ -651,30 +651,44 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 	else
 	{
-		entity->player->drown_timer++;
-
-		if (entity->player->drown_timer % 125 * 30 == 0)
+		if (entity->player->state != PLAYER_DEAD)
 		{
-			bool ret = false;
+			entity->player->drown_timer++;
 
-			switch (footstep_num++ % 2)
+			if (entity->player->drown_timer % 125 * 30 == 0)
 			{
-			case 0:
-				ret = engine->select_wave(entity->speaker->source, entity->player->gurp1_sound);
-				break;
-			case 1:
-				ret = engine->select_wave(entity->speaker->source, entity->player->gurp2_sound);
-				break;
-			}
+				bool ret = false;
 
-			if (ret)
-			{
-				engine->audio.play(entity->speaker->source);
-				entity->player->health -= 15;
-			}
-			else
-			{
-				debugf("Failed to find PCM data for water exit sound\n");
+				switch (footstep_num++ % 2)
+				{
+				case 0:
+					ret = engine->select_wave(entity->speaker->source, entity->player->gurp1_sound);
+					break;
+				case 1:
+					ret = engine->select_wave(entity->speaker->source, entity->player->gurp2_sound);
+					break;
+				}
+
+				if (ret)
+				{
+					engine->audio.play(entity->speaker->source);
+					entity->player->health -= 15;
+				}
+				else
+				{
+					debugf("Failed to find PCM data for water exit sound\n");
+				}
+
+				if (entity->player->health < 0)
+				{
+					char msg[80];
+
+					entity->player->stats.deaths++;
+					sprintf(msg, "%s swallowed too much water\n", entity->player->name);
+					debugf(msg);
+					engine->menu.print_notif(msg);
+					notif_timer = 3 * TICK_RATE;
+				}
 			}
 		}
 	}

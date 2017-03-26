@@ -347,6 +347,23 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			model2 : path/name of model to include (eg: models/mapobjects/pipe/pipe02.md3).
 			*/
 		}
+		else if (strcmp(value, "trigger_hurt") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		else if (strcmp(value, "weapon_bfg") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+		}
 		else if (strcmp(value, "trigger_teleport") == 0)
 		{
 			if (entity.trigger == NULL)
@@ -400,6 +417,46 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
 		}
 		else if (strcmp(value, "misc_model") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "light") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "func_static") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "misc_portal_surface") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "target_remove_powerups") == 0)
 		{
 			if (entity.rigid)
 			{
