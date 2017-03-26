@@ -35,6 +35,9 @@ RigidBody::RigidBody(Entity *entity)
 	rotational_friction = 0.99f;
 	translational_friction_flag = false;
 	translational_friction = 0.99f;
+	ground_friction_flag = false;
+	on_ground = false;
+
 
 	world_tensor.m[0] = 0.0f;
 	world_tensor.m[1] = 0.0f;
@@ -124,6 +127,11 @@ void RigidBody::integrate(float time)
 	angular_velocity = angular_velocity + angular_acceleration * time;
 
 	if (translational_friction_flag || water == true || noclip == true || flight == true)
+	{
+		velocity *= translational_friction; // added translational "friction"
+	}
+
+	if (ground_friction_flag && on_ground)
 	{
 		velocity *= translational_friction; // added translational "friction"
 	}

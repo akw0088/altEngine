@@ -1066,6 +1066,9 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 		projectile->position = camera_frame.pos;
 		camera_frame.set(projectile->model->morientation);
+		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->bsp_leaf = player.entity->bsp_leaf;
+		projectile->bsp_leaf = player.entity->bsp_visible = true;
 
 		projectile->rigid->clone(*(engine->ball->model));
 		projectile->rigid->velocity = camera_frame.forward * -10.0f;
@@ -1130,6 +1133,9 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NT_ROCKET;
 		projectile->position = camera_frame.pos;
+		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->bsp_leaf = player.entity->bsp_leaf;
+		projectile->bsp_leaf = player.entity->bsp_visible = true;
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
@@ -1200,12 +1206,16 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 		projectile->position = camera_frame.pos;
 		camera_frame.set(projectile->model->morientation);
+		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->bsp_leaf = player.entity->bsp_leaf;
+		projectile->bsp_leaf = player.entity->bsp_visible = true;
 
 		projectile->rigid->clone(*(engine->box->model));
 		projectile->rigid->clone(*(engine->pineapple->model));
 		projectile->rigid->velocity = camera_frame.forward * -25.0f;
 		projectile->rigid->angular_velocity = vec3(1.1f, 0.1f, 1.1f);
 		projectile->rigid->gravity = true;
+		projectile->rigid->ground_friction_flag = true;
 		projectile->rigid->rotational_friction_flag = true;
 		//entity->rigid->set_target(*(entity_list[spawn]));
 
@@ -1287,6 +1297,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 	//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		camera_frame.set(projectile->model->morientation);
+		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->bsp_leaf = player.entity->bsp_leaf;
+		projectile->bsp_leaf = player.entity->bsp_visible = true;
 
 		/*
 		projectile->light = new Light(projectile, engine->gfx, 999);
@@ -1402,6 +1415,9 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 		projectile->model->rail_trail = true;
 		camera_frame.set(projectile->model->morientation);
+		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->bsp_leaf = player.entity->bsp_leaf;
+		projectile->bsp_leaf = player.entity->bsp_visible = true;
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
