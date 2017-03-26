@@ -3500,8 +3500,11 @@ void Engine::update_audio()
 
 	if (spawn != -1 && entity_list.size())
 	{
-		audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
-		audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
+		if (entity_list[spawn]->rigid)
+		{
+			audio.listener_velocity((float *)&(entity_list[spawn]->rigid->velocity));
+			audio.listener_orientation((float *)&(entity_list[spawn]->rigid->morientation.m));
+		}
 	}
 
 }
