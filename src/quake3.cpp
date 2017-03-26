@@ -3956,14 +3956,17 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				case 0:
 				case 45:
 				case 360:
+				case 315:
 					matrix4::mat_left(matrix, entity_list[self]->position);
 					break;
 				case 90:
 					matrix4::mat_forward(matrix, entity_list[self]->position);
 					break;
+				case 135:
 				case 180:
 					matrix4::mat_right(matrix, entity_list[self]->position);
 					break;
+				case 225:
 				case 270:
 					matrix4::mat_backward(matrix, entity_list[self]->position);
 					break;
