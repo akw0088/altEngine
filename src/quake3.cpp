@@ -408,7 +408,7 @@ void Quake3::handle_player(int self, input_t &input)
 
 	if (entity->player->health > 0)
 	{
-		if (spectator == false)
+		if (spectator == false || engine->menu.console == false)
 		{
 			// True if jumped
 			if (input.moveup || input.movedown || input.moveleft || input.moveright)
