@@ -1391,6 +1391,9 @@ void Engine::spatial_testing()
 	int leaf_a = -1;
 	int leaf_b = -1;
 
+	// Run this at 5 tims a second
+	if (tick_num % 25 != 0)
+		return;
 
 	if (q3map.vis_test(emitter.position, camera_frame.pos,
 		leaf_a, leaf_b))

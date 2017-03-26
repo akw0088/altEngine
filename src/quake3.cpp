@@ -4601,6 +4601,10 @@ void Quake3::endgame()
 
 void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 {
+	// Run 5 times a second
+	if (engine->tick_num % 25 != 0)
+		return;
+
 	engine->num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
