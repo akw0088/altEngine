@@ -126,6 +126,7 @@ public:
 	bool show_debug;
 	bool show_hud;
 	bool collision_detect_enable;
+	bool demo;
 
 //Game logic
 	BaseGame *game;

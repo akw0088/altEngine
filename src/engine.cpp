@@ -37,6 +37,7 @@ Engine::Engine()
 	collision_detect_enable = true;
 	num_bot = 0;
 	emitter.enabled = false;
+	demo = false;
 
 	memset(&netinfo, 0, sizeof(netinfo));
 
@@ -115,6 +116,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				if (strcmp(hash, "0613b3d4ef05e613a2b470571498690f") == 0)
 				{
 					printf("pak0.pk3 is from Q3A Demo\n");
+					demo = true;
 				}
 				else
 				{
@@ -234,7 +236,15 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	//audio
 	audio.init();
 	menu.init(&gfx, &audio, pk3_list, num_pk3);
-	menu.load("media/newmenu.txt", "media/newstate.txt");
+
+	if (demo)
+	{
+		menu.load("media/newmenu.txt", "media/newstate.txt");
+	}
+	else
+	{
+		menu.load("media/fullmenu.txt", "media/fullstate.txt");
+	}
 
 	//net crap
 	sequence = 0;
@@ -2692,18 +2702,22 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("moveup", cmd) == 0)
 	{
 		input.moveup = pressed;
+		k = 3;
 	}
 	else if (strcmp("moveleft", cmd) == 0)
 	{
 		input.moveleft = pressed;
+		k = 4;
 	}
 	else if (strcmp("movedown", cmd) == 0)
 	{
 		input.movedown = pressed;
+		k = 5;
 	}
 	else if (strcmp("moveright", cmd) == 0)
 	{
 		input.moveright = pressed;
+		k = 6;
 	}
 	else if (strcmp("jump", cmd) == 0)
 	{
