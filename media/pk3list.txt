@@ -12,3 +12,5 @@ media/zpak000_assets.pk3
 media/teamarenafull.pk3
 media/teamarenademo.pk3
 media/rtcwdemo.pk3
+media/rtcwfull.pk3
+media/q3wpak0.pk3
