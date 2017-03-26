@@ -1160,6 +1160,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 	if (blend_list.size() > 0 && blend_enabled)
 	{
+		mlight2.set_light(1.0f, 1.0f, 0);
 		gfx.DepthFunc("<=");
 		gfx.Blend(true);
 
