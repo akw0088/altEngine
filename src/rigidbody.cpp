@@ -566,7 +566,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	Frame yaw;
 
 	get_frame(camera);
-	vec3	forward = camera.forward;
+//	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
 	bool	jumped = false;
@@ -588,7 +588,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	//prevent walking upward
 	if (noclip == false && flight == false)
 	{
-		forward.y = 0.0f;
+//		forward.y = 0.0f;
 		right.y = 0.0f;
 	}
 

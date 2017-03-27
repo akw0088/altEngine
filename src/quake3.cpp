@@ -1293,7 +1293,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
-			if (i == self)
+			if (i == (unsigned int)self)
 				continue;
 
 			if (engine->entity_list[i]->player && engine->entity_list[i]->bsp_leaf == player.entity->bsp_leaf)
@@ -2476,8 +2476,6 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 
 		if (fired)
 		{
-			bool ret = false;
-
 			player.state = PLAYER_ATTACK;
 			player.stats.shots++;
 
@@ -2530,8 +2528,6 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		}
 		else if (empty)
 		{
-			bool ret = false;
-
 			player.reload_timer = 30;
 			engine->play_wave(player.entity->speaker->source, player.empty_sound);
 		}
@@ -4848,7 +4844,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					blue_flag_caps++;
 
-					bool ret = engine->play_wave(entity_list[i]->trigger->source, entity_list[self]->player->capture_sound);
+					engine->play_wave(entity_list[i]->trigger->source, entity_list[self]->player->capture_sound);
 
 					if (blue_flag_caps == capturelimit)
 					{
