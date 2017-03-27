@@ -571,6 +571,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	bool	moved = false;
 	bool	jumped = false;
 	bool	jumppad = false;
+	bool	ret = false;
 
 
 	vec3 yaw_right;
@@ -659,6 +660,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 			{
 				velocity.y += 3.0f * GRAVITY_SCALE;
 				jump_timer = (int)(TICK_RATE * 0.3f);
+				ret = true;
 			}
 			else
 			{
@@ -681,7 +683,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		velocity.z *= (1.5f * speed_scale / speed);
 	}
 
-	return (jump_timer == 120);
+	return ret;
 }
 
 
