@@ -3779,8 +3779,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 		{
-			if (!((strcmp(entity_list[i]->type, "misc_teleporter_dest") == 0) ||
-				(strcmp(entity_list[i]->type, "target_position") == 0)))
+			if ( !((strcmp(entity_list[i]->type, "misc_teleporter_dest") == 0) ||
+				   (strcmp(entity_list[i]->type, "target_position") == 0) ||
+				   (strcmp(entity_list[i]->type, "target_teleporter") == 0)) )
 				continue;
 
 			if (!strcmp(entity_list[i]->target_name, data))
