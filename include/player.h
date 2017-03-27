@@ -129,6 +129,41 @@ public:
 	char model_name[128];
 	char capture_sound[128];
 
+        char one_min_sound[128];
+        char five_min_sound[128];
+        char one_frag_sound[128];
+        char two_frag_sound[128];
+        char three_frag_sound[128];
+        char blue_lead_sound[128];
+        char red_lead_sound[128];
+        char tied_lead_sound[128];
+        char lost_lead_sound[128];
+        char taken_lead_sound[128];
+        char teams_tied_sound[128];
+
+        char excellent_sound[128];
+        char gauntlet_sound[128];
+        char humiliation_sound[128];
+        char impressive_a_sound[128];
+        char accuracy_sound[128];
+        char excellent_a_sound[128];
+        char frag_sound[128];
+        char impressive_sound[128];
+
+        char prepare_sound[128];
+        char fight_sound[128];
+        char denied_sound[128];
+        char hit_teammate_sound[128];
+
+        char one_sound[128];
+        char two_sound[128];
+        char three_sound[128];
+
+        char hit_sound[128];
+        char perfect_sound[128];
+        char sudden_death_sound[128];
+
+
 	int model_index;
 
 	int health;

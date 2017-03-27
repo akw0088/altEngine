@@ -107,7 +107,41 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	sprintf(telein_sound, "sound/world/telein.wav");
 	sprintf(teleout_sound, "sound/world/teleout.wav");
-	
+
+
+	sprintf(one_min_sound, "sound/feedback/1_minute.wav");
+	sprintf(five_min_sound, "sound/feedback/5_minute.wav");
+	sprintf(one_frag_sound, "sound/feedback/1_frag.wav");
+	sprintf(two_frag_sound, "sound/feedback/2_frags.wav");
+	sprintf(three_frag_sound, "sound/feedback/3_frags.wav");
+	sprintf(blue_lead_sound, "sound/feedback/blueleads.wav");
+	sprintf(red_lead_sound, "sound/feedback/redleads.wav");
+	sprintf(tied_lead_sound, "sound/feedback/tiedlead.wav");
+	sprintf(lost_lead_sound, "sound/feedback/lostlead.wav");
+	sprintf(taken_lead_sound, "sound/feedback/takenlead.wav");
+	sprintf(teams_tied_sound, "sound/feedback/teamstied.wav");
+
+	sprintf(excellent_sound, "sound/feedback/excellent.wav");
+	sprintf(gauntlet_sound, "sound/feedback/gauntlet.wav");
+	sprintf(humiliation_sound, "sound/feedback/humiliation.wav");
+	sprintf(impressive_a_sound, "sound/feedback/impressive_a.wav");
+	sprintf(accuracy_sound, "sound/feedback/accuracy.wav");
+	sprintf(excellent_a_sound, "sound/feedback/excellent_a.wav");
+	sprintf(frag_sound, "sound/feedback/frags.wav");
+	sprintf(impressive_sound, "sound/feedback/impressive.wav");
+
+	sprintf(prepare_sound, "sound/feedback/prepare.wav");
+	sprintf(fight_sound, "sound/feedback/fight.wav");
+	sprintf(denied_sound, "sound/feedback/denied.wav");
+	sprintf(hit_teammate_sound, "sound/feedback/hit_teammate.wav");
+
+	sprintf(one_sound, "sound/feedback/one.wav");
+	sprintf(two_sound, "sound/feedback/two.wav");
+	sprintf(three_sound, "sound/feedback/three.wav");
+
+	sprintf(hit_sound, "sound/feedback/hit.wav");
+	sprintf(perfect_sound, "sound/feedback/perfect.wav");
+	sprintf(sudden_death_sound, "sound/feedback/sudden_death.wav");
 
 
 	// Probably should be global and not tied to player entity
@@ -458,6 +492,152 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
+
+	strcpy(wave.file, "sound/feedback/blueleads.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/redleads.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/tiedlead.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/lostlead.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/takenlead.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/teamstied.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/excellent.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/gauntlet.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/humiliation.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/impressive_a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/accuracy.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/excellent_a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/frags.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/impressive.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/perfect.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/hit.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/hit_teammate.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/sudden_death.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/one.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/two.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/three.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/feedback/denied.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/fight.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/prepare.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/1_minute.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/5_minute.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/1_frag.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/2_frag.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/3_frag.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
 }
 
 
