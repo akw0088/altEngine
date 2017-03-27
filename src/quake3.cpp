@@ -1278,6 +1278,44 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	player.entity->model->get_frame(camera_frame);
 
 
+	if (player.entity->rigid->water && player.entity->rigid->water_depth >= 25.0f)
+	{
+		player.health -= player.ammo_lightning * LIGHTNING_DAMAGE;
+		if (player.health < 0)
+		{
+			char msg[80];
+
+			sprintf(msg, "%s discovered water conducts electricity\n", player.name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
+		}
+
+		for (unsigned int i = 0; i < engine->max_player; i++)
+		{
+			if (i == self)
+				continue;
+
+			if (engine->entity_list[i]->player && engine->entity_list[i]->bsp_leaf == player.entity->bsp_leaf)
+			{
+				Player *enemy = engine->entity_list[i]->player;
+
+				enemy->health -= enemy->ammo_lightning * LIGHTNING_DAMAGE;
+				if (enemy->health < 0)
+				{
+					char msg[80];
+
+					sprintf(msg, "%s was caught up in %s discharge\n", enemy->name, player.name);
+					debugf(msg);
+					engine->menu.print_notif(msg);
+					notif_timer = 3 * TICK_RATE;
+				}
+			}
+		}
+		player.ammo_lightning = 0;
+	}
+
+
 	sprintf(player.attack_sound, "sound/weapons/lightning/lg_fire.wav");
 	player.reload_timer = LIGHTNING_RELOAD;
 	player.ammo_lightning--;
