@@ -639,7 +639,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		if (jumppad == false)
 		{
 			velocity.x *= (MAX_SPEED * speed_scale / speed);
-//			velocity.y *= (MAX_SPEED * speed_scale / speed);
+			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
 			velocity.z *= (MAX_SPEED * speed_scale / speed);
 		}
 	}
@@ -653,10 +653,17 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (moved)
 	{
-		if (on_ground && jumped && jump_timer == 0)
+		if ((on_ground && jumped && jump_timer == 0) || (water && water_depth >= 5.0f && jumped))
 		{
-			velocity.y += 3.0f * GRAVITY_SCALE;
-			jump_timer = (int)(TICK_RATE * 0.3f);
+			if (water_depth <= 5)
+			{
+				velocity.y += 3.0f * GRAVITY_SCALE;
+				jump_timer = (int)(TICK_RATE * 0.3f);
+			}
+			else
+			{
+				velocity.y += ACCEL * speed_scale;
+			}
 		}
 	}
 	else
@@ -664,6 +671,14 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		// deceleration
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
+	}
+
+	// Speed up water movement due to additional deceleration friction
+	if (water_depth >= 2.0f && water)
+	{
+		velocity.x *= (1.5f * speed_scale / speed);
+		velocity.y *= (1.2f * speed_scale / speed);
+		velocity.z *= (1.5f * speed_scale / speed);
 	}
 
 	return (jump_timer == 120);
