@@ -56,6 +56,10 @@ typedef struct
 	int deaths;
 	int hits;
 	int shots;
+	int medal_accuracy;
+	int medal_excellent;
+	int medal_frags;
+	int medal_humiliation;
 } stats_t;
 
 
@@ -196,6 +200,8 @@ public:
 	unsigned int invisibility_timer;
 	unsigned int jumppad_timer;
 	unsigned int teleport_timer; // prevent teleporting out and back rapidly
+	unsigned int accuracy_timer;
+	unsigned int excellent_timer;
 
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon

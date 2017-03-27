@@ -164,6 +164,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	reload_timer = 0;
 	invisibility_timer = 0;
 	jumppad_timer = 0;
+	accuracy_timer = 0;
+	excellent_timer = 0;
 	teleport_timer = 0;
 	click_timer = 0;
 

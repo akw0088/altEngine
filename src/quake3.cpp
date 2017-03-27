@@ -1526,6 +1526,19 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 					sprintf(word, "%s", "killed");
 
 
+				if (player.accuracy_timer)
+				{
+					player.stats.medal_accuracy++;
+					engine->play_wave(player.entity->trigger->source, "sound/feedback/accuracy.wav");
+				}
+
+				if (player.excellent_timer)
+				{
+					player.stats.medal_excellent++;
+					engine->play_wave(player.entity->trigger->source, "sound/feedback/excellent.wav");
+				}
+				player.accuracy_timer = 3 * TICK_RATE;
+				player.excellent_timer = 3 * TICK_RATE;
 				sprintf(msg, "%s %s %s with a railgun\n", player.name,
 					word,
 					engine->entity_list[index[i]]->player->name);
