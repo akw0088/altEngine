@@ -14,3 +14,6 @@ media/teamarenademo.pk3
 media/rtcwdemo.pk3
 media/rtcwfull.pk3
 media/q3wpak0.pk3
+media/pak1-maps.pk3
+media/openarena.pk3
+media/obiq1dm3.pk3

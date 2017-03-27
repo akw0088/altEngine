@@ -157,14 +157,14 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->model->load(gfx, "media/models/thug22/thug22");
 
 	// Scale down so player closer match to q3 model size
-	thug22->model->aabb[0] *= 0.8f;
-	thug22->model->aabb[1] *= 0.8f;
-	thug22->model->aabb[2] *= 0.8f;
-	thug22->model->aabb[3] *= 0.8f;
-	thug22->model->aabb[4] *= 0.8f;
-	thug22->model->aabb[5] *= 0.8f;
-	thug22->model->aabb[6] *= 0.8f;
-	thug22->model->aabb[7] *= 0.8f;
+	thug22->model->aabb[0] *= 0.7f;
+	thug22->model->aabb[1] *= 0.7f;
+	thug22->model->aabb[2] *= 0.7f;
+	thug22->model->aabb[3] *= 0.7f;
+	thug22->model->aabb[4] *= 0.7f;
+	thug22->model->aabb[5] *= 0.7f;
+	thug22->model->aabb[6] *= 0.7f;
+	thug22->model->aabb[7] *= 0.7f;
 
 
 
