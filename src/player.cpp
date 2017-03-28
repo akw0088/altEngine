@@ -54,6 +54,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	Player::team = team;
 
+	global_source = audio.create_source(false, true);
+
 	zoom_level = 4.0;
 
 	path.path = new int[NUM_PATH];
@@ -164,10 +166,11 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	reload_timer = 0;
 	invisibility_timer = 0;
 	jumppad_timer = 0;
-	accuracy_timer = 0;
 	excellent_timer = 0;
 	teleport_timer = 0;
 	click_timer = 0;
+
+	accuracy_count = 0;
 
 
 	flash_machinegun = 0;
@@ -631,12 +634,12 @@ void Player::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/feedback/2_frag.wav");
+	strcpy(wave.file, "sound/feedback/2_frags.wav");
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);
 
-	strcpy(wave.file, "sound/feedback/3_frag.wav");
+	strcpy(wave.file, "sound/feedback/3_frags.wav");
 	audio.load(wave);
 	if (wave.data != NULL)
 		snd_wave.push_back(wave);

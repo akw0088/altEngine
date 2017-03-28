@@ -56,7 +56,9 @@ public:
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 	void endgame();
 
-	int		timelimit;
+	unsigned int		timelimit;
+	unsigned int		round_time;
+
 	unsigned int weapon_switch_timer;
 	~Quake3()
 	{

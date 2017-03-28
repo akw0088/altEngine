@@ -654,18 +654,11 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (moved)
 	{
-		if ((on_ground && jumped && jump_timer == 0) || (water && water_depth >= 5.0f && jumped))
+		if ((on_ground && jumped && jump_timer == 0) || (water && water_depth <= 5.0f && jumped))
 		{
-			if (water_depth <= 5)
-			{
-				velocity.y += 3.0f * GRAVITY_SCALE;
-				jump_timer = (int)(TICK_RATE * 0.3f);
-				ret = true;
-			}
-			else
-			{
-				velocity.y += ACCEL * speed_scale;
-			}
+			velocity.y += 3.0f * GRAVITY_SCALE;
+			jump_timer = (int)(TICK_RATE * 0.3f);
+			ret = true;
 		}
 	}
 	else

@@ -46,6 +46,7 @@ Quake3::Quake3()
 	notif_timer = 0;
 	fraglimit = 10;
 	timelimit = 0;
+	round_time = 0;
 	capturelimit = 8;
 	weapon_switch_timer = 0;
 
@@ -210,6 +211,10 @@ void Quake3::handle_player(int self, input_t &input)
 
 	if (entity->player == NULL)
 		return;
+
+	if (entity->player->excellent_timer > 0)
+		entity->player->excellent_timer--;
+
 
 
 	if (input.zoom == true && zoomed == false)
@@ -507,6 +512,16 @@ void Quake3::handle_player(int self, input_t &input)
 	if (engine->tick_num % TICK_RATE == 0)
 	{
 		blink = !blink;
+		round_time++;
+
+		if (timelimit * 60 - round_time == 60)
+		{
+			engine->play_wave(entity->speaker->source, entity->player->one_min_sound);
+		}
+		else if (timelimit * 60 - round_time == 60 * 5)
+		{
+			engine->play_wave(entity->speaker->source, entity->player->five_min_sound);
+		}
 
 		if (entity->player->regen_timer > 0 && entity->player->state != PLAYER_DEAD)
 		{
@@ -1416,6 +1431,18 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 					endgame();
 					return;
 				}
+				else if (fraglimit - player.stats.kills == 1)
+				{
+					engine->play_wave(player.global_source, player.one_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 2)
+				{
+					engine->play_wave(player.global_source, player.two_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 3)
+				{
+					engine->play_wave(player.global_source, player.three_frag_sound);
+				}
 
 			}
 		}
@@ -1493,6 +1520,10 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 			quad_factor = QUAD_FACTOR;
 
 		engine->hitscan(player.entity->position, forward, index, num_index, self);
+		if (num_index == 0)
+			player.accuracy_count = 0;
+
+
 		for (int i = 0; i < num_index; i++)
 		{
 			char cmd[80] = { 0 };
@@ -1525,19 +1556,20 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				else
 					sprintf(word, "%s", "killed");
 
+				player.accuracy_count++;
 
-				if (player.accuracy_timer)
+				if (player.accuracy_count > 1)
 				{
 					player.stats.medal_accuracy++;
-					engine->play_wave(player.entity->trigger->source, "sound/feedback/accuracy.wav");
+					engine->play_wave(player.global_source, "sound/feedback/accuracy.wav");
 				}
 
-				if (player.excellent_timer)
+				if (player.excellent_timer > 0)
 				{
 					player.stats.medal_excellent++;
-					engine->play_wave(player.entity->trigger->source, "sound/feedback/excellent.wav");
+					engine->play_wave(player.global_source, "sound/feedback/excellent.wav");
 				}
-				player.accuracy_timer = 3 * TICK_RATE;
+
 				player.excellent_timer = 3 * TICK_RATE;
 				sprintf(msg, "%s %s %s with a railgun\n", player.name,
 					word,
@@ -1550,6 +1582,18 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				{
 					endgame();
 					return;
+				}
+				else if (fraglimit - player.stats.kills == 1)
+				{
+					engine->play_wave(player.global_source, player.one_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 2)
+				{
+					engine->play_wave(player.global_source, player.two_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 3)
+				{
+					engine->play_wave(player.global_source, player.three_frag_sound);
 				}
 			}
 		}
@@ -1665,6 +1709,19 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 					endgame();
 					return;
 				}
+				else if (fraglimit - player.stats.kills == 1)
+				{
+					engine->play_wave(player.global_source, player.one_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 2)
+				{
+					engine->play_wave(player.global_source, player.two_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 3)
+				{
+					engine->play_wave(player.global_source, player.three_frag_sound);
+				}
+
 			}
 		}
 	}
@@ -1788,6 +1845,18 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 				{
 					endgame();
 					return;
+				}
+				else if (fraglimit - player.stats.kills == 1)
+				{
+					engine->play_wave(player.global_source, player.one_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 2)
+				{
+					engine->play_wave(player.global_source, player.two_frag_sound);
+				}
+				else if (fraglimit - player.stats.kills == 3)
+				{
+					engine->play_wave(player.global_source, player.three_frag_sound);
 				}
 			}
 		}
@@ -2492,6 +2561,9 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			player.state = PLAYER_ATTACK;
 			player.stats.shots++;
 
+			if (player.current_weapon != WEAPON_RAILGUN)
+				player.accuracy_count = 0;
+
 			switch (player.current_weapon)
 			{
 			case wp_machinegun:
@@ -2545,7 +2617,6 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			engine->play_wave(player.entity->speaker->source, player.empty_sound);
 		}
 	}
-
 
 }
 
@@ -4703,8 +4774,8 @@ void Quake3::endgame()
 
 void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 {
-	// Run 5 times a second
-	if (engine->tick_num % 25 != 0)
+	// Run ~20 times a second
+	if (engine->tick_num % 6 != 0)
 		return;
 
 	engine->num_light = 0;
@@ -4863,6 +4934,15 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					{
 						endgame();
 					}
+					else if (blue_flag_caps == red_flag_caps)
+					{
+						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->teams_tied_sound);
+					}
+					else if (blue_flag_caps > red_flag_caps)
+					{
+						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->blue_lead_sound);
+					}
+
 				}
 				continue;
 			}
@@ -4882,6 +4962,14 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					if (red_flag_caps == capturelimit)
 					{
 						endgame();
+					}
+					else if (blue_flag_caps == red_flag_caps)
+					{
+						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->teams_tied_sound);
+					}
+					else if (blue_flag_caps < red_flag_caps)
+					{
+						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->red_lead_sound);
 					}
 				}
 				continue;
@@ -4988,6 +5076,18 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						{
 							endgame();
 							return;
+						}
+						else if (fraglimit - entity_list[owner]->player->stats.kills == 1)
+						{
+							engine->play_wave(entity_list[owner]->player->global_source, entity_list[owner]->player->one_frag_sound);
+						}
+						else if (fraglimit - entity_list[owner]->player->stats.kills == 2)
+						{
+							engine->play_wave(entity_list[owner]->player->global_source, entity_list[owner]->player->two_frag_sound);
+						}
+						else if (fraglimit - entity_list[owner]->player->stats.kills == 3)
+						{
+							engine->play_wave(entity_list[owner]->player->global_source, entity_list[owner]->player->three_frag_sound);
 						}
 					}
 				}
