@@ -50,8 +50,8 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++
-#CC := gcc
+#CPP := g++ -fuse-linker-plugin
+#CC := gcc -fuse-linker-plugin
 CPP := clang++
 CC := clang
 
@@ -68,8 +68,8 @@ CC := clang
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-altEngine: CFLAGS := -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
-altEngine_dedicated: CFLAGS := -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -g -pg -march=native
+altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
+altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal -lrt
 LIBS := -L/usr/X11R6/lib/ 
