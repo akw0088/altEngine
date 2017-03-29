@@ -164,7 +164,7 @@ void Commando::handle_player(int self)
 			engine->entity_list[self]->player->health = 125;
 			engine->entity_list[self]->player->holdable_medikit = false;
 			//play medikit sound
-			engine->play_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->medikit_sound);
+			engine->play_wave(engine->entity_list[self]->speaker->source, medikit_sound);
 			click = false;
 		}
 		if (engine->entity_list[self]->player->holdable_teleporter)
@@ -179,7 +179,7 @@ void Commando::handle_player(int self)
 			if (engine->entity_list[self]->player->click_timer == 0)
 			{
 				engine->entity_list[self]->player->click_timer = (int)(0.5f * TICK_RATE);
-				engine->play_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->noitem_sound);
+				engine->play_wave(engine->entity_list[self]->speaker->source, noitem_sound);
 			}
 			else
 			{
@@ -412,7 +412,7 @@ void Commando::handle_player(int self)
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				engine->play_wave(engine->entity_list[self]->speaker->source, engine->entity_list[self]->player->regen_bump_sound);
+				engine->play_wave(engine->entity_list[self]->speaker->source, regen_bump_sound);
 			}
 
 			if (entity->player->health > 200)
@@ -445,16 +445,16 @@ void Commando::handle_player(int self)
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				engine->play_wave(entity->player->footstep_source, entity->player->step1_sound);
+				engine->play_wave(entity->player->footstep_source, step1_sound);
 				break;
 			case 1:
-				engine->play_wave(entity->player->footstep_source, entity->player->step2_sound);
+				engine->play_wave(entity->player->footstep_source, step2_sound);
 				break;
 			case 2:
-				engine->play_wave(entity->player->footstep_source, entity->player->step3_sound);
+				engine->play_wave(entity->player->footstep_source, step3_sound);
 				break;
 			case 3:
-				engine->play_wave(entity->player->footstep_source, entity->player->step4_sound);
+				engine->play_wave(entity->player->footstep_source, step4_sound);
 				break;
 			}
 		}
@@ -464,7 +464,7 @@ void Commando::handle_player(int self)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, entity->player->waterin_sound);
+			engine->play_wave(entity->speaker->source, waterin_sound);
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
@@ -472,7 +472,7 @@ void Commando::handle_player(int self)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, entity->player->waterout_sound);
+			engine->play_wave(entity->speaker->source, waterout_sound);
 			entity->rigid->last_water = entity->rigid->water;
 			entity->player->drown_timer = 0;
 		}
@@ -486,10 +486,10 @@ void Commando::handle_player(int self)
 			switch (footstep_num++ % 2)
 			{
 			case 0:
-				engine->play_wave(entity->speaker->source, entity->player->gurp1_sound);
+				engine->play_wave(entity->speaker->source, gurp1_sound);
 				break;
 			case 1:
-				engine->play_wave(entity->speaker->source, entity->player->gurp2_sound);
+				engine->play_wave(entity->speaker->source, gurp2_sound);
 				break;
 			}
 
@@ -508,7 +508,7 @@ void Commando::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		engine->play_wave(entity->speaker->source, entity->player->gibbed_sound);
+		engine->play_wave(entity->speaker->source, gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
@@ -2119,7 +2119,7 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 
 		if (player.spawned)
 		{
-			engine->play_wave(player.entity->speaker->source, player.weapon_swap_sound);
+			engine->play_wave(player.entity->speaker->source, weapon_swap_sound);
 		}
 		player.spawned = true;
 		player.last_weapon = player.current_weapon;
@@ -2294,7 +2294,7 @@ void Commando::handle_weapons(Player &player, input_t &input, int self)
 		else if (empty)
 		{
 			player.reload_timer = 30;
-			engine->play_wave(player.entity->speaker->source, player.empty_sound);
+			engine->play_wave(player.entity->speaker->source, empty_sound);
 		}
 	}
 
@@ -3529,7 +3529,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				debugf("Teleporting on entity %d\n", i);
 
 				// Play teleport sound
-				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
+				engine->play_wave(entity_list[self]->speaker->source, telein_sound);
 				break;
 			}
 		}
@@ -3563,10 +3563,10 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 
 				if (index < entity_list.size())
 				{
-					engine->play_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
+					engine->play_wave(entity_list[index]->trigger->source, teleout_sound);
 				}
 
-				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
+				engine->play_wave(entity_list[self]->speaker->source, telein_sound);
 
 
 
@@ -3673,7 +3673,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-			engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
+			engine->play_wave(entity_list[player]->speaker->source, telein_sound);
 			return;
 		}
 
@@ -3735,7 +3735,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 					entity_list[player]->player->respawn();
 					entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-					engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
+					engine->play_wave(entity_list[player]->speaker->source, telein_sound);
 					spawned = true;
 					break;
 
@@ -3774,7 +3774,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				//add velocity towards target
 				engine->entity_list[self]->rigid->velocity += dir * 0.4f;
 
-				ret = engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
+				ret = engine->play_wave(entity_list[self]->speaker->source, pad_sound);
 				break;
 			}
 		}

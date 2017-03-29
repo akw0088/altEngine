@@ -1,4 +1,7 @@
+#ifndef TYPES_H
+#define TYPES_H
 typedef unsigned int uint;
+
 
 #ifndef WIN32
 typedef char byte;
@@ -552,3 +555,7 @@ typedef struct
         int length;
         int pos;
 } rletable_t;
+
+
+// Player sound sets
+#endif

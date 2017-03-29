@@ -3,6 +3,8 @@
 #ifndef QUAKE3_H
 #define QUAKE3_H
 
+
+
 class Quake3 : public BaseGame
 {
 public:
@@ -37,6 +39,7 @@ public:
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);
 	void load_icon();
+	void load_sounds(Audio &audio, std::vector<wave_t> &snd_wave);
 
 
 	void make_dynamic_ent(nettype_t item, int ent_id);
@@ -56,10 +59,10 @@ public:
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 	void endgame();
 
-	unsigned int		timelimit;
-	unsigned int		round_time;
-
 	unsigned int weapon_switch_timer;
+
+
+
 	~Quake3()
 	{
 	};
@@ -78,14 +81,92 @@ private:
 	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
 	bool spectator;
+	bool warmup;
 
 
+	unsigned int		timelimit;
+	unsigned int		round_time;
+	unsigned int		warmup_time;
 
 	unsigned int num_player;
 	unsigned int num_player_blue;
 	unsigned int num_player_red;
-
 	unsigned int spectator_timer;
+	unsigned int global_source;
+
+
+	bool played_one_frag;
+	bool played_two_frag;
+	bool played_three_frag;
+
+
+
+	char empty_sound[128];
+	char pad_sound[128];
+	char land_sound[128];
+	char weapon_swap_sound[128];
+	char medikit_sound[128];
+	char noitem_sound[128];
+	char regen_bump_sound[128];
+
+	char step1_sound[128];
+	char step2_sound[128];
+	char step3_sound[128];
+	char step4_sound[128];
+
+	char waterin_sound[128];
+	char waterout_sound[128];
+
+	char telein_sound[128];
+	char teleout_sound[128];
+
+	char gurp1_sound[128];
+	char gurp2_sound[128];
+
+	char gibbed_sound[128];
+	char gibimpact1_sound[128];
+	char gibimpact2_sound[128];
+	char gibimpact3_sound[128];
+
+	char chat_sound[128];
+	char capture_sound[128];
+
+	char one_min_sound[128];
+	char five_min_sound[128];
+
+	char one_frag_sound[128];
+	char two_frag_sound[128];
+	char three_frag_sound[128];
+
+	char blue_lead_sound[128];
+	char red_lead_sound[128];
+	char teams_tied_sound[128];
+
+	char tied_lead_sound[128];
+	char lost_lead_sound[128];
+	char taken_lead_sound[128];
+
+	char excellent_sound[128];
+	char gauntlet_sound[128];
+	char humiliation_sound[128];
+	char impressive_a_sound[128];
+	char accuracy_sound[128];
+	char excellent_a_sound[128];
+	char frag_sound[128];
+	char impressive_sound[128];
+
+	char prepare_sound[128];
+	char fight_sound[128];
+	char denied_sound[128];
+	char hit_teammate_sound[128];
+
+	char one_sound[128];
+	char two_sound[128];
+	char three_sound[128];
+
+	char hit_sound[128];
+	char perfect_sound[128];
+	char sudden_death_sound[128];
 };
 
 #endif

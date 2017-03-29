@@ -34,18 +34,22 @@
 
 
 extern char bot_state_name[16][80];
+extern const char *models[23];
+
 
 Quake3::Quake3()
 {
 	blink = false;
 	spectator = false;
+	warmup = true;
 	gametype = GAMETYPE_CTF;
 	last_spawn = 0;
 	spectator_timer = 0;
 	chat_timer = 0;
 	notif_timer = 0;
 	fraglimit = 10;
-	timelimit = 0;
+	timelimit = 10;
+	warmup_time = 30;
 	round_time = 0;
 	capturelimit = 8;
 	weapon_switch_timer = 0;
@@ -53,6 +57,11 @@ Quake3::Quake3()
 	num_player = 0;
 	num_player_red = 0;
 	num_player_blue = 0;
+
+	played_one_frag = false;
+	played_two_frag = false;
+	played_three_frag = false;
+
 }
 
 void Quake3::init(Engine *altEngine)
@@ -64,12 +73,93 @@ void Quake3::init(Engine *altEngine)
 
 	load_icon();
 	create_icon();
+
+	global_source = engine->audio.create_source(false, true);
+
+	sprintf(land_sound, "sound/player/land1.wav");
+	sprintf(pad_sound, "sound/world/jumppad.wav");
+
+	sprintf(empty_sound, "sound/weapons/noammo.wav");
+	sprintf(weapon_swap_sound, "sound/weapons/change.wav");
+
+	sprintf(medikit_sound, "sound/items/use_medkit.wav");
+	sprintf(noitem_sound, "sound/items/use_nothing.wav");
+	sprintf(regen_bump_sound, "sound/items/regen.wav");
+
+
+	sprintf(step1_sound, "sound/player/footsteps/step1.wav");
+	sprintf(step2_sound, "sound/player/footsteps/step2.wav");
+	sprintf(step3_sound, "sound/player/footsteps/step3.wav");
+	sprintf(step4_sound, "sound/player/footsteps/step4.wav");
+
+	sprintf(waterin_sound, "sound/player/watr_in.wav");
+	sprintf(waterout_sound, "sound/player/watr_out.wav");
+
+	sprintf(gurp1_sound, "sound/player/gurp1.wav");
+	sprintf(gurp2_sound, "sound/player/gurp2.wav");
+
+	sprintf(gibbed_sound, "sound/player/gibsplt1.wav");
+	sprintf(gibimpact1_sound, "sound/player/gibimp1.wav");
+	sprintf(gibimpact2_sound, "sound/player/gibimp2.wav");
+	sprintf(gibimpact3_sound, "sound/player/gibimp3.wav");
+
+
+	sprintf(telein_sound, "sound/world/telein.wav");
+	sprintf(teleout_sound, "sound/world/teleout.wav");
+
+
+	sprintf(one_min_sound, "sound/feedback/1_minute.wav");
+	sprintf(five_min_sound, "sound/feedback/5_minute.wav");
+	sprintf(one_frag_sound, "sound/feedback/1_frag.wav");
+	sprintf(two_frag_sound, "sound/feedback/2_frags.wav");
+	sprintf(three_frag_sound, "sound/feedback/3_frags.wav");
+	sprintf(blue_lead_sound, "sound/feedback/blueleads.wav");
+	sprintf(red_lead_sound, "sound/feedback/redleads.wav");
+	sprintf(tied_lead_sound, "sound/feedback/tiedlead.wav");
+	sprintf(lost_lead_sound, "sound/feedback/lostlead.wav");
+	sprintf(taken_lead_sound, "sound/feedback/takenlead.wav");
+	sprintf(teams_tied_sound, "sound/feedback/teamstied.wav");
+
+	sprintf(excellent_sound, "sound/feedback/excellent.wav");
+	sprintf(gauntlet_sound, "sound/feedback/gauntlet.wav");
+	sprintf(humiliation_sound, "sound/feedback/humiliation.wav");
+	sprintf(impressive_a_sound, "sound/feedback/impressive_a.wav");
+	sprintf(accuracy_sound, "sound/feedback/accuracy.wav");
+	sprintf(excellent_a_sound, "sound/feedback/excellent_a.wav");
+	sprintf(frag_sound, "sound/feedback/frags.wav");
+	sprintf(impressive_sound, "sound/feedback/impressive.wav");
+
+	sprintf(prepare_sound, "sound/feedback/prepare.wav");
+	sprintf(fight_sound, "sound/feedback/fight.wav");
+	sprintf(denied_sound, "sound/feedback/denied.wav");
+	sprintf(hit_teammate_sound, "sound/feedback/hit_teammate.wav");
+
+	sprintf(one_sound, "sound/feedback/one.wav");
+	sprintf(two_sound, "sound/feedback/two.wav");
+	sprintf(three_sound, "sound/feedback/three.wav");
+
+	sprintf(hit_sound, "sound/feedback/hit.wav");
+	sprintf(perfect_sound, "sound/feedback/perfect.wav");
+	sprintf(sudden_death_sound, "sound/feedback/sudden_death.wav");
+
+
+	// Probably should be global and not tied to player entity
+	sprintf(chat_sound, "sound/player/talk.wav");
+
+	sprintf(capture_sound, "sound/teamplay/flagcap_blu.wav");
+
+
+	//sounds/player/watr_un.wav // another water in?
+	//sound/player/fry.wav
+
+
 }
 
 void Quake3::load(gametype_t type)
 {
 	last_spawn = 0;
 	gametype = type;
+	load_sounds(engine->audio, engine->snd_wave);
 }
 
 void Quake3::unload()
@@ -253,7 +343,7 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
-			engine->play_wave(entity->speaker->source, entity->player->land_sound);
+			engine->play_wave(entity->speaker->source, land_sound);
 		}
 	}
 
@@ -264,7 +354,7 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			entity->player->health = 125;
 			entity->player->holdable_medikit = false;
-			engine->play_wave(entity->speaker->source, entity->player->medikit_sound);
+			engine->play_wave(entity->speaker->source, medikit_sound);
 			click = false;
 		}
 		if (entity->player->holdable_teleporter)
@@ -279,7 +369,7 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->click_timer == 0)
 			{
 				entity->player->click_timer = (int)(0.5f * TICK_RATE);
-				engine->play_wave(entity->speaker->source, entity->player->noitem_sound);
+				engine->play_wave(entity->speaker->source, noitem_sound);
 			}
 			else
 			{
@@ -511,24 +601,12 @@ void Quake3::handle_player(int self, input_t &input)
 	// Stuff that updates every second
 	if (engine->tick_num % TICK_RATE == 0)
 	{
-		blink = !blink;
-		round_time++;
-
-		if (timelimit * 60 - round_time == 60)
-		{
-			engine->play_wave(entity->speaker->source, entity->player->one_min_sound);
-		}
-		else if (timelimit * 60 - round_time == 60 * 5)
-		{
-			engine->play_wave(entity->speaker->source, entity->player->five_min_sound);
-		}
-
 		if (entity->player->regen_timer > 0 && entity->player->state != PLAYER_DEAD)
 		{
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				engine->play_wave(entity->speaker->source, entity->player->regen_bump_sound);
+				engine->play_wave(entity->speaker->source, regen_bump_sound);
 			}
 
 			if (entity->player->health > 200)
@@ -561,16 +639,16 @@ void Quake3::handle_player(int self, input_t &input)
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				engine->play_wave(entity->player->footstep_source, entity->player->step1_sound);
+				engine->play_wave(entity->player->footstep_source, step1_sound);
 				break;
 			case 1:
-				engine->play_wave(entity->player->footstep_source, entity->player->step2_sound);
+				engine->play_wave(entity->player->footstep_source, step2_sound);
 				break;
 			case 2:
-				engine->play_wave(entity->player->footstep_source, entity->player->step3_sound);
+				engine->play_wave(entity->player->footstep_source, step3_sound);
 				break;
 			case 3:
-				engine->play_wave(entity->player->footstep_source, entity->player->step4_sound);
+				engine->play_wave(entity->player->footstep_source, step4_sound);
 				break;
 			}
 		}
@@ -581,7 +659,7 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, entity->player->waterin_sound);
+			engine->play_wave(entity->speaker->source, waterin_sound);
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
@@ -589,7 +667,7 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, entity->player->waterout_sound);
+			engine->play_wave(entity->speaker->source, waterout_sound);
 			entity->rigid->last_water = entity->rigid->water;
 			entity->player->drown_timer = 0;
 		}
@@ -605,10 +683,10 @@ void Quake3::handle_player(int self, input_t &input)
 				switch (footstep_num++ % 2)
 				{
 				case 0:
-					engine->play_wave(entity->speaker->source, entity->player->gurp1_sound);
+					engine->play_wave(entity->speaker->source, gurp1_sound);
 					break;
 				case 1:
-					engine->play_wave(entity->speaker->source, entity->player->gurp2_sound);
+					engine->play_wave(entity->speaker->source, gurp2_sound);
 					break;
 				}
 
@@ -637,7 +715,7 @@ void Quake3::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		engine->play_wave(entity->speaker->source, entity->player->gibbed_sound);
+		engine->play_wave(entity->speaker->source, gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
@@ -792,6 +870,53 @@ void Quake3::step(int frame_step)
 
 	if (engine->entity_list.size() == 0)
 		return;
+
+	if (frame_step % TICK_RATE == 0)
+	{
+		blink = !blink;
+		round_time++;
+
+
+		if (warmup)
+		{
+			int timeleft = warmup_time - round_time;
+
+			if (timeleft == 3)
+			{
+				engine->play_wave(global_source, three_sound);
+			}
+			else if ( timeleft == 2)
+			{
+				engine->play_wave(global_source, two_sound);
+			}
+			else if (timeleft == 1)
+			{
+				engine->play_wave(global_source, one_sound);
+			}
+			if (warmup_time <= round_time)
+			{
+				warmup = false;
+				console(-1, "reset", engine->menu, engine->entity_list);
+				engine->play_wave(global_source, fight_sound);
+			}
+		}
+		else
+		{
+			if (timelimit * 60 - round_time == 60)
+			{
+				engine->play_wave(global_source, one_min_sound);
+			}
+			else if (timelimit * 60 - round_time == 60 * 5)
+			{
+				engine->play_wave(global_source, five_min_sound);
+			}
+			else if (timelimit * 60 - round_time <= 0)
+			{
+				endgame();
+			}
+		}
+	}
+
 
 	if (engine->server_flag == false && engine->client_flag == false && engine->num_bot < num_bot)
 	{
@@ -1433,15 +1558,15 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				}
 				else if (fraglimit - player.stats.kills == 1)
 				{
-					engine->play_wave(player.global_source, player.one_frag_sound);
+					engine->play_wave(global_source, one_frag_sound);
 				}
 				else if (fraglimit - player.stats.kills == 2)
 				{
-					engine->play_wave(player.global_source, player.two_frag_sound);
+					engine->play_wave(global_source, two_frag_sound);
 				}
 				else if (fraglimit - player.stats.kills == 3)
 				{
-					engine->play_wave(player.global_source, player.three_frag_sound);
+					engine->play_wave(global_source, three_frag_sound);
 				}
 
 			}
@@ -1561,13 +1686,13 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				if (player.accuracy_count > 1)
 				{
 					player.stats.medal_accuracy++;
-					engine->play_wave(player.global_source, "sound/feedback/accuracy.wav");
+					engine->play_wave(global_source, "sound/feedback/accuracy.wav");
 				}
 
 				if (player.excellent_timer > 0)
 				{
 					player.stats.medal_excellent++;
-					engine->play_wave(player.global_source, "sound/feedback/excellent.wav");
+					engine->play_wave(global_source, "sound/feedback/excellent.wav");
 				}
 
 				player.excellent_timer = 3 * TICK_RATE;
@@ -1585,15 +1710,15 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				}
 				else if (fraglimit - player.stats.kills == 1)
 				{
-					engine->play_wave(player.global_source, player.one_frag_sound);
+					engine->play_wave(global_source, one_frag_sound);
 				}
 				else if (fraglimit - player.stats.kills == 2)
 				{
-					engine->play_wave(player.global_source, player.two_frag_sound);
+					engine->play_wave(global_source, two_frag_sound);
 				}
 				else if (fraglimit - player.stats.kills == 3)
 				{
-					engine->play_wave(player.global_source, player.three_frag_sound);
+					engine->play_wave(global_source, three_frag_sound);
 				}
 			}
 		}
@@ -1709,17 +1834,17 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 					endgame();
 					return;
 				}
-				else if (fraglimit - player.stats.kills == 1)
+				else if (fraglimit - player.stats.kills == 1 && played_one_frag == false)
 				{
-					engine->play_wave(player.global_source, player.one_frag_sound);
+					engine->play_wave(global_source, one_frag_sound);
 				}
-				else if (fraglimit - player.stats.kills == 2)
+				else if (fraglimit - player.stats.kills == 2 && played_two_frag == false)
 				{
-					engine->play_wave(player.global_source, player.two_frag_sound);
+					engine->play_wave(global_source, two_frag_sound);
 				}
-				else if (fraglimit - player.stats.kills == 3)
+				else if (fraglimit - player.stats.kills == 3 && played_three_frag == false)
 				{
-					engine->play_wave(player.global_source, player.three_frag_sound);
+					engine->play_wave(global_source, three_frag_sound);
 				}
 
 			}
@@ -1848,15 +1973,15 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 				}
 				else if (fraglimit - player.stats.kills == 1)
 				{
-					engine->play_wave(player.global_source, player.one_frag_sound);
+					engine->play_wave(global_source, one_frag_sound);
 				}
 				else if (fraglimit - player.stats.kills == 2)
 				{
-					engine->play_wave(player.global_source, player.two_frag_sound);
+					engine->play_wave(global_source, two_frag_sound);
 				}
 				else if (fraglimit - player.stats.kills == 3)
 				{
-					engine->play_wave(player.global_source, player.three_frag_sound);
+					engine->play_wave(global_source, three_frag_sound);
 				}
 			}
 		}
@@ -2436,7 +2561,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 
 		if (player.spawned)
 		{
-			engine->play_wave(player.entity->speaker->source, player.weapon_swap_sound);
+			engine->play_wave(player.entity->speaker->source, weapon_swap_sound);
 		}
 		player.spawned = true;
 		player.last_weapon = player.current_weapon;
@@ -2614,7 +2739,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		else if (empty)
 		{
 			player.reload_timer = 30;
-			engine->play_wave(player.entity->speaker->source, player.empty_sound);
+			engine->play_wave(player.entity->speaker->source, empty_sound);
 		}
 	}
 
@@ -2678,6 +2803,20 @@ void Quake3::render_hud(double last_frametime)
 	{
 		if (spawn != -1)
 		{
+			if (warmup)
+			{
+				snprintf(msg, LINE_SIZE, "Warmup: %d", warmup_time - round_time);
+				engine->menu.draw_text(msg, 0.35f, 0.25f, 0.050f, color, false, false);
+			}
+			else
+			{
+				if (round_time <= 1)
+				{
+					snprintf(msg, LINE_SIZE, "Fight!", warmup_time - round_time);
+					engine->menu.draw_text(msg, 0.45f, 0.25f, 0.050f, color, false, false);
+				}
+			}
+
 			if (entity->player->health > 50)
 			{
 				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
@@ -2739,7 +2878,7 @@ void Quake3::render_hud(double last_frametime)
 				red_flag_caps, capturelimit,
 				blue_flag_caps, capturelimit);
 		else
-			snprintf(msg, LINE_SIZE, "Scores:");
+			snprintf(msg, LINE_SIZE, "Scores: Fraglimit %d Timelimit %d Round Time %d:%d", fraglimit, timelimit, round_time / 60, round_time % 60);
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
@@ -3881,7 +4020,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				debugf("Teleporting on entity %d\n", i);
 
 				// Play teleport sound
-				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
+				engine->play_wave(entity_list[self]->speaker->source, telein_sound);
 				break;
 			}
 		}
@@ -3917,10 +4056,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 				if (index < entity_list.size())
 				{
-					engine->play_wave(entity_list[index]->trigger->source, entity_list[self]->player->teleout_sound);
+					engine->play_wave(entity_list[index]->trigger->source, teleout_sound);
 				}
 
-				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->telein_sound);
+				engine->play_wave(entity_list[self]->speaker->source, telein_sound);
 
 				switch (entity_list[i]->angle)
 				{
@@ -4035,7 +4174,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-			engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
+			engine->play_wave(entity_list[player]->speaker->source, telein_sound);
 			return;
 		}
 
@@ -4097,7 +4236,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					entity_list[player]->player->respawn();
 					entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-					engine->play_wave(entity_list[player]->speaker->source, entity_list[player]->player->telein_sound);
+					engine->play_wave(entity_list[player]->speaker->source, telein_sound);
 					spawned = true;
 					break;
 
@@ -4138,7 +4277,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 
 				entity_list[self]->player->jumppad_timer = TICK_RATE >> 1;
-				engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pad_sound);
+				engine->play_wave(entity_list[self]->speaker->source, pad_sound);
 				break;
 			}
 		}
@@ -4373,6 +4512,53 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "disconnecting\n");
 		menu.print(msg);
 		engine->unload();
+		return;
+	}
+
+	if (strcmp(cmd, "reset") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
+
+		for (unsigned int i = 0; i < engine->max_player; i++)
+		{
+			if (entity_list[i]->player)
+			{
+				char respawn[128];
+
+				sprintf(respawn, "respawn -1 %d", i);
+				entity_list[i]->player->reset();
+				console(i, respawn, menu, entity_list);
+			}
+
+			round_time = 0;
+		}
+
+		return;
+	}
+
+
+	if (sscanf(cmd, "g_fraglimit %s", data) == 1)
+	{
+		menu.print(msg);
+		fraglimit = atoi(data);
+		return;
+	}
+
+	if (sscanf(cmd, "g_timelimit %s", data) == 1)
+	{
+		menu.print(msg);
+		timelimit = atoi(data);
+		return;
+	}
+
+	if (sscanf(cmd, "g_warmup %s", data) == 1)
+	{
+		menu.print(msg);
+		warmup_time = atoi(data);
+
+		if (warmup_time == 0)
+			warmup = false;
+
 		return;
 	}
 
@@ -4928,7 +5114,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					blue_flag_caps++;
 
-					engine->play_wave(entity_list[i]->trigger->source, entity_list[self]->player->capture_sound);
+					engine->play_wave(entity_list[i]->trigger->source, capture_sound);
 
 					if (blue_flag_caps == capturelimit)
 					{
@@ -4936,11 +5122,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{
-						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->teams_tied_sound);
+						engine->play_wave(global_source, teams_tied_sound);
 					}
 					else if (blue_flag_caps > red_flag_caps)
 					{
-						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->blue_lead_sound);
+						engine->play_wave(global_source, blue_lead_sound);
 					}
 
 				}
@@ -4965,11 +5151,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{
-						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->teams_tied_sound);
+						engine->play_wave(global_source, teams_tied_sound);
 					}
 					else if (blue_flag_caps < red_flag_caps)
 					{
-						engine->play_wave(entity_list[self]->player->global_source, entity_list[self]->player->red_lead_sound);
+						engine->play_wave(global_source, red_lead_sound);
 					}
 				}
 				continue;
@@ -5079,15 +5265,15 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						}
 						else if (fraglimit - entity_list[owner]->player->stats.kills == 1)
 						{
-							engine->play_wave(entity_list[owner]->player->global_source, entity_list[owner]->player->one_frag_sound);
+							engine->play_wave(global_source, one_frag_sound);
 						}
 						else if (fraglimit - entity_list[owner]->player->stats.kills == 2)
 						{
-							engine->play_wave(entity_list[owner]->player->global_source, entity_list[owner]->player->two_frag_sound);
+							engine->play_wave(global_source, two_frag_sound);
 						}
 						else if (fraglimit - entity_list[owner]->player->stats.kills == 3)
 						{
-							engine->play_wave(entity_list[owner]->player->global_source, entity_list[owner]->player->three_frag_sound);
+							engine->play_wave(global_source, three_frag_sound);
 						}
 					}
 				}
@@ -5131,4 +5317,414 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			entity_list[i]->trigger->timeout = 0.0f;
 		}
 	}
+}
+
+
+void Quake3::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
+{
+	wave_t wave;
+
+	//load player sounds
+	strcpy(wave.file, "sound/weapons/railgun/rg_hum.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/lightning/lg_hum.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/shotgun/sshotf1b.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/railgun/railgf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/lightning/lg_fire.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+#ifdef G_COMMANDO
+	strcpy(wave.file, "sound/weapons/knife/knife_slash1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+#endif
+
+
+	strcpy(wave.file, "sound/weapons/rocket/rocklf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/grenade/grenlf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/plasma/hyprbf1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/machinegun/machgf1b.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/world/telein.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/world/teleout.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/teamplay/flagcap_blu.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/teamplay/flagret_blu.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	for (unsigned int i = 0; i < 23; i++)
+	{
+		sprintf(wave.file, "sound/player/%s/death1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/death2.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/death3.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+
+		sprintf(wave.file, "sound/player/%s/pain25_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/pain50_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/pain75_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/pain100_1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/jump1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/fall1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+
+		sprintf(wave.file, "sound/player/%s/falling1.wav", models[i]);
+		audio.load(wave);
+		if (wave.data != NULL)
+			snd_wave.push_back(wave);
+	}
+
+	strcpy(wave.file, "sound/weapons/grenade/hgrenb1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/rocket/rocklx1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/weapons/plasma/lasfly.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/weapons/plasma/plasmx1a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/weapons/change.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/items/use_medkit.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/items/use_nothing.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/items/regen.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step3.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/footsteps/step4.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	sprintf(wave.file, "sound/player/land1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	sprintf(wave.file, "sound/world/jumppad.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/weapons/noammo.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/watr_in.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/watr_out.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gurp1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gurp2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibsplt1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibimp1.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibimp2.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/player/gibimp3.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/player/talk.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/feedback/blueleads.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/redleads.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/tiedlead.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/lostlead.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/takenlead.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/teamstied.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/excellent.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/gauntlet.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/humiliation.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/impressive_a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/accuracy.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/excellent_a.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/frags.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/impressive.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/perfect.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/hit.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/hit_teammate.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/sudden_death.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/one.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/two.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/three.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+
+	strcpy(wave.file, "sound/feedback/denied.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/fight.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/prepare.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/1_minute.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/5_minute.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/1_frag.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/2_frags.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
+
+	strcpy(wave.file, "sound/feedback/3_frags.wav");
+	audio.load(wave);
+	if (wave.data != NULL)
+		snd_wave.push_back(wave);
 }

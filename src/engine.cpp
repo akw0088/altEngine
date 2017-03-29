@@ -242,12 +242,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 	global.init(&gfx);
-
-	game->init(this);
-
-	//audio
 	audio.init();
 	menu.init(&gfx, &audio, pk3_list, num_pk3);
+	game->init(this);
 
 	if (demo)
 	{
@@ -2342,7 +2339,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				int self = find_type("player", 0);
 				if (self != -1)
 				{
-					play_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
+					play_wave(entity_list[self]->speaker->source, "sound/player/talk.wav");
 				}
 			}
 
@@ -2985,7 +2982,6 @@ void Engine::load_sounds()
 {
 	wave_t wave[8] = { {0} };
 
-	Player::load_sounds(audio, snd_wave);
 	
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -3997,7 +3993,7 @@ void Engine::chat(char *name, char *msg)
 		int self = find_type("player", 0);
 		if (self != -1)
 		{
-			play_wave(entity_list[self]->speaker->source, entity_list[self]->player->chat_sound);
+			play_wave(entity_list[self]->speaker->source, "sound/player/talk.wav");
 		}
 	}
 }
