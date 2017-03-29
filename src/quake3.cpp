@@ -5438,7 +5438,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (entity_list[i]->trigger->timeout > 0)
 		{
-			entity_list[i]->trigger->timeout -= 0.016f * 25;
+			entity_list[i]->trigger->timeout -= 0.016f;
 		}
 		else
 		{
