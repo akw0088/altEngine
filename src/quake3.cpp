@@ -61,6 +61,8 @@ Quake3::Quake3()
 	played_one_frag = false;
 	played_two_frag = false;
 	played_three_frag = false;
+	played_prepare = false;
+	played_sudden = false;
 
 }
 
@@ -880,6 +882,11 @@ void Quake3::step(int frame_step)
 		if (warmup)
 		{
 			int timeleft = warmup_time - round_time;
+			if (played_prepare == false)
+			{
+				engine->play_wave(global_source, prepare_sound);
+				played_prepare = true;
+			}
 
 			if (timeleft == 3)
 			{
@@ -912,7 +919,55 @@ void Quake3::step(int frame_step)
 			}
 			else if (timelimit * 60 - round_time <= 0)
 			{
-				endgame();
+				if (gametype == GAMETYPE_CTF && red_flag_caps == blue_flag_caps)
+				{
+					if (played_sudden == false)
+					{
+						engine->play_wave(global_source, sudden_death_sound);
+						played_sudden = true;
+					}
+				}
+				else
+				{
+					endgame();
+				}
+
+				if (gametype == GAMETYPE_DEATHMATCH)
+				{
+					bool tied = false;
+
+					for (unsigned int i = 0; i < engine->entity_list.size(); i++)
+					{
+						int max_frags = 0;
+
+						if (engine->entity_list[i]->player)
+						{
+							if (engine->entity_list[i]->player->stats.kills > max_frags)
+							{
+								max_frags = engine->entity_list[i]->player->stats.kills;
+								tied = false;
+							}
+							else if (engine->entity_list[i]->player->stats.kills == max_frags)
+							{
+								tied = true;
+							}
+						}
+					}
+
+					if (tied)
+					{
+						if (played_sudden == false)
+						{
+							engine->play_wave(global_source, sudden_death_sound);
+							played_sudden = true;
+						}
+					}
+					else
+					{
+						endgame();
+					}
+				}
+
 			}
 		}
 	}
@@ -1646,7 +1701,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 		engine->hitscan(player.entity->position, forward, index, num_index, self);
 		if (num_index == 0)
-			player.accuracy_count = 0;
+			player.impressive_count = 0;
 
 
 		for (int i = 0; i < num_index; i++)
@@ -1681,12 +1736,12 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				else
 					sprintf(word, "%s", "killed");
 
-				player.accuracy_count++;
+				player.impressive_count++;
 
-				if (player.accuracy_count > 1)
+				if (player.impressive_count > 1)
 				{
-					player.stats.medal_accuracy++;
-					engine->play_wave(global_source, "sound/feedback/accuracy.wav");
+					player.stats.medal_impressive++;
+					engine->play_wave(global_source, "sound/feedback/impressive.wav");
 				}
 
 				if (player.excellent_timer > 0)
@@ -2687,7 +2742,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			player.stats.shots++;
 
 			if (player.current_weapon != WEAPON_RAILGUN)
-				player.accuracy_count = 0;
+				player.impressive_count = 0;
 
 			switch (player.current_weapon)
 			{
@@ -2812,7 +2867,7 @@ void Quake3::render_hud(double last_frametime)
 			{
 				if (round_time <= 1)
 				{
-					snprintf(msg, LINE_SIZE, "Fight!", warmup_time - round_time);
+					snprintf(msg, LINE_SIZE, "Fight!");
 					engine->menu.draw_text(msg, 0.45f, 0.25f, 0.050f, color, false, false);
 				}
 			}
@@ -4517,7 +4572,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "reset") == 0)
 	{
-		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
+		snprintf(msg, LINE_SIZE, "reset\n");
 
 		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
@@ -4531,6 +4586,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			}
 
 			round_time = 0;
+			played_one_frag = false;
+			played_two_frag = false;
+			played_three_frag = false;
+			played_prepare = false;
+			played_sudden = false;
 		}
 
 		return;
@@ -4954,6 +5014,10 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 void Quake3::endgame()
 {
 	engine->input.scores = true;
+
+	warmup = true;
+	console(-1, "reset", engine->menu, engine->entity_list);
+	round_time = 0;
 }
 
 

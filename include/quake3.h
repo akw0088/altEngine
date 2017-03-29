@@ -98,6 +98,8 @@ private:
 	bool played_one_frag;
 	bool played_two_frag;
 	bool played_three_frag;
+	bool played_prepare;
+	bool played_sudden;
 
 
 

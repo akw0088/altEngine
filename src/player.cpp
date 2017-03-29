@@ -95,7 +95,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	teleport_timer = 0;
 	click_timer = 0;
 
-	accuracy_count = 0;
+	impressive_count = 0;
 
 
 	flash_machinegun = 0;
