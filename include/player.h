@@ -142,6 +142,9 @@ public:
 	unsigned int teleport_timer; // prevent teleporting out and back rapidly
 	unsigned int excellent_timer;
 	unsigned int impressive_count;
+	unsigned int impressive_award_timer;
+	unsigned int excellent_award_timer;
+
 
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon

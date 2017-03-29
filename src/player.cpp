@@ -62,6 +62,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	get_item = 0;
 	ignore[0] = '\0';
 
+	impressive_award_timer = 0;
+	excellent_award_timer = 0;
+
 	model_index = model; // default to visor -- ranger isnt in demo files :'( 
 
 	strcpy(model_name, models[model_index]);

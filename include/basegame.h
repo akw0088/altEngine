@@ -22,7 +22,7 @@ public:
 	virtual void render_hud(double last_frametime) = 0;
 	virtual void draw_flash(Player &player) = 0;
 	virtual void make_dynamic_ent(nettype_t item, int ent_id) = 0;
-	virtual void endgame() = 0;
+	virtual void endgame(char *winner) = 0;
 	virtual ~BaseGame()
 	{
 	};

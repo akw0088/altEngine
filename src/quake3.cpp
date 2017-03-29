@@ -929,12 +929,19 @@ void Quake3::step(int frame_step)
 				}
 				else
 				{
-					endgame();
+					char winner[128];
+
+					if (red_flag_caps > blue_flag_caps)
+						sprintf(winner, "Red team wins!");
+					else
+						sprintf(winner, "Blue team wins!");
+					endgame(winner);
 				}
 
 				if (gametype == GAMETYPE_DEATHMATCH)
 				{
 					bool tied = false;
+					char *leader = NULL;
 
 					for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 					{
@@ -945,6 +952,7 @@ void Quake3::step(int frame_step)
 							if (engine->entity_list[i]->player->stats.kills > max_frags)
 							{
 								max_frags = engine->entity_list[i]->player->stats.kills;
+								leader = engine->entity_list[i]->player->name;
 								tied = false;
 							}
 							else if (engine->entity_list[i]->player->stats.kills == max_frags)
@@ -964,7 +972,10 @@ void Quake3::step(int frame_step)
 					}
 					else
 					{
-						endgame();
+						char winner[128];
+
+						sprintf(winner, "%s wins", leader);
+						endgame(winner);
 					}
 				}
 
@@ -1608,7 +1619,10 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 				if (player.stats.kills >= fraglimit)
 				{
-					endgame();
+					char winner[128];
+
+					sprintf(winner, "%s wins", player.name);
+					endgame(winner);
 					return;
 				}
 				else if (fraglimit - player.stats.kills == 1)
@@ -1740,12 +1754,14 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 				if (player.impressive_count > 1)
 				{
+					player.impressive_award_timer = 3 * TICK_RATE;
 					player.stats.medal_impressive++;
 					engine->play_wave(global_source, "sound/feedback/impressive.wav");
 				}
 
 				if (player.excellent_timer > 0)
 				{
+					player.excellent_award_timer = 3 * TICK_RATE;
 					player.stats.medal_excellent++;
 					engine->play_wave(global_source, "sound/feedback/excellent.wav");
 				}
@@ -1760,7 +1776,10 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 				if (player.stats.kills >= fraglimit)
 				{
-					endgame();
+					char winner[128];
+
+					sprintf(winner, "%s wins", player.name);
+					endgame(winner);
 					return;
 				}
 				else if (fraglimit - player.stats.kills == 1)
@@ -1886,7 +1905,10 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 				if (player.stats.kills >= fraglimit)
 				{
-					endgame();
+					char winner[128];
+
+					sprintf(winner, "%s wins", player.name);
+					endgame(winner);
 					return;
 				}
 				else if (fraglimit - player.stats.kills == 1 && played_one_frag == false)
@@ -2023,7 +2045,10 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 				if (player.stats.kills >= fraglimit)
 				{
-					endgame();
+					char winner[128];
+
+					sprintf(winner, "%s wins", player.name);
+					endgame(winner);
 					return;
 				}
 				else if (fraglimit - player.stats.kills == 1)
@@ -2860,8 +2885,17 @@ void Quake3::render_hud(double last_frametime)
 		{
 			if (warmup)
 			{
-				snprintf(msg, LINE_SIZE, "Warmup: %d", warmup_time - round_time);
-				engine->menu.draw_text(msg, 0.35f, 0.25f, 0.050f, color, false, false);
+
+				if (win_timer > 0)
+				{
+					engine->menu.draw_text(win_msg, 0.35f, 0.25f, 0.050f, color, false, false);
+					win_timer--;
+				}
+				else
+				{
+					snprintf(msg, LINE_SIZE, "Warmup: %d", warmup_time - round_time);
+					engine->menu.draw_text(msg, 0.35f, 0.25f, 0.050f, color, false, false);
+				}
 			}
 			else
 			{
@@ -3184,6 +3218,18 @@ void Quake3::render_hud(double last_frametime)
 	if (entity->player->quad_timer)
 	{
 		draw_icon(1.0, ICON_QUAD);
+	}
+
+	if (entity->player->excellent_award_timer > 0)
+	{
+		draw_icon(1.0, ICON_MEDAL_EXCELLENT);
+		entity->player->excellent_award_timer--;
+	}
+
+	if (entity->player->impressive_award_timer > 0)
+	{
+		draw_icon(1.0, ICON_MEDAL_IMPRESSIVE);
+		entity->player->impressive_award_timer--;
 	}
 
 	if (entity->player->regen_timer)
@@ -5011,9 +5057,12 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 }
 
 
-void Quake3::endgame()
+void Quake3::endgame(char *winner)
 {
 	engine->input.scores = true;
+
+	win_timer = 3 * TICK_RATE;
+	strcpy(win_msg, winner);
 
 	warmup = true;
 	console(-1, "reset", engine->menu, engine->entity_list);
@@ -5182,7 +5231,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 					if (blue_flag_caps == capturelimit)
 					{
-						endgame();
+						endgame("Blue team wins");
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{
@@ -5211,7 +5260,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 					if (red_flag_caps == capturelimit)
 					{
-						endgame();
+						endgame("Red Wins");
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{
@@ -5324,7 +5373,10 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 						if (entity_list[owner]->player->stats.kills >= fraglimit)
 						{
-							endgame();
+							char winner[128];
+
+							sprintf(winner, "%s wins", entity_list[owner]->player->name);
+							endgame(winner);
 							return;
 						}
 						else if (fraglimit - entity_list[owner]->player->stats.kills == 1)

@@ -1185,7 +1185,7 @@ void Commando::handle_knife(Player &player, int self)
 
 			if (player.stats.kills >= fraglimit)
 			{
-				endgame();
+				endgame("msg");
 				return;
 			}
 
@@ -1301,7 +1301,7 @@ void Commando::handle_rifle(Player &player, int self)
 
 			if (player.stats.kills >= fraglimit)
 			{
-				endgame();
+				endgame("msg");
 				return;
 			}
 		}
@@ -1409,7 +1409,7 @@ void Commando::handle_machinegun(Player &player, int self)
 
 			if (player.stats.kills >= fraglimit)
 			{
-				endgame();
+				endgame("msg");
 				return;
 			}
 		}
@@ -1506,7 +1506,7 @@ void Commando::handle_pistol(Player &player, int self)
 
 			if (player.stats.kills >= fraglimit)
 			{
-				endgame();
+				endgame("msg");
 				return;
 			}
 		}
@@ -2649,6 +2649,7 @@ void Commando::render_hud(double last_frametime)
 	{
 		draw_icon(1.0, ICON_QUAD);
 	}
+
 
 	if (entity->player->regen_timer)
 	{
@@ -4047,7 +4048,7 @@ void Commando::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 
 
-void Commando::endgame()
+void Commando::endgame(char *winner)
 {
 	engine->input.scores = true;
 }

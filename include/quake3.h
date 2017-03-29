@@ -57,7 +57,7 @@ public:
 	void unload();
 	void add_player(vector<Entity *> &entity_list, char *type, int &ent_id, char *player_name);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
-	void endgame();
+	void endgame(char *winner);
 
 	unsigned int weapon_switch_timer;
 
@@ -87,6 +87,9 @@ private:
 	unsigned int		timelimit;
 	unsigned int		round_time;
 	unsigned int		warmup_time;
+
+	unsigned int win_timer;
+	char win_msg[128];
 
 	unsigned int num_player;
 	unsigned int num_player_blue;

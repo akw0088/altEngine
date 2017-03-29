@@ -140,7 +140,7 @@ public:
 	void unload();
 	void init_camera(vector<Entity *> &entity_list);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
-	void endgame();
+	void endgame(char *winner);
 
 	gametype_t gametype;
 	int		fraglimit;
