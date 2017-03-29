@@ -201,6 +201,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_shells 10");
 		}
+		else if (strcmp(value, "ammo_cells") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 10");
+		}
 		else if (strcmp(value, "ammo_lightning") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
@@ -223,6 +230,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_rocketlauncher");
 		}
 		else if (strstr(value, "weapon_lightning"))
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
+		}
+		else if (strstr(value, "weapon_bfg"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
@@ -299,6 +313,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			lip : lip remaining at end of move (default 4 units).
 			health : if set to a non-zero value, the button must be damaged by "health" amount of points to operate.
 			*/
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
 		}
 		else if (strcmp(value, "func_door") == 0)
 		{
@@ -517,6 +538,16 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.nodraw = true;
 		}
 		else if (strcmp(value, "target_position") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "target_give") == 0)
 		{
 			if (entity.rigid)
 			{

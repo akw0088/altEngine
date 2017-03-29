@@ -698,6 +698,7 @@ void Quake3::handle_player(int self, input_t &input)
 					char msg[80];
 
 					entity->player->stats.deaths++;
+					entity->player->kill();
 					sprintf(msg, "%s swallowed too much water\n", entity->player->name);
 					debugf(msg);
 					engine->menu.print_notif(msg);
@@ -4643,6 +4644,22 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 
+	if (sscanf(cmd, "g_gametype %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (strstr(data, "ctf"))
+		{
+			gametype = GAMETYPE_CTF;
+		}
+		else if (strstr(data, "deathmatch"))
+		{
+			gametype = GAMETYPE_DEATHMATCH;
+		}
+		return;
+	}
+
+
 	if (sscanf(cmd, "g_fraglimit %s", data) == 1)
 	{
 		menu.print(msg);
@@ -4667,6 +4684,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		return;
 	}
+
+	if (sscanf(cmd, "g_capturelimit %s", data) == 1)
+	{
+		menu.print(msg);
+		capturelimit = atoi(data);
+
+		return;
+	}
+
 
 	snprintf(msg, LINE_SIZE, "Unknown command: %s\n", cmd);
 	menu.print(msg);
@@ -5229,7 +5255,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 					engine->play_wave(entity_list[i]->trigger->source, capture_sound);
 
-					if (blue_flag_caps == capturelimit)
+					if (blue_flag_caps >= capturelimit)
 					{
 						endgame("Blue team wins");
 					}
@@ -5258,9 +5284,9 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 					engine->play_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
 
-					if (red_flag_caps == capturelimit)
+					if (red_flag_caps >= capturelimit)
 					{
-						endgame("Red Wins");
+						endgame("Red team wins");
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{

@@ -566,7 +566,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	Frame yaw;
 
 	get_frame(camera);
-//	vec3	forward = camera.forward;
+	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
 	bool	jumped = false;
@@ -589,7 +589,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	//prevent walking upward
 	if (noclip == false && flight == false)
 	{
-//		forward.y = 0.0f;
+		forward.y = 0.0f;
 		right.y = 0.0f;
 	}
 
@@ -599,13 +599,30 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	sleep = false;
 	if (input.moveup)
 	{
-		velocity += -yaw.forward * ACCEL * speed_scale;
-		moved = true;
+		if (water == false && noclip == false && flight == false)
+		{
+			velocity += -yaw.forward * ACCEL * speed_scale;
+			moved = true;
+		}
+		else
+		{
+			velocity += -forward * ACCEL * speed_scale;
+			moved = true;
+		}
 	}
 	if (input.movedown)
 	{
-		velocity += yaw.forward * ACCEL * speed_scale;
-		moved = true;
+		if (water == false && noclip == false && flight == false)
+		{
+			velocity += yaw.forward * ACCEL * speed_scale;
+			moved = true;
+		}
+		else
+		{
+			velocity += forward * ACCEL * speed_scale;
+			moved = true;
+		}
+
 	}
 	if (input.moveleft)
 	{
@@ -621,6 +638,12 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		jumped = true;
 		moved = true;
+
+		if (water || noclip || flight )
+		{
+			velocity.y += ACCEL * speed_scale;
+			moved = true;
+		}
 	}
 	if (input.duck)
 	{
@@ -669,11 +692,10 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 
 	// Speed up water movement due to additional deceleration friction
-	if (water_depth >= 2.0f && water)
+	if (water_depth >= 2.0f && water || noclip)
 	{
-		velocity.x *= (1.5f * speed_scale / speed);
-		velocity.y *= (1.2f * speed_scale / speed);
-		velocity.z *= (1.5f * speed_scale / speed);
+		velocity.x *= (1.25f * speed_scale / speed);
+		velocity.z *= (1.25f * speed_scale / speed);
 	}
 
 	return ret;
