@@ -692,7 +692,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 
 	// Speed up water movement due to additional deceleration friction
-	if (water_depth >= 2.0f && water || noclip)
+	if ((water_depth >= 2.0f && water) || noclip)
 	{
 		velocity.x *= (1.25f * speed_scale / speed);
 		velocity.z *= (1.25f * speed_scale / speed);
