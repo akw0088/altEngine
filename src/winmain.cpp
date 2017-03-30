@@ -497,15 +497,16 @@ BOOL setupPixelFormat(HDC hdc)
 	PIXELFORMATDESCRIPTOR pfd;
 	INT pixelformat;
 
-	pfd.nSize			= sizeof(PIXELFORMATDESCRIPTOR);
+	memset(&pdf, 0, sizeof(PIXELFORMATDESCRIPTOR));
+	pfd.nSize		= sizeof(PIXELFORMATDESCRIPTOR);
 	pfd.nVersion		= 1;
-	pfd.dwFlags			= PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
+	pfd.dwFlags		= PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_GENERIC_ACCELERATED | PFD_DOUBLEBUFFER;
 	pfd.dwLayerMask		= PFD_MAIN_PLANE;
 	pfd.iPixelType		= PFD_TYPE_RGBA;
 	pfd.cColorBits		= 32;
 	pfd.cDepthBits		= 24;
-	pfd.cAccumBits		= 32;
-	pfd.cStencilBits	= 32;
+	//pfd.cAccumBits	= 32;
+	pfd.cStencilBits	= 8;
 
 	if ( (pixelformat = ChoosePixelFormat(hdc, &pfd)) == 0 )
 	{
