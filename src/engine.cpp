@@ -1203,6 +1203,10 @@ void Engine::render_players(matrix4 &trans, bool lights)
 	{
 		Entity *entity = entity_list[i];
 
+
+		if (entity->visible == false)
+			continue;
+
 		if ((strcmp(entity->type, "NPC") == 0 ||
 			(strcmp(entity->type, "spectator") == 0 ||
 			strcmp(entity->type, "server") == 0 ||
@@ -1599,6 +1603,9 @@ void Engine::dynamics()
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->rigid == NULL)
+			continue;
+
+		if (entity_list[i]->nodraw || entity_list[i]->rigid->noclip)
 			continue;
 
 		if (collision_detect_enable == false && i >= max_player)

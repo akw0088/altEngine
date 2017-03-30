@@ -53,6 +53,7 @@ Quake3::Quake3()
 	round_time = 0;
 	capturelimit = 8;
 	weapon_switch_timer = 0;
+	win_timer = 0;
 
 	num_player = 0;
 	num_player_red = 0;
