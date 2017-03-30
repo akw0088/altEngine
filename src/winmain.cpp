@@ -89,7 +89,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		{
 			SendMessage(hwnd, WMU_RENDER, 0, 0);
 #ifdef DEDICATED
-			Sleep(1);
+//			Sleep(1);
 #endif
 		}
 	}
@@ -290,15 +290,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_KEYUP:
 		{
 			bool pressed = (message == WM_KEYDOWN) ? true : false;
-			if ((wParam >= 'A' && wParam <= 'Z') || (wParam >= 'a' && wParam <= 'z') || (wParam >= '0' && wParam <= '9'))
-			{
-				char c[2];
-
-				c[0] = wParam;
-				c[1] = '\0';
-				altEngine.keypress(c, pressed);
-				return DefWindowProc(hwnd, message, wParam, lParam);;
-			}
 
 			switch (wParam)
 			{
@@ -447,6 +438,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				altEngine.keypress("pgdown", pressed);
 				break;
 			}
+
+
+			if ((wParam >= 'A' && wParam <= 'Z') || (wParam >= 'a' && wParam <= 'z') || (wParam >= '0' && wParam <= '9'))
+			{
+				char c[2];
+
+				c[0] = wParam;
+				c[1] = '\0';
+				altEngine.keypress(c, pressed);
+				return DefWindowProc(hwnd, message, wParam, lParam);;
+			}
+
 			return 0;
 		}
 	case WM_CHAR:

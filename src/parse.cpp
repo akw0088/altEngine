@@ -206,14 +206,21 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 10");
+			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
 		}
 		else if (strcmp(value, "ammo_lightning") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
 			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 10");
+			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
+		}
+		else if (strcmp(value, "ammo_bfg") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
 		}
 		else if (strcmp(value, "ammo_plasma") == 0)
 		{
