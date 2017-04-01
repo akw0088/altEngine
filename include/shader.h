@@ -41,9 +41,11 @@ class mLight2 : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, float ambient = AMBIENT_LIGHT, float lightmap = 0.0f);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset);
 	virtual void prelink(void);
-
+	void set_max(int max);
+	void set_ambient(float ambient);
+	void set_lightmap(float lightmap);
 	void set_light(float ambient, float lightmap, int num_light);
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
@@ -61,6 +63,7 @@ public:
 
 	int m_num_light;
 	float m_ambient;
+	float m_lightmap;
 private:
 	int matrix;
 	int	texture0;
@@ -117,6 +120,8 @@ private:
 	int u_num_lights;
 	int u_position;
 	int u_color;
+
+	unsigned int max_light;
 };
 
 class mLightDepth : public Shader

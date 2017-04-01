@@ -740,13 +740,17 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			switch (entity_list[i]->angle)
 			{
 			case 0:
+			case 45:
 			case 360:
+			case 325:
 				matrix4::mat_left(matrix, entity_list[spawn]->position);
 				break;
 			case 90:
+			case 135:
 				matrix4::mat_forward(matrix, entity_list[spawn]->position);
 				break;
 			case 180:
+			case 225:
 				matrix4::mat_right(matrix, entity_list[spawn]->position);
 				break;
 			case 270:

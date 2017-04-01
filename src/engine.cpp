@@ -3706,6 +3706,67 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (sscanf(cmd, "r_maxlight %s", data) == 1)
+	{
+		int max = 64;
+
+		menu.print(msg);
+		max = atoi(data);
+
+		mlight2.set_max(max);
+		return;
+	}
+
+	if (sscanf(cmd, "r_ambient %s", data) == 1)
+	{
+		float ambient = 1.0f;
+
+		menu.print(msg);
+		ambient = (float)atof(data);
+
+		mlight2.set_ambient(ambient);
+		return;
+	}
+
+	if (sscanf(cmd, "r_lightmap %s", data) == 1)
+	{
+		float lightmap = 1.0f;
+
+		menu.print(msg);
+		lightmap = (float)atof(data);
+
+		mlight2.set_lightmap(lightmap);
+		return;
+	}
+
+	if (sscanf(cmd, "r_light %s", data) == 1)
+	{
+		int mode = 0;
+		menu.print(msg);
+		mode = atoi(data);
+
+		switch (mode)
+		{
+		case 0:
+			mlight2.set_light(1.0, 0.0, 0);
+			mlight2.set_max(0);
+			break;
+		case 1:
+			mlight2.set_light(0.3, 1.0, 0);
+			mlight2.set_max(0);
+			break;
+		case 2:
+			mlight2.set_light(0.3, 0.0, 64);
+			mlight2.set_max(64);
+			break;
+		case 3:
+			mlight2.set_light(0.3, 1.0, 64);
+			mlight2.set_max(64);
+			break;
+		}
+		return;
+	}
+
 	ret = sscanf(cmd, "cl_skip %s", data);
 	if (ret == 1)
 	{

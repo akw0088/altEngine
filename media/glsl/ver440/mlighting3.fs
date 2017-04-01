@@ -29,6 +29,7 @@ uniform float		u_lightmap;
 uniform mat4		mvp;
 
 
+
 layout(binding=0) uniform sampler2D texture0;// 8 possible textures
 layout(binding=1) uniform sampler2D texture1;
 layout(binding=2) uniform sampler2D texture2;
@@ -54,9 +55,9 @@ void main(void)
 
 	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
 	vec3 ambient;
-	ambient.x = max(u_lightmap, u_ambient);
-	ambient.y = max(u_lightmap, u_ambient);
-	ambient.z = max(u_lightmap, u_ambient);
+	ambient.x = u_ambient;
+	ambient.y = u_ambient;
+	ambient.z = u_ambient;
 	vec3 light = vec3(0.0f, 0.0f, 0.0f);
 
 	// scale and bias parallax effect
@@ -75,10 +76,6 @@ void main(void)
 	vec4 Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
 	vec4 Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
 	vec4 Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
-
-
-
-
 
 	float frag0gs = (Fragment0.r + Fragment0.g + Fragment0.b) / 3.0;
 	float frag1gs = (Fragment1.r + Fragment1.g + Fragment1.b) / 3.0;
@@ -122,7 +119,10 @@ void main(void)
 	vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
 
 
-	if (lightmap.r + lightmap.g + lightmap.b > 0.001)
-		Fragment.xyz *= lightmap;
+	if (u_lightmap > 0.0)
+	{
+		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
+			Fragment.xyz *= lightmap;
+	}
 	Fragment.rgb *= max(light, ambient);
 }

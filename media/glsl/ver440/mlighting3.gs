@@ -60,6 +60,10 @@ void main()
 		VertexOut.att_position = VertexIn[i].att_position;
 		VertexOut.vary_position = VertexIn[i].vary_position;
 		VertexOut.vary_TexCoord = VertexIn[i].vary_TexCoord;
+		VertexOut.vary_TexCoord0 = VertexIn[i].vary_TexCoord0;
+		VertexOut.vary_TexCoord1 = VertexIn[i].vary_TexCoord1;
+		VertexOut.vary_TexCoord2 = VertexIn[i].vary_TexCoord2;
+		VertexOut.vary_TexCoord3 = VertexIn[i].vary_TexCoord3;
 		VertexOut.vary_LightCoord = VertexIn[i].vary_LightCoord;
 		VertexOut.vary_color = VertexIn[i].vary_color;
 		VertexOut.vary_normal = VertexIn[i].vary_normal; // I dont trust the artists ;)

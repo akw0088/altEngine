@@ -118,6 +118,8 @@ void Global::Params(matrix4 &mvp, int tex0)
 
 int mLight2::init(Graphics *gfx)
 {
+
+	max_light = 64;
 	//"media/glsl/mlighting3.gs"
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
@@ -194,6 +196,24 @@ int mLight2::init(Graphics *gfx)
 	return 0;
 }
 
+void mLight2::set_max(int max)
+{
+	max_light = max;
+}
+
+void mLight2::set_ambient(float ambient)
+{
+	m_ambient = ambient;
+}
+
+void mLight2::set_lightmap(float lightmap)
+{
+	m_lightmap = lightmap;
+}
+
+
+
+
 void mLight2::prelink()
 {
 #ifndef DIRECTX
@@ -207,7 +227,7 @@ void mLight2::prelink()
 }
 
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, float ambient, float lightmap)
+void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset)
 {
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
@@ -290,14 +310,13 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
 
-	glUniform1f(u_ambient, ambient);
-	glUniform1f(u_lightmap, lightmap);
-	glUniform1i(u_num_lights, j);
+	glUniform1f(u_ambient, m_ambient);
+	glUniform1f(u_lightmap, m_lightmap);
+	glUniform1i(u_num_lights, MIN(j, max_light));
 	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 
 	m_num_light = j;
-	m_ambient = ambient;
 #endif
 }
 
@@ -307,8 +326,9 @@ void mLight2::set_light(float ambient, float lightmap, int num_light)
 	glUniform1i(u_num_lights, num_light);
 	glUniform1f(u_ambient, ambient);
 	glUniform1f(u_lightmap, lightmap);
-	m_num_light = num_light;
-	m_ambient = ambient;
+//	m_num_light = num_light;
+//	m_ambient = ambient;
+//	m_lightmap = lightmap;
 #endif
 }
 
