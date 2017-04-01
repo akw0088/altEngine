@@ -109,6 +109,15 @@ typedef struct
 	int			visible_side;	// the brush side that ray tests need to clip against (-1 == none)
 } fog_t;
 
+typedef enum
+{
+	FACE_NONE,
+	FACE_POLYGON,
+	FACE_PATCH,
+	FACE_MODEL,
+	FACE_BILLBOARD
+} facetype_t;
+
 typedef struct
 {
 	int			material;

@@ -333,7 +333,7 @@ void Bsp::unload(Graphics &gfx)
 	loaded = false;
 	textures_loaded = false;
 
-	anim_list.clear();
+	anim_list.resize(0);
 
 	delete[] face_to_patch;
 
@@ -450,7 +450,7 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 }
 
 bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
-	vector<surface_t *> &surface_list, bool debug, vec3 &clip, vec3 &velocity)
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -463,7 +463,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		// Outside of map
 		return true;
 	}
-
+	vec3 midpoint = point - oldpoint;
 
 
 	// A leaf is a convex volume of open space divided from the other leafs by brushes and bsp planes
@@ -747,9 +747,9 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 {
 	leaf_t *frameLeaf = &data.Leaf[leaf];
 
-	face_list.clear();
-	blend_list.clear();
-	leaf_list.clear();
+	face_list.resize(0);
+	blend_list.resize(0);
+	leaf_list.resize(0);
 	for (unsigned int i = 0; i < data.num_leafs; i++)
 	{
 		leaf_t *leaf = &data.Leaf[i];
@@ -1112,7 +1112,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
 	float time = ((float)tick_num / TICK_RATE);
-
 
 	if (frameIndex != lastIndex)
 	{
@@ -1944,4 +1943,218 @@ void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 
 		RayBoxSlab(origin, dir, min, max, distance);
 	}	
+}
+
+
+
+
+//=====================================================================================
+// Magic "trace" function for collision detection
+//=====================================================================================
+// Idea is you take these two points and walk them along the line towards each other
+// if they pass each other, no collision, if they dont you collided with something
+// For each collision plane you can move one point, (the one not inside the plane)
+// eg: dist = plane.normal dot position - plane.d
+// if dist > 0, then move point dist on the line
+// http://lineofsight.awright2009.com/BrushCollision.pdf
+//======================================================================================
+//
+// Inputs, start and desired end position
+// Outputs, either end position, or as far as you can go 
+// If a collision occurs, we set collision flag and collision normal
+// we also set an on_ground flag to indicate we are on the ground plane
+//======================================================================================
+vec3 Bsp::trace(vec3 &start, vec3 &end)
+{
+	float trace_amount = 1.0f;
+
+	// Check trace starting from BSP tree root
+	check_node(0, 0.0f, 1.0f, start, end);
+
+	if (trace_amount == 1.0f)
+	{
+		return end;
+	}
+	else
+	{
+		// collision occurred, collision normal expected in class
+		vec3 new_pos = start + ((end - start) * trace_amount);
+		vec3 move = end - new_pos;
+
+		float distance = move * collision_normal;
+
+		vec3 end_pos = end - collision_normal * distance;
+
+		new_pos = trace(new_pos, end);
+
+		if (collision_normal.y > 0.2f || on_ground)
+			on_ground = true;
+		else
+			on_ground = false;
+
+
+		return new_pos;
+	}
+}
+
+// Walks BSP Tree and checks brush planes for collisions
+void Bsp::check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end)
+{
+	// if leaf node, finish recursion
+	if (node_index < 0)
+	{
+		leaf_t *leaf = &data.Leaf[-(node_index + 1)];
+
+		for (int i = 0; i < leaf->num_brushes; i++)
+		{
+			int index = data.LeafBrush[leaf->leaf_brush + i];
+			brush_t *brush = &data.Brushes[index];
+
+			if ((brush->num_sides > 0) && (data.Material[brush->material].contents & CONTENTS_SOLID))
+			{
+				check_brush(brush, start, end);
+			}
+		}
+
+		return;
+	}
+
+	node_t *node = &data.Node[node_index];
+	plane_t *plane = &data.Plane[node->plane];
+
+	// Find distance to BSP splitter plane
+	float start_distance = start * plane->normal - plane->d;
+	float end_distance = end * plane->normal - plane->d;
+
+
+	if (start_distance >= 0.0f && end_distance >= 0.0f)
+	{
+		// start and end in front of splitter plane
+		check_node(node->front, start_distance, end_distance, start, end);
+	}
+	else if (start_distance < 0.0f && end_distance < 0.0f)
+	{
+		// start and end behind splitter plane
+		check_node(node->back, start_distance, end_distance, start, end);
+	}
+	else
+	{
+		// start and end span splitter plane, divide line in half
+		float ratio1 = 1.0f, ratio2 = 0.0f, half_amount = 0.0f;
+		vec3 middle;
+		float epsilon = 0.01f; // leave small gap
+
+		int side = node->front;
+
+		if (start_distance < end_distance)
+		{
+			side = node->back;
+
+			float inverse = 1.0f / (start_distance - end_distance);
+			ratio1 = (start_distance - epsilon) * inverse;
+			ratio2 = (start_distance + epsilon) * inverse;
+		}
+		else if (start_distance > end_distance)
+		{
+			float inverse = 1.0f / (start_distance - end_distance);
+			ratio1 = (start_distance + epsilon) * inverse;
+			ratio2 = (start_distance - epsilon) * inverse;
+		}
+
+		if (ratio1 < 0.0f)
+			ratio1 = 0.0f;
+		else if (ratio1 > 1.0f)
+			ratio1 = 1.0f;
+
+		if (ratio2 < 0.0f)
+			ratio2 = 0.0f;
+		else if (ratio2 > 1.0f)
+			ratio2 = 1.0f;
+
+		half_amount = start_amount + ((end_amount - start_amount) * ratio1);
+		middle = start + ((end - start) * ratio1);
+
+		check_node(side, start_amount, half_amount, start, middle);
+
+		half_amount = start_amount + ((end_amount - start_amount) * ratio2);
+		middle = start + ((end - start) * ratio2);
+
+		if (side == node->back)
+			check_node(node->front, half_amount, end_distance, middle, end);
+		else
+			check_node(node->back, half_amount, end_distance, middle, end);
+	}
+}
+
+
+void Bsp::check_brush(brush_t *brush, vec3 &start, vec3 &end)
+{
+	float start_amount = -1.0f;
+	float end_amount = 1.0f;
+	bool starts_out = false;
+	float epsilon = 0.01f;
+
+	for (int i = 0; i < brush->num_sides; i++)
+	{
+		brushSide_t *brushSide = &data.BrushSides[brush->first_side + i];
+		plane_t *plane = &data.Plane[brushSide->plane];
+
+		float start_distance = start * plane->normal - plane->d;
+		float end_distance = end * plane->normal - plane->d;
+
+		if (start_distance > 0)
+			starts_out = true;
+
+		if (start_distance > 0 && end_distance > 0)
+			return;
+
+		if (start_distance <= 0 && end_distance <= 0)
+			continue;
+
+		if (start_distance > end_distance)
+		{
+			float ratio1 = (start_distance - epsilon) / (start_distance - end_distance);
+
+			if (ratio1 > start_amount)
+			{
+				start_amount = ratio1;
+				collision = true;
+
+				collision_normal = plane->normal;
+
+
+				if ((start.x != end.x || start.z != end.z) && plane->normal.y != 1)
+				{
+					//attempt stair step
+					//	step_flag = true;
+				}
+
+				if (collision_normal.y >= 0.2f)
+					on_ground = true;
+
+			}
+		}
+		else
+		{
+			float ratio = (start_distance + epsilon) / (start_distance - end_distance);
+
+			if (ratio < end_amount)
+				end_amount = ratio;
+		}
+	}
+
+	if (starts_out == false)
+	{
+		return;
+	}
+
+	if (start_amount < end_amount)
+	{
+		if (start_amount > -1 && start_amount < trace_amount)
+		{
+			if (start_amount < 0)
+				start_amount = 0;
+			trace_amount = start_amount;
+		}
+	}
 }
