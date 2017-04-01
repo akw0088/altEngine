@@ -46,7 +46,18 @@ public:
 
 	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth,
 		bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug,
-		vec3 &clip, vec3 &velocity);
+		vec3 &clip, const vec3 &velocity);
+
+
+	vec3 trace(vec3 &start, vec3 &end);
+	void check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end);
+	void check_brush(brush_t *brush, vec3 &start, vec3 &end);
+
+	bool on_ground;
+	bool collision;
+	vec3 collision_normal;
+	float trace_amount;
+
 
 	bool loaded;
 	bool textures_loaded;
