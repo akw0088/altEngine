@@ -77,7 +77,6 @@ void Quake3::init(Engine *altEngine)
 	load_icon();
 	create_icon();
 
-	global_source = engine->audio.create_source(false, true);
 
 	sprintf(land_sound, "sound/player/land1.wav");
 	sprintf(pad_sound, "sound/world/jumppad.wav");
@@ -196,7 +195,8 @@ team_t Quake3::get_team()
 
 void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &ent_id, char *player_name)
 {
-	char *spawn_type;
+	char *spawn_type = NULL;
+	bool local = false;
 	team_t team = get_team();
 
 
@@ -234,6 +234,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			{
 				// Only set render view position for local clients
 				engine->camera_frame.pos = entity_list[i]->position;
+				local = true;
 			}
 
 			int spawn = engine->get_player();
@@ -249,6 +250,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 
 			strcpy(entity_list[spawn]->player->name, player_name);
+			entity_list[spawn]->player->local = local;
 
 
 			matrix4 matrix;
@@ -308,6 +310,9 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player->excellent_timer > 0)
 		entity->player->excellent_timer--;
 
+	if (entity->player->pain_timer > 0)
+		entity->player->pain_timer--;
+
 
 
 	if (input.zoom == true && zoomed == false)
@@ -342,11 +347,17 @@ void Quake3::handle_player(int self, input_t &input)
 				notif_timer = 3 * TICK_RATE;
 			}
 
-			engine->play_wave(entity->speaker->source, entity->player->fall_sound);
+			if (entity->player->local)
+				engine->play_wave_global(entity->player->fall_sound);
+			else
+				engine->play_wave(entity->position, entity->player->fall_sound);
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
-			engine->play_wave(entity->speaker->source, land_sound);
+			if (entity->player->local)
+				engine->play_wave_global(land_sound);
+			else
+				engine->play_wave(entity->position, land_sound);
 		}
 	}
 
@@ -357,7 +368,11 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			entity->player->health = 125;
 			entity->player->holdable_medikit = false;
-			engine->play_wave(entity->speaker->source, medikit_sound);
+			if (entity->player->local)
+				engine->play_wave_global(medikit_sound);
+			else
+				engine->play_wave(entity->position, medikit_sound);
+
 			click = false;
 		}
 		if (entity->player->holdable_teleporter)
@@ -372,7 +387,10 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->click_timer == 0)
 			{
 				entity->player->click_timer = (int)(0.5f * TICK_RATE);
-				engine->play_wave(entity->speaker->source, noitem_sound);
+				if (entity->player->local)
+					engine->play_wave_global(noitem_sound);
+				else
+					engine->play_wave(entity->position, noitem_sound);
 			}
 			else
 			{
@@ -494,7 +512,11 @@ void Quake3::handle_player(int self, input_t &input)
 				if (entity->rigid->move(input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
-					engine->play_wave(entity->speaker->source, entity->player->jump_sound);
+					if (entity->player->local)
+						engine->play_wave_global(entity->player->jump_sound);
+					else
+						engine->play_wave(entity->position, entity->player->jump_sound);
+
 				}
 			}
 		}
@@ -609,7 +631,11 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				engine->play_wave(entity->speaker->source, regen_bump_sound);
+				if (entity->player->local)
+					engine->play_wave_global(regen_bump_sound);
+				else
+					engine->play_wave(entity->position, regen_bump_sound);
+
 			}
 
 			if (entity->player->health > 200)
@@ -642,16 +668,28 @@ void Quake3::handle_player(int self, input_t &input)
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				engine->play_wave(entity->player->footstep_source, step1_sound);
+				if (entity->player->local)
+					engine->play_wave_global(step1_sound);
+				else
+					engine->play_wave(entity->position, step1_sound);
 				break;
 			case 1:
-				engine->play_wave(entity->player->footstep_source, step2_sound);
+				if (entity->player->local)
+					engine->play_wave_global(step2_sound);
+				else
+					engine->play_wave(entity->position, step2_sound);
 				break;
 			case 2:
-				engine->play_wave(entity->player->footstep_source, step3_sound);
+				if (entity->player->local)
+					engine->play_wave_global(step3_sound);
+				else
+					engine->play_wave(entity->position, step3_sound);
 				break;
 			case 3:
-				engine->play_wave(entity->player->footstep_source, step4_sound);
+				if (entity->player->local)
+					engine->play_wave_global(step4_sound);
+				else
+					engine->play_wave(entity->position, step4_sound);
 				break;
 			}
 		}
@@ -662,7 +700,11 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, waterin_sound);
+			if (entity->player->local)
+				engine->play_wave_global(waterin_sound);
+			else
+				engine->play_wave(entity->position, waterin_sound);
+
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
@@ -670,7 +712,10 @@ void Quake3::handle_player(int self, input_t &input)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, waterout_sound);
+			if (entity->player->local)
+				engine->play_wave_global(waterout_sound);
+			else
+				engine->play_wave(entity->position, waterout_sound);
 			entity->rigid->last_water = entity->rigid->water;
 			entity->player->drown_timer = 0;
 		}
@@ -686,10 +731,16 @@ void Quake3::handle_player(int self, input_t &input)
 				switch (footstep_num++ % 2)
 				{
 				case 0:
-					engine->play_wave(entity->speaker->source, gurp1_sound);
+					if (entity->player->local)
+						engine->play_wave_global(gurp1_sound);
+					else
+						engine->play_wave(entity->position, gurp1_sound);
 					break;
 				case 1:
-					engine->play_wave(entity->speaker->source, gurp2_sound);
+					if (entity->player->local)
+						engine->play_wave_global(gurp2_sound);
+					else
+						engine->play_wave(entity->position, gurp2_sound);
 					break;
 				}
 
@@ -719,7 +770,10 @@ void Quake3::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		engine->play_wave(entity->speaker->source, gibbed_sound);
+		if (entity->player->local)
+			engine->play_wave_global(gibbed_sound);
+		else
+			engine->play_wave(entity->position, gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
@@ -727,13 +781,22 @@ void Quake3::player_died(int index)
 		switch (engine->tick_num % 3)
 		{
 		case 0:
-			engine->play_wave(entity->speaker->source, entity->player->death1_sound);
+			if (entity->player->local)
+				engine->play_wave_global(entity->player->death1_sound);
+			else
+				engine->play_wave(entity->position, entity->player->death1_sound);
 			break;
 		case 1:
-			engine->play_wave(entity->speaker->source, entity->player->death2_sound);
+			if (entity->player->local)
+				engine->play_wave_global(entity->player->death2_sound);
+			else
+				engine->play_wave(entity->position, entity->player->death2_sound);
 			break;
 		case 2:
-			engine->play_wave(entity->speaker->source, entity->player->death3_sound);
+			if (entity->player->local)
+				engine->play_wave_global(entity->player->death3_sound);
+			else
+				engine->play_wave(entity->position, entity->player->death3_sound);
 			break;
 		}
 	}
@@ -886,38 +949,38 @@ void Quake3::step(int frame_step)
 			int timeleft = warmup_time - round_time;
 			if (played_prepare == false)
 			{
-				engine->play_wave(global_source, prepare_sound);
+				engine->play_wave_global(prepare_sound);
 				played_prepare = true;
 			}
 
 			if (timeleft == 3)
 			{
-				engine->play_wave(global_source, three_sound);
+				engine->play_wave_global(three_sound);
 			}
 			else if ( timeleft == 2)
 			{
-				engine->play_wave(global_source, two_sound);
+				engine->play_wave_global(two_sound);
 			}
 			else if (timeleft == 1)
 			{
-				engine->play_wave(global_source, one_sound);
+				engine->play_wave_global(one_sound);
 			}
 			if (warmup_time <= round_time)
 			{
 				warmup = false;
 				console(-1, "reset", engine->menu, engine->entity_list);
-				engine->play_wave(global_source, fight_sound);
+				engine->play_wave_global(fight_sound);
 			}
 		}
 		else
 		{
 			if (timelimit * 60 - round_time == 60)
 			{
-				engine->play_wave(global_source, one_min_sound);
+				engine->play_wave_global(one_min_sound);
 			}
 			else if (timelimit * 60 - round_time == 60 * 5)
 			{
-				engine->play_wave(global_source, five_min_sound);
+				engine->play_wave_global(five_min_sound);
 			}
 			else if (timelimit * 60 - round_time <= 0)
 			{
@@ -925,7 +988,7 @@ void Quake3::step(int frame_step)
 				{
 					if (played_sudden == false)
 					{
-						engine->play_wave(global_source, sudden_death_sound);
+						engine->play_wave_global(sudden_death_sound);
 						played_sudden = true;
 					}
 				}
@@ -968,7 +1031,7 @@ void Quake3::step(int frame_step)
 					{
 						if (played_sudden == false)
 						{
-							engine->play_wave(global_source, sudden_death_sound);
+							engine->play_wave_global(sudden_death_sound);
 							played_sudden = true;
 						}
 					}
@@ -1132,7 +1195,7 @@ void Quake3::step(int frame_step)
 		case BOT_DEAD:
 			engine->zcc.select_animation(1);
 			bot->model->clone(*(engine->box->model));
-			engine->play_wave(bot->speaker->source, bot->player->death1_sound);
+			engine->play_wave(bot->position, bot->player->death1_sound);
 
 			bot->player->respawn();
 			char cmd[80];
@@ -1233,8 +1296,6 @@ void Quake3::step(int frame_step)
 #endif
 
 	}
-
-
 
 	// handles triggers and the projectile as trigger stuff
 	for (unsigned int i = 0; i < engine->max_player; i++)
@@ -1382,7 +1443,9 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
 
-		engine->play_wave(projectile->trigger->loop_source, projectile->trigger->idle_sound);
+		projectile->trigger->create_sources(engine->audio);
+
+		engine->play_wave_source(projectile->trigger->loop_source, projectile->trigger->idle_sound);
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -1554,6 +1617,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		camera_frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->rigid->noclip = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_leaf = player.entity->bsp_visible = true;
 
@@ -1565,9 +1629,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
-		sprintf(projectile->trigger->action, " ");
+		sprintf(projectile->trigger->action, "");
 
-		projectile->rigid->bounce = 5;
+//		projectile->rigid->bounce = 5;
 		projectile->trigger->hide = false;
 		projectile->trigger->radius = 25.0f;
 		projectile->trigger->idle = true;
@@ -1617,29 +1681,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				debugf(msg);
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
-
-
-				if (player.stats.kills >= fraglimit)
-				{
-					char winner[128];
-
-					sprintf(winner, "%s wins", player.name);
-					endgame(winner);
-					return;
-				}
-				else if (fraglimit - player.stats.kills == 1)
-				{
-					engine->play_wave(global_source, one_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 2)
-				{
-					engine->play_wave(global_source, two_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 3)
-				{
-					engine->play_wave(global_source, three_frag_sound);
-				}
-
+				handle_frags_left(player);
 			}
 		}
 	}
@@ -1758,14 +1800,14 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				{
 					player.impressive_award_timer = 3 * TICK_RATE;
 					player.stats.medal_impressive++;
-					engine->play_wave(global_source, "sound/feedback/impressive.wav");
+					engine->play_wave_global("sound/feedback/impressive.wav");
 				}
 
 				if (player.excellent_timer > 0)
 				{
 					player.excellent_award_timer = 3 * TICK_RATE;
 					player.stats.medal_excellent++;
-					engine->play_wave(global_source, "sound/feedback/excellent.wav");
+					engine->play_wave_global("sound/feedback/excellent.wav");
 				}
 
 				player.excellent_timer = 3 * TICK_RATE;
@@ -1775,27 +1817,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				debugf(msg);
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
-
-				if (player.stats.kills >= fraglimit)
-				{
-					char winner[128];
-
-					sprintf(winner, "%s wins", player.name);
-					endgame(winner);
-					return;
-				}
-				else if (fraglimit - player.stats.kills == 1)
-				{
-					engine->play_wave(global_source, one_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 2)
-				{
-					engine->play_wave(global_source, two_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 3)
-				{
-					engine->play_wave(global_source, three_frag_sound);
-				}
+				handle_frags_left(player);
 			}
 		}
 	}
@@ -1905,29 +1927,34 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
 
-				if (player.stats.kills >= fraglimit)
-				{
-					char winner[128];
-
-					sprintf(winner, "%s wins", player.name);
-					endgame(winner);
-					return;
-				}
-				else if (fraglimit - player.stats.kills == 1 && played_one_frag == false)
-				{
-					engine->play_wave(global_source, one_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 2 && played_two_frag == false)
-				{
-					engine->play_wave(global_source, two_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 3 && played_three_frag == false)
-				{
-					engine->play_wave(global_source, three_frag_sound);
-				}
-
+				handle_frags_left(player);
 			}
 		}
+	}
+}
+
+
+void Quake3::handle_frags_left(Player &player)
+{
+	if (player.stats.kills >= fraglimit)
+	{
+		char winner[128];
+
+		sprintf(winner, "%s wins", player.name);
+		endgame(winner);
+		return;
+	}
+	else if (fraglimit - player.stats.kills == 1 && played_one_frag == false)
+	{
+		engine->play_wave_global(one_frag_sound);
+	}
+	else if (fraglimit - player.stats.kills == 2 && played_two_frag == false)
+	{
+		engine->play_wave_global(two_frag_sound);
+	}
+	else if (fraglimit - player.stats.kills == 3 && played_three_frag == false)
+	{
+		engine->play_wave_global(three_frag_sound);
 	}
 }
 
@@ -2045,26 +2072,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
 
-				if (player.stats.kills >= fraglimit)
-				{
-					char winner[128];
-
-					sprintf(winner, "%s wins", player.name);
-					endgame(winner);
-					return;
-				}
-				else if (fraglimit - player.stats.kills == 1)
-				{
-					engine->play_wave(global_source, one_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 2)
-				{
-					engine->play_wave(global_source, two_frag_sound);
-				}
-				else if (fraglimit - player.stats.kills == 3)
-				{
-					engine->play_wave(global_source, three_frag_sound);
-				}
+				handle_frags_left(player);
 			}
 		}
 	}
@@ -2582,7 +2590,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 	{
 		if (once && player.current_weapon & WEAPON_LIGHTNING)
 		{
-			engine->audio.stop(player.entity->speaker->loop_source);
+//			engine->audio.stop(player.entity->speaker->loop_source);
 		}
 
 		once = false;
@@ -2634,16 +2642,16 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			player.weapon_idle_sound[0] = '\0';
 			break;
 		}
-		engine->audio.stop(player.entity->speaker->loop_source);
-		player.entity->speaker->loop_gain(0.25f);
+//		engine->audio.stop(player.entity->speaker->loop_source);
+//		player.entity->speaker->loop_gain(0.25f);
 		if (player.weapon_idle_sound[0] != '\0')
 		{
-			engine->play_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
+			engine->play_wave_global(player.weapon_idle_sound);
 		}
 
 		if (player.spawned)
 		{
-			engine->play_wave(player.entity->speaker->source, weapon_swap_sound);
+			engine->play_wave_global(weapon_swap_sound);
 		}
 		player.spawned = true;
 		player.last_weapon = player.current_weapon;
@@ -2800,14 +2808,21 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			{
 				if (once == false)
 				{
-					engine->play_wave(player.entity->speaker->source, player.attack_sound);
+					if (player.local)
+						engine->play_wave_global(player.attack_sound);
+					else
+						engine->play_wave(player.entity->position, player.attack_sound);
+
 					sprintf(player.weapon_idle_sound, "sound/weapons/lightning/lg_hum.wav");
 
-					engine->audio.stop(player.entity->speaker->loop_source);
+//					engine->audio.stop(player.entity->speaker->loop_source);
 //					player.entity->speaker->loop_gain(0.25f);
 					if (player.weapon_idle_sound[0] != '\0')
 					{
-						engine->play_wave(player.entity->speaker->loop_source, player.weapon_idle_sound);
+						if (player.local)
+							engine->play_wave_global(player.weapon_idle_sound);
+						else
+							engine->play_wave(player.entity->position, player.weapon_idle_sound);
 					}
 
 					once = true;
@@ -2815,13 +2830,20 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			}
 			else
 			{
-				engine->play_wave(player.entity->speaker->source, player.attack_sound);
+				if (player.local)
+					engine->play_wave_global(player.attack_sound);
+				else
+					engine->play_wave(player.entity->position, player.attack_sound);
 			}
 		}
 		else if (empty)
 		{
 			player.reload_timer = 30;
-			engine->play_wave(player.entity->speaker->source, empty_sound);
+
+			if (player.local)
+				engine->play_wave_global(empty_sound);
+			else
+				engine->play_wave(player.entity->position, empty_sound);
 		}
 	}
 
@@ -3722,20 +3744,19 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		entity_list[index]->player->health -= health_damage;
 
-		switch (engine->tick_num % 4)
+
+		if (entity_list[index]->player->pain_timer == 0)
 		{
-		case 0:
-			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain25_sound);
-			break;
-		case 1:
-			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain50_sound);
-			break;
-		case 2:
-			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain75_sound);
-			break;
-		case 3:
-			engine->play_wave(entity_list[index]->speaker->source, entity_list[index]->player->pain100_sound);
-			break;
+			if (entity_list[index]->player->health <= 25)
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->pain25_sound);
+			else if (entity_list[index]->player->health <= 50)
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->pain50_sound);
+			else if (entity_list[index]->player->health <= 75)
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->pain75_sound);
+			else if (entity_list[index]->player->health <= 100)
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->pain100_sound);
+
+			entity_list[index]->player->pain_timer = TICK_RATE >> 2;
 		}
 
 		return;
@@ -3750,12 +3771,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "damage %s", data);
 	if (ret == 1)
 	{
+		bool local = entity_list[self]->player->local;
+
 		snprintf(msg, LINE_SIZE, "damage %s\n", data);
 		menu.print(msg);
 
 		unsigned int damage = abs32(atoi(data));
 		unsigned int health_damage = damage / 3;
 		unsigned int armor_damage = 2 * health_damage;
+
 
 		if (entity_list[self]->player->godmode)
 			return;
@@ -3773,20 +3797,38 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		entity_list[self]->player->health -= health_damage;
 
-		switch (engine->tick_num % 4)
+		if (entity_list[self]->player->pain_timer == 0)
 		{
-		case 0:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
-			break;
-		case 1:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
-			break;
-		case 2:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
-			break;
-		case 3:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
-			break;
+			if (entity_list[self]->player->health <= 25)
+			{
+				if (local)
+					engine->play_wave_global(entity_list[self]->player->pain25_sound);
+				else
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain25_sound);
+			}
+			else if (entity_list[self]->player->health <= 50)
+			{
+				if (local)
+					engine->play_wave_global(entity_list[self]->player->pain50_sound);
+				else
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain50_sound);
+			}
+			else if (entity_list[self]->player->health <= 75)
+			{
+				if (local)
+					engine->play_wave_global(entity_list[self]->player->pain75_sound);
+				else
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain75_sound);
+			}
+			else if (entity_list[self]->player->health <= 100)
+			{
+				if (local)
+					engine->play_wave_global(entity_list[self]->player->pain100_sound);
+				else
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain100_sound);
+			}
+
+			entity_list[self]->player->pain_timer = TICK_RATE >> 2;
 		}
 
 		return;
@@ -4064,6 +4106,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "teleport");
 	if (ret == 0)
 	{
+		bool local = entity_list[self]->player->local;
+
 		// Find a spawn point
 		for (unsigned int i = last_spawn; i < entity_list.size(); i++)
 		{
@@ -4107,7 +4151,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				entity_list[self]->model->morientation.m[8] = matrix.m[10];
 
 
-				if (self == engine->find_type("player", 0))
+				if (local)
 				{
 					// Set frame if player (or else frame will override model position)
 					engine->camera_frame.up.x = matrix.m[4];
@@ -4123,7 +4167,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				debugf("Teleporting on entity %d\n", i);
 
 				// Play teleport sound
-				engine->play_wave(entity_list[self]->speaker->source, telein_sound);
+				if (local)
+					engine->play_wave_global(telein_sound);
+				else
+					engine->play_wave(entity_list[self]->position, telein_sound);
+
 				break;
 			}
 		}
@@ -4159,10 +4207,13 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 				if (index < entity_list.size())
 				{
-					engine->play_wave(entity_list[index]->trigger->source, teleout_sound);
+					engine->play_wave(entity_list[index]->position, teleout_sound);
 				}
 
-				engine->play_wave(entity_list[self]->speaker->source, telein_sound);
+				if (entity_list[self]->player->local)
+					engine->play_wave_global(telein_sound);
+				else
+					engine->play_wave(entity_list[self]->position, telein_sound);
 
 				switch (entity_list[i]->angle)
 				{
@@ -4185,7 +4236,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					break;
 				}
 
-				if (engine->find_type("player", 0) == (int)self)
+				if (entity_list[self]->player->local)
 				{
 					engine->camera_frame.forward.x = matrix.m[8];
 					engine->camera_frame.forward.y = matrix.m[9];
@@ -4277,7 +4328,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-			engine->play_wave(entity_list[player]->speaker->source, telein_sound);
+			engine->play_wave(entity_list[player]->position, telein_sound);
 			return;
 		}
 
@@ -4339,7 +4390,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					entity_list[player]->player->respawn();
 					entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-					engine->play_wave(entity_list[player]->speaker->source, telein_sound);
+					engine->play_wave(entity_list[player]->position, telein_sound);
 					spawned = true;
 					break;
 
@@ -4365,6 +4416,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "push %s", data);
 	if (ret == 1)
 	{
+		bool local = entity_list[self]->player->local;
+
 		snprintf(msg, LINE_SIZE, "push %s\n", data);
 		menu.print(msg);
 
@@ -4380,7 +4433,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 
 				entity_list[self]->player->jumppad_timer = TICK_RATE >> 1;
-				engine->play_wave(entity_list[self]->speaker->source, pad_sound);
+				if (local)
+					engine->play_wave(entity_list[self]->position, pad_sound);
+				else
+					engine->play_wave_global(pad_sound);
 				break;
 			}
 		}
@@ -5112,13 +5168,17 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		if (entity_list[i]->light)
 			engine->num_light++;
 
-
 		if (entity_list[i]->rigid && entity_list[i]->rigid->hard_impact && i >= engine->max_player)
 		{
 			if (entity_list[i]->speaker && entity_list[i]->rigid->impact_velocity < -3.0f)
 			{
 				entity_list[i]->rigid->hard_impact = false;
-				engine->play_wave(entity_list[i]->speaker->source, entity_list[i]->rigid->impact_sound);
+
+				if (entity_list[self]->player->local)
+					engine->play_wave_global(entity_list[i]->rigid->impact_sound);
+				else
+					engine->play_wave(entity_list[i]->position, entity_list[i]->rigid->impact_sound);
+
 			}
 		}
 
@@ -5209,16 +5269,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
 							entity_list[i]->trigger->explode = false;
 
-							bool ret = engine->select_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->explode_sound);
-							if (ret)
-							{
-								engine->audio.stop(entity_list[i]->trigger->loop_source);
-								engine->audio.play(entity_list[i]->trigger->source);
-							}
-							else
-							{
-								debugf("Unable to find PCM data for %s\n", entity_list[i]->trigger->explode_sound);
-							}
+							engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->explode_sound);
 							continue;
 						}
 						else
@@ -5254,7 +5305,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					blue_flag_caps++;
 
-					engine->play_wave(entity_list[i]->trigger->source, capture_sound);
+					engine->play_wave(entity_list[i]->position, capture_sound);
 
 					if (blue_flag_caps >= capturelimit)
 					{
@@ -5262,11 +5313,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{
-						engine->play_wave(global_source, teams_tied_sound);
+						engine->play_wave_global(teams_tied_sound);
 					}
 					else if (blue_flag_caps > red_flag_caps)
 					{
-						engine->play_wave(global_source, blue_lead_sound);
+						engine->play_wave_global(blue_lead_sound);
 					}
 
 				}
@@ -5283,7 +5334,10 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->player->holdable_flag = false;
 					red_flag_caps++;
 
-					engine->play_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
+					if (entity_list[self]->player->local)
+						engine->play_wave_global(entity_list[i]->trigger->pickup_sound);
+					else
+						engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->pickup_sound);
 
 					if (red_flag_caps >= capturelimit)
 					{
@@ -5291,11 +5345,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					}
 					else if (blue_flag_caps == red_flag_caps)
 					{
-						engine->play_wave(global_source, teams_tied_sound);
+						engine->play_wave_global(teams_tied_sound);
 					}
 					else if (blue_flag_caps < red_flag_caps)
 					{
-						engine->play_wave(global_source, red_lead_sound);
+						engine->play_wave_global(red_lead_sound);
 					}
 				}
 				continue;
@@ -5396,28 +5450,8 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						debugf(msg);
 						engine->menu.print_notif(msg);
 						notif_timer = 3 * TICK_RATE;
+						handle_frags_left(*(entity_list[owner]->player));
 
-
-						if (entity_list[owner]->player->stats.kills >= fraglimit)
-						{
-							char winner[128];
-
-							sprintf(winner, "%s wins", entity_list[owner]->player->name);
-							endgame(winner);
-							return;
-						}
-						else if (fraglimit - entity_list[owner]->player->stats.kills == 1)
-						{
-							engine->play_wave(global_source, one_frag_sound);
-						}
-						else if (fraglimit - entity_list[owner]->player->stats.kills == 2)
-						{
-							engine->play_wave(global_source, two_frag_sound);
-						}
-						else if (fraglimit - entity_list[owner]->player->stats.kills == 3)
-						{
-							engine->play_wave(global_source, three_frag_sound);
-						}
 					}
 				}
 
@@ -5432,7 +5466,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
 
-				engine->play_wave(entity_list[i]->trigger->source, entity_list[i]->trigger->pickup_sound);
+				if (entity_list[self]->player->local)
+					engine->play_wave_global(entity_list[i]->trigger->pickup_sound);
+				else
+					engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->pickup_sound);
+
 			}
 		}
 
@@ -5445,19 +5483,18 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		{
 			if (entity_list[i]->trigger->active)
 			{
-				for (unsigned int j = 0; j < engine->snd_wave.size(); j++)
-				{
-					if (strcmp(engine->snd_wave[j].file, entity_list[i]->trigger->respawn_sound) == 0)
-					{
-						engine->audio.select_buffer(entity_list[i]->trigger->source, engine->snd_wave[j].buffer);
-						break;
-					}
-				}
-				engine->audio.play(entity_list[i]->trigger->source);
+				engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->respawn_sound);
 			}
 
-			entity_list[i]->trigger->active = false;
-			entity_list[i]->trigger->timeout = 0.0f;
+			if (entity_list[i]->trigger->noise == false)
+			{
+				entity_list[i]->trigger->active = false;
+				entity_list[i]->trigger->timeout = 0.0f;
+			}
+			else
+			{
+				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
+			}
 		}
 	}
 }

@@ -52,6 +52,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	spawned = false;
 	godmode = false;
+	local = false;
 
 	Player::team = team;
 
@@ -97,7 +98,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	excellent_timer = 0;
 	teleport_timer = 0;
 	click_timer = 0;
-
+	pain_timer = 0;
 	impressive_count = 0;
 
 
@@ -138,20 +139,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	weapon_lightning.load(gfx,	"media/models/weapons2/lightning/lightning");
 	weapon_railgun.load(gfx,	"media/models/weapons2/railgun/railgun");
 	weapon_plasma.load(gfx,		"media/models/weapons2/plasma/plasma");
-
-
-	entity->speaker = new Speaker(entity, audio);
-	strcpy(entity->speaker->file, "info_player_deathmatch");
-#ifndef __OBJC__
-    alSourcef(entity->speaker->source, AL_GAIN, 4.0f);
-#endif
-	audio.effects(entity->speaker->source);
-
-	footstep_source = audio.create_source(false, true);
-#ifndef __OBJC__
-	alSourcef(footstep_source, AL_GAIN, 4.0f);
-#endif
-	audio.effects(footstep_source);
 
 
 	//	weapon_model.center = entity->rigid->center;

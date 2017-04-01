@@ -72,8 +72,14 @@ public:
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, bool lights);
 
+
 	bool select_wave(int source, char *file);
-	bool play_wave(int source, char *file);
+
+	// Hit max source limit, only moving entities really need them
+	bool play_wave_source(int source, char *file);
+	// Rest will play from 32 sources round robin style
+	bool play_wave(vec3 &position, char *file);
+	bool play_wave_global(char *file);
 
 	void destroy_buffers();
 	void render_to_framebuffer();
@@ -85,6 +91,9 @@ public:
 	void zoom(float level);
 	void reload_shaders();
 
+	int get_source();
+	int get_global_source();
+
 	unsigned int xres, yres;
 	unsigned int tick_num;
 
@@ -92,6 +101,12 @@ public:
 //temp
 	unsigned int testObj;
 	unsigned int num_light;
+
+
+	unsigned int audio_source[32];
+	unsigned int global_source[32];
+	int max_sources = 32;
+
 
 	char *pk3_list[32];
 	char *hash_list[32];
@@ -119,6 +134,7 @@ public:
 	Entity *gib7;
 	Entity *gib8;
 	Entity *gib9;
+
 
 
 

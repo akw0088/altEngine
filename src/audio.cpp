@@ -273,18 +273,18 @@ void Audio::init()
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
 	debugf("%d sends per audio source\n", sends);
 #endif
-	alListenerf(AL_REFERENCE_DISTANCE, 8 * 800.0f);
+	alListenerf(AL_REFERENCE_DISTANCE, 600.0f);
 
 	//gain = 	(distance / AL_REFERENCE_DISTANCE) ^ (-AL_ROLLOFF_FACTOR
-	alDistanceModel(AL_EXPONENT_DISTANCE);
-	alListenerf(AL_ROLLOFF_FACTOR, 0.000001f);
+	alDistanceModel(AL_LINEAR_DISTANCE);
+//	alListenerf(AL_ROLLOFF_FACTOR, -1.0);
 //	alListenerf(AL_MAX_DISTANCE, 10000.0f);
 
 	alDopplerFactor(1.0f);
 //	alDopplerVelocity(8.0f);
 //	alSpeedOfSound(343.3f * UNITS_TO_METERS);
 #ifdef WIN32
-	alListenerf(AL_METERS_PER_UNIT, 0.3f);
+	alListenerf(AL_METERS_PER_UNIT, 0.25f);
 
 	ALFWIsEFXSupported();
 	alGenAuxiliaryEffectSlots(1, &slot);

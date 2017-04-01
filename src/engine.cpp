@@ -244,6 +244,15 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	global.init(&gfx);
 	audio.init();
 	menu.init(&gfx, &audio, pk3_list, num_pk3);
+
+
+	for (int i = 0; i < max_sources; i++)
+	{
+		audio_source[i] = audio.create_source(false, false);
+		global_source[i] = audio.create_source(false, true);
+	}
+
+
 	game->init(this);
 
 	if (demo)
@@ -832,6 +841,7 @@ void Engine::render_scene(bool lights)
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
+
 #ifdef PARTICLES
 	gfx.Blend(true);
 	gfx.BlendFunc(NULL, NULL);
@@ -1148,6 +1158,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			mlight2.Params(mvp, light_list, 0, offset);
 		}
 
+
+
 #if 0
 		// render network clients
 		if (server_flag || client_flag)
@@ -1184,13 +1196,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			emitter.num = entity->num_particle;
 			emitter.position = entity->position;
 			emitter.gravity = vec3(0.0f, 30.0f, 0.0f);
-		}
-
-		// render func_ items (doors, moving platforms, etc)
-		if (entity->model_ref != -1)
-		{
-			entity->rigid->gravity = false;
-			q3map.render_model(entity->model_ref, gfx);
 		}
 	}
 }
@@ -1612,12 +1617,6 @@ void Engine::dynamics()
 			continue;
 
 		RigidBody *body = entity_list[i]->rigid;
-
-		if (body->velocity.magnitude() > 100)
-		{
-			printf("Hacky for fix killed by lightning gun issue\n");
-			body->velocity = vec3(0.0f, 0.0f, 0.0f);
-		}
 
 		float delta_time = TICK_MS / 1000.0f;
 		float target_time = delta_time;
@@ -2343,11 +2342,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				menu.print_chat(reliablemsg->msg + 5);
 				game->chat_timer = 3 * TICK_RATE;
 
-				int self = find_type("player", 0);
-				if (self != -1)
-				{
-					play_wave(entity_list[self]->speaker->source, "sound/player/talk.wav");
-				}
+				play_wave_global("sound/player/talk.wav");
 			}
 
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
@@ -3122,6 +3117,13 @@ void Engine::load_model(Entity &ent)
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
+	else if (strcmp(ent.type, "ammo_grenades") == 0)
+	{
+		debugf("Loading ammo_bfg\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
 	else if (strcmp(ent.type, "ammo_lightning") == 0)
 	{
 		debugf("Loading ammo_lightning\n");
@@ -3465,7 +3467,7 @@ int Engine::get_player()
 void Engine::create_sources()
 {
 	// create and associate sources
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	for(unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker != NULL)
 		{
@@ -4021,7 +4023,7 @@ void Engine::chat(char *name, char *msg)
 		int self = find_type("player", 0);
 		if (self != -1)
 		{
-			play_wave(entity_list[self]->speaker->source, "sound/player/talk.wav");
+			play_wave_global("sound/player/talk.wav");
 		}
 	}
 }
@@ -4044,8 +4046,69 @@ bool Engine::select_wave(int source, char *file)
 	return false;
 }
 
-bool Engine::play_wave(int source, char *file)
+int Engine::get_source()
 {
+	int source;
+	static int i = 0;
+
+	source = audio_source[i++];
+
+	if (i == max_sources)
+		i = 0;
+
+	return source;
+}
+
+int Engine::get_global_source()
+{
+	int source;
+	static int i = 0;
+
+	source = global_source[i++];
+
+	if (i == max_sources)
+		i = 0;
+
+	return source;
+}
+
+
+bool Engine::play_wave_source(int source, char *file)
+{
+	bool ret = select_wave(source, file);
+	if (ret)
+	{
+		audio.play(source);
+	}
+	else
+	{
+		debugf("Unable to find PCM data for %s\n", file);
+	}
+	return ret;
+}
+
+bool Engine::play_wave(vec3 &position, char *file)
+{
+	int source = get_source();
+
+	audio.source_position(source, &position.x);
+
+	bool ret = select_wave(source, file);
+	if (ret)
+	{
+		audio.play(source);
+	}
+	else
+	{
+		debugf("Unable to find PCM data for %s\n", file);
+	}
+	return false;
+}
+
+bool Engine::play_wave_global(char *file)
+{
+	int source = get_global_source();
+
 	bool ret = select_wave(source, file);
 	if (ret)
 	{

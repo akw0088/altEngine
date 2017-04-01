@@ -44,6 +44,7 @@ public:
 
 	void make_dynamic_ent(nettype_t item, int ent_id);
 	void handle_player(int index, input_t &input);
+	void handle_frags_left(Player &player);
 	void player_died(int index);
 	void drop_weapon(int index);
 	void drop_powerup(vec3 &position, char *model, char *action);

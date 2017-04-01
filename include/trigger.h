@@ -8,8 +8,11 @@ class Trigger
 public:
 	Trigger(Entity *entity, Audio &audio);
 	~Trigger();
+	void create_sources(Audio &audio);
 	void destroy(Audio &audio);
 	Entity	*entity;
+
+	bool noise;
 
 
 	char	pickup_sound[LINE_SIZE];

@@ -111,7 +111,6 @@ public:
 	int model_index;
 
 	int health;
-	unsigned int footstep_source;
 
 	unsigned int armor;
 	unsigned int weapon_flags;
@@ -144,6 +143,7 @@ public:
 	unsigned int impressive_count;
 	unsigned int impressive_award_timer;
 	unsigned int excellent_award_timer;
+	unsigned int pain_timer;
 
 
 	unsigned int current_light; // debugging light sources, selected same as weapon
@@ -161,6 +161,7 @@ public:
 
 
 	bool godmode;
+	bool local;
 	bool quad_damage;
 
 

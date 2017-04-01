@@ -222,6 +222,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
 		}
+		else if (strcmp(value, "ammo_grenades") == 0)
+		{
+			entity.trigger = new Trigger(&entity, audio);
+			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
+			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			snprintf(entity.trigger->action, LINE_SIZE, "ammo_grenades 10");
+		}
 		else if (strcmp(value, "ammo_plasma") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
@@ -494,6 +501,16 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 			}
 			entity.nodraw = true;
 		}
+		else if (strcmp(value, "func_timer") == 0)
+		{
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
 		else if (strcmp(value, "target_location") == 0)
 		{
 			if (entity.rigid)
@@ -576,16 +593,6 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 
 		}
 		else if (strcmp(value, "target_relay") == 0)
-		{
-			if (entity.rigid)
-			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
-				entity.nodraw = true;
-			}
-		}
-		else if (strcmp(value, "target_speaker") == 0)
 		{
 			if (entity.rigid)
 			{
@@ -717,8 +724,12 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 	}
 	else if (strcmp(key, "noise") == 0)
 	{
-		entity.speaker = new Speaker(&entity, audio);
-		snprintf(entity.speaker->file, LINE_SIZE, "%s", value);
+		if (entity.trigger == NULL)
+			entity.trigger = new Trigger(&entity, audio);
+		snprintf(entity.trigger->respawn_sound, LINE_SIZE, "%s", value);
+		entity.trigger->noise = true;
+		entity.trigger->timeout = entity.trigger->timeout_value;
+		entity.trigger->active = true;
 	}
 	else if (strcmp(key, "wait") == 0)
 	{

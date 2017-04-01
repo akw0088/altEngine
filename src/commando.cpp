@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#ifdef G_COMMANDO
+
 #define BOT_ENABLE
 
 #define MACHINEGUN_DAMAGE 7
@@ -164,7 +166,7 @@ void Commando::handle_player(int self)
 			engine->entity_list[self]->player->health = 125;
 			engine->entity_list[self]->player->holdable_medikit = false;
 			//play medikit sound
-			engine->play_wave(engine->entity_list[self]->speaker->source, medikit_sound);
+			engine->play_wave(engine->entity_list[self]->position, medikit_sound);
 			click = false;
 		}
 		if (engine->entity_list[self]->player->holdable_teleporter)
@@ -179,7 +181,7 @@ void Commando::handle_player(int self)
 			if (engine->entity_list[self]->player->click_timer == 0)
 			{
 				engine->entity_list[self]->player->click_timer = (int)(0.5f * TICK_RATE);
-				engine->play_wave(engine->entity_list[self]->speaker->source, noitem_sound);
+				engine->play_wave(engine->entity_list[self]->position, noitem_sound);
 			}
 			else
 			{
@@ -299,7 +301,7 @@ void Commando::handle_player(int self)
 				if (entity->rigid->move(engine->input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
-					engine->play_wave(entity->speaker->source, entity->player->jump_sound);
+					engine->play_wave(entity->position, entity->player->jump_sound);
 				}
 			}
 		}
@@ -412,7 +414,7 @@ void Commando::handle_player(int self)
 			if (entity->player->health < 200)
 			{
 				entity->player->health += 15;
-				engine->play_wave(engine->entity_list[self]->speaker->source, regen_bump_sound);
+				engine->play_wave(engine->entity_list[self]->position, regen_bump_sound);
 			}
 
 			if (entity->player->health > 200)
@@ -445,16 +447,16 @@ void Commando::handle_player(int self)
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				engine->play_wave(entity->player->footstep_source, step1_sound);
+				engine->play_wave(entity->position, step1_sound);
 				break;
 			case 1:
-				engine->play_wave(entity->player->footstep_source, step2_sound);
+				engine->play_wave(entity->position, step2_sound);
 				break;
 			case 2:
-				engine->play_wave(entity->player->footstep_source, step3_sound);
+				engine->play_wave(entity->position, step3_sound);
 				break;
 			case 3:
-				engine->play_wave(entity->player->footstep_source, step4_sound);
+				engine->play_wave(entity->position, step4_sound);
 				break;
 			}
 		}
@@ -464,7 +466,7 @@ void Commando::handle_player(int self)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, waterin_sound);
+			engine->play_wave(entity->position, waterin_sound);
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
@@ -472,7 +474,7 @@ void Commando::handle_player(int self)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
-			engine->play_wave(entity->speaker->source, waterout_sound);
+			engine->play_wave(entity->position, waterout_sound);
 			entity->rigid->last_water = entity->rigid->water;
 			entity->player->drown_timer = 0;
 		}
@@ -486,10 +488,10 @@ void Commando::handle_player(int self)
 			switch (footstep_num++ % 2)
 			{
 			case 0:
-				engine->play_wave(entity->speaker->source, gurp1_sound);
+				engine->play_wave(entity->position, gurp1_sound);
 				break;
 			case 1:
-				engine->play_wave(entity->speaker->source, gurp2_sound);
+				engine->play_wave(entity->position, gurp2_sound);
 				break;
 			}
 
@@ -508,7 +510,7 @@ void Commando::player_died(int index)
 
 	if (entity->player->health <= -50)
 	{
-		engine->play_wave(entity->speaker->source, gibbed_sound);
+		engine->play_wave(entity->position, gibbed_sound);
 		handle_gibs(*(entity->player));
 	}
 	else
@@ -516,13 +518,13 @@ void Commando::player_died(int index)
 		switch (engine->tick_num % 3)
 		{
 		case 0:
-			engine->play_wave(entity->speaker->source, entity->player->death1_sound);
+			engine->play_wave(entity->position, entity->player->death1_sound);
 			break;
 		case 1:
-			engine->play_wave(entity->speaker->source, entity->player->death2_sound);
+			engine->play_wave(entity->position, entity->player->death2_sound);
 			break;
 		case 2:
-			engine->play_wave(entity->speaker->source, entity->player->death3_sound);
+			engine->play_wave(entity->position, entity->player->death3_sound);
 			break;
 		}
 	}
@@ -784,7 +786,7 @@ void Commando::step(int frame_step)
 			case BOT_DEAD:
 				engine->zcc.select_animation(1);
 				bot->model->clone(*(engine->box->model));
-				engine->play_wave(bot->speaker->source, bot->player->death1_sound);
+				engine->play_wave(bot->position, bot->player->death1_sound);
 
 				bot->player->respawn();
 				char cmd[80];
@@ -3183,16 +3185,16 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 		switch (engine->tick_num % 4)
 		{
 		case 0:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain25_sound);
+			engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain25_sound);
 			break;
 		case 1:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain50_sound);
+			engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain50_sound);
 			break;
 		case 2:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain75_sound);
+			engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain75_sound);
 			break;
 		case 3:
-			engine->play_wave(entity_list[self]->speaker->source, entity_list[self]->player->pain100_sound);
+			engine->play_wave(entity_list[self]->position, entity_list[self]->player->pain100_sound);
 			break;
 		}
 
@@ -3424,6 +3426,15 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 		snprintf(msg, LINE_SIZE, "ammo_plasma %s\n", data);
 		menu.print(msg);
 		entity_list[self]->player->ammo_plasma += atoi(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "ammo_grenades %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_grenades %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_grenades += atoi(data);
 		return;
 	}
 
@@ -3674,7 +3685,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 			entity_list[player]->player->respawn();
 			entity_list[player]->rigid->clone(*(engine->thug22->model));
 
-			engine->play_wave(entity_list[player]->speaker->source, telein_sound);
+			engine->play_wave(entity_list[player]->position, telein_sound);
 			return;
 		}
 
@@ -3775,7 +3786,7 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				//add velocity towards target
 				engine->entity_list[self]->rigid->velocity += dir * 0.4f;
 
-				ret = engine->play_wave(entity_list[self]->speaker->source, pad_sound);
+				ret = engine->play_wave(entity_list[self]->position, pad_sound);
 				break;
 			}
 		}
@@ -4052,3 +4063,4 @@ void Commando::endgame(char *winner)
 {
 	engine->input.scores = true;
 }
+#endif

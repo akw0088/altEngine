@@ -25,14 +25,18 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	owner = -1;
 	num_bounce = 0;
 	projectile = false;
+	noise = false;
 
+	source = -1;
+	loop_source = -1;
+
+}
+
+void Trigger::create_sources(Audio &audio)
+{
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
 
-#ifndef __OBJC__
-	alSourcef(source, AL_GAIN, 30.0f);
-	alSourcef(loop_source, AL_GAIN, 30.0f);
-#endif
 	audio.effects(source);
 	audio.effects(loop_source);
 
