@@ -122,7 +122,7 @@ void main(void)
 	if (u_lightmap > 0.0)
 	{
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
-			Fragment.xyz *= lightmap;
+			Fragment.xyz *= lightmap * 1.5;
 	}
 	Fragment.rgb *= max(light, ambient);
 }

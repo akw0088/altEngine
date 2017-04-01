@@ -3748,19 +3748,23 @@ void Engine::console(char *cmd)
 		switch (mode)
 		{
 		case 0:
-			mlight2.set_light(1.0, 0.0, 0);
+			mlight2.set_ambient(1.5);
+			mlight2.set_lightmap(0.0);
 			mlight2.set_max(0);
 			break;
 		case 1:
-			mlight2.set_light(0.3, 1.0, 0);
+			mlight2.set_ambient(2.0);
+			mlight2.set_lightmap(1.0);
 			mlight2.set_max(0);
 			break;
 		case 2:
-			mlight2.set_light(0.3, 0.0, 64);
+			mlight2.set_ambient(0.0);
+			mlight2.set_lightmap(0.0);
 			mlight2.set_max(64);
 			break;
 		case 3:
-			mlight2.set_light(0.3, 1.0, 64);
+			mlight2.set_ambient(1.0);
+			mlight2.set_lightmap(0.5);
 			mlight2.set_max(64);
 			break;
 		}
