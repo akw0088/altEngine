@@ -814,11 +814,9 @@ void Quake3::handle_player(int self, input_t &input)
 
 	if (entity->rigid->hard_impact)
 	{
-		entity->rigid->hard_impact = false;
-
-
 		if (entity->rigid->impact_velocity < -FALL_DAMAGE_VELOCITY)
 		{
+			entity->rigid->hard_impact = false;
 
 			entity->player->health -= 10;
 			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
@@ -839,6 +837,8 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
+			entity->rigid->hard_impact = false;
+
 			if (entity->player->local)
 				engine->play_wave_global(SND_LAND);
 			else
@@ -2577,7 +2577,7 @@ void Quake3::handle_gibs(Player &player)
 		entity0->rigid->gravity = true;
 		entity0->rigid->translational_friction_flag = true;
 		entity0->rigid->rotational_friction_flag = true;
-		sprintf(entity0->rigid->impact_sound, "sound/player/gibimp1.wav");
+		entity0->rigid->impact_index = SND_GIB1;
 	}
 
 	{
@@ -2594,7 +2594,7 @@ void Quake3::handle_gibs(Player &player)
 		entity1->rigid->gravity = true;
 		entity1->rigid->translational_friction_flag = true;
 		entity1->rigid->rotational_friction_flag = true;
-		sprintf(entity1->rigid->impact_sound, "sound/player/gibimp2.wav");
+		entity1->rigid->impact_index = SND_GIB2;
 	}
 
 	{
@@ -2612,7 +2612,7 @@ void Quake3::handle_gibs(Player &player)
 		entity2->rigid->gravity = true;
 		entity2->rigid->translational_friction_flag = true;
 		entity2->rigid->rotational_friction_flag = true;
-		sprintf(entity2->rigid->impact_sound, "sound/player/gibimp3.wav");
+		entity2->rigid->impact_index = SND_GIB3;
 	}
 
 	{
@@ -2630,7 +2630,7 @@ void Quake3::handle_gibs(Player &player)
 		entity3->rigid->gravity = true;
 		entity3->rigid->rotational_friction_flag = true;
 		entity3->rigid->translational_friction_flag = true;
-		sprintf(entity3->rigid->impact_sound, "sound/player/gibimp1.wav");
+		entity3->rigid->impact_index = SND_GIB1;
 	}
 
 	{
@@ -2648,7 +2648,7 @@ void Quake3::handle_gibs(Player &player)
 		entity4->rigid->gravity = true;
 		entity4->rigid->rotational_friction_flag = true;
 		entity4->rigid->translational_friction_flag = true;
-		sprintf(entity4->rigid->impact_sound, "sound/player/gibimp2.wav");
+		entity4->rigid->impact_index = SND_GIB2;
 	}
 
 	{
@@ -2665,7 +2665,7 @@ void Quake3::handle_gibs(Player &player)
 		entity5->rigid->gravity = true;
 		entity5->rigid->rotational_friction_flag = true;
 		entity5->rigid->translational_friction_flag = true;
-		sprintf(entity5->rigid->impact_sound, "sound/player/gibimp1.wav");
+		entity5->rigid->impact_index = SND_GIB1;
 	}
 
 	{
@@ -2682,7 +2682,7 @@ void Quake3::handle_gibs(Player &player)
 		entity6->rigid->gravity = true;
 		entity6->rigid->translational_friction_flag = true;
 		entity6->rigid->rotational_friction_flag = true;
-		sprintf(entity6->rigid->impact_sound, "sound/player/gibimp2.wav");
+		entity6->rigid->impact_index = SND_GIB2;
 	}
 
 	{
@@ -2699,7 +2699,7 @@ void Quake3::handle_gibs(Player &player)
 		entity7->rigid->gravity = true;
 		entity7->rigid->translational_friction_flag = true;
 		entity7->rigid->rotational_friction_flag = true;
-		sprintf(entity7->rigid->impact_sound, "sound/player/gibimp3.wav");
+		entity7->rigid->impact_index = SND_GIB3;
 	}
 
 	{
@@ -2717,7 +2717,7 @@ void Quake3::handle_gibs(Player &player)
 		entity8->rigid->gravity = true;
 		entity8->rigid->translational_friction_flag = true;
 		entity8->rigid->rotational_friction_flag = true;
-		sprintf(entity8->rigid->impact_sound, "sound/player/gibimp1.wav");
+		entity8->rigid->impact_index = SND_GIB1;
 	}
 
 	{
@@ -2734,7 +2734,7 @@ void Quake3::handle_gibs(Player &player)
 		entity9->rigid->gravity = true;
 		entity9->rigid->translational_friction_flag = true;
 		entity9->rigid->rotational_friction_flag = true;
-		sprintf(entity9->rigid->impact_sound, "sound/player/gibimp2.wav");
+		entity9->rigid->impact_index = SND_GIB2;
 	}
 
 }
@@ -5655,8 +5655,8 @@ void Quake3::endgame(char *winner)
 void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 {
 	// Run ~20 times a second
-	if (engine->tick_num % 6 != 0)
-		return;
+//	if (engine->tick_num % 6 != 0)
+//		return;
 
 	engine->num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -5668,14 +5668,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (entity_list[i]->rigid && entity_list[i]->rigid->hard_impact && i >= engine->max_player)
 		{
-			if (entity_list[i]->speaker && entity_list[i]->rigid->impact_velocity < -3.0f)
+			if (entity_list[i]->rigid->impact_velocity <= -RIGID_IMPACT)
 			{
 				entity_list[i]->rigid->hard_impact = false;
 
-				if (entity_list[self]->player->local)
-					engine->play_wave_global(SND_GRENADE_IMPACT);
-				else
-					engine->play_wave(entity_list[i]->position, SND_GRENADE_IMPACT);
+				engine->play_wave(entity_list[i]->position, entity_list[i]->rigid->impact_index);
 
 			}
 		}
@@ -5767,7 +5764,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
 							entity_list[i]->trigger->explode = false;
 
-							engine->play_wave(entity_list[i]->position, SND_EXPLODE);
+							engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->explode_index);
 							continue;
 						}
 						else

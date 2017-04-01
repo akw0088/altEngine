@@ -1799,7 +1799,7 @@ bool Engine::map_collision(RigidBody &body)
 	if (collision)
 	{
 		body.on_ground = true;
-		if (body.velocity.y < -1.5)
+		if (body.velocity.y <= -RIGID_IMPACT)
 		{
 			body.hard_impact = true;
 			body.impact_velocity = body.velocity.y;
@@ -2366,6 +2366,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				entity_list[client]->position += entity_list[client]->rigid->center;
 				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21, TEAM_NONE);
 				camera_frame.pos = entity_list[client]->position;
+				entity_list[client]->player->type = PLAYER;
 
 				if (server_spawn != -1)
 				{
@@ -2377,6 +2378,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 					entity_list[server_spawn]->rigid->step_flag = true;
 					entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
 					entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21, TEAM_NONE);
+					entity_list[client]->player->type = SERVER;
 				}
 			}
 

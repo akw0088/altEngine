@@ -46,7 +46,7 @@ public:
 	float get_height();
 
 
-	char impact_sound[128];
+	unsigned int impact_index;
 
 	bool			on_ground;
 	bool			hard_impact;

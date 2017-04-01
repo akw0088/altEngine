@@ -61,7 +61,9 @@ RigidBody::RigidBody(Entity *entity)
 	inverse_tensor.m[7] = 0;
 	inverse_tensor.m[8] = 12.0f / (mass *  (width * width + height * height));
 
-	sprintf(impact_sound, "sounds/weapons/grenade/hgrenb1a.wav");
+
+	#define SND_GRENADE_IMPACT 244
+	impact_index = SND_GRENADE_IMPACT;
 }
 
 void RigidBody::recalc()

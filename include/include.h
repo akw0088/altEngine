@@ -17,6 +17,7 @@
 #define GRAVITY_SCALE 1.25f
 #define JUMPPAD_SCALE 0.015f
 
+#define RIGID_IMPACT 2.0f
 #define IMPACT_VELOCITY 4.0f
 #define FALL_DAMAGE_VELOCITY 7.0f
 
