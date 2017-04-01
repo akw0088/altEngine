@@ -89,6 +89,9 @@ private:
 	unsigned int		round_time;
 	unsigned int		warmup_time;
 
+	unsigned int snd_table[512];
+
+
 	unsigned int win_timer;
 	char win_msg[128];
 
@@ -104,75 +107,6 @@ private:
 	bool played_three_frag;
 	bool played_prepare;
 	bool played_sudden;
-
-
-
-	char empty_sound[128];
-	char pad_sound[128];
-	char land_sound[128];
-	char weapon_swap_sound[128];
-	char medikit_sound[128];
-	char noitem_sound[128];
-	char regen_bump_sound[128];
-
-	char step1_sound[128];
-	char step2_sound[128];
-	char step3_sound[128];
-	char step4_sound[128];
-
-	char waterin_sound[128];
-	char waterout_sound[128];
-
-	char telein_sound[128];
-	char teleout_sound[128];
-
-	char gurp1_sound[128];
-	char gurp2_sound[128];
-
-	char gibbed_sound[128];
-	char gibimpact1_sound[128];
-	char gibimpact2_sound[128];
-	char gibimpact3_sound[128];
-
-	char chat_sound[128];
-	char capture_sound[128];
-
-	char one_min_sound[128];
-	char five_min_sound[128];
-
-	char one_frag_sound[128];
-	char two_frag_sound[128];
-	char three_frag_sound[128];
-
-	char blue_lead_sound[128];
-	char red_lead_sound[128];
-	char teams_tied_sound[128];
-
-	char tied_lead_sound[128];
-	char lost_lead_sound[128];
-	char taken_lead_sound[128];
-
-	char excellent_sound[128];
-	char gauntlet_sound[128];
-	char humiliation_sound[128];
-	char impressive_a_sound[128];
-	char accuracy_sound[128];
-	char excellent_a_sound[128];
-	char frag_sound[128];
-	char impressive_sound[128];
-
-	char prepare_sound[128];
-	char fight_sound[128];
-	char denied_sound[128];
-	char hit_teammate_sound[128];
-
-	char one_sound[128];
-	char two_sound[128];
-	char three_sound[128];
-
-	char hit_sound[128];
-	char perfect_sound[128];
-	char sudden_death_sound[128];
 };
 
 #endif

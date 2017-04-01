@@ -88,26 +88,6 @@ public:
 	float DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point);
 
 	char model_name[128];
-
-
-	char weapon_idle_sound[128];
-	char death1_sound[128];
-	char death2_sound[128];
-	char death3_sound[128];
-
-	char pain25_sound[128];
-	char pain50_sound[128];
-	char pain75_sound[128];
-	char pain100_sound[128];
-
-	char jump_sound[128];
-	char attack_sound[128];
-	char pit_sound[128];
-	char fall_sound[128];
-
-
-
-
 	int model_index;
 
 	int health;

@@ -439,7 +439,7 @@ void Engine::load(char *level)
 	char *entdata = get_file(entfile, NULL);
 	if (entdata != NULL)
 	{
-		parse_entity(entdata, entity_list, gfx, audio);
+		parse_entity(this, entdata, entity_list, gfx, audio);
 		free((void *)entdata);
 	}
 	else
@@ -449,7 +449,7 @@ void Engine::load(char *level)
 
 		sprintf(filename, "media/%s.ent", q3map.map_name);
 		write_file(filename, data, strlen(data));
-		parse_entity(q3map.get_entities(), entity_list, gfx, audio);
+		parse_entity(this, q3map.get_entities(), entity_list, gfx, audio);
 	}
 
 
@@ -461,7 +461,7 @@ void Engine::load(char *level)
 	char *navdata = get_file(navfile, NULL);
 	if (navdata != NULL)
 	{
-		parse_entity(navdata, entity_list, gfx, audio);
+		parse_entity(this, navdata, entity_list, gfx, audio);
 		free((void *)navdata);
 	}
 
@@ -2342,7 +2342,8 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				menu.print_chat(reliablemsg->msg + 5);
 				game->chat_timer = 3 * TICK_RATE;
 
-				play_wave_global("sound/player/talk.wav");
+				#define SND_TALK 267
+				play_wave_global(SND_TALK);
 			}
 
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
@@ -2980,61 +2981,26 @@ void Engine::resize(int width, int height)
 #endif
 }
 
-void Engine::load_sounds()
+
+int Engine::get_load_wave(const char *file)
 {
-	wave_t wave[8] = { {0} };
+	wave_t wave;
 
-	
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	for (unsigned int j = 0; j < snd_wave.size(); j++)
 	{
-		unsigned int	num_wave = 0;
-		bool			add = true;
-
-		if (entity_list[i]->speaker)
+		if (strcmp(file, snd_wave[j].file) == 0)
 		{
-				strcpy(wave[0].file, entity_list[i]->speaker->file);
-				num_wave++;
+			return j;
 		}
-		else if (entity_list[i]->trigger)
-		{
-			if (entity_list[i]->trigger->pickup_sound[0] != '\0')
-			{
-				strcpy(wave[num_wave].file, entity_list[i]->trigger->pickup_sound);
-				num_wave++;
-			}
-
-			if (entity_list[i]->trigger->respawn_sound[0] != '\0')
-			{
-				strcpy(wave[num_wave].file, entity_list[i]->trigger->respawn_sound);
-				num_wave++;
-			}
-		}
-
-		for(unsigned int k = 0; k < num_wave; k++)
-		{
-			for(unsigned int j = 0; j < snd_wave.size(); j++)
-			{
-				char *file = snd_wave[j].file;
-				if (strcmp(wave[k].file, file) == 0)
-				{
-					add = false;
-					break;
-				}
-			}
-
-			if (add == false)
-				continue;
-
-			debugf("Loading wave file %s\n", wave[k].file);
-			audio.load(wave[k]);
-			if (wave[k].data == NULL)
-				continue;
-
-			snd_wave.push_back(wave[k]);
-		}
-
-
 	}
+
+	strcpy(wave.file, file);
+
+	debugf("Loading wave file %s\n", file);
+	audio.load(wave);
+	snd_wave.push_back(wave);
+
+	return snd_wave.size() - 1;
 }
 
 // To prevent making a class that looks exactly like model...
@@ -3349,7 +3315,7 @@ void Engine::load_entities()
 	if (client_flag == false)
 		game->add_player(entity_list, "player", spawn, "UnnamedPlayer");
 #endif
-	load_sounds();
+//	load_sounds();
 	create_sources();
 	load_models();
 
@@ -3472,14 +3438,10 @@ void Engine::create_sources()
 		if (entity_list[i]->speaker != NULL)
 		{
 			entity_list[i]->rigid->gravity = false;
-			for(unsigned int j = 0; j < snd_wave.size(); j++)
+			if (entity_list[i]->speaker->index  != -1)
 			{
-				if (strcmp(snd_wave[j].file, entity_list[i]->speaker->file) == 0)
-				{
-					audio.select_buffer(entity_list[i]->speaker->loop_source, snd_wave[j].buffer);
-					audio.play(entity_list[i]->speaker->loop_source);
-					break;
-				}
+				audio.select_buffer(entity_list[i]->speaker->loop_source, snd_wave[entity_list[i]->speaker->index].buffer);
+				audio.play(entity_list[i]->speaker->loop_source);
 			}
 		}
 		else if (entity_list[i]->trigger != NULL)
@@ -3496,6 +3458,7 @@ void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos));
 
+	/*
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->speaker)
@@ -3521,6 +3484,7 @@ void Engine::update_audio()
 			}
 		}
 	}
+	*/
 
 	int spawn = find_type("player", 0);
 
@@ -4023,7 +3987,7 @@ void Engine::chat(char *name, char *msg)
 		int self = find_type("player", 0);
 		if (self != -1)
 		{
-			play_wave_global("sound/player/talk.wav");
+			play_wave_global(SND_TALK);
 		}
 	}
 }
@@ -4073,52 +4037,38 @@ int Engine::get_global_source()
 }
 
 
-bool Engine::play_wave_source(int source, char *file)
+bool Engine::play_wave_source(int source, int index)
 {
-	bool ret = select_wave(source, file);
-	if (ret)
-	{
-		audio.play(source);
-	}
-	else
-	{
-		debugf("Unable to find PCM data for %s\n", file);
-	}
-	return ret;
+	audio.select_buffer(source, snd_wave[index].buffer);
+	audio.play(source);
+	return true;
 }
 
-bool Engine::play_wave(vec3 &position, char *file)
+bool Engine::play_wave(vec3 &position, int index)
 {
+	index -= 1;
+
+	if (index < 0)
+		return false;
+
 	int source = get_source();
 
 	audio.source_position(source, &position.x);
 
-	bool ret = select_wave(source, file);
-	if (ret)
-	{
-		audio.play(source);
-	}
-	else
-	{
-		debugf("Unable to find PCM data for %s\n", file);
-	}
-	return false;
+	audio.select_buffer(source, snd_wave[index].buffer);
+	audio.play(source);
+	return true;
 }
 
-bool Engine::play_wave_global(char *file)
+bool Engine::play_wave_global(int index)
 {
-	int source = get_global_source();
+	if (index < 0)
+		return false;
 
-	bool ret = select_wave(source, file);
-	if (ret)
-	{
-		audio.play(source);
-	}
-	else
-	{
-		debugf("Unable to find PCM data for %s\n", file);
-	}
-	return false;
+	int source = get_global_source();
+	audio.select_buffer(source, snd_wave[index].buffer);
+	audio.play(source);
+	return true;
 }
 
 

@@ -13,9 +13,9 @@ public:
 	void destroy(Audio &audio);
 	Entity			*entity;
 
-	char			file[LINE_SIZE];
 	int	source;
 	int	loop_source;
+	int index;
 };
 
 #endif

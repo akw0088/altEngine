@@ -38,12 +38,12 @@ typedef struct
 
 typedef struct
 {
+	char			file[LINE_SIZE];
 	waveFormat_t	*format;
 	void			*pcmData;
 	int				dataSize;
 	int				duration;
 	char			*data;
-	char			file[LINE_SIZE];
 	int				buffer;
 } wave_t;
 

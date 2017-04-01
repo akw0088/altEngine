@@ -15,10 +15,12 @@ public:
 	bool noise;
 
 
-	char	pickup_sound[LINE_SIZE];
-	char	respawn_sound[LINE_SIZE];
-	char	explode_sound[LINE_SIZE];
-	char	idle_sound[LINE_SIZE];
+	unsigned int pickup_index;
+	unsigned int respawn_index;
+	unsigned int explode_index;
+	unsigned int idle_index;
+
+
 	char	action[LINE_SIZE];
 	float	radius;
 	int	source;

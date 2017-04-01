@@ -11,6 +11,8 @@ Speaker::Speaker(Entity *entity, Audio &audio)
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
 
+	index = -1;
+
 	audio.effects(loop_source);
 
 	audio.play(loop_source);

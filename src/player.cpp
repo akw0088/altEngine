@@ -69,20 +69,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	model_index = model; // default to visor -- ranger isnt in demo files :'( 
 
 	strcpy(model_name, models[model_index]);
-	attack_sound[0] = '\0';
-	weapon_idle_sound[0] = '\0';
-	sprintf(death1_sound, "sound/player/%s/death1.wav", model_name);
-	sprintf(death2_sound, "sound/player/%s/death2.wav", model_name);
-	sprintf(death3_sound, "sound/player/%s/death3.wav", model_name);
-
-	sprintf(pain25_sound, "sound/player/%s/pain25_1.wav", model_name);
-	sprintf(pain50_sound, "sound/player/%s/pain50_1.wav", model_name);
-	sprintf(pain75_sound, "sound/player/%s/pain75_1.wav", model_name);
-	sprintf(pain100_sound, "sound/player/%s/pain100_1.wav", model_name);
-
-	sprintf(jump_sound, "sound/player/%s/jump1.wav", model_name);
-	sprintf(fall_sound, "sound/player/%s/fall1.wav", model_name);
-	sprintf(pit_sound, "sound/player/%s/falling1.wav", model_name);
 
 	health = 125;
 	armor = 0;
@@ -156,8 +142,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 void Player::respawn()
 {
-	attack_sound[0] = '\0';
-	weapon_idle_sound[0] = '\0';
 	health = 100;
 	armor = 0;
 	weapon_flags = WEAPON_MACHINEGUN;

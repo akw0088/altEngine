@@ -12,10 +12,13 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	timeout_value = 30.0f;
 	radius = 75.0f;
 	action[0] = '\0';
-	pickup_sound[0] = '\0';
-	respawn_sound[0] = '\0';
-	explode_sound[0] = '\0';
-	idle_sound[0] = '\0';
+
+	pickup_index = -1;
+	respawn_index = -1;
+	explode_index = -1;
+	idle_index = -1;
+
+
 	hide = true;
 	idle = false;
 	explode = false;

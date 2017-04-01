@@ -76,10 +76,11 @@ public:
 	bool select_wave(int source, char *file);
 
 	// Hit max source limit, only moving entities really need them
-	bool play_wave_source(int source, char *file);
+	bool play_wave_source(int source, int index);
 	// Rest will play from 32 sources round robin style
-	bool play_wave(vec3 &position, char *file);
-	bool play_wave_global(char *file);
+	bool play_wave(vec3 &position, int index);
+	bool play_wave_global(int index);
+	int get_load_wave(const char *file);
 
 	void destroy_buffers();
 	void render_to_framebuffer();
@@ -192,6 +193,7 @@ protected:
 
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;
+
 
 
 	//net stuff

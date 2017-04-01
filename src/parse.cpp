@@ -6,7 +6,7 @@
 
 #include <ctype.h>
 
-void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
+void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
 {
 	static int light_num = 0;
 
@@ -49,40 +49,41 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		if (strcmp(value, "item_armor_shard") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/s_health.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/s_health.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+
 			//snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/respawn1.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 5");
 		}
 		else if (strcmp(value, "item_health") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/n_health.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/n_health.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 25");
 			entity.trigger->health = true;
 		}
 		else if (strcmp(value, "item_health_large") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/l_health.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/l_health.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 50");
 			entity.trigger->health = true;
 		}
 		else if (strcmp(value, "item_health_small") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/n_health.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/n_health.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 5");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_health_mega") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/m_health.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/m_health.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 100");
 			entity.trigger->health = false;
 
@@ -96,215 +97,219 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		else if (strcmp(value, "item_quad") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/quaddamage.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/quaddamage.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
+
 			snprintf(entity.trigger->action, LINE_SIZE, "quaddamage");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "holdable_medkit") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/holdable.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/holdable.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "holdable_medkit");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "holdable_teleporter") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/holdable.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/holdable.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "holdable_teleporter");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_enviro") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/protect.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/protect.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "bodysuit");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_flight") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/holdable.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/holdable.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "flight 30");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_haste") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/haste.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/haste.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "haste");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_invis") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/invisibility.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/invisibility.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "invisibility");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "item_regen") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/items/regeneration.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/items/regeneration.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "regeneration");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "team_CTF_blueflag") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/teamplay/flagtk_blu.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/teamplay/flagtk_blu.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
+
 			snprintf(entity.trigger->action, LINE_SIZE, "blueflag");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "team_CTF_redflag") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/teamplay/flagtk_red.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/poweruprespawn.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/teamplay/flagtk_red.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "redflag");
 			entity.trigger->health = false;
 		}
 		else if (strcmp(value, "ammo_bullets") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_bullets 25");
 		}
 		else if (strcmp(value, "ammo_rockets") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_rockets 10");
 		}
 		else if (strcmp(value, "ammo_slugs") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_slugs 10");
 		}
 		else if (strcmp(value, "ammo_shells") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_shells 10");
 		}
 		else if (strcmp(value, "ammo_cells") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
 		}
 		else if (strcmp(value, "ammo_lightning") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
 		}
 		else if (strcmp(value, "ammo_bfg") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
 		}
 		else if (strcmp(value, "ammo_grenades") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_grenades 10");
 		}
 		else if (strcmp(value, "ammo_plasma") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/am_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_plasma 10");
 		}
 		else if (strstr(value, "weapon_rocketlauncher"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_rocketlauncher");
 		}
 		else if (strstr(value, "weapon_lightning"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
 		}
 		else if (strstr(value, "weapon_bfg"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
 		}
 		else if (strstr(value, "weapon_shotgun"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_shotgun");
 		}
 		else if (strstr(value, "weapon_machinegun"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_machinegun");
 		}
 		else if (strstr(value, "weapon_railgun"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_railgun");
 		}
 		else if (strstr(value, "weapon_plasma"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_plasma");
 		}
 		else if (strstr(value, "weapon_grenadelauncher"))
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/w_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_grenadelauncher");
 		}
 		else if (strcmp(value, "item_armor_combat") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/ar2_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
 			entity.trigger->armor = true;
 		}
 		else if (strcmp(value, "item_armor_body") == 0)
 		{
 			entity.trigger = new Trigger(&entity, audio);
-			snprintf(entity.trigger->pickup_sound, LINE_SIZE, "sound/misc/ar2_pkup.wav");
-			snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/s_health.wav");
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
 			entity.trigger->armor = true;
 		}
@@ -720,13 +725,13 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 		entity.speaker = new Speaker(&entity, audio);
 		entity.speaker->gain(0.3f);
 		entity.speaker->loop_gain(0.3f);
-		snprintf(entity.speaker->file, LINE_SIZE, "%s", value);
+		entity.speaker->index = engine->get_load_wave(value);
 	}
 	else if (strcmp(key, "noise") == 0)
 	{
 		if (entity.trigger == NULL)
 			entity.trigger = new Trigger(&entity, audio);
-		snprintf(entity.trigger->respawn_sound, LINE_SIZE, "%s", value);
+		entity.trigger->respawn_index = engine->get_load_wave(value);
 		entity.trigger->noise = true;
 		entity.trigger->timeout = entity.trigger->timeout_value;
 		entity.trigger->active = true;
@@ -770,7 +775,7 @@ void add_key(Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio
 
 }
 
-bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gfx, Audio &audio)
+bool parse_entity(Engine *engine, const char *input, vector<Entity *> &entity_list, Graphics &gfx, Audio &audio)
 {
 	Entity *entity = NULL;
 	char state = 'S';
@@ -818,7 +823,7 @@ bool parse_entity(const char *input, vector<Entity *> &entity_list, Graphics &gf
 			break;
 		case 'R':
 			i--;
-			add_key(*entity, key, val, gfx, audio, entity_list.size() - 1);
+			add_key(engine, *entity, key, val, gfx, audio, entity_list.size() - 1);
 			break;
 		}
 	}
