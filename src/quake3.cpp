@@ -655,7 +655,7 @@ team_t Quake3::get_team()
 	}
 }
 
-void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &ent_id, char *player_name)
+void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type, int &ent_id, char *player_name)
 {
 	char *spawn_type = NULL;
 	bool local = false;
@@ -691,8 +691,8 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			if ((unsigned int)last_spawn == i + 1)
 				continue;
 
-			if ((strcmp(player_type, "player") == 0) ||
-				(strcmp(player_type, "server") == 0))
+			if (player_type == PLAYER ||
+				player_type == SERVER)
 			{
 				// Only set render view position for local clients
 				engine->camera_frame.pos = entity_list[i]->position;
@@ -701,7 +701,25 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 
 			int spawn = engine->get_player();
 			ent_id = spawn;
-			strcpy(entity_list[spawn]->type, player_type);
+
+			switch (player_type)
+			{
+			case PLAYER:
+				strcpy(entity_list[spawn]->type, "player");
+				break;
+			case SERVER:
+				strcpy(entity_list[spawn]->type, "server");
+				break;
+			case CLIENT:
+				strcpy(entity_list[spawn]->type, "client");
+				break;
+			case BOT:
+				strcpy(entity_list[spawn]->type, "NPC");
+				break;
+			case SPECTATOR:
+				strcpy(entity_list[spawn]->type, "spectator");
+				break;
+			}
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
 			entity_list[spawn]->model = entity_list[spawn]->rigid;
@@ -710,6 +728,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team);
 			entity_list[spawn]->position += entity_list[spawn]->rigid->center;
 			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
+			entity_list[spawn]->player->type = player_type;
 
 			strcpy(entity_list[spawn]->player->name, player_name);
 			entity_list[spawn]->player->local = local;
@@ -743,7 +762,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, char *player_type, int &e
 		}
 	}
 
-	if (gametype == GAMETYPE_DEATHMATCH && strcmp(player_type, "NPC") == 0)
+	if (gametype == GAMETYPE_DEATHMATCH && player_type == BOT)
 	{
 		char cmd[80];
 
@@ -1001,7 +1020,7 @@ void Quake3::handle_player(int self, input_t &input)
 			player_died(self);
 		}
 
-		if (strcmp(entity->type, "player") == 0)
+		if (entity->player && entity->player->type == PLAYER)
 		{
 			if (input.attack && entity->player->reload_timer == 0)
 			{
@@ -1519,7 +1538,7 @@ void Quake3::step(int frame_step)
 			int bot_index = -1;
 
 			sprintf(bot_name, "Bot %d", i);
-			add_player(engine->entity_list, "NPC", bot_index, bot_name);
+			add_player(engine->entity_list, BOT, bot_index, bot_name);
 			engine->num_bot++;
 		}
 	}
@@ -1578,10 +1597,10 @@ void Quake3::step(int frame_step)
 	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		Entity *entity = engine->entity_list[i];
-		bool isplayer = (strcmp(entity->type, "player") == 0);
-		bool isbot = (strcmp(entity->type, "NPC") == 0);
-		bool isclient = (strcmp(entity->type, "client") == 0);
-		bool isserver = (strcmp(entity->type, "server") == 0);
+		bool isplayer = (entity->player && entity->player->type == PLAYER);
+		bool isbot = (entity->player && entity->player->type == BOT);
+		bool isclient = (entity->player && entity->player->type == CLIENT);
+		bool isserver = (entity->player && entity->player->type == SERVER);
 
 		if (isplayer || isbot || isserver)
 		{
@@ -1607,7 +1626,10 @@ void Quake3::step(int frame_step)
 			}
 		}
 
-		if (strcmp(entity->type, "NPC") != 0)
+		if (entity->player == NULL)
+			continue;
+
+		if (entity->player->type != BOT)
 			continue;
 
 #ifdef BOT_ENABLE
@@ -1762,11 +1784,11 @@ void Quake3::step(int frame_step)
 	// handles triggers and the projectile as trigger stuff
 	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
-		if (strcmp(engine->entity_list[i]->type, "player") == 0)
+		if (engine->entity_list[i]->player && engine->entity_list[i]->player->type == PLAYER)
 			check_triggers(i, engine->entity_list);
-		if (engine->server_flag && strcmp(engine->entity_list[i]->type, "client") == 0)
+		if (engine->server_flag && engine->entity_list[i]->player && engine->entity_list[i]->player->type == CLIENT)
 			check_triggers(i, engine->entity_list);
-		else if (strcmp(engine->entity_list[i]->type, "NPC") == 0)
+		else if (engine->entity_list[i]->player && engine->entity_list[i]->player->type == BOT)
 			check_triggers(i, engine->entity_list);
 	}
 
@@ -3128,7 +3150,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 	}
 
 	if ((input.attack &&
-		(strcmp(player.entity->type, "player") == 0 || strcmp(player.entity->type, "client") == 0) &&
+		(player.type == PLAYER || player.type == CLIENT) &&
 		player.reload_timer <= 0) ||
 		((player.bot_state == BOT_ATTACK) && (player.reload_timer <= 0)))
 	{
@@ -3464,8 +3486,8 @@ void Quake3::render_hud(double last_frametime)
 			float accuracy = 0.0f;
 
 
-			bool player = strcmp(engine->entity_list[i]->type, "player") == 0;
-			bool bot = strcmp(engine->entity_list[i]->type, "NPC") == 0;
+			bool player = (engine->entity_list[i]->player && engine->entity_list[i]->player->type == PLAYER);
+			bool bot = (engine->entity_list[i]->player && engine->entity_list[i]->player->type == BOT);
 
 			if (!(bot || player))
 				continue;
@@ -3538,7 +3560,10 @@ void Quake3::render_hud(double last_frametime)
 
 	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
-		if (strcmp(engine->entity_list[i]->type, "NPC") != 0)
+		if (engine->entity_list[i]->player == NULL)
+			continue;
+
+		if (engine->entity_list[i]->player->type != BOT)
 			continue;
 
 		if (engine->entity_list[i]->visible && engine->entity_list[i]->nodraw == false)
@@ -3803,7 +3828,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 		}
 
-		if (strcmp(entity->type, "navpoint") == 0)
+		if (entity->ent_type == ENT_NAVPOINT)
 		{
 			vec3 blue(0.0f, 0.0f, 1.0f);
 			vec3 green(0.0f, 1.0f, 0.0f);
@@ -3815,7 +3840,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, green, false, false);
 		}
 
-		if (strcmp(entity->type, "light") == 0)
+		if (entity->ent_type == ENT_LIGHT)
 		{
 			int line = 1;
 
@@ -3829,7 +3854,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			}
 		}
 
-		if (strcmp(entity->type, "NPC") == 0)
+		if (entity->player && entity->player->type == BOT)
 		{
 			int line = 1;
 			vec3 red(1.0f, 0.0f, 0.0f);
@@ -3851,8 +3876,8 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 			}
 		}
 
-		if (strcmp(entity->type, "func_plat") == 0 || strcmp(entity->type, "func_bobbing") == 0 ||
-			strcmp(entity->type, "func_train") == 0)
+		if (entity->ent_type == ENT_FUNC_PLAT || entity->ent_type == ENT_FUNC_BOBBING ||
+			entity->ent_type == ENT_FUNC_TRAIN)
 		{
 			int line = 1;
 
@@ -4061,7 +4086,7 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 
 	for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 	{
-		if (strcmp(engine->entity_list[i]->type, "navpoint") == 0)
+		if (engine->entity_list[i]->ent_type == ENT_NAVPOINT)
 		{
 			float distance_self = (engine->entity_list[i]->position - self_pos).magnitude();
 			float distance_target = (engine->entity_list[i]->position - target_pos).magnitude();
@@ -4575,8 +4600,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		// Find a spawn point
 		for (unsigned int i = last_spawn; i < entity_list.size(); i++)
 		{
-			if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
-				strcmp(entity_list[i]->type, "info_player_start") == 0)
+			if (entity_list[i]->ent_type == ENT_INFO_PLAYER_DEATHMATCH ||
+				entity_list[i]->ent_type == ENT_INFO_PLAYER_START)
 			{
 				matrix4 matrix;
 
@@ -4651,9 +4676,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 		{
-			if ( !((strcmp(entity_list[i]->type, "misc_teleporter_dest") == 0) ||
-				   (strcmp(entity_list[i]->type, "target_position") == 0) ||
-				   (strcmp(entity_list[i]->type, "target_teleporter") == 0)) )
+			if ( !(entity_list[i]->ent_type == ENT_MISC_TELEPORTER_DEST ||
+				   entity_list[i]->ent_type == ENT_TARGET_POSITION ||
+				   entity_list[i]->ent_type == ENT_TARGET_TELEPORTER) )
 				continue;
 
 			if (!strcmp(entity_list[i]->target_name, data))
@@ -4800,8 +4825,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			for (i = last_spawn; i < entity_list.size(); i++)
 			{
-				if (strcmp(entity_list[i]->type, "info_player_deathmatch") == 0 ||
-					strcmp(entity_list[i]->type, "info_player_start") == 0)
+				if (entity_list[i]->ent_type == ENT_INFO_PLAYER_DEATHMATCH ||
+					entity_list[i]->ent_type == ENT_INFO_PLAYER_START)
 				{
 					matrix4 matrix;
 
@@ -5765,7 +5790,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		if (distance < entity_list[i]->trigger->radius)
 			inside = true;
 
-		if (inside && strcmp(entity_list[i]->type, "team_CTF_blueflag") == 0)
+		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_BLUEFLAG)
 		{
 			if (entity_list[self]->player->team == TEAM_BLUE)
 			{
@@ -5794,7 +5819,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			}
 		}
 
-		if (inside && strcmp(entity_list[i]->type, "team_CTF_redflag") == 0)
+		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_REDFLAG)
 		{
 			if (entity_list[self]->player->team == TEAM_RED)
 			{

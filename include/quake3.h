@@ -56,7 +56,7 @@ public:
 	void load(gametype_t gametype);
 	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
 	void unload();
-	void add_player(vector<Entity *> &entity_list, char *type, int &ent_id, char *player_name);
+	void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 	void endgame(char *winner);
 

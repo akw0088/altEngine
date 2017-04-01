@@ -1120,27 +1120,27 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 				continue;
 		}
 
-		if (i < max_player && strcmp(entity->type, "player") == 0)
+		if (i < max_player && entity->player && entity->player->type == PLAYER)
 		{
 			continue;
 		}
 
-		if (i < max_player && strcmp(entity->type, "server") == 0)
+		if (i < max_player && entity->player && entity->player->type == SERVER)
 		{
 			continue;
 		}
 
-		if (i < max_player && strcmp(entity->type, "client") == 0)
+		if (i < max_player && entity->player && entity->player->type == CLIENT)
 		{
 			continue;
 		}
 
-		if (i < max_player  && strcmp(entity->type, "NPC") == 0)
+		if (i < max_player  && entity->player && entity->player->type == BOT)
 		{
 			continue;
 		}
 
-		if (i < max_player  && strcmp(entity->type, "spectator") == 0)
+		if (i < max_player  && entity->player && entity->player->type == SPECTATOR)
 		{
 			continue;
 		}
@@ -1212,46 +1212,49 @@ void Engine::render_players(matrix4 &trans, bool lights)
 		if (entity->visible == false)
 			continue;
 
-		if ((strcmp(entity->type, "NPC") == 0 ||
-			(strcmp(entity->type, "spectator") == 0 ||
-			strcmp(entity->type, "server") == 0 ||
-			strcmp(entity->type, "client") == 0)) &&
-			entity->player->health > 0)
+		if (entity->player && entity->player->type == BOT ||
+			(entity->player && entity->player->type == SPECTATOR ||
+				entity->player && entity->player->type == SERVER ||
+				entity->player && entity->player->type == CLIENT))
 		{
 
-			//md5 faces right, need to flip right and forward orientation
-			vec4 temp;
-
-			entity->rigid->get_matrix(mvp.m);
-
-			temp.x = mvp.m[0];
-			temp.y = mvp.m[1];
-			temp.z = mvp.m[2];
-			temp.w = mvp.m[3];
-
-			mvp.m[0] = mvp.m[8];
-			mvp.m[1] = mvp.m[9];
-			mvp.m[2] = mvp.m[10];
-			mvp.m[3] = mvp.m[11];
-
-			mvp.m[8] = -temp.x;
-			mvp.m[9] = -temp.y;
-			mvp.m[10] = -temp.z;
-			mvp.m[11] = -temp.w;
-
-
-			mvp = (mvp * trans) * projection;
-			vec3 offset = entity->position;
-
-			if (lights)
+			if (entity->player->health > 0)
 			{
-				mlight2.Params(mvp, light_list, light_list.size(), offset);
+
+				//md5 faces right, need to flip right and forward orientation
+				vec4 temp;
+
+				entity->rigid->get_matrix(mvp.m);
+
+				temp.x = mvp.m[0];
+				temp.y = mvp.m[1];
+				temp.z = mvp.m[2];
+				temp.w = mvp.m[3];
+
+				mvp.m[0] = mvp.m[8];
+				mvp.m[1] = mvp.m[9];
+				mvp.m[2] = mvp.m[10];
+				mvp.m[3] = mvp.m[11];
+
+				mvp.m[8] = -temp.x;
+				mvp.m[9] = -temp.y;
+				mvp.m[10] = -temp.z;
+				mvp.m[11] = -temp.w;
+
+
+				mvp = (mvp * trans) * projection;
+				vec3 offset = entity->position;
+
+				if (lights)
+				{
+					mlight2.Params(mvp, light_list, light_list.size(), offset);
+				}
+				else
+				{
+					mlight2.Params(mvp, light_list, 0, offset);
+				}
+				zcc.render(gfx, tick_num >> 1);
 			}
-			else
-			{
-				mlight2.Params(mvp, light_list, 0, offset);
-			}
-			zcc.render(gfx, tick_num >> 1);
 		}
 	}
 }
@@ -2059,7 +2062,7 @@ void Engine::server_recv()
 		char client_name[80];
 
 		sprintf(client_name, "client %d", (int)client_list.size());
-		game->add_player(entity_list, "client", client->ent_id, client_name);
+		game->add_player(entity_list, CLIENT, client->ent_id, client_name);
 		printf("client %s qport %d got entity %d\n", socketname, client->qport, client->ent_id);
 
 
@@ -3313,7 +3316,7 @@ void Engine::load_entities()
 #ifndef DEDICATED
 	int spawn = -1;
 	if (client_flag == false)
-		game->add_player(entity_list, "player", spawn, "UnnamedPlayer");
+		game->add_player(entity_list, PLAYER, spawn, "UnnamedPlayer");
 #endif
 //	load_sounds();
 	create_sources();
@@ -3372,7 +3375,7 @@ int Engine::get_entity()
 			}
 		}
 
-		if (strcmp(entity_list[index]->type, "free") == 0)
+//		if (strcmp(entity_list[index]->type, "free") == 0)
 		{
 			clean_entity(index);
 			entity_list[index]->~Entity();

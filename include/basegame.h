@@ -16,7 +16,7 @@ public:
 	virtual void load(gametype_t gametype) = 0;
 	virtual void unload() = 0;
 	virtual void destroy() = 0;
-	virtual void add_player(vector<Entity *> &entity_list, char *type, int &ent_id, char *player_name) = 0;
+	virtual void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name) = 0;
 	virtual void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list) = 0;
 	virtual void setup_func(vector<Entity *> &entity_list, Bsp &q3map) = 0;
 	virtual void render_hud(double last_frametime) = 0;

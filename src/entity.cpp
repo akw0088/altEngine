@@ -4,8 +4,12 @@
 #define new DEBUG_NEW
 #endif
 
+
+
+
 Entity::Entity()
 {
+	ent_type = ENT_UNKNOWN;
 	position = vec3(0.0f, 0.0f, 0.0f);
 	visible = false;
 	frustum_visible = false;

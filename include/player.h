@@ -63,6 +63,15 @@ typedef struct
 } stats_t;
 
 
+typedef enum
+{
+	PLAYER,
+	BOT,
+	CLIENT,
+	SERVER,
+	SPECTATOR
+} playertype_t;
+
 class Player
 {
 public:
@@ -89,6 +98,8 @@ public:
 
 	char model_name[128];
 	int model_index;
+
+	playertype_t type;
 
 	int health;
 
