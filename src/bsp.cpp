@@ -1157,11 +1157,14 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	}
 
 
-	if (blend_list.size() > 0 && blend_enabled)
+	if (blend_list.size() > 0)
 	{
 		mlight2.set_light(1.0f, 1.0f, 0);
-		gfx.DepthFunc("<=");
-		gfx.Blend(true);
+		if (blend_enabled)
+		{
+			gfx.DepthFunc("<=");
+			gfx.Blend(true);
+		}
 
 		for (int i = blend_list.size() - 1; i >= 0; i--)
 		{
@@ -1207,8 +1210,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			}
 		}
 	}
-	gfx.DepthFunc("<");
-	gfx.Blend(false);
+	if (blend_enabled)
+	{
+		gfx.DepthFunc("<");
+		gfx.Blend(false);
+	}
 	render_sky(gfx, mlight2, tick_num, surface_list);
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
