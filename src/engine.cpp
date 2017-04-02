@@ -2034,6 +2034,11 @@ void Engine::server_recv()
 	{
 		bool found = false;
 		client_t *client = (client_t *)malloc(sizeof(client_t));
+		if (client == NULL)
+		{
+			debugf("malloc failed allocating client");
+			return;
+		}
 
 		client->last_time = (unsigned int)time(NULL);
 		strcpy(client->socketname, socketname);
@@ -2737,7 +2742,7 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("moveright", cmd) == 0)
 	{
 		input.moveright = pressed;
-		if (*key != 'D' && *key != 'D')
+		if (*key != 'd' && *key != 'D')
 			k = 6;
 	}
 	else if (strcmp("jump", cmd) == 0)

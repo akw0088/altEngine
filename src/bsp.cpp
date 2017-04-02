@@ -12,7 +12,7 @@ Bsp::Bsp()
 	sky_enabled = true;
 	shader_enabled = true;
 	blend_enabled = true;
-	memset(map_name, 0, 80);
+	memset(map_name, 0, 64);
 	sky_face = -1;
 	lastIndex = -2;
 }
@@ -1330,7 +1330,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	int				tex_object = 0;
 	unsigned int	j = 0;
 
-	memset(texture_name, 0, sizeof(texture_name));
+	memset(texture_name, 0, LINE_SIZE + 1);
 
 	//printf("Attempting to load %s, trying surface_list\n", name);
 	for (j = 0; j < surface_list.size(); j++)
