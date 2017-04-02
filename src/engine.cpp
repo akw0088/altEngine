@@ -866,6 +866,7 @@ void Engine::render_scene(bool lights)
 
 	if (emitter.enabled == false)
 	{
+		emitter.visible = false;
 		emitter.position = vec3(0.0f, -10000.0, 0.0f);
 	}
 #endif

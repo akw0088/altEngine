@@ -20,6 +20,7 @@ Bsp::Bsp()
 
 bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
+	selected_map = false;
 //	tBsp = (bsp_t *)get_file(map);
 	for (int i = 0; i < num_pk3; i++)
 	{
@@ -603,8 +604,12 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 
 inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
-	gfx.SelectVertexBuffer(map_vertex_vbo);
-	gfx.SelectIndexBuffer(map_index_vbo);
+	if (selected_map == false)
+	{
+		selected_map = true;
+		gfx.SelectVertexBuffer(map_vertex_vbo);
+		gfx.SelectIndexBuffer(map_index_vbo);
+	}
 
 	if (textures_loaded)
 	{
@@ -673,6 +678,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 
 	for (int i = 0; i < patchdata[mesh_index].num_mesh; i++)
 	{
+		selected_map = false;
 		gfx.SelectVertexBuffer(patchdata[mesh_index + i].vbo);
 		gfx.SelectIndexBuffer(patchdata[mesh_index + i].ibo);
 
@@ -728,6 +734,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
 #endif
+	selected_map = false;
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
@@ -1112,6 +1119,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	vec2 zero(0.0f, 0.0f);
 	vec2 one(1.0f, 1.0f);
 	float time = ((float)tick_num / TICK_RATE);
+	selected_map = false;
 
 	if (frameIndex != lastIndex)
 	{

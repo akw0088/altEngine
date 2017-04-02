@@ -81,6 +81,8 @@ private:
 	bsp_t		*tBsp;
 	vec4		*tangent;
 
+	bool selected_map;
+
 //	int last_leaf;
 
 	// keeping this around because it seems like data.vertex is getting corrupted.
