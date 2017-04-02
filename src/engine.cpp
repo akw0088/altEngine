@@ -2782,6 +2782,7 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("escape", cmd) == 0)
 	{
 		input.escape = pressed;
+		k = 27;
 	}
 	else if (strcmp("numpad0", cmd) == 0)
 	{
@@ -4121,8 +4122,6 @@ bool Engine::play_wave_source(int source, int index)
 
 bool Engine::play_wave(vec3 &position, int index)
 {
-	index -= 1;
-
 	if (index < 0)
 		return false;
 

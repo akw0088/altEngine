@@ -65,6 +65,9 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 //	audio->load(menu_wave);
 	menu_source = audio->create_source(false, true);
 
+	alSourcef(menu_source, AL_GAIN, 0.125f);
+	
+
 	wave_t wave;
 	waveFormat_t format;
 
@@ -272,7 +275,8 @@ void Menu::handle(char key, Engine *altEngine)
 		console = !console;
 		break;
 	case 27:
-		ingame = false;
+		if (altEngine->q3map.loaded == false)
+			delta("unload", *altEngine);
 		break;
 	}
 }

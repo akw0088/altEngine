@@ -20,6 +20,7 @@ RigidBody::RigidBody(Entity *entity)
 	water = false;
 	flight = false;
 	last_water = false;
+	hard_impact = false;
 	target = NULL;
 	mass = 10.0f;
 	sphere_target = vec3(0.0f, 0.0f, 0.0f);

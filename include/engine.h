@@ -156,6 +156,7 @@ public:
 	vector<surface_t *> surface_list;
 
 	unsigned int num_bot;
+	Bsp			q3map;
 
 protected:
 	matrix4		projection;
@@ -167,7 +168,6 @@ protected:
 
 	Graphics	gfx;
 	Audio		audio;
-	Bsp			q3map;
 	input_t		input;
 	Menu		menu;
 	Frame		camera_frame;
@@ -193,7 +193,6 @@ protected:
 
 	vector<Light *>		light_list;
 	vector<wave_t>		snd_wave;
-
 
 
 	//net stuff
