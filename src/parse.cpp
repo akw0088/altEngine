@@ -507,6 +507,61 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			entity.nodraw = true;
 		}
+		else if (strcmp(value, "info_spectator_start") == 0)
+		{
+			entity.ent_type = ENT_INFO_SPECTATOR_START;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_firstplace") == 0)
+		{
+			entity.ent_type = ENT_INFO_FIRSTPLACE;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_secondplace") == 0)
+		{
+			entity.ent_type = ENT_INFO_SECONDPLACE;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_thirdplace") == 0)
+		{
+			entity.ent_type = ENT_INFO_THIRDPLACE;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "shooter_grenade") == 0)
+		{
+			entity.ent_type = ENT_SHOOTER_GRENADE;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
 		else if (strcmp(value, "light") == 0)
 		{
 			entity.ent_type = ENT_LIGHT;
