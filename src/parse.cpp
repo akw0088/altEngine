@@ -518,6 +518,17 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			entity.nodraw = true;
 		}
+		else if (strcmp(value, "item_botroam") == 0)
+		{
+			entity.ent_type = ENT_ITEM_BOT_ROAM;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
 		else if (strcmp(value, "info_firstplace") == 0)
 		{
 			entity.ent_type = ENT_INFO_FIRSTPLACE;

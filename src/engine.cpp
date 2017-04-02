@@ -3685,6 +3685,33 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strstr(cmd, "list") != 0)
+	{
+#define LIST_SIZE 1024 * 512
+		char *filelist = new char[LIST_SIZE];
+		char *line = NULL;
+
+		memset(filelist, 0, LIST_SIZE);
+		for (int i = 0; i < num_pk3; i++)
+		{
+			list_zipfile(pk3_list[i], &filelist[0]);
+
+			line = strtok(filelist, "\n");
+			while (line)
+			{
+				if (strstr(line, ".bsp") != NULL)
+				{
+					debugf("map %s", line);
+				}
+				line = strtok(NULL, "\n");
+			}
+			memset(filelist, 0, LIST_SIZE);
+		}
+
+		delete[] filelist;
+		return;
+	}
+
 	if (strcmp(cmd, "clear") == 0)
 	{
 		menu.clear_console();

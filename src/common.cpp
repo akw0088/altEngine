@@ -522,6 +522,13 @@ int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, v
 	return 0; // continue
 }
 
+int listCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, void *filelist)
+{
+	strcat((char *)filelist, filename);
+	strcat((char *)filelist, "\n");
+	return 1; // continue
+}
+
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 {
 	FILE *fp;
@@ -562,6 +569,41 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
 	{
 		*size = user.size;
 	}
+	retval = 0;
+	zip->close(zip);
+	return retval;
+}
+
+int list_zipfile(char *zipfile, char *filelist)
+{
+	FILE *fp;
+	JZEndRecord endRecord;
+	JZFile *zip;
+	int retval = -1;
+
+	fp = fopen(zipfile, "rb");
+	if (fp == NULL)
+	{
+		//		printf("Couldn't open zip file %s\n", zipfile);
+		return -1;
+	}
+
+	zip = jzfile_from_stdio_file(fp);
+
+	if (jzReadEndRecord(zip, &endRecord))
+	{
+		printf("Couldn't read ZIP file end record.");
+		zip->close(zip);
+		return retval;
+	}
+
+	if (jzReadCentralDirectory(zip, &endRecord, listCallback, filelist))
+	{
+		printf("Couldn't read ZIP file central record.");
+		zip->close(zip);
+		return retval;
+	}
+
 	retval = 0;
 	zip->close(zip);
 	return retval;
