@@ -102,7 +102,7 @@ void Quake3::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 	wave_t wave;
 
 	//load player sounds
-#define SND_PLAYER	0 // +23 * 11
+#define SND_PLAYER	10 // +23 * 10
 #define SND_DEATH1	0
 #define SND_DEATH2	1
 #define SND_DEATH3	2
@@ -730,6 +730,11 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 			entity_list[spawn]->player->type = player_type;
 
+			if (player_type == BOT && engine->demo == false)
+			{
+				entity_list[spawn]->player->model_index = 20;
+			}
+
 			strcpy(entity_list[spawn]->player->name, player_name);
 			entity_list[spawn]->player->local = local;
 
@@ -831,9 +836,9 @@ void Quake3::handle_player(int self, input_t &input)
 			}
 
 			if (entity->player->local)
-				engine->play_wave_global(entity->player->model_index * 11 + SND_FALL);
+				engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_FALL);
 			else
-				engine->play_wave(entity->position, entity->player->model_index * 11 + SND_FALL);
+				engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_FALL);
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
@@ -998,9 +1003,9 @@ void Quake3::handle_player(int self, input_t &input)
 				{
 					entity->player->state = PLAYER_JUMPED;
 					if (entity->player->local)
-						engine->play_wave_global(entity->player->model_index * 11 + SND_JUMP);
+						engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_JUMP);
 					else
-						engine->play_wave(entity->position, entity->player->model_index * 11 + SND_JUMP);
+						engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_JUMP);
 
 				}
 			}
@@ -1267,21 +1272,21 @@ void Quake3::player_died(int index)
 		{
 		case 0:
 			if (entity->player->local)
-				engine->play_wave_global(entity->player->model_index * 11 + SND_DEATH1);
+				engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_DEATH1);
 			else
-				engine->play_wave(entity->position, entity->player->model_index * 11 + SND_DEATH1);
+				engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_DEATH1);
 			break;
 		case 1:
 			if (entity->player->local)
-				engine->play_wave_global(entity->player->model_index * 11 + SND_DEATH2);
+				engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_DEATH2);
 			else
-				engine->play_wave(entity->position, entity->player->model_index * 11 + SND_DEATH2);
+				engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_DEATH2);
 			break;
 		case 2:
 			if (entity->player->local)
-				engine->play_wave_global(entity->player->model_index * 11 + SND_DEATH3);
+				engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_DEATH3);
 			else
-				engine->play_wave(entity->position, entity->player->model_index * 11 + SND_DEATH3);
+				engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_DEATH3);
 			break;
 		}
 	}
@@ -1683,7 +1688,7 @@ void Quake3::step(int frame_step)
 		case BOT_DEAD:
 			engine->zcc.select_animation(1);
 			bot->model->clone(*(engine->box->model));
-			engine->play_wave(bot->position, bot->player->model_index * 11 + SND_DEATH1);
+			engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
 			bot->player->respawn();
 			char cmd[80];
@@ -4241,13 +4246,13 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		if (entity_list[index]->player->pain_timer == 0)
 		{
 			if (entity_list[index]->player->health <= 25)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * 11 + SND_PAIN1);
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN1);
 			else if (entity_list[index]->player->health <= 50)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * 11 + SND_PAIN2);
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN2);
 			else if (entity_list[index]->player->health <= 75)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * 11 + SND_PAIN3);
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN3);
 			else if (entity_list[index]->player->health <= 100)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * 11 + SND_PAIN4);
+				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN4);
 
 			entity_list[index]->player->pain_timer = TICK_RATE >> 2;
 		}
@@ -4295,30 +4300,30 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			if (entity_list[self]->player->health <= 25)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * 11 + SND_PAIN1);
+					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN1);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * 11 + SND_PAIN1);
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN1);
 			}
 			else if (entity_list[self]->player->health <= 50)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * 11 + SND_PAIN2);
+					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN2);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * 11 + SND_PAIN2);
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN2);
 			}
 			else if (entity_list[self]->player->health <= 75)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * 11 + SND_PAIN3);
+					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN3);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * 11 + SND_PAIN3);
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN3);
 			}
 			else if (entity_list[self]->player->health <= 100)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * 11 + SND_PAIN4);
+					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN4);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * 11 + SND_PAIN4);
+					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN4);
 			}
 
 			entity_list[self]->player->pain_timer = TICK_RATE >> 2;
@@ -5655,8 +5660,8 @@ void Quake3::endgame(char *winner)
 void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 {
 	// Run ~20 times a second
-//	if (engine->tick_num % 6 != 0)
-//		return;
+	if (engine->tick_num % 6 != 0)
+		return;
 
 	engine->num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
