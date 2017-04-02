@@ -26,7 +26,7 @@
 Engine::Engine()
 {
 	initialized = false;
-	max_dynamic = 100;
+	max_dynamic = 300;
 	max_player = 8;
 	cl_skip = 0;
 	show_names = false;

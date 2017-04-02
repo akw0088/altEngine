@@ -634,6 +634,24 @@ void Quake3::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 #define SND_THREE_FRAG 297
 	snd_table[SND_THREE_FRAG] = snd_wave.size() - 1;
 
+	strcpy(wave.file, "media/sound/shell_quiet.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SHELL 298
+	snd_table[SND_SHELL] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "media/sound/bullet_quiet.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_BULLET 299
+	snd_table[SND_BULLET] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "media/sound/dropgun_quiet.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_DROPGUN 300
+	snd_table[SND_DROPGUN] = snd_wave.size() - 1;
+
 }
 
 team_t Quake3::get_team()
@@ -1325,6 +1343,7 @@ void Quake3::drop_weapon(int index)
 	drop_weapon->rigid = new RigidBody(drop_weapon);
 	drop_weapon->position = entity->position;
 	drop_weapon->model = drop_weapon->rigid;
+	drop_weapon->rigid->impact_index = SND_DROPGUN;
 
 	switch (entity->player->current_weapon)
 	{
@@ -1838,6 +1857,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
 
+		projectile->rigid->impact_index = SND_PLASMA_EXPLODE;
 		projectile->trigger->explode_index = SND_PLASMA_EXPLODE;
 		projectile->trigger->idle_index = SND_PLASMAFLY;
 
@@ -1999,7 +2019,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		sprintf(projectile->trigger->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
 
 		projectile->trigger->hide = false;
-		projectile->trigger->radius = 25.0f;
+		projectile->trigger->radius = 50.0f;
 		projectile->trigger->idle = true;
 		projectile->trigger->idle_timer = 120;
 		projectile->trigger->explode = true;
@@ -2348,21 +2368,22 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 
-	Entity *shell = engine->entity_list[engine->get_entity()];
-	shell->rigid = new RigidBody(shell);
-	shell->position = camera_frame.pos;
-	shell->rigid->clone(*(engine->bullet->model));
-	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
-	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
-	shell->rigid->gravity = true;
-	shell->model = shell->rigid;
-	shell->rigid->rotational_friction_flag = true;
-	shell->rigid->translational_friction_flag = true;
-	shell->rigid->translational_friction = 0.9f;
-	camera_frame.set(shell->model->morientation);
-	shell->visible = true; // accomodate for low spatial testing rate
-	shell->bsp_leaf = player.entity->bsp_leaf;
-	shell->bsp_leaf = player.entity->bsp_visible = true;
+	Entity *bullet = engine->entity_list[engine->get_entity()];
+	bullet->rigid = new RigidBody(bullet);
+	bullet->position = camera_frame.pos;
+	bullet->rigid->clone(*(engine->bullet->model));
+	bullet->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
+	bullet->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
+	bullet->rigid->gravity = true;
+	bullet->model = bullet->rigid;
+	bullet->rigid->impact_index = SND_BULLET;
+	bullet->rigid->rotational_friction_flag = true;
+	bullet->rigid->translational_friction_flag = true;
+	bullet->rigid->translational_friction = 0.9f;
+	camera_frame.set(bullet->model->morientation);
+	bullet->visible = true; // accomodate for low spatial testing rate
+	bullet->bsp_leaf = player.entity->bsp_leaf;
+	bullet->bsp_leaf = player.entity->bsp_visible = true;
 
 
 	if (client == false)
@@ -2478,6 +2499,8 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell->rigid->rotational_friction_flag = true;
 	shell->rigid->translational_friction_flag = true;
 	shell->rigid->translational_friction = 0.9f;
+	shell->rigid->impact_index = SND_SHELL;
+
 
 	shell->model = shell->rigid;
 	camera_frame.set(shell->model->morientation);
@@ -2496,6 +2519,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid->translational_friction = 0.9f;
 	shell2->rigid->angular_velocity = vec3(-1.0, 2.0, -3.0);
 	shell2->rigid->gravity = true;
+	shell2->rigid->impact_index = SND_SHELL;
 	shell2->model = shell2->rigid;
 	camera_frame.set(shell2->model->morientation);
 	shell2->visible = true; // accomodate for low spatial testing rate

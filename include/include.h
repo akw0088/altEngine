@@ -1,6 +1,8 @@
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
+#define _HAS_EXCEPTIONS 0
+
 #define LINE_SIZE 512
 
 #define LIGHTMAP
@@ -10,6 +12,10 @@
 #define TICK_RATE	125
 //#define TICK_MS 16		// 62.5hz
 //#define TICK_RATE 60
+// quite jerky movement, makes me sick
+//#define TICK_MS 33
+//#define TICK_RATE 30
+
 
 
 #define GRAVITY 9.8f
@@ -17,7 +23,7 @@
 #define GRAVITY_SCALE 1.25f
 #define JUMPPAD_SCALE 0.015f
 
-#define RIGID_IMPACT 2.0f
+#define RIGID_IMPACT 0.5f
 #define IMPACT_VELOCITY 4.0f
 #define FALL_DAMAGE_VELOCITY 7.0f
 
