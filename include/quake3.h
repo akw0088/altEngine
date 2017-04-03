@@ -59,10 +59,10 @@ public:
 	void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
 	void endgame(char *winner);
+	void get_state(serverdata_t *data);
+	void set_state(serverdata_t *data);
 
 	unsigned int weapon_switch_timer;
-
-
 
 	~Quake3()
 	{

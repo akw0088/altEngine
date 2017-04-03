@@ -26,7 +26,7 @@
 Engine::Engine()
 {
 	initialized = false;
-	max_dynamic = 300;
+	max_dynamic = 100; // 300 is causing network issues
 	max_player = 8;
 	cl_skip = 0;
 	show_names = false;
@@ -268,7 +268,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	sequence = 0;
 	server_flag = false;
 	client_flag = false;
-	memset(reliable.msg, 0, LINE_SIZE);
+	memset(&reliable, 0, sizeof(reliablemsg_t));
 	reliable.sequence = -1;
 	last_server_sequence = 0;
 	testObj = 0;
@@ -965,48 +965,6 @@ void Engine::render_scene_using_shadowmap(bool lights)
 //	gfx.SelectShader(0);
 }
 
-void Engine::render_client(int i, const matrix4 &trans, bool lights, bool hack)
-{
-	matrix4 mvp;
-
-	entity_list[i]->rigid->get_matrix(mvp.m);
-
-	//md5 faces right, need to flip right and forward orientation
-	if (hack)
-	{
-		vec4 temp;
-
-		temp.x = mvp.m[0];
-		temp.y = mvp.m[1];
-		temp.z = mvp.m[2];
-		temp.w = mvp.m[3];
-
-		mvp.m[0] = mvp.m[8];
-		mvp.m[1] = mvp.m[9];
-		mvp.m[2] = mvp.m[10];
-		mvp.m[3] = mvp.m[11];
-
-		mvp.m[8] = temp.x;
-		mvp.m[9] = temp.y;
-		mvp.m[10] = temp.z;
-		mvp.m[11] = temp.w;
-	}
-
-	mvp = (mvp * trans) * projection;
-	vec3 offset = entity_list[i]->position;
-
-
-	if (lights)
-	{
-		mlight2.Params(mvp, light_list, light_list.size(), offset);
-	}
-	else
-	{
-		mlight2.Params(mvp, light_list, 0, offset);
-	}
-	zcc.render(gfx, tick_num >> 1);
-}
-
 void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 {
 	matrix4 mvp;
@@ -1221,7 +1179,7 @@ void Engine::render_players(matrix4 &trans, bool lights)
 		if (entity->player && entity->player->type == BOT ||
 			(entity->player && entity->player->type == SPECTATOR ||
 				entity->player && entity->player->type == SERVER ||
-				entity->player && entity->player->type == CLIENT))
+				(entity->player && entity->player->type == CLIENT && server_flag)))
 		{
 
 			if (entity->player->health > 0)
@@ -1882,6 +1840,16 @@ void Engine::step(int tick)
 #endif
 }
 
+void Engine::server_send_state(int client)
+{
+	serverdata_t data;
+	game->get_state(&data);
+	memcpy(reliable.msg, &data, sizeof(serverdata_t));
+	reliable.size = 2 * sizeof(int) + sizeof(serverdata_t);
+	reliable.sequence = sequence;
+}
+
+
 void Engine::server_recv()
 {
 	servermsg_t	servermsg;
@@ -1938,6 +1906,7 @@ void Engine::server_recv()
 		if (clientmsg.server_sequence > reliable.sequence)
 		{
 			memset(reliable.msg, 0, LINE_SIZE);
+			reliable.size = 0;
 			reliable.sequence = -1;
 		}
 
@@ -2021,12 +1990,11 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "map %s", q3map.map_name);
+		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
 		reliable.sequence = sequence;
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
-			&reliable,
-			sizeof(int) + strlen(reliable.msg) + 1);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
-			sizeof(int) + strlen(reliable.msg) + 1;
+
+		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
 	}
@@ -2043,6 +2011,7 @@ void Engine::server_recv()
 		client->last_time = (unsigned int)time(NULL);
 		strcpy(client->socketname, socketname);
 		client->qport = clientmsg.qport;
+		client->needs_state = true;
 
 		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
@@ -2072,7 +2041,7 @@ void Engine::server_recv()
 
 		char client_name[80];
 
-		sprintf(client_name, "client %d", (int)client_list.size());
+		sprintf(client_name, "client %d", (int)client_list.size() - 1);
 		game->add_player(entity_list, CLIENT, client->ent_id, client_name);
 		printf("client %s qport %d got entity %d\n", socketname, client->qport, client->ent_id);
 
@@ -2082,12 +2051,10 @@ void Engine::server_recv()
 		servermsg.num_ents = 0;
 		
 		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type("player", 0));
+		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
 		reliable.sequence = sequence;
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
-			&reliable,
-			sizeof(int) + strlen(reliable.msg) + 1);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
-			sizeof(int) + strlen(reliable.msg) + 1;
+		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("Client is now entity %d\n", client->ent_id);
 	}
@@ -2179,12 +2146,14 @@ void Engine::server_send()
 			}
 		}
 
+		if (client_list[i]->needs_state)
+		{
+			server_send_state(i);
+			client_list[i]->needs_state = false;
+		}
 
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)],
-			(void *)&reliable,
-			sizeof(int) + strlen(reliable.msg) + 1);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) +
-			sizeof(int) + strlen(reliable.msg) + 1;
+		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], (void *)&reliable, reliable.size);
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
 		client_list[i]->netinfo.num_ents = servermsg.num_ents;
@@ -2201,9 +2170,29 @@ void Engine::server_send()
 //		free((void *)compressed);
 		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 		if (num_sent <= 0)
+		{
 			netinfo.send_full = true;
+
+#ifdef WIN32
+			int ret = WSAGetLastError();
+
+			if (ret != WSAEWOULDBLOCK)
+			{
+				printf("Fatal socket error %d\n", ret);
+				printf("size was %d bytes\n", servermsg.length);
+			}
+#else
+			if (errno != EWOULDBLOCK)
+			{
+				printf("Fatal socket error %d\n", errno);
+			}
+
+#endif
+		}
 		else
+		{
 			netinfo.send_full = false;
+		}
 
 		if (num_sent != servermsg.length)
 		{
@@ -2257,6 +2246,7 @@ void Engine::client_recv()
 		if (servermsg.client_sequence > reliable.sequence)
 		{
 			memset(reliable.msg, 0, LINE_SIZE);
+			reliable.size = 0;
 			reliable.sequence = -1;
 		}
 
@@ -2315,11 +2305,8 @@ void Engine::client_send()
 	clientmsg.forward[2] = camera_frame.forward.z;
 	clientmsg.num_cmds = 1;
 	memcpy(clientmsg.data, &keystate, sizeof(int));
-	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],
-		(void *)&reliable,
-		sizeof(int) + strlen(reliable.msg) + 1);
-	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
-		+ sizeof(int) + strlen(reliable.msg) + 1;
+	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], (void *)&reliable, reliable.size);
+	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + reliable.size;
 	int num_sent = ::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
 
 	if (server_flag == false)
@@ -2360,6 +2347,14 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				play_wave_global(SND_TALK);
 			}
 
+			if (strstr(reliablemsg->msg, "data"))
+			{
+				serverdata_t *data = (serverdata_t *)reliablemsg->msg;
+
+				debugf("client received server state\n");
+				game->set_state(data);
+			}
+
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
 			if (ret == 2)
 			{
@@ -2371,8 +2366,8 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				entity_list[client]->rigid->step_flag = true;
 				entity_list[client]->position += entity_list[client]->rigid->center;
 				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21, TEAM_NONE);
-				camera_frame.pos = entity_list[client]->position;
 				entity_list[client]->player->type = PLAYER;
+				camera_frame.pos = entity_list[client]->position;
 
 				if (server_spawn != -1)
 				{
@@ -3534,10 +3529,10 @@ void Engine::kick(unsigned int i)
 	servermsg.num_ents = 0;
 
 	sprintf(reliable.msg, "disconnect");
-	reliable.sequence = sequence + 1;
-	servermsg.length = SERVER_HEADER +
-		sizeof(int) + strlen(reliable.msg) + 1;
-	memcpy(servermsg.data, &reliable, sizeof(int) + strlen(reliable.msg) + 1);
+	reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+	reliable.sequence = sequence;
+	servermsg.length = SERVER_HEADER + reliable.size;
+	memcpy(servermsg.data, &reliable, reliable.size);
 	net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 	debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
 	free((void *)client_list[i]);
@@ -4024,12 +4019,10 @@ void Engine::connect(char *serverip)
 	clientmsg.num_cmds = 0;
 	clientmsg.qport = qport;
 	strcpy(reliable.msg, "connect");
+	reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
 	reliable.sequence = sequence;
-	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)],
-		&reliable,
-		sizeof(int) + strlen(reliable.msg) + 1);
-	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int)
-		+ sizeof(int) + strlen(reliable.msg) + 1;
+	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &reliable, reliable.size);
+	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + reliable.size;
 
 	net.connect(serverip, 65535);
 	debugf("Sending map request\n");
@@ -4048,6 +4041,7 @@ void Engine::connect(char *serverip)
 			debugf("Loading %s\n", level);
 			load((char *)level);
 			strcpy(reliable.msg, "spawn");
+			reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
 			reliable.sequence = sequence;
 			last_server_sequence = servermsg.sequence;
 		}
@@ -4085,6 +4079,7 @@ void Engine::chat(char *name, char *msg)
 
 
 	strcat(reliable.msg, data);
+	reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
 	reliable.sequence = sequence;
 
 	// Client will get message back from server

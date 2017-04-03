@@ -56,6 +56,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	Player::team = team;
 
+	type = UNKNOWN;
+
 
 	zoom_level = 4.0;
 

@@ -65,6 +65,7 @@ typedef struct
 
 typedef enum
 {
+	UNKNOWN,
 	PLAYER,
 	BOT,
 	CLIENT,

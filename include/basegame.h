@@ -23,6 +23,8 @@ public:
 	virtual void draw_flash(Player &player) = 0;
 	virtual void make_dynamic_ent(nettype_t item, int ent_id) = 0;
 	virtual void endgame(char *winner) = 0;
+	virtual void get_state(serverdata_t *data) = 0;
+	virtual void set_state(serverdata_t *data) = 0;
 	virtual ~BaseGame()
 	{
 	};

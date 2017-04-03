@@ -201,6 +201,7 @@ typedef struct
 typedef struct
 {
 	unsigned int	sequence;
+	unsigned int	size; // size of entire header + data
 	char			msg[256000];
 }
 reliablemsg_t;
@@ -258,6 +259,7 @@ typedef struct
 	unsigned int	last_time;
 	input_t			input;
 	netinfo_t		netinfo;
+	bool			needs_state;
 } client_t;
 
 
@@ -555,6 +557,18 @@ typedef struct
         int length;
         int pos;
 } rletable_t;
+
+typedef struct
+{
+	char header[4]; // data
+	uint8_t warmup;
+	uint32_t warmup_time;
+	uint32_t round_time;
+	uint8_t fraglimit;
+	uint8_t timelimit;
+	uint8_t red_flag_caps;
+	uint8_t blue_flag_caps;
+} serverdata_t;
 
 
 // Player sound sets

@@ -3428,7 +3428,6 @@ void Quake3::render_hud(double last_frametime)
 		{
 			if (warmup)
 			{
-
 				if (win_timer > 0)
 				{
 					engine->menu.draw_text(win_msg, 0.35f, 0.25f, 0.050f, color, false, false);
@@ -6023,7 +6022,34 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 	}
 }
 
+void Quake3::get_state(serverdata_t *data)
+{
+	memset(data, 0, sizeof(serverdata_t));
+	memcpy(data->header, "data", 4);
+	if (warmup)
+		data->warmup = 0xFF;
 
+	data->warmup_time = warmup_time;
+	data->red_flag_caps = red_flag_caps;
+	data->blue_flag_caps = blue_flag_caps;
+	data->fraglimit = fraglimit;
+	data->timelimit = timelimit;
+	data->round_time = round_time;
+}
 
-
-
+void Quake3::set_state(serverdata_t *data)
+{
+	if (memcmp(data->header, "data", 4) == 0)
+	{
+		if (data->warmup)
+			warmup = true;
+		else
+			warmup = false;
+		warmup_time = data->warmup_time;
+		red_flag_caps = data->red_flag_caps;
+		blue_flag_caps = data->blue_flag_caps;
+		fraglimit = data->fraglimit;
+		timelimit = data->timelimit;
+		round_time = data->round_time;
+	}
+}
