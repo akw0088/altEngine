@@ -91,24 +91,26 @@ void main(void)
 	vec3 r = reflect(u, -normal);
 
 
-
-	// Environment "sphere" mapping
-//	r.z += 1.0;
-//	float m = 0.5 * inversesqrt(dot(r,r));
-//	vec2 tc = (r.xy * m) + vec2(0.5);
-
-	//equirectangular env mapping
 	vec2 tc;
 
-	tc.y = r.y;
-	r.y = 0.0;
-	tc.x = normalize(r).x * 0.5;
+	if (u_env0 + u_env1 + u_env2 + u_env3 > 0)
+	{
+		// Environment "sphere" mapping
+		r.z += 1.0;
+		float m = 0.5 * inversesqrt(dot(r,r));
+		tc = (r.xy * m) + vec2(0.5);
 	
-	float s = sign(r.z) * 0.5;
-	tc.s = 0.75 - s * (0.5 - tc.s);
-	tc.t = 0.5 + 0.5 * tc.t;
-
-	tc *= 0.1; // enlarge texture so you cant see details
+		//equirectangular env mapping
+	//	tc.y = r.y;
+	//	r.y = 0.0;
+	//	tc.x = normalize(r).x * 0.5;
+		
+	//	float s = sign(r.z) * 0.5;
+	//	tc.s = 0.75 - s * (0.5 - tc.s);
+	//	tc.t = 0.5 + 0.5 * tc.t;
+	
+		tc *= 0.2; // enlarge texture so you cant see details
+	}
 
 
 	if (u_env0 > 0)
