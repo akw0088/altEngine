@@ -587,7 +587,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		}
 		else if (strcmp(value, "func_static") == 0)
 		{
-			entity.ent_type = FUNC_STATIC;
+			entity.ent_type = ENT_FUNC_STATIC;
 
 			if (entity.rigid)
 			{

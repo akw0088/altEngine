@@ -28,6 +28,7 @@ Engine::Engine()
 	initialized = false;
 	max_dynamic = 100; // 300 is causing network issues
 	max_player = 8;
+	max_sources = 32;
 	cl_skip = 0;
 	show_names = false;
 	show_lines = false;
@@ -1176,10 +1177,10 @@ void Engine::render_players(matrix4 &trans, bool lights)
 		if (entity->visible == false)
 			continue;
 
-		if (entity->player && entity->player->type == BOT ||
-			(entity->player && entity->player->type == SPECTATOR ||
-				entity->player && entity->player->type == SERVER ||
-				(entity->player && entity->player->type == CLIENT && server_flag)))
+		if (	(entity->player && entity->player->type == BOT) ||
+			(entity->player && entity->player->type == SPECTATOR) ||
+			(entity->player && entity->player->type == SERVER) ||
+			(entity->player && entity->player->type == CLIENT && server_flag))
 		{
 
 			if (entity->player->health > 0)

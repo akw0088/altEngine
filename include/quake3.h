@@ -99,7 +99,6 @@ private:
 	unsigned int num_player_blue;
 	unsigned int num_player_red;
 	unsigned int spectator_timer;
-	unsigned int global_source;
 
 
 	bool played_one_frag;

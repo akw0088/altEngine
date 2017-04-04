@@ -106,7 +106,7 @@ public:
 
 	unsigned int audio_source[32];
 	unsigned int global_source[32];
-	int max_sources = 32;
+	int max_sources;
 
 
 	char *pk3_list[32];

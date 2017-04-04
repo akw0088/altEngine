@@ -737,6 +737,9 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			case SPECTATOR:
 				strcpy(entity_list[spawn]->type, "spectator");
 				break;
+			case UNKNOWN:
+				strcpy(entity_list[spawn]->type, "unknown");
+				break;
 			}
 			entity_list[spawn]->position = entity_list[i]->position;
 			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
@@ -2134,7 +2137,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
-		sprintf(projectile->trigger->action, "");
+		projectile->trigger->action[0] = '\0';
 
 //		projectile->rigid->bounce = 5;
 		projectile->trigger->hide = false;
@@ -3071,7 +3074,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 	bool empty = false;
 	static bool once = false;
 	int attack_sound = -1;
-	int weapon_idle_sound = -1;
+//	int weapon_idle_sound = -1;
 
 	if (input.weapon_up)
 	{
@@ -3145,7 +3148,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 //			engine->play_wave_global(SND_LG_HUM);
 			break;
 		default:
-			weapon_idle_sound = -1;
+			//weapon_idle_sound = -1;
 			break;
 		}
 //		engine->audio.stop(player.entity->speaker->loop_source);
@@ -3330,7 +3333,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 					else
 						engine->play_wave(player.entity->position, SND_LIGHTNING);
 
-					weapon_idle_sound = SND_LG_HUM;
+					//weapon_idle_sound = SND_LG_HUM;
 
 					/*
 					engine->audio.stop(player.entity->speaker->loop_source);

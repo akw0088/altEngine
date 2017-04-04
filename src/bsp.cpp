@@ -464,7 +464,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		// Outside of map
 		return true;
 	}
-	vec3 midpoint = point - oldpoint;
+	//vec3 midpoint = point - oldpoint;
 
 
 	// A leaf is a convex volume of open space divided from the other leafs by brushes and bsp planes
@@ -2008,11 +2008,11 @@ vec3 Bsp::trace(vec3 &start, vec3 &end)
 	{
 		// collision occurred, collision normal expected in class
 		vec3 new_pos = start + ((end - start) * trace_amount);
-		vec3 move = end - new_pos;
+		//vec3 move = end - new_pos;
 
-		float distance = move * collision_normal;
+		//float distance = move * collision_normal;
 
-		vec3 end_pos = end - collision_normal * distance;
+		//vec3 end_pos = end - collision_normal * distance;
 
 		new_pos = trace(new_pos, end);
 
