@@ -1146,8 +1146,6 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 255);
-			else
-				mlight2.envmap(face_list[i].stage, 0);
 		}
 
 		if (face->type == 1 || face->type == 3)
@@ -1169,7 +1167,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			mlight2.tcmod_rotate(0, j);
 			mlight2.tcmod_scroll(zero, j);
 			mlight2.tcmod_scale(one, j);
-			mlight2.envmap(face_list[i].stage, 0);
+			if (face_list[i].envmap)
+				mlight2.envmap(face_list[i].stage, 0);
 		}
 	}
 
@@ -1196,6 +1195,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (blend_list[i].shader)
 			{
 				set_tcmod(mlight2, blend_list[i], tick_num, time);
+
+				if (blend_list[i].envmap)
+					mlight2.envmap(blend_list[i].stage, 255);
 			}
 
 
@@ -1224,6 +1226,10 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				mlight2.tcmod_rotate(0, j);
 				mlight2.tcmod_scroll(zero, j);
 				mlight2.tcmod_scale(one, j);
+
+				if (blend_list[i].envmap)
+					mlight2.envmap(blend_list[i].stage, 0);
+
 			}
 		}
 	}
