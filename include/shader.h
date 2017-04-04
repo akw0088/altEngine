@@ -60,6 +60,8 @@ public:
 	void tcmod_scale(vec2 &scale, int index);
 	void tcmod_rotate(float deg, int index);
 
+	void envmap(int stage, int env);
+
 
 	int m_num_light;
 	float m_ambient;
@@ -113,6 +115,16 @@ private:
 	int u_tcmod_cos5;
 	int u_tcmod_cos6;
 	int u_tcmod_cos7;
+
+	int u_env0;
+	int u_env1;
+	int u_env2;
+	int u_env3;
+	int u_env4;
+	int u_env5;
+	int u_env6;
+	int u_env7;
+
 
 
 	int u_ambient;

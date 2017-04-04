@@ -187,6 +187,15 @@ int mLight2::init(Graphics *gfx)
 	u_tcmod_cos6 = glGetUniformLocation(program_handle, "u_tcmod_cos6");
 	u_tcmod_cos7 = glGetUniformLocation(program_handle, "u_tcmod_cos7");
 
+	u_env0 = glGetUniformLocation(program_handle, "u_env0");
+	u_env1 = glGetUniformLocation(program_handle, "u_env1");
+	u_env2 = glGetUniformLocation(program_handle, "u_env2");
+	u_env3 = glGetUniformLocation(program_handle, "u_env3");
+	u_env4 = glGetUniformLocation(program_handle, "u_env4");
+	u_env5 = glGetUniformLocation(program_handle, "u_env5");
+	u_env6 = glGetUniformLocation(program_handle, "u_env6");
+	u_env7 = glGetUniformLocation(program_handle, "u_env7");
+
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_lightmap = glGetUniformLocation(program_handle, "u_lightmap");
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
@@ -273,6 +282,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
 	float tcmod_sin = 0.0f;
 	float tcmod_cos = 1.0f;
+	int env = 0;
 
 	glUniform2fv(u_tcmod_scroll0, 1, (float *)&tcmod_scroll);
 	glUniform2fv(u_tcmod_scroll1, 1, (float *)&tcmod_scroll);
@@ -310,6 +320,19 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
 
+	glUniform1i(u_env0, env);
+	glUniform1i(u_env1, env);
+	glUniform1i(u_env2, env);
+	glUniform1i(u_env3, env);
+	glUniform1i(u_env4, env);
+	glUniform1i(u_env5, env);
+	glUniform1i(u_env6, env);
+	glUniform1i(u_env7, env);
+	//	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
+	//	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
+	//	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
+	//	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
+
 	glUniform1f(u_ambient, m_ambient);
 	glUniform1f(u_lightmap, m_lightmap);
 	glUniform1i(u_num_lights, MIN(j, max_light));
@@ -330,6 +353,38 @@ void mLight2::set_light(float ambient, float lightmap, int num_light)
 //	m_ambient = ambient;
 //	m_lightmap = lightmap;
 #endif
+}
+
+
+void mLight2::envmap(int stage, int env)
+{
+	switch (stage)
+	{
+	case 0:
+		glUniform1i(u_env0, env);
+		break;
+	case 1:
+		glUniform1i(u_env1, env);
+		break;
+	case 2:
+		glUniform1i(u_env2, env);
+		break;
+	case 3:
+		glUniform1i(u_env3, env);
+		break;
+	case 4:
+		glUniform1i(u_env4, env);
+		break;
+	case 5:
+		glUniform1i(u_env5, env);
+		break;
+	case 6:
+		glUniform1i(u_env6, env);
+		break;
+	case 7:
+		glUniform1i(u_env7, env);
+		break;
+	}
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)

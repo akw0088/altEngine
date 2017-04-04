@@ -28,6 +28,15 @@ uniform float		u_ambient;
 uniform float		u_lightmap;
 uniform mat4		mvp;
 
+uniform int u_env0;
+uniform int u_env1;
+uniform int u_env2;
+uniform int u_env3;
+uniform int u_env4;
+uniform int u_env5;
+uniform int u_env6;
+uniform int u_env7;
+
 
 
 layout(binding=0) uniform sampler2D texture0;// 8 possible textures
@@ -51,7 +60,7 @@ void main(void)
 	vec3 normal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
 	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
 	vec3 bitangent = normalize(cross(normal, tangent));
-	mat3 tangent_space = mat3(normal, bitangent,  tangent);
+	mat3 tangent_space = mat3(tangent, bitangent, normal);
 
 	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
 	vec3 ambient;
@@ -72,10 +81,59 @@ void main(void)
 	normal_map.y = 2 * texture(texture_normalmap, Vertex.vary_TexCoord0).b - 1; 
 
 
-	vec4 Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
-	vec4 Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
-	vec4 Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
-	vec4 Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
+	vec4 Fragment0;
+	vec4 Fragment1;
+	vec4 Fragment2;
+	vec4 Fragment3;
+
+
+	vec3 u = normalize(-Vertex.vary_position.zyx);
+	vec3 r = reflect(u, -normal);
+
+
+
+	// Environment "sphere" mapping
+//	r.z += 1.0;
+//	float m = 0.5 * inversesqrt(dot(r,r));
+//	vec2 tc = (r.xy * m) + vec2(0.5);
+
+	//equirectangular env mapping
+	vec2 tc;
+
+	tc.y = r.y;
+	r.y = 0.0;
+	tc.x = normalize(r).x * 0.5;
+	
+	float s = sign(r.z) * 0.5;
+	tc.s = 0.75 - s * (0.5 - tc.s);
+	tc.t = 0.5 + 0.5 * tc.t;
+
+	tc *= 0.1; // enlarge texture so you cant see details
+
+
+	if (u_env0 > 0)
+		Fragment0 = texture(texture0, tc);
+	else
+		Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
+
+	if (u_env1 > 0)
+		Fragment1 = texture(texture1, tc);
+	else
+		Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
+
+
+	if (u_env2 > 0)
+		Fragment2 = texture(texture2, tc);
+	else
+		Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
+
+
+	if (u_env3 > 0)
+		Fragment3 = texture(texture3, tc);
+	else
+		Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
+
+
 
 	float frag0gs = (Fragment0.r + Fragment0.g + Fragment0.b) / 3.0;
 	float frag1gs = (Fragment1.r + Fragment1.g + Fragment1.b) / 3.0;

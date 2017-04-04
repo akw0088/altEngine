@@ -791,6 +791,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				render.face = face_index;
 				render.shader = true;
 				render.stage = 0;
+				render.envmap = false;
 
 				if (surface->surfaceparm_sky)
 				{
@@ -820,6 +821,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					render.alpha_ge128 = surface->stage[k].alpha_ge128;
 					render.alpha_lt128 = surface->stage[k].alpha_lt128;
 					render.alpha_gt0 = surface->stage[k].alpha_gt0;
+					render.envmap = surface->stage[k].tcgen_env;
 
 					render.blend = false;
 
@@ -930,6 +932,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				render.name = data.Material[face->material].name;
 				render.face = face_index;
 				render.stage = 0;
+				render.envmap = false;
 
 				if (tex_object[face->material].texObj < 0)
 				{
@@ -1140,6 +1143,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		if (face_list[i].shader)
 		{
 			set_tcmod(mlight2, face_list[i], tick_num, time);
+
+			if (face_list[i].envmap)
+				mlight2.envmap(face_list[i].stage, 255);
+			else
+				mlight2.envmap(face_list[i].stage, 0);
 		}
 
 		if (face->type == 1 || face->type == 3)
@@ -1161,6 +1169,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			mlight2.tcmod_rotate(0, j);
 			mlight2.tcmod_scroll(zero, j);
 			mlight2.tcmod_scale(one, j);
+			mlight2.envmap(face_list[i].stage, 0);
 		}
 	}
 
