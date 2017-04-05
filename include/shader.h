@@ -47,6 +47,8 @@ public:
 	void set_ambient(float ambient);
 	void set_lightmap(float lightmap);
 	void set_light(float ambient, float lightmap, int num_light);
+	void set_lightmap_stage(int flag);
+
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
 	void tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index);
@@ -129,6 +131,7 @@ private:
 
 	int u_ambient;
 	int u_lightmap;
+	int u_lightmap_stage;
 	int u_num_lights;
 	int u_position;
 	int u_color;

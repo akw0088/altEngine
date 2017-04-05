@@ -28,6 +28,9 @@ uniform float		u_ambient;
 uniform float		u_lightmap;
 uniform mat4		mvp;
 
+uniform int u_lightmap_stage;
+
+
 uniform int u_env0;
 uniform int u_env1;
 uniform int u_env2;
@@ -112,12 +115,18 @@ void main(void)
 		tc *= 0.2; // enlarge texture so you cant see details
 	}
 
-
-	if (u_env0 > 0)
-		Fragment0 = texture(texture0, tc);
+	if (u_lightmap_stage)
+	{
+		Fragment0 = 0.125 * texture(texture0, Vertex.vary_LightCoord);
+	}
 	else
-		Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
-
+	{
+		if (u_env0 > 0)
+			Fragment0 = texture(texture0, tc);
+		else
+			Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
+}
+	
 	if (u_env1 > 0)
 		Fragment1 = texture(texture1, tc);
 	else
@@ -134,6 +143,7 @@ void main(void)
 		Fragment3 = texture(texture3, tc);
 	else
 		Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
+
 
 
 

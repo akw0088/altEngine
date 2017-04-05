@@ -620,7 +620,14 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			}
 #endif
-			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+			if (lightmap && face->lightmap != -1)
+			{
+				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+			}
+			else
+			{
+				gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+			}
 	}
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
@@ -659,14 +666,16 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 	// will be same texture for all 3x3 patches making up this mesh
 	if (textures_loaded)
 	{
-		if (lightmap)
-		{
 #ifdef LIGHTMAP
-
-			// surfaces that arent lit with lightmaps eg: skies
-			if (face->lightmap != -1)
-				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+		// surfaces that arent lit with lightmaps eg: skies
+		if (face->lightmap != -1)
+		{
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+		}
 #endif
+		if (lightmap && face->lightmap != -1)
+		{
+			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
 		}
 		else
 		{
@@ -718,13 +727,16 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 {
 	if (textures_loaded)
 	{
-		if (lightmap)
-		{
 #ifdef LIGHTMAP
-			// surfaces that arent lit with lightmaps eg: skies
-			if (face->lightmap != -1)
-				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+		// surfaces that arent lit with lightmaps eg: skies
+		if (face->lightmap != -1)
+		{
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+		}
 #endif
+		if (lightmap && face->lightmap != -1)
+		{
+			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
 		}
 		else
 		{
@@ -800,7 +812,8 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				}
 
 				// Going backwards to fix render ordering
-				for (int k = surface->num_stage - 1; k >= 0; k--)
+//				for (int k = surface->num_stage - 1; k >= 0; k--)
+				for (unsigned int k = 0; k < surface->num_stage; k++)
 				{
 //					k = 0;
 					render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
@@ -849,7 +862,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 						render.blend = true;
 						render.blend_default = true;
 					}
-					else if (surface->stage[k].blendfunc_filter || surface->stage[k].lightmap)
+					else if (surface->stage[k].blendfunc_filter /*|| surface->stage[k].lightmap*/)
 					{
 						render.blend = true;
 						render.blend_filter = true;
@@ -984,7 +997,7 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 		if (last_mode != 1)
 			gfx.BlendFuncOneOne();
 		last_mode = 1;
-		//gfx.BlendFuncDstColorZero();
+//		gfx.BlendFuncDstColorZero();
 	}
 	else if (face.blend_one_zero)
 	{
@@ -1146,6 +1159,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 255);
+
+			if (face_list[i].lightmap && face_list[i].stage == 0)
+				mlight2.set_lightmap_stage(1);
 		}
 
 		if (face->type == 1 || face->type == 3)
@@ -1169,6 +1185,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			mlight2.tcmod_scale(one, j);
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 0);
+
+			if (face_list[i].lightmap)
+				mlight2.set_lightmap_stage(0);
 		}
 	}
 
@@ -1182,7 +1201,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			gfx.Blend(true);
 		}
 
-		for (int i = blend_list.size() - 1; i >= 0; i--)
+		for (unsigned int i = 0; i < blend_list.size(); i++)
 		{
 			face_t *face = &data.Face[blend_list[i].face];
 
@@ -1198,6 +1217,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 255);
+
+				if (face_list[i].lightmap && face_list[i].stage == 0)
+					mlight2.set_lightmap_stage(1);
 			}
 
 
@@ -1230,6 +1252,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 0);
 
+				if (blend_list[i].lightmap)
+					mlight2.set_lightmap_stage(0);
 			}
 		}
 	}

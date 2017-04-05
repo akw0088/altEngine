@@ -201,6 +201,7 @@ int mLight2::init(Graphics *gfx)
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
+	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
 #endif
 	return 0;
 }
@@ -339,6 +340,8 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 
+	glUniform1i(u_lightmap_stage, 0);
+
 	m_num_light = j;
 #endif
 }
@@ -349,9 +352,17 @@ void mLight2::set_light(float ambient, float lightmap, int num_light)
 	glUniform1i(u_num_lights, num_light);
 	glUniform1f(u_ambient, ambient);
 	glUniform1f(u_lightmap, lightmap);
-//	m_num_light = num_light;
-//	m_ambient = ambient;
-//	m_lightmap = lightmap;
+	//	m_num_light = num_light;
+	//	m_ambient = ambient;
+	//	m_lightmap = lightmap;
+#endif
+}
+
+
+void mLight2::set_lightmap_stage(int flag)
+{
+#ifndef DIRECTX
+	glUniform1i(u_lightmap_stage, flag);
 #endif
 }
 
