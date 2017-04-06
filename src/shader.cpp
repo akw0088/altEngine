@@ -464,6 +464,8 @@ void mLight2::tcmod_scale(vec2 &scale, int index)
 #endif
 }
 
+
+
 void mLight2::tcmod_rotate(float deg, int index)
 {
 #ifndef DIRECTX
@@ -515,6 +517,9 @@ void mLight2::tcmod_rotate(float deg, int index)
 void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	vec2 value;
+
+	if (abs32((float)(freq - 0.001)) <= 0.0011)
+		freq = 0.1f;
 
 	value.x = (float)( amplitude * fsin(freq * tick_num + phase) );
 	value.y = value.x;

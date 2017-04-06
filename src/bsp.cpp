@@ -1101,9 +1101,9 @@ void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time
 	}
 	if (face.tcmod_stretch_square[j])
 	{
-		mlight2.tcmod_stretch_square(face.stretch_value[j].x,
-			face.stretch_value[j].y,
+		mlight2.tcmod_stretch_square(face.stretch_value[j].y,
 			face.stretch_value[j].z,
+			face.stretch_value[j].w,
 			tick_num, j);
 	}
 	if (face.tcmod_stretch_triangle[j])
@@ -1186,7 +1186,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 0);
 
-			if (face_list[i].lightmap)
+
+			if (face_list[i].lightmap && face->lightmap != -1)
 				mlight2.set_lightmap_stage(0);
 		}
 	}
@@ -1252,7 +1253,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 0);
 
-				if (blend_list[i].lightmap)
+				if (blend_list[i].lightmap && face->lightmap != -1)
 					mlight2.set_lightmap_stage(0);
 			}
 		}
