@@ -43,7 +43,6 @@ public:
 	int get_player();
 	int find_type(char *type, int skip);
 	void clean_entity(int index);
-	void load_sounds();
 	void load_models();
 	void load_model(Entity &ent);
 	void create_sources();
@@ -54,6 +53,8 @@ public:
 	bool collision_detect(RigidBody &body);
 	bool map_collision(RigidBody &body);
 	bool body_collision(RigidBody &body);
+
+	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
 
 	int bind(int port);
 	void connect(char *server);
@@ -113,7 +114,7 @@ public:
 	char *hash_list[32];
 	int num_pk3;
 	int num_hash;
-	char *shader_list[32];
+	char *shader_list[256];
 	int num_shader;
 	HashTable key_bind;
 

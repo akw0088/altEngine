@@ -285,7 +285,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
-	newlinelist("media/shaderlist.txt", shader_list, num_shader);
+//	newlinelist("media/shaderlist.txt", shader_list, num_shader);
+	get_shaderlist_pk3(shader_list, num_shader);
+
+
 	if (num_shader == 0)
 	{
 		printf("****************Unable to load shaderlist.txt\n");
@@ -4212,4 +4215,45 @@ void Engine::reload_shaders()
 	particle_update.init(&gfx);
 	particle_render.destroy();
 	particle_render.init(&gfx);	
+}
+
+
+void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
+{
+#define LIST_SIZE 1024 * 512
+	char *filelist = new char[LIST_SIZE];
+	char *line = NULL;
+
+	memset(filelist, 0, LIST_SIZE);
+	for (int i = 0; i < num_pk3; i++)
+	{
+		list_zipfile(pk3_list[i], &filelist[0]);
+
+		line = strtok(filelist, "\n");
+		while (line)
+		{
+			if (strstr(line, ".shader") != NULL)
+			{
+				bool found = false;
+
+				for (int j = 0; j < num_shader; j++)
+				{
+					if (strcmp(shaderlist[j], line) == 0)
+					{
+						found = true;
+						break;
+					}
+				}
+				if (found == false)
+				{
+					shaderlist[num_shader] = new char[256];
+					strcpy(shaderlist[num_shader++], line);
+				}
+			}
+			line = strtok(NULL, "\n");
+		}
+		memset(filelist, 0, LIST_SIZE);
+	}
+
+	delete[] filelist;
 }
