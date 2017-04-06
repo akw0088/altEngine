@@ -56,7 +56,14 @@ public:
 	void tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num, int index);
 	void tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num, int index);
 	void tcmod_stretch_square(float amplitude, float phase, float freq, int tick_num, int index);
-	
+
+	void rgbgen_wave_sin(float amplitude, float phase, float freq, int tick_num, int index);
+	void rgbgen_wave_sawtooth(float amplitude, float phase, float freq, int tick_num, int index);
+	void rgbgen_wave_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num, int index);
+	void rgbgen_wave_triangle(float amplitude, float phase, float freq, int tick_num, int index);
+	void rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index);
+
+
 
 	void tcmod_scroll(vec2 &scroll, int index);
 	void tcmod_scale(vec2 &scale, int index);
@@ -64,6 +71,7 @@ public:
 
 	void envmap(int stage, int env);
 	void turb(int stage, int turb);
+	void rgbgen_scale(int stage, float scale);
 
 
 	int m_num_light;
@@ -139,6 +147,14 @@ private:
 
 	int u_time;
 
+	int u_rgbgen_scale0;
+	int u_rgbgen_scale1;
+	int u_rgbgen_scale2;
+	int u_rgbgen_scale3;
+	int u_rgbgen_scale4;
+	int u_rgbgen_scale5;
+	int u_rgbgen_scale6;
+	int u_rgbgen_scale7;
 
 
 	int u_ambient;

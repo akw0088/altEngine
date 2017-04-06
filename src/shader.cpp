@@ -205,6 +205,15 @@ int mLight2::init(Graphics *gfx)
 	u_water6 = glGetUniformLocation(program_handle, "u_water6");
 	u_water7 = glGetUniformLocation(program_handle, "u_water7");
 
+	u_rgbgen_scale0 = glGetUniformLocation(program_handle, "u_rgbgen_scale0");
+	u_rgbgen_scale1 = glGetUniformLocation(program_handle, "u_rgbgen_scale1");
+	u_rgbgen_scale2 = glGetUniformLocation(program_handle, "u_rgbgen_scale2");
+	u_rgbgen_scale3 = glGetUniformLocation(program_handle, "u_rgbgen_scale3");
+	u_rgbgen_scale4 = glGetUniformLocation(program_handle, "u_rgbgen_scale4");
+	u_rgbgen_scale5 = glGetUniformLocation(program_handle, "u_rgbgen_scale5");
+	u_rgbgen_scale6 = glGetUniformLocation(program_handle, "u_rgbgen_scale6");
+	u_rgbgen_scale7 = glGetUniformLocation(program_handle, "u_rgbgen_scale7");
+
 	u_time = glGetUniformLocation(program_handle, "u_time");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
@@ -318,6 +327,13 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform2fv(u_tcmod_scale6, 1, (float *)&tcmod_scale);
 //	glUniform2fv(u_tcmod_scale7, 1, (float *)&tcmod_scale);
 
+
+	glUniform1fv(u_rgbgen_scale0, 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale1, 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale2, 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale3, 1, (float *)&tcmod_scale);
+
+
 	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
 	glUniform1fv(u_tcmod_sin1, 1, &tcmod_sin);
 	glUniform1fv(u_tcmod_sin2, 1, &tcmod_sin);
@@ -409,6 +425,37 @@ void mLight2::envmap(int stage, int env)
 		break;
 	case 7:
 		glUniform1i(u_env7, env);
+		break;
+	}
+}
+
+void mLight2::rgbgen_scale(int stage, float scale)
+{
+	switch (stage)
+	{
+	case 0:
+		glUniform1f(u_rgbgen_scale0, scale);
+		break;
+	case 1:
+		glUniform1f(u_rgbgen_scale1, scale);
+		break;
+	case 2:
+		glUniform1f(u_rgbgen_scale2, scale);
+		break;
+	case 3:
+		glUniform1f(u_rgbgen_scale3, scale);
+		break;
+	case 4:
+		glUniform1f(u_rgbgen_scale4, scale);
+		break;
+	case 5:
+		glUniform1f(u_rgbgen_scale5, scale);
+		break;
+	case 6:
+		glUniform1f(u_rgbgen_scale6, scale);
+		break;
+	case 7:
+		glUniform1f(u_rgbgen_scale7, scale);
 		break;
 	}
 }
@@ -612,6 +659,54 @@ void mLight2::tcmod_stretch_square(float amplitude, float phase, float freq, int
 
 	tcmod_scale(value, index);
 }
+
+//rgbgen
+void mLight2::rgbgen_wave_sin(float amplitude, float phase, float freq, int tick_num, int index)
+{
+	float value;
+
+//	if (abs32((float)(freq - 0.001)) <= 0.0011)
+//		freq = 0.1f;
+
+	value = (float)(amplitude * fsin(freq * tick_num + phase));
+
+	rgbgen_scale(index, value);
+}
+
+void mLight2::rgbgen_wave_sawtooth(float amplitude, float phase, float freq, int tick_num, int index)
+{
+	float value;
+
+	//cot(x)=1/tan(x)
+	value = (float)(amplitude * (-0.5 * atan(1.0 / tan(freq * tick_num / MY_PI + phase))));
+
+	rgbgen_scale(index, value);
+}
+
+void mLight2::rgbgen_wave_inverse_sawtooth(float amplitude, float phase, float freq, int tick_num, int index)
+{
+	rgbgen_wave_sawtooth(amplitude, phase, freq, -tick_num, index);
+}
+
+void mLight2::rgbgen_wave_triangle(float amplitude, float phase, float freq, int tick_num, int index)
+{
+	float value;
+	float x = (float)(0.5 * tick_num * freq + phase);
+	value = (float)(amplitude * (1.0 - 2.0 * abs32(sign(x) - x)));
+
+	rgbgen_scale(index, value);
+}
+
+void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index)
+{
+	float value;
+
+	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num + phase) % 2 * MY_PI)));
+
+	rgbgen_scale(index, value);
+}
+
+
 #ifdef NOPE
 int mLightDepth::init(Graphics *gfx)
 {

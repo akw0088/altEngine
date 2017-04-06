@@ -49,6 +49,15 @@ uniform int u_water5;
 uniform int u_water6;
 uniform int u_water7;
 
+uniform float u_rgbgen_scale0;
+uniform float u_rgbgen_scale1;
+uniform float u_rgbgen_scale2;
+uniform float u_rgbgen_scale3;
+uniform float u_rgbgen_scale4;
+uniform float u_rgbgen_scale5;
+uniform float u_rgbgen_scale6;
+uniform float u_rgbgen_scale7;
+
 
 uniform int u_time;
 
@@ -169,6 +178,11 @@ void main(void)
 		Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
 
 
+
+	ambient *= u_rgbgen_scale0;
+	ambient *= u_rgbgen_scale1;
+	ambient *= u_rgbgen_scale2;
+	ambient *= u_rgbgen_scale3;
 
 
 	float frag0gs = (Fragment0.r + Fragment0.g + Fragment0.b) / 3.0;

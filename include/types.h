@@ -336,6 +336,14 @@ typedef struct
 	bool tcmod_turb;
 	vec4 tcmod_turb_value;
 	bool tcgen_env;
+
+	bool rgbgen_wave_sin;
+	bool rgbgen_wave_sawtooth;
+	bool rgbgen_wave_inverse_sawtooth;
+	bool rgbgen_wave_square;
+	bool rgbgen_wave_triangle;
+	vec4 rgbgen_wave_value;
+
 } stage_t;
 
 
@@ -447,6 +455,14 @@ typedef struct
 	bool alpha_lt128;
 	bool envmap;
 	bool turb;
+
+	bool rgbgen_wave_sin[MAX_TEXTURES];
+	bool rgbgen_wave_square[MAX_TEXTURES];
+	bool rgbgen_wave_triangle[MAX_TEXTURES];
+	bool rgbgen_wave_sawtooth[MAX_TEXTURES];
+	bool rgbgen_wave_inverse_sawtooth[MAX_TEXTURES];
+	vec4 rgbgen_wave_value[MAX_TEXTURES];
+
 
 	bool lightmap[MAX_TEXTURES];
 	unsigned int stage;

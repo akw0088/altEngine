@@ -1598,6 +1598,67 @@ void handle_stage(char *stagecmd, stage_t *stage)
 	{
 		stage->tcgen_env = true;
 	}
+	else if ((ret = strstr(stagecmd, "rgbgen")))
+	{
+		int match = 0;
+		float base, amplitude, phase, freq;
+
+		match = sscanf(ret, "rgbgen wave sin %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->rgbgen_wave_sin = true;
+			stage->rgbgen_wave_value.x = base;
+			stage->rgbgen_wave_value.y = amplitude;
+			stage->rgbgen_wave_value.z = phase;
+			stage->rgbgen_wave_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "rgbgen wave square  %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->rgbgen_wave_square = true;
+			stage->rgbgen_wave_value.x = base;
+			stage->rgbgen_wave_value.y = amplitude;
+			stage->rgbgen_wave_value.z = phase;
+			stage->rgbgen_wave_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "rgbgen wave triangle %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->rgbgen_wave_triangle = true;
+			stage->rgbgen_wave_value.x = base;
+			stage->rgbgen_wave_value.y = amplitude;
+			stage->rgbgen_wave_value.z = phase;
+			stage->rgbgen_wave_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "rgbgen wave sawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->rgbgen_wave_sawtooth = true;
+			stage->rgbgen_wave_value.x = base;
+			stage->rgbgen_wave_value.y = amplitude;
+			stage->rgbgen_wave_value.z = phase;
+			stage->rgbgen_wave_value.w = freq;
+			return;
+		}
+
+		match = sscanf(ret, "rgbgen wave inversesawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
+		if (match == 4)
+		{
+			stage->rgbgen_wave_inverse_sawtooth = true;
+			stage->rgbgen_wave_value.x = base;
+			stage->rgbgen_wave_value.y = amplitude;
+			stage->rgbgen_wave_value.z = phase;
+			stage->rgbgen_wave_value.w = freq;
+			return;
+		}
+
+	}
 }
 
 

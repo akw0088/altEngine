@@ -842,6 +842,16 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					render.alpha_gt0 = surface->stage[k].alpha_gt0;
 					render.envmap = surface->stage[k].tcgen_env;
 
+
+					render.rgbgen_wave_sin[k]		= surface->stage[k].rgbgen_wave_sin;
+					render.rgbgen_wave_square[k]	= surface->stage[k].rgbgen_wave_square;
+					render.rgbgen_wave_triangle[k]	= surface->stage[k].rgbgen_wave_triangle;
+					render.rgbgen_wave_sawtooth[k]	= surface->stage[k].rgbgen_wave_sawtooth;
+					render.rgbgen_wave_inverse_sawtooth[k] = surface->stage[k].rgbgen_wave_inverse_sawtooth;
+					render.rgbgen_wave_value[k] = surface->stage[k].rgbgen_wave_value;
+
+
+
 					render.blend = false;
 
 					if (surface->stage[k].alpha_gt0 || 
@@ -1134,6 +1144,44 @@ void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time
 			face.stretch_value[j].z,
 			tick_num, j);
 	}
+	//rgbgen
+	if (face.rgbgen_wave_sin[j])
+	{
+		mlight2.rgbgen_wave_sin(face.rgbgen_wave_value[j].x,
+			face.rgbgen_wave_value[j].y,
+			face.rgbgen_wave_value[j].z,
+			tick_num, j);
+	}
+	if (face.rgbgen_wave_square[j])
+	{
+		mlight2.rgbgen_wave_square(face.rgbgen_wave_value[j].y,
+			face.rgbgen_wave_value[j].z,
+			face.rgbgen_wave_value[j].w,
+			tick_num, j);
+	}
+	if (face.rgbgen_wave_triangle[j])
+	{
+		mlight2.rgbgen_wave_square(face.rgbgen_wave_value[j].x,
+			face.rgbgen_wave_value[j].y,
+			face.rgbgen_wave_value[j].z,
+			tick_num, j);
+	}
+	if (face.rgbgen_wave_sawtooth[j])
+	{
+		mlight2.rgbgen_wave_square(face.rgbgen_wave_value[j].x,
+			face.rgbgen_wave_value[j].y,
+			face.rgbgen_wave_value[j].z,
+			tick_num, j);
+	}
+	if (face.rgbgen_wave_inverse_sawtooth[j])
+	{
+		mlight2.rgbgen_wave_square(face.rgbgen_wave_value[j].x,
+			face.rgbgen_wave_value[j].y,
+			face.rgbgen_wave_value[j].z,
+			tick_num, j);
+	}
+
+
 }
 
 void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
@@ -1193,6 +1241,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			mlight2.tcmod_rotate(0, j);
 			mlight2.tcmod_scroll(zero, j);
 			mlight2.tcmod_scale(one, j);
+			mlight2.rgbgen_scale(j, one.x);
+
 
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 0);
@@ -1265,6 +1315,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				mlight2.tcmod_rotate(0, j);
 				mlight2.tcmod_scroll(zero, j);
 				mlight2.tcmod_scale(one, j);
+				mlight2.rgbgen_scale(j, one.x);
+
 
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 0);
