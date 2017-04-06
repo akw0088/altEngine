@@ -521,6 +521,10 @@ void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int ti
 	if (abs32((float)(freq - 0.001)) <= 0.0011)
 		freq = 0.1f;
 
+	// or jumppad aesthetics
+	amplitude *= 0.8f;
+	amplitude += amplitude / 2.25f;
+
 	value.x = (float)( amplitude * fsin(freq * tick_num + phase) );
 	value.y = value.x;
 
