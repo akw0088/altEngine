@@ -41,7 +41,7 @@ class mLight2 : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset);
+	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time);
 	virtual void prelink(void);
 	void set_max(int max);
 	void set_ambient(float ambient);
@@ -63,6 +63,7 @@ public:
 	void tcmod_rotate(float deg, int index);
 
 	void envmap(int stage, int env);
+	void turb(int stage, int turb);
 
 
 	int m_num_light;
@@ -126,6 +127,17 @@ private:
 	int u_env5;
 	int u_env6;
 	int u_env7;
+
+	int u_water0;
+	int u_water1;
+	int u_water2;
+	int u_water3;
+	int u_water4;
+	int u_water5;
+	int u_water6;
+	int u_water7;
+
+	int u_time;
 
 
 

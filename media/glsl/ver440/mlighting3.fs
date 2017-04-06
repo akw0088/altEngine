@@ -40,6 +40,17 @@ uniform int u_env5;
 uniform int u_env6;
 uniform int u_env7;
 
+uniform int u_water0;
+uniform int u_water1;
+uniform int u_water2;
+uniform int u_water3;
+uniform int u_water4;
+uniform int u_water5;
+uniform int u_water6;
+uniform int u_water7;
+
+
+uniform int u_time;
 
 
 layout(binding=0) uniform sampler2D texture0;// 8 possible textures
@@ -115,31 +126,44 @@ void main(void)
 		tc *= 0.2; // enlarge texture so you cant see details
 	}
 
+	if (u_water0 + u_water1 + u_water2 + u_water3 > 0)
+	{
+		float s = Vertex.vary_TexCoord0.x;
+		float t = Vertex.vary_TexCoord0.y;
+		float x = Vertex.vary_position.x;
+		float y = Vertex.vary_position.y;
+		float z = Vertex.vary_position.z;
+
+		tc.x = s + sin( (( x + z ) * 1.0/128.0 * 0.125 + u_time / 500.0 ) );
+		tc.y = t + sin((y * 1.0 / 128 * 0.125 + u_time / 500.0));
+	}
+
+
 	if (u_lightmap_stage)
 	{
 		Fragment0 = 0.125 * texture(texture0, Vertex.vary_LightCoord);
 	}
 	else
 	{
-		if (u_env0 > 0)
+		if (u_env0 > 0 || u_water0 > 0)
 			Fragment0 = texture(texture0, tc);
 		else
 			Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
-}
+	}
 	
-	if (u_env1 > 0)
+	if (u_env1 > 0 || u_water1 > 0)
 		Fragment1 = texture(texture1, tc);
 	else
 		Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
 
 
-	if (u_env2 > 0)
+	if (u_env2 > 0 || u_water2 > 0)
 		Fragment2 = texture(texture2, tc);
 	else
 		Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
 
 
-	if (u_env3 > 0)
+	if (u_env3 > 0 || u_water3 > 0)
 		Fragment3 = texture(texture3, tc);
 	else
 		Fragment3 = texture(texture3, Vertex.vary_TexCoord3);

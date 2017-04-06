@@ -446,6 +446,7 @@ typedef struct
 	bool alpha_ge128;
 	bool alpha_lt128;
 	bool envmap;
+	bool turb;
 
 	bool lightmap[MAX_TEXTURES];
 	unsigned int stage;

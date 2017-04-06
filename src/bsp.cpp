@@ -804,11 +804,17 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				render.shader = true;
 				render.stage = 0;
 				render.envmap = false;
+				render.turb = false;
 
 				if (surface->surfaceparm_sky)
 				{
 					render.sky = true;
 					sky_face = face_index;
+				}
+
+				if (surface->surfaceparm_lava || surface->surfaceparm_slime || surface->surfaceparm_water)
+				{
+					render.turb = true;
 				}
 
 				// Going backwards to fix render ordering
@@ -946,6 +952,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				render.face = face_index;
 				render.stage = 0;
 				render.envmap = false;
+				render.turb = false;
 
 				if (tex_object[face->material].texObj < 0)
 				{
@@ -1160,6 +1167,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 255);
 
+			if (face_list[i].turb)
+				mlight2.turb(face_list[i].stage, 255);
+
 			if (face_list[i].lightmap && face->lightmap != -1)
 				mlight2.set_lightmap_stage(1);
 		}
@@ -1183,9 +1193,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			mlight2.tcmod_rotate(0, j);
 			mlight2.tcmod_scroll(zero, j);
 			mlight2.tcmod_scale(one, j);
+
 			if (face_list[i].envmap)
 				mlight2.envmap(face_list[i].stage, 0);
 
+			if (face_list[i].turb)
+				mlight2.turb(face_list[i].stage, 0);
 
 			if (face_list[i].lightmap && face->lightmap != -1)
 				mlight2.set_lightmap_stage(0);
@@ -1218,6 +1231,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 255);
+
+				if (face_list[i].turb)
+					mlight2.turb(face_list[i].stage, 255);
 
 				if (blend_list[i].lightmap && face->lightmap != -1)
 					mlight2.set_lightmap_stage(1);
@@ -1252,6 +1268,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 0);
+
+				if (face_list[i].turb)
+					mlight2.turb(face_list[i].stage, 0);
 
 				if (blend_list[i].lightmap && face->lightmap != -1)
 					mlight2.set_lightmap_stage(0);

@@ -785,7 +785,7 @@ void Engine::render_shadowmaps()
 
 				mlight2.Select();
 				vec3 offset(0.0f, 0.0f, 0.0f);
-				mlight2.Params(mvp, light_list, light_list.size(), offset);
+				mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 				q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
@@ -844,9 +844,9 @@ void Engine::render_scene(bool lights)
 	mlight2.Select();
 	mvp = transformation * projection;
 	if (lights)
-		mlight2.Params(mvp, light_list, light_list.size(), offset);
+		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 	else
-		mlight2.Params(mvp, light_list, 0, offset);
+		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
@@ -930,7 +930,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	vec3 offset(0.0f, 0.0f, 0.0f);
 	mlight2.Select();
 	mvp = transformation * projection;
-	mlight2.Params(mvp, light_list, light_list.size(), offset);
+	mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 
 
 //	shadowmap.Params(mvp, shadowmvp);
@@ -994,11 +994,11 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	mvp = (mvp * trans) * projection;
 	if (lights)
 	{
-		mlight2.Params(mvp, light_list, light_list.size(), offset);
+		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 	}
 	else
 	{
-		mlight2.Params(mvp, light_list, 0, offset);
+		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 	}
 
 	entity_list[i]->player->render_weapon(gfx);
@@ -1119,11 +1119,11 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 		mvp = (mvp * trans) * projection;
 		if (lights)
 		{
-			mlight2.Params(mvp, light_list, light_list.size(), offset);
+			mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 		}
 		else
 		{
-			mlight2.Params(mvp, light_list, 0, offset);
+			mlight2.Params(mvp, light_list, 0, offset, tick_num);
 		}
 
 
@@ -1215,11 +1215,11 @@ void Engine::render_players(matrix4 &trans, bool lights)
 
 				if (lights)
 				{
-					mlight2.Params(mvp, light_list, light_list.size(), offset);
+					mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 				}
 				else
 				{
-					mlight2.Params(mvp, light_list, 0, offset);
+					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 				}
 				zcc.render(gfx, tick_num >> 1);
 			}

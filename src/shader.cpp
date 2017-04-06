@@ -196,6 +196,17 @@ int mLight2::init(Graphics *gfx)
 	u_env6 = glGetUniformLocation(program_handle, "u_env6");
 	u_env7 = glGetUniformLocation(program_handle, "u_env7");
 
+	u_water0 = glGetUniformLocation(program_handle, "u_water0");
+	u_water1 = glGetUniformLocation(program_handle, "u_water1");
+	u_water2 = glGetUniformLocation(program_handle, "u_water2");
+	u_water3 = glGetUniformLocation(program_handle, "u_water3");
+	u_water4 = glGetUniformLocation(program_handle, "u_water4");
+	u_water5 = glGetUniformLocation(program_handle, "u_water5");
+	u_water6 = glGetUniformLocation(program_handle, "u_water6");
+	u_water7 = glGetUniformLocation(program_handle, "u_water7");
+
+	u_time = glGetUniformLocation(program_handle, "u_time");
+
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_lightmap = glGetUniformLocation(program_handle, "u_lightmap");
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
@@ -237,7 +248,7 @@ void mLight2::prelink()
 }
 
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset)
+void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time)
 {
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
@@ -274,6 +285,10 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1i(texture5, 5);
 //	glUniform1i(texture6, 6);
 //	glUniform1i(texture7, 7);
+
+
+	glUniform1i(mLight2::u_time, u_time);
+
 
 // Going to treat normals and lightmaps like normal textures
 	glUniform1i(texture_lightmap, 8);
@@ -394,6 +409,37 @@ void mLight2::envmap(int stage, int env)
 		break;
 	case 7:
 		glUniform1i(u_env7, env);
+		break;
+	}
+}
+
+void mLight2::turb(int stage, int turb)
+{
+	switch (stage)
+	{
+	case 0:
+		glUniform1i(u_water0, turb);
+		break;
+	case 1:
+		glUniform1i(u_water1, turb);
+		break;
+	case 2:
+		glUniform1i(u_water2, turb);
+		break;
+	case 3:
+		glUniform1i(u_water3, turb);
+		break;
+	case 4:
+		glUniform1i(u_water4, turb);
+		break;
+	case 5:
+		glUniform1i(u_water5, turb);
+		break;
+	case 6:
+		glUniform1i(u_water6, turb);
+		break;
+	case 7:
+		glUniform1i(u_water7, turb);
 		break;
 	}
 }
