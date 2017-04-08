@@ -3,7 +3,7 @@
 #define	MAX_LIGHTS 64
 
 layout(triangles) in;
-layout (line_strip, max_vertices=6) out;
+layout (line_strip, max_vertices=9) out;
 
 uniform float normal_length; 
 
@@ -42,7 +42,8 @@ void main()
 	//calculate normal
 	vec3 a = gl_in[0].gl_Position.xyz - gl_in[1].gl_Position.xyz;
 	vec3 b = gl_in[0].gl_Position.xyz - gl_in[2].gl_Position.xyz;
-	vec3 normal = cross(a,b);
+	vec3 normal = normalize(cross(a,b));
+	
 
 	//calculate tangent, these values are just constants
 	float s1 = VertexIn[0].vary_TexCoord.x - VertexIn[1].vary_TexCoord.x; 
@@ -72,9 +73,16 @@ void main()
 //		VertexOut.vary_normal = normal;
 //		VertexOut.vary_tangent = vec4(tangent, 0.0f);
 
+		// normal point
 		EmitVertex();
 
-		gl_Position = gl_in[i].gl_Position + VertexIn[i].vary_normal * 100.0f;
+		// normal line
+//		gl_Position = gl_in[i].gl_Position + vec4(VertexIn[i].vary_normal * 10.0f, 0.0f);
+		gl_Position = gl_in[i].gl_Position + vec4(normal * 10.0f, 0.0f);
+		EmitVertex();
+
+		// normal point again
+		gl_Position = gl_in[i].gl_Position;
 		EmitVertex();
 	}
 }
