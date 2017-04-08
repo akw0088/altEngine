@@ -1282,8 +1282,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 255);
 
-				if (face_list[i].turb)
-					mlight2.turb(face_list[i].stage, 255);
+				if (blend_list[i].turb)
+					mlight2.turb(blend_list[i].stage, 255);
 
 				if (blend_list[i].lightmap && face->lightmap != -1)
 					mlight2.set_lightmap_stage(1);
@@ -1321,8 +1321,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].envmap)
 					mlight2.envmap(blend_list[i].stage, 0);
 
-				if (face_list[i].turb)
-					mlight2.turb(face_list[i].stage, 0);
+				if (blend_list[i].turb)
+					mlight2.turb(blend_list[i].stage, 0);
 
 				if (blend_list[i].lightmap && face->lightmap != -1)
 					mlight2.set_lightmap_stage(0);

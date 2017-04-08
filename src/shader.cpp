@@ -668,7 +668,7 @@ void mLight2::rgbgen_wave_sin(float amplitude, float phase, float freq, int tick
 //	if (abs32((float)(freq - 0.001)) <= 0.0011)
 //		freq = 0.1f;
 
-	value = (float)(amplitude * fsin(freq * tick_num + phase));
+	value = (float)(amplitude * fsin(freq * tick_num / 10.0f + phase));
 
 	rgbgen_scale(index, value);
 }
@@ -678,7 +678,7 @@ void mLight2::rgbgen_wave_sawtooth(float amplitude, float phase, float freq, int
 	float value;
 
 	//cot(x)=1/tan(x)
-	value = (float)(amplitude * (-0.5 * atan(1.0 / tan(freq * tick_num / MY_PI + phase))));
+	value = (float)(amplitude * (-0.5 * atan(1.0 / tan(freq / 10.0f * tick_num / MY_PI + phase))));
 
 	rgbgen_scale(index, value);
 }
@@ -691,7 +691,7 @@ void mLight2::rgbgen_wave_inverse_sawtooth(float amplitude, float phase, float f
 void mLight2::rgbgen_wave_triangle(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	float value;
-	float x = (float)(0.5 * tick_num * freq + phase);
+	float x = (float)(0.5 * tick_num / 10.0f * freq + phase);
 	value = (float)(amplitude * (1.0 - 2.0 * abs32(sign(x) - x)));
 
 	rgbgen_scale(index, value);
@@ -701,7 +701,7 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 {
 	float value;
 
-	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num + phase) % 2 * MY_PI)));
+	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI)));
 
 	rgbgen_scale(index, value);
 }

@@ -148,7 +148,7 @@ void main(void)
 	}
 
 
-	if (u_lightmap_stage)
+	if (u_lightmap_stage > 0)
 	{
 		Fragment0 = 0.125 * texture(texture0, Vertex.vary_LightCoord);
 	}
@@ -179,10 +179,10 @@ void main(void)
 
 
 
-	ambient *= u_rgbgen_scale0;
-	ambient *= u_rgbgen_scale1;
-	ambient *= u_rgbgen_scale2;
-	ambient *= u_rgbgen_scale3;
+	ambient *= min(u_rgbgen_scale0, 3.0);
+	ambient *= min(u_rgbgen_scale1, 3.0);
+	ambient *= min(u_rgbgen_scale2, 3.0);
+	ambient *= min(u_rgbgen_scale3, 3.0);
 
 
 	float frag0gs = (Fragment0.r + Fragment0.g + Fragment0.b) / 3.0;
