@@ -150,7 +150,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment0 = 0.125 * texture(texture0, Vertex.vary_LightCoord);
+		Fragment0 = texture(texture0, Vertex.vary_LightCoord);
 	}
 	else
 	{
@@ -160,23 +160,44 @@ void main(void)
 			Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
 	}
 	
-	if (u_env1 > 0 || u_water1 > 0)
-		Fragment1 = texture(texture1, tc);
+
+	if (u_lightmap_stage > 0)
+	{
+		Fragment1 = texture(texture1, Vertex.vary_LightCoord);
+	}
 	else
-		Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
+	{
+		if (u_env1 > 0 || u_water1 > 0)
+			Fragment1 = texture(texture1, tc);
+		else
+			Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
+	}
 
 
-	if (u_env2 > 0 || u_water2 > 0)
-		Fragment2 = texture(texture2, tc);
+	if (u_lightmap_stage > 0)
+	{
+		Fragment2 = texture(texture2, Vertex.vary_LightCoord);
+	}
 	else
-		Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
+	{
+		if (u_env2 > 0 || u_water2 > 0)
+			Fragment2 = texture(texture2, tc);
+		else
+			Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
+	}
 
 
-	if (u_env3 > 0 || u_water3 > 0)
-		Fragment3 = texture(texture3, tc);
+	if (u_lightmap_stage > 0)
+	{
+		Fragment3 = texture(texture3, Vertex.vary_LightCoord);
+	}
 	else
-		Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
-
+	{
+		if (u_env3 > 0 || u_water3 > 0)
+			Fragment3 = texture(texture3, tc);
+		else
+			Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
+	}
 
 
 	ambient *= min(u_rgbgen_scale0, 3.0);
@@ -205,6 +226,7 @@ void main(void)
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 
+
 	for(int i = 0; i < u_num_lights; i++)
 	{
 		vec3 lightPosWorld = vec3(u_position[i]);
@@ -225,7 +247,6 @@ void main(void)
 
 	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
 	vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
-
 
 	if (u_lightmap > 0.0)
 	{
