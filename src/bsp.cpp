@@ -1009,13 +1009,6 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 			gfx.BlendFuncDstColorOne();
 		last_mode = 3;
 	}
-	else if (face.blend_dstcolor_zero)
-	{
-		if (last_mode != 1)
-			gfx.BlendFuncOneOne();
-		last_mode = 1;
-//		gfx.BlendFuncDstColorZero();
-	}
 	else if (face.blend_one_zero)
 	{
 		if (last_mode != 4)
@@ -1081,6 +1074,12 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 		if (last_mode != 14)
 			gfx.BlendFuncZeroSrcAlpha();
 		last_mode = 14;
+	}
+	else if (face.blend_dstcolor_zero)
+	{
+		if (last_mode != 15)
+			gfx.BlendFuncDstColorZero();
+		last_mode = 15;
 	}
 	else
 	{
@@ -1218,7 +1217,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (face_list[i].turb)
 				mlight2.turb(face_list[i].stage, 255);
 
-			if (face_list[i].lightmap && face->lightmap != -1)
+			if (face_list[i].lightmap[face_list[i].stage] && face->lightmap != -1)
 				mlight2.set_lightmap_stage(1);
 		}
 
@@ -1250,7 +1249,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (face_list[i].turb)
 				mlight2.turb(face_list[i].stage, 0);
 
-			if (face_list[i].lightmap && face->lightmap != -1)
+			if (face_list[i].lightmap[face_list[i].stage] && face->lightmap != -1)
 				mlight2.set_lightmap_stage(0);
 		}
 	}
@@ -1285,7 +1284,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].turb)
 					mlight2.turb(blend_list[i].stage, 255);
 
-				if (blend_list[i].lightmap && face->lightmap != -1)
+				if (blend_list[i].lightmap[face->lightmap] && face->lightmap != -1)
 					mlight2.set_lightmap_stage(1);
 			}
 
@@ -1324,7 +1323,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				if (blend_list[i].turb)
 					mlight2.turb(blend_list[i].stage, 0);
 
-				if (blend_list[i].lightmap && face->lightmap != -1)
+				if (blend_list[i].lightmap[face->lightmap] && face->lightmap != -1)
 					mlight2.set_lightmap_stage(0);
 			}
 		}
