@@ -701,6 +701,9 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 {
 	float value;
 
+	if (abs32((float)(freq - 0.001)) <= 0.0011)
+		freq = 0.1f;
+
 	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI)));
 
 	rgbgen_scale(index, value);

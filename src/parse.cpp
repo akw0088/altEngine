@@ -1464,7 +1464,6 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blend_zero_src_alpha = true;
 		}
-
 		else
 		{
 			printf("Unsupported blendfunc %s\n", ret);

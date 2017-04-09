@@ -658,6 +658,26 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		if (data != NULL)
 			break;
 	}
+
+	// tga failed tried jpg
+	if (data == NULL)
+	{
+		if (strlen(pk3_name) > 4)
+		{
+			pk3_name[strlen(pk3_name) - 4] = '\0';
+			strcat(pk3_name, ".jpg");
+			//printf("Trying jpeg texture [%s]\n", texture_name);
+
+			for (int i = 0; i < num_pk3; i++)
+			{
+				get_zipfile(pk3_list[i], pk3_name, &data, &size);
+				if (data != NULL)
+					break;
+			}
+		}
+
+	}
+
 	if (data == NULL)
 	{
 //		debugf("Unable to load texture %s\n", file_name);
