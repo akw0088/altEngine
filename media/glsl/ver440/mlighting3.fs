@@ -99,9 +99,11 @@ void main(void)
 
 	vec3 normal_map;
 
-	normal_map.x = 2 * texture(texture_normalmap, Vertex.vary_TexCoord0).r - 1; 
-	normal_map.z = 2 * texture(texture_normalmap, Vertex.vary_TexCoord0).g - 1; 
-	normal_map.y = 2 * texture(texture_normalmap, Vertex.vary_TexCoord0).b - 1; 
+	normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).r - 1);
+	normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).g - 1);
+	normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).b - 1);
+
+	normal_map = (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
 
 
 	vec4 Fragment0;
@@ -239,14 +241,16 @@ void main(void)
 		vec3 v_light2 = normalize(vec3(lightpos.xyz));
 
 		vec3 v_light = normalize(vec3(lightDir.rgb));	
-		vec3 n_light = tangent_space * v_light; // light vector in tangent space
+		vec3 n_light = tangent_space * v_light2; // light vector in tangent space
 
-		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
+		float diffuse = max(dot(v_light, normal_map), 0.25);		// directional light factor for fragment
 		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
-		vec3 v_reflect = reflect(v_light2, eye);			// normal map reflection vector
+		vec3 v_reflect = reflect(n_light, normal_map);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 32.0), 0.25);	// specular relection for fragment
 		if (specular < 0.5)
 			specular = 0.0;
+		if (specular > 5.0)
+			specular = 5.0;
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
