@@ -85,7 +85,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
-//	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
 	normal_object = new int [data.num_materials];
@@ -615,13 +615,11 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 
 	if (textures_loaded)
 	{
-#ifdef LIGHTMAP
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
 			{
 				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			}
-#endif
 			if (lightmap && face->lightmap != -1)
 			{
 				// Pretty much shader stage with lightmap
@@ -759,9 +757,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	gfx.DrawArrayTri(0, 0, 6, 4);
 	if (lightmap)
 	{
-#ifdef LIGHTMAP
 		gfx.SelectTexture(8, 0);
-#endif
 	}
 	else
 	{
@@ -1545,7 +1541,6 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
 {
 	textures_loaded = true;
-#ifdef LIGHTMAP
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifndef DIRECTX
@@ -1585,8 +1580,6 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 	}
 
-#endif
-
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
@@ -1608,6 +1601,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		tex_object[i].num_tex++;
 
 #ifdef NORMALMAP
+		char texture_name[128];
 		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
 		normal_object[i] = load_texture(gfx, texture_name, false);
 #endif
@@ -1780,12 +1774,12 @@ bool Bsp::leaf_test(vec3 &x, vec3 &y)
 */
 void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
 {
-	vec3 *temp_tan = new vec3 [num_vert];
-	vec3 *temp_btan = new vec3 [num_vert];
+	vec3 *temp_tan = new vec3 [num_index];
+	vec3 *temp_btan = new vec3 [num_index];
 
 	memset(temp_tan, 0, num_vert * sizeof(vec3));
 	memset(temp_btan, 0, num_vert * sizeof(vec3));
-	for (int i = 0; i < num_index - 2;)
+	for (int i = 0; i < num_index - 2; i += 3)
 	{
 		int ai = index[i];
 		int bi = index[i + 1];
@@ -1836,6 +1830,9 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 			b.y = 0.0f;
 			b.z = 1.0f;
 		}
+		t.normalize();
+		b.normalize();
+
 		temp_tan[i]    = t;
 		temp_tan[i+1]  = t;
 		temp_tan[i+2]  = t;

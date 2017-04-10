@@ -583,7 +583,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+//			entity.nodraw = true;
 		}
 		else if (strcmp(value, "func_static") == 0)
 		{
@@ -854,6 +854,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		while (intensity > 1750.0f)
 			intensity /= 2.0f;
 
+		// uncomment to draw light positions
 		entity.nodraw = true;
 
 		if (entity.light)

@@ -85,7 +85,7 @@ void main(void)
 	vec3 bitangent = normalize(cross(normal, tangent));
 	mat3 tangent_space = mat3(tangent, bitangent, normal);
 
-	vec3 eye = tangent_space * -normalize(Vertex.vary_position.xyz); // eye vector in tangent space
+	vec3 eye = -normalize(Vertex.vary_position.xyz); // for specular reflections
 	vec3 ambient;
 	ambient.x = u_ambient;
 	ambient.y = u_ambient;
@@ -235,13 +235,18 @@ void main(void)
 		lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
 
+		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
+		vec3 v_light2 = normalize(vec3(lightpos.xyz));
+
 		vec3 v_light = normalize(vec3(lightDir.rgb));	
 		vec3 n_light = tangent_space * v_light; // light vector in tangent space
 
 		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
 		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
-		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
-		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
+		vec3 v_reflect = reflect(v_light2, eye);			// normal map reflection vector
+		float specular = max(pow(dot(v_reflect, eye), 32.0), 0.25);	// specular relection for fragment
+		if (specular < 0.5)
+			specular = 0.0;
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
@@ -254,4 +259,5 @@ void main(void)
 			Fragment.xyz *= lightmap * 1.5;
 	}
 	Fragment.rgb *= max(light, ambient);
+//	Fragment.rgb = light;
 }
