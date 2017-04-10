@@ -978,6 +978,9 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 
 	vec3 offset = entity_list[i]->position;
 
+	if (entity_list[i]->player == NULL)
+		return;
+
 
 	entity_list[i]->rigid->get_matrix(mvp.m);
 	mvp = (mvp * trans) * projection;

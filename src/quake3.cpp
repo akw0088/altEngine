@@ -3406,6 +3406,10 @@ void Quake3::render_hud(double last_frametime)
 	}
 
 	Entity *entity = engine->entity_list[spawn];
+	if (entity->player == NULL)
+	{
+		return;
+	}
 
 	engine->projection = engine->identity;
 	vec3 color(1.0f, 1.0f, 1.0f);
