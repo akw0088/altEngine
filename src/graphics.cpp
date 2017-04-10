@@ -660,6 +660,9 @@ void Graphics::init(void *param1, void *param2)
 	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
 
+	float bias = -3.0f;
+	glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, bias);
+
 #ifdef ERROR_CHECK
 	error_check();
 #endif
