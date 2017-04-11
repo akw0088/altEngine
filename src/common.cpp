@@ -722,6 +722,9 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 #endif
 
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+
+
+
 	stbi_image_free(bytes);
 	free((void *)data);
 
@@ -1122,3 +1125,106 @@ void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsign
 	*size = j;
 }
 
+float GetLuminance(vec3 &v)
+{
+	// greyscale conversion
+	return v.x * 0.2126f + v.y * 0.7152f + v.z * 0.0722f;
+}
+
+vec3 ColorToVector(int color)
+{
+	vec3 vcolor;
+
+//	vcolor.w = (float)(((color & 0xFF000000) >> 24) / 255.0f);
+	vcolor.x = (float)(((color & 0x00FF0000) >> 16) / 255.0f);
+	vcolor.y = (float)(((color & 0x0000FF00) >> 8) / 255.0f);
+	vcolor.z = (float)(((color & 0x000000FF)) / 255.0f);
+
+	return vcolor;
+}
+
+unsigned int VectorToColor(vec3 &v)
+{
+	unsigned int color = 0;
+	char *data = (char *)&color;
+
+	byte a = 255;
+	byte r = (byte)(255.0f * v.x);
+	byte g = (byte)(255.0f * v.y);
+	byte b = (byte)(255.0f * v.z);
+
+	data[0] = a;
+	data[1] = r;
+	data[2] = g;
+	data[3] = b;
+
+	return color;
+}
+
+
+int Clamp(int value, int max)
+{
+	if (value < 0)
+		value = 0;
+	if (value > max)
+		value = max;
+
+	return value;
+}
+
+
+void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int width, int height)
+{
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			vec3 center = ColorToVector(pixel[x + y * width]);
+			vec3 left	= ColorToVector(pixel[MAX(x - 1, 0) + y * width]);
+			vec3 right	= ColorToVector(pixel[MIN(x + 1, width - 1) + y * width]);
+			vec3 bottom	= ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
+			vec3 top	= ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
+
+
+			float centerL	= scale * GetLuminance(center);
+			float leftL		= scale * GetLuminance(left);
+			float rightL	= scale * GetLuminance(right);
+			float bottomL	= scale * GetLuminance(bottom);
+			float topL		= scale * GetLuminance(top);
+
+			// finite difference method
+//			The x component of the normal is luminance(i - 1, j) - luminance(i + 1, j)
+//			The y component of the normal is luminance(i, j - 1) - luminance(i, j + 1)
+//			And then we can find the z component as sqrt(1 - x*x - y*y)
+
+//			vec3 normal;
+//			normal.x = leftL - rightL;
+//			normal.y = bottomL - topL;
+//			normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);
+
+			vec3 tangent1(1.0f, 0.0f, centerL - leftL);
+			vec3 tangent2(1.0f, 0.0f, rightL - centerL);
+			vec3 bitangent1(0.0f, 1.0f, centerL - bottomL);
+			vec3 bitangent2(0.0f, 1.0f, topL - centerL);
+
+			tangent1 = tangent1.normalize();
+			tangent2 = tangent2.normalize();
+			bitangent1 = bitangent1.normalize();
+			bitangent2 = bitangent2.normalize();
+			vec3 tangent = tangent1 + tangent2;
+			vec3 bitangent = bitangent1 + bitangent2;
+
+			vec3 normal = vec3::crossproduct(tangent, bitangent);
+			normal = normal.normalize();
+
+			normal.x *= 0.5f;
+			normal.y *= 0.5f;
+			normal.x += 0.5f;
+			normal.y += 0.5f;
+
+			unsigned int color = VectorToColor(normal);
+
+			pixelout[x + y * width] = color;
+		}
+	}
+}
