@@ -3,7 +3,16 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int width, int height);
+#pragma pack(1)
+typedef struct
+{
+	unsigned char b;
+	unsigned char g;
+	unsigned char r;
+} pixel_t;
+#pragma pack(8)
+
+void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height);
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v);
 bool RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius, float &t);

@@ -24,6 +24,7 @@ extern "C" {
 }
 
 
+
 /*
 Transforms leaf aabb to clip space
 if any point within clip [-1,1] box
@@ -694,6 +695,8 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
+
+
 #ifndef DIRECTX
 	if (components == 4)
 	{
@@ -708,7 +711,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	else if (components == 1)
 	{
 		format = GL_RED;
-		components =  GL_RED;
+		components = GL_RED;
 	}
 	else
 	{
@@ -721,7 +724,16 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	format = 4;
 #endif
 
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	if (format == GL_RGB)
+	{
+		unsigned char *normal = new unsigned char[width * height * 4];
+		gen_normalmap(1.0f, (pixel_t *)bytes, (pixel_t *)normal, width, height);
+		tex_object = gfx.LoadTexture(width, height, components, format, normal, clamp);
+	}
+	else
+	{
+		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	}
 
 
 
@@ -1131,32 +1143,38 @@ float GetLuminance(vec3 &v)
 	return v.x * 0.2126f + v.y * 0.7152f + v.z * 0.0722f;
 }
 
-vec3 ColorToVector(int color)
+
+
+vec3 ColorToVector(pixel_t color)
 {
 	vec3 vcolor;
 
-//	vcolor.w = (float)(((color & 0xFF000000) >> 24) / 255.0f);
-	vcolor.x = (float)(((color & 0x00FF0000) >> 16) / 255.0f);
-	vcolor.y = (float)(((color & 0x0000FF00) >> 8) / 255.0f);
-	vcolor.z = (float)(((color & 0x000000FF)) / 255.0f);
+
+	//high byte is alpha
+//	vcolor.z = (float)(((color.a) >> 24) / 255.0f);
+	vcolor.z = (float)(color.r / 255.0f);
+	vcolor.y = (float)(color.g / 255.0f);
+	vcolor.x = (float)(color.b / 255.0f);
 
 	return vcolor;
 }
 
-unsigned int VectorToColor(vec3 &v)
+pixel_t VectorToColor(vec3 &v)
 {
-	unsigned int color = 0;
-	char *data = (char *)&color;
+	pixel_t color;
+
+	memset(&color, 0, sizeof(pixel_t));
 
 	byte a = 255;
 	byte r = (byte)(255.0f * v.x);
 	byte g = (byte)(255.0f * v.y);
 	byte b = (byte)(255.0f * v.z);
 
-	data[0] = a;
-	data[1] = r;
-	data[2] = g;
-	data[3] = b;
+
+	color.r = r;
+	color.g = g;
+	color.b = b;
+//	color.a = a;
 
 	return color;
 }
@@ -1173,7 +1191,9 @@ int Clamp(int value, int max)
 }
 
 
-void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int width, int height)
+
+
+void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height)
 {
 	for (int y = 0; y < height; y++)
 	{
@@ -1188,17 +1208,6 @@ void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int
 			vec3 topright = ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
 			vec3 bottomleft = ColorToVector(pixel[MAX(x - 1, 0) + MAX(y - 1, 0) * width]);
 			vec3 bottomright = ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
-
-
-			//Sobel_dx
-			// 1 0 -1
-			// 2 0 -2
-			// 1 0 -1
-
-			//Sobel_dy
-			//  1  2  1
-			//  0  0  0
-			// -1 -2 -1
 
 			float centerL	= scale * GetLuminance(center);
 			float leftL		= scale * GetLuminance(left);
@@ -1221,6 +1230,7 @@ void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int
 //			normal.y = bottomL - topL;
 //			normal.z = sqrt(1 - normal.x * normal.x - normal.y * normal.y);
 
+			/*
 			vec3 tangent1(1.0f, 0.0f, centerL - leftL);
 			vec3 tangent2(1.0f, 0.0f, rightL - centerL);
 			vec3 bitangent1(0.0f, 1.0f, centerL - bottomL);
@@ -1240,10 +1250,28 @@ void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int
 			normal.y *= 0.5f;
 			normal.x += 0.5f;
 			normal.y += 0.5f;
+			*/
 
-			unsigned int color = VectorToColor(normal);
+			vec3 normal;
 
-			pixelout[x + y * width] = color;
+			//Sobel_dx
+			// 1 0 -1
+			// 2 0 -2
+			// 1 0 -1
+
+			//Sobel_dy
+			//  1  2  1
+			//  0  0  0
+			// -1 -2 -1
+
+
+			normal.x = topleftL + 2 * leftL + bottomleftL + -toprightL + -2 * rightL + -bottomrightL;
+			normal.y = normal.x;
+			normal.z = normal.x;
+			pixel_t color = VectorToColor(normal);
+
+//			pixelout[x + y * width] = color;
+			pixelout[x + y * width] = pixel[x + y * width];
 		}
 	}
 }
