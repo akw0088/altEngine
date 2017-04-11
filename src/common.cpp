@@ -1167,7 +1167,7 @@ pixel_t VectorToColor(vec3 &v)
 
 	memset(&color, 0, sizeof(pixel_t));
 
-	byte a = 255;
+	//byte a = 255;
 	byte r = (byte)(255.0f * v.x);
 	byte g = (byte)(255.0f * v.y);
 	byte b = (byte)(255.0f * v.z);
@@ -1259,13 +1259,13 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 								   0,  0,  0 };
 
 
-			normal.x = (float)(topleftL * kernelx[0] + topL * kernelx[1] + rightL * kernelx[2]  +
+			normal.x = (float)(topleftL * kernelx[0] + topL * kernelx[1] + toprightL * kernelx[2]  +
 				leftL * kernelx[3] + centerL * kernelx[4] + rightL * kernelx[5] +
-				bottomleftL * kernelx[6] + bottomL * kernelx[7] + bottomL * kernelx[8]);
+				bottomleftL * kernelx[6] + bottomL * kernelx[7] + bottomrightL * kernelx[8]);
 
-			normal.y = (float)(topleftL * kernely[0] + topL * kernely[1] + rightL * kernely[2] +
+			normal.y = (float)(topleftL * kernely[0] + topL * kernely[1] + toprightL * kernely[2] +
 				leftL * kernely[3] + centerL * kernely[4] + rightL * kernely[5] +
-				bottomleftL * kernely[6] + bottomL * kernely[7] + bottomL * kernely[8]);
+				bottomleftL * kernely[6] + bottomL * kernely[7] + bottomrightL * kernely[8]);
 
 			normal.z = normal.y;
 //			normal.z = 1.0f / scale;
