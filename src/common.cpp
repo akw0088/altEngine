@@ -1184,13 +1184,32 @@ void gen_normalmap(float scale, unsigned int *pixel, unsigned int *pixelout, int
 			vec3 right	= ColorToVector(pixel[MIN(x + 1, width - 1) + y * width]);
 			vec3 bottom	= ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
 			vec3 top	= ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
+			vec3 topleft  = ColorToVector(pixel[MAX(x - 1, 0) + MIN(y + 1, height - 1) * width]);
+			vec3 topright = ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
+			vec3 bottomleft = ColorToVector(pixel[MAX(x - 1, 0) + MAX(y - 1, 0) * width]);
+			vec3 bottomright = ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
 
+
+			//Sobel_dx
+			// 1 0 -1
+			// 2 0 -2
+			// 1 0 -1
+
+			//Sobel_dy
+			//  1  2  1
+			//  0  0  0
+			// -1 -2 -1
 
 			float centerL	= scale * GetLuminance(center);
 			float leftL		= scale * GetLuminance(left);
 			float rightL	= scale * GetLuminance(right);
 			float bottomL	= scale * GetLuminance(bottom);
 			float topL		= scale * GetLuminance(top);
+			float topleftL		= scale * GetLuminance(topleft);
+			float toprightL		= scale * GetLuminance(topright);
+			float bottomleftL	= scale * GetLuminance(bottomleft);
+			float bottomrightL	= scale * GetLuminance(bottomright);
+
 
 			// finite difference method
 //			The x component of the normal is luminance(i - 1, j) - luminance(i + 1, j)
