@@ -1188,16 +1188,16 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 	{
 		for (int x = 0; x < width; x++)
 		{
-			vec3 center			= ColorToVector(pixel[x + y * width]);
-			vec3 left			= ColorToVector(pixel[MAX(x - 1, 0)		+ y * width]);
-			vec3 right			= ColorToVector(pixel[MIN(x + 1, width) + y * width]);
-			vec3 bottom			= ColorToVector(pixel[MIN(x + 1, width) + MAX(y - 1, 0) * width]);
-			vec3 top			= ColorToVector(pixel[MIN(x + 1, width) + MIN(y + 1, height) * width]);
 
-			vec3 topleft		= ColorToVector(pixel[MAX(x - 1, 0)		+ MIN(y + 1, height) * width]);
-			vec3 topright		= ColorToVector(pixel[MIN(x + 1, width) + MIN(y + 1, height) * width]);
-			vec3 bottomleft		= ColorToVector(pixel[MAX(x - 1, 0)		+ MAX(y - 1, 0) * width]);
-			vec3 bottomright	= ColorToVector(pixel[MIN(x + 1, width) + MAX(y - 1, 0) * width]);
+			vec3 topleft		= ColorToVector(pixel[MAX(x - 1, 0)			+ MIN(y + 1, height - 1) * width]);
+			vec3 top			= ColorToVector(pixel[x						+ MIN(y + 1, height - 1) * width]);
+			vec3 topright		= ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
+			vec3 left			= ColorToVector(pixel[MAX(x - 1, 0)			+ y * width]);
+			vec3 center			= ColorToVector(pixel[x						+ y * width]);
+			vec3 right			= ColorToVector(pixel[MIN(x + 1, width - 1) + y * width]);
+			vec3 bottomleft		= ColorToVector(pixel[MAX(x - 1, 0)			+ MAX(y - 1, 0) * width]);
+			vec3 bottom			= ColorToVector(pixel[x						+ MAX(y - 1, 0) * width]);
+			vec3 bottomright	= ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
 
 			float centerL		= GetLuminance(center);
 			float leftL			= GetLuminance(left);
@@ -1251,11 +1251,11 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 			// -1 -2 -1
 
 			double kernelx[9] = { 0, 0, 0,
-								  0, 1, 0,
+								0, 1, 0,
 								  0, 0, 0 };
 
 			double kernely[9] = {  0,  0,  0,
-								   0,  1,  0,
+									0,  1,  0,
 								   0,  0,  0 };
 
 
