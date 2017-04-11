@@ -1140,7 +1140,9 @@ void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsign
 float GetLuminance(vec3 &v)
 {
 	// greyscale conversion
-	return v.x * 0.2126f + v.y * 0.7152f + v.z * 0.0722f;
+//	return v.x * 0.2126f + v.y * 0.7152f + v.z * 0.0722f;
+
+	return (v.x + v.y + v.z) / 3.0f;
 }
 
 
@@ -1152,9 +1154,9 @@ vec3 ColorToVector(pixel_t color)
 
 	//high byte is alpha
 //	vcolor.z = (float)(((color.a) >> 24) / 255.0f);
-	vcolor.z = (float)(color.r / 255.0f);
+	vcolor.x = (float)(color.r / 255.0f);
 	vcolor.y = (float)(color.g / 255.0f);
-	vcolor.x = (float)(color.b / 255.0f);
+	vcolor.z = (float)(color.b / 255.0f);
 
 	return vcolor;
 }
@@ -1180,44 +1182,32 @@ pixel_t VectorToColor(vec3 &v)
 }
 
 
-int Clamp(int value, int max)
-{
-	if (value < 0)
-		value = 0;
-	if (value > max)
-		value = max;
-
-	return value;
-}
-
-
-
-
 void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height)
 {
 	for (int y = 0; y < height; y++)
 	{
 		for (int x = 0; x < width; x++)
 		{
-			vec3 center = ColorToVector(pixel[x + y * width]);
-			vec3 left	= ColorToVector(pixel[MAX(x - 1, 0) + y * width]);
-			vec3 right	= ColorToVector(pixel[MIN(x + 1, width - 1) + y * width]);
-			vec3 bottom	= ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
-			vec3 top	= ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
-			vec3 topleft  = ColorToVector(pixel[MAX(x - 1, 0) + MIN(y + 1, height - 1) * width]);
-			vec3 topright = ColorToVector(pixel[MIN(x + 1, width - 1) + MIN(y + 1, height - 1) * width]);
-			vec3 bottomleft = ColorToVector(pixel[MAX(x - 1, 0) + MAX(y - 1, 0) * width]);
-			vec3 bottomright = ColorToVector(pixel[MIN(x + 1, width - 1) + MAX(y - 1, 0) * width]);
+			vec3 center			= ColorToVector(pixel[x + y * width]);
+			vec3 left			= ColorToVector(pixel[MAX(x - 1, 0)		+ y * width]);
+			vec3 right			= ColorToVector(pixel[MIN(x + 1, width) + y * width]);
+			vec3 bottom			= ColorToVector(pixel[MIN(x + 1, width) + MAX(y - 1, 0) * width]);
+			vec3 top			= ColorToVector(pixel[MIN(x + 1, width) + MIN(y + 1, height) * width]);
 
-			float centerL	= scale * GetLuminance(center);
-			float leftL		= scale * GetLuminance(left);
-			float rightL	= scale * GetLuminance(right);
-			float bottomL	= scale * GetLuminance(bottom);
-			float topL		= scale * GetLuminance(top);
-			float topleftL		= scale * GetLuminance(topleft);
-			float toprightL		= scale * GetLuminance(topright);
-			float bottomleftL	= scale * GetLuminance(bottomleft);
-			float bottomrightL	= scale * GetLuminance(bottomright);
+			vec3 topleft		= ColorToVector(pixel[MAX(x - 1, 0)		+ MIN(y + 1, height) * width]);
+			vec3 topright		= ColorToVector(pixel[MIN(x + 1, width) + MIN(y + 1, height) * width]);
+			vec3 bottomleft		= ColorToVector(pixel[MAX(x - 1, 0)		+ MAX(y - 1, 0) * width]);
+			vec3 bottomright	= ColorToVector(pixel[MIN(x + 1, width) + MAX(y - 1, 0) * width]);
+
+			float centerL		= GetLuminance(center);
+			float leftL			= GetLuminance(left);
+			float rightL		= GetLuminance(right);
+			float bottomL		= GetLuminance(bottom);
+			float topL			= GetLuminance(top);
+			float topleftL		= GetLuminance(topleft);
+			float toprightL		= GetLuminance(topright);
+			float bottomleftL	= GetLuminance(bottomleft);
+			float bottomrightL	= GetLuminance(bottomright);
 
 
 			// finite difference method
@@ -1246,10 +1236,6 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 			vec3 normal = vec3::crossproduct(tangent, bitangent);
 			normal = normal.normalize();
 
-			normal.x *= 0.5f;
-			normal.y *= 0.5f;
-			normal.x += 0.5f;
-			normal.y += 0.5f;
 			*/
 
 			vec3 normal;
@@ -1264,14 +1250,40 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 			//  0  0  0
 			// -1 -2 -1
 
+			double kernelx[9] = { 0, 0, 0,
+								  0, 1, 0,
+								  0, 0, 0 };
 
-			normal.x = topleftL + 2 * leftL + bottomleftL + -toprightL + -2 * rightL + -bottomrightL;
-			normal.y = normal.x;
-			normal.z = normal.x;
+			double kernely[9] = {  0,  0,  0,
+								   0,  1,  0,
+								   0,  0,  0 };
+
+
+			normal.x = (float)(topleftL * kernelx[0] + topL * kernelx[1] + rightL * kernelx[2]  +
+				leftL * kernelx[3] + centerL * kernelx[4] + rightL * kernelx[5] +
+				bottomleftL * kernelx[6] + bottomL * kernelx[7] + bottomL * kernelx[8]);
+
+			normal.y = (float)(topleftL * kernely[0] + topL * kernely[1] + rightL * kernely[2] +
+				leftL * kernely[3] + centerL * kernely[4] + rightL * kernely[5] +
+				bottomleftL * kernely[6] + bottomL * kernely[7] + bottomL * kernely[8]);
+
+			normal.z = normal.y;
+//			normal.z = 1.0f / scale;
+
+
+//			normal.x = centerL;
+//			normal.y = centerL;
+//			normal.z = centerL;
+
+//			normal.x *= 0.5f;
+//			normal.y *= 0.5f;
+//			normal.x += 0.5f;
+//			normal.y += 0.5f;
+
 			pixel_t color = VectorToColor(normal);
 
-//			pixelout[x + y * width] = color;
-			pixelout[x + y * width] = pixel[x + y * width];
+			pixelout[x + y * width] = color;
+//			pixelout[x + y * width] = pixel[x + y * width];
 		}
 	}
 }
