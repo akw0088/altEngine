@@ -228,28 +228,27 @@ void main(void)
 	for(int i = 0; i < u_num_lights; i++)
 	{
 		vec3 lightPosWorld = vec3(u_position[i]);
-		vec3 lightPosEye = vec3(mvp * vec4(u_position[i].xyz, 1.0));
+
+		vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
+		lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
 
-		vec4 lightDir = vec4(Vertex.vary_position.xyz - lightPosEye, 1.0);
-		vec3 v_light = normalize(vec3(lightDir));	
-		lightDir.a = length(vec3(Vertex.vary_position) - lightPosEye); // distance from light to pixel
-
+		vec3 v_light = normalize(vec3(lightDir.rgb));	
+		vec3 n_light = tangent_space * v_light; // light vector in tangent space
 
 //		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
 //		vec3 v_light2 = normalize(vec3(lightpos.xyz));
 //		vec3 n_light = tangent_space * v_light2; // light vector in tangent space
 
-		float diffuse = max(dot(v_light, normal), 1.0);		// directional light factor for fragment
-		float atten = min( lightDir.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
+
+		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
+		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
 		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
-		float specular = max(pow(dot(v_reflect, eye), 32.0), 0.25);	// specular relection for fragment
-		if (specular < 0.5)
-			specular = 0.0;
-		if (specular > 5.0)
-			specular = 5.0;
-		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.25 + specular * 0.0); // combine everything
+		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
+		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
+
+
 
 	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
 	vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
