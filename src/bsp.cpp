@@ -604,7 +604,7 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 
 inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
-	bool lightmap_done = false;
+	bool lightmap_selected = false;
 
 	if (selected_map == false)
 	{
@@ -619,13 +619,13 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 			if (face->lightmap != -1)
 			{
 				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+				lightmap_selected = true;
 			}
 			if (lightmap && face->lightmap != -1)
 			{
 				// Pretty much shader stage with lightmap
 				// normal faces without shaders get set below
 				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
-				lightmap_done = true;
 			}
 			else
 			{
@@ -636,7 +636,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 	gfx.SelectTexture(9, normal_object[face->material]);
 #endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
-	if (lightmap_done == false)
+	if (lightmap_selected)
 		gfx.SelectTexture(8, 0);
 	gfx.SelectTexture(stage, 0);
 }
@@ -645,7 +645,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 {
 	int mesh_index = -1;
 	int index_per_row = 2 * (mesh_level + 1);
-	bool lightmap_done = false;
+	bool lightmap_selected = false;
 
 	// Find pre-generated vertex data for patch O(n)
 
@@ -673,7 +673,6 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		if (lightmap && face->lightmap != -1)
 		{
 			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
-			lightmap_done = true;
 		}
 		else
 		{
@@ -682,8 +681,8 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 
 		if (face->lightmap != -1)
 		{
-			if (lightmap_done == false)
-				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			lightmap_selected = true;
 		}
 	}
 
@@ -715,7 +714,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		//patchdata[mesh_index + i].num_verts);
 		
 	}
-	if (lightmap)
+	if (lightmap_selected)
 	{
 		gfx.SelectTexture(8, 0);
 	}
@@ -727,14 +726,13 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 
 inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
-	bool lightmap_done = false;
+	bool lightmap_selected = false;
 
 	if (textures_loaded)
 	{
 		if (lightmap && face->lightmap != -1)
 		{
 			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
-			lightmap_done = true;
 		}
 		else
 		{
@@ -744,8 +742,8 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 		// surfaces that arent lit with lightmaps eg: skies
 		if (face->lightmap != -1)
 		{
-			if (lightmap_done == false)
-				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			lightmap_selected = true;
 		}
 	}
 #ifdef NORMALMAP
@@ -755,7 +753,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
-	if (lightmap)
+	if (lightmap_selected)
 	{
 		gfx.SelectTexture(8, 0);
 	}

@@ -724,6 +724,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	format = 4;
 #endif
 
+#if 0
 	if (format == GL_RGB)
 	{
 		unsigned char *normal = new unsigned char[width * height * 4];
@@ -734,6 +735,9 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	{
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	}
+#endif
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+
 
 
 

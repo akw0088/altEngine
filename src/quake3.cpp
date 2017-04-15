@@ -90,6 +90,9 @@ void Quake3::load(gametype_t type)
 void Quake3::unload()
 {
 	last_spawn = 0;
+	warmup = true;
+	warmup_time = 30;
+	round_time = 0;
 }
 
 void Quake3::destroy()
