@@ -97,14 +97,15 @@ void main(void)
 //	Fragment = texture(texture0, Vertex.vary_TexCoord + height * eye.xy);
 //	vec3 normal_map = normalize(texture(texture_normalmap, Vertex.vary_TexCoord + height * eye.xy).xyz);
 
+/*
 	vec3 normal_map;
 
 	normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).r - 1);
 	normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).g - 1);
 	normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).b - 1);
 
-	normal_map = (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
-
+	normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
+*/
 
 	vec4 Fragment0;
 	vec4 Fragment1;
@@ -208,11 +209,6 @@ void main(void)
 	ambient *= min(u_rgbgen_scale3, 3.0);
 
 
-	float frag0gs = (Fragment0.r + Fragment0.g + Fragment0.b) / 3.0;
-	float frag1gs = (Fragment1.r + Fragment1.g + Fragment1.b) / 3.0;
-	float frag2gs = (Fragment2.r + Fragment2.g + Fragment2.b) / 3.0;
-	float frag3gs = (Fragment3.r + Fragment3.g + Fragment3.b) / 3.0;
-
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment0.a * Fragment1.a  * Fragment2.a  * Fragment3.a;
 //	Fragment.a = 1.0;
@@ -232,26 +228,27 @@ void main(void)
 	for(int i = 0; i < u_num_lights; i++)
 	{
 		vec3 lightPosWorld = vec3(u_position[i]);
-
-		vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
-		lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
+		vec3 lightPosEye = vec3(mvp * vec4(u_position[i].xyz, 1.0));
 
 
-		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
-		vec3 v_light2 = normalize(vec3(lightpos.xyz));
+		vec4 lightDir = vec4(Vertex.vary_position.xyz - lightPosEye, 1.0);
+		vec3 v_light = normalize(vec3(lightDir));	
+		lightDir.a = length(vec3(Vertex.vary_position) - lightPosEye); // distance from light to pixel
 
-		vec3 v_light = normalize(vec3(lightDir.rgb));	
-		vec3 n_light = tangent_space * v_light2; // light vector in tangent space
 
-		float diffuse = max(dot(v_light, normal_map), 0.25);		// directional light factor for fragment
-		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
-		vec3 v_reflect = reflect(n_light, normal_map);			// normal map reflection vector
+//		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
+//		vec3 v_light2 = normalize(vec3(lightpos.xyz));
+//		vec3 n_light = tangent_space * v_light2; // light vector in tangent space
+
+		float diffuse = max(dot(v_light, normal), 1.0);		// directional light factor for fragment
+		float atten = min( lightDir.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
+		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 32.0), 0.25);	// specular relection for fragment
 		if (specular < 0.5)
 			specular = 0.0;
 		if (specular > 5.0)
 			specular = 5.0;
-		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
+		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.25 + specular * 0.0); // combine everything
 	}
 
 	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
@@ -264,4 +261,5 @@ void main(void)
 	}
 	Fragment.rgb *= max(light, ambient);
 //	Fragment.rgb = light;
+
 }
