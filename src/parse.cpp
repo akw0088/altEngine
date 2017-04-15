@@ -356,6 +356,11 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			phase : sets the start offset of the oscillation cycle. Values must be 0 < phase < 1. Any integer phase value is the same as no offset (default 0).
 			noise : path/name of .wav file to play. Use looping sounds only (eg. sound/world/drone6.wav - See Notes).
 			*/
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
 		}
 		else if (strcmp(value, "func_button") == 0)
 		{
@@ -389,6 +394,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			dmg : damage to inflict on player when he blocks operation of door (default 4). Door will reverse direction when blocked unless CRUSHER spawnflag is set.
 			team: assign the same team name to multiple doors that should operate together (see Notes).
 			*/
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+
 		}
 		else if (strcmp(value, "func_plat") == 0)
 		{
@@ -399,6 +411,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			height : if set, this will determine the total amount of vertical travel of the plat.
 			dmg : damage to inflict on player when he blocks operation of plat (default 4). Plat will reverse direction when blocked.
 			*/
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+
 		}
 		else if (strcmp(value, "func_pendulum") == 0)
 		{
@@ -409,6 +428,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			phase : sets the start offset of the swinging cycle.Values must be 0 < phase < 1. Any integer phase value is the same as no offset(default 0).
 			noise : path / name of.wav file to play.Use looping sounds only(eg.sound / world / drone6.wav).
 			*/
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+
 		}
 		else if (strcmp(value, "func_rotating") == 0)
 		{
@@ -418,6 +444,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			speed: determines how fast entity rotates(default 100).
 			noise : path / name of.wav file to play.Use looping sounds only(eg.sound / world / drone6.wav).
 			*/
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+
 		}
 		else if (strcmp(value, "func_train") == 0)
 		{
@@ -428,6 +461,12 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			target : this points to the first path_corner of the path which is also the spawn location of the train's origin.
 			model2 : path/name of model to include (eg: models/mapobjects/pipe/pipe02.md3).
 			*/
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+
 		}
 		else if (strcmp(value, "trigger_teleport") == 0)
 		{
