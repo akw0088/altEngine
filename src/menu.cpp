@@ -277,6 +277,10 @@ void Menu::handle(char key, Engine *altEngine)
 	case 27:
 		if (altEngine->q3map.loaded == false)
 			delta("unload", *altEngine);
+
+/*		if (ingame)
+			ingame = false;
+			*/
 		break;
 	}
 }

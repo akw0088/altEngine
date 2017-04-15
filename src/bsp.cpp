@@ -636,9 +636,13 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 	gfx.SelectTexture(9, normal_object[face->material]);
 #endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
-	if (lightmap_selected)
-		gfx.SelectTexture(8, 0);
-	gfx.SelectTexture(stage, 0);
+
+	if (textures_loaded)
+	{
+		if (lightmap_selected)
+			gfx.SelectTexture(8, 0);
+		gfx.SelectTexture(stage, 0);
+	}
 }
 
 inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap)
@@ -714,12 +718,13 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		//patchdata[mesh_index + i].num_verts);
 		
 	}
-	if (lightmap_selected)
+	if (textures_loaded)
 	{
-		gfx.SelectTexture(8, 0);
-	}
-	else
-	{
+
+		if (lightmap_selected)
+		{
+			gfx.SelectTexture(8, 0);
+		}
 		gfx.SelectTexture(stage, 0);
 	}
 }
@@ -757,10 +762,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	{
 		gfx.SelectTexture(8, 0);
 	}
-	else
-	{
-		gfx.SelectTexture(stage, 0);
-	}
+	gfx.SelectTexture(stage, 0);
 }
 
 void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position)
@@ -1207,7 +1209,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			continue;
 		}
 
-		if (face_list[i].shader)
+		if (face_list[i].shader && textures_loaded)
 		{
 			set_tcmod(mlight2, face_list[i], tick_num, time);
 
@@ -1234,7 +1236,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
 
-		if (face_list[i].shader)
+		if (face_list[i].shader  && textures_loaded)
 		{
 			int j = face_list[i].stage;
 			mlight2.tcmod_rotate(0, j);
@@ -1253,7 +1255,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	}
 
 
-	if (blend_list.size() > 0)
+	if (blend_list.size() > 0 && textures_loaded)
 	{
 		mlight2.set_light(1.0f, 1.0f, 0);
 		if (blend_enabled)
@@ -1272,7 +1274,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				continue;
 			}
 
-			if (blend_list[i].shader)
+			if (blend_list[i].shader && textures_loaded)
 			{
 				set_tcmod(mlight2, blend_list[i], tick_num, time);
 
@@ -1304,7 +1306,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				render_billboard(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
 
-			if (blend_list[i].shader)
+			if (blend_list[i].shader && textures_loaded)
 			{
 				int j = blend_list[i].stage;
 				//technically shouldnt need to reset

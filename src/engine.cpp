@@ -500,6 +500,9 @@ void Engine::load(char *level)
 	global.Select();
 	global.Params(mvp, 0);
 	gfx.SelectTexture(0, no_tex);
+	gfx.SelectTexture(1, no_tex);
+	gfx.SelectTexture(2, no_tex);
+	gfx.SelectTexture(3, no_tex);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	q3map.lastIndex = -2; // force generation of new face lists
@@ -2956,7 +2959,7 @@ void Engine::handle_game(char key)
 		break;
 
 	case 27:
-		menu.ingame = !menu.ingame;
+		menu.ingame = true;
 		break;
 	case '[':
 		if (spawn != -1)
