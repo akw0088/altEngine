@@ -1132,34 +1132,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 			mlight2.Params(mvp, light_list, 0, offset, tick_num);
 		}
 
-
-
-#if 0
-		// render network clients
-		if (server_flag || client_flag)
-		{
-			if (i == (unsigned int)server_spawn)
-			{
-				render_client(i, trans, lights, true);
-				continue;
-			}
-
-			unsigned int j = 0;
-			for (j = 0; j < client_list.size(); j++)
-			{
-				if (i == client_list[j]->ent_id)
-				{
-					render_client(i, trans, lights, false);
-					break;
-				}
-			}
-
-			if (client_list.size() && j < client_list.size() && i == client_list[j]->ent_id)
-				continue;
-		}
-#endif
-
-
 		//render entity
 		entity->rigid->render(gfx);
 
@@ -1182,7 +1154,6 @@ void Engine::render_players(matrix4 &trans, bool lights)
 	{
 		Entity *entity = entity_list[i];
 
-
 		if (entity->visible == false)
 			continue;
 
@@ -1191,6 +1162,8 @@ void Engine::render_players(matrix4 &trans, bool lights)
 			(entity->player && entity->player->type == SERVER) ||
 			(entity->player && entity->player->type == CLIENT && server_flag))
 		{
+			if (entity->player->local)
+				continue;
 
 			if (entity->player->health > 0)
 			{
@@ -2377,6 +2350,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				entity_list[client]->position += entity_list[client]->rigid->center;
 				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21, TEAM_NONE);
 				entity_list[client]->player->type = PLAYER;
+				entity_list[client]->player->local = true;
 				camera_frame.pos = entity_list[client]->position;
 
 				if (server_spawn != -1)
@@ -2389,7 +2363,8 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 					entity_list[server_spawn]->rigid->step_flag = true;
 					entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
 					entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21, TEAM_NONE);
-					entity_list[client]->player->type = SERVER;
+					entity_list[server_spawn]->player->local = false;
+					entity_list[server_spawn]->player->type = SERVER;
 				}
 			}
 
