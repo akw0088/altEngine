@@ -1675,39 +1675,25 @@ bool Engine::map_collision(RigidBody &body)
 	vec3 clip(0.0f, 0.0f, 0.0f);
 	bool collision = false;
 
-	vec3 mid[4];
-	
-	// Do additional mid point testing (front back left right points, mid level)
-	mid[0] = body.aabb[0] + vec3(body.aabb[7].x / 2, 0, body.aabb[7].z / 2);
-	mid[1] = body.aabb[0] + vec3(0.0f, body.aabb[7].y / 2, body.aabb[7].z / 2);
-	mid[2] = body.aabb[0] + vec3(body.aabb[7].x / 2, body.aabb[7].y, body.aabb[7].z / 2);
-	mid[3] = body.aabb[0] + vec3(body.aabb[7].x, body.aabb[7].y / 2, body.aabb[7].z / 2);
 
 	if (body.noclip)
 		return false;
 
 	// Check bounding box against map
-	for(int i = 0; i < 8 + 4; i++)
+	for(int i = 0; i < 8; i++)
 	{
 		vec3 point;
 		vec3 oldpoint;
 
-		if (i < 8)
-		{
-			point = body.aabb[i] - body.center + body.entity->position;
-			oldpoint = body.aabb[i] - body.center + body.old_position;
-		}
-		else
-		{
-			point = mid[i - 8] - body.center + body.entity->position;
-			oldpoint = mid[i - 8] - body.center + body.old_position;
-		}
+		point = body.aabb[i] - body.center + body.entity->position;
+		oldpoint = body.aabb[i] - body.center + body.old_position;
 
 //		can be used to avoid checking all eight points, but checking all 8 works pretty well
 //		vec3 point = body.center + body.entity->position;
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
-		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth, surface_list, body.step_flag && input.numpad1, clip, body.velocity))
+		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
+			surface_list, body.step_flag && input.numpad1, clip, body.velocity))
 		{
 			if (body.step_flag)
 			{
@@ -1735,6 +1721,27 @@ bool Engine::map_collision(RigidBody &body)
 		}
 	}
 
+	// Do a bsp trace collision to eliminate the case where we are going really fast and pass through objects
+	if (collision == false && body.velocity.magnitude() > 6.0f )
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			vec3 point;
+			vec3 oldpoint;
+
+			point = body.aabb[i] - body.center + body.entity->position;
+			oldpoint = body.aabb[i] - body.center + body.old_position;
+
+			q3map.trace(oldpoint, point);
+
+			if (q3map.collision)
+			{
+				collision = true;
+				q3map.collision = false;
+				break;
+			}
+		}
+	}
 
 
 
