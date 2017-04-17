@@ -1679,14 +1679,32 @@ bool Engine::map_collision(RigidBody &body)
 	if (body.noclip)
 		return false;
 
+	vec3 mid[4];
+	
+	// Do additional mid point testing (front back left right points, mid level)
+	mid[0] = body.aabb[0] + vec3(body.aabb[7].x / 2, 0, body.aabb[7].z / 2);
+	mid[1] = body.aabb[0] + vec3(0.0f, body.aabb[7].y / 2, body.aabb[7].z / 2);
+	mid[2] = body.aabb[0] + vec3(body.aabb[7].x / 2, body.aabb[7].y, body.aabb[7].z / 2);
+	mid[3] = body.aabb[0] + vec3(body.aabb[7].x, body.aabb[7].y / 2, body.aabb[7].z / 2);
+
 	// Check bounding box against map
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 8 + 4; i++)
 	{
 		vec3 point;
 		vec3 oldpoint;
 
-		point = body.aabb[i] - body.center + body.entity->position;
-		oldpoint = body.aabb[i] - body.center + body.old_position;
+
+		if (i < 8)
+		{
+			point = body.aabb[i] - body.center + body.entity->position;
+			oldpoint = body.aabb[i] - body.center + body.old_position;
+		}
+		else
+		{
+			point = body.aabb[i] - body.center + body.entity->position;
+			oldpoint = body.aabb[i] - body.center + body.old_position;
+		}
+
 
 //		can be used to avoid checking all eight points, but checking all 8 works pretty well
 //		vec3 point = body.center + body.entity->position;

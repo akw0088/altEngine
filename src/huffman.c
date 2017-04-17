@@ -14,7 +14,7 @@
 #include <assert.h>
 #include "huffman.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <malloc.h>
 #define alloca _alloca

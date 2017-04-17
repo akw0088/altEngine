@@ -1483,7 +1483,7 @@ void Quake3::step(int frame_step)
 			if (warmup_time <= round_time)
 			{
 				warmup = false;
-				console(-1, "reset", engine->menu, engine->entity_list);
+				console(-1, "reset 1", engine->menu, engine->entity_list);
 				engine->play_wave_global(SND_FIGHT);
 			}
 		}
@@ -5165,7 +5165,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "godmode");
 	if (ret == 0)
 	{
-		snprintf(msg, LINE_SIZE, "give all\n");
+		snprintf(msg, LINE_SIZE, "godmode\n");
 		menu.print(msg);
 		if (self != -1)
 		{
@@ -5205,9 +5205,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
-	if (strcmp(cmd, "reset") == 0)
+	if (strstr(cmd, "reset"))
 	{
+		int reset_score = 0;
+
 		snprintf(msg, LINE_SIZE, "reset\n");
+		sscanf(cmd, "reset %d", &reset_score);
 
 		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
@@ -5216,7 +5219,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				char respawn[128];
 
 				sprintf(respawn, "respawn -1 %d", i);
-				entity_list[i]->player->reset();
+				if (reset_score)
+					entity_list[i]->player->reset();
 				console(i, respawn, menu, entity_list);
 			}
 
@@ -5684,7 +5688,7 @@ void Quake3::endgame(char *winner)
 	strcpy(win_msg, winner);
 
 	warmup = true;
-	console(-1, "reset", engine->menu, engine->entity_list);
+	console(-1, "reset 0", engine->menu, engine->entity_list);
 	round_time = 0;
 }
 
