@@ -4184,7 +4184,6 @@ bool Engine::play_wave_global(int index)
 }
 
 
-// We are only checking for hitting of entities
 void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self)
 {
 	int j = 0;
@@ -4203,8 +4202,29 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 			if (RayBoxSlab(origin, dir, min, max, distance))
 			{
-				index_list[j++] = i;
-				num_index++;
+				vec3 endpoint = entity_list[i]->position;
+
+				// Hit someone, do BSP trace to check if a wall is in the way
+	                        q3map.trace(origin, endpoint);
+	                        if (q3map.collision)
+	                        {
+					vec3 dist1 = endpoint - origin;
+					vec3 dist2 = entity_list[i]->position - origin;
+
+	                                q3map.collision = false;
+					if (dist1.magnitude() > dist2.magnitude() )
+					{
+						index_list[j++] = i;
+						num_index++;
+	        	                        break;
+					}
+	                        }
+				else
+				{
+					index_list[j++] = i;
+					num_index++;
+	        	                break;
+				}
 			}
 		}
 	}
