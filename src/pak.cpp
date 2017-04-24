@@ -23,7 +23,7 @@ int get_pakfile(char *pakfile, char *file, char **pdata)
 	FILE *pak = (FILE *)fopen(pakfile, "rb");
 	if (pak == NULL)
 	{
-		printf("error opening %s\n", pak);
+		printf("error opening %s\n", pakfile);
 		return -1;
 	}
 
