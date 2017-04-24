@@ -1,3 +1,5 @@
+NUMJOBS := 8
+
 SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
 		basegame.cpp \
@@ -21,6 +23,7 @@ SOURCES_CPP := 	xmain.cpp \
 		menu.cpp \
 		net.cpp \
 		parse.cpp \
+		pak.cpp \
 		plane.cpp \
 		player.cpp \
 		quake3.cpp \
@@ -50,10 +53,10 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++ -fuse-linker-plugin
-#CC := gcc -fuse-linker-plugin
-CPP := clang++
-CC := clang
+CPP := g++ -fuse-linker-plugin
+CC := gcc -fuse-linker-plugin
+#CPP := clang++
+#CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]
@@ -72,7 +75,7 @@ altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wa
 altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal -lrt
-LIBS := -L/usr/X11R6/lib/ 
+LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
 
 all: altEngine
 
