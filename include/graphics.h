@@ -111,6 +111,16 @@ public:
 #endif
 
 #ifdef DIRECTX
+#ifdef D3D11
+	ID3D11DeviceContext		*d3d;
+	ID3D11Device			*device;
+	IDXGISwapChain			*swapchain;
+	ID3D11Texture2D			*pBackBuffer;
+	ID3D11RenderTargetView	*backbuffer;
+
+	ID3D11VertexShader	*pVS;
+	ID3D11PixelShader	*pPS;
+#else
 	IDirect3D9				*d3d;
 	IDirect3DDevice9		*device;
 	D3DPRESENT_PARAMETERS	d3dpp;
@@ -120,6 +130,7 @@ public:
 	vector<IDirect3DTexture9 *> texture;
 	vector<IDirect3DSurface9 *> surface;
 	ID3DXFont *font;
+#endif
 #endif
 };
 

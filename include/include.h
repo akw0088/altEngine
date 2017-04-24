@@ -61,9 +61,15 @@
 //#define SHADOWMAPS
 
 #ifdef DIRECTX
+#ifdef D3D11
+	#include <d3d11.h>
+	#include <d3dx11.h>
+	#include <d3dx10.h>
+#else
 	#include <d3d9.h>
 	#include <d3dx9.h>
 	#include <d3dx9math.h>
+#endif
 #else
 	#define GLEW_STATIC
 	#include <GL/glew.h>

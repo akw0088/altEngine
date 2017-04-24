@@ -17,6 +17,17 @@ void Graphics::resize(int width, int height)
 #ifndef DIRECTX
 	glViewport(0, 0, width, height);
 #else
+#ifdef D3D11
+	D3D11_VIEWPORT viewport;
+	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = width;
+	viewport.Height = height;
+
+	d3d->RSSetViewports(1, &viewport);
+#else
 	D3DVIEWPORT9 viewport;
 
 	viewport.Width = width;
@@ -26,7 +37,7 @@ void Graphics::resize(int width, int height)
 	{
 		printf("resize error!!!\n");
 	}
-
+#endif
 #endif
 #endif
 }
@@ -138,6 +149,62 @@ void Graphics::init(void *param1, void *param2)
 	hdc = *((HDC *)param2);
 	HRESULT		ret;
 
+#ifdef D3D11
+	DXGI_SWAP_CHAIN_DESC scd;
+	ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
+	scd.BufferCount = 1;                                    // one back buffer
+	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
+	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
+	scd.OutputWindow = hwnd;                                // the window to be used
+	scd.SampleDesc.Count = 0;                               // how many multisamples
+	scd.Windowed = TRUE;                                    // windowed/full-screen mode
+
+	D3D11CreateDeviceAndSwapChain(NULL,
+		D3D_DRIVER_TYPE_HARDWARE,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		D3D11_SDK_VERSION,
+		&scd,
+		&swapchain,
+		&device,
+		NULL,
+		&d3d);
+
+	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+
+	device->CreateRenderTargetView(pBackBuffer, NULL, &backbuffer);
+	pBackBuffer->Release();
+
+	// set the render target as the back buffer
+	d3d->OMSetRenderTargets(1, &backbuffer, NULL);
+
+	// Set the viewport
+	D3D11_VIEWPORT viewport;
+	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = width;
+	viewport.Height = height;
+
+	d3d->RSSetViewports(1, &viewport);
+
+
+	D3D11_INPUT_ELEMENT_DESC ied[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		//		{ 0, sizeof(vec3), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		//		{ 0, sizeof(vec3) + sizeof(vec2), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	device->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
+	d3d->IASetInputLayout(pLayout);
+#else
 	memset(&d3dpp, sizeof(d3dpp), 0);
     d3dpp.Windowed = TRUE;
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -185,6 +252,7 @@ void Graphics::init(void *param1, void *param2)
 		D3DDECL_END()
 	};
 	ret = device->CreateVertexDeclaration(decl, &vertex_decl);
+#endif
 }
 
 void Graphics::DrawText(const char *str, float x, float y)
@@ -201,22 +269,41 @@ void Graphics::DrawText(const char *str, float x, float y)
 
 void Graphics::swap()
 {
+#ifdef D3D11
+	swapchain->Present(0, 0);
+#else
 	device->EndScene();
 	device->Present(NULL, NULL, NULL, NULL);
+#endif
 }
 
 void Graphics::clear()
 {
+#ifdef D3D11
+	d3d->ClearRenderTargetView(backbuffer, D3DXCOLOR(0.0f, 0.2f, 0.4f, 1.0f));
+#else
 	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1.0f, 0);
 	device->BeginScene();
+#endif
 }
 
 void Graphics::destroy()
 {
+#ifdef D3D11
 	if (device)
 		device->Release();
 	if (d3d)
 		d3d->Release();
+	if (swapchain)
+		swapchain->Release();
+	if (backbuffer)
+		backbuffer->Release();
+#else
+	if (device)
+		device->Release();
+	if (d3d)
+		d3d->Release();
+#endif
 
 }
 
@@ -511,6 +598,29 @@ Shader::Shader()
 
 int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *fragment_file)
 {
+#ifdef D3D11
+	Shader::gfx = gfx;
+	FILE *fLog = fopen("infolog.txt", "a");
+
+	if (vertex_file)
+	{
+		ID3D10Blob *VS;
+
+		D3DX11CompileFromFile(vertex_file, 0, 0, "VShader", "vs_4_0", 0, 0, 0, &VS, 0, 0);
+		gfx->device->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &(gfx->pVS));
+		gfx->d3d->VSSetShader(gfx->pVS, 0, 0);
+	}
+
+	if (fragment_file)
+	{
+		ID3D10Blob *PS;
+
+		D3DX11CompileFromFile(fragment_file, 0, 0, "PShader", "ps_4_0", 0, 0, 0, &PS, 0, 0);
+		gfx->device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &(gfx->pPS));
+		gfx->d3d->PSSetShader(gfx->pPS, 0, 0);
+	}
+#else
+
 	Shader::gfx = gfx;
 	LPD3DXBUFFER err;
 	FILE *fLog = fopen("infolog.txt", "a");
@@ -576,7 +686,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		pixel_binary->Release();
 		fprintf(fLog, "Loaded fragment shader %s\n", fragment_file);
 	}
-
+#endif
 	fclose(fLog);
 	return 0;
 }
