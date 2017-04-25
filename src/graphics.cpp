@@ -712,10 +712,12 @@ void Shader::destroy()
 		pixel_shader = NULL;
 	}
 
+#ifndef DIRECTX
 	if (vertex_src)
 		delete[] vertex_src;
 	if (fragment_src)
 		delete[] fragment_src;
+#endif
 }
 
 Shader::~Shader()

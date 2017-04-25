@@ -400,6 +400,8 @@ void mLight2::set_lightmap_stage(int flag)
 
 void mLight2::envmap(int stage, int env)
 {
+#ifndef DIRECTX
+
 	switch (stage)
 	{
 	case 0:
@@ -427,10 +429,12 @@ void mLight2::envmap(int stage, int env)
 		glUniform1i(u_env7, env);
 		break;
 	}
+#endif
 }
 
 void mLight2::rgbgen_scale(int stage, float scale)
 {
+#ifndef DIRECTX
 	switch (stage)
 	{
 	case 0:
@@ -458,10 +462,12 @@ void mLight2::rgbgen_scale(int stage, float scale)
 		glUniform1f(u_rgbgen_scale7, scale);
 		break;
 	}
+#endif
 }
 
 void mLight2::turb(int stage, int turb)
 {
+#ifndef DIRECTX
 	switch (stage)
 	{
 	case 0:
@@ -489,6 +495,7 @@ void mLight2::turb(int stage, int turb)
 		glUniform1i(u_water7, turb);
 		break;
 	}
+#endif
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
