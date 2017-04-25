@@ -3608,7 +3608,8 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "drawcalls: %d triangles %d", engine->gfx.gpustat.drawcall, engine->gfx.gpustat.triangle);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
-			snprintf(msg, LINE_SIZE, "netinfo: delta %d size %d num_ents %d dropped %d",
+			snprintf(msg, LINE_SIZE, "netinfo: ping: %d delta %d size %d num_ents %d dropped %d",
+				engine->netinfo.ping,
 				engine->netinfo.sequence_delta,
 				engine->netinfo.size,
 				engine->netinfo.num_ents,

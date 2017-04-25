@@ -241,6 +241,7 @@ typedef struct
 typedef struct
 {
 	int sequence_delta;
+	int ping;
 	int dropped;
 	int num_ents;
 	int size;

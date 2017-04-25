@@ -1984,6 +1984,7 @@ void Engine::server_recv()
 			}
 		}
 		netinfo.sequence_delta = sequence - clientmsg.sequence;
+		netinfo.ping = netinfo.sequence_delta * TICK_MS;
 		client_list[index]->client_sequence = clientmsg.sequence;
 	}
 	else
@@ -2112,10 +2113,12 @@ void Engine::server_recv()
 		char cmd[512] = "";
 		char pass[512] = "";
 
-		sscanf(reliablemsg->msg, "%s %s", &pass, &cmd);
-		if (strcmp(pass, password) == 0)
+		if (sscanf(reliablemsg->msg, "rcon %s %s", &pass, &cmd) == 2)
 		{
-			console(cmd);
+			if (strcmp(pass, password) == 0)
+			{
+				console(cmd);
+			}
 		}
 
 		/*
@@ -2331,6 +2334,7 @@ void Engine::client_recv()
 		netinfo.num_ents = servermsg.num_ents;
 		netinfo.size = servermsg.length;
 		netinfo.sequence_delta = sequence - servermsg.client_sequence;
+		netinfo.ping = netinfo.sequence_delta * TICK_MS;
 
 		handle_servermsg(servermsg, reliablemsg);
 
