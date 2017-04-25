@@ -392,6 +392,13 @@ void Audio::load(wave_t &wave)
 	{
 		get_zipfile("media/pak0.pk3", wave.file, (unsigned char **)&wave.data, NULL);
 	}
+
+	if (wave.data == NULL)
+	{
+		char *pak = "media/PAK0.PAK";
+		wave.data = get_pakfile(pak, wave.file);
+	}
+
 	if (wave.data == NULL)
 	{
 		debugf("Unable to load wave file %s.\n", wave.file);

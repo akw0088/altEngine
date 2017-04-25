@@ -14,17 +14,15 @@ typedef struct
 	int length;
 } pak_entry_t;
 
-int get_pakfile(char *pakfile, char *file, char **pdata)
+char *get_pakfile(char *pakfile, char *file)
 {
 	int i;
     
-	*pdata = NULL;
-
 	FILE *pak = (FILE *)fopen(pakfile, "rb");
 	if (pak == NULL)
 	{
 		printf("error opening %s\n", pakfile);
-		return -1;
+		return NULL;
 	}
 
 	pak_header_t header;
@@ -34,14 +32,14 @@ int get_pakfile(char *pakfile, char *file, char **pdata)
 	{
 		printf("invalid header id\n");
 		fclose(pak);
-		return -1;
+		return NULL;
 	}
     
 	if (header.dir_length % sizeof(pak_entry_t) != 0)
 	{
 		printf("invalid dir length\n");  
 		fclose(pak);
-		return 1;
+		return NULL;
 	}
     
 	pak_entry_t *entries = (pak_entry_t *)malloc(header.dir_length);
@@ -49,7 +47,7 @@ int get_pakfile(char *pakfile, char *file, char **pdata)
 	{
 		perror("malloc failed");
 		fclose(pak);
-		return 1;
+		return NULL;
 	}
     
 	fseek(pak, header.dir_offset, SEEK_SET);
@@ -59,7 +57,7 @@ int get_pakfile(char *pakfile, char *file, char **pdata)
 	int num_entries = header.dir_length / sizeof(pak_entry_t);
 	for (i = 0; i < num_entries; ++i, ++entry)
 	{
-		printf("%d: %s (%d, %d)\n", i, entry->name, entry->offset, entry->length);
+//		printf("%d: %s (%d, %d)\n", i, entry->name, entry->offset, entry->length);
 
 		if (strcmp(entry->name, file) == 0)
 		{
@@ -67,7 +65,7 @@ int get_pakfile(char *pakfile, char *file, char **pdata)
 			if (data == NULL)
 			{
 				perror("malloc failed");
-				return -1;
+				return NULL;
 			}
 
 			fseek(pak, entry->offset, SEEK_SET);
@@ -75,13 +73,12 @@ int get_pakfile(char *pakfile, char *file, char **pdata)
 			{
 				fprintf(stderr, "error reading entry\n");
 			}
-			*pdata = data;
-			break;	
+			return data;
 		}
 	}
     
 	free(entries);
 	fclose(pak);
-	return 0;
+	return NULL;
 }
 

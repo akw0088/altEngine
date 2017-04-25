@@ -161,7 +161,8 @@ void Quake3::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 		snd_table[SND_PLAYER + i * 11 + 6] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/jump1.wav", models[i]);
+//		sprintf(wave.file, "sound/player/%s/jump1.wav", models[i]);
+		sprintf(wave.file, "sound/player/plyrjmp8.wav");
 		audio.load(wave);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 7] = snd_wave.size() - 1;
