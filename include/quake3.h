@@ -85,7 +85,7 @@ private:
 	bool warmup;
 
 
-	unsigned int		timelimit;
+//	unsigned int		timelimit;
 	unsigned int		round_time;
 	unsigned int		warmup_time;
 

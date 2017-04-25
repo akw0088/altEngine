@@ -40,6 +40,8 @@ Engine::Engine()
 	emitter.enabled = false;
 	demo = false;
 
+	sprintf(servername, "altEngine Server %s", __DATE__);
+	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
 
 	fov = 45.0f;
@@ -70,7 +72,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #ifdef G_COMMANDO
 	game = new Commando();
 #endif
-
 
 	debugf("altEngine2 built %s\n", __DATE__);
 	bind_keys();
@@ -1969,6 +1970,7 @@ void Engine::server_recv()
 
 				debugf("client to server: %s\n", reliablemsg->msg);
 
+
 				if (strstr(reliablemsg->msg, "chat"))
 				{
 					sprintf(name, "%s", reliablemsg->msg + 5);
@@ -2066,6 +2068,68 @@ void Engine::server_recv()
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("Client is now entity %d\n", client->ent_id);
 	}
+	else if (strcmp(reliablemsg->msg, "getstatus") == 0)
+	{
+		/*
+		"getstatus" responds with all the info that qplug or qspy can see about the server and all connected players.
+		Used for getting detailed information after the simple info query.  It is sent along with a challenge string.
+		The server will respond with a "getstatusResponse" packet.
+		*/
+	}
+	else if (strcmp(reliablemsg->msg, "getinfo") == 0)
+	{
+/*
+		"getinfo" responds with a short info message that should be enough to determine if a user is interested in a server
+		to do a full status.  It is also sent with a challenge string.
+		*/
+
+		debugf("getinfo request from %s\n", socketname);
+		servermsg.sequence = sequence;
+		servermsg.client_sequence = clientmsg.sequence;
+		servermsg.num_ents = 0;
+		sprintf(reliable.msg, "/servername %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
+			servername, q3map.map_name, client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
+		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+		reliable.sequence = sequence;
+
+		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
+		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
+		net.sendto((char *)&servermsg, servermsg.length, socketname);
+		debugf("sent client map data\n");
+
+	}
+	else if (strcmp(reliablemsg->msg, "getchallenge") == 0)
+	{
+		/*
+		"getchallenge" returns a challenge number that can be used in a subsequent connectResponse command.
+		We do this to prevent denial of service attacks that flood the server with invalid connection IPs.
+		With a challenge, they must give a valid IP address.
+		The server will respond with a "challengeResponse" packet.
+		*/
+	}
+	else if (strstr(reliablemsg->msg, "rcon") != 0)
+	{
+		char cmd[512] = "";
+		char pass[512] = "";
+
+		sscanf(reliablemsg->msg, "%s %s", &pass, &cmd);
+		if (strcmp(pass, password) == 0)
+		{
+			console(cmd);
+		}
+
+		/*
+		"rcon" is a remote command to the server.  It's sent as "rcon" followed by the server password,
+		followed by the command string to be executed.
+		*/
+	}
+
+
+	/*
+		"connect" is the first step in a client connecting to a server.  You send the "connect" string followed by the infoString
+		containing the protocol version of the client, the qport, the challenge string (obtained via getchallenge), and the userinfo.
+		*/
+
 }
 
 void Engine::server_send()

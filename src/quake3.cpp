@@ -160,6 +160,47 @@ void Quake3::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 6] = snd_wave.size() - 1;
 
+/*
+		Cool Quake 1 sounds
+
+		sound/items/health1.wav
+		sound/items/r_item1.wav
+		sound/misc/r_tele1.wav
+		sound/misc/r_tele2.wav
+		sound/misc/r_tele3.wav
+		sound/misc/r_tele4.wav
+		sound/misc/r_tele5.wav
+		sound/misc/talk.wav
+		sound/misc/water1.wav
+		sound/misc/water2.wav
+		sound/player/death1.wav
+		sound/player/death2.wav
+		sound/player/death3.wav
+		sound/player/death4.wav
+		sound/player/death5.wav
+		sound/player/drown1.wav
+		sound/player/drown2.wav
+		sound/player/gasp1.wav
+		sound/player/gasp2.wav
+		sound/player/h2odeath.wav
+		sound/player/lburn1.wav
+		sound/player/lburn2.wav
+		sound/player/pain1.wav
+		sound/player/pain2.wav
+		sound/player/pain3.wav
+		sound/player/pain4.wav
+		sound/player/pain5.wav
+		sound/player/pain6.wav
+		sound/player/teledth1.wav
+
+		sound/weapons/lock4.wav
+		sound/weapons/pkup.wav
+		sound/weapons/lstart.wav
+
+		sound/weapons/sgun1.wav
+		sound/weapons/r_exp3.wav
+
+*/
 
 //		sprintf(wave.file, "sound/player/%s/jump1.wav", models[i]);
 		sprintf(wave.file, "sound/player/plyrjmp8.wav");

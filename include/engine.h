@@ -201,6 +201,8 @@ protected:
 	Net		net;
 	reliablemsg_t	reliable;
 	int cl_skip;
+	char servername[512];
+	char password[512];
 	
 	
 	int		server_spawn;	// entity index of hosting player

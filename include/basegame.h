@@ -34,6 +34,7 @@ public:
 	// Need to move these references out of Engine
 	gametype_t gametype;
 	int fraglimit;
+	int timelimit;
 	int capturelimit;
 	int blue_flag_caps;
 	int red_flag_caps;
