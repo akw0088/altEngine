@@ -32,7 +32,7 @@ void Graphics::resize(int width, int height)
 
 	viewport.Width = width;
 	viewport.Height = height;
-	viewport.MinZ = -1.0f;
+	viewport.MinZ = 0.0f;
 	viewport.MaxZ = 1.0f;
 	viewport.X = 0;
 	viewport.Y = 0;
@@ -222,7 +222,7 @@ void Graphics::init(void *param1, void *param2)
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
 	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D24X8;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
     d3dpp.hDeviceWindow = hwnd;
 
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -235,9 +235,9 @@ void Graphics::init(void *param1, void *param2)
 
 	// Render States
     device->SetRenderState(D3DRS_ZENABLE, TRUE);
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); // d3d and opengl will have opposite winding
+	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW); // d3d and opengl will have opposite winding
 	device->SetRenderState(D3DRS_LIGHTING, FALSE);
-//	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	
 	device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
 
