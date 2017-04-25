@@ -32,6 +32,11 @@ void Graphics::resize(int width, int height)
 
 	viewport.Width = width;
 	viewport.Height = height;
+	viewport.MinZ = -1.0f;
+	viewport.MaxZ = 1.0f;
+	viewport.X = 0;
+	viewport.Y = 0;
+
 	HRESULT ret = device->SetViewport(&viewport);
 	if (ret != D3D_OK)
 	{
@@ -64,6 +69,12 @@ void Graphics::cleardepth()
 
 void Graphics::DepthFunc(char *op)
 {
+	if (strcmp(op, "<=") == 0)
+		device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	else if (strcmp(op, "<") == 0)
+		device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
+
+
 }
 
 bool Graphics::error_check()
@@ -77,6 +88,7 @@ void Graphics::Blend(bool flag)
 		device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	else
 		device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+
 }
 
 void Graphics::BlendFunc(char *src, char *dst)
@@ -210,7 +222,7 @@ void Graphics::init(void *param1, void *param2)
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
 	d3dpp.EnableAutoDepthStencil = TRUE;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D24X8;
     d3dpp.hDeviceWindow = hwnd;
 
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -226,17 +238,20 @@ void Graphics::init(void *param1, void *param2)
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); // d3d and opengl will have opposite winding
 	device->SetRenderState(D3DRS_LIGHTING, FALSE);
 //	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	
+	device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
 
 	// Texture Unit States
-	device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
-	device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
-	device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+	for (int i = 0; i < 4; i++)
+	{
+		device->SetSamplerState(i, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+		device->SetSamplerState(i, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		device->SetSamplerState(i, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 
-	device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-	device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-	
+		device->SetTextureStageState(i, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+		device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	}
 	D3DXCreateFont( device, 8, 0, FW_THIN, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "System", &font );
 
@@ -428,74 +443,108 @@ void Graphics::GetDebugLog(void)
 
 void Graphics::BlendFuncDstColorOne()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 }
 
 void Graphics::BlendFuncDstColorZero()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 }
 
 void Graphics::BlendFuncZeroOneMinusAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 }
 
 void Graphics::BlendFuncOneAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
 }
 
 
 void Graphics::BlendFuncOneOneMinusAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVDESTALPHA);
 }
 
 
 void Graphics::BlendFuncOneOne()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 }
 
 
 void Graphics::BlendFuncZeroSrcColor()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
 }
 
 void Graphics::BlendFuncZeroOne()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 }
 
 void Graphics::BlendFuncDstColorOneMinusDstAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVDESTALPHA);
 }
 
 void Graphics::BlendFuncDstColorSrcAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 }
 
 void Graphics::BlendFuncOneMinusSrcAlphaSrcAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 }
 
 void Graphics::BlendFuncSrcAlphaOneMinusSrcAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 }
 
 
 void Graphics::BlendFuncOneSrcAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 }
 
 void Graphics::BlendFuncOneMinusDstColorZero()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 }
 
 void Graphics::BlendFuncDstColorSrcColor()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
 }
 
 void Graphics::BlendFuncZeroSrcAlpha()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
 }
 
 void Graphics::BlendFuncOneZero()
 {
+	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
 }
 
 

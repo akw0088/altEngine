@@ -281,9 +281,9 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 #ifdef DIRECTX
 	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-//	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
-//	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
-//	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
+	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
+	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
+	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, 0);
