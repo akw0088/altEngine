@@ -32,7 +32,7 @@ void Graphics::resize(int width, int height)
 
 	viewport.Width = width;
 	viewport.Height = height;
-	viewport.MinZ = 0.0f;
+	viewport.MinZ = -1.0f;
 	viewport.MaxZ = 1.0f;
 	viewport.X = 0;
 	viewport.Y = 0;
@@ -235,9 +235,9 @@ void Graphics::init(void *param1, void *param2)
 
 	// Render States
     device->SetRenderState(D3DRS_ZENABLE, TRUE);
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW); // d3d and opengl will have opposite winding
+	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW); // d3d and opengl will have opposite winding
 	device->SetRenderState(D3DRS_LIGHTING, FALSE);
-	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+//	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	
 	device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
 
@@ -259,14 +259,17 @@ void Graphics::init(void *param1, void *param2)
 	D3DVERTEXELEMENT9 decl[] =
 	{
 		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-		{0, sizeof(vec3), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-		{0, sizeof(vec3) + sizeof(vec2), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
-		{0, sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
-		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2), D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
-		{0, 2 * sizeof(vec3) + 2 * sizeof(vec2) + sizeof(int), D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+		{0, 20, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
+		{0, 28, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
+		{0, 40, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
+		{0, 56, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
 		D3DDECL_END()
 	};
+
 	ret = device->CreateVertexDeclaration(decl, &vertex_decl);
+	device->SetVertexDeclaration(vertex_decl);
+
 #endif
 }
 

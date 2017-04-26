@@ -1,6 +1,8 @@
 #include "vector.h"
 #include "matrix.h"
 
+#include "include.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -509,6 +511,15 @@ void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, boo
 		m[10] =  epsilon - 1.0f;
 		m[14] =  zNear * (epsilon - 2.0f);
 	}
+#ifdef DIRECTX
+	matrix4 compare;
+	compare = m;
+//	D3DXMatrixPerspectiveFovLH((D3DXMATRIX *)&m[0], 2 * fovy, aspect, zNear, zFar);
+
+	m[5] *= -1.0f;
+	m[10] *= 2.0f;
+
+#endif
 }
 
 void matrix4::ortho(float left, float right, float bottom, float top, float nearval, float farval)

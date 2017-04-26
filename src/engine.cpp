@@ -3055,8 +3055,10 @@ void Engine::resize(int width, int height)
 	gfx.resize(width, height);
 	post.resize(width, height);
 
-
 	projection.perspective(fov, (float)width / height, zNear, zFar, inf);
+#ifdef DIRECTX
+	projection.transpose();
+#endif
 
 #ifndef __linux__
 	// This should probably be in render
