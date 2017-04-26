@@ -22,8 +22,13 @@ uniform float4x4 mvp;
 vary_t main(in attr_t attr)
 {
 	vary_t output;
+	float4 pos;
+	float temp;
 
-	output.position = mul(attr.position, mvp); 
+	pos.xyz =  attr.position;
+	pos.w = 1.0;
+
+	output.position = mul(pos, mvp);
 	output.texCoord0 = attr.texCoord0;
 	output.texCoord1 = attr.texCoord1;
 	output.normal = attr.normal;

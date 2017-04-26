@@ -28,7 +28,7 @@ uniform sampler tex0, tex1, tex2, tex3;
 
 float4 main(in vary_t vary) : COLOR0
 {
-	float4 texColor[3];
+	float4 texColor[4];
 	float4 Fragment;
 
 
@@ -57,7 +57,7 @@ float4 main(in vary_t vary) : COLOR0
 
 		intensity = intensity + atten * (diffuse + specular + u_color[i].xyz * 0.25);
 	}
-	Fragment.xyz += intensity;
+//	Fragment.xyz += intensity;
 
 	return Fragment;
 //	return tex2D(tex0, vary.texCoord0);
