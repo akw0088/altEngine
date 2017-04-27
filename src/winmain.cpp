@@ -125,7 +125,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static double min_frametime = 0.0;
 	static double max_frametime = 0.0;
 	static double freq = 0.0;
-	static bool  once = false;
 
 
 
@@ -214,11 +213,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case TICK_TIMER:
-			if (once == false)
-			{
-				altEngine.resize(xres, yres);
-				once = true;
-			}
 			altEngine.step(tick_count++);
 			break;
 		}
