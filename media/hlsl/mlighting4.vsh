@@ -98,7 +98,7 @@ vary_t main(in attr_t attr)
 	output.texCoord2 = temp2 + u_tcmod_scroll2 + bias;
 	output.texCoord3 = temp3 + u_tcmod_scroll3 + bias;
 
-	output.position = mul(mvp, vpos);
+	output.position = mul(vpos, mvp);
 //	output.texCoord0 = attr.texCoord0;
 //	output.texCoord1 = attr.texCoord1;
 	output.normal = attr.normal;

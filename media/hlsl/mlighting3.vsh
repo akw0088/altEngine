@@ -33,7 +33,7 @@ vary_t main(in attr_t attr)
 
 	float4 vpos = float4(attr.position, 1.0);
 
-	output.position = mul(mvp, vpos);
+	output.position = mul(vpos, mvp);
 	output.texCoord0 = attr.texCoord0;
 	output.texCoord1 = attr.texCoord1;
 	output.normal = attr.normal;

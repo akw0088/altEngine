@@ -284,7 +284,6 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 #ifdef DIRECTX
 	HRESULT ret = S_OK;
 
-	mvp = mvp.transpose();
 	ret = uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
 	if (FAILED(ret))
 	{
