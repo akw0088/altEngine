@@ -14,7 +14,7 @@ unsigned int ParticleUpdate::max_particles = 5000;
 int mFont::init(Graphics *gfx)
 {
 #ifdef DIRECTX
-	Shader::init(gfx, "media/hlsl/font.vsh", NULL, NULL);
+	Shader::init(gfx, "media/hlsl/font.vsh", NULL, "media/hlsl/font.psh");
 #else
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/font.vs", NULL, "media/glsl/ver410/font.fs"))
@@ -56,12 +56,12 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 	float offset = 16.0f / 256.0f;
 
 #ifdef DIRECTX
-	uniform_vs->SetFloat(gfx->device, "u_scale", scale);
 	uniform_vs->SetFloat(gfx->device, "u_col", col * offset);
 	uniform_vs->SetFloat(gfx->device, "u_row", row * offset);
 	uniform_vs->SetFloat(gfx->device, "u_xpos", (2.0f * x));
 	uniform_vs->SetFloat(gfx->device, "u_ypos", (2.0f * y));
-	uniform_vs->SetFloatArray(gfx->device, "u_color", (float *)&color, 3);
+	uniform_vs->SetFloat(gfx->device, "u_scale", scale);
+	uniform_ps->SetFloatArray(gfx->device, "u_color", (float *)&color, 3);
 #else
 	glUniform1f(u_scale, scale);
 	glUniform1f(u_col, col * offset);

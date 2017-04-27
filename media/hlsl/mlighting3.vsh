@@ -20,11 +20,11 @@ struct vary_t
 	float4 tangent			: TANGENT;
 };
 
+uniform float4x4	mvp;
+uniform sampler		tex0, tex1, tex2, tex3;
 uniform float3		u_position[MAX_LIGHTS];
 uniform float4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
-uniform float4x4	mvp;
-uniform sampler tex0, tex1, tex2;
 
 
 vary_t main(in attr_t attr)
@@ -33,7 +33,7 @@ vary_t main(in attr_t attr)
 
 	float4 vpos = float4(attr.position, 1.0);
 
-	output.position = mul(vpos, mvp);
+	output.position = mul(mvp, vpos);
 	output.texCoord0 = attr.texCoord0;
 	output.texCoord1 = attr.texCoord1;
 	output.normal = attr.normal;

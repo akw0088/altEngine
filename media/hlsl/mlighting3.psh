@@ -20,11 +20,11 @@ struct vary_t
 	float4 tangent			: TANGENT;
 };
 
+uniform float4x4	mvp;
+uniform sampler		tex0, tex1, tex2, tex3;
 uniform float3		u_position[MAX_LIGHTS];
 uniform float4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
-uniform float4x4	mvp;
-uniform sampler tex0, tex1, tex2, tex3;
 
 float4 main(in vary_t vary) : COLOR0
 {
@@ -41,7 +41,7 @@ float4 main(in vary_t vary) : COLOR0
 	Fragment.g = 0.0;
 	Fragment.b = 0.0;
 	Fragment.a = 0.5;
-	Fragment += texColor[0] + texColor[1] + texColor[2] + texColor[3];
+	Fragment += texColor[0];// + texColor[1] + texColor[2] + texColor[3];
 	float3 normal = normalize(vary.normal.xyz);
 
 	float3 intensity = 0.5;
