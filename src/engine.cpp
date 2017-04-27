@@ -2089,7 +2089,7 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "/servername %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
-			servername, q3map.map_name, client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
+			servername, q3map.map_name, (int)client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
 		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
 		reliable.sequence = sequence;
 
@@ -2113,7 +2113,7 @@ void Engine::server_recv()
 		char cmd[512] = "";
 		char pass[512] = "";
 
-		if (sscanf(reliablemsg->msg, "rcon %s %s", &pass, &cmd) == 2)
+		if (sscanf(reliablemsg->msg, "rcon %s %s", &pass[0], &cmd[0]) == 2)
 		{
 			if (strcmp(pass, password) == 0)
 			{

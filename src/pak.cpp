@@ -69,10 +69,7 @@ char *get_pakfile(char *pakfile, char *file)
 			}
 
 			fseek(pak, entry->offset, SEEK_SET);
-			if (fread(data, entry->length, 1, pak) < 0)
-			{
-				fprintf(stderr, "error reading entry\n");
-			}
+			fread(data, entry->length, 1, pak);
 			return data;
 		}
 	}
