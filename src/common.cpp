@@ -641,7 +641,7 @@ void newlinelist(char *filename, char **list, int &num)
 	}
 }
 
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp)
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr)
 {
 	int width, height, components, format;
 	int tex_object;
@@ -686,7 +686,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	if (data == NULL)
 	{
 		debugf("Unable to load texture %s from pk3\n", file_name);
-		return load_texture(gfx, file_name, clamp);
+		return load_texture(gfx, file_name, clamp, false);
 	}
 	else
 	{
@@ -722,9 +722,16 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		return 0;
 	}
 #else
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 4);
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	byte *pBits = NULL;
+	if (components == 3)
+	{
+		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
+	}
+
+
 	format = 4;
-	components = 4;
+//	components = 4;
 #endif
 
 
@@ -740,7 +747,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	}
 #endif
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	if (components == 3)
+		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp);
+	else
+		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 
 
 
@@ -759,7 +769,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 }
 
 // Need asset manager class so things arent doubly loaded
-int load_texture(Graphics &gfx, char *file_name, bool clamp)
+int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 {
 	int width, height, components, format;
 	int tex_object;
@@ -804,12 +814,26 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp)
 		return 0;
 	}
 #else
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 4);
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	format = 4;
-	components = 4;
+//	components = 4;
 #endif
 
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	byte *pBits = NULL;
+	if (components == 3)
+	{
+		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
+	}
+
+
+	if (components == 3)
+	{
+		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp);
+	}
+	else
+	{
+		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	}
 	stbi_image_free(bytes);
 	free((void *)data);
 
@@ -843,16 +867,25 @@ bool check_hash(char *filename, char *md5match, char *hash)
 		return false;
 }
 
-byte *tga_24to32(int width, int height, byte *pBits)
+byte *tga_24to32(int width, int height, byte *pBits, bool bgr)
 {
 	int lImageSize = width * height * 4;
 	byte *pNewBits = new byte[lImageSize * sizeof(byte)];
 
 	for (int i = 0, j = 0; i < lImageSize; i += 4)
 	{
-		pNewBits[i] = pBits[j++];
-		pNewBits[i + 1] = pBits[j++];
-		pNewBits[i + 2] = pBits[j++];
+		if (bgr)
+		{
+			pNewBits[i + 2] = pBits[j++];
+			pNewBits[i + 1] = pBits[j++];
+			pNewBits[i + 0] = pBits[j++];
+		}
+		else
+		{
+			pNewBits[i + 0] = pBits[j++];
+			pNewBits[i + 1] = pBits[j++];
+			pNewBits[i + 2] = pBits[j++];
+		}
 		pNewBits[i + 3] = 0;
 	}
 	return pNewBits;

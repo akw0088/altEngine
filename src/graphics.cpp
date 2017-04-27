@@ -32,7 +32,7 @@ void Graphics::resize(int width, int height)
 
 	viewport.Width = width;
 	viewport.Height = height;
-	viewport.MinZ = -1.0f;
+	viewport.MinZ = 0.0f;
 	viewport.MaxZ = 1.0f;
 	viewport.X = 0;
 	viewport.Y = 0;
@@ -239,7 +239,7 @@ void Graphics::init(void *param1, void *param2)
 	device->SetRenderState(D3DRS_LIGHTING, FALSE);
 //	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	
-	device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
+	device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
 	// Texture Unit States
 	for (int i = 0; i < 4; i++)
@@ -601,7 +601,14 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	D3DLOCKED_RECT		rect;
 	//D3DFMT_A8B8G8R8
 	//D3DFMT_A8R8G8B8
-	device->CreateTexture(width, height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, d3d9_buffer, NULL);
+	
+	if (components == 4)
+		device->CreateTexture(width, height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, d3d9_buffer, NULL);
+	else if (components == 3)
+		device->CreateTexture(width, height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R8G8B8, D3DPOOL_MANAGED, d3d9_buffer, NULL);
+	else if (components == 1)
+		device->CreateTexture(width, height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_L8, D3DPOOL_MANAGED, d3d9_buffer, NULL);
+		
 	(*d3d9_buffer)->LockRect(0, &rect, NULL, 0);
 	memcpy((void *)rect.pBits, bytes, width * height * components);
 	(*d3d9_buffer)->UnlockRect(0);

@@ -138,8 +138,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}
 #endif
 
-	no_tex = load_texture(gfx, "media/notexture.tga", false);
-	particle_tex = load_texture(gfx, "media/flare.png", false);
+	no_tex = load_texture(gfx, "media/notexture.tga", false, false);
+	particle_tex = load_texture(gfx, "media/flare.png", false, false);
 	Model::CreateObjects(gfx);
 	Model::make_skybox(gfx);
 

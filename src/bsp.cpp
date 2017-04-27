@@ -1418,13 +1418,13 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char 
 
 	//printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
-	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
+	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
 
 	if (tex_object == 0)
 	{
 		//printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
 	}
 	if (tex_object != 0)
 	{
@@ -1473,12 +1473,12 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
 
 			//printf("Trying texture [%s]\n", texture_name);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
 		}
 		else if (surface_list[j]->stage[k].clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true, true);
 		}
 		else if (surface_list[j]->stage[k].anim_map)
 		{
@@ -1495,7 +1495,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			{
 //				printf("animmap tex %s\n", tex);
 				snprintf(texture_name, LINE_SIZE, "media/%s", tex);
-				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
+				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
 				tex = strtok(NULL, " ");
 			}
 
@@ -1525,7 +1525,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			continue;
 		}
 
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
 		if (tex_object != 0)
 		{
 			//printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
@@ -1556,7 +1556,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
 		}
 #else
-		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image);
+		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image, false);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);
 		delete [] pBits;
 #endif
@@ -1576,7 +1576,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		for (int i = 0;; i++)
 		{
 			sprintf(filename, "media/%s/lm_%04d.tga", name, i);
-			lightmap_object[i] = load_texture_pk3(gfx, filename, pk3_list, num_pk3, false);
+			lightmap_object[i] = load_texture_pk3(gfx, filename, pk3_list, num_pk3, false, false);
 			if (lightmap_object[i] == 0)
 				break;
 		}
