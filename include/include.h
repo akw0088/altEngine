@@ -2,6 +2,7 @@
 #define INCLUDE_H
 
 #define _HAS_EXCEPTIONS 0
+#define D3D_DEBUG_INFO
 
 #define LINE_SIZE 512
 
@@ -163,6 +164,11 @@
 #include <float.h>
 #ifdef WIN32
 	#include <crtdbg.h>
+#endif
+
+#ifdef DIRECTX
+	#include <DxErr.h>
+
 #endif
 
 #define G_QUAKE3

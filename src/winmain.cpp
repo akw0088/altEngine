@@ -17,6 +17,10 @@ double GetCounter(double freq);
 void GetFreq(double &freq);
 
 
+//for dxerr
+int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
+
+
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
 

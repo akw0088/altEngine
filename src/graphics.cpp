@@ -263,13 +263,12 @@ void Graphics::init(void *param1, void *param2)
 		{0, 20, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
 		{0, 28, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
 		{0, 40, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
-		{0, 56, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{0, 44, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
 		D3DDECL_END()
 	};
 
 	ret = device->CreateVertexDeclaration(decl, &vertex_decl);
 	device->SetVertexDeclaration(vertex_decl);
-
 #endif
 }
 
@@ -600,7 +599,8 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 {
 	IDirect3DTexture9	**d3d9_buffer = new IDirect3DTexture9 *;
 	D3DLOCKED_RECT		rect;
-
+	//D3DFMT_A8B8G8R8
+	//D3DFMT_A8R8G8B8
 	device->CreateTexture(width, height, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, d3d9_buffer, NULL);
 	(*d3d9_buffer)->LockRect(0, &rect, NULL, 0);
 	memcpy((void *)rect.pBits, bytes, width * height * components);
@@ -690,13 +690,22 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		}
 
 		D3DXCompileShader(vertex_src, strlen(vertex_src) + 1,
-			NULL, NULL, "main", "vs_3_0", D3DXSHADER_USE_LEGACY_D3DX9_31_DLL, &vertex_binary, &err, &uniform);
+			NULL, NULL, "main", "vs_3_0", D3DXSHADER_PACKMATRIX_COLUMNMAJOR, &vertex_binary, &err, &uniform_vs);
 		if (err)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n%s\n", vertex_file, (char  *)err->GetBufferPointer());
 			fclose(fLog);
 			return -1;
 		}
+
+
+
+		D3DXCONSTANTTABLE_DESC constantDesc;
+
+		uniform_vs->GetDesc(&constantDesc);
+
+		printf("%s has %d constants\n", vertex_file, constantDesc.Constants);
+
 		ret = gfx->device->CreateVertexShader((DWORD *)vertex_binary->GetBufferPointer(), &vertex_shader);
 		vertex_binary->Release();
 		fprintf(fLog, "Loaded vertex shader %s\n", vertex_file);
@@ -727,13 +736,21 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		}
 
 		D3DXCompileShader(fragment_src, strlen(fragment_src) + 1,
-			NULL, NULL, "main", "ps_3_0", D3DXSHADER_SKIPOPTIMIZATION, &pixel_binary, &err, &uniform);
+			NULL, NULL, "main", "ps_3_0", D3DXSHADER_PACKMATRIX_COLUMNMAJOR, &pixel_binary, &err, &uniform_ps);
 		if (err)
 		{
 			fprintf(fLog, "Unable to load fragment shader %s\n%s\n", fragment_file, (char  *)err->GetBufferPointer());
 			fclose(fLog);
 			return -1;
 		}
+
+		D3DXCONSTANTTABLE_DESC constantDesc;
+
+		uniform_ps->GetDesc(&constantDesc);
+
+		printf("%s has %d constants\n", fragment_file, constantDesc.Constants);
+
+
 		ret = gfx->device->CreatePixelShader((DWORD *)pixel_binary->GetBufferPointer(), &pixel_shader);
 		pixel_binary->Release();
 		fprintf(fLog, "Loaded fragment shader %s\n", fragment_file);

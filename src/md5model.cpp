@@ -125,7 +125,6 @@ void MD5Model::load_textures(Graphics &gfx)
 		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
 
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
-		//		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 
 #ifndef DIRECTX
 		format = GL_RGBA;

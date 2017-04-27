@@ -56,12 +56,12 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 	float offset = 16.0f / 256.0f;
 
 #ifdef DIRECTX
-	uniform->SetFloat(gfx->device, "u_scale", scale);
-	uniform->SetFloat(gfx->device, "u_col", col * offset);
-	uniform->SetFloat(gfx->device, "u_row", row * offset);
-	uniform->SetFloat(gfx->device, "u_xpos", (2.0f * x));
-	uniform->SetFloat(gfx->device, "u_ypos", (2.0f * y));
-	uniform->SetFloatArray(gfx->device, "u_color", (float *)&color, 3);
+	uniform_vs->SetFloat(gfx->device, "u_scale", scale);
+	uniform_vs->SetFloat(gfx->device, "u_col", col * offset);
+	uniform_vs->SetFloat(gfx->device, "u_row", row * offset);
+	uniform_vs->SetFloat(gfx->device, "u_xpos", (2.0f * x));
+	uniform_vs->SetFloat(gfx->device, "u_ypos", (2.0f * y));
+	uniform_vs->SetFloatArray(gfx->device, "u_color", (float *)&color, 3);
 #else
 	glUniform1f(u_scale, scale);
 	glUniform1f(u_col, col * offset);
@@ -109,7 +109,7 @@ void Global::prelink()
 void Global::Params(matrix4 &mvp, int tex0)
 {
 #ifdef DIRECTX
-	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+	uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, tex0);
@@ -119,10 +119,12 @@ void Global::Params(matrix4 &mvp, int tex0)
 int mLight2::init(Graphics *gfx)
 {
 
-	max_light = 64;
+	max_light = MAX_LIGHTS;
 	//"media/glsl/mlighting3.gs"
 #ifdef DIRECTX
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
+
+
 #else
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
@@ -280,13 +282,34 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	}
 
 #ifdef DIRECTX
-	D3DXMATRIX m;
-	D3DXMatrixIdentity(&m);
+	HRESULT ret = S_OK;
 
-	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)&(mvp.m));
-	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
-	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
-	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
+	mvp = mvp.transpose();
+	ret = uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+	if (FAILED(ret))
+	{
+		printf("Error: %s error description: %s\n",
+			DXGetErrorString(ret), DXGetErrorDescription(ret));
+	}
+
+	ret = uniform_vs->SetVectorArray(gfx->device, "u_position", (D3DXVECTOR4 *)position, MAX_LIGHTS);
+	if (FAILED(ret))
+	{
+		printf("Error: %s error description: %s\n",
+			DXGetErrorString(ret), DXGetErrorDescription(ret));
+	}
+	ret = uniform_vs->SetVectorArray(gfx->device, "u_color", (D3DXVECTOR4 *)color, MAX_LIGHTS);
+	if (FAILED(ret))
+	{
+		printf("Error: %s error description: %s\n",
+			DXGetErrorString(ret), DXGetErrorDescription(ret));
+	}
+	ret = uniform_vs->SetInt(gfx->device, "u_num_lights", num_lights);
+	if (FAILED(ret))
+	{
+		printf("Error: %s error description: %s\n",
+			DXGetErrorString(ret), DXGetErrorDescription(ret));
+	}
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, 0);
@@ -831,7 +854,7 @@ void Post::resize(int width, int height)
 void Post::Params(int tex0, int tex1)
 {
 #ifdef DIRECTX
-	uniform->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
+	uniform_ps->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
 #else
 	glUniform1i(texture0, tex0);
 	glUniform1i(texture1, tex1);

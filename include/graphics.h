@@ -151,7 +151,8 @@ protected:
 	IDirect3DVertexShader9		*vertex_shader;
 	IDirect3DPixelShader9		*pixel_shader;
 //	IDirect3DGeometryShader9	*geometry_shader;
-	LPD3DXCONSTANTTABLE		uniform;
+	LPD3DXCONSTANTTABLE		uniform_vs;
+	LPD3DXCONSTANTTABLE		uniform_ps;
 #else
 	int		program_handle;
 	int		vertex_handle;

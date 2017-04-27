@@ -1331,7 +1331,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		gfx.DepthFunc("<");
 		gfx.Blend(false);
 	}
+#ifndef DIRECTX
 	render_sky(gfx, mlight2, tick_num, surface_list);
+#endif
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
 }
 

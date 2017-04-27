@@ -693,11 +693,12 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		//debugf("Loaded %s from pk3\n", file_name);
 	}
 
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
-
 
 
 #ifndef DIRECTX
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+
+
 	if (components == 4)
 	{
 		format = GL_RGBA;
@@ -721,8 +722,11 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		return 0;
 	}
 #else
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 4);
 	format = 4;
+	components = 4;
 #endif
+
 
 #if 0
 	if (format == GL_RGB)
