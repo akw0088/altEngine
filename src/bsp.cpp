@@ -85,7 +85,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
-	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+//	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
 	normal_object = new int [data.num_materials];

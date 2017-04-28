@@ -17,3 +17,6 @@ media/q3wpak0.pk3
 media/pak1-maps.pk3
 media/openarena.pk3
 media/obiq1dm3.pk3
+media/q3wpak4.pk3
+media/map-13vast.pk3
+media/maps-q3wctf.pk3
