@@ -234,7 +234,7 @@ void Graphics::init(void *param1, void *param2)
 		0,                 // default adapter
 		D3D_DRIVER_TYPE_HARDWARE,
 		0,                 // no software device
-		D3D11_CREATE_DEVICE_DEBUG,
+		D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_SINGLETHREADED,
 		0, 0,              // default feature level array
 		D3D11_SDK_VERSION,
 		&device,
@@ -303,6 +303,22 @@ void Graphics::init(void *param1, void *param2)
 	viewport.Height = (float)height;
 
 	context->RSSetViewports(1, &viewport);
+
+
+	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32_UINT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	ID3D11InputLayout *layout;
+
+	device->CreateInputLayout(vertexDesc, 6, NULL, 0, &layout);
+
 #else
 	memset(&d3dpp, sizeof(d3dpp), 0);
     d3dpp.Windowed = TRUE;
@@ -430,7 +446,22 @@ int Graphics::CreateIndexBuffer(void *index_array, int num_index)
 	index_buffers.push_back(*d3d9_buffer);
 	return index_buffers.size() - 1;
 #else
-	return 0;
+	D3D11_BUFFER_DESC ibd;
+	ibd.Usage = D3D11_USAGE_IMMUTABLE;
+	ibd.ByteWidth = sizeof(unsigned int) * num_index;
+	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	ibd.CPUAccessFlags = 0;
+	ibd.MiscFlags = 0;
+	ibd.StructureByteStride = 0;
+	// Specify the data to initialize the index buffer.
+	D3D11_SUBRESOURCE_DATA iinitData;
+	iinitData.pSysMem = index_array;
+	// Create the index buffer.
+	ID3D11Buffer *d3d11_buffer;
+	device->CreateBuffer(&ibd, &iinitData, &d3d11_buffer);
+
+	index_buffers.push_back(d3d11_buffer);
+	return index_buffers.size() - 1;
 #endif
 }
 
@@ -440,6 +471,10 @@ void Graphics::SelectIndexBuffer(int handle)
 	IDirect3DIndexBuffer9	*d3d9_buffer = index_buffers[handle];
 
 	device->SetIndices(d3d9_buffer);
+#else
+	ID3D11Buffer *d3d11_buffer = index_buffers[handle];
+
+	context->IASetIndexBuffer(d3d11_buffer, DXGI_FORMAT_R32_UINT, 0);
 #endif
 }
 
@@ -717,7 +752,21 @@ int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 	vertex_buffers.push_back(*d3d9_buffer);
 	return vertex_buffers.size() - 1;
 #else
-	return 0;
+	D3D11_BUFFER_DESC vbd;
+	D3D11_SUBRESOURCE_DATA vinitData;
+	ID3D11Buffer *d3d11_buffer;
+
+	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.ByteWidth = sizeof(vertex_t) * num_verts;
+	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vbd.CPUAccessFlags = 0;
+	vbd.MiscFlags = 0;
+	vbd.StructureByteStride = 0;
+
+	vinitData.pSysMem = vertex_array;
+	device->CreateBuffer(&vbd, &vinitData, &d3d11_buffer);
+	vertex_buffers.push_back(d3d11_buffer);
+	return vertex_buffers.size() - 1;
 #endif
 }
 
@@ -729,6 +778,15 @@ void Graphics::SelectVertexBuffer(int handle)
 	if (handle != 0)
 		device->SetStreamSource(0, d3d9_buffer, 0, sizeof(vertex_t));
 	device->SetVertexDeclaration(vertex_decl);
+#else
+	ID3D11Buffer *d3d11_buffer = vertex_buffers[handle];
+
+	if (handle != 0)
+	{
+		unsigned int stride = sizeof(vertex_t);
+		unsigned int offset = 0;
+		context->IASetVertexBuffers(0, 1, &d3d11_buffer, &stride, &offset);
+	}
 #endif
 }
 

@@ -124,6 +124,10 @@ public:
 
 	ID3D11VertexShader	*pVS;
 	ID3D11PixelShader	*pPS;
+
+	vector<ID3D11Buffer *>	vertex_buffers;
+	vector<ID3D11Buffer *> index_buffers;
+
 #else
 	IDirect3D9				*d3d;
 	IDirect3DDevice9		*device;
