@@ -112,11 +112,15 @@ public:
 
 #ifdef DIRECTX
 #ifdef D3D11
-	ID3D11DeviceContext		*d3d;
 	ID3D11Device			*device;
+	ID3D11DeviceContext		*context;
 	IDXGISwapChain			*swapchain;
-	ID3D11Texture2D			*pBackBuffer;
-	ID3D11RenderTargetView	*backbuffer;
+	ID3D11Texture2D			*back_buffer;
+	ID3D11Texture2D			*depth_buffer;
+	ID3D11RenderTargetView	*render_target;
+	ID3D11DepthStencilView	*depth_view;
+
+
 
 	ID3D11VertexShader	*pVS;
 	ID3D11PixelShader	*pPS;
@@ -147,12 +151,16 @@ public:
 protected:
 	const char	*vertex_src, *geometry_src, *fragment_src;
 #ifdef DIRECTX
+#ifdef D3D11
+	Graphics *gfx;
+#else
 	Graphics *gfx;
 	IDirect3DVertexShader9		*vertex_shader;
 	IDirect3DPixelShader9		*pixel_shader;
 //	IDirect3DGeometryShader9	*geometry_shader;
 	LPD3DXCONSTANTTABLE		uniform_vs;
 	LPD3DXCONSTANTTABLE		uniform_ps;
+#endif
 #else
 	int		program_handle;
 	int		vertex_handle;

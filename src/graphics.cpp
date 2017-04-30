@@ -18,15 +18,51 @@ void Graphics::resize(int width, int height)
 	glViewport(0, 0, width, height);
 #else
 #ifdef D3D11
+	// Resize the swap chain and recreate the render target view.
+	swapchain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	ID3D11Texture2D* backBuffer;
+	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
+	device->CreateRenderTargetView(backBuffer, 0, &render_target);
+
+	// Create the depth/stencil buffer and view.
+
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+
+	depthStencilDesc.Width = width;
+	depthStencilDesc.Height = height;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	device->CreateTexture2D(&depthStencilDesc, 0, &depth_buffer);
+	device->CreateDepthStencilView(depth_buffer, 0, &depth_view);
+
+
+	// Bind the render target view and depth/stencil view to the pipeline.
+
+	context->OMSetRenderTargets(1, &render_target, depth_view);
+
+
+	// Set the viewport transform.
+
 	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+	memset(&viewport, 0, sizeof(D3D11_VIEWPORT));
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = width;
-	viewport.Height = height;
+	viewport.Width = (float)width;
+	viewport.Height = (float)height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
 
-	d3d->RSSetViewports(1, &viewport);
+	context->RSSetViewports(1, &viewport);
 #else
 	D3DVIEWPORT9 viewport;
 
@@ -59,22 +95,26 @@ Graphics::Graphics()
 #ifdef DIRECTX
 Graphics::~Graphics() 
 {
+#ifndef D3D11
 	font->Release();
+#endif
 }
 
 void Graphics::cleardepth()
 {
+#ifndef D3D11
 	device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(255,255,255), 1.0f, 0);
+#endif
 }
 
 void Graphics::DepthFunc(char *op)
 {
+#ifndef D3D11
 	if (strcmp(op, "<=") == 0)
 		device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 	else if (strcmp(op, "<") == 0)
 		device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
-
-
+#endif
 }
 
 bool Graphics::error_check()
@@ -84,36 +124,44 @@ bool Graphics::error_check()
 
 void Graphics::Blend(bool flag)
 {
+#ifndef D3D11
 	if (flag)
 		device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	else
 		device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-
+#endif
 }
 
 void Graphics::BlendFunc(char *src, char *dst)
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+#endif
 }
 
 void Graphics::Color(bool flag)
 {
+#ifndef D3D11
 	if (flag)
 		device->SetRenderState(D3DRS_COLORWRITEENABLE, TRUE);
 	else
 		device->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);	
+#endif
 }
 
 void Graphics::Stencil(bool flag)
 {
+#ifndef D3D11
 	if (flag)
 		device->SetRenderState(D3DRS_STENCILENABLE, TRUE);
 	else
 		device->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+#endif
 }
 
 void Graphics::StencilFunc(char *op, int ref, int mask)
 {
+#ifndef D3D11
 	if (strcmp(op, "always") == 0)
 		device->SetRenderState( D3DRS_STENCILFUNC, D3DCMP_ALWAYS );
 	else if (strcmp(op, "equal") == 0)
@@ -121,10 +169,12 @@ void Graphics::StencilFunc(char *op, int ref, int mask)
 
 	device->SetRenderState( D3DRS_STENCILREF, ref);
 	device->SetRenderState( D3DRS_STENCILMASK, mask);
+#endif
 }
 
 void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
 {
+#ifndef D3D11
 	if (strcmp(zpass, "incr") == 0)
 		device->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_INCR );
 	else if (strcmp(zpass, "decr") == 0)
@@ -135,25 +185,31 @@ void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
 
 	device->SetRenderState( D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP );
 	device->SetRenderState( D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP );
+#endif
 }
 
 void Graphics::CullFace(int mode)
 {
+#ifndef D3D11
 	if (mode == 0)
 		device->SetRenderState( D3DRS_CULLMODE, D3DCULL_CCW );
 	else if (mode == 1)
 		device->SetRenderState( D3DRS_CULLMODE, D3DCULL_CW );
 	else
 		device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+#endif
 }
 
 void Graphics::Depth(bool flag)
 {
+#ifndef D3D11
 	if (flag)
 		device->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 	else
 		device->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+#endif
 }
+
 
 void Graphics::init(void *param1, void *param2)
 {
@@ -163,7 +219,7 @@ void Graphics::init(void *param1, void *param2)
 
 #ifdef D3D11
 	DXGI_SWAP_CHAIN_DESC scd;
-	ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
+	memset(&scd, 0, sizeof(DXGI_SWAP_CHAIN_DESC));
 	scd.BufferCount = 1;                                    // one back buffer
 	scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;     // use 32-bit color
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;      // how swap chain is to be used
@@ -171,51 +227,82 @@ void Graphics::init(void *param1, void *param2)
 	scd.SampleDesc.Count = 0;                               // how many multisamples
 	scd.Windowed = TRUE;                                    // windowed/full-screen mode
 
-	D3D11CreateDeviceAndSwapChain(NULL,
+
+	D3D_FEATURE_LEVEL featureLevel;
+
+	ret = D3D11CreateDevice(
+		0,                 // default adapter
 		D3D_DRIVER_TYPE_HARDWARE,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
+		0,                 // no software device
+		D3D11_CREATE_DEVICE_DEBUG,
+		0, 0,              // default feature level array
 		D3D11_SDK_VERSION,
-		&scd,
-		&swapchain,
 		&device,
-		NULL,
-		&d3d);
+		&featureLevel,
+		&context);
 
-	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+	if (FAILED(ret))
+	{
+		printf("Failed to initialize dx11\n");
+		return;
+	}
 
-	device->CreateRenderTargetView(pBackBuffer, NULL, &backbuffer);
-	pBackBuffer->Release();
+	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
+	{
+		printf("Hardware doesnt support dx11");
+		return;
+	}
+
+	DXGI_SWAP_CHAIN_DESC sd;
+	sd.BufferDesc.Width = width;
+	sd.BufferDesc.Height = height;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Quality = 0;
+
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.BufferCount = 1;
+	sd.OutputWindow = hwnd;
+	sd.Windowed = true;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	sd.Flags = 0;
+
+
+	IDXGIDevice* dxgiDevice = 0;
+	device->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice);
+
+	IDXGIAdapter* dxgiAdapter = 0;
+	dxgiDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&dxgiAdapter);
+
+	IDXGIFactory* dxgiFactory = 0;
+	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
+
+	dxgiFactory->CreateSwapChain(device, &sd, &swapchain);
+
+
+	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&back_buffer);
+
+	device->CreateRenderTargetView(back_buffer, NULL, &render_target);
+	back_buffer->Release();
 
 	// set the render target as the back buffer
-	d3d->OMSetRenderTargets(1, &backbuffer, NULL);
+	context->OMSetRenderTargets(1, &render_target, NULL);
 
 	// Set the viewport
 	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+	memset(&viewport, 0, sizeof(D3D11_VIEWPORT));
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = width;
-	viewport.Height = height;
+	viewport.Width = (float)width;
+	viewport.Height = (float)height;
 
-	d3d->RSSetViewports(1, &viewport);
-
-
-	D3D11_INPUT_ELEMENT_DESC ied[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		//		{ 0, sizeof(vec3), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		//		{ 0, sizeof(vec3) + sizeof(vec2), D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	device->CreateInputLayout(ied, 2, VS->GetBufferPointer(), VS->GetBufferSize(), &pLayout);
-	d3d->IASetInputLayout(pLayout);
+	context->RSSetViewports(1, &viewport);
 #else
 	memset(&d3dpp, sizeof(d3dpp), 0);
     d3dpp.Windowed = TRUE;
@@ -274,6 +361,7 @@ void Graphics::init(void *param1, void *param2)
 
 void Graphics::DrawText(const char *str, float x, float y)
 {
+#ifndef D3D11
 	RECT rect;
 
 	rect.left = (int)(x * width);
@@ -282,6 +370,7 @@ void Graphics::DrawText(const char *str, float x, float y)
 	rect.bottom = rect.top + height;
 
 	font->DrawText(NULL, str, -1, &rect, DT_LEFT | DT_NOCLIP, 0xFFFFFFFF );
+#endif
 }
 
 void Graphics::swap()
@@ -296,8 +385,11 @@ void Graphics::swap()
 
 void Graphics::clear()
 {
+	vec4 clear = { 0.5f, 0.5f, 0.5f, 1.0f };
+
 #ifdef D3D11
-	d3d->ClearRenderTargetView(backbuffer, D3DXCOLOR(0.0f, 0.2f, 0.4f, 1.0f));
+	context->ClearRenderTargetView(render_target, (float *)&clear);
+	context->ClearDepthStencilView(depth_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 #else
 	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1.0f, 0);
 	device->BeginScene();
@@ -309,12 +401,12 @@ void Graphics::destroy()
 #ifdef D3D11
 	if (device)
 		device->Release();
-	if (d3d)
-		d3d->Release();
+	if (context)
+		context->Release();
 	if (swapchain)
 		swapchain->Release();
-	if (backbuffer)
-		backbuffer->Release();
+	if (back_buffer)
+		back_buffer->Release();
 #else
 	if (device)
 		device->Release();
@@ -326,6 +418,7 @@ void Graphics::destroy()
 
 int Graphics::CreateIndexBuffer(void *index_array, int num_index)
 {
+#ifndef D3D11
 	IDirect3DIndexBuffer9	**d3d9_buffer = new IDirect3DIndexBuffer9 *;
 	HRESULT ret;
 	void *pIndex = NULL;
@@ -336,26 +429,34 @@ int Graphics::CreateIndexBuffer(void *index_array, int num_index)
 	(*d3d9_buffer)->Unlock();
 	index_buffers.push_back(*d3d9_buffer);
 	return index_buffers.size() - 1;
+#else
+	return 0;
+#endif
 }
 
 void Graphics::SelectIndexBuffer(int handle)
 {
+#ifndef D3D11
 	IDirect3DIndexBuffer9	*d3d9_buffer = index_buffers[handle];
 
 	device->SetIndices(d3d9_buffer);
+#endif
 }
 
 void Graphics::DeleteIndexBuffer(int handle)
 {
+#ifndef D3D11
 	IDirect3DIndexBuffer9	*d3d9_buffer = index_buffers[handle];
 
 //	index_buffers.remove(d3d9_buffer);
 	d3d9_buffer->Release();
 //	delete d3d9_buffer;
+#endif
 }
 
 void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+#ifndef D3D11
 	/* Branches in rendering loop are slow, find faster portable method */
 	if (primitive == PRIM_TRIANGLES)
 		device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, start_vertex, 0, num_verts, start_index, num_index / 3);
@@ -365,26 +466,35 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 		device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
 	else if (primitive == PRIM_POINTS)
 		device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
+#endif
 }
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+#ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, start_vertex, 0, num_verts, start_index, num_index / 3);
+#endif
 }
 
 void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+#ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, start_vertex, 0, num_verts, start_index, num_index - 2);
+#endif
 }
 
 void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+#ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
+#endif
 }
 
 void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+#ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
+#endif
 }
 
 
@@ -400,16 +510,20 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 
 void Graphics::bindFramebuffer(int index)
 {
+#ifndef D3D11
 	device->SetRenderTarget(0, surface[index]);
 	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1, 0);
 	return;
+#endif
 }
 
 void Graphics::DeleteFrameBuffer(unsigned int index)
 {
+#ifndef D3D11
 	surface[index]->Release();
 	surface.erase(surface.begin() + index);
 	return;
+#endif
 }
 
 int Graphics::checkFramebuffer()
@@ -419,6 +533,7 @@ int Graphics::checkFramebuffer()
 
 int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
 {
+#ifndef D3D11
 	IDirect3DSurface9* surf = NULL;
 
 	HRESULT ret = device->CreateRenderTarget(width, height,
@@ -426,6 +541,9 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 
 	surface.push_back(surf);
 	return surface.size() - 1;
+#else
+	return 0;
+#endif
 }
 
 void Graphics::fbAttachTexture(int fbo)
@@ -445,113 +563,148 @@ void Graphics::GetDebugLog(void)
 
 void Graphics::BlendFuncDstColorOne()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+#endif
 }
 
 void Graphics::BlendFuncDstColorZero()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+#endif
 }
 
 void Graphics::BlendFuncZeroOneMinusAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+#endif
 }
 
 void Graphics::BlendFuncOneAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+#endif
 }
 
 
 void Graphics::BlendFuncOneOneMinusAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVDESTALPHA);
+#endif
 }
 
 
 void Graphics::BlendFuncOneOne()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+#endif
 }
 
 
 void Graphics::BlendFuncZeroSrcColor()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
+#endif
 }
 
 void Graphics::BlendFuncZeroOne()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+#endif
 }
 
 void Graphics::BlendFuncDstColorOneMinusDstAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVDESTALPHA);
+#endif
 }
 
 void Graphics::BlendFuncDstColorSrcAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+#endif
 }
 
 void Graphics::BlendFuncOneMinusSrcAlphaSrcAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVSRCALPHA);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+#endif
 }
 
 void Graphics::BlendFuncSrcAlphaOneMinusSrcAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+#endif
 }
 
 
 void Graphics::BlendFuncOneSrcAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+#endif
 }
 
 void Graphics::BlendFuncOneMinusDstColorZero()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTCOLOR);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+#endif
 }
 
 void Graphics::BlendFuncDstColorSrcColor()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
+#endif
 }
 
 void Graphics::BlendFuncZeroSrcAlpha()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ZERO);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCALPHA);
+#endif
 }
 
 void Graphics::BlendFuncOneZero()
 {
+#ifndef D3D11
 	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
+#endif
 }
 
 
 int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 {
+#ifndef D3D11
 	LPDIRECT3DVERTEXBUFFER9 *d3d9_buffer = new LPDIRECT3DVERTEXBUFFER9;
 	HRESULT ret;
 	void *pVert = NULL;
@@ -563,40 +716,52 @@ int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 
 	vertex_buffers.push_back(*d3d9_buffer);
 	return vertex_buffers.size() - 1;
+#else
+	return 0;
+#endif
 }
 
 void Graphics::SelectVertexBuffer(int handle)
 {
+#ifndef D3D11
 	IDirect3DVertexBuffer9 *d3d9_buffer = vertex_buffers[handle];
 
 	if (handle != 0)
 		device->SetStreamSource(0, d3d9_buffer, 0, sizeof(vertex_t));
 	device->SetVertexDeclaration(vertex_decl);
+#endif
 }
 
 void Graphics::DeleteVertexBuffer(int handle)
 {
+#ifndef D3D11
 	IDirect3DVertexBuffer9 *d3d9_buffer = vertex_buffers[handle];
 
 //	vertex_buffers.remove(d3d9_buffer);
 	d3d9_buffer->Release();
 //	delete d3d9_buffer;
+#endif
 }
 
 void Graphics::SelectTexture(int level, int handle)
 {
+#ifndef D3D11
 	if (handle < 0)
 		return;
 	device->SetTexture(level, texture[handle]);
+#endif
 }
 
 void Graphics::DeselectTexture(int level)
 {
+#ifndef D3D11
 	device->SetTexture(level, NULL);
+#endif
 }
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
 {
+#ifndef D3D11
 	IDirect3DTexture9	**d3d9_buffer = new IDirect3DTexture9 *;
 	D3DLOCKED_RECT		rect;
 	//D3DFMT_A8B8G8R8
@@ -615,10 +780,14 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	(*d3d9_buffer)->GenerateMipSubLevels();
 	texture.push_back(*d3d9_buffer);
 	return texture.size() - 1;
+#else
+	return 0;
+#endif
 }
 
 void Graphics::DeleteTexture(int handle)
 {
+#ifndef D3D11
 	if (handle < 0)
 		return;
 
@@ -626,6 +795,7 @@ void Graphics::DeleteTexture(int handle)
 //	texture.remove(d3d9_buffer);
 	d3d9_buffer->Release();
 //	delete d3d9_buffer;
+#endif
 }
 
 int Graphics::CreateCubeMap()
@@ -643,16 +813,20 @@ void SelectCubemap(int texObject)
 
 void Graphics::SelectShader(int handle)
 {
+#ifndef D3D11
 	device->SetVertexShader(NULL);
 	device->SetPixelShader(NULL);
+#endif
 }
 
 Shader::Shader()
 {
+#ifndef D3D11
 	vertex_src = NULL;
 	geometry_src = NULL;
 	fragment_src = NULL;
 	gfx = NULL;
+#endif
 }
 
 int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *fragment_file)
@@ -663,20 +837,20 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 
 	if (vertex_file)
 	{
-		ID3D10Blob *VS;
+//		ID3D10Blob *VS;
 
-		D3DX11CompileFromFile(vertex_file, 0, 0, "VShader", "vs_4_0", 0, 0, 0, &VS, 0, 0);
-		gfx->device->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &(gfx->pVS));
-		gfx->d3d->VSSetShader(gfx->pVS, 0, 0);
+//		D3DX11CompileFromFile(vertex_file, 0, 0, "VShader", "vs_4_0", 0, 0, 0, &VS, 0, 0);
+//		gfx->device->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &(gfx->pVS));
+		gfx->context->VSSetShader(gfx->pVS, 0, 0);
 	}
 
 	if (fragment_file)
 	{
-		ID3D10Blob *PS;
+//		ID3D10Blob *PS;
 
-		D3DX11CompileFromFile(fragment_file, 0, 0, "PShader", "ps_4_0", 0, 0, 0, &PS, 0, 0);
-		gfx->device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &(gfx->pPS));
-		gfx->d3d->PSSetShader(gfx->pPS, 0, 0);
+//		D3DX11CompileFromFile(fragment_file, 0, 0, "PShader", "ps_4_0", 0, 0, 0, &PS, 0, 0);
+//		gfx->device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &(gfx->pPS));
+		gfx->context->PSSetShader(gfx->pPS, 0, 0);
 	}
 #else
 
@@ -769,14 +943,17 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 
 void Shader::Select()
 {
+#ifndef D3D11
 	if (vertex_src)
 		gfx->device->SetVertexShader(vertex_shader);
 	if (fragment_src)
 		gfx->device->SetPixelShader(pixel_shader);
+#endif
 }
 
 void Shader::destroy()
 {
+#ifndef D3D11
 	if (vertex_shader)
 	{
 		vertex_shader->Release();
@@ -787,6 +964,7 @@ void Shader::destroy()
 		pixel_shader->Release();
 		pixel_shader = NULL;
 	}
+#endif
 
 #ifndef DIRECTX
 	if (vertex_src)

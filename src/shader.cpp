@@ -56,12 +56,15 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 	float offset = 16.0f / 256.0f;
 
 #ifdef DIRECTX
+#ifdef D3D11
+#else
 	uniform_vs->SetFloat(gfx->device, "u_col", col * offset);
 	uniform_vs->SetFloat(gfx->device, "u_row", row * offset);
 	uniform_vs->SetFloat(gfx->device, "u_xpos", (2.0f * x));
 	uniform_vs->SetFloat(gfx->device, "u_ypos", (2.0f * y));
 	uniform_vs->SetFloat(gfx->device, "u_scale", scale);
 	uniform_ps->SetFloatArray(gfx->device, "u_color", (float *)&color, 3);
+#endif
 #else
 	glUniform1f(u_scale, scale);
 	glUniform1f(u_col, col * offset);
@@ -109,7 +112,9 @@ void Global::prelink()
 void Global::Params(matrix4 &mvp, int tex0)
 {
 #ifdef DIRECTX
+#ifndef D3D11
 	uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+#endif
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, tex0);
@@ -282,6 +287,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	}
 
 #ifdef DIRECTX
+#ifndef D3D11
 	HRESULT ret = S_OK;
 
 	ret = uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
@@ -309,6 +315,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		printf("Error: %s error description: %s\n",
 			DXGetErrorString(ret), DXGetErrorDescription(ret));
 	}
+#endif
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, 0);
@@ -853,7 +860,9 @@ void Post::resize(int width, int height)
 void Post::Params(int tex0, int tex1)
 {
 #ifdef DIRECTX
+#ifndef D3D11
 	uniform_ps->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
+#endif
 #else
 	glUniform1i(texture0, tex0);
 	glUniform1i(texture1, tex1);
