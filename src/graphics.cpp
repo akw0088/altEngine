@@ -25,7 +25,6 @@ void Graphics::resize(int width, int height)
 	device->CreateRenderTargetView(backBuffer, 0, &render_target);
 
 	// Create the depth/stencil buffer and view.
-
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 
 	depthStencilDesc.Width = width;
@@ -46,7 +45,6 @@ void Graphics::resize(int width, int height)
 
 
 	// Bind the render target view and depth/stencil view to the pipeline.
-
 	context->OMSetRenderTargets(1, &render_target, depth_view);
 
 
@@ -315,9 +313,8 @@ void Graphics::init(void *param1, void *param2)
 		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	ID3D11InputLayout *layout;
-
 	device->CreateInputLayout(vertexDesc, 6, NULL, 0, &layout);
+	context->IASetInputLayout(layout);
 
 
 
@@ -515,6 +512,17 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 		device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
 	else if (primitive == PRIM_POINTS)
 		device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
+#else
+	if (primitive == PRIM_TRIANGLES)
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	else if (primitive == PRIM_TRIANGLE_STRIP)
+		context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	else if (primitive == PRIM_LINE_STRIP)
+		context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ);
+	else if (primitive == PRIM_POINTS)
+		context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+	context->Draw(num_index, start_index);
 #endif
 }
 
@@ -522,6 +530,9 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 {
 #ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, start_vertex, 0, num_verts, start_index, num_index / 3);
+#else
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context->Draw(num_index, start_index);
 #endif
 }
 
@@ -529,6 +540,9 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 {
 #ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, start_vertex, 0, num_verts, start_index, num_index - 2);
+#else
+	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	context->Draw(num_index, start_index);
 #endif
 }
 
@@ -536,6 +550,9 @@ void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned in
 {
 #ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
+#else
+	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ);
+	context->Draw(num_index, start_index);
 #endif
 }
 
@@ -543,6 +560,9 @@ void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int nu
 {
 #ifndef D3D11
 	device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);
+#else
+	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	context->Draw(num_index, start_index);
 #endif
 }
 
@@ -933,7 +953,6 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	{
 		ID3D10Blob *vertex = 0;
 		ID3D10Blob *infolog = 0;
-		ID3D11VertexShader *vertex_shader;
 		WCHAR wfile[512];
 
 		mbstowcs(wfile, vertex_file, strlen(vertex_file));
@@ -958,14 +977,13 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			return false;
 		}
 
-		gfx->context->VSSetShader(gfx->pVS, 0, 0);
+		gfx->context->VSSetShader(vertex_shader, 0, 0);
 	}
 
 	if (fragment_file)
 	{
 		ID3D10Blob *fragment = 0;
 		ID3D10Blob *infolog = 0;
-		ID3D11PixelShader *fragment_shader;
 		WCHAR wfile[512];
 
 		mbstowcs(wfile, fragment_file, strlen(fragment_file));
@@ -990,7 +1008,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			return -1;
 		}
 
-		gfx->context->PSSetShader(gfx->pPS, 0, 0);
+		gfx->context->PSSetShader(fragment_shader, 0, 0);
 	}
 #else
 
@@ -1088,6 +1106,9 @@ void Shader::Select()
 		gfx->device->SetVertexShader(vertex_shader);
 	if (fragment_src)
 		gfx->device->SetPixelShader(pixel_shader);
+#else
+	gfx->context->VSSetShader(vertex_shader, 0, 0);
+	gfx->context->PSSetShader(fragment_shader, 0, 0);
 #endif
 }
 

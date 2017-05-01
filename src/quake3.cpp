@@ -4108,10 +4108,12 @@ void Quake3::draw_crosshair()
 	vec3 quad1 = vec3(0.0f, scale, 0.0f);
 	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
 
+#ifndef DIRECTX
 	engine->particle_render.Select();
 	engine->particle_render.Params(engine->projection, quad1, quad2, 0.0f, 0.0f);
 	engine->gfx.SelectTexture(0, crosshair_tex[current_crosshair]);
 	engine->particle_render.render(engine->gfx, 0, crosshair_vbo, 1);
+#endif
 }
 
 
@@ -4148,10 +4150,12 @@ void Quake3::draw_icon(float scale, int index, float x, float y)
 	vec3 quad1 = vec3(0.0f, scale, 0.0f);
 	vec3 quad2 = vec3(scale, 0.0f, 0.0f);
 
+#ifndef DIRECTX
 	engine->gfx.SelectTexture(0, icon_list[index].tex);
 	engine->particle_render.Select();
 	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x + x, icon_list[index].y + y);
 	engine->particle_render.render(engine->gfx, index, icon_vbo, 1);
+#endif
 }
 
 
