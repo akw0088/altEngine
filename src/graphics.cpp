@@ -18,11 +18,13 @@ void Graphics::resize(int width, int height)
 	glViewport(0, 0, width, height);
 #else
 #ifdef D3D11
+	HRESULT ret;
+
 	// Resize the swap chain and recreate the render target view.
-	swapchain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	ret = swapchain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 	ID3D11Texture2D* backBuffer;
 	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer));
-	device->CreateRenderTargetView(backBuffer, 0, &render_target);
+	ret = device->CreateRenderTargetView(backBuffer, 0, &render_target);
 
 	// Create the depth/stencil buffer and view.
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
@@ -40,8 +42,8 @@ void Graphics::resize(int width, int height)
 	depthStencilDesc.CPUAccessFlags = 0;
 	depthStencilDesc.MiscFlags = 0;
 
-	device->CreateTexture2D(&depthStencilDesc, 0, &depth_buffer);
-	device->CreateDepthStencilView(depth_buffer, 0, &depth_view);
+	ret = device->CreateTexture2D(&depthStencilDesc, 0, &depth_buffer);
+	ret = device->CreateDepthStencilView(depth_buffer, 0, &depth_view);
 
 
 	// Bind the render target view and depth/stencil view to the pipeline.
@@ -285,7 +287,7 @@ void Graphics::init(void *param1, void *param2)
 
 	swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&back_buffer);
 
-	device->CreateRenderTargetView(back_buffer, NULL, &render_target);
+	ret = device->CreateRenderTargetView(back_buffer, NULL, &render_target);
 	back_buffer->Release();
 
 	// set the render target as the back buffer
@@ -303,21 +305,6 @@ void Graphics::init(void *param1, void *param2)
 	context->RSSetViewports(1, &viewport);
 
 
-	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",    0, DXGI_FORMAT_R32G32B32_UINT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
-
-	device->CreateInputLayout(vertexDesc, 6, NULL, 0, &layout);
-	context->IASetInputLayout(layout);
-
-
-
 	D3D11_RASTERIZER_DESC rsDesc;
 	memset(&rsDesc, 0, sizeof(D3D11_RASTERIZER_DESC));
 	rsDesc.FillMode = D3D11_FILL_SOLID;
@@ -329,7 +316,6 @@ void Graphics::init(void *param1, void *param2)
 	device->CreateRasterizerState(&rsDesc, &render_state_wireframe);
 
 	context->RSSetState(render_state);
-
 #else
 	memset(&d3dpp, sizeof(d3dpp), 0);
     d3dpp.Windowed = TRUE;
@@ -458,15 +444,19 @@ int Graphics::CreateIndexBuffer(void *index_array, int num_index)
 	return index_buffers.size() - 1;
 #else
 	D3D11_BUFFER_DESC ibd;
+	D3D11_SUBRESOURCE_DATA iinitData;
+
 	ibd.Usage = D3D11_USAGE_IMMUTABLE;
 	ibd.ByteWidth = sizeof(unsigned int) * num_index;
 	ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibd.CPUAccessFlags = 0;
 	ibd.MiscFlags = 0;
 	ibd.StructureByteStride = 0;
-	// Specify the data to initialize the index buffer.
-	D3D11_SUBRESOURCE_DATA iinitData;
+
 	iinitData.pSysMem = index_array;
+	iinitData.SysMemPitch = 0;
+	iinitData.SysMemSlicePitch = 0;
+
 	// Create the index buffer.
 	ID3D11Buffer *d3d11_buffer;
 	device->CreateBuffer(&ibd, &iinitData, &d3d11_buffer);
@@ -798,6 +788,9 @@ int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
 	vbd.StructureByteStride = 0;
 
 	vinitData.pSysMem = vertex_array;
+	vinitData.SysMemPitch = 0;
+	vinitData.SysMemSlicePitch = 0;
+
 	device->CreateBuffer(&vbd, &vinitData, &d3d11_buffer);
 	vertex_buffers.push_back(d3d11_buffer);
 	return vertex_buffers.size() - 1;
@@ -948,16 +941,18 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	Shader::gfx = gfx;
 	FILE *fLog = fopen("infolog.txt", "a");
 	HRESULT result;
+	ID3D10Blob *vertex = 0;
+	ID3D10Blob *fragment = 0;
 
 	if (vertex_file)
 	{
-		ID3D10Blob *vertex = 0;
+
 		ID3D10Blob *infolog = 0;
 		WCHAR wfile[512];
 
 		mbstowcs(wfile, vertex_file, strlen(vertex_file));
 
-		result = D3DX11CompileFromFile(vertex_file, 0, 0, "VShader", "vs_4_0", 0, 0, 0, &vertex, &infolog, 0);
+		result = D3DX11CompileFromFile(vertex_file, 0, 0, "main", "vs_3_0", 0, 0, 0, &vertex, &infolog, 0);
 //		result = D3DCompileFromFile(wfile, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 //			"main", "vs_4_0", 0, 0, &vertex, &infolog);
 
@@ -982,13 +977,12 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 
 	if (fragment_file)
 	{
-		ID3D10Blob *fragment = 0;
 		ID3D10Blob *infolog = 0;
 		WCHAR wfile[512];
 
 		mbstowcs(wfile, fragment_file, strlen(fragment_file));
 
-		result = D3DX11CompileFromFile(fragment_file, 0, 0, "PShader", "ps_4_0", 0, 0, 0, &fragment, &infolog, 0);
+		result = D3DX11CompileFromFile(fragment_file, 0, 0, "main", "ps_3_0", 0, 0, 0, &fragment, &infolog, 0);
 //		result = D3DCompileFromFile(wfile, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 //			"main", "ps_4_0", 0, 0, &fragment, &infolog);
 
@@ -1010,6 +1004,20 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 
 		gfx->context->PSSetShader(fragment_shader, 0, 0);
 	}
+
+	D3D11_INPUT_ELEMENT_DESC vertex_desc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32_UINT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	gfx->device->CreateInputLayout(vertex_desc, 6, vertex->GetBufferPointer(), vertex->GetBufferSize(), &layout);
+	gfx->context->IASetInputLayout(layout);
+
 #else
 
 	Shader::gfx = gfx;

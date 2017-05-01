@@ -114,6 +114,33 @@ void Global::Params(matrix4 &mvp, int tex0)
 #ifdef DIRECTX
 #ifndef D3D11
 	uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+#else
+	ID3D11Buffer*   g_pConstantBuffer11 = NULL;
+	HRESULT ret;
+
+	D3D11_BUFFER_DESC cbDesc;
+	cbDesc.ByteWidth = sizeof(mvp);
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbDesc.MiscFlags = 0;
+	cbDesc.StructureByteStride = 0;
+
+	// Fill in the subresource data.
+	D3D11_SUBRESOURCE_DATA InitData;
+	InitData.pSysMem = &(mvp.m);
+	InitData.SysMemPitch = 0;
+	InitData.SysMemSlicePitch = 0;
+
+	// Create the buffer.
+	ret = gfx->device->CreateBuffer(&cbDesc, &InitData,
+		&g_pConstantBuffer11);
+
+	if (FAILED(ret))
+		return;
+
+	// Set the buffer.
+	gfx->context->VSSetConstantBuffers(0, 1, &g_pConstantBuffer11);
 #endif
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
@@ -315,6 +342,33 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		printf("Error: %s error description: %s\n",
 			DXGetErrorString(ret), DXGetErrorDescription(ret));
 	}
+#else
+	ID3D11Buffer*   g_pConstantBuffer11 = NULL;
+	HRESULT ret;
+
+	D3D11_BUFFER_DESC cbDesc;
+	cbDesc.ByteWidth = sizeof(mvp);
+	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cbDesc.MiscFlags = 0;
+	cbDesc.StructureByteStride = 0;
+
+	// Fill in the subresource data.
+	D3D11_SUBRESOURCE_DATA InitData;
+	InitData.pSysMem = &(mvp.m);
+	InitData.SysMemPitch = 0;
+	InitData.SysMemSlicePitch = 0;
+
+	// Create the buffer.
+	ret = gfx->device->CreateBuffer(&cbDesc, &InitData,
+		&g_pConstantBuffer11);
+
+	if (FAILED(ret))
+		return;
+
+	// Set the buffer.
+	gfx->context->VSSetConstantBuffers(0, 1, &g_pConstantBuffer11);
 #endif
 #else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);

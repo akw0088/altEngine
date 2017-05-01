@@ -122,7 +122,6 @@ public:
 
 
 
-	ID3D11InputLayout *layout;
 	vector<ID3D11Buffer *>	vertex_buffers;
 	vector<ID3D11Buffer *> index_buffers;
 	vector<ID3D11Texture2D *> texture;
@@ -163,6 +162,7 @@ protected:
 
 	ID3D11VertexShader *vertex_shader;
 	ID3D11PixelShader *fragment_shader;
+	ID3D11InputLayout *layout;
 #else
 	Graphics *gfx;
 	IDirect3DVertexShader9		*vertex_shader;

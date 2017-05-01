@@ -81,6 +81,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	//visual
 	gfx.init(param1, param2);
+
 	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 
@@ -637,6 +638,37 @@ void Engine::load_md5()
 
 void Engine::render(double last_frametime)
 {
+#if 0
+	//test triangle
+	vertex_t tVertices[3];
+
+	memset(&tVertices, 0, sizeof(vertex_t) * 3);
+	tVertices[0].position.x = 0.0f;
+	tVertices[0].position.y = 0.5f;
+	tVertices[0].position.z = 0.0f;
+
+
+	tVertices[1].position.x = 0.24f;
+	tVertices[1].position.y = -0.5f;
+	tVertices[1].position.z = 0.0f;
+
+	tVertices[2].position.x = -0.45f;
+	tVertices[2].position.y = -0.5f;
+	tVertices[2].position.z = 0.0f;
+
+	gfx.clear();
+
+	int index[3] = { 0,1,2 };
+	int index_buf = gfx.CreateIndexBuffer(index, 3);
+	int vert_buf = gfx.CreateVertexBuffer(tVertices, 3);
+
+	global.Select();
+	gfx.SelectIndexBuffer(index_buf);
+	gfx.SelectVertexBuffer(vert_buf);
+	gfx.DrawArrayTri(0, 0, 3, 3);
+	gfx.swap();
+#endif
+
 	if (q3map.loaded == false)
 		return;
 
@@ -746,6 +778,11 @@ void Engine::render(double last_frametime)
 		menu.render_console(global);
 	if (menu.chatmode)
 		menu.render_chatmode(global);
+#ifdef DIRECTX
+	gfx.cleardepth();
+	gfx.Blend(false);
+#endif
+
 	gfx.swap();
 }
 
