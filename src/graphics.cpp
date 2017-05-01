@@ -853,7 +853,28 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	texture.push_back(*d3d9_buffer);
 	return texture.size() - 1;
 #else
-	return 0;
+	D3DX11_IMAGE_LOAD_INFO iload;
+
+	ID3D11Texture2D *tex;
+
+	iload.Width = width;
+	iload.Height = height;
+	iload.Depth = D3DX11_FROM_FILE;
+	iload.FirstMipLevel = 0;
+	iload.MipLevels = D3DX11_FROM_FILE;
+	iload.Usage = D3D11_USAGE_STAGING;
+	iload.Format = DXGI_FORMAT_R8G8B8A8_UINT;
+	iload.BindFlags = 0;
+	iload.CpuAccessFlags = 0;// D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
+	iload.MiscFlags = 0;
+	iload.Filter = 0;
+	iload.MipFilter = 0;
+	iload.pSrcInfo = 0;
+
+
+	HRESULT ret = D3DX11CreateTextureFromMemory(device, bytes, width * height * components, &iload, 0, (ID3D11Resource**)&tex, 0);
+	texture.push_back(tex);
+	return texture.size() - 1;
 #endif
 }
 

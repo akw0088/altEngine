@@ -127,6 +127,9 @@ public:
 
 	vector<ID3D11Buffer *>	vertex_buffers;
 	vector<ID3D11Buffer *> index_buffers;
+	vector<ID3D11Texture2D *> texture;
+
+
 	ID3D11RasterizerState *render_state;
 	ID3D11RasterizerState *render_state_wireframe;
 
