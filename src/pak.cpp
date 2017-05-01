@@ -70,6 +70,8 @@ char *get_pakfile(char *pakfile, char *file)
 
 			fseek(pak, entry->offset, SEEK_SET);
 			fread(data, entry->length, 1, pak);
+			free(entries);
+			fclose(pak);
 			return data;
 		}
 	}

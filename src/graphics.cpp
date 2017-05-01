@@ -961,6 +961,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			if (infolog != 0)
 			{
 				fprintf(fLog, "%s\n", (char*)infolog->GetBufferPointer());
+				fclose(fLog);
 			}
 			return -1;
 		}
@@ -969,7 +970,8 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		result = gfx->device->CreateVertexShader(vertex->GetBufferPointer(), vertex->GetBufferSize(), NULL, &vertex_shader);
 		if (FAILED(result))
 		{
-			return false;
+			fclose(fLog);
+			return -1;
 		}
 
 		gfx->context->VSSetShader(vertex_shader, 0, 0);
@@ -991,6 +993,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 			if (infolog != 0)
 			{
 				fprintf(fLog, "%s\n", (char*)infolog->GetBufferPointer());
+				fclose(fLog);
 			}
 			return -1;
 		}
@@ -999,6 +1002,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		result = gfx->device->CreatePixelShader(fragment->GetBufferPointer(), fragment->GetBufferSize(), NULL, &fragment_shader);
 		if (FAILED(result))
 		{
+			fclose(fLog);
 			return -1;
 		}
 
