@@ -319,6 +319,20 @@ void Graphics::init(void *param1, void *param2)
 
 	device->CreateInputLayout(vertexDesc, 6, NULL, 0, &layout);
 
+
+
+	D3D11_RASTERIZER_DESC rsDesc;
+	memset(&rsDesc, 0, sizeof(D3D11_RASTERIZER_DESC));
+	rsDesc.FillMode = D3D11_FILL_SOLID;
+	rsDesc.CullMode = D3D11_CULL_BACK;
+	rsDesc.FrontCounterClockwise = false;
+	rsDesc.DepthClipEnable = true;
+	device->CreateRasterizerState(&rsDesc, &render_state);
+	rsDesc.FillMode = D3D11_FILL_WIREFRAME;
+	device->CreateRasterizerState(&rsDesc, &render_state_wireframe);
+
+	context->RSSetState(render_state);
+
 #else
 	memset(&d3dpp, sizeof(d3dpp), 0);
     d3dpp.Windowed = TRUE;
@@ -892,22 +906,69 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 #ifdef D3D11
 	Shader::gfx = gfx;
 	FILE *fLog = fopen("infolog.txt", "a");
+	HRESULT result;
 
 	if (vertex_file)
 	{
-//		ID3D10Blob *VS;
+		ID3D10Blob *vertex = 0;
+		ID3D10Blob *infolog = 0;
+		ID3D11VertexShader *vertex_shader;
+		WCHAR wfile[512];
 
-//		D3DX11CompileFromFile(vertex_file, 0, 0, "VShader", "vs_4_0", 0, 0, 0, &VS, 0, 0);
-//		gfx->device->CreateVertexShader(VS->GetBufferPointer(), VS->GetBufferSize(), NULL, &(gfx->pVS));
+		mbstowcs(wfile, vertex_file, strlen(vertex_file));
+
+		result = D3DX11CompileFromFile(vertex_file, 0, 0, "VShader", "vs_4_0", 0, 0, 0, &vertex, &infolog, 0);
+//		result = D3DCompileFromFile(wfile, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+//			"main", "vs_4_0", 0, 0, &vertex, &infolog);
+
+		if (FAILED(result))
+		{
+			if (infolog != 0)
+			{
+				fprintf(fLog, "%s\n", (char*)infolog->GetBufferPointer());
+			}
+			return -1;
+		}
+
+		// Create the vertex shader from the buffer.
+		result = gfx->device->CreateVertexShader(vertex->GetBufferPointer(), vertex->GetBufferSize(), NULL, &vertex_shader);
+		if (FAILED(result))
+		{
+			return false;
+		}
+
 		gfx->context->VSSetShader(gfx->pVS, 0, 0);
 	}
 
 	if (fragment_file)
 	{
-//		ID3D10Blob *PS;
+		ID3D10Blob *fragment = 0;
+		ID3D10Blob *infolog = 0;
+		ID3D11PixelShader *fragment_shader;
+		WCHAR wfile[512];
 
-//		D3DX11CompileFromFile(fragment_file, 0, 0, "PShader", "ps_4_0", 0, 0, 0, &PS, 0, 0);
-//		gfx->device->CreatePixelShader(PS->GetBufferPointer(), PS->GetBufferSize(), NULL, &(gfx->pPS));
+		mbstowcs(wfile, fragment_file, strlen(fragment_file));
+
+		result = D3DX11CompileFromFile(fragment_file, 0, 0, "PShader", "ps_4_0", 0, 0, 0, &fragment, &infolog, 0);
+//		result = D3DCompileFromFile(wfile, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+//			"main", "ps_4_0", 0, 0, &fragment, &infolog);
+
+		if (FAILED(result))
+		{
+			if (infolog != 0)
+			{
+				fprintf(fLog, "%s\n", (char*)infolog->GetBufferPointer());
+			}
+			return -1;
+		}
+
+		// Create the pixel shader from the buffer.
+		result = gfx->device->CreatePixelShader(fragment->GetBufferPointer(), fragment->GetBufferSize(), NULL, &fragment_shader);
+		if (FAILED(result))
+		{
+			return -1;
+		}
+
 		gfx->context->PSSetShader(gfx->pPS, 0, 0);
 	}
 #else

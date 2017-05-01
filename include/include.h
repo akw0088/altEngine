@@ -4,6 +4,9 @@
 #define _HAS_EXCEPTIONS 0
 #define D3D_DEBUG_INFO
 
+#define D3D11
+
+
 #define LINE_SIZE 512
 
 //#define NORMALMAP
@@ -65,7 +68,8 @@
 #ifdef D3D11
 	#include <d3d11.h>
 	#include <d3dx11.h>
-	#include <d3dx10.h>
+	#include <D3Dcompiler.h>
+//	#include <d3dx10.h>
 #else
 	#include <d3d9.h>
 	#include <d3dx9.h>
