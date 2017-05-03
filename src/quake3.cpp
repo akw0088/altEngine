@@ -3070,6 +3070,11 @@ void Quake3::load_icon()
 
 #define FLASH_X 0.122f
 #define FLASH_Y -0.127f
+
+#define FACE_X	 0.0f
+#define FACE_Y	-0.4f
+
+
 #define ICON_F_MACHINEGUN 41
 	sprintf(icon.filename, "media/models/weapons2/machinegun/f_machinegun.jpg");
 	icon.x = FLASH_X; // positive right from center
@@ -3111,6 +3116,69 @@ void Quake3::load_icon()
 	icon.x = FLASH_X; // positive right from center
 	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
+
+
+#define ICON_FACE0 48
+	sprintf(icon.filename, "media/gfx/face0.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE0_PAIN 49
+	sprintf(icon.filename, "media/gfx/face0_pain.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE1 50
+	sprintf(icon.filename, "media/gfx/face1.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE1_PAIN 51
+	sprintf(icon.filename, "media/gfx/face1_pain.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE2 52
+	sprintf(icon.filename, "media/gfx/face2.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE3 53
+	sprintf(icon.filename, "media/gfx/face3.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE3_PAIN 54
+	sprintf(icon.filename, "media/gfx/face3_pain.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE_QUAD 55
+	sprintf(icon.filename, "media/gfx/face_quad.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE_PENT 56
+	sprintf(icon.filename, "media/gfx/face_pent.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_FACE_PENT_KILL 57
+	sprintf(icon.filename, "media/gfx/face_pent_kill.png");
+	icon.x = FACE_X; // positive right from center
+	icon.y = FACE_Y; // positive up from center
+	icon_list.push_back(icon);
+
+
 }
 
 void Quake3::handle_weapons(Player &player, input_t &input, int self, bool client)
@@ -3500,6 +3568,7 @@ void Quake3::render_hud(double last_frametime)
 				}
 			}
 
+
 			if (entity->player->health > 50)
 			{
 				snprintf(msg, LINE_SIZE, "%d/%d", entity->player->health, entity->player->armor);
@@ -3549,6 +3618,45 @@ void Quake3::render_hud(double last_frametime)
 				break;
 			}
 		}
+
+		if (entity->player->quad_timer)
+		{
+			draw_icon(4.0f, ICON_FACE_QUAD, 0.0f, 0.0f);
+		}
+		else if (entity->player->godmode)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE_PENT_KILL, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE_PENT, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 80)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE0_PAIN, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE0, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 60)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE1_PAIN, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE1, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 40)
+		{
+			draw_icon(4.0f, ICON_FACE2, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 0)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE3_PAIN, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE3, 0.0f, 0.0f);
+		}
+
+		engine->global.Select();
 	}
 
 	if (engine->input.scores)
@@ -4130,6 +4238,12 @@ void Quake3::create_icon()
 		vert[i].tangent.y = 5.0f; //size
 		vert[i].tangent.z = -1.0f; //type
 		icon_list[i].tex = load_texture_pk3(engine->gfx, icon_list[i].filename, engine->pk3_list, engine->num_pk3, true, false);
+
+		if (icon_list[i].tex == 0)
+		{
+			icon_list[i].tex = load_texture(engine->gfx, icon_list[i].filename, false, false);
+		}
+
 		if (icon_list[i].tex == 0)
 		{
 			printf("Failed to load %s\n", icon_list[i].filename);

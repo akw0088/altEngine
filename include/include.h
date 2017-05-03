@@ -4,7 +4,7 @@
 #define _HAS_EXCEPTIONS 0
 #define D3D_DEBUG_INFO
 
-#define D3D11
+//#define D3D11
 
 
 #define LINE_SIZE 512
