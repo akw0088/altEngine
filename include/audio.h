@@ -22,6 +22,9 @@ public:
 	void delete_buffer(int hBuffer);
 	void destroy();
 	void effects(int source);
+
+	void set_audio_model(int model);
+
 private:
 	int checkFormat(char *data, char *format);
 	char *findChunk(char *chunk, char *id, int *size, char *end);

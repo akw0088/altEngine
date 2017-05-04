@@ -33,6 +33,9 @@ public:
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
 	void update_audio();
+	void set_reference_distance(float value);
+	void set_max_distance(float value);
+	void set_rolloff_factor(float value);
 
 	bool mousepos(int x, int y, int deltax, int deltay);
 	void keypress(char *key, bool pressed);

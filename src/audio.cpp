@@ -273,18 +273,21 @@ void Audio::init()
 	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &sends);
 	debugf("%d sends per audio source\n", sends);
 #endif
-	alListenerf(AL_REFERENCE_DISTANCE, 600.0f);
 
 	//gain = 	(distance / AL_REFERENCE_DISTANCE) ^ (-AL_ROLLOFF_FACTOR
-	alDistanceModel(AL_LINEAR_DISTANCE);
-//	alListenerf(AL_ROLLOFF_FACTOR, -1.0);
-//	alListenerf(AL_MAX_DISTANCE, 10000.0f);
+	alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+//	alListenerf(AL_MAX_DISTANCE, 2000.0f);
+//	alListenerf(AL_REFERENCE_DISTANCE, 75.0f);
+//	alListenerf(AL_ROLLOFF_FACTOR, 0.0001);
+	
 
 	alDopplerFactor(1.0f);
 //	alDopplerVelocity(8.0f);
 //	alSpeedOfSound(343.3f * UNITS_TO_METERS);
 #ifdef WIN32
-	alListenerf(AL_METERS_PER_UNIT, 0.25f);
+	// 8 units = 1 foot, 1 foot = 0.3 meters
+	// 1 unit = 0.3 / 8 meters
+	alListenerf(AL_METERS_PER_UNIT, 0.375f);
 
 	ALFWIsEFXSupported();
 	alGenAuxiliaryEffectSlots(1, &slot);
@@ -329,6 +332,32 @@ void Audio::init()
 	alFilterf(filter, AL_LOWPASS_GAINHF, 0.5f);
 #endif
 }
+
+void Audio::set_audio_model(int model)
+{
+	switch (model)
+	{
+	case 0:
+		alDistanceModel(AL_INVERSE_DISTANCE);
+		break;
+	case 1:
+		alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
+		break;
+	case 2:
+		alDistanceModel(AL_LINEAR_DISTANCE);
+		break;
+	case 3:
+		alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+		break;
+	case 4:
+		alDistanceModel(AL_EXPONENT_DISTANCE);
+		break;
+	case 5:
+		alDistanceModel(AL_EXPONENT_DISTANCE_CLAMPED);
+		break;
+	}
+}
+
 
 void Audio::effects(int source)
 {
@@ -715,5 +744,11 @@ ALenum Audio::alFormat(wave_t *wave)
 {
 	return AL_FORMAT_STEREO16;
 }
+
+void Audio::set_audio_model(int model)
+{
+
+}
+
 
 #endif

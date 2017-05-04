@@ -803,7 +803,11 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			}
 
 			strcpy(entity_list[spawn]->player->name, player_name);
+
+
 			entity_list[spawn]->player->local = local;
+			if (player_type == BOT)
+				entity_list[spawn]->player->local = false;
 
 
 			matrix4 matrix;
@@ -847,7 +851,10 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 		console(ent_id, cmd, engine->menu, engine->entity_list);
 	}
 
-	engine->audio.listener_position((float *)&(engine->camera_frame.pos));
+	if (local)
+	{
+		engine->audio.listener_position((float *)&(engine->camera_frame.pos));
+	}
 }
 
 

@@ -256,6 +256,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}
 
 
+	set_reference_distance(100.0f);
+
+
 	game->init(this);
 
 	if (demo)
@@ -3794,6 +3797,41 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	float value = 1.0f;
+
+	ret = sscanf(cmd, "al_reference_dist %f", &value);
+	if (ret == 1)
+	{
+		printf("Setting audio reference distance to %f\n", value);
+		set_reference_distance(value);
+		return;
+	}
+
+	ret = sscanf(cmd, "al_max_dist %f", &value);
+	if (ret == 1)
+	{
+		printf("Setting audio max distance to %f\n", value);
+		set_max_distance(value);
+		return;
+	}
+
+	ret = sscanf(cmd, "al_rolloff %f", &value);
+	if (ret == 1)
+	{
+		printf("Setting audio rolloff factor to %f\n", value);
+		set_rolloff_factor(value);
+		return;
+	}
+
+	ret = sscanf(cmd, "al_model %s", &data);
+	if (ret == 1)
+	{
+		printf("Setting audio model to %d\n", atoi(data));
+		audio.set_audio_model(atoi(data));
+		return;
+	}
+
+
 	if (strstr(cmd, "list") != 0)
 	{
 #define LIST_SIZE 1024 * 512
@@ -4386,4 +4424,31 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 	}
 
 	delete[] filelist;
+}
+
+void Engine::set_reference_distance(float value)
+{
+	for (int i = 0; i < max_sources; i++)
+	{
+		alSourcef(audio_source[i], AL_REFERENCE_DISTANCE, value);
+		alSourcef(global_source[i], AL_REFERENCE_DISTANCE, value);
+	}
+}
+
+void Engine::set_max_distance(float value)
+{
+	for (int i = 0; i < max_sources; i++)
+	{
+		alSourcef(audio_source[i], AL_MAX_DISTANCE, value);
+		alSourcef(global_source[i], AL_MAX_DISTANCE, value);
+	}
+}
+
+void Engine::set_rolloff_factor(float value)
+{
+	for (int i = 0; i < max_sources; i++)
+	{
+		alSourcef(audio_source[i], AL_ROLLOFF_FACTOR, value);
+		alSourcef(global_source[i], AL_ROLLOFF_FACTOR, value);
+	}
 }
