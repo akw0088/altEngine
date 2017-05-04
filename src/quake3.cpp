@@ -64,6 +64,7 @@ Quake3::Quake3()
 	played_three_frag = false;
 	played_prepare = false;
 	played_sudden = false;
+	faceicon = true;
 
 }
 
@@ -3619,41 +3620,44 @@ void Quake3::render_hud(double last_frametime)
 			}
 		}
 
-		if (entity->player->quad_timer)
+		if (faceicon)
 		{
-			draw_icon(4.0f, ICON_FACE_QUAD, 0.0f, 0.0f);
-		}
-		else if (entity->player->godmode)
-		{
-			if (entity->player->pain_timer)
-				draw_icon(4.0f, ICON_FACE_PENT_KILL, 0.0f, 0.0f);
-			else
-				draw_icon(4.0f, ICON_FACE_PENT, 0.0f, 0.0f);
-		}
-		else if (entity->player->health > 80)
-		{
-			if (entity->player->pain_timer)
-				draw_icon(4.0f, ICON_FACE0_PAIN, 0.0f, 0.0f);
-			else
-				draw_icon(4.0f, ICON_FACE0, 0.0f, 0.0f);
-		}
-		else if (entity->player->health > 60)
-		{
-			if (entity->player->pain_timer)
-				draw_icon(4.0f, ICON_FACE1_PAIN, 0.0f, 0.0f);
-			else
-				draw_icon(4.0f, ICON_FACE1, 0.0f, 0.0f);
-		}
-		else if (entity->player->health > 40)
-		{
-			draw_icon(4.0f, ICON_FACE2, 0.0f, 0.0f);
-		}
-		else if (entity->player->health > 0)
-		{
-			if (entity->player->pain_timer)
-				draw_icon(4.0f, ICON_FACE3_PAIN, 0.0f, 0.0f);
-			else
-				draw_icon(4.0f, ICON_FACE3, 0.0f, 0.0f);
+			if (entity->player->quad_timer)
+			{
+				draw_icon(4.0f, ICON_FACE_QUAD, 0.0f, 0.0f);
+			}
+			else if (entity->player->godmode)
+			{
+				if (entity->player->pain_timer)
+					draw_icon(4.0f, ICON_FACE_PENT_KILL, 0.0f, 0.0f);
+				else
+					draw_icon(4.0f, ICON_FACE_PENT, 0.0f, 0.0f);
+			}
+			else if (entity->player->health > 80)
+			{
+				if (entity->player->pain_timer)
+					draw_icon(4.0f, ICON_FACE0_PAIN, 0.0f, 0.0f);
+				else
+					draw_icon(4.0f, ICON_FACE0, 0.0f, 0.0f);
+			}
+			else if (entity->player->health > 60)
+			{
+				if (entity->player->pain_timer)
+					draw_icon(4.0f, ICON_FACE1_PAIN, 0.0f, 0.0f);
+				else
+					draw_icon(4.0f, ICON_FACE1, 0.0f, 0.0f);
+			}
+			else if (entity->player->health > 40)
+			{
+				draw_icon(4.0f, ICON_FACE2, 0.0f, 0.0f);
+			}
+			else if (entity->player->health > 0)
+			{
+				if (entity->player->pain_timer)
+					draw_icon(4.0f, ICON_FACE3_PAIN, 0.0f, 0.0f);
+				else
+					draw_icon(4.0f, ICON_FACE3, 0.0f, 0.0f);
+			}
 		}
 
 		engine->global.Select();
@@ -5409,6 +5413,20 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			gametype = GAMETYPE_DEATHMATCH;
 		}
+		return;
+	}
+
+	if (sscanf(cmd, "cg_faceicon %s", data) == 1)
+	{
+		int flag = atoi(data);
+		menu.print(msg);
+
+		if (flag)
+			faceicon = true;
+		else
+			faceicon = false;
+
+
 		return;
 	}
 

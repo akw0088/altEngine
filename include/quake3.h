@@ -83,6 +83,7 @@ private:
 	unsigned int icon_vbo;
 	bool spectator;
 	bool warmup;
+	bool faceicon;
 
 
 //	unsigned int		timelimit;
