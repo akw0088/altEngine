@@ -184,74 +184,6 @@
 
 using namespace std;
 
-#include "huffman.h"
-#include "net.h"
-#include "vector.h"
-#include "matrix.h"
-#include "quaternion.h"
-#include "plane.h"
-#include "types.h"
-#include "md5_types.h"
-
-
-#include "hashtable.h"
-#include "graph.h"
-#include "md5.h"
-#include "graphics.h"
-#include "bspTypes.h"
-#include "audio.h"
-#include "frame.h"
-
-#include "edge.h"
-#include "bsp.h"
-#include "trigger.h"
-#include "light.h"
-#include "speaker.h"
-#include "model.h"
-#include "md5model.h"
-#include "rigidbody.h"
-#include "vehicle.h"
-#include "player.h"
-#include "decal.h"
-
-#include "sin_table.h"
-#include "common.h"
-#include "entity.h"
-#include "shader.h"
-#include "parse.h"
-#include "menu.h"
-#include "basegame.h"
-#include "quake3.h"
-#include "commando.h"
-#include "engine.h"
-
-
-bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
-int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr);
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr);
-
-#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
-
-
-byte *tga_24to32(int width, int height, byte *pBits, bool bgr);
-float abs32(float val);
-int abs32(int val);
-
-
-double fsin(double rad);
-double fcos(double rad);
-
-int debugf(const char *format, ...);
-
-#define MY_PI 3.14159265359f
-#define MY_HALF_PI 1.5707963268f
-#define MAXLINE 4096
-
-
-//quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)
-#define UNITS_TO_METERS (8.0f * 8.0f * 3.3f)
-
-
 #ifdef VULKAN
 // Garbage for vulkan that I'll delete eventually
 
@@ -482,5 +414,75 @@ const unsigned char TexturedFragmentShader[] = {
 	0x0 , 0x0 , 0xfd, 0x0 , 0x1 , 0x0 , 0x38, 0x0 , 0x1 , 0x0 ,
 };
 #endif
+
+#include "huffman.h"
+#include "net.h"
+#include "vector.h"
+#include "matrix.h"
+#include "quaternion.h"
+#include "plane.h"
+#include "types.h"
+#include "md5_types.h"
+
+
+#include "hashtable.h"
+#include "graph.h"
+#include "md5.h"
+#include "graphics.h"
+#include "bspTypes.h"
+#include "audio.h"
+#include "frame.h"
+
+#include "edge.h"
+#include "bsp.h"
+#include "trigger.h"
+#include "light.h"
+#include "speaker.h"
+#include "model.h"
+#include "md5model.h"
+#include "rigidbody.h"
+#include "vehicle.h"
+#include "player.h"
+#include "decal.h"
+
+#include "sin_table.h"
+#include "common.h"
+#include "entity.h"
+#include "shader.h"
+#include "parse.h"
+#include "menu.h"
+#include "basegame.h"
+#include "quake3.h"
+#include "commando.h"
+#include "engine.h"
+
+
+bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
+int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr);
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr);
+
+#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
+
+
+byte *tga_24to32(int width, int height, byte *pBits, bool bgr);
+float abs32(float val);
+int abs32(int val);
+
+
+double fsin(double rad);
+double fcos(double rad);
+
+int debugf(const char *format, ...);
+
+#define MY_PI 3.14159265359f
+#define MY_HALF_PI 1.5707963268f
+#define MAXLINE 4096
+
+
+//quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)
+#define UNITS_TO_METERS (8.0f * 8.0f * 3.3f)
+
+
+
 
 #endif

@@ -32,9 +32,9 @@ VkSwapchainKHR Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevi
 
 	uint32_t presentModeCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
-		surface, &presentModeCount, nullptr);
+		surface, &presentModeCount, NULL);
 
-	std::vector<VkPresentModeKHR> presentModes{ presentModeCount };
+	vector<VkPresentModeKHR> presentModes{ presentModeCount };
 
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
 		surface, &presentModeCount, presentModes.data());
@@ -66,7 +66,7 @@ VkSwapchainKHR Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevi
 	swapchainCreateInfo.preTransform = surfaceTransformFlags;
 	swapchainCreateInfo.imageColorSpace = swapchainFormatColorSpace.colorSpace;
 	swapchainCreateInfo.imageFormat = swapchainFormatColorSpace.format;
-	swapchainCreateInfo.pQueueFamilyIndices = nullptr;
+	swapchainCreateInfo.pQueueFamilyIndices = NULL;
 	swapchainCreateInfo.queueFamilyIndexCount = 0;
 	swapchainCreateInfo.clipped = VK_TRUE;
 	swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
@@ -77,7 +77,7 @@ VkSwapchainKHR Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevi
 
 	VkSwapchainKHR swapchain;
 	vkCreateSwapchainKHR(device, &swapchainCreateInfo,
-		nullptr, &swapchain);
+		NULL, &swapchain);
 
 	if (swapchainFormat)
 	{
@@ -95,7 +95,7 @@ VkBuffer Graphics::AllocateBuffer(VkDevice device, const int size, const VkBuffe
 	bufferCreateInfo.usage = bits;
 
 	VkBuffer result;
-	vkCreateBuffer(device, &bufferCreateInfo, nullptr, &result);
+	vkCreateBuffer(device, &bufferCreateInfo, NULL, &result);
 	return result;
 }
 
@@ -104,7 +104,7 @@ VkBuffer Graphics::AllocateBuffer(VkDevice device, const int size, const VkBuffe
 /*
 Wrapper function, loops multiple gpu memory allocations
 */
-VkDeviceMemory Graphics::AllocateMemory(const std::vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent)
+VkDeviceMemory Graphics::AllocateMemory(const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent)
 {
 	for (auto& memoryInfo : memoryInfos)
 	{
@@ -134,7 +134,7 @@ VkDeviceMemory Graphics::AllocateMemory(const std::vector<MemoryTypeInfo>& memor
 		memoryAllocateInfo.allocationSize = size;
 
 		VkDeviceMemory deviceMemory;
-		vkAllocateMemory(device, &memoryAllocateInfo, nullptr,
+		vkAllocateMemory(device, &memoryAllocateInfo, NULL,
 			&deviceMemory);
 		return deviceMemory;
 	}
@@ -147,12 +147,12 @@ VkDeviceMemory Graphics::AllocateMemory(const std::vector<MemoryTypeInfo>& memor
 /*
 Checks GPU memory sizes
 */
-std::vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
+vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
 {
 	VkPhysicalDeviceMemoryProperties memoryProperties = {};
 	vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
 
-	std::vector<MemoryTypeInfo::Heap> heaps;
+	vector<MemoryTypeInfo::Heap> heaps;
 
 	for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; ++i)
 	{
@@ -163,7 +163,7 @@ std::vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
 		heaps.push_back(info);
 	}
 
-	std::vector<MemoryTypeInfo> result;
+	vector<MemoryTypeInfo> result;
 
 	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
 	{
@@ -198,7 +198,7 @@ void Graphics::CreateSampler()
 	samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
 
-	vkCreateSampler(device_, &samplerCreateInfo, nullptr, &sampler_);
+	vkCreateSampler(device_, &samplerCreateInfo, NULL, &sampler_);
 }
 
 /*
@@ -214,7 +214,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = nullptr;
+	imageCreateInfo.pNext = NULL;
 	imageCreateInfo.queueFamilyIndexCount = 1;
 	uint32_t queueFamilyIndex = static_cast<uint32_t> (queueFamilyIndex_);
 	imageCreateInfo.pQueueFamilyIndices = &queueFamilyIndex;
@@ -230,7 +230,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	vkCreateImage(device_, &imageCreateInfo, nullptr, &rubyImage_);
+	vkCreateImage(device_, &imageCreateInfo, NULL, &rubyImage_);
 
 	VkMemoryRequirements requirements = {};
 	vkGetImageMemoryRequirements(device_, rubyImage_,
@@ -247,13 +247,13 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.pNext = nullptr;
+	bufferCreateInfo.pNext = NULL;
 	bufferCreateInfo.queueFamilyIndexCount = 1;
 	bufferCreateInfo.pQueueFamilyIndices = &queueFamilyIndex;
 	bufferCreateInfo.size = requiredSizeForImage;
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-	vkCreateBuffer(device_, &bufferCreateInfo, nullptr, &uploadImageBuffer_);
+	vkCreateBuffer(device_, &bufferCreateInfo, NULL, &uploadImageBuffer_);
 
 	vkGetBufferMemoryRequirements(device_, uploadImageBuffer_, &requirements);
 
@@ -266,7 +266,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 
 	vkBindBufferMemory(device_, uploadImageBuffer_, uploadImageMemory_, 0);
 
-	void* data = nullptr;
+	void* data = NULL;
 	vkMapMemory(device_, uploadImageMemory_, 0, VK_WHOLE_SIZE,
 		0, &data);
 	::memcpy(data, image_data, image_size);
@@ -294,7 +294,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 
 	VkImageMemoryBarrier imageBarrier = {};
 	imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageBarrier.pNext = nullptr;
+	imageBarrier.pNext = NULL;
 	imageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageBarrier.srcAccessMask = 0;
@@ -307,7 +307,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	vkCmdPipelineBarrier(uploadCommandList,
 		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, 0, nullptr, 0, nullptr,
+		0, 0, NULL, 0, NULL,
 		1, &imageBarrier);
 
 	vkCmdCopyBufferToImage(uploadCommandList, uploadImageBuffer_,
@@ -322,7 +322,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	vkCmdPipelineBarrier(uploadCommandList,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0, 0, nullptr, 0, nullptr,
+		0, 0, NULL, 0, NULL,
 		1, &imageBarrier);
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
@@ -334,7 +334,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	imageViewCreateInfo.subresourceRange.layerCount = 1;
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-	vkCreateImageView(device_, &imageViewCreateInfo, nullptr, &rubyImageView_);
+	vkCreateImageView(device_, &imageViewCreateInfo, NULL, &rubyImageView_);
 }
 
 /*
@@ -360,7 +360,7 @@ void Graphics::CreateDescriptors()
 
 	vkCreateDescriptorSetLayout(
 		device_, descriptorSetLayoutCreateInfo,
-		nullptr, &descriptorSetLayout_);
+		NULL, &descriptorSetLayout_);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -368,7 +368,7 @@ void Graphics::CreateDescriptors()
 	pipelineLayoutCreateInfo.setLayoutCount = 1;
 
 	vkCreatePipelineLayout(device_, &pipelineLayoutCreateInfo,
-		nullptr, &pipelineLayout_);
+		NULL, &pipelineLayout_);
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -384,7 +384,7 @@ void Graphics::CreateDescriptors()
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSize;
 
 	vkCreateDescriptorPool(device_, &descriptorPoolCreateInfo,
-		nullptr, &descriptorPool_);
+		NULL, &descriptorPool_);
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -407,7 +407,7 @@ void Graphics::CreateDescriptors()
 
 	writeDescriptorSets[0].pImageInfo = &descriptorImageInfo[0];
 
-	vkUpdateDescriptorSets(device_, 1, writeDescriptorSets, 0, nullptr);
+	vkUpdateDescriptorSets(device_, 1, writeDescriptorSets, 0, NULL);
 }
 
 /*
@@ -422,7 +422,7 @@ VkShaderModule Graphics::LoadShader(VkDevice device, const void* shaderContents,
 	shaderModuleCreateInfo.codeSize = size;
 
 	VkShaderModule result;
-	vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &result);
+	vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &result);
 
 	return result;
 }
@@ -451,7 +451,7 @@ VkPipeline Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, Vk
 
 	VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {};
 	pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = std::extent<decltype(vertexInputAttributeDescription)>::value;
+	pipelineVertexInputStateCreateInfo.vertexAttributeDescriptionCount = extent<decltype(vertexInputAttributeDescription)>::value;
 	pipelineVertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputAttributeDescription;
 	pipelineVertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
 	pipelineVertexInputStateCreateInfo.pVertexBindingDescriptions = &vertexInputBindingDescription;
@@ -540,7 +540,7 @@ VkPipeline Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, Vk
 
 	VkPipeline pipeline;
 	vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo,
-		nullptr, &pipeline);
+		NULL, &pipeline);
 
 	return pipeline;
 }
@@ -630,7 +630,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 
 	vkBindBufferMemory(device_, uploadBufferBuffer_, uploadBufferMemory_, 0);
 
-	void* mapping = nullptr;
+	void* mapping = NULL;
 	vkMapMemory(device_, uploadBufferMemory_, 0, VK_WHOLE_SIZE,
 		0, &mapping);
 	::memcpy(mapping, vertices, sizeof(vertices));
@@ -683,8 +683,8 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	vkCmdPipelineBarrier(uploadCommandBuffer,
 		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, 0, nullptr, 2, uploadBarriers,
-		0, nullptr);
+		0, 0, NULL, 2, uploadBarriers,
+		0, NULL);
 }
 
 
@@ -713,7 +713,7 @@ void Graphics::render(VkCommandBuffer commandBuffer)
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipelineLayout_, 0, 1, &descriptorSet_, 0, nullptr);
+		pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
 
 	vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
 }
@@ -724,52 +724,52 @@ destroy the thousand handles to bullcrap
 */
 void Graphics::destroy()
 {
-	vkDestroyPipeline(device_, pipeline_, nullptr);
-	vkDestroyPipelineLayout(device_, pipelineLayout_, nullptr);
+	vkDestroyPipeline(device_, pipeline_, NULL);
+	vkDestroyPipelineLayout(device_, pipelineLayout_, NULL);
 
-	vkDestroyBuffer(device_, vertexBuffer_, nullptr);
-	vkDestroyBuffer(device_, indexBuffer_, nullptr);
-	vkFreeMemory(device_, deviceBufferMemory_, nullptr);
+	vkDestroyBuffer(device_, vertexBuffer_, NULL);
+	vkDestroyBuffer(device_, indexBuffer_, NULL);
+	vkFreeMemory(device_, deviceBufferMemory_, NULL);
 
-	vkDestroyImageView(device_, rubyImageView_, nullptr);
-	vkDestroyImage(device_, rubyImage_, nullptr);
-	vkFreeMemory(device_, deviceImageMemory_, nullptr);
+	vkDestroyImageView(device_, rubyImageView_, NULL);
+	vkDestroyImage(device_, rubyImage_, NULL);
+	vkFreeMemory(device_, deviceImageMemory_, NULL);
 
-	vkDestroyBuffer(device_, uploadImageBuffer_, nullptr);
-	vkFreeMemory(device_, uploadImageMemory_, nullptr);
+	vkDestroyBuffer(device_, uploadImageBuffer_, NULL);
+	vkFreeMemory(device_, uploadImageMemory_, NULL);
 
-	vkDestroyBuffer(device_, uploadBufferBuffer_, nullptr);
-	vkFreeMemory(device_, uploadBufferMemory_, nullptr);
+	vkDestroyBuffer(device_, uploadBufferBuffer_, NULL);
+	vkFreeMemory(device_, uploadBufferMemory_, NULL);
 
-	vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, nullptr);
-	vkDestroyDescriptorPool(device_, descriptorPool_, nullptr);
+	vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, NULL);
+	vkDestroyDescriptorPool(device_, descriptorPool_, NULL);
 
-	vkDestroySampler(device_, sampler_, nullptr);
+	vkDestroySampler(device_, sampler_, NULL);
 
-	vkDestroyShaderModule(device_, vertexShader_, nullptr);
-	vkDestroyShaderModule(device_, fragmentShader_, nullptr);
-
-	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
-	{
-		vkDestroyFence(device_, frameFences_[i], nullptr);
-	}
-
-	vkDestroyRenderPass(device_, renderPass_, nullptr);
+	vkDestroyShaderModule(device_, vertexShader_, NULL);
+	vkDestroyShaderModule(device_, fragmentShader_, NULL);
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
-		vkDestroyFramebuffer(device_, framebuffer_[i], nullptr);
-		vkDestroyImageView(device_, swapChainImageViews_[i], nullptr);
+		vkDestroyFence(device_, frameFences_[i], NULL);
 	}
 
-	vkDestroyCommandPool(device_, commandPool_, nullptr);
+	vkDestroyRenderPass(device_, renderPass_, NULL);
 
-	vkDestroySwapchainKHR(device_, swapchain_, nullptr);
-	vkDestroySurfaceKHR(instance_, surface_, nullptr);
+	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
+	{
+		vkDestroyFramebuffer(device_, framebuffer_[i], NULL);
+		vkDestroyImageView(device_, swapChainImageViews_[i], NULL);
+	}
+
+	vkDestroyCommandPool(device_, commandPool_, NULL);
+
+	vkDestroySwapchainKHR(device_, swapchain_, NULL);
+	vkDestroySurfaceKHR(instance_, surface_, NULL);
 
 
-	vkDestroyDevice(device_, nullptr);
-	vkDestroyInstance(instance_, nullptr);
+	vkDestroyDevice(device_, NULL);
+	vkDestroyInstance(instance_, NULL);
 }
 
 VkRenderPass Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat)
@@ -802,7 +802,7 @@ VkRenderPass Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainForma
 	renderPassCreateInfo.pAttachments = &attachmentDescription;
 
 	VkRenderPass result = NULL;
-	vkCreateRenderPass(device, &renderPassCreateInfo, nullptr,
+	vkCreateRenderPass(device, &renderPassCreateInfo, NULL,
 		&result);
 
 	return result;
@@ -823,7 +823,7 @@ void Graphics::CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
 		framebufferCreateInfo.layers = 1;
 		framebufferCreateInfo.renderPass = renderPass;
 
-		vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr,
+		vkCreateFramebuffer(device, &framebufferCreateInfo, NULL,
 			&framebuffers[i]);
 	}
 }
@@ -842,7 +842,7 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format,
 		imageViewCreateInfo.subresourceRange.layerCount = 1;
 		imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-		vkCreateImageView(device, &imageViewCreateInfo, nullptr,
+		vkCreateImageView(device, &imageViewCreateInfo, NULL,
 			&imageViews[i]);
 	}
 }
@@ -852,10 +852,10 @@ VkSurfaceKHR Graphics::CreateSurface(VkInstance instance, HWND hwnd)
 	VkWin32SurfaceCreateInfoKHR win32surfaceCreateInfo = {};
 	win32surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	win32surfaceCreateInfo.hwnd = hwnd;
-	win32surfaceCreateInfo.hinstance = ::GetModuleHandle(nullptr);
+	win32surfaceCreateInfo.hinstance = ::GetModuleHandle(NULL);
 
 	VkSurfaceKHR surface = NULL;
-	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, nullptr,
+	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, NULL,
 		&surface);
 
 	return surface;
@@ -865,9 +865,9 @@ SwapchainFormatColorSpace Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDe
 {
 	uint32_t surfaceFormatCount = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
-		surface, &surfaceFormatCount, nullptr);
+		surface, &surfaceFormatCount, NULL);
 
-	std::vector<VkSurfaceFormatKHR> surfaceFormats{ surfaceFormatCount };
+	vector<VkSurfaceFormatKHR> surfaceFormats{ surfaceFormatCount };
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
 		surface, &surfaceFormatCount, surfaceFormats.data());
 
@@ -887,16 +887,16 @@ SwapchainFormatColorSpace Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDe
 	return result;
 }
 
-void Graphics::FindPhysicalDeviceWithGraphicsQueue(const std::vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex)
+void Graphics::FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex)
 {
 	for (auto physicalDevice : physicalDevices)
 	{
 		uint32_t queueFamilyPropertyCount = 0;
 
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
-			&queueFamilyPropertyCount, nullptr);
+			&queueFamilyPropertyCount, NULL);
 
-		std::vector<VkQueueFamilyProperties> queueFamilyProperties{ queueFamilyPropertyCount };
+		vector<VkQueueFamilyProperties> queueFamilyProperties{ queueFamilyPropertyCount };
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
 			&queueFamilyPropertyCount, queueFamilyProperties.data());
 
@@ -927,13 +927,13 @@ void Graphics::FindPhysicalDeviceWithGraphicsQueue(const std::vector<VkPhysicalD
 void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice)
 {
 	uint32_t physicalDeviceCount = 0;
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, NULL);
 
-	std::vector<VkPhysicalDevice> devices{ physicalDeviceCount };
+	vector<VkPhysicalDevice> devices{ physicalDeviceCount };
 	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount,
 		devices.data());
 
-	VkPhysicalDevice physicalDevice = nullptr;
+	VkPhysicalDevice physicalDevice = NULL;
 	int graphicsQueueIndex = -1;
 
 	FindPhysicalDeviceWithGraphicsQueue(devices, &physicalDevice, &graphicsQueueIndex);
@@ -952,13 +952,13 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	deviceCreateInfo.queueCreateInfoCount = 1;
 	deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
 
-	std::vector<const char*> deviceLayers;
+	vector<const char*> deviceLayers;
 
 
 	deviceCreateInfo.ppEnabledLayerNames = deviceLayers.data();
 	deviceCreateInfo.enabledLayerCount = static_cast<uint32_t> (deviceLayers.size());
 
-	std::vector<const char*> deviceExtensions =
+	vector<const char*> deviceExtensions =
 	{
 		"VK_KHR_swapchain"
 	};
@@ -966,10 +966,10 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (deviceExtensions.size());
 
-	VkDevice device = nullptr;
-	vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
+	VkDevice device = NULL;
+	vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device);
 
-	VkQueue queue = nullptr;
+	VkQueue queue = NULL;
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &queue);
 
 	if (outputQueue)
@@ -998,7 +998,7 @@ VkInstance Graphics::CreateInstance()
 	VkInstanceCreateInfo instanceCreateInfo = {};
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-	std::vector<const char*> instanceExtensions =
+	vector<const char*> instanceExtensions =
 	{
 		"VK_KHR_surface", "VK_KHR_win32_surface"
 	};
@@ -1007,7 +1007,7 @@ VkInstance Graphics::CreateInstance()
 	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (instanceExtensions.size());
 
-	std::vector<const char*> instanceLayers;
+	vector<const char*> instanceLayers;
 
 
 	instanceCreateInfo.ppEnabledLayerNames = instanceLayers.data();
@@ -1024,7 +1024,7 @@ VkInstance Graphics::CreateInstance()
 	instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
 	VkInstance instance = VK_NULL_HANDLE;
-	vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
+	vkCreateInstance(&instanceCreateInfo, NULL, &instance);
 
 	return instance;
 }
@@ -1056,7 +1056,7 @@ void Graphics::init(void *param1, void *param2)
 
 	uint32_t swapchainImageCount = 0;
 	vkGetSwapchainImagesKHR(device_, swapchain_,
-		&swapchainImageCount, nullptr);
+		&swapchainImageCount, NULL);
 
 	vkGetSwapchainImagesKHR(device_, swapchain_,
 		&swapchainImageCount, swapchainImages_);
@@ -1073,7 +1073,7 @@ void Graphics::init(void *param1, void *param2)
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	vkCreateCommandPool(device_, &commandPoolCreateInfo, nullptr,
+	vkCreateCommandPool(device_, &commandPoolCreateInfo, NULL,
 		&commandPool_);
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
@@ -1101,7 +1101,7 @@ void Graphics::init(void *param1, void *param2)
 		// We need this so we can wait for them on the first try
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		vkCreateFence(device_, &fenceCreateInfo, nullptr, &frameFences_[i]);
+		vkCreateFence(device_, &fenceCreateInfo, NULL, &frameFences_[i]);
 	}
 
 
@@ -1131,11 +1131,11 @@ void Graphics::init(void *param1, void *param2)
 
 	VkSemaphore imageAcquiredSemaphore;
 	vkCreateSemaphore(device_, &semaphoreCreateInfo,
-		nullptr, &imageAcquiredSemaphore);
+		NULL, &imageAcquiredSemaphore);
 
 	VkSemaphore renderingCompleteSemaphore;
 	vkCreateSemaphore(device_, &semaphoreCreateInfo,
-		nullptr, &renderingCompleteSemaphore);
+		NULL, &renderingCompleteSemaphore);
 }
 
 void Graphics::swap()

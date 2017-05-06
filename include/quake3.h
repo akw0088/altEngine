@@ -39,7 +39,7 @@ public:
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);
 	void load_icon();
-	void load_sounds(Audio &audio, std::vector<wave_t> &snd_wave);
+	void load_sounds(Audio &audio, vector<wave_t> &snd_wave);
 
 
 	void make_dynamic_ent(nettype_t item, int ent_id);

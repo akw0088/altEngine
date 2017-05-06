@@ -101,7 +101,7 @@ void Quake3::destroy()
 
 }
 
-void Quake3::load_sounds(Audio &audio, std::vector<wave_t> &snd_wave)
+void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 {
 	wave_t wave;
 

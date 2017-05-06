@@ -110,7 +110,7 @@ private:
 		VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight,
 		const int backbufferCount, VkFormat* swapchainFormat);
 	VkBuffer AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits);
-	VkDeviceMemory AllocateMemory(const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = nullptr);
+	VkDeviceMemory AllocateMemory(const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = NULL);
 	SwapchainFormatColorSpace GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
 	void CreateSampler();
