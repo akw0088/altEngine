@@ -6,6 +6,7 @@
 #endif
 
 
+#ifdef OPENGL32
 //unsigned int ParticleUpdate::max_particles = 175000;
 
 // Setting to a low value to keep FPS up
@@ -13,9 +14,6 @@ unsigned int ParticleUpdate::max_particles = 5000;
 
 int mFont::init(Graphics *gfx)
 {
-#ifdef DIRECTX
-	Shader::init(gfx, "media/hlsl/font.vsh", NULL, "media/hlsl/font.psh");
-#else
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/font.vs", NULL, "media/glsl/ver410/font.fs"))
 	{
@@ -36,17 +34,14 @@ int mFont::init(Graphics *gfx)
 	u_ypos = glGetUniformLocation(program_handle, "u_ypos");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
-#endif
 	return 0;
 }
 
 void mFont::prelink()
 {
-#ifndef DIRECTX
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
 	glBindAttribLocation(program_handle, 4, "attr_color");
-#endif
 }
 
 void mFont::Params(char c, float x, float y, float scale, vec3 &color)
@@ -55,17 +50,6 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 	int row = 15 - c / 16;
 	float offset = 16.0f / 256.0f;
 
-#ifdef DIRECTX
-#ifdef D3D11
-#else
-	uniform_vs->SetFloat(gfx->device, "u_col", col * offset);
-	uniform_vs->SetFloat(gfx->device, "u_row", row * offset);
-	uniform_vs->SetFloat(gfx->device, "u_xpos", (2.0f * x));
-	uniform_vs->SetFloat(gfx->device, "u_ypos", (2.0f * y));
-	uniform_vs->SetFloat(gfx->device, "u_scale", scale);
-	uniform_ps->SetFloatArray(gfx->device, "u_color", (float *)&color, 3);
-#endif
-#else
 	glUniform1f(u_scale, scale);
 	glUniform1f(u_col, col * offset);
 	glUniform1f(u_row, row * offset);
@@ -73,14 +57,10 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 	glUniform1f(u_ypos, (2.0f * (1.0f - y) - 1.0f));
 	glUniform3fv(u_color, 1, (float *)&color);
 	glUniform1i(texture0, 0);
-#endif
 }
 
 int Global::init(Graphics *gfx)
 {
-#ifdef DIRECTX
-	Shader::init(gfx, "media/hlsl/basic.vsh", NULL, "media/hlsl/basic.psh");
-#else
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/global.vs", NULL, "media/glsl/ver410/global.fs"))
 	{
@@ -96,56 +76,20 @@ int Global::init(Graphics *gfx)
 #endif
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
-#endif
 	return 0;
 }
 
 void Global::prelink()
 {
-#ifndef DIRECTX
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
 	glBindAttribLocation(program_handle, 4, "attr_color");
-#endif
 }
 
 void Global::Params(matrix4 &mvp, int tex0)
 {
-#ifdef DIRECTX
-#ifndef D3D11
-	uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-#else
-	ID3D11Buffer*   g_pConstantBuffer11 = NULL;
-	HRESULT ret;
-
-	D3D11_BUFFER_DESC cbDesc;
-	cbDesc.ByteWidth = sizeof(mvp);
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbDesc.MiscFlags = 0;
-	cbDesc.StructureByteStride = 0;
-
-	// Fill in the subresource data.
-	D3D11_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem = &(mvp.m);
-	InitData.SysMemPitch = 0;
-	InitData.SysMemSlicePitch = 0;
-
-	// Create the buffer.
-	ret = gfx->device->CreateBuffer(&cbDesc, &InitData,
-		&g_pConstantBuffer11);
-
-	if (FAILED(ret))
-		return;
-
-	// Set the buffer.
-	gfx->context->VSSetConstantBuffers(0, 1, &g_pConstantBuffer11);
-#endif
-#else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, tex0);
-#endif
 }
 
 int mLight2::init(Graphics *gfx)
@@ -153,11 +97,6 @@ int mLight2::init(Graphics *gfx)
 
 	max_light = MAX_LIGHTS;
 	//"media/glsl/mlighting3.gs"
-#ifdef DIRECTX
-	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
-
-
-#else
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
 	{
@@ -256,7 +195,6 @@ int mLight2::init(Graphics *gfx)
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
-#endif
 	return 0;
 }
 
@@ -280,14 +218,12 @@ void mLight2::set_lightmap(float lightmap)
 
 void mLight2::prelink()
 {
-#ifndef DIRECTX
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
 	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
 	glBindAttribLocation(program_handle, 3, "attr_normal");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-#endif
 }
 
 
@@ -313,64 +249,6 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		}
 	}
 
-#ifdef DIRECTX
-#ifndef D3D11
-	HRESULT ret = S_OK;
-
-	ret = uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-	if (FAILED(ret))
-	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
-	}
-
-	ret = uniform_vs->SetVectorArray(gfx->device, "u_position", (D3DXVECTOR4 *)position, MAX_LIGHTS);
-	if (FAILED(ret))
-	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
-	}
-	ret = uniform_vs->SetVectorArray(gfx->device, "u_color", (D3DXVECTOR4 *)color, MAX_LIGHTS);
-	if (FAILED(ret))
-	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
-	}
-	ret = uniform_vs->SetInt(gfx->device, "u_num_lights", num_lights);
-	if (FAILED(ret))
-	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
-	}
-#else
-	ID3D11Buffer*   g_pConstantBuffer11 = NULL;
-	HRESULT ret;
-
-	D3D11_BUFFER_DESC cbDesc;
-	cbDesc.ByteWidth = sizeof(mvp);
-	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	cbDesc.MiscFlags = 0;
-	cbDesc.StructureByteStride = 0;
-
-	// Fill in the subresource data.
-	D3D11_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem = &(mvp.m);
-	InitData.SysMemPitch = 0;
-	InitData.SysMemSlicePitch = 0;
-
-	// Create the buffer.
-	ret = gfx->device->CreateBuffer(&cbDesc, &InitData,
-		&g_pConstantBuffer11);
-
-	if (FAILED(ret))
-		return;
-
-	// Set the buffer.
-	gfx->context->VSSetConstantBuffers(0, 1, &g_pConstantBuffer11);
-#endif
-#else
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, 0);
 	glUniform1i(texture1, 1);
@@ -460,34 +338,27 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(u_lightmap_stage, 0);
 
 	m_num_light = j;
-#endif
 }
 
 void mLight2::set_light(float ambient, float lightmap, int num_light)
 {
-#ifndef DIRECTX
 	glUniform1i(u_num_lights, num_light);
 	glUniform1f(u_ambient, ambient);
 	glUniform1f(u_lightmap, lightmap);
 	//	m_num_light = num_light;
 	//	m_ambient = ambient;
 	//	m_lightmap = lightmap;
-#endif
 }
 
 
 void mLight2::set_lightmap_stage(int flag)
 {
-#ifndef DIRECTX
 	glUniform1i(u_lightmap_stage, flag);
-#endif
 }
 
 
 void mLight2::envmap(int stage, int env)
 {
-#ifndef DIRECTX
-
 	switch (stage)
 	{
 	case 0:
@@ -515,12 +386,10 @@ void mLight2::envmap(int stage, int env)
 		glUniform1i(u_env7, env);
 		break;
 	}
-#endif
 }
 
 void mLight2::rgbgen_scale(int stage, float scale)
 {
-#ifndef DIRECTX
 	switch (stage)
 	{
 	case 0:
@@ -548,12 +417,10 @@ void mLight2::rgbgen_scale(int stage, float scale)
 		glUniform1f(u_rgbgen_scale7, scale);
 		break;
 	}
-#endif
 }
 
 void mLight2::turb(int stage, int turb)
 {
-#ifndef DIRECTX
 	switch (stage)
 	{
 	case 0:
@@ -581,7 +448,6 @@ void mLight2::turb(int stage, int turb)
 		glUniform1i(u_water7, turb);
 		break;
 	}
-#endif
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
@@ -619,7 +485,6 @@ void mLight2::tcmod_scroll(vec2 &scroll, int index)
 
 void mLight2::tcmod_scale(vec2 &scale, int index)
 {
-#ifndef DIRECTX
 	switch (index)
 	{
 	case 0:
@@ -647,15 +512,12 @@ void mLight2::tcmod_scale(vec2 &scale, int index)
 		glUniform2fv(u_tcmod_scale7, 1, (float *)&scale);
 		break;
 	}
-#endif
 }
 
 
 
 void mLight2::tcmod_rotate(float deg, int index)
 {
-#ifndef DIRECTX
-
 	//convert to radians
 	deg = (float)(MY_PI * deg / 180.0f);
 	
@@ -697,7 +559,6 @@ void mLight2::tcmod_rotate(float deg, int index)
 		glUniform1fv(u_tcmod_cos7, 1, &cosval);
 		break;
 	}
-#endif
 }
 
 void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index)
@@ -802,54 +663,8 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 	rgbgen_scale(index, value);
 }
 
-
-#ifdef NOPE
-int mLightDepth::init(Graphics *gfx)
-{
-	//"media/glsl/mlighting3.gs"
-#ifdef DIRECTX
-	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
-#else
-	if (Shader::init(gfx, "media/glsl/ver440/mlighting3_depthonly.vs", NULL, "media/glsl/ver440/mlighting3_depthonly.fs"))
-	{
-		program_handle = -1;
-		return -1;
-	}
-
-	matrix = glGetUniformLocation(program_handle, "mvp");
-#endif
-	return 0;
-}
-
-void mLightDepth::prelink()
-{
-#ifndef DIRECTX
-	glBindAttribLocation(program_handle, 0, "attr_position");
-	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
-	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
-	glBindAttribLocation(program_handle, 3, "attr_normal");
-	glBindAttribLocation(program_handle, 4, "attr_color");
-	glBindAttribLocation(program_handle, 5, "attr_tangent");
-#endif
-}
-
-
-void mLightDepth::Params(matrix4 &mvp)
-{
-#ifdef DIRECTX
-//	uniform->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
-//	uniform->SetFloatArray(gfx->device, "u_position", (float *)position, num_lights);
-//	uniform->SetFloatArray(gfx->device, "u_color", (float *)color, num_lights);
-//	uniform->SetInt(gfx->device, "u_num_lights", num_lights);
-#else
-	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
-#endif
-}
-#endif
-
 int Post::init(Graphics *gfx)
 {
-#ifndef DIRECTX
 #ifdef __OBJC__
     if (Shader::init(gfx, "media/glsl/ver410/post.vs", NULL, "media/glsl/ver410/post.fs"))
     {
@@ -863,11 +678,7 @@ int Post::init(Graphics *gfx)
         return -1;
     }
 #endif
-#else
-	Shader::init(gfx, "media/hlsl/post.vsh", NULL, "media/hlsl/post.psh");
-#endif
 
-#ifndef DIRECTX
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 	texture1 = glGetUniformLocation(program_handle, "texture1");
 	tc_offset = glGetUniformLocation(program_handle, "tc_offset");
@@ -880,17 +691,14 @@ int Post::init(Graphics *gfx)
 	glBindTexture(GL_TEXTURE_2D, swap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-#endif
 	return 0;
 }
 
 
 void Post::prelink(void)
 {
-#ifndef DIRECTX
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
-#endif
 }
 
 /*
@@ -913,15 +721,9 @@ void Post::resize(int width, int height)
 
 void Post::Params(int tex0, int tex1)
 {
-#ifdef DIRECTX
-#ifndef D3D11
-	uniform_ps->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
-#endif
-#else
 	glUniform1i(texture0, tex0);
 	glUniform1i(texture1, tex1);
 	glUniform2fv(tc_offset, 9, texCoordOffsets);
-#endif
 }
 
 #ifdef NOPE
@@ -1075,7 +877,6 @@ void ShadowMap::Params(matrix4 &mvp, matrix4 &shadowmvp)
 
 int ParticleUpdate::init(Graphics *gfx)
 {
-#ifndef DIRECTX
 	if (Shader::init(gfx,
 		"media/glsl/ver440/particle_update.vs",
 		"media/glsl/ver440/particle_update.gs",
@@ -1120,14 +921,12 @@ int ParticleUpdate::init(Graphics *gfx)
 	glBindBuffer(GL_ARRAY_BUFFER, ParticleBufferB);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * ParticleUpdate::max_particles, 0, GL_STREAM_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-#endif
 	return 0;
 }
 
 
 void ParticleUpdate::prelink(void)
 {
-#ifndef DIRECTX
 	const GLchar* feedbackVaryings[] = {
 		"vary_position",
 		"vary_TexCoord",
@@ -1144,12 +943,10 @@ void ParticleUpdate::prelink(void)
 	glBindAttribLocation(program_handle, 3, "attr_velocity");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-#endif
 }
 
 void ParticleUpdate::Params(emitter_t &emit)
 {
-#ifndef DIRECTX
 	glUniform3fv(u_emit_position, 1, (float *)&(emit.position));
 	glUniform3fv(u_emit_vel_min, 1, (float *)&(emit.vel_min));
 	glUniform3fv(u_emit_vel_range, 1, (float *)&(emit.vel_range));
@@ -1163,12 +960,10 @@ void ParticleUpdate::Params(emitter_t &emit)
 	glUniform1f(u_delta_time, emit.delta_time);
 	glUniform3fv(u_seed, 1, (float *)&(emit.seed));
 	//emitter = emit;
-#endif
 }
 
 int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 {
-#ifndef DIRECTX
 	if (emit.num > max_particles)
 		emit.num = max_particles;
 
@@ -1201,16 +996,13 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 	// Get num primitives generated
 	glGetQueryObjectuiv(query, GL_QUERY_RESULT, &num_particle);
 
-#ifndef DEDICATED
 	if (num_particle == 0 && max_particles != 0)
 	{
 		printf("ParticleSystem Error: %u particles written!\n\n", num_particle);
 	}
-#endif
 
 	//emitter.num = num_particle;
 	emit.num = num_particle;
-#endif
 	return ParticleBufferA;
 }
 
@@ -1218,7 +1010,6 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 
 int ParticleRender::init(Graphics *gfx)
 {
-#ifndef DIRECTX
 
 #ifdef QUAD_PARTICLES
 	// quad particles
@@ -1248,7 +1039,6 @@ int ParticleRender::init(Graphics *gfx)
 	u_texture0 = glGetUniformLocation(program_handle, "u_texture0");
 	u_xshift = glGetUniformLocation(program_handle, "u_xshift");
 	u_yshift = glGetUniformLocation(program_handle, "u_yshift");
-#endif
 
 	unsigned int *index = new unsigned int [ParticleUpdate::max_particles];
 	for (unsigned int i = 0; i < ParticleUpdate::max_particles; i++)
@@ -1264,31 +1054,26 @@ int ParticleRender::init(Graphics *gfx)
 
 void ParticleRender::prelink(void)
 {
-#ifndef DIRECTX
 	glBindAttribLocation(program_handle, 0, "attr_position");
 	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
 	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
 	glBindAttribLocation(program_handle, 3, "attr_velocity");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
-#endif
 }
 
 void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
 {
-#ifndef DIRECTX
 	glUniformMatrix4fv(u_mvp, 1, GL_FALSE, mvp.m);
 	glUniform3fv(u_quad1, 1, (float *)&quad1);
 	glUniform3fv(u_quad2, 1, (float *)&quad2);
 	glUniform1f(u_xshift, x);
 	glUniform1f(u_yshift, y);
 	glUniform1i(u_texture0, 0);
-#endif
 }
 
 void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 {
-#ifndef DIRECTX
 //	gfx.Blend(true);
 	gfx.Depth(false);
 //	gfx.BlendFunc(NULL, NULL);
@@ -1297,5 +1082,5 @@ void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 	gfx.DrawArrayPoint(start, 0, num, num);
 	gfx.Depth(true);
 //	gfx.Blend(false);
-#endif
 }
+#endif
