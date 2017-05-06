@@ -6,7 +6,6 @@
 //#define ERROR_CHECK
 
 
-
 /*
 	You could make this a pure virtual class and switch between OpenGL and Direct3D at runtime...
 	But then you would need to link to both d3d9 dll's and opengl32 dll's at the same time
@@ -93,7 +92,38 @@ public:
 	void GetDebugLog();
 
 
+
 	~Graphics();
+
+#ifdef VULKAN
+private:
+	void CreateSwapchainImageViews(VkDevice device, VkFormat format,
+		const int count, const VkImage* images, VkImageView* imageViews);
+	void CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
+		const int width, const int height,
+		const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers);
+	VkSurfaceKHR CreateSurface(VkInstance instance, HWND hwnd);
+	VkInstance  CreateInstance();
+	void CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice);
+	void FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex);
+	VkSwapchainKHR CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
+		VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight,
+		const int backbufferCount, VkFormat* swapchainFormat);
+	VkBuffer AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits);
+	VkDeviceMemory AllocateMemory(const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = nullptr);
+	SwapchainFormatColorSpace GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
+	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
+	void CreateSampler();
+	void CreateTexture(VkCommandBuffer uploadCommandList);
+	void CreateDescriptors();
+	VkShaderModule LoadShader(VkDevice device, const void* shaderContents, const size_t size);
+	VkPipeline CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout,
+		VkShaderModule vertexShader, VkShaderModule fragmentShader);
+	void CreatePipelineStateObject();
+	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer);
+	void render(VkCommandBuffer commandBuffer);
+	VkRenderPass CreateRenderPass(VkDevice device, VkFormat swapchainFormat);
+#endif
 
 public:
 	int width, height;
@@ -142,6 +172,60 @@ public:
 	ID3DXFont *font;
 #endif
 #endif
+
+#ifdef VULKAN
+	static const int QUEUE_SLOT_COUNT = 3;
+
+	VkDeviceMemory deviceBufferMemory_ = VK_NULL_HANDLE;
+	VkBuffer vertexBuffer_ = VK_NULL_HANDLE;
+	VkBuffer indexBuffer_ = VK_NULL_HANDLE;
+
+	VkDeviceMemory uploadBufferMemory_ = VK_NULL_HANDLE;
+	VkBuffer uploadBufferBuffer_ = VK_NULL_HANDLE;
+
+	VkShaderModule vertexShader_ = VK_NULL_HANDLE;
+	VkShaderModule fragmentShader_ = VK_NULL_HANDLE;
+
+	VkPipeline pipeline_ = VK_NULL_HANDLE;
+	VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
+
+	VkDeviceMemory deviceImageMemory_ = VK_NULL_HANDLE;
+	VkImage rubyImage_ = VK_NULL_HANDLE;
+	VkImageView rubyImageView_ = VK_NULL_HANDLE;
+
+	VkDeviceMemory uploadImageMemory_ = VK_NULL_HANDLE;
+	VkBuffer uploadImageBuffer_ = VK_NULL_HANDLE;
+
+	VkDescriptorPool descriptorPool_ = VK_NULL_HANDLE;
+	VkDescriptorSet descriptorSet_ = VK_NULL_HANDLE;
+	VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
+
+	VkSampler sampler_ = VK_NULL_HANDLE;
+
+	VkViewport viewport_;
+
+	VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
+	VkInstance instance_ = VK_NULL_HANDLE;
+	VkDevice device_ = VK_NULL_HANDLE;
+	VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
+	VkQueue queue_ = VK_NULL_HANDLE;
+
+	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+
+	VkFence frameFences_[QUEUE_SLOT_COUNT];
+	VkImage swapchainImages_[QUEUE_SLOT_COUNT];
+	VkImageView swapChainImageViews_[QUEUE_SLOT_COUNT];
+	VkFramebuffer framebuffer_[QUEUE_SLOT_COUNT];
+
+	VkRenderPass renderPass_ = VK_NULL_HANDLE;
+
+	int queueFamilyIndex_ = -1;
+
+	VkCommandPool commandPool_;
+	VkCommandBuffer commandBuffers_[QUEUE_SLOT_COUNT];
+	VkCommandBuffer setupCommandBuffer_;
+	uint32_t currentBackBuffer_ = 0;
+#endif
 };
 
 class Shader
@@ -178,5 +262,8 @@ protected:
 	int		fragment_handle;
 #endif
 };
+
+
+
 
 #endif

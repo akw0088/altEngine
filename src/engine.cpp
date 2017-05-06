@@ -1282,7 +1282,7 @@ void Engine::post_process(int num_passes)
 	gfx.SelectTexture(0, post.image);
 	for (int pass = 0; pass < num_passes; pass++)
 	{
-#ifndef DIRECTX
+#ifdef OPENGL32
 	#ifdef FORWARD
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, gfx.width, gfx.height, 0);
 	#else
@@ -4102,7 +4102,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "r_polygonmode %s", data);
 	if (ret == 1)
 	{
-#ifndef DIRECTX
+#ifdef OPENGL32
 		if (atoi(data) == 1)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else if (atoi(data) == 2)

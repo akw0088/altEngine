@@ -148,7 +148,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		yres = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
 		GetFreq(freq);
 		setupPixelFormat(hdc);
-#ifndef DIRECTX
+#ifdef OPENGL32
 		hglrc_legacy = wglCreateContext(hdc);
 		wglMakeCurrent(hdc, hglrc_legacy);
 		glewInit();
@@ -482,7 +482,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
-#ifndef DIRECTX
+#ifdef OPENGL32
 		if (hglrc)
 		{
 			wglMakeCurrent(NULL, NULL);

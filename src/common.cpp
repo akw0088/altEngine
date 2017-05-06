@@ -695,7 +695,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 
 
-#ifndef DIRECTX
+#ifdef OPENGL32
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 
@@ -721,7 +721,8 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		free((void *)data);
 		return 0;
 	}
-#else
+#endif
+#ifdef DIRECTX
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	byte *pBits = NULL;
 	if (components == 3)
@@ -732,6 +733,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 	format = 4;
 //	components = 4;
+#endif
+
+#ifdef VULKAN
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 
 
@@ -762,7 +767,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	stbi_image_free(bytes);
 	free((void *)data);
 
-#ifndef DIRECTX
+#ifdef OPENGL32
 	if (format != GL_RGBA)
 	{
 		// negative means it has an alpha channel
@@ -792,7 +797,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	}
 
 	//tex_object[face->material].texObj[0]
-#ifndef DIRECTX
+#ifdef OPENGL32
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 	if (components == 4)
@@ -817,10 +822,14 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 		free((void *)data);
 		return 0;
 	}
-#else
+#endif
+#ifdef DIRECTX
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	format = 4;
 //	components = 4;
+#endif
+#ifdef VULKAN
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 
 	byte *pBits = NULL;
@@ -841,7 +850,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	stbi_image_free(bytes);
 	free((void *)data);
 
-#ifndef DIRECTX
+#ifdef OPENGL32
 	if (format != GL_RGBA)
 	{
 		// negative means it has an alpha channel

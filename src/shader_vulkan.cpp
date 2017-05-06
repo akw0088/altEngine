@@ -8,7 +8,7 @@
 
 //unsigned int ParticleUpdate::max_particles = 175000;
 
-#ifdef DEDICATED
+#ifdef VULKAN
 
 // Setting to a low value to keep FPS up
 unsigned int ParticleUpdate::max_particles = 5000;

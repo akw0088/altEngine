@@ -24,7 +24,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 
 void Light::generate_cubemaps(int width, int height)
 {
-#ifndef DIRECTX
+#ifdef OPENGL32
 	for (int i = 0; i < 6; i++)
 	{
 		glGenTextures(1, &quad_tex[i]);
@@ -89,7 +89,7 @@ void Light::generate_volumes(Bsp &map)
 
 void Light::extend(Edge &edge_list, vec3 position, int current_light)
 {
-#ifndef DIRECTX
+#ifdef OPENGL32
 	float t = 10.0f;
 	bool debug = true;
 

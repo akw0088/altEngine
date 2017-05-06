@@ -1545,7 +1545,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	textures_loaded = true;
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
-#ifndef DIRECTX
+#ifdef OPENGL32
 		if (data.header->version == 0x2E)
 		{
 			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
@@ -1555,7 +1555,8 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 			printf("Unknown BSP Version %X, assuming Quake3 0x2E\n", data.header->version);
 			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
 		}
-#else
+#endif
+#ifdef DIRECTX
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image, false);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false);
 		delete [] pBits;

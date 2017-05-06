@@ -119,17 +119,21 @@ void MD5Model::load_textures(Graphics &gfx)
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
 		char file[256];
-		int width, height, components, format;
 		unsigned char *bytes;
+		int width = 0;
+		int height = 0;
+		int components = 0;
+		int format = 0;
 
 		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
 
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
 
-#ifndef DIRECTX
+#ifdef OPENGL32
 		format = GL_RGBA;
 		components = GL_RGBA8;
-#else
+#endif
+#ifdef DIRECTX
 		format = 4;
 		components = 4;
 #endif
@@ -144,7 +148,7 @@ void MD5Model::load_textures(Graphics &gfx)
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
 //		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
-#ifndef DIRECTX
+#ifdef OPENGL32
 		format = GL_RGBA;
 		components = GL_RGBA8;
 #endif
