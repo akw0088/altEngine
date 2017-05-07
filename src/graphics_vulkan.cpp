@@ -63,9 +63,7 @@ VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance)
 }
 
 
-VkSwapchainKHR Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
-	VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight,
-	const int backbufferCount, VkFormat* swapchainFormat)
+void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight, const int backbufferCount, VkFormat* swapchainFormat, VkSwapchainKHR &swapchain)
 {
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice,
@@ -116,28 +114,22 @@ VkSwapchainKHR Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevi
 	swapchainCreateInfo.imageArrayLayers = 1;
 	swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-	VkSwapchainKHR swapchain;
-	vkCreateSwapchainKHR(device, &swapchainCreateInfo,
-		NULL, &swapchain);
+	vkCreateSwapchainKHR(device, &swapchainCreateInfo, NULL, &swapchain);
 
 	if (swapchainFormat)
 	{
 		*swapchainFormat = swapchainFormatColorSpace.format;
 	}
-
-	return swapchain;
 }
 
-VkBuffer Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits)
+void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer)
 {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.size = static_cast<uint32_t> (size);
 	bufferCreateInfo.usage = bits;
 
-	VkBuffer result;
-	vkCreateBuffer(device, &bufferCreateInfo, NULL, &result);
-	return result;
+	vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer);
 }
 
 
@@ -145,7 +137,7 @@ VkBuffer Graphics::AllocateBuffer(VkDevice device, const int size, const VkBuffe
 /*
 Wrapper function, loops multiple gpu memory allocations
 */
-VkDeviceMemory Graphics::AllocateMemory(const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent)
+int Graphics::AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent)
 {
 	for (auto& memoryInfo : memoryInfos)
 	{
@@ -174,13 +166,11 @@ VkDeviceMemory Graphics::AllocateMemory(const vector<MemoryTypeInfo>& memoryInfo
 		memoryAllocateInfo.memoryTypeIndex = memoryInfo.index;
 		memoryAllocateInfo.allocationSize = size;
 
-		VkDeviceMemory deviceMemory;
-		vkAllocateMemory(device, &memoryAllocateInfo, NULL,
-			&deviceMemory);
-		return deviceMemory;
+		vkAllocateMemory(device, &memoryAllocateInfo, NULL, &deviceMemory);
+		return 0;
 	}
 
-	return VK_NULL_HANDLE;
+	return -1;
 }
 
 
@@ -280,9 +270,7 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	VkDeviceSize requiredSizeForImage = requirements.size;
 
 	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
-	deviceImageMemory_ = AllocateMemory(memoryHeaps, vk_device, static_cast<int> (requiredSizeForImage),
-		requirements.memoryTypeBits,
-		MT_DeviceLocal);
+	AllocateMemory(deviceImageMemory_, memoryHeaps, vk_device, static_cast<int> (requiredSizeForImage), requirements.memoryTypeBits, MT_DeviceLocal);
 
 	vkBindImageMemory(vk_device, Image_, deviceImageMemory_, 0);
 
@@ -301,9 +289,7 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	VkDeviceSize requiredSizeForBuffer = requirements.size;
 
 	bool memoryIsHostCoherent = false;
-	uploadImageMemory_ = AllocateMemory(memoryHeaps, vk_device,
-		static_cast<int> (requiredSizeForBuffer), requirements.memoryTypeBits,
-		MT_HostVisible, &memoryIsHostCoherent);
+	AllocateMemory(uploadImageMemory_, memoryHeaps, vk_device, static_cast<int> (requiredSizeForBuffer), requirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
 
 	vkBindBufferMemory(vk_device, uploadImageBuffer_, uploadImageMemory_, 0);
 
@@ -629,10 +615,8 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 
 	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
 
-	indexBuffer_ = AllocateBuffer(vk_device, sizeof(indices),
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-	vertexBuffer_ = AllocateBuffer(vk_device, sizeof(vertices),
-		VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+	AllocateBuffer(vk_device, sizeof(indices), VK_BUFFER_USAGE_TRANSFER_DST_BIT, indexBuffer_);
+	AllocateBuffer(vk_device, sizeof(vertices),	VK_BUFFER_USAGE_TRANSFER_DST_BIT, vertexBuffer_);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
 	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_,
@@ -648,26 +632,19 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 		indexBufferMemoryRequirements.alignment);
 
 	bufferSize = indexBufferOffset + indexBufferMemoryRequirements.size;
-	deviceMemory_ = AllocateMemory(memoryHeaps, vk_device,
-		static_cast<int>(bufferSize),
-		vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits,
-		MT_DeviceLocal);
+	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
 
 	vkBindBufferMemory(vk_device, vertexBuffer_, deviceMemory_, 0);
 	vkBindBufferMemory(vk_device, indexBuffer_, deviceMemory_,
 		indexBufferOffset);
 
-	uploadBuffer_ = AllocateBuffer(vk_device, static_cast<int> (bufferSize),
-		VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
 	VkMemoryRequirements uploadBufferMemoryRequirements = {};
 	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_,
 		&uploadBufferMemoryRequirements);
 
 	bool memoryIsHostCoherent = false;
-	uploadMemory_ = AllocateMemory(memoryHeaps, vk_device,
-		static_cast<int>(uploadBufferMemoryRequirements.size),
-		vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits,
-		MT_HostVisible, &memoryIsHostCoherent);
+	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits,	MT_HostVisible, &memoryIsHostCoherent);
 
 	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
 
@@ -958,18 +935,14 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format,
 	}
 }
 
-VkSurfaceKHR Graphics::CreateSurface(VkInstance instance, HWND hwnd)
+ void Graphics::CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface)
 {
 	VkWin32SurfaceCreateInfoKHR win32surfaceCreateInfo = {};
 	win32surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	win32surfaceCreateInfo.hwnd = hwnd;
 	win32surfaceCreateInfo.hinstance = ::GetModuleHandle(NULL);
 
-	VkSurfaceKHR surface = NULL;
-	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, NULL,
-		&surface);
-
-	return surface;
+	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, NULL, &surface);
 }
 
 SwapchainFormatColorSpace Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
@@ -1253,38 +1226,32 @@ void Graphics::init(void *param1, void *param2)
 	physicalDevice_ = physicalDevice;
 
 
-	surface_ = CreateSurface(vk_instance, hwnd);
+	CreateSurface(vk_instance, hwnd, surface_);
 
 	VkBool32 presentSupported;
 	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice,
 		0, surface_, &presentSupported);
 
 	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
-	swapchain_ = CreateSwapchain(physicalDevice, vk_device, surface_,
-		width, height, QUEUE_SLOT_COUNT, &swapchainFormat);
+	CreateSwapchain(physicalDevice, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, &swapchainFormat, swapchain_);
 
 
 	uint32_t swapchainImageCount = 0;
-	vkGetSwapchainImagesKHR(vk_device, swapchain_,
-		&swapchainImageCount, NULL);
+	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
 
-	vkGetSwapchainImagesKHR(vk_device, swapchain_,
-		&swapchainImageCount, swapchainImages_);
+	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
 
 	renderPass_ = CreateRenderPass(vk_device, swapchainFormat);
 
-	CreateSwapchainImageViews(vk_device, swapchainFormat,
-		QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(vk_device, renderPass_, 1024, 768,
-		QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
+	CreateFramebuffers(vk_device, renderPass_, 1024, 768, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL,
-		&commandPool_);
+	vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL, &commandPool_);
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1294,8 +1261,7 @@ void Graphics::init(void *param1, void *param2)
 
 	VkCommandBuffer commandBuffers[QUEUE_SLOT_COUNT + 1];
 
-	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo,
-		commandBuffers);
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, commandBuffers);
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
@@ -1341,12 +1307,8 @@ void Graphics::init(void *param1, void *param2)
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	vkCreateSemaphore(vk_device, &semaphoreCreateInfo,
-		NULL, &imageAcquiredSemaphore);
-
-	vkCreateSemaphore(vk_device, &semaphoreCreateInfo,
-		NULL, &renderingCompleteSemaphore);
-
+	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &imageAcquiredSemaphore);
+	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &renderingCompleteSemaphore);
 }
 
 void Graphics::swap()

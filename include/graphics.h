@@ -99,19 +99,14 @@ public:
 private:
 	VkInstance  CreateInstance();
 
-	void CreateSwapchainImageViews(VkDevice device, VkFormat format,
-		const int count, const VkImage* images, VkImageView* imageViews);
-	void CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
-		const int width, const int height,
-		const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers);
-	VkSurfaceKHR CreateSurface(VkInstance instance, HWND hwnd);
+	void CreateSwapchainImageViews(VkDevice device, VkFormat format, const int count, const VkImage* images, VkImageView* imageViews);
+	void CreateFramebuffers(VkDevice device, VkRenderPass renderPass, const int width, const int height, const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers);
+	void CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface);
 	void CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice);
 	void FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex);
-	VkSwapchainKHR CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
-		VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight,
-		const int backbufferCount, VkFormat* swapchainFormat);
-	VkBuffer AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits);
-	VkDeviceMemory AllocateMemory(const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = NULL);
+	void CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight, const int backbufferCount, VkFormat* swapchainFormat, VkSwapchainKHR &swapchain);
+	void AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer);
+	int AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = nullptr);
 	SwapchainFormatColorSpace GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
 	void CreateSampler();
@@ -119,8 +114,7 @@ private:
 	void CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp);
 	void CreateDescriptors();
 	VkShaderModule LoadShader(VkDevice device, const void* shaderContents, const size_t size);
-	VkPipeline CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout,
-		VkShaderModule vertexShader, VkShaderModule fragmentShader);
+	VkPipeline CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader);
 	void CreatePipelineStateObject();
 	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer);
 	VkRenderPass CreateRenderPass(VkDevice device, VkFormat swapchainFormat);
