@@ -4,13 +4,20 @@
 #define new DEBUG_NEW
 #endif
 
+#include "assert.h"
+
 #ifdef VULKAN
 
 char *image_data = NULL;
 int image_size = 0;
 
+PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
+
+
 void Graphics::resize(int width, int height)
 {
+	Graphics::width = width;
+	Graphics::height = height;
 }
 
 Graphics::Graphics()
@@ -21,6 +28,43 @@ Graphics::Graphics()
 Graphics::~Graphics()
 {
 }
+
+
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
+	VkDebugReportFlagsEXT       /*flags*/,
+	VkDebugReportObjectTypeEXT  /*objectType*/,
+	uint64_t                    /*object*/,
+	size_t                      /*location*/,
+	int32_t                     /*messageCode*/,
+	const char*                 /*pLayerPrefix*/,
+	const char*                 pMessage,
+	void*                       pUserData)
+{
+	printf("%s\n", pMessage);
+#ifdef WIN32
+	MessageBox((HWND)pUserData, pMessage, "Vulkan Error", 0);
+
+#endif
+	return VK_FALSE;
+}
+
+
+VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance)
+{
+	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+	callbackCreateInfo.flags =
+		VK_DEBUG_REPORT_ERROR_BIT_EXT |
+		VK_DEBUG_REPORT_WARNING_BIT_EXT |
+		VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+	callbackCreateInfo.pfnCallback = &DebugReportCallback;
+	callbackCreateInfo.pUserData = hwnd;
+
+	VkDebugReportCallbackEXT callback;
+	CreateDebugReportCallback(instance, &callbackCreateInfo, nullptr, &callback);
+	return callback;
+}
+
 
 VkSwapchainKHR Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight,
@@ -197,6 +241,7 @@ void Graphics::CreateSampler()
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+	samplerCreateInfo.maxAnisotropy = 1.0f;
 
 	vkCreateSampler(device_, &samplerCreateInfo, NULL, &sampler_);
 }
@@ -209,7 +254,6 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	VkDeviceMemory uploadImageMemory_ = VK_NULL_HANDLE;
 	VkBuffer uploadImageBuffer_ = VK_NULL_HANDLE;
 
-	int width = 1024, height = 768;
 	//auto image = LoadImageFromMemory(RubyTexture, sizeof(RubyTexture), 1, &width, &height);
 
 	VkImageCreateInfo imageCreateInfo = {};
@@ -694,16 +738,16 @@ Renders (finally) vkCmdDrawIndexed
 void Graphics::render(VkCommandBuffer commandBuffer)
 {
 	VkViewport viewports[1] = {};
-	viewports[0].width = static_cast<float> (1024);
-	viewports[0].height = static_cast<float> (768);
+	viewports[0].width = static_cast<float> (width);
+	viewports[0].height = static_cast<float> (height);
 	viewports[0].minDepth = 0;
 	viewports[0].maxDepth = 1;
 
 	vkCmdSetViewport(commandBuffer, 0, 1, viewports);
 
 	VkRect2D scissors[1] = {};
-	scissors[0].extent.width = 1024;
-	scissors[0].extent.height = 768;
+	scissors[0].extent.width = width;
+	scissors[0].extent.height = height;
 	vkCmdSetScissor(commandBuffer, 0, 1, scissors);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -923,21 +967,42 @@ void Graphics::FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice
 	}
 }
 
+std::vector<const char*> GetDebugDeviceLayerNames(VkPhysicalDevice device)
+{
+	uint32_t layerCount = 0;
+	vkEnumerateDeviceLayerProperties(device, &layerCount, nullptr);
+
+	std::vector<VkLayerProperties> deviceLayers{ layerCount };
+	vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers.data());
+
+	std::vector<const char*> result;
+	for (const auto& p : deviceLayers)
+	{
+		if (strcmp(p.layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
+		{
+			result.push_back("VK_LAYER_LUNARG_standard_validation");
+		}
+	}
+
+	return result;
+}
+
 
 void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice)
 {
 	uint32_t physicalDeviceCount = 0;
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, NULL);
+	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
 
-	vector<VkPhysicalDevice> devices{ physicalDeviceCount };
+	std::vector<VkPhysicalDevice> devices{ physicalDeviceCount };
 	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount,
 		devices.data());
 
-	VkPhysicalDevice physicalDevice = NULL;
+	VkPhysicalDevice physicalDevice = nullptr;
 	int graphicsQueueIndex = -1;
 
 	FindPhysicalDeviceWithGraphicsQueue(devices, &physicalDevice, &graphicsQueueIndex);
 
+	assert(physicalDevice);
 
 	VkDeviceQueueCreateInfo deviceQueueCreateInfo = {};
 	deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -952,13 +1017,18 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	deviceCreateInfo.queueCreateInfoCount = 1;
 	deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
 
-	vector<const char*> deviceLayers;
+	std::vector<const char*> deviceLayers;
+
+	auto debugDeviceLayerNames = GetDebugDeviceLayerNames(physicalDevice);
+	deviceLayers.insert(deviceLayers.end(),
+		debugDeviceLayerNames.begin(), debugDeviceLayerNames.end());
 
 
 	deviceCreateInfo.ppEnabledLayerNames = deviceLayers.data();
 	deviceCreateInfo.enabledLayerCount = static_cast<uint32_t> (deviceLayers.size());
 
-	vector<const char*> deviceExtensions =
+
+	std::vector<const char*> deviceExtensions =
 	{
 		"VK_KHR_swapchain"
 	};
@@ -966,10 +1036,10 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (deviceExtensions.size());
 
-	VkDevice device = NULL;
-	vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device);
+	VkDevice device = nullptr;
+	vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
 
-	VkQueue queue = NULL;
+	VkQueue queue = nullptr;
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &queue);
 
 	if (outputQueue)
@@ -993,22 +1063,72 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	}
 }
 
+std::vector<const char*> GetDebugInstanceExtensionNames()
+{
+	uint32_t extensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount,
+		nullptr);
+
+	std::vector<VkExtensionProperties> instanceExtensions{ extensionCount };
+	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount,
+		instanceExtensions.data());
+
+	std::vector<const char*> result;
+	for (const auto& e : instanceExtensions)
+	{
+		if (strcmp(e.extensionName, "VK_EXT_debug_report") == 0)
+		{
+			result.push_back("VK_EXT_debug_report");
+		}
+	}
+
+	return result;
+}
+
+std::vector<const char*> GetDebugInstanceLayerNames()
+{
+	uint32_t layerCount = 0;
+	vkEnumerateInstanceLayerProperties(&layerCount,
+		nullptr);
+
+	std::vector<VkLayerProperties> instanceLayers{ layerCount };
+	vkEnumerateInstanceLayerProperties(&layerCount,
+		instanceLayers.data());
+
+	std::vector<const char*> result;
+	for (const auto& p : instanceLayers)
+	{
+		if (strcmp(p.layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
+		{
+			result.push_back("VK_LAYER_LUNARG_standard_validation");
+		}
+	}
+
+	return result;
+}
+
 VkInstance Graphics::CreateInstance()
 {
 	VkInstanceCreateInfo instanceCreateInfo = {};
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-	vector<const char*> instanceExtensions =
+	std::vector<const char*> instanceExtensions =
 	{
 		"VK_KHR_surface", "VK_KHR_win32_surface"
 	};
 
+	auto debugInstanceExtensionNames = GetDebugInstanceExtensionNames();
+	instanceExtensions.insert(instanceExtensions.end(),
+		debugInstanceExtensionNames.begin(), debugInstanceExtensionNames.end());
 
 	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (instanceExtensions.size());
 
-	vector<const char*> instanceLayers;
+	std::vector<const char*> instanceLayers;
 
+	auto debugInstanceLayerNames = GetDebugInstanceLayerNames();
+	instanceLayers.insert(instanceLayers.end(),
+		debugInstanceLayerNames.begin(), debugInstanceLayerNames.end());
 
 	instanceCreateInfo.ppEnabledLayerNames = instanceLayers.data();
 	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t> (instanceLayers.size());
@@ -1018,24 +1138,43 @@ VkInstance Graphics::CreateInstance()
 	applicationInfo.apiVersion = VK_API_VERSION_1_0;
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 	applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	applicationInfo.pApplicationName = "Vulkan";
-	applicationInfo.pEngineName = "Vulkan";
+	applicationInfo.pApplicationName = "AMD Vulkan Sample application";
+	applicationInfo.pEngineName = "AMD Vulkan Sample Engine";
 
 	instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
 	VkInstance instance = VK_NULL_HANDLE;
-	vkCreateInstance(&instanceCreateInfo, NULL, &instance);
+	vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
 
 	return instance;
 }
+
 void Graphics::init(void *param1, void *param2)
 {
+	width = 1136;
+	height = 554;
+
+#ifdef _WIN32
+	hwnd = *((HWND *)param1);
+	hdc = *((HDC *)param2);
+#endif
+#ifdef __linux__
+	display = (Display *)param1;
+	window = *((Window *)param2);
+#endif
+
+
 	instance_ = CreateInstance();
 	if (instance_ == VK_NULL_HANDLE)
 	{
-		// just bail out if the user does not have a compatible Vulkan driver
+		printf("Unable to create Vulkan instance\r\n");
 		return;
 	}
+
+	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance_, "vkCreateDebugReportCallbackEXT");
+
+
+	SetupDebugCallback(instance_);
 
 	VkPhysicalDevice physicalDevice;
 	CreateDeviceAndQueue(instance_, &device_, &queue_, &queueFamilyIndex_,
@@ -1051,7 +1190,7 @@ void Graphics::init(void *param1, void *param2)
 
 	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
 	swapchain_ = CreateSwapchain(physicalDevice, device_, surface_,
-		1024, 768, QUEUE_SLOT_COUNT, &swapchainFormat);
+		width, height, QUEUE_SLOT_COUNT, &swapchainFormat);
 
 
 	uint32_t swapchainImageCount = 0;
@@ -1065,7 +1204,7 @@ void Graphics::init(void *param1, void *param2)
 
 	CreateSwapchainImageViews(device_, swapchainFormat,
 		QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(device_, renderPass_, 1024, 768,
+	CreateFramebuffers(device_, renderPass_, width, height,
 		QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};

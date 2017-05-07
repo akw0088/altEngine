@@ -123,6 +123,7 @@ private:
 	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer);
 	void render(VkCommandBuffer commandBuffer);
 	VkRenderPass CreateRenderPass(VkDevice device, VkFormat swapchainFormat);
+	VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance);
 #endif
 
 public:
