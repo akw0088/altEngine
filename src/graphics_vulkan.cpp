@@ -46,7 +46,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
 }
 
 
-VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance)
+void Graphics::SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp)
 {
 	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
 	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
@@ -57,9 +57,7 @@ VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance)
 	callbackCreateInfo.pfnCallback = &DebugReportCallback;
 	callbackCreateInfo.pUserData = hwnd;
 
-	VkDebugReportCallbackEXT callback;
-	CreateDebugReportCallback(instance, &callbackCreateInfo, NULL, &callback);
-	return callback;
+	CreateDebugReportCallback(instance, &callbackCreateInfo, NULL, &fp);
 }
 
 
@@ -95,7 +93,8 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 		surfaceTransformFlags = surfaceCapabilities.currentTransform;
 	}
 
-	auto swapchainFormatColorSpace = GetSwapchainFormatAndColorspace(physicalDevice, surface);
+	SwapchainFormatColorSpace swapchainFormatColorSpace;
+	GetSwapchainFormatAndColorspace(physicalDevice, surface, swapchainFormatColorSpace);
 
 	VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
 	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -440,7 +439,7 @@ void Graphics::CreateDescriptors()
 /*
 Copies shader to GPU
 */
-VkShaderModule Graphics::LoadShader(VkDevice device, const void* shaderContents, const size_t size)
+void Graphics::LoadShader(VkDevice device, const void* shaderContents, const size_t size, VkShaderModule &shader)
 {
 	VkShaderModuleCreateInfo shaderModuleCreateInfo = {};
 	shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -448,17 +447,13 @@ VkShaderModule Graphics::LoadShader(VkDevice device, const void* shaderContents,
 	shaderModuleCreateInfo.pCode = static_cast<const uint32_t*> (shaderContents);
 	shaderModuleCreateInfo.codeSize = size;
 
-	VkShaderModule result;
-	vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &result);
-
-	return result;
+	vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shader);
 }
 
 /*
 Sets parameters like depth, viewport, vertex + pixel formats etc
 */
-VkPipeline Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout,
-	VkShaderModule vertexShader, VkShaderModule fragmentShader)
+void Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline)
 {
 	VkVertexInputBindingDescription vertexInputBindingDescription;
 	vertexInputBindingDescription.binding = 0;
@@ -565,11 +560,8 @@ VkPipeline Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, Vk
 	graphicsPipelineCreateInfo.pStages = pipelineShaderStageCreateInfos;
 	graphicsPipelineCreateInfo.stageCount = 2;
 
-	VkPipeline pipeline;
 	vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo,
 		NULL, &pipeline);
-
-	return pipeline;
 }
 
 
@@ -578,11 +570,10 @@ Takes two shaders and combines into "pipeline"
 */
 void Graphics::CreatePipelineStateObject()
 {
-	vertexShader_ = LoadShader(vk_device, BasicVertexShader, sizeof(BasicVertexShader));
-	fragmentShader_ = LoadShader(vk_device, TexturedFragmentShader, sizeof(TexturedFragmentShader));
+	LoadShader(vk_device, BasicVertexShader, sizeof(BasicVertexShader), vertexShader_);
+	LoadShader(vk_device, TexturedFragmentShader, sizeof(TexturedFragmentShader), fragmentShader_);
 
-	pipeline_ = CreatePipeline(vk_device, renderPass_, pipelineLayout_,
-		vertexShader_, fragmentShader_);
+	CreatePipeline(vk_device, renderPass_, pipelineLayout_,	vertexShader_, fragmentShader_, pipeline_);
 }
 
 /*
@@ -860,7 +851,7 @@ void Graphics::destroy()
 	vkDestroyInstance(vk_instance, NULL);
 }
 
-VkRenderPass Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat)
+void Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp)
 {
 	VkAttachmentDescription attachmentDescription = {};
 	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -889,11 +880,8 @@ VkRenderPass Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainForma
 	renderPassCreateInfo.pSubpasses = &subpassDescription;
 	renderPassCreateInfo.pAttachments = &attachmentDescription;
 
-	VkRenderPass result = NULL;
 	vkCreateRenderPass(device, &renderPassCreateInfo, NULL,
-		&result);
-
-	return result;
+		&rp);
 }
 
 void Graphics::CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
@@ -945,7 +933,7 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format,
 	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, NULL, &surface);
 }
 
-SwapchainFormatColorSpace Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
+void Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, SwapchainFormatColorSpace &result)
 {
 	uint32_t surfaceFormatCount = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
@@ -954,8 +942,6 @@ SwapchainFormatColorSpace Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDe
 	vector<VkSurfaceFormatKHR> surfaceFormats{ surfaceFormatCount };
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
 		surface, &surfaceFormatCount, surfaceFormats.data());
-
-	SwapchainFormatColorSpace result;
 
 	if (surfaceFormatCount == 1 && surfaceFormats.front().format == VK_FORMAT_UNDEFINED)
 	{
@@ -967,8 +953,6 @@ SwapchainFormatColorSpace Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDe
 	}
 
 	result.colorSpace = surfaceFormats.front().colorSpace;
-
-	return result;
 }
 
 void Graphics::FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex)
@@ -1219,7 +1203,7 @@ void Graphics::init(void *param1, void *param2)
 	DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT");
 
 
-	callback = SetupDebugCallback(vk_instance);
+	SetupDebugCallback(vk_instance, callback);
 
 	VkPhysicalDevice physicalDevice;
 	CreateDeviceAndQueue(vk_instance, &vk_device, &queue_, &queueFamilyIndex_, &physicalDevice);
@@ -1241,7 +1225,7 @@ void Graphics::init(void *param1, void *param2)
 
 	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
 
-	renderPass_ = CreateRenderPass(vk_device, swapchainFormat);
+	CreateRenderPass(vk_device, swapchainFormat, renderPass_);
 
 	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
 	CreateFramebuffers(vk_device, renderPass_, 1024, 768, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);

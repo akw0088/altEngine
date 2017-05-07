@@ -107,18 +107,20 @@ private:
 	void CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight, const int backbufferCount, VkFormat* swapchainFormat, VkSwapchainKHR &swapchain);
 	void AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer);
 	int AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = nullptr);
-	SwapchainFormatColorSpace GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
+	void GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, SwapchainFormatColorSpace &result);
 	void CreateSampler();
 	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height);
 	void CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp);
 	void CreateDescriptors();
-	VkShaderModule LoadShader(VkDevice device, const void* shaderContents, const size_t size);
-	VkPipeline CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader);
+	void LoadShader(VkDevice device, const void* shaderContents, const size_t size, VkShaderModule &shader);
+
+	void CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline);
 	void CreatePipelineStateObject();
 	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer);
-	VkRenderPass CreateRenderPass(VkDevice device, VkFormat swapchainFormat);
-	VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance);
+	void CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp);
+	void SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp);
+
+	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
 public:
 	void render();
 #endif
