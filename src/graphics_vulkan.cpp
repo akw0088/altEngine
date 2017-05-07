@@ -28,15 +28,7 @@ Graphics::~Graphics()
 }
 
 
-VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
-	VkDebugReportFlagsEXT       flags,
-	VkDebugReportObjectTypeEXT  objectType,
-	uint64_t                    object,
-	size_t                      location,
-	int32_t                     messageCode,
-	const char*                 pLayerPrefix,
-	const char*                 pMessage,
-	void*                       pUserData)
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback( VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT  bjectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 {
 	printf("%s\n", pMessage);
 #ifdef WIN32
@@ -293,9 +285,8 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	vkBindBufferMemory(vk_device, uploadImageBuffer_, uploadImageMemory_, 0);
 
 	void* data = NULL;
-	vkMapMemory(vk_device, uploadImageMemory_, 0, VK_WHOLE_SIZE,
-		0, &data);
-	::memcpy(data, image_data, image_size);
+	vkMapMemory(vk_device, uploadImageMemory_, 0, VK_WHOLE_SIZE, 0, &data);
+	memcpy(data, image_data, image_size);
 
 	if (!memoryIsHostCoherent)
 	{
@@ -330,26 +321,16 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	imageBarrier.subresourceRange.layerCount = 1;
 	imageBarrier.subresourceRange.levelCount = 1;
 
-	vkCmdPipelineBarrier(setupCommandBuffer_,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, 0, NULL, 0, NULL,
-		1, &imageBarrier);
+	vkCmdPipelineBarrier(setupCommandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
 
-	vkCmdCopyBufferToImage(setupCommandBuffer_, uploadImageBuffer_,
-		Image_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		1, &bufferImageCopy);
+	vkCmdCopyBufferToImage(setupCommandBuffer_, uploadImageBuffer_, Image_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopy);
 
 	imageBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	imageBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	imageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	vkCmdPipelineBarrier(setupCommandBuffer_,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0, 0, NULL, 0, NULL,
-		1, &imageBarrier);
+	vkCmdPipelineBarrier(setupCommandBuffer_, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -384,17 +365,14 @@ void Graphics::CreateDescriptors()
 	descriptorSetLayoutCreateInfo[0].bindingCount = 2;
 	descriptorSetLayoutCreateInfo[0].pBindings = descriptorSetLayoutBinding;
 
-	vkCreateDescriptorSetLayout(
-		vk_device, descriptorSetLayoutCreateInfo,
-		NULL, &descriptorSetLayout_);
+	vkCreateDescriptorSetLayout(vk_device, descriptorSetLayoutCreateInfo, NULL, &descriptorSetLayout_);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout_;
 	pipelineLayoutCreateInfo.setLayoutCount = 1;
 
-	vkCreatePipelineLayout(vk_device, &pipelineLayoutCreateInfo,
-		NULL, &pipelineLayout_);
+	vkCreatePipelineLayout(vk_device, &pipelineLayoutCreateInfo, NULL, &pipelineLayout_);
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -409,8 +387,7 @@ void Graphics::CreateDescriptors()
 	descriptorPoolCreateInfo.poolSizeCount = 2;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSize;
 
-	vkCreateDescriptorPool(vk_device, &descriptorPoolCreateInfo,
-		NULL, &descriptorPool_);
+	vkCreateDescriptorPool(vk_device, &descriptorPoolCreateInfo, NULL, &descriptorPool_);
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -560,8 +537,7 @@ void Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipeli
 	graphicsPipelineCreateInfo.pStages = pipelineShaderStageCreateInfos;
 	graphicsPipelineCreateInfo.stageCount = 2;
 
-	vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo,
-		NULL, &pipeline);
+	vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, NULL, &pipeline);
 }
 
 
@@ -610,29 +586,24 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	AllocateBuffer(vk_device, sizeof(vertices),	VK_BUFFER_USAGE_TRANSFER_DST_BIT, vertexBuffer_);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_,
-		&vertexBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
 	VkMemoryRequirements indexBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, indexBuffer_,
-		&indexBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, indexBuffer_, &indexBufferMemoryRequirements);
 
 	VkDeviceSize bufferSize = vertexBufferMemoryRequirements.size;
 	// We want to place the index buffer behind the vertex buffer. Need to take
 	// the alignment into account to find the next suitable location
-	VkDeviceSize indexBufferOffset = RoundToNextMultiple(bufferSize,
-		indexBufferMemoryRequirements.alignment);
+	VkDeviceSize indexBufferOffset = RoundToNextMultiple(bufferSize, indexBufferMemoryRequirements.alignment);
 
 	bufferSize = indexBufferOffset + indexBufferMemoryRequirements.size;
 	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
 
 	vkBindBufferMemory(vk_device, vertexBuffer_, deviceMemory_, 0);
-	vkBindBufferMemory(vk_device, indexBuffer_, deviceMemory_,
-		indexBufferOffset);
+	vkBindBufferMemory(vk_device, indexBuffer_, deviceMemory_, indexBufferOffset);
 
 	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
 	VkMemoryRequirements uploadBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_,
-		&uploadBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_, &uploadBufferMemoryRequirements);
 
 	bool memoryIsHostCoherent = false;
 	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits,	MT_HostVisible, &memoryIsHostCoherent);
@@ -640,12 +611,10 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
 
 	void* mapping = NULL;
-	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE,
-		0, &mapping);
-	::memcpy(mapping, vertices, sizeof(vertices));
+	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
+	memcpy(mapping, vertices, sizeof(vertices));
 
-	::memcpy(static_cast<uint8_t*> (mapping) + indexBufferOffset,
-		indices, sizeof(indices));
+	memcpy(static_cast<uint8_t*> (mapping) + indexBufferOffset, indices, sizeof(indices));
 
 	if (!memoryIsHostCoherent)
 	{
@@ -667,10 +636,8 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	indexCopy.size = sizeof(indices);
 	indexCopy.srcOffset = indexBufferOffset;
 
-	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, vertexBuffer_,
-		1, &vertexCopy);
-	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, indexBuffer_,
-		1, &indexCopy);
+	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
+	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, indexBuffer_, 1, &indexCopy);
 
 	VkBufferMemoryBarrier uploadBarriers[2] = {};
 	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -689,11 +656,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	uploadBarriers[1].dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
 	uploadBarriers[1].size = VK_WHOLE_SIZE;
 
-	vkCmdPipelineBarrier(uploadCommandBuffer,
-		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, 0, NULL, 2, uploadBarriers,
-		0, NULL);
+	vkCmdPipelineBarrier(uploadCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 2, uploadBarriers, 0, NULL);
 }
 
 
@@ -880,13 +843,10 @@ void Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRen
 	renderPassCreateInfo.pSubpasses = &subpassDescription;
 	renderPassCreateInfo.pAttachments = &attachmentDescription;
 
-	vkCreateRenderPass(device, &renderPassCreateInfo, NULL,
-		&rp);
+	vkCreateRenderPass(device, &renderPassCreateInfo, NULL, &rp);
 }
 
-void Graphics::CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
-	const int width, const int height,
-	const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers)
+void Graphics::CreateFramebuffers(VkDevice device, VkRenderPass renderPass, const int width, const int height, const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers)
 {
 	for (int i = 0; i < count; ++i)
 	{
@@ -899,13 +859,11 @@ void Graphics::CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
 		framebufferCreateInfo.layers = 1;
 		framebufferCreateInfo.renderPass = renderPass;
 
-		vkCreateFramebuffer(device, &framebufferCreateInfo, NULL,
-			&framebuffers[i]);
+		vkCreateFramebuffer(device, &framebufferCreateInfo, NULL, &framebuffers[i]);
 	}
 }
 
-void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format,
-	const int count, const VkImage* images, VkImageView* imageViews)
+void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const int count, const VkImage* images, VkImageView* imageViews)
 {
 	for (int i = 0; i < count; ++i)
 	{
@@ -1018,8 +976,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, NULL);
 
 	std::vector<VkPhysicalDevice> devices{ physicalDeviceCount };
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount,
-		devices.data());
+	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, devices.data());
 
 	VkPhysicalDevice physicalDevice = NULL;
 	int graphicsQueueIndex = -1;
@@ -1051,8 +1008,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	std::vector<const char*> deviceLayers;
 
 	auto debugDeviceLayerNames = GetDebugDeviceLayerNames(physicalDevice);
-	deviceLayers.insert(deviceLayers.end(),
-		debugDeviceLayerNames.begin(), debugDeviceLayerNames.end());
+	deviceLayers.insert(deviceLayers.end(), debugDeviceLayerNames.begin(), debugDeviceLayerNames.end());
 
 
 	deviceCreateInfo.ppEnabledLayerNames = deviceLayers.data();
@@ -1097,12 +1053,10 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 std::vector<const char*> GetDebugInstanceExtensionNames()
 {
 	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount,
-		NULL);
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
 
 	std::vector<VkExtensionProperties> instanceExtensions{ extensionCount };
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount,
-		instanceExtensions.data());
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, instanceExtensions.data());
 
 	std::vector<const char*> result;
 	for (const auto& e : instanceExtensions)
@@ -1119,12 +1073,10 @@ std::vector<const char*> GetDebugInstanceExtensionNames()
 std::vector<const char*> GetDebugInstanceLayerNames()
 {
 	uint32_t layerCount = 0;
-	vkEnumerateInstanceLayerProperties(&layerCount,
-		NULL);
+	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
 	std::vector<VkLayerProperties> instanceLayers{ layerCount };
-	vkEnumerateInstanceLayerProperties(&layerCount,
-		instanceLayers.data());
+	vkEnumerateInstanceLayerProperties(&layerCount, instanceLayers.data());
 
 	std::vector<const char*> result;
 	for (const auto& p : instanceLayers)
@@ -1149,8 +1101,7 @@ VkInstance Graphics::CreateInstance()
 	};
 
 	auto debugInstanceExtensionNames = GetDebugInstanceExtensionNames();
-	instanceExtensions.insert(instanceExtensions.end(),
-		debugInstanceExtensionNames.begin(), debugInstanceExtensionNames.end());
+	instanceExtensions.insert(instanceExtensions.end(), debugInstanceExtensionNames.begin(), debugInstanceExtensionNames.end());
 
 	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (instanceExtensions.size());
@@ -1158,8 +1109,7 @@ VkInstance Graphics::CreateInstance()
 	std::vector<const char*> instanceLayers;
 
 	auto debugInstanceLayerNames = GetDebugInstanceLayerNames();
-	instanceLayers.insert(instanceLayers.end(),
-		debugInstanceLayerNames.begin(), debugInstanceLayerNames.end());
+	instanceLayers.insert(instanceLayers.end(), debugInstanceLayerNames.begin(), debugInstanceLayerNames.end());
 
 	instanceCreateInfo.ppEnabledLayerNames = instanceLayers.data();
 	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t> (instanceLayers.size());
@@ -1213,8 +1163,7 @@ void Graphics::init(void *param1, void *param2)
 	CreateSurface(vk_instance, hwnd, surface_);
 
 	VkBool32 presentSupported;
-	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice,
-		0, surface_, &presentSupported);
+	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, 0, surface_, &presentSupported);
 
 	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
 	CreateSwapchain(physicalDevice, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, &swapchainFormat, swapchain_);
