@@ -376,7 +376,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 					last_resize = tick_count;
 					old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
 					new_style = old_style;
-					SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, xres, yres, 0);
+					SetWindowPos(hwnd, HWND_TOP, 0, 0, xres, yres, 0);
 					break;
 				}
 			case VK_F2:
