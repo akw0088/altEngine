@@ -1086,6 +1086,13 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	deviceCreateInfo.queueCreateInfoCount = 1;
 	deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
 
+	VkPhysicalDeviceFeatures features;
+
+	memset(&features, 0, sizeof(features));
+	features.shaderClipDistance = true;
+
+	deviceCreateInfo.pEnabledFeatures = &features;
+
 	std::vector<const char*> deviceLayers;
 
 	auto debugDeviceLayerNames = GetDebugDeviceLayerNames(physicalDevice);
