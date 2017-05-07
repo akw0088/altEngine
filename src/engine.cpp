@@ -641,6 +641,9 @@ void Engine::load_md5()
 
 void Engine::render(double last_frametime)
 {
+#ifdef VULKAN
+	gfx.render();
+#else
 #if 0
 	//test triangle
 	vertex_t tVertices[3];
@@ -787,6 +790,7 @@ void Engine::render(double last_frametime)
 #endif
 
 	gfx.swap();
+#endif
 }
 
 void Engine::zoom(float level)

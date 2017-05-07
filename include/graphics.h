@@ -114,16 +114,18 @@ private:
 	SwapchainFormatColorSpace GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
 	void CreateSampler();
-	void CreateTexture(VkCommandBuffer uploadCommandList);
+	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height);
+	void CreateTexture(VkCommandBuffer uploadCommandList, int width, int height, unsigned char *image_data, int image_size);
 	void CreateDescriptors();
 	VkShaderModule LoadShader(VkDevice device, const void* shaderContents, const size_t size);
 	VkPipeline CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout,
 		VkShaderModule vertexShader, VkShaderModule fragmentShader);
 	void CreatePipelineStateObject();
 	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer);
-	void render(VkCommandBuffer commandBuffer);
 	VkRenderPass CreateRenderPass(VkDevice device, VkFormat swapchainFormat);
 	VkDebugReportCallbackEXT Graphics::SetupDebugCallback(VkInstance instance);
+public:
+	void render();
 #endif
 
 public:
@@ -177,6 +179,12 @@ public:
 #ifdef VULKAN
 	static const int QUEUE_SLOT_COUNT = 3;
 
+
+	VkSemaphore renderingCompleteSemaphore;
+	VkSemaphore imageAcquiredSemaphore;
+	VkDebugReportCallbackEXT callback;
+
+
 	VkDeviceMemory deviceBufferMemory_ = VK_NULL_HANDLE;
 	VkBuffer vertexBuffer_ = VK_NULL_HANDLE;
 	VkBuffer indexBuffer_ = VK_NULL_HANDLE;
@@ -191,8 +199,8 @@ public:
 	VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
 
 	VkDeviceMemory deviceImageMemory_ = VK_NULL_HANDLE;
-	VkImage rubyImage_ = VK_NULL_HANDLE;
-	VkImageView rubyImageView_ = VK_NULL_HANDLE;
+	VkImage Image_ = VK_NULL_HANDLE;
+	VkImageView ImageView_ = VK_NULL_HANDLE;
 
 	VkDeviceMemory uploadImageMemory_ = VK_NULL_HANDLE;
 	VkBuffer uploadImageBuffer_ = VK_NULL_HANDLE;

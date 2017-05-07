@@ -735,11 +735,6 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 //	components = 4;
 #endif
 
-#ifdef VULKAN
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
-#endif
-
-
 #if 0
 	if (format == GL_RGB)
 	{
@@ -757,7 +752,13 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp);
 	else
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
-#else
+#endif
+#ifdef OPENGL32
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+#endif
+#ifdef VULKAN
+	format = -1;
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 #endif
 
@@ -829,6 +830,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 //	components = 4;
 #endif
 #ifdef VULKAN
+	format = -1;
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 

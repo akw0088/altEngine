@@ -125,6 +125,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static double min_frametime = 0.0;
 	static double max_frametime = 0.0;
 	static double freq = 0.0;
+#ifdef VULKAN
+	static bool resized = false;
+	static bool initialized = false;
+#endif
 
 
 
@@ -194,7 +198,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 #endif
 		shwnd = hwnd;
+#ifndef VULKAN
 		altEngine.init(&shwnd, &hdc, (char *)GetCommandLine());
+#endif
 	}
 	return 0;
 
@@ -464,8 +470,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			int	width, height;
 
-			width	= LOWORD(lParam);
-			height	= HIWORD(lParam);
+			width = LOWORD(lParam);
+			height = HIWORD(lParam);
+#ifdef VULKAN
+			if (resized == false)
+			{
+				RECT rect;
+				int image_width = 1024;
+				int image_height = 768;
+
+				rect.top = 160;
+				rect.left = 120;
+				rect.right = 120 + image_width;
+				rect.bottom = 160 + image_height;
+				resized = true;
+				// Vulkan is picky about client area matching the texture dimensions, SetWindowPos includes the window border
+				AdjustWindowRectEx(&rect, GetWindowLong(hwnd, GWL_STYLE), FALSE, GetWindowLong(hwnd, GWL_EXSTYLE));
+				SetWindowPos(hwnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 0);
+			}
+
+			if (width == 1024 && initialized == false)
+			{
+				initialized = true;
+				altEngine.init(&shwnd, &hdc, (char *)GetCommandLine());
+			}
+#endif
+
 			center.x = width / 2;
 			center.y = height / 2;
 			altEngine.resize(width, height);

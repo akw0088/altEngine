@@ -4,14 +4,14 @@
 #define new DEBUG_NEW
 #endif
 
+
+#include "stb_image.h"
 #include "assert.h"
 
 #ifdef VULKAN
 
-char *image_data = NULL;
-int image_size = 0;
-
 PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
+PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
 
 
 void Graphics::resize(int width, int height)
@@ -249,17 +249,17 @@ void Graphics::CreateSampler()
 /*
 Sets up GPU texture buffer, copies data
 */
-void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
+void Graphics::CreateTexture(VkCommandBuffer uploadCommandList, int width, int height, unsigned char *image_data, int image_size)
 {
 	VkDeviceMemory uploadImageMemory_ = VK_NULL_HANDLE;
 	VkBuffer uploadImageBuffer_ = VK_NULL_HANDLE;
 
-	//auto image = LoadImageFromMemory(RubyTexture, sizeof(RubyTexture), 1, &width, &height);
 
 	VkImageCreateInfo imageCreateInfo = {};
 	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.pNext = NULL;
+	imageCreateInfo.pNext = nullptr;
 	imageCreateInfo.queueFamilyIndexCount = 1;
+
 	uint32_t queueFamilyIndex = static_cast<uint32_t> (queueFamilyIndex_);
 	imageCreateInfo.pQueueFamilyIndices = &queueFamilyIndex;
 	imageCreateInfo.mipLevels = 1;
@@ -274,11 +274,10 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	vkCreateImage(device_, &imageCreateInfo, NULL, &rubyImage_);
+	vkCreateImage(device_, &imageCreateInfo, nullptr, &Image_);
 
 	VkMemoryRequirements requirements = {};
-	vkGetImageMemoryRequirements(device_, rubyImage_,
-		&requirements);
+	vkGetImageMemoryRequirements(device_, Image_, &requirements);
 
 	VkDeviceSize requiredSizeForImage = requirements.size;
 
@@ -287,17 +286,17 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 		requirements.memoryTypeBits,
 		MT_DeviceLocal);
 
-	vkBindImageMemory(device_, rubyImage_, deviceImageMemory_, 0);
+	vkBindImageMemory(device_, Image_, deviceImageMemory_, 0);
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.pNext = NULL;
+	bufferCreateInfo.pNext = nullptr;
 	bufferCreateInfo.queueFamilyIndexCount = 1;
 	bufferCreateInfo.pQueueFamilyIndices = &queueFamilyIndex;
 	bufferCreateInfo.size = requiredSizeForImage;
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-	vkCreateBuffer(device_, &bufferCreateInfo, NULL, &uploadImageBuffer_);
+	vkCreateBuffer(device_, &bufferCreateInfo, nullptr, &uploadImageBuffer_);
 
 	vkGetBufferMemoryRequirements(device_, uploadImageBuffer_, &requirements);
 
@@ -310,7 +309,7 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 
 	vkBindBufferMemory(device_, uploadImageBuffer_, uploadImageMemory_, 0);
 
-	void* data = NULL;
+	void* data = nullptr;
 	vkMapMemory(device_, uploadImageMemory_, 0, VK_WHOLE_SIZE,
 		0, &data);
 	::memcpy(data, image_data, image_size);
@@ -338,12 +337,12 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 
 	VkImageMemoryBarrier imageBarrier = {};
 	imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageBarrier.pNext = NULL;
+	imageBarrier.pNext = nullptr;
 	imageBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageBarrier.srcAccessMask = 0;
 	imageBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	imageBarrier.image = rubyImage_;
+	imageBarrier.image = Image_;
 	imageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageBarrier.subresourceRange.layerCount = 1;
 	imageBarrier.subresourceRange.levelCount = 1;
@@ -351,11 +350,11 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	vkCmdPipelineBarrier(uploadCommandList,
 		VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
-		0, 0, NULL, 0, NULL,
+		0, 0, nullptr, 0, nullptr,
 		1, &imageBarrier);
 
 	vkCmdCopyBufferToImage(uploadCommandList, uploadImageBuffer_,
-		rubyImage_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		Image_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1, &bufferImageCopy);
 
 	imageBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -366,19 +365,19 @@ void Graphics::CreateTexture(VkCommandBuffer uploadCommandList)
 	vkCmdPipelineBarrier(uploadCommandList,
 		VK_PIPELINE_STAGE_TRANSFER_BIT,
 		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		0, 0, NULL, 0, NULL,
+		0, 0, nullptr, 0, nullptr,
 		1, &imageBarrier);
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCreateInfo.format = imageCreateInfo.format;
-	imageViewCreateInfo.image = rubyImage_;
+	imageViewCreateInfo.image = Image_;
 	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageViewCreateInfo.subresourceRange.levelCount = 1;
 	imageViewCreateInfo.subresourceRange.layerCount = 1;
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-	vkCreateImageView(device_, &imageViewCreateInfo, NULL, &rubyImageView_);
+	vkCreateImageView(device_, &imageViewCreateInfo, nullptr, &ImageView_);
 }
 
 /*
@@ -447,7 +446,7 @@ void Graphics::CreateDescriptors()
 
 	VkDescriptorImageInfo descriptorImageInfo[1] = {};
 	descriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	descriptorImageInfo[0].imageView = rubyImageView_;
+	descriptorImageInfo[0].imageView = ImageView_;
 
 	writeDescriptorSets[0].pImageInfo = &descriptorImageInfo[0];
 
@@ -732,10 +731,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 }
 
 
-/*
-Renders (finally) vkCmdDrawIndexed
-*/
-void Graphics::render(VkCommandBuffer commandBuffer)
+void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height)
 {
 	VkViewport viewports[1] = {};
 	viewports[0].width = static_cast<float> (width);
@@ -757,9 +753,79 @@ void Graphics::render(VkCommandBuffer commandBuffer)
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
 
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
+		pipelineLayout_, 0, 1, &descriptorSet_, 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+}
+
+void Graphics::render()
+{
+	vkAcquireNextImageKHR(
+		device_, swapchain_, UINT64_MAX, imageAcquiredSemaphore,
+		VK_NULL_HANDLE, &currentBackBuffer_);
+
+	vkWaitForFences(device_, 1, &frameFences_[currentBackBuffer_], VK_TRUE,
+		UINT64_MAX);
+	vkResetFences(device_, 1, &frameFences_[currentBackBuffer_]);
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	vkBeginCommandBuffer(commandBuffers_[currentBackBuffer_], &beginInfo);
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.framebuffer = framebuffer_[currentBackBuffer_];
+	renderPassBeginInfo.renderArea.extent.width = 1024;
+	renderPassBeginInfo.renderArea.extent.height = 768;
+	renderPassBeginInfo.renderPass = renderPass_;
+
+	VkClearValue clearValue = {};
+
+	clearValue.color.float32[0] = 0.042f;
+	clearValue.color.float32[1] = 0.042f;
+	clearValue.color.float32[2] = 0.042f;
+	clearValue.color.float32[3] = 1.0f;
+
+	renderPassBeginInfo.pClearValues = &clearValue;
+	renderPassBeginInfo.clearValueCount = 1;
+
+	vkCmdBeginRenderPass(commandBuffers_[currentBackBuffer_],
+		&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	render_cmdbuffer(commandBuffers_[currentBackBuffer_], 1024, 768);
+
+
+
+	vkCmdEndRenderPass(commandBuffers_[currentBackBuffer_]);
+	vkEndCommandBuffer(commandBuffers_[currentBackBuffer_]);
+
+	// Submit rendering work to the graphics queue
+	const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &imageAcquiredSemaphore;
+	submitInfo.pWaitDstStageMask = &waitDstStageMask;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers_[currentBackBuffer_];
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &renderingCompleteSemaphore;
+	vkQueueSubmit(queue_, 1, &submitInfo, VK_NULL_HANDLE);
+
+	// Submit present operation to present queue
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &renderingCompleteSemaphore;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &swapchain_;
+	presentInfo.pImageIndices = &currentBackBuffer_;
+	vkQueuePresentKHR(queue_, &presentInfo);
+
+	vkQueueSubmit(queue_, 0, nullptr, frameFences_[currentBackBuffer_]);
+	// Wait for all rendering to finish
+	vkWaitForFences(device_, 3, frameFences_, VK_TRUE, UINT64_MAX);
 }
 
 
@@ -768,52 +834,58 @@ destroy the thousand handles to bullcrap
 */
 void Graphics::destroy()
 {
-	vkDestroyPipeline(device_, pipeline_, NULL);
-	vkDestroyPipelineLayout(device_, pipelineLayout_, NULL);
+	vkDestroySemaphore(device_, imageAcquiredSemaphore, nullptr);
+	vkDestroySemaphore(device_, renderingCompleteSemaphore, nullptr);
 
-	vkDestroyBuffer(device_, vertexBuffer_, NULL);
-	vkDestroyBuffer(device_, indexBuffer_, NULL);
-	vkFreeMemory(device_, deviceBufferMemory_, NULL);
+	vkDestroyPipeline(device_, pipeline_, nullptr);
+	vkDestroyPipelineLayout(device_, pipelineLayout_, nullptr);
 
-	vkDestroyImageView(device_, rubyImageView_, NULL);
-	vkDestroyImage(device_, rubyImage_, NULL);
-	vkFreeMemory(device_, deviceImageMemory_, NULL);
+	vkDestroyBuffer(device_, vertexBuffer_, nullptr);
+	vkDestroyBuffer(device_, indexBuffer_, nullptr);
+	vkFreeMemory(device_, deviceBufferMemory_, nullptr);
 
-	vkDestroyBuffer(device_, uploadImageBuffer_, NULL);
-	vkFreeMemory(device_, uploadImageMemory_, NULL);
+	vkDestroyImageView(device_, ImageView_, nullptr);
+	vkDestroyImage(device_, Image_, nullptr);
+	vkFreeMemory(device_, deviceImageMemory_, nullptr);
 
-	vkDestroyBuffer(device_, uploadBufferBuffer_, NULL);
-	vkFreeMemory(device_, uploadBufferMemory_, NULL);
+	vkDestroyBuffer(device_, uploadImageBuffer_, nullptr);
+	vkFreeMemory(device_, uploadImageMemory_, nullptr);
 
-	vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, NULL);
-	vkDestroyDescriptorPool(device_, descriptorPool_, NULL);
+	vkDestroyBuffer(device_, uploadBufferBuffer_, nullptr);
+	vkFreeMemory(device_, uploadBufferMemory_, nullptr);
 
-	vkDestroySampler(device_, sampler_, NULL);
+	vkDestroyDescriptorSetLayout(device_, descriptorSetLayout_, nullptr);
+	vkDestroyDescriptorPool(device_, descriptorPool_, nullptr);
 
-	vkDestroyShaderModule(device_, vertexShader_, NULL);
-	vkDestroyShaderModule(device_, fragmentShader_, NULL);
+	vkDestroySampler(device_, sampler_, nullptr);
 
-	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
-	{
-		vkDestroyFence(device_, frameFences_[i], NULL);
-	}
-
-	vkDestroyRenderPass(device_, renderPass_, NULL);
+	vkDestroyShaderModule(device_, vertexShader_, nullptr);
+	vkDestroyShaderModule(device_, fragmentShader_, nullptr);
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
-		vkDestroyFramebuffer(device_, framebuffer_[i], NULL);
-		vkDestroyImageView(device_, swapChainImageViews_[i], NULL);
+		vkDestroyFence(device_, frameFences_[i], nullptr);
 	}
 
-	vkDestroyCommandPool(device_, commandPool_, NULL);
+	vkDestroyRenderPass(device_, renderPass_, nullptr);
 
-	vkDestroySwapchainKHR(device_, swapchain_, NULL);
-	vkDestroySurfaceKHR(instance_, surface_, NULL);
+	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
+	{
+		vkDestroyFramebuffer(device_, framebuffer_[i], nullptr);
+		vkDestroyImageView(device_, swapChainImageViews_[i], nullptr);
+	}
+
+	vkDestroyCommandPool(device_, commandPool_, nullptr);
+
+	vkDestroySwapchainKHR(device_, swapchain_, nullptr);
+	vkDestroySurfaceKHR(instance_, surface_, nullptr);
 
 
-	vkDestroyDevice(device_, NULL);
-	vkDestroyInstance(instance_, NULL);
+	DestroyDebugReportCallback(instance_, callback, NULL);
+
+
+	vkDestroyDevice(device_, nullptr);
+	vkDestroyInstance(instance_, nullptr);
 }
 
 VkRenderPass Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat)
@@ -1151,8 +1223,6 @@ VkInstance Graphics::CreateInstance()
 
 void Graphics::init(void *param1, void *param2)
 {
-	width = 1136;
-	height = 554;
 
 #ifdef _WIN32
 	hwnd = *((HWND *)param1);
@@ -1163,18 +1233,18 @@ void Graphics::init(void *param1, void *param2)
 	window = *((Window *)param2);
 #endif
 
-
 	instance_ = CreateInstance();
 	if (instance_ == VK_NULL_HANDLE)
 	{
-		printf("Unable to create Vulkan instance\r\n");
+		// just bail out if the user does not have a compatible Vulkan driver
 		return;
 	}
 
 	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance_, "vkCreateDebugReportCallbackEXT");
+	DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance_, "vkDestroyDebugReportCallbackEXT");
 
 
-	SetupDebugCallback(instance_);
+	callback = SetupDebugCallback(instance_);
 
 	VkPhysicalDevice physicalDevice;
 	CreateDeviceAndQueue(instance_, &device_, &queue_, &queueFamilyIndex_,
@@ -1195,7 +1265,7 @@ void Graphics::init(void *param1, void *param2)
 
 	uint32_t swapchainImageCount = 0;
 	vkGetSwapchainImagesKHR(device_, swapchain_,
-		&swapchainImageCount, NULL);
+		&swapchainImageCount, nullptr);
 
 	vkGetSwapchainImagesKHR(device_, swapchain_,
 		&swapchainImageCount, swapchainImages_);
@@ -1204,7 +1274,7 @@ void Graphics::init(void *param1, void *param2)
 
 	CreateSwapchainImageViews(device_, swapchainFormat,
 		QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(device_, renderPass_, width, height,
+	CreateFramebuffers(device_, renderPass_, 1024, 768,
 		QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
@@ -1212,7 +1282,7 @@ void Graphics::init(void *param1, void *param2)
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	vkCreateCommandPool(device_, &commandPoolCreateInfo, NULL,
+	vkCreateCommandPool(device_, &commandPoolCreateInfo, nullptr,
 		&commandPool_);
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
@@ -1240,7 +1310,7 @@ void Graphics::init(void *param1, void *param2)
 		// We need this so we can wait for them on the first try
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-		vkCreateFence(device_, &fenceCreateInfo, NULL, &frameFences_[i]);
+		vkCreateFence(device_, &fenceCreateInfo, nullptr, &frameFences_[i]);
 	}
 
 
@@ -1250,7 +1320,9 @@ void Graphics::init(void *param1, void *param2)
 	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
 
 	CreateSampler();
-	CreateTexture(setupCommandBuffer_);
+	// load texture, will call gfx loadtexture, which will call CreateTexture below
+	load_texture(*this, "media/menu.tga", false, false);
+	//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
 	CreateDescriptors();
 	CreatePipelineStateObject();
 	CreateMeshBuffers(setupCommandBuffer_);
@@ -1268,13 +1340,12 @@ void Graphics::init(void *param1, void *param2)
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	VkSemaphore imageAcquiredSemaphore;
 	vkCreateSemaphore(device_, &semaphoreCreateInfo,
-		NULL, &imageAcquiredSemaphore);
+		nullptr, &imageAcquiredSemaphore);
 
-	VkSemaphore renderingCompleteSemaphore;
 	vkCreateSemaphore(device_, &semaphoreCreateInfo,
-		NULL, &renderingCompleteSemaphore);
+		nullptr, &renderingCompleteSemaphore);
+
 }
 
 void Graphics::swap()
@@ -1472,6 +1543,13 @@ int Graphics::CreateCubeMap()
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
 {
+	static bool once = true;
+
+	if (once)
+	{
+		CreateTexture(setupCommandBuffer_, width, height, (unsigned char *)bytes, width * height * components * sizeof(char));
+		once = false;
+	}
 	return 1;
 }
 
