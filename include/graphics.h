@@ -97,13 +97,14 @@ public:
 
 #ifdef VULKAN
 private:
+	VkInstance  CreateInstance();
+
 	void CreateSwapchainImageViews(VkDevice device, VkFormat format,
 		const int count, const VkImage* images, VkImageView* imageViews);
 	void CreateFramebuffers(VkDevice device, VkRenderPass renderPass,
 		const int width, const int height,
 		const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers);
 	VkSurfaceKHR CreateSurface(VkInstance instance, HWND hwnd);
-	VkInstance  CreateInstance();
 	void CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice);
 	void FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex);
 	VkSwapchainKHR CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
@@ -115,7 +116,7 @@ private:
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
 	void CreateSampler();
 	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height);
-	void CreateTexture(VkCommandBuffer uploadCommandList, int width, int height, unsigned char *image_data, int image_size);
+	void CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp);
 	void CreateDescriptors();
 	VkShaderModule LoadShader(VkDevice device, const void* shaderContents, const size_t size);
 	VkPipeline CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout,
@@ -179,18 +180,21 @@ public:
 #ifdef VULKAN
 	static const int QUEUE_SLOT_COUNT = 3;
 
+	VkInstance vk_instance = VK_NULL_HANDLE;
+	VkDevice vk_device = VK_NULL_HANDLE;
+
 
 	VkSemaphore renderingCompleteSemaphore;
 	VkSemaphore imageAcquiredSemaphore;
 	VkDebugReportCallbackEXT callback;
 
 
-	VkDeviceMemory deviceBufferMemory_ = VK_NULL_HANDLE;
+	VkDeviceMemory deviceMemory_ = VK_NULL_HANDLE;
 	VkBuffer vertexBuffer_ = VK_NULL_HANDLE;
 	VkBuffer indexBuffer_ = VK_NULL_HANDLE;
 
-	VkDeviceMemory uploadBufferMemory_ = VK_NULL_HANDLE;
-	VkBuffer uploadBufferBuffer_ = VK_NULL_HANDLE;
+	VkDeviceMemory uploadMemory_ = VK_NULL_HANDLE;
+	VkBuffer uploadBuffer_ = VK_NULL_HANDLE;
 
 	VkShaderModule vertexShader_ = VK_NULL_HANDLE;
 	VkShaderModule fragmentShader_ = VK_NULL_HANDLE;
@@ -214,8 +218,6 @@ public:
 	VkViewport viewport_;
 
 	VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
-	VkInstance instance_ = VK_NULL_HANDLE;
-	VkDevice device_ = VK_NULL_HANDLE;
 	VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
 	VkQueue queue_ = VK_NULL_HANDLE;
 
