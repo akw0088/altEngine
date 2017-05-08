@@ -11,7 +11,8 @@ SOURCES_CPP := 	xmain.cpp \
 		entity.cpp \
 		frame.cpp \
 		graph.cpp \
-		graphics.cpp \
+		graphics_opengl.cpp \
+		graphics_vulkan.cpp \
 		hashtable.cpp \
 		heap.cpp \
 		junzip.cpp \
@@ -53,10 +54,10 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-CPP := g++ -fuse-linker-plugin
-CC := gcc -fuse-linker-plugin
-#CPP := clang++
-#CC := clang
+#CPP := g++ -fuse-linker-plugin
+#CC := gcc -fuse-linker-plugin
+CPP := clang++
+CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]
@@ -71,16 +72,21 @@ CC := gcc -fuse-linker-plugin
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
-altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native
+altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -DOPENGL32 -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
+altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -DOPENGL32 -Wno-write-strings -Wall -march=native
+altEngine_vulkan: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DVULKAN -Wno-write-strings -Wall -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal -lrt
+LFLAGS_VULKAN := -lX11 -lGL -lvulkan -lrt
 LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
 
 all: altEngine
 
 altEngine: $(OBJS_CPP) $(OBJS_C)
 	$(CPP) $(CFLAGS) -o altEngine $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
+
+altEngine_vulkan: $(OBJS_CPP) $(OBJS_C)
+	$(CPP) $(CFLAGS) -o altEngine_vulkan $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS_VULKAN)
 
 altEngine_dedicated: $(OBJS_CPP) $(OBJS_C)
 	$(CPP) $(CFLAGS) -o altEngine_dedicated $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)

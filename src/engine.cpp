@@ -3852,7 +3852,7 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	ret = sscanf(cmd, "al_model %s", &data);
+	ret = sscanf(cmd, "al_model %s", (char *)data);
 	if (ret == 1)
 	{
 		printf("Setting audio model to %d\n", atoi(data));
