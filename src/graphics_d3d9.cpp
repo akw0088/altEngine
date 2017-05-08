@@ -37,7 +37,7 @@ Graphics::Graphics()
 
 Graphics::~Graphics() 
 {
-	font->Release();
+	//font->Release();
 }
 
 void Graphics::cleardepth()
@@ -172,8 +172,8 @@ void Graphics::init(void *param1, void *param2)
 		device->SetTextureStageState(i, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		device->SetTextureStageState(i, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 	}
-	D3DXCreateFont( device, 8, 0, FW_THIN, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
-		DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "System", &font );
+	//D3DXCreateFont( device, 8, 0, FW_THIN, 1, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+	//	DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "System", &font );
 
 
 	D3DVERTEXELEMENT9 decl[] =
@@ -200,7 +200,7 @@ void Graphics::DrawText(const char *str, float x, float y)
 	rect.right = rect.left + width;
 	rect.bottom = rect.top + height;
 
-	font->DrawText(NULL, str, -1, &rect, DT_LEFT | DT_NOCLIP, 0xFFFFFFFF );
+	//font->DrawText(NULL, str, -1, &rect, DT_LEFT | DT_NOCLIP, 0xFFFFFFFF );
 }
 
 void Graphics::swap()

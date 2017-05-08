@@ -1866,8 +1866,15 @@ void Quake3::step(int frame_step)
 	}
 
 	// handles triggers and the projectile as trigger stuff
+	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
+#ifdef OPENMP
+		if (i % omp_get_num_threads() != omp_get_thread_num())
+			continue;
+#endif
+
+
 		if (engine->entity_list[i]->player && engine->entity_list[i]->player->type == PLAYER)
 			check_triggers(i, engine->entity_list);
 		if (engine->server_flag && engine->entity_list[i]->player && engine->entity_list[i]->player->type == CLIENT)
@@ -5883,8 +5890,8 @@ void Quake3::endgame(char *winner)
 void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 {
 	// Run ~20 times a second
-	if (engine->tick_num % 6 != 0)
-		return;
+//	if (engine->tick_num % 6 != 0)
+//		return;
 
 	engine->num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)

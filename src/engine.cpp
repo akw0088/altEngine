@@ -1602,6 +1602,11 @@ void Engine::dynamics()
 	#pragma omp parallel for num_threads(8)
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
+#ifdef OPENMP
+		if (i % omp_get_num_threads() != omp_get_thread_num())
+			continue;
+#endif
+
 		if (entity_list[i]->rigid == NULL)
 			continue;
 

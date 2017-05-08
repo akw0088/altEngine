@@ -98,21 +98,23 @@ public:
 #ifdef VULKAN
 private:
 	VkInstance  CreateInstance();
-
-	void CreateSwapchainImageViews(VkDevice device, VkFormat format, const int count, const VkImage* images, VkImageView* imageViews);
-	void CreateFramebuffers(VkDevice device, VkRenderPass renderPass, const int width, const int height, const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers);
-	void CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface);
 	void CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice);
 	void FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex);
+	void CreateSwapchainImageViews(VkDevice device, VkFormat format, const int count, const VkImage* images, VkImageView* imageViews);
+	void CreateFramebuffers(VkDevice device, VkRenderPass renderPass, const int width, const int height, const int count, const VkImageView* imageViews, VkFramebuffer* framebuffers);
 	void CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight, const int backbufferCount, VkFormat* swapchainFormat, VkSwapchainKHR &swapchain);
+	void GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, SwapchainFormatColorSpace &result);
+
 	void AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer);
 	int AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent = nullptr);
-	void GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, SwapchainFormatColorSpace &result);
-	void CreateSampler();
-	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height);
+
+	void CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface);
 	void CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp);
+	void CreateSampler();
 	void CreateDescriptors();
 	void LoadShader(VkDevice device, const void* shaderContents, const size_t size, VkShaderModule &shader);
+
+	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height);
 
 	void CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline);
 	void CreatePipelineStateObject();
@@ -169,7 +171,7 @@ public:
 	vector<IDirect3DIndexBuffer9 *> index_buffers;
 	vector<IDirect3DTexture9 *> texture;
 	vector<IDirect3DSurface9 *> surface;
-	ID3DXFont *font;
+//	ID3DXFont *font;
 #endif
 #endif
 

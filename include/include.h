@@ -181,8 +181,10 @@
 #endif
 
 #define G_QUAKE3
+#define OPENMP
 
 using namespace std;
+
 
 #ifdef VULKAN
 // Garbage for vulkan that I'll delete eventually
