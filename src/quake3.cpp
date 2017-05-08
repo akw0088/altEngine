@@ -1867,12 +1867,18 @@ void Quake3::step(int frame_step)
 
 	// handles triggers and the projectile as trigger stuff
 	#pragma omp parallel for num_threads(8)
-	for (unsigned int i = 0; i < engine->max_player; i++)
+	for (int i = 0; i < engine->max_player; i++)
 	{
 #ifdef OPENMP
-		if (i % omp_get_num_threads() != omp_get_thread_num())
+		int thread_num = omp_get_thread_num();
+		int num_thread = omp_get_num_threads();
+
+		if (engine->entity_list[i]->bsp_leaf % num_thread != thread_num)
 			continue;
+
+//		printf("bsp leaf %d Handled by thread %d of %d\n", engine->entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
+
 
 
 		if (engine->entity_list[i]->player && engine->entity_list[i]->player->type == PLAYER)

@@ -181,7 +181,7 @@
 #endif
 
 #define G_QUAKE3
-#define OPENMP
+//#define OPENMP
 
 using namespace std;
 

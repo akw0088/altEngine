@@ -65,6 +65,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
+#ifdef OPENMP
+	omp_set_num_threads(8);
+#endif
+
 #ifdef G_QUAKE3
 	game = new Quake3();
 #endif
@@ -1405,11 +1409,10 @@ void Engine::spatial_testing()
 	int leaf_b = -1;
 
 	// Run this at ~20 tims a second
-	if (tick_num % 6 != 0)
-		return;
+//	if (tick_num % 6 != 0)
+//		return;
 
-	if (q3map.vis_test(emitter.position, camera_frame.pos,
-		leaf_a, leaf_b))
+	if (q3map.vis_test(emitter.position, camera_frame.pos, leaf_a, leaf_b))
 	{
 		emitter.visible = true;
 	}
@@ -1418,8 +1421,19 @@ void Engine::spatial_testing()
 		emitter.visible = false;
 	}
 
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	#pragma omp parallel for num_threads(8)
+	for (int i = 0; i < entity_list.size(); i++)
 	{
+#ifdef OPENMP
+		int thread_num = omp_get_thread_num();
+		int num_thread = omp_get_num_threads();
+
+		if (entity_list[i]->bsp_leaf % num_thread != thread_num)
+			continue;
+
+//		printf("bsp leaf %d Handled by thread %d of %d\n", entity_list[i]->bsp_leaf, thread_num, num_thread);
+#endif
+
 		// set pursue / evade
 		// (really need to move elsewhere, but had an entity loop here)
 		if (entity_list[i]->rigid)
@@ -1597,14 +1611,18 @@ void Engine::activate_light(float distance, Light *light)
 */
 void Engine::dynamics()
 {
-	cfg_t	config;
 
 	#pragma omp parallel for num_threads(8)
-	for(unsigned int i = 0; i < entity_list.size(); i++)
+	for(int i = 0; i < entity_list.size(); i++)
 	{
 #ifdef OPENMP
-		if (i % omp_get_num_threads() != omp_get_thread_num())
+		int thread_num = omp_get_thread_num();
+		int num_thread = omp_get_num_threads();
+
+		if (entity_list[i]->bsp_leaf % num_thread != thread_num)
 			continue;
+
+		printf("bsp leaf %d Handled by thread %d of %d\n", entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
 
 		if (entity_list[i]->rigid == NULL)
@@ -1653,6 +1671,8 @@ void Engine::dynamics()
 
 		while (current_time < delta_time)
 		{
+			cfg_t	config;
+
 			body->save_config(config);
 			body->integrate(target_time - current_time);
 			if ( collision_detect(*body) )

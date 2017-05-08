@@ -29,6 +29,7 @@ Entity::Entity()
 	player = NULL;
 	decal = NULL;
 	num_particle = 0;
+	bsp_leaf = 0;
 	particle_on = false;
 	nettype = NT_NONE;
 }
