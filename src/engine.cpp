@@ -709,7 +709,8 @@ void Engine::render(double last_frametime)
 	{
 		// Generate depth cubemaps for each light
 	//	render_shadowmaps(); // done at load time
-		render_to_framebuffer();
+		render_to_framebuffer(last_frametime);
+
 		gfx.clear();
 		if (entity_list[find_type("player", 0)]->player->current_light == 0)
 			render_texture(quad_tex);
@@ -741,7 +742,22 @@ void Engine::render(double last_frametime)
 	{
 		gfx.clear();
 		render_scene(true);
+
+		//Handle realtime keys (typing can be slower)
+		handle_input();
+
+		//render menu
+		if (menu.chatmode == false)
+			game->render_hud(last_frametime);
+		if (menu.ingame)
+			menu.render(global);
+		if (menu.console)
+			menu.render_console(global);
+		if (menu.chatmode)
+			menu.render_chatmode(global);
 	}
+
+
 #ifdef SHADOWVOL
 	matrix4 mvp;
 
@@ -782,18 +798,7 @@ void Engine::render(double last_frametime)
 #endif
 
 
-	//Handle realtime keys (typing can be slower)
-	handle_input();
 
-	//render menu
-	if (menu.chatmode == false)
-		game->render_hud(last_frametime);
-	if (menu.ingame)
-		menu.render(global);
-	if (menu.console)
-		menu.render_console(global);
-	if (menu.chatmode)
-		menu.render_chatmode(global);
 #ifdef DIRECTX
 	gfx.cleardepth();
 	gfx.Blend(false);
@@ -853,7 +858,7 @@ void Engine::render_shadowmaps()
 }
 
 
-void Engine::render_to_framebuffer()
+void Engine::render_to_framebuffer(float last_frametime)
 {
 	gfx.bindFramebuffer(fbo);
 	gfx.resize(fb_width, fb_height);
@@ -869,6 +874,19 @@ void Engine::render_to_framebuffer()
 		render_shadow_volumes(entity_list[spawn]->player->current_light);
 	}
 	*/
+
+	//Handle realtime keys (typing can be slower)
+	handle_input();
+
+	//render menu
+	if (menu.chatmode == false)
+		game->render_hud(last_frametime);
+	if (menu.ingame)
+		menu.render(global);
+	if (menu.console)
+		menu.render_console(global);
+	if (menu.chatmode)
+		menu.render_chatmode(global);
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);

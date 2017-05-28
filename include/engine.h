@@ -87,7 +87,7 @@ public:
 	int get_load_wave(const char *file);
 
 	void destroy_buffers();
-	void render_to_framebuffer();
+	void render_to_framebuffer(float last_frametime);
 	void handle_input();
 
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
