@@ -764,9 +764,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 
 
-
+#ifndef DEDICATED
 	stbi_image_free(bytes);
 	free((void *)data);
+#endif
 
 #ifdef OPENGL32
 	if (format != GL_RGBA)
@@ -833,14 +834,14 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	format = -1;
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
-
+#ifndef DEDICATED
 	byte *pBits = NULL;
 	if (components == 3)
 	{
 		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
 	}
-
-
+#endif
+#ifndef DEDICATED
 	if (components == 3)
 	{
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp);
@@ -851,7 +852,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	}
 	stbi_image_free(bytes);
 	free((void *)data);
-
+#endif
 #ifdef OPENGL32
 	if (format != GL_RGBA)
 	{

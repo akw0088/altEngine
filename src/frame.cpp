@@ -96,15 +96,15 @@ void Frame::update(input_t &input)
 		pos.y -= SPEED;
 }
 
-void Frame::update(const vec2 &delta)
+void Frame::update(const vec2 &delta, float scale)
 {
 	const vec3		vup(0.0f, 1.0f, 0.0f);
 	vec3		right;
 
 //"camera"
 	// Left / Right
-	rotate_vector(delta.x / 50.0f, forward, vup );
-	rotate_vector(delta.x / 50.0f, up, vup);
+	rotate_vector(scale * (delta.x / 50.0f), forward, vup );
+	rotate_vector(scale * (delta.x / 50.0f), up, vup);
 	forward.normalize();
 	up.normalize();
 
@@ -116,12 +116,12 @@ void Frame::update(const vec2 &delta)
 	vec3 old_up = up;
 	float deltad = 50.0f;
 
-	rotate_vector(delta.y / deltad, forward, right);
-	rotate_vector(delta.y / deltad, up, right);
+	rotate_vector(scale * (delta.y / 50.0f), forward, right);
+	rotate_vector(scale * (delta.y / 50.0f), up, right);
 	forward.normalize();
 	up.normalize();
 
-	if (up * vup < 0)
+	if (up * vup < 0.001f)
 	{
 		forward = old_forward;
 		up = old_up;

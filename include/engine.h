@@ -112,6 +112,8 @@ public:
 	unsigned int global_source[32];
 	int max_sources;
 
+	rendermode_t render_mode;
+
 
 	char *pk3_list[32];
 	char *hash_list[32];
@@ -169,6 +171,7 @@ protected:
 	float zFar;
 	bool inf;
 	float fov; // y fov
+	float sensitivity;
 
 	Graphics	gfx;
 	Audio		audio;
@@ -188,6 +191,7 @@ protected:
 	unsigned int	depth_tex;
 	unsigned int	fb_width;
 	unsigned int	fb_height;
+	float			res_scale;
 	unsigned int	no_tex;
 	unsigned int	particle_tex;
 

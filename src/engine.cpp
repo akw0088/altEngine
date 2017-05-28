@@ -6,8 +6,8 @@
 
 
 //#define SHADOWVOL
-#define FORWARD
-//#define DEFERRED
+//#define FORWARD
+#define INDIRECT
 
 // Height above desired position we allow a step to occur
 // (Fairly large as forward velocity can put you fairly deep forward)
@@ -40,6 +40,8 @@ Engine::Engine()
 	emitter.enabled = false;
 	demo = false;
 
+	res_scale = 1.0f;
+
 	sprintf(servername, "altEngine Server %s", __DATE__);
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
@@ -64,6 +66,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	srand((unsigned int)time(NULL));
 	qport = rand();
+
+
+	render_mode = MODE_INDIRECT;
+
+
+	sensitivity = 1.0f;
 
 #ifdef OPENMP
 	omp_set_num_threads(8);
@@ -288,8 +296,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
-	fb_width = 1280;
-	fb_height = 1280;
+	fb_width = 2048 * res_scale;
+	fb_height = 2048 * res_scale;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 
 	//parse shaders
@@ -326,6 +334,14 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	menu.render(global);
 	gfx.swap();
 #endif
+	
+	if (render_mode == MODE_INDIRECT)
+	{
+		//Setup render to texture
+		gfx.bindFramebuffer(fbo);
+		gfx.resize(fb_width, fb_height);
+		gfx.bindFramebuffer(0);
+	}
 
 #ifdef DEDICATED
 	printf("Dedicated server mode\n");
@@ -530,7 +546,6 @@ void Engine::load(char *level)
 	menu.chat = true;
 
 
-#ifdef DEFERRED
 	//Setup render to texture
 	gfx.bindFramebuffer(fbo);
 	gfx.resize(fb_width, fb_height);
@@ -538,7 +553,6 @@ void Engine::load(char *level)
 	// Generate depth cubemaps for each light
 	render_shadowmaps();
 	gfx.bindFramebuffer(0);
-#endif
 
 
 #ifdef SHADOWVOL
@@ -691,51 +705,43 @@ void Engine::render(double last_frametime)
 	if (client_flag)
 		client_recv();
 
-#ifdef DEFERRED
-
-	//Setup render to texture
-	gfx.bindFramebuffer(fbo);
-	gfx.resize(fb_width, fb_height);
-
-	// Generate depth cubemaps for each light
-	render_shadowmaps(); // done at load time
-
-	gfx.bindFramebuffer(0);
-
-	render_to_framebuffer();
-
-	gfx.clear();
-
-	if (spawn != -1 && entity_list[spawn]->player->current_light == 0)
-		render_texture(quad_tex);
-	else
+	if (render_mode == MODE_INDIRECT)
 	{
-		for (unsigned int i = 0; i < entity_list.size(); i++)
+		// Generate depth cubemaps for each light
+	//	render_shadowmaps(); // done at load time
+		render_to_framebuffer();
+		gfx.clear();
+		if (entity_list[find_type("player", 0)]->player->current_light == 0)
+			render_texture(quad_tex);
+		else
 		{
-			if (entity_list[i]->light)
+			for (unsigned int i = 0; i < entity_list.size(); i++)
 			{
-				if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
+				if (entity_list[i]->light)
 				{
-					if (input.control)
+					if (entity_list[i]->light->light_num == entity_list[find_type("player", 0)]->player->current_light)
 					{
-						testObj = entity_list[i]->light->depth_tex[entity_list[spawn]->player->current_face];
+						if (input.control)
+						{
+							testObj = entity_list[i]->light->depth_tex[entity_list[find_type("player", 0)]->player->current_face];
+						}
+						else
+						{
+							testObj = entity_list[i]->light->quad_tex[entity_list[find_type("player", 0)]->player->current_face];
+						}
+						break;
 					}
-					else
-					{
-						testObj = entity_list[i]->light->quad_tex[entity_list[spawn]->player->current_face];
-					}
-					break;
 				}
 			}
-		}
 
-		render_texture(testObj);
+			render_texture(testObj);
+		}
 	}
-#endif
-#ifdef FORWARD
-	gfx.clear();
-	render_scene(true);
-#endif
+	if (render_mode == MODE_FORWARD)
+	{
+		gfx.clear();
+		render_scene(true);
+	}
 #ifdef SHADOWVOL
 	matrix4 mvp;
 
@@ -855,7 +861,8 @@ void Engine::render_to_framebuffer()
 	gfx.fbAttachDepth(depth_tex);
 
 	gfx.clear();
-	render_scene_using_shadowmap(true);
+	render_scene(true);
+//	render_scene_using_shadowmap(true);
 /*
 	if (spawn != -1)
 	{
@@ -2738,7 +2745,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 		return true;
 	}
 
-	camera_frame.update(vec2((float)deltax, (float)deltay));
+	camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity);
 	return true;
 }
 
@@ -2834,9 +2841,6 @@ void Engine::bind_keys()
 	seta sv_hostname "noname"
 	rate
 	cmdrate
-	sensitivity
-	name
-	model
 	skin
 	team red/blue
 	seta cg_autoswitch "0"
@@ -4099,6 +4103,45 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		fov = atoi(data) * 0.5f;
 		projection.perspective(fov, (float)xres / yres, zNear, zFar, inf);
+		return;
+	}
+
+	if (sscanf(cmd, "r_rendermode %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (atoi(data))
+		{
+			snprintf(msg, LINE_SIZE, "Setting rendermode to indirect\n");
+			menu.print(msg);
+			render_mode = MODE_INDIRECT;
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "Setting rendermode to forward\n");
+			menu.print(msg);
+			render_mode = MODE_FORWARD;
+		}
+		return;
+	}
+
+
+	if (sscanf(cmd, "sensitivity %s", data) == 1)
+	{
+		snprintf(msg, LINE_SIZE, "Setting mouse sensitivity to %3.3f\n", atof(data));
+		menu.print(msg);
+		sensitivity = atof(data);
+		return;
+	}
+
+	if (sscanf(cmd, "res_scale %s", data) == 1)
+	{
+		snprintf(msg, LINE_SIZE, "Setting resolution scale to %3.3f\n", atof(data));
+		menu.print(msg);
+		res_scale = atof(data);
+		fb_width = 2048 * res_scale;
+		fb_height = 2048 * res_scale;
+		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 		return;
 	}
 

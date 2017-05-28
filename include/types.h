@@ -590,5 +590,13 @@ typedef struct
 } serverdata_t;
 
 
+
+typedef enum
+{
+	MODE_FORWARD,
+	MODE_INDIRECT
+} rendermode_t;
+
+
 // Player sound sets
 #endif
