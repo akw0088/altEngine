@@ -41,6 +41,7 @@ Engine::Engine()
 	demo = false;
 
 	res_scale = 1.0f;
+	dynamic_resolution = false;
 
 	sprintf(servername, "altEngine Server %s", __DATE__);
 	sprintf(password, "iddqd");
@@ -857,9 +858,41 @@ void Engine::render_shadowmaps()
 	}
 }
 
+void Engine::set_dynamic_resolution(float last_frametime)
+{
+	if (q3map.loaded)
+	{
+		float fps = 1000.0 / last_frametime;
+		if (fps < 60.0f && res_scale > 0.1f)
+		{
+			res_scale *= 0.75f;
+			fb_width = 2048 * res_scale;
+			fb_height = 2048 * res_scale;
+			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+		}
+		else if (fps > 100.0f && res_scale < 2.0f)
+		{
+			res_scale *= 1.25f;
+			fb_width = 2048 * res_scale;
+			fb_height = 2048 * res_scale;
+			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+		}
+	}
+	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
+	{
+		res_scale = 1.0f;
+		fb_width = 2048 * res_scale;
+		fb_height = 2048 * res_scale;
+		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+	}
+}
+
 
 void Engine::render_to_framebuffer(float last_frametime)
 {
+	if (dynamic_resolution)
+		set_dynamic_resolution(last_frametime);
+
 	gfx.bindFramebuffer(fbo);
 	gfx.resize(fb_width, fb_height);
 	gfx.fbAttachTexture(quad_tex);
@@ -4160,6 +4193,23 @@ void Engine::console(char *cmd)
 		fb_width = 2048 * res_scale;
 		fb_height = 2048 * res_scale;
 		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+		return;
+	}
+
+	if (sscanf(cmd, "dynamic_res %s", data) == 1)
+	{
+		if (atoi(data))
+		{
+			snprintf(msg, LINE_SIZE, "Dynamic resolution on\n");
+			menu.print(msg);
+			dynamic_resolution = true;
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "Dynamic resolution off\n");
+			menu.print(msg);
+			dynamic_resolution = false;
+		}
 		return;
 	}
 

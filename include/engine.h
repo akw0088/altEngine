@@ -88,6 +88,7 @@ public:
 
 	void destroy_buffers();
 	void render_to_framebuffer(float last_frametime);
+	void set_dynamic_resolution(float last_frametime);
 	void handle_input();
 
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
@@ -113,6 +114,7 @@ public:
 	int max_sources;
 
 	rendermode_t render_mode;
+	bool dynamic_resolution;
 
 
 	char *pk3_list[32];
