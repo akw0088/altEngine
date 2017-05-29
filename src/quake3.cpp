@@ -3694,7 +3694,7 @@ void Quake3::render_hud(double last_frametime)
 				blue_flag_caps, capturelimit);
 		else
 			snprintf(msg, LINE_SIZE, "Scores: Fraglimit %d Timelimit %d Round Time %d:%2d", fraglimit, timelimit, round_time / 60, round_time % 60);
-		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
 
 
 		for (unsigned int i = 0; i < engine->max_player; i++)
@@ -3726,7 +3726,7 @@ void Quake3::render_hud(double last_frametime)
 		int line = 1;
 
 		snprintf(msg, LINE_SIZE, "Debug Messages: lastframe %.2f ms %.2f fps", last_frametime, 1000.0 / last_frametime);
-		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
 		snprintf(msg, LINE_SIZE, "%d active lights.", (int)engine->light_list.size());
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 		if (spawn != -1)
@@ -3757,6 +3757,28 @@ void Quake3::render_hud(double last_frametime)
 			snprintf(msg, LINE_SIZE, "on_ground %d impact velocity %f", entity->rigid->on_ground, entity->rigid->impact_velocity );
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
+
+			if (engine->server_flag)
+			{
+				for (int i = 0; i < engine->client_list.size(); i++)
+				{
+					snprintf(msg, LINE_SIZE, "[client %d]", i );
+					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+
+					snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d num_ents %d dropped %d",
+						engine->client_list[i]->netinfo.ping,
+						engine->client_list[i]->netinfo.sequence_delta,
+						engine->client_list[i]->netinfo.size,
+						engine->client_list[i]->netinfo.num_ents,
+						engine->client_list[i]->netinfo.dropped);
+					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+					snprintf(msg, LINE_SIZE, "position delta %3.3f", engine->client_list[i]->position_delta.magnitude());
+					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+				}
+
+			}
 
 		}
 	}

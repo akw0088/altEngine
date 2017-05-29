@@ -157,7 +157,7 @@ typedef struct
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
-#define CLIENT_HEADER 41
+#define CLIENT_HEADER 53
 
 #ifdef LINUX
 typedef unsigned char byte;
@@ -177,6 +177,7 @@ typedef struct
 	unsigned int	server_sequence;
 	float			up[3];
 	float			forward[3];
+	float			pos[3];		// Sending position (not used, but interesting to calculate delta's)
 	byte			num_cmds;
 	char			data[16834];
 } clientmsg_t;
@@ -261,6 +262,7 @@ typedef struct
 	input_t			input;
 	netinfo_t		netinfo;
 	bool			needs_state;
+	vec3			position_delta;
 } client_t;
 
 

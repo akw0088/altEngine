@@ -110,7 +110,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}
 
 
-#ifdef NDEBUG 
+#if 0
 	char hash[128];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
@@ -2097,6 +2097,7 @@ void Engine::server_recv()
 
 
 		Frame client_frame;
+		vec3 client_pos; // dont use, client can cheat, only to see how bad delta is
 
 		client_frame.up.x = clientmsg.up[0];
 		client_frame.up.y = clientmsg.up[1];
@@ -2107,14 +2108,16 @@ void Engine::server_recv()
 		vec3 right = vec3::crossproduct(client_frame.up, client_frame.forward);
 		right.normalize();
 
+		client_pos.x = clientmsg.pos[0];
+		client_pos.y = clientmsg.pos[1];
+		client_pos.z = clientmsg.pos[2];
+
 		Entity *client = entity_list[client_list[index]->ent_id];
 
 		client_frame.set(client->rigid->morientation);
 		client_frame.pos = client->position + client->rigid->center;
 		client_list[index]->input = clientkeys;
-
-
-
+		client_list[index]->position_delta = client->position - client_pos;
 
 		/*
 		printf("-> server_sequence %d\n"
@@ -2151,8 +2154,8 @@ void Engine::server_recv()
 				}
 			}
 		}
-		netinfo.sequence_delta = sequence - clientmsg.sequence;
-		netinfo.ping = netinfo.sequence_delta * TICK_MS;
+		client_list[index]->netinfo.sequence_delta = sequence - clientmsg.sequence;
+		client_list[index]->netinfo.ping = netinfo.sequence_delta * TICK_MS;
 		client_list[index]->client_sequence = clientmsg.sequence;
 	}
 	else
@@ -2187,6 +2190,8 @@ void Engine::server_recv()
 			return;
 		}
 
+
+		memset(client, 0, sizeof(client_t));
 		client->last_time = (unsigned int)time(NULL);
 		strcpy(client->socketname, socketname);
 		client->qport = clientmsg.qport;
@@ -2401,7 +2406,9 @@ void Engine::server_send()
 
 		client_list[i]->netinfo.num_ents = servermsg.num_ents;
 		client_list[i]->netinfo.size = servermsg.length;
-		
+		netinfo.num_ents = servermsg.num_ents;
+		netinfo.size = servermsg.length;
+
 		if (servermsg.length > 8192)
 		{
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
@@ -2547,6 +2554,10 @@ void Engine::client_send()
 	clientmsg.forward[0] = camera_frame.forward.x;
 	clientmsg.forward[1] = camera_frame.forward.y;
 	clientmsg.forward[2] = camera_frame.forward.z;
+	clientmsg.pos[0] = camera_frame.pos.x;
+	clientmsg.pos[1] = camera_frame.pos.y;
+	clientmsg.pos[2] = camera_frame.pos.z;
+
 	clientmsg.num_cmds = 1;
 	memcpy(clientmsg.data, &keystate, sizeof(int));
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], (void *)&reliable, reliable.size);
@@ -4242,6 +4253,12 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 
 		multisample = atoi(data);
+#ifdef OPENGL
+		if (multisample > 0)
+			glEnable(GL_MULTISAMPLE);
+		else
+			glDisable(GL_MULTISAMPLE);
+#endif
 		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		return;
 	}
