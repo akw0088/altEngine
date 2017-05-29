@@ -600,6 +600,17 @@ typedef enum
 	MODE_SHADOWVOL
 } rendermode_t;
 
+typedef struct
+{
+	char magic[5];
+	char map[64];
+} demoheader_t;
 
-// Player sound sets
+typedef struct
+{
+	char magic[6];
+	int num_ents;
+	int tick_num;
+} demo_frameheader_t;
+
 #endif

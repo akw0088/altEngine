@@ -36,6 +36,7 @@ Engine::Engine()
 	emitter.enabled = false;
 	demo = false;
 	shadowmaps = false;
+	recording = false;
 
 	res_scale = 1.0f;
 	dynamic_resolution = false;
@@ -2012,6 +2013,20 @@ void Engine::step(int tick)
 	game->step(tick);
 
 	dynamics();
+
+	if (recording)
+	{
+		servermsg_t servermsg;
+		demo_frameheader_t header;
+
+		memcpy(header.magic, "frame", 6);
+		header.num_ents = servermsg.num_ents;
+		header.tick_num = tick_num;
+		serialize_ents(entity_list, servermsg.data, servermsg.num_ents);
+		fwrite(&header, sizeof(demo_frameheader_t), 1, demofile);
+		fwrite(&servermsg, servermsg.num_ents * sizeof(entity_t), 1, demofile);
+	}
+
 #ifndef DEDICATED
 	update_audio();
 #endif
@@ -2308,6 +2323,53 @@ void Engine::server_recv()
 
 }
 
+
+void Engine::serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents)
+{
+	for (unsigned int j = 0; j < entity_list.size(); j++)
+	{
+		entity_t ent;
+
+
+		ent.id = j;
+		ent.type = entity_list[j]->nettype;
+		ent.active = false;
+
+		if (entity_list[j]->trigger)
+		{
+			if (entity_list[j]->trigger->active)
+				ent.active = true;
+			ent.owner = entity_list[j]->trigger->owner;
+		}
+
+		if (entity_list[j]->rigid)
+		{
+			ent.morientation = entity_list[j]->rigid->morientation;
+			ent.angular_velocity = entity_list[j]->rigid->angular_velocity;
+			ent.velocity = entity_list[j]->rigid->velocity;
+			ent.position = entity_list[j]->position;
+		}
+
+
+		if (entity_list[j]->player)
+		{
+			ent.health = entity_list[j]->player->health;
+			ent.armor = entity_list[j]->player->armor;
+			ent.weapon_flags = entity_list[j]->player->weapon_flags;
+			//ent.current_weapon = entity_list[j]->player->current_weapon;
+			ent.ammo_bullets = entity_list[j]->player->ammo_bullets;
+			ent.ammo_shells = entity_list[j]->player->ammo_shells;
+			ent.ammo_rockets = entity_list[j]->player->ammo_rockets;
+			ent.ammo_lightning = entity_list[j]->player->ammo_lightning;
+			ent.ammo_slugs = entity_list[j]->player->ammo_slugs;
+			ent.ammo_plasma = entity_list[j]->player->ammo_plasma;
+		}
+
+		memcpy(&data[j * sizeof(entity_t)], &ent, sizeof(entity_t));
+		num_ents++;
+	}
+}
+
 void Engine::server_send()
 {
 //	static entity_t old_ent[1024];
@@ -2336,63 +2398,7 @@ void Engine::server_send()
 		}
 
 
-		for (unsigned int j = 0; j < entity_list.size(); j++)
-		{
-			entity_t ent;
-			/*
-			// Vis test causing issues for some reason
-			int leaf_a;
-			int leaf_b;
-
-			bool visible = q3map.vis_test(entity_list[j]->position,
-				entity_list[client_list[i]->ent_id]->position, leaf_a, leaf_b);
-			if ( visible == false )
-				continue;
-			*/
-
-			ent.id = j;
-			ent.type = entity_list[j]->nettype;
-			ent.active = false;
-
-			if (entity_list[j]->trigger)
-			{
-				if (entity_list[j]->trigger->active)
-					ent.active = true;
-				ent.owner = entity_list[j]->trigger->owner;
-			}
-
-			if (entity_list[j]->rigid)
-			{
-				ent.morientation = entity_list[j]->rigid->morientation;
-				ent.angular_velocity = entity_list[j]->rigid->angular_velocity;
-				ent.velocity = entity_list[j]->rigid->velocity;
-				ent.position = entity_list[j]->position;
-			}
-
-
-			if (entity_list[j]->player)
-			{
-				ent.health = entity_list[j]->player->health;
-				ent.armor = entity_list[j]->player->armor;
-				ent.weapon_flags = entity_list[j]->player->weapon_flags;
-				//ent.current_weapon = entity_list[j]->player->current_weapon;
-				ent.ammo_bullets = entity_list[j]->player->ammo_bullets;
-				ent.ammo_shells = entity_list[j]->player->ammo_shells;
-				ent.ammo_rockets = entity_list[j]->player->ammo_rockets;
-				ent.ammo_lightning = entity_list[j]->player->ammo_lightning;
-				ent.ammo_slugs = entity_list[j]->player->ammo_slugs;
-				ent.ammo_plasma = entity_list[j]->player->ammo_plasma;
-			}
-
-//			if (memcmp((void *)&old_ent[j], (void *)&ent, sizeof(entity_t)) != 0)
-			if (1)
-			{
-			//	old_ent[j] = ent;
-				memcpy(&servermsg.data[j * sizeof(entity_t)],
-					&ent, sizeof(entity_t));
-				servermsg.num_ents++;
-			}
-		}
+		serialize_ents(entity_list, servermsg.data, servermsg.num_ents);
 
 		if (client_list[i]->needs_state)
 		{
@@ -2418,6 +2424,12 @@ void Engine::server_send()
 //		huffman_encode_memory((unsigned char *)&servermsg, servermsg.length, &compressed, &compressed_length);
 //		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
 //		free((void *)compressed);
+
+		if (recording)
+		{
+			fwrite(&servermsg, servermsg.length, 1, demofile);
+		}
+
 		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 		if (num_sent <= 0)
 		{
@@ -3936,6 +3948,40 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
 		menu.print(msg);
 		load(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "record %s", data);
+	if (ret == 1)
+	{
+
+		if (q3map.loaded)
+		{
+			demoheader_t header;
+			menu.print(msg);
+			demofile = fopen(data, "wb");
+
+			memcpy(header.magic, "demo", 5);
+			memcpy(header.map, q3map.map_name, 64);
+			fwrite(&header, sizeof(demoheader_t), 1, demofile);
+			recording = true;
+		}
+		else
+		{
+			menu.print("Load map first");
+		}
+		return;
+	}
+
+
+	if (strstr(cmd, "stop"))
+	{
+		if (recording)
+		{
+			menu.print(msg);
+			fclose(demofile);
+			recording = false;
+		}
 		return;
 	}
 

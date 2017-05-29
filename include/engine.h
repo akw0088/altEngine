@@ -75,7 +75,7 @@ public:
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, bool lights);
-
+	void serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents);
 
 	bool select_wave(int source, char *file);
 
@@ -216,6 +216,9 @@ protected:
 	int cl_skip;
 	char servername[512];
 	char password[512];
+
+	bool recording;
+	FILE *demofile;
 	
 	
 	int		server_spawn;	// entity index of hosting player
