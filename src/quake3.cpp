@@ -4842,7 +4842,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 	ret = strcmp(cmd, "teleport");
-	if (ret == 0)
+	if (ret == 0 && engine->client_flag == false)
 	{
 		bool local = entity_list[self]->player->local;
 
@@ -4918,7 +4918,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 
 	ret = sscanf(cmd, "teleport %s %s", data, data2);
-	if (ret == 2)
+	if (ret == 2 && engine->client_flag == false)
 	{
 		snprintf(msg, LINE_SIZE, "target %s\n", data);
 		menu.print(msg);
@@ -4990,7 +4990,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	char *pret = NULL; // linux didnt like pointer to int cast
 	pret = strstr(cmd, "respawn");
-	if (pret)
+	if (pret && engine->client_flag == false)
 	{
 		unsigned int i = last_spawn;
 		bool spawned = false;
@@ -5254,7 +5254,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 	ret = strcmp(cmd, "noclip");
-	if (ret == 0)
+	if (ret == 0 && engine->client_flag == false)
 	{
 		if (self != -1)
 		{
