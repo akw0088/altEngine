@@ -5,10 +5,6 @@
 #endif
 
 
-//#define SHADOWVOL
-//#define FORWARD
-#define INDIRECT
-
 // Height above desired position we allow a step to occur
 // (Fairly large as forward velocity can put you fairly deep forward)
 #define STAIR_HEIGHT 20.0f
@@ -72,7 +68,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	render_mode = MODE_INDIRECT;
 
-
+	multisample = 0;
 	sensitivity = 1.0f;
 
 #ifdef OPENMP
@@ -300,7 +296,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	fb_width = 1024 * res_scale;
 	fb_height = 1024 * res_scale;
-	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
@@ -557,17 +553,17 @@ void Engine::load(char *level)
 	gfx.bindFramebuffer(0);
 
 
-#ifdef SHADOWVOL
-	for(int i = 0; i < entity_list.size(); i++)
+	if (render_mode == MODE_SHADOWVOL)
 	{
-		if (entity_list[i]->light)
+		for (int i = 0; i < entity_list.size(); i++)
 		{
-			entity_list[i]->light->generate_volumes(q3map);
-//			entity_list[i]->rigid->angular_velocity = vec3();
+			if (entity_list[i]->light)
+			{
+				entity_list[i]->light->generate_volumes(q3map);
+				//			entity_list[i]->rigid->angular_velocity = vec3();
+			}
 		}
 	}
-
-#endif
 
 }
 
@@ -711,7 +707,7 @@ void Engine::render(double last_frametime)
 	{
 		int spawn = find_type("player", 0);
 
-		if (shadowmaps)
+		if (shadowmaps || all_lights)
 		{
 			// Generate depth cubemaps for each light
 			render_shadowmaps(); // done at load time
@@ -772,45 +768,58 @@ void Engine::render(double last_frametime)
 	}
 
 
-#ifdef SHADOWVOL
-	matrix4 mvp;
+	if (render_mode == MODE_SHADOWVOL)
+	{
+		matrix4 mvp;
 
-	gfx.clear();
-	gfx.Blend(true);
-	render_scene(false); // render without lights, fill stencil mask, render with lights
-	gfx.Blend(false);
+		gfx.clear();
+		gfx.Blend(true);
+		render_scene(false); // render without lights, fill stencil mask, render with lights
+		gfx.Blend(false);
 
-	gfx.Color(false);
-	gfx.Stencil(true);
-	gfx.Depth(false);
-	gfx.StencilFunc("always", 0, 0);
+		gfx.Color(false);
+		gfx.Stencil(true);
+		gfx.Depth(false);
+		gfx.StencilFunc("always", 0, 0);
 
-	gfx.StencilOp("keep", "keep", "incr"); // increment shadows that pass depth
-	render_shadow_volumes(0);
+		gfx.StencilOp("keep", "keep", "incr"); // increment shadows that pass depth
+		render_shadow_volumes(0);
 
-	gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
-	gfx.CullFace("front");
-	render_shadow_volumes(0);
+		gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
+		gfx.CullFace(1);
+		render_shadow_volumes(0);
 
-	gfx.Depth(true);
-	gfx.Color(true);
-	gfx.CullFace("back");
+		gfx.Depth(true);
+		gfx.Color(true);
+		gfx.CullFace(0);
 
-	gfx.DepthFunc("<="); // is this necessary?
-	gfx.StencilOp("keep", "keep", "keep");
-	
-	//all lit surfaces will correspond to a 0 in the stencil buffer
-	//all shadowed surfaces will be one
-	gfx.StencilFunc("equal", 0, 1);
-	// render with lights
-	gfx.cleardepth();
-	render_scene(true);
-	
+		gfx.DepthFunc("<="); // is this necessary?
+		gfx.StencilOp("keep", "keep", "keep");
 
-	gfx.DepthFunc("<");
-	gfx.Stencil(false);
-#endif
+		//all lit surfaces will correspond to a 0 in the stencil buffer
+		//all shadowed surfaces will be one
+		gfx.StencilFunc("equal", 0, 1);
+		// render with lights
+		gfx.cleardepth();
+		render_scene(true);
 
+
+		gfx.DepthFunc("<");
+		gfx.Stencil(false);
+
+		//Handle realtime keys (typing can be slower)
+		handle_input();
+
+		//render menu
+		if (menu.chatmode == false)
+			game->render_hud(last_frametime);
+		if (menu.ingame)
+			menu.render(global);
+		if (menu.console)
+			menu.render_console(global);
+		if (menu.chatmode)
+			menu.render_chatmode(global);
+	}
 
 
 #ifdef DIRECTX
@@ -829,6 +838,8 @@ void Engine::zoom(float level)
 
 void Engine::render_shadowmaps()
 {
+	mlight2.Select();
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		int spawn = find_type("player", 0);
@@ -842,42 +853,47 @@ void Engine::render_shadowmaps()
 
 		lighti = entity_list[spawn]->player->current_light;
 
-		if (entity_list[i]->light && light_list[lighti] == entity_list[i]->light)
+		if (entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
 
 			matrix4 cube[6];
 
-			// Generate matrices
-			matrix4::mat_right(cube[0], entity_list[i]->position);
-			matrix4::mat_left(cube[1], entity_list[i]->position);
-			matrix4::mat_top(cube[2], entity_list[i]->position);
-			matrix4::mat_bottom(cube[3], entity_list[i]->position);
-			matrix4::mat_forward(cube[4], entity_list[i]->position);
-			matrix4::mat_backward(cube[5], entity_list[i]->position);
-			for (int j = 0; j < 6; j++)
+			if (all_lights == false)
 			{
-				matrix4 mvp = cube[j] * projection;
+				if (lighti >= light_list.size())
+					continue;
+			}
 
-				gfx.fbAttachTexture(light->quad_tex[j]);
-//				gfx.fbAttachTexture(0);
-				gfx.fbAttachDepth(light->depth_tex[j]);
-				gfx.clear();
-//				gfx.Color(false);
-				//		glDrawBuffer(GL_NONE);
-				//		glReadBuffer(GL_NONE);
-				//gfx.CullFace("front");
 
-				render_entities(cube[j], true);
-				//gfx.CullFace("back");
+			if (all_lights || (light_list[lighti] == entity_list[i]->light))
+			{
+				// Generate matrices
+				matrix4::mat_right(cube[0], entity_list[i]->position);
+				matrix4::mat_left(cube[1], entity_list[i]->position);
+				matrix4::mat_top(cube[2], entity_list[i]->position);
+				matrix4::mat_bottom(cube[3], entity_list[i]->position);
+				matrix4::mat_forward(cube[4], entity_list[i]->position);
+				matrix4::mat_backward(cube[5], entity_list[i]->position);
+				for (int j = 0; j < 6; j++)
+				{
+					matrix4 mvp = cube[j] * projection;
 
-				mlight2.Select();
-				vec3 offset(0.0f, 0.0f, 0.0f);
-				mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
-				q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
-				render_entities(mvp, true);
-//				gfx.SelectShader(0);
-//				gfx.Color(true);
+
+					// No real FPS improvement by masking color buffer
+//					gfx.fbAttachTexture(0);
+					gfx.fbAttachTexture(light->quad_tex[j]);
+					gfx.fbAttachDepth(light->depth_tex[j]);
+					gfx.clear();
+
+					vec3 offset(0.0f, 0.0f, 0.0f);
+					mlight2.Params(mvp, light_list, 0, offset, tick_num);
+					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+//					render_entities(cube[j], true);
+
+					//gfx.SelectShader(0);
+					//gfx.Color(true);
+				}
 			}
 		}
 	}
@@ -891,24 +907,24 @@ void Engine::set_dynamic_resolution(float last_frametime)
 		if (fps < 60.0f && res_scale > 0.1f)
 		{
 			res_scale *= 0.75f;
-			fb_width = 2048 * res_scale;
-			fb_height = 2048 * res_scale;
-			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+			fb_width = 1024 * res_scale;
+			fb_height = 1024 * res_scale;
+			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
 		{
 			res_scale *= 1.25f;
-			fb_width = 2048 * res_scale;
-			fb_height = 2048 * res_scale;
-			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+			fb_width = 1024 * res_scale;
+			fb_height = 1024 * res_scale;
+			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		}
 	}
 	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
 	{
 		res_scale = 1.0f;
-		fb_width = 2048 * res_scale;
-		fb_height = 2048 * res_scale;
-		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+		fb_width = 1024 * res_scale;
+		fb_height = 1024 * res_scale;
+		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 	}
 }
 
@@ -4192,18 +4208,41 @@ void Engine::console(char *cmd)
 	{
 		menu.print(msg);
 
-		if (atoi(data))
+		if (atoi(data) == MODE_INDIRECT)
 		{
 			snprintf(msg, LINE_SIZE, "Setting rendermode to indirect\n");
 			menu.print(msg);
 			render_mode = MODE_INDIRECT;
 		}
-		else
+		else if (atoi(data) == MODE_FORWARD)
 		{
 			snprintf(msg, LINE_SIZE, "Setting rendermode to forward\n");
 			menu.print(msg);
 			render_mode = MODE_FORWARD;
 		}
+		else if (atoi(data) == MODE_SHADOWVOL)
+		{
+			if (q3map.loaded == false)
+			{
+				snprintf(msg, LINE_SIZE, "Setting rendermode to shadow volumes\n");
+				menu.print(msg);
+				render_mode = MODE_SHADOWVOL;
+			}
+			else
+			{
+				snprintf(msg, LINE_SIZE, "Must enable shadowvolumes before loading map\n");
+				menu.print(msg);
+			}
+		}
+		return;
+	}
+
+	if (sscanf(cmd, "r_multisample %s", data) == 1)
+	{
+		menu.print(msg);
+
+		multisample = atoi(data);
+		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		return;
 	}
 
@@ -4221,9 +4260,9 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Setting resolution scale to %3.3f\n", atof(data));
 		menu.print(msg);
 		res_scale = atof(data);
-		fb_width = 2048 * res_scale;
-		fb_height = 2048 * res_scale;
-		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
+		fb_width = 1024 * res_scale;
+		fb_height = 1024 * res_scale;
+		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		return;
 	}
 

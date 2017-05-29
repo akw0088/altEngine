@@ -155,6 +155,7 @@ public:
 	bool collision_detect_enable;
 	bool demo;
 	bool shadowmaps;
+	bool all_lights;
 
 //Game logic
 	BaseGame *game;
@@ -196,6 +197,7 @@ protected:
 	unsigned int	depth_tex;
 	unsigned int	fb_width;
 	unsigned int	fb_height;
+	unsigned int	multisample;
 	unsigned int	no_tex;
 	unsigned int	particle_tex;
 

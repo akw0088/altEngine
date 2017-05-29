@@ -84,7 +84,7 @@ public:
 	void SelectShader(int program);
 
 	int checkFramebuffer();
-	int setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex);
+	int setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int multisample);
 	void bindFramebuffer(int fbo);
 	void DeleteFrameBuffer(unsigned int fbo);
 	void fbAttachTexture(int texObj);

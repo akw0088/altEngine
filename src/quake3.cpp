@@ -5352,6 +5352,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	ret = strcmp(cmd, "all_lights");
+	if (ret == 0)
+	{
+		engine->all_lights = !engine->all_lights;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->all_lights);
+		menu.print(msg);
+		return;
+	}
+
 	ret = sscanf(cmd, "animation %s", data);
 	if (ret == 1)
 	{

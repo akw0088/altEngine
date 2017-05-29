@@ -142,7 +142,6 @@
 	#define INVALID_SOCKET	-1
 #endif
 
-//#define SHADOWVOL
 
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
