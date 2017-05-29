@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-Light::Light(Entity *entity, Graphics &gfx, int num)
+Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 {
 	Light::entity = entity;
 	color = vec3(1.0f, 1.0f, 1.0f);
@@ -17,7 +17,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num)
 
 	memset(quad_tex, 0, sizeof(unsigned int) * 6);
 	memset(depth_tex, 0, sizeof(unsigned int) * 6);
-//	generate_cubemaps(1024, 1024);
+	generate_cubemaps(1024 * scale, 1024 * scale);
 }
 
 

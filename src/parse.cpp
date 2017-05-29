@@ -882,7 +882,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 		if (entity.light == NULL)
 		{
-			entity.light = new Light(&entity, gfx, light_num++);
+			entity.light = new Light(&entity, gfx, light_num++, engine->res_scale);
 		}
 		sscanf(value, "%d", &inten);
 		intensity = (float)inten;
@@ -906,7 +906,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (entity.light == NULL)
 		{
 			// generates cubemaps for light, this sucks up memory on large maps
-			entity.light = new Light(&entity, gfx, light_num++);
+			entity.light = new Light(&entity, gfx, light_num++, engine->res_scale);
 		}
 		sscanf(value, "%f %f %f", &r, &g, &b);
 		if (entity.light)

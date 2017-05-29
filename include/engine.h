@@ -154,6 +154,7 @@ public:
 	bool show_hud;
 	bool collision_detect_enable;
 	bool demo;
+	bool shadowmaps;
 
 //Game logic
 	BaseGame *game;
@@ -165,6 +166,8 @@ public:
 
 	unsigned int num_bot;
 	Bsp			q3map;
+	float			res_scale;
+
 
 protected:
 	matrix4		projection;
@@ -193,7 +196,6 @@ protected:
 	unsigned int	depth_tex;
 	unsigned int	fb_width;
 	unsigned int	fb_height;
-	float			res_scale;
 	unsigned int	no_tex;
 	unsigned int	particle_tex;
 

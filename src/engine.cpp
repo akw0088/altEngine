@@ -39,6 +39,7 @@ Engine::Engine()
 	num_bot = 0;
 	emitter.enabled = false;
 	demo = false;
+	shadowmaps = false;
 
 	res_scale = 1.0f;
 	dynamic_resolution = false;
@@ -47,7 +48,7 @@ Engine::Engine()
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
 
-	fov = 45.0f;
+	fov = 50.0f;
 	zNear = 1.0f;
 	zFar = 2001.0f; // zFar - zNear makes nice values
 	inf = true; // above ignored if true
@@ -297,8 +298,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
-	fb_width = 2048 * res_scale;
-	fb_height = 2048 * res_scale;
+	fb_width = 1024 * res_scale;
+	fb_height = 1024 * res_scale;
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex);
 
 	//parse shaders
@@ -708,28 +709,40 @@ void Engine::render(double last_frametime)
 
 	if (render_mode == MODE_INDIRECT)
 	{
-		// Generate depth cubemaps for each light
-	//	render_shadowmaps(); // done at load time
+		int spawn = find_type("player", 0);
+
+		if (shadowmaps)
+		{
+			// Generate depth cubemaps for each light
+			render_shadowmaps(); // done at load time
+		}
+
 		render_to_framebuffer(last_frametime);
 
 		gfx.clear();
-		if (entity_list[find_type("player", 0)]->player->current_light == 0)
+		if (spawn == -1 || (entity_list[spawn]->player && entity_list[spawn]->player->current_light == 0))
 			render_texture(quad_tex);
 		else
 		{
 			for (unsigned int i = 0; i < entity_list.size(); i++)
 			{
+				if (spawn == -1)
+					break;
+
+				if (entity_list[spawn]->player == NULL)
+					break;
+
 				if (entity_list[i]->light)
 				{
-					if (entity_list[i]->light->light_num == entity_list[find_type("player", 0)]->player->current_light)
+					if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
 					{
-						if (input.control)
+						if (input.duck)
 						{
-							testObj = entity_list[i]->light->depth_tex[entity_list[find_type("player", 0)]->player->current_face];
+							testObj = entity_list[i]->light->depth_tex[entity_list[spawn]->player->current_face];
 						}
 						else
 						{
-							testObj = entity_list[i]->light->quad_tex[entity_list[find_type("player", 0)]->player->current_face];
+							testObj = entity_list[i]->light->quad_tex[entity_list[spawn]->player->current_face];
 						}
 						break;
 					}
@@ -818,7 +831,18 @@ void Engine::render_shadowmaps()
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light && light_list[entity_list[find_type("player", 0)]->player->current_light] == entity_list[i]->light)
+		int spawn = find_type("player", 0);
+		int lighti = -1;
+
+		if (spawn == -1)
+			continue;
+
+		if (entity_list[spawn]->player == NULL)
+			continue;
+
+		lighti = entity_list[spawn]->player->current_light;
+
+		if (entity_list[i]->light && light_list[lighti] == entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
 
@@ -851,6 +875,7 @@ void Engine::render_shadowmaps()
 				vec3 offset(0.0f, 0.0f, 0.0f);
 				mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 				q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+				render_entities(mvp, true);
 //				gfx.SelectShader(0);
 //				gfx.Color(true);
 			}
@@ -3138,15 +3163,21 @@ void Engine::handle_game(char key)
 	case '-':
 		if (spawn != -1)
 		{
-			if (entity_list[spawn]->player->current_light > 0)
-				entity_list[spawn]->player->current_light--;
+			if (entity_list[spawn]->player)
+			{
+				if (entity_list[spawn]->player->current_light > 0)
+					entity_list[spawn]->player->current_light--;
+			}
 		}
 		break;
 	case '=':
 		if (spawn != -1)
 		{
-			if (entity_list[spawn]->player->current_light < num_light)
-				entity_list[spawn]->player->current_light++;
+			if (entity_list[spawn]->player)
+			{
+				if (entity_list[spawn]->player->current_light < num_light)
+					entity_list[spawn]->player->current_light++;
+			}
 		}
 		break;
 

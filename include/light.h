@@ -6,7 +6,7 @@
 class Light
 {
 public:
-	Light(Entity *entity, Graphics &gfx, int num);
+	Light(Entity *entity, Graphics &gfx, int num, float scale);
 	void render_shadow_volumes(int current_light);
 	void generate_volumes(Bsp &map);
 

@@ -1137,7 +1137,7 @@ void Quake3::handle_player(int self, input_t &input)
 		if (entity->light == NULL)
 		{
 			entity->player->quad_damage = true;
-			entity->light = new Light(entity, engine->gfx, 999);
+			entity->light = new Light(entity, engine->gfx, 999, engine->res_scale);
 			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
 			entity->light->intensity = 4000.0f;
 			entity->light->attenuation = 0.125f;
@@ -1945,7 +1945,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->trigger->owner = self;
 
 
-		projectile->light = new Light(projectile, engine->gfx, 999);
+		projectile->light = new Light(projectile, engine->gfx, 999, engine->res_scale);
 		projectile->light->color = vec3(0.0f, 0.0f, 1.0f);
 		projectile->light->intensity = 1000.0f;
 	}
@@ -1953,7 +1953,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -2010,7 +2010,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->particle_on = true;
 		projectile->num_particle = 5000;
 
-		projectile->light = new Light(projectile, engine->gfx, 999);
+		projectile->light = new Light(projectile, engine->gfx, 999, engine->res_scale);
 		projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
 		projectile->light->intensity = 1000.0f;
 
@@ -2030,7 +2030,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -2104,7 +2104,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -2264,7 +2264,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -2397,7 +2397,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -2425,7 +2425,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -2547,7 +2547,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999);
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
 	muzzleflash->light->intensity = 3000.0f;
 	muzzleflash->light->attenuation = 0.125f;
@@ -5311,6 +5311,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		engine->show_names = !engine->show_names;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_names);
+		menu.print(msg);
 		return;
 	}
 
@@ -5318,6 +5320,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		engine->show_lines = !engine->show_lines;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_lines);
+		menu.print(msg);
 		return;
 	}
 
@@ -5325,6 +5329,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		engine->show_debug = !engine->show_debug;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_debug);
+		menu.print(msg);
 		return;
 	}
 
@@ -5332,11 +5338,19 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		engine->show_hud = !engine->show_hud;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_hud);
+		menu.print(msg);
 		return;
 	}
 
-
-
+	ret = strcmp(cmd, "shadowmaps");
+	if (ret == 0)
+	{
+		engine->shadowmaps = !engine->shadowmaps;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->shadowmaps);
+		menu.print(msg);
+		return;
+	}
 
 	ret = sscanf(cmd, "animation %s", data);
 	if (ret == 1)
@@ -5578,7 +5592,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->num_particle = 5000;
 
 
-		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
 		ent->light->color = vec3(1.0f, 1.0f, 1.0f);
 		ent->light->intensity = 1000.0f;
 
@@ -5739,7 +5753,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->trigger->knockback = 10.0f;
 
 
-		ent->light = new Light(ent, engine->gfx, 999);
+		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
 		ent->light->color = vec3(0.0f, 0.0f, 1.0f);
 		ent->light->intensity = 1000.0f;
 
@@ -5999,7 +6013,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							sprintf(entity_list[i]->trigger->action, "damage %d", entity_list[i]->trigger->splash_damage);
 							if (entity_list[i]->light == NULL)
 							{
-								entity_list[i]->light = new Light(entity_list[i], engine->gfx, 999);
+								entity_list[i]->light = new Light(entity_list[i], engine->gfx, 999, engine->res_scale);
 							}
 							entity_list[i]->light->intensity = entity_list[i]->trigger->explode_intensity;
 							entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
