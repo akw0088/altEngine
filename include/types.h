@@ -157,7 +157,7 @@ typedef struct
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
-#define CLIENT_HEADER 53
+#define CLIENT_HEADER 45
 
 #ifdef LINUX
 typedef unsigned char byte;
@@ -171,10 +171,10 @@ typedef unsigned char byte;
 */
 typedef struct
 {
-	int				length;
-	unsigned int	qport;
-	unsigned int	sequence;
-	unsigned int	server_sequence;
+	unsigned short int	length;
+	unsigned short int	qport;
+	unsigned short int	sequence;
+	unsigned short int	server_sequence;
 	float			up[3];
 	float			forward[3];
 	float			pos[3];		// Sending position (not used, but interesting to calculate delta's)
@@ -183,7 +183,7 @@ typedef struct
 } clientmsg_t;
 
 
-#define SERVER_HEADER 16
+#define SERVER_HEADER 8
 /*
 	Variable length server msg
 	after num_ents is a variable number of entity states
@@ -192,17 +192,17 @@ typedef struct
 */
 typedef struct
 {
-	int		length;
-	unsigned int	sequence;
-	unsigned int	client_sequence;
-	int 			num_ents;
+	unsigned short int		length;
+	unsigned short int	sequence;
+	unsigned short int	client_sequence;
+	unsigned short int 			num_ents;
 	char			data[256000];
 } servermsg_t;
 
 typedef struct
 {
-	unsigned int	sequence;
-	unsigned int	size; // size of entire header + data
+	unsigned short int	sequence;
+	unsigned short int	size; // size of entire header + data
 	char			msg[256000];
 }
 reliablemsg_t;
@@ -256,8 +256,8 @@ typedef struct
 	char			socketname[80];
 	unsigned int	qport;
 	int				ent_id;
-	unsigned int	client_sequence;
-	unsigned int	server_sequence;
+	unsigned short int	client_sequence;
+	unsigned short int	server_sequence;
 	unsigned int	last_time;
 	input_t			input;
 	netinfo_t		netinfo;

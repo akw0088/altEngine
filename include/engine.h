@@ -75,8 +75,8 @@ public:
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, bool lights);
-	int serialize_ents(char *data, int &num_ents);
-	int deserialize_ents(char *data, int num_ents);
+	int serialize_ents(char *data, unsigned short int &num_ents);
+	int deserialize_ents(char *data, unsigned short int num_ents);
 
 	bool select_wave(int source, char *file);
 

@@ -1867,7 +1867,7 @@ void Quake3::step(int frame_step)
 
 	// handles triggers and the projectile as trigger stuff
 	#pragma omp parallel for num_threads(8)
-	for (unsigned int i = 0; i < engine->max_player; i++)
+	for (int i = 0; i < engine->max_player; i++)
 	{
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();

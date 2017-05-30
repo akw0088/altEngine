@@ -2225,7 +2225,7 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "map %s", q3map.map_name);
-		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+		reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 		reliable.sequence = sequence;
 
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
@@ -2288,7 +2288,7 @@ void Engine::server_recv()
 		servermsg.num_ents = 0;
 		
 		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type("player", 0));
-		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+		reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
 		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
@@ -2316,7 +2316,7 @@ void Engine::server_recv()
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "/servername %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
 			servername, q3map.map_name, (int)client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
-		reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+		reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 		reliable.sequence = sequence;
 
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
@@ -2362,7 +2362,7 @@ void Engine::server_recv()
 }
 
 
-int Engine::serialize_ents(char *data, int &num_ents)
+int Engine::serialize_ents(char *data, unsigned short int &num_ents)
 {
 	for (unsigned int j = 0; j < entity_list.size(); j++)
 	{
@@ -2405,6 +2405,88 @@ int Engine::serialize_ents(char *data, int &num_ents)
 
 		memcpy(&data[j * sizeof(entity_t)], &ent, sizeof(entity_t));
 		num_ents++;
+	}
+	return 0;
+}
+
+int Engine::deserialize_ents(char *data, unsigned short int num_ents)
+{
+	for (int i = 0; i < num_ents; i++)
+	{
+		entity_t	*ent = (entity_t *)data;
+
+		// dont let bad data cause an exception
+		if (ent[i].id >= entity_list.size())
+		{
+			printf("Invalid entity index, bad packet\n");
+			break;
+		}
+
+
+		// Check if an entity is a projectile that needs to be loaded
+		if (ent[i].type != entity_list[ent[i].id]->nettype)
+		{
+			game->make_dynamic_ent(ent[i].type, ent[i].id);
+		}
+
+		if (entity_list[ent[i].id]->trigger)
+		{
+			if (ent[i].active)
+				entity_list[ent[i].id]->trigger->active = true;
+			else
+				entity_list[ent[i].id]->trigger->active = false;
+
+			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
+		}
+
+		if (entity_list[ent[i].id]->player)
+		{
+			entity_list[ent[i].id]->player->health = ent[i].health;
+			entity_list[ent[i].id]->player->armor = ent[i].armor;
+			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
+			// will force server to sync to our current weapon
+			//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
+
+			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
+				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
+			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
+				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
+			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
+				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
+			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
+				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
+			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
+				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
+			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
+				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
+
+		}
+
+
+
+		if (entity_list[ent[i].id]->rigid)
+		{
+			if ((unsigned int)find_type("player", 0) == ent[i].id)
+			{
+				// current entity has the clients predicted position
+				// the ent[i].position has the server (lagged) position
+				// Need to lerp between the two, but then we have time sync issues
+				entity_list[ent[i].id]->position = ent[i].position;
+				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+				camera_frame.pos = ent[i].position;
+			}
+			else
+			{
+				entity_list[ent[i].id]->position = ent[i].position;
+				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+				entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
+				entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+			}
+		}
+		else
+		{
+			entity_list[ent[i].id]->position = ent[i].position;
+		}
 	}
 	return 0;
 }
@@ -2632,90 +2714,6 @@ void Engine::client_send()
 		}
 	}
 }
-
-
-int Engine::deserialize_ents(char *data, int num_ents)
-{
-	for (int i = 0; i < num_ents; i++)
-	{
-		entity_t	*ent = (entity_t *)data;
-
-		// dont let bad data cause an exception
-		if (ent[i].id >= entity_list.size())
-		{
-			printf("Invalid entity index, bad packet\n");
-			break;
-		}
-
-
-		// Check if an entity is a projectile that needs to be loaded
-		if (ent[i].type != entity_list[ent[i].id]->nettype)
-		{
-			game->make_dynamic_ent(ent[i].type, ent[i].id);
-		}
-
-		if (entity_list[ent[i].id]->trigger)
-		{
-			if (ent[i].active)
-				entity_list[ent[i].id]->trigger->active = true;
-			else
-				entity_list[ent[i].id]->trigger->active = false;
-
-			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
-		}
-
-		if (entity_list[ent[i].id]->player)
-		{
-			entity_list[ent[i].id]->player->health = ent[i].health;
-			entity_list[ent[i].id]->player->armor = ent[i].armor;
-			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
-			// will force server to sync to our current weapon
-			//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
-
-			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
-				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
-			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
-				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
-			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
-				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
-			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
-				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
-			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
-				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
-			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
-				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
-
-		}
-
-
-
-		if (entity_list[ent[i].id]->rigid)
-		{
-			if ((unsigned int)find_type("player", 0) == ent[i].id)
-			{
-				// current entity has the clients predicted position
-				// the ent[i].position has the server (lagged) position
-				// Need to lerp between the two, but then we have time sync issues
-				entity_list[ent[i].id]->position = ent[i].position;
-				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-				camera_frame.pos = ent[i].position;
-			}
-			else
-			{
-				entity_list[ent[i].id]->position = ent[i].position;
-				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-				entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
-				entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
-			}
-		}
-		else
-		{
-			entity_list[ent[i].id]->position = ent[i].position;
-		}
-	}
-	return 0;
-}
-
 
 int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 {
@@ -3842,7 +3840,7 @@ void Engine::kick(unsigned int i)
 	servermsg.num_ents = 0;
 
 	sprintf(reliable.msg, "disconnect");
-	reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+	reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 	reliable.sequence = sequence;
 	servermsg.length = SERVER_HEADER + reliable.size;
 	memcpy(servermsg.data, &reliable, reliable.size);
@@ -4517,7 +4515,7 @@ void Engine::connect(char *serverip)
 	clientmsg.num_cmds = 0;
 	clientmsg.qport = qport;
 	strcpy(reliable.msg, "connect");
-	reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+	reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 	reliable.sequence = sequence;
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &reliable, reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + reliable.size;
@@ -4539,7 +4537,7 @@ void Engine::connect(char *serverip)
 			debugf("Loading %s\n", level);
 			load((char *)level);
 			strcpy(reliable.msg, "spawn");
-			reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+			reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 			reliable.sequence = sequence;
 			last_server_sequence = servermsg.sequence;
 		}
@@ -4577,7 +4575,7 @@ void Engine::chat(char *name, char *msg)
 
 
 	strcat(reliable.msg, data);
-	reliable.size = 2 * sizeof(int) + strlen(reliable.msg) + 1;
+	reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
 	reliable.sequence = sequence;
 
 	// Client will get message back from server
