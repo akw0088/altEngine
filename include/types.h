@@ -604,7 +604,7 @@ typedef struct
 {
 	char magic[5];
 	char map[64];
-} demoheader_t;
+} demo_fileheader_t;
 
 typedef struct
 {

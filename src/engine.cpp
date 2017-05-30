@@ -36,7 +36,8 @@ Engine::Engine()
 	emitter.enabled = false;
 	demo = false;
 	shadowmaps = false;
-	recording = false;
+	recording_demo = false;
+	playing_demo = false;
 
 	res_scale = 1.0f;
 	dynamic_resolution = false;
@@ -295,8 +296,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
-	fb_width = 1024 * res_scale;
-	fb_height = 1024 * res_scale;
+	fb_width = (float)(1024 * res_scale);
+	fb_height = (float)(1024 * res_scale);
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 
 	//parse shaders
@@ -419,10 +420,17 @@ void Engine::load(char *level)
 		memcpy(entity->type, "free", strlen("free") + 1);
 		entity_list.push_back(entity);
 
-		if (i < max_player && server_flag)
+		if (i < max_player && (server_flag || playing_demo))
 		{
 			// Forces server to expect player rigid bodies
 			entity->rigid = new RigidBody(entity);
+
+			if (playing_demo)
+			{
+				entity->player = new Player(entity, gfx, audio, 21, TEAM_NONE);
+				if (i == 0)
+					sprintf(entity->type, "player");
+			}
 		}
 	}
 
@@ -2010,19 +2018,49 @@ void Engine::step(int tick)
 		client_send();
 	}
 
+
+	if (playing_demo)
+	{
+		demo_frameheader_t header;
+		static char data[4096];
+		int num_read;
+
+		memset(data, 0, 4096);
+		fread(&header, sizeof(demo_frameheader_t), 1, demofile);
+		if (strcmp(header.magic, "frame") != 0)
+		{
+			playing_demo = false;
+			unload();
+			menu.print("Invalid frame");
+			return;
+		}
+		num_read = fread(&data[0], 1, sizeof(entity_t) * header.num_ents, demofile);
+		if (num_read != sizeof(entity_t) * header.num_ents)
+		{
+			playing_demo = false;
+			unload();
+			menu.print("Not enough entity data in frame");
+			return;
+		}
+		deserialize_ents(data, header.num_ents);
+		update_audio();
+		return;
+	}
+
 	game->step(tick);
 
 	dynamics();
 
-	if (recording)
+	if (recording_demo)
 	{
 		servermsg_t servermsg;
 		demo_frameheader_t header;
 
 		memcpy(header.magic, "frame", 6);
+		serialize_ents(entity_list, servermsg.data, servermsg.num_ents);
 		header.num_ents = servermsg.num_ents;
 		header.tick_num = tick_num;
-		serialize_ents(entity_list, servermsg.data, servermsg.num_ents);
+
 		fwrite(&header, sizeof(demo_frameheader_t), 1, demofile);
 		fwrite(&servermsg, servermsg.num_ents * sizeof(entity_t), 1, demofile);
 	}
@@ -2324,7 +2362,7 @@ void Engine::server_recv()
 }
 
 
-void Engine::serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents)
+int Engine::serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents)
 {
 	for (unsigned int j = 0; j < entity_list.size(); j++)
 	{
@@ -2368,6 +2406,7 @@ void Engine::serialize_ents(vector<Entity *> &entity_list, char *data, int &num_
 		memcpy(&data[j * sizeof(entity_t)], &ent, sizeof(entity_t));
 		num_ents++;
 	}
+	return 0;
 }
 
 void Engine::server_send()
@@ -2425,7 +2464,7 @@ void Engine::server_send()
 //		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
 //		free((void *)compressed);
 
-		if (recording)
+		if (recording_demo)
 		{
 			fwrite(&servermsg, servermsg.length, 1, demofile);
 		}
@@ -2595,6 +2634,89 @@ void Engine::client_send()
 }
 
 
+int Engine::deserialize_ents(char *data, int num_ents)
+{
+	for (int i = 0; i < num_ents; i++)
+	{
+		entity_t	*ent = (entity_t *)data;
+
+		// dont let bad data cause an exception
+		if (ent[i].id >= entity_list.size())
+		{
+			printf("Invalid entity index, bad packet\n");
+			break;
+		}
+
+
+		// Check if an entity is a projectile that needs to be loaded
+		if (ent[i].type != entity_list[ent[i].id]->nettype)
+		{
+			game->make_dynamic_ent(ent[i].type, ent[i].id);
+		}
+
+		if (entity_list[ent[i].id]->trigger)
+		{
+			if (ent[i].active)
+				entity_list[ent[i].id]->trigger->active = true;
+			else
+				entity_list[ent[i].id]->trigger->active = false;
+
+			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
+		}
+
+		if (entity_list[ent[i].id]->player)
+		{
+			entity_list[ent[i].id]->player->health = ent[i].health;
+			entity_list[ent[i].id]->player->armor = ent[i].armor;
+			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
+			// will force server to sync to our current weapon
+			//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
+
+			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
+				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
+			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
+				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
+			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
+				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
+			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
+				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
+			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
+				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
+			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
+				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
+
+		}
+
+
+
+		if (entity_list[ent[i].id]->rigid)
+		{
+			if ((unsigned int)find_type("player", 0) == ent[i].id)
+			{
+				// current entity has the clients predicted position
+				// the ent[i].position has the server (lagged) position
+				// Need to lerp between the two, but then we have time sync issues
+				entity_list[ent[i].id]->position = ent[i].position;
+				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+				camera_frame.pos = ent[i].position;
+			}
+			else
+			{
+				entity_list[ent[i].id]->position = ent[i].position;
+				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
+				entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
+				entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+			}
+		}
+		else
+		{
+			entity_list[ent[i].id]->position = ent[i].position;
+		}
+	}
+	return 0;
+}
+
+
 int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 {
 	if (reliablemsg != NULL)
@@ -2662,83 +2784,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 
 
 
-	for (int i = 0; i < servermsg.num_ents; i++)
-	{
-		entity_t	*ent = (entity_t *)servermsg.data;
-
-		// dont let bad data cause an exception
-		if (ent[i].id >= entity_list.size())
-		{
-			printf("Invalid entity index, bad packet\n");
-			break;
-		}
-
-
-		// Check if an entity is a projectile that needs to be loaded
-		if (ent[i].type != entity_list[ent[i].id]->nettype)
-		{
-			game->make_dynamic_ent(ent[i].type, ent[i].id);
-		}
-
-		if (entity_list[ent[i].id]->trigger)
-		{
-			if (ent[i].active)
-				entity_list[ent[i].id]->trigger->active = true;
-			else
-				entity_list[ent[i].id]->trigger->active = false;
-
-			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
-		}
-
-		if (entity_list[ent[i].id]->player)
-		{
-			entity_list[ent[i].id]->player->health = ent[i].health;
-			entity_list[ent[i].id]->player->armor = ent[i].armor;
-			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
-			// will force server to sync to our current weapon
-//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
-
-			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
-				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
-			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
-				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
-			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
-				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
-			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
-				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
-			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
-				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
-			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
-				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
-
-		}
-
-
-
-		if (entity_list[ent[i].id]->rigid)
-		{
-			if ((unsigned int)find_type("player", 0) == ent[i].id)
-			{
-				// current entity has the clients predicted position
-				// the ent[i].position has the server (lagged) position
-				// Need to lerp between the two, but then we have time sync issues
-				entity_list[ent[i].id]->position = ent[i].position;
-				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-				camera_frame.pos = ent[i].position;
-			}
-			else
-			{
-				entity_list[ent[i].id]->position = ent[i].position;
-				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-				entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
-				entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
-			}
-		}
-		else
-		{
-			entity_list[ent[i].id]->position = ent[i].position;
-		}
-	}
+	deserialize_ents(servermsg.data, servermsg.num_ents);
 
 
 	return 0;
@@ -3866,6 +3912,11 @@ void Engine::unload()
 
 void Engine::destroy()
 {
+	if (recording_demo)
+	{
+		console("stop");
+	}
+
 	free((void *)shader_list[0]);
 	free((void *)hash_list[0]);
 	free((void *)pk3_list[0]);
@@ -3957,14 +4008,14 @@ void Engine::console(char *cmd)
 
 		if (q3map.loaded)
 		{
-			demoheader_t header;
+			demo_fileheader_t header;
 			menu.print(msg);
 			demofile = fopen(data, "wb");
 
 			memcpy(header.magic, "demo", 5);
 			memcpy(header.map, q3map.map_name, 64);
-			fwrite(&header, sizeof(demoheader_t), 1, demofile);
-			recording = true;
+			fwrite(&header, sizeof(demo_fileheader_t), 1, demofile);
+			recording_demo = true;
 		}
 		else
 		{
@@ -3973,14 +4024,40 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "play %s", data);
+	if (ret == 1)
+	{
+
+		if (q3map.loaded)
+		{
+			menu.print("unload map first");
+		}
+		else
+		{
+			demo_fileheader_t header;
+
+			demofile = fopen(data, "rb");
+			if (demofile == NULL)
+			{
+				menu.print("Unable to open demofile");
+				return;
+			}
+
+			fread(&header, sizeof(demo_fileheader_t), 1, demofile);
+			playing_demo = true;
+			load(header.map);
+		}
+		return;
+	}
+
 
 	if (strstr(cmd, "stop"))
 	{
-		if (recording)
+		if (recording_demo)
 		{
 			menu.print(msg);
 			fclose(demofile);
-			recording = false;
+			recording_demo = false;
 		}
 		return;
 	}

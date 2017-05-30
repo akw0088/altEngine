@@ -75,7 +75,8 @@ public:
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, bool lights);
-	void serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents);
+	int serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents);
+	int deserialize_ents(char *data, int num_ents);
 
 	bool select_wave(int source, char *file);
 
@@ -217,7 +218,8 @@ protected:
 	char servername[512];
 	char password[512];
 
-	bool recording;
+	bool recording_demo;
+	bool playing_demo;
 	FILE *demofile;
 	
 	
