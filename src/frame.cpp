@@ -114,7 +114,6 @@ void Frame::update(const vec2 &delta, float scale)
 
 	vec3 old_forward = forward;
 	vec3 old_up = up;
-	float deltad = 50.0f;
 
 	rotate_vector(scale * (delta.y / 50.0f), forward, right);
 	rotate_vector(scale * (delta.y / 50.0f), up, right);

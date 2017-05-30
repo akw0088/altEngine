@@ -30,7 +30,10 @@ SOURCES_CPP := 	xmain.cpp \
 		quake3.cpp \
 		quaternion.cpp \
 		rigidbody.cpp \
-		shader.cpp \
+		shader_opengl.cpp \
+		shader_d3d9.cpp \
+		shader_d3d11.cpp \
+		shader_vulkan.cpp \
 		sin_table.cpp \
 		speaker.cpp \
 		trigger.cpp \
@@ -54,10 +57,10 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++ -fuse-linker-plugin
-#CC := gcc -fuse-linker-plugin
-CPP := clang++
-CC := clang
+CPP := g++ -fuse-linker-plugin
+CC := gcc -fuse-linker-plugin
+#CPP := clang++
+#CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]

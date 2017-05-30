@@ -1867,7 +1867,7 @@ void Quake3::step(int frame_step)
 
 	// handles triggers and the projectile as trigger stuff
 	#pragma omp parallel for num_threads(8)
-	for (int i = 0; i < engine->max_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();
@@ -3760,7 +3760,7 @@ void Quake3::render_hud(double last_frametime)
 
 			if (engine->server_flag)
 			{
-				for (int i = 0; i < engine->client_list.size(); i++)
+				for (unsigned int i = 0; i < engine->client_list.size(); i++)
 				{
 					snprintf(msg, LINE_SIZE, "[client %d]", i );
 					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
