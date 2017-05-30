@@ -296,8 +296,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
-	fb_width = (float)(1024 * res_scale);
-	fb_height = (float)(1024 * res_scale);
+	fb_width = (unsigned int)(1024 * res_scale);
+	fb_height = (unsigned int)(1024 * res_scale);
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 
 	//parse shaders
@@ -564,7 +564,7 @@ void Engine::load(char *level)
 
 	if (render_mode == MODE_SHADOWVOL)
 	{
-		for (int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
 			{
@@ -852,7 +852,7 @@ void Engine::render_shadowmaps()
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		int spawn = find_type("player", 0);
-		int lighti = -1;
+		unsigned int lighti = 0;
 
 		if (spawn == -1)
 			continue;
@@ -908,37 +908,37 @@ void Engine::render_shadowmaps()
 	}
 }
 
-void Engine::set_dynamic_resolution(float last_frametime)
+void Engine::set_dynamic_resolution(double last_frametime)
 {
 	if (q3map.loaded)
 	{
-		float fps = 1000.0 / last_frametime;
+		double fps = 1000.0 / last_frametime;
 		if (fps < 60.0f && res_scale > 0.1f)
 		{
 			res_scale *= 0.75f;
-			fb_width = 1024 * res_scale;
-			fb_height = 1024 * res_scale;
+			fb_width = (unsigned int)(1024 * res_scale);
+			fb_height = (unsigned int)(1024 * res_scale);
 			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
 		{
 			res_scale *= 1.25f;
-			fb_width = 1024 * res_scale;
-			fb_height = 1024 * res_scale;
+			fb_width = (unsigned int)(1024 * res_scale);
+			fb_height = (unsigned int)(1024 * res_scale);
 			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		}
 	}
 	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
 	{
 		res_scale = 1.0f;
-		fb_width = 1024 * res_scale;
-		fb_height = 1024 * res_scale;
+		fb_width = (unsigned int)(1024 * res_scale);
+		fb_height = (unsigned int)(1024 * res_scale);
 		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 	}
 }
 
 
-void Engine::render_to_framebuffer(float last_frametime)
+void Engine::render_to_framebuffer(double last_frametime)
 {
 	if (dynamic_resolution)
 		set_dynamic_resolution(last_frametime);
@@ -2057,7 +2057,7 @@ void Engine::step(int tick)
 		demo_frameheader_t header;
 
 		memcpy(header.magic, "frame", 6);
-		serialize_ents(entity_list, servermsg.data, servermsg.num_ents);
+		serialize_ents(servermsg.data, servermsg.num_ents);
 		header.num_ents = servermsg.num_ents;
 		header.tick_num = tick_num;
 
@@ -2362,7 +2362,7 @@ void Engine::server_recv()
 }
 
 
-int Engine::serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents)
+int Engine::serialize_ents(char *data, int &num_ents)
 {
 	for (unsigned int j = 0; j < entity_list.size(); j++)
 	{
@@ -2437,7 +2437,7 @@ void Engine::server_send()
 		}
 
 
-		serialize_ents(entity_list, servermsg.data, servermsg.num_ents);
+		serialize_ents(servermsg.data, servermsg.num_ents);
 
 		if (client_list[i]->needs_state)
 		{
@@ -2782,11 +2782,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 		}
 	}
 
-
-
 	deserialize_ents(servermsg.data, servermsg.num_ents);
-
-
 	return 0;
 }
 
@@ -4391,7 +4387,7 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "Setting mouse sensitivity to %3.3f\n", atof(data));
 		menu.print(msg);
-		sensitivity = atof(data);
+		sensitivity = (float)atof(data);
 		return;
 	}
 
@@ -4399,9 +4395,9 @@ void Engine::console(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "Setting resolution scale to %3.3f\n", atof(data));
 		menu.print(msg);
-		res_scale = atof(data);
-		fb_width = 1024 * res_scale;
-		fb_height = 1024 * res_scale;
+		res_scale = (float)atof(data);
+		fb_width = (unsigned int)(1024 * res_scale);
+		fb_height = (unsigned int)(1024 * res_scale);
 		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		return;
 	}

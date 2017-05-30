@@ -75,7 +75,7 @@ public:
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, bool lights);
-	int serialize_ents(vector<Entity *> &entity_list, char *data, int &num_ents);
+	int serialize_ents(char *data, int &num_ents);
 	int deserialize_ents(char *data, int num_ents);
 
 	bool select_wave(int source, char *file);
@@ -88,8 +88,8 @@ public:
 	int get_load_wave(const char *file);
 
 	void destroy_buffers();
-	void render_to_framebuffer(float last_frametime);
-	void set_dynamic_resolution(float last_frametime);
+	void render_to_framebuffer(double last_frametime);
+	void set_dynamic_resolution(double last_frametime);
 	void handle_input();
 
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self);
