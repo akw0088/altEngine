@@ -164,6 +164,7 @@ public:
 	bool spawned;
 
 	bot_state_t bot_state;
+	int alert_timer;
 	bot_state_t last_state;
 	player_state_t state;
 	int get_item;

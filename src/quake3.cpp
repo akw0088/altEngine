@@ -698,6 +698,13 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 #define SND_DROPGUN 300
 	snd_table[SND_DROPGUN] = snd_wave.size() - 1;
 
+
+	strcpy(wave.file, "sound/soldier/sight1.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SOLDIER_SIGHT 301
+	snd_table[SND_SOLDIER_SIGHT] = snd_wave.size() - 1;
+
 }
 
 team_t Quake3::get_team()
@@ -1737,6 +1744,17 @@ void Quake3::step(int frame_step)
 			//clear path
 			bot->player->path.step = 0;
 			bot->player->path.length = 0;
+
+			if (bot->player->alert_timer == 0)
+			{
+				engine->play_wave(bot->position, SND_SOLDIER_SIGHT);
+				bot->player->alert_timer = 20 * TICK_RATE;
+			}
+		}
+		else
+		{
+			if (bot->player->alert_timer > 0)
+				bot->player->alert_timer--;
 		}
 
 

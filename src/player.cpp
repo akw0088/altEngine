@@ -74,6 +74,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	health = 125;
 	armor = 0;
+	alert_timer = 0;
 	flight_timer = 0;
 	teleport_timer = 0;
 	drown_timer = 0;
@@ -525,7 +526,9 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 			else
 			{
 				if (bot_state == BOT_ALERT)
+				{
 					bot_state = BOT_IDLE;
+				}
 			}
 
 			if (distance < 400.0f)
