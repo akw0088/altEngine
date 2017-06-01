@@ -75,6 +75,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	health = 125;
 	armor = 0;
 	alert_timer = 0;
+	idle_timer = (20 + rand() % 10) * TICK_RATE;
 	flight_timer = 0;
 	teleport_timer = 0;
 	drown_timer = 0;

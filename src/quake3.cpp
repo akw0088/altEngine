@@ -705,6 +705,12 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 #define SND_SOLDIER_SIGHT 301
 	snd_table[SND_SOLDIER_SIGHT] = snd_wave.size() - 1;
 
+	strcpy(wave.file, "sound/soldier/idle.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SOLDIER_IDLE 302
+	snd_table[SND_SOLDIER_IDLE] = snd_wave.size() - 1;
+
 }
 
 team_t Quake3::get_team()
@@ -1753,10 +1759,18 @@ void Quake3::step(int frame_step)
 		}
 		else
 		{
+			if (bot->player->idle_timer > 0)
+				bot->player->idle_timer--;
+
 			if (bot->player->alert_timer > 0)
 				bot->player->alert_timer--;
 		}
 
+		if (bot->player->idle_timer == 0)
+		{
+			bot->player->idle_timer = (20 + rand() % 10) * TICK_RATE;
+			engine->play_wave(bot->position, SND_SOLDIER_IDLE);
+		}
 
 		if (bot->player->bot_state == BOT_IDLE || bot->player->bot_state == BOT_EXPLORE)
 		{
@@ -1765,6 +1779,11 @@ void Quake3::step(int frame_step)
 			//clear path just in case
 			bot->player->path.step = 0;
 			bot->player->path.length = 0;
+		}
+		else
+		{
+			if (bot->player->bot_state != BOT_GET_ITEM)
+				bot->player->idle_timer = (20 + rand() % 10) * TICK_RATE;
 		}
 
 		float speed_scale = 1.0f;
