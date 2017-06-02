@@ -43,6 +43,8 @@ void delta_uncompress(char *output, char *input, char *delta, int size);
 void runlength_encode(uint8_t *output, rletable_t *table, int *table_size, uint8_t *input, unsigned int *size);
 void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsigned int *size);
 char *get_pakfile(char *pakfile, char *file);
+char *get_wadfile(char *wadfile, char *lump, int *lump_size);
+void lump_to_wave(char *lump_data, int size, wave_t *wave);
 
 
 // Lerp between A and B where time is within [0,1]

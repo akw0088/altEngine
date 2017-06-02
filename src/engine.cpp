@@ -52,7 +52,6 @@ Engine::Engine()
 	inf = true; // above ignored if true
 }
 
-
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
@@ -258,6 +257,21 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	global.init(&gfx);
 	audio.init();
+
+	wave_t wave;
+	waveFormat_t format;
+	wave.format = &format;
+
+	int lump_size = 0;
+	//DSSHOTGN
+	//DSDMPAIN
+	char *sound_lump = get_wadfile("media/DOOM1.WAD", "DSTELEPT", &lump_size);
+	lump_to_wave(sound_lump, lump_size, &wave);
+	alGenBuffers(1, (unsigned int *)&doom_sound);
+	alBufferData(doom_sound, AL_FORMAT_MONO8, wave.pcmData, wave.dataSize, wave.format->sampleRate);
+
+
+
 	menu.init(&gfx, &audio, pk3_list, num_pk3);
 
 
@@ -4653,7 +4667,10 @@ bool Engine::play_wave(vec3 &position, int index)
 
 	audio.source_position(source, &position.x);
 
-	audio.select_buffer(source, snd_wave[index].buffer);
+	if (index != 302)
+		audio.select_buffer(source, snd_wave[index].buffer);
+	else
+		audio.select_buffer(source, doom_sound);
 	audio.play(source);
 	return true;
 }

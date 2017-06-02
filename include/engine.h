@@ -108,6 +108,7 @@ public:
 //temp
 	unsigned int testObj;
 	unsigned int num_light;
+	int doom_sound;
 
 
 	unsigned int audio_source[32];
