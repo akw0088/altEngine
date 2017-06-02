@@ -2,18 +2,10 @@
 
 typedef struct
 {
-	char id[4];
+	char id[4]; //PACK
 	int dir_offset;
 	int dir_length;
 } pak_header_t;
-
-typedef struct
-{
-	char name[56];
-	int offset;
-	int length;
-} pak_entry_t;
-
 
 typedef struct
 {
@@ -24,9 +16,16 @@ typedef struct
 
 typedef struct
 {
-	int file_offset;
-	int size;
-	unsigned char name[8];
+	char name[56];
+	int offset;
+	int length;
+} pak_entry_t;
+
+typedef struct
+{
+	int offset;
+	int length;
+	char name[8];
 } wad_lump_t;
 
 
@@ -154,8 +153,8 @@ char *get_wadfile(char *wadfile, char *lump, int *lump_size)
 
 		if (strstr(lump, name) != 0)
 		{
-			lump_data = &data[lump_table[i].file_offset];
-			*lump_size = lump_table[i].size;
+			lump_data = &data[lump_table[i].offset];
+			*lump_size = lump_table[i].length;
 			break;
 		}
 	}
