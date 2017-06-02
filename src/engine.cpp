@@ -267,9 +267,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	//DSDMPAIN
 	char *sound_lump = get_wadfile("media/DOOM1.WAD", "DSTELEPT", &lump_size);
 	lump_to_wave(sound_lump, lump_size, &wave);
-	alGenBuffers(1, (unsigned int *)&doom_sound);
-	alBufferData(doom_sound, AL_FORMAT_MONO8, wave.pcmData, wave.dataSize, wave.format->sampleRate);
-
+	audio.load_doom(wave, &doom_sound);
 
 
 	menu.init(&gfx, &audio, pk3_list, num_pk3);

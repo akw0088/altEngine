@@ -9,6 +9,7 @@ public:
 	void init();
 	void load(wave_t &wave);
 	int load_ogg(char *filename, wave_t &wave);
+	void load_doom(wave_t &wave, int *buffer);
 	void play(int hSource);
 	void stop(int hSource);
 	int create_source(bool loop, bool global);

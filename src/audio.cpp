@@ -409,6 +409,13 @@ int Audio::load_ogg(char *filename, wave_t &wave)
 }
 
 
+
+void Audio::load_doom(wave_t &wave, int *buffer)
+{
+	alGenBuffers(1, (unsigned int *)buffer);
+	alBufferData(*buffer, AL_FORMAT_MONO8, wave.pcmData, wave.dataSize, wave.format->sampleRate);
+}
+
 void Audio::load(wave_t &wave)
 {
 	char	*end;
