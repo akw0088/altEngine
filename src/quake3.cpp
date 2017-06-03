@@ -3760,7 +3760,7 @@ void Quake3::render_hud(double last_frametime)
 				red_flag_caps, capturelimit,
 				blue_flag_caps, capturelimit);
 		else
-			snprintf(msg, LINE_SIZE, "Scores: Fraglimit %d Timelimit %d Round Time %d:%2d", fraglimit, timelimit, round_time / 60, round_time % 60);
+			snprintf(msg, LINE_SIZE, "Scores: Fraglimit %d Timelimit %d Round Time %d:%02d", fraglimit, timelimit, round_time / 60, round_time % 60);
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
 
 
