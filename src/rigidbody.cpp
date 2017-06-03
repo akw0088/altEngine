@@ -335,6 +335,36 @@ bool RigidBody::collision_detect_simple(RigidBody &body)
 	return false;
 }
 
+bool RigidBody::collision_distance(RigidBody &body)
+{
+	vec3 distance = body.entity->position - entity->position;
+
+	// Should only be for player/player collisions
+	if (body.entity->player == NULL)
+		return false;
+
+	if (body.entity->player->health < 0)
+		return false;
+
+	if (entity->player->health < 0)
+		return false;
+
+	if (distance.magnitude() < 50.0)
+	{
+		if (distance.magnitude() < 20.0f)
+		{
+			//telefrag
+			body.entity->player->telefragged = entity;
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 bool RigidBody::collision_detect(RigidBody &body)
 {
 	Plane plane[6];

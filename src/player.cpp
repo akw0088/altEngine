@@ -56,6 +56,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	Player::team = team;
 
+	telefragged = NULL;
+
 	type = UNKNOWN;
 
 
@@ -401,7 +403,6 @@ void Player::best_weapon()
 		current_weapon = wp_machinegun;
 
 }
-
 
 float Player::DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point)
 {

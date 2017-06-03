@@ -1863,8 +1863,11 @@ bool Engine::collision_detect(RigidBody &body)
 		return true;
 	}
 
-//	if (body_collision(body))
-//		return true;
+	if (body.entity->player)
+	{
+		if (body_collision(body))
+			return true;
+	}
 
 	return false;
 }
@@ -1881,13 +1884,16 @@ bool Engine::map_collision(RigidBody &body)
 	if (body.noclip)
 		return false;
 
-	vec3 mid[4];
-	
-	// Do additional mid point testing (front back left right points, mid level)
-	mid[0] = body.aabb[0] + vec3(body.aabb[7].x / 2, 0, body.aabb[7].z / 2);
-	mid[1] = body.aabb[0] + vec3(0.0f, body.aabb[7].y / 2, body.aabb[7].z / 2);
-	mid[2] = body.aabb[0] + vec3(body.aabb[7].x / 2, body.aabb[7].y, body.aabb[7].z / 2);
-	mid[3] = body.aabb[0] + vec3(body.aabb[7].x, body.aabb[7].y / 2, body.aabb[7].z / 2);
+	if (body.entity->player)
+	{
+		vec3 mid[4];
+
+		// Do additional mid point testing (front back left right points, mid level)
+		mid[0] = body.aabb[0] + vec3(body.aabb[7].x / 2, 0, body.aabb[7].z / 2);
+		mid[1] = body.aabb[0] + vec3(0.0f, body.aabb[7].y / 2, body.aabb[7].z / 2);
+		mid[2] = body.aabb[0] + vec3(body.aabb[7].x / 2, body.aabb[7].y, body.aabb[7].z / 2);
+		mid[3] = body.aabb[0] + vec3(body.aabb[7].x, body.aabb[7].y / 2, body.aabb[7].z / 2);
+	}
 
 	// Check bounding box against map
 	for(int i = 0; i < 8 + 4; i++)
@@ -1903,6 +1909,8 @@ bool Engine::map_collision(RigidBody &body)
 		}
 		else
 		{
+			if (body.entity->player == NULL)
+				break;
 			point = body.aabb[i] - body.center + body.entity->position;
 			oldpoint = body.aabb[i] - body.center + body.old_position;
 		}
@@ -1995,8 +2003,10 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
-			body.collision_detect(*entity_list[i]->rigid);
+//		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
+		if (body.collision_distance(*entity_list[i]->rigid))
+			return true;
+
 	}
 	return false;
 }

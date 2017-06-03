@@ -15,6 +15,7 @@ public:
 	bool collision_detect(Plane &p);
 	bool collision_detect_simple(RigidBody &body);
 	bool collision_detect(RigidBody &body);
+	bool collision_distance(RigidBody &body);
 	void impulse(Plane &plane, vec3 &vertex);
 	void impulse(RigidBody &rigid, vec3 &point);
 	void impulse(RigidBody &rigid, vec3 &point, Plane &plane);

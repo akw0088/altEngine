@@ -120,6 +120,7 @@ public:
 	bool holdable_teleporter;
 	bool holdable_medikit;
 	bool holdable_flag;
+	Entity *telefragged;
 
 	unsigned int reload_timer;
 	unsigned int drown_timer;

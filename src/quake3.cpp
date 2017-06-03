@@ -888,6 +888,31 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player == NULL)
 		return;
 
+	if (entity->player->telefragged)
+	{
+		char msg[512];
+		Entity *entity2 = entity->player->telefragged;
+		entity->player->telefragged = NULL;
+
+
+		if (round_time > 1)
+		{
+			entity->player->health = -100;
+			entity->player->stats.deaths++;
+			entity2->player->stats.kills++;
+
+			sprintf(msg, "%s telefragged %s\n", entity2->player->name, entity->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
+			handle_frags_left(*(entity2->player));
+		}
+		else
+		{
+			console(self, "respawn", engine->menu, engine->entity_list);
+		}
+	}
+
 	if (entity->player->excellent_timer > 0)
 		entity->player->excellent_timer--;
 
@@ -1702,6 +1727,7 @@ void Quake3::step(int frame_step)
 		bool isbot = (entity->player && entity->player->type == BOT);
 		bool isclient = (entity->player && entity->player->type == CLIENT);
 		bool isserver = (entity->player && entity->player->type == SERVER);
+
 
 		if (isplayer || isbot || isserver)
 		{
