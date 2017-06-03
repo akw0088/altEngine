@@ -1024,8 +1024,8 @@ int spiral(float distance, vec3 &scale, float step, vec3 *point)
 
 int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 {
+	static vertex_t vert[512];
 	vec3 point[512];
-	vertex_t vert[512];
 	int index[512];
 	vec3 scale(5.0f, 5.0f, 20.0f);
 	vec3 offset(0.0f, 0.0f, -12.0f);
@@ -1067,8 +1067,8 @@ int lightning(float distance, vec3 &scale, float step, vec3 *point)
 
 int gen_lightning(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 {
+	static vertex_t vert[512];
 	vec3 point[512];
-	vertex_t vert[512];
 	int index[512];
 	vec3 scale(29.0f, 20.0f, 5.0f);
 	vec3 offset(-10.0f, -10.0f, -12.0f);

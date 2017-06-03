@@ -941,12 +941,12 @@ void Graphics::GetDebugLog()
 	GLint maxMsgLen = 0;
 	glGetIntegerv(GL_MAX_DEBUG_MESSAGE_LENGTH, &maxMsgLen);
 
-	char buffer[4096] = { 0 };
-	GLenum	source[1000];
-	GLenum	type[1000];
-	GLenum	severity[1000];
-	GLuint	id[1000];
-	GLsizei	length[1000];
+	static char buffer[4096] = { 0 };
+	static GLenum	source[1000];
+	static GLenum	type[1000];
+	static GLenum	severity[1000];
+	static GLuint	id[1000];
+	static GLsizei	length[1000];
 
 
 	GLuint numFound = glGetDebugMessageLog(1000, 4096, &source[0], &type[0], &id[0], &severity[0], &length[0], &buffer[0]);

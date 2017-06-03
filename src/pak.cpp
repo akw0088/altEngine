@@ -123,6 +123,7 @@ char *get_wadfile(char *wadfile, char *lump, int *lump_size)
 	if (data == NULL)
 	{
 		printf("Unable to open %s\n", wadfile);
+		return NULL;
 	}
 
 	header =(wad_header_t *)data;

@@ -753,6 +753,10 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 	{
 		spawn_type = "info_player_deathmatch";
 	}
+	else
+	{
+		spawn_type = "unknown";
+	}
 	num_player++;
 
 	for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
@@ -4173,10 +4177,10 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 
 void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 {
+	static vertex_t vertex[512];
 	matrix4 trans2;
 	matrix4 mvp2;
 	matrix4 model;
-	vertex_t vertex[512];
 	int index[512];
 	int i;
 
@@ -4310,7 +4314,7 @@ void Quake3::draw_crosshair()
 
 void Quake3::create_icon()
 {
-	vertex_t vert[512];
+	static vertex_t vert[512];
 
 	for (unsigned int i = 0; i < icon_list.size(); i++)
 	{

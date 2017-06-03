@@ -266,8 +266,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	//DSSHOTGN
 	//DSDMPAIN
 	char *sound_lump = get_wadfile("media/DOOM1.WAD", "DSTELEPT", &lump_size);
-	lump_to_wave(sound_lump, lump_size, &wave);
-	audio.load_doom(wave, &doom_sound);
+	if (sound_lump != NULL)
+	{
+		lump_to_wave(sound_lump, lump_size, &wave);
+		audio.load_doom(wave, &doom_sound);
+	}
 
 
 	menu.init(&gfx, &audio, pk3_list, num_pk3);
@@ -2065,7 +2068,7 @@ void Engine::step(int tick)
 
 	if (recording_demo)
 	{
-		servermsg_t servermsg;
+		static servermsg_t servermsg;
 		demo_frameheader_t header;
 
 		memcpy(header.magic, "frame", 6);
@@ -2094,8 +2097,8 @@ void Engine::server_send_state(int client)
 
 void Engine::server_recv()
 {
-	servermsg_t	servermsg;
-	clientmsg_t clientmsg;
+	static servermsg_t	servermsg;
+	static clientmsg_t clientmsg;
 	char socketname[LINE_SIZE];
 	bool connected = false;
 	int index = -1;
@@ -2211,11 +2214,13 @@ void Engine::server_recv()
 				{
 					sprintf(name, "%s", reliablemsg->msg + 5);
 					char *end = strstr(name, ":");
-
-					end[0] = '\0';
-					sprintf(msg, "say \"%s\"", strstr(reliablemsg->msg, ":") + 2);
-					//  Echoes chat back to all clients
-					chat(name, msg);
+					if (end != NULL)
+					{
+						end[0] = '\0';
+						sprintf(msg, "say \"%s\"", strstr(reliablemsg->msg, ":") + 2);
+						//  Echoes chat back to all clients
+						chat(name, msg);
+					}
 				}
 			}
 		}
@@ -2418,6 +2423,8 @@ int Engine::serialize_ents(char *data, unsigned short int &num_ents)
 		memcpy(&data[j * sizeof(entity_t)], &ent, sizeof(entity_t));
 		num_ents++;
 	}
+
+//	printf("serialize_ents: size is %d\n", num_ents * sizeof(entity_t));
 	return 0;
 }
 
@@ -2509,7 +2516,7 @@ void Engine::server_send()
 //	unsigned char	*compressed = NULL;
 //	unsigned char	*data = NULL;
 //	unsigned int	compressed_length = 0;
-	servermsg_t	servermsg;
+	static servermsg_t	servermsg;
 
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
@@ -2604,7 +2611,7 @@ void Engine::client_recv()
 {
 //	static unsigned char	compressed[256000];
 //	unsigned char *data = NULL;
-	servermsg_t	servermsg;
+	static servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
 
@@ -2677,7 +2684,7 @@ void Engine::client_recv()
 
 void Engine::client_send()
 {
-	clientmsg_t clientmsg;
+	static clientmsg_t clientmsg;
 	unsigned int socksize = sizeof(sockaddr_in);
 	int keystate = GetKeyState(input);
 
@@ -3845,7 +3852,7 @@ void Engine::kick(unsigned int i)
 		return;
 	}
 
-	servermsg_t servermsg = { 0 };
+	static servermsg_t servermsg = { 0 };
 
 	servermsg.sequence = sequence + 1;
 	servermsg.client_sequence = reliable.sequence;
@@ -4515,8 +4522,8 @@ int Engine::bind(int port)
 
 void Engine::connect(char *serverip)
 {
-	clientmsg_t	clientmsg;
-	servermsg_t servermsg;
+	static clientmsg_t	clientmsg;
+	static servermsg_t servermsg;
 
 	client_flag = false;
 
