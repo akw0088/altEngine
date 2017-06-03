@@ -434,6 +434,48 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 	}
 }
 
+void RigidBody::frame2ent_yaw(Frame *camera, input_t &input)
+{
+	vec3		forward = camera->forward;
+	vec3		up(0.0f, 1.0f, 0.0f);
+	vec3		right;
+
+	forward.y = 0.0f;
+	forward.normalize();
+
+	right = vec3::crossproduct(forward, up);
+	right.normalize();
+	up = vec3::crossproduct(right, forward);
+	up.normalize();
+
+	//	forward.y = 0.0f;
+	//	forward.normalize();
+	right = vec3::crossproduct(forward, up);
+	right.normalize();
+	if (input.control == false)
+	{
+		//		entity->rigid->sleep = false;
+		entity->rigid->gravity = true;
+		camera->pos = entity->position;
+
+		morientation.m[0] = right.x;
+		morientation.m[1] = right.y;
+		morientation.m[2] = right.z;
+
+		morientation.m[3] = camera->up.x;
+		morientation.m[4] = camera->up.y;
+		morientation.m[5] = camera->up.z;
+
+		morientation.m[6] = -forward.x;
+		morientation.m[7] = -forward.y;
+		morientation.m[8] = -forward.z;
+	}
+	else
+	{
+		//		entity->position = camera->pos;
+	}
+}
+
 void RigidBody::save_config(cfg_t &config)
 {
 	config.morientation = morientation;

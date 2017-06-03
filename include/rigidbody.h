@@ -19,6 +19,7 @@ public:
 	void impulse(RigidBody &rigid, vec3 &point);
 	void impulse(RigidBody &rigid, vec3 &point, Plane &plane);
 	void frame2ent(Frame *camera_frame, input_t &input);
+	void frame2ent_yaw(Frame *camera_frame, input_t &input);
 	void save_config(cfg_t &config);
 	void load_config(cfg_t &config);
 

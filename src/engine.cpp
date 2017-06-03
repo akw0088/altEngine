@@ -1341,24 +1341,33 @@ void Engine::render_players(matrix4 &trans, bool lights)
 			{
 
 				//md5 faces right, need to flip right and forward orientation
-				vec4 temp;
-
+				// also forcing to yaw only (no up / down rotation)
 				entity->rigid->get_matrix(mvp.m);
 
-				temp.x = mvp.m[0];
-				temp.y = mvp.m[1];
-				temp.z = mvp.m[2];
-				temp.w = mvp.m[3];
+				vec3 forward(mvp.m[8], mvp.m[9], mvp.m[10]);
+				vec3 up(0.0f, 1.0f, 0.0f);
 
-				mvp.m[0] = mvp.m[8];
-				mvp.m[1] = mvp.m[9];
-				mvp.m[2] = mvp.m[10];
-				mvp.m[3] = mvp.m[11];
+				forward.y = 0.0f;
+				forward.normalize();
+				vec3 right = vec3::crossproduct(forward, up);
+				right.normalize();
+				up = vec3::crossproduct(right, forward);
+				up.normalize();
 
-				mvp.m[8] = -temp.x;
-				mvp.m[9] = -temp.y;
-				mvp.m[10] = -temp.z;
-				mvp.m[11] = -temp.w;
+				right = vec3::crossproduct(forward, up);
+				right.normalize();
+
+				mvp.m[0] = forward.x;
+				mvp.m[1] = forward.y;
+				mvp.m[2] = forward.z;
+
+				mvp.m[4] = up.x;
+				mvp.m[5] = up.y;
+				mvp.m[6] = up.z;
+
+				mvp.m[8]  = right.x;
+				mvp.m[9]  = right.y;
+				mvp.m[10] = right.z;
 
 
 				mvp = (mvp * trans) * projection;
@@ -4713,20 +4722,20 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 				vec3 endpoint = entity_list[i]->position;
 
 				// Hit someone, do BSP trace to check if a wall is in the way
-	                        q3map.trace(origin, endpoint);
-	                        if (q3map.collision)
-	                        {
+	            q3map.trace(origin, endpoint);
+	            if (q3map.collision)
+	            {
 					vec3 dist1 = endpoint - origin;
 					vec3 dist2 = entity_list[i]->position - origin;
 
-	                                q3map.collision = false;
+	                q3map.collision = false;
 					if (dist1.magnitude() > dist2.magnitude() )
 					{
 						index_list[j++] = i;
 						num_index++;
 	        	                        break;
 					}
-	                        }
+	            }
 				else
 				{
 					index_list[j++] = i;
