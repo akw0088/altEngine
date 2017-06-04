@@ -5,8 +5,8 @@
 #endif
 
 #define ACCEL (0.25f)
-#define MAX_SPEED 3.5f
-#define MAX_AIR_SPEED 4.5f
+#define MAX_SPEED 3.0f
+#define MAX_AIR_SPEED 4.0f
 
 
 RigidBody::RigidBody(Entity *entity)
@@ -637,8 +637,14 @@ float RigidBody::get_height()
 // Move negative relative to the forward vector
 bool RigidBody::move(input_t &input, float speed_scale)
 {
+	float air_control = 1.0f;
+	float jump_scale = 0.75f;
 	Frame camera;
 	Frame yaw;
+
+	if (on_ground == false)
+		air_control = 0.25;
+
 
 	get_frame(camera);
 	vec3	forward = camera.forward;
@@ -676,12 +682,12 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if (water == false && noclip == false && flight == false)
 		{
-			velocity += -yaw.forward * ACCEL * speed_scale;
+			velocity += -yaw.forward * ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else
 		{
-			velocity += -forward * ACCEL * speed_scale;
+			velocity += -forward * ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 	}
@@ -689,7 +695,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if (water == false && noclip == false && flight == false)
 		{
-			velocity += yaw.forward * ACCEL * speed_scale;
+			velocity += yaw.forward * ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else
@@ -701,24 +707,18 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 	if (input.moveleft)
 	{
-		velocity += -yaw_right * ACCEL * speed_scale;
+		velocity += -yaw_right * ACCEL * air_control * speed_scale;
 		moved = true;
 	}
 	if (input.moveright)
 	{
-		velocity += yaw_right * ACCEL * speed_scale;
+		velocity += yaw_right * ACCEL * air_control * speed_scale;
 		moved = true;
 	}
 	if (input.jump)
 	{
 		jumped = true;
 		moved = true;
-
-		if (water || noclip || flight )
-		{
-			velocity.y += ACCEL * speed_scale;
-			moved = true;
-		}
 	}
 	if (input.duck)
 	{
@@ -754,7 +754,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if ((on_ground && jumped && jump_timer == 0) || (water && water_depth <= 5.0f && jumped))
 		{
-			velocity.y += 3.0f * GRAVITY_SCALE;
+			velocity.y += 3.0f * jump_scale * GRAVITY_SCALE;
 			jump_timer = (int)(TICK_RATE * 0.3f);
 			ret = true;
 		}
