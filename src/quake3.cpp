@@ -2017,6 +2017,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
+	add_decal(player.entity->position, camera_frame, *(engine->plasma_hit->model), -40.0f);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
@@ -2487,9 +2488,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
 
-	vec3 end = camera_frame.forward * 1000.0f + player.entity->position;
-	add_decal(player.entity->position, camera_frame, 10.0f);
-
+	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
@@ -2664,6 +2663,8 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->bsp_leaf = player.entity->bsp_leaf;
 	shell2->bsp_leaf = player.entity->bsp_visible = true;
 
+
+	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f);
 
 
 	if (client == false)
@@ -6381,7 +6382,7 @@ void Quake3::set_state(serverdata_t *data)
 	}
 }
 
-void Quake3::add_decal(vec3 &start, Frame &camera_frame, float offset)
+void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, float offset)
 {
 	plane_t plane;
 	float depth;
@@ -6421,7 +6422,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, float offset)
 		Entity *decal = engine->entity_list[engine->get_entity()];
 		decal->rigid = new RigidBody(decal);
 		decal->position = pos + plane.normal * offset;
-		decal->rigid->clone(*(engine->bullet_hit->model));
+		decal->rigid->clone(decal_model);
 		decal->rigid->gravity = false;
 		decal->model = decal->rigid;
 		decal->rigid->noclip = true;
