@@ -6259,68 +6259,71 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						int owner = entity_list[i]->trigger->owner;
 
 						entity_list[self]->player->stats.deaths++;
-						entity_list[owner]->player->stats.kills++;
-						entity_list[owner]->player->stats.hits++;
+						if (owner != -1)
+						{
+							entity_list[owner]->player->stats.kills++;
+							entity_list[owner]->player->stats.hits++;
 
-						if (entity_list[owner]->player->current_weapon == wp_rocket)
-						{
-							sprintf(weapon, "rocket launcher");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_grenade)
-						{
-							sprintf(weapon, "grenade launcher");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_plasma)
-						{
-							sprintf(weapon, "plasma gun");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_lightning)
-						{
-							sprintf(weapon, "lightning gun");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_shotgun)
-						{
-							sprintf(weapon, "shotgun");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_machinegun)
-						{
-							sprintf(weapon, "machinegun");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_railgun)
-						{
-							sprintf(weapon, "railgun");
-						}
-						else if (entity_list[owner]->player->current_weapon == wp_melee)
-						{
-							sprintf(weapon, "gauntlet");
-						}
+							if (entity_list[owner]->player->current_weapon == wp_rocket)
+							{
+								sprintf(weapon, "rocket launcher");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_grenade)
+							{
+								sprintf(weapon, "grenade launcher");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_plasma)
+							{
+								sprintf(weapon, "plasma gun");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_lightning)
+							{
+								sprintf(weapon, "lightning gun");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_shotgun)
+							{
+								sprintf(weapon, "shotgun");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_machinegun)
+							{
+								sprintf(weapon, "machinegun");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_railgun)
+							{
+								sprintf(weapon, "railgun");
+							}
+							else if (entity_list[owner]->player->current_weapon == wp_melee)
+							{
+								sprintf(weapon, "gauntlet");
+							}
 
 
-						if (entity_list[self]->player->health <= -50)
-							sprintf(word, "%s", "gibbed");
-						else
-							sprintf(word, "%s", "killed");
+							if (entity_list[self]->player->health <= -50)
+								sprintf(word, "%s", "gibbed");
+							else
+								sprintf(word, "%s", "killed");
 
-						char msg[64];
+							char msg[64];
 
-						if (entity_list[owner]->player == entity_list[self]->player)
-						{
-							sprintf(msg, "%s killed themselves with a %s\n",
-								entity_list[owner]->player->name, weapon);
+							if (entity_list[owner]->player == entity_list[self]->player)
+							{
+								sprintf(msg, "%s killed themselves with a %s\n",
+									entity_list[owner]->player->name, weapon);
+							}
+							else
+							{
+								sprintf(msg, "%s %s %s with a %s\n",
+									entity_list[owner]->player->name,
+									word,
+									entity_list[self]->player->name,
+									weapon);
+							}
+
+							debugf(msg);
+							engine->menu.print_notif(msg);
+							notif_timer = 3 * TICK_RATE;
+							handle_frags_left(*(entity_list[owner]->player));
 						}
-						else
-						{
-							sprintf(msg, "%s %s %s with a %s\n",
-								entity_list[owner]->player->name,
-								word,
-								entity_list[self]->player->name,
-								weapon);
-						}
-
-						debugf(msg);
-						engine->menu.print_notif(msg);
-						notif_timer = 3 * TICK_RATE;
-						handle_frags_left(*(entity_list[owner]->player));
 
 					}
 				}

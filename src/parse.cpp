@@ -4,6 +4,10 @@
 #define new DEBUG_NEW
 #endif
 
+#define WEAPON_TIMEOUT 5
+#define AMMO_TIMEOUT 10
+#define HEALTH_TIMEOUT 10
+
 #include <ctype.h>
 
 void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &gfx, Audio &audio, int entity_num)
@@ -55,6 +59,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			//snprintf(entity.trigger->respawn_sound, LINE_SIZE, "sound/items/respawn1.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 5");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "item_health") == 0)
 		{
@@ -64,6 +69,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 25");
 			entity.trigger->health = true;
+			entity.trigger->timeout_value = HEALTH_TIMEOUT;
 		}
 		else if (strcmp(value, "item_health_large") == 0)
 		{
@@ -73,6 +79,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 50");
 			entity.trigger->health = true;
+			entity.trigger->timeout_value = HEALTH_TIMEOUT;
 		}
 		else if (strcmp(value, "item_health_small") == 0)
 		{
@@ -82,6 +89,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 5");
 			entity.trigger->health = false;
+			entity.trigger->timeout_value = HEALTH_TIMEOUT;
 		}
 		else if (strcmp(value, "item_health_mega") == 0)
 		{
@@ -198,6 +206,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_bullets 25");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_rockets") == 0)
 		{
@@ -206,6 +215,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_rockets 10");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_slugs") == 0)
 		{
@@ -214,6 +224,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_slugs 10");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_shells") == 0)
 		{
@@ -222,6 +233,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_shells 10");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_cells") == 0)
 		{
@@ -230,6 +242,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_lightning") == 0)
 		{
@@ -238,6 +251,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_bfg") == 0)
 		{
@@ -246,6 +260,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_grenades") == 0)
 		{
@@ -254,6 +269,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_grenades 10");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_plasma") == 0)
 		{
@@ -262,6 +278,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_plasma 10");
+			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_rocketlauncher"))
 		{
@@ -269,6 +286,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger = new Trigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
+
 
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_rocketlauncher");
 		}
@@ -279,6 +298,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_bfg"))
 		{
@@ -287,6 +307,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_shotgun"))
 		{
@@ -295,6 +316,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_shotgun");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_machinegun"))
 		{
@@ -303,6 +325,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_machinegun");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_railgun"))
 		{
@@ -311,6 +334,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_railgun");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_plasma"))
 		{
@@ -319,6 +343,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_plasma");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_grenadelauncher"))
 		{
@@ -327,6 +352,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_grenadelauncher");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
 		}
 		else if (strcmp(value, "item_armor_combat") == 0)
 		{
