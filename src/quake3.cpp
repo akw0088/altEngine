@@ -2067,6 +2067,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->trigger->idle = true;
 		projectile->trigger->explode = true;
 		projectile->trigger->idle_timer = 0;
+		projectile->trigger->num_bounce = 0;
 		projectile->trigger->explode_timer = 10;
 		projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
 		projectile->trigger->explode_intensity = 500.0f;
@@ -2152,6 +2153,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
+		projectile->trigger->num_bounce = 20;
 		projectile->trigger->explode_index = SND_EXPLODE;
 		sprintf(projectile->trigger->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
 

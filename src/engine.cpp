@@ -1960,7 +1960,7 @@ bool Engine::map_collision(RigidBody &body)
 	}
 
 	// Do a bsp trace collision to eliminate the case where we are going really fast and pass through objects
-	if (collision == false && body.velocity.magnitude() > 6.0f )
+	if (collision == false && body.entity->player && body.velocity.magnitude() > 6.0f )
 	{
 		for (int i = 0; i < 8; i++)
 		{
