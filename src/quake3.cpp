@@ -2485,11 +2485,32 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	int num_index = 0;
 
 	Frame camera_frame;
+	vec3 dir;
+	vec3 end;
+
 
 	player.entity->model->get_frame(camera_frame);
 	camera_frame.forward *= -1;
 	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
+
+
+	// Added to end vector
+	int spread = 200;
+	float r = random() * M_PI * 2.0f;
+	float spread_up = sin(r) * crandom() * spread * 16;
+	float spread_right = cos(r) * crandom() * spread * 16;
+
+	end = player.entity->position + camera_frame.forward * 8192 * 16;
+	end.y += spread_up;
+	end.z += spread_right;
+
+	dir = end - player.entity->position;
+	dir.normalize();
+
+	camera_frame.forward = dir;
+
+
 
 	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
 

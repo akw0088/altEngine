@@ -3,6 +3,12 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+//random in the range [0, 1]
+#define random()			((rand () & 0x7fff) / ((float)0x7fff))
+//random in the range [-1, 1]
+#define crandom() (2.0 * (random() - 0.5))
+
+
 #pragma pack(1)
 typedef struct
 {
