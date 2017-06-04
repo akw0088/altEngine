@@ -49,6 +49,8 @@ public:
 
 	static			int skybox_vertex;
 	static			int skybox_index;
+
+	bool			blend;
 	bool			rail_trail;
 	bool			lightning_trail;
 };

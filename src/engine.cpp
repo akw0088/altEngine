@@ -561,10 +561,13 @@ void Engine::load(char *level)
 	gfx.SelectTexture(2, no_tex);
 	gfx.SelectTexture(3, no_tex);
 
+	render_entities(transformation, true, false);
+
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	q3map.lastIndex = -2; // force generation of new face lists
 	camera_frame.set(transformation);
-	render_entities(transformation, true);
+
+	render_entities(transformation, true, true);
 
 	menu.delta("textures", *this);
 	menu.render(global);
@@ -1023,7 +1026,7 @@ void Engine::render_scene(bool lights)
 	camera_frame.set(transformation);
 
 	// Rendering entities before map for blends
-	render_entities(transformation, lights);
+	render_entities(transformation, lights, false);
 	render_players(transformation, lights);
 
 	mlight2.Select();
@@ -1034,6 +1037,8 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+
+	render_entities(transformation, lights, true);
 
 
 #ifdef PARTICLES
@@ -1111,7 +1116,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	//shadowmap.Select();
 		
-	render_entities(transformation, lights);
+	render_entities(transformation, lights, false);
 	vec3 offset(0.0f, 0.0f, 0.0f);
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -1144,6 +1149,8 @@ void Engine::render_scene_using_shadowmap(bool lights)
 //		gfx.SelectShader(0);
 		return;
 	}
+
+	render_entities(transformation, lights, true);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	q3map.render_model(0, gfx);
@@ -1245,7 +1252,7 @@ void Engine::render_trails(matrix4 &trans)
 	}
 }
 
-void Engine::render_entities(const matrix4 &trans, bool lights)
+void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 {
 	matrix4 mvp;
 
@@ -1261,13 +1268,16 @@ void Engine::render_entities(const matrix4 &trans, bool lights)
 	{
 		Entity *entity = entity_list[i];
 
+		if (entity->rigid == NULL)
+			continue;
+
+		if (entity->rigid->blend != blend)
+			continue;
+
 		if (entity->visible == false)
 			continue;
 
 		if (entity->nodraw == true)
-			continue;
-
-		if (entity->rigid == NULL)
 			continue;
 
 		if (entity->model != NULL)

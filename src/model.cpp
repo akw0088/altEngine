@@ -93,6 +93,7 @@ Model::Model(Entity *entity)
 	center = vec3();
 	rail_trail = false;
 	lightning_trail = false;
+	blend = false;
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;
@@ -312,6 +313,12 @@ void Model::render(Graphics &gfx)
 {
 	gfx.SelectIndexBuffer(model_index);
 	gfx.SelectVertexBuffer(model_vertex);
+	if (blend)
+	{
+		gfx.Blend(true);
+		gfx.BlendFuncOneOne();
+	}
+
 	for (int i = 0; i < MAX_TEXTURES; i++)
 	{
 		gfx.SelectTexture(i, 0);
@@ -321,6 +328,11 @@ void Model::render(Graphics &gfx)
 	gfx.DrawArrayTri(0, 0, num_index, num_vertex);
 //	gfx.DeselectTexture(2);
 //	gfx.DeselectTexture(0);
+	if (blend)
+	{
+		gfx.Blend(false);
+	}
+
 }
 
 void Model::render_box(Graphics &gfx)
