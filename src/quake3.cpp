@@ -893,12 +893,13 @@ void Quake3::handle_player(int self, input_t &input)
 		if (entity->rigid->lava)
 		{
 			console(self, "damage 20", engine->menu, engine->entity_list);
+			entity->player->pain_timer = TICK_RATE * 0.5;
 		}
 		else if (entity->rigid->slime)
 		{
 			console(self, "damage 10", engine->menu, engine->entity_list);
+			entity->player->pain_timer = TICK_RATE * 0.5;
 		}
-		entity->player->pain_timer = TICK_RATE * 0.5;
 	}
 
 	if (entity->player->telefragged)
