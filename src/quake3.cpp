@@ -1224,11 +1224,11 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player->invisibility_timer > 0)
 	{
 		entity->player->invisibility_timer--;
-		entity->nodraw = true;
+		entity->rigid->blend = true;
 	}
 	else
 	{
-		entity->nodraw = false;
+		entity->rigid->blend = false;
 	}
 
 	if (entity->player->flight_timer > 0)
@@ -1997,6 +1997,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_leaf = player.entity->bsp_visible = true;
+		projectile->rigid->blend = true;
 
 		projectile->rigid->clone(*(engine->ball->model));
 		projectile->rigid->velocity = camera_frame.forward * -10.0f;

@@ -444,21 +444,24 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 	right.normalize();
 	if (input.control == false)
 	{
-//		entity->rigid->sleep = false;
-		entity->rigid->gravity = true;
-		camera->pos = entity->position;
+		if (entity->rigid)
+		{
+			//		entity->rigid->sleep = false;
+			entity->rigid->gravity = true;
+			camera->pos = entity->position;
 
-		morientation.m[0] = right.x;
-		morientation.m[1] = right.y;
-		morientation.m[2] = right.z;
+			morientation.m[0] = right.x;
+			morientation.m[1] = right.y;
+			morientation.m[2] = right.z;
 
-		morientation.m[3] = camera->up.x;
-		morientation.m[4] = camera->up.y;
-		morientation.m[5] = camera->up.z;
+			morientation.m[3] = camera->up.x;
+			morientation.m[4] = camera->up.y;
+			morientation.m[5] = camera->up.z;
 
-		morientation.m[6] = -forward.x;
-		morientation.m[7] = -forward.y;
-		morientation.m[8] = -forward.z;
+			morientation.m[6] = -forward.x;
+			morientation.m[7] = -forward.y;
+			morientation.m[8] = -forward.z;
+		}
 	}
 	else
 	{

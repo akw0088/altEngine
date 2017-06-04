@@ -198,6 +198,12 @@ void Player::kill()
 
 void Player::render_weapon(Graphics &gfx)
 {
+	if (invisibility_timer > 0)
+	{
+		gfx.Blend(true);
+		gfx.BlendFuncOneOne();
+	}
+
 	switch (current_weapon)
 	{
 	case wp_none:
@@ -223,6 +229,11 @@ void Player::render_weapon(Graphics &gfx)
 	case wp_plasma:
 		weapon_plasma.render(gfx);
 		break;
+	}
+
+	if (invisibility_timer > 0)
+	{
+		gfx.Blend(false);
 	}
 }
 
