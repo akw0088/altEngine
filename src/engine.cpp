@@ -1957,6 +1957,7 @@ bool Engine::map_collision(RigidBody &body)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
+						body.on_ground = true;
 						continue;
 					}
 				}
@@ -2007,7 +2008,7 @@ bool Engine::map_collision(RigidBody &body)
 		clip = body.velocity;
 		ClipVelocity(clip, normal);
 		// Clip velocity, and reduce ground friction
-		body.velocity = clip + vec3(0.0f, 0.1f, 0.0f);
+		body.velocity = clip + vec3(0.0f, 0.01f, 0.0f);
 		body.bounce++;
 	}
 

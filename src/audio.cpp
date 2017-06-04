@@ -757,5 +757,9 @@ void Audio::set_audio_model(int model)
 
 }
 
+void Audio::load_doom(wave_t &wave, int *buffer)
+{
+}
+
 
 #endif

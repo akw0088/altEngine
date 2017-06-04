@@ -2138,7 +2138,7 @@ void Bsp::check_node(int node_index, float start_amount, float end_amount, vec3 
 			int index = data.LeafBrush[leaf->leaf_brush + i];
 			brush_t *brush = &data.Brushes[index];
 
-			if ((brush->num_sides > 0) && (data.Material[brush->material].contents & CONTENTS_PLAYERCLIP))
+			if ((brush->num_sides > 0) && (data.Material[brush->material].contents & CONTENTS_SOLID))
 			{
 				check_brush(brush, start, end);
 			}
