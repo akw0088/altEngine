@@ -33,7 +33,7 @@
 #define QUAD_FACTOR 3.0f
 
 
-extern char bot_state_name[16][80];
+extern char bot_state_name[16][32];
 extern const char *models[23];
 
 
@@ -861,7 +861,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 
 	if (gametype == GAMETYPE_DEATHMATCH && player_type == BOT)
 	{
-		char cmd[80];
+		char cmd[64];
 
 		// Hack to maintain same spawn behavior for bots
 		sprintf(cmd, "respawn %d %d", -1, ent_id);
@@ -942,7 +942,7 @@ void Quake3::handle_player(int self, input_t &input)
 			entity->player->health -= 10;
 			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 			{
-				char msg[80];
+				char msg[64];
 
 				entity->player->stats.deaths++;
 				sprintf(msg, "%s fell and cant get up\n", entity->player->name);
@@ -1353,7 +1353,7 @@ void Quake3::handle_player(int self, input_t &input)
 				entity->player->health -= 15;
 				if (entity->player->health < 0 && entity->player->state != PLAYER_DEAD)
 				{
-					char msg[80];
+					char msg[64];
 
 					entity->player->stats.deaths++;
 					entity->player->kill();
@@ -1660,7 +1660,7 @@ void Quake3::step(int frame_step)
 	{
 		for (unsigned int i = 0; i < num_bot; i++)
 		{
-			char bot_name[80];
+			char bot_name[32];
 			int bot_index = -1;
 
 			sprintf(bot_name, "Bot %d", i);
@@ -1833,7 +1833,7 @@ void Quake3::step(int frame_step)
 			engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
 			bot->player->respawn();
-			char cmd[80];
+			char cmd[64];
 			sprintf(cmd, "respawn -1 %d", i);
 			console(i, cmd, engine->menu, engine->entity_list);
 			break;
@@ -2017,7 +2017,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
-	add_decal(player.entity->position, camera_frame, *(engine->plasma_hit->model), -40.0f);
+	add_decal(player.entity->position, camera_frame, *(engine->plasma_hit->model), -40.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
@@ -2198,7 +2198,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		player.health -= player.ammo_lightning * LIGHTNING_DAMAGE;
 		if (player.health < 0)
 		{
-			char msg[80];
+			char msg[64];
 
 			sprintf(msg, "%s discovered water conducts electricity\n", player.name);
 			debugf(msg);
@@ -2253,6 +2253,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
+		projectile->rigid->bounce = 2;
 	//	projectile->rigid->rotational_friction_flag = true;
 		projectile->rigid->lightning_trail = true;
 		projectile->model = projectile->rigid;
@@ -2365,6 +2366,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
+		projectile->rigid->bounce = 5;
 		projectile->model = projectile->rigid;
 		projectile->model->rail_trail = true;
 		projectile->rigid->noclip = true;
@@ -2378,11 +2380,10 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->trigger->projectile = true;
 		sprintf(projectile->trigger->action, " ");
 
-		projectile->rigid->bounce = 5;
 		projectile->trigger->hide = false;
 		projectile->trigger->radius = 25.0f;
 		projectile->trigger->idle = true;
-		projectile->trigger->idle_timer = (int)(5.0 * TICK_RATE);
+		projectile->trigger->idle_timer = (int)(1.0 * TICK_RATE);
 		projectile->trigger->explode = true;
 		projectile->trigger->explode_timer = 10;
 		projectile->trigger->owner = self;
@@ -2402,7 +2403,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 		for (int i = 0; i < num_index; i++)
 		{
-			char cmd[80] = { 0 };
+			char cmd[64] = { 0 };
 	
 			if (engine->entity_list[index[i]]->player == NULL)
 				continue;
@@ -2477,7 +2478,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 void Quake3::handle_machinegun(Player &player, int self, bool client)
 {
-	char cmd[80] = { 0 };
+	char cmd[64] = { 0 };
 	int index[16] = { -1 };
 	int num_index = 0;
 
@@ -2488,7 +2489,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
 
-	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f);
+	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
@@ -2507,7 +2508,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	Entity *bullet = engine->entity_list[engine->get_entity()];
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = camera_frame.pos;
-	bullet->rigid->clone(*(engine->bullet_hit->model));
+	bullet->rigid->clone(*(engine->bullet->model));
 	bullet->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
 	bullet->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
 	bullet->rigid->gravity = true;
@@ -2549,8 +2550,8 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	
 			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 			{
-				char msg[80];
-				char word[32] = { 0 };
+				char msg[64];
+				char word[16] = { 0 };
 
 				player.stats.kills++;
 				engine->entity_list[index[i]]->player->stats.deaths++;
@@ -2664,7 +2665,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->bsp_leaf = player.entity->bsp_visible = true;
 
 
-	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f);
+	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
 
 
 	if (client == false)
@@ -2678,7 +2679,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
 		for (int i = 0; i < num_index; i++)
 		{
-			char cmd[80] = { 0 };
+			char cmd[64] = { 0 };
 
 			if (engine->entity_list[index[i]]->player == NULL)
 				continue;
@@ -2697,7 +2698,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 			player.stats.hits++;
 			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
 			{
-				char msg[80];
+				char msg[64];
 				char word[32] = { 0 };
 
 				player.stats.kills++;
@@ -4310,7 +4311,7 @@ void Quake3::create_crosshair()
 
 	for (int i = 0; i < num_crosshair; i++)
 	{
-		char filename[80];
+		char filename[128];
 
 		sprintf(filename, "media/gfx/2d/crosshair%c.tga", 'a' + i);
 		crosshair_tex[i] = load_texture_pk3(engine->gfx, filename, engine->pk3_list, engine->num_pk3, true, false);
@@ -6010,10 +6011,6 @@ void Quake3::endgame(char *winner)
 
 void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 {
-	// Run ~20 times a second
-//	if (engine->tick_num % 6 != 0)
-//		return;
-
 	engine->num_light = 0;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -6088,7 +6085,6 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		{
 			if (entity_list[i]->rigid)
 			{
-
 				if (entity_list[i]->rigid->bounce > entity_list[i]->trigger->num_bounce)
 				{
 					entity_list[i]->particle_on = false;
@@ -6236,7 +6232,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					if (entity_list[self]->player->health <= 0)
 					{
 						char word[32] = { 0 };
-						char weapon[80];
+						char weapon[32];
 						int owner = entity_list[i]->trigger->owner;
 
 						entity_list[self]->player->stats.deaths++;
@@ -6282,7 +6278,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						else
 							sprintf(word, "%s", "killed");
 
-						char msg[80];
+						char msg[64];
 
 						if (entity_list[owner]->player == entity_list[self]->player)
 						{
@@ -6382,7 +6378,7 @@ void Quake3::set_state(serverdata_t *data)
 	}
 }
 
-void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, float offset)
+void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, float offset, bool idle, int idle_timer)
 {
 	plane_t plane;
 	float depth;
@@ -6416,6 +6412,10 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		}
 	} while (hit == false);
 
+
+
+
+
 	if (hit)
 	{
 //		printf("decal added at x %4.3f y %4.3f z %4.3f\n", pos.x, pos.y, pos.z);
@@ -6424,10 +6424,20 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal->position = pos + plane.normal * offset;
 		decal->rigid->clone(decal_model);
 		decal->rigid->gravity = false;
+		decal->rigid->bounce = 2;
 		decal->model = decal->rigid;
 		decal->rigid->noclip = true;
 		decal->visible = true; // accomodate for low spatial testing rate
 		decal->bsp_leaf = true;
+
+		decal->trigger = new Trigger(decal, engine->audio);
+		decal->trigger->idle = idle;
+		decal->trigger->explode_timer = idle_timer;
+		decal->trigger->idle_timer = idle_timer;
+		decal->trigger->projectile = true;
+		decal->trigger->hide = false;
+
+
 
 
 		// make point axial to plane (change forward vector and normalze a bunch)

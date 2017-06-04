@@ -500,7 +500,7 @@ void Engine::load(char *level)
 	q3map.generate_meshes(gfx);
 
 
-	char entfile[80] = { 0 };
+	char entfile[128] = { 0 };
 	sprintf(entfile, "media/%s.ent", q3map.map_name);
 	char *entdata = get_file(entfile, NULL);
 	if (entdata != NULL)
@@ -510,7 +510,7 @@ void Engine::load(char *level)
 	}
 	else
 	{
-		char filename[80];
+		char filename[128];
 		const char *data = q3map.get_entities();
 
 		sprintf(filename, "media/%s.ent", q3map.map_name);
@@ -522,7 +522,7 @@ void Engine::load(char *level)
 
 	int start = entity_list.size();
 
-	char navfile[80] = { 0 };
+	char navfile[128] = { 0 };
 	sprintf(navfile, "media/%s.nav", q3map.map_name);
 	char *navdata = get_file(navfile, NULL);
 	if (navdata != NULL)
@@ -2323,7 +2323,7 @@ void Engine::server_recv()
 		// assign entity to client
 		//set to zero if we run out of info_player_deathmatches
 
-		char client_name[80];
+		char client_name[64];
 
 		sprintf(client_name, "client %d", (int)client_list.size() - 1);
 		game->add_player(entity_list, CLIENT, client->ent_id, client_name);

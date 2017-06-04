@@ -36,7 +36,7 @@
 
 
 
-extern char bot_state_name[16][80];
+extern char bot_state_name[16][32];
 
 Commando::Commando()
 {
@@ -789,7 +789,7 @@ void Commando::step(int frame_step)
 				engine->play_wave(bot->position, bot->player->death1_sound);
 
 				bot->player->respawn();
-				char cmd[80];
+				char cmd[64];
 				sprintf(cmd, "respawn -1 %d", i);
 				console(i, cmd, engine->menu, engine->entity_list);
 				break;
@@ -1147,7 +1147,7 @@ void Commando::handle_knife(Player &player, int self)
 	engine->hitscan(player.entity->position, forward, index, num_index, self);
 	for (int i = 0; i < num_index; i++)
 	{
-		char cmd[80] = { 0 };
+		char cmd[64] = { 0 };
 
 		if (engine->entity_list[index[i]]->player == NULL)
 			continue;
@@ -1176,7 +1176,7 @@ void Commando::handle_knife(Player &player, int self)
 			else
 				sprintf(word, "%s", "killed");
 
-			char msg[80];
+			char msg[64];
 			sprintf(msg, "%s %s %s with a lightning gun\n", player.name,
 				word,
 				engine->entity_list[index[i]]->player->name);

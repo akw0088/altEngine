@@ -19,14 +19,25 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	idle_index = -1;
 
 
+
+	idle_timer = 0;
+
+
 	hide = true;
 	idle = false;
 	explode = false;
 	health = false;
 	armor = false;
+	explode_color.x = 1.0f;
+	explode_color.y = 1.0f;
+	explode_color.z = 1.0f;
+	explode_intensity = 0.0f;
 	explode_timer = 0;
+	splash_damage = 0;
+	splash_radius = 0.0f;
+	knockback = 0.0f;
 	owner = -1;
-	num_bounce = 0;
+	num_bounce = 1;
 	projectile = false;
 	noise = false;
 

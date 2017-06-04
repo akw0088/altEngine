@@ -253,7 +253,7 @@ typedef struct
 
 typedef struct
 {
-	char			socketname[80];
+	char			socketname[32];
 	unsigned int	qport;
 	int				ent_id;
 	unsigned short int	client_sequence;

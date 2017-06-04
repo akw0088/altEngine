@@ -5,7 +5,7 @@
 #endif
 #include <float.h>
 
-char bot_state_name[16][80] = {
+char bot_state_name[16][32] = {
 	"BOT_IDLE",
 	"BOT_ALERT",
 	"BOT_ATTACK",

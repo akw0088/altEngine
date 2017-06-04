@@ -1567,7 +1567,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	if (data.header->version == 0x2F)
 	{
 		char filename[128];
-		char name[80];
+		char name[128];
 
 		//remove .bsp
 		strcpy(name, map_name);
@@ -2111,7 +2111,7 @@ vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal)
 
 		//vec3 end_pos = end - collision_normal * distance;
 
-//		new_pos = trace(new_pos, end);
+		new_pos = trace(new_pos, end, normal);
 
 		normal = collision_normal;
 
