@@ -49,7 +49,7 @@ public:
 		vec3 &clip, const vec3 &velocity);
 
 
-	vec3 trace(vec3 &start, vec3 &end);
+	vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal);
 	void check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end);
 	void check_brush(brush_t *brush, vec3 &start, vec3 &end);
 

@@ -2327,8 +2327,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		}
 	}
 
-
-
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
@@ -2489,6 +2487,9 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
 
+	vec3 end = camera_frame.forward * 1000.0f + player.entity->position;
+	add_decal(player.entity->position, camera_frame, 10.0f);
+
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
@@ -2507,7 +2508,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	Entity *bullet = engine->entity_list[engine->get_entity()];
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = camera_frame.pos;
-	bullet->rigid->clone(*(engine->bullet->model));
+	bullet->rigid->clone(*(engine->bullet_hit->model));
 	bullet->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
 	bullet->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
 	bullet->rigid->gravity = true;
@@ -2570,6 +2571,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 			}
 		}
 	}
+
 }
 
 
@@ -6376,5 +6378,78 @@ void Quake3::set_state(serverdata_t *data)
 		fraglimit = data->fraglimit;
 		timelimit = data->timelimit;
 		round_time = data->round_time;
+	}
+}
+
+void Quake3::add_decal(vec3 &start, Frame &camera_frame, float offset)
+{
+	plane_t plane;
+	float depth;
+	float water_depth;
+	bool water;
+	vec3 clip;
+	vec3 velocity;
+	bool ret = false;
+	bool hit = false;
+	vec3 pos;
+	vec3 step = start;
+
+
+	vec3 end = step + camera_frame.forward;
+	
+//	pos = engine->q3map.trace(start, end, normal);
+//	engine->q3map.collision = false;
+
+	do
+	{
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity);
+		if (ret)
+		{
+			hit = true;
+			pos = end + camera_frame.forward.normalize() * -depth;
+		}
+		else
+		{
+			step = end;
+			end += camera_frame.forward;
+		}
+	} while (hit == false);
+
+	if (hit)
+	{
+//		printf("decal added at x %4.3f y %4.3f z %4.3f\n", pos.x, pos.y, pos.z);
+		Entity *decal = engine->entity_list[engine->get_entity()];
+		decal->rigid = new RigidBody(decal);
+		decal->position = pos + plane.normal * offset;
+		decal->rigid->clone(*(engine->bullet_hit->model));
+		decal->rigid->gravity = false;
+		decal->model = decal->rigid;
+		decal->rigid->noclip = true;
+		decal->visible = true; // accomodate for low spatial testing rate
+		decal->bsp_leaf = true;
+
+
+		// make point axial to plane (change forward vector and normalze a bunch)
+		vec3 up = camera_frame.up;
+		vec3 forward = plane.normal;
+
+		vec3 right = vec3::crossproduct(forward, up);
+		right.normalize();
+		up = vec3::crossproduct(right, forward);
+		up.normalize();
+		right = vec3::crossproduct(forward, up);
+		right.normalize();
+
+		decal->model->morientation.m[0] = right.x;
+		decal->model->morientation.m[1] = right.y;
+		decal->model->morientation.m[2] = right.z;
+
+		decal->model->morientation.m[3] = up.x;
+		decal->model->morientation.m[4] = up.y;
+		decal->model->morientation.m[5] = up.z;
+
+		decal->model->morientation.m[6] = forward.x;
+		decal->model->morientation.m[7] = forward.y;
+		decal->model->morientation.m[8] = forward.z;
 	}
 }

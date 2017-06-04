@@ -34,7 +34,7 @@ public:
 	void create_crosshair();
 	void draw_crosshair();
 	void draw_flash(Player &player);
-
+	void add_decal(vec3 &start, Frame &camera_frame, float offset);
 
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);

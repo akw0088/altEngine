@@ -202,6 +202,16 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	bullet->model = bullet->rigid;
 	bullet->model->load(gfx, "media/models/weapons2/shells/M_shell");
 
+	bullet_hit = new Entity();
+	bullet_hit->rigid = new RigidBody(bullet_hit);
+	bullet_hit->model = bullet_hit->rigid;
+	bullet_hit->model->load(gfx, "media/models/weaphits/bullet_hit");
+
+	plasma_hit = new Entity();
+	plasma_hit->rigid = new RigidBody(plasma_hit);
+	plasma_hit->model = plasma_hit->rigid;
+	plasma_hit->model->load(gfx, "media/models/weaphits/plasma_hit");
+
 
 	gib0 = new Entity();
 	gib0->rigid = new RigidBody(gib0);
@@ -1956,11 +1966,12 @@ bool Engine::map_collision(RigidBody &body)
 		{
 			vec3 point;
 			vec3 oldpoint;
+			vec3 normal;
 
 			point = body.aabb[i] - body.center + body.entity->position;
 			oldpoint = body.aabb[i] - body.center + body.old_position;
 
-			q3map.trace(oldpoint, point);
+			q3map.trace(oldpoint, point, normal);
 
 			if (q3map.collision)
 			{
@@ -4730,9 +4741,10 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 			if (RayBoxSlab(origin, dir, min, max, distance))
 			{
 				vec3 endpoint = entity_list[i]->position;
+				vec3 normal;
 
 				// Hit someone, do BSP trace to check if a wall is in the way
-	            q3map.trace(origin, endpoint);
+	            q3map.trace(origin, endpoint, normal);
 	            if (q3map.collision)
 	            {
 					vec3 dist1 = endpoint - origin;
@@ -4743,14 +4755,14 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 					{
 						index_list[j++] = i;
 						num_index++;
-	        	                        break;
+						break;
 					}
 	            }
 				else
 				{
 					index_list[j++] = i;
 					num_index++;
-	        	                break;
+					break;
 				}
 			}
 		}

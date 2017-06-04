@@ -2090,7 +2090,7 @@ void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 // If a collision occurs, we set collision flag and collision normal
 // we also set an on_ground flag to indicate we are on the ground plane
 //======================================================================================
-vec3 Bsp::trace(vec3 &start, vec3 &end)
+vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal)
 {
 	float trace_amount = 1.0f;
 
@@ -2111,7 +2111,9 @@ vec3 Bsp::trace(vec3 &start, vec3 &end)
 
 		//vec3 end_pos = end - collision_normal * distance;
 
-		new_pos = trace(new_pos, end);
+//		new_pos = trace(new_pos, end);
+
+		normal = collision_normal;
 
 		if (collision_normal.y > 0.2f || on_ground)
 			on_ground = true;
@@ -2136,7 +2138,7 @@ void Bsp::check_node(int node_index, float start_amount, float end_amount, vec3 
 			int index = data.LeafBrush[leaf->leaf_brush + i];
 			brush_t *brush = &data.Brushes[index];
 
-			if ((brush->num_sides > 0) && (data.Material[brush->material].contents & CONTENTS_SOLID))
+			if ((brush->num_sides > 0) && (data.Material[brush->material].contents & CONTENTS_PLAYERCLIP))
 			{
 				check_brush(brush, start, end);
 			}

@@ -135,6 +135,8 @@ public:
 	Entity *pineapple;
 	Entity *shell;
 	Entity *bullet;
+	Entity *bullet_hit;
+	Entity *plasma_hit;
 	Entity *gib0;
 	Entity *gib1;
 	Entity *gib2;

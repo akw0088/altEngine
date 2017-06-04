@@ -16,7 +16,6 @@ int Model::skybox_index = 0;
 int Model::skybox_vertex = 0;
 
 
-
 void Model::load(Graphics &gfx, char *file)
 {
 	char vbo_file[LINE_SIZE];
@@ -39,9 +38,8 @@ void Model::load(Graphics &gfx, char *file)
 	num_vertex = *((int *)model_file);
 	model_array = (vertex_t *)(model_file + 4);
 
+//	create_box(gfx, aabb);
 	make_aabb();
-	make_skybox(gfx);
-	create_box(gfx, aabb);
 
 	char *index_file = get_file(ibo_file, NULL);
 	if (index_file == NULL)
@@ -382,6 +380,8 @@ void Model::CreateObjects(Graphics &gfx)
 
 	quad_index = gfx.CreateIndexBuffer(qindex, 6);
 	quad_vertex = gfx.CreateVertexBuffer(quad, 4);
+
+	make_skybox(gfx);
 
 	/*
 	int cube_idx[36];
