@@ -1038,14 +1038,11 @@ void Engine::render_scene(bool lights)
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
-	render_entities(transformation, lights, true);
-
-
 #ifdef PARTICLES
 	gfx.Blend(true);
 	gfx.BlendFunc(NULL, NULL);
 
-#ifndef DIRECTX
+#ifdef OPENGL32
 	int vbo = 0;
 
 	if (emitter.visible)
@@ -1071,7 +1068,7 @@ void Engine::render_scene(bool lights)
 	vec3 quad1 = camera_frame.up;
 	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
-#ifndef DIRECTX
+#ifdef OPENGL32
 	if (emitter.visible)
 	{
 		particle_render.Select();
@@ -1085,7 +1082,11 @@ void Engine::render_scene(bool lights)
 #endif
 #endif
 
+	render_entities(transformation, lights, true);
+
 	render_weapon(transformation, lights, find_type("player", 0));
+
+
 }
 
 
