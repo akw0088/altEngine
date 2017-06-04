@@ -888,6 +888,19 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player == NULL)
 		return;
 
+	if (entity->player->pain_timer == 0)
+	{
+		if (entity->rigid->lava)
+		{
+			console(self, "damage 20", engine->menu, engine->entity_list);
+		}
+		else if (entity->rigid->slime)
+		{
+			console(self, "damage 10", engine->menu, engine->entity_list);
+		}
+		entity->player->pain_timer = TICK_RATE * 0.5;
+	}
+
 	if (entity->player->telefragged)
 	{
 		char msg[512];
@@ -6416,6 +6429,8 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	bool hit = false;
 	vec3 pos;
 	vec3 step = start;
+	bool lava;
+	bool slime;
 
 
 	vec3 end = step + camera_frame.forward;
@@ -6425,7 +6440,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 
 	do
 	{
-		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity);
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime);
 		if (ret)
 		{
 			hit = true;

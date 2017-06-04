@@ -1941,7 +1941,7 @@ bool Engine::map_collision(RigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-			surface_list, body.step_flag && input.numpad1, clip, body.velocity))
+			surface_list, body.step_flag && input.numpad1, clip, body.velocity, body.lava, body.slime))
 		{
 			if (body.step_flag)
 			{
@@ -1953,7 +1953,7 @@ bool Engine::map_collision(RigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-						surface_list, body.step_flag && input.numpad1, clip, body.velocity) == false)
+						surface_list, body.step_flag && input.numpad1, clip, body.velocity, body.lava, body.slime) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);

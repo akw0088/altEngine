@@ -26,6 +26,8 @@ RigidBody::RigidBody(Entity *entity)
 	sphere_target = vec3(0.0f, 0.0f, 0.0f);
 	jump_timer = 0; // move this to Player
 	bounce = 0; // number of impacts
+	lava = false;
+	slime = false;
 
 	restitution = 0.5f; // boxes should never rest
 	float height = 10.0f / UNITS_TO_METERS;

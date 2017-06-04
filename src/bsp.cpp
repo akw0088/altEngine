@@ -451,7 +451,7 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 }
 
 bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
-	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity)
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -533,6 +533,16 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 		if (count == num_sides)
 		{
+			if (data.Material[brush->material].contents & CONTENTS_LAVA)
+				lava = true;
+			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
+				slime = true;
+
+			if (strstr(data.Material[brush->material].name, "lava") != NULL)
+			{
+				lava = true;
+			}
+
 			if (debug)
 			{
 				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,

@@ -68,6 +68,8 @@ public:
 	bool			flight;
 	bool			water;
 	bool			last_water;
+	bool			lava;
+	bool			slime;
 	bool			rotational_friction_flag;
 	bool			translational_friction_flag;
 	bool			ground_friction_flag;

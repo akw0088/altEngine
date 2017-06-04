@@ -44,9 +44,8 @@ public:
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
 
-	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth,
-		bool &water, float &water_depth, vector<surface_t *> &surface_list, bool debug,
-		vec3 &clip, const vec3 &velocity);
+	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
+		vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime);
 
 
 	vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal);
