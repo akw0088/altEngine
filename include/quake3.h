@@ -23,6 +23,7 @@ public:
 
 	void handle_weapons(Player &player, input_t &input, int self, bool client);
 
+	void handle_gauntlet(Player &player, int self, bool client);
 	void handle_plasma(Player &player, int self, bool client);
 	void handle_rocketlauncher(Player &player, int self, bool client);
 	void handle_grenade(Player &player, int self, bool client);

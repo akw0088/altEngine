@@ -4734,7 +4734,7 @@ bool Engine::play_wave_global(int index)
 }
 
 
-void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self)
+void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range)
 {
 	int j = 0;
 	num_index = 0;
@@ -4755,15 +4755,22 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 				vec3 endpoint = entity_list[i]->position;
 				vec3 normal;
 
+				vec3 dist2 = entity_list[i]->position - origin;
+				float enemy_distance = dist2.magnitude();
+
+				if (range > 0.0f && enemy_distance > range)
+					continue;
+
 				// Hit someone, do BSP trace to check if a wall is in the way
 	            q3map.trace(origin, endpoint, normal);
 	            if (q3map.collision)
 	            {
 					vec3 dist1 = endpoint - origin;
-					vec3 dist2 = entity_list[i]->position - origin;
+
+
 
 	                q3map.collision = false;
-					if (dist1.magnitude() > dist2.magnitude() )
+					if (dist1.magnitude() > enemy_distance)
 					{
 						index_list[j++] = i;
 						num_index++;

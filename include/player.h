@@ -4,7 +4,7 @@
 #define PLAYER_H
 
 #define WEAPON_NONE				0
-#define WEAPON_MELEE			1
+#define WEAPON_GAUNTLET			1
 #define WEAPON_MACHINEGUN		2
 #define WEAPON_SHOTGUN			4
 #define WEAPON_GRENADE			8
@@ -17,7 +17,7 @@
 //multiple types exist because I forgot above code existed D:
 typedef enum {
 	wp_none = WEAPON_NONE,
-	wp_melee = WEAPON_MELEE,
+	wp_gauntlet = WEAPON_GAUNTLET,
 	wp_machinegun = WEAPON_MACHINEGUN,
 	wp_shotgun = WEAPON_SHOTGUN,
 	wp_grenade = WEAPON_GRENADE,
@@ -145,7 +145,7 @@ public:
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
 
-
+	unsigned int flash_gauntlet;
 	unsigned int flash_machinegun;
 	unsigned int flash_shotgun;
 	unsigned int flash_grenade;
@@ -176,7 +176,7 @@ public:
 	float zoom_level;
 	team_t team;
 
-
+	Model weapon_gauntlet;
 	Model weapon_machinegun;
 	Model weapon_shotgun;
 	Model weapon_grenade;

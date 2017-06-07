@@ -9,6 +9,9 @@
 #define MACHINEGUN_DAMAGE 7
 #define MACHINEGUN_RELOAD 8
 
+#define GAUNTLET_DAMAGE 50
+#define GAUNTLET_RELOAD 60
+
 #define SHOTGUN_DAMAGE 10
 #define SHOTGUN_RELOAD 60
 
@@ -710,6 +713,24 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 	snd_wave.push_back(wave);
 #define SND_SOLDIER_IDLE 302
 	snd_table[SND_SOLDIER_IDLE] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/weapons/melee/fstrun.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_GAUNTLET 303
+	snd_table[SND_GAUNTLET] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/weapons/melee/fsthum.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_GAUNTLET_IDLE 304
+	snd_table[SND_GAUNTLET_IDLE] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/weapons/melee/fstatck.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_GAUNTLET_HIT 305
+	snd_table[SND_GAUNTLET_HIT] = snd_wave.size() - 1;
 
 }
 
@@ -2302,12 +2323,15 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 
 
-		engine->hitscan(player.entity->position, forward, index, num_index, self);
+		engine->hitscan(player.entity->position, forward, index, num_index, self, 768.0f);
 		for (int i = 0; i < num_index; i++)
 		{
 			char cmd[512] = { 0 };
 
 			if (engine->entity_list[index[i]]->player == NULL)
+				continue;
+
+			if (engine->entity_list[index[i]]->player->health <= 0)
 				continue;
 
 			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
@@ -2413,7 +2437,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		if (player.quad_timer > 0)
 			quad_factor = QUAD_FACTOR;
 
-		engine->hitscan(player.entity->position, forward, index, num_index, self);
+		engine->hitscan(player.entity->position, forward, index, num_index, self, -1.0f);
 		if (num_index == 0)
 			player.impressive_count = 0;
 
@@ -2425,8 +2449,12 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 			if (engine->entity_list[index[i]]->player == NULL)
 				continue;
 
+			if (engine->entity_list[index[i]]->player->health <= 0)
+				continue;
+
 			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
+
 
 			debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
 				engine->entity_list[index[i]]->player->name, (int)(RAILGUN_DAMAGE * quad_factor));
@@ -2490,6 +2518,92 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
 	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
+}
+
+void Quake3::handle_gauntlet(Player &player, int self, bool client)
+{
+	char cmd[64] = { 0 };
+	int index[16] = { -1 };
+	int num_index = 0;
+
+	Frame camera_frame;
+	vec3 dir;
+	vec3 end;
+
+
+	player.entity->model->get_frame(camera_frame);
+	camera_frame.forward *= -1;
+	player.reload_timer = GAUNTLET_RELOAD;
+	player.ammo_bullets--;
+
+
+
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
+	muzzleflash->light->intensity = 2000.0f;
+	muzzleflash->light->attenuation = 0.0625f;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
+	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+
+
+
+	if (client == false)
+	{
+		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, 75.0f);
+
+		float quad_factor = 1.0f;
+
+		if (player.quad_timer > 0)
+			quad_factor = QUAD_FACTOR;
+
+		for (int i = 0; i < num_index; i++)
+		{
+			if (engine->entity_list[index[i]]->player == NULL)
+				continue;
+
+			if (engine->entity_list[index[i]]->player->health <= 0)
+				continue;
+
+			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+				continue;
+
+			debugf("Player %s hit %s with the gauntlet for %d damage\n", player.name,
+				engine->entity_list[index[i]]->player->name, (int)(GAUNTLET_DAMAGE * quad_factor));
+			sprintf(cmd, "hurt %d %d", index[i], (int)(GAUNTLET_DAMAGE * quad_factor));
+			console(self, cmd, engine->menu, engine->entity_list);
+			debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+				engine->entity_list[index[i]]->player->health);
+			player.stats.hits++;
+
+			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+			{
+				char msg[64];
+				char word[16] = { 0 };
+
+				player.stats.kills++;
+				engine->entity_list[index[i]]->player->stats.deaths++;
+
+				if (engine->entity_list[index[i]]->player->health <= -50)
+					sprintf(word, "%s", "gibbed");
+				else
+					sprintf(word, "%s", "killed");
+
+				sprintf(msg, "%s killed %s with a gauntlet\n", player.name,
+					engine->entity_list[index[i]]->player->name);
+				debugf(msg);
+				engine->menu.print_notif(msg);
+				notif_timer = 3 * TICK_RATE;
+
+				handle_frags_left(player);
+			}
+		}
+	}
 
 }
 
@@ -2563,7 +2677,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 	if (client == false)
 	{
-		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
+		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, -1.0f);
 
 		float quad_factor = 1.0f;
 
@@ -2573,6 +2687,9 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 		for (int i = 0; i < num_index; i++)
 		{
 			if (engine->entity_list[index[i]]->player == NULL)
+				continue;
+
+			if (engine->entity_list[index[i]]->player->health <= 0)
 				continue;
 
 			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
@@ -2734,7 +2851,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 				quad_factor = QUAD_FACTOR;
 
 
-			engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
+			engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, -1.0f);
 			for (int i = 0; i < num_index; i++)
 			{
 				char cmd[64] = { 0 };
@@ -3333,6 +3450,13 @@ void Quake3::load_icon()
 	icon.y = FACE_Y; // positive up from center
 	icon_list.push_back(icon);
 
+#define ICON_F_GAUNTLET 58
+	sprintf(icon.filename, "media/models/weapons2/machinegun/f_gauntlet.jpg");
+	icon.x = FLASH_X; // positive right from center
+	icon.y = FLASH_Y; // positive up from center
+	icon_list.push_back(icon);
+
+
 
 }
 
@@ -3383,6 +3507,8 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		weapon_switch_timer--;
 	}
 
+	if (player.flash_gauntlet > 0)
+		player.flash_gauntlet--;
 	if (player.flash_machinegun > 0)
 		player.flash_machinegun--;
 	if (player.flash_shotgun > 0)
@@ -3558,6 +3684,12 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 				empty = true;
 			}
 		}
+		else if (player.current_weapon == wp_gauntlet)
+		{
+			attack_sound = SND_GAUNTLET;
+			fired = true;
+			handle_gauntlet(player, self, client);
+		}
 
 		if (fired)
 		{
@@ -3569,6 +3701,9 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 
 			switch (player.current_weapon)
 			{
+			case wp_gauntlet:
+				player.flash_gauntlet = 5;
+				break;
 			case wp_machinegun:
 				player.flash_machinegun = 5;
 				break;
@@ -3643,7 +3778,9 @@ void Quake3::draw_flash(Player &player)
 {
 	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
-	if (player.flash_machinegun)
+	if (player.flash_gauntlet)
+		draw_icon(15.0, ICON_F_GAUNTLET);
+	else if (player.flash_machinegun)
 		draw_icon(15.0, ICON_F_MACHINEGUN);
 	else if (player.flash_shotgun)
 		draw_icon(15.0, ICON_F_SHOTGUN);
@@ -6332,7 +6469,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							{
 								sprintf(weapon, "railgun");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_melee)
+							else if (entity_list[owner]->player->current_weapon == wp_gauntlet)
 							{
 								sprintf(weapon, "gauntlet");
 							}
