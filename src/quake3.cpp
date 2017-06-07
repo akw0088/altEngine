@@ -2631,6 +2631,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	float spread_right = cos(r) * crandom() * spread * 16;
 
 	end = player.entity->position + camera_frame.forward * 8192 * 16;
+	end.x += spread_right;
 	end.y += spread_up;
 	end.z += spread_right;
 
@@ -2831,6 +2832,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		vec3 dir;
 
 		end = player.entity->position + camera_frame.forward * 8192 * 16;
+		end.x += spread_right;
 		end.y += spread_up;
 		end.z += spread_right;
 
@@ -4130,9 +4132,26 @@ void Quake3::render_hud(double last_frametime)
 			draw_icon(1.0, ICON_NOAMMO);
 			break;
 		case wp_gauntlet:
-			draw_icon(1.0, ICON_NOAMMO);
+			draw_icon(1.0, ICON_GAUNTLET);
+			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
+				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
+				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GRENADE)
+				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_ROCKET)
+				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
+				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_RAILGUN)
+				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_PLASMA)
+				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
+
 			break;
 		case wp_machinegun:
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_MACHINEGUN);
 			if (entity->player->weapon_flags & WEAPON_SHOTGUN)
 				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * i++, 0.0f);
@@ -4150,6 +4169,8 @@ void Quake3::render_hud(double last_frametime)
 		case wp_shotgun:
 			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
 				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_SHOTGUN);
 			if (entity->player->weapon_flags & WEAPON_GRENADE)
 				draw_icon(1.0, ICON_GRENADE, WEAPON_SPACING * i++, 0.0f);
@@ -4167,6 +4188,8 @@ void Quake3::render_hud(double last_frametime)
 				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
 			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
 				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_GRENADE);
 			if (entity->player->weapon_flags & WEAPON_ROCKET)
 				draw_icon(1.0, ICON_ROCKET, WEAPON_SPACING * i++, 0.0f);
@@ -4184,6 +4207,8 @@ void Quake3::render_hud(double last_frametime)
 				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
 			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
 				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_ROCKET);
 			if (entity->player->weapon_flags & WEAPON_LIGHTNING)
 				draw_icon(1.0, ICON_LIGHTNING, WEAPON_SPACING * i++, 0.0f);
@@ -4201,6 +4226,8 @@ void Quake3::render_hud(double last_frametime)
 				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
 			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
 				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_LIGHTNING);
 			if (entity->player->weapon_flags & WEAPON_RAILGUN)
 				draw_icon(1.0, ICON_RAILGUN, WEAPON_SPACING * i++, 0.0f);
@@ -4218,6 +4245,8 @@ void Quake3::render_hud(double last_frametime)
 				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
 			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
 				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_RAILGUN);
 			if (entity->player->weapon_flags & WEAPON_PLASMA)
 				draw_icon(1.0, ICON_PLASMA, WEAPON_SPACING * i++, 0.0f);
@@ -4235,6 +4264,8 @@ void Quake3::render_hud(double last_frametime)
 				draw_icon(1.0, ICON_SHOTGUN, WEAPON_SPACING * j--, 0.0f);
 			if (entity->player->weapon_flags & WEAPON_MACHINEGUN)
 				draw_icon(1.0, ICON_MACHINEGUN, WEAPON_SPACING * j--, 0.0f);
+			if (entity->player->weapon_flags & WEAPON_GAUNTLET)
+				draw_icon(1.0, ICON_GAUNTLET, WEAPON_SPACING * j--, 0.0f);
 			draw_icon(1.0, ICON_PLASMA);
 			break;
 		}

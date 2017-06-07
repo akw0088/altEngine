@@ -151,7 +151,7 @@ void Player::respawn()
 {
 	health = 100;
 	armor = 0;
-	weapon_flags = WEAPON_MACHINEGUN;
+	weapon_flags = WEAPON_MACHINEGUN | WEAPON_GAUNTLET;
 	current_weapon = wp_machinegun;
 	ammo_rockets = 0;
 	ammo_slugs = 0;
