@@ -124,7 +124,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	memset(&stats, 0, sizeof(stats_t));
 
 //	weapon_machinegun.load(gfx, "media/models/weapons2/m4/m4s");
-	weapon_gauntlet.load(gfx,   "media/models/weapons2/plasma/plasma");
+	weapon_gauntlet.load(gfx,   "media/models/weapons2/grenadel/grenade");
 	weapon_machinegun.load(gfx, "media/models/weapons2/machinegun/machinegun");
 	weapon_shotgun.load(gfx,	"media/models/weapons2/shotgun/shotgun");
 	weapon_grenade.load(gfx,	"media/models/weapons2/grenadel/grenade");

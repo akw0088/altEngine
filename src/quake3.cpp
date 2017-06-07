@@ -3451,7 +3451,7 @@ void Quake3::load_icon()
 	icon_list.push_back(icon);
 
 #define ICON_F_GAUNTLET 58
-	sprintf(icon.filename, "media/models/weapons2/machinegun/f_gauntlet.jpg");
+	sprintf(icon.filename, "media/models/weapons2/gauntlet/gauntlet3.jpg");
 	icon.x = FLASH_X; // positive right from center
 	icon.y = FLASH_Y; // positive up from center
 	icon_list.push_back(icon);
@@ -3702,7 +3702,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			switch (player.current_weapon)
 			{
 			case wp_gauntlet:
-				player.flash_gauntlet = 5;
+				player.flash_gauntlet = 60;
 				break;
 			case wp_machinegun:
 				player.flash_machinegun = 5;
@@ -4127,6 +4127,9 @@ void Quake3::render_hud(double last_frametime)
 		switch (entity->player->current_weapon)
 		{
 		case wp_none:
+			draw_icon(1.0, ICON_NOAMMO);
+			break;
+		case wp_gauntlet:
 			draw_icon(1.0, ICON_NOAMMO);
 			break;
 		case wp_machinegun:
