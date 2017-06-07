@@ -137,6 +137,7 @@ public:
 	Entity *bullet;
 	Entity *bullet_hit;
 	Entity *plasma_hit;
+	Entity *mark;
 	Entity *gib0;
 	Entity *gib1;
 	Entity *gib2;

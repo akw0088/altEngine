@@ -212,6 +212,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	plasma_hit->model = plasma_hit->rigid;
 	plasma_hit->model->load(gfx, "media/models/weaphits/plasma_hit");
 
+	mark = new Entity();
+	mark->rigid = new RigidBody(mark);
+	mark->model = mark->rigid;
+	mark->model->load(gfx, "media/models/weaphits/boom");
+
 
 	gib0 = new Entity();
 	gib0->rigid = new RigidBody(gib0);

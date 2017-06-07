@@ -6702,5 +6702,31 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal->model->morientation.m[6] = forward.x;
 		decal->model->morientation.m[7] = forward.y;
 		decal->model->morientation.m[8] = forward.z;
+
+		Entity *decal2 = engine->entity_list[engine->get_entity()];
+		decal2->rigid = new RigidBody(decal2);
+		decal2->model = decal->rigid;
+		decal2->position = pos + plane.normal * offset;
+		decal2->rigid->clone(*(engine->box->model));
+		decal2->visible = true; // accomodate for low spatial testing rate
+		decal2->bsp_leaf = -1;
+		decal2->rigid->gravity = false;
+		decal2->rigid->noclip = true;
+		decal2->rigid->bounce = 2;
+		decal2->rigid->blend = true;
+
+
+
+		decal2->model->morientation.m[0] = right.x;
+		decal2->model->morientation.m[1] = right.y;
+		decal2->model->morientation.m[2] = right.z;
+
+		decal2->model->morientation.m[3] = up.x;
+		decal2->model->morientation.m[4] = up.y;
+		decal2->model->morientation.m[5] = up.z;
+
+		decal2->model->morientation.m[6] = forward.x;
+		decal2->model->morientation.m[7] = forward.y;
+		decal2->model->morientation.m[8] = forward.z;
 	}
 }
