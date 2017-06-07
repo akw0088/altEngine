@@ -9,7 +9,7 @@
 #define MACHINEGUN_DAMAGE 7
 #define MACHINEGUN_RELOAD 8
 
-#define SHOTGUN_DAMAGE 50
+#define SHOTGUN_DAMAGE 10
 #define SHOTGUN_RELOAD 60
 
 #define GRENADE_DAMAGE 100
@@ -2703,58 +2703,83 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->bsp_leaf = player.entity->bsp_visible = true;
 
 
-	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
-
-
-	if (client == false)
+	for (int i = 0; i < 10; i++)
 	{
-		float quad_factor = 1.0f;
+		// Added to end vector
+		int spread = 700;
+		float r = random() * M_PI * 2.0f;
+		float spread_up = sin(r) * crandom() * spread * 16;
+		float spread_right = cos(r) * crandom() * spread * 16;
+		vec3 end;
+		vec3 dir;
 
-		if (player.quad_timer > 0)
-			quad_factor = QUAD_FACTOR;
+		end = player.entity->position + camera_frame.forward * 8192 * 16;
+		end.y += spread_up;
+		end.z += spread_right;
+
+		dir = end - player.entity->position;
+		dir.normalize();
+
+		camera_frame.forward = dir;
 
 
-		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
-		for (int i = 0; i < num_index; i++)
+		add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
+
+
+		if (client == false)
 		{
-			char cmd[64] = { 0 };
+			float quad_factor = 1.0f;
 
-			if (engine->entity_list[index[i]]->player == NULL)
-				continue;
+			if (player.quad_timer > 0)
+				quad_factor = QUAD_FACTOR;
 
-			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
-				continue;
 
-			debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,
-				engine->entity_list[index[i]]->player->name, (int)(SHOTGUN_DAMAGE * quad_factor));
-			sprintf(cmd, "hurt %d %d", index[i], (int)(SHOTGUN_DAMAGE * quad_factor));
-
-			console(self, cmd, engine->menu, engine->entity_list);
-			debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-				engine->entity_list[index[i]]->player->health);
-
-			player.stats.hits++;
-			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+			engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self);
+			for (int i = 0; i < num_index; i++)
 			{
-				char msg[64];
-				char word[32] = { 0 };
+				char cmd[64] = { 0 };
 
-				player.stats.kills++;
-				engine->entity_list[index[i]]->player->stats.deaths++;
+				if (engine->entity_list[index[i]]->player == NULL)
+					continue;
 
-				if (engine->entity_list[index[i]]->player->health <= -50)
-					sprintf(word, "%s", "gibbed");
-				else
-					sprintf(word, "%s", "killed");
+				if (engine->entity_list[index[i]]->player->health <= 0)
+					continue;
 
-				sprintf(msg, "%s %s %s with a shotgun\n", player.name,
-					word,
-					engine->entity_list[index[i]]->player->name);
-				debugf(msg);
-				engine->menu.print_notif(msg);
-				notif_timer = 3 * TICK_RATE;
+				if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+					continue;
 
-				handle_frags_left(player);
+				debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,
+					engine->entity_list[index[i]]->player->name, (int)(SHOTGUN_DAMAGE * quad_factor));
+
+				sprintf(cmd, "hurt %d %d", index[i], (int)(SHOTGUN_DAMAGE * quad_factor));
+
+				console(self, cmd, engine->menu, engine->entity_list);
+				debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
+					engine->entity_list[index[i]]->player->health);
+
+				player.stats.hits++;
+				if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+				{
+					char msg[64];
+					char word[32] = { 0 };
+
+					player.stats.kills++;
+					engine->entity_list[index[i]]->player->stats.deaths++;
+
+					if (engine->entity_list[index[i]]->player->health <= -50)
+						sprintf(word, "%s", "gibbed");
+					else
+						sprintf(word, "%s", "killed");
+
+					sprintf(msg, "%s %s %s with a shotgun\n", player.name,
+						word,
+						engine->entity_list[index[i]]->player->name);
+					debugf(msg);
+					engine->menu.print_notif(msg);
+					notif_timer = 3 * TICK_RATE;
+
+					handle_frags_left(player);
+				}
 			}
 		}
 	}
