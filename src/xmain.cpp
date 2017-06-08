@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 					GLX_GREEN_SIZE, 8,
 					GLX_BLUE_SIZE, 8,
 					GLX_DEPTH_SIZE, 24,
-					GLX_STENCIL_SIZE, 8,
+                                    	GLX_STENCIL_SIZE, 8,
 					None	};
 
 
@@ -291,20 +291,28 @@ int EventProc(Display *display, Window window, GLXContext context)
 				altEngine.keypress("escape", pressed);
 				break;
 			case XK_Up:
-			case XK_w:
 				altEngine.keypress("up", pressed);
 				break;
+			case XK_w:
+				altEngine.keypress("w", pressed);
+				break;
 			case XK_Left:
-			case XK_a:
 				altEngine.keypress("left", pressed);
 				break;
+			case XK_a:
+				altEngine.keypress("a", pressed);
+				break;
 			case XK_Down:
-			case XK_s:
 				altEngine.keypress("down", pressed);
 				break;
+			case XK_s:
+				altEngine.keypress("s", pressed);
+				break;
 			case XK_Right:
-			case XK_d:
 				altEngine.keypress("right", pressed);
+				break;
+			case XK_d:
+				altEngine.keypress("d", pressed);
 				break;
 			}
 		}

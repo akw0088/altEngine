@@ -2626,9 +2626,9 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 	// Added to end vector
 	int spread = 200;
-	float r = random() * M_PI * 2.0f;
-	float spread_up = sin(r) * crandom() * spread * 16;
-	float spread_right = cos(r) * crandom() * spread * 16;
+	float r = random() * MY_PI * 2.0f;
+	float spread_up = fsin(r) * crandom() * spread * 16;
+	float spread_right = fcos(r) * crandom() * spread * 16;
 
 	end = player.entity->position + camera_frame.forward * 8192 * 16;
 	end.x += spread_right;
@@ -2825,9 +2825,9 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	{
 		// Added to end vector
 		int spread = 700;
-		float r = random() * M_PI * 2.0f;
-		float spread_up = sin(r) * crandom() * spread * 16;
-		float spread_right = cos(r) * crandom() * spread * 16;
+		float r = random() * MY_PI * 2.0f;
+		float spread_up = fsin(r) * crandom() * spread * 16;
+		float spread_right = fcos(r) * crandom() * spread * 16;
 		vec3 end;
 		vec3 dir;
 
