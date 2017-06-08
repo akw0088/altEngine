@@ -536,8 +536,8 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 	strcpy(wave.file, "sound/feedback/gauntlet.wav");
 	audio.load(wave);
 	snd_wave.push_back(wave);
-#define SND_GUANTLET 276
-	snd_table[SND_GUANTLET] = snd_wave.size() - 1;
+#define SND_GAUNTLET 276
+	snd_table[SND_GAUNTLET] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/humiliation.wav");
@@ -3455,7 +3455,7 @@ void Quake3::load_icon()
 #define ICON_F_GAUNTLET 58
 	sprintf(icon.filename, "media/models/weapons2/gauntlet/gauntlet3.jpg");
 	icon.x = FLASH_X; // positive right from center
-	icon.y = FLASH_Y; // positive up from center
+	icon.y = -0.15f; // positive up from center
 	icon_list.push_back(icon);
 
 
