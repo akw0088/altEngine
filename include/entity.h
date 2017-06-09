@@ -97,27 +97,24 @@ public:
 	bool			nodraw;
 	bool			network;
 	RigidBody		*rigid;
-	Vehicle			*vehicle;
 	Model			*model;
 	Light			*light;
 	Speaker			*speaker;
 	Trigger			*trigger;
 	Player			*player;
-	Decal			*decal;
 
 	//Really bsp related items
-	char			type[64];
 	int				ent_type; // will replace string type eventually
 	nettype_t		nettype;
-	char			target[64];
-	char			target_name[64];
 	int				angle;
 	int				model_ref;
 	float			height; // for movers will make own class later
 
-	//temp hack
 	bool particle_on;
 	int num_particle;
 
+	char			type[64];
+	char			target[64];
+	char			target_name[64];
 };
 #endif

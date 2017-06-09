@@ -4,8 +4,6 @@
 #define _HAS_EXCEPTIONS 0
 #define D3D_DEBUG_INFO
 
-//#define D3D11
-
 
 #define LINE_SIZE 512
 
@@ -442,9 +440,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "model.h"
 #include "md5model.h"
 #include "rigidbody.h"
-#include "vehicle.h"
 #include "player.h"
-#include "decal.h"
 
 #include "sin_table.h"
 #include "common.h"

@@ -9,29 +9,31 @@
 
 Entity::Entity()
 {
-	ent_type = ENT_UNKNOWN;
 	position = vec3(0.0f, 0.0f, 0.0f);
 	visible = false;
 	frustum_visible = false;
+	bsp_visible = false;
+	bsp_leaf = 0;
 	nodraw = false;
-	network = false;
-	target[0] = '\0';
-	target_name[0] = '\0';
-	angle = 0;
-	model_ref = -1;
-	sprintf(type, "free");
 	rigid = NULL;
-	vehicle = NULL;
 	model = NULL;
 	light = NULL;
 	speaker = NULL;
 	trigger = NULL;
 	player = NULL;
-	decal = NULL;
-	num_particle = 0;
-	bsp_leaf = 0;
-	particle_on = false;
+
+	ent_type = ENT_UNKNOWN;
 	nettype = NT_NONE;
+	angle = 0;
+	model_ref = -1;
+	height = 0.0f;
+
+	particle_on = false;
+	num_particle = 0;
+
+	sprintf(type, "free");
+	target[0] = '\0';
+	target_name[0] = '\0';
 }
 
 Entity::~Entity()
@@ -60,13 +62,11 @@ Entity::~Entity()
 	angle = 0;
 	model_ref = -1;
 	rigid = NULL;
-	vehicle = NULL;
 	model = NULL;
 	light = NULL;
 	speaker = NULL;
 	trigger = NULL;
 	player = NULL;
-	decal = NULL;
 	nettype = NT_NONE;
 }
 
