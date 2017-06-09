@@ -295,6 +295,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	{
 		audio_source[i] = audio.create_source(false, false);
 		global_source[i] = audio.create_source(false, true);
+		audio_loop_source[i] = audio.create_source(true, false);
+		global_loop_source[i] = audio.create_source(true, true);
 	}
 
 
@@ -4689,12 +4691,38 @@ int Engine::get_source()
 	return source;
 }
 
+int Engine::get_loop_source()
+{
+	int source;
+	static int i = 0;
+
+	source = audio_loop_source[i++];
+
+	if (i == max_sources)
+		i = 0;
+
+	return source;
+}
+
 int Engine::get_global_source()
 {
 	int source;
 	static int i = 0;
 
 	source = global_source[i++];
+
+	if (i == max_sources)
+		i = 0;
+
+	return source;
+}
+
+int Engine::get_global_loop_source()
+{
+	int source;
+	static int i = 0;
+
+	source = global_loop_source[i++];
 
 	if (i == max_sources)
 		i = 0;
@@ -4710,10 +4738,10 @@ bool Engine::play_wave_source(int source, int index)
 	return true;
 }
 
-bool Engine::play_wave(vec3 &position, int index)
+int Engine::play_wave(vec3 &position, int index)
 {
 	if (index < 0)
-		return false;
+		return 0;
 
 	int source = get_source();
 
@@ -4724,10 +4752,27 @@ bool Engine::play_wave(vec3 &position, int index)
 	else
 		audio.select_buffer(source, doom_sound);
 	audio.play(source);
-	return true;
+	return source;
 }
 
-bool Engine::play_wave_global(int index)
+int Engine::play_wave_loop(vec3 &position, int index)
+{
+	if (index < 0)
+		return 0;
+
+	int source = get_loop_source();
+
+	audio.source_position(source, &position.x);
+
+	if (index != 302)
+		audio.select_buffer(source, snd_wave[index].buffer);
+	else
+		audio.select_buffer(source, doom_sound);
+	audio.play(source);
+	return source;
+}
+
+int Engine::play_wave_global(int index)
 {
 	if (index < 0)
 		return false;
@@ -4735,7 +4780,18 @@ bool Engine::play_wave_global(int index)
 	int source = get_global_source();
 	audio.select_buffer(source, snd_wave[index].buffer);
 	audio.play(source);
-	return true;
+	return source;
+}
+
+int Engine::play_wave_global_loop(int index)
+{
+	if (index < 0)
+		return false;
+
+	int source = get_global_loop_source();
+	audio.select_buffer(source, snd_wave[index].buffer);
+	audio.play(source);
+	return source;
 }
 
 

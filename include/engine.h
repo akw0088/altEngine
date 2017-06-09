@@ -83,8 +83,10 @@ public:
 	// Hit max source limit, only moving entities really need them
 	bool play_wave_source(int source, int index);
 	// Rest will play from 32 sources round robin style
-	bool play_wave(vec3 &position, int index);
-	bool play_wave_global(int index);
+	int play_wave(vec3 &position, int index);
+	int play_wave_loop(vec3 &position, int index);
+	int play_wave_global(int index);
+	int play_wave_global_loop(int index);
 	int get_load_wave(const char *file);
 
 	void destroy_buffers();
@@ -99,7 +101,9 @@ public:
 	void reload_shaders();
 
 	int get_source();
+	int get_loop_source();
 	int get_global_source();
+	int get_global_loop_source();
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -113,6 +117,8 @@ public:
 
 	unsigned int audio_source[32];
 	unsigned int global_source[32];
+	unsigned int audio_loop_source[32];
+	unsigned int global_loop_source[32];
 	int max_sources;
 
 	rendermode_t render_mode;

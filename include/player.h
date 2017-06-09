@@ -136,6 +136,7 @@ public:
 	unsigned int impressive_count;
 	unsigned int impressive_award_timer;
 	unsigned int excellent_award_timer;
+	unsigned int gauntlet_award_timer;
 	unsigned int pain_timer;
 	unsigned int alert_timer;
 	unsigned int idle_timer;
@@ -153,6 +154,9 @@ public:
 	unsigned int flash_railgun;
 	unsigned int flash_lightning;
 	unsigned int flash_plasma;
+
+	int weapon_source;
+	int weapon_loop_source;
 
 
 

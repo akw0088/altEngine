@@ -62,6 +62,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 
 	zoom_level = 4.0;
+	weapon_source = -1;
+	weapon_loop_source = -1;
 
 	path.path = new int[NUM_PATH];
 	get_item = 0;
@@ -69,6 +71,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	impressive_award_timer = 0;
 	excellent_award_timer = 0;
+	gauntlet_award_timer = 0;
 
 	model_index = model; // default to visor -- ranger isnt in demo files :'( 
 

@@ -10,7 +10,7 @@
 #define MACHINEGUN_RELOAD 8
 
 #define GAUNTLET_DAMAGE 50
-#define GAUNTLET_RELOAD 60
+#define GAUNTLET_RELOAD 40
 
 #define SHOTGUN_DAMAGE 10
 #define SHOTGUN_RELOAD 60
@@ -536,8 +536,8 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 	strcpy(wave.file, "sound/feedback/gauntlet.wav");
 	audio.load(wave);
 	snd_wave.push_back(wave);
-#define SND_GAUNTLET 276
-	snd_table[SND_GAUNTLET] = snd_wave.size() - 1;
+#define SND_GAUNTLET_MEDAL 276
+	snd_table[SND_GAUNTLET_MEDAL] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/humiliation.wav");
@@ -914,12 +914,12 @@ void Quake3::handle_player(int self, input_t &input)
 		if (entity->rigid->lava)
 		{
 			console(self, "damage 20", engine->menu, engine->entity_list);
-			entity->player->pain_timer = TICK_RATE * 0.5;
+			entity->player->pain_timer = (TICK_RATE >> 1);
 		}
 		else if (entity->rigid->slime)
 		{
 			console(self, "damage 10", engine->menu, engine->entity_list);
-			entity->player->pain_timer = TICK_RATE * 0.5;
+			entity->player->pain_timer = (TICK_RATE >> 1);
 		}
 	}
 
@@ -2532,9 +2532,10 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 	vec3 end;
 
 
+	player.reload_timer = 5; // prevent doing gauntlet hitscan every frame
+
 	player.entity->model->get_frame(camera_frame);
 	camera_frame.forward *= -1;
-	player.reload_timer = GAUNTLET_RELOAD;
 	player.ammo_bullets--;
 
 
@@ -2573,6 +2574,13 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
 
+			player.reload_timer = GAUNTLET_RELOAD;
+
+			if (player.local)
+				player.weapon_source = engine->play_wave_global(SND_GAUNTLET_HIT);
+			else
+				player.weapon_source = engine->play_wave(player.entity->position, SND_GAUNTLET_HIT);
+
 			debugf("Player %s hit %s with the gauntlet for %d damage\n", player.name,
 				engine->entity_list[index[i]]->player->name, (int)(GAUNTLET_DAMAGE * quad_factor));
 			sprintf(cmd, "hurt %d %d", index[i], (int)(GAUNTLET_DAMAGE * quad_factor));
@@ -2593,6 +2601,10 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
+
+				player.gauntlet_award_timer = 3 * TICK_RATE;
+				player.stats.medal_humiliation++;
+				engine->play_wave_global(277);
 
 				sprintf(msg, "%s killed %s with a gauntlet\n", player.name,
 					engine->entity_list[index[i]]->player->name);
@@ -2627,8 +2639,8 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	// Added to end vector
 	int spread = 200;
 	float r = random() * MY_PI * 2.0f;
-	float spread_up = fsin(r) * crandom() * spread * 16;
-	float spread_right = fcos(r) * crandom() * spread * 16;
+	float spread_up = (float)(fsin(r) * crandom() * spread * 16);
+	float spread_right = (float)(fcos(r) * crandom() * spread * 16);
 
 	end = player.entity->position + camera_frame.forward * 8192 * 16;
 	end.x += spread_right;
@@ -2826,8 +2838,8 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		// Added to end vector
 		int spread = 700;
 		float r = random() * MY_PI * 2.0f;
-		float spread_up = fsin(r) * crandom() * spread * 16;
-		float spread_right = fcos(r) * crandom() * spread * 16;
+		float spread_up = (float)(fsin(r) * crandom() * spread * 16);
+		float spread_right = (float)(fcos(r) * crandom() * spread * 16);
 		vec3 end;
 		vec3 dir;
 
@@ -3464,11 +3476,11 @@ void Quake3::load_icon()
 
 void Quake3::handle_weapons(Player &player, input_t &input, int self, bool client)
 {
+	static bool once = false;
+	static bool playing = false;
 	bool fired = false;
 	bool empty = false;
-	static bool once = false;
 	int attack_sound = -1;
-//	int weapon_idle_sound = -1;
 
 	if (input.weapon_up)
 	{
@@ -3538,13 +3550,11 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		switch (player.current_weapon)
 		{
 		case wp_railgun:
-			engine->play_wave_global(SND_RG_HUM);
-			break;
-		case wp_lightning:
-//			engine->play_wave_global(SND_LG_HUM);
+			player.weapon_loop_source = engine->play_wave_global_loop(SND_RG_HUM);
 			break;
 		default:
-			//weapon_idle_sound = -1;
+			if (player.weapon_loop_source != -1)
+				engine->audio.stop(player.weapon_loop_source);
 			break;
 		}
 //		engine->audio.stop(player.entity->speaker->loop_source);
@@ -3704,7 +3714,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			switch (player.current_weapon)
 			{
 			case wp_gauntlet:
-				player.flash_gauntlet = 60;
+				player.flash_gauntlet = 5;
 				break;
 			case wp_machinegun:
 				player.flash_machinegun = 5;
@@ -3755,12 +3765,23 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 					once = true;
 				}
 			}
+			else if (player.current_weapon & WEAPON_GAUNTLET)
+			{
+				if (playing == false)
+				{
+					if (player.local)
+						player.weapon_loop_source = engine->play_wave_global_loop(attack_sound);
+					else
+						player.weapon_loop_source = engine->play_wave_loop(player.entity->position, attack_sound);
+					playing = true;
+				}
+			}
 			else
 			{
 				if (player.local)
-					engine->play_wave_global(attack_sound);
+					player.weapon_source = engine->play_wave_global(attack_sound);
 				else
-					engine->play_wave(player.entity->position, attack_sound);
+					player.weapon_source = engine->play_wave(player.entity->position, attack_sound);
 			}
 		}
 		else if (empty)
@@ -3772,6 +3793,14 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			else
 				engine->play_wave(player.entity->position, SND_NOAMMO);
 		}
+	}
+
+	if (player.current_weapon & WEAPON_GAUNTLET && input.attack == false)
+	{
+		if (player.weapon_loop_source != -1)
+			engine->audio.stop(player.weapon_loop_source);
+
+		playing = false;
 	}
 
 }
@@ -4281,6 +4310,12 @@ void Quake3::render_hud(double last_frametime)
 	{
 		draw_icon(1.0, ICON_MEDAL_EXCELLENT);
 		entity->player->excellent_award_timer--;
+	}
+
+	if (entity->player->gauntlet_award_timer > 0)
+	{
+		draw_icon(1.0, ICON_MEDAL_GAUNTLET);
+		entity->player->gauntlet_award_timer--;
 	}
 
 	if (entity->player->impressive_award_timer > 0)
