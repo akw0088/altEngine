@@ -19,6 +19,12 @@ void Graphics::resize(int width, int height)
 
 Graphics::Graphics()
 {
+	width = 0;
+	height = 0;
+	gpustat.drawcall = 0;
+	gpustat.triangle = 0;
+	hwnd = 0;
+	hdc = 0;
 }
 
 
@@ -618,6 +624,10 @@ Shader::Shader()
 	vertex_src = NULL;
 	geometry_src = NULL;
 	fragment_src = NULL;
+	program_handle = 0;
+	vertex_handle = 0;
+	geometry_handle = 0;
+	fragment_handle = 0;
 }
 
 

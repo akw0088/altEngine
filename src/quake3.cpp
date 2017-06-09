@@ -57,6 +57,12 @@ Quake3::Quake3()
 	capturelimit = 8;
 	weapon_switch_timer = 0;
 	win_timer = 0;
+	win_msg[0] = '\0';
+
+	crosshair_vbo = 0;
+	current_crosshair = 0;
+	crosshair_scale = 1.0f;
+	icon_vbo = 0;
 
 	num_player = 0;
 	num_player_red = 0;
@@ -825,27 +831,29 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 				strcpy(entity_list[spawn]->type, "unknown");
 				break;
 			}
-			entity_list[spawn]->position = entity_list[i]->position;
-			entity_list[spawn]->rigid = new RigidBody(entity_list[spawn]);
-			entity_list[spawn]->model = entity_list[spawn]->rigid;
-			entity_list[spawn]->rigid->clone(*(engine->thug22->model));
-			entity_list[spawn]->rigid->step_flag = true;
-			entity_list[spawn]->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team);
-			entity_list[spawn]->position += entity_list[spawn]->rigid->center;
-			entity_list[spawn]->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
-			entity_list[spawn]->player->type = player_type;
+			Entity *spawn_ent = entity_list[spawn];
+
+			spawn_ent->position = entity_list[i]->position;
+			spawn_ent->rigid = new RigidBody(entity_list[spawn]);
+			spawn_ent->model = entity_list[spawn]->rigid;
+			spawn_ent->rigid->clone(*(engine->thug22->model));
+			spawn_ent->rigid->step_flag = true;
+			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team);
+			spawn_ent->position += entity_list[spawn]->rigid->center;
+			spawn_ent->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
+			spawn_ent->player->type = player_type;
 
 			if (player_type == BOT && engine->demo == false)
 			{
-				entity_list[spawn]->player->model_index = 20;
+				spawn_ent->player->model_index = 20;
 			}
 
-			strcpy(entity_list[spawn]->player->name, player_name);
+			strcpy(spawn_ent->player->name, player_name);
 
 
-			entity_list[spawn]->player->local = local;
+			spawn_ent->player->local = local;
 			if (player_type == BOT)
-				entity_list[spawn]->player->local = false;
+				spawn_ent->player->local = false;
 
 
 			matrix4 matrix;
@@ -857,18 +865,18 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			case 45:
 			case 360:
 			case 325:
-				matrix4::mat_left(matrix, entity_list[spawn]->position);
+				matrix4::mat_left(matrix, spawn_ent->position);
 				break;
 			case 90:
 			case 135:
-				matrix4::mat_forward(matrix, entity_list[spawn]->position);
+				matrix4::mat_forward(matrix, spawn_ent->position);
 				break;
 			case 180:
 			case 225:
-				matrix4::mat_right(matrix, entity_list[spawn]->position);
+				matrix4::mat_right(matrix, spawn_ent->position);
 				break;
 			case 270:
-				matrix4::mat_backward(matrix, entity_list[spawn]->position);
+				matrix4::mat_backward(matrix, spawn_ent->position);
 				break;
 			}
 			engine->camera_frame.forward.x = matrix.m[8];
@@ -977,7 +985,7 @@ void Quake3::handle_player(int self, input_t &input)
 			entity->player->health -= 10;
 			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 			{
-				char msg[64];
+				char msg[256];
 
 				entity->player->stats.deaths++;
 				sprintf(msg, "%s fell and cant get up\n", entity->player->name);
@@ -1388,7 +1396,7 @@ void Quake3::handle_player(int self, input_t &input)
 				entity->player->health -= 15;
 				if (entity->player->health < 0 && entity->player->state != PLAYER_DEAD)
 				{
-					char msg[64];
+					char msg[256];
 
 					entity->player->stats.deaths++;
 					entity->player->kill();
@@ -1653,16 +1661,17 @@ void Quake3::step(int frame_step)
 					for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 					{
 						int max_frags = 0;
+						Player *player = engine->entity_list[i]->player;
 
-						if (engine->entity_list[i]->player)
+						if (player != NULL)
 						{
-							if (engine->entity_list[i]->player->stats.kills > max_frags)
+							if (player->stats.kills > max_frags)
 							{
-								max_frags = engine->entity_list[i]->player->stats.kills;
-								leader = engine->entity_list[i]->player->name;
+								max_frags = player->stats.kills;
+								leader = player->name;
 								tied = false;
 							}
-							else if (engine->entity_list[i]->player->stats.kills == max_frags)
+							else if (player->stats.kills == max_frags)
 							{
 								tied = true;
 							}
@@ -1730,11 +1739,11 @@ void Quake3::step(int frame_step)
 					index = i;
 				}
 			}
-			int spectator = engine->find_type("spectator", 0);
+			int spec = engine->find_type("spectator", 0);
 
-			if (spectator != -1)
+			if (spec != -1)
 			{
-				sprintf(engine->entity_list[spectator]->type, "NPC");
+				sprintf(engine->entity_list[spec]->type, "NPC");
 			}
 			sprintf(engine->entity_list[index]->type, "player");
 		}
@@ -1889,13 +1898,13 @@ void Quake3::step(int frame_step)
 			}
 
 			// Need a path to item
-			if (engine->entity_list[i]->player->path.length == 0)
+			if (bot->player->path.length == 0)
 			{
 				//probably need to pass Player reference instead of each path param, or make a struct
-				ret = bot_get_path(engine->entity_list[i]->player->get_item, i, nav_array,
-					engine->entity_list[i]->player->path);
+				ret = bot_get_path(bot->player->get_item, i, nav_array,
+					bot->player->path);
 
-				if (engine->entity_list[i]->player->path.length == -1)
+				if (bot->player->path.length == -1)
 				{
 					// Path doesnt exist, give up
 					strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, 1023);
@@ -1971,6 +1980,7 @@ void Quake3::step(int frame_step)
 	#pragma omp parallel for num_threads(8)
 	for (int i = 0; i < engine->max_player; i++)
 	{
+		Player *player = engine->entity_list[i]->player;
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();
 		int num_thread = omp_get_num_threads();
@@ -1983,11 +1993,11 @@ void Quake3::step(int frame_step)
 
 
 
-		if (engine->entity_list[i]->player && engine->entity_list[i]->player->type == PLAYER)
+		if (player && player->type == PLAYER)
 			check_triggers(i, engine->entity_list);
-		if (engine->server_flag && engine->entity_list[i]->player && engine->entity_list[i]->player->type == CLIENT)
+		if (engine->server_flag && player && player->type == CLIENT)
 			check_triggers(i, engine->entity_list);
-		else if (engine->entity_list[i]->player && engine->entity_list[i]->player->type == BOT)
+		else if (player && player->type == BOT)
 			check_triggers(i, engine->entity_list);
 	}
 
@@ -2017,7 +2027,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		camera_frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_leaf = player.entity->bsp_visible = true;
+		projectile->bsp_visible = player.entity->bsp_visible = true;
 		projectile->rigid->blend = true;
 
 		projectile->rigid->clone(*(engine->ball->model));
@@ -2065,7 +2075,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 }
 
 void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
@@ -2089,7 +2099,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->position = camera_frame.pos;
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_leaf = player.entity->bsp_visible = true;
+		projectile->bsp_visible = player.entity->bsp_visible = true;
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
@@ -2143,7 +2153,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 }
 
@@ -2166,7 +2176,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		camera_frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_leaf = player.entity->bsp_visible = true;
+		projectile->bsp_visible = player.entity->bsp_visible = true;
 
 		projectile->rigid->clone(*(engine->box->model));
 		projectile->rigid->clone(*(engine->pineapple->model));
@@ -2218,7 +2228,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 }
 
@@ -2236,7 +2246,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		player.health -= player.ammo_lightning * LIGHTNING_DAMAGE;
 		if (player.health < 0)
 		{
-			char msg[64];
+			char msg[256];
 
 			sprintf(msg, "%s discovered water conducts electricity\n", player.name);
 			debugf(msg);
@@ -2256,7 +2266,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				enemy->health -= enemy->ammo_lightning * LIGHTNING_DAMAGE;
 				if (enemy->health < 0)
 				{
-					char msg[80];
+					char msg[256];
 
 					sprintf(msg, "%s was caught up in %s discharge\n", enemy->name, player.name);
 					debugf(msg);
@@ -2300,7 +2310,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->rigid->noclip = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_leaf = player.entity->bsp_visible = true;
+		projectile->bsp_visible = player.entity->bsp_visible = true;
 
 		/*
 		projectile->light = new Light(projectile, engine->gfx, 999);
@@ -2327,41 +2337,42 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		for (int i = 0; i < num_index; i++)
 		{
 			char cmd[512] = { 0 };
+			Player *target = engine->entity_list[index[i]]->player;
 
-			if (engine->entity_list[index[i]]->player == NULL)
+			if (target == NULL)
 				continue;
 
-			if (engine->entity_list[index[i]]->player->health <= 0)
+			if (target->health <= 0)
 				continue;
 
-			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			if (player.team == target->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
 
 			debugf("Player %s hit %s with the lightning gun for %d damage\n", player.name,
-				engine->entity_list[index[i]]->player->name, (int)(LIGHTNING_DAMAGE * quad_factor));
+				target->name, (int)(LIGHTNING_DAMAGE * quad_factor));
 
 			sprintf(cmd, "hurt %d %d", index[i], (int)(LIGHTNING_DAMAGE * quad_factor));
 			console(self, cmd, engine->menu, engine->entity_list);
 
-			debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-				engine->entity_list[index[i]]->player->health);
+			debugf("%s has %d health\n", target->name,
+				target->health);
 
 			player.stats.hits++;
-			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
 				char msg[512];
 				char word[32] = { 0 };
 				player.stats.kills++;
-				engine->entity_list[index[i]]->player->stats.deaths++;
+				target->stats.deaths++;
 
-				if (engine->entity_list[index[i]]->player->health <= -50)
+				if (target->health <= -50)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
 
 				sprintf(msg, "%s %s %s with a lightning gun\n", player.name,
 					word,
-					engine->entity_list[index[i]]->player->name);
+					target->name);
 				debugf(msg);
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
@@ -2380,7 +2391,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 
 }
@@ -2415,7 +2426,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		camera_frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_leaf = player.entity->bsp_visible = true;
+		projectile->bsp_visible = player.entity->bsp_visible = true;
 
 		projectile->trigger = new Trigger(projectile, engine->audio);
 		projectile->trigger->projectile = true;
@@ -2444,36 +2455,37 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 		for (int i = 0; i < num_index; i++)
 		{
+			Player *target = engine->entity_list[index[i]]->player;
 			char cmd[64] = { 0 };
 	
-			if (engine->entity_list[index[i]]->player == NULL)
+			if (target == NULL)
 				continue;
 
-			if (engine->entity_list[index[i]]->player->health <= 0)
+			if (target->health <= 0)
 				continue;
 
-			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			if (player.team == target->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
 
 
 			debugf("Player %s hit %s with the railgun for %d damage\n", player.name,
-				engine->entity_list[index[i]]->player->name, (int)(RAILGUN_DAMAGE * quad_factor));
+				target->name, (int)(RAILGUN_DAMAGE * quad_factor));
 
 			sprintf(cmd, "hurt %d %d", index[i], (int)(RAILGUN_DAMAGE * quad_factor));
 			console(self, cmd, engine->menu, engine->entity_list);
 
-			debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-				engine->entity_list[index[i]]->player->health);
+			debugf("%s has %d health\n", target->name,
+				target->health);
 
 			player.stats.hits++;
-			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
-				char msg[80];
+				char msg[256];
 				char word[32] = { 0 };
 				player.stats.kills++;
-				engine->entity_list[index[i]]->player->stats.deaths++;
+				target->stats.deaths++;
 
-				if (engine->entity_list[index[i]]->player->health <= -50)
+				if (target->health <= -50)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
@@ -2497,7 +2509,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				player.excellent_timer = 3 * TICK_RATE;
 				sprintf(msg, "%s %s %s with a railgun\n", player.name,
 					word,
-					engine->entity_list[index[i]]->player->name);
+					target->name);
 				debugf(msg);
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
@@ -2517,7 +2529,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 }
 
@@ -2550,7 +2562,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 
 
@@ -2565,13 +2577,15 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 
 		for (int i = 0; i < num_index; i++)
 		{
-			if (engine->entity_list[index[i]]->player == NULL)
+			Player *target = engine->entity_list[index[i]]->player;
+
+			if (target == NULL)
 				continue;
 
-			if (engine->entity_list[index[i]]->player->health <= 0)
+			if (target->health <= 0)
 				continue;
 
-			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			if (player.team == target->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
 
 			player.reload_timer = GAUNTLET_RELOAD;
@@ -2582,22 +2596,22 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 				player.weapon_source = engine->play_wave(player.entity->position, SND_GAUNTLET_HIT);
 
 			debugf("Player %s hit %s with the gauntlet for %d damage\n", player.name,
-				engine->entity_list[index[i]]->player->name, (int)(GAUNTLET_DAMAGE * quad_factor));
+				target->name, (int)(GAUNTLET_DAMAGE * quad_factor));
 			sprintf(cmd, "hurt %d %d", index[i], (int)(GAUNTLET_DAMAGE * quad_factor));
 			console(self, cmd, engine->menu, engine->entity_list);
-			debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-				engine->entity_list[index[i]]->player->health);
+			debugf("%s has %d health\n", target->name,
+				target->health);
 			player.stats.hits++;
 
-			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
-				char msg[64];
+				char msg[256];
 				char word[16] = { 0 };
 
 				player.stats.kills++;
-				engine->entity_list[index[i]]->player->stats.deaths++;
+				target->stats.deaths++;
 
-				if (engine->entity_list[index[i]]->player->health <= -50)
+				if (target->health <= -50)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
@@ -2607,7 +2621,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 				engine->play_wave_global(277);
 
 				sprintf(msg, "%s killed %s with a gauntlet\n", player.name,
-					engine->entity_list[index[i]]->player->name);
+					target->name);
 				debugf(msg);
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
@@ -2666,7 +2680,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 
 
@@ -2685,7 +2699,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	camera_frame.set(bullet->model->morientation);
 	bullet->visible = true; // accomodate for low spatial testing rate
 	bullet->bsp_leaf = player.entity->bsp_leaf;
-	bullet->bsp_leaf = player.entity->bsp_visible = true;
+	bullet->bsp_visible = player.entity->bsp_visible = true;
 
 
 	if (client == false)
@@ -2699,38 +2713,39 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 		for (int i = 0; i < num_index; i++)
 		{
-			if (engine->entity_list[index[i]]->player == NULL)
+			Player *target = engine->entity_list[index[i]]->player;
+			if (target == NULL)
 				continue;
 
-			if (engine->entity_list[index[i]]->player->health <= 0)
+			if (target->health <= 0)
 				continue;
 
-			if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+			if (player.team == target->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
 
 			debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
-				engine->entity_list[index[i]]->player->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
+				target->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
 			sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
 			console(self, cmd, engine->menu, engine->entity_list);
-			debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-				engine->entity_list[index[i]]->player->health);
+			debugf("%s has %d health\n", target->name,
+				target->health);
 			player.stats.hits++;
 	
-			if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
-				char msg[64];
+				char msg[256];
 				char word[16] = { 0 };
 
 				player.stats.kills++;
-				engine->entity_list[index[i]]->player->stats.deaths++;
+				target->stats.deaths++;
 
-				if (engine->entity_list[index[i]]->player->health <= -50)
+				if (target->health <= -50)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
 
 				sprintf(msg, "%s killed %s with a machinegun\n", player.name,
-					engine->entity_list[index[i]]->player->name);
+					target->name);
 				debugf(msg);
 				engine->menu.print_notif(msg);
 				notif_timer = 3 * TICK_RATE;
@@ -2747,7 +2762,7 @@ void Quake3::handle_frags_left(Player &player)
 {
 	if (player.stats.kills >= fraglimit)
 	{
-		char winner[128];
+		char winner[192];
 
 		sprintf(winner, "%s wins", player.name);
 		endgame(winner);
@@ -2792,7 +2807,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_leaf = player.entity->bsp_visible = true;
+	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
@@ -2812,7 +2827,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	camera_frame.set(shell->model->morientation);
 	shell->visible = true; // accomodate for low spatial testing rate
 	shell->bsp_leaf = player.entity->bsp_leaf;
-	shell->bsp_leaf = player.entity->bsp_visible = true;
+	shell->bsp_visible = player.entity->bsp_visible = true;
 
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
@@ -2830,7 +2845,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	camera_frame.set(shell2->model->morientation);
 	shell2->visible = true; // accomodate for low spatial testing rate
 	shell2->bsp_leaf = player.entity->bsp_leaf;
-	shell2->bsp_leaf = player.entity->bsp_visible = true;
+	shell2->bsp_visible = player.entity->bsp_visible = true;
 
 
 	for (int i = 0; i < 10; i++)
@@ -2868,43 +2883,44 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 			engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, -1.0f);
 			for (int i = 0; i < num_index; i++)
 			{
+				Player *target = engine->entity_list[index[i]]->player;
 				char cmd[64] = { 0 };
 
-				if (engine->entity_list[index[i]]->player == NULL)
+				if (target == NULL)
 					continue;
 
-				if (engine->entity_list[index[i]]->player->health <= 0)
+				if (target->health <= 0)
 					continue;
 
-				if (player.team == engine->entity_list[index[i]]->player->team && gametype != GAMETYPE_DEATHMATCH)
+				if (player.team == target->team && gametype != GAMETYPE_DEATHMATCH)
 					continue;
 
 				debugf("Player %s hit %s with the shotgun for %d damage\n", player.name,
-					engine->entity_list[index[i]]->player->name, (int)(SHOTGUN_DAMAGE * quad_factor));
+					target->name, (int)(SHOTGUN_DAMAGE * quad_factor));
 
 				sprintf(cmd, "hurt %d %d", index[i], (int)(SHOTGUN_DAMAGE * quad_factor));
 
 				console(self, cmd, engine->menu, engine->entity_list);
-				debugf("%s has %d health\n", engine->entity_list[index[i]]->player->name,
-					engine->entity_list[index[i]]->player->health);
+				debugf("%s has %d health\n", target->name,
+					target->health);
 
 				player.stats.hits++;
-				if (engine->entity_list[index[i]]->player->health <= 0 && engine->entity_list[index[i]]->player->state != PLAYER_DEAD)
+				if (target->health <= 0 && target->state != PLAYER_DEAD)
 				{
 					char msg[64];
 					char word[32] = { 0 };
 
 					player.stats.kills++;
-					engine->entity_list[index[i]]->player->stats.deaths++;
+					target->stats.deaths++;
 
-					if (engine->entity_list[index[i]]->player->health <= -50)
+					if (target->health <= -50)
 						sprintf(word, "%s", "gibbed");
 					else
 						sprintf(word, "%s", "killed");
 
 					sprintf(msg, "%s %s %s with a shotgun\n", player.name,
 						word,
-						engine->entity_list[index[i]]->player->name);
+						target->name);
 					debugf(msg);
 					engine->menu.print_notif(msg);
 					notif_timer = 3 * TICK_RATE;
@@ -4002,21 +4018,22 @@ void Quake3::render_hud(double last_frametime)
 		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
 			float accuracy = 0.0f;
+			Player *p = engine->entity_list[i]->player;
 
 
-			bool player = (engine->entity_list[i]->player && engine->entity_list[i]->player->type == PLAYER);
-			bool bot = (engine->entity_list[i]->player && engine->entity_list[i]->player->type == BOT);
+			bool player = (p && p->type == PLAYER);
+			bool bot = (p && p->type == BOT);
 
 			if (!(bot || player))
 				continue;
 
-			if (engine->entity_list[i]->player->stats.shots != 0)
-				accuracy = 100.0f *engine->entity_list[i]->player->stats.hits / engine->entity_list[i]->player->stats.shots;
+			if (p->stats.shots != 0)
+				accuracy = 100.0f * p->stats.hits / p->stats.shots;
 
 			snprintf(msg, LINE_SIZE, "%-32s %d kills, %d deaths, %3.1f%% accuracy",
-				engine->entity_list[i]->player->name,
-				engine->entity_list[i]->player->stats.kills,
-				engine->entity_list[i]->player->stats.deaths,
+				p->name,
+				p->stats.kills,
+				p->stats.deaths,
 				accuracy);
 			engine->menu.draw_text(msg, 0.05f, 0.025f * line++, 0.025f, color, false, false);
 		}
@@ -4064,19 +4081,20 @@ void Quake3::render_hud(double last_frametime)
 			{
 				for (unsigned int i = 0; i < engine->client_list.size(); i++)
 				{
+					client_t *client = engine->client_list[i];
 					snprintf(msg, LINE_SIZE, "[client %d]", i );
 					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
 					snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d num_ents %d dropped %d",
-						engine->client_list[i]->netinfo.ping,
-						engine->client_list[i]->netinfo.sequence_delta,
-						engine->client_list[i]->netinfo.size,
-						engine->client_list[i]->netinfo.num_ents,
-						engine->client_list[i]->netinfo.dropped);
+						client->netinfo.ping,
+						client->netinfo.sequence_delta,
+						client->netinfo.size,
+						client->netinfo.num_ents,
+						client->netinfo.dropped);
 					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
-					snprintf(msg, LINE_SIZE, "position delta %3.3f", engine->client_list[i]->position_delta.magnitude());
+					snprintf(msg, LINE_SIZE, "position delta %3.3f", client->position_delta.magnitude());
 					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 				}
 
@@ -4089,27 +4107,30 @@ void Quake3::render_hud(double last_frametime)
 	{
 		for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 		{
-			if (engine->entity_list[i]->rigid == NULL)
+			Entity *ent = engine->entity_list[i];
+			if (ent->rigid == NULL)
 				continue;
 
-			if (engine->entity_list[i]->visible && engine->entity_list[i]->nodraw == false)
+			if (ent->visible && ent->nodraw == false)
 			{
-				draw_name(engine->entity_list[i], engine->menu, real_projection);
+				draw_name(ent, engine->menu, real_projection);
 			}
 		}
 	}
 
 	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
-		if (engine->entity_list[i]->player == NULL)
+		Entity *ent = engine->entity_list[i];
+
+		if (ent->player == NULL)
 			continue;
 
-		if (engine->entity_list[i]->player->type != BOT)
+		if (ent->player->type != BOT)
 			continue;
 
-		if (engine->entity_list[i]->visible && engine->entity_list[i]->nodraw == false)
+		if (ent->visible && ent->nodraw == false)
 		{
-			draw_name(engine->entity_list[i], engine->menu, real_projection);
+			draw_name(ent, engine->menu, real_projection);
 		}
 	}
 
@@ -4675,10 +4696,12 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 
 	for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 	{
-		if (engine->entity_list[i]->ent_type == ENT_NAVPOINT)
+		Entity *ent = engine->entity_list[i];
+
+		if (ent->ent_type == ENT_NAVPOINT)
 		{
-			float distance_self = (engine->entity_list[i]->position - self_pos).magnitude();
-			float distance_target = (engine->entity_list[i]->position - target_pos).magnitude();
+			float distance_self = (ent->position - self_pos).magnitude();
+			float distance_target = (ent->position - target_pos).magnitude();
 
 			if (distance_target < min_target)
 			{
@@ -4805,36 +4828,37 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int damage = abs32(atoi(data2));
 		unsigned int health_damage = damage / 3;
 		unsigned int armor_damage = 2 * health_damage;
+		Player *player = entity_list[index]->player;
 
-		if (entity_list[index]->player->godmode)
+		if (player->godmode)
 			return;
 
-		if (armor_damage > entity_list[index]->player->armor)
+		if (armor_damage > player->armor)
 		{
-			armor_damage -= entity_list[index]->player->armor;
-			entity_list[index]->player->armor = 0;
+			armor_damage -= player->armor;
+			player->armor = 0;
 			health_damage += armor_damage;
 		}
 		else
 		{
-			entity_list[index]->player->armor -= armor_damage;
+			player->armor -= armor_damage;
 		}
 
-		entity_list[index]->player->health -= health_damage;
+		player->health -= health_damage;
 
 
-		if (entity_list[index]->player->pain_timer == 0)
+		if (player->pain_timer == 0)
 		{
-			if (entity_list[index]->player->health <= 25)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN1);
-			else if (entity_list[index]->player->health <= 50)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN2);
-			else if (entity_list[index]->player->health <= 75)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN3);
-			else if (entity_list[index]->player->health <= 100)
-				engine->play_wave(entity_list[index]->position, entity_list[index]->player->model_index * SND_PLAYER + SND_PAIN4);
+			if (player->health <= 25)
+				engine->play_wave(entity_list[index]->position, player->model_index * SND_PLAYER + SND_PAIN1);
+			else if (player->health <= 50)
+				engine->play_wave(entity_list[index]->position, player->model_index * SND_PLAYER + SND_PAIN2);
+			else if (player->health <= 75)
+				engine->play_wave(entity_list[index]->position, player->model_index * SND_PLAYER + SND_PAIN3);
+			else if (player->health <= 100)
+				engine->play_wave(entity_list[index]->position, player->model_index * SND_PLAYER + SND_PAIN4);
 
-			entity_list[index]->player->pain_timer = TICK_RATE >> 2;
+			player->pain_timer = TICK_RATE >> 2;
 		}
 
 		return;
@@ -4850,6 +4874,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 1)
 	{
 		bool local = entity_list[self]->player->local;
+		Player *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "damage %s\n", data);
 		menu.print(msg);
@@ -4859,54 +4884,54 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int armor_damage = 2 * health_damage;
 
 
-		if (entity_list[self]->player->godmode)
+		if (player->godmode)
 			return;
 
-		if (armor_damage > entity_list[self]->player->armor)
+		if (armor_damage > player->armor)
 		{
-			armor_damage -= entity_list[self]->player->armor;
-			entity_list[self]->player->armor = 0;
+			armor_damage -= player->armor;
+			player->armor = 0;
 			health_damage += armor_damage;
 		}
 		else
 		{
-			entity_list[self]->player->armor -= armor_damage;
+			player->armor -= armor_damage;
 		}
 
-		entity_list[self]->player->health -= health_damage;
+		player->health -= health_damage;
 
-		if (entity_list[self]->player->pain_timer == 0)
+		if (player->pain_timer == 0)
 		{
-			if (entity_list[self]->player->health <= 25)
+			if (player->health <= 25)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN1);
+					engine->play_wave_global(player->model_index * SND_PLAYER + SND_PAIN1);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN1);
+					engine->play_wave(entity_list[self]->position, player->model_index * SND_PLAYER + SND_PAIN1);
 			}
-			else if (entity_list[self]->player->health <= 50)
+			else if (player->health <= 50)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN2);
+					engine->play_wave_global(player->model_index * SND_PLAYER + SND_PAIN2);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN2);
+					engine->play_wave(entity_list[self]->position, player->model_index * SND_PLAYER + SND_PAIN2);
 			}
-			else if (entity_list[self]->player->health <= 75)
+			else if (player->health <= 75)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN3);
+					engine->play_wave_global(player->model_index * SND_PLAYER + SND_PAIN3);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN3);
+					engine->play_wave(entity_list[self]->position, player->model_index * SND_PLAYER + SND_PAIN3);
 			}
-			else if (entity_list[self]->player->health <= 100)
+			else if (player->health <= 100)
 			{
 				if (local)
-					engine->play_wave_global(entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN4);
+					engine->play_wave_global(player->model_index * SND_PLAYER + SND_PAIN4);
 				else
-					engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_PAIN4);
+					engine->play_wave(entity_list[self]->position, player->model_index * SND_PLAYER + SND_PAIN4);
 			}
 
-			entity_list[self]->player->pain_timer = TICK_RATE >> 2;
+			player->pain_timer = TICK_RATE >> 2;
 		}
 
 		return;
@@ -5194,39 +5219,40 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			{
 				matrix4 matrix;
 
+				Entity *ent = entity_list[self];
 				// Set position and orientation
-				entity_list[self]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+				ent->position = ent->position + vec3(0.0f, 50.0f, 0.0f);
 
-				switch (entity_list[i]->angle)
+				switch (ent->angle)
 				{
 				case 0:
-					matrix4::mat_left(matrix, entity_list[self]->position);
+					matrix4::mat_left(matrix, ent->position);
 					break;
 				case 90:
-					matrix4::mat_forward(matrix, entity_list[self]->position);
+					matrix4::mat_forward(matrix, ent->position);
 					break;
 				case 180:
-					matrix4::mat_right(matrix, entity_list[self]->position);
+					matrix4::mat_right(matrix, ent->position);
 					break;
 				case 270:
-					matrix4::mat_backward(matrix, entity_list[self]->position);
+					matrix4::mat_backward(matrix, ent->position);
 					break;
 				default:
-					matrix4::mat_forward(matrix, entity_list[self]->position);
+					matrix4::mat_forward(matrix, ent->position);
 					break;
 				}
 
-				entity_list[self]->model->morientation.m[0] = matrix.m[0];
-				entity_list[self]->model->morientation.m[1] = matrix.m[1];
-				entity_list[self]->model->morientation.m[2] = matrix.m[2];
+				ent->model->morientation.m[0] = matrix.m[0];
+				ent->model->morientation.m[1] = matrix.m[1];
+				ent->model->morientation.m[2] = matrix.m[2];
 
-				entity_list[self]->model->morientation.m[3] = matrix.m[4];
-				entity_list[self]->model->morientation.m[4] = matrix.m[5];
-				entity_list[self]->model->morientation.m[5] = matrix.m[6];
+				ent->model->morientation.m[3] = matrix.m[4];
+				ent->model->morientation.m[4] = matrix.m[5];
+				ent->model->morientation.m[5] = matrix.m[6];
 
-				entity_list[self]->model->morientation.m[6] = matrix.m[8];
-				entity_list[self]->model->morientation.m[7] = matrix.m[9];
-				entity_list[self]->model->morientation.m[8] = matrix.m[10];
+				ent->model->morientation.m[6] = matrix.m[8];
+				ent->model->morientation.m[7] = matrix.m[9];
+				ent->model->morientation.m[8] = matrix.m[10];
 
 
 				if (local)
@@ -5248,7 +5274,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				if (local)
 					engine->play_wave_global(SND_TELEIN);
 				else
-					engine->play_wave(entity_list[self]->position, SND_TELEIN);
+					engine->play_wave(ent->position, SND_TELEIN);
 
 				break;
 			}
@@ -5418,40 +5444,41 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					entity_list[i]->ent_type == ENT_INFO_PLAYER_START)
 				{
 					matrix4 matrix;
-
+					Entity *ent = entity_list[player];
 					//					camera_frame.set(matrix);
-					entity_list[player]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+					ent->position = ent->position + vec3(0.0f, 50.0f, 0.0f);
 
 					switch (entity_list[i]->angle)
 					{
 					case 0:
-						matrix4::mat_left(matrix, entity_list[player]->position);
+						matrix4::mat_left(matrix, ent->position);
 						break;
 					case 90:
-						matrix4::mat_forward(matrix, entity_list[player]->position);
+						matrix4::mat_forward(matrix, ent->position);
 						break;
 					case 180:
-						matrix4::mat_right(matrix, entity_list[player]->position);
+						matrix4::mat_right(matrix, ent->position);
 						break;
 					case 270:
-						matrix4::mat_backward(matrix, entity_list[player]->position);
+						matrix4::mat_backward(matrix, ent->position);
 						break;
 					default:
-						matrix4::mat_forward(matrix, entity_list[player]->position);
+						matrix4::mat_forward(matrix, ent->position);
 						break;
 					}
+					Model *model = entity_list[player]->model;
 
-					entity_list[player]->model->morientation.m[0] = matrix.m[0];
-					entity_list[player]->model->morientation.m[1] = matrix.m[1];
-					entity_list[player]->model->morientation.m[2] = matrix.m[2];
+					model->morientation.m[0] = matrix.m[0];
+					model->morientation.m[1] = matrix.m[1];
+					model->morientation.m[2] = matrix.m[2];
 
-					entity_list[player]->model->morientation.m[3] = matrix.m[4];
-					entity_list[player]->model->morientation.m[4] = matrix.m[5];
-					entity_list[player]->model->morientation.m[5] = matrix.m[6];
+					model->morientation.m[3] = matrix.m[4];
+					model->morientation.m[4] = matrix.m[5];
+					model->morientation.m[5] = matrix.m[6];
 
-					entity_list[player]->model->morientation.m[6] = matrix.m[8];
-					entity_list[player]->model->morientation.m[7] = matrix.m[9];
-					entity_list[player]->model->morientation.m[8] = matrix.m[10];
+					model->morientation.m[6] = matrix.m[8];
+					model->morientation.m[7] = matrix.m[9];
+					model->morientation.m[8] = matrix.m[10];
 
 					if (player == engine->find_type("player", 0))
 					{
@@ -5525,8 +5552,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 1)
 	{
 		bool valid = true;
+		int data_length = strlen(data);
 
-		for (unsigned int i = 0; i < strlen(data); i++)
+		for (unsigned int i = 0; i < data_length; i++)
 		{
 			if (data[i] >= 'A' && data[i] <= 'Z')
 				continue;
@@ -5598,9 +5626,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
-			entity_list[self]->rigid->noclip = !entity_list[self]->rigid->noclip;
-			entity_list[self]->rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
-			entity_list[self]->rigid->translational_friction = 0.9f;
+			RigidBody *rigid = entity_list[self]->rigid;
+
+			rigid->noclip = !entity_list[self]->rigid->noclip;
+			rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
+			rigid->translational_friction = 0.9f;
 		}
 		return;
 	}
@@ -5902,15 +5932,14 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		}
 
 
-		if (strstr(entity_list[i]->type, "func_") ||
-			strstr(entity_list[i]->type, "func_train"))
+		if (strstr(entity_list[i]->type, "func_"))
 		{
 			for (unsigned int j = 0; j < entity_list.size(); j++)
 			{
 				if (i == j)
 					continue;
 
-				if (strlen(entity_list[i]->target) == 0)
+				if (entity_list[i]->target[0] == '\0')
 					continue;
 
 				if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
@@ -6284,17 +6313,18 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		bool inside = false;
+		RigidBody *rigid = entity_list[i]->rigid;
 
 		if (entity_list[i]->light)
 			engine->num_light++;
 
-		if (entity_list[i]->rigid && entity_list[i]->rigid->hard_impact && i >= engine->max_player)
+		if (rigid && rigid->hard_impact && i >= engine->max_player)
 		{
-			if (entity_list[i]->rigid->impact_velocity <= -RIGID_IMPACT)
+			if (rigid->impact_velocity <= -RIGID_IMPACT)
 			{
-				entity_list[i]->rigid->hard_impact = false;
+				rigid->hard_impact = false;
 
-				engine->play_wave(entity_list[i]->position, entity_list[i]->rigid->impact_index);
+				engine->play_wave(entity_list[i]->position, rigid->impact_index);
 
 			}
 		}
@@ -6346,20 +6376,22 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 
 		// Not a trigger
-		if (entity_list[i]->trigger == NULL)
+		Trigger *trigger = entity_list[i]->trigger;
+
+		if (trigger == NULL)
 			continue;
 
 		// Delete when not moving
-		if (entity_list[i]->trigger->idle == true)
+		if (trigger->idle == true)
 		{
 			if (entity_list[i]->rigid)
 			{
-				if (entity_list[i]->rigid->bounce > entity_list[i]->trigger->num_bounce)
+				if (entity_list[i]->rigid->bounce > trigger->num_bounce)
 				{
 					entity_list[i]->particle_on = false;
-					if (entity_list[i]->trigger->explode == false)
+					if (trigger->explode == false)
 					{
-						if (entity_list[i]->trigger->explode_timer <= 0)
+						if (trigger->explode_timer <= 0)
 						{
 							engine->clean_entity(i);
 							entity_list[i]->~Entity();
@@ -6367,30 +6399,30 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						}
 						else
 						{
-							entity_list[i]->trigger->explode_timer--;
+							trigger->explode_timer--;
 						}
 					}
 					else
 					{
 						// Explode after being idle for idle_timer time (usually zero)
-						if (entity_list[i]->trigger->idle_timer <= 0)
+						if (trigger->idle_timer <= 0)
 						{
-							entity_list[i]->trigger->radius = entity_list[i]->trigger->splash_radius;
-							sprintf(entity_list[i]->trigger->action, "damage %d", entity_list[i]->trigger->splash_damage);
+							trigger->radius = trigger->splash_radius;
+							sprintf(trigger->action, "damage %d", trigger->splash_damage);
 							if (entity_list[i]->light == NULL)
 							{
 								entity_list[i]->light = new Light(entity_list[i], engine->gfx, 999, engine->res_scale);
 							}
-							entity_list[i]->light->intensity = entity_list[i]->trigger->explode_intensity;
-							entity_list[i]->light->color = entity_list[i]->trigger->explode_color;
-							entity_list[i]->trigger->explode = false;
+							entity_list[i]->light->intensity = trigger->explode_intensity;
+							entity_list[i]->light->color = trigger->explode_color;
+							trigger->explode = false;
 
-							engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->explode_index);
+							engine->play_wave(entity_list[i]->position, trigger->explode_index);
 							continue;
 						}
 						else
 						{
-							entity_list[i]->trigger->idle_timer--;
+							trigger->idle_timer--;
 						}
 					}
 				}
@@ -6399,26 +6431,28 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 
 		// Only other players can pick up
-		if (entity_list[i]->trigger->owner == self && entity_list[i]->rigid->bounce == 0)
+		if (trigger->owner == self && entity_list[i]->rigid->bounce == 0)
 			continue;
 
-		if (entity_list[i]->trigger->owner >= 0 &&
+		Player *player = entity_list[self]->player;
+
+		if (trigger->owner >= 0 &&
 			gametype != GAMETYPE_DEATHMATCH &&
-			entity_list[entity_list[i]->trigger->owner]->player->team == entity_list[self]->player->team)
+			entity_list[trigger->owner]->player->team == player->team)
 			continue;
 
 		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
 
-		if (distance < entity_list[i]->trigger->radius)
+		if (distance < trigger->radius)
 			inside = true;
 
 		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_BLUEFLAG)
 		{
-			if (entity_list[self]->player->team == TEAM_BLUE)
+			if (player->team == TEAM_BLUE)
 			{
-				if (entity_list[self]->player->holdable_flag)
+				if (player->holdable_flag)
 				{
-					entity_list[self]->player->holdable_flag = false;
+					player->holdable_flag = false;
 					blue_flag_caps++;
 
 					engine->play_wave(entity_list[i]->position, SND_FLAGCAP);
@@ -6443,14 +6477,14 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_REDFLAG)
 		{
-			if (entity_list[self]->player->team == TEAM_RED)
+			if (player->team == TEAM_RED)
 			{
-				if (entity_list[self]->player->holdable_flag)
+				if (player->holdable_flag)
 				{
-					entity_list[self]->player->holdable_flag = false;
+					player->holdable_flag = false;
 					red_flag_caps++;
 
-					if (entity_list[self]->player->local)
+					if (player->local)
 						engine->play_wave_global(SND_FLAGTAKE);
 					else
 						engine->play_wave(entity_list[i]->position, SND_FLAGTAKE);
@@ -6477,16 +6511,16 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		{
 			int pickup = true;
 
-			if (entity_list[i]->trigger->armor && entity_list[self]->player->armor >= 200)
+			if (entity_list[i]->trigger->armor && player->armor >= 200)
 				pickup = false;
 
-			if (entity_list[i]->trigger->health && entity_list[self]->player->health >= 100)
+			if (entity_list[i]->trigger->health && player->health >= 100)
 				pickup = false;
 
-			if (entity_list[self]->player->state == PLAYER_DEAD)
+			if (player->state == PLAYER_DEAD)
 				pickup = false;
 
-			if (entity_list[self]->player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
+			if (player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
 				pickup = false;
 
 
@@ -6498,13 +6532,13 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 				if (entity_list[i]->trigger->projectile)
 				{
-					if (entity_list[self]->player->health <= 0)
+					if (player->health <= 0)
 					{
 						char word[32] = { 0 };
 						char weapon[32];
 						int owner = entity_list[i]->trigger->owner;
 
-						entity_list[self]->player->stats.deaths++;
+						player->stats.deaths++;
 						if (owner != -1)
 						{
 							entity_list[owner]->player->stats.kills++;
@@ -6544,24 +6578,24 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							}
 
 
-							if (entity_list[self]->player->health <= -50)
+							if (player->health <= -50)
 								sprintf(word, "%s", "gibbed");
 							else
 								sprintf(word, "%s", "killed");
 
-							char msg[64];
+							char msg[256];
 
-							if (entity_list[owner]->player == entity_list[self]->player)
+							if (entity_list[owner]->player == player)
 							{
 								sprintf(msg, "%s killed themselves with a %s\n",
-									entity_list[owner]->player->name, weapon);
+									player->name, weapon);
 							}
 							else
 							{
 								sprintf(msg, "%s %s %s with a %s\n",
 									entity_list[owner]->player->name,
 									word,
-									entity_list[self]->player->name,
+									player->name,
 									weapon);
 							}
 
@@ -6585,7 +6619,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					entity_list[self]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
 				}
 
-				if (entity_list[self]->player->local)
+				if (player->local)
 					engine->play_wave_global(entity_list[i]->trigger->pickup_index);
 				else
 					engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->pickup_index);
@@ -6738,6 +6772,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal->model->morientation.m[7] = forward.y;
 		decal->model->morientation.m[8] = forward.z;
 
+		/*
 		Entity *decal2 = engine->entity_list[engine->get_entity()];
 		decal2->rigid = new RigidBody(decal2);
 		decal2->model = decal->rigid;
@@ -6772,6 +6807,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal2->model->morientation.m[8] = forward.z * 0.01f;
 
 		decal2->model->morientation.m[15] *= 0.01f;
+		*/
 
 	}
 }

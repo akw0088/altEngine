@@ -96,7 +96,7 @@ matrix3 quaternion::to_matrix()
 	return matrix;
 }
 
-vec3 quaternion::rotate(float delta, vec3 axis, vec3 vector)
+vec3 quaternion::rotate(float delta, const vec3 &axis, const vec3 &vector)
 {
 	quaternion	v(0.0f, vector);
 	quaternion	result_quaternion;
@@ -269,5 +269,5 @@ void quaternion::slerp(const quaternion &p, const quaternion &q, float time, qua
 
 	float omega = (float)facos(p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z);
 
-	result = ((p * ((float)fsin(omega * (1.0f - time))) + (q * (float)fsin(omega*time)))) / (float)fsin(omega);
+	result = (p * ((float)fsin(omega * (1.0f - time))) + (q * (float)fsin(omega*time))) / (float)fsin(omega);
 }

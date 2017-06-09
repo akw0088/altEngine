@@ -95,7 +95,6 @@ public:
 	bool			bsp_visible;
 	int				bsp_leaf;
 	bool			nodraw;
-	bool			network;
 	RigidBody		*rigid;
 	Model			*model;
 	Light			*light;

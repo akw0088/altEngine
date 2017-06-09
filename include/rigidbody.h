@@ -25,9 +25,9 @@ public:
 	void load_config(cfg_t &config);
 
 	//AI
-	void seek(vec3 position);
-	void flee(vec3 position);
-	void arrive(vec3 position);
+	void seek(const vec3 &position);
+	void flee(const vec3 &position);
+	void arrive(const vec3 &position);
 	void pursue();
 	void evade();
 	void wander(float radius, float distance, float jitter);

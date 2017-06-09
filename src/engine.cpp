@@ -41,6 +41,13 @@ Engine::Engine()
 
 	res_scale = 1.0f;
 	dynamic_resolution = false;
+	xres = 0;
+	yres = 0;
+	tick_num = 0;
+	testObj = 0;
+	num_light = 0;
+	doom_sound = 0;
+	render_mode = MODE_INDIRECT;
 
 	sprintf(servername, "altEngine Server %s", __DATE__);
 	sprintf(password, "iddqd");
@@ -449,7 +456,7 @@ void Engine::load(char *level)
 	for (unsigned int i = 0; i < max_dynamic; i++)
 	{
 		Entity *entity = new Entity();
-		memcpy(entity->type, "free", strlen("free") + 1);
+		memcpy(entity->type, "free", 5);
 		entity_list.push_back(entity);
 
 		if (i < max_player && (server_flag || playing_demo))
@@ -760,7 +767,8 @@ void Engine::render(double last_frametime)
 		render_to_framebuffer(last_frametime);
 
 		gfx.clear();
-		if (spawn == -1 || (entity_list[spawn]->player && entity_list[spawn]->player->current_light == 0))
+		Player *player = entity_list[spawn]->player;
+		if (spawn == -1 || (player && player->current_light == 0))
 			render_texture(quad_tex);
 		else
 		{
@@ -769,20 +777,20 @@ void Engine::render(double last_frametime)
 				if (spawn == -1)
 					break;
 
-				if (entity_list[spawn]->player == NULL)
+				if (player == NULL)
 					break;
 
 				if (entity_list[i]->light)
 				{
-					if (entity_list[i]->light->light_num == entity_list[spawn]->player->current_light)
+					if (entity_list[i]->light->light_num == player->current_light)
 					{
 						if (input.duck)
 						{
-							testObj = entity_list[i]->light->depth_tex[entity_list[spawn]->player->current_face];
+							testObj = entity_list[i]->light->depth_tex[player->current_face];
 						}
 						else
 						{
-							testObj = entity_list[i]->light->quad_tex[entity_list[spawn]->player->current_face];
+							testObj = entity_list[i]->light->quad_tex[player->current_face];
 						}
 						break;
 					}
@@ -1139,12 +1147,14 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		{
 			if (entity_list[i]->light)
 			{
-				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[0]);
-				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[1]);
-				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[2]);
-				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[3]);
-				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[4]);
-				gfx.SelectTexture(num_shadow_cube, entity_list[i]->light->depth_tex[5]);
+				Light *light = entity_list[i]->light;
+
+				gfx.SelectTexture(num_shadow_cube, light->depth_tex[0]);
+				gfx.SelectTexture(num_shadow_cube, light->depth_tex[1]);
+				gfx.SelectTexture(num_shadow_cube, light->depth_tex[2]);
+				gfx.SelectTexture(num_shadow_cube, light->depth_tex[3]);
+				gfx.SelectTexture(num_shadow_cube, light->depth_tex[4]);
+				gfx.SelectTexture(num_shadow_cube, light->depth_tex[5]);
 				num_shadow_cube++;
 			}
 		}
@@ -1218,17 +1228,20 @@ void Engine::render_trails(matrix4 &trans)
 	//render particle trails first
 	for (unsigned int i = max_player; i < max_dynamic; i++)
 	{
-		if (entity_list[i]->model == NULL)
+		Model *model = entity_list[i]->model;
+
+		if (model == NULL)
 			continue;
 
 
-		if (once == false && (entity_list[i]->model->rail_trail || entity_list[i]->model->lightning_trail))
+
+		if (once == false && (model->rail_trail || model->lightning_trail))
 		{
 			//			vec3 offset = entity_list[i]->position;
 
 			// Undo model orientation
-			quad1 = entity_list[i]->model->morientation.transpose() * quad1;
-			quad2 = entity_list[i]->model->morientation.transpose() * quad2;
+			quad1 = model->morientation.transpose() * quad1;
+			quad2 = model->morientation.transpose() * quad2;
 
 			particle_render.Select();
 			gfx.SelectTexture(0, particle_tex);
@@ -1596,18 +1609,19 @@ void Engine::spatial_testing()
 
 		// set pursue / evade
 		// (really need to move elsewhere, but had an entity loop here)
-		if (entity_list[i]->rigid)
+		RigidBody *rigid = entity_list[i]->rigid;
+		if (rigid)
 		{
-			if (entity_list[i]->rigid->target)
+			if (rigid->target)
 			{
-				if (entity_list[i]->rigid->pursue_flag == true)
+				if (rigid->pursue_flag == true)
 				{
-//					entity_list[i]->rigid->wander(20.0f, 1.0f, 5.0f);
-					entity_list[i]->rigid->pursue();
+//					rigid->wander(20.0f, 1.0f, 5.0f);
+					rigid->pursue();
 				}
 				else
 				{
-					entity_list[i]->rigid->evade();
+					rigid->evade();
 				}
 			}
 		}
@@ -1625,24 +1639,29 @@ void Engine::spatial_testing()
 			matrix4 mvp;
 			entity_list[i]->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
-			vec3 min = entity_list[i]->model->aabb[0];
-			vec3 max = entity_list[i]->model->aabb[7];
+
+			Model *model = entity_list[i]->model;
 
 
-
-			if (entity_list[i]->model && entity_list[i]->model->rail_trail)
+			if (model)
 			{
-				entity_list[i]->frustum_visible = true; // trail extends past aabb
-			}
-			else
-			{
-				entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
+				vec3 min = model->aabb[0];
+				vec3 max = model->aabb[7];
+
+				if (model->rail_trail)
+				{
+					entity_list[i]->frustum_visible = true; // trail extends past aabb
+				}
+				else
+				{
+					entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
+				}
 			}
 
 
 			for(int j = 0; j < 8; j++)
 			{
-				vec3 position = entity_list[i]->position + entity_list[i]->model->aabb[j];
+				vec3 position = entity_list[i]->position + model->aabb[j];
 				bool vert_visible = q3map.vis_test(camera_frame.pos, position, leaf_a, leaf_b);
 
 				if (vert_visible)
@@ -1667,14 +1686,15 @@ void Engine::spatial_testing()
 
 
 			// make triggered entities disappear
-			if (entity_list[i]->trigger)
+			Trigger *trigger = entity_list[i]->trigger;
+			if (trigger)
 			{
-				if (entity_list[i]->trigger->hide == false)
+				if (trigger->hide == false)
 				{
 					//Always show with hide flag false
 					entity_list[i]->visible = visible;
 				}
-				else if (entity_list[i]->trigger->active == false)
+				else if (trigger->active == false)
 				{
 					//Only show when not triggered
 					entity_list[i]->visible = visible;
@@ -1703,14 +1723,14 @@ void Engine::spatial_testing()
 
 		vec3 dist_vec = entity_list[i]->position - camera_frame.pos;
 		float distance = dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y + dist_vec.z * dist_vec.z;
-
-		if (entity_list[i]->light)
+		Light *light = entity_list[i]->light;
+		if (light)
 		{
-			if (entity_list[i]->light->timer_flag)
+			if (light->timer_flag)
 			{
-				if (entity_list[i]->light->timer > 0)
+				if (light->timer > 0)
 				{
-					entity_list[i]->light->timer -= 25;
+					light->timer -= 25;
 				}
 				else
 				{
@@ -1718,7 +1738,7 @@ void Engine::spatial_testing()
 				}
 			}
 
-			activate_light(distance, entity_list[i]->light);
+			activate_light(distance, light);
 		}
 
 	}
@@ -1773,7 +1793,7 @@ void Engine::dynamics()
 {
 
 	#pragma omp parallel for num_threads(8)
-	for(int i = 0; i < entity_list.size(); i++)
+	for (int i = 0; i < entity_list.size(); i++)
 	{
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();
@@ -1907,6 +1927,8 @@ bool Engine::map_collision(RigidBody &body)
 	vec3 staircheck(0.0f, STAIR_HEIGHT, 0.0f);
 	vec3 clip(0.0f, 0.0f, 0.0f);
 	bool collision = false;
+	vec3 mid[4];
+
 
 
 	if (body.noclip)
@@ -1914,8 +1936,6 @@ bool Engine::map_collision(RigidBody &body)
 
 	if (body.entity->player)
 	{
-		vec3 mid[4];
-
 		// Do additional mid point testing (front back left right points, mid level)
 		mid[0] = body.aabb[0] + vec3(body.aabb[7].x / 2, 0, body.aabb[7].z / 2);
 		mid[1] = body.aabb[0] + vec3(0.0f, body.aabb[7].y / 2, body.aabb[7].z / 2);
@@ -1939,8 +1959,8 @@ bool Engine::map_collision(RigidBody &body)
 		{
 			if (body.entity->player == NULL)
 				break;
-			point = body.aabb[i] - body.center + body.entity->position;
-			oldpoint = body.aabb[i] - body.center + body.old_position;
+			point = mid[i - 8] - body.center + body.entity->position;
+			oldpoint = mid[i - 8] - body.center + body.old_position;
 		}
 
 
@@ -2262,11 +2282,11 @@ void Engine::server_recv()
 				if (strstr(reliablemsg->msg, "chat"))
 				{
 					sprintf(name, "%s", reliablemsg->msg + 5);
-					char *end = strstr(name, ":");
+					char *end = strchr(name, ':');
 					if (end != NULL)
 					{
 						end[0] = '\0';
-						sprintf(msg, "say \"%s\"", strstr(reliablemsg->msg, ":") + 2);
+						sprintf(msg, "say \"%s\"", strchr(reliablemsg->msg, ':') + 2);
 						//  Echoes chat back to all clients
 						chat(name, msg);
 					}
@@ -2291,7 +2311,7 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "map %s", q3map.map_name);
-		reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
@@ -2354,7 +2374,7 @@ void Engine::server_recv()
 		servermsg.num_ents = 0;
 		
 		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type("player", 0));
-		reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
 		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
@@ -2382,7 +2402,7 @@ void Engine::server_recv()
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "/servername %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
 			servername, q3map.map_name, (int)client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
-		reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
@@ -2437,36 +2457,38 @@ int Engine::serialize_ents(char *data, unsigned short int &num_ents)
 
 		ent.id = j;
 		ent.type = entity_list[j]->nettype;
-		ent.active = false;
+		ent.active = 0;
 
 		if (entity_list[j]->trigger)
 		{
 			if (entity_list[j]->trigger->active)
-				ent.active = true;
+				ent.active = 1;
 			ent.owner = entity_list[j]->trigger->owner;
 		}
-
-		if (entity_list[j]->rigid)
+		RigidBody *rigid = entity_list[j]->rigid;
+		if (rigid)
 		{
-			ent.morientation = entity_list[j]->rigid->morientation;
-			ent.angular_velocity = entity_list[j]->rigid->angular_velocity;
-			ent.velocity = entity_list[j]->rigid->velocity;
+			ent.morientation = rigid->morientation;
+			ent.angular_velocity = rigid->angular_velocity;
+			ent.velocity = rigid->velocity;
 			ent.position = entity_list[j]->position;
 		}
 
+		Player *player = entity_list[j]->player;
 
-		if (entity_list[j]->player)
+		if (player != NULL)
 		{
-			ent.health = entity_list[j]->player->health;
-			ent.armor = entity_list[j]->player->armor;
-			ent.weapon_flags = entity_list[j]->player->weapon_flags;
-			//ent.current_weapon = entity_list[j]->player->current_weapon;
-			ent.ammo_bullets = entity_list[j]->player->ammo_bullets;
-			ent.ammo_shells = entity_list[j]->player->ammo_shells;
-			ent.ammo_rockets = entity_list[j]->player->ammo_rockets;
-			ent.ammo_lightning = entity_list[j]->player->ammo_lightning;
-			ent.ammo_slugs = entity_list[j]->player->ammo_slugs;
-			ent.ammo_plasma = entity_list[j]->player->ammo_plasma;
+
+			ent.health = player->health;
+			ent.armor = player->armor;
+			ent.weapon_flags = player->weapon_flags;
+			//ent.current_weapon = player->current_weapon;
+			ent.ammo_bullets = player->ammo_bullets;
+			ent.ammo_shells = player->ammo_shells;
+			ent.ammo_rockets = player->ammo_rockets;
+			ent.ammo_lightning = player->ammo_lightning;
+			ent.ammo_slugs = player->ammo_slugs;
+			ent.ammo_plasma = player->ammo_plasma;
 		}
 
 		memcpy(&data[j * sizeof(entity_t)], &ent, sizeof(entity_t));
@@ -2507,26 +2529,28 @@ int Engine::deserialize_ents(char *data, unsigned short int num_ents)
 			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
 		}
 
-		if (entity_list[ent[i].id]->player)
+		Player *player = entity_list[ent[i].id]->player;
+
+		if (player != NULL)
 		{
-			entity_list[ent[i].id]->player->health = ent[i].health;
-			entity_list[ent[i].id]->player->armor = ent[i].armor;
-			entity_list[ent[i].id]->player->weapon_flags = ent[i].weapon_flags;
+			player->health = ent[i].health;
+			player->armor = ent[i].armor;
+			player->weapon_flags = ent[i].weapon_flags;
 			// will force server to sync to our current weapon
 			//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
 
-			if (ent[i].ammo_bullets - entity_list[ent[i].id]->player->ammo_bullets > 1)
-				entity_list[ent[i].id]->player->ammo_bullets = ent[i].ammo_bullets;
-			if (ent[i].ammo_shells - entity_list[ent[i].id]->player->ammo_shells > 1)
-				entity_list[ent[i].id]->player->ammo_shells = ent[i].ammo_shells;
-			if (ent[i].ammo_rockets - entity_list[ent[i].id]->player->ammo_rockets > 1)
-				entity_list[ent[i].id]->player->ammo_rockets = ent[i].ammo_rockets;
-			if (ent[i].ammo_lightning - entity_list[ent[i].id]->player->ammo_lightning > 1)
-				entity_list[ent[i].id]->player->ammo_lightning = ent[i].ammo_lightning;
-			if (ent[i].ammo_slugs - entity_list[ent[i].id]->player->ammo_slugs > 1)
-				entity_list[ent[i].id]->player->ammo_slugs = ent[i].ammo_slugs;
-			if (ent[i].ammo_plasma - entity_list[ent[i].id]->player->ammo_plasma > 1)
-				entity_list[ent[i].id]->player->ammo_plasma = ent[i].ammo_plasma;
+			if (ent[i].ammo_bullets - player->ammo_bullets > 1)
+				player->ammo_bullets = ent[i].ammo_bullets;
+			if (ent[i].ammo_shells - player->ammo_shells > 1)
+				player->ammo_shells = ent[i].ammo_shells;
+			if (ent[i].ammo_rockets - player->ammo_rockets > 1)
+				player->ammo_rockets = ent[i].ammo_rockets;
+			if (ent[i].ammo_lightning - player->ammo_lightning > 1)
+				player->ammo_lightning = ent[i].ammo_lightning;
+			if (ent[i].ammo_slugs - player->ammo_slugs > 1)
+				player->ammo_slugs = ent[i].ammo_slugs;
+			if (ent[i].ammo_plasma - player->ammo_plasma > 1)
+				player->ammo_plasma = ent[i].ammo_plasma;
 
 		}
 
@@ -2545,10 +2569,11 @@ int Engine::deserialize_ents(char *data, unsigned short int num_ents)
 			}
 			else
 			{
+				RigidBody *rigid = entity_list[ent[i].id]->rigid;
 				entity_list[ent[i].id]->position = ent[i].position;
-				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-				entity_list[ent[i].id]->rigid->angular_velocity = ent[i].angular_velocity;
-				entity_list[ent[i].id]->rigid->morientation = ent[i].morientation;
+				rigid->velocity = ent[i].velocity;
+				rigid->angular_velocity = ent[i].angular_velocity;
+				rigid->morientation = ent[i].morientation;
 			}
 		}
 		else
@@ -2813,30 +2838,32 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
 			if (ret == 2)
 			{
+				Entity *ent = entity_list[client];
 				clean_entity(client);
-				sprintf(entity_list[client]->type, "player");
-				entity_list[client]->rigid = new RigidBody(entity_list[client]);
-				entity_list[client]->model = entity_list[client]->rigid;
-				entity_list[client]->rigid->clone(*(thug22->model));
-				entity_list[client]->rigid->step_flag = true;
-				entity_list[client]->position += entity_list[client]->rigid->center;
-				entity_list[client]->player = new Player(entity_list[client], gfx, audio, 21, TEAM_NONE);
-				entity_list[client]->player->type = PLAYER;
-				entity_list[client]->player->local = true;
-				camera_frame.pos = entity_list[client]->position;
+				sprintf(ent->type, "player");
+				ent->rigid = new RigidBody(ent);
+				ent->model = ent->rigid;
+				ent->rigid->clone(*(thug22->model));
+				ent->rigid->step_flag = true;
+				ent->position += ent->rigid->center;
+				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE);
+				ent->player->type = PLAYER;
+				ent->player->local = true;
+				camera_frame.pos = ent->position;
 
 				if (server_spawn != -1)
 				{
+					Entity *ent = entity_list[server_spawn];
 					clean_entity(server_spawn);
-					sprintf(entity_list[server_spawn]->type, "server");
-					entity_list[server_spawn]->rigid = new RigidBody(entity_list[server_spawn]);
-					entity_list[server_spawn]->model = entity_list[server_spawn]->rigid;
-					entity_list[server_spawn]->rigid->clone(*(thug22->model));
-					entity_list[server_spawn]->rigid->step_flag = true;
-					entity_list[server_spawn]->position += entity_list[server_spawn]->rigid->center;
-					entity_list[server_spawn]->player = new Player(entity_list[server_spawn], gfx, audio, 21, TEAM_NONE);
-					entity_list[server_spawn]->player->local = false;
-					entity_list[server_spawn]->player->type = SERVER;
+					sprintf(ent->type, "server");
+					ent->rigid = new RigidBody(ent);
+					ent->model = ent->rigid;
+					ent->rigid->clone(*(thug22->model));
+					ent->rigid->step_flag = true;
+					ent->position += ent->rigid->center;
+					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE);
+					ent->player->local = false;
+					ent->player->type = SERVER;
 				}
 			}
 
@@ -3659,13 +3686,6 @@ void Engine::load_model(Entity &ent)
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
-	else if (strcmp(ent.type, "info_player_deathmatch") == 0)
-	{
-		debugf("Loading info_player_deathmatch\n");
-		ent.rigid->load(gfx, "media/models/ball");
-		ent.rigid->gravity = false;
-		ent.nodraw = true;
-	}
 	else if (strcmp(ent.type, "team_CTF_bluespawn") == 0)
 	{
 		debugf("Loading team_CTF_bluespawn\n");
@@ -3826,13 +3846,14 @@ void Engine::create_sources()
 	// create and associate sources
 	for(unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->speaker != NULL)
+		Speaker *speaker = entity_list[i]->speaker;
+		if (speaker != NULL)
 		{
 			entity_list[i]->rigid->gravity = false;
-			if (entity_list[i]->speaker->index  != -1)
+			if (speaker->index  != -1)
 			{
-				audio.select_buffer(entity_list[i]->speaker->loop_source, snd_wave[entity_list[i]->speaker->index].buffer);
-				audio.play(entity_list[i]->speaker->loop_source);
+				audio.select_buffer(speaker->loop_source, snd_wave[entity_list[i]->speaker->index].buffer);
+				audio.play(speaker->loop_source);
 			}
 		}
 		else if (entity_list[i]->trigger != NULL)
@@ -3908,7 +3929,7 @@ void Engine::kick(unsigned int i)
 	servermsg.num_ents = 0;
 
 	sprintf(reliable.msg, "disconnect");
-	reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+	reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 	reliable.sequence = sequence;
 	servermsg.length = SERVER_HEADER + reliable.size;
 	memcpy(servermsg.data, &reliable, reliable.size);
@@ -4234,22 +4255,18 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_ambient %s", data) == 1)
 	{
-		float ambient = 1.0f;
-
 		menu.print(msg);
-		ambient = (float)atof(data);
 
+		float ambient = (float)atof(data);
 		mlight2.set_ambient(ambient);
 		return;
 	}
 
 	if (sscanf(cmd, "r_lightmap %s", data) == 1)
 	{
-		float lightmap = 1.0f;
-
 		menu.print(msg);
-		lightmap = (float)atof(data);
 
+		float lightmap = (float)atof(data);
 		mlight2.set_lightmap(lightmap);
 		return;
 	}
@@ -4583,7 +4600,7 @@ void Engine::connect(char *serverip)
 	clientmsg.num_cmds = 0;
 	clientmsg.qport = qport;
 	strcpy(reliable.msg, "connect");
-	reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+	reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 	reliable.sequence = sequence;
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &reliable, reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + reliable.size;
@@ -4605,7 +4622,7 @@ void Engine::connect(char *serverip)
 			debugf("Loading %s\n", level);
 			load((char *)level);
 			strcpy(reliable.msg, "spawn");
-			reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+			reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 			reliable.sequence = sequence;
 			last_server_sequence = servermsg.sequence;
 		}
@@ -4643,7 +4660,7 @@ void Engine::chat(char *name, char *msg)
 
 
 	strcat(reliable.msg, data);
-	reliable.size = 2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1;
+	reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 	reliable.sequence = sequence;
 
 	// Client will get message back from server
@@ -4775,7 +4792,7 @@ int Engine::play_wave_loop(vec3 &position, int index)
 int Engine::play_wave_global(int index)
 {
 	if (index < 0)
-		return false;
+		return 0;
 
 	int source = get_global_source();
 	audio.select_buffer(source, snd_wave[index].buffer);
@@ -4786,7 +4803,7 @@ int Engine::play_wave_global(int index)
 int Engine::play_wave_global_loop(int index)
 {
 	if (index < 0)
-		return false;
+		return 0;
 
 	int source = get_global_loop_source();
 	audio.select_buffer(source, snd_wave[index].buffer);
@@ -4802,14 +4819,15 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
+		RigidBody *rigid = entity_list[i]->rigid;
 		if (i == (unsigned int)self)
 			continue;
 
-		if (entity_list[i]->player && entity_list[i]->rigid)
+		if (entity_list[i]->player && rigid != NULL)
 		{
 			float distance = FLT_MAX;
-			vec3 min = entity_list[i]->rigid->aabb[0] + entity_list[i]->position - entity_list[i]->rigid->center;
-			vec3 max = entity_list[i]->rigid->aabb[7] + entity_list[i]->position - entity_list[i]->rigid->center;
+			vec3 min = rigid->aabb[0] + entity_list[i]->position - rigid->center;
+			vec3 max = rigid->aabb[7] + entity_list[i]->position - rigid->center;
 
 			if (RayBoxSlab(origin, dir, min, max, distance))
 			{

@@ -28,6 +28,8 @@ RigidBody::RigidBody(Entity *entity)
 	bounce = 0; // number of impacts
 	lava = false;
 	slime = false;
+	impact_velocity = 0.0f;
+	water_depth = 0.0f;
 
 	restitution = 0.5f; // boxes should never rest
 	float height = 10.0f / UNITS_TO_METERS;
@@ -530,7 +532,7 @@ void RigidBody::load_config(cfg_t &config)
 }
 
 
-void RigidBody::seek(vec3 position)
+void RigidBody::seek(const vec3 &position)
 {
 	vec3 direction = position - entity->position;
 	direction.normalize();
@@ -538,7 +540,7 @@ void RigidBody::seek(vec3 position)
 	net_force += direction - velocity;
 }
 
-void RigidBody::flee(vec3 position)
+void RigidBody::flee(const vec3 &position)
 {
 	vec3 direction = entity->position - position;
 	direction.normalize();
@@ -547,7 +549,7 @@ void RigidBody::flee(vec3 position)
 }
 
 //not quite right yet
-void RigidBody::arrive(vec3 position)
+void RigidBody::arrive(const vec3 &position)
 {
 	vec3 direction = position - entity->position;
 	float distance = direction.magnitude();

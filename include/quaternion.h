@@ -31,7 +31,7 @@ public:
 
 	static void slerp(const quaternion &q, const quaternion &p, float time, quaternion &result);
 
-	vec3 rotate(float delta, vec3 axis, vec3 vector);
+	vec3 rotate(float delta, const vec3 &axis, const vec3 &vector);
 
 	float s;
 	float x;

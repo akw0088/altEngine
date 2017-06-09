@@ -617,7 +617,7 @@ void RedirectIOToConsole()
 	//ios::sync_with_stdio();
 
 	//Fix issue on windows 10
-	freopen("CONOUT$", "w", stdout);
+	FILE *fp2 = freopen("CONOUT$", "w", stdout);
 #endif
 }
 

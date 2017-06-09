@@ -291,6 +291,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 {
 	float xpos = 0.0f;
 	float ypos = 0.0f;
+	int length = strlen(str);
 
 	if (start)
 	{
@@ -303,7 +304,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 		font.Select();
 	}
 
-	for(unsigned int i = 0; i < strlen(str); i++)
+	for(unsigned int i = 0; i < length; i++)
 	{
 		if (str[i] == '\n')
 			continue;

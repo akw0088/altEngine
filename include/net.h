@@ -28,7 +28,7 @@ public:
 	void closesock();
 
 	struct sockaddr_in	servaddr;
-	SOCKET			sockfd;
+	int			sockfd;
 private:
 
 

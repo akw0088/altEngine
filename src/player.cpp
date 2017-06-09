@@ -64,6 +64,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	zoom_level = 4.0;
 	weapon_source = -1;
 	weapon_loop_source = -1;
+	last_weapon = 0;
+	last_state = BOT_IDLE;
+	state = PLAYER_IDLE;
 
 	path.path = new int[NUM_PATH];
 	get_item = 0;
@@ -91,7 +94,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	invisibility_timer = 0;
 	jumppad_timer = 0;
 	excellent_timer = 0;
-	teleport_timer = 0;
 	click_timer = 0;
 	pain_timer = 0;
 	impressive_count = 0;
@@ -122,7 +124,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	ammo_plasma = 0;
 	ammo_bfg = 0;
 	reload_timer = 0;
-	drown_timer = 0;
 	sprintf(name, "UnnamedPlayer");
 	memset(&stats, 0, sizeof(stats_t));
 
@@ -180,7 +181,6 @@ void Player::respawn()
 	quad_timer = 0;
 	reload_timer = 0;
 	invisibility_timer = 0;
-	teleport_timer = 0;
 
 
 //	entity->model->make_aabb();
@@ -645,13 +645,15 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 		need_ammo = true;
 	}
 
+	int ignore_length = strlen(ignore);
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (i == (unsigned int)self)
 			continue;
 
 
-		if (strlen(ignore) >= 1)
+		if (ignore_length >= 1)
 		{
 			if (strstr(ignore, entity_list[i]->type) != NULL)
 				continue;

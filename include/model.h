@@ -35,7 +35,6 @@ public:
 	//quaternion		orientation;
 	matrix3			morientation;
 	vec3			aabb[8];
-	int				box_vao;
 	int				box_vertex;
 	int				box_index;
 	vec3			center;

@@ -12,6 +12,8 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	timeout_value = 30.0f;
 	radius = 75.0f;
 	action[0] = '\0';
+	pickup_buf = -1;
+	respawn_buf = -1;
 
 	pickup_index = -1;
 	respawn_index = -1;

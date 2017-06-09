@@ -149,7 +149,7 @@ bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t,
 	return true;
 }
 
-bool RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius, float &t)
+bool RaySphere(vec3 &origin, vec3 &dir, vec3 &sphere, float radius, float &t)
 {
 	vec3 dist = sphere - origin;
 	float B = dir * dist;
@@ -821,7 +821,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	{
 		printf("Unknown component: %s %d\n", file_name, components);
 		stbi_image_free(bytes);
-		free((void *)data);
+		delete [] data;
 		return 0;
 	}
 #endif
@@ -851,7 +851,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	}
 	stbi_image_free(bytes);
-	free((void *)data);
+	delete [] data;
 #endif
 #ifdef OPENGL32
 	if (format != GL_RGBA)
@@ -876,7 +876,7 @@ bool check_hash(char *filename, char *md5match, char *hash)
 
 	memset(hash, 0, 17);
 	md5sum(data, size, hash);
-	free((void *)data);
+	delete [] data;
 	if (strcmp(hash, md5match) == 0)
 		return true;
 	else

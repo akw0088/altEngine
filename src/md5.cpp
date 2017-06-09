@@ -7,6 +7,7 @@
 MD5::MD5()
 {
 	loaded = false;
+	model = NULL;
 }
 
 MD5::~MD5()
@@ -217,10 +218,10 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 
 	int i = 0;
 
-	pdata = strstr(data, "\"");
+	pdata = strchr(data, '\"');
 	while (pdata)
 	{
-		if ( 8 == sscanf(pdata, "%s %d ( %f %f %f ) ( %f %f %f )", name, &parent, &x, &y, &z, &qx, &qy, &qz) )
+		if ( 8 == sscanf(pdata, "%256s %d ( %f %f %f ) ( %f %f %f )", name, &parent, &x, &y, &z, &qx, &qy, &qz) )
 		{
 			strcpy(joint[i].name, name);
 			joint[i].parent = parent;
@@ -242,8 +243,8 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 		if (i == num_joint)
 			break;
 
-		pdata = strstr(pdata, "\""); // ending quote of name
-		pdata = strstr(pdata, "\""); // begining quote of new joint
+		pdata = strchr(pdata, '\"'); // ending quote of name
+		pdata = strchr(pdata, '\"'); // begining quote of new joint
 	}
 	return 0;
 }
@@ -262,7 +263,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 
 	pdata = strstr(data, "shader");
-	sscanf(pdata, "shader %s", shader);
+	sscanf(pdata, "shader %256s", shader);
 
 	// Read in counts
 	pdata = strstr(data, "numverts");
@@ -627,7 +628,7 @@ int MD5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
 
 	int i;
 
-	pdata = strstr(data, "\"");
+	pdata = strchr(data, '\"');
 
 	for(i = 0; i < num_joint; i++)
 	{
@@ -654,8 +655,8 @@ int MD5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
 			printf("Error: Unexpected end of hierarchy\n");
 			return 1;
 		}
-		pdata = strstr(pdata + 1, "\"");
-		pdata = strstr(pdata + 1, "\"");
+		pdata = strchr(pdata + 1, '\"');
+		pdata = strchr(pdata + 1, '\"');
 	}
 	return 0;
 }
@@ -666,7 +667,7 @@ int MD5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
 	int i = 0;
 
 
-	pdata = strstr(data, "(");
+	pdata = strchr(data, '(');
 	for(i = 0; i < num_bound; i++)
 	{
 		float x1, y1, z1;
@@ -692,8 +693,8 @@ int MD5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
 			printf("Unable to read bound %d\n", i);
 			return 1;
 		}
-		pdata = strstr(pdata + 1, "(");
-		pdata = strstr(pdata + 1, "(");
+		pdata = strchr(pdata + 1, '(');
+		pdata = strchr(pdata + 1, '(');
 	}
 	return 0;
 }
@@ -706,7 +707,7 @@ int MD5::parse_base(char *data, int num_base, md5_base_t *base)
 	int i;
 
 
-	pdata = strstr(data, "(");
+	pdata = strchr(data, '(');
 	for(i = 0; i < num_base; i++)
 	{
 		if ( 6 == sscanf(pdata, "( %f %f %f ) ( %f %f %f )", &x, &y, &z, &qx, &qy, &qz) )
@@ -724,8 +725,8 @@ int MD5::parse_base(char *data, int num_base, md5_base_t *base)
 			printf("Unable to read base %d\n", i);
 			return 1;
 		}
-		pdata = strstr(pdata + 1, "(");
-		pdata = strstr(pdata + 1, "(");
+		pdata = strchr(pdata + 1, '(');
+		pdata = strchr(pdata + 1, '(');
 	}
 	return 0;
 }
@@ -738,7 +739,7 @@ int MD5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 
 	for(int j = 0; j < num_frame; j++)
 	{
-		pdata = strstr(pdata, "{");
+		pdata = strchr(pdata, '{');
 		pdata++;
 
 		//skip whitespace

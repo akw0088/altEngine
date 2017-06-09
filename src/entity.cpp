@@ -55,7 +55,6 @@ Entity::~Entity()
 
 	position = vec3(0.0f, 0.0f, 0.0f);
 	visible = false;
-	network = false;
 	particle_on = false;
 	target[0] = '\0';
 	target_name[0] = '\0';

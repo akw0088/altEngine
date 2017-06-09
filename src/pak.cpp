@@ -128,11 +128,11 @@ char *get_wadfile(char *wadfile, char *lump, int *lump_size)
 
 	header =(wad_header_t *)data;
 
-	if (strstr((char *)header->type, "IWAD") != 0)
+	if (memcmp((char *)header->type, "IWAD", 4) != 0)
 	{
 		//printf("IWAD %d lumps\n", header->num_lump);
 	}
-	else if (strstr((char *)header->type, "PWAD") != 0)
+	else if (memcmp((char *)header->type, "PWAD", 4) != 0)
 	{
 		//printf("PWAD %d lumps\n", header->num_lump);
 	}

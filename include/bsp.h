@@ -55,7 +55,7 @@ public:
 	bool on_ground;
 	bool collision;
 	vec3 collision_normal;
-	float trace_amount;
+	float trace_result;
 
 
 	bool loaded;

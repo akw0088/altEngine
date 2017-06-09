@@ -35,7 +35,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		int num;
 
 		// Reference into BSP model lump for triggers / movers
-		if (strstr(value, "*") != NULL)
+		if (strchr(value, '*') != NULL)
 		{
 			int ret = sscanf(value + 1, "%d", &num);
 			if (ret == 1)
@@ -465,7 +465,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "func_rotating") == 0)
 		{
 			entity.ent_type = ENT_FUNC_ROTATING;
-			entity.rigid->angular_velocity.y = 1.0f;
 			/*
 			speed: determines how fast entity rotates(default 100).
 			noise : path / name of.wav file to play.Use looping sounds only(eg.sound / world / drone6.wav).
@@ -473,6 +472,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
+				entity.rigid->angular_velocity.y = 1.0f;
 				entity.rigid->gravity = false;
 				entity.rigid->flight = true;
 			}
@@ -1007,8 +1007,9 @@ bool parse_entity(Engine *engine, const char *input, vector<Entity *> &entity_li
 	char stack[LINE_SIZE] = {0};
 	int sp = 0;
 	unsigned int i, j = 0;
+	int input_length = strlen(input);
 
-	for(i = 0; state != 'F' && state != '\0' && i < strlen(input); i++)
+	for(i = 0; state != 'F' && state != '\0' && i < input_length; i++)
 	{		
 		prevstate = state;
 		state = machine_entity(state, input[i], stack, sp);
@@ -1481,10 +1482,6 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blend_one_src_color = true;
 		}
-		else if (strstr(ret, "gl_dst_color gl_one"))
-		{
-			stage->blend_dst_color_one = true;
-		}
 		else if (strstr(ret, "gl_dst_color gl_zero"))
 		{
 			stage->blend_dst_color_zero = true;
@@ -1492,6 +1489,10 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		else if (strstr(ret, "gl_dst_color gl_one_minus_dst_alpha"))
 		{
 			stage->blend_dst_color_one_minus_dst_alpha = true;
+		}
+		else if (strstr(ret, "gl_dst_color gl_one"))
+		{
+			stage->blend_dst_color_one = true;
 		}
 		else if (strstr(ret, "gl_dst_color gl_src_alpha"))
 		{
@@ -1501,11 +1502,6 @@ void handle_stage(char *stagecmd, stage_t *stage)
 		{
 			stage->blend_one_minus_src_alpha_src_alpha = true;
 		}
-		else if (strstr(ret, "gl_src_alpha gl_one_minus_src_alpha"))
-		{
-			stage->blend_src_alpha_one_minus_src_alpha = true;
-		}
-
 		else if (strstr(ret, "gl_src_alpha gl_one_minus_src_alpha"))
 		{
 			stage->blend_src_alpha_one_minus_src_alpha = true;
@@ -1827,7 +1823,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 				memcpy(stagecmd, &input[old_pos + 1], i - old_pos - 1);
 				stagecmd[i - old_pos - 2] = '\0';
 
-				if (strstr(stagecmd, "{") != NULL)
+				if (strchr(stagecmd, '{') != NULL)
 				{
 					surface->num_stage++;
 					num_stage++;

@@ -64,7 +64,6 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	data.num_leafs = tBsp->directory[Leafs].length / sizeof(leaf_t);
 	data.num_LeafFaces = tBsp->directory[LeafFaces].length / sizeof(int);
 	data.num_LeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
-	data.num_LeafBrushes = tBsp->directory[LeafBrushes].length / sizeof(int);
 	data.num_model = tBsp->directory[Models].length / sizeof(model_t);
 	data.num_brushes = tBsp->directory[Brushes].length / sizeof(brush_t);
 	data.num_BrushSides = tBsp->directory[BrushSides].length / sizeof(brushSide_t);
@@ -262,7 +261,7 @@ void Bsp::change_axis()
 		vert->normal.y =  vert->normal.z;
 		vert->normal.z =  -temp;
 		vert->texCoord0.y = -vert->texCoord0.y;
-		vert->texCoord1.y = vert->texCoord1.y;
+//		vert->texCoord1.y = vert->texCoord1.y;
 
 
 //		vert->vPosition *= (1.0f / UNITS_TO_METERS);
@@ -583,19 +582,21 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 			if (surface_index == -1)
 				continue;
 
-			if (surface_list[surface_index]->stage[i].tcmod_rotate)
+			stage_t *stage = &surface_list[surface_index]->stage[i];
+
+			if (stage->tcmod_rotate)
 			{
-				mlight2.tcmod_rotate(surface_list[surface_index]->stage[i].tcmod_rotate_value * time, i);
+				mlight2.tcmod_rotate(stage->tcmod_rotate_value * time, i);
 			}
-			if (surface_list[surface_index]->stage[i].tcmod_scroll)
+			if (stage->tcmod_scroll)
 			{
-				scroll.x += surface_list[surface_index]->stage[i].tcmod_scroll_value.x * time * 0.01f;
-				scroll.y += surface_list[surface_index]->stage[i].tcmod_scroll_value.y * time * 0.01f;
+				scroll.x += stage->tcmod_scroll_value.x * time * 0.01f;
+				scroll.y += stage->tcmod_scroll_value.y * time * 0.01f;
 				mlight2.tcmod_scroll(scroll, i);
 			}
-			if (surface_list[surface_index]->stage[i].tcmod_scale)
+			if (stage->tcmod_scale)
 			{
-				mlight2.tcmod_scale(surface_list[surface_index]->stage[i].tcmod_scale_value, i);
+				mlight2.tcmod_scale(stage->tcmod_scale_value, i);
 			}
 			
 			gfx.SelectTexture(i, tex_object[data.Face[sky_face].material].texObj[i]);
@@ -976,7 +977,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				render.envmap = false;
 				render.turb = false;
 
-				if (tex_object[face->material].texObj < 0)
+				if (tex_object[face->material].texObj[0] < 0)
 				{
 					// texture has alpha channel, use it as a mask
 					render.blend = true;
@@ -1471,28 +1472,29 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 	for (unsigned int k = 0; k < surface_list[j]->num_stage && k < 4; k++)
 	{
+		stage_t *stage = &surface_list[j]->stage[k];
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
 
-		if (surface_list[j]->stage[k].lightmap)
+		if (stage->lightmap)
 		{
 			continue;
 		}
 
-		if (surface_list[j]->stage[k].map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
+		if (stage->map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
 		{
-			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].map_tex);
+			snprintf(texture_name, LINE_SIZE, "media/%s", stage->map_tex);
 
 			//printf("Trying texture [%s]\n", texture_name);
 			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
 		}
-		else if (surface_list[j]->stage[k].clampmap)
+		else if (stage->clampmap)
 		{
-			snprintf(texture_name, LINE_SIZE, "media/%s", surface_list[j]->stage[k].clampmap_tex);
+			snprintf(texture_name, LINE_SIZE, "media/%s", stage->clampmap_tex);
 			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true, true);
 		}
-		else if (surface_list[j]->stage[k].anim_map)
+		else if (stage->anim_map)
 		{
-			char *tex = strtok(surface_list[j]->stage[k].anim_map_tex, " ");
+			char *tex = strtok(stage->anim_map_tex, " ");
 			anim_list.push_back(texObj);
 			int n = 0;
 
@@ -1516,7 +1518,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		}
 
 
-		if (tex_object != 0 && tex_object != -1 && surface_list[j]->stage[k].anim_map == false)
+		if (tex_object != 0 && tex_object != -1 && stage->anim_map == false)
 		{
 			//printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
 			//texObj->stage = k;
@@ -2288,11 +2290,11 @@ void Bsp::check_brush(brush_t *brush, vec3 &start, vec3 &end)
 
 	if (start_amount < end_amount)
 	{
-		if (start_amount > -1 && start_amount < trace_amount)
+		if (start_amount > -1 && start_amount < trace_result)
 		{
 			if (start_amount < 0)
 				start_amount = 0;
-			trace_amount = start_amount;
+			trace_result = start_amount;
 		}
 	}
 }
