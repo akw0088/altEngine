@@ -116,7 +116,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			snprintf(entity.trigger->action, LINE_SIZE, "quaddamage");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "holdable_medkit") == 0)
 		{
@@ -126,7 +125,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "holdable_medkit");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "holdable_teleporter") == 0)
 		{
@@ -136,7 +134,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "holdable_teleporter");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "item_enviro") == 0)
 		{
@@ -146,7 +143,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "bodysuit");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "item_flight") == 0)
 		{
@@ -156,7 +152,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "flight 30");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "item_haste") == 0)
 		{
@@ -166,7 +161,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "haste");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "item_invis") == 0)
 		{
@@ -176,7 +170,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "invisibility");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "item_regen") == 0)
 		{
@@ -186,7 +179,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "regeneration");
 			entity.trigger->health = false;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "team_CTF_blueflag") == 0)
 		{
@@ -371,7 +363,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
 			entity.trigger->armor = true;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "item_armor_body") == 0)
 		{
@@ -381,7 +372,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
 			entity.trigger->armor = true;
-			entity.position.y += 15.0f;
 		}
 		else if (strcmp(value, "func_bobbing") == 0)
 		{
@@ -848,6 +838,26 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "info_player_start") == 0)
 		{
 			entity.ent_type = ENT_INFO_PLAYER_START;
+		}
+		else if (strcmp(value, "info_player_deathmatch") == 0)
+		{
+			entity.ent_type = ENT_INFO_PLAYER_DEATHMATCH;
+		}
+		else if (strcmp(value, "team_CTF_bluespawn") == 0)
+		{
+			entity.ent_type = ENT_TEAM_CTF_BLUESPAWN;
+		}
+		else if (strcmp(value, "team_CTF_redspawn") == 0)
+		{
+			entity.ent_type = ENT_TEAM_CTF_REDSPAWN;
+		}
+		else if (strcmp(value, "team_CTF_blueplayer") == 0)
+		{
+			entity.ent_type = ENT_TEAM_CTF_BLUEPLAYER;
+		}
+		else if (strcmp(value, "team_CTF_redplayer") == 0)
+		{
+			entity.ent_type = ENT_TEAM_CTF_REDPLAYER;
 		}
 		else if (strcmp(value, "misc_teleporter_dest") == 0)
 		{

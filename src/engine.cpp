@@ -3441,6 +3441,7 @@ void Engine::load_models()
 		if (entity_list[i]->model == NULL)
 			continue;
 
+		/*
 		for(unsigned int j = max_dynamic; j < i; j++)
 		{
 			if (entity_list[j]->model == NULL)
@@ -3457,7 +3458,7 @@ void Engine::load_models()
 
 		if (loaded)
 			continue;
-
+			*/
 		game->load_model(*entity_list[i]);
 	}
 }
