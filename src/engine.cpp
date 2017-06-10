@@ -19,6 +19,8 @@
 // This is extra clipping past what is necessary, making you stay further away from walls
 #define BOUNCE		1.2f
 
+extern double com_maxfps;
+
 Engine::Engine()
 {
 	initialized = false;
@@ -4010,6 +4012,14 @@ void Engine::console(char *cmd)
 
 		float ambient = (float)atof(data);
 		mlight2.set_ambient(ambient);
+		return;
+	}
+
+	if (sscanf(cmd, "com_maxfps %s", data) == 1)
+	{
+		menu.print(msg);
+
+		com_maxfps = 1000.0 / atoi(data);
 		return;
 	}
 

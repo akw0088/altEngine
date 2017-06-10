@@ -9,6 +9,8 @@
 #include <fcntl.h>
 
 
+double com_maxfps = 1000.0f / 250;
+
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL setupPixelFormat(HDC);
 void RedirectIOToConsole();
@@ -212,6 +214,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		last_frametime = end - start;
 		min_frametime = MIN(min_frametime, last_frametime);
 		max_frametime = MIN(max_frametime, last_frametime);
+
+		while (end - start < com_maxfps)
+		{
+			Sleep(0);
+			end = GetCounter(freq);
+		}
 
 		return 0;
 	}
