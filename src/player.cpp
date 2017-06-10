@@ -775,7 +775,7 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 			return i;
 		}
 
-		if ((strstr(entity_list[i]->type, "ammo_") != NULL) && need_ammo)
+		if ((entity_list[i]->ent_type > ENT_START_AMMO && entity_list[i]->ent_type < ENT_END_AMMO)  && need_ammo)
 		{
 //			printf("bot %d wants %s\n", i, entity_list[i]->type);
 			bot_state = BOT_GET_ITEM;

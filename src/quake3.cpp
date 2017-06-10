@@ -761,39 +761,34 @@ team_t Quake3::get_team()
 
 void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type, int &ent_id, char *player_name)
 {
-	char *spawn_type = NULL;
+	int spawn_type = -1;
 	bool local = false;
 	team_t team = get_team();
 
 
 	if (team == TEAM_RED)
 	{
-		spawn_type = "team_CTF_redspawn";
+		spawn_type = ENT_TEAM_CTF_REDSPAWN;
 		num_player_red++;
 	}
 	else if (team == TEAM_BLUE)
 	{
-		spawn_type = "team_CTF_bluespawn";
+		spawn_type = ENT_TEAM_CTF_BLUESPAWN;
 		num_player_blue++;
 	}
 	else if (team == TEAM_NONE)
 	{
-		spawn_type = "info_player_deathmatch";
+		spawn_type = ENT_INFO_PLAYER_DEATHMATCH;
 	}
 	else
 	{
-		spawn_type = "unknown";
+		spawn_type = ENT_UNKNOWN;
 	}
 	num_player++;
 
 	for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
-	{
-		char *type = entity_list[i]->type;
-
-		if (type == NULL)
-			continue;
-		
-		if (strcmp(type, spawn_type) == 0 //||
+	{		
+		if (spawn_type == entity_list[i]->ent_type //||
 			/*strcmp(type, "info_player_start") == 0*/)
 		{
 			if ((unsigned int)last_spawn == i + 1)
@@ -6373,17 +6368,17 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		}
 
 
-		if (strstr(entity_list[i]->type, "func_"))
+		if (entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END)
 		{
 			float period = 2200.0f; // manually setting for q3tourney6 plat
 			float sin_wave = (float)fsin(MY_PI * engine->tick_num / period);
 			float square_wave = (float)sign((float)fsin(2 * MY_PI * engine->tick_num / period));
 			float amount = sin_wave * square_wave;
 
-			if (strstr(entity_list[i]->type, "func_static"))
+			if (entity_list[i]->ent_type == ENT_FUNC_STATIC)
 				continue;
 
-			if (strstr(entity_list[i]->type, "func_door"))
+			if (entity_list[i]->ent_type == ENT_FUNC_DOOR)
 			{
 				amount = 25.0f * amount;
 			}
@@ -6562,7 +6557,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (player->state == PLAYER_DEAD)
 				pickup = false;
 
-			if (player->teleport_timer > 0 && strstr(entity_list[i]->type, "teleport"))
+			if (player->teleport_timer > 0 && entity_list[i]->ent_type == ENT_TRIGGER_TELEPORT)
 				pickup = false;
 
 
