@@ -363,6 +363,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
 			entity.trigger->armor = true;
+			entity.position.y += 15.0f;
+			entity.rigid->angular_velocity.y = 10.0f;
 		}
 		else if (strcmp(value, "item_armor_body") == 0)
 		{
@@ -372,6 +374,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
 			entity.trigger->armor = true;
+			entity.position.y += 15.0f;
+			entity.rigid->angular_velocity.y = 10.0f;
 		}
 		else if (strcmp(value, "func_bobbing") == 0)
 		{
