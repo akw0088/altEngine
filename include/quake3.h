@@ -40,6 +40,7 @@ public:
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);
 	void load_icon();
+	void load_model(Entity &ent);
 	void load_sounds(Audio &audio, vector<wave_t> &snd_wave);
 
 

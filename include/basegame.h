@@ -14,6 +14,7 @@ public:
 	virtual void init(Engine *altEngine) = 0;
 	virtual void step(int frame_step) = 0;
 	virtual void load(gametype_t gametype) = 0;
+	virtual void load_model(Entity &ent) = 0;
 	virtual void unload() = 0;
 	virtual void destroy() = 0;
 	virtual void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name) = 0;

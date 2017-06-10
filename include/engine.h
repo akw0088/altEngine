@@ -47,7 +47,6 @@ public:
 	int find_type(char *type, int skip);
 	void clean_entity(int index);
 	void load_models();
-	void load_model(Entity &ent);
 	void create_sources();
 
 	void console(char *cmd);

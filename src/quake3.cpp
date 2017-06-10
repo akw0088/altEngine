@@ -6854,3 +6854,275 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 
 	}
 }
+
+void Quake3::load_model(Entity &ent)
+{
+	Graphics &gfx = engine->gfx;
+
+	if (strcmp(ent.type, "item_armor_shard") == 0)
+	{
+		debugf("Loading item_armor_shard\n");
+		ent.model->load(gfx, "media/models/powerups/armor/shard");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "weapon_rocketlauncher") == 0)
+	{
+		debugf("Loading weapon_rocketlauncher\n");
+		ent.model->load(gfx, "media/models/weapons2/rocketl/rocketl");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_shells") == 0)
+	{
+		debugf("Loading ammo_shells\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_shells");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_rockets") == 0)
+	{
+		debugf("Loading ammo_rockets\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_cells") == 0)
+	{
+		debugf("Loading ammo_cells\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_bfg") == 0)
+	{
+		debugf("Loading ammo_bfg\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_grenades") == 0)
+	{
+		debugf("Loading ammo_bfg\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_lightning") == 0)
+	{
+		debugf("Loading ammo_lightning\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_slugs") == 0)
+	{
+		debugf("Loading ammo_slugs\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "ammo_bullets") == 0)
+	{
+		debugf("Loading ammo_bullets\n");
+		ent.model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_armor_combat") == 0)
+	{
+		debugf("Loading item_armor_combat\n");
+		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position.y += 15.0f;
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "team_CTF_blueflag") == 0)
+	{
+		debugf("Loading team_CTF_blueflag\n");
+		ent.model->load(gfx, "media/models/flags/b_flag");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position += vec3(0.0f, 50.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "team_CTF_redflag") == 0)
+	{
+		debugf("Loading team_CTF_redflag\n");
+		ent.model->load(gfx, "media/models/flags/r_flag");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position += vec3(0.0f, 50.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+
+	else if (strcmp(ent.type, "item_armor_body") == 0)
+	{
+		debugf("Loading item_armor_body\n");
+		ent.model->load(gfx, "media/models/powerups/armor/item_armor_body");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position.y += 15.0f;
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_quad") == 0)
+	{
+		debugf("Loading item_quad\n");
+		ent.model->load(gfx, "media/models/powerups/instant/quad");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "item_regen") == 0)
+	{
+		debugf("Loading item_regen\n");
+		ent.model->load(gfx, "media/models/powerups/instant/regen");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "item_invis") == 0)
+	{
+		debugf("Loading item_invis\n");
+		ent.model->load(gfx, "media/models/powerups/instant/invis");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "item_flight") == 0)
+	{
+		debugf("Loading item_flight\n");
+		ent.model->load(gfx, "media/models/powerups/instant/flight");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "item_haste") == 0)
+	{
+		debugf("Loading item_haste\n");
+		ent.model->load(gfx, "media/models/powerups/instant/haste");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "holdable_medkit") == 0)
+	{
+		debugf("Loading holdable_medkit\n");
+		ent.model->load(gfx, "media/models/powerups/holdable/medkit");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "holdable_teleporter") == 0)
+	{
+		debugf("Loading holdable_teleporter\n");
+		ent.model->load(gfx, "media/models/powerups/holdable/teleporter");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+		ent.position.y += 15.0f;
+	}
+	else if (strcmp(ent.type, "weapon_lightning") == 0)
+	{
+		debugf("Loading weapon_lightning\n");
+		ent.model->load(gfx, "media/models/weapons2/lightning/lightning");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "weapon_bfg") == 0)
+	{
+		debugf("Loading weapon_bfg\n");
+		ent.model->load(gfx, "media/models/weapons2/lightning/lightning");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "weapon_shotgun") == 0)
+	{
+		debugf("Loading weapon_shotgun\n");
+		ent.model->load(gfx, "media/models/weapons2/shotgun/shotgun");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "weapon_railgun") == 0)
+	{
+		debugf("Loading weapon_railgun\n");
+		ent.model->load(gfx, "media/models/weapons2/railgun/railgun");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "weapon_grenadelauncher") == 0)
+	{
+		debugf("Loading weapon_grenadelauncher\n");
+		ent.model->load(gfx, "media/models/weapons2/grenadel/grenade");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "weapon_plasmagun") == 0)
+	{
+		debugf("Loading weapon_plasmagun\n");
+		ent.model->load(gfx, "media/models/weapons2/plasma/plasma");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_health") == 0)
+	{
+		debugf("Loading item_health\n");
+		ent.model->load(gfx, "media/models/powerups/health/item_health");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_health_large") == 0)
+	{
+		debugf("Loading item_health_large\n");
+		ent.model->load(gfx, "media/models/powerups/health/item_health_large");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_health_small") == 0)
+	{
+		debugf("Loading item_health_large\n");
+		ent.model->load(gfx, "media/models/powerups/health/item_health_small");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "item_health_mega") == 0)
+	{
+		debugf("Loading item_health_mega\n");
+		ent.model->load(gfx, "media/models/powerups/health/item_health_mega");
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.rigid->gravity = false;
+	}
+	else if (strcmp(ent.type, "info_player_deathmatch") == 0)
+	{
+		debugf("Loading info_player_deathmatch\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_bluespawn") == 0)
+	{
+		debugf("Loading team_CTF_bluespawn\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_redspawn") == 0)
+	{
+		debugf("Loading team_CTF_redspawn\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_blueplayer") == 0)
+	{
+		debugf("Loading team_CTF_blueplayer\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+	else if (strcmp(ent.type, "team_CTF_redplayer") == 0)
+	{
+		debugf("Loading team_CTF_redplayer\n");
+		ent.rigid->load(gfx, "media/models/ball");
+		ent.rigid->gravity = false;
+		ent.nodraw = true;
+	}
+
+
+}
