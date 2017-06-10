@@ -182,9 +182,11 @@ vec3 vec3::crossproduct(const vec3 &VecA, const vec3 &VecB)
 	return result;
 }
 
+float abs32(float);
+
 bool vec3::operator==(const vec3 &vector)
 {
-	if ((x == vector.x) && (y == vector.y) && (z == vector.z))
+	if ((abs32(x - vector.x) < 0.0001f && (abs32(y - vector.y) < 0.0001f) && (abs32(z - vector.z) < 0.0001f)))
 		return true;
 	else
 		return false;

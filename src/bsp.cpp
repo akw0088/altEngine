@@ -7,6 +7,9 @@
 Bsp::Bsp()
 {
 	loaded = false;
+	on_ground = false;
+	collision = false;
+	trace_result = 0.0f;
 	textures_loaded = false;
 	patch_enabled = true;
 	sky_enabled = true;
@@ -2109,7 +2112,7 @@ vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal)
 	// Check trace starting from BSP tree root
 	check_node(0, 0.0f, 1.0f, start, end);
 
-	if (trace_amount == 1.0f)
+	if (abs32(trace_amount - 1.0f) < 0.001)
 	{
 		return end;
 	}
@@ -2263,7 +2266,7 @@ void Bsp::check_brush(brush_t *brush, vec3 &start, vec3 &end)
 				collision_normal = plane->normal;
 
 
-				if ((start.x != end.x || start.z != end.z) && plane->normal.y != 1)
+				if ((abs32(start.x - end.x) >= 0.001f || abs32(start.z - end.z) >= 0.001f) && abs32(plane->normal.y - 1.0f) >= 0.001f)
 				{
 					//attempt stair step
 					//	step_flag = true;

@@ -182,7 +182,7 @@ bool RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point)
 	float denom = dir * normal;
 	float time;
 
-	if (denom == 0.0f)
+	if (abs32(denom) <= 0.0001f)
 	{
 		return false;
 	}
@@ -203,7 +203,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	float tmin = -10000, tmax = 10000;
 
 	// X coordinate
-	if (dir.x != 0.0)
+	if (abs32(dir.x) <= 0.0001f)
 	{
 		float t1 = (min.x - origin.x) / dir.x;
 		float t2 = (max.x - origin.x) / dir.x;
@@ -213,7 +213,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 
 	// Y coordinate
-	if (dir.y != 0.0)
+	if (abs32(dir.y) <= 0.0001f)
 	{
 		float t1 = (min.y - origin.y) / dir.y;
 		float t2 = (max.y - origin.y) / dir.y;
@@ -920,16 +920,17 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 	{
 		if (strcmp(entity_list[i]->type, "navpoint") == 0)
 		{
+			Entity *ent = entity_list[i];
 			int k = 0;
 			int targetname = atoi(entity_list[i]->target_name + 3);
 			node[j].num_arcs = 0;
 
 			// Manhattan distance table
-			ref[k].x = (int)entity_list[i]->position.x;
-			ref[k].y = (int)entity_list[i]->position.y;
-			ref[k].z = (int)entity_list[i]->position.z;
+			ref[k].x = (int)ent->position.x;
+			ref[k].y = (int)ent->position.y;
+			ref[k].z = (int)ent->position.z;
 
-			strcpy(data, entity_list[i]->target);
+			strcpy(data, ent->target);
 
 
 			char *target = strtok(data, " ");

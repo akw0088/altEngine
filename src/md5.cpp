@@ -221,7 +221,7 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 	pdata = strchr(data, '\"');
 	while (pdata)
 	{
-		if ( 8 == sscanf(pdata, "%256s %d ( %f %f %f ) ( %f %f %f )", name, &parent, &x, &y, &z, &qx, &qy, &qz) )
+		if ( 8 == sscanf(pdata, "%255s %d ( %f %f %f ) ( %f %f %f )", name, &parent, &x, &y, &z, &qx, &qy, &qz) )
 		{
 			strcpy(joint[i].name, name);
 			joint[i].parent = parent;
@@ -263,7 +263,7 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 
 
 	pdata = strstr(data, "shader");
-	sscanf(pdata, "shader %256s", shader);
+	sscanf(pdata, "shader %255s", shader);
 
 	// Read in counts
 	pdata = strstr(data, "numverts");
@@ -857,7 +857,7 @@ void MD5::calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c)
 	t2 = c.texCoord0.y - a.texCoord0.y;
 
 	denom = (s1 * t2 - s2 * t1);
-	if (denom != 0)
+	if (abs32(denom) >= 0.0001f)
 	{
 		t = (p * t2 - q * t1) / denom;
 		bi = (q * s1 - p * s2) / denom;

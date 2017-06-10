@@ -146,7 +146,7 @@ int Net::strtoaddr(char *str, sockaddr_in &addr)
 		sprintf(ip, "%d.%d.%d.%d", a,b,c,d);
 		addr.sin_addr.s_addr = inet_addr(ip);
 	}
-	else if (sscanf(str, "%32s:%d", ip, &port) == 2)
+	else if (sscanf(str, "%31s:%d", ip, &port) == 2)
 	{
 		addr.sin_addr.s_addr = inet_addr(ip);
 	}

@@ -77,7 +77,7 @@ void RigidBody::recalc()
 	float width = (aabb[7].x - aabb[0].x);
 	float depth = (aabb[7].z - aabb[0].z);
 	mass = (height * width * depth) / 800.0f;
-	if (mass == 0.0f)
+	if (abs32(mass) <= 0.00001f)
 		mass = 10.0f;
 
 	inverse_tensor.m[0] = 1.0f / (mass *  (height * height + depth * depth));

@@ -235,17 +235,19 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
-		if (light_list[i]->active)
+		Light *light = light_list[i];
+
+		if (light->active)
 		{
-			vec3 pos = light_list[i]->entity->position - offset;
+			vec3 pos = light->entity->position - offset;
 
-			position[j] = vec4(pos.x, pos.y, pos.z, light_list[i]->attenuation);
+			position[j] = vec4(pos.x, pos.y, pos.z, light->attenuation);
 
 
-			color[j] = vec4(light_list[i]->color.x,
-							light_list[i]->color.y,
-							light_list[i]->color.z,
-					(float)(light_list[i]->intensity / 500.0f));
+			color[j] = vec4(light->color.x,
+							light->color.y,
+							light->color.z,
+					(float)(light->intensity / 500.0f));
 		}
 	}
 
@@ -597,8 +599,8 @@ void mLight2::tcmod_stretch_inverse_sawtooth(float amplitude, float phase, float
 void mLight2::tcmod_stretch_triangle(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	vec2 value;
-	float x = (float)(0.5 * tick_num * freq + phase);
-	value.x = (float)( amplitude * (1.0 - 2.0 * abs32(sign(x) - x)) );
+	float x = (float)(0.5f * tick_num * freq + phase);
+	value.x = (float)( amplitude * (1.0f - 2.0f * abs32(sign(x) - x)) );
 	value.y = value.x;
 
 	tcmod_scale(value, index);

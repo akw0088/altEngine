@@ -2259,9 +2259,11 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 			if (i == (unsigned int)self)
 				continue;
 
-			if (engine->entity_list[i]->player && engine->entity_list[i]->bsp_leaf == player.entity->bsp_leaf)
+			Entity *ent = engine->entity_list[i];
+
+			if (ent->player && ent->bsp_leaf == player.entity->bsp_leaf)
 			{
-				Player *enemy = engine->entity_list[i]->player;
+				Player *enemy = ent->player;
 
 				enemy->health -= enemy->ammo_lightning * LIGHTNING_DAMAGE;
 				if (enemy->health < 0)
@@ -4940,12 +4942,13 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "health %s", data);
 	if (ret == 1)
 	{
+		Player *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
-		entity_list[self]->player->health += atoi(data);
-		if (entity_list[self]->player->health > 200)
+		player->health += atoi(data);
+		if (player->health > 200)
 		{
-			entity_list[self]->player->health = 200;
+			player->health = 200;
 		}
 
 		return;
@@ -5604,9 +5607,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		for (unsigned int i = 0; i < engine->client_list.size(); i++)
 		{
-			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, entity_list[engine->client_list[i]->ent_id]->player->name,
-				entity_list[engine->client_list[i]->ent_id]->player->stats.kills,
-				entity_list[engine->client_list[i]->ent_id]->player->stats.deaths,
+			Player *player = entity_list[engine->client_list[i]->ent_id]->player;
+			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, player->name,
+				player->stats.kills,
+				player->stats.deaths,
 				engine->client_list[i]->socketname,
 				current - engine->client_list[i]->last_time);
 			menu.print(msg);
@@ -6506,15 +6510,14 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			}
 		}
 
-
-		if (inside == true && entity_list[i]->trigger->active == false)
+		if (inside == true && trigger->active == false)
 		{
 			int pickup = true;
 
-			if (entity_list[i]->trigger->armor && player->armor >= 200)
+			if (trigger->armor && player->armor >= 200)
 				pickup = false;
 
-			if (entity_list[i]->trigger->health && player->health >= 100)
+			if (trigger->health && player->health >= 100)
 				pickup = false;
 
 			if (player->state == PLAYER_DEAD)
@@ -6527,52 +6530,53 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 			if (pickup)
 			{
-				entity_list[i]->trigger->active = true;
-				console(self, entity_list[i]->trigger->action, engine->menu, entity_list);
+				trigger->active = true;
+				console(self, trigger->action, engine->menu, entity_list);
 
-				if (entity_list[i]->trigger->projectile)
+				if (trigger->projectile)
 				{
 					if (player->health <= 0)
 					{
 						char word[32] = { 0 };
 						char weapon[32];
-						int owner = entity_list[i]->trigger->owner;
+						int owner = trigger->owner;
 
 						player->stats.deaths++;
 						if (owner != -1)
 						{
-							entity_list[owner]->player->stats.kills++;
-							entity_list[owner]->player->stats.hits++;
+							Player *powner = entity_list[owner]->player;
+							powner->stats.kills++;
+							powner->stats.hits++;
 
-							if (entity_list[owner]->player->current_weapon == wp_rocket)
+							if (powner->current_weapon == wp_rocket)
 							{
 								sprintf(weapon, "rocket launcher");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_grenade)
+							else if (powner->current_weapon == wp_grenade)
 							{
 								sprintf(weapon, "grenade launcher");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_plasma)
+							else if (powner->current_weapon == wp_plasma)
 							{
 								sprintf(weapon, "plasma gun");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_lightning)
+							else if (powner->current_weapon == wp_lightning)
 							{
 								sprintf(weapon, "lightning gun");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_shotgun)
+							else if (powner->current_weapon == wp_shotgun)
 							{
 								sprintf(weapon, "shotgun");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_machinegun)
+							else if (powner->current_weapon == wp_machinegun)
 							{
 								sprintf(weapon, "machinegun");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_railgun)
+							else if (powner->current_weapon == wp_railgun)
 							{
 								sprintf(weapon, "railgun");
 							}
-							else if (entity_list[owner]->player->current_weapon == wp_gauntlet)
+							else if (powner->current_weapon == wp_gauntlet)
 							{
 								sprintf(weapon, "gauntlet");
 							}
@@ -6585,7 +6589,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 							char msg[256];
 
-							if (entity_list[owner]->player == player)
+							if (powner == player)
 							{
 								sprintf(msg, "%s killed themselves with a %s\n",
 									player->name, weapon);
@@ -6593,7 +6597,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							else
 							{
 								sprintf(msg, "%s %s %s with a %s\n",
-									entity_list[owner]->player->name,
+									powner->name,
 									word,
 									player->name,
 									weapon);

@@ -123,7 +123,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	ammo_lightning = 0;
 	ammo_plasma = 0;
 	ammo_bfg = 0;
-	reload_timer = 0;
 	sprintf(name, "UnnamedPlayer");
 	memset(&stats, 0, sizeof(stats_t));
 

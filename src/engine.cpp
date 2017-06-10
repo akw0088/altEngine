@@ -4244,10 +4244,9 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_maxlight %s", data) == 1)
 	{
-		int max = 64;
-
 		menu.print(msg);
-		max = atoi(data);
+
+		int max = atoi(data);
 
 		mlight2.set_max(max);
 		return;
