@@ -208,6 +208,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WMU_RENDER:
 	{
+		if (end - start < com_maxfps)
+		{
+			end = GetCounter(freq);
+			return 0;
+		}
+
 		start = GetCounter(freq);
 		altEngine.render(last_frametime);
 		end = GetCounter(freq);
@@ -215,11 +221,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		min_frametime = MIN(min_frametime, last_frametime);
 		max_frametime = MIN(max_frametime, last_frametime);
 
-		while (end - start < com_maxfps)
-		{
-			Sleep(0);
-			end = GetCounter(freq);
-		}
 
 		return 0;
 	}
