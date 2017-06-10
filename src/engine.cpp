@@ -757,6 +757,12 @@ void Engine::render(double last_frametime)
 	if (render_mode == MODE_INDIRECT)
 	{
 		int spawn = find_type("player", 0);
+		Player *player = NULL;
+
+		if (spawn != -1)
+			player = entity_list[spawn]->player;
+
+
 
 		if (shadowmaps || all_lights)
 		{
@@ -767,7 +773,6 @@ void Engine::render(double last_frametime)
 		render_to_framebuffer(last_frametime);
 
 		gfx.clear();
-		Player *player = entity_list[spawn]->player;
 		if (spawn == -1 || (player && player->current_light == 0))
 			render_texture(quad_tex);
 		else

@@ -123,6 +123,7 @@ public:
 	Entity *telefragged;
 
 	unsigned int reload_timer;
+	unsigned int fall_timer;
 	unsigned int drown_timer;
 	unsigned int flight_timer;
 	unsigned int regen_timer;

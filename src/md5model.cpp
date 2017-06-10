@@ -125,7 +125,7 @@ void MD5Model::load_textures(Graphics &gfx)
 		int components = 0;
 		int format = 0;
 
-		sprintf(file, "media/%128s.tga", md5.model->mesh[i].shader);
+		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
 
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
 
@@ -145,7 +145,7 @@ void MD5Model::load_textures(Graphics &gfx)
 		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
 		delete[] bytes;
 
-		sprintf(file, "media/%128s_normal.tga", md5.model->mesh[i].shader);
+		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
 //		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
 #ifdef OPENGL32

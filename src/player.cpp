@@ -97,6 +97,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	click_timer = 0;
 	pain_timer = 0;
 	impressive_count = 0;
+	fall_timer = 0;
 
 	flash_gauntlet = 0;
 	flash_machinegun = 0;

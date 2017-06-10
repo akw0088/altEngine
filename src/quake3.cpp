@@ -982,31 +982,41 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			entity->rigid->hard_impact = false;
 
-			entity->player->health -= 10;
-			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+			if (entity->player->fall_timer == 0)
 			{
-				char msg[256];
+				entity->player->fall_timer = TICK_RATE >> 4;
+				entity->player->health -= 10;
+				if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+				{
+					char msg[256];
 
-				entity->player->stats.deaths++;
-				sprintf(msg, "%s fell and cant get up\n", entity->player->name);
-				debugf(msg);
-				engine->menu.print_notif(msg);
-				notif_timer = 3 * TICK_RATE;
+					entity->player->stats.deaths++;
+					sprintf(msg, "%s fell and cant get up\n", entity->player->name);
+					debugf(msg);
+					engine->menu.print_notif(msg);
+					notif_timer = 3 * TICK_RATE;
+				}
+
+				if (entity->player->local)
+					engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_FALL);
+				else
+					engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_FALL);
 			}
-
-			if (entity->player->local)
-				engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_FALL);
-			else
-				engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_FALL);
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
 			entity->rigid->hard_impact = false;
 
-			if (entity->player->local)
-				engine->play_wave_global(SND_LAND);
-			else
-				engine->play_wave(entity->position, SND_LAND);
+
+			if (entity->player->fall_timer == 0)
+			{
+				entity->player->fall_timer = TICK_RATE >> 4;
+
+				if (entity->player->local)
+					engine->play_wave_global(SND_LAND);
+				else
+					engine->play_wave(entity->position, SND_LAND);
+			}
 		}
 	}
 
@@ -1215,6 +1225,11 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player->teleport_timer > 0)
 	{
 		entity->player->teleport_timer--;
+	}
+
+	if (entity->player->fall_timer > 0)
+	{
+		entity->player->fall_timer--;
 	}
 
 	if (entity->player->quad_timer > 0)
