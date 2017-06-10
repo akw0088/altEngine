@@ -1158,7 +1158,7 @@ void Quake3::handle_player(int self, input_t &input)
 				entity->player->state = PLAYER_DUCKED;
 			}
 
-			if (strcmp(entity->type, "player") == 0 || (engine->server_flag && strcmp(entity->type, "client") == 0))
+			if ((entity->player && entity->player->type == PLAYER) || (engine->server_flag && (entity->player && entity->player->type == CLIENT)))
 			{
 				float speed_scale = 1.0f;
 

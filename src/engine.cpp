@@ -34,6 +34,7 @@ Engine::Engine()
 	collision_detect_enable = true;
 	num_bot = 0;
 	emitter.enabled = false;
+	emitter_count = 0;
 	demo = false;
 	shadowmaps = false;
 	recording_demo = false;
@@ -1077,7 +1078,11 @@ void Engine::render_scene(bool lights)
 
 	if (emitter.enabled == false)
 	{
-		emitter.visible = false;
+		if (emitter_count > 0)
+			emitter_count--;
+		else
+			emitter.visible = false;
+
 		emitter.position = vec3(0.0f, -10000.0, 0.0f);
 	}
 #endif
@@ -1085,12 +1090,13 @@ void Engine::render_scene(bool lights)
 	camera_frame.set(transformation);
 	mvp = transformation * projection;
 
-	vec3 quad1 = camera_frame.up;
-	vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 #ifdef OPENGL32
 	if (emitter.visible)
 	{
+		vec3 quad1 = camera_frame.up;
+		vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
 		particle_render.Select();
 		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
 		gfx.SelectTexture(0, particle_tex);
@@ -1104,7 +1110,7 @@ void Engine::render_scene(bool lights)
 
 	render_entities(transformation, lights, true);
 
-	render_weapon(transformation, lights, find_type("player", 0));
+	render_weapon(transformation, lights, player);
 
 
 }
@@ -1360,6 +1366,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 			emitter.num = entity->num_particle;
 			emitter.position = entity->position;
 			emitter.gravity = vec3(0.0f, 30.0f, 0.0f);
+			emitter_count = 5 * TICK_RATE;
 		}
 	}
 }
@@ -1726,8 +1733,6 @@ void Engine::spatial_testing()
 		if (entity_list[i]->visible == false)
 			continue;
 
-		vec3 dist_vec = entity_list[i]->position - camera_frame.pos;
-		float distance = dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y + dist_vec.z * dist_vec.z;
 		Light *light = entity_list[i]->light;
 		if (light)
 		{
@@ -1742,6 +1747,8 @@ void Engine::spatial_testing()
 					clean_entity(i);
 				}
 			}
+			vec3 dist_vec = entity_list[i]->position - camera_frame.pos;
+			float distance = dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y + dist_vec.z * dist_vec.z;
 
 			activate_light(distance, light);
 		}

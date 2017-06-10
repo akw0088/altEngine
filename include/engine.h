@@ -259,6 +259,7 @@ protected:
 	ParticleUpdate		particle_update;
 	ParticleRender		particle_render;
 	emitter_t			emitter;
+	unsigned int		emitter_count;
 
 	bool entities_enabled;
 
