@@ -3539,6 +3539,7 @@ void Engine::load_model(Entity &ent)
 		debugf("Loading item_armor_combat\n");
 		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position.y += 15.0f;
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "team_CTF_blueflag") == 0)
@@ -3563,6 +3564,7 @@ void Engine::load_model(Entity &ent)
 		debugf("Loading item_armor_body\n");
 		ent.model->load(gfx, "media/models/powerups/armor/item_armor_body");
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position.y += 15.0f;
 		ent.rigid->gravity = false;
 	}
 	else if (strcmp(ent.type, "item_quad") == 0)
