@@ -5571,6 +5571,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				//target - origin
 				vec3 dir = entity_list[i]->position - entity_list[self]->position;
 
+				// clear out any negative velocity so if you are falling it still works
+				if (engine->entity_list[self]->rigid->velocity.y < 0.0f)
+					engine->entity_list[self]->rigid->velocity.y = 0.0f;
+
 				//add velocity towards target
 				engine->entity_list[self]->rigid->velocity += dir * JUMPPAD_SCALE * GRAVITY_SCALE;
 

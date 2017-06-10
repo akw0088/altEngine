@@ -3783,6 +3783,10 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 				//target - origin
 				vec3 dir = entity_list[i]->position - entity_list[self]->position;
 
+				// clear out any negative velocity so if you are falling it still works
+				if (engine->entity_list[self]->rigid->velocity.y < 0.0f)
+					engine->entity_list[self]->rigid->velocity.y = 0.0f;
+
 				//add velocity towards target
 				engine->entity_list[self]->rigid->velocity += dir * 0.4f;
 

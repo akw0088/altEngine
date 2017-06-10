@@ -17,7 +17,7 @@
 #define STAIR_VEL	0.25f
 // When colliding with a wall, velocity towards the wall is clipped
 // This is extra clipping past what is necessary, making you stay further away from walls
-#define BOUNCE		1.1f
+#define BOUNCE		1.2f
 
 Engine::Engine()
 {
