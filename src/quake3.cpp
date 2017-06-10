@@ -913,9 +913,11 @@ void Quake3::handle_player(int self, input_t &input)
 	static int last_tick = 0;
 #endif
 
-
 	if (entity->player == NULL)
 		return;
+
+
+	entity->player->alive_timer++;
 
 	if (entity->player->pain_timer == 0)
 	{
@@ -1826,6 +1828,8 @@ void Quake3::step(int frame_step)
 		memset(&input, 0, sizeof(input_t));
 		if (bot->player->health <= 0)
 		{
+			if (bot->player->bot_state != BOT_DEAD)
+				bot->player->dead_timer = random() * (TICK_RATE << 1);
 			bot->player->bot_state = BOT_DEAD;
 			continue;
 		}
@@ -1891,7 +1895,12 @@ void Quake3::step(int frame_step)
 			bot->model->clone(*(engine->box->model));
 			engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
-			bot->player->respawn();
+			if (bot->player->dead_timer > 0)
+				bot->player->dead_timer--;
+
+			if (bot->player->dead_timer == 0)
+				bot->player->respawn();
+
 			char cmd[64];
 			sprintf(cmd, "respawn -1 %d", i);
 			console(i, cmd, engine->menu, engine->entity_list);
@@ -5391,9 +5400,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int i = last_spawn;
 		bool spawned = false;
 		unsigned int index = i;
-		int player = self;
 
-		if (player == -1)
+		if (self == -1)
 			return;
 
 
@@ -5404,8 +5412,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		ret = sscanf(cmd, "respawn %s %s", data, data2);
 		if (ret == 2)
 		{
-			player = atoi(data2);
-			if (player >= (int)entity_list.size() || entity_list[player]->player == NULL)
+			self = atoi(data2);
+			if (self >= (int)entity_list.size() || entity_list[self]->player == NULL)
 			{
 				debugf("respawn given invalid player index\n");
 				return;
@@ -5427,28 +5435,28 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			matrix4 matrix;
 
-			entity_list[player]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
+			entity_list[self]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
 
 			switch (entity_list[i]->angle)
 			{
 			case 0:
-				matrix4::mat_left(matrix, entity_list[player]->position);
+				matrix4::mat_left(matrix, entity_list[self]->position);
 				break;
 			case 90:
-				matrix4::mat_forward(matrix, entity_list[player]->position);
+				matrix4::mat_forward(matrix, entity_list[self]->position);
 				break;
 			case 180:
-				matrix4::mat_right(matrix, entity_list[player]->position);
+				matrix4::mat_right(matrix, entity_list[self]->position);
 				break;
 			case 270:
-				matrix4::mat_backward(matrix, entity_list[player]->position);
+				matrix4::mat_backward(matrix, entity_list[self]->position);
 				break;
 			default:
-				matrix4::mat_forward(matrix, entity_list[player]->position);
+				matrix4::mat_forward(matrix, entity_list[self]->position);
 				break;
 			}
 
-			if (player == engine->find_type("player", 0))
+			if (self == engine->find_type("player", 0))
 			{
 				engine->camera_frame.up.x = matrix.m[4];
 				engine->camera_frame.up.y = matrix.m[5];
@@ -5459,10 +5467,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			}
 
 			debugf("Spawning on entity %d\n", index);
-			entity_list[player]->player->respawn();
-			entity_list[player]->rigid->clone(*(engine->thug22->model));
+			entity_list[self]->player->respawn();
+			entity_list[self]->rigid->clone(*(engine->thug22->model));
 
-			engine->play_wave(entity_list[player]->position, SND_TELEIN);
+			engine->play_wave(entity_list[self]->position, SND_TELEIN);
 			return;
 		}
 
@@ -5474,9 +5482,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					entity_list[i]->ent_type == ENT_INFO_PLAYER_START)
 				{
 					matrix4 matrix;
-					Entity *ent = entity_list[player];
+					Entity *ent = entity_list[self];
 					//					camera_frame.set(matrix);
-					ent->position = ent->position + vec3(0.0f, 50.0f, 0.0f);
+					ent->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
 					switch (entity_list[i]->angle)
 					{
@@ -5496,7 +5504,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 						matrix4::mat_forward(matrix, ent->position);
 						break;
 					}
-					Model *model = entity_list[player]->model;
+					Model *model = entity_list[self]->model;
 
 					model->morientation.m[0] = matrix.m[0];
 					model->morientation.m[1] = matrix.m[1];
@@ -5510,7 +5518,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					model->morientation.m[7] = matrix.m[9];
 					model->morientation.m[8] = matrix.m[10];
 
-					if (player == engine->find_type("player", 0))
+					if (self == engine->find_type("player", 0))
 					{
 						engine->camera_frame.up.x = matrix.m[4];
 						engine->camera_frame.up.y = matrix.m[5];
@@ -5522,10 +5530,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
-					entity_list[player]->player->respawn();
-					entity_list[player]->rigid->clone(*(engine->thug22->model));
+					entity_list[self]->player->respawn();
+					entity_list[self]->rigid->clone(*(engine->thug22->model));
 
-					engine->play_wave(entity_list[player]->position, SND_TELEIN);
+					engine->play_wave(entity_list[self]->position, SND_TELEIN);
 					spawned = true;
 					break;
 

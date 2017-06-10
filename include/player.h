@@ -141,6 +141,8 @@ public:
 	unsigned int pain_timer;
 	unsigned int alert_timer;
 	unsigned int idle_timer;
+	unsigned int dead_timer;
+	unsigned int alive_timer;
 
 
 

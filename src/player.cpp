@@ -107,6 +107,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	flash_railgun = 0;
 	flash_lightning = 0;
 	flash_plasma = 0;
+	dead_timer = 0;
+	alive_timer = 0;
 
 	holdable_teleporter = false;
 	holdable_medikit = false;
@@ -181,6 +183,7 @@ void Player::respawn()
 	quad_timer = 0;
 	reload_timer = 0;
 	invisibility_timer = 0;
+	alive_timer = 0;
 
 
 //	entity->model->make_aabb();
@@ -560,6 +563,7 @@ void Player::avoid_walls(Bsp &map)
 
 void Player::handle_bot(vector<Entity *> &entity_list, int self)
 {
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (i == (unsigned int)self)
@@ -622,9 +626,6 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 #endif
 
 	best_weapon();
-
-//	entity_list[self]->rigid->move_forward();
-//	return;
 
 #ifdef DEBUG_BOT
 	printf("bot_search_for_items() state is %d\n", bot_state);
