@@ -782,8 +782,11 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 // Need asset manager class so things arent doubly loaded
 int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 {
-	int width, height, components, format;
-	int tex_object;
+	int width = 0;
+	int height = 0;
+	int components = 0;
+	int format = 0;
+	int tex_object = -1;
 
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(file_name, &size);
@@ -1205,7 +1208,7 @@ float GetLuminance(vec3 &v)
 
 
 
-vec3 ColorToVector(pixel_t color)
+vec3 ColorToVector(const pixel_t &color)
 {
 	vec3 vcolor;
 

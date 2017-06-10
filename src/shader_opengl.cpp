@@ -227,7 +227,7 @@ void mLight2::prelink()
 }
 
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time)
+void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int time)
 {
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
@@ -262,7 +262,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1i(texture7, 7);
 
 
-	glUniform1i(mLight2::u_time, u_time);
+	glUniform1i(u_time, time);
 
 
 // Going to treat normals and lightmaps like normal textures

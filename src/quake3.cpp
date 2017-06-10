@@ -4983,148 +4983,160 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_grenadelauncher") == 0)
 	{
+		Player *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_grenade;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_grenade;
 
-		entity_list[self]->player->weapon_flags |= wp_grenade;
-		if (entity_list[self]->player->ammo_grenades > 10)
+		player->weapon_flags |= wp_grenade;
+		if (player->ammo_grenades > 10)
 		{
-			entity_list[self]->player->ammo_grenades++;
+			player->ammo_grenades++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_grenades = 10;
+			player->ammo_grenades = 10;
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "weapon_rocketlauncher") == 0)
 	{
+		Player *player = entity_list[self]->player;
+
 		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_rocket;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_rocket;
 
-		entity_list[self]->player->weapon_flags |= wp_rocket;
-		if (entity_list[self]->player->ammo_rockets > 10)
+		player->weapon_flags |= wp_rocket;
+		if (player->ammo_rockets > 10)
 		{
-			entity_list[self]->player->ammo_rockets++;
+			player->ammo_rockets++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_rockets = 10;
+			player->ammo_rockets = 10;
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "weapon_shotgun") == 0)
 	{
+		Player *player = entity_list[self]->player;
+
 		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_shotgun;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_shotgun;
 
-		entity_list[self]->player->weapon_flags |= wp_shotgun;
-		if (entity_list[self]->player->ammo_shells > 10)
+		player->weapon_flags |= wp_shotgun;
+		if (player->ammo_shells > 10)
 		{
-			entity_list[self]->player->ammo_shells++;
+			player->ammo_shells++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_shells = 10;
+			player->ammo_shells = 10;
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "weapon_machinegun") == 0)
 	{
+		Player *player = entity_list[self]->player;
+
 		snprintf(msg, LINE_SIZE, "weapon_machinegun\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_machinegun;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_machinegun;
 
-		entity_list[self]->player->weapon_flags |= wp_machinegun;
+		player->weapon_flags |= wp_machinegun;
 
-		if (entity_list[self]->player->ammo_bullets > 100)
+		if (player->ammo_bullets > 100)
 		{
-			entity_list[self]->player->ammo_bullets++;
+			player->ammo_bullets++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_bullets = 100;
+			player->ammo_bullets = 100;
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "weapon_lightning") == 0)
 	{
+		Player *player = entity_list[self]->player;
+
 		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_lightning;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_lightning;
 
-		entity_list[self]->player->weapon_flags |= wp_lightning;
-		if (entity_list[self]->player->ammo_lightning > 100)
+		player->weapon_flags |= wp_lightning;
+		if (player->ammo_lightning > 100)
 		{
-			entity_list[self]->player->ammo_lightning++;
+			player->ammo_lightning++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_lightning = 100;
+			player->ammo_lightning = 100;
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "weapon_railgun") == 0)
 	{
+		Player *player = entity_list[self]->player;
+
 		snprintf(msg, LINE_SIZE, "weapon_railgun\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_railgun;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_railgun;
 
-		entity_list[self]->player->weapon_flags |= wp_railgun;
-		if (entity_list[self]->player->ammo_slugs > 10)
+		player->weapon_flags |= wp_railgun;
+		if (player->ammo_slugs > 10)
 		{
-			entity_list[self]->player->ammo_slugs++;
+			player->ammo_slugs++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_slugs = 10;
+			player->ammo_slugs = 10;
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "weapon_plasma") == 0)
 	{
+		Player *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "weapon_plasma\n");
 		menu.print(msg);
 
 		weapon_switch_timer = 2 * TICK_RATE;
-		if (entity_list[self]->player->current_weapon == wp_none)
-			entity_list[self]->player->current_weapon = wp_plasma;
+		if (player->current_weapon == wp_none)
+			player->current_weapon = wp_plasma;
 
-		entity_list[self]->player->weapon_flags |= wp_plasma;
-		if (entity_list[self]->player->ammo_plasma > 50)
+		player->weapon_flags |= wp_plasma;
+		if (player->ammo_plasma > 50)
 		{
-			entity_list[self]->player->ammo_plasma++;
+			player->ammo_plasma++;
 		}
 		else
 		{
-			entity_list[self]->player->ammo_plasma = 50;
+			player->ammo_plasma = 50;
 		}
 		return;
 	}
@@ -6628,44 +6640,44 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				}
 
 				entity_list[i]->visible = false;
-				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
+				trigger->timeout = entity_list[i]->trigger->timeout_value;
 
-				if (entity_list[i]->trigger->explode_timer)
+				if (trigger->explode_timer)
 				{
 					vec3 distance = entity_list[self]->position - entity_list[i]->position;
 					float mag = MIN(distance.magnitude(), 50.0f);
 					//add knockback to explosions
-					entity_list[self]->rigid->velocity += (distance.normalize() * entity_list[i]->trigger->knockback) / mag;
+					entity_list[self]->rigid->velocity += (distance.normalize() * trigger->knockback) / mag;
 				}
 
 				if (player->local)
-					engine->play_wave_global(entity_list[i]->trigger->pickup_index);
+					engine->play_wave_global(trigger->pickup_index);
 				else
-					engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->pickup_index);
+					engine->play_wave(entity_list[i]->position, trigger->pickup_index);
 
 			}
 		}
 
 
-		if (entity_list[i]->trigger->timeout > 0)
+		if (trigger->timeout > 0)
 		{
-			entity_list[i]->trigger->timeout -= 0.016f;
+			trigger->timeout -= 0.016f;
 		}
 		else
 		{
-			if (entity_list[i]->trigger->active)
+			if (trigger->active)
 			{
-				engine->play_wave(entity_list[i]->position, entity_list[i]->trigger->respawn_index);
+				engine->play_wave(entity_list[i]->position, trigger->respawn_index);
 			}
 
-			if (entity_list[i]->trigger->noise == false)
+			if (trigger->noise == false)
 			{
-				entity_list[i]->trigger->active = false;
-				entity_list[i]->trigger->timeout = 0.0f;
+				trigger->active = false;
+				trigger->timeout = 0.0f;
 			}
 			else
 			{
-				entity_list[i]->trigger->timeout = entity_list[i]->trigger->timeout_value;
+				trigger->timeout = trigger->timeout_value;
 			}
 		}
 	}

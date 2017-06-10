@@ -30,7 +30,7 @@ void Edge::insert(int index, vec3 *edge)
 	{
 		size++;
 		size *= 4;
-		edge_list = (vec3 *)new vec3[2 * size];
+		edge_list = new vec3[2 * size];
 	}
 	num_edges++;
 
