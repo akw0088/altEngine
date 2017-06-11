@@ -130,6 +130,10 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 	for (unsigned int i = 0; i < 23; i++)
 	{
+		if (engine->demo && i != 21)
+			continue;
+
+
 		sprintf(wave.file, "sound/player/%s/death1.wav", models[i]);
 		audio.load(wave);
 		snd_wave.push_back(wave);

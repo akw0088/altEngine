@@ -121,7 +121,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}
 
 
-#if 0
+#if NDEBUG
 	char hash[128];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
