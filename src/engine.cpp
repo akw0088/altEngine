@@ -451,7 +451,6 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 	camera_frame.reset();
-	light_frame.reset();
 
 
 
@@ -899,17 +898,17 @@ void Engine::zoom(float level)
 void Engine::render_shadowmaps()
 {
 	mlight2.Select();
+	int spawn = find_type("player", 0);
+
+	if (spawn == -1)
+		return;
+
+	if (entity_list[spawn]->player == NULL)
+		return;
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		int spawn = find_type("player", 0);
 		unsigned int lighti = 0;
-
-		if (spawn == -1)
-			continue;
-
-		if (entity_list[spawn]->player == NULL)
-			continue;
 
 		lighti = entity_list[spawn]->player->current_light;
 
@@ -958,6 +957,8 @@ void Engine::render_shadowmaps()
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 					render_entities(cube[j], true, false);
 					render_players(cube[j], true, true);
+					gfx.fbAttachTexture(0);
+					gfx.fbAttachDepth(0);
 
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
@@ -1008,8 +1009,11 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.fbAttachDepth(depth_tex);
 
 	gfx.clear();
-	render_scene(true);
-//	render_scene_using_shadowmap(true);
+	if (shadowmaps)
+		render_scene_using_shadowmap(true);
+	else
+		render_scene(true);
+
 /*
 	if (spawn != -1)
 	{
@@ -1131,39 +1135,31 @@ void Engine::render_scene(bool lights)
 // Right now I can only get four shadow omni-lights with this limit
 void Engine::render_scene_using_shadowmap(bool lights)
 {
-	matrix4 mvp;
+
 	matrix4 transformation;
-
-	if (input.control == false)
-	{
-		int player = find_type("player", 0);
-
-		if (player != -1)
-		{
-			entity_list[player]->rigid->frame2ent(&camera_frame, input);
-		}
-
-		camera_frame.set(transformation);
-	}
-	else
-	{
-		light_frame.set(transformation);
-	}
-
-
-	//shadowmap.Select();
-		
-	render_entities(transformation, lights, false);
+	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
+
+	int player = find_type("player", 0);
+	if (player != -1)
+		entity_list[player]->rigid->frame2ent(&camera_frame, input);
+
+	camera_frame.set(transformation);
+
+	// Rendering entities before map for blends
+	render_entities(transformation, lights, false);
+	render_players(transformation, lights, game->spectator);
+
 	mlight2.Select();
 	mvp = transformation * projection;
-	mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
+	if (lights)
+		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
+	else
+		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-
-//	shadowmap.Params(mvp, shadowmvp);
 	if (light_list.size())
 	{
-		int num_shadow_cube = 0;
+		int num_shadow_cube = 10;
 		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
@@ -1181,23 +1177,60 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		}
 	}
 
-	if (input.control)
+	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+
+#ifdef PARTICLES
+	gfx.Blend(true);
+	gfx.BlendFunc(NULL, NULL);
+
+#ifdef OPENGL32
+	int vbo = 0;
+
+	if (emitter.visible)
 	{
-		q3map.render(light_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
-//		render_shadow_volumes(entity_list[spawn]->player->current_light);
-//		gfx.SelectShader(0);
-		return;
+		particle_update.Select();
+		emitter.seed = vec3(rand_float(0.0, 10.0),
+			rand_float(0.0, 10.0),
+			rand_float(0.0, 10.0));
+		particle_update.Params(emitter);
+		vbo = particle_update.step(gfx, emitter);
 	}
 
+	if (emitter.enabled == false)
+	{
+		if (emitter_count > 0)
+			emitter_count--;
+		else
+			emitter.visible = false;
+
+		emitter.position = vec3(0.0f, -10000.0, 0.0f);
+	}
+#endif
+
+	camera_frame.set(transformation);
+	mvp = transformation * projection;
+
+
+#ifdef OPENGL32
+	if (emitter.visible)
+	{
+		vec3 quad1 = camera_frame.up;
+		vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
+
+		particle_render.Select();
+		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+		gfx.SelectTexture(0, particle_tex);
+		particle_render.render(gfx, 0, vbo, emitter.num);
+	}
+
+
+	render_trails(transformation);
+#endif
+#endif
+
 	render_entities(transformation, lights, true);
+	render_weapon(transformation, lights, player);
 
-	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
-	q3map.render_model(0, gfx);
-
-//	for (int i = 0; i < q3map.data.num_model; i++)
-//	{
-//	}
-//	gfx.SelectShader(0);
 }
 
 void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
@@ -1461,14 +1494,7 @@ void Engine::render_shadow_volumes(int current_light)
 	{
 		if (entity_list[i]->light)
 		{
-			if (input.control)
-			{
-				light_frame.set(transformation);
-			}
-			else
-			{
-				camera_frame.set(transformation);
-			}
+			camera_frame.set(transformation);
 
 			mvp = transformation * projection;
 			global.Select();

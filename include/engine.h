@@ -194,7 +194,6 @@ protected:
 	input_t		input;
 	Menu		menu;
 	Frame		camera_frame;
-	Frame		light_frame;
 
 
 	unsigned int	spiral_vbo;
