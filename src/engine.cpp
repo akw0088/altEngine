@@ -924,7 +924,14 @@ void Engine::render_shadowmaps()
 				if (lighti >= light_list.size())
 					continue;
 			}
+			/*
+			static int count = 0;
 
+			count++;
+
+			if (count % 60 != 0)
+				continue;
+				*/
 
 			if (all_lights || (light_list[lighti] == entity_list[i]->light))
 			{
@@ -949,7 +956,8 @@ void Engine::render_shadowmaps()
 					vec3 offset(0.0f, 0.0f, 0.0f);
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
-//					render_entities(cube[j], true);
+					render_entities(cube[j], true, false);
+					render_players(cube[j], true, true);
 
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
@@ -1050,7 +1058,7 @@ void Engine::render_scene(bool lights)
 
 	// Rendering entities before map for blends
 	render_entities(transformation, lights, false);
-	render_players(transformation, lights);
+	render_players(transformation, lights, game->spectator);
 
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -1373,7 +1381,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 	}
 }
 
-void Engine::render_players(matrix4 &trans, bool lights)
+void Engine::render_players(matrix4 &trans, bool lights, bool render_self)
 {
 	matrix4 mvp;
 	//render player md5
@@ -1381,15 +1389,16 @@ void Engine::render_players(matrix4 &trans, bool lights)
 	{
 		Entity *entity = entity_list[i];
 
-		if (entity->visible == false)
+		if (entity->visible == false && entity->player && entity->player->type != SPECTATOR)
 			continue;
 
 		if (	(entity->player && entity->player->type == BOT) ||
 			(entity->player && entity->player->type == SPECTATOR) ||
 			(entity->player && entity->player->type == SERVER) ||
+			(entity->player && entity->player->type == PLAYER) ||
 			(entity->player && entity->player->type == CLIENT && server_flag))
 		{
-			if (entity->player->local)
+			if (entity->player->local && render_self == false)
 				continue;
 
 			if (entity->player->health > 0)

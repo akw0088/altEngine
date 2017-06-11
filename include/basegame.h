@@ -41,6 +41,7 @@ public:
 	int red_flag_caps;
 	int notif_timer;
 	int chat_timer;
+	bool spectator;
 	Engine *engine;
 };
 

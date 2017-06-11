@@ -73,7 +73,7 @@ public:
 	int handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
-	void render_players(matrix4 &trans, bool lights);
+	void render_players(matrix4 &trans, bool lights, bool self);
 	int serialize_ents(char *data, unsigned short int &num_ents);
 	int deserialize_ents(char *data, unsigned short int num_ents);
 

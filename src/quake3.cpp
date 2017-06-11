@@ -911,6 +911,9 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player == NULL)
 		return;
 
+	if (spectator)
+		return;
+
 
 	entity->player->alive_timer++;
 

@@ -15,4 +15,5 @@ BaseGame::BaseGame()
 	notif_timer = 0;
 	chat_timer = 0;
 	engine = NULL;
+	spectator = false;
 }

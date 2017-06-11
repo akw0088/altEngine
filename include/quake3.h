@@ -83,7 +83,6 @@ private:
 
 	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
-	bool spectator;
 	bool warmup;
 	bool faceicon;
 
