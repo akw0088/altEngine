@@ -3480,8 +3480,6 @@ void Engine::load_models()
 
 	for(unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
-		bool loaded = false;
-
 		if (entity_list[i]->model == NULL)
 			continue;
 

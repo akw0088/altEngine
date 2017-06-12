@@ -23,8 +23,10 @@ Graphics::Graphics()
 	height = 0;
 	gpustat.drawcall = 0;
 	gpustat.triangle = 0;
+#ifdef _WIN32
 	hwnd = 0;
 	hdc = 0;
+#endif
 }
 
 

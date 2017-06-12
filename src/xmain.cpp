@@ -10,6 +10,8 @@ int EventProc(Display *display, Window window, GLXContext context);
 int timer_tick = 0;
 char cmdline[1024] = {0};
 
+double com_maxfps;
+
 void timer_handler(int sig, siginfo_t *si, void *uc)
 {
 //	timer_t *timer_d = (timer_t *)si->si_value.sival_ptr;

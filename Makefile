@@ -5,7 +5,6 @@ SOURCES_CPP := 	xmain.cpp \
 		basegame.cpp \
 		bsp.cpp \
 		common.cpp \
-		decal.cpp \
 		edge.cpp \
 		engine.cpp \
 		entity.cpp \
@@ -38,7 +37,6 @@ SOURCES_CPP := 	xmain.cpp \
 		speaker.cpp \
 		trigger.cpp \
 		vector.cpp \
-		vehicle.cpp \
 
 SOURCES_CC :=	huffman.c \
 		md5sum.c \
