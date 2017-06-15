@@ -1815,7 +1815,10 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 
 				memset(surface->name, 0, sizeof(surface->name));
 				memcpy(surface->name, &input[old_pos + 1], i - old_pos - 1);
-				surface->name[i - old_pos - 2] = '\0';
+				if (i - old_pos - 2 > 0)
+					surface->name[i - old_pos - 2] = '\0';
+				else
+					surface->name[0] = '\0';
 				old_pos = i;
 				num_stage = 0;
 				j = 0;

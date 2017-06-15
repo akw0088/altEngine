@@ -67,6 +67,9 @@ bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp)
 		int zn = 0;
 
 		// Going to NDC as I was having issues with clipspace
+		if (abs32(aabb[i].w) < 0.00001f )
+			continue;
+
 		aabb[i].x = aabb[i].x / aabb[i].w;
 		aabb[i].y = -aabb[i].y / aabb[i].w;
 		aabb[i].z = aabb[i].z / aabb[i].w;
