@@ -656,13 +656,18 @@ void mLight2::rgbgen_wave_triangle(float amplitude, float phase, float freq, int
 void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	float value;
+	float denom;
 
 	if (abs32((float)(freq - 0.001)) <= 0.0011)
 		freq = 0.1f;
 
-	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI)));
+	denom = ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI);
 
-	rgbgen_scale(index, value);
+	if (abs32(denom) > 0.0001f)
+	{
+		value = (float)(amplitude * (4.0 / denom));
+		rgbgen_scale(index, value);
+	}
 }
 
 int Post::init(Graphics *gfx)
