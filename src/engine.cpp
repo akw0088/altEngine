@@ -364,7 +364,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		if (shader_file)
 		{
 			parse_shader(shader_file, surface_list, shader_list[i]);
-			free((void *)shader_file);
+			delete [] shader_file;
 		}
 	}
 
@@ -522,7 +522,7 @@ void Engine::load(char *level)
 	if (entdata != NULL)
 	{
 		parse_entity(this, entdata, entity_list, gfx, audio);
-		free((void *)entdata);
+		delete [] entdata;
 	}
 	else
 	{
@@ -544,7 +544,7 @@ void Engine::load(char *level)
 	if (navdata != NULL)
 	{
 		parse_entity(this, navdata, entity_list, gfx, audio);
-		free((void *)navdata);
+		delete [] navdata;
 	}
 
 	int num_node = entity_list.size() - start;
@@ -3108,7 +3108,7 @@ void Engine::bind_keys()
 		}
 		line = strtok(NULL, "\r\n");
 	}
-	free((void *)file);
+	delete [] file;
 
 	//TBD
 	/*
@@ -3787,9 +3787,9 @@ void Engine::destroy()
 		console("stop");
 	}
 
-	free((void *)shader_list[0]);
-	free((void *)hash_list[0]);
-	free((void *)pk3_list[0]);
+	delete [] shader_list[0];
+	delete [] hash_list[0];
+	delete [] pk3_list[0];
 	game->destroy();
 	delete game;
 	debugf("Shutting down.\n");

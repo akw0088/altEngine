@@ -208,7 +208,7 @@ char *get_pakfile(char *pakfile, char *file)
 		return NULL;
 	}
     
-	pak_entry_t *entries = (pak_entry_t *)malloc(header.dir_length);
+	pak_entry_t *entries = (pak_entry_t *) new char [header.dir_length];
 	if (entries == NULL)
 	{
 		perror("malloc failed");
@@ -227,7 +227,7 @@ char *get_pakfile(char *pakfile, char *file)
 
 		if (strcmp(entry->name, file) == 0)
 		{
-			char *data = (char *)malloc(entry->length);
+			char *data = (char *) new char [entry->length];
 			if (data == NULL)
 			{
 				perror("malloc failed");

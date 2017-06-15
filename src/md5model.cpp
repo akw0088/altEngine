@@ -143,7 +143,7 @@ void MD5Model::load_textures(Graphics &gfx)
 			continue;
 		}
 		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
-		delete[] bytes;
+		free((void *)bytes);
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
 //		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
@@ -158,7 +158,7 @@ void MD5Model::load_textures(Graphics &gfx)
 			continue;
 		}
 		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
-		delete[] bytes;
+		free((void *)bytes);
 	}
 }
 

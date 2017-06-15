@@ -477,18 +477,14 @@ int processFile(JZFile *zip, userdata_t *user)
 		return -1;
 	}
 
-	if ((data = (unsigned char *)malloc(header.uncompressedSize + 1)) == NULL)
-	{
-		printf("Couldn't allocate memory!");
-		return -1;
-	}
+	data = (unsigned char *) new unsigned char [header.uncompressedSize + 1];
 
 	//printf("%s, %d / %d bytes at offset %08X\n", filename, header.compressedSize, header.uncompressedSize, header.offset);
 
 	if (jzReadData(zip, &header, data) != Z_OK)
 	{
 		printf("Couldn't read file data!");
-		free(data);
+		delete [] data;
 		return -1;
 	}
 
@@ -766,7 +762,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 #ifndef DEDICATED
 	stbi_image_free(bytes);
-	free((void *)data);
+	delete [] data;
 #endif
 
 #ifdef OPENGL32

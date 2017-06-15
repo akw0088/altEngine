@@ -244,13 +244,13 @@ stdio_read_file_handle_close(JZFile *file)
 {
 	StdioJZFile *handle = (StdioJZFile *)file;
 	fclose(handle->fp);
-	free(file);
+	delete file;
 }
 
 JZFile *
 jzfile_from_stdio_file(FILE *fp)
 {
-	StdioJZFile *handle = (StdioJZFile *)malloc(sizeof(StdioJZFile));
+	StdioJZFile *handle = (StdioJZFile *) new StdioJZFile;
 
 	handle->handle.read = stdio_read_file_handle_read;
 	handle->handle.tell = stdio_read_file_handle_tell;
