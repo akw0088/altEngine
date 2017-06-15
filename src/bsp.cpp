@@ -1413,6 +1413,7 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 {
 	int byte_offset, bit_offset;
 	char test_byte;
+	int shift = 0;
 
 	// if no vis data or if camera leaf invalid (outside map) draw everything
 	if (vis_cluster < 0 || data.num_vis == 0)
@@ -1421,7 +1422,12 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	// bit of pVecs we need to return
 	bit_offset = vis_cluster + test_cluster * data.VisData->vector_size * 8; 
 	byte_offset = bit_offset / 8;
-	test_byte = 1 << (bit_offset - byte_offset * 8);
+
+	shift = (bit_offset - byte_offset * 8);
+	if (shift < 0)
+		return 1;
+
+	test_byte = 1 << shift;
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
