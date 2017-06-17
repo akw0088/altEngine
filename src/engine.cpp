@@ -1097,7 +1097,7 @@ void Engine::render_scene(bool lights)
 		else
 			emitter.visible = false;
 
-		emitter.position = vec3(0.0f, -10000.0, 0.0f);
+		emitter.position = vec3(0.0f, -10000.0f, 0.0f);
 	}
 #endif
 
@@ -1203,7 +1203,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		else
 			emitter.visible = false;
 
-		emitter.position = vec3(0.0f, -10000.0, 0.0f);
+		emitter.position = vec3(0.0f, -10000.0f, 0.0f);
 	}
 #endif
 
@@ -1634,13 +1634,16 @@ void Engine::spatial_testing()
 //	if (tick_num % 6 != 0)
 //		return;
 
-	if (q3map.vis_test(emitter.position, camera_frame.pos, leaf_a, leaf_b))
+	if (emitter.position.y >= -9999.0f)
 	{
-		emitter.visible = true;
-	}
-	else
-	{
-		emitter.visible = false;
+		if (q3map.vis_test(emitter.position, camera_frame.pos, leaf_a, leaf_b))
+		{
+			emitter.visible = true;
+		}
+		else
+		{
+			emitter.visible = false;
+		}
 	}
 
 	#pragma omp parallel for num_threads(8)

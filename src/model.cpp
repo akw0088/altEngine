@@ -319,7 +319,7 @@ void Model::render(Graphics &gfx)
 		gfx.BlendFuncOneOne();
 	}
 
-	for (int i = 0; i < MAX_TEXTURES; i++)
+	for (int i = 1; i < MAX_TEXTURES; i++)
 	{
 		gfx.SelectTexture(i, 0);
 	}
