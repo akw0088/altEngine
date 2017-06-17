@@ -1336,6 +1336,10 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 
 	emitter.enabled = false;
 
+	for (int i = 1; i < MAX_TEXTURES; i++)
+	{
+		gfx.SelectTexture(i, 0);
+	}
 
 	gfx.Blend(false);
 	mlight2.Select();
