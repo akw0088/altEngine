@@ -1054,7 +1054,7 @@ void Engine::render_texture(int texObj)
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
-	global.Params(identity, 0);
+	global.Params(identity, 0, input.duck);
 	gfx.DrawArrayTri(0, 0, 6, 4);
 }
 

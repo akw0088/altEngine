@@ -86,8 +86,9 @@ void Global::prelink()
 	glBindAttribLocation(program_handle, 4, "attr_color");
 }
 
-void Global::Params(matrix4 &mvp, int tex0)
+void Global::Params(matrix4 &mvp, int tex0, int depth)
 {
+	glUniform1i(u_depth, depth);
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, tex0);
 }
@@ -104,7 +105,8 @@ int mLight2::init(Graphics *gfx)
 		return -1;
 	}
 #else
-	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
+//	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs")) 
 	{
 		program_handle = -1;
 		return -1;
@@ -195,6 +197,7 @@ int mLight2::init(Graphics *gfx)
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
+	u_depth = glGetUniformLocation(program_handle, "u_depth");
 	return 0;
 }
 
@@ -357,6 +360,12 @@ void mLight2::set_lightmap_stage(int flag)
 {
 	glUniform1i(u_lightmap_stage, flag);
 }
+
+void mLight2::set_depth(int flag)
+{
+	glUniform1i(u_depth, flag);
+}
+
 
 
 void mLight2::envmap(int stage, int env)

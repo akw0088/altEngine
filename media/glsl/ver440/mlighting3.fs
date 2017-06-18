@@ -3,7 +3,7 @@
 #define	MAX_LIGHTS 64
 
 // per vertex interpolated program input
-in VertexDataOut {
+in VertexData {
     vec3 att_position;
     vec4 vary_position; // vertex position
     vec2 vary_TexCoord;
@@ -29,6 +29,7 @@ uniform float		u_lightmap;
 uniform mat4		mvp;
 
 uniform int u_lightmap_stage;
+uniform int u_depth;
 
 
 uniform int u_env0;
@@ -80,6 +81,7 @@ vec4 lightDir;
 
 void main(void)
 {
+	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
 	vec3 normal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
 	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
 	vec3 bitangent = normalize(cross(normal, tangent));
@@ -118,6 +120,9 @@ void main(void)
 
 
 	vec2 tc;
+
+	tc.x = 0.0;
+	tc.y = 0.0;
 
 	if (u_env0 + u_env1 + u_env2 + u_env3 > 0)
 	{

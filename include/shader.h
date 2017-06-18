@@ -24,11 +24,12 @@ class Global : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, int tex0);
+	void Params(matrix4 &mvp, int tex0, int depth = 0);
 	virtual void prelink(void);
 private:
 	int matrix;
 	int	texture0;
+	int u_depth;
 };
 
 
@@ -48,6 +49,7 @@ public:
 	void set_lightmap(float lightmap);
 	void set_light(float ambient, float lightmap, int num_light);
 	void set_lightmap_stage(int flag);
+	void set_depth(int flag);
 
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
@@ -160,6 +162,7 @@ private:
 	int u_ambient;
 	int u_lightmap;
 	int u_lightmap_stage;
+	int u_depth;
 	int u_num_lights;
 	int u_position;
 	int u_color;
