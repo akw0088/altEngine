@@ -15,6 +15,7 @@ in VertexData {
     vec3 vary_normal;
     flat int vary_color;
     vec4 vary_tangent;
+    vec4 shadowpos[8];
 } Vertex;
 
 // Final fragment color output
@@ -74,6 +75,112 @@ layout(binding=7) uniform sampler2D texture7;
 layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
 layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
+
+layout(binding=11) uniform sampler2D shadow1tex0;
+layout(binding=12) uniform sampler2D shadow1tex1;
+layout(binding=13) uniform sampler2D shadow1tex2;
+layout(binding=14) uniform sampler2D shadow1tex3;
+layout(binding=15) uniform sampler2D shadow1tex4;
+layout(binding=16) uniform sampler2D shadow1tex5;
+
+/*
+layout(binding=21) uniform sampler2D shadow2tex0;
+layout(binding=22) uniform sampler2D shadow2tex1;
+layout(binding=23) uniform sampler2D shadow2tex2;
+layout(binding=24) uniform sampler2D shadow2tex3;
+layout(binding=25) uniform sampler2D shadow2tex4;
+layout(binding=26) uniform sampler2D shadow2tex5;
+
+layout(binding=31) uniform sampler2D shadow3tex0;
+layout(binding=32) uniform sampler2D shadow3tex1;
+layout(binding=33) uniform sampler2D shadow3tex2;
+layout(binding=34) uniform sampler2D shadow3tex3;
+layout(binding=35) uniform sampler2D shadow3tex4;
+layout(binding=36) uniform sampler2D shadow3tex5;
+
+layout(binding=41) uniform sampler2D shadow4tex0;
+layout(binding=42) uniform sampler2D shadow4tex1;
+layout(binding=43) uniform sampler2D shadow4tex2;
+layout(binding=44) uniform sampler2D shadow4tex3;
+layout(binding=45) uniform sampler2D shadow4tex4;
+layout(binding=46) uniform sampler2D shadow4tex5;
+*/
+
+// Loop could clean this up, but need to figure out how to make an array of texture arrays that bind correctly
+void calc_shadow(out float shadowFlagCombined, in int light_num)
+{
+	float shadowDistFromLight;
+	vec4 shadowWdivide;
+	float shadowFlag = 0.5;
+	light_num = 0;
+
+/*
+	//Shadowmap0
+	Vertex.shadowpos[0 + light_num * 6] * 0.5 + 0.5;
+	shadowWdivide = Vertex.shadowpos[0 + light_num * 6] / Vertex.shadowpos[0 + light_num * 6].w;
+	shadowDistFromLight = texture(shadow1tex0, vec2(shadowWdivide.s, shadowWdivide.t) ).r;
+	shadowWdivide.z += 0.0005;
+
+	if (Vertex.shadowpos[0 + light_num * 6].w > 0.0)
+		shadowFlag = shadowDistFromLight < shadowWdivide.z ? 0.0 : 1.0;
+	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+
+	//Shadowmap1
+	Vertex.shadowpos[1 + light_num * 6] * 0.5 + 0.5;
+	shadowWdivide = Vertex.shadowpos[1 + light_num * 6] / Vertex.shadowpos[1 + light_num* 6].w;
+	shadowDistFromLight = texture(shadow1tex1, vec2(shadowWdivide.s, shadowWdivide.t)).r;
+	shadowWdivide.z += 0.0005;
+
+	if (Vertex.shadowpos[1 + light_num * 6].w > 0.0)
+		shadowFlag = shadowDistFromLight < shadowWdivide.z ? 0.0 : 1.0;
+	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+
+	//Shadowmap2
+	Vertex.shadowpos[2 + light_num * 6] * 0.5 + 0.5;
+	shadowWdivide = Vertex.shadowpos[2 + light_num * 6] / Vertex.shadowpos[2 + light_num * 6].w;
+	shadowDistFromLight = texture(shadow1tex2, vec2(shadowWdivide.s, shadowWdivide.t)).r;
+	shadowWdivide.z += 0.0005;
+
+
+	if (Vertex.shadowpos[2 + light_num * 6].w > 0.0)
+		shadowFlag = shadowDistFromLight < shadowWdivide.z ? 0.0 : 1.0;
+	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+
+
+	//Shadowmap3
+	Vertex.shadowpos[3 + light_num * 6] * 0.5 + 0.5;
+	shadowWdivide = Vertex.shadowpos[3 + light_num * 6] / Vertex.shadowpos[3 + light_num * 6].w;
+	shadowDistFromLight = texture(shadow1tex3, vec2(shadowWdivide.s, shadowWdivide.t)).r;
+	shadowWdivide.z += 0.0005;
+
+
+	if (Vertex.shadowpos[3 + light_num * 6].w > 0.0)
+		shadowFlag = shadowDistFromLight < shadowWdivide.z ? 0.0 : 1.0;
+	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+*/
+	//Shadowmap4
+	Vertex.shadowpos[4 + light_num * 6] * 0.5 + 0.5;
+	shadowWdivide = Vertex.shadowpos[4 + light_num * 6] / Vertex.shadowpos[4 + light_num * 6].w;
+	shadowDistFromLight = texture(shadow1tex4, vec2(shadowWdivide.s, shadowWdivide.t)).r;
+	shadowWdivide.z += 0.0005;
+
+
+	if (Vertex.shadowpos[4 + light_num * 6].w > 0.0)
+		shadowFlag = shadowDistFromLight < shadowWdivide.z ? 0.0 : 1.0;
+	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+/*
+	//Shadowmap5
+	Vertex.shadowpos[5 + light_num * 6] * 0.5 + 0.5;
+	shadowWdivide = Vertex.shadowpos[5 + light_num * 6] / Vertex.shadowpos[5 + light_num * 6].w;
+	shadowDistFromLight = texture(shadow1tex5, vec2(shadowWdivide.s, shadowWdivide.t)).r;
+	shadowWdivide.z += 0.0005;
+
+
+	if (Vertex.shadowpos[5 + light_num * 6].w > 0.0)
+		shadowFlag = shadowDistFromLight < shadowWdivide.z ? 0.0 : 1.0;
+	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+*/
+}
 
 
 // was originally varying, but couldnt pass through geometry shader
@@ -250,7 +357,13 @@ void main(void)
 		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
 		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
-		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
+
+		float shadow;
+		calc_shadow(shadow, i);
+		if (shadow > 0.75)
+			light = light + vec3(0.0, 1.0f, 0.0);
+		else
+			light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
 

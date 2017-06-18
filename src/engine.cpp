@@ -1172,21 +1172,52 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	if (light_list.size())
 	{
-		int num_shadow_cube = 10;
+		int num_shadow_cube = 1;
+		static int last_light = 0;
 		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
-			if (entity_list[i]->light)
+			// cap to four shadow generating lights
+			if (num_shadow_cube > 1)
+				break;
+
+			if (player == -1)
 			{
+				i = last_light;
 				Light *light = entity_list[i]->light;
 
-				gfx.SelectTexture(num_shadow_cube, light->depth_tex[0]);
-				gfx.SelectTexture(num_shadow_cube, light->depth_tex[1]);
-				gfx.SelectTexture(num_shadow_cube, light->depth_tex[2]);
-				gfx.SelectTexture(num_shadow_cube, light->depth_tex[3]);
-				gfx.SelectTexture(num_shadow_cube, light->depth_tex[4]);
-				gfx.SelectTexture(num_shadow_cube, light->depth_tex[5]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 1, light->depth_tex[0]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 2, light->depth_tex[1]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 3, light->depth_tex[2]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 4, light->depth_tex[3]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 5, light->depth_tex[4]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 6, light->depth_tex[5]);
+				num_shadow_cube++;
+				continue;
+			}
+
+			if (entity_list[i]->light && entity_list[i]->light->light_num == entity_list[player]->player->current_light)
+			{
+				Light *light = entity_list[i]->light;
+				last_light = i;
+
+
+				if (i == 100)
+					continue;
+				printf("Using light %d at %3.3f %3.3f %3.3f\n", i,
+					light->entity->position.x,
+					light->entity->position.y,
+					light->entity->position.z);
+
+				gfx.SelectTexture(num_shadow_cube * 10 + 1, light->depth_tex[0]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 2, light->depth_tex[1]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 3, light->depth_tex[2]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 4, light->depth_tex[3]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 5, light->depth_tex[4]);
+				gfx.SelectTexture(num_shadow_cube * 10 + 6, light->depth_tex[5]);
 				num_shadow_cube++;
 			}
+
+
 		}
 	}
 
