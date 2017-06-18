@@ -4840,6 +4840,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	char data2[LINE_SIZE] = { 0 };
 	int ret;
 
+	if (cmd[0] == '\0')
+		return;
+
 	debugf("Console: %s\n", cmd);
 
 	ret = sscanf(cmd, "hurt %s %s", data, data2);
