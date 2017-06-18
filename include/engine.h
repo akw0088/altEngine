@@ -23,7 +23,7 @@ public:
 	void render_shadow_volumes(int current_light);
 
 
-	void render_shadowmaps();
+	void render_shadowmaps(bool everything);
 	void render_texture(int texObj);
 	void post_process(int num_passes);
 	void resize(int width, int height);
@@ -201,6 +201,7 @@ protected:
 	unsigned int	lightning_ibo;
 	unsigned int	lightning_vbo;
 	unsigned int	fbo;
+	unsigned int	fbo_shadowmaps;
 	unsigned int	global_vao;
 	unsigned int	quad_tex;
 	unsigned int	depth_tex;

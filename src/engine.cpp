@@ -341,6 +341,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_width = (unsigned int)(1024 * res_scale);
 	fb_height = (unsigned int)(1024 * res_scale);
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
+	gfx.setupFramebuffer(fb_width, fb_height, fbo_shadowmaps, quad_tex, depth_tex, multisample);
 
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
@@ -380,9 +381,15 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	if (render_mode == MODE_INDIRECT)
 	{
 		//Setup render to texture
+		gfx.bindFramebuffer(fbo_shadowmaps);
+		gfx.resize(fb_width, fb_height);
+		gfx.bindFramebuffer(0);
+
+
 		gfx.bindFramebuffer(fbo);
 		gfx.resize(fb_width, fb_height);
 		gfx.bindFramebuffer(0);
+
 	}
 
 #ifdef DEDICATED
@@ -598,11 +605,11 @@ void Engine::load(char *level)
 
 
 	//Setup render to texture
-	gfx.bindFramebuffer(fbo);
+	gfx.bindFramebuffer(fbo_shadowmaps);
 	gfx.resize(fb_width, fb_height);
 
 	// Generate depth cubemaps for each light
-	render_shadowmaps();
+	render_shadowmaps(true);
 	gfx.bindFramebuffer(0);
 
 
@@ -613,7 +620,7 @@ void Engine::load(char *level)
 			if (entity_list[i]->light)
 			{
 				entity_list[i]->light->generate_volumes(q3map);
-				//			entity_list[i]->rigid->angular_velocity = vec3();
+				//			entity_list[i]->rigid->angular_velocity f= vec3();
 			}
 		}
 	}
@@ -768,8 +775,14 @@ void Engine::render(double last_frametime)
 
 		if (shadowmaps || all_lights)
 		{
+
+			//Setup render to texture
+			gfx.bindFramebuffer(fbo_shadowmaps);
+			//gfx.resize(fb_width, fb_height);
+
 			// Generate depth cubemaps for each light
-			render_shadowmaps(); // done at load time
+			render_shadowmaps(all_lights); // done at load time
+			gfx.bindFramebuffer(0);
 		}
 
 		render_to_framebuffer(last_frametime);
@@ -895,7 +908,7 @@ void Engine::zoom(float level)
 	projection.perspective(fov / level, (float)xres / yres, zNear, zFar, inf);
 }
 
-void Engine::render_shadowmaps()
+void Engine::render_shadowmaps(bool everything)
 {
 	mlight2.Select();
 	int spawn = find_type("player", 0);
@@ -906,12 +919,9 @@ void Engine::render_shadowmaps()
 	if (entity_list[spawn]->player == NULL)
 		return;
 
+	unsigned int lighti = entity_list[spawn]->player->current_light;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		unsigned int lighti = 0;
-
-		lighti = entity_list[spawn]->player->current_light;
-
 		if (entity_list[i]->light)
 		{
 			Light *light = entity_list[i]->light;
@@ -932,7 +942,7 @@ void Engine::render_shadowmaps()
 				continue;
 				*/
 
-			if (all_lights || (light_list[lighti] == entity_list[i]->light))
+			if (all_lights || (light_list[lighti] == entity_list[i]->light) || everything)
 			{
 				// Generate matrices
 				matrix4::mat_right(cube[0], entity_list[i]->position);
