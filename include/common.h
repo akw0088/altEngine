@@ -6,7 +6,7 @@
 //random in the range [0, 1]
 #define random()			((rand () & 0x7fff) / ((float)0x7fff))
 //random in the range [-1, 1]
-#define crandom() (2.0 * (random() - 0.5))
+#define crandom() (2.0f * (random() - 0.5f))
 
 
 #pragma pack(1)

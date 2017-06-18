@@ -2716,8 +2716,10 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = camera_frame.pos;
 	bullet->rigid->clone(*(engine->bullet->model));
-	bullet->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
-	bullet->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
+	camera_frame.set(bullet->rigid->morientation);
+	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
+	bullet->rigid->velocity += right * random() + camera_frame.up * random();
+	bullet->rigid->angular_velocity = vec3(1.0 * random(), 2.0 * random(), 3.0 * random());
 	bullet->rigid->gravity = true;
 	bullet->model = bullet->rigid;
 	bullet->rigid->impact_index = SND_BULLET;
@@ -2837,13 +2839,15 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
 	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
+	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
 	shell->rigid->clone(*(engine->shell->model));
-	shell->rigid->velocity = vec3(0.5f, 0.5f, 0.0f);
-	shell->rigid->angular_velocity = vec3(1.0, 2.0, 3.0);
+	camera_frame.set(shell->rigid->morientation);
+	shell->rigid->velocity += right * random() + camera_frame.up * random();
+	shell->rigid->angular_velocity = vec3(1.0 * random(), 2.0 * random(), 3.0  * random());
 	shell->rigid->gravity = true;
 	shell->rigid->rotational_friction_flag = true;
 	shell->rigid->translational_friction_flag = true;
@@ -2862,11 +2866,13 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid = new RigidBody(shell2);
 	shell2->position = camera_frame.pos;
 	shell2->rigid->clone(*(engine->shell->model));
-	shell2->rigid->velocity = vec3(0.25f, 0.5f, 0.0f);
+	camera_frame.set(shell->rigid->morientation);
+
+	shell2->rigid->velocity += right * 1.25f * random() + camera_frame.up * random();
 	shell2->rigid->rotational_friction_flag = true;
 	shell2->rigid->translational_friction_flag = true;
 	shell2->rigid->translational_friction = 0.9f;
-	shell2->rigid->angular_velocity = vec3(-1.0, 2.0, -3.0);
+	shell2->rigid->angular_velocity = vec3(-1.0 * random(), 2.0 * random(), -3.0 * random());
 	shell2->rigid->gravity = true;
 	shell2->rigid->impact_index = SND_SHELL;
 	shell2->model = shell2->rigid;
