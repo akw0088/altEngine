@@ -3224,6 +3224,10 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 		{
 			entity_list[self]->player->armor += atoi(data);
 		}
+		else
+		{
+			entity_list[self]->player->armor = 200;
+		}
 		return;
 	}
 

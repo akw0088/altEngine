@@ -4989,6 +4989,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			entity_list[self]->player->armor += atoi(data);
 		}
+		else
+		{
+			entity_list[self]->player->armor = 200;
+		}
 		return;
 	}
 
