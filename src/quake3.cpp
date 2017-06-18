@@ -2718,6 +2718,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	bullet->rigid->clone(*(engine->bullet->model));
 	camera_frame.set(bullet->rigid->morientation);
 	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
+	bullet->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
 	bullet->rigid->velocity += right * random() + camera_frame.up * random();
 	bullet->rigid->angular_velocity = vec3(1.0 * random(), 2.0 * random(), 3.0 * random());
 	bullet->rigid->gravity = true;
@@ -2844,6 +2845,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
+	shell->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
 	shell->rigid->clone(*(engine->shell->model));
 	camera_frame.set(shell->rigid->morientation);
 	shell->rigid->velocity += right * random() + camera_frame.up * random();
@@ -2865,9 +2867,11 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
 	shell2->rigid = new RigidBody(shell2);
 	shell2->position = camera_frame.pos;
+	shell2->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
 	shell2->rigid->clone(*(engine->shell->model));
 	camera_frame.set(shell->rigid->morientation);
 
+	shell2->position += camera_frame.forward * 2.0f;
 	shell2->rigid->velocity += right * 1.25f * random() + camera_frame.up * random();
 	shell2->rigid->rotational_friction_flag = true;
 	shell2->rigid->translational_friction_flag = true;
