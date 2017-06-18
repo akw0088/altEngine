@@ -2354,9 +2354,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->trigger->hide = false;
 		projectile->trigger->radius = 25.0f;
 		projectile->trigger->idle = true;
-		projectile->trigger->idle_timer = (int)(0.1 * TICK_RATE);
+		projectile->trigger->idle_timer = (int)(0.025 * TICK_RATE);
 		projectile->trigger->explode = true;
-		projectile->trigger->explode_timer = 20;
+		projectile->trigger->explode_timer = 5;
 		projectile->trigger->owner = self;
 
 
@@ -6586,7 +6586,8 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (pickup)
 			{
 				trigger->active = true;
-				console(self, trigger->action, engine->menu, entity_list);
+				if (trigger->action[0] != '\0')
+					console(self, trigger->action, engine->menu, entity_list);
 
 				if (trigger->projectile)
 				{
