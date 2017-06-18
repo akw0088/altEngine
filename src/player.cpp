@@ -60,7 +60,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	type = UNKNOWN;
 
-
+	entity->ent_type = ENT_PLAYER;
 	zoom_level = 4.0;
 	weapon_source = -1;
 	weapon_loop_source = -1;

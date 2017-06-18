@@ -766,7 +766,7 @@ void Engine::render(double last_frametime)
 	if (render_mode == MODE_INDIRECT)
 	{
 		bool depth_view = false;
-		int spawn = find_type("player", 0);
+		int spawn = find_type(ENT_PLAYER, 0);
 		Player *player = NULL;
 
 		if (spawn != -1)
@@ -914,7 +914,7 @@ void Engine::zoom(float level)
 void Engine::render_shadowmaps(bool everything)
 {
 	mlight2.Select();
-	int spawn = find_type("player", 0);
+	int spawn = find_type(ENT_PLAYER, 0);
 
 	if (spawn == -1)
 		return;
@@ -1067,7 +1067,7 @@ void Engine::render_scene(bool lights)
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
 
-	int player = find_type("player", 0);
+	int player = find_type(ENT_PLAYER, 0);
 	if (player != -1)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
@@ -1153,7 +1153,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
 
-	int player = find_type("player", 0);
+	int player = find_type(ENT_PLAYER, 0);
 	if (player != -1)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
@@ -1773,7 +1773,7 @@ void Engine::spatial_testing()
 
 			entity_list[i]->bsp_visible = bsp_visible;
 
-			int player = find_type("player", 0);
+			int player = find_type(ENT_PLAYER, 0);
 
 			if (player != -1)
 				entity_list[player]->bsp_leaf = leaf_a;
@@ -1809,7 +1809,7 @@ void Engine::spatial_testing()
 		{
 			// Lights? what else?
 
-			int player = find_type("player", 0);
+			int player = find_type(ENT_PLAYER, 0);
 
 			if (player != -1)
 				entity_list[player]->bsp_leaf = leaf_a;
@@ -2473,7 +2473,7 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		
-		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type("player", 0));
+		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type(ENT_PLAYER, 0));
 		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
@@ -2658,7 +2658,7 @@ int Engine::deserialize_ents(char *data, unsigned short int num_ents)
 
 		if (entity_list[ent[i].id]->rigid)
 		{
-			if ((unsigned int)find_type("player", 0) == ent[i].id)
+			if ((unsigned int)find_type(ENT_PLAYER, 0) == ent[i].id)
 			{
 				// current entity has the clients predicted position
 				// the ent[i].position has the server (lagged) position
@@ -3251,7 +3251,7 @@ void Engine::keypress(char *key, bool pressed)
 	}
 	else if (strcmp("weapon_up", cmd) == 0)
 	{
-		int spawn = find_type("player", 0);
+		int spawn = find_type(ENT_PLAYER, 0);
 
 		input.weapon_up = pressed;
 		if (client_flag)
@@ -3259,7 +3259,7 @@ void Engine::keypress(char *key, bool pressed)
 	}
 	else if (strcmp("weapon_down", cmd) == 0)
 	{
-		int spawn = find_type("player", 0);
+		int spawn = find_type(ENT_PLAYER, 0);
 
 		input.weapon_down = pressed;
 		if (client_flag)
@@ -3376,7 +3376,7 @@ void Engine::keystroke(char key)
 
 void Engine::handle_game(char key)
 {
-	int spawn = find_type("player", 0);
+	int spawn = find_type(ENT_PLAYER, 0);
 
 	switch (key)
 	{
@@ -3633,11 +3633,11 @@ int Engine::get_entity()
 	return max_dynamic - 1;
 }
 
-int Engine::find_type(char *type, int skip)
+int Engine::find_type(int ent_type, int skip)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (strcmp(entity_list[i]->type, type) == 0)
+		if (entity_list[i]->ent_type == ent_type)
 		{
 			if (skip == 0)
 				return i;
@@ -3736,7 +3736,7 @@ void Engine::update_audio()
 	}
 	*/
 
-	int spawn = find_type("player", 0);
+	int spawn = find_type(ENT_PLAYER, 0);
 
 	if (spawn != -1 && entity_list.size())
 	{
@@ -4400,7 +4400,7 @@ void Engine::console(char *cmd)
 
 	if (q3map.loaded)
 	{
-		int player = find_type("player", 0);
+		int player = find_type(ENT_PLAYER, 0);
 
 		if (player == -1)
 			return;
@@ -4488,7 +4488,7 @@ void Engine::chat(char *name, char *msg)
 
 	if (name == NULL)
 	{
-		int index = find_type("player", 0);
+		int index = find_type(ENT_PLAYER, 0);
 
 		//chatmode chat
 		sprintf(data, "chat %s: %s", entity_list[index]->player->name, msg);
@@ -4514,7 +4514,7 @@ void Engine::chat(char *name, char *msg)
 		menu.print_chat(data + 5);
 		game->chat_timer = 3 * TICK_RATE;
 
-		int self = find_type("player", 0);
+		int self = find_type(ENT_PLAYER, 0);
 		if (self != -1)
 		{
 			play_wave_global(SND_TALK);

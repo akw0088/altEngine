@@ -44,7 +44,7 @@ public:
 	void load_entities();
 	int get_entity();
 	int get_player();
-	int find_type(char *type, int skip);
+	int find_type(int ent_type, int skip);
 	void clean_entity(int index);
 	void load_models();
 	void create_sources();

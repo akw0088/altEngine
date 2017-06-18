@@ -812,19 +812,19 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			switch (player_type)
 			{
 			case PLAYER:
-				strcpy(entity_list[spawn]->type, "player");
+				entity_list[spawn]->ent_type = ENT_PLAYER;
 				break;
 			case SERVER:
-				strcpy(entity_list[spawn]->type, "server");
+				entity_list[spawn]->ent_type = ENT_SERVER;
 				break;
 			case CLIENT:
-				strcpy(entity_list[spawn]->type, "client");
+				entity_list[spawn]->ent_type = ENT_CLIENT;
 				break;
 			case BOT:
-				strcpy(entity_list[spawn]->type, "NPC");
+				entity_list[spawn]->ent_type = ENT_NPC;
 				break;
 			case SPECTATOR:
-				strcpy(entity_list[spawn]->type, "spectator");
+				engine->entity_list[spawn]->ent_type = ENT_SPECTATOR;
 				break;
 			case UNKNOWN:
 				strcpy(entity_list[spawn]->type, "unknown");
@@ -1758,7 +1758,7 @@ void Quake3::step(int frame_step)
 					index = i;
 				}
 			}
-			int spec = engine->find_type("spectator", 0);
+			int spec = engine->find_type(ENT_SPECTATOR, 0);
 
 			if (spec != -1)
 			{
@@ -1768,11 +1768,11 @@ void Quake3::step(int frame_step)
 		}
 		else
 		{
-			int player = engine->find_type("player", 0);
+			int player = engine->find_type(ENT_PLAYER, 0);
 
 			if (player != -1)
 			{
-				sprintf(engine->entity_list[player]->type, "spectator");
+				engine->entity_list[player]->ent_type = ENT_SPECTATOR;
 			}
 		}
 	}
@@ -3888,7 +3888,7 @@ void Quake3::render_hud(double last_frametime)
 	char msg[LINE_SIZE];
 
 
-	int spawn = engine->find_type("player", 0);
+	int spawn = engine->find_type(ENT_PLAYER, 0);
 	if (spawn == -1)
 	{
 		// player is spectating
@@ -5475,7 +5475,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				break;
 			}
 
-			if (self == engine->find_type("player", 0))
+			if (self == engine->find_type(ENT_PLAYER, 0))
 			{
 				engine->camera_frame.up.x = matrix.m[4];
 				engine->camera_frame.up.y = matrix.m[5];
@@ -5537,7 +5537,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					model->morientation.m[7] = matrix.m[9];
 					model->morientation.m[8] = matrix.m[10];
 
-					if (self == engine->find_type("player", 0))
+					if (self == engine->find_type(ENT_PLAYER, 0))
 					{
 						engine->camera_frame.up.x = matrix.m[4];
 						engine->camera_frame.up.y = matrix.m[5];
