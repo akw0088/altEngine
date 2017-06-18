@@ -765,6 +765,7 @@ void Engine::render(double last_frametime)
 
 	if (render_mode == MODE_INDIRECT)
 	{
+		bool depth_view = false;
 		int spawn = find_type("player", 0);
 		Player *player = NULL;
 
@@ -789,11 +790,12 @@ void Engine::render(double last_frametime)
 
 		gfx.clear();
 		if (spawn == -1 || (player && player->current_light == 0))
-			render_texture(quad_tex);
+			render_texture(quad_tex, false);
 		else
 		{
 			for (unsigned int i = 0; i < entity_list.size(); i++)
 			{
+
 				if (spawn == -1)
 					break;
 
@@ -806,6 +808,7 @@ void Engine::render(double last_frametime)
 					{
 						if (input.duck)
 						{
+							depth_view = true;
 							testObj = entity_list[i]->light->depth_tex[player->current_face];
 						}
 						else
@@ -817,7 +820,7 @@ void Engine::render(double last_frametime)
 				}
 			}
 
-			render_texture(testObj);
+			render_texture(testObj, depth_view);
 		}
 	}
 	if (render_mode == MODE_FORWARD)
@@ -1048,13 +1051,13 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.resize(xres, yres);
 }
 
-void Engine::render_texture(int texObj)
+void Engine::render_texture(int texObj, bool depth_view)
 {
 	gfx.SelectTexture(0, texObj);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
-	global.Params(identity, 0, input.duck);
+	global.Params(identity, 0, depth_view);
 	gfx.DrawArrayTri(0, 0, 6, 4);
 }
 

@@ -12,6 +12,7 @@ out int vary_color;
 
 // uniform primitive constant input
 uniform mat4		mvp;
+uniform int u_depth;
 
 void main(void)
 {

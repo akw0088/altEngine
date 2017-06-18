@@ -76,6 +76,7 @@ int Global::init(Graphics *gfx)
 #endif
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
+	u_depth = glGetUniformLocation(program_handle, "u_depth");
 	return 0;
 }
 
@@ -88,9 +89,9 @@ void Global::prelink()
 
 void Global::Params(matrix4 &mvp, int tex0, int depth)
 {
-	glUniform1i(u_depth, depth);
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 	glUniform1i(texture0, tex0);
+	glUniform1i(u_depth, depth);
 }
 
 int mLight2::init(Graphics *gfx)

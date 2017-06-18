@@ -24,7 +24,7 @@ public:
 
 
 	void render_shadowmaps(bool everything);
-	void render_texture(int texObj);
+	void render_texture(int texObj, bool depth_view);
 	void post_process(int num_passes);
 	void resize(int width, int height);
 
