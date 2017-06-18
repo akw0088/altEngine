@@ -3852,6 +3852,8 @@ void Engine::destroy()
 
 	delete bullet;
 	delete shell;
+	delete plasma_hit;
+	delete bullet_hit;
 
 	delete gib0;
 	delete gib1;
