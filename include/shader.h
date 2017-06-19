@@ -43,6 +43,7 @@ class mLight2 : public Shader
 public:
 	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time);
+	void proj(matrix4 &mvp);
 	virtual void prelink(void);
 	void set_max(int max);
 	void set_ambient(float ambient);
@@ -81,6 +82,7 @@ public:
 	float m_lightmap;
 private:
 	int matrix;
+	int projection;
 	int	texture0;
 	int texture1;
 	int texture2;

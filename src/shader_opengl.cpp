@@ -115,6 +115,7 @@ int mLight2::init(Graphics *gfx)
 #endif
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
+	projection = glGetUniformLocation(program_handle, "proj");
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 	texture1 = glGetUniformLocation(program_handle, "texture1");
 	texture2 = glGetUniformLocation(program_handle, "texture2");
@@ -228,6 +229,12 @@ void mLight2::prelink()
 	glBindAttribLocation(program_handle, 3, "attr_normal");
 	glBindAttribLocation(program_handle, 4, "attr_color");
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
+}
+
+
+void mLight2::proj(matrix4 &proj)
+{
+	glUniformMatrix4fv(projection, 1, GL_FALSE, proj.m);
 }
 
 

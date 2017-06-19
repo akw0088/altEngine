@@ -949,6 +949,8 @@ void Engine::render_shadowmaps(bool everything)
 			if (all_lights || (light_list[lighti] == entity_list[i]->light) || everything)
 			{
 				// Generate matrices
+				//rl tb fb
+
 				matrix4::mat_right(cube[0], entity_list[i]->position);
 				matrix4::mat_left(cube[1], entity_list[i]->position);
 				matrix4::mat_top(cube[2], entity_list[i]->position);
@@ -1162,6 +1164,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
 	camera_frame.set(transformation);
+	mlight2.proj(projection);
 
 	// Rendering entities before map for blends
 	render_entities(transformation, lights, false);
@@ -1391,6 +1394,8 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 
 	gfx.Blend(false);
 	mlight2.Select();
+	mlight2.proj(projection);
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		Entity *entity = entity_list[i];
