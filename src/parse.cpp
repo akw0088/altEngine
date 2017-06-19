@@ -839,10 +839,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		{
 			entity.ent_type = ENT_INFO_PLAYER_START;
 		}
-		else if (strcmp(value, "info_player_deathmatch") == 0)
-		{
-			entity.ent_type = ENT_INFO_PLAYER_DEATHMATCH;
-		}
 		else if (strcmp(value, "team_CTF_bluespawn") == 0)
 		{
 			entity.ent_type = ENT_TEAM_CTF_BLUESPAWN;
