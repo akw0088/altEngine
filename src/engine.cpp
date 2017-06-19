@@ -789,6 +789,7 @@ void Engine::render(double last_frametime)
 		render_to_framebuffer(last_frametime);
 
 		gfx.clear();
+
 		if (spawn == -1 || (player && player->current_light == 0))
 			render_texture(quad_tex, false);
 		else
@@ -1046,6 +1047,9 @@ void Engine::render_to_framebuffer(double last_frametime)
 		menu.render_console(global);
 	if (menu.chatmode)
 		menu.render_chatmode(global);
+
+	gfx.Depth(true);
+	gfx.Blend(false);
 
 	gfx.bindFramebuffer(0);
 	gfx.resize(xres, yres);
