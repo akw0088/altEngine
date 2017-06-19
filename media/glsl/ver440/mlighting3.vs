@@ -23,7 +23,7 @@ out VertexData {
 	vec3		vary_normal;
 	flat int	vary_color;
 	vec4		vary_tangent;
-	vec4 shadowpos[8];
+	vec4 shadowpos[6];
 } Vertex;
 
 // uniform primitive constant input
@@ -31,6 +31,7 @@ uniform vec4	u_position[MAX_LIGHTS]; // alph is attenuation cofactor
 uniform vec4	u_color[MAX_LIGHTS]; //alpha is intensity
 uniform int	u_num_lights;
 uniform mat4	mvp;
+uniform mat4	projection;
 
 uniform vec2		u_tcmod_scroll0;
 uniform vec2		u_tcmod_scroll1;
@@ -190,11 +191,12 @@ void main(void)
 						translation.x, translation.y, translation.z, 1.0f);
 
 
-		Vertex.shadowpos[0 + 6 * i] = (mat_right)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[1 + 6 * i] = (mat_left)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[2 + 6 * i] = (mat_top)		* vec4(attr_position, 1.0);
-		Vertex.shadowpos[3 + 6 * i] = (mat_bottom)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[4 + 6 * i] = (mat_forward)	* vec4(attr_position, 1.0);
-		Vertex.shadowpos[5 + 6 * i] = (mat_backward)	* vec4(attr_position, 1.0);
+		Vertex.shadowpos[0 + 6 * i] = (mat_right)	* projection * vec4(attr_position, 1.0);
+		Vertex.shadowpos[1 + 6 * i] = (mat_left)	* projection * vec4(attr_position, 1.0);
+		Vertex.shadowpos[2 + 6 * i] = (mat_top)		* projection * vec4(attr_position, 1.0);
+		Vertex.shadowpos[3 + 6 * i] = (mat_bottom)	* projection * vec4(attr_position, 1.0);
+		Vertex.shadowpos[4 + 6 * i] = (mat_forward)	* projection * vec4(attr_position, 1.0);
+		Vertex.shadowpos[5 + 6 * i] = (mat_backward)	* projection * vec4(attr_position, 1.0);
 	}
+
 }
