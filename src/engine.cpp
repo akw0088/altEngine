@@ -779,7 +779,7 @@ void Engine::render(double last_frametime)
 
 			//Setup render to texture
 			gfx.bindFramebuffer(fbo_shadowmaps);
-			//gfx.resize(fb_width, fb_height);
+			gfx.resize(fb_width, fb_height);
 
 			// Generate depth cubemaps for each light
 			render_shadowmaps(all_lights); // done at load time
