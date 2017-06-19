@@ -1762,9 +1762,9 @@ void Quake3::step(int frame_step)
 
 			if (spec != -1)
 			{
-				sprintf(engine->entity_list[spec]->type, "NPC");
+				engine->entity_list[spec]->ent_type = ENT_NPC;
 			}
-			sprintf(engine->entity_list[index]->type, "player");
+			engine->entity_list[index]->ent_type = ENT_PLAYER;
 		}
 		else
 		{
