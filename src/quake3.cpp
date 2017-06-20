@@ -5235,8 +5235,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "blueflag");
 	if (ret == 0)
 	{
-		if (entity_list[self]->player->team == TEAM_RED && entity_list[self]->player->holdable_flag == false)
-			entity_list[self]->player->holdable_flag = true;
+		Player *player = entity_list[self]->player;
+
+		if (player->team == TEAM_RED && player->holdable_flag == false)
+			player->holdable_flag = true;
 		return;
 	}
 

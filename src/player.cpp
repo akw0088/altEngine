@@ -569,13 +569,11 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 		if (i == (unsigned int)self)
 			continue;
 
+		Player *player = entity_list[i]->player;
 
-		if (entity_list[i]->player && entity_list[i]->player->type == PLAYER)
+		if (player && player->type == PLAYER)
 		{
-			if (entity_list[i]->player == NULL)
-				continue;
-
-			if (team != TEAM_NONE && entity_list[i]->player->team == team)
+			if (team != TEAM_NONE && player->team == team)
 				continue;
 
 			float distance = (entity_list[i]->position - entity->position).magnitude();
@@ -595,13 +593,13 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 
 			if (distance < 400.0f)
 			{
-				if (reload_timer <= 0 && entity_list[i]->player->state != PLAYER_DEAD)
+				if (reload_timer <= 0 && player->state != PLAYER_DEAD)
 				{
 					entity->rigid->lookat(entity_list[i]->position);
 					bot_state = BOT_ATTACK;
 				}
 
-				if (entity_list[i]->player->state == PLAYER_DEAD)
+				if (player->state == PLAYER_DEAD)
 				{
 					bot_state = BOT_IDLE;
 				}

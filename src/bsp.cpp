@@ -1840,7 +1840,7 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 
 		// tangent and bitangent
 		denom = (s1 * t2 - s2 * t1);
-		if (denom != 0)
+		if (abs32(denom) >= 0.00001f)
 		{
 			t = (p * t2 - q * t1) / denom;
 			b = (q * s1 - p * s2) / denom;

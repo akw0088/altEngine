@@ -602,13 +602,7 @@ void Audio::play(int hSource)
 {
 	ALenum		al_err;
 
-	al_err = alGetError();
 	alSourcePlay(hSource);
-	al_err = alGetError();
-	if (al_err != AL_NO_ERROR)
-	{
-		debugf("Play error: %s\n", GetALErrorString(al_err));
-	}
 }
 
 void Audio::stop(int hSource)
