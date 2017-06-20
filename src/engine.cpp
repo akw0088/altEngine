@@ -912,6 +912,13 @@ void Engine::zoom(float level)
 	projection.perspective(fov / level, (float)xres / yres, zNear, zFar, inf);
 }
 
+matrix4 magic0;
+matrix4 magic1;
+matrix4 magic2;
+matrix4 magic3;
+matrix4 magic4;
+matrix4 magic5;
+
 void Engine::render_shadowmaps(bool everything)
 {
 	mlight2.Select();
@@ -957,6 +964,9 @@ void Engine::render_shadowmaps(bool everything)
 				matrix4::mat_bottom(cube[3], entity_list[i]->position);
 				matrix4::mat_forward(cube[4], entity_list[i]->position);
 				matrix4::mat_backward(cube[5], entity_list[i]->position);
+
+
+
 				for (int j = 0; j < 6; j++)
 				{
 					matrix4 mvp = cube[j] * projection;
@@ -970,6 +980,20 @@ void Engine::render_shadowmaps(bool everything)
 
 					vec3 offset(0.0f, 0.0f, 0.0f);
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
+
+					if (j == 0 && i == 107)
+						magic0 = mvp;
+					if (j == 1 && i == 107)
+						magic1 = mvp;
+					if (j == 2 && i == 107)
+						magic2 = mvp;
+					if (j == 3 && i == 107)
+						magic3 = mvp;
+					if (j == 4 && i == 107)
+						magic4 = mvp;
+					if (j == 5 && i == 107)
+						magic5 = mvp;
+
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 					render_entities(cube[j], true, false);
 					render_players(cube[j], true, true);
@@ -1025,10 +1049,10 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.fbAttachDepth(depth_tex);
 
 	gfx.clear();
-	if (shadowmaps)
+//	if (shadowmaps)
 		render_scene_using_shadowmap(true);
-	else
-		render_scene(true);
+//	else
+		//render_scene(true);
 
 /*
 	if (spawn != -1)
@@ -1164,69 +1188,35 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
 	camera_frame.set(transformation);
-	mlight2.proj(projection);
+
+
+	mlight2.Select();
+	mlight2.set_shadow_matrix0(magic0);
+	mlight2.set_shadow_matrix1(magic1);
+	mlight2.set_shadow_matrix2(magic2);
+	mlight2.set_shadow_matrix3(magic3);
+	mlight2.set_shadow_matrix4(magic4);
+	mlight2.set_shadow_matrix5(magic5);
+
+	Light *light = entity_list[107]->light;
+	gfx.SelectTexture(11, light->depth_tex[0]);
+	gfx.SelectTexture(12, light->depth_tex[1]);
+	gfx.SelectTexture(13, light->depth_tex[2]);
+	gfx.SelectTexture(14, light->depth_tex[3]);
+	gfx.SelectTexture(15, light->depth_tex[4]);
+	gfx.SelectTexture(16, light->depth_tex[5]);
 
 	// Rendering entities before map for blends
 	render_entities(transformation, lights, false);
 	render_players(transformation, lights, game->spectator);
 
-	mlight2.Select();
 	mvp = transformation * projection;
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 	else
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-	if (light_list.size())
-	{
-		int num_shadow_cube = 1;
-		static int last_light = 0;
-		for (unsigned int i = 0; i < entity_list.size(); i++)
-		{
-			// cap to four shadow generating lights
-			if (num_shadow_cube > 1)
-				break;
 
-			if (player == -1)
-			{
-				i = last_light;
-				Light *light = entity_list[i]->light;
-
-				gfx.SelectTexture(num_shadow_cube * 10 + 1, light->depth_tex[0]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 2, light->depth_tex[1]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 3, light->depth_tex[2]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 4, light->depth_tex[3]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 5, light->depth_tex[4]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 6, light->depth_tex[5]);
-				num_shadow_cube++;
-				continue;
-			}
-
-			if (entity_list[i]->light && entity_list[i]->light->light_num == entity_list[player]->player->current_light)
-			{
-				Light *light = entity_list[i]->light;
-				last_light = i;
-
-
-				if (i == 100)
-					continue;
-				printf("Using light %d at %3.3f %3.3f %3.3f\n", i,
-					light->entity->position.x,
-					light->entity->position.y,
-					light->entity->position.z);
-
-				gfx.SelectTexture(num_shadow_cube * 10 + 1, light->depth_tex[0]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 2, light->depth_tex[1]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 3, light->depth_tex[2]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 4, light->depth_tex[3]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 5, light->depth_tex[4]);
-				gfx.SelectTexture(num_shadow_cube * 10 + 6, light->depth_tex[5]);
-				num_shadow_cube++;
-			}
-
-
-		}
-	}
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
@@ -1394,7 +1384,6 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 
 	gfx.Blend(false);
 	mlight2.Select();
-	mlight2.proj(projection);
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{

@@ -31,7 +31,13 @@ uniform vec4	u_position[MAX_LIGHTS]; // alph is attenuation cofactor
 uniform vec4	u_color[MAX_LIGHTS]; //alpha is intensity
 uniform int	u_num_lights;
 uniform mat4	mvp;
-uniform mat4	projection;
+
+uniform mat4	shadow_matrix0;
+uniform mat4	shadow_matrix1;
+uniform mat4	shadow_matrix2;
+uniform mat4	shadow_matrix3;
+uniform mat4	shadow_matrix4;
+uniform mat4	shadow_matrix5;
 
 uniform vec2		u_tcmod_scroll0;
 uniform vec2		u_tcmod_scroll1;
@@ -70,54 +76,6 @@ uniform float	u_tcmod_cos5;
 uniform float	u_tcmod_cos6;
 uniform float	u_tcmod_cos7;
 
-void mright(in vec3 position, out vec3 right, out vec3 up, out vec3 forward, out vec3 translation)
-{
-	right		= vec3(-1.0f, 0.0f, 0.0f);
-	up		= vec3(0.0f, 1.0f, 0.0f);
-	forward		= vec3(0.0f, 0.0f, -1.0f);
-	translation	= vec3(dot(-right, position), dot(-up, position), dot(-forward, position));
-}
-
-void mleft(in vec3 position, out vec3 right, out vec3 up, out vec3 forward, out vec3 translation)
-{
-	right		= vec3(0.0f, 0.0f, -1.0f);
-	up		= vec3(0.0f, 1.0f, 0.0f);
-	forward		= vec3(1.0f, 0.0f, 0.0f);
-	translation	= vec3(dot(-right, position), dot(-up, position), dot(-forward, position));
-}
-
-void mforward(in vec3 position, out vec3 right, out vec3 up, out vec3 forward, out vec3 translation)
-{
-	right		= vec3(1.0f, 0.0f, 0.0f);
-	up		= vec3(0.0f, 1.0f, 0.0f);
-	forward		= vec3(0.0f, 0.0f, 1.0f);
-	translation	= vec3(dot(-right, position), dot(-up, position), dot(-forward, position));
-}
-
-void mbackward(in vec3 position, out vec3 right, out vec3 up, out vec3 forward, out vec3 translation)
-{
-	right		= vec3(0.0f, 0.0f, 1.0f);
-	up		= vec3(0.0f, 1.0f, 0.0f);
-	forward		= vec3(-1.0f, 0.0f, 0.0f);
-	translation	= vec3(dot(-right, position), dot(-up, position), dot(-forward, position));
-}
-
-void mtop(in vec3 position, out vec3 right, out vec3 up, out vec3 forward, out vec3 translation)
-{
-	right		= vec3(1.0f, 0.0f, 0.0f);
-	up		= vec3(0.0f, 0.0f, 1.0f);
-	forward		= vec3(0.0f, -1.0f, 0.0f);
-	translation	= vec3(dot(-right, position), dot(-up, position), dot(-forward, position));
-}
-
-void mbottom(in vec3 position, out vec3 right, out vec3 up, out vec3 forward, out vec3 translation)
-{
-	right		= vec3(1.0f, 0.0f, 0.0f);
-	up		= vec3(0.0f, 0.0f, -1.0f);
-	forward		= vec3(0.0f, 1.0f, 0.0f);
-	translation	= vec3(dot(-right, position), dot(-up, position), dot(-forward, position));
-}
-
 void main(void)
 {
 
@@ -150,53 +108,11 @@ void main(void)
 	vec3 forward;
 	vec3 translation;
 
-
-
-	for(int i = 0; i < min(MAX_SHADOW, u_num_lights); i++)
-	{
-		mright(u_position[i].xyz, right, up, forward, translation);
-		mat4 mat_right = mat4(		right.x, up.x, forward.x, 0.0f,
-				 		right.y, up.y, forward.y, 0.0f,
-						right.z, up.z, forward.z, 0.0f,
-						translation.x, translation.y, translation.z, 1.0f);
-	
-		mleft(u_position[i].xyz, right, up, forward, translation);
-		mat4 mat_left = mat4(		right.x, up.x, forward.x, 0.0f,
-				 		right.y, up.y, forward.y, 0.0f,
-						right.z, up.z, forward.z, 0.0f,
-						translation.x, translation.y, translation.z, 1.0f);
-	
-		mforward(u_position[i].xyz, right, up, forward, translation);
-		mat4 mat_forward = mat4(	right.x, up.x, forward.x, 0.0f,
-				 		right.y, up.y, forward.y, 0.0f,
-						right.z, up.z, forward.z, 0.0f,
-						translation.x, translation.y, translation.z, 1.0f);
-	
-		mbackward(u_position[i].xyz, right, up, forward, translation);
-		mat4 mat_backward = mat4(	right.x, up.x, forward.x, 0.0f,
-				 		right.y, up.y, forward.y, 0.0f,
-						right.z, up.z, forward.z, 0.0f,
-						translation.x, translation.y, translation.z, 1.0f);
-	
-		mtop(u_position[i].xyz, right, up, forward, translation);
-		mat4 mat_top = mat4(		right.x, up.x, forward.x, 0.0f,
-				 		right.y, up.y, forward.y, 0.0f,
-						right.z, up.z, forward.z, 0.0f,
-						translation.x, translation.y, translation.z, 1.0f);
-	
-		mbottom(u_position[i].xyz, right, up, forward, translation);
-		mat4 mat_bottom = mat4(		right.x, up.x, forward.x, 0.0f,
-				 		right.y, up.y, forward.y, 0.0f,
-						right.z, up.z, forward.z, 0.0f,
-						translation.x, translation.y, translation.z, 1.0f);
-
-
-		Vertex.shadowpos[0 + 6 * i] = (mat_right)	* projection * vec4(attr_position, 1.0);
-		Vertex.shadowpos[1 + 6 * i] = (mat_left)	* projection * vec4(attr_position, 1.0);
-		Vertex.shadowpos[2 + 6 * i] = (mat_top)		* projection * vec4(attr_position, 1.0);
-		Vertex.shadowpos[3 + 6 * i] = (mat_bottom)	* projection * vec4(attr_position, 1.0);
-		Vertex.shadowpos[4 + 6 * i] = (mat_forward)	* projection * vec4(attr_position, 1.0);
-		Vertex.shadowpos[5 + 6 * i] = (mat_backward)	* projection * vec4(attr_position, 1.0);
-	}
+	Vertex.shadowpos[0] = shadow_matrix0 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[1] = shadow_matrix1 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[2] = shadow_matrix2 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[3] = shadow_matrix3 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[4] = shadow_matrix4 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[5] = shadow_matrix5 * vec4(attr_position, 1.0);
 
 }

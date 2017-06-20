@@ -600,8 +600,6 @@ void Audio::delete_buffer(int hBuffer)
 
 void Audio::play(int hSource)
 {
-	ALenum		al_err;
-
 	alSourcePlay(hSource);
 }
 
