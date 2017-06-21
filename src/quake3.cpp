@@ -1754,8 +1754,12 @@ void Quake3::step(int frame_step)
 
 				if (distance < min_distance)
 				{
-					min_distance = distance;
-					index = i;
+
+					if (engine->entity_list[i]->player)
+					{
+						min_distance = distance;
+						index = i;
+					}
 				}
 			}
 			int spec = engine->find_type(ENT_SPECTATOR, 0);
@@ -1768,12 +1772,9 @@ void Quake3::step(int frame_step)
 		}
 		else
 		{
-			int player = engine->find_type(ENT_PLAYER, 0);
+			int spawn = engine->find_type(ENT_PLAYER, 0);
 
-			if (player != -1)
-			{
-				engine->entity_list[player]->ent_type = ENT_SPECTATOR;
-			}
+			engine->entity_list[spawn]->ent_type = ENT_SPECTATOR;
 		}
 	}
 	else
@@ -3886,12 +3887,15 @@ void Quake3::render_hud(double last_frametime)
 {
 	matrix4 real_projection = engine->projection;
 	char msg[LINE_SIZE];
+	vec3 color(1.0f, 1.0f, 1.0f);
+
 
 
 	int spawn = engine->find_type(ENT_PLAYER, 0);
 	if (spawn == -1)
 	{
-		// player is spectating
+		snprintf(msg, LINE_SIZE, "Spectating");
+		engine->menu.draw_text(msg, 0.1f, 0.95f, 0.050f, color, true, true);
 		return;
 	}
 
@@ -3902,7 +3906,6 @@ void Quake3::render_hud(double last_frametime)
 	}
 
 	engine->projection = engine->identity;
-	vec3 color(1.0f, 1.0f, 1.0f);
 
 
 	if (chat_timer > 0 || engine->menu.chatmode)
@@ -3995,7 +3998,7 @@ void Quake3::render_hud(double last_frametime)
 				break;
 			}
 		}
-
+		
 		if (faceicon)
 		{
 			if (entity->player->quad_timer)
