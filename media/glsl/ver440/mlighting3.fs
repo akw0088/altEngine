@@ -93,88 +93,52 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	float shadowFlag = 1.0;
 	light_num = 0;
 
-/*
-	//Shadowmap0
-	shadowFlag = 1.0;
-	shadowpos = Vertex.shadowpos[0]  * 0.5 + 0.5;
-	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture(depth0, vec2(shadowWdivide.s, shadowWdivide.t) ).z;
 
-	if (shadowpos.w > 0.0)
-		shadowFlag = depthmap < shadowWdivide.z ? 0.0 : 1.0;
-	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+	//Shadowmap0
+	shadowpos = Vertex.shadowpos[0];
+	shadowWdivide = shadowpos / shadowpos.w;
+	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
+	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
 	//Shadowmap1
-	shadowFlag = 1.0;
-	shadowpos = Vertex.shadowpos[1] * 0.5 + 0.5;
+	shadowpos = Vertex.shadowpos[1];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture(depth1, vec2(shadowWdivide.s, shadowWdivide.t)).z;
-
-	if (shadowpos.w > 0.0)
-		shadowFlag = depthmap < shadowWdivide.z ? 0.0 : 1.0;
-	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
+	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
 
 	//Shadowmap2
-	shadowFlag = 1.0;
-	shadowpos = Vertex.shadowpos[2]  * 0.5 + 0.5;
+	shadowpos = Vertex.shadowpos[2];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture(depth2, vec2(shadowWdivide.s, shadowWdivide.t)).z;
-	shadowWdivide.z += 0.0005;
-
-
-	if (shadowpos.w > 0.0)
-		shadowFlag = depthmap < shadowWdivide.z ? 0.0 : 1.0;
-	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
+	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
+	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
 	//Shadowmap3
-	shadowFlag = 1.0;
-	shadowpos = Vertex.shadowpos[3] * 0.5 + 0.5;
+	shadowpos = Vertex.shadowpos[3];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture(depth3, vec2(shadowWdivide.s, shadowWdivide.t)).z;
+	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
+	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
-
-	if (shadowpos.w > 0.0)
-		shadowFlag = depthmap < shadowWdivide.z ? 0.0 : 1.0;
-	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
-*/
  
 	//Shadowmap4
-
-	shadowFlag = 1.0;
-	shadowpos = Vertex.shadowpos[4]  * 0.5 + 0.5;
+	shadowpos = Vertex.shadowpos[4];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture(depth4, vec2(shadowWdivide.s, shadowWdivide.t)).z;
-
-	shadowFlagCombined = 1.0;
-	if (shadowpos.w > 0.0)
-		shadowFlagCombined = depthmap < shadowWdivide.z ? 0.5 : 1.0;
-
-/*
-	vec4 shadowCoordinateWdivide = ShadowCoord / ShadowCoord.w ;
-	float distanceFromLight = texture2D(ShadowMap, shadowCoordinateWdivide.st).z;
-	shadowCoordinateWdivide.z += 0.0005;
-	
-	
- 	float shadow = 1.0;
- 	if (ShadowCoord.w > 0.0)
- 		shadow = distanceFromLight < shadowCoordinateWdivide.z ? 0.5 : 1.0 ;
+	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
+	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
 
-	Fragment = vec4(color.x, color.y, color.z, 1.0) * shadow;
-*/
-/*
+
 	//Shadowmap5
-	shadowFlag = 1.0;
-	shadowpos = Vertex.shadowpos[5] * 0.5 + 0.5;
+	shadowpos = Vertex.shadowpos[5];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture(depth5, vec2(shadowWdivide.s, shadowWdivide.t)).z;
-
-
-	if (shadowpos.w > 0.0)
-		shadowFlag = depthmap < shadowWdivide.z ? 0.0 : 1.0;
-	shadowFlagCombined = max(shadowFlagCombined, shadowFlag);
-*/
+	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
+	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 }
 
 
@@ -330,6 +294,7 @@ void main(void)
 
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
+	float shadow = 1.0;
 
 
 	for(int i = 0; i < u_num_lights; i++)
@@ -353,12 +318,8 @@ void main(void)
 		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
 
-		float shadow = 1.0;
-		calc_shadow(shadow, i);
-		if (shadow < 0.75)
-			light = light + vec3(0.0, 1.0f, 0.0);
-		else
-			light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
+
+		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
 
 
@@ -372,6 +333,9 @@ void main(void)
 			Fragment.xyz *= lightmap * 1.5;
 	}
 	Fragment.rgb *= max(light, ambient);
+	calc_shadow(shadow, 0);
+	Fragment.rgb *= shadow;
+
 //	Fragment.rgb = light;
 
 }

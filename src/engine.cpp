@@ -970,6 +970,12 @@ void Engine::render_shadowmaps(bool everything)
 				for (int j = 0; j < 6; j++)
 				{
 					matrix4 mvp = cube[j] * projection;
+					float bias[16] = {
+						0.5, 0.0, 0.0, 0.0,
+						0.0, 0.5, 0.0, 0.0,
+						0.0, 0.0, 0.5, 0.0,
+						0.5, 0.5, 0.5, 1.0 };
+
 
 
 					// No real FPS improvement by masking color buffer
@@ -982,17 +988,17 @@ void Engine::render_shadowmaps(bool everything)
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 					if (j == 0 && i == 107)
-						magic0 = mvp;
+						magic0 = (cube[j] * projection) * bias;
 					if (j == 1 && i == 107)
-						magic1 = mvp;
+						magic1 = (cube[j] * projection) * bias;
 					if (j == 2 && i == 107)
-						magic2 = mvp;
+						magic2 = (cube[j] * projection) * bias;
 					if (j == 3 && i == 107)
-						magic3 = mvp;
+						magic3 = (cube[j] * projection) * bias;
 					if (j == 4 && i == 107)
-						magic4 = mvp;
+						magic4 = (cube[j] * projection) * bias;
 					if (j == 5 && i == 107)
-						magic5 = mvp;
+						magic5 = (cube[j] * projection) * bias;
 
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 					render_entities(cube[j], true, false);

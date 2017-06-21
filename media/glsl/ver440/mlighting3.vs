@@ -102,12 +102,6 @@ void main(void)
 	Vertex.att_position = attr_position;
 	Vertex.vary_position = gl_Position;
 
-
-	vec3 right;
-	vec3 up;
-	vec3 forward;
-	vec3 translation;
-
 	Vertex.shadowpos[0] = shadow_matrix0 * vec4(attr_position, 1.0);
 	Vertex.shadowpos[1] = shadow_matrix1 * vec4(attr_position, 1.0);
 	Vertex.shadowpos[2] = shadow_matrix2 * vec4(attr_position, 1.0);
