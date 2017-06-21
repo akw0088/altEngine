@@ -944,15 +944,7 @@ void Engine::render_shadowmaps(bool everything)
 				if (lighti >= light_list.size())
 					continue;
 			}
-			/*
-			static int count = 0;
-
-			count++;
-
-			if (count % 60 != 0)
-				continue;
-				*/
-
+			
 			if (all_lights || (light_list[lighti] == entity_list[i]->light) || everything)
 			{
 				// Generate matrices
@@ -967,7 +959,6 @@ void Engine::render_shadowmaps(bool everything)
 
 
 				gfx.Color(false);
-
 				for (int j = 0; j < 6; j++)
 				{
 					matrix4 mvp = cube[j] * projection;
@@ -1217,20 +1208,8 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	// Rendering entities before map for blends
 	render_entities(transformation, lights, false);
-	gfx.SelectTexture(11, light->depth_tex[0]);
-	gfx.SelectTexture(12, light->depth_tex[1]);
-	gfx.SelectTexture(13, light->depth_tex[2]);
-	gfx.SelectTexture(14, light->depth_tex[3]);
-	gfx.SelectTexture(15, light->depth_tex[4]);
-	gfx.SelectTexture(16, light->depth_tex[5]);
 
 	render_players(transformation, lights, game->spectator);
-	gfx.SelectTexture(11, light->depth_tex[0]);
-	gfx.SelectTexture(12, light->depth_tex[1]);
-	gfx.SelectTexture(13, light->depth_tex[2]);
-	gfx.SelectTexture(14, light->depth_tex[3]);
-	gfx.SelectTexture(15, light->depth_tex[4]);
-	gfx.SelectTexture(16, light->depth_tex[5]);
 	mvp = transformation * projection;
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
@@ -4445,6 +4424,7 @@ int Engine::bind(int port)
 
 	if (net.bind(NULL, port) == 0)
 	{
+		client_flag = false;
 		server_flag = true;
 		return 0;
 	}
@@ -4486,6 +4466,7 @@ void Engine::connect(char *serverip)
 		char level[LINE_SIZE];
 
 		client_flag = true;
+		server_flag = false;
 		debugf("Connected\n");
 		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		if (sscanf(reliablemsg->msg, "map %s", level) == 1)
