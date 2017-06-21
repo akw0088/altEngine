@@ -915,6 +915,21 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player == NULL)
 		return;
 
+	if (input.zoom == true && zoomed == false)
+	{
+		zoomed = true;
+		if (spectator)
+			engine->zoom(4.0);
+		else
+			engine->zoom(entity->player->zoom_level);
+	}
+
+	if (input.zoom == false && zoomed == true)
+	{
+		zoomed = false;
+		engine->zoom(1.0);
+	}
+
 	if (spectator)
 		return;
 
@@ -965,20 +980,6 @@ void Quake3::handle_player(int self, input_t &input)
 
 	if (entity->player->pain_timer > 0)
 		entity->player->pain_timer--;
-
-
-
-	if (input.zoom == true && zoomed == false)
-	{
-		zoomed = true;
-		engine->zoom(entity->player->zoom_level);
-	}
-
-	if (input.zoom == false && zoomed == true)
-	{
-		zoomed = false;
-		engine->zoom(1.0);
-	}
 
 	if (entity->rigid->hard_impact)
 	{
@@ -4154,7 +4155,7 @@ void Quake3::render_hud(double last_frametime)
 
 			if (ent->visible && ent->nodraw == false)
 			{
-				draw_name(ent, engine->menu, real_projection);
+				draw_name(ent, engine->menu, real_projection, i);
 			}
 		}
 	}
@@ -4171,7 +4172,7 @@ void Quake3::render_hud(double last_frametime)
 
 		if (ent->visible && ent->nodraw == false)
 		{
-			draw_name(ent, engine->menu, real_projection);
+			draw_name(ent, engine->menu, real_projection, i);
 		}
 	}
 
@@ -4418,7 +4419,7 @@ void Quake3::render_hud(double last_frametime)
 
 }
 
-void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
+void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int ent_num)
 {
 	matrix4 trans2;
 	matrix4 mvp2;
@@ -4487,6 +4488,9 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection)
 
 			if (entity->light != NULL)
 			{
+				sprintf(data, "ent num %d", ent_num);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+
 				sprintf(data, "intensity %f", entity->light->intensity);
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 

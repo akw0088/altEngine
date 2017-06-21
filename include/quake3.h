@@ -17,7 +17,7 @@ public:
 
 	void check_triggers(int self, vector<Entity *> &entity_list);
 	void render_hud(double last_frametime);
-	void draw_name(Entity *entity, Menu &menu, matrix4 &real_projection);
+	void draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int ent_num);
 	void draw_line(Entity *a, Entity *b, Menu &menu, vec3 &color);
 	void transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection);
 

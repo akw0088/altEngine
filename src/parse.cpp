@@ -936,7 +936,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			intensity /= 2.0f;
 
 		// uncomment to draw light positions
-		entity.nodraw = true;
+//		entity.nodraw = true;
 
 		if (entity.light)
 			entity.light->intensity = intensity;

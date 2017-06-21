@@ -447,31 +447,26 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 //	forward.normalize();
 	right = vec3::crossproduct(forward, up);
 	right.normalize();
-	if (input.control == false)
+
+	if (entity->rigid)
 	{
-		if (entity->rigid)
-		{
-			//		entity->rigid->sleep = false;
-			entity->rigid->gravity = true;
-			camera->pos = entity->position;
+		//		entity->rigid->sleep = false;
+		entity->rigid->gravity = true;
+		camera->pos = entity->position;
 
-			morientation.m[0] = right.x;
-			morientation.m[1] = right.y;
-			morientation.m[2] = right.z;
+		morientation.m[0] = right.x;
+		morientation.m[1] = right.y;
+		morientation.m[2] = right.z;
 
-			morientation.m[3] = camera->up.x;
-			morientation.m[4] = camera->up.y;
-			morientation.m[5] = camera->up.z;
+		morientation.m[3] = camera->up.x;
+		morientation.m[4] = camera->up.y;
+		morientation.m[5] = camera->up.z;
 
-			morientation.m[6] = -forward.x;
-			morientation.m[7] = -forward.y;
-			morientation.m[8] = -forward.z;
-		}
+		morientation.m[6] = -forward.x;
+		morientation.m[7] = -forward.y;
+		morientation.m[8] = -forward.z;
 	}
-	else
-	{
-//		entity->position = camera->pos;
-	}
+
 }
 
 void RigidBody::frame2ent_yaw(Frame *camera, input_t &input)
@@ -492,28 +487,22 @@ void RigidBody::frame2ent_yaw(Frame *camera, input_t &input)
 	//	forward.normalize();
 	right = vec3::crossproduct(forward, up);
 	right.normalize();
-	if (input.control == false)
-	{
-		//		entity->rigid->sleep = false;
-		entity->rigid->gravity = true;
-		camera->pos = entity->position;
 
-		morientation.m[0] = right.x;
-		morientation.m[1] = right.y;
-		morientation.m[2] = right.z;
+	//entity->rigid->sleep = false;
+	entity->rigid->gravity = true;
+	camera->pos = entity->position;
 
-		morientation.m[3] = camera->up.x;
-		morientation.m[4] = camera->up.y;
-		morientation.m[5] = camera->up.z;
+	morientation.m[0] = right.x;
+	morientation.m[1] = right.y;
+	morientation.m[2] = right.z;
 
-		morientation.m[6] = -forward.x;
-		morientation.m[7] = -forward.y;
-		morientation.m[8] = -forward.z;
-	}
-	else
-	{
-		//		entity->position = camera->pos;
-	}
+	morientation.m[3] = camera->up.x;
+	morientation.m[4] = camera->up.y;
+	morientation.m[5] = camera->up.z;
+
+	morientation.m[6] = -forward.x;
+	morientation.m[7] = -forward.y;
+	morientation.m[8] = -forward.z;
 }
 
 void RigidBody::save_config(cfg_t &config)

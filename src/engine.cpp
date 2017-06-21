@@ -807,7 +807,7 @@ void Engine::render(double last_frametime)
 				{
 					if (entity_list[i]->light->light_num == player->current_light)
 					{
-						if (input.duck)
+						if (input.duck == false)
 						{
 							depth_view = true;
 							testObj = entity_list[i]->light->depth_tex[player->current_face];
@@ -966,6 +966,7 @@ void Engine::render_shadowmaps(bool everything)
 				matrix4::mat_backward(cube[5], entity_list[i]->position);
 
 
+				gfx.Color(false);
 
 				for (int j = 0; j < 6; j++)
 				{
@@ -980,7 +981,7 @@ void Engine::render_shadowmaps(bool everything)
 
 					// No real FPS improvement by masking color buffer
 //					gfx.fbAttachTexture(0);
-					gfx.fbAttachTexture(light->quad_tex[j]);
+//					gfx.fbAttachTexture(light->quad_tex[j]);
 					gfx.fbAttachDepth(light->depth_tex[j]);
 					gfx.clear();
 
@@ -1009,6 +1010,8 @@ void Engine::render_shadowmaps(bool everything)
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
 				}
+				gfx.Color(true);
+
 			}
 		}
 	}
@@ -1214,15 +1217,32 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	// Rendering entities before map for blends
 	render_entities(transformation, lights, false);
-	render_players(transformation, lights, game->spectator);
+	gfx.SelectTexture(11, light->depth_tex[0]);
+	gfx.SelectTexture(12, light->depth_tex[1]);
+	gfx.SelectTexture(13, light->depth_tex[2]);
+	gfx.SelectTexture(14, light->depth_tex[3]);
+	gfx.SelectTexture(15, light->depth_tex[4]);
+	gfx.SelectTexture(16, light->depth_tex[5]);
 
+	render_players(transformation, lights, game->spectator);
+	gfx.SelectTexture(11, light->depth_tex[0]);
+	gfx.SelectTexture(12, light->depth_tex[1]);
+	gfx.SelectTexture(13, light->depth_tex[2]);
+	gfx.SelectTexture(14, light->depth_tex[3]);
+	gfx.SelectTexture(15, light->depth_tex[4]);
+	gfx.SelectTexture(16, light->depth_tex[5]);
 	mvp = transformation * projection;
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 	else
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-
+	gfx.SelectTexture(11, light->depth_tex[0]);
+	gfx.SelectTexture(12, light->depth_tex[1]);
+	gfx.SelectTexture(13, light->depth_tex[2]);
+	gfx.SelectTexture(14, light->depth_tex[3]);
+	gfx.SelectTexture(15, light->depth_tex[4]);
+	gfx.SelectTexture(16, light->depth_tex[5]);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
