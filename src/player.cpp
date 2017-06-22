@@ -4,6 +4,7 @@
 #define new DEBUG_NEW
 #endif
 #include <float.h>
+#include "quake3.h"
 
 char bot_state_name[16][32] = {
 	"BOT_IDLE",
@@ -44,7 +45,7 @@ const char *models[23] = {
 
 #define NUM_PATH 64 // Should equal map navpoint count
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team)
+Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, vector<Model *> &model_table)
 : weapon_gauntlet(entity), weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {
@@ -130,14 +131,14 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	memset(&stats, 0, sizeof(stats_t));
 
 //	weapon_machinegun.load(gfx, "media/models/weapons2/m4/m4s");
-	weapon_gauntlet.load(gfx,   "media/models/weapons2/gauntlet/gauntlet");
-	weapon_machinegun.load(gfx, "media/models/weapons2/machinegun/machinegun");
-	weapon_shotgun.load(gfx,	"media/models/weapons2/shotgun/shotgun");
-	weapon_grenade.load(gfx,	"media/models/weapons2/grenadel/grenade");
-	weapon_rocket.load(gfx,		"media/models/weapons2/rocketl/rocketl");
-	weapon_lightning.load(gfx,	"media/models/weapons2/lightning/lightning");
-	weapon_railgun.load(gfx,	"media/models/weapons2/railgun/railgun");
-	weapon_plasma.load(gfx,		"media/models/weapons2/plasma/plasma");
+	weapon_gauntlet.clone(*model_table[MODEL_WEAPON_GAUNTLET]);
+	weapon_machinegun.clone(*model_table[MODEL_WEAPON_GAUNTLET]);
+	weapon_shotgun.clone(*model_table[MODEL_WEAPON_SHOTGUN]);
+	weapon_grenade.clone(*model_table[MODEL_WEAPON_GRENADE]);
+	weapon_rocket.clone(*model_table[MODEL_WEAPON_ROCKET]);
+	weapon_lightning.clone(*model_table[MODEL_WEAPON_LIGHTNING]);
+	weapon_railgun.clone(*model_table[MODEL_WEAPON_RAILGUN]);
+	weapon_plasma.clone(*model_table[MODEL_WEAPON_PLASMA]);
 
 
 	//	weapon_model.center = entity->rigid->center;

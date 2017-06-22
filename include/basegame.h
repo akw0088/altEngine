@@ -43,6 +43,7 @@ public:
 	int chat_timer;
 	bool spectator;
 	Engine *engine;
+	vector<Model *> model_table;
 };
 
 #endif

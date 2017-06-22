@@ -76,7 +76,7 @@ typedef enum
 class Player
 {
 public:
-	Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team);
+	Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, vector<Model *> &model_table);
 	~Player();
 	Entity	*entity;
 

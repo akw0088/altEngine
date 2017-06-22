@@ -407,7 +407,7 @@ void Engine::load(char *level)
 
 			if (playing_demo)
 			{
-				entity->player = new Player(entity, gfx, audio, 21, TEAM_NONE);
+				entity->player = new Player(entity, gfx, audio, 21, TEAM_NONE, game->model_table);
 				if (i == 0)
 					sprintf(entity->type, "player");
 			}
@@ -2881,7 +2881,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 				ent->rigid->clone(*(thug22->model));
 				ent->rigid->step_flag = true;
 				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE);
+				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, game->model_table);
 				ent->player->type = PLAYER;
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
@@ -2896,7 +2896,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 					ent->rigid->clone(*(thug22->model));
 					ent->rigid->step_flag = true;
 					ent->position += ent->rigid->center;
-					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE);
+					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, game->model_table);
 					ent->player->local = false;
 					ent->player->type = SERVER;
 				}

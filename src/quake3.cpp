@@ -216,16 +216,47 @@ void Quake3::load_models(Graphics &gfx)
 	model->load(gfx, "media/models/box");
         model_table.push_back(model);
 
-/*
-        weapon_gauntlet.load(gfx,   "media/models/weapons2/gauntlet/gauntlet");
-        weapon_machinegun.load(gfx, "media/models/weapons2/machinegun/machinegun");
-        weapon_shotgun.load(gfx,        "media/models/weapons2/shotgun/shotgun");
-        weapon_grenade.load(gfx,        "media/models/weapons2/grenadel/grenade");
-        weapon_rocket.load(gfx,         "media/models/weapons2/rocketl/rocketl");
-        weapon_lightning.load(gfx,      "media/models/weapons2/lightning/lightning");
-        weapon_railgun.load(gfx,        "media/models/weapons2/railgun/railgun");
-        weapon_plasma.load(gfx,         "media/models/weapons2/plasma/plasma");
-*/
+//	#define MODEL_WEAPON_GAUNTLET 19
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/gauntlet/gauntlet");
+        model_table.push_back(model);
+
+//	#define MODEL_WEAPON_MACHINEGUN 20
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/machinegun/machinegun");
+        model_table.push_back(model);
+
+//	#define MODEL_WEAPON_SHOTGUN 21
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/shotgun/shotgun");
+        model_table.push_back(model);
+
+//	#define MODEL_WEAPON_GRENADE 22
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/grenadel/grenade");
+        model_table.push_back(model);
+
+//	#define MODEL_WEAPON_ROCKET 23
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/rocketl/rocketl");
+        model_table.push_back(model);
+
+
+//	#define MODEL_WEAPON_LIGHTNING 24
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/lightning/lightning");
+        model_table.push_back(model);
+
+
+//	#define MODEL_WEAPON_RAILGUN 25
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/railgun/railgun");
+        model_table.push_back(model);
+
+//	#define MODEL_WEAPON_PLASMA 26
+	model = new Model;
+	model->load(gfx, "media/models/weapons2/plasma/plasma");
+        model_table.push_back(model);
 
 }
 
@@ -956,7 +987,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			spawn_ent->model = entity_list[spawn]->rigid;
 			spawn_ent->rigid->clone(*(engine->thug22->model));
 			spawn_ent->rigid->step_flag = true;
-			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team);
+			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team, model_table);
 			spawn_ent->position += entity_list[spawn]->rigid->center;
 			spawn_ent->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 			spawn_ent->player->type = player_type;
