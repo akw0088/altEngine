@@ -1,7 +1,6 @@
 #include "quaternion.h"
 //#include <cmath> // for acos
 double fsin(double rad);
-double fasin(double rad);
 double fcos(double rad);
 double facos(double rad);
 float newtonSqrt(float x);

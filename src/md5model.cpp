@@ -10,6 +10,11 @@
 MD5Model::MD5Model()
 {
 	loaded = false;
+	num_buffer = 0;
+	normal_object = NULL;
+	current_buffer = NULL;
+	current_anim = NULL;
+	tex_object = NULL;
 }
 
 MD5Model::~MD5Model() 

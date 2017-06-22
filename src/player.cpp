@@ -444,19 +444,19 @@ void Player::change_weapon_down()
 
 void Player::best_weapon()
 {
-	if (weapon_flags & wp_railgun && ammo_slugs > 0)
+	if ((weapon_flags & wp_railgun) && ammo_slugs > 0)
 		current_weapon = wp_railgun;
-	else if (weapon_flags & wp_rocket  && ammo_rockets > 0)
+	else if ((weapon_flags & wp_rocket) && ammo_rockets > 0)
 		current_weapon = wp_rocket;
-	else if (weapon_flags & wp_plasma && ammo_plasma > 0)
+	else if ((weapon_flags & wp_plasma) && ammo_plasma > 0)
 		current_weapon = wp_plasma;
-	else if (weapon_flags & wp_lightning && ammo_lightning > 0)
+	else if ((weapon_flags & wp_lightning) && ammo_lightning > 0)
 		current_weapon = wp_lightning;
-	else if (weapon_flags & wp_grenade && ammo_grenades > 0)
+	else if ((weapon_flags & wp_grenade) && ammo_grenades > 0)
 		current_weapon = wp_grenade;
-	else if (weapon_flags & wp_shotgun && ammo_shells > 0)
+	else if ((weapon_flags & wp_shotgun) && ammo_shells > 0)
 		current_weapon = wp_shotgun;
-	else if (weapon_flags & wp_machinegun && ammo_bullets > 0)
+	else if ((weapon_flags & wp_machinegun) && ammo_bullets > 0)
 		current_weapon = wp_machinegun;
 
 }

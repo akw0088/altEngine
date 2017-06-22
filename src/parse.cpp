@@ -1037,15 +1037,15 @@ bool parse_entity(Engine *engine, const char *input, vector<Entity *> &entity_li
 			{
 				key[j++] = input[i];
 				key[j] = '\0';
-				break;
 			}
+			break;
 		case 'V': //value
 			if (prevstate == 'V')
 			{
 				val[j++] = input[i];
 				val[j] = '\0';
-				break;
 			}
+			break;
 		case 'A':
 			if (prevstate == 'S')
 			{

@@ -18,6 +18,21 @@ Bsp::Bsp()
 	memset(map_name, 0, 64);
 	sky_face = -1;
 	lastIndex = -2;
+	normal_object = NULL;
+	lightmap_object = NULL;
+	num_meshes = 0;
+	normal_object = NULL;
+	mesh_level = 8;
+	map_vertex_vbo = 0;
+	map_index_vbo = 0;
+	lightmap_object = NULL;
+	face_to_patch = NULL;
+	vertex = NULL;
+	tBsp = NULL;
+	tex_object = NULL;
+	tangent = NULL;
+	patchdata = NULL;
+	selected_map = false;
 }
 
 
