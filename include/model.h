@@ -7,6 +7,7 @@ class Model
 {
 public:
 	Model(Entity *entity);
+	Model();
 	virtual ~Model();
 	static void CreateObjects(Graphics &gfx);
 	static void make_skybox(Graphics &gfx);

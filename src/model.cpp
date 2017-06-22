@@ -657,3 +657,34 @@ void Model::get_frame(Frame &frame)
 	frame.forward.z = -morientation.m[8];
 	frame.pos = entity->position;
 }
+
+Model::Model()
+{
+	num_vertex = 0;
+	num_index = 0;
+	normal_tex = 0;
+	model_vertex = 0;
+	model_index = 0;
+	model_tex = 0;
+	box_vertex = 0;
+	box_index = 0;
+	model_file = NULL;
+	model_array = NULL;
+	center = vec3();
+	rail_trail = false;
+	lightning_trail = false;
+	blend = false;
+
+	morientation.m[0] = 1.0f;
+	morientation.m[1] = 0.0f;
+	morientation.m[2] = 0.0f;
+
+	morientation.m[3] = 0.0f;
+	morientation.m[4] = 1.0f;
+	morientation.m[5] = 0.0f;
+
+	morientation.m[6] = 0.0f;
+	morientation.m[7] = 0.0f;
+	morientation.m[8] = 1.0f;
+}
+

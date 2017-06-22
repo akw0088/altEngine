@@ -69,7 +69,7 @@ public:
 
 	~Quake3();
 
-	vector<Entity *> model_table;
+	vector<Model *> model_table;
 
 private:
 	Engine *engine;
