@@ -258,6 +258,115 @@ void Quake3::load_models(Graphics &gfx)
 	model->load(gfx, "media/models/weapons2/plasma/plasma");
         model_table.push_back(model);
 
+	#define MODEL_ARMOR_SHARD 27
+	model = new Model;
+	model->load(gfx, "media/models/powerups/armor/shard");
+        model_table.push_back(model);
+
+	#define MODEL_AMMO_SHELLS 28
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_shells");
+        model_table.push_back(model);
+
+	#define MODEL_AMMO_ROCKETS 29
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
+        model_table.push_back(model);
+
+	#define MODEL_AMMO_LIGHTNING 30
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+        model_table.push_back(model);
+
+	#define MODEL_AMMO_GRENADES 31
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
+        model_table.push_back(model);
+
+	#define MODEL_AMMO_SLUGS 32
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
+        model_table.push_back(model);
+
+	#define MODEL_AMMO_BULLETS 33
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
+        model_table.push_back(model);
+
+	#define MODEL_ARMOR_COMBAT 34
+	model = new Model;
+	model->load(gfx, "media/models/powerups/armor/item_armor_combat");
+        model_table.push_back(model);
+
+	#define MODEL_ARMOR_BODY 35
+	model = new Model;
+	model->load(gfx, "media/models/powerups/armor/item_armor_body");
+        model_table.push_back(model);
+
+	#define MODEL_BLUE_FLAG 36
+	model = new Model;
+	model->load(gfx, "media/models/flags/b_flag");
+        model_table.push_back(model);
+
+	#define MODEL_RED_FLAG 37
+	model = new Model;
+	model->load(gfx, "media/models/flags/r_flag");
+        model_table.push_back(model);
+
+	#define MODEL_QUAD 38
+	model = new Model;
+	model->load(gfx, "media/models/powerups/instant/quad");
+        model_table.push_back(model);
+
+	#define MODEL_REGEN 39
+	model = new Model;
+	model->load(gfx, "media/models/powerups/instant/regen");
+        model_table.push_back(model);
+
+	#define MODEL_INVIS 40
+	model = new Model;
+	model->load(gfx, "media/models/powerups/instant/invis");
+        model_table.push_back(model);
+
+	#define MODEL_FLIGHT 41
+	model = new Model;
+	model->load(gfx, "media/models/powerups/instant/flight");
+        model_table.push_back(model);
+
+	#define MODEL_HASTE 42
+	model = new Model;
+	model->load(gfx, "media/models/powerups/instant/haste");
+        model_table.push_back(model);
+
+	#define MODEL_MEDKIT 43
+	model = new Model;
+	model->load(gfx, "media/models/powerups/holdable/medkit");
+        model_table.push_back(model);
+
+	#define MODEL_TELEPORTER 44
+	model = new Model;
+	model->load(gfx, "media/models/powerups/holdable/teleporter");
+        model_table.push_back(model);
+
+	#define MODEL_HEALTH 45
+	model = new Model;
+	model->load(gfx, "media/models/powerups/health/item_health");
+        model_table.push_back(model);
+
+	#define MODEL_HEALTH_LARGE 46
+	model = new Model;
+	model->load(gfx, "media/models/powerups/health/item_health_large");
+        model_table.push_back(model);
+
+	#define MODEL_HEALTH_SMALL 47
+	model = new Model;
+	model->load(gfx, "media/models/powerups/health/item_health_small");
+        model_table.push_back(model);
+
+	#define MODEL_HEALTH_MEGA 48
+	model = new Model;
+	model->load(gfx, "media/models/powerups/health/item_health_mega");
+        model_table.push_back(model);
 }
 
 void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
@@ -7027,84 +7136,82 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	}
 }
 
-void Quake3::load_model(Entity &ent)
+void Quake3::map_model(Entity &ent)
 {
-	Graphics &gfx = engine->gfx;
-
 	if (ent.ent_type == ENT_ITEM_ARMOR_SHARD)
 	{
 		debugf("Loading item_armor_shard\n");
-		ent.model->load(gfx, "media/models/powerups/armor/shard");
+		ent.model->clone(*model_table[MODEL_ARMOR_SHARD]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_ROCKETLAUNCHER)
 	{
 		debugf("Loading weapon_rocketlauncher\n");
-		ent.model->load(gfx, "media/models/weapons2/rocketl/rocketl");
+		ent.model->clone(*model_table[MODEL_WEAPON_ROCKET]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_SHELLS)
 	{
 		debugf("Loading ammo_shells\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_shells");
+		ent.model->clone(*model_table[MODEL_AMMO_SHELLS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_ROCKETS)
 	{
 		debugf("Loading ammo_rockets\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
+		ent.model->clone(*model_table[MODEL_AMMO_ROCKETS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_CELLS)
 	{
 		debugf("Loading ammo_cells\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_BFG)
 	{
 		debugf("Loading ammo_bfg\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_GRENADES)
 	{
 		debugf("Loading ammo_bfg\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
+		ent.model->clone(*model_table[MODEL_AMMO_GRENADES]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_LIGHTNING)
 	{
 		debugf("Loading ammo_lightning\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
+		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_SLUGS)
 	{
 		debugf("Loading ammo_slugs\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
+		ent.model->clone(*model_table[MODEL_AMMO_SLUGS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_BULLETS)
 	{
 		debugf("Loading ammo_bullets\n");
-		ent.model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
+		ent.model->clone(*model_table[MODEL_AMMO_BULLETS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_ARMOR_COMBAT)
 	{
 		debugf("Loading item_armor_combat\n");
-		ent.model->load(gfx, "media/models/powerups/armor/item_armor_combat");
+		ent.model->clone(*model_table[MODEL_ARMOR_COMBAT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 		ent.rigid->gravity = false;
@@ -7112,7 +7219,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_ARMOR_BODY)
 	{
 		debugf("Loading item_armor_body\n");
-		ent.model->load(gfx, "media/models/powerups/armor/item_armor_body");
+		ent.model->clone(*model_table[MODEL_ARMOR_BODY]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 		ent.rigid->gravity = false;
@@ -7120,7 +7227,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEFLAG)
 	{
 		debugf("Loading team_CTF_blueflag\n");
-		ent.model->load(gfx, "media/models/flags/b_flag");
+		ent.model->clone(*model_table[MODEL_BLUE_FLAG]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position += vec3(0.0f, 50.0f, 0.0);
 		ent.rigid->gravity = false;
@@ -7128,7 +7235,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_TEAM_CTF_REDFLAG)
 	{
 		debugf("Loading team_CTF_redflag\n");
-		ent.model->load(gfx, "media/models/flags/r_flag");
+		ent.model->clone(*model_table[MODEL_RED_FLAG]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position += vec3(0.0f, 50.0f, 0.0);
 		ent.rigid->gravity = false;
@@ -7136,7 +7243,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_QUAD)
 	{
 		debugf("Loading item_quad\n");
-		ent.model->load(gfx, "media/models/powerups/instant/quad");
+		ent.model->clone(*model_table[MODEL_QUAD]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7144,7 +7251,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_REGEN)
 	{
 		debugf("Loading item_regen\n");
-		ent.model->load(gfx, "media/models/powerups/instant/regen");
+		ent.model->clone(*model_table[MODEL_REGEN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7152,7 +7259,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_INVIS)
 	{
 		debugf("Loading item_invis\n");
-		ent.model->load(gfx, "media/models/powerups/instant/invis");
+		ent.model->clone(*model_table[MODEL_INVIS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7160,7 +7267,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_FLIGHT)
 	{
 		debugf("Loading item_flight\n");
-		ent.model->load(gfx, "media/models/powerups/instant/flight");
+		ent.model->clone(*model_table[MODEL_FLIGHT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7168,7 +7275,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_HASTE)
 	{
 		debugf("Loading item_haste\n");
-		ent.model->load(gfx, "media/models/powerups/instant/haste");
+		ent.model->clone(*model_table[MODEL_HASTE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7176,7 +7283,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_HOLDABLE_MEDKIT)
 	{
 		debugf("Loading holdable_medkit\n");
-		ent.model->load(gfx, "media/models/powerups/holdable/medkit");
+		ent.model->clone(*model_table[MODEL_MEDKIT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7184,7 +7291,7 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_HOLDABLE_TELEPORTER)
 	{
 		debugf("Loading holdable_teleporter\n");
-		ent.model->load(gfx, "media/models/powerups/holdable/teleporter");
+		ent.model->clone(*model_table[MODEL_TELEPORTER]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
@@ -7192,105 +7299,105 @@ void Quake3::load_model(Entity &ent)
 	else if (ent.ent_type == ENT_WEAPON_LIGHTNING)
 	{
 		debugf("Loading weapon_lightning\n");
-		ent.model->load(gfx, "media/models/weapons2/lightning/lightning");
+		ent.model->clone(*model_table[MODEL_WEAPON_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_BFG)
 	{
 		debugf("Loading weapon_bfg\n");
-		ent.model->load(gfx, "media/models/weapons2/lightning/lightning");
+		ent.model->clone(*model_table[MODEL_WEAPON_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_SHOTGUN)
 	{
 		debugf("Loading weapon_shotgun\n");
-		ent.model->load(gfx, "media/models/weapons2/shotgun/shotgun");
+		ent.model->clone(*model_table[MODEL_WEAPON_SHOTGUN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_RAILGUN)
 	{
 		debugf("Loading weapon_railgun\n");
-		ent.model->load(gfx, "media/models/weapons2/railgun/railgun");
+		ent.model->clone(*model_table[MODEL_WEAPON_RAILGUN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_GRENADELAUNCHER)
 	{
 		debugf("Loading weapon_grenadelauncher\n");
-		ent.model->load(gfx, "media/models/weapons2/grenadel/grenade");
+		ent.model->clone(*model_table[MODEL_WEAPON_GRENADE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_PLASMA)
 	{
 		debugf("Loading weapon_plasmagun\n");
-		ent.model->load(gfx, "media/models/weapons2/plasma/plasma");
+		ent.model->clone(*model_table[MODEL_WEAPON_PLASMA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH)
 	{
 		debugf("Loading item_health\n");
-		ent.model->load(gfx, "media/models/powerups/health/item_health");
+		ent.model->clone(*model_table[MODEL_HEALTH]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_LARGE)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->load(gfx, "media/models/powerups/health/item_health_large");
+		ent.model->clone(*model_table[MODEL_HEALTH_LARGE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_SMALL)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->load(gfx, "media/models/powerups/health/item_health_small");
+		ent.model->clone(*model_table[MODEL_HEALTH_SMALL]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_MEGA)
 	{
 		debugf("Loading item_health_mega\n");
-		ent.model->load(gfx, "media/models/powerups/health/item_health_mega");
+		ent.model->clone(*model_table[MODEL_HEALTH_MEGA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_INFO_PLAYER_DEATHMATCH)
 	{
 		debugf("Loading info_player_deathmatch\n");
-		ent.rigid->load(gfx, "media/models/ball");
+		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUESPAWN)
 	{
 		debugf("Loading team_CTF_bluespawn\n");
-		ent.rigid->load(gfx, "media/models/ball");
+		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDSPAWN)
 	{
 		debugf("Loading team_CTF_redspawn\n");
-		ent.rigid->load(gfx, "media/models/ball");
+		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEPLAYER)
 	{
 		debugf("Loading team_CTF_blueplayer\n");
-		ent.rigid->load(gfx, "media/models/ball");
+		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDPLAYER)
 	{
 		debugf("Loading team_CTF_redplayer\n");
-		ent.rigid->load(gfx, "media/models/ball");
+		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}

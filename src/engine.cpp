@@ -3456,8 +3456,6 @@ int Engine::get_load_wave(const char *file)
 	return snd_wave.size() - 1;
 }
 
-// To prevent making a class that looks exactly like model...
-// I will search previous entities for models that are already loaded
 void Engine::load_models()
 {
 	if (entity_list.size() == 0)
@@ -3469,25 +3467,7 @@ void Engine::load_models()
 		if (entity_list[i]->model == NULL)
 			continue;
 
-		/*
-		for(unsigned int j = max_dynamic; j < i; j++)
-		{
-			if (entity_list[j]->model == NULL)
-				continue;
-
-			entity_list[i]->model->clone(*(box->model));
-			if (strcmp(entity_list[i]->type, entity_list[j]->type) == 0)
-			{
-				entity_list[i]->model->clone(*entity_list[j]->model);
-				loaded = true;
-				break;
-			}
-		}
-
-		if (loaded)
-			continue;
-			*/
-		game->load_model(*entity_list[i]);
+		game->map_model(*entity_list[i]);
 	}
 }
 
