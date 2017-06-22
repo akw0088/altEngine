@@ -97,14 +97,14 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	//Shadowmap0
 	shadowpos = Vertex.shadowpos[0];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	depthmap = texture2D(depth0, shadowWdivide.st).z;
 	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
 	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
 	//Shadowmap1
 	shadowpos = Vertex.shadowpos[1];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	depthmap = texture2D(depth1, shadowWdivide.st).z;
 	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
 	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
@@ -112,14 +112,14 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	//Shadowmap2
 	shadowpos = Vertex.shadowpos[2];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	depthmap = texture2D(depth2, shadowWdivide.st).z;
 	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
 	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
 	//Shadowmap3
 	shadowpos = Vertex.shadowpos[3];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	depthmap = texture2D(depth3, shadowWdivide.st).z;
 	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
 	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 
@@ -136,7 +136,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	//Shadowmap5
 	shadowpos = Vertex.shadowpos[5];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth4, shadowWdivide.st).z;
+	depthmap = texture2D(depth5, shadowWdivide.st).z;
 	shadowFlag = depthmap < shadowWdivide.z ? 0.5 : 1.0;
 	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 }
