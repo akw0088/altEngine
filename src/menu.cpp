@@ -291,7 +291,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 {
 	float xpos = 0.0f;
 	float ypos = 0.0f;
-	int length = strlen(str);
+	unsigned int length = strlen(str);
 
 	if (start)
 	{

@@ -2006,7 +2006,7 @@ void Quake3::step(int frame_step)
 
 	// handles triggers and the projectile as trigger stuff
 	#pragma omp parallel for num_threads(8)
-	for (int i = 0; i < engine->max_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		Player *player = engine->entity_list[i]->player;
 #ifdef OPENMP
@@ -5622,7 +5622,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 1)
 	{
 		bool valid = true;
-		int data_length = strlen(data);
+		unsigned int data_length = strlen(data);
 
 		for (unsigned int i = 0; i < data_length; i++)
 		{

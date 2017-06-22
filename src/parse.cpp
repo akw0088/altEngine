@@ -1023,7 +1023,7 @@ bool parse_entity(Engine *engine, const char *input, vector<Entity *> &entity_li
 	char stack[LINE_SIZE] = {0};
 	int sp = 0;
 	unsigned int i, j = 0;
-	int input_length = strlen(input);
+	unsigned int input_length = strlen(input);
 
 	for(i = 0; state != 'F' && state != '\0' && i < input_length; i++)
 	{		

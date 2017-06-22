@@ -24,7 +24,7 @@ public:
 	bool	active;
 	bool	timer_flag;
 	int		timer;
-	int		light_num;
+	unsigned int		light_num;
 	vector<shadowvol_t>	shadow_list;
 	Edge	edge_list;
 };

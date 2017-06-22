@@ -1698,7 +1698,7 @@ void Engine::spatial_testing()
 	}
 
 	#pragma omp parallel for num_threads(8)
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();
@@ -1762,7 +1762,7 @@ void Engine::spatial_testing()
 			}
 
 
-			for(int j = 0; j < 8; j++)
+			for(unsigned int j = 0; j < 8; j++)
 			{
 				vec3 position = entity_list[i]->position + model->aabb[j];
 				bool vert_visible = q3map.vis_test(camera_frame.pos, position, leaf_a, leaf_b);
@@ -1896,7 +1896,7 @@ void Engine::dynamics()
 {
 
 	#pragma omp parallel for num_threads(8)
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();
@@ -2210,7 +2210,7 @@ void Engine::step(int tick)
 	{
 		demo_frameheader_t header;
 		static char data[4096];
-		int num_read;
+		unsigned int num_read;
 
 		memset(data, 0, 4096);
 		fread(&header, sizeof(demo_frameheader_t), 1, demofile);
