@@ -69,28 +69,7 @@ public:
 
 	~Quake3();
 
-        // for cloning
-        Entity *box;
-        Entity *ball;
-        Entity *thug22;
-        Entity *rocket;
-        Entity *pineapple;
-        Entity *shell;
-        Entity *bullet;
-        Entity *bullet_hit;
-        Entity *plasma_hit;
-        Entity *mark;
-        Entity *gib0;
-        Entity *gib1;
-        Entity *gib2;
-        Entity *gib3;
-        Entity *gib4;
-        Entity *gib5;
-        Entity *gib6;
-        Entity *gib7;
-        Entity *gib8;
-        Entity *gib9;
-
+	vector<Entity *> model_table;
 
 private:
 	Engine *engine;
