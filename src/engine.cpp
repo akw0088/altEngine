@@ -46,7 +46,6 @@ Engine::Engine()
 	depth_tex = 0;
 	demofile = NULL;
 	multisample = 1;
-	mark = NULL;
 	lightning_vbo = 0;
 	lightning_ibo = 0;
 	last_server_sequence = 0;
@@ -60,34 +59,16 @@ Engine::Engine()
 	param1 = NULL;
 	param2 = NULL;
 	particle_tex = 0;
-	pineapple = NULL;
-	plasma_hit = NULL;
 	qport = 0;
 	quad_tex = 0;
 	ref = NULL;
-	rocket = NULL;
 	thug22 = NULL;
 	sensitivity = 1.0f;
 	sequence = 0;
 	server_flag = false;
 	server_spawn = -1;
-	shell = NULL;
 	spiral_vbo = 0;
 	spiral_ibo = 0;
-	gib0 = NULL;
-	gib1 = NULL;
-	gib2 = NULL;
-	gib3 = NULL;
-	gib4 = NULL;
-	gib5 = NULL;
-	gib6 = NULL;
-	gib7 = NULL;
-	gib8 = NULL;
-	gib9 = NULL;
-	bullet = NULL;
-	bullet_hit = NULL;
-	box = NULL;
-	ball = NULL;
 	all_lights = false;
 
 	fb_width = 1024;
@@ -216,16 +197,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	Model::CreateObjects(gfx);
 	Model::make_skybox(gfx);
 
-	box = new Entity();
-	box->rigid = new RigidBody(box);
-	box->model = box->rigid;
-	box->model->load(gfx, "media/models/box");
-
-	ball = new Entity();
-	ball->rigid = new RigidBody(ball);
-	ball->model = ball->rigid;
-	ball->model->load(gfx, "media/models/ball");
-
 	thug22 = new Entity();
 	thug22->rigid = new RigidBody(thug22);
 	thug22->model = thug22->rigid;
@@ -240,96 +211,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->model->aabb[5] *= 0.7f;
 	thug22->model->aabb[6] *= 0.7f;
 	thug22->model->aabb[7] *= 0.7f;
-
-
-
-	rocket = new Entity();
-	rocket->rigid = new RigidBody(rocket);
-	rocket->model = rocket->rigid;
-	rocket->rigid->load(gfx, "media/models/weapons2/rocketl/rocket");
-
-	pineapple = new Entity();
-	pineapple->rigid = new RigidBody(pineapple);
-	pineapple->model = pineapple->rigid;
-	pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
-
-	shell = new Entity();
-	shell->rigid = new RigidBody(shell);
-	shell->model = shell->rigid;
-	shell->model->load(gfx, "media/models/weapons2/shells/s_shell");
-
-	bullet = new Entity();
-	bullet->rigid = new RigidBody(bullet);
-	bullet->model = bullet->rigid;
-	bullet->model->load(gfx, "media/models/weapons2/shells/M_shell");
-
-	bullet_hit = new Entity();
-	bullet_hit->rigid = new RigidBody(bullet_hit);
-	bullet_hit->model = bullet_hit->rigid;
-	bullet_hit->model->load(gfx, "media/models/weaphits/bullet_hit");
-
-	plasma_hit = new Entity();
-	plasma_hit->rigid = new RigidBody(plasma_hit);
-	plasma_hit->model = plasma_hit->rigid;
-	plasma_hit->model->load(gfx, "media/models/weaphits/plasma_hit");
-
-	mark = new Entity();
-	mark->rigid = new RigidBody(mark);
-	mark->model = mark->rigid;
-	mark->model->load(gfx, "media/models/weaphits/boom");
-
-
-	gib0 = new Entity();
-	gib0->rigid = new RigidBody(gib0);
-	gib0->model = gib0->rigid;
-	gib0->model->load(gfx, "media/models/gibs/abdomen");
-
-	gib1 = new Entity();
-	gib1->rigid = new RigidBody(gib1);
-	gib1->model = gib1->rigid;
-	gib1->model->load(gfx, "media/models/gibs/arm");
-
-	gib2 = new Entity();
-	gib2->rigid = new RigidBody(gib2);
-	gib2->model = gib2->rigid;
-	gib2->model->load(gfx, "media/models/gibs/brain");
-
-	gib3 = new Entity();
-	gib3->rigid = new RigidBody(gib3);
-	gib3->model = gib3->rigid;
-	gib3->model->load(gfx, "media/models/gibs/chest");
-
-	gib4 = new Entity();
-	gib4->rigid = new RigidBody(gib4);
-	gib4->model = gib4->rigid;
-	gib4->model->load(gfx, "media/models/gibs/fist");
-
-	gib5 = new Entity();
-	gib5->rigid = new RigidBody(gib5);
-	gib5->model = gib5->rigid;
-	gib5->model->load(gfx, "media/models/gibs/foot");
-
-	gib6 = new Entity();
-	gib6->rigid = new RigidBody(gib6);
-	gib6->model = gib6->rigid;
-	gib6->model->load(gfx, "media/models/gibs/forearm");
-
-	gib7 = new Entity();
-	gib7->rigid = new RigidBody(gib7);
-	gib7->model = gib7->rigid;
-	gib7->model->load(gfx, "media/models/gibs/intestine");
-
-	gib8 = new Entity();
-	gib8->rigid = new RigidBody(gib8);
-	gib8->model = gib8->rigid;
-	gib8->model->load(gfx, "media/models/gibs/leg");
-
-	gib9 = new Entity();
-	gib9->rigid = new RigidBody(gib9);
-	gib9->model = gib9->rigid;
-	gib9->model->load(gfx, "media/models/gibs/skull");
-
-
 
 	global.init(&gfx);
 	audio.init();
@@ -3898,29 +3779,7 @@ void Engine::destroy()
 	game->destroy();
 	delete game;
 	debugf("Shutting down.\n");
-	delete box;
-	delete ball;
-	delete thug22;
-	delete rocket;
-	delete pineapple;
 
-	delete bullet;
-	delete shell;
-	delete plasma_hit;
-	delete bullet_hit;
-
-	delete gib0;
-	delete gib1;
-	delete gib2;
-	delete gib3;
-	delete gib4;
-	delete gib5;
-	delete gib6;
-	delete gib7;
-	delete gib8;
-	delete gib9;
-
-	
 	for (unsigned int i = 0; i < surface_list.size(); i++)
 	{
 		delete surface_list[i];

@@ -56,6 +56,7 @@ public:
 	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
 
 	void load(gametype_t gametype);
+	void load_models(Graphics &gfx);
 	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
 	void unload();
 	void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name);
@@ -66,9 +67,30 @@ public:
 
 	unsigned int weapon_switch_timer;
 
-	~Quake3()
-	{
-	};
+	~Quake3();
+
+        // for cloning
+        Entity *box;
+        Entity *ball;
+        Entity *thug22;
+        Entity *rocket;
+        Entity *pineapple;
+        Entity *shell;
+        Entity *bullet;
+        Entity *bullet_hit;
+        Entity *plasma_hit;
+        Entity *mark;
+        Entity *gib0;
+        Entity *gib1;
+        Entity *gib2;
+        Entity *gib3;
+        Entity *gib4;
+        Entity *gib5;
+        Entity *gib6;
+        Entity *gib7;
+        Entity *gib8;
+        Entity *gib9;
+
 
 private:
 	Engine *engine;

@@ -111,6 +111,107 @@ void Quake3::destroy()
 
 }
 
+
+void Quake3::load_models(Graphics &gfx)
+{
+        rocket = new Entity();
+        rocket->rigid = new RigidBody(rocket);
+        rocket->model = rocket->rigid;
+        rocket->rigid->load(gfx, "media/models/weapons2/rocketl/rocket");
+
+        pineapple = new Entity();
+        pineapple->rigid = new RigidBody(pineapple);
+        pineapple->model = pineapple->rigid;
+        pineapple->rigid->load(gfx, "media/models/weapons2/grenadel/pineapple");
+
+        shell = new Entity();
+        shell->rigid = new RigidBody(shell);
+        shell->model = shell->rigid;
+        shell->model->load(gfx, "media/models/weapons2/shells/s_shell");
+
+        bullet = new Entity();
+        bullet->rigid = new RigidBody(bullet);
+        bullet->model = bullet->rigid;
+        bullet->model->load(gfx, "media/models/weapons2/shells/M_shell");
+
+        bullet_hit = new Entity();
+        bullet_hit->rigid = new RigidBody(bullet_hit);
+        bullet_hit->model = bullet_hit->rigid;
+        bullet_hit->model->load(gfx, "media/models/weaphits/bullet_hit");
+
+        plasma_hit = new Entity();
+        plasma_hit->rigid = new RigidBody(plasma_hit);
+        plasma_hit->model = plasma_hit->rigid;
+        plasma_hit->model->load(gfx, "media/models/weaphits/plasma_hit");
+
+        mark = new Entity();
+        mark->rigid = new RigidBody(mark);
+        mark->model = mark->rigid;
+        mark->model->load(gfx, "media/models/weaphits/boom");
+
+
+        gib0 = new Entity();
+        gib0->rigid = new RigidBody(gib0);
+        gib0->model = gib0->rigid;
+        gib0->model->load(gfx, "media/models/gibs/abdomen");
+
+        gib1 = new Entity();
+        gib1->rigid = new RigidBody(gib1);
+        gib1->model = gib1->rigid;
+        gib1->model->load(gfx, "media/models/gibs/arm");
+
+	gib2 = new Entity();
+	gib2->rigid = new RigidBody(gib2);
+	gib2->model = gib2->rigid;
+	gib2->model->load(gfx, "media/models/gibs/brain");
+
+	gib3 = new Entity();
+	gib3->rigid = new RigidBody(gib3);
+	gib3->model = gib3->rigid;
+	gib3->model->load(gfx, "media/models/gibs/chest");
+
+	gib4 = new Entity();
+	gib4->rigid = new RigidBody(gib4);
+	gib4->model = gib4->rigid;
+	gib4->model->load(gfx, "media/models/gibs/fist");
+
+	gib5 = new Entity();
+	gib5->rigid = new RigidBody(gib5);
+	gib5->model = gib5->rigid;
+	gib5->model->load(gfx, "media/models/gibs/foot");
+
+	gib6 = new Entity();
+	gib6->rigid = new RigidBody(gib6);
+	gib6->model = gib6->rigid;
+	gib6->model->load(gfx, "media/models/gibs/forearm");
+
+	gib7 = new Entity();
+	gib7->rigid = new RigidBody(gib7);
+	gib7->model = gib7->rigid;
+	gib7->model->load(gfx, "media/models/gibs/intestine");
+
+	gib8 = new Entity();
+	gib8->rigid = new RigidBody(gib8);
+	gib8->model = gib8->rigid;
+	gib8->model->load(gfx, "media/models/gibs/leg");
+
+	gib9 = new Entity();
+	gib9->rigid = new RigidBody(gib9);
+	gib9->model = gib9->rigid;
+	gib9->model->load(gfx, "media/models/gibs/skull");
+
+        box = new Entity();
+        box->rigid = new RigidBody(box);
+        box->model = box->rigid;
+        box->model->load(gfx, "media/models/box");
+
+        ball = new Entity();
+        ball->rigid = new RigidBody(ball);
+        ball->model = ball->rigid;
+        ball->model->load(gfx, "media/models/ball");
+
+}
+
 void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 {
 	wave_t wave;
@@ -1492,7 +1593,7 @@ void Quake3::player_died(int index)
 	}
 
 	entity->player->kill();
-	entity->model->clone(*(engine->box->model));
+	entity->model->clone(*(box->model));
 }
 
 void Quake3::drop_weapon(int index)
@@ -1897,7 +1998,7 @@ void Quake3::step(int frame_step)
 			break;
 		case BOT_DEAD:
 			engine->zcc.select_animation(1);
-			bot->model->clone(*(engine->box->model));
+			bot->model->clone(*(box->model));
 			engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
 			if (bot->player->dead_timer > 0)
@@ -2059,7 +2160,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->bsp_visible = player.entity->bsp_visible = true;
 		projectile->rigid->blend = true;
 
-		projectile->rigid->clone(*(engine->ball->model));
+		projectile->rigid->clone(*(ball->model));
 		projectile->rigid->velocity = camera_frame.forward * -10.0f;
 		projectile->rigid->net_force = camera_frame.forward * -10.0f;
 
@@ -2092,7 +2193,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
-	add_decal(player.entity->position, camera_frame, *(engine->plasma_hit->model), -40.0f, true, 10);
+	add_decal(player.entity->position, camera_frame, *(plasma_hit->model), -40.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
@@ -2161,7 +2262,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
 		camera_frame.set(projectile->rigid->morientation);
-		projectile->rigid->clone(*(engine->rocket->model));
+		projectile->rigid->clone(*(rocket->model));
 		projectile->rigid->velocity = camera_frame.forward * -6.25f;
 		projectile->rigid->net_force = camera_frame.forward * -10.0f;
 		projectile->rigid->angular_velocity = vec3();
@@ -2207,8 +2308,8 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
 
-		projectile->rigid->clone(*(engine->box->model));
-		projectile->rigid->clone(*(engine->pineapple->model));
+		projectile->rigid->clone(*(box->model));
+		projectile->rigid->clone(*(pineapple->model));
 		projectile->rigid->velocity = camera_frame.forward * -25.0f;
 		projectile->rigid->angular_velocity = vec3(1.1f, 0.1f, 1.1f);
 		projectile->rigid->gravity = true;
@@ -2328,7 +2429,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->nettype = NT_LIGHTNING;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->position = camera_frame.pos;
-		projectile->rigid->clone(*(engine->box->model));
+		projectile->rigid->clone(*(box->model));
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
@@ -2445,7 +2546,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->nettype = NT_RAIL;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->position = camera_frame.pos;
-		projectile->rigid->clone(*(engine->ball->model));
+		projectile->rigid->clone(*(ball->model));
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
@@ -2699,7 +2800,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 
-	add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
+	add_decal(player.entity->position, camera_frame, *(bullet_hit->model), 10.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
@@ -2718,7 +2819,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	Entity *bullet = engine->entity_list[engine->get_entity()];
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = camera_frame.pos;
-	bullet->rigid->clone(*(engine->bullet->model));
+	bullet->rigid->clone(*(bullet->model));
 	camera_frame.set(bullet->rigid->morientation);
 	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
 	bullet->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
@@ -2849,7 +2950,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell->rigid = new RigidBody(shell);
 	shell->position = camera_frame.pos;
 	shell->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
-	shell->rigid->clone(*(engine->shell->model));
+	shell->rigid->clone(*(shell->model));
 	camera_frame.set(shell->rigid->morientation);
 	shell->rigid->velocity += right * random() + camera_frame.up * random();
 	shell->rigid->angular_velocity = vec3(1.0 * random(), 2.0 * random(), 3.0  * random());
@@ -2871,7 +2972,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid = new RigidBody(shell2);
 	shell2->position = camera_frame.pos;
 	shell2->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
-	shell2->rigid->clone(*(engine->shell->model));
+	shell2->rigid->clone(*(shell->model));
 	camera_frame.set(shell->rigid->morientation);
 
 	shell2->position += camera_frame.forward * 2.0f;
@@ -2910,7 +3011,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		camera_frame.forward = dir;
 
 
-		add_decal(player.entity->position, camera_frame, *(engine->bullet_hit->model), 10.0f, true, 10);
+		add_decal(player.entity->position, camera_frame, *(bullet_hit->model), 10.0f, true, 10);
 
 
 		if (client == false)
@@ -2991,7 +3092,7 @@ void Quake3::handle_gibs(Player &player)
 		entity0->position = camera_frame.pos;
 		camera_frame.set(entity0->model->morientation);
 
-		entity0->rigid->clone(*(engine->gib0->model));
+		entity0->rigid->clone(*(gib0->model));
 		entity0->rigid->velocity = vec3(2.0f, 1.2f, 1.6f);
 		entity0->rigid->angular_velocity = vec3(3.0f, 1.0f, 2.2f);
 		entity0->rigid->gravity = true;
@@ -3007,8 +3108,7 @@ void Quake3::handle_gibs(Player &player)
 		entity1->position = camera_frame.pos;
 		camera_frame.set(entity1->model->morientation);
 
-		entity1->rigid->clone(*(engine->gib1->model));
-		//entity->rigid->clone(*(pineapple->model));
+		entity1->rigid->clone(*(gib1->model));
 		entity1->rigid->velocity = vec3(0.8f, 1.2f, -1.2f);
 		entity1->rigid->angular_velocity = vec3(1.0f, 1.6f, 2.0f);
 		entity1->rigid->gravity = true;
@@ -3025,8 +3125,7 @@ void Quake3::handle_gibs(Player &player)
 		entity2->position = camera_frame.pos;
 		camera_frame.set(entity2->model->morientation);
 
-		entity2->rigid->clone(*(engine->gib2->model));
-		//entity->rigid->clone(*(pineapple->model));
+		entity2->rigid->clone(*(gib2->model));
 		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
 		entity2->rigid->angular_velocity = vec3(-2.0f, 1.0f, 6.0f);
 		entity2->rigid->gravity = true;
@@ -3043,8 +3142,7 @@ void Quake3::handle_gibs(Player &player)
 		entity3->position = camera_frame.pos;
 		camera_frame.set(entity3->model->morientation);
 
-		entity3->rigid->clone(*(engine->gib3->model));
-		//entity->rigid->clone(*(pineapple->model));
+		entity3->rigid->clone(*(gib3->model));
 		entity3->rigid->velocity = vec3(-2.0f, 3.2f, 1.2f);
 		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity3->rigid->gravity = true;
@@ -3061,8 +3159,7 @@ void Quake3::handle_gibs(Player &player)
 		entity4->position = camera_frame.pos;
 		camera_frame.set(entity4->model->morientation);
 
-		entity4->rigid->clone(*(engine->gib4->model));
-		//entity->rigid->clone(*(pineapple->model));
+		entity4->rigid->clone(*(gib4->model));
 		entity4->rigid->velocity = vec3(-1.25f, 1.7f, 1.27f);
 		entity4->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity4->rigid->gravity = true;
@@ -3079,7 +3176,7 @@ void Quake3::handle_gibs(Player &player)
 		entity5->position = camera_frame.pos;
 		camera_frame.set(entity5->model->morientation);
 
-		entity5->rigid->clone(*(engine->gib5->model));
+		entity5->rigid->clone(*(gib5->model));
 		entity5->rigid->velocity = vec3(-1.45f, 3.7f, 1.72f);
 		entity5->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity5->rigid->gravity = true;
@@ -3096,7 +3193,7 @@ void Quake3::handle_gibs(Player &player)
 		entity6->position = camera_frame.pos;
 		camera_frame.set(entity6->model->morientation);
 
-		entity6->rigid->clone(*(engine->gib6->model));
+		entity6->rigid->clone(*(gib6->model));
 		entity6->rigid->velocity = vec3(-1.15f, 1.7f, 1.37f);
 		entity6->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity6->rigid->gravity = true;
@@ -3113,7 +3210,7 @@ void Quake3::handle_gibs(Player &player)
 		entity7->position = camera_frame.pos;
 		camera_frame.set(entity7->model->morientation);
 
-		entity7->rigid->clone(*(engine->gib7->model));
+		entity7->rigid->clone(*(gib7->model));
 		entity7->rigid->velocity = vec3(-1.45f, 2.34f, 1.27f);
 		entity7->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity7->rigid->gravity = true;
@@ -3130,8 +3227,7 @@ void Quake3::handle_gibs(Player &player)
 		entity8->position = camera_frame.pos;
 		camera_frame.set(entity8->model->morientation);
 
-		entity8->rigid->clone(*(engine->gib8->model));
-		//entity->rigid->clone(*(pineapple->model));
+		entity8->rigid->clone(*(gib8->model));
 		entity8->rigid->velocity = vec3(-1.85f, 1.73f, 2.32f);
 		entity8->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity8->rigid->gravity = true;
@@ -3148,7 +3244,7 @@ void Quake3::handle_gibs(Player &player)
 		entity9->position = camera_frame.pos;
 		camera_frame.set(entity9->model->morientation);
 
-		entity9->rigid->clone(*(engine->gib9->model));
+		entity9->rigid->clone(*(gib9->model));
 		entity9->rigid->velocity = vec3(1.45f, 1.27f, -1.2f);
 		entity9->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity9->rigid->gravity = true;
@@ -6070,7 +6166,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
-		ent->rigid->clone(*(engine->rocket->model));
+		ent->rigid->clone(*(rocket->model));
 		ent->rigid->gravity = false;
 		break;
 	case NT_ROCKET_LAUNCHER:
@@ -6092,8 +6188,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
-		ent->rigid->clone(*(engine->box->model));
-		//entity->rigid->clone(*(pineapple->model));
+		ent->rigid->clone(*(box->model));
 		ent->rigid->gravity = true;
 		ent->rigid->rotational_friction_flag = true;
 		ent->rigid->translational_friction_flag = true;
@@ -6132,7 +6227,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 	case NT_LIGHTNING:
 		ent->nettype = NT_LIGHTNING;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(engine->box->model));
+		ent->rigid->clone(*(box->model));
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
 		ent->rigid->gravity = false;
@@ -6169,7 +6264,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 	case NT_RAIL:
 		ent->nettype = NT_RAIL;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(engine->ball->model));
+		ent->rigid->clone(*(ball->model));
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
 		ent->rigid->gravity = false;
@@ -6206,7 +6301,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 
-		ent->rigid->clone(*(engine->ball->model));
+		ent->rigid->clone(*(ball->model));
 		ent->rigid->gravity = false;
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->explode_index = engine->get_load_wave("sound/weapons/plasma/plasmx1a.wav");
@@ -7152,6 +7247,28 @@ void Quake3::load_model(Entity &ent)
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
 	}
+}
 
 
+Quake3::~Quake3()
+{
+        delete box;
+        delete ball;
+        delete thug22;
+        delete rocket;
+        delete pineapple;
+        delete bullet;
+        delete shell;
+        delete plasma_hit;
+        delete bullet_hit;
+        delete gib0;
+        delete gib1;
+        delete gib2;
+        delete gib3;
+        delete gib4;
+        delete gib5;
+        delete gib6;
+        delete gib7;
+        delete gib8;
+        delete gib9;
 }
