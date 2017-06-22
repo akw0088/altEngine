@@ -42,6 +42,7 @@ extern const char *models[23];
 
 Quake3::Quake3()
 {
+	engine = NULL;
 	blink = false;
 	spectator = false;
 	warmup = true;
@@ -3559,7 +3560,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 	// Only reset flag when they stop clicking for lightning gun
 	if (engine->input.attack == false)
 	{
-		if (once && player.current_weapon & WEAPON_LIGHTNING)
+		if (once && (player.current_weapon & WEAPON_LIGHTNING))
 		{
 //			engine->audio.stop(player.entity->speaker->loop_source);
 		}
@@ -3851,7 +3852,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		}
 	}
 
-	if (player.current_weapon & WEAPON_GAUNTLET && input.attack == false)
+	if ((player.current_weapon & WEAPON_GAUNTLET) && input.attack == false)
 	{
 		if (player.weapon_loop_source != -1)
 			engine->audio.stop(player.weapon_loop_source);

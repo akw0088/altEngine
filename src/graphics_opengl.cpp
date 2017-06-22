@@ -19,6 +19,7 @@ void Graphics::resize(int width, int height)
 
 Graphics::Graphics()
 {
+
 	width = 0;
 	height = 0;
 	gpustat.drawcall = 0;
@@ -26,6 +27,9 @@ Graphics::Graphics()
 #ifdef _WIN32
 	hwnd = 0;
 	hdc = 0;
+#else
+	display = NULL;
+	font = NULL;
 #endif
 }
 

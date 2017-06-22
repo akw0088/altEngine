@@ -217,6 +217,10 @@ int mLight2::init(Graphics *gfx)
 	return 0;
 }
 
+Global::~Global()
+{
+}
+
 void mLight2::set_max(int max)
 {
 	max_light = max;

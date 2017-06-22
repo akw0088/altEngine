@@ -245,7 +245,7 @@ public:
 	int init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *fragment_file);
 	void Select();
 	void destroy();
-	~Shader();
+	virtual ~Shader();
 	virtual void prelink() = 0;
 protected:
 	const char	*vertex_src, *geometry_src, *fragment_src;

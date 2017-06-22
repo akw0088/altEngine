@@ -26,6 +26,7 @@ public:
 	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, int tex0, int depth = 0);
 	virtual void prelink(void);
+	virtual ~Global();
 private:
 	int matrix;
 	int	texture0;
