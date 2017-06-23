@@ -643,7 +643,7 @@ void newlinelist(char *filename, char **list, int &num)
 int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr)
 {
 	int width, height, components, format;
-	int tex_object;
+	int tex_object = -1;
 
 	int size = 0;
 	unsigned char *data = NULL;

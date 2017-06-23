@@ -236,13 +236,12 @@ char *get_pakfile(char *pakfile, char *file)
 
 			fseek(pak, entry->offset, SEEK_SET);
 			fread(data, entry->length, 1, pak);
-			free(entries);
+			delete [] entries;
 			fclose(pak);
 			return data;
 		}
 	}
-    
-	free(entries);
+    	delete [] entries;
 	fclose(pak);
 	return NULL;
 }
