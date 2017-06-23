@@ -520,6 +520,7 @@ void Player::avoid_walls(Bsp &map)
 
 	input_t input;
 
+	memset(&input, 0, sizeof(input_t));
 	float speed_scale = 1.0f;
 	bool lava;
 	bool slime;

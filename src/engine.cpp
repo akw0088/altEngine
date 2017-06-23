@@ -167,7 +167,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	memset(&result, 0, sizeof(result));
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
-		pool[i](calc_hash, pk3_list[i], hash_list[i]);
+		pool[i] = thread(calc_hash, pk3_list[i], hash_list[i]);
 	}
 
 	for(int i = 0; i < num_pk3 && i < num_hash; i++)
@@ -4007,7 +4007,8 @@ void Engine::console(char *cmd)
 	{
 		menu.print(msg);
 
-		com_maxfps = 1000.0 / atoi(data);
+		if (atoi(data) > 0)
+			com_maxfps = 1000.0 / atoi(data);
 		return;
 	}
 
