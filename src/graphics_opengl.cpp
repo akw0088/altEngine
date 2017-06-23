@@ -60,8 +60,8 @@ void Graphics::init(void *param1, void *param2)
 	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
 
-	float bias = -3.0f;
-	glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, bias);
+//	float bias = -3.0f;
+	//glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, bias);
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -357,7 +357,7 @@ void Graphics::CreateVertexArrayObject(unsigned int &vao)
 
 void Graphics::SelectVertexArrayObject(unsigned int vao)
 {
-		glBindVertexArray(vao);
+	glBindVertexArray(vao);
 
 #ifdef ERROR_CHECK
 		error_check();
@@ -376,6 +376,7 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
 {
 	unsigned int	vbo;
+
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
@@ -507,8 +508,8 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	if (clamp)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);
