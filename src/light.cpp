@@ -17,7 +17,9 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 
 	memset(quad_tex, 0, sizeof(unsigned int) * 6);
 	memset(depth_tex, 0, sizeof(unsigned int) * 6);
-	generate_cubemaps((int)(1024 * scale), (int)(1024 * scale));
+
+	if (num == 1)
+		generate_cubemaps((int)(1024 * scale), (int)(1024 * scale));
 }
 
 
@@ -25,7 +27,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 void Light::generate_cubemaps(int width, int height)
 {
 #ifdef OPENGL32
-	for (int i = 0; i < 6; i++)
+	for (int i = 4; i < 5; i++)
 	{
 		glGenTextures(1, &quad_tex[i]);
 		glBindTexture(GL_TEXTURE_2D, quad_tex[i]);
@@ -41,11 +43,13 @@ void Light::generate_cubemaps(int width, int height)
 		glBindTexture(GL_TEXTURE_2D, depth_tex[i]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear seems to work too
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 //		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
 	}
 #endif

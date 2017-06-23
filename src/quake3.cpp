@@ -213,7 +213,7 @@ void Quake3::load_models(Graphics &gfx)
 
 	#define MODEL_BALL 18
 	model = new Model;
-	model->load(gfx, "media/models/box");
+	model->load(gfx, "media/models/ball");
         model_table.push_back(model);
 
 //	#define MODEL_WEAPON_GAUNTLET 19

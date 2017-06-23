@@ -746,6 +746,7 @@ void Engine::render(double last_frametime)
 						}
 						else
 						{
+							printf("light %d %d\n", i, entity_list[i]->light->light_num);
 							testObj = entity_list[i]->light->quad_tex[player->current_face];
 						}
 						break;
@@ -890,7 +891,7 @@ void Engine::render_shadowmaps(bool everything)
 				matrix4::mat_backward(cube[5], entity_list[i]->position);
 
 
-				gfx.Color(false);
+//				gfx.Color(false);
 				for (int j = 0; j < 6; j++)
 				{
 					matrix4 mvp = cube[j] * projection;
@@ -904,7 +905,7 @@ void Engine::render_shadowmaps(bool everything)
 
 					// No real FPS improvement by masking color buffer
 //					gfx.fbAttachTexture(0);
-//					gfx.fbAttachTexture(light->quad_tex[j]);
+					gfx.fbAttachTexture(light->quad_tex[j]);
 					gfx.fbAttachDepth(light->depth_tex[j]);
 					gfx.clear();
 
@@ -933,7 +934,7 @@ void Engine::render_shadowmaps(bool everything)
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
 				}
-				gfx.Color(true);
+//				gfx.Color(true);
 
 			}
 		}
