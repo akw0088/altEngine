@@ -132,7 +132,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 //	weapon_machinegun.load(gfx, "media/models/weapons2/m4/m4s");
 	weapon_gauntlet.clone(*model_table[MODEL_WEAPON_GAUNTLET]);
-	weapon_machinegun.clone(*model_table[MODEL_WEAPON_GAUNTLET]);
+	weapon_machinegun.clone(*model_table[MODEL_WEAPON_MACHINEGUN]);
 	weapon_shotgun.clone(*model_table[MODEL_WEAPON_SHOTGUN]);
 	weapon_grenade.clone(*model_table[MODEL_WEAPON_GRENADE]);
 	weapon_rocket.clone(*model_table[MODEL_WEAPON_ROCKET]);

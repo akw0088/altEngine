@@ -69,7 +69,7 @@ void Model::load(Graphics &gfx, char *file)
 
 	normal_tex = load_texture(gfx, normal_file, false, false);
 
-	if (entity->rigid)
+	if (entity && entity->rigid)
 	{
 		entity->rigid->recalc();
 	}
@@ -126,10 +126,13 @@ void Model::clone(Model &model)
 	num_vertex = model.num_vertex;
 
 	//hacks
-	if (entity->rigid)
+	if (entity && entity->rigid)
 	{
-		entity->rigid->gravity = model.entity->rigid->gravity;
-		entity->rigid->angular_velocity = model.entity->rigid->angular_velocity;
+		if (model.entity)
+		{
+			entity->rigid->gravity = model.entity->rigid->gravity;
+			entity->rigid->angular_velocity = model.entity->rigid->angular_velocity;
+		}
 	}
 }
 
@@ -660,6 +663,7 @@ void Model::get_frame(Frame &frame)
 
 Model::Model()
 {
+	entity = NULL;
 	num_vertex = 0;
 	num_index = 0;
 	normal_tex = 0;
