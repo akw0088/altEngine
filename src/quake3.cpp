@@ -2092,7 +2092,7 @@ void Quake3::step(int frame_step)
 		if (bot->player->health <= 0)
 		{
 			if (bot->player->bot_state != BOT_DEAD)
-				bot->player->dead_timer = random() * (TICK_RATE << 1);
+				bot->player->dead_timer = (int)(random() * (TICK_RATE << 1));
 			bot->player->bot_state = BOT_DEAD;
 			continue;
 		}
@@ -2980,7 +2980,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
 	bullet->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
 	bullet->rigid->velocity += right * random() + camera_frame.up * random();
-	bullet->rigid->angular_velocity = vec3(1.0 * random(), 2.0 * random(), 3.0 * random());
+	bullet->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f * random());
 	bullet->rigid->gravity = true;
 	bullet->model = bullet->rigid;
 	bullet->rigid->impact_index = SND_BULLET;
@@ -3109,7 +3109,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell->rigid->clone(*(model_table[MODEL_SHELL]));
 	camera_frame.set(shell->rigid->morientation);
 	shell->rigid->velocity += right * random() + camera_frame.up * random();
-	shell->rigid->angular_velocity = vec3(1.0 * random(), 2.0 * random(), 3.0  * random());
+	shell->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f  * random());
 	shell->rigid->gravity = true;
 	shell->rigid->rotational_friction_flag = true;
 	shell->rigid->translational_friction_flag = true;
@@ -3136,7 +3136,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid->rotational_friction_flag = true;
 	shell2->rigid->translational_friction_flag = true;
 	shell2->rigid->translational_friction = 0.9f;
-	shell2->rigid->angular_velocity = vec3(-1.0 * random(), 2.0 * random(), -3.0 * random());
+	shell2->rigid->angular_velocity = vec3(-1.0f * random(), 2.0f * random(), -3.0f * random());
 	shell2->rigid->gravity = true;
 	shell2->rigid->impact_index = SND_SHELL;
 	shell2->model = shell2->rigid;
