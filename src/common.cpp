@@ -865,24 +865,19 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	return tex_object;
 }
 
-bool check_hash(char *filename, char *md5match, char *hash)
+void calc_hash(char *filename, char *hash)
 {
 	int size = 0;
 
+	memset(hash, 0, 17);
 	char *data = get_file(filename, &size);
 	if (data == NULL)
 	{
 		sprintf(hash, "missing file");
-		return false;
 	}
 
-	memset(hash, 0, 17);
 	md5sum(data, size, hash);
 	delete [] data;
-	if (strcmp(hash, md5match) == 0)
-		return true;
-	else
-		return false;
 }
 
 byte *tga_24to32(int width, int height, byte *pBits, bool bgr)

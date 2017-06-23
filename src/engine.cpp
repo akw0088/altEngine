@@ -154,7 +154,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 #if NDEBUG
-	char hash[128];
+	char hash[32][128];
+	thread pool[32];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
 	{
@@ -162,14 +163,22 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		exit(0);
 	}*/
 
+
+	memset(&result, 0, sizeof(result));
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
+		pool[i](calc_hash, pk3_list[i], hash_list[i]);
+	}
+
+	for(int i = 0; i < num_pk3 && i < num_hash; i++)
+	{
+		pool[i].join();
 		printf("Checking hash for %s...", pk3_list[i]);
-		if (check_hash(pk3_list[i], hash_list[i], hash) == false)
+		if (strcmp(hash_list[i], hash[i]) != 0)
 		{
 			if (strcmp(pk3_list[i], "media/pak0.pk3") == 0)
 			{
-				if (strcmp(hash, "0613b3d4ef05e613a2b470571498690f") == 0)
+				if (strcmp(hash[i], "0613b3d4ef05e613a2b470571498690f") == 0)
 				{
 					printf("pak0.pk3 is from Q3A Demo\n");
 					demo = true;
@@ -177,7 +186,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				else
 				{
 					printf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
-					exit(0);
 				}
 			}
 			else
