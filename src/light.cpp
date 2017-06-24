@@ -14,31 +14,26 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 	light_num = num;
 	timer_flag = false;
 	timer = 0;
+	lightmap_scale = scale;
 
 	memset(quad_tex, 0, sizeof(unsigned int) * 6);
 	memset(depth_tex, 0, sizeof(unsigned int) * 6);
 
 	if (num == 1)
-		generate_cubemaps(gfx, (int)(1024 * scale), (int)(1024 * scale));
+		generate_cubemaps(gfx);
 }
 
 
 
-void Light::generate_cubemaps(Graphics &gfx, int width, int height)
+void Light::generate_cubemaps(Graphics &gfx)
 {
 #ifdef OPENGL32
 	for (int i = 0; i < 6; i++)
 	{
-		gfx.setupFramebuffer(width, height, fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
+		gfx.setupFramebuffer((int)(1024 * lightmap_scale), (int)(1024 * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
 	}
 #endif
 }
-
-void Light::select_shadowmap(Graphics &gfx, int face)
-{
-	gfx.bindFramebuffer(fbo_shadowmaps[face]);
-}
-
 
 void Light::render_shadow_volumes(int current_light)
 {

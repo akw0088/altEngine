@@ -838,25 +838,10 @@ void Engine::zoom(float level)
 	projection.perspective(fov / level, (float)xres / yres, zNear, zFar, inf);
 }
 
-matrix4 magic0;
-matrix4 magic1;
-matrix4 magic2;
-matrix4 magic3;
-matrix4 magic4;
-matrix4 magic5;
-
 void Engine::render_shadowmaps(bool everything)
 {
 	mlight2.Select();
-	int spawn = find_type(ENT_PLAYER, 0);
 
-	if (spawn == -1)
-		return;
-
-	if (entity_list[spawn]->player == NULL)
-		return;
-
-	unsigned int lighti = entity_list[spawn]->player->current_light;
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light)
@@ -865,13 +850,8 @@ void Engine::render_shadowmaps(bool everything)
 
 			matrix4 cube[6];
 
-			if (all_lights == false)
-			{
-				if (lighti >= light_list.size())
-					continue;
-			}
-			
-			if (all_lights || (light_list[lighti] == entity_list[i]->light) || everything)
+		
+			if (all_lights || (i == 107) || everything)
 			{
 				// Generate matrices
 				//rl tb fb
@@ -909,18 +889,13 @@ void Engine::render_shadowmaps(bool everything)
 					vec3 offset(0.0f, 0.0f, 0.0f);
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-					if (j == 0 && i == 107)
-						magic0 = (cube[j] * projection) * bias;
-					if (j == 1 && i == 107)
-						magic1 = (cube[j] * projection) * bias;
-					if (j == 2 && i == 107)
-						magic2 = (cube[j] * projection) * bias;
-					if (j == 3 && i == 107)
-						magic3 = (cube[j] * projection) * bias;
-					if (j == 4 && i == 107)
-						magic4 = (cube[j] * projection) * bias;
-					if (j == 5 && i == 107)
-						magic5 = (cube[j] * projection) * bias;
+
+					light->shadow_matrix[j] = (cube[j] * projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * projection) * bias;
 
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 					render_entities(cube[j], true, false);
@@ -1119,16 +1094,16 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 
 	mlight2.Select();
-	mlight2.set_shadow_matrix0(magic0);
-	mlight2.set_shadow_matrix1(magic1);
-	mlight2.set_shadow_matrix2(magic2);
-	mlight2.set_shadow_matrix3(magic3);
-	mlight2.set_shadow_matrix4(magic4);
-	mlight2.set_shadow_matrix5(magic5);
-
 	Light *light = entity_list[107]->light;
 	if (light)
 	{
+		mlight2.set_shadow_matrix0(light->shadow_matrix[0]);
+		mlight2.set_shadow_matrix1(light->shadow_matrix[1]);
+		mlight2.set_shadow_matrix2(light->shadow_matrix[2]);
+		mlight2.set_shadow_matrix3(light->shadow_matrix[3]);
+		mlight2.set_shadow_matrix4(light->shadow_matrix[4]);
+		mlight2.set_shadow_matrix5(light->shadow_matrix[5]);
+
 		gfx.SelectTexture(11, light->depth_tex[0]);
 		gfx.SelectTexture(12, light->depth_tex[1]);
 		gfx.SelectTexture(13, light->depth_tex[2]);
