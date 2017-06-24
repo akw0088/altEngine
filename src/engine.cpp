@@ -52,7 +52,6 @@ Engine::Engine()
 	client_flag = false;
 	global_vao = 0;
 	fbo = 0;
-	fbo_shadowmaps = 0;
 	game = NULL;
 	num_pk3 = 0;
 	num_shader = 0;
@@ -164,12 +163,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}*/
 
 
-	for (int i = 0; i < num_pk3 && i < num_hash; i++)
+	for (unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		pool[i] = std::thread(calc_hash, pk3_list[i], &hash[i][0]);
 	}
 
-	for(int i = 0; i < num_pk3 && i < num_hash; i++)
+	for(unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		pool[i].join();
 		printf("Checking hash for %s...", pk3_list[i]);
@@ -280,7 +279,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_width = (unsigned int)(1024 * res_scale);
 	fb_height = (unsigned int)(1024 * res_scale);
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
-	gfx.setupFramebuffer(fb_width, fb_height, fbo_shadowmaps, quad_tex, depth_tex, multisample);
 
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
@@ -320,11 +318,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	if (render_mode == MODE_INDIRECT)
 	{
 		//Setup render to texture
-		gfx.bindFramebuffer(fbo_shadowmaps);
-		gfx.resize(fb_width, fb_height);
-		gfx.bindFramebuffer(0);
-
-
 		gfx.bindFramebuffer(fbo);
 		gfx.resize(fb_width, fb_height);
 		gfx.bindFramebuffer(0);
@@ -544,8 +537,6 @@ void Engine::load(char *level)
 
 
 	//Setup render to texture
-	gfx.bindFramebuffer(fbo_shadowmaps);
-	gfx.resize(fb_width, fb_height);
 
 	// Generate depth cubemaps for each light
 	render_shadowmaps(true);
@@ -715,11 +706,6 @@ void Engine::render(double last_frametime)
 
 		if (shadowmaps || all_lights)
 		{
-
-			//Setup render to texture
-			gfx.bindFramebuffer(fbo_shadowmaps);
-			gfx.resize(fb_width, fb_height);
-
 			// Generate depth cubemaps for each light
 			render_shadowmaps(all_lights); // done at load time
 			gfx.bindFramebuffer(0);
@@ -890,6 +876,10 @@ void Engine::render_shadowmaps(bool everything)
 				// Generate matrices
 				//rl tb fb
 
+				if (light->light_num != 1)
+					continue;
+
+
 				matrix4::mat_right(cube[0], entity_list[i]->position);
 				matrix4::mat_left(cube[1], entity_list[i]->position);
 				matrix4::mat_top(cube[2], entity_list[i]->position);
@@ -912,8 +902,8 @@ void Engine::render_shadowmaps(bool everything)
 
 					// No real FPS improvement by masking color buffer
 //					gfx.fbAttachTexture(0);
-					gfx.fbAttachTexture(light->quad_tex[j]);
-					gfx.fbAttachDepth(light->depth_tex[j]);
+					gfx.bindFramebuffer(light->fbo_shadowmaps[j]);
+					gfx.resize(fb_width, fb_height);
 					gfx.clear();
 
 					vec3 offset(0.0f, 0.0f, 0.0f);
@@ -935,9 +925,7 @@ void Engine::render_shadowmaps(bool everything)
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
 					render_entities(cube[j], true, false);
 					render_players(cube[j], true, true);
-					gfx.fbAttachTexture(0);
-					gfx.fbAttachDepth(0);
-
+					gfx.bindFramebuffer(0);
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
 				}
@@ -1139,12 +1127,15 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	mlight2.set_shadow_matrix5(magic5);
 
 	Light *light = entity_list[107]->light;
-	gfx.SelectTexture(11, light->depth_tex[0]);
-	gfx.SelectTexture(12, light->depth_tex[1]);
-	gfx.SelectTexture(13, light->depth_tex[2]);
-	gfx.SelectTexture(14, light->depth_tex[3]);
-	gfx.SelectTexture(15, light->depth_tex[4]);
-	gfx.SelectTexture(16, light->depth_tex[5]);
+	if (light)
+	{
+		gfx.SelectTexture(11, light->depth_tex[0]);
+		gfx.SelectTexture(12, light->depth_tex[1]);
+		gfx.SelectTexture(13, light->depth_tex[2]);
+		gfx.SelectTexture(14, light->depth_tex[3]);
+		gfx.SelectTexture(15, light->depth_tex[4]);
+		gfx.SelectTexture(16, light->depth_tex[5]);
+	}
 
 	// Rendering entities before map for blends
 	render_entities(transformation, lights, false);
@@ -1156,12 +1147,6 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-	gfx.SelectTexture(11, light->depth_tex[0]);
-	gfx.SelectTexture(12, light->depth_tex[1]);
-	gfx.SelectTexture(13, light->depth_tex[2]);
-	gfx.SelectTexture(14, light->depth_tex[3]);
-	gfx.SelectTexture(15, light->depth_tex[4]);
-	gfx.SelectTexture(16, light->depth_tex[5]);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 
@@ -3928,7 +3913,7 @@ void Engine::console(char *cmd)
 		char *line = NULL;
 
 		memset(filelist, 0, LIST_SIZE);
-		for (int i = 0; i < num_pk3; i++)
+		for (unsigned int i = 0; i < num_pk3; i++)
 		{
 			list_zipfile(pk3_list[i], &filelist[0]);
 
@@ -4639,7 +4624,7 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 	char *line = NULL;
 
 	memset(filelist, 0, LIST_SIZE);
-	for (int i = 0; i < num_pk3; i++)
+	for (unsigned int i = 0; i < num_pk3; i++)
 	{
 		list_zipfile(pk3_list[i], &filelist[0]);
 

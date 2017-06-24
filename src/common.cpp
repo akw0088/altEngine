@@ -609,7 +609,7 @@ int list_zipfile(char *zipfile, char *filelist)
 	return retval;
 }
 
-void newlinelist(char *filename, char **list, int &num)
+void newlinelist(char *filename, char **list, unsigned int &num)
 {
 	if (filename == NULL || list == NULL)
 	{

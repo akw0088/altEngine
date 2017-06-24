@@ -10,12 +10,13 @@ public:
 	void render_shadow_volumes(int current_light);
 	void generate_volumes(Bsp &map);
 
-	void generate_cubemaps(int width, int height);
+	void generate_cubemaps(Graphics &gfx, int width, int height);
 
 	void select_shadowmap(Graphics &gfx, int face);
 	void extend(Edge &edge_list, vec3 position, int current_light);
 
 	Entity	*entity;
+	unsigned int fbo_shadowmaps[6];
 	unsigned int quad_tex[6];
 	unsigned int depth_tex[6];
 	vec3	color;

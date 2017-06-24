@@ -126,8 +126,8 @@ public:
 
 	char *pk3_list[32];
 	char *hash_list[32];
-	int num_pk3;
-	int num_hash;
+	unsigned int num_pk3;
+	unsigned int num_hash;
 	char *shader_list[256];
 	int num_shader;
 	HashTable key_bind;
@@ -178,7 +178,6 @@ protected:
 	unsigned int	lightning_ibo;
 	unsigned int	lightning_vbo;
 	unsigned int	fbo;
-	unsigned int	fbo_shadowmaps;
 	unsigned int	global_vao;
 	unsigned int	quad_tex;
 	unsigned int	depth_tex;
