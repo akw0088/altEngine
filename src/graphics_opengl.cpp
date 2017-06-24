@@ -942,6 +942,7 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 
 	if (checkFramebuffer() != 0)
 	{
+		printf("Failed to create fbo\n");
 		return -1;
 	}
 
