@@ -450,6 +450,20 @@ void Graphics::SelectTexture(int level, int texObject)
 #endif
 }
 
+void Graphics::SelectTextureArray(int level, int texObject)
+{
+	//hack for blended surfaces
+	if (texObject < 0)
+		texObject = -texObject;
+
+	glActiveTexture(GL_TEXTURE0 + level);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, texObject);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+}
+
 void Graphics::DeselectTexture(int level)
 {
 	glActiveTexture(GL_TEXTURE0 + level);
@@ -514,6 +528,40 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);
 	glGenerateMipmap(GL_TEXTURE_2D);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+
+	return texObject;
+}
+
+int Graphics::LoadTextureArray(int width, int height, int components, int format, void **bytes, bool clamp, int num_layer)
+{
+	unsigned int texObject = -1;
+
+	glGenTextures(1, &texObject);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, texObject);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if (clamp)
+	{
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	glTexStorage3D(GL_TEXTURE_2D_ARRAY, num_layer, components, width, height, 1);
+
+
+	if (bytes != NULL)
+	{
+		for (int i = 0; i < num_layer; i++)
+		{
+			glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i,
+				width, height, 1, format, GL_UNSIGNED_BYTE, bytes[i]);
+		}
+	}
+
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -935,7 +983,7 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 

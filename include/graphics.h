@@ -75,10 +75,12 @@ public:
 	void DeleteVertexBuffer(int handle);
 
 	void SelectTexture(int level, int index);
+	void SelectTextureArray(int level, int texObject);
 	void DeselectTexture(int level);
 	int CreateCubeMap();
 	void SelectCubemap(int texObject);
 	int LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp);
+	int LoadTextureArray(int width, int height, int components, int format, void **bytes, bool clamp, int num_layer);
 	void DeleteTexture(int handle);
 
 	void SelectShader(int program);

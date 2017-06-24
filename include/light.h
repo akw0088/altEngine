@@ -17,6 +17,8 @@ public:
 	unsigned int fbo_shadowmaps[6];
 	unsigned int quad_tex[6];
 	unsigned int depth_tex[6];
+	unsigned int array_tex;
+
 
 	matrix4 shadow_matrix[6];
 

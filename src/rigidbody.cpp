@@ -127,7 +127,11 @@ void RigidBody::integrate(float time)
 
 
 	old_position = entity->position;
-	entity->position = entity->position + velocity * time * UNITS_TO_METERS;
+	entity->position = entity->position + velocity * time * UNITS_TO_METERS
+		+ acceleration * time * time * 0.5 * UNITS_TO_METERS;
+	// Went ahead and used "simplified velocity verlet" as it subjectively feels nicer
+	// Although it looks a lot like constant acceleration motion equations: x = x0 + vt + 0.5at^2
+
 
 	//rotational
 	angular_acceleration = world_tensor * net_torque;
@@ -862,4 +866,54 @@ void RigidBody::lookat_yaw(vec3 &target)
 	frame.up.normalize();
 
 	frame.set(entity->model->morientation);
+}
+
+
+typedef struct
+{
+	vec3 dx;
+	vec3 dv;
+} Derivative;
+
+vec3 rk4_acceleration(const vec3 &pos, const vec3 &vel, float t)
+{
+	float k = 10;
+	float b = 1;
+
+	vec3 a = pos * -k + -vel * b;
+	return a;
+}
+
+Derivative rk4_evaluate(const vec3 &pos, const vec3 &vel, float t)
+{
+	Derivative output;
+	output.dx = vel;
+	output.dv = rk4_acceleration(pos, vel, t);
+	return output;
+}
+
+Derivative rk4_evaluate(const vec3 &pos, const vec3 &vel, float t, float dt, const Derivative &d)
+{
+	vec3 npos;
+	vec3 nvel;
+	npos = pos + d.dx * dt;
+	nvel = vel + d.dv * dt;
+	Derivative output;
+	output.dx = nvel;
+	output.dv = rk4_acceleration(npos, nvel, t + dt);
+	return output;
+}
+
+void rk4_integrate(vec3 &pos, vec3 &vel, float t, float dt)
+{
+	Derivative a = rk4_evaluate(pos, vel, t);
+	Derivative b = rk4_evaluate(pos, vel, t, dt*0.5f, a);
+	Derivative c = rk4_evaluate(pos, vel, t, dt*0.5f, b);
+	Derivative d = rk4_evaluate(pos, vel, t, dt, c);
+
+	vec3 dxdt = ((a.dx + (b.dx + c.dx) + d.dx) * 2.0f) * (1.0f / 6.0f);
+	vec3 dvdt = ((a.dv + (b.dv + c.dv) + d.dv) * 2.0f) * (1.0f / 6.0f);
+
+	pos += dxdt * dt;
+	vel += dvdt * dt;
 }
