@@ -540,17 +540,17 @@ int Graphics::LoadTextureArray(int width, int height, int components, int format
 {
 	unsigned int texObject = -1;
 
+	// using so far only for depth cube maps
 	glGenTextures(1, &texObject);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, texObject);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	if (clamp)
-	{
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	}
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear seems to work too
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexStorage3D(GL_TEXTURE_2D_ARRAY, num_layer, components, width, height, 1);
+	glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32, width, height, num_layer, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0);
 
 
 	if (bytes != NULL)
@@ -987,6 +987,38 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+
+	if (checkFramebuffer() != 0)
+	{
+		printf("Failed to create fbo\n");
+		return -1;
+	}
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	return 0;
+}
+
+int Graphics::setupFramebufferArray(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &array_tex, int layer, int multisample)
+{
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	glGenTextures(1, &quad_tex);
+	glBindTexture(GL_TEXTURE_2D, quad_tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	if (multisample > 0)
+	{
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGBA8, width, height, GL_FALSE);
+	}
+
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, array_tex, layer);
 
 	if (checkFramebuffer() != 0)
 	{
