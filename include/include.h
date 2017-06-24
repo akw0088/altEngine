@@ -168,6 +168,8 @@
 #include <cstring>
 #include <ctime>
 #include <vector>
+#include <functional>
+#include <thread>
 #include <float.h>
 #ifdef WIN32
 	#include <crtdbg.h>

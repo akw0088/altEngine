@@ -155,7 +155,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 #if NDEBUG
 	char hash[32][128];
-	thread pool[32];
+	std::thread pool[32];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
 	{
@@ -164,10 +164,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}*/
 
 
-	memset(&result, 0, sizeof(result));
 	for (int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
-		pool[i] = thread(calc_hash, pk3_list[i], hash_list[i]);
+		pool[i] = std::thread(calc_hash, pk3_list[i], &hash[i][0]);
 	}
 
 	for(int i = 0; i < num_pk3 && i < num_hash; i++)

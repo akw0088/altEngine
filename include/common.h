@@ -35,7 +35,7 @@ int list_zipfile(char *zipfile, char *filelist);
 int write_file(char *filename, const char *bytes, int size);
 float sign(float x);
 void newlinelist(char *filename, char **list, int &num);
-bool check_hash(char *filename, char *checkhash, char *hash);
+void calc_hash(char *filename, char *hash);
 
 void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity_list, int start);
 void print_graph(graph_node_t *node, int num_node);
