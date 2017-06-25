@@ -1076,6 +1076,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 				entity_list[spawn]->ent_type = ENT_CLIENT;
 				break;
 			case BOT:
+				sprintf(entity_list[spawn]->type, "NPC");
 				entity_list[spawn]->ent_type = ENT_NPC;
 				break;
 			case SPECTATOR:

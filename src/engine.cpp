@@ -859,7 +859,7 @@ void Engine::render_shadowmaps(bool everything)
 			matrix4 cube[6];
 
 		
-			if (all_lights || (i == 107) || everything)
+			if (all_lights || (i == shadow_light) || everything)
 			{
 				// Generate matrices
 				//rl tb fb
