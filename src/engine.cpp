@@ -518,13 +518,13 @@ void Engine::load(char *level)
 	gfx.SelectTexture(2, no_tex);
 	gfx.SelectTexture(3, no_tex);
 
-	render_entities(transformation, true, false);
+	render_entities(transformation, projection, true, false);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
 	q3map.lastIndex = -2; // force generation of new face lists
 	camera_frame.set(transformation);
 
-	render_entities(transformation, true, true);
+	render_entities(transformation, projection, true, true);
 
 	menu.delta("textures", *this);
 	menu.render(global);
@@ -875,11 +875,11 @@ void Engine::render_shadowmaps(bool everything)
 				matrix4::mat_forward(cube[4], entity_list[i]->position);
 				matrix4::mat_backward(cube[5], entity_list[i]->position);
 
-
+				light->shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
 //				gfx.Color(false);
 				for (int j = 0; j < 6; j++)
 				{
-					matrix4 mvp = cube[j] * projection;
+					matrix4 mvp = cube[j] * light->shadow_projection;
 					float bias[16] = {
 						0.5, 0.0, 0.0, 0.0,
 						0.0, 0.5, 0.0, 0.0,
@@ -898,16 +898,16 @@ void Engine::render_shadowmaps(bool everything)
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 
-					light->shadow_matrix[j] = (cube[j] * projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
+					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
 
 					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
-					render_entities(cube[j], true, false);
-					render_players(cube[j], true, true);
+					render_entities(cube[j], light->shadow_projection, true, false);
+					render_players(cube[j], light->shadow_projection, true, true);
 					gfx.bindFramebuffer(0);
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
@@ -1015,8 +1015,8 @@ void Engine::render_scene(bool lights)
 	camera_frame.set(transformation);
 
 	// Rendering entities before map for blends
-	render_entities(transformation, lights, false);
-	render_players(transformation, lights, game->spectator);
+	render_entities(transformation, projection, lights, false);
+	render_players(transformation, projection, lights, game->spectator);
 
 	mlight2.Select();
 	mvp = transformation * projection;
@@ -1076,11 +1076,8 @@ void Engine::render_scene(bool lights)
 #endif
 #endif
 
-	render_entities(transformation, lights, true);
-
+	render_entities(transformation, projection, lights, true);
 	render_weapon(transformation, lights, player);
-
-
 }
 
 
@@ -1089,7 +1086,6 @@ void Engine::render_scene(bool lights)
 // Right now I can only get four shadow omni-lights with this limit
 void Engine::render_scene_using_shadowmap(bool lights)
 {
-
 	matrix4 transformation;
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
@@ -1121,9 +1117,8 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	}
 
 	// Rendering entities before map for blends
-	render_entities(transformation, lights, false);
-
-	render_players(transformation, lights, game->spectator);
+	render_entities(transformation, projection, lights, false);
+	render_players(transformation, projection, lights, game->spectator);
 	mvp = transformation * projection;
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
@@ -1182,7 +1177,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 #endif
 #endif
 
-	render_entities(transformation, lights, true);
+	render_entities(transformation, light->shadow_projection, lights, true);
 	render_weapon(transformation, lights, player);
 
 }
@@ -1281,7 +1276,7 @@ void Engine::render_trails(matrix4 &trans)
 	}
 }
 
-void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
+void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend)
 {
 	matrix4 mvp;
 
@@ -1348,7 +1343,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 		vec3 offset = entity->position;
 
 		entity->rigid->get_matrix(mvp.m);
-		mvp = (mvp * trans) * projection;
+		mvp = (mvp * trans) * proj;
 		if (lights)
 		{
 			mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
@@ -1373,7 +1368,7 @@ void Engine::render_entities(const matrix4 &trans, bool lights, bool blend)
 	}
 }
 
-void Engine::render_players(matrix4 &trans, bool lights, bool render_self)
+void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool render_self)
 {
 	matrix4 mvp;
 	//render player md5
@@ -1426,7 +1421,7 @@ void Engine::render_players(matrix4 &trans, bool lights, bool render_self)
 				mvp.m[10] = right.z;
 
 
-				mvp = (mvp * trans) * projection;
+				mvp = (mvp * trans) * proj;
 				vec3 offset = entity->position;
 
 				if (lights)

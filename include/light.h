@@ -20,6 +20,7 @@ public:
 	unsigned int array_tex;
 
 
+	matrix4 shadow_projection;
 	matrix4 shadow_matrix[6];
 
 	vec3	color;
