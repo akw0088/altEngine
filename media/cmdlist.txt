@@ -18,7 +18,6 @@ cg_crosshairsize
 cg_faceicon
 cl_skip
 clear
-clear
 com_maxfps
 connect
 damage
@@ -46,7 +45,6 @@ list
 log
 map
 name ""
-noclip
 noclip
 play
 push

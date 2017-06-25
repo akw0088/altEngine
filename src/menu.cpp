@@ -55,6 +55,7 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	chatmode = false;
 	chat = true;
 	notif = true;
+	line_offset = 0;
 
 
 	menu_object = load_texture(*gfx, "media/menu.tga", false, false);
@@ -335,14 +336,14 @@ void Menu::render_console(Global &global)
 	gfx->DrawArrayTri(0, 0, 6, 4);
 
 	gfx->cleardepth();
-	for (unsigned int i = 0; i < console_buffer.size(); i++)
+	for (unsigned int i = line_offset; i < console_buffer.size(); i++)
 	{
 		bool start = false;
 
-		if (i == 0)
+		if (i == line_offset)
 			start = true;
 
-		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i), 0.025f, color, start, false);
+		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i - line_offset), 0.025f, color, start, false);
 	}
 	strcat(key_buffer, "\4");
 	draw_text(key_buffer, 0.0125f, 0.5f - 0.05f, 0.025f, color, false, false);
@@ -512,6 +513,20 @@ void Menu::handle_console(char key, Engine *altEngine)
 			strcpy(key_buffer, cmd_buffer[cmd_buffer.size() - 1 - history_index]);
 		}
 		break;
+	case 1:
+		if (line_offset > 0)
+			line_offset--;
+		break;
+	case 2:
+		line_offset++;
+		break;
+	case 10:
+		if (line_offset >= 10)
+			line_offset -= 10;
+		break;
+	case 11:
+		line_offset += 10;
+		break;
 	case '`':
 	case '~':
 		console = false;
@@ -531,7 +546,7 @@ void Menu::handle_console(char key, Engine *altEngine)
 		}
 	case 4:
 	case '\t':
-		for (int i = 0; i < altEngine->num_cmd; i++)
+		for (unsigned int i = 0; i < altEngine->num_cmd; i++)
 		{
 			if (strncmp(key_buffer, altEngine->cmd_list[i], strlen(key_buffer)) == 0)
 			{

@@ -3033,6 +3033,8 @@ void Engine::bind_keys()
 		key_bind.insert("S", "movedown");
 		key_bind.insert("D", "moveright");
 		key_bind.insert("tab", "scores");
+		key_bind.insert("pgup", "pgup");
+		key_bind.insert("pgdown", "pgdown");
 
 
 		key_bind.insert("numpad0", "numpad0");
@@ -3164,6 +3166,7 @@ void Engine::keypress(char *key, bool pressed)
 		input.weapon_up = pressed;
 		if (client_flag)
 			entity_list[spawn]->player->change_weapon_up();
+		k = 2;
 	}
 	else if (strcmp("weapon_down", cmd) == 0)
 	{
@@ -3172,6 +3175,7 @@ void Engine::keypress(char *key, bool pressed)
 		input.weapon_down = pressed;
 		if (client_flag)
 			entity_list[spawn]->player->change_weapon_down();
+		k = 1;
 	}
 	else if (strcmp("use", cmd) == 0)
 	{
@@ -3237,6 +3241,14 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("scores", cmd) == 0)
 	{
 		input.scores = pressed;
+	}
+	else if (strcmp("pgup", cmd) == 0)
+	{
+		k = 11;
+	}
+	else if (strcmp("pgdown", cmd) == 0)
+	{
+		k = 10;
 	}
 
 	if (pressed)

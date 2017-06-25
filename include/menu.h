@@ -59,6 +59,7 @@ private:
 
 	char key_buffer[1024];
 	unsigned int history_index;
+	unsigned int line_offset;
 
 	mFont	font;
 	int		menu_object;
