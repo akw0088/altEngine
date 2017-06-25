@@ -1516,8 +1516,6 @@ void Engine::handle_input()
 		post_process(5);
 	}
 
-
-
 	if (input.numpad2)
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
@@ -2072,6 +2070,9 @@ bool Engine::body_collision(RigidBody &body)
 void Engine::step(int tick)
 {
 	tick_num = tick;
+	if (fullscreen_timer > 0)
+		fullscreen_timer--;
+
 	if (q3map.loaded == false)
 		return;
 
@@ -3035,6 +3036,7 @@ void Engine::bind_keys()
 		key_bind.insert("tab", "scores");
 		key_bind.insert("pgup", "pgup");
 		key_bind.insert("pgdown", "pgdown");
+		key_bind.insert("F1", "fullscreen");
 
 
 		key_bind.insert("numpad0", "numpad0");
@@ -3075,16 +3077,11 @@ void Engine::bind_keys()
 	/*
 	key_bind.insert(make_pair((char *)"~", (char *)"console"));
 	key_bind.insert(make_pair((char *)"k", (char *)"kill"));
-	key_bind.insert(make_pair((char *)"t", (char *)"talk"));
 	key_bind.insert(make_pair((char *)"q", (char *)"walk"));
 	key_bind.insert(make_pair((char *)"F1", (char *)"voteyes"));
 	key_bind.insert(make_pair((char *)"F2", (char *)"voteno"));
 	key_bind.insert(make_pair((char *)"F11", (char *)"screenshot"));
 	*/
-
-
-	//seta com_maxfps "85"
-	//console(-1, "com_maxfps")
 	/*
 	seta sv_strictAuth "1"
 	seta sv_lanForceRate "1"
@@ -3104,9 +3101,6 @@ void Engine::bind_keys()
 	skin
 	team red/blue
 	seta cg_autoswitch "0"
-	resolution
-	seta r_customheight "1080"
-	seta r_customwidth "1080"
 	net_port 65535
 	banip
 	*/
@@ -3249,6 +3243,10 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("pgdown", cmd) == 0)
 	{
 		k = 10;
+	}
+	else if (strcmp("fullscreen", cmd) == 0)
+	{
+		fullscreen();
 	}
 
 	if (pressed)
@@ -3478,24 +3476,26 @@ void Engine::load_entities()
 void Engine::fullscreen()
 {
 #ifdef WIN32
-	HMONITOR hmon;
-	MONITORINFO mi = { sizeof(MONITORINFO) };
-	HWND hwnd = *((HWND *)param1);
+	if (fullscreen_timer == 0)
+	{
+		HMONITOR hmon;
+		MONITORINFO mi = { sizeof(MONITORINFO) };
+		HWND hwnd = *((HWND *)param1);
 
-	hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-	GetMonitorInfo(hmon, &mi);
+		hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+		GetMonitorInfo(hmon, &mi);
 
-	int xres = abs(mi.rcMonitor.right - mi.rcMonitor.left);
-	int yres = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
+		int xr = abs(mi.rcMonitor.right - mi.rcMonitor.left);
+		int yr = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
 
+		static LONG old_style;
+		static int	new_style = WS_CHILD | WS_VISIBLE;
 
-
-	static LONG old_style;
-	static int	new_style = WS_CHILD | WS_VISIBLE;
-
-	old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
-	new_style = old_style;
-	SetWindowPos(hwnd, HWND_TOP, 0, 0, xres, yres, 0);
+		old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
+		new_style = old_style;
+		SetWindowPos(hwnd, HWND_TOP, 0, 0, xr, yr, 0);
+		fullscreen_timer = TICK_RATE;
+	}
 #endif
 }
 

@@ -25,6 +25,7 @@ disconnect
 dynamic_res
 exit
 flight
+fullscreen
 g_capturelimit
 g_collision
 g_fov

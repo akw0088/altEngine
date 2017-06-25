@@ -119,9 +119,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static unsigned int		tick_count;
 	static unsigned int		last_tick;
 	static unsigned int		last_resize = 0;
-	static int	old_style = 0;
-	static int	new_style = WS_CHILD | WS_VISIBLE;
-	static int	xres, yres;
 	static bool show_cursor = true;
 	static double start = 0.0, end = 0.0, last_frametime = 0.0;
 	static double min_frametime = 0.0;
@@ -138,20 +135,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 	{
-		HMONITOR hmon;
-		MONITORINFO mi = { sizeof(MONITORINFO) };
-
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
 		RedirectIOToConsole();
 
 		SetTimer(hwnd, TICK_TIMER, TICK_MS, NULL);
 		hdc = GetDC(hwnd);
-
-		hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-		GetMonitorInfo(hmon, &mi);
-
-		xres = abs(mi.rcMonitor.right - mi.rcMonitor.left);
-		yres = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
 		GetFreq(freq);
 		setupPixelFormat(hdc);
 #ifdef OPENGL32
@@ -380,14 +368,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				altEngine.keypress("numpad9", pressed);
 				break;
 			case VK_F1:
-				if (tick_count > 60 + last_resize)
-				{
-					last_resize = tick_count;
-					old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
-					new_style = old_style;
-					SetWindowPos(hwnd, HWND_TOP, 0, 0, xres, yres, 0);
-					break;
-				}
+				altEngine.keypress("F1", pressed);
+				break;
 			case VK_F2:
 				altEngine.keypress("F2", pressed);
 				break;

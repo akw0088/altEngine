@@ -113,6 +113,7 @@ public:
 	unsigned int testObj;
 	unsigned int num_light;
 	int doom_sound;
+	unsigned int fullscreen_timer;
 
 
 	unsigned int audio_source[32];
