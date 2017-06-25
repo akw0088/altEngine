@@ -38,7 +38,12 @@ void Global::prelink()
 
 }
 
-void Global::Params(matrix4 &mvp, int tex0)
+void Global::Params(matrix4 &mvp, int tex0, int depth)
+{
+
+}
+
+Global::~Global()
 {
 
 }
@@ -62,6 +67,30 @@ void mLight2::set_ambient(float ambient)
 void mLight2::set_lightmap(float lightmap)
 {
 
+}
+
+void mLight2::set_shadow_matrix0(matrix4 &proj)
+{
+}
+
+void mLight2::set_shadow_matrix1(matrix4 &proj)
+{
+}
+
+void mLight2::set_shadow_matrix2(matrix4 &proj)
+{
+}
+
+void mLight2::set_shadow_matrix3(matrix4 &proj)
+{
+}
+
+void mLight2::set_shadow_matrix4(matrix4 &proj)
+{
+}
+
+void mLight2::set_shadow_matrix5(matrix4 &proj)
+{
 }
 
 

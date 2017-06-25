@@ -153,6 +153,8 @@ public:
 	vector<surface_t *> surface_list;
 
 	unsigned int num_bot;
+	unsigned int shadow_light;
+
 	Bsp			q3map;
 	float			res_scale;
 

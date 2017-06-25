@@ -113,6 +113,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	multisample = 0;
 	sensitivity = 1.0f;
 
+	shadow_light = 107;
+
 #ifdef OPENMP
 	omp_set_num_threads(8);
 #endif
@@ -732,6 +734,12 @@ void Engine::render(double last_frametime)
 				{
 					if (entity_list[i]->light->light_num == player->current_light)
 					{
+						if (input.scores)
+						{
+							shadow_light = i;
+							printf("selecting light %d for shadows\n", i);
+						}
+
 						if (input.duck == false)
 						{
 							depth_view = true;
@@ -856,8 +864,8 @@ void Engine::render_shadowmaps(bool everything)
 				// Generate matrices
 				//rl tb fb
 
-				if (light->light_num != 1)
-					continue;
+//				if (light->light_num != 1)
+//					continue;
 
 
 				matrix4::mat_right(cube[0], entity_list[i]->position);
@@ -952,10 +960,10 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.fbAttachDepth(depth_tex);
 
 	gfx.clear();
-//	if (shadowmaps)
+	if (shadowmaps)
 		render_scene_using_shadowmap(true);
-//	else
-		//render_scene(true);
+	else
+		render_scene(true);
 
 /*
 	if (spawn != -1)
@@ -1094,7 +1102,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 
 	mlight2.Select();
-	Light *light = entity_list[107]->light;
+	Light *light = entity_list[shadow_light]->light;
 	if (light)
 	{
 		mlight2.set_shadow_matrix0(light->shadow_matrix[0]);
