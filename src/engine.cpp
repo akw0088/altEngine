@@ -144,6 +144,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 	// hash check data files
+	newlinelist("media/cmdlist.txt", cmd_list, num_cmd);
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
 	newlinelist("media/pk3hash.txt", hash_list, num_hash);
 
@@ -209,6 +210,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->rigid = new RigidBody(thug22);
 	thug22->model = thug22->rigid;
 	thug22->model->load(gfx, "media/models/thug22/thug22");
+
 
 	// Scale down so player closer match to q3 model size
 	thug22->model->aabb[0] *= 0.7f;

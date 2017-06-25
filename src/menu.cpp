@@ -530,6 +530,15 @@ void Menu::handle_console(char key, Engine *altEngine)
 		break;
 		}
 	case 4:
+	case '\t':
+		for (int i = 0; i < altEngine->num_cmd; i++)
+		{
+			if (strncmp(key_buffer, altEngine->cmd_list[i], strlen(key_buffer)) == 0)
+			{
+				print(altEngine->cmd_list[i]);
+			}
+		}
+		break;
 	case '\b':
 		if (length - 1 == -1)
 			return;

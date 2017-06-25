@@ -123,11 +123,12 @@ public:
 	rendermode_t render_mode;
 	bool dynamic_resolution;
 
-
 	char *pk3_list[32];
-	char *hash_list[32];
 	unsigned int num_pk3;
+	char *hash_list[32];
 	unsigned int num_hash;
+	char *cmd_list[512];
+	unsigned int num_cmd;
 	char *shader_list[256];
 	int num_shader;
 	HashTable key_bind;
