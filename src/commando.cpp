@@ -3094,8 +3094,6 @@ void Commando::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity
 	char data2[LINE_SIZE] = { 0 };
 	int ret;
 
-	debugf("Console: %s\n", cmd);
-
 	ret = sscanf(cmd, "hurt %s %s", data, data2);
 	if (ret == 2)
 	{

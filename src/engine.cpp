@@ -3782,8 +3782,6 @@ void Engine::console(char *cmd)
 	int port;
 	int ret;
 
-	debugf("Console: %s\n", cmd);
-
 	ret = sscanf(cmd, "log %s", data);
 	if (ret == 1)
 	{
@@ -3928,6 +3926,7 @@ void Engine::console(char *cmd)
 	if (strcmp(cmd, "clear") == 0)
 	{
 		menu.clear_console();
+		return;
 	}
 
 	ret = sscanf(cmd, "connect %s", data);

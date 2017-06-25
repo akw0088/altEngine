@@ -437,7 +437,7 @@ void Audio::load(wave_t &wave)
 
 	if (wave.data == NULL)
 	{
-		debugf("Unable to load wave file %s.\n", wave.file);
+		debugf("Unable to load wave %s\n", wave.file);
 		memset(&wave, 0, sizeof(wave_t));
 		return;
 	}
