@@ -27,6 +27,7 @@ public:
 	void render_texture(int texObj, bool depth_view);
 	void post_process(int num_passes);
 	void resize(int width, int height);
+	void fullscreen();
 
 	void step(int tick_num);
 	void dynamics();

@@ -3475,6 +3475,30 @@ void Engine::load_entities()
 	}
 }
 
+void Engine::fullscreen()
+{
+#ifdef WIN32
+	HMONITOR hmon;
+	MONITORINFO mi = { sizeof(MONITORINFO) };
+	HWND hwnd = *((HWND *)param1);
+
+	hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+	GetMonitorInfo(hmon, &mi);
+
+	int xres = abs(mi.rcMonitor.right - mi.rcMonitor.left);
+	int yres = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
+
+
+
+	static LONG old_style;
+	static int	new_style = WS_CHILD | WS_VISIBLE;
+
+	old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
+	new_style = old_style;
+	SetWindowPos(hwnd, HWND_TOP, 0, 0, xres, yres, 0);
+#endif
+}
+
 void Engine::clean_entity(int index)
 {
 	//free audio sources
@@ -3928,6 +3952,13 @@ void Engine::console(char *cmd)
 		menu.clear_console();
 		return;
 	}
+
+	if (strcmp(cmd, "fullscreen") == 0)
+	{
+		fullscreen();
+		return;
+	}
+
 
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
