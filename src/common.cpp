@@ -13,7 +13,7 @@
 #include <math.h> // for ceil
 
 
-#define DMESG_SIZE 256
+#define DMESG_SIZE 2048
 extern char dmesg[DMESG_SIZE][1024];
 extern int dmesg_index;
 

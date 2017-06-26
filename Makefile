@@ -55,7 +55,7 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-CPP := g++ -fuse-linker-plugin
+CPP := g++ -fuse-linker-plugin -std=c++11
 CC := gcc -fuse-linker-plugin
 #CPP := clang++
 #CC := clang
