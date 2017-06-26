@@ -63,6 +63,7 @@ public:
 
 	float			restitution;
 	bool			sleep;
+	bool			ducked;
 	bool			gravity;
 	bool			noclip;
 	bool			flight;

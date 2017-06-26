@@ -20,6 +20,7 @@ RigidBody::RigidBody(Entity *entity)
 	water = false;
 	flight = false;
 	last_water = false;
+	ducked = false;
 	hard_impact = false;
 	target = NULL;
 	mass = 10.0f;
@@ -168,6 +169,11 @@ bool RigidBody::collision_detect(Plane &p)
 	{
 		// make center origin
 		vec3 point = center + aabb[i];
+
+		if (ducked)
+		{
+			point.y /= 2.0f;
+		}
 
 		//rotate around origin
 		point = morientation * point;
@@ -726,7 +732,13 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	if (input.duck)
 	{
 		velocity.y += -ACCEL * speed_scale;
+		ducked = true;
 		moved = true;
+	}
+	else
+	{
+		ducked = false;
+		position.y += vec3(0.0f, 50.0f, 0.0f); // prevent getting stuck in floor
 	}
 
 	float speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);
