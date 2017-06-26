@@ -7,7 +7,7 @@
 #define SOCKET int
 #endif
 
-#ifndef linux
+#ifndef __linux__
 int inet_pton(int af, const char *server, in_addr *addr);
 #endif
 

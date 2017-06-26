@@ -235,8 +235,9 @@ void Net::closesock()
 
 
 #ifdef _WIN32
-int inet_pton(int af, const char *server, in_addr *addr)
+int inet_pton(int af, const char *server, void *vaddr);
 {
+	in_addr *addr = vaddr;
 	struct hostent *host = gethostbyname(server);
 	if (host)
 	*addr = *((struct in_addr *)*host->h_addr_list);
