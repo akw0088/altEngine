@@ -49,7 +49,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	if (tBsp == NULL)
 	{
-		printf("Unable to open map %s\n", map);
+		debugf("Unable to open map %s\n", map);
 		return false;
 	}
 

@@ -174,29 +174,29 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	for(unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		pool[i].join();
-		printf("Checking hash for %s...", pk3_list[i]);
+		debugf("Checking hash for %s...", pk3_list[i]);
 		if (strcmp(hash_list[i], hash[i]) != 0)
 		{
 			if (strcmp(pk3_list[i], "media/pak0.pk3") == 0)
 			{
 				if (strcmp(hash[i], "0613b3d4ef05e613a2b470571498690f") == 0)
 				{
-					printf("pak0.pk3 is from Q3A Demo\n");
+					debugf("pak0.pk3 is from Q3A Demo\n");
 					demo = true;
 				}
 				else
 				{
-					printf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+					debugf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
 				}
 			}
 			else
 			{
-				printf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+				debugf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
 			}
 		}
 		else
 		{
-			printf("Good!\n");
+			debugf("Good!\n");
 		}
 	}
 #endif

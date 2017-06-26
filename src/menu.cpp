@@ -9,7 +9,7 @@ vector<char *> Menu::chat_buffer;
 vector<char *> Menu::notif_buffer;
 
 
-#define DMESG_SIZE 256
+#define DMESG_SIZE 2048
 char dmesg[DMESG_SIZE][1024];
 int dmesg_index = 0;
 
@@ -336,11 +336,11 @@ void Menu::render_console(Global &global)
 	gfx->DrawArrayTri(0, 0, 6, 4);
 
 	gfx->cleardepth();
-	for (unsigned int i = line_offset; i < console_buffer.size(); i++)
+	for (unsigned int i = 0; i < console_buffer.size(); i++)
 	{
 		bool start = false;
 
-		if (i == line_offset)
+		if (i == 0)
 			start = true;
 
 		draw_text(console_buffer[i], 0.0125f, 0.4f - 0.025f * (console_buffer.size() - 1 - i - line_offset), 0.025f, color, start, false);
