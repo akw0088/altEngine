@@ -714,7 +714,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	yaw.up = vec3::crossproduct(right, yaw.forward);
 	yaw.up.normalize();
 
-	if (y_offset != 0)
+	if (y_offset != 0 || input.walk)
 	{
 		speed_scale *= 0.5f;
 	}

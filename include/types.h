@@ -221,6 +221,7 @@ typedef struct
 	bool moveleft;
 	bool movedown;
 	bool moveright;
+	bool walk;
 
 	bool weapon_up;
 	bool weapon_down;

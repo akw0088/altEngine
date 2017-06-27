@@ -2962,7 +2962,7 @@ void Engine::bind_keys()
 		key_bind.insert("F1", "fullscreen");
 
 
-		key_bind.insert("numpad0", "postprocess");
+		key_bind.insert("numpad0", "walk");
 		key_bind.insert("numpad1", "numpad1");
 		key_bind.insert("numpad2", "lookforward");
 		key_bind.insert("numpad3", "lookdown");
@@ -3048,6 +3048,11 @@ void Engine::keypress(char *key, bool pressed)
 		handled = true;
 		input.attack = pressed;
 		k = 14;
+	}
+	else if (strcmp("walk", cmd) == 0)
+	{
+		handled = true;
+		input.walk = pressed;
 	}
 	else if (strcmp("moveup", cmd) == 0)
 	{

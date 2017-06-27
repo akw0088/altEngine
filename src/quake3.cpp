@@ -1602,7 +1602,7 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
-	if (entity->rigid->on_ground && entity->rigid->gravity == true &&
+	if (input.walk == false && entity->rigid->on_ground && entity->rigid->gravity == true &&
 		entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
 		entity->rigid->noclip == false)
 	{
