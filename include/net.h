@@ -8,7 +8,7 @@
 #endif
 
 #ifndef __linux__
-int inet_pton(int af, const char *server, in_addr *addr);
+int inet_pton(int af, const char *server, void *vaddr);
 #endif
 
 /*

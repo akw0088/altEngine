@@ -14,12 +14,12 @@ public:
 	void calc_frustum(matrix4 &clip);
 	void load(Graphics &gfx, char *file);
 	void create_box(Graphics &gfx, vec3 *aabb);
-	float *get_matrix(float *matrix);
+	virtual float *get_matrix(float *matrix);
 	void render(Graphics &gfx);
 	void render_box(Graphics &gfx);
 	void clone(Model &model);
 	void getForwardVector(vec3 &forward);
-	void get_frame(Frame &frame);
+	virtual void get_frame(Frame &frame);
 	void make_aabb();
 
 	Entity			*entity;

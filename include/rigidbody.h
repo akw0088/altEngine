@@ -23,6 +23,7 @@ public:
 	void frame2ent_yaw(Frame *camera_frame, input_t &input);
 	void save_config(cfg_t &config);
 	void load_config(cfg_t &config);
+	void get_frame(Frame &frame);
 
 	//AI
 	void seek(const vec3 &position);
@@ -46,6 +47,7 @@ public:
 
 	float get_volume();
 	float get_height();
+	float *get_matrix(float *matrix);
 
 
 	unsigned int impact_index;

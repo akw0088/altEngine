@@ -1700,7 +1700,6 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 
 	handle_weapons(*(entity->player), input, self, engine->client_flag);
-
 }
 
 void Quake3::player_died(int index)
@@ -2303,9 +2302,9 @@ void Quake3::step(int frame_step)
 
 void Quake3::handle_plasma(Player &player, int self, bool client)
 {
-	Frame camera_frame;
+	Frame frame;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(frame);
 	player.reload_timer = PLASMA_RELOAD;
 	player.ammo_plasma--;
 
@@ -2321,16 +2320,16 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->nettype = NT_PLASMA;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
-		projectile->position = camera_frame.pos;
-		camera_frame.set(projectile->model->morientation);
+		projectile->position = frame.pos;
+		frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
 		projectile->rigid->blend = true;
 
 		projectile->rigid->clone(*(model_table[MODEL_BALL]));
-		projectile->rigid->velocity = camera_frame.forward * -10.0f;
-		projectile->rigid->net_force = camera_frame.forward * -10.0f;
+		projectile->rigid->velocity = frame.forward * -10.0f;
+		projectile->rigid->net_force = frame.forward * -10.0f;
 
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
@@ -2361,10 +2360,10 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
-	add_decal(player.entity->position, camera_frame, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
+	add_decal(frame.pos, frame, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->position = player.entity->position + frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2378,9 +2377,9 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 
 void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 {
-	Frame camera_frame;
+	Frame frame;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(frame);
 	player.reload_timer = ROCKET_RELOAD;
 	player.ammo_rockets--;
 
@@ -2394,7 +2393,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NT_ROCKET;
-		projectile->position = camera_frame.pos;
+		projectile->position = frame.pos;
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
@@ -2429,10 +2428,10 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
-		camera_frame.set(projectile->rigid->morientation);
+		frame.set(projectile->rigid->morientation);
 		projectile->rigid->clone(*(model_table[MODEL_ROCKET]));
-		projectile->rigid->velocity = camera_frame.forward * -6.25f;
-		projectile->rigid->net_force = camera_frame.forward * -10.0f;
+		projectile->rigid->velocity = frame.forward * -6.25f;
+		projectile->rigid->net_force = frame.forward * -10.0f;
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
 
@@ -2442,7 +2441,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->position = frame.pos + frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2452,14 +2451,13 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	muzzleflash->visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
 	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
-
 }
 
 void Quake3::handle_grenade(Player &player, int self, bool client)
 {
-	Frame camera_frame;
+	Frame frame;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(frame);
 	player.reload_timer = GRENADE_RELOAD;
 	player.ammo_grenades--;
 
@@ -2470,14 +2468,14 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
-		projectile->position = camera_frame.pos;
-		camera_frame.set(projectile->model->morientation);
+		projectile->position = frame.pos;
+		frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
 
 		projectile->rigid->clone(*(model_table[MODEL_GRENADE]));
-		projectile->rigid->velocity = camera_frame.forward * -25.0f;
+		projectile->rigid->velocity = frame.forward * -25.0f;
 		projectile->rigid->angular_velocity = vec3(1.1f, 0.1f, 1.1f);
 		projectile->rigid->gravity = true;
 		projectile->rigid->ground_friction_flag = true;
@@ -2516,7 +2514,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->position = frame.pos + frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2531,11 +2529,11 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 void Quake3::handle_lightning(Player &player, int self, bool client)
 {
-	Frame camera_frame;
+	Frame frame;
 	int index[16] = { -1 };
 	int num_index = 0;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(frame);
 
 
 	if (player.entity->rigid->water && player.entity->rigid->water_depth >= 25.0f)
@@ -2595,7 +2593,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NT_LIGHTNING;
 		projectile->rigid = new RigidBody(projectile);
-		projectile->position = camera_frame.pos;
+		projectile->position = frame.pos;
 		projectile->rigid->clone(*(model_table[MODEL_BOX]));
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
@@ -2605,7 +2603,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->rigid->lightning_trail = true;
 		projectile->model = projectile->rigid;
 	//	projectile->rigid->set_target(*(engine->entity_list[self]));
-		camera_frame.set(projectile->model->morientation);
+		frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->rigid->noclip = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
@@ -2632,7 +2630,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 
 
-		engine->hitscan(player.entity->position, forward, index, num_index, self, 768.0f);
+		engine->hitscan(frame.pos, forward, index, num_index, self, 768.0f);
 		for (int i = 0; i < num_index; i++)
 		{
 			char cmd[512] = { 0 };
@@ -2681,7 +2679,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->position = frame.pos + frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2700,9 +2698,9 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	int index[16] = { -1 };
 	int num_index = 0;
 
-	Frame camera_frame;
+	Frame frame;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(frame);
 	player.reload_timer = RAILGUN_RELOAD;
 	player.ammo_slugs--;
 
@@ -2712,7 +2710,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NT_RAIL;
 		projectile->rigid = new RigidBody(projectile);
-		projectile->position = camera_frame.pos;
+		projectile->position = frame.pos;
 		projectile->rigid->clone(*(model_table[MODEL_BALL]));
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
@@ -2722,7 +2720,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->model->rail_trail = true;
 		projectile->rigid->noclip = true;
 
-		camera_frame.set(projectile->model->morientation);
+		frame.set(projectile->model->morientation);
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
@@ -2747,7 +2745,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		if (player.quad_timer > 0)
 			quad_factor = QUAD_FACTOR;
 
-		engine->hitscan(player.entity->position, forward, index, num_index, self, -1.0f);
+		engine->hitscan(frame.pos, forward, index, num_index, self, -1.0f);
 		if (num_index == 0)
 			player.impressive_count = 0;
 
@@ -2819,7 +2817,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * -75.0f;
+	muzzleflash->position = frame.pos + frame.forward * -75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2838,21 +2836,21 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 	int index[16] = { -1 };
 	int num_index = 0;
 
-	Frame camera_frame;
+	Frame frame;
 	vec3 dir;
 	vec3 end;
 
 
 	player.reload_timer = 5; // prevent doing gauntlet hitscan every frame
 
-	player.entity->model->get_frame(camera_frame);
-	camera_frame.forward *= -1;
+	player.entity->rigid->get_frame(frame);
+	frame.forward *= -1;
 	player.ammo_bullets--;
 
 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2867,7 +2865,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 
 	if (client == false)
 	{
-		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, 75.0f);
+		engine->hitscan(frame.pos, frame.forward, index, num_index, self, 75.0f);
 
 		float quad_factor = 1.0f;
 
@@ -2938,13 +2936,13 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	int index[16] = { -1 };
 	int num_index = 0;
 
-	Frame camera_frame;
+	Frame frame;
 	vec3 dir;
 	vec3 end;
 
 
-	player.entity->model->get_frame(camera_frame);
-	camera_frame.forward *= -1;
+	player.entity->rigid->get_frame(frame);
+	frame.forward *= -1;
 	player.reload_timer = MACHINEGUN_RELOAD;
 	player.ammo_bullets--;
 
@@ -2955,22 +2953,22 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	float spread_up = (float)(fsin(r) * crandom() * spread * 16);
 	float spread_right = (float)(fcos(r) * crandom() * spread * 16);
 
-	end = player.entity->position + camera_frame.forward * 8192 * 16;
+	end = frame.pos + frame.forward * 8192 * 16;
 	end.x += spread_right;
 	end.y += spread_up;
 	end.z += spread_right;
 
-	dir = end - player.entity->position;
+	dir = end - frame.pos;
 	dir.normalize();
 
-	camera_frame.forward = dir;
+	frame.forward = dir;
 
 
 
-	add_decal(player.entity->position, camera_frame, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+	add_decal(frame.pos, frame, * (model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->position = frame.pos + frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
@@ -2985,12 +2983,12 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 	Entity *bullet = engine->entity_list[engine->get_entity()];
 	bullet->rigid = new RigidBody(bullet);
-	bullet->position = camera_frame.pos;
+	bullet->position = frame.pos;
 	bullet->rigid->clone(*(model_table[MODEL_BULLET]));
-	camera_frame.set(bullet->rigid->morientation);
-	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
-	bullet->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
-	bullet->rigid->velocity += right * random() + camera_frame.up * random();
+	frame.set(bullet->rigid->morientation);
+	vec3 right = vec3::crossproduct(frame.forward, frame.up);
+	bullet->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
+	bullet->rigid->velocity += right * random() + frame.up * random();
 	bullet->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f * random());
 	bullet->rigid->gravity = true;
 	bullet->model = bullet->rigid;
@@ -2998,7 +2996,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	bullet->rigid->rotational_friction_flag = true;
 	bullet->rigid->translational_friction_flag = true;
 	bullet->rigid->translational_friction = 0.9f;
-	camera_frame.set(bullet->model->morientation);
+	frame.set(bullet->model->morientation);
 	bullet->visible = true; // accomodate for low spatial testing rate
 	bullet->bsp_leaf = player.entity->bsp_leaf;
 	bullet->bsp_visible = player.entity->bsp_visible = true;
@@ -3006,7 +3004,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 	if (client == false)
 	{
-		engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, -1.0f);
+		engine->hitscan(frame.pos, frame.forward, index, num_index, self, -1.0f);
 
 		float quad_factor = 1.0f;
 
@@ -3086,21 +3084,21 @@ void Quake3::handle_frags_left(Player &player)
 
 void Quake3::handle_shotgun(Player &player, int self, bool client)
 {
-	Frame camera_frame;
+	Frame frame;
 	int index[16] = { -1 };
 	int num_index = 0;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(frame);
 
 	player.reload_timer = SHOTGUN_RELOAD;
 	player.ammo_shells--;
 
 	//	engine->map.hitscan(player.entity->position, forward, distance);
 
-	camera_frame.forward *= -1;
+	frame.forward *= -1;
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + camera_frame.forward * 75.0f;
+	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
 	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
 	muzzleflash->light->intensity = 3000.0f;
@@ -3111,15 +3109,15 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
 	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
 
-	vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
+	vec3 right = vec3::crossproduct(frame.forward, frame.up);
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->rigid = new RigidBody(shell);
-	shell->position = camera_frame.pos;
-	shell->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
+	shell->position = frame.pos;
+	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
 	shell->rigid->clone(*(model_table[MODEL_SHELL]));
-	camera_frame.set(shell->rigid->morientation);
-	shell->rigid->velocity += right * random() + camera_frame.up * random();
+	frame.set(shell->rigid->morientation);
+	shell->rigid->velocity += right * random() + frame.up * random();
 	shell->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f  * random());
 	shell->rigid->gravity = true;
 	shell->rigid->rotational_friction_flag = true;
@@ -3129,7 +3127,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 
 	shell->model = shell->rigid;
-	camera_frame.set(shell->model->morientation);
+	frame.set(shell->model->morientation);
 	shell->visible = true; // accomodate for low spatial testing rate
 	shell->bsp_leaf = player.entity->bsp_leaf;
 	shell->bsp_visible = player.entity->bsp_visible = true;
@@ -3137,13 +3135,13 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
 	shell2->rigid = new RigidBody(shell2);
-	shell2->position = camera_frame.pos;
-	shell2->position += camera_frame.forward * 3.0f - camera_frame.up * 4.0f + right * 5.0f;
+	shell2->position = frame.pos;
+	shell2->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
 	shell2->rigid->clone(*(model_table[MODEL_SHELL]));
-	camera_frame.set(shell->rigid->morientation);
+	frame.set(shell->rigid->morientation);
 
-	shell2->position += camera_frame.forward * 2.0f;
-	shell2->rigid->velocity += right * 1.25f * random() + camera_frame.up * random();
+	shell2->position += frame.forward * 2.0f;
+	shell2->rigid->velocity += right * 1.25f * random() + frame.up * random();
 	shell2->rigid->rotational_friction_flag = true;
 	shell2->rigid->translational_friction_flag = true;
 	shell2->rigid->translational_friction = 0.9f;
@@ -3151,7 +3149,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid->gravity = true;
 	shell2->rigid->impact_index = SND_SHELL;
 	shell2->model = shell2->rigid;
-	camera_frame.set(shell2->model->morientation);
+	frame.set(shell2->model->morientation);
 	shell2->visible = true; // accomodate for low spatial testing rate
 	shell2->bsp_leaf = player.entity->bsp_leaf;
 	shell2->bsp_visible = player.entity->bsp_visible = true;
@@ -3167,7 +3165,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		vec3 end;
 		vec3 dir;
 
-		end = player.entity->position + camera_frame.forward * 8192 * 16;
+		end = frame.pos + frame.forward * 8192 * 16;
 		end.x += spread_right;
 		end.y += spread_up;
 		end.z += spread_right;
@@ -3175,10 +3173,10 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		dir = end - player.entity->position;
 		dir.normalize();
 
-		camera_frame.forward = dir;
+		frame.forward = dir;
 
 
-		add_decal(player.entity->position, camera_frame, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+		add_decal(frame.pos, frame, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
 
 
 		if (client == false)
@@ -3189,7 +3187,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 				quad_factor = QUAD_FACTOR;
 
 
-			engine->hitscan(player.entity->position, camera_frame.forward, index, num_index, self, -1.0f);
+			engine->hitscan(frame.pos, frame.forward, index, num_index, self, -1.0f);
 			for (int i = 0; i < num_index; i++)
 			{
 				Player *target = engine->entity_list[index[i]]->player;
@@ -3246,7 +3244,7 @@ void Quake3::handle_gibs(Player &player)
 
 	Frame camera_frame;
 
-	player.entity->model->get_frame(camera_frame);
+	player.entity->rigid->get_frame(camera_frame);
 
 
 	player.entity->rigid->velocity += vec3(0.5f, 3.0f, 1.2f);

@@ -170,11 +170,6 @@ bool RigidBody::collision_detect(Plane &p)
 		// make center origin
 		vec3 point = center + aabb[i];
 
-		if (ducked)
-		{
-			point.y /= 2.0f;
-		}
-
 		//rotate around origin
 		point = morientation * point;
 
@@ -462,7 +457,11 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 	{
 		//		entity->rigid->sleep = false;
 		entity->rigid->gravity = true;
-		camera->pos = entity->position;
+
+		if (ducked)
+			camera->pos = entity->position + vec3(0.0f, -25.0f, 0.0f);
+		else
+			camera->pos = entity->position;
 
 		morientation.m[0] = right.x;
 		morientation.m[1] = right.y;
@@ -641,6 +640,54 @@ float RigidBody::get_height()
 	return abs32(aabb[7].z - aabb[0].z);
 }
 
+float *RigidBody::get_matrix(float *matrix)
+{
+	matrix[0] = morientation.m[0];
+	matrix[1] = morientation.m[1];
+	matrix[2] = morientation.m[2];
+	matrix[3] = 0.0f;
+
+	matrix[4] = morientation.m[3];
+	matrix[5] = morientation.m[4];
+	matrix[6] = morientation.m[5];
+	matrix[7] = 0.0f;
+
+	matrix[8] = morientation.m[6];
+	matrix[9] = morientation.m[7];
+	matrix[10] = morientation.m[8];
+	matrix[11] = 0.0f;
+
+	/* matrix rotates around center, but position is arbitrary point
+	from which verts are defined */
+
+	vec3 offset;
+
+	if (ducked)
+	{
+		vec3 temp = center + vec3(0.0f, 25.0f, 0.0f);
+		offset = morientation * temp;
+	}
+	else
+	{
+		offset = morientation * center;
+	}
+
+
+
+	matrix[12] = entity->position.x - offset.x;
+	matrix[13] = entity->position.y - offset.y;
+	matrix[14] = entity->position.z - offset.z;
+	matrix[15] = 1.0f;
+	return matrix;
+}
+
+void RigidBody::get_frame(Frame &frame)
+{
+	Model::get_frame(frame);
+
+	if (ducked)
+		frame.pos += vec3(0.0f, -25.0f, 0.0f);
+}
 
 
 // Move negative relative to the forward vector
@@ -675,6 +722,8 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	yaw.up = vec3::crossproduct(right, yaw.forward);
 	yaw.up.normalize();
 
+	if (ducked)
+		speed_scale *= 0.5f;
 
 	//prevent walking upward
 	if (noclip == false && flight == false)
@@ -731,14 +780,12 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 	if (input.duck)
 	{
-		velocity.y += -ACCEL * speed_scale;
 		ducked = true;
 		moved = true;
 	}
 	else
 	{
 		ducked = false;
-		position.y += vec3(0.0f, 50.0f, 0.0f); // prevent getting stuck in floor
 	}
 
 	float speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);

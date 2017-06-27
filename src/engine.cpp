@@ -1014,6 +1014,7 @@ void Engine::render_scene(bool lights)
 	if (player != -1)
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
 
+
 	camera_frame.set(transformation);
 
 	// Rendering entities before map for blends
@@ -1056,10 +1057,6 @@ void Engine::render_scene(bool lights)
 		emitter.position = vec3(0.0f, -10000.0f, 0.0f);
 	}
 #endif
-
-	camera_frame.set(transformation);
-	mvp = transformation * projection;
-
 
 #ifdef OPENGL32
 	if (emitter.visible)
@@ -1158,8 +1155,8 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	}
 #endif
 
-	camera_frame.set(transformation);
-	mvp = transformation * projection;
+//	camera_frame.set(transformation);
+//	mvp = transformation * projection;
 
 
 #ifdef OPENGL32
@@ -1954,7 +1951,6 @@ bool Engine::map_collision(RigidBody &body)
 	{
 		vec3 point;
 		vec3 oldpoint;
-
 
 		if (i < 8)
 		{
