@@ -65,7 +65,11 @@ bool HashTable::update(const char *key, char *value)
 
 		if (strcmp(table[index]->key, key) == 0)
 		{
-			table[index]->value = value;
+			int size = strlen(value) + 1;
+			char *nval = new char[size];
+			memcpy(nval, value, size);
+
+			table[index]->value = nval;
 			return true;
 		}
 	}

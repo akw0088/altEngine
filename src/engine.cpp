@@ -69,6 +69,8 @@ Engine::Engine()
 	spiral_vbo = 0;
 	spiral_ibo = 0;
 	all_lights = false;
+	ingame_menu_timer = 0;
+	fullscreen_timer = 0;
 
 	fb_width = 1024;
 	fb_height = 1024;
@@ -850,6 +852,7 @@ void Engine::zoom(float level)
 
 void Engine::render_shadowmaps(bool everything)
 {
+	return;
 	mlight2.Select();
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -2072,6 +2075,10 @@ void Engine::step(int tick)
 	if (q3map.loaded == false)
 		return;
 
+	if (ingame_menu_timer > 0)
+		ingame_menu_timer--;
+
+
 #ifndef DEDICATED
 	// Animate animated textures
 	for (unsigned int i = 0; i < q3map.anim_list.size(); i++)
@@ -3046,6 +3053,15 @@ void Engine::bind_keys()
 		key_bind.insert("numpad8", "numpad8");
 		key_bind.insert("numpad9", "numpad9");
 
+		key_bind.insert("num1", "weapon 1");
+		key_bind.insert("num2", "weapon 2");
+		key_bind.insert("num3", "weapon 3");
+		key_bind.insert("num4", "weapon 4");
+		key_bind.insert("num5", "weapon 5");
+		key_bind.insert("num6", "weapon 6");
+		key_bind.insert("num7", "weapon 7");
+		key_bind.insert("num8", "weapon 8");
+
 		return;
 	}
 
@@ -3070,14 +3086,6 @@ void Engine::bind_keys()
 	delete [] file;
 
 	//TBD
-	/*
-	key_bind.insert(make_pair((char *)"~", (char *)"console"));
-	key_bind.insert(make_pair((char *)"k", (char *)"kill"));
-	key_bind.insert(make_pair((char *)"q", (char *)"walk"));
-	key_bind.insert(make_pair((char *)"F1", (char *)"voteyes"));
-	key_bind.insert(make_pair((char *)"F2", (char *)"voteno"));
-	key_bind.insert(make_pair((char *)"F11", (char *)"screenshot"));
-	*/
 	/*
 	seta sv_strictAuth "1"
 	seta sv_lanForceRate "1"
@@ -3310,42 +3318,55 @@ void Engine::handle_game(char key)
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->current_face = 0;
+			console((char *)key_bind.find("num0"));
 		}
 		break;
 	case '1':
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->current_face = 1;
+			console((char *)key_bind.find("num1"));
 		}
 		break;
 	case '2':
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->current_face = 2;
+			console((char *)key_bind.find("num2"));
 		}
 		break;
 	case '3':
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->current_face = 3;
+			console((char *)key_bind.find("num3"));
 		}
 		break;
 	case '4':
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->current_face = 4;
+			console((char *)key_bind.find("num4"));
 		}
 		break;
 	case '5':
 		if (spawn != -1)
 		{
 			entity_list[spawn]->player->current_face = 5;
+			console((char *)key_bind.find("num5"));
 		}
 		break;
 	case '6':
+		console((char *)key_bind.find("num6"));
+		break;
 	case '7':
+		console((char *)key_bind.find("num7"));
+		break;
 	case '8':
+		console((char *)key_bind.find("num8"));
+		break;
 	case '9':
+		console((char *)key_bind.find("num9"));
 		break;
 
 	case '-':
@@ -3370,7 +3391,9 @@ void Engine::handle_game(char key)
 		break;
 
 	case 27:
-		menu.ingame = true;
+		if (ingame_menu_timer == 0)
+			menu.ingame = true;
+		ingame_menu_timer = TICK_RATE >> 2;
 		break;
 	case '[':
 		if (spawn != -1)
@@ -3384,6 +3407,13 @@ void Engine::handle_game(char key)
 		{
 			input.weapon_up = true;
 			entity_list[spawn]->player->change_weapon_up();
+		}
+		break;
+	default:
+		{
+			char skey[2];
+			sprintf(skey, "%c", key);
+			console((char *)key_bind.find(skey));
 		}
 		break;
 	}
@@ -3802,6 +3832,9 @@ void Engine::console(char *cmd)
 	int port;
 	int ret;
 
+	if (cmd == NULL)
+		return;
+
 	ret = sscanf(cmd, "log %s", data);
 	if (ret == 1)
 	{
@@ -3818,6 +3851,17 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
 		menu.print(msg);
 		load(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "bind %s %s", data, msg);
+	if (ret == 2)
+	{
+		if (key_bind.update(data, strstr(cmd, msg)))
+		{
+			return;
+		}
+		key_bind.insert(data, strstr(cmd, msg));
 		return;
 	}
 

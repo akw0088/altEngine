@@ -5386,6 +5386,50 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	if (strstr(cmd, "weapon "))
+	{
+		int weapon = atoi(cmd + 7);
+
+		switch (weapon)
+		{
+		case 1:
+			if (entity_list[self]->player->weapon_flags & WEAPON_GAUNTLET)	
+				entity_list[self]->player->current_weapon = WEAPON_GAUNTLET;
+			break;
+		case 2:
+			if (entity_list[self]->player->weapon_flags & WEAPON_MACHINEGUN)
+				entity_list[self]->player->current_weapon = WEAPON_MACHINEGUN;
+			break;
+		case 3:
+			if (entity_list[self]->player->weapon_flags & WEAPON_SHOTGUN)
+				entity_list[self]->player->current_weapon = WEAPON_SHOTGUN;
+			break;
+		case 4:
+			if (entity_list[self]->player->weapon_flags & WEAPON_GRENADE)
+				entity_list[self]->player->current_weapon = WEAPON_GRENADE;
+			break;
+		case 5:
+			if (entity_list[self]->player->weapon_flags & WEAPON_ROCKET)
+				entity_list[self]->player->current_weapon = WEAPON_ROCKET;
+			break;
+		case 6:
+			if (entity_list[self]->player->weapon_flags & WEAPON_LIGHTNING)
+				entity_list[self]->player->current_weapon = WEAPON_LIGHTNING;
+			break;
+		case 7:
+			if (entity_list[self]->player->weapon_flags & WEAPON_RAILGUN)
+				entity_list[self]->player->current_weapon = WEAPON_RAILGUN;
+			break;
+		case 8:
+			if (entity_list[self]->player->weapon_flags & WEAPON_PLASMA)
+				entity_list[self]->player->current_weapon = WEAPON_PLASMA;
+			break;
+		default:
+			break;
+		}
+		return;
+	}
+
 	if (strcmp(cmd, "weapon_lightning") == 0)
 	{
 		Player *player = entity_list[self]->player;

@@ -114,6 +114,7 @@ public:
 	unsigned int num_light;
 	int doom_sound;
 	unsigned int fullscreen_timer;
+	unsigned int ingame_menu_timer;
 
 
 	unsigned int audio_source[32];
