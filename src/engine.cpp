@@ -3115,6 +3115,7 @@ void Engine::bind_keys()
 
 void Engine::keypress(char *key, bool pressed)
 {
+	bool handled = false;
 	char k = 0;
 	char *cmd = (char *)key_bind.find(key);
 	if (cmd == NULL)
@@ -3122,44 +3123,52 @@ void Engine::keypress(char *key, bool pressed)
 
 	if (strcmp("attack", cmd) == 0)
 	{
+		handled = true;
 		input.attack = pressed;
 		k = 14;
 	}
 	else if (strcmp("moveup", cmd) == 0)
 	{
+		handled = true;
 		input.moveup = pressed;
 		if (*key != 'w' && *key != 'W')
 			k = 3;
 	}
 	else if (strcmp("moveleft", cmd) == 0)
 	{
+		handled = true;
 		input.moveleft = pressed;
 		if (*key != 'a' && *key != 'A')
 			k = 4;
 	}
 	else if (strcmp("movedown", cmd) == 0)
 	{
+		handled = true;
 		input.movedown = pressed;
 		if (*key != 's' && *key != 'S')
 			k = 5;
 	}
 	else if (strcmp("moveright", cmd) == 0)
 	{
+		handled = true;
 		input.moveright = pressed;
 		if (*key != 'd' && *key != 'D')
 			k = 6;
 	}
 	else if (strcmp("jump", cmd) == 0)
 	{
+		handled = true;
 		input.jump = pressed;
 	}
 	else if (strcmp("duck", cmd) == 0)
 	{
+		handled = true;
 		input.duck = pressed;
 	}
 	else if (strcmp("weapon_up", cmd) == 0)
 	{
 		int spawn = find_type(ENT_PLAYER, 0);
+		handled = true;
 
 		input.weapon_up = pressed;
 		if (client_flag)
@@ -3169,6 +3178,7 @@ void Engine::keypress(char *key, bool pressed)
 	else if (strcmp("weapon_down", cmd) == 0)
 	{
 		int spawn = find_type(ENT_PLAYER, 0);
+		handled = true;
 
 		input.weapon_down = pressed;
 		if (client_flag)
@@ -3177,84 +3187,101 @@ void Engine::keypress(char *key, bool pressed)
 	}
 	else if (strcmp("use", cmd) == 0)
 	{
+		handled = true;
 		input.use = pressed;
 	}
 	else if (strcmp("pickup", cmd) == 0)
 	{
+		handled = true;
 		input.pickup = pressed;
 	}
 	else if (strcmp("zoom", cmd) == 0)
 	{
+		handled = true;
 		input.zoom = pressed;
 	}
 	else if (strcmp("control", cmd) == 0)
 	{
+		handled = true;
 		input.control = pressed;
 	}
 	else if (strcmp("escape", cmd) == 0)
 	{
+		handled = true;
 		input.escape = pressed;
 		k = 27;
 	}
 	else if (strcmp("numpad0", cmd) == 0)
 	{
+		handled = true;
 		input.numpad0 = pressed;
 	}
 	else if (strcmp("numpad1", cmd) == 0)
 	{
+		handled = true;
 		input.numpad1 = pressed;
 	}
 	else if (strcmp("numpad2", cmd) == 0)
 	{
+		handled = true;
 		input.numpad2 = pressed;
 	}
 	else if (strcmp("numpad3", cmd) == 0)
 	{
+		handled = true;
 		input.numpad3 = pressed;
 	}
 	else if (strcmp("numpad4", cmd) == 0)
 	{
+		handled = true;
 		input.numpad4 = pressed;
 	}
 	else if (strcmp("numpad5", cmd) == 0)
 	{
+		handled = true;
 		input.numpad5 = pressed;
 	}
 	else if (strcmp("numpad6", cmd) == 0)
 	{
+		handled = true;
 		input.numpad6 = pressed;
 	}
 	else if (strcmp("numpad7", cmd) == 0)
 	{
+		handled = true;
 		input.numpad7 = pressed;
 	}
 	else if (strcmp("numpad8", cmd) == 0)
 	{
+		handled = true;
 		input.numpad8 = pressed;
 	}
 	else if (strcmp("numpad9", cmd) == 0)
 	{
+		handled = true;
 		input.numpad9 = pressed;
 	}
 	else if (strcmp("scores", cmd) == 0)
 	{
+		handled = true;
 		input.scores = pressed;
 	}
 	else if (strcmp("pgup", cmd) == 0)
 	{
+		handled = true;
 		k = 11;
 	}
 	else if (strcmp("pgdown", cmd) == 0)
 	{
+		handled = true;
 		k = 10;
-	}
-	else if (strcmp("fullscreen", cmd) == 0)
-	{
-		fullscreen();
 	}
 
 	if (pressed)
 		keystroke(k);
+
+	if (handled == false)
+		console(cmd);
 }
 
 void Engine::keystroke(char key)
