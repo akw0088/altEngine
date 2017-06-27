@@ -92,7 +92,6 @@ public:
 	void destroy_buffers();
 	void render_to_framebuffer(double last_frametime);
 	void set_dynamic_resolution(double last_frametime);
-	void handle_input();
 
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range);
 	void load_md5();

@@ -1338,19 +1338,6 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 
 
-	if (input.numpad7 == true)
-	{
-		if (engine->shadowmaps)
-		{
-			printf("Moving shadow light to player position %3.3f %3.3f %3.3f\n",
-				entity->position.x, 
-				entity->position.y, 
-				entity->position.z );
-			engine->entity_list[engine->shadow_light]->position = entity->position;
-		}
-	}
-
-
 #if 0
 	if (input.use == true)
 	{

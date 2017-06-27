@@ -767,9 +767,6 @@ void Engine::render(double last_frametime)
 		gfx.clear();
 		render_scene(true);
 
-		//Handle realtime keys (typing can be slower)
-		handle_input();
-
 		//render menu
 		if (menu.chatmode == false)
 			game->render_hud(last_frametime);
@@ -820,9 +817,6 @@ void Engine::render(double last_frametime)
 
 		gfx.DepthFunc("<");
 		gfx.Stencil(false);
-
-		//Handle realtime keys (typing can be slower)
-		handle_input();
 
 		//render menu
 		if (menu.chatmode == false)
@@ -976,9 +970,6 @@ void Engine::render_to_framebuffer(double last_frametime)
 		render_shadow_volumes(entity_list[spawn]->player->current_light);
 	}
 	*/
-
-	//Handle realtime keys (typing can be slower)
-	handle_input();
 
 	//render menu
 	if (menu.chatmode == false)
@@ -1508,77 +1499,6 @@ void Engine::destroy_buffers()
 	snd_wave.clear();
 }
 
-
-void Engine::handle_input()
-{
-	if (input.numpad0)
-	{
-		post_process(5);
-	}
-
-	if (input.numpad2)
-	{
-		vec3 right(-1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(0.0f, 0.0f, 1.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-	}
-
-	if (input.numpad3)
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 0.0f, 1.0f);
-		vec3 forward(0.0f, 1.0f, 0.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-	}
-
-	if (input.numpad6)
-	{
-		vec3 right(0.0f, 0.0f, 1.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(1.0f, 0.0f, 0.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-	}
-
-
-	if (input.numpad4)
-	{
-		vec3 right(0.0f, 0.0f, -1.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(-1.0f, 0.0f, 0.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-	}
-
-	if (input.numpad8)
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(0.0f, 0.0f, -1.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-	}
-
-	if (input.numpad9)
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 0.0f, -1.0f);
-		vec3 forward(0.0f, -1.0f, 0.0f);
-
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-	}
-}
-
 void Engine::spatial_testing()
 {
 	int leaf_a = -1;
@@ -1974,7 +1894,7 @@ bool Engine::map_collision(RigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-			surface_list, body.step_flag && input.numpad1, clip, body.velocity, body.lava, body.slime))
+			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime))
 		{
 			if (body.step_flag)
 			{
@@ -1986,7 +1906,7 @@ bool Engine::map_collision(RigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-						surface_list, body.step_flag && input.numpad1, clip, body.velocity, body.lava, body.slime) == false)
+						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
@@ -3042,16 +2962,16 @@ void Engine::bind_keys()
 		key_bind.insert("F1", "fullscreen");
 
 
-		key_bind.insert("numpad0", "numpad0");
+		key_bind.insert("numpad0", "postprocess");
 		key_bind.insert("numpad1", "numpad1");
-		key_bind.insert("numpad2", "numpad2");
-		key_bind.insert("numpad3", "numpad3");
-		key_bind.insert("numpad4", "numpad4");
+		key_bind.insert("numpad2", "lookforward");
+		key_bind.insert("numpad3", "lookdown");
+		key_bind.insert("numpad4", "lookleft");
 		key_bind.insert("numpad5", "numpad5");
-		key_bind.insert("numpad6", "numpad6");
+		key_bind.insert("numpad6", "lookright");
 		key_bind.insert("numpad7", "numpad7");
-		key_bind.insert("numpad8", "numpad8");
-		key_bind.insert("numpad9", "numpad9");
+		key_bind.insert("numpad8", "lookback");
+		key_bind.insert("numpad9", "lookup");
 
 		key_bind.insert("num1", "weapon 1");
 		key_bind.insert("num2", "weapon 2");
@@ -3212,56 +3132,6 @@ void Engine::keypress(char *key, bool pressed)
 		handled = true;
 		input.escape = pressed;
 		k = 27;
-	}
-	else if (strcmp("numpad0", cmd) == 0)
-	{
-		handled = true;
-		input.numpad0 = pressed;
-	}
-	else if (strcmp("numpad1", cmd) == 0)
-	{
-		handled = true;
-		input.numpad1 = pressed;
-	}
-	else if (strcmp("numpad2", cmd) == 0)
-	{
-		handled = true;
-		input.numpad2 = pressed;
-	}
-	else if (strcmp("numpad3", cmd) == 0)
-	{
-		handled = true;
-		input.numpad3 = pressed;
-	}
-	else if (strcmp("numpad4", cmd) == 0)
-	{
-		handled = true;
-		input.numpad4 = pressed;
-	}
-	else if (strcmp("numpad5", cmd) == 0)
-	{
-		handled = true;
-		input.numpad5 = pressed;
-	}
-	else if (strcmp("numpad6", cmd) == 0)
-	{
-		handled = true;
-		input.numpad6 = pressed;
-	}
-	else if (strcmp("numpad7", cmd) == 0)
-	{
-		handled = true;
-		input.numpad7 = pressed;
-	}
-	else if (strcmp("numpad8", cmd) == 0)
-	{
-		handled = true;
-		input.numpad8 = pressed;
-	}
-	else if (strcmp("numpad9", cmd) == 0)
-	{
-		handled = true;
-		input.numpad9 = pressed;
 	}
 	else if (strcmp("scores", cmd) == 0)
 	{
@@ -4095,6 +3965,91 @@ void Engine::console(char *cmd)
 		mlight2.set_lightmap(lightmap);
 		return;
 	}
+
+
+	if (strstr(cmd, "postprocess"))
+	{
+		post_process(5);
+	}
+
+	if (strstr(cmd, "lookforward"))
+	{
+		vec3 right(-1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, 1.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+	}
+
+	if (strstr(cmd, "lookdown"))
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, 1.0f);
+		vec3 forward(0.0f, 1.0f, 0.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+	}
+
+	if (strstr(cmd, "lookright"))
+	{
+		vec3 right(0.0f, 0.0f, 1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(1.0f, 0.0f, 0.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+	}
+
+
+	if (strstr(cmd, "lookleft"))
+	{
+		vec3 right(0.0f, 0.0f, -1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(-1.0f, 0.0f, 0.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+	}
+
+	if (strstr(cmd, "lookback"))
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, -1.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+	}
+
+	if (strstr(cmd, "lookup"))
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, -1.0f);
+		vec3 forward(0.0f, -1.0f, 0.0f);
+
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+	}
+
+
+	if (strstr(cmd, "movelight"))
+	{
+		if (shadowmaps)
+		{
+			Entity *entity = entity_list[shadow_light];
+			Entity *player = entity_list[find_type(ENT_PLAYER, 0)];
+
+			printf("Moving shadow light to player position %3.3f %3.3f %3.3f\n",
+				entity->position.x,
+				entity->position.y,
+				entity->position.z);
+			entity->position = player->position;
+		}
+	}
+
 
 	if (sscanf(cmd, "r_light %s", data) == 1)
 	{

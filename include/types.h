@@ -222,17 +222,6 @@ typedef struct
 	bool movedown;
 	bool moveright;
 
-	bool numpad0;
-	bool numpad1;
-	bool numpad2;
-	bool numpad3;
-	bool numpad4;
-	bool numpad5;
-	bool numpad6;
-	bool numpad7;
-	bool numpad8;
-	bool numpad9;
-
 	bool weapon_up;
 	bool weapon_down;
 
