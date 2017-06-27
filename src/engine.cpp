@@ -3062,6 +3062,8 @@ void Engine::bind_keys()
 		key_bind.insert("num7", "weapon 7");
 		key_bind.insert("num8", "weapon 8");
 
+		key_bind.insert("k", "kill");
+
 		return;
 	}
 

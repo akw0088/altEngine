@@ -5672,6 +5672,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 
+	if (strstr(cmd, "kill"))
+	{
+		if (entity_list[self]->player)
+		{
+			entity_list[self]->player->health = -100;
+		}
+	}
+
+
 	ret = sscanf(cmd, "teleport %s %s", data, data2);
 	if (ret == 2 && engine->client_flag == false)
 	{
