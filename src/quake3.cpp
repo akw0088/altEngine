@@ -1683,7 +1683,7 @@ void Quake3::handle_player(int self, input_t &input)
 					break;
 				}
 
-				entity->player->health -= 15;
+				console(self, "damage 15", engine->menu, engine->entity_list);
 				if (entity->player->health < 0 && entity->player->state != PLAYER_DEAD)
 				{
 					char msg[256];

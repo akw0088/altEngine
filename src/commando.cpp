@@ -495,7 +495,7 @@ void Commando::handle_player(int self)
 				break;
 			}
 
-			entity->player->health -= 15;
+			console(self, "damage 15", engine->menu, engine->entity_list);
 		}
 	}
 

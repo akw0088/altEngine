@@ -1811,7 +1811,7 @@ void Engine::dynamics()
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (entity_list[i]->nodraw || entity_list[i]->rigid->noclip)
+		if (entity_list[i]->nodraw)
 			continue;
 
 		if (collision_detect_enable == false && i >= max_player)
@@ -1847,7 +1847,7 @@ void Engine::dynamics()
 			// density of water is 10000 kg/m3, but fudging as a scale factor
 			float force_bouyant = volume * 0.0015f * GRAVITY * submerged_percent;
 
-			body->net_force += vec3(0.0f, force_bouyant, 0.0f);
+//			body->net_force += vec3(0.0f, force_bouyant, 0.0f);
 		}
 
 

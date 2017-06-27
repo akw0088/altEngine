@@ -690,7 +690,7 @@ void RigidBody::get_frame(Frame &frame)
 }
 
 
-// Move negative relative to the forward vector
+// This is becoming a rats nest
 bool RigidBody::move(input_t &input, float speed_scale)
 {
 	float air_control = 1.0f;
@@ -699,7 +699,12 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	Frame yaw;
 
 	if (on_ground == false)
+	{
 		air_control = 0.25;
+	}
+
+	if (water || flight || noclip)
+		air_control = 1.0f;
 
 
 	get_frame(camera);
@@ -725,6 +730,9 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	if (ducked)
 		speed_scale *= 0.5f;
 
+	if (noclip)
+		speed_scale *= 1.5f;
+
 	//prevent walking upward
 	if (noclip == false && flight == false)
 	{
@@ -745,10 +753,11 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		}
 		else
 		{
-			velocity += -forward * ACCEL * air_control * speed_scale;
+			velocity += -forward * ACCEL * speed_scale;
 			moved = true;
 		}
 	}
+
 	if (input.movedown)
 	{
 		if (water == false && noclip == false && flight == false)
@@ -761,26 +770,59 @@ bool RigidBody::move(input_t &input, float speed_scale)
 			velocity += forward * ACCEL * speed_scale;
 			moved = true;
 		}
-
 	}
+
 	if (input.moveleft)
 	{
-		velocity += -yaw_right * ACCEL * air_control * speed_scale;
-		moved = true;
+		if (water == false && noclip == false && flight == false)
+		{
+			velocity += -yaw_right * ACCEL * air_control * speed_scale;
+			moved = true;
+		}
+		else
+		{
+			velocity += -yaw_right * ACCEL * speed_scale;
+			moved = true;
+		}
 	}
+
 	if (input.moveright)
 	{
-		velocity += yaw_right * ACCEL * air_control * speed_scale;
-		moved = true;
+		if (water == false && noclip == false && flight == false)
+		{
+			velocity += yaw_right * ACCEL * air_control * speed_scale;
+			moved = true;
+		}
+		else
+		{
+			velocity += yaw_right * ACCEL * speed_scale;
+			moved = true;
+		}
 	}
+
 	if (input.jump)
 	{
-		jumped = true;
+		if (flight || water || noclip)
+		{
+			velocity.y += ACCEL * speed_scale;
+		}
+		else
+		{
+			jumped = true;
+		}
+
 		moved = true;
 	}
 	if (input.duck)
 	{
-		ducked = true;
+		if ((flight || water || noclip) && (on_ground == false || noclip == true))
+		{
+			velocity.y += -ACCEL * speed_scale;
+		}
+		else
+		{
+			ducked = true;
+		}
 		moved = true;
 	}
 	else
@@ -832,8 +874,10 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	if ((water_depth >= 2.0f && water) || noclip)
 	{
 		velocity.x *= (1.25f * speed_scale / speed);
+		velocity.y *= (1.25f * speed_scale / speed);
 		velocity.z *= (1.25f * speed_scale / speed);
 	}
+
 
 	return ret;
 }
