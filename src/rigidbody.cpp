@@ -20,7 +20,7 @@ RigidBody::RigidBody(Entity *entity)
 	water = false;
 	flight = false;
 	last_water = false;
-	ducked = false;
+	y_offset = 0;
 	hard_impact = false;
 	target = NULL;
 	mass = 10.0f;
@@ -458,10 +458,7 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 		//		entity->rigid->sleep = false;
 		entity->rigid->gravity = true;
 
-		if (ducked)
-			camera->pos = entity->position + vec3(0.0f, -25.0f, 0.0f);
-		else
-			camera->pos = entity->position;
+		camera->pos = entity->position + vec3(0.0f, (float)y_offset, 0.0f);
 
 		morientation.m[0] = right.x;
 		morientation.m[1] = right.y;
@@ -662,17 +659,8 @@ float *RigidBody::get_matrix(float *matrix)
 
 	vec3 offset;
 
-	if (ducked)
-	{
-		vec3 temp = center + vec3(0.0f, 25.0f, 0.0f);
-		offset = morientation * temp;
-	}
-	else
-	{
-		offset = morientation * center;
-	}
-
-
+	vec3 temp = center + vec3(0.0f, (float)-y_offset, 0.0f);
+	offset = morientation * temp;
 
 	matrix[12] = entity->position.x - offset.x;
 	matrix[13] = entity->position.y - offset.y;
@@ -685,8 +673,7 @@ void RigidBody::get_frame(Frame &frame)
 {
 	Model::get_frame(frame);
 
-	if (ducked)
-		frame.pos += vec3(0.0f, -25.0f, 0.0f);
+	frame.pos += vec3(0.0f, (float)y_offset, 0.0f);
 }
 
 
@@ -727,8 +714,10 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	yaw.up = vec3::crossproduct(right, yaw.forward);
 	yaw.up.normalize();
 
-	if (ducked)
+	if (y_offset != 0)
+	{
 		speed_scale *= 0.5f;
+	}
 
 	if (noclip)
 		speed_scale *= 1.5f;
@@ -819,15 +808,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		{
 			velocity.y += -ACCEL * speed_scale;
 		}
-		else
-		{
-			ducked = true;
-		}
 		moved = true;
-	}
-	else
-	{
-		ducked = false;
 	}
 
 	float speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);

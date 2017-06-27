@@ -1171,6 +1171,24 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player == NULL)
 		return;
 
+
+	if (input.duck && entity->rigid->y_offset != -25)
+	{
+		entity->rigid->y_offset -= 2;
+		if (entity->rigid->y_offset < -25)
+			entity->rigid->y_offset = -25;
+	}
+
+
+	if (input.duck == false && entity->rigid->y_offset != 0)
+	{
+		entity->rigid->y_offset += 4;
+		if (entity->rigid->y_offset > 0)
+			entity->rigid->y_offset = 0;
+	}
+
+
+
 	if (input.zoom == true && zoomed == false)
 	{
 		zoomed = true;
