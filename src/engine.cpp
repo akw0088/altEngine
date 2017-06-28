@@ -4093,6 +4093,19 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		return;
 	}
+	if (sscanf(cmd, "r_texture %s", data) == 1)
+	{
+		menu.print(msg);
+		if (atoi(data))
+		{
+			q3map.enable_textures = true;
+		}
+		else
+		{
+			q3map.enable_textures = false;
+		}
+		return;
+	}
 
 	if (sscanf(cmd, "r_patch %s", data) == 1)
 	{
