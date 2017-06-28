@@ -1342,3 +1342,33 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 		}
 	}
 }
+
+
+void write_bitmap(char *filename, int width, int height, int *data)
+{
+	FILE *file;
+	bitmap_t	bitmap = { 0 };
+
+	memcpy(bitmap.header.type, "BM", 2);
+	bitmap.header.offset = sizeof(bmpheader_t);
+	bitmap.dib.size = sizeof(dib_t);
+	bitmap.dib.width = width;
+	bitmap.dib.height = height;
+	bitmap.dib.planes = 1;
+	bitmap.dib.bpp = 32;
+	bitmap.dib.compression = 0;
+	bitmap.dib.image_size = width * height * sizeof(int);
+	bitmap.header.file_size = sizeof(bmpheader_t) + sizeof(dib_t) + bitmap.dib.image_size;
+
+	file = fopen(filename, "w");
+	if (file == NULL)
+	{
+		perror("Unable to write file");
+		return;
+	}
+
+	fwrite(&bitmap, 1, sizeof(bitmap_t), file);
+	fwrite((void *)data, 1, width * height * 4, file);
+	fclose(file);
+
+}

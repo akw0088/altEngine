@@ -38,6 +38,7 @@ Engine::Engine()
 	emitter.enabled = false;
 	emitter_count = 0;
 	demo = false;
+	voted = false;
 	shadowmaps = false;
 	recording_demo = false;
 	playing_demo = false;
@@ -1450,6 +1451,43 @@ void Engine::render_shadow_volumes(int current_light)
 //			gfx.SelectShader(0);
 		}
 	}
+}
+
+void Engine::screenshot()
+{
+	int width = gfx.width;
+	int height = gfx.height;
+	char *pixel = new char[3 * width * height];
+	char *bmp = new char[4 * width * height];
+	static int num = 0;
+	char filename[128];
+
+#ifdef OPENGL32
+
+	
+	gfx.bindFramebuffer(0);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+	gfx.resize(width, height);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	
+	gfx.SelectTexture(0, quad_tex);
+	glGetTexImage(GL_TEXTURE_2D, quad_tex, GL_UNSIGNED_BYTE, GL_RGBA, pixel);
+	//glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+
+	for (int i = 0, j = 0; i < 3 * width * height; i += 4)
+	{
+		bmp[j++] = pixel[i + 3];
+		bmp[j++] = pixel[i];
+		bmp[j++] = pixel[i + 1];
+		bmp[j++] = pixel[i + 2];
+	}
+#endif
+	sprintf(filename, "Screenshot%d.bmp", num++);
+	write_bitmap(filename, width, height, (int *)bmp);
+	menu.print(filename);
+	delete[] pixel;
+	delete[] bmp;
 }
 
 void Engine::post_process(int num_passes)
@@ -3739,7 +3777,40 @@ void Engine::console(char *cmd)
 	if (cmd == NULL)
 		return;
 
-	ret = sscanf(cmd, "log %s", data);
+
+	if (strstr(cmd, "console"))
+	{
+		menu.console = !menu.console;
+		return;
+	}
+
+	if (strstr(cmd, "voteyes"))
+	{
+		if (voted == false)
+		{
+			vote_yes++;
+			voted = true;
+		}
+		return;
+	}
+
+	if (strstr(cmd, "voteyes"))
+	{
+		if (voted == false)
+		{
+			vote_no++;
+			voted = true;
+		}
+		return;
+	}
+
+	if (strstr(cmd, "screenshot"))
+	{
+		screenshot();
+		return;
+	}
+
+	ret = sscanf(cmd, "echo %s", data);
 	if (ret == 1)
 	{
 		snprintf(msg, LINE_SIZE, "%s\n", data);

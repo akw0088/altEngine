@@ -51,6 +51,7 @@ void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsign
 char *get_pakfile(char *pakfile, char *file);
 char *get_wadfile(char *wadfile, char *lump, int *lump_size);
 void lump_to_wave(char *lump_data, int size, wave_t *wave);
+void write_bitmap(char *filename, int width, int height, int *data);
 
 
 // Lerp between A and B where time is within [0,1]

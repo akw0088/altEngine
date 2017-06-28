@@ -603,4 +603,39 @@ typedef struct
 	int tick_num;
 } demo_frameheader_t;
 
+#pragma pack(1)
+typedef struct
+{
+	char type[2];
+	int file_size;
+	int reserved;
+	int offset;
+} bmpheader_t;
+#pragma pack(8)
+
+#pragma pack(1)
+typedef struct
+{
+	int size;
+	int width;
+	int height;
+	short planes;
+	short bpp;
+	int compression;
+	int image_size;
+	int xres;
+	int yres;
+	int clr_used;
+	int clr_important;
+} dib_t;
+#pragma pack(8)
+
+#pragma pack(1)
+typedef struct
+{
+	bmpheader_t	header;
+	dib_t		dib;
+} bitmap_t;
+#pragma pack(8)
+
 #endif

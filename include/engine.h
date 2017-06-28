@@ -88,6 +88,7 @@ public:
 	int play_wave_global(int index);
 	int play_wave_global_loop(int index);
 	int get_load_wave(const char *file);
+	void screenshot();
 
 	void destroy_buffers();
 	void render_to_framebuffer(double last_frametime);
@@ -191,6 +192,9 @@ protected:
 	unsigned int	multisample;
 	unsigned int	no_tex;
 	unsigned int	particle_tex;
+	bool			voted;
+	unsigned int	vote_yes;
+	unsigned int	vote_no;
 
 	vector<Entity *>	entity_list;
 	unsigned int	max_dynamic;
