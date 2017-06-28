@@ -1128,7 +1128,6 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	mlight2.Select();
 
-	unsigned int depth_sampler = 10;
 	unsigned int smatrix = 0;
 
 	for (int i = 0; i < entity_list.size(); i++)

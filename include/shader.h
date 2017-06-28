@@ -83,8 +83,8 @@ public:
 	float m_lightmap;
 private:
 	int matrix;
-	int shadow_matrix[17];
-	int depth[17];
+	int shadow_matrix[18];
+	int depth[18];
 
 	int	texture0;
 	int texture1;
