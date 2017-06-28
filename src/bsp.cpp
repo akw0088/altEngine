@@ -10,11 +10,11 @@ Bsp::Bsp()
 	on_ground = false;
 	collision = false;
 	trace_result = 0.0f;
-	textures_loaded = false;
-	patch_enabled = true;
-	sky_enabled = true;
-	shader_enabled = true;
-	blend_enabled = true;
+	enable_textures = false;
+	enable_patch = true;
+	enable_sky = true;
+	enable_shader = true;
+	enable_blend = true;
 	memset(map_name, 0, 64);
 	sky_face = -1;
 	lastIndex = -2;
@@ -349,7 +349,7 @@ void Bsp::unload(Graphics &gfx)
 	//int mesh_index = 0;
 
 	loaded = false;
-	textures_loaded = false;
+	enable_textures = false;
 
 	anim_list.resize(0);
 
@@ -583,14 +583,14 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 {
 	float time = (float)tick_num / TICK_RATE;
 
-	if (sky_face == -1 || sky_enabled == false)
+	if (sky_face == -1 || enable_sky == false)
 		return;
 
 	gfx.SelectVertexBuffer(Model::skybox_vertex);
 	gfx.SelectIndexBuffer(Model::skybox_index);
 
 
-	if (textures_loaded)
+	if (enable_textures)
 	{
 		static vec2 scroll(0.0f, 0.0f);
 		for (int i = 0; i < MAX_TEXTURES; i++)
@@ -642,7 +642,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		gfx.SelectIndexBuffer(map_index_vbo);
 	}
 
-	if (textures_loaded)
+	if (enable_textures)
 	{
 			// surfaces that arent lit with lightmaps eg: skies
 			if (face->lightmap != -1)
@@ -666,7 +666,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 #endif
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 
-	if (textures_loaded)
+	if (enable_textures)
 	{
 		if (lightmap_selected)
 			gfx.SelectTexture(8, 0);
@@ -700,7 +700,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		return;
 
 	// will be same texture for all 3x3 patches making up this mesh
-	if (textures_loaded)
+	if (enable_textures)
 	{
 		// surfaces that arent lit with lightmaps eg: skies
 		if (lightmap && face->lightmap != -1)
@@ -747,7 +747,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		//patchdata[mesh_index + i].num_verts);
 		
 	}
-	if (textures_loaded)
+	if (enable_textures)
 	{
 
 		if (lightmap_selected)
@@ -762,7 +762,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 {
 	bool lightmap_selected = false;
 
-	if (textures_loaded)
+	if (enable_textures)
 	{
 		if (lightmap && face->lightmap != -1)
 		{
@@ -825,7 +825,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 			int face_index = data.LeafFace[leaf->leaf_face + j];
 			face_t *face = &data.Face[face_index];
 
-			if (tex_object[face->material].index != -1 && shader_enabled)
+			if (tex_object[face->material].index != -1 && enable_shader)
 			{
 				// Texture with a shader
 				surface_t *surface = surface_list[tex_object[face->material].index];
@@ -1238,7 +1238,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			continue;
 		}
 
-		if (face_list[i].shader && textures_loaded)
+		if (face_list[i].shader && enable_textures)
 		{
 			set_tcmod(mlight2, face_list[i], tick_num, time);
 
@@ -1256,7 +1256,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		{
 			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
-		else if (face->type == 2 && patch_enabled)
+		else if (face->type == 2 && enable_patch)
 		{
 			render_patch(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
@@ -1265,7 +1265,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
 
-		if (face_list[i].shader  && textures_loaded)
+		if (face_list[i].shader  && enable_textures)
 		{
 			int j = face_list[i].stage;
 			mlight2.tcmod_rotate(0, j);
@@ -1284,10 +1284,10 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	}
 
 
-	if (blend_list.size() > 0 && textures_loaded)
+	if (blend_list.size() > 0 && enable_textures)
 	{
 		mlight2.set_light(1.0f, 1.0f, 0);
-		if (blend_enabled)
+		if (enable_blend)
 		{
 			gfx.DepthFunc("<=");
 			gfx.Blend(true);
@@ -1303,7 +1303,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				continue;
 			}
 
-			if (blend_list[i].shader && textures_loaded)
+			if (blend_list[i].shader && enable_textures)
 			{
 				set_tcmod(mlight2, blend_list[i], tick_num, time);
 
@@ -1326,7 +1326,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
-			else if (face->type == 2 && patch_enabled)
+			else if (face->type == 2 && enable_patch)
 			{
 				render_patch(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
@@ -1335,7 +1335,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				render_billboard(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
 
-			if (blend_list[i].shader && textures_loaded)
+			if (blend_list[i].shader && enable_textures)
 			{
 				int j = blend_list[i].stage;
 				//technically shouldnt need to reset
@@ -1355,7 +1355,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			}
 		}
 	}
-	if (blend_enabled)
+	if (enable_blend)
 	{
 		gfx.DepthFunc("<");
 		gfx.Blend(false);
@@ -1578,7 +1578,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
 {
-	textures_loaded = true;
+	enable_textures = true;
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
 #ifdef OPENGL32

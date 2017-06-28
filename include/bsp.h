@@ -59,7 +59,6 @@ public:
 
 
 	bool loaded;
-	bool textures_loaded;
 	bspData_t	data;
 	char map_name[64];
 	vector<texture_t *> anim_list;
@@ -72,10 +71,11 @@ public:
 	int lastIndex;
 
 
-	bool shader_enabled;
-	bool blend_enabled;
-	bool patch_enabled;
-	bool sky_enabled;
+	bool enable_textures;
+	bool enable_shader;
+	bool enable_blend;
+	bool enable_patch;
+	bool enable_sky;
 private:
 	bsp_t		*tBsp;
 	vec4		*tangent;

@@ -847,7 +847,7 @@ void Engine::zoom(float level)
 
 void Engine::render_shadowmaps(bool everything)
 {
-	return;
+	Entity *entity = entity_list[find_type(ENT_PLAYER, 0)];
 	mlight2.Select();
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -876,7 +876,11 @@ void Engine::render_shadowmaps(bool everything)
 				matrix4::mat_backward(cube[5], entity_list[i]->position);
 
 				light->shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
-//				gfx.Color(false);
+				gfx.Color(false);
+				q3map.enable_textures = false;
+				q3map.enable_shader = false;
+				q3map.enable_blend = false;
+				q3map.enable_sky = false;
 				for (int j = 0; j < 6; j++)
 				{
 					matrix4 mvp = cube[j] * light->shadow_projection;
@@ -887,9 +891,14 @@ void Engine::render_shadowmaps(bool everything)
 						0.5, 0.5, 0.5, 1.0 };
 
 
+					bool visible = aabb_visible(entity->position, entity->position, mvp);
+
+					if (visible == false)
+						continue;
+
 
 					// No real FPS improvement by masking color buffer
-//					gfx.fbAttachTexture(0);
+					gfx.fbAttachTexture(0);
 					gfx.bindFramebuffer(light->fbo_shadowmaps[j]);
 					gfx.resize(fb_width, fb_height);
 					gfx.clear();
@@ -912,7 +921,12 @@ void Engine::render_shadowmaps(bool everything)
 					//gfx.SelectShader(0);
 					//gfx.Color(true);
 				}
-//				gfx.Color(true);
+				gfx.Color(true);
+				q3map.enable_textures = true;
+				q3map.enable_shader = true;
+				q3map.enable_blend = true;
+				q3map.enable_sky = true;
+
 
 			}
 		}
@@ -1457,7 +1471,7 @@ void Engine::screenshot()
 {
 	int width = gfx.width;
 	int height = gfx.height;
-	char *pixel = new char[3 * width * height];
+	char *pixel = new char[4 * width * height];
 	char *bmp = new char[4 * width * height];
 	static int num = 0;
 	char filename[128];
@@ -1465,17 +1479,18 @@ void Engine::screenshot()
 #ifdef OPENGL32
 
 	
+	/*
 	gfx.bindFramebuffer(0);
+	gfx.resize(width, height);
+	*/
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
-	gfx.resize(width, height);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	
-	gfx.SelectTexture(0, quad_tex);
-	glGetTexImage(GL_TEXTURE_2D, quad_tex, GL_UNSIGNED_BYTE, GL_RGBA, pixel);
-	//glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+//	gfx.SelectTexture(0, quad_tex);
+	//glGetTexImage(GL_TEXTURE_2D, quad_tex, GL_UNSIGNED_BYTE, GL_RGBA, pixel);
+	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
 
-	for (int i = 0, j = 0; i < 3 * width * height; i += 4)
+	for (int i = 0, j = 0; i < 4 * width * height; i += 4)
 	{
 		bmp[j++] = pixel[i + 3];
 		bmp[j++] = pixel[i];
@@ -3996,11 +4011,11 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		if (atoi(data))
 		{
-			q3map.patch_enabled = true;
+			q3map.enable_patch = true;
 		}
 		else
 		{
-			q3map.patch_enabled = false;
+			q3map.enable_patch = false;
 		}
 		return;
 	}
@@ -4187,11 +4202,11 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		if (atoi(data))
 		{
-			q3map.sky_enabled = true;
+			q3map.enable_sky = true;
 		}
 		else
 		{
-			q3map.sky_enabled = false;
+			q3map.enable_sky = false;
 		}
 		return;
 	}
@@ -4225,11 +4240,11 @@ void Engine::console(char *cmd)
 
 		if (atoi(data))
 		{
-			q3map.shader_enabled = true;
+			q3map.enable_shader = true;
 		}
 		else
 		{
-			q3map.shader_enabled = false;
+			q3map.enable_shader = false;
 		}
 		return;
 	}
@@ -4255,11 +4270,11 @@ void Engine::console(char *cmd)
 
 		if (atoi(data))
 		{
-			q3map.blend_enabled = true;
+			q3map.enable_blend = true;
 		}
 		else
 		{
-			q3map.blend_enabled = false;
+			q3map.enable_blend = false;
 		}
 		return;
 	}
