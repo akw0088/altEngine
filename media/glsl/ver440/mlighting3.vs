@@ -23,7 +23,7 @@ out VertexData {
 	vec3		vary_normal;
 	flat int	vary_color;
 	vec4		vary_tangent;
-	vec4 shadowpos[6];
+	vec4 shadowpos[24];
 } Vertex;
 
 // uniform primitive constant input
@@ -38,6 +38,18 @@ uniform mat4	shadow_matrix2;
 uniform mat4	shadow_matrix3;
 uniform mat4	shadow_matrix4;
 uniform mat4	shadow_matrix5;
+uniform mat4	shadow_matrix6;
+uniform mat4	shadow_matrix7;
+uniform mat4	shadow_matrix8;
+uniform mat4	shadow_matrix9;
+uniform mat4	shadow_matrix10;
+uniform mat4	shadow_matrix11;
+uniform mat4	shadow_matrix12;
+uniform mat4	shadow_matrix13;
+uniform mat4	shadow_matrix14;
+uniform mat4	shadow_matrix15;
+uniform mat4	shadow_matrix16;
+uniform mat4	shadow_matrix17;
 
 uniform vec2		u_tcmod_scroll0;
 uniform vec2		u_tcmod_scroll1;
@@ -108,5 +120,17 @@ void main(void)
 	Vertex.shadowpos[3] = shadow_matrix3 * vec4(attr_position, 1.0);
 	Vertex.shadowpos[4] = shadow_matrix4 * vec4(attr_position, 1.0);
 	Vertex.shadowpos[5] = shadow_matrix5 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[6] = shadow_matrix6 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[7] = shadow_matrix7 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[8] = shadow_matrix8 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[9] = shadow_matrix9 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[10] = shadow_matrix10 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[11] = shadow_matrix11 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[12] = shadow_matrix12 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[13] = shadow_matrix13 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[14] = shadow_matrix14 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[15] = shadow_matrix15 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[16] = shadow_matrix16 * vec4(attr_position, 1.0);
+	Vertex.shadowpos[17] = shadow_matrix17 * vec4(attr_position, 1.0);
 
 }

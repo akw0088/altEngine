@@ -5,6 +5,8 @@
 #endif
 
 
+#define MAX_DEPTH 6
+
 // Height above desired position we allow a step to occur
 // (Fairly large as forward velocity can put you fairly deep forward)
 #define STAIR_HEIGHT 20.0f
@@ -848,89 +850,108 @@ void Engine::zoom(float level)
 void Engine::render_shadowmaps(bool everything)
 {
 	Entity *entity = entity_list[find_type(ENT_PLAYER, 0)];
+
+	int depth_used = 0;
+
+	float bias[16] = {
+		0.5, 0.0, 0.0, 0.0,
+		0.0, 0.5, 0.0, 0.0,
+		0.0, 0.0, 0.5, 0.0,
+		0.5, 0.5, 0.5, 1.0 };
+
 	mlight2.Select();
+
+	q3map.enable_textures = false;
+	/*
+	gfx.Color(false);
+	q3map.enable_shader = false;
+	//q3map.enable_blend = false;
+	//q3map.enable_sky = false;
+	*/
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->light)
+		Light *light = entity_list[i]->light;
+		if (light == NULL)
+			continue;
+
+
+		if (everything == false)
 		{
-			Light *light = entity_list[i]->light;
+			if (entity_list[i]->bsp_visible == false)
+				continue;
 
-			matrix4 cube[6];
+			if (i == 100)
+				continue;
+		}
 
-		
-			if (all_lights || (i == shadow_light) || everything)
+
+		matrix4 cube[6];
+
+		// generate matrices for each light face
+		matrix4::mat_right(cube[0], entity_list[i]->position);
+		matrix4::mat_left(cube[1], entity_list[i]->position);
+		matrix4::mat_top(cube[2], entity_list[i]->position);
+		matrix4::mat_bottom(cube[3], entity_list[i]->position);
+		matrix4::mat_forward(cube[4], entity_list[i]->position);
+		matrix4::mat_backward(cube[5], entity_list[i]->position);
+
+		light->shadow_flag = 0;
+
+		if (everything == false)
+		{
+			if (depth_used == MAX_DEPTH)
+				break;
+		}
+
+		for (int j = 0; j < 6; j++)
+		{
+			matrix4 mvp = cube[j] * light->shadow_projection;
+//			bool visible = aabb_visible(entity->position, entity->position, mvp);
+
+			//if (visible == false)
+				//continue;
+
+			depth_used++;
+			if (everything == false)
 			{
-				// Generate matrices
-				//rl tb fb
-
-//				if (light->light_num != 1)
-//					continue;
-
-
-				matrix4::mat_right(cube[0], entity_list[i]->position);
-				matrix4::mat_left(cube[1], entity_list[i]->position);
-				matrix4::mat_top(cube[2], entity_list[i]->position);
-				matrix4::mat_bottom(cube[3], entity_list[i]->position);
-				matrix4::mat_forward(cube[4], entity_list[i]->position);
-				matrix4::mat_backward(cube[5], entity_list[i]->position);
-
-				light->shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
-				gfx.Color(false);
-				q3map.enable_textures = false;
-				q3map.enable_shader = false;
-				q3map.enable_blend = false;
-				q3map.enable_sky = false;
-				for (int j = 0; j < 6; j++)
-				{
-					matrix4 mvp = cube[j] * light->shadow_projection;
-					float bias[16] = {
-						0.5, 0.0, 0.0, 0.0,
-						0.0, 0.5, 0.0, 0.0,
-						0.0, 0.0, 0.5, 0.0,
-						0.5, 0.5, 0.5, 1.0 };
-
-
-					bool visible = aabb_visible(entity->position, entity->position, mvp);
-
-					if (visible == false)
-						continue;
-
-
-					// No real FPS improvement by masking color buffer
-					gfx.fbAttachTexture(0);
-					gfx.bindFramebuffer(light->fbo_shadowmaps[j]);
-					gfx.resize(fb_width, fb_height);
-					gfx.clear();
-
-					vec3 offset(0.0f, 0.0f, 0.0f);
-					mlight2.Params(mvp, light_list, 0, offset, tick_num);
-
-
-					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
-					light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
-
-					q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
-					render_entities(cube[j], light->shadow_projection, true, false);
-					render_players(cube[j], light->shadow_projection, true, true);
-					gfx.bindFramebuffer(0);
-					//gfx.SelectShader(0);
-					//gfx.Color(true);
-				}
-				gfx.Color(true);
-				q3map.enable_textures = true;
-				q3map.enable_shader = true;
-				q3map.enable_blend = true;
-				q3map.enable_sky = true;
-
-
+				if (depth_used == MAX_DEPTH)
+					break;
 			}
+
+			//printf("Rendering light %d face %d\n", i, j);
+
+			// setting bit 1 through 6
+			light->shadow_flag |= (1 << j);
+
+
+			// No real FPS improvement by masking color buffer
+//			gfx.fbAttachTexture(0);
+			gfx.bindFramebuffer(light->fbo_shadowmaps[j]);
+			gfx.resize(fb_width, fb_height);
+			gfx.clear();
+
+			vec3 offset(0.0f, 0.0f, 0.0f);
+			mlight2.Params(mvp, light_list, 0, offset, tick_num);
+
+			light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
+
+			q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+			render_entities(cube[j], light->shadow_projection, false, false, false);
+			render_players(cube[j], light->shadow_projection, false, true);
+			gfx.bindFramebuffer(0);
+			//gfx.SelectShader(0);
+			//gfx.Color(true);
 		}
 	}
+	
+	q3map.enable_textures = true;
+	/*
+	gfx.Color(true);
+	q3map.enable_shader = true;
+	//q3map.enable_blend = true;
+	//q3map.enable_sky = true;
+	*/
 }
 
 void Engine::set_dynamic_resolution(double last_frametime)
@@ -1106,22 +1127,82 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 
 	mlight2.Select();
-	Light *light = entity_list[shadow_light]->light;
-	if (light)
-	{
-		mlight2.set_shadow_matrix0(light->shadow_matrix[0]);
-		mlight2.set_shadow_matrix1(light->shadow_matrix[1]);
-		mlight2.set_shadow_matrix2(light->shadow_matrix[2]);
-		mlight2.set_shadow_matrix3(light->shadow_matrix[3]);
-		mlight2.set_shadow_matrix4(light->shadow_matrix[4]);
-		mlight2.set_shadow_matrix5(light->shadow_matrix[5]);
 
-		gfx.SelectTexture(11, light->depth_tex[0]);
-		gfx.SelectTexture(12, light->depth_tex[1]);
-		gfx.SelectTexture(13, light->depth_tex[2]);
-		gfx.SelectTexture(14, light->depth_tex[3]);
-		gfx.SelectTexture(15, light->depth_tex[4]);
-		gfx.SelectTexture(16, light->depth_tex[5]);
+	unsigned int depth_sampler = 10;
+	unsigned int smatrix = 0;
+
+	for (int i = 0; i < entity_list.size(); i++)
+	{
+		Light *light = entity_list[i]->light;
+		if (light == NULL)
+			continue;
+
+		if (entity_list[i]->bsp_visible == false)
+			continue;
+
+		if (i == 100)
+			continue;
+
+		if (light->shadow_flag & 1)
+		{
+			//printf("Using light %d face %d in slot %d\n", i, 0, smatrix);
+			mlight2.set_shadow_matrix(smatrix, light->shadow_matrix[0]);
+			gfx.SelectTexture(smatrix + 10, light->depth_tex[0]);
+			smatrix++;
+		}
+		if (smatrix == MAX_DEPTH)
+			break;
+
+		if (light->shadow_flag & 2)
+		{
+			//printf("Using light %d face %d in slot %d\n", i, 1, smatrix);
+			mlight2.set_shadow_matrix(smatrix, light->shadow_matrix[1]);
+			gfx.SelectTexture(smatrix + 10, light->depth_tex[1]);
+			smatrix++;
+		}
+		if (smatrix == MAX_DEPTH)
+			break;
+
+		if (light->shadow_flag & 4)
+		{
+			//printf("Using light %d face %d in slot %d\n", i, 2, smatrix);
+			mlight2.set_shadow_matrix(smatrix, light->shadow_matrix[2]);
+			gfx.SelectTexture(smatrix + 10, light->depth_tex[2]);
+			smatrix++;
+		}
+		if (smatrix == MAX_DEPTH)
+			break;
+
+		if (light->shadow_flag & 8)
+		{
+			//printf("Using light %d face %d in slot %d\n", i, 3, smatrix);
+			mlight2.set_shadow_matrix(smatrix, light->shadow_matrix[3]);
+			gfx.SelectTexture(smatrix + 10, light->depth_tex[3]);
+			smatrix++;
+		}
+		if (smatrix == MAX_DEPTH)
+			break;
+
+		if (light->shadow_flag & 16)
+		{
+			//printf("Using light %d face %d in slot %d\n", i, 4, smatrix);
+			mlight2.set_shadow_matrix(smatrix, light->shadow_matrix[4]);
+			gfx.SelectTexture(smatrix + 10, light->depth_tex[4]);
+			smatrix++;
+		}
+		if (smatrix == MAX_DEPTH)
+			break;
+
+		if (light->shadow_flag & 32)
+		{
+			//printf("Using light %d face %d in slot %d\n", i, 5, smatrix);
+			mlight2.set_shadow_matrix(smatrix, light->shadow_matrix[5]);
+			gfx.SelectTexture(smatrix + 10, light->depth_tex[5]);
+			smatrix++;
+		}
+		if (smatrix == MAX_DEPTH)
+			break;
+
 	}
 
 	// Rendering entities before map for blends
@@ -1185,7 +1266,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 #endif
 #endif
 
-	render_entities(transformation, light->shadow_projection, lights, true);
+	render_entities(transformation, projection, lights, true);
 	render_weapon(transformation, lights, player);
 
 }
@@ -1284,7 +1365,7 @@ void Engine::render_trails(matrix4 &trans)
 	}
 }
 
-void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend)
+void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend, bool vis)
 {
 	matrix4 mvp;
 
@@ -1311,8 +1392,16 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
-		if (entity->visible == false)
-			continue;
+		if (vis)
+		{
+			if (entity->visible == false)
+				continue;
+		}
+		else
+		{
+			if (entity->bsp_visible == false)
+				continue;
+		}
 
 		if (entity->nodraw == true)
 			continue;
@@ -1726,10 +1815,10 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
+	float min_distance = FLT_MAX;
+
 	if (distance < 9 * 800.0f * 800.0f && light->entity->visible)
 	{
-
-
 		if (light->active == false)
 		{
 			light_list.push_back(light);

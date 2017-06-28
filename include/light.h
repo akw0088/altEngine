@@ -23,6 +23,9 @@ public:
 	matrix4 shadow_projection;
 	matrix4 shadow_matrix[6];
 
+
+	int shadow_flag;
+
 	vec3	color;
 	float	intensity;
 	float	attenuation;

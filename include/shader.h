@@ -44,12 +44,7 @@ class mLight2 : public Shader
 public:
 	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time);
-	void set_shadow_matrix0(matrix4 &mvp);
-	void set_shadow_matrix1(matrix4 &mvp);
-	void set_shadow_matrix2(matrix4 &mvp);
-	void set_shadow_matrix3(matrix4 &mvp);
-	void set_shadow_matrix4(matrix4 &mvp);
-	void set_shadow_matrix5(matrix4 &mvp);
+	void set_shadow_matrix(int index, matrix4 &mvp);
 	virtual void prelink(void);
 	void set_max(int max);
 	void set_ambient(float ambient);
@@ -88,12 +83,9 @@ public:
 	float m_lightmap;
 private:
 	int matrix;
-	int shadow_matrix0;
-	int shadow_matrix1;
-	int shadow_matrix2;
-	int shadow_matrix3;
-	int shadow_matrix4;
-	int shadow_matrix5;
+	int shadow_matrix[17];
+	int depth[17];
+
 	int	texture0;
 	int texture1;
 	int texture2;
@@ -103,12 +95,6 @@ private:
 	int	texture6;
 	int texture7;
 
-	int depth0;
-	int depth1;
-	int depth2;
-	int depth3;
-	int depth4;
-	int depth5;
 
 
 	int texture_normalmap;

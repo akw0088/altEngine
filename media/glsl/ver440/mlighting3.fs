@@ -15,7 +15,7 @@ in VertexData {
     vec3 vary_normal;
     flat int vary_color;
     vec4 vary_tangent;
-    vec4 shadowpos[6];
+    vec4 shadowpos[24];
 } Vertex;
 
 // Final fragment color output
@@ -76,12 +76,28 @@ layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
 layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
 
-layout(binding=11) uniform sampler2D depth0;
-layout(binding=12) uniform sampler2D depth1;
-layout(binding=13) uniform sampler2D depth2;
-layout(binding=14) uniform sampler2D depth3;
-layout(binding=15) uniform sampler2D depth4;
-layout(binding=16) uniform sampler2D depth5;
+layout(binding=10) uniform sampler2D depth0;
+layout(binding=11) uniform sampler2D depth1;
+layout(binding=12) uniform sampler2D depth2;
+layout(binding=13) uniform sampler2D depth3;
+layout(binding=14) uniform sampler2D depth4;
+layout(binding=15) uniform sampler2D depth5;
+layout(binding=16) uniform sampler2D depth6;
+layout(binding=17) uniform sampler2D depth7;
+layout(binding=18) uniform sampler2D depth8;
+layout(binding=19) uniform sampler2D depth9;
+layout(binding=20) uniform sampler2D depth10;
+layout(binding=21) uniform sampler2D depth11;
+layout(binding=22) uniform sampler2D depth12;
+layout(binding=23) uniform sampler2D depth13;
+layout(binding=24) uniform sampler2D depth14;
+layout(binding=25) uniform sampler2D depth15;
+layout(binding=26) uniform sampler2D depth16;
+layout(binding=27) uniform sampler2D depth17;
+
+
+
+
 
 
 // Loop could clean this up, but need to figure out how to make an array of texture arrays that bind correctly
@@ -92,54 +108,203 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	vec4 shadowWdivide;
 	float shadowFlag = 1.0f;
 	float bias = 0.00001f;
-	float darkness = 0.25f;
+	float darkness = 0.50f;
 
 
 	//Shadowmap0
 	shadowpos = Vertex.shadowpos[0];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth0, shadowWdivide.st).r;
-	shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
-	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth0, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
 
 	//Shadowmap1
 	shadowpos = Vertex.shadowpos[1];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth1, shadowWdivide.st).r;
-	shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
-	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth1, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
 
 
 	//Shadowmap2
 	shadowpos = Vertex.shadowpos[2];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth2, shadowWdivide.st).r;
-	shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
-	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth2, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
 
 	//Shadowmap3
 	shadowpos = Vertex.shadowpos[3];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth3, shadowWdivide.st).r;
-	shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
-	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth3, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
 
  
 	//Shadowmap4
 	shadowpos = Vertex.shadowpos[4];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth4, shadowWdivide.st).r;
-	shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
-	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth4, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
 
 
 
 	//Shadowmap5
 	shadowpos = Vertex.shadowpos[5];
 	shadowWdivide = shadowpos / shadowpos.w;
-	depthmap = texture2D(depth5, shadowWdivide.st).r;
-	shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
-	shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth5, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+
+	//Shadowmap6
+	shadowpos = Vertex.shadowpos[6];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth6, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+	//Shadowmap7
+	shadowpos = Vertex.shadowpos[7];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth7, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+	//Shadowmap8
+	shadowpos = Vertex.shadowpos[8];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth8, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+	//Shadowmap9
+	shadowpos = Vertex.shadowpos[9];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth9, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+	//Shadowmap10
+	shadowpos = Vertex.shadowpos[10];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth10, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+	//Shadowmap11
+	shadowpos = Vertex.shadowpos[11];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth11, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+	//Shadowmap12
+	shadowpos = Vertex.shadowpos[12];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth12, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+	//Shadowmap13
+	shadowpos = Vertex.shadowpos[13];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth13, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+	//Shadowmap14
+	shadowpos = Vertex.shadowpos[14];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth14, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+	//Shadowmap15
+	shadowpos = Vertex.shadowpos[15];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth15, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+	//Shadowmap16
+	shadowpos = Vertex.shadowpos[16];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth16, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
+
+	//Shadowmap17
+	shadowpos = Vertex.shadowpos[17];
+	shadowWdivide = shadowpos / shadowpos.w;
+	if (shadowWdivide.w > 0)
+	{
+		depthmap = texture2D(depth17, shadowWdivide.st).r;
+		shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+		shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
+	}
+
 }
 
 

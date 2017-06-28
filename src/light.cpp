@@ -27,7 +27,9 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 
 void Light::generate_cubemaps(Graphics &gfx)
 {
+	shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
 #ifdef OPENGL32
+
 	for (int i = 0; i < 6; i++)
 	{
 		gfx.setupFramebuffer((int)(1024 * lightmap_scale), (int)(1024 * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);

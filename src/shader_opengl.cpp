@@ -115,12 +115,24 @@ int mLight2::init(Graphics *gfx)
 #endif
 
 	matrix = glGetUniformLocation(program_handle, "mvp");
-	shadow_matrix0 = glGetUniformLocation(program_handle, "shadow_matrix0");
-	shadow_matrix1 = glGetUniformLocation(program_handle, "shadow_matrix1");
-	shadow_matrix2 = glGetUniformLocation(program_handle, "shadow_matrix2");
-	shadow_matrix3 = glGetUniformLocation(program_handle, "shadow_matrix3");
-	shadow_matrix4 = glGetUniformLocation(program_handle, "shadow_matrix4");
-	shadow_matrix5 = glGetUniformLocation(program_handle, "shadow_matrix5");
+	shadow_matrix[0] = glGetUniformLocation(program_handle, "shadow_matrix0");
+	shadow_matrix[1]= glGetUniformLocation(program_handle, "shadow_matrix1");
+	shadow_matrix[2]= glGetUniformLocation(program_handle, "shadow_matrix2");
+	shadow_matrix[3]= glGetUniformLocation(program_handle, "shadow_matrix3");
+	shadow_matrix[4]= glGetUniformLocation(program_handle, "shadow_matrix4");
+	shadow_matrix[5]= glGetUniformLocation(program_handle, "shadow_matrix5");
+	shadow_matrix[6]= glGetUniformLocation(program_handle, "shadow_matrix6");
+	shadow_matrix[7]= glGetUniformLocation(program_handle, "shadow_matrix7");
+	shadow_matrix[8]= glGetUniformLocation(program_handle, "shadow_matrix8");
+	shadow_matrix[9]= glGetUniformLocation(program_handle, "shadow_matrix9");
+	shadow_matrix[10] = glGetUniformLocation(program_handle, "shadow_matrix10");
+	shadow_matrix[11] = glGetUniformLocation(program_handle, "shadow_matrix11");
+	shadow_matrix[12] = glGetUniformLocation(program_handle, "shadow_matrix12");
+	shadow_matrix[13] = glGetUniformLocation(program_handle, "shadow_matrix13");
+	shadow_matrix[14] = glGetUniformLocation(program_handle, "shadow_matrix14");
+	shadow_matrix[15] = glGetUniformLocation(program_handle, "shadow_matrix15");
+	shadow_matrix[16] = glGetUniformLocation(program_handle, "shadow_matrix16");
+	shadow_matrix[17] = glGetUniformLocation(program_handle, "shadow_matrix17");
 
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 	texture1 = glGetUniformLocation(program_handle, "texture1");
@@ -131,12 +143,24 @@ int mLight2::init(Graphics *gfx)
 	texture6 = glGetUniformLocation(program_handle, "texture6");
 	texture7 = glGetUniformLocation(program_handle, "texture7");
 
-	depth0 = glGetUniformLocation(program_handle, "depth0");
-	depth1 = glGetUniformLocation(program_handle, "depth1");
-	depth2 = glGetUniformLocation(program_handle, "depth2");
-	depth3 = glGetUniformLocation(program_handle, "depth3");
-	depth4 = glGetUniformLocation(program_handle, "depth4");
-	depth5 = glGetUniformLocation(program_handle, "depth5");
+	depth[0] = glGetUniformLocation(program_handle, "depth0");
+	depth[1]= glGetUniformLocation(program_handle, "depth1");
+	depth[2]= glGetUniformLocation(program_handle, "depth2");
+	depth[3]= glGetUniformLocation(program_handle, "depth3");
+	depth[4]= glGetUniformLocation(program_handle, "depth4");
+	depth[5]= glGetUniformLocation(program_handle, "depth5");
+	depth[6]= glGetUniformLocation(program_handle, "depth6");
+	depth[7]= glGetUniformLocation(program_handle, "depth7");
+	depth[8]= glGetUniformLocation(program_handle, "depth8");
+	depth[9]= glGetUniformLocation(program_handle, "depth9");
+	depth[10] = glGetUniformLocation(program_handle, "depth10");
+	depth[11] = glGetUniformLocation(program_handle, "depth11");
+	depth[12] = glGetUniformLocation(program_handle, "depth12");
+	depth[13] = glGetUniformLocation(program_handle, "depth13");
+	depth[14] = glGetUniformLocation(program_handle, "depth14");
+	depth[15] = glGetUniformLocation(program_handle, "depth15");
+	depth[16] = glGetUniformLocation(program_handle, "depth16");
+	depth[17] = glGetUniformLocation(program_handle, "depth17");
 
 
 	texture_lightmap = glGetUniformLocation(program_handle, "texture_lightmap");
@@ -249,35 +273,9 @@ void mLight2::prelink()
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
 }
 
-
-void mLight2::set_shadow_matrix0(matrix4 &proj)
+void mLight2::set_shadow_matrix(int index, matrix4 &mvp)
 {
-	glUniformMatrix4fv(shadow_matrix0, 1, GL_FALSE, proj.m);
-}
-
-void mLight2::set_shadow_matrix1(matrix4 &proj)
-{
-	glUniformMatrix4fv(shadow_matrix1, 1, GL_FALSE, proj.m);
-}
-
-void mLight2::set_shadow_matrix2(matrix4 &proj)
-{
-	glUniformMatrix4fv(shadow_matrix2, 1, GL_FALSE, proj.m);
-}
-
-void mLight2::set_shadow_matrix3(matrix4 &proj)
-{
-	glUniformMatrix4fv(shadow_matrix3, 1, GL_FALSE, proj.m);
-}
-
-void mLight2::set_shadow_matrix4(matrix4 &proj)
-{
-	glUniformMatrix4fv(shadow_matrix4, 1, GL_FALSE, proj.m);
-}
-
-void mLight2::set_shadow_matrix5(matrix4 &proj)
-{
-	glUniformMatrix4fv(shadow_matrix5, 1, GL_FALSE, proj.m);
+	glUniformMatrix4fv(shadow_matrix[index], 1, GL_FALSE, mvp.m);
 }
 
 
@@ -316,12 +314,24 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1i(texture7, 7);
 
 
-	glUniform1i(depth0, 11);
-	glUniform1i(depth1, 12);
-	glUniform1i(depth2, 13);
-	glUniform1i(depth3, 14);
-	glUniform1i(depth4, 15);
-	glUniform1i(depth5, 16);
+	glUniform1i(depth[0], 10);
+	glUniform1i(depth[1], 11);
+	glUniform1i(depth[2], 12);
+	glUniform1i(depth[3], 13);
+	glUniform1i(depth[4], 14);
+	glUniform1i(depth[5], 15);
+	glUniform1i(depth[6], 16);
+	glUniform1i(depth[7], 17);
+	glUniform1i(depth[8], 18);
+	glUniform1i(depth[9], 19);
+	glUniform1i(depth[10], 20);
+	glUniform1i(depth[11], 21);
+	glUniform1i(depth[12], 22);
+	glUniform1i(depth[13], 23);
+	glUniform1i(depth[14], 24);
+	glUniform1i(depth[15], 25);
+	glUniform1i(depth[16], 26);
+	glUniform1i(depth[17], 27);
 
 
 
