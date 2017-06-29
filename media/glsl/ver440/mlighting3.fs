@@ -24,6 +24,7 @@ uniform vec4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
 uniform float		u_ambient;
 uniform float		u_lightmap;
+uniform float		u_shadowmap;
 uniform mat4		mvp;
 
 uniform int u_lightmap_stage;
@@ -315,10 +316,7 @@ void main(void)
 	normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
 */
 
-	vec4 Fragment0;
-	vec4 Fragment1;
-	vec4 Fragment2;
-	vec4 Fragment3;
+	vec4 Fragment_stage[4];
 
 
 	vec3 u = normalize(-Vertex.vary_position.zyx);
@@ -364,53 +362,53 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment0 = texture(texture0, Vertex.vary_LightCoord);
+		Fragment_stage[0] = texture(texture0, Vertex.vary_LightCoord);
 	}
 	else
 	{
 		if (u_env[0] > 0 || u_water[0] > 0)
-			Fragment0 = texture(texture0, tc);
+			Fragment_stage[0] = texture(texture0, tc);
 		else
-			Fragment0 = texture(texture0, Vertex.vary_newTexCoord[0]);
+			Fragment_stage[0] = texture(texture0, Vertex.vary_newTexCoord[0]);
 	}
 	
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment1 = texture(texture1, Vertex.vary_LightCoord);
+		Fragment_stage[1] = texture(texture1, Vertex.vary_LightCoord);
 	}
 	else
 	{
 		if (u_env[1] > 0 || u_water[1] > 0)
-			Fragment1 = texture(texture1, tc);
+			Fragment_stage[1] = texture(texture1, tc);
 		else
-			Fragment1 = texture(texture1, Vertex.vary_newTexCoord[1]);
+			Fragment_stage[1] = texture(texture1, Vertex.vary_newTexCoord[1]);
 	}
 
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment2 = texture(texture2, Vertex.vary_LightCoord);
+		Fragment_stage[2] = texture(texture2, Vertex.vary_LightCoord);
 	}
 	else
 	{
 		if (u_env[2] > 0 || u_water[2] > 0)
-			Fragment2 = texture(texture2, tc);
+			Fragment_stage[2] = texture(texture2, tc);
 		else
-			Fragment2 = texture(texture2, Vertex.vary_newTexCoord[2]);
+			Fragment_stage[2] = texture(texture2, Vertex.vary_newTexCoord[2]);
 	}
 
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment3 = texture(texture3, Vertex.vary_LightCoord);
+		Fragment_stage[3] = texture(texture3, Vertex.vary_LightCoord);
 	}
 	else
 	{
 		if (u_env[3] > 0 || u_water[3] > 0)
-			Fragment3 = texture(texture3, tc);
+			Fragment_stage[3] = texture(texture3, tc);
 		else
-			Fragment3 = texture(texture3, Vertex.vary_newTexCoord[3]);
+			Fragment_stage[3] = texture(texture3, Vertex.vary_newTexCoord[3]);
 	}
 
 
@@ -421,16 +419,16 @@ void main(void)
 
 
 //	alpha 1 = opaque, 0 equals transparent
-	Fragment.a = Fragment0.a * Fragment1.a  * Fragment2.a  * Fragment3.a;
+	Fragment.a = Fragment_stage[0].a * Fragment_stage[1].a  * Fragment_stage[2].a  * Fragment_stage[3].a;
 //	Fragment.a = 1.0;
-	Fragment.xyz += Fragment0.xyz * 0.75;
-	Fragment.xyz += Fragment1.xyz;
-	Fragment.xyz += Fragment2.xyz;
-	Fragment.xyz += Fragment3.xyz;
-//	Fragment.xyz += Fragment4.xyz;
-//	Fragment.xyz += Fragment5.xyz;
-//	Fragment.xyz += Fragment6.xyz;
-//	Fragment.xyz += Fragment7.xyz;
+	Fragment.xyz += Fragment_stage[0].xyz * 0.75;
+	Fragment.xyz += Fragment_stage[1].xyz;
+	Fragment.xyz += Fragment_stage[2].xyz;
+	Fragment.xyz += Fragment_stage[3].xyz;
+//	Fragment.xyz += Fragment_stage[4].xyz;
+//	Fragment.xyz += Fragment_stage[5].xyz;
+//	Fragment.xyz += Fragment_stage[6].xyz;
+//	Fragment.xyz += Fragment_stage[7].xyz;
 
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
@@ -473,8 +471,13 @@ void main(void)
 			Fragment.xyz *= lightmap * 1.5;
 	}
 	Fragment.rgb *= max(light, ambient);
-	calc_shadow(shadow, 0);
-	Fragment.rgb *= shadow;
+
+
+	if (u_shadowmap > 0.0)
+	{
+		calc_shadow(shadow, 0);
+		Fragment.rgb *= shadow;
+	}
 
 //	Fragment.rgb = light;
 

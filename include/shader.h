@@ -49,6 +49,7 @@ public:
 	void set_max(int max);
 	void set_ambient(float ambient);
 	void set_lightmap(float lightmap);
+	void set_shadowmap(float value);
 	void set_light(float ambient, float lightmap, int num_light);
 	void set_lightmap_stage(int flag);
 	void set_depth(int flag);
@@ -81,6 +82,7 @@ public:
 	int m_num_light;
 	float m_ambient;
 	float m_lightmap;
+	float m_shadowmap;
 private:
 	int matrix;
 
@@ -102,6 +104,7 @@ private:
 	int u_time;
 	int u_ambient;
 	int u_lightmap;
+	int u_shadowmap;
 	int u_lightmap_stage;
 	int u_depth;
 	int u_num_lights;

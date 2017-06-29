@@ -6124,15 +6124,6 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
-	ret = strcmp(cmd, "shadowmaps");
-	if (ret == 0)
-	{
-		engine->shadowmaps = !engine->shadowmaps;
-		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->shadowmaps);
-		menu.print(msg);
-		return;
-	}
-
 	ret = strcmp(cmd, "all_lights");
 	if (ret == 0)
 	{

@@ -233,6 +233,7 @@ int mLight2::init(Graphics *gfx)
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_lightmap = glGetUniformLocation(program_handle, "u_lightmap");
+	u_shadowmap = glGetUniformLocation(program_handle, "u_shadowmap");
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
@@ -260,6 +261,10 @@ void mLight2::set_lightmap(float lightmap)
 	m_lightmap = lightmap;
 }
 
+void mLight2::set_shadowmap(float value)
+{
+	m_shadowmap = value;
+}
 
 
 
@@ -406,6 +411,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 	glUniform1f(u_ambient, m_ambient);
 	glUniform1f(u_lightmap, m_lightmap);
+	glUniform1f(u_shadowmap, m_shadowmap);
 	glUniform1i(u_num_lights, MIN(j, max_light));
 	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);

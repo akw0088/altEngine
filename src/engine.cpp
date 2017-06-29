@@ -849,8 +849,6 @@ void Engine::zoom(float level)
 
 void Engine::render_shadowmaps(bool everything)
 {
-	Entity *entity = entity_list[find_type(ENT_PLAYER, 0)];
-
 	int depth_used = 0;
 
 	float bias[16] = {
@@ -907,10 +905,10 @@ void Engine::render_shadowmaps(bool everything)
 		for (int j = 0; j < 6; j++)
 		{
 			matrix4 mvp = cube[j] * light->shadow_projection;
-//			bool visible = aabb_visible(entity->position, entity->position, mvp);
+			bool visible = aabb_visible(camera_frame.pos, camera_frame.pos + camera_frame.forward + camera_frame.up, mvp);
 
-			//if (visible == false)
-				//continue;
+			if (visible == false)
+				continue;
 
 			depth_used++;
 			if (everything == false)
@@ -4155,6 +4153,23 @@ void Engine::console(char *cmd)
 
 		float lightmap = (float)atof(data);
 		mlight2.set_lightmap(lightmap);
+		return;
+	}
+
+	ret = strcmp(cmd, "shadowmaps");
+	if (ret == 0)
+	{
+		shadowmaps = !shadowmaps;
+		if (shadowmaps)
+		{
+			mlight2.set_shadowmap(1.0f);
+		}
+		else
+		{
+			mlight2.set_shadowmap(0.0f);
+		}
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, shadowmaps);
+		menu.print(msg);
 		return;
 	}
 
