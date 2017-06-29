@@ -33,32 +33,9 @@ uniform int u_lightmap_stage;
 uniform int u_depth;
 
 
-uniform int u_env0;
-uniform int u_env1;
-uniform int u_env2;
-uniform int u_env3;
-uniform int u_env4;
-uniform int u_env5;
-uniform int u_env6;
-uniform int u_env7;
-
-uniform int u_water0;
-uniform int u_water1;
-uniform int u_water2;
-uniform int u_water3;
-uniform int u_water4;
-uniform int u_water5;
-uniform int u_water6;
-uniform int u_water7;
-
-uniform float u_rgbgen_scale0;
-uniform float u_rgbgen_scale1;
-uniform float u_rgbgen_scale2;
-uniform float u_rgbgen_scale3;
-uniform float u_rgbgen_scale4;
-uniform float u_rgbgen_scale5;
-uniform float u_rgbgen_scale6;
-uniform float u_rgbgen_scale7;
+uniform int u_env[8];
+uniform int u_water[8];
+uniform float u_rgbgen_scale[8];
 
 
 uniform int u_time;
@@ -356,7 +333,7 @@ void main(void)
 	tc.x = 0.0;
 	tc.y = 0.0;
 
-	if (u_env0 + u_env1 + u_env2 + u_env3 > 0)
+	if (u_env[0] + u_env[1] + u_env[2] + u_env[3] > 0)
 	{
 		// Environment "sphere" mapping
 		r.z += 1.0;
@@ -375,7 +352,7 @@ void main(void)
 		tc *= 0.2; // enlarge texture so you cant see details
 	}
 
-	if (u_water0 + u_water1 + u_water2 + u_water3 > 0)
+	if (u_water[0] + u_water[1] + u_water[2] + u_water[3] > 0)
 	{
 		float s = Vertex.vary_TexCoord0.x;
 		float t = Vertex.vary_TexCoord0.y;
@@ -394,7 +371,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env0 > 0 || u_water0 > 0)
+		if (u_env[0] > 0 || u_water[0] > 0)
 			Fragment0 = texture(texture0, tc);
 		else
 			Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
@@ -407,7 +384,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env1 > 0 || u_water1 > 0)
+		if (u_env[1] > 0 || u_water[1] > 0)
 			Fragment1 = texture(texture1, tc);
 		else
 			Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
@@ -420,7 +397,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env2 > 0 || u_water2 > 0)
+		if (u_env[2] > 0 || u_water[2] > 0)
 			Fragment2 = texture(texture2, tc);
 		else
 			Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
@@ -433,17 +410,17 @@ void main(void)
 	}
 	else
 	{
-		if (u_env3 > 0 || u_water3 > 0)
+		if (u_env[3] > 0 || u_water[3] > 0)
 			Fragment3 = texture(texture3, tc);
 		else
 			Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
 	}
 
 
-	ambient *= min(u_rgbgen_scale0, 3.0);
-	ambient *= min(u_rgbgen_scale1, 3.0);
-	ambient *= min(u_rgbgen_scale2, 3.0);
-	ambient *= min(u_rgbgen_scale3, 3.0);
+	ambient *= min(u_rgbgen_scale[0], 3.0);
+	ambient *= min(u_rgbgen_scale[1], 3.0);
+	ambient *= min(u_rgbgen_scale[2], 3.0);
+	ambient *= min(u_rgbgen_scale[3], 3.0);
 
 
 //	alpha 1 = opaque, 0 equals transparent
