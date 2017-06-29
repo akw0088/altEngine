@@ -859,13 +859,13 @@ void Engine::render_shadowmaps(bool everything)
 
 	mlight2.Select();
 
+
+	q3map.lastIndex = -1;
 	q3map.enable_textures = false;
-	/*
 	gfx.Color(false);
 	q3map.enable_shader = false;
-	//q3map.enable_blend = false;
-	//q3map.enable_sky = false;
-	*/
+	q3map.enable_blend = false;
+	q3map.enable_sky = false;
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -876,9 +876,6 @@ void Engine::render_shadowmaps(bool everything)
 
 		if (everything == false)
 		{
-			if (entity_list[i]->bsp_visible == false)
-				continue;
-
 			if (i == 100)
 				continue;
 		}
@@ -905,10 +902,21 @@ void Engine::render_shadowmaps(bool everything)
 		for (int j = 0; j < 6; j++)
 		{
 			matrix4 mvp = cube[j] * light->shadow_projection;
+			/*
 			bool visible = aabb_visible(camera_frame.pos, camera_frame.pos + camera_frame.forward + camera_frame.up, mvp);
 
 			if (visible == false)
 				continue;
+			*/
+
+			if (everything == false)
+			{
+				int leaf_a = -1;
+				int leaf_b = -1;
+				if (q3map.vis_test(light->entity->position, camera_frame.pos, leaf_a, leaf_b) == false)
+					continue;
+			}
+
 
 			depth_used++;
 			if (everything == false)
@@ -943,13 +951,12 @@ void Engine::render_shadowmaps(bool everything)
 		}
 	}
 	
+	q3map.lastIndex = -1;
 	q3map.enable_textures = true;
-	/*
 	gfx.Color(true);
 	q3map.enable_shader = true;
-	//q3map.enable_blend = true;
-	//q3map.enable_sky = true;
-	*/
+	q3map.enable_blend = true;
+	q3map.enable_sky = true;
 }
 
 void Engine::set_dynamic_resolution(double last_frametime)
@@ -1396,7 +1403,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 		else
 		{
-			if (entity->bsp_visible == false)
+			if (entity->bsp_visible == false || (entity->trigger && entity->trigger->active))
 				continue;
 		}
 
