@@ -71,12 +71,12 @@ public:
 	void server_send_state(int client);
 	void client_recv();
 	void client_send();
-	int handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg);
+	int handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, matrix4 &projection, bool lights, bool self);
-	int serialize_ents(char *data, unsigned short int &num_ents);
-	int deserialize_ents(char *data, unsigned short int num_ents);
+	int serialize_ents(unsigned char *data, unsigned short int &num_ents);
+	int deserialize_ents(unsigned char *data, unsigned short int num_ents);
 
 	bool select_wave(int source, char *file);
 

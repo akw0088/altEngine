@@ -179,11 +179,11 @@ typedef struct
 	float			forward[3];
 	float			pos[3];		// Sending position (not used, but interesting to calculate delta's)
 	byte			num_cmds;
-	char			data[16834];
+	unsigned char		data[16834];
 } clientmsg_t;
 
 
-#define SERVER_HEADER 8
+#define SERVER_HEADER 12
 /*
 	Variable length server msg
 	after num_ents is a variable number of entity states
@@ -192,11 +192,12 @@ typedef struct
 */
 typedef struct
 {
-	unsigned short int		length;
+	unsigned short int	length;
+	unsigned int	compressed_size;
 	unsigned short int	sequence;
 	unsigned short int	client_sequence;
-	unsigned short int 			num_ents;
-	char			data[256000];
+	unsigned short int	num_ents;
+	unsigned char		data[256000];
 } servermsg_t;
 
 typedef struct

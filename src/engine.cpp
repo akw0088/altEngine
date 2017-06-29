@@ -2184,7 +2184,7 @@ void Engine::step(int tick)
 	if (playing_demo)
 	{
 		demo_frameheader_t header;
-		static char data[4096];
+		static unsigned char data[4096];
 		unsigned int num_read;
 
 		memset(data, 0, 4096);
@@ -2526,7 +2526,7 @@ void Engine::server_recv()
 }
 
 
-int Engine::serialize_ents(char *data, unsigned short int &num_ents)
+int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents)
 {
 	for (unsigned int j = 0; j < entity_list.size(); j++)
 	{
@@ -2577,7 +2577,7 @@ int Engine::serialize_ents(char *data, unsigned short int &num_ents)
 	return 0;
 }
 
-int Engine::deserialize_ents(char *data, unsigned short int num_ents)
+int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents)
 {
 	for (int i = 0; i < num_ents; i++)
 	{
@@ -2665,10 +2665,10 @@ int Engine::deserialize_ents(char *data, unsigned short int num_ents)
 void Engine::server_send()
 {
 //	static entity_t old_ent[1024];
-//	unsigned char	*compressed = NULL;
-//	unsigned char	*data = NULL;
-//	unsigned int	compressed_length = 0;
+	unsigned char	*compressed = NULL;
+	unsigned int	compressed_size = 0;
 	static servermsg_t	servermsg;
+	static unsigned char	data[256000];
 
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
@@ -2690,7 +2690,7 @@ void Engine::server_send()
 		}
 
 
-		serialize_ents(servermsg.data, servermsg.num_ents);
+		serialize_ents(&data[0], servermsg.num_ents);
 
 		if (client_list[i]->needs_state)
 		{
@@ -2698,8 +2698,8 @@ void Engine::server_send()
 			client_list[i]->needs_state = false;
 		}
 
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], (void *)&reliable, reliable.size);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
+//		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], (void *)&reliable, reliable.size);
+//		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
 		client_list[i]->netinfo.num_ents = servermsg.num_ents;
@@ -2712,17 +2712,20 @@ void Engine::server_send()
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-//		unsigned int dsize = 0;
-//		huffman_encode_memory((unsigned char *)&servermsg, servermsg.length, &compressed, &compressed_length);
-//		int num_sent = net.sendto((char *)&compressed, compressed_length, client_list[i]->socketname);
-//		free((void *)compressed);
+		unsigned char *pdata;
+		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &servermsg.compressed_size);
+		memcpy(servermsg.data, pdata, servermsg.compressed_size);
+		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size;
+		int num_sent = net.sendto((char *)&compressed, compressed_size, client_list[i]->socketname);
+		free((void *)compressed);
+		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
 
 		if (recording_demo)
 		{
 			fwrite(&servermsg, servermsg.length, 1, demofile);
 		}
 
-		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+//		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 		if (num_sent <= 0)
 		{
 			netinfo.send_full = true;
@@ -2761,8 +2764,8 @@ void Engine::server_send()
 
 void Engine::client_recv()
 {
-//	static unsigned char	compressed[256000];
-//	unsigned char *data = NULL;
+	static unsigned char	compressed[256000];
+	unsigned char *data = NULL;
 	static servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
@@ -2776,13 +2779,6 @@ void Engine::client_recv()
 #endif
 	if ( size > 0)
 	{
-// huffman_decode doesnt do too well with partial data, might need to pack into a struct
-//		unsigned int dsize = 0;
-//		memset(&compressed, 0, 256000);
-//		huffman_decode_memory((unsigned char *)compressed, (unsigned int)size, (unsigned char **)&data, &dsize);
-//		servermsg = (servermsg_t *)&data;
-//		size = dsize;
-
 		if (size != servermsg.length)
 		{
 			printf("Packet size mismatch: %d %d\n", size, servermsg.length);
@@ -2809,13 +2805,22 @@ void Engine::client_recv()
 			reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		}
 
+		unsigned int dsize = 0;
+		memset(&compressed, 0, 256000);
+		huffman_decode_memory((unsigned char *)servermsg.data, (unsigned int)servermsg.compressed_size, (unsigned char **)&data, &dsize);
+
+		if (dsize != servermsg.num_ents * sizeof(entity_t))
+		{
+			printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.num_ents * sizeof(entity_t)));
+			return;
+		}
 
 		netinfo.num_ents = servermsg.num_ents;
 		netinfo.size = servermsg.length;
 		netinfo.sequence_delta = sequence - servermsg.client_sequence;
 		netinfo.ping = netinfo.sequence_delta * TICK_MS;
 
-		handle_servermsg(servermsg, reliablemsg);
+		handle_servermsg(servermsg, data, reliablemsg);
 
 		/*
 		printf("-> client_sequence %d\n"
@@ -2886,7 +2891,7 @@ void Engine::client_send()
 	}
 }
 
-int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
+int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg)
 {
 	if (reliablemsg != NULL)
 	{
@@ -2953,7 +2958,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, reliablemsg_t *reliablemsg)
 		}
 	}
 
-	deserialize_ents(servermsg.data, servermsg.num_ents);
+	deserialize_ents(data, servermsg.num_ents);
 	return 0;
 }
 
