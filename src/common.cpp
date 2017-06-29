@@ -226,7 +226,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 
 	// Z coordinate
-	if (dir.z != 0.0)
+	if (abs32(dir.z) < 0.0001f)
 	{
 		float t1 = (min.z - origin.z) / dir.z;
 		float t2 = (max.z - origin.z) / dir.z;
