@@ -1135,7 +1135,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	unsigned int smatrix = 0;
 
-	for (int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		Light *light = entity_list[i]->light;
 		if (light == NULL)
@@ -2666,7 +2666,6 @@ void Engine::server_send()
 {
 //	static entity_t old_ent[1024];
 	unsigned char	*compressed = NULL;
-	unsigned int	compressed_size = 0;
 	static servermsg_t	servermsg;
 	static unsigned char	data[256000];
 
@@ -2698,26 +2697,17 @@ void Engine::server_send()
 			client_list[i]->needs_state = false;
 		}
 
-//		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], (void *)&reliable, reliable.size);
-//		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
 		servermsg.client_sequence = client_list[i]->client_sequence;
-
-		client_list[i]->netinfo.num_ents = servermsg.num_ents;
-		client_list[i]->netinfo.size = servermsg.length;
-		netinfo.num_ents = servermsg.num_ents;
-		netinfo.size = servermsg.length;
 
 		if (servermsg.length > 8192)
 		{
 			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
 		}
 
-		unsigned char *pdata;
+		unsigned char *pdata = NULL;
 		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &servermsg.compressed_size);
 		memcpy(servermsg.data, pdata, servermsg.compressed_size);
 		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size;
-		int num_sent = net.sendto((char *)&compressed, compressed_size, client_list[i]->socketname);
-		free((void *)compressed);
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
 
 		if (recording_demo)
@@ -2725,7 +2715,13 @@ void Engine::server_send()
 			fwrite(&servermsg, servermsg.length, 1, demofile);
 		}
 
-//		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		client_list[i]->netinfo.num_ents = servermsg.num_ents;
+		client_list[i]->netinfo.size = servermsg.length;
+		netinfo.num_ents = servermsg.num_ents;
+		netinfo.size = servermsg.length;
+
+		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		free((void *)pdata);
 		if (num_sent <= 0)
 		{
 			netinfo.send_full = true;
@@ -2835,7 +2831,7 @@ void Engine::client_recv()
 
 
 		last_server_sequence = servermsg.sequence;
-//		free((void *)data);
+		free((void *)data);
 	}
 }
 
