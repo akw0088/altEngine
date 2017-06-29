@@ -4450,7 +4450,7 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 
 		multisample = atoi(data);
-#ifdef OPENGL
+#ifdef OPENGL32
 		if (multisample > 0)
 			glEnable(GL_MULTISAMPLE);
 		else
@@ -4540,7 +4540,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "r_frontface %s", data);
 	if (ret == 1)
 	{
-#ifdef OPENGL
+#ifdef OPENGL32
 		if (atoi(data) == 1)
 			glFrontFace(GL_CCW);
 		else
