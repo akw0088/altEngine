@@ -2664,8 +2664,6 @@ int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents)
 
 void Engine::server_send()
 {
-//	static entity_t old_ent[1024];
-	unsigned char	*compressed = NULL;
 	static servermsg_t	servermsg;
 	static unsigned char	data[256000];
 
@@ -2698,11 +2696,6 @@ void Engine::server_send()
 		}
 
 		servermsg.client_sequence = client_list[i]->client_sequence;
-
-		if (servermsg.length > 8192)
-		{
-			//printf("Warning: Server packet too big!\nsize %d\n", servermsg.length);
-		}
 
 		unsigned char *pdata = NULL;
 		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &servermsg.compressed_size);
@@ -2796,7 +2789,7 @@ void Engine::client_recv()
 			reliable.sequence = -1;
 		}
 
-		if ((unsigned int)servermsg.length > SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + sizeof(int) + 1)
+		if ((unsigned int)servermsg.length > SERVER_HEADER + servermsg.compressed_size + sizeof(int) + 1)
 		{
 			reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		}
@@ -2817,19 +2810,6 @@ void Engine::client_recv()
 		netinfo.ping = netinfo.sequence_delta * TICK_MS;
 
 		handle_servermsg(servermsg, data, reliablemsg);
-
-		/*
-		printf("-> client_sequence %d\n"
-			"<- server_sequence %d\n"
-			"<- servers_client_sequence %d\n"
-			"server delay %d steps\n"
-			"reliable msg: %s\n",
-			sequence, servermsg.sequence, servermsg.client_sequence,
-			sequence - servermsg.client_sequence,
-			reliable.msg);
-		*/
-
-
 		last_server_sequence = servermsg.sequence;
 		free((void *)data);
 	}
