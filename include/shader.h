@@ -83,89 +83,23 @@ public:
 	float m_lightmap;
 private:
 	int matrix;
-	int shadow_matrix[18];
-	int depth[18];
 
-	int	texture0;
-	int texture1;
-	int texture2;
-	int	texture3;
-	int texture4;
-	int texture5;
-	int	texture6;
-	int texture7;
-
-
-
+	int	texture[8];
 	int texture_normalmap;
 	int texture_lightmap;
 
-	int u_tcmod_scroll0;
-	int u_tcmod_scroll1;
-	int u_tcmod_scroll2;
-	int u_tcmod_scroll3;
-	int u_tcmod_scroll4;
-	int u_tcmod_scroll5;
-	int u_tcmod_scroll6;
-	int u_tcmod_scroll7;
+	int u_tcmod_scroll[8];
+	int u_tcmod_scale[8];
+	int u_tcmod_sin[8];
+	int u_tcmod_cos[8];
+	int u_env[8];
+	int u_water[8];
+	int u_rgbgen_scale[8];
+	int shadow_matrix[18];
+	int depth[18];
 
-	int u_tcmod_scale0;
-	int u_tcmod_scale1;
-	int u_tcmod_scale2;
-	int u_tcmod_scale3;
-	int u_tcmod_scale4;
-	int u_tcmod_scale5;
-	int u_tcmod_scale6;
-	int u_tcmod_scale7;
-
-	int u_tcmod_sin0;
-	int u_tcmod_sin1;
-	int u_tcmod_sin2;
-	int u_tcmod_sin3;
-	int u_tcmod_sin4;
-	int u_tcmod_sin5;
-	int u_tcmod_sin6;
-	int u_tcmod_sin7;
-	
-	int u_tcmod_cos0;
-	int u_tcmod_cos1;
-	int u_tcmod_cos2;
-	int u_tcmod_cos3;
-	int u_tcmod_cos4;
-	int u_tcmod_cos5;
-	int u_tcmod_cos6;
-	int u_tcmod_cos7;
-
-	int u_env0;
-	int u_env1;
-	int u_env2;
-	int u_env3;
-	int u_env4;
-	int u_env5;
-	int u_env6;
-	int u_env7;
-
-	int u_water0;
-	int u_water1;
-	int u_water2;
-	int u_water3;
-	int u_water4;
-	int u_water5;
-	int u_water6;
-	int u_water7;
 
 	int u_time;
-
-	int u_rgbgen_scale0;
-	int u_rgbgen_scale1;
-	int u_rgbgen_scale2;
-	int u_rgbgen_scale3;
-	int u_rgbgen_scale4;
-	int u_rgbgen_scale5;
-	int u_rgbgen_scale6;
-	int u_rgbgen_scale7;
-
-
 	int u_ambient;
 	int u_lightmap;
 	int u_lightmap_stage;

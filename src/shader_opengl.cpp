@@ -134,14 +134,14 @@ int mLight2::init(Graphics *gfx)
 	shadow_matrix[16] = glGetUniformLocation(program_handle, "shadow_matrix16");
 	shadow_matrix[17] = glGetUniformLocation(program_handle, "shadow_matrix17");
 
-	texture0 = glGetUniformLocation(program_handle, "texture0");
-	texture1 = glGetUniformLocation(program_handle, "texture1");
-	texture2 = glGetUniformLocation(program_handle, "texture2");
-	texture3 = glGetUniformLocation(program_handle, "texture3");
-	texture4 = glGetUniformLocation(program_handle, "texture4");
-	texture5 = glGetUniformLocation(program_handle, "texture5");
-	texture6 = glGetUniformLocation(program_handle, "texture6");
-	texture7 = glGetUniformLocation(program_handle, "texture7");
+	texture[0] = glGetUniformLocation(program_handle, "texture0");
+	texture[1] = glGetUniformLocation(program_handle, "texture1");
+	texture[2] = glGetUniformLocation(program_handle, "texture2");
+	texture[3] = glGetUniformLocation(program_handle, "texture3");
+	texture[4] = glGetUniformLocation(program_handle, "texture4");
+	texture[5] = glGetUniformLocation(program_handle, "texture5");
+	texture[6] = glGetUniformLocation(program_handle, "texture6");
+	texture[7] = glGetUniformLocation(program_handle, "texture7");
 
 	depth[0] = glGetUniformLocation(program_handle, "depth0");
 	depth[1]= glGetUniformLocation(program_handle, "depth1");
@@ -166,68 +166,68 @@ int mLight2::init(Graphics *gfx)
 	texture_lightmap = glGetUniformLocation(program_handle, "texture_lightmap");
 	texture_normalmap = glGetUniformLocation(program_handle, "texture_normalmap");
 
-	u_tcmod_scroll0 = glGetUniformLocation(program_handle, "u_tcmod_scroll0");
-	u_tcmod_scroll1 = glGetUniformLocation(program_handle, "u_tcmod_scroll1");
-	u_tcmod_scroll2 = glGetUniformLocation(program_handle, "u_tcmod_scroll2");
-	u_tcmod_scroll3 = glGetUniformLocation(program_handle, "u_tcmod_scroll3");
-	u_tcmod_scroll4 = glGetUniformLocation(program_handle, "u_tcmod_scroll4");
-	u_tcmod_scroll5 = glGetUniformLocation(program_handle, "u_tcmod_scroll5");
-	u_tcmod_scroll6 = glGetUniformLocation(program_handle, "u_tcmod_scroll6");
-	u_tcmod_scroll7 = glGetUniformLocation(program_handle, "u_tcmod_scroll7");
+	u_tcmod_scroll[0] = glGetUniformLocation(program_handle, "u_tcmod_scroll0");
+	u_tcmod_scroll[1] = glGetUniformLocation(program_handle, "u_tcmod_scroll1");
+	u_tcmod_scroll[2] = glGetUniformLocation(program_handle, "u_tcmod_scroll2");
+	u_tcmod_scroll[3] = glGetUniformLocation(program_handle, "u_tcmod_scroll3");
+	u_tcmod_scroll[4] = glGetUniformLocation(program_handle, "u_tcmod_scroll4");
+	u_tcmod_scroll[5] = glGetUniformLocation(program_handle, "u_tcmod_scroll5");
+	u_tcmod_scroll[6] = glGetUniformLocation(program_handle, "u_tcmod_scroll6");
+	u_tcmod_scroll[7] = glGetUniformLocation(program_handle, "u_tcmod_scroll7");
 
-	u_tcmod_scale0 = glGetUniformLocation(program_handle, "u_tcmod_scale0");
-	u_tcmod_scale1 = glGetUniformLocation(program_handle, "u_tcmod_scale1");
-	u_tcmod_scale2 = glGetUniformLocation(program_handle, "u_tcmod_scale2");
-	u_tcmod_scale3 = glGetUniformLocation(program_handle, "u_tcmod_scale3");
-	u_tcmod_scale4 = glGetUniformLocation(program_handle, "u_tcmod_scale4");
-	u_tcmod_scale5 = glGetUniformLocation(program_handle, "u_tcmod_scale5");
-	u_tcmod_scale6 = glGetUniformLocation(program_handle, "u_tcmod_scale6");
-	u_tcmod_scale7 = glGetUniformLocation(program_handle, "u_tcmod_scale7");
+	u_tcmod_scale[0] = glGetUniformLocation(program_handle, "u_tcmod_scale0");
+	u_tcmod_scale[1] = glGetUniformLocation(program_handle, "u_tcmod_scale1");
+	u_tcmod_scale[2] = glGetUniformLocation(program_handle, "u_tcmod_scale2");
+	u_tcmod_scale[3] = glGetUniformLocation(program_handle, "u_tcmod_scale3");
+	u_tcmod_scale[4] = glGetUniformLocation(program_handle, "u_tcmod_scale4");
+	u_tcmod_scale[5] = glGetUniformLocation(program_handle, "u_tcmod_scale5");
+	u_tcmod_scale[6] = glGetUniformLocation(program_handle, "u_tcmod_scale6");
+	u_tcmod_scale[7] = glGetUniformLocation(program_handle, "u_tcmod_scale7");
 
-	u_tcmod_sin0 = glGetUniformLocation(program_handle, "u_tcmod_sin0");
-	u_tcmod_sin1 = glGetUniformLocation(program_handle, "u_tcmod_sin1");
-	u_tcmod_sin2 = glGetUniformLocation(program_handle, "u_tcmod_sin2");
-	u_tcmod_sin3 = glGetUniformLocation(program_handle, "u_tcmod_sin3");
-	u_tcmod_sin4 = glGetUniformLocation(program_handle, "u_tcmod_sin4");
-	u_tcmod_sin5 = glGetUniformLocation(program_handle, "u_tcmod_sin5");
-	u_tcmod_sin6 = glGetUniformLocation(program_handle, "u_tcmod_sin6");
-	u_tcmod_sin7 = glGetUniformLocation(program_handle, "u_tcmod_sin7");
+	u_tcmod_sin[0] = glGetUniformLocation(program_handle, "u_tcmod_sin0");
+	u_tcmod_sin[1] = glGetUniformLocation(program_handle, "u_tcmod_sin1");
+	u_tcmod_sin[2] = glGetUniformLocation(program_handle, "u_tcmod_sin2");
+	u_tcmod_sin[3] = glGetUniformLocation(program_handle, "u_tcmod_sin3");
+	u_tcmod_sin[4] = glGetUniformLocation(program_handle, "u_tcmod_sin4");
+	u_tcmod_sin[5] = glGetUniformLocation(program_handle, "u_tcmod_sin5");
+	u_tcmod_sin[6] = glGetUniformLocation(program_handle, "u_tcmod_sin6");
+	u_tcmod_sin[7] = glGetUniformLocation(program_handle, "u_tcmod_sin7");
 
-	u_tcmod_cos0 = glGetUniformLocation(program_handle, "u_tcmod_cos0");
-	u_tcmod_cos1 = glGetUniformLocation(program_handle, "u_tcmod_cos1");
-	u_tcmod_cos2 = glGetUniformLocation(program_handle, "u_tcmod_cos2");
-	u_tcmod_cos3 = glGetUniformLocation(program_handle, "u_tcmod_cos3");
-	u_tcmod_cos4 = glGetUniformLocation(program_handle, "u_tcmod_cos4");
-	u_tcmod_cos5 = glGetUniformLocation(program_handle, "u_tcmod_cos5");
-	u_tcmod_cos6 = glGetUniformLocation(program_handle, "u_tcmod_cos6");
-	u_tcmod_cos7 = glGetUniformLocation(program_handle, "u_tcmod_cos7");
+	u_tcmod_cos[0] = glGetUniformLocation(program_handle, "u_tcmod_cos0");
+	u_tcmod_cos[1] = glGetUniformLocation(program_handle, "u_tcmod_cos1");
+	u_tcmod_cos[2] = glGetUniformLocation(program_handle, "u_tcmod_cos2");
+	u_tcmod_cos[3] = glGetUniformLocation(program_handle, "u_tcmod_cos3");
+	u_tcmod_cos[4] = glGetUniformLocation(program_handle, "u_tcmod_cos4");
+	u_tcmod_cos[5] = glGetUniformLocation(program_handle, "u_tcmod_cos5");
+	u_tcmod_cos[6] = glGetUniformLocation(program_handle, "u_tcmod_cos6");
+	u_tcmod_cos[7] = glGetUniformLocation(program_handle, "u_tcmod_cos7");
 
-	u_env0 = glGetUniformLocation(program_handle, "u_env0");
-	u_env1 = glGetUniformLocation(program_handle, "u_env1");
-	u_env2 = glGetUniformLocation(program_handle, "u_env2");
-	u_env3 = glGetUniformLocation(program_handle, "u_env3");
-	u_env4 = glGetUniformLocation(program_handle, "u_env4");
-	u_env5 = glGetUniformLocation(program_handle, "u_env5");
-	u_env6 = glGetUniformLocation(program_handle, "u_env6");
-	u_env7 = glGetUniformLocation(program_handle, "u_env7");
+	u_env[0] = glGetUniformLocation(program_handle, "u_env0");
+	u_env[1] = glGetUniformLocation(program_handle, "u_env1");
+	u_env[2] = glGetUniformLocation(program_handle, "u_env2");
+	u_env[3] = glGetUniformLocation(program_handle, "u_env3");
+	u_env[4] = glGetUniformLocation(program_handle, "u_env4");
+	u_env[5] = glGetUniformLocation(program_handle, "u_env5");
+	u_env[6] = glGetUniformLocation(program_handle, "u_env6");
+	u_env[7] = glGetUniformLocation(program_handle, "u_env7");
 
-	u_water0 = glGetUniformLocation(program_handle, "u_water0");
-	u_water1 = glGetUniformLocation(program_handle, "u_water1");
-	u_water2 = glGetUniformLocation(program_handle, "u_water2");
-	u_water3 = glGetUniformLocation(program_handle, "u_water3");
-	u_water4 = glGetUniformLocation(program_handle, "u_water4");
-	u_water5 = glGetUniformLocation(program_handle, "u_water5");
-	u_water6 = glGetUniformLocation(program_handle, "u_water6");
-	u_water7 = glGetUniformLocation(program_handle, "u_water7");
+	u_water[0] = glGetUniformLocation(program_handle, "u_water0");
+	u_water[1] = glGetUniformLocation(program_handle, "u_water1");
+	u_water[2] = glGetUniformLocation(program_handle, "u_water2");
+	u_water[3] = glGetUniformLocation(program_handle, "u_water3");
+	u_water[4] = glGetUniformLocation(program_handle, "u_water4");
+	u_water[5] = glGetUniformLocation(program_handle, "u_water5");
+	u_water[6] = glGetUniformLocation(program_handle, "u_water6");
+	u_water[7] = glGetUniformLocation(program_handle, "u_water7");
 
-	u_rgbgen_scale0 = glGetUniformLocation(program_handle, "u_rgbgen_scale0");
-	u_rgbgen_scale1 = glGetUniformLocation(program_handle, "u_rgbgen_scale1");
-	u_rgbgen_scale2 = glGetUniformLocation(program_handle, "u_rgbgen_scale2");
-	u_rgbgen_scale3 = glGetUniformLocation(program_handle, "u_rgbgen_scale3");
-	u_rgbgen_scale4 = glGetUniformLocation(program_handle, "u_rgbgen_scale4");
-	u_rgbgen_scale5 = glGetUniformLocation(program_handle, "u_rgbgen_scale5");
-	u_rgbgen_scale6 = glGetUniformLocation(program_handle, "u_rgbgen_scale6");
-	u_rgbgen_scale7 = glGetUniformLocation(program_handle, "u_rgbgen_scale7");
+	u_rgbgen_scale[0] = glGetUniformLocation(program_handle, "u_rgbgen_scale0");
+	u_rgbgen_scale[1] = glGetUniformLocation(program_handle, "u_rgbgen_scale1");
+	u_rgbgen_scale[2] = glGetUniformLocation(program_handle, "u_rgbgen_scale2");
+	u_rgbgen_scale[3] = glGetUniformLocation(program_handle, "u_rgbgen_scale3");
+	u_rgbgen_scale[4] = glGetUniformLocation(program_handle, "u_rgbgen_scale4");
+	u_rgbgen_scale[5] = glGetUniformLocation(program_handle, "u_rgbgen_scale5");
+	u_rgbgen_scale[6] = glGetUniformLocation(program_handle, "u_rgbgen_scale6");
+	u_rgbgen_scale[7] = glGetUniformLocation(program_handle, "u_rgbgen_scale7");
 
 	u_time = glGetUniformLocation(program_handle, "u_time");
 
@@ -304,14 +304,14 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	}
 
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
-	glUniform1i(texture0, 0);
-	glUniform1i(texture1, 1);
-	glUniform1i(texture2, 2);
-	glUniform1i(texture3, 3);
-//	glUniform1i(texture4, 4);
-//	glUniform1i(texture5, 5);
-//	glUniform1i(texture6, 6);
-//	glUniform1i(texture7, 7);
+	glUniform1i(texture[0], 0);
+	glUniform1i(texture[1], 1);
+	glUniform1i(texture[2], 2);
+	glUniform1i(texture[3], 3);
+//	glUniform1i(texture[4], 4);
+//	glUniform1i(texture[5], 5);
+//	glUniform1i(texture[6], 6);
+//	glUniform1i(texture[7], 7);
 
 
 	glUniform1i(depth[0], 10);
@@ -348,57 +348,57 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	float tcmod_cos = 1.0f;
 	int env = 0;
 
-	glUniform2fv(u_tcmod_scroll0, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll1, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll2, 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll3, 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[0], 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[1], 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[2], 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[3], 1, (float *)&tcmod_scroll);
 //	glUniform2fv(u_tcmod_scroll4, 1, (float *)&tcmod_scroll);
 //	glUniform2fv(u_tcmod_scroll5, 1, (float *)&tcmod_scroll);
 //	glUniform2fv(u_tcmod_scroll6, 1, (float *)&tcmod_scroll);
 //	glUniform2fv(u_tcmod_scroll7, 1, (float *)&tcmod_scroll);
 
-	glUniform2fv(u_tcmod_scale0, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale1, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale2, 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale3, 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[0], 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[1], 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[2], 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[3], 1, (float *)&tcmod_scale);
 //	glUniform2fv(u_tcmod_scale4, 1, (float *)&tcmod_scale);
 //	glUniform2fv(u_tcmod_scale5, 1, (float *)&tcmod_scale);
 //	glUniform2fv(u_tcmod_scale6, 1, (float *)&tcmod_scale);
 //	glUniform2fv(u_tcmod_scale7, 1, (float *)&tcmod_scale);
 
 
-	glUniform1fv(u_rgbgen_scale0, 1, (float *)&tcmod_scale);
-	glUniform1fv(u_rgbgen_scale1, 1, (float *)&tcmod_scale);
-	glUniform1fv(u_rgbgen_scale2, 1, (float *)&tcmod_scale);
-	glUniform1fv(u_rgbgen_scale3, 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[0], 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[1], 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[2], 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[3], 1, (float *)&tcmod_scale);
 
 
-	glUniform1fv(u_tcmod_sin0, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin1, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin2, 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin3, 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[0], 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[1], 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[2], 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[3], 1, &tcmod_sin);
 //	glUniform1fv(u_tcmod_sin4, 1, &tcmod_sin);
 //	glUniform1fv(u_tcmod_sin5, 1, &tcmod_sin);
 //	glUniform1fv(u_tcmod_sin6, 1, &tcmod_sin);
 //	glUniform1fv(u_tcmod_sin7, 1, &tcmod_sin);
 
-	glUniform1fv(u_tcmod_cos0, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos1, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos2, 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos3, 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[0], 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[1], 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[2], 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[3], 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
 //	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
 
-	glUniform1i(u_env0, env);
-	glUniform1i(u_env1, env);
-	glUniform1i(u_env2, env);
-	glUniform1i(u_env3, env);
-	glUniform1i(u_env4, env);
-	glUniform1i(u_env5, env);
-	glUniform1i(u_env6, env);
-	glUniform1i(u_env7, env);
+	glUniform1i(u_env[0], env);
+	glUniform1i(u_env[1], env);
+	glUniform1i(u_env[2], env);
+	glUniform1i(u_env[3], env);
+	glUniform1i(u_env[4], env);
+	glUniform1i(u_env[5], env);
+	glUniform1i(u_env[6], env);
+	glUniform1i(u_env[7], env);
 	//	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
 	//	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
 	//	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
@@ -440,159 +440,27 @@ void mLight2::set_depth(int flag)
 
 void mLight2::envmap(int stage, int env)
 {
-	switch (stage)
-	{
-	case 0:
-		glUniform1i(u_env0, env);
-		break;
-	case 1:
-		glUniform1i(u_env1, env);
-		break;
-	case 2:
-		glUniform1i(u_env2, env);
-		break;
-	case 3:
-		glUniform1i(u_env3, env);
-		break;
-	case 4:
-		glUniform1i(u_env4, env);
-		break;
-	case 5:
-		glUniform1i(u_env5, env);
-		break;
-	case 6:
-		glUniform1i(u_env6, env);
-		break;
-	case 7:
-		glUniform1i(u_env7, env);
-		break;
-	}
+	glUniform1i(u_env[stage], env);
 }
 
 void mLight2::rgbgen_scale(int stage, float scale)
 {
-	switch (stage)
-	{
-	case 0:
-		glUniform1f(u_rgbgen_scale0, scale);
-		break;
-	case 1:
-		glUniform1f(u_rgbgen_scale1, scale);
-		break;
-	case 2:
-		glUniform1f(u_rgbgen_scale2, scale);
-		break;
-	case 3:
-		glUniform1f(u_rgbgen_scale3, scale);
-		break;
-	case 4:
-		glUniform1f(u_rgbgen_scale4, scale);
-		break;
-	case 5:
-		glUniform1f(u_rgbgen_scale5, scale);
-		break;
-	case 6:
-		glUniform1f(u_rgbgen_scale6, scale);
-		break;
-	case 7:
-		glUniform1f(u_rgbgen_scale7, scale);
-		break;
-	}
+	glUniform1f(u_rgbgen_scale[stage], scale);
 }
 
 void mLight2::turb(int stage, int turb)
 {
-	switch (stage)
-	{
-	case 0:
-		glUniform1i(u_water0, turb);
-		break;
-	case 1:
-		glUniform1i(u_water1, turb);
-		break;
-	case 2:
-		glUniform1i(u_water2, turb);
-		break;
-	case 3:
-		glUniform1i(u_water3, turb);
-		break;
-	case 4:
-		glUniform1i(u_water4, turb);
-		break;
-	case 5:
-		glUniform1i(u_water5, turb);
-		break;
-	case 6:
-		glUniform1i(u_water6, turb);
-		break;
-	case 7:
-		glUniform1i(u_water7, turb);
-		break;
-	}
+	glUniform1i(u_water[stage], turb);
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
 {
-#ifndef DIRECTX
-	switch (index)
-	{
-	case 0:
-		glUniform2fv(u_tcmod_scroll0, 1, (float *)&scroll);
-		break;
-	case 1:
-		glUniform2fv(u_tcmod_scroll1, 1, (float *)&scroll);
-		break;
-	case 2:
-		glUniform2fv(u_tcmod_scroll2, 1, (float *)&scroll);
-		break;
-	case 3:
-		glUniform2fv(u_tcmod_scroll3, 1, (float *)&scroll);
-		break;
-	case 4:
-		glUniform2fv(u_tcmod_scroll4, 1, (float *)&scroll);
-		break;
-	case 5:
-		glUniform2fv(u_tcmod_scroll5, 1, (float *)&scroll);
-		break;
-	case 6:
-		glUniform2fv(u_tcmod_scroll6, 1, (float *)&scroll);
-		break;
-	case 7:
-		glUniform2fv(u_tcmod_scroll7, 1, (float *)&scroll);
-		break;
-	}
-#endif
+	glUniform2fv(u_tcmod_scroll[index], 1, (float *)&scroll);
 }
 
 void mLight2::tcmod_scale(vec2 &scale, int index)
 {
-	switch (index)
-	{
-	case 0:
-		glUniform2fv(u_tcmod_scale0, 1, (float *)&scale);
-		break;
-	case 1:
-		glUniform2fv(u_tcmod_scale1, 1, (float *)&scale);
-		break;
-	case 2:
-		glUniform2fv(u_tcmod_scale2, 1, (float *)&scale);
-		break;
-	case 3:
-		glUniform2fv(u_tcmod_scale3, 1, (float *)&scale);
-		break;
-	case 4:
-		glUniform2fv(u_tcmod_scale4, 1, (float *)&scale);
-		break;
-	case 5:
-		glUniform2fv(u_tcmod_scale5, 1, (float *)&scale);
-		break;
-	case 6:
-		glUniform2fv(u_tcmod_scale6, 1, (float *)&scale);
-		break;
-	case 7:
-		glUniform2fv(u_tcmod_scale7, 1, (float *)&scale);
-		break;
-	}
+	glUniform2fv(u_tcmod_scale[index], 1, (float *)&scale);
 }
 
 
@@ -605,41 +473,8 @@ void mLight2::tcmod_rotate(float deg, int index)
 	float sinval = sinf(deg);
 	float cosval = cosf(deg);
 
-	switch (index)
-	{
-	case 0:
-		glUniform1fv(u_tcmod_sin0, 1, &sinval);
-		glUniform1fv(u_tcmod_cos0, 1, &cosval);
-		break;
-	case 1:
-		glUniform1fv(u_tcmod_sin1, 1, &sinval);
-		glUniform1fv(u_tcmod_cos1, 1, &cosval);
-		break;
-	case 2:
-		glUniform1fv(u_tcmod_sin2, 1, &sinval);
-		glUniform1fv(u_tcmod_cos2, 1, &cosval);
-		break;
-	case 3:
-		glUniform1fv(u_tcmod_sin3, 1, &sinval);
-		glUniform1fv(u_tcmod_cos3, 1, &cosval);
-		break;
-	case 4:
-		glUniform1fv(u_tcmod_sin4, 1, &sinval);
-		glUniform1fv(u_tcmod_cos4, 1, &cosval);
-		break;
-	case 5:
-		glUniform1fv(u_tcmod_sin5, 1, &sinval);
-		glUniform1fv(u_tcmod_cos5, 1, &cosval);
-		break;
-	case 6:
-		glUniform1fv(u_tcmod_sin6, 1, &sinval);
-		glUniform1fv(u_tcmod_cos6, 1, &cosval);
-		break;
-	case 7:
-		glUniform1fv(u_tcmod_sin7, 1, &sinval);
-		glUniform1fv(u_tcmod_cos7, 1, &cosval);
-		break;
-	}
+	glUniform1fv(u_tcmod_sin[index], 1, &sinval);
+	glUniform1fv(u_tcmod_cos[index], 1, &cosval);
 }
 
 void mLight2::tcmod_stretch_sin(float amplitude, float phase, float freq, int tick_num, int index)
