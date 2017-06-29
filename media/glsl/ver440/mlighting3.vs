@@ -15,10 +15,7 @@ out VertexData {
 	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
-	vec2		vary_TexCoord0;
-	vec2		vary_TexCoord1;
-	vec2		vary_TexCoord2;
-	vec2		vary_TexCoord3;
+	vec2		vary_newTexCoord[4];
 	vec2		vary_LightCoord;
 	vec3		vary_normal;
 	flat int	vary_color;
@@ -40,18 +37,13 @@ uniform float	u_tcmod_cos[8];
 
 void main(void)
 {
-
-	mat2 mRot0 = mat2( u_tcmod_cos[0], -u_tcmod_sin[0], u_tcmod_sin[0],  u_tcmod_cos[0]);
-	mat2 mRot1 = mat2( u_tcmod_cos[1], -u_tcmod_sin[1], u_tcmod_sin[1],  u_tcmod_cos[1]);
-	mat2 mRot2 = mat2( u_tcmod_cos[2], -u_tcmod_sin[2], u_tcmod_sin[2],  u_tcmod_cos[2]);
-	mat2 mRot3 = mat2( u_tcmod_cos[3], -u_tcmod_sin[3], u_tcmod_sin[3],  u_tcmod_cos[3]);
-
-
 	vec2 bias = vec2(0.5, -0.5);
-	Vertex.vary_TexCoord0 = ((u_tcmod_scale[0] * (attr_TexCoord - bias)) * mRot0) + u_tcmod_scroll[0] + bias;
-	Vertex.vary_TexCoord1 = ((u_tcmod_scale[1] * (attr_TexCoord - bias)) * mRot1) + u_tcmod_scroll[1] + bias;
-	Vertex.vary_TexCoord2 = ((u_tcmod_scale[2] * (attr_TexCoord - bias)) * mRot2) + u_tcmod_scroll[2] + bias;
-	Vertex.vary_TexCoord3 = ((u_tcmod_scale[3] * (attr_TexCoord - bias)) * mRot3) + u_tcmod_scroll[3] + bias;
+
+	for(int i = 0; i < 4; i++)
+	{
+		mat2 mRot0 = mat2( u_tcmod_cos[i], -u_tcmod_sin[i], u_tcmod_sin[i],  u_tcmod_cos[i]);
+		Vertex.vary_newTexCoord[i] = ((u_tcmod_scale[i] * (attr_TexCoord - bias)) * mRot0) + u_tcmod_scroll[i] + bias;
+	}
 
 	//pass through to fragment shader
 	Vertex.vary_normal = attr_normal;
@@ -64,23 +56,9 @@ void main(void)
 	Vertex.att_position = attr_position;
 	Vertex.vary_position = gl_Position;
 
-	Vertex.shadowpos[0] = shadow_matrix[0] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[1] = shadow_matrix[1] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[2] = shadow_matrix[2] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[3] = shadow_matrix[3] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[4] = shadow_matrix[4] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[5] = shadow_matrix[5] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[6] = shadow_matrix[6] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[7] = shadow_matrix[7] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[8] = shadow_matrix[8] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[9] = shadow_matrix[9] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[10] = shadow_matrix[10] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[11] = shadow_matrix[11] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[12] = shadow_matrix[12] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[13] = shadow_matrix[13] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[14] = shadow_matrix[14] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[15] = shadow_matrix[15] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[16] = shadow_matrix[16] * vec4(attr_position, 1.0);
-	Vertex.shadowpos[17] = shadow_matrix[17] * vec4(attr_position, 1.0);
 
+	for(int i = 0; i < 18; i++)
+	{
+		Vertex.shadowpos[i] = shadow_matrix[i] * vec4(attr_position, 1.0);
+	}
 }

@@ -7,10 +7,7 @@ in VertexData {
     vec3 att_position;
     vec4 vary_position; // vertex position
     vec2 vary_TexCoord;
-    vec2 vary_TexCoord0;
-    vec2 vary_TexCoord1;
-    vec2 vary_TexCoord2;
-    vec2 vary_TexCoord3;
+    vec2 vary_newTexCoord[4];
     vec2 vary_LightCoord;
     vec3 vary_normal;
     flat int vary_color;
@@ -311,9 +308,9 @@ void main(void)
 /*
 	vec3 normal_map;
 
-	normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).r - 1);
-	normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).g - 1);
-	normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_TexCoord0).b - 1);
+	normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
+	normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
+	normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
 
 	normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
 */
@@ -354,8 +351,8 @@ void main(void)
 
 	if (u_water[0] + u_water[1] + u_water[2] + u_water[3] > 0)
 	{
-		float s = Vertex.vary_TexCoord0.x;
-		float t = Vertex.vary_TexCoord0.y;
+		float s = Vertex.vary_newTexCoord[0].x;
+		float t = Vertex.vary_newTexCoord[0].y;
 		float x = Vertex.vary_position.x;
 		float y = Vertex.vary_position.y;
 		float z = Vertex.vary_position.z;
@@ -374,7 +371,7 @@ void main(void)
 		if (u_env[0] > 0 || u_water[0] > 0)
 			Fragment0 = texture(texture0, tc);
 		else
-			Fragment0 = texture(texture0, Vertex.vary_TexCoord0);
+			Fragment0 = texture(texture0, Vertex.vary_newTexCoord[0]);
 	}
 	
 
@@ -387,7 +384,7 @@ void main(void)
 		if (u_env[1] > 0 || u_water[1] > 0)
 			Fragment1 = texture(texture1, tc);
 		else
-			Fragment1 = texture(texture1, Vertex.vary_TexCoord1);
+			Fragment1 = texture(texture1, Vertex.vary_newTexCoord[1]);
 	}
 
 
@@ -400,7 +397,7 @@ void main(void)
 		if (u_env[2] > 0 || u_water[2] > 0)
 			Fragment2 = texture(texture2, tc);
 		else
-			Fragment2 = texture(texture2, Vertex.vary_TexCoord2);
+			Fragment2 = texture(texture2, Vertex.vary_newTexCoord[2]);
 	}
 
 
@@ -413,7 +410,7 @@ void main(void)
 		if (u_env[3] > 0 || u_water[3] > 0)
 			Fragment3 = texture(texture3, tc);
 		else
-			Fragment3 = texture(texture3, Vertex.vary_TexCoord3);
+			Fragment3 = texture(texture3, Vertex.vary_newTexCoord[3]);
 	}
 
 
