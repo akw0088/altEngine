@@ -23,6 +23,8 @@
 
 extern double com_maxfps;
 
+static unsigned char huffbuf[HUFFHEAP_SIZE];
+
 Engine::Engine()
 {
 	initialized = false;
@@ -2699,9 +2701,15 @@ void Engine::server_send()
 
 		unsigned char *pdata = NULL;
 		unsigned int size = 0;
-		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &size);
-		servermsg.compressed_size = size;
-		memcpy(servermsg.data, pdata, servermsg.compressed_size);
+
+	        servermsg.compressed_size = huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
+			servermsg.data, sizeof(servermsg.data), huffbuf);
+//        	memset(huffbuf, 0, sizeof(huffbuf));
+//	        dcl = huffman_decompress(testout,cl,testver,sizeof(testver),huffbuf);
+
+//		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &size);
+//		servermsg.compressed_size = size;
+//		memcpy(servermsg.data, pdata, servermsg.compressed_size);
 		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size + 1;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
 
@@ -2798,8 +2806,8 @@ void Engine::client_recv()
 		if (servermsg.num_ents)
 		{
 			unsigned int dsize = 0;
-			huffman_decode_memory((unsigned char *)servermsg.data, (unsigned int)servermsg.compressed_size, (unsigned char **)&data, &dsize);
 
+			dsize = huffman_decompress(servermsg.data, servermsg.compressed_size, data, sizeof(data), huffbuf);
 			if (dsize != servermsg.num_ents * sizeof(entity_t))
 			{
 				printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.num_ents * sizeof(entity_t)));
