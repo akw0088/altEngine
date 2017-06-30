@@ -45,7 +45,7 @@ const char *models[23] = {
 
 #define NUM_PATH 64 // Should equal map navpoint count
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, vector<Model *> &model_table)
+Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type ent_type, vector<Model *> &model_table)
 : weapon_gauntlet(entity), weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {
@@ -59,9 +59,19 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	telefragged = NULL;
 
-	type = UNKNOWN;
+	if (ent_type == ENT_SERVER)
+	{
+		type = SERVER;
+		entity->ent_type = ENT_SERVER;
+		sprintf(entity->type, "server");
+	}
+	else if (ent_type == ENT_PLAYER)
+	{
+		type = PLAYER;
+		entity->ent_type = ENT_PLAYER;
+		sprintf(entity->type, "player");
+	}
 
-	entity->ent_type = ENT_PLAYER;
 	zoom_level = 4.0;
 	weapon_source = -1;
 	weapon_loop_source = -1;

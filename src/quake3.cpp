@@ -1093,7 +1093,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			spawn_ent->model = entity_list[spawn]->rigid;
 			spawn_ent->rigid->clone(*(engine->thug22->model));
 			spawn_ent->rigid->step_flag = true;
-			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team, model_table);
+			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team, ENT_PLAYER, model_table);
 			spawn_ent->position += entity_list[spawn]->rigid->center;
 			spawn_ent->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 			spawn_ent->player->type = player_type;

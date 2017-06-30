@@ -416,7 +416,7 @@ void Engine::load(char *level)
 
 			if (playing_demo)
 			{
-				entity->player = new Player(entity, gfx, audio, 21, TEAM_NONE, game->model_table);
+				entity->player = new Player(entity, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
 				if (i == 0)
 					sprintf(entity->type, "player");
 			}
@@ -2389,11 +2389,11 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		sprintf(reliable.msg, "map %s", q3map.map_name);
-		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
+		reliable.size = (unsigned short)(2 * sizeof(short) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
+		memcpy(&servermsg.data[0], &reliable, reliable.size);
+		servermsg.length = SERVER_HEADER + reliable.size;
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
 	}
@@ -2455,7 +2455,7 @@ void Engine::server_recv()
 		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable.size;
+		servermsg.length = SERVER_HEADER + reliable.size;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("Client is now entity %d\n", client->ent_id);
 	}
@@ -2698,9 +2698,11 @@ void Engine::server_send()
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
 		unsigned char *pdata = NULL;
-		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &servermsg.compressed_size);
+		unsigned int size = 0;
+		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &size);
+		servermsg.compressed_size = size;
 		memcpy(servermsg.data, pdata, servermsg.compressed_size);
-		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size;
+		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size + 1;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
 
 		if (recording_demo)
@@ -2753,7 +2755,6 @@ void Engine::server_send()
 
 void Engine::client_recv()
 {
-	static unsigned char	compressed[256000];
 	unsigned char *data = NULL;
 	static servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
@@ -2794,14 +2795,16 @@ void Engine::client_recv()
 			reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
 		}
 
-		unsigned int dsize = 0;
-		memset(&compressed, 0, 256000);
-		huffman_decode_memory((unsigned char *)servermsg.data, (unsigned int)servermsg.compressed_size, (unsigned char **)&data, &dsize);
-
-		if (dsize != servermsg.num_ents * sizeof(entity_t))
+		if (servermsg.num_ents)
 		{
-			printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.num_ents * sizeof(entity_t)));
-			return;
+			unsigned int dsize = 0;
+			huffman_decode_memory((unsigned char *)servermsg.data, (unsigned int)servermsg.compressed_size, (unsigned char **)&data, &dsize);
+
+			if (dsize != servermsg.num_ents * sizeof(entity_t))
+			{
+				printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.num_ents * sizeof(entity_t)));
+				return;
+			}
 		}
 
 		netinfo.num_ents = servermsg.num_ents;
@@ -2905,7 +2908,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 				ent->rigid->clone(*(thug22->model));
 				ent->rigid->step_flag = true;
 				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, game->model_table);
+				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
 				ent->player->type = PLAYER;
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
@@ -2920,7 +2923,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 					ent->rigid->clone(*(thug22->model));
 					ent->rigid->step_flag = true;
 					ent->position += ent->rigid->center;
-					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, game->model_table);
+					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
 					ent->player->local = false;
 					ent->player->type = SERVER;
 				}
@@ -4593,7 +4596,7 @@ void Engine::connect(char *serverip)
 		client_flag = true;
 		server_flag = false;
 		debugf("Connected\n");
-		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
+		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
 		if (sscanf(reliablemsg->msg, "map %s", level) == 1)
 		{
 			debugf("Loading %s\n", level);
