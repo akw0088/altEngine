@@ -5667,6 +5667,30 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		}
 	}
 
+	ret = sscanf(cmd, "team %s", data);
+	if (ret == 1)
+	{
+		if (strcmp(data, "red") == 0)
+		{
+			entity_list[self]->player->team = TEAM_RED;
+			engine->console("respawn");
+		}
+		else if (strcmp(data, "blue") == 0)
+		{
+			entity_list[self]->player->team = TEAM_BLUE;
+			engine->console("respawn");
+		}
+		else
+		{
+			debugf("Invalid team: [red, blue]");
+		}
+		return;
+	}
+
+	if (strstr(cmd, "spectate"))
+	{
+		spectator = !spectator;
+	}
 
 	ret = sscanf(cmd, "teleport %s %s", data, data2);
 	if (ret == 2 && engine->client_flag == false)

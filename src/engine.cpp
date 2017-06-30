@@ -3171,7 +3171,6 @@ void Engine::bind_keys()
 	skin
 	team red/blue
 	seta cg_autoswitch "0"
-	net_port 65535
 	banip
 	*/
 
