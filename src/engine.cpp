@@ -90,6 +90,7 @@ Engine::Engine()
 	doom_sound = 0;
 	render_mode = MODE_INDIRECT;
 	num_hash = 0;
+	net_port = 65535;
 
 	sprintf(sv_hostname, "altEngine Server %s", __DATE__);
 	sprintf(password, "iddqd");
@@ -2717,17 +2718,8 @@ void Engine::server_send()
 
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
-		unsigned char *pdata = NULL;
-		unsigned int size = 0;
-
 	        servermsg.compressed_size = huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
 			servermsg.data, sizeof(servermsg.data), huffbuf);
-//        	memset(huffbuf, 0, sizeof(huffbuf));
-//	        dcl = huffman_decompress(testout,cl,testver,sizeof(testver),huffbuf);
-
-//		huffman_encode_memory((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t), &pdata, &size);
-//		servermsg.compressed_size = size;
-//		memcpy(servermsg.data, pdata, servermsg.compressed_size);
 		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size + 1;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
 
@@ -3174,7 +3166,6 @@ void Engine::bind_keys()
 	seta sv_minPing "0"
 	seta sv_maxRate "0"
 	seta sv_punkbuster "0"
-	seta sv_maxclients "8"
 	rate
 	cmdrate
 	skin
@@ -4098,6 +4089,23 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "net_port %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num <= 65535 && num >= 0)
+		{
+			debugf("setting port");
+			net_port = num;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
+		return;
+	}
+
 
 	if (strstr(cmd, "list") != 0)
 	{
@@ -4656,7 +4664,7 @@ void Engine::connect(char *serverip)
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &reliable, reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + reliable.size;
 
-	net.connect(serverip, 65535);
+	net.connect(serverip, net_port);
 	debugf("Sending map request\n");
 	net.send((char *)&clientmsg, clientmsg.length);
 	debugf("Waiting for server info\n");

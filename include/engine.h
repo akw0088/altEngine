@@ -211,7 +211,8 @@ protected:
 	int cl_skip;
 	char sv_hostname[512];
 	char password[512];
-	int sv_maxclients;
+	unsigned int sv_maxclients;
+	unsigned short int net_port;
 
 	bool recording_demo;
 	bool playing_demo;
