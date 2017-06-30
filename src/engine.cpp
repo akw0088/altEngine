@@ -32,6 +32,7 @@ Engine::Engine()
 	max_player = 8;
 	max_sources = 32;
 	cl_skip = 0;
+	sv_maxclients = 8;
 	show_names = false;
 	show_lines = false;
 	show_debug = false;
@@ -90,7 +91,7 @@ Engine::Engine()
 	render_mode = MODE_INDIRECT;
 	num_hash = 0;
 
-	sprintf(servername, "altEngine Server %s", __DATE__);
+	sprintf(sv_hostname, "altEngine Server %s", __DATE__);
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
 
@@ -2387,6 +2388,23 @@ void Engine::server_recv()
 	if ( strcmp(reliablemsg->msg, "connect") == 0 )
 	{
 		debugf("client %s qport %d connected\n", socketname, clientmsg.qport);
+
+		if (client_list.size() < sv_maxclients)
+		{
+			debugf("server full");
+			servermsg.sequence = sequence;
+			servermsg.client_sequence = clientmsg.sequence;
+			servermsg.num_ents = 0;
+			sprintf(reliable.msg, "full");
+			reliable.size = (unsigned short)(2 * sizeof(short) + strlen(reliable.msg) + 1);
+			reliable.sequence = sequence;
+
+			memcpy(&servermsg.data[0], &reliable, reliable.size);
+			servermsg.length = SERVER_HEADER + reliable.size;
+			net.sendto((char *)&servermsg, servermsg.length, socketname);
+			return;
+		}
+
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
@@ -2480,8 +2498,8 @@ void Engine::server_recv()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
-		sprintf(reliable.msg, "/servername %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
-			servername, q3map.map_name, (int)client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
+		sprintf(reliable.msg, "/sv_hostname %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
+			sv_hostname, q3map.map_name, (int)client_list.size(), max_player, game->gametype, game->fraglimit, game->timelimit, game->capturelimit);
 		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 
@@ -2724,7 +2742,6 @@ void Engine::server_send()
 		netinfo.size = servermsg.length;
 
 		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
-		free((void *)pdata);
 		if (num_sent <= 0)
 		{
 			netinfo.send_full = true;
@@ -2822,7 +2839,6 @@ void Engine::client_recv()
 
 		handle_servermsg(servermsg, data, reliablemsg);
 		last_server_sequence = servermsg.sequence;
-		free((void *)data);
 	}
 }
 
@@ -3145,7 +3161,7 @@ void Engine::bind_keys()
 	}
 	delete [] file;
 
-	//TBD
+	//TODO
 	/*
 	seta sv_strictAuth "1"
 	seta sv_lanForceRate "1"
@@ -3159,7 +3175,6 @@ void Engine::bind_keys()
 	seta sv_maxRate "0"
 	seta sv_punkbuster "0"
 	seta sv_maxclients "8"
-	seta sv_hostname "noname"
 	rate
 	cmdrate
 	skin
@@ -3910,6 +3925,38 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+        ret = sscanf(cmd, "sv_hostname \"%[^\"]s", data);
+        if (ret == 1)
+        {
+                bool valid = true;
+                unsigned int data_length = strlen(data);
+
+                for (unsigned int i = 0; i < data_length; i++)
+                {
+                        if (data[i] >= 'A' && data[i] <= 'Z')
+                                continue;
+                        if (data[i] >= 'a' && data[i] <= 'z')
+                                continue;
+                        if (data[i] >= '0' && data[i] <= '9')
+                                continue;
+                        if (data[i] == ' ')
+                                continue;
+
+                        valid = false;
+                }
+                if (valid)
+                {
+                        snprintf(sv_hostname, 127, "%s", data);
+                        debugf("sv_hostname: %s\n", data);
+                }
+                else
+                {
+                        debugf("Invalid name, must be alphanumeric + space\n");
+                }
+                return;
+        }
+
+
 	ret = sscanf(cmd, "echo %s", data);
 	if (ret == 1)
 	{
@@ -4031,6 +4078,23 @@ void Engine::console(char *cmd)
 	{
 		printf("Setting audio model to %d\n", atoi(data));
 		audio.set_audio_model(atoi(data));
+		return;
+	}
+
+	ret = sscanf(cmd, "sv_maxclients %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num <= 8 && num >= 0)
+		{
+			debugf("setting max clients");
+			sv_maxclients = num;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
 		return;
 	}
 
