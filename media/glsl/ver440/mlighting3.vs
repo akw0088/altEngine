@@ -20,7 +20,7 @@ out VertexData {
 	vec3		vary_normal;
 	flat int	vary_color;
 	vec4		vary_tangent;
-	vec4 shadowpos[24];
+	vec4 shadowpos[18];
 } Vertex;
 
 // uniform primitive constant input

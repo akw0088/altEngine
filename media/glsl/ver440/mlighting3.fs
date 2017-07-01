@@ -12,7 +12,7 @@ in VertexData {
     vec3 vary_normal;
     flat int vary_color;
     vec4 vary_tangent;
-    vec4 shadowpos[24];
+    vec4 shadowpos[18];
 } Vertex;
 
 // Final fragment color output
@@ -58,6 +58,14 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 	float bias = 0.00001f;
 	float darkness = 0.50f;
 
+	vec2 poissonDisk[4] = vec2[](
+	 	vec2( -0.94201624, -0.39906216 ),
+		vec2( 0.94558609, -0.76890725 ),
+		vec2( -0.094184101, -0.92938870 ),
+		vec2( 0.34495938, 0.29387760 )
+	);
+
+
 
 	for(int i = 0; i < 18; i++)
 	{
@@ -67,6 +75,14 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 		{
 			depthmap = texture2D(depth[i], shadowWdivide.st).r;
 			shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+			for (int i = 0; i < 4; i++)
+			{
+				if ( texture( depth[i], shadowWdivide.st + poissonDisk[i] / 700.0 ).r  <  shadowWdivide.z - bias )
+				{
+					shadowFlag -= 0.2;
+				}
+			}
+
 			shadowFlagCombined = max(shadowFlag, shadowFlagCombined);
 		}
 	}

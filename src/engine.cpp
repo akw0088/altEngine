@@ -4589,6 +4589,16 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = strcmp(cmd, "bind default");
+	if (ret == 0)
+	{
+		port = 65535;
+		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
+		menu.print(msg);
+		bind(port);
+		return;
+	}
+
 	ret = strcmp(cmd, "quit");
 	if (ret == 0)
 	{
