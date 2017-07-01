@@ -438,6 +438,7 @@ void Engine::load(char *level)
 		menu.print("Failed to load particle_update shader");
 
 
+	mlight2.set_contrast(2.0);
 	mlight2.set_ambient(1.0);
 	mlight2.set_lightmap(0.5);
 	mlight2.set_max(64);
@@ -4391,6 +4392,7 @@ void Engine::console(char *cmd)
 			mlight2.set_max(64);
 			break;
 		case 3:
+			mlight2.set_contrast(2.0);
 			mlight2.set_ambient(1.0);
 			mlight2.set_lightmap(0.5);
 			mlight2.set_max(64);
