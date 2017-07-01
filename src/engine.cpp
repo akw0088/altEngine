@@ -92,7 +92,8 @@ Engine::Engine()
 	num_hash = 0;
 	net_port = 65535;
 
-	sprintf(sv_hostname, "altEngine Server %s", __DATE__);
+	sprintf(sv_hostname, "servername");
+	sprintf(sv_motd, "Write games, not engines");
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
 
@@ -2338,17 +2339,6 @@ void Engine::server_recv()
 		client_list[index]->input = clientkeys;
 		client_list[index]->position_delta = client->position - client_pos;
 
-		/*
-		printf("-> server_sequence %d\n"
-			"<- client_sequence %d\n"
-			"<- clients_server_sequence %d\n"
-			"client delay %d steps\n"
-			"reliable msg: %s\n",
-			sequence, clientmsg.sequence, clientmsg.server_sequence,
-			sequence - clientmsg.server_sequence,
-			reliable.msg);
-		*/
-
 		if ((unsigned int)clientmsg.length > CLIENT_HEADER + sizeof(int) + sizeof(int) + 1)
 		{
 			reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[4];
@@ -2472,7 +2462,7 @@ void Engine::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		
-		sprintf(reliable.msg, "spawn %d %d", client->ent_id, find_type(ENT_PLAYER, 0));
+		sprintf(reliable.msg, "spawn %d %d chat Welcome to %s: %s", client->ent_id, find_type(ENT_PLAYER, 0), sv_hostname, sv_motd);
 		reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable.msg) + 1);
 		reliable.sequence = sequence;
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable, reliable.size);
@@ -2898,10 +2888,10 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 
 			if (strstr(reliablemsg->msg, "chat"))
 			{
-				menu.print_chat(reliablemsg->msg + 5);
+				menu.print_chat(strstr(reliablemsg->msg, "chat") + 5);
 				game->chat_timer = 3 * TICK_RATE;
 
-				#define SND_TALK 267
+				#define SND_TALK 268
 				play_wave_global(SND_TALK);
 			}
 
@@ -3915,36 +3905,67 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-        ret = sscanf(cmd, "sv_hostname \"%[^\"]s", data);
-        if (ret == 1)
-        {
-                bool valid = true;
-                unsigned int data_length = strlen(data);
+	ret = sscanf(cmd, "sv_hostname \"%[^\"]s", data);
+	if (ret == 1)
+	{
+		bool valid = true;
+		unsigned int data_length = strlen(data);
 
-                for (unsigned int i = 0; i < data_length; i++)
-                {
-                        if (data[i] >= 'A' && data[i] <= 'Z')
-                                continue;
-                        if (data[i] >= 'a' && data[i] <= 'z')
-                                continue;
-                        if (data[i] >= '0' && data[i] <= '9')
-                                continue;
-                        if (data[i] == ' ')
-                                continue;
+		for (unsigned int i = 0; i < data_length; i++)
+		{
+			if (data[i] >= 'A' && data[i] <= 'Z')
+				continue;
+			if (data[i] >= 'a' && data[i] <= 'z')
+				continue;
+			if (data[i] >= '0' && data[i] <= '9')
+				continue;
+			if (data[i] == ' ')
+				continue;
 
-                        valid = false;
-                }
-                if (valid)
-                {
-                        snprintf(sv_hostname, 127, "%s", data);
-                        debugf("sv_hostname: %s\n", data);
-                }
-                else
-                {
-                        debugf("Invalid name, must be alphanumeric + space\n");
-                }
-                return;
-        }
+			valid = false;
+		}
+		if (valid)
+		{
+			snprintf(sv_hostname, 127, "%s", data);
+			debugf("sv_hostname: %s\n", data);
+		}
+		else
+		{
+			debugf("Invalid name, must be alphanumeric + space\n");
+		}
+		return;
+    }
+
+	ret = sscanf(cmd, "sv_motd \"%[^\"]s", data);
+	if (ret == 1)
+	{
+		bool valid = true;
+		unsigned int data_length = strlen(data);
+
+		for (unsigned int i = 0; i < data_length; i++)
+		{
+			if (data[i] >= 'A' && data[i] <= 'Z')
+				continue;
+			if (data[i] >= 'a' && data[i] <= 'z')
+				continue;
+			if (data[i] >= '0' && data[i] <= '9')
+				continue;
+			if (data[i] == ' ')
+				continue;
+
+			valid = false;
+		}
+		if (valid)
+		{
+			snprintf(sv_motd, 127, "%s", data);
+			debugf("sv_motd: %s\n", data);
+		}
+		else
+		{
+			debugf("Invalid name, must be alphanumeric + space\n");
+		}
+		return;
+	}
 
 
 	ret = sscanf(cmd, "echo %s", data);

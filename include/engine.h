@@ -210,6 +210,7 @@ protected:
 	reliablemsg_t	reliable;
 	int cl_skip;
 	char sv_hostname[512];
+	char sv_motd[512];
 	char password[512];
 	unsigned int sv_maxclients;
 	unsigned short int net_port;
