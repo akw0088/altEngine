@@ -7,10 +7,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "altEngine2", "altEngine2.vc
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug Direct3d|x64 = Debug Direct3d|x64
-		Debug Direct3d|x86 = Debug Direct3d|x86
+		Debug D3D11|x64 = Debug D3D11|x64
+		Debug D3D11|x86 = Debug D3D11|x86
+		Debug D3D9|x64 = Debug D3D9|x64
+		Debug D3D9|x86 = Debug D3D9|x86
 		Debug OpenGL|x64 = Debug OpenGL|x64
 		Debug OpenGL|x86 = Debug OpenGL|x86
+		Debug Vulkan|x64 = Debug Vulkan|x64
+		Debug Vulkan|x86 = Debug Vulkan|x86
 		Dedicated Server|x64 = Dedicated Server|x64
 		Dedicated Server|x86 = Dedicated Server|x86
 		Release Dedicated Server|x64 = Release Dedicated Server|x64
@@ -19,14 +23,22 @@ Global
 		Release OpenGL|x86 = Release OpenGL|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Direct3d|x64.ActiveCfg = Debug Direct3d|x64
-		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Direct3d|x64.Build.0 = Debug Direct3d|x64
-		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Direct3d|x86.ActiveCfg = Debug Direct3d|Win32
-		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Direct3d|x86.Build.0 = Debug Direct3d|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D11|x64.ActiveCfg = Direct3d11|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D11|x64.Build.0 = Direct3d11|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D11|x86.ActiveCfg = Direct3d11|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D11|x86.Build.0 = Direct3d11|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D9|x64.ActiveCfg = Debug Direct3d|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D9|x64.Build.0 = Debug Direct3d|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D9|x86.ActiveCfg = Debug Direct3d|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug D3D9|x86.Build.0 = Debug Direct3d|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug OpenGL|x64.ActiveCfg = Debug|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug OpenGL|x64.Build.0 = Debug|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug OpenGL|x86.ActiveCfg = Debug|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug OpenGL|x86.Build.0 = Debug|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Vulkan|x64.ActiveCfg = Debug Vulkan|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Vulkan|x64.Build.0 = Debug Vulkan|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Vulkan|x86.ActiveCfg = Debug Vulkan|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Debug Vulkan|x86.Build.0 = Debug Vulkan|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x64.ActiveCfg = Dedicated Server|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x64.Build.0 = Dedicated Server|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x86.ActiveCfg = Dedicated Server|Win32
