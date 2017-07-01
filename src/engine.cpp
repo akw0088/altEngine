@@ -2708,7 +2708,7 @@ void Engine::server_send()
 
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
-		servermsg.compressed_size = huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
+		servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
 			servermsg.data, sizeof(servermsg.data), huffbuf);
 		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size + 1;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
@@ -4592,7 +4592,7 @@ void Engine::console(char *cmd)
 	ret = strcmp(cmd, "bind default");
 	if (ret == 0)
 	{
-		port = 65535;
+		port = net_port;
 		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
 		menu.print(msg);
 		bind(port);
