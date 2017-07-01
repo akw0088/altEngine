@@ -29,7 +29,8 @@ uniform mat4		mvp;
 
 uniform int u_lightmap_stage;
 uniform int u_depth;
-
+uniform float u_brightness;
+uniform float u_contrast;
 
 uniform int u_env[8];
 uniform int u_water[8];
@@ -274,7 +275,7 @@ void main(void)
 	if (u_lightmap > 0.0)
 	{
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
-			Fragment.xyz *= lightmap * 1.5;
+			Fragment.xyz *= lightmap * 2.0;
 	}
 	Fragment.rgb *= max(light, ambient);
 
@@ -284,6 +285,10 @@ void main(void)
 		calc_shadow(shadow, 0);
 		Fragment.rgb *= shadow;
 	}
+
+	Fragment.rgb += u_brightness;
+	Fragment.rgb *= u_contrast;
+
 
 //	Fragment.rgb = light;
 

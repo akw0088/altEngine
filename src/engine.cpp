@@ -4229,6 +4229,24 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (sscanf(cmd, "r_brightness %s", data) == 1)
+	{
+		menu.print(msg);
+
+		float ambient = (float)atof(data);
+		mlight2.set_brightness(ambient - 1.0f);
+		return;
+	}
+
+	if (sscanf(cmd, "r_contrast %s", data) == 1)
+	{
+		menu.print(msg);
+
+		float contrast = (float)atof(data);
+		mlight2.set_contrast(contrast);
+		return;
+	}
+
 	if (sscanf(cmd, "com_maxfps %s", data) == 1)
 	{
 		menu.print(msg);
