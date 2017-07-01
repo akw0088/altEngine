@@ -2015,42 +2015,7 @@ void Quake3::step(int frame_step)
 	if (engine->input.control && spectator_timer <= 0)
 	{
 		spectator_timer = TICK_RATE;
-		spectator = !spectator;
-		printf("spectator is %d\n", (int)spectator);
-
-		if (spectator == false)
-		{
-			float min_distance = FLT_MAX;
-			int index = -1;
-
-			for (unsigned int i = 0; i < engine->max_player; i++)
-			{
-				float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
-
-				if (distance < min_distance)
-				{
-
-					if (engine->entity_list[i]->player)
-					{
-						min_distance = distance;
-						index = i;
-					}
-				}
-			}
-			int spec = engine->find_type(ENT_SPECTATOR, 0);
-
-			if (spec != -1)
-			{
-				engine->entity_list[spec]->ent_type = ENT_NPC;
-			}
-			engine->entity_list[index]->ent_type = ENT_PLAYER;
-		}
-		else
-		{
-			int spawn = engine->find_type(ENT_PLAYER, 0);
-
-			engine->entity_list[spawn]->ent_type = ENT_SPECTATOR;
-		}
+		engine->console("spectate");
 	}
 	else
 	{
@@ -5690,6 +5655,42 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (strstr(cmd, "spectate"))
 	{
 		spectator = !spectator;
+		debugf("spectator is %d\n", (int)spectator);
+
+		if (spectator == false)
+		{
+			float min_distance = FLT_MAX;
+			int index = -1;
+
+			for (unsigned int i = 0; i < engine->max_player; i++)
+			{
+				float distance = (engine->camera_frame.pos - engine->entity_list[i]->position).magnitude();
+
+				if (distance < min_distance)
+				{
+
+					if (engine->entity_list[i]->player)
+					{
+						min_distance = distance;
+						index = i;
+					}
+				}
+			}
+			int spec = engine->find_type(ENT_SPECTATOR, 0);
+
+			if (spec != -1)
+			{
+				engine->entity_list[spec]->ent_type = ENT_NPC;
+			}
+			engine->entity_list[index]->ent_type = ENT_PLAYER;
+		}
+		else
+		{
+			int spawn = engine->find_type(ENT_PLAYER, 0);
+
+			engine->entity_list[spawn]->ent_type = ENT_SPECTATOR;
+		}
+		return;
 	}
 
 	ret = sscanf(cmd, "teleport %s %s", data, data2);

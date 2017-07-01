@@ -4636,7 +4636,11 @@ void Engine::console(char *cmd)
 		int player = find_type(ENT_PLAYER, 0);
 
 		if (player == -1)
-			return;
+		{
+			int player = find_type(ENT_SPECTATOR, 0);
+			if (player == -1)
+				return;
+		}
 
 		game->console(player, cmd, menu, entity_list);
 	}
