@@ -5,8 +5,9 @@
 #endif
 
 #define ACCEL (0.25f)
+#define AIR_ACCEL (0.5f)
 #define MAX_SPEED 3.0f
-#define MAX_AIR_SPEED 4.0f
+#define MAX_AIR_SPEED 4.5f
 
 
 RigidBody::RigidBody(Entity *entity)
@@ -737,7 +738,10 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if (water == false && noclip == false && flight == false)
 		{
-			velocity += -yaw.forward * ACCEL * air_control * speed_scale;
+			if (on_ground)
+				velocity += -yaw.forward * ACCEL * air_control * speed_scale;
+			else
+				velocity += -yaw.forward * AIR_ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else
@@ -751,12 +755,18 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if (water == false && noclip == false && flight == false)
 		{
-			velocity += yaw.forward * ACCEL * air_control * speed_scale;
+			if (on_ground)
+				velocity += yaw.forward * ACCEL * air_control * speed_scale;
+			else
+				velocity += yaw.forward * AIR_ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else
 		{
-			velocity += forward * ACCEL * speed_scale;
+			if (on_ground)
+				velocity += forward * ACCEL * speed_scale;
+			else
+				velocity += forward * AIR_ACCEL * speed_scale;
 			moved = true;
 		}
 	}
@@ -765,7 +775,10 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if (water == false && noclip == false && flight == false)
 		{
-			velocity += -yaw_right * ACCEL * air_control * speed_scale;
+			if (on_ground)
+				velocity += -yaw_right * ACCEL * air_control * speed_scale;
+			else
+				velocity += -yaw_right * AIR_ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else
@@ -779,7 +792,10 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		if (water == false && noclip == false && flight == false)
 		{
-			velocity += yaw_right * ACCEL * air_control * speed_scale;
+			if (on_ground)
+				velocity += yaw_right * ACCEL * air_control * speed_scale;
+			else
+				velocity += yaw_right * AIR_ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else

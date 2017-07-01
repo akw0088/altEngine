@@ -5459,6 +5459,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	ret = sscanf(cmd, "ammo_grenades %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "ammo_grenades %s\n", data);
+		menu.print(msg);
+		entity_list[self]->player->ammo_grenades += atoi(data);
+		return;
+	}
+
 	ret = sscanf(cmd, "ammo_slugs %s", data);
 	if (ret == 1)
 	{
