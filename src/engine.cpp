@@ -2390,7 +2390,7 @@ void Engine::server_recv()
 	{
 		debugf("client %s qport %d connected\n", socketname, clientmsg.qport);
 
-		if (client_list.size() < sv_maxclients)
+		if (client_list.size() > sv_maxclients)
 		{
 			debugf("server full");
 			servermsg.sequence = sequence;
@@ -2718,7 +2718,7 @@ void Engine::server_send()
 
 		servermsg.client_sequence = client_list[i]->client_sequence;
 
-	        servermsg.compressed_size = huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
+		servermsg.compressed_size = huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
 			servermsg.data, sizeof(servermsg.data), huffbuf);
 		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable.size + 1;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable, reliable.size);
@@ -2772,7 +2772,7 @@ void Engine::server_send()
 
 void Engine::client_recv()
 {
-	unsigned char *data = NULL;
+	static unsigned char data[256000];
 	static servermsg_t	servermsg;
 	reliablemsg_t *reliablemsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
