@@ -12,7 +12,6 @@
 #include <stdarg.h> // for vargs
 #include <math.h> // for ceil
 
-
 #define DMESG_SIZE 2048
 extern char dmesg[DMESG_SIZE][1024];
 extern int dmesg_index;
@@ -1371,4 +1370,43 @@ void write_bitmap(char *filename, int width, int height, int *data)
 	fwrite((void *)data, 1, width * height * 4, file);
 	fclose(file);
 
+}
+
+ping_t hist[64];
+int hist_index = 0;
+
+void ping_time_start(int sequence)
+{
+	ping_t start;
+
+	double time;
+
+#ifdef WIN32
+	time = GetCounter(freq);
+#endif
+
+	start.sequence = sequence;
+	start.time = time;
+	hist[hist_index++] = start;
+	if (hist_index >= 64)
+		hist_index = 0;
+}
+
+double ping_time_end(int sequence)
+{
+	double time;
+
+	for (int i = 0; i < 64; i++)
+	{
+		if (hist[i].sequence == sequence)
+		{
+#ifdef WIN32
+			time = GetCounter(freq);
+#endif
+			return time - hist[i].time;
+		}
+	}
+
+
+	return 1.0;
 }

@@ -17,7 +17,7 @@ void RedirectIOToConsole();
 unsigned int getTimeStamp(void);
 double GetCounter(double freq);
 void GetFreq(double &freq);
-
+double freq = 0.0;
 
 //for dxerr
 int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
@@ -123,7 +123,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static double start = 0.0, end = 0.0, last_frametime = 0.0;
 	static double min_frametime = 0.0;
 	static double max_frametime = 0.0;
-	static double freq = 0.0;
+	
 #ifdef VULKAN
 	static bool resized = false;
 	static bool initialized = false;

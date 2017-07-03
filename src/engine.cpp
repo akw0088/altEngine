@@ -2790,6 +2790,10 @@ void Engine::client_recv()
 			return;
 		}
 
+		double delay = ping_time_end(servermsg.client_sequence);
+		if (delay > 0.0)
+			netinfo.ping = delay;
+
 //		printf("Recieved %d ents from server\n", servermsg.num_ents);
 		if (servermsg.client_sequence > reliable.sequence)
 		{
@@ -2818,7 +2822,7 @@ void Engine::client_recv()
 		netinfo.num_ents = servermsg.num_ents;
 		netinfo.size = servermsg.length;
 		netinfo.sequence_delta = sequence - servermsg.client_sequence;
-		netinfo.ping = netinfo.sequence_delta * TICK_MS;
+		netinfo.ping_tick = netinfo.sequence_delta * TICK_MS;
 
 		handle_servermsg(servermsg, data, reliablemsg);
 		last_server_sequence = servermsg.sequence;
@@ -2857,6 +2861,8 @@ void Engine::client_send()
 	memcpy(clientmsg.data, &keystate, sizeof(int));
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], (void *)&reliable, reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + reliable.size;
+
+	ping_time_start(sequence);
 	int num_sent = ::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
 
 	if (server_flag == false)

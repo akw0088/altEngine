@@ -236,6 +236,7 @@ typedef struct
 {
 	int sequence_delta;
 	int ping;
+	int ping_tick;
 	int dropped;
 	int num_ents;
 	int size;

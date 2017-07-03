@@ -18,6 +18,13 @@ typedef struct
 } pixel_t;
 #pragma pack(8)
 
+typedef struct
+{
+	int sequence;
+	double time;
+} ping_t;
+
+
 void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height);
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v);
@@ -52,6 +59,12 @@ char *get_pakfile(char *pakfile, char *file);
 char *get_wadfile(char *wadfile, char *lump, int *lump_size);
 void lump_to_wave(char *lump_data, int size, wave_t *wave);
 void write_bitmap(char *filename, int width, int height, int *data);
+void ping_time_start(int sequence);
+double ping_time_end(int sequence);
+
+double GetCounter(double freq);
+extern double freq;
+
 
 
 // Lerp between A and B where time is within [0,1]

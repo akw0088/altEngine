@@ -46,9 +46,14 @@ void Global::prelink()
 {
 }
 
-void Global::Params(matrix4 &mvp, int tex0)
+void Global::Params(matrix4 &mvp, int tex0, int depth)
 {
 	uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
+}
+
+Global::~Global()
+{
+
 }
 
 int mLight2::init(Graphics *gfx)
@@ -57,6 +62,11 @@ int mLight2::init(Graphics *gfx)
 	//"media/glsl/mlighting3.gs"
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 	return 0;
+}
+
+void mLight2::set_shadow_matrix(int index, matrix4 &matrix)
+{
+	return;
 }
 
 void mLight2::set_max(int max)
@@ -68,6 +78,23 @@ void mLight2::set_ambient(float ambient)
 {
 	m_ambient = ambient;
 }
+
+void mLight2::set_brightness(float value)
+{
+	m_brightness = value;
+}
+
+void mLight2::set_contrast(float value)
+{
+	m_contrast = value;
+}
+
+void mLight2::set_shadowmap(float value)
+{
+	m_shadowmap = value;
+}
+
+
 
 void mLight2::set_lightmap(float lightmap)
 {
