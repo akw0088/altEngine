@@ -69,32 +69,21 @@ void mLight2::set_lightmap(float lightmap)
 
 }
 
-void mLight2::set_shadow_matrix0(matrix4 &proj)
+void mLight2::set_shadow_matrix(int index, matrix4 &proj)
 {
 }
 
-void mLight2::set_shadow_matrix1(matrix4 &proj)
+void mLight2::set_brightness(float value)
 {
 }
 
-void mLight2::set_shadow_matrix2(matrix4 &proj)
+void mLight2::set_shadowmap(float value)
 {
 }
 
-void mLight2::set_shadow_matrix3(matrix4 &proj)
+void mLight2::set_contrast(float value)
 {
 }
-
-void mLight2::set_shadow_matrix4(matrix4 &proj)
-{
-}
-
-void mLight2::set_shadow_matrix5(matrix4 &proj)
-{
-}
-
-
-
 
 void mLight2::prelink()
 {

@@ -7171,7 +7171,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		right.normalize();
 		up = vec3::crossproduct(right, forward);
 		up.normalize();
-		right = vec3::crossproduct(forward, up);
+		right = vec3::crossproduct(up, forward);
 		right.normalize();
 
 		decal->model->morientation.m[0] = right.x;

@@ -1408,5 +1408,5 @@ double ping_time_end(int sequence)
 	}
 
 
-	return 1.0;
+	return -1.0;
 }
