@@ -20,11 +20,14 @@ cl_skip
 clear
 com_maxfps
 connect
+console
 damage
 disconnect
 dynamic_res
+echo
 exit
 flight
+fullscreen
 fullscreen
 g_capturelimit
 g_collision
@@ -42,10 +45,11 @@ holdable_teleporter
 hurt
 invisibility
 kick
+kill
 list
-log
 map
 name ""
+net_port
 noclip
 play
 push
@@ -53,6 +57,8 @@ quaddamage
 quit
 r_ambient
 r_blend
+r_brightness
+r_contrast
 r_entities
 r_frontface
 r_light
@@ -67,6 +73,7 @@ r_rendermode
 r_res
 r_shader
 r_sky
+r_texture
 record
 redflag
 regeneration
@@ -74,15 +81,23 @@ res_scale
 reset
 respawn
 say ""
+screenshot
 sensitivity
 shadowmaps
 showdebug
 showhud
 showlines
 shownames
+spectate
 stop
+sv_hostname ""
 sv_list
+sv_maxclients
+sv_motd
+team
 teleport
+voteno
+voteyes
 weapon_grenadelauncher
 weapon_lightning
 weapon_machinegun
