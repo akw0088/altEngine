@@ -158,6 +158,32 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		printf("Error: %s error description: %s\n",
 			DXGetErrorString(ret), DXGetErrorDescription(ret));
 	}
+
+	D3DXHANDLE tex0c = uniform_ps->GetConstantByName(NULL, "tex0");
+	int tex0 = uniform_ps->GetSamplerIndex(tex0c);
+	gfx->device->SetSamplerState(tex0, D3DSAMP_ELEMENTINDEX, 0);
+
+	D3DXHANDLE tex1c = uniform_ps->GetConstantByName(NULL, "tex1");
+	int tex1 = uniform_ps->GetSamplerIndex(tex1c);
+	gfx->device->SetSamplerState(tex1, D3DSAMP_ELEMENTINDEX, 1);
+
+	D3DXHANDLE tex2c = uniform_ps->GetConstantByName(NULL, "tex2");
+	int tex2 = uniform_ps->GetSamplerIndex(tex2c);
+	gfx->device->SetSamplerState(tex2, D3DSAMP_ELEMENTINDEX, 2);
+
+	D3DXHANDLE tex3c = uniform_ps->GetConstantByName(NULL, "tex3");
+	int tex3 = uniform_ps->GetSamplerIndex(tex3c);
+	gfx->device->SetSamplerState(tex3, D3DSAMP_ELEMENTINDEX, 3);
+
+	D3DXHANDLE tex8c = uniform_ps->GetConstantByName(NULL, "texture_lightmap");
+	int tex8 = uniform_ps->GetSamplerIndex(tex8c);
+	gfx->device->SetSamplerState(tex8, D3DSAMP_ELEMENTINDEX, 8);
+
+	D3DXHANDLE tex9c = uniform_ps->GetConstantByName(NULL, "texture_normalmap");
+	int tex9 = uniform_ps->GetSamplerIndex(tex9c);
+	gfx->device->SetSamplerState(tex9, D3DSAMP_ELEMENTINDEX, 9);
+
+
 }
 
 void mLight2::set_light(float ambient, float lightmap, int num_light)

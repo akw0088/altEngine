@@ -12,7 +12,7 @@ struct attr_t
 
 struct vary_t
 {
-	float4 position			: POSITION;
+	float4 position			: POSITION1;
 	float2 texCoord0		: TEXCOORD0;
 	float2 texCoord1		: TEXCOORD1;
 	float3 normal			: NORMAL;
@@ -21,7 +21,7 @@ struct vary_t
 };
 
 uniform float4x4	mvp;
-uniform sampler		tex0, tex1, tex2, tex3;
+uniform sampler		tex0, tex1, tex2, tex3, tex4, tex5, tex6, tex7, texture_lightmap, texture_normalmap;
 uniform float3		u_position[MAX_LIGHTS];
 uniform float4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
@@ -30,18 +30,18 @@ float4 main(in vary_t vary) : COLOR0
 {
 	float4 texColor[4];
 	float4 Fragment;
-
+	float3 lightmap;
 
 	texColor[0] = tex2D(tex0, vary.texCoord0);
 	texColor[1] = tex2D(tex1, vary.texCoord0);
 	texColor[2] = tex2D(tex2, vary.texCoord0);
-	texColor[3] = tex2D(tex2, vary.texCoord0);
+	texColor[3] = tex2D(tex3, vary.texCoord0);
+	lightmap = tex2D(texture_lightmap, vary.texCoord1).xyz;
 
-	Fragment.r = 0.0;
-	Fragment.g = 0.0;
-	Fragment.b = 0.0;
-	Fragment.a = 0.5;
-	Fragment += texColor[0];// + texColor[1] + texColor[2] + texColor[3];
+	Fragment.rgb = texColor[0].rgb; + texColor[1].rgb + texColor[2].rgb + texColor[3].rgb;
+//	Fragment.a = texColor[0].a * texColor[1].a * texColor[2].a * texColor[3].a;
+	Fragment.a = 1.0;
+
 	float3 normal = normalize(vary.normal.xyz);
 
 	float3 intensity = 0.5;
@@ -62,6 +62,10 @@ float4 main(in vary_t vary) : COLOR0
 
 		intensity = intensity + atten * (diffuse + specular + u_color[i].xyz * 0.25);
 	}
+
+//	Fragment.rgb *= lightmap;
+
+
 //	Fragment.xyz += intensity;
 
 	return Fragment;

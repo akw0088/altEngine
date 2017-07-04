@@ -21,7 +21,10 @@ struct vary_t
 };
 
 uniform float4x4	mvp;
-uniform sampler		tex0, tex1, tex2, tex3;
+
+uniform sampler		tex0, tex1, tex2, tex3, tex4, tex5, tex6, tex7, texture_lightmap, texture_normalmap;
+
+
 uniform float3		u_position[MAX_LIGHTS];
 uniform float4		u_color[MAX_LIGHTS];
 uniform int		u_num_lights;
