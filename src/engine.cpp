@@ -88,7 +88,11 @@ Engine::Engine()
 	testObj = 0;
 	num_light = 0;
 	doom_sound = 0;
+#ifdef OPENGL32
 	render_mode = MODE_INDIRECT;
+#else
+	render_mode = MODE_FORWARD;
+#endif
 	num_hash = 0;
 	net_port = 65535;
 
@@ -117,8 +121,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
-
+#ifdef OPENGL32
 	render_mode = MODE_INDIRECT;
+#endif
 
 	multisample = 0;
 	sensitivity = 1.0f;
@@ -554,8 +559,11 @@ void Engine::load(char *level)
 	//Setup render to texture
 
 	// Generate depth cubemaps for each light
-	render_shadowmaps(true);
-	gfx.bindFramebuffer(0);
+	if (render_mode == MODE_INDIRECT)
+	{
+		render_shadowmaps(true);
+		gfx.bindFramebuffer(0);
+	}
 
 
 	if (render_mode == MODE_SHADOWVOL)
@@ -785,6 +793,9 @@ void Engine::render(double last_frametime)
 			menu.render_console(global);
 		if (menu.chatmode)
 			menu.render_chatmode(global);
+
+		gfx.Depth(true);
+		gfx.Blend(false);
 	}
 
 
@@ -2792,7 +2803,7 @@ void Engine::client_recv()
 
 		double delay = ping_time_end(servermsg.client_sequence);
 		if (delay > 0.0)
-			netinfo.ping = delay;
+			netinfo.ping = (int)delay;
 
 //		printf("Recieved %d ents from server\n", servermsg.num_ents);
 		if (servermsg.client_sequence > reliable.sequence)
