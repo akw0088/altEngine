@@ -144,6 +144,7 @@ void Graphics::init(void *param1, void *param2)
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
     d3dpp.hDeviceWindow = hwnd;
+	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 
 	d3d = Direct3DCreate9(D3D_SDK_VERSION);
 	if (d3d == NULL)
@@ -575,7 +576,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		}
 
 		D3DXCompileShader(vertex_src, strlen(vertex_src) + 1,
-			NULL, NULL, "main", "vs_3_0", D3DXSHADER_PACKMATRIX_COLUMNMAJOR, &vertex_binary, &err, &uniform_vs);
+			NULL, NULL, "main", "vs_3_0", D3DXSHADER_PACKMATRIX_COLUMNMAJOR | D3DXSHADER_SKIPOPTIMIZATION, &vertex_binary, &err, &uniform_vs);
 		if (err)
 		{
 			fprintf(fLog, "Unable to load vertex shader %s\n%s\n", vertex_file, (char  *)err->GetBufferPointer());
@@ -621,7 +622,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		}
 
 		D3DXCompileShader(fragment_src, strlen(fragment_src) + 1,
-			NULL, NULL, "main", "ps_3_0", D3DXSHADER_PACKMATRIX_COLUMNMAJOR, &pixel_binary, &err, &uniform_ps);
+			NULL, NULL, "main", "ps_3_0", D3DXSHADER_PACKMATRIX_COLUMNMAJOR | D3DXSHADER_SKIPOPTIMIZATION, &pixel_binary, &err, &uniform_ps);
 		if (err)
 		{
 			fprintf(fLog, "Unable to load fragment shader %s\n%s\n", fragment_file, (char  *)err->GetBufferPointer());

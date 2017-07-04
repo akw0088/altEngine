@@ -140,23 +140,43 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 			DXGetErrorString(ret), DXGetErrorDescription(ret));
 	}
 
-	ret = uniform_vs->SetVectorArray(gfx->device, "u_position", (D3DXVECTOR4 *)position, MAX_LIGHTS);
+	ret = uniform_ps->SetVectorArray(gfx->device, "u_position", (D3DXVECTOR4 *)position, MAX_LIGHTS);
 	if (FAILED(ret))
 	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
+		static int once = 0;
+
+		if (once)
+		{
+			printf("Failed to set u_position: %s error description: %s\n",
+				DXGetErrorString(ret), DXGetErrorDescription(ret));
+			once = 1;
+		}
 	}
-	ret = uniform_vs->SetVectorArray(gfx->device, "u_color", (D3DXVECTOR4 *)color, MAX_LIGHTS);
+	ret = uniform_ps->SetVectorArray(gfx->device, "u_color", (D3DXVECTOR4 *)color, MAX_LIGHTS);
 	if (FAILED(ret))
 	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
+		static int once = 0;
+
+		if (once)
+		{
+			printf("Failed to set u_color: %s error description: %s\n",
+				DXGetErrorString(ret), DXGetErrorDescription(ret));
+			once = 1;
+		}
+
 	}
-	ret = uniform_vs->SetInt(gfx->device, "u_num_lights", num_lights);
+	ret = uniform_ps->SetInt(gfx->device, "u_num_lights", num_lights);
 	if (FAILED(ret))
 	{
-		printf("Error: %s error description: %s\n",
-			DXGetErrorString(ret), DXGetErrorDescription(ret));
+		static int once = 0;
+
+		if (once)
+		{
+			printf("Failed to set u_num_lights: %s error description: %s\n",
+				DXGetErrorString(ret), DXGetErrorDescription(ret));
+			once = 1;
+		}
+
 	}
 
 	D3DXHANDLE tex0c = uniform_ps->GetConstantByName(NULL, "tex0");
