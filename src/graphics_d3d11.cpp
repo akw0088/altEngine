@@ -346,7 +346,12 @@ int Graphics::checkFramebuffer()
 	return 0;
 }
 
-int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int multisample)
+{
+	return 0;
+}
+
+int setupFramebufferArray(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int layer, int multisample)
 {
 	return 0;
 }

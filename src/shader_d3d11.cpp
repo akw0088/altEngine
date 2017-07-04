@@ -36,11 +36,15 @@ int Global::init(Graphics *gfx)
 	return 0;
 }
 
+Global::~Global()
+{
+}
+
 void Global::prelink()
 {
 }
 
-void Global::Params(matrix4 &mvp, int tex0)
+void Global::Params(matrix4 &mvp, int tex0, int depth)
 {
 	ID3D11Buffer*   g_pConstantBuffer11 = NULL;
 	HRESULT ret;
@@ -76,6 +80,22 @@ int mLight2::init(Graphics *gfx)
 	//"media/glsl/mlighting3.gs"
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 	return 0;
+}
+
+void mLight2::set_shadow_matrix(int index, matrix4 &proj)
+{
+}
+
+void mLight2::set_brightness(float value)
+{
+}
+
+void mLight2::set_shadowmap(float value)
+{
+}
+
+void mLight2::set_contrast(float value)
+{
 }
 
 void mLight2::set_max(int max)
