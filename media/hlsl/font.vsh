@@ -24,16 +24,21 @@ uniform float	u_xpos;
 uniform float	u_ypos;
 uniform float	u_scale;
 
+
 vary_t main(in attr_t attr)
 {
 	vary_t output;
 	float4 vpos = float4(attr.position, 1.0);
 
-	output.position = vpos * u_scale;
-	output.position.x = u_xpos;
-	output.position.y = u_ypos;
-	output.position.z = 0.0;
+	output.position.x = vpos.x * u_scale - 1.0;
+	output.position.y = vpos.y * u_scale + 1.0;
+	output.position.z = vpos.z;
 	output.position.w = 1.0f;
+	output.position.x += u_xpos;
+	output.position.y -= u_ypos;
+
+
+
 	output.texCoord0 = attr.texCoord0 * (16.0 / 256.0);
 	output.texCoord0.x += u_col;
 	output.texCoord0.y += u_row;
