@@ -2266,6 +2266,8 @@ void Quake3::step(int frame_step)
 			check_triggers(i, engine->entity_list);
 		else if (player && player->type == BOT)
 			check_triggers(i, engine->entity_list);
+		else if (player && player->type == SERVER)
+			check_triggers(i, engine->entity_list);
 	}
 
 }
@@ -6939,9 +6941,11 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 			if (pickup)
 			{
-				trigger->active = true;
-				if (trigger->action[0] != '\0')
+				if (trigger->action[0] != '\0' && trigger->client_active == false)
 					console(self, trigger->action, engine->menu, entity_list);
+
+				trigger->active = true;
+				trigger->client_active = true;
 
 				if (trigger->projectile)
 				{
@@ -7056,6 +7060,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (trigger->noise == false)
 			{
 				trigger->active = false;
+				trigger->client_active = false;
 				trigger->timeout = 0.0f;
 			}
 			else

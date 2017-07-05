@@ -131,17 +131,21 @@ void Graphics::init(void *param1, void *param2)
 	scd.Windowed = TRUE;                                    // windowed/full-screen mode
 
 
-	D3D_FEATURE_LEVEL featureLevel;
+	D3D_FEATURE_LEVEL feature_level_out;
+	D3D_FEATURE_LEVEL feature_level_in;
+
+	feature_level_in = D3D_FEATURE_LEVEL_11_0;
 
 	ret = D3D11CreateDevice(
 		0,                 // default adapter
 		D3D_DRIVER_TYPE_HARDWARE,
 		0,                 // no software device
-		D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_SINGLETHREADED,
-		0, 0,              // default feature level array
+		D3D11_CREATE_DEVICE_SINGLETHREADED,
+		&feature_level_in,
+		1,
 		D3D11_SDK_VERSION,
 		&device,
-		&featureLevel,
+		&feature_level_out,
 		&context);
 
 	if (FAILED(ret))
@@ -150,9 +154,9 @@ void Graphics::init(void *param1, void *param2)
 		return;
 	}
 
-	if (featureLevel != D3D_FEATURE_LEVEL_11_0)
+	if (feature_level_out != feature_level_in)
 	{
-		printf("Hardware doesnt support dx11");
+		printf("Hardware doesnt support dx11.1");
 		return;
 	}
 

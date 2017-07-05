@@ -601,7 +601,13 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 	{
 		/*
 		LPD3DXBUFFER geometry_binary;
-		geometry_src = (char *)getFile(geometry_file);
+		geometry_src = (char *)get_file(geometry_file, NULL);
+		if (geometry_src == NULL)
+		{
+			fprintf(fLog, "Unable to load geometry shader %s\n", fragment_file);
+			fclose(fLog);
+			return -1;
+		}
 
 		D3DXCompileShader(geometry_src, strlen(geometry_src) + 1,
 			NULL, NULL, "main", "gs_3_0", 0, &geometry_binary, NULL, &constants);
