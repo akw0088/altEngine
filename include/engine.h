@@ -207,7 +207,8 @@ protected:
 	//net stuff
 	int		sequence;
 	Net		net;
-	reliablemsg_t	reliable;
+	reliablemsg_t	reliable[8];
+	reliablemsg_t	client_reliable;
 	int cl_skip;
 	char sv_hostname[512];
 	char sv_motd[512];
