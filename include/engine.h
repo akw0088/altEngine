@@ -69,6 +69,8 @@ public:
 	void server_recv();
 	void server_send();
 	void server_send_state(int client);
+	void set_spawn_string(char *msg, client_t *client);
+	void parse_spawn_string(char *msg);
 	void client_recv();
 	void client_send();
 	int handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg);
@@ -237,6 +239,7 @@ protected:
 	bool	client_flag;
 	unsigned int	last_server_sequence;
 	unsigned int	qport;
+	bool active_clients[8];
 
 	netinfo_t netinfo;
 

@@ -287,7 +287,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	client_flag = false;
 	memset(&reliable, 0, sizeof(reliablemsg_t));
 
-	for (int i = 0; i < max_player; i++)
+	for (unsigned int i = 0; i < max_player; i++)
 	{
 		reliable[i].sequence = -1;
 	}
@@ -2270,6 +2270,98 @@ void Engine::server_send_state(int client)
 }
 
 
+void Engine::set_spawn_string(char *msg, client_t *client)
+{
+	sprintf(msg, "<spawn> %d %d ", client->ent_id, find_type(ENT_PLAYER, 0));
+	for (unsigned int i = 0; i < client_list.size(); i++)
+	{
+		char client_index[8];
+		if (client_list[i] == client)
+			continue;
+
+		sprintf(client_index, "%d ", client_list[i]->ent_id);
+		strcat(msg, client_index);
+	}
+	strcat(msg, "</spawn> ");
+}
+
+void Engine::parse_spawn_string(char *msg)
+{
+	char *start = strstr(msg, "<spawn>");
+	char *end = strstr(msg, "</spawn>");
+	int count = 0;
+	int client;
+
+	if (start && end)
+	{
+		char temp[512];
+
+		start += 8;
+		int length = (int)(end - start);
+
+		memset(temp, 0, sizeof(temp));
+		memcpy(temp, start, length);
+		char *line = strtok(temp, " ");
+		while (line)
+		{
+			client = atoi(line);
+			line = strtok(NULL, " ");
+
+			if (count == 0 && active_clients[count] == false)
+			{
+				Entity *ent = entity_list[client];
+
+				active_clients[count] = true;
+				clean_entity(client);
+				sprintf(ent->type, "player");
+				ent->rigid = new RigidBody(ent);
+				ent->model = ent->rigid;
+				ent->rigid->clone(*(thug22->model));
+				ent->rigid->step_flag = true;
+				ent->position += ent->rigid->center;
+				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
+				ent->player->type = PLAYER;
+				ent->player->local = true;
+				camera_frame.pos = ent->position;
+			}
+			else if (count == 1 && active_clients[count] == false)
+			{
+				active_clients[count] = true;
+				Entity *ent = entity_list[client];
+				clean_entity(client);
+				sprintf(ent->type, "server");
+				ent->rigid = new RigidBody(ent);
+				ent->model = ent->rigid;
+				ent->rigid->clone(*(thug22->model));
+				ent->rigid->step_flag = true;
+				ent->position += ent->rigid->center;
+				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
+				ent->player->local = false;
+				ent->player->type = SERVER;
+			}
+			else
+			{
+				if (active_clients[count] == false)
+				{
+					active_clients[count] = true;
+					Entity *ent = entity_list[client];
+					clean_entity(client);
+					sprintf(ent->type, "server");
+					ent->rigid = new RigidBody(ent);
+					ent->model = ent->rigid;
+					ent->rigid->clone(*(thug22->model));
+					ent->rigid->step_flag = true;
+					ent->position += ent->rigid->center;
+					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
+					ent->player->local = false;
+					ent->player->type = SERVER;
+				}
+			}
+			count++;
+		}
+	}
+}
+
 void Engine::server_recv()
 {
 	static servermsg_t	servermsg;
@@ -2436,27 +2528,18 @@ void Engine::server_recv()
 	else if ( strcmp(reliablemsg->msg, "<spawn/>") == 0 )
 	{
 		bool found = false;
-		client_t *client = (client_t *)malloc(sizeof(client_t));
-		if (client == NULL)
+		unsigned int i = 0;
+
+		for (i = 0; i < client_list.size(); i++)
 		{
-			debugf("malloc failed allocating client");
-			return;
-		}
-
-
-		memset(client, 0, sizeof(client_t));
-		client->last_time = (unsigned int)time(NULL);
-		strcpy(client->socketname, socketname);
-		client->qport = clientmsg.qport;
-		client->needs_state = true;
-
-		for (unsigned int i = 0; i < client_list.size(); i++)
-		{
-			if (strcmp(client_list[i]->socketname, client->socketname) == 0)
+			if (strcmp(client_list[i]->socketname, socketname) == 0)
 			{
-				if (client_list[i]->qport == client->qport)
+				if (client_list[i]->qport == clientmsg.qport)
 				{
 					found = true;
+					client_list[i]->client_sequence = clientmsg.sequence;
+					client_list[i]->server_sequence = sequence + 1;
+					client_list[i]->last_time = (unsigned int)time(NULL);
 					break;
 				}
 			}
@@ -2464,10 +2547,22 @@ void Engine::server_recv()
 
 		if (found)
 		{
-			printf("Client already spawned, ignoring\n");
-			free((void *)client);
+			//printf("Client already spawned, ignoring\n");
 			return;
 		}
+		client_t *client = (client_t *)malloc(sizeof(client_t));
+		if (client == NULL)
+		{
+			debugf("malloc failed allocating client");
+			return;
+		}
+
+		memset(client, 0, sizeof(client_t));
+		client->last_time = (unsigned int)time(NULL);
+		strcpy(client->socketname, socketname);
+		client->qport = clientmsg.qport;
+		client->needs_state = true;
+
 
 		client_list.push_back(client);
 		debugf("client %s qport %d spawned\n", client->socketname, client->qport);
@@ -2493,19 +2588,11 @@ void Engine::server_recv()
 
 
 		// let new client know how many players exist
-		sprintf(reliable[index].msg, "<spawn> %d %d ", client->ent_id, find_type(ENT_PLAYER, 0));
+		char spawn_str[256];
+		set_spawn_string(spawn_str, client);
+		strcat(reliable[index].msg, spawn_str);
 
 		char motd[256];
-
-		for (int i = 0; i < client_list.size() - 1; i++)
-		{
-			char client_index[8];
-
-			sprintf(client_index, "%d ", client_list[i]->ent_id);
-			strcat(reliable[index].msg, client_index);
-		}
-		strcat(reliable[index].msg, "</spawn> ");
-
 		sprintf(motd, "<chat>Welcome to %s: %s</chat>", sv_hostname, sv_motd);
 		strcat(reliable[index].msg, motd);
 		
@@ -2517,6 +2604,27 @@ void Engine::server_recv()
 		servermsg.length = SERVER_HEADER + reliable[index].size;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("Client is now entity %d\n", client->ent_id);
+
+
+		// Notify other clients of new player
+		for (i = 0; i < client_list.size() - 1; i++)
+		{
+			set_spawn_string(spawn_str, client_list[i]);
+			strcat(reliable[i].msg, spawn_str);
+
+			reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
+			reliable[i].sequence = sequence;
+
+			memset(&servermsg, 0, sizeof(servermsg));
+			servermsg.client_sequence = client_list[i]->client_sequence;
+			servermsg.sequence = sequence;
+			servermsg.num_ents = 0;
+			servermsg.compressed_size = 0;
+			servermsg.length = SERVER_HEADER + reliable[i].size;
+			memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable[i], reliable[i].size);
+			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		}
+
 	}
 	else if (strcmp(reliablemsg->msg, "getstatus") == 0)
 	{
@@ -2827,11 +2935,11 @@ void Engine::client_recv()
 			return;
 		}
 
-		if (servermsg.sequence <= last_server_sequence)
+		if (servermsg.sequence < last_server_sequence)
 		{
 			printf("Got old server packet\n");
 			netinfo.dropped++;
-//			return;
+			return;
 		}
 
 		double delay = ping_time_end(servermsg.client_sequence);
@@ -2935,7 +3043,6 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 	{
 		if (last_server_sequence <= reliablemsg->sequence)
 		{
-			int client;
 			int ret;
 
 			debugf("server to client: %s\n", reliablemsg->msg);
@@ -2966,72 +3073,8 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 			}
 
 
-			char *start = strstr(reliablemsg->msg, "<spawn>");
-			char *end = strstr(reliablemsg->msg, "</spawn>");
-			int count = 0;
 
-			if (start && end)
-			{
-				char temp[512];
-
-				start += 8;
-				int length = (int)(end - start);
-
-				memset(temp, 0, sizeof(temp));
-				memcpy(temp, start, length);
-				char *line = strtok(temp, " ");
-				while (line)
-				{
-					client = atoi(line);
-					line = strtok(NULL, " ");
-
-					if (count == 0)
-					{
-						Entity *ent = entity_list[client];
-
-						clean_entity(client);
-						sprintf(ent->type, "player");
-						ent->rigid = new RigidBody(ent);
-						ent->model = ent->rigid;
-						ent->rigid->clone(*(thug22->model));
-						ent->rigid->step_flag = true;
-						ent->position += ent->rigid->center;
-						ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
-						ent->player->type = PLAYER;
-						ent->player->local = true;
-						camera_frame.pos = ent->position;
-					}
-					else if (count == 1)
-					{
-						Entity *ent = entity_list[client];
-						clean_entity(client);
-						sprintf(ent->type, "server");
-						ent->rigid = new RigidBody(ent);
-						ent->model = ent->rigid;
-						ent->rigid->clone(*(thug22->model));
-						ent->rigid->step_flag = true;
-						ent->position += ent->rigid->center;
-						ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
-						ent->player->local = false;
-						ent->player->type = SERVER;
-					}
-					else
-					{
-						Entity *ent = entity_list[client];
-						clean_entity(client);
-						sprintf(ent->type, "client");
-						ent->rigid = new RigidBody(ent);
-						ent->model = ent->rigid;
-						ent->rigid->clone(*(thug22->model));
-						ent->rigid->step_flag = true;
-						ent->position += ent->rigid->center;
-						ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_CLIENT, game->model_table);
-						ent->player->local = false;
-						ent->player->type = CLIENT;
-					}
-					count++;
-				}
-			}
+			parse_spawn_string(reliablemsg->msg);
 
 			ret = strcmp(reliablemsg->msg, "<disconnect/>");
 			if (ret == 0)
@@ -4872,7 +4915,7 @@ void Engine::chat(char *name, char *msg)
 	}
 
 
-	for (int i = 0; i < max_player; i++)
+	for (unsigned int i = 0; i < max_player; i++)
 	{
 		sprintf(msg, "<chat>%s</chat>", data);
 		strcat(reliable[i].msg, msg);
