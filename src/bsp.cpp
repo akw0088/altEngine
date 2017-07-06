@@ -1581,7 +1581,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	enable_textures = true;
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
 	{
-#ifdef OPENGL32
+#ifdef OPENGL
 		if (data.header->version == 0x2E)
 		{
 			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);

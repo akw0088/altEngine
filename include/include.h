@@ -74,7 +74,7 @@
 	#include <d3dx9math.h>
 #endif
 #endif
-#ifdef OPENGL32
+#ifdef OPENGL
 	#define GLEW_STATIC
 	#include <GL/glew.h>
 	#include <GL/wglew.h>

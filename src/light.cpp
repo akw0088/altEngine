@@ -28,7 +28,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 void Light::generate_cubemaps(Graphics &gfx)
 {
 	shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
-#ifdef OPENGL32
+#ifdef OPENGL
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -67,7 +67,7 @@ void Light::generate_volumes(Bsp &map)
 
 void Light::extend(Edge &edge_list, vec3 position, int current_light)
 {
-#ifdef OPENGL32
+#ifdef OPENGL
 	float t = 10.0f;
 	bool debug = true;
 

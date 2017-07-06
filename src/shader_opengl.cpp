@@ -6,7 +6,7 @@
 #endif
 
 
-#ifdef OPENGL32
+#ifdef OPENGL
 //unsigned int ParticleUpdate::max_particles = 175000;
 
 // Setting to a low value to keep FPS up

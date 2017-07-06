@@ -88,7 +88,7 @@ Engine::Engine()
 	testObj = 0;
 	num_light = 0;
 	doom_sound = 0;
-#ifdef OPENGL32
+#ifdef OPENGL
 	render_mode = MODE_INDIRECT;
 #else
 	render_mode = MODE_FORWARD;
@@ -121,7 +121,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	render_mode = MODE_INDIRECT;
 #endif
 
@@ -1090,7 +1090,7 @@ void Engine::render_scene(bool lights)
 	gfx.Blend(true);
 	gfx.BlendFunc(NULL, NULL);
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	int vbo = 0;
 
 	if (emitter.visible)
@@ -1114,7 +1114,7 @@ void Engine::render_scene(bool lights)
 	}
 #endif
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	if (emitter.visible)
 	{
 		vec3 quad1 = camera_frame.up;
@@ -1246,7 +1246,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	gfx.Blend(true);
 	gfx.BlendFunc(NULL, NULL);
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	int vbo = 0;
 
 	if (emitter.visible)
@@ -1274,7 +1274,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 //	mvp = transformation * projection;
 
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	if (emitter.visible)
 	{
 		vec3 quad1 = camera_frame.up;
@@ -1593,7 +1593,7 @@ void Engine::screenshot()
 	static int num = 0;
 	char filename[128];
 
-#ifdef OPENGL32
+#ifdef OPENGL
 
 	
 	/*
@@ -1629,7 +1629,7 @@ void Engine::post_process(int num_passes)
 	gfx.SelectTexture(0, post.image);
 	for (int pass = 0; pass < num_passes; pass++)
 	{
-#ifdef OPENGL32
+#ifdef OPENGL
 	#ifdef FORWARD
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, gfx.width, gfx.height, 0);
 	#else
@@ -4693,7 +4693,7 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 
 		multisample = atoi(data);
-#ifdef OPENGL32
+#ifdef OPENGL
 		if (multisample > 0)
 			glEnable(GL_MULTISAMPLE);
 		else
@@ -4779,7 +4779,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "r_polygonmode %s", data);
 	if (ret == 1)
 	{
-#ifdef OPENGL32
+#ifdef OPENGL
 		if (atoi(data) == 1)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		else if (atoi(data) == 2)
@@ -4793,7 +4793,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "r_frontface %s", data);
 	if (ret == 1)
 	{
-#ifdef OPENGL32
+#ifdef OPENGL
 		if (atoi(data) == 1)
 			glFrontFace(GL_CCW);
 		else

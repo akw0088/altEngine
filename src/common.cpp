@@ -693,7 +693,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 
@@ -751,7 +751,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	else
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 #endif
-#ifdef OPENGL32
+#ifdef OPENGL
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 #endif
 #ifdef VULKAN
@@ -767,7 +767,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	delete [] data;
 #endif
 
-#ifdef OPENGL32
+#ifdef OPENGL
 	if (format != GL_RGBA)
 	{
 		// negative means it has an alpha channel
@@ -800,7 +800,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	}
 
 	//tex_object[face->material].texObj[0]
-#ifdef OPENGL32
+#ifdef OPENGL
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 	if (components == 4)
@@ -854,7 +854,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 	stbi_image_free(bytes);
 	delete [] data;
 #endif
-#ifdef OPENGL32
+#ifdef OPENGL
 	if (format != GL_RGBA)
 	{
 		// negative means it has an alpha channel

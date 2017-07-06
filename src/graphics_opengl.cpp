@@ -6,7 +6,7 @@
 
 //#define ERROR_CHECK
 
-#ifdef OPENGL32
+#ifdef OPENGL
 void Graphics::resize(int width, int height)
 {
 	Graphics::width = width;

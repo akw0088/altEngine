@@ -73,8 +73,8 @@ CC := gcc -fuse-linker-plugin -Wfloat-equal
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -DOPENGL32 -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
-altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -DOPENGL32 -Wno-write-strings -Wall -march=native
+altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
+altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native
 altEngine_vulkan: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DVULKAN -Wno-write-strings -Wall -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal -lrt

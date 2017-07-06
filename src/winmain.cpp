@@ -142,7 +142,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hdc = GetDC(hwnd);
 		GetFreq(freq);
 		setupPixelFormat(hdc);
-#ifdef OPENGL32
+#ifdef OPENGL
 		hglrc_legacy = wglCreateContext(hdc);
 		wglMakeCurrent(hdc, hglrc_legacy);
 		glewInit();
@@ -503,7 +503,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
-#ifdef OPENGL32
+#ifdef OPENGL
 		if (hglrc)
 		{
 			wglMakeCurrent(NULL, NULL);
