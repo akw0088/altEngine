@@ -4830,6 +4830,8 @@ void Engine::connect(char *serverip)
 		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
 		if (sscanf(reliablemsg->msg, "<map>%s</map>", level) == 1)
 		{
+			char *end = strstr(level, "</map>");
+			*end = '\0';
 			debugf("Loading %s\n", level);
 			load((char *)level);
 			strcpy(client_reliable.msg, "<spawn/>");
