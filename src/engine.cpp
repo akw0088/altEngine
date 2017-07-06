@@ -2401,7 +2401,7 @@ void Engine::server_recv()
 
 	// client not in list, check if it is a connect msg
 	reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[clientmsg.num_cmds * sizeof(int)];
-	if ( strcmp(reliablemsg->msg, "connect") == 0 )
+	if ( strcmp(reliablemsg->msg, "<connect/>") == 0 )
 	{
 		debugf("client %s qport %d connected\n", socketname, clientmsg.qport);
 
@@ -2424,7 +2424,7 @@ void Engine::server_recv()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
-		sprintf(reliable[index].msg, "map %s", q3map.map_name);
+		sprintf(reliable[index].msg, "<map>%s</map>", q3map.map_name);
 		reliable[index].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
 
@@ -2433,7 +2433,7 @@ void Engine::server_recv()
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
 	}
-	else if ( strcmp(reliablemsg->msg, "spawn") == 0 )
+	else if ( strcmp(reliablemsg->msg, "<spawn/>") == 0 )
 	{
 		bool found = false;
 		client_t *client = (client_t *)malloc(sizeof(client_t));
@@ -3033,7 +3033,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 				}
 			}
 
-			ret = strcmp(reliablemsg->msg, "disconnect");
+			ret = strcmp(reliablemsg->msg, "<disconnect/>");
 			if (ret == 0)
 			{
 				unload();
@@ -3851,7 +3851,7 @@ void Engine::kick(unsigned int i)
 	servermsg.client_sequence = reliable[i].sequence;
 	servermsg.num_ents = 0;
 
-	sprintf(reliable[i].msg, "disconnect");
+	sprintf(reliable[i].msg, "<disconnect/>");
 	reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
 	reliable[i].sequence = sequence;
 	servermsg.length = SERVER_HEADER + reliable[i].size;
@@ -4809,7 +4809,7 @@ void Engine::connect(char *serverip)
 	clientmsg.server_sequence = 0;
 	clientmsg.num_cmds = 0;
 	clientmsg.qport = qport;
-	strcpy(client_reliable.msg, "connect");
+	strcpy(client_reliable.msg, "<connect/>");
 	client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
 	client_reliable.sequence = sequence;
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &client_reliable, client_reliable.size);
@@ -4828,11 +4828,11 @@ void Engine::connect(char *serverip)
 		server_flag = false;
 		debugf("Connected\n");
 		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
-		if (sscanf(reliablemsg->msg, "map %s", level) == 1)
+		if (sscanf(reliablemsg->msg, "<map>%s</map>", level) == 1)
 		{
 			debugf("Loading %s\n", level);
 			load((char *)level);
-			strcpy(client_reliable.msg, "spawn");
+			strcpy(client_reliable.msg, "<spawn/>");
 			client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
 			client_reliable.sequence = sequence;
 			last_server_sequence = servermsg.sequence;
