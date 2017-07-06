@@ -1494,9 +1494,12 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 {
 	matrix4 mvp;
 	//render player md5
-	for (unsigned int i = 0; i < max_player; i++)
+	for (unsigned int i = 0; i < max_player && i < entity_list.size(); i++)
 	{
 		Entity *entity = entity_list[i];
+
+		if (entity == NULL)
+			continue;
 
 		if (entity->visible == false && entity->player && entity->player->type != SPECTATOR)
 			continue;
@@ -1510,7 +1513,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 			if (entity->player->local && render_self == false)
 				continue;
 
-			if (entity->player->health > 0)
+			//if (entity->player->health > 0)
 			{
 
 				//md5 faces right, need to flip right and forward orientation
@@ -2256,9 +2259,13 @@ void Engine::step(int tick)
 void Engine::server_send_state(int client)
 {
 	serverdata_t data;
+	int offset = strlen(reliable[client].msg) + 1;
 	game->get_state(&data);
-	memcpy(reliable[client].msg, &data, sizeof(serverdata_t));
-	reliable[client].size = 2 * sizeof(int) + sizeof(serverdata_t);
+
+
+	reliable[client].msg[offset - 1] = ' ';
+	memcpy(&reliable[client].msg[offset], &data, sizeof(serverdata_t));
+	reliable[client].size = 2 * sizeof(int) + sizeof(serverdata_t) + offset;
 	reliable[client].sequence = sequence;
 }
 
@@ -2367,14 +2374,16 @@ void Engine::server_recv()
 				debugf("client to server: %s\n", reliablemsg->msg);
 
 
-				if (strstr(reliablemsg->msg, "chat"))
+				char *start = strstr(reliablemsg->msg, "<chat>");
+				if ( start )
 				{
-					sprintf(name, "%s", reliablemsg->msg + 5);
+					
+					sprintf(name, "%s", start + 6);
 					char *end = strchr(name, ':');
 					if (end != NULL)
 					{
 						end[0] = '\0';
-						sprintf(msg, "say \"%s\"", strchr(reliablemsg->msg, ':') + 2);
+						sprintf(msg, "say \"%s\"", end + 2);
 						//  Echoes chat back to all clients
 						chat(name, msg);
 					}
@@ -2480,18 +2489,30 @@ void Engine::server_recv()
 		servermsg.num_ents = 0;
 
 
-		// Send new client info to other clients
+
+
+
+		// let new client know how many players exist
+		sprintf(reliable[index].msg, "<spawn> %d %d ", client->ent_id, find_type(ENT_PLAYER, 0));
+
+		char motd[256];
+
 		for (int i = 0; i < client_list.size() - 1; i++)
 		{
-			sprintf(reliable[i].msg, "client %d", client->ent_id);
-			reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
-			reliable[i].sequence = sequence;
-		}
+			char client_index[8];
 
-		// let new client know where server player is and where to spawn
-		sprintf(reliable[index].msg, "spawn %d %d chat Welcome to %s: %s", client->ent_id, find_type(ENT_PLAYER, 0), sv_hostname, sv_motd);
+			sprintf(client_index, "%d ", client_list[i]->ent_id);
+			strcat(reliable[index].msg, client_index);
+		}
+		strcat(reliable[index].msg, "</spawn> ");
+
+		sprintf(motd, "<chat>Welcome to %s: %s</chat>", sv_hostname, sv_motd);
+		strcat(reliable[index].msg, motd);
+		
 		reliable[index].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
+
+		
 		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + reliable[index].size;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
@@ -2707,6 +2728,15 @@ void Engine::server_send()
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
 
+	serialize_ents(&data[0], servermsg.num_ents);
+	servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
+		servermsg.data, sizeof(servermsg.data), huffbuf);
+
+
+	if (recording_demo)
+	{
+		fwrite(&servermsg, servermsg.compressed_size + SERVER_HEADER, 1, demofile);
+	}
 
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
@@ -2722,26 +2752,10 @@ void Engine::server_send()
 			continue;
 		}
 
-
-		serialize_ents(&data[0], servermsg.num_ents);
-
-		if (client_list[i]->needs_state)
-		{
-			server_send_state(i);
-			client_list[i]->needs_state = false;
-		}
-
+		reliable[i].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[i].msg) + 1);
 		servermsg.client_sequence = client_list[i]->client_sequence;
-
-		servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
-			servermsg.data, sizeof(servermsg.data), huffbuf);
-		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable[i].size + 1;
+		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable[i].size;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable[i], reliable[i].size);
-
-		if (recording_demo)
-		{
-			fwrite(&servermsg, servermsg.length, 1, demofile);
-		}
 
 		client_list[i]->netinfo.num_ents = servermsg.num_ents;
 		client_list[i]->netinfo.size = servermsg.length;
@@ -2781,6 +2795,12 @@ void Engine::server_send()
 		else
 		{
 			netinfo.send_partial = false;
+		}
+
+		if (client_list[i]->needs_state)
+		{
+			server_send_state(i);
+			client_list[i]->needs_state = false;
 		}
 	}
 }
@@ -2909,17 +2929,28 @@ void Engine::client_send()
 
 int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg)
 {
+	int ent_id = -1;
+
 	if (reliablemsg != NULL)
 	{
 		if (last_server_sequence <= reliablemsg->sequence)
 		{
 			int client;
+			int ret;
 
 			debugf("server to client: %s\n", reliablemsg->msg);
 
-			if (strstr(reliablemsg->msg, "chat"))
+			if (strstr(reliablemsg->msg, "<chat>"))
 			{
-				menu.print_chat(strstr(reliablemsg->msg, "chat") + 5);
+				char msg[256];
+
+				char *start = strstr(reliablemsg->msg, "<chat>");
+				start += 6;
+				char *end = strstr(reliablemsg->msg, "</chat>");
+
+				memcpy(msg, start, end - start);
+
+				menu.print_chat(msg);
 				game->chat_timer = 3 * TICK_RATE;
 
 				#define SND_TALK 268
@@ -2934,55 +2965,72 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 				game->set_state(data);
 			}
 
-			int ret = sscanf(reliablemsg->msg, "spawn %d %d", &client, &server_spawn);
-			if (ret == 2)
+
+			char *start = strstr(reliablemsg->msg, "<spawn>");
+			char *end = strstr(reliablemsg->msg, "</spawn>");
+			int count = 0;
+
+			if (start && end)
 			{
-				Entity *ent = entity_list[client];
+				char temp[512];
 
-				clean_entity(client);
-				sprintf(ent->type, "player");
-				ent->rigid = new RigidBody(ent);
-				ent->model = ent->rigid;
-				ent->rigid->clone(*(thug22->model));
-				ent->rigid->step_flag = true;
-				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
-				ent->player->type = PLAYER;
-				ent->player->local = true;
-				camera_frame.pos = ent->position;
+				start += 8;
+				int length = (int)(end - start);
 
-				if (server_spawn != -1)
+				memset(temp, 0, sizeof(temp));
+				memcpy(temp, start, length);
+				char *line = strtok(temp, " ");
+				while (line)
 				{
-					Entity *ent = entity_list[server_spawn];
-					clean_entity(server_spawn);
-					sprintf(ent->type, "server");
-					ent->rigid = new RigidBody(ent);
-					ent->model = ent->rigid;
-					ent->rigid->clone(*(thug22->model));
-					ent->rigid->step_flag = true;
-					ent->position += ent->rigid->center;
-					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
-					ent->player->local = false;
-					ent->player->type = SERVER;
+					client = atoi(line);
+					line = strtok(NULL, " ");
+
+					if (count == 0)
+					{
+						Entity *ent = entity_list[client];
+
+						clean_entity(client);
+						sprintf(ent->type, "player");
+						ent->rigid = new RigidBody(ent);
+						ent->model = ent->rigid;
+						ent->rigid->clone(*(thug22->model));
+						ent->rigid->step_flag = true;
+						ent->position += ent->rigid->center;
+						ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
+						ent->player->type = PLAYER;
+						ent->player->local = true;
+						camera_frame.pos = ent->position;
+					}
+					else if (count == 1)
+					{
+						Entity *ent = entity_list[client];
+						clean_entity(client);
+						sprintf(ent->type, "server");
+						ent->rigid = new RigidBody(ent);
+						ent->model = ent->rigid;
+						ent->rigid->clone(*(thug22->model));
+						ent->rigid->step_flag = true;
+						ent->position += ent->rigid->center;
+						ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
+						ent->player->local = false;
+						ent->player->type = SERVER;
+					}
+					else
+					{
+						Entity *ent = entity_list[client];
+						clean_entity(client);
+						sprintf(ent->type, "client");
+						ent->rigid = new RigidBody(ent);
+						ent->model = ent->rigid;
+						ent->rigid->clone(*(thug22->model));
+						ent->rigid->step_flag = true;
+						ent->position += ent->rigid->center;
+						ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_CLIENT, game->model_table);
+						ent->player->local = false;
+						ent->player->type = CLIENT;
+					}
+					count++;
 				}
-			}
-
-			if (strstr(reliablemsg->msg, "client"))
-			{
-				debugf("client connected");
-				Entity *ent = entity_list[server_spawn];
-
-				clean_entity(client);
-				sprintf(ent->type, "client");
-				ent->rigid = new RigidBody(ent);
-				ent->model = ent->rigid;
-				ent->rigid->clone(*(thug22->model));
-				ent->rigid->step_flag = true;
-				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_CLIENT, game->model_table);
-				ent->player->type = CLIENT;
-				ent->player->local = false;
-				camera_frame.pos = ent->position;
 			}
 
 			ret = strcmp(reliablemsg->msg, "disconnect");
@@ -4809,7 +4857,7 @@ void Engine::chat(char *name, char *msg)
 		int index = find_type(ENT_PLAYER, 0);
 
 		//chatmode chat
-		sprintf(data, "chat %s: %s", entity_list[index]->player->name, msg);
+		sprintf(data, "%s: %s", entity_list[index]->player->name, msg);
 	}
 	else
 	{
@@ -4818,13 +4866,14 @@ void Engine::chat(char *name, char *msg)
 		char *pmsg = msg + 5;
 		// remove ending "
 		pmsg[strlen(pmsg) - 1] = '\0';
-		sprintf(data, "chat %s: %s", name, pmsg);
+		sprintf(data, "%s: %s", name, pmsg);
 	}
 
 
 	for (int i = 0; i < max_player; i++)
 	{
-		strcat(reliable[i].msg, data);
+		sprintf(msg, "<chat>%s</chat>", data);
+		strcat(reliable[i].msg, msg);
 		reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
 		reliable[i].sequence = sequence;
 	}
@@ -4832,7 +4881,7 @@ void Engine::chat(char *name, char *msg)
 	// Client will get message back from server
 	if (client_flag == false)
 	{
-		menu.print_chat(data + 5);
+		menu.print_chat(data);
 		game->chat_timer = 3 * TICK_RATE;
 
 		int self = find_type(ENT_PLAYER, 0);

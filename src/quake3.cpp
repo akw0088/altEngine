@@ -1491,8 +1491,11 @@ void Quake3::handle_player(int self, input_t &input)
 			{
 				char cmd[128] = { 0 };
 
-				sprintf(cmd, "respawn %d %d", -1, self);
-				console(self, cmd, engine->menu, engine->entity_list);
+				if (engine->client_flag == false)
+				{
+					sprintf(cmd, "respawn %d %d", -1, self);
+					console(self, cmd, engine->menu, engine->entity_list);
+				}
 			}
 		}
 	}
