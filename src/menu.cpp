@@ -633,3 +633,9 @@ Menu::~Menu()
 
 	state_list.clear();
 }
+
+void Menu::copy(char *data, unsigned int size)
+{
+	int length = MIN(size - 1, strlen(key_buffer));
+	strncpy(data, key_buffer, length + 1);
+}

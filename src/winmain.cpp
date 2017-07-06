@@ -322,8 +322,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					char data[512];
 					clipboard_paste(hwnd, data, 512);
-					for(int i = 0; i < strlen(data); i++)
-						altEngine.keystroke(data[i]);
+					altEngine.paste(data, strlen(data) + 1);
 				}
 				break;
 			case VK_MENU:

@@ -5207,3 +5207,18 @@ void Engine::set_rolloff_factor(float value)
 		alSourcef(global_source[i], AL_ROLLOFF_FACTOR, value);
 	}
 }
+
+void Engine::paste(char *data, unsigned int size)
+{
+	if (menu.console)
+	{
+		for(int i = 0; i < strlen(data); i++)
+			keystroke(data[i]);
+
+	}
+}
+
+void Engine::copy(char *data, unsigned int size)
+{
+	menu.copy(data, size);
+}

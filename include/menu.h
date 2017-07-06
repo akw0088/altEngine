@@ -24,6 +24,7 @@ public:
 	void stop();
 	void play();
 	void clear_console();
+	void copy(char *data, unsigned int size);
 
 	void print_chat(const char *str);
 	void render_chat(Global &global);

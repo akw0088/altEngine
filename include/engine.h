@@ -91,6 +91,8 @@ public:
 	int play_wave_global_loop(int index);
 	int get_load_wave(const char *file);
 	void screenshot();
+	void paste(char *data, unsigned int size);
+	void copy(char *data, unsigned int size);
 
 	void destroy_buffers();
 	void render_to_framebuffer(double last_frametime);
