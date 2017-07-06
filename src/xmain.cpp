@@ -2,6 +2,7 @@
 
 #ifndef WIN32
 #include <X11/XKBlib.h>
+#include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <signal.h>
 
@@ -11,6 +12,9 @@ int timer_tick = 0;
 char cmdline[1024] = {0};
 
 double com_maxfps;
+
+//int clipboard_copy(Display *display, char *value, int size);
+int clipboard_paste(Display *display, Window w, char *value, int size);
 
 void timer_handler(int sig, siginfo_t *si, void *uc)
 {
@@ -116,7 +120,13 @@ int main(int argc, char *argv[])
 	XMapWindow(display, window);
 	make_timer("Timer", &time_id, 8);
 
-
+/*
+	char input[] = "hello";
+	char data[10];
+	memset(data, 0, 10);
+	clipboard_copy(display, input, 6);
+	clipboard_paste(display, window, data, 10);
+*/
 	while (True)
 	{
 		if ( XPending(display) )
@@ -349,6 +359,105 @@ int EventProc(Display *display, Window window, GLXContext context)
 		return 1;
 	}
 	return 0;
+}
+
+int clipboard_copy(Display *dpy, Window w, char *value, int size)
+{
+	Atom a1, a2, a3, type;
+	Window Sown;
+	int format, result;
+	unsigned long len, bytes_left, dummy;
+	unsigned char *data;
+	int ret = -1;
+
+	XSelectInput(dpy, w, StructureNotifyMask);
+	XSelectInput(dpy, w, StructureNotifyMask + ExposureMask);
+	XSetSelectionOwner(dpy, XA_PRIMARY, w, CurrentTime);
+	XFlush(dpy);
+
+	// TODO: move to event loop
+#if 0
+	if (e.type == SelectionRequest)
+	{
+		req = &(e.xselectionrequest);
+		printf("Selection Request from Mr %i I am %i\n",
+			(int)e.xselection.requestor, (int)w);
+		printf("prop:%i tar:%i sel:%i\n", req->property,
+			req->target, req->selection);
+		if (req->target == XA_STRING)
+		{
+			XChangeProperty(dpy,
+				req->requestor,
+				req->property,
+				XA_STRING,
+				size,
+				PropModeReplace,
+				(unsigned char*)value,
+				size);
+			respond.xselection.property = req->property;
+			ret = 0;
+		}
+		else // Strings only please
+		{
+			printf("No String %i\n",
+				(int)req->target);
+			respond.xselection.property = None;
+			ret = -1;
+		}
+		respond.xselection.type = SelectionNotify;
+		respond.xselection.display = req->display;
+		respond.xselection.requestor = req->requestor;
+		respond.xselection.selection = req->selection;
+		respond.xselection.target = req->target;
+		respond.xselection.time = req->time;
+		XSendEvent(dpy, req->requestor, 0, 0, &respond);
+		XFlush(dpy);
+	}
+#endif
+	return ret;
+}
+
+int clipboard_paste(Display *display, Window window, char *value, int size)
+{
+	// Copy from application
+	Atom a1, a2, type;
+	XSelectInput(display, window, StructureNotifyMask + ExposureMask);
+	int format, result;
+	unsigned long len, bytes_left, dummy;
+	unsigned char *data;
+	Window Sown;
+
+	Sown = XGetSelectionOwner(display, XA_PRIMARY);
+	//printf("Selection owner%i\n", (int)Sown);
+	if (Sown != None)
+	{
+		XConvertSelection(display, XA_PRIMARY, XA_STRING, None,	Sown, CurrentTime);
+		XFlush(display);
+
+		// Do not get any data, see how much data is there
+		XGetWindowProperty(display, Sown, XA_STRING, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes_left, &data);
+
+		// DATA is There
+		if (bytes_left > 0)
+		{
+			result = XGetWindowProperty(display, Sown, XA_STRING, 0, bytes_left, 0, AnyPropertyType, &type, &format, &len, &dummy, &data);
+			if (result == Success)
+			{
+				printf("Clipboard: %s", data);
+				XFree(data);
+				snprintf(value, size - 1, "%s", data);
+				return 0;
+			}
+			else
+			{
+				printf("FAIL\n");
+				XFree(data);
+				return -1;
+			}
+			
+		}
+	}
+	return -1;
 }
 
 #endif
