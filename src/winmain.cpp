@@ -655,4 +655,55 @@ double GetCounter(double freq)
 	return (double)li.QuadPart / freq;
 }
 
+int clipboard_copy(HWND hwnd, char *value, int size)
+{
+	HGLOBAL hglobal;
+	char *str = NULL;
+	BOOL ret = 0;
+
+	ret = OpenClipboard(hwnd);
+	hglobal = GlobalAlloc(GMEM_MOVEABLE, size);
+	if (hglobal == NULL)
+	{
+		CloseClipboard();
+		return -1;
+	}
+	EmptyClipboard();
+	str = (char *)GlobalLock(hglobal);
+	if (str)
+	{
+		sprintf(str, "%s", value);
+		ret = GlobalUnlock(hglobal);
+		if (SetClipboardData(CF_TEXT, hglobal) == NULL)
+		{
+			printf("error\n");
+		}
+	}
+	ret = CloseClipboard();
+	return 0;
+}
+
+void clipboard_paste(HWND hwnd, char *value, int size)
+{
+	HGLOBAL hglobal;
+	char *str = NULL;
+
+	memset(value, 0, size);
+	OpenClipboard(hwnd);
+
+	if (IsClipboardFormatAvailable(CF_TEXT))
+	{
+		hglobal = GetClipboardData(CF_TEXT);
+		if (hglobal != NULL)
+		{
+			str = (char *)GlobalLock(hglobal);
+			if (str != NULL)
+			{
+				strncpy(value, str, size - 1);
+				GlobalUnlock(hglobal);
+			}
+		}
+	}
+	CloseClipboard();
+}
 #endif
