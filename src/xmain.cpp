@@ -10,6 +10,7 @@ int EventProc(Display *display, Window window, GLXContext context);
 
 int timer_tick = 0;
 char cmdline[1024] = {0};
+char paste_value[512];
 
 double com_maxfps;
 
@@ -154,14 +155,29 @@ int main(int argc, char *argv[])
 int EventProc(Display *display, Window window, GLXContext context)
 {
 	XEvent			event;
+	XEvent 			respond;
 	static Engine		altEngine;
 	static bool		init = false;
 	static bool		once = false;
 	static int		xcenter, ycenter;
 	static int		frame_step;
-	static Cursor invisibleCursor;
-	static Cursor cursor;
-	static Pixmap bitmapNoData;
+	static Cursor		invisibleCursor;
+	static Cursor		cursor;
+	static Pixmap		bitmapNoData;
+
+        Atom a1, a2, a3, type;
+        Window Sown;
+        int format, result;
+        unsigned long len, bytes_left, dummy;
+        unsigned char *data;
+        int ret = -1;
+	XSelectionRequestEvent *req;
+
+        XSelectInput(display, window, StructureNotifyMask);
+        XSelectInput(display, window, StructureNotifyMask + ExposureMask);
+        XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
+        XFlush(display);
+
 
 	if (display == NULL)
 	{
@@ -350,6 +366,33 @@ int EventProc(Display *display, Window window, GLXContext context)
 			init = true;
 		}
 		break;
+	case SelectionRequest:
+		// Some window did a paste from something we have "selected/hightlighted" and wants the data
+		XEvent respond;
+                req = &(event.xselectionrequest);
+                printf("Selection Request from Mr %i I am %i\n", (int)event.xselection.requestor, (int)window);
+                printf("prop:%i tar:%i sel:%i\n", req->property, req->target, req->selection);
+                if (req->target == XA_STRING)
+                {
+                        XChangeProperty(display, req->requestor, req->property, XA_STRING, strlen(paste_value), PropModeReplace, (unsigned char*)paste_value, strlen(paste_value));
+                        respond.xselection.property = req->property;
+                        ret = 0;
+                }
+                else
+                {
+                        printf("No String %i\n", (int)req->target);
+                        respond.xselection.property = None;
+                        ret = -1;
+                }
+                respond.xselection.type = SelectionNotify;
+                respond.xselection.display = req->display;
+                respond.xselection.requestor = req->requestor;
+                respond.xselection.selection = req->selection;
+                respond.xselection.target = req->target;
+                respond.xselection.time = req->time;
+                XSendEvent(display, req->requestor, 0, 0, &respond);
+                XFlush(display);
+		break;
 	case DestroyNotify:
 		printf("DestroyNotify\n");
 		altEngine.destroy();
@@ -361,60 +404,10 @@ int EventProc(Display *display, Window window, GLXContext context)
 	return 0;
 }
 
-int clipboard_copy(Display *dpy, Window w, char *value, int size)
+
+int clipboard_copy(char *value, int size)
 {
-	Atom a1, a2, a3, type;
-	Window Sown;
-	int format, result;
-	unsigned long len, bytes_left, dummy;
-	unsigned char *data;
-	int ret = -1;
-
-	XSelectInput(dpy, w, StructureNotifyMask);
-	XSelectInput(dpy, w, StructureNotifyMask + ExposureMask);
-	XSetSelectionOwner(dpy, XA_PRIMARY, w, CurrentTime);
-	XFlush(dpy);
-
-	// TODO: move to event loop
-#if 0
-	if (e.type == SelectionRequest)
-	{
-		req = &(e.xselectionrequest);
-		printf("Selection Request from Mr %i I am %i\n",
-			(int)e.xselection.requestor, (int)w);
-		printf("prop:%i tar:%i sel:%i\n", req->property,
-			req->target, req->selection);
-		if (req->target == XA_STRING)
-		{
-			XChangeProperty(dpy,
-				req->requestor,
-				req->property,
-				XA_STRING,
-				size,
-				PropModeReplace,
-				(unsigned char*)value,
-				size);
-			respond.xselection.property = req->property;
-			ret = 0;
-		}
-		else // Strings only please
-		{
-			printf("No String %i\n",
-				(int)req->target);
-			respond.xselection.property = None;
-			ret = -1;
-		}
-		respond.xselection.type = SelectionNotify;
-		respond.xselection.display = req->display;
-		respond.xselection.requestor = req->requestor;
-		respond.xselection.selection = req->selection;
-		respond.xselection.target = req->target;
-		respond.xselection.time = req->time;
-		XSendEvent(dpy, req->requestor, 0, 0, &respond);
-		XFlush(dpy);
-	}
-#endif
-	return ret;
+	sprintf(paste_value, value);
 }
 
 int clipboard_paste(Display *display, Window window, char *value, int size)
@@ -425,10 +418,10 @@ int clipboard_paste(Display *display, Window window, char *value, int size)
 	int format, result;
 	unsigned long len, bytes_left, dummy;
 	unsigned char *data;
-	Window Sown;
+	Window Sown; // selection owner
 
 	Sown = XGetSelectionOwner(display, XA_PRIMARY);
-	//printf("Selection owner%i\n", (int)Sown);
+	printf("Selection owner%i\n", (int)Sown);
 	if (Sown != None)
 	{
 		XConvertSelection(display, XA_PRIMARY, XA_STRING, None,	Sown, CurrentTime);
@@ -444,8 +437,8 @@ int clipboard_paste(Display *display, Window window, char *value, int size)
 			if (result == Success)
 			{
 				printf("Clipboard: %s", data);
-				XFree(data);
 				snprintf(value, size - 1, "%s", data);
+				XFree(data);
 				return 0;
 			}
 			else
