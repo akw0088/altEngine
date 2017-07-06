@@ -712,4 +712,50 @@ void clipboard_paste(HWND hwnd, char *value, int size)
 	}
 	CloseClipboard();
 }
+
+void GetScreenShot(HWND hwnd)
+{
+	RECT rect;
+	static int count = 0;
+
+	GetClientRect(hwnd, &rect);
+
+	POINT p1, p2;
+
+	p1.x = rect.left;
+	p1.y = rect.top;
+	p2.x = rect.right;
+	p2.y = rect.bottom;
+	ClientToScreen(hwnd, &p1);
+	ClientToScreen(hwnd, &p2);
+
+	// copy screen to bitmap
+	HDC     hScreen = GetDC(NULL);
+	HDC     hDC = CreateCompatibleDC(hScreen);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, rect.right, rect.bottom);
+	HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
+	BOOL    bRet = BitBlt(hDC, 0, 0, rect.right, rect.bottom, hScreen, p1.x, p1.y, SRCCOPY);
+
+
+
+	BITMAP bitmap;
+	GetObject(hBitmap, sizeof(bitmap), &bitmap);
+	int size = bitmap.bmWidth * bitmap.bmHeight * bitmap.bmBitsPixel;
+
+	sprintf(filename, "screenshot%d.bmp", count++);
+	write_bitmap(filename, bitmap.bmWidth, bitmap.bmHeight, bitmap.bmBits);
+
+
+	// save bitmap to clipboard
+	OpenClipboard(NULL);
+	EmptyClipboard();
+	SetClipboardData(CF_BITMAP, hBitmap);
+	CloseClipboard();
+
+	// clean up
+	SelectObject(hDC, old_obj);
+	DeleteDC(hDC);
+	ReleaseDC(NULL, hScreen);
+	DeleteObject(hBitmap);
+}
 #endif
