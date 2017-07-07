@@ -5196,7 +5196,7 @@ void Engine::set_rolloff_factor(float value)
 
 void Engine::paste(char *data, unsigned int size)
 {
-	if (menu.console)
+	if (menu.console || menu.chatmode)
 	{
 		for(unsigned int i = 0; i < size; i++)
 			keystroke(data[i]);
