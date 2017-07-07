@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
 
 	for(int i = 0; i < argc; i++)
 	{
-		strcat(cmdline, argv[i]);
-		strcat(cmdline, " ");
+		strncat(cmdline, argv[i], 1023);
+		strncat(cmdline, " ", 1023);
 	}
 	printf("commandline: %d %s\n", argc, cmdline);
 
