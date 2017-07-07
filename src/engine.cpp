@@ -3913,6 +3913,9 @@ void Engine::unload()
 		if (entity_list[i]->trigger)
 			entity_list[i]->trigger->destroy(audio);
 
+		if (entity_list[i]->light)
+			entity_list[i]->light->destroy(gfx);
+
 		delete entity_list[i];
 	}
 	entity_list.clear();

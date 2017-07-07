@@ -10,6 +10,7 @@ public:
 	void render_shadow_volumes(int current_light);
 	void generate_volumes(Bsp &map);
 
+	void destroy(Graphics &gfx);
 	void generate_cubemaps(Graphics &gfx);
 	void extend(Edge &edge_list, vec3 position, int current_light);
 

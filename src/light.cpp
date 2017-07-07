@@ -25,6 +25,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 
 
 
+
 void Light::generate_cubemaps(Graphics &gfx)
 {
 	shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
@@ -38,6 +39,16 @@ void Light::generate_cubemaps(Graphics &gfx)
 		}
 	}
 #endif
+}
+
+void Light::destroy(Graphics &gfx)
+{
+	for (int i = 0; i < 6; i++)
+	{
+		gfx.DeleteFrameBuffer(fbo_shadowmaps[i]);
+		gfx.DeleteTexture(quad_tex[i]);
+		gfx.DeleteTexture(depth_tex[i]);
+	}
 }
 
 void Light::render_shadow_volumes(int current_light)
