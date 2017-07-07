@@ -363,6 +363,7 @@ float *Model::get_matrix(float *matrix)
 	/* matrix rotates around center, but position is arbitrary point
 	from which verts are defined */
 	vec3 offset = morientation * center;
+
 	matrix[12] = entity->position.x - offset.x;
 	matrix[13] = entity->position.y - offset.y;
 	matrix[14] = entity->position.z - offset.z;

@@ -12,12 +12,14 @@
 double com_maxfps = 1000.0f / 250;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+void clipboard_paste(HWND hwnd, char *value, int size); 
 BOOL setupPixelFormat(HDC);
 void RedirectIOToConsole();
 unsigned int getTimeStamp(void);
 double GetCounter(double freq);
 void GetFreq(double &freq);
 double freq = 0.0;
+
 
 //for dxerr
 int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
@@ -318,7 +320,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case VK_CONTROL:
 				altEngine.keypress("control", pressed);
-				if ( GetKeyState('V') || GetKeyState('v') )
+				if (pressed && (GetKeyState('V') || GetKeyState('v')) )
 				{
 					char data[512];
 					clipboard_paste(hwnd, data, 512);
@@ -463,6 +465,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CHAR:
 		altEngine.keystroke((char)wParam);
 		return 0;
+	case WM_SETFOCUS:
+	{
+		POINT screen = center;
+		ClientToScreen(hwnd, &screen);
+		SetCursorPos(screen.x, screen.y);
+		if (show_cursor == true)
+		{
+			show_cursor = false;
+			ShowCursor(FALSE);
+		}
+		return 0;
+	}
 	case WM_SIZE:
 		{
 			int	width, height;
@@ -716,6 +730,7 @@ void clipboard_paste(HWND hwnd, char *value, int size)
 void GetScreenShot(HWND hwnd)
 {
 	RECT rect;
+	char filename[256];
 	static int count = 0;
 
 	GetClientRect(hwnd, &rect);
@@ -730,9 +745,35 @@ void GetScreenShot(HWND hwnd)
 	ClientToScreen(hwnd, &p2);
 
 	// copy screen to bitmap
+
 	HDC     hScreen = GetDC(NULL);
 	HDC     hDC = CreateCompatibleDC(hScreen);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, rect.right, rect.bottom);
+//	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, rect.right, rect.bottom);
+	BITMAPINFO bmi;
+	char *bytes = NULL;
+
+	memset(&bmi, 0, sizeof(BITMAPINFO));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biHeight = rect.bottom;
+	bmi.bmiHeader.biWidth = rect.right;
+	bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
+	HBITMAP hBitmap = CreateDIBSection(hScreen, &bmi, DIB_RGB_COLORS, (LPVOID*)&bytes, NULL, 0);
+
+	BITMAPFILEHEADER bmfh;
+	memset(&bmfh, 0, sizeof(BITMAPFILEHEADER));
+
+	bmfh.bfType = 0x4d42;        // 0x42 = "B" 0x4d = "M"  
+	bmfh.bfSize = (DWORD)(sizeof(BITMAPFILEHEADER) +
+		bmi.bmiHeader.biSize + bmi.bmiHeader.biClrUsed
+		* sizeof(RGBQUAD) + bmi.bmiHeader.biSizeImage);
+
+	bmfh.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) + bmi.bmiHeader.biSize + bmi.bmiHeader.biClrUsed * sizeof(RGBQUAD);
+
+
+	
+
 	HGDIOBJ old_obj = SelectObject(hDC, hBitmap);
 	BOOL    bRet = BitBlt(hDC, 0, 0, rect.right, rect.bottom, hScreen, p1.x, p1.y, SRCCOPY);
 
@@ -742,8 +783,15 @@ void GetScreenShot(HWND hwnd)
 	GetObject(hBitmap, sizeof(bitmap), &bitmap);
 	int size = bitmap.bmWidth * bitmap.bmHeight * bitmap.bmBitsPixel;
 
-	sprintf(filename, "screenshot%d.bmp", count++);
-	write_bitmap(filename, bitmap.bmWidth, bitmap.bmHeight, bitmap.bmBits);
+	if (bitmap.bmBits)
+	{
+		sprintf(filename, "screenshot%d.bmp", count++);
+		FILE *fp = fopen(filename, "wb");
+		fwrite(&bmfh, sizeof(bmfh), 1, fp);
+		fwrite(&bmi, sizeof(bmi), 1, fp);
+		fwrite(bitmap.bmBits, bitmap.bmWidth * bitmap.bmHeight * 4, 1, fp);
+		fclose(fp);
+	}
 
 
 	// save bitmap to clipboard
@@ -758,4 +806,5 @@ void GetScreenShot(HWND hwnd)
 	ReleaseDC(NULL, hScreen);
 	DeleteObject(hBitmap);
 }
+
 #endif

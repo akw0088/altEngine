@@ -1359,7 +1359,7 @@ void write_bitmap(char *filename, int width, int height, int *data)
 	bitmap.dib.image_size = width * height * sizeof(int);
 	bitmap.header.file_size = sizeof(bmpheader_t) + sizeof(dib_t) + bitmap.dib.image_size;
 
-	file = fopen(filename, "w");
+	file = fopen(filename, "wb");
 	if (file == NULL)
 	{
 		perror("Unable to write file");
@@ -1369,7 +1369,6 @@ void write_bitmap(char *filename, int width, int height, int *data)
 	fwrite(&bitmap, 1, sizeof(bitmap_t), file);
 	fwrite((void *)data, 1, width * height * 4, file);
 	fclose(file);
-
 }
 
 ping_t hist[64];

@@ -1586,20 +1586,23 @@ void Engine::render_shadow_volumes(int current_light)
 
 void Engine::screenshot()
 {
+	/*
 	int width = gfx.width;
 	int height = gfx.height;
 	char *pixel = new char[4 * width * height];
 	char *bmp = new char[4 * width * height];
 	static int num = 0;
 	char filename[128];
+	*/
 
+	GetScreenShot(*((HWND *)param1));
+	return;
+/*
 #ifdef OPENGL
 
 	
-	/*
-	gfx.bindFramebuffer(0);
-	gfx.resize(width, height);
-	*/
+//	gfx.bindFramebuffer(0);
+//	gfx.resize(width, height);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -1620,6 +1623,7 @@ void Engine::screenshot()
 	menu.print(filename);
 	delete[] pixel;
 	delete[] bmp;
+	*/
 }
 
 void Engine::post_process(int num_passes)
@@ -2323,21 +2327,6 @@ void Engine::parse_spawn_string(char *msg)
 				ent->player->type = PLAYER;
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
-			}
-			else if (count == 1 && active_clients[count] == false)
-			{
-				active_clients[count] = true;
-				Entity *ent = entity_list[client];
-				clean_entity(client);
-				sprintf(ent->type, "server");
-				ent->rigid = new RigidBody(ent);
-				ent->model = ent->rigid;
-				ent->rigid->clone(*(thug22->model));
-				ent->rigid->step_flag = true;
-				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
-				ent->player->local = false;
-				ent->player->type = SERVER;
 			}
 			else
 			{
@@ -5212,9 +5201,8 @@ void Engine::paste(char *data, unsigned int size)
 {
 	if (menu.console)
 	{
-		for(int i = 0; i < strlen(data); i++)
+		for(unsigned int i = 0; i < size; i++)
 			keystroke(data[i]);
-
 	}
 }
 
