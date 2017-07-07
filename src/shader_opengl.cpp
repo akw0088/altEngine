@@ -222,6 +222,15 @@ int mLight2::init(Graphics *gfx)
 	u_water[6] = glGetUniformLocation(program_handle, "u_water[6]");
 	u_water[7] = glGetUniformLocation(program_handle, "u_water[7]");
 
+	u_alphatest[0] = glGetUniformLocation(program_handle, "u_alphatest[0]");
+	u_alphatest[1] = glGetUniformLocation(program_handle, "u_alphatest[1]");
+	u_alphatest[2] = glGetUniformLocation(program_handle, "u_alphatest[2]");
+	u_alphatest[3] = glGetUniformLocation(program_handle, "u_alphatest[3]");
+	u_alphatest[4] = glGetUniformLocation(program_handle, "u_alphatest[4]");
+	u_alphatest[5] = glGetUniformLocation(program_handle, "u_alphatest[5]");
+	u_alphatest[6] = glGetUniformLocation(program_handle, "u_alphatest[6]");
+	u_alphatest[7] = glGetUniformLocation(program_handle, "u_alphatest[7]");
+
 	u_rgbgen_scale[0] = glGetUniformLocation(program_handle, "u_rgbgen_scale[0]");
 	u_rgbgen_scale[1] = glGetUniformLocation(program_handle, "u_rgbgen_scale[1]");
 	u_rgbgen_scale[2] = glGetUniformLocation(program_handle, "u_rgbgen_scale[2]");
@@ -242,7 +251,8 @@ int mLight2::init(Graphics *gfx)
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
-	u_depth = glGetUniformLocation(program_handle, "u_depth");
+	u_depth = glGetUniformLocation(program_handle, "u_depth");
+	
 	return 0;
 }
 
@@ -459,6 +469,10 @@ void mLight2::set_depth(int flag)
 }
 
 
+void mLight2::alphatest(int stage, int mode)
+{
+	glUniform1i(u_alphatest[stage], mode);
+}
 
 void mLight2::envmap(int stage, int env)
 {

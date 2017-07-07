@@ -76,6 +76,8 @@ public:
 	void tcmod_scale(vec2 &scale, int index);
 	void tcmod_rotate(float deg, int index);
 
+
+	void alphatest(int stage, int mode);
 	void envmap(int stage, int env);
 	void turb(int stage, int turb);
 	void rgbgen_scale(int stage, float scale);
@@ -101,6 +103,8 @@ private:
 	int u_env[8];
 	int u_water[8];
 	int u_rgbgen_scale[8];
+	int u_alphatest[8];
+
 	int shadow_matrix[18];
 	int depth[18];
 
@@ -116,6 +120,7 @@ private:
 	int u_num_lights;
 	int u_position;
 	int u_color;
+
 
 	unsigned int max_light;
 };

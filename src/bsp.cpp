@@ -576,9 +576,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	return false;
 }
 
-
-
-
 void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list)
 {
 	float time = (float)tick_num / TICK_RATE;
@@ -593,31 +590,35 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 	if (enable_textures)
 	{
 		static vec2 scroll(0.0f, 0.0f);
-		for (int i = 0; i < MAX_TEXTURES; i++)
+		int surface_index = tex_object[data.Face[sky_face].material].index;
+		if (surface_index != -1)
 		{
-			int surface_index = tex_object[data.Face[sky_face].material].index;
-
-			if (surface_index == -1)
-				continue;
-
-			stage_t *stage = &surface_list[surface_index]->stage[i];
-
-			if (stage->tcmod_rotate)
+			for (unsigned int i = 0; i < surface_list[surface_index]->num_stage; i++)
 			{
-				mlight2.tcmod_rotate(stage->tcmod_rotate_value * time, i);
+
+				stage_t *stage = &surface_list[surface_index]->stage[i];
+
+				if (stage->tcmod_rotate)
+				{
+					mlight2.tcmod_rotate(stage->tcmod_rotate_value * time, i);
+				}
+				if (stage->tcmod_scroll)
+				{
+					scroll.x += stage->tcmod_scroll_value.x * time * 0.01f;
+					scroll.y += stage->tcmod_scroll_value.y * time * 0.01f;
+					mlight2.tcmod_scroll(scroll, i);
+				}
+				if (stage->tcmod_scale)
+				{
+					mlight2.tcmod_scale(stage->tcmod_scale_value, i);
+				}
+
+				gfx.SelectTexture(i, tex_object[data.Face[sky_face].material].texObj[i]);
 			}
-			if (stage->tcmod_scroll)
-			{
-				scroll.x += stage->tcmod_scroll_value.x * time * 0.01f;
-				scroll.y += stage->tcmod_scroll_value.y * time * 0.01f;
-				mlight2.tcmod_scroll(scroll, i);
-			}
-			if (stage->tcmod_scale)
-			{
-				mlight2.tcmod_scale(stage->tcmod_scale_value, i);
-			}
-			
-			gfx.SelectTexture(i, tex_object[data.Face[sky_face].material].texObj[i]);
+		}
+		else
+		{
+			gfx.SelectTexture(0, tex_object[data.Face[sky_face].material].texObj[0]);
 		}
 	}
 
@@ -634,6 +635,8 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap)
 {
 	bool lightmap_selected = false;
+	bool shader = false;
+
 
 	if (selected_map == false)
 	{
@@ -644,22 +647,26 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 
 	if (enable_textures)
 	{
-			// surfaces that arent lit with lightmaps eg: skies
-			if (face->lightmap != -1)
-			{
-				gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-				lightmap_selected = true;
-			}
-			if (lightmap && face->lightmap != -1)
-			{
-				// Pretty much shader stage with lightmap
-				// normal faces without shaders get set below
-				gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
-			}
-			else
-			{
-				gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
-			}
+		if (lightmap && face->lightmap != -1)
+		{
+			// Pretty much shader stage with lightmap
+			// normal faces without shaders get set below
+			gfx.Blend(true);
+			glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+			shader = true;
+		}
+		else
+		{
+			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+		}
+		// surfaces that arent lit with lightmaps eg: skies
+		if (face->lightmap != -1 && shader == false)
+		{
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			lightmap_selected = true;
+		}
+
 	}
 #ifdef NORMALMAP
 	gfx.SelectTexture(9, normal_object[face->material]);
@@ -671,6 +678,11 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		if (lightmap_selected)
 			gfx.SelectTexture(8, 0);
 		gfx.SelectTexture(stage, 0);
+		if (shader)
+		{
+			gfx.Blend(false);
+		}
+
 	}
 }
 
@@ -702,17 +714,21 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 	// will be same texture for all 3x3 patches making up this mesh
 	if (enable_textures)
 	{
+		bool shader = false;
+
 		// surfaces that arent lit with lightmaps eg: skies
 		if (lightmap && face->lightmap != -1)
 		{
-			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+			//gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+			shader = true;
+			return;
 		}
 		else
 		{
 			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 		}
 
-		if (face->lightmap != -1)
+		if (face->lightmap != -1 && shader == false)
 		{
 			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			lightmap_selected = true;
@@ -764,9 +780,13 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 
 	if (enable_textures)
 	{
+		bool shader = false;
+
 		if (lightmap && face->lightmap != -1)
 		{
-			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+			shader = true;
+			//gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
+			return;
 		}
 		else
 		{
@@ -774,7 +794,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 		}
 
 		// surfaces that arent lit with lightmaps eg: skies
-		if (face->lightmap != -1)
+		if (face->lightmap != -1 && shader == false)
 		{
 			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			lightmap_selected = true;
@@ -885,12 +905,17 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 
 					render.blend = false;
 
-					if (surface->stage[k].alpha_gt0 || 
-						surface->stage[k].alpha_ge128 ||
-						surface->stage[k].alpha_lt128 )
+					if (surface->stage[k].alpha_gt0)
 					{
-						render.blend = true;
-						render.blend_default = true;
+						render.alpha_gt0 = true;
+					}
+					else if (surface->stage[k].alpha_ge128)
+					{
+						render.alpha_ge128 = true;
+					}
+					else if (surface->stage[k].alpha_lt128)
+					{
+						render.alpha_lt128 = true;
 					}
 					else if (surface->stage[k].blendfunc_add ||
 						surface->stage[k].blend_one_one)
@@ -1240,6 +1265,24 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 		if (face_list[i].shader && enable_textures)
 		{
+			if (face_list[i].alpha_gt0)
+			{
+				mlight2.alphatest(face_list[i].stage, 1);
+			}
+			else if (face_list[i].alpha_lt128)
+			{
+				mlight2.alphatest(face_list[i].stage, 2);
+			}
+			else if (face_list[i].alpha_ge128)
+			{
+				mlight2.alphatest(face_list[i].stage, 3);
+			}
+			else
+			{
+				mlight2.alphatest(face_list[i].stage, 0);
+			}
+
+
 			set_tcmod(mlight2, face_list[i], tick_num, time);
 
 			if (face_list[i].envmap)
@@ -1264,6 +1307,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		{
 			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
+
+		mlight2.alphatest(0, 0);
+		mlight2.alphatest(1, 0);
+		mlight2.alphatest(2, 0);
+		mlight2.alphatest(3, 0);
 
 		if (face_list[i].shader  && enable_textures)
 		{

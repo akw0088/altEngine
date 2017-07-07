@@ -35,6 +35,7 @@ uniform float u_contrast;
 uniform int u_env[8];
 uniform int u_water[8];
 uniform float u_rgbgen_scale[8];
+uniform int u_alphatest[8];
 
 
 uniform int u_time;
@@ -216,6 +217,31 @@ void main(void)
 			Fragment_stage[3] = texture(tex[3], tc);
 		else
 			Fragment_stage[3] = texture(tex[3], Vertex.vary_newTexCoord[3]);
+	}
+
+
+	for(int i = 0; i < 4; i++)
+	{
+		// Keep GT0
+		if (u_alphatest[i] == 1)
+		{
+			if (Fragment_stage[i].a < 0.0)
+				discard;
+		}
+
+		// Keep LT128
+		if (u_alphatest[i] == 2)
+		{
+			if (Fragment_stage[i].a >= 128.0)
+				discard;
+		}
+
+		// Keep GE128
+		if (u_alphatest[i] == 2)
+		{
+			if (Fragment_stage[i].a < 128.0)
+				discard;
+		}
 	}
 
 
