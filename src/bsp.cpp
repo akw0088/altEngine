@@ -651,8 +651,8 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		{
 			// Pretty much shader stage with lightmap
 			// normal faces without shaders get set below
-			gfx.Blend(true);
-			glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
+//			gfx.Blend(true);
+			//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
 			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
 			shader = true;
 		}
@@ -678,11 +678,12 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		if (lightmap_selected)
 			gfx.SelectTexture(8, 0);
 		gfx.SelectTexture(stage, 0);
+		/*
 		if (shader)
 		{
 			gfx.Blend(false);
 		}
-
+*/
 	}
 }
 

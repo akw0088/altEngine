@@ -225,21 +225,21 @@ void main(void)
 		// Keep GT0
 		if (u_alphatest[i] == 1)
 		{
-			if (Fragment_stage[i].a < 0.0)
+			if (Fragment_stage[i].a <= 0.0)
 				discard;
 		}
 
 		// Keep LT128
 		if (u_alphatest[i] == 2)
 		{
-			if (Fragment_stage[i].a >= 128.0)
+			if (Fragment_stage[i].a >= 0.5)
 				discard;
 		}
 
 		// Keep GE128
-		if (u_alphatest[i] == 2)
+		if (u_alphatest[i] == 3)
 		{
-			if (Fragment_stage[i].a < 128.0)
+			if (Fragment_stage[i].a < 0.5)
 				discard;
 		}
 	}
