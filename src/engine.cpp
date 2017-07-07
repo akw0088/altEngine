@@ -1513,7 +1513,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 			if (entity->player->local && render_self == false)
 				continue;
 
-			//if (entity->player->health > 0)
+			if (entity->player->health > 0)
 			{
 
 				//md5 faces right, need to flip right and forward orientation

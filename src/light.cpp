@@ -30,9 +30,12 @@ void Light::generate_cubemaps(Graphics &gfx)
 	shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
 #ifdef OPENGL
 
-	for (int i = 0; i < 6; i++)
+	if (light_num != 999)
 	{
-		gfx.setupFramebuffer((int)(1024 * lightmap_scale), (int)(1024 * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
+		for (int i = 0; i < 6; i++)
+		{
+			gfx.setupFramebuffer((int)(1024 * lightmap_scale), (int)(1024 * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
+		}
 	}
 #endif
 }
