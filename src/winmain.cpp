@@ -282,6 +282,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	case WM_MBUTTONDOWN:
+	{
+		char data[512];
+		clipboard_paste(hwnd, data, 512);
+		altEngine.paste(data, strlen(data) + 1);
+	}
 	case WM_MBUTTONUP:
 		{
 			bool pressed = (message == WM_MBUTTONDOWN) ? true : false;
@@ -320,12 +325,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case VK_CONTROL:
 				altEngine.keypress("control", pressed);
-				if (pressed && (GetKeyState('V') || GetKeyState('v')) )
-				{
-					char data[512];
-					clipboard_paste(hwnd, data, 512);
-					altEngine.paste(data, strlen(data) + 1);
-				}
 				break;
 			case VK_MENU:
 				altEngine.keypress("alt", pressed);
