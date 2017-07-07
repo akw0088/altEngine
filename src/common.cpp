@@ -1346,8 +1346,9 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 void write_bitmap(char *filename, int width, int height, int *data)
 {
 	FILE *file;
-	bitmap_t	bitmap = { 0 };
+	bitmap_t	bitmap;
 
+	memset(&bitmap, 0, sizeof(bitmap_t));
 	memcpy(bitmap.header.type, "BM", 2);
 	bitmap.header.offset = sizeof(bmpheader_t);
 	bitmap.dib.size = sizeof(dib_t);
@@ -1378,7 +1379,7 @@ void ping_time_start(int sequence)
 {
 	ping_t start;
 
-	double time;
+	double time = 0.0;
 
 #ifdef WIN32
 	time = GetCounter(freq);
@@ -1393,7 +1394,7 @@ void ping_time_start(int sequence)
 
 double ping_time_end(int sequence)
 {
-	double time;
+	double time = 0.0;
 
 	for (int i = 0; i < 64; i++)
 	{

@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 int EventProc(Display *display, Window window, GLXContext context)
 {
 	XEvent			event;
-	XEvent 			respond;
+	//XEvent 			respond;
 	static Engine		altEngine;
 	static bool		init = false;
 	static bool		once = false;
@@ -165,12 +165,15 @@ int EventProc(Display *display, Window window, GLXContext context)
 	static Cursor		cursor;
 	static Pixmap		bitmapNoData;
 
-        Atom a1, a2, a3, type;
-        Window Sown;
-        int format, result;
-        unsigned long len, bytes_left, dummy;
-        unsigned char *data;
-        int ret = -1;
+        //Atom a1;
+	//Atom type;
+	//Window Sown;
+        //int format;
+	//int result;
+        //unsigned long len;
+	//unsigned long bytes_left;
+	//unsigned long dummy;
+        //unsigned char *data;
 	XSelectionRequestEvent *req;
 
         XSelectInput(display, window, StructureNotifyMask);
@@ -370,19 +373,17 @@ int EventProc(Display *display, Window window, GLXContext context)
 		// Some window did a paste from something we have "selected/hightlighted" and wants the data
 		XEvent respond;
                 req = &(event.xselectionrequest);
-                printf("Selection Request from Mr %i I am %i\n", (int)event.xselection.requestor, (int)window);
-                printf("prop:%i tar:%i sel:%i\n", req->property, req->target, req->selection);
+//                printf("Selection Request from Mr %i I am %i\n", (int)event.xselection.requestor, (int)window);
+//                printf("prop:%i tar:%i sel:%i\n", req->property, req->target, req->selection);
                 if (req->target == XA_STRING)
                 {
                         XChangeProperty(display, req->requestor, req->property, XA_STRING, strlen(paste_value), PropModeReplace, (unsigned char*)paste_value, strlen(paste_value));
                         respond.xselection.property = req->property;
-                        ret = 0;
                 }
                 else
                 {
                         printf("No String %i\n", (int)req->target);
                         respond.xselection.property = None;
-                        ret = -1;
                 }
                 respond.xselection.type = SelectionNotify;
                 respond.xselection.display = req->display;
@@ -407,13 +408,14 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 int clipboard_copy(char *value, int size)
 {
-	sprintf(paste_value, value);
+	sprintf(paste_value, "%s", value);
+	return 0;
 }
 
 int clipboard_paste(Display *display, Window window, char *value, int size)
 {
 	// Copy from application
-	Atom a1, a2, type;
+	Atom type;
 	XSelectInput(display, window, StructureNotifyMask + ExposureMask);
 	int format, result;
 	unsigned long len, bytes_left, dummy;

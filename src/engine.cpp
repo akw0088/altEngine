@@ -1844,7 +1844,7 @@ void Engine::spatial_testing()
 
 void Engine::activate_light(float distance, Light *light)
 {
-	float min_distance = FLT_MAX;
+//	float min_distance = FLT_MAX;
 
 	if (distance < 9 * 800.0f * 800.0f && light->entity->visible)
 	{
@@ -1921,7 +1921,7 @@ void Engine::dynamics()
 		if (body->water)
 		{
 			float submerged_percent = 1.0f;
-			float volume = body->get_volume();
+			//float volume = body->get_volume();
 			float height = 0.5f * abs32(body->aabb[0].z - body->aabb[7].z);
 
 			if (body->water_depth < height)
@@ -1939,7 +1939,7 @@ void Engine::dynamics()
 
 			//Force_bouyant = volume * density of water * 9.8
 			// density of water is 10000 kg/m3, but fudging as a scale factor
-			float force_bouyant = volume * 0.0015f * GRAVITY * submerged_percent;
+			//float force_bouyant = volume * 0.0015f * GRAVITY * submerged_percent;
 
 //			body->net_force += vec3(0.0f, force_bouyant, 0.0f);
 		}
@@ -3023,7 +3023,7 @@ void Engine::client_send()
 
 int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg)
 {
-	int ent_id = -1;
+//	int ent_id = -1;
 
 	if (reliablemsg != NULL)
 	{
