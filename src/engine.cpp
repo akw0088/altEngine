@@ -4029,7 +4029,7 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strstr(cmd, "screenshot"))
+	if (strcmp(cmd, "screenshot") == 0)
 	{
 		screenshot();
 		return;
