@@ -205,7 +205,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	float tmin = -10000, tmax = 10000;
 
 	// X coordinate
-	if (abs32(dir.x) <= 0.0001f)
+	if (abs32(dir.x) > 0.0001f)
 	{
 		float t1 = (min.x - origin.x) / dir.x;
 		float t2 = (max.x - origin.x) / dir.x;
@@ -215,7 +215,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 
 	// Y coordinate
-	if (abs32(dir.y) <= 0.0001f)
+	if (abs32(dir.y) > 0.0001f)
 	{
 		float t1 = (min.y - origin.y) / dir.y;
 		float t2 = (max.y - origin.y) / dir.y;
@@ -225,7 +225,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 
 	// Z coordinate
-	if (abs32(dir.z) < 0.0001f)
+	if (abs32(dir.z) > 0.0001f)
 	{
 		float t1 = (min.z - origin.z) / dir.z;
 		float t2 = (max.z - origin.z) / dir.z;
