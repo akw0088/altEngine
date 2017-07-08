@@ -21,6 +21,7 @@ Entity::Entity()
 	speaker = NULL;
 	trigger = NULL;
 	player = NULL;
+	portal_camera = NULL;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NT_NONE;

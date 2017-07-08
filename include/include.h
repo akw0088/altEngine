@@ -438,6 +438,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "bsp.h"
 #include "trigger.h"
 #include "light.h"
+#include "portal_camera.h"
 #include "speaker.h"
 #include "model.h"
 #include "md5model.h"

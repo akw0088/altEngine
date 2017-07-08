@@ -407,6 +407,7 @@ typedef struct
 	int num_anim;
 	int index; // index into surface list (if it exists)
 	int num_tex;
+	bool portal;
 } texture_t;
 
 typedef struct
@@ -452,6 +453,7 @@ typedef struct
 	bool alpha_lt128;
 	bool envmap;
 	bool turb;
+	bool portal;
 
 	bool rgbgen_wave_sin[MAX_TEXTURES];
 	bool rgbgen_wave_square[MAX_TEXTURES];

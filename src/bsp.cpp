@@ -105,6 +105,8 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 //	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
+
+	memset(tex_object, 0, sizeof(texture_t) * data.num_materials);
 	normal_object = new int [data.num_materials];
 
 	if (data.num_lightmaps == 0 && data.header->version == 0x2F)
@@ -658,7 +660,14 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		}
 		else
 		{
-			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+			if (tex_object[face->material].portal)
+			{
+				gfx.SelectTexture(stage, portal_tex);
+			}
+			else
+			{
+				gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
+			}
 		}
 		// surfaces that arent lit with lightmaps eg: skies
 		if (face->lightmap != -1 && shader == false)
@@ -863,6 +872,11 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				{
 					render.sky = true;
 					sky_face = face_index;
+				}
+
+				if (surface->portal)
+				{
+					render.portal = true;
 				}
 
 				if (surface->surfaceparm_lava || surface->surfaceparm_slime || surface->surfaceparm_water)
@@ -1542,6 +1556,12 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 	{
 		return;
 	}
+
+	if (surface_list[j]->portal)
+		texObj->portal = true;
+	else
+		texObj->portal = false;
+
 
 	for (unsigned int k = 0; k < surface_list[j]->num_stage && k < 4; k++)
 	{

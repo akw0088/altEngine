@@ -732,6 +732,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
+
+			entity.portal_camera = new PortalCamera(&entity, gfx);
 			entity.nodraw = true;
 		}
 		else if (strcmp(value, "worldspawn") == 0)
@@ -1307,6 +1309,10 @@ void handle_command(char *basecmd, surface_t *surface)
 	else if (strstr(basecmd, "polygonOffset"))
 	{
 		surface->polygon_offset = true;
+	}
+	else if (strstr(basecmd, "portal"))
+	{
+		surface->portal = true;
 	}
 	else if (strstr(basecmd, "surfaceparm"))
 	{

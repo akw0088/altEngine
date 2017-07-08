@@ -70,6 +70,7 @@ public:
 	int *face_to_patch;
 	int lastIndex;
 
+	unsigned int portal_tex; // hack
 
 	bool enable_textures;
 	bool enable_shader;

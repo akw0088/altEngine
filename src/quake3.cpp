@@ -35,6 +35,8 @@
 
 #define QUAD_FACTOR 3.0f
 
+#define GIB_HEALTH -40
+
 
 extern char bot_state_name[16][32];
 extern const char *models[23];
@@ -2637,7 +2639,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				player.stats.kills++;
 				target->stats.deaths++;
 
-				if (target->health <= -50)
+				if (target->health <= GIB_HEALTH)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
@@ -2757,7 +2759,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 				player.stats.kills++;
 				target->stats.deaths++;
 
-				if (target->health <= -50)
+				if (target->health <= GIB_HEALTH)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
@@ -2883,7 +2885,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 				player.stats.kills++;
 				target->stats.deaths++;
 
-				if (target->health <= -50)
+				if (target->health <= GIB_HEALTH)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
@@ -3014,7 +3016,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 				player.stats.kills++;
 				target->stats.deaths++;
 
-				if (target->health <= -50)
+				if (target->health <= GIB_HEALTH)
 					sprintf(word, "%s", "gibbed");
 				else
 					sprintf(word, "%s", "killed");
@@ -3195,7 +3197,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 					player.stats.kills++;
 					target->stats.deaths++;
 
-					if (target->health <= -50)
+					if (target->health <= GIB_HEALTH)
 						sprintf(word, "%s", "gibbed");
 					else
 						sprintf(word, "%s", "killed");
@@ -6332,26 +6334,33 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			entity_list[i]->position = q3map.model_origin(entity_list[i]->model_ref);
 
 
-		if (strstr(entity_list[i]->type, "trigger_push"))
+		if (entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
 			sprintf(entity_list[i]->trigger->action, "push %s", entity_list[i]->target);
 		}
 
-		if (strstr(entity_list[i]->type, "trigger_teleport"))
+		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_CAMERA)
+		{
+			engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
+		}
+
+		if (entity_list[i]->ent_type == ENT_TRIGGER_TELEPORT)
 		{
 			// Reset action because of ordering issues
 			sprintf(entity_list[i]->trigger->action, "teleport %s %d", entity_list[i]->target, i);
 		}
 
-		if (strstr(entity_list[i]->type, "func_") || strstr(entity_list[i]->type, "info_player_intermission") ||
-			strstr(entity_list[i]->type, "target_position") || strstr(entity_list[i]->type, "info_notnull") ||
-			strstr(entity_list[i]->type, "trigger_push"))
+		if ((entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END) ||
+			entity_list[i]->ent_type == ENT_INFO_PLAYER_INTERMISSION ||
+			entity_list[i]->ent_type == ENT_TARGET_POSITION ||
+			entity_list[i]->ent_type == ENT_INFO_NOTNULL ||
+			entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
 			entity_list[i]->rigid->gravity = false;
 		}
 
 
-		if (strstr(entity_list[i]->type, "func_"))
+		if (entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END)
 		{
 			for (unsigned int j = 0; j < entity_list.size(); j++)
 			{
@@ -6999,7 +7008,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 							}
 
 
-							if (player->health <= -50)
+							if (player->health <= GIB_HEALTH)
 								sprintf(word, "%s", "gibbed");
 							else
 								sprintf(word, "%s", "killed");

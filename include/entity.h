@@ -21,6 +21,7 @@ public:
 	Speaker			*speaker;
 	Trigger			*trigger;
 	Player			*player;
+	PortalCamera	*portal_camera;
 
 	//Really bsp related items
 	int				ent_type; // will replace string type eventually

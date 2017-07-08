@@ -738,6 +738,7 @@ void Engine::render(double last_frametime)
 			gfx.bindFramebuffer(0);
 		}
 
+		render_portalcamera();
 		render_to_framebuffer(last_frametime);
 
 		gfx.clear();
@@ -780,7 +781,7 @@ void Engine::render(double last_frametime)
 				}
 			}
 
-			render_texture(testObj, depth_view);
+			render_texture(q3map.portal_tex, false);
 		}
 	}
 	if (render_mode == MODE_FORWARD)
@@ -868,6 +869,66 @@ void Engine::zoom(float level)
 	projection.perspective(fov / level, (float)xres / yres, zNear, zFar, inf);
 }
 
+void Engine::render_portalcamera()
+{
+	q3map.lastIndex = -1;
+
+	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
+	{
+		PortalCamera *portal = entity_list[i]->portal_camera;
+		if (portal == NULL)
+			continue;
+
+		matrix4 matrix;
+
+		// generate matrices for each light face
+
+		switch (entity_list[i]->angle)
+		{
+		case 0:
+		case 360:
+			matrix4::mat_forward(matrix, entity_list[i]->position);
+			break;
+		case 45:
+		case 90:
+			matrix4::mat_right(matrix, entity_list[i]->position);
+			break;
+		case 135:
+		case 180:
+			matrix4::mat_backward(matrix, entity_list[i]->position);
+			break;
+		case 245:
+		case 270:
+			matrix4::mat_left(matrix, entity_list[i]->position);
+			break;
+		default:
+			matrix4::mat_forward(matrix, entity_list[i]->position);
+			break;
+		}
+
+		matrix4 mvp = matrix * portal->portal_projection;
+
+		gfx.bindFramebuffer(portal->fbo);
+		gfx.resize(fb_width, fb_height);
+		gfx.fbAttachTexture(portal->quad_tex);
+		gfx.fbAttachDepth(portal->depth_tex);
+		gfx.clear();
+
+		vec3 offset(0.0f, 0.0f, 0.0f);
+		mlight2.Select();
+		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
+		q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+		render_entities(matrix, portal->portal_projection, false, false, false);
+		render_players(matrix, portal->portal_projection, false, true);
+		gfx.bindFramebuffer(0);
+		//gfx.SelectShader(0);
+		//gfx.Color(true);
+	}
+
+	q3map.lastIndex = -1;
+}
+
+
 void Engine::render_shadowmaps(bool everything)
 {
 	int depth_used = 0;
@@ -888,7 +949,7 @@ void Engine::render_shadowmaps(bool everything)
 	q3map.enable_blend = false;
 	q3map.enable_sky = false;
 
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		Light *light = entity_list[i]->light;
 		if (light == NULL)

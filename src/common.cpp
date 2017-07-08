@@ -235,7 +235,7 @@ bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance)
 	}
 
 
-	if (tmax > tmin && tmax > 0.0)
+	if (tmax > tmin && tmax > 0.0f)
 	{
 		distance = tmax;
 		return true;
