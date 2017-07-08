@@ -7120,6 +7120,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	vec3 step = start;
 	bool lava;
 	bool slime;
+	int nstep = 0;
 
 
 	vec3 end = step + camera_frame.forward;
@@ -7139,8 +7140,9 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		{
 			step = end;
 			end += camera_frame.forward;
+			nstep++;
 		}
-	} while (hit == false);
+	} while (hit == false && nstep < 10000);
 
 
 
