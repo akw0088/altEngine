@@ -241,7 +241,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger = new Trigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
+			snprintf(entity.trigger->action, LINE_SIZE, "ammo_plasma 50");
 			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strcmp(value, "ammo_lightning") == 0)
@@ -269,15 +269,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_grenades 10");
-			entity.trigger->timeout_value = AMMO_TIMEOUT;
-		}
-		else if (strcmp(value, "ammo_plasma") == 0)
-		{
-			entity.ent_type = ENT_AMMO_PLASMA;
-			entity.trigger = new Trigger(&entity, audio);
-			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
-			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
-			snprintf(entity.trigger->action, LINE_SIZE, "ammo_plasma 10");
 			entity.trigger->timeout_value = AMMO_TIMEOUT;
 		}
 		else if (strstr(value, "weapon_rocketlauncher"))
