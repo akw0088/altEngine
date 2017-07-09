@@ -1410,3 +1410,9 @@ double ping_time_end(int sequence)
 
 	return -1.0;
 }
+
+float clamp(float value, float min, float max)
+{
+	return MIN(max, MAX(min, value));
+}
+
