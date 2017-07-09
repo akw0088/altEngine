@@ -98,13 +98,10 @@ vec4 lightDir;
 void main(void)
 {
 	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
+	vec2 tc;
 
-	if (u_portal > 0)
-	{
-//		Fragment.z = 0.0;
-//		discard;
-	}
-
+	tc.x = 0.0;
+	tc.y = 0.0;
 
 	vec3 normal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
 	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
@@ -140,10 +137,17 @@ void main(void)
 	vec3 r = reflect(u, -normal);
 
 
-	vec2 tc;
-
-	tc.x = 0.0;
-	tc.y = 0.0;
+	if (u_portal > 0)
+	{
+		//equirectangular env mapping
+		tc.y = r.y;
+		r.y = 0.0;
+		tc.x = normalize(r).x * 0.5;
+		
+		float s = sign(r.z) * 0.5;
+		tc.s = 0.75 - s * (0.5 - tc.s);
+		tc.t = -(0.5 + 0.5 * tc.t);
+	}
 
 	if (u_env[0] + u_env[1] + u_env[2] + u_env[3] > 0)
 	{
@@ -151,6 +155,7 @@ void main(void)
 		r.z += 1.0;
 		float m = 0.5 * inversesqrt(dot(r,r));
 		tc = (r.xy * m) + vec2(0.5);
+		tc.y *= -1;
 	
 		//equirectangular env mapping
 	//	tc.y = r.y;
@@ -159,7 +164,7 @@ void main(void)
 		
 	//	float s = sign(r.z) * 0.5;
 	//	tc.s = 0.75 - s * (0.5 - tc.s);
-	//	tc.t = 0.5 + 0.5 * tc.t;
+	//	tc.t = -(0.5 + 0.5 * tc.t);
 	
 		tc *= 0.2; // enlarge texture so you cant see details
 	}
@@ -183,7 +188,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[0] > 0 || u_water[0] > 0)
+		if (u_env[0] > 0 || u_water[0] > 0 || u_portal > 0)
 			Fragment_stage[0] = texture(tex[0], tc);
 		else
 			Fragment_stage[0] = texture(tex[0], Vertex.vary_newTexCoord[0]);
@@ -196,7 +201,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[1] > 0 || u_water[1] > 0)
+		if (u_env[1] > 0 || u_water[1] > 0 || u_portal > 0)
 			Fragment_stage[1] = texture(tex[1], tc);
 		else
 			Fragment_stage[1] = texture(tex[1], Vertex.vary_newTexCoord[1]);
@@ -209,7 +214,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[2] > 0 || u_water[2] > 0)
+		if (u_env[2] > 0 || u_water[2] > 0 || u_portal > 0)
 			Fragment_stage[2] = texture(tex[2], tc);
 		else
 			Fragment_stage[2] = texture(tex[2], Vertex.vary_newTexCoord[2]);
@@ -222,7 +227,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[3] > 0 || u_water[3] > 0)
+		if (u_env[3] > 0 || u_water[3] > 0 || u_portal > 0)
 			Fragment_stage[3] = texture(tex[3], tc);
 		else
 			Fragment_stage[3] = texture(tex[3], Vertex.vary_newTexCoord[3]);

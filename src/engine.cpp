@@ -123,11 +123,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
-	glDisable(GL_STENCIL_TEST);
-	glStencilMask(0);
-	glClearStencil(0);
-	glStencilFunc(GL_ALWAYS, ~0, ~0);;
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glEnable(GL_STENCIL_TEST);
+	glStencilMask(0x00); // disable writes to stencil
+	glClearStencil(0x00); // clear stencil to zero
+	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // replace if 0xFF if passes
 #endif
 
 	multisample = 0;
@@ -745,8 +745,8 @@ void Engine::render(double last_frametime)
 		render_portalcamera();
 
 		render_to_framebuffer(last_frametime);
-		render_texture(q3map.portal_tex, false);
 
+		gfx.bindFramebuffer(0);
 		gfx.clear();
 
 		if (spawn == -1 || (player && player->current_light == 0))
@@ -1098,14 +1098,15 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.fbAttachTexture(quad_tex);
 	gfx.fbAttachDepth(depth_tex);
 
-//	glEnable(GL_STENCIL_TEST);
 	gfx.clear();
 	if (shadowmaps)
 		render_scene_using_shadowmap(true);
 	else
 		render_scene(true);
-	glDisable(GL_STENCIL_TEST);
-	glStencilMask(0);
+//	glStencilFunc(GL_GREATER, 128, 0xFF); // only pass if greater than 128
+//	render_texture(q3map.portal_tex, false);
+//	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF
+
 
 
 /*
@@ -1125,12 +1126,6 @@ void Engine::render_to_framebuffer(double last_frametime)
 	if (menu.chatmode)
 		menu.render_chatmode(global);
 
-//	glDisable(GL_STENCIL_TEST);
-//	glStencilMask(~0);
-//	glStencilFunc(GL_GREATER, 128, ~0);
-//	render_texture(q3map.portal_tex, false);
-//	glDisable(GL_STENCIL_TEST);
-//	glStencilMask(0);
 
 	gfx.Depth(true);
 	gfx.Blend(false);
@@ -4505,6 +4500,7 @@ void Engine::console(char *cmd)
 	if (strstr(cmd, "postprocess"))
 	{
 		post_process(5);
+		return;
 	}
 
 	if (strstr(cmd, "lookforward"))
@@ -4515,6 +4511,7 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		return;
 	}
 
 	if (strstr(cmd, "lookdown"))
@@ -4525,6 +4522,7 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		return;
 	}
 
 	if (strstr(cmd, "lookright"))
@@ -4535,6 +4533,7 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		return;
 	}
 
 
@@ -4546,6 +4545,7 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		return;
 	}
 
 	if (strstr(cmd, "lookback"))
@@ -4556,6 +4556,7 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		return;
 	}
 
 	if (strstr(cmd, "lookup"))
@@ -4567,6 +4568,7 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		return;
 	}
 
 
@@ -4583,6 +4585,7 @@ void Engine::console(char *cmd)
 				entity->position.z);
 			entity->position = player->position;
 		}
+		return;
 	}
 
 

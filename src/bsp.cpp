@@ -1299,13 +1299,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (face_list[i].portal)
 			{
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+//				glStencilMask(0xFF);
 				mlight2.portal(255);
-			}
-			else
-			{
-				glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-				mlight2.portal(0);
+					tex_object[face->material].texObj[0] = portal_tex;
+					tex_object[face->material].texObj[1] = portal_tex;
+					tex_object[face->material].texObj[2] = portal_tex;
+					tex_object[face->material].texObj[3] = portal_tex;
 			}
 
 			if (face_list[i].lightmap[face_list[i].stage] && face->lightmap != -1)
@@ -1315,6 +1314,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		if (face->type == 1 || face->type == 3)
 		{
 			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
+			glStencilMask(0x00);
+			mlight2.portal(0);
 		}
 		else if (face->type == 2 && enable_patch)
 		{
@@ -1389,18 +1390,19 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (blend_list[i].portal)
 			{
-				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+//				glStencilMask(0xFF);
 				mlight2.portal(255);
-			}
-			else
-			{
-				glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-				mlight2.portal(0);
+				tex_object[face->material].texObj[0] = portal_tex;
+				tex_object[face->material].texObj[1] = portal_tex;
+				tex_object[face->material].texObj[2] = portal_tex;
+				tex_object[face->material].texObj[3] = portal_tex;
 			}
 
 			if (face->type == 1 || face->type == 3)
 			{
 				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
+				glStencilMask(0x00);
+				mlight2.portal(0);
 			}
 			else if (face->type == 2 && enable_patch)
 			{
