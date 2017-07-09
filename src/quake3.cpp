@@ -2423,6 +2423,8 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid->net_force = frame.forward * -10.0f;
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
+		projectile->rigid->impact_index = SND_EXPLODE;
+
 
 		projectile->trigger->create_sources(engine->audio);
 

@@ -755,7 +755,7 @@ void Engine::render(double last_frametime)
 		}
 		else
 		{
-			for (unsigned int i = 0; i < entity_list.size(); i++)
+			for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 			{
 
 				if (spawn == -1)
@@ -1240,7 +1240,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	unsigned int smatrix = 0;
 
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		Light *light = entity_list[i]->light;
 		if (light == NULL)
