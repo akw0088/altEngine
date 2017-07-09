@@ -48,6 +48,7 @@ Quake3::Quake3()
 	blink = false;
 	spectator = false;
 	warmup = true;
+	hold_fire = false;
 	gametype = GAMETYPE_CTF;
 	last_spawn = 0;
 	spectator_timer = 0;
@@ -1926,6 +1927,7 @@ void Quake3::step(int frame_step)
 			if (warmup_time <= round_time)
 			{
 				warmup = false;
+				hold_fire = false;
 				console(-1, "reset 1", engine->menu, engine->entity_list);
 				engine->play_wave_global(SND_FIGHT);
 			}
@@ -3839,6 +3841,23 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 	bool fired = false;
 	bool empty = false;
 	int attack_sound = -1;
+
+	if (hold_fire)
+	{
+		if (round_time >= 10)
+		{
+			hold_fire = false;
+		}
+		player.flash_gauntlet = 0;
+		player.flash_machinegun = 0;
+		player.flash_shotgun = 0;
+		player.flash_grenade = 0;
+		player.flash_rocket = 0;
+		player.flash_lightning = 0;
+		player.flash_railgun = 0;
+		player.flash_plasma = 0;
+		return;
+	}
 
 	if (input.weapon_up)
 	{
@@ -6370,7 +6389,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		warmup_time = atoi(data);
 
 		if (warmup_time == 0)
+		{
 			warmup = false;
+			hold_fire = false;
+		}
 
 		return;
 	}
@@ -6807,6 +6829,7 @@ void Quake3::endgame(char *winner)
 	strcpy(win_msg, winner);
 
 	warmup = true;
+	hold_fire = true;
 	console(-1, "reset 0", engine->menu, engine->entity_list);
 	round_time = 0;
 }
@@ -7200,9 +7223,14 @@ void Quake3::set_state(serverdata_t *data)
 	if (memcmp(data->header, "data", 4) == 0)
 	{
 		if (data->warmup)
+		{
 			warmup = true;
+		}
 		else
+		{
 			warmup = false;
+			hold_fire = false;
+		}
 		warmup_time = data->warmup_time;
 		red_flag_caps = data->red_flag_caps;
 		blue_flag_caps = data->blue_flag_caps;

@@ -90,6 +90,7 @@ private:
 
 	unsigned int icon_vbo;
 	bool warmup;
+	bool hold_fire;
 	bool faceicon;
 
 
