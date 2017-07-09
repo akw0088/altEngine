@@ -81,6 +81,7 @@ public:
 	void envmap(int stage, int env);
 	void turb(int stage, int turb);
 	void rgbgen_scale(int stage, float scale);
+	void portal(int portal);
 
 
 	int m_num_light;
@@ -104,6 +105,7 @@ private:
 	int u_water[8];
 	int u_rgbgen_scale[8];
 	int u_alphatest[8];
+	int u_portal;
 
 	int shadow_matrix[18];
 	int depth[18];

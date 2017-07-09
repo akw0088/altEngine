@@ -36,6 +36,7 @@ uniform int u_env[8];
 uniform int u_water[8];
 uniform float u_rgbgen_scale[8];
 uniform int u_alphatest[8];
+uniform int u_portal;
 
 
 uniform int u_time;
@@ -97,6 +98,14 @@ vec4 lightDir;
 void main(void)
 {
 	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
+
+	if (u_portal > 0)
+	{
+//		Fragment.z = 0.0;
+//		discard;
+	}
+
+
 	vec3 normal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
 	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
 	vec3 bitangent = normalize(cross(normal, tangent));
@@ -219,7 +228,6 @@ void main(void)
 			Fragment_stage[3] = texture(tex[3], Vertex.vary_newTexCoord[3]);
 	}
 
-
 	for(int i = 0; i < 4; i++)
 	{
 		// Keep GT0
@@ -243,7 +251,6 @@ void main(void)
 				discard;
 		}
 	}
-
 
 	ambient *= min(u_rgbgen_scale[0], 3.0);
 	ambient *= min(u_rgbgen_scale[1], 3.0);

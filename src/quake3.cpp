@@ -6344,6 +6344,22 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
 		}
 
+		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_SURFACE)
+		{
+			if (entity_list[i]->target[0] != '\0')
+			{
+				// If we have a target, then use corresponding portal camera
+				delete entity_list[i]->portal_camera;
+				entity_list[i]->portal_camera = NULL;
+			}
+			else
+			{
+				// mirror
+				engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
+			}
+		}
+
+
 		if (entity_list[i]->ent_type == ENT_TRIGGER_TELEPORT)
 		{
 			// Reset action because of ordering issues

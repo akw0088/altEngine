@@ -241,6 +241,7 @@ int mLight2::init(Graphics *gfx)
 	u_rgbgen_scale[7] = glGetUniformLocation(program_handle, "u_rgbgen_scale[7]");
 
 	u_time = glGetUniformLocation(program_handle, "u_time");
+	u_portal = glGetUniformLocation(program_handle, "u_portal");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_brightness = glGetUniformLocation(program_handle, "u_brightness");
@@ -487,6 +488,11 @@ void mLight2::rgbgen_scale(int stage, float scale)
 void mLight2::turb(int stage, int turb)
 {
 	glUniform1i(u_water[stage], turb);
+}
+
+void mLight2::portal(int portal)
+{
+	glUniform1i(u_portal, portal);
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)

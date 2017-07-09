@@ -662,18 +662,6 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			entity.nodraw = true;
 		}
-		else if (strcmp(value, "misc_portal_surface") == 0)
-		{
-			entity.ent_type = ENT_MISC_PORTAL_SURFACE;
-
-			if (entity.rigid)
-			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
-			}
-			entity.nodraw = true;
-		}
 		else if (strcmp(value, "target_remove_powerups") == 0)
 		{
 			entity.ent_type = ENT_TARGET_REMOVE_POWERUPS;
@@ -725,6 +713,20 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "misc_portal_camera") == 0)
 		{
 			entity.ent_type = ENT_MISC_PORTAL_CAMERA;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+
+			entity.portal_camera = new PortalCamera(&entity, gfx);
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "misc_portal_surface") == 0)
+		{
+			entity.ent_type = ENT_MISC_PORTAL_SURFACE;
 
 			if (entity.rigid)
 			{

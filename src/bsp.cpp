@@ -660,14 +660,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		}
 		else
 		{
-			if (tex_object[face->material].portal)
-			{
-				gfx.SelectTexture(stage, portal_tex);
-			}
-			else
-			{
-				gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
-			}
+			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 		}
 		// surfaces that arent lit with lightmaps eg: skies
 		if (face->lightmap != -1 && shader == false)
@@ -874,15 +867,12 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					sky_face = face_index;
 				}
 
-				if (surface->portal)
-				{
-					render.portal = true;
-				}
-
 				if (surface->surfaceparm_lava || surface->surfaceparm_slime || surface->surfaceparm_water)
 				{
 					render.turb = true;
 				}
+
+				if (surface->portal)				{					render.portal = true;				}
 
 				// Going backwards to fix render ordering
 //				for (int k = surface->num_stage - 1; k >= 0; k--)
@@ -1306,6 +1296,18 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (face_list[i].turb)
 				mlight2.turb(face_list[i].stage, 255);
 
+
+			if (face_list[i].portal)
+			{
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				mlight2.portal(255);
+			}
+			else
+			{
+				glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+				mlight2.portal(0);
+			}
+
 			if (face_list[i].lightmap[face_list[i].stage] && face->lightmap != -1)
 				mlight2.set_lightmap_stage(1);
 		}
@@ -1383,6 +1385,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (blend_list[i].blend)
 			{
 				set_blend_mode(gfx, blend_list[i]);
+			}
+
+			if (blend_list[i].portal)
+			{
+				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+				mlight2.portal(255);
+			}
+			else
+			{
+				glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+				mlight2.portal(0);
 			}
 
 			if (face->type == 1 || face->type == 3)

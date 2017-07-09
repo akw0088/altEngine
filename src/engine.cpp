@@ -123,6 +123,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0);
+	glClearStencil(0);
+	glStencilFunc(GL_ALWAYS, ~0, ~0);;
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 #endif
 
 	multisample = 0;
@@ -737,14 +742,17 @@ void Engine::render(double last_frametime)
 			render_shadowmaps(all_lights); // done at load time
 			gfx.bindFramebuffer(0);
 		}
-
 		render_portalcamera();
+
 		render_to_framebuffer(last_frametime);
+		render_texture(q3map.portal_tex, false);
 
 		gfx.clear();
 
 		if (spawn == -1 || (player && player->current_light == 0))
+		{
 			render_texture(quad_tex, false);
+		}
 		else
 		{
 			for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -873,10 +881,19 @@ void Engine::render_portalcamera()
 {
 	q3map.lastIndex = -1;
 
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0);
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		PortalCamera *portal = entity_list[i]->portal_camera;
 		if (portal == NULL)
+			continue;
+
+		// Portal surface with target use misc_portal_camera, else it's a mirror
+		if (entity_list[i]->target[0] != '\0' && entity_list[i]->ent_type == ENT_MISC_PORTAL_SURFACE)
+			continue;
+
+		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_CAMERA)
 			continue;
 
 		matrix4 matrix;
@@ -902,7 +919,7 @@ void Engine::render_portalcamera()
 			matrix4::mat_left(matrix, entity_list[i]->position);
 			break;
 		default:
-			matrix4::mat_forward(matrix, entity_list[i]->position);
+			matrix4::mat_backward(matrix, entity_list[i]->position);
 			break;
 		}
 
@@ -1081,11 +1098,15 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.fbAttachTexture(quad_tex);
 	gfx.fbAttachDepth(depth_tex);
 
+//	glEnable(GL_STENCIL_TEST);
 	gfx.clear();
 	if (shadowmaps)
 		render_scene_using_shadowmap(true);
 	else
 		render_scene(true);
+	glDisable(GL_STENCIL_TEST);
+	glStencilMask(0);
+
 
 /*
 	if (spawn != -1)
@@ -1103,6 +1124,13 @@ void Engine::render_to_framebuffer(double last_frametime)
 		menu.render_console(global);
 	if (menu.chatmode)
 		menu.render_chatmode(global);
+
+//	glDisable(GL_STENCIL_TEST);
+//	glStencilMask(~0);
+//	glStencilFunc(GL_GREATER, 128, ~0);
+//	render_texture(q3map.portal_tex, false);
+//	glDisable(GL_STENCIL_TEST);
+//	glStencilMask(0);
 
 	gfx.Depth(true);
 	gfx.Blend(false);
