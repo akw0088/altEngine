@@ -26,6 +26,7 @@ SOURCES_CPP := 	xmain.cpp \
 		pak.cpp \
 		plane.cpp \
 		player.cpp \
+		portal_camera.cpp \
 		quake3.cpp \
 		quaternion.cpp \
 		rigidbody.cpp \
