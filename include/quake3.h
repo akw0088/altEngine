@@ -88,7 +88,6 @@ private:
 	int current_crosshair;
 	float crosshair_scale;
 
-	vector <icon_t> icon_list;
 	unsigned int icon_vbo;
 	bool warmup;
 	bool faceicon;

@@ -3774,6 +3774,54 @@ void Quake3::load_icon()
 	icon.y = -0.15f; // positive up from center
 	icon_list.push_back(icon);
 
+#define ICON_RLBOOM1 59
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_1.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM2 60
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_2.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM3 61
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_3.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM4 62
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_4.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM5 63
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_5.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM6 64
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_6.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM7 65
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_7.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
+#define ICON_RLBOOM8 66
+	sprintf(icon.filename, "media/models/weaphits/rlboom/rlboom_8.jpg");
+	icon.x = 0.0f; // positive right from center
+	icon.y = 0.0f; // positive up from center
+	icon_list.push_back(icon);
+
 
 
 }
