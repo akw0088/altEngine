@@ -7081,6 +7081,27 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 				if (trigger->projectile)
 				{
+					if (trigger->explode_type == 1)
+					{
+						entity_list[i]->rigid->velocity = vec3();
+						int sprite_index = MIN(7, trigger->explode_timer);
+						if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
+						{
+							entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
+							entity_list[i]->model->blend = true;
+						}
+						entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
+					}
+					else if (trigger->explode_type == 2)
+					{
+						entity_list[i]->rigid->velocity = vec3();
+						if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+						{
+							entity_list[i]->model->clone(*model_table[MODEL_PLASMA_HIT]);
+							entity_list[i]->model->blend = true;
+						}
+					}
+
 					if (player->health <= 0)
 					{
 						char word[32] = { 0 };
