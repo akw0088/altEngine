@@ -1396,36 +1396,6 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	entity_list[i]->rigid->get_matrix(mvp.m);
 	mvp = (mvp * trans) * projection;
 
-
-	for (int i = 0; i < entity_list.size(); i++)
-	{
-		Entity *entity = entity_list[i];
-		if (entity->trigger && entity->trigger->explode)
-		{
-			entity->rigid->get_matrix(mvp.m);
-			mvp = (mvp * trans) * projection;
-			vec4 pos;
-
-			pos.x = entity->position.x;
-			pos.y = entity->position.y;
-			pos.z = entity->position.z;
-			pos.w = 1.0f;
-
-			pos = mvp * pos;
-
-			pos.x /= pos.w;
-			pos.y /= pos.w;
-			pos.z /= pos.w;
-
-#define ICON_RLBOOM1 59
-			//			gfx.Blend(true);
-			//				gfx.BlendFuncOneOne();
-			game->draw_icon(1.0 / pos.z, ICON_RLBOOM1, pos.x, pos.y);
-			//			gfx.Blend(false);
-		}
-	}
-
-
 	game->draw_flash(*(entity_list[i]->player));
 	mlight2.Select();
 	entity_list[i]->rigid->get_matrix(mvp.m);

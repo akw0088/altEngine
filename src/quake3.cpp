@@ -154,7 +154,7 @@ void Quake3::load_models(Graphics &gfx)
 
 	#define MODEL_BOOM 6
 	model = new Model;
-	model->load(gfx, "media/models/weaphits/boom");
+	model->load(gfx, "media/models/weaphits/rlboom");
         model_table.push_back(model);
 
 
@@ -6899,6 +6899,13 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						}
 						else
 						{
+							int sprite_index = MIN(7, trigger->explode_timer);
+							if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
+							{
+								entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
+								entity_list[i]->model->blend = true;
+							}
+							entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
 							trigger->explode_timer--;
 						}
 					}
