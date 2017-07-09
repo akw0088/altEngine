@@ -334,8 +334,8 @@ void main(void)
 		Fragment.rgb *= shadow;
 	}
 
-//	Fragment.rgb += u_brightness;
-//	Fragment.rgb *= u_contrast;
+	Fragment.rgb += u_brightness;
+	Fragment.rgb *= u_contrast;
 
 
 //	Fragment.rgb = light;

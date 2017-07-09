@@ -1608,8 +1608,10 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 
 	if (input.walk == false && entity->rigid->on_ground && entity->rigid->gravity == true &&
-		entity->rigid->water == false && entity->player->state != PLAYER_DEAD &&
-		entity->rigid->noclip == false)
+		entity->rigid->water == false &&
+		entity->player->state != PLAYER_DEAD &&
+		entity->rigid->noclip == false &&
+		entity->rigid->flight == false)
 	{
 		// Footstep sounds
 		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
