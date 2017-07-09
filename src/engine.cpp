@@ -88,6 +88,7 @@ Engine::Engine()
 	testObj = 0;
 	num_light = 0;
 	doom_sound = 0;
+	enable_portal = false;
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
 #else
@@ -587,6 +588,9 @@ void Engine::load(char *level)
 		}
 	}
 
+	// render portals at least once
+	render_portalcamera();
+
 }
 
 void Engine::load_md5()
@@ -742,7 +746,8 @@ void Engine::render(double last_frametime)
 			render_shadowmaps(all_lights); // done at load time
 			gfx.bindFramebuffer(0);
 		}
-		render_portalcamera();
+		if (enable_portal)
+			render_portalcamera();
 
 		render_to_framebuffer(last_frametime);
 
@@ -4486,6 +4491,15 @@ void Engine::console(char *cmd)
 		if (shadowmaps)
 		{
 			mlight2.set_shadowmap(1.0f);
+
+			for (int i = max_dynamic; i < entity_list.size(); i++)
+			{
+				if (entity_list[i]->light)
+				{
+					if (entity_list[i]->light->depth_tex[0] == 0)
+						entity_list[i]->light->generate_cubemaps(gfx);
+				}
+			}
 		}
 		else
 		{
@@ -4726,6 +4740,22 @@ void Engine::console(char *cmd)
 		}
 		return;
 	}
+
+	if (sscanf(cmd, "r_portal %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (atoi(data))
+		{
+			enable_portal = true;
+		}
+		else
+		{
+			enable_portal = false;
+		}
+		return;
+	}
+
 
 	if (sscanf(cmd, "cg_fov %s", data) == 1)
 	{

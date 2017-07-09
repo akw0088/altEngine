@@ -18,13 +18,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 
 	memset(quad_tex, 0, sizeof(unsigned int) * 6);
 	memset(depth_tex, 0, sizeof(unsigned int) * 6);
-
-	if (light_num != 999)
-		generate_cubemaps(gfx);
 }
-
-
-
 
 void Light::generate_cubemaps(Graphics &gfx)
 {
