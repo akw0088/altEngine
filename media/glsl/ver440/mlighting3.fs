@@ -98,7 +98,7 @@ vec4 lightDir;
 void main(void)
 {
 	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
-	vec2 tc;
+	vec2 tc, tc0, tc1, tc2, tc3;
 
 	tc.x = 0.0;
 	tc.y = 0.0;
@@ -133,20 +133,32 @@ void main(void)
 	vec4 Fragment_stage[4];
 
 
-	vec3 u = normalize(-Vertex.vary_position.zyx);
+	vec3 u = normalize(-Vertex.vary_position.xyz);
 	vec3 r = reflect(u, -normal);
 
+	tc0 = Vertex.vary_newTexCoord[0];
+	tc1 = Vertex.vary_newTexCoord[1];
+	tc2 = Vertex.vary_newTexCoord[2];
+	tc3 = Vertex.vary_newTexCoord[3];
 
 	if (u_portal > 0)
 	{
-		//equirectangular env mapping
-		tc.y = r.y;
-		r.y = 0.0;
-		tc.x = normalize(r).x * 0.5;
-		
-		float s = sign(r.z) * 0.5;
-		tc.s = 0.75 - s * (0.5 - tc.s);
-		tc.t = -(0.5 + 0.5 * tc.t);
+		tc0 *= 0.5;
+		tc0.s += 0.9;
+		tc0.t += 1.1;
+
+
+		tc1 *= 0.5;
+		tc1.s += 0.9;
+		tc1.t += 1.1;
+
+		tc2 *= 0.5;
+		tc2.s += 0.9;
+		tc2.t += 1.1;
+
+		tc3 *= 0.5;
+		tc3.s += 0.9;
+		tc3.t += 1.1;
 	}
 
 	if (u_env[0] + u_env[1] + u_env[2] + u_env[3] > 0)
@@ -167,6 +179,11 @@ void main(void)
 	//	tc.t = -(0.5 + 0.5 * tc.t);
 	
 		tc *= 0.2; // enlarge texture so you cant see details
+
+		tc0 = tc;
+		tc1 = tc;
+		tc2 = tc;
+		tc3 = tc;
 	}
 
 	if (u_water[0] + u_water[1] + u_water[2] + u_water[3] > 0)
@@ -179,6 +196,11 @@ void main(void)
 
 		tc.x = s + sin( (( x + z ) * 1.0/128.0 * 0.125 + u_time / 500.0 ) );
 		tc.y = t + sin((y * 1.0 / 128 * 0.125 + u_time / 500.0));
+
+		tc0 = tc;
+		tc1 = tc;
+		tc2 = tc;
+		tc3 = tc;
 	}
 
 
@@ -188,10 +210,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[0] > 0 || u_water[0] > 0 || u_portal > 0)
-			Fragment_stage[0] = texture(tex[0], tc);
-		else
-			Fragment_stage[0] = texture(tex[0], Vertex.vary_newTexCoord[0]);
+		Fragment_stage[0] = texture(tex[0], tc0);
 	}
 	
 
@@ -201,10 +220,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[1] > 0 || u_water[1] > 0 || u_portal > 0)
-			Fragment_stage[1] = texture(tex[1], tc);
-		else
-			Fragment_stage[1] = texture(tex[1], Vertex.vary_newTexCoord[1]);
+		Fragment_stage[1] = texture(tex[1], tc1);
 	}
 
 
@@ -214,10 +230,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[2] > 0 || u_water[2] > 0 || u_portal > 0)
-			Fragment_stage[2] = texture(tex[2], tc);
-		else
-			Fragment_stage[2] = texture(tex[2], Vertex.vary_newTexCoord[2]);
+		Fragment_stage[2] = texture(tex[2], tc2);
 	}
 
 
@@ -227,10 +240,7 @@ void main(void)
 	}
 	else
 	{
-		if (u_env[3] > 0 || u_water[3] > 0 || u_portal > 0)
-			Fragment_stage[3] = texture(tex[3], tc);
-		else
-			Fragment_stage[3] = texture(tex[3], Vertex.vary_newTexCoord[3]);
+		Fragment_stage[3] = texture(tex[3], tc3);
 	}
 
 	for(int i = 0; i < 4; i++)
@@ -324,8 +334,8 @@ void main(void)
 		Fragment.rgb *= shadow;
 	}
 
-	Fragment.rgb += u_brightness;
-	Fragment.rgb *= u_contrast;
+//	Fragment.rgb += u_brightness;
+//	Fragment.rgb *= u_contrast;
 
 
 //	Fragment.rgb = light;
