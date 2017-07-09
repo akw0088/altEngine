@@ -2332,6 +2332,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->trigger->radius = 25.0f;
 		projectile->trigger->idle = true;
 		projectile->trigger->explode = false;
+		projectile->trigger->explode_type = 2;
 		projectile->trigger->explode_timer = 10;
 		projectile->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
 		projectile->trigger->explode_intensity = 200.0f;
@@ -2395,6 +2396,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->trigger->radius = 25.0f;
 		projectile->trigger->idle = true;
 		projectile->trigger->explode = true;
+		projectile->trigger->explode_type = 1;
 		projectile->trigger->idle_timer = 0;
 		projectile->trigger->num_bounce = 0;
 		projectile->trigger->explode_timer = 10;
@@ -2404,6 +2406,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->trigger->splash_radius = 250.0f;
 		projectile->trigger->knockback = 250.0f;
 		projectile->trigger->owner = self;
+
 
 		projectile->particle_on = true;
 		projectile->num_particle = 5000;
@@ -2489,6 +2492,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->trigger->idle = true;
 		projectile->trigger->idle_timer = 120;
 		projectile->trigger->explode = true;
+		projectile->trigger->explode_type = 1;
 		projectile->trigger->explode_timer = 10;
 		projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
 		projectile->trigger->explode_intensity = 500.0f;
@@ -6825,7 +6829,6 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				rigid->hard_impact = false;
 
 				engine->play_wave(entity_list[i]->position, rigid->impact_index);
-
 			}
 		}
 
@@ -6886,7 +6889,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		{
 			if (entity_list[i]->rigid)
 			{
-				if (entity_list[i]->rigid->bounce > trigger->num_bounce)
+				if (entity_list[i]->rigid->bounce > trigger->num_bounce || entity_list[i]->rigid->velocity.magnitude() < 0.0001f)
 				{
 					entity_list[i]->particle_on = false;
 					if (trigger->explode == false)
@@ -6899,13 +6902,25 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						}
 						else
 						{
-							int sprite_index = MIN(7, trigger->explode_timer);
-							if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
+
+							if (trigger->explode_type == 1)
 							{
-								entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
-								entity_list[i]->model->blend = true;
+								int sprite_index = MIN(7, trigger->explode_timer);
+								if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
+								{
+									entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
+									entity_list[i]->model->blend = true;
+								}
+								entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
 							}
-							entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
+							else if (trigger->explode_type == 2)
+							{
+								if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+								{
+									entity_list[i]->model->clone(*model_table[MODEL_PLASMA_HIT]);
+									entity_list[i]->model->blend = true;
+								}
+							}
 							trigger->explode_timer--;
 						}
 					}

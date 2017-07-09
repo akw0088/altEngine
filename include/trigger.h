@@ -30,6 +30,7 @@ public:
 
 	// I should probably split item pickups from projectiles as it's starting to get complex
 	bool			projectile;
+	int				explode_type; // type of explosion sprite
 	vec3			explode_color;
 	float			explode_intensity;
 	unsigned int	explode_timer;	// How long an explosion lasts (light effect, damage trigger time)

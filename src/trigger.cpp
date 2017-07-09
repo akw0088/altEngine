@@ -31,6 +31,8 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 	explode = false;
 	health = false;
 	armor = false;
+
+	explode_type = 0;
 	explode_color.x = 1.0f;
 	explode_color.y = 1.0f;
 	explode_color.z = 1.0f;
