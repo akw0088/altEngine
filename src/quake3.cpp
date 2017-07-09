@@ -368,7 +368,14 @@ void Quake3::load_models(Graphics &gfx)
 	#define MODEL_HEALTH_MEGA 48
 	model = new Model;
 	model->load(gfx, "media/models/powerups/health/item_health_mega");
-        model_table.push_back(model);
+    model_table.push_back(model);
+
+	#define MODEL_AMMO_PLASMA 49
+	model = new Model;
+	model->load(gfx, "media/models/powerups/ammo/ammo_plasma");
+	model_table.push_back(model);
+
+
 }
 
 void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
@@ -7296,7 +7303,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_AMMO_CELLS)
 	{
 		debugf("Loading ammo_cells\n");
-		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
+		ent.model->clone(*model_table[MODEL_AMMO_PLASMA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 	}
