@@ -514,6 +514,10 @@ void Menu::handle_console(char key, Engine *altEngine)
 			history_index--;
 			strcpy(key_buffer, cmd_buffer[cmd_buffer.size() - 1 - history_index]);
 		}
+		else
+		{
+			key_buffer[0] = '\0';
+		}
 		break;
 	case 1:
 		if (line_offset > 0)
@@ -544,6 +548,7 @@ void Menu::handle_console(char key, Engine *altEngine)
 		cmd_buffer.push_back(line);
 		altEngine->console(key_buffer);
 		key_buffer[0] = '\0';
+		history_index = 0;
 		break;
 		}
 	case 4:
