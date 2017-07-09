@@ -886,8 +886,6 @@ void Engine::render_portalcamera()
 {
 	q3map.lastIndex = -1;
 
-	glDisable(GL_STENCIL_TEST);
-	glStencilMask(0);
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		PortalCamera *portal = entity_list[i]->portal_camera;
@@ -4492,7 +4490,7 @@ void Engine::console(char *cmd)
 		{
 			mlight2.set_shadowmap(1.0f);
 
-			for (int i = max_dynamic; i < entity_list.size(); i++)
+			for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 			{
 				if (entity_list[i]->light)
 				{

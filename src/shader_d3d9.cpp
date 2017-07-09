@@ -350,6 +350,14 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 	rgbgen_scale(index, value);
 }
 
+void mLight2::portal(int value)
+{
+}
+
+void mLight2::alphatest(int value, int p)
+{
+}
+
 int Post::init(Graphics *gfx)
 {
 	Shader::init(gfx, "media/hlsl/post.vsh", NULL, "media/hlsl/post.psh");
