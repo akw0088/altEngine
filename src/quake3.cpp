@@ -1928,6 +1928,14 @@ void Quake3::step(int frame_step)
 			{
 				warmup = false;
 				hold_fire = false;
+				for (unsigned int i = 0; i < engine->max_player; i++)
+				{
+					if (engine->entity_list[i]->player)
+					{
+						memset(&engine->entity_list[i]->player->stats, 0, sizeof(stats_t));
+					}
+				}
+				engine->input.scores = false;
 				console(-1, "reset 1", engine->menu, engine->entity_list);
 				engine->play_wave_global(SND_FIGHT);
 			}
@@ -3846,6 +3854,14 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 	{
 		if (round_time >= 10)
 		{
+			for (unsigned int i = 0; i < engine->max_player; i++)
+			{
+				if (engine->entity_list[i]->player)
+				{
+					memset(&engine->entity_list[i]->player->stats, 0, sizeof(stats_t));
+				}
+			}
+			engine->input.scores = false;
 			hold_fire = false;
 		}
 		player.flash_gauntlet = 0;
@@ -6390,6 +6406,14 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		if (warmup_time == 0)
 		{
+			for (unsigned int i = 0; i < engine->max_player; i++)
+			{
+				if (engine->entity_list[i]->player)
+				{
+					memset(&engine->entity_list[i]->player->stats, 0, sizeof(stats_t));
+				}
+			}
+			engine->input.scores = false;
 			warmup = false;
 			hold_fire = false;
 		}
@@ -7249,6 +7273,14 @@ void Quake3::set_state(serverdata_t *data)
 		}
 		else
 		{
+			for (unsigned int i = 0; i < engine->max_player; i++)
+			{
+				if (engine->entity_list[i]->player)
+				{
+					memset(&engine->entity_list[i]->player->stats, 0, sizeof(stats_t));
+				}
+			}
+			engine->input.scores = false;
 			warmup = false;
 			hold_fire = false;
 		}
