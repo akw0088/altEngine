@@ -51,8 +51,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 
-	_clearfp();
-	_controlfp(_EM_ZERODIVIDE, _MCW_EM);
+	int fpOld, fpNew;
+	fpOld = _controlfp(0, 0);
+	fpNew = fpOld & ~(EM_OVERFLOW | EM_UNDERFLOW | EM_INEXACT | EM_ZERODIVIDE | EM_DENORMAL | EM_INVALID);
+	_controlfp(fpNew, MCW_EM);
 
 
 
