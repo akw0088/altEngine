@@ -1928,6 +1928,7 @@ void Quake3::step(int frame_step)
 			{
 				warmup = false;
 				hold_fire = false;
+				console(-1, "reset 0", engine->menu, engine->entity_list);
 				for (unsigned int i = 0; i < engine->max_player; i++)
 				{
 					if (engine->entity_list[i]->player)
@@ -3863,6 +3864,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			}
 			engine->input.scores = false;
 			hold_fire = false;
+			console(-1, "reset 0", engine->menu, engine->entity_list);
 		}
 		player.flash_gauntlet = 0;
 		player.flash_machinegun = 0;
@@ -6416,6 +6418,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			engine->input.scores = false;
 			warmup = false;
 			hold_fire = false;
+			console(-1, "reset 0", engine->menu, engine->entity_list);
 		}
 
 		return;
@@ -6854,7 +6857,6 @@ void Quake3::endgame(char *winner)
 
 	warmup = true;
 	hold_fire = true;
-	console(-1, "reset 0", engine->menu, engine->entity_list);
 	round_time = 0;
 }
 
@@ -7283,6 +7285,7 @@ void Quake3::set_state(serverdata_t *data)
 			engine->input.scores = false;
 			warmup = false;
 			hold_fire = false;
+			console(-1, "reset 0", engine->menu, engine->entity_list);
 		}
 		warmup_time = data->warmup_time;
 		red_flag_caps = data->red_flag_caps;
