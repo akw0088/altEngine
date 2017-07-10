@@ -794,7 +794,10 @@ void Engine::render(double last_frametime)
 				}
 			}
 
-			render_texture(q3map.portal_tex, false);
+			if (input.scores)
+				render_texture(q3map.portal_tex, false);
+			else
+				render_texture(testObj, depth_view);
 		}
 	}
 	if (render_mode == MODE_FORWARD)
