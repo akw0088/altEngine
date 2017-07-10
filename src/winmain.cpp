@@ -51,6 +51,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 
+	_clearfp();
+	_controlfp(_EM_ZERODIVIDE, _MCW_EM);
+
 
 
 	if (!RegisterClass(&wndclass))
