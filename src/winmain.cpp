@@ -108,6 +108,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 #ifdef OPENGL
 	printf("OpenGL Version:\t%s\n", glGetString(GL_VERSION));
+	printf("GLSL Version:\t%s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	printf("Vendor:\t\t%s\n", glGetString(GL_VENDOR));
 	printf("GPU:\t\t%s\n", glGetString(GL_RENDERER));
 #endif
 
@@ -191,7 +193,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			const int context[] =
 			{
 				WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-				WGL_CONTEXT_MINOR_VERSION_ARB, 4,
+				WGL_CONTEXT_MINOR_VERSION_ARB, 5,
 //				WGL_CONTEXT_FLAGS_ARB,
 //				WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | WGL_CONTEXT_DEBUG_BIT_ARB,
 				WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
