@@ -838,4 +838,69 @@ void GetScreenShot(HWND hwnd)
 	DeleteObject(hBitmap);
 }
 
+
+BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static HWND	hwndCombo = 0;
+	DEVMODE		dmScreenSettings;
+	TCHAR		resbuf[80];
+	static TCHAR	currentRes[80];
+	int i;
+
+	switch (message)
+	{
+	case WM_INITDIALOG:
+//		hwndCombo = GetDlgItem(hdlg, IDD_RESOLUTION);
+
+		// populate available resolutions
+		for (i = 1; i != 0; i++)
+		{
+			if (EnumDisplaySettings(NULL, i - 1, &dmScreenSettings))
+			{
+				wsprintf(resbuf, "%dx%d %dbpp", dmScreenSettings.dmPelsWidth,
+					dmScreenSettings.dmPelsHeight,
+					dmScreenSettings.dmBitsPerPel);
+				// add to combo box
+				SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)resbuf);
+			}
+			else {
+				i = -1;
+			}
+		}
+
+		// make default selection in dropdown box
+		EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmScreenSettings);
+		wsprintf(currentRes, "%dx%d %dbpp", dmScreenSettings.dmPelsWidth,
+			dmScreenSettings.dmPelsHeight,
+			dmScreenSettings.dmBitsPerPel);
+		SendMessage(hwndCombo, CB_SELECTSTRING, -1, (LPARAM)currentRes);
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+//		case IDD_RESOLUTION:
+			return TRUE;
+		case IDOK:
+			//if (SendMessage(GetDlgItem(hdlg, IDD_FULLSCREEN), BM_GETCHECK, 0, 0))
+			{
+				// check res and go fullscreen
+				memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
+				dmScreenSettings.dmSize = sizeof(dmScreenSettings);
+				dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+				SendMessage(hwndCombo, LB_GETTEXT, SendMessage(hwndCombo, CB_GETCURSEL, 0, 0), (LPARAM)currentRes);
+				/*				sscanf(currentRes, "%dx%x %dbpp",	&(dmScreenSettings.dmPelsWidth),
+				&(dmScreenSettings.dmPelsHeight),
+				&(dmScreenSettings.dmBitsPerPel));*/
+				ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
+			}
+			EndDialog(hdlg, 0);
+			return TRUE;
+		case IDCANCEL:
+			EndDialog(hdlg, 0);
+			return TRUE;
+		}
+		break;
+	}
+	return FALSE;
+}
 #endif
