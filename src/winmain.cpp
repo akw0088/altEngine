@@ -112,6 +112,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	printf("Vendor:\t\t%s\n", glGetString(GL_VENDOR));
 	printf("GPU:\t\t%s\n", glGetString(GL_RENDERER));
 #endif
+	ULONGLONG mem_kb = 0;
+	GetPhysicallyInstalledSystemMemory(&mem_kb);
+	printf("RAM:\t\t%.2f GB\n", (float)(mem_kb / (1024 * 1024)));
 
 
 
