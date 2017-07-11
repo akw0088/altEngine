@@ -3332,9 +3332,12 @@ void Engine::bind_keys()
 		key_bind.insert("tab", "scores");
 		key_bind.insert("pgup", "pgup");
 		key_bind.insert("pgdown", "pgdown");
+
+
+		key_bind.insert("R", "centerview");
 		
-		key_bind.insert("F1", "fullscreen");
-		//key_bind.insert("F2", "");
+		key_bind.insert("F1", "voteyes");
+		key_bind.insert("F2", "voteno");
 		key_bind.insert("F3", "godmode");
 		key_bind.insert("F4", "give all");
 		
@@ -3344,7 +3347,7 @@ void Engine::bind_keys()
 		key_bind.insert("F8", "shadowmaps");
 
 		key_bind.insert("F9", "showdebug");
-		//key_bind.insert("F10", "");
+		key_bind.insert("F10", "fullscreen");
 		key_bind.insert("F11", "screenshot");
 		//key_bind.insert("F12", "");
 
@@ -3592,10 +3595,6 @@ void Engine::handle_game(char key)
 
 	switch (key)
 	{
-	case 'r':
-		camera_frame.reset();
-		break;
-
 	case '0':
 		if (spawn != -1)
 		{
@@ -4118,6 +4117,14 @@ void Engine::console(char *cmd)
 	if (strstr(cmd, "console"))
 	{
 		menu.console = !menu.console;
+		return;
+	}
+
+	
+
+	if (strstr(cmd, "centerview"))
+	{
+		camera_frame.reset();
 		return;
 	}
 
