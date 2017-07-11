@@ -1419,6 +1419,7 @@ float clamp(float value, float min, float max)
 
 void get_cpu_info(struct cpuinfo *info)
 {
+#ifdef WIN32
 	__asm
 	{
 		mov esi, info
@@ -1455,6 +1456,7 @@ void get_cpu_info(struct cpuinfo *info)
 			mov[esi]info.ext, eax
 			enda :
 	};
+#endif
 
 	info->stepping = (info->signature & 0x0000000F);
 	info->model = (info->signature & 0x000000F0) >> 4;
@@ -1466,6 +1468,7 @@ void get_cpu_info(struct cpuinfo *info)
 
 void show_hw_info()
 {
+#ifdef WIN32
 	__m128 input = { -997.0f };
 	input = _mm_rcp_ps(input);
 	int platform = (input.m128_u32[0] >> 8) & 0xf;
@@ -1481,6 +1484,7 @@ void show_hw_info()
 		printf("CPU:\t\tAMD K8\n");
 		break;
 	}
+#endif
 
 	printf("Frequency:\t%.1f ghz\n", freq / 1000.0f);
 

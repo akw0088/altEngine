@@ -683,11 +683,13 @@ void Engine::load_md5()
 
 void Engine::render(double last_frametime)
 {
+#ifdef WIN32
 	int fpOld, fpNew;
 	fpOld = _controlfp(0, 0);
 	//fpNew = fpOld & ~(EM_OVERFLOW | EM_UNDERFLOW | EM_INEXACT | EM_ZERODIVIDE | EM_DENORMAL | EM_INVALID);
 	fpNew = fpOld & ~(EM_ZERODIVIDE | EM_INVALID);
 	_controlfp(fpNew, MCW_EM);
+#endif
 
 #ifdef VULKAN
 	gfx.render();
@@ -884,8 +886,9 @@ void Engine::render(double last_frametime)
 
 	gfx.swap();
 #endif
-
+#ifdef WIN32
 	_controlfp(fpOld, MCW_EM);
+#endif
 }
 
 void Engine::zoom(float level)

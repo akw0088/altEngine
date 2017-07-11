@@ -1894,11 +1894,13 @@ void Quake3::step(int frame_step)
 {
 	unsigned int num_bot = 3;
 
+#ifdef WIN32
 	int fpOld, fpNew;
 	fpOld = _controlfp(0, 0);
 	//fpNew = fpOld & ~(EM_OVERFLOW | EM_UNDERFLOW | EM_INEXACT | EM_ZERODIVIDE | EM_DENORMAL | EM_INVALID);
 	fpNew = fpOld & ~( EM_ZERODIVIDE | EM_INVALID);
 	_controlfp(fpNew, MCW_EM);
+#endif
 
 
 
@@ -2303,8 +2305,9 @@ void Quake3::step(int frame_step)
 			check_triggers(i, engine->entity_list);
 	}
 
-
+#ifdef WIN32
 	_controlfp(fpOld, MCW_EM);
+#endif
 }
 
 void Quake3::handle_plasma(Player &player, int self, bool client)
