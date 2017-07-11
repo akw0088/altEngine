@@ -1484,9 +1484,9 @@ void show_hw_info()
 		printf("CPU:\t\tAMD K8\n");
 		break;
 	}
-#endif
 
 	printf("Frequency:\t%.1f ghz\n", freq / 1000.0f);
+#endif
 
 	struct cpuinfo	info = { 0 };
 	get_cpu_info(&info);
