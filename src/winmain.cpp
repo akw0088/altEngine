@@ -7,6 +7,7 @@
 #ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
+#include <xmmintrin.h>
 
 
 double com_maxfps = 1000.0f / 250;
@@ -19,6 +20,8 @@ unsigned int getTimeStamp(void);
 double GetCounter(double freq);
 void GetFreq(double &freq);
 double freq = 0.0;
+void get_cpu_info(struct cpuinfo *);
+
 
 
 //for dxerr
@@ -77,6 +80,32 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	ShowWindow(hwnd, iCmdShow);
 #endif
 	UpdateWindow(hwnd);
+
+
+
+
+
+	__m128 input = { -997.0f };
+	input = _mm_rcp_ps(input);
+	int platform = (input.m128_u32[0] >> 8) & 0xf;
+	switch (platform)
+	{
+	case 0x0:
+		printf("Intel\n");
+		break;
+	case 0x7:
+		printf("AMD Bulldozer\n");
+		break;
+	case 0x8:
+		printf("AMD K8\n");
+		break;
+	}
+
+	struct cpuinfo	info = { 0 };
+	get_cpu_info(&info);
+	printf("Vendor: %s\nStepping:\t%i\nModel:\t\t%i\nFamily:\t\t%i\nType:\t\t%i\nExtModel:\t%i\nExtFamily:\t%i\n", info.vendor, info.stepping,
+		info.model, info.family, info.type, info.extmodel,info.extfamily);
+
 
 
 	while (TRUE)

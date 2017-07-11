@@ -66,6 +66,20 @@ double GetCounter(double freq);
 extern double freq;
 
 
+struct cpuinfo
+{
+	char	vendor[13], serial[9];
+	int	support, signature, brandid, msr, config, extsupport, ext,
+		stepping, model, family, type, extmodel, extfamily;
+};
+
+struct cpuinfo2
+{
+	char	vendor[13], serial[9];
+	int	support, signature, brandid, msr, config, extsupport, ext,
+		stepping, model, family, type, extmodel, extfamily;
+};
+
 
 // Lerp between A and B where time is within [0,1]
 inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)

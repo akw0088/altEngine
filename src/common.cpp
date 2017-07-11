@@ -1416,3 +1416,50 @@ float clamp(float value, float min, float max)
 	return MIN(max, MAX(min, value));
 }
 
+
+void get_cpu_info(struct cpuinfo *info)
+{
+	__asm
+	{
+		mov esi, info
+		mov eax, 0
+		CPUID
+		mov DWORD PTR[esi]info.support, eax
+		mov DWORD PTR([esi]info.vendor), ebx
+		mov DWORD PTR([esi]info.vendor + 4), edx
+		mov DWORD PTR([esi]info.vendor + 8), ecx
+		mov DWORD PTR([esi]info.vendor + 12), 0
+		cmp eax, 1
+		js done
+		mov eax, 1
+		CPUID
+		mov[esi]info.signature, eax
+		mov[esi]info.brandid, ebx
+		mov[esi]info.msr, ecx
+		mov[esi]info.config, edx
+		cmp[esi]info.support, 3
+		js done
+		mov eax, 3
+		CPUID
+		mov DWORD PTR([esi]info.serial), ecx
+		mov DWORD PTR([esi]info.serial + 4), edx
+		mov DWORD PTR([esi]info.serial + 8), 0
+		done:
+		mov eax, 0x80000000
+			CPUID
+			mov[esi]info.extsupport, eax
+			cmp eax, 0x80000001
+			js enda
+			mov eax, 0x80000001
+			CPUID
+			mov[esi]info.ext, eax
+			enda :
+	};
+
+	info->stepping = (info->signature & 0x0000000F);
+	info->model = (info->signature & 0x000000F0) >> 4;
+	info->family = (info->signature & 0x00000F00) >> 8;
+	info->type = (info->signature & 0x00003000) >> 12;
+	info->extmodel = (info->signature & 0x000F0000) >> 16;
+	info->extfamily = (info->signature & 0x0FF00000) >> 24;
+}
