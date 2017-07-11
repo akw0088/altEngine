@@ -28,7 +28,6 @@ echo
 exit
 flight
 fullscreen
-fullscreen
 g_capturelimit
 g_collision
 g_fov
