@@ -1463,3 +1463,61 @@ void get_cpu_info(struct cpuinfo *info)
 	info->extmodel = (info->signature & 0x000F0000) >> 16;
 	info->extfamily = (info->signature & 0x0FF00000) >> 24;
 }
+
+void show_hw_info()
+{
+	__m128 input = { -997.0f };
+	input = _mm_rcp_ps(input);
+	int platform = (input.m128_u32[0] >> 8) & 0xf;
+	switch (platform)
+	{
+	case 0x0:
+		printf("CPU:\t\tIntel\n");
+		break;
+	case 0x7:
+		printf("CPU:\t\tAMD Bulldozer\n");
+		break;
+	case 0x8:
+		printf("CPU:\t\tAMD K8\n");
+		break;
+	}
+
+	printf("Frequency:\t%.1f ghz\n", freq / 1000.0f);
+
+	struct cpuinfo	info = { 0 };
+	get_cpu_info(&info);
+	printf("Vendor:\t\t%s\nStepping:\t%i\nModel:\t\t%i\nFamily:\t\t%i\nType:\t\t%i\nExtModel:\t%i\nExtFamily:\t%i\n", info.vendor, info.stepping,
+		info.model, info.family, info.type, info.extmodel, info.extfamily);
+
+#ifdef WIN32
+	ULONGLONG mem_kb = 0;
+	GetPhysicallyInstalledSystemMemory(&mem_kb);
+	printf("RAM:\t\t%.2f GB\n", (float)(mem_kb / (1024 * 1024)));
+#endif
+
+#ifdef OPENGL
+	printf("OpenGL Version:\t%s\n", glGetString(GL_VERSION));
+	printf("GLSL Version:\t%s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	printf("Vendor:\t\t%s\n", glGetString(GL_VENDOR));
+	printf("GPU:\t\t%s\n", glGetString(GL_RENDERER));
+
+	if (strstr((char *)glGetString(GL_VENDOR), "nvidia") || strstr((char *)glGetString(GL_VENDOR), "NVIDIA"))
+	{
+#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
+		int total_mem_kb = 0;
+		glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
+		printf("GPU RAM:\t%.2f GB", (float)(total_mem_kb / (1024 * 1024)));
+	}
+	else
+	{
+#ifdef WIN32
+		UINT n = wglGetGPUIDsAMD(0, 0);
+		UINT *ids = new UINT[n];
+		size_t total_mem_mb = 0;
+		wglGetGPUIDsAMD(n, ids);
+		wglGetGPUInfoAMD(ids[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(size_t), &total_mem_mb);
+		printf("GPU RAM:\t%.2f GB", (float)(total_mem_mb / 1024));
+#endif
+	}
+#endif
+}
