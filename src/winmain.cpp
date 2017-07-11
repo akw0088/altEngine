@@ -101,6 +101,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 		break;
 	}
 
+	printf("Frequency:\t%.1f ghz\n", freq / 1000.0f);
+
 	struct cpuinfo	info = { 0 };
 	get_cpu_info(&info);
 	printf("Vendor:\t\t%s\nStepping:\t%i\nModel:\t\t%i\nFamily:\t\t%i\nType:\t\t%i\nExtModel:\t%i\nExtFamily:\t%i\n", info.vendor, info.stepping,
@@ -115,6 +117,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	ULONGLONG mem_kb = 0;
 	GetPhysicallyInstalledSystemMemory(&mem_kb);
 	printf("RAM:\t\t%.2f GB\n", (float)(mem_kb / (1024 * 1024)));
+	
 
 
 
