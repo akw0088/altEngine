@@ -98,7 +98,7 @@ Engine::Engine()
 	net_port = 65535;
 
 	sprintf(sv_hostname, "servername");
-	sprintf(sv_motd, "Write games, not engines");
+	sprintf(sv_motd, "Write engines, not games");
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
 
@@ -317,8 +317,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	if (num_shader == 0)
 	{
-		printf("****************Unable to load shaderlist.txt\n");
-		exit(0);
+		printf("Unable to load shaders!\n");
 	}
 
 	for (int i = 0; i < num_shader; i++)
