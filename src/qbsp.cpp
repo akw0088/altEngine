@@ -8,6 +8,7 @@
 
 char *get_file(char *filename, int *size);
 
+static vector cam_loc;
 float main_matrix[3][3], view_matrix[3][3], translate[3];
 point_3d *clip_list1[40], *clip_list2[40];
 point_3d pts[32], *default_vlist[32];
@@ -144,6 +145,8 @@ int QBsp::load(char *filename)
 
 	for (int i = 0; i < 32; ++i)
 		default_vlist[i] = &pts[i];
+
+	memset(&scan, 0, sizeof(scan));
 
 	return 0;
 }
@@ -539,6 +542,17 @@ void qmap_set_texture(bitmap *bm)
 			qmap_tex_row_table[i + 1] = row * i;
 		qmap_tex_row_table[0] = qmap_tex_row_table[1];
 		qmap_tex_row_table[ht + 1] = qmap_tex_row_table[ht];
+	}
+}
+
+void qmap_set_output(char *where, int row)
+{
+	qmap_buf = where;
+	if (qmap_buf_row != row) {
+		int i;
+		qmap_buf_row = row;
+		for (i = 0; i < 768; ++i)
+			qmap_row_table[i] = i * row;
 	}
 }
 
@@ -958,20 +972,20 @@ void QBsp::draw_face(int face)
 		else
 			transform_point(&pts[i], (vector *)VERTEX(dedges[edge].v[0]));
 		codes_or |= pts[i].ccodes;
-		codes_and &= pts[i].ccodes;
+		//		codes_and &= pts[i].ccodes;
 	}
 
-	if (codes_and)
-		return;  // abort if poly outside frustrum
-
+	//	if (codes_and)
+	//		return;  // abort if poly outside frustrum
+	/*
 	if (codes_or)
 	{
-		// poly crosses frustrum, so clip it
-		n = clip_poly(n, default_vlist, codes_or, &vlist);
-		vlist = default_vlist;
+	// poly crosses frustrum, so clip it
+	n = clip_poly(n, default_vlist, codes_or, &vlist);
 	}
 	else
-		vlist = default_vlist;
+	*/
+	vlist = default_vlist;
 
 	if (n)
 	{
@@ -983,6 +997,86 @@ void QBsp::draw_face(int face)
 		qmap_set_texture(&bm);
 		compute_texture_gradients(face, tex, mip, u, v);
 		draw_poly(n, vlist);
+	}
+}
+
+void rot_x(float *v, fixang ang)
+{
+	float s = (float)sin(ang * 3.141592 / 0x8000);
+	float c = (float)cos(ang * 3.141592 / 0x8000);
+	float y, z;
+
+	y = c * v[1] + s * v[2];
+	z = -s * v[1] + c * v[2];
+	v[1] = y;
+	v[2] = z;
+}
+
+void rot_y(float *v, fixang ang)
+{
+	float s = (float)sin(ang * 3.141592 / 0x8000);
+	float c = (float)cos(ang * 3.141592 / 0x8000);
+	float x, z;
+
+	z = c * v[2] + s * v[0];
+	x = -s * v[2] + c * v[0];
+	v[0] = x;
+	v[2] = z;
+}
+
+void rot_z(float *v, fixang ang)
+{
+	float s = (float)sin(ang * 3.141592 / 0x8000);
+	float c = (float)cos(ang * 3.141592 / 0x8000);
+	float x, y;
+
+	x = c * v[0] + s * v[1];
+	y = -s * v[0] + c * v[1];
+	v[0] = x;
+	v[1] = y;
+}
+
+void rotate(float *x, angvec *ang)
+{
+	rot_y(x, ang->ty);  // bank
+	rot_x(x, ang->tx);  // pitch
+	rot_z(x, ang->tz);  // yaw
+}
+
+void set_view_info(vector *loc, angvec *ang)
+{
+	int i;
+	cam_loc = *loc;
+
+	clip_x_low = -0x8000;
+	clip_x_high = fix_make(320, 0) - 0x8000;
+	clip_y_low = -0x8000;
+	clip_y_high = fix_make(200, 0) - 0x8000;
+
+	clip_scale_x = 1 / 160.0;
+	clip_scale_y = 1 / 100.0;
+
+	// compute rotation matrix
+	memset(view_matrix, 0, sizeof(view_matrix));
+	view_matrix[0][0] = view_matrix[1][1] = view_matrix[2][2] = 1;
+	rotate(view_matrix[0], ang);
+	rotate(view_matrix[1], ang);
+	rotate(view_matrix[2], ang);
+	memcpy(main_matrix, view_matrix, sizeof(view_matrix));
+
+	// so (1,0,0) in camera space maps to view_matrix[0] in world space.
+	// thus we multiply on the right by a worldspace vector to transform
+	// it to camera space.
+	// now, to account for translation, we just subtract the camera
+	// center before multiplying
+	translate[0] = loc->x;
+	translate[1] = loc->y;
+	translate[2] = loc->z;
+
+	// roll projection math into transformation
+	for (i = 0; i < 3; ++i) {
+		view_matrix[0][i] *= proj_scale_x;
+		view_matrix[2][i] *= proj_scale_y;
 	}
 }
 

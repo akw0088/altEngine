@@ -109,6 +109,9 @@ Engine::Engine()
 }
 
 /*
+void set_view_info(vector *loc, angvec *ang);
+void qmap_set_output(char *where, int row);
+
 int qbsp_init()
 {
 QBsp bsp;
@@ -116,18 +119,34 @@ QBsp bsp;
 vector loc;
 dplane_t pl;
 
-loc.x = 0.0f;
-loc.y = 0.0f;
-loc.z = 0.0f;
+loc.x = 500;
+loc.y = 240;
+loc.z = 100;
 
 pl.dist = 0.0f;
 pl.normal[0] = 0.0f;
 pl.normal[1] = 0.0f;
 pl.normal[2] = 1.0f;
 
+angvec ang;
+
+ang.tx = 0.0f;
+ang.ty = 0.0f;
+ang.tz = 0.0f;
+set_view_info(&loc, &ang);
+
 bsp.load("start.bsp");
+
+
+char *scr_buf = (char *)malloc(320 * 200);
+int scr_row = 320;
+qmap_set_output(scr_buf, scr_row);
+
 bsp.bsp_render_world(&loc, &pl);
 
+FILE *fp = fopen("out.bin", "w");
+fwrite(scr_buf, 320 * 240, 1, fp);
+fclose(fp);
 return 0;
 }
 */

@@ -56,7 +56,12 @@ typedef struct {
 } bitmap;
 
 
+typedef unsigned short fixang;
 
+typedef struct
+{
+	fixang tx, ty, tz;
+} angvec;
 
 typedef struct
 {
