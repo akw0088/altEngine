@@ -14,14 +14,28 @@ point_3d pts[32], *default_vlist[32];
 static fix clip_x_low, clip_x_high, clip_y_low, clip_y_high;
 
 #define VERTEX(x) ((dvertex_t *) ((char *) dvertexes + (x)*4 + (x)*8))
-
+#define fix_cint(x)       (((x)+65535) >> 16)
 
 double chop_temp;
 #define FLOAT_TO_INT(x)  ((chop_temp = (x) + BIG_NUM), *(int*)(&chop_temp))
 #define FLOAT_TO_FIX(x)  \
              ((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
 #define BIG_NUM     ((float) (1 << 26) * (1 << 26) * 1.5)
+fix scan[768][2];
+
+#define fix_int(x)        ((x) >> 16)
+#define float_to_fix(x)   ((fix) ((x) * 65536))
+
 #define fix_cint(x)       (((x)+65535) >> 16)
+
+#define fix_floor(x)      ((x) & 0xffff0000)
+#define fix_ceil(x)       fix_floor((x)+0xffff)
+
+#define fix_make(a,b)     (((a) << 16) + (b))
+
+#define   MAX_MAP_FACES      65535
+int is_cached = 0;
+short surface_cache[MAX_MAP_FACES];      // cache entry for each face
 
 
 short BigShort(short l)
@@ -87,37 +101,50 @@ int QBsp::load(char *filename)
 		return -1;
 	}
 
-	dentdata		= (char *)			(data + qbsp->entity.offset);
-	dnodes			= (dnode_t *)		(data + qbsp->node.offset);
-	texinfo			= (texinfo_t *)		(data + qbsp->texinfo.offset);
-	dfaces			= (dface_t *)		(data + qbsp->face.offset);
-	dclipnodes		= (dclipnode_t *)	(data + qbsp->clipnode.offset);
-	dedges			= (dedge_t *)		(data + qbsp->edge.offset);
-	dmarksurfaces	= (unsigned short *)(data + qbsp->marksurf.offset);
-	dsurfedges		= (int *)			(data + qbsp->surface_edge.offset);
-	dplanes			= (dplane_t *)		(data + qbsp->plane.offset);
-	dmodels			= (dmodel_t *)		(data + qbsp->model.offset);
-	dtexdata		= (byte *)			(data + qbsp->tex.offset);
-	dvertexes		= (dvertex_t *)		(data + qbsp->vert.offset);
-	dvisdata		= (byte *)			(data + qbsp->vis.offset);
-	dlightdata		= (byte *)			(data + qbsp->lightmap.offset);
 
-	numnodes		= qbsp->node.size / sizeof(dnode_t);
-	numtexinfo		= qbsp->texinfo.size / sizeof(texinfo_t);
-	numfaces		= qbsp->face.size / sizeof(dface_t);
-	numclipnodes	= qbsp->clipnode.size / sizeof(dclipnode_t);
-	numedges		= qbsp->edge.size / sizeof(dedge_t);
+	dentdata = (char *)(data + qbsp->entity.offset);
+	dnodes = (dnode_t *)(data + qbsp->node.offset);
+	texinfo = (texinfo_t *)(data + qbsp->texinfo.offset);
+	dfaces = (dface_t *)(data + qbsp->face.offset);
+	dclipnodes = (dclipnode_t *)(data + qbsp->clipnode.offset);
+	dedges = (dedge_t *)(data + qbsp->edge.offset);
+	dmarksurfaces = (unsigned short *)(data + qbsp->marksurf.offset);
+	dsurfedges = (int *)(data + qbsp->surface_edge.offset);
+	dplanes = (dplane_t *)(data + qbsp->plane.offset);
+	dmodels = (dmodel_t *)(data + qbsp->model.offset);
+	dtexdata = (byte *)(data + qbsp->tex.offset);
+	dvertexes = (dvertex_t *)(data + qbsp->vert.offset);
+	dvisdata = (byte *)(data + qbsp->vis.offset);
+	dlightdata = (byte *)(data + qbsp->lightmap.offset);
+
+
+
+	numnodes = qbsp->node.size / sizeof(dnode_t);
+	numtexinfo = qbsp->texinfo.size / sizeof(texinfo_t);
+	numfaces = qbsp->face.size / sizeof(dface_t);
+	numclipnodes = qbsp->clipnode.size / sizeof(dclipnode_t);
+	numedges = qbsp->edge.size / sizeof(dedge_t);
 	nummarksurfaces = qbsp->marksurf.size / sizeof(unsigned short);
-	numsurfedges	= qbsp->surface_edge.size / sizeof(int);
-	numplanes		= qbsp->plane.size / sizeof(dplane_t);
-	nummodels		= qbsp->model.size / sizeof(dmodel_t);
-	numvertexes		= qbsp->vert.size / sizeof(dvertex_t);
-	numleaf			= qbsp->leaf.size / sizeof(dleaf_t);
+	numsurfedges = qbsp->surface_edge.size / sizeof(int);
+	numplanes = qbsp->plane.size / sizeof(dplane_t);
+	nummodels = qbsp->model.size / sizeof(dmodel_t);
+	numvertexes = qbsp->vert.size / sizeof(dvertex_t);
+	numleaf = qbsp->leaf.size / sizeof(dleaf_t);
+
 
 	vis_node = (char *)dvisdata;
 	vis_face = (char *)dfaces;
 
+
+
 	SwapBSPFile(false);
+
+	for (int i = 0; i < MAX_MAP_FACES; ++i)
+		surface_cache[i] = -1;
+
+	for (int i = 0; i < 32; ++i)
+		default_vlist[i] = &pts[i];
+
 	return 0;
 }
 
@@ -187,9 +214,9 @@ void transform_point_raw(vector *out, vector *in)
 	out->y = dot_vec_dbl(view_matrix[2], &temp);
 }
 
-float proj_scale_x = 160, proj_scale_y = 160 * 200 / 240;
-float xcenter = 159.5, ycenter = 99.5;
-float near_clip = 0.01, near_code = 16.0;
+float proj_scale_x = 160.0f, proj_scale_y = 160 * 200 / 240.0f;
+float xcenter = 159.5f, ycenter = 99.5f;
+float near_clip = 0.01f, near_code = 16.0f;
 
 
 void project_point(point_3d *p)
@@ -314,10 +341,6 @@ surface_t surface[MAX_CACHED_SURFACES];  // circular queue
 int surface_head, surface_tail;          // index into surfaces
 int cur_cache;                           // current storage in use
 
-
-int is_cached = 0;
-#define   MAX_MAP_FACES      65535
-short surface_cache[MAX_MAP_FACES];      // cache entry for each face
 
 void QBsp::get_raw_tmap(bitmap *bm, int tex, int ml)
 {
@@ -624,6 +647,142 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 	qmap_set_texture_gradients(tmap_data);
 }
 
+void scan_convert(point_3d *a, point_3d *b)
+{
+	void *temp;
+	int right;
+	fix x, dx;
+	int y, ey;
+
+	if (a->sy == b->sy)
+		return;
+
+	if (a->sy < b->sy) {
+		right = 0;
+	}
+	else {
+		temp = a;
+		a = b;
+		b = (point_3d *)temp;
+		right = 1;
+	}
+
+	// compute dxdy
+	dx = FLOAT_TO_INT(65536.0 * (b->sx - a->sx) / (b->sy - a->sy));
+	x = a->sx;
+	y = fix_cint(a->sy);
+	ey = fix_cint(b->sy);
+
+	// fixup x location to 'y' (subpixel correction in y)
+	x += FLOAT_TO_INT(((double)dx * ((y << 16) - a->sy)) / 65536.0);
+
+	while (y < ey) {
+		scan[y][right] = x;
+		x += dx;
+		++y;
+	}
+}
+
+#define SUBDIV_SHIFT  4
+#define SUBDIV        (1 << SUBDIV_SHIFT)
+
+void qmap_draw_affine(int n, char *dest, fix u, fix v, fix du, fix dv)
+{
+	if (is_cached) {
+		while (n--) {
+			int iu = fix_int(u);
+			int iv = fix_int(v);
+			*dest++ = qmap_tex[qmap_tex_row_table[iv + 1] + iu];
+			u += du;
+			v += dv;
+		}
+	}
+	else {
+		while (n--) {
+			int iu = (fix_int(u)) & qmap_wid;
+			int iv = (fix_int(v)) & qmap_ht;
+			*dest++ = qmap_tex[qmap_tex_row_table[iv + 1] + iu];
+			u += du;
+			v += dv;
+		}
+	}
+}
+
+// given a span (x0,y)..(x1,y), draw a perspective-correct span for it
+void qmap_draw_span(int y, int sx, int ex)
+{
+	double u0, v0, w0, u1, v1, w1, z;
+	int len, e, last = 0;
+	fix u, v, du, dv;
+
+	// compute (u,v) at left end
+
+	u0 = qmap_tmap[0] + sx * qmap_tmap[1] + y * qmap_tmap[2];
+	v0 = qmap_tmap[3] + sx * qmap_tmap[4] + y * qmap_tmap[5];
+	w0 = qmap_tmap[6] + sx * qmap_tmap[7] + y * qmap_tmap[8];
+
+	z = 1 / w0;
+	u0 = u0 * z;
+	v0 = v0 * z;
+
+#ifdef CLAMP
+	// if you turn on clamping, you have to change qmap_wid & qmap_ht
+	// back to being wid&ht, not wid-1 & ht-1 as they are right now
+	if (u0 < 0) u0 = 0; else if (u0 >= qmap_wid) u0 = qmap_wid - 0.01;
+	if (v0 < 0) v0 = 0; else if (v0 >= qmap_ht) v0 = qmap_ht - 0.01;
+#endif
+
+	for (;;) {
+		len = ex - sx;
+		if (len > SUBDIV)
+			len = SUBDIV;
+		else
+			last = 1;
+
+		u = FLOAT_TO_FIX(u0);
+		v = FLOAT_TO_FIX(v0);
+
+		if (len == 1) {
+			// shortcut out to avoid divide by 0 below
+			qmap_draw_affine(len, qmap_buf + qmap_row_table[y] + sx, u, v, 0, 0);
+			return;
+		}
+
+		e = sx + len - last;
+
+		u1 = qmap_tmap[0] + e * qmap_tmap[1] + y * qmap_tmap[2];
+		v1 = qmap_tmap[3] + e * qmap_tmap[4] + y * qmap_tmap[5];
+		w1 = qmap_tmap[6] + e * qmap_tmap[7] + y * qmap_tmap[8];
+
+		z = 1 / w1;
+		u1 = u1 * z;
+		v1 = v1 * z;
+
+#ifdef CLAMP
+		if (u1 < 0) u1 = 0; else if (u1 >= qmap_wid) u1 = qmap_wid - 0.01;
+		if (v1 < 0) v1 = 0; else if (v1 >= qmap_ht) v1 = qmap_ht - 0.01;
+#endif
+
+		if (len == SUBDIV) {
+			du = (FLOAT_TO_FIX(u1) - u) >> SUBDIV_SHIFT;
+			dv = (FLOAT_TO_FIX(v1) - v) >> SUBDIV_SHIFT;
+		}
+		else {
+			du = FLOAT_TO_FIX((u1 - u0) / (len - last));
+			dv = FLOAT_TO_FIX((v1 - v0) / (len - last));
+		}
+		if (du < 0) ++du;
+		if (dv < 0) ++dv;
+
+		qmap_draw_affine(len, qmap_buf + qmap_row_table[y] + sx, u, v, du, dv);
+		if (last)
+			break;
+
+		sx += len;
+		u0 = u1;
+		v0 = v1;
+	}
+}
 
 void draw_poly(int n, point_3d **vl)
 {
@@ -631,6 +790,7 @@ void draw_poly(int n, point_3d **vl)
 	fix ymin, ymax;
 
 	// find max and min y height
+
 	ymin = ymax = vl[0]->sy;
 	for (i = 1; i < n; ++i) {
 		if (vl[i]->sy < ymin) ymin = vl[i]->sy;
@@ -639,9 +799,8 @@ void draw_poly(int n, point_3d **vl)
 
 	// scan out each edge
 	j = n - 1;
-	for (i = 0; i < n; ++i)
-	{
-		//scan_convert(vl[i], vl[j]);
+	for (i = 0; i < n; ++i) {
+		scan_convert(vl[i], vl[j]);
 		j = i;
 	}
 
@@ -652,13 +811,12 @@ void draw_poly(int n, point_3d **vl)
 
 	while (y < ey)
 	{
-		/*
 		int sx = fix_cint(scan[y][0]), ex = fix_cint(scan[y][1]);
 		if (sx < ex)
 			qmap_draw_span(y, sx, ex);
 		++y;
-		*/
 	}
+
 }
 
 void transform_rotated_point(point_3d *p)
