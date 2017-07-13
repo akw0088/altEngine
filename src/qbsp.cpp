@@ -8,13 +8,13 @@
 
 char *get_file(char *filename, int *size);
 
-static double main_matrix[3][3], view_matrix[3][3], translate[3];
-static point_3d *clip_list1[40], *clip_list2[40];
+float main_matrix[3][3], view_matrix[3][3], translate[3];
+point_3d *clip_list1[40], *clip_list2[40];
 point_3d pts[32], *default_vlist[32];
 
 #define VERTEX(x) ((dvertex_t *) ((char *) dvertexes + (x)*4 + (x)*8))
 
-short   BigShort(short l)
+short BigShort(short l)
 {
 	byte    b1, b2;
 
@@ -24,13 +24,13 @@ short   BigShort(short l)
 	return (b1 << 8) + b2;
 }
 
-short   LittleShort(short l)
+short LittleShort(short l)
 {
 	return l;
 }
 
 
-int    BigLong(int l)
+int BigLong(int l)
 {
 	byte    b1, b2, b3, b4;
 
@@ -42,12 +42,12 @@ int    BigLong(int l)
 	return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
 }
 
-int    LittleLong(int l)
+int LittleLong(int l)
 {
 	return l;
 }
 
-float   BigFloat(float l)
+float BigFloat(float l)
 {
 	union { byte b[4]; float f; } in, out;
 
@@ -60,7 +60,7 @@ float   BigFloat(float l)
 	return out.f;
 }
 
-float   LittleFloat(float l)
+float LittleFloat(float l)
 {
 	return l;
 }
@@ -77,7 +77,6 @@ int QBsp::load(char *filename)
 		return -1;
 	}
 
-
 	dentdata		= (char *)			(data + qbsp->entity.offset);
 	dnodes			= (dnode_t *)		(data + qbsp->node.offset);
 	texinfo			= (texinfo_t *)		(data + qbsp->texinfo.offset);
@@ -93,8 +92,6 @@ int QBsp::load(char *filename)
 	dvisdata		= (byte *)			(data + qbsp->vis.offset);
 	dlightdata		= (byte *)			(data + qbsp->lightmap.offset);
 
-
-
 	numnodes		= qbsp->node.size / sizeof(dnode_t);
 	numtexinfo		= qbsp->texinfo.size / sizeof(texinfo_t);
 	numfaces		= qbsp->face.size / sizeof(dface_t);
@@ -107,14 +104,10 @@ int QBsp::load(char *filename)
 	numvertexes		= qbsp->vert.size / sizeof(dvertex_t);
 	numleaf			= qbsp->leaf.size / sizeof(dleaf_t);
 
-
 	vis_node = (char *)dvisdata;
 	vis_face = (char *)dfaces;
 
-
-
 	SwapBSPFile(false);
-
 	return 0;
 }
 
@@ -252,14 +245,14 @@ typedef struct
 } surface_t;
 
 #define MAX_CACHED_SURFACES  (1024)
-static surface_t surface[MAX_CACHED_SURFACES];  // circular queue
-static int surface_head, surface_tail;          // index into surfaces
-static int cur_cache;                           // current storage in use
+surface_t surface[MAX_CACHED_SURFACES];  // circular queue
+int surface_head, surface_tail;          // index into surfaces
+int cur_cache;                           // current storage in use
 
 
 int is_cached = 0;
 #define   MAX_MAP_FACES      65535
-static short surface_cache[MAX_MAP_FACES];      // cache entry for each face
+short surface_cache[MAX_MAP_FACES];      // cache entry for each face
 
 void QBsp::get_raw_tmap(bitmap *bm, int tex, int ml)
 {
@@ -314,9 +307,9 @@ int allocate_cached_surface(int size)
 	return surf;
 }
 
-static int shift, global_step, global_row, lightmap_width;
-static unsigned char *light_index;
-static unsigned char blank_light[512];
+int shift, global_step, global_row, lightmap_width;
+unsigned char *light_index;
+unsigned char blank_light[512];
 
 // compute one lightmap square of surface
 void build_block(char *out, bitmap *raw, int x, int y)
@@ -335,20 +328,24 @@ void build_block(char *out, bitmap *raw, int x, int y)
 	c2 = (c2 - c0) >> shift;
 	c3 = (c3 - c1) >> shift;
 
-	for (b = 0; b < step; ++b) {
+	for (b = 0; b < step; ++b)
+	{
 		h = x;
 		c = c0;
 		dc = (c1 - c0) >> shift;
-		for (a = 0; a < step; ++a) {
+		for (a = 0; a < step; ++a)
+		{
 			*out++ = colormap[c >> 18][s[h]];
 			c += dc;
-			if (++h == x_max) h = 0;
+			if (++h == x_max)
+				h = 0;
 		}
 		out += row;
 		c0 += c2;
 		c1 += c3;
 
-		if (++y == y_max) {
+		if (++y == y_max)
+		{
 			y = 0;
 			s = raw->bits;
 		}
@@ -365,8 +362,10 @@ void QBsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 	is_cached = 1;
 
 	surf = surface_cache[face];
-	if (surf >= 0) {
-		if (surface[surf].mip_level == ml) {
+	if (surf >= 0)
+	{
+		if (surface[surf].mip_level == ml)
+		{
 			*bm = *surface[surf].bm;
 			*u = surface[surf].u;
 			*v = surface[surf].v;
@@ -381,7 +380,8 @@ void QBsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 	bm->wid = (u1 - u0) >> ml;
 	bm->ht = (v1 - v0) >> ml;
 
-	if (bm->wid > 256 || bm->ht > 256) {
+	if (bm->wid > 256 || bm->ht > 256)
+	{
 		is_cached = 0;
 		get_raw_tmap(bm, tex, ml);
 		return;
@@ -395,8 +395,8 @@ void QBsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 	surface[surf].face = face;
 	surface[surf].mip_level = ml;
 	surface[surf].valid = 1;
-	*u = surface[surf].u = u0;
-	*v = surface[surf].v = v0;
+	*u = surface[surf].u = (float)u0;
+	*v = surface[surf].v = (float)v0;
 
 	step = 16 >> ml;   // width of lightmap after mipmapping
 	shift = 4 - ml;      // 1 << shift  == step
@@ -417,9 +417,11 @@ void QBsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 	y = v0%raw.ht;  if (y < 0)  y += raw.ht;   // fixup for signed mod
 	x0 = u0%raw.wid; if (x0 < 0) x0 += raw.wid;  // fixup for signed mod
 
-	for (j = 0; j < bm->ht; j += step) {
+	for (j = 0; j < bm->ht; j += step)
+	{
 		x = x0;
-		for (i = 0; i < bm->wid; i += step, ++light_index) {
+		for (i = 0; i < bm->wid; i += step, ++light_index)
+		{
 			build_block(bm->bits + j*bm->wid + i, &raw, x, y);
 			x += step; if (x >= raw.wid) x -= raw.wid;
 		}
@@ -440,7 +442,8 @@ void qmap_set_texture(bitmap *bm)
 	qmap_tex = bm->bits;
 	qmap_wid = bm->wid - 1;
 
-	if (qmap_tex_row != row || qmap_ht != ht - 1) {
+	if (qmap_tex_row != row || qmap_ht != ht - 1)
+	{
 		int i;
 		qmap_tex_row = row;
 		qmap_ht = ht - 1;
@@ -458,7 +461,7 @@ void compute_texture_normal(vector *out, vector *u, vector *v)
 	out->z = u->x*v->y - u->y*v->x;
 }
 
-double dot_vec_dbl(double *a, vector *b)
+float dot_vec_dbl(float *a, vector *b)
 {
 	return a[0] * b->x + a[1] * b->y + a[2] * b->z;
 }
@@ -475,9 +478,10 @@ void transform_vector(vector *out, vector *in)
 
 void setup_uv_vector(vector *out, vector *in, vector *norm, float *plane)
 {
-	double dot = -(in->x*plane[0] + in->y*plane[1] + in->z*plane[2])
+	float dot = -(in->x*plane[0] + in->y*plane[1] + in->z*plane[2])
 		/ (norm->x*plane[0] + norm->y*plane[1] + norm->z*plane[2]);
-	if (dot != 0) {
+	if (dot != 0)
+	{
 		vector temp = *in;
 		temp.x += norm->x*dot;
 		temp.y += norm->y*dot;
@@ -513,7 +517,7 @@ void setup_origin_vector(vector *out, dplane_t *plane, vector *norm)
 	transform_point_raw(out, &temp);
 }
 
-static double qmap_tmap[9];
+double qmap_tmap[9];
 
 void qmap_set_texture_gradients(double *tmap_data)
 {
@@ -528,7 +532,7 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 	vector P, M, N;
 	vector norm;
 	dplane_t *plane = &dplanes[dfaces[face].planenum];
-	float rescale = (8 >> mip) / 8.0;
+	float rescale = (8 >> mip) / 8.0f;
 
 	compute_texture_normal(&norm,
 		(vector *)texinfo[tex].vecs[0], (vector *)texinfo[tex].vecs[1]);
@@ -575,8 +579,8 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 
 void draw_poly(int n, point_3d **vl)
 {
-	int i, j, y, ey;
-	fix ymin, ymax;
+//	int i, j, y, ey;
+//	fix ymin, ymax;
 
 	// find max and min y height
 	/*
@@ -614,7 +618,8 @@ void QBsp::draw_face(int face)
 	int i, codes_or = 0, codes_and = 0xff;
 	point_3d **vlist;
 
-	for (i = 0; i < n; ++i) {
+	for (i = 0; i < n; ++i)
+	{
 		int edge = dsurfedges[se + i];
 		if (edge < 0)
 			transform_point(&pts[i], (vector *)VERTEX(dedges[-edge].v[1]));
@@ -624,7 +629,8 @@ void QBsp::draw_face(int face)
 		codes_and &= pts[i].ccodes;
 	}
 
-	if (codes_and) return;  // abort if poly outside frustrum
+	if (codes_and)
+		return;  // abort if poly outside frustrum
 
 	if (codes_or)
 	{
@@ -635,7 +641,8 @@ void QBsp::draw_face(int face)
 	else
 		vlist = default_vlist;
 
-	if (n) {
+	if (n)
+	{
 		bitmap bm;
 		float u, v;
 		int tex = dfaces[face].texinfo;
@@ -837,7 +844,8 @@ void compute_view_frustrum(dplane_t *planes, vector &cam_loc)
 int QBsp::find_leaf(vector *loc)
 {
 	int n = dmodels[0].headnode[0];
-	while (n >= 0) {
+	while (n >= 0)
+	{
 		dnode_t *node = &dnodes[n];
 		n = node->children[point_plane_test(loc, &dplanes[node->planenum])];
 	}
@@ -857,12 +865,15 @@ int QBsp::visit_visible_leaves(vector *cam_loc)
 		return 0;
 
 	v = dleafs[n].visofs;
-	for (i = 1; i < numleafs; ) {
-		if (dvisdata[v] == 0) {
+	for (i = 1; i < numleafs; )
+	{
+		if (dvisdata[v] == 0)
+		{
 			i += 8 * dvisdata[v + 1];    // skip some leaves
 			v += 2;
 		}
-		else {
+		else
+		{
 			int j;
 			for (j = 0; j <8; j++, i++)
 				if (dvisdata[v] & (1 << j))
@@ -924,9 +935,11 @@ void QBsp::mark_leaf_faces(int leaf)
 	int ms = dleafs[leaf].firstmarksurface;
 	int i;
 
-	for (i = 0; i < n; ++i) {
+	for (i = 0; i < n; ++i)
+	{
 		int s = dmarksurfaces[ms + i];
-		if (!is_marked(s)) {
+		if (!is_marked(s))
+		{
 			mark_face(s);
 		}
 	}
@@ -944,7 +957,8 @@ int node_in_frustrum(dnode_t *node, dplane_t *planes)
 
 void QBsp::bsp_explore_node(int node)
 {
-	if (node < 0) {
+	if (node < 0)
+	{
 		node = ~node;
 		if (vis_leaf[node >> 3] & (1 << (node & 7)))
 			if (leaf_in_frustrum(&dleafs[node], planes))
@@ -952,10 +966,12 @@ void QBsp::bsp_explore_node(int node)
 		return;
 	}
 
-	if (vis_node[node]) {
+	if (vis_node[node])
+	{
 		if (!node_in_frustrum(&dnodes[node], planes))
 			vis_node[node] = 0;
-		else {
+		else
+		{
 			bsp_explore_node(dnodes[node].children[0]);
 			bsp_explore_node(dnodes[node].children[1]);
 		}
