@@ -108,6 +108,30 @@ Engine::Engine()
 	inf = true; // above ignored if true
 }
 
+/*
+int qbsp_init()
+{
+QBsp bsp;
+
+vector loc;
+dplane_t pl;
+
+loc.x = 0.0f;
+loc.y = 0.0f;
+loc.z = 0.0f;
+
+pl.dist = 0.0f;
+pl.normal[0] = 0.0f;
+pl.normal[1] = 0.0f;
+pl.normal[2] = 1.0f;
+
+bsp.load("start.bsp");
+bsp.bsp_render_world(&loc, &pl);
+
+return 0;
+}
+*/
+
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
