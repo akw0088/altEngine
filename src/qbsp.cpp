@@ -11,8 +11,18 @@ char *get_file(char *filename, int *size);
 float main_matrix[3][3], view_matrix[3][3], translate[3];
 point_3d *clip_list1[40], *clip_list2[40];
 point_3d pts[32], *default_vlist[32];
+static fix clip_x_low, clip_x_high, clip_y_low, clip_y_high;
 
 #define VERTEX(x) ((dvertex_t *) ((char *) dvertexes + (x)*4 + (x)*8))
+
+
+double chop_temp;
+#define FLOAT_TO_INT(x)  ((chop_temp = (x) + BIG_NUM), *(int*)(&chop_temp))
+#define FLOAT_TO_FIX(x)  \
+             ((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
+#define BIG_NUM     ((float) (1 << 26) * (1 << 26) * 1.5)
+#define fix_cint(x)       (((x)+65535) >> 16)
+
 
 short BigShort(short l)
 {
@@ -160,9 +170,69 @@ void QBsp::render_node_faces(int node, int side)
 	}
 }
 
-void transform_point(void *pts, void *vert)
+float dot_vec_dbl(float *a, vector *b)
 {
+	return a[0] * b->x + a[1] * b->y + a[2] * b->z;
+}
 
+void transform_point_raw(vector *out, vector *in)
+{
+	vector temp;
+	temp.x = in->x - translate[0];
+	temp.y = in->y - translate[1];
+	temp.z = in->z - translate[2];
+
+	out->x = dot_vec_dbl(view_matrix[0], &temp);
+	out->z = dot_vec_dbl(view_matrix[1], &temp);
+	out->y = dot_vec_dbl(view_matrix[2], &temp);
+}
+
+float proj_scale_x = 160, proj_scale_y = 160 * 200 / 240;
+float xcenter = 159.5, ycenter = 99.5;
+float near_clip = 0.01, near_code = 16.0;
+
+
+void project_point(point_3d *p)
+{
+	if (p->p.z >= near_clip) {
+		double div = 1.0 / p->p.z;
+		p->sx = FLOAT_TO_FIX(p->p.x * div + xcenter);
+		p->sy = FLOAT_TO_FIX(-p->p.y * div + ycenter);
+	}
+}
+
+#define CC_OFF_LEFT 1
+#define CC_OFF_RIGHT 2
+#define CC_OFF_TOP 4
+#define CC_OFF_BOT 8
+#define CC_BEHIND 16
+
+double clip_scale_x, clip_scale_y;
+
+void code_point(point_3d *p)
+{
+	if (p->p.z >= near_code) {
+		// if point is far enough away, code in 2d from fixedpoint (faster)
+		if (p->sx < clip_x_low)  p->ccodes = CC_OFF_LEFT;
+		else if (p->sx > clip_x_high) p->ccodes = CC_OFF_RIGHT;
+		else                          p->ccodes = 0;
+		if (p->sy < clip_y_low)  p->ccodes |= CC_OFF_TOP;
+		else if (p->sy > clip_y_high) p->ccodes |= CC_OFF_BOT;
+	}
+	else {
+		p->ccodes = (p->p.z > 0) ? 0 : CC_BEHIND;
+		if (p->p.x * clip_scale_x < -p->p.z) p->ccodes |= CC_OFF_LEFT;
+		if (p->p.x * clip_scale_x >  p->p.z) p->ccodes |= CC_OFF_RIGHT;
+		if (p->p.y * clip_scale_y >  p->p.z) p->ccodes |= CC_OFF_TOP;
+		if (p->p.y * clip_scale_y < -p->p.z) p->ccodes |= CC_OFF_BOT;
+	}
+}
+
+void transform_point(point_3d *p, vector *v)
+{
+	transform_point_raw(&p->p, v);
+	project_point(p);
+	code_point(p);
 }
 
 double dist2_from_viewer(vector *in, vector &cam_loc)
@@ -193,11 +263,6 @@ int QBsp::compute_mip_level(int face)
 	return 3;
 }
 
-double chop_temp;
-#define FLOAT_TO_INT(x)  ((chop_temp = (x) + BIG_NUM), *(int*)(&chop_temp))
-#define FLOAT_TO_FIX(x)  \
-             ((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
-#define BIG_NUM     ((float) (1 << 26) * (1 << 26) * 1.5)
 
 
 // iterate over vertices of face, compute u&v coords, compute min & max
@@ -461,11 +526,6 @@ void compute_texture_normal(vector *out, vector *u, vector *v)
 	out->z = u->x*v->y - u->y*v->x;
 }
 
-float dot_vec_dbl(float *a, vector *b)
-{
-	return a[0] * b->x + a[1] * b->y + a[2] * b->z;
-}
-
 
 void transform_vector(vector *out, vector *in)
 {
@@ -490,18 +550,6 @@ void setup_uv_vector(vector *out, vector *in, vector *norm, float *plane)
 	}
 	else
 		transform_vector(out, in);
-}
-
-void transform_point_raw(vector *out, vector *in)
-{
-	vector temp;
-	temp.x = in->x - translate[0];
-	temp.y = in->y - translate[1];
-	temp.z = in->z - translate[2];
-
-	out->x = dot_vec_dbl(view_matrix[0], &temp);
-	out->z = dot_vec_dbl(view_matrix[1], &temp);
-	out->y = dot_vec_dbl(view_matrix[2], &temp);
 }
 
 // compute location of origin of texture (should precompute)
@@ -579,11 +627,10 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 
 void draw_poly(int n, point_3d **vl)
 {
-//	int i, j, y, ey;
-//	fix ymin, ymax;
+	int i, j, y, ey;
+	fix ymin, ymax;
 
 	// find max and min y height
-	/*
 	ymin = ymax = vl[0]->sy;
 	for (i = 1; i < n; ++i) {
 		if (vl[i]->sy < ymin) ymin = vl[i]->sy;
@@ -592,8 +639,9 @@ void draw_poly(int n, point_3d **vl)
 
 	// scan out each edge
 	j = n - 1;
-	for (i = 0; i < n; ++i) {
-		scan_convert(vl[i], vl[j]);
+	for (i = 0; i < n; ++i)
+	{
+		//scan_convert(vl[i], vl[j]);
 		j = i;
 	}
 
@@ -602,14 +650,140 @@ void draw_poly(int n, point_3d **vl)
 
 	// iterate over all spans and draw
 
-	while (y < ey) {
+	while (y < ey)
+	{
+		/*
 		int sx = fix_cint(scan[y][0]), ex = fix_cint(scan[y][1]);
 		if (sx < ex)
 			qmap_draw_span(y, sx, ex);
 		++y;
+		*/
 	}
-	*/
 }
+
+void transform_rotated_point(point_3d *p)
+{
+	project_point(p);
+	code_point(p);
+}
+
+
+static void intersect(point_3d *out, point_3d *a, point_3d *b, float where)
+{
+	// intersection occurs 'where' % along the line from a to b
+
+	out->p.x = a->p.x + (b->p.x - a->p.x) * where;
+	out->p.y = a->p.y + (b->p.y - a->p.y) * where;
+	out->p.z = a->p.z + (b->p.z - a->p.z) * where;
+
+	transform_rotated_point(out);
+}
+
+static double left_loc(point_3d *a, point_3d *b)
+{
+	return -(a->p.z + a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x + b->p.z - a->p.z);
+}
+
+static double right_loc(point_3d *a, point_3d *b)
+{
+	return  (a->p.z - a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x - b->p.z + a->p.z);
+}
+
+static double top_loc(point_3d *a, point_3d *b)
+{
+	return  (a->p.z - a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y - b->p.z + a->p.z);
+}
+
+static double bottom_loc(point_3d *a, point_3d *b)
+{
+	return -(a->p.z + a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y + b->p.z - a->p.z);
+}
+
+// clip the polygon to each of the view frustrum planes
+int clip_poly(int n, point_3d **vl, int codes_or, point_3d ***out_vl)
+{
+	int i, j, k, p = 0; // p = index into temporary point pool
+	point_3d **cur;
+
+	if (codes_or & CC_OFF_LEFT) {
+		cur = clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i) {
+			// process edge from j..i
+			// if j is inside, add it
+
+			if (!(vl[j]->ccodes & CC_OFF_LEFT))
+				cur[k++] = vl[j];
+
+			// if it crosses, add the intersection point
+
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_LEFT) {
+				intersect(&pts[p], vl[i], vl[j], left_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		// move output list to be input
+		n = k;
+		vl = cur;
+	}
+	if (codes_or & CC_OFF_RIGHT) {
+		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i) {
+			if (!(vl[j]->ccodes & CC_OFF_RIGHT))
+				cur[k++] = vl[j];
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_RIGHT) {
+				intersect(&pts[p], vl[i], vl[j], right_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		n = k;
+		vl = cur;
+	}
+	if (codes_or & CC_OFF_TOP) {
+		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i) {
+			if (!(vl[j]->ccodes & CC_OFF_TOP))
+				cur[k++] = vl[j];
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_TOP) {
+				intersect(&pts[p], vl[i], vl[j], top_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		n = k;
+		vl = cur;
+	}
+	if (codes_or & CC_OFF_BOT) {
+		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i) {
+			if (!(vl[j]->ccodes & CC_OFF_BOT))
+				cur[k++] = vl[j];
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_BOT) {
+				intersect(&pts[p], vl[i], vl[j], bottom_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		n = k;
+		vl = cur;
+	}
+	for (i = 0; i < n; ++i)
+		if (vl[i]->ccodes & CC_BEHIND)
+			return 0;
+
+	*out_vl = vl;
+	return n;
+}
+
 
 void QBsp::draw_face(int face)
 {
@@ -635,7 +809,7 @@ void QBsp::draw_face(int face)
 	if (codes_or)
 	{
 		// poly crosses frustrum, so clip it
-//		n = clip_poly(n, default_vlist, codes_or, &vlist);
+		n = clip_poly(n, default_vlist, codes_or, &vlist);
 		vlist = default_vlist;
 	}
 	else
