@@ -9,7 +9,7 @@ class Bsp
 {
 	void change_axis();
 	inline int find_leaf(const vec3 &position);
-	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf);
+	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order);
 	inline int cluster_visible(int visCluster, int testCluster);
 	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
 		int **index_array, int &numIndexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size);
@@ -17,6 +17,7 @@ class Bsp
 	inline void render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap);
 	inline void render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap);
 	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position);
+	void add_list(vector<surface_t *> &surface_list, bool blend_flag);
 	void set_blend_mode(Graphics &gfx, faceinfo_t &face);
 	void set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time);
 	//void draw_line_box(int *min, int *max);

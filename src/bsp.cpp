@@ -446,7 +446,7 @@ inline int Bsp::find_leaf(const vec3 &position)
 }
 
 // in order tree walk, keeping only visible nodes, front to back order
-void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf)
+void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order)
 {
 	if (node_index < 0)
 	{
@@ -464,15 +464,33 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	float	distance = (plane->normal * position) - plane->d;
 	if (distance >= 0)
 	{
-		sort_leaf(leaf_list, node->back, position, frameLeaf);
-		//draw
-		sort_leaf(leaf_list, node->front, position, frameLeaf);
+		if (order)
+		{
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+			//draw
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+		}
+		else
+		{
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+			//draw
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+		}
 	}
 	else
 	{
-		sort_leaf(leaf_list, node->front, position, frameLeaf);
-		//draw
-		sort_leaf(leaf_list, node->back, position, frameLeaf);
+		if (order)
+		{
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+			//draw
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+		}
+		else
+		{
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+			//draw
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+		}
 	}
 }
 
@@ -833,9 +851,18 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 	leaf_list.resize(0);
 
 	// sort leafs front to back
-	sort_leaf(&leaf_list, 0, position, frameLeaf);
+	sort_leaf(&leaf_list, 0, position, frameLeaf, false);	
+	add_list(surface_list, false);
+	leaf_list.resize(0);
+	sort_leaf(&leaf_list, 0, position, frameLeaf, true);
+	add_list(surface_list, true);
 
-	// loop through visible sortedd leaves, checking if leaf visible from current leaf
+}
+
+
+void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag)
+{
+	// loop through visible sorted leaves, checking if leaf visible from current leaf
 	for (unsigned int i = 0; i < leaf_list.size(); i++)
 	{
 		leaf_t *leaf = &data.Leaf[leaf_list[i]];
@@ -873,7 +900,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 				if (surface->portal)				{					render.portal = true;				}
 
 				// Going backwards to fix render ordering
-//				for (int k = surface->num_stage - 1; k >= 0; k--)
+				//				for (int k = surface->num_stage - 1; k >= 0; k--)
 				for (unsigned int k = 0; k < surface->num_stage; k++)
 				{
 					render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
@@ -897,10 +924,10 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 					render.envmap = surface->stage[k].tcgen_env;
 
 
-					render.rgbgen_wave_sin[k]		= surface->stage[k].rgbgen_wave_sin;
-					render.rgbgen_wave_square[k]	= surface->stage[k].rgbgen_wave_square;
-					render.rgbgen_wave_triangle[k]	= surface->stage[k].rgbgen_wave_triangle;
-					render.rgbgen_wave_sawtooth[k]	= surface->stage[k].rgbgen_wave_sawtooth;
+					render.rgbgen_wave_sin[k] = surface->stage[k].rgbgen_wave_sin;
+					render.rgbgen_wave_square[k] = surface->stage[k].rgbgen_wave_square;
+					render.rgbgen_wave_triangle[k] = surface->stage[k].rgbgen_wave_triangle;
+					render.rgbgen_wave_sawtooth[k] = surface->stage[k].rgbgen_wave_sawtooth;
 					render.rgbgen_wave_inverse_sawtooth[k] = surface->stage[k].rgbgen_wave_inverse_sawtooth;
 					render.rgbgen_wave_value[k] = surface->stage[k].rgbgen_wave_value;
 
@@ -1003,13 +1030,14 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 						render.blend_zero_src_alpha = true;
 					}
 
-					if (render.blend == true)
-						blend_list.push_back(render);
-					else
+					if (render.blend == false)
 						face_list.push_back(render);
+					else
+					{
+						if (blend_flag)
+							blend_list.push_back(render);
+					}
 				}
-
-
 			}
 			else
 			{
@@ -1037,8 +1065,9 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 			}
 		}
 	}
-	
 }
+
+
 
 void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 {
