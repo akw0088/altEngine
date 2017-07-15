@@ -9,7 +9,7 @@ class Bsp
 {
 	void change_axis();
 	inline int find_leaf(const vec3 &position);
-	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position);
+	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf);
 	inline int cluster_visible(int visCluster, int testCluster);
 	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
 		int **index_array, int &numIndexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size);

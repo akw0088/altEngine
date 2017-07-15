@@ -445,10 +445,15 @@ inline int Bsp::find_leaf(const vec3 &position)
 	return -(i + 1);
 }
 
-void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position)
+// in order tree walk, keeping only visible nodes, front to back order
+void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf)
 {
 	if (node_index < 0)
 	{
+		leaf_t *leaf = &data.Leaf[-(node_index + 1)];
+
+		if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
+				return;
 		leaf_list->push_back( -(node_index + 1) );
 		return;
 	}
@@ -459,13 +464,15 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	float	distance = (plane->normal * position) - plane->d;
 	if (distance >= 0)
 	{
-		sort_leaf(leaf_list, data.Node[node_index].front, position);
-		sort_leaf(leaf_list, data.Node[node_index].back, position);
+		sort_leaf(leaf_list, node->back, position, frameLeaf);
+		//draw
+		sort_leaf(leaf_list, node->front, position, frameLeaf);
 	}
 	else
 	{
-		sort_leaf(leaf_list, data.Node[node_index].back, position);
-		sort_leaf(leaf_list, data.Node[node_index].front, position);
+		sort_leaf(leaf_list, node->front, position, frameLeaf);
+		//draw
+		sort_leaf(leaf_list, node->back, position, frameLeaf);
 	}
 }
 
@@ -824,18 +831,9 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 	face_list.resize(0);
 	blend_list.resize(0);
 	leaf_list.resize(0);
-	for (unsigned int i = 0; i < data.num_leafs; i++)
-	{
-		leaf_t *leaf = &data.Leaf[i];
-
-		if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
-			continue;
-
-		leaf_list.push_back(i);
-	}
 
 	// sort leafs front to back
-	sort_leaf(&leaf_list, leaf, position);
+	sort_leaf(&leaf_list, 0, position, frameLeaf);
 
 	// loop through visible sortedd leaves, checking if leaf visible from current leaf
 	for (unsigned int i = 0; i < leaf_list.size(); i++)
