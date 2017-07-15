@@ -98,7 +98,7 @@ Engine::Engine()
 	net_port = 65535;
 
 	sprintf(sv_hostname, "servername");
-	sprintf(sv_motd, "Write games, not engines");
+	sprintf(sv_motd, "Write engines, not games");
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
 
@@ -107,6 +107,49 @@ Engine::Engine()
 	zFar = 2001.0f; // zFar - zNear makes nice values
 	inf = true; // above ignored if true
 }
+
+/*
+void set_view_info(vector *loc, angvec *ang);
+void qmap_set_output(char *where, int row);
+
+int qbsp_init()
+{
+QBsp bsp;
+
+vector loc;
+dplane_t pl;
+
+loc.x = 500;
+loc.y = 240;
+loc.z = 100;
+
+pl.dist = 0.0f;
+pl.normal[0] = 0.0f;
+pl.normal[1] = 0.0f;
+pl.normal[2] = 1.0f;
+
+angvec ang;
+
+ang.tx = 0.0f;
+ang.ty = 0.0f;
+ang.tz = 0.0f;
+set_view_info(&loc, &ang);
+
+bsp.load("start.bsp");
+
+
+char *scr_buf = (char *)malloc(320 * 200);
+int scr_row = 320;
+qmap_set_output(scr_buf, scr_row);
+
+bsp.bsp_render_world(&loc, &pl);
+
+FILE *fp = fopen("out.bin", "w");
+fwrite(scr_buf, 320 * 240, 1, fp);
+fclose(fp);
+return 0;
+}
+*/
 
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
@@ -317,8 +360,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	if (num_shader == 0)
 	{
-		printf("****************Unable to load shaderlist.txt\n");
-		exit(0);
+		printf("Unable to load shaders!\n");
 	}
 
 	for (int i = 0; i < num_shader; i++)
@@ -683,6 +725,14 @@ void Engine::load_md5()
 
 void Engine::render(double last_frametime)
 {
+#ifdef WIN32
+	int fpOld, fpNew;
+	fpOld = _controlfp(0, 0);
+	//fpNew = fpOld & ~(EM_OVERFLOW | EM_UNDERFLOW | EM_INEXACT | EM_ZERODIVIDE | EM_DENORMAL | EM_INVALID);
+	fpNew = fpOld & ~(EM_ZERODIVIDE | EM_INVALID);
+	_controlfp(fpNew, MCW_EM);
+#endif
+
 #ifdef VULKAN
 	gfx.render();
 #else
@@ -794,7 +844,10 @@ void Engine::render(double last_frametime)
 				}
 			}
 
-			render_texture(q3map.portal_tex, false);
+			if (input.scores)
+				render_texture(q3map.portal_tex, false);
+			else
+				render_texture(testObj, depth_view);
 		}
 	}
 	if (render_mode == MODE_FORWARD)
@@ -874,6 +927,9 @@ void Engine::render(double last_frametime)
 #endif
 
 	gfx.swap();
+#endif
+#ifdef WIN32
+	_controlfp(fpOld, MCW_EM);
 #endif
 }
 
@@ -3297,6 +3353,8 @@ void Engine::bind_keys()
 		key_bind.insert("rightbutton", "zoom");
 		key_bind.insert("mousewheelup", "weapon_up");
 		key_bind.insert("mousewheeldown", "weapon_down");
+		key_bind.insert("]", "weapon_up");
+		key_bind.insert("[", "weapon_down");
 		key_bind.insert("shift", "duck");
 		key_bind.insert("escape", "escape");
 		key_bind.insert("control", "control");
@@ -3305,6 +3363,16 @@ void Engine::bind_keys()
 		key_bind.insert("left", "moveleft");
 		key_bind.insert("right", "moveright");
 
+		key_bind.insert("~", "console");
+		key_bind.insert("`", "console");
+
+		key_bind.insert("T", "talk");
+		key_bind.insert("t", "talk");
+
+		key_bind.insert("-", "talkteam");
+		key_bind.insert("=", "talkteam");
+
+
 		key_bind.insert("W", "moveup");
 		key_bind.insert("A", "moveleft");
 		key_bind.insert("S", "movedown");
@@ -3312,7 +3380,26 @@ void Engine::bind_keys()
 		key_bind.insert("tab", "scores");
 		key_bind.insert("pgup", "pgup");
 		key_bind.insert("pgdown", "pgdown");
-		key_bind.insert("F1", "fullscreen");
+
+
+		key_bind.insert("R", "centerview");
+		
+		key_bind.insert("F1", "voteyes");
+		key_bind.insert("F2", "voteno");
+		key_bind.insert("F3", "godmode");
+		key_bind.insert("F4", "give all");
+		
+		key_bind.insert("F5", "respawn");
+		//key_bind.insert("F6", "");
+		key_bind.insert("F7", "g_collision 0");
+		key_bind.insert("F8", "shadowmaps");
+
+		key_bind.insert("F9", "showdebug");
+		key_bind.insert("F10", "fullscreen");
+		key_bind.insert("F11", "screenshot");
+		//key_bind.insert("F12", "");
+
+
 
 
 		key_bind.insert("numpad0", "walk");
@@ -3393,18 +3480,7 @@ void Engine::keypress(char *key, bool pressed)
 	if (cmd == NULL)
 		return;
 
-	if (strcmp("attack", cmd) == 0)
-	{
-		handled = true;
-		input.attack = pressed;
-		k = 14;
-	}
-	else if (strcmp("walk", cmd) == 0)
-	{
-		handled = true;
-		input.walk = pressed;
-	}
-	else if (strcmp("moveup", cmd) == 0)
+	if (strcmp("moveup", cmd) == 0)
 	{
 		handled = true;
 		input.moveup = pressed;
@@ -3418,13 +3494,6 @@ void Engine::keypress(char *key, bool pressed)
 		if (*key != 'a' && *key != 'A')
 			k = 4;
 	}
-	else if (strcmp("movedown", cmd) == 0)
-	{
-		handled = true;
-		input.movedown = pressed;
-		if (*key != 's' && *key != 'S')
-			k = 5;
-	}
 	else if (strcmp("moveright", cmd) == 0)
 	{
 		handled = true;
@@ -3432,15 +3501,23 @@ void Engine::keypress(char *key, bool pressed)
 		if (*key != 'd' && *key != 'D')
 			k = 6;
 	}
+	else if (strcmp("movedown", cmd) == 0)
+	{
+		handled = true;
+		input.movedown = pressed;
+		if (*key != 's' && *key != 'S')
+			k = 5;
+	}
 	else if (strcmp("jump", cmd) == 0)
 	{
 		handled = true;
 		input.jump = pressed;
 	}
-	else if (strcmp("duck", cmd) == 0)
+	if (strcmp("attack", cmd) == 0)
 	{
 		handled = true;
-		input.duck = pressed;
+		input.attack = pressed;
+		k = 14;
 	}
 	else if (strcmp("weapon_up", cmd) == 0)
 	{
@@ -3467,15 +3544,25 @@ void Engine::keypress(char *key, bool pressed)
 		handled = true;
 		input.use = pressed;
 	}
+	else if (strcmp("zoom", cmd) == 0)
+	{
+		handled = true;
+		input.zoom = pressed;
+	}
+	else if (strcmp("duck", cmd) == 0)
+	{
+		handled = true;
+		input.duck = pressed;
+	}
 	else if (strcmp("pickup", cmd) == 0)
 	{
 		handled = true;
 		input.pickup = pressed;
 	}
-	else if (strcmp("zoom", cmd) == 0)
+	else if (strcmp("walk", cmd) == 0)
 	{
 		handled = true;
-		input.zoom = pressed;
+		input.walk = pressed;
 	}
 	else if (strcmp("control", cmd) == 0)
 	{
@@ -3507,7 +3594,7 @@ void Engine::keypress(char *key, bool pressed)
 	if (pressed)
 		keystroke(k);
 
-	if (handled == false)
+	if (handled == false && menu.console == false)
 		console(cmd);
 }
 
@@ -3556,18 +3643,6 @@ void Engine::handle_game(char key)
 
 	switch (key)
 	{
-	case '~':
-	case '`':
-		menu.console = !menu.console;
-		break;
-	case 'T':
-	case 't':
-		menu.chatmode = true;
-		break;
-	case 'r':
-		camera_frame.reset();
-		break;
-
 	case '0':
 		if (spawn != -1)
 		{
@@ -3645,29 +3720,16 @@ void Engine::handle_game(char key)
 		break;
 
 	case 27:
-		if (ingame_menu_timer == 0)
-			menu.ingame = true;
-		ingame_menu_timer = TICK_RATE >> 2;
-		break;
-	case '[':
-		if (spawn != -1)
-		{
-			input.weapon_down = true;
-			entity_list[spawn]->player->change_weapon_down();
-		}
-		break;
-	case ']':
-		if (spawn != -1)
-		{
-			input.weapon_up = true;
-			entity_list[spawn]->player->change_weapon_up();
-		}
+		console("togglemenu");
 		break;
 	default:
 		{
-			char skey[2];
-			sprintf(skey, "%c", key);
-			console((char *)key_bind.find(skey));
+			if (menu.console == false)
+			{
+				char skey[2];
+				sprintf(skey, "%c", key);
+				console((char *)key_bind.find(skey));
+			}
 		}
 		break;
 	}
@@ -4092,10 +4154,45 @@ void Engine::console(char *cmd)
 	if (cmd == NULL)
 		return;
 
+/*
+	static int last_cmd = 0;
+	if (last_cmd >= tick_num)
+		return;
+	last_cmd = tick_num;
+	*/
+
 
 	if (strstr(cmd, "console"))
 	{
 		menu.console = !menu.console;
+		return;
+	}
+
+	
+
+	if (strstr(cmd, "centerview"))
+	{
+		camera_frame.reset();
+		return;
+	}
+
+	if (strstr(cmd, "talk"))
+	{
+		menu.chatmode = true;
+		return;
+	}
+
+	if (strstr(cmd, "talkteam"))
+	{
+		menu.chatmode = true;
+		return;
+	}
+
+	if (strstr(cmd, "togglemenu"))
+	{
+		if (ingame_menu_timer == 0)
+			menu.ingame = !menu.ingame;
+		ingame_menu_timer = TICK_RATE >> 4;
 		return;
 	}
 
