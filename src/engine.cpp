@@ -167,7 +167,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
-	glEnable(GL_STENCIL_TEST);
+	//glEnable(GL_STENCIL_TEST);
 	glStencilMask(0x00); // disable writes to stencil
 	glClearStencil(0x00); // clear stencil to zero
 	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF

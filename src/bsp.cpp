@@ -1849,8 +1849,20 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 			(*vertex_array)[i * num_verts + j].texCoord0.x = i * (1.0f / level) + texcoord.x;
 			(*vertex_array)[i * num_verts + j].texCoord0.y = -(j * (1.0f / level) + texcoord.y);
 
+			if (texcoord.x < 0.0f)
+				(*vertex_array)[i * num_verts + j].texCoord0.x *= -1;
+			if (texcoord.y < 0.0f)
+				(*vertex_array)[i * num_verts + j].texCoord0.y *= -1;
+
+
 			(*vertex_array)[i * num_verts + j].texCoord1.x = size.x * i * (1.0f / level) + lightcoord.x;
 			(*vertex_array)[i * num_verts + j].texCoord1.y = size.y * j * (1.0f / level) + lightcoord.y;
+
+			if (lightcoord.x < 0.0f)
+				(*vertex_array)[i * num_verts + j].texCoord1.x *= -1;
+			if (lightcoord.y < 0.0f)
+				(*vertex_array)[i * num_verts + j].texCoord1.y *= -1;
+
 
 			(*vertex_array)[i * num_verts + j].tangent.x = a.x;
 			(*vertex_array)[i * num_verts + j].tangent.y = a.y;
