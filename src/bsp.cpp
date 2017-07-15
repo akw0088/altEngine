@@ -467,13 +467,11 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 		if (order)
 		{
 			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
-			//draw
 			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
 		}
 		else
 		{
 			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
-			//draw
 			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
 		}
 	}
@@ -482,13 +480,11 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 		if (order)
 		{
 			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
-			//draw
 			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
 		}
 		else
 		{
 			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
-			//draw
 			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
 		}
 	}
@@ -852,215 +848,221 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 
 	// sort leafs front to back
 	sort_leaf(&leaf_list, 0, position, frameLeaf, false);	
-	add_list(surface_list, false);
-	leaf_list.resize(0);
-	sort_leaf(&leaf_list, 0, position, frameLeaf, true);
-	add_list(surface_list, true);
+	// loop through visible sorted leaves, checking if leaf visible from current leaf
+	for (unsigned int i = 0; i < leaf_list.size(); i++)
+		add_list(surface_list, false, i);
+	for (unsigned int i = leaf_list.size() - 1; i < leaf_list.size(); i--)
+		add_list(surface_list, true, i);
 
 }
 
 
-void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag)
+void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 {
-	// loop through visible sorted leaves, checking if leaf visible from current leaf
-	for (unsigned int i = 0; i < leaf_list.size(); i++)
+	leaf_t *leaf = &data.Leaf[leaf_list[i]];
+
+	// generate face lists
+	for (int j = 0; j < leaf->num_faces; j++)
 	{
-		leaf_t *leaf = &data.Leaf[leaf_list[i]];
+		int face_index = data.LeafFace[leaf->leaf_face + j];
+		face_t *face = &data.Face[face_index];
 
-		// generate face lists
-		for (int j = 0; j < leaf->num_faces; j++)
+		if (tex_object[face->material].index != -1 && enable_shader)
 		{
-			int face_index = data.LeafFace[leaf->leaf_face + j];
-			face_t *face = &data.Face[face_index];
+			// Texture with a shader
+			surface_t *surface = surface_list[tex_object[face->material].index];
+			faceinfo_t render;
 
-			if (tex_object[face->material].index != -1 && enable_shader)
+			memset(&render, 0, sizeof(faceinfo_t));
+			render.face = face_index;
+			render.shader = true;
+			render.stage = 0;
+			render.envmap = false;
+			render.turb = false;
+
+			if (surface->surfaceparm_sky)
 			{
-				// Texture with a shader
-				surface_t *surface = surface_list[tex_object[face->material].index];
-				faceinfo_t render;
-
-				memset(&render, 0, sizeof(faceinfo_t));
-				render.face = face_index;
-				render.shader = true;
-				render.stage = 0;
-				render.envmap = false;
-				render.turb = false;
-
-				if (surface->surfaceparm_sky)
-				{
-					render.sky = true;
-					sky_face = face_index;
-				}
-
-				if (surface->surfaceparm_lava || surface->surfaceparm_slime || surface->surfaceparm_water)
-				{
-					render.turb = true;
-				}
-
-				if (surface->portal)				{					render.portal = true;				}
-
-				// Going backwards to fix render ordering
-				//				for (int k = surface->num_stage - 1; k >= 0; k--)
-				for (unsigned int k = 0; k < surface->num_stage; k++)
-				{
-					render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
-					render.deg[k] = surface->stage[k].tcmod_rotate_value;
-					render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
-					render.scroll[k] = surface->stage[k].tcmod_scroll_value;
-					render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
-					render.scale[k] = surface->stage[k].tcmod_scale_value;
-					render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
-					render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
-					render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
-					render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
-					render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
-					render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
-					render.stage = k;
-					render.name = surface->stage[k].map_tex;
-					render.lightmap[k] = surface->stage[k].lightmap;
-					render.alpha_ge128 = surface->stage[k].alpha_ge128;
-					render.alpha_lt128 = surface->stage[k].alpha_lt128;
-					render.alpha_gt0 = surface->stage[k].alpha_gt0;
-					render.envmap = surface->stage[k].tcgen_env;
-
-
-					render.rgbgen_wave_sin[k] = surface->stage[k].rgbgen_wave_sin;
-					render.rgbgen_wave_square[k] = surface->stage[k].rgbgen_wave_square;
-					render.rgbgen_wave_triangle[k] = surface->stage[k].rgbgen_wave_triangle;
-					render.rgbgen_wave_sawtooth[k] = surface->stage[k].rgbgen_wave_sawtooth;
-					render.rgbgen_wave_inverse_sawtooth[k] = surface->stage[k].rgbgen_wave_inverse_sawtooth;
-					render.rgbgen_wave_value[k] = surface->stage[k].rgbgen_wave_value;
-
-
-
-					render.blend = false;
-
-					if (surface->stage[k].alpha_gt0)
-					{
-						render.alpha_gt0 = true;
-					}
-					else if (surface->stage[k].alpha_ge128)
-					{
-						render.alpha_ge128 = true;
-					}
-					else if (surface->stage[k].alpha_lt128)
-					{
-						render.alpha_lt128 = true;
-					}
-					else if (surface->stage[k].blendfunc_add ||
-						surface->stage[k].blend_one_one)
-					{
-						// Doing multiple passes to get the quake3 blending right
-						render.blend = true;
-						render.blend_one_one = true;
-					}
-					else if (surface->stage[k].blend_one_zero)
-					{
-						render.blend = true;
-						render.blend_one_zero = true;
-					}
-					else if (surface->stage[k].blendfunc_blend)
-					{
-						render.blend = true;
-						render.blend_default = true;
-					}
-					else if (surface->stage[k].blendfunc_filter)
-					{
-						render.blend = true;
-						render.blend_filter = true;
-					}
-					else if (surface->stage[k].blend_dst_color_one)
-					{
-						render.blend = true;
-						render.blend_dstcolor_one = true;
-					}
-					else if (surface->stage[k].blend_dst_color_zero)
-					{
-						render.blend = true;
-						render.blend_dstcolor_zero = true;
-					}
-					else if (surface->stage[k].blend_dst_color_src_alpha)
-					{
-						render.blend = true;
-						render.blend_dst_color_src_alpha = true;
-					}
-					else if (surface->stage[k].blend_dst_color_one_minus_dst_alpha)
-					{
-						render.blend = true;
-						render.blend_dst_color_one_minus_dst_alpha = true;
-					}
-					else if (surface->stage[k].one_minus_src_alpha_src_alpha)
-					{
-						render.blend = true;
-						render.one_minus_src_alpha_src_alpha = true;
-					}
-					else if (surface->stage[k].blend_one_minus_src_alpha_src_alpha)
-					{
-						render.blend = true;
-						render.blend_one_minus_src_alpha_src_alpha = true;
-					}
-					else if (surface->stage[k].blend_src_alpha_one_minus_src_alpha)
-					{
-						render.blend = true;
-						render.blend_src_alpha_one_minus_src_alpha = true;
-					}
-					else if (surface->stage[k].blend_one_minus_dst_color_zero)
-					{
-						render.blend = true;
-						render.blend_one_minus_dst_color_zero = true;
-					}
-					else if (surface->stage[k].blend_one_src_alpha)
-					{
-						render.blend = true;
-						render.blend_one_src_alpha = true;
-					}
-					else if (surface->stage[k].blend_zero_src_color)
-					{
-						render.blend = true;
-						render.blend_zero_src_color = true;
-					}
-					else if (surface->stage[k].blend_dst_color_src_color)
-					{
-						render.blend = true;
-						render.blend_dst_color_src_color = true;
-					}
-					else if (surface->stage[k].blend_zero_src_alpha)
-					{
-						render.blend = true;
-						render.blend_zero_src_alpha = true;
-					}
-
-					if (render.blend == false)
-						face_list.push_back(render);
-					else
-					{
-						if (blend_flag)
-							blend_list.push_back(render);
-					}
-				}
+				render.sky = true;
+				sky_face = face_index;
 			}
-			else
+
+			if (surface->surfaceparm_lava || surface->surfaceparm_slime || surface->surfaceparm_water)
 			{
-				// Texture without a shader
-				faceinfo_t render;
+				render.turb = true;
+			}
 
-				memset(&render, 0, sizeof(faceinfo_t));
-				render.name = data.Material[face->material].name;
-				render.face = face_index;
-				render.stage = 0;
-				render.envmap = false;
-				render.turb = false;
+			if (surface->portal)			{				render.portal = true;			}
 
-				if (tex_object[face->material].texObj[0] < 0)
+			// Going backwards to fix render ordering
+			//				for (int k = surface->num_stage - 1; k >= 0; k--)
+			for (unsigned int k = 0; k < surface->num_stage; k++)
+			{
+				render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
+				render.deg[k] = surface->stage[k].tcmod_rotate_value;
+				render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
+				render.scroll[k] = surface->stage[k].tcmod_scroll_value;
+				render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
+				render.scale[k] = surface->stage[k].tcmod_scale_value;
+				render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
+				render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
+				render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
+				render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
+				render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
+				render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
+				render.stage = k;
+				render.name = surface->stage[k].map_tex;
+				render.lightmap[k] = surface->stage[k].lightmap;
+				render.alpha_ge128 = surface->stage[k].alpha_ge128;
+				render.alpha_lt128 = surface->stage[k].alpha_lt128;
+				render.alpha_gt0 = surface->stage[k].alpha_gt0;
+				render.envmap = surface->stage[k].tcgen_env;
+
+
+				render.rgbgen_wave_sin[k] = surface->stage[k].rgbgen_wave_sin;
+				render.rgbgen_wave_square[k] = surface->stage[k].rgbgen_wave_square;
+				render.rgbgen_wave_triangle[k] = surface->stage[k].rgbgen_wave_triangle;
+				render.rgbgen_wave_sawtooth[k] = surface->stage[k].rgbgen_wave_sawtooth;
+				render.rgbgen_wave_inverse_sawtooth[k] = surface->stage[k].rgbgen_wave_inverse_sawtooth;
+				render.rgbgen_wave_value[k] = surface->stage[k].rgbgen_wave_value;
+
+
+
+				render.blend = false;
+
+				if (surface->stage[k].alpha_gt0)
 				{
-					// texture has alpha channel, use it as a mask
+					render.alpha_gt0 = true;
+				}
+				else if (surface->stage[k].alpha_ge128)
+				{
+					render.alpha_ge128 = true;
+				}
+				else if (surface->stage[k].alpha_lt128)
+				{
+					render.alpha_lt128 = true;
+				}
+				else if (surface->stage[k].blendfunc_add ||
+					surface->stage[k].blend_one_one)
+				{
+					// Doing multiple passes to get the quake3 blending right
+					render.blend = true;
+					render.blend_one_one = true;
+				}
+				else if (surface->stage[k].blend_one_zero)
+				{
+					render.blend = true;
+					render.blend_one_zero = true;
+				}
+				else if (surface->stage[k].blendfunc_blend)
+				{
 					render.blend = true;
 					render.blend_default = true;
 				}
+				else if (surface->stage[k].blendfunc_filter)
+				{
+					render.blend = true;
+					render.blend_filter = true;
+				}
+				else if (surface->stage[k].blend_dst_color_one)
+				{
+					render.blend = true;
+					render.blend_dstcolor_one = true;
+				}
+				else if (surface->stage[k].blend_dst_color_zero)
+				{
+					render.blend = true;
+					render.blend_dstcolor_zero = true;
+				}
+				else if (surface->stage[k].blend_dst_color_src_alpha)
+				{
+					render.blend = true;
+					render.blend_dst_color_src_alpha = true;
+				}
+				else if (surface->stage[k].blend_dst_color_one_minus_dst_alpha)
+				{
+					render.blend = true;
+					render.blend_dst_color_one_minus_dst_alpha = true;
+				}
+				else if (surface->stage[k].one_minus_src_alpha_src_alpha)
+				{
+					render.blend = true;
+					render.one_minus_src_alpha_src_alpha = true;
+				}
+				else if (surface->stage[k].blend_one_minus_src_alpha_src_alpha)
+				{
+					render.blend = true;
+					render.blend_one_minus_src_alpha_src_alpha = true;
+				}
+				else if (surface->stage[k].blend_src_alpha_one_minus_src_alpha)
+				{
+					render.blend = true;
+					render.blend_src_alpha_one_minus_src_alpha = true;
+				}
+				else if (surface->stage[k].blend_one_minus_dst_color_zero)
+				{
+					render.blend = true;
+					render.blend_one_minus_dst_color_zero = true;
+				}
+				else if (surface->stage[k].blend_one_src_alpha)
+				{
+					render.blend = true;
+					render.blend_one_src_alpha = true;
+				}
+				else if (surface->stage[k].blend_zero_src_color)
+				{
+					render.blend = true;
+					render.blend_zero_src_color = true;
+				}
+				else if (surface->stage[k].blend_dst_color_src_color)
+				{
+					render.blend = true;
+					render.blend_dst_color_src_color = true;
+				}
+				else if (surface->stage[k].blend_zero_src_alpha)
+				{
+					render.blend = true;
+					render.blend_zero_src_alpha = true;
+				}
 
 				if (render.blend == false)
-					face_list.push_back(render);
+				{
+					if (blend_flag == false)
+						face_list.push_back(render);
+				}
 				else
+				{
+					if (blend_flag)
+						blend_list.push_back(render);
+				}
+			}
+		}
+		else
+		{
+			// Texture without a shader
+			faceinfo_t render;
+
+			memset(&render, 0, sizeof(faceinfo_t));
+			render.name = data.Material[face->material].name;
+			render.face = face_index;
+			render.stage = 0;
+			render.envmap = false;
+			render.turb = false;
+
+			if (tex_object[face->material].texObj[0] < 0)
+			{
+				// texture has alpha channel, use it as a mask
+				render.blend = true;
+				render.blend_default = true;
+			}
+
+			if (render.blend == false)
+			{
+				if (blend_flag == false)
+					face_list.push_back(render);
+			}
+			else
+			{
+				if (blend_flag)
 					blend_list.push_back(render);
 			}
 		}
