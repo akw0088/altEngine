@@ -596,6 +596,91 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		}
 	}
 
+
+	// do same thing for bsp doors platforms etc
+	for (int i = 1; i < data.num_model; i++)
+	{
+//		for (int j = 0; i < data.Model[i].num_brushes; j++)
+	//	{
+			int index = data.Model[i].brush_index;
+			brush_t	*brush = &data.Brushes[index];
+			int brush_index = brush->first_side;
+			int num_sides = brush->num_sides;
+			int count = 0;
+
+
+			// Let water pass through for water flag
+			if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
+			{
+				// Ignore non solid brushes
+				if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
+					continue;
+			}
+
+			for (int j = 0; j < num_sides; j++)
+			{
+				brushSide_t *brushSide = &data.BrushSides[brush_index + j];
+				int plane_index = brushSide->plane;
+
+				float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+
+				// outside of brush plane
+				if (d > 0.0f)
+					continue;
+
+				// Inside a brush
+				if (data.Material[brush->material].contents & CONTENTS_WATER)
+				{
+					// Set underwater flag + depth
+					water = true;
+					water_depth = -d;
+					//				printf("underwater depth = %f\n", d);
+					continue;
+				}
+
+				// Ignore individual non solid surfaces (had to move lower to allow water)
+				if (data.Material[brush->material].surface & SURF_NONSOLID)
+					continue;
+
+
+				// Check old position against planes, if we werent colliding before
+				//then it is the collision plane we want to return
+				d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+				if (d > 0.0)
+				{
+					plane->normal = data.Plane[plane_index].normal;
+					plane->d = data.Plane[plane_index].d;
+					*depth = d;
+				}
+				count++;
+			}
+
+			if (count == num_sides)
+			{
+				if (data.Material[brush->material].contents & CONTENTS_LAVA)
+					lava = true;
+				else if (data.Material[brush->material].contents & CONTENTS_SLIME)
+					slime = true;
+				/*
+				if (strstr(data.Material[brush->material].name, "lava") != NULL)
+				{
+				lava = true;
+				}
+				*/
+				if (debug)
+				{
+					printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
+						data.Material[brush->material].name,
+						data.Material[brush->material].contents,
+						data.Material[brush->material].surface,
+						*depth, count,
+						plane->normal.x, plane->normal.y, plane->normal.z);
+				}
+				return true;
+			}
+//		}
+	}
+
 	return false;
 }
 
@@ -1465,10 +1550,17 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		gfx.DepthFunc("<");
 		gfx.Blend(false);
 	}
+
 #ifndef DIRECTX
+	for (int i = 1; i < data.num_model; i++)
+	{
+		render_model(i, gfx);
+	}
 	render_sky(gfx, mlight2, tick_num, surface_list);
 #endif
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
+
+
 }
 
 
@@ -1505,6 +1597,7 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
+
 
 	for (int i = 0; i < model->num_faces; i++)
 	{
