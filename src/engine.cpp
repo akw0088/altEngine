@@ -2905,6 +2905,9 @@ void Engine::server_send()
 	static servermsg_t	servermsg;
 	static unsigned char	data[256000];
 
+	if (client_list.size() == 0)
+		return;
+
 	servermsg.sequence = sequence;
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
