@@ -33,13 +33,9 @@ uniform float u_brightness;
 uniform float u_contrast;
 
 uniform int u_env[8];
-uniform int u_water[8];
 uniform float u_rgbgen_scale[8];
 uniform int u_alphatest[8];
 uniform int u_portal;
-
-
-uniform int u_time;
 
 
 uniform sampler2D tex[8];// 8 possible textures
@@ -186,23 +182,6 @@ void main(void)
 		tc3 = tc;
 	}
 
-	if (u_water[0] + u_water[1] + u_water[2] + u_water[3] > 0)
-	{
-		float s = Vertex.vary_newTexCoord[0].x;
-		float t = Vertex.vary_newTexCoord[0].y;
-		float x = Vertex.vary_position.x;
-		float y = Vertex.vary_position.y;
-		float z = Vertex.vary_position.z;
-
-		tc.x = s + sin( (( x + z ) * 1.0/128.0 * 0.125 + u_time / 500.0 ) );
-		tc.y = t + sin((y * 1.0 / 128 * 0.125 + u_time / 500.0));
-
-		tc0 = tc;
-		tc1 = tc;
-		tc2 = tc;
-		tc3 = tc;
-	}
-
 
 	if (u_lightmap_stage > 0)
 	{
@@ -267,6 +246,7 @@ void main(void)
 		}
 	}
 
+
 	ambient *= min(u_rgbgen_scale[0], 3.0);
 	ambient *= min(u_rgbgen_scale[1], 3.0);
 	ambient *= min(u_rgbgen_scale[2], 3.0);
@@ -288,6 +268,14 @@ void main(void)
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
 	float shadow = 1.0;
+
+	if (u_portal > 0)
+	{
+		// darken a bit
+		Fragment.xyz *= 0.8;
+		return;
+	}
+
 
 
 	for(int i = 0; i < u_num_lights; i++)
@@ -325,6 +313,7 @@ void main(void)
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
 			Fragment.xyz *= lightmap * 2.0;
 	}
+
 	Fragment.rgb *= max(light, ambient);
 
 
