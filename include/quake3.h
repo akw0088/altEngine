@@ -50,7 +50,8 @@ public:
 	void load_icon();
 	void map_model(Entity &ent);
 	void load_sounds(Audio &audio, vector<wave_t> &snd_wave);
-
+	void handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, int self);
+	void check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self);
 
 	void make_dynamic_ent(nettype_t item, int ent_id);
 	void handle_player(int index, input_t &input);
