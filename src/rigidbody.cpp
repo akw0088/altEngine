@@ -32,6 +32,7 @@ RigidBody::RigidBody(Entity *entity)
 	slime = false;
 	impact_velocity = 0.0f;
 	water_depth = 0.0f;
+	bsp_trigger_volume = 0;
 
 	restitution = 0.5f; // boxes should never rest
 	float height = 10.0f / UNITS_TO_METERS;

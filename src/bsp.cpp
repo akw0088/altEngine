@@ -15,6 +15,7 @@ Bsp::Bsp()
 	enable_sky = true;
 	enable_shader = true;
 	enable_blend = true;
+	portal_tex = 0;
 	memset(map_name, 0, 64);
 	sky_face = -1;
 	lastIndex = -2;
@@ -98,13 +99,6 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	{
 		face_to_patch[i] = -1;
 	}
-
-
-	for (unsigned int i = 0; i < 128; i++)
-	{
-		model_trigger[i] = false;
-	}
-
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);

@@ -5963,7 +5963,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 			entity_list[self]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
 
-			entity_list[self]->rigid->model_trigger = 0;
+			entity_list[self]->rigid->bsp_trigger_volume = 0;
 
 			switch (entity_list[i]->angle)
 			{
@@ -6983,11 +6983,11 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 			continue;
 		}
 
-		if (entity_list[j]->rigid->model_trigger != model_index)
+		if (entity_list[j]->rigid->bsp_trigger_volume != model_index)
 		{
 			continue;
 		}
-				entity_list[j]->rigid->model_trigger = 0;
+				entity_list[j]->rigid->bsp_trigger_volume = 0;
 
 
 		if (ent->trigger && ent->trigger->active == false)
