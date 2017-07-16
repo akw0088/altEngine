@@ -7120,6 +7120,8 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					if (entity_list[j]->rigid->model_trigger == model_index)
 					{
 						entity_list[j]->rigid->model_trigger = 0;
+
+
 						if (entity_list[i]->trigger && entity_list[i]->trigger->active == false)
 						{
 							printf("Triggered model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
@@ -7153,6 +7155,13 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 											engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
 											entity_list[self]->player->falling = true;
 										}
+									}
+
+
+									if (strcmp(entity_list[j]->type, "target_remove_powerups") == 0)
+									{
+										//hack for q3tourney3, just kill them
+										console(self, "damage 1000", engine->menu, entity_list);
 									}
 
 
