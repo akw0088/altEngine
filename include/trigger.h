@@ -14,7 +14,7 @@ public:
 
 	bool noise;
 
-
+	char noise_str[128];
 	unsigned int pickup_index;
 	unsigned int respawn_index;
 	unsigned int explode_index;

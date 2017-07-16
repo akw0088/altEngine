@@ -6929,26 +6929,36 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 		printf("%s bsp volume triggered %s with targetname %s\n",
 			ent->type, target->type, ent->target);
 
-		if (target->trigger && target->trigger->active == false)
+		if (target->trigger)
 		{
-			target->trigger->active = true;
-			console(self, target->trigger->action, engine->menu, engine->entity_list);
-		}
-		else
-		{
-			printf("trigger has already been hit\n");
+			if (target->trigger->active == false)
+			{
+				target->trigger->active = true;
+				console(self, target->trigger->action, engine->menu, engine->entity_list);
+			}
+			else
+			{
+				printf("trigger has already been hit\n");
+			}
 		}
 
 		switch (target->ent_type)
 		{
 		case ENT_TARGET_SPEAKER:
 			//hack we know it's *falling
-			if (entity_list[self]->player->falling == false)
-			{
-				printf("Ahhhh...\n");
-				engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
-				entity_list[self]->player->falling = true;
-			}
+				if (target->trigger)
+				{
+					if (entity_list[self]->player->falling == false)
+					{
+						if (strstr(target->trigger->noise_str, "*falling"))
+						{
+							printf("Ahhhh...\n");
+							engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
+							entity_list[self]->player->falling = true;
+						}
+					}
+				}
+
 			break;
 		case ENT_TARGET_REMOVE_POWERUPS:
 			//hack for q3tourney3, just kill them

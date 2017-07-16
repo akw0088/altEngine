@@ -985,6 +985,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger = new Trigger(&entity, audio);
 		entity.trigger->respawn_index = engine->get_load_wave(value);
 		entity.trigger->noise = true;
+
+		strcpy(value, entity.trigger->noise_str);
 		if (entity.trigger && entity.trigger->timeout_value < 0.001f)
 		{
 			if (strstr("*falling", key))
