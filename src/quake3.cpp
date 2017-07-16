@@ -6928,7 +6928,15 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 			if (entity_list[i]->opening == false && entity_list[i]->model_lerp > 0.0)
 			{
-				entity_list[i]->model_offset = entity_list[i]->model_offset * entity_list[i]->model_lerp;
+
+				if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
+				{
+					entity_list[i]->model_offset = entity_list[i]->model_offset * (1.0f - entity_list[i]->model_lerp);
+				}
+				else
+				{
+					entity_list[i]->model_offset = entity_list[i]->model_offset * entity_list[i]->model_lerp;
+				}
 				engine->q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->model_offset;
 
 
@@ -6950,7 +6958,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (entity_list[i]->ent_type == ENT_FUNC_STATIC)
 				continue;
 
-			if (entity_list[i]->ent_type == ENT_FUNC_DOOR || entity_list[i]->ent_type == ENT_FUNC_BUTTON)
+			if (entity_list[i]->ent_type == ENT_FUNC_DOOR || entity_list[i]->ent_type == ENT_FUNC_BUTTON || entity_list[i]->ent_type == ENT_FUNC_PLAT)
 			{
 //				float amount = entity_list[i]->height;
 				float amount = 50.0f;
@@ -6962,6 +6970,16 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				{
 					amount = 10.0f; // buttons are tiny doors ;)
 				}
+				else if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
+				{
+					amount = (engine->q3map.data.Model[entity_list[i]->model_ref].max[1]
+						- engine->q3map.data.Model[entity_list[i]->model_ref].min[1]);
+
+					amount *= 0.9f;
+					if (amount < 0)
+						amount *= -1;
+				}
+
 
 
 				if (entity_list[i]->model_lerp < 0.01f)
@@ -6995,6 +7013,13 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 
 				amount = amount * entity_list[i]->model_lerp;
+
+				// platforms start up (so lightmaps are generated)
+				// so invert lerp value
+				if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
+					amount = amount * (1.0 - entity_list[i]->model_lerp);
+
+
 
 				vec3 end;
 				switch (entity_list[i]->angle)
