@@ -166,6 +166,7 @@ public:
 	bool godmode;
 	bool local;
 	bool quad_damage;
+	bool falling;
 
 
 	path_t path;

@@ -54,6 +54,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	spawned = false;
 	godmode = false;
 	local = false;
+	falling = false;
 
 	Player::team = team;
 

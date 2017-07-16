@@ -7108,23 +7108,71 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		}
 
 
-		// Not a trigger
-		Trigger *trigger = entity_list[i]->trigger;
-
-		if (trigger == NULL)
-			continue;
-
-
-
 		if (entity_list[i]->model_ref > 0 && entity_list[i]->model_ref < engine->q3map.data.num_model)
 		{
 			if (engine->q3map.model_trigger[entity_list[i]->model_ref])
 			{
 				engine->q3map.model_trigger[entity_list[i]->model_ref] = false;
 				printf("Inside trigger model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
-				console(self, trigger->action, engine->menu, entity_list);
+
+				if (entity_list[i]->trigger)
+					console(self, entity_list[i]->trigger->action, engine->menu, entity_list);
+
+				if (strlen(entity_list[i]->target) > 1)
+				{
+					for (int j = 0; j < entity_list.size(); j++)
+					{
+						if (i == j)
+							continue;
+
+
+						if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
+						{
+							printf("trigger_multiple volume triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
+							if (entity_list[j]->ent_type == ENT_TARGET_RELAY)
+							{
+								// search again, great
+								if (strlen(entity_list[i]->target) > 1)
+								{
+									for (int k = 0; k < entity_list.size(); k++)
+									{
+										if (j == k)
+											continue;
+										if (strcmp(entity_list[j]->target, entity_list[k]->target_name) == 0)
+										{
+											printf("target_relay triggered target %s of type %s\n", entity_list[j]->target, entity_list[k]->type);
+											if (strcmp(entity_list[k]->type, "target_speaker") == 0)
+											{
+												//hack we know it's *falling
+												if (entity_list[self]->player->falling == false)
+												{
+													printf("Ahhhh...\n");
+													engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
+													entity_list[self]->player->falling = true;
+												}
+											}
+
+											break;
+										}
+									}
+								}
+								break;
+							}
+
+							if (entity_list[j]->trigger)
+								console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+						}
+					}
+				}
 			}
 		}
+
+
+		// Not a trigger
+		Trigger *trigger = entity_list[i]->trigger;
+
+		if (trigger == NULL)
+			continue;
 
 		// Delete when not moving
 		if (trigger->idle == true)
