@@ -5241,6 +5241,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			return;
 		}
 
+		if (entity_list[index]->player->health <= 0)
+			return;
+
+
 
 		unsigned int damage = abs32(atoi(data2));
 		unsigned int health_damage = damage / 3;
@@ -5295,6 +5299,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		snprintf(msg, LINE_SIZE, "damage %s\n", data);
 		menu.print(msg);
+
+
+		if (player->health <= 0)
+			return;
 
 		unsigned int damage = abs32(atoi(data));
 		unsigned int health_damage = damage / 3;
@@ -6965,6 +6973,29 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (entity_list[i]->ent_type == ENT_FUNC_STATIC)
 				continue;
 
+
+			if (entity_list[i]->ent_type == ENT_TRIGGER_MULTIPLE)
+			{
+				float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
+
+				if (distance < 75.0f)
+				{
+					for (int j = engine->max_dynamic; j < entity_list.size(); j++)
+					{
+						if (i == j)
+							continue;
+
+						if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
+						{
+							printf("trigger_multiple triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
+							if (entity_list[j]->trigger)
+								console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+						}
+					}
+				}
+			}
+
+
 			if (entity_list[i]->ent_type == ENT_FUNC_DOOR || entity_list[i]->ent_type == ENT_FUNC_BUTTON || entity_list[i]->ent_type == ENT_FUNC_PLAT)
 			{
 //				float amount = entity_list[i]->height;
@@ -7082,6 +7113,18 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (trigger == NULL)
 			continue;
+
+
+
+		if (entity_list[i]->model_ref > 0 && entity_list[i]->model_ref < engine->q3map.data.num_model)
+		{
+			if (engine->q3map.model_trigger[entity_list[i]->model_ref])
+			{
+				engine->q3map.model_trigger[entity_list[i]->model_ref] = false;
+				printf("Inside trigger model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
+				console(self, trigger->action, engine->menu, entity_list);
+			}
+		}
 
 		// Delete when not moving
 		if (trigger->idle == true)

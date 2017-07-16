@@ -73,6 +73,7 @@ public:
 
 
 	vec3 model_offset[128];
+	bool model_trigger[128];
 
 	unsigned int portal_tex; // hack
 

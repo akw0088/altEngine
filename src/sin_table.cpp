@@ -704,12 +704,16 @@ inline float guessSqrt(float x)
 	return *(float*)&i;
 }
 
+float fabs(float);
+
 #define NUM_ITERATIONS 2
 float newtonSqrt(float x)
 {
 	int i = 0;
 
 	float z = guessSqrt(x);
+	if (fabs(z) < 0.00001)
+		return 0.0f;
 	
 	for (i = 0; i < NUM_ITERATIONS; i++)
 	{

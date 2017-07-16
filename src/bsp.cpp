@@ -100,6 +100,12 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	}
 
 
+	for (unsigned int i = 0; i < 128; i++)
+	{
+		model_trigger[i] = false;
+	}
+
+
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
 //	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
@@ -605,86 +611,96 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		if (model_offset[i].magnitude() > 0.001f)
 			continue;
 
-//		for (int j = 0; i < data.Model[i].num_brushes; j++)
-	//	{
-			int index = data.Model[i].brush_index;
-			brush_t	*brush = &data.Brushes[index];
-			int brush_index = brush->first_side;
-			int num_sides = brush->num_sides;
-			int count = 0;
+		int index = data.Model[i].brush_index;
+		brush_t	*brush = &data.Brushes[index];
+		int brush_index = brush->first_side;
+		int num_sides = brush->num_sides;
+		int count = 0;
 
 
-			// Let water pass through for water flag
-			if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
+		//Inside brush 2 with texture textures/common/trigger and contents 0x1 surf 0x80
+
+
+		// Let water pass through for water flag
+		if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
+		{
+			// Ignore non solid brushes
+			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
+				continue;
+		}
+
+		for (int j = 0; j < num_sides; j++)
+		{
+			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
+			int plane_index = brushSide->plane;
+
+			float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+
+			// outside of brush plane
+			if (d > 0.0f)
+				continue;
+
+			// Inside a brush
+			if (data.Material[brush->material].contents & CONTENTS_WATER)
 			{
-				// Ignore non solid brushes
-				if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
-					continue;
+				// Set underwater flag + depth
+				water = true;
+				water_depth = -d;
+				//				printf("underwater depth = %f\n", d);
+				continue;
 			}
 
-			for (int j = 0; j < num_sides; j++)
+			// Ignore individual non solid surfaces (had to move lower to allow water)
+			if (data.Material[brush->material].surface & SURF_NONSOLID)
+				continue;
+
+
+			// Check old position against planes, if we werent colliding before
+			//then it is the collision plane we want to return
+
+			d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+			if (d > 0.0)
 			{
-				brushSide_t *brushSide = &data.BrushSides[brush_index + j];
-				int plane_index = brushSide->plane;
-
-				float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
-
-				// outside of brush plane
-				if (d > 0.0f)
-					continue;
-
-				// Inside a brush
-				if (data.Material[brush->material].contents & CONTENTS_WATER)
-				{
-					// Set underwater flag + depth
-					water = true;
-					water_depth = -d;
-					//				printf("underwater depth = %f\n", d);
-					continue;
-				}
-
-				// Ignore individual non solid surfaces (had to move lower to allow water)
-				if (data.Material[brush->material].surface & SURF_NONSOLID)
-					continue;
-
-
-				// Check old position against planes, if we werent colliding before
-				//then it is the collision plane we want to return
-
-				d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
-				if (d > 0.0)
-				{
-					plane->normal = data.Plane[plane_index].normal;
-					plane->d = data.Plane[plane_index].d;
-					*depth = d;
-				}
-				count++;
+				plane->normal = data.Plane[plane_index].normal;
+				plane->d = data.Plane[plane_index].d;
+				*depth = d;
 			}
+			count++;
+		}
 
-			if (count == num_sides)
-			{
-				if (data.Material[brush->material].contents & CONTENTS_LAVA)
-					lava = true;
-				else if (data.Material[brush->material].contents & CONTENTS_SLIME)
-					slime = true;
-				/*
-				if (strstr(data.Material[brush->material].name, "lava") != NULL)
-				{
+		if (count == num_sides)
+		{
+			if (data.Material[brush->material].contents & CONTENTS_LAVA)
 				lava = true;
-				}
-				*/
-				if (debug)
-				{
-					printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
-						data.Material[brush->material].name,
-						data.Material[brush->material].contents,
-						data.Material[brush->material].surface,
-						*depth, count,
-						plane->normal.x, plane->normal.y, plane->normal.z);
-				}
-				return true;
+			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
+				slime = true;
+			/*
+			if (strstr(data.Material[brush->material].name, "lava") != NULL)
+			{
+			lava = true;
 			}
-//		}
+			*/
+			if (debug)
+			{
+				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
+					data.Material[brush->material].name,
+					data.Material[brush->material].contents,
+					data.Material[brush->material].surface,
+					*depth, count,
+					plane->normal.x, plane->normal.y, plane->normal.z);
+			}
+
+
+			// inside a common/trigger etc
+			if (data.Material[brush->material].surface & SURF_NODRAW)
+			{
+				model_trigger[i] = true;
+				return false;
+			}
+
+
+			return true;
+		}
 	}
 
 	return false;

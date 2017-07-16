@@ -895,7 +895,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+//				entity.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "navpoint") == 0)
