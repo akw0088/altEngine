@@ -7995,10 +7995,14 @@ void Quake3::map_model(Entity &ent)
 	}
 	else if (ent.ent_type > ENT_FUNC_START && ent.ent_type < ENT_FUNC_END)
 	{
-		debugf("Loading func iem\n");
-		ent.model->clone(*model_table[MODEL_BOX]);
-		ent.rigid->gravity = false;
-		ent.nodraw = false;
+
+		if (!(ent.ent_type == ENT_FUNC_DOOR || ent.ent_type == ENT_FUNC_BUTTON || ent.ent_type == ENT_FUNC_PLAT))
+		{
+			debugf("Loading func iem\n");
+			ent.model->clone(*model_table[MODEL_BOX]);
+			ent.rigid->gravity = false;
+			ent.nodraw = false;
+		}
 	}
 }
 
