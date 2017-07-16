@@ -1673,6 +1673,24 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
+	if (entity->rigid->lava == true)
+	{
+		entity->rigid->lava = false;
+		entity->player->drown_timer++;
+
+		if (entity->player->drown_timer % 125 * 30 == 0)
+			console(self, "damage 15", engine->menu, engine->entity_list);
+	}
+	else if (entity->rigid->slime == true)
+	{
+		entity->rigid->slime = false;
+		entity->player->drown_timer++;
+
+		if (entity->player->drown_timer % 125 * 30 == 0)
+			console(self, "damage 15", engine->menu, engine->entity_list);
+	}
+
+
 	//Water sounds
 	if (entity->rigid->water && entity->rigid->water_depth < entity->rigid->get_height())
 	{

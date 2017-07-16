@@ -527,14 +527,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		int count = 0;
 
 
-		// Let water pass through for water flag
-		if ((data.Material[brush->material].contents & CONTENTS_WATER) == 0)
-		{
-			// Ignore non solid brushes
-			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
-				continue;
-		}
-
 		for( int j = 0; j < num_sides; j++)
 		{
 			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
@@ -562,6 +554,9 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
 				slime = true;
 
+			// Ignore non solid brushes
+			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
+				continue;
 
 			// Ignore individual non solid surfaces (had to move lower to allow water)
 			if (data.Material[brush->material].surface & SURF_NONSOLID)
