@@ -597,9 +597,14 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	}
 
 
+
 	// do same thing for bsp doors platforms etc
 	for (int i = 1; i < data.num_model; i++)
 	{
+
+		if (model_offset[i].magnitude() > 0.001f)
+			continue;
+
 //		for (int j = 0; i < data.Model[i].num_brushes; j++)
 	//	{
 			int index = data.Model[i].brush_index;
@@ -645,6 +650,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 				// Check old position against planes, if we werent colliding before
 				//then it is the collision plane we want to return
+
 				d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
 				if (d > 0.0)
 				{
@@ -1551,11 +1557,15 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		gfx.Blend(false);
 	}
 
-#ifndef DIRECTX
+	
 	for (int i = 1; i < data.num_model; i++)
 	{
-		render_model(i, gfx);
+//		mlight2.set_matrix(mvp);
+		if (fabs(model_offset[i].x) + fabs(model_offset[i].y) + fabs(model_offset[i].z) < 0.001f)
+			render_model(i, gfx);
 	}
+	
+#ifndef DIRECTX
 	render_sky(gfx, mlight2, tick_num, surface_list);
 #endif
 //	draw_box(frameLeaf->mins, frameLeaf->maxs);
@@ -1597,7 +1607,6 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
-
 
 	for (int i = 0; i < model->num_faces; i++)
 	{

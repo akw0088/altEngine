@@ -22,6 +22,9 @@ Entity::Entity()
 	trigger = NULL;
 	player = NULL;
 	portal_camera = NULL;
+	model_lerp = 0.0f;
+	model_offset = vec3();
+	opening = false;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NT_NONE;

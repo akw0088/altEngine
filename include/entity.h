@@ -23,11 +23,16 @@ public:
 	Player			*player;
 	PortalCamera	*portal_camera;
 
+
+
 	//Really bsp related items
 	int				ent_type; // will replace string type eventually
 	nettype_t		nettype;
 	int				angle;
 	int				model_ref;
+	vec3			model_offset;
+	float			model_lerp;
+	bool			opening;
 	float			height; // for movers will make own class later
 
 	bool particle_on;

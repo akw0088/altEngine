@@ -1007,6 +1007,18 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 #define SND_GAUNTLET_HIT 305
 	snd_table[SND_GAUNTLET_HIT] = snd_wave.size() - 1;
 
+	strcpy(wave.file, "sound/movers/doors/dr1_strt.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_DOOR_START 306
+	snd_table[SND_DOOR_START] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/movers/doors/dr1_end.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_DOOR_END 307
+	snd_table[SND_DOOR_END] = snd_wave.size() - 1;
+
 }
 
 team_t Quake3::get_team()
@@ -6511,14 +6523,16 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 				if (entity_list[i]->target[0] == '\0')
 					continue;
 
+				/*
 				if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
 				{
 					printf("Entity %d type %s pursuing %d type %s\n", i, entity_list[i]->type,
 						j, entity_list[j]->type);
-					entity_list[i]->rigid->pursue_flag = true;
-					entity_list[i]->rigid->target = entity_list[j];
+//					entity_list[i]->rigid->pursue_flag = true;
+//					entity_list[i]->rigid->target = entity_list[j];
 					break;
 				}
+				*/
 			}
 		}
 	}
@@ -6899,45 +6913,117 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END)
 		{
-			float period = 2200.0f; // manually setting for q3tourney6 plat
-			float sin_wave = (float)fsin(MY_PI * engine->tick_num / period);
-			float square_wave = (float)sign((float)fsin(2 * MY_PI * engine->tick_num / period));
-			float amount = sin_wave * square_wave;
+			float distance = (entity_list[self]->position - entity_list[i]->position).magnitude();
+
+
+			// start closing a distance further than we started opening
+			if (distance > 300.0f && entity_list[i]->opening == true)
+			{
+				entity_list[i]->opening = false;
+				if (entity_list[i]->model_lerp > 0.99f)
+				{
+					engine->play_wave(entity_list[i]->position, SND_DOOR_END);
+				}
+			}
+
+			if (entity_list[i]->opening == false && entity_list[i]->model_lerp > 0.0)
+			{
+				entity_list[i]->model_offset = entity_list[i]->model_offset * entity_list[i]->model_lerp;
+				engine->q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->model_offset;
+
+
+				if (entity_list[i]->model_lerp > 0.0f)
+					entity_list[i]->model_lerp -= 0.0001f;
+				else
+					entity_list[i]->model_lerp = 0.0f;
+			}
+
+
+			// only open if very close
+			if (distance > 100.0f && entity_list[i]->opening == false)
+			{
+				continue;
+			}
+
+			entity_list[i]->opening = true;
 
 			if (entity_list[i]->ent_type == ENT_FUNC_STATIC)
 				continue;
 
-			if (entity_list[i]->ent_type == ENT_FUNC_DOOR)
+			if (entity_list[i]->ent_type == ENT_FUNC_DOOR || entity_list[i]->ent_type == ENT_FUNC_BUTTON)
 			{
-				amount = 25.0f * amount;
-			}
-			static int count;
-			{
-				count++;
-				amount *= entity_list[i]->height / 800.0f;
+//				float amount = entity_list[i]->height;
+				float amount = 50.0f;
+				float half_x = 1.0f;
+				float half_y = 1.0f;
+				float half_z = 1.0f;
 
+				if (entity_list[i]->ent_type == ENT_FUNC_BUTTON)
+				{
+					amount = 10.0f; // buttons are tiny doors ;)
+				}
+
+
+				if (entity_list[i]->model_lerp < 0.01f)
+				{
+					engine->play_wave(entity_list[i]->position, SND_DOOR_START);
+				}
+
+				if (entity_list[i]->model_lerp < 1.0f)
+					entity_list[i]->model_lerp += 0.01f;
+
+				if (fabs(amount) < 0.001f)
+				{
+					half_x = (engine->q3map.data.Model[entity_list[i]->model_ref].max[0]
+						- engine->q3map.data.Model[entity_list[i]->model_ref].min[0]);
+
+					if (half_x < 0)
+						half_x *= -1;
+
+					half_y = (engine->q3map.data.Model[entity_list[i]->model_ref].max[1]
+						- engine->q3map.data.Model[entity_list[i]->model_ref].min[1]);
+
+					if (half_y < 0)
+						half_y *= -1;
+
+					half_z = (engine->q3map.data.Model[entity_list[i]->model_ref].max[2]
+						- engine->q3map.data.Model[entity_list[i]->model_ref].min[2]);
+
+					if (half_z < 0)
+						half_z *= -1;
+				}
+
+
+				amount = amount * entity_list[i]->model_lerp;
+
+				vec3 end;
 				switch (entity_list[i]->angle)
 				{
 				case 0:
 				case 360:
-					entity_list[i]->position += vec3(amount, 0.0f, 0.0f);
+					entity_list[i]->model_offset = vec3(amount, 0.0f, 0.0f);
 					break;
 				case 90:
-					entity_list[i]->position += vec3(0.0f, 0.0f, -amount);
+					entity_list[i]->model_offset = vec3(0.0f, 0.0f, amount);
 					break;
 				case 180:
-					entity_list[i]->position += vec3(-amount, 0.0f, 0.0f);
+					entity_list[i]->model_offset = vec3(-amount, 0.0f, 0.0f);
 					break;
 				case 270:
-					entity_list[i]->position += vec3(0.0f, 0.0f, amount);
+					entity_list[i]->model_offset = vec3(0.0f, 0.0f, -amount);
 					break;
 				case -1://up
-					entity_list[i]->position += vec3(0.0f, amount, 0.0f);
+					entity_list[i]->model_offset = vec3(0.0f, amount, 0.0f);
 					break;
 				case -2://down
-					entity_list[i]->position += vec3(0.0f, -amount, 0.0f);
+					entity_list[i]->model_offset = vec3(0.0f, -amount, 0.0f);
 					break;
 				}
+
+
+				engine->q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->model_offset;
+
+				
 			}
 		}
 
@@ -7703,6 +7789,13 @@ void Quake3::map_model(Entity &ent)
 		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
 		ent.nodraw = true;
+	}
+	else if (ent.ent_type > ENT_FUNC_START && ent.ent_type < ENT_FUNC_END)
+	{
+		debugf("Loading func iem\n");
+		ent.model->clone(*model_table[MODEL_BOX]);
+		ent.rigid->gravity = false;
+		ent.nodraw = false;
 	}
 }
 

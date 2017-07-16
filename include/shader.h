@@ -45,6 +45,7 @@ public:
 	int init(Graphics *gfx);
 	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time);
 	void set_shadow_matrix(int index, matrix4 &mvp);
+	void set_matrix(matrix4 &mvp);
 	virtual void prelink(void);
 	void set_max(int max);
 	void set_brightness(float value);

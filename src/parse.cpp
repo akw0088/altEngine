@@ -395,7 +395,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			{
 				entity.rigid->gravity = false;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+//				entity.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "func_door") == 0)
@@ -1003,7 +1003,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (atoi(value) != 0)
 			entity.height = (float)atoi(value);
 		else
-			entity.height = 1.0f;
+			entity.height = 0.0f;
 //		entity.rigid->velocity = vec3(0.0f, atoi(value), 0.0f);
 	}
 

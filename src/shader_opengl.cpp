@@ -309,6 +309,11 @@ void mLight2::set_shadow_matrix(int index, matrix4 &mvp)
 }
 
 
+void mLight2::set_matrix(matrix4 &mvp)
+{
+	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
+}
+
 void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int time)
 {
 	vec4 position[MAX_LIGHTS];

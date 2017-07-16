@@ -1560,6 +1560,13 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
+		if (entity->ent_type == ENT_FUNC_DOOR)
+		{
+			entity->visible = true;
+			entity->bsp_visible = true;
+			//printf("break\n");
+		}
+
 		if (vis)
 		{
 			if (entity->visible == false)
@@ -1620,6 +1627,20 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 		//render entity
 		entity->rigid->render(gfx);
+
+		if (entity->model_ref > 0 && entity->model_ref < q3map.data.num_model)
+		{
+			Frame frame;
+
+			vec3 old = entity->position;
+			entity->position = entity->model_offset;
+			entity->rigid->get_matrix(mvp.m);
+			mvp = (mvp * trans) * proj;
+			mlight2.set_matrix(mvp);
+			q3map.render_model(entity->model_ref, gfx);
+
+			entity->position = old;
+		}
 
 		//  update emitter position if this entity has particles
 		if (entity->particle_on)

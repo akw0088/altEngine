@@ -71,6 +71,9 @@ public:
 	int *face_to_patch;
 	int lastIndex;
 
+
+	vec3 model_offset[128];
+
 	unsigned int portal_tex; // hack
 
 	bool enable_textures;
