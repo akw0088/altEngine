@@ -196,6 +196,7 @@ void Player::respawn()
 	reload_timer = 0;
 	invisibility_timer = 0;
 	alive_timer = 0;
+	falling = false;
 
 
 //	entity->model->make_aabb();
@@ -528,6 +529,7 @@ void Player::avoid_walls(Bsp &map)
 	vector<surface_t *> surface_list;
 	vec3 clip;
 	vec3 vel;
+	int model_trigger;
 
 	input_t input;
 
@@ -540,31 +542,31 @@ void Player::avoid_walls(Bsp &map)
 		speed_scale = 2.0f;
 
 
-	map.collision_detect(forward, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime);
+	map.collision_detect(forward, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger);
 	if ( depth < 0 )
 	{
 		input.moveright = true;
 	}
 
-	map.collision_detect(backward, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime);
+	map.collision_detect(backward, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger);
 	if (depth < 0)
 	{
 		input.moveleft = true;
 	}
 
-	map.collision_detect(left, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime);
+	map.collision_detect(left, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger);
 	if (depth < 0)
 	{
 		input.moveup = true;
 	}
 
-	map.collision_detect(right, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime);
+	map.collision_detect(right, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger);
 	if (depth < 0)
 	{
 		input.movedown = true;
 	}
 
-	map.collision_detect(down, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime);
+	map.collision_detect(down, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger);
 	if (depth > 0)
 	{
 		input.jump = true;

@@ -1632,6 +1632,9 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		{
 			Frame frame;
 
+			if (entity->model_ref == 6)
+				continue;
+
 			vec3 old = entity->position;
 			entity->position = entity->model_offset;
 			entity->rigid->get_matrix(mvp.m);
@@ -2075,6 +2078,7 @@ void Engine::dynamics()
 		if (collision_detect_enable == false && i >= max_player)
 			continue;
 
+
 		RigidBody *body = entity_list[i]->rigid;
 
 		float delta_time = TICK_MS / 1000.0f;
@@ -2229,7 +2233,7 @@ bool Engine::map_collision(RigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime))
+			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.model_trigger))
 		{
 			if (body.step_flag)
 			{
@@ -2241,7 +2245,7 @@ bool Engine::map_collision(RigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime) == false)
+						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.model_trigger) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);

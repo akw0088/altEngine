@@ -543,6 +543,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			if (entity.trigger == NULL)
 				entity.trigger = new Trigger(&entity, audio);
 
+			entity.trigger->timeout = 1.0f;
+			entity.trigger->timeout_value = 1.0f;
+
 			if (entity.rigid)
 			{
 				entity.rigid->gravity = false;
@@ -884,6 +887,21 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 				entity.nodraw = true;
+
+				if (entity.trigger)
+				{
+					if (entity.trigger->timeout_value < 0.001f)
+					{
+						entity.trigger->timeout = 1.0f;
+						entity.trigger->timeout_value = 1.0f;
+					}
+					else
+					{
+						entity.trigger->timeout = 15.0f;
+						entity.trigger->timeout_value = 15.0f;
+					}
+
+				}
 			}
 		}
 		else if (strcmp(value, "trigger_multiple") == 0)
@@ -967,7 +985,19 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger = new Trigger(&entity, audio);
 		entity.trigger->respawn_index = engine->get_load_wave(value);
 		entity.trigger->noise = true;
-		entity.trigger->timeout = entity.trigger->timeout_value;
+		if (entity.trigger && entity.trigger->timeout_value < 0.001f)
+		{
+			if (strstr("*falling", key))
+			{
+				entity.trigger->timeout = 1.0f;
+				entity.trigger->timeout_value = 1.0f;
+			}
+			else
+			{
+				entity.trigger->timeout = 15.0f;
+				entity.trigger->timeout_value = 15.0f;
+			}
+		}
 		entity.trigger->active = true;
 	}
 	else if (strcmp(key, "wait") == 0)

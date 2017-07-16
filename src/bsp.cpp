@@ -497,10 +497,12 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 }
 
 bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
-	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime)
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime, int &model_trigger)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
+	model_trigger = 0;
+
 
 	water = false;
 	water_depth = 2048.0f;
@@ -657,7 +659,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 			// Check old position against planes, if we werent colliding before
 			//then it is the collision plane we want to return
-
 			d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
 			if (d > 0.0)
 			{
@@ -694,7 +695,8 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 			// inside a common/trigger etc
 			if (data.Material[brush->material].surface & SURF_NODRAW)
 			{
-				model_trigger[i] = true;
+
+				model_trigger = i;
 				return false;
 			}
 
@@ -704,6 +706,15 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	}
 
 	return false;
+}
+
+
+void Bsp::clear_triggers()
+{
+	for (int i = 1; i < data.num_model; i++)
+	{
+		model_trigger[i] = false;
+	}
 }
 
 void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list)

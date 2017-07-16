@@ -5932,6 +5932,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			return;
 
 
+		// prevent trigger hurts from killing freshly spawned player
+		engine->q3map.clear_triggers();
+
 		// Respawn command needs to be rewritten really
 		// param one spawns player on entity index given
 		// param two spawns a different player entity
@@ -7072,7 +7075,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				// platforms start up (so lightmaps are generated)
 				// so invert lerp value
 				if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
-					amount = amount * (1.0 - entity_list[i]->model_lerp);
+					amount = amount * (1.0f - entity_list[i]->model_lerp);
 
 
 
@@ -7113,10 +7116,17 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (engine->q3map.model_trigger[entity_list[i]->model_ref])
 			{
 				engine->q3map.model_trigger[entity_list[i]->model_ref] = false;
-				printf("Inside trigger model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
 
-				if (entity_list[i]->trigger)
+				if (entity_list[i]->trigger && entity_list[i]->trigger->active == false)
+				{
+					printf("Triggered model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
+					entity_list[i]->trigger->active = true;
 					console(self, entity_list[i]->trigger->action, engine->menu, entity_list);
+				}
+				else
+				{
+					printf("model %d trigger already hit\n", entity_list[i]->model_ref);
+				}
 
 				if (strlen(entity_list[i]->target) > 1)
 				{
@@ -7129,6 +7139,20 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
 						{
 							printf("trigger_multiple volume triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
+
+
+							if (strcmp(entity_list[j]->type, "target_speaker") == 0)
+							{
+								//hack we know it's *falling
+								if (entity_list[self]->player->falling == false)
+								{
+									printf("Ahhhh...\n");
+									engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
+									entity_list[self]->player->falling = true;
+								}
+							}
+
+
 							if (entity_list[j]->ent_type == ENT_TARGET_RELAY)
 							{
 								// search again, great
@@ -7159,8 +7183,15 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 								break;
 							}
 
-							if (entity_list[j]->trigger)
+							if (entity_list[j]->trigger && entity_list[j]->trigger->active == false)
+							{
+								entity_list[j]->trigger->active = true;
 								console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+							}
+							else
+							{
+								printf("trigger has already been hit\n");
+							}
 						}
 					}
 				}
@@ -7550,6 +7581,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	bool lava;
 	bool slime;
 	int nstep = 0;
+	int model_trigger = 0;
 
 
 	vec3 end = step + camera_frame.forward;
@@ -7559,7 +7591,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 
 	do
 	{
-		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime);
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime, model_trigger);
 		if (ret)
 		{
 			hit = true;
