@@ -6906,13 +6906,6 @@ void Quake3::endgame(char *winner)
 
 void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self)
 {
-	if (entity_list[self]->player)
-	{
-		// dont let dead people trigger anything
-		if (entity_list[self]->player->health <= 0)
-			return;
-	}
-
 	if (strcmp(ent->target, target->target_name) == 0)
 	{
 		printf("%s bsp volume triggered %s with targetname %s\n",
@@ -6962,18 +6955,18 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 {
 	int model_index = ent->model_ref;
 
-	if (entity_list[self]->player)
-	{
-		// dont let dead people trigger anything
-		if (entity_list[self]->player->health <= 0)
-			return;
-	}
-
 	for (int j = 0; j < engine->max_player; j++)
 	{
 		if (entity_list[j]->player == NULL || entity_list[j]->rigid == NULL)
 		{
 			continue;
+		}
+
+		if (entity_list[j]->player)
+		{
+			// dont let dead people trigger anything
+			if (entity_list[j]->player->health <= 0)
+				continue;
 		}
 
 		if (entity_list[j]->rigid->bsp_trigger_volume != model_index)
