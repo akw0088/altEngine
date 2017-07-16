@@ -6908,56 +6908,8 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 {
 	if (strcmp(ent->target, target->target_name) == 0)
 	{
-		printf("trigger_multiple volume triggered target %s of type %s\n",
-			ent->target, target->type);
-
-
-		if (strcmp(target->type, "target_speaker") == 0)
-		{
-			//hack we know it's *falling
-			if (entity_list[self]->player->falling == false)
-			{
-				printf("Ahhhh...\n");
-				engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
-				entity_list[self]->player->falling = true;
-			}
-		}
-
-
-		if (strcmp(target->type, "target_remove_powerups") == 0)
-		{
-			//hack for q3tourney3, just kill them
-			console(self, "damage 1000", engine->menu, entity_list);
-		}
-
-
-		if (target->ent_type == ENT_TARGET_RELAY)
-		{
-			// search again, great
-			if (strlen(ent->target) > 1)
-			{
-				for (int k = 0; k < entity_list.size(); k++)
-				{
-					if (strcmp(target->target, entity_list[k]->target_name) == 0)
-					{
-						printf("target_relay triggered target %s of type %s\n", target->target, entity_list[k]->type);
-						if (strcmp(entity_list[k]->type, "target_speaker") == 0)
-						{
-							//hack we know it's *falling
-							if (entity_list[self]->player->falling == false)
-							{
-								printf("Ahhhh...\n");
-								engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
-								entity_list[self]->player->falling = true;
-							}
-						}
-
-						break;
-					}
-				}
-			}
-			return;
-		}
+		printf("%s bsp volume triggered %s with targetname %s\n",
+			ent->type, target->type, ent->target);
 
 		if (target->trigger && target->trigger->active == false)
 		{
@@ -6967,6 +6919,33 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 		else
 		{
 			printf("trigger has already been hit\n");
+		}
+
+		switch (target->ent_type)
+		{
+		case ENT_TARGET_SPEAKER:
+			//hack we know it's *falling
+			if (entity_list[self]->player->falling == false)
+			{
+				printf("Ahhhh...\n");
+				engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
+				entity_list[self]->player->falling = true;
+			}
+			break;
+		case ENT_TARGET_REMOVE_POWERUPS:
+			//hack for q3tourney3, just kill them
+			console(self, "damage 1000", engine->menu, entity_list);
+			break;
+		case ENT_TARGET_RELAY:
+			// search again, great
+			if (strlen(ent->target) > 1)
+			{
+				for (int k = 0; k < entity_list.size(); k++)
+				{
+					check_target(entity_list, target, entity_list[k], self);
+				}
+			}
+			return;
 		}
 	}
 }
@@ -6992,13 +6971,13 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 
 		if (ent->trigger && ent->trigger->active == false)
 		{
-			printf("Triggered model %d type %s\n", ent->model_ref, ent->type);
+			printf("Triggered bsp volume %d type %s\n", ent->model_ref, ent->type);
 			ent->trigger->active = true;
 			console(self, ent->trigger->action, engine->menu, entity_list);
 		}
 		else
 		{
-			printf("model %d trigger already hit\n", ent->model_ref);
+			printf("bsp volume %d trigger already hit\n", ent->model_ref);
 		}
 
 		if (strlen(ent->target) > 1)
