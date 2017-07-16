@@ -1019,6 +1019,13 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 #define SND_DOOR_END 307
 	snd_table[SND_DOOR_END] = snd_wave.size() - 1;
 
+	strcpy(wave.file, "sound/movers/switches/butn2.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_BUTTON 308
+	snd_table[SND_BUTTON] = snd_wave.size() - 1;
+
+
 }
 
 team_t Quake3::get_team()
@@ -6984,7 +6991,10 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 				if (entity_list[i]->model_lerp < 0.01f)
 				{
-					engine->play_wave(entity_list[i]->position, SND_DOOR_START);
+					if (entity_list[i]->ent_type == ENT_FUNC_BUTTON)
+						engine->play_wave(entity_list[i]->position, SND_BUTTON);
+					else
+						engine->play_wave(entity_list[i]->position, SND_DOOR_START);
 				}
 
 				if (entity_list[i]->model_lerp < 1.0f)
