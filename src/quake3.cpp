@@ -5687,7 +5687,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
-	ret = strcmp(cmd, "holdable_medikit");
+	ret = strcmp(cmd, "holdable_medkit");
 	if (ret == 0)
 	{
 		if (entity_list[self]->player->holdable_teleporter == false)
@@ -6992,9 +6992,23 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				if (entity_list[i]->model_lerp < 0.01f)
 				{
 					if (entity_list[i]->ent_type == ENT_FUNC_BUTTON)
+					{
 						engine->play_wave(entity_list[i]->position, SND_BUTTON);
+						for (int j = engine->max_dynamic; j < entity_list.size(); j++)
+						{
+							if (i == j)
+								continue;
+
+							if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
+							{
+								printf("func_button triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
+							}
+						}
+					}
 					else
+					{
 						engine->play_wave(entity_list[i]->position, SND_DOOR_START);
+					}
 				}
 
 				if (entity_list[i]->model_lerp < 1.0f)
