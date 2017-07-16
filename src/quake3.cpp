@@ -5931,10 +5931,6 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		if (self == -1)
 			return;
 
-
-		// prevent trigger hurts from killing freshly spawned player
-		engine->q3map.clear_triggers();
-
 		// Respawn command needs to be rewritten really
 		// param one spawns player on entity index given
 		// param two spawns a different player entity
@@ -5966,6 +5962,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			matrix4 matrix;
 
 			entity_list[self]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
+
+			entity_list[self]->rigid->model_trigger = 0;
 
 			switch (entity_list[i]->angle)
 			{
@@ -7113,84 +7111,91 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		if (entity_list[i]->model_ref > 0 && entity_list[i]->model_ref < engine->q3map.data.num_model)
 		{
-			if (engine->q3map.model_trigger[entity_list[i]->model_ref])
+			int model_index = entity_list[i]->model_ref;
+
+			for (int j = 0; j < engine->max_player; j++)
 			{
-				engine->q3map.model_trigger[entity_list[i]->model_ref] = false;
-
-				if (entity_list[i]->trigger && entity_list[i]->trigger->active == false)
+				if (entity_list[j]->player && entity_list[j]->rigid)
 				{
-					printf("Triggered model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
-					entity_list[i]->trigger->active = true;
-					console(self, entity_list[i]->trigger->action, engine->menu, entity_list);
-				}
-				else
-				{
-					printf("model %d trigger already hit\n", entity_list[i]->model_ref);
-				}
-
-				if (strlen(entity_list[i]->target) > 1)
-				{
-					for (int j = 0; j < entity_list.size(); j++)
+					if (entity_list[j]->rigid->model_trigger == model_index)
 					{
-						if (i == j)
-							continue;
-
-
-						if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
+						entity_list[j]->rigid->model_trigger = 0;
+						if (entity_list[i]->trigger && entity_list[i]->trigger->active == false)
 						{
-							printf("trigger_multiple volume triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
+							printf("Triggered model %d type %s\n", entity_list[i]->model_ref, entity_list[i]->type);
+							entity_list[i]->trigger->active = true;
+							console(self, entity_list[i]->trigger->action, engine->menu, entity_list);
+						}
+						else
+						{
+							printf("model %d trigger already hit\n", entity_list[i]->model_ref);
+						}
 
-
-							if (strcmp(entity_list[j]->type, "target_speaker") == 0)
+						if (strlen(entity_list[i]->target) > 1)
+						{
+							for (int j = 0; j < entity_list.size(); j++)
 							{
-								//hack we know it's *falling
-								if (entity_list[self]->player->falling == false)
-								{
-									printf("Ahhhh...\n");
-									engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
-									entity_list[self]->player->falling = true;
-								}
-							}
+								if (i == j)
+									continue;
 
 
-							if (entity_list[j]->ent_type == ENT_TARGET_RELAY)
-							{
-								// search again, great
-								if (strlen(entity_list[i]->target) > 1)
+								if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
 								{
-									for (int k = 0; k < entity_list.size(); k++)
+									printf("trigger_multiple volume triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
+
+
+									if (strcmp(entity_list[j]->type, "target_speaker") == 0)
 									{
-										if (j == k)
-											continue;
-										if (strcmp(entity_list[j]->target, entity_list[k]->target_name) == 0)
+										//hack we know it's *falling
+										if (entity_list[self]->player->falling == false)
 										{
-											printf("target_relay triggered target %s of type %s\n", entity_list[j]->target, entity_list[k]->type);
-											if (strcmp(entity_list[k]->type, "target_speaker") == 0)
-											{
-												//hack we know it's *falling
-												if (entity_list[self]->player->falling == false)
-												{
-													printf("Ahhhh...\n");
-													engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
-													entity_list[self]->player->falling = true;
-												}
-											}
-
-											break;
+											printf("Ahhhh...\n");
+											engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
+											entity_list[self]->player->falling = true;
 										}
 									}
-								}
-								break;
-							}
 
-							if (entity_list[j]->trigger && entity_list[j]->trigger->active == false)
-							{
-								entity_list[j]->trigger->active = true;
-								console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
-							}
-							else
-							{
-								printf("trigger has already been hit\n");
+
+									if (entity_list[j]->ent_type == ENT_TARGET_RELAY)
+									{
+										// search again, great
+										if (strlen(entity_list[i]->target) > 1)
+										{
+											for (int k = 0; k < entity_list.size(); k++)
+											{
+												if (j == k)
+													continue;
+												if (strcmp(entity_list[j]->target, entity_list[k]->target_name) == 0)
+												{
+													printf("target_relay triggered target %s of type %s\n", entity_list[j]->target, entity_list[k]->type);
+													if (strcmp(entity_list[k]->type, "target_speaker") == 0)
+													{
+														//hack we know it's *falling
+														if (entity_list[self]->player->falling == false)
+														{
+															printf("Ahhhh...\n");
+															engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
+															entity_list[self]->player->falling = true;
+														}
+													}
+
+													break;
+												}
+											}
+										}
+										break;
+									}
+
+									if (entity_list[j]->trigger && entity_list[j]->trigger->active == false)
+									{
+										entity_list[j]->trigger->active = true;
+										console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+									}
+									else
+									{
+										printf("trigger has already been hit\n");
+									}
+								}
 							}
 						}
 					}
@@ -7482,8 +7487,12 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				{
 					vec3 distance = entity_list[self]->position - entity_list[i]->position;
 					float mag = MIN(distance.magnitude(), 50.0f);
-					//add knockback to explosions
-					entity_list[self]->rigid->velocity += (distance.normalize() * trigger->knockback) / mag;
+
+					if (fabs(mag) > 0.0001f)
+					{
+						//add knockback to explosions
+						entity_list[self]->rigid->velocity += (distance.normalize() * trigger->knockback) / mag;
+					}
 				}
 
 				if (player->local)

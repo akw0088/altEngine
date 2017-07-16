@@ -708,15 +708,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	return false;
 }
 
-
-void Bsp::clear_triggers()
-{
-	for (int i = 1; i < data.num_model; i++)
-	{
-		model_trigger[i] = false;
-	}
-}
-
 void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list)
 {
 	float time = (float)tick_num / TICK_RATE;

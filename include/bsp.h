@@ -34,7 +34,6 @@ public:
 	void render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render_model(unsigned int index, Graphics &gfx);
 	vec3 model_origin(unsigned int index);
-	void clear_triggers();
 
 	bool load(char *map, char **pk3list, int num_pk3);
 	void load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3);

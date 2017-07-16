@@ -182,6 +182,7 @@ void Player::respawn()
 	click_timer = 0;
 	entity->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 	entity->rigid->net_force = vec3(0.0f, 0.0f, 0.0f);
+	entity->rigid->model_trigger = 0;
 	state = PLAYER_IDLE;
 	bot_state = BOT_IDLE;
 
