@@ -556,6 +556,13 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 				continue;
 			}
 
+
+			if (data.Material[brush->material].contents & CONTENTS_LAVA)
+				lava = true;
+			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
+				slime = true;
+
+
 			// Ignore individual non solid surfaces (had to move lower to allow water)
 			if (data.Material[brush->material].surface & SURF_NONSOLID)
 				continue;
@@ -575,16 +582,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 		if (count == num_sides)
 		{
-			if (data.Material[brush->material].contents & CONTENTS_LAVA)
-				lava = true;
-			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
-				slime = true;
-/*
-			if (strstr(data.Material[brush->material].name, "lava") != NULL)
-			{
-				lava = true;
-			}
-			*/
 			if (debug)
 			{
 				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
@@ -669,12 +666,8 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 				lava = true;
 			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
 				slime = true;
-			/*
-			if (strstr(data.Material[brush->material].name, "lava") != NULL)
-			{
-			lava = true;
-			}
-			*/
+
+
 			if (debug)
 			{
 				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
