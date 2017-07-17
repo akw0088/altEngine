@@ -593,7 +593,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 
 	// do same thing for bsp doors platforms etc
-	for (int i = 1; i < data.num_model; i++)
+	for (unsigned int i = 1; i < data.num_model; i++)
 	{
 
 		if (model_offset[i].magnitude() > 0.001f)
@@ -657,12 +657,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 		if (count == num_sides)
 		{
-			if (data.Material[brush->material].contents & CONTENTS_LAVA)
-				lava = true;
-			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
-				slime = true;
-
-
 			if (debug)
 			{
 				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
@@ -1552,7 +1546,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	}
 
 	
-	for (int i = 1; i < data.num_model; i++)
+	for (unsigned int i = 1; i < data.num_model; i++)
 	{
 //		mlight2.set_matrix(mvp);
 		if (fabs(model_offset[i].x) + fabs(model_offset[i].y) + fabs(model_offset[i].z) < 0.001f)

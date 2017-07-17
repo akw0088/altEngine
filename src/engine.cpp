@@ -1628,7 +1628,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		//render entity
 		entity->rigid->render(gfx);
 
-		if (entity->model_ref > 0 && entity->model_ref < q3map.data.num_model)
+		if (entity->model_ref > 0 && entity->model_ref < q3map.data.num_model && q3map.enable_textures)
 		{
 			Frame frame;
 
@@ -1640,7 +1640,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			entity->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
-			q3map.render_model(entity->model_ref, gfx);
+//			q3map.render_model(entity->model_ref, gfx);
 
 			entity->position = old;
 		}
@@ -4231,7 +4231,7 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strstr(cmd, "voteyes"))
+	if (strstr(cmd, "voteno"))
 	{
 		if (voted == false)
 		{

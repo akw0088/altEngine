@@ -1245,11 +1245,40 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			console(self, "damage 20", engine->menu, engine->entity_list);
 			entity->player->pain_timer = (TICK_RATE >> 1);
+			entity->rigid->lava = false;
+
+			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+			{
+				char msg[256];
+
+				entity->player->stats.deaths++;
+
+				//  "Player" visits the Volcano God
+				//	"Player" turned into hot slag
+				//	"Player" burst into flames
+
+				sprintf(msg, "%s turned into hot slag\n", entity->player->name);
+				debugf(msg);
+				engine->menu.print_notif(msg);
+				notif_timer = 3 * TICK_RATE;
+			}
 		}
 		else if (entity->rigid->slime)
 		{
 			console(self, "damage 10", engine->menu, engine->entity_list);
 			entity->player->pain_timer = (TICK_RATE >> 1);
+			entity->rigid->slime = false;
+
+			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+			{
+				char msg[256];
+
+				entity->player->stats.deaths++;
+				sprintf(msg, "%s took an acid bath\n", entity->player->name);
+				debugf(msg);
+				engine->menu.print_notif(msg);
+				notif_timer = 3 * TICK_RATE;
+			}
 		}
 	}
 
@@ -1672,46 +1701,6 @@ void Quake3::handle_player(int self, input_t &input)
 			}
 		}
 	}
-
-	if (entity->rigid->lava == true)
-	{
-		entity->rigid->lava = false;
-		entity->player->drown_timer++;
-
-		if (entity->player->drown_timer % 125 * 30 == 0)
-			console(self, "damage 15", engine->menu, engine->entity_list);
-
-		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
-		{
-			char msg[256];
-
-			entity->player->stats.deaths++;
-			sprintf(msg, "%s is lava hot\n", entity->player->name);
-			debugf(msg);
-			engine->menu.print_notif(msg);
-			notif_timer = 3 * TICK_RATE;
-		}
-	}
-	else if (entity->rigid->slime == true)
-	{
-		entity->rigid->slime = false;
-		entity->player->drown_timer++;
-
-		if (entity->player->drown_timer % 125 * 30 == 0)
-			console(self, "damage 15", engine->menu, engine->entity_list);
-
-		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
-		{
-			char msg[256];
-
-			entity->player->stats.deaths++;
-			sprintf(msg, "%s took an acid bath\n", entity->player->name);
-			debugf(msg);
-			engine->menu.print_notif(msg);
-			notif_timer = 3 * TICK_RATE;
-		}
-	}
-
 
 	//Water sounds
 	if (entity->rigid->water && entity->rigid->water_depth < entity->rigid->get_height())
@@ -5390,7 +5379,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				else
 					engine->play_wave(entity_list[self]->position, player->model_index * SND_PLAYER + SND_PAIN3);
 			}
-			else if (player->health <= 100)
+			else if (player->health <= 200)
 			{
 				if (local)
 					engine->play_wave_global(player->model_index * SND_PLAYER + SND_PAIN4);
