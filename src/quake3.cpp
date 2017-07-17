@@ -1680,6 +1680,17 @@ void Quake3::handle_player(int self, input_t &input)
 
 		if (entity->player->drown_timer % 125 * 30 == 0)
 			console(self, "damage 15", engine->menu, engine->entity_list);
+
+		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+		{
+			char msg[256];
+
+			entity->player->stats.deaths++;
+			sprintf(msg, "%s is lava hot\n", entity->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
+		}
 	}
 	else if (entity->rigid->slime == true)
 	{
@@ -1688,6 +1699,17 @@ void Quake3::handle_player(int self, input_t &input)
 
 		if (entity->player->drown_timer % 125 * 30 == 0)
 			console(self, "damage 15", engine->menu, engine->entity_list);
+
+		if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
+		{
+			char msg[256];
+
+			entity->player->stats.deaths++;
+			sprintf(msg, "%s took an acid bath\n", entity->player->name);
+			debugf(msg);
+			engine->menu.print_notif(msg);
+			notif_timer = 3 * TICK_RATE;
+		}
 	}
 
 
@@ -1932,11 +1954,13 @@ void Quake3::step(int frame_step)
 	unsigned int num_bot = 3;
 
 #ifdef WIN32
+	/*
 	int fpOld, fpNew;
 	fpOld = _controlfp(0, 0);
 	//fpNew = fpOld & ~(EM_OVERFLOW | EM_UNDERFLOW | EM_INEXACT | EM_ZERODIVIDE | EM_DENORMAL | EM_INVALID);
 	fpNew = fpOld & ~( EM_ZERODIVIDE | EM_INVALID);
 	_controlfp(fpNew, MCW_EM);
+	*/
 #endif
 
 
@@ -2343,7 +2367,7 @@ void Quake3::step(int frame_step)
 	}
 
 #ifdef WIN32
-	_controlfp(fpOld, MCW_EM);
+//	_controlfp(fpOld, MCW_EM);
 #endif
 }
 
@@ -6974,7 +6998,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			// search again, great
 			if (strlen(ent->target) > 1)
 			{
-				for (int k = 0; k < entity_list.size(); k++)
+				for (unsigned int k = 0; k < entity_list.size(); k++)
 				{
 					check_target(entity_list, target, entity_list[k], self);
 				}
@@ -6989,7 +7013,7 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 {
 	int model_index = ent->model_ref;
 
-	for (int j = 0; j < engine->max_player; j++)
+	for (unsigned int j = 0; j < engine->max_player; j++)
 	{
 		if (entity_list[j]->player == NULL || entity_list[j]->rigid == NULL)
 		{
@@ -7023,7 +7047,7 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 
 		if (strlen(ent->target) > 1)
 		{
-			for (int j = 0; j < entity_list.size(); j++)
+			for (unsigned int j = 0; j < entity_list.size(); j++)
 			{
 				check_target(entity_list, ent, entity_list[j], self);
 			}
@@ -7108,7 +7132,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 				if (distance < 75.0f)
 				{
-					for (int j = engine->max_dynamic; j < entity_list.size(); j++)
+					for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
 					{
 						if (i == j)
 							continue;
@@ -7153,7 +7177,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					if (entity_list[i]->ent_type == ENT_FUNC_BUTTON)
 					{
 						engine->play_wave(entity_list[i]->position, SND_BUTTON);
-						for (int j = engine->max_dynamic; j < entity_list.size(); j++)
+						for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
 						{
 							if (i == j)
 								continue;

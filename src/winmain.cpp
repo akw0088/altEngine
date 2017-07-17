@@ -680,6 +680,9 @@ double GetCounter(double freq)
 	LARGE_INTEGER li;
 	QueryPerformanceCounter(&li);
 
+	if (freq < 1000)
+		return 0.0;
+
 	return (double)li.QuadPart / freq;
 }
 
@@ -840,7 +843,8 @@ BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam
 				// add to combo box
 				SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)resbuf);
 			}
-			else {
+			else
+			{
 				i = -1;
 			}
 		}
@@ -856,7 +860,7 @@ BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam
 		switch (LOWORD(wParam))
 		{
 //		case IDD_RESOLUTION:
-			return TRUE;
+//			return TRUE;
 		case IDOK:
 			//if (SendMessage(GetDlgItem(hdlg, IDD_FULLSCREEN), BM_GETCHECK, 0, 0))
 			{

@@ -24,11 +24,11 @@ typedef struct
 	double time;
 } ping_t;
 
-
+float fabs(float val);
 void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height);
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
 bool RayTriangleMT(vec3 &origin, vec3 &dir, vec3 &a, vec3 &b, vec3 &c, float &t, float &u, float &v);
-bool RaySphere(vec3 &origin, vec3 &dir, vec3 sphere, float radius, float &t);
+bool RaySphere(vec3 &origin, vec3 &dir, vec3 &sphere, float radius, float &t);
 bool RayPlane(vec3 &origin, vec3 &dir, vec3 &normal, float d, vec3 &point);
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
 void quadratic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, float time, vec3 &out);

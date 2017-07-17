@@ -1505,16 +1505,22 @@ void show_hw_info()
 	printf("Vendor:\t\t%s\n", glGetString(GL_VENDOR));
 	printf("GPU:\t\t%s\n", glGetString(GL_RENDERER));
 	char *vendor = (char *)glGetString(GL_VENDOR);
+	if (vendor == NULL)
+	{
+		printf("Vendor is NULL, does you GPU support OpenGL 4.4?\n");
+	}
+
+
 	if (vendor && (strstr(vendor, "nvidia") || strstr(vendor, "NVIDIA")))
 	{
 #define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
 		int total_mem_kb = 0;
 		glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
-		printf("GPU RAM:\t%.2f GB", (float)(total_mem_kb / (1024 * 1024)));
+		printf("GPU RAM:\t%.2f GB\n", (float)(total_mem_kb / (1024 * 1024)));
 	}
 	else if (vendor && strstr(vendor, "Intel"))
 	{
-		printf("GPU RAM: using system ram\n");
+		printf("GPU RAM:\t\tUsing system ram\n");
 	}
 	else if (vendor)
 	{
@@ -1524,7 +1530,7 @@ void show_hw_info()
 		size_t total_mem_mb = 0;
 		wglGetGPUIDsAMD(n, ids);
 		wglGetGPUInfoAMD(ids[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(size_t), &total_mem_mb);
-		printf("GPU RAM:\t%.2f GB", (float)(total_mem_mb / 1024));
+		printf("GPU RAM:\t%.2f GB\n", (float)(total_mem_mb / 1024));
 #endif
 	}
 #endif
