@@ -10,6 +10,7 @@
 #include <xmmintrin.h>
 
 
+double freq = 0.0;
 double com_maxfps = 1000.0f / 250;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -19,7 +20,6 @@ void RedirectIOToConsole();
 unsigned int getTimeStamp(void);
 double GetCounter(double freq);
 void GetFreq(double &freq);
-double freq = 0.0;
 void get_cpu_info(struct cpuinfo *);
 void show_hw_info();
 
@@ -55,7 +55,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
 
 
-
+	GetFreq(freq);
 
 
 	if (!RegisterClass(&wndclass))
@@ -162,7 +162,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			const int context[] =
 			{
 				WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-				WGL_CONTEXT_MINOR_VERSION_ARB, 5,
+				WGL_CONTEXT_MINOR_VERSION_ARB, 4,
 //				WGL_CONTEXT_FLAGS_ARB,
 //				WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB | WGL_CONTEXT_DEBUG_BIT_ARB,
 				WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
@@ -679,6 +679,7 @@ double GetCounter(double freq)
 {
 	LARGE_INTEGER li;
 	QueryPerformanceCounter(&li);
+
 	return (double)li.QuadPart / freq;
 }
 

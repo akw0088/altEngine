@@ -986,7 +986,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		entity.trigger->respawn_index = engine->get_load_wave(value);
 		entity.trigger->noise = true;
 
-		strcpy(value, entity.trigger->noise_str);
+		strcpy(entity.trigger->noise_str, value);
 		if (entity.trigger && entity.trigger->timeout_value < 0.001f)
 		{
 			if (strstr("*falling", key))
@@ -996,8 +996,18 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			else
 			{
-				entity.trigger->timeout = 15.0f;
-				entity.trigger->timeout_value = 15.0f;
+				if (strlen(entity.target_name) > 1)
+				{
+					// suppose to be triggered
+					entity.trigger->noise = false;
+					entity.trigger->timeout = 15.0f;
+					entity.trigger->timeout_value = 15.0f;
+				}
+				else
+				{
+					entity.trigger->timeout = 15.0f;
+					entity.trigger->timeout_value = 15.0f;
+				}
 			}
 		}
 		entity.trigger->active = true;

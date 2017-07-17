@@ -792,12 +792,6 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		if (lightmap_selected)
 			gfx.SelectTexture(8, 0);
 		gfx.SelectTexture(stage, 0);
-		/*
-		if (shader)
-		{
-			gfx.Blend(false);
-		}
-*/
 	}
 }
 

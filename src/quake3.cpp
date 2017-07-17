@@ -6957,6 +6957,12 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 							entity_list[self]->player->falling = true;
 						}
 					}
+
+					if (target->trigger->played  == false)
+					{
+						engine->play_wave(target->position, target->trigger->respawn_index);
+						target->trigger->played = true;
+					}
 				}
 
 			break;
@@ -7542,16 +7548,19 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		}
 		else
 		{
-			if (trigger->active)
+			trigger->played = false;
+			if (trigger->active && trigger->noise)
 			{
+				// play periodic sound
 				engine->play_wave(entity_list[i]->position, trigger->respawn_index);
 			}
 
 			if (trigger->noise == false)
 			{
+				// means this sound must be triggered, reset timeout so it's not trigger continously
 				trigger->active = false;
 				trigger->client_active = false;
-				trigger->timeout = 0.0f;
+//				trigger->timeout = trigger->timeout_value;;
 			}
 			else
 			{

@@ -1504,15 +1504,19 @@ void show_hw_info()
 	printf("GLSL Version:\t%s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	printf("Vendor:\t\t%s\n", glGetString(GL_VENDOR));
 	printf("GPU:\t\t%s\n", glGetString(GL_RENDERER));
-
-	if (strstr((char *)glGetString(GL_VENDOR), "nvidia") || strstr((char *)glGetString(GL_VENDOR), "NVIDIA"))
+	char *vendor = (char *)glGetString(GL_VENDOR);
+	if (vendor && (strstr(vendor, "nvidia") || strstr(vendor, "NVIDIA")))
 	{
 #define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
 		int total_mem_kb = 0;
 		glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
 		printf("GPU RAM:\t%.2f GB", (float)(total_mem_kb / (1024 * 1024)));
 	}
-	else
+	else if (vendor && strstr(vendor, "Intel"))
+	{
+		printf("GPU RAM: using system ram\n");
+	}
+	else if (vendor)
 	{
 #ifdef WIN32
 		UINT n = wglGetGPUIDsAMD(0, 0);
