@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+float fabs(float);
+
 Bsp::Bsp()
 {
 	loaded = false;

@@ -1,5 +1,5 @@
 #include "shader.h"
-#include <cmath> // for some sin/cos/tan funcs
+//#include <cmath> // for some sin/cos/tan funcs
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

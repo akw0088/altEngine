@@ -1488,7 +1488,7 @@ void show_hw_info()
 	printf("Frequency:\t%.1f ghz\n", freq / 1000.0f);
 #endif
 
-	struct cpuinfo	info = { 0 };
+	struct cpuinfo	info = { {0} };
 	get_cpu_info(&info);
 	printf("Vendor:\t\t%s\nStepping:\t%i\nModel:\t\t%i\nFamily:\t\t%i\nType:\t\t%i\nExtModel:\t%i\nExtFamily:\t%i\n", info.vendor, info.stepping,
 		info.model, info.family, info.type, info.extmodel, info.extfamily);

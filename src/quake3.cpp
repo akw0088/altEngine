@@ -40,7 +40,7 @@
 
 extern char bot_state_name[16][32];
 extern const char *models[23];
-
+float fabs(float);
 
 Quake3::Quake3()
 {
