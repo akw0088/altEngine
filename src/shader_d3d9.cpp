@@ -69,6 +69,12 @@ void mLight2::set_shadow_matrix(int index, matrix4 &matrix)
 	return;
 }
 
+void mLight2::set_matrix(matrix4 &matrix)
+{
+	return;
+}
+
+
 void mLight2::set_max(int max)
 {
 	max_light = max;
