@@ -4,10 +4,12 @@
 #define new DEBUG_NEW
 #endif
 
-#define ACCEL (0.25f)
-#define AIR_ACCEL (0.5f)
+#define ACCEL (0.2f)
+#define AIR_ACCEL (0.125f)
 #define MAX_SPEED 3.0f
-#define MAX_AIR_SPEED 4.5f
+//#define MAX_AIR_SPEED 4.5f
+#define MAX_AIR_SPEED 7.5f
+#define AIR_ACCEL (0.25f)
 
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
@@ -731,14 +733,16 @@ void RigidBody::get_frame(Frame &frame)
 // This is becoming a rats nest
 bool RigidBody::move(input_t &input, float speed_scale)
 {
-	float air_control = 1.0f;	float jump_scale = 0.75f;	Frame camera;
+	float air_control = 1.0f;
+	float jump_scale = 0.65f;
+	Frame camera;
 	Frame yaw;
 
 	wishdir = vec3();
 
 	if (on_ground == false)
 	{
-		air_control = 0.25;
+		air_control = 0.3;
 	}
 
 	if (water || flight || noclip)
@@ -866,13 +870,16 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	{
 		static int two_frames = 0;
 
-		if (jumppad == false && two_frames > 2)
+		if (jumppad == false && two_frames > 8)
 		{
 			printf("MAX_SPEEDED\n");
 			two_frames = 0;
 			velocity.x *= (MAX_SPEED * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
 			velocity.z *= (MAX_SPEED * speed_scale / speed);
+
+			net_force.x = 0.0f;
+			net_force.z = 0.0f;
 		}
 		two_frames++;
 	}
@@ -899,9 +906,13 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 	else
 	{
-		// deceleration		printf("FRICTIONED\n");
-		velocity.x *= 0.5f;
-		velocity.z *= 0.5f;
+		// deceleration
+		if (on_ground)
+		{
+			printf("FRICTIONED\n");
+			velocity.x *= 0.5f;
+			velocity.z *= 0.5f;
+		}
 	}
 
 	// Speed up water movement due to additional deceleration friction
