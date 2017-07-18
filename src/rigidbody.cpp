@@ -96,6 +96,33 @@ void RigidBody::recalc()
 	inverse_tensor.m[8] = 1.0f / (mass *  (width * width + height * height));
 }
 
+// Quake bunny hopping
+void PM_Accelerate(vec3 wishdir, float wishspeed, float accel, Entity *ent)
+{
+	float delta_time = 0.08f;
+	vec3 vel = ent->rigid->velocity;
+	vel.y = 0.0f;
+
+	// q2 style
+	float		addspeed, accelspeed, currentspeed;
+
+	currentspeed = vel  * wishdir;
+	addspeed = wishspeed - currentspeed;
+	if (addspeed <= 0)
+	{
+		return;
+	}
+	accelspeed = accel * delta_time * wishspeed;
+	if (accelspeed > addspeed)
+	{
+		accelspeed = addspeed;
+	}
+
+
+	ent->rigid->velocity.x = wishdir.x * accelspeed;
+	ent->rigid->velocity.z = wishdir.z * accelspeed;
+}
+
 /*
 	Integrate physical quantaties over time by a fixed time step
 
@@ -111,6 +138,8 @@ void RigidBody::integrate(float time)
 		return;
 
 	//translational
+
+
 	acceleration = net_force / mass;
 	if (gravity == true && noclip == false && flight == false)
 	{
@@ -121,6 +150,17 @@ void RigidBody::integrate(float time)
 	if (velocity.magnitude() > MAX_VELOCITY)
 		velocity = velocity.normalize() * MAX_VELOCITY;
 
+	/*
+	if (entity->player)
+	{
+		velocity.x = 0.0f;
+		velocity.z = 0.0f;
+
+		PM_Accelerate(wishdir, 10.0f, 5.0f, entity);
+	}
+	else
+	{
+		*/
 	// Clamp velocity on Y much lower
 	// (jumppads / falling can integrate through solid objects if going too fast)
 	if (velocity.y > 10.0f)
@@ -134,6 +174,7 @@ void RigidBody::integrate(float time)
 		+ acceleration * time * time * 0.5 * UNITS_TO_METERS;
 	// Went ahead and used "simplified velocity verlet" as it subjectively feels nicer
 	// Although it looks a lot like constant acceleration motion equations: x = x0 + vt + 0.5at^2
+//	}
 
 
 	//rotational
@@ -161,6 +202,9 @@ void RigidBody::integrate(float time)
 	morientation.normalize();
 	world_tensor = morientation * inverse_tensor * morientation.transpose();
 }
+
+
+
 
 /*
 	Detects a collision with a plane and applies physical impulse response
@@ -687,6 +731,8 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	Frame camera;
 	Frame yaw;
 
+	wishdir = vec3();
+
 	if (on_ground == false)
 	{
 		air_control = 0.25;
@@ -737,6 +783,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	sleep = false;
 	if (input.moveup)
 	{
+		wishdir += -forward;
 		if (water == false && noclip == false && flight == false)
 		{
 			if (on_ground)
@@ -754,6 +801,8 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (input.movedown)
 	{
+		wishdir += forward;
+
 		if (water == false && noclip == false && flight == false)
 		{
 			if (on_ground)
@@ -774,6 +823,9 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (input.moveleft)
 	{
+		wishdir += -right;
+
+
 		if (water == false && noclip == false && flight == false)
 		{
 			if (on_ground)
@@ -791,6 +843,9 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (input.moveright)
 	{
+		wishdir += right;
+
+
 		if (water == false && noclip == false && flight == false)
 		{
 			if (on_ground)
@@ -821,12 +876,17 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 	if (input.duck)
 	{
+		wishdir += vec3(0.0f, -1.0f, 0.0f);
+
+
 		if ((flight || water || noclip) && (on_ground == false || noclip == true))
 		{
 			velocity.y += -ACCEL * speed_scale;
 		}
 		moved = true;
 	}
+
+	wishdir = wishdir.normalize();
 
 	float speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 
@@ -835,6 +895,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		jumppad = true;
 	}
 
+	
 	if (on_ground && (speed > MAX_SPEED * speed_scale))
 	{
 		if (jumppad == false)
@@ -844,13 +905,16 @@ bool RigidBody::move(input_t &input, float speed_scale)
 			velocity.z *= (MAX_SPEED * speed_scale / speed);
 		}
 	}
+	
 
+	
 	if ((on_ground == false || jumppad == true) && (speed > MAX_AIR_SPEED * speed_scale) )
 	{
 		velocity.x *= (MAX_AIR_SPEED * speed_scale / speed);
 //		velocity.y *= (MAX_AIR_SPEED * speed_scale / speed);
 		velocity.z *= (MAX_AIR_SPEED * speed_scale / speed);
 	}
+	
 
 	if (moved)
 	{
