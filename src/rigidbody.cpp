@@ -9,7 +9,6 @@
 #define MAX_SPEED 3.0f
 #define MAX_AIR_SPEED 4.5f
 
-
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
 {
@@ -147,6 +146,8 @@ void RigidBody::integrate(float time)
 	}
 
 	velocity = velocity + acceleration * time;
+
+	// This is a really large cap for hopefully impossible situations
 	if (velocity.magnitude() > MAX_VELOCITY)
 		velocity = velocity.normalize() * MAX_VELOCITY;
 
@@ -184,6 +185,10 @@ void RigidBody::integrate(float time)
 	if (translational_friction_flag || water == true || noclip == true || flight == true)
 	{
 		velocity *= translational_friction; // added translational "friction"
+		if (entity->player)
+		{
+			printf("Friction :o(\n");
+		}
 	}
 
 	if (ground_friction_flag && on_ground)
@@ -726,9 +731,7 @@ void RigidBody::get_frame(Frame &frame)
 // This is becoming a rats nest
 bool RigidBody::move(input_t &input, float speed_scale)
 {
-	float air_control = 1.0f;
-	float jump_scale = 0.75f;
-	Frame camera;
+	float air_control = 1.0f;	float jump_scale = 0.75f;	Frame camera;
 	Frame yaw;
 
 	wishdir = vec3();
@@ -781,85 +784,48 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		jump_timer--;
 
 	sleep = false;
+
 	if (input.moveup)
 	{
 		wishdir += -forward;
-		if (water == false && noclip == false && flight == false)
-		{
-			if (on_ground)
-				velocity += -yaw.forward * ACCEL * air_control * speed_scale;
-			else
-				velocity += -yaw.forward * AIR_ACCEL * air_control * speed_scale;
-			moved = true;
-		}
-		else
-		{
-			velocity += -forward * ACCEL * speed_scale;
-			moved = true;
-		}
+		moved = true;
 	}
 
 	if (input.movedown)
 	{
 		wishdir += forward;
-
-		if (water == false && noclip == false && flight == false)
-		{
-			if (on_ground)
-				velocity += yaw.forward * ACCEL * air_control * speed_scale;
-			else
-				velocity += yaw.forward * AIR_ACCEL * air_control * speed_scale;
-			moved = true;
-		}
-		else
-		{
-			if (on_ground)
-				velocity += forward * ACCEL * speed_scale;
-			else
-				velocity += forward * AIR_ACCEL * speed_scale;
-			moved = true;
-		}
+		moved = true;
 	}
 
 	if (input.moveleft)
 	{
 		wishdir += -right;
-
-
-		if (water == false && noclip == false && flight == false)
-		{
-			if (on_ground)
-				velocity += -yaw_right * ACCEL * air_control * speed_scale;
-			else
-				velocity += -yaw_right * AIR_ACCEL * air_control * speed_scale;
-			moved = true;
-		}
-		else
-		{
-			velocity += -yaw_right * ACCEL * speed_scale;
-			moved = true;
-		}
+		moved = true;
 	}
 
 	if (input.moveright)
 	{
 		wishdir += right;
+		moved = true;
+	}
 
-
+	if (moved)
+	{
 		if (water == false && noclip == false && flight == false)
 		{
 			if (on_ground)
-				velocity += yaw_right * ACCEL * air_control * speed_scale;
+				velocity += wishdir * ACCEL * speed_scale;
 			else
-				velocity += yaw_right * AIR_ACCEL * air_control * speed_scale;
+				velocity += wishdir * AIR_ACCEL * air_control * speed_scale;
 			moved = true;
 		}
 		else
 		{
-			velocity += yaw_right * ACCEL * speed_scale;
+			velocity += wishdir * ACCEL * speed_scale;
 			moved = true;
 		}
 	}
+
 
 	if (input.jump)
 	{
@@ -898,18 +864,24 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	
 	if (on_ground && (speed > MAX_SPEED * speed_scale))
 	{
-		if (jumppad == false)
+		static int two_frames = 0;
+
+		if (jumppad == false && two_frames > 2)
 		{
+			printf("MAX_SPEEDED\n");
+			two_frames = 0;
 			velocity.x *= (MAX_SPEED * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
 			velocity.z *= (MAX_SPEED * speed_scale / speed);
 		}
+		two_frames++;
 	}
 	
 
 	
 	if ((on_ground == false || jumppad == true) && (speed > MAX_AIR_SPEED * speed_scale) )
 	{
+		printf("MAX_AIR_SPEEDED\n");
 		velocity.x *= (MAX_AIR_SPEED * speed_scale / speed);
 //		velocity.y *= (MAX_AIR_SPEED * speed_scale / speed);
 		velocity.z *= (MAX_AIR_SPEED * speed_scale / speed);
@@ -927,7 +899,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 	else
 	{
-		// deceleration
+		// deceleration		printf("FRICTIONED\n");
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
 	}
