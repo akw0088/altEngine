@@ -90,6 +90,8 @@ public:
 	vec3			net_torque;
 	vec3			old_position;
 	matrix3			old_orientation;
+
+	vec3 wishdir;
 };
 
 #endif
