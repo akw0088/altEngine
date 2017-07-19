@@ -450,6 +450,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			{
 				entity.rigid->gravity = false;
 				entity.rigid->flight = true;
+				entity.rigid->angular_velocity.x = 10.0f;
 			}
 
 		}

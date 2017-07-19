@@ -1628,19 +1628,16 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		//render entity
 		entity->rigid->render(gfx);
 
-		if (entity->model_ref > 0 && entity->model_ref < q3map.data.num_model && q3map.enable_textures)
+		if (entity->model_ref != -1 && q3map.enable_textures)
 		{
 			Frame frame;
-
-			if (entity->model_ref == 6)
-				continue;
 
 			vec3 old = entity->position;
 			entity->position = entity->model_offset;
 			entity->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
-//			q3map.render_model(entity->model_ref, gfx);
+			q3map.render_model(entity->model_ref, gfx);
 
 			entity->position = old;
 		}
@@ -2078,7 +2075,6 @@ void Engine::dynamics()
 		if (collision_detect_enable == false && i >= max_player)
 			continue;
 
-
 		RigidBody *body = entity_list[i]->rigid;
 
 		float delta_time = TICK_MS / 1000.0f;
@@ -2120,6 +2116,10 @@ void Engine::dynamics()
 
 			body->save_config(config);
 			body->integrate(target_time - current_time);
+
+			if (entity_list[i]->model_ref != -1)
+				break;
+
 			if ( collision_detect(*body) )
 			{
 				vec3 clip = body->velocity;

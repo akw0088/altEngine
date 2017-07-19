@@ -673,6 +673,9 @@ double fcos(double rad)
 
 float InvSqrt(float x)
 {
+	if (x < 0.00001)
+		return 0;
+
     float xhalf = 0.5f * x;
 	int i = *(int*)&x;
     i = 0x5f3759df - (i >> 1);

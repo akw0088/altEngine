@@ -1,4 +1,6 @@
 #include "vector.h"
+#include <float.h>
+
 float InvSqrt(float x);
 float newtonSqrt(float x);
 
@@ -93,9 +95,12 @@ float vec3::magnitude()
 vec3 &vec3::normalize()
 {
 	float invmag = InvSqrt(x * x + y * y + z * z);
-	x *= invmag;
-	y *= invmag;
-	z *= invmag;
+	if (invmag < FLT_MAX && invmag > FLT_MIN)
+	{
+		x *= invmag;
+		y *= invmag;
+		z *= invmag;
+	}
 	return *this;
 }
 

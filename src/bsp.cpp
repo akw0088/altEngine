@@ -42,13 +42,17 @@ Bsp::Bsp()
 bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 	selected_map = false;
-//	tBsp = (bsp_t *)get_file(map);
 	for (int i = 0; i < num_pk3; i++)
 	{
 		get_zipfile(pk3list[i], map, (unsigned char **)&tBsp, NULL);
 		if (tBsp != NULL)
 			break;
 	}
+
+
+	if (tBsp == NULL)
+		tBsp = (bsp_t *)get_file(map, NULL);
+
 
 	if (tBsp == NULL)
 	{
