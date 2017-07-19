@@ -1507,6 +1507,7 @@ void Quake3::handle_player(int self, input_t &input)
 				if (entity->player->haste_timer > 0)
 					speed_scale = 2.0f;
 
+
 				if (entity->rigid->move(input, speed_scale))
 				{
 					entity->player->state = PLAYER_JUMPED;
@@ -6558,6 +6559,17 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
 			entity_list[i]->rigid->gravity = false;
+		}
+
+		if (entity_list[i]->ent_type == ENT_FUNC_DOOR)
+		{
+			if (entity_list[i]->trigger)
+			{
+				if (strstr(entity_list[i]->trigger->action, "damage"))
+				{
+					sprintf(entity_list[i]->trigger->action, "");
+				}
+			}
 		}
 
 
