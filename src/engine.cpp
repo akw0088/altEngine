@@ -2250,6 +2250,24 @@ bool Engine::map_collision(RigidBody &body)
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
 						body.on_ground = true;
+
+						if (body.entity->player)
+						{
+							float speed = body.velocity.magnitude();
+							float speed_scale = 1.2f;
+
+							if (body.entity->player->haste_timer > 0)
+								speed_scale = 2.0f;
+#define MAX_SPEED 3.0
+
+							if (speed > MAX_SPEED * speed_scale)
+							{
+								body.velocity.x *= (MAX_SPEED * speed_scale / speed);
+								body.velocity.z *= (MAX_SPEED * speed_scale / speed);
+							}
+						}
+
+
 						continue;
 					}
 				}
@@ -2263,6 +2281,7 @@ bool Engine::map_collision(RigidBody &body)
 	}
 
 	// Do a bsp trace collision to eliminate the case where we are going really fast and pass through objects
+	/*
 	if (collision == false && body.entity->player && body.velocity.magnitude() > 6.0f )
 	{
 		for (int i = 0; i < 8; i++)
@@ -2284,6 +2303,7 @@ bool Engine::map_collision(RigidBody &body)
 			}
 		}
 	}
+	*/
 
 
 

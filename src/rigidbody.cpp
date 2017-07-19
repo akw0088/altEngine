@@ -4,12 +4,10 @@
 #define new DEBUG_NEW
 #endif
 
-#define ACCEL (0.2f)
-#define AIR_ACCEL (0.125f)
+#define ACCEL (0.25f)
+#define AIR_ACCEL (0.5f)
 #define MAX_SPEED 3.0f
-//#define MAX_AIR_SPEED 4.5f
-#define MAX_AIR_SPEED 7.5f
-#define AIR_ACCEL (0.25f)
+#define MAX_AIR_SPEED 5.5f
 
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
@@ -733,6 +731,7 @@ void RigidBody::get_frame(Frame &frame)
 // This is becoming a rats nest
 bool RigidBody::move(input_t &input, float speed_scale)
 {
+	static int two_frames = 0;
 	float air_control = 1.0f;
 	float jump_scale = 0.65f;
 	Frame camera;
@@ -742,7 +741,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if (on_ground == false)
 	{
-		air_control = 0.3;
+		air_control = 0.25;
 	}
 
 	if (water || flight || noclip)
@@ -813,24 +812,6 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		moved = true;
 	}
 
-	if (moved)
-	{
-		if (water == false && noclip == false && flight == false)
-		{
-			if (on_ground)
-				velocity += wishdir * ACCEL * speed_scale;
-			else
-				velocity += wishdir * AIR_ACCEL * air_control * speed_scale;
-			moved = true;
-		}
-		else
-		{
-			velocity += wishdir * ACCEL * speed_scale;
-			moved = true;
-		}
-	}
-
-
 	if (input.jump)
 	{
 		if (flight || water || noclip)
@@ -856,9 +837,35 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		moved = true;
 	}
 
-	wishdir = wishdir.normalize();
+//	wishdir = wishdir.normalize();
 
-	float speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+
+	if (moved)
+	{
+		if (water == false && noclip == false && flight == false)
+		{
+			if (on_ground)
+				velocity += wishdir * ACCEL * speed_scale;
+			else
+				velocity += wishdir * AIR_ACCEL * air_control * speed_scale;
+		}
+		else
+		{
+			velocity += wishdir * ACCEL * speed_scale;
+		}
+	}
+	float speed = 0.0f;
+	static bool hopped = false;
+
+	if ((hopped || wishdir.magnitude() > 1.0f) && on_ground == false)
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * MAX_SPEED);
+		hopped = true;
+	}
+	else
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+	}
 
 	if (entity->player && entity->player->jumppad_timer > 0)
 	{
@@ -868,7 +875,6 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	
 	if (on_ground && (speed > MAX_SPEED * speed_scale))
 	{
-		static int two_frames = 0;
 
 		if (jumppad == false && two_frames > 8)
 		{
@@ -877,13 +883,15 @@ bool RigidBody::move(input_t &input, float speed_scale)
 			velocity.x *= (MAX_SPEED * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
 			velocity.z *= (MAX_SPEED * speed_scale / speed);
-
-			net_force.x = 0.0f;
-			net_force.z = 0.0f;
+			hopped = false;
 		}
 		two_frames++;
 	}
 	
+	if (on_ground == false)
+	{
+		two_frames = 0;
+	}
 
 	
 	if ((on_ground == false || jumppad == true) && (speed > MAX_AIR_SPEED * speed_scale) )
@@ -900,6 +908,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		if ((on_ground && jumped && jump_timer == 0) || (water && water_depth <= 5.0f && jumped))
 		{
 			velocity.y += 3.0f * jump_scale * GRAVITY_SCALE;
+			velocity += wishdir * 1.25f;
 			jump_timer = (int)(TICK_RATE * 0.3f);
 			ret = true;
 		}
@@ -907,12 +916,9 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	else
 	{
 		// deceleration
-		if (on_ground)
-		{
-			printf("FRICTIONED\n");
-			velocity.x *= 0.5f;
-			velocity.z *= 0.5f;
-		}
+		printf("FRICTIONED\n");
+		velocity.x *= 0.5f;
+		velocity.z *= 0.5f;
 	}
 
 	// Speed up water movement due to additional deceleration friction
