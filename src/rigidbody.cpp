@@ -182,13 +182,9 @@ void RigidBody::integrate(float time)
 	angular_acceleration = world_tensor * net_torque;
 	angular_velocity = angular_velocity + angular_acceleration * time;
 
-	if (translational_friction_flag || water == true || noclip == true || flight == true)
+	if (translational_friction_flag || noclip == true || flight == true)
 	{
 		velocity *= translational_friction; // added translational "friction"
-		if (entity->player)
-		{
-			printf("Friction :o(\n");
-		}
 	}
 
 	if (ground_friction_flag && on_ground)

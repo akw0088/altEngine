@@ -527,6 +527,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		int brush_index = brush->first_side;
 		int num_sides = brush->num_sides;
 		int count = 0;
+		int nonsolid = 0;
 
 
 		for( int j = 0; j < num_sides; j++)
@@ -540,29 +541,41 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 			if (d > 0.0f)
 				continue;
 
-			// Inside a brush
-			if (data.Material[brush->material].contents & CONTENTS_WATER)
+			// Ignore non solid brushes
+			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
 			{
-				// Set underwater flag + depth
-				water = true;
-				water_depth = -d;
-//				printf("underwater depth = %f\n", d);
+				nonsolid++;
+
+				if (data.Material[brush->material].contents & CONTENTS_LAVA && count + nonsolid == num_sides)
+				{
+					lava = true;
+					continue;
+				}
+				else if (data.Material[brush->material].contents & CONTENTS_SLIME && count + nonsolid == num_sides)
+				{
+					slime = true;
+					continue;
+				}
+				else if (data.Material[brush->material].contents & CONTENTS_WATER && count + nonsolid == num_sides)
+				{
+					// Set underwater flag + depth
+					water = true;
+					water_depth = -d;
+					//printf("underwater depth = %f\n", d);
+					continue;
+				}
+
+
+
 				continue;
 			}
 
-
-			if (data.Material[brush->material].contents & CONTENTS_LAVA)
-				lava = true;
-			else if (data.Material[brush->material].contents & CONTENTS_SLIME)
-				slime = true;
-
-			// Ignore non solid brushes
-			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
-				continue;
-
 			// Ignore individual non solid surfaces (had to move lower to allow water)
 			if (data.Material[brush->material].surface & SURF_NONSOLID)
+			{
+				nonsolid++;
 				continue;
+			}
 
 
 			// Check old position against planes, if we werent colliding before

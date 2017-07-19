@@ -1238,7 +1238,7 @@ void Quake3::handle_player(int self, input_t &input)
 
 
 	entity->player->alive_timer++;
-	/*
+	
 	if (entity->player->pain_timer == 0)
 	{
 		if (entity->rigid->lava)
@@ -1281,7 +1281,7 @@ void Quake3::handle_player(int self, input_t &input)
 			}
 		}
 	}
-	*/
+	
 
 	if (entity->player->telefragged)
 	{
