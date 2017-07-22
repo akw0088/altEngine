@@ -874,7 +874,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 		if (jumppad == false && two_frames > 8)
 		{
-			printf("MAX_SPEEDED\n");
+			//printf("MAX_SPEEDED\n");
 			two_frames = 0;
 			velocity.x *= (MAX_SPEED * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
@@ -892,7 +892,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	
 	if ((on_ground == false || jumppad == true) && (speed > MAX_AIR_SPEED * speed_scale) )
 	{
-		printf("MAX_AIR_SPEEDED\n");
+		//printf("MAX_AIR_SPEEDED\n");
 		velocity.x *= (MAX_AIR_SPEED * speed_scale / speed);
 //		velocity.y *= (MAX_AIR_SPEED * speed_scale / speed);
 		velocity.z *= (MAX_AIR_SPEED * speed_scale / speed);
@@ -912,7 +912,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	else
 	{
 		// deceleration
-		printf("FRICTIONED\n");
+		//printf("FRICTIONED\n");
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
 	}

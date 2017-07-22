@@ -185,7 +185,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[0] = texture(tex[0], Vertex.vary_LightCoord);
+		Fragment_stage[0] = texture(tex[0], Vertex.vary_LightCoord) * 2.0;
 	}
 	else
 	{
@@ -195,7 +195,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[1] = texture(tex[1], Vertex.vary_LightCoord);
+		Fragment_stage[1] = texture(tex[1], Vertex.vary_LightCoord) * 2.0;
 	}
 	else
 	{
@@ -205,7 +205,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[2] = texture(tex[2], Vertex.vary_LightCoord);
+		Fragment_stage[2] = texture(tex[2], Vertex.vary_LightCoord) * 2.0;
 	}
 	else
 	{
@@ -215,7 +215,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[3] = texture(tex[3], Vertex.vary_LightCoord);
+		Fragment_stage[3] = texture(tex[3], Vertex.vary_LightCoord) * 2.0;
 	}
 	else
 	{
@@ -256,7 +256,7 @@ void main(void)
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment_stage[0].a * Fragment_stage[1].a  * Fragment_stage[2].a  * Fragment_stage[3].a;
 //	Fragment.a = 1.0;
-	Fragment.xyz += Fragment_stage[0].xyz * 0.75;
+	Fragment.xyz += Fragment_stage[0].xyz;
 	Fragment.xyz += Fragment_stage[1].xyz;
 	Fragment.xyz += Fragment_stage[2].xyz;
 	Fragment.xyz += Fragment_stage[3].xyz;

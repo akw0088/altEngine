@@ -41,6 +41,7 @@ Bsp::Bsp()
 
 bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
+	max_stage = MAX_TEXTURES;
 	selected_map = false;
 	for (int i = 0; i < num_pk3; i++)
 	{
@@ -991,9 +992,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 			if (surface->portal)			{				render.portal = true;			}
 
-			// Going backwards to fix render ordering
-			//				for (int k = surface->num_stage - 1; k >= 0; k--)
-			for (unsigned int k = 0; k < surface->num_stage; k++)
+			for (unsigned int k = 0; k < surface->num_stage && k < max_stage; k++)
 			{
 				render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
 				render.deg[k] = surface->stage[k].tcmod_rotate_value;
@@ -1213,6 +1212,7 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 	{
 		if (last_mode != 6)
 			gfx.BlendFuncDstColorOneMinusDstAlpha();
+		gfx.BlendFuncOneZero();
 		last_mode = 6;
 	}
 	else if (face.blend_dst_color_src_alpha)

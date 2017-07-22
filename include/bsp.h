@@ -73,6 +73,7 @@ public:
 
 
 	vec3 model_offset[128];
+	vec3 model_rot[128];
 
 	unsigned int portal_tex; // hack
 
@@ -81,6 +82,7 @@ public:
 	bool enable_blend;
 	bool enable_patch;
 	bool enable_sky;
+	int max_stage;
 private:
 	bsp_t		*tBsp;
 	vec4		*tangent;

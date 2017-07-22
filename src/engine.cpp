@@ -4884,6 +4884,13 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (sscanf(cmd, "r_maxstage %s", data) == 1)
+	{
+		menu.print(msg);
+		q3map.max_stage = atoi(data);
+		return;
+	}
+
 	if (sscanf(cmd, "r_portal %s", data) == 1)
 	{
 		menu.print(msg);

@@ -6232,9 +6232,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			RigidBody *rigid = entity_list[self]->rigid;
 
-			rigid->noclip = !entity_list[self]->rigid->noclip;
-			rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
-			rigid->translational_friction = 0.9f;
+			rigid->noclip = !rigid->noclip;
+//			rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
+			//rigid->translational_friction = 0.9f;
 		}
 		return;
 	}
@@ -6523,6 +6523,15 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		if (entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
 			sprintf(entity_list[i]->trigger->action, "push %s", entity_list[i]->target);
+		}
+
+
+		if (entity_list[i]->ent_type == ENT_FUNC_PENDULUM)
+		{
+			// PENDULUM start at origin, need to offset
+//			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
+
+			entity_list[i]->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
 		}
 
 		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_CAMERA)
