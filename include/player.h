@@ -158,6 +158,14 @@ public:
 	unsigned int flash_lightning;
 	unsigned int flash_plasma;
 
+
+	float accel;
+	float air_accel;
+	float max_speed;
+	float max_air_speed;
+	float air_control;
+
+
 	int weapon_source;
 	int weapon_loop_source;
 

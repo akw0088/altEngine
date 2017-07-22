@@ -626,7 +626,7 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 
 	if (abs32(denom) > 0.0001f)
 	{
-		value = (float)(amplitude * (4.0 / denom));
+		value = (float)(amplitude * (4.0 / denom)) + 0.5;
 		rgbgen_scale(index, value);
 	}
 }

@@ -88,6 +88,14 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	excellent_award_timer = 0;
 	gauntlet_award_timer = 0;
 
+
+	accel = 0.25f;
+	air_accel = 0.5f;
+	max_speed = 3.0f;
+	max_air_speed = 5.5f;
+	air_control = 0.25f;
+
+
 	model_index = model; // default to visor -- ranger isnt in demo files :'( 
 
 	strcpy(model_name, models[model_index]);

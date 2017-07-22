@@ -357,7 +357,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 //	newlinelist("media/shaderlist.txt", shader_list, num_shader);
 	get_shaderlist_pk3(shader_list, num_shader);
 
-
 	if (num_shader == 0)
 	{
 		printf("Unable to load shaders!\n");
@@ -376,6 +375,22 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 			delete [] shader_file;
 		}
 	}
+
+	char *hack_list[256];
+	unsigned int num_hack;
+	newlinelist("media/hacklist.txt", hack_list, num_hack);
+	for (int i = 0; i < num_hack; i += 2)
+	{
+		for (int j = 0; j < surface_list.size(); j++)
+		{
+			if (strcmp(hack_list[i], surface_list[j]->name) == 0)
+			{
+				surface_list[j]->num_stage = atoi(hack_list[i + 1]);
+				break;
+			}
+		}
+	}
+
 
 	printf("Done\n");
 
@@ -1637,7 +1652,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			entity->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
-			q3map.render_model(entity->model_ref, gfx);
+			//q3map.render_model(entity->model_ref, gfx);
 
 			entity->position = old;
 		}
