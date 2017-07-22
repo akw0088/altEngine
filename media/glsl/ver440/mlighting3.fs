@@ -185,7 +185,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[0] = texture(tex[0], Vertex.vary_LightCoord) * 2.0;
+		Fragment_stage[0] = texture(tex[0], Vertex.vary_LightCoord) * 2.0 + 0.25;
 	}
 	else
 	{
@@ -195,7 +195,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[1] = texture(tex[1], Vertex.vary_LightCoord) * 2.0;
+		Fragment_stage[1] = texture(tex[1], Vertex.vary_LightCoord) * 2.0 + 0.25;
 	}
 	else
 	{
@@ -205,7 +205,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[2] = texture(tex[2], Vertex.vary_LightCoord) * 2.0;
+		Fragment_stage[2] = texture(tex[2], Vertex.vary_LightCoord) * 2.0 + 0.25;
 	}
 	else
 	{
@@ -215,7 +215,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[3] = texture(tex[3], Vertex.vary_LightCoord) * 2.0;
+		Fragment_stage[3] = texture(tex[3], Vertex.vary_LightCoord) * 2.0 + 0.25;
 	}
 	else
 	{
