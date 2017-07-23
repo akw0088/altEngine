@@ -93,6 +93,10 @@ void mLight2::alphatest(int value, int p)
 {
 }
 
+void mLight2::set_normalmap(int value)
+{
+}
+
 void mLight2::set_matrix(matrix4 &matrix)
 {
 	return;

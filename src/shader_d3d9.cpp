@@ -360,6 +360,10 @@ void mLight2::portal(int value)
 {
 }
 
+void mLight2::set_normalmap(int value)
+{
+}
+
 void mLight2::alphatest(int value, int p)
 {
 }

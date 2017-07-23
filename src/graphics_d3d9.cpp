@@ -66,11 +66,6 @@ void Graphics::Blend(bool flag)
 		device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
-void Graphics::BlendFunc(char *src, char *dst)
-{
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-}
-
 void Graphics::Color(bool flag)
 {
 	if (flag)

@@ -3480,7 +3480,7 @@ void Engine::bind_keys()
 		key_bind.insert("F4", "give all");
 		
 		key_bind.insert("F5", "respawn");
-		//key_bind.insert("F6", "");
+		key_bind.insert("F6", "r_reload_shaders");
 		key_bind.insert("F7", "g_collision 0");
 		key_bind.insert("F8", "shadowmaps");
 

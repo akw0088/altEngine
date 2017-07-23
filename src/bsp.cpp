@@ -1064,11 +1064,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				else if (surface->stage[k].blendfunc_filter)
 				{
 					render.blend = true;
-
-					if (render.rgbgen_identity)
-						render.blend_one_one = true;
-					else
-						render.blend_filter = true;
+					render.blend_filter = true;
 				}
 				else if (surface->stage[k].blend_dst_color_one)
 				{
@@ -1078,11 +1074,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				else if (surface->stage[k].blend_dst_color_zero)
 				{
 					render.blend = true;
-					if (render.rgbgen_identity)
-						render.blend_one_one = true;
-					else
-						render.blend_dstcolor_zero = true;
-//					render.blend_zero_src_color = true;
+					render.blend_dstcolor_zero = true;
 				}
 				else if (surface->stage[k].blend_dst_color_src_alpha)
 				{
@@ -1209,6 +1201,12 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 		{
 			gfx.BlendFuncDstColorZero();
 			last_mode = 98;		}
+
+		/*
+		if (last_mode != 1)
+			gfx.BlendFuncOneOne();
+		last_mode = 1;
+		*/
 	}
 	else if (face.blend_dstcolor_one)
 	{

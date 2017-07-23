@@ -82,6 +82,11 @@ int mLight2::init(Graphics *gfx)
 	return 0;
 }
 
+void mLight2::set_normalmap(int value)
+{
+}
+
+
 void mLight2::set_shadow_matrix(int index, matrix4 &proj)
 {
 }

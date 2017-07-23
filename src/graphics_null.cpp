@@ -44,11 +44,6 @@ void Graphics::Blend(bool flag)
 {
 }
 
-
-void Graphics::BlendFunc(char *src, char *dst)
-{
-}
-
 void Graphics::BlendFuncDstColorOne()
 {
 }
