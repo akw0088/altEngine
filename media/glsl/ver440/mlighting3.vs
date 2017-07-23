@@ -43,6 +43,10 @@ void main(void)
 {
 	vec2 bias = vec2(0.5, -0.5);
 
+	gl_Position = mvp * vec4(attr_position, 1.0);
+	Vertex.att_position = attr_position;
+	Vertex.vary_position = gl_Position;
+
 	for(int i = 0; i < 4; i++)
 	{
 		mat2 mRot0 = mat2( u_tcmod_cos[i], -u_tcmod_sin[i], u_tcmod_sin[i],  u_tcmod_cos[i]);
@@ -69,9 +73,7 @@ void main(void)
 	Vertex.vary_color = attr_color;
 	Vertex.vary_tangent = attr_tangent;
 
-	gl_Position = mvp * vec4(attr_position, 1.0);
-	Vertex.att_position = attr_position;
-	Vertex.vary_position = gl_Position;
+
 
 
 
