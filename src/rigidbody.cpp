@@ -878,7 +878,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 		if (jumppad == false && two_frames > 8)
 		{
-			printf("MAX_SPEEDED\n");
+//			printf("MAX_SPEEDED\n");
 			two_frames = 0;
 			velocity.x *= (entity->player->max_speed * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
@@ -896,7 +896,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	
 	if ((on_ground == false || jumppad == true) && (speed > entity->player->max_air_speed * speed_scale) )
 	{
-		printf("MAX_AIR_SPEEDED\n");
+//		printf("MAX_AIR_SPEEDED\n");
 		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
 //		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
 		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
@@ -916,7 +916,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	else
 	{
 		// deceleration
-		printf("FRICTIONED\n");
+//		printf("FRICTIONED\n");
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
 	}

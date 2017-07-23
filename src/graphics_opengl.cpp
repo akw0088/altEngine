@@ -140,15 +140,6 @@ void Graphics::Blend(bool flag)
 #endif
 }
 
-
-void Graphics::BlendFunc(char *src, char *dst)
-{
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-#ifdef ERROR_CHECK
-	error_check();
-#endif
-}
-
 void Graphics::BlendFuncDstColorOne()
 {
 	glBlendFunc(GL_DST_COLOR, GL_ONE);

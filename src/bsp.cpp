@@ -569,6 +569,10 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 					//printf("underwater depth = %f\n", d);
 					continue;
 				}
+				else if (data.Material[brush->material].contents & CONTENTS_FOG && count + nonsolid == num_sides)
+				{
+					continue;
+				}
 
 
 
@@ -1069,6 +1073,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				{
 					render.blend = true;
 					render.blend_dstcolor_zero = true;
+//					render.blend_zero_src_color = true;
 				}
 				else if (surface->stage[k].blend_dst_color_src_alpha)
 				{
@@ -1181,14 +1186,20 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 	else if (face.blend_default)
 	{
 		if (last_mode != 2)
-			gfx.BlendFunc(NULL, NULL);
+			gfx.BlendFuncSrcAlphaOneMinusSrcAlpha();
 		last_mode = 2;
 	}
 	else if (face.blend_filter)
 	{
-		if (last_mode != 1)
-			gfx.BlendFuncOneOne();
-		last_mode = 1;
+		// gl_dst_color gl_zero or blendfunc gl_zero gl_src_color
+		if (last_mode != 99 && face.stage == 0)
+		{
+			gfx.BlendFuncZeroSrcColor();
+			last_mode = 99;		}
+		else if (last_mode != 98 && face.stage > 0)
+		{
+			gfx.BlendFuncDstColorZero();
+			last_mode = 98;		}
 	}
 	else if (face.blend_dstcolor_one)
 	{
@@ -1212,7 +1223,7 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 	{
 		if (last_mode != 6)
 			gfx.BlendFuncDstColorOneMinusDstAlpha();
-		gfx.BlendFuncOneZero();
+//		gfx.BlendFuncOneZero();
 		last_mode = 6;
 	}
 	else if (face.blend_dst_color_src_alpha)
@@ -1272,7 +1283,7 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 	else
 	{
 		if (last_mode != 2)
-			gfx.BlendFunc(NULL, NULL);
+			gfx.BlendFuncSrcAlphaOneMinusSrcAlpha();
 		last_mode = 2;
 	}
 }

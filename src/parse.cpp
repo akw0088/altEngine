@@ -1470,7 +1470,7 @@ bool deformVertexes;
 */
 
 
-void handle_stage(char *stagecmd, stage_t *stage)
+void handle_stage(char *stagecmd, stage_t *stage, int stage_num)
 {
 	char *ret = NULL;
 
@@ -1480,6 +1480,8 @@ void handle_stage(char *stagecmd, stage_t *stage)
 	if (strstr(stagecmd, "$lightmap"))
 	{
 		stage->lightmap = true;
+		if (stage_num > 0)
+			stage->blendfunc_filter = true;
 	}
 	else if ((ret = strstr(stagecmd, "animmap ")))
 	{
@@ -1889,7 +1891,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 					surface->num_stage++;
 					num_stage++;
 				}
-				handle_stage(stagecmd, &(surface->stage[num_stage - 1]));
+				handle_stage(stagecmd, &(surface->stage[num_stage - 1]), num_stage - 1);
 				old_pos = i;
 				j = 0;
 			}

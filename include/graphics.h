@@ -24,7 +24,6 @@ public:
 	void clearstencil();
 	void Depth(bool flag);
 	void Blend(bool flag);
-	void BlendFunc(char *src, char *dst);
 	void BlendFuncDstColorOne();
 	void BlendFuncDstColorZero();
 	void BlendFuncOneOne();

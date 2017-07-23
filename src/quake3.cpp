@@ -4616,7 +4616,7 @@ void Quake3::render_hud(double last_frametime)
 	engine->projection = real_projection;
 
 	engine->gfx.Blend(true);
-	engine->gfx.BlendFunc(NULL, NULL);
+	engine->gfx.BlendFuncSrcAlphaOneMinusSrcAlpha();
 	draw_crosshair();
 	int i = 1;
 	int j = -1;

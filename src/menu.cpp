@@ -300,7 +300,7 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 	{
 		gfx->Blend(true);
 		gfx->Depth(false);
-		gfx->BlendFunc(NULL, NULL);
+		gfx->BlendFuncSrcAlphaOneMinusSrcAlpha();
 		gfx->SelectTexture(0, font_object);
 		gfx->SelectIndexBuffer(Model::quad_index);
 		gfx->SelectVertexBuffer(Model::quad_vertex);
