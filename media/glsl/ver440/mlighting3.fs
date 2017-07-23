@@ -124,7 +124,7 @@ void main(void)
 
 
 	vec3 u = normalize(-Vertex.vary_position.xyz);
-	vec3 r = reflect(u, -normal);
+	vec3 r = reflect(u, -unormal);
 
 	tc0 = Vertex.vary_newTexCoord[0];
 	tc1 = Vertex.vary_newTexCoord[1];
