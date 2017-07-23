@@ -328,11 +328,22 @@ void main(void)
 		Fragment.rgb *= shadow;
 	}
 
+	if (u_contrast < 0)
+	{
+		float value = (Fragment.r + Fragment.g + Fragment.b) / 3.0;
+		Fragment.r = value;
+		Fragment.g = value;
+		Fragment.b = value;
+		return;
+	}
+
+
 	if (u_lightmap_stage <= 0)
 	{
 		Fragment.rgb += u_brightness;
 		Fragment.rgb *= u_contrast;
 	}
+
 
 
 //	Fragment.rgb = light;
