@@ -82,6 +82,7 @@ public:
 	bool enable_blend;
 	bool enable_patch;
 	bool enable_sky;
+	bool enable_normalmap;
 	int max_stage;
 private:
 	bsp_t		*tBsp;

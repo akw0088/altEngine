@@ -658,6 +658,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 			break;
 	}
 
+
+	if (data == NULL)
+		get_file(file_name, NULL);
+
 	// tga failed tried jpg
 	if (data == NULL)
 	{
@@ -680,6 +684,29 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		}
 
 	}
+
+
+	// tga failed tried jpg
+	if (data == NULL)
+	{
+		if (strlen(file_name) > 4)
+		{
+			char *ext = strstr(file_name, ".tga");
+			if (ext != NULL)
+			{
+				*ext = '\0';
+				strcat(file_name, ".jpg");
+				//printf("Trying jpeg texture [%s]\n", texture_name);
+				if (data == NULL)
+					get_file(file_name, NULL);
+
+			}
+		}
+
+	}
+
+
+
 
 	if (data == NULL)
 	{

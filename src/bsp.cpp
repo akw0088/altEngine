@@ -50,7 +50,6 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 			break;
 	}
 
-
 	if (tBsp == NULL)
 		tBsp = (bsp_t *)get_file(map, NULL);
 
@@ -109,7 +108,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
-//	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+	//CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
 
@@ -800,9 +799,10 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		}
 
 	}
-#ifdef NORMALMAP
-	gfx.SelectTexture(9, normal_object[face->material]);
-#endif
+	if (enable_normalmap)
+	{
+		gfx.SelectTexture(9, normal_object[face->material]);
+	}
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 
 	if (enable_textures)
@@ -870,10 +870,10 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		gfx.SelectVertexBuffer(patchdata[mesh_index + i].vbo);
 		gfx.SelectIndexBuffer(patchdata[mesh_index + i].ibo);
 
-#ifdef NORMALMAP
-		gfx.SelectTexture(9, normal_object[face->material]);
-#endif
-
+		if (enable_normalmap)
+		{
+			gfx.SelectTexture(9, normal_object[face->material]);
+		}
 		// Rendered row by row because tessellate leaves a degenerate triangles at row ends
 		for( int row = 0; row < mesh_level; row++)
 		{
@@ -927,9 +927,11 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 			lightmap_selected = true;
 		}
 	}
-#ifdef NORMALMAP
-	gfx.SelectTexture(9, normal_object[face->material]);
-#endif
+
+	if (enable_normalmap)
+	{
+		gfx.SelectTexture(9, normal_object[face->material]);
+	}
 	selected_map = false;
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -1018,7 +1020,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				render.alpha_gt0 = surface->stage[k].alpha_gt0;
 				render.envmap = surface->stage[k].tcgen_env;
 
-
+				render.rgbgen_identity = surface->stage[k].rgbgen_identity;
 				render.rgbgen_wave_sin[k] = surface->stage[k].rgbgen_wave_sin;
 				render.rgbgen_wave_square[k] = surface->stage[k].rgbgen_wave_square;
 				render.rgbgen_wave_triangle[k] = surface->stage[k].rgbgen_wave_triangle;
@@ -1062,7 +1064,11 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				else if (surface->stage[k].blendfunc_filter)
 				{
 					render.blend = true;
-					render.blend_filter = true;
+
+					if (render.rgbgen_identity)
+						render.blend_one_one = true;
+					else
+						render.blend_filter = true;
 				}
 				else if (surface->stage[k].blend_dst_color_one)
 				{
@@ -1072,7 +1078,10 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				else if (surface->stage[k].blend_dst_color_zero)
 				{
 					render.blend = true;
-					render.blend_dstcolor_zero = true;
+					if (render.rgbgen_identity)
+						render.blend_one_one = true;
+					else
+						render.blend_dstcolor_zero = true;
 //					render.blend_zero_src_color = true;
 				}
 				else if (surface->stage[k].blend_dst_color_src_alpha)
@@ -1378,7 +1387,6 @@ void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time
 			face.rgbgen_wave_value[j].z,
 			tick_num, j);
 	}
-
 
 }
 
@@ -1713,7 +1721,6 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		}
 	}
 
-
 	if (j == surface_list.size())
 	{
 		return;
@@ -1870,11 +1877,13 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 		tex_object[i].num_tex++;
 
-#ifdef NORMALMAP
-		char texture_name[128];
-		snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
-		normal_object[i] = load_texture(gfx, texture_name, false);
-#endif
+		if (enable_normalmap)
+		{
+			char texture_name[128];
+			snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
+			normal_object[i] = load_texture(gfx, texture_name, false, false);
+		}
+
 	}
 }
 

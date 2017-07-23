@@ -455,6 +455,7 @@ typedef struct
 	bool turb;
 	bool portal;
 
+	bool rgbgen_identity;
 	bool rgbgen_wave_sin[MAX_TEXTURES];
 	bool rgbgen_wave_square[MAX_TEXTURES];
 	bool rgbgen_wave_triangle[MAX_TEXTURES];

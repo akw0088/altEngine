@@ -1470,7 +1470,7 @@ bool deformVertexes;
 */
 
 
-void handle_stage(char *stagecmd, stage_t *stage, int stage_num)
+void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 {
 	char *ret = NULL;
 
@@ -1724,6 +1724,12 @@ void handle_stage(char *stagecmd, stage_t *stage, int stage_num)
 		int match = 0;
 		float base, amplitude, phase, freq;
 
+		if (strstr(stagecmd, "identity"))
+		{
+			stage->rgbgen_identity = true;
+			return;
+		}
+
 		match = sscanf(ret, "rgbgen wave sin %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
@@ -1891,7 +1897,7 @@ void parse_shader(char *input, vector<surface_t *> &surface_list, char *filename
 					surface->num_stage++;
 					num_stage++;
 				}
-				handle_stage(stagecmd, &(surface->stage[num_stage - 1]), num_stage - 1);
+				handle_stage(stagecmd, &(surface->stage[num_stage - 1]), num_stage);
 				old_pos = i;
 				j = 0;
 			}

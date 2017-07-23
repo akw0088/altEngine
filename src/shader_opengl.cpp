@@ -108,8 +108,8 @@ int mLight2::init(Graphics *gfx)
 		return -1;
 	}
 #else
-//	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
-	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs")) 
+	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
+//	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs")) 
 	{
 		program_handle = -1;
 		return -1;
@@ -242,6 +242,7 @@ int mLight2::init(Graphics *gfx)
 
 	u_time = glGetUniformLocation(program_handle, "u_time");
 	u_portal = glGetUniformLocation(program_handle, "u_portal");
+	u_normalmap = glGetUniformLocation(program_handle, "u_normalmap");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_brightness = glGetUniformLocation(program_handle, "u_brightness");
@@ -498,6 +499,11 @@ void mLight2::turb(int stage, int turb)
 void mLight2::portal(int portal)
 {
 	glUniform1i(u_portal, portal);
+}
+
+void mLight2::set_normalmap(int value)
+{
+	glUniform1i(u_normalmap, value);
 }
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)

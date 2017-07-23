@@ -89,6 +89,7 @@ Engine::Engine()
 	num_light = 0;
 	doom_sound = 0;
 	enable_portal = false;
+
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
 #else
@@ -379,9 +380,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	char *hack_list[256];
 	unsigned int num_hack;
 	newlinelist("media/hacklist.txt", hack_list, num_hack);
-	for (int i = 0; i < num_hack; i += 2)
+	for (unsigned int i = 0; i < num_hack; i += 2)
 	{
-		for (int j = 0; j < surface_list.size(); j++)
+		for (unsigned int j = 0; j < surface_list.size(); j++)
 		{
 			if (strcmp(hack_list[i], surface_list[j]->name) == 0)
 			{
@@ -392,7 +393,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				}
 				else
 				{
-					for (int k = 0; k < surface_list[j]->num_stage; k++)
+					for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 					{
 						surface_list[j]->stage[k].blendfunc_add = false;
 						surface_list[j]->stage[k].blendfunc_blend = false;
@@ -4862,9 +4863,8 @@ void Engine::console(char *cmd)
 
 	if (strcmp(cmd, "r_max_particles") == 0)
 	{
-		menu.print(msg);
-
 		sprintf(data, "max particles: %d\n", ParticleUpdate::max_particles);
+		menu.print(msg);
 		return;
 	}
 
@@ -4946,6 +4946,24 @@ void Engine::console(char *cmd)
 		else
 		{
 			enable_portal = false;
+		}
+		return;
+	}
+
+
+	if (sscanf(cmd, "r_normalmap %s", data) == 1)
+	{
+		menu.print(msg);
+
+		if (atoi(data))
+		{
+			q3map.enable_normalmap = true;
+			mlight2.set_normalmap(1);
+		}
+		else
+		{
+			q3map.enable_normalmap = false;
+			mlight2.set_normalmap(0);
 		}
 		return;
 	}
