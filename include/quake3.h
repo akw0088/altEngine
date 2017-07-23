@@ -98,6 +98,7 @@ private:
 //	unsigned int		timelimit;
 	unsigned int		round_time;
 	unsigned int		warmup_time;
+	float old_contrast;
 
 	unsigned int snd_table[512];
 

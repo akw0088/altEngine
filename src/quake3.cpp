@@ -71,6 +71,7 @@ Quake3::Quake3()
 	num_player = 0;
 	num_player_red = 0;
 	num_player_blue = 0;
+	old_contrast = 2.0f;
 
 	played_one_frag = false;
 	played_two_frag = false;
@@ -4000,8 +4001,18 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 
 	if (player.health <= 0)
 	{
-		player.state = PLAYER_DEAD;
+		if (player.local)
+		{
+			engine->mlight2.set_contrast(-1.0f);
+			player.state = PLAYER_DEAD;
+		}
 		return;
+	}
+
+	if (player.local)
+	{
+		engine->mlight2.set_contrast(old_contrast);
+		old_contrast = engine->mlight2.m_contrast;
 	}
 
 	if (player.current_weapon != player.last_weapon)
