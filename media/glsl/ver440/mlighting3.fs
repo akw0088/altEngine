@@ -36,6 +36,7 @@ uniform int u_env[8];
 uniform float u_rgbgen_scale[8];
 uniform int u_alphatest[8];
 uniform int u_portal;
+uniform int u_normalmap;
 
 
 uniform sampler2D tex[8];// 8 possible textures
@@ -99,7 +100,7 @@ void main(void)
 	tc.x = 0.0;
 	tc.y = 0.0;
 
-	vec3 normal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
+	vec3 normal  = Vertex.vary_normal;
 	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
 	vec3 bitangent = normalize(cross(normal, tangent));
 	mat3 tangent_space = mat3(tangent, bitangent, normal);
@@ -116,15 +117,7 @@ void main(void)
 //	Fragment = texture(tex[0], Vertex.vary_TexCoord + height * eye.xy);
 //	vec3 normal_map = normalize(texture(texture_normalmap, Vertex.vary_TexCoord + height * eye.xy).xyz);
 
-/*
-	vec3 normal_map;
 
-	normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
-	normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
-	normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
-
-	normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
-*/
 
 	vec4 Fragment_stage[4];
 
@@ -276,7 +269,24 @@ void main(void)
 		return;
 	}
 
+	if (u_lightmap_stage > 0)
+	{
+		Fragment.a = 1.0;
+		return;
+	}
 
+
+
+	vec3 normal_map;
+
+	if (u_normalmap > 0)
+	{
+		normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
+		normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
+		normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
+
+		normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
+	}
 
 	for(int i = 0; i < u_num_lights; i++)
 	{
@@ -286,19 +296,29 @@ void main(void)
 		lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
 
-		vec3 v_light = normalize(vec3(lightDir.rgb));	
+		vec3 test = vec3(0.0, 0.0, 0.0);
+		vec3 v_light = normalize(vec3(test.rgb));	
 		vec3 n_light = tangent_space * v_light; // light vector in tangent space
 
-//		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
-//		vec3 v_light2 = normalize(vec3(lightpos.xyz));
-//		vec3 n_light = tangent_space * v_light2; // light vector in tangent space
+
+		if (u_normalmap > 0)
+		{
+			vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
+			vec3 v_light2 = normalize(vec3(lightpos.xyz));
+			n_light = tangent_space * v_light2; // light vector in tangent space
+		}
 
 
-		float diffuse = max(dot(v_light, normal), 0.25);		// directional light factor for fragment
+		float diffuse = max(dot(v_light, normal), 0.25);			// directional light factor for fragment
 		float atten = min( u_position[i].a * 160000.0 / pow(lightDir.a, 2.25), 0.25);	// light distance from fragment 1/(r^2) falloff
-		vec3 v_reflect = reflect(v_light, normal);			// normal map reflection vector
+		vec3 v_reflect = reflect(n_light, normal);				// normal map reflection vector
 		float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);	// specular relection for fragment
 
+
+ 		if (specular < 0.5)
+ 			specular = 0.0;
+		if (specular > 5.0)
+			specular = 5.0;
 
 		light = light + ( vec3(u_color[i]) * u_color[i].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
 	}
@@ -323,10 +343,13 @@ void main(void)
 		Fragment.rgb *= shadow;
 	}
 
-	Fragment.rgb += u_brightness;
-	Fragment.rgb *= u_contrast;
+	if (u_lightmap_stage <= 0)
+	{
+		Fragment.rgb += u_brightness;
+		Fragment.rgb *= u_contrast;
+	}
 
 
-//	Fragment.rgb = light;
+	Fragment.rgb = light;
 
 }

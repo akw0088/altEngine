@@ -11,29 +11,25 @@ in VertexData {
 	vec3		att_position;
 	vec4		vary_position;
 	vec2		vary_TexCoord;
-	vec2		vary_TexCoord0;
-	vec2		vary_TexCoord1;
-	vec2		vary_TexCoord2;
-	vec2		vary_TexCoord3;
+	vec2		vary_newTexCoord[4];
 	vec2		vary_LightCoord;
 	vec3		vary_normal;
 	flat int	vary_color;
 	vec4		vary_tangent;
+	vec4 shadowpos[18];
 } VertexIn[3];
 
  
 out VertexDataOut {
     vec3 att_position;
-    vec4 vary_position;
+    vec4 vary_position; // vertex position
     vec2 vary_TexCoord;
-    vec2 vary_TexCoord0;
-    vec2 vary_TexCoord1;
-    vec2 vary_TexCoord2;
-    vec2 vary_TexCoord3;
+    vec2 vary_newTexCoord[4];
     vec2 vary_LightCoord;
     vec3 vary_normal;
     flat int vary_color;
     vec4 vary_tangent;
+    vec4 shadowpos[18];
 } VertexOut;
  
 void main()
@@ -41,7 +37,7 @@ void main()
 	//calculate normal
 	vec3 a = gl_in[0].gl_Position.xyz - gl_in[1].gl_Position.xyz;
 	vec3 b = gl_in[0].gl_Position.xyz - gl_in[2].gl_Position.xyz;
-	vec3 normal = normalize(cross(a,b));
+	vec3 normal = normalize(cross(b,a));
 
 	//calculate tangent, these values are just constants
 	float s1 = VertexIn[0].vary_TexCoord.x - VertexIn[1].vary_TexCoord.x; 
@@ -60,16 +56,16 @@ void main()
 		VertexOut.att_position = VertexIn[i].att_position;
 		VertexOut.vary_position = VertexIn[i].vary_position;
 		VertexOut.vary_TexCoord = VertexIn[i].vary_TexCoord;
-		VertexOut.vary_TexCoord0 = VertexIn[i].vary_TexCoord0;
-		VertexOut.vary_TexCoord1 = VertexIn[i].vary_TexCoord1;
-		VertexOut.vary_TexCoord2 = VertexIn[i].vary_TexCoord2;
-		VertexOut.vary_TexCoord3 = VertexIn[i].vary_TexCoord3;
+		VertexOut.vary_newTexCoord[0] = VertexIn[i].vary_newTexCoord[0];
+		VertexOut.vary_newTexCoord[1] = VertexIn[i].vary_newTexCoord[1];
+		VertexOut.vary_newTexCoord[2] = VertexIn[i].vary_newTexCoord[2];
+		VertexOut.vary_newTexCoord[3] = VertexIn[i].vary_newTexCoord[3];
 		VertexOut.vary_LightCoord = VertexIn[i].vary_LightCoord;
 		VertexOut.vary_color = VertexIn[i].vary_color;
-//		VertexOut.vary_normal = VertexIn[i].vary_normal; // map normal
-		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // map tangent
-		VertexOut.vary_normal = normal; // geometry shader normal (not smoothed across triangles)
-//		VertexOut.vary_tangent = vec4(tangent, 0.0f); // geometry shader tangent
+		VertexOut.vary_normal = VertexIn[i].vary_normal; // map normal
+//		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // map tangent
+//		VertexOut.vary_normal = normal; // geometry shader normal (not smoothed across triangles)
+		VertexOut.vary_tangent = vec4(tangent, 0.0f); // geometry shader tangent
 
 		// done with the vertex
 		EmitVertex();
