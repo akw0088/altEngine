@@ -271,14 +271,16 @@ void main(void)
 	}
 
 
--	if (u_normalmap > 0)
--	{
--		normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
--		normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
--		normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
--
--		normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
--	}
+	if (u_normalmap > 0)
+	{
+		vec3 normal_map;
+
+		normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
+		normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
+		normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
+
+		normal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
+	}
 
 
 	for(int i = 0; i < u_num_lights; i++)
