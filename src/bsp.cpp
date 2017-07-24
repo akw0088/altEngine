@@ -1031,7 +1031,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 				render.blend = false;
 
-				if (surface->stage[k].alpha)
+				if (surface->stage[k].alpha /*|| (surface->stage[0].lightmap && k > 0)*/)
 				{
 					render.alpha = true;
 				}

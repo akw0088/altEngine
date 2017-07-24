@@ -1480,8 +1480,8 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 	if (strstr(stagecmd, "$lightmap"))
 	{
 		stage->lightmap = true;
-		if (stage_num - 1 > 0)
-			stage_num--;
+//		if (stage_num - 1 > 0)
+//			stage->blendfunc_filter = true;
 	}
 	else if ((ret = strstr(stagecmd, "animmap ")))
 	{
