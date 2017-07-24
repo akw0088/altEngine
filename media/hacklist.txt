@@ -44,3 +44,5 @@ textures/ctf/ctf_tower_redfin
 -1
 textures/ctf/ctf_tower_bluefin
 -1
+textures/base_floor/clangdark
+-1
