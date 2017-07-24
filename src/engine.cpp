@@ -846,6 +846,7 @@ void Engine::render(double last_frametime)
 		if (enable_portal)
 			render_portalcamera();
 
+
 		render_to_framebuffer(last_frametime);
 
 		gfx.bindFramebuffer(0);
@@ -854,6 +855,11 @@ void Engine::render(double last_frametime)
 		if (spawn == -1 || (player && player->current_light == 0))
 		{
 			render_texture(quad_tex, false);
+
+			if (enable_postprocess)
+			{
+				post_process(5);
+			}
 		}
 		else
 		{
@@ -895,6 +901,8 @@ void Engine::render(double last_frametime)
 				render_texture(q3map.portal_tex, false);
 			else
 				render_texture(testObj, depth_view);
+
+
 		}
 	}
 	if (render_mode == MODE_FORWARD)
@@ -4700,10 +4708,9 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-
 	if (strstr(cmd, "postprocess"))
 	{
-		post_process(5);
+		enable_postprocess = !enable_postprocess;
 		return;
 	}
 

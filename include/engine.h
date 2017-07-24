@@ -153,6 +153,7 @@ public:
 	bool shadowmaps;
 	bool all_lights;
 	bool enable_portal;
+	bool enable_postprocess;
 
 //Game logic
 	BaseGame *game;

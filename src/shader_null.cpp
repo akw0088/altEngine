@@ -107,6 +107,11 @@ void mLight2::prelink()
 
 }
 
+void mLight2::set_alpha(float value)
+{
+}
+
+
 
 void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time)
 {
