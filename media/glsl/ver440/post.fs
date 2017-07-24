@@ -14,6 +14,8 @@ layout(binding=1) uniform sampler2D texture1;
 
 uniform vec2 tc_offset[9];
 
+uniform int u_type;
+
 void main(void)
 {
 	vec4 texsample[9];
@@ -23,14 +25,29 @@ void main(void)
 		texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
 	}
 
-	Fragment =  (texsample[4] * 8.0) - 
-		(texsample[0] + texsample[1] + texsample[2] + 
-		texsample[3] + texsample[5] + 
-		texsample[6] + texsample[7] + texsample[8]);
-//	Fragment = (
-//		2.0 * sample[1] + 
-//		2.0 * sample[3] + 4.0 * sample[4] + 2.0 * sample[5] + 
-//		2.0 * sample[7]) / 12.0;
+
+	if (u_type == 0)
+	{
+		// laplacian edge detect
+		Fragment =  (texsample[4] * 8.0) - 
+			(texsample[0] + texsample[1] + texsample[2] + 
+			texsample[3] + texsample[5] + 
+			texsample[6] + texsample[7] + texsample[8]);
+	}
+	else if (u_type == 1)
+	{
+		// gaussian blur
+		Fragment = (1.0 * texsample[0] + 2.0 * texsample[1] + 1.0 * texsample[2] + 
+			2.0 * texsample[3] + 4.0 * texsample[4] + 2.0 * texsample[5] + 
+			1.0 * texsample[6] + 2.0 * texsample[7] + 1.0 * texsample[8]) / 16.0;
+	}
+	else if (u_type == 2)
+	{
+		// embosss
+		Fragment = (-2.0 * texsample[0] + -1.0 * texsample[1] +
+			-1.0 * texsample[3] + 1.0 * texsample[4] + 1.0 * texsample[5] + 
+						1.0 * texsample[7] + 2.0 * texsample[8]) / 16.0;
+	}
 }
 
 
