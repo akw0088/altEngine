@@ -57,6 +57,7 @@ public:
 	void set_lightmap_stage(int flag);
 	void set_depth(int flag);
 	void set_normalmap(int value);
+	void set_alpha(float value);
 
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
@@ -84,6 +85,7 @@ public:
 	void turb(int stage, int turb);
 	void rgbgen_scale(int stage, float scale);
 	void portal(int portal);
+	
 
 
 	int m_num_light;
@@ -92,6 +94,7 @@ public:
 	float m_lightmap;
 	float m_shadowmap;
 	float m_contrast;
+	float m_alpha;
 private:
 	int matrix;
 
@@ -109,6 +112,7 @@ private:
 	int u_alphatest[8];
 	int u_portal;
 	int u_normalmap;
+	int u_alpha;
 
 	int shadow_matrix[18];
 	int depth[18];

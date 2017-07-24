@@ -293,6 +293,7 @@ typedef struct
 	float anim_map_freq;
 	bool lightmap;
 
+	bool alpha;
 	bool blendfunc_add;
 	bool blendfunc_filter;
 	bool blendfunc_blend;	//source * srccoef + dest * destcoef
@@ -454,6 +455,7 @@ typedef struct
 	bool envmap;
 	bool turb;
 	bool portal;
+	bool alpha;
 
 	bool rgbgen_identity;
 	bool rgbgen_wave_sin[MAX_TEXTURES];

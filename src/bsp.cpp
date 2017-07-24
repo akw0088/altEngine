@@ -4,8 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-float fabs(float);
-
 Bsp::Bsp()
 {
 	loaded = false;
@@ -998,6 +996,7 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 			if (surface->portal)			{				render.portal = true;			}
 
+
 			for (unsigned int k = 0; k < surface->num_stage && k < max_stage; k++)
 			{
 				render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
@@ -1031,6 +1030,11 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 
 				render.blend = false;
+
+				if (surface->stage[k].alpha)
+				{
+					render.alpha = true;
+				}
 
 				if (surface->stage[k].alpha_gt0)
 				{
@@ -1395,6 +1399,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	vec2 one(1.0f, 1.0f);
 	float time = ((float)tick_num / TICK_RATE);
 	selected_map = false;
+	float alpha_value = 1.0f;
 
 	if (frameIndex != lastIndex)
 	{
@@ -1440,6 +1445,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			if (face_list[i].turb)
 				mlight2.turb(face_list[i].stage, 255);
 
+
+			if (face_list[i].alpha)
+				mlight2.set_alpha(alpha_value);
+			else
+				mlight2.set_alpha(-1.0f);
 
 			if (face_list[i].portal)
 			{
@@ -1525,6 +1535,10 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			}
 
+			if (blend_list[i].alpha)
+				mlight2.set_alpha(alpha_value);
+			else
+				mlight2.set_alpha(-1.0f);
 
 			if (blend_list[i].blend)
 			{
@@ -1585,7 +1599,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
 //		mlight2.set_matrix(mvp);
-		if (fabs(model_offset[i].x) + fabs(model_offset[i].y) + fabs(model_offset[i].z) < 0.001f)
+		if (abs32(model_offset[i].x) + abs32(model_offset[i].y) + abs32(model_offset[i].z) < 0.001f)
 			render_model(i, gfx);
 	}
 	

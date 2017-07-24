@@ -46,6 +46,7 @@ layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
 
 uniform sampler2D depth[18];
+uniform float u_alpha;
 
 
 // Loop could clean this up, but need to figure out how to make an array of texture arrays that bind correctly
@@ -345,6 +346,10 @@ void main(void)
 	}
 
 
+	if (u_alpha >= 0.0)
+	{
+		Fragment.a = u_alpha;
+	}
 
 //	Fragment.rgb = light;
 

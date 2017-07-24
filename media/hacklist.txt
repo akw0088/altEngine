@@ -78,8 +78,7 @@ textures/skin/spikemove
 -1
 textures/skin/pjwal2f
 -1
-textures/gothic_wall/iron01_ndark
--1
 textures/gothic_wall/iron01_m
 -1
-
+textures/gothic_wall/iron01_ndark
+-1

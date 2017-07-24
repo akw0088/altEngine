@@ -395,6 +395,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				{
 					for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 					{
+						surface_list[j]->stage[k].lightmap = false;
 						surface_list[j]->stage[k].blendfunc_add = false;
 						surface_list[j]->stage[k].blendfunc_blend = false;
 						surface_list[j]->stage[k].blendfunc_filter = false;
@@ -413,8 +414,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 						surface_list[j]->stage[k].blend_zero_one = false;
 						surface_list[j]->stage[k].blend_zero_src_alpha = false;
 						surface_list[j]->stage[k].blend_zero_src_color = false;
+						surface_list[j]->stage[k].alpha = true;
 					}
-					surface_list.erase(surface_list.begin() + j);
+//					surface_list.erase(surface_list.begin() + j);
 				}
 				break;
 			}

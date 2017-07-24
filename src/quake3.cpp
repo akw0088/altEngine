@@ -40,7 +40,6 @@
 
 extern char bot_state_name[16][32];
 extern const char *models[23];
-float fabs(float);
 
 Quake3::Quake3()
 {
@@ -7221,7 +7220,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				if (entity_list[i]->model_lerp < 1.0f)
 					entity_list[i]->model_lerp += 0.01f;
 
-				if (fabs(amount) < 0.001f)
+				if (abs32(amount) < 0.001f)
 				{
 					half_x = (engine->q3map.data.Model[entity_list[i]->model_ref].max[0]
 						- engine->q3map.data.Model[entity_list[i]->model_ref].min[0]);
@@ -7577,7 +7576,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					vec3 distance = entity_list[self]->position - entity_list[i]->position;
 					float mag = MIN(distance.magnitude(), 50.0f);
 
-					if (fabs(mag) > 0.0001f)
+					if (abs32(mag) > 0.0001f)
 					{
 						//add knockback to explosions
 						entity_list[self]->rigid->velocity += (distance.normalize() * trigger->knockback) / mag;

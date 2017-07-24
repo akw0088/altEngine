@@ -116,6 +116,8 @@ int mLight2::init(Graphics *gfx)
 	}
 #endif
 
+	m_alpha = -1.0f;
+
 	matrix = glGetUniformLocation(program_handle, "mvp");
 	shadow_matrix[0] = glGetUniformLocation(program_handle, "shadow_matrix[0]");
 	shadow_matrix[1] = glGetUniformLocation(program_handle, "shadow_matrix[1]");
@@ -222,6 +224,7 @@ int mLight2::init(Graphics *gfx)
 	u_water[6] = glGetUniformLocation(program_handle, "u_water[6]");
 	u_water[7] = glGetUniformLocation(program_handle, "u_water[7]");
 
+	u_alpha = glGetUniformLocation(program_handle, "u_alpha");
 	u_alphatest[0] = glGetUniformLocation(program_handle, "u_alphatest[0]");
 	u_alphatest[1] = glGetUniformLocation(program_handle, "u_alphatest[1]");
 	u_alphatest[2] = glGetUniformLocation(program_handle, "u_alphatest[2]");
@@ -292,6 +295,11 @@ void mLight2::set_shadowmap(float value)
 	m_shadowmap = value;
 }
 
+void mLight2::set_alpha(float value)
+{
+	m_alpha = value;
+	glUniform1f(u_alpha, value);
+}
 
 
 void mLight2::prelink()
@@ -348,6 +356,8 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 //	glUniform1i(texture[5], 5);
 //	glUniform1i(texture[6], 6);
 //	glUniform1i(texture[7], 7);
+
+	glUniform1f(u_alpha, -1.0f);
 
 
 	glUniform1i(depth[0], 10);
@@ -625,12 +635,12 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 	float value;
 	float denom;
 
-	if (fabs((float)(freq - 0.001)) <= 0.0011)
+	if (abs32((float)(freq - 0.001)) <= 0.0011)
 		freq = 0.1f;
 
 	denom = ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI);
 
-	if (fabs(denom) > 0.0001f)
+	if (abs32(denom) > 0.0001f)
 	{
 		value = (float)(amplitude * (4.0 / denom)) + 0.5;
 		rgbgen_scale(index, value);
