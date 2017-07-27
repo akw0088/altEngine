@@ -911,10 +911,15 @@ void xbox_vibration(int index, bool left, bool right)
 void xbox_controller(int index, Engine *engine, POINT *center)
 {
 	XINPUT_STATE state;
-	memset(&state, 0, sizeof(state));
-	DWORD rs = XInputGetState(index, &state);
+	DWORD dwResult = 0;
 	bool analog = false;
 	bool trigger = false;
+
+	memset(&state, 0, sizeof(state));
+	dwResult = XInputGetState(index, &state);
+
+	if (dwResult != ERROR_SUCCESS)
+		return;
 
 
 	vec2 left_analog(state.Gamepad.sThumbLX, state.Gamepad.sThumbLY);
