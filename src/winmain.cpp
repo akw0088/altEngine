@@ -914,6 +914,7 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 	memset(&state, 0, sizeof(state));
 	DWORD rs = XInputGetState(index, &state);
 	bool analog = false;
+	bool trigger = false;
 
 
 	vec2 left_analog(state.Gamepad.sThumbLX, state.Gamepad.sThumbLY);
@@ -979,8 +980,30 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 	if (right_trigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
 	{
 		float value = (right_trigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD) / (float)(UINT8_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-		if (value > 1.0f)
+
+		printf("right trigger %3.3f\n", value);
+
+		if (value > 0.1f)
 		{
+			trigger = true;
+			engine->keypress("space", true);
+		}
+		else
+		{
+			engine->keypress("space", false);
+		}
+	}
+
+	unsigned char left_trigger = state.Gamepad.bLeftTrigger;
+	if (left_trigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+	{
+		float value = (left_trigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD) / (float)(UINT8_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+
+		printf("left trigger %3.3f\n", value);
+
+		if (value > 0.1f)
+		{
+			trigger = true;
 			engine->keypress("space", true);
 		}
 		else
@@ -1082,13 +1105,17 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 		{
 			engine->keypress("rightbutton", false);
 		}
-		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
+
+		if (trigger == false)
 		{
-			engine->keypress("space", true);
-		}
-		else
-		{
-			engine->keypress("space", false);
+			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
+			{
+				engine->keypress("space", true);
+			}
+			else
+			{
+				engine->keypress("space", false);
+			}
 		}
 		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y)
 		{
