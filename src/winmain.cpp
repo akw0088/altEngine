@@ -1064,10 +1064,11 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 		}
 		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)
 		{
-			static bool keyval = true;
-			engine->keypress("~", keyval);
-
-			keyval = !keyval;
+			engine->keypress("tab", true);
+		}
+		else
+		{
+			engine->keypress("tab", false);
 		}
 
 	

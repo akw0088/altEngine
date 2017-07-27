@@ -6971,6 +6971,7 @@ void Quake3::endgame(char *winner)
 
 void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self)
 {
+
 	if (strcmp(ent->target, target->target_name) == 0)
 	{
 		printf("%s bsp volume triggered %s with targetname %s\n",
@@ -6978,6 +6979,13 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 
 		if (target->trigger)
 		{
+			if (target->ent_type == ENT_TRIGGER_TELEPORT)
+			{
+				// bots will teleport player
+				return;
+			}
+
+
 			if (target->trigger->active == false)
 			{
 				target->trigger->active = true;
