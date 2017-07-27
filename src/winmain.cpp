@@ -1019,44 +1019,41 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 
 
 
-	if (rs == ERROR_SUCCESS)
+	if (analog == false)
 	{
-
-		if (analog == false)
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
 		{
-			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
-			{
-				engine->keypress("up", true);
-			}
-			else
-			{
-				engine->keypress("up", false);
-			}
-			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
-			{
-				engine->keypress("down", true);
-			}
-			else
-			{
-				engine->keypress("down", false);
-			}
-			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
-			{
-				engine->keypress("left", true);
-			}
-			else
-			{
-				engine->keypress("left", false);
-			}
-			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
-			{
-				engine->keypress("right", true);
-			}
-			else
-			{
-				engine->keypress("right", false);
-			}
+			engine->keypress("up", true);
 		}
+		else
+		{
+			engine->keypress("up", false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+		{
+			engine->keypress("down", true);
+		}
+		else
+		{
+			engine->keypress("down", false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
+		{
+			engine->keypress("left", true);
+		}
+		else
+		{
+			engine->keypress("left", false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
+		{
+			engine->keypress("right", true);
+		}
+		else
+		{
+			engine->keypress("right", false);
+		}
+
 		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_START)
 		{
 			engine->keypress("escape", true);
