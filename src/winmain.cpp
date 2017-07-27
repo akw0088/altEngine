@@ -9,6 +9,11 @@
 #include <fcntl.h>
 #include <xmmintrin.h>
 
+//xbox controller
+#include <xutility>
+#include <Xinput.h>
+
+
 
 double freq = 0.0;
 double com_maxfps = 1000.0f / 250;
@@ -22,7 +27,7 @@ double GetCounter(double freq);
 void GetFreq(double &freq);
 void get_cpu_info(struct cpuinfo *);
 void show_hw_info();
-
+void xbox_controller(int index, Engine *engine, POINT *center);
 
 //for dxerr
 int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
@@ -226,6 +231,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case TICK_TIMER:
+			xbox_controller(0, &altEngine, &center);
 			altEngine.step(tick_count++);
 			break;
 		}
@@ -884,4 +890,216 @@ BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam
 	}
 	return FALSE;
 }
+
+
+void xbox_vibration(int index, bool left, bool right)
+{
+	_XINPUT_VIBRATION vib;
+
+	memset(&vib, 0, sizeof(_XINPUT_VIBRATION));
+	
+	if (left)
+		vib.wLeftMotorSpeed = 65535 >> 1;
+
+	if (right)
+		vib.wRightMotorSpeed = 65535 >> 1;
+
+	XInputSetState(index, &vib);
+}
+
+// One came with my oculus, why not
+void xbox_controller(int index, Engine *engine, POINT *center)
+{
+	XINPUT_STATE state;
+	memset(&state, 0, sizeof(state));
+	DWORD rs = XInputGetState(index, &state);
+	bool analog = false;
+
+
+	vec2 left_analog(state.Gamepad.sThumbLX, state.Gamepad.sThumbLY);
+	float left_mag = left_analog.magnitude();
+	if (left_mag > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
+	{
+		left_mag = (left_mag - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) / (float)(UINT16_MAX - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+		left_analog = left_analog.normalize() * left_mag;
+
+//		printf("left analog %3.3f %3.3f\n", left_analog.x, left_analog.y);
+
+
+		engine->mousepos(center->x, center->y,  20.0f * left_analog.x, -20.0f * left_analog.y);
+	}
+
+	vec2 right_analog(state.Gamepad.sThumbRX, state.Gamepad.sThumbRY);
+	float right_mag = right_analog.magnitude();
+	if (right_mag > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
+	{
+		right_mag = (right_mag - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) / (float)(UINT16_MAX - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+		right_analog = right_analog.normalize() * right_mag;
+
+//		printf("right analog %3.3f %3.3f\n", right_analog.x, right_analog.y);
+
+		if (right_analog.x > 0.1f)
+		{
+			analog = true;
+			engine->keypress("right", true);
+		}
+		else if (right_analog.x < -0.1f)
+		{
+			analog = true;
+			engine->keypress("left", true);
+		}
+		else
+		{
+			engine->keypress("right", false);
+			engine->keypress("left", false);
+		}
+
+
+		if (right_analog.y > 0.1f)
+		{
+			analog = true;
+			engine->keypress("up", true);
+		}
+		else if (right_analog.y < -0.1f)
+		{
+			analog = true;
+			engine->keypress("down", true);
+		}
+		else
+		{
+			engine->keypress("up", false);
+			engine->keypress("down", false);
+		}
+
+
+	}
+
+
+	unsigned char right_trigger = state.Gamepad.bRightTrigger;
+	if (right_trigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+	{
+		float value = (right_trigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD) / (float)(UINT8_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+		if (value > 1.0f)
+		{
+			engine->keypress("space", true);
+		}
+		else
+		{
+			engine->keypress("space", false);
+		}
+	}
+
+
+
+	if (rs == ERROR_SUCCESS)
+	{
+
+		if (analog == false)
+		{
+			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP)
+			{
+				engine->keypress("up", true);
+			}
+			else
+			{
+				engine->keypress("up", false);
+			}
+			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN)
+			{
+				engine->keypress("down", true);
+			}
+			else
+			{
+				engine->keypress("down", false);
+			}
+			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)
+			{
+				engine->keypress("left", true);
+			}
+			else
+			{
+				engine->keypress("left", false);
+			}
+			if (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)
+			{
+				engine->keypress("right", true);
+			}
+			else
+			{
+				engine->keypress("right", false);
+			}
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_START)
+		{
+			engine->keypress("escape", true);
+		}
+		else
+		{
+			engine->keypress("escape", false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK)
+		{
+			static bool keyval = true;
+			engine->keypress("~", keyval);
+
+			keyval = !keyval;
+		}
+
+	
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB)
+		{
+			engine->keypress("[", true);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB)
+		{
+			engine->keypress("]", true);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+		{
+			engine->keypress("[", true);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+		{
+			engine->keypress("]", true);
+		}
+
+
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A)
+		{
+			engine->keypress("leftbutton", true);
+			xbox_vibration(0, true, true);
+		}
+		else
+		{
+			engine->keypress("leftbutton", false);
+			xbox_vibration(0, false, false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
+		{
+			engine->keypress("rightbutton", true);
+		}
+		else
+		{
+			engine->keypress("rightbutton", false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_X)
+		{
+			engine->keypress("space", true);
+		}
+		else
+		{
+			engine->keypress("space", false);
+		}
+		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y)
+		{
+			engine->keypress("shift", true);
+		}
+		else
+		{
+			engine->keypress("shift", false);
+		}
+	}
+}
+
+
 #endif

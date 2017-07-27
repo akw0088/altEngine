@@ -58,6 +58,11 @@ public:
 	vec2 operator+(const vec2 &vector);
 	vec2 operator-(const vec2 &vector);
 	vec2 &operator*=(const float scalar);
+	vec2 operator*(const float scalar) const;
+
+
+	vec2 &normalize();
+	float vec2::magnitude();
 
 	float x, y;
 };

@@ -252,3 +252,24 @@ vec2 &vec2::operator*=(const float scalar)
 	y *= scalar;
 	return *this;
 }
+
+vec2 &vec2::normalize()
+{
+	float invmag = InvSqrt(x * x + y * y );
+	if (invmag < FLT_MAX && invmag > FLT_MIN)
+	{
+		x *= invmag;
+		y *= invmag;
+	}
+	return *this;
+}
+
+float vec2::magnitude()
+{
+	return newtonSqrt(x * x + y * y);
+}
+
+vec2 vec2::operator*(const float scalar) const
+{
+	return vec2(x * scalar, y * scalar);
+}
