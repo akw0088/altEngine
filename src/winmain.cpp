@@ -981,7 +981,7 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 	{
 		float value = (right_trigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD) / (float)(UINT8_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
 
-		printf("right trigger %3.3f\n", value);
+//		printf("right trigger %3.3f\n", value);
 
 		if (value > 0.1f)
 		{
@@ -999,7 +999,7 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 	{
 		float value = (left_trigger - XINPUT_GAMEPAD_TRIGGER_THRESHOLD) / (float)(UINT8_MAX - XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
 
-		printf("left trigger %3.3f\n", value);
+//		printf("left trigger %3.3f\n", value);
 
 		if (value > 0.1f)
 		{
