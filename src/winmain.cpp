@@ -27,7 +27,7 @@ double GetCounter(double freq);
 void GetFreq(double &freq);
 void get_cpu_info(struct cpuinfo *);
 void show_hw_info();
-void xbox_controller(int index, Engine *engine, POINT *center);
+void xbox_controller(HWND hwnd, int index, Engine *engine);
 
 //for dxerr
 int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
@@ -231,7 +231,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case TICK_TIMER:
-			xbox_controller(0, &altEngine, &center);
+			xbox_controller(hwnd, 0, &altEngine);
 			altEngine.step(tick_count++);
 			break;
 		}
@@ -908,8 +908,9 @@ void xbox_vibration(int index, bool left, bool right)
 }
 
 // One came with my oculus, why not
-void xbox_controller(int index, Engine *engine, POINT *center)
+void xbox_controller(HWND hwnd, int index, Engine *engine)
 {
+	static POINT pos = { 0 };
 	XINPUT_STATE state;
 	DWORD dwResult = 0;
 	bool analog = false;
@@ -931,25 +932,12 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 
 //		printf("left analog %3.3f %3.3f\n", left_analog.x, left_analog.y);
 
-
-		engine->mousepos(center->x, center->y,  20.0f * left_analog.x, -20.0f * left_analog.y);
-	}
-
-	vec2 right_analog(state.Gamepad.sThumbRX, state.Gamepad.sThumbRY);
-	float right_mag = right_analog.magnitude();
-	if (right_mag > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
-	{
-		right_mag = (right_mag - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) / (float)(UINT16_MAX - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
-		right_analog = right_analog.normalize() * right_mag;
-
-//		printf("right analog %3.3f %3.3f\n", right_analog.x, right_analog.y);
-
-		if (right_analog.x > 0.1f)
+		if (left_analog.x > 0.1f)
 		{
 			analog = true;
 			engine->keypress("right", true);
 		}
-		else if (right_analog.x < -0.1f)
+		else if (left_analog.x < -0.1f)
 		{
 			analog = true;
 			engine->keypress("left", true);
@@ -961,12 +949,12 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 		}
 
 
-		if (right_analog.y > 0.1f)
+		if (left_analog.y > 0.1f)
 		{
 			analog = true;
 			engine->keypress("up", true);
 		}
-		else if (right_analog.y < -0.1f)
+		else if (left_analog.y < -0.1f)
 		{
 			analog = true;
 			engine->keypress("down", true);
@@ -976,8 +964,40 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 			engine->keypress("up", false);
 			engine->keypress("down", false);
 		}
+	}
 
+	vec2 right_analog(state.Gamepad.sThumbRX, state.Gamepad.sThumbRY);
+	float right_mag = right_analog.magnitude();
+	if (right_mag > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
+	{
+		right_mag = (right_mag - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) / (float)(UINT16_MAX - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+		right_analog = right_analog.normalize() * right_mag;
 
+		RECT rect;
+		GetWindowRect(hwnd, &rect);
+
+	//		printf("right analog %3.3f %3.3f\n", right_analog.x, right_analog.y);
+		pos.x += right_analog.x * 20.0f;
+		pos.y += right_analog.y * -20.0f;
+		if (pos.x > rect.right)
+			pos.x = rect.right;
+		if (pos.x < rect.left)
+			pos.x = rect.left;
+
+		if (pos.y < rect.top)
+			pos.y = rect.top;
+		if (pos.y > rect.bottom)
+			pos.y = rect.bottom;
+
+		if (engine->q3map.loaded)
+		{
+			engine->mousepos(0, 0, 10.0f * right_analog.x, -10.0f * right_analog.y);
+		}
+		else
+		{
+			SetCursorPos(pos.x, pos.y);
+			engine->mousepos(pos.x, pos.y, 10.0f * right_analog.x, -10.0f * right_analog.y);
+		}
 	}
 
 
@@ -1093,12 +1113,15 @@ void xbox_controller(int index, Engine *engine, POINT *center)
 		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_A)
 		{
 			engine->keypress("leftbutton", true);
-			xbox_vibration(0, true, true);
+
+			if (engine->q3map.loaded)
+				xbox_vibration(0, false, true);
 		}
 		else
 		{
 			engine->keypress("leftbutton", false);
-			xbox_vibration(0, false, false);
+			if (engine->q3map.loaded)
+				xbox_vibration(0, false, false);
 		}
 		if (state.Gamepad.wButtons & XINPUT_GAMEPAD_B)
 		{
