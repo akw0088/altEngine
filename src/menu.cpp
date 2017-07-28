@@ -253,7 +253,7 @@ bool Menu::delta(float x, float y)
 
 void Menu::handle(char key, Engine *altEngine)
 {
-	static int last_key = 0;
+	static unsigned int last_key = 0;
 
 	if (last_key + TICK_RATE / 8 > altEngine->tick_num)
 	{

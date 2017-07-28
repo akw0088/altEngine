@@ -6588,7 +6588,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			{
 				if (strstr(entity_list[i]->trigger->action, "damage"))
 				{
-					sprintf(entity_list[i]->trigger->action, "");
+					entity_list[i]->trigger->action[0] = '\0';
 				}
 			}
 		}
@@ -7291,7 +7291,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 		}
 
 
-		if (entity_list[i]->model_ref > 0 && entity_list[i]->model_ref < engine->q3map.data.num_model)
+		if (entity_list[i]->model_ref > 0 && (unsigned int)entity_list[i]->model_ref < engine->q3map.data.num_model)
 		{
 			handle_model_trigger(entity_list, entity_list[i], self);
 		}

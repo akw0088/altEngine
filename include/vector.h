@@ -62,7 +62,7 @@ public:
 
 
 	vec2 &normalize();
-	float vec2::magnitude();
+	float magnitude();
 
 	float x, y;
 };

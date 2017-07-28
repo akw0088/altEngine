@@ -83,7 +83,7 @@ public:
 	bool enable_patch;
 	bool enable_sky;
 	bool enable_normalmap;
-	int max_stage;
+	unsigned int max_stage;
 private:
 	bsp_t		*tBsp;
 	vec4		*tangent;
