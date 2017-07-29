@@ -21,3 +21,4 @@ media/q3wpak4.pk3
 media/map-13vast.pk3
 media/maps-q3wctf.pk3
 media/ztn3dm1.pk3
+media/quake1tex.pk3
