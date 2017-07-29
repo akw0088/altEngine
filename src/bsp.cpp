@@ -621,6 +621,8 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 			continue;
 
 		int index = data.Model[i].brush_index;
+		if (index > data.num_brushes)
+			break;
 		brush_t	*brush = &data.Brushes[index];
 		int brush_index = brush->first_side;
 		int num_sides = brush->num_sides;
@@ -1595,13 +1597,14 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		gfx.Blend(false);
 	}
 
-	
+	/*
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
 //		mlight2.set_matrix(mvp);
 		if (abs32(model_offset[i].x) + abs32(model_offset[i].y) + abs32(model_offset[i].z) < 0.001f)
 			render_model(i, gfx);
 	}
+	*/
 	
 #ifndef DIRECTX
 	render_sky(gfx, mlight2, tick_num, surface_list);
@@ -1872,6 +1875,10 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	for (unsigned int i = 0; i < data.num_materials; i++)
 	{
 		material_t	*material = &data.Material[i];
+
+		// hack for quake1 maps
+		if (i > 75)
+			break;
 		
 		strcpy(tex_object[i].name, data.Material[i].name);
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);

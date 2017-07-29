@@ -501,7 +501,7 @@ int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, v
 	long offset;
 	userdata_t *user = (userdata_t *)user_data;
 
-	if (strcmp(filename, user->file) != 0)
+	if (stricmp(filename, user->file) != 0)
 	{
 		return 1;
 	}

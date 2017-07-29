@@ -556,6 +556,24 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
 		}
+		else if (strcmp(value, "trigger_changelevel") == 0)
+		{
+			entity.ent_type = ENT_TRIGGER_CHANGELEVEL;
+
+			if (entity.trigger == NULL)
+				entity.trigger = new Trigger(&entity, audio);
+
+			entity.trigger->timeout = 1.0f;
+			entity.trigger->timeout_value = 1.0f;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+				entity.nodraw = true;
+			}
+		}
+		//trigger_setskill
 		else if (strcmp(value, "misc_model") == 0)
 		{
 			entity.ent_type = ENT_MISC_MODEL;
@@ -931,6 +949,22 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 		}
 	}
+	/*
+	Quake1 monsters
+		monster_army	- shotgun basic guy
+		monster_dog
+		monster_ogre	- gun + grenade
+		monster_zombie
+		monster_shambler
+		monster_wizard - flying thing
+		monster_knight - samarai knight
+		monster_demon1 - fiend
+		monster_enforcer
+		monster_fish
+		monster_hell_knight - medieval knight
+		monster_shalrath - spider thing
+		monster_tarbaby - blob
+	*/
 	else if (strcmp(key, "light") == 0)
 	{
 		int inten;
@@ -979,6 +1013,22 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		entity.speaker->gain(0.3f);
 		entity.speaker->loop_gain(0.3f);
 		entity.speaker->index = engine->get_load_wave(value);
+	}
+	else if (strcmp(key, "map") == 0)
+	{
+		if (entity.trigger == NULL)
+			entity.trigger = new Trigger(&entity, audio);
+
+		// changel level, should only exist in trigger_changelevel
+		sprintf(entity.trigger->action, "map %s", value);
+	}
+	else if (strcmp(key, "message") == 0)
+	{
+		if (entity.trigger == NULL)
+			entity.trigger = new Trigger(&entity, audio);
+
+		// print message when triggered, quake1 style
+		sprintf(entity.trigger->message, "%s", value);
 	}
 	else if (strcmp(key, "noise") == 0)
 	{

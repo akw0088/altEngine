@@ -22,6 +22,7 @@ public:
 
 
 	char	action[LINE_SIZE];
+	char	message[LINE_SIZE];
 	float	radius;
 	int	source;
 	int	loop_source;
