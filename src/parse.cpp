@@ -948,23 +948,548 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.nodraw = true;
 
 		}
+		//quake 1 ents
+		if (strcmp(value, "monster_army") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_ARMY;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_dog") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_DOG;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_ogre") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_OGRE;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_zombie") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_ZOMBIE;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_shambler") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_SHAMBLER;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_wizard") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_WIZARD;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_knight") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_KNIGHT;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_demon1") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_DEMON1;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_enforcer") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_ENFORCER;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_fish") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_FISH;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_hell_knight") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_HELL_KNIGHT;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_shalrath") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_SHALRATH;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "monster_tarbaby") == 0)
+		{
+			entity.ent_type = ENT_Q1_MONSTER_TARBABY;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "light_fluoro") == 0)
+		{
+			entity.ent_type = ENT_Q1_LIGHT_FLUORO;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "light_fluorospark") == 0)
+		{
+			entity.ent_type = ENT_Q1_LIGHT_FLUOROSPARK;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "func_door_secret") == 0)
+		{
+			entity.ent_type = ENT_Q1_FUNC_DOOR_SECRET;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "func_train") == 0)
+		{
+			entity.ent_type = ENT_Q1_FUNC_TRAIN;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_teleport_destination") == 0)
+		{
+			entity.ent_type = ENT_Q1_INFO_TELEPORT_DESTINATION;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_intermission") == 0)
+		{
+			entity.ent_type = ENT_Q1_INFO_INTERMISSION;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "info_player_coop") == 0)
+		{
+			entity.ent_type = ENT_Q1_INFO_PLAYER_COOP;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "trigger_once") == 0)
+		{
+			entity.ent_type = ENT_TRIGGER_ONCE;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "trigger_counter") == 0)
+		{
+			entity.ent_type = ENT_Q1_TRIGGER_COUNTER;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "trigger_secret") == 0)
+		{
+			entity.ent_type = ENT_Q1_TRIGGER_SECRET;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "path_corner") == 0)
+		{
+			entity.ent_type = ENT_Q1_PATH_CORNER;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_spikes") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_SPIKES;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_artifact_super_damage") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_artifact_invulnerability") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_ARTIFACT_INVULNERABILITY;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_artifact_envirosuit") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_ARTIFACT_ENVIROSUIT;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "weapon_nailgun") == 0)
+		{
+			entity.ent_type = ENT_Q1_WEAPON_NAILGUN;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "weapon_supernailgun") == 0)
+		{
+			entity.ent_type = ENT_Q1_WEAPON_SUPERNAILGUN;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "weapon_supershotgun") == 0)
+		{
+			entity.ent_type = ENT_Q1_WEAPON_SUPERSHOTGUN;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "misc_explobox") == 0)
+		{
+			entity.ent_type = ENT_Q1_MISC_EXPLOBOX;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "ambient_comp_hum") == 0)
+		{
+			entity.ent_type = ENT_Q1_AMBIENT_COMP_HUM;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "ambient_drone") == 0)
+		{
+			entity.ent_type = ENT_Q1_AMBIENT_DRONE;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "ambient_drip") == 0)
+		{
+			entity.ent_type = ENT_Q1_AMBIENT_DRIP;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "ambient_swamp1") == 0)
+		{
+			entity.ent_type = ENT_Q1_AMBIENT_SWAMP1;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "ambient_swamp2") == 0)
+		{
+			entity.ent_type = ENT_Q1_AMBIENT_SWAMP2;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "func_wall") == 0)
+		{
+			entity.ent_type = ENT_Q1_FUNC_WALL;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "light_torch_small_walltorch") == 0)
+		{
+			entity.ent_type = ENT_Q1_LIGHT_TORCH_SMALL_WALLTORCH;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "light_flame_small_yellow") == 0)
+		{
+			entity.ent_type = ENT_Q1_LIGHT_FLAME_SMALL_YELLOW;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_key1") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_KEY1;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_key2") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_KEY2;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_armor1") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_ARMOR1;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "item_armor2") == 0)
+		{
+			entity.ent_type = ENT_Q1_ITEM_ARMOR2;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
+		else if (strcmp(value, "trap_spikeshooter") == 0)
+		{
+			entity.ent_type = ENT_Q1_TRAP_SPIKESHOOTER;
+
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->noclip = true;
+				entity.rigid->flight = true;
+			}
+			entity.nodraw = true;
+		}
 	}
-	/*
-	Quake1 monsters
-		monster_army	- shotgun basic guy
-		monster_dog
-		monster_ogre	- gun + grenade
-		monster_zombie
-		monster_shambler
-		monster_wizard - flying thing
-		monster_knight - samarai knight
-		monster_demon1 - fiend
-		monster_enforcer
-		monster_fish
-		monster_hell_knight - medieval knight
-		monster_shalrath - spider thing
-		monster_tarbaby - blob
-	*/
 	else if (strcmp(key, "light") == 0)
 	{
 		int inten;

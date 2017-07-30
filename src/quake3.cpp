@@ -5904,7 +5904,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			if ( !(entity_list[i]->ent_type == ENT_MISC_TELEPORTER_DEST ||
 				   entity_list[i]->ent_type == ENT_TARGET_POSITION ||
-				   entity_list[i]->ent_type == ENT_TARGET_TELEPORTER) )
+				   entity_list[i]->ent_type == ENT_TARGET_TELEPORTER ||
+				   entity_list[i]->ent_type == ENT_Q1_INFO_TELEPORT_DESTINATION))
 				continue;
 
 			if (!strcmp(entity_list[i]->target_name, data))
