@@ -1879,6 +1879,13 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		// hack for quake1 maps
 		if (i > 75)
 			break;
+
+		int length = strlen(material->name);
+		for (int i = 0; i < length; i++)
+		{
+			if (material->name[i] == '*')
+				material->name[i] = '#';
+		}
 		
 		strcpy(tex_object[i].name, data.Material[i].name);
 		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);
