@@ -272,6 +272,14 @@ void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int 
 */
 void Bsp::change_axis()
 {
+	bool quake1 = false;
+
+	if (strstr((char *)data.Ent, "\"wad\""))
+	{
+		quake1 = true;
+	}
+
+
 	for(unsigned int i = 0; i < data.num_verts; i++)
 	{
 		bspvertex_t *vert = &data.Vert[i];
@@ -284,6 +292,14 @@ void Bsp::change_axis()
 		temp = vert->normal.y;
 		vert->normal.y =  vert->normal.z;
 		vert->normal.z =  -temp;
+
+		if (quake1)
+		{
+			// some quake1 textures misscaled, need to find out why
+//				vert->texCoord0.x *= 0.5f;
+//				vert->texCoord0.y *= 0.5f;
+		}
+
 		vert->texCoord0.y = -vert->texCoord0.y;
 //		vert->texCoord1.y = vert->texCoord1.y;
 
@@ -1597,14 +1613,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		gfx.Blend(false);
 	}
 
-	/*
+
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
 //		mlight2.set_matrix(mvp);
 		if (abs32(model_offset[i].x) + abs32(model_offset[i].y) + abs32(model_offset[i].z) < 0.001f)
 			render_model(i, gfx);
 	}
-	*/
 	
 #ifndef DIRECTX
 	render_sky(gfx, mlight2, tick_num, surface_list);
@@ -1652,6 +1667,10 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 	for (int i = 0; i < model->num_faces; i++)
 	{
 		int face_index = model->face_index + i;
+
+		if (face_index > data.num_faces)
+			break;
+
 		face_t *face = &data.Face[face_index];
 
 		if (face->type == 1 || face->type == 3)
