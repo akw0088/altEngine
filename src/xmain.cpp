@@ -16,6 +16,7 @@ double com_maxfps;
 
 //int clipboard_copy(Display *display, char *value, int size);
 int clipboard_paste(Display *display, Window w, char *value, int size);
+void show_utf8_prop(Display *dpy, Window w, Atom p, char *clip);
 
 void timer_handler(int sig, siginfo_t *si, void *uc)
 {
@@ -54,6 +55,38 @@ int make_timer(char *name, timer_t *timer_id, int interval )
     timer_settime(*timer_id, 0, &its, NULL);
 
     return(0);
+}
+
+
+void show_utf8_prop(Display *dpy, Window w, Atom p, char *clip)
+{
+    Atom da, incr, type;
+    int di;
+    unsigned long size, dul;
+    unsigned char *prop_ret = NULL;
+
+    // Dummy call to get type and size
+    XGetWindowProperty(dpy, w, p, 0, 0, False, AnyPropertyType,
+                       &type, &di, &dul, &size, &prop_ret);
+    XFree(prop_ret);
+
+    incr = XInternAtom(dpy, "INCR", False);
+    if (type == incr)
+    {
+        printf("Data too large and INCR mechanism not implemented\n");
+        return;
+    }
+
+    // Read the data in one go.
+    printf("Property size: %lu\n", size);
+
+    XGetWindowProperty(dpy, w, p, 0, size, False, AnyPropertyType,
+                       &da, &di, &dul, &dul, &prop_ret);
+    sprintf(clip, "%s", prop_ret);
+    XFree(prop_ret);
+
+    // Signal the selection owner that we have successfully read the data
+    XDeleteProperty(dpy, w, p);
 }
 
 
@@ -164,6 +197,9 @@ int EventProc(Display *display, Window window, GLXContext context)
 	static Cursor		invisibleCursor;
 	static Cursor		cursor;
 	static Pixmap		bitmapNoData;
+	static char		clip[512];
+	XSelectionEvent *sev;
+	static Atom		target_property;
 
         //Atom a1;
 	//Atom type;
@@ -203,6 +239,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 	{
 	case CreateNotify:
 		printf("CreateNotify\n");
+		target_property = XInternAtom(display, "PENGUIN", False);
 		break;
 	case ConfigureNotify:
 		printf("ConfigureNotify\n");
@@ -394,6 +431,20 @@ int EventProc(Display *display, Window window, GLXContext context)
                 XSendEvent(display, req->requestor, 0, 0, &respond);
                 XFlush(display);
 		break;
+	case SelectionNotify:
+                sev = (XSelectionEvent*)&event.xselection;
+                if (sev->property == None)
+                {
+                    printf("Conversion could not be performed.\n");
+                    return 1;
+                }
+                else    
+                {
+                    show_utf8_prop(display, window, target_property, &clip[0]);
+                    return 0;
+                }
+                break;
+
 	case DestroyNotify:
 		printf("DestroyNotify\n");
 		altEngine.destroy();
@@ -420,37 +471,39 @@ int clipboard_paste(Display *display, Window window, char *value, int size)
 	int format, result;
 	unsigned long len, bytes_left, dummy;
 	unsigned char *data;
-	Window Sown; // selection owner
+	Window owner; // selection owner
 
-	Sown = XGetSelectionOwner(display, XA_PRIMARY);
-	printf("Selection owner%i\n", (int)Sown);
-	if (Sown != None)
+	owner = XGetSelectionOwner(display, XA_PRIMARY);
+	printf("Selection owner%i\n", (int)owner);
+	if (owner == None)
 	{
-		XConvertSelection(display, XA_PRIMARY, XA_STRING, None,	Sown, CurrentTime);
-		XFlush(display);
+		return -1;
+	}
+	XSelectInput(display, window, SelectionNotify);
+	XConvertSelection(display, XA_PRIMARY, XA_STRING, None,	owner, CurrentTime);
+	XFlush(display);
 
-		// Do not get any data, see how much data is there
-		XGetWindowProperty(display, Sown, XA_STRING, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes_left, &data);
+	// Do not get any data, see how much data is there
+	XGetWindowProperty(display, owner, XA_STRING, 0, 0, 0, AnyPropertyType, &type, &format, &len, &bytes_left, &data);
 
-		// DATA is There
-		if (bytes_left > 0)
+	// DATA is There
+	if (bytes_left > 0)
+	{
+		result = XGetWindowProperty(display, owner, XA_STRING, 0, bytes_left, 0, AnyPropertyType, &type, &format, &len, &dummy, &data);
+		if (result == Success)
 		{
-			result = XGetWindowProperty(display, Sown, XA_STRING, 0, bytes_left, 0, AnyPropertyType, &type, &format, &len, &dummy, &data);
-			if (result == Success)
-			{
-				printf("Clipboard: %s", data);
-				snprintf(value, size - 1, "%s", data);
-				XFree(data);
-				return 0;
-			}
-			else
-			{
-				printf("FAIL\n");
-				XFree(data);
-				return -1;
-			}
-			
+			printf("Clipboard: %s", data);
+			snprintf(value, size - 1, "%s", data);
+			XFree(data);
+			return 0;
 		}
+		else
+		{
+			printf("FAIL\n");
+			XFree(data);
+			return -1;
+		}
+		
 	}
 	return -1;
 }
