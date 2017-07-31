@@ -508,4 +508,36 @@ int clipboard_paste(Display *display, Window window, char *value, int size)
 	return -1;
 }
 
+// Send request to X11 (convert function) we want clipboard data, will receive clipboard event
+int request_clipboard(Display *dpy, Window target_window)
+{
+    Window owner, root;
+    int screen;
+    Atom sel, target_property, utf8;
+    XEvent ev;
+    XSelectionEvent *sev;
+
+    screen = DefaultScreen(dpy);
+    root = RootWindow(dpy, screen);
+
+    sel = XInternAtom(dpy, "CLIPBOARD", False);
+    utf8 = XInternAtom(dpy, "UTF8_STRING", False);
+
+    owner = XGetSelectionOwner(dpy, sel);
+    if (owner == None)
+    {
+        printf("'CLIPBOARD' has no owner\n");
+        return 1;
+    }
+    printf("0x%lX\n", owner);
+
+    XSelectInput(dpy, target_window, SelectionNotify);
+
+    // That's the property used by the owner. Note that it's completely arbitrary
+    target_property = XInternAtom(dpy, "PENGUIN", False);
+
+    // Request conversion to UTF-8. Not all owners will be able to fulfill that request.
+    XConvertSelection(dpy, sel, utf8, target_property, target_window, CurrentTime);
+}
+
 #endif
