@@ -11,6 +11,10 @@
 #include "stb_image.h"
 #include <stdarg.h> // for vargs
 #include <math.h> // for ceil
+#ifdef __linux__
+#define stricmp strcasecmp
+#endif
+
 
 #define DMESG_SIZE 2048
 extern char dmesg[DMESG_SIZE][1024];
