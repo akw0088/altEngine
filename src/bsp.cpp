@@ -272,8 +272,7 @@ void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int 
 */
 void Bsp::change_axis()
 {
-	bool quake1 = false;
-
+	quake1 = false;
 	if (strstr((char *)data.Ent, "\"wad\""))
 	{
 		quake1 = true;
@@ -1896,7 +1895,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		material_t	*material = &data.Material[i];
 
 		// hack for quake1 maps
-		if (i > 75)
+		if (i > 75 && quake1)
 			break;
 
 		int length = strlen(material->name);

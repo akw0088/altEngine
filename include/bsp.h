@@ -60,6 +60,7 @@ public:
 
 
 	bool loaded;
+	bool quake1;
 	bspData_t	data;
 	char map_name[64];
 	vector<texture_t *> anim_list;
