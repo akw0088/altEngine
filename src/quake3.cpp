@@ -685,6 +685,21 @@ void Quake3::load_q1_models(Graphics &gfx)
 	model->load(gfx, "media/models/quake1/knight/knight");
 	model_table.push_back(model);
 
+#define MODEL_REDARMOR 59
+	model = new Model;
+	model->load(gfx, "media/models/quake1/armor/redarmor");
+	model_table.push_back(model);
+
+#define MODEL_YELLOWARMOR 60
+	model = new Model;
+	model->load(gfx, "media/models/quake1/armor/yellowarmor");
+	model_table.push_back(model);
+
+#define MODEL_G_KEY 61
+	model = new Model;
+	model->load(gfx, "media/models/quake1/g_key/g_key");
+	model_table.push_back(model);
+
 
 }
 
@@ -8448,6 +8463,120 @@ void Quake3::map_model(Entity &ent)
 		ent.rigid->gravity = true;
 		ent.nodraw = false;
 	}
+	else if (ent.ent_type == ENT_Q1_LIGHT_FLUORO)
+	{
+		debugf("Loading light_fluoro\n");
+		ent.model->clone(*model_table[MODEL_ZOMBIE]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_LIGHT_FLUOROSPARK)
+	{
+		debugf("Loading light_fluorospark\n");
+		ent.model->clone(*model_table[MODEL_LIGHT_FLUOROSPARK]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE)
+	{
+		debugf("Loading item_artifact_super_damage\n");
+		ent.model->clone(*model_table[MODEL_QUADDAMA]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_INVULNERABILITY)
+	{
+		debugf("Loading item_artifact_invulnerability\n");
+		ent.model->clone(*model_table[MODEL_INVULNER]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_ENVIROSUIT)
+	{
+		debugf("Loading item_artifact_envirosuit\n");
+		ent.model->clone(*model_table[ENT_Q1_ITEM_ARTIFACT_ENVIROSUIT]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_WEAPON_NAILGUN)
+	{
+		debugf("Loading weapon_nailgun\n");
+		ent.model->clone(*model_table[MODEL_NAILGUN]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_WEAPON_SUPERNAILGUN)
+	{
+		debugf("Loading weapon_supernailgun\n");
+		ent.model->clone(*model_table[MODEL_SUPERNAILGUN]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_WEAPON_SUPERSHOTGUN)
+	{
+		debugf("Loading weapon_supershotgun\n");
+		ent.model->clone(*model_table[MODEL_SUPERSHOTGUN]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MISC_EXPLOBOX)
+	{
+		debugf("Loading misc_explobox\n");
+		ent.model->clone(*model_table[MODEL_EXPLOBOX]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_LIGHT_TORCH_SMALL_WALLTORCH)
+	{
+		debugf("Loading light_torch_small_walltorch\n");
+		ent.model->clone(*model_table[MODEL_LIGHT_TORCH_SMALL_WALLTORCH]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_YELLOW)
+	{
+		debugf("Loading light_flame_small_yellow\n");
+		ent.model->clone(*model_table[MODEL_LIGHT_FLAME_SMALL_YELLOW]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_KEY1)
+	{
+		debugf("Loading item_key1\n");
+		ent.model->clone(*model_table[MODEL_G_KEY]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_KEY2)
+	{
+		debugf("Loading item_key2\n");
+		ent.model->clone(*model_table[MODEL_S_KEY]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_ARMOR1)
+	{
+		debugf("Loading item_armor1\n");
+		ent.model->clone(*model_table[MODEL_YELLOWARMOR]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_ITEM_ARMOR2)
+	{
+		debugf("Loading item_armor2\n");
+		ent.model->clone(*model_table[MODEL_REDARMOR]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+
+/*
+		else if (strcmp(value, "ambient_comp_hum") == 0)
+		else if (strcmp(value, "ambient_drone") == 0)
+		else if (strcmp(value, "ambient_drip") == 0)
+		else if (strcmp(value, "ambient_swamp1") == 0)
+		else if (strcmp(value, "ambient_swamp2") == 0)
+		else if (strcmp(value, "trap_spikeshooter") == 0)
+*/
 }
 
 
