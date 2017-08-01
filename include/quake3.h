@@ -66,6 +66,7 @@ public:
 
 	void load(gametype_t gametype);
 	void load_models(Graphics &gfx);
+	void load_q1_models(Graphics &gfx);
 	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
 	void unload();
 	void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name);

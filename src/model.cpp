@@ -65,6 +65,13 @@ void Model::load(Graphics &gfx, char *file)
 
 		memcpy(pdata, ".jpg", 4);
 		model_tex = load_texture(gfx, tga_file, false, false);
+		if (model_tex == 0)
+		{
+			char *pdata = strstr(tga_file, ".jpg");
+
+			memcpy(pdata, ".png", 4);
+			model_tex = load_texture(gfx, tga_file, false, false);
+		}
 	}
 
 	normal_tex = load_texture(gfx, normal_file, false, false);
