@@ -489,34 +489,34 @@ void Quake3::load_q1_models(Graphics &gfx)
 
 	//	#define MODEL_WEAPON_MACHINEGUN 20
 	model = new Model;
-	model->load(gfx, "media/models/quake1/v_nail/v_nail");
+	model->load(gfx, "media/models/quake1/g_nail/g_nail");
 	model_table.push_back(model);
 
 	//	#define MODEL_WEAPON_SHOTGUN 21
 	model = new Model;
-	model->load(gfx, "media/models/quake1/v_shot/v_shot");
+	model->load(gfx, "media/models/quake1/g_shot/g_shot");
 	model_table.push_back(model);
 
 	//	#define MODEL_WEAPON_GRENADE 22
 	model = new Model;
-	model->load(gfx, "media/models/quake1/v_rock/v_rock");
+	model->load(gfx, "media/models/quake1/g_rock/g_rock");
 	model_table.push_back(model);
 
 	//	#define MODEL_WEAPON_ROCKET 23
 	model = new Model;
-	model->load(gfx, "media/models/quake1/v_rock2/v_rock2");
+	model->load(gfx, "media/models/quake1/g_rock2/g_rock2");
 	model_table.push_back(model);
 
 
 	//	#define MODEL_WEAPON_LIGHTNING 24
 	model = new Model;
-	model->load(gfx, "media/models/quake1/v_light/v_light");
+	model->load(gfx, "media/models/quake1/g_light/g_light");
 	model_table.push_back(model);
 
 
 	//	#define MODEL_WEAPON_RAILGUN 25
 	model = new Model;
-	model->load(gfx, "media/models/quake1/v_light/v_light");
+	model->load(gfx, "media/models/quake1/g_light/g_light");
 	model_table.push_back(model);
 
 	//	#define MODEL_WEAPON_PLASMA 26
@@ -637,6 +637,52 @@ void Quake3::load_q1_models(Graphics &gfx)
 #define MODEL_AMMO_PLASMA 49
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_plasma");
+	model_table.push_back(model);
+
+
+#define MODEL_SHAMBLER 50
+	model = new Model;
+	model->load(gfx, "media/models/quake1/shambler/shambler");
+	model_table.push_back(model);
+
+#define MODEL_WIZARD 51
+	model = new Model;
+	model->load(gfx, "media/models/quake1/wizard/wizard");
+	model_table.push_back(model);
+
+#define MODEL_OGRE 52
+	model = new Model;
+	model->load(gfx, "media/models/quake1/ogre/ogre");
+	model_table.push_back(model);
+
+#define MODEL_DOG 53
+	model = new Model;
+	model->load(gfx, "media/models/quake1/dog/dog");
+	model_table.push_back(model);
+
+#define MODEL_ZOMBIE 54
+	model = new Model;
+	model->load(gfx, "media/models/quake1/zombie/zombie");
+	model_table.push_back(model);
+
+#define MODEL_PLAYER 55
+	model = new Model;
+	model->load(gfx, "media/models/quake1/player/player");
+	model_table.push_back(model);
+
+#define MODEL_DEMON 56
+	model = new Model;
+	model->load(gfx, "media/models/quake1/demon/demon");
+	model_table.push_back(model);
+
+#define MODEL_SOLDIER 57
+	model = new Model;
+	model->load(gfx, "media/models/quake1/soldier/soldier");
+	model_table.push_back(model);
+
+#define MODEL_KNIGHT 58
+	model = new Model;
+	model->load(gfx, "media/models/quake1/knight/knight");
 	model_table.push_back(model);
 
 
@@ -8345,6 +8391,62 @@ void Quake3::map_model(Entity &ent)
 			ent.rigid->gravity = false;
 			ent.nodraw = false;
 		}
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_DEMON1)
+	{
+		debugf("Loading monster_demon1\n");
+		ent.model->clone(*model_table[MODEL_DEMON]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_SHAMBLER)
+	{
+		debugf("Loading monster_shambler\n");
+		ent.model->clone(*model_table[MODEL_SHAMBLER]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_DOG)
+	{
+		debugf("Loading monster_dog\n");
+		ent.model->clone(*model_table[MODEL_DOG]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_ARMY)
+	{
+		debugf("Loading monster_army\n");
+		ent.model->clone(*model_table[MODEL_SOLDIER]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_WIZARD)
+	{
+		debugf("Loading monster_wizard\n");
+		ent.model->clone(*model_table[MODEL_WIZARD]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_OGRE)
+	{
+		debugf("Loading monster_ogre\n");
+		ent.model->clone(*model_table[MODEL_OGRE]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_KNIGHT)
+	{
+		debugf("Loading monster_knight\n");
+		ent.model->clone(*model_table[MODEL_KNIGHT]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
+	}
+	else if (ent.ent_type == ENT_Q1_MONSTER_ZOMBIE)
+	{
+		debugf("Loading monster_knight\n");
+		ent.model->clone(*model_table[MODEL_ZOMBIE]);
+		ent.rigid->gravity = true;
+		ent.nodraw = false;
 	}
 }
 
