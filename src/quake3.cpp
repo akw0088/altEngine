@@ -7573,7 +7573,11 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			if (target->trigger->active == false)
 			{
 				target->trigger->active = true;
-				console(self, target->trigger->action, engine->menu, engine->entity_list);
+
+				if (strstr(target->trigger->action, "map"))
+					engine->console(target->trigger->action);
+				else
+					console(self, target->trigger->action, engine->menu, engine->entity_list);
 			}
 			else
 			{
@@ -8052,7 +8056,17 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 			if (pickup)
 			{
 				if (trigger->action[0] != '\0' && trigger->client_active == false)
-					console(self, trigger->action, engine->menu, entity_list);
+				{
+					if (strstr(trigger->action, "map"))
+					{
+						engine->console(trigger->action);
+						return;
+					}
+					else
+					{
+						console(self, trigger->action, engine->menu, entity_list);
+					}
+				}
 
 				trigger->active = true;
 				trigger->client_active = true;

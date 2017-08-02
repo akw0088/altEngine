@@ -1545,7 +1545,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.trigger = new Trigger(&entity, audio);
 
 		// changel level, should only exist in trigger_changelevel
-		sprintf(entity.trigger->action, "map %s", value);
+		sprintf(entity.trigger->action, "map maps/%s.bsp", value);
 	}
 	else if (strcmp(key, "message") == 0)
 	{
