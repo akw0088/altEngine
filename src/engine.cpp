@@ -220,8 +220,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}
 
 
-#if NDEBUG
-	char hash[32][128];
+	char *hash[32];
 	std::thread pool[32];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
@@ -233,7 +232,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	for (unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
-		pool[i] = std::thread(calc_hash, pk3_list[i], &hash[i][0]);
+		hash[i] = new char[32];
+		hash[i][0] = '\0';
+		strcpy(hash[i], "Missing file");
+		pool[i] = std::thread(calc_hash, pk3_list[i], hash[i]);
 	}
 
 	for(unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
@@ -251,12 +253,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				}
 				else
 				{
-					debugf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+					debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash[i], hash_list[i]);
 				}
 			}
 			else
 			{
-				debugf("\n%s failed hash check:\n[%s] expected [%s]\n", pk3_list[i], hash, hash_list[i]);
+				debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash[i], hash_list[i]);
 			}
 		}
 		else
@@ -264,7 +266,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 			debugf("Good!\n");
 		}
 	}
-#endif
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false, false);
 	particle_tex = load_texture(gfx, "media/flare.png", false, false);
@@ -2224,12 +2225,12 @@ void ClipVelocity(vec3 &in, vec3 &normal)
 */
 bool Engine::collision_detect(RigidBody &body)
 {
-//	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);
-
+//	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);	
 	if (map_collision(body))
 	{
 		return true;
 	}
+
 
 	if (body.entity->player)
 	{

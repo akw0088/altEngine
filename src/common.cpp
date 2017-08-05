@@ -899,11 +899,11 @@ void calc_hash(char *filename, char *hash)
 {
 	int size = 0;
 
-	memset(hash, 0, 17);
 	char *data = get_file(filename, &size);
 	if (data == NULL)
 	{
 		sprintf(hash, "missing file");
+		return;
 	}
 
 	md5sum(data, size, hash);
