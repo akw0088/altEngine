@@ -7,6 +7,10 @@ media/pak3.pk3
 media/pak2.pk3
 media/pak1.pk3
 media/pak0.pk3
+media/QRP_map_textures_v.1.00.pk3
+media/quake1.pk3
+media/obiq1dm3.pk3
+media/ztn3dm1.pk3
 media/q3f2_pak0.pk3
 media/zpak000_assets.pk3
 media/teamarenafull.pk3
@@ -16,9 +20,7 @@ media/rtcwfull.pk3
 media/q3wpak0.pk3
 media/pak1-maps.pk3
 media/openarena.pk3
-media/obiq1dm3.pk3
 media/q3wpak4.pk3
 media/map-13vast.pk3
 media/maps-q3wctf.pk3
-media/ztn3dm1.pk3
-media/quake1.pk3
+
