@@ -93,7 +93,8 @@ void Quake3::init(Engine *altEngine)
 	load_sounds(engine->audio, engine->snd_wave);
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
-	//load_models(engine->gfx);
+
+//	load_models(engine->gfx);
 	load_q1_models(engine->gfx);
 }
 
@@ -101,6 +102,7 @@ void Quake3::load(gametype_t type)
 {
 	last_spawn = 0;
 	gametype = type;
+
 }
 
 void Quake3::unload()
@@ -7332,7 +7334,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/lightning/lightning");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_LIGHTNINGGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7367,7 +7369,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/railgun/railgun");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_RAILGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7409,7 +7411,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/plasmagun/plasmagun");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_PLASMAGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7422,7 +7424,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/shotgun/shotgun");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_SHOTGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7435,7 +7437,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/machinegun/machinegun");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_MACHINEGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7448,7 +7450,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/quad");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_QUAD;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7461,7 +7463,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/regen");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_REGEN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7474,7 +7476,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/invis");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_INVIS;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7487,7 +7489,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/flight");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_FLIGHT;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7500,7 +7502,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/haste");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_HASTE;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7513,7 +7515,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/b_flag");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_BLUE_FLAG;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7526,7 +7528,7 @@ void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/r_flag");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NT_RED_FLAG;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -8826,6 +8828,13 @@ void Quake3::map_model(Entity &ent)
 		ent.rigid->gravity = false;
 		ent.nodraw = false;
 	}
+	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_WHITE)
+	{
+		debugf("Loading light_flame_small_yellow\n");
+		ent.model->clone(*model_table[MODEL_FLAME2]);
+		ent.rigid->gravity = false;
+		ent.nodraw = false;
+	}
 	else if (ent.ent_type == ENT_Q1_ITEM_KEY1)
 	{
 		debugf("Loading item_key1\n");
@@ -8862,7 +8871,16 @@ void Quake3::map_model(Entity &ent)
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
-
+	else if (ent.ent_type == ENT_Q1_ITEM_SIGIL)
+	{
+		debugf("Loading item_sigil\n");
+		ent.model->clone(*model_table[MODEL_END1]);
+		ent.rigid->gravity = false;
+		ent.nodraw = false;
+		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent.position.y += 15.0f;
+	}
+	
 /*
 		else if (strcmp(value, "ambient_comp_hum") == 0)
 		else if (strcmp(value, "ambient_drone") == 0)
@@ -8870,6 +8888,20 @@ void Quake3::map_model(Entity &ent)
 		else if (strcmp(value, "ambient_swamp1") == 0)
 		else if (strcmp(value, "ambient_swamp2") == 0)
 		else if (strcmp(value, "trap_spikeshooter") == 0)
+
+
+		0 - normal
+		1 - flicker (first variety)
+		2 - slow strong pulse
+		3 - candle (first variety)
+		4 - fast strobe
+		5 - gentle pulse
+		6 - flicker (second variety)
+		7 - candle (second variety)
+		8 - candle (third variety)
+		9 - slow strobe
+		10 - flourescent flicker
+		11 - slow pulse, not fading to black
 */
 }
 

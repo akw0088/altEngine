@@ -1295,7 +1295,15 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.nodraw = false;
+
+			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
+
+
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_machinegun");
 		}
 		else if (strcmp(value, "weapon_supernailgun") == 0)
 		{
@@ -1307,7 +1315,16 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.nodraw = false;
+
+
+			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
+
+
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_plasma");
 		}
 		else if (strcmp(value, "weapon_supershotgun") == 0)
 		{
@@ -1319,7 +1336,15 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.nodraw = false;
+
+
+			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+			entity.trigger->timeout_value = WEAPON_TIMEOUT;
+
+			snprintf(entity.trigger->action, LINE_SIZE, "weapon_shotgun");
 		}
 		else if (strcmp(value, "misc_explobox") == 0)
 		{
@@ -1464,6 +1489,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->flight = true;
 			}
 			entity.nodraw = true;
+
+			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+
+			snprintf(entity.trigger->action, LINE_SIZE, "armor 50");
+			entity.trigger->armor = true;
 		}
 		else if (strcmp(value, "item_armor2") == 0)
 		{
@@ -1476,6 +1508,14 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->flight = true;
 			}
 			entity.nodraw = true;
+
+			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
+			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
+
+			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
+			entity.trigger->armor = true;
+
 		}
 		else if (strcmp(value, "trap_spikeshooter") == 0)
 		{
