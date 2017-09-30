@@ -15,6 +15,7 @@
 #define stricmp strcasecmp
 #endif
 
+typedef unsigned char byte;
 
 #define DMESG_SIZE 2048
 extern char dmesg[DMESG_SIZE][1024];
@@ -1448,6 +1449,7 @@ float clamp(float value, float min, float max)
 }
 
 
+#ifndef _WIN64 
 void get_cpu_info(struct cpuinfo *info)
 {
 #ifdef WIN32
@@ -1496,6 +1498,11 @@ void get_cpu_info(struct cpuinfo *info)
 	info->extmodel = (info->signature & 0x000F0000) >> 16;
 	info->extfamily = (info->signature & 0x0FF00000) >> 24;
 }
+#else
+void get_cpu_info(struct cpuinfo *info)
+{
+}
+#endif
 
 void show_hw_info()
 {
@@ -1565,4 +1572,86 @@ void show_hw_info()
 #endif
 	}
 #endif
+}
+
+
+
+/*
+This is based on a pid controller project from a control systems class
+The assignment was to have a rocket with X/Y thrusters hit targets of two types
+	one type you had to wait 0.2 seconds a small distance away before going to next target
+	the other type you had to just get near it before going to next target
+
+This code (translated from matlab) performed phenomenology
+My code was more time domain typical approach type stuff,
+but the PID approach Noah Maze came up with blew me away
+
+I kept a copy of the project from 2011, six years later I finally get around to messing with it :p
+
+// some background
+// https://www.youtube.com/watch?v=XfAt6hNV8XM
+*/
+void pid_controller(vec3 &target, float timestep, vec3 &pos, vec3 &thrust, int target_type)
+{
+	int kdx; // gain X
+	int kdy; // gain Y
+	int kdz; // gain Z
+
+	int a;
+	int p;
+
+	static vec3 old_delta;
+	static vec3 old_thrust;
+	static int start = 0;
+
+
+	if (start == 0)
+	{
+		//initialize old data
+		start = 1;
+
+		old_delta = target - pos;
+		old_thrust = vec3(0.0f, 0.0f, 0.0f);
+	}
+
+	if (target_type == 0)
+	{
+		// If you have to wait
+		kdx = 820;
+	}
+	else
+	{
+		//If you just have to hit it.
+		kdx = 636;
+	}
+
+	// same gain in all directions
+	kdy = kdx;
+	kdz = kdx;
+
+	// Lead Compensator params
+	a = 5;
+	p = 10 * a;
+
+	// X-axis thrust
+	thrust.x = ((kdx * ((target.x - pos.x) - old_delta.x) / timestep) +
+		kdx * a * (target.x - pos.x) - (thrust.x - old_thrust.x) / timestep) / p;
+	old_delta.x = target.x - pos.x;
+	old_thrust.x = thrust.x;
+
+	// Y-axis thrust
+	thrust.y = ((kdy * ((target.y - pos.y) - old_delta.y) / timestep) +
+		kdy * a * (target.y - pos.y) - (thrust.y - old_thrust.y) / timestep) / p;
+	old_delta.y = target.y - pos.y;
+	old_thrust.y = thrust.y;
+
+	// Z-axis thrust
+	thrust.z = ((kdz * ((target.z - pos.z) - old_delta.z) / timestep) +
+		kdz * a * (target.z - pos.z) - (thrust.z - old_thrust.z) / timestep) / p;
+	old_delta.z = target.z - pos.z;
+	old_thrust.z = thrust.z;
+
+//	printf("target %3.3f %3.3f %3.3f\n", target.x, target.y, target.z);
+//	printf("pos    %3.3f %3.3f %3.3f\n", pos.x, pos.y, pos.z);
+//	printf("thrust %3.3f %3.3f %3.3f\n", thrust.x, thrust.y, thrust.z);
 }

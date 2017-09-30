@@ -789,4 +789,14 @@ typedef enum
 	ENT_Q1_ITEM_SIGIL
 }entity_type;
 
+
+typedef struct
+{
+	int				index;
+	int				count;
+	int				start;
+	vec3			*target;
+	vec3			*next;
+} func_path_t;
+
 #endif

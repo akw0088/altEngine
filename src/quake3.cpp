@@ -94,8 +94,8 @@ void Quake3::init(Engine *altEngine)
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
 
-//	load_models(engine->gfx);
-	load_q1_models(engine->gfx);
+	load_models(engine->gfx);
+//	load_q1_models(engine->gfx);
 }
 
 void Quake3::load(gametype_t type)
@@ -1786,6 +1786,30 @@ void Quake3::handle_player(int self, input_t &input)
 		return;
 
 
+	// make all plasma balls from plasma gun follow path around the player position
+	if (1)
+	{
+		vec3 path_list[4];
+		Entity *ref = entity;
+
+		path_list[0] = ref->position + vec3(100.0f, 0.0f, -100.0f);
+		path_list[1] = ref->position + vec3(-100.0f, 0.0f, -100.0f);
+		path_list[2] = ref->position + vec3(-100.0f, 0.0f, 100.0f);;
+		path_list[3] = ref->position + vec3(100.0f, 0.0f, 100.0f);;
+
+		Entity *projectile = NULL;
+		for (int i = 0; i < engine->max_dynamic; i++)
+		{
+			if (engine->entity_list[i]->trigger && engine->entity_list[i]->trigger->explode_type == 2)
+			{
+				projectile = engine->entity_list[i];
+				projectile->rigid->pid_follow_path(path_list, 4, 5.0f, 75.0f, 1);
+			}
+		}
+	}
+
+
+
 	if (input.duck && entity->rigid->y_offset != -25)
 	{
 		entity->rigid->y_offset -= 2;
@@ -2525,6 +2549,7 @@ void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 	strcpy(drop->trigger->action, action);
 }
 
+
 void Quake3::step(int frame_step)
 {
 	unsigned int num_bot = 3;
@@ -2538,7 +2563,6 @@ void Quake3::step(int frame_step)
 	_controlfp(fpNew, MCW_EM);
 	*/
 #endif
-
 
 
 	if (engine->entity_list.size() == 0)

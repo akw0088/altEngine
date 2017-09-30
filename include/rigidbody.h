@@ -44,6 +44,7 @@ public:
 	void move_down(float speed_scale);
 	void lookat(vec3 &target);
 	void lookat_yaw(vec3 &target);
+	void pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait);
 
 	float get_volume();
 	float get_height();
@@ -92,6 +93,10 @@ public:
 	matrix3			old_orientation;
 
 	vec3 wishdir;
+
+
+
+	func_path_t path;
 };
 
 #endif

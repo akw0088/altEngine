@@ -69,6 +69,10 @@ RigidBody::RigidBody(Entity *entity)
 	inverse_tensor.m[8] = 12.0f / (mass *  (width * width + height * height));
 
 
+	memset(&path, 0, sizeof(func_path_t));
+	path.start = 1;
+
+
 	#define SND_GRENADE_IMPACT 244
 	impact_index = SND_GRENADE_IMPACT;
 }
@@ -1070,4 +1074,44 @@ void rk4_integrate(vec3 &pos, vec3 &vel, float t, float dt)
 
 	pos += dxdt * dt;
 	vel += dvdt * dt;
+}
+
+// This is just a basic follow the path setup for the pid controller, kills momentum to make it nicer for eventual func_train use
+void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait)
+{
+	Entity *projectile = entity;
+
+	if (path.start)
+	{
+		path.start = 0;
+		path.target = &path_list[path.index++];
+		path.next = &path_list[path.index++];
+	}
+
+	if ((*path.target - projectile->position).magnitude() < distance)
+	{
+		path.count++;
+		if (path.count == wait)
+		{
+			path.count = 0;
+			path.target = path.next;
+			path.index++;
+
+			if (path.index >= num_path)
+			{
+				path.index = 0;
+			}
+			path.next = &path_list[path.index];
+		}
+
+		projectile->rigid->velocity = projectile->rigid->velocity.normalize() * 0.01f;
+	}
+	else
+	{
+		pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 0);
+		if (projectile->rigid->velocity.magnitude() > max_velocity)
+		{
+			projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
+		}
+	}
 }
