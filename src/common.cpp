@@ -1584,7 +1584,8 @@ The assignment was to have a rocket with X/Y thrusters hit targets of two types
 
 This code (translated from matlab) performed phenomenology
 My code was more time domain typical approach type stuff,
-but the PID approach Noah Maze came up with blew me away
+but the performance of the PID approach my partner Noah Maze
+came up with blew me away
 
 I kept a copy of the project from 2011, six years later I finally get around to messing with it :p
 
@@ -1593,12 +1594,13 @@ I kept a copy of the project from 2011, six years later I finally get around to 
 */
 void pid_controller(vec3 &target, float timestep, vec3 &pos, vec3 &thrust, int target_type)
 {
-	int kdx; // gain X
-	int kdy; // gain Y
-	int kdz; // gain Z
+	vec3 delta = target - pos;
 
-	int a;
-	int p;
+	int kd; // gain
+
+	// Lead Compensator params
+	int a = 5;
+	int p = 10 * a;
 
 	static vec3 old_delta;
 	static vec3 old_thrust;
@@ -1617,39 +1619,28 @@ void pid_controller(vec3 &target, float timestep, vec3 &pos, vec3 &thrust, int t
 	if (target_type == 0)
 	{
 		// If you have to wait
-		kdx = 820;
+		kd = 820;
 	}
 	else
 	{
 		//If you just have to hit it.
-		kdx = 636;
+		kd = 636;
 	}
 
-	// same gain in all directions
-	kdy = kdx;
-	kdz = kdx;
-
-	// Lead Compensator params
-	a = 5;
-	p = 10 * a;
-
 	// X-axis thrust
-	thrust.x = ((kdx * ((target.x - pos.x) - old_delta.x) / timestep) +
-		kdx * a * (target.x - pos.x) - (thrust.x - old_thrust.x) / timestep) / p;
-	old_delta.x = target.x - pos.x;
-	old_thrust.x = thrust.x;
+	thrust.x = ((kd * (delta.x - old_delta.x) / timestep) +
+		kd * a * delta.x - (thrust.x - old_thrust.x) / timestep) / p;
 
 	// Y-axis thrust
-	thrust.y = ((kdy * ((target.y - pos.y) - old_delta.y) / timestep) +
-		kdy * a * (target.y - pos.y) - (thrust.y - old_thrust.y) / timestep) / p;
-	old_delta.y = target.y - pos.y;
-	old_thrust.y = thrust.y;
+	thrust.y = ((kd * (delta.y - old_delta.y) / timestep) +
+		kd * a * (delta.y) - (thrust.y - old_thrust.y) / timestep) / p;
 
 	// Z-axis thrust
-	thrust.z = ((kdz * ((target.z - pos.z) - old_delta.z) / timestep) +
-		kdz * a * (target.z - pos.z) - (thrust.z - old_thrust.z) / timestep) / p;
-	old_delta.z = target.z - pos.z;
-	old_thrust.z = thrust.z;
+	thrust.z = ((kd * (delta.z - old_delta.z) / timestep) +
+		kd * a * delta.z - (thrust.z - old_thrust.z) / timestep) / p;
+
+	old_delta = delta;
+	old_thrust = thrust;
 
 //	printf("target %3.3f %3.3f %3.3f\n", target.x, target.y, target.z);
 //	printf("pos    %3.3f %3.3f %3.3f\n", pos.x, pos.y, pos.z);
