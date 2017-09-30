@@ -1090,7 +1090,6 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 
 	if ((*path.target - projectile->position).magnitude() < distance)
 	{
-		path.count++;
 		if (path.count == wait)
 		{
 			path.count = 0;
@@ -1103,8 +1102,40 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 			}
 			path.next = &path_list[path.index];
 		}
-
+		path.count++;
 		projectile->rigid->velocity = projectile->rigid->velocity.normalize() * 0.01f;
+	}
+	else
+	{
+		// Could probably use steering behavior arrive / follow etc here too, but the PID is faster
+		pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 0);
+		if (projectile->rigid->velocity.magnitude() > max_velocity)
+		{
+			projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
+		}
+	}
+}
+
+
+int RigidBody::train_follow_path(vec3 *target, float max_velocity, float distance, int wait)
+{
+	Entity *projectile = entity;
+
+	if (path.start)
+	{
+		path.start = 0;
+		path.target = target;
+	}
+
+	if ((*path.target - projectile->position).magnitude() < distance)
+	{
+		if (path.count == wait)
+		{
+			path.count = 0;
+			return 0;
+		}
+		path.count++;
+		projectile->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 	}
 	else
 	{
@@ -1114,4 +1145,5 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 			projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
 		}
 	}
+	return -1;
 }

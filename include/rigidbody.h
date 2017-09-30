@@ -45,6 +45,7 @@ public:
 	void lookat(vec3 &target);
 	void lookat_yaw(vec3 &target);
 	void pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait);
+	int train_follow_path(vec3 *target, float max_velocity, float distance, int wait);
 
 	float get_volume();
 	float get_height();
