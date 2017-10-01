@@ -8531,6 +8531,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal->visible = true; // accomodate for low spatial testing rate
 		decal->bsp_leaf = true;
 		decal->rigid->blend = true;
+		decal->rigid->cull_none = true;
 
 		decal->trigger = new Trigger(decal, engine->audio);
 		decal->trigger->idle = idle;

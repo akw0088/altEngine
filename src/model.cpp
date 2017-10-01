@@ -101,6 +101,7 @@ Model::Model(Entity *entity)
 	rail_trail = false;
 	lightning_trail = false;
 	blend = false;
+	cull_none = false;
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;

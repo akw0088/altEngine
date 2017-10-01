@@ -1015,6 +1015,9 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 			if (surface->portal)			{				render.portal = true;			}
 
+			if (surface->cull_none || surface->cull_twosided || surface->cull_disable)
+				render.cull_none = true;
+
 
 			for (unsigned int k = 0; k < surface->num_stage && k < max_stage; k++)
 			{
@@ -1455,6 +1458,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				mlight2.alphatest(face_list[i].stage, 0);
 			}
 
+			if (face_list[i].cull_none)
+			{
+				gfx.CullFace(2);
+			}
+
 
 			set_tcmod(mlight2, face_list[i], tick_num, time);
 
@@ -1496,6 +1504,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		else// (face->type == 4)
 		{
 			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
+		}
+
+		if (face_list[i].cull_none)
+		{
+			gfx.CullFace(3);
 		}
 
 		mlight2.alphatest(0, 0);
@@ -1559,6 +1572,11 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			else
 				mlight2.set_alpha(-1.0f);
 
+			if (blend_list[i].cull_none)
+			{
+				gfx.CullFace(2);
+			}
+
 			if (blend_list[i].blend)
 			{
 				set_blend_mode(gfx, blend_list[i]);
@@ -1587,6 +1605,12 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				render_billboard(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
 			}
+
+			if (blend_list[i].cull_none)
+			{
+				gfx.CullFace(3);
+			}
+
 
 			if (blend_list[i].shader && enable_textures)
 			{

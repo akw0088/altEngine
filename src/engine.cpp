@@ -1681,8 +1681,20 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			mlight2.Params(mvp, light_list, 0, offset, tick_num);
 		}
 
+		if (entity->rigid->cull_none)
+		{
+			gfx.CullFace(2);
+		}
+
 		//render entity
 		entity->rigid->render(gfx);
+
+		if (entity->rigid->cull_none)
+		{
+			gfx.CullFace(3);
+		}
+
+
 
 		if (entity->model_ref != -1 && q3map.enable_textures)
 		{

@@ -51,6 +51,7 @@ public:
 	static			int skybox_index;
 
 	bool			blend;
+	bool			cull_none;
 	bool			rail_trail;
 	bool			lightning_trail;
 };
