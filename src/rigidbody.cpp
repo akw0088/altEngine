@@ -412,13 +412,15 @@ bool RigidBody::collision_distance(RigidBody &body)
 	if (body.entity->player->type == BOT && entity->player->type == BOT)
 		return false;
 
-	if (distance.magnitude() < 50.0)
+	if (distance.magnitude() < 40.0)
 	{
 		if (distance.magnitude() < 10.0f)
 		{
 			//telefrag
 			body.entity->player->telefragged = entity;
 		}
+		// add some seperating force
+		velocity += -distance.normalize() * (40.0f / distance.magnitude());
 
 		return true;
 	}
