@@ -1687,6 +1687,12 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 #define SND_SPLASH_STEP4 320
 	snd_table[SND_SPLASH_STEP4] = snd_wave.size() - 1;
 
+	strcpy(wave.file, "sound/player/fry.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_FRY 321
+	snd_table[SND_FRY] = snd_wave.size() - 1;
+
 }
 
 team_t Quake3::get_team()
@@ -1929,6 +1935,13 @@ void Quake3::handle_player(int self, input_t &input)
 		if (entity->rigid->lava)
 		{
 			console(self, "damage 20", engine->menu, engine->entity_list);
+
+			if (entity->player->local)
+				engine->play_wave_global(SND_FRY);
+			else
+				engine->play_wave(entity->position, SND_FRY);
+
+
 			entity->player->pain_timer = (TICK_RATE >> 1);
 			entity->rigid->lava = false;
 
