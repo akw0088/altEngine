@@ -29,6 +29,7 @@ RigidBody::RigidBody(Entity *entity)
 	bounce = 0; // number of impacts
 	lava = false;
 	slime = false;
+	step_type = 0;
 	impact_velocity = 0.0f;
 	water_depth = 0.0f;
 	bsp_trigger_volume = 0;

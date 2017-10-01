@@ -75,6 +75,7 @@ public:
 	bool			last_water;
 	bool			lava;
 	bool			slime;
+	int				step_type;
 	int				bsp_trigger_volume;
 	bool			rotational_friction_flag;
 	bool			translational_friction_flag;

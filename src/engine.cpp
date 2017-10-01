@@ -2269,6 +2269,7 @@ bool Engine::map_collision(RigidBody &body)
 	{
 		vec3 point;
 		vec3 oldpoint;
+		int surf_flags;
 
 		if (i < 8)
 		{
@@ -2289,10 +2290,30 @@ bool Engine::map_collision(RigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume))
+			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume, surf_flags))
 		{
 			if (body.step_flag)
 			{
+				if (surf_flags & SURF_METALSTEPS)
+				{
+					body.step_type = SURF_METALSTEPS;
+				}
+				else if (surf_flags & SURF_FLESH)
+				{
+					body.step_type = SURF_FLESH;
+				}
+				else if (surf_flags & SURF_NOSTEPS)
+				{
+					body.step_type = SURF_NOSTEPS;
+				}
+
+				else
+				{
+					body.step_type = 0;
+				}
+
+
+
 				// Moving, on ground plane, if we get clipped below velocity threshold and will fail to climb stairs
 				// So dont mess up :)
 				if ( (abs32(body.velocity.x) > 0.25f || abs32(body.velocity.z) > 0.25f))
@@ -2301,7 +2322,7 @@ bool Engine::map_collision(RigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume) == false)
+						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume, surf_flags) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);

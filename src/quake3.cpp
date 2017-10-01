@@ -1611,6 +1611,82 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 	snd_table[SND_BUTTON] = snd_wave.size() - 1;
 
 
+	strcpy(wave.file, "sound/player/footsteps/clank1.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_METAL_STEP1 309
+	snd_table[SND_METAL_STEP1] = snd_wave.size() - 1;
+
+
+	strcpy(wave.file, "sound/player/footsteps/clank2.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_METAL_STEP2 310
+	snd_table[SND_METAL_STEP2] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/clank3.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_METAL_STEP3 311
+	snd_table[SND_METAL_STEP3] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/clank4.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_METAL_STEP4 312
+	snd_table[SND_METAL_STEP4] = snd_wave.size() - 1;
+
+
+	strcpy(wave.file, "sound/player/footsteps/flesh1.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_FLESH_STEP1 313
+	snd_table[SND_FLESH_STEP1] = snd_wave.size() - 1;
+
+
+	strcpy(wave.file, "sound/player/footsteps/flesh2.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_FLESH_STEP2 314
+	snd_table[SND_FLESH_STEP2] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/flesh3.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_FLESH_STEP3 315
+	snd_table[SND_FLESH_STEP3] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/flesh4.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_FLESH_STEP4 316
+	snd_table[SND_FLESH_STEP4] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/splash1.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SPLASH_STEP1 317
+	snd_table[SND_SPLASH_STEP1] = snd_wave.size() - 1;
+
+
+	strcpy(wave.file, "sound/player/footsteps/splash2.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SPLASH_STEP2 318
+	snd_table[SND_SPLASH_STEP2] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/splash3.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SPLASH_STEP3 319
+	snd_table[SND_SPLASH_STEP3] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/player/footsteps/splash4.wav");
+	audio.load(wave);
+	snd_wave.push_back(wave);
+#define SND_SPLASH_STEP4 320
+	snd_table[SND_SPLASH_STEP4] = snd_wave.size() - 1;
+
 }
 
 team_t Quake3::get_team()
@@ -2286,28 +2362,124 @@ void Quake3::handle_player(int self, input_t &input)
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				if (entity->player->local)
-					engine->play_wave_global(SND_STEP1);
+				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_SPLASH_STEP1);
+					else
+						engine->play_wave(entity->position, SND_SPLASH_STEP1);
+				}
+				else if (entity->rigid->step_type == SURF_METALSTEPS)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_METAL_STEP1);
+					else
+						engine->play_wave(entity->position, SND_METAL_STEP1);
+				}
+				else if (entity->rigid->step_type == SURF_FLESH)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_FLESH_STEP1);
+					else
+						engine->play_wave(entity->position, SND_FLESH_STEP1);
+				}
 				else
-					engine->play_wave(entity->position, SND_STEP1);
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_STEP1);
+					else
+						engine->play_wave(entity->position, SND_STEP1);
+				}
 				break;
 			case 1:
-				if (entity->player->local)
-					engine->play_wave_global(SND_STEP2);
+				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_SPLASH_STEP2);
+					else
+						engine->play_wave(entity->position, SND_SPLASH_STEP2);
+				}
+				else if (entity->rigid->step_type == SURF_METALSTEPS)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_METAL_STEP2);
+					else
+						engine->play_wave(entity->position, SND_METAL_STEP2);
+				}
+				else if (entity->rigid->step_type == SURF_FLESH)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_FLESH_STEP2);
+					else
+						engine->play_wave(entity->position, SND_FLESH_STEP2);
+				}
 				else
-					engine->play_wave(entity->position, SND_STEP2);
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_STEP2);
+					else
+						engine->play_wave(entity->position, SND_STEP2);
+				}
 				break;
 			case 2:
-				if (entity->player->local)
-					engine->play_wave_global(SND_STEP3);
+				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_SPLASH_STEP3);
+					else
+						engine->play_wave(entity->position, SND_SPLASH_STEP3);
+				}
+				else if (entity->rigid->step_type == SURF_METALSTEPS)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_METAL_STEP3);
+					else
+						engine->play_wave(entity->position, SND_METAL_STEP3);
+				}
+				else if (entity->rigid->step_type == SURF_FLESH)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_FLESH_STEP3);
+					else
+						engine->play_wave(entity->position, SND_FLESH_STEP3);
+				}
 				else
-					engine->play_wave(entity->position, SND_STEP3);
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_STEP3);
+					else
+						engine->play_wave(entity->position, SND_STEP3);
+				}
 				break;
 			case 3:
-				if (entity->player->local)
-					engine->play_wave_global(SND_STEP4);
+				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_SPLASH_STEP4);
+					else
+						engine->play_wave(entity->position, SND_SPLASH_STEP4);
+				}
+				else if (entity->rigid->step_type == SURF_METALSTEPS)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_METAL_STEP4);
+					else
+						engine->play_wave(entity->position, SND_METAL_STEP4);
+				}
+				else if (entity->rigid->step_type == SURF_FLESH)
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_FLESH_STEP4);
+					else
+						engine->play_wave(entity->position, SND_FLESH_STEP4);
+				}
 				else
-					engine->play_wave(entity->position, SND_STEP4);
+				{
+					if (entity->player->local)
+						engine->play_wave_global(SND_STEP4);
+					else
+						engine->play_wave(entity->position, SND_STEP4);
+				}
 				break;
 			}
 		}
@@ -2391,7 +2563,7 @@ void Quake3::player_died(int index)
 			engine->play_wave_global(SND_GIBBED);
 		else
 			engine->play_wave(entity->position, SND_GIBBED);
-		handle_gibs(*(entity->player));
+//		handle_gibs(*(entity->player));
 	}
 	else
 	{
@@ -3692,6 +3864,9 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 		{
 			Player *target = engine->entity_list[index[i]]->player;
 			if (target == NULL)
+				continue;
+
+			if (index[i] == self)
 				continue;
 
 			if (target->health <= 0)
@@ -8314,6 +8489,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	bool slime;
 	int nstep = 0;
 	int model_trigger = 0;
+	int surf_flags;
 
 
 	vec3 end = step + camera_frame.forward;
@@ -8323,7 +8499,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 
 	do
 	{
-		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime, model_trigger);
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime, model_trigger, surf_flags);
 		if (ret)
 		{
 			hit = true;
