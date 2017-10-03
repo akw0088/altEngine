@@ -64,7 +64,7 @@ double ping_time_end(int sequence);
 
 double GetCounter(double freq);
 extern double freq;
-void pid_controller(vec3 &target, float timestep, vec3 &pos, vec3 &thrust, int target_type);
+void pid_controller(const vec3 &target, const float timestep, const vec3 &pos, vec3 &thrust, const float kd);
 
 struct cpuinfo
 {

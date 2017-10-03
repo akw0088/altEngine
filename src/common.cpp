@@ -1592,11 +1592,11 @@ I kept a copy of the project from 2011, six years later I finally get around to 
 // some background
 // https://www.youtube.com/watch?v=XfAt6hNV8XM
 */
-void pid_controller(vec3 &target, float timestep, vec3 &pos, vec3 &thrust, int target_type)
+void pid_controller(const vec3 &target, const float timestep, const vec3 &pos, vec3 &thrust, const float kd)
 {
 	vec3 delta = target - pos;
 
-	int kd; // gain
+//	int kd; // gain
 
 	// Lead Compensator params
 	int a = 5;
@@ -1616,16 +1616,13 @@ void pid_controller(vec3 &target, float timestep, vec3 &pos, vec3 &thrust, int t
 		old_thrust = vec3(0.0f, 0.0f, 0.0f);
 	}
 
-	if (target_type == 0)
-	{
 		// If you have to wait
-		kd = 820;
-	}
-	else
-	{
+		//kd = 820;
 		//If you just have to hit it.
-		kd = 636;
-	}
+//		kd = 636;
+
+	// Really more of a pd controller as there is no summation of error terms
+	// doing difference / derivatives over position and velocity
 
 	// X-axis thrust
 	thrust.x = ((kd * (delta.x - old_delta.x) / timestep) +

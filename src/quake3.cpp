@@ -1885,7 +1885,7 @@ void Quake3::handle_player(int self, input_t &input)
 			if (engine->entity_list[i]->trigger && engine->entity_list[i]->trigger->explode_type == 2)
 			{
 				projectile = engine->entity_list[i];
-				projectile->rigid->pid_follow_path(path_list, 4, 5.0f, 75.0f, 1);
+				projectile->rigid->pid_follow_path(path_list, 4, 2.0f, 75.0f, 1);
 			}
 		}
 	}
