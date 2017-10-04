@@ -24,6 +24,17 @@ typedef struct
 	double time;
 } ping_t;
 
+typedef struct
+{
+	vec3 dState;		// Last position input
+	vec3 iState;		// Integrator state
+	float iMin, iMax;	// min max integrator state
+
+	float iGain;
+	float pGain;
+	float dGain;
+} pid_state_t;
+
 //float fabs(float val);
 void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height);
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
@@ -65,6 +76,9 @@ double ping_time_end(int sequence);
 double GetCounter(double freq);
 extern double freq;
 void pid_controller(const vec3 &target, const float timestep, const vec3 &pos, vec3 &thrust, const float kd);
+
+void init_pid(pid_state_t *pid);
+void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3 &output);
 
 struct cpuinfo
 {

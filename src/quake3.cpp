@@ -6053,6 +6053,8 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed
 	return 0;
 }
 
+extern pid_state_t pid;
+
 void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list)
 {
 	char msg[LINE_SIZE] = { 0 };
@@ -6131,6 +6133,25 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 1)
 	{
 		crosshair_scale = (float)atof(data);
+	}
+
+
+	ret = sscanf(cmd, "pgain %s", data);
+	if (ret == 1)
+	{
+		pid.pGain = (float)atof(data);
+	}
+
+	ret = sscanf(cmd, "igain %s", data);
+	if (ret == 1)
+	{
+		pid.iGain = (float)atof(data);
+	}
+
+	ret = sscanf(cmd, "dgain %s", data);
+	if (ret == 1)
+	{
+		pid.dGain = (float)atof(data);
 	}
 
 	ret = sscanf(cmd, "damage %s", data);

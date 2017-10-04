@@ -1079,6 +1079,8 @@ void rk4_integrate(vec3 &pos, vec3 &vel, float t, float dt)
 	vel += dvdt * dt;
 }
 
+pid_state_t pid;
+
 // This is just a basic follow the path setup for the pid controller, kills momentum to make it nicer for eventual func_train use
 void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait)
 {
@@ -1086,6 +1088,8 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 
 	if (path.start)
 	{
+		
+		init_pid(&pid);
 		path.start = 0;
 		path.target = &path_list[path.index++];
 		path.next = &path_list[path.index++];
@@ -1108,14 +1112,15 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 		path.count++;
 		//projectile->rigid->velocity = projectile->rigid->velocity.normalize() * 0.01f;
 	}
-	else
+
+	update_pid(&pid, *path.target, projectile->position, projectile->rigid->net_force);
+	// Could probably use steering behavior arrive / follow etc here too, but the PID is faster
+	/*
+	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->net_force, 15.0f);
+	*/
+	if (projectile->rigid->velocity.magnitude() > max_velocity)
 	{
-		// Could probably use steering behavior arrive / follow etc here too, but the PID is faster
-		pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->net_force, 15.0f);
-		if (projectile->rigid->velocity.magnitude() > max_velocity)
-		{
-			projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
-		}
+		projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
 	}
 }
 

@@ -1643,3 +1643,51 @@ void pid_controller(const vec3 &target, const float timestep, const vec3 &pos, v
 //	printf("pos    %3.3f %3.3f %3.3f\n", pos.x, pos.y, pos.z);
 //	printf("thrust %3.3f %3.3f %3.3f\n", thrust.x, thrust.y, thrust.z);
 }
+
+void init_pid(pid_state_t *pid)
+{
+	pid->dState = vec3(0.0f, 0.0f, 0.0f);
+	pid->iState = vec3(0.0f, 0.0f, 0.0f);
+	pid->iMin = 0.0f;
+	pid->iMax = 800.0f;
+
+	pid->pGain = 100.0f;
+	pid->iGain = 0.0f; // really just used to eliminate oscillations
+	pid->dGain = 250.0f;
+}
+
+// Going to limit to only position, not velocity or acceleration 
+// Error is delta position from target
+void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3 &output)
+{
+	vec3 pTerm, dTerm, iTerm;
+	vec3 error = target - position;
+	float max_force = 1000.0f;
+
+	pTerm = error * pid->pGain;
+	pid->iState += error;
+	if (pid->iState.magnitude() > pid->iMax)
+	{
+		pid->iState = pid->iState.normalize() * pid->iMax;
+	}
+	else if (pid->iState.magnitude() < pid->iMin)
+	{
+		pid->iState = pid->iState.normalize() * pid->iMin;
+	}
+
+	iTerm = pid->iState * pid->iGain;
+
+	dTerm = (pid->dState - position) * pid->dGain;
+	pid->dState = position;
+
+	if (pTerm.magnitude() > max_force)
+		pTerm = pTerm.normalize() * max_force;
+	if (iTerm.magnitude() > max_force)
+		iTerm = iTerm.normalize() * max_force;
+	if (dTerm.magnitude() > max_force)
+		dTerm = dTerm.normalize() * max_force;
+	
+//	printf("pterm %04.2f iterm %04.2f dterm %04.2f\n", pTerm, iTerm, dTerm);
+
+	output += pTerm + iTerm + dTerm;
+}
