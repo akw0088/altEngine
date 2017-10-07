@@ -20,12 +20,16 @@ Speaker::Speaker(Entity *entity, Audio &audio)
 
 void Speaker::gain(float value)
 {
+#ifndef DEDICATED
 	alSourcef(source, AL_GAIN, value);
+#endif
 }
 
 void Speaker::loop_gain(float value)
 {
+#ifndef DEDICATED
 	alSourcef(loop_source, AL_GAIN, value);
+#endif
 }
 
 void Speaker::destroy(Audio &audio)

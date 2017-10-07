@@ -5549,29 +5549,35 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 
 void Engine::set_reference_distance(float value)
 {
+#ifndef DEDICATED
 	for (int i = 0; i < max_sources; i++)
 	{
 		alSourcef(audio_source[i], AL_REFERENCE_DISTANCE, value);
 		alSourcef(global_source[i], AL_REFERENCE_DISTANCE, value);
 	}
+#endif
 }
 
 void Engine::set_max_distance(float value)
 {
+#ifndef DEDICATED
 	for (int i = 0; i < max_sources; i++)
 	{
 		alSourcef(audio_source[i], AL_MAX_DISTANCE, value);
 		alSourcef(global_source[i], AL_MAX_DISTANCE, value);
 	}
+#endif
 }
 
 void Engine::set_rolloff_factor(float value)
 {
+#ifndef DEDICATED
 	for (int i = 0; i < max_sources; i++)
 	{
 		alSourcef(audio_source[i], AL_ROLLOFF_FACTOR, value);
 		alSourcef(global_source[i], AL_ROLLOFF_FACTOR, value);
 	}
+#endif
 }
 
 void Engine::paste(char *data, unsigned int size)

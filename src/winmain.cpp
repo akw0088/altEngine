@@ -231,7 +231,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch(wParam)
 		{
 		case TICK_TIMER:
+#ifndef DEDICATED
 			xbox_controller(hwnd, 0, &altEngine);
+#endif
 			altEngine.step(tick_count++);
 			break;
 		}
@@ -642,6 +644,9 @@ void RedirectIOToConsole()
 
 	//Fix issue on windows 10
 	FILE *fp2 = freopen("CONOUT$", "w", stdout);
+#else
+	freopen("altEngine.log", "a", stdout);
+	freopen("altEngine.log", "a", stderr);
 #endif
 }
 
@@ -891,7 +896,7 @@ BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam
 	return FALSE;
 }
 
-
+#ifndef DEDICATED
 void xbox_vibration(int index, bool left, bool right)
 {
 	_XINPUT_VIBRATION vib;
@@ -1153,6 +1158,6 @@ void xbox_controller(HWND hwnd, int index, Engine *engine)
 		}
 	}
 }
-
+#endif
 
 #endif

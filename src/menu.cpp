@@ -65,8 +65,9 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 //	strcpy(menu_wave.file, "media/sound/mwmusic.wav");
 //	audio->load(menu_wave);
 	menu_source = audio->create_source(false, true);
-
+#ifndef DEDICATED
 	alSourcef(menu_source, AL_GAIN, 0.125f);
+#endif
 	
 
 	wave_t wave;
@@ -318,6 +319,9 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 	for(unsigned int i = 0; i < length; i++)
 	{
 		if (str[i] == '\n')
+			continue;
+
+		if (str[i] == '\t')
 			continue;
 
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
