@@ -94,8 +94,8 @@ void Quake3::init(Engine *altEngine)
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
 
-	load_models(engine->gfx);
-//	load_q1_models(engine->gfx);
+//	load_models(engine->gfx);
+	load_q1_models(engine->gfx);
 }
 
 void Quake3::load(gametype_t type)
@@ -9225,8 +9225,39 @@ void Quake3::handle_func_bobbing(Entity *entity)
 
 void Quake3::handle_func_train(Entity *entity)
 {
-	Entity *ref = entity;
+	Entity **ref = &entity;
+
+	if (entity->once == 0)
+	{
+		for (int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
+		{
+			if (add_train_path(engine->entity_list, entity, ref, engine->entity_list[i]))
+			{
+				i = -1;
+				continue;
+			}
+		}
+		entity->once = 1;
+	}
+
 
 //	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
 //	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 3.0f, 75.0f, 100);
+}
+
+int Quake3::add_train_path(vector<Entity *> &entity_list, Entity *original, Entity **ref, Entity *target)
+{
+	if (strlen((*ref)->target) <= 1)
+		return 0;
+
+	if (original->num_path == 8)
+		return 0;
+
+	if (strcmp((*ref)->target, target->target_name) == 0)
+	{
+		original->path_list[original->num_path++] = target->position;
+		ref = &target;
+		return 1;
+	}
+	return 0;
 }

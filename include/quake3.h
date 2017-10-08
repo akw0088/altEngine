@@ -78,6 +78,7 @@ public:
 	void handle_func_platform(Entity *ent);
 	void handle_func_bobbing(Entity *ent);
 	void handle_func_train(Entity *ent);
+	int add_train_path(vector<Entity *> &entity_list, Entity *original, Entity **ent, Entity *target);
 
 	unsigned int weapon_switch_timer;
 
