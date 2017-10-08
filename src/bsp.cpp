@@ -510,7 +510,7 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 }
 
 bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
-	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime, int &model_trigger, int &surf_flags)
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime, int &model_trigger, int &model_platform, int &surf_flags)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -629,7 +629,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	}
 
 
-
 	// do same thing for bsp doors platforms etc
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
@@ -696,6 +695,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 			count++;
 		}
 
+
 		if (count == num_sides)
 		{
 			if (debug)
@@ -708,6 +708,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 					plane->normal.x, plane->normal.y, plane->normal.z);
 			}
 
+			model_platform = i;
 
 			// inside a common/trigger etc
 			if (data.Material[brush->material].surface & SURF_NODRAW)
@@ -716,7 +717,6 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 				model_trigger = i;
 				return false;
 			}
-
 
 			return true;
 		}

@@ -1143,7 +1143,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		}
 		else if (strcmp(value, "func_train") == 0)
 		{
-			entity.ent_type = ENT_Q1_FUNC_TRAIN;
+			entity.ent_type = ENT_FUNC_TRAIN;
 
 			if (entity.rigid)
 			{
@@ -1227,15 +1227,15 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		}
 		else if (strcmp(value, "path_corner") == 0)
 		{
-			entity.ent_type = ENT_Q1_PATH_CORNER;
+			entity.ent_type = ENT_PATH_CORNER;
 
 			if (entity.rigid)
 			{
 				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
+//				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.nodraw = false;
 		}
 		else if (strcmp(value, "item_spikes") == 0)
 		{

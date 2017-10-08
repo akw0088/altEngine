@@ -1616,7 +1616,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
-		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING)
+		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_PATH_CORNER)
 		{
 			entity->visible = true;
 			entity->bsp_visible = true;
@@ -2302,7 +2302,7 @@ bool Engine::map_collision(RigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume, surf_flags))
+			surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume, body.bsp_model_platform, surf_flags))
 		{
 			if (body.step_flag)
 			{
@@ -2334,7 +2334,7 @@ bool Engine::map_collision(RigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water, body.water_depth,
-						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume, surf_flags) == false)
+						surface_list, body.step_flag && input.use, clip, body.velocity, body.lava, body.slime, body.bsp_trigger_volume, body.bsp_model_platform, surf_flags) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
@@ -2347,7 +2347,7 @@ bool Engine::map_collision(RigidBody &body)
 
 							if (body.entity->player->haste_timer > 0)
 								speed_scale = 2.0f;
-#define MAX_SPEED 3.0f
+							#define MAX_SPEED 3.0f
 
 							if (speed > MAX_SPEED * speed_scale)
 							{

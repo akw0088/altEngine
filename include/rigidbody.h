@@ -77,6 +77,7 @@ public:
 	bool			slime;
 	int				step_type;
 	int				bsp_trigger_volume;
+	int				bsp_model_platform;
 	bool			rotational_friction_flag;
 	bool			translational_friction_flag;
 	bool			ground_friction_flag;

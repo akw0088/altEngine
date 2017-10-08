@@ -33,6 +33,7 @@ RigidBody::RigidBody(Entity *entity)
 	impact_velocity = 0.0f;
 	water_depth = 0.0f;
 	bsp_trigger_volume = 0;
+	bsp_model_platform = 0;
 
 	restitution = 0.5f; // boxes should never rest
 	float height = 10.0f / UNITS_TO_METERS;
@@ -1091,8 +1092,8 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 		
 //		init_pid(&pid);
 		path.start = 0;
-		path.target = &path_list[path.index++];
-		path.next = &path_list[path.index++];
+		path.target = &path_list[0];
+		path.next = &path_list[1];
 	}
 
 	if ((*path.target - projectile->position).magnitude() < distance)
@@ -1103,9 +1104,13 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 			path.target = path.next;
 			path.index++;
 
-			if (path.index >= num_path)
+			if ( path.loop && path.index >= num_path)
 			{
 				path.index = 0;
+			}
+			else if (path.index >= num_path)
+			{
+				path.index = num_path - 1;
 			}
 			path.next = &path_list[path.index];
 		}
@@ -1116,7 +1121,7 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 	//update_pid(&pid, *path.target, projectile->position, projectile->rigid->net_force);
 	// Could probably use steering behavior arrive / follow etc here too, but the PID is faster
 	
-	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->net_force, 15.0f);
+	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 15.0f);
 	
 	if (projectile->rigid->velocity.magnitude() > max_velocity)
 	{

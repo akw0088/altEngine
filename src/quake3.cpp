@@ -94,8 +94,8 @@ void Quake3::init(Engine *altEngine)
 	//sounds/player/watr_un.wav // another water in?
 	//sound/player/fry.wav
 
-//	load_models(engine->gfx);
-	load_q1_models(engine->gfx);
+	load_models(engine->gfx);
+//	load_q1_models(engine->gfx);
 }
 
 void Quake3::load(gametype_t type)
@@ -1829,6 +1829,9 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			case 270:
 				matrix4::mat_backward(matrix, spawn_ent->position);
 				break;
+			default:
+				matrix4::mat_left(matrix, spawn_ent->position);
+				break;
 			}
 			engine->camera_frame.forward.x = matrix.m[8];
 			engine->camera_frame.forward.y = matrix.m[9];
@@ -2916,7 +2919,7 @@ void Quake3::step(int frame_step)
 		case ENT_FUNC_PLAT:
 			handle_func_platform(ent);
 			break;
-		case ENT_Q1_FUNC_TRAIN:
+		case ENT_FUNC_TRAIN:
 			handle_func_train(ent);
 			break;
 		}
@@ -7388,6 +7391,19 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			entity_list[i]->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
 		}
 
+		if (entity_list[i]->ent_type == ENT_FUNC_TRAIN)
+		{
+			// PENDULUM start at origin, need to offset
+			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
+		}
+
+		if (entity_list[i]->ent_type == ENT_PATH_CORNER)
+		{
+			entity_list[i]->visible = true;
+			entity_list[i]->bsp_visible = true;
+			entity_list[i]->rigid->gravity = false;
+		}
+
 		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_CAMERA)
 		{
 			engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
@@ -8547,6 +8563,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	bool slime;
 	int nstep = 0;
 	int model_trigger = 0;
+	int model_platform = 0;
 	int surf_flags;
 
 
@@ -8557,7 +8574,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 
 	do
 	{
-		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime, model_trigger, surf_flags);
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime, model_trigger, model_platform, surf_flags);
 		if (ret)
 		{
 			hit = true;
@@ -8934,11 +8951,18 @@ void Quake3::map_model(Entity &ent)
 
 		if (!(ent.ent_type == ENT_FUNC_DOOR || ent.ent_type == ENT_FUNC_BUTTON || ent.ent_type == ENT_FUNC_PLAT))
 		{
-			debugf("Loading func iem\n");
+			debugf("Loading func item\n");
 			ent.model->clone(*model_table[MODEL_BOX]);
 			ent.rigid->gravity = false;
 			ent.nodraw = false;
 		}
+	}
+	else if (ent.ent_type == ENT_PATH_CORNER)
+	{
+			debugf("Loading path_corner\n");
+			ent.model->clone(*model_table[MODEL_BOX]);
+			ent.rigid->gravity = false;
+			ent.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DEMON1)
 	{
@@ -9225,38 +9249,70 @@ void Quake3::handle_func_bobbing(Entity *entity)
 
 void Quake3::handle_func_train(Entity *entity)
 {
-	Entity **ref = &entity;
+	Entity *ref = entity;
 
 	if (entity->once == 0)
 	{
 		for (int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
 		{
-			if (add_train_path(engine->entity_list, entity, ref, engine->entity_list[i]))
+			int ret = add_train_path(entity, ref, engine->entity_list[i]);
+			if ( ret == 1)
 			{
-				i = -1;
+				//target found, set new reference to target
+				ref = engine->entity_list[i];
+
+				// restart loop from begining
+				i = engine->max_dynamic - 1;
 				continue;
 			}
+			else if (ret == 2)
+			{
+				entity->rigid->path.loop = 1;
+				break;
+			}
 		}
+
+		//entity defaults at origin, move to first path_corner
+		entity->position += entity->path_list[0];
 		entity->once = 1;
 	}
 
 
-//	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
-//	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 3.0f, 75.0f, 100);
+	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
+	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 8.5f, 75.0f, 100);
+	engine->q3map.model_vel[entity->model_ref] = entity->rigid->velocity;
+
+	for (int i = 0; i < engine->max_player; i++)
+	{
+		if (engine->entity_list[i]->rigid == NULL)
+			continue;
+
+		// Right now players dont move when on top of train objects, need to find nice way to match velocity
+		if (engine->entity_list[i]->rigid->bsp_model_platform == entity->model_ref)
+		{
+			//engine->entity_list[i]->rigid->net_force = entity->rigid->net_force;
+		}
+	}
+
 }
 
-int Quake3::add_train_path(vector<Entity *> &entity_list, Entity *original, Entity **ref, Entity *target)
+int Quake3::add_train_path(Entity *original, Entity *ref, Entity *target)
 {
-	if (strlen((*ref)->target) <= 1)
+	if (strlen((ref)->target) <= 1)
 		return 0;
 
 	if (original->num_path == 8)
 		return 0;
 
-	if (strcmp((*ref)->target, target->target_name) == 0)
+	if (strcmp(ref->target, target->target_name) == 0)
 	{
+		// Loop detected
+		if ((strcmp(ref->target, original->target) == 0) && original->num_path != 0)
+		{
+			return 2;
+		}
+
 		original->path_list[original->num_path++] = target->position;
-		ref = &target;
 		return 1;
 	}
 	return 0;
