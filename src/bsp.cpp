@@ -1013,7 +1013,10 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 				render.turb = true;
 			}
 
-			if (surface->portal)			{				render.portal = true;			}
+			if (surface->portal)
+			{
+				render.portal = true;
+			}
 
 			if (surface->cull_none || surface->cull_twosided || surface->cull_disable)
 				render.cull_none = true;
@@ -1222,11 +1225,13 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 		if (last_mode != 99 && face.stage == 0)
 		{
 			gfx.BlendFuncZeroSrcColor();
-			last_mode = 99;		}
+			last_mode = 99;
+		}
 		else if (last_mode != 98 && face.stage > 0)
 		{
 			gfx.BlendFuncDstColorZero();
-			last_mode = 98;		}
+			last_mode = 98;
+		}
 
 		/*
 		if (last_mode != 1)
@@ -1638,10 +1643,8 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		gfx.Blend(false);
 	}
 
-
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
-//		mlight2.set_matrix(mvp);
 		if (abs32(model_offset[i].x) + abs32(model_offset[i].y) + abs32(model_offset[i].z) < 0.001f)
 			render_model(i, gfx);
 	}
@@ -1689,6 +1692,7 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 	vec3 min((float)model->min[0], (float)model->min[1], (float)model->min[2]);
 	vec3 max((float)model->max[0], (float)model->max[1], (float)model->max[2]);
 
+	selected_map = false;
 	for (int i = 0; i < model->num_faces; i++)
 	{
 		int face_index = model->face_index + i;

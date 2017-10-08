@@ -1659,9 +1659,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "height") == 0)
 	{
 		if (atoi(value) != 0)
-			entity.height = (float)atoi(value);
+			entity.func_height = (float)atoi(value);
 		else
-			entity.height = 0.0f;
+			entity.func_height = 0.0f;
 //		entity.rigid->velocity = vec3(0.0f, atoi(value), 0.0f);
 	}
 

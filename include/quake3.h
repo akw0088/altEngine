@@ -4,14 +4,14 @@
 #define QUAKE3_H
 
 
-        #define MODEL_WEAPON_GAUNTLET 19
-        #define MODEL_WEAPON_MACHINEGUN 20
-        #define MODEL_WEAPON_SHOTGUN 21
-        #define MODEL_WEAPON_GRENADE 22
-        #define MODEL_WEAPON_ROCKET 23
-        #define MODEL_WEAPON_LIGHTNING 24
-        #define MODEL_WEAPON_RAILGUN 25
-        #define MODEL_WEAPON_PLASMA 26
+#define MODEL_WEAPON_GAUNTLET 19
+#define MODEL_WEAPON_MACHINEGUN 20
+#define MODEL_WEAPON_SHOTGUN 21
+#define MODEL_WEAPON_GRENADE 22
+#define MODEL_WEAPON_ROCKET 23
+#define MODEL_WEAPON_LIGHTNING 24
+#define MODEL_WEAPON_RAILGUN 25
+#define MODEL_WEAPON_PLASMA 26
 
 class Quake3 : public BaseGame
 {
@@ -74,6 +74,10 @@ public:
 	void endgame(char *winner);
 	void get_state(serverdata_t *data);
 	void set_state(serverdata_t *data);
+
+	void handle_func_platform(Entity *ent);
+	void handle_func_bobbing(Entity *ent);
+	void handle_func_train(Entity *ent);
 
 	unsigned int weapon_switch_timer;
 

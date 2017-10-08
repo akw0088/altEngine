@@ -25,12 +25,13 @@ Entity::Entity()
 	model_lerp = 0.0f;
 	model_offset = vec3();
 	opening = false;
+	once = 0;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NT_NONE;
-	angle = 0;
+	angle = -1;
 	model_ref = -1;
-	height = 0.0f;
+	func_height = 0.0f;
 
 	particle_on = false;
 	num_particle = 0;

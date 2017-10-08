@@ -1616,7 +1616,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
-		if (entity->ent_type == ENT_FUNC_DOOR)
+		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING)
 		{
 			entity->visible = true;
 			entity->bsp_visible = true;
@@ -1696,16 +1696,16 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 
 
-		if (entity->model_ref != -1 && q3map.enable_textures)
+		if (entity->model_ref > 0 && entity->model_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 2)
 		{
 			Frame frame;
 
 			vec3 old = entity->position;
-			entity->position = entity->model_offset;
+			entity->position = entity->model_offset + (entity->position - entity->origin);
 			entity->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
-			//q3map.render_model(entity->model_ref, gfx);
+			q3map.render_model(entity->model_ref, gfx);
 
 			entity->position = old;
 		}

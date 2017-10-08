@@ -1869,15 +1869,15 @@ void Quake3::handle_player(int self, input_t &input)
 
 
 	// make all plasma balls from plasma gun follow path around the player position
-	if (1)
+	if (0)
 	{
 		vec3 path_list[4];
 		Entity *ref = entity;
 
 		path_list[0] = ref->position + vec3(100.0f, 0.0f, -100.0f);
 		path_list[1] = ref->position + vec3(-100.0f, 0.0f, -100.0f);
-		path_list[2] = ref->position + vec3(-100.0f, 0.0f, 100.0f);;
-		path_list[3] = ref->position + vec3(100.0f, 0.0f, 100.0f);;
+		path_list[2] = ref->position + vec3(-100.0f, 0.0f, 100.0f);
+		path_list[3] = ref->position + vec3(100.0f, 0.0f, 100.0f);
 
 		Entity *projectile = NULL;
 		for (int i = 0; i < engine->max_dynamic; i++)
@@ -1889,8 +1889,6 @@ void Quake3::handle_player(int self, input_t &input)
 			}
 		}
 	}
-
-
 
 	if (input.duck && entity->rigid->y_offset != -25)
 	{
@@ -2902,6 +2900,26 @@ void Quake3::step(int frame_step)
 	{
 		if (spectator_timer > 0)
 			spectator_timer--;
+	}
+
+	for (int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
+	{
+		Entity *ent = engine->entity_list[i];
+		if (ent->ent_type <= ENT_FUNC_START && ent->ent_type >= ENT_FUNC_END)
+			continue;
+
+		switch (ent->ent_type)
+		{
+		case ENT_FUNC_BOBBING:
+			handle_func_bobbing(ent);
+			break;
+		case ENT_FUNC_PLAT:
+			handle_func_platform(ent);
+			break;
+		case ENT_Q1_FUNC_TRAIN:
+			handle_func_train(ent);
+			break;
+		}
 	}
 
 
@@ -6352,6 +6370,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		int weapon = atoi(cmd + 7);
 
+		if (self == -1)
+			return;
+
 		switch (weapon)
 		{
 		case 1:
@@ -7350,6 +7371,8 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		if (entity_list[i]->model_ref != -1)
 			entity_list[i]->position = q3map.model_origin(entity_list[i]->model_ref);
 
+		entity_list[i]->origin = entity_list[i]->position;
+
 
 		if (entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
@@ -7435,6 +7458,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 				*/
 			}
 		}
+
 	}
 }
 
@@ -9147,4 +9171,58 @@ Quake3::~Quake3()
 	{
 		delete model_table[i];
 	}
+}
+
+
+
+void Quake3::handle_func_platform(Entity *ent)
+{
+}
+
+void Quake3::handle_func_bobbing(Entity *entity)
+{
+	Entity *ref = entity;
+
+	if (entity->once == 0)
+	{
+		switch (entity->angle)
+		{
+		case 0:
+		case 360:
+			entity->path_list[0] = ref->position + vec3(-entity->func_height, 0.0f, 0.0f);
+			entity->path_list[1] = ref->position + vec3(entity->func_height, 0.0f, 0.0f);
+			break;
+		case 90:
+			entity->path_list[0] = ref->position + vec3(0.0f, 0.0f, -entity->func_height);
+			entity->path_list[1] = ref->position + vec3(0.0f, 0.0f, entity->func_height);
+			break;
+		case 180:
+			entity->path_list[0] = ref->position + vec3(entity->func_height, 0.0f, 0.0f);
+			entity->path_list[1] = ref->position + vec3(-entity->func_height, 0.0f, 0.0f);
+			break;
+		case 270:
+			entity->path_list[0] = ref->position + vec3(0.0f, 0.0f, entity->func_height);
+			entity->path_list[1] = ref->position + vec3(0.0f, 0.0f, -entity->func_height);
+			break;
+		case -1:
+			entity->path_list[0] = ref->position + vec3(0.0f, entity->func_height, 0.0f);
+			entity->path_list[1] = ref->position + vec3(0.0f, -entity->func_height, 0.0f);
+			break;
+		case -2:
+			entity->path_list[0] = ref->position + vec3(0.0f, -entity->func_height, 0.0f);
+			entity->path_list[1] = ref->position + vec3(0.0f, entity->func_height, 0.0f);
+			break;
+		}
+		entity->num_path = 2;
+		entity->once = 1;
+	}
+
+	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
+
+	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 3.0f, 75.0f, 100);
+}
+
+void Quake3::handle_func_train(Entity *ent)
+{
+
 }

@@ -72,6 +72,7 @@ void lump_to_wave(char *lump_data, int size, wave_t *wave);
 void write_bitmap(char *filename, int width, int height, int *data);
 void ping_time_start(int sequence);
 double ping_time_end(int sequence);
+float clamp(float value, float min, float max);
 
 double GetCounter(double freq);
 extern double freq;
