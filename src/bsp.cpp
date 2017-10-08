@@ -633,9 +633,10 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	// do same thing for bsp doors platforms etc
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
-
-		if (model_offset[i].magnitude() > 0.001f)
-			continue;
+		vec3 translated_point = point - model_offset[i];
+		vec3 translated_oldpoint = oldpoint - model_offset[i];
+//		if (model_offset[i].magnitude() > 0.001f)
+//			continue;
 
 		int index = data.Model[i].brush_index;
 		if (index > data.num_brushes)
@@ -662,7 +663,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
 			int plane_index = brushSide->plane;
 
-			float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+			float d = translated_point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
 
 			// outside of brush plane
 			if (d > 0.0f)
@@ -685,7 +686,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 			// Check old position against planes, if we werent colliding before
 			//then it is the collision plane we want to return
-			d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+			d = translated_oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
 			if (d > 0.0)
 			{
 				plane->normal = data.Plane[plane_index].normal;
