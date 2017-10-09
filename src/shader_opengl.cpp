@@ -624,8 +624,8 @@ void mLight2::rgbgen_wave_inverse_sawtooth(float amplitude, float phase, float f
 void mLight2::rgbgen_wave_triangle(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	float value;
-	float x = (float)(0.5 * tick_num / 10.0f * freq + phase);
-	value = (float)(amplitude * (1.0 - 2.0 * abs32(sign(x) - x)));
+	float x = (float)(0.5f * tick_num / 10.0f * freq + phase);
+	value = (float)(amplitude * (1.0f - 2.0f * abs32(sign(x) - x)));
 
 	rgbgen_scale(index, value);
 }
@@ -635,14 +635,14 @@ void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int t
 	float value;
 	float denom;
 
-	if (abs32((float)(freq - 0.001)) <= 0.0011)
+	if (abs32((float)(freq - 0.001f)) <= 0.0011f)
 		freq = 0.1f;
 
 	denom = ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI);
 
 	if (abs32(denom) > 0.0001f)
 	{
-		value = (float)(amplitude * (4.0 / denom)) + 0.5;
+		value = (float)(amplitude * (4.0f / denom)) + 0.5f;
 		rgbgen_scale(index, value);
 	}
 }

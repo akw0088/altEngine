@@ -637,7 +637,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 //		if (model_offset[i].magnitude() > 0.001f)
 //			continue;
 
-		int index = data.Model[i].brush_index;
+		unsigned int index = data.Model[i].brush_index;
 		if (index > data.num_brushes)
 			break;
 		brush_t	*brush = &data.Brushes[index];
@@ -1696,7 +1696,7 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 	selected_map = false;
 	for (int i = 0; i < model->num_faces; i++)
 	{
-		int face_index = model->face_index + i;
+		unsigned int face_index = model->face_index + i;
 
 		if (face_index > data.num_faces)
 			break;

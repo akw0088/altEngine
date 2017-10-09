@@ -777,22 +777,22 @@ void Quake3::load_q1_models(Graphics &gfx)
 	model->load(gfx, "media/models/quake1/g_shot/g_shot");
 	model_table.push_back(model);
 
-#define MODEL_GIB1 77
+#define MODEL_Q1_GIB1 77
 	model = new Model;
 	model->load(gfx, "media/models/quake1/gib1/gib1");
 	model_table.push_back(model);
 
-#define MODEL_GIB2 78
+#define MODEL_Q1_GIB2 78
 	model = new Model;
 	model->load(gfx, "media/models/quake1/gib2/gib2");
 	model_table.push_back(model);
 
-#define MODEL_GIB3 79
+#define MODEL_Q1_GIB3 79
 	model = new Model;
 	model->load(gfx, "media/models/quake1/gib3/gib3");
 	model_table.push_back(model);
 
-#define MODEL_GRENADE 80
+#define MODEL_Q1_GRENADE 80
 	model = new Model;
 	model->load(gfx, "media/models/quake1/grenade/grenade");
 	model_table.push_back(model);
@@ -812,7 +812,7 @@ void Quake3::load_q1_models(Graphics &gfx)
 	model->load(gfx, "media/models/quake1/h_guard/h_guard");
 	model_table.push_back(model);
 
-#define MODEL_H_GUARD 84
+#define MODEL_H_KNIGHT 84
 	model = new Model;
 	model->load(gfx, "media/models/quake1/h_knight/h_knight");
 	model_table.push_back(model);
@@ -872,7 +872,7 @@ void Quake3::load_q1_models(Graphics &gfx)
 	model->load(gfx, "media/models/quake1/missle/missle");
 	model_table.push_back(model);
 
-#define MODEL_PLAYER 96
+#define MODEL_Q1_PLAYER 96
 	model = new Model;
 	model->load(gfx, "media/models/quake1/player/player");
 	model_table.push_back(model);
@@ -1883,7 +1883,7 @@ void Quake3::handle_player(int self, input_t &input)
 		path_list[3] = ref->position + vec3(100.0f, 0.0f, 100.0f);
 
 		Entity *projectile = NULL;
-		for (int i = 0; i < engine->max_dynamic; i++)
+		for (unsigned int i = 0; i < engine->max_dynamic; i++)
 		{
 			if (engine->entity_list[i]->trigger && engine->entity_list[i]->trigger->explode_type == 2)
 			{
@@ -2905,7 +2905,7 @@ void Quake3::step(int frame_step)
 			spectator_timer--;
 	}
 
-	for (int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
+	for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
 	{
 		Entity *ent = engine->entity_list[i];
 		if (ent->ent_type <= ENT_FUNC_START && ent->ent_type >= ENT_FUNC_END)
@@ -9253,7 +9253,7 @@ void Quake3::handle_func_train(Entity *entity)
 
 	if (entity->once == 0)
 	{
-		for (int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
+		for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
 		{
 			int ret = add_train_path(entity, ref, engine->entity_list[i]);
 			if ( ret == 1)
@@ -9282,7 +9282,7 @@ void Quake3::handle_func_train(Entity *entity)
 	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 8.5f, 75.0f, 100);
 	engine->q3map.model_vel[entity->model_ref] = entity->rigid->velocity;
 
-	for (int i = 0; i < engine->max_player; i++)
+	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
 		if (engine->entity_list[i]->rigid == NULL)
 			continue;

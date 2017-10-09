@@ -1696,7 +1696,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 
 
-		if (entity->model_ref > 0 && entity->model_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 2)
+		if (entity->model_ref > 0 && (unsigned int)entity->model_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 2)
 		{
 			Frame frame;
 

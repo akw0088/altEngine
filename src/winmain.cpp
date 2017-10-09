@@ -982,8 +982,8 @@ void xbox_controller(HWND hwnd, int index, Engine *engine)
 		GetWindowRect(hwnd, &rect);
 
 	//		printf("right analog %3.3f %3.3f\n", right_analog.x, right_analog.y);
-		pos.x += right_analog.x * 20.0f;
-		pos.y += right_analog.y * -20.0f;
+		pos.x += (LONG)(right_analog.x * 20.0f);
+		pos.y += (LONG)(right_analog.y * -20.0f);
 		if (pos.x > rect.right)
 			pos.x = rect.right;
 		if (pos.x < rect.left)
@@ -996,12 +996,12 @@ void xbox_controller(HWND hwnd, int index, Engine *engine)
 
 		if (engine->q3map.loaded)
 		{
-			engine->mousepos(0, 0, 10.0f * right_analog.x, -10.0f * right_analog.y);
+			engine->mousepos(0, 0, (int)(10.0f * right_analog.x), (int)(-10.0f * right_analog.y));
 		}
 		else
 		{
 			SetCursorPos(pos.x, pos.y);
-			engine->mousepos(pos.x, pos.y, 10.0f * right_analog.x, -10.0f * right_analog.y);
+			engine->mousepos(pos.x, pos.y, (int)(10.0f * right_analog.x), (int)(-10.0f * right_analog.y));
 		}
 	}
 
