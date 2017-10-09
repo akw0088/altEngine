@@ -1086,8 +1086,6 @@ void rk4_integrate(vec3 &pos, vec3 &vel, float t, float dt)
 	vel += dvdt * dt;
 }
 
-pid_state_t pid;
-
 // This is just a basic follow the path setup for the pid controller, kills momentum to make it nicer for eventual func_train use
 void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait)
 {
@@ -1095,7 +1093,7 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 
 	if ((*path.target - projectile->position).magnitude() < distance)
 	{
-		if (path.count == wait)
+		if (path.count == wait + 1)
 		{
 			path.count = 0;
 			path.target = path.next;

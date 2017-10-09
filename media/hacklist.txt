@@ -1,3 +1,5 @@
+textures/base_floor/clangdark
+-2
 textures/base_trim/pewter_shiney
 2
 textures/base_wall/metalfloor_wall_15ow
@@ -43,6 +45,4 @@ textures/gothic_wall/iron01_ndark
 textures/ctf/ctf_tower_redfin
 -1
 textures/ctf/ctf_tower_bluefin
--1
-textures/base_floor/clangdark
 -1

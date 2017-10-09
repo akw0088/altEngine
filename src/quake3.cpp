@@ -6173,7 +6173,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		crosshair_scale = (float)atof(data);
 	}
 
-
+	/*
 	ret = sscanf(cmd, "pgain %s", data);
 	if (ret == 1)
 	{
@@ -6191,6 +6191,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		pid.dGain = (float)atof(data);
 	}
+	*/
 
 	ret = sscanf(cmd, "damage %s", data);
 	if (ret == 1)
@@ -9249,12 +9250,18 @@ void Quake3::handle_func_platform(Entity *ent)
 void Quake3::handle_func_bobbing(Entity *entity)
 {
 	Entity *ref = entity;
+	int wait = 10;
 
 	sprintf(entity->target, " ");
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
 	entity->rigid->path.loop = 1;
 
-	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 3.0f, 75.0f, 100);
+	if (entity->trigger)
+	{
+		wait = entity->trigger->timeout_value;
+	}
+
+	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 3.0f, 75.0f, wait);
 }
 
 void Quake3::handle_func_train(Entity *entity)

@@ -392,7 +392,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				{
 					surface_list[j]->num_stage = value;
 				}
-				else
+				else if (value == -1)
 				{
 					for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 					{
@@ -418,6 +418,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 						surface_list[j]->stage[k].alpha = true;
 					}
 //					surface_list.erase(surface_list.begin() + j);
+				}
+				else if (value == -2)
+				{
+					surface_list.erase(surface_list.begin() + j);
 				}
 				break;
 			}
