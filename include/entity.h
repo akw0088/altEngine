@@ -42,10 +42,5 @@ public:
 	char			type[64];
 	char			target[64];
 	char			target_name[64];
-
-
-	int once;
-	vec3 path_list[8];
-	int num_path;
 };
 #endif

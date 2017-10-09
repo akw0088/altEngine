@@ -25,8 +25,6 @@ Entity::Entity()
 	model_lerp = 0.0f;
 	model_offset = vec3();
 	opening = false;
-	once = 0;
-	num_path = 0;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NT_NONE;

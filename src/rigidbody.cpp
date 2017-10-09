@@ -72,7 +72,11 @@ RigidBody::RigidBody(Entity *entity)
 
 
 	memset(&path, 0, sizeof(func_path_t));
-	path.start = 1;
+	path.num_path = 0;
+	path.target = &path.path_list[0];
+	path.next = &path.path_list[1];
+
+
 
 
 	#define SND_GRENADE_IMPACT 244
@@ -1087,15 +1091,6 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 {
 	Entity *projectile = entity;
 
-	if (path.start)
-	{
-		
-//		init_pid(&pid);
-		path.start = 0;
-		path.target = &path_list[0];
-		path.next = &path_list[1];
-	}
-
 	if ((*path.target - projectile->position).magnitude() < distance)
 	{
 		if (path.count == wait)
@@ -1121,7 +1116,7 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 	//update_pid(&pid, *path.target, projectile->position, projectile->rigid->net_force);
 	// Could probably use steering behavior arrive / follow etc here too, but the PID is faster
 	
-	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 15.0f);
+	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 300.0f);
 	
 	if (projectile->rigid->velocity.magnitude() > max_velocity)
 	{
@@ -1134,11 +1129,13 @@ int RigidBody::train_follow_path(vec3 *target, float max_velocity, float distanc
 {
 	Entity *projectile = entity;
 
+	/*
 	if (path.start)
 	{
 		path.start = 0;
 		path.target = target;
 	}
+	*/
 
 	if ((*path.target - projectile->position).magnitude() < distance)
 	{

@@ -1696,7 +1696,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 
 
-		if (entity->model_ref > 0 && (unsigned int)entity->model_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 2)
+		if (entity->model_ref > 0 && (unsigned int)entity->model_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 0.5)
 		{
 			Frame frame;
 
@@ -2238,6 +2238,13 @@ void ClipVelocity(vec3 &in, vec3 &normal)
 bool Engine::collision_detect(RigidBody &body)
 {
 //	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);	
+
+	// ignore func items
+	if (body.entity->ent_type == ENT_PATH_CORNER)
+	{
+		return false;
+	}
+
 	if (map_collision(body))
 	{
 		return true;
@@ -2360,6 +2367,13 @@ bool Engine::map_collision(RigidBody &body)
 						continue;
 					}
 				}
+			}
+
+			if (body.bsp_model_platform > 0)
+			{
+				vec3 dir = (q3map.model_offset[body.bsp_model_platform] - body.entity->position);
+				body.velocity += dir.normalize() * 10.0f;
+				body.bsp_model_platform = 0;
 			}
 
 			body.entity->position = body.old_position;

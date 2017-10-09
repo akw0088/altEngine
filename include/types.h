@@ -793,10 +793,12 @@ typedef struct
 {
 	int				index;
 	int				count;
-	int				start;
 	vec3			*target;
 	vec3			*next;
 	int				loop;
+
+	vec3 path_list[8];
+	int num_path;
 } func_path_t;
 
 #endif

@@ -5349,7 +5349,7 @@ void Quake3::render_hud(double last_frametime)
 			);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
-			snprintf(msg, LINE_SIZE, "on_ground %d impact velocity %f", entity->rigid->on_ground, entity->rigid->impact_velocity );
+			snprintf(msg, LINE_SIZE, "bsp_platform %d on_ground %d impact velocity %f", entity->rigid->bsp_model_platform, entity->rigid->on_ground, entity->rigid->impact_velocity );
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
@@ -7371,46 +7371,96 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->model_ref != -1)
-			entity_list[i]->position = q3map.model_origin(entity_list[i]->model_ref);
+		Entity *ent = entity_list[i];
+		Entity *ref = ent;
 
-		entity_list[i]->origin = entity_list[i]->position;
+		if (ent->model_ref != -1)
+			ent->position = q3map.model_origin(ent->model_ref);
+
+		ent->origin = ent->position;
 
 
-		if (entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
+		switch (ent->ent_type)
 		{
-			sprintf(entity_list[i]->trigger->action, "push %s", entity_list[i]->target);
-		}
 
 
-		if (entity_list[i]->ent_type == ENT_FUNC_PENDULUM)
-		{
+		case ENT_TRIGGER_PUSH:
+			sprintf(ent->trigger->action, "push %s", ent->target);
+			break;
+		case ENT_FUNC_PENDULUM:
 			// PENDULUM start at origin, need to offset
-//			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
-
-			entity_list[i]->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
-		}
-
-		if (entity_list[i]->ent_type == ENT_FUNC_TRAIN)
-		{
-			// PENDULUM start at origin, need to offset
+			//			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
+			ent->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
+			break;
+		case ENT_FUNC_BOBBING:
+			switch (ent->angle)
+			{
+			case 0:
+			case 360:
+				ent->rigid->path.path_list[0] = ent->position + vec3(-ent->func_height, 0.0f, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(ent->func_height, 0.0f, 0.0f);
+				break;
+			case 90:
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, 0.0f, -ent->func_height);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, 0.0f, ent->func_height);
+				break;
+			case 180:
+				ent->rigid->path.path_list[0] = ent->position + vec3(ent->func_height, 0.0f, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(-ent->func_height, 0.0f, 0.0f);
+				break;
+			case 270:
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, 0.0f, ent->func_height);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, 0.0f, -ent->func_height);
+				break;
+			case -1:
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, ent->func_height, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, -ent->func_height, 0.0f);
+				break;
+			case -2:
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, -ent->func_height, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, ent->func_height, 0.0f);
+				break;
+			default:
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, ent->func_height, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, -ent->func_height, 0.0f);
+				break;
+			}
+			ent->rigid->path.num_path = 2;
+			break;
+		case ENT_FUNC_TRAIN:
 			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
-		}
+			for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
+			{
+				int ret = add_train_path(ent, ref, engine->entity_list[i]);
+				if (ret == 1)
+				{
+					//target found, set new reference to target
+					ref = engine->entity_list[i];
 
-		if (entity_list[i]->ent_type == ENT_PATH_CORNER)
-		{
+					// restart loop from begining
+					i = engine->max_dynamic - 1;
+					continue;
+				}
+				else if (ret == 2)
+				{
+					ent->rigid->path.loop = 1;
+					break;
+				}
+			}
+
+			//entity defaults at origin, move to first path_corner
+			ent->position += ent->rigid->path.path_list[0];
+
+			break;
+		case ENT_PATH_CORNER:
 			entity_list[i]->visible = true;
 			entity_list[i]->bsp_visible = true;
 			entity_list[i]->rigid->gravity = false;
-		}
-
-		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_CAMERA)
-		{
+			break;
+		case ENT_MISC_PORTAL_CAMERA:
 			engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
-		}
-
-		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_SURFACE)
-		{
+			break;
+		case ENT_MISC_PORTAL_SURFACE:
 			if (entity_list[i]->target[0] != '\0')
 			{
 				// If we have a target, then use corresponding portal camera
@@ -7422,13 +7472,21 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 				// mirror
 				engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
 			}
-		}
-
-
-		if (entity_list[i]->ent_type == ENT_TRIGGER_TELEPORT)
-		{
+			break;
+		case ENT_TRIGGER_TELEPORT:
 			// Reset action because of ordering issues
 			sprintf(entity_list[i]->trigger->action, "teleport %s %d", entity_list[i]->target, i);
+			break;
+		case ENT_FUNC_DOOR:
+			if (entity_list[i]->trigger)
+			{
+				if (strstr(entity_list[i]->trigger->action, "damage"))
+				{
+					entity_list[i]->trigger->action[0] = '\0';
+				}
+			}
+			break;
+
 		}
 
 		if ((entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END) ||
@@ -7438,41 +7496,6 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
 			entity_list[i]->rigid->gravity = false;
-		}
-
-		if (entity_list[i]->ent_type == ENT_FUNC_DOOR)
-		{
-			if (entity_list[i]->trigger)
-			{
-				if (strstr(entity_list[i]->trigger->action, "damage"))
-				{
-					entity_list[i]->trigger->action[0] = '\0';
-				}
-			}
-		}
-
-
-		if (entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END)
-		{
-			for (unsigned int j = 0; j < entity_list.size(); j++)
-			{
-				if (i == j)
-					continue;
-
-				if (entity_list[i]->target[0] == '\0')
-					continue;
-
-				/*
-				if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
-				{
-					printf("Entity %d type %s pursuing %d type %s\n", i, entity_list[i]->type,
-						j, entity_list[j]->type);
-//					entity_list[i]->rigid->pursue_flag = true;
-//					entity_list[i]->rigid->target = entity_list[j];
-					break;
-				}
-				*/
-			}
 		}
 
 	}
@@ -9207,79 +9230,19 @@ void Quake3::handle_func_bobbing(Entity *entity)
 {
 	Entity *ref = entity;
 
-	if (entity->once == 0)
-	{
-		switch (entity->angle)
-		{
-		case 0:
-		case 360:
-			entity->path_list[0] = ref->position + vec3(-entity->func_height, 0.0f, 0.0f);
-			entity->path_list[1] = ref->position + vec3(entity->func_height, 0.0f, 0.0f);
-			break;
-		case 90:
-			entity->path_list[0] = ref->position + vec3(0.0f, 0.0f, -entity->func_height);
-			entity->path_list[1] = ref->position + vec3(0.0f, 0.0f, entity->func_height);
-			break;
-		case 180:
-			entity->path_list[0] = ref->position + vec3(entity->func_height, 0.0f, 0.0f);
-			entity->path_list[1] = ref->position + vec3(-entity->func_height, 0.0f, 0.0f);
-			break;
-		case 270:
-			entity->path_list[0] = ref->position + vec3(0.0f, 0.0f, entity->func_height);
-			entity->path_list[1] = ref->position + vec3(0.0f, 0.0f, -entity->func_height);
-			break;
-		case -1:
-			entity->path_list[0] = ref->position + vec3(0.0f, entity->func_height, 0.0f);
-			entity->path_list[1] = ref->position + vec3(0.0f, -entity->func_height, 0.0f);
-			break;
-		case -2:
-			entity->path_list[0] = ref->position + vec3(0.0f, -entity->func_height, 0.0f);
-			entity->path_list[1] = ref->position + vec3(0.0f, entity->func_height, 0.0f);
-			break;
-		}
-		entity->num_path = 2;
-		entity->once = 1;
-	}
-
 	sprintf(entity->target, " ");
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
+	entity->rigid->path.loop = 1;
 
-	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 3.0f, 75.0f, 100);
+	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 3.0f, 75.0f, 100);
 }
 
 void Quake3::handle_func_train(Entity *entity)
 {
 	Entity *ref = entity;
 
-	if (entity->once == 0)
-	{
-		for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
-		{
-			int ret = add_train_path(entity, ref, engine->entity_list[i]);
-			if ( ret == 1)
-			{
-				//target found, set new reference to target
-				ref = engine->entity_list[i];
-
-				// restart loop from begining
-				i = engine->max_dynamic - 1;
-				continue;
-			}
-			else if (ret == 2)
-			{
-				entity->rigid->path.loop = 1;
-				break;
-			}
-		}
-
-		//entity defaults at origin, move to first path_corner
-		entity->position += entity->path_list[0];
-		entity->once = 1;
-	}
-
-
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
-	entity->rigid->pid_follow_path(entity->path_list, entity->num_path, 8.5f, 75.0f, 100);
+	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 8.5f, 75.0f, 100);
 	engine->q3map.model_vel[entity->model_ref] = entity->rigid->velocity;
 
 	for (unsigned int i = 0; i < engine->max_player; i++)
@@ -9301,18 +9264,18 @@ int Quake3::add_train_path(Entity *original, Entity *ref, Entity *target)
 	if (strlen((ref)->target) <= 1)
 		return 0;
 
-	if (original->num_path == 8)
+	if (original->rigid->path.num_path == 8)
 		return 0;
 
 	if (strcmp(ref->target, target->target_name) == 0)
 	{
 		// Loop detected
-		if ((strcmp(ref->target, original->target) == 0) && original->num_path != 0)
+		if ((strcmp(ref->target, original->target) == 0) && original->rigid->path.num_path != 0)
 		{
 			return 2;
 		}
 
-		original->path_list[original->num_path++] = target->position;
+		original->rigid->path.path_list[original->rigid->path.num_path++] = target->position;
 		return 1;
 	}
 	return 0;
