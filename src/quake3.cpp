@@ -5704,6 +5704,23 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 		}
 
+
+		if (entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_FUNC_TRAIN)
+		{
+			int line = 1;
+
+			sprintf(data, "Target %.3f %.3f %.3f",	entity->rigid->path.path_list[entity->rigid->path.index].x,
+													entity->rigid->path.path_list[entity->rigid->path.index].y,
+													entity->rigid->path.path_list[entity->rigid->path.index].z );
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+
+			sprintf(data, "path_index %d", entity->rigid->path.index);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+			sprintf(data, "num_path %d", entity->rigid->path.num_path);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+
+		}
+
 		if (entity->ent_type == ENT_NAVPOINT)
 		{
 			vec3 blue(0.0f, 0.0f, 1.0f);
@@ -7375,7 +7392,10 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		Entity *ref = ent;
 
 		if (ent->model_ref != -1)
+		{
+			q3map.model_type[ent->model_ref] = ent->ent_type;
 			ent->position = q3map.model_origin(ent->model_ref);
+		}
 
 		ent->origin = ent->position;
 

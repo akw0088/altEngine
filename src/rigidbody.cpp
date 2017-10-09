@@ -76,6 +76,8 @@ RigidBody::RigidBody(Entity *entity)
 	path.target = &path.path_list[0];
 	path.next = &path.path_list[1];
 
+	init_pid(&pid);
+
 
 
 
@@ -1109,14 +1111,16 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 			}
 			path.next = &path_list[path.index];
 		}
+
+		// increase count at target position until we hit wait
 		path.count++;
-		//projectile->rigid->velocity = projectile->rigid->velocity.normalize() * 0.01f;
+		projectile->rigid->velocity = projectile->rigid->velocity.normalize() * 0.01f;
 	}
 
-	//update_pid(&pid, *path.target, projectile->position, projectile->rigid->net_force);
+	update_pid(&projectile->rigid->pid, *path.target, projectile->position, projectile->rigid->net_force);
 	// Could probably use steering behavior arrive / follow etc here too, but the PID is faster
 	
-	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 300.0f);
+//	pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 300.0f);
 	
 	if (projectile->rigid->velocity.magnitude() > max_velocity)
 	{

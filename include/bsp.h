@@ -73,7 +73,7 @@ public:
 	int *face_to_patch;
 	int lastIndex;
 
-
+	int model_type[128];
 	vec3 model_offset[128];
 	vec3 model_rot[128];
 	vec3 model_vel[128];

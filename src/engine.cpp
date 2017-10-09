@@ -2369,10 +2369,14 @@ bool Engine::map_collision(RigidBody &body)
 				}
 			}
 
-			if (body.bsp_model_platform > 0)
+			if (body.bsp_model_platform > 0 && (q3map.model_type[body.bsp_model_platform] > ENT_FUNC_START && q3map.model_type[body.bsp_model_platform] < ENT_FUNC_END))
 			{
 				vec3 dir = (q3map.model_offset[body.bsp_model_platform] - body.entity->position);
 				body.velocity += dir.normalize() * 10.0f;
+				body.bsp_model_platform = 0;
+			}
+			else if (body.bsp_model_platform > 0)
+			{
 				body.bsp_model_platform = 0;
 			}
 

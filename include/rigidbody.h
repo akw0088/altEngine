@@ -100,6 +100,7 @@ public:
 
 
 	func_path_t path;
+	pid_state_t pid;
 };
 
 #endif

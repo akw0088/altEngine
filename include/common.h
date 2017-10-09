@@ -24,16 +24,6 @@ typedef struct
 	double time;
 } ping_t;
 
-typedef struct
-{
-	vec3 dState;		// Last position input
-	vec3 iState;		// Integrator state
-	float iMin, iMax;	// min max integrator state
-
-	float iGain;
-	float pGain;
-	float dGain;
-} pid_state_t;
 
 //float fabs(float val);
 void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height);

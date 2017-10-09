@@ -801,4 +801,15 @@ typedef struct
 	int num_path;
 } func_path_t;
 
+typedef struct
+{
+	vec3 dState;		// Last position input
+	vec3 iState;		// Integrator state
+	float iMin, iMax;	// min max integrator state
+
+	float iGain;
+	float pGain;
+	float dGain;
+} pid_state_t;
+
 #endif
