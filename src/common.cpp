@@ -1693,3 +1693,50 @@ void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3
 
 	output += pTerm + iTerm + dTerm;
 }
+
+
+
+void centriod(vec3 &a. vec3 &b, vec3 &c, vec3 &result)
+{
+	result.x = (a.x + b.x + c.x) / 3.0f;
+	result.y = (a.y + b.y + c.y) / 3.0f;
+	result.z = (a.z + b.z + c.z) / 3.0f;
+}
+
+
+int frontface(vec3 &a, vec3 &b, vec3 &c, vec3 &origin)
+{
+	vec3 v1 = b - a;
+	vec3 v1 = c - a;
+
+	vec3 normal = vec3::crossproduct(v1, v2);
+
+	if (origin * normal > 0.0f)
+	{
+		return 0;
+	}
+	return 1;
+}
+
+
+
+void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance)
+{
+	vec3 ra, rb, rc;
+	
+
+
+	ra = a - origin;
+	ra = ra.normalize();
+
+	rb = b - origin;
+	rb = rb.normalize();
+
+	rc = c - origin;
+	rc = rc.normalize();
+
+
+	a = ra * distance + origin;
+	b = rb * distance + origin;
+	c = rc * distance + origin;
+}
