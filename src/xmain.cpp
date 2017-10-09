@@ -538,6 +538,7 @@ int request_clipboard(Display *dpy, Window target_window)
 
     // Request conversion to UTF-8. Not all owners will be able to fulfill that request.
     XConvertSelection(dpy, sel, utf8, target_property, target_window, CurrentTime);
+    return 0;
 }
 
 #endif

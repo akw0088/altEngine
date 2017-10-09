@@ -56,10 +56,10 @@ OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
-CC := gcc -fuse-linker-plugin -Wfloat-equal
-#CPP := clang++ -std=c++11
-#CC := clang
+#CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
+#CC := gcc -fuse-linker-plugin -Wfloat-equal
+CPP := clang++ -std=c++11
+CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]
@@ -74,12 +74,12 @@ CC := gcc -fuse-linker-plugin -Wfloat-equal
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-altEngine: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -g -march=native #-fsanitize=address -fno-omit-frame-pointer
+altEngine: CFLAGS := -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native #-fsanitize=address -fno-omit-frame-pointer
 altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native
 altEngine_vulkan: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DVULKAN -Wno-write-strings -Wall -march=native
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
-LFLAGS := -lX11 -lGL -lopenal -lrt
-LFLAGS_VULKAN := -lX11 -lGL -lvulkan -lrt
+LFLAGS := -lX11 -lGL -lopenal -lrt -lpthread
+LFLAGS_VULKAN := -lX11 -lGL -lvulkan -lrt -lpthread
 LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
 
 all: altEngine

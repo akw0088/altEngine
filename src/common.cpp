@@ -15,7 +15,9 @@
 #define stricmp strcasecmp
 #endif
 
+#ifndef __linux__
 typedef unsigned char byte;
+#endif
 
 #define DMESG_SIZE 2048
 extern char dmesg[DMESG_SIZE][1024];
