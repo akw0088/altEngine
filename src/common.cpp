@@ -1696,7 +1696,7 @@ void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3
 
 
 
-void centriod(vec3 &a. vec3 &b, vec3 &c, vec3 &result)
+void centroid(vec3 &a, vec3 &b, vec3 &c, vec3 &result)
 {
 	result.x = (a.x + b.x + c.x) / 3.0f;
 	result.y = (a.y + b.y + c.y) / 3.0f;
@@ -1707,7 +1707,7 @@ void centriod(vec3 &a. vec3 &b, vec3 &c, vec3 &result)
 int frontface(vec3 &a, vec3 &b, vec3 &c, vec3 &origin)
 {
 	vec3 v1 = b - a;
-	vec3 v1 = c - a;
+	vec3 v2 = c - a;
 
 	vec3 normal = vec3::crossproduct(v1, v2);
 
@@ -1720,12 +1720,65 @@ int frontface(vec3 &a, vec3 &b, vec3 &c, vec3 &origin)
 
 
 
-void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance)
+void extend_array(vec3 *point, int num_point, vec3 &origin, float distance, vec3 *result, int &num_result)
 {
-	vec3 ra, rb, rc;
-	
+	int j = 0;
+	int facedir[6];
+
+	for (int i = 0; i < num_point;)
+	{
+		extend(point[i], point[i+1], point[i+2], origin, distance,
+			   result[j], result[j+1], result[j+2]);
+		
+		// Result is extended triangle, need to create volume sides
+		// six triangles to create sides using existing points
+		// if top triangle is ABC and bottom DEF
+		// abd, abe, acd, acf, bce, bcf
+
+		result[j + 4] = point[i];			//a
+		result[j + 5] = point[i+1];			//b
+		result[j + 6] = result[j];			//d
+		facedir[0] = frontface(result[j + 4], result[j + 5], result[j + 6], origin);
+
+		result[j + 7] = point[i];			//a
+		result[j + 8] = point[i + 1];		//b
+		result[j + 9] = result[j+1];		//e
+		facedir[1] = frontface(result[j + 7], result[j + 8], result[j + 9], origin);
+
+		result[j + 10] = point[i];			//a
+		result[j + 11] = point[i + 2];		//c
+		result[j + 12] = result[j];			//d
+		facedir[2] = frontface(result[j + 10], result[j + 11], result[j + 12], origin);
+
+		result[j + 13] = point[i];			//a
+		result[j + 14] = point[i + 2];		//c
+		result[j + 15] = result[j + 2];		//f
+		facedir[3] = frontface(result[j + 13], result[j + 14], result[j + 15], origin);
 
 
+		result[j + 16] = point[i + 1];		//b
+		result[j + 17] = point[i + 2];		//c
+		result[j + 18] = result[j + 1];		//e
+		facedir[4] = frontface(result[j + 16], result[j + 17], result[j + 18], origin);
+
+
+		result[j + 19] = point[i + 1];		//b
+		result[j + 20] = point[i + 2];		//c
+		result[j + 21] = result[j + 2];		//f
+		facedir[5] = frontface(result[j + 19], result[j + 20], result[j + 21], origin);
+
+		i += 3;
+		j += 3;
+		j += 18;
+	}
+
+	num_result = j + 1;
+}
+
+
+
+void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance, vec3 &ra, vec3 &rb, vec3 &rc)
+{
 	ra = a - origin;
 	ra = ra.normalize();
 
@@ -1736,7 +1789,7 @@ void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance)
 	rc = rc.normalize();
 
 
-	a = ra * distance + origin;
-	b = rb * distance + origin;
-	c = rc * distance + origin;
+	ra = ra * distance + origin;
+	rb = rb * distance + origin;
+	rc = rc * distance + origin;
 }
