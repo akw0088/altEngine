@@ -1793,3 +1793,21 @@ void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance, vec3 &ra, v
 	rb = rb * distance + origin;
 	rc = rc * distance + origin;
 }
+
+void bezier_curve(float t, vec3 &p, const vec3 &p0, const vec3 &p1, const vec3 &p2, const vec3 &p3)
+{
+	if (t < 0)
+	{
+		p =  p0;
+		return;
+	}
+	if (t > 1)
+	{
+		p = p3;
+		return;
+	}
+
+	p = p0 * ((1 - t) * (1 - t) * (1 - t)) +
+		p2 * (3.0f * ((1 - t) * (1 - t)) * t * t) +
+		p3 * (t * t * t);
+}
