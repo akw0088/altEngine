@@ -1811,3 +1811,37 @@ void bezier_curve(float t, vec3 &p, const vec3 &p0, const vec3 &p1, const vec3 &
 		p2 * (3.0f * ((1 - t) * (1 - t)) * t * t) +
 		p3 * (t * t * t);
 }
+
+
+// just a single 0 < t < 1.0 value for multiple bezier curves, need to specify control points p1, p2  and start / end points p0, p3
+// can also include a lookat point I suppose, but later
+void polyline(vec3 *point, int num_point, float t, vec3 &p)
+{
+	float time = t * num_point;
+	int set = (int)time;
+
+	if (t < 0.0f)
+	{
+		p = point[0];
+		return;
+	}
+
+	if (t > 1.0f)
+	{
+		p = point[num_point - 1];
+		return;
+	}
+
+	if (set >= num_point - 1)
+	{
+		set = num_point - 4;
+	}
+
+	if (set < 0)
+	{
+		set = 0;
+	}
+
+	bezier_curve(time - set, p, point[set], point[set+1], point[set + 2], point[set + 3]);
+}
+
