@@ -84,11 +84,29 @@ int ShadowVolume::CreateVolume(vec3 *pVertex, int *pIndex, int num_face, vec3 &v
 	// Delete the temporary edge list
 	delete[] pEdges;
 
+
+
+
+	int *index_array = new int [num_vert];
+
+	for( int i = 0; i < num_vert; i++)
+	{	
+		index_array[i] = i;
+	}
+	vbo = gfx.CreateVertexBuffer(vert_array, num_vert);
+	ibo = gfx.CreateIndexBuffer(index_array, num_vert); 
+
+	delete [] index_array;	
 	return 0;
 }
 
+
+
 int ShadowVolume::Render()
 {
+	gfx.SelectIndexBuffer(ibo);
+	gfx.SelectVertexBuffer(vbo);
+	gfx.DrawArrayTri(0, 0, num_vert, num_vert);
 	/*
 	glBegin(GL_TRIANGLES);
 	for (int i = 0; i < m_dwNumVertices; i++)
