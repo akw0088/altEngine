@@ -28,7 +28,7 @@ void ShadowVolume::AddEdge(int *pEdge, int &num_edge, int v0, int v1)
 	num_edge++;
 }
 
-int ShadowVolume::CreateVolume(vec3 *pVertex, int *pIndex, int num_face, vec3 &vLight)
+int ShadowVolume::CreateVolume(Graphics &gfx, vec3 *pVertex, int *pIndex, int num_face, vec3 &vLight)
 {
 	// Allocate a temporary edge list
 	int *pEdges = new int[num_face * 6];
@@ -102,7 +102,7 @@ int ShadowVolume::CreateVolume(vec3 *pVertex, int *pIndex, int num_face, vec3 &v
 
 
 
-int ShadowVolume::Render()
+int ShadowVolume::Render(Graphics &gfx)
 {
 	gfx.SelectIndexBuffer(ibo);
 	gfx.SelectVertexBuffer(vbo);

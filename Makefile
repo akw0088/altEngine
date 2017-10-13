@@ -34,6 +34,7 @@ SOURCES_CPP := 	xmain.cpp \
 		shader_d3d9.cpp \
 		shader_d3d11.cpp \
 		shader_vulkan.cpp \
+		shadow_volume.cpp \
 		sin_table.cpp \
 		speaker.cpp \
 		trigger.cpp \

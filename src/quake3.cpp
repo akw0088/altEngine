@@ -9249,7 +9249,7 @@ void Quake3::handle_func_platform(Entity *ent)
 
 void Quake3::handle_func_bobbing(Entity *entity)
 {
-	Entity *ref = entity;
+	//Entity *ref = entity;
 	int wait = 10;
 
 	sprintf(entity->target, " ");
@@ -9266,7 +9266,7 @@ void Quake3::handle_func_bobbing(Entity *entity)
 
 void Quake3::handle_func_train(Entity *entity)
 {
-	Entity *ref = entity;
+	//Entity *ref = entity;
 
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
 	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 8.5f, 75.0f, 100);

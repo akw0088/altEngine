@@ -514,8 +514,8 @@ int request_clipboard(Display *dpy, Window target_window)
     Window owner, root;
     int screen;
     Atom sel, target_property, utf8;
-    XEvent ev;
-    XSelectionEvent *sev;
+    //XEvent ev;
+    //XSelectionEvent *sev;
 
     screen = DefaultScreen(dpy);
     root = RootWindow(dpy, screen);
