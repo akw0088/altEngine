@@ -36,7 +36,7 @@ void Model::load(Graphics &gfx, char *file)
 	}
 
 	num_vertex = *((int *)model_file);
-	model_array = (vertex_t *)(model_file + 4);
+	model_vertex_array = (vertex_t *)(model_file + 4);
 
 //	create_box(gfx, aabb);
 	make_aabb();
@@ -50,13 +50,14 @@ void Model::load(Graphics &gfx, char *file)
 	}
 
 	num_index = *((int *)index_file);
+	model_index_array = (int *)(index_file + 4);
 
-	model_vertex = gfx.CreateVertexBuffer(model_array, num_vertex);
-	model_index = gfx.CreateIndexBuffer(index_file + 4, num_index);
-	delete [] index_file;
-	index_file = NULL;
-	delete [] model_file;
-	model_file = NULL;
+	model_vertex = gfx.CreateVertexBuffer(model_vertex_array, num_vertex);
+	model_index = gfx.CreateIndexBuffer(model_index_array, num_index);
+//	delete [] index_file;
+//	index_file = NULL;
+//	delete [] model_file;
+//	model_file = NULL;
 
 	model_tex = load_texture(gfx, tga_file, false, false);
 	if (model_tex == 0)
@@ -96,7 +97,8 @@ Model::Model(Entity *entity)
 	box_vertex = 0;
 	box_index = 0;
 	model_file = NULL;
-	model_array = NULL;
+	model_index_array = NULL;
+	model_vertex_array = NULL;
 	center = vec3();
 	rail_trail = false;
 	lightning_trail = false;
@@ -126,7 +128,8 @@ void Model::clone(Model &model)
 	center = model.center;
 	box_index = model.box_index;
 	box_vertex = model.box_vertex;
-	model_array = model.model_array;
+	model_index_array = model.model_index_array;
+	model_vertex_array = model.model_vertex_array;
 	model_index = model.model_index;
 	model_tex = model.model_tex;
 	model_vertex = model.model_vertex;
@@ -151,21 +154,21 @@ void Model::make_aabb()
 	vec3 sum = vec3();
 	for (int i = 0; i < num_vertex; i++)
 	{
-		sum += model_array[i].position;
+		sum += model_vertex_array[i].position;
 
-		if (model_array[i].position.x < aabb[0].x)
-			aabb[0].x = model_array[i].position.x;
-		else if (model_array[i].position.y < aabb[0].y)
-			aabb[0].y = model_array[i].position.y;
-		else if (model_array[i].position.z < aabb[0].z)
-			aabb[0].z = model_array[i].position.z;
+		if (model_vertex_array[i].position.x < aabb[0].x)
+			aabb[0].x = model_vertex_array[i].position.x;
+		else if (model_vertex_array[i].position.y < aabb[0].y)
+			aabb[0].y = model_vertex_array[i].position.y;
+		else if (model_vertex_array[i].position.z < aabb[0].z)
+			aabb[0].z = model_vertex_array[i].position.z;
 
-		if (model_array[i].position.x > aabb[7].x)
-			aabb[7].x = model_array[i].position.x;
-		else if (model_array[i].position.y > aabb[7].y)
-			aabb[7].y = model_array[i].position.y;
-		else if (model_array[i].position.z > aabb[7].z)
-			aabb[7].z = model_array[i].position.z;
+		if (model_vertex_array[i].position.x > aabb[7].x)
+			aabb[7].x = model_vertex_array[i].position.x;
+		else if (model_vertex_array[i].position.y > aabb[7].y)
+			aabb[7].y = model_vertex_array[i].position.y;
+		else if (model_vertex_array[i].position.z > aabb[7].z)
+			aabb[7].z = model_vertex_array[i].position.z;
 	}
 	center = sum / (float)num_vertex;
 	// binary order
@@ -682,7 +685,8 @@ Model::Model()
 	box_vertex = 0;
 	box_index = 0;
 	model_file = NULL;
-	model_array = NULL;
+	model_vertex_array = NULL;
+	model_index_array = NULL;
 	center = vec3();
 	rail_trail = false;
 	lightning_trail = false;

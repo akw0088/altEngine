@@ -95,6 +95,7 @@ void Quake3::init(Engine *altEngine)
 	//sound/player/fry.wav
 
 	load_models(engine->gfx);
+
 //	load_q1_models(engine->gfx);
 }
 
@@ -102,7 +103,6 @@ void Quake3::load(gametype_t type)
 {
 	last_spawn = 0;
 	gametype = type;
-
 }
 
 void Quake3::unload()
@@ -9258,7 +9258,7 @@ void Quake3::handle_func_bobbing(Entity *entity)
 
 	if (entity->trigger)
 	{
-		wait = entity->trigger->timeout_value;
+		wait = (int)entity->trigger->timeout_value;
 	}
 
 	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 3.0f, 75.0f, wait);

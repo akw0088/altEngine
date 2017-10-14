@@ -7,12 +7,12 @@ class Light
 {
 public:
 	Light(Entity *entity, Graphics &gfx, int num, float scale);
-	void render_shadow_volumes(int current_light);
-	void generate_volumes(Bsp &map);
+	void render_shadow_volumes(Graphics &gfx, int current_light);
+	void generate_map_volumes(Bsp &map);
+	void generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list);
 
 	void destroy(Graphics &gfx);
 	void generate_cubemaps(Graphics &gfx);
-	void extend(Edge &edge_list, vec3 position, int current_light);
 
 	Entity	*entity;
 	unsigned int fbo_shadowmaps[6];
@@ -24,7 +24,7 @@ public:
 	matrix4 shadow_projection;
 	matrix4 shadow_matrix[6];
 
-
+	ShadowVolume shadow;
 	int shadow_flag;
 
 	vec3	color;
@@ -35,8 +35,6 @@ public:
 	float	lightmap_scale;
 	int		timer;
 	unsigned int		light_num;
-	vector<shadowvol_t>	shadow_list;
-	Edge	edge_list;
 };
 
 #endif

@@ -642,6 +642,8 @@ void Graphics::StencilFunc(char *op, int ref, int mask)
 		glStencilFunc(GL_EQUAL, ref, mask);
 	else if (strcmp(op, "never") == 0)
 		glStencilFunc(GL_NEVER, ref, mask);
+	else if (strcmp(op, ">=") == 0)
+		glStencilFunc(GL_GEQUAL, ref, mask);
 
 #ifdef ERROR_CHECK
 	error_check();

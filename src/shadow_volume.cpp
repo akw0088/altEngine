@@ -3,6 +3,14 @@
 ShadowVolume::ShadowVolume()
 {
 	num_vert = 0;
+	vbo = -1;
+	ibo = -1;
+	position = vec3(0.0f, 0.0f, 0.0f);
+
+	for (int i = 0; i < MAX_VERT; i++)
+	{
+		index_array[i] = i;
+	}
 }
 
 void ShadowVolume::AddEdge(int *pEdge, int &num_edge, int v0, int v1)
@@ -28,15 +36,17 @@ void ShadowVolume::AddEdge(int *pEdge, int &num_edge, int v0, int v1)
 	num_edge++;
 }
 
-int ShadowVolume::CreateVolume(Graphics &gfx, vec3 *pVertex, int *pIndex, int num_face, vec3 &vLight)
+int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, int num_face, vec3 &vLight)
 {
+	int num_edge = 0;
+	num_vert = 0;
+
 	// Allocate a temporary edge list
 	int *pEdges = new int[num_face * 6];
 	if (pEdges == NULL)
 	{
 		return -1;
 	}
-	int num_edge = 0;
 
 	// For each face
 	for (int i = 0; i < num_face; i++)
@@ -45,9 +55,9 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vec3 *pVertex, int *pIndex, int nu
 		int wFace1 = pIndex[3 * i + 1];
 		int wFace2 = pIndex[3 * i + 2];
 
-		vec3 v0 = pVertex[wFace0];
-		vec3 v1 = pVertex[wFace1];
-		vec3 v2 = pVertex[wFace2];
+		vec3 v0 = pVertex[wFace0].position;
+		vec3 v1 = pVertex[wFace1].position;
+		vec3 v2 = pVertex[wFace2].position ;
 
 		// Transform vertices
 		vec3 vCross1 = v2 - v1;
@@ -65,9 +75,8 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vec3 *pVertex, int *pIndex, int nu
 
 	for (int i = 0; i < num_edge; i++)
 	{
-
-		vec3 v1 = pVertex[pEdges[2 * i + 0]];
-		vec3 v2 = pVertex[pEdges[2 * i + 1]];
+		vec3 v1 = pVertex[pEdges[2 * i + 0]].position;
+		vec3 v2 = pVertex[pEdges[2 * i + 1]].position;
 		vec3 v3 = v1 - vLight * 500;
 		vec3 v4 = v2 - vLight * 500;
 
@@ -84,36 +93,29 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vec3 *pVertex, int *pIndex, int nu
 	// Delete the temporary edge list
 	delete[] pEdges;
 
-
-
-
-	int *index_array = new int [num_vert];
-
-	for( int i = 0; i < num_vert; i++)
-	{	
-		index_array[i] = i;
+	if (vbo != -1)
+	{
+		gfx.DeleteVertexBuffer(vbo);
+		vbo = -1;
 	}
+
+	if (ibo != -1)
+	{
+		gfx.DeleteIndexBuffer(ibo);
+		ibo = -1;
+	}
+
 	vbo = gfx.CreateVertexBuffer(vert_array, num_vert);
 	ibo = gfx.CreateIndexBuffer(index_array, num_vert); 
-
-	delete [] index_array;	
 	return 0;
 }
 
 
 
-int ShadowVolume::Render(Graphics &gfx)
+int ShadowVolume::render(Graphics &gfx)
 {
 	gfx.SelectIndexBuffer(ibo);
 	gfx.SelectVertexBuffer(vbo);
 	gfx.DrawArrayTri(0, 0, num_vert, num_vert);
-	/*
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < m_dwNumVertices; i++)
-	{
-		glVertex3f(m_pVertices[i].x, m_pVertices[i].y, m_pVertices[i].z);
-	}
-	glEnd();
-	*/
 	return 0;
 }

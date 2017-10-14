@@ -3,6 +3,7 @@
 
 #include "include.h"
 
+#define MAX_VERT 8192
 
 typedef struct
 {
@@ -17,13 +18,16 @@ class ShadowVolume
 {
 public:
 	ShadowVolume();
-	int CreateVolume(Graphics &gfx, vec3 *pVertex, int *pIndex, int num_vert, vec3 &light_pos);
+	int CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, int num_face, vec3 &vLight);
 	void AddEdge(int *pEdge, int &num_edges, int v0, int v1);
-	int Render(Graphics &gfx);
+	int render(Graphics &gfx);
 
+	vec3 position;
 private:
-	vec3	vert_array[4096]; // Vertex data for rendering shadow volume
+	vec3	vert_array[MAX_VERT]; // Vertex data for rendering shadow volume
+	int		index_array[MAX_VERT];
 	int     num_vert;
+
 	int	vbo;
 	int	ibo;
 };

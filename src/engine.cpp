@@ -91,10 +91,14 @@ Engine::Engine()
 	enable_portal = false;
 
 #ifdef OPENGL
-	render_mode = MODE_INDIRECT;
+//	render_mode = MODE_INDIRECT;
+	render_mode = MODE_SHADOWVOL;
 #else
 	render_mode = MODE_FORWARD;
 #endif
+
+
+
 	num_hash = 0;
 	net_port = 65535;
 
@@ -167,7 +171,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	qport = rand();
 
 #ifdef OPENGL
-	render_mode = MODE_INDIRECT;
+	render_mode = MODE_SHADOWVOL;
+//	render_mode = MODE_INDIRECT;
 	//glEnable(GL_STENCIL_TEST);
 	glStencilMask(0x00); // disable writes to stencil
 	glClearStencil(0x00); // clear stencil to zero
@@ -669,15 +674,14 @@ void Engine::load(char *level)
 		gfx.bindFramebuffer(0);
 	}
 
-
 	if (render_mode == MODE_SHADOWVOL)
 	{
-		for (unsigned int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
 			{
-				entity_list[i]->light->generate_volumes(q3map);
-				//			entity_list[i]->rigid->angular_velocity f= vec3();
+				entity_list[i]->light->generate_map_volumes(q3map);
+				entity_list[i]->light->generate_ent_volumes(gfx, entity_list);
 			}
 		}
 	}
@@ -935,36 +939,36 @@ void Engine::render(double last_frametime)
 		matrix4 mvp;
 
 		gfx.clear();
-		gfx.Blend(true);
-		render_scene(false); // render without lights, fill stencil mask, render with lights
-		gfx.Blend(false);
-
 		gfx.Color(false);
+		render_scene(false); // render without lights, fill stencil mask, render with lights
 		gfx.Stencil(true);
-		gfx.Depth(false);
+		gfx.Depth(false); // turn off depth writes
 		gfx.StencilFunc("always", 0, 0);
 
+		gfx.CullFace(0);
 		gfx.StencilOp("keep", "keep", "incr"); // increment shadows that pass depth
 		render_shadow_volumes(0);
 
-		gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
 		gfx.CullFace(1);
+		gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
 		render_shadow_volumes(0);
 
 		gfx.Depth(true);
 		gfx.Color(true);
 		gfx.CullFace(0);
 
-		gfx.DepthFunc("<="); // is this necessary?
+		gfx.DepthFunc("<="); // depth already filled, need <=
 		gfx.StencilOp("keep", "keep", "keep");
 
 		//all lit surfaces will correspond to a 0 in the stencil buffer
 		//all shadowed surfaces will be one
-		gfx.StencilFunc("equal", 0, 1);
+		gfx.StencilFunc(">=", 0, ~0);
 		// render with lights
 		gfx.cleardepth();
 		render_scene(true);
 
+		if (input.scores)
+			render_shadow_volumes(0);
 
 		gfx.DepthFunc("<");
 		gfx.Stencil(false);
@@ -1802,21 +1806,43 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 
 void Engine::render_shadow_volumes(int current_light)
 {
-	matrix4 mvp;
 	matrix4 transformation;
+	matrix4 matrix;
 
+	Player *player = entity_list[find_type(ENT_PLAYER, 0)]->player;
+
+	global.Select();
+	camera_frame.set(transformation);
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
+
 		if (entity_list[i]->light)
 		{
-			camera_frame.set(transformation);
+			if (entity_list[i]->light->light_num == player->current_light)
+			{
+				if (input.scores)
+				{
+					shadow_light = i;
+					printf("selecting light %d for shadows\n", i);
+				}
 
-			mvp = transformation * projection;
-			global.Select();
-			global.Params(mvp, 0);
-			entity_list[i]->light->render_shadow_volumes(current_light);
-//			gfx.SelectShader(0);
+				if (entity_list[i]->rigid)
+				{
+					vec3 old_pos = entity_list[i]->position;
+					entity_list[i]->position = entity_list[i]->light->shadow.position;
+					entity_list[i]->rigid->get_matrix(matrix.m);
+					entity_list[i]->position = old_pos;
+
+					matrix4 mvp = transformation.premultiply(matrix.m) * projection;
+					global.Params(mvp, 0);
+					entity_list[i]->light->render_shadow_volumes(gfx, current_light);
+					break;
+					//			gfx.SelectShader(0);
+				}
+			}
 		}
+
+
 	}
 }
 
@@ -2534,6 +2560,18 @@ void Engine::step(int tick)
 	}
 
 	game->step(tick);
+
+	if (render_mode == MODE_SHADOWVOL)
+	{
+		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
+		{
+			if (entity_list[i]->light)
+			{
+				//				entity_list[i]->light->generate_map_volumes(q3map);
+				entity_list[i]->light->generate_ent_volumes(gfx, entity_list);
+			}
+		}
+	}
 
 	dynamics();
 
