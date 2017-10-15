@@ -938,6 +938,7 @@ void Engine::render(double last_frametime)
 	{
 		matrix4 mvp;
 		bool zpass = true;
+		bool zfail = false;
 
 
 		if (zpass)
@@ -969,7 +970,6 @@ void Engine::render(double last_frametime)
 			//all shadowed surfaces will be one
 			gfx.StencilFunc(GEQUAL, 0, ~0);
 			// render with lights
-			gfx.cleardepth();
 			render_scene(true);
 
 			if (input.scores)
@@ -978,7 +978,7 @@ void Engine::render(double last_frametime)
 			gfx.DepthFunc(LESS);
 			gfx.Stencil(false);
 		}
-		else
+		else if (zfail)
 		{
 			// Depth FAIL Stencil Shadows (need caps)
 			gfx.clear();
@@ -1006,7 +1006,6 @@ void Engine::render(double last_frametime)
 			//all shadowed surfaces will be one
 			gfx.StencilFunc(GEQUAL, 0, ~0);
 			// render with lights
-			gfx.cleardepth();
 			render_scene(true);
 
 			if (input.scores)
@@ -1015,6 +1014,56 @@ void Engine::render(double last_frametime)
 			gfx.DepthFunc(LESS);
 			gfx.Stencil(false);
 		}
+		else
+		{
+#ifdef OPENGL
+			// Depth PASS Stencil Shadows -- using two sided stencil
+			//(allows single call to draw shadow volumes instead of two)
+			gfx.clear();
+			render_scene(false); // render without lights, fill stencil mask, render with lights
+
+
+			gfx.Depth(false); // turn off depth writes
+			gfx.Color(false);
+			gfx.CullFace(NONE);
+			gfx.Stencil(true);
+			glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
+			glActiveStencilFaceEXT(GL_BACK);
+			glStencilOp(GL_KEEP,            // stencil test fail
+				GL_KEEP,            // depth test fail
+				GL_DECR_WRAP_EXT);  // depth test pass
+				glStencilMask(~0);
+			gfx.StencilFunc(ALWAYS, 0, ~0);
+			glActiveStencilFaceEXT(GL_FRONT);
+			glStencilOp(GL_KEEP,            // stencil test fail
+				GL_KEEP,            // depth test fail
+				GL_INCR_WRAP_EXT);  // depth test pass
+				glStencilMask(~0);
+			gfx.StencilFunc(ALWAYS, 0, ~0);
+			render_shadow_volumes();
+
+			gfx.Depth(true);
+			gfx.Color(true);
+
+			gfx.DepthFunc(LEQUAL); // depth already filled, need <=
+			gfx.StencilOp(KEEP, KEEP, KEEP);
+
+			//all lit surfaces will correspond to a 0 in the stencil buffer
+			//all shadowed surfaces will be one
+			gfx.StencilFunc(GEQUAL, 0, ~0);
+			// render with lights
+//			gfx.cleardepth();
+			gfx.CullFace(3);
+			render_scene(true);
+
+			if (input.scores)
+				render_shadow_volumes();
+
+			gfx.DepthFunc(LESS);
+			gfx.Stencil(false);
+#endif
+		}
+
 
 		//render menu
 		if (menu.chatmode == false)
