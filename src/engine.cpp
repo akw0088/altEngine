@@ -1913,8 +1913,6 @@ void Engine::render_shadow_volumes()
 	matrix4 transformation;
 	matrix4 matrix;
 
-	Player *player = entity_list[find_type(ENT_PLAYER, 0)]->player;
-
 	global.Select();
 	camera_frame.set(transformation);
 	for (unsigned int i = 0; i < entity_list.size(); i++)
