@@ -1515,17 +1515,17 @@ void show_hw_info()
 	switch (platform)
 	{
 	case 0x0:
-		printf("CPU:\t\tIntel\n");
+		debugf("CPU:             Intel\n");
 		break;
 	case 0x7:
-		printf("CPU:\t\tAMD Bulldozer\n");
+		debugf("CPU:             AMD Bulldozer\n");
 		break;
 	case 0x8:
-		printf("CPU:\t\tAMD K8\n");
+		debugf("CPU:             AMD K8\n");
 		break;
 	}
 
-	printf("Frequency:\t%.1f ghz\n", freq / 1000.0f);
+	debugf("Frequency:     %.1f ghz\n", freq / 1000.0f);
 #endif
 
 	struct cpuinfo	info = { {0} };
@@ -1536,42 +1536,40 @@ void show_hw_info()
 #ifdef WIN32
 	ULONGLONG mem_kb = 0;
 	GetPhysicallyInstalledSystemMemory(&mem_kb);
-	printf("RAM:\t\t%.2f GB\n", (float)(mem_kb / (1024 * 1024)));
+	debugf("RAM:             %.2f GB\n", (float)(mem_kb / (1024 * 1024)));
 #endif
 
 #ifdef OPENGL
-	printf("OpenGL Version:\t%s\n", glGetString(GL_VERSION));
-	printf("GLSL Version:\t%s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	printf("Vendor:\t\t%s\n", glGetString(GL_VENDOR));
-	printf("GPU:\t\t%s\n", glGetString(GL_RENDERER));
+	debugf("GL Version:    %s\n", glGetString(GL_VERSION));
+	debugf("GLSL Version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	debugf("Vendor:         %s\n", glGetString(GL_VENDOR));
+	debugf("GPU:             %s\n", glGetString(GL_RENDERER));
 	char *vendor = (char *)glGetString(GL_VENDOR);
 	if (vendor == NULL)
 	{
-		printf("Vendor is NULL, does you GPU support OpenGL 4.4?\n");
+		debugf("Vendor is NULL, does you GPU support OpenGL 4.4?\n");
 	}
 
 
 	if (vendor && (strstr(vendor, "nvidia") || strstr(vendor, "NVIDIA")))
 	{
-#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
+		#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
 		int total_mem_kb = 0;
 		glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
-		printf("GPU RAM:\t%.2f GB\n", (float)(total_mem_kb / (1024 * 1024)));
+		debugf("GPU RAM:        %.2f GB\n", (float)(total_mem_kb / (1024 * 1024)));
 	}
 	else if (vendor && strstr(vendor, "Intel"))
 	{
-		printf("GPU RAM:\t\tUsing system ram\n");
+		debugf("GPU RAM:      Using system ram\n");
 	}
 	else if (vendor)
 	{
-#ifdef WIN32
 		UINT n = wglGetGPUIDsAMD(0, 0);
 		UINT *ids = new UINT[n];
 		size_t total_mem_mb = 0;
 		wglGetGPUIDsAMD(n, ids);
 		wglGetGPUInfoAMD(ids[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(size_t), &total_mem_mb);
-		printf("GPU RAM:\t%.2f GB\n", (float)(total_mem_mb / 1024));
-#endif
+		debugf("GPU RAM:      %.2f GB\n", (float)(total_mem_mb / 1024));
 	}
 #endif
 }
@@ -1692,106 +1690,6 @@ void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3
 //	printf("pterm %04.2f iterm %04.2f dterm %04.2f\n", pTerm, iTerm, dTerm);
 
 	output += pTerm + iTerm + dTerm;
-}
-
-
-
-void centroid(vec3 &a, vec3 &b, vec3 &c, vec3 &result)
-{
-	result.x = (a.x + b.x + c.x) / 3.0f;
-	result.y = (a.y + b.y + c.y) / 3.0f;
-	result.z = (a.z + b.z + c.z) / 3.0f;
-}
-
-
-int frontface(vec3 &a, vec3 &b, vec3 &c, vec3 &origin)
-{
-	vec3 v1 = b - a;
-	vec3 v2 = c - a;
-
-	vec3 normal = vec3::crossproduct(v1, v2);
-
-	if (origin * normal > 0.0f)
-	{
-		return 0;
-	}
-	return 1;
-}
-
-
-
-void extend_array(vec3 *point, int num_point, vec3 &origin, float distance, vec3 *result, int &num_result)
-{
-	int j = 0;
-	int facedir[6];
-
-	for (int i = 0; i < num_point;)
-	{
-		extend(point[i], point[i+1], point[i+2], origin, distance,
-			   result[j], result[j+1], result[j+2]);
-		
-		// Result is extended triangle, need to create volume sides
-		// six triangles to create sides using existing points
-		// if top triangle is ABC and bottom DEF
-		// abd, abe, acd, acf, bce, bcf
-
-		result[j + 4] = point[i];			//a
-		result[j + 5] = point[i+1];			//b
-		result[j + 6] = result[j];			//d
-		facedir[0] = frontface(result[j + 4], result[j + 5], result[j + 6], origin);
-
-		result[j + 7] = point[i];			//a
-		result[j + 8] = point[i + 1];		//b
-		result[j + 9] = result[j+1];		//e
-		facedir[1] = frontface(result[j + 7], result[j + 8], result[j + 9], origin);
-
-		result[j + 10] = point[i];			//a
-		result[j + 11] = point[i + 2];		//c
-		result[j + 12] = result[j];			//d
-		facedir[2] = frontface(result[j + 10], result[j + 11], result[j + 12], origin);
-
-		result[j + 13] = point[i];			//a
-		result[j + 14] = point[i + 2];		//c
-		result[j + 15] = result[j + 2];		//f
-		facedir[3] = frontface(result[j + 13], result[j + 14], result[j + 15], origin);
-
-
-		result[j + 16] = point[i + 1];		//b
-		result[j + 17] = point[i + 2];		//c
-		result[j + 18] = result[j + 1];		//e
-		facedir[4] = frontface(result[j + 16], result[j + 17], result[j + 18], origin);
-
-
-		result[j + 19] = point[i + 1];		//b
-		result[j + 20] = point[i + 2];		//c
-		result[j + 21] = result[j + 2];		//f
-		facedir[5] = frontface(result[j + 19], result[j + 20], result[j + 21], origin);
-
-		i += 3;
-		j += 3;
-		j += 18;
-	}
-
-	num_result = j + 1;
-}
-
-
-
-void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance, vec3 &ra, vec3 &rb, vec3 &rc)
-{
-	ra = a - origin;
-	ra = ra.normalize();
-
-	rb = b - origin;
-	rb = rb.normalize();
-
-	rc = c - origin;
-	rc = rc.normalize();
-
-
-	ra = ra * distance + origin;
-	rb = rb * distance + origin;
-	rc = rc * distance + origin;
 }
 
 void bezier_curve(float t, vec3 &p, const vec3 &p0, const vec3 &p1, const vec3 &p2, const vec3 &p3)
