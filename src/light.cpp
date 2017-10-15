@@ -102,7 +102,7 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 												position);
 
 		// so shadow rotates with object
-		entity->model->morientation = entity_list[i]->model->morientation;
+		entity->light->shadow[num_shadowvol].morientation = entity_list[i]->model->morientation;
 		entity->light->shadow[num_shadowvol].position = entity_list[i]->position - entity_list[i]->model->center;
 		num_shadowvol++;
 

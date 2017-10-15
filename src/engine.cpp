@@ -1935,9 +1935,13 @@ void Engine::render_shadow_volumes()
 					for (int j = 0; j < entity_list[i]->light->num_shadowvol; j++)
 					{
 						vec3 old_pos = entity_list[i]->position;
+						matrix3 old_matrix = entity_list[i]->model->morientation;
+
 						entity_list[i]->position = entity_list[i]->light->shadow[j].position;
-						entity_list[i]->rigid->get_matrix(matrix.m);
+						entity_list[i]->model->morientation = entity_list[i]->light->shadow[j].morientation;
+						entity_list[i]->model->get_matrix(matrix.m);
 						entity_list[i]->position = old_pos;
+						entity_list[i]->model->morientation = old_matrix;
 
 						matrix4 mvp = transformation.premultiply(matrix.m) * projection;
 						global.Params(mvp, 0);

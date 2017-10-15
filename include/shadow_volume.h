@@ -23,6 +23,7 @@ public:
 	int render(Graphics &gfx);
 	void destroy(Graphics &gfx);
 
+	matrix3 morientation;
 	vec3 position;
 private:
 	vertex_t	vert_array[MAX_VERT]; // Vertex data for rendering shadow volume
