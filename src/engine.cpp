@@ -174,7 +174,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	render_mode = MODE_SHADOWVOL;
 //	render_mode = MODE_INDIRECT;
 	//glEnable(GL_STENCIL_TEST);
-	glStencilMask(0x00); // disable writes to stencil
+	//glStencilMask(0x00); // disable writes to stencil
 	glClearStencil(0x00); // clear stencil to zero
 	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // replace if 0xFF if passes
@@ -888,7 +888,7 @@ void Engine::render(double last_frametime)
 						if (input.scores)
 						{
 							shadow_light = i;
-							printf("selecting light %d for shadows\n", i);
+//							printf("selecting light %d for shadows\n", i);
 						}
 
 						if (input.duck == false)
@@ -939,8 +939,8 @@ void Engine::render(double last_frametime)
 		matrix4 mvp;
 
 		gfx.clear();
-		gfx.Color(false);
 		render_scene(false); // render without lights, fill stencil mask, render with lights
+		gfx.Color(false);
 		gfx.Stencil(true);
 		gfx.Depth(false); // turn off depth writes
 		gfx.StencilFunc(ALWAYS, 0, 0);
@@ -1272,6 +1272,7 @@ void Engine::render_scene(bool lights)
 	matrix4 transformation;
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
+	float temp = 0.0f;
 
 	int player = find_type(ENT_PLAYER, 0);
 	if (player != -1)
@@ -1284,6 +1285,13 @@ void Engine::render_scene(bool lights)
 	render_entities(transformation, projection, lights, false);
 	render_players(transformation, projection, lights, game->spectator);
 
+
+	if (lights == false)
+	{
+		temp = mlight2.m_brightness;
+		mlight2.set_brightness(0.75f - 1.0f);
+	}
+
 	mlight2.Select();
 	mvp = transformation * projection;
 	if (lights)
@@ -1292,6 +1300,11 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	if (lights == false)
+	{
+		mlight2.set_brightness(temp);
+	}
+
 
 #ifdef PARTICLES
 	gfx.Blend(true);

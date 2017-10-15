@@ -256,7 +256,8 @@ int mLight2::init(Graphics *gfx)
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
-	u_depth = glGetUniformLocation(program_handle, "u_depth");
+	u_depth = glGetUniformLocation(program_handle, "u_depth");
+
 	
 	return 0;
 }
