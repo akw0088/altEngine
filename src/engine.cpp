@@ -1028,8 +1028,8 @@ void Engine::render(double last_frametime)
 			gfx.CullFace(NONE);
 			gfx.Stencil(true);
 
-			glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-			glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
+			gfx.TwoSidedStencilOp(BACKFACE, KEEP, KEEP, DECR_WRAP);
+			gfx.TwoSidedStencilOp(FRONTFACE, KEEP, KEEP, INCR_WRAP);
 			gfx.StencilFunc(ALWAYS, 0, ~0);
 			render_shadow_volumes();
 

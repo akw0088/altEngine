@@ -24,6 +24,8 @@
 #define REPLACE		0x1E01
 #define INCR		0x1E02
 #define DECR		0x1E03
+#define INCR_WRAP	0x8507
+#define DECR_WRAP	0x8508
 
 
 /*
@@ -67,6 +69,7 @@ public:
 	void Stencil(bool flag);
 	void StencilFunc(int op, int ref, unsigned int mask);
 	void StencilOp(int stencil_fail, int zfail, int zpass);
+	void TwoSidedStencilOp(int face, int stencil_fail, int zfail, int zpass);
 	void DrawText(const char *str, float x, float y);
 
 	void swap();

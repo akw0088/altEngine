@@ -655,8 +655,8 @@ void Graphics::StencilFunc(int op, int ref, unsigned int mask)
 #ifdef ERROR_CHECK
 	error_check();
 #endif
-
 }
+
 
 void Graphics::DepthFunc(int op)
 {
@@ -678,8 +678,18 @@ void Graphics::StencilOp(int stencil_fail, int zfail, int zpass)
 #ifdef ERROR_CHECK
 	error_check();
 #endif
-
 }
+
+void Graphics::TwoSidedStencilOp(int face, int stencil_fail, int zfail, int zpass)
+{
+	glStencilOpSeparate(face, stencil_fail, zfail, zpass);
+
+#ifdef ERROR_CHECK
+	error_check();
+#endif
+}
+
+
 
 Shader::Shader()
 {
