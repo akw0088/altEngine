@@ -25,9 +25,11 @@ public:
 
 	vec3 position;
 private:
-	vec3	vert_array[MAX_VERT]; // Vertex data for rendering shadow volume
-	int		index_array[MAX_VERT];
-	int     num_vert;
+	vertex_t	vert_array[MAX_VERT]; // Vertex data for rendering shadow volume
+	int			index_array[MAX_VERT];
+	int			pEdges[MAX_VERT * 2];	// temporary edge list
+	int			num_vert;
+
 
 	int	vbo;
 	int	ibo;

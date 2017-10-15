@@ -41,12 +41,6 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 	int num_edge = 0;
 	num_vert = 0;
 
-	// Allocate a temporary edge list
-	int *pEdges = new int[num_face * 6];
-	if (pEdges == NULL)
-	{
-		return -1;
-	}
 
 	// For each face
 	for (int i = 0; i < num_face; i++)
@@ -60,11 +54,11 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 		vec3 v2 = pVertex[wFace2].position;
 
 		// Transform vertices
-		vec3 vCross1 = v2 - v1;
-		vec3 vCross2 = v1 - v0;
+		vec3 vCross1 = v1 - v0;
+		vec3 vCross2 = v2 - v1;
 		vec3 vNormal = vec3::crossproduct(vCross1, vCross2);
 
-		if (vNormal * vLight <= 0.0f )
+		if (vNormal * vLight >= 0.0f )
 		{
 			AddEdge(pEdges, num_edge, wFace0, wFace1);
 			AddEdge(pEdges, num_edge, wFace1, wFace2);
@@ -80,17 +74,15 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 		vec3 v4 = v2 - vLight * 512;
 
 		// Add a quad (two triangles) to the vertex list
-		vert_array[num_vert++] = v1;
-		vert_array[num_vert++] = v2;
-		vert_array[num_vert++] = v3;
+		vert_array[num_vert++].position = v1;
+		vert_array[num_vert++].position = v2;
+		vert_array[num_vert++].position = v3;
 
-		vert_array[num_vert++] = v2;
-		vert_array[num_vert++] = v4;
-		vert_array[num_vert++] = v3;
+		vert_array[num_vert++].position = v2;
+		vert_array[num_vert++].position = v4;
+		vert_array[num_vert++].position = v3;
 	}
 
-	// Delete the temporary edge list
-	delete[] pEdges;
 
 	if (vbo != -1)
 	{

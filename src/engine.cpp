@@ -1852,6 +1852,7 @@ void Engine::render_shadow_volumes()
 						matrix4 mvp = transformation.premultiply(matrix.m) * projection;
 						global.Params(mvp, 0);
 						entity_list[i]->light->render_shadow_volume(gfx, j);
+						break;
 					}
 				}
 			}

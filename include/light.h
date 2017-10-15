@@ -3,7 +3,7 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#define MAX_SHADOWVOL 8
+#define MAX_SHADOWVOL 1
 #define SHADOWVOL_MAX_DIST (800.0f)
 
 #define NUM_CUBE_FACE 6

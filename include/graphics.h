@@ -6,20 +6,24 @@
 //#define ERROR_CHECK
 
 
-#define BACKFACE	0
-#define FRONTFACE	1
+#define FRONTFACE	0x0404
+#define BACKFACE	0x0405
+#define BOTHFACE	0x0408
 
-#define LESS	0
-#define LEQUAL	1
-#define GREATER	2
-#define GEQUAL	3
-#define ALWAYS	4
-#define EQUAL	5
-#define NEVER	6
+#define LESS		0x0201
+#define EQUAL		0x0202
+#define LEQUAL		0x0203
+#define GREATER		0x0204
+#define NOTEQUAL	0x0205
+#define GEQUAL		0x0206
+#define ALWAYS		0x0207
 
-#define KEEP 0
-#define DECR 1
-#define INCR 1
+#define NEVER		0x0200
+
+#define KEEP		0x1E00
+#define REPLACE		0x1E01
+#define INCR		0x1E02
+#define DECR		0x1E03
 
 
 /*
@@ -61,7 +65,7 @@ public:
 	void Color(bool flag);
 	void DepthFunc(int op);
 	void Stencil(bool flag);
-	void StencilFunc(int op, int ref, int mask);
+	void StencilFunc(int op, int ref, unsigned int mask);
 	void StencilOp(int stencil_fail, int zfail, int zpass);
 	void DrawText(const char *str, float x, float y);
 
@@ -85,7 +89,7 @@ public:
 	void SelectIndexBuffer(int handle);
 	void DeleteIndexBuffer(int handle);
 
-	int  CreateVertexBuffer(void *index_buffer, int num_verts);
+	int  CreateVertexBuffer(void *vertex_buffer, int num_verts);
 	
 	void SelectVertexBuffer(int handle);
 	void DeleteVertexBuffer(int handle);

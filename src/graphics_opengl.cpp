@@ -593,11 +593,11 @@ void Graphics::SelectShader(int program)
 
 void Graphics::CullFace(int mode)
 {
-	if (mode == 0)
+	if (mode == BACKFACE)
 		glCullFace(GL_BACK);
-	else if (mode == 1)
+	else if (mode == FRONTFACE)
 		glCullFace(GL_FRONT);
-	else if (mode == 2)
+	else if (mode == BOTHFACE)
 		glDisable(GL_CULL_FACE);
 	else
 		glEnable(GL_CULL_FACE);
@@ -634,7 +634,7 @@ void Graphics::Stencil(bool flag)
 
 }
 
-void Graphics::StencilFunc(int op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, unsigned int mask)
 {
 	if (op == ALWAYS)
 		glStencilFunc(GL_ALWAYS, ref, mask);
