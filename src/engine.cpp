@@ -4123,7 +4123,6 @@ void Engine::load_entities()
 
 void Engine::fullscreen()
 {
-#ifdef WIN32
 	if (fullscreen_timer == 0)
 	{
 		HMONITOR hmon;
@@ -4137,14 +4136,13 @@ void Engine::fullscreen()
 		int yr = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
 
 		static LONG old_style;
-		static int	new_style = WS_CHILD | WS_VISIBLE;
+		static LONG	new_style = WS_CHILD | WS_VISIBLE;
 
-		old_style = SetWindowLong(hwnd, GWL_STYLE, new_style);
+		old_style = SetWindowLongPtr(hwnd, GWL_STYLE, new_style);
 		new_style = old_style;
 		SetWindowPos(hwnd, HWND_TOP, 0, 0, xr, yr, 0);
 		fullscreen_timer = TICK_RATE;
 	}
-#endif
 }
 
 void Engine::clean_entity(int index)
