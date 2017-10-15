@@ -66,7 +66,6 @@ void Light::generate_map_volumes(Bsp &map)
 
 void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 {
-	int j = 0;
 	num_shadowvol = 0;
 	for (unsigned int i = 100; i < entity_list.size(); i++)
 	{

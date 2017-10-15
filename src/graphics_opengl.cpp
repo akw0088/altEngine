@@ -648,7 +648,7 @@ void Graphics::StencilFunc(int op, int ref, unsigned int mask)
 		glStencilFunc(GL_GREATER, ref, mask);
 	else if (op == LESS)
 		glStencilFunc(GL_LESS, ref, mask);
-	else if (op = LEQUAL)
+	else if (op == LEQUAL)
 		glStencilFunc(GL_LEQUAL, ref, mask);
 
 
