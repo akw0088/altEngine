@@ -675,7 +675,7 @@ void Engine::load(char *level)
 		gfx.bindFramebuffer(0);
 	}
 
-	if (render_mode == MODE_SHADOWVOL)
+	if (render_mode == MODE_SHADOWVOL && enable_stencil)
 	{
 		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 		{
@@ -2674,7 +2674,7 @@ void Engine::step(int tick)
 
 	game->step(tick);
 
-	if (render_mode == MODE_SHADOWVOL)
+	if (render_mode == MODE_SHADOWVOL && enable_stencil)
 	{
 		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 		{
