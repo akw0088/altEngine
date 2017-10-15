@@ -937,7 +937,7 @@ void Engine::render(double last_frametime)
 	if (render_mode == MODE_SHADOWVOL)
 	{
 		matrix4 mvp;
-		bool zpass = true;
+		bool zpass = false;
 		bool zfail = false;
 
 
@@ -1027,18 +1027,9 @@ void Engine::render(double last_frametime)
 			gfx.Color(false);
 			gfx.CullFace(NONE);
 			gfx.Stencil(true);
-			glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
-			glActiveStencilFaceEXT(GL_BACK);
-			glStencilOp(GL_KEEP,            // stencil test fail
-				GL_KEEP,            // depth test fail
-				GL_DECR_WRAP_EXT);  // depth test pass
-				glStencilMask(~0);
-			gfx.StencilFunc(ALWAYS, 0, ~0);
-			glActiveStencilFaceEXT(GL_FRONT);
-			glStencilOp(GL_KEEP,            // stencil test fail
-				GL_KEEP,            // depth test fail
-				GL_INCR_WRAP_EXT);  // depth test pass
-				glStencilMask(~0);
+
+			glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
+			glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
 			gfx.StencilFunc(ALWAYS, 0, ~0);
 			render_shadow_volumes();
 
