@@ -16,8 +16,10 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 	timer = 0;
 	lightmap_scale = scale;
 
-	memset(quad_tex, 0, sizeof(unsigned int) * 6);
-	memset(depth_tex, 0, sizeof(unsigned int) * 6);
+	memset(quad_tex, 0, sizeof(unsigned int) * NUM_CUBE_FACE);
+	memset(depth_tex, 0, sizeof(unsigned int) * NUM_CUBE_FACE);
+
+	num_shadowvol = 0;
 }
 
 void Light::generate_cubemaps(Graphics &gfx)
@@ -27,9 +29,9 @@ void Light::generate_cubemaps(Graphics &gfx)
 
 	if (light_num != 999)
 	{
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < NUM_CUBE_FACE; i++)
 		{
-			gfx.setupFramebuffer((int)(1024 * lightmap_scale), (int)(1024 * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
+			gfx.setupFramebuffer((int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), (int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
 		}
 	}
 #endif
@@ -37,21 +39,23 @@ void Light::generate_cubemaps(Graphics &gfx)
 
 void Light::destroy(Graphics &gfx)
 {
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < NUM_CUBE_FACE; i++)
 	{
 		gfx.DeleteFrameBuffer(fbo_shadowmaps[i]);
 		gfx.DeleteTexture(quad_tex[i]);
 		gfx.DeleteTexture(depth_tex[i]);
 	}
+
+
+	for (int i = 0; i < MAX_SHADOWVOL; i++)
+	{
+		shadow[i].destroy(gfx);
+	}
 }
 
-void Light::render_shadow_volumes(Graphics &gfx, int current_light)
+void Light::render_shadow_volume(Graphics &gfx, int index)
 {
-	if (entity->visible)
-	{
-		shadow.render(gfx);
-	}
-//		extend(edge_list, entity->position, current_light);
+	shadow[index].render(gfx);
 }
 
 void Light::generate_map_volumes(Bsp &map)
@@ -62,20 +66,36 @@ void Light::generate_map_volumes(Bsp &map)
 
 void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 {
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	int j = 0;
+	num_shadowvol = 0;
+	for (unsigned int i = 100; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->ent_type == ENT_ITEM_ARMOR_COMBAT)
+		if (entity_list[i]->model == NULL)
+			continue;
+
+		if (entity_list[i]->visible == false)
+			continue;
+
+		vec3 dist = entity_list[i]->position - entity->position;
+
+		if (dist.magnitude() > SHADOWVOL_MAX_DIST)
 		{
-			if (entity_list[i]->visible && entity->visible)
-			{
-				shadow.CreateVolume(gfx, entity_list[i]->model->model_vertex_array, entity_list[i]->model->model_index_array, entity_list[i]->model->num_index / 3, entity->position - entity_list[i]->position);
-
-				// so shadow rotates with object
-				entity->rigid->morientation = entity_list[i]->rigid->morientation;
-				entity->light->shadow.position = entity_list[i]->position - entity_list[i]->model->center;
-			}
-
+			continue;
 		}
+
+		if (entity_list[i]->ent_type <= ENT_VISIBLE_START && entity_list[i]->ent_type >= ENT_VISIBLE_END)
+			continue;
+
+		// Probably need a test to see if either light or model moved, as static volumes dont need to be regenerated
+		shadow[num_shadowvol].CreateVolume(gfx, entity_list[i]->model->model_vertex_array, entity_list[i]->model->model_index_array, entity_list[i]->model->num_index / 3, entity->position - entity_list[i]->position);
+
+		// so shadow rotates with object
+		entity->model->morientation = entity_list[i]->model->morientation;
+		entity->light->shadow[num_shadowvol].position = entity_list[i]->position - entity_list[i]->model->center;
+		num_shadowvol++;
+
+		if (num_shadowvol >= MAX_SHADOWVOL)
+			break;
 	}
 }
 

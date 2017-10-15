@@ -3,11 +3,17 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
+#define MAX_SHADOWVOL 8
+#define SHADOWVOL_MAX_DIST (800.0f)
+
+#define NUM_CUBE_FACE 6
+#define SHADOWMAP_DEFAULT_RES 1024
+
 class Light
 {
 public:
 	Light(Entity *entity, Graphics &gfx, int num, float scale);
-	void render_shadow_volumes(Graphics &gfx, int current_light);
+	void render_shadow_volume(Graphics &gfx, int index);
 	void generate_map_volumes(Bsp &map);
 	void generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list);
 
@@ -15,26 +21,31 @@ public:
 	void generate_cubemaps(Graphics &gfx);
 
 	Entity	*entity;
-	unsigned int fbo_shadowmaps[6];
-	unsigned int quad_tex[6];
-	unsigned int depth_tex[6];
+
+	// Shadow maps
+	unsigned int fbo_shadowmaps[NUM_CUBE_FACE];
+	unsigned int quad_tex[NUM_CUBE_FACE];
+	unsigned int depth_tex[NUM_CUBE_FACE];
 	unsigned int array_tex;
 
 
-	matrix4 shadow_projection;
-	matrix4 shadow_matrix[6];
+	matrix4	shadow_projection;
+	matrix4	shadow_matrix[NUM_CUBE_FACE];
+	int		shadow_flag;
 
-	ShadowVolume shadow;
-	int shadow_flag;
 
-	vec3	color;
-	float	intensity;
-	float	attenuation;
-	bool	active;
-	bool	timer_flag;
-	float	lightmap_scale;
-	int		timer;
-	unsigned int		light_num;
+	// Shadow Volumes
+	ShadowVolume	shadow[MAX_SHADOWVOL];
+	int				num_shadowvol;
+
+	vec3			color;
+	float			intensity;
+	float			attenuation;
+	bool			active;
+	bool			timer_flag;
+	float			lightmap_scale;
+	int				timer;
+	unsigned int	light_num;
 };
 
 #endif

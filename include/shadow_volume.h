@@ -21,6 +21,7 @@ public:
 	int CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, int num_face, vec3 &vLight);
 	void AddEdge(int *pEdge, int &num_edges, int v0, int v1);
 	int render(Graphics &gfx);
+	void destroy(Graphics &gfx);
 
 	vec3 position;
 private:

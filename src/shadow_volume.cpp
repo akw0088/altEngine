@@ -118,3 +118,19 @@ int ShadowVolume::render(Graphics &gfx)
 	gfx.DrawArrayTri(0, 0, num_vert, num_vert);
 	return 0;
 }
+
+
+void ShadowVolume::destroy(Graphics &gfx)
+{
+	if (vbo != -1)
+	{
+		gfx.DeleteVertexBuffer(vbo);
+		vbo = -1;
+	}
+
+	if (ibo != -1)
+	{
+		gfx.DeleteIndexBuffer(ibo);
+		ibo = -1;
+	}
+}

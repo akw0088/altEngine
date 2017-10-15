@@ -947,11 +947,11 @@ void Engine::render(double last_frametime)
 
 		gfx.CullFace(BACKFACE);
 		gfx.StencilOp(KEEP, KEEP, INCR); // increment shadows that pass depth
-		render_shadow_volumes(0);
+		render_shadow_volumes();
 
 		gfx.CullFace(FRONTFACE);
 		gfx.StencilOp(KEEP, KEEP, DECR); // decrement shadows that backface pass depth
-		render_shadow_volumes(0);
+		render_shadow_volumes();
 
 		gfx.Depth(true);
 		gfx.Color(true);
@@ -968,7 +968,7 @@ void Engine::render(double last_frametime)
 		render_scene(true);
 
 		if (input.scores)
-			render_shadow_volumes(0);
+			render_shadow_volumes();
 
 		gfx.DepthFunc(LESS);
 		gfx.Stencil(false);
@@ -1804,7 +1804,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 }
 
 
-void Engine::render_shadow_volumes(int current_light)
+void Engine::render_shadow_volumes()
 {
 	matrix4 transformation;
 	matrix4 matrix;
@@ -1818,7 +1818,7 @@ void Engine::render_shadow_volumes(int current_light)
 
 		if (entity_list[i]->light)
 		{
-			if (entity_list[i]->light->light_num == player->current_light)
+//			if (entity_list[i]->light->light_num == player->current_light)
 			{
 				if (input.scores)
 				{
@@ -1828,16 +1828,18 @@ void Engine::render_shadow_volumes(int current_light)
 
 				if (entity_list[i]->rigid)
 				{
-					vec3 old_pos = entity_list[i]->position;
-					entity_list[i]->position = entity_list[i]->light->shadow.position;
-					entity_list[i]->rigid->get_matrix(matrix.m);
-					entity_list[i]->position = old_pos;
 
-					matrix4 mvp = transformation.premultiply(matrix.m) * projection;
-					global.Params(mvp, 0);
-					entity_list[i]->light->render_shadow_volumes(gfx, current_light);
-					break;
-					//			gfx.SelectShader(0);
+					for (int j = 0; j < entity_list[i]->light->num_shadowvol; j++)
+					{
+						vec3 old_pos = entity_list[i]->position;
+						entity_list[i]->position = entity_list[i]->light->shadow[j].position;
+						entity_list[i]->rigid->get_matrix(matrix.m);
+						entity_list[i]->position = old_pos;
+
+						matrix4 mvp = transformation.premultiply(matrix.m) * projection;
+						global.Params(mvp, 0);
+						entity_list[i]->light->render_shadow_volume(gfx, j);
+					}
 				}
 			}
 		}
@@ -2497,25 +2499,25 @@ void Engine::step(int tick)
 
 #ifndef DEDICATED
 	// Animate animated textures
-		for (unsigned int i = 0; i < q3map.anim_list.size(); i++)
+	for (unsigned int i = 0; i < q3map.anim_list.size(); i++)
+	{
+		texture_t  *tex = q3map.anim_list[i];
+
+		if (tex->num_anim == 0)
+			continue;
+
+		int texunit = tex->anim_unit;
+
+		if (tex->freq == 0)
+			continue;
+
+		if (tick_num % ((tex->freq * TICK_RATE) / TICK_RATE) == 0)
 		{
-			texture_t  *tex = q3map.anim_list[i];
-
-			if (tex->num_anim == 0)
-				continue;
-
-			int texunit = tex->anim_unit;
-
-			if (tex->freq == 0)
-				continue;
-
-			if (tick_num % ((tex->freq * TICK_RATE) / TICK_RATE) == 0)
-			{
-				int ani_index = tex->anim_count % tex->num_anim;
-				tex->texObj[texunit] = tex->texObjAnim[ani_index];
-				tex->anim_count++;
-			}
+			int ani_index = tex->anim_count % tex->num_anim;
+			tex->texObj[texunit] = tex->texObjAnim[ani_index];
+			tex->anim_count++;
 		}
+	}
 
 	spatial_testing(); // mostly sets visible flag
 #endif

@@ -20,7 +20,7 @@ public:
 	void render_scene(bool lights);
 	void render_scene_using_shadowmap(bool lights);
 	void render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend, bool vis = true);
-	void render_shadow_volumes(int current_light);
+	void render_shadow_volumes();
 
 
 	void render_shadowmaps(bool everything);
