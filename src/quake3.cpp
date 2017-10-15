@@ -2908,7 +2908,7 @@ void Quake3::step(int frame_step)
 	for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
 	{
 		Entity *ent = engine->entity_list[i];
-		if (ent->ent_type <= ENT_FUNC_START && ent->ent_type >= ENT_FUNC_END)
+		if (ent->ent_type <= ENT_FUNC_START || ent->ent_type >= ENT_FUNC_END)
 			continue;
 
 		switch (ent->ent_type)

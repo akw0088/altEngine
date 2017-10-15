@@ -56,6 +56,7 @@ bool HashTable::update(const char *key, char *value)
 //	printf("HashTable::update(%s, %s)\n", key, value);
 	int index;
 
+	int size = strlen(value) + 1;
 	for(int i = 0; i < TABLE_SIZE; i++)
 	{
 		index = hash(key, i);
@@ -65,7 +66,6 @@ bool HashTable::update(const char *key, char *value)
 
 		if (strcmp(table[index]->key, key) == 0)
 		{
-			int size = strlen(value) + 1;
 			char *nval = new char[size];
 			memcpy(nval, value, size);
 

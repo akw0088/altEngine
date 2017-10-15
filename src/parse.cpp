@@ -1603,7 +1603,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		entity.trigger->noise = true;
 
 		strcpy(entity.trigger->noise_str, value);
-		if (entity.trigger && entity.trigger->timeout_value < 0.001f)
+		if (entity.trigger->timeout_value < 0.001f)
 		{
 			if (strstr("*falling", key))
 			{

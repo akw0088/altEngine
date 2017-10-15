@@ -567,7 +567,7 @@ void Menu::handle_console(char key, Engine *altEngine)
 	case '\t':
 		for (unsigned int i = 0; i < altEngine->num_cmd; i++)
 		{
-			if (strncmp(key_buffer, altEngine->cmd_list[i], strlen(key_buffer)) == 0)
+			if (strncmp(key_buffer, altEngine->cmd_list[i], length) == 0)
 			{
 				print(altEngine->cmd_list[i]);
 			}

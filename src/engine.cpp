@@ -4,7 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-
 #define MAX_DEPTH 6
 
 // Height above desired position we allow a step to occur
@@ -402,26 +401,28 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				{
 					for (unsigned int k = 0; k < surface_list[j]->num_stage; k++)
 					{
-						surface_list[j]->stage[k].lightmap = false;
-						surface_list[j]->stage[k].blendfunc_add = false;
-						surface_list[j]->stage[k].blendfunc_blend = false;
-						surface_list[j]->stage[k].blendfunc_filter = false;
-						surface_list[j]->stage[k].blend_dst_color_one = false;
-						surface_list[j]->stage[k].blend_dst_color_one_minus_dst_alpha = false;
-						surface_list[j]->stage[k].blend_dst_color_src_alpha = false;
-						surface_list[j]->stage[k].blend_dst_color_src_color = false;
-						surface_list[j]->stage[k].blend_dst_color_zero = false;
-						surface_list[j]->stage[k].blend_one_minus_dst_color_zero = false;
-						surface_list[j]->stage[k].blend_one_minus_src_alpha_src_alpha = false;
-						surface_list[j]->stage[k].blend_one_one = false;
-						surface_list[j]->stage[k].blend_one_src_alpha = false;
-						surface_list[j]->stage[k].blend_one_src_color = false;
-						surface_list[j]->stage[k].blend_one_zero = false;
-						surface_list[j]->stage[k].blend_src_alpha_one_minus_src_alpha = false;
-						surface_list[j]->stage[k].blend_zero_one = false;
-						surface_list[j]->stage[k].blend_zero_src_alpha = false;
-						surface_list[j]->stage[k].blend_zero_src_color = false;
-						surface_list[j]->stage[k].alpha = true;
+						stage_t *stage = &surface_list[j]->stage[k];
+
+						stage->lightmap = false;
+						stage->blendfunc_add = false;
+						stage->blendfunc_blend = false;
+						stage->blendfunc_filter = false;
+						stage->blend_dst_color_one = false;
+						stage->blend_dst_color_one_minus_dst_alpha = false;
+						stage->blend_dst_color_src_alpha = false;
+						stage->blend_dst_color_src_color = false;
+						stage->blend_dst_color_zero = false;
+						stage->blend_one_minus_dst_color_zero = false;
+						stage->blend_one_minus_src_alpha_src_alpha = false;
+						stage->blend_one_one = false;
+						stage->blend_one_src_alpha = false;
+						stage->blend_one_src_color = false;
+						stage->blend_one_zero = false;
+						stage->blend_src_alpha_one_minus_src_alpha = false;
+						stage->blend_zero_one = false;
+						stage->blend_zero_src_alpha = false;
+						stage->blend_zero_src_color = false;
+						stage->alpha = true;
 					}
 //					surface_list.erase(surface_list.begin() + j);
 				}
