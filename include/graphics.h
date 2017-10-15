@@ -8,7 +8,7 @@
 
 #define FRONTFACE	0x0404
 #define BACKFACE	0x0405
-#define BOTHFACE	0x0408
+#define NONE		2
 
 #define LESS		0x0201
 #define EQUAL		0x0202

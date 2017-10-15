@@ -83,11 +83,11 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 			continue;
 		}
 
-		if (entity_list[i]->ent_type <= ENT_VISIBLE_START && entity_list[i]->ent_type >= ENT_VISIBLE_END)
+		if (entity_list[i]->ent_type <= ENT_VISIBLE_START || entity_list[i]->ent_type >= ENT_VISIBLE_END)
 			continue;
 
 //		if (entity_list[i]->ent_type != ENT_ITEM_ARMOR_COMBAT)
-//			continue;
+			//continue;
 
 
 

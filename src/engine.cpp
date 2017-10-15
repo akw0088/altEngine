@@ -937,7 +937,7 @@ void Engine::render(double last_frametime)
 	if (render_mode == MODE_SHADOWVOL)
 	{
 		matrix4 mvp;
-		bool zpass = false;
+		bool zpass = true;
 
 
 		if (zpass)

@@ -597,7 +597,7 @@ void Graphics::CullFace(int mode)
 		glCullFace(GL_BACK);
 	else if (mode == FRONTFACE)
 		glCullFace(GL_FRONT);
-	else if (mode == BOTHFACE)
+	else if (mode == NONE)
 		glDisable(GL_CULL_FACE);
 	else
 		glEnable(GL_CULL_FACE);
