@@ -89,11 +89,20 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 		if (entity_list[i]->ent_type != ENT_ITEM_ARMOR_COMBAT)
 			continue;
 
+
+		vec3 position = entity->position;// -entity_list[i]->position;
+		matrix4 matrix;
+
+
+		entity_list[i]->model->get_matrix(matrix.m);
+
+		position = entity_list[i]->model->morientation.transpose() * position;
+
 		// Probably need a test to see if either light or model moved, as static volumes dont need to be regenerated
 		shadow[num_shadowvol].CreateVolume(gfx, entity_list[i]->model->model_vertex_array,
 												entity_list[i]->model->model_index_array,
 												entity_list[i]->model->num_index / 3,
-												entity->position - entity_list[i]->position);
+												position);
 
 		// so shadow rotates with object
 		entity->model->morientation = entity_list[i]->model->morientation;

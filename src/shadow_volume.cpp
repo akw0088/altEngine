@@ -54,11 +54,11 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 		vec3 v2 = pVertex[wFace2].position;
 
 		// Transform vertices
-		vec3 vCross1 = v1 - v0;
-		vec3 vCross2 = v2 - v1;
+		vec3 vCross1 = v2 - v1;
+		vec3 vCross2 = v1 - v0;
 		vec3 vNormal = vec3::crossproduct(vCross1, vCross2);
 
-		if (vNormal * vLight >= 0.0f )
+		if (vNormal * vLight <= 0.0f )
 		{
 			AddEdge(pEdges, num_edge, wFace0, wFace1);
 			AddEdge(pEdges, num_edge, wFace1, wFace2);
@@ -70,8 +70,8 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 	{
 		vec3 v1 = pVertex[pEdges[2 * i + 0]].position;
 		vec3 v2 = pVertex[pEdges[2 * i + 1]].position;
-		vec3 v3 = v1 - vLight * 512;
-		vec3 v4 = v2 - vLight * 512;
+		vec3 v3 = v1 - vLight * 1024;
+		vec3 v4 = v2 - vLight * 1024;
 
 		// Add a quad (two triangles) to the vertex list
 		vert_array[num_vert++].position = v1;
