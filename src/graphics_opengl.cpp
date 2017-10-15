@@ -673,12 +673,7 @@ void Graphics::DepthFunc(int op)
 
 void Graphics::StencilOp(int stencil_fail, int zfail, int zpass)
 {
-	if (zpass == INCR)
-		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	else if (zpass == DECR)
-		glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
-	else if (zpass == KEEP)
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glStencilOp(GL_KEEP, zfail, zpass);
 
 #ifdef ERROR_CHECK
 	error_check();
