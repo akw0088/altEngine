@@ -406,6 +406,7 @@ typedef struct
 	int anim_unit;
 	int freq;
 	int num_anim;
+	int anim_count;
 	int index; // index into surface list (if it exists)
 	int num_tex;
 	bool portal;

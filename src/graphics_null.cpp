@@ -239,11 +239,11 @@ void Graphics::Stencil(bool flag)
 {
 }
 
-void Graphics::StencilFunc(char *op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, int mask)
 {
 }
 
-void Graphics::DepthFunc(char *op)
+void Graphics::DepthFunc(int op)
 {
 }
 

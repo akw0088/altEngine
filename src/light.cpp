@@ -47,7 +47,10 @@ void Light::destroy(Graphics &gfx)
 
 void Light::render_shadow_volumes(Graphics &gfx, int current_light)
 {
+	if (entity->visible)
+	{
 		shadow.render(gfx);
+	}
 //		extend(edge_list, entity->position, current_light);
 }
 
@@ -61,13 +64,17 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		if (entity_list[i]->ent_type == ENT_WEAPON_LIGHTNING)
+		if (entity_list[i]->ent_type == ENT_ITEM_ARMOR_COMBAT)
 		{
-			shadow.CreateVolume(gfx, entity_list[i]->model->model_vertex_array, entity_list[i]->model->model_index_array, entity_list[i]->model->num_index / 3, entity->position - entity_list[i]->position);
+			if (entity_list[i]->visible && entity->visible)
+			{
+				shadow.CreateVolume(gfx, entity_list[i]->model->model_vertex_array, entity_list[i]->model->model_index_array, entity_list[i]->model->num_index / 3, entity->position - entity_list[i]->position);
 
-			// so shadow rotates with object
-			entity->rigid->morientation = entity_list[i]->rigid->morientation;
-			entity->light->shadow.position = entity_list[i]->position;
+				// so shadow rotates with object
+				entity->rigid->morientation = entity_list[i]->rigid->morientation;
+				entity->light->shadow.position = entity_list[i]->position - entity_list[i]->model->center;
+			}
+
 		}
 	}
 }

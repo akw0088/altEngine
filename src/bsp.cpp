@@ -1546,7 +1546,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		mlight2.set_light(1.0f, 1.0f, 0);
 		if (enable_blend)
 		{
-			gfx.DepthFunc("<=");
+			gfx.DepthFunc(LEQUAL);
 			gfx.Blend(true);
 		}
 
@@ -1640,7 +1640,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 	}
 	if (enable_blend)
 	{
-		gfx.DepthFunc("<");
+		gfx.DepthFunc(LESS);
 		gfx.Blend(false);
 	}
 

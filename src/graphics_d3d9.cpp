@@ -82,24 +82,24 @@ void Graphics::Stencil(bool flag)
 		device->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 }
 
-void Graphics::StencilFunc(char *op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, int mask)
 {
-	if (strcmp(op, "always") == 0)
+	if (op == ALWAYS)
 		device->SetRenderState( D3DRS_STENCILFUNC, D3DCMP_ALWAYS );
-	else if (strcmp(op, "equal") == 0)
+	else if (op == EQUAL)
 		device->SetRenderState( D3DRS_STENCILFUNC, D3DCMP_EQUAL );
 
 	device->SetRenderState( D3DRS_STENCILREF, ref);
 	device->SetRenderState( D3DRS_STENCILMASK, mask);
 }
 
-void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
+void Graphics::StencilOp(int  stencil_fail, int zfail, int zpass)
 {
-	if (strcmp(zpass, "incr") == 0)
+	if (zpass == INCR)
 		device->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_INCR );
-	else if (strcmp(zpass, "decr") == 0)
+	else if (zpass == DECR)
 		device->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_DECR );
-	else if (strcmp(zpass, "keep") == 0)
+	else if (zpass == KEEP)
 		device->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_KEEP );
 
 

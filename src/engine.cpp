@@ -943,26 +943,26 @@ void Engine::render(double last_frametime)
 		render_scene(false); // render without lights, fill stencil mask, render with lights
 		gfx.Stencil(true);
 		gfx.Depth(false); // turn off depth writes
-		gfx.StencilFunc("always", 0, 0);
+		gfx.StencilFunc(ALWAYS, 0, 0);
 
-		gfx.CullFace(0);
-		gfx.StencilOp("keep", "keep", "incr"); // increment shadows that pass depth
+		gfx.CullFace(BACKFACE);
+		gfx.StencilOp(KEEP, KEEP, INCR); // increment shadows that pass depth
 		render_shadow_volumes(0);
 
-		gfx.CullFace(1);
-		gfx.StencilOp("keep", "keep", "decr"); // decrement shadows that backface pass depth
+		gfx.CullFace(FRONTFACE);
+		gfx.StencilOp(KEEP, KEEP, DECR); // decrement shadows that backface pass depth
 		render_shadow_volumes(0);
 
 		gfx.Depth(true);
 		gfx.Color(true);
-		gfx.CullFace(0);
+		gfx.CullFace(BACKFACE);
 
-		gfx.DepthFunc("<="); // depth already filled, need <=
-		gfx.StencilOp("keep", "keep", "keep");
+		gfx.DepthFunc(LEQUAL); // depth already filled, need <=
+		gfx.StencilOp(KEEP, KEEP, KEEP);
 
 		//all lit surfaces will correspond to a 0 in the stencil buffer
 		//all shadowed surfaces will be one
-		gfx.StencilFunc(">=", 0, ~0);
+		gfx.StencilFunc(GEQUAL, 0, ~0);
 		// render with lights
 		gfx.cleardepth();
 		render_scene(true);
@@ -970,7 +970,7 @@ void Engine::render(double last_frametime)
 		if (input.scores)
 			render_shadow_volumes(0);
 
-		gfx.DepthFunc("<");
+		gfx.DepthFunc(LESS);
 		gfx.Stencil(false);
 
 		//render menu
@@ -2497,22 +2497,25 @@ void Engine::step(int tick)
 
 #ifndef DEDICATED
 	// Animate animated textures
-	for (unsigned int i = 0; i < q3map.anim_list.size(); i++)
-	{
-		texture_t  *tex = q3map.anim_list[i];
+		for (unsigned int i = 0; i < q3map.anim_list.size(); i++)
+		{
+			texture_t  *tex = q3map.anim_list[i];
 
-		if (tex->num_anim == 0)
-			break;
+			if (tex->num_anim == 0)
+				continue;
 
-		int texunit = tex->anim_unit;
+			int texunit = tex->anim_unit;
 
-		if (tex->freq == 0)
-			continue;
+			if (tex->freq == 0)
+				continue;
 
-		int ani_index = (tick_num % (TICK_RATE / tex->freq)) % tex->num_anim;
-
-		tex->texObj[texunit] = tex->texObjAnim[ani_index];
-	}
+			if (tick_num % ((tex->freq * TICK_RATE) / TICK_RATE) == 0)
+			{
+				int ani_index = tex->anim_count % tex->num_anim;
+				tex->texObj[texunit] = tex->texObjAnim[ani_index];
+				tex->anim_count++;
+			}
+		}
 
 	spatial_testing(); // mostly sets visible flag
 #endif

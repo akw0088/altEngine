@@ -6,6 +6,22 @@
 //#define ERROR_CHECK
 
 
+#define BACKFACE	0
+#define FRONTFACE	1
+
+#define LESS	0
+#define LEQUAL	1
+#define GREATER	2
+#define GEQUAL	3
+#define ALWAYS	4
+#define EQUAL	5
+#define NEVER	6
+
+#define KEEP 0
+#define DECR 1
+#define INCR 1
+
+
 /*
 	You could make this a pure virtual class and switch between OpenGL and Direct3D at runtime...
 	But then you would need to link to both d3d9 dll's and opengl32 dll's at the same time
@@ -43,10 +59,10 @@ public:
 	void BlendFuncOneSrcAlpha();
 	void CullFace(int mode);
 	void Color(bool flag);
-	void DepthFunc(char *op);
+	void DepthFunc(int op);
 	void Stencil(bool flag);
-	void StencilFunc(char *op, int ref, int mask);
-	void StencilOp(char *stencil_fail, char *zfail, char *zpass);
+	void StencilFunc(int op, int ref, int mask);
+	void StencilOp(int stencil_fail, int zfail, int zpass);
 	void DrawText(const char *str, float x, float y);
 
 	void swap();

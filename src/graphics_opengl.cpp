@@ -634,16 +634,23 @@ void Graphics::Stencil(bool flag)
 
 }
 
-void Graphics::StencilFunc(char *op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, int mask)
 {
-	if (strcmp(op, "always") == 0)
+	if (op == ALWAYS)
 		glStencilFunc(GL_ALWAYS, ref, mask);
-	else if (strcmp(op, "equal") == 0)
+	else if (op == EQUAL)
 		glStencilFunc(GL_EQUAL, ref, mask);
-	else if (strcmp(op, "never") == 0)
+	else if (op == NEVER)
 		glStencilFunc(GL_NEVER, ref, mask);
-	else if (strcmp(op, ">=") == 0)
+	else if (op == GEQUAL)
 		glStencilFunc(GL_GEQUAL, ref, mask);
+	else if (op == GREATER)
+		glStencilFunc(GL_GREATER, ref, mask);
+	else if (op == LESS)
+		glStencilFunc(GL_LESS, ref, mask);
+	else if (op = LEQUAL)
+		glStencilFunc(GL_LEQUAL, ref, mask);
+
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -651,11 +658,11 @@ void Graphics::StencilFunc(char *op, int ref, int mask)
 
 }
 
-void Graphics::DepthFunc(char *op)
+void Graphics::DepthFunc(int op)
 {
-	if (strcmp(op, "<=") == 0)
+	if (op == LEQUAL)
 		glDepthFunc(GL_LEQUAL);
-	else if (strcmp(op, "<") == 0)
+	else if (op == LESS)
 		glDepthFunc(GL_LESS);
 
 #ifdef ERROR_CHECK
@@ -664,13 +671,13 @@ void Graphics::DepthFunc(char *op)
 
 }
 
-void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
+void Graphics::StencilOp(int stencil_fail, int zfail, int zpass)
 {
-	if (strcmp(zpass, "incr") == 0)
+	if (zpass == INCR)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-	else if (strcmp(zpass, "decr") == 0)
+	else if (zpass == DECR)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_DECR);
-	else if (strcmp(zpass, "keep") == 0)
+	else if (zpass == KEEP)
 		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
 #ifdef ERROR_CHECK
@@ -988,7 +995,10 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);	glBindTexture(GL_TEXTURE_2D, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_tex, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	*/
 
 	glGenTextures(1, &depth_tex);
