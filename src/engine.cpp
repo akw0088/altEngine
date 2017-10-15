@@ -180,6 +180,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // replace if 0xFF if passes
 #endif
 
+	enable_stencil = true;
 	multisample = 0;
 	sensitivity = 1.0f;
 
@@ -937,11 +938,12 @@ void Engine::render(double last_frametime)
 	if (render_mode == MODE_SHADOWVOL)
 	{
 		matrix4 mvp;
+		bool zpass_two = true;
 		bool zpass = false;
 		bool zfail = false;
 
 
-		if (zpass)
+		if (zpass && enable_stencil)
 		{
 			// Depth PASS Stencil Shadows
 			gfx.clear();
@@ -978,7 +980,7 @@ void Engine::render(double last_frametime)
 			gfx.DepthFunc(LESS);
 			gfx.Stencil(false);
 		}
-		else if (zfail)
+		else if (zfail && enable_stencil)
 		{
 			// Depth FAIL Stencil Shadows (need caps)
 			gfx.clear();
@@ -1014,7 +1016,7 @@ void Engine::render(double last_frametime)
 			gfx.DepthFunc(LESS);
 			gfx.Stencil(false);
 		}
-		else
+		else if (zpass_two && enable_stencil)
 		{
 #ifdef OPENGL
 			// Depth PASS Stencil Shadows -- using two sided stencil
@@ -1053,6 +1055,11 @@ void Engine::render(double last_frametime)
 			gfx.DepthFunc(LESS);
 			gfx.Stencil(false);
 #endif
+		}
+		else
+		{
+			gfx.clear();
+			render_scene(true);
 		}
 
 
@@ -4795,6 +4802,7 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		return;
 	}
+
 	if (sscanf(cmd, "r_texture %s", data) == 1)
 	{
 		menu.print(msg);
@@ -4805,6 +4813,20 @@ void Engine::console(char *cmd)
 		else
 		{
 			q3map.enable_textures = false;
+		}
+		return;
+	}
+
+	if (sscanf(cmd, "r_stencil %s", data) == 1)
+	{
+		menu.print(msg);
+		if (atoi(data))
+		{
+			enable_stencil = true;
+		}
+		else
+		{
+			enable_stencil = false;
 		}
 		return;
 	}

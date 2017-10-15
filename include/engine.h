@@ -154,6 +154,7 @@ public:
 	bool all_lights;
 	bool enable_portal;
 	bool enable_postprocess;
+	bool enable_stencil;
 
 //Game logic
 	BaseGame *game;
