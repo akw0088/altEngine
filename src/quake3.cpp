@@ -6171,6 +6171,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 1)
 	{
 		crosshair_scale = (float)atof(data);
+		snprintf(msg, LINE_SIZE, "Set to %f\n", crosshair_scale);
+		menu.print(msg);
+		return;
 	}
 
 	/*
@@ -6580,7 +6583,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		Player *player = entity_list[self]->player;
 
 		if (player->team == TEAM_RED && player->holdable_flag == false)
+		{
+			snprintf(msg, LINE_SIZE, "blueflag taken\n");
+			menu.print(msg);
 			player->holdable_flag = true;
+		}
 		return;
 	}
 
@@ -6588,7 +6595,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		if (entity_list[self]->player->team == TEAM_BLUE && entity_list[self]->player->holdable_flag == false)
+		{
+			snprintf(msg, LINE_SIZE, "redflag taken\n");
+			menu.print(msg);
 			entity_list[self]->player->holdable_flag = true;
+		}
 		return;
 	}
 
@@ -6596,7 +6607,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		if (entity_list[self]->player->holdable_medikit == false)
+		{
+			snprintf(msg, LINE_SIZE, "holdable_teleporter\n");
+			menu.print(msg);
 			entity_list[self]->player->holdable_teleporter = true;
+		}
 		return;
 	}
 
@@ -6604,7 +6619,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 0)
 	{
 		if (entity_list[self]->player->holdable_teleporter == false)
+		{
+			snprintf(msg, LINE_SIZE, "holdable_medkit\n");
+			menu.print(msg);
 			entity_list[self]->player->holdable_medikit = true;
+		}
 		return;
 	}
 
@@ -6689,6 +6708,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (entity_list[self]->player)
 		{
+			snprintf(msg, LINE_SIZE, "killed\n");
+			menu.print(msg);
 			entity_list[self]->player->health = -100;
 		}
 	}
@@ -7104,6 +7125,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		if (self != -1)
 		{
 			RigidBody *rigid = entity_list[self]->rigid;
+			snprintf(msg, LINE_SIZE, "noclip\n");
+			menu.print(msg);
 
 			rigid->noclip = !rigid->noclip;
 //			rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
@@ -7121,6 +7144,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
+			snprintf(msg, LINE_SIZE, "regeneration\n");
+			menu.print(msg);
 			entity_list[self]->player->regen_timer = 60 * TICK_RATE;
 		}
 		return;
@@ -7131,6 +7156,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
+			snprintf(msg, LINE_SIZE, "haste\n");
+			menu.print(msg);
 			entity_list[self]->player->haste_timer = 60 * TICK_RATE;
 		}
 		return;
@@ -7141,6 +7168,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
+			snprintf(msg, LINE_SIZE, "quaddamage\n");
+			menu.print(msg);
 			entity_list[self]->player->quad_timer = 60 * TICK_RATE;
 		}
 		return;
@@ -7151,6 +7180,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
+			snprintf(msg, LINE_SIZE, "invisibility\n");
+			menu.print(msg);
 			entity_list[self]->player->invisibility_timer = 60 * TICK_RATE;
 		}
 		return;
@@ -7161,7 +7192,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
-			entity_list[self]->player->flight_timer = 60 * 60 * 24 * TICK_RATE;
+			snprintf(msg, LINE_SIZE, "flight\n");
+			menu.print(msg);
+			entity_list[self]->player->flight_timer = 30 * TICK_RATE;
 		}
 		return;
 	}
@@ -7171,6 +7204,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
+			snprintf(msg, LINE_SIZE, "flight %d\n", atoi(data));
+			menu.print(msg);
 			entity_list[self]->player->flight_timer = atoi(data) * TICK_RATE;
 		}
 		return;
@@ -7179,6 +7214,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "shownames");
 	if (ret == 0)
 	{
+		snprintf(msg, LINE_SIZE, "shownames\n");
+		menu.print(msg);
 		engine->show_names = !engine->show_names;
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_names);
 		menu.print(msg);
@@ -7188,6 +7225,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "showlines");
 	if (ret == 0)
 	{
+		snprintf(msg, LINE_SIZE, "showlines\n");
+		menu.print(msg);
 		engine->show_lines = !engine->show_lines;
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_lines);
 		menu.print(msg);
@@ -7197,6 +7236,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "showdebug");
 	if (ret == 0)
 	{
+		snprintf(msg, LINE_SIZE, "showdebug\n");
+		menu.print(msg);
 		engine->show_debug = !engine->show_debug;
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_debug);
 		menu.print(msg);
@@ -7206,15 +7247,19 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "showhud");
 	if (ret == 0)
 	{
+		snprintf(msg, LINE_SIZE, "showhud\n");
+		menu.print(msg);
 		engine->show_hud = !engine->show_hud;
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_hud);
 		menu.print(msg);
 		return;
 	}
 
-	ret = strcmp(cmd, "all_lights");
+	ret = strcmp(cmd, "r_all_lights");
 	if (ret == 0)
 	{
+		snprintf(msg, LINE_SIZE, "r_all_lights\n");
+		menu.print(msg);
 		engine->all_lights = !engine->all_lights;
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->all_lights);
 		menu.print(msg);
@@ -7224,6 +7269,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "animation %s", data);
 	if (ret == 1)
 	{
+		snprintf(msg, LINE_SIZE, "Selected animation %d\n", atoi(data));
+		menu.print(msg);
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
 		engine->zcc.select_animation(atoi(data));

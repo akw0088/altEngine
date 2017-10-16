@@ -4478,6 +4478,8 @@ void Engine::console(char *cmd)
 
 	if (strstr(cmd, "centerview"))
 	{
+		snprintf(msg, LINE_SIZE, "centerview");
+		menu.print(msg);
 		camera_frame.reset();
 		return;
 	}
@@ -4506,6 +4508,8 @@ void Engine::console(char *cmd)
 	{
 		if (voted == false)
 		{
+			snprintf(msg, LINE_SIZE, "voteyes");
+			menu.print(msg);
 			vote_yes++;
 			voted = true;
 		}
@@ -4516,6 +4520,8 @@ void Engine::console(char *cmd)
 	{
 		if (voted == false)
 		{
+			snprintf(msg, LINE_SIZE, "voteno");
+			menu.print(msg);
 			vote_no++;
 			voted = true;
 		}
@@ -4524,6 +4530,8 @@ void Engine::console(char *cmd)
 
 	if (strcmp(cmd, "screenshot") == 0)
 	{
+		snprintf(msg, LINE_SIZE, "screenshot taken");
+		menu.print(msg);
 		screenshot();
 		return;
 	}
@@ -4613,6 +4621,8 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "bind %s %s", data, msg);
 	if (ret == 2)
 	{
+		snprintf(msg, LINE_SIZE, "binding key");
+		menu.print(msg);
 		if (key_bind.update(data, strstr(cmd, msg)))
 		{
 			return;
@@ -4627,6 +4637,8 @@ void Engine::console(char *cmd)
 
 		if (q3map.loaded)
 		{
+			snprintf(msg, LINE_SIZE, "recording");
+			menu.print(msg);
 			demo_fileheader_t header;
 			menu.print(msg);
 			demofile = fopen(data, "wb");
@@ -4653,6 +4665,8 @@ void Engine::console(char *cmd)
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "playing");
+			menu.print(msg);
 			demo_fileheader_t header;
 
 			demofile = fopen(data, "rb");
@@ -4674,9 +4688,16 @@ void Engine::console(char *cmd)
 	{
 		if (recording_demo)
 		{
+			snprintf(msg, LINE_SIZE, "stopping playerback");
+			menu.print(msg);
 			menu.print(msg);
 			fclose(demofile);
 			recording_demo = false;
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "not recording");
+			menu.print(msg);
 		}
 		return;
 	}
@@ -4686,7 +4707,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "al_reference_dist %f", &value);
 	if (ret == 1)
 	{
-		printf("Setting audio reference distance to %f\n", value);
+		debugf("Setting audio reference distance to %f\n", value);
 		set_reference_distance(value);
 		return;
 	}
@@ -4694,7 +4715,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "al_max_dist %f", &value);
 	if (ret == 1)
 	{
-		printf("Setting audio max distance to %f\n", value);
+		debugf("Setting audio max distance to %f\n", value);
 		set_max_distance(value);
 		return;
 	}
@@ -4702,7 +4723,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "al_rolloff %f", &value);
 	if (ret == 1)
 	{
-		printf("Setting audio rolloff factor to %f\n", value);
+		debugf("Setting audio rolloff factor to %f\n", value);
 		set_rolloff_factor(value);
 		return;
 	}
@@ -4710,7 +4731,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "al_model %s", (char *)data);
 	if (ret == 1)
 	{
-		printf("Setting audio model to %d\n", atoi(data));
+		debugf("Setting audio model to %d\n", atoi(data));
 		audio.set_audio_model(atoi(data));
 		return;
 	}
@@ -4785,6 +4806,8 @@ void Engine::console(char *cmd)
 
 	if (strcmp(cmd, "fullscreen") == 0)
 	{
+		snprintf(msg, LINE_SIZE, "fullscreen");
+		menu.print(msg);
 		fullscreen();
 		return;
 	}
@@ -4811,10 +4834,14 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		if (atoi(data))
 		{
+			snprintf(msg, LINE_SIZE, "textures enabled");
+			menu.print(msg);
 			q3map.enable_textures = true;
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "textures disabled");
+			menu.print(msg);
 			q3map.enable_textures = false;
 		}
 		return;
@@ -4825,10 +4852,14 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		if (atoi(data))
 		{
+			snprintf(msg, LINE_SIZE, "stencil enabled");
+			menu.print(msg);
 			enable_stencil = true;
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "stencil disabled");
+			menu.print(msg);
 			enable_stencil = false;
 		}
 		return;
@@ -4839,10 +4870,14 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		if (atoi(data))
 		{
+			snprintf(msg, LINE_SIZE, "patches enabled");
+			menu.print(msg);
 			q3map.enable_patch = true;
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "patches disabled");
+			menu.print(msg);
 			q3map.enable_patch = false;
 		}
 		return;
@@ -4855,6 +4890,8 @@ void Engine::console(char *cmd)
 		int max = atoi(data);
 
 		mlight2.set_max(max);
+		snprintf(msg, LINE_SIZE, "Setting max lights to %d", max);
+		menu.print(msg);
 		return;
 	}
 
@@ -4864,6 +4901,9 @@ void Engine::console(char *cmd)
 
 		float ambient = (float)atof(data);
 		mlight2.set_ambient(ambient);
+		
+		snprintf(msg, LINE_SIZE, "Setting ambient light to %f", ambient);
+		menu.print(msg);
 		return;
 	}
 
@@ -4873,6 +4913,8 @@ void Engine::console(char *cmd)
 
 		float ambient = (float)atof(data);
 		mlight2.set_brightness(ambient - 1.0f);
+		snprintf(msg, LINE_SIZE, "Setting brightness to %f", ambient);
+		menu.print(msg);
 		return;
 	}
 
@@ -4882,6 +4924,8 @@ void Engine::console(char *cmd)
 
 		float contrast = (float)atof(data);
 		mlight2.set_contrast(contrast);
+		snprintf(msg, LINE_SIZE, "Setting contrast to %f", contrast);
+		menu.print(msg);
 		return;
 	}
 
@@ -4890,7 +4934,11 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 
 		if (atoi(data) > 0)
+		{
+			snprintf(msg, LINE_SIZE, "Setting com_maxfps to %d", atoi(data));
+			menu.print(msg);
 			com_maxfps = 1000.0 / atoi(data);
+		}
 		return;
 	}
 
@@ -4900,6 +4948,9 @@ void Engine::console(char *cmd)
 
 		float lightmap = (float)atof(data);
 		mlight2.set_lightmap(lightmap);
+
+		snprintf(msg, LINE_SIZE, "Setting lightmap to %f", lightmap);
+		menu.print(msg);
 		return;
 	}
 
@@ -4910,6 +4961,8 @@ void Engine::console(char *cmd)
 		if (shadowmaps)
 		{
 			mlight2.set_shadowmap(1.0f);
+			snprintf(msg, LINE_SIZE, "Enabling shadowmaps");
+			menu.print(msg);
 
 			for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 			{
@@ -4922,6 +4975,8 @@ void Engine::console(char *cmd)
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "Disabling shadowmaps");
+			menu.print(msg);
 			mlight2.set_shadowmap(0.0f);
 		}
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, shadowmaps);
@@ -4931,6 +4986,8 @@ void Engine::console(char *cmd)
 
 	if (strstr(cmd, "postprocess"))
 	{
+		snprintf(msg, LINE_SIZE, "Toggling postprocessing");
+		menu.print(msg);
 		enable_postprocess = !enable_postprocess;
 		return;
 	}
@@ -4943,6 +5000,8 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookforward");
+		menu.print(msg);
 		return;
 	}
 
@@ -4954,6 +5013,8 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookdown");
+		menu.print(msg);
 		return;
 	}
 
@@ -4965,6 +5026,8 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookright");
+		menu.print(msg);
 		return;
 	}
 
@@ -4977,6 +5040,8 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookleft");
+		menu.print(msg);
 		return;
 	}
 
@@ -4988,6 +5053,8 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookback");
+		menu.print(msg);
 		return;
 	}
 
@@ -5000,6 +5067,8 @@ void Engine::console(char *cmd)
 
 		camera_frame.forward = forward;
 		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookup");
+		menu.print(msg);
 		return;
 	}
 
@@ -5011,7 +5080,7 @@ void Engine::console(char *cmd)
 			Entity *entity = entity_list[shadow_light];
 			Entity *player = entity_list[find_type(ENT_PLAYER, 0)];
 
-			printf("Moving shadow light to player position %3.3f %3.3f %3.3f\n",
+			debugf("Moving shadow light to player position %3.3f %3.3f %3.3f\n",
 				entity->position.x,
 				entity->position.y,
 				entity->position.z);
@@ -5050,7 +5119,13 @@ void Engine::console(char *cmd)
 			mlight2.set_lightmap(0.5);
 			mlight2.set_max(64);
 			break;
+		default:
+			snprintf(msg, LINE_SIZE, "Invalid light mode [0-3]");
+			menu.print(msg);
+			return;
 		}
+		snprintf(msg, LINE_SIZE, "setting lightmode to %d", mode);
+		menu.print(msg);
 		return;
 	}
 
@@ -5069,9 +5144,13 @@ void Engine::console(char *cmd)
 		if (atoi(data))
 		{
 			collision_detect_enable = true;
+			snprintf(msg, LINE_SIZE, "Enabling rigid body dynamics");
+			menu.print(msg);
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "Disabling rigid body dynamics");
+			menu.print(msg);
 			collision_detect_enable = false;
 		}
 		return;
@@ -5083,17 +5162,21 @@ void Engine::console(char *cmd)
 		if (atoi(data))
 		{
 			q3map.enable_sky = true;
+			snprintf(msg, LINE_SIZE, "Enabling skybox");
+			menu.print(msg);
 		}
 		else
 		{
 			q3map.enable_sky = false;
+			snprintf(msg, LINE_SIZE, "Disabling skybox");
+			menu.print(msg);
 		}
 		return;
 	}
 
 	if (strcmp(cmd, "r_max_particles") == 0)
 	{
-		sprintf(data, "max particles: %d\n", ParticleUpdate::max_particles);
+		sprintf(data, "max particles is: %d\n", ParticleUpdate::max_particles);
 		menu.print(msg);
 		return;
 	}
@@ -5120,9 +5203,13 @@ void Engine::console(char *cmd)
 		if (atoi(data))
 		{
 			q3map.enable_shader = true;
+			snprintf(msg, LINE_SIZE, "Enabling q3 shaders");
+			menu.print(msg);
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "Disabling q3 shaders");
+			menu.print(msg);
 			q3map.enable_shader = false;
 		}
 		return;
@@ -5134,10 +5221,14 @@ void Engine::console(char *cmd)
 
 		if (atoi(data))
 		{
+			snprintf(msg, LINE_SIZE, "Enabling entities");
+			menu.print(msg);
 			entities_enabled = true;
 		}
 		else
 		{
+			snprintf(msg, LINE_SIZE, "Disabling entities");
+			menu.print(msg);
 			entities_enabled = false;
 		}
 		return;
@@ -5150,10 +5241,14 @@ void Engine::console(char *cmd)
 		if (atoi(data))
 		{
 			q3map.enable_blend = true;
+			snprintf(msg, LINE_SIZE, "Enabling blends");
+			menu.print(msg);
 		}
 		else
 		{
 			q3map.enable_blend = false;
+			snprintf(msg, LINE_SIZE, "Disabling blends");
+			menu.print(msg);
 		}
 		return;
 	}
@@ -5162,6 +5257,8 @@ void Engine::console(char *cmd)
 	{
 		menu.print(msg);
 		q3map.max_stage = atoi(data);
+		snprintf(msg, LINE_SIZE, "Setting q3 shader max stage to %d", q3map.max_stage);
+		menu.print(msg);
 		return;
 	}
 
@@ -5172,10 +5269,14 @@ void Engine::console(char *cmd)
 		if (atoi(data))
 		{
 			enable_portal = true;
+			snprintf(msg, LINE_SIZE, "Enabling portals");
+			menu.print(msg);
 		}
 		else
 		{
 			enable_portal = false;
+			snprintf(msg, LINE_SIZE, "Disabling portals");
+			menu.print(msg);
 		}
 		return;
 	}
@@ -5189,11 +5290,15 @@ void Engine::console(char *cmd)
 		{
 			q3map.enable_normalmap = true;
 			mlight2.set_normalmap(1);
+			snprintf(msg, LINE_SIZE, "Enabling normalmaps");
+			menu.print(msg);
 		}
 		else
 		{
 			q3map.enable_normalmap = false;
 			mlight2.set_normalmap(0);
+			snprintf(msg, LINE_SIZE, "Disabling normalmaps");
+			menu.print(msg);
 		}
 		return;
 	}
@@ -5248,9 +5353,17 @@ void Engine::console(char *cmd)
 		multisample = atoi(data);
 #ifdef OPENGL
 		if (multisample > 0)
+		{
+			snprintf(msg, LINE_SIZE, "Enabling multisampling");
+			menu.print(msg);
 			glEnable(GL_MULTISAMPLE);
+		}
 		else
+		{
+			snprintf(msg, LINE_SIZE, "Disabling multisampling");
+			menu.print(msg);
 			glDisable(GL_MULTISAMPLE);
+		}
 #endif
 		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 		return;
@@ -5334,11 +5447,23 @@ void Engine::console(char *cmd)
 	{
 #ifdef OPENGL
 		if (atoi(data) == 1)
+		{
+			snprintf(msg, LINE_SIZE, "Line rendering");
+			menu.print(msg);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
 		else if (atoi(data) == 2)
+		{
+			snprintf(msg, LINE_SIZE, "Point rendering");
+			menu.print(msg);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		}
 		else
+		{
+			snprintf(msg, LINE_SIZE, "Normal rendering");
+			menu.print(msg);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 #endif
 		return;
 	}
@@ -5348,9 +5473,17 @@ void Engine::console(char *cmd)
 	{
 #ifdef OPENGL
 		if (atoi(data) == 1)
+		{
+			snprintf(msg, LINE_SIZE, "Counter clockwise winding");
+			menu.print(msg);
 			glFrontFace(GL_CCW);
+		}
 		else
+		{
+			snprintf(msg, LINE_SIZE, "Clockwise winding");
+			menu.print(msg);
 			glFrontFace(GL_CW);
+		}
 #endif
 	}
 
