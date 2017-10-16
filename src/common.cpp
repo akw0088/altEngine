@@ -1564,12 +1564,14 @@ void show_hw_info()
 	}
 	else if (vendor)
 	{
-		UINT n = wglGetGPUIDsAMD(0, 0);
-		UINT *ids = new UINT[n];
+#ifndef __linux
+		unsigned int  n = wglGetGPUIDsAMD(0, 0);
+		unsigned int *ids = new UINT[n];
 		size_t total_mem_mb = 0;
 		wglGetGPUIDsAMD(n, ids);
 		wglGetGPUInfoAMD(ids[0], WGL_GPU_RAM_AMD, GL_UNSIGNED_INT, sizeof(size_t), &total_mem_mb);
 		debugf("GPU RAM:      %.2f GB\n", (float)(total_mem_mb / 1024));
+#endif
 	}
 #endif
 }

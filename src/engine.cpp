@@ -4125,6 +4125,7 @@ void Engine::fullscreen()
 {
 	if (fullscreen_timer == 0)
 	{
+#ifndef __linux
 		HMONITOR hmon;
 		MONITORINFO mi = { sizeof(MONITORINFO) };
 		HWND hwnd = *((HWND *)param1);
@@ -4142,6 +4143,7 @@ void Engine::fullscreen()
 		new_style = old_style;
 		SetWindowPos(hwnd, HWND_TOP, 0, 0, xr, yr, 0);
 		fullscreen_timer = TICK_RATE;
+#endif
 	}
 }
 
