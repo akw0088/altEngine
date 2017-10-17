@@ -27,6 +27,7 @@ public:
 	void render_portalcamera();
 	void render_texture(int texObj, bool depth_view);
 	void post_process(int num_passes, int type);
+	void bloom();
 	void resize(int width, int height);
 	void fullscreen();
 
@@ -195,9 +196,19 @@ protected:
 	unsigned int	lightning_ibo;
 	unsigned int	lightning_vbo;
 	unsigned int	fbo;
+	unsigned int	blur1;
+	unsigned int	blur2;
 	unsigned int	global_vao;
 	unsigned int	quad_tex;
 	unsigned int	depth_tex;
+
+	unsigned int	blur1_quad;
+	unsigned int	blur1_depth;
+	unsigned int	blur2_quad;
+	unsigned int	blur2_depth;
+
+
+
 	unsigned int	fb_width;
 	unsigned int	fb_height;
 	unsigned int	multisample;

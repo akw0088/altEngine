@@ -666,6 +666,8 @@ int Post::init(Graphics *gfx)
 
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 	texture1 = glGetUniformLocation(program_handle, "texture1");
+	texture2 = glGetUniformLocation(program_handle, "texture2");
+
 	tc_offset = glGetUniformLocation(program_handle, "tc_offset");
 	u_type = glGetUniformLocation(program_handle, "u_type");
 
@@ -683,6 +685,12 @@ int Post::init(Graphics *gfx)
 	glBindTexture(GL_TEXTURE_2D, swap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+	glGenTextures(1, &swap2);
+	glBindTexture(GL_TEXTURE_2D, swap2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+
 	return 0;
 }
 
@@ -711,10 +719,11 @@ void Post::resize(int width, int height)
     }
 }
 
-void Post::Params(int tex0, int tex1, int type)
+void Post::Params(int type)
 {
-	glUniform1i(texture0, tex0);
-	glUniform1i(texture1, tex1);
+	glUniform1i(texture0, 0);
+	glUniform1i(texture1, 1);
+	glUniform1i(texture2, 2);
 	glUniform2fv(tc_offset, 9, texCoordOffsets);
 	glUniform1i(u_type, type);
 }

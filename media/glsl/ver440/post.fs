@@ -11,6 +11,7 @@ out vec4 Fragment;
 // constant program input
 layout(binding=0) uniform sampler2D texture0;
 layout(binding=1) uniform sampler2D texture1;
+layout(binding=2) uniform sampler2D texture2;
 
 uniform vec2 tc_offset[9];
 
@@ -23,7 +24,7 @@ uniform float u_strength;
 
 float GaussianFunction(float x, float dev)
 {
-  return ((1.0/sqrt(2.0*3.142857*dev))*exp(-(x*x)/(2.0*dev)));
+	return ( (1.0 / sqrt(2.0 * 3.142857 * dev) ) * exp( -(x * x) / (2.0 * dev) ) );
 } 
 
 void main(void)
@@ -64,32 +65,59 @@ void main(void)
 		vec4	temp =  vec4(0.0,0.0,0.0,0.0);
 		float	strength = 1.0 - u_strength;
 		float	half1 = float(u_amount) * 0.5;
-		float	texel = (1.0/1024.0);
+		float	texel = (1.0/768.0);
 		float	dev = u_amount * 0.5 * 0.5;
 		int	count = int(u_amount);
+		vec3 original = texture2D(texture0, vary_TexCoord).rgb;
+		float avg = (original.r + original.g + original.b) / 3.0;
+		float threshold = 0.5;
+
 	
 		dev *= dev;
 		if (u_dir == 0) 
 		{
 			for (int i = 0; i < count; i++)
 			{
-				float offset = float(i) - half1;
-				temp = texture2D(texture0, vary_TexCoord + vec2(offset * texel * u_scale, 0.0)) * GaussianFunction(offset * u_strength, dev);
-				color += temp;
+////				if ( 1 > 0 )
+				if ( avg > threshold )
+				{
+					float offset = float(i) - half1;
+					temp = texture2D(texture0, vary_TexCoord + vec2(offset * texel * u_scale, 0.0)) * GaussianFunction(offset * u_strength, dev);
+					color += temp;
+				}
+				else
+				{
+//					color.rgb = vec3(0,0,0);
+					color.rgb = original;
+				}
 			}
 		} 
 		else 
 		{
 			for (int i = 0; i < count; i++)
 			{
-				float offset = float(i) - half1;
-				temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset * u_strength, dev);
-				color += temp;
+//				if ( 1 > 0 )
+				if ( avg > threshold )
+				{
+					float offset = float(i) - half1;
+					temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset * u_strength, dev);
+
+					color += temp;
+				}
+				else
+				{
+//					color.rgb = vec3(0,0,0);
+					color.rgb = original;
+				}
 			}
 		}
 	  
 		Fragment = clamp(color, 0.0, 1.0);
 		Fragment.w = 1.0;
+	}
+	else if (u_type == 4)
+	{
+		Fragment = texture2D(texture0, vary_TexCoord) * 1.0 +  texture2D(texture1, vary_TexCoord) * 0.5 + texture2D(texture2, vary_TexCoord) * 0.5;
 	}
 }
 

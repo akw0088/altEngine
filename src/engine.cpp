@@ -359,6 +359,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_height = (unsigned int)(1024 * res_scale);
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 
+	gfx.setupFramebuffer(fb_width, fb_height, blur1, blur1_quad, blur1_depth, multisample);
+	gfx.setupFramebuffer(fb_width, fb_height, blur2, blur2_quad, blur2_depth, multisample);
+
+
+
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
 //	newlinelist("media/shaderlist.txt", shader_list, num_shader);
@@ -869,7 +874,7 @@ void Engine::render(double last_frametime)
 			}
 			else if (enable_bloom)
 			{
-				post_process(1, POST_BLOOM);
+				bloom();
 			}
 		}
 		else
@@ -2042,7 +2047,7 @@ void Engine::post_process(int num_passes, int type)
 #endif
 		gfx.SelectTexture(1, post.swap);
 		post.Select();
-		post.Params(0, 1, type);
+		post.Params(type);
 		post.BloomParams(pass % 2 == 0, 20, 0.5f, 1.0f);
 		gfx.clear();
 		gfx.SelectIndexBuffer(Model::quad_index);
@@ -2055,6 +2060,52 @@ void Engine::post_process(int num_passes, int type)
 	post.swap = post.image;
 	post.image = temp;
 //	gfx.DeselectTexture(0);
+}
+
+void Engine::bloom()
+{
+#ifdef OPENGL
+	gfx.bindFramebuffer(blur1);
+	gfx.resize(fb_width, fb_height);
+	gfx.fbAttachTexture(blur1_quad);
+	gfx.fbAttachDepth(blur1_depth);
+	gfx.clear();
+	gfx.SelectTexture(0, quad_tex);
+	post.Select();
+	post.Params(POST_BLOOM);
+	post.BloomParams(0, 20, 0.5f, 1.0f);
+	gfx.clear();
+	gfx.SelectIndexBuffer(Model::quad_index);
+	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
+	gfx.bindFramebuffer(0);
+
+	// Reselect original frame buffer texture
+	gfx.bindFramebuffer(blur2);
+	gfx.resize(fb_width, fb_height);
+	gfx.fbAttachTexture(blur2_quad);
+	gfx.fbAttachDepth(blur2_depth);
+	gfx.clear();
+	gfx.SelectIndexBuffer(Model::quad_index);
+	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectTexture(0, quad_tex);
+	post.Select();
+	post.Params(POST_BLOOM);
+	post.BloomParams(1, 20, 0.5f, 1.0f);
+	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
+	gfx.bindFramebuffer(0);
+
+	gfx.resize(xres, yres);
+	gfx.clear();
+	gfx.SelectIndexBuffer(Model::quad_index);
+	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectTexture(0, quad_tex);
+	gfx.SelectTexture(1, blur1_quad);
+	gfx.SelectTexture(2, blur2_quad);
+	post.Select();
+	post.Params(POST_COMBINE);
+	gfx.DrawArrayTri(0, 0, 6, 4); // add all three together
+#endif
 }
 
 void Engine::destroy_buffers()
