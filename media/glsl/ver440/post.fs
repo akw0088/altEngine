@@ -78,37 +78,19 @@ void main(void)
 		{
 			for (int i = 0; i < count; i++)
 			{
-////				if ( 1 > 0 )
-				if ( avg > threshold )
-				{
-					float offset = float(i) - half1;
-					temp = texture2D(texture0, vary_TexCoord + vec2(offset * texel * u_scale, 0.0)) * GaussianFunction(offset * u_strength, dev);
-					color += temp;
-				}
-				else
-				{
-//					color.rgb = vec3(0,0,0);
-					color.rgb = original;
-				}
+				float offset = float(i) - half1;
+				temp = texture2D(texture0, vary_TexCoord + vec2(offset * texel * u_scale, 0.0)) * GaussianFunction(offset * u_strength, dev);
+				color += temp;
 			}
 		} 
 		else 
 		{
 			for (int i = 0; i < count; i++)
 			{
-//				if ( 1 > 0 )
-				if ( avg > threshold )
-				{
-					float offset = float(i) - half1;
-					temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset * u_strength, dev);
+				float offset = float(i) - half1;
+				temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset * u_strength, dev);
 
-					color += temp;
-				}
-				else
-				{
-//					color.rgb = vec3(0,0,0);
-					color.rgb = original;
-				}
+				color += temp;
 			}
 		}
 	  
@@ -118,6 +100,20 @@ void main(void)
 	else if (u_type == 4)
 	{
 		Fragment = texture2D(texture0, vary_TexCoord) * 1.0 +  texture2D(texture1, vary_TexCoord) * 0.5 + texture2D(texture2, vary_TexCoord) * 0.5;
+	}
+	else if (u_type == 5)
+	{
+		vec4 original = texture2D(texture0, vary_TexCoord);
+		float avg = (original.r + original.g + original.b) / 3.0;
+		float threshold = 0.5;
+		if (avg > threshold)
+		{
+			Fragment = original;
+		}
+		else
+		{
+			Fragment = vec4(0,0,0,0);
+		}
 	}
 }
 

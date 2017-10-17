@@ -196,12 +196,15 @@ protected:
 	unsigned int	lightning_ibo;
 	unsigned int	lightning_vbo;
 	unsigned int	fbo;
-	unsigned int	blur1;
-	unsigned int	blur2;
+	unsigned int	mask_fbo;
+	unsigned int	blur1_fbo;
+	unsigned int	blur2_fbo;
 	unsigned int	global_vao;
 	unsigned int	quad_tex;
 	unsigned int	depth_tex;
 
+	unsigned int	mask_quad;
+	unsigned int	mask_depth;
 	unsigned int	blur1_quad;
 	unsigned int	blur1_depth;
 	unsigned int	blur2_quad;

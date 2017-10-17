@@ -359,8 +359,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_height = (unsigned int)(1024 * res_scale);
 	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, multisample);
 
-	gfx.setupFramebuffer(fb_width, fb_height, blur1, blur1_quad, blur1_depth, multisample);
-	gfx.setupFramebuffer(fb_width, fb_height, blur2, blur2_quad, blur2_depth, multisample);
+	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, multisample);
+	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, multisample);
+	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, multisample);
 
 
 
@@ -2065,10 +2066,11 @@ void Engine::post_process(int num_passes, int type)
 void Engine::bloom()
 {
 #ifdef OPENGL
-	gfx.bindFramebuffer(blur1);
+
+	gfx.bindFramebuffer(mask_fbo);
 	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(blur1_quad);
-	gfx.fbAttachDepth(blur1_depth);
+	gfx.fbAttachTexture(mask_quad);
+	gfx.fbAttachDepth(mask_depth);
 	gfx.clear();
 	gfx.SelectTexture(0, quad_tex);
 	post.Select();
@@ -2080,8 +2082,23 @@ void Engine::bloom()
 	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
 	gfx.bindFramebuffer(0);
 
+	gfx.bindFramebuffer(blur1_fbo);
+	gfx.resize(fb_width, fb_height);
+	gfx.fbAttachTexture(blur1_quad);
+	gfx.fbAttachDepth(blur1_depth);
+	gfx.clear();
+	gfx.SelectTexture(0, mask_quad);
+	post.Select();
+	post.Params(POST_BLOOM);
+	post.BloomParams(0, 20, 0.5f, 1.0f);
+	gfx.clear();
+	gfx.SelectIndexBuffer(Model::quad_index);
+	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
+	gfx.bindFramebuffer(0);
+
 	// Reselect original frame buffer texture
-	gfx.bindFramebuffer(blur2);
+	gfx.bindFramebuffer(blur2_fbo);
 	gfx.resize(fb_width, fb_height);
 	gfx.fbAttachTexture(blur2_quad);
 	gfx.fbAttachDepth(blur2_depth);
