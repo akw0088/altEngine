@@ -90,8 +90,7 @@ Engine::Engine()
 	enable_portal = false;
 
 #ifdef OPENGL
-//	render_mode = MODE_INDIRECT;
-	render_mode = MODE_SHADOWVOL;
+	render_mode = MODE_INDIRECT;
 #else
 	render_mode = MODE_FORWARD;
 #endif
@@ -170,8 +169,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	qport = rand();
 
 #ifdef OPENGL
-	render_mode = MODE_SHADOWVOL;
-//	render_mode = MODE_INDIRECT;
 	//glEnable(GL_STENCIL_TEST);
 	//glStencilMask(0x00); // disable writes to stencil
 	glClearStencil(0x00); // clear stencil to zero
@@ -676,18 +673,6 @@ void Engine::load(char *level)
 		gfx.bindFramebuffer(0);
 	}
 
-	if (render_mode == MODE_SHADOWVOL && enable_stencil)
-	{
-		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
-		{
-			if (entity_list[i]->light)
-			{
-				entity_list[i]->light->generate_map_volumes(q3map);
-				entity_list[i]->light->generate_ent_volumes(gfx, entity_list);
-			}
-		}
-	}
-
 	// render portals at least once
 	render_portalcamera();
 
@@ -918,167 +903,164 @@ void Engine::render(double last_frametime)
 	}
 	if (render_mode == MODE_FORWARD)
 	{
-		gfx.clear();
-		render_scene(true);
-
-		//render menu
-		if (menu.chatmode == false)
-			game->render_hud(last_frametime);
-		if (menu.ingame)
-			menu.render(global);
-		if (menu.console)
-			menu.render_console(global);
-		if (menu.chatmode)
-			menu.render_chatmode(global);
-
-		gfx.Depth(true);
-		gfx.Blend(false);
-	}
-
-
-	if (render_mode == MODE_SHADOWVOL)
-	{
-		matrix4 mvp;
-		bool zpass_two = true;
-		bool zpass = false;
-		bool zfail = false;
-
-
-		if (zpass && enable_stencil)
+		if (enable_stencil == false)
 		{
-			// Depth PASS Stencil Shadows
 			gfx.clear();
-			render_scene(false); // render without lights, fill stencil mask, render with lights
-			gfx.Color(false);
-			gfx.Stencil(true);
-			gfx.Depth(false); // turn off depth writes
-			gfx.StencilFunc(ALWAYS, 0, 0);
-
-			gfx.CullFace(BACKFACE);
-			gfx.StencilOp(KEEP, KEEP, INCR); // increment shadows that pass depth
-			render_shadow_volumes();
-
-			gfx.CullFace(FRONTFACE);
-			gfx.StencilOp(KEEP, KEEP, DECR); // decrement shadows that backface pass depth
-			render_shadow_volumes();
-
-			gfx.Depth(true);
-			gfx.Color(true);
-			gfx.CullFace(BACKFACE);
-
-			gfx.DepthFunc(LEQUAL); // depth already filled, need <=
-			gfx.StencilOp(KEEP, KEEP, KEEP);
-
-			//all lit surfaces will correspond to a 0 in the stencil buffer
-			//all shadowed surfaces will be one
-			gfx.StencilFunc(GEQUAL, 0, ~0);
-			// render with lights
 			render_scene(true);
 
-			if (input.scores)
-				render_shadow_volumes();
-
-			gfx.DepthFunc(LESS);
-			gfx.Stencil(false);
-		}
-		else if (zfail && enable_stencil)
-		{
-			// Depth FAIL Stencil Shadows (need caps)
-			gfx.clear();
-			render_scene(false); // render without lights, fill stencil mask, render with lights
-			gfx.Color(false);
-			gfx.Stencil(true);
-			gfx.Depth(false); // turn off depth writes
-			gfx.StencilFunc(ALWAYS, 0, 0);
-
-			gfx.CullFace(FRONTFACE);
-			gfx.StencilOp(KEEP, INCR, KEEP); // increment shadows that fail depth
-			render_shadow_volumes();
-
-			gfx.CullFace(BACKFACE);
-			gfx.StencilOp(KEEP, DECR, KEEP); // decrement shadows that backface pass depth
-			render_shadow_volumes();
-
-			gfx.Depth(true);
-			gfx.Color(true);
-
-			gfx.DepthFunc(LEQUAL); // depth already filled, need <=
-			gfx.StencilOp(KEEP, KEEP, KEEP);
-
-			//all lit surfaces will correspond to a 0 in the stencil buffer
-			//all shadowed surfaces will be one
-			gfx.StencilFunc(GEQUAL, 0, ~0);
-			// render with lights
-			render_scene(true);
-
-			if (input.scores)
-				render_shadow_volumes();
-
-			gfx.DepthFunc(LESS);
-			gfx.Stencil(false);
-		}
-		else if (zpass_two && enable_stencil)
-		{
-#ifdef OPENGL
-			// Depth PASS Stencil Shadows -- using two sided stencil
-			//(allows single call to draw shadow volumes instead of two)
-			gfx.clear();
-			render_scene(false); // render without lights, fill stencil mask, render with lights
-
-
-			gfx.Depth(false); // turn off depth writes
-			gfx.Color(false);
-			gfx.CullFace(NONE);
-			gfx.Stencil(true);
-
-			gfx.TwoSidedStencilOp(BACKFACE, KEEP, KEEP, DECR_WRAP);
-			gfx.TwoSidedStencilOp(FRONTFACE, KEEP, KEEP, INCR_WRAP);
-			gfx.StencilFunc(ALWAYS, 0, ~0);
-			render_shadow_volumes();
-
-			gfx.Depth(true);
-			gfx.Color(true);
-
-			gfx.DepthFunc(LEQUAL); // depth already filled, need <=
-			gfx.StencilOp(KEEP, KEEP, KEEP);
-
-			//all lit surfaces will correspond to a 0 in the stencil buffer
-			//all shadowed surfaces will be one
-			gfx.StencilFunc(GEQUAL, 0, ~0);
-			// render with lights
-//			gfx.cleardepth();
-			gfx.CullFace(3);
-			render_scene(true);
-
-			if (input.scores)
-				render_shadow_volumes();
-
-			gfx.DepthFunc(LESS);
-			gfx.Stencil(false);
-#endif
+			//render menu
+			if (menu.chatmode == false)
+				game->render_hud(last_frametime);
+			if (menu.ingame)
+				menu.render(global);
+			if (menu.console)
+				menu.render_console(global);
+			if (menu.chatmode)
+				menu.render_chatmode(global);
 		}
 		else
 		{
-			gfx.clear();
-			render_scene(true);
+			matrix4 mvp;
+			bool zpass_two = true;
+			bool zpass = false;
+			bool zfail = false;
+
+
+			if (zpass && enable_stencil)
+			{
+				// Depth PASS Stencil Shadows
+				gfx.clear();
+				render_scene(false); // render without lights, fill stencil mask, render with lights
+				gfx.Color(false);
+				gfx.Stencil(true);
+				gfx.Depth(false); // turn off depth writes
+				gfx.StencilFunc(ALWAYS, 0, 0);
+
+				gfx.CullFace(BACKFACE);
+				gfx.StencilOp(KEEP, KEEP, INCR); // increment shadows that pass depth
+				render_shadow_volumes();
+
+				gfx.CullFace(FRONTFACE);
+				gfx.StencilOp(KEEP, KEEP, DECR); // decrement shadows that backface pass depth
+				render_shadow_volumes();
+
+				gfx.Depth(true);
+				gfx.Color(true);
+				gfx.CullFace(BACKFACE);
+
+				gfx.DepthFunc(LEQUAL); // depth already filled, need <=
+				gfx.StencilOp(KEEP, KEEP, KEEP);
+
+				//all lit surfaces will correspond to a 0 in the stencil buffer
+				//all shadowed surfaces will be one
+				gfx.StencilFunc(GEQUAL, 0, ~0);
+				// render with lights
+				render_scene(true);
+
+				if (input.scores)
+					render_shadow_volumes();
+
+				gfx.DepthFunc(LESS);
+				gfx.Stencil(false);
+			}
+			else if (zfail && enable_stencil)
+			{
+				// Depth FAIL Stencil Shadows (need caps)
+				gfx.clear();
+				render_scene(false); // render without lights, fill stencil mask, render with lights
+				gfx.Color(false);
+				gfx.Stencil(true);
+				gfx.Depth(false); // turn off depth writes
+				gfx.StencilFunc(ALWAYS, 0, 0);
+
+				gfx.CullFace(FRONTFACE);
+				gfx.StencilOp(KEEP, INCR, KEEP); // increment shadows that fail depth
+				render_shadow_volumes();
+
+				gfx.CullFace(BACKFACE);
+				gfx.StencilOp(KEEP, DECR, KEEP); // decrement shadows that backface pass depth
+				render_shadow_volumes();
+
+				gfx.Depth(true);
+				gfx.Color(true);
+
+				gfx.DepthFunc(LEQUAL); // depth already filled, need <=
+				gfx.StencilOp(KEEP, KEEP, KEEP);
+
+				//all lit surfaces will correspond to a 0 in the stencil buffer
+				//all shadowed surfaces will be one
+				gfx.StencilFunc(GEQUAL, 0, ~0);
+				// render with lights
+				render_scene(true);
+
+				if (input.scores)
+					render_shadow_volumes();
+
+				gfx.DepthFunc(LESS);
+				gfx.Stencil(false);
+			}
+			else if (zpass_two && enable_stencil)
+			{
+				// Depth PASS Stencil Shadows -- using two sided stencil
+				//(allows single call to draw shadow volumes instead of two)
+				gfx.clear();
+				render_scene(false); // render without lights, fill stencil mask, render with lights
+
+
+				gfx.Depth(false); // turn off depth writes
+				gfx.Color(false);
+				gfx.CullFace(NONE);
+				gfx.Stencil(true);
+
+				gfx.TwoSidedStencilOp(BACKFACE, KEEP, KEEP, DECR_WRAP);
+				gfx.TwoSidedStencilOp(FRONTFACE, KEEP, KEEP, INCR_WRAP);
+				gfx.StencilFunc(ALWAYS, 0, ~0);
+				render_shadow_volumes();
+
+				gfx.Depth(true);
+				gfx.Color(true);
+
+				gfx.DepthFunc(LEQUAL); // depth already filled, need <=
+				gfx.StencilOp(KEEP, KEEP, KEEP);
+
+				//all lit surfaces will correspond to a 0 in the stencil buffer
+				//all shadowed surfaces will be one
+				gfx.StencilFunc(GEQUAL, 0, ~0);
+				// render with lights
+				//			gfx.cleardepth();
+				gfx.CullFace(3);
+				render_scene(true);
+
+				if (input.scores)
+					render_shadow_volumes();
+
+				gfx.DepthFunc(LESS);
+				gfx.Stencil(false);
+			}
+			else
+			{
+				gfx.clear();
+				render_scene(true);
+			}
+
+
+			//render menu
+			if (menu.chatmode == false)
+				game->render_hud(last_frametime);
+			if (menu.ingame)
+				menu.render(global);
+			if (menu.console)
+				menu.render_console(global);
+			if (menu.chatmode)
+				menu.render_chatmode(global);
 		}
-
-
-		//render menu
-		if (menu.chatmode == false)
-			game->render_hud(last_frametime);
-		if (menu.ingame)
-			menu.render(global);
-		if (menu.console)
-			menu.render_console(global);
-		if (menu.chatmode)
-			menu.render_chatmode(global);
 	}
 
+	gfx.Depth(true);
+	gfx.Blend(false);
 
 #ifdef DIRECTX
 	gfx.cleardepth();
-	gfx.Blend(false);
 #endif
 
 	gfx.swap();
@@ -1312,23 +1294,58 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.fbAttachTexture(quad_tex);
 	gfx.fbAttachDepth(depth_tex);
 
-	gfx.clear();
-	if (shadowmaps)
-		render_scene_using_shadowmap(true);
-	else
-		render_scene(true);
-//	glStencilFunc(GL_GREATER, 128, 0xFF); // only pass if greater than 128
-//	render_texture(q3map.portal_tex, false);
-//	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF
-
-
-
-/*
-	if (spawn != -1)
+	if (enable_stencil)
 	{
-		render_shadow_volumes(entity_list[spawn]->player->current_light);
+		// Depth PASS Stencil Shadows -- using two sided stencil
+		//(allows single call to draw shadow volumes instead of two)
+		gfx.clear();
+		render_scene(false); // render without lights, fill stencil mask, render with lights
+
+
+		gfx.Depth(false); // turn off depth writes
+		gfx.Color(false);
+		gfx.CullFace(NONE);
+		gfx.Stencil(true);
+
+		gfx.TwoSidedStencilOp(BACKFACE, KEEP, KEEP, DECR_WRAP);
+		gfx.TwoSidedStencilOp(FRONTFACE, KEEP, KEEP, INCR_WRAP);
+		gfx.StencilFunc(ALWAYS, 0, ~0);
+		render_shadow_volumes();
+
+		gfx.Depth(true);
+		gfx.Color(true);
+
+		gfx.DepthFunc(LEQUAL); // depth already filled, need <=
+		gfx.StencilOp(KEEP, KEEP, KEEP);
+
+		//all lit surfaces will correspond to a 0 in the stencil buffer
+		//all shadowed surfaces will be one
+		gfx.StencilFunc(GEQUAL, 0, ~0);
+		// render with lights
+		//			gfx.cleardepth();
+		gfx.CullFace(3);
+
+
+		if (shadowmaps)
+			render_scene_using_shadowmap(true);
+		else
+			render_scene(true);
+
+		if (input.scores)
+			render_shadow_volumes();
+
+		gfx.DepthFunc(LESS);
+		gfx.Stencil(false);
 	}
-	*/
+	else
+	{
+		gfx.clear();
+
+		if (shadowmaps)
+			render_scene_using_shadowmap(true);
+		else
+			render_scene(true);
+	}
 
 	//render menu
 	if (menu.chatmode == false)
@@ -2673,7 +2690,7 @@ void Engine::step(int tick)
 
 	game->step(tick);
 
-	if (render_mode == MODE_SHADOWVOL && enable_stencil)
+	if (enable_stencil)
 	{
 		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 		{
@@ -4621,13 +4638,15 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "bind %s %s", data, msg);
 	if (ret == 2)
 	{
-		snprintf(msg, LINE_SIZE, "binding key");
-		menu.print(msg);
 		if (key_bind.update(data, strstr(cmd, msg)))
 		{
+			snprintf(msg, LINE_SIZE, "binding key");
+			menu.print(msg);
 			return;
 		}
 		key_bind.insert(data, strstr(cmd, msg));
+		snprintf(msg, LINE_SIZE, "binding key");
+		menu.print(msg);
 		return;
 	}
 
@@ -5328,20 +5347,6 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "Setting rendermode to forward\n");
 			menu.print(msg);
 			render_mode = MODE_FORWARD;
-		}
-		else if (atoi(data) == MODE_SHADOWVOL)
-		{
-			if (q3map.loaded == false)
-			{
-				snprintf(msg, LINE_SIZE, "Setting rendermode to shadow volumes\n");
-				menu.print(msg);
-				render_mode = MODE_SHADOWVOL;
-			}
-			else
-			{
-				snprintf(msg, LINE_SIZE, "Must enable shadowvolumes before loading map\n");
-				menu.print(msg);
-			}
 		}
 		return;
 	}

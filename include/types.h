@@ -596,8 +596,7 @@ typedef struct
 typedef enum
 {
 	MODE_FORWARD,
-	MODE_INDIRECT,
-	MODE_SHADOWVOL
+	MODE_INDIRECT
 } rendermode_t;
 
 typedef struct
