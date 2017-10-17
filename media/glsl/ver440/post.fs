@@ -16,6 +16,16 @@ uniform vec2 tc_offset[9];
 
 uniform int u_type;
 
+uniform int u_dir;
+uniform float u_scale;
+uniform float u_amount;
+uniform float u_strength;
+
+float GaussianFunction(float x, float dev)
+{
+  return ((1.0/sqrt(2.0*3.142857*dev))*exp(-(x*x)/(2.0*dev)));
+} 
+
 void main(void)
 {
 	vec4 texsample[9];
@@ -47,6 +57,39 @@ void main(void)
 		Fragment = (-2.0 * texsample[0] + -1.0 * texsample[1] +
 			-1.0 * texsample[3] + 1.0 * texsample[4] + 1.0 * texsample[5] + 
 						1.0 * texsample[7] + 2.0 * texsample[8]) / 16.0;
+	}
+	else if (u_type == 3)
+	{
+		vec4	color = vec4(0.0,0.0,0.0,0.0);
+		vec4	temp =  vec4(0.0,0.0,0.0,0.0);
+		float	strength = 1.0 - u_strength;
+		float	half1 = float(u_amount) * 0.5;
+		float	texel = (1.0/1024.0);
+		float	dev = u_amount * 0.5 * 0.5;
+		int	count = int(u_amount);
+	
+		dev *= dev;
+		if (u_dir == 0) 
+		{
+			for (int i = 0; i < count; i++)
+			{
+				float offset = float(i) - half1;
+				temp = texture2D(texture0, vary_TexCoord + vec2(offset * texel * u_scale, 0.0)) * GaussianFunction(offset * u_strength, dev);
+				color += temp;
+			}
+		} 
+		else 
+		{
+			for (int i = 0; i < count; i++)
+			{
+				float offset = float(i) - half1;
+				temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset * u_strength, dev);
+				color += temp;
+			}
+		}
+	  
+		Fragment = clamp(color, 0.0, 1.0);
+		Fragment.w = 1.0;
 	}
 }
 

@@ -26,7 +26,7 @@ public:
 	void render_shadowmaps(bool everything);
 	void render_portalcamera();
 	void render_texture(int texObj, bool depth_view);
-	void post_process(int num_passes);
+	void post_process(int num_passes, int type);
 	void resize(int width, int height);
 	void fullscreen();
 
@@ -154,6 +154,9 @@ public:
 	bool all_lights;
 	bool enable_portal;
 	bool enable_postprocess;
+	bool enable_blur;
+	bool enable_emboss;
+	bool enable_bloom;
 	bool enable_stencil;
 
 //Game logic

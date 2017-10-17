@@ -667,6 +667,13 @@ int Post::init(Graphics *gfx)
 	texture0 = glGetUniformLocation(program_handle, "texture0");
 	texture1 = glGetUniformLocation(program_handle, "texture1");
 	tc_offset = glGetUniformLocation(program_handle, "tc_offset");
+	u_type = glGetUniformLocation(program_handle, "u_type");
+
+	u_dir = glGetUniformLocation(program_handle, "u_dir");
+	u_scale = glGetUniformLocation(program_handle, "u_scale");
+	u_amount = glGetUniformLocation(program_handle, "u_amount");
+	u_strength = glGetUniformLocation(program_handle, "u_strength");
+
 
 	glGenTextures(1, &image);
 	glBindTexture(GL_TEXTURE_2D, image);
@@ -704,11 +711,20 @@ void Post::resize(int width, int height)
     }
 }
 
-void Post::Params(int tex0, int tex1)
+void Post::Params(int tex0, int tex1, int type)
 {
 	glUniform1i(texture0, tex0);
 	glUniform1i(texture1, tex1);
 	glUniform2fv(tc_offset, 9, texCoordOffsets);
+	glUniform1i(u_type, type);
+}
+
+void Post::BloomParams(int dir, float amount, float strength, float scale)
+{
+	glUniform1i(u_dir, dir);
+	glUniform1f(u_amount, amount);
+	glUniform1f(u_strength, strength);
+	glUniform1f(u_scale, scale);
 }
 
 #ifdef NOPE

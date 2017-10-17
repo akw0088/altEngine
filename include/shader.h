@@ -130,7 +130,7 @@ private:
 	int u_position;
 	int u_color;
 
-
+	int m_normalmap;
 	unsigned int max_light;
 };
 
@@ -172,12 +172,18 @@ private:
 	int u_color;
 };
 
+#define POST_EDGE	0
+#define POST_BLUR	1
+#define POST_EMBOSS	2
+#define POST_BLOOM	3
+
 class Post : public Shader
 {
 public:
 	int init(Graphics *gfx);
 	void resize(int width, int height);
-	void Params(int tex0, int tex1);
+	void Params(int tex0, int tex1, int type);
+	void BloomParams(int dir, float amount, float strength, float scale);
 
 	virtual void prelink(void);
 
@@ -186,6 +192,12 @@ private:
 	int texture0;
 	int texture1;
 	int tc_offset;
+	int u_type;
+
+	int u_dir;
+	int u_amount;
+	int u_strength;
+	int u_scale;
 	float texCoordOffsets[18];
 };
 

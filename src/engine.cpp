@@ -88,6 +88,9 @@ Engine::Engine()
 	num_light = 0;
 	doom_sound = 0;
 	enable_portal = false;
+	enable_blur = false;
+	enable_emboss = false;
+	enable_bloom = false;
 
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
@@ -854,7 +857,19 @@ void Engine::render(double last_frametime)
 
 			if (enable_postprocess)
 			{
-				post_process(5);
+				post_process(5, POST_EDGE);
+			}
+			else if (enable_blur)
+			{
+				post_process(5, POST_BLUR);
+			}
+			else if (enable_emboss)
+			{
+				post_process(5, POST_EMBOSS);
+			}
+			else if (enable_bloom)
+			{
+				post_process(1, POST_BLOOM);
 			}
 		}
 		else
@@ -2011,7 +2026,7 @@ void Engine::screenshot()
 #endif
 }
 
-void Engine::post_process(int num_passes)
+void Engine::post_process(int num_passes, int type)
 {
 	int temp;
 
@@ -2027,7 +2042,8 @@ void Engine::post_process(int num_passes)
 #endif
 		gfx.SelectTexture(1, post.swap);
 		post.Select();
-		post.Params(0, 1);
+		post.Params(0, 1, type);
+		post.BloomParams(pass % 2 == 0, 20, 0.5f, 1.0f);
 		gfx.clear();
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -5005,9 +5021,65 @@ void Engine::console(char *cmd)
 
 	if (strstr(cmd, "postprocess"))
 	{
-		snprintf(msg, LINE_SIZE, "Toggling postprocessing");
-		menu.print(msg);
 		enable_postprocess = !enable_postprocess;
+		if (enable_postprocess)
+		{
+			snprintf(msg, LINE_SIZE, "postprocessing on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "postprocessing off");
+			menu.print(msg);
+		}
+		return;
+	}
+
+	if (strstr(cmd, "bloom"))
+	{
+		enable_bloom = !enable_bloom;
+		if (enable_bloom)
+		{
+			snprintf(msg, LINE_SIZE, "bloom on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "bloom off");
+			menu.print(msg);
+		}
+		return;
+	}
+
+	if (strstr(cmd, "blur"))
+	{
+		enable_blur = !enable_blur;
+		if (enable_blur)
+		{
+			snprintf(msg, LINE_SIZE, "blur on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "blur off");
+			menu.print(msg);
+		}
+		return;
+	}
+
+	if (strstr(cmd, "emboss"))
+	{
+		enable_emboss = !enable_emboss;
+		if (enable_emboss)
+		{
+			snprintf(msg, LINE_SIZE, "emboss on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "emboss off");
+			menu.print(msg);
+		}
 		return;
 	}
 
@@ -5828,7 +5900,9 @@ void Engine::reload_shaders()
 	particle_update.destroy();
 	particle_update.init(&gfx);
 	particle_render.destroy();
-	particle_render.init(&gfx);	
+	particle_render.init(&gfx);
+	post.destroy();
+	post.init(&gfx);
 }
 
 
