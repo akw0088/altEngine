@@ -4791,8 +4791,7 @@ void Engine::console(char *cmd)
 	{
 		if (recording_demo)
 		{
-			snprintf(msg, LINE_SIZE, "stopping playerback");
-			menu.print(msg);
+			snprintf(msg, LINE_SIZE, "stopping playeback");
 			menu.print(msg);
 			fclose(demofile);
 			recording_demo = false;
@@ -4927,14 +4926,13 @@ void Engine::console(char *cmd)
 
 	if (strcmp(cmd, "r_res") == 0)
 	{
-		snprintf(msg, LINE_SIZE, "%dx%d\n", gfx.width, gfx.height);
+		snprintf(msg, LINE_SIZE, "Resolution: %dx%d\n", gfx.width, gfx.height);
 		menu.print(msg);
 		return;
 	}
 
 	if (sscanf(cmd, "r_texture %s", data) == 1)
 	{
-		menu.print(msg);
 		if (atoi(data))
 		{
 			snprintf(msg, LINE_SIZE, "textures enabled");
@@ -4952,7 +4950,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_stencil %s", data) == 1)
 	{
-		menu.print(msg);
 		if (atoi(data))
 		{
 			snprintf(msg, LINE_SIZE, "stencil enabled");
@@ -4970,7 +4967,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_patch %s", data) == 1)
 	{
-		menu.print(msg);
 		if (atoi(data))
 		{
 			snprintf(msg, LINE_SIZE, "patches enabled");
@@ -4988,7 +4984,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_maxlight %s", data) == 1)
 	{
-		menu.print(msg);
 
 		int max = atoi(data);
 
@@ -5000,8 +4995,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_ambient %s", data) == 1)
 	{
-		menu.print(msg);
-
 		float ambient = (float)atof(data);
 		mlight2.set_ambient(ambient);
 		
@@ -5012,8 +5005,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_brightness %s", data) == 1)
 	{
-		menu.print(msg);
-
 		float ambient = (float)atof(data);
 		mlight2.set_brightness(ambient - 1.0f);
 		snprintf(msg, LINE_SIZE, "Setting brightness to %f", ambient);
@@ -5023,8 +5014,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_contrast %s", data) == 1)
 	{
-		menu.print(msg);
-
 		float contrast = (float)atof(data);
 		mlight2.set_contrast(contrast);
 		snprintf(msg, LINE_SIZE, "Setting contrast to %f", contrast);
@@ -5034,8 +5023,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "com_maxfps %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data) > 0)
 		{
 			snprintf(msg, LINE_SIZE, "Setting com_maxfps to %d", atoi(data));
@@ -5047,8 +5034,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_lightmap %s", data) == 1)
 	{
-		menu.print(msg);
-
 		float lightmap = (float)atof(data);
 		mlight2.set_lightmap(lightmap);
 
@@ -5082,8 +5067,6 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			mlight2.set_shadowmap(0.0f);
 		}
-		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, shadowmaps);
-		menu.print(msg);
 		return;
 	}
 
@@ -5252,7 +5235,6 @@ void Engine::console(char *cmd)
 	if (sscanf(cmd, "r_light %s", data) == 1)
 	{
 		int mode = 0;
-		menu.print(msg);
 		mode = atoi(data);
 
 		switch (mode)
@@ -5291,7 +5273,6 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "cl_skip %s", data);
 	if (ret == 1)
 	{
-		menu.print(msg);
 		debugf("Setting cl_skip to %s\n", data);
 		cl_skip = atoi(data);
 		return;
@@ -5299,7 +5280,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "g_collision %s", data) == 1)
 	{
-		menu.print(msg);
 		if (atoi(data))
 		{
 			collision_detect_enable = true;
@@ -5317,7 +5297,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_sky %s", data) == 1)
 	{
-		menu.print(msg);
 		if (atoi(data))
 		{
 			q3map.enable_sky = true;
@@ -5342,13 +5321,14 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_max_particles %s", data) == 1)
 	{
-		menu.print(msg);
+		menu.print(cmd);
 		ParticleUpdate::max_particles = atoi(data);
 		return;
 	}
 
 	if (strcmp(cmd, "r_reload_shaders") == 0)
 	{
+		sprintf(msg, "reloading gpu shaders");
 		menu.print(msg);
 
 		reload_shaders();
@@ -5357,8 +5337,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_shader %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data))
 		{
 			q3map.enable_shader = true;
@@ -5376,8 +5354,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_entities %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data))
 		{
 			snprintf(msg, LINE_SIZE, "Enabling entities");
@@ -5395,8 +5371,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_blend %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data))
 		{
 			q3map.enable_blend = true;
@@ -5414,7 +5388,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_maxstage %s", data) == 1)
 	{
-		menu.print(msg);
 		q3map.max_stage = atoi(data);
 		snprintf(msg, LINE_SIZE, "Setting q3 shader max stage to %d", q3map.max_stage);
 		menu.print(msg);
@@ -5423,8 +5396,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_portal %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data))
 		{
 			enable_portal = true;
@@ -5443,8 +5414,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data))
 		{
 			q3map.enable_normalmap = true;
@@ -5474,8 +5443,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_rendermode %s", data) == 1)
 	{
-		menu.print(msg);
-
 		if (atoi(data) == MODE_INDIRECT)
 		{
 			snprintf(msg, LINE_SIZE, "Setting rendermode to indirect\n");
@@ -5493,8 +5460,6 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_multisample %s", data) == 1)
 	{
-		menu.print(msg);
-
 		multisample = atoi(data);
 #ifdef OPENGL
 		if (multisample > 0)
