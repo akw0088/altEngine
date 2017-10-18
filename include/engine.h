@@ -27,7 +27,7 @@ public:
 	void render_portalcamera();
 	void render_texture(int texObj, bool depth_view);
 	void post_process(int num_passes, int type);
-	void bloom();
+	void bloom(bool debug);
 	void resize(int width, int height);
 	void fullscreen();
 
@@ -158,6 +158,7 @@ public:
 	bool enable_blur;
 	bool enable_emboss;
 	bool enable_bloom;
+	bool debug_bloom;
 	bool enable_stencil;
 
 //Game logic

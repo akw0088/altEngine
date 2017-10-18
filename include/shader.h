@@ -177,6 +177,7 @@ private:
 #define POST_EMBOSS		2
 #define POST_BLOOM		3
 #define POST_COMBINE	4
+#define POST_MASK		5
 
 class Post : public Shader
 {

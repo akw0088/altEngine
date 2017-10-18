@@ -91,6 +91,7 @@ Engine::Engine()
 	enable_blur = false;
 	enable_emboss = false;
 	enable_bloom = false;
+	debug_bloom = false;
 
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
@@ -873,10 +874,6 @@ void Engine::render(double last_frametime)
 			{
 				post_process(5, POST_EMBOSS);
 			}
-			else if (enable_bloom)
-			{
-				bloom();
-			}
 		}
 		else
 		{
@@ -1366,6 +1363,11 @@ void Engine::render_to_framebuffer(double last_frametime)
 			render_scene_using_shadowmap(true);
 		else
 			render_scene(true);
+	}
+
+	if (enable_bloom)
+	{
+		bloom(debug_bloom);
 	}
 
 	//render menu
@@ -2063,10 +2065,8 @@ void Engine::post_process(int num_passes, int type)
 //	gfx.DeselectTexture(0);
 }
 
-void Engine::bloom()
+void Engine::bloom(bool debug)
 {
-#ifdef OPENGL
-
 	gfx.bindFramebuffer(mask_fbo);
 	gfx.resize(fb_width, fb_height);
 	gfx.fbAttachTexture(mask_quad);
@@ -2074,12 +2074,11 @@ void Engine::bloom()
 	gfx.clear();
 	gfx.SelectTexture(0, quad_tex);
 	post.Select();
-	post.Params(POST_BLOOM);
-	post.BloomParams(0, 20, 0.5f, 1.0f);
+	post.Params(5);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
+	gfx.DrawArrayTri(0, 0, 6, 4); // bright pass filter
 	gfx.bindFramebuffer(0);
 
 	gfx.bindFramebuffer(blur1_fbo);
@@ -2105,24 +2104,33 @@ void Engine::bloom()
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.SelectTexture(0, quad_tex);
+	gfx.SelectTexture(0, mask_quad);
 	post.Select();
 	post.Params(POST_BLOOM);
 	post.BloomParams(1, 20, 0.5f, 1.0f);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
-	gfx.bindFramebuffer(0);
 
-	gfx.resize(xres, yres);
-	gfx.clear();
+	gfx.bindFramebuffer(fbo);
+	gfx.resize(fb_width, fb_height);
+//	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.SelectTexture(0, quad_tex);
-	gfx.SelectTexture(1, blur1_quad);
-	gfx.SelectTexture(2, blur2_quad);
+	if (debug)
+	{
+		gfx.SelectTexture(0, mask_quad);
+		gfx.SelectTexture(1, blur1_quad);
+		gfx.SelectTexture(2, blur2_quad);
+	}
+	else
+	{
+		gfx.SelectTexture(0, quad_tex);
+		gfx.SelectTexture(1, blur1_quad);
+		gfx.SelectTexture(2, blur2_quad);
+	}
 	post.Select();
 	post.Params(POST_COMBINE);
 	gfx.DrawArrayTri(0, 0, 6, 4); // add all three together
-#endif
+
 }
 
 void Engine::destroy_buffers()
@@ -5098,6 +5106,15 @@ void Engine::console(char *cmd)
 		{
 			snprintf(msg, LINE_SIZE, "bloom off");
 			menu.print(msg);
+		}
+
+		if (strstr(cmd, "debug"))
+		{
+			debug_bloom = true;
+		}
+		else
+		{
+			debug_bloom = false;
 		}
 		return;
 	}
