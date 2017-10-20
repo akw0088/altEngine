@@ -48,7 +48,9 @@ Engine::Engine()
 	playing_demo = false;
 	node = NULL;
 	no_tex = 0;
-	depth_tex = 0;
+	render_quad = 0;
+	render_depth = 0;
+	render_ndepth = 0;
 	demofile = NULL;
 	multisample = 1;
 	lightning_vbo = 0;
@@ -64,7 +66,6 @@ Engine::Engine()
 	param2 = NULL;
 	particle_tex = 0;
 	qport = 0;
-	quad_tex = 0;
 	ref = NULL;
 	thug22 = NULL;
 	sensitivity = 1.0f;
@@ -361,7 +362,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_height = (unsigned int)(1024 * res_scale);
 
 	unsigned int normal_depth;
-	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 
 	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, multisample, false);
 	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, multisample, false);
@@ -873,7 +874,7 @@ void Engine::render(double last_frametime)
 		if (spawn == -1 || (player && player->current_light == 0))
 		{
 			// render fbo to fullscreen quad
-			render_texture(quad_tex, false);
+			render_texture(render_quad, false);
 
 			if (enable_postprocess)
 			{
@@ -1296,7 +1297,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			fb_width = (unsigned int)(1024 * res_scale);
 			fb_height = (unsigned int)(1024 * res_scale);
 			gfx.DeleteFrameBuffer(render_fbo);
-			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
 		{
@@ -1304,7 +1305,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			fb_width = (unsigned int)(1024 * res_scale);
 			fb_height = (unsigned int)(1024 * res_scale);
 			gfx.DeleteFrameBuffer(render_fbo);
-			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 	}
 	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
@@ -1313,7 +1314,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 		fb_width = (unsigned int)(1024 * res_scale);
 		fb_height = (unsigned int)(1024 * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo);
-		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 	}
 }
 
@@ -1327,9 +1328,9 @@ void Engine::render_to_framebuffer(double last_frametime)
 
 	gfx.bindFramebuffer(render_fbo, 2);
 	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(quad_tex);
-	gfx.fbAttachTextureOne(ndepth_tex);
-	gfx.fbAttachDepth(depth_tex);
+	gfx.fbAttachTexture(render_quad);
+	gfx.fbAttachTextureOne(render_ndepth);
+	gfx.fbAttachDepth(render_depth);
 
 	if (enable_stencil)
 	{
@@ -2100,7 +2101,7 @@ void Engine::render_bloom(bool debug)
 	gfx.fbAttachTexture(mask_quad);
 	gfx.fbAttachDepth(mask_depth);
 	gfx.clear();
-	gfx.SelectTexture(0, quad_tex);
+	gfx.SelectTexture(0, render_quad);
 	post.Select();
 	post.Params(5);
 	gfx.clear();
@@ -2151,7 +2152,7 @@ void Engine::render_bloom(bool debug)
 	}
 	else
 	{
-		gfx.SelectTexture(0, quad_tex);
+		gfx.SelectTexture(0, render_quad);
 		gfx.SelectTexture(1, blur1_quad);
 		gfx.SelectTexture(2, blur2_quad);
 	}
@@ -2178,8 +2179,8 @@ void Engine::render_ssao(bool debug)
 
 	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count);
 
-	gfx.SelectTexture(0, quad_tex);
-	gfx.SelectTexture(1, ndepth_tex);
+	gfx.SelectTexture(0, render_quad);
+	gfx.SelectTexture(1, render_ndepth);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	glDisable(GL_DEPTH_TEST);
@@ -5563,7 +5564,7 @@ void Engine::console(char *cmd)
 		}
 #endif
 		gfx.DeleteFrameBuffer(render_fbo);
-		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		return;
 	}
 
@@ -5584,7 +5585,7 @@ void Engine::console(char *cmd)
 		fb_width = (unsigned int)(1024 * res_scale);
 		fb_height = (unsigned int)(1024 * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo);
-		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		return;
 	}
 

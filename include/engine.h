@@ -221,9 +221,9 @@ protected:
 	unsigned int	ssao_fbo;
 
 
-	unsigned int	quad_tex;
-	unsigned int	depth_tex;
-	unsigned int	ndepth_tex;
+	unsigned int	render_quad;
+	unsigned int	render_depth;
+	unsigned int	render_ndepth;
 
 	unsigned int	mask_quad;
 	unsigned int	mask_depth;
