@@ -239,6 +239,8 @@ private:
 	int u_level;
 	int u_randomize_points;
 	int u_point_count;
+
+	unsigned int points_buffer;
 };
 
 #endif

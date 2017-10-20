@@ -24,6 +24,8 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 
 void Light::generate_cubemaps(Graphics &gfx)
 {
+	unsigned int normal_depth;
+
 	shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
 #ifdef OPENGL
 
@@ -31,7 +33,7 @@ void Light::generate_cubemaps(Graphics &gfx)
 	{
 		for (int i = 0; i < NUM_CUBE_FACE; i++)
 		{
-			gfx.setupFramebuffer((int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), (int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], 0);
+			gfx.setupFramebuffer((int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), (int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], normal_depth, 0, false);
 		}
 	}
 #endif
@@ -66,6 +68,7 @@ void Light::generate_map_volumes(Bsp &map)
 
 void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 {
+	int j = 0;
 	num_shadowvol = 0;
 	for (unsigned int i = 100; i < entity_list.size(); i++)
 	{

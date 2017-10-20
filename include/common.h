@@ -64,10 +64,7 @@ void ping_time_start(int sequence);
 double ping_time_end(int sequence);
 float clamp(float value, float min, float max);
 
-void extend(vec3 &a, vec3 &b, vec3 &c, vec3 &origin, float distance, vec3 &ra, vec3 &rb, vec3 &rc);
-int frontface(vec3 &a, vec3 &b, vec3 &c, vec3 &origin);
-void centroid(vec3 &a, vec3 &b, vec3 &c, vec3 &result);
-void extend_array(vec3 *point, int num_point, vec3 &origin, float distance, vec3 *result, int &num_result);
+float random_float();
 
 double GetCounter(double freq);
 extern double freq;

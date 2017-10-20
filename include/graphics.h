@@ -42,6 +42,7 @@ public:
 	void init(void *param1, void *param2);
 	bool error_check();
 	void clear();
+	void clear_multi();
 	void cleardepth();
 	void clearstencil();
 	void Depth(bool flag);
@@ -109,12 +110,13 @@ public:
 	void SelectShader(int program);
 
 	int checkFramebuffer();
-	int setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int multisample);
+	int setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach);
 	int setupFramebufferArray(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int layer, int multisample);
-	void bindFramebuffer(int fbo);
 	void DeleteFrameBuffer(unsigned int fbo);
 	void fbAttachTexture(int texObj);
+	void fbAttachTextureOne(int texObj);
 	void fbAttachDepth(int texObj);
+	void bindFramebuffer(int fbo, int num_attach = 1);
 	void GetDebugLog();
 
 

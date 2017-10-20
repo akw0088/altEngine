@@ -98,6 +98,16 @@ void Graphics::clear()
 #endif
 }
 
+void Graphics::clear_multi()
+{
+	static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	static const GLfloat one = 1.0f;
+
+//	glClearBufferfv(GL_COLOR, 0, black);
+	glClearBufferfv(GL_COLOR, 1, black);
+//	glClearBufferfv(GL_DEPTH, 0, &one);
+}
+
 void Graphics::cleardepth()
 {
 	glClear( GL_DEPTH_BUFFER_BIT );
@@ -896,20 +906,27 @@ void Graphics::fbAttachTexture(int texObj)
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texObj, 0);
 }
 
+void Graphics::fbAttachTextureOne(int texObj)
+{
+	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texObj, 0);
+}
+
+
 void Graphics::fbAttachDepth(int texObj)
 {
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texObj, 0);
 }
 
-void Graphics::bindFramebuffer(int fbo)
-{
-	GLuint attachments[1] = { GL_COLOR_ATTACHMENT0 };
 
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+void Graphics::bindFramebuffer(int fbo, int num_attach)
+{
+	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+
 	if (fbo)
 	{
-		glDrawBuffers(1, &attachments[0]);
+		glDrawBuffers(num_attach, &attachments[0]);
 	}
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 }
 
 int Graphics::checkFramebuffer()
@@ -954,7 +971,7 @@ int Graphics::checkFramebuffer()
 	return 0;
 }
 
-int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int multisample)
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
 {
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -981,7 +998,8 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB16F, width, height);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	if (multisample > 0)
 	{
 		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGBA8, width, height, GL_FALSE);
@@ -989,6 +1007,20 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	if (twoattach)
+	{
+		glGenTextures(1, &normal_depth);
+		glBindTexture(GL_TEXTURE_2D, normal_depth);
+		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, width, height);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, normal_depth, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
 
 	/*
 	glGenTextures(1, &depth_tex);

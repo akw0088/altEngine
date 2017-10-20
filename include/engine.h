@@ -27,7 +27,7 @@ public:
 	void render_portalcamera();
 	void render_texture(int texObj, bool depth_view);
 	void post_process(int num_passes, int type);
-	void bloom(bool debug);
+	void render_bloom(bool debug);
 	void resize(int width, int height);
 	void fullscreen();
 
@@ -159,6 +159,7 @@ public:
 	bool enable_emboss;
 	bool enable_bloom;
 	bool debug_bloom;
+	bool enable_ssao;
 	bool enable_stencil;
 
 //Game logic
@@ -176,19 +177,9 @@ public:
 	float			res_scale;
 
 	//ssao temp
+	ScreenSpace ssao;
 
-	void ssao_init();
-	void ssao_render();
-
-	unsigned int      render_program;
-	unsigned int      ssao_program;
-	bool        paused;
-
-	unsigned int      render_fbo;
-	unsigned int      fbo_textures[3];
-	unsigned int      quad_vao;
-	unsigned int      points_buffer;
-
+	void render_ssao(bool debug);
 
 	bool  show_shading;
 	bool  show_ao;
@@ -227,6 +218,7 @@ protected:
 	unsigned int	global_vao;
 	unsigned int	quad_tex;
 	unsigned int	depth_tex;
+	unsigned int	ndepth_tex;
 
 	unsigned int	mask_quad;
 	unsigned int	mask_depth;

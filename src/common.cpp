@@ -1745,3 +1745,19 @@ void polyline(vec3 *point, int num_point, float t, vec3 &p)
 	bezier_curve(time - set, p, point[set], point[set+1], point[set + 2], point[set + 3]);
 }
 
+// Random number generator
+static unsigned int seed = 0x13371337;
+
+float random_float()
+{
+	float res;
+	unsigned int tmp;
+
+	seed *= 16807;
+
+	tmp = seed ^ (seed >> 4) ^ (seed << 15);
+
+	*((unsigned int *)&res) = (tmp >> 9) | 0x3F800000;
+
+	return (res - 1.0f);
+}

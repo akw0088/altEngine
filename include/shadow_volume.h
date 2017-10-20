@@ -3,7 +3,7 @@
 
 #include "include.h"
 
-#define MAX_VERT 8192
+#define MAX_VERT 10 * 4096
 
 typedef struct
 {
