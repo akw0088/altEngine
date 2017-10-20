@@ -184,6 +184,7 @@ public:
 	bool  show_shading;
 	bool  show_ao;
 	float ssao_level;
+	float object_level;
 	float ssao_radius;
 	bool  weight_by_angle;
 	bool randomize_points;
@@ -211,7 +212,7 @@ protected:
 	unsigned int	spiral_ibo;
 	unsigned int	lightning_ibo;
 	unsigned int	lightning_vbo;
-	unsigned int	fbo;
+	unsigned int	render_fbo;
 	unsigned int	mask_fbo;
 	unsigned int	blur1_fbo;
 	unsigned int	blur2_fbo;

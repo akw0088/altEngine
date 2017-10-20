@@ -1118,7 +1118,8 @@ int ScreenSpace::init(Graphics *gfx)
 	*/
 
 	u_radius = glGetUniformLocation(program_handle, "ssao_radius");
-	u_level = glGetUniformLocation(program_handle, "ssao_level");
+	u_ssaolevel = glGetUniformLocation(program_handle, "ssao_level");
+	u_objectlevel = glGetUniformLocation(program_handle, "object_level");
 	u_randomize_points = glGetUniformLocation(program_handle, "randomize_points");
 	u_point_count = glGetUniformLocation(program_handle, "point_count");
 
@@ -1156,7 +1157,7 @@ int ScreenSpace::init(Graphics *gfx)
 	glBindBuffer(GL_UNIFORM_BUFFER, points_buffer);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(SAMPLE_POINTS), &point_data, GL_STATIC_DRAW);
 
-
+	return 0;
 }
 
 void ScreenSpace::prelink(void)
@@ -1170,10 +1171,11 @@ void ScreenSpace::prelink(void)
 }
 
 
-void ScreenSpace::Params(float radius, float level, bool show_ao, bool randomize_points, int point_count)
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count)
 {
 	glUniform1f(u_radius, radius * (1024.0f / 1000.0f));
-	glUniform1f(u_level, 1.0f);
+	glUniform1f(u_objectlevel, objectlevel);
+	glUniform1f(u_ssaolevel, ssaolevel);
 	glUniform1i(u_randomize_points, randomize_points);
 	glUniform1ui(u_point_count, point_count);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, points_buffer);

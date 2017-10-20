@@ -56,7 +56,7 @@ Engine::Engine()
 	last_server_sequence = 0;
 	client_flag = false;
 	global_vao = 0;
-	fbo = 0;
+	render_fbo = 0;
 	game = NULL;
 	num_pk3 = 0;
 	num_shader = 0;
@@ -91,6 +91,7 @@ Engine::Engine()
 	enable_blur = false;
 	enable_emboss = false;
 	enable_bloom = false;
+	enable_ssao = false;
 	debug_bloom = false;
 
 #ifdef OPENGL
@@ -360,7 +361,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_height = (unsigned int)(1024 * res_scale);
 
 	unsigned int normal_depth;
-	gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
 
 	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, multisample, false);
 	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, multisample, false);
@@ -457,7 +458,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	if (render_mode == MODE_INDIRECT)
 	{
 		//Setup render to texture
-		gfx.bindFramebuffer(fbo);
+		gfx.bindFramebuffer(render_fbo);
 		gfx.resize(fb_width, fb_height);
 		gfx.bindFramebuffer(0);
 
@@ -855,9 +856,11 @@ void Engine::render(double last_frametime)
 			render_shadowmaps(all_lights); // done at load time
 			gfx.bindFramebuffer(0);
 		}
-		if (enable_portal)
-			render_portalcamera();
 
+		if (enable_portal)
+		{
+			render_portalcamera();
+		}
 
 		render_to_framebuffer(last_frametime);
 
@@ -866,7 +869,7 @@ void Engine::render(double last_frametime)
 
 		if (spawn == -1 || (player && player->current_light == 0))
 		{
-			render_texture(quad_tex, false);
+			render_texture(mask_quad, false);
 
 			if (enable_postprocess)
 			{
@@ -1288,14 +1291,16 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			res_scale *= 0.75f;
 			fb_width = (unsigned int)(1024 * res_scale);
 			fb_height = (unsigned int)(1024 * res_scale);
-			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+			gfx.DeleteFrameBuffer(render_fbo);
+			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
 		{
 			res_scale *= 1.25f;
 			fb_width = (unsigned int)(1024 * res_scale);
 			fb_height = (unsigned int)(1024 * res_scale);
-			gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+			gfx.DeleteFrameBuffer(render_fbo);
+			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
 		}
 	}
 	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
@@ -1303,7 +1308,8 @@ void Engine::set_dynamic_resolution(double last_frametime)
 		res_scale = 1.0f;
 		fb_width = (unsigned int)(1024 * res_scale);
 		fb_height = (unsigned int)(1024 * res_scale);
-		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+		gfx.DeleteFrameBuffer(render_fbo);
+		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
 	}
 }
 
@@ -1311,9 +1317,11 @@ void Engine::set_dynamic_resolution(double last_frametime)
 void Engine::render_to_framebuffer(double last_frametime)
 {
 	if (dynamic_resolution)
+	{
 		set_dynamic_resolution(last_frametime);
+	}
 
-	gfx.bindFramebuffer(fbo);
+	gfx.bindFramebuffer(render_fbo);
 	gfx.resize(fb_width, fb_height);
 	gfx.fbAttachTexture(quad_tex);
 	gfx.fbAttachTextureOne(ndepth_tex);
@@ -1373,13 +1381,6 @@ void Engine::render_to_framebuffer(double last_frametime)
 	}
 
 
-	if (menu.console)
-		menu.render_console(global);
-
-	if (menu.ingame)
-		menu.render(global);
-
-
 	if (enable_ssao)
 	{
 		render_ssao(debug_bloom);
@@ -1397,9 +1398,10 @@ void Engine::render_to_framebuffer(double last_frametime)
 		game->render_hud(last_frametime);
 	if (menu.chatmode)
 		menu.render_chatmode(global);
-
-
-
+	if (menu.console)
+		menu.render_console(global);
+	if (menu.ingame)
+		menu.render(global);
 
 	gfx.Depth(true);
 	gfx.Blend(false);
@@ -2130,7 +2132,7 @@ void Engine::render_bloom(bool debug)
 	post.BloomParams(1, 20, 0.5f, 1.0f);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
-	gfx.bindFramebuffer(fbo);
+	gfx.bindFramebuffer(render_fbo);
 	gfx.resize(fb_width, fb_height);
 //	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2155,17 +2157,26 @@ void Engine::render_bloom(bool debug)
 
 void Engine::render_ssao(bool debug)
 {
-
-	gfx.bindFramebuffer(fbo);
+	gfx.bindFramebuffer(mask_fbo);
 	gfx.resize(fb_width, fb_height);
 	ssao.Select();
-	ssao.Params(ssao_radius, ssao_level, show_ao, randomize_points, point_count);
+
+	ssao_level = 1.0;
+//	object_level = 1.0;
+	object_level = 0.75;
+	ssao_radius = 5.0;
+	weight_by_angle = true;
+	point_count = 8;
+	randomize_points = true;
+	show_ao = true;
+
+	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count);
 
 	gfx.SelectTexture(0, quad_tex);
 	gfx.SelectTexture(1, ndepth_tex);
-//	glDisable(GL_DEPTH_TEST);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
+	glDisable(GL_DEPTH_TEST);
 	gfx.DrawArrayTri(0, 0, 6, 4);
 
 	/*
@@ -2241,7 +2252,7 @@ void Engine::destroy_buffers()
 	sentry.destroy_buffers(gfx);
 	zsec_shotgun.destroy_buffers(gfx);
 
-	gfx.DeleteFrameBuffer(fbo);
+	gfx.DeleteFrameBuffer(render_fbo);
 
 	key_bind.destroy();
 
@@ -5221,6 +5232,23 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strstr(cmd, "ssao"))
+	{
+		enable_ssao = !enable_ssao;
+		if (enable_ssao)
+		{
+			snprintf(msg, LINE_SIZE, "ssao on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "ssao off");
+			menu.print(msg);
+		}
+		return;
+	}
+
+
 	if (strstr(cmd, "blur"))
 	{
 		enable_blur = !enable_blur;
@@ -5594,7 +5622,8 @@ void Engine::console(char *cmd)
 			glDisable(GL_MULTISAMPLE);
 		}
 #endif
-		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+		gfx.DeleteFrameBuffer(render_fbo);
+		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
 		return;
 	}
 
@@ -5614,7 +5643,8 @@ void Engine::console(char *cmd)
 		res_scale = (float)atof(data);
 		fb_width = (unsigned int)(1024 * res_scale);
 		fb_height = (unsigned int)(1024 * res_scale);
-		gfx.setupFramebuffer(fb_width, fb_height, fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
+		gfx.DeleteFrameBuffer(render_fbo);
+		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, quad_tex, depth_tex, ndepth_tex, multisample, true);
 		return;
 	}
 
