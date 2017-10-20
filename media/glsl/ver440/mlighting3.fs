@@ -16,7 +16,9 @@ in VertexData {
 } Vertex;
 
 // Final fragment color output
-out vec4 Fragment;
+layout (location = 0) out vec4 Fragment;
+layout (location = 1) out vec4 normal_depth;
+
 
 // constant program input
 uniform vec4		u_position[MAX_LIGHTS]; // light position, world coordinates
@@ -101,9 +103,6 @@ vec3 lighting( int lightIndex, vec4 pos )
 	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
 	vec3 bitangent = normalize(cross(norm, tangent));
 	mat3 tangent_space = mat3(tangent, bitangent, norm);
-
-
-
 
 
 	vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
@@ -360,6 +359,9 @@ void main(void)
 	{
 		Fragment.a = u_alpha;
 	}
+
+	normal_depth.xyz = unormal.xyz;
+	normal_depth.a = Vertex.vary_position.z;
 
 //	Fragment.rgb = light;
 
