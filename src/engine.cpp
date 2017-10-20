@@ -366,6 +366,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, multisample, false);
 	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, multisample, false);
 	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, multisample, false);
+	gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, multisample, false);
 
 
 
@@ -458,7 +459,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	if (render_mode == MODE_INDIRECT)
 	{
 		//Setup render to texture
-		gfx.bindFramebuffer(render_fbo);
+		gfx.bindFramebuffer(render_fbo, 2);
 		gfx.resize(fb_width, fb_height);
 		gfx.bindFramebuffer(0);
 
@@ -862,14 +863,17 @@ void Engine::render(double last_frametime)
 			render_portalcamera();
 		}
 
+		//render's fbo
 		render_to_framebuffer(last_frametime);
-
 		gfx.bindFramebuffer(0);
+
+		// clear real backbuffer
 		gfx.clear();
 
 		if (spawn == -1 || (player && player->current_light == 0))
 		{
-			render_texture(mask_quad, false);
+			// render fbo to fullscreen quad
+			render_texture(quad_tex, false);
 
 			if (enable_postprocess)
 			{
@@ -1321,7 +1325,7 @@ void Engine::render_to_framebuffer(double last_frametime)
 		set_dynamic_resolution(last_frametime);
 	}
 
-	gfx.bindFramebuffer(render_fbo);
+	gfx.bindFramebuffer(render_fbo, 2);
 	gfx.resize(fb_width, fb_height);
 	gfx.fbAttachTexture(quad_tex);
 	gfx.fbAttachTextureOne(ndepth_tex);
@@ -1384,6 +1388,8 @@ void Engine::render_to_framebuffer(double last_frametime)
 	if (enable_ssao)
 	{
 		render_ssao(debug_bloom);
+		gfx.bindFramebuffer(render_fbo, 2);
+		gfx.fbAttachTexture(ssao_quad);
 	}
 
 	if (enable_bloom)
@@ -2132,7 +2138,7 @@ void Engine::render_bloom(bool debug)
 	post.BloomParams(1, 20, 0.5f, 1.0f);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
-	gfx.bindFramebuffer(render_fbo);
+	gfx.bindFramebuffer(render_fbo, 2);
 	gfx.resize(fb_width, fb_height);
 //	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2157,7 +2163,7 @@ void Engine::render_bloom(bool debug)
 
 void Engine::render_ssao(bool debug)
 {
-	gfx.bindFramebuffer(mask_fbo);
+	gfx.bindFramebuffer(ssao_fbo);
 	gfx.resize(fb_width, fb_height);
 	ssao.Select();
 
@@ -2178,72 +2184,6 @@ void Engine::render_ssao(bool debug)
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	glDisable(GL_DEPTH_TEST);
 	gfx.DrawArrayTri(0, 0, 6, 4);
-
-	/*
-	gfx.bindFramebuffer(mask_fbo);
-	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(mask_quad);
-	gfx.fbAttachDepth(mask_depth);
-	gfx.clear();
-	gfx.SelectTexture(0, quad_tex);
-	post.Select();
-	post.Params(5);
-	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.DrawArrayTri(0, 0, 6, 4); // bright pass filter
-	gfx.bindFramebuffer(0);
-
-	gfx.bindFramebuffer(blur1_fbo);
-	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(blur1_quad);
-	gfx.fbAttachDepth(blur1_depth);
-	gfx.clear();
-	gfx.SelectTexture(0, mask_quad);
-	post.Select();
-	post.Params(POST_BLOOM);
-	post.BloomParams(0, 20, 0.5f, 1.0f);
-	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
-	gfx.bindFramebuffer(0);
-
-	// Reselect original frame buffer texture
-	gfx.bindFramebuffer(blur2_fbo);
-	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(blur2_quad);
-	gfx.fbAttachDepth(blur2_depth);
-	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.SelectTexture(0, mask_quad);
-	post.Select();
-	post.Params(POST_BLOOM);
-	post.BloomParams(1, 20, 0.5f, 1.0f);
-	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
-
-	gfx.bindFramebuffer(fbo);
-	gfx.resize(fb_width, fb_height);
-	//	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
-	if (debug)
-	{
-		gfx.SelectTexture(0, mask_quad);
-		gfx.SelectTexture(1, blur1_quad);
-		gfx.SelectTexture(2, blur2_quad);
-	}
-	else
-	{
-		gfx.SelectTexture(0, quad_tex);
-		gfx.SelectTexture(1, blur1_quad);
-		gfx.SelectTexture(2, blur2_quad);
-	}
-	post.Select();
-	post.Params(POST_COMBINE);
-	gfx.DrawArrayTri(0, 0, 6, 4); // add all three together
-*/
 }
 
 void Engine::destroy_buffers()
