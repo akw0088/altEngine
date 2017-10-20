@@ -175,6 +175,30 @@ public:
 	Bsp			q3map;
 	float			res_scale;
 
+	//ssao temp
+
+	void ssao_init();
+	void ssao_render();
+
+	unsigned int      render_program;
+	unsigned int      ssao_program;
+	bool        paused;
+
+	unsigned int      render_fbo;
+	unsigned int      fbo_textures[3];
+	unsigned int      quad_vao;
+	unsigned int      points_buffer;
+
+
+	bool  show_shading;
+	bool  show_ao;
+	float ssao_level;
+	float ssao_radius;
+	bool  weight_by_angle;
+	bool randomize_points;
+	unsigned int point_count;
+
+
 
 protected:
 	matrix4		projection;
@@ -276,6 +300,7 @@ protected:
 	ParticleRender		particle_render;
 	emitter_t			emitter;
 	unsigned int		emitter_count;
+	ScreenSpace			screen_space;
 
 	bool entities_enabled;
 

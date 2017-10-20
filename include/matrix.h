@@ -44,6 +44,8 @@ public:
 	matrix4 transpose();
 	void perspective(float fovy, float aspect, float zNear, float zFar, bool infinite);
 	void ortho(float left, float right, float bottom, float top, float near, float far);
+	matrix4 lookat(const vec3 &eye, vec3 &center, vec3 &up);
+
 
 	// Generate matrices for point light shadow map/cubemap
 	static void mat_forward(matrix4 &mvp, vec3 &position);

@@ -1093,4 +1093,55 @@ void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 	gfx.Depth(true);
 //	gfx.Blend(false);
 }
+
+
+int ScreenSpace::init(Graphics *gfx)
+{
+	if (Shader::init(gfx,
+		"media/glsl/ver440/screen_space.vs",
+		NULL,
+		"media/glsl/ver440/screen_space.fs"))
+	{
+		program_handle = -1;
+		return -1;
+	}
+
+
+	/*
+	uniform float ssao_level = 1.0;
+	uniform float object_level = 1.0;
+	uniform float ssao_radius = 5.0;
+	uniform bool weight_by_angle = true;
+	uniform uint point_count = 8;
+	uniform bool randomize_points = true;
+
+	*/
+
+	u_radius = glGetUniformLocation(program_handle, "ssao_radius");
+	u_level = glGetUniformLocation(program_handle, "ssao_level");
+	u_randomize_points = glGetUniformLocation(program_handle, "randomize_points");
+	u_point_count = glGetUniformLocation(program_handle, "point_count");
+}
+
+void ScreenSpace::prelink(void)
+{
+	glBindAttribLocation(program_handle, 0, "attr_position");
+	glBindAttribLocation(program_handle, 1, "attr_TexCoord");
+	glBindAttribLocation(program_handle, 2, "attr_LightCoord");
+	glBindAttribLocation(program_handle, 3, "attr_velocity");
+	glBindAttribLocation(program_handle, 4, "attr_color");
+	glBindAttribLocation(program_handle, 5, "attr_tangent");
+}
+
+
+void ScreenSpace::Params(float radius, float level, bool show_ao, bool randomize_points, int point_count)
+{
+	glUniform1f(u_radius, radius * (1024.0f / 1000.0f));
+	glUniform1f(u_level, 1.0f);
+	glUniform1i(u_randomize_points, randomize_points);
+	glUniform1ui(u_point_count, point_count);
+}
+
+
+
 #endif

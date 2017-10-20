@@ -134,44 +134,6 @@ private:
 	unsigned int max_light;
 };
 
-class mLightDepth : public Shader
-{
-public:
-	int init(Graphics *gfx);
-	void Params(matrix4 &mvp);
-	virtual void prelink(void);
-
-private:
-	int matrix;
-};
-
-class mLight3 : public Shader
-{
-public:
-	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights);
-	virtual void prelink(void);
-
-private:
-	int matrix;
-	int	texture0;
-	int texture1;
-	int texture2;
-
-	int texture3;
-	int texture4;
-	int texture5;
-	int texture6;
-	int texture7;
-	int texture8;
-
-
-
-	int u_num_lights;
-	int u_position;
-	int u_color;
-};
-
 #define POST_EDGE		0
 #define POST_BLUR		1
 #define POST_EMBOSS		2
@@ -203,22 +165,6 @@ private:
 	int u_strength;
 	int u_scale;
 	float texCoordOffsets[18];
-};
-
-
-
-class ShadowMap : public Shader
-{
-public:
-	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, matrix4 &shadowmvp);
-	virtual void prelink(void);
-
-private:
-	int matrix;
-	int shadowmatrix;
-	int u_color;
-	int shadowmap;
 };
 
 class ParticleUpdate : public Shader
@@ -277,6 +223,22 @@ private:
 	int u_texture0;
 	int u_xshift;
 	int u_yshift;
+};
+
+
+
+class ScreenSpace : public Shader
+{
+public:
+	int init(Graphics *gfx);
+	void Params(float radius, float level, bool show_ao, bool randomize_points, int point_count);
+	virtual void prelink(void);
+
+private:
+	int u_radius;
+	int u_level;
+	int u_randomize_points;
+	int u_point_count;
 };
 
 #endif
