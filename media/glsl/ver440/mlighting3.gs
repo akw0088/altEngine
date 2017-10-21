@@ -62,9 +62,9 @@ void main()
 		VertexOut.vary_newTexCoord[3] = VertexIn[i].vary_newTexCoord[3];
 		VertexOut.vary_LightCoord = VertexIn[i].vary_LightCoord;
 		VertexOut.vary_color = VertexIn[i].vary_color;
-		VertexOut.vary_normal = VertexIn[i].vary_normal; // map normal
+//		VertexOut.vary_normal = VertexIn[i].vary_normal; // map normal
 //		VertexOut.vary_tangent = VertexIn[i].vary_tangent; // map tangent
-//		VertexOut.vary_normal = normal; // geometry shader normal (not smoothed across triangles)
+		VertexOut.vary_normal = normal; // geometry shader normal (not smoothed across triangles)
 		VertexOut.vary_tangent = vec4(tangent, 0.0f); // geometry shader tangent
 
 		// done with the vertex

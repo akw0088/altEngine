@@ -3,7 +3,7 @@
 #define	MAX_LIGHTS 64
 
 // per vertex interpolated program input
-in VertexData {
+in VertexDataOut {
     vec3 att_position;
     vec4 vary_position; // vertex position
     vec2 vary_TexCoord;
