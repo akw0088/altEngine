@@ -52,7 +52,7 @@ Engine::Engine()
 	render_depth = 0;
 	render_ndepth = 0;
 	demofile = NULL;
-	multisample = 1;
+	multisample = 0;
 	lightning_vbo = 0;
 	lightning_ibo = 0;
 	last_server_sequence = 0;
@@ -183,7 +183,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 
 	enable_stencil = true;
-	multisample = 0;
 	sensitivity = 1.0f;
 
 	shadow_light = 107;
@@ -874,7 +873,10 @@ void Engine::render(double last_frametime)
 		if (spawn == -1 || (player && player->current_light == 0))
 		{
 			// render fbo to fullscreen quad
-			render_texture(render_quad, false);
+			if (enable_ssao)
+				render_texture(render_ndepth, false);
+			else
+				render_texture(render_quad, false);
 
 			if (enable_postprocess)
 			{
@@ -1389,8 +1391,8 @@ void Engine::render_to_framebuffer(double last_frametime)
 	if (enable_ssao)
 	{
 		render_ssao(debug_bloom);
-		gfx.bindFramebuffer(render_fbo, 2);
-		gfx.fbAttachTexture(ssao_quad);
+//		gfx.bindFramebuffer(render_fbo, 2);
+//		gfx.fbAttachTexture(ssao_quad);
 	}
 
 	if (enable_bloom)
@@ -2183,7 +2185,7 @@ void Engine::render_ssao(bool debug)
 	gfx.SelectTexture(1, render_ndepth);
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	glDisable(GL_DEPTH_TEST);
+//	glDisable(GL_DEPTH_TEST);
 	gfx.DrawArrayTri(0, 0, 6, 4);
 }
 
