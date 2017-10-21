@@ -51,8 +51,7 @@ void main(void)
     float occ = 0.0;
     float total = 0.0;
 
-    // n is a pseudo-random number generated from fragment coordinate
-    // and depth
+    // n is a pseudo-random number generated from fragment coordinate and depth
     n = (int(gl_FragCoord.x * 7123.2315 + 125.232) *
          int(gl_FragCoord.y * 3137.1519 + 234.8)) ^
          int(my_depth);
@@ -115,6 +114,9 @@ void main(void)
     vec4 object_color =  textureLod(sColor, P, 0);
 
     // Mix in ambient color scaled by SSAO level
+
     color = object_level * object_color +
             mix(vec4(0.2), vec4(ao_amount), ssao_level);
+	color.a = 1.0f;
+//color = vec4(1.0,1.0,1.0,1.0);
 }

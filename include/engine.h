@@ -303,7 +303,6 @@ protected:
 	ParticleRender		particle_render;
 	emitter_t			emitter;
 	unsigned int		emitter_count;
-	ScreenSpace			screen_space;
 
 	bool entities_enabled;
 

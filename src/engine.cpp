@@ -174,6 +174,18 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
+
+	ssao_level = 1.0;
+	//	object_level = 1.0;
+	object_level = 1.0;
+//	ssao_radius = 5.0;
+	ssao_radius = 0.01;
+	weight_by_angle = true;
+	point_count = 8;
+	randomize_points = true;
+	show_ao = true;
+
+
 #ifdef OPENGL
 	//glEnable(GL_STENCIL_TEST);
 	//glStencilMask(0x00); // disable writes to stencil
@@ -563,7 +575,7 @@ void Engine::load(char *level)
 		menu.print("Failed to load particle_render shader");
 	if (particle_update.init(&gfx))
 		menu.print("Failed to load particle_update shader");
-	if (screen_space.init(&gfx))
+	if (ssao.init(&gfx))
 		menu.print("Failed to load screen_space shader");
 
 	
@@ -874,7 +886,7 @@ void Engine::render(double last_frametime)
 		{
 			// render fbo to fullscreen quad
 			if (enable_ssao)
-				render_texture(render_ndepth, false);
+				render_texture(ssao_quad, false);
 			else
 				render_texture(render_quad, false);
 
@@ -1391,6 +1403,7 @@ void Engine::render_to_framebuffer(double last_frametime)
 	if (enable_ssao)
 	{
 		render_ssao(debug_bloom);
+		gfx.cleardepth();
 //		gfx.bindFramebuffer(render_fbo, 2);
 //		gfx.fbAttachTexture(ssao_quad);
 	}
@@ -2169,15 +2182,6 @@ void Engine::render_ssao(bool debug)
 	gfx.bindFramebuffer(ssao_fbo);
 	gfx.resize(fb_width, fb_height);
 	ssao.Select();
-
-	ssao_level = 1.0;
-//	object_level = 1.0;
-	object_level = 0.75;
-	ssao_radius = 5.0;
-	weight_by_angle = true;
-	point_count = 8;
-	randomize_points = true;
-	show_ao = true;
 
 	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count);
 
@@ -5075,6 +5079,14 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		return;
 	}
+
+	
+		if (sscanf(cmd, "ssao_radius %s", data) == 1)
+		{
+			float ambient = (float)atof(data);
+			ssao_radius = ambient;
+			return;
+		}
 
 	if (sscanf(cmd, "r_contrast %s", data) == 1)
 	{
