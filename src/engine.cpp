@@ -78,6 +78,8 @@ Engine::Engine()
 	ingame_menu_timer = 0;
 	fullscreen_timer = 0;
 
+	bloom_threshold = 0.9f;
+
 	fb_width = 1024;
 	fb_height = 1024;
 	res_scale = 1.0f;
@@ -2119,6 +2121,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, render_quad);
 	post.Select();
 	post.Params(5);
+	post.BloomParams(0, 20, 0.5f, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -5080,13 +5083,26 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	
-		if (sscanf(cmd, "ssao_radius %s", data) == 1)
-		{
-			float ambient = (float)atof(data);
-			ssao_radius = ambient;
-			return;
-		}
+	if (strstr(cmd, "r_brightness"))
+	{
+		snprintf(msg, LINE_SIZE, "brightness %f", mlight2.m_brightness + 1.0f);
+		menu.print(msg);
+		return;
+	}
+
+	if (sscanf(cmd, "ssao_radius %s", data) == 1)
+	{
+		float ambient = (float)atof(data);
+		ssao_radius = ambient;
+		return;
+	}
+
+	if (strstr(cmd, "ssao_radius"))
+	{
+		snprintf(msg, LINE_SIZE, "ssao_radius %f", ssao_radius);
+		menu.print(msg);
+		return;
+	}
 
 	if (sscanf(cmd, "r_contrast %s", data) == 1)
 	{
@@ -5096,6 +5112,14 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		return;
 	}
+
+	if (strstr(cmd, "r_contrast"))
+	{
+		snprintf(msg, LINE_SIZE, "contrast %f", mlight2.m_contrast);
+		menu.print(msg);
+		return;
+	}
+
 
 	if (sscanf(cmd, "com_maxfps %s", data) == 1)
 	{
@@ -5107,6 +5131,14 @@ void Engine::console(char *cmd)
 		}
 		return;
 	}
+
+	if (strstr(cmd, "com_maxfps"))
+	{
+		snprintf(msg, LINE_SIZE, "com_maxfps %f", com_maxfps / 1000.0f);
+		menu.print(msg);
+		return;
+	}
+
 
 	if (sscanf(cmd, "r_lightmap %s", data) == 1)
 	{
@@ -5162,7 +5194,21 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strstr(cmd, "bloom"))
+	ret = sscanf(cmd, "bloom_threshold %s", data);
+	if (ret == 1)
+	{
+		debugf("Setting bloom_threshold to %s\n", data);
+		bloom_threshold = atof(data);
+		return;
+	}
+
+
+	if (strstr(cmd, "bloom_debug"))
+	{
+		debug_bloom = !debug_bloom;
+	}
+
+	if (strstr(cmd, "r_bloom"))
 	{
 		enable_bloom = !enable_bloom;
 		if (enable_bloom)
@@ -5175,16 +5221,6 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "bloom off");
 			menu.print(msg);
 		}
-
-		if (strstr(cmd, "debug"))
-		{
-			debug_bloom = true;
-		}
-		else
-		{
-			debug_bloom = false;
-		}
-		return;
 	}
 
 	if (strstr(cmd, "ssao"))
@@ -5381,6 +5417,7 @@ void Engine::console(char *cmd)
 		cl_skip = atoi(data);
 		return;
 	}
+
 
 	if (sscanf(cmd, "g_collision %s", data) == 1)
 	{

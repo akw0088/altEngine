@@ -190,6 +190,8 @@ public:
 	bool randomize_points;
 	unsigned int point_count;
 
+	float bloom_threshold;
+
 
 
 protected:
