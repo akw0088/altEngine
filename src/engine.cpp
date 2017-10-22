@@ -80,6 +80,11 @@ Engine::Engine()
 
 	bloom_threshold = 0.9f;
 	bloom_strength = 0.5f;
+	bloom_amount = 20.0f;
+
+	// far = 0.1  near = 0.3
+	dof_near = 0.4f;
+	dof_far = 0.1f;
 
 	fb_width = 1024;
 	fb_height = 1024;
@@ -2123,10 +2128,10 @@ void Engine::render_bloom(bool debug)
 	gfx.fbAttachDepth(mask_depth);
 	gfx.clear();
 	gfx.SelectTexture(0, render_quad);
-	gfx.SelectTexture(1, palette1);
+	gfx.SelectTexture(1, render_depth);
 	post.Select();
-	post.Params(POST_HSV, tick_num);
-	post.BloomParams(0, 20, bloom_strength, bloom_threshold);
+	post.Params(POST_DOF, tick_num);
+	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2140,8 +2145,8 @@ void Engine::render_bloom(bool debug)
 	gfx.clear();
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
-	post.Params(POST_RADIAL, tick_num);
-	post.BloomParams(0, 20, bloom_strength, bloom_threshold);
+	post.Params(POST_BLOOM, tick_num);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2158,8 +2163,8 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
-	post.Params(POST_RADIAL, tick_num);
-	post.BloomParams(0, 20, bloom_strength, bloom_threshold);
+	post.Params(POST_BLOOM, tick_num);
+	post.BloomParams(1, bloom_amount, bloom_strength, bloom_threshold);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
 	gfx.bindFramebuffer(render_fbo, 2);
@@ -5215,6 +5220,30 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	ret = sscanf(cmd, "bloom_amount %s", data);
+	if (ret == 1)
+	{
+		debugf("Setting bloom_amount to %s\n", data);
+		bloom_amount = atof(data);
+		return;
+	}
+
+
+	ret = sscanf(cmd, "dof_near %s", data);
+	if (ret == 1)
+	{
+		debugf("Setting dof_near to %s\n", data);
+		dof_near = atof(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "dof_far %s", data);
+	if (ret == 1)
+	{
+		debugf("Setting dof_far to %s\n", data);
+		dof_far = atof(data);
+		return;
+	}
 
 
 	if (strstr(cmd, "bloom_debug"))

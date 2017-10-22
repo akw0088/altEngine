@@ -192,7 +192,10 @@ public:
 
 	float bloom_threshold;
 	float bloom_strength;
+	float bloom_amount;
 
+	float dof_near;
+	float dof_far;
 
 
 protected:

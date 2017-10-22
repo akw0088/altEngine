@@ -227,18 +227,33 @@ void main(void)
 		vec2 texcoord = vary_TexCoord;
 		texcoord.x += sin(texcoord.y * 3.14159 + u_time / 50.0f) / 100.0f;
 		Fragment = texture2D(texture0, texcoord);
+		Fragment.b = Fragment.b + (1.0f - Fragment.b) * 0.2f;
 	}
 	else if (u_type == 10)
 	{
 		vec4 temp = texture2D(texture0, vary_TexCoord);
 		vec3 color = rgb2hsb( temp.rgb );
 		color.r = u_scale;
-		color.b = u_strength;
+		color.g = u_strength;
+//		color.b = u_amount;
 
 		Fragment.rgb = hsb2rgb( color );
 		Fragment.a = temp.a;
 	}
+	else if (u_type == 11)
+	{
+		vec4 original = texture2D(texture0, vary_TexCoord);
+		float min_dof = u_strength;
+		float max_dof = u_amount;
 
+		float z = texture(texture1, vary_TexCoord).r;      // fetch the z-value from our depth texture
+		float n = 1.0;                                // the near plane
+		float f = 2001.0;                               // the far plane
+		float depth = (2.0 * n) / (f + n - z * (f - n));  // convert to linear values 
+ 
+
+		Fragment = original * (1.0f - min(smoothstep(min_dof, min_dof + 0.1, depth), smoothstep(max_dof, max_dof - 0.1, depth)) );
+	}
 
 
 }

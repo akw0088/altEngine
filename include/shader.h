@@ -145,6 +145,7 @@ private:
 #define POST_GRADING	8
 #define POST_WAVE		9
 #define POST_HSV		10
+#define POST_DOF		11
 
 
 class Post : public Shader
