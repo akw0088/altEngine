@@ -247,6 +247,11 @@ protected:
 	unsigned int	multisample;
 	unsigned int	no_tex;
 	unsigned int	particle_tex;
+
+	unsigned int	palette1;
+	unsigned int	palette2;
+
+
 	bool			voted;
 	unsigned int	vote_yes;
 	unsigned int	vote_no;

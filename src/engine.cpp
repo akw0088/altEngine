@@ -228,7 +228,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	gen_spiral(gfx, spiral_ibo, spiral_vbo);
 	gen_lightning(gfx, lightning_ibo, lightning_vbo);
 
-
 	// hash check data files
 	newlinelist("media/cmdlist.txt", cmd_list, num_cmd);
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
@@ -290,6 +289,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false, false);
 	particle_tex = load_texture(gfx, "media/flare.png", false, false);
+
+	palette1 = load_texture(gfx, "media/palette.png", false, false);
+	palette2 = load_texture(gfx, "media/palette2.png", false, false);
+
 	Model::CreateObjects(gfx);
 	Model::make_skybox(gfx);
 
@@ -2119,8 +2122,9 @@ void Engine::render_bloom(bool debug)
 	gfx.fbAttachDepth(mask_depth);
 	gfx.clear();
 	gfx.SelectTexture(0, render_quad);
+	gfx.SelectTexture(1, palette1);
 	post.Select();
-	post.Params(5);
+	post.Params(POST_GRADING);
 	post.BloomParams(0, 20, 0.5f, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2165,8 +2169,8 @@ void Engine::render_bloom(bool debug)
 	if (debug)
 	{
 		gfx.SelectTexture(0, mask_quad);
-		gfx.SelectTexture(1, blur1_quad);
-		gfx.SelectTexture(2, blur2_quad);
+		gfx.SelectTexture(1, mask_quad);
+		gfx.SelectTexture(2, mask_quad);
 	}
 	else
 	{
@@ -5206,6 +5210,19 @@ void Engine::console(char *cmd)
 	if (strstr(cmd, "bloom_debug"))
 	{
 		debug_bloom = !debug_bloom;
+
+		if (debug_bloom)
+		{
+			snprintf(msg, LINE_SIZE, "bloom debug on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "bloom debug off");
+			menu.print(msg);
+		}
+
+		return;
 	}
 
 	if (strstr(cmd, "r_bloom"))
@@ -5221,6 +5238,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "bloom off");
 			menu.print(msg);
 		}
+		return;
 	}
 
 	if (strstr(cmd, "ssao"))

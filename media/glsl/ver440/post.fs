@@ -27,18 +27,37 @@ float GaussianFunction(float x, float dev)
 	return ( (1.0 / sqrt(2.0 * 3.142857 * dev) ) * exp( -(x * x) / (2.0 * dev) ) );
 } 
 
+vec4 sampleAs3DTexture(sampler2D texture, vec3 uv, float width)
+{
+    float sliceSize = 1.0 / width;              // space of 1 slice
+    float slicePixelSize = sliceSize / width;           // space of 1 pixel
+    float sliceInnerSize = slicePixelSize * (width - 1.0);  // space of width pixels
+    float zSlice0 = min(floor(uv.z * width), width - 1.0);
+    float zSlice1 = min(zSlice0 + 1.0, width - 1.0);
+    float xOffset = slicePixelSize * 0.5 + uv.x * sliceInnerSize;
+    float s0 = xOffset + (zSlice0 * sliceSize);
+    float s1 = xOffset + (zSlice1 * sliceSize);
+    vec4 slice0Color = texture2D(texture, vec2(s0, uv.y));
+    vec4 slice1Color = texture2D(texture, vec2(s1, uv.y));
+    float zOffset = mod(uv.z * width, 1.0);
+    vec4 result = mix(slice0Color, slice1Color, zOffset);
+    return result;
+}
+
+
+
+
 void main(void)
 {
-	vec4 texsample[9];
-
-	for (int i = 0; i < 9; i++)
-	{
-		texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
-	}
-
-
 	if (u_type == 0)
 	{
+		vec4 texsample[9];
+	
+		for (int i = 0; i < 9; i++)
+		{
+			texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
+		}
+
 		// laplacian edge detect
 		Fragment =  (texsample[4] * 8.0) - 
 			(texsample[0] + texsample[1] + texsample[2] + 
@@ -47,6 +66,14 @@ void main(void)
 	}
 	else if (u_type == 1)
 	{
+		vec4 texsample[9];
+	
+		for (int i = 0; i < 9; i++)
+		{
+			texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
+		}
+
+
 		// gaussian blur
 		Fragment = (1.0 * texsample[0] + 2.0 * texsample[1] + 1.0 * texsample[2] + 
 			2.0 * texsample[3] + 4.0 * texsample[4] + 2.0 * texsample[5] + 
@@ -54,6 +81,13 @@ void main(void)
 	}
 	else if (u_type == 2)
 	{
+		vec4 texsample[9];
+	
+		for (int i = 0; i < 9; i++)
+		{
+			texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
+		}
+
 		// embosss
 		Fragment = (-2.0 * texsample[0] + -1.0 * texsample[1] +
 			-1.0 * texsample[3] + 1.0 * texsample[4] + 1.0 * texsample[5] + 
@@ -70,7 +104,6 @@ void main(void)
 		int	count = int(u_amount*2);
 		vec3 original = texture2D(texture0, vary_TexCoord).rgb;
 		float avg = (original.r + original.g + original.b) / 3.0;
-		float threshold = 0.5;
 
 	
 		dev *= dev;
@@ -105,7 +138,7 @@ void main(void)
 	{
 		vec4 original = texture2D(texture0, vary_TexCoord);
 		float avg = (original.r + original.g + original.b) / 3.0;
-		float threshold = 0.9f;
+		float threshold = u_scale;
 		if (avg > threshold)
 		{
 			Fragment = original;
@@ -147,13 +180,22 @@ void main(void)
 	else if (u_type == 7)
 	{
 		vec3 resolution; // screen resolution
-		resolution = vec3(1024,1024,1024);
+		resolution = vec3(1024, 1024, 1024);
 
 		vec3 p = gl_FragCoord.xyz / resolution - 0.5;
 		vec3 o = texture2D(texture0, 0.5 + (p.xy *= 0.992)).rbb;
 		for (float i = 0.0; i < 100.0; i++) 
+		{
 			p.z += pow(max(0.0f, 0.5f - length(texture2D(texture0, 0.5 + (p.xy *= 0.992)).rg)), 2.0) * exp(-i * 0.08);
-		Fragment = vec4(o * o + p.z, 1);
+		}
+		Fragment = vec4(o * o + p.z, 1) - vec4(1.5f, 1.5f, 1.5f, 0.0f);
+	}
+	else if (u_type == 8)
+	{
+		// Apply the color grading
+		vec4 gradedPixel = sampleAs3DTexture(texture1, texture2D(texture0, vary_TexCoord).rgb, 16);
+		gradedPixel.a = Fragment.a;
+		Fragment = gradedPixel;
 	}
 
 

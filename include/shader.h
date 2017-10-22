@@ -142,6 +142,7 @@ private:
 #define POST_MASK		5
 #define POST_RAY		6
 #define POST_RADIAL		7
+#define POST_GRADING	8
 
 
 class Post : public Shader
