@@ -2099,7 +2099,7 @@ void Engine::post_process(int num_passes, int type)
 #endif
 		gfx.SelectTexture(1, post.swap);
 		post.Select();
-		post.Params(type);
+		post.Params(type, tick_num);
 		post.BloomParams(pass % 2 == 0, 20, 0.5f, 1.0f);
 		gfx.clear();
 		gfx.SelectIndexBuffer(Model::quad_index);
@@ -2124,7 +2124,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, palette1);
 	post.Select();
-	post.Params(POST_GRADING);
+	post.Params(POST_WAVE, tick_num);
 	post.BloomParams(0, 20, 0.5f, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2139,7 +2139,7 @@ void Engine::render_bloom(bool debug)
 	gfx.clear();
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
-	post.Params(POST_RADIAL);
+	post.Params(POST_RADIAL, tick_num);
 	post.BloomParams(0, 20, 0.5f, 1.0f);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2157,7 +2157,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
-	post.Params(POST_RADIAL);
+	post.Params(POST_RADIAL, tick_num);
 	post.BloomParams(1, 20, 0.5f, 1.0f);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
@@ -2179,7 +2179,7 @@ void Engine::render_bloom(bool debug)
 		gfx.SelectTexture(2, blur2_quad);
 	}
 	post.Select();
-	post.Params(POST_COMBINE);
+	post.Params(POST_COMBINE, tick_num);
 	gfx.DrawArrayTri(0, 0, 6, 4); // add all three together
 
 }

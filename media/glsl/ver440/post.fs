@@ -16,6 +16,7 @@ layout(binding=2) uniform sampler2D texture2;
 uniform vec2 tc_offset[9];
 
 uniform int u_type;
+uniform int u_time;
 
 uniform int u_dir;
 uniform float u_scale;
@@ -197,6 +198,13 @@ void main(void)
 		gradedPixel.a = Fragment.a;
 		Fragment = gradedPixel;
 	}
+	else if (u_type == 9)
+	{
+		vec2 texcoord = vary_TexCoord;
+		texcoord.x += sin(texcoord.y * 3.14159 + u_time / 50.0f) / 100.0f;
+		Fragment = texture2D(texture0, texcoord);
+	}
+
 
 
 }

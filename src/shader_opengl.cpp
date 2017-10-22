@@ -670,6 +670,7 @@ int Post::init(Graphics *gfx)
 
 	tc_offset = glGetUniformLocation(program_handle, "tc_offset");
 	u_type = glGetUniformLocation(program_handle, "u_type");
+	u_time = glGetUniformLocation(program_handle, "u_time");
 
 	u_dir = glGetUniformLocation(program_handle, "u_dir");
 	u_scale = glGetUniformLocation(program_handle, "u_scale");
@@ -719,13 +720,14 @@ void Post::resize(int width, int height)
     }
 }
 
-void Post::Params(int type)
+void Post::Params(int type, int frame_step)
 {
 	glUniform1i(texture0, 0);
 	glUniform1i(texture1, 1);
 	glUniform1i(texture2, 2);
 	glUniform2fv(tc_offset, 9, texCoordOffsets);
 	glUniform1i(u_type, type);
+	glUniform1i(u_time, frame_step);
 }
 
 void Post::BloomParams(int dir, float amount, float strength, float scale)

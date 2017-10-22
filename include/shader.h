@@ -143,6 +143,7 @@ private:
 #define POST_RAY		6
 #define POST_RADIAL		7
 #define POST_GRADING	8
+#define POST_WAVE		9
 
 
 class Post : public Shader
@@ -150,7 +151,7 @@ class Post : public Shader
 public:
 	int init(Graphics *gfx);
 	void resize(int width, int height);
-	void Params(int type);
+	void Params(int type, int framestep);
 	void BloomParams(int dir, float amount, float strength, float scale);
 
 	virtual void prelink(void);
@@ -163,6 +164,7 @@ private:
 
 	int tc_offset;
 	int u_type;
+	int u_time;
 
 	int u_dir;
 	int u_amount;
