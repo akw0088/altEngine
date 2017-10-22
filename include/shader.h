@@ -140,6 +140,9 @@ private:
 #define POST_BLOOM		3
 #define POST_COMBINE	4
 #define POST_MASK		5
+#define POST_RAY		6
+#define POST_RADIAL		7
+
 
 class Post : public Shader
 {

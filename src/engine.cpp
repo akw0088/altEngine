@@ -2132,7 +2132,7 @@ void Engine::render_bloom(bool debug)
 	gfx.clear();
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
-	post.Params(POST_BLOOM);
+	post.Params(POST_RADIAL);
 	post.BloomParams(0, 20, 0.5f, 1.0f);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2150,7 +2150,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
-	post.Params(POST_BLOOM);
+	post.Params(POST_RADIAL);
 	post.BloomParams(1, 20, 0.5f, 1.0f);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
@@ -5193,11 +5193,13 @@ void Engine::console(char *cmd)
 		if (enable_ssao)
 		{
 			snprintf(msg, LINE_SIZE, "ssao on");
+			mlight2.set_brightness(0.5f - 1.0f);
 			menu.print(msg);
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "ssao off");
+			mlight2.set_brightness(1.0f - 1.0f);
 			menu.print(msg);
 		}
 		return;

@@ -63,11 +63,11 @@ void main(void)
 	{
 		vec4	color = vec4(0.0,0.0,0.0,0.0);
 		vec4	temp =  vec4(0.0,0.0,0.0,0.0);
-		float	strength = 1.0 - u_strength;
-		float	half1 = float(u_amount) * 0.5;
-		float	texel = (1.0/768.0);
-		float	dev = u_amount * 0.5 * 0.5;
-		int	count = int(u_amount);
+		float	strength = 1.0 - (2 * u_strength);
+		float	half1 = float(u_amount*2) * 0.5;
+		float	texel = (1.0/256.0);
+		float	dev = u_amount*2 * 0.5 * 0.5;
+		int	count = int(u_amount*2);
 		vec3 original = texture2D(texture0, vary_TexCoord).rgb;
 		float avg = (original.r + original.g + original.b) / 3.0;
 		float threshold = 0.5;
@@ -88,7 +88,7 @@ void main(void)
 			for (int i = 0; i < count; i++)
 			{
 				float offset = float(i) - half1;
-				temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset * u_strength, dev);
+				temp = texture2D(texture0, vary_TexCoord + vec2(0.0, offset * texel * u_scale)) * GaussianFunction(offset *  u_strength, dev);
 
 				color += temp;
 			}
@@ -105,7 +105,7 @@ void main(void)
 	{
 		vec4 original = texture2D(texture0, vary_TexCoord);
 		float avg = (original.r + original.g + original.b) / 3.0;
-		float threshold = 0.5;
+		float threshold = 0.9f;
 		if (avg > threshold)
 		{
 			Fragment = original;
@@ -115,6 +115,48 @@ void main(void)
 			Fragment = vec4(0,0,0,0);
 		}
 	}
+	else if (u_type == 6)
+	{
+		float exposure = 5.0;
+		float decay = 1.0f;
+		float density = 0.5f;
+		float weight = 0.5f;
+
+		vec2 deltaTextCoord = vec2( vary_TexCoord.st - vec2(512,512) );
+		vec2 textCoo = vary_TexCoord.st;
+		deltaTextCoord *= 1.0 /  float(100) * density;
+		float illuminationDecay = 1.0;
+
+
+		Fragment = texture2D(texture0, vary_TexCoord);
+		
+		for(int i = 0; i < 100 ; i++)
+		{
+		         textCoo -= deltaTextCoord;
+		         vec4 samp = texture2D(texture0, textCoo );
+				
+		         samp *= illuminationDecay * weight;
+		
+		         Fragment += samp;
+		
+		         illuminationDecay *= decay;
+		 }
+
+		Fragment *= exposure;
+	}
+	else if (u_type == 7)
+	{
+		vec3 resolution; // screen resolution
+		resolution = vec3(1024,1024,1024);
+
+		vec3 p = gl_FragCoord.xyz / resolution - 0.5;
+		vec3 o = texture2D(texture0, 0.5 + (p.xy *= 0.992)).rbb;
+		for (float i = 0.0; i < 100.0; i++) 
+			p.z += pow(max(0.0f, 0.5f - length(texture2D(texture0, 0.5 + (p.xy *= 0.992)).rg)), 2.0) * exp(-i * 0.08);
+		Fragment = vec4(o * o + p.z, 1);
+	}
+
+
 }
 
 
