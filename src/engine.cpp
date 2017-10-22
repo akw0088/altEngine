@@ -79,6 +79,7 @@ Engine::Engine()
 	fullscreen_timer = 0;
 
 	bloom_threshold = 0.9f;
+	bloom_strength = 0.5f;
 
 	fb_width = 1024;
 	fb_height = 1024;
@@ -2100,7 +2101,7 @@ void Engine::post_process(int num_passes, int type)
 		gfx.SelectTexture(1, post.swap);
 		post.Select();
 		post.Params(type, tick_num);
-		post.BloomParams(pass % 2 == 0, 20, 0.5f, 1.0f);
+		post.BloomParams(0, 20, bloom_strength, bloom_threshold);
 		gfx.clear();
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2124,8 +2125,8 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, palette1);
 	post.Select();
-	post.Params(POST_WAVE, tick_num);
-	post.BloomParams(0, 20, 0.5f, bloom_threshold);
+	post.Params(POST_HSV, tick_num);
+	post.BloomParams(0, 20, bloom_strength, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2140,7 +2141,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
 	post.Params(POST_RADIAL, tick_num);
-	post.BloomParams(0, 20, 0.5f, 1.0f);
+	post.BloomParams(0, 20, bloom_strength, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2158,7 +2159,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
 	post.Params(POST_RADIAL, tick_num);
-	post.BloomParams(1, 20, 0.5f, 1.0f);
+	post.BloomParams(0, 20, bloom_strength, bloom_threshold);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
 	gfx.bindFramebuffer(render_fbo, 2);
@@ -5205,6 +5206,15 @@ void Engine::console(char *cmd)
 		bloom_threshold = atof(data);
 		return;
 	}
+
+	ret = sscanf(cmd, "bloom_strength %s", data);
+	if (ret == 1)
+	{
+		debugf("Setting bloom_strength to %s\n", data);
+		bloom_strength = atof(data);
+		return;
+	}
+
 
 
 	if (strstr(cmd, "bloom_debug"))
