@@ -33,6 +33,32 @@ layout (binding = 0, std140) uniform SAMPLE_POINTS
     vec4 random_vectors[256];
 } points;
 
+
+// A re-weighted Gaussian kernel
+const vec3 chromaticAberrationKernel[9] = vec3[9](
+vec3(0.0000000000000000000, 0.04416589065853191, 0.0922903086524308425), vec3(0.10497808951021347), vec3(0.0922903086524308425, 0.04416589065853191, 0.0000000000000000000),
+vec3(0.0112445223775533675, 0.10497808951021347, 0.1987116566428735725), vec3(0.40342407932501833), vec3(0.1987116566428735725, 0.10497808951021347, 0.0112445223775533675),
+vec3(0.0000000000000000000, 0.04416589065853191, 0.0922903086524308425), vec3(0.10497808951021347), vec3(0.0922903086524308425, 0.04416589065853191, 0.0000000000000000000)
+);
+
+// Accumulate an approximation of chromatic aberration using a specially weighted kernel.
+// resolution - Screen or texture resolution to sample each pixel.
+// coordinate - Screen space coordinate in pixels.
+// texture - The texture to sample.
+vec4 chromaticAberration(vec2 resolution, vec2 coordinate, sampler2D texture)
+{
+	vec3 chromaticAberrationSample = vec3(0.0);
+	
+	for(int y = -1; y < 2; y++)
+	{
+		for(int x = -1; x < 2; x++)
+		{
+			chromaticAberrationSample += texture2D(texture, ((coordinate + vec2(x,y)) / resolution)).rgb * chromaticAberrationKernel[((y + 1) * 3) + (x + 1)];
+		}
+	}
+	return vec4(chromaticAberrationSample, texture2D(texture, coordinate / resolution).a);
+}
+
 void main(void)
 {
     // Get texture position from gl_FragCoord
@@ -111,12 +137,18 @@ void main(void)
     float ao_amount = (1.0 - occ / total);
 
     // Get object color from color texture
-    vec4 object_color =  textureLod(sColor, P, 0);
+//    color = chromaticAberration(vec2(1024,1024), gl_FragCoord.xy, texture0);
+    vec4 object_color =  chromaticAberration(vec2(1024,1024), gl_FragCoord.xy, texture0);;
+//textureLod(sColor, P, 0);
+
 
     // Mix in ambient color scaled by SSAO level
 
     color = object_level * object_color +
             mix(vec4(0.2), vec4(ao_amount), ssao_level);
 	color.a = 1.0f;
+
+
+
 //color = vec4(1.0,1.0,1.0,1.0);
 }
