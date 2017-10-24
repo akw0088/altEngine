@@ -403,7 +403,7 @@ state 404 next		7 "null"
 
 state 405 up		404 "null"
 state 405 down		406 "null"
-state 405 enter		405 "toggle res_scale"
+state 405 enter		405 "toggle r_rscale"
 state 405 next		7 "null"
 
 state 406 up		405 "null"

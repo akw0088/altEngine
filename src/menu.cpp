@@ -50,6 +50,7 @@ Menu::Menu()
 	data.contrast = 0.5f;
 	data.volume = 0.5f;
 	data.rscale = 0.5f;
+	data.shadowvol = true;
 
 }
 

@@ -193,6 +193,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	randomize_points = true;
 	show_ao = true;
 
+	enum_resolutions();
+
 
 #ifdef OPENGL
 	//glEnable(GL_STENCIL_TEST);
@@ -4327,6 +4329,11 @@ void Engine::fullscreen()
 		old_style = SetWindowLongPtr(hwnd, GWL_STYLE, new_style);
 		new_style = old_style;
 		SetWindowPos(hwnd, HWND_TOP, 0, 0, xr, yr, 0);
+
+		if (menu.data.fullscreen)
+		{
+			sprintf(menu.data.resolution, "%dx%d", xr, yr);
+		}
 		fullscreen_timer = TICK_RATE;
 #endif
 	}
@@ -4672,6 +4679,11 @@ void Engine::console(char *cmd)
 			enable_ssao = !enable_ssao;
 			menu.data.ssao = enable_ssao;
 		}
+		else if (strcmp(data, "r_skyray") == 0)
+		{
+			enable_ssao = !enable_ssao;
+			menu.data.ssao = enable_ssao;
+		}
 		else if (strcmp(data, "r_bloom") == 0)
 		{
 			enable_bloom = !enable_bloom;
@@ -4685,6 +4697,39 @@ void Engine::console(char *cmd)
 		else if (strcmp(data, "r_fullscreen") == 0)
 		{
 			fullscreen();
+		}
+		else if (strcmp(data, "r_brightness") == 0)
+		{
+			menu.data.brightness += 0.1f;
+			if (menu.data.brightness > 1.0f)
+				menu.data.brightness = 0.0f;
+			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
+		}
+		else if (strcmp(data, "r_contrast") == 0)
+		{
+			menu.data.contrast += 0.1f;
+			if (menu.data.contrast > 1.0f)
+				menu.data.contrast = 0.0f;
+			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
+		}
+		else if (strcmp(data, "r_rscale") == 0)
+		{
+			menu.data.rscale += 0.1f;
+			if (menu.data.rscale > 1.0f)
+				menu.data.rscale = 0.1f;
+			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
+			console(data);
+		}
+		else if (strcmp(data, "r_res") == 0)
+		{
+			static int i = 0;
+			sprintf(menu.data.resolution, "%s", resbuf[i++]);
+			if (i > num_res)
+				i = 0;
+		}
+		else if (strcmp(data, "r_vsync") == 0)
+		{
+			menu.data.vsync = !menu.data.vsync;
 		}
 
 
@@ -6271,4 +6316,38 @@ void Engine::paste(char *data, unsigned int size)
 void Engine::copy(char *data, unsigned int size)
 {
 	menu.copy(data, size);
+}
+
+
+void Engine::enum_resolutions()
+{
+#ifndef __linux
+	DEVMODE		dmScreenSettings;
+	static char	currentRes[80];
+	int i = 1;
+
+	num_res = 0;
+	for (i = 1; i != 0; i++)
+	{
+		if (EnumDisplaySettings(NULL, i - 1, &dmScreenSettings))
+		{
+			if (dmScreenSettings.dmPelsWidth < 1024 || dmScreenSettings.dmBitsPerPel < 32)
+				continue;
+
+			sprintf(resbuf[num_res], "%dx%d", dmScreenSettings.dmPelsWidth,
+				dmScreenSettings.dmPelsHeight,
+				dmScreenSettings.dmBitsPerPel);
+
+			if (strcmp(resbuf[num_res], resbuf[num_res - 1]) == 0)
+			{
+				continue;
+			}
+			num_res++;
+		}
+		else
+		{
+			i = -1;
+		}
+	}
+#endif
 }

@@ -105,6 +105,7 @@ public:
 	void find_path(int *&path, int &path_length, int start_path, int end_path);
 	void zoom(float level);
 	void reload_shaders();
+	void enum_resolutions();
 
 	int get_source();
 	int get_loop_source();
@@ -161,6 +162,9 @@ public:
 	bool debug_bloom;
 	bool enable_ssao;
 	bool enable_stencil;
+
+	char resbuf[32][80];
+	int num_res;
 
 //Game logic
 	BaseGame *game;
