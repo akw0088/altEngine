@@ -32,6 +32,7 @@ Engine::Engine()
 	max_sources = 32;
 	cl_skip = 0;
 	sv_maxclients = 8;
+	current_res = 0;
 	show_names = false;
 	show_lines = false;
 	show_debug = false;
@@ -4681,8 +4682,7 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_skyray") == 0)
 		{
-			enable_ssao = !enable_ssao;
-			menu.data.ssao = enable_ssao;
+			menu.data.skyray = !menu.data.skyray;
 		}
 		else if (strcmp(data, "r_bloom") == 0)
 		{
@@ -4722,10 +4722,12 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_res") == 0)
 		{
-			static int i = 0;
-			sprintf(menu.data.resolution, "%s", resbuf[i++]);
-			if (i > num_res)
-				i = 0;
+			current_res++;
+			if (current_res + 1 > num_res - 1)
+				current_res = 0;
+			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
+
+			sprintf(menu.data.apply, "Apply");
 		}
 		else if (strcmp(data, "r_vsync") == 0)
 		{
@@ -5084,6 +5086,19 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strcmp(cmd, "r_apply") == 0)
+	{
+		int xres;
+		int yres;
+
+		debugf("Setting resolution to %s\n", resbuf[current_res + 1]);
+		sscanf(resbuf[current_res + 1], "%dx%d", &xres, &yres);
+#ifndef __linux
+		set_resolution(xres, yres, 32);
+#endif
+		return;
+	}
+
 	if (strcmp(cmd, "r_res") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "Resolution: %dx%d\n", gfx.width, gfx.height);
@@ -5293,7 +5308,7 @@ void Engine::console(char *cmd)
 	if (ret == 1)
 	{
 		debugf("Setting bloom_threshold to %s\n", data);
-		bloom_threshold = atof(data);
+		bloom_threshold = (float)atof(data);
 		return;
 	}
 
@@ -5301,7 +5316,7 @@ void Engine::console(char *cmd)
 	if (ret == 1)
 	{
 		debugf("Setting bloom_strength to %s\n", data);
-		bloom_strength = atof(data);
+		bloom_strength = (float)atof(data);
 		return;
 	}
 
@@ -5309,7 +5324,7 @@ void Engine::console(char *cmd)
 	if (ret == 1)
 	{
 		debugf("Setting bloom_amount to %s\n", data);
-		bloom_amount = atof(data);
+		bloom_amount = (float)atof(data);
 		return;
 	}
 
@@ -5318,7 +5333,7 @@ void Engine::console(char *cmd)
 	if (ret == 1)
 	{
 		debugf("Setting dof_near to %s\n", data);
-		dof_near = atof(data);
+		dof_near = (float)atof(data);
 		return;
 	}
 
@@ -5326,7 +5341,7 @@ void Engine::console(char *cmd)
 	if (ret == 1)
 	{
 		debugf("Setting dof_far to %s\n", data);
-		dof_far = atof(data);
+		dof_far = (float)atof(data);
 		return;
 	}
 
@@ -5787,7 +5802,7 @@ void Engine::console(char *cmd)
 		fb_height = (unsigned int)(1024 * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo);
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
-		menu.data.rscale = res_scale / 2.0;
+		menu.data.rscale = res_scale / 2.0f;
 		return;
 	}
 
@@ -6322,9 +6337,13 @@ void Engine::copy(char *data, unsigned int size)
 void Engine::enum_resolutions()
 {
 #ifndef __linux
-	DEVMODE		dmScreenSettings;
 	static char	currentRes[80];
 	int i = 1;
+
+#ifndef __linux
+	DEVMODE dmScreenSettings;
+#endif
+
 
 	num_res = 0;
 	for (i = 1; i != 0; i++)
@@ -6335,11 +6354,11 @@ void Engine::enum_resolutions()
 				continue;
 
 			sprintf(resbuf[num_res], "%dx%d", dmScreenSettings.dmPelsWidth,
-				dmScreenSettings.dmPelsHeight,
-				dmScreenSettings.dmBitsPerPel);
+				dmScreenSettings.dmPelsHeight);
 
 			if (strcmp(resbuf[num_res], resbuf[num_res - 1]) == 0)
 			{
+				resbuf[num_res][0] = '\0';
 				continue;
 			}
 			num_res++;

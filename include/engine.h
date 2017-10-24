@@ -163,8 +163,10 @@ public:
 	bool enable_ssao;
 	bool enable_stencil;
 
+
 	char resbuf[32][80];
 	int num_res;
+	int current_res;
 
 //Game logic
 	BaseGame *game;
@@ -184,6 +186,7 @@ public:
 	ScreenSpace ssao;
 
 	void render_ssao(bool debug);
+
 
 	bool  show_shading;
 	bool  show_ao;

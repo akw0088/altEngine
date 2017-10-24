@@ -825,6 +825,8 @@ typedef struct
 	char resolution[64];
 	float rscale;
 
+	char apply[64];
+
 	char attack[64];
 	char jump[64];
 	char duck[64];

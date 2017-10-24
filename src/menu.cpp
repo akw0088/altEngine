@@ -45,6 +45,7 @@ Menu::Menu()
 	sprintf(data.model, "Visor");
 	sprintf(data.skin, "Default");
 	sprintf(data.team, "Red");
+	data.apply[0] = '\0';
 
 	data.brightness = 0.5f;
 	data.contrast = 0.5f;
@@ -381,6 +382,13 @@ void Menu::sub_value(const char *str, char *out)
 				i += 1 + strlen(key);
 				continue;
 			}
+			else if (strcmp(key, "d_apply") == 0)
+			{
+				strcat(out, data.apply);
+				j += strlen(data.apply);
+				i += 1 + strlen(key);
+				continue;
+			}
 			else if (strcmp(key, "d_model") == 0)
 			{
 				strcat(out, data.model);
@@ -685,7 +693,7 @@ bool Menu::delta(float x, float y)
 		menu_t *item = menu_list[i];
 		if (item->state == menu_state)
 		{
-			float dist  = abs32(item->position[1] - y);
+			float dist  = sqrt((item->position[1] - y) * (item->position[1] - y) + (item->position[0] - x) * (item->position[0] - x));
 			if (min_dist > dist)
 			{
 				min_dist = dist;
