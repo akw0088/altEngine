@@ -4309,6 +4309,7 @@ void Engine::fullscreen()
 {
 	if (fullscreen_timer == 0)
 	{
+		menu.data.fullscreen = !menu.data.fullscreen;
 #ifndef __linux
 		HMONITOR hmon;
 		MONITORINFO mi = { sizeof(MONITORINFO) };
@@ -4681,6 +4682,11 @@ void Engine::console(char *cmd)
 			enable_portal = !enable_portal;
 			menu.data.portal = enable_portal;
 		}
+		else if (strcmp(data, "r_fullscreen") == 0)
+		{
+			fullscreen();
+		}
+
 
 		return;
 	}
