@@ -24,6 +24,15 @@ extern double com_maxfps;
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
 
+extern const char *models[23];
+
+const char *teams[3] = 
+{
+	"Red",
+	"Blue",
+	"None"
+};
+
 Engine::Engine()
 {
 	initialized = false;
@@ -33,6 +42,10 @@ Engine::Engine()
 	cl_skip = 0;
 	sv_maxclients = 8;
 	current_res = 0;
+	current_model = 21;
+	current_team = 2;
+	num_team = 3;
+	num_model = 23;
 	show_names = false;
 	show_lines = false;
 	show_debug = false;
@@ -4781,7 +4794,7 @@ void Engine::console(char *cmd)
 		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.volume += 0.1f;
-			if (menu.data.volume > 1.0f)
+			if (menu.data.volume > 1.01f)
 				menu.data.volume = 0.0f;
 
 #ifndef __linux
@@ -4798,6 +4811,39 @@ void Engine::console(char *cmd)
 			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
 #endif
 		}
+		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "up"))
+		{
+			current_model++;
+			if (current_model >= num_model)
+				current_model = 0;
+			sprintf(menu.data.model, "%s", models[current_model]);
+
+			sprintf(menu.data.apply, "Apply");
+		}
+		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "down"))
+		{
+			current_model--;
+			if (current_model < 0)
+				current_model = num_model - 1;
+			sprintf(menu.data.model, "%s", models[current_model]);
+		}
+		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "up"))
+		{
+			current_team++;
+			if (current_team >= num_team)
+				current_team = 0;
+			sprintf(menu.data.team, "%s", teams[current_team]);
+
+			sprintf(menu.data.apply, "Apply");
+		}
+		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "down"))
+		{
+			current_team--;
+			if (current_team < 0)
+				current_team = num_team - 1;
+			sprintf(menu.data.team, "%s", teams[current_team]);
+		}
+
 
 
 		return;

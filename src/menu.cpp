@@ -44,7 +44,7 @@ Menu::Menu()
 	sprintf(data.name, "UnnamedPlayer");
 	sprintf(data.model, "Visor");
 	sprintf(data.skin, "Default");
-	sprintf(data.team, "Red");
+	sprintf(data.team, "None");
 	data.apply[0] = '\0';
 
 	data.brightness = 0.5f;

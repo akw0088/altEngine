@@ -168,6 +168,12 @@ public:
 	int num_res;
 	int current_res;
 
+	int current_model;
+	int num_model;
+	int current_team;
+	int num_team;
+
+
 //Game logic
 	BaseGame *game;
 

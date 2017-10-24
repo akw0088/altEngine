@@ -377,13 +377,36 @@ state 205 next		7 "null"
 
 state 300 up		300 "null"
 state 300 down		301 "null"
-state 300 enter		200 "null"
+state 300 enter		300 "null"
 state 300 next		7 "null"
 
 state 301 up		300 "null"
 state 301 down		301 "null"
 state 301 enter		200 "null"
 state 301 next		7 "null"
+
+state 302 up		300 "null"
+state 302 down		303 "null"
+state 302 enter		303 "null"
+state 302 next		7 "null"
+
+state 303 up		302 "null"
+state 303 down		304 "null"
+state 303 enter		303 "toggle cg_model up"
+state 303 select	303 "toggle cg_model down"
+state 303 next		7 "null"
+
+state 304 up		303 "null"
+state 304 down		305 "null"
+state 304 enter		304 "toggle cg_skin up"
+state 304 select	304 "toggle cg_skin down"
+state 304 next		7 "null"
+
+state 305 up		304 "null"
+state 305 down		305 "null"
+state 305 enter		305 "toggle cg_team up"
+state 305 select	305 "toggle cg_team down"
+state 305 next		7 "null"
 
 
 state 400 up		400 "null"
