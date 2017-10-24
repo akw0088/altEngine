@@ -45,6 +45,11 @@ Menu::Menu()
 	sprintf(data.model, "Visor");
 	sprintf(data.skin, "Default");
 	sprintf(data.team, "Red");
+
+	data.brightness = 0.5f;
+	data.contrast = 0.5f;
+	data.volume = 0.5f;
+
 }
 
 void Menu::clear_console()
@@ -117,45 +122,49 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 
 void Menu::handle_slider(char *out, float value)
 {
-	if (value >= 0.0 && value < 0.1)
+	if (value >= 0.0 && value < 0.01)
+	{
+		strcat(out, "[         ]");
+	}
+	else if (value > 0.01 && value <= 0.101)
 	{
 		strcat(out, "[=         ]");
 	}
-	else if (value > 0.1 && value < 0.2)
+	else if (value > 0.1 && value <= 0.201)
 	{
 		strcat(out, "[==        ]");
 	}
-	else if (value > 0.2 && value < 0.3)
+	else if (value > 0.2 && value <= 0.301)
 	{
 		strcat(out, "[===       ]");
 	}
-	else if (value > 0.3 && value < 0.4)
+	else if (value > 0.3 && value <= 0.401)
 	{
 		strcat(out, "[====      ]");
 	}
-	else if (value > 0.4 && value < 0.5)
+	else if (value > 0.4 && value <= 0.501)
 	{
 		strcat(out, "[=====     ]");
 	}
-	else if (value > 0.5 && value < 0.6)
+	else if (value > 0.5 && value <= 0.601)
 	{
 		strcat(out, "[======    ]");
 	}
-	else if (value > 0.6 && value < 0.7)
+	else if (value > 0.6 && value <= 0.701)
 	{
 		strcat(out, "[=======   ]");
 	}
-	else if (value > 0.7 && value < 0.8)
+	else if (value > 0.7 && value <= 0.801)
 	{
 		strcat(out, "[========  ]");
 	}
-	else if (value > 0.8 && value < 0.9)
+	else if (value > 0.8 && value <= 0.901)
 	{
 		strcat(out, "[========= ]");
 	}
-	else if (value > 0.9 && value <= 1.0)
+	else if (value > 0.9 && value <= 1.01)
 	{
-		strcat(out, "[========= ]");
+		strcat(out, "[==========]");
 	}
 }
 

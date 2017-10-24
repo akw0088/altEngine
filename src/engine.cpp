@@ -5038,12 +5038,14 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "stencil enabled");
 			menu.print(msg);
 			enable_stencil = true;
+			menu.data.shadowvol = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "stencil disabled");
 			menu.print(msg);
 			enable_stencil = false;
+			menu.data.shadowvol = false;
 		}
 		return;
 	}
@@ -5088,10 +5090,11 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_brightness %s", data) == 1)
 	{
-		float ambient = (float)atof(data);
-		mlight2.set_brightness(ambient - 1.0f);
-		snprintf(msg, LINE_SIZE, "Setting brightness to %f", ambient);
+		float value = (float)atof(data);
+		mlight2.set_brightness(value - 1.0f);
+		snprintf(msg, LINE_SIZE, "Setting brightness to %f", value);
 		menu.print(msg);
+		menu.data.brightness = value / 2.0f;
 		return;
 	}
 
@@ -5118,10 +5121,11 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_contrast %s", data) == 1)
 	{
-		float contrast = (float)atof(data);
-		mlight2.set_contrast(contrast);
-		snprintf(msg, LINE_SIZE, "Setting contrast to %f", contrast);
+		float value = (float)atof(data);
+		mlight2.set_contrast(value);
+		snprintf(msg, LINE_SIZE, "Setting contrast to %f", value);
 		menu.print(msg);
+		menu.data.contrast = value;
 		return;
 	}
 
@@ -5162,7 +5166,7 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	ret = strcmp(cmd, "shadowmaps");
+	ret = strcmp(cmd, "r_shadowmaps");
 	if (ret == 0)
 	{
 		shadowmaps = !shadowmaps;
@@ -5171,6 +5175,7 @@ void Engine::console(char *cmd)
 			mlight2.set_shadowmap(1.0f);
 			snprintf(msg, LINE_SIZE, "Enabling shadowmaps");
 			menu.print(msg);
+			menu.data.shadowmaps = true;
 
 			for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 			{
@@ -5185,6 +5190,7 @@ void Engine::console(char *cmd)
 		{
 			snprintf(msg, LINE_SIZE, "Disabling shadowmaps");
 			menu.print(msg);
+			menu.data.shadowmaps = false;
 			mlight2.set_shadowmap(0.0f);
 		}
 		return;
@@ -5273,11 +5279,13 @@ void Engine::console(char *cmd)
 		{
 			snprintf(msg, LINE_SIZE, "bloom on");
 			menu.print(msg);
+			menu.data.bloom = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "bloom off");
 			menu.print(msg);
+			menu.data.bloom = false;
 		}
 		return;
 	}
@@ -5290,12 +5298,14 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "ssao on");
 			mlight2.set_brightness(0.5f - 1.0f);
 			menu.print(msg);
+			menu.data.ssao = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "ssao off");
 			mlight2.set_brightness(1.0f - 1.0f);
 			menu.print(msg);
+			menu.data.ssao = false;
 		}
 		return;
 	}
@@ -5601,12 +5611,14 @@ void Engine::console(char *cmd)
 			enable_portal = true;
 			snprintf(msg, LINE_SIZE, "Enabling portals");
 			menu.print(msg);
+			menu.data.portal = true;
 		}
 		else
 		{
 			enable_portal = false;
 			snprintf(msg, LINE_SIZE, "Disabling portals");
 			menu.print(msg);
+			menu.data.portal = false;
 		}
 		return;
 	}

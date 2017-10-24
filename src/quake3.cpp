@@ -1725,19 +1725,38 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 	{
 		spawn_type = ENT_TEAM_CTF_REDSPAWN;
 		num_player_red++;
+
+		if (local)
+		{
+			sprintf(engine->menu.data.team, "Red");
+		}
 	}
 	else if (team == TEAM_BLUE)
 	{
 		spawn_type = ENT_TEAM_CTF_BLUESPAWN;
 		num_player_blue++;
+
+		if (local)
+		{
+			sprintf(engine->menu.data.team, "Blue");
+		}
 	}
 	else if (team == TEAM_NONE)
 	{
 		spawn_type = ENT_INFO_PLAYER_DEATHMATCH;
+		if (local)
+		{
+			sprintf(engine->menu.data.team, "None");
+		}
 	}
 	else
 	{
 		spawn_type = ENT_UNKNOWN;
+
+		if (local)
+		{
+			sprintf(engine->menu.data.team, "Unknown");
+		}
 	}
 	num_player++;
 
@@ -7068,6 +7087,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			snprintf(entity_list[self]->player->name, 127, "%s", data);
 			debugf("Player name: %s\n", data);
+			sprintf(menu.data.name, "%s", data);
 		}
 		else
 		{
