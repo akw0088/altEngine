@@ -319,23 +319,38 @@ void Menu::sub_value(const char *str, char *out)
 			}
 			else if (strcmp(key, "d_brightness") == 0)
 			{
+				char value[32];
 				handle_slider(out, data.brightness);
 				j += 12;
 				i += 1 + strlen(key);
+
+				sprintf(value, " %3.1f", 2.0f * data.brightness);
+				strcat(out, value);
+				j += strlen(value);
 				continue;
 			}
 			else if (strcmp(key, "d_contrast") == 0)
 			{
+				char value[32];
+
 				handle_slider(out, data.contrast);
 				j += 12;
 				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", 2.0f * data.contrast);
+				strcat(out, value);
+				j += strlen(value);
 				continue;
 			}
 			else if (strcmp(key, "d_volume") == 0)
 			{
+				char value[32];
+
 				handle_slider(out, data.volume);
 				j += 12;
 				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", 2.0f * data.volume);
+				strcat(out, value);
+				j += strlen(value);
 				continue;
 			}
 			else if (strcmp(key, "d_resolution") == 0)
