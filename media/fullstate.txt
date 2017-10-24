@@ -425,10 +425,47 @@ state 601 next		7 "null"
 
 state 700 up		700 "null"
 state 700 down		701 "null"
-state 700 enter		400 "null"
+state 700 enter		700 "null"
 state 700 next		7 "null"
+
+state 702 up		700 "null"
+state 702 down		703 "null"
+state 702 enter		702 "toggle r_ssao"
+state 702 next		7 "null"
+
+
+state 703 up		702 "null"
+state 703 down		704 "null"
+state 703 enter		703 "toggle r_bloom"
+state 703 next		7 "null"
+
+state 704 up		703 "null"
+state 704 down		705 "null"
+state 704 enter		704 "toggle r_shadowmaps"
+state 704 next		7 "null"
+
+state 705 up		704 "null"
+state 705 down		706 "null"
+state 705 enter		705 "toggle r_stencil"
+state 705 next		7 "null"
+
+state 706 up		705 "null"
+state 706 down		707 "null"
+state 706 enter		706 "toggle r_skyray"
+state 706 next		7 "null"
+
+state 707 up		706 "null"
+state 707 down		701 "null"
+state 707 enter		707 "toggle r_portal"
+state 707 next		7 "null"
+
+
+
 
 state 701 up		700 "null"
 state 701 down		701 "null"
 state 701 enter		400 "null"
 state 701 next		7 "null"
+
+
+
