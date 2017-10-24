@@ -202,21 +202,28 @@ state 18 next		7 "null"
 state 7 entities	8 "null"
 state 8 textures	9 "null"
 state 9 loaded		10 "null"
+
 state 10 down		11 "null"
 state 10 enter		10 "togglemenu"
+
 state 11 up		10 "null"
+state 11 enter		200 "null"
 state 11 down		12 "null"
+
 state 12 up		11 "null"
 state 12 down		13 "null"
 state 12 enter		0 "disconnect"
+
 state 13 up		12 "null"
 state 13 enter		0 "quit"
 
 state 14 down		15 "null"
 state 14 enter		14 "connect 127.0.0.1"
+
 state 15 up		14 "null"
 state 15 enter		133 "bind default"
 state 15 down		16 "null"
+
 state 16 up		15 "null"
 state 16 enter		0 "null"
 
@@ -314,8 +321,28 @@ state 131 unload		0 "null"
 state 132 unload		0 "null"
 state 133 unload		0 "null"
 
+state 200 unload		0 "null"
+state 201 unload		0 "null"
+state 202 unload		0 "null"
+state 203 unload		0 "null"
+state 204 unload		0 "null"
+state 205 unload		0 "null"
+state 300 unload		0 "null"
+state 301 unload		0 "null"
 
 
+state 400 unload		0 "null"
+state 401 unload		0 "null"
+state 402 unload		0 "null"
+
+state 500 unload		0 "null"
+state 501 unload		0 "null"
+
+state 600 unload		0 "null"
+state 601 unload		0 "null"
+
+state 700 unload		0 "null"
+state 701 unload		0 "null"
 
 
 state 200 up		200 "null"

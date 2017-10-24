@@ -969,7 +969,7 @@ void Engine::render(double last_frametime)
 			if (menu.chatmode == false)
 				game->render_hud(last_frametime);
 			if (menu.ingame)
-				menu.render(global);
+				menu.render(global, true);
 			if (menu.console)
 				menu.render_console(global);
 			if (menu.chatmode)
@@ -1105,7 +1105,7 @@ void Engine::render(double last_frametime)
 			if (menu.chatmode == false)
 				game->render_hud(last_frametime);
 			if (menu.ingame)
-				menu.render(global);
+				menu.render(global, true);
 			if (menu.console)
 				menu.render_console(global);
 			if (menu.chatmode)
@@ -1434,7 +1434,7 @@ void Engine::render_to_framebuffer(double last_frametime)
 	if (menu.console)
 		menu.render_console(global);
 	if (menu.ingame)
-		menu.render(global);
+		menu.render(global, true);
 
 	gfx.Depth(true);
 	gfx.Blend(false);

@@ -9,7 +9,7 @@ class Menu
 {
 public:
 	void init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3);
-	void render(Global &global);
+	void render(Global &global, bool ingame = false);
 	void load(char *menu_file, char *state_file);
 	void delta(char *delta, Engine &altEngine);
 	bool delta(float x, float y);

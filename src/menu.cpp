@@ -89,7 +89,7 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	history_index = 0;
 }
 
-void Menu::render(Global &global)
+void Menu::render(Global &global, bool ingame)
 {
 	gfx->SelectTexture(0, menu_object);
 	gfx->SelectVertexBuffer(Model::quad_vertex);
@@ -99,7 +99,7 @@ void Menu::render(Global &global)
 		menu_t *item = menu_list[i];
 		if (item->state == menu_state)
 		{
-			if (item->flag & 1)
+			if (item->flag & 1 && ingame == false)
 			{
 				gfx->clear();
 				global.Select();
@@ -220,6 +220,11 @@ void Menu::delta(char *delta, Engine &altEngine)
 				break;
 			}
 		}
+	}
+	if (menu_state == 0 && ingame)
+	{
+		ingame = false;
+		menu_state = 10;
 	}
 }
 
