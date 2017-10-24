@@ -818,4 +818,44 @@ typedef struct
 	float dGain;
 } pid_state_t;
 
+typedef struct
+{
+	bool fullscreen;
+	bool vsync;
+	char resolution[64];
+
+	char attack[64];
+	char jump[64];
+	char duck[64];
+	char zoom[64];
+	char use[64];
+	char weapnext[64];
+	char weapprev[64];
+	char moveforward[64];
+	char movebackward[64];
+	char moveleft[64];
+	char moveright[64];
+	char walk[64];
+	char spectate[64];
+	char console[64];
+	char menu[64];
+	char scores[64];
+
+	char name[128];
+	char model[128];
+	char skin[128];
+	char team[128];
+
+	float volume;
+	float brightness;
+	float contrast;
+
+	bool ssao;
+	bool bloom;
+	bool shadowmaps;
+	bool shadowvol;
+	bool skyray;
+	bool portal;
+} menudata_t;
+
 #endif

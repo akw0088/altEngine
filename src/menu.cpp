@@ -22,6 +22,30 @@ char notifmsg[NOTIF_SIZE][1024];
 int notif_index = 0;
 
 
+Menu::Menu()
+{
+	sprintf(data.resolution, "Unknown");
+	sprintf(data.attack, "Mouse1");
+	sprintf(data.jump, "Enter + Space");
+	sprintf(data.duck, "Shift");
+	sprintf(data.zoom, "Mouse2");
+	sprintf(data.use, "Mouse3");
+	sprintf(data.weapnext, "mwheelup");
+	sprintf(data.weapprev, "mwheeldown");
+	sprintf(data.moveforward, "W + Up");
+	sprintf(data.movebackward, "S + Down");
+	sprintf(data.moveleft, "A + Left");
+	sprintf(data.moveright, "S + Right");
+	sprintf(data.walk, "KP_INS");
+	sprintf(data.spectate, "Control");
+	sprintf(data.console, "Tilde");
+	sprintf(data.menu, "Escape");
+	sprintf(data.scores, "Tab");
+	sprintf(data.name, "UnnamedPlayer");
+	sprintf(data.model, "Visor");
+	sprintf(data.skin, "Default");
+	sprintf(data.team, "Red");
+}
 
 void Menu::clear_console()
 {
@@ -91,6 +115,50 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	history_index = 0;
 }
 
+void Menu::handle_slider(char *out, float value)
+{
+	if (value >= 0.0 && value < 0.1)
+	{
+		strcat(out, "[=         ]");
+	}
+	else if (value > 0.1 && value < 0.2)
+	{
+		strcat(out, "[==        ]");
+	}
+	else if (value > 0.2 && value < 0.3)
+	{
+		strcat(out, "[===       ]");
+	}
+	else if (value > 0.3 && value < 0.4)
+	{
+		strcat(out, "[====      ]");
+	}
+	else if (value > 0.4 && value < 0.5)
+	{
+		strcat(out, "[=====     ]");
+	}
+	else if (value > 0.5 && value < 0.6)
+	{
+		strcat(out, "[======    ]");
+	}
+	else if (value > 0.6 && value < 0.7)
+	{
+		strcat(out, "[=======   ]");
+	}
+	else if (value > 0.7 && value < 0.8)
+	{
+		strcat(out, "[========  ]");
+	}
+	else if (value > 0.8 && value < 0.9)
+	{
+		strcat(out, "[========= ]");
+	}
+	else if (value > 0.9 && value <= 1.0)
+	{
+		strcat(out, "[========= ]");
+	}
+}
+
 void Menu::sub_value(const char *str, char *out)
 {
 	int length = strlen(str);
@@ -138,7 +206,129 @@ void Menu::sub_value(const char *str, char *out)
 				i += 1 + strlen(key);
 				continue;
 			}
+			else if (strcmp(key, "d_ssao") == 0)
+			{
+				if (data.ssao)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
 
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_bloom") == 0)
+			{
+				if (data.bloom)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_shadowvol") == 0)
+			{
+				if (data.shadowvol)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_shadowmaps") == 0)
+			{
+				if (data.shadowmaps)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_portal") == 0)
+			{
+				if (data.portal)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_skyray") == 0)
+			{
+				if (data.portal)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_brightness") == 0)
+			{
+				handle_slider(out, data.brightness);
+				j += 12;
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_contrast") == 0)
+			{
+				handle_slider(out, data.contrast);
+				j += 12;
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_volume") == 0)
+			{
+				handle_slider(out, data.volume);
+				j += 12;
+				i += 1 + strlen(key);
+				continue;
+			}
 			else if (strcmp(key, "d_resolution") == 0)
 			{
 				strcat(out, data.resolution);
@@ -146,6 +336,158 @@ void Menu::sub_value(const char *str, char *out)
 				i += 1 + strlen(key);
 				continue;
 			}
+			else if (strcmp(key, "d_name") == 0)
+			{
+				strcat(out, data.name);
+				j += strlen(data.name);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_model") == 0)
+			{
+				strcat(out, data.model);
+				j += strlen(data.model);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_skin") == 0)
+			{
+				strcat(out, data.skin);
+				j += strlen(data.skin);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_skin") == 0)
+			{
+				strcat(out, data.skin);
+				j += strlen(data.skin);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_team") == 0)
+			{
+				strcat(out, data.team);
+				j += strlen(data.team);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_attack") == 0)
+			{
+				strcat(out, data.attack);
+				j += strlen(data.attack);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_jump") == 0)
+			{
+				strcat(out, data.jump);
+				j += strlen(data.jump);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_duck") == 0)
+			{
+				strcat(out, data.duck);
+				j += strlen(data.duck);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_zoom") == 0)
+			{
+				strcat(out, data.zoom);
+				j += strlen(data.zoom);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_use") == 0)
+			{
+				strcat(out, data.use);
+				j += strlen(data.use);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_weapnext") == 0)
+			{
+				strcat(out, data.weapnext);
+				j += strlen(data.weapnext);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_weapprev") == 0)
+			{
+				strcat(out, data.weapprev);
+				j += strlen(data.weapprev);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_forward") == 0)
+			{
+				strcat(out, data.moveforward);
+				j += strlen(data.moveforward);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_backward") == 0)
+			{
+				strcat(out, data.movebackward);
+				j += strlen(data.movebackward);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_left") == 0)
+			{
+				strcat(out, data.moveleft);
+				j += strlen(data.moveleft);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_right") == 0)
+			{
+				strcat(out, data.moveright);
+				j += strlen(data.moveright);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_walk") == 0)
+			{
+				strcat(out, data.walk);
+				j += strlen(data.walk);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_spectate") == 0)
+			{
+				strcat(out, data.spectate);
+				j += strlen(data.spectate);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_console") == 0)
+			{
+				strcat(out, data.console);
+				j += strlen(data.console);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_menu") == 0)
+			{
+				strcat(out, data.menu);
+				j += strlen(data.menu);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_scores") == 0)
+			{
+				strcat(out, data.scores);
+				j += strlen(data.scores);
+				i += 1 + strlen(key);
+				continue;
+			}
+
+
+
+
+
 		}
 
 		out[j++] = str[i++];

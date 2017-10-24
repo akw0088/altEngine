@@ -8,6 +8,7 @@ class Engine;
 class Menu
 {
 public:
+	Menu();
 	void init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3);
 	void render(Global &global, bool ingame = false);
 	void load(char *menu_file, char *state_file);
@@ -35,7 +36,7 @@ public:
 	void clear_notif();
 
 	void sub_value(const char *str, char *out);
-
+	void handle_slider(char *out, float value);
 
 	~Menu();
 
@@ -44,13 +45,6 @@ public:
 	bool console;
 	bool ingame;
 	bool chatmode;
-
-	typedef struct
-	{
-		bool fullscreen;
-		bool vsync;
-		char resolution[64];
-	} menudata_t;
 
 	menudata_t data;
 
