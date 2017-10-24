@@ -475,6 +475,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #ifndef DIRECTX
 	//render menu again for linux
 	gfx.resize(xres,yres);
+	sprintf(menu.data.resolution, "%dx%d", xres, yres);
 	menu.render(global);
 	gfx.swap();
 #endif
@@ -4231,6 +4232,7 @@ void Engine::resize(int width, int height)
 
 	gfx.resize(width, height);
 	post.resize(width, height);
+	sprintf(menu.data.resolution, "%dx%d", width, height);
 
 	projection.perspective(fov, (float)width / height, zNear, zFar, inf);
 

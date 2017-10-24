@@ -34,6 +34,8 @@ public:
 	void render_notif(Global &global);
 	void clear_notif();
 
+	void sub_value(const char *str, char *out);
+
 
 	~Menu();
 
@@ -42,6 +44,15 @@ public:
 	bool console;
 	bool ingame;
 	bool chatmode;
+
+	typedef struct
+	{
+		bool fullscreen;
+		bool vsync;
+		char resolution[64];
+	} menudata_t;
+
+	menudata_t data;
 
 	//making static so I can use it like printf
 	static vector<char *> console_buffer;

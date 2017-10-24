@@ -57,6 +57,8 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	notif = true;
 	line_offset = 0;
 
+	data.vsync = false;
+	data.fullscreen = false;
 
 	menu_object = load_texture(*gfx, "media/menu.tga", false, false);
 	console_object = load_texture_pk3(*gfx, "media/gfx/misc/console01.tga", pk3_list, num_pk3, false, false);
@@ -87,6 +89,67 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	audio->select_buffer(delta_source, delta_wave.buffer);
 	menu_state = 0;
 	history_index = 0;
+}
+
+void Menu::sub_value(const char *str, char *out)
+{
+	int length = strlen(str);
+	int j = 0;
+
+	for (int i = 0; i < length;)
+	{
+		if (str[i] == '$')
+		{
+			out[j] = '\0';
+			char key[80];
+			sscanf(&str[i], "$%s", &key);
+
+			if (strcmp(key, "d_fullscreen") == 0)
+			{
+				if (data.fullscreen)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_vsync") == 0)
+			{
+				if (data.vsync)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
+
+			else if (strcmp(key, "d_resolution") == 0)
+			{
+				strcat(out, data.resolution);
+				j += strlen(data.resolution);
+				i += 1 + strlen(key);
+				continue;
+			}
+		}
+
+		out[j++] = str[i++];
+	}
 }
 
 void Menu::render(Global &global, bool ingame)
@@ -126,8 +189,12 @@ void Menu::render(Global &global, bool ingame)
 			}
 			else
 			{
+				char msg[512];
 				vec3 color(item->color[0], item->color[1], item->color[2]);
-				draw_text(item->msg, item->position[0],
+
+				memset(msg, 0, 512);
+				sub_value(item->msg, msg);
+				draw_text(msg, item->position[0],
 					item->position[1], item->scale, color, true, true);
 			}
 		}
