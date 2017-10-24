@@ -388,8 +388,40 @@ state 301 next		7 "null"
 
 state 400 up		400 "null"
 state 400 down		401 "null"
-state 400 enter		200 "null"
+state 400 enter		400 "null"
 state 400 next		7 "null"
+
+state 403 up		400 "null"
+state 403 down		404 "null"
+state 403 enter		403 "toggle r_fullscreen"
+state 403 next		7 "null"
+
+state 404 up		403 "null"
+state 404 down		405 "null"
+state 404 enter		404 "toggle r_res"
+state 404 next		7 "null"
+
+state 405 up		404 "null"
+state 405 down		406 "null"
+state 405 enter		405 "toggle res_scale"
+state 405 next		7 "null"
+
+state 406 up		405 "null"
+state 406 down		407 "null"
+state 406 enter		406 "toggle r_vsync"
+state 406 next		7 "null"
+
+state 407 up		406 "null"
+state 407 down		408 "null"
+state 407 enter		407 "toggle r_brightness"
+state 407 next		7 "null"
+
+state 408 up		407 "null"
+state 408 down		401 "null"
+state 408 enter		408 "toggle r_contrast"
+state 408 next		7 "null"
+
+
 
 state 401 up		400 "null"
 state 401 down		402 "null"
@@ -458,9 +490,6 @@ state 707 up		706 "null"
 state 707 down		701 "null"
 state 707 enter		707 "toggle r_portal"
 state 707 next		7 "null"
-
-
-
 
 state 701 up		700 "null"
 state 701 down		701 "null"
