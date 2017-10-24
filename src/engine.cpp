@@ -5710,6 +5710,7 @@ void Engine::console(char *cmd)
 		fb_height = (unsigned int)(1024 * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo);
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+		menu.data.rscale = res_scale / 2.0;
 		return;
 	}
 

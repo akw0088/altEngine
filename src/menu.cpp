@@ -49,6 +49,7 @@ Menu::Menu()
 	data.brightness = 0.5f;
 	data.contrast = 0.5f;
 	data.volume = 0.5f;
+	data.rscale = 0.5f;
 
 }
 
@@ -358,6 +359,18 @@ void Menu::sub_value(const char *str, char *out)
 				strcat(out, data.resolution);
 				j += strlen(data.resolution);
 				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_rscale") == 0)
+			{
+				char value[32];
+
+				handle_slider(out, data.rscale);
+				j += 12;
+				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", 2.0 * data.rscale);
+				strcat(out, value);
+				j += strlen(value);
 				continue;
 			}
 			else if (strcmp(key, "d_name") == 0)

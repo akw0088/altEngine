@@ -823,6 +823,7 @@ typedef struct
 	bool fullscreen;
 	bool vsync;
 	char resolution[64];
+	float rscale;
 
 	char attack[64];
 	char jump[64];
