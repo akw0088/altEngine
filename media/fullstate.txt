@@ -398,12 +398,14 @@ state 403 next		7 "null"
 
 state 404 up		403 "null"
 state 404 down		405 "null"
-state 404 enter		404 "toggle r_res"
+state 404 enter		404 "toggle r_res up"
+state 404 select	404 "toggle r_res down"
 state 404 next		7 "null"
 
 state 405 up		404 "null"
 state 405 down		406 "null"
-state 405 enter		405 "toggle r_rscale"
+state 405 enter		405 "toggle r_rscale up"
+state 405 select	405 "toggle r_rscale down"
 state 405 next		7 "null"
 
 state 406 up		405 "null"
@@ -413,12 +415,14 @@ state 406 next		7 "null"
 
 state 407 up		406 "null"
 state 407 down		408 "null"
-state 407 enter		407 "toggle r_brightness"
+state 407 enter		407 "toggle r_brightness up"
+state 407 select	407 "toggle r_brightness down"
 state 407 next		7 "null"
 
 state 408 up		407 "null"
 state 408 down		401 "null"
-state 408 enter		408 "toggle r_contrast"
+state 408 enter		408 "toggle r_contrast up"
+state 408 select	408 "toggle r_contrast down"
 state 408 next		7 "null"
 
 

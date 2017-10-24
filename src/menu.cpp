@@ -740,6 +740,9 @@ void Menu::handle(char key, Engine *altEngine)
 	case 14:
 		delta("enter", *altEngine);
 		break;
+	case 15:
+		delta("select", *altEngine);
+		break;
 	case '~':
 	case '`':
 		console = !console;

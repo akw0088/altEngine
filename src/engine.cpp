@@ -4040,6 +4040,7 @@ void Engine::keypress(char *key, bool pressed)
 	{
 		handled = true;
 		input.zoom = pressed;
+		k = 15;
 	}
 	else if (strcmp("duck", cmd) == 0)
 	{
@@ -4698,21 +4699,35 @@ void Engine::console(char *cmd)
 		{
 			fullscreen();
 		}
-		else if (strcmp(data, "r_brightness") == 0)
+		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.brightness += 0.1f;
 			if (menu.data.brightness > 1.0f)
 				menu.data.brightness = 0.0f;
 			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
 		}
-		else if (strcmp(data, "r_contrast") == 0)
+		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.brightness -= 0.1f;
+			if (menu.data.brightness < 0.0f)
+				menu.data.brightness = 1.0f;
+			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
+		}
+		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.contrast += 0.1f;
 			if (menu.data.contrast > 1.0f)
 				menu.data.contrast = 0.0f;
 			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
 		}
-		else if (strcmp(data, "r_rscale") == 0)
+		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.contrast -= 0.1f;
+			if (menu.data.contrast < 0.0f)
+				menu.data.contrast = 1.0f;
+			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
+		}
+		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.rscale += 0.1f;
 			if (menu.data.rscale > 1.0f)
@@ -4720,11 +4735,28 @@ void Engine::console(char *cmd)
 			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
 			console(data);
 		}
-		else if (strcmp(data, "r_res") == 0)
+		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.rscale -= 0.1f;
+			if (menu.data.rscale < 0.01f)
+				menu.data.rscale = 1.0f;
+			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
+			console(data);
+		}
+		else if (strcmp(data, "r_res") == 0 && strstr(cmd, "up"))
 		{
 			current_res++;
 			if (current_res + 1 > num_res - 1)
 				current_res = 0;
+			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
+
+			sprintf(menu.data.apply, "Apply");
+		}
+		else if (strcmp(data, "r_res") == 0 && strstr(cmd, "down"))
+		{
+			current_res--;
+			if (current_res < 0)
+				current_res = num_res - 1;
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
