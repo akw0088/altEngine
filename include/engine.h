@@ -204,6 +204,10 @@ public:
 	float dof_near;
 	float dof_far;
 
+#ifndef __linux
+	HWAVEOUT hWaveOut;
+#endif
+
 
 protected:
 	matrix4		projection;

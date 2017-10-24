@@ -445,14 +445,21 @@ state 399 next		7 "null"
 
 
 state 500 up		500 "null"
-state 500 down		501 "null"
+state 500 down		502 "null"
 state 500 enter		200 "null"
 state 500 next		7 "null"
 
-state 501 up		500 "null"
+state 501 up		502 "null"
 state 501 down		501 "null"
 state 501 enter		200 "null"
 state 501 next		7 "null"
+
+state 502 up		500 "null"
+state 502 down		501 "null"
+state 502 enter		502 "toggle s_volume up"
+state 502 select	502 "toggle s_volume down"
+state 502 next		7 "null"
+
 
 state 600 up		600 "null"
 state 600 down		601 "null"

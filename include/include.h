@@ -52,6 +52,8 @@
 	#include <windows.h>
 	#include <winsock.h>
 	#include <omp.h>
+	#include <mmsystem.h>
+
 
 	#pragma comment(lib, "wsock32.lib")
 

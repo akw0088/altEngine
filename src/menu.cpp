@@ -351,7 +351,7 @@ void Menu::sub_value(const char *str, char *out)
 				handle_slider(out, data.volume);
 				j += 12;
 				i += 1 + strlen(key);
-				sprintf(value, " %3.1f", 2.0f * data.volume);
+				sprintf(value, " %3.1f", data.volume);
 				strcat(out, value);
 				j += strlen(value);
 				continue;

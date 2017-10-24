@@ -195,6 +195,19 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	show_ao = true;
 
 	enum_resolutions();
+#ifndef __linux
+	WAVEFORMATEX wf;
+
+	wf.wFormatTag = WAVE_FORMAT_PCM;
+	wf.nChannels = 2;
+	wf.nSamplesPerSec = 44100;
+	wf.nAvgBytesPerSec = (44100 * 4);
+	wf.nBlockAlign = (2 * 16) / 8;
+	wf.wBitsPerSample = 16;
+	wf.cbSize = 0;
+
+	waveOutOpen((LPHWAVEOUT)&hWaveOut, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL);
+#endif
 
 
 #ifdef OPENGL
@@ -4764,6 +4777,26 @@ void Engine::console(char *cmd)
 		else if (strcmp(data, "r_vsync") == 0)
 		{
 			menu.data.vsync = !menu.data.vsync;
+		}
+		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "up"))
+		{
+			menu.data.volume += 0.1f;
+			if (menu.data.volume > 1.0f)
+				menu.data.volume = 0.0f;
+
+#ifndef __linux
+			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
+#endif
+		}
+		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.volume -= 0.1f;
+			if (menu.data.volume < 0.00f)
+				menu.data.volume = 1.0f;
+
+#ifndef __linux
+			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
+#endif
 		}
 
 
