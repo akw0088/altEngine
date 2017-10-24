@@ -4659,6 +4659,32 @@ void Engine::console(char *cmd)
 	}
 
 	
+	if (sscanf(cmd, "toggle %s", &data))
+	{
+		if (strcmp(data, "r_stencil") == 0)
+		{
+			enable_stencil = !enable_stencil;
+			menu.data.shadowvol = enable_stencil;
+		}
+		else if (strcmp(data, "r_ssao") == 0)
+		{
+			enable_ssao = !enable_ssao;
+			menu.data.ssao = enable_ssao;
+		}
+		else if (strcmp(data, "r_bloom") == 0)
+		{
+			enable_bloom = !enable_bloom;
+			menu.data.bloom = enable_bloom;
+		}
+		else if (strcmp(data, "r_portal") == 0)
+		{
+			enable_portal = !enable_portal;
+			menu.data.portal = enable_portal;
+		}
+
+		return;
+	}
+
 
 	if (strstr(cmd, "centerview"))
 	{

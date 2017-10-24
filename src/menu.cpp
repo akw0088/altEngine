@@ -303,7 +303,7 @@ void Menu::sub_value(const char *str, char *out)
 			}
 			else if (strcmp(key, "d_skyray") == 0)
 			{
-				if (data.portal)
+				if (data.skyray)
 				{
 					strcat(out, "On");
 					j += 2;
