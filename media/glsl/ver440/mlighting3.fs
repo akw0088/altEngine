@@ -51,6 +51,16 @@ layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 uniform sampler2D depth[18];
 uniform float u_alpha;
 
+vec3 ACESFilm( vec3 x )
+{
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return clamp( (x * ( a * x + b ) ) / ( x * ( c * x + d ) + e), 0.0, 1.0);
+}
+
 
 // Loop could clean this up, but need to figure out how to make an array of texture arrays that bind correctly
 void calc_shadow(out float shadowFlagCombined, in int light_num)
@@ -91,8 +101,6 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 		}
 	}
 }
-
-
 
 vec3 lighting( int lightIndex, vec4 pos )
 {
@@ -359,6 +367,8 @@ void main(void)
 	{
 		Fragment.a = u_alpha;
 	}
+
+	Fragment.rgb = ACESFilm(Fragment.rgb);
 
 	normal_depth.xyz = unormal.xyz;
 	normal_depth.a = Vertex.vary_position.z;
