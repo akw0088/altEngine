@@ -6,6 +6,7 @@
 
 vector<char *> Menu::console_buffer;
 vector<char *> Menu::chat_buffer;
+vector<char *> Menu::string_buffer;
 vector<char *> Menu::notif_buffer;
 
 
@@ -865,6 +866,17 @@ void Menu::render_chatmode(Global &global)
 	draw_text("Say:", 0.1f, 0.5f - 0.05f, 0.025f, color, false, true);
 }
 
+void Menu::render_stringmode(Global &global)
+{
+	vec3 color(1.0f, 1.0f, 1.0f);
+
+	gfx->cleardepth();
+	strcat(key_buffer, "\4");
+	draw_text(key_buffer, 0.3f, 0.8f - 0.05f, 0.025f, color, true, false);
+	key_buffer[strlen(key_buffer) - 1] = '\0';
+	draw_text("Enter value:", 0.1f, 0.8f - 0.05f, 0.025f, color, false, true);
+}
+
 void Menu::render_chat(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -1104,6 +1116,52 @@ void Menu::handle_chatmode(char key, Engine *altEngine)
 		altEngine->chat(NULL, key_buffer);
 		key_buffer[0] = '\0';
 		chatmode = false;
+		break;
+	}
+	case 4:
+	case '\b':
+		if (length - 1 == -1)
+			return;
+
+		key_buffer[length - 1] = '\0';
+		break;
+	default:
+		if (length + 1 == sizeof(key_buffer))
+			return;
+		key_buffer[length] = key;
+		key_buffer[length + 1] = '\0';
+	}
+}
+
+void Menu::handle_stringmode(char key, Engine *altEngine)
+{
+	int length = strlen(key_buffer);
+
+	switch (key)
+	{
+	case 27:
+		*string_target = '\0';
+		stringmode = false;
+		break;
+	case 3:
+		if (history_index < string_buffer.size())
+		{
+			strcpy(key_buffer, string_buffer[string_buffer.size() - 1 - history_index]);
+			history_index++;
+		}
+		break;
+	case 5:
+		if (history_index)
+		{
+			history_index--;
+			strcpy(key_buffer, string_buffer[string_buffer.size() - 1 - history_index]);
+		}
+		break;
+	case '\r':
+	{
+		strcpy(string_target, key_buffer);
+		key_buffer[0] = '\0';
+		stringmode = false;
 		break;
 	}
 	case 4:

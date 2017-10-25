@@ -113,7 +113,7 @@ Engine::Engine()
 	enable_portal = false;
 	enable_blur = false;
 	enable_emboss = false;
-	enable_bloom = false;
+	enable_bloom = true;
 	enable_ssao = false;
 	debug_bloom = false;
 
@@ -1008,6 +1008,9 @@ void Engine::render(double last_frametime)
 				menu.render_console(global);
 			if (menu.chatmode)
 				menu.render_chatmode(global);
+			if (menu.stringmode)
+				menu.render_stringmode(global);
+
 		}
 		else
 		{
@@ -1139,11 +1142,16 @@ void Engine::render(double last_frametime)
 			if (menu.chatmode == false)
 				game->render_hud(last_frametime);
 			if (menu.ingame)
+			{
 				menu.render(global, true);
+				if (menu.stringmode)
+					menu.render_stringmode(global);
+			}
 			if (menu.console)
 				menu.render_console(global);
 			if (menu.chatmode)
 				menu.render_chatmode(global);
+
 		}
 	}
 
@@ -1456,19 +1464,22 @@ void Engine::render_to_framebuffer(double last_frametime)
 	if (enable_bloom)
 	{
 		render_bloom(debug_bloom);
+		gfx.cleardepth();
 	}
-
-
 
 	//render menu
 	if (menu.chatmode == false)
 		game->render_hud(last_frametime);
 	else
 		menu.render_chatmode(global);
+	if (menu.ingame)
+	{
+		menu.render(global, true);
+		if (menu.stringmode)
+			menu.render_stringmode(global);
+	}
 	if (menu.console)
 		menu.render_console(global);
-	if (menu.ingame)
-		menu.render(global, true);
 
 	gfx.Depth(true);
 	gfx.Blend(false);
@@ -2230,10 +2241,10 @@ void Engine::render_bloom(bool debug)
 void Engine::render_ssao(bool debug)
 {
 	gfx.bindFramebuffer(ssao_fbo);
-	gfx.resize(fb_width, fb_height);
+//	gfx.resize(fb_width, fb_height);
 	ssao.Select();
 
-	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count);
+	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count, fb_width, fb_height);
 
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, render_ndepth);
@@ -4120,7 +4131,7 @@ void Engine::keypress(char *key, bool pressed)
 	if (pressed)
 		keystroke(k);
 
-	if (handled == false && menu.console == false)
+	if (handled == false && menu.console == false && menu.ingame == false && menu.stringmode == false)
 		console(cmd);
 }
 
@@ -4142,11 +4153,32 @@ void Engine::keystroke(char key)
 		else
 		{
 			gfx.clear();
-			menu.handle(key, this);
 
+			if (menu.stringmode)
+			{
+				menu.handle_stringmode(key, this);
+				if (menu.stringmode == false)
+				{
+					char cmd[80];
+
+					sprintf(cmd, "%s \"%s\"", menu.string_cmd, menu.string_target);
+					console(cmd);
+				}
+			}
+			else
+			{
+				menu.handle(key, this);
+			}
 			menu.render(global);
 			if (menu.console)
+			{
 				menu.render_console(global);
+			}
+			if (menu.stringmode)
+			{
+				menu.render_stringmode(global);
+			}
+
 			gfx.swap();
 		}
 	}
@@ -4155,9 +4187,27 @@ void Engine::keystroke(char key)
 		if (menu.console)
 			menu.handle_console(key, this);
 		else if (menu.ingame)
-			menu.handle(key, this);
+		{
+			if (menu.stringmode)
+			{
+				menu.handle_stringmode(key, this);
+				if (menu.stringmode == false)
+				{
+					char cmd[80];
+
+					sprintf(cmd, "%s \"%s\"", menu.string_cmd, menu.string_target);
+					console(cmd);
+				}
+			}
+			else
+			{
+				menu.handle(key, this);
+			}
+		}
 		else if (menu.chatmode)
 			menu.handle_chatmode(key, this);
+		else if (menu.stringmode)
+			menu.handle_stringmode(key, this);
 		else
 			handle_game(key);
 	}
@@ -4712,7 +4762,7 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_ssao") == 0)
 		{
-			enable_ssao = !enable_ssao;
+			console("ssao");
 			menu.data.ssao = enable_ssao;
 			return;
 		}
@@ -4820,7 +4870,7 @@ void Engine::console(char *cmd)
 				menu.data.volume = 0.0f;
 
 #ifndef __linux
-			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
+			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
 #endif
 			return;
 		}
@@ -4831,7 +4881,7 @@ void Engine::console(char *cmd)
 				menu.data.volume = 1.0f;
 
 #ifndef __linux
-			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
+			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
 #endif
 			return;
 		}
@@ -4911,6 +4961,14 @@ void Engine::console(char *cmd)
 			console(data);
 			return;
 		}
+		else if (strcmp(data, "name") == 0 && strstr(cmd, "string"))
+		{
+			menu.stringmode = true;
+			menu.string_target = &(menu.data.name[0]);
+			strcpy(menu.string_cmd, "name");
+			return;
+		}
+
 	}
 
 
@@ -6497,7 +6555,7 @@ void Engine::set_rolloff_factor(float value)
 
 void Engine::paste(char *data, unsigned int size)
 {
-	if (menu.console || menu.chatmode)
+	if (menu.console || menu.chatmode || menu.stringmode)
 	{
 		for(unsigned int i = 0; i < size; i++)
 			keystroke(data[i]);

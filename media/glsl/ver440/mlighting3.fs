@@ -3,7 +3,7 @@
 #define	MAX_LIGHTS 64
 
 // per vertex interpolated program input
-in VertexDataOut {
+in VertexData {
     vec3 att_position;
     vec4 vary_position; // vertex position
     vec2 vary_TexCoord;
@@ -330,15 +330,17 @@ void main(void)
 
 
 	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
-	vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
 
 	if (u_lightmap > 0.0)
 	{
+		vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
+
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
 			Fragment.xyz *= lightmap;
 	}
 
 	Fragment.rgb *= max(light, ambient);
+
 
 
 	if (u_shadowmap > 0.0)
@@ -363,6 +365,8 @@ void main(void)
 		Fragment.rgb += u_brightness;
 		Fragment.rgb *= u_contrast;
 	}
+
+
 
 	if (u_alpha >= 0.0)
 	{

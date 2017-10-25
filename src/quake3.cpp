@@ -101,8 +101,12 @@ void Quake3::init(Engine *altEngine)
 
 void Quake3::load(gametype_t type)
 {
+	char cmd[80];
 	last_spawn = 0;
 	gametype = type;
+
+	sprintf(cmd, "name \"%s\"", engine->menu.data.name);
+	engine->console(cmd);
 }
 
 void Quake3::unload()
@@ -2911,7 +2915,7 @@ void Quake3::step(int frame_step)
 		}
 	}
 
-	if (spectator == true)
+	if (spectator == true && engine->menu.console == false)
 	{
 		engine->camera_frame.update(engine->input);
 	}
@@ -2960,7 +2964,7 @@ void Quake3::step(int frame_step)
 		if (isplayer || isbot || isserver)
 		{
 			if (((isplayer || isserver) &&
-				(engine->menu.ingame == true || engine->menu.console == true || engine->menu.chatmode == true)))
+				(engine->menu.ingame == true || engine->menu.console == true || engine->menu.stringmode == true || engine->menu.chatmode == true)))
 			{
 				input_t noinput = { 0 };
 

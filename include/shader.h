@@ -240,7 +240,7 @@ class ScreenSpace : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count);
+	void Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count, int width, int height);
 	virtual void prelink(void);
 
 private:
@@ -249,6 +249,8 @@ private:
 	int u_ssaolevel;
 	int u_randomize_points;
 	int u_point_count;
+	int u_width;
+	int u_height;
 
 	unsigned int points_buffer;
 };

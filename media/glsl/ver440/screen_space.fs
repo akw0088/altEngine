@@ -24,6 +24,8 @@ uniform float ssao_radius = 5.0;
 uniform bool weight_by_angle = true;
 uniform uint point_count = 8;
 uniform bool randomize_points = true;
+uniform int u_width;
+uniform int u_height;
 
 // Uniform block containing up to 256 random directions (x,y,z,0)
 // and 256 more completely random vectors
@@ -137,8 +139,8 @@ void main(void)
     float ao_amount = (1.0 - occ / total);
 
     // Get object color from color texture
-//    color = chromaticAberration(vec2(1024,1024), gl_FragCoord.xy, texture0);
-    vec4 object_color =  chromaticAberration(vec2(1024,1024), gl_FragCoord.xy, texture0);;
+//    color = chromaticAberration(vec2(u_width,u_height), gl_FragCoord.xy, texture0);
+    vec4 object_color =  chromaticAberration(vec2(u_width,u_height), gl_FragCoord.xy, texture0);;
 //textureLod(sColor, P, 0);
 
 

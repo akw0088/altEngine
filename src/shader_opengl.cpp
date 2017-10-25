@@ -108,8 +108,8 @@ int mLight2::init(Graphics *gfx)
 		return -1;
 	}
 #else
-	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
-//	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs")) 
+//	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
+	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs")) 
 	{
 		program_handle = -1;
 		return -1;
@@ -271,21 +271,38 @@ void mLight2::set_max(int max)
 	max_light = max;
 }
 
+
+//=============================================================================
+// Mostly effects things not lit by lightmaps
+//=============================================================================
 void mLight2::set_ambient(float ambient)
 {
 	m_ambient = ambient;
 }
 
+//=============================================================================
+// bias added to final fragment color, tends to wash out color when above 1.0
+//=============================================================================
 void mLight2::set_brightness(float value)
 {
 	m_brightness = value;
 }
 
+//=============================================================================
+// scalar multiplied by final fragment color, high contrast makes things stand out
+//=============================================================================
 void mLight2::set_contrast(float value)
 {
 	m_contrast = value;
 }
 
+
+//=============================================================================
+// Used to scale between dynamic light and lightmaps
+// 1.0 means 100% lightmap
+// 0.5 means 50% lightmap 50% dynamic lighting
+// 0.0 means 100% dynamic lighting
+//=============================================================================
 void mLight2::set_lightmap(float lightmap)
 {
 	m_lightmap = lightmap;
@@ -1126,6 +1143,8 @@ int ScreenSpace::init(Graphics *gfx)
 	u_objectlevel = glGetUniformLocation(program_handle, "object_level");
 	u_randomize_points = glGetUniformLocation(program_handle, "randomize_points");
 	u_point_count = glGetUniformLocation(program_handle, "point_count");
+	u_width = glGetUniformLocation(program_handle, "u_width");
+	u_height = glGetUniformLocation(program_handle, "u_height");
 
 
 	int i;
@@ -1175,13 +1194,16 @@ void ScreenSpace::prelink(void)
 }
 
 
-void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count)
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count, int width, int height)
 {
-	glUniform1f(u_radius, radius * (1024.0f / 1000.0f));
+	glUniform1f(u_radius, radius * ((width) / 1000.0f));
 	glUniform1f(u_objectlevel, objectlevel);
 	glUniform1f(u_ssaolevel, ssaolevel);
 	glUniform1i(u_randomize_points, randomize_points);
 	glUniform1ui(u_point_count, point_count);
+	glUniform1ui(u_width, width);
+	glUniform1ui(u_height, height);
+
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, points_buffer);
 }
 

@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-PortalCamera::PortalCamera(Entity *entity, Graphics &gfx)
+PortalCamera::PortalCamera(Entity *entity, Graphics &gfx, float scale)
 {
 	PortalCamera::entity = entity;
 	unsigned int normal_depth = -1;
@@ -13,10 +13,7 @@ PortalCamera::PortalCamera(Entity *entity, Graphics &gfx)
 	fbo = -1;
 
 	portal_projection.perspective(90.0, 1.0, 1.0, 2001.0, true);
-#ifdef OPENGL
-	gfx.setupFramebuffer((int)(1024), (int)(1024), fbo, quad_tex, depth_tex, normal_depth, 0, false);
-#endif
-
+	gfx.setupFramebuffer((int)(1024 * scale), (int)(1024 * scale), fbo, quad_tex, depth_tex, normal_depth, 0, false);
 }
 
 void PortalCamera::destroy(Graphics &gfx)
