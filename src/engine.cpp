@@ -989,6 +989,7 @@ void Engine::render(double last_frametime)
 				render_texture(testObj, depth_view);
 
 
+
 		}
 	}
 	if (render_mode == MODE_FORWARD)
@@ -1462,7 +1463,7 @@ void Engine::render_to_framebuffer(double last_frametime)
 	//render menu
 	if (menu.chatmode == false)
 		game->render_hud(last_frametime);
-	if (menu.chatmode)
+	else
 		menu.render_chatmode(global);
 	if (menu.console)
 		menu.render_console(global);
@@ -4707,29 +4708,35 @@ void Engine::console(char *cmd)
 		{
 			enable_stencil = !enable_stencil;
 			menu.data.shadowvol = enable_stencil;
+			return;
 		}
 		else if (strcmp(data, "r_ssao") == 0)
 		{
 			enable_ssao = !enable_ssao;
 			menu.data.ssao = enable_ssao;
+			return;
 		}
 		else if (strcmp(data, "r_skyray") == 0)
 		{
 			menu.data.skyray = !menu.data.skyray;
+			return;
 		}
 		else if (strcmp(data, "r_bloom") == 0)
 		{
 			enable_bloom = !enable_bloom;
 			menu.data.bloom = enable_bloom;
+			return;
 		}
 		else if (strcmp(data, "r_portal") == 0)
 		{
 			enable_portal = !enable_portal;
 			menu.data.portal = enable_portal;
+			return;
 		}
 		else if (strcmp(data, "r_fullscreen") == 0)
 		{
 			fullscreen();
+			return;
 		}
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "up"))
 		{
@@ -4737,6 +4744,7 @@ void Engine::console(char *cmd)
 			if (menu.data.brightness > 1.0f)
 				menu.data.brightness = 0.0f;
 			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
+			return;
 		}
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "down"))
 		{
@@ -4744,6 +4752,7 @@ void Engine::console(char *cmd)
 			if (menu.data.brightness < 0.0f)
 				menu.data.brightness = 1.0f;
 			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
+			return;
 		}
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "up"))
 		{
@@ -4751,6 +4760,7 @@ void Engine::console(char *cmd)
 			if (menu.data.contrast > 1.0f)
 				menu.data.contrast = 0.0f;
 			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
+			return;
 		}
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "down"))
 		{
@@ -4758,6 +4768,7 @@ void Engine::console(char *cmd)
 			if (menu.data.contrast < 0.0f)
 				menu.data.contrast = 1.0f;
 			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
+			return;
 		}
 		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "up"))
 		{
@@ -4766,6 +4777,7 @@ void Engine::console(char *cmd)
 				menu.data.rscale = 0.1f;
 			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
 			console(data);
+			return;
 		}
 		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "down"))
 		{
@@ -4774,6 +4786,7 @@ void Engine::console(char *cmd)
 				menu.data.rscale = 1.0f;
 			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
 			console(data);
+			return;
 		}
 		else if (strcmp(data, "r_res") == 0 && strstr(cmd, "up"))
 		{
@@ -4783,6 +4796,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
+			return;
 		}
 		else if (strcmp(data, "r_res") == 0 && strstr(cmd, "down"))
 		{
@@ -4792,10 +4806,12 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
+			return;
 		}
 		else if (strcmp(data, "r_vsync") == 0)
 		{
 			menu.data.vsync = !menu.data.vsync;
+			return;
 		}
 		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "up"))
 		{
@@ -4806,6 +4822,7 @@ void Engine::console(char *cmd)
 #ifndef __linux
 			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
 #endif
+			return;
 		}
 		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "down"))
 		{
@@ -4816,6 +4833,7 @@ void Engine::console(char *cmd)
 #ifndef __linux
 			waveOutSetVolume(hWaveOut, menu.data.volume * 65535);
 #endif
+			return;
 		}
 		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "up"))
 		{
@@ -4825,6 +4843,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.model, "%s", models[current_model]);
 
 			sprintf(menu.data.apply, "Apply");
+			return;
 		}
 		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "down"))
 		{
@@ -4832,6 +4851,7 @@ void Engine::console(char *cmd)
 			if (current_model < 0)
 				current_model = num_model - 1;
 			sprintf(menu.data.model, "%s", models[current_model]);
+			return;
 		}
 		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "up"))
 		{
@@ -4841,6 +4861,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.team, "%s", teams[current_team]);
 
 			sprintf(menu.data.apply, "Apply");
+			return;
 		}
 		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "down"))
 		{
@@ -4848,6 +4869,7 @@ void Engine::console(char *cmd)
 			if (current_team < 0)
 				current_team = num_team - 1;
 			sprintf(menu.data.team, "%s", teams[current_team]);
+			return;
 		}
 		else if (strcmp(data, "cg_fov") == 0 && strstr(cmd, "up"))
 		{
@@ -4855,7 +4877,9 @@ void Engine::console(char *cmd)
 			if (menu.data.fov > 1.01f)
 				menu.data.fov = 0.0f;
 
-			sprintf(data, "cg_fov %d", 100 * menu.data.fov + 90);
+			sprintf(data, "cg_fov %d", (int)(100 * menu.data.fov + 90));
+			console(data);
+			return;
 		}
 		else if (strcmp(data, "cg_fov") == 0 && strstr(cmd, "down"))
 		{
@@ -4863,7 +4887,9 @@ void Engine::console(char *cmd)
 			if (menu.data.fov < 0.00f)
 				menu.data.fov = 1.0f;
 
-			sprintf(data, "cg_fov %d", 100 * menu.data.fov + 90);
+			sprintf(data, "cg_fov %d", (int)(100 * menu.data.fov + 90));
+			console(data);
+			return;
 		}
 		else if (strcmp(data, "sensitivity") == 0 && strstr(cmd, "up"))
 		{
@@ -4871,7 +4897,9 @@ void Engine::console(char *cmd)
 			if (menu.data.sensitivity > 1.01f)
 				menu.data.sensitivity = 0.0f;
 
-			sprintf(data, "sensitivity %d", 2.5 * menu.data.sensitivity);
+			sprintf(data, "sensitivity %lf", 2.5 * menu.data.sensitivity);
+			console(data);
+			return;
 		}
 		else if (strcmp(data, "sensitivity") == 0 && strstr(cmd, "down"))
 		{
@@ -4879,13 +4907,10 @@ void Engine::console(char *cmd)
 			if (menu.data.sensitivity < 0.00f)
 				menu.data.sensitivity = 1.0f;
 
-			sprintf(data, "sensitivity %d", 5 * menu.data.sensitivity);
+			sprintf(data, "sensitivity %lf", 2.5 * menu.data.sensitivity);
+			console(data);
+			return;
 		}
-
-
-
-
-		return;
 	}
 
 
@@ -5246,6 +5271,7 @@ void Engine::console(char *cmd)
 #ifndef __linux
 		set_resolution(xres, yres, 32);
 #endif
+		sprintf(menu.data.apply, "");
 		return;
 	}
 

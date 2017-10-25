@@ -53,6 +53,7 @@ Menu::Menu()
 	data.rscale = 0.5f;
 	data.sensitivity = 1.0f;
 	data.shadowvol = true;
+	data.fov = 0.1f;
 
 }
 
