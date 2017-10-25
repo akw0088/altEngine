@@ -2226,14 +2226,17 @@ void Quake3::handle_player(int self, input_t &input)
 					speed_scale = 2.0f;
 
 
-				if (entity->rigid->move(input, speed_scale))
+				if (engine->menu.console == false)
 				{
-					entity->player->state = PLAYER_JUMPED;
-					if (entity->player->local)
-						engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_JUMP);
-					else
-						engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_JUMP);
+					if (entity->rigid->move(input, speed_scale))
+					{
+						entity->player->state = PLAYER_JUMPED;
+						if (entity->player->local)
+							engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_JUMP);
+						else
+							engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_JUMP);
 
+					}
 				}
 			}
 		}
@@ -5166,6 +5169,46 @@ void Quake3::render_hud(double last_frametime)
 		notif_timer--;
 	}
 
+	if (faceicon)
+	{
+		if (entity->player->quad_timer)
+		{
+			draw_icon(4.0f, ICON_FACE_QUAD, 0.0f, 0.0f);
+		}
+		else if (entity->player->godmode)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE_PENT_KILL, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE_PENT, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 80)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE0_PAIN, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE0, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 60)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE1_PAIN, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE1, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 40)
+		{
+			draw_icon(4.0f, ICON_FACE2, 0.0f, 0.0f);
+		}
+		else if (entity->player->health > 0)
+		{
+			if (entity->player->pain_timer)
+				draw_icon(4.0f, ICON_FACE3_PAIN, 0.0f, 0.0f);
+			else
+				draw_icon(4.0f, ICON_FACE3, 0.0f, 0.0f);
+		}
+	}
+
 	engine->menu.draw_text("", 0.15f, 0.95f, 0.050f, color, true, false);
 
 	if (engine->show_hud)
@@ -5242,46 +5285,6 @@ void Quake3::render_hud(double last_frametime)
 				snprintf(msg, LINE_SIZE, "%d", entity->player->ammo_plasma);
 				engine->menu.draw_text(msg, 0.7f, 0.95f, 0.050f, color, false, false);
 				break;
-			}
-		}
-		
-		if (faceicon)
-		{
-			if (entity->player->quad_timer)
-			{
-				draw_icon(4.0f, ICON_FACE_QUAD, 0.0f, 0.0f);
-			}
-			else if (entity->player->godmode)
-			{
-				if (entity->player->pain_timer)
-					draw_icon(4.0f, ICON_FACE_PENT_KILL, 0.0f, 0.0f);
-				else
-					draw_icon(4.0f, ICON_FACE_PENT, 0.0f, 0.0f);
-			}
-			else if (entity->player->health > 80)
-			{
-				if (entity->player->pain_timer)
-					draw_icon(4.0f, ICON_FACE0_PAIN, 0.0f, 0.0f);
-				else
-					draw_icon(4.0f, ICON_FACE0, 0.0f, 0.0f);
-			}
-			else if (entity->player->health > 60)
-			{
-				if (entity->player->pain_timer)
-					draw_icon(4.0f, ICON_FACE1_PAIN, 0.0f, 0.0f);
-				else
-					draw_icon(4.0f, ICON_FACE1, 0.0f, 0.0f);
-			}
-			else if (entity->player->health > 40)
-			{
-				draw_icon(4.0f, ICON_FACE2, 0.0f, 0.0f);
-			}
-			else if (entity->player->health > 0)
-			{
-				if (entity->player->pain_timer)
-					draw_icon(4.0f, ICON_FACE3_PAIN, 0.0f, 0.0f);
-				else
-					draw_icon(4.0f, ICON_FACE3, 0.0f, 0.0f);
 			}
 		}
 
