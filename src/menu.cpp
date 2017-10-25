@@ -51,6 +51,7 @@ Menu::Menu()
 	data.contrast = 0.5f;
 	data.volume = 0.5f;
 	data.rscale = 0.5f;
+	data.sensitivity = 1.0f;
 	data.shadowvol = true;
 
 }
@@ -352,6 +353,30 @@ void Menu::sub_value(const char *str, char *out)
 				j += 12;
 				i += 1 + strlen(key);
 				sprintf(value, " %3.1f", data.volume);
+				strcat(out, value);
+				j += strlen(value);
+				continue;
+			}
+			else if (strcmp(key, "d_fov") == 0)
+			{
+				char value[32];
+
+				handle_slider(out, data.fov);
+				j += 12;
+				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", 100 * data.fov + 90);
+				strcat(out, value);
+				j += strlen(value);
+				continue;
+			}
+			else if (strcmp(key, "d_sensitivity") == 0)
+			{
+				char value[32];
+
+				handle_slider(out, data.fov);
+				j += 12;
+				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", 2.5 * data.sensitivity);
 				strcat(out, value);
 				j += strlen(value);
 				continue;

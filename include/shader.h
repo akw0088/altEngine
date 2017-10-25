@@ -218,7 +218,7 @@ class ParticleRender : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y);
+	void Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y, float z);
 	void render(Graphics &gfx, int start, int vbo, int num);
 
 	virtual void prelink(void);
@@ -231,6 +231,7 @@ private:
 	int u_texture0;
 	int u_xshift;
 	int u_yshift;
+	int u_zshift;
 };
 
 

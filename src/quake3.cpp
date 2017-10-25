@@ -5117,21 +5117,21 @@ void Quake3::draw_flash(Player &player)
 	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
 	if (player.flash_gauntlet)
-		draw_icon(15.0, ICON_F_GAUNTLET);
+		draw_icon(15.0, ICON_F_GAUNTLET, 0.0f, 0.0f, -50.0f);
 	else if (player.flash_machinegun)
-		draw_icon(15.0, ICON_F_MACHINEGUN);
+		draw_icon(15.0, ICON_F_MACHINEGUN, 0.0f, 0.0f, -50.0f);
 	else if (player.flash_shotgun)
-		draw_icon(15.0, ICON_F_SHOTGUN);
+		draw_icon(15.0, ICON_F_SHOTGUN, 0.0f, 0.0f, -5.0f);
 	else if (player.flash_grenade)
-		draw_icon(15.0, ICON_F_GRENADE);
+		draw_icon(15.0, ICON_F_GRENADE, 0.0f, 0.0f, -5.0f);
 	else if (player.flash_rocket)
-		draw_icon(15.0, ICON_F_ROCKET);
+		draw_icon(15.0, ICON_F_ROCKET, 0.0f, 0.0f, -5.0f);
 	else if (player.flash_lightning)
-		draw_icon(15.0, ICON_F_LIGHTNING);
+		draw_icon(15.0, ICON_F_LIGHTNING, 0.0f, 0.0f, -5.0f);
 	else if (player.flash_railgun)
-		draw_icon(15.0, ICON_F_RAILGUN);
+		draw_icon(15.0, ICON_F_RAILGUN, 0.0f, 0.0f, -5.0f);
 	else if (player.flash_plasma)
-		draw_icon(15.0, ICON_F_PLASMA);
+		draw_icon(15.0, ICON_F_PLASMA, 0.0f, 0.0f, -5.0f);
 	engine->gfx.Blend(false);
 }
 
@@ -5849,7 +5849,7 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 
 
 	engine->particle_render.Select();
-	engine->particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+	engine->particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f, 0.0f);
 	engine->gfx.SelectTexture(0, engine->particle_tex);
 	engine->gfx.SelectIndexBuffer(line_ibo);
 	engine->particle_render.render(engine->gfx, 0, line_vbo, 400);
@@ -5940,7 +5940,7 @@ void Quake3::draw_crosshair()
 
 #ifndef DIRECTX
 	engine->particle_render.Select();
-	engine->particle_render.Params(engine->projection, quad1, quad2, 0.0f, 0.0f);
+	engine->particle_render.Params(engine->projection, quad1, quad2, 0.0f, 0.0f, 0.0f);
 	engine->gfx.SelectTexture(0, crosshair_tex[current_crosshair]);
 	engine->particle_render.render(engine->gfx, 0, crosshair_vbo, 1);
 #endif
@@ -5975,7 +5975,7 @@ void Quake3::create_icon()
 	icon_vbo = engine->gfx.CreateVertexBuffer(&vert, icon_list.size());
 }
 
-void Quake3::draw_icon(float scale, int index, float x, float y)
+void Quake3::draw_icon(float scale, int index, float x, float y, float z)
 {
 	matrix4 transformation;
 	engine->camera_frame.set(transformation);
@@ -5989,7 +5989,7 @@ void Quake3::draw_icon(float scale, int index, float x, float y)
 #ifndef DIRECTX
 	engine->gfx.SelectTexture(0, icon_list[index].tex);
 	engine->particle_render.Select();
-	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x + x, icon_list[index].y + y);
+	engine->particle_render.Params(engine->projection, quad1, quad2, icon_list[index].x + x, icon_list[index].y + y, z);
 	engine->particle_render.render(engine->gfx, index, icon_vbo, 1);
 #endif
 }

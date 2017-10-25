@@ -19,13 +19,14 @@ out	vec4		ivary_tangent;
 uniform mat4 u_mvp;
 uniform float u_xshift;
 uniform float u_yshift;
+uniform float u_zshift;
 
 
 void main()
 {
 	gl_Position = vec4(	attr_position.x + u_xshift,
 				attr_position.y + u_yshift,
-				attr_position.z,
+				attr_position.z + u_zshift,
 				1.0);
 	iatt_position = gl_Position.xyz;
 	ivary_color = attr_color;

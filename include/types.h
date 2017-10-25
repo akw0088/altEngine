@@ -824,6 +824,8 @@ typedef struct
 	bool vsync;
 	char resolution[64];
 	float rscale;
+	float fov;
+	float sensitivity;
 
 	char apply[64];
 

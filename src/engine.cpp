@@ -1557,7 +1557,7 @@ void Engine::render_scene(bool lights)
 		vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 		particle_render.Select();
-		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f, 0.0f);
 		gfx.SelectTexture(0, particle_tex);
 		particle_render.render(gfx, 0, vbo, emitter.num);
 	}
@@ -1717,7 +1717,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		vec3 quad2 = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 		particle_render.Select();
-		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+		particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f, 0.0f);
 		gfx.SelectTexture(0, particle_tex);
 		particle_render.render(gfx, 0, vbo, emitter.num);
 	}
@@ -1744,11 +1744,6 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	if (entity_list[i]->player == NULL)
 		return;
 
-
-	entity_list[i]->rigid->get_matrix(mvp.m);
-	mvp = (mvp * trans) * projection;
-
-	game->draw_flash(*(entity_list[i]->player));
 	mlight2.Select();
 	entity_list[i]->rigid->get_matrix(mvp.m);
 
@@ -1768,6 +1763,12 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	}
 
 	entity_list[i]->player->render_weapon(gfx);
+
+	entity_list[i]->rigid->get_matrix(mvp.m);
+	mvp = (mvp * trans) * projection;
+
+	game->draw_flash(*(entity_list[i]->player));
+
 }
 
 void Engine::render_trails(matrix4 &trans)
@@ -1807,7 +1808,7 @@ void Engine::render_trails(matrix4 &trans)
 		{
 			entity_list[i]->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
-			particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+			particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f, 0.0f);
 
 			particle_render.render(gfx, 0, spiral_vbo, 400);
 			continue;
@@ -1818,7 +1819,7 @@ void Engine::render_trails(matrix4 &trans)
 		{
 			entity_list[i]->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
-			particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f);
+			particle_render.Params(mvp, quad1, quad2, 0.0f, 0.0f, 0.0f);
 
 			particle_render.render(gfx, 0, lightning_vbo, 400);
 			continue;
@@ -4843,6 +4844,39 @@ void Engine::console(char *cmd)
 				current_team = num_team - 1;
 			sprintf(menu.data.team, "%s", teams[current_team]);
 		}
+		else if (strcmp(data, "cg_fov") == 0 && strstr(cmd, "up"))
+		{
+			menu.data.fov += 0.1f;
+			if (menu.data.fov > 1.01f)
+				menu.data.fov = 0.0f;
+
+			sprintf(data, "cg_fov %d", 100 * menu.data.fov + 90);
+		}
+		else if (strcmp(data, "cg_fov") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.fov -= 0.1f;
+			if (menu.data.fov < 0.00f)
+				menu.data.fov = 1.0f;
+
+			sprintf(data, "cg_fov %d", 100 * menu.data.fov + 90);
+		}
+		else if (strcmp(data, "sensitivity") == 0 && strstr(cmd, "up"))
+		{
+			menu.data.sensitivity += 0.1f;
+			if (menu.data.sensitivity > 1.01f)
+				menu.data.sensitivity = 0.0f;
+
+			sprintf(data, "sensitivity %d", 2.5 * menu.data.sensitivity);
+		}
+		else if (strcmp(data, "sensitivity") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.sensitivity -= 0.1f;
+			if (menu.data.sensitivity < 0.00f)
+				menu.data.sensitivity = 1.0f;
+
+			sprintf(data, "sensitivity %d", 5 * menu.data.sensitivity);
+		}
+
 
 
 

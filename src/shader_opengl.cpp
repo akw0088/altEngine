@@ -1051,6 +1051,7 @@ int ParticleRender::init(Graphics *gfx)
 	u_texture0 = glGetUniformLocation(program_handle, "u_texture0");
 	u_xshift = glGetUniformLocation(program_handle, "u_xshift");
 	u_yshift = glGetUniformLocation(program_handle, "u_yshift");
+	u_zshift = glGetUniformLocation(program_handle, "u_zshift");
 
 	unsigned int *index = new unsigned int [ParticleUpdate::max_particles];
 	for (unsigned int i = 0; i < ParticleUpdate::max_particles; i++)
@@ -1074,13 +1075,14 @@ void ParticleRender::prelink(void)
 	glBindAttribLocation(program_handle, 5, "attr_tangent");
 }
 
-void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y, float z)
 {
 	glUniformMatrix4fv(u_mvp, 1, GL_FALSE, mvp.m);
 	glUniform3fv(u_quad1, 1, (float *)&quad1);
 	glUniform3fv(u_quad2, 1, (float *)&quad2);
 	glUniform1f(u_xshift, x);
 	glUniform1f(u_yshift, y);
+	glUniform1f(u_zshift, z);
 	glUniform1i(u_texture0, 0);
 }
 

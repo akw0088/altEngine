@@ -387,7 +387,7 @@ state 301 next		7 "null"
 
 state 302 up		300 "null"
 state 302 down		303 "null"
-state 302 enter		303 "null"
+state 302 enter		302 "null"
 state 302 next		7 "null"
 
 state 303 up		302 "null"
@@ -403,11 +403,16 @@ state 304 select	304 "toggle cg_skin down"
 state 304 next		7 "null"
 
 state 305 up		304 "null"
-state 305 down		305 "null"
+state 305 down		306 "null"
 state 305 enter		305 "toggle cg_team up"
 state 305 select	305 "toggle cg_team down"
 state 305 next		7 "null"
 
+state 306 up		305 "null"
+state 306 down		306 "null"
+state 306 enter		306 "toggle cg_fov up"
+state 306 select	306 "toggle cg_fov down"
+state 306 next		7 "null"
 
 state 400 up		400 "null"
 state 400 down		401 "null"
@@ -486,13 +491,64 @@ state 502 next		7 "null"
 
 state 600 up		600 "null"
 state 600 down		601 "null"
-state 600 enter		200 "null"
+state 600 enter		600 "null"
 state 600 next		7 "null"
 
 state 601 up		600 "null"
 state 601 down		601 "null"
 state 601 enter		200 "null"
 state 601 next		7 "null"
+
+state 602 up		600 "null"
+state 602 down		603 "null"
+state 602 enter		602 "null"
+state 602 next		7 "null"
+
+state 603 up		602 "null"
+state 603 down		604 "null"
+state 603 enter		603 "null"
+state 603 next		7 "null"
+
+state 604 up		603 "null"
+state 604 down		605 "null"
+state 604 enter		604 "null"
+state 604 next		7 "null"
+
+state 605 up		604 "null"
+state 605 down		606 "null"
+state 605 enter		605 "null"
+state 605 next		7 "null"
+
+state 606 up		605 "null"
+state 606 down		607 "null"
+state 606 enter		606 "null"
+state 606 next		7 "null"
+
+state 607 up		606 "null"
+state 607 down		608 "null"
+state 607 enter		607 "null"
+state 607 next		7 "null"
+
+state 608 up		607 "null"
+state 608 down		609 "null"
+state 608 enter		608 "null"
+state 608 next		7 "null"
+
+state 609 up		608 "null"
+state 609 down		610 "null"
+state 609 enter		609 "null"
+state 609 next		7 "null"
+
+state 610 up		609 "null"
+state 610 down		611 "null"
+state 610 enter		610 "null"
+state 610 next		7 "null"
+
+state 619 up		610 "null"
+state 619 down		601 "null"
+state 619 enter		619 "toggle sensitivity up"
+state 619 select	619 "toggle sensitivity down"
+state 619 next		7 "null"
 
 
 state 700 up		700 "null"

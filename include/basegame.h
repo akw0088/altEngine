@@ -22,7 +22,7 @@ public:
 	virtual void setup_func(vector<Entity *> &entity_list, Bsp &q3map) = 0;
 	virtual void render_hud(double last_frametime) = 0;
 	virtual void draw_flash(Player &player) = 0;
-	virtual void draw_icon(float scale, int index, float x, float y) = 0;
+	virtual void draw_icon(float scale, int index, float x, float y, float z) = 0;
 	virtual void make_dynamic_ent(nettype_t item, int ent_id) = 0;
 	virtual void endgame(char *winner) = 0;
 	virtual void get_state(serverdata_t *data) = 0;

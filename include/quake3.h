@@ -46,7 +46,7 @@ public:
 	void add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, float offset, bool explode, int explode_timer);
 
 	void create_icon();
-	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f);
+	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f, float z = 0.0f);
 	void load_icon();
 	void map_model(Entity &ent);
 	void load_sounds(Audio &audio, vector<wave_t> &snd_wave);
