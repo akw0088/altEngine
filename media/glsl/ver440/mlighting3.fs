@@ -335,7 +335,7 @@ void main(void)
 	if (u_lightmap > 0.0)
 	{
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
-			Fragment.xyz *= lightmap * 2.0;
+			Fragment.xyz *= lightmap;
 	}
 
 	Fragment.rgb *= max(light, ambient);
@@ -356,6 +356,7 @@ void main(void)
 		return;
 	}
 
+	Fragment.rgb = ACESFilm(Fragment.rgb);
 
 	if (u_lightmap_stage <= 0)
 	{
@@ -368,7 +369,6 @@ void main(void)
 		Fragment.a = u_alpha;
 	}
 
-	Fragment.rgb = ACESFilm(Fragment.rgb);
 
 	normal_depth.xyz = unormal.xyz;
 	normal_depth.a = Vertex.vary_position.z;

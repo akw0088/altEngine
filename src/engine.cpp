@@ -210,6 +210,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	enum_resolutions();
 #ifndef __linux
 	WAVEFORMATEX wf;
+	DWORD value = 0;
 
 	wf.wFormatTag = WAVE_FORMAT_PCM;
 	wf.nChannels = 2;
@@ -220,6 +221,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	wf.cbSize = 0;
 
 	waveOutOpen((LPHWAVEOUT)&hWaveOut, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL);
+	waveOutGetVolume(hWaveOut, &value);
+	menu.data.volume = value / 65535.0f;
 #endif
 
 
@@ -624,7 +627,7 @@ void Engine::load(char *level)
 
 	mlight2.set_contrast(2.0);
 	mlight2.set_ambient(1.0);
-	mlight2.set_lightmap(0.5);
+	mlight2.set_lightmap(1.0);
 	mlight2.set_max(64);
 
 
@@ -2161,8 +2164,10 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, render_depth);
 	post.Select();
-	post.Params(POST_DOF, tick_num);
-	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
+	post.Params(POST_MASK, tick_num);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
+	//	post.Params(POST_DOF, tick_num);
+//	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
