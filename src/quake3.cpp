@@ -4845,12 +4845,6 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		return;
 	}
 
-	if (player.local)
-	{
-		engine->mlight2.set_contrast(old_contrast);
-		old_contrast = engine->mlight2.m_contrast;
-	}
-
 	if (player.current_weapon != player.last_weapon)
 	{
 		weapon_switch_timer = 2 * TICK_RATE;
@@ -5117,21 +5111,21 @@ void Quake3::draw_flash(Player &player)
 	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
 	if (player.flash_gauntlet)
-		draw_icon(15.0, ICON_F_GAUNTLET, 0.0f, 0.0f, -50.0f);
+		draw_icon(15.0, ICON_F_GAUNTLET, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_machinegun)
-		draw_icon(15.0, ICON_F_MACHINEGUN, 0.0f, 0.0f, -50.0f);
+		draw_icon(15.0, ICON_F_MACHINEGUN, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_shotgun)
-		draw_icon(15.0, ICON_F_SHOTGUN, 0.0f, 0.0f, -5.0f);
+		draw_icon(15.0, ICON_F_SHOTGUN, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_grenade)
-		draw_icon(15.0, ICON_F_GRENADE, 0.0f, 0.0f, -5.0f);
+		draw_icon(15.0, ICON_F_GRENADE, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_rocket)
-		draw_icon(15.0, ICON_F_ROCKET, 0.0f, 0.0f, -5.0f);
+		draw_icon(15.0, ICON_F_ROCKET, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_lightning)
-		draw_icon(15.0, ICON_F_LIGHTNING, 0.0f, 0.0f, -5.0f);
+		draw_icon(15.0, ICON_F_LIGHTNING, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_railgun)
-		draw_icon(15.0, ICON_F_RAILGUN, 0.0f, 0.0f, -5.0f);
+		draw_icon(15.0, ICON_F_RAILGUN, 0.0f, -0.5f, -0.5f);
 	else if (player.flash_plasma)
-		draw_icon(15.0, ICON_F_PLASMA, 0.0f, 0.0f, -5.0f);
+		draw_icon(15.0, ICON_F_PLASMA, 0.0f, -0.5f, -0.5f);
 	engine->gfx.Blend(false);
 }
 
@@ -6110,8 +6104,6 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed
 	return 0;
 }
 
-extern pid_state_t pid;
-
 void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list)
 {
 	char msg[LINE_SIZE] = { 0 };
@@ -6942,6 +6934,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 			debugf("Spawning on entity %d\n", index);
 			entity_list[self]->player->respawn();
+			if (entity_list[self]->player->local)
+			{
+				engine->mlight2.set_contrast(old_contrast);
+				old_contrast = engine->mlight2.m_contrast;
+			}
+
 			entity_list[self]->rigid->clone(*(engine->thug22->model));
 
 			engine->play_wave(entity_list[self]->position, SND_TELEIN);
@@ -7006,6 +7004,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					debugf("Spawning on entity %d\n", i);
 					entity_list[self]->player->respawn();
 					entity_list[self]->rigid->clone(*(engine->thug22->model));
+					if (entity_list[self]->player->local)
+					{
+						engine->mlight2.set_contrast(old_contrast);
+						old_contrast = engine->mlight2.m_contrast;
+					}
+
 
 					engine->play_wave(entity_list[self]->position, SND_TELEIN);
 					spawned = true;
