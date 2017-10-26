@@ -56,6 +56,7 @@ Menu::Menu()
 	data.sensitivity = 1.0f;
 	data.shadowvol = true;
 	data.fov = 0.1f;
+	data.bloom = true;
 
 }
 

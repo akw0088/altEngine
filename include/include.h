@@ -483,6 +483,7 @@ int debugf(const char *format, ...);
 #define MY_PI 3.14159265359f
 #define MY_HALF_PI 1.5707963268f
 #define MAXLINE 4096
+#define FBO_RESOLUTION 1024
 
 
 //quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)

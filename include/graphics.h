@@ -93,7 +93,7 @@ public:
 	void SelectIndexBuffer(int handle);
 	void DeleteIndexBuffer(int handle);
 
-	int  CreateVertexBuffer(void *vertex_buffer, int num_verts);
+	int CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic = false);
 	
 	void SelectVertexBuffer(int handle);
 	void DeleteVertexBuffer(int handle);

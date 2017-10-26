@@ -83,6 +83,23 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 		vert_array[num_vert++].position = v3;
 	}
 
+	/*
+	// Attempted to use dynamic draw vs delete / recreate, no noticable improvement
+	if (vbo == -1)
+	{
+		vbo = gfx.CreateVertexBuffer(vert_array, MAX_VERT, true);
+	}
+	else
+	{
+		gfx.SelectVertexBuffer(vbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, num_vert * sizeof(vertex_t), (void *)vert_array);
+	}
+
+	if (ibo == -1)
+	{
+		ibo = gfx.CreateIndexBuffer(index_array, MAX_VERT);
+	}
+	*/
 
 	if (vbo != -1)
 	{
@@ -97,7 +114,9 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, in
 	}
 
 	vbo = gfx.CreateVertexBuffer(vert_array, num_vert);
-	ibo = gfx.CreateIndexBuffer(index_array, num_vert); 
+	ibo = gfx.CreateIndexBuffer(index_array, num_vert);
+
+
 	return 0;
 }
 

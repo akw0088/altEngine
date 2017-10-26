@@ -6,7 +6,7 @@
 class PortalCamera
 {
 public:
-	PortalCamera::PortalCamera(Entity *entity, Graphics &gfx, float scale);
+	PortalCamera(Entity *entity, Graphics &gfx, float scale, float zNear, float zFar, bool inf);
 	void destroy(Graphics &gfx);
 
 	Entity	*entity;

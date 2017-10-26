@@ -384,7 +384,7 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 #endif
 }
 
-int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
+int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
 	unsigned int	vbo;
 
@@ -399,7 +399,11 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
 	glVertexAttribPointer(4, 1, GL_INT,   GL_FALSE,	sizeof(vertex_t), (void *)(offsetof(vertex_t, color)));
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE,	sizeof(vertex_t), (void *)(offsetof(vertex_t, tangent)));
 
-	glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_STATIC_DRAW);
+	if (dynamic == false)
+		glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_STATIC_DRAW);
+	else
+		glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_DYNAMIC_DRAW);
+
 
 #ifdef ERROR_CHECK
 	error_check();
@@ -982,8 +986,8 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB16F, width, height);
 //	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	if (multisample > 0)
@@ -1015,7 +1019,7 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH32F_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV, 0);
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depth_tex, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 

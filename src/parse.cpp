@@ -734,7 +734,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->flight = true;
 			}
 
-			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale);
+			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
 			entity.nodraw = true;
 		}
 		else if (strcmp(value, "misc_portal_surface") == 0)
@@ -748,7 +748,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->flight = true;
 			}
 
-			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale);
+			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
 			entity.nodraw = true;
 		}
 		else if (strcmp(value, "worldspawn") == 0)

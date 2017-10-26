@@ -100,8 +100,8 @@ Engine::Engine()
 	dof_near = 0.4f;
 	dof_far = 0.1f;
 
-	fb_width = 1024;
-	fb_height = 1024;
+	fb_width = FBO_RESOLUTION;
+	fb_height = FBO_RESOLUTION;
 	res_scale = 1.0f;
 	dynamic_resolution = false;
 	xres = 0;
@@ -1361,16 +1361,16 @@ void Engine::set_dynamic_resolution(double last_frametime)
 		if (fps < 60.0f && res_scale > 0.1f)
 		{
 			res_scale *= 0.75f;
-			fb_width = (unsigned int)(1024 * res_scale);
-			fb_height = (unsigned int)(1024 * res_scale);
+			fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
+			fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 			gfx.DeleteFrameBuffer(render_fbo);
 			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
 		{
 			res_scale *= 1.25f;
-			fb_width = (unsigned int)(1024 * res_scale);
-			fb_height = (unsigned int)(1024 * res_scale);
+			fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
+			fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 			gfx.DeleteFrameBuffer(render_fbo);
 			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
@@ -1378,8 +1378,8 @@ void Engine::set_dynamic_resolution(double last_frametime)
 	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
 	{
 		res_scale = 1.0f;
-		fb_width = (unsigned int)(1024 * res_scale);
-		fb_height = (unsigned int)(1024 * res_scale);
+		fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
+		fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo);
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 	}
@@ -6218,8 +6218,8 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Setting resolution scale to %3.3f\n", atof(data));
 		menu.print(msg);
 		res_scale = (float)atof(data);
-		fb_width = (unsigned int)(1024 * res_scale);
-		fb_height = (unsigned int)(1024 * res_scale);
+		fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
+		fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo);
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		menu.data.rscale = res_scale / 2.0f;

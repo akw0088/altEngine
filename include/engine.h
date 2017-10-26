@@ -214,14 +214,14 @@ public:
 	HWAVEOUT hWaveOut;
 #endif
 
-
-protected:
-	matrix4		projection;
-	matrix4		identity;
 	float zNear;
 	float zFar;
 	bool inf;
 	float fov; // y fov
+
+protected:
+	matrix4		projection;
+	matrix4		identity;
 	float sensitivity;
 
 	Graphics	gfx;
