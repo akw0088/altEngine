@@ -100,7 +100,7 @@ int mLight2::init(Graphics *gfx)
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
 	m_contrast = 1.0f;
-	m_exposure = 2.0f;
+	m_exposure = 1.0f;
 	//"media/glsl/mlighting3.gs"
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))

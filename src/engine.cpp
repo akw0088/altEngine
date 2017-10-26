@@ -628,7 +628,7 @@ void Engine::load(char *level)
 	mlight2.set_contrast(2.0);
 	mlight2.set_ambient(0.2);
 	mlight2.set_lightmap(1.0);
-	mlight2.set_exposure(4.0);
+	mlight2.set_exposure(1.0);
 	mlight2.set_max(64);
 
 
