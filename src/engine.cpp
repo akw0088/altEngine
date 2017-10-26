@@ -4200,7 +4200,9 @@ void Engine::keystroke(char key, char *keystr)
 	else
 	{
 		if (menu.console)
+		{
 			menu.handle_console(key, this);
+		}
 		else if (menu.ingame)
 		{
 			if (menu.bindnextkey)
@@ -4233,11 +4235,17 @@ void Engine::keystroke(char key, char *keystr)
 			}
 		}
 		else if (menu.chatmode)
+		{
 			menu.handle_chatmode(key, this);
+		}
 		else if (menu.stringmode)
+		{
 			menu.handle_stringmode(key, this);
+		}
 		else
+		{
 			handle_game(key);
+		}
 	}
 }
 
@@ -5036,6 +5044,39 @@ void Engine::console(char *cmd)
 			menu.bindstr = &menu.data.use[0];
 			return;
 		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveleft"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "moveleft");
+			sprintf(menu.data.moveleft, "???");
+			menu.bindstr = &menu.data.moveleft[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveright"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "moveright");
+			sprintf(menu.data.moveright, "???");
+			menu.bindstr = &menu.data.moveright[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveforward"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "moveforward");
+			sprintf(menu.data.moveforward, "???");
+			menu.bindstr = &menu.data.moveforward[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveback"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "moveback");
+			sprintf(menu.data.moveback, "???");
+			menu.bindstr = &menu.data.moveback[0];
+			return;
+		}
+
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "weapnext"))
 		{
 			menu.bindnextkey = true;
@@ -5123,7 +5164,7 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strstr(cmd, "togglemenu"))
+	if (strcmp(cmd, "togglemenu") == 0)
 	{
 		if (ingame_menu_timer == 0)
 			menu.ingame = !menu.ingame;

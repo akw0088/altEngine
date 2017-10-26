@@ -837,7 +837,7 @@ typedef struct
 	char weapnext[64];
 	char weapprev[64];
 	char moveforward[64];
-	char movebackward[64];
+	char moveback[64];
 	char moveleft[64];
 	char moveright[64];
 	char walk[64];

@@ -536,23 +536,23 @@ state 608 next		7 "null"
 
 state 609 up		608 "null"
 state 609 down		610 "null"
-state 609 enter		609 "toggle bind forward"
+state 609 enter		609 "toggle bind moveforward"
 state 609 next		7 "null"
 
 state 610 up		609 "null"
 state 610 down		611 "null"
-state 610 enter		610 "toggle bind back"
+state 610 enter		610 "toggle bind moveback"
 state 610 next		7 "null"
 
 state 611 up		610 "null"
 state 611 down		612 "null"
-state 611 enter		611 "toggle bind left"
+state 611 enter		611 "toggle bind moveleft"
 state 611 next		7 "null"
 
 
 state 612 up		611 "null"
 state 612 down		613 "null"
-state 612 enter		612 "toggle bind right"
+state 612 enter		612 "toggle bind moveright"
 state 612 next		7 "null"
 
 

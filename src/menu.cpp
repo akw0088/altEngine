@@ -35,7 +35,7 @@ Menu::Menu()
 	sprintf(data.weapnext, "mwheelup");
 	sprintf(data.weapprev, "mwheeldown");
 	sprintf(data.moveforward, "W + Up");
-	sprintf(data.movebackward, "S + Down");
+	sprintf(data.moveback, "S + Down");
 	sprintf(data.moveleft, "A + Left");
 	sprintf(data.moveright, "S + Right");
 	sprintf(data.walk, "KP_INS");
@@ -503,8 +503,8 @@ void Menu::sub_value(const char *str, char *out)
 			}
 			else if (strcmp(key, "d_backward") == 0)
 			{
-				strcat(out, data.movebackward);
-				j += strlen(data.movebackward);
+				strcat(out, data.moveback);
+				j += strlen(data.moveback);
 				i += 1 + strlen(key);
 				continue;
 			}
