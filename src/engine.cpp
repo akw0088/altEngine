@@ -3881,7 +3881,11 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 		return true;
 	}
 
-	camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity);
+	if (menu.data.invert)
+		camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity);
+	else
+		camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity);
+
 	return true;
 }
 
@@ -4912,6 +4916,11 @@ void Engine::console(char *cmd)
 		else if (strcmp(data, "r_vsync") == 0)
 		{
 			menu.data.vsync = !menu.data.vsync;
+			return;
+		}
+		else if (strcmp(data, "in_invert") == 0)
+		{
+			menu.data.invert = !menu.data.invert;
 			return;
 		}
 		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "up"))

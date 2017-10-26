@@ -587,7 +587,7 @@ state 617 next		7 "null"
 
 state 618 up		617 "null"
 state 618 down		619 "null"
-state 618 enter		618 ""
+state 618 enter		618 "toggle in_invert"
 state 618 next		7 "null"
 
 state 619 up		610 "null"

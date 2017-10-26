@@ -861,6 +861,7 @@ typedef struct
 	bool shadowvol;
 	bool skyray;
 	bool portal;
+	bool invert;
 } menudata_t;
 
 #endif

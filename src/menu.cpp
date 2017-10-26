@@ -57,6 +57,7 @@ Menu::Menu()
 	data.shadowvol = true;
 	data.fov = 0.1f;
 	data.bloom = true;
+	data.invert = false;
 
 }
 
@@ -383,6 +384,23 @@ void Menu::sub_value(const char *str, char *out)
 				sprintf(value, " %3.1f", 2.5 * data.sensitivity);
 				strcat(out, value);
 				j += strlen(value);
+				continue;
+			}
+			else if (strcmp(key, "d_invert") == 0)
+			{
+				if (data.invert)
+				{
+					strcat(out, "On");
+					j += 2;
+				}
+				else
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
 				continue;
 			}
 			else if (strcmp(key, "d_resolution") == 0)
