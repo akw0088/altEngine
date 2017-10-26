@@ -4781,7 +4781,7 @@ void Engine::console(char *cmd)
 	*/
 
 
-	if (strstr(cmd, "console"))
+	if (strcmp(cmd, "console") == 0)
 	{
 		menu.console = !menu.console;
 		return;
