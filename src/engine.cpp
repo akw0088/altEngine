@@ -4819,6 +4819,12 @@ void Engine::console(char *cmd)
 			menu.data.portal = enable_portal;
 			return;
 		}
+		else if (strcmp(data, "r_shadowmaps") == 0)
+		{
+			console("r_shadowmaps");
+			menu.data.shadowmaps = !menu.data.shadowmaps;
+			return;
+		}
 		else if (strcmp(data, "r_fullscreen") == 0)
 		{
 			fullscreen();
