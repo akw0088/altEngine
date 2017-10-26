@@ -3,8 +3,8 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-#define MAX_SHADOWVOL 1
-#define SHADOWVOL_MAX_DIST (800.0f)
+#define MAX_SHADOWVOL 4
+#define SHADOWVOL_MAX_DIST (400.0f)
 
 #define NUM_CUBE_FACE 6
 #define SHADOWMAP_DEFAULT_RES 1024

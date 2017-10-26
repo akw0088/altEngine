@@ -2053,6 +2053,15 @@ void Engine::render_shadow_volumes()
 {
 	matrix4 transformation;
 	matrix4 matrix;
+	Player *player = NULL;
+
+	/*
+	int index = find_type(ENT_PLAYER, 0);
+	if (index != -1)
+	{
+		player = entity_list[index]->player;
+	}
+	*/
 
 	global.Select();
 	camera_frame.set(transformation);
@@ -2086,7 +2095,6 @@ void Engine::render_shadow_volumes()
 						matrix4 mvp = transformation.premultiply(matrix.m) * projection;
 						global.Params(mvp, 0);
 						entity_list[i]->light->render_shadow_volume(gfx, j);
-						break;
 					}
 				}
 			}
