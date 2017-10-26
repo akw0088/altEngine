@@ -49,6 +49,7 @@ public:
 	virtual void prelink(void);
 	void set_max(int max);
 	void set_brightness(float value);
+	void set_exposure(float value);
 	void set_contrast(float value);	
 	void set_ambient(float ambient);
 	void set_lightmap(float lightmap);
@@ -91,6 +92,7 @@ public:
 	int m_num_light;
 	float m_ambient;
 	float m_brightness;
+	float m_exposure;
 	float m_lightmap;
 	float m_shadowmap;
 	float m_contrast;
@@ -122,6 +124,7 @@ private:
 	int u_ambient;
 	int u_lightmap;
 	int u_brightness;
+	int u_exposure;
 	int u_contrast;
 	int u_shadowmap;
 	int u_lightmap_stage;

@@ -100,6 +100,7 @@ int mLight2::init(Graphics *gfx)
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
 	m_contrast = 1.0f;
+	m_exposure = 2.0f;
 	//"media/glsl/mlighting3.gs"
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
@@ -249,6 +250,7 @@ int mLight2::init(Graphics *gfx)
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_brightness = glGetUniformLocation(program_handle, "u_brightness");
+	u_exposure = glGetUniformLocation(program_handle, "u_exposure");
 	u_contrast = glGetUniformLocation(program_handle, "u_contrast");
 	u_lightmap = glGetUniformLocation(program_handle, "u_lightmap");
 	u_shadowmap = glGetUniformLocation(program_handle, "u_shadowmap");
@@ -287,6 +289,12 @@ void mLight2::set_brightness(float value)
 {
 	m_brightness = value;
 }
+
+void mLight2::set_exposure(float value)
+{
+	m_exposure = value;
+}
+
 
 //=============================================================================
 // scalar multiplied by final fragment color, high contrast makes things stand out
@@ -471,6 +479,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1f(u_ambient, m_ambient);
 	glUniform1f(u_lightmap, m_lightmap);
 	glUniform1f(u_brightness, m_brightness);
+	glUniform1f(u_exposure, m_exposure);
 	glUniform1f(u_contrast, m_contrast);
 	glUniform1f(u_shadowmap, m_shadowmap);
 	glUniform1i(u_num_lights, MIN(j, max_light));

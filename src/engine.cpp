@@ -628,6 +628,7 @@ void Engine::load(char *level)
 	mlight2.set_contrast(2.0);
 	mlight2.set_ambient(0.2);
 	mlight2.set_lightmap(1.0);
+	mlight2.set_exposure(4.0);
 	mlight2.set_max(64);
 
 
@@ -5613,6 +5614,22 @@ void Engine::console(char *cmd)
 	if (strstr(cmd, "r_brightness"))
 	{
 		snprintf(msg, LINE_SIZE, "brightness %f", mlight2.m_brightness + 1.0f);
+		menu.print(msg);
+		return;
+	}
+
+	if (sscanf(cmd, "r_exposure %s", data) == 1)
+	{
+		float value = (float)atof(data);
+		mlight2.set_exposure(value);
+		snprintf(msg, LINE_SIZE, "Setting exposure to %f", value);
+		menu.print(msg);
+		return;
+	}
+
+	if (strstr(cmd, "r_exposure"))
+	{
+		snprintf(msg, LINE_SIZE, "exposure %f", mlight2.m_exposure);
 		menu.print(msg);
 		return;
 	}
