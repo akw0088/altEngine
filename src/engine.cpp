@@ -4129,13 +4129,13 @@ void Engine::keypress(char *key, bool pressed)
 	}
 
 	if (pressed)
-		keystroke(k);
+		keystroke(k, key);
 
 	if (handled == false && menu.console == false && menu.ingame == false && menu.stringmode == false)
 		console(cmd);
 }
 
-void Engine::keystroke(char key)
+void Engine::keystroke(char key, char *keystr)
 {
 	if (q3map.loaded == false)
 	{
@@ -4159,7 +4159,7 @@ void Engine::keystroke(char key)
 				menu.handle_stringmode(key, this);
 				if (menu.stringmode == false)
 				{
-					char cmd[80];
+					char cmd[512];
 
 					sprintf(cmd, "%s \"%s\"", menu.string_cmd, menu.string_target);
 					console(cmd);
@@ -4167,7 +4167,22 @@ void Engine::keystroke(char key)
 			}
 			else
 			{
-				menu.handle(key, this);
+				if (menu.bindnextkey)
+				{
+					char cmd[512];
+					menu.bindnextkey = false;
+
+					if (keystr)
+					{
+						sprintf(cmd, "bind %s %s", keystr, menu.bindcmd);
+						console(cmd);
+						sprintf(menu.bindstr, "%s", keystr);
+					}
+				}
+				else
+				{
+					menu.handle(key, this);
+				}
 			}
 			menu.render(global);
 			if (menu.console)
@@ -4188,6 +4203,19 @@ void Engine::keystroke(char key)
 			menu.handle_console(key, this);
 		else if (menu.ingame)
 		{
+			if (menu.bindnextkey)
+			{
+				char cmd[512];
+				menu.bindnextkey = false;
+
+				if (keystr)
+				{
+					sprintf(cmd, "bind %s %s", keystr, menu.bindcmd);
+					console(cmd);
+					sprintf(menu.bindstr, "%s", keystr);
+				}
+			}
+
 			if (menu.stringmode)
 			{
 				menu.handle_stringmode(key, this);
@@ -4968,6 +4996,109 @@ void Engine::console(char *cmd)
 			strcpy(menu.string_cmd, "name");
 			return;
 		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "attack"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "attack");
+			sprintf(menu.data.attack, "???");
+			menu.bindstr = &menu.data.attack[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "zoom"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "zoom");
+			sprintf(menu.data.zoom, "???");
+			menu.bindstr = &menu.data.zoom[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "jump"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "jump");
+			sprintf(menu.data.jump, "???");
+			menu.bindstr = &menu.data.jump[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "duck"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "duck");
+			sprintf(menu.data.duck, "???");
+			menu.bindstr = &menu.data.duck[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "use"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "use");
+			sprintf(menu.data.use, "???");
+			menu.bindstr = &menu.data.use[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "weapnext"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "weapnext");
+			sprintf(menu.data.weapnext, "???");
+			menu.bindstr = &menu.data.weapnext[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "weapprev"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "weapprev");
+			sprintf(menu.data.weapprev, "???");
+			menu.bindstr = &menu.data.weapprev[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "walk"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "walk");
+			sprintf(menu.data.walk, "???");
+			menu.bindstr = &menu.data.walk[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "spectate"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "spectate");
+			sprintf(menu.data.spectate, "???");
+			menu.bindstr = &menu.data.spectate[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "console"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "console");
+			sprintf(menu.data.console, "???");
+			menu.bindstr = &menu.data.console[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "menu"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "togglemenu");
+			sprintf(menu.data.menu, "???");
+			menu.bindstr = &menu.data.menu[0];
+			return;
+		}
+		else if (strcmp(data, "bind") == 0 && strstr(cmd, "scores"))
+		{
+			menu.bindnextkey = true;
+			sprintf(menu.bindcmd, "scores");
+			sprintf(menu.data.scores, "???");
+			menu.bindstr = &menu.data.scores[0];
+			return;
+		}
+
+
+
+
+
+
+
 
 	}
 
@@ -6558,7 +6689,7 @@ void Engine::paste(char *data, unsigned int size)
 	if (menu.console || menu.chatmode || menu.stringmode)
 	{
 		for(unsigned int i = 0; i < size; i++)
-			keystroke(data[i]);
+			keystroke(data[i], NULL);
 	}
 }
 

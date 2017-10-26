@@ -387,7 +387,7 @@ state 301 next		7 "null"
 
 state 302 up		300 "null"
 state 302 down		303 "null"
-state 302 enter		302 "null"
+state 302 enter		302 "toggle name string"
 state 302 next		7 "null"
 
 state 303 up		302 "null"
@@ -501,48 +501,94 @@ state 601 next		7 "null"
 
 state 602 up		600 "null"
 state 602 down		603 "null"
-state 602 enter		602 "null"
+state 602 enter		602 "toggle bind attack"
 state 602 next		7 "null"
 
 state 603 up		602 "null"
 state 603 down		604 "null"
-state 603 enter		603 "null"
+state 603 enter		603 "toggle bind jump"
 state 603 next		7 "null"
 
 state 604 up		603 "null"
 state 604 down		605 "null"
-state 604 enter		604 "null"
+state 604 enter		604 "toggle bind duck"
 state 604 next		7 "null"
 
 state 605 up		604 "null"
 state 605 down		606 "null"
-state 605 enter		605 "null"
+state 605 enter		605 "toggle bind zoom"
 state 605 next		7 "null"
 
 state 606 up		605 "null"
 state 606 down		607 "null"
-state 606 enter		606 "null"
+state 606 enter		606 "toggle bind use"
 state 606 next		7 "null"
 
 state 607 up		606 "null"
 state 607 down		608 "null"
-state 607 enter		607 "null"
+state 607 enter		607 "toggle bind weapnext"
 state 607 next		7 "null"
 
 state 608 up		607 "null"
 state 608 down		609 "null"
-state 608 enter		608 "null"
+state 608 enter		608 "toggle bind weapprev"
 state 608 next		7 "null"
 
 state 609 up		608 "null"
 state 609 down		610 "null"
-state 609 enter		609 "null"
+state 609 enter		609 "toggle bind forward"
 state 609 next		7 "null"
 
 state 610 up		609 "null"
 state 610 down		611 "null"
-state 610 enter		610 "null"
+state 610 enter		610 "toggle bind back"
 state 610 next		7 "null"
+
+state 611 up		610 "null"
+state 611 down		612 "null"
+state 611 enter		611 "toggle bind left"
+state 611 next		7 "null"
+
+
+state 612 up		611 "null"
+state 612 down		613 "null"
+state 612 enter		612 "toggle bind right"
+state 612 next		7 "null"
+
+
+state 613 up		612 "null"
+state 613 down		614 "null"
+state 613 enter		613 "toggle bind walk"
+state 613 next		7 "null"
+
+
+state 614 up		613 "null"
+state 614 down		615 "null"
+state 614 enter		614 "toggle bind spectate"
+state 614 next		7 "null"
+
+
+state 615 up		614 "null"
+state 615 down		616 "null"
+state 615 enter		615 "toggle bind console"
+state 615 next		7 "null"
+
+
+state 616 up		615 "null"
+state 616 down		617 "null"
+state 616 enter		616 "toggle bind togglemenu"
+state 616 next		7 "null"
+
+
+state 617 up		616 "null"
+state 617 down		618 "null"
+state 617 enter		617 "toggle bind scores"
+state 617 next		7 "null"
+
+state 618 up		617 "null"
+state 618 down		619 "null"
+state 618 enter		618 ""
+state 618 next		7 "null"
 
 state 619 up		610 "null"
 state 619 down		601 "null"

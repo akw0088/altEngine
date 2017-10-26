@@ -25,6 +25,7 @@ int notif_index = 0;
 
 Menu::Menu()
 {
+	bindnextkey = false;
 	sprintf(data.resolution, "Unknown");
 	sprintf(data.attack, "Mouse1");
 	sprintf(data.jump, "Enter + Space");
@@ -1159,7 +1160,7 @@ void Menu::handle_stringmode(char key, Engine *altEngine)
 		break;
 	case '\r':
 	{
-		strcpy(string_target, key_buffer);
+		strncpy(string_target, key_buffer, 127);
 		key_buffer[0] = '\0';
 		stringmode = false;
 		break;

@@ -48,6 +48,9 @@ public:
 	bool ingame;
 	bool chatmode;
 	bool stringmode;
+	bool bindnextkey;
+	char *bindstr;
+	char bindcmd[128];
 
 	menudata_t data;
 

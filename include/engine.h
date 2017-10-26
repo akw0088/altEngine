@@ -42,7 +42,7 @@ public:
 
 	bool mousepos(int x, int y, int deltax, int deltay);
 	void keypress(char *key, bool pressed);
-	void keystroke(char key);
+	void keystroke(char key, char *keystr);
 
 	void load_entities();
 	int get_entity();

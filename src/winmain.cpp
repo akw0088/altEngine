@@ -478,7 +478,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 	case WM_CHAR:
-		altEngine.keystroke((char)wParam);
+		altEngine.keystroke((char)wParam, NULL);
 		return 0;
 	case WM_SETFOCUS:
 	{
