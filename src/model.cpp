@@ -59,23 +59,23 @@ void Model::load(Graphics &gfx, char *file)
 //	delete [] model_file;
 //	model_file = NULL;
 
-	model_tex = load_texture(gfx, tga_file, false, false);
+	model_tex = load_texture(gfx, tga_file, false, false, 0);
 	if (model_tex == 0)
 	{
 		char *pdata = strstr(tga_file, ".tga");
 
 		memcpy(pdata, ".jpg", 4);
-		model_tex = load_texture(gfx, tga_file, false, false);
+		model_tex = load_texture(gfx, tga_file, false, false, 0);
 		if (model_tex == 0)
 		{
 			char *pdata = strstr(tga_file, ".jpg");
 
 			memcpy(pdata, ".png", 4);
-			model_tex = load_texture(gfx, tga_file, false, false);
+			model_tex = load_texture(gfx, tga_file, false, false, 0);
 		}
 	}
 
-	normal_tex = load_texture(gfx, normal_file, false, false);
+	normal_tex = load_texture(gfx, normal_file, false, false, 0);
 
 	if (entity && entity->rigid)
 	{

@@ -328,11 +328,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		}
 	}
 
-	no_tex = load_texture(gfx, "media/notexture.tga", false, false);
-	particle_tex = load_texture(gfx, "media/flare.png", false, false);
+	no_tex = load_texture(gfx, "media/notexture.tga", false, false, 0);
+	particle_tex = load_texture(gfx, "media/flare.png", false, false, 0);
 
-	palette1 = load_texture(gfx, "media/palette.png", false, false);
-	palette2 = load_texture(gfx, "media/palette2.png", false, false);
+	palette1 = load_texture(gfx, "media/palette.png", false, false, 0);
+	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
 
 	Model::CreateObjects(gfx);
 	Model::make_skybox(gfx);
@@ -738,7 +738,7 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 
-	q3map.load_textures(gfx, surface_list, pk3_list, num_pk3);
+	q3map.load_textures(gfx, surface_list, pk3_list, num_pk3, menu.data.anisotropic);
 	menu.delta("loaded", *this);
 	menu.stop();
 	menu.ingame = false;
@@ -767,7 +767,7 @@ void Engine::load_md5()
 	animation = new char *[50];
 	animation[0] = "media/md5/chaingun_stand_fire.md5anim";
 	animation[1] = "media/md5/chaingun_idle.md5anim";
-	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx);
+	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx, 0);
 /*
 	animation[0] = "media/md5/sentry/initial.md5anim";
 	animation[1] = "media/md5/sentry/fold.md5anim";

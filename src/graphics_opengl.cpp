@@ -527,7 +527,7 @@ int Graphics::CreateCubeMap()
 	return texObject;
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
 	unsigned int texObject = -1;
 
@@ -539,6 +539,11 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+
+	if (anisotropic)
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropic);
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);

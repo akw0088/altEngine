@@ -8,10 +8,10 @@ class MD5Model
 public:
 	MD5Model();
 	~MD5Model();
-	void load(char *md5file, char **animation, int num_anim, Graphics &gfx);
+	void load(char *md5file, char **animation, int num_anim, Graphics &gfx, int anisotropic);
 	void generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *buffer);
 	void destroy_buffers(Graphics &gfx);
-	void load_textures(Graphics &gfx);
+	void load_textures(Graphics &gfx, int anisotropic);
 	void render(Graphics &gfx, int frame_step);
 	void select_animation(int index);
 

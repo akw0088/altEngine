@@ -459,8 +459,8 @@ const unsigned char TexturedFragmentShader[] = {
 
 
 bool RayBoxSlab(vec3 &origin, vec3 &dir, vec3 &min, vec3 &max, float &distance);
-int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr);
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr);
+int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int anisotropic);
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr, int anisotropic);
 
 #ifdef _WIN32
 void GetScreenShot(HWND hwnd);

@@ -103,7 +103,7 @@ public:
 	void DeselectTexture(int level);
 	int CreateCubeMap();
 	void SelectCubemap(int texObject);
-	int LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp);
+	int LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic);
 	int LoadTextureArray(int width, int height, int components, int format, void **bytes, bool clamp, int num_layer);
 	void DeleteTexture(int handle);
 

@@ -106,7 +106,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
-	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+//	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
 
@@ -1743,20 +1743,20 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
-void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char **pk3_list, int num_pk3)
+void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char **pk3_list, int num_pk3, int anisotropic)
 {
 	char	texture_name[LINE_SIZE] = { 0 };
 	int		tex_object = 0;
 
 	//printf("Attempting to load %s, trying .tga\n", filename);
 	snprintf(texture_name, LINE_SIZE, "media/%s.tga", filename);
-	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
+	tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true, anisotropic);
 
 	if (tex_object == 0)
 	{
 		//printf("Attempting to load %s, trying .jpg\n", filename);
 		snprintf(texture_name, LINE_SIZE, "media/%s.jpg", filename);
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true, anisotropic);
 	}
 	if (tex_object != 0)
 	{
@@ -1766,7 +1766,7 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char 
 
 }
 
-void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx, char **pk3_list, int num_pk3)
+void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx, char **pk3_list, int num_pk3, int anisotropic)
 {
 	char			texture_name[LINE_SIZE + 1];
 	int				tex_object = 0;
@@ -1811,12 +1811,12 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			snprintf(texture_name, LINE_SIZE, "media/%s", stage->map_tex);
 
 			//printf("Trying texture [%s]\n", texture_name);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true, anisotropic);
 		}
 		else if (stage->clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", stage->clampmap_tex);
-			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true, true);
+			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true, true, anisotropic);
 		}
 		else if (stage->anim_map)
 		{
@@ -1833,7 +1833,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			{
 //				printf("animmap tex %s\n", tex);
 				snprintf(texture_name, LINE_SIZE, "media/%s", tex);
-				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
+				texObj->texObjAnim[n++] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true, anisotropic);
 				tex = strtok(NULL, " ");
 			}
 
@@ -1863,7 +1863,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 			continue;
 		}
 
-		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true);
+		tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true, anisotropic);
 		if (tex_object != 0)
 		{
 			//printf("Loaded texture stage %d for shader with texture %s\n", k, texture_name);
@@ -1878,7 +1878,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 
 
-void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3)
+void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3, int anisotropic)
 {
 	enable_textures = true;
 	for (unsigned int i = 0; i < data.num_lightmaps; i++)
@@ -1886,12 +1886,12 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 #ifdef OPENGL
 		if (data.header->version == 0x2E)
 		{
-			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
+			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false, anisotropic);
 		}
 		else
 		{
 			printf("Unknown BSP Version %X, assuming Quake3 0x2E\n", data.header->version);
-			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false);
+			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false, anisotropic);
 		}
 #endif
 #ifdef DIRECTX
@@ -1915,7 +1915,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		for (int i = 0;; i++)
 		{
 			sprintf(filename, "media/%s/lm_%04d.tga", name, i);
-			lightmap_object[i] = load_texture_pk3(gfx, filename, pk3_list, num_pk3, false, false);
+			lightmap_object[i] = load_texture_pk3(gfx, filename, pk3_list, num_pk3, false, false, anisotropic);
 			if (lightmap_object[i] == 0)
 				break;
 		}
@@ -1937,10 +1937,10 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 		
 		strcpy(tex_object[i].name, data.Material[i].name);
-		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3);
+		load_from_shader(material->name, surface_list, &tex_object[i], gfx, pk3_list, num_pk3, anisotropic);
 		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
 		{
-			load_from_file(material->name, tex_object[i], gfx, pk3_list, num_pk3);
+			load_from_file(material->name, tex_object[i], gfx, pk3_list, num_pk3, anisotropic);
 		}
 		
 		if (tex_object[i].texObj[tex_object[i].num_tex] == 0)
@@ -1956,7 +1956,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		{
 			char texture_name[128];
 			snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
-			normal_object[i] = load_texture(gfx, texture_name, false, false);
+			normal_object[i] = load_texture(gfx, texture_name, false, false, anisotropic);
 		}
 
 	}

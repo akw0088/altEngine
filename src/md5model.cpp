@@ -37,7 +37,7 @@ MD5Model::~MD5Model()
 	}
 }
 
-void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx)
+void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx, int anisotropic)
 {
 	anim_list_t *plist = &anim_list;
 
@@ -52,7 +52,7 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 		md5.generate_tangent(md5.index_array[i], md5.num_index[i], md5.vertex_array[i], md5.num_vertex[i]);
 	}
 
-	load_textures(gfx);
+	load_textures(gfx, anisotropic);
 	for (int i = 0; i < num_anim; i++)
 	{
 		printf("Loading animation %s\n", animation[i]);
@@ -111,7 +111,7 @@ void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *b
 	}
 }
 
-void MD5Model::load_textures(Graphics &gfx)
+void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 {
 	tex_object = new int[md5.model->num_mesh];
 	normal_object = new int[md5.model->num_mesh];
@@ -147,7 +147,7 @@ void MD5Model::load_textures(Graphics &gfx)
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
+		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false, anisotropic);
 		free((void *)bytes);
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
@@ -162,7 +162,7 @@ void MD5Model::load_textures(Graphics &gfx)
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false);
+		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false, anisotropic);
 		free((void *)bytes);
 	}
 }

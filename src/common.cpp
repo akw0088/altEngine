@@ -646,7 +646,7 @@ void newlinelist(char *filename, char **list, unsigned int &num)
 	}
 }
 
-int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr)
+int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr, int anisotropic)
 {
 	int width, height, components, format;
 	int tex_object = -1;
@@ -718,7 +718,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	if (data == NULL)
 	{
 		debugf("Unable to load texture %s from pk3\n", file_name);
-		return load_texture(gfx, file_name, clamp, false);
+		return load_texture(gfx, file_name, clamp, false, anisotropic);
 	}
 	else
 	{
@@ -786,7 +786,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 #endif
 #ifdef OPENGL
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp, anisotropic);
 #endif
 #ifdef VULKAN
 	format = -1;
@@ -812,7 +812,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 }
 
 // Need asset manager class so things arent doubly loaded
-int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
+int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int anisotropic)
 {
 	int width = 0;
 	int height = 0;
@@ -879,11 +879,11 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr)
 #ifndef DEDICATED
 	if (components == 3)
 	{
-		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp);
+		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
 	}
 	else
 	{
-		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp, anisotropic);
 	}
 	stbi_image_free(bytes);
 	delete [] data;

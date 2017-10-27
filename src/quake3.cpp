@@ -5920,7 +5920,7 @@ void Quake3::create_crosshair()
 		char filename[128];
 
 		sprintf(filename, "media/gfx/2d/crosshair%c.tga", 'a' + i);
-		crosshair_tex[i] = load_texture_pk3(engine->gfx, filename, engine->pk3_list, engine->num_pk3, true, false);
+		crosshair_tex[i] = load_texture_pk3(engine->gfx, filename, engine->pk3_list, engine->num_pk3, true, false, 0);
 	}
 	current_crosshair = 0;
 }
@@ -5960,11 +5960,11 @@ void Quake3::create_icon()
 		vert[i].tangent.x = 10.0f; //life
 		vert[i].tangent.y = 5.0f; //size
 		vert[i].tangent.z = -1.0f; //type
-		icon_list[i].tex = load_texture_pk3(engine->gfx, icon_list[i].filename, engine->pk3_list, engine->num_pk3, true, false);
+		icon_list[i].tex = load_texture_pk3(engine->gfx, icon_list[i].filename, engine->pk3_list, engine->num_pk3, true, false, 0);
 
 		if (icon_list[i].tex == 0)
 		{
-			icon_list[i].tex = load_texture(engine->gfx, icon_list[i].filename, false, false);
+			icon_list[i].tex = load_texture(engine->gfx, icon_list[i].filename, false, false, 0);
 		}
 
 		if (icon_list[i].tex == 0)
