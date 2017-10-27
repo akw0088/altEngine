@@ -930,6 +930,7 @@ void Engine::render(double last_frametime)
 
 		// clear real backbuffer
 		gfx.clear();
+		gfx.resize(gfx.width, gfx.height);
 
 		if (spawn == -1 || (player && player->current_light == 0))
 		{
@@ -2254,7 +2255,7 @@ void Engine::render_bloom(bool debug)
 void Engine::render_ssao(bool debug)
 {
 	gfx.bindFramebuffer(ssao_fbo);
-//	gfx.resize(fb_width, fb_height);
+	gfx.resize(fb_width, fb_height);
 	ssao.Select();
 
 	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count, fb_width, fb_height);
@@ -5863,14 +5864,14 @@ void Engine::console(char *cmd)
 		if (enable_ssao)
 		{
 			snprintf(msg, LINE_SIZE, "ssao on");
-			mlight2.set_brightness(0.5f - 1.0f);
+//			mlight2.set_brightness(0.5f - 1.0f);
 			menu.print(msg);
 			menu.data.ssao = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "ssao off");
-			mlight2.set_brightness(1.0f - 1.0f);
+//			mlight2.set_brightness(1.0f - 1.0f);
 			menu.print(msg);
 			menu.data.ssao = false;
 		}
@@ -6270,13 +6271,29 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "res_scale %s", data) == 1)
 	{
+		unsigned int normal_depth;
+
 		snprintf(msg, LINE_SIZE, "Setting resolution scale to %3.3f\n", atof(data));
 		menu.print(msg);
 		res_scale = (float)atof(data);
 		fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 		fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
+
 		gfx.DeleteFrameBuffer(render_fbo);
+		gfx.DeleteFrameBuffer(mask_fbo);
+		gfx.DeleteFrameBuffer(blur1_fbo);
+		gfx.DeleteFrameBuffer(blur2_fbo);
+		gfx.DeleteFrameBuffer(ssao_fbo);
+
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+
+		gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, multisample, false);
+		gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, multisample, false);
+		gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, multisample, false);
+		gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, multisample, false);
+
+
+
 		menu.data.rscale = res_scale / 2.0f;
 		return;
 	}
