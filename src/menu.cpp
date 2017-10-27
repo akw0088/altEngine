@@ -210,6 +210,69 @@ void Menu::sub_value(const char *str, char *out)
 				i += 1 + strlen(key);
 				continue;
 			}
+			if (strcmp(key, "d_antialias") == 0)
+			{
+				if (data.antialias == 2)
+				{
+					strcat(out, "2x");
+					j += 2;
+				}
+				if (data.antialias == 4)
+				{
+					strcat(out, "4x");
+					j += 2;
+				}
+				if (data.antialias == 8)
+				{
+					strcat(out, "8x");
+					j += 2;
+				}
+				if (data.antialias == 16)
+				{
+					strcat(out, "16x");
+					j += 3;
+				}
+				else if (data.antialias == 0)
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+				i += 1 + strlen(key);
+				continue;
+			}
+			if (strcmp(key, "d_anisotropic") == 0)
+			{
+				if (data.anisotropic == 2)
+				{
+					strcat(out, "2x");
+					j += 2;
+				}
+				if (data.anisotropic == 4)
+				{
+					strcat(out, "4x");
+					j += 2;
+				}
+				if (data.anisotropic == 8)
+				{
+					strcat(out, "8x");
+					j += 2;
+				}
+				if (data.anisotropic == 16)
+				{
+					strcat(out, "16x");
+					j += 3;
+				}
+				else if (data.anisotropic == 0)
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+
+
+				i += 1 + strlen(key);
+				continue;
+			}
 			else if (strcmp(key, "d_vsync") == 0)
 			{
 				if (data.vsync == 1)

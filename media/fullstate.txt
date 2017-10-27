@@ -449,11 +449,22 @@ state 407 select	407 "toggle r_brightness down"
 state 407 next		7 "null"
 
 state 408 up		407 "null"
-state 408 down		401 "null"
+state 408 down		409 "null"
 state 408 enter		408 "toggle r_contrast up"
 state 408 select	408 "toggle r_contrast down"
 state 408 next		7 "null"
 
+state 409 up		408 "null"
+state 409 down		410 "null"
+state 409 enter		409 "toggle r_antialias up"
+state 409 select	409 "toggle r_antialias down"
+state 409 next		7 "null"
+
+state 410 up		409 "null"
+state 410 down		401 "null"
+state 410 enter		410 "toggle r_anisotropic up"
+state 410 select	410 "toggle r_anisotropic down"
+state 410 next		7 "null"
 
 
 state 401 up		400 "null"

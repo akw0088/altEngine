@@ -828,6 +828,8 @@ typedef struct
 	float rscale;
 	float fov;
 	float sensitivity;
+	int antialias;
+	int anisotropic;
 
 	char apply[64];
 

@@ -223,6 +223,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	waveOutOpen((LPHWAVEOUT)&hWaveOut, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL);
 	waveOutGetVolume(hWaveOut, &value);
 	menu.data.volume = value / 65535.0f;
+	wglSwapIntervalEXT(0);
+#else
+	glXSwapIntervalEXT(0);
 #endif
 
 
@@ -4845,6 +4848,50 @@ void Engine::console(char *cmd)
 			fullscreen();
 			return;
 		}
+		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "up"))
+		{
+			if (menu.data.antialias == 0)
+				menu.data.antialias = 2;
+			else
+				menu.data.antialias = menu.data.antialias << 1;
+			if (menu.data.antialias > 16)
+				menu.data.antialias = 0;
+			return;
+		}
+		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "down"))
+		{
+			if (menu.data.antialias == 0)
+				menu.data.antialias = 16;
+			else
+				menu.data.antialias = menu.data.antialias >> 1;
+
+			if (menu.data.antialias == 1)
+				menu.data.antialias = 0;
+
+			return;
+		}
+		else if (strcmp(data, "r_anisotropic") == 0 && strstr(cmd, "up"))
+		{
+			if (menu.data.anisotropic == 0)
+				menu.data.anisotropic = 2;
+			else
+				menu.data.anisotropic = menu.data.anisotropic << 1;
+			if (menu.data.anisotropic > 16)
+				menu.data.anisotropic = 0;
+
+			if (menu.data.anisotropic == 1)
+				menu.data.anisotropic = 0;
+
+			return;
+		}
+		else if (strcmp(data, "r_anisotropic") == 0 && strstr(cmd, "down"))
+		{
+			if (menu.data.anisotropic == 0)
+				menu.data.anisotropic = 16;
+			else
+				menu.data.anisotropic = menu.data.anisotropic >> 1;
+			return;
+		}
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.brightness += 0.1f;
@@ -4915,7 +4962,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.apply, "Apply");
 			return;
 		}
-		else if (strcmp(data, "r_vsync up") == 0)
+		else if (strcmp(data, "r_vsync") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.vsync++;
 			if (menu.data.vsync >= 3)
@@ -4938,7 +4985,7 @@ void Engine::console(char *cmd)
 #endif
 			return;
 		}
-		else if (strcmp(data, "r_vsync down") == 0)
+		else if (strcmp(data, "r_vsync") == 0 && strstr(cmd, "down"))
 		{
 			menu.data.vsync--;
 			if (menu.data.vsync < 0)
