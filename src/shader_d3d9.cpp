@@ -74,6 +74,11 @@ void mLight2::set_matrix(matrix4 &matrix)
 	return;
 }
 
+void mLight2::set_exposure(float value)
+{
+	return;
+}
+
 
 void mLight2::set_max(int max)
 {
@@ -402,9 +407,29 @@ void Post::resize(int width, int height)
     }
 }
 
-void Post::Params(int tex0, int tex1)
+void Post::Params(int type, int framestep)
 {
 	uniform_ps->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
+}
+
+void Post::BloomParams(int dir, float amount, float strength, float scale)
+{
+
+}
+
+int ScreenSpace::init(Graphics *gfx)
+{
+//	Shader::init(gfx, "media/hlsl/post.vsh", NULL, "media/hlsl/post.psh");
+	return 0;
+}
+
+
+void ScreenSpace::prelink(void)
+{
+}
+
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count, int width, int height)
+{
 }
 
 int ParticleUpdate::init(Graphics *gfx)
@@ -449,7 +474,7 @@ void ParticleRender::prelink(void)
 {
 }
 
-void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y, float z)
 {
 }
 

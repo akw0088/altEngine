@@ -45,11 +45,11 @@ void Graphics::cleardepth()
 	device->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(255,255,255), 1.0f, 0);
 }
 
-void Graphics::DepthFunc(char *op)
+void Graphics::DepthFunc(int op)
 {
-	if (strcmp(op, "<=") == 0)
+	if (op == LEQUAL)
 		device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-	else if (strcmp(op, "<") == 0)
+	else if (op == LESS)
 		device->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESS);
 }
 
@@ -82,7 +82,7 @@ void Graphics::Stencil(bool flag)
 		device->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 }
 
-void Graphics::StencilFunc(int op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, unsigned int mask)
 {
 	if (op == ALWAYS)
 		device->SetRenderState( D3DRS_STENCILFUNC, D3DCMP_ALWAYS );
@@ -295,7 +295,7 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 	return;
 }
 
-void Graphics::bindFramebuffer(int index)
+void Graphics::bindFramebuffer(int index, int num_attach)
 {
 	device->SetRenderTarget(0, surface[index]);
 	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1, 0);
@@ -314,7 +314,7 @@ int Graphics::checkFramebuffer()
 	return 0;
 }
 
-int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int multisample)
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
 {
 	IDirect3DSurface9* surf = NULL;
 
@@ -447,7 +447,7 @@ void Graphics::BlendFuncOneZero()
 }
 
 
-int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts)
+int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts, bool dynamic)
 {
 	LPDIRECT3DVERTEXBUFFER9 *d3d9_buffer = new LPDIRECT3DVERTEXBUFFER9;
 	HRESULT ret;
@@ -490,6 +490,16 @@ void Graphics::SelectTexture(int level, int handle)
 void Graphics::DeselectTexture(int level)
 {
 	device->SetTexture(level, NULL);
+}
+
+void Graphics::TwoSidedStencilOp(int, int, int, int)
+{
+
+}
+
+void Graphics::fbAttachTextureOne(int)
+{
+
 }
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)

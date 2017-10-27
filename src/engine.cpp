@@ -197,11 +197,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	qport = rand();
 
 
-	ssao_level = 1.0;
+	ssao_level = 1.0f;
 	//	object_level = 1.0;
-	object_level = 1.0;
+	object_level = 1.0f;
 //	ssao_radius = 5.0;
-	ssao_radius = 0.01;
+	ssao_radius = 0.01f;
 	weight_by_angle = true;
 	point_count = 8;
 	randomize_points = true;
@@ -629,15 +629,15 @@ void Engine::load(char *level)
 	
 
 
-	mlight2.set_contrast(2.0);
-	mlight2.set_ambient(0.2);
-	mlight2.set_lightmap(1.0);
-	mlight2.set_exposure(1.0);
+	mlight2.set_contrast(2.0f);
+	mlight2.set_ambient(0.2f);
+	mlight2.set_lightmap(1.0f);
+	mlight2.set_exposure(1.0f);
 	mlight2.set_max(64);
 
 
 	emitter.position = vec3(0.0f, 100.0f, 0.0f);
-	emitter.vel_min = vec3(50.0f, 50.0f, 50.0);
+	emitter.vel_min = vec3(50.0f, 50.0f, 50.0f);
 	emitter.vel_range = vec3(200.0f, 200.0f, 200.0f);
 	emitter.color = 0x00FF00FF;
 	emitter.size = 2.5f;
