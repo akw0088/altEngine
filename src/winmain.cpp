@@ -761,7 +761,7 @@ void clipboard_paste(HWND hwnd, char *value, int size)
 	CloseClipboard();
 }
 
-void GetScreenShot(HWND hwnd)
+void GetScreenShot(HWND hwnd, unsigned int &luminance, bool luminance_only)
 {
 	RECT rect;
 	char filename[256];
@@ -817,7 +817,7 @@ void GetScreenShot(HWND hwnd)
 	GetObject(hBitmap, sizeof(bitmap), &bitmap);
 	int size = bitmap.bmWidth * bitmap.bmHeight * bitmap.bmBitsPixel;
 
-	if (bitmap.bmBits)
+	if (bitmap.bmBits && luminance_only == false)
 	{
 		sprintf(filename, "screenshot%d.bmp", count++);
 		FILE *fp = fopen(filename, "wb");
@@ -828,11 +828,27 @@ void GetScreenShot(HWND hwnd)
 	}
 
 
-	// save bitmap to clipboard
-	OpenClipboard(NULL);
-	EmptyClipboard();
-	SetClipboardData(CF_BITMAP, hBitmap);
-	CloseClipboard();
+	uint64_t average = 0;
+	unsigned char *data = (unsigned char *)bitmap.bmBits;
+	for (int i = 0; i < bitmap.bmWidth * bitmap.bmHeight * 4;)
+	{
+		average += data[i];
+		average += data[i+1];
+		average += data[i+2];
+//		average += data[i+3];
+		i += 4;
+	}
+	average =  (float)average / (bitmap.bmWidth * bitmap.bmHeight * 4);
+	luminance = average;
+
+	if (luminance_only == false)
+	{
+		// save bitmap to clipboard
+		OpenClipboard(NULL);
+		EmptyClipboard();
+		SetClipboardData(CF_BITMAP, hBitmap);
+		CloseClipboard();
+	}
 
 	// clean up
 	SelectObject(hDC, old_obj);

@@ -92,7 +92,7 @@ public:
 	int play_wave_global(int index);
 	int play_wave_global_loop(int index);
 	int get_load_wave(const char *file);
-	void screenshot();
+	void screenshot(unsigned int &luminance, bool luminance_only);
 	void paste(char *data, unsigned int size);
 	void copy(char *data, unsigned int size);
 
@@ -114,6 +114,12 @@ public:
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
+
+	unsigned int lum_table[125];
+	unsigned int lum_index;
+	unsigned int lum_avg;
+
+
 
 
 //temp

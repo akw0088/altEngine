@@ -463,7 +463,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk3, bool clamp, bool bgr, int anisotropic);
 
 #ifdef _WIN32
-void GetScreenShot(HWND hwnd);
+void GetScreenShot(HWND hwnd, unsigned int &luminance, bool luminance_only);
 void get_resolution(int &width, int &height, int &bpp, int &refresh_rate);
 void set_resolution(int width, int height, int bpp);
 #endif

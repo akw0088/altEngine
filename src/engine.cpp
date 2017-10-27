@@ -2086,7 +2086,7 @@ void Engine::render_shadow_volumes()
 				if (input.scores)
 				{
 					shadow_light = i;
-					printf("selecting light %d for shadows\n", i);
+//					printf("selecting light %d for shadows\n", i);
 				}
 
 				if (entity_list[i]->rigid)
@@ -2115,14 +2115,17 @@ void Engine::render_shadow_volumes()
 	}
 }
 
-void Engine::screenshot()
+void Engine::screenshot(unsigned int &luminance, bool luminance_only)
 {
 	static int num = 0;
 	char filename[128];
 #ifdef WIN32
-	GetScreenShot(*((HWND *)param1));
-	sprintf(filename, "Screenshot%d.bmp", num++);
-	menu.print(filename);
+	GetScreenShot(*((HWND *)param1), luminance, luminance_only);
+	if (luminance_only == false)
+	{
+		sprintf(filename, "Screenshot%d.bmp", num++);
+		menu.print(filename);
+	}
 	return;
 #else
 	int width = fb_width;
@@ -2228,7 +2231,7 @@ void Engine::render_bloom(bool debug)
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.SelectTexture(0, mask_quad);
+	gfx.SelectTexture(0, blur1_quad);
 	post.Select();
 	post.Params(POST_BLOOM, tick_num);
 	post.BloomParams(1, bloom_amount, bloom_strength, bloom_threshold);
@@ -2248,7 +2251,7 @@ void Engine::render_bloom(bool debug)
 	else
 	{
 		gfx.SelectTexture(0, render_quad);
-		gfx.SelectTexture(1, blur1_quad);
+		gfx.SelectTexture(1, blur2_quad);
 		gfx.SelectTexture(2, blur2_quad);
 	}
 	post.Select();
@@ -2919,6 +2922,23 @@ void Engine::step(int tick)
 		update_audio();
 		return;
 	}
+
+	/*
+	if (tick % TICK_RATE * 10000)
+	{
+		unsigned int lum;
+		screenshot(lum, true);
+
+		lum_table[lum_index++ % 125] = lum;
+		for (int i = 0; i < 125; i++)
+		{
+			lum_avg += lum_table[i];
+		}
+		lum_avg /= 125;
+		mlight2.set_exposure(2.0f * menu.data.brightness + 1.0f / lum_avg);
+	}
+	*/
+
 
 	game->step(tick);
 
@@ -5352,9 +5372,10 @@ void Engine::console(char *cmd)
 
 	if (strcmp(cmd, "screenshot") == 0)
 	{
-		snprintf(msg, LINE_SIZE, "screenshot taken");
+		unsigned int luminance = 0;
+		screenshot(luminance, false);
+		snprintf(msg, LINE_SIZE, "screenshot taken with luminance average %d", luminance);
 		menu.print(msg);
-		screenshot();
 		return;
 	}
 
