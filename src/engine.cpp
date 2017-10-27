@@ -4847,7 +4847,7 @@ void Engine::console(char *cmd)
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.brightness += 0.1f;
-			if (menu.data.brightness > 1.0f)
+			if (menu.data.brightness > 1.001f)
 				menu.data.brightness = 0.0f;
 			mlight2.set_exposure(2.0f * menu.data.brightness);
 			return;
@@ -4863,9 +4863,9 @@ void Engine::console(char *cmd)
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.contrast += 0.1f;
-			if (menu.data.contrast > 1.0f)
+			if (menu.data.contrast > 1.001f)
 				menu.data.contrast = 0.0f;
-			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
+			mlight2.set_contrast(2.0f * menu.data.contrast + 1.0f);
 			return;
 		}
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "down"))
@@ -4873,7 +4873,7 @@ void Engine::console(char *cmd)
 			menu.data.contrast -= 0.1f;
 			if (menu.data.contrast < 0.0f)
 				menu.data.contrast = 1.0f;
-			mlight2.set_contrast(2.0f * menu.data.contrast - 1.0f);
+			mlight2.set_contrast(2.0f * menu.data.contrast + 1.0f);
 			return;
 		}
 		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "up"))
