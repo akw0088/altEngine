@@ -153,6 +153,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
 		RedirectIOToConsole();
 
+		SetProcessDPIAware();
 		SetTimer(hwnd, TICK_TIMER, TICK_MS, NULL);
 		hdc = GetDC(hwnd);
 		GetFreq(freq);
@@ -650,6 +651,16 @@ void RedirectIOToConsole()
 #endif
 }
 
+
+void get_resolution(int &width, int &height, int &bpp)
+{
+	DEVMODE dmScreenSettings;
+
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmScreenSettings);
+	width = dmScreenSettings.dmPelsWidth;
+	height = dmScreenSettings.dmPelsHeight;
+	bpp = dmScreenSettings.dmBitsPerPel;
+}
 
 void set_resolution(int width, int height, int bpp)
 {

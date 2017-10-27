@@ -507,7 +507,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #ifndef DIRECTX
 	//render menu again for linux
 	gfx.resize(xres,yres);
-	sprintf(menu.data.resolution, "%dx%d", xres, yres);
+
+	int x, y, bpp;
+	get_resolution(x, y, bpp);
+	sprintf(menu.data.resolution, "%dx%d", x, y);
+	sprintf(menu.data.window, "%dx%d", xres, yres);
 	menu.render(global);
 	gfx.swap();
 #endif
@@ -4368,7 +4372,7 @@ void Engine::resize(int width, int height)
 
 	gfx.resize(width, height);
 	post.resize(width, height);
-	sprintf(menu.data.resolution, "%dx%d", width, height);
+	sprintf(menu.data.window, "%dx%d", width, height);
 
 	projection.perspective(fov, (float)width / height, zNear, zFar, inf);
 
@@ -4448,14 +4452,16 @@ void Engine::fullscreen()
 		menu.data.fullscreen = !menu.data.fullscreen;
 #ifndef __linux
 		HMONITOR hmon;
-		MONITORINFO mi = { sizeof(MONITORINFO) };
+		MONITORINFOEX  mi;
 		HWND hwnd = *((HWND *)param1);
 
+		mi.cbSize = sizeof(MONITORINFOEX);
 		hmon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 		GetMonitorInfo(hmon, &mi);
 
 		int xr = abs(mi.rcMonitor.right - mi.rcMonitor.left);
 		int yr = abs(mi.rcMonitor.bottom - mi.rcMonitor.top);
+		sprintf(menu.data.monitor, "%s", mi.szDevice);
 
 		static LONG old_style;
 		static LONG	new_style = WS_CHILD | WS_VISIBLE;
@@ -4463,11 +4469,6 @@ void Engine::fullscreen()
 		old_style = SetWindowLongPtr(hwnd, GWL_STYLE, new_style);
 		new_style = old_style;
 		SetWindowPos(hwnd, HWND_TOP, 0, 0, xr, yr, 0);
-
-		if (menu.data.fullscreen)
-		{
-			sprintf(menu.data.resolution, "%dx%d", xr, yr);
-		}
 		fullscreen_timer = TICK_RATE;
 #endif
 	}

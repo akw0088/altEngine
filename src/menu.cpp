@@ -27,6 +27,7 @@ Menu::Menu()
 {
 	bindnextkey = false;
 	sprintf(data.resolution, "Unknown");
+	sprintf(data.window, "Unknown");
 	sprintf(data.attack, "Mouse1");
 	sprintf(data.jump, "Enter + Space");
 	sprintf(data.duck, "Shift");
@@ -433,6 +434,13 @@ void Menu::sub_value(const char *str, char *out)
 			{
 				strcat(out, data.resolution);
 				j += strlen(data.resolution);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_window") == 0)
+			{
+				strcat(out, data.window);
+				j += strlen(data.window);
 				i += 1 + strlen(key);
 				continue;
 			}
