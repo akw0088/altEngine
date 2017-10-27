@@ -1,3 +1,4 @@
+
 #version 440 core
 #define	MAX_LIGHTS 64
 #define MAX_SHADOW 1
@@ -30,12 +31,13 @@ uniform int	u_num_lights;
 uniform mat4	mvp;
 
 uniform mat4	shadow_matrix[18];
-uniform vec2	u_tcmod_scroll[8];
-uniform vec2	u_tcmod_scale[8];
-uniform float	u_tcmod_sin[8];
-uniform float	u_tcmod_cos[8];
-uniform int u_water[8];
+uniform vec2	u_tcmod_scroll[4];
+uniform vec2	u_tcmod_scale[4];
+uniform float	u_tcmod_sin[4];
+uniform float	u_tcmod_cos[4];
+uniform int u_water[4];
 uniform int u_time;
+uniform float u_shadowmap;
 
 
 
@@ -52,17 +54,17 @@ void main(void)
 		mat2 mRot0 = mat2( u_tcmod_cos[i], -u_tcmod_sin[i], u_tcmod_sin[i],  u_tcmod_cos[i]);
 		Vertex.vary_newTexCoord[i] = ((u_tcmod_scale[i] * (attr_TexCoord - bias)) * mRot0) + u_tcmod_scroll[i] + bias;
 
-		if (u_water[i] > 0)
+		if (u_water[i] != 0)
 		{
 			float s = Vertex.vary_newTexCoord[0].x;
 			float t = Vertex.vary_newTexCoord[0].y;
 			float x = Vertex.vary_position.x;
 			float y = Vertex.vary_position.y;
 			float z = Vertex.vary_position.z;
-			float scale = 0.0009765625;
+			float scale = 0.0009765625f;
 	
-			Vertex.vary_newTexCoord[i].x = s + sin( (( x + z ) * scale + u_time / 512.0 ) );
-			Vertex.vary_newTexCoord[i].y = t + sin((y * scale + u_time / 512.0));
+			Vertex.vary_newTexCoord[i].x = s + sin( (( x + z ) * scale + u_time * 0.001953125f ) );
+			Vertex.vary_newTexCoord[i].y = t + sin((y * scale + u_time * 0.001953125f));
 		}
 	}
 
@@ -73,13 +75,11 @@ void main(void)
 	Vertex.vary_color = attr_color;
 	Vertex.vary_tangent = attr_tangent;
 
-
-
-
-
-
-	for(int i = 0; i < 18; i++)
+	if (u_shadowmap > 0)
 	{
-		Vertex.shadowpos[i] = shadow_matrix[i] * vec4(attr_position, 1.0);
+		for(int i = 0; i < 18; i++)
+		{
+			Vertex.shadowpos[i] = shadow_matrix[i] * vec4(attr_position, 1.0);
+		}
 	}
 }

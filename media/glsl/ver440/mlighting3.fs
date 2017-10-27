@@ -36,14 +36,14 @@ uniform float u_brightness;
 uniform float u_contrast;
 uniform float u_exposure;
 
-uniform int u_env[8];
-uniform float u_rgbgen_scale[8];
-uniform int u_alphatest[8];
+uniform int u_env[4];
+uniform float u_rgbgen_scale[4];
+uniform int u_alphatest[4];
 uniform int u_portal;
 uniform int u_normalmap;
 
 
-uniform sampler2D tex[8];// 8 possible textures
+uniform sampler2D tex[4];// 4 possible textures
 
 layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
 layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
@@ -76,9 +76,6 @@ vec3 Uncharted2Tonemap(vec3 x)
 	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
-
-
-// Loop could clean this up, but need to figure out how to make an array of texture arrays that bind correctly
 void calc_shadow(out float shadowFlagCombined, in int light_num)
 {
 	float depthmap;
@@ -107,7 +104,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 			shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
 			for (int i = 0; i < 4; i++)
 			{
-				if ( texture( depth[i], shadowWdivide.st + poissonDisk[i] / 700.0 ).r  <  shadowWdivide.z - bias )
+				if ( texture( depth[i], shadowWdivide.st + poissonDisk[i] * 0.0014285 ).r  <  shadowWdivide.z - bias )
 				{
 					shadowFlag -= 0.2;
 				}
@@ -190,8 +187,6 @@ void main(void)
 	vec4 Fragment_stage[4];
 
 
-	vec3 u = normalize(-Vertex.vary_position.xyz);
-	vec3 r = reflect(u, -unormal);
 
 	tc0 = Vertex.vary_newTexCoord[0];
 	tc1 = Vertex.vary_newTexCoord[1];
@@ -220,6 +215,9 @@ void main(void)
 
 	if (u_env[0] + u_env[1] + u_env[2] + u_env[3] > 0)
 	{
+		vec3 u = normalize(-Vertex.vary_position.xyz);
+		vec3 r = reflect(u, -unormal);
+
 		// Environment "sphere" mapping
 		r.z += 1.0;
 		float m = 0.5 * inversesqrt(dot(r,r));
@@ -305,26 +303,15 @@ void main(void)
 			if (Fragment_stage[i].a < 0.5)
 				discard;
 		}
+
+
+		Fragment_stage[i] *= min(u_rgbgen_scale[i], 3.0);
+		Fragment.xyz += Fragment_stage[i].xyz;
 	}
-
-
-	ambient *= min(u_rgbgen_scale[0], 3.0);
-	ambient *= min(u_rgbgen_scale[1], 3.0);
-	ambient *= min(u_rgbgen_scale[2], 3.0);
-	ambient *= min(u_rgbgen_scale[3], 3.0);
-
 
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment_stage[0].a * Fragment_stage[1].a  * Fragment_stage[2].a  * Fragment_stage[3].a;
 //	Fragment.a = 1.0;
-	Fragment.xyz += Fragment_stage[0].xyz;
-	Fragment.xyz += Fragment_stage[1].xyz;
-	Fragment.xyz += Fragment_stage[2].xyz;
-	Fragment.xyz += Fragment_stage[3].xyz;
-//	Fragment.xyz += Fragment_stage[4].xyz;
-//	Fragment.xyz += Fragment_stage[5].xyz;
-//	Fragment.xyz += Fragment_stage[6].xyz;
-//	Fragment.xyz += Fragment_stage[7].xyz;
 
 //	Fragment.xyz = vec3(0.5,0.5,0.5);
 //	Fragment.xyz = tangent;
@@ -343,13 +330,11 @@ void main(void)
 		light += lighting(i, u_position[i]);
 	}
 
-
-
-	light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
-
 	if (u_lightmap > 0.0)
 	{
 		vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
+
+		light *= vec3(1.0 - u_lightmap, 1.0 - u_lightmap, 1.0 - u_lightmap);
 
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
 			Fragment.xyz *= lightmap;
@@ -367,7 +352,7 @@ void main(void)
 
 	if (u_contrast < 0)
 	{
-		float value = (Fragment.r + Fragment.g + Fragment.b) / 3.0;
+		float value = (Fragment.r + Fragment.g + Fragment.b) * 0.3333333f;
 		Fragment.r = value;
 		Fragment.g = value;
 		Fragment.b = value;
