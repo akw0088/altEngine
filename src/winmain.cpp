@@ -652,7 +652,7 @@ void RedirectIOToConsole()
 }
 
 
-void get_resolution(int &width, int &height, int &bpp)
+void get_resolution(int &width, int &height, int &bpp, int &refresh_rate)
 {
 	DEVMODE dmScreenSettings;
 
@@ -660,6 +660,7 @@ void get_resolution(int &width, int &height, int &bpp)
 	width = dmScreenSettings.dmPelsWidth;
 	height = dmScreenSettings.dmPelsHeight;
 	bpp = dmScreenSettings.dmBitsPerPel;
+	refresh_rate = dmScreenSettings.dmDisplayFrequency;
 }
 
 void set_resolution(int width, int height, int bpp)

@@ -508,9 +508,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	//render menu again for linux
 	gfx.resize(xres,yres);
 
-	int x, y, bpp;
-	get_resolution(x, y, bpp);
-	sprintf(menu.data.resolution, "%dx%d", x, y);
+	int x, y, bpp, refresh_rate;
+	get_resolution(x, y, bpp, refresh_rate);
+	sprintf(menu.data.resolution, "%dx%d %dHz", x, y, refresh_rate);
 	sprintf(menu.data.window, "%dx%d", xres, yres);
 	menu.render(global);
 	gfx.swap();
@@ -4909,7 +4909,7 @@ void Engine::console(char *cmd)
 		{
 			current_res--;
 			if (current_res < 0)
-				current_res = num_res - 1;
+				current_res = num_res - 2;
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
@@ -6842,11 +6842,12 @@ void Engine::enum_resolutions()
 	{
 		if (EnumDisplaySettings(NULL, i - 1, &dmScreenSettings))
 		{
-			if (dmScreenSettings.dmPelsWidth < 1024 || dmScreenSettings.dmBitsPerPel < 32)
+			if (dmScreenSettings.dmPelsWidth < 1024 || dmScreenSettings.dmBitsPerPel < 32 || dmScreenSettings.dmDisplayFrequency < 60)
 				continue;
 
-			sprintf(resbuf[num_res], "%dx%d", dmScreenSettings.dmPelsWidth,
-				dmScreenSettings.dmPelsHeight);
+			sprintf(resbuf[num_res], "%dx%d %dHz", dmScreenSettings.dmPelsWidth,
+				dmScreenSettings.dmPelsHeight,
+				dmScreenSettings.dmDisplayFrequency);
 
 			if (strcmp(resbuf[num_res], resbuf[num_res - 1]) == 0)
 			{
