@@ -43,9 +43,7 @@ void Light::destroy(Graphics &gfx)
 {
 	for (int i = 0; i < NUM_CUBE_FACE; i++)
 	{
-		gfx.DeleteFrameBuffer(fbo_shadowmaps[i]);
-		gfx.DeleteTexture(quad_tex[i]);
-		gfx.DeleteTexture(depth_tex[i]);
+		gfx.DeleteFrameBuffer(fbo_shadowmaps[i], quad_tex[i], depth_tex[i]);
 	}
 
 

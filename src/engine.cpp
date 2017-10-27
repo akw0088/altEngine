@@ -419,12 +419,14 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	fb_height = (unsigned int)(1024 * res_scale);
 
 	unsigned int normal_depth;
+
+
 	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 
-	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, multisample, false);
-	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, multisample, false);
-	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, multisample, false);
-	gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, multisample, false);
+	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+	gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
 
 
@@ -1372,7 +1374,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			res_scale *= 0.75f;
 			fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 			fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
-			gfx.DeleteFrameBuffer(render_fbo);
+			gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
 			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
@@ -1380,7 +1382,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			res_scale *= 1.25f;
 			fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 			fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
-			gfx.DeleteFrameBuffer(render_fbo);
+			gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
 			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 	}
@@ -1389,7 +1391,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 		res_scale = 1.0f;
 		fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 		fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
-		gfx.DeleteFrameBuffer(render_fbo);
+		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 	}
 }
@@ -2277,7 +2279,7 @@ void Engine::destroy_buffers()
 	sentry.destroy_buffers(gfx);
 	zsec_shotgun.destroy_buffers(gfx);
 
-	gfx.DeleteFrameBuffer(render_fbo);
+	gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
 
 	key_bind.destroy();
 
@@ -4850,16 +4852,24 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "up"))
 		{
+			char cmd[80];
+
 			if (menu.data.antialias == 0)
 				menu.data.antialias = 2;
 			else
 				menu.data.antialias = menu.data.antialias << 1;
 			if (menu.data.antialias > 16)
 				menu.data.antialias = 0;
+
+
+			sprintf(cmd, "r_multisample %d", menu.data.antialias);
+			console(cmd);
 			return;
 		}
 		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "down"))
 		{
+			char cmd[80];
+
 			if (menu.data.antialias == 0)
 				menu.data.antialias = 16;
 			else
@@ -4868,6 +4878,8 @@ void Engine::console(char *cmd)
 			if (menu.data.antialias == 1)
 				menu.data.antialias = 0;
 
+			sprintf(cmd, "r_multisample %d", menu.data.antialias);
+			console(cmd);
 			return;
 		}
 		else if (strcmp(data, "r_anisotropic") == 0 && strstr(cmd, "up"))
@@ -6329,6 +6341,7 @@ void Engine::console(char *cmd)
 	if (sscanf(cmd, "r_multisample %s", data) == 1)
 	{
 		multisample = atoi(data);
+		menu.data.antialias = multisample;
 #ifdef OPENGL
 		if (multisample > 0)
 		{
@@ -6343,8 +6356,8 @@ void Engine::console(char *cmd)
 			glDisable(GL_MULTISAMPLE);
 		}
 #endif
-		gfx.DeleteFrameBuffer(render_fbo);
-		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+//		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
+//		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		return;
 	}
 
@@ -6367,18 +6380,18 @@ void Engine::console(char *cmd)
 		fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 		fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 
-		gfx.DeleteFrameBuffer(render_fbo);
-		gfx.DeleteFrameBuffer(mask_fbo);
-		gfx.DeleteFrameBuffer(blur1_fbo);
-		gfx.DeleteFrameBuffer(blur2_fbo);
-		gfx.DeleteFrameBuffer(ssao_fbo);
+		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
+		gfx.DeleteFrameBuffer(mask_fbo, mask_quad, mask_depth);
+		gfx.DeleteFrameBuffer(blur1_fbo, blur1_quad, blur1_depth);
+		gfx.DeleteFrameBuffer(blur2_fbo, blur2_quad, blur2_depth);
+		gfx.DeleteFrameBuffer(ssao_fbo, ssao_quad, ssao_depth);
 
 		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 
-		gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, multisample, false);
-		gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, multisample, false);
-		gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, multisample, false);
-		gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, multisample, false);
+		gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+		gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+		gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+		gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
 
 

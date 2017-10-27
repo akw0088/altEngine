@@ -18,9 +18,7 @@ PortalCamera::PortalCamera(Entity *entity, Graphics &gfx, float scale, float zNe
 
 void PortalCamera::destroy(Graphics &gfx)
 {
-	gfx.DeleteFrameBuffer(fbo);
-	gfx.DeleteTexture(quad_tex);
-	gfx.DeleteTexture(depth_tex);
+	gfx.DeleteFrameBuffer(fbo, quad_tex, depth_tex);
 }
 
 
