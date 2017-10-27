@@ -52,6 +52,8 @@ Menu::Menu()
 	data.brightness = 0.5f;
 	data.contrast = 0.5f;
 	data.volume = 0.5f;
+	data.musicvol = 0.5f;
+	data.sfxvol = 0.5f;
 	data.rscale = 0.5f;
 	data.sensitivity = 1.0f;
 	data.shadowvol = true;
@@ -358,6 +360,30 @@ void Menu::sub_value(const char *str, char *out)
 				j += 12;
 				i += 1 + strlen(key);
 				sprintf(value, " %3.1f", data.volume);
+				strcat(out, value);
+				j += strlen(value);
+				continue;
+			}
+			else if (strcmp(key, "d_musicvol") == 0)
+			{
+				char value[32];
+
+				handle_slider(out, data.musicvol);
+				j += 12;
+				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", data.musicvol);
+				strcat(out, value);
+				j += strlen(value);
+				continue;
+			}
+			else if (strcmp(key, "d_sfxvol") == 0)
+			{
+				char value[32];
+
+				handle_slider(out, data.sfxvol);
+				j += 12;
+				i += 1 + strlen(key);
+				sprintf(value, " %3.1f", data.sfxvol);
 				strcat(out, value);
 				j += strlen(value);
 				continue;

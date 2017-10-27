@@ -852,6 +852,8 @@ typedef struct
 	char team[128];
 
 	float volume;
+	float musicvol;
+	float sfxvol;
 	float brightness;
 	float contrast;
 

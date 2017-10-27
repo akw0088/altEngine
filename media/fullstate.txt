@@ -483,10 +483,23 @@ state 501 enter		200 "null"
 state 501 next		7 "null"
 
 state 502 up		500 "null"
-state 502 down		501 "null"
+state 502 down		503 "null"
 state 502 enter		502 "toggle s_volume up"
 state 502 select	502 "toggle s_volume down"
 state 502 next		7 "null"
+
+state 503 up		502 "null"
+state 503 down		504 "null"
+state 503 enter		503 "toggle s_musicvol up"
+state 503 select	503 "toggle s_musicvol down"
+state 503 next		7 "null"
+
+state 504 up		503 "null"
+state 504 down		501 "null"
+state 504 enter		504 "toggle s_sfxvol up"
+state 504 select	504 "toggle s_sfxvol down"
+state 504 next		7 "null"
+
 
 
 state 600 up		600 "null"

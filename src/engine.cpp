@@ -4945,6 +4945,34 @@ void Engine::console(char *cmd)
 #endif
 			return;
 		}
+		else if (strcmp(data, "s_musicvol") == 0 && strstr(cmd, "up"))
+		{
+			menu.data.musicvol += 0.1f;
+			if (menu.data.musicvol > 1.01f)
+				menu.data.musicvol = 0.0f;
+			return;
+		}
+		else if (strcmp(data, "s_musicvol") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.musicvol -= 0.1f;
+			if (menu.data.musicvol < 0.00f)
+				menu.data.musicvol = 1.0f;
+			return;
+		}
+		else if (strcmp(data, "s_sfxvol") == 0 && strstr(cmd, "up"))
+		{
+			menu.data.sfxvol += 0.1f;
+			if (menu.data.sfxvol > 1.01f)
+				menu.data.sfxvol = 0.0f;
+			return;
+		}
+		else if (strcmp(data, "s_sfxvol") == 0 && strstr(cmd, "down"))
+		{
+			menu.data.sfxvol -= 0.1f;
+			if (menu.data.sfxvol < 0.00f)
+				menu.data.sfxvol = 1.0f;
+			return;
+		}
 		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "up"))
 		{
 			current_model++;
