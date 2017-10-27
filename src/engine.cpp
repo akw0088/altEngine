@@ -4915,9 +4915,50 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.apply, "Apply");
 			return;
 		}
-		else if (strcmp(data, "r_vsync") == 0)
+		else if (strcmp(data, "r_vsync up") == 0)
 		{
-			menu.data.vsync = !menu.data.vsync;
+			menu.data.vsync++;
+			if (menu.data.vsync >= 3)
+				menu.data.vsync = 0;
+#ifdef WIN32
+			if (menu.data.vsync == 0)
+				wglSwapIntervalEXT(0);
+			else if (menu.data.vsync == 1)
+				wglSwapIntervalEXT(1);
+			else if (menu.data.vsync == 2)
+				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
+#endif
+#ifdef __linux
+			if (menu.data.vsync == 0)
+				glXSwapIntervalEXT(0); //adaptive vsync (disables stupid divide crap)
+			else if (menu.data.vsync == 1)
+				glXSwapIntervalEXT(1);
+			else if (menu.data.vsync == 2)
+				glXSwapIntervalEXT(-1);
+#endif
+			return;
+		}
+		else if (strcmp(data, "r_vsync down") == 0)
+		{
+			menu.data.vsync--;
+			if (menu.data.vsync < 0)
+				menu.data.vsync = 2;
+#ifdef WIN32
+			if (menu.data.vsync == 0)
+				wglSwapIntervalEXT(0);
+			else if (menu.data.vsync == 1)
+				wglSwapIntervalEXT(1);
+			else if (menu.data.vsync == 2)
+				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
+#endif
+#ifdef __linux
+			if (menu.data.vsync == 0)
+				glXSwapIntervalEXT(0); //adaptive vsync (disables stupid divide crap)
+			else if (menu.data.vsync == 1)
+				glXSwapIntervalEXT(1);
+			else if (menu.data.vsync == 2)
+				glXSwapIntervalEXT(-1);
+#endif
 			return;
 		}
 		else if (strcmp(data, "in_invert") == 0)

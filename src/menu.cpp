@@ -212,10 +212,15 @@ void Menu::sub_value(const char *str, char *out)
 			}
 			else if (strcmp(key, "d_vsync") == 0)
 			{
-				if (data.vsync)
+				if (data.vsync == 1)
 				{
 					strcat(out, "On");
 					j += 2;
+				}
+				else if (data.vsync == 2)
+				{
+					strcat(out, "Adaptive");
+					j += 8;
 				}
 				else
 				{

@@ -438,7 +438,8 @@ state 405 next		7 "null"
 
 state 406 up		405 "null"
 state 406 down		407 "null"
-state 406 enter		406 "toggle r_vsync"
+state 406 enter		406 "toggle r_vsync up"
+state 406 select	406 "toggle r_vsync down"
 state 406 next		7 "null"
 
 state 407 up		406 "null"

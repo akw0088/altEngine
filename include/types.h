@@ -821,7 +821,7 @@ typedef struct
 typedef struct
 {
 	bool fullscreen;
-	bool vsync;
+	int vsync;
 	char resolution[64];
 	char window[64];
 	char monitor[128];
