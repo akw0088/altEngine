@@ -4849,7 +4849,7 @@ void Engine::console(char *cmd)
 			menu.data.brightness += 0.1f;
 			if (menu.data.brightness > 1.0f)
 				menu.data.brightness = 0.0f;
-			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
+			mlight2.set_exposure(2.0f * menu.data.brightness);
 			return;
 		}
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "down"))
@@ -4857,7 +4857,7 @@ void Engine::console(char *cmd)
 			menu.data.brightness -= 0.1f;
 			if (menu.data.brightness < 0.0f)
 				menu.data.brightness = 1.0f;
-			mlight2.set_brightness(2.0f * menu.data.brightness - 1.0f);
+			mlight2.set_exposure(2.0f * menu.data.brightness);
 			return;
 		}
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "up"))
