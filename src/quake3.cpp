@@ -8674,19 +8674,16 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 	plane_t plane;
 	float depth;
 	float water_depth;
-	bool water;
 	vec3 clip;
 	vec3 velocity;
 	bool ret = false;
 	bool hit = false;
 	vec3 pos;
 	vec3 step = start;
-	bool lava;
-	bool slime;
 	int nstep = 0;
 	int model_trigger = 0;
 	int model_platform = 0;
-	int surf_flags;
+	content_flag_t flag;
 
 
 	vec3 end = step + camera_frame.forward;
@@ -8696,7 +8693,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 
 	do
 	{
-		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water, water_depth, engine->surface_list, false, clip, velocity, lava, slime, model_trigger, model_platform, surf_flags);
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water_depth, engine->surface_list, false, clip, velocity, model_trigger, model_platform, flag);
 		if (ret)
 		{
 			hit = true;

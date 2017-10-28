@@ -870,4 +870,15 @@ typedef struct
 	bool invert;
 } menudata_t;
 
+typedef struct
+{
+	bool lava;
+	bool slime;
+	bool water;
+	bool fog;
+	int contents;
+	int surf_flags;
+} content_flag_t;
+
+
 #endif

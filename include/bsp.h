@@ -27,6 +27,7 @@ public:
 	void find_edges(vec3 &position, Edge &edge_list);
 	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
+	bool is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float *depth, plane_t *plane, content_flag_t &flag, float &water_depth, bool debug);
 	bool vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b);
 	bool leaf_test(vec3 &x, vec3 &y);
 	void generate_meshes(Graphics &gfx);
@@ -45,9 +46,8 @@ public:
 	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
 	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
 
-	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
-		vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime, int &model_trigger,
-		int &model_platform, int &surf_flags);
+	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, float &water_depth,
+		vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag);
 
 
 	vec3 trace(vec3 &start, vec3 &end, vec3 &normal);

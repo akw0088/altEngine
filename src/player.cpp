@@ -550,38 +550,37 @@ void Player::avoid_walls(Bsp &map)
 
 	memset(&input, 0, sizeof(input_t));
 	float speed_scale = 1.0f;
-	bool lava;
-	bool slime;
+	content_flag_t flag;;
 
 	if (haste_timer > 0)
 		speed_scale = 2.0f;
 
 
-	map.collision_detect(forward, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger, model_platform, surf_flags);
+	map.collision_detect(forward, entity->position, &plane, &depth, water_depth, surface_list, false, clip, vel, model_trigger, model_platform, flag);
 	if ( depth < 0 )
 	{
 		input.moveright = true;
 	}
 
-	map.collision_detect(backward, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger, model_platform, surf_flags);
+	map.collision_detect(backward, entity->position, &plane, &depth, water_depth, surface_list, false, clip, vel, model_trigger, model_platform, flag);
 	if (depth < 0)
 	{
 		input.moveleft = true;
 	}
 
-	map.collision_detect(left, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger, model_platform, surf_flags);
+	map.collision_detect(left, entity->position, &plane, &depth, water_depth, surface_list, false, clip, vel, model_trigger, model_platform, flag);
 	if (depth < 0)
 	{
 		input.moveup = true;
 	}
 
-	map.collision_detect(right, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger, model_platform, surf_flags);
+	map.collision_detect(right, entity->position, &plane, &depth, water_depth, surface_list, false, clip, vel, model_trigger, model_platform, flag);
 	if (depth < 0)
 	{
 		input.movedown = true;
 	}
 
-	map.collision_detect(down, entity->position, &plane, &depth, water, water_depth, surface_list, false, clip, vel, lava, slime, model_trigger, model_platform, surf_flags);
+	map.collision_detect(down, entity->position, &plane, &depth, water_depth, surface_list, false, clip, vel, model_trigger, model_platform, flag);
 	if (depth > 0)
 	{
 		input.jump = true;

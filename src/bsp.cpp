@@ -509,15 +509,111 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	}
 }
 
-bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, bool &water, float &water_depth,
-	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, bool &lava, bool &slime, int &model_trigger, int &model_platform, int &surf_flags)
+bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float *depth, plane_t *plane, content_flag_t &flag, float &water_depth, bool debug)
+{
+	brush_t	*brush = &data.Brushes[brush_index];
+	int brush_side_index = brush->first_side;
+	int num_sides = brush->num_sides;
+	int count = 0;
+	int nonsolid = 0;
+
+
+
+	for (int j = 0; j < num_sides; j++)
+	{
+		brushSide_t *brushSide = &data.BrushSides[brush_side_index + j];
+		int plane_index = brushSide->plane;
+
+		float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+
+		// outside of brush plane
+		if (d > 0.0f)
+			continue;
+
+		// Ignore non solid brushes
+		if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
+		{
+			nonsolid++;
+
+			if (data.Material[brush->material].contents & CONTENTS_LAVA && count + nonsolid == num_sides)
+			{
+				flag.lava = true;
+				continue;
+			}
+			else if (data.Material[brush->material].contents & CONTENTS_SLIME && count + nonsolid == num_sides)
+			{
+				flag.slime = true;
+				continue;
+			}
+			else if (data.Material[brush->material].contents & CONTENTS_WATER && count + nonsolid == num_sides)
+			{
+				// Set underwater flag + depth
+				flag.water = true;
+				water_depth = -d;
+				//printf("underwater depth = %f\n", d);
+				continue;
+			}
+			else if (data.Material[brush->material].contents & CONTENTS_FOG && count + nonsolid == num_sides)
+			{
+				flag.fog = true;
+				continue;
+			}
+
+
+
+			continue;
+		}
+
+		// Ignore individual non solid surfaces (had to move lower to allow water)
+		if (data.Material[brush->material].surface & SURF_NONSOLID)
+		{
+			nonsolid++;
+			continue;
+		}
+
+
+		// Check old position against planes, if we werent colliding before
+		//then it is the collision plane we want to return
+		d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+		if (d > 0.0)
+		{
+			plane->normal = data.Plane[plane_index].normal;
+			plane->d = data.Plane[plane_index].d;
+			*depth = d;
+		}
+		count++;
+	}
+
+	if (count == num_sides)
+	{
+		if (debug)
+		{
+			printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", brush_index,
+				data.Material[brush->material].name,
+				data.Material[brush->material].contents,
+				data.Material[brush->material].surface,
+				*depth, count,
+				plane->normal.x, plane->normal.y, plane->normal.z);
+		}
+
+		flag.surf_flags = data.Material[brush->material].surface;
+		flag.contents = data.Material[brush->material].contents;
+		return true;
+	}
+
+	return false;
+}
+
+
+bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, float &water_depth,
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
 	model_trigger = 0;
 
 
-	water = false;
+	flag.water = false;
 	water_depth = 2048.0f;
 
 	if (leaf_index == -1)
@@ -539,93 +635,10 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 	for (int i = 0; i < leaf->num_brushes; i++)
 	{
-		int *index = &data.LeafBrush[leaf->leaf_brush + i];
-		brush_t	*brush = &data.Brushes[*index];
-		int brush_index = brush->first_side;
-		int num_sides = brush->num_sides;
-		int count = 0;
-		int nonsolid = 0;
+		int *brush_index = &data.LeafBrush[leaf->leaf_brush + i];
 
-
-		for( int j = 0; j < num_sides; j++)
-		{
-			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
-			int plane_index = brushSide->plane;
-
-			float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
-
-			// outside of brush plane
-			if (d > 0.0f)
-				continue;
-
-			// Ignore non solid brushes
-			if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
-			{
-				nonsolid++;
-
-				if (data.Material[brush->material].contents & CONTENTS_LAVA && count + nonsolid == num_sides)
-				{
-					lava = true;
-					continue;
-				}
-				else if (data.Material[brush->material].contents & CONTENTS_SLIME && count + nonsolid == num_sides)
-				{
-					slime = true;
-					continue;
-				}
-				else if (data.Material[brush->material].contents & CONTENTS_WATER && count + nonsolid == num_sides)
-				{
-					// Set underwater flag + depth
-					water = true;
-					water_depth = -d;
-					//printf("underwater depth = %f\n", d);
-					continue;
-				}
-				else if (data.Material[brush->material].contents & CONTENTS_FOG && count + nonsolid == num_sides)
-				{
-					continue;
-				}
-
-
-
-				continue;
-			}
-
-			// Ignore individual non solid surfaces (had to move lower to allow water)
-			if (data.Material[brush->material].surface & SURF_NONSOLID)
-			{
-				nonsolid++;
-				continue;
-			}
-
-
-			// Check old position against planes, if we werent colliding before
-			//then it is the collision plane we want to return
-			d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
-			if (d > 0.0)
-			{
-				plane->normal = data.Plane[plane_index].normal;
-				plane->d = data.Plane[plane_index].d;
-				*depth = d;
-			}
-			count++;
-		}
-
-		if (count == num_sides)
-		{
-			if (debug)
-			{
-				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
-					data.Material[brush->material].name,
-					data.Material[brush->material].contents,
-					data.Material[brush->material].surface,
-					*depth, count,
-					plane->normal.x, plane->normal.y, plane->normal.z);
-			}
-
-			surf_flags = data.Material[brush->material].surface;
+		if (is_point_in_brush(*brush_index, point, oldpoint, depth, plane, flag, water_depth, debug))
 			return true;
-		}
 	}
 
 
@@ -657,63 +670,13 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 				continue;
 		}
 
-		for (int j = 0; j < num_sides; j++)
+		if (is_point_in_brush(index, translated_point, translated_oldpoint, depth, plane, flag, water_depth, debug))
 		{
-			brushSide_t *brushSide = &data.BrushSides[brush_index + j];
-			int plane_index = brushSide->plane;
-
-			float d = translated_point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
-
-			// outside of brush plane
-			if (d > 0.0f)
-				continue;
-
-			// Inside a brush
-			if (data.Material[brush->material].contents & CONTENTS_WATER)
-			{
-				// Set underwater flag + depth
-				water = true;
-				water_depth = -d;
-				//				printf("underwater depth = %f\n", d);
-				continue;
-			}
-
-			// Ignore individual non solid surfaces (had to move lower to allow water)
-			if (data.Material[brush->material].surface & SURF_NONSOLID)
-				continue;
-
-
-			// Check old position against planes, if we werent colliding before
-			//then it is the collision plane we want to return
-			d = translated_oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
-			if (d > 0.0)
-			{
-				plane->normal = data.Plane[plane_index].normal;
-				plane->d = data.Plane[plane_index].d;
-				*depth = d;
-			}
-			count++;
-		}
-
-
-		if (count == num_sides)
-		{
-			if (debug)
-			{
-				printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", i,
-					data.Material[brush->material].name,
-					data.Material[brush->material].contents,
-					data.Material[brush->material].surface,
-					*depth, count,
-					plane->normal.x, plane->normal.y, plane->normal.z);
-			}
-
 			model_platform = i;
 
 			// inside a common/trigger etc
 			if (data.Material[brush->material].surface & SURF_NODRAW)
 			{
-
 				model_trigger = i;
 				return false;
 			}
@@ -1498,6 +1461,15 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				mlight2.set_lightmap_stage(1);
 		}
 
+		if (face->fog_num != -1)
+		{
+			int brush = data.Fog[face->fog_num].brush_num;
+//			printf("fog face\n");
+//			data.BrushSides[data.Brushes[brush].first_side + data.Fog[face->fog_num].visible_side];
+//			data.Fog[face->fog_num].material
+			mlight2.set_fog(1.0f, 100.0f, 500.0f, vec3(0.0f, 0.0f, 1.0f));
+		}
+
 		if (face->type == 1 || face->type == 3)
 		{
 			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
@@ -1511,6 +1483,15 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 		{
 			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
+
+		if (face->fog_num != -1)
+		{
+			int brush = data.Fog[face->fog_num].brush_num;
+			//			printf("fog face\n");
+			//			data.Brushes[brush].first_side + data.Fog[face->fog_num].visible_side;
+			mlight2.set_fog(0.0f, 100.0f, 500.0f, vec3(0.0f, 0.0f, 1.0f));
+		}
+
 
 		if (face_list[i].cull_none)
 		{
