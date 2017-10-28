@@ -74,6 +74,8 @@ public:
 	void rgbgen_wave_triangle(float amplitude, float phase, float freq, int tick_num, int index);
 	void rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index);
 
+	void set_fog(float fog, float start, float end, vec3 &color);
+
 
 
 	void tcmod_scroll(vec2 &scroll, int index);
@@ -132,6 +134,18 @@ private:
 	int u_num_lights;
 	int u_position;
 	int u_color;
+
+	int u_fog;
+	int u_fog_start;
+	int u_fog_end;
+	int u_fog_color;
+
+
+	float m_fog;
+	vec3 m_color;
+	float m_start;
+	float m_end;
+
 
 	int m_normalmap;
 	unsigned int max_light;

@@ -143,10 +143,6 @@ int mLight2::init(Graphics *gfx)
 	texture[1] = glGetUniformLocation(program_handle, "tex[1]");
 	texture[2] = glGetUniformLocation(program_handle, "tex[2]");
 	texture[3] = glGetUniformLocation(program_handle, "tex[3]");
-	texture[4] = glGetUniformLocation(program_handle, "tex[4]");
-	texture[5] = glGetUniformLocation(program_handle, "tex[5]");
-	texture[6] = glGetUniformLocation(program_handle, "tex[6]");
-	texture[7] = glGetUniformLocation(program_handle, "tex[7]");
 
 	depth[0] = glGetUniformLocation(program_handle, "depth[0]");
 	depth[1]= glGetUniformLocation(program_handle, "depth[1]");
@@ -175,74 +171,42 @@ int mLight2::init(Graphics *gfx)
 	u_tcmod_scroll[1] = glGetUniformLocation(program_handle, "u_tcmod_scroll[1]");
 	u_tcmod_scroll[2] = glGetUniformLocation(program_handle, "u_tcmod_scroll[2]");
 	u_tcmod_scroll[3] = glGetUniformLocation(program_handle, "u_tcmod_scroll[3]");
-	u_tcmod_scroll[4] = glGetUniformLocation(program_handle, "u_tcmod_scroll[4]");
-	u_tcmod_scroll[5] = glGetUniformLocation(program_handle, "u_tcmod_scroll[5]");
-	u_tcmod_scroll[6] = glGetUniformLocation(program_handle, "u_tcmod_scroll[6]");
-	u_tcmod_scroll[7] = glGetUniformLocation(program_handle, "u_tcmod_scroll[7]");
 
 	u_tcmod_scale[0] = glGetUniformLocation(program_handle, "u_tcmod_scale[0]");
 	u_tcmod_scale[1] = glGetUniformLocation(program_handle, "u_tcmod_scale[1]");
 	u_tcmod_scale[2] = glGetUniformLocation(program_handle, "u_tcmod_scale[2]");
 	u_tcmod_scale[3] = glGetUniformLocation(program_handle, "u_tcmod_scale[3]");
-	u_tcmod_scale[4] = glGetUniformLocation(program_handle, "u_tcmod_scale[4]");
-	u_tcmod_scale[5] = glGetUniformLocation(program_handle, "u_tcmod_scale[5]");
-	u_tcmod_scale[6] = glGetUniformLocation(program_handle, "u_tcmod_scale[6]");
-	u_tcmod_scale[7] = glGetUniformLocation(program_handle, "u_tcmod_scale[7]");
 
 	u_tcmod_sin[0] = glGetUniformLocation(program_handle, "u_tcmod_sin[0]");
 	u_tcmod_sin[1] = glGetUniformLocation(program_handle, "u_tcmod_sin[1]");
 	u_tcmod_sin[2] = glGetUniformLocation(program_handle, "u_tcmod_sin[2]");
 	u_tcmod_sin[3] = glGetUniformLocation(program_handle, "u_tcmod_sin[3]");
-	u_tcmod_sin[4] = glGetUniformLocation(program_handle, "u_tcmod_sin[4]");
-	u_tcmod_sin[5] = glGetUniformLocation(program_handle, "u_tcmod_sin[5]");
-	u_tcmod_sin[6] = glGetUniformLocation(program_handle, "u_tcmod_sin[6]");
-	u_tcmod_sin[7] = glGetUniformLocation(program_handle, "u_tcmod_sin[7]");
 
 	u_tcmod_cos[0] = glGetUniformLocation(program_handle, "u_tcmod_cos[0]");
 	u_tcmod_cos[1] = glGetUniformLocation(program_handle, "u_tcmod_cos[1]");
 	u_tcmod_cos[2] = glGetUniformLocation(program_handle, "u_tcmod_cos[2]");
 	u_tcmod_cos[3] = glGetUniformLocation(program_handle, "u_tcmod_cos[3]");
-	u_tcmod_cos[4] = glGetUniformLocation(program_handle, "u_tcmod_cos[4]");
-	u_tcmod_cos[5] = glGetUniformLocation(program_handle, "u_tcmod_cos[5]");
-	u_tcmod_cos[6] = glGetUniformLocation(program_handle, "u_tcmod_cos[6]");
-	u_tcmod_cos[7] = glGetUniformLocation(program_handle, "u_tcmod_cos[7]");
 
 	u_env[0] = glGetUniformLocation(program_handle, "u_env[0]");
 	u_env[1] = glGetUniformLocation(program_handle, "u_env[1]");
 	u_env[2] = glGetUniformLocation(program_handle, "u_env[2]");
 	u_env[3] = glGetUniformLocation(program_handle, "u_env[3]");
-	u_env[4] = glGetUniformLocation(program_handle, "u_env[4]");
-	u_env[5] = glGetUniformLocation(program_handle, "u_env[5]");
-	u_env[6] = glGetUniformLocation(program_handle, "u_env[6]");
-	u_env[7] = glGetUniformLocation(program_handle, "u_env[7]");
 
 	u_water[0] = glGetUniformLocation(program_handle, "u_water[0]");
 	u_water[1] = glGetUniformLocation(program_handle, "u_water[1]");
 	u_water[2] = glGetUniformLocation(program_handle, "u_water[2]");
 	u_water[3] = glGetUniformLocation(program_handle, "u_water[3]");
-	u_water[4] = glGetUniformLocation(program_handle, "u_water[4]");
-	u_water[5] = glGetUniformLocation(program_handle, "u_water[5]");
-	u_water[6] = glGetUniformLocation(program_handle, "u_water[6]");
-	u_water[7] = glGetUniformLocation(program_handle, "u_water[7]");
 
 	u_alpha = glGetUniformLocation(program_handle, "u_alpha");
 	u_alphatest[0] = glGetUniformLocation(program_handle, "u_alphatest[0]");
 	u_alphatest[1] = glGetUniformLocation(program_handle, "u_alphatest[1]");
 	u_alphatest[2] = glGetUniformLocation(program_handle, "u_alphatest[2]");
 	u_alphatest[3] = glGetUniformLocation(program_handle, "u_alphatest[3]");
-	u_alphatest[4] = glGetUniformLocation(program_handle, "u_alphatest[4]");
-	u_alphatest[5] = glGetUniformLocation(program_handle, "u_alphatest[5]");
-	u_alphatest[6] = glGetUniformLocation(program_handle, "u_alphatest[6]");
-	u_alphatest[7] = glGetUniformLocation(program_handle, "u_alphatest[7]");
 
 	u_rgbgen_scale[0] = glGetUniformLocation(program_handle, "u_rgbgen_scale[0]");
 	u_rgbgen_scale[1] = glGetUniformLocation(program_handle, "u_rgbgen_scale[1]");
 	u_rgbgen_scale[2] = glGetUniformLocation(program_handle, "u_rgbgen_scale[2]");
 	u_rgbgen_scale[3] = glGetUniformLocation(program_handle, "u_rgbgen_scale[3]");
-	u_rgbgen_scale[4] = glGetUniformLocation(program_handle, "u_rgbgen_scale[4]");
-	u_rgbgen_scale[5] = glGetUniformLocation(program_handle, "u_rgbgen_scale[5]");
-	u_rgbgen_scale[6] = glGetUniformLocation(program_handle, "u_rgbgen_scale[6]");
-	u_rgbgen_scale[7] = glGetUniformLocation(program_handle, "u_rgbgen_scale[7]");
 
 	u_time = glGetUniformLocation(program_handle, "u_time");
 	u_portal = glGetUniformLocation(program_handle, "u_portal");
@@ -260,7 +224,10 @@ int mLight2::init(Graphics *gfx)
 	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
 	u_depth = glGetUniformLocation(program_handle, "u_depth");
 
-	
+	u_fog = glGetUniformLocation(program_handle, "u_fog");
+	u_fog_start = glGetUniformLocation(program_handle, "u_fog_start");
+	u_fog_end = glGetUniformLocation(program_handle, "u_fog_end");
+	u_fog_color = glGetUniformLocation(program_handle, "u_fog_color");
 	return 0;
 }
 
@@ -273,6 +240,13 @@ void mLight2::set_max(int max)
 	max_light = max;
 }
 
+void mLight2::set_fog(float fog, float start, float end, vec3 &color)
+{
+	m_fog = fog;
+	m_start = start;
+	m_end = end;
+	m_color = color;
+}
 
 //=============================================================================
 // Mostly effects things not lit by lightmaps
@@ -406,6 +380,12 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(depth[17], 27);
 
 
+	glUniform1f(u_fog, m_fog);
+	glUniform1f(u_fog_start, m_start);
+	glUniform1f(u_fog_end, m_end);
+	glUniform3f(u_fog_color, m_color.x, m_color.y, m_color.z);
+
+
 
 	glUniform1i(u_time, time);
 
@@ -467,10 +447,6 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform1i(u_env[1], env);
 	glUniform1i(u_env[2], env);
 	glUniform1i(u_env[3], env);
-	glUniform1i(u_env[4], env);
-	glUniform1i(u_env[5], env);
-	glUniform1i(u_env[6], env);
-	glUniform1i(u_env[7], env);
 	//	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
 	//	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
 	//	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);

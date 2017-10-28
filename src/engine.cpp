@@ -633,7 +633,7 @@ void Engine::load(char *level)
 
 	
 
-
+	mlight2.set_fog(0.0f, 100.0f, 500.0f, vec3(0.0f, 1.0f, 0.0f));
 	mlight2.set_contrast(2.0f);
 	mlight2.set_ambient(0.2f);
 	mlight2.set_lightmap(1.0f);
@@ -2854,7 +2854,6 @@ void Engine::step(int tick)
 
 	if (ingame_menu_timer > 0)
 		ingame_menu_timer--;
-
 
 #ifndef DEDICATED
 	// Animate animated textures

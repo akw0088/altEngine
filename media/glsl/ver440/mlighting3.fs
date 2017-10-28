@@ -42,6 +42,12 @@ uniform int u_alphatest[4];
 uniform int u_portal;
 uniform int u_normalmap;
 
+uniform float u_fog;
+uniform float u_fog_start;
+uniform float u_fog_end;
+uniform vec3 u_fog_color;
+
+
 
 uniform sampler2D tex[4];// 4 possible textures
 
@@ -339,6 +345,24 @@ void main(void)
 		if (lightmap.r + lightmap.g + lightmap.b > 0.001)
 			Fragment.xyz *= lightmap;
 	}
+
+
+	if (u_fog > 0.0)
+	{
+		float fog_distance = abs(Vertex.vary_position.z);
+		float fog_factor;
+
+		if (u_fog_end - fog_distance > 0.0f)
+			fog_factor = (u_fog_end - fog_distance) / (u_fog_end - u_fog_start);
+		else
+			fog_factor = 0.0f;
+
+		vec3 fog_color = vec3(0.0f, 1.0f, 0.0f);
+
+		clamp(fog_factor, 0.0f, 1.0f);
+		Fragment.rgb = mix(fog_color, Fragment.rgb, fog_factor);
+	}
+
 
 	Fragment.rgb *= max(light, ambient);
 
