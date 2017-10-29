@@ -537,7 +537,6 @@ void Player::avoid_walls(Bsp &map)
 
 	plane_t plane;
 	float depth;
-	bool water;
 	float water_depth;
 	vector<surface_t *> surface_list;
 	vec3 clip;

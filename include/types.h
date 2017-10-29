@@ -577,6 +577,8 @@ typedef struct
 {
 	int drawcall;
 	int triangle;
+	int buffer_size;
+	int texture_size;
 } gpustat_t;
 
 

@@ -5355,6 +5355,8 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "drawcalls: %d triangles %d", engine->gfx.gpustat.drawcall, engine->gfx.gpustat.triangle);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+			snprintf(msg, LINE_SIZE, "buffer mb: %d texture mb %d", engine->gfx.gpustat.buffer_size / (1024 * 1024), engine->gfx.gpustat.texture_size / (1024 * 1024));
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "netinfo: ping: %d delta %d size %d num_ents %d dropped %d",
 				engine->netinfo.ping,
 				engine->netinfo.sequence_delta,
@@ -6851,7 +6853,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					break;
 				}
 
-				if (entity_list[self]->player->local)
+				if (entity_list[self]->player->local && spectator == 0)
 				{
 					engine->camera_frame.forward.x = matrix.m[8];
 					engine->camera_frame.forward.y = matrix.m[9];
@@ -6929,7 +6931,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				break;
 			}
 
-			if (self == engine->find_type(ENT_PLAYER, 0))
+			if (self == engine->find_type(ENT_PLAYER, 0) && spectator == 0)
 			{
 				engine->camera_frame.up.x = matrix.m[4];
 				engine->camera_frame.up.y = matrix.m[5];
@@ -6997,7 +6999,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					model->morientation.m[7] = matrix.m[9];
 					model->morientation.m[8] = matrix.m[10];
 
-					if (self == engine->find_type(ENT_PLAYER, 0))
+					if (self == engine->find_type(ENT_PLAYER, 0) && spectator == 0)
 					{
 						engine->camera_frame.up.x = matrix.m[4];
 						engine->camera_frame.up.y = matrix.m[5];

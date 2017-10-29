@@ -320,6 +320,8 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 	glGenBuffers(1, &ibo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, num_index * sizeof(int), index_buffer, GL_STATIC_DRAW);
+
+	gpustat.buffer_size += num_index * sizeof(int);
 	return ibo;
 
 #ifdef ERROR_CHECK
@@ -410,6 +412,7 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynam
 		glBufferData(GL_ARRAY_BUFFER, num_vertex * sizeof(vertex_t), vertex_buffer, GL_DYNAMIC_DRAW);
 
 
+	gpustat.buffer_size += num_vertex * sizeof(vertex_t);
 #ifdef ERROR_CHECK
 	error_check();
 #endif
@@ -553,6 +556,8 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 
 	glTexImage2D(GL_TEXTURE_2D, 0, components, width, height, 0, format, GL_UNSIGNED_BYTE, bytes);
 	glGenerateMipmap(GL_TEXTURE_2D);
+
+	gpustat.texture_size += width * height * 4;
 
 #ifdef ERROR_CHECK
 	error_check();
