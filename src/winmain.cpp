@@ -318,6 +318,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 
+
+	case WM_SYSKEYUP:
+	case WM_SYSKEYDOWN:
+		switch (wParam)
+		{
+		case VK_RETURN:
+			if ((HIWORD(lParam) & KF_ALTDOWN))
+			{
+				altEngine.console("fullscreen");
+				break;
+			}
+		}
+		return DefWindowProc(hwnd, message, wParam, lParam);
+//	case WM_SYSCHAR:
+//		return TRUE;
+
+
 	case WM_KEYDOWN:
 	case WM_KEYUP:
 		{
