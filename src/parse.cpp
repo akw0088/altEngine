@@ -1965,6 +1965,16 @@ void handle_command(char *basecmd, surface_t *surface)
 	{
 		surface->portal = true;
 	}
+	else if (strstr(basecmd, "fogparms"))
+	{
+		vec3 color;
+		int density;
+
+		sscanf(basecmd, "fogparms ( %f %f %f ) %d", &color.x, &color.y, &color.z, &density);
+		surface->fog = true;
+		surface->fog_color = color;
+		surface->fog_density = density;
+	}
 	else if (strstr(basecmd, "surfaceparm"))
 	{
 		if (strstr(basecmd, "trans"))

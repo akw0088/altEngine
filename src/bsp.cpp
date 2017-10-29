@@ -34,6 +34,7 @@ Bsp::Bsp()
 	tangent = NULL;
 	patchdata = NULL;
 	selected_map = false;
+	enable_fog = false;
 }
 
 
@@ -983,7 +984,21 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 			}
 
 			if (surface->cull_none || surface->cull_twosided || surface->cull_disable)
+			{
 				render.cull_none = true;
+			}
+
+			if (surface->fog)
+			{
+				render.fog = true;
+				render.fog_color = surface->fog_color;
+				render.fog_density = surface->fog_density;
+			}
+			else
+			{
+				render.fog = false;
+				render.fog_density = 0;
+			}
 
 
 			for (unsigned int k = 0; k < surface->num_stage && k < max_stage; k++)
@@ -1461,13 +1476,27 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				mlight2.set_lightmap_stage(1);
 		}
 
-		if (face->fog_num != -1)
+		if (face->fog_num != -1 && enable_fog)
 		{
-			int brush = data.Fog[face->fog_num].brush_num;
-//			printf("fog face\n");
-//			data.BrushSides[data.Brushes[brush].first_side + data.Fog[face->fog_num].visible_side];
-//			data.Fog[face->fog_num].material
-			mlight2.set_fog(1.0f, 100.0f, 500.0f, vec3(0.0f, 0.0f, 1.0f));
+
+			if (face_list[i].fog_density == 0)
+			{
+				for (int j = 0; j < surface_list.size(); j++)
+				{
+					if (strcmp(data.Fog[face->fog_num].material, surface_list[j]->name) == 0)
+					{
+						face_list[i].fog_color = surface_list[j]->fog_color;
+						face_list[i].fog_density = surface_list[j]->fog_density;
+						break;
+					}
+				}
+			}
+
+//			float fog_factor = 64.0f / face_list[i].fog_density;
+//			fog_factor = 1.0f;
+
+			mlight2.set_fog(1.0f, 200.0f, 3000.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
+			//			gfx.Depth(false);
 		}
 
 		if (face->type == 1 || face->type == 3)
@@ -1484,12 +1513,9 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
 
-		if (face->fog_num != -1)
+		if (face->fog_num != -1 && enable_fog)
 		{
-			int brush = data.Fog[face->fog_num].brush_num;
-			//			printf("fog face\n");
-			//			data.Brushes[brush].first_side + data.Fog[face->fog_num].visible_side;
-			mlight2.set_fog(0.0f, 100.0f, 500.0f, vec3(0.0f, 0.0f, 1.0f));
+			mlight2.set_fog(0.0f, 200.0f, 3000.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
 		}
 
 
@@ -1579,6 +1605,29 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 				tex_object[face->material].texObj[3] = portal_tex;
 			}
 
+			if (face->fog_num != -1 && enable_fog)
+			{
+				if (blend_list[i].fog_density == 0)
+				{
+					for (int j = 0; j < surface_list.size(); j++)
+					{
+						if (strcmp(data.Fog[face->fog_num].material, surface_list[j]->name) == 0)
+						{
+							blend_list[i].fog_color = surface_list[j]->fog_color;
+							blend_list[i].fog_density = surface_list[j]->fog_density;
+							break;
+						}
+					}
+				}
+
+
+
+				float fog_factor;// = 64.0f / blend_list[i].fog_density;
+				fog_factor = 1.0f;
+				mlight2.set_fog(1.0f, 200.0f, fog_factor * 3000.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
+				//			gfx.Depth(false);
+			}
+
 			if (face->type == 1 || face->type == 3)
 			{
 				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
@@ -1597,6 +1646,13 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 			{
 				gfx.CullFace(3);
 			}
+
+			if (face->fog_num != -1 && enable_fog)
+			{
+				mlight2.set_fog(0.0f, 200.0f, 3000.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
+			}
+
+
 
 
 			if (blend_list[i].shader && enable_textures)

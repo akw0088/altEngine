@@ -246,6 +246,12 @@ void mLight2::set_fog(float fog, float start, float end, vec3 &color)
 	m_start = start;
 	m_end = end;
 	m_color = color;
+
+	glUniform1f(u_fog, m_fog);
+	glUniform1f(u_fog_start, m_start);
+	glUniform1f(u_fog_end, m_end);
+	glUniform3f(u_fog_color, m_color.x, m_color.y, m_color.z);
+
 }
 
 //=============================================================================

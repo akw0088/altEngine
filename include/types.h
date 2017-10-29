@@ -393,6 +393,9 @@ struct surface_t
 	bool cull_backside;
 	bool cull_twosided;
 	bool deformVertexes;
+	bool fog;
+	vec3 fog_color;
+	int fog_density;
 	deform_t deform;
 };
 
@@ -469,6 +472,10 @@ typedef struct
 
 	bool lightmap[MAX_TEXTURES];
 	unsigned int stage;
+
+	bool fog;
+	vec3 fog_color;
+	int fog_density;
 } faceinfo_t;
 
 

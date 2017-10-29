@@ -357,10 +357,8 @@ void main(void)
 		else
 			fog_factor = 0.0f;
 
-		vec3 fog_color = vec3(0.0f, 1.0f, 0.0f);
-
 		clamp(fog_factor, 0.0f, 1.0f);
-		Fragment.rgb = mix(fog_color, Fragment.rgb, fog_factor);
+		Fragment.rgb = mix(u_fog_color, Fragment.rgb, fog_factor);
 	}
 
 

@@ -1542,6 +1542,7 @@ void Engine::render_scene(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+
 	if (lights == false)
 	{
 		mlight2.set_brightness(temp);
@@ -5723,6 +5724,23 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			enable_stencil = false;
 			menu.data.shadowvol = false;
+		}
+		return;
+	}
+
+	if (sscanf(cmd, "r_fog %s", data) == 1)
+	{
+		if (atoi(data))
+		{
+			snprintf(msg, LINE_SIZE, "fog enabled");
+			menu.print(msg);
+			q3map.enable_fog = true;
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "fog disabled");
+			menu.print(msg);
+			q3map.enable_fog = false;
 		}
 		return;
 	}

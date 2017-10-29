@@ -80,6 +80,7 @@ public:
 
 	unsigned int portal_tex; // hack
 
+	bool enable_fog;
 	bool enable_textures;
 	bool enable_shader;
 	bool enable_blend;
