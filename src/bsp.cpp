@@ -34,7 +34,7 @@ Bsp::Bsp()
 	tangent = NULL;
 	patchdata = NULL;
 	selected_map = false;
-	enable_fog = false;
+	enable_fog = true;
 }
 
 
@@ -531,36 +531,37 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 		if (d > 0.0f)
 			continue;
 
-		// Ignore non solid brushes
+		// Check non solid brushes of interest
 		if ((data.Material[brush->material].contents & CONTENTS_SOLID) == 0)
 		{
 			nonsolid++;
 
-			if (data.Material[brush->material].contents & CONTENTS_LAVA && count + nonsolid == num_sides)
+			if (count + nonsolid == num_sides)
 			{
-				flag.lava = true;
-				continue;
+				if (data.Material[brush->material].contents & CONTENTS_LAVA)
+				{
+					flag.lava = true;
+					continue;
+				}
+				else if (data.Material[brush->material].contents & CONTENTS_SLIME)
+				{
+					flag.slime = true;
+					continue;
+				}
+				else if (data.Material[brush->material].contents & CONTENTS_WATER)
+				{
+					// Set underwater flag + depth
+					flag.water = true;
+					water_depth = -*depth;
+					//printf("underwater depth = %f\n", d);
+					continue;
+				}
+				else if (data.Material[brush->material].contents & CONTENTS_FOG)
+				{
+					flag.fog = true;
+					continue;
+				}
 			}
-			else if (data.Material[brush->material].contents & CONTENTS_SLIME && count + nonsolid == num_sides)
-			{
-				flag.slime = true;
-				continue;
-			}
-			else if (data.Material[brush->material].contents & CONTENTS_WATER && count + nonsolid == num_sides)
-			{
-				// Set underwater flag + depth
-				flag.water = true;
-				water_depth = -d;
-				//printf("underwater depth = %f\n", d);
-				continue;
-			}
-			else if (data.Material[brush->material].contents & CONTENTS_FOG && count + nonsolid == num_sides)
-			{
-				flag.fog = true;
-				continue;
-			}
-
-
 
 			continue;
 		}
@@ -1398,7 +1399,7 @@ void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time
 
 }
 
-void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
+void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num)
 {
 	int frameIndex = find_leaf(position);
 	vec2 zero(0.0f, 0.0f);
@@ -1495,7 +1496,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 //			float fog_factor = 64.0f / face_list[i].fog_density;
 //			fog_factor = 1.0f;
 
-			mlight2.set_fog(1.0f, 200.0f, 3000.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
+			mlight2.set_fog(1.0f, 200.0f, 1500.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
 			//			gfx.Depth(false);
 		}
 
@@ -1515,7 +1516,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 		if (face->fog_num != -1 && enable_fog)
 		{
-			mlight2.set_fog(0.0f, 200.0f, 3000.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
+			mlight2.set_fog(0.0f, 200.0f, 1500.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
 		}
 
 
@@ -1624,7 +1625,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 				float fog_factor;// = 64.0f / blend_list[i].fog_density;
 				fog_factor = 1.0f;
-				mlight2.set_fog(1.0f, 200.0f, fog_factor * 3000.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
+				mlight2.set_fog(1.0f, 200.0f, fog_factor * 1500.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
 				//			gfx.Depth(false);
 			}
 
@@ -1649,7 +1650,7 @@ void Bsp::render(vec3 &position, matrix4 &mvp, Graphics &gfx, vector<surface_t *
 
 			if (face->fog_num != -1 && enable_fog)
 			{
-				mlight2.set_fog(0.0f, 200.0f, 3000.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
+				mlight2.set_fog(0.0f, 200.0f, 1500.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
 			}
 
 

@@ -716,25 +716,44 @@ void Engine::load(char *level)
 	load_entities();
 
 	// This renders map before loading textures
+
+	int player = find_type(ENT_INFO_PLAYER_DEATHMATCH, 0);
+	if (player != -1)
+		entity_list[player]->rigid->frame2ent(&camera_frame, input);
+
+
 	camera_frame.set(transformation);
-	matrix4 mvp = transformation * projection;
+	camera_frame.pos = entity_list[player]->position;
 
 	spatial_testing();
 	gfx.clear();
+	matrix4 mvp = transformation * projection;
+
 	global.Select();
-	global.Params(mvp, 0);
+	render_entities(transformation, projection, true, false);
+
+
+	if (player != -1)
+		entity_list[player]->rigid->frame2ent(&camera_frame, input);
+
+	camera_frame.set(transformation);
+	camera_frame.pos = entity_list[player]->position;
+
 	gfx.SelectTexture(0, no_tex);
 	gfx.SelectTexture(1, no_tex);
 	gfx.SelectTexture(2, no_tex);
 	gfx.SelectTexture(3, no_tex);
 
-	render_entities(transformation, projection, true, false);
+	mvp = transformation * projection;
+	global.Select();
+	global.Params(mvp, 0);
 
-	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.enable_textures = false;
+	q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
 	q3map.lastIndex = -2; // force generation of new face lists
 	camera_frame.set(transformation);
 
-	render_entities(transformation, projection, true, true);
+//	render_entities(transformation, projection, true, true);
 
 	menu.delta("textures", *this);
 	menu.render(global);
@@ -1240,7 +1259,7 @@ void Engine::render_portalcamera()
 		vec3 offset(0.0f, 0.0f, 0.0f);
 		mlight2.Select();
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
-		q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+		q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num);
 		render_entities(matrix, portal->portal_projection, false, false, false);
 		render_players(matrix, portal->portal_projection, false, true);
 		gfx.bindFramebuffer(0);
@@ -1347,7 +1366,7 @@ void Engine::render_shadowmaps(bool everything)
 
 			light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
 
-			q3map.render(entity_list[i]->position, mvp, gfx, surface_list, mlight2, tick_num);
+			q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num);
 			render_entities(cube[j], light->shadow_projection, false, false, false);
 			render_players(cube[j], light->shadow_projection, false, true);
 			gfx.bindFramebuffer(0);
@@ -1541,7 +1560,7 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
 
 	if (lights == false)
 	{
@@ -1703,7 +1722,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 
-	q3map.render(camera_frame.pos, mvp, gfx, surface_list, mlight2, tick_num);
+	q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
 
 #ifdef PARTICLES
 	gfx.Blend(true);
@@ -2063,6 +2082,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 
 void Engine::render_shadow_volumes()
 {
+#ifdef SHADOWVOL
 	matrix4 transformation;
 	matrix4 matrix;
 	Player *player = NULL;
@@ -2111,9 +2131,8 @@ void Engine::render_shadow_volumes()
 				}
 			}
 		}
-
-
 	}
+#endif
 }
 
 void Engine::screenshot(unsigned int &luminance, bool luminance_only)
@@ -2680,6 +2699,7 @@ bool Engine::map_collision(RigidBody &body)
 	{
 		vec3 point;
 		vec3 oldpoint;
+		content_flag_t flag;
 
 		if (i < 8)
 		{
@@ -2699,7 +2719,6 @@ bool Engine::map_collision(RigidBody &body)
 //		vec3 point = body.center + body.entity->position;
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
-		content_flag_t flag;
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water_depth,
 			surface_list, body.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag))

@@ -35,8 +35,10 @@ public:
 
 
 	// Shadow Volumes
+#ifdef SHADOWVOL
 	ShadowVolume	shadow[MAX_SHADOWVOL];
 	int				num_shadowvol;
+#endif
 
 	vec3			color;
 	float			intensity;

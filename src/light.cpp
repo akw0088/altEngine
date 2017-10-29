@@ -18,8 +18,9 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 
 	memset(quad_tex, 0, sizeof(unsigned int) * NUM_CUBE_FACE);
 	memset(depth_tex, 0, sizeof(unsigned int) * NUM_CUBE_FACE);
-
+#ifdef SHADOWVOL
 	num_shadowvol = 0;
+#endif
 }
 
 void Light::generate_cubemaps(Graphics &gfx)
@@ -46,16 +47,19 @@ void Light::destroy(Graphics &gfx)
 		gfx.DeleteFrameBuffer(fbo_shadowmaps[i], quad_tex[i], depth_tex[i]);
 	}
 
-
+#ifdef SHADOWVOL
 	for (int i = 0; i < MAX_SHADOWVOL; i++)
 	{
 		shadow[i].destroy(gfx);
 	}
+#endif
 }
 
 void Light::render_shadow_volume(Graphics &gfx, int index)
 {
+#ifdef SHADOWVOL
 	shadow[index].render(gfx);
+#endif
 }
 
 void Light::generate_map_volumes(Bsp &map)
@@ -66,6 +70,7 @@ void Light::generate_map_volumes(Bsp &map)
 
 void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 {
+#ifdef SHADOWVOL
 	int j = 0;
 	num_shadowvol = 0;
 	for (unsigned int i = 100; i < entity_list.size(); i++)
@@ -109,6 +114,7 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 		if (num_shadowvol >= MAX_SHADOWVOL)
 			break;
 	}
+#endif
 }
 
 
