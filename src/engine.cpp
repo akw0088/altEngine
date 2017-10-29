@@ -5802,6 +5802,16 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	vec3 color;
+	if (sscanf(cmd, "r_clearcolor %f %f %f", &color.x, &color.y, &color.z) == 3)
+	{
+
+		gfx.clear_color(color);
+		snprintf(msg, LINE_SIZE, "Setting clear color to %f %f %f", color.x, color.y, color.z);
+		menu.print(msg);
+		return;
+	}
+
 	if (sscanf(cmd, "r_brightness %s", data) == 1)
 	{
 		float value = (float)atof(data);

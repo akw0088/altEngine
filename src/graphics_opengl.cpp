@@ -117,6 +117,11 @@ void Graphics::cleardepth()
 #endif
 }
 
+void Graphics::clear_color(vec3 &color)
+{
+	glClearColor(color.x, color.y, color.z, 1.0f);
+}
+
 void Graphics::clearstencil()
 {
 	glClear(GL_STENCIL_BUFFER_BIT);

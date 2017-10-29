@@ -42,6 +42,7 @@ public:
 	void init(void *param1, void *param2);
 	bool error_check();
 	void clear();
+	void clear_color(vec3 &color);
 	void clear_multi();
 	void cleardepth();
 	void clearstencil();
