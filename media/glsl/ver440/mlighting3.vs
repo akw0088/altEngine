@@ -38,7 +38,10 @@ uniform float	u_tcmod_cos[4];
 uniform int u_water[4];
 uniform int u_time;
 uniform float u_shadowmap;
-
+uniform vec4 u_clip0;
+uniform vec4 u_clip1;
+uniform vec4 u_clip2;
+uniform vec4 u_clip3;
 
 
 void main(void)
@@ -48,6 +51,13 @@ void main(void)
 	gl_Position = mvp * vec4(attr_position, 1.0);
 	Vertex.att_position = attr_position;
 	Vertex.vary_position = gl_Position;
+
+
+	gl_ClipDistance[0] = dot(gl_Position, u_clip0);
+	gl_ClipDistance[1] = dot(gl_Position, u_clip1);
+	gl_ClipDistance[2] = dot(gl_Position, u_clip2);
+	gl_ClipDistance[3] = dot(gl_Position, u_clip3);
+
 
 	for(int i = 0; i < 4; i++)
 	{

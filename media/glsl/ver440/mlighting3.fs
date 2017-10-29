@@ -170,7 +170,6 @@ vec4 lightDir;
 
 void main(void)
 {
-	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
 	vec2 tc, tc0, tc1, tc2, tc3;
 	vec3 unormal  = normalize(vec3(mvp * vec4(Vertex.vary_normal, 1.0)));
 	tc.x = 0.0;
@@ -309,11 +308,16 @@ void main(void)
 			if (Fragment_stage[i].a < 0.5)
 				discard;
 		}
-
-
 		Fragment_stage[i] *= min(u_rgbgen_scale[i], 3.0);
+	}
+
+	// Dont write to fragment until after discard's
+	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
+	for(int i = 0; i < 4; i++)
+	{
 		Fragment.xyz += Fragment_stage[i].xyz;
 	}
+
 
 //	alpha 1 = opaque, 0 equals transparent
 	Fragment.a = Fragment_stage[0].a * Fragment_stage[1].a  * Fragment_stage[2].a  * Fragment_stage[3].a;

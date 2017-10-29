@@ -1479,7 +1479,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 		if (face->fog_num != -1 && enable_fog)
 		{
-
+//			glEnable(GL_CLIP_DISTANCE0);
 			if (face_list[i].fog_density == 0)
 			{
 				for (int j = 0; j < surface_list.size(); j++)
