@@ -138,6 +138,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static double start = 0.0, end = 0.0, last_frametime = 0.0;
 	static double min_frametime = 0.0;
 	static double max_frametime = 0.0;
+	static HCURSOR hCursor;
 	
 #ifdef VULKAN
 	static bool resized = false;
@@ -152,6 +153,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
 		RedirectIOToConsole();
+
+		hCursor = LoadCursorFromFile("media/mouse.cur");
+		if (hCursor)
+			SetCursor(hCursor);
 
 		SetProcessDPIAware();
 		SetTimer(hwnd, TICK_TIMER, TICK_MS, NULL);
@@ -318,11 +323,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return 0;
 		}
 
+	case WM_SETCURSOR:
+		if (LOWORD(lParam) == HTCLIENT)
+		{
+			SetCursor(hCursor);
+			return TRUE;
+		}
+		break;
+
 
 	case WM_SYSKEYUP:
 	case WM_SYSKEYDOWN:
+	{
+		bool pressed = (message == WM_SYSKEYDOWN) ? true : false;
+
 		switch (wParam)
 		{
+		case VK_F10:
+			altEngine.keypress("F10", pressed);
+			return 0;
 		case VK_RETURN:
 			if ((HIWORD(lParam) & KF_ALTDOWN))
 			{
@@ -331,6 +350,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return DefWindowProc(hwnd, message, wParam, lParam);
+	}
 //	case WM_SYSCHAR:
 //		return TRUE;
 
