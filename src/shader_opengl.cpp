@@ -228,6 +228,13 @@ int mLight2::init(Graphics *gfx)
 	u_fog_start = glGetUniformLocation(program_handle, "u_fog_start");
 	u_fog_end = glGetUniformLocation(program_handle, "u_fog_end");
 	u_fog_color = glGetUniformLocation(program_handle, "u_fog_color");
+
+
+	u_clip0 = glGetUniformLocation(program_handle, "u_clip0");
+	u_clip1 = glGetUniformLocation(program_handle, "u_clip1");
+	u_clip2 = glGetUniformLocation(program_handle, "u_clip2");
+	u_clip3 = glGetUniformLocation(program_handle, "u_clip3");
+
 	return 0;
 }
 
@@ -239,6 +246,22 @@ void mLight2::set_max(int max)
 {
 	max_light = max;
 }
+
+
+void mLight2::set_clip(vec4 *plane)
+{
+	glUniform4f(u_clip0, plane[0].x, plane[0].y, plane[0].z, plane[0].w);
+	glUniform4f(u_clip1, plane[1].x, plane[1].y, plane[1].z, plane[1].w);
+	glUniform4f(u_clip2, plane[2].x, plane[2].y, plane[2].z, plane[2].w);
+	glUniform4f(u_clip3, plane[3].x, plane[3].y, plane[3].z, plane[3].w);
+
+	glEnable(GL_CLIP_DISTANCE0);
+	glEnable(GL_CLIP_DISTANCE1);
+	glEnable(GL_CLIP_DISTANCE2);
+	glEnable(GL_CLIP_DISTANCE3);
+
+}
+
 
 void mLight2::set_fog(float fog, float start, float end, vec3 &color)
 {

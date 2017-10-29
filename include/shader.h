@@ -75,7 +75,7 @@ public:
 	void rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index);
 
 	void set_fog(float fog, float start, float end, vec3 &color);
-
+	void set_clip(vec4 *plane);
 
 
 	void tcmod_scroll(vec2 &scroll, int index);
@@ -139,6 +139,13 @@ private:
 	int u_fog_start;
 	int u_fog_end;
 	int u_fog_color;
+
+
+	int u_clip0;
+	int u_clip1;
+	int u_clip2;
+	int u_clip3;
+
 
 
 	float m_fog;
