@@ -1494,17 +1494,19 @@ void Engine::render_to_framebuffer(double last_frametime)
 	int player = find_type(ENT_PLAYER, 0);
 
 
+	if (menu.data.skyray)
+	{
+		render_skyray(debug_bloom);
+		gfx.cleardepth();
+	}
+
 	if (enable_bloom)
 	{
 		render_bloom(debug_bloom);
 		gfx.cleardepth();
 	}
-	else if (menu.data.skyray)
-	{
-		render_skyray(debug_bloom);
-		gfx.cleardepth();
-	}
-	else if (entity_list[player]->rigid->water_depth < -50.0f)
+
+	if (entity_list[player]->rigid->water)
 	{
 		render_wave(debug_bloom);
 		gfx.cleardepth();
@@ -2357,36 +2359,20 @@ void Engine::render_wave(bool debug)
 	gfx.resize(fb_width, fb_height);
 	gfx.fbAttachTexture(mask_quad);
 	gfx.fbAttachDepth(mask_depth);
-	gfx.clear();
+
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, render_depth);
 	post.Select();
-	post.Params(POST_MASK, tick_num);
+	post.Params(POST_WAVE, tick_num);
 	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
-	//	post.Params(POST_DOF, tick_num);
-	//	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
+
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4); // bright pass filter
 	gfx.bindFramebuffer(0);
-
-	gfx.bindFramebuffer(blur1_fbo);
-	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(blur1_quad);
-	gfx.fbAttachDepth(blur1_depth);
-	gfx.clear();
-	gfx.SelectTexture(0, mask_quad);
-	post.Select();
-	post.Params(POST_WAVE, tick_num);
-	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
-	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
-	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
-	gfx.bindFramebuffer(0);
-
 	gfx.bindFramebuffer(render_fbo, 2);
+
 	gfx.resize(fb_width, fb_height);
 	//	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -2399,9 +2385,9 @@ void Engine::render_wave(bool debug)
 	}
 	else
 	{
-		gfx.SelectTexture(0, render_quad);
-		gfx.SelectTexture(1, blur1_quad);
-		gfx.SelectTexture(2, blur1_quad);
+		gfx.SelectTexture(0, mask_quad);
+		gfx.SelectTexture(1, mask_quad);
+		gfx.SelectTexture(2, mask_quad);
 	}
 	post.Select();
 	post.Params(POST_COMBINE, tick_num);
