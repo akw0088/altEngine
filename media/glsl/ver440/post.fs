@@ -164,13 +164,27 @@ void main(void)
 		vec4 original = texture2D(texture0, vary_TexCoord);
 		float avg = (original.r + original.g + original.b) / 3.0;
 		float threshold = u_scale;
-		if (avg > threshold)
+		if (threshold > 0)
 		{
-			Fragment = original;
+			if (avg > threshold)
+			{
+				Fragment = original;
+			}
+			else
+			{
+				Fragment = vec4(0,0,0,0);
+			}
 		}
 		else
 		{
-			Fragment = vec4(0,0,0,0);
+			if (avg > -threshold)
+			{
+				Fragment = vec4(0,0,0,0);
+			}
+			else
+			{
+				Fragment = original;
+			}
 		}
 	}
 	else if (u_type == 6)
@@ -180,7 +194,7 @@ void main(void)
 		float density = 0.5f;
 		float weight = 0.5f;
 
-		vec2 deltaTextCoord = vec2( vary_TexCoord.st - vec2(512,512) );
+		vec2 deltaTextCoord = vec2( vary_TexCoord.st - vec2(1024,1024) );
 		vec2 textCoo = vary_TexCoord.st;
 		deltaTextCoord *= 1.0 /  float(100) * density;
 		float illuminationDecay = 1.0;
@@ -205,15 +219,16 @@ void main(void)
 	else if (u_type == 7)
 	{
 		vec3 resolution; // screen resolution
+		vec3 offset = vec3(0.25f, 0.25f, 0.0f);
 		resolution = vec3(1024, 1024, 1024);
 
 		vec3 p = gl_FragCoord.xyz / resolution - 0.5;
 		vec3 o = texture2D(texture0, 0.5 + (p.xy *= 0.992)).rbb;
-		for (float i = 0.0; i < 100.0; i++) 
+		for (float i = 0.0; i < 25.0; i++) 
 		{
 			p.z += pow(max(0.0f, 0.5f - length(texture2D(texture0, 0.5 + (p.xy *= 0.992)).rg)), 2.0) * exp(-i * 0.08);
 		}
-		Fragment = vec4(o * o + p.z, 1) - vec4(1.5f, 1.5f, 1.5f, 0.0f);
+		Fragment = vec4(1.0f, 1.0f, 1.0f, 0.0f) - clamp(vec4(o * o + p.z, 1) - vec4(1.0f, 1.0f, 1.0f, 0.0f), 0, 1);
 	}
 	else if (u_type == 8)
 	{
@@ -253,6 +268,31 @@ void main(void)
  
 
 		Fragment = original * (1.0f - min(smoothstep(min_dof, min_dof + 0.1, depth), smoothstep(max_dof, max_dof - 0.1, depth)) );
+	}
+	else if (u_type == 12)
+	{
+		float sampleDist = 0.5;
+		float sampleStrength = 2.2; 
+		float samples[10] = float[](-0.08,-0.05,-0.03,-0.02,-0.01,0.01,0.02,0.03,0.05,0.08);
+		vec2 dir = 0.5 - vary_TexCoord; 
+		
+		float dist = sqrt(dir.x*dir.x + dir.y*dir.y); 
+		dir = dir/dist; 
+		vec4 color = texture2D(texture0, vary_TexCoord); 
+		
+		vec4 sum = color;
+		
+		for (int i = 0; i < 10; i++)
+		{
+			sum += texture2D( texture0, vary_TexCoord + dir * samples[i] * sampleDist );
+		}
+		sum *= 1.0/11.0;
+		
+		float t = dist * sampleStrength;
+		t = clamp( t ,0.0,1.0); //0 &lt;= t &lt;= 1
+		
+		//Blend the original color with the averaged pixels
+		Fragment = mix( color, sum, t );
 	}
 
 

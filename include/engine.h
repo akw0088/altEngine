@@ -28,6 +28,8 @@ public:
 	void render_texture(int texObj, bool depth_view);
 	void post_process(int num_passes, int type);
 	void render_bloom(bool debug);
+	void render_skyray(bool debug);
+	void render_wave(bool debug);
 	void resize(int width, int height);
 	void fullscreen();
 
