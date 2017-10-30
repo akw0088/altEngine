@@ -28,6 +28,36 @@ float GaussianFunction(float x, float dev)
 	return ( (1.0 / sqrt(2.0 * 3.142857 * dev) ) * exp( -(x * x) / (2.0 * dev) ) );
 } 
 
+
+
+
+vec3 GaussianBlur( sampler2D tex0, vec2 centerUV, vec2 halfPixelOffset, vec2 pixelOffset )
+{
+    vec3 colOut = vec3( 0, 0, 0 );
+
+    const int stepCount = 2;
+
+    const float gWeights[2] = {
+       0.44908,
+       0.05092
+    };
+
+    const float gOffsets[2] = {
+       0.53805,
+       2.06278
+    };
+
+    for( int i = 0; i < stepCount; i++ )
+    {                                                                                                            
+        vec2 texCoordOffset = gOffsets[i] * pixelOffset;                                           
+
+	vec3 col = texture2D( tex0, centerUV + texCoordOffset ).xyz + texture2D( tex0, centerUV - texCoordOffset ).xyz;
+        colOut += gWeights[i] * col;
+    }
+
+    return colOut;
+}
+
 vec4 sampleAs3DTexture(sampler2D texture, vec3 uv, float width)
 {
     float sliceSize = 1.0 / width;              // space of 1 slice
@@ -83,7 +113,7 @@ void main(void)
 			texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
 		}
 
-		// laplacian edge detect
+		// laplacian edge detect -- OpenGL Super bible stonehenge
 		Fragment =  (texsample[4] * 8.0) - 
 			(texsample[0] + texsample[1] + texsample[2] + 
 			texsample[3] + texsample[5] + 
@@ -113,13 +143,14 @@ void main(void)
 			texsample[i] = texture2D(texture0, vary_TexCoord + tc_offset[i]);
 		}
 
-		// embosss
+		// embosss -- OpenGL Super bible stonehenge
 		Fragment = (-2.0 * texsample[0] + -1.0 * texsample[1] +
 			-1.0 * texsample[3] + 1.0 * texsample[4] + 1.0 * texsample[5] + 
 						1.0 * texsample[7] + 2.0 * texsample[8]) / 16.0;
 	}
 	else if (u_type == 3)
 	{
+		// http://opengles2learning.blogspot.mx/2014/10/bloom-effect-with-gaussian-blur.html
 		vec4	color = vec4(0.0,0.0,0.0,0.0);
 		vec4	temp =  vec4(0.0,0.0,0.0,0.0);
 		float	strength = 1.0 - (2 * u_strength);
@@ -157,10 +188,12 @@ void main(void)
 	}
 	else if (u_type == 4)
 	{
-		Fragment = texture2D(texture0, vary_TexCoord) * 1.0 +  texture2D(texture1, vary_TexCoord) * 0.5 + texture2D(texture2, vary_TexCoord) * 0.5;
+		//  Add textures together (used to add bloom / skyrays to original texture)
+		Fragment = texture2D(texture0, vary_TexCoord) +  texture2D(texture1, vary_TexCoord) * 0.5 + texture2D(texture2, vary_TexCoord) * 0.5;
 	}
 	else if (u_type == 5)
 	{
+		// Brightpass filter (simple threshold)
 		vec4 original = texture2D(texture0, vary_TexCoord);
 		float avg = (original.r + original.g + original.b) / 3.0;
 		float threshold = u_scale;
@@ -189,6 +222,7 @@ void main(void)
 	}
 	else if (u_type == 6)
 	{
+		// https://medium.com/community-play-3d/god-rays-whats-that-5a67f26aeac2
 		float exposure = 5.0;
 		float decay = 1.0f;
 		float density = 0.5f;
@@ -218,6 +252,8 @@ void main(void)
 	}
 	else if (u_type == 7)
 	{
+		//  Volumetric Light / Radial Blur Post Processing Filter (for webcam / video)
+
 		vec3 resolution; // screen resolution
 		vec3 offset = vec3(0.25f, 0.25f, 0.0f);
 		resolution = vec3(1024, 1024, 1024);
@@ -239,6 +275,7 @@ void main(void)
 	}
 	else if (u_type == 9)
 	{
+		// some "first glsl postprocess shader" example lighthouse3d I think
 		vec2 texcoord = vary_TexCoord;
 		texcoord.x += sin(texcoord.y * 3.14159 + u_time / 50.0f) / 100.0f;
 		Fragment = texture2D(texture0, texcoord);
@@ -246,6 +283,7 @@ void main(void)
 	}
 	else if (u_type == 10)
 	{
+		// hsv conversion and back
 		vec4 temp = texture2D(texture0, vary_TexCoord);
 		vec3 color = rgb2hsb( temp.rgb );
 		color.r = u_scale;
@@ -257,6 +295,8 @@ void main(void)
 	}
 	else if (u_type == 11)
 	{
+		// depth of field "bright pass" used with same bloom gaussian blur
+
 		vec4 original = texture2D(texture0, vary_TexCoord);
 		float min_dof = u_strength;
 		float max_dof = u_amount;
@@ -271,6 +311,7 @@ void main(void)
 	}
 	else if (u_type == 12)
 	{
+		// http://www.gamerendering.com/2008/12/20/radial-blur-filter/ -- use wayback machine -- didnt look too great tbh, needs tweaking likely
 		float sampleDist = 0.5;
 		float sampleStrength = 2.2; 
 		float samples[10] = float[](-0.08,-0.05,-0.03,-0.02,-0.01,0.01,0.02,0.03,0.05,0.08);
@@ -289,10 +330,25 @@ void main(void)
 		sum *= 1.0/11.0;
 		
 		float t = dist * sampleStrength;
-		t = clamp( t ,0.0,1.0); //0 &lt;= t &lt;= 1
+		t = clamp( t ,0.0,1.0);
 		
 		//Blend the original color with the averaged pixels
 		Fragment = mix( color, sum, t );
+
+	}
+	else if (u_type == 13)
+	{
+		// Intel: An investigation of fast real-time GPU-based image blur algorithms
+		if (u_dir > 0)
+		{
+			// Blur X
+			Fragment.rgb = GaussianBlur( texture0, vary_TexCoord, vec2(0.5f/1024.0f, 0), vec2(5.0f/1024.0f, 0));
+		}
+		else
+		{
+			// Blur Y
+			Fragment.rgb = GaussianBlur( texture0, vary_TexCoord, vec2(0, 0.5f/1024.0f), vec2(0, 5.0f/1024.0f));
+		}
 	}
 
 

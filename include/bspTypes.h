@@ -215,7 +215,7 @@ typedef struct
 	byte	ambient[3];	// This is the ambient color in RGB
 	byte	directional[3];	// This is the directional color in RGB
 	byte	direction[2];	// The direction of the light: [phi,theta] 
-} light_t;
+} lightgrid_t;
 
 typedef struct
 {

@@ -23,10 +23,10 @@ class Bsp
 	//void draw_line_box(int *min, int *max);
 	//void draw_box(int *min, int *max);
 public:
-	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
-	void find_edges(vec3 &position, Edge &edge_list);
-	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	Bsp();
+
+	void CreateShadowVolumes(vec3 &position, Graphics &gfx, vec3 &light_pos);
+	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	bool is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float *depth, plane_t *plane, content_flag_t &flag, float &water_depth, bool debug);
 	bool vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b);
 	bool leaf_test(vec3 &x, vec3 &y);
@@ -34,6 +34,7 @@ public:
 	const char *get_entities();
 	void render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render_model(unsigned int index, Graphics &gfx);
+	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
 	vec3 model_origin(unsigned int index);
 
 	bool load(char *map, char **pk3list, int num_pk3);
@@ -97,7 +98,7 @@ private:
 //	int last_leaf;
 
 	// keeping this around because it seems like data.vertex is getting corrupted.
-	vertex_t *vertex;
+	vertex_t *map_vertex;
 
 	//for bezier patches
 	patch_t *patchdata;
@@ -108,6 +109,9 @@ private:
 	unsigned int	map_index_vbo;
 	unsigned int	map_vertex_vbo;
 
+#ifdef SHADOWVOL
+	ShadowVolume *shadow;
+#endif
 	int	*normal_object;
 	int	*lightmap_object;
 	int	sky_face;

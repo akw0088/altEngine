@@ -28,13 +28,13 @@ Bsp::Bsp()
 	map_index_vbo = 0;
 	lightmap_object = NULL;
 	face_to_patch = NULL;
-	vertex = NULL;
+	map_vertex = NULL;
 	tBsp = NULL;
 	tex_object = NULL;
 	tangent = NULL;
 	patchdata = NULL;
 	selected_map = false;
-	enable_fog = true;
+	enable_fog = false;
 }
 
 
@@ -105,6 +105,10 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 		face_to_patch[i] = -1;
 	}
 
+#ifdef SHADOWVOL
+	shadow = new ShadowVolume[data.num_leafs];
+#endif
+
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
 //	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
@@ -144,6 +148,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	loaded = true;
 	memcpy(map_name, map, strlen(map) + 1);
+
 	return true;
 }
 
@@ -244,10 +249,10 @@ void Bsp::generate_meshes(Graphics &gfx)
 		}
 	}
 
-	vertex = new vertex_t [data.num_verts];
-	CreateTangentArray(vertex, data.Vert, data.num_verts, tangent);
+	map_vertex = new vertex_t [data.num_verts];
+	CreateTangentArray(map_vertex, data.Vert, data.num_verts, tangent);
 
-	map_vertex_vbo = gfx.CreateVertexBuffer(vertex, data.num_verts);
+	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_verts);
 	map_index_vbo = gfx.CreateIndexBuffer(data.IndexArray, data.num_index);
 }
 
@@ -377,10 +382,10 @@ void Bsp::unload(Graphics &gfx)
 
 	delete[] face_to_patch;
 
-	if (vertex != NULL)
+	if (map_vertex != NULL)
 	{
-		delete [] vertex;
-		vertex = NULL;
+		delete [] map_vertex;
+		map_vertex = NULL;
 	}
 
 
@@ -1499,12 +1504,12 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 			//			gfx.Depth(false);
 		}
 
-		if (face->type == 1 || face->type == 3)
+		if (face->type == FACE_POLYGON || face->type == FACE_MODEL)
 		{
 			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 			mlight2.portal(0);
 		}
-		else if (face->type == 2 && enable_patch)
+		else if (face->type == FACE_PATCH && enable_patch)
 		{
 			render_patch(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
 		}
@@ -2351,16 +2356,9 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 }
 */
 
-/*
-Loop through all the model's triangles
-If triangle faces the light source (dot product > 0)
-Insert the three edges (pair of vertices), into an edge stack
-Check for previous occurrence of each edges or it's reverse in the stack
-If an edge or its reverse is found in the stack, remove both edges
-Start with new triangle
-*/
-void Bsp::find_edges(vec3 &position, Edge &edge_list)
+void Bsp::CreateShadowVolumes(vec3 &position, Graphics &gfx, vec3 &light_pos)
 {
+#ifdef SHADOWVOL
 	int leaf_index = find_leaf(position);
 
 	leaf_t *light_Leaf = &data.Leaf[leaf_index];
@@ -2375,88 +2373,13 @@ void Bsp::find_edges(vec3 &position, Edge &edge_list)
 
 		for (int j = 0; j < leaf->num_faces; j++)
 		{
-			vector<vec3> vertex_list;
 			int face_index = data.LeafFace[leaf->leaf_face + j];
 			face_t *face = &data.Face[face_index];
 
-			for (int k = 0; k < face->num_index; k++)
-			{
-				int index = data.IndexArray[face->index + k];
-				vec3 x = data.Vert[face->vertex + index].position;
-				vertex_list.push_back(x);
-			}
-
-			for(unsigned int k = 0; k < vertex_list.size(); k += 3)
-			{
-				vec3 x = vertex_list[k];
-				vec3 y = vertex_list[k + 1];
-				vec3 z = vertex_list[k + 2];
-
-				
-				vec3 a = y - x;
-				vec3 b = z - x;
-				vec3 normal = vec3::crossproduct(a, b);
-
-				vec3 lightdir1 = x - position;
-				vec3 lightdir2 = y - position;
-				vec3 lightdir3 = z - position;
-				vec3 lightdir;
-
-				if (lightdir1.magnitude() < lightdir2.magnitude() && lightdir1.magnitude() < lightdir3.magnitude())
-					lightdir = lightdir1;
-				else if (lightdir2.magnitude() < lightdir1.magnitude() && lightdir2.magnitude() < lightdir3.magnitude())
-					lightdir = lightdir2;
-				else
-					lightdir = lightdir3;
-
-				normal.normalize();
-//				if (lightdir.magnitude() > 400.0f)
-//					continue;
-
-
-				if (lightdir * normal > 0)
-				{
-					vec3 triple[3][2];
-
-					if (x.x < y.x)
-					{
-						triple[0][0] = x;
-						triple[0][1] = y;
-					}
-					else
-					{
-						triple[0][1] = x;
-						triple[0][0] = y;
-					}
-
-					if (x.x < z.x)
-					{
-						triple[1][0] = x;
-						triple[1][1] = z;
-					}
-					else
-					{
-						triple[1][1] = x;
-						triple[1][0] = z;
-					}
-
-					if (y.x < z.x)
-					{
-						triple[2][0] = y;
-						triple[2][1] = z;
-					}
-					else
-					{
-						triple[2][1] = y;
-						triple[2][0] = z;
-					}
-					edge_list.insert(&triple[0][0]);
-					edge_list.insert(&triple[1][0]);
-					edge_list.insert(&triple[2][0]);
-				}
-			}
+			shadow[i].CreateVolume(gfx, map_vertex, data.IndexArray, face->index, face->num_index / 3, light_pos);
 		}
 	}
+#endif
 }
 
 void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
@@ -2489,6 +2412,9 @@ void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 // Outputs, either end position, or as far as you can go 
 // If a collision occurs, we set collision flag and collision normal
 // we also set an on_ground flag to indicate we are on the ground plane
+//
+// http://devmaster.net/articles/quake3collision/ (use wayback machine)
+//
 //======================================================================================
 vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal)
 {

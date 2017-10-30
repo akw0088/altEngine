@@ -7,7 +7,6 @@
 #define SHADOWVOL_MAX_DIST (400.0f)
 
 #define NUM_CUBE_FACE 6
-#define SHADOWMAP_DEFAULT_RES FBO_RESOLUTION
 
 class Light
 {

@@ -1358,7 +1358,7 @@ void Engine::render_shadowmaps(bool everything)
 			// No real FPS improvement by masking color buffer
 //			gfx.fbAttachTexture(0);
 			gfx.bindFramebuffer(light->fbo_shadowmaps[j]);
-			gfx.resize(fb_width, fb_height);
+			gfx.resize(SHADOWMAP_DEFAULT_RES, SHADOWMAP_DEFAULT_RES);
 			gfx.clear();
 
 			vec3 offset(0.0f, 0.0f, 0.0f);
@@ -1506,7 +1506,7 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.cleardepth();
 	}
 
-	if (entity_list[player]->rigid->water)
+	if (player != -1 && entity_list[player]->rigid->water)
 	{
 		render_wave(debug_bloom);
 		gfx.cleardepth();
@@ -2817,6 +2817,7 @@ bool Engine::map_collision(RigidBody &body)
 		vec3 oldpoint;
 		content_flag_t flag;
 
+		memset(&flag, 0, sizeof(content_flag_t));
 		if (i < 8)
 		{
 			point = body.aabb[i] - body.center + body.entity->position;

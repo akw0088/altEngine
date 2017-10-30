@@ -103,6 +103,7 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 		// Probably need a test to see if either light or model moved, as static volumes dont need to be regenerated
 		shadow[num_shadowvol].CreateVolume(gfx, entity_list[i]->model->model_vertex_array,
 												entity_list[i]->model->model_index_array,
+												0,
 												entity_list[i]->model->num_index / 3,
 												position);
 

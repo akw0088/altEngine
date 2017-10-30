@@ -4,6 +4,8 @@
 #define _HAS_EXCEPTIONS 0
 #define D3D_DEBUG_INFO
 
+#define SHADOWVOL
+
 
 #define LINE_SIZE 512
 
@@ -485,11 +487,11 @@ int debugf(const char *format, ...);
 #define MY_HALF_PI 1.5707963268f
 #define MAXLINE 4096
 #define FBO_RESOLUTION 1024
+#define SHADOWMAP_DEFAULT_RES 3 * FBO_RESOLUTION
 
 
 //quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)
 #define UNITS_TO_METERS (8.0f * 8.0f * 3.3f)
-
 
 
 

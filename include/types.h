@@ -47,16 +47,6 @@ typedef struct
 	int				buffer;
 } wave_t;
 
-typedef struct {
-	vec3 a;
-	vec3 b;
-	vec3 c;
-	vec3 lightdir1;
-	vec3 lightdir2;
-	vec3 lightdir3;
-} shadowvol_t;
-
-
 /*
 	Temporarily saves original entity position
 	that may be restored if integration yields
@@ -123,6 +113,7 @@ typedef enum {
 
 /*
 	Holds data sent across network to represent entities
+	TODO: add type int and create entity specific structs
 */
 typedef struct
 {

@@ -166,6 +166,7 @@ public:
 	bool enable_postprocess;
 	bool enable_blur;
 	bool enable_emboss;
+	bool enable_wave;
 	bool enable_bloom;
 	bool debug_bloom;
 	bool enable_ssao;
