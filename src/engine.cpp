@@ -3804,6 +3804,7 @@ void Engine::server_send()
 
 //	memset(&data[0], 0, sizeof(data));
 	serialize_ents(&data[0], servermsg.num_ents, servermsg.data_size);
+	netinfo.uncompressed_size = servermsg.data_size + SERVER_HEADER;
 	servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.data_size,
 		servermsg.data, sizeof(servermsg.data), huffbuf);
 
@@ -3882,7 +3883,7 @@ void Engine::server_send()
 
 void Engine::client_recv()
 {
-	static unsigned char data[256000];
+	static unsigned char data[16384];
 	static servermsg_t	servermsg;
 	reliablemsg_t *rmsg = NULL;
 	unsigned int socksize = sizeof(sockaddr_in);
@@ -3936,6 +3937,7 @@ void Engine::client_recv()
 				printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.data_size));
 				return;
 			}
+			netinfo.uncompressed_size = dsize + SERVER_HEADER;
 		}
 
 		netinfo.num_ents = servermsg.num_ents;

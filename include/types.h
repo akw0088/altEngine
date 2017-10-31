@@ -176,6 +176,7 @@ typedef struct
 	int dropped;
 	int num_ents;
 	int size;
+	int uncompressed_size;
 	bool send_full;
 	bool send_partial;
 	bool recv_empty;
