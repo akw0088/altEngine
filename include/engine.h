@@ -318,7 +318,10 @@ protected:
 	bool recording_demo;
 	bool playing_demo;
 	FILE *demofile;
-	
+
+
+	net_entity_t delta_list[512];
+
 	
 	int		server_spawn;	// entity index of hosting player
 

@@ -3305,7 +3305,8 @@ void Engine::server_recv()
 			return;
 		}
 
-		client_list[index]->server_sequence = clientmsg.server_sequence;
+		client_list[index]->server_sequence = clientmsg.server_sequence; //  Client is ACK'ing our sequence
+
 		if (clientmsg.server_sequence > reliable[index].sequence)
 		{
 			memset(reliable[index].msg, 0, LINE_SIZE);
@@ -3610,9 +3611,15 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 
 			ent.ctype = NET_TRIGGER;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_trigger_t);
-			memcpy(&data[data_size], &ent, size);
-			data_size += size;
-			num_ents++;
+
+
+			if (memcmp(&delta_list[i], &ent, size) != 0)
+			{
+				memcpy(&delta_list[i], &ent, size);
+				memcpy(&data[data_size], &ent, size);
+				data_size += size;
+				num_ents++;
+			}
 //			printf("serialized trigger index %d\n", i);
 			continue;
 		}
@@ -3638,9 +3645,14 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 
 			ent.ctype = NET_PLAYER;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_player_t);
-			memcpy(&data[data_size], &ent, size);
-			data_size += size;
-			num_ents++;
+
+			if (memcmp(&delta_list[i], &ent, size) != 0)
+			{
+				memcpy(&delta_list[i], &ent, size);
+				memcpy(&data[data_size], &ent, size);
+				data_size += size;
+				num_ents++;
+			}
 //			printf("Sent player data index %d pos %3.3f %3.3f %3.3f\n", i, net_player->position.x, net_player->position.y, net_player->position.z);
 			continue;
 		}
@@ -3655,9 +3667,14 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 
 			ent.ctype = NET_RIGID;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_rigid_t);
-			memcpy(&data[data_size], &ent, size);
-			data_size += size;
-			num_ents++;
+
+			if (memcmp(&delta_list[i], &ent, size) != 0)
+			{
+				memcpy(&delta_list[i], &ent, size);
+				memcpy(&data[data_size], &ent, size);
+				data_size += size;
+				num_ents++;
+			}
 //			printf("serialized rigid index %d\n", i);
 			continue;
 		}

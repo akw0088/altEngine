@@ -112,7 +112,7 @@ typedef struct
 	unsigned short int	server_sequence;
 	float			up[3];
 	float			forward[3];
-	float			pos[3];		// Sending position (not used, but interesting to calculate delta's)
+	float			pos[3];		// Sending position (not used, but interesting to calculate delta's on server)
 	byte			num_cmds;
 	unsigned char		data[16834];
 } clientmsg_t;
@@ -132,9 +132,9 @@ typedef struct
 	unsigned short int	compressed_size;
 	unsigned short int	sequence;
 	unsigned short int	client_sequence;
-	unsigned short int	num_ents;
+	unsigned short int	num_ents;	// not really neeeded with size, but worth the two bytes info wise
 	unsigned int		data_size;
-	unsigned char		data[256000];
+	unsigned char		data[16384];
 } servermsg_t;
 #pragma pack(8)
 
@@ -143,8 +143,7 @@ typedef struct
 	unsigned short int	sequence;
 	unsigned short int	size; // size of entire header + data
 	char			msg[LINE_SIZE];
-}
-reliablemsg_t;
+} reliablemsg_t;
 
 typedef struct
 {
@@ -805,10 +804,8 @@ typedef struct
 	vec3			angular_velocity;
 	vec3			position;
 
-	char			name[64];
 	short int		health;
 	unsigned short int		armor;
-	uint8_t			weapon_flags;
 	unsigned short int		current_weapon;
 	unsigned short int		ammo_bullets;
 	unsigned short int		ammo_shells;
@@ -816,13 +813,15 @@ typedef struct
 	unsigned short int		ammo_lightning;
 	unsigned short int		ammo_slugs;
 	unsigned short int		ammo_plasma;
-	uint8_t 		holdable_teleporter;
-	uint8_t			holdable_medikit;
-	uint8_t			holdable_flag;
 	unsigned short flight_timer;
 	unsigned short regen_timer;
 	unsigned short haste_timer;
 	unsigned short quad_timer;
+	uint8_t			weapon_flags;
+	uint8_t 		holdable_teleporter;
+	uint8_t			holdable_medikit;
+	uint8_t			holdable_flag;
+	char			name[64];
 } net_player_t;
 
 
