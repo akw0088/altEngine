@@ -775,13 +775,13 @@ typedef enum
 
 typedef struct
 {
-	unsigned int ctype;		// class type [net_type_t]
-	unsigned int etype;		// net entity type [net_ent_t] need to combine with entity_type_t really
-	unsigned int index;		// index into entity_list
-	unsigned int data_size;	// size of data packet below not including header
+	unsigned short int ctype;		// class type [net_type_t]
+	unsigned short int etype;		// net entity type [net_ent_t] need to combine with entity_type_t really
+	unsigned short int index;		// index into entity_list
+	unsigned short int data_size;	// size of data packet below not including header
 	char data[1024];	// data size depends on ctype
 } net_entity_t;
-#define SIZE_NET_ENTITY_HEADER 16
+#define SIZE_NET_ENTITY_HEADER 8
 
 typedef struct
 {
@@ -807,22 +807,22 @@ typedef struct
 
 	char			name[64];
 	short int		health;
-	short int		armor;
+	unsigned short int		armor;
 	uint8_t			weapon_flags;
-	short int		current_weapon;
-	short int		ammo_bullets;
-	short int		ammo_shells;
-	short int		ammo_rockets;
-	short int		ammo_lightning;
-	short int		ammo_slugs;
-	short int		ammo_plasma;
+	unsigned short int		current_weapon;
+	unsigned short int		ammo_bullets;
+	unsigned short int		ammo_shells;
+	unsigned short int		ammo_rockets;
+	unsigned short int		ammo_lightning;
+	unsigned short int		ammo_slugs;
+	unsigned short int		ammo_plasma;
 	uint8_t 		holdable_teleporter;
 	uint8_t			holdable_medikit;
 	uint8_t			holdable_flag;
-	unsigned int flight_timer;
-	unsigned int regen_timer;
-	unsigned int haste_timer;
-	unsigned int quad_timer;
+	unsigned short flight_timer;
+	unsigned short regen_timer;
+	unsigned short haste_timer;
+	unsigned short quad_timer;
 } net_player_t;
 
 

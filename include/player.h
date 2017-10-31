@@ -104,59 +104,59 @@ public:
 
 	int health;
 
-	unsigned int armor;
-	unsigned int weapon_flags;
+	unsigned short int armor;
+	unsigned short int weapon_flags;
 
-	unsigned int current_weapon;
-	unsigned int last_weapon;
-	unsigned int ammo_rockets;
-	unsigned int ammo_grenades;
-	unsigned int ammo_slugs;
-	unsigned int ammo_shells;
-	unsigned int ammo_bullets;
-	unsigned int ammo_lightning;
-	unsigned int ammo_plasma;
-	unsigned int ammo_bfg;
+	unsigned short int current_weapon;
+	unsigned short int last_weapon;
+	unsigned short int ammo_rockets;
+	unsigned short int ammo_grenades;
+	unsigned short int ammo_slugs;
+	unsigned short int ammo_shells;
+	unsigned short int ammo_bullets;
+	unsigned short int ammo_lightning;
+	unsigned short int ammo_plasma;
+	unsigned short int ammo_bfg;
 	bool holdable_teleporter;
 	bool holdable_medikit;
 	bool holdable_flag;
 	Entity *telefragged;
 
-	unsigned int reload_timer;
-	unsigned int fall_timer;
-	unsigned int drown_timer;
-	unsigned int flight_timer;
-	unsigned int regen_timer;
-	unsigned int haste_timer;
-	unsigned int quad_timer;
-	unsigned int click_timer;
-	unsigned int invisibility_timer;
-	unsigned int jumppad_timer;
-	unsigned int teleport_timer; // prevent teleporting out and back rapidly
-	unsigned int excellent_timer;
-	unsigned int impressive_count;
-	unsigned int impressive_award_timer;
-	unsigned int excellent_award_timer;
-	unsigned int gauntlet_award_timer;
-	unsigned int pain_timer;
-	unsigned int alert_timer;
-	unsigned int idle_timer;
-	unsigned int dead_timer;
-	unsigned int alive_timer;
+	unsigned short int reload_timer;
+	unsigned short int fall_timer;
+	unsigned short int drown_timer;
+	unsigned short int flight_timer;
+	unsigned short int regen_timer;
+	unsigned short int haste_timer;
+	unsigned short int quad_timer;
+	unsigned short int click_timer;
+	unsigned short int invisibility_timer;
+	unsigned short int jumppad_timer;
+	unsigned short int teleport_timer; // prevent teleporting out and back rapidly
+	unsigned short int excellent_timer;
+	unsigned short int impressive_count;
+	unsigned short int impressive_award_timer;
+	unsigned short int excellent_award_timer;
+	unsigned short int gauntlet_award_timer;
+	unsigned short int pain_timer;
+	unsigned short int alert_timer;
+	unsigned short int idle_timer;
+	unsigned short int dead_timer;
+	unsigned short int alive_timer;
 
 
 
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
 
-	unsigned int flash_gauntlet;
-	unsigned int flash_machinegun;
-	unsigned int flash_shotgun;
-	unsigned int flash_grenade;
-	unsigned int flash_rocket;
-	unsigned int flash_railgun;
-	unsigned int flash_lightning;
-	unsigned int flash_plasma;
+	unsigned short int flash_gauntlet;
+	unsigned short int flash_machinegun;
+	unsigned short int flash_shotgun;
+	unsigned short int flash_grenade;
+	unsigned short int flash_rocket;
+	unsigned short int flash_railgun;
+	unsigned short int flash_lightning;
+	unsigned short int flash_plasma;
 
 
 	float accel;

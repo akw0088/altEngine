@@ -3793,7 +3793,7 @@ int Engine::deserialize_net_trigger(net_trigger_t *net, int index, int etype)
 void Engine::server_send()
 {
 	static servermsg_t	servermsg;
-	static unsigned char	data[256000];
+	static unsigned char	data[16384];
 
 	if (client_list.size() == 0)
 		return;
