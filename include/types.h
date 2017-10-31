@@ -766,8 +766,10 @@ typedef enum {
 
 typedef enum
 {
+	NET_UNKNOWN,
 	NET_RIGID,
-	NET_PLAYER
+	NET_PLAYER,
+	NET_TRIGGER
 } net_type_t;
 
 typedef struct
@@ -786,12 +788,22 @@ typedef struct
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
-	uint8_t			active; // whether trigger is active
-	short int		owner;
 } net_rigid_t;
 
 typedef struct
 {
+	uint8_t			active; // whether trigger is active
+	short int		owner;
+} net_trigger_t;
+
+
+typedef struct
+{
+	matrix3			morientation;
+	vec3			velocity;
+	vec3			angular_velocity;
+	vec3			position;
+
 	char			name[64];
 	short int		health;
 	short int		armor;

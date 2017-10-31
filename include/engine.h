@@ -87,7 +87,7 @@ public:
 	int deserialize_ents(unsigned char *data, unsigned short int num_ents, unsigned int data_size);
 	int deserialize_net_player(net_player_t *player, int index, int etype);
 	int deserialize_net_rigid(net_rigid_t *rigid, int index, int etype);
-
+	int deserialize_net_trigger(net_trigger_t *net, int index, int etype);
 
 	bool select_wave(int source, char *file);
 
