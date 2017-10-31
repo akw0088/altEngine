@@ -86,65 +86,9 @@ typedef struct
 	char cmd[LINE_SIZE];
 } state_t;
 
-// Any dynamically created entity type that should be synced over network
-// dropped items, muzzle flashes, shells, projectiles etc
-typedef enum {
-	NT_NONE,
-	NT_ROCKET,
-	NT_ROCKET_LAUNCHER,
-	NT_GRENADE,
-	NT_GRENADE_LAUNCHER,
-	NT_LIGHTNING,
-	NT_LIGHTNINGGUN,
-	NT_RAIL,
-	NT_RAILGUN,
-	NT_PLASMA,
-	NT_PLASMAGUN,
-	NT_SHOTGUN,
-	NT_MACHINEGUN,
-	NT_QUAD,
-	NT_HASTE,
-	NT_REGEN,
-	NT_INVIS,
-	NT_FLIGHT,
-	NT_BLUE_FLAG,
-	NT_RED_FLAG
-} nettype_t;
 
-/*
-	Holds data sent across network to represent entities
-	TODO: add type int and create entity specific structs
-*/
-typedef struct
-{
-	unsigned int	id;
-	nettype_t		type;
-	matrix3			morientation;
-	vec3			velocity;
-	vec3			angular_velocity;
-	vec3			position;
-	uint8_t			active; // whether trigger is active
-	short int		owner;
-	//player info
-	char			name[64];
-	short int		health;
-	short int		armor;
-	uint8_t			weapon_flags;
-	short int		current_weapon;
-	short int		ammo_bullets;
-	short int		ammo_shells;
-	short int		ammo_rockets;
-	short int		ammo_lightning;
-	short int		ammo_slugs;
-	short int		ammo_plasma;
-	uint8_t 		holdable_teleporter;
-	uint8_t			holdable_medikit;
-	uint8_t			holdable_flag;
-	unsigned int flight_timer;
-	unsigned int regen_timer;
-	unsigned int haste_timer;
-	unsigned int quad_timer;
-} entity_t;
+
+
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
@@ -174,7 +118,7 @@ typedef struct
 } clientmsg_t;
 
 
-#define SERVER_HEADER 10
+#define SERVER_HEADER 14
 /*
 	Variable length server msg
 	after num_ents is a variable number of entity states
@@ -189,6 +133,7 @@ typedef struct
 	unsigned short int	sequence;
 	unsigned short int	client_sequence;
 	unsigned short int	num_ents;
+	unsigned int		data_size;
 	unsigned char		data[256000];
 } servermsg_t;
 #pragma pack(8)
@@ -792,7 +737,80 @@ typedef enum
 	ENT_Q1_TRAP_SPIKESHOOTER,
 	ENT_Q1_ITEM_SIGIL,
 	ENT_Q1_END
-}entity_type;
+} entity_type_t;
+
+// Any dynamically created entity type that should be synced over network
+// dropped items, muzzle flashes, shells, projectiles etc
+typedef enum {
+	NT_NONE,
+	NT_ROCKET,
+	NT_ROCKET_LAUNCHER,
+	NT_GRENADE,
+	NT_GRENADE_LAUNCHER,
+	NT_LIGHTNING,
+	NT_LIGHTNINGGUN,
+	NT_RAIL,
+	NT_RAILGUN,
+	NT_PLASMA,
+	NT_PLASMAGUN,
+	NT_SHOTGUN,
+	NT_MACHINEGUN,
+	NT_QUAD,
+	NT_HASTE,
+	NT_REGEN,
+	NT_INVIS,
+	NT_FLIGHT,
+	NT_BLUE_FLAG,
+	NT_RED_FLAG
+} net_ent_t;
+
+typedef enum
+{
+	NET_RIGID,
+	NET_PLAYER
+} net_type_t;
+
+typedef struct
+{
+	unsigned int ctype;		// class type [net_type_t]
+	unsigned int etype;		// net entity type [net_ent_t] need to combine with entity_type_t really
+	unsigned int index;		// index into entity_list
+	unsigned int data_size;	// size of data packet below not including header
+	char data[1024];	// data size depends on ctype
+} net_entity_t;
+#define SIZE_NET_ENTITY_HEADER 16
+
+typedef struct
+{
+	matrix3			morientation;
+	vec3			velocity;
+	vec3			angular_velocity;
+	vec3			position;
+	uint8_t			active; // whether trigger is active
+	short int		owner;
+} net_rigid_t;
+
+typedef struct
+{
+	char			name[64];
+	short int		health;
+	short int		armor;
+	uint8_t			weapon_flags;
+	short int		current_weapon;
+	short int		ammo_bullets;
+	short int		ammo_shells;
+	short int		ammo_rockets;
+	short int		ammo_lightning;
+	short int		ammo_slugs;
+	short int		ammo_plasma;
+	uint8_t 		holdable_teleporter;
+	uint8_t			holdable_medikit;
+	uint8_t			holdable_flag;
+	unsigned int flight_timer;
+	unsigned int regen_timer;
+	unsigned int haste_timer;
+	unsigned int quad_timer;
+} net_player_t;
 
 
 typedef struct

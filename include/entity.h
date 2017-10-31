@@ -28,7 +28,7 @@ public:
 
 	//Really bsp related items
 	int				ent_type; // will replace string type eventually
-	nettype_t		nettype;
+	net_ent_t		nettype;
 	int				angle;
 	int				model_ref;		// bsp model index
 	vec3			model_offset;	// bsp model offset

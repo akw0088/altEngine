@@ -53,7 +53,7 @@ public:
 	void handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, int self);
 	void check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self);
 
-	void make_dynamic_ent(nettype_t item, int ent_id);
+	void make_dynamic_ent(net_ent_t item, int ent_id);
 	void handle_player(int index, input_t &input);
 	void handle_frags_left(Player &player);
 	void player_died(int index);

@@ -81,8 +81,13 @@ public:
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, matrix4 &projection, bool lights, bool self);
-	int serialize_ents(unsigned char *data, unsigned short int &num_ents);
-	int deserialize_ents(unsigned char *data, unsigned short int num_ents);
+
+
+	int serialize_ents(unsigned char *data, unsigned short int &num_ents, unsigned int &data_size);
+	int deserialize_ents(unsigned char *data, unsigned short int num_ents, unsigned int data_size);
+	int deserialize_net_player(net_player_t *player, int index, int etype);
+	int deserialize_net_rigid(net_rigid_t *rigid, int index, int etype);
+
 
 	bool select_wave(int source, char *file);
 
@@ -113,6 +118,7 @@ public:
 	int get_loop_source();
 	int get_global_source();
 	int get_global_loop_source();
+
 
 	unsigned int xres, yres;
 	unsigned int tick_num;

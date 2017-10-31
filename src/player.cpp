@@ -45,7 +45,7 @@ const char *models[23] = {
 
 #define NUM_PATH 64 // Should equal map navpoint count
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type ent_type, vector<Model *> &model_table)
+Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, vector<Model *> &model_table)
 : weapon_gauntlet(entity), weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {

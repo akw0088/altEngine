@@ -3078,6 +3078,7 @@ void Engine::step(int tick)
 			menu.print("Invalid frame");
 			return;
 		}
+/*
 		num_read = fread(&data[0], 1, sizeof(entity_t) * header.num_ents, demofile);
 		if (num_read != sizeof(entity_t) * header.num_ents)
 		{
@@ -3088,6 +3089,7 @@ void Engine::step(int tick)
 		}
 		deserialize_ents(data, header.num_ents);
 		update_audio();
+*/
 		return;
 	}
 
@@ -3143,12 +3145,12 @@ void Engine::step(int tick)
 		demo_frameheader_t header;
 
 		memcpy(header.magic, "frame", 6);
-		serialize_ents(servermsg.data, servermsg.num_ents);
+		serialize_ents(servermsg.data, servermsg.num_ents, servermsg.data_size);
 		header.num_ents = servermsg.num_ents;
 		header.tick_num = tick_num;
 
-		fwrite(&header, sizeof(demo_frameheader_t), 1, demofile);
-		fwrite(&servermsg, servermsg.num_ents * sizeof(entity_t), 1, demofile);
+//		fwrite(&header, sizeof(demo_frameheader_t), 1, demofile);
+//		fwrite(&servermsg, servermsg.num_ents * sizeof(entity_t), 1, demofile);
 	}
 
 #ifndef DEDICATED
@@ -3485,7 +3487,7 @@ void Engine::server_recv()
 		reliable[index].sequence = sequence;
 
 		
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable[index], reliable[index].size);
+		memcpy(&servermsg.data[servermsg.data_size], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + reliable[index].size;
 		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("Client is now entity %d\n", client->ent_id);
@@ -3506,7 +3508,7 @@ void Engine::server_recv()
 			servermsg.num_ents = 0;
 			servermsg.compressed_size = 0;
 			servermsg.length = SERVER_HEADER + reliable[i].size;
-			memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable[i], reliable[i].size);
+			memcpy(&servermsg.data[servermsg.data_size], &reliable[i], reliable[i].size);
 			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 		}
 
@@ -3535,8 +3537,8 @@ void Engine::server_recv()
 		reliable[index].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
 
-		memcpy(&servermsg.data[servermsg.num_ents * sizeof(entity_t)], &reliable[index], reliable[index].size);
-		servermsg.length = SERVER_HEADER + servermsg.num_ents * sizeof(entity_t) + reliable[index].size;
+		memcpy(&servermsg.data[servermsg.data_size], &reliable[index], reliable[index].size);
+		servermsg.length = SERVER_HEADER + servermsg.data_size + reliable[index].size;
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 	}
 	else if (strcmp(reliablemsg->msg, "getchallenge") == 0)
@@ -3576,30 +3578,36 @@ void Engine::server_recv()
 }
 
 
-int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents)
+int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, unsigned int &data_size)
 {
+	data_size = 0;
 	for (unsigned int j = 0; j < entity_list.size(); j++)
 	{
-		entity_t ent;
+		net_entity_t ent;
+		net_rigid_t *net_rigid = (net_rigid_t *)&(ent.data[0]);
+		net_player_t *net_player = (net_player_t *)&ent.data[sizeof(net_rigid_t)];
+		unsigned int size = SIZE_NET_ENTITY_HEADER; // sizeof net_entity_t header
 
-
-		ent.id = j;
-		ent.type = entity_list[j]->nettype;
-		ent.active = 0;
+		memset(&ent, 0, sizeof(net_entity_t));
+		ent.index = j;
+		ent.etype = (net_ent_t)entity_list[j]->nettype;
+		net_rigid->active = 0;
 
 		if (entity_list[j]->trigger)
 		{
 			if (entity_list[j]->trigger->active)
-				ent.active = 1;
-			ent.owner = entity_list[j]->trigger->owner;
+				net_rigid->active = 1;
+			net_rigid->owner = entity_list[j]->trigger->owner;
 		}
+
 		RigidBody *rigid = entity_list[j]->rigid;
 		if (rigid)
 		{
-			ent.morientation = rigid->morientation;
-			ent.angular_velocity = rigid->angular_velocity;
-			ent.velocity = rigid->velocity;
-			ent.position = entity_list[j]->position;
+			net_rigid->morientation = rigid->morientation;
+			net_rigid->angular_velocity = rigid->angular_velocity;
+			net_rigid->velocity = rigid->velocity;
+			net_rigid->position = entity_list[j]->position;
+			size += sizeof(net_rigid_t);
 		}
 
 		Player *player = entity_list[j]->player;
@@ -3607,106 +3615,124 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents)
 		if (player != NULL)
 		{
 
-			ent.health = player->health;
-			ent.armor = player->armor;
-			ent.weapon_flags = player->weapon_flags;
+			net_player->health = player->health;
+			net_player->armor = player->armor;
+			net_player->weapon_flags = player->weapon_flags;
 			//ent.current_weapon = player->current_weapon;
-			ent.ammo_bullets = player->ammo_bullets;
-			ent.ammo_shells = player->ammo_shells;
-			ent.ammo_rockets = player->ammo_rockets;
-			ent.ammo_lightning = player->ammo_lightning;
-			ent.ammo_slugs = player->ammo_slugs;
-			ent.ammo_plasma = player->ammo_plasma;
+			net_player->ammo_bullets = player->ammo_bullets;
+			net_player->ammo_shells = player->ammo_shells;
+			net_player->ammo_rockets = player->ammo_rockets;
+			net_player->ammo_lightning = player->ammo_lightning;
+			net_player->ammo_slugs = player->ammo_slugs;
+			net_player->ammo_plasma = player->ammo_plasma;
+			size += sizeof(net_rigid_t);
 		}
 
-		memcpy(&data[j * sizeof(entity_t)], &ent, sizeof(entity_t));
-		num_ents++;
+		if (size > SIZE_NET_ENTITY_HEADER)
+		{
+			memcpy(&data[data_size], &ent, size);
+			data_size += size;
+			num_ents++;
+		}
 	}
 
 //	printf("serialize_ents: size is %d\n", num_ents * sizeof(entity_t));
 	return 0;
 }
 
-int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents)
+
+int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 {
-	for (int i = 0; i < num_ents; i++)
+	Player *player = entity_list[index]->player;
+
+	if (player != NULL)
 	{
-		entity_t	*ent = (entity_t *)data;
+		player->health = net->health;
+		player->armor = net->armor;
+		player->weapon_flags = net->weapon_flags;
+		// will force server to sync to our current weapon
+		//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
 
-		// dont let bad data cause an exception
-		if (ent[i].id >= entity_list.size())
+		if (net->ammo_bullets - player->ammo_bullets > 1)
+			player->ammo_bullets = net->ammo_bullets;
+		if (net->ammo_shells - player->ammo_shells > 1)
+			player->ammo_shells = net->ammo_shells;
+		if (net->ammo_rockets - player->ammo_rockets > 1)
+			player->ammo_rockets = net->ammo_rockets;
+		if (net->ammo_lightning - player->ammo_lightning > 1)
+			player->ammo_lightning = net->ammo_lightning;
+		if (net->ammo_slugs - player->ammo_slugs > 1)
+			player->ammo_slugs = net->ammo_slugs;
+		if (net->ammo_plasma - player->ammo_plasma > 1)
+			player->ammo_plasma = net->ammo_plasma;
+	}
+
+	return 0;
+}
+
+int Engine::deserialize_net_rigid(net_rigid_t *net, int index, int etype)
+{
+	// Check if an entity is a projectile that needs to be loaded
+	if (etype != entity_list[index]->nettype)
+	{
+		game->make_dynamic_ent((net_ent_t)etype, index);
+	}
+
+	if (entity_list[index]->trigger)
+	{
+		if (net->active)
+			entity_list[index]->trigger->active = true;
+		else
+			entity_list[index]->trigger->active = false;
+
+		entity_list[index]->trigger->owner = net->owner;
+	}
+
+	if (entity_list[index]->rigid)
+	{
+		if ((unsigned int)find_type(ENT_PLAYER, 0) == index)
 		{
-			printf("Invalid entity index, bad packet\n");
-			break;
-		}
-
-
-		// Check if an entity is a projectile that needs to be loaded
-		if (ent[i].type != entity_list[ent[i].id]->nettype)
-		{
-			game->make_dynamic_ent(ent[i].type, ent[i].id);
-		}
-
-		if (entity_list[ent[i].id]->trigger)
-		{
-			if (ent[i].active)
-				entity_list[ent[i].id]->trigger->active = true;
-			else
-				entity_list[ent[i].id]->trigger->active = false;
-
-			entity_list[ent[i].id]->trigger->owner = ent[i].owner;
-		}
-
-		Player *player = entity_list[ent[i].id]->player;
-
-		if (player != NULL)
-		{
-			player->health = ent[i].health;
-			player->armor = ent[i].armor;
-			player->weapon_flags = ent[i].weapon_flags;
-			// will force server to sync to our current weapon
-			//			entity_list[ent[i].id]->player->current_weapon = ent[i].current_weapon;
-
-			if (ent[i].ammo_bullets - player->ammo_bullets > 1)
-				player->ammo_bullets = ent[i].ammo_bullets;
-			if (ent[i].ammo_shells - player->ammo_shells > 1)
-				player->ammo_shells = ent[i].ammo_shells;
-			if (ent[i].ammo_rockets - player->ammo_rockets > 1)
-				player->ammo_rockets = ent[i].ammo_rockets;
-			if (ent[i].ammo_lightning - player->ammo_lightning > 1)
-				player->ammo_lightning = ent[i].ammo_lightning;
-			if (ent[i].ammo_slugs - player->ammo_slugs > 1)
-				player->ammo_slugs = ent[i].ammo_slugs;
-			if (ent[i].ammo_plasma - player->ammo_plasma > 1)
-				player->ammo_plasma = ent[i].ammo_plasma;
-
-		}
-
-
-
-		if (entity_list[ent[i].id]->rigid)
-		{
-			if ((unsigned int)find_type(ENT_PLAYER, 0) == ent[i].id)
-			{
-				// current entity has the clients predicted position
-				// the ent[i].position has the server (lagged) position
-				// Need to lerp between the two, but then we have time sync issues
-				entity_list[ent[i].id]->position = ent[i].position;
-				entity_list[ent[i].id]->rigid->velocity = ent[i].velocity;
-				camera_frame.pos = ent[i].position;
-			}
-			else
-			{
-				RigidBody *rigid = entity_list[ent[i].id]->rigid;
-				entity_list[ent[i].id]->position = ent[i].position;
-				rigid->velocity = ent[i].velocity;
-				rigid->angular_velocity = ent[i].angular_velocity;
-				rigid->morientation = ent[i].morientation;
-			}
+			// current entity has the clients predicted position
+			// the ent[i].position has the server (lagged) position
+			// Need to lerp between the two, but then we have time sync issues
+			entity_list[index]->position = net->position;
+			entity_list[index]->rigid->velocity = net->velocity;
+			camera_frame.pos = net->position;
 		}
 		else
 		{
-			entity_list[ent[i].id]->position = ent[i].position;
+			RigidBody *rigid = entity_list[index]->rigid;
+			entity_list[index]->position = net->position;
+			rigid->velocity = net->velocity;
+			rigid->angular_velocity = net->angular_velocity;
+			rigid->morientation = net->morientation;
+		}
+	}
+	else
+	{
+		entity_list[index]->position = net->position;
+	}
+
+	return 0;
+}
+
+
+int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents, unsigned int data_size)
+{
+	for (int i = 0; i < num_ents; i++)
+	{
+		net_entity_t	*ent = (net_entity_t *)data;
+		switch (ent->ctype)
+		{
+		case NET_RIGID:
+			return deserialize_net_rigid((net_rigid_t *)ent->data, ent->index, ent->etype);
+			break;
+		case NET_PLAYER:
+			return deserialize_net_player((net_player_t *)ent->data, ent->index, ent->etype);
+			break;
+		default:
+			printf("Unknown net_entity %d\n", ent->ctype);
+			return -1;
 		}
 	}
 	return 0;
@@ -3724,8 +3750,8 @@ void Engine::server_send()
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
 
-	serialize_ents(&data[0], servermsg.num_ents);
-	servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.num_ents * sizeof(entity_t),
+	serialize_ents(&data[0], servermsg.num_ents, servermsg.data_size);
+	servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.data_size,
 		servermsg.data, sizeof(servermsg.data), huffbuf);
 
 
@@ -3844,7 +3870,7 @@ void Engine::client_recv()
 
 		if ((unsigned int)servermsg.length > SERVER_HEADER + servermsg.compressed_size + sizeof(int) + 1)
 		{
-			rmsg = (reliablemsg_t *)&servermsg.data[servermsg.num_ents * sizeof(entity_t)];
+			rmsg = (reliablemsg_t *)&servermsg.data[servermsg.data_size];
 		}
 
 		if (servermsg.num_ents)
@@ -3852,9 +3878,9 @@ void Engine::client_recv()
 			unsigned int dsize = 0;
 
 			dsize = huffman_decompress(servermsg.data, servermsg.compressed_size, data, sizeof(data), huffbuf);
-			if (dsize != servermsg.num_ents * sizeof(entity_t))
+			if (dsize != servermsg.data_size)
 			{
-				printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.num_ents * sizeof(entity_t)));
+				printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.data_size));
 				return;
 			}
 		}
@@ -3972,7 +3998,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 		}
 	}
 
-	deserialize_ents(data, servermsg.num_ents);
+	deserialize_ents(data, servermsg.num_ents, servermsg.data_size);
 	return 0;
 }
 

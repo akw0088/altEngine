@@ -7609,7 +7609,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 	they get the position and orientation over the network
 	and let server handle damage etc
 */
-void Quake3::make_dynamic_ent(nettype_t item, int ent_id)
+void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 {
 	Entity *ent = engine->entity_list[ent_id];
 	engine->clean_entity(ent_id);
