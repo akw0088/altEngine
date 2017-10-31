@@ -18,7 +18,7 @@ ShadowVolume::ShadowVolume()
 void ShadowVolume::AddEdge(int *pEdge, unsigned int &num_edge, int v0, int v1)
 {
 	// Remove interior edges (which appear in the list twice)
-	for (int i = 0; i < num_edge; i++)
+	for (unsigned int i = 0; i < num_edge; i++)
 	{
 		if ((pEdge[2 * i + 0] == v0 && pEdge[2 * i + 1] == v1) ||
 			(pEdge[2 * i + 0] == v1 && pEdge[2 * i + 1] == v0))

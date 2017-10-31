@@ -3368,6 +3368,8 @@ void Engine::server_recv()
 					{
 						end[0] = '\0';
 						sprintf(msg, "say \"%s\"", end + 2);
+						char *terminate = strstr(end + 2, "</chat>");
+						*terminate = '\0';
 						//  Echoes chat back to all clients
 						chat(name, msg);
 					}
@@ -3742,6 +3744,8 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		// the net->position has the server (lagged) position
 		// Need to lerp between the two, but then we have time sync issues
 		entity_list[index]->position = net->position;
+		entity_list[index]->rigid->morientation = net->morientation;
+
 		entity_list[index]->rigid->velocity = net->velocity;
 		camera_frame.pos = net->position;
 		//printf("Got player data index %d pos %3.3f %3.3f %3.3f\n", index, net->position.x, net->position.y, net->position.z );
@@ -4037,12 +4041,12 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 			{
 				char msg[256];
 
+				memset(msg, 0, sizeof(msg));
 				char *start = strstr(reliablemsg->msg, "<chat>");
 				start += 6;
 				char *end = strstr(reliablemsg->msg, "</chat>");
 
 				memcpy(msg, start, end - start);
-
 				menu.print_chat(msg);
 				game->chat_timer = 3 * TICK_RATE;
 
@@ -4058,15 +4062,14 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 				game->set_state(data);
 			}
 
-
-
-			parse_spawn_string(reliablemsg->msg);
-
 			ret = strcmp(reliablemsg->msg, "<disconnect/>");
 			if (ret == 0)
 			{
 				unload();
 			}
+
+			parse_spawn_string(reliablemsg->msg);
+
 		}
 	}
 

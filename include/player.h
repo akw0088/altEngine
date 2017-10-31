@@ -105,7 +105,7 @@ public:
 	int health;
 
 	unsigned short int armor;
-	unsigned short int weapon_flags;
+	unsigned char weapon_flags;
 
 	unsigned short int current_weapon;
 	unsigned short int last_weapon;
