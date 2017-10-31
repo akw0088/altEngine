@@ -611,6 +611,7 @@ void Engine::load(char *level)
 		if (i < max_player && (server_flag || playing_demo))
 		{
 			// Forces server to expect player rigid bodies
+			/*
 			entity->rigid = new RigidBody(entity);
 
 			if (playing_demo)
@@ -619,6 +620,7 @@ void Engine::load(char *level)
 				if (i == 0)
 					sprintf(entity->type, "player");
 			}
+			*/
 		}
 	}
 
@@ -3594,6 +3596,7 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 		memset(&ent, 0, sizeof(net_entity_t));
 		ent.index = i;
 		ent.etype = (net_ent_t)entity_list[i]->nettype;
+		ent.ctype = NET_UNKNOWN;
 
 		Trigger *trigger = entity_list[i]->trigger;
 		if (trigger)
@@ -3674,14 +3677,20 @@ int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents, u
 		switch (ent->ctype)
 		{
 		case NET_RIGID:
-			return deserialize_net_rigid((net_rigid_t *)ent->data, ent->index, ent->etype);
+			deserialize_net_rigid((net_rigid_t *)ent->data, ent->index, ent->etype);
+			data += SIZE_NET_ENTITY_HEADER + sizeof(net_rigid_t);
+			break;
 		case NET_PLAYER:
-			return deserialize_net_player((net_player_t *)ent->data, ent->index, ent->etype);
+			deserialize_net_player((net_player_t *)ent->data, ent->index, ent->etype);
+			data += SIZE_NET_ENTITY_HEADER + sizeof(net_player_t);
+			break;
 		case NET_TRIGGER:
-			return deserialize_net_trigger((net_trigger_t *)ent->data, ent->index, ent->etype);
+			deserialize_net_trigger((net_trigger_t *)ent->data, ent->index, ent->etype);
+			data += SIZE_NET_ENTITY_HEADER + sizeof(net_trigger_t);
+			break;
 		default:
 			printf("Unknown net_entity %d\n", ent->ctype);
-			return -1;
+			break;
 		}
 	}
 	return 0;
@@ -3793,6 +3802,7 @@ void Engine::server_send()
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
 
+//	memset(&data[0], 0, sizeof(data));
 	serialize_ents(&data[0], servermsg.num_ents, servermsg.data_size);
 	servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.data_size,
 		servermsg.data, sizeof(servermsg.data), huffbuf);
