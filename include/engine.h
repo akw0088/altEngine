@@ -171,6 +171,9 @@ public:
 	bool debug_bloom;
 	bool enable_ssao;
 	bool enable_stencil;
+	bool enable_map_shadows;
+	bool enable_entities;
+	bool enable_map;
 
 
 	char resbuf[32][80];
@@ -341,7 +344,6 @@ protected:
 	emitter_t			emitter;
 	unsigned int		emitter_count;
 
-	bool entities_enabled;
 
 	bool	initialized;
 	void	*param1;

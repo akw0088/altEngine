@@ -106,7 +106,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	}
 
 #ifdef SHADOWVOL
-	shadow = new ShadowVolume[data.num_leafs];
+	shadow = new ShadowVolume [data.num_leafs];
 #endif
 
 	tangent = new vec4 [data.num_verts];
@@ -2356,10 +2356,12 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 }
 */
 
-void Bsp::CreateShadowVolumes(vec3 &position, Graphics &gfx, vec3 &light_pos)
+void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light, vertex_t *shadow_vertex, unsigned int *shadow_index, int &num_index)
 {
 #ifdef SHADOWVOL
-	int leaf_index = find_leaf(position);
+	int leaf_index = find_leaf(light_pos);
+	int vertex_count = 0;
+	int index_count = 0;
 
 	leaf_t *light_Leaf = &data.Leaf[leaf_index];
 
@@ -2367,20 +2369,62 @@ void Bsp::CreateShadowVolumes(vec3 &position, Graphics &gfx, vec3 &light_pos)
 	for (unsigned int i = 0; i < data.num_leafs; i++)
 	{
 		leaf_t *leaf = &data.Leaf[i];
+		int start_index = 0;
+		int num_index = 0;
+		int temp = 0;
 
-		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
-			continue;
+//		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
+//			continue;
 
 		for (int j = 0; j < leaf->num_faces; j++)
 		{
 			int face_index = data.LeafFace[leaf->leaf_face + j];
 			face_t *face = &data.Face[face_index];
 
-			shadow[i].CreateVolume(gfx, map_vertex, data.IndexArray, face->index, face->num_index / 3, light_pos);
+			for (int k = 0; k < face->num_index; k++)
+			{
+				shadow_vertex[vertex_count++] = map_vertex[ data.IndexArray[face->index + k] ];
+				shadow_index[index_count++] = data.IndexArray[face->index + k];
+			}
 		}
+	}
+	num_index = index_count;
+#endif
+}
+
+
+
+void Bsp::RenderShadowVolumes(Graphics &gfx, vec3 &pos, int current_light)
+{
+#ifdef SHADOWVOL
+	int leaf_index = find_leaf(pos);
+
+	leaf_t *player_Leaf = &data.Leaf[leaf_index];
+
+	// loop through all leaves, checking if leaf visible from current leaf
+	for (unsigned int i = 0; i < data.num_leafs; i++)
+	{
+		leaf_t *leaf = &data.Leaf[i];
+		int temp = 0;
+
+//		if (!cluster_visible(player_Leaf->cluster, leaf->cluster))
+//			continue;
+
+			for (int j = 0; j < leaf->num_faces; j++)
+			{
+				int face_index = data.LeafFace[leaf->leaf_face + j];
+				face_t *face = &data.Face[face_index];
+
+//				if (current_light == temp)
+				{
+					shadow[i].render(gfx);
+				}
+				temp++;
+			}
 	}
 #endif
 }
+
 
 void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 {

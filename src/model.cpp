@@ -50,7 +50,7 @@ void Model::load(Graphics &gfx, char *file)
 	}
 
 	num_index = *((int *)index_file);
-	model_index_array = (int *)(index_file + 4);
+	model_index_array = (unsigned int *)(index_file + 4);
 
 	model_vertex = gfx.CreateVertexBuffer(model_vertex_array, num_vertex);
 	model_index = gfx.CreateIndexBuffer(model_index_array, num_index);

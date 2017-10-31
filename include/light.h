@@ -13,7 +13,8 @@ class Light
 public:
 	Light(Entity *entity, Graphics &gfx, int num, float scale);
 	void render_shadow_volume(Graphics &gfx, int index);
-	void generate_map_volumes(Bsp &map);
+	void render_map_shadowvol(Graphics &gfx);
+	void generate_map_volumes(Graphics &gfx, Bsp &map, int current_light);
 	void generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list);
 
 	void destroy(Graphics &gfx);
@@ -37,6 +38,9 @@ public:
 #ifdef SHADOWVOL
 	ShadowVolume	shadow[MAX_SHADOWVOL];
 	int				num_shadowvol;
+
+
+	ShadowVolume map_shadow;
 #endif
 
 	vec3			color;

@@ -3,7 +3,7 @@
 
 #include "include.h"
 
-#define MAX_VERT 10 * 4096
+#define MAX_VERT 4096
 
 typedef struct
 {
@@ -18,7 +18,7 @@ class ShadowVolume
 {
 public:
 	ShadowVolume();
-	int CreateVolume(Graphics &gfx, vertex_t *pVertex, int *pIndex, int start_index, int num_face, vec3 &vLight);
+	int CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *pIndex, unsigned int start_index, unsigned int num_face, vec3 &vLight);
 	void AddEdge(int *pEdge, int &num_edges, int v0, int v1);
 	int render(Graphics &gfx);
 	void destroy(Graphics &gfx);

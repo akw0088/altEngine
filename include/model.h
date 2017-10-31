@@ -27,7 +27,7 @@ public:
 	int				num_vertex;
 	int				num_index;
 	vertex_t		*model_vertex_array;
-	int				*model_index_array;
+	unsigned int	*model_index_array;
 	char			*model_file;
 	int				model_vertex;
 	int				model_index;

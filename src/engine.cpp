@@ -50,7 +50,6 @@ Engine::Engine()
 	show_lines = false;
 	show_debug = false;
 	show_hud = true;
-	entities_enabled = true;
 	collision_detect_enable = true;
 	num_bot = 0;
 	emitter.enabled = false;
@@ -116,6 +115,7 @@ Engine::Engine()
 	enable_bloom = true;
 	enable_ssao = false;
 	debug_bloom = false;
+	enable_entities = true;
 
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
@@ -206,6 +206,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	point_count = 8;
 	randomize_points = true;
 	show_ao = true;
+	enable_map = true;
 
 	enum_resolutions();
 #ifndef __linux
@@ -238,6 +239,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 
 	enable_stencil = true;
+	enable_map_shadows = true;
 	sensitivity = 1.0f;
 
 	shadow_light = 107;
@@ -956,7 +958,7 @@ void Engine::render(double last_frametime)
 		gfx.clear();
 		gfx.resize(gfx.width, gfx.height);
 
-		if (spawn == -1 || (player && player->current_light == 0))
+		if ( 1/*spawn == -1 || (player && player->current_light == 0)*/)
 		{
 			// render fbo to fullscreen quad
 			if (enable_ssao)
@@ -1575,7 +1577,8 @@ void Engine::render_scene(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-	q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+	if (enable_map)
+		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
 
 	if (lights == false)
 	{
@@ -1892,7 +1895,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 {
 	matrix4 mvp;
 
-	if (entities_enabled == false)
+	if (enable_entities == false)
 		return;
 
 	emitter.enabled = false;
@@ -2100,7 +2103,7 @@ void Engine::render_shadow_volumes()
 #ifdef SHADOWVOL
 	matrix4 transformation;
 	matrix4 matrix;
-	Player *player = NULL;
+
 
 	/*
 	int index = find_type(ENT_PLAYER, 0);
@@ -2110,9 +2113,31 @@ void Engine::render_shadow_volumes()
 	}
 	*/
 
+	int player = find_type(ENT_PLAYER, 0);
+	int current_light = 0;
+	if (player != -1)
+	{
+		current_light = entity_list[player]->player->current_light;
+	}
+
+
 	global.Select();
 	camera_frame.set(transformation);
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+
+	matrix4 mvp = transformation * projection;
+	global.Params(mvp, 0);
+	for (int i = max_dynamic; i < entity_list.size(); i++)
+	{
+		if (entity_list[i]->light)
+			entity_list[i]->light->render_map_shadowvol(gfx);
+	}
+	
+	q3map.RenderShadowVolumes(gfx, camera_frame.pos, current_light);
+
+	if (enable_entities == false)
+		return;
+
+	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 
 		if (entity_list[i]->light)
@@ -3083,16 +3108,29 @@ void Engine::step(int tick)
 
 	game->step(tick);
 
+	int player = find_type(ENT_PLAYER, 0);
+	int current_light = 0;
+	if (player != -1)
+	{
+		current_light = entity_list[player]->player->current_light;
+	}
+
 	if (enable_stencil)
 	{
 		for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 		{
 			if (entity_list[i]->light)
 			{
-				//				entity_list[i]->light->generate_map_volumes(q3map);
-				entity_list[i]->light->generate_ent_volumes(gfx, entity_list);
+				if (enable_map_shadows)
+				{
+					entity_list[i]->light->generate_map_volumes(gfx, q3map, current_light);
+				}
+
+				if (enable_entities)
+					entity_list[i]->light->generate_ent_volumes(gfx, entity_list);
 			}
 		}
+		enable_map_shadows = false;
 	}
 
 	dynamics();
@@ -6200,6 +6238,22 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strstr(cmd, "r_map"))
+	{
+		enable_map = !enable_map;
+		if (enable_map)
+		{
+			snprintf(msg, LINE_SIZE, "render map on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "render map off");
+			menu.print(msg);
+		}
+		return;
+	}
+
 	if (strstr(cmd, "lookforward"))
 	{
 		vec3 right(-1.0f, 0.0f, 0.0f);
@@ -6425,13 +6479,13 @@ void Engine::console(char *cmd)
 		{
 			snprintf(msg, LINE_SIZE, "Enabling entities");
 			menu.print(msg);
-			entities_enabled = true;
+			enable_entities = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "Disabling entities");
 			menu.print(msg);
-			entities_enabled = false;
+			enable_entities = false;
 		}
 		return;
 	}

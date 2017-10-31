@@ -24,8 +24,8 @@ class Bsp
 	//void draw_box(int *min, int *max);
 public:
 	Bsp();
-
-	void CreateShadowVolumes(vec3 &position, Graphics &gfx, vec3 &light_pos);
+	void CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light, vertex_t *shadow_vertex, unsigned int *shadow_index, int &num_index);
+	void RenderShadowVolumes(Graphics &gfx, vec3 &pos, int current_light);
 	void hitscan(vec3 &origin, vec3 &dir, float &distance);
 	bool is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float *depth, plane_t *plane, content_flag_t &flag, float &water_depth, bool debug);
 	bool vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b);

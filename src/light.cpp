@@ -62,9 +62,24 @@ void Light::render_shadow_volume(Graphics &gfx, int index)
 #endif
 }
 
-void Light::generate_map_volumes(Bsp &map)
+void Light::render_map_shadowvol(Graphics &gfx)
 {
-//	map.find_edges(entity->position, edge_list);
+	map_shadow.render(gfx);
+}
+
+void Light::generate_map_volumes(Graphics &gfx, Bsp &map, int current_light)
+{
+	static vertex_t shadow_vertex[50 * 4096];
+	static unsigned int		 shadow_index[50 * 4096];
+	int		num_index = 0;
+
+	memset(&shadow_vertex[0], 0, sizeof(shadow_vertex));
+	memset(&shadow_index[0], 0, sizeof(shadow_index));
+	map.CreateShadowVolumes(gfx, entity->position, current_light, &shadow_vertex[0], &shadow_index[0], num_index);
+	if (num_index > 0)
+	{
+		map_shadow.CreateVolume(gfx, &shadow_vertex[0], &shadow_index[0], 0, num_index / 3, entity->position);
+	}
 }
 
 
