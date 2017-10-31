@@ -105,10 +105,6 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 		face_to_patch[i] = -1;
 	}
 
-#ifdef SHADOWVOL
-	shadow = new ShadowVolume [data.num_leafs];
-#endif
-
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
 //	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
@@ -1486,7 +1482,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 		{
 			if (face_list[i].fog_density == 0)
 			{
-				for (int j = 0; j < surface_list.size(); j++)
+				for (unsigned int j = 0; j < surface_list.size(); j++)
 				{
 					if (strcmp(data.Fog[face->fog_num].material, surface_list[j]->name) == 0)
 					{
@@ -1614,7 +1610,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 			{
 				if (blend_list[i].fog_density == 0)
 				{
-					for (int j = 0; j < surface_list.size(); j++)
+					for (unsigned int j = 0; j < surface_list.size(); j++)
 					{
 						if (strcmp(data.Fog[face->fog_num].material, surface_list[j]->name) == 0)
 						{
@@ -2358,7 +2354,6 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 
 void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light, vertex_t *shadow_vertex, unsigned int *shadow_index, int &num_index)
 {
-#ifdef SHADOWVOL
 	int leaf_index = find_leaf(light_pos);
 	int vertex_count = 0;
 	int index_count = 0;
@@ -2373,8 +2368,8 @@ void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light,
 		int num_index = 0;
 		int temp = 0;
 
-//		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
-//			continue;
+		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
+			continue;
 
 		for (int j = 0; j < leaf->num_faces; j++)
 		{
@@ -2389,41 +2384,10 @@ void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light,
 		}
 	}
 	num_index = index_count;
-#endif
 }
 
 
 
-void Bsp::RenderShadowVolumes(Graphics &gfx, vec3 &pos, int current_light)
-{
-#ifdef SHADOWVOL
-	int leaf_index = find_leaf(pos);
-
-	leaf_t *player_Leaf = &data.Leaf[leaf_index];
-
-	// loop through all leaves, checking if leaf visible from current leaf
-	for (unsigned int i = 0; i < data.num_leafs; i++)
-	{
-		leaf_t *leaf = &data.Leaf[i];
-		int temp = 0;
-
-//		if (!cluster_visible(player_Leaf->cluster, leaf->cluster))
-//			continue;
-
-			for (int j = 0; j < leaf->num_faces; j++)
-			{
-				int face_index = data.LeafFace[leaf->leaf_face + j];
-				face_t *face = &data.Face[face_index];
-
-//				if (current_light == temp)
-				{
-					shadow[i].render(gfx);
-				}
-				temp++;
-			}
-	}
-#endif
-}
 
 
 void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)

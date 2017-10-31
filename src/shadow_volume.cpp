@@ -6,14 +6,16 @@ ShadowVolume::ShadowVolume()
 	vbo = -1;
 	ibo = -1;
 	position = vec3(0.0f, 0.0f, 0.0f);
+	alloc_vert = 0;
+	alloc_edge = 0;
 
-	for (int i = 0; i < MAX_VERT; i++)
-	{
-		index_array[i] = i;
-	}
+	vert_array = NULL;
+	pEdges = NULL;
+	index_array = NULL;
+
 }
 
-void ShadowVolume::AddEdge(int *pEdge, int &num_edge, int v0, int v1)
+void ShadowVolume::AddEdge(int *pEdge, unsigned int &num_edge, int v0, int v1)
 {
 	// Remove interior edges (which appear in the list twice)
 	for (int i = 0; i < num_edge; i++)
@@ -38,9 +40,33 @@ void ShadowVolume::AddEdge(int *pEdge, int &num_edge, int v0, int v1)
 
 int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *pIndex, unsigned int start_index, unsigned int num_face, vec3 &vLight)
 {
-	int num_edge = 0;
+	unsigned int num_edge = 0;
 	num_vert = 0;
 
+	if (num_face * 6 > alloc_vert)
+	{
+		if (vert_array != NULL)
+			delete[] vert_array;
+
+		if (index_array != NULL)
+			delete[] index_array;
+
+		if (pEdges != NULL)
+			delete[] pEdges;
+
+
+		vert_array = new vertex_t[num_face * 6];
+		index_array = new unsigned int [num_face * 6];
+		pEdges = new int[num_face * 6];
+
+		alloc_vert = num_face * 6;
+
+		for (unsigned int i = 0; i < num_face * 6; i++)
+		{
+			index_array[i] = i;
+		}
+
+	}
 
 	// For each face
 	for (unsigned int i = 0; i < num_face; i++)

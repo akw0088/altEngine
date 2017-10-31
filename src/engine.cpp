@@ -1328,12 +1328,12 @@ void Engine::render_shadowmaps(bool everything)
 		for (int j = 0; j < 6; j++)
 		{
 			matrix4 mvp = cube[j] * light->shadow_projection;
-			/*
+
 			bool visible = aabb_visible(camera_frame.pos, camera_frame.pos + camera_frame.forward + camera_frame.up, mvp);
 
 			if (visible == false)
 				continue;
-			*/
+
 
 			if (everything == false)
 			{
@@ -1739,8 +1739,8 @@ void Engine::render_scene_using_shadowmap(bool lights)
 	else
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
-
-	q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+	if (enable_map)
+		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
 
 #ifdef PARTICLES
 	gfx.Blend(true);
@@ -2007,7 +2007,8 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			entity->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
-			q3map.render_model(entity->model_ref, gfx);
+			if (enable_map)
+				q3map.render_model(entity->model_ref, gfx);
 
 			entity->position = old;
 		}
@@ -2126,13 +2127,13 @@ void Engine::render_shadow_volumes()
 
 	matrix4 mvp = transformation * projection;
 	global.Params(mvp, 0);
-	for (int i = max_dynamic; i < entity_list.size(); i++)
+	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light)
 			entity_list[i]->light->render_map_shadowvol(gfx);
 	}
 	
-	q3map.RenderShadowVolumes(gfx, camera_frame.pos, current_light);
+//	q3map.RenderShadowVolumes(gfx, camera_frame.pos, current_light);
 
 	if (enable_entities == false)
 		return;
@@ -2488,6 +2489,7 @@ void Engine::spatial_testing()
 //		printf("bsp leaf %d Handled by thread %d of %d\n", entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
 
+
 		// set pursue / evade
 		// (really need to move elsewhere, but had an entity loop here)
 		RigidBody *rigid = entity_list[i]->rigid;
@@ -2509,15 +2511,14 @@ void Engine::spatial_testing()
 
 		if (entity_list[i]->model)
 		{
+			matrix4 trans;
+			matrix4 mvp;
+
 			bool bsp_visible = false;
 			//bool frustum_visible = false;
 			bool visible = false;
 
-
-			matrix4 trans;
-
 			camera_frame.set(trans);
-			matrix4 mvp;
 			entity_list[i]->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
 
@@ -2592,11 +2593,12 @@ void Engine::spatial_testing()
 
 			int player = find_type(ENT_PLAYER, 0);
 
+	
+			entity_list[i]->visible = q3map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
+			entity_list[i]->bsp_leaf = leaf_b;
 			if (player != -1)
 				entity_list[player]->bsp_leaf = leaf_a;
 
-			entity_list[i]->visible = q3map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
-			entity_list[i]->bsp_leaf = leaf_b;
 		}
 
 		if (entity_list[i]->visible == false)
