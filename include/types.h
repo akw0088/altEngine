@@ -743,6 +743,11 @@ typedef enum
 // dropped items, muzzle flashes, shells, projectiles etc
 typedef enum {
 	NT_NONE,
+	NT_BULLET_HIT,
+	NT_PLASMA_HIT,
+	NT_SHELL,
+	NT_BULLET,
+	NT_BOOM,
 	NT_ROCKET,
 	NT_ROCKET_LAUNCHER,
 	NT_GRENADE,

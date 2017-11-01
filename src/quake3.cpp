@@ -3271,7 +3271,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
-	add_decal(frame.pos, frame, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
+	add_decal(frame.pos, frame, NT_PLASMA_HIT, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + frame.forward * -75.0f;
@@ -3877,7 +3877,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 
-	add_decal(frame.pos, frame, * (model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+	add_decal(frame.pos, frame, NT_BULLET_HIT, * (model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * 75.0f;
@@ -3894,6 +3894,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 	Entity *bullet = engine->entity_list[engine->get_entity()];
+	bullet->nettype = NT_BULLET;
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = frame.pos;
 	bullet->rigid->clone(*(model_table[MODEL_BULLET]));
@@ -4027,6 +4028,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	vec3 right = vec3::crossproduct(frame.forward, frame.up);
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
+	shell->nettype = NT_SHELL;
 	shell->rigid = new RigidBody(shell);
 	shell->position = frame.pos;
 	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
@@ -4050,6 +4052,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
 	shell2->rigid = new RigidBody(shell2);
+	shell2->nettype = NT_SHELL;
 	shell2->position = frame.pos;
 	shell2->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
 	shell2->rigid->clone(*(model_table[MODEL_SHELL]));
@@ -4091,7 +4094,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		frame.forward = dir;
 
 
-		add_decal(frame.pos, frame, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+		add_decal(frame.pos, frame, NT_BULLET_HIT, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
 
 
 		if (client == false)
@@ -7626,6 +7629,90 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	switch (item)
 	{
 	case NT_NONE:
+		engine->clean_entity(ent_id);
+		break;
+	case NT_BULLET_HIT:
+		ent->nettype = NT_BULLET_HIT;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(model_table[MODEL_BULLET_HIT]));
+		ent->rigid->gravity = false;
+		ent->rigid->bounce = 2;
+		ent->model = ent->rigid;
+		ent->rigid->noclip = true;
+		ent->visible = true; // accomodate for low spatial testing rate
+		ent->bsp_leaf = true;
+		ent->rigid->blend = true;
+		ent->rigid->cull_none = true;
+
+		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile->idle = true;
+		ent->projectile->explode_timer = 10;
+		ent->projectile->idle_timer = 10;
+		ent->projectile->hide = false;
+		break;
+	case NT_PLASMA_HIT:
+		ent->nettype = NT_PLASMA_HIT;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(model_table[MODEL_PLASMA_HIT]));
+		ent->rigid->gravity = false;
+		ent->rigid->bounce = 2;
+		ent->model = ent->rigid;
+		ent->rigid->noclip = true;
+		ent->visible = true; // accomodate for low spatial testing rate
+		ent->bsp_leaf = true;
+		ent->rigid->blend = true;
+		ent->rigid->cull_none = true;
+
+		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile->idle = true;
+		ent->projectile->explode_timer = 10;
+		ent->projectile->idle_timer = 10;
+		ent->projectile->hide = false;
+		break;
+	case NT_BULLET:
+		ent->nettype = NT_BULLET;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(model_table[MODEL_BULLET]));
+		ent->rigid->gravity = false;
+		ent->rigid->bounce = 2;
+		ent->model = ent->rigid;
+		ent->rigid->noclip = false;
+		ent->visible = true; // accomodate for low spatial testing rate
+		ent->bsp_leaf = true;
+		ent->rigid->blend = true;
+		ent->rigid->cull_none = true;
+		break;
+	case NT_SHELL:
+		ent->nettype = NT_SHELL;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(model_table[MODEL_SHELL]));
+		ent->rigid->gravity = false;
+		ent->rigid->bounce = 2;
+		ent->model = ent->rigid;
+		ent->rigid->noclip = false;
+		ent->visible = true; // accomodate for low spatial testing rate
+		ent->bsp_leaf = true;
+		ent->rigid->blend = true;
+		ent->rigid->cull_none = true;
+		break;
+	case NT_BOOM:
+		ent->nettype = NT_BOOM;
+		ent->rigid = new RigidBody(ent);
+		ent->rigid->clone(*(model_table[MODEL_BOOM]));
+		ent->rigid->gravity = false;
+		ent->rigid->bounce = 2;
+		ent->model = ent->rigid;
+		ent->rigid->noclip = true;
+		ent->visible = true; // accomodate for low spatial testing rate
+		ent->bsp_leaf = true;
+		ent->rigid->blend = true;
+		ent->rigid->cull_none = true;
+
+		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile->idle = true;
+		ent->projectile->explode_timer = 10;
+		ent->projectile->idle_timer = 10;
+		ent->projectile->hide = false;
 		break;
 	case NT_ROCKET:
 		ent->nettype = NT_ROCKET;
@@ -7682,7 +7769,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->translational_friction = 0.9f;
 		ent->num_particle = 5000;
-
+		ent->particle_on = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->explode_index = SND_EXPLODE;
@@ -7760,7 +7847,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->noclip = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
-		sprintf(ent->trigger->action, " ");
+		sprintf(ent->projectile->action, " ");
 		ent->projectile->hide = false;
 		ent->projectile->radius = 25.0f;
 		ent->projectile->idle = true;
@@ -8467,6 +8554,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 							int sprite_index = MIN(7, projectile->explode_timer);
 							if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
 							{
+								ent->nettype = NT_BOOM;
 								ent->model->clone(*model_table[MODEL_BOOM]);
 								ent->model->blend = true;
 							}
@@ -8476,6 +8564,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 						{
 							if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
 							{
+								ent->nettype = NT_PLASMA_HIT;
 								ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
 								ent->model->blend = true;
 							}
@@ -8770,7 +8859,7 @@ void Quake3::set_state(serverdata_t *data)
 	}
 }
 
-void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, float offset, bool idle, int idle_timer)
+void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Model &decal_model, float offset, bool idle, int idle_timer)
 {
 	plane_t plane;
 	float depth;
@@ -8827,6 +8916,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal->bsp_leaf = true;
 		decal->rigid->blend = true;
 		decal->rigid->cull_none = true;
+		decal->nettype = nettype;
 
 		decal->projectile = new Projectile(decal, engine->audio);
 		decal->projectile->idle = idle;
