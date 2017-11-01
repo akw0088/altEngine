@@ -25,6 +25,8 @@ public:
 
 	void check_triggers(Player *player, Entity *ent, int self, vector<Entity *> &entity_list);
 	void check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list);
+	void check_func(Player *player, Entity *ent, int self, vector<Entity *> &entity_list);
+
 	void render_hud(double last_frametime);
 	void draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int ent_num);
 	void draw_line(Entity *a, Entity *b, Menu &menu, vec3 &color);

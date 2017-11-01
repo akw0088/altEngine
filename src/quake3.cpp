@@ -3199,6 +3199,7 @@ void Quake3::step(int frame_step)
 			if (player && (player->type == PLAYER || player->type == CLIENT || player->type == BOT || player->type == SERVER))
 			{
 				check_triggers(player, engine->entity_list[j], i, engine->entity_list);
+				check_func(player, engine->entity_list[j], i, engine->entity_list);
 				check_projectiles(player, engine->entity_list[j], owner, i, j, engine->entity_list);
 			}
 		}
@@ -8093,195 +8094,6 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 		}
 	}
 
-
-	if (ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END)
-	{
-		float distance = (player->entity->position - ent->position).magnitude();
-
-
-		// start closing a distance further than we started opening
-		if (distance > 300.0f && ent->opening == true)
-		{
-			ent->opening = false;
-			if (ent->model_lerp > 0.99f)
-			{
-				engine->play_wave(ent->position, SND_DOOR_END);
-			}
-		}
-
-		if (ent->opening == false && ent->model_lerp > 0.0)
-		{
-
-			if (ent->ent_type == ENT_FUNC_PLAT)
-			{
-				ent->model_offset = ent->model_offset * (1.0f - ent->model_lerp);
-			}
-			else
-			{
-				ent->model_offset = ent->model_offset * ent->model_lerp;
-			}
-			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
-
-
-			if (ent->model_lerp > 0.0f)
-				ent->model_lerp -= 0.0001f;
-			else
-				ent->model_lerp = 0.0f;
-		}
-
-
-		// only open if very close
-		if (distance > 100.0f && ent->opening == false)
-		{
-			return;
-		}
-
-		ent->opening = true;
-
-		if (ent->ent_type == ENT_FUNC_STATIC)
-			return;
-
-
-		if (ent->ent_type == ENT_TRIGGER_MULTIPLE)
-		{
-			float distance = (ent->position - player->entity->position).magnitude();
-
-			if (distance < 75.0f)
-			{
-				for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
-				{
-					if (ent == entity_list[j])
-						continue;
-
-					if (strcmp(ent->target, entity_list[j]->target_name) == 0)
-					{
-						printf("trigger_multiple triggered target %s of type %s\n", ent->target, entity_list[j]->type);
-						if (entity_list[j]->trigger)
-							console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
-					}
-				}
-			}
-		}
-
-
-		if (ent->ent_type == ENT_FUNC_DOOR || ent->ent_type == ENT_FUNC_BUTTON || ent->ent_type == ENT_FUNC_PLAT)
-		{
-//				float amount = entity_list[i]->height;
-			float amount = 50.0f;
-			float half_x = 1.0f;
-			float half_y = 1.0f;
-			float half_z = 1.0f;
-
-			if (ent->ent_type == ENT_FUNC_BUTTON)
-			{
-				amount = 10.0f; // buttons are tiny doors ;)
-			}
-			else if (ent->ent_type == ENT_FUNC_PLAT)
-			{
-				amount = (engine->q3map.data.Model[ent->model_ref].max[1]
-					- engine->q3map.data.Model[ent->model_ref].min[1]);
-
-				amount *= 0.9f;
-				if (amount < 0)
-					amount *= -1;
-			}
-
-
-
-			if (ent->model_lerp < 0.01f)
-			{
-				if (ent->ent_type == ENT_FUNC_BUTTON)
-				{
-					engine->play_wave(ent->position, SND_BUTTON);
-					for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
-					{
-						if (ent == entity_list[j])
-							continue;
-
-						if (strcmp(ent->target, entity_list[j]->target_name) == 0)
-						{
-							printf("func_button triggered target %s of type %s\n", ent->target, entity_list[j]->type);
-						}
-					}
-				}
-				else
-				{
-					engine->play_wave(ent->position, SND_DOOR_START);
-				}
-			}
-
-			if (ent->model_lerp < 1.0f)
-				ent->model_lerp += 0.01f;
-
-			if (abs32(amount) < 0.001f)
-			{
-				half_x = (engine->q3map.data.Model[ent->model_ref].max[0]
-					- engine->q3map.data.Model[ent->model_ref].min[0]);
-
-				if (half_x < 0)
-					half_x *= -1;
-
-				half_y = (engine->q3map.data.Model[ent->model_ref].max[1]
-					- engine->q3map.data.Model[ent->model_ref].min[1]);
-
-				if (half_y < 0)
-					half_y *= -1;
-
-				half_z = (engine->q3map.data.Model[ent->model_ref].max[2]
-					- engine->q3map.data.Model[ent->model_ref].min[2]);
-
-				if (half_z < 0)
-					half_z *= -1;
-			}
-
-
-			amount = amount * ent->model_lerp;
-
-			// platforms start up (so lightmaps are generated)
-			// so invert lerp value
-			if (ent->ent_type == ENT_FUNC_PLAT)
-				amount = amount * (1.0f - ent->model_lerp);
-
-
-
-			vec3 end;
-			switch (ent->angle)
-			{
-			case 0:
-			case 360:
-				ent->model_offset = vec3(amount, 0.0f, 0.0f);
-				break;
-			case 90:
-				ent->model_offset = vec3(0.0f, 0.0f, amount);
-				break;
-			case 180:
-				ent->model_offset = vec3(-amount, 0.0f, 0.0f);
-				break;
-			case 270:
-				ent->model_offset = vec3(0.0f, 0.0f, -amount);
-				break;
-			case -1://up
-				ent->model_offset = vec3(0.0f, amount, 0.0f);
-				break;
-			case -2://down
-				ent->model_offset = vec3(0.0f, -amount, 0.0f);
-				break;
-			}
-
-
-			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
-
-				
-		}
-	}
-
-
-	if (ent->model_ref > 0 && (unsigned int)ent->model_ref < engine->q3map.data.num_model)
-	{
-		handle_model_trigger(entity_list, ent, self);
-	}
-
-
 	// Not a trigger
 	Trigger *trigger = ent->trigger;
 
@@ -8425,6 +8237,199 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 			trigger->timeout = trigger->timeout_value;
 		}
 	}
+}
+
+void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
+{
+	bool inside = false;
+	RigidBody *rigid = ent->rigid;
+
+	if (ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END)
+	{
+		float distance = (player->entity->position - ent->position).magnitude();
+
+
+		// start closing a distance further than we started opening
+		if (distance > 300.0f && ent->opening == true)
+		{
+			ent->opening = false;
+			if (ent->model_lerp > 0.99f)
+			{
+				engine->play_wave(ent->position, SND_DOOR_END);
+			}
+		}
+
+		if (ent->opening == false && ent->model_lerp > 0.0)
+		{
+
+			if (ent->ent_type == ENT_FUNC_PLAT)
+			{
+				ent->model_offset = ent->model_offset * (1.0f - ent->model_lerp);
+			}
+			else
+			{
+				ent->model_offset = ent->model_offset * ent->model_lerp;
+			}
+			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
+
+
+			if (ent->model_lerp > 0.0f)
+				ent->model_lerp -= 0.0001f;
+			else
+				ent->model_lerp = 0.0f;
+		}
+
+
+		// only open if very close
+		if (distance > 100.0f && ent->opening == false)
+		{
+			return;
+		}
+
+		ent->opening = true;
+
+		if (ent->ent_type == ENT_FUNC_STATIC)
+			return;
+
+
+		if (ent->ent_type == ENT_TRIGGER_MULTIPLE)
+		{
+			float distance = (ent->position - player->entity->position).magnitude();
+
+			if (distance < 75.0f)
+			{
+				for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
+				{
+					if (ent == entity_list[j])
+						continue;
+
+					if (strcmp(ent->target, entity_list[j]->target_name) == 0)
+					{
+						printf("trigger_multiple triggered target %s of type %s\n", ent->target, entity_list[j]->type);
+						if (entity_list[j]->trigger)
+							console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+					}
+				}
+			}
+		}
+
+
+		if (ent->ent_type == ENT_FUNC_DOOR || ent->ent_type == ENT_FUNC_BUTTON || ent->ent_type == ENT_FUNC_PLAT)
+		{
+			//				float amount = entity_list[i]->height;
+			float amount = 50.0f;
+			float half_x = 1.0f;
+			float half_y = 1.0f;
+			float half_z = 1.0f;
+
+			if (ent->ent_type == ENT_FUNC_BUTTON)
+			{
+				amount = 10.0f; // buttons are tiny doors ;)
+			}
+			else if (ent->ent_type == ENT_FUNC_PLAT)
+			{
+				amount = (engine->q3map.data.Model[ent->model_ref].max[1]
+					- engine->q3map.data.Model[ent->model_ref].min[1]);
+
+				amount *= 0.9f;
+				if (amount < 0)
+					amount *= -1;
+			}
+
+
+
+			if (ent->model_lerp < 0.01f)
+			{
+				if (ent->ent_type == ENT_FUNC_BUTTON)
+				{
+					engine->play_wave(ent->position, SND_BUTTON);
+					for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
+					{
+						if (ent == entity_list[j])
+							continue;
+
+						if (strcmp(ent->target, entity_list[j]->target_name) == 0)
+						{
+							printf("func_button triggered target %s of type %s\n", ent->target, entity_list[j]->type);
+						}
+					}
+				}
+				else
+				{
+					engine->play_wave(ent->position, SND_DOOR_START);
+				}
+			}
+
+			if (ent->model_lerp < 1.0f)
+				ent->model_lerp += 0.01f;
+
+			if (abs32(amount) < 0.001f)
+			{
+				half_x = (engine->q3map.data.Model[ent->model_ref].max[0]
+					- engine->q3map.data.Model[ent->model_ref].min[0]);
+
+				if (half_x < 0)
+					half_x *= -1;
+
+				half_y = (engine->q3map.data.Model[ent->model_ref].max[1]
+					- engine->q3map.data.Model[ent->model_ref].min[1]);
+
+				if (half_y < 0)
+					half_y *= -1;
+
+				half_z = (engine->q3map.data.Model[ent->model_ref].max[2]
+					- engine->q3map.data.Model[ent->model_ref].min[2]);
+
+				if (half_z < 0)
+					half_z *= -1;
+			}
+
+
+			amount = amount * ent->model_lerp;
+
+			// platforms start up (so lightmaps are generated)
+			// so invert lerp value
+			if (ent->ent_type == ENT_FUNC_PLAT)
+				amount = amount * (1.0f - ent->model_lerp);
+
+
+
+			vec3 end;
+			switch (ent->angle)
+			{
+			case 0:
+			case 360:
+				ent->model_offset = vec3(amount, 0.0f, 0.0f);
+				break;
+			case 90:
+				ent->model_offset = vec3(0.0f, 0.0f, amount);
+				break;
+			case 180:
+				ent->model_offset = vec3(-amount, 0.0f, 0.0f);
+				break;
+			case 270:
+				ent->model_offset = vec3(0.0f, 0.0f, -amount);
+				break;
+			case -1://up
+				ent->model_offset = vec3(0.0f, amount, 0.0f);
+				break;
+			case -2://down
+				ent->model_offset = vec3(0.0f, -amount, 0.0f);
+				break;
+			}
+
+
+			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
+
+
+		}
+	}
+
+	if (ent->model_ref > 0 && (unsigned int)ent->model_ref < engine->q3map.data.num_model)
+	{
+		handle_model_trigger(entity_list, ent, self);
+	}
+
 }
 
 void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list)
