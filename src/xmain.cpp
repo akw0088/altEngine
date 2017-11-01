@@ -336,7 +336,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 				count = XLookupString((XKeyEvent *)&event, buffer, 128, &keysym, &compose);
 				for(int i = 0; i < count; i++)
 				{
-					altEngine.keystroke(buffer[i]);
+					altEngine.keystroke(buffer[i], buffer);
 				}
 			}
 

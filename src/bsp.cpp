@@ -1496,7 +1496,8 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 //			float fog_factor = 64.0f / face_list[i].fog_density;
 //			fog_factor = 1.0f;
 
-			mlight2.set_fog(1.0f, 200.0f, 1500.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
+			vec3 fog_color = face_list[i].fog_color;
+			mlight2.set_fog(1.0f, 200.0f, 1500.0f, fog_color);
 			//			gfx.Depth(false);
 		}
 
@@ -1516,7 +1517,8 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 		if (face->fog_num != -1 && enable_fog)
 		{
-			mlight2.set_fog(0.0f, 200.0f, 1500.0f, vec3(face_list[i].fog_color.x, face_list[i].fog_color.y, face_list[i].fog_color.z));
+			vec3 fog_color = face_list[i].fog_color;
+			mlight2.set_fog(0.0f, 200.0f, 1500.0f, face_list[i].fog_color);
 		}
 
 
@@ -1625,7 +1627,8 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 				float fog_factor;// = 64.0f / blend_list[i].fog_density;
 				fog_factor = 1.0f;
-				mlight2.set_fog(1.0f, 200.0f, fog_factor * 1500.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
+				vec3 fog_color = blend_list[i].fog_color;
+				mlight2.set_fog(1.0f, 200.0f, fog_factor * 1500.0f, fog_color);
 				//			gfx.Depth(false);
 			}
 
@@ -1650,7 +1653,8 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 			if (face->fog_num != -1 && enable_fog)
 			{
-				mlight2.set_fog(0.0f, 200.0f, 1500.0f, vec3(blend_list[i].fog_color.x, blend_list[i].fog_color.y, blend_list[i].fog_color.z));
+				vec3 fog_color = blend_list[i].fog_color;
+				mlight2.set_fog(0.0f, 200.0f, 1500.0f, blend_list[i].fog_color);
 			}
 
 

@@ -842,7 +842,7 @@ bool Menu::delta(float x, float y)
 		menu_t *item = menu_list[i];
 		if (item->state == menu_state)
 		{
-			float dist  = sqrt((item->position[1] - y) * (item->position[1] - y) + (item->position[0] - x) * (item->position[0] - x));
+			float dist  = newtonSqrt((item->position[1] - y) * (item->position[1] - y) + (item->position[0] - x) * (item->position[0] - x));
 			if (min_dist > dist)
 			{
 				min_dist = dist;

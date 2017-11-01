@@ -230,7 +230,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	menu.data.volume = value / 65535.0f;
 	wglSwapIntervalEXT(0);
 #else
-	glXSwapIntervalEXT(0);
+//	glXSwapInterval(0);
 #endif
 
 
@@ -520,9 +520,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	gfx.resize(xres,yres);
 
 	int x, y, bpp, refresh_rate;
+#ifdef WIN32
 	get_resolution(x, y, bpp, refresh_rate);
 	sprintf(menu.data.resolution, "%dx%d %dHz", x, y, refresh_rate);
 	sprintf(menu.data.window, "%dx%d", xres, yres);
+#endif
 	menu.render(global);
 	gfx.swap();
 #endif
@@ -641,7 +643,8 @@ void Engine::load(char *level)
 
 	
 
-	mlight2.set_fog(0.0f, 100.0f, 500.0f, vec3(0.0f, 1.0f, 0.0f));
+	vec3 green(0.0f, 1.0f, 0.0f);
+	mlight2.set_fog(0.0f, 100.0f, 500.0f, green);
 	mlight2.set_contrast(2.0f);
 	mlight2.set_ambient(0.2f);
 	mlight2.set_lightmap(1.0f);
@@ -1335,7 +1338,8 @@ void Engine::render_shadowmaps(bool everything)
 		{
 			matrix4 mvp = cube[j] * light->shadow_projection;
 
-			bool visible = aabb_visible(camera_frame.pos, camera_frame.pos + camera_frame.forward + camera_frame.up, mvp);
+			vec3 point = camera_frame.pos + camera_frame.forward + camera_frame.up;
+			bool visible = aabb_visible(camera_frame.pos, point, mvp);
 
 			if (visible == false)
 				continue;
@@ -2204,7 +2208,7 @@ void Engine::screenshot(unsigned int &luminance, bool luminance_only)
 //	gfx.bindFramebuffer(0);
 //	gfx.resize(width, height);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, render_fbo);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 //	gfx.SelectTexture(0, quad_tex);
 	//glGetTexImage(GL_TEXTURE_2D, quad_tex, GL_UNSIGNED_BYTE, GL_RGBA, pixel);
@@ -5368,12 +5372,12 @@ void Engine::console(char *cmd)
 				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
 #endif
 #ifdef __linux
-			if (menu.data.vsync == 0)
-				glXSwapIntervalEXT(0); //adaptive vsync (disables stupid divide crap)
-			else if (menu.data.vsync == 1)
-				glXSwapIntervalEXT(1);
-			else if (menu.data.vsync == 2)
-				glXSwapIntervalEXT(-1);
+//			if (menu.data.vsync == 0)
+			//	glXSwapIntervalExt(0); //adaptive vsync (disables stupid divide crap)
+//			else if (menu.data.vsync == 1)
+			//	glXSwapIntervalExt(1);
+//			else if (menu.data.vsync == 2)
+			//	glXSwapIntervalExt(-1);
 #endif
 			return;
 		}
@@ -5391,12 +5395,12 @@ void Engine::console(char *cmd)
 				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
 #endif
 #ifdef __linux
-			if (menu.data.vsync == 0)
-				glXSwapIntervalEXT(0); //adaptive vsync (disables stupid divide crap)
-			else if (menu.data.vsync == 1)
-				glXSwapIntervalEXT(1);
-			else if (menu.data.vsync == 2)
-				glXSwapIntervalEXT(-1);
+//			if (menu.data.vsync == 0)
+				//glXSwapIntervalExt(0); //adaptive vsync (disables stupid divide crap)
+//			else if (menu.data.vsync == 1)
+				//glXSwapIntervalExt(1);
+//			else if (menu.data.vsync == 2)
+				//glXSwapIntervalExt(-1);
 #endif
 			return;
 		}
