@@ -20,6 +20,10 @@
 // This is extra clipping past what is necessary, making you stay further away from walls
 #define BOUNCE		1.2f
 
+
+// Distance we ignore the server position before correcting (usually lags behind by ping)
+#define DELTA_GRACE 200.0f
+
 extern double com_maxfps;
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
@@ -3773,12 +3777,25 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		// current entity has the clients predicted position
 		// the net->position has the server (lagged) position
 		// Need to lerp between the two, but then we have time sync issues
-		entity_list[index]->position = net->position;
 		entity_list[index]->rigid->center = net->center;
 		entity_list[index]->rigid->morientation = net->morientation;
 
 		entity_list[index]->rigid->velocity = net->velocity;
-		camera_frame.pos = net->position;
+		
+		vec3 position_delta;
+
+		position_delta = camera_frame.pos - net->position;
+
+		if (position_delta.magnitude() >= DELTA_GRACE)
+		{
+			// Server will use catch up to our position (eventually)
+			// So only force a correction for large deltas
+			camera_frame.pos = net->position;
+			entity_list[index]->position = net->position;
+		}
+
+
+
 		//printf("Got player data index %d pos %3.3f %3.3f %3.3f\n", index, net->position.x, net->position.y, net->position.z );
 	}
 	else
