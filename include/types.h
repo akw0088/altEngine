@@ -815,6 +815,7 @@ typedef struct
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
+	vec3			center;
 
 	short int		health;
 	unsigned short int		armor;

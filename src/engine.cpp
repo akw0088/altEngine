@@ -3569,14 +3569,7 @@ void Engine::server_recv()
 				console(cmd);
 			}
 		}
-
-		/*
-		"rcon" is a remote command to the server.  It's sent as "rcon" followed by the server password,
-		followed by the command string to be executed.
-		*/
 	}
-
-
 	/*
 		"connect" is the first step in a client connecting to a server.  You send the "connect" string followed by the infoString
 		containing the protocol version of the client, the qport, the challenge string (obtained via getchallenge), and the userinfo.
@@ -3677,6 +3670,7 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			net_player->angular_velocity = player->entity->rigid->angular_velocity;
 			net_player->velocity = player->entity->rigid->velocity;
 			net_player->position = player->entity->position;
+			net_player->center = player->entity->rigid->center;
 
 			ent.ctype = NET_PLAYER;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_player_t);
@@ -3780,6 +3774,7 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		// the net->position has the server (lagged) position
 		// Need to lerp between the two, but then we have time sync issues
 		entity_list[index]->position = net->position;
+		entity_list[index]->rigid->center = net->center;
 		entity_list[index]->rigid->morientation = net->morientation;
 
 		entity_list[index]->rigid->velocity = net->velocity;
