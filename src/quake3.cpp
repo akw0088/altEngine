@@ -3185,28 +3185,22 @@ void Quake3::step(int frame_step)
 
 //		printf("bsp leaf %d Handled by thread %d of %d\n", engine->entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
+		engine->num_light = 0;
+		for (int j = engine->max_player; j < engine->entity_list.size(); j++)
+		{
+			if (engine->entity_list[j]->light)
+				engine->num_light++;
 
+			Entity *owner = NULL;
 
+			if (engine->entity_list[j]->projectile && engine->entity_list[j]->projectile->owner != -1)
+				owner = engine->entity_list[engine->entity_list[j]->projectile->owner];
 
-		if (player && player->type == PLAYER)
-		{
-			check_triggers(i, engine->entity_list);
-			check_projectiles(i, engine->entity_list);
-		}
-		if (engine->server_flag && player && player->type == CLIENT)
-		{
-			check_triggers(i, engine->entity_list);
-			check_projectiles(i, engine->entity_list);
-		}
-		else if (player && player->type == BOT)
-		{
-			check_triggers(i, engine->entity_list);
-			check_projectiles(i, engine->entity_list);
-		}
-		else if (player && player->type == SERVER)
-		{
-			check_triggers(i, engine->entity_list);
-			check_projectiles(i, engine->entity_list);
+			if (player && (player->type == PLAYER || player->type == CLIENT || player->type == BOT || player->type == SERVER))
+			{
+				check_triggers(player, engine->entity_list[j], i, engine->entity_list);
+				check_projectiles(player, engine->entity_list[j], owner, i, j, engine->entity_list);
+			}
 		}
 	}
 
@@ -8084,658 +8078,643 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 }
 
 
-void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
+void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
 {
-	engine->num_light = 0;
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	bool inside = false;
+	RigidBody *rigid = ent->rigid;
+
+	if (rigid && rigid->hard_impact)
 	{
-		bool inside = false;
-		RigidBody *rigid = entity_list[i]->rigid;
-
-		if (entity_list[i]->light)
-			engine->num_light++;
-
-		if (rigid && rigid->hard_impact && i >= engine->max_player)
+		if (rigid->impact_velocity <= -RIGID_IMPACT)
 		{
-			if (rigid->impact_velocity <= -RIGID_IMPACT)
-			{
-				rigid->hard_impact = false;
+			rigid->hard_impact = false;
 
-				engine->play_wave(entity_list[i]->position, rigid->impact_index);
+			engine->play_wave(ent->position, rigid->impact_index);
+		}
+	}
+
+
+	if (ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END)
+	{
+		float distance = (player->entity->position - ent->position).magnitude();
+
+
+		// start closing a distance further than we started opening
+		if (distance > 300.0f && ent->opening == true)
+		{
+			ent->opening = false;
+			if (ent->model_lerp > 0.99f)
+			{
+				engine->play_wave(ent->position, SND_DOOR_END);
 			}
 		}
 
-
-		if (entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END)
+		if (ent->opening == false && ent->model_lerp > 0.0)
 		{
-			float distance = (entity_list[self]->position - entity_list[i]->position).magnitude();
 
-
-			// start closing a distance further than we started opening
-			if (distance > 300.0f && entity_list[i]->opening == true)
+			if (ent->ent_type == ENT_FUNC_PLAT)
 			{
-				entity_list[i]->opening = false;
-				if (entity_list[i]->model_lerp > 0.99f)
-				{
-					engine->play_wave(entity_list[i]->position, SND_DOOR_END);
-				}
-			}
-
-			if (entity_list[i]->opening == false && entity_list[i]->model_lerp > 0.0)
-			{
-
-				if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
-				{
-					entity_list[i]->model_offset = entity_list[i]->model_offset * (1.0f - entity_list[i]->model_lerp);
-				}
-				else
-				{
-					entity_list[i]->model_offset = entity_list[i]->model_offset * entity_list[i]->model_lerp;
-				}
-				engine->q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->model_offset;
-
-
-				if (entity_list[i]->model_lerp > 0.0f)
-					entity_list[i]->model_lerp -= 0.0001f;
-				else
-					entity_list[i]->model_lerp = 0.0f;
-			}
-
-
-			// only open if very close
-			if (distance > 100.0f && entity_list[i]->opening == false)
-			{
-				continue;
-			}
-
-			entity_list[i]->opening = true;
-
-			if (entity_list[i]->ent_type == ENT_FUNC_STATIC)
-				continue;
-
-
-			if (entity_list[i]->ent_type == ENT_TRIGGER_MULTIPLE)
-			{
-				float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
-
-				if (distance < 75.0f)
-				{
-					for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
-					{
-						if (i == j)
-							continue;
-
-						if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
-						{
-							printf("trigger_multiple triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
-							if (entity_list[j]->trigger)
-								console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
-						}
-					}
-				}
-			}
-
-
-			if (entity_list[i]->ent_type == ENT_FUNC_DOOR || entity_list[i]->ent_type == ENT_FUNC_BUTTON || entity_list[i]->ent_type == ENT_FUNC_PLAT)
-			{
-//				float amount = entity_list[i]->height;
-				float amount = 50.0f;
-				float half_x = 1.0f;
-				float half_y = 1.0f;
-				float half_z = 1.0f;
-
-				if (entity_list[i]->ent_type == ENT_FUNC_BUTTON)
-				{
-					amount = 10.0f; // buttons are tiny doors ;)
-				}
-				else if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
-				{
-					amount = (engine->q3map.data.Model[entity_list[i]->model_ref].max[1]
-						- engine->q3map.data.Model[entity_list[i]->model_ref].min[1]);
-
-					amount *= 0.9f;
-					if (amount < 0)
-						amount *= -1;
-				}
-
-
-
-				if (entity_list[i]->model_lerp < 0.01f)
-				{
-					if (entity_list[i]->ent_type == ENT_FUNC_BUTTON)
-					{
-						engine->play_wave(entity_list[i]->position, SND_BUTTON);
-						for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
-						{
-							if (i == j)
-								continue;
-
-							if (strcmp(entity_list[i]->target, entity_list[j]->target_name) == 0)
-							{
-								printf("func_button triggered target %s of type %s\n", entity_list[i]->target, entity_list[j]->type);
-							}
-						}
-					}
-					else
-					{
-						engine->play_wave(entity_list[i]->position, SND_DOOR_START);
-					}
-				}
-
-				if (entity_list[i]->model_lerp < 1.0f)
-					entity_list[i]->model_lerp += 0.01f;
-
-				if (abs32(amount) < 0.001f)
-				{
-					half_x = (engine->q3map.data.Model[entity_list[i]->model_ref].max[0]
-						- engine->q3map.data.Model[entity_list[i]->model_ref].min[0]);
-
-					if (half_x < 0)
-						half_x *= -1;
-
-					half_y = (engine->q3map.data.Model[entity_list[i]->model_ref].max[1]
-						- engine->q3map.data.Model[entity_list[i]->model_ref].min[1]);
-
-					if (half_y < 0)
-						half_y *= -1;
-
-					half_z = (engine->q3map.data.Model[entity_list[i]->model_ref].max[2]
-						- engine->q3map.data.Model[entity_list[i]->model_ref].min[2]);
-
-					if (half_z < 0)
-						half_z *= -1;
-				}
-
-
-				amount = amount * entity_list[i]->model_lerp;
-
-				// platforms start up (so lightmaps are generated)
-				// so invert lerp value
-				if (entity_list[i]->ent_type == ENT_FUNC_PLAT)
-					amount = amount * (1.0f - entity_list[i]->model_lerp);
-
-
-
-				vec3 end;
-				switch (entity_list[i]->angle)
-				{
-				case 0:
-				case 360:
-					entity_list[i]->model_offset = vec3(amount, 0.0f, 0.0f);
-					break;
-				case 90:
-					entity_list[i]->model_offset = vec3(0.0f, 0.0f, amount);
-					break;
-				case 180:
-					entity_list[i]->model_offset = vec3(-amount, 0.0f, 0.0f);
-					break;
-				case 270:
-					entity_list[i]->model_offset = vec3(0.0f, 0.0f, -amount);
-					break;
-				case -1://up
-					entity_list[i]->model_offset = vec3(0.0f, amount, 0.0f);
-					break;
-				case -2://down
-					entity_list[i]->model_offset = vec3(0.0f, -amount, 0.0f);
-					break;
-				}
-
-
-				engine->q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->model_offset;
-
-				
-			}
-		}
-
-
-		if (entity_list[i]->model_ref > 0 && (unsigned int)entity_list[i]->model_ref < engine->q3map.data.num_model)
-		{
-			handle_model_trigger(entity_list, entity_list[i], self);
-		}
-
-
-		// Not a trigger
-		Trigger *trigger = entity_list[i]->trigger;
-		Player *player = entity_list[self]->player;
-
-		if (trigger == NULL)
-			continue;
-
-		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
-
-		if (distance < trigger->radius)
-			inside = true;
-
-		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_BLUEFLAG)
-		{
-			if (player->team == TEAM_BLUE)
-			{
-				if (player->holdable_flag)
-				{
-					player->holdable_flag = false;
-					blue_flag_caps++;
-
-					engine->play_wave(entity_list[i]->position, SND_FLAGCAP);
-
-					if (blue_flag_caps >= capturelimit)
-					{
-						endgame("Blue team wins");
-					}
-					else if (blue_flag_caps == red_flag_caps)
-					{
-						engine->play_wave_global(SND_TEAMS_TIED);
-					}
-					else if (blue_flag_caps > red_flag_caps)
-					{
-						engine->play_wave_global(SND_BLUE_LEAD);
-					}
-
-				}
-				continue;
-			}
-		}
-
-		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_REDFLAG)
-		{
-			if (player->team == TEAM_RED)
-			{
-				if (player->holdable_flag)
-				{
-					player->holdable_flag = false;
-					red_flag_caps++;
-
-					if (player->local)
-						engine->play_wave_global(SND_FLAGTAKE);
-					else
-						engine->play_wave(entity_list[i]->position, SND_FLAGTAKE);
-
-					if (red_flag_caps >= capturelimit)
-					{
-						endgame("Red team wins");
-					}
-					else if (blue_flag_caps == red_flag_caps)
-					{
-						engine->play_wave_global(SND_TEAMS_TIED);
-					}
-					else if (blue_flag_caps < red_flag_caps)
-					{
-						engine->play_wave_global(SND_RED_LEAD);
-					}
-				}
-				continue;
-			}
-		}
-
-		if (inside == true && trigger->active == false)
-		{
-			int pickup = true;
-
-			if (trigger->armor && player->armor >= 200)
-				pickup = false;
-
-			if (trigger->health && player->health >= 100)
-				pickup = false;
-
-			if (player->state == PLAYER_DEAD)
-				pickup = false;
-
-			if (player->teleport_timer > 0 && entity_list[i]->ent_type == ENT_TRIGGER_TELEPORT)
-				pickup = false;
-
-
-
-			if (pickup)
-			{
-				if (trigger->action[0] != '\0' && trigger->client_active == false)
-				{
-					if (strstr(trigger->action, "map"))
-					{
-						engine->console(trigger->action);
-						return;
-					}
-					else
-					{
-						console(self, trigger->action, engine->menu, entity_list);
-					}
-				}
-
-				trigger->active = true;
-				trigger->client_active = true;
-
-				entity_list[i]->visible = false;
-				trigger->timeout = entity_list[i]->trigger->timeout_value;
-
-				if (player->local)
-					engine->play_wave_global(trigger->pickup_index);
-				else
-					engine->play_wave(entity_list[i]->position, trigger->pickup_index);
-
-			}
-		}
-
-
-		if (trigger->timeout > 0)
-		{
-			trigger->timeout -= 0.016f;
-		}
-		else
-		{
-			trigger->played = false;
-			if (trigger->active && trigger->noise)
-			{
-				// play periodic sound
-				engine->play_wave(entity_list[i]->position, trigger->respawn_index);
-			}
-
-			if (trigger->noise == false)
-			{
-				// means this sound must be triggered, reset timeout so it's not trigger continously
-				trigger->active = false;
-				trigger->client_active = false;
-//				trigger->timeout = trigger->timeout_value;;
+				ent->model_offset = ent->model_offset * (1.0f - ent->model_lerp);
 			}
 			else
 			{
-				trigger->timeout = trigger->timeout_value;
+				ent->model_offset = ent->model_offset * ent->model_lerp;
 			}
+			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
+
+
+			if (ent->model_lerp > 0.0f)
+				ent->model_lerp -= 0.0001f;
+			else
+				ent->model_lerp = 0.0f;
+		}
+
+
+		// only open if very close
+		if (distance > 100.0f && ent->opening == false)
+		{
+			return;
+		}
+
+		ent->opening = true;
+
+		if (ent->ent_type == ENT_FUNC_STATIC)
+			return;
+
+
+		if (ent->ent_type == ENT_TRIGGER_MULTIPLE)
+		{
+			float distance = (ent->position - player->entity->position).magnitude();
+
+			if (distance < 75.0f)
+			{
+				for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
+				{
+					if (ent == entity_list[j])
+						continue;
+
+					if (strcmp(ent->target, entity_list[j]->target_name) == 0)
+					{
+						printf("trigger_multiple triggered target %s of type %s\n", ent->target, entity_list[j]->type);
+						if (entity_list[j]->trigger)
+							console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+					}
+				}
+			}
+		}
+
+
+		if (ent->ent_type == ENT_FUNC_DOOR || ent->ent_type == ENT_FUNC_BUTTON || ent->ent_type == ENT_FUNC_PLAT)
+		{
+//				float amount = entity_list[i]->height;
+			float amount = 50.0f;
+			float half_x = 1.0f;
+			float half_y = 1.0f;
+			float half_z = 1.0f;
+
+			if (ent->ent_type == ENT_FUNC_BUTTON)
+			{
+				amount = 10.0f; // buttons are tiny doors ;)
+			}
+			else if (ent->ent_type == ENT_FUNC_PLAT)
+			{
+				amount = (engine->q3map.data.Model[ent->model_ref].max[1]
+					- engine->q3map.data.Model[ent->model_ref].min[1]);
+
+				amount *= 0.9f;
+				if (amount < 0)
+					amount *= -1;
+			}
+
+
+
+			if (ent->model_lerp < 0.01f)
+			{
+				if (ent->ent_type == ENT_FUNC_BUTTON)
+				{
+					engine->play_wave(ent->position, SND_BUTTON);
+					for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
+					{
+						if (ent == entity_list[j])
+							continue;
+
+						if (strcmp(ent->target, entity_list[j]->target_name) == 0)
+						{
+							printf("func_button triggered target %s of type %s\n", ent->target, entity_list[j]->type);
+						}
+					}
+				}
+				else
+				{
+					engine->play_wave(ent->position, SND_DOOR_START);
+				}
+			}
+
+			if (ent->model_lerp < 1.0f)
+				ent->model_lerp += 0.01f;
+
+			if (abs32(amount) < 0.001f)
+			{
+				half_x = (engine->q3map.data.Model[ent->model_ref].max[0]
+					- engine->q3map.data.Model[ent->model_ref].min[0]);
+
+				if (half_x < 0)
+					half_x *= -1;
+
+				half_y = (engine->q3map.data.Model[ent->model_ref].max[1]
+					- engine->q3map.data.Model[ent->model_ref].min[1]);
+
+				if (half_y < 0)
+					half_y *= -1;
+
+				half_z = (engine->q3map.data.Model[ent->model_ref].max[2]
+					- engine->q3map.data.Model[ent->model_ref].min[2]);
+
+				if (half_z < 0)
+					half_z *= -1;
+			}
+
+
+			amount = amount * ent->model_lerp;
+
+			// platforms start up (so lightmaps are generated)
+			// so invert lerp value
+			if (ent->ent_type == ENT_FUNC_PLAT)
+				amount = amount * (1.0f - ent->model_lerp);
+
+
+
+			vec3 end;
+			switch (ent->angle)
+			{
+			case 0:
+			case 360:
+				ent->model_offset = vec3(amount, 0.0f, 0.0f);
+				break;
+			case 90:
+				ent->model_offset = vec3(0.0f, 0.0f, amount);
+				break;
+			case 180:
+				ent->model_offset = vec3(-amount, 0.0f, 0.0f);
+				break;
+			case 270:
+				ent->model_offset = vec3(0.0f, 0.0f, -amount);
+				break;
+			case -1://up
+				ent->model_offset = vec3(0.0f, amount, 0.0f);
+				break;
+			case -2://down
+				ent->model_offset = vec3(0.0f, -amount, 0.0f);
+				break;
+			}
+
+
+			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
+
+				
+		}
+	}
+
+
+	if (ent->model_ref > 0 && (unsigned int)ent->model_ref < engine->q3map.data.num_model)
+	{
+		handle_model_trigger(entity_list, ent, self);
+	}
+
+
+	// Not a trigger
+	Trigger *trigger = ent->trigger;
+
+	if (trigger == NULL)
+		return;
+
+	float distance = (ent->position - player->entity->position).magnitude();
+
+	if (distance < trigger->radius)
+		inside = true;
+
+	if (inside && ent->ent_type == ENT_TEAM_CTF_BLUEFLAG)
+	{
+		if (player->team == TEAM_BLUE)
+		{
+			if (player->holdable_flag)
+			{
+				player->holdable_flag = false;
+				blue_flag_caps++;
+
+				engine->play_wave(ent->position, SND_FLAGCAP);
+
+				if (blue_flag_caps >= capturelimit)
+				{
+					endgame("Blue team wins");
+				}
+				else if (blue_flag_caps == red_flag_caps)
+				{
+					engine->play_wave_global(SND_TEAMS_TIED);
+				}
+				else if (blue_flag_caps > red_flag_caps)
+				{
+					engine->play_wave_global(SND_BLUE_LEAD);
+				}
+
+			}
+			return;
+		}
+	}
+
+	if (inside && ent->ent_type == ENT_TEAM_CTF_REDFLAG)
+	{
+		if (player->team == TEAM_RED)
+		{
+			if (player->holdable_flag)
+			{
+				player->holdable_flag = false;
+				red_flag_caps++;
+
+				if (player->local)
+					engine->play_wave_global(SND_FLAGTAKE);
+				else
+					engine->play_wave(ent->position, SND_FLAGTAKE);
+
+				if (red_flag_caps >= capturelimit)
+				{
+					endgame("Red team wins");
+				}
+				else if (blue_flag_caps == red_flag_caps)
+				{
+					engine->play_wave_global(SND_TEAMS_TIED);
+				}
+				else if (blue_flag_caps < red_flag_caps)
+				{
+					engine->play_wave_global(SND_RED_LEAD);
+				}
+			}
+			return;
+		}
+	}
+
+	if (inside == true && trigger->active == false)
+	{
+		int pickup = true;
+
+		if (trigger->armor && player->armor >= 200)
+			pickup = false;
+
+		if (trigger->health && player->health >= 100)
+			pickup = false;
+
+		if (player->state == PLAYER_DEAD)
+			pickup = false;
+
+		if (player->teleport_timer > 0 && ent->ent_type == ENT_TRIGGER_TELEPORT)
+			pickup = false;
+
+
+
+		if (pickup)
+		{
+			if (trigger->action[0] != '\0' && trigger->client_active == false)
+			{
+				if (strstr(trigger->action, "map"))
+				{
+					engine->console(trigger->action);
+					return;
+				}
+				else
+				{
+					console(self, trigger->action, engine->menu, entity_list);
+				}
+			}
+
+			trigger->active = true;
+			trigger->client_active = true;
+
+			ent->visible = false;
+			trigger->timeout = ent->trigger->timeout_value;
+
+			if (player->local)
+				engine->play_wave_global(trigger->pickup_index);
+			else
+				engine->play_wave(ent->position, trigger->pickup_index);
+
+		}
+	}
+
+
+	if (trigger->timeout > 0)
+	{
+		trigger->timeout -= 0.016f;
+	}
+	else
+	{
+		trigger->played = false;
+		if (trigger->active && trigger->noise)
+		{
+			// play periodic sound
+			engine->play_wave(ent->position, trigger->respawn_index);
+		}
+
+		if (trigger->noise == false)
+		{
+			// means this sound must be triggered, reset timeout so it's not trigger continously
+			trigger->active = false;
+			trigger->client_active = false;
+		}
+		else
+		{
+			trigger->timeout = trigger->timeout_value;
 		}
 	}
 }
 
-void Quake3::check_projectiles(int self, vector<Entity *> &entity_list)
+void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list)
 {
-	engine->num_light = 0;
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	bool inside = false;
+	RigidBody *rigid = ent->rigid;
+
+	// Not a trigger
+	Projectile *projectile = ent->projectile;
+
+	if (projectile == NULL)
+		return;
+
+	// Delete when not moving
+	if (projectile->idle == true)
 	{
-		bool inside = false;
-		RigidBody *rigid = entity_list[i]->rigid;
-
-		// Not a trigger
-		Projectile *projectile = entity_list[i]->projectile;
-
-		if (projectile == NULL)
-			continue;
-
-		// Delete when not moving
-		if (projectile->idle == true)
+		if (ent->rigid)
 		{
-			if (entity_list[i]->rigid)
+			if (ent->rigid->bounce > projectile->num_bounce || ent->rigid->velocity.magnitude() < 0.0001f)
 			{
-				if (entity_list[i]->rigid->bounce > projectile->num_bounce || entity_list[i]->rigid->velocity.magnitude() < 0.0001f)
+				ent->particle_on = false;
+				if (projectile->explode == false)
 				{
-					entity_list[i]->particle_on = false;
-					if (projectile->explode == false)
+					if (projectile->explode_timer <= 0)
 					{
-						if (projectile->explode_timer <= 0)
-						{
-							engine->clean_entity(i);
-							entity_list[i]->~Entity();
-							continue;
-						}
-						else
-						{
-
-							if (projectile->explode_type == 1)
-							{
-								int sprite_index = MIN(7, projectile->explode_timer);
-								if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
-								{
-									entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
-									entity_list[i]->model->blend = true;
-								}
-								entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
-							}
-							else if (projectile->explode_type == 2)
-							{
-								if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
-								{
-									entity_list[i]->model->clone(*model_table[MODEL_PLASMA_HIT]);
-									entity_list[i]->model->blend = true;
-								}
-							}
-							projectile->explode_timer--;
-						}
+						engine->clean_entity(proj_id);
+						ent->~Entity();
+						return;
 					}
 					else
 					{
-						// Explode after being idle for idle_timer time (usually zero)
-						if (projectile->idle_timer <= 0)
-						{
-							projectile->radius = projectile->splash_radius;
-							sprintf(projectile->action, "damage %d", projectile->splash_damage);
-							if (entity_list[i]->light == NULL)
-							{
-								entity_list[i]->light = new Light(entity_list[i], engine->gfx, 999, engine->res_scale);
-							}
-							entity_list[i]->light->intensity = projectile->explode_intensity;
-							entity_list[i]->light->color = projectile->explode_color;
-							projectile->explode = false;
 
-							engine->play_wave(entity_list[i]->position, projectile->explode_index);
-							continue;
+						if (projectile->explode_type == 1)
+						{
+							int sprite_index = MIN(7, projectile->explode_timer);
+							if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
+							{
+								ent->model->clone(*model_table[MODEL_BOOM]);
+								ent->model->blend = true;
+							}
+							ent->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
+						}
+						else if (projectile->explode_type == 2)
+						{
+							if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+							{
+								ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
+								ent->model->blend = true;
+							}
+						}
+						projectile->explode_timer--;
+					}
+				}
+				else
+				{
+					// Explode after being idle for idle_timer time (usually zero)
+					if (projectile->idle_timer <= 0)
+					{
+						projectile->radius = projectile->splash_radius;
+						sprintf(projectile->action, "damage %d", projectile->splash_damage);
+						if (ent->light == NULL)
+						{
+							ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
+						}
+						ent->light->intensity = projectile->explode_intensity;
+						ent->light->color = projectile->explode_color;
+						projectile->explode = false;
+
+						engine->play_wave(ent->position, projectile->explode_index);
+						return;
+					}
+					else
+					{
+						projectile->idle_timer--;
+					}
+				}
+			}
+		}
+	}
+
+
+	// Only other players can pick up
+	if (owner == player->entity && ent->rigid && ent->rigid->bounce == 0)
+		return;
+
+
+	if (projectile->owner >= 0 &&
+		gametype != GAMETYPE_DEATHMATCH &&
+		owner->player->team == player->team)
+		return;
+
+	float distance = (ent->position - player->entity->position).magnitude();
+
+
+	if (distance < projectile->radius)
+		inside = true;
+
+	if (inside && ent->ent_type == ENT_TEAM_CTF_BLUEFLAG)
+	{
+		if (player->team == TEAM_BLUE)
+		{
+			if (player->holdable_flag)
+			{
+				player->holdable_flag = false;
+				blue_flag_caps++;
+
+				engine->play_wave(ent->position, SND_FLAGCAP);
+
+				if (blue_flag_caps >= capturelimit)
+				{
+					endgame("Blue team wins");
+				}
+				else if (blue_flag_caps == red_flag_caps)
+				{
+					engine->play_wave_global(SND_TEAMS_TIED);
+				}
+				else if (blue_flag_caps > red_flag_caps)
+				{
+					engine->play_wave_global(SND_BLUE_LEAD);
+				}
+
+			}
+			return;
+		}
+	}
+
+
+	if (inside == true && projectile->active == false)
+	{
+		int pickup = true;
+
+		if (pickup)
+		{
+			if (projectile->action[0] != '\0' && projectile->client_active == false)
+			{
+				console(self, projectile->action, engine->menu, entity_list);
+			}
+
+			projectile->active = true;
+			projectile->client_active = true;
+
+			if (projectile)
+			{
+				if (projectile->explode_type == 1)
+				{
+					ent->rigid->velocity = vec3();
+					int sprite_index = MIN(7, projectile->explode_timer);
+					if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
+					{
+						ent->model->clone(*model_table[MODEL_BOOM]);
+						ent->model->blend = true;
+					}
+					ent->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
+				}
+				else if (projectile->explode_type == 2)
+				{
+					ent->rigid->velocity = vec3();
+					if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+					{
+						ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
+						ent->model->blend = true;
+					}
+				}
+
+				if (player->health <= 0)
+				{
+					char word[32] = { 0 };
+					char weapon[32];
+
+					player->stats.deaths++;
+					if (owner != NULL)
+					{
+						Player *powner = owner->player;
+						powner->stats.kills++;
+						powner->stats.hits++;
+
+						if (powner->current_weapon == wp_rocket)
+						{
+							sprintf(weapon, "rocket launcher");
+						}
+						else if (powner->current_weapon == wp_grenade)
+						{
+							sprintf(weapon, "grenade launcher");
+						}
+						else if (powner->current_weapon == wp_plasma)
+						{
+							sprintf(weapon, "plasma gun");
+						}
+						else if (powner->current_weapon == wp_lightning)
+						{
+							sprintf(weapon, "lightning gun");
+						}
+						else if (powner->current_weapon == wp_shotgun)
+						{
+							sprintf(weapon, "shotgun");
+						}
+						else if (powner->current_weapon == wp_machinegun)
+						{
+							sprintf(weapon, "machinegun");
+						}
+						else if (powner->current_weapon == wp_railgun)
+						{
+							sprintf(weapon, "railgun");
+						}
+						else if (powner->current_weapon == wp_gauntlet)
+						{
+							sprintf(weapon, "gauntlet");
+						}
+
+
+						if (player->health <= GIB_HEALTH)
+							sprintf(word, "%s", "gibbed");
+						else
+							sprintf(word, "%s", "killed");
+
+						char msg[256];
+
+						if (powner == player)
+						{
+							sprintf(msg, "%s killed themselves with a %s\n",
+								player->name, weapon);
 						}
 						else
 						{
-							projectile->idle_timer--;
+							sprintf(msg, "%s %s %s with a %s\n",
+								powner->name,
+								word,
+								player->name,
+								weapon);
 						}
+
+						// allow rocket jumping to pass max air speed
+						if (player->entity->rigid->on_ground == false)
+							player->max_air_speed *= 2.0f;
+						debugf(msg);
+						engine->menu.print_notif(msg);
+						notif_timer = 3 * TICK_RATE;
+						handle_frags_left(*(owner->player));
 					}
+
 				}
 			}
-		}
 
+			ent->visible = false;
+			projectile->timeout = ent->projectile->timeout_value;
 
-		// Only other players can pick up
-		if (projectile->owner == self && entity_list[i]->rigid && entity_list[i]->rigid->bounce == 0)
-			continue;
-
-		Player *player = entity_list[self]->player;
-
-		if (projectile->owner >= 0 &&
-			gametype != GAMETYPE_DEATHMATCH &&
-			entity_list[projectile->owner]->player->team == player->team)
-			continue;
-
-		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
-
-
-		if (distance < projectile->radius)
-			inside = true;
-
-		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_BLUEFLAG)
-		{
-			if (player->team == TEAM_BLUE)
+			if (projectile->explode_timer)
 			{
-				if (player->holdable_flag)
+				vec3 distance = player->entity->position - ent->position;
+				float mag = MIN(distance.magnitude(), 50.0f);
+
+				if (abs32(mag) > 0.0001f)
 				{
-					player->holdable_flag = false;
-					blue_flag_caps++;
-
-					engine->play_wave(entity_list[i]->position, SND_FLAGCAP);
-
-					if (blue_flag_caps >= capturelimit)
-					{
-						endgame("Blue team wins");
-					}
-					else if (blue_flag_caps == red_flag_caps)
-					{
-						engine->play_wave_global(SND_TEAMS_TIED);
-					}
-					else if (blue_flag_caps > red_flag_caps)
-					{
-						engine->play_wave_global(SND_BLUE_LEAD);
-					}
-
+					//add knockback to explosions
+					player->entity->rigid->velocity += (distance.normalize() * projectile->knockback) / mag;
 				}
-				continue;
 			}
+
+			if (player->local)
+				engine->play_wave_global(projectile->pickup_index);
+			else
+				engine->play_wave(ent->position, projectile->pickup_index);
+
+		}
+	}
+
+
+	if (projectile->timeout > 0)
+	{
+		projectile->timeout -= 0.016f;
+	}
+	else
+	{
+		projectile->played = false;
+		if (projectile->active && projectile->noise)
+		{
+			// play periodic sound
+			engine->play_wave(ent->position, projectile->respawn_index);
 		}
 
-
-		if (inside == true && projectile->active == false)
+		if (projectile->noise == false)
 		{
-			int pickup = true;
-
-			if (pickup)
-			{
-				if (projectile->action[0] != '\0' && projectile->client_active == false)
-				{
-					console(self, projectile->action, engine->menu, entity_list);
-				}
-
-				projectile->active = true;
-				projectile->client_active = true;
-
-				if (projectile)
-				{
-					if (projectile->explode_type == 1)
-					{
-						entity_list[i]->rigid->velocity = vec3();
-						int sprite_index = MIN(7, projectile->explode_timer);
-						if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
-						{
-							entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
-							entity_list[i]->model->blend = true;
-						}
-						entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
-					}
-					else if (projectile->explode_type == 2)
-					{
-						entity_list[i]->rigid->velocity = vec3();
-						if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
-						{
-							entity_list[i]->model->clone(*model_table[MODEL_PLASMA_HIT]);
-							entity_list[i]->model->blend = true;
-						}
-					}
-
-					if (player->health <= 0)
-					{
-						char word[32] = { 0 };
-						char weapon[32];
-						int owner = projectile->owner;
-
-						player->stats.deaths++;
-						if (owner != -1)
-						{
-							Player *powner = entity_list[owner]->player;
-							powner->stats.kills++;
-							powner->stats.hits++;
-
-							if (powner->current_weapon == wp_rocket)
-							{
-								sprintf(weapon, "rocket launcher");
-							}
-							else if (powner->current_weapon == wp_grenade)
-							{
-								sprintf(weapon, "grenade launcher");
-							}
-							else if (powner->current_weapon == wp_plasma)
-							{
-								sprintf(weapon, "plasma gun");
-							}
-							else if (powner->current_weapon == wp_lightning)
-							{
-								sprintf(weapon, "lightning gun");
-							}
-							else if (powner->current_weapon == wp_shotgun)
-							{
-								sprintf(weapon, "shotgun");
-							}
-							else if (powner->current_weapon == wp_machinegun)
-							{
-								sprintf(weapon, "machinegun");
-							}
-							else if (powner->current_weapon == wp_railgun)
-							{
-								sprintf(weapon, "railgun");
-							}
-							else if (powner->current_weapon == wp_gauntlet)
-							{
-								sprintf(weapon, "gauntlet");
-							}
-
-
-							if (player->health <= GIB_HEALTH)
-								sprintf(word, "%s", "gibbed");
-							else
-								sprintf(word, "%s", "killed");
-
-							char msg[256];
-
-							if (powner == player)
-							{
-								sprintf(msg, "%s killed themselves with a %s\n",
-									player->name, weapon);
-							}
-							else
-							{
-								sprintf(msg, "%s %s %s with a %s\n",
-									powner->name,
-									word,
-									player->name,
-									weapon);
-							}
-
-							// allow rocket jumping to pass max air speed
-							if (player->entity->rigid->on_ground == false)
-								player->max_air_speed *= 2.0f;
-							debugf(msg);
-							engine->menu.print_notif(msg);
-							notif_timer = 3 * TICK_RATE;
-							handle_frags_left(*(entity_list[owner]->player));
-						}
-
-					}
-				}
-
-				entity_list[i]->visible = false;
-				projectile->timeout = entity_list[i]->projectile->timeout_value;
-
-				if (projectile->explode_timer)
-				{
-					vec3 distance = entity_list[self]->position - entity_list[i]->position;
-					float mag = MIN(distance.magnitude(), 50.0f);
-
-					if (abs32(mag) > 0.0001f)
-					{
-						//add knockback to explosions
-						entity_list[self]->rigid->velocity += (distance.normalize() * projectile->knockback) / mag;
-					}
-				}
-
-				if (player->local)
-					engine->play_wave_global(projectile->pickup_index);
-				else
-					engine->play_wave(entity_list[i]->position, projectile->pickup_index);
-
-			}
-		}
-
-
-		if (projectile->timeout > 0)
-		{
-			projectile->timeout -= 0.016f;
+			// means this sound must be triggered, reset timeout so it's not trigger continously
+			projectile->active = false;
+			projectile->client_active = false;
+			//				trigger->timeout = trigger->timeout_value;;
 		}
 		else
 		{
-			projectile->played = false;
-			if (projectile->active && projectile->noise)
-			{
-				// play periodic sound
-				engine->play_wave(entity_list[i]->position, projectile->respawn_index);
-			}
-
-			if (projectile->noise == false)
-			{
-				// means this sound must be triggered, reset timeout so it's not trigger continously
-				projectile->active = false;
-				projectile->client_active = false;
-				//				trigger->timeout = trigger->timeout_value;;
-			}
-			else
-			{
-				projectile->timeout = projectile->timeout_value;
-			}
+			projectile->timeout = projectile->timeout_value;
 		}
 	}
 }

@@ -4859,6 +4859,9 @@ void Engine::clean_entity(int index)
 	if (entity_list[index]->trigger)
 		entity_list[index]->trigger->destroy(audio);
 
+	if (entity_list[index]->projectile)
+		entity_list[index]->projectile->destroy(audio);
+
 	if (entity_list[index]->speaker)
 		entity_list[index]->speaker->destroy(audio);
 	entity_list[index]->nettype = NT_NONE;
