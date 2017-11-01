@@ -3606,12 +3606,12 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 		ent.ctype = NET_UNKNOWN;
 
 
-		Trigger *trigger = entity_list[i]->trigger;
-		if (trigger && i < max_dynamic)
+		Projectile *projectile = entity_list[i]->projectile;
+		if (projectile)
 		{
 			net_projectile->active = 0;
 
-			if (entity_list[i]->trigger->active)
+			if (entity_list[i]->projectile->active)
 				net_projectile->active = 1;
 
 			net_projectile->owner = entity_list[i]->projectile->owner;
@@ -3636,7 +3636,7 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			continue;
 		}
 
-
+		Trigger *trigger = entity_list[i]->trigger;
 		if (trigger)
 		{
 			net_trigger->active = 0;
@@ -3863,19 +3863,19 @@ int Engine::deserialize_net_projectile(net_projectile_t *net, int index, int ety
 		rigid->morientation = net->morientation;
 	}
 
-	if (entity_list[index]->trigger)
+	if (entity_list[index]->projectile)
 	{
 		if (net->active)
-			entity_list[index]->trigger->active = true;
+			entity_list[index]->projectile->active = true;
 		else
-			entity_list[index]->trigger->active = false;
+			entity_list[index]->projectile->active = false;
 
 		entity_list[index]->projectile->owner = net->owner;
 		//		printf("Got trigger data index %d\n", index);
 	}
 	else
 	{
-		printf("deserialize_net_trigger() failed to find trigger at index %d\n", index);
+		printf("deserialize_net_projectile() failed to find projectile at index %d\n", index);
 	}
 
 	return 0;

@@ -55,6 +55,8 @@ Entity::~Entity()
 		delete speaker;
 	if (trigger)
 		delete trigger;
+	if (projectile)
+		delete projectile;
 	if (player)
 		delete player;
 
@@ -70,6 +72,7 @@ Entity::~Entity()
 	light = NULL;
 	speaker = NULL;
 	trigger = NULL;
+	projectile = NULL;
 	player = NULL;
 	nettype = NT_NONE;
 }
