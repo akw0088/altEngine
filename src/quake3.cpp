@@ -7679,8 +7679,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->noclip = false;
 		ent->visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
-		ent->rigid->blend = true;
-		ent->rigid->cull_none = true;
+		ent->rigid->impact_index = SND_BULLET;
 		break;
 	case NET_SHELL:
 		ent->nettype = NET_SHELL;
@@ -7692,8 +7691,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->noclip = false;
 		ent->visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
-		ent->rigid->blend = true;
-		ent->rigid->cull_none = true;
+		ent->rigid->impact_index = SND_SHELL;
 		break;
 	case NET_BOOM:
 		ent->nettype = NET_BOOM;

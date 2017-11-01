@@ -89,6 +89,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 	show_hw_info();
 
+
+	if (!SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS))
+	{
+		DWORD dwError = GetLastError();
+		printf("Failed to set process priority to high Error #%d)\n", dwError);
+	}
+
+
 	while (TRUE)
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))

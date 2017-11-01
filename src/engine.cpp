@@ -6964,6 +6964,15 @@ int Engine::bind(int port)
 		return -1;
 	}
 
+#ifndef __linux
+	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
+	{
+		DWORD dwError = GetLastError();
+		printf("Failed to set process priority to high Error #%d)\n", dwError);
+	}
+
+#endif
+
 
 }
 
