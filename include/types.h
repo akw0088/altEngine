@@ -769,7 +769,8 @@ typedef enum
 	NET_UNKNOWN,
 	NET_RIGID,
 	NET_PLAYER,
-	NET_TRIGGER
+	NET_TRIGGER,
+	NET_PROJECTILE
 } net_type_t;
 
 typedef struct
@@ -793,8 +794,19 @@ typedef struct
 typedef struct
 {
 	uint8_t			active; // whether trigger is active
-	short int		owner;
 } net_trigger_t;
+
+typedef struct
+{
+	uint8_t			active;
+	short int		owner;
+
+	matrix3			morientation;
+	vec3			velocity;
+	vec3			angular_velocity;
+	vec3			position;
+} net_projectile_t;
+
 
 
 typedef struct

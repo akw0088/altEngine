@@ -3194,7 +3194,7 @@ void Engine::parse_spawn_string(char *msg)
 	char *start = strstr(msg, "<spawn>");
 	char *end = strstr(msg, "</spawn>");
 	int count = 0;
-	int client;
+	int index;
 
 	if (start && end)
 	{
@@ -3208,15 +3208,15 @@ void Engine::parse_spawn_string(char *msg)
 		char *line = strtok(temp, " ");
 		while (line)
 		{
-			client = atoi(line);
+			index = atoi(line);
 			line = strtok(NULL, " ");
 
 			if (count == 0 && active_clients[count] == false)
 			{
-				Entity *ent = entity_list[client];
+				Entity *ent = entity_list[index];
 
 				active_clients[count] = true;
-				clean_entity(client);
+				clean_entity(index);
 				sprintf(ent->type, "player");
 				ent->rigid = new RigidBody(ent);
 				ent->model = ent->rigid;
@@ -3227,15 +3227,15 @@ void Engine::parse_spawn_string(char *msg)
 				ent->player->type = PLAYER;
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
-				printf("Adding client player at index %d\n", client);
+				printf("Adding client player at index %d\n", index);
 			}
 			else
 			{
 				if (active_clients[count] == false)
 				{
 					active_clients[count] = true;
-					Entity *ent = entity_list[client];
-					clean_entity(client);
+					Entity *ent = entity_list[index];
+					clean_entity(index);
 					sprintf(ent->type, "server");
 					ent->rigid = new RigidBody(ent);
 					ent->model = ent->rigid;
@@ -3245,7 +3245,7 @@ void Engine::parse_spawn_string(char *msg)
 					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
 					ent->player->local = false;
 					ent->player->type = SERVER;
-					printf("Adding server player at index %d\n", client);
+					printf("Adding server player at index %d\n", index);
 				}
 			}
 			count++;
@@ -3594,22 +3594,55 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 		net_rigid_t *net_rigid = (net_rigid_t *)&(ent.data[0]);
 		net_trigger_t *net_trigger = (net_trigger_t *)&(ent.data[0]);
 		net_player_t *net_player = (net_player_t *)&ent.data[0];
+		net_projectile_t *net_projectile = (net_projectile_t *)&(ent.data[0]);
 		int size = 0;
+
+		RigidBody *rigid = entity_list[i]->rigid;
+
 
 		memset(&ent, 0, sizeof(net_entity_t));
 		ent.index = i;
 		ent.etype = (net_ent_t)entity_list[i]->nettype;
 		ent.ctype = NET_UNKNOWN;
 
+
 		Trigger *trigger = entity_list[i]->trigger;
+		if (trigger && i < max_dynamic)
+		{
+			net_projectile->active = 0;
+
+			if (entity_list[i]->trigger->active)
+				net_projectile->active = 1;
+
+			net_projectile->owner = entity_list[i]->trigger->owner;
+
+			ent.ctype = NET_PROJECTILE;
+			size = SIZE_NET_ENTITY_HEADER + sizeof(net_projectile_t);
+
+			net_projectile->morientation = rigid->morientation;
+			net_projectile->angular_velocity = rigid->angular_velocity;
+			net_projectile->velocity = rigid->velocity;
+			net_projectile->position = entity_list[i]->position;
+
+
+			if (memcmp(&delta_list[i], &ent, size) != 0)
+			{
+				memcpy(&delta_list[i], &ent, size);
+				memcpy(&data[data_size], &ent, size);
+				data_size += size;
+				num_ents++;
+			}
+			//			printf("serialized trigger index %d\n", i);
+			continue;
+		}
+
+
 		if (trigger)
 		{
 			net_trigger->active = 0;
 
 			if (entity_list[i]->trigger->active)
 				net_trigger->active = 1;
-
-			net_trigger->owner = entity_list[i]->trigger->owner;
 
 			ent.ctype = NET_TRIGGER;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_trigger_t);
@@ -3659,7 +3692,6 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			continue;
 		}
 
-		RigidBody *rigid = entity_list[i]->rigid;
 		if (rigid)
 		{
 			net_rigid->morientation = rigid->morientation;
@@ -3695,17 +3727,21 @@ int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents, u
 		net_entity_t *ent = (net_entity_t *)data;
 		switch (ent->ctype)
 		{
-		case NET_RIGID:
-			deserialize_net_rigid((net_rigid_t *)ent->data, ent->index, ent->etype);
-			data += SIZE_NET_ENTITY_HEADER + sizeof(net_rigid_t);
-			break;
 		case NET_PLAYER:
 			deserialize_net_player((net_player_t *)ent->data, ent->index, ent->etype);
 			data += SIZE_NET_ENTITY_HEADER + sizeof(net_player_t);
 			break;
+		case NET_RIGID:
+			deserialize_net_rigid((net_rigid_t *)ent->data, ent->index, ent->etype);
+			data += SIZE_NET_ENTITY_HEADER + sizeof(net_rigid_t);
+			break;
 		case NET_TRIGGER:
 			deserialize_net_trigger((net_trigger_t *)ent->data, ent->index, ent->etype);
 			data += SIZE_NET_ENTITY_HEADER + sizeof(net_trigger_t);
+			break;
+		case NET_PROJECTILE:
+			deserialize_net_projectile((net_projectile_t *)ent->data, ent->index, ent->etype);
+			data += SIZE_NET_ENTITY_HEADER + sizeof(net_projectile_t);
 			break;
 		default:
 			printf("Unknown net_entity %d\n", ent->ctype);
@@ -3799,8 +3835,43 @@ int Engine::deserialize_net_trigger(net_trigger_t *net, int index, int etype)
 		else
 			entity_list[index]->trigger->active = false;
 
-		entity_list[index]->trigger->owner = net->owner;
 //		printf("Got trigger data index %d\n", index);
+	}
+	else
+	{
+		printf("deserialize_net_trigger() failed to find trigger at index %d\n", index);
+	}
+
+	return 0;
+}
+
+int Engine::deserialize_net_projectile(net_projectile_t *net, int index, int etype)
+{
+	// Check if an entity is a projectile that needs to be loaded
+	if (etype != entity_list[index]->nettype)
+	{
+		game->make_dynamic_ent((net_ent_t)etype, index);
+	}
+
+	RigidBody *rigid = entity_list[index]->rigid;
+
+	if (rigid)
+	{
+		entity_list[index]->position = net->position;
+		rigid->velocity = net->velocity;
+		rigid->angular_velocity = net->angular_velocity;
+		rigid->morientation = net->morientation;
+	}
+
+	if (entity_list[index]->trigger)
+	{
+		if (net->active)
+			entity_list[index]->trigger->active = true;
+		else
+			entity_list[index]->trigger->active = false;
+
+		entity_list[index]->trigger->owner = net->owner;
+		//		printf("Got trigger data index %d\n", index);
 	}
 	else
 	{

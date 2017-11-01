@@ -4851,6 +4851,11 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 		}
 		return;
 	}
+	else
+	{
+		// network clients might get stuck black and white
+		engine->mlight2.set_contrast(old_contrast);
+	}
 
 	if (player.current_weapon != player.last_weapon)
 	{
@@ -7638,6 +7643,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->knockback = 250.0f;
 		ent->trigger->splash_damage = 0;
 		ent->num_particle = 5000;
+		ent->particle_on = true;
 
 
 		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
