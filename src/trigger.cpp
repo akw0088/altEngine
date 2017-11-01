@@ -23,28 +23,28 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 
 
 
-	idle_timer = 0;
+//	idle_timer = 0;
 
 
 	hide = true;
-	idle = false;
-	explode = false;
+//	idle = false;
+//	explode = false;
 	health = false;
 	armor = false;
 	played = false;
 
-	explode_type = 0;
-	explode_color.x = 1.0f;
-	explode_color.y = 1.0f;
-	explode_color.z = 1.0f;
-	explode_intensity = 0.0f;
-	explode_timer = 0;
-	splash_damage = 0;
-	splash_radius = 0.0f;
-	knockback = 0.0f;
-	owner = -1;
-	num_bounce = 1;
-	projectile = false;
+//	explode_type = 0;
+//	explode_color.x = 1.0f;
+//	explode_color.y = 1.0f;
+//	explode_color.z = 1.0f;
+//	explode_intensity = 0.0f;
+//	explode_timer = 0;
+//	splash_damage = 0;
+//	splash_radius = 0.0f;
+//	knockback = 0.0f;
+//	owner = -1;
+//	num_bounce = 1;
+//	projectile = false;
 	noise = false;
 
 	source = -1;

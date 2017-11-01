@@ -21,6 +21,7 @@ public:
 	Light			*light;
 	Speaker			*speaker;
 	Trigger			*trigger;
+	Projectile		*projectile;
 	Player			*player;
 	PortalCamera	*portal_camera;
 

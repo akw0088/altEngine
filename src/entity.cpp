@@ -20,6 +20,7 @@ Entity::Entity()
 	light = NULL;
 	speaker = NULL;
 	trigger = NULL;
+	projectile = NULL;
 	player = NULL;
 	portal_camera = NULL;
 	model_lerp = 0.0f;

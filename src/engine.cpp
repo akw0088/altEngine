@@ -3614,7 +3614,7 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			if (entity_list[i]->trigger->active)
 				net_projectile->active = 1;
 
-			net_projectile->owner = entity_list[i]->trigger->owner;
+			net_projectile->owner = entity_list[i]->projectile->owner;
 
 			ent.ctype = NET_PROJECTILE;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_projectile_t);
@@ -3870,7 +3870,7 @@ int Engine::deserialize_net_projectile(net_projectile_t *net, int index, int ety
 		else
 			entity_list[index]->trigger->active = false;
 
-		entity_list[index]->trigger->owner = net->owner;
+		entity_list[index]->projectile->owner = net->owner;
 		//		printf("Got trigger data index %d\n", index);
 	}
 	else

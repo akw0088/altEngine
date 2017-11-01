@@ -1908,7 +1908,7 @@ void Quake3::handle_player(int self, input_t &input)
 		Entity *projectile = NULL;
 		for (unsigned int i = 0; i < engine->max_dynamic; i++)
 		{
-			if (engine->entity_list[i]->trigger && engine->entity_list[i]->trigger->explode_type == 2)
+			if (engine->entity_list[i]->trigger && engine->entity_list[i]->projectile->explode_type == 2)
 			{
 				projectile = engine->entity_list[i];
 				projectile->rigid->pid_follow_path(path_list, 4, 2.0f, 75.0f, 1);
@@ -3189,13 +3189,25 @@ void Quake3::step(int frame_step)
 
 
 		if (player && player->type == PLAYER)
+		{
 			check_triggers(i, engine->entity_list);
+			check_projectiles(i, engine->entity_list);
+		}
 		if (engine->server_flag && player && player->type == CLIENT)
+		{
 			check_triggers(i, engine->entity_list);
+			check_projectiles(i, engine->entity_list);
+		}
 		else if (player && player->type == BOT)
+		{
 			check_triggers(i, engine->entity_list);
+			check_projectiles(i, engine->entity_list);
+		}
 		else if (player && player->type == SERVER)
+		{
 			check_triggers(i, engine->entity_list);
+			check_projectiles(i, engine->entity_list);
+		}
 	}
 
 #ifdef WIN32
@@ -3236,27 +3248,27 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->gravity = false;
-		projectile->trigger = new Trigger(projectile, engine->audio);
-		projectile->trigger->projectile = true;
+		projectile->projectile = new Projectile(projectile, engine->audio);
+//		projectile->trigger->projectile = true;
 
 		projectile->rigid->impact_index = SND_PLASMA_EXPLODE;
-		projectile->trigger->explode_index = SND_PLASMA_EXPLODE;
-		projectile->trigger->idle_index = SND_PLASMAFLY;
+		projectile->projectile->explode_index = SND_PLASMA_EXPLODE;
+		projectile->projectile->idle_index = SND_PLASMAFLY;
 
-		sprintf(projectile->trigger->action, "damage %d", (int)(PLASMA_DAMAGE * quad_factor));
+		sprintf(projectile->projectile->action, "damage %d", (int)(PLASMA_DAMAGE * quad_factor));
 
-		projectile->trigger->hide = false;
-		projectile->trigger->radius = 25.0f;
-		projectile->trigger->idle = true;
-		projectile->trigger->explode = false;
-		projectile->trigger->explode_type = 2;
-		projectile->trigger->explode_timer = 10;
-		projectile->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
-		projectile->trigger->explode_intensity = 200.0f;
-		projectile->trigger->splash_damage = (int)(PLASMA_SPLASH_DAMAGE * quad_factor);
-		projectile->trigger->splash_radius = 75.0f;
-		projectile->trigger->knockback = 10.0f;
-		projectile->trigger->owner = self;
+		projectile->projectile->hide = false;
+		projectile->projectile->radius = 25.0f;
+		projectile->projectile->idle = true;
+		projectile->projectile->explode = false;
+		projectile->projectile->explode_type = 2;
+		projectile->projectile->explode_timer = 10;
+		projectile->projectile->explode_color = vec3(0.0f, 0.0f, 1.0f);
+		projectile->projectile->explode_intensity = 200.0f;
+		projectile->projectile->splash_damage = (int)(PLASMA_SPLASH_DAMAGE * quad_factor);
+		projectile->projectile->splash_radius = 75.0f;
+		projectile->projectile->knockback = 10.0f;
+		projectile->projectile->owner = self;
 
 
 		projectile->light = new Light(projectile, engine->gfx, 999, engine->res_scale);
@@ -3302,27 +3314,26 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
 
-		projectile->trigger = new Trigger(projectile, engine->audio);
-		projectile->trigger->projectile = true;
-		projectile->trigger->explode_index = SND_EXPLODE;
-		projectile->trigger->idle_index = SND_ROCKETFLY;
+		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile->explode_index = SND_EXPLODE;
+		projectile->projectile->idle_index = SND_ROCKETFLY;
 
-		sprintf(projectile->trigger->action, "damage %d", (int)(ROCKET_DAMAGE * quad_factor));
+		sprintf(projectile->projectile->action, "damage %d", (int)(ROCKET_DAMAGE * quad_factor));
 
-		projectile->trigger->hide = false;
-		projectile->trigger->radius = 25.0f;
-		projectile->trigger->idle = true;
-		projectile->trigger->explode = true;
-		projectile->trigger->explode_type = 1;
-		projectile->trigger->idle_timer = 0;
-		projectile->trigger->num_bounce = 0;
-		projectile->trigger->explode_timer = 10;
-		projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-		projectile->trigger->explode_intensity = 500.0f;
-		projectile->trigger->splash_damage = (int)(ROCKET_SPLASH_DAMAGE * quad_factor);
-		projectile->trigger->splash_radius = 250.0f;
-		projectile->trigger->knockback = 250.0f;
-		projectile->trigger->owner = self;
+		projectile->projectile->hide = false;
+		projectile->projectile->radius = 25.0f;
+		projectile->projectile->idle = true;
+		projectile->projectile->explode = true;
+		projectile->projectile->explode_type = 1;
+		projectile->projectile->idle_timer = 0;
+		projectile->projectile->num_bounce = 0;
+		projectile->projectile->explode_timer = 10;
+		projectile->projectile->explode_color = vec3(1.0f, 0.0f, 0.0f);
+		projectile->projectile->explode_intensity = 500.0f;
+		projectile->projectile->splash_damage = (int)(ROCKET_SPLASH_DAMAGE * quad_factor);
+		projectile->projectile->splash_radius = 250.0f;
+		projectile->projectile->knockback = 250.0f;
+		projectile->projectile->owner = self;
 
 
 		projectile->particle_on = true;
@@ -3343,9 +3354,9 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid->impact_index = SND_EXPLODE;
 
 
-		projectile->trigger->create_sources(engine->audio);
+		projectile->projectile->create_sources(engine->audio);
 
-		engine->play_wave_source(projectile->trigger->loop_source, projectile->trigger->idle_index);
+		engine->play_wave_source(projectile->projectile->loop_source, projectile->projectile->idle_index);
 	}
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
@@ -3400,25 +3411,24 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 			quad_factor = QUAD_FACTOR;
 
 
-		projectile->trigger = new Trigger(projectile, engine->audio);
-		projectile->trigger->projectile = true;
-		projectile->trigger->num_bounce = 20;
-		projectile->trigger->explode_index = SND_EXPLODE;
-		sprintf(projectile->trigger->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
+		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile->num_bounce = 20;
+		projectile->projectile->explode_index = SND_EXPLODE;
+		sprintf(projectile->projectile->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
 
-		projectile->trigger->hide = false;
-		projectile->trigger->radius = 50.0f;
-		projectile->trigger->idle = true;
-		projectile->trigger->idle_timer = 120;
-		projectile->trigger->explode = true;
-		projectile->trigger->explode_type = 1;
-		projectile->trigger->explode_timer = 10;
-		projectile->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-		projectile->trigger->explode_intensity = 500.0f;
-		projectile->trigger->splash_damage = (int)(GRENADE_SPLASH_DAMAGE * quad_factor);
-		projectile->trigger->splash_radius = 250.0f;
-		projectile->trigger->knockback = 250.0f;
-		projectile->trigger->owner = self;
+		projectile->projectile->hide = false;
+		projectile->projectile->radius = 50.0f;
+		projectile->projectile->idle = true;
+		projectile->projectile->idle_timer = 120;
+		projectile->projectile->explode = true;
+		projectile->projectile->explode_type = 1;
+		projectile->projectile->explode_timer = 10;
+		projectile->projectile->explode_color = vec3(1.0f, 0.0f, 0.0f);
+		projectile->projectile->explode_intensity = 500.0f;
+		projectile->projectile->splash_damage = (int)(GRENADE_SPLASH_DAMAGE * quad_factor);
+		projectile->projectile->splash_radius = 250.0f;
+		projectile->projectile->knockback = 250.0f;
+		projectile->projectile->owner = self;
 	}
 
 
@@ -3524,18 +3534,17 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 		*/
 
-		projectile->trigger = new Trigger(projectile, engine->audio);
-		projectile->trigger->projectile = true;
-		projectile->trigger->action[0] = '\0';
+		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile->action[0] = '\0';
 
 //		projectile->rigid->bounce = 5;
-		projectile->trigger->hide = false;
-		projectile->trigger->radius = 25.0f;
-		projectile->trigger->idle = true;
-		projectile->trigger->idle_timer = (int)(0.025 * TICK_RATE);
-		projectile->trigger->explode = true;
-		projectile->trigger->explode_timer = 5;
-		projectile->trigger->owner = self;
+		projectile->projectile->hide = false;
+		projectile->projectile->radius = 25.0f;
+		projectile->projectile->idle = true;
+		projectile->projectile->idle_timer = (int)(0.025 * TICK_RATE);
+		projectile->projectile->explode = true;
+		projectile->projectile->explode_timer = 5;
+		projectile->projectile->owner = self;
 
 
 
@@ -3634,17 +3643,16 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->bsp_visible = player.entity->bsp_visible = true;
 
-		projectile->trigger = new Trigger(projectile, engine->audio);
-		projectile->trigger->projectile = true;
-		sprintf(projectile->trigger->action, " ");
+		projectile->projectile = new Projectile(projectile, engine->audio);
+		sprintf(projectile->projectile->action, " ");
 
-		projectile->trigger->hide = false;
-		projectile->trigger->radius = 25.0f;
-		projectile->trigger->idle = true;
-		projectile->trigger->idle_timer = (int)(1.0 * TICK_RATE);
-		projectile->trigger->explode = true;
-		projectile->trigger->explode_timer = 10;
-		projectile->trigger->owner = self;
+		projectile->projectile->hide = false;
+		projectile->projectile->radius = 25.0f;
+		projectile->projectile->idle = true;
+		projectile->projectile->idle_timer = (int)(1.0 * TICK_RATE);
+		projectile->projectile->explode = true;
+		projectile->projectile->explode_timer = 10;
+		projectile->projectile->owner = self;
 
 		vec3 forward;
 		player.entity->model->getForwardVector(forward);
@@ -7626,22 +7634,21 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NT_ROCKET:
 		ent->nettype = NT_ROCKET;
-		ent->trigger = new Trigger(ent, engine->audio);
-		ent->trigger->projectile = true;
-		ent->trigger->explode_index = SND_EXPLODE;
-		ent->trigger->idle_index = SND_ROCKETFLY;
+		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile->explode_index = SND_EXPLODE;
+		ent->projectile->idle_index = SND_ROCKETFLY;
 
-		ent->trigger->hide = false;
-		ent->trigger->radius = 25.0f;
-		ent->trigger->idle = true;
-		ent->trigger->explode = true;
-		ent->trigger->idle_timer = 0;
-		ent->trigger->explode_timer = 10;
-		ent->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-		ent->trigger->explode_intensity = 500.0f;
-		ent->trigger->splash_radius = 250.0f;
-		ent->trigger->knockback = 250.0f;
-		ent->trigger->splash_damage = 0;
+		ent->projectile->hide = false;
+		ent->projectile->radius = 25.0f;
+		ent->projectile->idle = true;
+		ent->projectile->explode = true;
+		ent->projectile->idle_timer = 0;
+		ent->projectile->explode_timer = 10;
+		ent->projectile->explode_color = vec3(1.0f, 0.0f, 0.0f);
+		ent->projectile->explode_intensity = 500.0f;
+		ent->projectile->splash_radius = 250.0f;
+		ent->projectile->knockback = 250.0f;
+		ent->projectile->splash_damage = 0;
 		ent->num_particle = 5000;
 		ent->particle_on = true;
 
@@ -7682,20 +7689,19 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->num_particle = 5000;
 
 
-		ent->trigger = new Trigger(ent, engine->audio);
-		ent->trigger->explode_index = SND_EXPLODE;
-		ent->trigger->projectile = true;
-		ent->trigger->splash_damage = 0;
-		ent->trigger->hide = false;
-		ent->trigger->radius = 25.0f;
-		ent->trigger->idle = true;
-		ent->trigger->idle_timer = 120;
-		ent->trigger->explode = true;
-		ent->trigger->explode_timer = 10;
-		ent->trigger->explode_color = vec3(1.0f, 0.0f, 0.0f);
-		ent->trigger->explode_intensity = 500.0f;
-		ent->trigger->splash_radius = 250.0f;
-		ent->trigger->knockback = 250.0f;
+		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile->explode_index = SND_EXPLODE;
+		ent->projectile->splash_damage = 0;
+		ent->projectile->hide = false;
+		ent->projectile->radius = 25.0f;
+		ent->projectile->idle = true;
+		ent->projectile->idle_timer = 120;
+		ent->projectile->explode = true;
+		ent->projectile->explode_timer = 10;
+		ent->projectile->explode_color = vec3(1.0f, 0.0f, 0.0f);
+		ent->projectile->explode_intensity = 500.0f;
+		ent->projectile->splash_radius = 250.0f;
+		ent->projectile->knockback = 250.0f;
 		break;
 	case NT_GRENADE_LAUNCHER:
 		ent->rigid = new RigidBody(ent);
@@ -7723,16 +7729,15 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->noclip = true;
 
 
-		ent->trigger = new Trigger(ent, engine->audio);
-		sprintf(ent->trigger->action, " ");
-		ent->trigger->projectile = true;
-		ent->trigger->splash_damage = 0;
-		ent->trigger->hide = false;
-		ent->trigger->radius = 25.0f;
-		ent->trigger->idle = true;
-		ent->trigger->idle_timer = (int)(0.1 * TICK_RATE);
-		ent->trigger->explode = true;
-		ent->trigger->explode_timer = 20;
+		ent->projectile = new Projectile(ent, engine->audio);
+		sprintf(ent->projectile->action, " ");
+		ent->projectile->splash_damage = 0;
+		ent->projectile->hide = false;
+		ent->projectile->radius = 25.0f;
+		ent->projectile->idle = true;
+		ent->projectile->idle_timer = (int)(0.1 * TICK_RATE);
+		ent->projectile->explode = true;
+		ent->projectile->explode_timer = 20;
 		break;
 	case NT_LIGHTNINGGUN:
 		ent->rigid = new RigidBody(ent);
@@ -7759,15 +7764,14 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model->rail_trail = true;
 		ent->rigid->noclip = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->projectile = new Projectile(ent, engine->audio);
 		sprintf(ent->trigger->action, " ");
-		ent->trigger->projectile = true;
-		ent->trigger->hide = false;
-		ent->trigger->radius = 25.0f;
-		ent->trigger->idle = true;
-		ent->trigger->idle_timer = (int)(5.0 * TICK_RATE);
-		ent->trigger->explode = true;
-		ent->trigger->explode_timer = 10;
+		ent->projectile->hide = false;
+		ent->projectile->radius = 25.0f;
+		ent->projectile->idle = true;
+		ent->projectile->idle_timer = (int)(5.0 * TICK_RATE);
+		ent->projectile->explode = true;
+		ent->projectile->explode_timer = 10;
 		break;
 	case NT_RAILGUN:
 		ent->rigid = new RigidBody(ent);
@@ -7789,21 +7793,20 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 
 		ent->rigid->clone(*(model_table[MODEL_BALL]));
 		ent->rigid->gravity = false;
-		ent->trigger = new Trigger(ent, engine->audio);
-		ent->trigger->explode_index = engine->get_load_wave("sound/weapons/plasma/plasmx1a.wav");
-		ent->trigger->idle_index = engine->get_load_wave("sound/weapons/plasma/lasfly.wav");
+		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile->explode_index = engine->get_load_wave("sound/weapons/plasma/plasmx1a.wav");
+		ent->projectile->idle_index = engine->get_load_wave("sound/weapons/plasma/lasfly.wav");
 
-		ent->trigger->projectile = true;
-		ent->trigger->splash_damage = 0;
-		ent->trigger->hide = false;
-		ent->trigger->radius = 25.0f;
-		ent->trigger->idle = true;
-		ent->trigger->explode = false;
-		ent->trigger->explode_timer = 10;
-		ent->trigger->explode_color = vec3(0.0f, 0.0f, 1.0f);
-		ent->trigger->explode_intensity = 200.0f;
-		ent->trigger->splash_radius = 75.0f;
-		ent->trigger->knockback = 10.0f;
+		ent->projectile->splash_damage = 0;
+		ent->projectile->hide = false;
+		ent->projectile->radius = 25.0f;
+		ent->projectile->idle = true;
+		ent->projectile->explode = false;
+		ent->projectile->explode_timer = 10;
+		ent->projectile->explode_color = vec3(0.0f, 0.0f, 1.0f);
+		ent->projectile->explode_intensity = 200.0f;
+		ent->projectile->splash_radius = 75.0f;
+		ent->projectile->knockback = 10.0f;
 
 
 		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
@@ -8293,87 +8296,9 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 
 		// Not a trigger
 		Trigger *trigger = entity_list[i]->trigger;
-
-		if (trigger == NULL)
-			continue;
-
-		// Delete when not moving
-		if (trigger->idle == true)
-		{
-			if (entity_list[i]->rigid)
-			{
-				if (entity_list[i]->rigid->bounce > trigger->num_bounce || entity_list[i]->rigid->velocity.magnitude() < 0.0001f)
-				{
-					entity_list[i]->particle_on = false;
-					if (trigger->explode == false)
-					{
-						if (trigger->explode_timer <= 0)
-						{
-							engine->clean_entity(i);
-							entity_list[i]->~Entity();
-							continue;
-						}
-						else
-						{
-
-							if (trigger->explode_type == 1)
-							{
-								int sprite_index = MIN(7, trigger->explode_timer);
-								if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
-								{
-									entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
-									entity_list[i]->model->blend = true;
-								}
-								entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
-							}
-							else if (trigger->explode_type == 2)
-							{
-								if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
-								{
-									entity_list[i]->model->clone(*model_table[MODEL_PLASMA_HIT]);
-									entity_list[i]->model->blend = true;
-								}
-							}
-							trigger->explode_timer--;
-						}
-					}
-					else
-					{
-						// Explode after being idle for idle_timer time (usually zero)
-						if (trigger->idle_timer <= 0)
-						{
-							trigger->radius = trigger->splash_radius;
-							sprintf(trigger->action, "damage %d", trigger->splash_damage);
-							if (entity_list[i]->light == NULL)
-							{
-								entity_list[i]->light = new Light(entity_list[i], engine->gfx, 999, engine->res_scale);
-							}
-							entity_list[i]->light->intensity = trigger->explode_intensity;
-							entity_list[i]->light->color = trigger->explode_color;
-							trigger->explode = false;
-
-							engine->play_wave(entity_list[i]->position, trigger->explode_index);
-							continue;
-						}
-						else
-						{
-							trigger->idle_timer--;
-						}
-					}
-				}
-			}
-		}
-
-
-		// Only other players can pick up
-		if (trigger->owner == self && entity_list[i]->rigid->bounce == 0)
-			continue;
-
 		Player *player = entity_list[self]->player;
 
-		if (trigger->owner >= 0 &&
-			gametype != GAMETYPE_DEATHMATCH &&
-			entity_list[trigger->owner]->player->team == player->team)
+		if (trigger == NULL)
 			continue;
 
 		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
@@ -8477,12 +8402,195 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				trigger->active = true;
 				trigger->client_active = true;
 
-				if (trigger->projectile)
+				entity_list[i]->visible = false;
+				trigger->timeout = entity_list[i]->trigger->timeout_value;
+
+				if (player->local)
+					engine->play_wave_global(trigger->pickup_index);
+				else
+					engine->play_wave(entity_list[i]->position, trigger->pickup_index);
+
+			}
+		}
+
+
+		if (trigger->timeout > 0)
+		{
+			trigger->timeout -= 0.016f;
+		}
+		else
+		{
+			trigger->played = false;
+			if (trigger->active && trigger->noise)
+			{
+				// play periodic sound
+				engine->play_wave(entity_list[i]->position, trigger->respawn_index);
+			}
+
+			if (trigger->noise == false)
+			{
+				// means this sound must be triggered, reset timeout so it's not trigger continously
+				trigger->active = false;
+				trigger->client_active = false;
+//				trigger->timeout = trigger->timeout_value;;
+			}
+			else
+			{
+				trigger->timeout = trigger->timeout_value;
+			}
+		}
+	}
+}
+
+void Quake3::check_projectiles(int self, vector<Entity *> &entity_list)
+{
+	engine->num_light = 0;
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		bool inside = false;
+		RigidBody *rigid = entity_list[i]->rigid;
+
+		// Not a trigger
+		Projectile *projectile = entity_list[i]->projectile;
+
+		if (projectile == NULL)
+			continue;
+
+		// Delete when not moving
+		if (projectile->idle == true)
+		{
+			if (entity_list[i]->rigid)
+			{
+				if (entity_list[i]->rigid->bounce > projectile->num_bounce || entity_list[i]->rigid->velocity.magnitude() < 0.0001f)
 				{
-					if (trigger->explode_type == 1)
+					entity_list[i]->particle_on = false;
+					if (projectile->explode == false)
+					{
+						if (projectile->explode_timer <= 0)
+						{
+							engine->clean_entity(i);
+							entity_list[i]->~Entity();
+							continue;
+						}
+						else
+						{
+
+							if (projectile->explode_type == 1)
+							{
+								int sprite_index = MIN(7, projectile->explode_timer);
+								if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
+								{
+									entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
+									entity_list[i]->model->blend = true;
+								}
+								entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
+							}
+							else if (projectile->explode_type == 2)
+							{
+								if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+								{
+									entity_list[i]->model->clone(*model_table[MODEL_PLASMA_HIT]);
+									entity_list[i]->model->blend = true;
+								}
+							}
+							projectile->explode_timer--;
+						}
+					}
+					else
+					{
+						// Explode after being idle for idle_timer time (usually zero)
+						if (projectile->idle_timer <= 0)
+						{
+							projectile->radius = projectile->splash_radius;
+							sprintf(projectile->action, "damage %d", projectile->splash_damage);
+							if (entity_list[i]->light == NULL)
+							{
+								entity_list[i]->light = new Light(entity_list[i], engine->gfx, 999, engine->res_scale);
+							}
+							entity_list[i]->light->intensity = projectile->explode_intensity;
+							entity_list[i]->light->color = projectile->explode_color;
+							projectile->explode = false;
+
+							engine->play_wave(entity_list[i]->position, projectile->explode_index);
+							continue;
+						}
+						else
+						{
+							projectile->idle_timer--;
+						}
+					}
+				}
+			}
+		}
+
+
+		// Only other players can pick up
+		if (projectile->owner == self && entity_list[i]->rigid && entity_list[i]->rigid->bounce == 0)
+			continue;
+
+		Player *player = entity_list[self]->player;
+
+		if (projectile->owner >= 0 &&
+			gametype != GAMETYPE_DEATHMATCH &&
+			entity_list[projectile->owner]->player->team == player->team)
+			continue;
+
+		float distance = (entity_list[i]->position - entity_list[self]->position).magnitude();
+
+
+		if (distance < projectile->radius)
+			inside = true;
+
+		if (inside && entity_list[i]->ent_type == ENT_TEAM_CTF_BLUEFLAG)
+		{
+			if (player->team == TEAM_BLUE)
+			{
+				if (player->holdable_flag)
+				{
+					player->holdable_flag = false;
+					blue_flag_caps++;
+
+					engine->play_wave(entity_list[i]->position, SND_FLAGCAP);
+
+					if (blue_flag_caps >= capturelimit)
+					{
+						endgame("Blue team wins");
+					}
+					else if (blue_flag_caps == red_flag_caps)
+					{
+						engine->play_wave_global(SND_TEAMS_TIED);
+					}
+					else if (blue_flag_caps > red_flag_caps)
+					{
+						engine->play_wave_global(SND_BLUE_LEAD);
+					}
+
+				}
+				continue;
+			}
+		}
+
+
+		if (inside == true && projectile->active == false)
+		{
+			int pickup = true;
+
+			if (pickup)
+			{
+				if (projectile->action[0] != '\0' && projectile->client_active == false)
+				{
+					console(self, projectile->action, engine->menu, entity_list);
+				}
+
+				projectile->active = true;
+				projectile->client_active = true;
+
+				if (projectile)
+				{
+					if (projectile->explode_type == 1)
 					{
 						entity_list[i]->rigid->velocity = vec3();
-						int sprite_index = MIN(7, trigger->explode_timer);
+						int sprite_index = MIN(7, projectile->explode_timer);
 						if (entity_list[i]->model->model_index != model_table[MODEL_BOOM]->model_index)
 						{
 							entity_list[i]->model->clone(*model_table[MODEL_BOOM]);
@@ -8490,7 +8598,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 						}
 						entity_list[i]->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
 					}
-					else if (trigger->explode_type == 2)
+					else if (projectile->explode_type == 2)
 					{
 						entity_list[i]->rigid->velocity = vec3();
 						if (entity_list[i]->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
@@ -8504,7 +8612,7 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					{
 						char word[32] = { 0 };
 						char weapon[32];
-						int owner = trigger->owner;
+						int owner = projectile->owner;
 
 						player->stats.deaths++;
 						if (owner != -1)
@@ -8581,9 +8689,9 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 				}
 
 				entity_list[i]->visible = false;
-				trigger->timeout = entity_list[i]->trigger->timeout_value;
+				projectile->timeout = entity_list[i]->projectile->timeout_value;
 
-				if (trigger->explode_timer)
+				if (projectile->explode_timer)
 				{
 					vec3 distance = entity_list[self]->position - entity_list[i]->position;
 					float mag = MIN(distance.magnitude(), 50.0f);
@@ -8591,42 +8699,42 @@ void Quake3::check_triggers(int self, vector<Entity *> &entity_list)
 					if (abs32(mag) > 0.0001f)
 					{
 						//add knockback to explosions
-						entity_list[self]->rigid->velocity += (distance.normalize() * trigger->knockback) / mag;
+						entity_list[self]->rigid->velocity += (distance.normalize() * projectile->knockback) / mag;
 					}
 				}
 
 				if (player->local)
-					engine->play_wave_global(trigger->pickup_index);
+					engine->play_wave_global(projectile->pickup_index);
 				else
-					engine->play_wave(entity_list[i]->position, trigger->pickup_index);
+					engine->play_wave(entity_list[i]->position, projectile->pickup_index);
 
 			}
 		}
 
 
-		if (trigger->timeout > 0)
+		if (projectile->timeout > 0)
 		{
-			trigger->timeout -= 0.016f;
+			projectile->timeout -= 0.016f;
 		}
 		else
 		{
-			trigger->played = false;
-			if (trigger->active && trigger->noise)
+			projectile->played = false;
+			if (projectile->active && projectile->noise)
 			{
 				// play periodic sound
-				engine->play_wave(entity_list[i]->position, trigger->respawn_index);
+				engine->play_wave(entity_list[i]->position, projectile->respawn_index);
 			}
 
-			if (trigger->noise == false)
+			if (projectile->noise == false)
 			{
 				// means this sound must be triggered, reset timeout so it's not trigger continously
-				trigger->active = false;
-				trigger->client_active = false;
-//				trigger->timeout = trigger->timeout_value;;
+				projectile->active = false;
+				projectile->client_active = false;
+				//				trigger->timeout = trigger->timeout_value;;
 			}
 			else
 			{
-				trigger->timeout = trigger->timeout_value;
+				projectile->timeout = projectile->timeout_value;
 			}
 		}
 	}
@@ -8736,12 +8844,11 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, Model &decal_model, flo
 		decal->rigid->blend = true;
 		decal->rigid->cull_none = true;
 
-		decal->trigger = new Trigger(decal, engine->audio);
-		decal->trigger->idle = idle;
-		decal->trigger->explode_timer = idle_timer;
-		decal->trigger->idle_timer = idle_timer;
-		decal->trigger->projectile = true;
-		decal->trigger->hide = false;
+		decal->projectile = new Projectile(decal, engine->audio);
+		decal->projectile->idle = idle;
+		decal->projectile->explode_timer = idle_timer;
+		decal->projectile->idle_timer = idle_timer;
+		decal->projectile->hide = false;
 
 
 
