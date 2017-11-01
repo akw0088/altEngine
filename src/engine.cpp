@@ -4876,7 +4876,7 @@ void Engine::clean_entity(int index)
 
 	if (entity_list[index]->speaker)
 		entity_list[index]->speaker->destroy(audio);
-	entity_list[index]->nettype = NT_NONE;
+	entity_list[index]->nettype = NET_NONE;
 
 	entity_list[index]->particle_on = false;
 

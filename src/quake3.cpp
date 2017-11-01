@@ -2671,37 +2671,37 @@ void Quake3::drop_weapon(int index)
 	case wp_machinegun:
 		weapon_str = "weapon_machinegun";
 		drop_weapon->model->clone(entity->player->weapon_machinegun);
-		drop_weapon->nettype = NT_MACHINEGUN;
+		drop_weapon->nettype = NET_MACHINEGUN;
 		break;
 	case wp_shotgun:
 		weapon_str = "weapon_shotgun";
 		drop_weapon->model->clone(entity->player->weapon_shotgun);
-		drop_weapon->nettype = NT_SHOTGUN;
+		drop_weapon->nettype = NET_SHOTGUN;
 		break;
 	case wp_grenade:
 		weapon_str = "weapon_grenadelauncher";
 		drop_weapon->model->clone(entity->player->weapon_grenade);
-		drop_weapon->nettype = NT_GRENADE_LAUNCHER;
+		drop_weapon->nettype = NET_GRENADE_LAUNCHER;
 		break;
 	case wp_rocket:
 		weapon_str = "weapon_rocketlauncher";
 		drop_weapon->model->clone(entity->player->weapon_rocket);
-		drop_weapon->nettype = NT_ROCKET_LAUNCHER;
+		drop_weapon->nettype = NET_ROCKET_LAUNCHER;
 		break;
 	case wp_plasma:
 		weapon_str = "weapon_plasmagun";
 		drop_weapon->model->clone(entity->player->weapon_plasma);
-		drop_weapon->nettype = NT_PLASMAGUN;
+		drop_weapon->nettype = NET_PLASMAGUN;
 		break;
 	case wp_lightning:
 		weapon_str = "weapon_lightning";
 		drop_weapon->model->clone(entity->player->weapon_lightning);
-		drop_weapon->nettype = NT_LIGHTNINGGUN;
+		drop_weapon->nettype = NET_LIGHTNINGGUN;
 		break;
 	case wp_railgun:
 		weapon_str = "weapon_railgun";
 		drop_weapon->model->clone(entity->player->weapon_railgun);
-		drop_weapon->nettype = NT_RAILGUN;
+		drop_weapon->nettype = NET_RAILGUN;
 		break;
 	}
 
@@ -2746,7 +2746,7 @@ void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 {
 	Entity *drop = engine->entity_list[engine->get_entity()];
 	drop->position = position;
-	drop->nettype = NT_QUAD;
+	drop->nettype = NET_QUAD;
 
 
 	drop->rigid = new RigidBody(drop);
@@ -3227,7 +3227,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 
-		projectile->nettype = NT_PLASMA;
+		projectile->nettype = NET_PLASMA;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
@@ -3271,7 +3271,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
-	add_decal(frame.pos, frame, NT_PLASMA_HIT, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
+	add_decal(frame.pos, frame, NET_PLASMA_HIT, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + frame.forward * -75.0f;
@@ -3303,7 +3303,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	if (client == false)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
-		projectile->nettype = NT_ROCKET;
+		projectile->nettype = NET_ROCKET;
 		projectile->position = frame.pos;
 		projectile->visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
@@ -3378,7 +3378,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 	if (client == false)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
-		projectile->nettype = NT_GRENADE;
+		projectile->nettype = NET_GRENADE;
 
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
@@ -3505,7 +3505,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	if (client == false)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
-		projectile->nettype = NT_LIGHTNING;
+		projectile->nettype = NET_LIGHTNING;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->position = frame.pos;
 		projectile->rigid->clone(*(model_table[MODEL_BOX]));
@@ -3621,7 +3621,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	if (client == false)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
-		projectile->nettype = NT_RAIL;
+		projectile->nettype = NET_RAIL;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->position = frame.pos;
 		projectile->rigid->clone(*(model_table[MODEL_BALL]));
@@ -3877,7 +3877,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 
-	add_decal(frame.pos, frame, NT_BULLET_HIT, * (model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+	add_decal(frame.pos, frame, NET_BULLET_HIT, * (model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * 75.0f;
@@ -3894,7 +3894,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 	Entity *bullet = engine->entity_list[engine->get_entity()];
-	bullet->nettype = NT_BULLET;
+	bullet->nettype = NET_BULLET;
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = frame.pos;
 	bullet->rigid->clone(*(model_table[MODEL_BULLET]));
@@ -4028,7 +4028,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	vec3 right = vec3::crossproduct(frame.forward, frame.up);
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
-	shell->nettype = NT_SHELL;
+	shell->nettype = NET_SHELL;
 	shell->rigid = new RigidBody(shell);
 	shell->position = frame.pos;
 	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
@@ -4052,7 +4052,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
 	shell2->rigid = new RigidBody(shell2);
-	shell2->nettype = NT_SHELL;
+	shell2->nettype = NET_SHELL;
 	shell2->position = frame.pos;
 	shell2->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
 	shell2->rigid->clone(*(model_table[MODEL_SHELL]));
@@ -4094,7 +4094,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		frame.forward = dir;
 
 
-		add_decal(frame.pos, frame, NT_BULLET_HIT, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+		add_decal(frame.pos, frame, NET_BULLET_HIT, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
 
 
 		if (client == false)
@@ -7628,11 +7628,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 
 	switch (item)
 	{
-	case NT_NONE:
+	case NET_NONE:
 		engine->clean_entity(ent_id);
 		break;
-	case NT_BULLET_HIT:
-		ent->nettype = NT_BULLET_HIT;
+	case NET_BULLET_HIT:
+		ent->nettype = NET_BULLET_HIT;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BULLET_HIT]));
 		ent->rigid->gravity = false;
@@ -7650,8 +7650,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->idle_timer = 10;
 		ent->projectile->hide = false;
 		break;
-	case NT_PLASMA_HIT:
-		ent->nettype = NT_PLASMA_HIT;
+	case NET_PLASMA_HIT:
+		ent->nettype = NET_PLASMA_HIT;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_PLASMA_HIT]));
 		ent->rigid->gravity = false;
@@ -7669,8 +7669,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->idle_timer = 10;
 		ent->projectile->hide = false;
 		break;
-	case NT_BULLET:
-		ent->nettype = NT_BULLET;
+	case NET_BULLET:
+		ent->nettype = NET_BULLET;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BULLET]));
 		ent->rigid->gravity = false;
@@ -7682,8 +7682,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->blend = true;
 		ent->rigid->cull_none = true;
 		break;
-	case NT_SHELL:
-		ent->nettype = NT_SHELL;
+	case NET_SHELL:
+		ent->nettype = NET_SHELL;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_SHELL]));
 		ent->rigid->gravity = false;
@@ -7695,8 +7695,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->blend = true;
 		ent->rigid->cull_none = true;
 		break;
-	case NT_BOOM:
-		ent->nettype = NT_BOOM;
+	case NET_BOOM:
+		ent->nettype = NET_BOOM;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BOOM]));
 		ent->rigid->gravity = false;
@@ -7714,8 +7714,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->idle_timer = 10;
 		ent->projectile->hide = false;
 		break;
-	case NT_ROCKET:
-		ent->nettype = NT_ROCKET;
+	case NET_ROCKET:
+		ent->nettype = NET_ROCKET;
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->explode_index = SND_EXPLODE;
 		ent->projectile->idle_index = SND_ROCKETFLY;
@@ -7744,11 +7744,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->clone(*(model_table[MODEL_ROCKET]));
 		ent->rigid->gravity = false;
 		break;
-	case NT_ROCKET_LAUNCHER:
+	case NET_ROCKET_LAUNCHER:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/rocketl/rocketl");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NET_ROCKET_LAUNCHER;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7758,8 +7758,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_rocketlauncer");
 		break;
-	case NT_GRENADE:
-		ent->nettype = NT_GRENADE;
+	case NET_GRENADE:
+		ent->nettype = NET_GRENADE;
 
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
@@ -7785,11 +7785,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->splash_radius = 250.0f;
 		ent->projectile->knockback = 250.0f;
 		break;
-	case NT_GRENADE_LAUNCHER:
+	case NET_GRENADE_LAUNCHER:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/grenadel/grenade");
-		ent->nettype = NT_ROCKET_LAUNCHER;
+		ent->nettype = NET_GRENADE_LAUNCHER;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7798,8 +7798,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_grenadelauncer");
 		break;
-	case NT_LIGHTNING:
-		ent->nettype = NT_LIGHTNING;
+	case NET_LIGHTNING:
+		ent->nettype = NET_LIGHTNING;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BOX]));
 		ent->rigid->velocity = vec3();
@@ -7821,11 +7821,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->explode = true;
 		ent->projectile->explode_timer = 20;
 		break;
-	case NT_LIGHTNINGGUN:
+	case NET_LIGHTNINGGUN:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/lightning/lightning");
-		ent->nettype = NT_LIGHTNINGGUN;
+		ent->nettype = NET_LIGHTNINGGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7834,8 +7834,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_lightninggun");
 		break;
-	case NT_RAIL:
-		ent->nettype = NT_RAIL;
+	case NET_RAIL:
+		ent->nettype = NET_RAIL;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BALL]));
 		ent->rigid->velocity = vec3();
@@ -7855,11 +7855,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->explode = true;
 		ent->projectile->explode_timer = 10;
 		break;
-	case NT_RAILGUN:
+	case NET_RAILGUN:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/railgun/railgun");
-		ent->nettype = NT_RAILGUN;
+		ent->nettype = NET_RAILGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7868,8 +7868,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_railgun");
 		break;
-	case NT_PLASMA:
-		ent->nettype = NT_PLASMA;
+	case NET_PLASMA:
+		ent->nettype = NET_PLASMA;
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 
@@ -7896,11 +7896,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->light->intensity = 1000.0f;
 
 		break;
-	case NT_PLASMAGUN:
+	case NET_PLASMAGUN:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/plasmagun/plasmagun");
-		ent->nettype = NT_PLASMAGUN;
+		ent->nettype = NET_PLASMAGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7909,11 +7909,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_plasma");
 		break;
-	case NT_SHOTGUN:
+	case NET_SHOTGUN:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/shotgun/shotgun");
-		ent->nettype = NT_SHOTGUN;
+		ent->nettype = NET_SHOTGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7922,11 +7922,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_shotgun");
 		break;
-	case NT_MACHINEGUN:
+	case NET_MACHINEGUN:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/machinegun/machinegun");
-		ent->nettype = NT_MACHINEGUN;
+		ent->nettype = NET_MACHINEGUN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7935,11 +7935,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_machinegun");
 		break;
-	case NT_QUAD:
+	case NET_QUAD:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/quad");
-		ent->nettype = NT_QUAD;
+		ent->nettype = NET_QUAD;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7948,11 +7948,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "quaddamage");
 		break;
-	case NT_REGEN:
+	case NET_REGEN:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/regen");
-		ent->nettype = NT_REGEN;
+		ent->nettype = NET_REGEN;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7961,11 +7961,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "regeneration");
 		break;
-	case NT_INVIS:
+	case NET_INVIS:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/invis");
-		ent->nettype = NT_INVIS;
+		ent->nettype = NET_INVIS;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7974,11 +7974,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "invisibility");
 		break;
-	case NT_FLIGHT:
+	case NET_FLIGHT:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/flight");
-		ent->nettype = NT_FLIGHT;
+		ent->nettype = NET_FLIGHT;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -7987,11 +7987,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "flight");
 		break;
-	case NT_HASTE:
+	case NET_HASTE:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/haste");
-		ent->nettype = NT_HASTE;
+		ent->nettype = NET_HASTE;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -8000,11 +8000,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "haste");
 		break;
-	case NT_BLUE_FLAG:
+	case NET_BLUE_FLAG:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/b_flag");
-		ent->nettype = NT_BLUE_FLAG;
+		ent->nettype = NET_BLUE_FLAG;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -8013,11 +8013,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "blue_flag");
 		break;
-	case NT_RED_FLAG:
+	case NET_RED_FLAG:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/r_flag");
-		ent->nettype = NT_RED_FLAG;
+		ent->nettype = NET_RED_FLAG;
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->rotational_friction_flag = true;
 
@@ -8554,7 +8554,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 							int sprite_index = MIN(7, projectile->explode_timer);
 							if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
 							{
-								ent->nettype = NT_BOOM;
+								ent->nettype = NET_BOOM;
 								ent->model->clone(*model_table[MODEL_BOOM]);
 								ent->model->blend = true;
 							}
@@ -8564,7 +8564,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 						{
 							if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
 							{
-								ent->nettype = NT_PLASMA_HIT;
+								ent->nettype = NET_PLASMA_HIT;
 								ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
 								ent->model->blend = true;
 							}

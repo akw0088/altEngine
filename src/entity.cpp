@@ -28,7 +28,7 @@ Entity::Entity()
 	opening = false;
 
 	ent_type = ENT_UNKNOWN;
-	nettype = NT_NONE;
+	nettype = NET_NONE;
 	angle = -1;
 	model_ref = -1;
 	func_height = 0.0f;
@@ -74,6 +74,6 @@ Entity::~Entity()
 	trigger = NULL;
 	projectile = NULL;
 	player = NULL;
-	nettype = NT_NONE;
+	nettype = NET_NONE;
 }
 
