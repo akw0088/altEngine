@@ -191,7 +191,7 @@ void Menu::sub_value(const char *str, char *out)
 		{
 			out[j] = '\0';
 			char key[80];
-			sscanf(&str[i], "$%s", &key);
+			sscanf(&str[i], "$%s", &key[0]);
 
 			if (strcmp(key, "d_fullscreen") == 0)
 			{

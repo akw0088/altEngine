@@ -3188,19 +3188,21 @@ void Quake3::step(int frame_step)
 		engine->num_light = 0;
 		for (int j = engine->max_player; j < engine->entity_list.size(); j++)
 		{
+			Entity *ent = engine->entity_list[j];
+
 			if (engine->entity_list[j]->light)
 				engine->num_light++;
 
 			Entity *owner = NULL;
 
-			if (engine->entity_list[j]->projectile && engine->entity_list[j]->projectile->owner != -1)
-				owner = engine->entity_list[engine->entity_list[j]->projectile->owner];
+			if (ent->projectile && ent->projectile->owner != -1)
+				owner = engine->entity_list[ent->projectile->owner];
 
 			if (player && (player->type == PLAYER || player->type == CLIENT || player->type == BOT || player->type == SERVER))
 			{
-				check_triggers(player, engine->entity_list[j], i, engine->entity_list);
-				check_func(player, engine->entity_list[j], i, engine->entity_list);
-				check_projectiles(player, engine->entity_list[j], owner, i, j, engine->entity_list);
+				check_triggers(player, ent, i, engine->entity_list);
+				check_func(player, ent, i, engine->entity_list);
+				check_projectiles(player, ent, owner, i, j, engine->entity_list);
 			}
 		}
 	}

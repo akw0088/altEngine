@@ -2162,18 +2162,19 @@ void Engine::render_shadow_volumes()
 
 					for (int j = 0; j < entity_list[i]->light->num_shadowvol; j++)
 					{
-						vec3 old_pos = entity_list[i]->position;
-						matrix3 old_matrix = entity_list[i]->model->morientation;
+						Entity *ent = entity_list[i];
+						vec3 old_pos = ent->position;
+						matrix3 old_matrix = ent->model->morientation;
 
-						entity_list[i]->position = entity_list[i]->light->shadow[j].position;
-						entity_list[i]->model->morientation = entity_list[i]->light->shadow[j].morientation;
-						entity_list[i]->model->get_matrix(matrix.m);
-						entity_list[i]->position = old_pos;
-						entity_list[i]->model->morientation = old_matrix;
+						ent->position = ent->light->shadow[j].position;
+						ent->model->morientation = ent->light->shadow[j].morientation;
+						ent->model->get_matrix(matrix.m);
+						ent->position = old_pos;
+						ent->model->morientation = old_matrix;
 
 						matrix4 mvp = transformation.premultiply(matrix.m) * projection;
 						global.Params(mvp, 0);
-						entity_list[i]->light->render_shadow_volume(gfx, j);
+						ent->light->render_shadow_volume(gfx, j);
 					}
 				}
 			}
@@ -2409,18 +2410,9 @@ void Engine::render_wave(bool debug)
 	//	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
-	if (debug)
-	{
-		gfx.SelectTexture(0, mask_quad);
-		gfx.SelectTexture(1, mask_quad);
-		gfx.SelectTexture(2, mask_quad);
-	}
-	else
-	{
-		gfx.SelectTexture(0, mask_quad);
-		gfx.SelectTexture(1, mask_quad);
-		gfx.SelectTexture(2, mask_quad);
-	}
+	gfx.SelectTexture(0, mask_quad);
+	gfx.SelectTexture(1, mask_quad);
+	gfx.SelectTexture(2, mask_quad);
 	post.Select();
 	post.Params(POST_COMBINE, tick_num);
 	gfx.DrawArrayTri(0, 0, 6, 4); // add all three together
@@ -3752,7 +3744,7 @@ int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents, u
 int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 {
 	Player *player = entity_list[index]->player;
-
+	RigidBody *rigid = entity_list[index]->rigid;
 	if (player != NULL)
 	{
 		player->health = net->health;
@@ -3777,10 +3769,10 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		// current entity has the clients predicted position
 		// the net->position has the server (lagged) position
 		// Need to lerp between the two, but then we have time sync issues
-		entity_list[index]->rigid->center = net->center;
-		entity_list[index]->rigid->morientation = net->morientation;
+		rigid->center = net->center;
+		rigid->morientation = net->morientation;
 
-		entity_list[index]->rigid->velocity = net->velocity;
+		rigid->velocity = net->velocity;
 		
 		vec3 position_delta;
 
@@ -4920,7 +4912,7 @@ int Engine::get_entity()
 			entity_list[index]->~Entity();
 			return index++;
 		}
-		index++;
+	//	index++;
 	}
 
 	return max_dynamic - 1;
@@ -5196,7 +5188,7 @@ void Engine::console(char *cmd)
 	}
 
 	
-	if (sscanf(cmd, "toggle %s", &data))
+	if (sscanf(cmd, "toggle %s", &data[0]))
 	{
 		if (strcmp(data, "r_stencil") == 0)
 		{
@@ -6036,13 +6028,13 @@ void Engine::console(char *cmd)
 
 	if (strcmp(cmd, "r_apply") == 0)
 	{
-		int xres;
-		int yres;
+		int x_res;
+		int y_res;
 
 		debugf("Setting resolution to %s\n", resbuf[current_res + 1]);
-		sscanf(resbuf[current_res + 1], "%dx%d", &xres, &yres);
+		sscanf(resbuf[current_res + 1], "%dx%d", &x_res, &y_res);
 #ifdef WIN32
-		set_resolution(xres, yres, 32);
+		set_resolution(x_res, y_res, 32);
 #endif
 		sprintf(menu.data.apply, "");
 		return;
@@ -6952,6 +6944,15 @@ int Engine::bind(int port)
 		return -1;
 	}
 
+#ifdef WIN32
+	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
+	{
+		DWORD dwError = GetLastError();
+		printf("Failed to set process priority to high Error #%d)\n", dwError);
+	}
+#endif
+
+
 	if (net.bind(NULL, port) == 0)
 	{
 		client_flag = false;
@@ -6963,17 +6964,6 @@ int Engine::bind(int port)
 		q3map.unload(gfx);
 		return -1;
 	}
-
-#ifdef WIN32
-	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
-	{
-		DWORD dwError = GetLastError();
-		printf("Failed to set process priority to high Error #%d)\n", dwError);
-	}
-
-#endif
-
-
 }
 
 void Engine::connect(char *serverip)
@@ -7371,7 +7361,6 @@ void Engine::copy(char *data, unsigned int size)
 void Engine::enum_resolutions()
 {
 #ifdef WIN32
-	static char	currentRes[80];
 	int i = 1;
 	DEVMODE dmScreenSettings;
 

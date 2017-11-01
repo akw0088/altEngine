@@ -108,7 +108,7 @@ void RigidBody::recalc()
 }
 
 // Quake bunny hopping
-void PM_Accelerate(vec3 wishdir, float wishspeed, float accel, Entity *ent)
+void PM_Accelerate(const vec3 &wishdir, float wishspeed, float accel, Entity *ent)
 {
 	float delta_time = 0.08f;
 	vec3 vel = ent->rigid->velocity;

@@ -76,6 +76,9 @@ void Light::generate_map_volumes(Graphics &gfx, Bsp &map, int current_light)
 	memset(&shadow_vertex[0], 0, sizeof(shadow_vertex));
 	memset(&shadow_index[0], 0, sizeof(shadow_index));
 	map.CreateShadowVolumes(gfx, entity->position, current_light, &shadow_vertex[0], &shadow_index[0], num_index);
+
+//	map_shadow.ibo = gfx.CreateIndexBuffer(shadow_index, num_index);
+//	map_shadow.vbo = gfx.CreateVertexBuffer(shadow_vertex, num_index);
 	if (num_index > 0)
 	{
 		map_shadow.CreateVolume(gfx, &shadow_vertex[0], &shadow_index[0], 0, num_index / 3, entity->position);
@@ -112,19 +115,20 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 
 
 		matrix4 matrix;
-		entity_list[i]->model->get_matrix(matrix.m);
+		Model *model = entity_list[i]->model;
+		model->get_matrix(matrix.m);
 		vec3 position = entity_list[i]->model->morientation.transpose() * entity->position;
 
 		// Probably need a test to see if either light or model moved, as static volumes dont need to be regenerated
-		shadow[num_shadowvol].CreateVolume(gfx, entity_list[i]->model->model_vertex_array,
-												entity_list[i]->model->model_index_array,
+		shadow[num_shadowvol].CreateVolume(gfx, model->model_vertex_array,
+												model->model_index_array,
 												0,
-												entity_list[i]->model->num_index / 3,
+												model->num_index / 3,
 												position);
 
 		// so shadow rotates with object
-		entity->light->shadow[num_shadowvol].morientation = entity_list[i]->model->morientation;
-		entity->light->shadow[num_shadowvol].position = entity_list[i]->position - entity_list[i]->model->center;
+		entity->light->shadow[num_shadowvol].morientation = model->morientation;
+		entity->light->shadow[num_shadowvol].position = entity_list[i]->position - model->center;
 		num_shadowvol++;
 
 		if (num_shadowvol >= MAX_SHADOWVOL)
