@@ -383,8 +383,9 @@ int debugf(const char *format, ...)
 	unsigned int width = 60;
 
     
+	memset(str, 0, sizeof(str));
     va_start(args, format);
-    vsprintf(str, format, args);
+    vsnprintf(str, 511, format, args);
     va_end(args);
     printf("%s", str);
     

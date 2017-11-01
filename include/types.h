@@ -813,15 +813,13 @@ typedef struct
 	unsigned short int		ammo_lightning;
 	unsigned short int		ammo_slugs;
 	unsigned short int		ammo_plasma;
-	unsigned short flight_timer;
-	unsigned short regen_timer;
-	unsigned short haste_timer;
-	unsigned short quad_timer;
+	unsigned short int flight_timer;
+	unsigned short int regen_timer;
+	unsigned short int haste_timer;
+	unsigned short int quad_timer;
 	uint8_t			weapon_flags;
-	uint8_t 		holdable_teleporter;
-	uint8_t			holdable_medikit;
-	uint8_t			holdable_flag;
-	char			name[64];
+	uint8_t 		holdable_flags;
+	char			name[32];
 } net_player_t;
 
 
