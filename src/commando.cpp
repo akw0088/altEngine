@@ -2956,7 +2956,7 @@ void Commando::create_icon()
 	icon_vbo = engine->gfx.CreateVertexBuffer(&vert, icon_list.size());
 }
 
-void Commando::draw_icon(float scale, int index, float x, float y)
+void Commando::draw_icon(float scale, int index, float x, float y, float z)
 {
 	matrix4 transformation;
 	engine->camera_frame.set(transformation);
