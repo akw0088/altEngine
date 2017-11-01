@@ -7,7 +7,7 @@
 #define SOCKET int
 #endif
 
-#ifndef __linux__
+#ifdef WIN32
 int inet_pton(int af, const char *server, void *vaddr);
 #endif
 

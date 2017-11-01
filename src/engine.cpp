@@ -213,7 +213,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	enable_map = true;
 
 	enum_resolutions();
-#ifndef __linux
+#ifdef WIN32
 	WAVEFORMATEX wf;
 	DWORD value = 0;
 
@@ -3906,17 +3906,17 @@ void Engine::server_send()
 	servermsg.client_sequence = 0;
 	servermsg.num_ents = 0;
 
-//	memset(&data[0], 0, sizeof(data));
+	//	memset(&data[0], 0, sizeof(data));
 	serialize_ents(&data[0], servermsg.num_ents, servermsg.data_size);
 	netinfo.uncompressed_size = servermsg.data_size + SERVER_HEADER;
 	servermsg.compressed_size = (unsigned short)huffman_compress((unsigned char *)&data[0], servermsg.data_size,
 		servermsg.data, sizeof(servermsg.data), huffbuf);
 
-
 	if (recording_demo)
 	{
 		fwrite(&servermsg, servermsg.compressed_size + SERVER_HEADER, 1, demofile);
 	}
+
 
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
@@ -4767,7 +4767,7 @@ void Engine::resize(int width, int height)
 
 	projection.perspective(fov, (float)width / height, zNear, zFar, inf);
 
-#ifndef __linux__
+#ifdef WIN32
 	// This should probably be in render
 	if (initialized && q3map.loaded == false)
 	{
@@ -4841,7 +4841,7 @@ void Engine::fullscreen()
 	if (fullscreen_timer == 0)
 	{
 		menu.data.fullscreen = !menu.data.fullscreen;
-#ifndef __linux
+#ifdef WIN32
 		HMONITOR hmon;
 		MONITORINFOEX  mi;
 		HWND hwnd = *((HWND *)param1);
@@ -5419,7 +5419,7 @@ void Engine::console(char *cmd)
 			if (menu.data.volume > 1.01f)
 				menu.data.volume = 0.0f;
 
-#ifndef __linux
+#ifdef WIN32
 			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
 #endif
 			return;
@@ -5430,7 +5430,7 @@ void Engine::console(char *cmd)
 			if (menu.data.volume < 0.00f)
 				menu.data.volume = 1.0f;
 
-#ifndef __linux
+#ifdef WIN32
 			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
 #endif
 			return;
@@ -6041,7 +6041,7 @@ void Engine::console(char *cmd)
 
 		debugf("Setting resolution to %s\n", resbuf[current_res + 1]);
 		sscanf(resbuf[current_res + 1], "%dx%d", &xres, &yres);
-#ifndef __linux
+#ifdef WIN32
 		set_resolution(xres, yres, 32);
 #endif
 		sprintf(menu.data.apply, "");
@@ -6964,7 +6964,7 @@ int Engine::bind(int port)
 		return -1;
 	}
 
-#ifndef __linux
+#ifdef WIN32
 	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
 	{
 		DWORD dwError = GetLastError();
@@ -7370,13 +7370,10 @@ void Engine::copy(char *data, unsigned int size)
 
 void Engine::enum_resolutions()
 {
-#ifndef __linux
+#ifdef WIN32
 	static char	currentRes[80];
 	int i = 1;
-
-#ifndef __linux
 	DEVMODE dmScreenSettings;
-#endif
 
 
 	num_res = 0;

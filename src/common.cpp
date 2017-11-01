@@ -15,7 +15,7 @@
 #define stricmp strcasecmp
 #endif
 
-#ifndef __linux__
+#ifdef WIN32
 typedef unsigned char byte;
 #endif
 
@@ -1565,7 +1565,7 @@ void show_hw_info()
 	}
 	else if (vendor)
 	{
-#ifndef __linux
+#ifdef WIN32
 		unsigned int  n = wglGetGPUIDsAMD(0, 0);
 		unsigned int *ids = new UINT[n];
 		size_t total_mem_mb = 0;

@@ -229,7 +229,7 @@ public:
 	float dof_near;
 	float dof_far;
 
-#ifndef __linux
+#ifdef WIN32
 	HWAVEOUT hWaveOut;
 #endif
 
