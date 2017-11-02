@@ -3186,7 +3186,7 @@ void Quake3::step(int frame_step)
 //		printf("bsp leaf %d Handled by thread %d of %d\n", engine->entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
 		engine->num_light = 0;
-		for (int j = engine->max_player; j < engine->entity_list.size(); j++)
+		for (unsigned int j = engine->max_player; j < engine->entity_list.size(); j++)
 		{
 			Entity *ent = engine->entity_list[j];
 
@@ -8328,8 +8328,8 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 
 void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
 {
-	bool inside = false;
-	RigidBody *rigid = ent->rigid;
+	//bool inside = false;
+	//RigidBody *rigid = ent->rigid;
 
 	if (ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END)
 	{
@@ -8522,7 +8522,7 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list)
 {
 	bool inside = false;
-	RigidBody *rigid = ent->rigid;
+	//RigidBody *rigid = ent->rigid;
 
 	// Not a trigger
 	Projectile *projectile = ent->projectile;

@@ -101,7 +101,7 @@ void Graphics::clear()
 void Graphics::clear_multi()
 {
 	static const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	static const GLfloat one = 1.0f;
+	//static const GLfloat one = 1.0f;
 
 //	glClearBufferfv(GL_COLOR, 0, black);
 	glClearBufferfv(GL_COLOR, 1, black);

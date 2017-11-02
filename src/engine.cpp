@@ -519,8 +519,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	//render menu again for linux
 	gfx.resize(xres,yres);
 
-	int x, y, bpp, refresh_rate;
 #ifdef WIN32
+	int x, y, bpp, refresh_rate;
 	get_resolution(x, y, bpp, refresh_rate);
 	sprintf(menu.data.resolution, "%dx%d %dHz", x, y, refresh_rate);
 	sprintf(menu.data.window, "%dx%d", xres, yres);

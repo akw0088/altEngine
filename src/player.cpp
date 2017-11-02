@@ -543,7 +543,7 @@ void Player::avoid_walls(Bsp &map)
 	vec3 vel;
 	int model_trigger;
 	int model_platform;
-	int surf_flags = 0;
+	//int surf_flags = 0;
 
 	input_t input;
 

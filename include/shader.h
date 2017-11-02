@@ -154,7 +154,7 @@ private:
 	float m_end;
 
 
-	int m_normalmap;
+	//int m_normalmap;
 	unsigned int max_light;
 };
 

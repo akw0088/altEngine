@@ -657,9 +657,9 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 		if (index > data.num_brushes)
 			break;
 		brush_t	*brush = &data.Brushes[index];
-		int brush_index = brush->first_side;
-		int num_sides = brush->num_sides;
-		int count = 0;
+		//int brush_index = brush->first_side;
+		//int num_sides = brush->num_sides;
+		//int count = 0;
 
 
 		//Inside brush 2 with texture textures/common/trigger and contents 0x1 surf 0x80
@@ -1517,7 +1517,6 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 		if (face->fog_num != -1 && enable_fog)
 		{
-			vec3 fog_color = face_list[i].fog_color;
 			mlight2.set_fog(0.0f, 200.0f, 1500.0f, face_list[i].fog_color);
 		}
 
@@ -1653,7 +1652,6 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 			if (face->fog_num != -1 && enable_fog)
 			{
-				vec3 fog_color = blend_list[i].fog_color;
 				mlight2.set_fog(0.0f, 200.0f, 1500.0f, blend_list[i].fog_color);
 			}
 
@@ -2368,9 +2366,9 @@ void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light,
 	for (unsigned int i = 0; i < data.num_leafs; i++)
 	{
 		leaf_t *leaf = &data.Leaf[i];
-		int start_index = 0;
-		int num_index = 0;
-		int temp = 0;
+		//int start_index = 0;
+		//int num_index = 0;
+		//int temp = 0;
 
 		if (!cluster_visible(light_Leaf->cluster, leaf->cluster))
 			continue;
