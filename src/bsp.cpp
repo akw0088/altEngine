@@ -738,10 +738,12 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 	}
 
 	gfx.DrawArrayTri(0, 0, 36, 36);
-
-	for (int i = 0; i < MAX_TEXTURES; i++)
+	if (enable_textures)
 	{
-		gfx.SelectTexture(i, 0);
+		for (int i = 0; i < MAX_TEXTURES; i++)
+		{
+			gfx.SelectTexture(i, 0);
+		}
 	}
 
 }
@@ -783,7 +785,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		}
 
 	}
-	if (enable_normalmap)
+	if (enable_textures && enable_normalmap)
 	{
 		gfx.SelectTexture(9, normal_object[face->material]);
 	}
@@ -854,7 +856,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		gfx.SelectVertexBuffer(patchdata[mesh_index + i].vbo);
 		gfx.SelectIndexBuffer(patchdata[mesh_index + i].ibo);
 
-		if (enable_normalmap)
+		if (enable_textures && enable_normalmap)
 		{
 			gfx.SelectTexture(9, normal_object[face->material]);
 		}
@@ -912,7 +914,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 		}
 	}
 
-	if (enable_normalmap)
+	if (enable_textures && enable_normalmap)
 	{
 		gfx.SelectTexture(9, normal_object[face->material]);
 	}
@@ -920,11 +922,14 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
-	if (lightmap_selected)
+	if (enable_textures)
 	{
-		gfx.SelectTexture(8, 0);
+		if (lightmap_selected)
+		{
+			gfx.SelectTexture(8, 0);
+		}
+		gfx.SelectTexture(stage, 0);
 	}
-	gfx.SelectTexture(stage, 0);
 }
 
 void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position)
