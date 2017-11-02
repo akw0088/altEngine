@@ -272,7 +272,7 @@ public:
 	Shader();
 
 	int init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *fragment_file);
-	void Select();
+	virtual void Select();
 	void destroy();
 	virtual ~Shader();
 	virtual void prelink() = 0;

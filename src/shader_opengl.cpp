@@ -265,10 +265,14 @@ void mLight2::set_clip(vec4 *plane)
 
 void mLight2::set_fog(float fog, float start, float end, vec3 &color)
 {
+	if (abs32(fog - m_fog) < 0.0001f)
+		return;
+
 	m_fog = fog;
 	m_start = start;
 	m_end = end;
 	m_color = color;
+
 
 	glUniform1f(u_fog, m_fog);
 	glUniform1f(u_fog_start, m_start);
@@ -354,6 +358,8 @@ void mLight2::set_matrix(matrix4 &mvp)
 
 void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int time)
 {
+	Shader::Select();
+
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
 	unsigned int i, j;
@@ -377,121 +383,13 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	}
 
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
-	glUniform1i(texture[0], 0);
-	glUniform1i(texture[1], 1);
-	glUniform1i(texture[2], 2);
-	glUniform1i(texture[3], 3);
-//	glUniform1i(texture[4], 4);
-//	glUniform1i(texture[5], 5);
-//	glUniform1i(texture[6], 6);
-//	glUniform1i(texture[7], 7);
-
-	glUniform1f(u_alpha, -1.0f);
-
-
-	glUniform1i(depth[0], 10);
-	glUniform1i(depth[1], 11);
-	glUniform1i(depth[2], 12);
-	glUniform1i(depth[3], 13);
-	glUniform1i(depth[4], 14);
-	glUniform1i(depth[5], 15);
-	glUniform1i(depth[6], 16);
-	glUniform1i(depth[7], 17);
-	glUniform1i(depth[8], 18);
-	glUniform1i(depth[9], 19);
-	glUniform1i(depth[10], 20);
-	glUniform1i(depth[11], 21);
-	glUniform1i(depth[12], 22);
-	glUniform1i(depth[13], 23);
-	glUniform1i(depth[14], 24);
-	glUniform1i(depth[15], 25);
-	glUniform1i(depth[16], 26);
-	glUniform1i(depth[17], 27);
-
-
-	glUniform1f(u_fog, m_fog);
-	glUniform1f(u_fog_start, m_start);
-	glUniform1f(u_fog_end, m_end);
-	glUniform3f(u_fog_color, m_color.x, m_color.y, m_color.z);
-
-
 
 	glUniform1i(u_time, time);
 
-
-// Going to treat normals and lightmaps like normal textures
-	glUniform1i(texture_lightmap, 8);
-	glUniform1i(texture_normalmap, 9);
-
-	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
-	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
-	float tcmod_sin = 0.0f;
-	float tcmod_cos = 1.0f;
-	int env = 0;
-
-	glUniform2fv(u_tcmod_scroll[0], 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll[1], 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll[2], 1, (float *)&tcmod_scroll);
-	glUniform2fv(u_tcmod_scroll[3], 1, (float *)&tcmod_scroll);
-//	glUniform2fv(u_tcmod_scroll4, 1, (float *)&tcmod_scroll);
-//	glUniform2fv(u_tcmod_scroll5, 1, (float *)&tcmod_scroll);
-//	glUniform2fv(u_tcmod_scroll6, 1, (float *)&tcmod_scroll);
-//	glUniform2fv(u_tcmod_scroll7, 1, (float *)&tcmod_scroll);
-
-	glUniform2fv(u_tcmod_scale[0], 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale[1], 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale[2], 1, (float *)&tcmod_scale);
-	glUniform2fv(u_tcmod_scale[3], 1, (float *)&tcmod_scale);
-//	glUniform2fv(u_tcmod_scale4, 1, (float *)&tcmod_scale);
-//	glUniform2fv(u_tcmod_scale5, 1, (float *)&tcmod_scale);
-//	glUniform2fv(u_tcmod_scale6, 1, (float *)&tcmod_scale);
-//	glUniform2fv(u_tcmod_scale7, 1, (float *)&tcmod_scale);
-
-
-	glUniform1fv(u_rgbgen_scale[0], 1, (float *)&tcmod_scale);
-	glUniform1fv(u_rgbgen_scale[1], 1, (float *)&tcmod_scale);
-	glUniform1fv(u_rgbgen_scale[2], 1, (float *)&tcmod_scale);
-	glUniform1fv(u_rgbgen_scale[3], 1, (float *)&tcmod_scale);
-
-
-	glUniform1fv(u_tcmod_sin[0], 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin[1], 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin[2], 1, &tcmod_sin);
-	glUniform1fv(u_tcmod_sin[3], 1, &tcmod_sin);
-//	glUniform1fv(u_tcmod_sin4, 1, &tcmod_sin);
-//	glUniform1fv(u_tcmod_sin5, 1, &tcmod_sin);
-//	glUniform1fv(u_tcmod_sin6, 1, &tcmod_sin);
-//	glUniform1fv(u_tcmod_sin7, 1, &tcmod_sin);
-
-	glUniform1fv(u_tcmod_cos[0], 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos[1], 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos[2], 1, &tcmod_cos);
-	glUniform1fv(u_tcmod_cos[3], 1, &tcmod_cos);
-//	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
-//	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
-//	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
-//	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
-
-	glUniform1i(u_env[0], env);
-	glUniform1i(u_env[1], env);
-	glUniform1i(u_env[2], env);
-	glUniform1i(u_env[3], env);
-	//	glUniform1fv(u_tcmod_cos4, 1, &tcmod_cos);
-	//	glUniform1fv(u_tcmod_cos5, 1, &tcmod_cos);
-	//	glUniform1fv(u_tcmod_cos6, 1, &tcmod_cos);
-	//	glUniform1fv(u_tcmod_cos7, 1, &tcmod_cos);
-
-	glUniform1f(u_ambient, m_ambient);
-	glUniform1f(u_lightmap, m_lightmap);
-	glUniform1f(u_brightness, m_brightness);
-	glUniform1f(u_exposure, m_exposure);
-	glUniform1f(u_contrast, m_contrast);
-	glUniform1f(u_shadowmap, m_shadowmap);
 	glUniform1i(u_num_lights, MIN(j, max_light));
 	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 
-	glUniform1i(u_lightmap_stage, 0);
 
 	m_num_light = j;
 }
@@ -536,6 +434,96 @@ void mLight2::rgbgen_scale(int stage, float scale)
 void mLight2::turb(int stage, int turb)
 {
 	glUniform1i(u_water[stage], turb);
+}
+
+void mLight2::Select()
+{
+	glUniform1i(texture[0], 0);
+	glUniform1i(texture[1], 1);
+	glUniform1i(texture[2], 2);
+	glUniform1i(texture[3], 3);
+
+	glUniform1f(u_alpha, -1.0f);
+
+
+	glUniform1i(depth[0], 10);
+	glUniform1i(depth[1], 11);
+	glUniform1i(depth[2], 12);
+	glUniform1i(depth[3], 13);
+	glUniform1i(depth[4], 14);
+	glUniform1i(depth[5], 15);
+	glUniform1i(depth[6], 16);
+	glUniform1i(depth[7], 17);
+	glUniform1i(depth[8], 18);
+	glUniform1i(depth[9], 19);
+	glUniform1i(depth[10], 20);
+	glUniform1i(depth[11], 21);
+	glUniform1i(depth[12], 22);
+	glUniform1i(depth[13], 23);
+	glUniform1i(depth[14], 24);
+	glUniform1i(depth[15], 25);
+	glUniform1i(depth[16], 26);
+	glUniform1i(depth[17], 27);
+
+
+	glUniform1f(u_fog, m_fog);
+	glUniform1f(u_fog_start, m_start);
+	glUniform1f(u_fog_end, m_end);
+	glUniform3f(u_fog_color, m_color.x, m_color.y, m_color.z);
+
+
+	// Going to treat normals and lightmaps like normal textures
+	glUniform1i(texture_lightmap, 8);
+	glUniform1i(texture_normalmap, 9);
+
+
+	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
+	vec2 tcmod_scale = vec2(1.0f, 1.0f); // 2.0 makes it half the size
+	float tcmod_sin = 0.0f;
+	float tcmod_cos = 1.0f;
+	int env = 0;
+
+	glUniform2fv(u_tcmod_scroll[0], 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[1], 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[2], 1, (float *)&tcmod_scroll);
+	glUniform2fv(u_tcmod_scroll[3], 1, (float *)&tcmod_scroll);
+
+	glUniform2fv(u_tcmod_scale[0], 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[1], 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[2], 1, (float *)&tcmod_scale);
+	glUniform2fv(u_tcmod_scale[3], 1, (float *)&tcmod_scale);
+
+
+	glUniform1fv(u_rgbgen_scale[0], 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[1], 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[2], 1, (float *)&tcmod_scale);
+	glUniform1fv(u_rgbgen_scale[3], 1, (float *)&tcmod_scale);
+
+
+	glUniform1fv(u_tcmod_sin[0], 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[1], 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[2], 1, &tcmod_sin);
+	glUniform1fv(u_tcmod_sin[3], 1, &tcmod_sin);
+
+	glUniform1fv(u_tcmod_cos[0], 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[1], 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[2], 1, &tcmod_cos);
+	glUniform1fv(u_tcmod_cos[3], 1, &tcmod_cos);
+
+	glUniform1i(u_env[0], env);
+	glUniform1i(u_env[1], env);
+	glUniform1i(u_env[2], env);
+	glUniform1i(u_env[3], env);
+
+	glUniform1f(u_ambient, m_ambient);
+	glUniform1f(u_lightmap, m_lightmap);
+	glUniform1f(u_brightness, m_brightness);
+	glUniform1f(u_exposure, m_exposure);
+	glUniform1f(u_contrast, m_contrast);
+	glUniform1f(u_shadowmap, m_shadowmap);
+
+	glUniform1i(u_lightmap_stage, 0);
+
 }
 
 void mLight2::portal(int portal)
