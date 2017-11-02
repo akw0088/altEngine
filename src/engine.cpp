@@ -1631,7 +1631,9 @@ void Engine::render_scene(bool lights)
 #endif
 
 	render_entities(transformation, projection, lights, true);
+	mlight2.set_lightmap(0.0f);
 	render_weapon(transformation, lights, player);
+	mlight2.set_lightmap(1.0f);
 }
 
 
@@ -1905,6 +1907,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 	}
 
 	gfx.Blend(false);
+	mlight2.set_lightmap(0.0f);
 	mlight2.Select();
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -2022,12 +2025,14 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			emitter_count = 5 * TICK_RATE;
 		}
 	}
+	mlight2.set_lightmap(1.0f);
 }
 
 void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool render_self)
 {
 	matrix4 mvp;
 	//render player md5
+	mlight2.set_lightmap(1.0f);
 	for (unsigned int i = 0; i < max_player && i < entity_list.size(); i++)
 	{
 		Entity *entity = entity_list[i];

@@ -324,6 +324,7 @@ void mLight2::set_contrast(float value)
 void mLight2::set_lightmap(float lightmap)
 {
 	m_lightmap = lightmap;
+	glUniform1f(u_lightmap, lightmap);
 }
 
 void mLight2::set_shadowmap(float value)
@@ -449,6 +450,8 @@ void mLight2::Select()
 	glUniform1f(u_alpha, -1.0f);
 
 
+	glUniform1i(u_normalmap, m_normalmap);
+
 	glUniform1i(depth[0], 10);
 	glUniform1i(depth[1], 11);
 	glUniform1i(depth[2], 12);
@@ -539,6 +542,7 @@ void mLight2::portal(int portal)
 void mLight2::set_normalmap(int value)
 {
 	glUniform1i(u_normalmap, value);
+	m_normalmap = value;
 }
 
 void mLight2::set_tone(int value)
