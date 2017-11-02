@@ -490,9 +490,9 @@ void Menu::sub_value(const char *str, char *out)
 				}
 				else if (data.crosshair >= 0 && data.crosshair <= 9)
 				{
-					char output[3];
+					char output[64];
 
-					itoa(data.crosshair, output, 10);
+					sprintf(output, "%d", data.crosshair);
 					strcat(out, output);
 					j += 1;
 				}

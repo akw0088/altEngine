@@ -3067,7 +3067,15 @@ void Engine::step(int tick)
 //		unsigned int num_read;
 
 		memset(data, 0, 4096);
-		fread(&header, sizeof(demo_frameheader_t), 1, demofile);
+		int ret = fread(&header, sizeof(demo_frameheader_t), 1, demofile);
+		if (ret != sizeof(demo_frameheader_t))
+		{
+			playing_demo = false;
+			unload();
+			menu.print("Invalid frame");
+			return;
+		}
+
 		if (strcmp(header.magic, "frame") != 0)
 		{
 			playing_demo = false;
@@ -5914,7 +5922,12 @@ void Engine::console(char *cmd)
 				return;
 			}
 
-			fread(&header, sizeof(demo_fileheader_t), 1, demofile);
+			int ret = fread(&header, sizeof(demo_fileheader_t), 1, demofile);
+			if (ret != sizeof(demo_fileheader_t))
+			{
+				menu.print("Unable to open demofile");
+				return;
+			} 
 			playing_demo = true;
 			load(header.map);
 		}
@@ -6086,7 +6099,7 @@ void Engine::console(char *cmd)
 #ifdef WIN32
 		set_resolution(x_res, y_res, 32);
 #endif
-		sprintf(menu.data.apply, "");
+		menu.data.apply[0] = '\0';
 		return;
 	}
 

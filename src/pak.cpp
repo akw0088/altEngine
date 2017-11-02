@@ -183,7 +183,8 @@ void lump_to_wave(char *lump_data, int size, wave_t *wave)
 char *get_pakfile(char *pakfile, char *file)
 {
 	int i;
-    
+	int ret;    
+
 	FILE *pak = (FILE *)fopen(pakfile, "rb");
 	if (pak == NULL)
 	{
@@ -192,7 +193,12 @@ char *get_pakfile(char *pakfile, char *file)
 	}
 
 	pak_header_t header;
-	fread(&header, sizeof(pak_header_t), 1, pak);
+	ret = fread(&header, sizeof(pak_header_t), 1, pak);
+	if (ret != sizeof(pak_header_t))
+	{
+		fclose(pak);
+		return NULL;
+	}
     
 	if (strncmp(header.id, "PACK", 4) != 0)
 	{
@@ -217,7 +223,12 @@ char *get_pakfile(char *pakfile, char *file)
 	}
     
 	fseek(pak, header.dir_offset, SEEK_SET);
-	fread(entries, header.dir_length, 1, pak);
+	ret = fread(entries, header.dir_length, 1, pak);
+	if (ret != header.dir_length)
+	{
+		fclose(pak);
+		return NULL;
+	}
     
 	pak_entry_t *entry = entries;
 	int num_entries = header.dir_length / sizeof(pak_entry_t);
@@ -235,7 +246,14 @@ char *get_pakfile(char *pakfile, char *file)
 			}
 
 			fseek(pak, entry->offset, SEEK_SET);
-			fread(data, entry->length, 1, pak);
+			ret = fread(data, entry->length, 1, pak);
+			if (ret != entry->length)
+			{
+				delete [] entries;
+				fclose(pak);
+				return NULL;
+			}
+			
 			delete [] entries;
 			fclose(pak);
 			return data;
