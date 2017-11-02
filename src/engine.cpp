@@ -2123,14 +2123,14 @@ void Engine::render_shadow_volumes()
 		player = entity_list[index]->player;
 	}
 	*/
-
+/*
 	int player = find_type(ENT_PLAYER, 0);
 	int current_light = 0;
 	if (player != -1)
 	{
 		current_light = entity_list[player]->player->current_light;
 	}
-
+*/
 
 	global.Select();
 	camera_frame.set(transformation);
@@ -3069,10 +3069,17 @@ void Engine::step(int tick)
 	{
 		demo_frameheader_t header;
 		static unsigned char data[4096];
-//		unsigned int num_read;
+		unsigned int num_read;
 
 		memset(data, 0, 4096);
-		fread(&header, sizeof(demo_frameheader_t), 1, demofile);
+		num_read = fread(&header, sizeof(demo_frameheader_t), 1, demofile);
+		if (num_read != sizeof(demo_frameheader_t))
+		{
+			playing_demo = false;
+			unload();
+			menu.print("Invalid frame");
+			return;
+		}
 		if (strcmp(header.magic, "frame") != 0)
 		{
 			playing_demo = false;
@@ -5885,7 +5892,13 @@ void Engine::console(char *cmd)
 				return;
 			}
 
-			fread(&header, sizeof(demo_fileheader_t), 1, demofile);
+			ret = fread(&header, sizeof(demo_fileheader_t), 1, demofile);
+			if (ret != sizeof(demo_fileheader_t))
+			{
+				playing_demo = false;
+				menu.print("Unable to read demo file header");
+				return;
+			}
 			playing_demo = true;
 			load(header.map);
 		}
@@ -6040,7 +6053,7 @@ void Engine::console(char *cmd)
 #ifdef WIN32
 		set_resolution(x_res, y_res, 32);
 #endif
-		sprintf(menu.data.apply, "");
+		menu.data.apply[0] = '\0';;
 		return;
 	}
 

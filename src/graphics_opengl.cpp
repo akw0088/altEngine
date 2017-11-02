@@ -1105,14 +1105,14 @@ int Graphics::setupFramebufferArray(int width, int height, unsigned int &fbo, un
 	return 0;
 }
 
-void Graphics::DeleteFrameBuffer(unsigned int fbo, unsigned int quad, unsigned int depth)
+void Graphics::DeleteFrameBuffer(int fbo, int quad, int depth)
 {
-	glDeleteFramebuffers(1, &fbo);
+	glDeleteFramebuffers(1, (unsigned int *)&fbo);
 
 	if (quad != -1)
-		glDeleteTextures(1, &quad);
+		glDeleteTextures(1, (unsigned int *)&quad);
 	if (depth != -1)
-		glDeleteTextures(1, &depth);
+		glDeleteTextures(1, (unsigned int *)&depth);
 }
 
 void Graphics::GetDebugLog()
