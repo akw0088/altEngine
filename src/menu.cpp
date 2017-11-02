@@ -57,7 +57,7 @@ Menu::Menu()
 	data.sfxvol = 0.5f;
 	data.rscale = 0.5f;
 	data.sensitivity = 1.0f;
-	data.shadowvol = true;
+	data.shadowvol = false;
 	data.fov = 0.1f;
 	data.bloom = true;
 	data.invert = false;
@@ -480,6 +480,28 @@ void Menu::sub_value(const char *str, char *out)
 				strcat(out, value);
 				j += strlen(value);
 				continue;
+			}
+			else if (strcmp(key, "d_crosshair") == 0)
+			{
+				if (data.crosshair == -1)
+				{
+					strcat(out, "Off");
+					j += 3;
+				}
+				else if (data.crosshair >= 0 && data.crosshair <= 9)
+				{
+					char output[3];
+
+					itoa(data.crosshair, output, 10);
+					strcat(out, output);
+					j += 1;
+				}
+				else if (data.crosshair == 10)
+				{
+					strcat(out, "10");
+					j += 2;
+				}
+				i += 1 + strlen(key);
 			}
 			else if (strcmp(key, "d_invert") == 0)
 			{

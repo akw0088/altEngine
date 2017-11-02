@@ -112,19 +112,19 @@ Lump 218: name DSGETPOW size 7936
 
 */
 
-char *get_wadfile(char *wadfile, char *lump, int *lump_size)
+char *get_wadfile(char *wadfile, char *lump, int *lump_size, char **pdata)
 {
-	char *data = NULL;
 	char *lump_data = NULL;
 	int size = 0;
 	wad_header_t *header = NULL;
 
-	data = get_file(wadfile, &size);
+	char *data = get_file(wadfile, &size);
 	if (data == NULL)
 	{
 		printf("Unable to open %s\n", wadfile);
 		return NULL;
 	}
+	*pdata = data;
 
 	header =(wad_header_t *)data;
 
@@ -182,10 +182,9 @@ void lump_to_wave(char *lump_data, int size, wave_t *wave)
 
 char *get_pakfile(char *pakfile, char *file)
 {
-	int i;    
+	int i;
+    
 	FILE *pak = (FILE *)fopen(pakfile, "rb");
-	int ret;
-
 	if (pak == NULL)
 	{
 		printf("error opening %s\n", pakfile);
@@ -193,11 +192,7 @@ char *get_pakfile(char *pakfile, char *file)
 	}
 
 	pak_header_t header;
-	ret = fread(&header, sizeof(pak_header_t), 1, pak);
-	if (ret != sizeof(pak_header_t))
-	{
-		return NULL;
-	}
+	fread(&header, sizeof(pak_header_t), 1, pak);
     
 	if (strncmp(header.id, "PACK", 4) != 0)
 	{
@@ -222,11 +217,7 @@ char *get_pakfile(char *pakfile, char *file)
 	}
     
 	fseek(pak, header.dir_offset, SEEK_SET);
-	ret = fread(entries, header.dir_length, 1, pak);
-	if (ret != header.dir_length)
-	{
-		return NULL;
-	}
+	fread(entries, header.dir_length, 1, pak);
     
 	pak_entry_t *entry = entries;
 	int num_entries = header.dir_length / sizeof(pak_entry_t);
@@ -244,11 +235,7 @@ char *get_pakfile(char *pakfile, char *file)
 			}
 
 			fseek(pak, entry->offset, SEEK_SET);
-			ret = fread(data, entry->length, 1, pak);
-			if (ret != entry->length)
-			{
-				return NULL;
-			}
+			fread(data, entry->length, 1, pak);
 			delete [] entries;
 			fclose(pak);
 			return data;

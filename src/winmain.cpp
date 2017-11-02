@@ -246,7 +246,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case TICK_TIMER:
 #ifndef DEDICATED
-			xbox_controller(hwnd, 0, &altEngine);
+			xbox_controller(hwnd, altEngine.controller, &altEngine);
 #endif
 			altEngine.step(tick_count++);
 			break;

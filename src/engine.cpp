@@ -50,6 +50,7 @@ Engine::Engine()
 	current_team = 2;
 	num_team = 3;
 	num_model = 23;
+	controller = 0;
 	show_names = false;
 	show_lines = false;
 	show_debug = false;
@@ -121,6 +122,10 @@ Engine::Engine()
 	debug_bloom = false;
 	enable_entities = true;
 
+
+	memset(shader_list, 0, sizeof(shader_list));
+	memset(hash_result, 0, sizeof(hash_result));
+	
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT;
 #else
@@ -276,9 +281,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	gen_lightning(gfx, lightning_ibo, lightning_vbo);
 
 	// hash check data files
-	newlinelist("media/cmdlist.txt", cmd_list, num_cmd);
-	newlinelist("media/pk3list.txt", pk3_list, num_pk3);
-	newlinelist("media/pk3hash.txt", hash_list, num_hash);
+	newlinelist("media/cmdlist.txt", cmd_list, num_cmd, &cmdlist);
+	newlinelist("media/pk3list.txt", pk3_list, num_pk3, &pk3list);
+	newlinelist("media/pk3hash.txt", hash_list, num_hash, &hashlist);
 
 	if (num_pk3 != num_hash)
 	{
@@ -287,7 +292,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}
 
 
-	char *hash[32];
+
 	std::thread pool[32];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
@@ -299,33 +304,32 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	for (unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
-		hash[i] = new char[32];
-		hash[i][0] = '\0';
-		strcpy(hash[i], "Missing file");
-		pool[i] = std::thread(calc_hash, pk3_list[i], hash[i]);
+		hash_result[i][0] = '\0';
+		strcpy(hash_result[i], "Missing file");
+		pool[i] = std::thread(calc_hash, pk3_list[i], hash_result[i]);
 	}
 
 	for(unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
 	{
 		pool[i].join();
 		debugf("Checking hash for %s...", pk3_list[i]);
-		if (strcmp(hash_list[i], hash[i]) != 0)
+		if (strcmp(hash_list[i], hash_result[i]) != 0)
 		{
 			if (strcmp(pk3_list[i], "media/pak0.pk3") == 0)
 			{
-				if (strcmp(hash[i], "0613b3d4ef05e613a2b470571498690f") == 0)
+				if (strcmp(hash_result[i], "0613b3d4ef05e613a2b470571498690f") == 0)
 				{
 					debugf("pak0.pk3 is from Q3A Demo\n");
 					demo = true;
 				}
 				else
 				{
-					debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash[i], hash_list[i]);
+					debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], hash_list[i]);
 				}
 			}
 			else
 			{
-				debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash[i], hash_list[i]);
+				debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], hash_list[i]);
 			}
 		}
 		else
@@ -369,7 +373,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	int lump_size = 0;
 	//DSSHOTGN
 	//DSDMPAIN
-	char *sound_lump = get_wadfile("media/DOOM1.WAD", "DSTELEPT", &lump_size);
+	char *sound_lump = get_wadfile("media/DOOM1.WAD", "DSTELEPT", &lump_size, &wad);
 	if (sound_lump != NULL)
 	{
 		lump_to_wave(sound_lump, lump_size, &wave);
@@ -458,11 +462,13 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 			parse_shader(shader_file, surface_list, shader_list[i]);
 			delete [] shader_file;
 		}
+		delete[] shader_list[i];
+		shader_list[i] = NULL;
 	}
 
 	char *hack_list[256];
 	unsigned int num_hack;
-	newlinelist("media/hacklist.txt", hack_list, num_hack);
+	newlinelist("media/hacklist.txt", hack_list, num_hack, &hacklist);
 	for (unsigned int i = 0; i < num_hack; i += 2)
 	{
 		for (unsigned int j = 0; j < surface_list.size(); j++)
@@ -613,21 +619,6 @@ void Engine::load(char *level)
 		Entity *entity = new Entity();
 		memcpy(entity->type, "free", 5);
 		entity_list.push_back(entity);
-
-		if (i < max_player && (server_flag || playing_demo))
-		{
-			// Forces server to expect player rigid bodies
-			/*
-			entity->rigid = new RigidBody(entity);
-
-			if (playing_demo)
-			{
-				entity->player = new Player(entity, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
-				if (i == 0)
-					sprintf(entity->type, "player");
-			}
-			*/
-		}
 	}
 
 	if (post.init(&gfx))
@@ -677,6 +668,11 @@ void Engine::load(char *level)
 
 	q3map.generate_meshes(gfx);
 
+	menu.delta("entities", *this);
+	gfx.clear();
+	menu.render(global);
+	gfx.swap();
+
 
 	char entfile[128] = { 0 };
 	sprintf(entfile, "media/%s.ent", q3map.map_name);
@@ -720,10 +716,6 @@ void Engine::load(char *level)
 
 	game->setup_func(entity_list, q3map);
 
-	menu.delta("entities", *this);
-	gfx.clear();
-	menu.render(global);
-	gfx.swap();
 	load_entities();
 
 	// This renders map before loading textures
@@ -2123,14 +2115,14 @@ void Engine::render_shadow_volumes()
 		player = entity_list[index]->player;
 	}
 	*/
-/*
+
 	int player = find_type(ENT_PLAYER, 0);
 	int current_light = 0;
 	if (player != -1)
 	{
 		current_light = entity_list[player]->player->current_light;
 	}
-*/
+
 
 	global.Select();
 	camera_frame.set(transformation);
@@ -2447,6 +2439,9 @@ void Engine::destroy_buffers()
 	zsec_shotgun.destroy_buffers(gfx);
 
 	gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
+	gfx.DeleteFrameBuffer(mask_fbo, mask_quad, mask_depth);
+	gfx.DeleteFrameBuffer(blur1_fbo, blur1_quad, blur1_depth);
+	gfx.DeleteFrameBuffer(blur2_fbo, blur2_quad, blur2_depth);
 
 	key_bind.destroy();
 
@@ -3069,17 +3064,10 @@ void Engine::step(int tick)
 	{
 		demo_frameheader_t header;
 		static unsigned char data[4096];
-		unsigned int num_read;
+//		unsigned int num_read;
 
 		memset(data, 0, 4096);
-		num_read = fread(&header, sizeof(demo_frameheader_t), 1, demofile);
-		if (num_read != sizeof(demo_frameheader_t))
-		{
-			playing_demo = false;
-			unload();
-			menu.print("Invalid frame");
-			return;
-		}
+		fread(&header, sizeof(demo_frameheader_t), 1, demofile);
 		if (strcmp(header.magic, "frame") != 0)
 		{
 			playing_demo = false;
@@ -3374,9 +3362,9 @@ void Engine::server_recv()
 					if (end != NULL)
 					{
 						end[0] = '\0';
-						sprintf(msg, "say \"%s\"", end + 2);
 						char *terminate = strstr(end + 2, "</chat>");
 						*terminate = '\0';
+						sprintf(msg, "say \"%s\"", end + 2);
 						//  Echoes chat back to all clients
 						chat(name, msg);
 					}
@@ -4031,7 +4019,7 @@ void Engine::client_recv()
 
 		if ((unsigned int)servermsg.length > SERVER_HEADER + servermsg.compressed_size + sizeof(int) + 1)
 		{
-			rmsg = (reliablemsg_t *)&servermsg.data[servermsg.data_size];
+			rmsg = (reliablemsg_t *)&servermsg.data[servermsg.compressed_size];
 		}
 
 		if (servermsg.num_ents)
@@ -5137,9 +5125,20 @@ void Engine::destroy()
 		console("stop");
 	}
 
-	delete [] shader_list[0];
-	delete [] hash_list[0];
-	delete [] pk3_list[0];
+	delete thug22;
+
+	if (wad)
+		delete[] wad;
+
+	if (pk3list)
+		delete[] pk3list;
+	if (cmdlist)
+		delete[] cmdlist;
+	if (hashlist)
+		delete[] hashlist;
+	if (hacklist)
+		delete[] hacklist;
+
 	game->destroy();
 	delete game;
 	debugf("Shutting down.\n");
@@ -5149,7 +5148,6 @@ void Engine::destroy()
 		delete surface_list[i];
 	}
 	surface_list.clear();
-
 
 	printf("destroying buffers\n");
 	destroy_buffers();
@@ -5363,6 +5361,30 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
+			return;
+		}
+		else if (strcmp(data, "cg_crosshair") == 0 && strstr(cmd, "up"))
+		{
+			char cmd[128];
+
+			menu.data.crosshair++;
+			if (menu.data.crosshair > 10)
+				menu.data.crosshair = 10;
+
+			sprintf(cmd, "cg_crosshair %d", menu.data.crosshair);
+			console(cmd);
+			return;
+		}
+		else if (strcmp(data, "cg_crosshair") == 0 && strstr(cmd, "down"))
+		{
+			char cmd[128];
+
+			menu.data.crosshair--;
+			if (menu.data.crosshair < -1)
+				menu.data.crosshair = -1;
+
+			sprintf(cmd, "cg_crosshair %d", menu.data.crosshair);
+			console(cmd);
 			return;
 		}
 		else if (strcmp(data, "r_vsync") == 0 && strstr(cmd, "up"))
@@ -5892,13 +5914,7 @@ void Engine::console(char *cmd)
 				return;
 			}
 
-			ret = fread(&header, sizeof(demo_fileheader_t), 1, demofile);
-			if (ret != sizeof(demo_fileheader_t))
-			{
-				playing_demo = false;
-				menu.print("Unable to read demo file header");
-				return;
-			}
+			fread(&header, sizeof(demo_fileheader_t), 1, demofile);
 			playing_demo = true;
 			load(header.map);
 		}
@@ -5966,6 +5982,23 @@ void Engine::console(char *cmd)
 		{
 			debugf("setting max clients");
 			sv_maxclients = num;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
+		return;
+	}
+
+	ret = sscanf(cmd, "in_controller %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num < 4 && num >= 0)
+		{
+			debugf("setting controller index to %d", num);
+			controller = num;
 		}
 		else
 		{
@@ -6053,7 +6086,7 @@ void Engine::console(char *cmd)
 #ifdef WIN32
 		set_resolution(x_res, y_res, 32);
 #endif
-		menu.data.apply[0] = '\0';;
+		sprintf(menu.data.apply, "");
 		return;
 	}
 
@@ -7058,13 +7091,22 @@ void Engine::chat(char *name, char *msg)
 		sprintf(data, "%s: %s", name, pmsg);
 	}
 
-
-	for (unsigned int i = 0; i < max_player; i++)
+	if (client_flag == false)
+	{
+		for (unsigned int i = 0; i < max_player; i++)
+		{
+			sprintf(msg, "<chat>%s</chat>", data);
+			strcat(reliable[i].msg, msg);
+			reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
+			reliable[i].sequence = sequence;
+		}
+	}
+	else
 	{
 		sprintf(msg, "<chat>%s</chat>", data);
-		strcat(reliable[i].msg, msg);
-		reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
-		reliable[i].sequence = sequence;
+		strcat(client_reliable.msg, msg);
+		client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
+		client_reliable.sequence = sequence;
 	}
 
 	// Client will get message back from server

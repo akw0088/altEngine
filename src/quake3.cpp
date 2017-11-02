@@ -105,6 +105,8 @@ void Quake3::load(gametype_t type)
 	last_spawn = 0;
 	gametype = type;
 
+	current_crosshair = engine->menu.data.crosshair;
+
 	sprintf(cmd, "name \"%s\"", engine->menu.data.name);
 	engine->console(cmd);
 }
@@ -119,7 +121,6 @@ void Quake3::unload()
 
 void Quake3::destroy()
 {
-
 }
 
 
@@ -5947,6 +5948,10 @@ void Quake3::create_crosshair()
 void Quake3::draw_crosshair()
 {
 	matrix4 transformation;
+
+	if (current_crosshair == -1)
+		return;
+
 	engine->camera_frame.set(transformation);
 
 	//matrix4 mvp = transformation * engine->projection;
@@ -6209,6 +6214,23 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		menu.print(msg);
 		return;
 	}
+
+	ret = sscanf(cmd, "cg_crosshair %s", data);
+	if (ret == 1)
+	{
+		engine->menu.data.crosshair = (int)atoi(data);
+		if (engine->menu.data.crosshair < -1)
+			engine->menu.data.crosshair = -1;
+		if (engine->menu.data.crosshair > 10)
+			engine->menu.data.crosshair = 10;
+
+		current_crosshair = engine->menu.data.crosshair;
+
+		snprintf(msg, LINE_SIZE, "Set to %d\n", engine->menu.data.crosshair);
+		menu.print(msg);
+		return;
+	}
+
 
 	/*
 	ret = sscanf(cmd, "pgain %s", data);

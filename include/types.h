@@ -876,6 +876,7 @@ typedef struct
 	float sensitivity;
 	int antialias;
 	int anisotropic;
+	int crosshair;
 
 	char apply[64];
 

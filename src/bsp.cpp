@@ -34,7 +34,7 @@ Bsp::Bsp()
 	tangent = NULL;
 	patchdata = NULL;
 	selected_map = false;
-	enable_fog = false;
+	enable_fog = true;
 }
 
 

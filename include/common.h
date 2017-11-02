@@ -42,7 +42,7 @@ int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int list_zipfile(char *zipfile, char *filelist);
 int write_file(char *filename, const char *bytes, int size);
 float sign(float x);
-void newlinelist(char *filename, char **list, unsigned int &num);
+void newlinelist(char *filename, char **list, unsigned int &num, char **file);
 void calc_hash(char *filename, char *hash);
 
 void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity_list, int start);
@@ -57,12 +57,13 @@ void delta_uncompress(char *output, char *input, char *delta, int size);
 void runlength_encode(uint8_t *output, rletable_t *table, int *table_size, uint8_t *input, unsigned int *size);
 void runlength_decode(uint8_t *output, rletable_t *table, uint8_t *input, unsigned int *size);
 char *get_pakfile(char *pakfile, char *file);
-char *get_wadfile(char *wadfile, char *lump, int *lump_size);
+char *get_wadfile(char *wadfile, char *lump, int *lump_size, char **file);
 void lump_to_wave(char *lump_data, int size, wave_t *wave);
 void write_bitmap(char *filename, int width, int height, int *data);
 void ping_time_start(int sequence);
 double ping_time_end(int sequence);
 float clamp(float value, float min, float max);
+void delete_file(char *fileptr);
 
 float random_float();
 

@@ -421,6 +421,8 @@ int debugf(const char *format, ...)
     return 0;
 }
 
+//vector<std::pair<char *, char *>> file_list;
+
 char *get_file(char *filename, int *size)
 {
     FILE	*file;
@@ -449,9 +451,30 @@ char *get_file(char *filename, int *size)
 		*size = file_size;
 	}
 
+	/*
+	std::pair<char *, char *> pair;
+
+	pair.first = new char[256];
+	strcpy(pair.first, filename);
+	pair.second = buffer;
+	file_list.push_back(pair);
+	*/
     return buffer;
 }
 
+/*
+void delete_file(char *fileptr)
+{
+	for (int i = 0; i < file_list.size(); i++)
+	{
+		if (fileptr == file_list[i].second)
+		{
+			delete[] fileptr;
+			break;
+		}
+	}
+}
+*/
 int write_file(char *filename, const char *bytes, int size)
 {
     FILE *fp = fopen(filename, "wb");
@@ -616,7 +639,7 @@ int list_zipfile(char *zipfile, char *filelist)
 	return retval;
 }
 
-void newlinelist(char *filename, char **list, unsigned int &num)
+void newlinelist(char *filename, char **list, unsigned int &num, char **file)
 {
 	if (filename == NULL || list == NULL)
 	{
@@ -624,8 +647,8 @@ void newlinelist(char *filename, char **list, unsigned int &num)
 		return;
 	}
 
-	char *file = get_file(filename, NULL);
-	if (file == NULL)
+	*file = get_file(filename, NULL);
+	if (*file == NULL)
 	{
 		printf("Unable to open %s\n", filename);
 		return;
@@ -633,7 +656,7 @@ void newlinelist(char *filename, char **list, unsigned int &num)
 
 	num = 0;
 
-	char *line = strtok(file, "\n");
+	char *line = strtok(*file, "\n");
 	while (line)
 	{
 		if (strlen(line) >= 2 && line[0] != '/' && line[1] != '/')
@@ -668,7 +691,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 
 	if (data == NULL)
-		get_file(file_name, NULL);
+		data = (unsigned char *)get_file(file_name, NULL);
 
 	// tga failed tried jpg
 	if (data == NULL)
@@ -706,7 +729,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 				strcat(file_name, ".jpg");
 				//printf("Trying jpeg texture [%s]\n", texture_name);
 				if (data == NULL)
-					get_file(file_name, NULL);
+					data = (unsigned char *)get_file(file_name, NULL);
 
 			}
 		}

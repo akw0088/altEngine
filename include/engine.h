@@ -151,12 +151,25 @@ public:
 	char *pk3_list[32];
 	unsigned int num_pk3;
 	char *hash_list[32];
+	char hash_result[64][32];
 	unsigned int num_hash;
-	char *cmd_list[512];
+
+
+	unsigned int controller;
+
+
+
+	char *cmd_list[1024];
 	unsigned int num_cmd;
 	char *shader_list[256];
 	int num_shader;
 	HashTable key_bind;
+
+	char *pk3list;
+	char *cmdlist;
+	char *hashlist;
+	char *hacklist;
+	char *wad;
 
 	Entity *thug22;
 
@@ -278,9 +291,6 @@ protected:
 
 	unsigned int	ssao_quad;
 	unsigned int	ssao_depth;
-
-
-
 
 	unsigned int	fb_width;
 	unsigned int	fb_height;

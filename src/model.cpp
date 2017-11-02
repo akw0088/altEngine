@@ -28,6 +28,7 @@ void Model::load(Graphics &gfx, char *file)
 	snprintf(tga_file, LINE_SIZE, "%s.tga", file);
 	snprintf(normal_file, LINE_SIZE, "%s_normal.tga", file);
 
+
 	model_file = get_file(vbo_file, NULL);
 	if (model_file == NULL)
 	{
@@ -41,7 +42,7 @@ void Model::load(Graphics &gfx, char *file)
 //	create_box(gfx, aabb);
 	make_aabb();
 
-	char *index_file = get_file(ibo_file, NULL);
+	index_file = get_file(ibo_file, NULL);
 	if (index_file == NULL)
 	{
 		debugf("Unable to load index array %s\n", index_file);
@@ -97,6 +98,7 @@ Model::Model(Entity *entity)
 	box_vertex = 0;
 	box_index = 0;
 	model_file = NULL;
+	index_file = NULL;
 	model_index_array = NULL;
 	model_vertex_array = NULL;
 	center = vec3();
@@ -519,6 +521,11 @@ void Model::CreateObjects(Graphics &gfx)
 
 Model::~Model()
 {
+	if (index_file != NULL)
+		delete[] index_file;
+	index_file = NULL;
+
+
 	if (model_file != NULL)
 		delete [] model_file;
 	model_file = NULL;
