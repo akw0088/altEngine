@@ -466,7 +466,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		shader_list[i] = NULL;
 	}
 
-	char *hack_list[256];
+	char *hack_list[512];
 	unsigned int num_hack;
 	newlinelist("media/hacklist.txt", hack_list, num_hack, &hacklist);
 	for (unsigned int i = 0; i < num_hack; i += 2)
@@ -4763,6 +4763,27 @@ void Engine::resize(int width, int height)
 
 	projection.perspective(fov, (float)width / height, zNear, zFar, inf);
 
+
+	fb_width = (unsigned int)(width * res_scale);
+	fb_height = (unsigned int)(height * res_scale);
+
+	unsigned int normal_depth;
+
+	gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
+	gfx.DeleteFrameBuffer(mask_fbo, mask_quad, mask_depth);
+	gfx.DeleteFrameBuffer(blur1_fbo, blur1_quad, blur1_depth);
+	gfx.DeleteFrameBuffer(blur2_fbo, blur2_quad, blur2_depth);
+	gfx.DeleteFrameBuffer(ssao_fbo, ssao_quad, ssao_depth);
+
+	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+
+	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+	gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
+
+
+
 #ifdef WIN32
 	// This should probably be in render
 	if (initialized && q3map.loaded == false)
@@ -6218,6 +6239,16 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (sscanf(cmd, "r_tone %s", data) == 1)
+	{
+		int value = atoi(data);
+		mlight2.set_tone(value);
+		snprintf(msg, LINE_SIZE, "Setting tone to %d", value);
+		menu.print(msg);
+		return;
+	}
+
+
 	if (strstr(cmd, "r_brightness"))
 	{
 		snprintf(msg, LINE_SIZE, "brightness %f", mlight2.m_brightness + 1.0f);
@@ -7132,7 +7163,6 @@ void Engine::chat(char *name, char *msg)
 		}
 	}
 }
-
 
 
 

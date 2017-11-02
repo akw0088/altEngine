@@ -61,6 +61,7 @@ public:
 	void set_depth(int flag);
 	void set_normalmap(int value);
 	void set_alpha(float value);
+	void set_tone(int value);
 
 	//sin tri square saw inverse saw
 	//tcMod stretch <func> <base> <amplitude> <phase> <frequency>
@@ -101,6 +102,7 @@ public:
 	float m_shadowmap;
 	float m_contrast;
 	float m_alpha;
+	int m_tone;
 private:
 	int matrix;
 
@@ -137,6 +139,9 @@ private:
 	int u_num_lights;
 	int u_position;
 	int u_color;
+
+	int u_tone;
+
 
 	int u_fog;
 	int u_fog_start;

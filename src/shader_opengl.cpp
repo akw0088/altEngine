@@ -110,8 +110,9 @@ int mLight2::init(Graphics *gfx)
 	}
 #else
 //	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
-	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs")) 
-	{
+	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs"))
+//	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3_nothing.fs"))
+		{
 		program_handle = -1;
 		return -1;
 	}
@@ -229,6 +230,8 @@ int mLight2::init(Graphics *gfx)
 	u_fog_end = glGetUniformLocation(program_handle, "u_fog_end");
 	u_fog_color = glGetUniformLocation(program_handle, "u_fog_color");
 
+
+	u_tone = glGetUniformLocation(program_handle, "u_tone");
 
 	u_clip0 = glGetUniformLocation(program_handle, "u_clip0");
 	u_clip1 = glGetUniformLocation(program_handle, "u_clip1");
@@ -358,8 +361,6 @@ void mLight2::set_matrix(matrix4 &mvp)
 
 void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int time)
 {
-	Shader::Select();
-
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
 	unsigned int i, j;
@@ -438,6 +439,8 @@ void mLight2::turb(int stage, int turb)
 
 void mLight2::Select()
 {
+	Shader::Select();
+
 	glUniform1i(texture[0], 0);
 	glUniform1i(texture[1], 1);
 	glUniform1i(texture[2], 2);
@@ -475,6 +478,8 @@ void mLight2::Select()
 	// Going to treat normals and lightmaps like normal textures
 	glUniform1i(texture_lightmap, 8);
 	glUniform1i(texture_normalmap, 9);
+
+	glUniform1i(u_tone, m_tone);
 
 
 	vec2 tcmod_scroll = vec2(0.0f, 0.0f);
@@ -535,6 +540,13 @@ void mLight2::set_normalmap(int value)
 {
 	glUniform1i(u_normalmap, value);
 }
+
+void mLight2::set_tone(int value)
+{
+	m_tone = value;
+	glUniform1i(u_tone, value);
+}
+
 
 void mLight2::tcmod_scroll(vec2 &scroll, int index)
 {

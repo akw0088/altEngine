@@ -41,6 +41,7 @@ uniform float u_rgbgen_scale[4];
 uniform int u_alphatest[4];
 uniform int u_portal;
 uniform int u_normalmap;
+uniform int u_tone;
 
 uniform float u_fog;
 uniform float u_fog_start;
@@ -66,6 +67,16 @@ vec3 ACESFilm( vec3 x )
 	float d = 0.59f;
 	float e = 0.14f;
 	return clamp( (x * ( a * x + b ) ) / ( x * ( c * x + d ) + e), 0.0, 1.0);
+}
+
+
+vec3 Reinhart(vec3 x)
+{
+	vec3 mapped = x / (x + vec3(1.0));
+	// gamma correction 
+	//mapped = pow(mapped, vec3(1.0 / gamma));
+  
+	return mapped;
 }
 
 vec3 Uncharted2Tonemap(vec3 x)
@@ -176,6 +187,7 @@ void main(void)
 	tc.y = 0.0;
 
 
+
 	vec3 ambient;
 	ambient.x = u_ambient;
 	ambient.y = u_ambient;
@@ -218,7 +230,7 @@ void main(void)
 		tc3.t += 1.1;
 	}
 
-	if (u_env[0] + u_env[1] + u_env[2] + u_env[3] > 0)
+	if (u_env[0]  > 0 || u_env[1]  > 0 || u_env[2] > 0 || u_env[3] > 0)
 	{
 		vec3 u = normalize(-Vertex.vary_position.xyz);
 		vec3 r = reflect(u, -unormal);
@@ -335,6 +347,8 @@ void main(void)
 	}
 
 
+
+
 	for(int i = 0; i < u_num_lights; i++)
 	{
 		light += lighting(i, u_position[i]);
@@ -385,8 +399,18 @@ void main(void)
 		return;
 	}
 
-	Fragment.rgb = ACESFilm(Fragment.rgb * u_exposure);
-//	Fragment.rgb = Uncharted2Tonemap(Fragment.rgb * u_exposure);
+	if (u_tone == 0)
+	{
+		Fragment.rgb = ACESFilm(Fragment.rgb * u_exposure);
+	}
+	else if (u_tone == 1)
+	{
+		Fragment.rgb = Uncharted2Tonemap(Fragment.rgb * u_exposure);
+	}
+	else if (u_tone == 2)
+	{
+		Fragment.rgb = Reinhart(Fragment.rgb * u_exposure);
+	}
 
 
 	if (u_lightmap_stage <= 0)

@@ -488,7 +488,7 @@ int debugf(const char *format, ...);
 #define MY_HALF_PI 1.5707963268f
 #define MAXLINE 4096
 #define FBO_RESOLUTION 1024
-#define SHADOWMAP_DEFAULT_RES 3 * FBO_RESOLUTION
+#define SHADOWMAP_DEFAULT_RES FBO_RESOLUTION
 
 
 //quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)
