@@ -38,6 +38,7 @@ private:
 // Max lights hardware can pass through shaders, gfx card specfic
 #define MAX_LIGHTS 64
 #define AMBIENT_LIGHT 0.125f
+#define NUM_STAGE 4
 
 class mLight2 : public Shader
 {
@@ -102,21 +103,22 @@ public:
 private:
 	int matrix;
 
-	int	texture[8];
+	int	texture[NUM_STAGE];
 	int texture_normalmap;
 	int texture_lightmap;
 
-	int u_tcmod_scroll[8];
-	int u_tcmod_scale[8];
-	int u_tcmod_sin[8];
-	int u_tcmod_cos[8];
-	int u_env[8];
-	int u_water[8];
-	int u_rgbgen_scale[8];
-	int u_alphatest[8];
+	int u_tcmod_scroll[NUM_STAGE];
+	int u_tcmod_scale[NUM_STAGE];
+	int u_tcmod_sin[NUM_STAGE];
+	int u_tcmod_cos[NUM_STAGE];
+	int u_env[NUM_STAGE];
+	int u_water[NUM_STAGE];
+	int u_rgbgen_scale[NUM_STAGE];
+	int u_alphatest[NUM_STAGE];
 	int u_portal;
 	int u_normalmap;
 	int u_alpha;
+
 
 	int shadow_matrix[18];
 	int depth[18];

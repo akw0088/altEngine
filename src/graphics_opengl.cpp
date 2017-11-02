@@ -622,6 +622,12 @@ void Graphics::SelectShader(int program)
 
 void Graphics::CullFace(int mode)
 {
+	static int last_mode = BACKFACE;
+
+	if (mode == last_mode)
+		return;
+	last_mode = mode;
+
 	if (mode == BACKFACE)
 		glCullFace(GL_BACK);
 	else if (mode == FRONTFACE)
@@ -1068,6 +1074,14 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 		printf("Failed to create fbo\n");
 		return -1;
 	}
+
+	fbAttachTexture(quad_tex);
+	if (twoattach)
+	{
+		fbAttachTextureOne(normal_depth);
+	}
+	fbAttachDepth(depth_tex);
+
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	return 0;

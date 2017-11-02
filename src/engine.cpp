@@ -1429,9 +1429,6 @@ void Engine::render_to_framebuffer(double last_frametime)
 
 	gfx.bindFramebuffer(render_fbo, 2);
 	gfx.resize(fb_width, fb_height);
-	gfx.fbAttachTexture(render_quad);
-	gfx.fbAttachTextureOne(render_ndepth);
-	gfx.fbAttachDepth(render_depth);
 
 	if (enable_stencil)
 	{

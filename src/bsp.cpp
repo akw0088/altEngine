@@ -749,7 +749,7 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 }
 
 
-inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap)
+inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	bool lightmap_selected = false;
 	bool shader = false;
@@ -764,6 +764,9 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 
 	if (enable_textures)
 	{
+		if (is_shader && stage > 0)
+			gfx.SelectTexture(0, 0);
+
 		if (lightmap && face->lightmap != -1)
 		{
 			// Pretty much shader stage with lightmap
@@ -783,6 +786,10 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			lightmap_selected = true;
 		}
+		else
+		{
+			gfx.SelectTexture(8, 0);
+		}
 
 	}
 	if (enable_textures && enable_normalmap)
@@ -793,13 +800,15 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 
 	if (enable_textures)
 	{
-		if (lightmap_selected)
-			gfx.SelectTexture(8, 0);
-		gfx.SelectTexture(stage, 0);
+//		if (lightmap_selected)
+//			gfx.SelectTexture(8, 0);
+
+		if (is_shader && stage > 0)
+			gfx.SelectTexture(stage, 0);
 	}
 }
 
-inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap)
+inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	int mesh_index = -1;
 	int index_per_row = 2 * (mesh_level + 1);
@@ -829,6 +838,9 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 	{
 		bool shader = false;
 
+		if (is_shader && stage > 0)
+			gfx.SelectTexture(0, 0);
+
 		// surfaces that arent lit with lightmaps eg: skies
 		if (lightmap && face->lightmap != -1)
 		{
@@ -845,6 +857,10 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		{
 			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			lightmap_selected = true;
+		}
+		else
+		{
+			gfx.SelectTexture(8, 0);
 		}
 	}
 
@@ -881,19 +897,23 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 
 		if (lightmap_selected)
 		{
-			gfx.SelectTexture(8, 0);
+//			gfx.SelectTexture(8, 0);
 		}
-		gfx.SelectTexture(stage, 0);
+		if (is_shader && stage > 0)
+			gfx.SelectTexture(stage, 0);
 	}
 }
 
-inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap)
+inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	bool lightmap_selected = false;
 
 	if (enable_textures)
 	{
 		bool shader = false;
+
+		if (is_shader && stage > 0)
+			gfx.SelectTexture(0, 0);
 
 		if (lightmap && face->lightmap != -1)
 		{
@@ -912,6 +932,10 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
 			lightmap_selected = true;
 		}
+		else
+		{
+			gfx.SelectTexture(8, 0);
+		}
 	}
 
 	if (enable_textures && enable_normalmap)
@@ -926,9 +950,10 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	{
 		if (lightmap_selected)
 		{
-			gfx.SelectTexture(8, 0);
+//			gfx.SelectTexture(8, 0);
 		}
-		gfx.SelectTexture(stage, 0);
+		if (is_shader && stage > 0)
+			gfx.SelectTexture(stage, 0);
 	}
 }
 
@@ -1453,6 +1478,10 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 			{
 				gfx.CullFace(2);
 			}
+			else
+			{
+				gfx.CullFace(3);
+			}
 
 
 			set_tcmod(mlight2, face_list[i], tick_num, time);
@@ -1508,16 +1537,16 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 		if (face->type == FACE_POLYGON || face->type == FACE_MODEL)
 		{
-			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
+			render_face(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage], face_list[i].shader);
 			mlight2.portal(0);
 		}
 		else if (face->type == FACE_PATCH && enable_patch)
 		{
-			render_patch(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
+			render_patch(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage], face_list[i].shader);
 		}
 		else// (face->type == 4)
 		{
-			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage]);
+			render_billboard(face, gfx, face_list[i].stage, face_list[i].lightmap[face_list[i].stage], face_list[i].shader);
 		}
 
 		if (face->fog_num != -1 && enable_fog)
@@ -1525,16 +1554,13 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 			mlight2.set_fog(0.0f, 200.0f, 1500.0f, face_list[i].fog_color);
 		}
 
-
-		if (face_list[i].cull_none)
+		if (face_list[i].shader && enable_textures)
 		{
-			gfx.CullFace(3);
+			mlight2.alphatest(0, 0);
+			mlight2.alphatest(1, 0);
+			mlight2.alphatest(2, 0);
+			mlight2.alphatest(3, 0);
 		}
-
-		mlight2.alphatest(0, 0);
-		mlight2.alphatest(1, 0);
-		mlight2.alphatest(2, 0);
-		mlight2.alphatest(3, 0);
 
 		if (face_list[i].shader  && enable_textures)
 		{
@@ -1585,16 +1611,31 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 				else if (blend_list[i].turb)
 					mlight2.turb(blend_list[i].stage, 255);
 
-			}
 
-			if (blend_list[i].alpha)
-				mlight2.set_alpha(alpha_value);
-			else
-				mlight2.set_alpha(-1.0f);
+				if (blend_list[i].alpha)
+					mlight2.set_alpha(alpha_value);
+				else
+					mlight2.set_alpha(-1.0f);
 
-			if (blend_list[i].cull_none)
-			{
-				gfx.CullFace(2);
+				if (blend_list[i].cull_none)
+				{
+					gfx.CullFace(2);
+				}
+				else
+				{
+					gfx.CullFace(3);
+				}
+
+				if (blend_list[i].portal)
+				{
+					//				glStencilMask(0xFF);
+					mlight2.portal(255);
+					tex_object[face->material].texObj[0] = portal_tex;
+					tex_object[face->material].texObj[1] = portal_tex;
+					tex_object[face->material].texObj[2] = portal_tex;
+					tex_object[face->material].texObj[3] = portal_tex;
+				}
+
 			}
 
 			if (blend_list[i].blend)
@@ -1602,15 +1643,6 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 				set_blend_mode(gfx, blend_list[i]);
 			}
 
-			if (blend_list[i].portal)
-			{
-//				glStencilMask(0xFF);
-				mlight2.portal(255);
-				tex_object[face->material].texObj[0] = portal_tex;
-				tex_object[face->material].texObj[1] = portal_tex;
-				tex_object[face->material].texObj[2] = portal_tex;
-				tex_object[face->material].texObj[3] = portal_tex;
-			}
 
 			if (face->fog_num != -1 && enable_fog)
 			{
@@ -1638,21 +1670,16 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 			if (face->type == 1 || face->type == 3)
 			{
-				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
+				render_face(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage], blend_list[i].shader);
 				mlight2.portal(0);
 			}
 			else if (face->type == 2 && enable_patch)
 			{
-				render_patch(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
+				render_patch(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage], blend_list[i].shader);
 			}
 			else// (face->type == 4)
 			{
-				render_billboard(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage]);
-			}
-
-			if (blend_list[i].cull_none)
-			{
-				gfx.CullFace(3);
+				render_billboard(face, gfx, blend_list[i].stage, blend_list[i].lightmap[blend_list[i].stage], blend_list[i].shader);
 			}
 
 			if (face->fog_num != -1 && enable_fog)
@@ -1683,6 +1710,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 			}
 		}
 	}
+
 	if (enable_blend)
 	{
 		gfx.DepthFunc(LESS);
@@ -1694,7 +1722,9 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 		if (abs32(model_offset[i].x) + abs32(model_offset[i].y) + abs32(model_offset[i].z) < 0.001f)
 			render_model(i, gfx);
 	}
-	
+	gfx.SelectTexture(0, 0);
+	gfx.SelectTexture(8, 0);
+	gfx.CullFace(3);
 #ifndef DIRECTX
 	render_sky(gfx, mlight2, tick_num, surface_list);
 #endif
@@ -1750,15 +1780,15 @@ void Bsp::render_model(unsigned int index, Graphics &gfx)
 
 		if (face->type == 1 || face->type == 3)
 		{
-			render_face(face, gfx, 0, false);
+			render_face(face, gfx, 0, false, false);
 		}
 		else if (face->type == 2)
 		{
-			render_patch(face, gfx, 0, false);
+			render_patch(face, gfx, 0, false, false);
 		}
 		else// (face->type == 4)
 		{
-			render_billboard(face, gfx, 0, false);
+			render_billboard(face, gfx, 0, false, false);
 		}
 	}
 }
