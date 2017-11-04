@@ -1631,7 +1631,7 @@ void Engine::render_scene(bool lights)
 #endif
 
 	render_entities(transformation, projection, lights, true);
-	mlight2.set_lightmap(0.0f);
+	mlight2.set_lightmap(0.5f);
 	render_weapon(transformation, lights, player);
 	mlight2.set_lightmap(1.0f);
 }
@@ -1907,7 +1907,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 	}
 
 	gfx.Blend(false);
-	mlight2.set_lightmap(0.0f);
+	mlight2.set_lightmap(0.5f);
 	mlight2.Select();
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)

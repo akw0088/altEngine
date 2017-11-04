@@ -955,3 +955,16 @@ double facos(double x)
 	return MY_HALF_PI - fasin(x);
 }
 
+#ifdef WIN32
+float sqrtSSE(float x)
+{
+	__asm
+	{
+		movss xmm0, x
+		rsqrtss xmm0, xmm0
+		rcpss xmm0, xmm0
+		movss x, xmm0
+	}
+	return x;
+}
+#endif

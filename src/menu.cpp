@@ -1210,14 +1210,37 @@ void Menu::handle_console(char key, Engine *altEngine)
 		}
 	case 4:
 	case '\t':
+	{
+		vector<char *> autocomplete_list;
+		int length = strlen(key_buffer);
+
 		for (unsigned int i = 0; i < altEngine->num_cmd; i++)
 		{
 			if (strncmp(key_buffer, altEngine->cmd_list[i], length) == 0)
 			{
 				print(altEngine->cmd_list[i]);
+				autocomplete_list.push_back(altEngine->cmd_list[i]);
 			}
 		}
+
+		if (autocomplete_list.size() == 1)
+		{
+			strcpy(key_buffer, autocomplete_list[0]);
+			break;
+		}
+		else if (autocomplete_list.size() == 0)
+		{
+			break;
+		}
+		for (unsigned int i = 1; i < autocomplete_list.size(); i++)
+		{
+			length = auto_complete(autocomplete_list[0], autocomplete_list[i]);
+		}
+		memset(key_buffer, 0, sizeof(key_buffer));
+		strncpy(key_buffer, autocomplete_list[0], length);
+		key_buffer[length] = '\0';
 		break;
+	}
 	case '\b':
 		if (length - 1 == -1)
 			return;

@@ -1785,3 +1785,16 @@ float random_float()
 
 	return (res - 1.0f);
 }
+
+int auto_complete(const char *a, const char *b)
+{
+	int min_length = MIN(strlen(a), strlen(b));
+
+	for (int i = 0; i < min_length; i++)
+	{
+		if (a[i] != b[i])
+			return i;
+	}
+
+	return strlen(a);
+}

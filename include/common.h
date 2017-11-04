@@ -74,6 +74,8 @@ void pid_controller(const vec3 &target, const float timestep, const vec3 &pos, v
 void init_pid(pid_state_t *pid);
 void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3 &output);
 
+int auto_complete(const char *a, const char *b);
+
 struct cpuinfo
 {
 	char	vendor[13], serial[9];
