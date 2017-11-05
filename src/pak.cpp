@@ -193,7 +193,7 @@ char *get_pakfile(char *pakfile, char *file)
 	}
 
 	pak_header_t header;
-	ret = fread(&header, sizeof(pak_header_t), 1, pak);
+	ret = fread(&header, 1, sizeof(pak_header_t), pak);
 	if (ret != sizeof(pak_header_t))
 	{
 		fclose(pak);
@@ -223,7 +223,7 @@ char *get_pakfile(char *pakfile, char *file)
 	}
     
 	fseek(pak, header.dir_offset, SEEK_SET);
-	ret = fread(entries, header.dir_length, 1, pak);
+	ret = fread(entries, 1, header.dir_length, pak);
 	if (ret != header.dir_length)
 	{
 		fclose(pak);
@@ -259,7 +259,7 @@ char *get_pakfile(char *pakfile, char *file)
 			return data;
 		}
 	}
-    	delete [] entries;
+	delete [] entries;
 	fclose(pak);
 	return NULL;
 }
