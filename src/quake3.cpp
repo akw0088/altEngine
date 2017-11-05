@@ -5159,21 +5159,21 @@ void Quake3::draw_flash(Player &player)
 	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
 	if (player.flash_gauntlet)
-		draw_icon(15.0, ICON_F_GAUNTLET, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_GAUNTLET, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_machinegun)
-		draw_icon(15.0, ICON_F_MACHINEGUN, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_MACHINEGUN, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_shotgun)
-		draw_icon(15.0, ICON_F_SHOTGUN, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_SHOTGUN, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_grenade)
-		draw_icon(15.0, ICON_F_GRENADE, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_GRENADE, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_rocket)
-		draw_icon(15.0, ICON_F_ROCKET, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_ROCKET, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_lightning)
-		draw_icon(15.0, ICON_F_LIGHTNING, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_LIGHTNING, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_railgun)
-		draw_icon(15.0, ICON_F_RAILGUN, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_RAILGUN, 0.0f, -0.1f, -0.5f);
 	else if (player.flash_plasma)
-		draw_icon(15.0, ICON_F_PLASMA, 0.0f, -0.5f, -0.5f);
+		draw_icon(15.0, ICON_F_PLASMA, 0.0f, -0.1f, -0.5f);
 	engine->gfx.Blend(false);
 }
 
