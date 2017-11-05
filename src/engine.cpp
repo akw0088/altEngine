@@ -3680,7 +3680,7 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			ent.ctype = NET_PLAYER;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_player_t);
 
-			if (memcmp(&delta_list[i], &ent, size) != 0)
+//			if (memcmp(&delta_list[i], &ent, size) != 0)
 			{
 				memcpy(&delta_list[i], &ent, size);
 				memcpy(&data[data_size], &ent, size);
@@ -3787,10 +3787,15 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 
 		position_delta = camera_frame.pos - net->position;
 
-		if (position_delta.magnitude() >= DELTA_GRACE)
+		if (position_delta.magnitude() >= DELTA_GRACE && entity_list[index]->player->local)
 		{
 			// Server will use catch up to our position (eventually)
 			// So only force a correction for large deltas
+			camera_frame.pos = net->position;
+			entity_list[index]->position = net->position;
+		}
+		else
+		{
 			camera_frame.pos = net->position;
 			entity_list[index]->position = net->position;
 		}

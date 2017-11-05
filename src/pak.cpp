@@ -246,7 +246,7 @@ char *get_pakfile(char *pakfile, char *file)
 			}
 
 			fseek(pak, entry->offset, SEEK_SET);
-			ret = fread(data, entry->length, 1, pak);
+			ret = fread(data, 1, entry->length, pak);
 			if (ret != entry->length)
 			{
 				delete [] entries;
