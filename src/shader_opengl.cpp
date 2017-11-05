@@ -1217,7 +1217,7 @@ void ScreenSpace::prelink(void)
 }
 
 
-void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count, int width, int height)
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool randomize_points, int point_count, int width, int height)
 {
 	glUniform1f(u_radius, radius * ((width) / 1000.0f));
 	glUniform1f(u_objectlevel, objectlevel);

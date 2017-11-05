@@ -227,7 +227,6 @@ public:
 
 
 	bool  show_shading;
-	bool  show_ao;
 	float ssao_level;
 	float object_level;
 	float ssao_radius;

@@ -275,7 +275,7 @@ class ScreenSpace : public Shader
 {
 public:
 	int init(Graphics *gfx);
-	void Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count, int width, int height);
+	void Params(float radius, float objectlevel, float ssaolevel, bool randomize_points, int point_count, int width, int height);
 	virtual void prelink(void);
 
 private:

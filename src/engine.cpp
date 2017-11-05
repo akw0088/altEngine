@@ -208,12 +208,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	ssao_level = 1.0f;
 	object_level = 1.0f;
-	ssao_radius = 5.0;
-//	ssao_radius = 0.01f;
+//	ssao_radius = 5.0;
+	ssao_radius = 0.01f;
 	weight_by_angle = true;
 	point_count = 8;
 	randomize_points = true;
-	show_ao = true;
 	enable_map = true;
 
 	enum_resolutions();
@@ -2425,7 +2424,7 @@ void Engine::render_ssao(bool debug)
 	gfx.resize(fb_width, fb_height);
 	ssao.Select();
 
-	ssao.Params(ssao_radius, object_level, ssao_level, show_ao, randomize_points, point_count, fb_width, fb_height);
+	ssao.Params(ssao_radius, object_level, ssao_level, randomize_points, point_count, fb_width, fb_height);
 
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, render_ndepth);
