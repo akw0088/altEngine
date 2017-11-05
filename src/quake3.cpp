@@ -227,47 +227,74 @@ void Quake3::load_models(Graphics &gfx)
 	model->load(gfx, "media/models/ball");
         model_table.push_back(model);
 
+		bool qc_weapons = false;
+
 //	#define MODEL_WEAPON_GAUNTLET 19
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/gauntlet/gauntlet");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_gauntlet_fixed");
+	else
+		model->load(gfx, "media/models/weapons2/gauntlet/gauntlet");
+	model_table.push_back(model);
 
 //	#define MODEL_WEAPON_MACHINEGUN 20
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/machinegun/machinegun");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_machinegun_small");
+	else
+		model->load(gfx, "media/models/weapons2/machinegun/machinegun");
+	model_table.push_back(model);
 
 //	#define MODEL_WEAPON_SHOTGUN 21
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/shotgun/shotgun");
-        model_table.push_back(model);
+	
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_shotgun_small");
+	else
+		model->load(gfx, "media/models/weapons2/shotgun/shotgun");
+	model_table.push_back(model);
 
 //	#define MODEL_WEAPON_GRENADE 22
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/grenadel/grenade");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_tribolt_small");
+	else
+		model->load(gfx, "media/models/weapons2/grenadel/grenade");
+	model_table.push_back(model);
 
 //	#define MODEL_WEAPON_ROCKET 23
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/rocketl/rocketl");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_rocketl_small");
+	else
+		model->load(gfx, "media/models/weapons2/rocketl/rocketl");
+	model_table.push_back(model);
 
 
 //	#define MODEL_WEAPON_LIGHTNING 24
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/lightning/lightning");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_lightning_small");
+	else
+		model->load(gfx, "media/models/weapons2/lightning/lightning");
+	model_table.push_back(model);
 
 
 //	#define MODEL_WEAPON_RAILGUN 25
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/railgun/railgun");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_railgun_small_long");
+	else
+		model->load(gfx, "media/models/weapons2/railgun/railgun");
+	model_table.push_back(model);
 
 //	#define MODEL_WEAPON_PLASMA 26
 	model = new Model;
-	model->load(gfx, "media/models/weapons2/plasma/plasma");
-        model_table.push_back(model);
+	if (qc_weapons)
+		model->load(gfx, "media/models/weapons_qc/qc_nailgun_small");
+	else
+		model->load(gfx, "media/models/weapons2/plasma/plasma");
+	model_table.push_back(model);
 
 	#define MODEL_ARMOR_SHARD 27
 	model = new Model;
@@ -2690,7 +2717,7 @@ void Quake3::drop_weapon(int index)
 		drop_weapon->nettype = NET_ROCKET_LAUNCHER;
 		break;
 	case wp_plasma:
-		weapon_str = "weapon_plasmagun";
+		weapon_str = "weapon_plasma";
 		drop_weapon->model->clone(entity->player->weapon_plasma);
 		drop_weapon->nettype = NET_PLASMAGUN;
 		break;
