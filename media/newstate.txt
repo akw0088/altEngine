@@ -6,12 +6,14 @@ state 1 enter		14 "null"
 state 1 down		2 "null"
 
 state 2 up		1 "null"
+state 2 enter		200 "null"
 state 2 down		3 "null"
 
 state 3 up		2 "null"
 state 3 enter		3 "quit"
 
 
+state 4 up		133 "null"
 state 4 down		5 "null"
 state 4 enter		4 "map maps/q3tourney2.bsp"
 state 4 next		7 "null"
@@ -42,21 +44,28 @@ state 18 next		7 "null"
 state 7 entities	8 "null"
 state 8 textures	9 "null"
 state 9 loaded		10 "null"
+
 state 10 down		11 "null"
 state 10 enter		10 "togglemenu"
+
 state 11 up		10 "null"
+state 11 enter		200 "null"
 state 11 down		12 "null"
+
 state 12 up		11 "null"
 state 12 down		13 "null"
 state 12 enter		0 "disconnect"
+
 state 13 up		12 "null"
 state 13 enter		0 "quit"
 
 state 14 down		15 "null"
 state 14 enter		14 "connect 127.0.0.1"
+
 state 15 up		14 "null"
 state 15 enter		4 "bind default"
 state 15 down		16 "null"
+
 state 16 up		15 "null"
 state 16 enter		0 "null"
 
@@ -98,3 +107,351 @@ state 15 unload		0 "null"
 state 16 unload		0 "null"
 state 17 unload		0 "null"
 state 18 unload		0 "null"
+state 200 unload		0 "null"
+state 201 unload		0 "null"
+state 202 unload		0 "null"
+state 203 unload		0 "null"
+state 204 unload		0 "null"
+state 205 unload		0 "null"
+state 300 unload		0 "null"
+state 301 unload		0 "null"
+
+
+state 400 unload		0 "null"
+state 401 unload		0 "null"
+state 402 unload		0 "null"
+
+state 500 unload		0 "null"
+state 501 unload		0 "null"
+
+state 600 unload		0 "null"
+state 601 unload		0 "null"
+
+state 700 unload		0 "null"
+state 701 unload		0 "null"
+
+
+state 200 up		200 "null"
+state 200 down		201 "null"
+state 200 enter		300 "null"
+state 200 next		7 "null"
+
+state 201 up		200 "null"
+state 201 down		202 "null"
+state 201 enter		400 "null"
+state 201 next		7 "null"
+
+state 202 up		201 "null"
+state 202 down		203 "null"
+state 202 enter		500 "null"
+state 202 next		7 "null"
+
+state 203 up		202 "null"
+state 203 down		204 "null"
+state 203 enter		600 "null"
+state 203 next		7 "null"
+
+state 204 up		203 "null"
+state 204 down		205 "null"
+state 204 enter		0 "null"
+state 204 next		7 "null"
+
+state 205 up		204 "null"
+state 205 down		205 "null"
+state 205 enter		2 "null"
+state 205 next		7 "null"
+
+state 300 up		300 "null"
+state 300 down		301 "null"
+state 300 enter		300 "null"
+state 300 next		7 "null"
+
+state 301 up		307 "null"
+state 301 down		301 "null"
+state 301 enter		200 "null"
+state 301 next		7 "null"
+
+state 302 up		300 "null"
+state 302 down		303 "null"
+state 302 enter		302 "toggle name string"
+state 302 next		7 "null"
+
+state 303 up		302 "null"
+state 303 down		304 "null"
+state 303 enter		303 "toggle cg_model up"
+state 303 select	303 "toggle cg_model down"
+state 303 next		7 "null"
+
+state 304 up		303 "null"
+state 304 down		305 "null"
+state 304 enter		304 "toggle cg_skin up"
+state 304 select	304 "toggle cg_skin down"
+state 304 next		7 "null"
+
+state 305 up		304 "null"
+state 305 down		306 "null"
+state 305 enter		305 "toggle cg_team up"
+state 305 select	305 "toggle cg_team down"
+state 305 next		7 "null"
+
+state 306 up		305 "null"
+state 306 down		307 "null"
+state 306 enter		306 "toggle cg_fov up"
+state 306 select	306 "toggle cg_fov down"
+state 306 next		7 "null"
+
+state 307 up		306 "null"
+state 307 down		307 "null"
+state 307 enter		307 "toggle cg_crosshair up"
+state 307 select	307 "toggle cg_crosshair down"
+state 307 next		7 "null"
+
+state 400 up		400 "null"
+state 400 down		401 "null"
+state 400 enter		400 "null"
+state 400 next		7 "null"
+
+state 403 up		400 "null"
+state 403 down		404 "null"
+state 403 enter		403 "toggle r_fullscreen"
+state 403 next		7 "null"
+
+state 404 up		403 "null"
+state 404 down		405 "null"
+state 404 enter		404 "toggle r_res up"
+state 404 select	404 "toggle r_res down"
+state 404 next		7 "null"
+
+state 405 up		404 "null"
+state 405 down		406 "null"
+state 405 enter		405 "toggle r_rscale up"
+state 405 select	405 "toggle r_rscale down"
+state 405 next		7 "null"
+
+state 406 up		405 "null"
+state 406 down		407 "null"
+state 406 enter		406 "toggle r_vsync up"
+state 406 select	406 "toggle r_vsync down"
+state 406 next		7 "null"
+
+state 407 up		406 "null"
+state 407 down		408 "null"
+state 407 enter		407 "toggle r_brightness up"
+state 407 select	407 "toggle r_brightness down"
+state 407 next		7 "null"
+
+state 408 up		407 "null"
+state 408 down		409 "null"
+state 408 enter		408 "toggle r_contrast up"
+state 408 select	408 "toggle r_contrast down"
+state 408 next		7 "null"
+
+state 409 up		408 "null"
+state 409 down		410 "null"
+state 409 enter		409 "toggle r_antialias up"
+state 409 select	409 "toggle r_antialias down"
+state 409 next		7 "null"
+
+state 410 up		409 "null"
+state 410 down		401 "null"
+state 410 enter		410 "toggle r_anisotropic up"
+state 410 select	410 "toggle r_anisotropic down"
+state 410 next		7 "null"
+
+
+state 401 up		400 "null"
+state 401 down		402 "null"
+state 401 enter		700 "null"
+state 401 next		7 "null"
+
+state 402 up		401 "null"
+state 402 down		399 "null"
+state 402 enter		200 "null"
+state 402 next		7 "null"
+
+state 399 up		402 "null"
+state 399 down		399 "null"
+state 399 enter		399 "r_apply"
+state 399 next		7 "null"
+
+
+
+state 500 up		500 "null"
+state 500 down		502 "null"
+state 500 enter		200 "null"
+state 500 next		7 "null"
+
+state 501 up		502 "null"
+state 501 down		501 "null"
+state 501 enter		200 "null"
+state 501 next		7 "null"
+
+state 502 up		500 "null"
+state 502 down		503 "null"
+state 502 enter		502 "toggle s_volume up"
+state 502 select	502 "toggle s_volume down"
+state 502 next		7 "null"
+
+state 503 up		502 "null"
+state 503 down		504 "null"
+state 503 enter		503 "toggle s_musicvol up"
+state 503 select	503 "toggle s_musicvol down"
+state 503 next		7 "null"
+
+state 504 up		503 "null"
+state 504 down		501 "null"
+state 504 enter		504 "toggle s_sfxvol up"
+state 504 select	504 "toggle s_sfxvol down"
+state 504 next		7 "null"
+
+
+
+state 600 up		600 "null"
+state 600 down		601 "null"
+state 600 enter		600 "null"
+state 600 next		7 "null"
+
+state 601 up		600 "null"
+state 601 down		601 "null"
+state 601 enter		200 "null"
+state 601 next		7 "null"
+
+state 602 up		600 "null"
+state 602 down		603 "null"
+state 602 enter		602 "toggle bind attack"
+state 602 next		7 "null"
+
+state 603 up		602 "null"
+state 603 down		604 "null"
+state 603 enter		603 "toggle bind jump"
+state 603 next		7 "null"
+
+state 604 up		603 "null"
+state 604 down		605 "null"
+state 604 enter		604 "toggle bind duck"
+state 604 next		7 "null"
+
+state 605 up		604 "null"
+state 605 down		606 "null"
+state 605 enter		605 "toggle bind zoom"
+state 605 next		7 "null"
+
+state 606 up		605 "null"
+state 606 down		607 "null"
+state 606 enter		606 "toggle bind use"
+state 606 next		7 "null"
+
+state 607 up		606 "null"
+state 607 down		608 "null"
+state 607 enter		607 "toggle bind weapnext"
+state 607 next		7 "null"
+
+state 608 up		607 "null"
+state 608 down		609 "null"
+state 608 enter		608 "toggle bind weapprev"
+state 608 next		7 "null"
+
+state 609 up		608 "null"
+state 609 down		610 "null"
+state 609 enter		609 "toggle bind moveforward"
+state 609 next		7 "null"
+
+state 610 up		609 "null"
+state 610 down		611 "null"
+state 610 enter		610 "toggle bind moveback"
+state 610 next		7 "null"
+
+state 611 up		610 "null"
+state 611 down		612 "null"
+state 611 enter		611 "toggle bind moveleft"
+state 611 next		7 "null"
+
+
+state 612 up		611 "null"
+state 612 down		613 "null"
+state 612 enter		612 "toggle bind moveright"
+state 612 next		7 "null"
+
+
+state 613 up		612 "null"
+state 613 down		614 "null"
+state 613 enter		613 "toggle bind walk"
+state 613 next		7 "null"
+
+
+state 614 up		613 "null"
+state 614 down		615 "null"
+state 614 enter		614 "toggle bind spectate"
+state 614 next		7 "null"
+
+
+state 615 up		614 "null"
+state 615 down		616 "null"
+state 615 enter		615 "toggle bind console"
+state 615 next		7 "null"
+
+
+state 616 up		615 "null"
+state 616 down		617 "null"
+state 616 enter		616 "toggle bind togglemenu"
+state 616 next		7 "null"
+
+
+state 617 up		616 "null"
+state 617 down		618 "null"
+state 617 enter		617 "toggle bind scores"
+state 617 next		7 "null"
+
+state 618 up		617 "null"
+state 618 down		619 "null"
+state 618 enter		618 "toggle in_invert"
+state 618 next		7 "null"
+
+state 619 up		610 "null"
+state 619 down		601 "null"
+state 619 enter		619 "toggle sensitivity up"
+state 619 select	619 "toggle sensitivity down"
+state 619 next		7 "null"
+
+
+state 700 up		700 "null"
+state 700 down		701 "null"
+state 700 enter		700 "null"
+state 700 next		7 "null"
+
+state 702 up		700 "null"
+state 702 down		703 "null"
+state 702 enter		702 "toggle r_ssao"
+state 702 next		7 "null"
+
+
+state 703 up		702 "null"
+state 703 down		704 "null"
+state 703 enter		703 "toggle r_bloom"
+state 703 next		7 "null"
+
+state 704 up		703 "null"
+state 704 down		705 "null"
+state 704 enter		704 "toggle r_shadowmaps"
+state 704 next		7 "null"
+
+state 705 up		704 "null"
+state 705 down		706 "null"
+state 705 enter		705 "toggle r_stencil"
+state 705 next		7 "null"
+
+state 706 up		705 "null"
+state 706 down		707 "null"
+state 706 enter		706 "toggle r_skyray"
+state 706 next		7 "null"
+
+state 707 up		706 "null"
+state 707 down		701 "null"
+state 707 enter		707 "toggle r_portal"
+state 707 next		7 "null"
+
+state 701 up		700 "null"
+state 701 down		701 "null"
+state 701 enter		400 "null"
+state 701 next		7 "null"
+

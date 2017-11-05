@@ -186,7 +186,7 @@ public:
 	int init(Graphics *gfx);
 	void resize(int width, int height);
 	void Params(int type, int framestep);
-	void BloomParams(int dir, float amount, float strength, float scale);
+	void BloomParams(int dir, float amount, float strength, float scale, int xres, int yres);
 
 	virtual void prelink(void);
 
@@ -201,6 +201,9 @@ private:
 	int u_time;
 
 	int u_dir;
+	int u_xres;
+	int u_yres;
+
 	int u_amount;
 	int u_strength;
 	int u_scale;

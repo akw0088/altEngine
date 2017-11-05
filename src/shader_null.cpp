@@ -59,6 +59,33 @@ void mLight2::set_max(int max)
 
 }
 
+void mLight2::Select()
+{
+
+}
+
+void mLight2::set_tone(int tone)
+{
+
+}
+
+void mLight2::set_exposure(float value)
+{
+
+}
+
+void mLight2::set_clip(vec4 *plane)
+{
+
+}
+
+
+void mLight2::set_fog(float fog, float start, float end, vec3 &color)
+{
+
+}
+
+
 void mLight2::set_ambient(float ambient)
 {
 
@@ -246,6 +273,10 @@ void Post::Params(int tex0, int tex1)
 {
 }
 
+void Post::BloomParams(int, float, float, float)
+{
+}
+
 
 
 int ParticleUpdate::init(Graphics *gfx)
@@ -270,6 +301,22 @@ int ParticleUpdate::step(Graphics &gfx, emitter_t &emit)
 	return ParticleBufferA;
 }
 
+int ScreenSpace::init(Graphics *gfx)
+{
+	return 0;
+}
+
+
+void ScreenSpace::prelink(void)
+{
+
+}
+
+void ScreenSpace::Params(float, float, float, bool, bool, int, int, int)
+{
+
+}
+
 #define QUAD_PARTICLES
 
 int ParticleRender::init(Graphics *gfx)
@@ -283,7 +330,7 @@ void ParticleRender::prelink(void)
 
 }
 
-void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y, float z)
 {
 
 }

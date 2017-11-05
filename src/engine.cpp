@@ -207,10 +207,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 	ssao_level = 1.0f;
-	//	object_level = 1.0;
 	object_level = 1.0f;
-//	ssao_radius = 5.0;
-	ssao_radius = 0.01f;
+	ssao_radius = 5.0;
+//	ssao_radius = 0.01f;
 	weight_by_angle = true;
 	point_count = 8;
 	randomize_points = true;
@@ -219,6 +218,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	enum_resolutions();
 #ifdef WIN32
+#ifndef DEDICATED
 	WAVEFORMATEX wf;
 	DWORD value = 0;
 
@@ -234,6 +234,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	waveOutGetVolume(hWaveOut, &value);
 	menu.data.volume = value / 65535.0f;
 	wglSwapIntervalEXT(0);
+#endif
 #else
 //	glXSwapInterval(0);
 #endif
@@ -248,7 +249,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 
 	enable_stencil = false;
-	enable_map_shadows = true;
+	enable_map_shadows = false;
 	sensitivity = 1.0f;
 
 	shadow_light = 107;
@@ -2240,7 +2241,7 @@ void Engine::post_process(int num_passes, int type)
 		gfx.SelectTexture(1, post.swap);
 		post.Select();
 		post.Params(type, tick_num);
-		post.BloomParams(0, 20, bloom_strength, bloom_threshold);
+		post.BloomParams(0, 20, bloom_strength, bloom_threshold, fb_width, fb_height);
 		gfx.clear();
 		gfx.SelectIndexBuffer(Model::quad_index);
 		gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2265,7 +2266,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(1, render_depth);
 	post.Select();
 	post.Params(POST_MASK, tick_num);
-	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	//	post.Params(POST_DOF, tick_num);
 //	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
 	gfx.clear();
@@ -2282,7 +2283,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
 	post.Params(POST_BLOOM, tick_num);
-	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2300,7 +2301,7 @@ void Engine::render_bloom(bool debug)
 	gfx.SelectTexture(0, blur1_quad);
 	post.Select();
 	post.Params(POST_BLOOM, tick_num);
-	post.BloomParams(1, bloom_amount, bloom_strength, bloom_threshold);
+	post.BloomParams(1, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	gfx.DrawArrayTri(0, 0, 6, 4); // second pass
 
 	gfx.bindFramebuffer(render_fbo, 2);
@@ -2337,7 +2338,7 @@ void Engine::render_skyray(bool debug)
 	gfx.SelectTexture(1, render_depth);
 	post.Select();
 	post.Params(POST_MASK, tick_num);
-	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	//	post.Params(POST_DOF, tick_num);
 	//	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
 	gfx.clear();
@@ -2354,7 +2355,7 @@ void Engine::render_skyray(bool debug)
 	gfx.SelectTexture(0, mask_quad);
 	post.Select();
 	post.Params(POST_RADIAL, tick_num);
-	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
 	gfx.SelectVertexBuffer(Model::quad_vertex);
@@ -2395,7 +2396,7 @@ void Engine::render_wave(bool debug)
 	gfx.SelectTexture(1, render_depth);
 	post.Select();
 	post.Params(POST_WAVE, tick_num);
-	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold);
+	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 
 	gfx.clear();
 	gfx.SelectIndexBuffer(Model::quad_index);
@@ -5243,7 +5244,7 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_ssao") == 0)
 		{
-			console("ssao");
+			console("r_ssao");
 			menu.data.ssao = enable_ssao;
 			return;
 		}
@@ -5429,12 +5430,14 @@ void Engine::console(char *cmd)
 			if (menu.data.vsync >= 3)
 				menu.data.vsync = 0;
 #ifdef WIN32
+#ifndef DEDICATED
 			if (menu.data.vsync == 0)
 				wglSwapIntervalEXT(0);
 			else if (menu.data.vsync == 1)
 				wglSwapIntervalEXT(1);
 			else if (menu.data.vsync == 2)
 				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
+#endif
 #endif
 #ifdef __linux
 //			if (menu.data.vsync == 0)
@@ -5452,12 +5455,14 @@ void Engine::console(char *cmd)
 			if (menu.data.vsync < 0)
 				menu.data.vsync = 2;
 #ifdef WIN32
+#ifndef DEDICATED
 			if (menu.data.vsync == 0)
 				wglSwapIntervalEXT(0);
 			else if (menu.data.vsync == 1)
 				wglSwapIntervalEXT(1);
 			else if (menu.data.vsync == 2)
 				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
+#endif
 #endif
 #ifdef __linux
 //			if (menu.data.vsync == 0)
@@ -5481,7 +5486,9 @@ void Engine::console(char *cmd)
 				menu.data.volume = 0.0f;
 
 #ifdef WIN32
+#ifndef DEDICATED
 			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
+#endif
 #endif
 			return;
 		}
@@ -5492,7 +5499,9 @@ void Engine::console(char *cmd)
 				menu.data.volume = 1.0f;
 
 #ifdef WIN32
+#ifndef DEDICATED
 			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
+#endif
 #endif
 			return;
 		}
@@ -6467,7 +6476,7 @@ void Engine::console(char *cmd)
 		return;
 	}
 
-	if (strstr(cmd, "ssao"))
+	if (strstr(cmd, "r_ssao"))
 	{
 		enable_ssao = !enable_ssao;
 		if (enable_ssao)

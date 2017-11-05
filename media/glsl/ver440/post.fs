@@ -23,6 +23,9 @@ uniform float u_scale;
 uniform float u_amount;
 uniform float u_strength;
 
+uniform int u_xres;
+uniform int u_yres;
+
 float GaussianFunction(float x, float dev)
 {
 	return ( (1.0 / sqrt(2.0 * 3.142857 * dev) ) * exp( -(x * x) / (2.0 * dev) ) );
@@ -256,7 +259,7 @@ void main(void)
 
 		vec3 resolution; // screen resolution
 		vec3 offset = vec3(0.25f, 0.25f, 0.0f);
-		resolution = vec3(1024, 1024, 1024);
+		resolution = vec3(u_xres, u_yres, u_xres);
 
 		vec3 p = gl_FragCoord.xyz / resolution - 0.5;
 		vec3 o = texture2D(texture0, 0.5 + (p.xy *= 0.992)).rbb;

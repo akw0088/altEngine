@@ -712,6 +712,9 @@ int Post::init(Graphics *gfx)
 	u_amount = glGetUniformLocation(program_handle, "u_amount");
 	u_strength = glGetUniformLocation(program_handle, "u_strength");
 
+	u_xres = glGetUniformLocation(program_handle, "u_xres");
+	u_yres = glGetUniformLocation(program_handle, "u_yres");
+
 
 	glGenTextures(1, &image);
 	glBindTexture(GL_TEXTURE_2D, image);
@@ -765,12 +768,14 @@ void Post::Params(int type, int frame_step)
 	glUniform1i(u_time, frame_step);
 }
 
-void Post::BloomParams(int dir, float amount, float strength, float scale)
+void Post::BloomParams(int dir, float amount, float strength, float scale, int xres, int yres)
 {
 	glUniform1i(u_dir, dir);
 	glUniform1f(u_amount, amount);
 	glUniform1f(u_strength, strength);
 	glUniform1f(u_scale, scale);
+	glUniform1i(u_xres, xres);
+	glUniform1i(u_yres, yres);
 }
 
 #ifdef NOPE

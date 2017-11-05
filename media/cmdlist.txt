@@ -18,6 +18,7 @@ blueflag
 cg_crosshair
 cg_crosshairsize
 cg_faceicon
+cg_fov
 cl_skip
 clear
 com_maxfps
@@ -76,6 +77,7 @@ r_maxlight
 r_multisample
 r_patch
 r_polygonmode
+r_portal
 r_reload_shaders
 r_rendermode
 r_res
@@ -88,6 +90,7 @@ r_ssao
 r_stencil
 r_texture
 r_tonemap
+r_vsync
 record
 redflag
 regeneration
@@ -101,6 +104,7 @@ showhud
 showlines
 shownames
 spectate
+ssao_radius
 stop
 sv_hostname ""
 sv_list

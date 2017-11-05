@@ -176,7 +176,7 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 {
 }
 
-int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
+int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
 	return 1;
 }
@@ -214,7 +214,7 @@ int Graphics::CreateCubeMap()
 	return 0;
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
 	return 1;
 }
@@ -239,7 +239,7 @@ void Graphics::Stencil(bool flag)
 {
 }
 
-void Graphics::StencilFunc(int op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, unsigned int mask)
 {
 }
 
@@ -247,7 +247,7 @@ void Graphics::DepthFunc(int op)
 {
 }
 
-void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
+void Graphics::StencilOp(int stencil_fail, int zfail, int zpass)
 {
 }
 
@@ -283,7 +283,7 @@ void Graphics::fbAttachDepth(int texObj)
 {
 }
 
-void Graphics::bindFramebuffer(int fbo)
+void Graphics::bindFramebuffer(int fbo, int num_attach)
 {
 }
 
@@ -292,12 +292,21 @@ int Graphics::checkFramebuffer()
 	return 0;
 }
 
-int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int multisample)
+void Graphics::clear_color(vec3 &color)
+{
+
+}
+
+void Graphics::TwoSidedStencilOp(int face, int stencil_fail, int zfail, int zpass)
+{
+}
+
+int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
 {
 	return 0;
 }
 
-void Graphics::DeleteFrameBuffer(unsigned int fbo)
+void Graphics::DeleteFrameBuffer(int fbo, int quad, int depth)
 {
 }
 
