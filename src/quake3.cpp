@@ -299,112 +299,112 @@ void Quake3::load_models(Graphics &gfx)
 	#define MODEL_ARMOR_SHARD 27
 	model = new Model;
 	model->load(gfx, "media/models/powerups/armor/shard");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_SHELLS 28
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_shells");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_ROCKETS 29
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_LIGHTNING 30
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_GRENADES 31
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_SLUGS 32
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_BULLETS 33
 	model = new Model;
 	model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_ARMOR_COMBAT 34
 	model = new Model;
 	model->load(gfx, "media/models/powerups/armor/item_armor_combat");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_ARMOR_BODY 35
 	model = new Model;
 	model->load(gfx, "media/models/powerups/armor/item_armor_body");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_BLUE_FLAG 36
 	model = new Model;
 	model->load(gfx, "media/models/flags/b_flag");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_RED_FLAG 37
 	model = new Model;
 	model->load(gfx, "media/models/flags/r_flag");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_QUAD 38
 	model = new Model;
 	model->load(gfx, "media/models/powerups/instant/quad");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_REGEN 39
 	model = new Model;
 	model->load(gfx, "media/models/powerups/instant/regen");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_INVIS 40
 	model = new Model;
 	model->load(gfx, "media/models/powerups/instant/invis");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_FLIGHT 41
 	model = new Model;
 	model->load(gfx, "media/models/powerups/instant/flight");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_HASTE 42
 	model = new Model;
 	model->load(gfx, "media/models/powerups/instant/haste");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_MEDKIT 43
 	model = new Model;
 	model->load(gfx, "media/models/powerups/holdable/medkit");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_TELEPORTER 44
 	model = new Model;
 	model->load(gfx, "media/models/powerups/holdable/teleporter");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_HEALTH 45
 	model = new Model;
 	model->load(gfx, "media/models/powerups/health/item_health");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_HEALTH_LARGE 46
 	model = new Model;
 	model->load(gfx, "media/models/powerups/health/item_health_large");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_HEALTH_SMALL 47
 	model = new Model;
 	model->load(gfx, "media/models/powerups/health/item_health_small");
-        model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_HEALTH_MEGA 48
 	model = new Model;
 	model->load(gfx, "media/models/powerups/health/item_health_mega");
-    model_table.push_back(model);
+	model_table.push_back(model);
 
 	#define MODEL_AMMO_PLASMA 49
 	model = new Model;
