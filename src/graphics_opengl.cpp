@@ -743,12 +743,17 @@ int Shader::init(Graphics *gfx, char *vertex_file, char *geometry_file, char *fr
 	FILE		*fLog;
 	int			success;
 	int			max_attrib = 0;
+	int			size = 0;
 
 	fLog = fopen("infolog.txt", "a");
 	fprintf(fLog, "OpenGL Version %s\n", glGetString(GL_VERSION));
 	fprintf(fLog, "OpenGL Renderer %s\n", glGetString(GL_RENDERER));
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_attrib);
 	fprintf(fLog, "Max vertex attribs %d\n", max_attrib);
+
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
+	fprintf(fLog, "Max texture size %dx%d\n", size, size);
+
 
 	if (vertex_file)
 	{
