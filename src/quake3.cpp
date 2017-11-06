@@ -9203,9 +9203,9 @@ void Quake3::map_model(Entity &ent)
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_TERRAIN)
+	else if (ent.ent_type == ENT_FUNC_TERRAIN)
 	{
-		debugf("Loading ent_terrain\n");
+		debugf("Loading func_terrain\n");
 		ent.model->clone(*model_table[MODEL_TERRAIN]);
 		ent.position += vec3(0.0f, -5000.0f, 0.0f);
 		ent.rigid->gravity = false;

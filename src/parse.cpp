@@ -366,7 +366,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		}
 		else if (strcmp(value, "func_terrain") == 0)
 		{
-			entity.ent_type = ENT_TERRAIN;
+			entity.ent_type = ENT_FUNC_TERRAIN;
 			if (entity.rigid)
 			{
 				entity.rigid->gravity = false;

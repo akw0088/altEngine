@@ -1938,7 +1938,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
-		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_PATH_CORNER)
+		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_PATH_CORNER || entity->ent_type == ENT_FUNC_TERRAIN)
 		{
 			entity->visible = true;
 			entity->bsp_visible = true;
