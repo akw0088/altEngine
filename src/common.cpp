@@ -1798,3 +1798,194 @@ int auto_complete(const char *a, const char *b)
 
 	return strlen(a);
 }
+
+vec3 getFarthestInDir(vec3 *shape, vec3 &v, int &index, int num_vert)
+{
+	int max_index;
+	float mag_max;
+
+	for(int i = 0; i < num_vert; i++)
+	{
+		vec3 data = shape[i];
+
+		float dotted = data * v;
+		if (dotted > mag_max)
+		{
+			mag_max = dotted;
+			max_index = i;
+		}
+	}
+
+	index = max_index;
+	return shape[index];
+}
+
+void support(vec3 *shape1, vec3 *shape2, vec3 &v, vec3 &point, int num_vert)
+{
+	int index;
+	vec3 nv = -v;
+
+	vec3 point1 = getFarthestInDir(shape1, v, index, num_vert);
+	vec3 point2 = getFarthestInDir(shape1, nv, index, num_vert);
+	point = point1 - point2;
+}
+
+
+void pick_line(vec3 &v, vec3 *shape1, vec3 *shape2, vec3 &a, vec3 &b, int num_vert)
+{
+	vec3 nv = -v;
+	support(shape2, shape1, v, a, num_vert);
+	support(shape2, shape1, nv, b, num_vert);
+}
+
+void pick_triangle(vec3 &a, vec3 &b, vec3 &c, int &flag, vec3 *shape1, vec3 *shape2, int iteration_allowed)
+{
+	flag  = 0;
+
+	vec3 ab  = b - a;
+	vec3 ao = -a;
+	vec3 temp = vec3::crossproduct(ab, ao);
+
+	vec3 v = vec3::crossproduct( temp, ab);
+
+	c = b;
+	b = a;
+	support(shape2, shape1, v, a, 8);
+
+	for(int i = 0; i < iteration_allowed; i++)
+	{
+		ab = b - a;
+		ao = -a;
+		vec3 ac = c - a;
+
+		vec3 abc = vec3::crossproduct(ab, ac);
+
+		vec3 abp = vec3::crossproduct(ab, abc);
+		vec3 acp = vec3::crossproduct(abc, ac);
+
+		if (abp * ao > 0)
+		{
+			c = b;
+			b = a;
+			v = abp;
+		}
+		else if (acp * ao > 0)
+		{
+			b = a;
+			v = acp;
+		}
+		else
+		{
+			flag = 1;
+			break;
+		}
+		support(shape2, shape1, v, a, 8);
+	}
+}
+
+
+void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c, vec3 * shape1, vec3 *shape2, int iteration_allowed)
+{
+	int flag = 0;
+
+	vec3 ab = b - a;
+	vec3 ac = c - a;
+	vec3 abc = vec3::crossproduct(ab, ac);
+	vec3 ao = -a;
+	vec3 v;
+	vec3 d;
+
+	if (abc * ao > 0)
+	{
+		b = c;
+		c = b;
+		b = a;
+
+		v = abc;
+		support(shape2, shape1, v, a, 8);
+	}
+	else
+	{
+		d = b;
+		b = a;
+		v = -abc;
+		support(shape2, shape1, v, a, 8);
+	}
+
+	for( int i = 0; i < iteration_allowed; i++)
+	{
+		ab = b - a;
+		ao = -a;
+		ac = c - a;
+		vec3 ad = d - a;
+
+		abc = vec3::crossproduct(ab, ac);
+		if ( abc * ao > 0)
+		{
+		}
+		else
+		{
+			vec3 acd = vec3::crossproduct(ac, ad);
+
+			if (acd * ao > 0)
+			{
+				b = c;
+				c = d;
+				ab = ac;
+				ac = ad;
+				abc = acd;
+			}
+			else
+			{
+				vec3 adb = vec3::crossproduct(ad, ab);
+				if (adb * ao > 0)
+				{
+					c = b;
+					b = d;
+					ac = ab;
+					ab = ad;
+					abc = adb;
+				}
+				else
+				{
+					flag = 1;
+					break;
+				}
+			}
+		}
+
+		if (abc * ao > 0)
+		{
+			d = c;
+			c = b;
+			b = a;
+			v = abc;
+			support(shape2, shape1, v, a, 8);
+		}
+		else
+		{
+			d = b;
+			b = a;
+			v = -abc;
+			support(shape2, shape1, v, a, 8);
+		}
+	}
+}
+
+
+int gjk(vec3 *shape1, vec3 *shape2, int iterations)
+{
+	int num_vert = 8;
+	vec3 v(0.8f, 0.5f, 1.0f);
+	vec3 a, b, c;
+	int flag = 0;
+
+	pick_line(v, shape2, shape1, a, b, num_vert);
+	pick_triangle(a, b, c, flag, shape2, shape1, iterations);
+
+	if (flag)
+	{
+		pick_tetrahedron(a, b, c, shape2, shape1, iterations);
+	}
+	return 0;
+}
