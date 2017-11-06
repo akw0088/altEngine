@@ -37,6 +37,11 @@ const char *teams[3] =
 	"None"
 };
 
+
+char *terrain_str = "{\
+\"classname\" \"func_terrain\"\
+}\")";
+
 Engine::Engine()
 {
 	initialized = false;
@@ -673,7 +678,6 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 
-
 	char entfile[128] = { 0 };
 	sprintf(entfile, "media/%s.ent", q3map.map_name);
 	char *entdata = get_file(entfile, NULL);
@@ -687,12 +691,26 @@ void Engine::load(char *level)
 		char filename[128];
 		const char *data = q3map.get_entities();
 
+		char *ndata = new char[strlen(data) + strlen(terrain_str) + 16];
+
 		sprintf(filename, "media/%s.ent", q3map.map_name);
 		write_file(filename, data, strlen(data));
-		parse_entity(this, q3map.get_entities(), entity_list, gfx, audio);
+		bool enable_terrain = true;
+
+		if (enable_terrain)
+		{
+			strcpy(ndata, data);
+			strcat(ndata, terrain_str);
+			parse_entity(this, ndata, entity_list, gfx, audio);
+		}
+		else
+		{
+			parse_entity(this, data, entity_list, gfx, audio);
+		}
 	}
 
 	debugf("Loaded %d entities\n", entity_list.size());
+
 
 	int start = entity_list.size();
 

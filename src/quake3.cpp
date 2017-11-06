@@ -412,6 +412,10 @@ void Quake3::load_models(Graphics &gfx)
 	model_table.push_back(model);
 
 
+	#define MODEL_TERRAIN 50
+	model = new Model;
+	model->load(gfx, "media/terrain/terrain_big");
+	model_table.push_back(model);
 }
 
 void Quake3::load_q1_models(Graphics &gfx)
@@ -9198,6 +9202,13 @@ void Quake3::map_model(Entity &ent)
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->gravity = false;
 		ent.position.y += 15.0f;
+	}
+	else if (ent.ent_type == ENT_TERRAIN)
+	{
+		debugf("Loading ent_terrain\n");
+		ent.model->clone(*model_table[MODEL_TERRAIN]);
+		ent.position += vec3(0.0f, -5000.0f, 0.0f);
+		ent.rigid->gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_LIGHTNING)
 	{

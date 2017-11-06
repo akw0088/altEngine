@@ -364,6 +364,15 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
 			entity.trigger->armor = true;
 		}
+		else if (strcmp(value, "func_terrain") == 0)
+		{
+			entity.ent_type = ENT_TERRAIN;
+			if (entity.rigid)
+			{
+				entity.rigid->gravity = false;
+				entity.rigid->flight = true;
+			}
+		}
 		else if (strcmp(value, "func_bobbing") == 0)
 		{
 			entity.ent_type = ENT_FUNC_BOBBING;

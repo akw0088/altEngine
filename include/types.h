@@ -736,7 +736,8 @@ typedef enum
 	ENT_Q1_ITEM_ARMOR2,
 	ENT_Q1_TRAP_SPIKESHOOTER,
 	ENT_Q1_ITEM_SIGIL,
-	ENT_Q1_END
+	ENT_Q1_END,
+	ENT_TERRAIN // giant OBJ file with texture, need to figure out collision
 } entity_type_t;
 
 // Any dynamically created entity type that should be synced over network
