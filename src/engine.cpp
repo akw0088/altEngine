@@ -694,7 +694,6 @@ void Engine::load(char *level)
 		char *ndata = new char[strlen(data) + strlen(terrain_str) + 16];
 
 		sprintf(filename, "media/%s.ent", q3map.map_name);
-		write_file(filename, data, strlen(data));
 		bool enable_terrain = true;
 
 		if (enable_terrain)
@@ -707,6 +706,7 @@ void Engine::load(char *level)
 		{
 			parse_entity(this, data, entity_list, gfx, audio);
 		}
+		write_file(filename, data, strlen(data));
 	}
 
 	debugf("Loaded %d entities\n", entity_list.size());
