@@ -29,6 +29,8 @@
 #define FALL_DAMAGE_VELOCITY 7.0f
 
 #define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
+#define MAX_RES 32
+
 
 #define PARTICLES
 // Could probably increase, but we are now at a point where

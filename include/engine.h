@@ -196,7 +196,7 @@ public:
 	bool enable_map;
 
 
-	char resbuf[32][80];
+	char resbuf[MAX_RES][80];
 	int num_res;
 	int current_res;
 

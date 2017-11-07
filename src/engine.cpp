@@ -7518,6 +7518,9 @@ void Engine::enum_resolutions()
 				continue;
 			}
 			num_res++;
+			if (num_res >= MAX_RES)
+				break;
+
 		}
 		else
 		{
