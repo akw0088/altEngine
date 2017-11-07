@@ -141,7 +141,7 @@ vec3 vec3::operator-() const
 	return temp;
 }
 
-float vec3::operator*(const vec3 &vector)
+float vec3::operator*(const vec3 &vector) const
 {
 	return (x * vector.x + y * vector.y + z * vector.z);
 }

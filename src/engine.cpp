@@ -210,7 +210,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
-
 	ssao_level = 1.0f;
 	object_level = 1.0f;
 //	ssao_radius = 5.0;
@@ -3021,9 +3020,31 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
+		if (i == 0 || body.entity->player->local)
+		{
+			int result = 0;
+			vec3 shape1[8];
+			vec3 shape2[8];
+
+			for (int j = 0; j < 8; j++)
+			{
+				shape1[j] = body.aabb[j] + body.entity->position + body.center;
+				//shape2[j] = entity_list[i]->rigid->aabb[j] + entity_list[i]->position + entity_list[i]->rigid->center;
+				shape2[j] = body.aabb[j] + body.entity->position + body.center + vec3(1000.0f, 1000.0f, 1000.0f);
+			}
+
+			result = gjk(shape1, shape2, 10, 8);
+			if (result)
+			{
+				printf("collision between %s and %s\n", entity_list[i]->player->name, body.entity->player->name);
+			}
+		}
+
+
 //		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
 		if (body.collision_distance(*entity_list[i]->rigid))
 			return true;
+
 
 	}
 	return false;

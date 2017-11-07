@@ -1799,16 +1799,15 @@ int auto_complete(const char *a, const char *b)
 	return strlen(a);
 }
 
-vec3 getFarthestInDir(vec3 *shape, vec3 &v, int &index, int num_vert)
+vec3 getFarthestInDir(const vec3 *shape, const vec3 &v,
+	int &index, const int num_vert)
 {
-	int max_index;
-	float mag_max;
+	int max_index = -1;
+	float mag_max = 0.0f;
 
 	for(int i = 0; i < num_vert; i++)
 	{
-		vec3 data = shape[i];
-
-		float dotted = data * v;
+		float dotted = shape[i] * v;
 		if (dotted > mag_max)
 		{
 			mag_max = dotted;
@@ -1820,7 +1819,9 @@ vec3 getFarthestInDir(vec3 *shape, vec3 &v, int &index, int num_vert)
 	return shape[index];
 }
 
-void support(vec3 *shape1, vec3 *shape2, vec3 &v, vec3 &point, int num_vert)
+//furthest point in a shape (minkowski difference) along given direction v
+void support(const vec3 *shape1, const vec3 *shape2,
+	const vec3 &v, vec3 &point, const int num_vert)
 {
 	int index;
 	vec3 nv = -v;
@@ -1831,14 +1832,17 @@ void support(vec3 *shape1, vec3 *shape2, vec3 &v, vec3 &point, int num_vert)
 }
 
 
-void pick_line(vec3 &v, vec3 *shape1, vec3 *shape2, vec3 &a, vec3 &b, int num_vert)
+void pick_line(const vec3 &v, const vec3 *shape1, const vec3 *shape2,
+	vec3 &a, vec3 &b, const int num_vert)
 {
-	vec3 nv = -v;
-	support(shape2, shape1, v, a, num_vert);
-	support(shape2, shape1, nv, b, num_vert);
+	const vec3 nv = -v;
+	support(shape2, shape1, v, b, num_vert);
+	support(shape2, shape1, nv, a, num_vert);
 }
 
-void pick_triangle(vec3 &a, vec3 &b, vec3 &c, int &flag, vec3 *shape1, vec3 *shape2, int iteration_allowed)
+void pick_triangle(vec3 &a, vec3 &b, vec3 &c,
+	int &flag, const vec3 *shape1, const vec3 *shape2,
+	const int iteration_allowed, const int num_vert)
 {
 	flag  = 0;
 
@@ -1847,10 +1851,12 @@ void pick_triangle(vec3 &a, vec3 &b, vec3 &c, int &flag, vec3 *shape1, vec3 *sha
 	vec3 temp = vec3::crossproduct(ab, ao);
 
 	vec3 v = vec3::crossproduct( temp, ab);
+	if (v.magnitude() < 0.00001f)
+		return;
 
 	c = b;
 	b = a;
-	support(shape2, shape1, v, a, 8);
+	support(shape2, shape1, v, a, num_vert);
 
 	for(int i = 0; i < iteration_allowed; i++)
 	{
@@ -1884,10 +1890,10 @@ void pick_triangle(vec3 &a, vec3 &b, vec3 &c, int &flag, vec3 *shape1, vec3 *sha
 }
 
 
-void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c, vec3 * shape1, vec3 *shape2, int iteration_allowed)
+void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c,
+	int &flag, const vec3 *shape1, const vec3 *shape2,
+	const int iteration_allowed, const int num_vert)
 {
-	int flag = 0;
-
 	vec3 ab = b - a;
 	vec3 ac = c - a;
 	vec3 abc = vec3::crossproduct(ab, ac);
@@ -1897,19 +1903,19 @@ void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c, vec3 * shape1, vec3 *shape2, in
 
 	if (abc * ao > 0)
 	{
-		b = c;
+		d = c;
 		c = b;
 		b = a;
 
 		v = abc;
-		support(shape2, shape1, v, a, 8);
+		support(shape2, shape1, v, a, num_vert);
 	}
 	else
 	{
 		d = b;
 		b = a;
 		v = -abc;
-		support(shape2, shape1, v, a, 8);
+		support(shape2, shape1, v, a, num_vert);
 	}
 
 	for( int i = 0; i < iteration_allowed; i++)
@@ -1960,32 +1966,32 @@ void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c, vec3 * shape1, vec3 *shape2, in
 			c = b;
 			b = a;
 			v = abc;
-			support(shape2, shape1, v, a, 8);
+			support(shape2, shape1, v, a, num_vert);
 		}
 		else
 		{
 			d = b;
 			b = a;
 			v = -abc;
-			support(shape2, shape1, v, a, 8);
+			support(shape2, shape1, v, a, num_vert);
 		}
 	}
 }
 
 
-int gjk(vec3 *shape1, vec3 *shape2, int iterations)
+int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert)
 {
-	int num_vert = 8;
 	vec3 v(0.8f, 0.5f, 1.0f);
 	vec3 a, b, c;
 	int flag = 0;
+	int flag2 = 0;
 
 	pick_line(v, shape2, shape1, a, b, num_vert);
-	pick_triangle(a, b, c, flag, shape2, shape1, iterations);
+	pick_triangle(a, b, c, flag, shape2, shape1, iterations, num_vert);
 
 	if (flag)
 	{
-		pick_tetrahedron(a, b, c, shape2, shape1, iterations);
+		pick_tetrahedron(a, b, c, flag2, shape2, shape1, iterations, num_vert);
 	}
-	return 0;
+	return flag2;
 }
