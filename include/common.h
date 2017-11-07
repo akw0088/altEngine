@@ -63,7 +63,7 @@ void write_bitmap(char *filename, int width, int height, int *data);
 void ping_time_start(int sequence);
 double ping_time_end(int sequence);
 float clamp(float value, float min, float max);
-int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert);
+int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert_one, const int num_vert_two);
 
 
 float random_float();

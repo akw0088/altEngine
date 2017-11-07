@@ -3029,11 +3029,11 @@ bool Engine::body_collision(RigidBody &body)
 			for (int j = 0; j < 8; j++)
 			{
 				shape1[j] = body.aabb[j] + body.entity->position + body.center;
-				//shape2[j] = entity_list[i]->rigid->aabb[j] + entity_list[i]->position + entity_list[i]->rigid->center;
-				shape2[j] = body.aabb[j] + body.entity->position + body.center + vec3(1000.0f, 1000.0f, 1000.0f);
+				shape2[j] = entity_list[i]->rigid->aabb[j] + entity_list[i]->position + entity_list[i]->rigid->center;
+				//shape2[j] = body.aabb[j] + body.entity->position + body.center + vec3(1000.0f, 1000.0f, 1000.0f);
 			}
 
-			result = gjk(shape1, shape2, 10, 8);
+			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
 				printf("collision between %s and %s\n", entity_list[i]->player->name, body.entity->player->name);

@@ -1799,50 +1799,49 @@ int auto_complete(const char *a, const char *b)
 	return strlen(a);
 }
 
-vec3 getFarthestInDir(const vec3 *shape, const vec3 &v,
-	int &index, const int num_vert)
+int getFarthestInDir(const vec3 *shape, const vec3 &v, const int num_vert)
 {
-	int max_index = -1;
-	float mag_max = 0.0f;
+	float max_dot = shape[0] * v;
+	int index = 0;
 
 	for(int i = 0; i < num_vert; i++)
 	{
 		float dotted = shape[i] * v;
-		if (dotted > mag_max)
+		if (dotted > max_dot)
 		{
-			mag_max = dotted;
-			max_index = i;
+			max_dot = dotted;
+			index = i;
 		}
 	}
 
-	index = max_index;
-	return shape[index];
+	return index;
 }
 
 //furthest point in a shape (minkowski difference) along given direction v
 void support(const vec3 *shape1, const vec3 *shape2,
-	const vec3 &v, vec3 &point, const int num_vert)
+	const vec3 &v, vec3 &point, const int num_vert_one, const int num_vert_two)
 {
-	int index;
+	int index1;
+	int index2;
 	vec3 nv = -v;
 
-	vec3 point1 = getFarthestInDir(shape1, v, index, num_vert);
-	vec3 point2 = getFarthestInDir(shape1, nv, index, num_vert);
-	point = point1 - point2;
+	index1 = getFarthestInDir(shape1, v, num_vert_one);
+	index2 = getFarthestInDir(shape2, nv, num_vert_two);
+	point = shape1[index1] - shape2[index2];
 }
 
 
 void pick_line(const vec3 &v, const vec3 *shape1, const vec3 *shape2,
-	vec3 &a, vec3 &b, const int num_vert)
+	vec3 &a, vec3 &b, const int num_vert_one, const int num_vert_two)
 {
 	const vec3 nv = -v;
-	support(shape2, shape1, v, b, num_vert);
-	support(shape2, shape1, nv, a, num_vert);
+	support(shape2, shape1, v, b, num_vert_two, num_vert_one);
+	support(shape2, shape1, nv, a, num_vert_two, num_vert_two);
 }
 
 void pick_triangle(vec3 &a, vec3 &b, vec3 &c,
 	int &flag, const vec3 *shape1, const vec3 *shape2,
-	const int iteration_allowed, const int num_vert)
+	const int iteration_allowed, const int num_vert_one, const int num_vert_two)
 {
 	flag  = 0;
 
@@ -1856,7 +1855,7 @@ void pick_triangle(vec3 &a, vec3 &b, vec3 &c,
 
 	c = b;
 	b = a;
-	support(shape2, shape1, v, a, num_vert);
+	support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 
 	for(int i = 0; i < iteration_allowed; i++)
 	{
@@ -1885,14 +1884,14 @@ void pick_triangle(vec3 &a, vec3 &b, vec3 &c,
 			flag = 1;
 			break;
 		}
-		support(shape2, shape1, v, a, 8);
+		support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 	}
 }
 
 
 void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c,
 	int &flag, const vec3 *shape1, const vec3 *shape2,
-	const int iteration_allowed, const int num_vert)
+	const int iteration_allowed, const int num_vert_one, const int num_vert_two)
 {
 	vec3 ab = b - a;
 	vec3 ac = c - a;
@@ -1908,14 +1907,14 @@ void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c,
 		b = a;
 
 		v = abc;
-		support(shape2, shape1, v, a, num_vert);
+		support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 	}
 	else
 	{
 		d = b;
 		b = a;
 		v = -abc;
-		support(shape2, shape1, v, a, num_vert);
+		support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 	}
 
 	for( int i = 0; i < iteration_allowed; i++)
@@ -1966,32 +1965,32 @@ void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c,
 			c = b;
 			b = a;
 			v = abc;
-			support(shape2, shape1, v, a, num_vert);
+			support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 		}
 		else
 		{
 			d = b;
 			b = a;
 			v = -abc;
-			support(shape2, shape1, v, a, num_vert);
+			support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 		}
 	}
 }
 
 
-int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert)
+int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert_one, const int num_vert_two)
 {
 	vec3 v(0.8f, 0.5f, 1.0f);
 	vec3 a, b, c;
 	int flag = 0;
 	int flag2 = 0;
 
-	pick_line(v, shape2, shape1, a, b, num_vert);
-	pick_triangle(a, b, c, flag, shape2, shape1, iterations, num_vert);
+	pick_line(v, shape2, shape1, a, b, num_vert_two, num_vert_one);
+	pick_triangle(a, b, c, flag, shape2, shape1, iterations, num_vert_two, num_vert_one);
 
 	if (flag)
 	{
-		pick_tetrahedron(a, b, c, flag2, shape2, shape1, iterations, num_vert);
+		pick_tetrahedron(a, b, c, flag2, shape2, shape1, iterations, num_vert_two, num_vert_one);
 	}
 	return flag2;
 }
