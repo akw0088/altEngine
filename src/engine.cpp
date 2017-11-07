@@ -3020,6 +3020,7 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
+		/*
 		if (i == 0 || body.entity->player->local)
 		{
 			int result = 0;
@@ -3032,13 +3033,14 @@ bool Engine::body_collision(RigidBody &body)
 				shape2[j] = entity_list[i]->rigid->aabb[j] + entity_list[i]->position + entity_list[i]->rigid->center;
 				//shape2[j] = body.aabb[j] + body.entity->position + body.center + vec3(1000.0f, 1000.0f, 1000.0f);
 			}
-
 			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
 				printf("collision between %s and %s\n", entity_list[i]->player->name, body.entity->player->name);
+				return true;
 			}
 		}
+		*/
 
 
 //		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
