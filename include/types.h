@@ -934,6 +934,13 @@ typedef struct
 	unsigned int rigid1;
 	unsigned int vertex0;
 	unsigned int vertex1;
+} body_spring_t;
+
+typedef struct
+{
+	unsigned int rigid0;
+	unsigned int vertex0;
+	vec3 anchor;
 } spring_t;
 
 #endif

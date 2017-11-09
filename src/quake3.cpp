@@ -121,6 +121,11 @@ void Quake3::unload()
 
 void Quake3::destroy()
 {
+	for (unsigned int i = 0; i < model_table.size(); i++)
+	{
+		delete model_table[i];
+		model_table[i] = NULL;
+	}
 }
 
 
@@ -9560,10 +9565,7 @@ void Quake3::map_model(Entity &ent)
 
 Quake3::~Quake3()
 {
-	for(unsigned int i = 0; i < model_table.size(); i++)
-	{
-		delete model_table[i];
-	}
+
 }
 
 
