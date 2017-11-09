@@ -35,6 +35,7 @@ public:
 
 	void step(int tick_num);
 	void dynamics();
+	void handle_springs();
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
 	void update_audio();

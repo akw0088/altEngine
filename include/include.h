@@ -53,6 +53,9 @@
 	#define WIN32_EXTRA_LEAN
 	#define _CRT_SECURE_NO_DEPRECATE
 	#define NOMINMAX
+	#define WIN32_LEAN_AND_MEAN
+	#define WIN32_EXTRA_LEAN
+	#define VC_EXTRALEAN
 	#include <windows.h>
 	#include <winsock.h>
 	#include <omp.h>
@@ -62,6 +65,7 @@
 	#pragma comment(lib, "wsock32.lib")
 
 	typedef int socklen_t;
+	typedef unsigned char byte;
 
 
 //#define SHADOWMAPS

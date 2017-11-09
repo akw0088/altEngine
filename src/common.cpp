@@ -15,10 +15,6 @@
 #define stricmp strcasecmp
 #endif
 
-#ifdef WIN32
-typedef unsigned char byte;
-#endif
-
 #define DMESG_SIZE 2048
 extern char dmesg[DMESG_SIZE][1024];
 extern int dmesg_index;

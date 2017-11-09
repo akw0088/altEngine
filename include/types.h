@@ -113,7 +113,7 @@ typedef struct
 	float			up[3];
 	float			forward[3];
 	float			pos[3];		// Sending position (not used, but interesting to calculate delta's on server)
-	byte			num_cmds;
+	char			num_cmds;
 	unsigned char		data[16834];
 } clientmsg_t;
 
@@ -928,5 +928,12 @@ typedef struct
 	int surf_flags;
 } content_flag_t;
 
+typedef struct
+{
+	unsigned int rigid0;
+	unsigned int rigid1;
+	unsigned int vertex0;
+	unsigned int vertex1;
+} spring_t;
 
 #endif

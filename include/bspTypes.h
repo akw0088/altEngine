@@ -1,6 +1,4 @@
-#ifndef WIN32
-	typedef char byte;
-#endif
+typedef unsigned char byte;
 
 #define	LUMP_ENTITIES		0
 #define	LUMP_SHADERS		1
@@ -150,7 +148,7 @@ typedef struct
 
 typedef struct
 {
-	byte image[128][128][3];	// The RGB data in a 128x128 image
+	char image[128][128][3];	// The RGB data in a 128x128 image
 } lightmap_t;
 
 typedef struct

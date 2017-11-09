@@ -2691,6 +2691,8 @@ void Engine::activate_light(float distance, Light *light)
 void Engine::dynamics()
 {
 
+	handle_springs();
+
 	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
@@ -2788,6 +2790,65 @@ void Engine::dynamics()
 	}
 }
 
+void Engine::handle_springs()
+{
+	int num_spring = 1;
+	float spring_k = 0.6f;
+	float damping = 0.1f;
+	spring_t spring;
+
+	spring.rigid0 = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
+	spring.rigid1 = find_type(ENT_WEAPON_LIGHTNING, 0);
+	spring.vertex0 = 0;
+	spring.vertex1 = 0;
+
+//	if (tick_num % 125 != 0)
+//		return;
+
+
+	for (int i = 0; i < num_spring; i++)
+	{
+		RigidBody *rigid0 = entity_list[spring.rigid0]->rigid;
+		vec3 position0 = rigid0->entity->position + rigid0->model_vertex_array[spring.vertex0].position;
+		vec3 u0 = position0 + rigid0->center;
+		vec3 vu0 = rigid0->velocity + vec3::crossproduct(rigid0->angular_velocity, u0);
+
+		RigidBody *rigid1 = entity_list[spring.rigid1]->rigid;
+		vec3 position1 = rigid1->entity->position + rigid1->model_vertex_array[spring.vertex1].position;
+		vec3 u1 = position1 + rigid1->center;
+		vec3 vu1 = rigid1->velocity + vec3::crossproduct(rigid1->angular_velocity, u1);
+
+		vec3 spring_vector = position1 - position0;
+		vec3 spring = spring_vector * -spring_k;
+
+		vec3 relative_velocity = vu1 - vu0;
+
+		vec3 damping_force = spring_vector * (relative_velocity * spring_vector) /
+			(spring_vector * spring_vector) * -damping;
+
+		spring += damping_force;
+
+		rigid0->net_force -= spring;
+		rigid0->net_torque -= vec3::crossproduct(u0, spring);
+
+		// Limit max forces
+		if (rigid0->net_force.magnitude() > 100.0f)
+			rigid0->net_force = rigid0->net_force.normalize() * 100.0f;
+		if (rigid0->net_torque.magnitude() > 100.0f)
+			rigid0->net_torque = rigid0->net_torque.normalize() * 100.0f;
+
+
+		rigid1->net_force += spring;
+		rigid1->net_torque += vec3::crossproduct(u1, spring);
+
+		if (rigid1->net_force.magnitude() > 100.0f)
+			rigid1->net_force = rigid1->net_force.normalize() * 100.0f;
+		if (rigid1->net_torque.magnitude() > 100.0f)
+			rigid1->net_torque = rigid1->net_torque.normalize() * 100.0f;
+
+
+	}
+}
 
 void ClipVelocity(vec3 &in, vec3 &normal)
 {
