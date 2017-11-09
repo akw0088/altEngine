@@ -60,6 +60,7 @@ public:
 
 	bool collision_detect(RigidBody &body);
 	bool map_collision(RigidBody &body);
+	bool terrain_collision(RigidBody &body);
 	bool body_collision(RigidBody &body);
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);

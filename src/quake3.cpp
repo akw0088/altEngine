@@ -2082,7 +2082,7 @@ void Quake3::handle_player(int self, input_t &input)
 			if (entity->player->fall_timer == 0)
 			{
 				entity->player->fall_timer = TICK_RATE >> 4;
-				entity->player->health -= 10;
+				console(self, "dmg 10", engine->menu, engine->entity_list);
 				if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 				{
 					char msg[256];
@@ -2959,7 +2959,7 @@ void Quake3::step(int frame_step)
 
 	if (engine->input.control && spectator_timer <= 0)
 	{
-		spectator_timer = TICK_RATE;
+		spectator_timer = TICK_RATE >> 1;
 		engine->console("spectate");
 	}
 	else
@@ -3513,7 +3513,8 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 			{
 				Player *enemy = ent->player;
 
-				enemy->health -= enemy->ammo_lightning * LIGHTNING_DAMAGE;
+				if (enemy->godmode == false)
+					enemy->health -= enemy->ammo_lightning * LIGHTNING_DAMAGE;
 				if (enemy->health < 0)
 				{
 					char msg[256];

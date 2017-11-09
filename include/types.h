@@ -943,4 +943,13 @@ typedef struct
 	vec3 anchor;
 } spring_t;
 
+typedef struct
+{
+	float size;
+	vec3 offset;
+	int num_col;
+	int num_row;
+} terrain_t;
+
+
 #endif

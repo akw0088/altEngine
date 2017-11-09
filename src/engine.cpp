@@ -1563,17 +1563,17 @@ void Engine::render_texture(int texObj, bool depth_view)
 
 void Engine::render_scene(bool lights)
 {
-	matrix4 transformation;
+	matrix4 transformation = identity;
 	matrix4 mvp;
 	vec3 offset(0.0f, 0.0f, 0.0f);
 	float temp = 0.0f;
 
 	int player = find_type(ENT_PLAYER, 0);
 	if (player != -1)
+	{
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
-
-
-	camera_frame.set(transformation);
+		camera_frame.set(transformation);
+	}
 
 	// Rendering entities before map for blends
 	render_entities(transformation, projection, lights, false);
@@ -2913,12 +2913,75 @@ bool Engine::collision_detect(RigidBody &body)
 		return true;
 	}
 
+	if (terrain_collision(body))
+	{
+		return true;
+	}
+
 
 	if (body.entity->player)
 	{
 		if (body_collision(body))
 			return true;
 	}
+
+	return false;
+}
+
+
+bool Engine::terrain_collision(RigidBody &body)
+{
+	terrain_t terrain;
+
+	terrain.num_col = 58;
+	terrain.num_row = 58;
+	terrain.offset = vec3(0.0f, -2000.0f, 0.0f);
+	terrain.size = 50000.0f;
+
+	if (body.entity->position.x > terrain.size || body.entity->position.x < -terrain.size)
+		return false;
+	if (body.entity->position.z > terrain.size || body.entity->position.z < -terrain.size)
+		return false;
+
+	static int index = 1;
+	
+	if (index == -1)
+		index = find_type(ENT_FUNC_TERRAIN, 0);
+	if (index == -1)
+		return false;
+
+	Entity *ent = entity_list[index];
+	if (ent->model == NULL)
+		return false;
+
+	int x = 0;//body.entity->position.x / terrain.num_row + terrain.num_row / 2;
+	int y = 0;// body.entity->position.z / terrain.num_col + terrain.num_col / 2;
+	int width = 7;
+
+	vec3 a = ent->model->model_vertex_array[y * width + x].position;
+	vec3 b = ent->model->model_vertex_array[y * width + x + 1].position;
+	vec3 c = ent->model->model_vertex_array[(y+1) * width + x + 1].position;
+
+	/*
+	vec3 ab = a - b;
+	vec3 ac = a - c;
+	vec3 normal1 = vec3::crossproduct(ab, ac);
+	float d1 = -(a * normal1);
+	*/
+	
+	vec3 d = ent->model->model_vertex_array[(y+1) * width + x].position;
+	vec3 e = ent->model->model_vertex_array[(y+1) * width + x + 1].position;
+	vec3 f = ent->model->model_vertex_array[(y+1) * width + x].position;
+	/*
+	vec3 de = d - e;
+	vec3 df = d - f;
+	vec3 normal2 = vec3::crossproduct(de, df);
+	// ax + by + cz + d = 0
+	float d2 = -(d * normal2);
+*/
+	vec3 avg = (a + b + c + d + e + f) / 6.0f;
+	if (body.entity->position.y < avg.y)
+		return true;
 
 	return false;
 }
@@ -6020,7 +6083,6 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		return;
 	}
-	menu.print(cmd);
 
 	ret = sscanf(cmd, "map %s", data);
 	if (ret == 1)
