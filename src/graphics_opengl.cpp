@@ -1001,7 +1001,7 @@ int Graphics::checkFramebuffer()
 	return 0;
 }
 
-int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
+int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
 {
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -1053,6 +1053,10 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Linear seems to work too
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	float border_color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
@@ -1092,7 +1096,8 @@ int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigne
 	return 0;
 }
 
-int Graphics::setupFramebufferArray(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &array_tex, int layer, int multisample)
+/*
+int Graphics::CreateFramebufferArray(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &array_tex, int layer, int multisample)
 {
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -1123,6 +1128,7 @@ int Graphics::setupFramebufferArray(int width, int height, unsigned int &fbo, un
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	return 0;
 }
+*/
 
 void Graphics::DeleteFrameBuffer(int fbo, int quad, int depth)
 {

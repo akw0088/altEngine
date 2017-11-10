@@ -91,6 +91,8 @@ public:
 	void turb(int stage, int turb);
 	void rgbgen_scale(int stage, float scale);
 	void portal(int portal);
+
+	void set_num_shadowmap(int value);
 	
 
 
@@ -137,6 +139,7 @@ private:
 	int u_lightmap_stage;
 	int u_depth;
 	int u_num_lights;
+	int u_num_shadowmap;
 	int u_position;
 	int u_color;
 
@@ -163,6 +166,7 @@ private:
 
 
 	int m_normalmap;
+	int m_num_shadowmap;
 	unsigned int max_light;
 };
 

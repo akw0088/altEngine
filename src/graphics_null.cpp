@@ -301,7 +301,7 @@ void Graphics::TwoSidedStencilOp(int face, int stencil_fail, int zfail, int zpas
 {
 }
 
-int Graphics::setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
+int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
 {
 	return 0;
 }

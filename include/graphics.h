@@ -111,8 +111,7 @@ public:
 	void SelectShader(int program);
 
 	int checkFramebuffer();
-	int setupFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach);
-	int setupFramebufferArray(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, int layer, int multisample);
+	int CreateFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach);
 	void DeleteFrameBuffer(int fbo, int quad, int depth);
 	void fbAttachTexture(int texObj);
 	void fbAttachTextureOne(int texObj);

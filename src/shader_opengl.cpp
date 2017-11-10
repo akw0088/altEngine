@@ -97,6 +97,7 @@ void Global::Params(matrix4 &mvp, int tex0, int depth)
 int mLight2::init(Graphics *gfx)
 {
 
+	m_num_shadowmap = 18;
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
 	m_contrast = 1.0f;
@@ -220,6 +221,7 @@ int mLight2::init(Graphics *gfx)
 	u_lightmap = glGetUniformLocation(program_handle, "u_lightmap");
 	u_shadowmap = glGetUniformLocation(program_handle, "u_shadowmap");
 	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
+	u_num_shadowmap = glGetUniformLocation(program_handle, "u_num_shadowmap");
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
 	u_lightmap_stage = glGetUniformLocation(program_handle, "u_lightmap_stage");
@@ -417,6 +419,11 @@ void mLight2::set_depth(int flag)
 	glUniform1i(u_depth, flag);
 }
 
+void mLight2::set_num_shadowmap(int value)
+{
+	m_num_shadowmap = value;
+	glUniform1i(u_num_shadowmap, value);
+}
 
 void mLight2::alphatest(int stage, int mode)
 {
@@ -442,6 +449,8 @@ void mLight2::Select()
 {
 	Shader::Select();
 
+
+	set_num_shadowmap(m_num_shadowmap);
 	glUniform1i(texture[0], 0);
 	glUniform1i(texture[1], 1);
 	glUniform1i(texture[2], 2);

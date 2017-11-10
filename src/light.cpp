@@ -34,7 +34,7 @@ void Light::generate_cubemaps(Graphics &gfx)
 	{
 		for (int i = 0; i < NUM_CUBE_FACE; i++)
 		{
-			gfx.setupFramebuffer((int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), (int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], normal_depth, 0, false);
+			gfx.CreateFramebuffer((int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), (int)(SHADOWMAP_DEFAULT_RES * lightmap_scale), fbo_shadowmaps[i], quad_tex[i], depth_tex[i], normal_depth, 0, false);
 		}
 	}
 #endif

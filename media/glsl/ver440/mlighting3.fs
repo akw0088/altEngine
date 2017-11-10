@@ -27,6 +27,7 @@ uniform int		u_num_lights;
 uniform float		u_ambient;
 uniform float		u_lightmap;
 uniform float		u_shadowmap;
+uniform int		u_num_shadowmap;
 uniform mat4		mvp;
 
 
@@ -95,7 +96,6 @@ vec3 Uncharted2Tonemap(vec3 x)
 
 void calc_shadow(out float shadowFlagCombined, in int light_num)
 {
-	float depthmap;
 	vec4 shadowpos;
 	vec4 shadowWdivide;
 	float shadowFlag = 1.0f;
@@ -109,16 +109,15 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 		vec2( 0.34495938, 0.29387760 )
 	);
 
-
-
-	for(int i = 0; i < 18; i++)
+	for(int i = 0; i < u_num_shadowmap; i++)
 	{
 		shadowpos = Vertex.shadowpos[i];
 		shadowWdivide = shadowpos / shadowpos.w;
 		if (shadowWdivide.w > 0)
 		{
-			depthmap = texture2D(depth[i], shadowWdivide.st).r;
-			shadowFlag = depthmap < shadowWdivide.z - bias ? darkness : 1.0;
+			vec4 depthmap = texture2D(depth[i], shadowWdivide.st);
+
+			shadowFlag = depthmap.r < shadowWdivide.z - bias ? darkness : 1.0;
 			for (int i = 0; i < 4; i++)
 			{
 				if ( texture( depth[i], shadowWdivide.st + poissonDisk[i] * 0.0014285 ).r  <  shadowWdivide.z - bias )

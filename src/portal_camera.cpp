@@ -13,7 +13,7 @@ PortalCamera::PortalCamera(Entity *entity, Graphics &gfx, float scale, float zNe
 	fbo = -1;
 
 	portal_projection.perspective(90.0, 1.0, zNear, zFar, inf);
-	gfx.setupFramebuffer((int)(FBO_RESOLUTION * scale), (int)(FBO_RESOLUTION * scale), fbo, quad_tex, depth_tex, normal_depth, 0, false);
+	gfx.CreateFramebuffer((int)(FBO_RESOLUTION * scale), (int)(FBO_RESOLUTION * scale), fbo, quad_tex, depth_tex, normal_depth, 0, false);
 }
 
 void PortalCamera::destroy(Graphics &gfx)

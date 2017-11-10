@@ -435,12 +435,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	unsigned int normal_depth;
 
 
-	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+	gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 
-	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
-	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
-	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
-	gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
 
 
@@ -1415,7 +1415,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 			fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 			gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
-			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+			gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 		else if (fps > 100.0f && res_scale < 2.0f)
 		{
@@ -1423,7 +1423,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 			fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 			fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 			gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
-			gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+			gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		}
 	}
 	else if (q3map.loaded == false && (abs32(res_scale - 1.0f) > 0.001f))
@@ -1432,7 +1432,7 @@ void Engine::set_dynamic_resolution(double last_frametime)
 		fb_width = (unsigned int)(FBO_RESOLUTION * res_scale);
 		fb_height = (unsigned int)(FBO_RESOLUTION * res_scale);
 		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
-		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+		gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 	}
 }
 
@@ -4982,12 +4982,12 @@ void Engine::resize(int width, int height)
 	gfx.DeleteFrameBuffer(blur2_fbo, blur2_quad, blur2_depth);
 	gfx.DeleteFrameBuffer(ssao_fbo, ssao_quad, ssao_depth);
 
-	gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+	gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 
-	gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
-	gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
-	gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
-	gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
 
 
@@ -6044,6 +6044,22 @@ void Engine::console(char *cmd)
 		return;
     }
 
+	ret = sscanf(cmd, "r_num_shadowmap %s", data);
+	if (ret == 1)
+	{
+		int value = atoi(data);
+		mlight2.set_num_shadowmap(value);
+		return;
+	}
+
+	ret = sscanf(cmd, "r_shadowmap_res_scale %s", data);
+	if (ret == 1)
+	{
+		int value = atoi(data);
+//		mlight2.set_num_shadowmap(value);
+		return;
+	}
+
 	ret = sscanf(cmd, "sv_motd \"%[^\"]s", data);
 	if (ret == 1)
 	{
@@ -7086,7 +7102,7 @@ void Engine::console(char *cmd)
 		}
 #endif
 //		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
-//		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+//		gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 		return;
 	}
 
@@ -7115,12 +7131,12 @@ void Engine::console(char *cmd)
 		gfx.DeleteFrameBuffer(blur2_fbo, blur2_quad, blur2_depth);
 		gfx.DeleteFrameBuffer(ssao_fbo, ssao_quad, ssao_depth);
 
-		gfx.setupFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+		gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
 
-		gfx.setupFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
-		gfx.setupFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
-		gfx.setupFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
-		gfx.setupFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
+		gfx.CreateFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+		gfx.CreateFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+		gfx.CreateFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+		gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
 
 
 
