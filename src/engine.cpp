@@ -2541,19 +2541,16 @@ void Engine::spatial_testing()
 			Model *model = entity_list[i]->model;
 
 
-			if (model)
-			{
-				vec3 min = model->aabb[0];
-				vec3 max = model->aabb[7];
+			vec3 min = model->aabb[0];
+			vec3 max = model->aabb[7];
 
-				if (model->rail_trail)
-				{
-					entity_list[i]->frustum_visible = true; // trail extends past aabb
-				}
-				else
-				{
-					entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
-				}
+			if (model->rail_trail)
+			{
+				entity_list[i]->frustum_visible = true; // trail extends past aabb
+			}
+			else
+			{
+				entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
 			}
 
 
@@ -2804,6 +2801,9 @@ void Engine::handle_springs()
 	body_spring.vertex0 = 0;
 	body_spring.vertex1 = 0;
 
+	if (body_spring.rigid0 == -1 || body_spring.rigid1 == -1)
+		return;
+
 	int index = find_type(ENT_PLAYER, 0);
 	vec3 point; 
 
@@ -2994,6 +2994,7 @@ bool Engine::map_collision(RigidBody &body)
 	vec3 clip(0.0f, 0.0f, 0.0f);
 	bool collision = false;
 	vec3 mid[4];
+	float duck_scale = 1.0f;
 
 
 
@@ -3002,6 +3003,11 @@ bool Engine::map_collision(RigidBody &body)
 
 	if (body.entity->player)
 	{
+		if (body.entity->player->state == PLAYER_DUCKED)
+		{
+			duck_scale = 2.0f;
+		}
+
 		// Do additional mid point testing (front back left right points, mid level)
 		mid[0] = body.aabb[0] + vec3(body.aabb[7].x / 2, 0, body.aabb[7].z / 2);
 		mid[1] = body.aabb[0] + vec3(0.0f, body.aabb[7].y / 2, body.aabb[7].z / 2);
@@ -3019,16 +3025,24 @@ bool Engine::map_collision(RigidBody &body)
 		memset(&flag, 0, sizeof(content_flag_t));
 		if (i < 8)
 		{
-			point = body.aabb[i] - body.center + body.entity->position;
-			oldpoint = body.aabb[i] - body.center + body.old_position;
+			point = body.aabb[i];
+			point.y /= duck_scale;
+			oldpoint = point;
+
+			point += -body.center + body.entity->position;
+			oldpoint += -body.center + body.old_position;
 		}
 		else
 		{
 			if (body.entity->player == NULL)
 				break;
+
 			point = mid[i - 8] - body.center + body.entity->position;
 			oldpoint = mid[i - 8] - body.center + body.old_position;
 		}
+
+
+
 
 
 //		can be used to avoid checking all eight points, but checking all 8 works pretty well

@@ -40,7 +40,7 @@ extern "C" {
 
 	JZFile *
 		jzfile_from_stdio_file(FILE *fp);
-
+#pragma pack(push)
 #pragma pack(1)
 	typedef struct {
 		uint32_t signature;
@@ -97,7 +97,7 @@ extern "C" {
 		uint16_t zipCommentLength;
 		// Followed by .ZIP file comment (variable size)
 	} JZEndRecord;
-#pragma pack(8)
+#pragma pack(pop)
 
 	// Callback prototype for central and local file record reading functions
 	typedef int(*JZRecordCallback)(JZFile *zip, int index, JZFileHeader *header,

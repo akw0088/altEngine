@@ -2030,7 +2030,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		if (enable_normalmap)
 		{
 			char texture_name[128];
-			snprintf(texture_name, LINE_SIZE, "media/%s_normal.tga", material->name);
+			snprintf(texture_name, 127, "media/%s_normal.tga", material->name);
 			normal_object[i] = load_texture(gfx, texture_name, false, false, anisotropic);
 		}
 
