@@ -1,3 +1,4 @@
+
 #include "terrain.h"
 #include "stb_image.h"
 
@@ -14,6 +15,7 @@ Terrain::Terrain()
 	index_array = NULL;
 	num_index = 0;
 	num_vertex = 0;
+	loaded = false;
 }
 
 int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic)
@@ -26,6 +28,7 @@ int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vertex, false);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
 	terrain_tex = load_texture(gfx, texture_str, false, false, anisotropic);
+	loaded = true;
 	return 0;
 }
 
@@ -238,117 +241,103 @@ void Terrain::render(Graphics &gfx)
 
 bool Terrain::collision_detect(RigidBody &body)
 {
-	terrain_t terrain;
-	static vec3 old_normal1;
-	static vec3 old_normal2;
-	static float old_d1;
-	static float old_d2;
-	static int old_x = 0;
-	static int old_y = 0;
-	vec3 a;
-	vec3 b;
-	vec3 c;
-	vec3 d;
-	vec3 e;
-	vec3 f;
+	vec3 normal;
 
-
-	vec3 normal1;
-	vec3 normal2;
-	float d1;
-	float d2;
-
-	if (body.entity->position.x > size || body.entity->position.x < -size)
+	if (loaded == false)
 		return false;
-	if (body.entity->position.z > size || body.entity->position.z < -size)
+
+	if (body.entity->player == NULL)
 		return false;
 
 
+	for (int i = 0; i < 8; i++)
+	{
+		vec3 point = body.aabb[i];
+		point += -body.center + body.entity->position;
 
-	int x = 0;//body.entity->position.x / terrain.num_row + terrain.num_row / 2;
-	int y = 0;// body.entity->position.z / terrain.num_col + terrain.num_col / 2;
+
+		float tpos = GetHeightAt(point, normal);
+		height = tpos;
+		if (point.y < tpos)
+		{
+			body.entity->position = body.old_position;
+			body.on_ground = true;
+			ClipVelocity(body.entity->rigid->velocity, normal);
+			return true;
+		}
+	}
+	return false;
+}
+
+float Terrain::GetHeightAt(const vec3 &position, vec3 &normal)
+{
+	float height = -FLT_MAX;
+
+	if (loaded == false)
+		return height;
+
+	float terrainWidth = size;
+	float terrainHeight = size;
+	float halfWidth = size * 0.5f;
+	float halfHeight = size * 0.5f;
+
+	int x = 0;
+	int y = 0;
 	int width = num_row;
-	x = (int)(num_row * (-body.entity->position.x / (2.0f * size) + 0.5f));
-	y = (int)(num_row * (-body.entity->position.z / (2.0f * size) + 0.5f));
+	float xf;
+	float yf;
+
+	// normalized 0-1 range for terrain
+	xf = (position.x / (2.0f * size) + 0.5f);
+	yf = (position.z / (2.0f * size) + 0.5f);
+	x = num_row * xf;
+	y = num_row * yf;
+
 	clamp(x, 0, num_row);
 	clamp(y, 0, num_row);
 
-	if (x != old_x && y != old_y)
+
+
+
+	// quad we are over
+	int u0 = x;
+	int u1 = u0 + 1;
+	int v0 = y;
+	int v1 = v0 + 1;
+
+	x_index = x;
+	y_index = y;
+
+	if (u0 >= 0 && u1 < num_row && v0 >= 0 && v1 < num_col)
 	{
-		a = vertex_array[y * width + x].position;
-		b = vertex_array[y * width + x + 1].position;
-		c = vertex_array[(y + 1) * width + x + 1].position;
+		vec3 p00 = vertex_array[(v0 * num_row) + u0].position;    // Top-left
+		vec3 p10 = vertex_array[(v0 * num_row) + u1].position;    // Top-right
+		vec3 p01 = vertex_array[(v1 * num_row) + u0].position;    // Bottom-left
+		vec3 p11 = vertex_array[(v1 * num_row) + u1].position;    // Bottom-right
 
-		vec3 ab = a - b;
-		vec3 ac = a - c;
-		normal1 = vec3::crossproduct(ab, ac);
-		normal1 = normal1.normalize();
-		d1 = -(a * normal1);
+		float percentU = xf * num_row - u0;
+		float percentV = yf * num_row - v0;
+		vec3 dU, dV;
 
-		d = vertex_array[(y + 1) * width + x].position;
-		e = vertex_array[(y + 1) * width + x + 1].position;
-		f = vertex_array[(y + 1) * width + x].position;
 
-		vec3 de = d - e;
-		vec3 df = d - f;
-		normal2 = vec3::crossproduct(de, df);
-		normal2 = normal2.normalize();
-		d2 = -(d * normal2);
-//		old_x = x;
-//		old_y = y;
-	}
-	else
-	{
-		normal1 = old_normal1;
-		normal2 = old_normal2;
-		d1 = old_d1;
-		d2 = old_d2;
-	}
-
-	// ax + by + cz + d = 0
-
-	vec3 point = body.entity->position + terrain.offset;
-	float distance = point * normal1 + d1;
-	if (distance > 0)
-	{
-		/*
-		if (tick_num % 125 == 0)
-		{
-			vec3 dist = a - point;
-			printf("Distance from plane one is %f\n", point * normal1 + d1);
-			printf("Distance to point A is %f %f %f\n", dist.x, dist.y, dist.z);
+		if (percentU > percentV)
+		{   // Top triangle
+			dU = p10 - p00;
+			dV = p11 - p10;
+			top = 1;
 		}
-		*/
-
-
-		body.entity->position = body.old_position;
-		body.morientation = body.old_orientation;
-		body.on_ground = true;
-		ClipVelocity(body.entity->rigid->velocity, normal1);
-		return true;
-	}
-
-	distance = point * normal2 + d2;
-	if (distance > 0)
-	{
-		/*
-		if (tick_num % 125 == 0)
-		{
-			vec3 dist = d - point;
-
-			printf("Distance from plane two is %f\n", point * normal2 + d2);
-			printf("Distance to point D is %f %f %f\n", dist.x, dist.y, dist.z);
+		else
+		{   // Bottom triangle
+			dU = p11 - p01;
+			dV = p01 - p00;
+			top = 0;
 		}
-		*/
 
-		body.entity->position = body.old_position;
-		body.morientation = body.old_orientation;
-		body.on_ground = true;
-		ClipVelocity(body.entity->rigid->velocity, normal2);
-		return true;
+		normal = vec3::crossproduct(dV, dU);
+		normal = normal.normalize();
+		vec3 heightPos = p00 + (dU * percentU) + (dV * percentV);
+		height = heightPos.y;
 	}
 
-	body.on_ground = true;
-
-	return false;
+	return height;
 }

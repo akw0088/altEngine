@@ -5426,6 +5426,9 @@ void Quake3::render_hud(double last_frametime)
 			snprintf(msg, LINE_SIZE, "bsp_platform %d on_ground %d impact velocity %f", entity->rigid->bsp_model_platform, entity->rigid->on_ground, entity->rigid->impact_velocity );
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
+			snprintf(msg, LINE_SIZE, "terrain height %f x: %d y: %d top %d", engine->terrain.height, engine->terrain.x_index, engine->terrain.y_index, engine->terrain.top);
+			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
 
 			if (engine->server_flag)
 			{

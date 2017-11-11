@@ -11,10 +11,15 @@ public:
 	int CreateMesh(char *heightmap, float scale_width, float scale_height, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
 	void render(Graphics &gfx);
 	bool collision_detect(RigidBody &body);
+	float GetHeightAt(const vec3 &position, vec3 &normal);
 
 
 	void CreateSphere(char *heightmap, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
 
+	float height;
+	int x_index;
+	int y_index;
+	int top;
 private:
 
 	float size;
@@ -22,6 +27,7 @@ private:
 	int num_col;
 	int num_row;
 	float trilength;
+	bool loaded;
 
 
 	vertex_t *vertex_array;
