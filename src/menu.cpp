@@ -725,7 +725,7 @@ void Menu::render(Global &global, bool ingame)
 			{
 				gfx->clear();
 				global.Select();
-				global.Params(matrix, 0);
+				global.Params(matrix);
 				gfx->DrawArrayTri(0, 0, 6, 4);
 				gfx->cleardepth();
 			}
@@ -979,7 +979,7 @@ void Menu::render_console(Global &global)
 	gfx->SelectVertexBuffer(Model::quad_vertex);
 	global.Select();
 	matrix.m[13] = 1.0f;
-	global.Params(matrix, 0);
+	global.Params(matrix);
 	matrix.m[13] = 0.0f;
 	gfx->DrawArrayTri(0, 0, 6, 4);
 
@@ -1027,7 +1027,7 @@ void Menu::render_chat(Global &global)
 
 	global.Select();
 	matrix.m[13] = 1.0f;
-	global.Params(matrix, 0);
+	global.Params(matrix);
 	matrix.m[13] = 0.0f;
 
 //	gfx->cleardepth();
@@ -1051,7 +1051,7 @@ void Menu::render_notif(Global &global)
 
 	global.Select();
 	matrix.m[13] = 1.0f;
-	global.Params(matrix, 0);
+	global.Params(matrix);
 	matrix.m[13] = 0.0f;
 
 //	gfx->cleardepth();

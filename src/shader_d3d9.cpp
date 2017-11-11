@@ -46,7 +46,7 @@ void Global::prelink()
 {
 }
 
-void Global::Params(matrix4 &mvp, int tex0, int depth)
+void Global::Params(matrix4 &mvp, int depth)
 {
 	uniform_vs->SetMatrix(gfx->device, "mvp", (D3DXMATRIX *)mvp.m);
 }

@@ -87,10 +87,10 @@ void Global::prelink()
 	glBindAttribLocation(program_handle, 4, "attr_color");
 }
 
-void Global::Params(matrix4 &mvp, int tex0, int depth)
+void Global::Params(matrix4 &mvp, int depth)
 {
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
-	glUniform1i(texture0, tex0);
+	glUniform1i(texture0, 0);
 	glUniform1i(u_depth, depth);
 }
 

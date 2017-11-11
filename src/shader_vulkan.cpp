@@ -38,7 +38,7 @@ void Global::prelink()
 
 }
 
-void Global::Params(matrix4 &mvp, int tex0)
+void Global::Params(matrix4 &mvp)
 {
 
 }

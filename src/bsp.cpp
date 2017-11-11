@@ -740,6 +740,12 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 	gfx.DrawArrayTri(0, 0, 36, 36);
 	if (enable_textures)
 	{
+		vec2 zero(0.0f, 0.0f);
+		vec2 one(1.0f, 1.0f);
+
+		mlight2.tcmod_scroll(zero, 0);
+		mlight2.tcmod_scale(one, 0);
+
 		for (int i = 0; i < MAX_TEXTURES; i++)
 		{
 			gfx.SelectTexture(i, 0);

@@ -60,7 +60,7 @@ public:
 
 	bool collision_detect(RigidBody &body);
 	bool map_collision(RigidBody &body);
-	bool terrain_collision(RigidBody &body);
+
 	bool body_collision(RigidBody &body);
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
@@ -121,6 +121,7 @@ public:
 	int get_loop_source();
 	int get_global_source();
 	int get_global_loop_source();
+	bool terrain_collision(RigidBody &body);
 
 
 	unsigned int xres, yres;
@@ -139,6 +140,7 @@ public:
 	int doom_sound;
 	unsigned int fullscreen_timer;
 	unsigned int ingame_menu_timer;
+	Terrain terrain;
 
 
 	unsigned int audio_source[32];
