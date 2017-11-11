@@ -1572,8 +1572,8 @@ void Engine::render_scene(bool lights)
 	if (player != -1)
 	{
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
-		camera_frame.set(transformation);
 	}
+	camera_frame.set(transformation);
 
 	// Rendering entities before map for blends
 	render_entities(transformation, projection, lights, false);
@@ -2688,7 +2688,7 @@ void Engine::activate_light(float distance, Light *light)
 void Engine::dynamics()
 {
 
-	handle_springs();
+	//handle_springs();
 
 	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -2814,6 +2814,10 @@ void Engine::handle_springs()
 	spring.rigid0 = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
 	spring.vertex0 = 0;
 
+	if (spring.rigid0 == -1)
+		return;
+
+
 
 	for (int i = 0; i < num_body_spring; i++)
 	{
@@ -2908,15 +2912,19 @@ bool Engine::collision_detect(RigidBody &body)
 		return false;
 	}
 
+	/*
 	if (map_collision(body))
 	{
 		return true;
 	}
+	*/
 
+	
 	if (terrain_collision(body))
 	{
 		return true;
 	}
+	
 
 
 	if (body.entity->player)
@@ -2932,18 +2940,35 @@ bool Engine::collision_detect(RigidBody &body)
 bool Engine::terrain_collision(RigidBody &body)
 {
 	terrain_t terrain;
+	static vec3 old_normal1;
+	static vec3 old_normal2;
+	static float old_d1;
+	static float old_d2;
+	static int old_x = 0;
+	static int old_y = 0;
 
-	terrain.num_col = 58;
-	terrain.num_row = 58;
-	terrain.offset = vec3(0.0f, -2000.0f, 0.0f);
+	vec3 normal1;
+	vec3 normal2;
+	float d1;
+	float d2;
+
+	if (body.entity->player == NULL)
+		return false;
+
+	terrain.num_col = 102;
+	terrain.num_row = 102;
+	terrain.offset = vec3(0.0f, -5000.0f, 0.0f);
 	terrain.size = 50000.0f;
+	terrain.trilength = terrain.size / terrain.num_row;
 
 	if (body.entity->position.x > terrain.size || body.entity->position.x < -terrain.size)
 		return false;
 	if (body.entity->position.z > terrain.size || body.entity->position.z < -terrain.size)
 		return false;
 
-	static int index = 1;
+
+
+	static int index = -1;
 	
 	if (index == -1)
 		index = find_type(ENT_FUNC_TERRAIN, 0);
@@ -2956,32 +2981,99 @@ bool Engine::terrain_collision(RigidBody &body)
 
 	int x = 0;//body.entity->position.x / terrain.num_row + terrain.num_row / 2;
 	int y = 0;// body.entity->position.z / terrain.num_col + terrain.num_col / 2;
-	int width = 7;
+	int width = 102;
+	x = 102 * (body.entity->position.x / (2.0f * terrain.size) + 0.5f);
+	y = 102 * (-body.entity->position.z / (2.0f * terrain.size) + 0.5f);
+	if (x < 0)
+	{
+		x = 0;
+		printf("Error: Clamped min x\n");
+	}
+	if (x > 102)
+	{
+		x = 102;
+		printf("Error: Clamped max x\n");
+	}
+	if (y < 0)
+	{ 
+		y = 0;
+		printf("Error: Clamped min y\n");
+	}
+	if (y > 102)
+	{
+		y = 102;
+		printf("Error: Clamped max y\n");
+	}
 
-	vec3 a = ent->model->model_vertex_array[y * width + x].position;
-	vec3 b = ent->model->model_vertex_array[y * width + x + 1].position;
-	vec3 c = ent->model->model_vertex_array[(y+1) * width + x + 1].position;
+	if (tick_num % 125 == 0)
+	{
+		printf("x %d y %d\n", x, y);
+	}
 
-	/*
-	vec3 ab = a - b;
-	vec3 ac = a - c;
-	vec3 normal1 = vec3::crossproduct(ab, ac);
-	float d1 = -(a * normal1);
-	*/
-	
-	vec3 d = ent->model->model_vertex_array[(y+1) * width + x].position;
-	vec3 e = ent->model->model_vertex_array[(y+1) * width + x + 1].position;
-	vec3 f = ent->model->model_vertex_array[(y+1) * width + x].position;
-	/*
-	vec3 de = d - e;
-	vec3 df = d - f;
-	vec3 normal2 = vec3::crossproduct(de, df);
+	if (x != old_x && y != old_y)
+	{
+		vec3 a = ent->model->model_vertex_array[y * width + x].position;
+		vec3 b = ent->model->model_vertex_array[y * width + x + 1].position;
+		vec3 c = ent->model->model_vertex_array[(y + 1) * width + x + 1].position;
+
+		vec3 ab = a - b;
+		vec3 ac = a - c;
+		normal1 = vec3::crossproduct(ab, ac);
+		normal1 = normal1.normalize();
+		d1 = -(a * normal1);
+
+		vec3 d = ent->model->model_vertex_array[(y + 1) * width + x].position;
+		vec3 e = ent->model->model_vertex_array[(y + 1) * width + x + 1].position;
+		vec3 f = ent->model->model_vertex_array[(y + 1) * width + x].position;
+
+		vec3 de = d - e;
+		vec3 df = d - f;
+		normal2 = vec3::crossproduct(de, df);
+		normal2 = normal2.normalize();
+		d2 = -(d * normal2);
+	}
+	else
+	{
+		normal1 = old_normal1;
+		normal2 = old_normal2;
+		d1 = old_d1;
+		d2 = old_d2;
+	}
+
+
 	// ax + by + cz + d = 0
-	float d2 = -(d * normal2);
-*/
-	vec3 avg = (a + b + c + d + e + f) / 6.0f;
-	if (body.entity->position.y < avg.y)
+
+	vec3 point = body.entity->position + terrain.offset;
+
+	if (point * normal1 + d1 > 0)
+	{
+		if (tick_num % 125 == 0)
+		{
+			printf("Distance from plane one is %f\n", point * normal1 + d1);
+		}
+
+
+		body.entity->position = body.old_position;
+		body.morientation = body.old_orientation;
+		body.on_ground = true;
+		ClipVelocity(body.entity->rigid->velocity, normal1);
 		return true;
+	}
+	else if (point * normal2 + d2 > 0)
+	{
+		if (tick_num % 125 == 0)
+		{
+			printf("Distance from plane two is %f\n", point * normal2 + d2);
+		}
+
+		body.entity->position = body.old_position;
+		body.morientation = body.old_orientation;
+		body.on_ground = true;
+		ClipVelocity(body.entity->rigid->velocity, normal2);
+		return true;
+	}
+
+	body.on_ground = true;
 
 	return false;
 }

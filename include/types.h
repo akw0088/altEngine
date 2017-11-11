@@ -949,6 +949,7 @@ typedef struct
 	vec3 offset;
 	int num_col;
 	int num_row;
+	float trilength;
 } terrain_t;
 
 

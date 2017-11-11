@@ -5743,6 +5743,11 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 	vec4 pos = mvp2 * vec4(0.0f, 0.0f, 0.0f, 1.0f); // model space coordinate
 
+	if (abs32(pos.w) < 0.00001f)
+	{
+		return;
+	}
+
 	pos.x = pos.x / pos.w;
 	pos.y = -pos.y / pos.w; // negative y? Hey it works
 	pos.z = pos.z / pos.w;
@@ -6240,6 +6245,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			player->pain_timer = TICK_RATE >> 2;
 		}
 
+		return;
+	}
+
+	vec3 pos;
+	ret = sscanf(cmd, "setpos %f %f %f", &pos.x, &pos.y, &pos.z);
+	if (ret == 3)
+	{
+		snprintf(msg, LINE_SIZE, "Setting position to %f %f %f\n", pos.x, pos.y, pos.z);
+		entity_list[self]->position = pos;
 		return;
 	}
 
