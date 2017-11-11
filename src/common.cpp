@@ -1470,6 +1470,12 @@ float clamp(float value, float min, float max)
 	return MIN(max, MAX(min, value));
 }
 
+int clamp(int value, int min, int max)
+{
+	return MIN(max, MAX(min, value));
+}
+
+
 
 #ifndef _WIN64 
 void get_cpu_info(struct cpuinfo *info)
@@ -2074,4 +2080,15 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 		}
 	}
 	num_index = j;
+}
+
+void ClipVelocity(vec3 &in, vec3 &normal)
+{
+	float	backoff;
+	vec3	change;
+	float	overbounce = BOUNCE;
+
+	backoff = in * normal;
+	change = (normal * backoff) * overbounce;
+	in -= change;
 }

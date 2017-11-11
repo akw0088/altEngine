@@ -16,10 +16,13 @@ Terrain::Terrain()
 	num_vertex = 0;
 }
 
-int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, int anisotropic)
+int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic)
 {
-//	CreateMesh(heightmap, 100.0f, 100.0f, vertex_array, index_array, num_vertex, num_index);
-	CreateSphere(heightmap, 100.0f, vertex_array, index_array, num_vertex, num_index);
+	if (sphere)
+		CreateSphere(heightmap, 100.0f, vertex_array, index_array, num_vertex, num_index);
+	else
+		CreateMesh(heightmap, 100.0f, 100.0f, vertex_array, index_array, num_vertex, num_index);
+
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vertex, false);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
 	terrain_tex = load_texture(gfx, texture_str, false, false, anisotropic);
@@ -63,9 +66,9 @@ void Terrain::CreateSphere(char *heightmap, float radius, vertex_t *&vertex, uns
 
 			theta3 = i * (2 * MY_PI) / sides;
 
-			ex = fcos(theta1) * fcos(theta3);
-			ey = fsin(theta1);
-			ez = fcos(theta1) * fsin(theta3);
+			ex = (float)(fcos(theta1) * fcos(theta3));
+			ey = (float)fsin(theta1);
+			ez = (float)(fcos(theta1) * fsin(theta3));
 			px = cx + r * ex;
 			py = cy + r * ey;
 			pz = cz + r * ez;
@@ -76,9 +79,9 @@ void Terrain::CreateSphere(char *heightmap, float radius, vertex_t *&vertex, uns
 			vertex[k].position = vec3(px, py, pz) * image[index * sizeof(int)];
 			k++;
 
-			ex = fcos(theta2) * fcos(theta3);
-			ey = fsin(theta2);
-			ez = fcos(theta2) * fsin(theta3);
+			ex = (float)(fcos(theta2) * fcos(theta3));
+			ey = (float)fsin(theta2);
+			ez = (float)(fcos(theta2) * fsin(theta3));
 			px = cx + r * ex;
 			py = cy + r * ey;
 			pz = cz + r * ez;
@@ -150,6 +153,13 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 
 	num_index = width * height * 3 * 2;
 	index = new unsigned int[num_index];
+
+
+	Terrain::size = (float)(width * scale_width);
+	offset = vec3(0.0f, -50000.0f, 0.0f);
+	num_col = height;
+	num_row = width;;
+	trilength = (float)size / num_row;
 
 
 	float half_length = scale_width * (width >> 1);
@@ -248,53 +258,26 @@ bool Terrain::collision_detect(RigidBody &body)
 	float d1;
 	float d2;
 
-	if (body.entity->player == NULL)
+	if (body.entity->position.x > size || body.entity->position.x < -size)
 		return false;
-
-	terrain.num_col = 102;
-	terrain.num_row = 102;
-	terrain.offset = vec3(0.0f, -5000.0f, 0.0f);
-	terrain.size = 50000.0f;
-	terrain.trilength = terrain.size / terrain.num_row;
-
-	if (body.entity->position.x > terrain.size || body.entity->position.x < -terrain.size)
-		return false;
-	if (body.entity->position.z > terrain.size || body.entity->position.z < -terrain.size)
+	if (body.entity->position.z > size || body.entity->position.z < -size)
 		return false;
 
 
 
 	int x = 0;//body.entity->position.x / terrain.num_row + terrain.num_row / 2;
 	int y = 0;// body.entity->position.z / terrain.num_col + terrain.num_col / 2;
-	int width = 102;
-	x = 102 * (-body.entity->position.x / (2.0f * terrain.size) + 0.5f);
-	y = 102 * (-body.entity->position.z / (2.0f * terrain.size) + 0.5f);
-	if (x < 0)
-	{
-		x = 0;
-		printf("Error: Clamped min x\n");
-	}
-	if (x > 102)
-	{
-		x = 102;
-		printf("Error: Clamped max x\n");
-	}
-	if (y < 0)
-	{
-		y = 0;
-		printf("Error: Clamped min y\n");
-	}
-	if (y > 102)
-	{
-		y = 102;
-		printf("Error: Clamped max y\n");
-	}
+	int width = num_row;
+	x = (int)(num_row * (-body.entity->position.x / (2.0f * size) + 0.5f));
+	y = (int)(num_row * (-body.entity->position.z / (2.0f * size) + 0.5f));
+	clamp(x, 0, num_row);
+	clamp(y, 0, num_row);
 
 	if (x != old_x && y != old_y)
 	{
-//		a = ent->model->model_vertex_array[y * width + x].position;
-//		b = ent->model->model_vertex_array[y * width + x + 1].position;
-//		c = ent->model->model_vertex_array[(y + 1) * width + x + 1].position;
+		a = vertex_array[y * width + x].position;
+		b = vertex_array[y * width + x + 1].position;
+		c = vertex_array[(y + 1) * width + x + 1].position;
 
 		vec3 ab = a - b;
 		vec3 ac = a - c;
@@ -302,15 +285,17 @@ bool Terrain::collision_detect(RigidBody &body)
 		normal1 = normal1.normalize();
 		d1 = -(a * normal1);
 
-//		d = ent->model->model_vertex_array[(y + 1) * width + x].position;
-//		e = ent->model->model_vertex_array[(y + 1) * width + x + 1].position;
-//		f = ent->model->model_vertex_array[(y + 1) * width + x].position;
+		d = vertex_array[(y + 1) * width + x].position;
+		e = vertex_array[(y + 1) * width + x + 1].position;
+		f = vertex_array[(y + 1) * width + x].position;
 
 		vec3 de = d - e;
 		vec3 df = d - f;
 		normal2 = vec3::crossproduct(de, df);
 		normal2 = normal2.normalize();
 		d2 = -(d * normal2);
+//		old_x = x;
+//		old_y = y;
 	}
 	else
 	{
@@ -323,8 +308,8 @@ bool Terrain::collision_detect(RigidBody &body)
 	// ax + by + cz + d = 0
 
 	vec3 point = body.entity->position + terrain.offset;
-
-	if (point * normal1 + d1 > 0)
+	float distance = point * normal1 + d1;
+	if (distance > 0)
 	{
 		/*
 		if (tick_num % 125 == 0)
@@ -339,10 +324,12 @@ bool Terrain::collision_detect(RigidBody &body)
 		body.entity->position = body.old_position;
 		body.morientation = body.old_orientation;
 		body.on_ground = true;
-//		ClipVelocity(body.entity->rigid->velocity, normal1);
+		ClipVelocity(body.entity->rigid->velocity, normal1);
 		return true;
 	}
-	else if (point * normal2 + d2 > 0)
+
+	distance = point * normal2 + d2;
+	if (distance > 0)
 	{
 		/*
 		if (tick_num % 125 == 0)
@@ -357,7 +344,7 @@ bool Terrain::collision_detect(RigidBody &body)
 		body.entity->position = body.old_position;
 		body.morientation = body.old_orientation;
 		body.on_ground = true;
-//		ClipVelocity(body.entity->rigid->velocity, normal2);
+		ClipVelocity(body.entity->rigid->velocity, normal2);
 		return true;
 	}
 

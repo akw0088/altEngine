@@ -16,10 +16,6 @@
 // Too little and we have lots of friction on flat planes
 // Too much causes jumping up stairs
 #define STAIR_VEL	0.25f
-// When colliding with a wall, velocity towards the wall is clipped
-// This is extra clipping past what is necessary, making you stay further away from walls
-#define BOUNCE		1.2f
-
 
 // Distance we ignore the server position before correcting (usually lags behind by ping)
 #define DELTA_GRACE 200.0f
@@ -801,7 +797,7 @@ void Engine::load(char *level)
 	render_portalcamera();
 
 
-	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", 0);
+	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0);
 
 }
 
@@ -2896,17 +2892,6 @@ void Engine::handle_springs()
 	}
 }
 
-void ClipVelocity(vec3 &in, vec3 &normal)
-{
-	float	backoff;
-	vec3	change;
-	float	overbounce = BOUNCE;
-
-	backoff = in * normal;
-	change = (normal * backoff) * overbounce;
-	in -= change;
-}
-
 /*
 	Handles all collision detection
 	return true if simulated too far.
@@ -2927,12 +2912,10 @@ bool Engine::collision_detect(RigidBody &body)
 		return true;
 	}
 
-/*	
 	if (terrain.collision_detect(body))
 	{
 		return true;
 	}
-	*/
 
 
 	if (body.entity->player)

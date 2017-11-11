@@ -8,6 +8,10 @@
 //random in the range [-1, 1]
 #define crandom() (2.0f * (random() - 0.5f))
 
+// When colliding with a wall, velocity towards the wall is clipped
+// This is extra clipping past what is necessary, making you stay further away from walls
+#define BOUNCE		1.2f
+
 
 #pragma pack(1)
 typedef struct
@@ -64,9 +68,10 @@ void lump_to_wave(char *lump_data, int size, wave_t *wave);
 void write_bitmap(char *filename, int width, int height, int *data);
 void ping_time_start(int sequence);
 double ping_time_end(int sequence);
+int clamp(int value, int min, int max);
 float clamp(float value, float min, float max);
 int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert_one, const int num_vert_two);
-
+void ClipVelocity(vec3 &in, vec3 &normal);
 
 float random_float();
 
