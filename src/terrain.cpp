@@ -18,12 +18,20 @@ Terrain::Terrain()
 
 int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, int anisotropic)
 {
-	CreateMesh(heightmap, 100.0f, 100.0f, vertex_array, index_array, num_vertex, num_index);
+//	CreateMesh(heightmap, 100.0f, 100.0f, vertex_array, index_array, num_vertex, num_index);
+	CreateSphere(32, 100.0f, vertex_array, index_array, num_vertex, num_index);
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vertex, false);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
 	terrain_tex = load_texture(gfx, texture_str, false, false, anisotropic);
 	return 0;
 }
+
+
+typedef enum
+{
+	PLANE,
+	SPHERE
+} terrain_type_t;
 
 
 
@@ -33,6 +41,7 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 	int height;
 	int components;
 	unsigned int i;
+	terrain_type_t type = PLANE;
 
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
@@ -47,22 +56,32 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 
 	float half_length = scale_width * (width >> 1);
 
-
-	for (int y = 0; y < height; y++)
+	if (type == PLANE)
 	{
-		for (int x = 0; x < width; x++)
+		for (int y = 0; y < height; y++)
 		{
-			int index = y * width + x;
-			vertex[index].position.x = scale_width * x - half_length;
-			vertex[index].position.y = scale_height * image[index * sizeof(int)] - 50000.0f;
-			vertex[index].position.z = scale_width * y - half_length;
+			for (int x = 0; x < width; x++)
+			{
+				int index = y * width + x;
+				vertex[index].position.x = scale_width * x - half_length;
+				vertex[index].position.y = scale_height * image[index * sizeof(int)] - 50000.0f;
+				vertex[index].position.z = scale_width * y - half_length;
 
-			vertex[index].texCoord0.x = (float)x / (width - 1);
-			vertex[index].texCoord0.y = (float)y / (height - 1);
-			vertex[index].texCoord1.x = (float)x / (width - 1);
-			vertex[index].texCoord1.y = (float)y / (height - 1);
-			vertex[index].color = ~0;
+				vertex[index].texCoord0.x = (float)x / (width - 1);
+				vertex[index].texCoord0.y = (float)y / (height - 1);
+				vertex[index].texCoord1.x = (float)x / (width - 1);
+				vertex[index].texCoord1.y = (float)y / (height - 1);
+				vertex[index].color = ~0;
+			}
 		}
+	}
+	else if (type == SPHERE)
+	{
+		// How to make spheres:
+		// 1. Typical UV map with texture distortion at north / south poles (yuck)
+		// 2. subdivide a box until you are happy, normalize all verticies to create sphere (interesting)
+		// 3. geo sphere (triangular approximation of sphere)
+		//  ???
 	}
 
 

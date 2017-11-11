@@ -2921,19 +2921,18 @@ bool Engine::collision_detect(RigidBody &body)
 	{
 		return false;
 	}
-/*
+
 	if (map_collision(body))
 	{
 		return true;
 	}
-	*/
 
-	
+/*	
 	if (terrain.collision_detect(body))
 	{
 		return true;
 	}
-	
+	*/
 
 
 	if (body.entity->player)

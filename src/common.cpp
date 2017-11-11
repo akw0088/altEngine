@@ -1990,3 +1990,90 @@ int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int 
 	}
 	return flag2;
 }
+
+
+void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
+{
+	float theta1 = 0, theta2 = 0, theta3 = 0;
+	float xcoord = 0;
+	float ycoord = 0;
+	float ex = 0, px = 0, cx = xcoord;
+	float ey = 0, py = 0, cy = ycoord;
+	float ez = 0, pz = 0, cz = 0, r = radius;
+	int k = 0;
+
+
+	vertex = new vertex_t[ sides * sides * sides ];
+	num_vertex = sides * sides * sides;
+
+	for (int j = 0; j < sides / 2; j++)
+	{
+		theta1 = j * (2 * MY_PI) / sides - MY_PI / 2;
+		theta2 = (j + 1) * (2 * MY_PI) / sides - MY_PI / 2;
+
+		for (int i = 0; i <= sides; i++)
+		{
+			theta3 = i * (2 * MY_PI) / sides;
+
+			ex = fcos(theta1) * fcos(theta3);
+			ey = fsin(theta1);
+			ez = fcos(theta1) * fsin(theta3);
+			px = cx + r * ex;
+			py = cy + r * ey;
+			pz = cz + r * ez;
+
+			vertex[k].normal = vec3(ex, ey, ez);
+			vertex[k].texCoord0.x = i / (float)sides;
+			vertex[k].texCoord0.y = 2 * j / (float)sides;
+			vertex[k].position = vec3(px, py, pz);
+			k++;
+
+			ex = fcos(theta2) * fcos(theta3);
+			ey = fsin(theta2);
+			ez = fcos(theta2) * fsin(theta3);
+			px = cx + r * ex;
+			py = cy + r * ey;
+			pz = cz + r * ez;
+
+			vertex[k].normal = vec3(ex, ey, ez);
+			vertex[k].texCoord0.x = i / (float)sides;
+			vertex[k].texCoord0.y = 2 * (j + 1) / (float)sides;
+			vertex[k].position = vec3(px, py, pz);
+			k++;
+		}
+	}
+	index = new unsigned int[k * 8];
+	num_vertex = k;
+
+	int j = 0;
+	for (int i = 0; i < num_vertex; i += 2)
+	{
+		// read quad strip, generate two triangles
+		if (i == 0)
+		{
+			index[j + 0] = i + 2;
+			index[j + 1] = i + 1;
+			index[j + 2] = i + 0;
+
+			index[j + 3] = i + 1;
+			index[j + 4] = i + 2;
+			index[j + 5] = i + 3;
+			j += 6;
+			i += 2;
+		}
+		else
+		{
+			index[j + 0] = i + 0;
+			index[j + 1] = i - 1;
+			index[j + 2] = i - 2;
+
+			index[j + 3] = i - 1;
+			index[j + 4] = i + 0;
+			index[j + 5] = i + 1;
+			j += 6;
+		}
+	}
+	num_index = j;
+
+
+}

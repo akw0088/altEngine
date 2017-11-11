@@ -37,6 +37,8 @@ void cubic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float time, vec3 &ou
 void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level);
+void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
+
 char *get_file(char *filename, int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int list_zipfile(char *zipfile, char *filelist);
