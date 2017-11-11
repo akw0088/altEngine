@@ -19,7 +19,7 @@ Terrain::Terrain()
 int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, int anisotropic)
 {
 //	CreateMesh(heightmap, 100.0f, 100.0f, vertex_array, index_array, num_vertex, num_index);
-	CreateSphere(32, 100.0f, vertex_array, index_array, num_vertex, num_index);
+	CreateSphere(heightmap, 100.0f, vertex_array, index_array, num_vertex, num_index);
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vertex, false);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
 	terrain_tex = load_texture(gfx, texture_str, false, false, anisotropic);
@@ -27,11 +27,110 @@ int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, int anisotr
 }
 
 
-typedef enum
+void Terrain::CreateSphere(char *heightmap, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
 {
-	PLANE,
-	SPHERE
-} terrain_type_t;
+	float theta1 = 0, theta2 = 0, theta3 = 0;
+	float xcoord = 0;
+	float ycoord = 0;
+	float ex = 0, px = 0, cx = xcoord;
+	float ey = 0, py = 0, cy = ycoord;
+	float ez = 0, pz = 0, cz = 0, r = radius;
+	int k = 0;
+
+	int width;
+	int height;
+	int components;
+
+	int size = 0;
+	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
+	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+
+	int sides = width;
+
+	vertex = new vertex_t[sides * (sides + 1)];
+	num_vertex = sides * (sides + 1);
+
+
+	
+	for (int j = 0; j < sides / 2; j++)
+	{
+		theta1 = j * (2 * MY_PI) / sides - MY_PI / 2;
+		theta2 = (j + 1) * (2 * MY_PI) / sides - MY_PI / 2;
+
+		for (int i = 0; i <= sides; i++)
+		{
+			int index = j * sides + i;
+
+			theta3 = i * (2 * MY_PI) / sides;
+
+			ex = fcos(theta1) * fcos(theta3);
+			ey = fsin(theta1);
+			ez = fcos(theta1) * fsin(theta3);
+			px = cx + r * ex;
+			py = cy + r * ey;
+			pz = cz + r * ez;
+
+			vertex[k].normal = vec3(ex, ey, ez);
+			vertex[k].texCoord0.x = i / (float)sides;
+			vertex[k].texCoord0.y = 2 * j / (float)sides;
+			vertex[k].position = vec3(px, py, pz) * image[index * sizeof(int)];
+			k++;
+
+			ex = fcos(theta2) * fcos(theta3);
+			ey = fsin(theta2);
+			ez = fcos(theta2) * fsin(theta3);
+			px = cx + r * ex;
+			py = cy + r * ey;
+			pz = cz + r * ez;
+
+			vertex[k].normal = vec3(ex, ey, ez);
+			vertex[k].texCoord0.x = i / (float)sides;
+			vertex[k].texCoord0.y = 2 * (j + 1) / (float)sides;
+			vertex[k].position = vec3(px, py, pz)  * image[index * sizeof(int)];
+
+
+			if (i == 0 && j > 0)
+			{
+				vertex[k - (sides + 1)].position = vertex[k].position;
+				vertex[k - (sides + 1)].position = vertex[k - 1].position;
+			}
+
+			k++;
+		}
+	}
+	index = new unsigned int[k * 3];
+	num_vertex = k;
+
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < num_vertex; i += 2)
+	{
+		// read quad strip, generate two triangles
+		if (i == 0)
+		{
+			index[j + 0] = i + 2;
+			index[j + 1] = i + 1;
+			index[j + 2] = i + 0;
+
+			index[j + 3] = i + 1;
+			index[j + 4] = i + 2;
+			index[j + 5] = i + 3;
+			j += 6;
+			i += 2;
+		}
+		else
+		{
+			index[j + 0] = i + 0;
+			index[j + 1] = i - 1;
+			index[j + 2] = i - 2;
+
+			index[j + 3] = i - 1;
+			index[j + 4] = i + 0;
+			index[j + 5] = i + 1;
+			j += 6;
+		}
+	}
+	num_index = j;
+}
 
 
 
@@ -41,7 +140,6 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 	int height;
 	int components;
 	unsigned int i;
-	terrain_type_t type = PLANE;
 
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
@@ -56,37 +154,26 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 
 	float half_length = scale_width * (width >> 1);
 
-	if (type == PLANE)
+	for (int y = 0; y < height; y++)
 	{
-		for (int y = 0; y < height; y++)
+		for (int x = 0; x < width; x++)
 		{
-			for (int x = 0; x < width; x++)
-			{
-				int index = y * width + x;
-				vertex[index].position.x = scale_width * x - half_length;
-				vertex[index].position.y = scale_height * image[index * sizeof(int)] - 50000.0f;
-				vertex[index].position.z = scale_width * y - half_length;
+			int index = y * width + x;
+			vertex[index].position.x = scale_width * x - half_length;
+			vertex[index].position.y = scale_height * image[index * sizeof(int)] - 50000.0f;
+			vertex[index].position.z = scale_width * y - half_length;
 
-				vertex[index].texCoord0.x = (float)x / (width - 1);
-				vertex[index].texCoord0.y = (float)y / (height - 1);
-				vertex[index].texCoord1.x = (float)x / (width - 1);
-				vertex[index].texCoord1.y = (float)y / (height - 1);
-				vertex[index].color = ~0;
-			}
+			vertex[index].texCoord0.x = (float)x / (width - 1);
+			vertex[index].texCoord0.y = (float)y / (height - 1);
+			vertex[index].texCoord1.x = (float)x / (width - 1);
+			vertex[index].texCoord1.y = (float)y / (height - 1);
+			vertex[index].color = ~0;
 		}
-	}
-	else if (type == SPHERE)
-	{
-		// How to make spheres:
-		// 1. Typical UV map with texture distortion at north / south poles (yuck)
-		// 2. subdivide a box until you are happy, normalize all verticies to create sphere (interesting)
-		// 3. geo sphere (triangular approximation of sphere)
-		//  ???
 	}
 
 
 	// pulled from tessellate bezier curve -- glad I dont have to write this twice ;)
-	int num_row = width;
+	unsigned int num_row = width;
 	// generate index array
 	unsigned int j = 0;
 	for (i = 0; j < num_row * (num_row - 1);)

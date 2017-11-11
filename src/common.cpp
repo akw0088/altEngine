@@ -2074,6 +2074,4 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 		}
 	}
 	num_index = j;
-
-
 }

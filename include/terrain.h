@@ -12,6 +12,9 @@ public:
 	void render(Graphics &gfx);
 	bool collision_detect(RigidBody &body);
 
+
+	void CreateSphere(char *heightmap, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
+
 private:
 	vertex_t *vertex_array;
 	unsigned int *index_array;
