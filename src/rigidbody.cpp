@@ -48,6 +48,11 @@ RigidBody::RigidBody(Entity *entity)
 	on_ground = false;
 
 
+	train.escort = true;
+	train.speed = 8.5f;
+	train.wait = 100;
+	train.path_min_dist = 75.0f;
+
 	world_tensor.m[0] = 0.0f;
 	world_tensor.m[1] = 0.0f;
 	world_tensor.m[2] = 0.0f;

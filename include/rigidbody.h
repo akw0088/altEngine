@@ -5,6 +5,15 @@
 
 #define MAX_VELOCITY 800.0f
 
+
+typedef struct
+{
+	bool escort;
+	float speed;
+	int wait;
+	float path_min_dist;
+} train_t;
+
 class RigidBody : public Model
 {
 public:
@@ -98,6 +107,7 @@ public:
 	vec3 wishdir;
 
 
+	train_t train;
 
 	func_path_t path;
 	pid_state_t pid;

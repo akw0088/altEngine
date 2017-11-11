@@ -9608,10 +9608,32 @@ void Quake3::handle_func_bobbing(Entity *entity)
 
 void Quake3::handle_func_train(Entity *entity)
 {
+	bool escort = true;
 	//Entity *ref = entity;
 
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
-	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 8.5f, 75.0f, 100);
+
+
+	if (entity->rigid->train.escort)
+	{
+		vec3 dist;
+
+		int index = engine->find_type(ENT_PLAYER, 0);
+		if (index == -1)
+			return;
+
+		dist = engine->entity_list[index]->position - entity->position;
+		if (dist.magnitude() < 300.0f)
+		{
+			entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path,
+				entity->rigid->train.speed, entity->rigid->train.path_min_dist, entity->rigid->train.wait);
+		}
+	}
+	else
+	{
+		entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, entity->rigid->train.speed,
+			entity->rigid->train.path_min_dist, entity->rigid->train.wait);
+	}
 	engine->q3map.model_vel[entity->model_ref] = entity->rigid->velocity;
 
 	for (unsigned int i = 0; i < engine->max_player; i++)
