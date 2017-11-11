@@ -345,7 +345,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
 
 	Model::CreateObjects(gfx);
-	Model::make_skybox(gfx);
+	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, true);
 
 	thug22 = new Entity();
 	thug22->rigid = new RigidBody(thug22);

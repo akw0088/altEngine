@@ -145,6 +145,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	loaded = true;
 	memcpy(map_name, map, strlen(map) + 1);
 
+
 	return true;
 }
 
@@ -698,8 +699,8 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 	if (sky_face == -1 || enable_sky == false)
 		return;
 
-	gfx.SelectVertexBuffer(Model::skybox_vertex);
-	gfx.SelectIndexBuffer(Model::skybox_index);
+	gfx.SelectVertexBuffer(skybox_vbo);
+	gfx.SelectIndexBuffer(skybox_ibo);
 
 
 	if (enable_textures)
@@ -737,7 +738,7 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 		}
 	}
 
-	gfx.DrawArrayTri(0, 0, 36, 36);
+	gfx.DrawArrayTri(0, 0, skybox_index, skybox_vertex);
 	if (enable_textures)
 	{
 		vec2 zero(0.0f, 0.0f);

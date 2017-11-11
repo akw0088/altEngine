@@ -10,7 +10,6 @@ public:
 	Model();
 	virtual ~Model();
 	static void CreateObjects(Graphics &gfx);
-	static void make_skybox(Graphics &gfx);
 	void calc_frustum(matrix4 &clip);
 	void load(Graphics &gfx, char *file);
 	void create_box(Graphics &gfx, vec3 *aabb);

@@ -1998,7 +1998,7 @@ int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int 
 }
 
 
-void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
+void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index, bool invert, vec3 &offset)
 {
 	float theta1 = 0, theta2 = 0, theta3 = 0;
 	float xcoord = 0;
@@ -2009,8 +2009,8 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 	int k = 0;
 
 
-	vertex = new vertex_t[ sides * sides * sides ];
-	num_vertex = sides * sides * sides;
+	vertex = new vertex_t[sides * (sides + 1)];
+	num_vertex = sides * (sides + 1);
 
 	for (int j = 0; j < sides / 2; j++)
 	{
@@ -2021,8 +2021,8 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 		{
 			theta3 = i * (2 * MY_PI) / sides;
 
-			ex = fcos(theta1) * fcos(theta3);
-			ey = fsin(theta1);
+			ey = fcos(theta1) * fcos(theta3);
+			ex = fsin(theta1);
 			ez = fcos(theta1) * fsin(theta3);
 			px = cx + r * ex;
 			py = cy + r * ey;
@@ -2031,11 +2031,11 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 			vertex[k].normal = vec3(ex, ey, ez);
 			vertex[k].texCoord0.x = i / (float)sides;
 			vertex[k].texCoord0.y = 2 * j / (float)sides;
-			vertex[k].position = vec3(px, py, pz);
+			vertex[k].position = vec3(px, py, pz) + offset;
 			k++;
 
-			ex = fcos(theta2) * fcos(theta3);
-			ey = fsin(theta2);
+			ey = fcos(theta2) * fcos(theta3);
+			ex = fsin(theta2);
 			ez = fcos(theta2) * fsin(theta3);
 			px = cx + r * ex;
 			py = cy + r * ey;
@@ -2044,38 +2044,64 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 			vertex[k].normal = vec3(ex, ey, ez);
 			vertex[k].texCoord0.x = i / (float)sides;
 			vertex[k].texCoord0.y = 2 * (j + 1) / (float)sides;
-			vertex[k].position = vec3(px, py, pz);
+			vertex[k].position = vec3(px, py, pz) + offset;
 			k++;
 		}
 	}
-	index = new unsigned int[k * 8];
+	index = new unsigned int[k * 3];
 	num_vertex = k;
 
-	int j = 0;
-	for (int i = 0; i < num_vertex; i += 2)
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < num_vertex; i += 2)
 	{
 		// read quad strip, generate two triangles
 		if (i == 0)
 		{
-			index[j + 0] = i + 2;
-			index[j + 1] = i + 1;
-			index[j + 2] = i + 0;
+			if (invert == false)
+			{
+				index[j + 0] = i + 2;
+				index[j + 1] = i + 1;
+				index[j + 2] = i + 0;
 
-			index[j + 3] = i + 1;
-			index[j + 4] = i + 2;
-			index[j + 5] = i + 3;
+				index[j + 3] = i + 1;
+				index[j + 4] = i + 2;
+				index[j + 5] = i + 3;
+			}
+			else
+			{
+				index[j + 2] = i + 2;
+				index[j + 1] = i + 1;
+				index[j + 0] = i + 0;
+
+				index[j + 5] = i + 1;
+				index[j + 4] = i + 2;
+				index[j + 3] = i + 3;
+			}
 			j += 6;
 			i += 2;
 		}
 		else
 		{
-			index[j + 0] = i + 0;
-			index[j + 1] = i - 1;
-			index[j + 2] = i - 2;
+			if (invert == false)
+			{
+				index[j + 0] = i + 0;
+				index[j + 1] = i - 1;
+				index[j + 2] = i - 2;
 
-			index[j + 3] = i - 1;
-			index[j + 4] = i + 0;
-			index[j + 5] = i + 1;
+				index[j + 3] = i - 1;
+				index[j + 4] = i + 0;
+				index[j + 5] = i + 1;
+			}
+			else
+			{
+				index[j + 2] = i + 0;
+				index[j + 1] = i - 1;
+				index[j + 0] = i - 2;
+
+				index[j + 5] = i - 1;
+				index[j + 4] = i + 0;
+				index[j + 3] = i + 1;
+			}
 			j += 6;
 		}
 	}
@@ -2091,4 +2117,159 @@ void ClipVelocity(vec3 &in, vec3 &normal)
 	backoff = in * normal;
 	change = (normal * backoff) * overbounce;
 	in -= change;
+}
+
+void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index, int &skybox_vertex, int &skybox_index, bool sphere)
+{
+	if (sphere == false)
+	{
+		vec3 verts[36] =
+		{
+		// Front face
+		vec3(-200.0f, 200.0f, 200.0f), //3
+		vec3(200.0f, -200.0f, 200.0f), //2
+		vec3(200.0f, 200.0f, 200.0f),  //1
+
+		vec3(-200.0f, -200.0f, 200.0f), //4
+		vec3(200.0f, -200.0f, 200.0f),  //2
+		vec3(-200.0f, 200.0f, 200.0f), //3
+
+		// Back face
+		vec3(200.0f, 200.0f, -200.0f),		//3
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(-200.0f, 200.0f, -200.0f),		//1
+
+		vec3(200.0f, -200.0f, -200.0f),		//4
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(200.0f, 200.0f, -200.0f),		//3
+
+		// Left face
+		vec3(-200.0f, 200.0f, -200.0f),		//3
+		vec3(-200.0f, -200.0f, 200.0f),		//2
+		vec3(-200.0f, 200.0f, 200.0f),		//1
+
+		vec3(-200.0f, -200.0f, -200.0f),	//4
+		vec3(-200.0f, -200.0f, 200.0f),		//2
+		vec3(-200.0f, 200.0f, -200.0f),		//3
+
+		// Right face
+		vec3(200.0f, 200.0f, 200.0f),		//3
+		vec3(200.0f, -200.0f, -200.0f),		//2
+		vec3(200.0f, 200.0f, -200.0f),		//1
+
+		vec3(200.0f, -200.0f, 200.0f),		//4
+		vec3(200.0f, -200.0f, -200.0f),		//2
+		vec3(200.0f, 200.0f, 200.0f),		//3
+
+		// Top face
+		vec3(-200.0f, 200.0f, 200.0f),		//3
+		vec3(200.0f, 200.0f, -200.0f),		//2
+		vec3(-200.0f, 200.0f, -200.0f),		//1
+
+		vec3(200.0f, 200.0f, 200.0f),		//4
+		vec3(200.0f, 200.0f, -200.0f),		//2
+		vec3(-200.0f, 200.0f, 200.0f),		//3
+
+		// Bottom face
+		vec3(200.0f, -200.0f, 200.0f),		//3
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(200.0f, -200.0f, -200.0f),		//1
+
+		vec3(-200.0f, -200.0f, 200.0f),		//4
+		vec3(-200.0f, -200.0f, -200.0f),	//2
+		vec3(200.0f, -200.0f, 200.0f)		//3
+		};
+
+		vec2 texcoords[36] =
+		{
+		// Front face
+		vec2(0.0f, 0.0f),			//2
+		vec2(0.0f, -1.0f),			//1
+		vec2(-1.0f, -1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(-1.0f, -1.0f),			//3
+		vec2(-1.0f, 0.0f),			//4
+
+
+		// Back face
+		vec2(0.0f, 0.0f),			//2
+		vec2(0.0f, 1.0f),			//1
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+		vec2(1.0f, 0.0f),			//4
+
+		// Left face
+		vec2(0.0f, -1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(-1.0f, -1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(-1.0f, 0.0f),			//4
+		vec2(-1.0f, -1.0f),			//3
+
+		// Right face
+		vec2(0.0f, 1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 0.0f),			//4
+		vec2(1.0f, 1.0f),			//3
+
+		// Top face
+		vec2(0.0f, 1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 0.0f),			//4
+		vec2(1.0f, 1.0f),			//3
+
+		// Bottom face
+		vec2(0.0f, 1.0f),			//1
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 1.0f),			//3
+
+		vec2(0.0f, 0.0f),			//2
+		vec2(1.0f, 0.0f),			//4
+		vec2(1.0f, 1.0f),			//3
+		};
+
+		/*
+		vec3 normals[6] =
+		{
+		vec3(0.0f, 0.0f, -1.0f),
+		vec3(0.0f, 0.0f, 1.0f),
+		vec3(1.0f, 0.0f, 0.0f),
+		vec3(-1.0f, 0.0f, 0.0f),
+		vec3(0.0f, -1.0f, 0.0f),
+		vec3(0.0f, 1.0f, 0.0f)
+		};*/
+
+		vertex_t vertex_array[36];
+		int index_array[36];
+		for (int i = 0; i < 36; i++)
+		{
+			vertex_array[i].position = verts[i] * 1000000.0f;
+			vertex_array[i].texCoord0 = texcoords[i];
+			vertex_array[i].normal = vec3();
+			index_array[i] = i;
+			skybox_vertex = gfx.CreateVertexBuffer(vertex_array, num_vertex);
+			skybox_index = gfx.CreateIndexBuffer(index_array, num_index);
+		}
+	}
+	else
+	{
+		vertex_t *vertex_array;
+		unsigned int *index_array;
+		vec3 offset(0.0f, -500.0f, 0.0f);
+
+		CreateSphere(36, 50000.0f, vertex_array, index_array, num_vertex, num_index, false, offset);
+		skybox_vertex = gfx.CreateVertexBuffer(vertex_array, num_vertex);
+		skybox_index = gfx.CreateIndexBuffer(index_array, num_index);
+	}
+
 }
