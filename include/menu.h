@@ -61,7 +61,7 @@ public:
 	static vector<char *> notif_buffer;
 
 	char *string_target;
-	char string_cmd[80];
+	char string_cmd[128];
 
 private:
 	matrix4 matrix;

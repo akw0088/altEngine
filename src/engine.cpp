@@ -798,7 +798,15 @@ void Engine::load(char *level)
 
 
 	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0);
-	isosphere.load(gfx, "media/terrain/earth.png", 2, 50.0f);
+	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
+	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);
+	isosphere[2].load(gfx, "media/terrain/earth.png", 2, 100.0f);
+	isosphere[3].load(gfx, "media/terrain/earth.png", 3, 100.0f);
+	isosphere[4].load(gfx, "media/terrain/earth.png", 4, 100.0f);
+//	isosphere[5].load(gfx, "media/terrain/earth.png", 5, 100.0f);
+//	isosphere[6].load(gfx, "media/terrain/earth.png", 6, 100.0f);
+//	isosphere[7].load(gfx, "media/terrain/earth.png", 7, 100.0f);
+//	isosphere[8].load(gfx, "media/terrain/earth.png", 8, 100.0f);
 }
 
 void Engine::load_md5()
@@ -2020,7 +2028,16 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		//render entity
 		if (entity->ent_type == ENT_WEAPON_LIGHTNING)
 		{
-			isosphere.render(gfx);
+			int player = find_type(ENT_PLAYER, 0);
+			int current_light = 0;
+			if (player != -1)
+			{
+				current_light = entity_list[player]->player->current_light;
+			}
+
+			int lod = clamp(current_light, 0, 5);
+
+			isosphere[lod].render(gfx);
 		}
 		else
 		{
