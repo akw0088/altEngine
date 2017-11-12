@@ -58,6 +58,7 @@ void print_path(int *path, int path_length, graph_node_t *node);
 float rand_float(float fMin, float fAdd);
 int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
 int gen_lightning(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
+void WriteObj(char *filename, vertex_t *vertex_array, unsigned int num_vertex, unsigned int *index_array, unsigned int num_index);
 
 void delta_compress(char *output, char *input, char *delta, int size);
 void delta_uncompress(char *output, char *input, char *delta, int size);

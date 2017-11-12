@@ -259,6 +259,9 @@ void Quake3::load_models(Graphics &gfx)
 		model->load(gfx, "media/models/weapons2/shotgun/shotgun");
 	model_table.push_back(model);
 
+//	WriteObj("shotgun.obj", model->model_vertex_array, model->num_vertex, model->model_index_array, model->num_index);
+
+
 //	#define MODEL_WEAPON_GRENADE 22
 	model = new Model;
 	if (qc_weapons)
@@ -274,6 +277,8 @@ void Quake3::load_models(Graphics &gfx)
 	else
 		model->load(gfx, "media/models/weapons2/rocketl/rocketl");
 	model_table.push_back(model);
+
+	
 
 
 //	#define MODEL_WEAPON_LIGHTNING 24

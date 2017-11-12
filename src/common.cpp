@@ -2273,3 +2273,48 @@ void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index
 	}
 
 }
+
+void WriteObj(char *filename, vertex_t *vertex_array, unsigned int num_vertex, unsigned int *index_array, unsigned int num_index)
+{
+	FILE *fp = fopen(filename, "w");
+	if (fp == NULL)
+	{
+		debugf("Unable to export %s\n", filename);
+		return;
+	}
+
+	fprintf(fp, "# model exported by altEngine\n\n");
+	fprintf(fp, "mtllib export.mtl\n\n");
+
+	for (unsigned int i = 0; i < num_vertex; i++)
+	{
+		fprintf(fp, "v %f %f %f\n", vertex_array[i].position.x, vertex_array[i].position.y, vertex_array[i].position.z);
+	}
+	fprintf(fp, "\n");
+	for (unsigned int i = 0; i < num_vertex; i++)
+	{
+		fprintf(fp, "vt %f %f %f\n", vertex_array[i].texCoord0.x, vertex_array[i].texCoord0.y, 0.0f);
+	}
+	fprintf(fp, "\n");
+
+	for (unsigned int i = 0; i < num_vertex; i++)
+	{
+		fprintf(fp, "vn %f %f %f\n", vertex_array[i].normal.x, vertex_array[i].normal.y, vertex_array[i].normal.z);
+	}
+	fprintf(fp, "\n");
+
+	for (unsigned int i = 0; i < num_index;)
+	{
+		fprintf(fp, "f %d/%d/%d %d/%d/%d %d/%d/%d\n",
+			index_array[i + 0] + 1, index_array[i + 0] + 1, index_array[i + 0] + 1,
+			index_array[i + 1] + 1, index_array[i + 1] + 1, index_array[i + 1] + 1,
+			index_array[i + 2] + 1, index_array[i + 2] + 1, index_array[i + 2] + 1
+		);
+		i += 3;
+	}
+	fprintf(fp, "\n");
+
+	fprintf(fp, "# %d triangles in total\n", num_index / 3);
+	fprintf(fp, "\n\n");
+	fclose(fp);
+}
