@@ -6256,7 +6256,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 3)
 	{
 		snprintf(msg, LINE_SIZE, "Setting position to %f %f %f\n", pos.x, pos.y, pos.z);
-		entity_list[self]->position = pos;
+		if (self != -1)
+			entity_list[self]->position = pos;
+		else
+			engine->camera_frame.pos = pos;
 		return;
 	}
 

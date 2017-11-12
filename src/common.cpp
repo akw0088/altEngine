@@ -2267,7 +2267,7 @@ void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index
 		unsigned int *index_array;
 		vec3 offset(0.0f, -500.0f, 0.0f);
 
-		CreateSphere(36, 50000.0f, vertex_array, index_array, num_vertex, num_index, false, offset);
+		CreateSphere(36, 1000000.0f, vertex_array, index_array, num_vertex, num_index, false, offset);
 		skybox_vertex = gfx.CreateVertexBuffer(vertex_array, num_vertex);
 		skybox_index = gfx.CreateIndexBuffer(index_array, num_index);
 	}

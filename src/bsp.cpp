@@ -720,8 +720,8 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 				}
 				if (stage->tcmod_scroll)
 				{
-					scroll.x += stage->tcmod_scroll_value.x * time * 0.01f;
-					scroll.y += stage->tcmod_scroll_value.y * time * 0.01f;
+					scroll.x += stage->tcmod_scroll_value.x * time * 0.001f;
+					scroll.y += stage->tcmod_scroll_value.y * time * 0.001f;
 					mlight2.tcmod_scroll(scroll, i);
 				}
 				if (stage->tcmod_scale)
