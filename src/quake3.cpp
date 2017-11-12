@@ -8904,7 +8904,9 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 void Quake3::get_state(serverdata_t *data)
 {
 	memset(data, 0, sizeof(serverdata_t));
-	memcpy(data->header, "data", 4);
+	memcpy(data->header, "<data>", 6);
+	memcpy(data->footer, "</data>", 8);
+
 	if (warmup)
 		data->warmup = 0xFF;
 
@@ -8918,7 +8920,7 @@ void Quake3::get_state(serverdata_t *data)
 
 void Quake3::set_state(serverdata_t *data)
 {
-	if (memcmp(data->header, "data", 4) == 0)
+	if (memcmp(data->header, "<data>", 6) == 0 && memcmp(data->footer, "</data>", 7) == 0)
 	{
 		if (data->warmup)
 		{

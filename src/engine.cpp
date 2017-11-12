@@ -3322,10 +3322,9 @@ void Engine::server_send_state(int client)
 	serverdata_t data;
 	int offset = strlen(reliable[client].msg) + 1;
 	game->get_state(&data);
-
-
 	reliable[client].msg[offset - 1] = ' ';
 	memcpy(&reliable[client].msg[offset], &data, sizeof(serverdata_t));
+	reliable[client].msg[offset + sizeof(serverdata_t) + 1] = '\0';
 	reliable[client].size = 2 * sizeof(int) + sizeof(serverdata_t) + offset;
 	reliable[client].sequence = sequence;
 }
@@ -3769,7 +3768,15 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			ent.ctype = NET_PROJECTILE;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_projectile_t);
 
-			net_projectile->morientation = rigid->morientation;
+//			net_projectile->morientation = rigid->morientation;
+			net_projectile->forward.x = rigid->morientation.m[6];
+			net_projectile->forward.y = rigid->morientation.m[7];
+			net_projectile->forward.z = rigid->morientation.m[8];
+			net_projectile->right.x = rigid->morientation.m[0];
+			net_projectile->right.y = rigid->morientation.m[1];
+			net_projectile->right.z = rigid->morientation.m[2];
+
+
 			net_projectile->angular_velocity = rigid->angular_velocity;
 			net_projectile->velocity = rigid->velocity;
 			net_projectile->position = entity_list[i]->position;
@@ -3823,7 +3830,15 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 			net_player->ammo_slugs = player->ammo_slugs;
 			net_player->ammo_plasma = player->ammo_plasma;
 
-			net_player->morientation = player->entity->rigid->morientation;
+//			net_player->morientation = player->entity->rigid->morientation;
+			net_player->forward.x = rigid->morientation.m[6];
+			net_player->forward.y = rigid->morientation.m[7];
+			net_player->forward.z = rigid->morientation.m[8];
+			net_player->right.x = rigid->morientation.m[0];
+			net_player->right.y = rigid->morientation.m[1];
+			net_player->right.z = rigid->morientation.m[2];
+
+
 			net_player->angular_velocity = player->entity->rigid->angular_velocity;
 			net_player->velocity = player->entity->rigid->velocity;
 			net_player->position = player->entity->position;
@@ -3845,7 +3860,13 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 
 		if (rigid)
 		{
-			net_rigid->morientation = rigid->morientation;
+//			net_rigid->morientation = rigid->morientation;
+			net_rigid->forward.x = rigid->morientation.m[6];
+			net_rigid->forward.y = rigid->morientation.m[7];
+			net_rigid->forward.z = rigid->morientation.m[8];
+			net_rigid->right.x = rigid->morientation.m[0];
+			net_rigid->right.y = rigid->morientation.m[1];
+			net_rigid->right.z = rigid->morientation.m[2];
 			net_rigid->angular_velocity = rigid->angular_velocity;
 			net_rigid->velocity = rigid->velocity;
 			net_rigid->position = entity_list[i]->position;
@@ -3931,7 +3952,17 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		// the net->position has the server (lagged) position
 		// Need to lerp between the two, but then we have time sync issues
 		rigid->center = net->center;
-		rigid->morientation = net->morientation;
+		vec3 up = vec3::crossproduct(net->right, net->forward);
+		rigid->morientation.m[0] = net->right.x;
+		rigid->morientation.m[1] = net->right.y;
+		rigid->morientation.m[2] = net->right.z;
+		rigid->morientation.m[3] = up.x;
+		rigid->morientation.m[4] = up.y;
+		rigid->morientation.m[5] = up.z;
+		rigid->morientation.m[6] = net->forward.x;
+		rigid->morientation.m[7] = net->forward.y;
+		rigid->morientation.m[8] = net->forward.z;
+
 
 		rigid->velocity = net->velocity;
 		
@@ -3978,7 +4009,18 @@ int Engine::deserialize_net_rigid(net_rigid_t *net, int index, int etype)
 		entity_list[index]->position = net->position;
 		rigid->velocity = net->velocity;
 		rigid->angular_velocity = net->angular_velocity;
-		rigid->morientation = net->morientation;
+//		rigid->morientation = net->morientation;
+		vec3 up = vec3::crossproduct(net->right, net->forward);
+		rigid->morientation.m[0] = net->right.x;
+		rigid->morientation.m[1] = net->right.y;
+		rigid->morientation.m[2] = net->right.z;
+		rigid->morientation.m[3] = up.x;
+		rigid->morientation.m[4] = up.y;
+		rigid->morientation.m[5] = up.z;
+		rigid->morientation.m[6] = net->forward.x;
+		rigid->morientation.m[7] = net->forward.y;
+		rigid->morientation.m[8] = net->forward.z;
+
 //		printf("Got rigid data index %d\n", index);
 	}
 	else
@@ -4030,7 +4072,18 @@ int Engine::deserialize_net_projectile(net_projectile_t *net, int index, int ety
 		entity_list[index]->position = net->position;
 		rigid->velocity = net->velocity;
 		rigid->angular_velocity = net->angular_velocity;
-		rigid->morientation = net->morientation;
+//		rigid->morientation = net->morientation;
+		vec3 up = vec3::crossproduct(net->right, net->forward);
+		rigid->morientation.m[0] = net->right.x;
+		rigid->morientation.m[1] = net->right.y;
+		rigid->morientation.m[2] = net->right.z;
+		rigid->morientation.m[3] = up.x;
+		rigid->morientation.m[4] = up.y;
+		rigid->morientation.m[5] = up.z;
+		rigid->morientation.m[6] = net->forward.x;
+		rigid->morientation.m[7] = net->forward.y;
+		rigid->morientation.m[8] = net->forward.z;
+
 	}
 
 	if (entity_list[index]->projectile)
@@ -4090,7 +4143,8 @@ void Engine::server_send()
 			continue;
 		}
 
-		reliable[i].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[i].msg) + 1);
+		if (reliable[i].size == 0)
+			reliable[i].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[i].msg) + 1);
 		servermsg.client_sequence = client_list[i]->client_sequence;
 		servermsg.length = SERVER_HEADER + servermsg.compressed_size + reliable[i].size;
 		memcpy(&servermsg.data[servermsg.compressed_size], (void *)&reliable[i], reliable[i].size);
@@ -4295,12 +4349,13 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 				play_wave_global(SND_TALK);
 			}
 
-			if (strstr(reliablemsg->msg, "data"))
+			char *pstate = strstr(reliablemsg->msg, "<data>");
+			if (pstate)
 			{
-				serverdata_t *data = (serverdata_t *)reliablemsg->msg;
+				serverdata_t *state = (serverdata_t *)pstate;
 
 				debugf("client received server state\n");
-				game->set_state(data);
+				game->set_state(state);
 			}
 
 			ret = strcmp(reliablemsg->msg, "<disconnect/>");

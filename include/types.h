@@ -524,9 +524,11 @@ typedef struct
         int pos;
 } rletable_t;
 
+
+// I should really just use binary for everything
 typedef struct
 {
-	char header[4]; // data
+	char header[6]; // <data>
 	uint8_t warmup;
 	uint32_t warmup_time;
 	uint32_t round_time;
@@ -534,6 +536,7 @@ typedef struct
 	uint8_t timelimit;
 	uint8_t red_flag_caps;
 	uint8_t blue_flag_caps;
+	char footer[8]; // </data>
 } serverdata_t;
 
 
@@ -791,7 +794,9 @@ typedef struct
 
 typedef struct
 {
-	matrix3			morientation;
+//	matrix3			morientation;
+	vec3			forward;
+	vec3			right;
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
@@ -807,7 +812,9 @@ typedef struct
 	uint8_t			active;
 	short int		owner;
 
-	matrix3			morientation;
+//	matrix3			morientation;
+	vec3			forward;
+	vec3			right;
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
@@ -817,7 +824,9 @@ typedef struct
 
 typedef struct
 {
-	matrix3			morientation;
+//	matrix3			morientation;
+	vec3			forward;
+	vec3			right;
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
