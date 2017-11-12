@@ -102,6 +102,7 @@ int mLight2::init(Graphics *gfx)
 	m_brightness = 0.0f;
 	m_contrast = 1.0f;
 	m_exposure = 1.0f;
+	m_normalmap = -1.0f;
 	//"media/glsl/mlighting3.gs"
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
@@ -337,7 +338,7 @@ void mLight2::set_shadowmap(float value)
 void mLight2::set_alpha(float value)
 {
 	m_alpha = value;
-	glUniform1f(u_alpha, value);
+	glUniform1f(u_alpha, m_alpha);
 }
 
 

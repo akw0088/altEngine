@@ -6488,6 +6488,24 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (sscanf(cmd, "r_normalmap %s", data) == 1)
+	{
+		float value = atof(data);
+		mlight2.set_normalmap(value);
+		snprintf(msg, LINE_SIZE, "Setting normalmap to %f", value);
+		if (value > 0.0f)
+		{
+			q3map.enable_normalmap = true;
+		}
+		else
+		{
+			q3map.enable_normalmap = false;
+		}
+		menu.print(msg);
+		return;
+	}
+
+
 
 	if (strstr(cmd, "r_brightness"))
 	{

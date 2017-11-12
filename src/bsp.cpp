@@ -1445,6 +1445,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 	float time = ((float)tick_num / TICK_RATE);
 	selected_map = false;
 	float alpha_value = 1.0f;
+	bool cull_face = false;
 
 	if (frameIndex != lastIndex)
 	{
@@ -1483,6 +1484,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 			if (face_list[i].cull_none)
 			{
+				cull_face = true;
 				gfx.CullFace(2);
 			}
 			else
@@ -1517,6 +1519,11 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 			if (face_list[i].lightmap[face_list[i].stage] && face->lightmap != -1)
 				mlight2.set_lightmap_stage(1);
+		}
+		else
+		{
+			if (cull_face)
+				gfx.CullFace(3);
 		}
 
 		if (face->fog_num != -1 && enable_fog)
@@ -1626,6 +1633,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 				if (blend_list[i].cull_none)
 				{
+					cull_face = true;
 					gfx.CullFace(2);
 				}
 				else
@@ -1643,6 +1651,11 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 					tex_object[face->material].texObj[3] = portal_tex;
 				}
 
+			}
+			else
+			{
+				if (cull_face)
+					gfx.CullFace(3);
 			}
 
 			if (blend_list[i].blend)
