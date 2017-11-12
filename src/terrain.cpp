@@ -247,10 +247,6 @@ bool Terrain::collision_detect(RigidBody &body)
 	if (loaded == false)
 		return false;
 
-	if (body.entity->player == NULL)
-		return false;
-
-
 	for (int i = 0; i < 8; i++)
 	{
 		vec3 point = body.aabb[i];
@@ -262,8 +258,16 @@ bool Terrain::collision_detect(RigidBody &body)
 		if (point.y < tpos)
 		{
 			body.entity->position = body.old_position;
+			if (body.old_position.y - body.center.y < tpos)
+			{
+				body.old_position.y = tpos + body.center.y;
+				body.entity->position.y = tpos + body.center.y;
+			}
+
+
 			body.on_ground = true;
 			ClipVelocity(body.entity->rigid->velocity, normal);
+			body.velocity.y = 0.1f;
 			return true;
 		}
 	}
