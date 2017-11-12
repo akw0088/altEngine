@@ -51,6 +51,8 @@ public:
 	static			int skybox_vertex;
 	static			int skybox_index;
 
+	char name[128];
+
 	bool			blend;
 	bool			cull_none;
 	bool			rail_trail;

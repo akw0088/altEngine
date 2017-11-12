@@ -12,9 +12,6 @@ int Model::quad_vertex = 0;
 int Model::cube_index = 0;
 int Model::cube_vertex = 0;
 
-int Model::skybox_index = 0;
-int Model::skybox_vertex = 0;
-
 
 void Model::load(Graphics &gfx, char *file)
 {
@@ -28,6 +25,17 @@ void Model::load(Graphics &gfx, char *file)
 	snprintf(tga_file, LINE_SIZE, "%s.tga", file);
 	snprintf(normal_file, LINE_SIZE, "%s_normal.tga", file);
 
+	int j = 0;
+	for (int i = 0; i < strlen(file); i++)
+	{
+		if (file[i] == '/' || file[i] == '\\')
+		{
+			memset(name, 0, sizeof(name));
+			j = 0;
+			continue;
+		}
+		name[j++] = file[i];
+	}
 
 	model_file = get_file(vbo_file, NULL);
 	if (model_file == NULL)

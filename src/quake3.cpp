@@ -121,8 +121,15 @@ void Quake3::unload()
 
 void Quake3::destroy()
 {
+	bool dump_obj = false;
+
 	for (unsigned int i = 0; i < model_table.size(); i++)
 	{
+		if (dump_obj)
+		{
+			strcat(model_table[i]->name, ".obj");
+			WriteObj(model_table[i]->name, model_table[i]->model_vertex_array, model_table[i]->num_vertex, model_table[i]->model_index_array, model_table[i]->num_index);
+		}
 		delete model_table[i];
 		model_table[i] = NULL;
 	}
@@ -258,9 +265,6 @@ void Quake3::load_models(Graphics &gfx)
 	else
 		model->load(gfx, "media/models/weapons2/shotgun/shotgun");
 	model_table.push_back(model);
-
-//	WriteObj("shotgun.obj", model->model_vertex_array, model->num_vertex, model->model_index_array, model->num_index);
-
 
 //	#define MODEL_WEAPON_GRENADE 22
 	model = new Model;

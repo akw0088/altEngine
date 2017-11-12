@@ -29,6 +29,7 @@ int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
 	terrain_tex = load_texture(gfx, texture_str, false, false, anisotropic);
 	loaded = true;
+//	WriteObj("terrain.obj", vertex_array, num_vertex, index_array, num_index);
 	return 0;
 }
 
@@ -341,3 +342,4 @@ float Terrain::GetHeightAt(const vec3 &position, vec3 &normal)
 
 	return height;
 }
+
