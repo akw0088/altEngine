@@ -34,10 +34,6 @@ const char *teams[3] =
 };
 
 
-char *terrain_str = "{\
-\"classname\" \"func_terrain\"\
-}\")";
-
 Engine::Engine()
 {
 	initialized = false;
@@ -214,6 +210,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	point_count = 8;
 	randomize_points = true;
 	enable_map = true;
+	enable_terrain = false;
 
 	enum_resolutions();
 #ifdef WIN32
@@ -687,16 +684,19 @@ void Engine::load(char *level)
 		char filename[128];
 		const char *data = q3map.get_entities();
 
-		char *ndata = new char[strlen(data) + strlen(terrain_str) + 16];
 
 		sprintf(filename, "media/%s.ent", q3map.map_name);
 		bool enable_terrain = true;
 
 		if (enable_terrain)
 		{
+			char *terrain_str = "{\"classname\" \"func_terrain\"}\")";
+			char *ndata = new char[strlen(data) + strlen(terrain_str) + 16];
+
 			strcpy(ndata, data);
 			strcat(ndata, terrain_str);
 			parse_entity(this, ndata, entity_list, gfx, audio);
+			delete[] ndata;
 		}
 		else
 		{
@@ -1596,6 +1596,10 @@ void Engine::render_scene(bool lights)
 	if (enable_map)
 	{
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+	}
+
+	if (enable_terrain)
+	{
 		gfx.SelectTexture(1, 0);
 		gfx.SelectTexture(2, 0);
 		gfx.SelectTexture(3, 0);
@@ -6779,6 +6783,22 @@ void Engine::console(char *cmd)
 		else
 		{
 			snprintf(msg, LINE_SIZE, "render map off");
+			menu.print(msg);
+		}
+		return;
+	}
+
+	if (strstr(cmd, "r_terrain"))
+	{
+		enable_terrain = !enable_terrain;
+		if (enable_terrain)
+		{
+			snprintf(msg, LINE_SIZE, "render terrain on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "render terrain off");
 			menu.print(msg);
 		}
 		return;

@@ -198,6 +198,7 @@ public:
 	bool enable_map_shadows;
 	bool enable_entities;
 	bool enable_map;
+	bool enable_terrain;
 
 
 	char resbuf[MAX_RES][80];
