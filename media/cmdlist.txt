@@ -88,6 +88,9 @@ r_sky
 r_skyray
 r_ssao
 r_stencil
+r_normalmap
+r_num_shadowmaps
+r_terrain
 r_texture
 r_tonemap
 r_vsync
@@ -99,6 +102,7 @@ respawn
 say ""
 screenshot
 sensitivity
+setpos
 showdebug
 showhud
 showlines
