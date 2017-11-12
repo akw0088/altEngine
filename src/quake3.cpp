@@ -101,7 +101,7 @@ void Quake3::init(Engine *altEngine)
 
 void Quake3::load(gametype_t type)
 {
-	char cmd[80];
+	char cmd[128];
 	last_spawn = 0;
 	gametype = type;
 

@@ -26,7 +26,7 @@ void Model::load(Graphics &gfx, char *file)
 	snprintf(normal_file, LINE_SIZE, "%s_normal.tga", file);
 
 	int j = 0;
-	for (int i = 0; i < strlen(file); i++)
+	for (unsigned int i = 0; i < strlen(file); i++)
 	{
 		if (file[i] == '/' || file[i] == '\\')
 		{

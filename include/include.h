@@ -465,6 +465,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "quake3.h"
 #include "commando.h"
 #include "terrain.h"
+#include "isosphere.h"
 #include "engine.h"
 
 

@@ -798,7 +798,7 @@ void Engine::load(char *level)
 
 
 	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0);
-
+	isosphere.load(gfx, "media/terrain/earth.png", 2, 50.0f);
 }
 
 void Engine::load_md5()
@@ -2018,7 +2018,16 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 
 		//render entity
-		entity->rigid->render(gfx);
+		if (entity->ent_type == ENT_WEAPON_LIGHTNING)
+		{
+			isosphere.render(gfx);
+		}
+		else
+		{
+			entity->rigid->render(gfx);
+		}
+
+
 
 		if (entity->rigid->cull_none)
 		{
@@ -4848,7 +4857,7 @@ void Engine::keystroke(char key, char *keystr)
 				menu.handle_stringmode(key, this);
 				if (menu.stringmode == false)
 				{
-					char cmd[80];
+					char cmd[128];
 
 					sprintf(cmd, "%s \"%s\"", menu.string_cmd, menu.string_target);
 					console(cmd);
@@ -5488,7 +5497,7 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "up"))
 		{
-			char cmd[80];
+			char cmd[128];
 
 			if (menu.data.antialias == 0)
 				menu.data.antialias = 2;
@@ -5504,7 +5513,7 @@ void Engine::console(char *cmd)
 		}
 		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "down"))
 		{
-			char cmd[80];
+			char cmd[128];
 
 			if (menu.data.antialias == 0)
 				menu.data.antialias = 16;
@@ -7770,145 +7779,4 @@ void Engine::enum_resolutions()
 		}
 	}
 #endif
-}
-
-bool Engine::terrain_collision(RigidBody &body)
-{
-	terrain_t terrain;
-	static vec3 old_normal1;
-	static vec3 old_normal2;
-	static float old_d1;
-	static float old_d2;
-	static int old_x = 0;
-	static int old_y = 0;
-
-	vec3 normal1;
-	vec3 normal2;
-	float d1;
-	float d2;
-
-	if (body.entity->player == NULL)
-		return false;
-
-	terrain.num_col = 102;
-	terrain.num_row = 102;
-	terrain.offset = vec3(0.0f, -5000.0f, 0.0f);
-	terrain.size = 50000.0f;
-	terrain.trilength = terrain.size / terrain.num_row;
-
-	if (body.entity->position.x > terrain.size || body.entity->position.x < -terrain.size)
-		return false;
-	if (body.entity->position.z > terrain.size || body.entity->position.z < -terrain.size)
-		return false;
-
-
-
-	static int index = -1;
-
-	if (index == -1)
-		index = find_type(ENT_FUNC_TERRAIN, 0);
-	if (index == -1)
-		return false;
-
-	Entity *ent = entity_list[index];
-	if (ent->model == NULL)
-		return false;
-
-	int x = 0;//body.entity->position.x / terrain.num_row + terrain.num_row / 2;
-	int y = 0;// body.entity->position.z / terrain.num_col + terrain.num_col / 2;
-	int width = 102;
-	x = 102 * (body.entity->position.x / (2.0f * terrain.size) + 0.5f);
-	y = 102 * (-body.entity->position.z / (2.0f * terrain.size) + 0.5f);
-	if (x < 0)
-	{
-		x = 0;
-		printf("Error: Clamped min x\n");
-	}
-	if (x > 102)
-	{
-		x = 102;
-		printf("Error: Clamped max x\n");
-	}
-	if (y < 0)
-	{
-		y = 0;
-		printf("Error: Clamped min y\n");
-	}
-	if (y > 102)
-	{
-		y = 102;
-		printf("Error: Clamped max y\n");
-	}
-
-	if (tick_num % 125 == 0)
-	{
-		printf("x %d y %d\n", x, y);
-	}
-
-	if (x != old_x && y != old_y)
-	{
-		vec3 a = ent->model->model_vertex_array[y * width + x].position;
-		vec3 b = ent->model->model_vertex_array[y * width + x + 1].position;
-		vec3 c = ent->model->model_vertex_array[(y + 1) * width + x + 1].position;
-
-		vec3 ab = a - b;
-		vec3 ac = a - c;
-		normal1 = vec3::crossproduct(ab, ac);
-		normal1 = normal1.normalize();
-		d1 = -(a * normal1);
-
-		vec3 d = ent->model->model_vertex_array[(y + 1) * width + x].position;
-		vec3 e = ent->model->model_vertex_array[(y + 1) * width + x + 1].position;
-		vec3 f = ent->model->model_vertex_array[(y + 1) * width + x].position;
-
-		vec3 de = d - e;
-		vec3 df = d - f;
-		normal2 = vec3::crossproduct(de, df);
-		normal2 = normal2.normalize();
-		d2 = -(d * normal2);
-	}
-	else
-	{
-		normal1 = old_normal1;
-		normal2 = old_normal2;
-		d1 = old_d1;
-		d2 = old_d2;
-	}
-
-
-	// ax + by + cz + d = 0
-
-	vec3 point = body.entity->position + terrain.offset;
-
-	if (point * normal1 + d1 > 0)
-	{
-		if (tick_num % 125 == 0)
-		{
-			printf("Distance from plane one is %f\n", point * normal1 + d1);
-		}
-
-
-		body.entity->position = body.old_position;
-		body.morientation = body.old_orientation;
-		body.on_ground = true;
-		ClipVelocity(body.entity->rigid->velocity, normal1);
-		return true;
-	}
-	else if (point * normal2 + d2 > 0)
-	{
-		if (tick_num % 125 == 0)
-		{
-			printf("Distance from plane two is %f\n", point * normal2 + d2);
-		}
-
-		body.entity->position = body.old_position;
-		body.morientation = body.old_orientation;
-		body.on_ground = true;
-		ClipVelocity(body.entity->rigid->velocity, normal2);
-		return true;
-	}
-
-	body.on_ground = true;
-
-	return false;
 }

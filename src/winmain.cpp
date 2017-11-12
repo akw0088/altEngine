@@ -907,8 +907,8 @@ BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam
 {
 	static HWND	hwndCombo = 0;
 	DEVMODE		dmScreenSettings;
-	TCHAR		resbuf[80];
-	static TCHAR	currentRes[80];
+	TCHAR		resbuf[128];
+	static TCHAR	currentRes[128];
 	int i;
 
 	switch (message)

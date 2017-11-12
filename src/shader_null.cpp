@@ -50,9 +50,14 @@ Global::~Global()
 
 int mLight2::init(Graphics *gfx)
 {
-
 	return 0;
 }
+
+void mLight2::set_num_shadowmap(int value)
+{
+
+}
+
 
 void mLight2::set_max(int max)
 {
@@ -273,7 +278,7 @@ void Post::Params(int tex0, int tex1)
 {
 }
 
-void Post::BloomParams(int, float, float, float)
+void Post::BloomParams(int dir, float amount, float strength, float scale, int xres, int yres)
 {
 }
 
@@ -312,7 +317,7 @@ void ScreenSpace::prelink(void)
 
 }
 
-void ScreenSpace::Params(float, float, float, bool, bool, int, int, int)
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool randomize_points, int point_count, int width, int height)
 {
 
 }
