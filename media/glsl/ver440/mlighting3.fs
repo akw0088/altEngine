@@ -260,7 +260,8 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[0] = texture(tex[0], Vertex.vary_LightCoord) * 2.0 + 0.25;
+		// Scale and bias affects lightmaps on surfaces with shader, keeps e3window on q3tourney2 right brightness
+		Fragment_stage[0] = texture(tex[0], Vertex.vary_LightCoord) * 2.0 + 1.0;
 	}
 	else
 	{
@@ -270,7 +271,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[1] = texture(tex[1], Vertex.vary_LightCoord) * 2.0 + 0.25;
+		Fragment_stage[1] = texture(tex[1], Vertex.vary_LightCoord) * 2.0 + 1.0;
 	}
 	else
 	{
@@ -280,7 +281,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[2] = texture(tex[2], Vertex.vary_LightCoord) * 2.0 + 0.25;
+		Fragment_stage[2] = texture(tex[2], Vertex.vary_LightCoord) * 2.0 + 1.0;
 	}
 	else
 	{
@@ -290,7 +291,7 @@ void main(void)
 
 	if (u_lightmap_stage > 0)
 	{
-		Fragment_stage[3] = texture(tex[3], Vertex.vary_LightCoord) * 2.0 + 0.25;
+		Fragment_stage[3] = texture(tex[3], Vertex.vary_LightCoord) * 2.0 + 1.0;
 	}
 	else
 	{
@@ -346,6 +347,16 @@ void main(void)
 	}
 
 
+	if (u_normalmap > 0)
+	{
+		vec3 normal_map;
+
+		normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
+		normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
+		normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
+
+		unormal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
+	}
 
 
 	for(int i = 0; i < u_num_lights; i++)
