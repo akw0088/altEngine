@@ -264,7 +264,7 @@ bool Terrain::collision_detect(RigidBody &body)
 				body.entity->position.y = tpos + body.center.y;
 			}
 
-
+			body.bounce++;
 			body.on_ground = true;
 			ClipVelocity(body.entity->rigid->velocity, normal);
 			body.velocity.y = 0.1f;
@@ -293,8 +293,8 @@ float Terrain::GetHeightAt(const vec3 &position, vec3 &normal)
 	float yf;
 
 	// normalized 0-1 range for terrain
-	xf = (position.x / (2.0f * size) + 0.5f);
-	yf = (position.z / (2.0f * size) + 0.5f);
+	xf = (position.x / size + 0.5f);
+	yf = (position.z / size + 0.5f);
 	x = num_row * xf;
 	y = num_row * yf;
 
