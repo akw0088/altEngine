@@ -803,10 +803,11 @@ void Engine::load(char *level)
 	isosphere[2].load(gfx, "media/terrain/earth.png", 2, 100.0f);
 	isosphere[3].load(gfx, "media/terrain/earth.png", 3, 100.0f);
 	isosphere[4].load(gfx, "media/terrain/earth.png", 4, 100.0f);
-//	isosphere[5].load(gfx, "media/terrain/earth.png", 5, 100.0f);
-//	isosphere[6].load(gfx, "media/terrain/earth.png", 6, 100.0f);
-//	isosphere[7].load(gfx, "media/terrain/earth.png", 7, 100.0f);
-//	isosphere[8].load(gfx, "media/terrain/earth.png", 8, 100.0f);
+	isosphere[5].load(gfx, "media/terrain/earth.png", 5, 100.0f);
+	isosphere[6].load(gfx, "media/terrain/earth.png", 6, 100.0f);
+	isosphere[7].load(gfx, "media/terrain/earth.png", 7, 100.0f);
+	isosphere[8].load(gfx, "media/terrain/earth.png", 8, 100.0f);
+	isosphere[9].load(gfx, "media/terrain/earth.png", 9, 100.0f);
 }
 
 void Engine::load_md5()
@@ -2035,7 +2036,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				current_light = entity_list[player]->player->current_light;
 			}
 
-			int lod = clamp(current_light, 0, 5);
+			int lod = clamp(current_light, 0, 10);
 
 			isosphere[lod].render(gfx);
 		}
