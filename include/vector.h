@@ -41,6 +41,7 @@ public:
 	vec3 &operator+=(const vec3 &vec);
 	vec3 &operator-=(const vec3 &vec);
 	vec3 &operator*=(const float scalar);
+	vec3 project(const vec3 &a);
 
 	static vec3 crossproduct(const vec3 &VecA, const vec3 &VecB);
 

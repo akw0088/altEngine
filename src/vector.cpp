@@ -197,6 +197,16 @@ bool vec3::operator==(const vec3 &vector)
 		return false;
 }
 
+vec3 vec3::project(const vec3 &a)
+{
+	vec3 *b = this;
+	vec3 result;
+	// dot product yield a float, so really scaling B by length of A
+	// [a dot b / (b dot b)] times B
+	result = (*b) * (a * (*b)) / ((*b) * (*b));
+	return result;
+}
+
 vec3 &vec3::operator*=(const float scalar)
 {
 	x *= scalar;

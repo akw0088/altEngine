@@ -460,7 +460,7 @@ void mLight2::Select()
 	glUniform1f(u_alpha, -1.0f);
 
 
-	glUniform1i(u_normalmap, m_normalmap);
+	glUniform1f(u_normalmap, m_normalmap);
 
 	glUniform1i(depth[0], 10);
 	glUniform1i(depth[1], 11);

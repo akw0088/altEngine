@@ -75,7 +75,7 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, int depth, float scale)
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vert, false);
 
 	index_array = new unsigned int[num_index];
-	for (int i = 0; i < num_index; i++)
+	for (unsigned int i = 0; i < num_index; i++)
 	{
 		index_array[i] = i;
 	}

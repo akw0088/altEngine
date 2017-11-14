@@ -797,7 +797,8 @@ void Engine::load(char *level)
 	render_portalcamera();
 
 
-	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0);
+	//terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0);
+#if 0
 	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
 	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);
 	isosphere[2].load(gfx, "media/terrain/earth.png", 2, 100.0f);
@@ -808,6 +809,7 @@ void Engine::load(char *level)
 	isosphere[7].load(gfx, "media/terrain/earth.png", 7, 100.0f);
 	isosphere[8].load(gfx, "media/terrain/earth.png", 8, 100.0f);
 	isosphere[9].load(gfx, "media/terrain/earth.png", 9, 100.0f);
+#endif
 }
 
 void Engine::load_md5()
@@ -3162,7 +3164,6 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		/*
 		if (i == 0 || body.entity->player->local)
 		{
 			int result = 0;
@@ -3175,14 +3176,16 @@ bool Engine::body_collision(RigidBody &body)
 				shape2[j] = entity_list[i]->rigid->aabb[j] + entity_list[i]->position + entity_list[i]->rigid->center;
 				//shape2[j] = body.aabb[j] + body.entity->position + body.center + vec3(1000.0f, 1000.0f, 1000.0f);
 			}
-			result = gjk(shape1, shape2, 10, 8, 8);
+
+
+			result = sat(shape1, shape2);
+//			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
 				printf("collision between %s and %s\n", entity_list[i]->player->name, body.entity->player->name);
 				return true;
 			}
 		}
-		*/
 
 
 //		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
