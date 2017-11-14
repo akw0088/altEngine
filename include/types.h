@@ -4,7 +4,6 @@ typedef unsigned int uint;
 
 
 #ifndef WIN32
-typedef char byte;
 #endif 
 
 typedef enum

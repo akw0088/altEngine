@@ -14,7 +14,7 @@ const vec3 vdata[12] = {
 	{ Z,X,N },{ -Z,X, N },{ Z,-X,N },{ -Z,-X, N }
 };
 
-const int index[60] = {
+const int vindex[60] = {
 	0,4,1,	0,9,4,		9,5,4,		4,5,8,		4,8,1,
 	8,10,1,	8,3,10,		5,3,8,		5,2,3,		2,7,3,
 	7,10,3,	7,6,10,		7,11,6,		11,0,6,		0,1,6,
@@ -137,9 +137,9 @@ void IsoSphere::generate(int depth, float scale)
 {
 	for (int i = 0; i < 60;)
 	{
-		subdivide(vdata[index[i]],
-			vdata[index[i + 1]],
-			vdata[index[i + 2]],
+		subdivide(vdata[vindex[i]],
+			vdata[vindex[i + 1]],
+			vdata[vindex[i + 2]],
 			depth, scale);
 
 		i += 3;

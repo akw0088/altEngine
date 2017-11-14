@@ -281,14 +281,14 @@ float Terrain::GetHeightAt(const vec3 &position, vec3 &normal)
 	if (loaded == false)
 		return height;
 
-	float terrainWidth = size;
-	float terrainHeight = size;
-	float halfWidth = size * 0.5f;
-	float halfHeight = size * 0.5f;
+	//float terrainWidth = size;
+	//float terrainHeight = size;
+	//float halfWidth = size * 0.5f;
+	//float halfHeight = size * 0.5f;
 
 	int x = 0;
 	int y = 0;
-	int width = num_row;
+	//int width = num_row;
 	float xf;
 	float yf;
 

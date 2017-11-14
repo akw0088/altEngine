@@ -6099,7 +6099,7 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "r_shadowmap_res_scale %s", data);
 	if (ret == 1)
 	{
-		int value = atoi(data);
+//		int value = atoi(data);
 //		mlight2.set_num_shadowmap(value);
 		return;
 	}
