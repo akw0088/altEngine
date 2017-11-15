@@ -2020,9 +2020,9 @@ bool TestIntersection(const vec3 *object_a, const vec3 *object_b, const vec3 *no
 {
 	float min1, max1, min2, max2;
 
-	// Only testing cubes, 6 planes for faces, 9 faces for edges
-	int num_normal_a = 6;
-	int num_normal_b = 6;
+	// Only testing cubes, 3 planes for faces, 9 faces for edges
+	int num_normal_a = 3;
+	int num_normal_b = 3;
 	int num_edge_a = 9;
 	int num_edge_b = 9;
 
@@ -2055,107 +2055,339 @@ bool TestIntersection(const vec3 *object_a, const vec3 *object_b, const vec3 *no
 }
 
 // box in binary order
-//0: 0 0 0 // origin
-//1: 0 0 1 // forward
-//2: 0 1 0 // up
+//0: 0 0 0 
+//1: 0 0 1 
+//2: 0 1 0 
 //3: 0 1 1 
-//4: 1 0 0 // right
+//4: 1 0 0 
 //5: 1 0 1
 //6: 1 1 0
 //7: 1 1 1
 
-// Triangles faces (one based)
-//123 243 826 842 678 657 137 175 152 256 347 487
+// Triangles faces 
 // zero based (pairs of triangles, skip one each time)
-//012 132 715 731 567 546 026 064 041 145 236 376
-int sat(const vec3 *box_a, const vec3 *box_b)
+//012 132, 715 731, 567 546, 026 064, 041 145, 236 376
+int seperating_axis_theorem(const vec3 *box_a, const vec3 *box_b)
 {
 	vec3 ba;
 	vec3 ca;
-	vec3 normal_a[6];
-	vec3 normal_b[6];
-	vec3 edge_a[9];
-	vec3 edge_b[9];
+	vec3 normal_a[3];
+	vec3 normal_b[3];
+	vec3 edge_a[3];
+	vec3 edge_b[3];
 
-	// Find normals for faces on cube A
-	//012
-	ba = box_a[1] - box_a[0];
-	ca = box_a[2] - box_a[0];
-	normal_a[0] = vec3::crossproduct(ba, ca).normalize();
+	vec3 ra;
+	vec3 ua;
+	vec3 fa;
+
+	vec3 rb;
+	vec3 ub;
+	vec3 fb;
+
+	float min = FLT_MAX;
+	int ai = -1;
+	int bj = -1;
+
+	// Find the closest vertex between the two boxes
+	//  Since we can only collide on one side at a time,
+	// we can throw away 3 of 6 face planes and
+	// 6 of 9 edges per box
+	for (int i = 0; i < 6; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			vec3 diff = box_a[i] - box_b[j];
+			float dist = diff.magnitude();
+			if ( dist < min)
+			{
+				min = dist;
+				ai = i;
+				bj = j;
+			}
+		}
+	}
+
+	// Only keep normal planes that involve vertex 0
+	if (ai == 0)
+	{
+		// Find normals for faces on cube A
+		//012
+		ba = box_a[1] - box_a[0];
+		ca = box_a[2] - box_a[0];
+		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//026
+		ba = box_a[2] - box_a[0];
+		ca = box_a[6] - box_a[0];
+		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//041
+		ba = box_a[4] - box_a[0];
+		ca = box_a[1] - box_a[0];
+		normal_a[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 0 (right up forward)
+		ra = box_a[4] - box_a[0];
+		ua = box_a[2] - box_a[0];
+		fa = box_a[1] - box_a[0];
+	}
+	else if (ai == 1)
+	{
+		// Find normals for faces on cube A
+		//012
+		ba = box_a[1] - box_a[0];
+		ca = box_a[2] - box_a[0];
+		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//041
+		ba = box_a[4] - box_a[0];
+		ca = box_a[1] - box_a[0];
+		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//715
+		ba = box_a[1] - box_a[7];
+		ca = box_a[5] - box_a[7];
+		normal_a[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 1 (right up forward)
+		ra = box_a[5] - box_a[1];
+		ua = box_a[3] - box_a[1];
+		fa = box_a[0] - box_a[1];
+	}
+	else if (ai == 2)
+	{
+		//012
+		ba = box_a[1] - box_a[0];
+		ca = box_a[2] - box_a[0];
+		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//026
+		ba = box_a[2] - box_a[0];
+		ca = box_a[6] - box_a[0];
+		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//236
+		ba = box_a[3] - box_a[2];
+		ca = box_a[6] - box_a[2];
+		normal_a[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 2 (right up forward)
+		ra = box_a[6] - box_a[2];
+		ua = box_a[3] - box_a[2];
+		fa = box_a[0] - box_a[2];
+	}
+	else if (ai == 3)
+	{
+		//132
+		ba = box_a[3] - box_a[1];
+		ca = box_a[2] - box_a[1];
+		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//731
+		ba = box_a[7] - box_a[1];
+		ca = box_a[3] - box_a[1];
+		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//376
+		ba = box_a[7] - box_a[3];
+		ca = box_a[6] - box_a[3];
+		normal_a[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 3 (right up forward)
+		ra = box_a[7] - box_a[3];
+		ua = box_a[1] - box_a[3];
+		fa = box_a[2] - box_a[3];
+	}
+	else if (ai == 4)
+	{
+		//546
+		ba = box_a[4] - box_a[5];
+		ca = box_a[6] - box_a[5];
+		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//064
+		ba = box_a[6] - box_a[0];
+		ca = box_a[4] - box_a[0];
+		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
 
 
-	//715
-	ba = box_a[1] - box_a[7];
-	ca = box_a[5] - box_a[7];
-	normal_a[1] = vec3::crossproduct(ba, ca).normalize();
+		//145
+		ba = box_a[4] - box_a[1];
+		ca = box_a[5] - box_a[1];
+		normal_a[2] = vec3::crossproduct(ba, ca).normalize();
 
-	//567
-	ba = box_a[6] - box_a[5];
-	ca = box_a[7] - box_a[5];
-	normal_a[2] = vec3::crossproduct(ba, ca).normalize();
+		// Find Edges involving vertex 4 (right up forward)
+		ra = box_a[0] - box_a[4];
+		ua = box_a[6] - box_a[4];
+		fa = box_a[5] - box_a[4];
+	}
+	else if (ai == 5)
+	{
 
-	//026
-	ba = box_a[2] - box_a[0];
-	ca = box_a[6] - box_a[0];
-	normal_a[3] = vec3::crossproduct(ba, ca).normalize();
+	    //715
+		ba = box_a[1] - box_a[7];
+		ca = box_a[5] - box_a[7];
+		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
 
-	//041
-	ba = box_a[4] - box_a[0];
-	ca = box_a[1] - box_a[0];
-	normal_a[4] = vec3::crossproduct(ba, ca).normalize();
+        //567
+		ba = box_a[6] - box_a[5];
+		ca = box_a[7] - box_a[5];
+		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
 
-	//236
-	ba = box_a[3] - box_a[2];
-	ca = box_a[6] - box_a[2];
-	normal_a[5] = vec3::crossproduct(ba, ca).normalize();
+		//376
+		ba = box_a[7] - box_a[3];
+		ca = box_a[6] - box_a[3];
+		normal_a[2] = vec3::crossproduct(ba, ca).normalize();
 
-	// Find normals for faces on cube B
-	//012
-	ba = box_b[1] - box_b[0];
-	ca = box_b[2] - box_b[0];
-	normal_b[0] = vec3::crossproduct(ba, ca).normalize();
-
-	//715
-	ba = box_b[1] - box_b[7];
-	ca = box_b[5] - box_b[7];
-	normal_b[1] = vec3::crossproduct(ba, ca).normalize();
-
-	//567
-	ba = box_b[6] - box_b[5];
-	ca = box_b[7] - box_b[5];
-	normal_b[2] = vec3::crossproduct(ba, ca).normalize();
-
-	//026
-	ba = box_b[2] - box_b[0];
-	ca = box_b[6] - box_b[0];
-	normal_b[3] = vec3::crossproduct(ba, ca).normalize();
-
-	//041
-	ba = box_b[4] - box_b[0];
-	ca = box_b[1] - box_b[0];
-	normal_b[4] = vec3::crossproduct(ba, ca).normalize();
-
-	//236
-	ba = box_b[3] - box_b[2];
-	ca = box_b[6] - box_b[2];
-	normal_b[5] = vec3::crossproduct(ba, ca).normalize();
+		// Find Edges involving vertex 5 (right up forward)
+		ra = box_a[1] - box_a[5];
+		ua = box_a[7] - box_a[5];
+		fa = box_a[4] - box_a[5];
+	}
 
 
-	// Test 6 planes of A, 6 planes of B (face planes)
-	// Test 18 planes generated by performing edges of A cross edges of B
+	// Only keep normal planes that involve vertex 0
+	if (bj == 0)
+	{
+		// Find normals for faces on cube A
+		//012
+		ba = box_b[1] - box_b[0];
+		ca = box_b[2] - box_b[0];
+		normal_b[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//026
+		ba = box_b[2] - box_b[0];
+		ca = box_b[6] - box_b[0];
+		normal_b[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//041
+		ba = box_b[4] - box_b[0];
+		ca = box_b[1] - box_b[0];
+		normal_b[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 0 (right up forward)
+		rb = box_a[4] - box_a[0];
+		ub = box_a[2] - box_a[0];
+		fb = box_a[1] - box_a[0];
+	}
+	else if (bj == 1)
+	{
+		// Find normals for faces on cube A
+		//012
+		ba = box_b[1] - box_b[0];
+		ca = box_b[2] - box_b[0];
+		normal_b[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//041
+		ba = box_b[4] - box_b[0];
+		ca = box_b[1] - box_b[0];
+		normal_b[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//715
+		ba = box_b[1] - box_b[7];
+		ca = box_b[5] - box_b[7];
+		normal_b[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 1 (right up forward)
+		rb = box_a[5] - box_a[1];
+		ub = box_a[3] - box_a[1];
+		fb = box_a[0] - box_a[1];
+	}
+	else if (bj == 2)
+	{
+		//012
+		ba = box_b[1] - box_b[0];
+		ca = box_b[2] - box_b[0];
+		normal_b[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//026
+		ba = box_b[2] - box_b[0];
+		ca = box_b[6] - box_b[0];
+		normal_b[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//236
+		ba = box_b[3] - box_b[2];
+		ca = box_b[6] - box_b[2];
+		normal_b[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 2 (right up forward)
+		rb = box_a[6] - box_a[2];
+		ub = box_a[3] - box_a[2];
+		fb = box_a[0] - box_a[2];
+	}
+	else if (bj == 3)
+	{
+		//132
+		ba = box_b[3] - box_b[1];
+		ca = box_b[2] - box_b[1];
+		normal_b[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//731
+		ba = box_b[7] - box_b[1];
+		ca = box_b[3] - box_b[1];
+		normal_b[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//376
+		ba = box_a[7] - box_a[3];
+		ca = box_a[6] - box_a[3];
+		normal_b[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 3 (right up forward)
+		rb = box_a[7] - box_a[3];
+		ub = box_a[1] - box_a[3];
+		fb = box_a[2] - box_a[3];
+	}
+	else if (bj == 4)
+	{
+		//546
+		ba = box_b[4] - box_b[5];
+		ca = box_b[6] - box_b[5];
+		normal_b[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//064
+		ba = box_b[6] - box_b[0];
+		ca = box_b[4] - box_b[0];
+		normal_b[1] = vec3::crossproduct(ba, ca).normalize();
+
+
+		//145
+		ba = box_b[4] - box_b[1];
+		ca = box_b[5] - box_b[1];
+		normal_b[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 4 (right up forward)
+		rb = box_a[0] - box_a[4];
+		ub = box_a[6] - box_a[4];
+		fb = box_a[5] - box_a[4];
+	}
+	else if (bj == 5)
+	{
+
+		//715
+		ba = box_b[1] - box_b[7];
+		ca = box_b[5] - box_b[7];
+		normal_b[0] = vec3::crossproduct(ba, ca).normalize();
+
+		//567
+		ba = box_b[6] - box_b[5];
+		ca = box_b[7] - box_b[5];
+		normal_b[1] = vec3::crossproduct(ba, ca).normalize();
+
+		//376
+		ba = box_b[7] - box_b[3];
+		ca = box_b[6] - box_b[3];
+		normal_b[2] = vec3::crossproduct(ba, ca).normalize();
+
+		// Find Edges involving vertex 5 (right up forward)
+		rb = box_a[1] - box_a[5];
+		ub = box_a[7] - box_a[5];
+		fb = box_a[4] - box_a[5];
+	}
+
+
+	// Test 3 planes of A, 3 planes of B (face planes of nearest vertices)
+	// Test 9 planes generated by performing edges of A cross edges of B
 	// Test face planes and "edge planes" which are edgeA cross EdgeB
-	// Optimization can reduce these counts in half
-	// (testing distance from one plane technically solves opposite facing plane distance too)
-
-
-	// Find Edges (cross product between cube_a and cube_b right up forward vectors)
-	vec3 ra	= box_a[4] - box_a[0];
-	vec3 ua	= box_a[2] - box_a[0];
-	vec3 fa	= box_a[1] - box_a[0];
-
-	vec3 rb	= box_b[4] - box_b[0];
-	vec3 ub	= box_b[2] - box_b[0];
-	vec3 fb	= box_b[1] - box_b[0];
 
 	ra = ra.normalize();
 	ua = ua.normalize();

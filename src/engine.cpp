@@ -3178,7 +3178,7 @@ bool Engine::body_collision(RigidBody &body)
 			}
 
 
-			result = sat(shape1, shape2);
+			result = seperating_axis_theorem(shape1, shape2);
 //			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
