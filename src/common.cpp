@@ -2073,8 +2073,8 @@ int seperating_axis_theorem(const vec3 *box_a, const vec3 *box_b)
 	vec3 ca;
 	vec3 normal_a[3];
 	vec3 normal_b[3];
-	vec3 edge_a[3];
-	vec3 edge_b[3];
+	vec3 edge_a[9];
+	vec3 edge_b[9];
 
 	vec3 ra;
 	vec3 ua;
@@ -2098,13 +2098,23 @@ int seperating_axis_theorem(const vec3 *box_a, const vec3 *box_b)
 		{
 			vec3 diff = box_a[i] - box_b[j];
 			float dist = diff.magnitude();
-			if ( dist < min)
+			if (dist < min)
 			{
 				min = dist;
 				ai = i;
 				bj = j;
 			}
 		}
+	}
+
+	float diag_a = (box_a[0] - box_a[7]).magnitude();
+	float diag_b = (box_b[0] - box_b[7]).magnitude();
+
+	float diag = MAX(diag_a, diag_b);
+	if (min > diag)
+	{
+		// too far apart to be colliding, early exit
+		return 0;
 	}
 
 	// Only keep normal planes that involve vertex 0
@@ -2224,12 +2234,12 @@ int seperating_axis_theorem(const vec3 *box_a, const vec3 *box_b)
 	else if (ai == 5)
 	{
 
-	    //715
+		//715
 		ba = box_a[1] - box_a[7];
 		ca = box_a[5] - box_a[7];
 		normal_a[0] = vec3::crossproduct(ba, ca).normalize();
 
-        //567
+		//567
 		ba = box_a[6] - box_a[5];
 		ca = box_a[7] - box_a[5];
 		normal_a[1] = vec3::crossproduct(ba, ca).normalize();
