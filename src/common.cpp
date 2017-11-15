@@ -778,6 +778,13 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 #endif
 #ifdef DIRECTX
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	if (bytes == NULL)
+	{
+		debugf("Unable to load texture %s from pk3\n", file_name);
+		free((void *)data);
+		return load_texture(gfx, file_name, clamp, false, anisotropic);
+	}
+
 	byte *pBits = NULL;
 	if (components == 3)
 	{
@@ -803,9 +810,9 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 #endif
 #ifdef DIRECTX
 	if (components == 3)
-		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp);
+		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
 	else
-		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp, anisotropic);
 #endif
 #ifdef OPENGL
 	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp, anisotropic);

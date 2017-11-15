@@ -229,7 +229,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	waveOutOpen((LPHWAVEOUT)&hWaveOut, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL);
 	waveOutGetVolume(hWaveOut, &value);
 	menu.data.volume = value / 65535.0f;
+#ifdef OPENGL
 	wglSwapIntervalEXT(0);
+#endif
 #endif
 #else
 //	glXSwapInterval(0);
@@ -1059,18 +1061,25 @@ void Engine::render(double last_frametime)
 		{
 			gfx.clear();
 			render_scene(true);
+			gfx.Depth(true);
+			gfx.Blend(false);
+			gfx.cleardepth();
 
 			//render menu
 			if (menu.chatmode == false)
 				game->render_hud(last_frametime);
+			else
+				menu.render_chatmode(global);
 			if (menu.ingame)
+			{
 				menu.render(global, true);
+				if (menu.stringmode)
+					menu.render_stringmode(global);
+			}
 			if (menu.console)
 				menu.render_console(global);
-			if (menu.chatmode)
-				menu.render_chatmode(global);
-			if (menu.stringmode)
-				menu.render_stringmode(global);
+
+
 
 		}
 		else
@@ -1237,6 +1246,11 @@ void Engine::zoom(float level)
 
 void Engine::render_portalcamera()
 {
+	if (render_mode != MODE_INDIRECT)
+	{
+		return;
+	}
+
 	q3map.lastIndex = -1;
 
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
@@ -5671,12 +5685,14 @@ void Engine::console(char *cmd)
 				menu.data.vsync = 0;
 #ifdef WIN32
 #ifndef DEDICATED
+#ifdef OPENGL
 			if (menu.data.vsync == 0)
 				wglSwapIntervalEXT(0);
 			else if (menu.data.vsync == 1)
 				wglSwapIntervalEXT(1);
 			else if (menu.data.vsync == 2)
 				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
+#endif
 #endif
 #endif
 #ifdef __linux
@@ -5696,12 +5712,14 @@ void Engine::console(char *cmd)
 				menu.data.vsync = 2;
 #ifdef WIN32
 #ifndef DEDICATED
+#ifdef OPENGL
 			if (menu.data.vsync == 0)
 				wglSwapIntervalEXT(0);
 			else if (menu.data.vsync == 1)
 				wglSwapIntervalEXT(1);
 			else if (menu.data.vsync == 2)
 				wglSwapIntervalEXT(-1); //adaptive vsync (disables stupid divide crap)
+#endif
 #endif
 #endif
 #ifdef __linux

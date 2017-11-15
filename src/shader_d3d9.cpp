@@ -69,6 +69,27 @@ void mLight2::set_shadow_matrix(int index, matrix4 &matrix)
 	return;
 }
 
+void mLight2::Select()
+{
+	Shader::Select();
+}
+
+void mLight2::set_tone(int tone)
+{
+
+}
+
+void mLight2::set_num_shadowmap(int value)
+{
+
+}
+
+void mLight2::set_fog(float fog, float start, float end, vec3 &color)
+{
+
+}
+
+
 void mLight2::set_matrix(matrix4 &matrix)
 {
 	return;
@@ -351,12 +372,14 @@ void mLight2::rgbgen_wave_triangle(float amplitude, float phase, float freq, int
 
 void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index)
 {
-	float value;
+	float value = 0.0f;
 
-	if (abs32((float)(freq - 0.001)) <= 0.0011)
+	if (abs32((float)(freq - 0.001f)) <= 0.0011f)
 		freq = 0.1f;
 
-	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI)));
+	int temp = ((int)(freq * tick_num * 0.1f + phase) % 2);
+	if (temp != 0)
+		value = (float)(amplitude * (4.0f / temp * MY_PI));
 
 	rgbgen_scale(index, value);
 }
@@ -412,7 +435,7 @@ void Post::Params(int type, int framestep)
 	uniform_ps->SetFloatArray(gfx->device, "tc_offset", texCoordOffsets, 9);
 }
 
-void Post::BloomParams(int dir, float amount, float strength, float scale)
+void Post::BloomParams(int dir, float amount, float strength, float scale, int width, int height)
 {
 
 }
@@ -428,7 +451,7 @@ void ScreenSpace::prelink(void)
 {
 }
 
-void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool show_ao, bool randomize_points, int point_count, int width, int height)
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool randomize_points, int point_count, int width, int height)
 {
 }
 

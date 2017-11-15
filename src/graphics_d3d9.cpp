@@ -132,6 +132,10 @@ void Graphics::init(void *param1, void *param2)
 	hdc = *((HDC *)param2);
 	HRESULT		ret;
 
+	clear_r = 128;
+	clear_g = 128;
+	clear_b = 128;
+
 	memset(&d3dpp, sizeof(d3dpp), 0);
     d3dpp.Windowed = TRUE;
     d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -207,9 +211,7 @@ void Graphics::swap()
 
 void Graphics::clear()
 {
-	vec4 clear = { 0.5f, 0.5f, 0.5f, 1.0f };
-
-	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1.0f, 0);
+	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(clear_r, clear_g, clear_b), 1.0f, 0);
 	device->BeginScene();
 }
 
@@ -297,15 +299,18 @@ void Graphics::SelectVertexArrayObject(unsigned int vao)
 
 void Graphics::bindFramebuffer(int index, int num_attach)
 {
+	if (index == -1)
+		return;
+
 	device->SetRenderTarget(0, surface[index]);
 	device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(128, 128, 128), 1, 0);
 	return;
 }
 
-void Graphics::DeleteFrameBuffer(unsigned int index)
+void Graphics::DeleteFrameBuffer(int fbo, int quad, int depth)
 {
-	surface[index]->Release();
-	surface.erase(surface.begin() + index);
+	surface[fbo]->Release();
+	surface.erase(surface.begin() + fbo);
 	return;
 }
 
@@ -502,7 +507,15 @@ void Graphics::fbAttachTextureOne(int)
 
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
+void Graphics::clear_color(vec3 &color)
+{
+	clear_r = color.x * 255;
+	clear_g = color.y * 255;
+	clear_b = color.z * 255;
+}
+
+
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
 	IDirect3DTexture9	**d3d9_buffer = new IDirect3DTexture9 *;
 	D3DLOCKED_RECT		rect;

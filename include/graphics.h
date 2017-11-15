@@ -199,6 +199,9 @@ public:
 	vector<IDirect3DIndexBuffer9 *> index_buffers;
 	vector<IDirect3DTexture9 *> texture;
 	vector<IDirect3DSurface9 *> surface;
+	unsigned char clear_r;
+	unsigned char clear_g;
+	unsigned char clear_b;
 //	ID3DXFont *font;
 #endif
 #endif
