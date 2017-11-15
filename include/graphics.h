@@ -184,8 +184,8 @@ public:
 
 	vector<ID3D11Buffer *>	vertex_buffers;
 	vector<ID3D11Buffer *> index_buffers;
-	vector<ID3D11Texture2D *> texture;
-
+	//vector<ID3D11Texture2D *> texture;
+	vector<ID3D11ShaderResourceView *> texture;
 
 	ID3D11RasterizerState *render_state;
 	ID3D11RasterizerState *render_state_wireframe;
@@ -284,9 +284,9 @@ protected:
 #ifdef D3D11
 	Graphics *gfx;
 
+	ID3D11InputLayout *layout;
 	ID3D11VertexShader *vertex_shader;
 	ID3D11PixelShader *fragment_shader;
-	ID3D11InputLayout *layout;
 #else
 	Graphics *gfx;
 	IDirect3DVertexShader9		*vertex_shader;

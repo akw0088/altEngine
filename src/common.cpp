@@ -2074,7 +2074,7 @@ bool TestIntersection(const vec3 *object_a, const vec3 *object_b, const vec3 *no
 // Triangles faces 
 // zero based (pairs of triangles, skip one each time)
 //012 132, 715 731, 567 546, 026 064, 041 145, 236 376
-int seperating_axis_theorem(const vec3 *box_a, const vec3 *box_b)
+int separating_axis_theorem(const vec3 *box_a, const vec3 *box_b)
 {
 	vec3 ba;
 	vec3 ca;

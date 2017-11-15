@@ -103,6 +103,17 @@ void mLight2::set_contrast(float value)
 {
 }
 
+void mLight2::set_matrix(matrix4 &matrix)
+{
+	return;
+}
+
+void mLight2::set_num_shadowmap(int value)
+{
+
+}
+
+
 void mLight2::set_max(int max)
 {
 	max_light = max;
@@ -311,15 +322,59 @@ void mLight2::rgbgen_wave_triangle(float amplitude, float phase, float freq, int
 void mLight2::rgbgen_wave_square(float amplitude, float phase, float freq, int tick_num, int index)
 {
 	float value;
+	float denom;
 
-	if (abs32((float)(freq - 0.001)) <= 0.0011)
+	if (abs32((float)(freq - 0.001f)) <= 0.0011f)
 		freq = 0.1f;
 
-	value = (float)(amplitude * (4.0 / ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI)));
+	denom = ((int)(freq * tick_num / 10.0f + phase) % 2 * MY_PI);
 
-	rgbgen_scale(index, value);
+	if (abs32(denom) > 0.0001f)
+	{
+		value = (float)(amplitude * (4.0f / denom)) + 0.5f;
+		rgbgen_scale(index, value);
+	}
 }
 
+void mLight2::set_alpha(float value)
+{
+}
+
+void mLight2::portal(int value)
+{
+}
+
+void mLight2::Select()
+{
+}
+
+
+
+void mLight2::set_tone(int tone)
+{
+
+}
+
+void mLight2::alphatest(int value, int p)
+{
+}
+
+
+void mLight2::set_exposure(float value)
+{
+
+}
+
+void mLight2::set_clip(vec4 *plane)
+{
+
+}
+
+
+void mLight2::set_fog(float fog, float start, float end, vec3 &color)
+{
+
+}
 
 
 
@@ -353,6 +408,10 @@ void Post::resize(int width, int height)
 }
 
 void Post::Params(int tex0, int tex1)
+{
+}
+
+void Post::BloomParams(int dir, float amount, float strength, float scale, int xres, int yres)
 {
 }
 
@@ -400,12 +459,28 @@ void ParticleRender::prelink(void)
 {
 }
 
-void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y, float z)
 {
 }
 
 void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 {
+}
+
+int ScreenSpace::init(Graphics *gfx)
+{
+	return 0;
+}
+
+
+void ScreenSpace::prelink(void)
+{
+
+}
+
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool randomize_points, int point_count, int width, int height)
+{
+
 }
 
 #endif
