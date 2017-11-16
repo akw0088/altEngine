@@ -18,12 +18,12 @@ Terrain::Terrain()
 	loaded = false;
 }
 
-int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic)
+int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic, float scale)
 {
 	if (sphere)
-		CreateSphere(heightmap, 100.0f, vertex_array, index_array, num_vertex, num_index);
+		CreateSphere(heightmap, scale, vertex_array, index_array, num_vertex, num_index);
 	else
-		CreateMesh(heightmap, 100.0f, 100.0f, vertex_array, index_array, num_vertex, num_index);
+		CreateMesh(heightmap, scale, scale, vertex_array, index_array, num_vertex, num_index);
 
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vertex, false);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
@@ -140,6 +140,34 @@ void Terrain::CreateSphere(char *heightmap, float radius, vertex_t *&vertex, uns
 }
 
 
+void Terrain::Smooth(vertex_t *image, int width, int height)
+{
+	float kernel[9] = {
+		1.0f / 9.0f, 1.0f / 9.0f,  1.0f / 9.0f,
+		1.0f / 9.0f, 1.0f / 9.0f,  1.0f / 9.0f,
+		1.0f / 9.0f, 1.0f / 9.0f,  1.0f / 9.0f
+	};
+
+
+	for (int y = 1; y < height - 1; y++)
+	{
+		for (int x = 1; x < width - 1; x++)
+		{
+			image[y * width + x].position.y =
+				image[(y - 1) * width + (x - 1)].position.y * kernel[0] +
+				image[(y - 1) * width + (x + 0)].position.y * kernel[1] +
+				image[(y - 1) * width + (x + 1)].position.y * kernel[2] +
+
+				image[(y)* width + (x - 1)].position.y * kernel[3] +
+				image[(y)* width + (x + 0)].position.y * kernel[4] +
+				image[(y)* width + (x + 1)].position.y * kernel[5] +
+
+				image[(y + 1) * width + (x - 1)].position.y * kernel[6] +
+				image[(y + 1) * width + (x + 0)].position.y * kernel[7] +
+				image[(y + 1) * width + (x + 1)].position.y * kernel[8];
+		}
+	}
+}
 
 int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
 {
@@ -184,6 +212,8 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 			vertex[index].color = ~0;
 		}
 	}
+
+	Smooth(vertex, width, height);
 
 
 	// pulled from tessellate bezier curve -- glad I dont have to write this twice ;)
@@ -253,7 +283,7 @@ bool Terrain::collision_detect(RigidBody &body)
 		point += -body.center + body.entity->position;
 
 
-		float tpos = GetHeightAt(point, normal);
+		float tpos = GetHeight(point, normal);
 		height = tpos;
 		if (point.y < tpos)
 		{
@@ -274,7 +304,7 @@ bool Terrain::collision_detect(RigidBody &body)
 	return false;
 }
 
-float Terrain::GetHeightAt(const vec3 &position, vec3 &normal)
+float Terrain::GetHeight(const vec3 &position, vec3 &normal)
 {
 	float height = -FLT_MAX;
 

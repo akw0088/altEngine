@@ -799,7 +799,7 @@ void Engine::load(char *level)
 	render_portalcamera();
 
 
-	//terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0);
+	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0, 500.0f);
 #if 0
 	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
 	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);

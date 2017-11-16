@@ -7,12 +7,12 @@ class Terrain
 {
 public:
 	Terrain();
-	int load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic);
+	int load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic, float scale);
 	int CreateMesh(char *heightmap, float scale_width, float scale_height, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
 	void render(Graphics &gfx);
 	bool collision_detect(RigidBody &body);
-	float GetHeightAt(const vec3 &position, vec3 &normal);
-
+	float GetHeight(const vec3 &position, vec3 &normal);
+	void Smooth(vertex_t *image, int width, int height);
 
 	void CreateSphere(char *heightmap, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
 
