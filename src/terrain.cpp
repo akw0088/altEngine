@@ -18,12 +18,23 @@ Terrain::Terrain()
 	loaded = false;
 }
 
-int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere, int anisotropic, float scale)
+int Terrain::load(Graphics &gfx, float scale, vec3 &offset, char *heightmap, char *texture_str, bool sphere, int anisotropic)
 {
 	if (sphere)
-		CreateSphere(heightmap, scale, vertex_array, index_array, num_vertex, num_index);
+	{
+		CreateSphere(heightmap, scale, offset, vertex_array, index_array, num_vertex, num_index);
+	}
 	else
-		CreateMesh(heightmap, scale, scale, vertex_array, index_array, num_vertex, num_index);
+	{
+		CreateMesh(heightmap, scale, scale, offset, vertex_array, index_array, num_vertex, num_index);
+		CreateWater(scale, scale, water_array, water_index, water_nvertex, water_nindex);
+	}
+
+	water_vbo = gfx.CreateVertexBuffer(water_array, water_nvertex, false);
+	water_ibo = gfx.CreateIndexBuffer(water_index, water_nindex);
+	water_tex = load_texture(gfx, "media/terrain/blue.png", false, false, anisotropic);
+
+
 
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vertex, false);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
@@ -34,7 +45,7 @@ int Terrain::load(Graphics &gfx, char *heightmap, char *texture_str, bool sphere
 }
 
 
-void Terrain::CreateSphere(char *heightmap, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
+void Terrain::CreateSphere(char *heightmap, float radius, vec3 &offset, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
 {
 	float theta1 = 0, theta2 = 0, theta3 = 0;
 	float xcoord = 0;
@@ -140,7 +151,7 @@ void Terrain::CreateSphere(char *heightmap, float radius, vertex_t *&vertex, uns
 }
 
 
-void Terrain::Smooth(vertex_t *image, int width, int height)
+void Terrain::Smooth(vertex_t *image, int width, int height, vec3 &avg)
 {
 	float kernel[9] = {
 		1.0f / 9.0f, 1.0f / 9.0f,  1.0f / 9.0f,
@@ -148,11 +159,14 @@ void Terrain::Smooth(vertex_t *image, int width, int height)
 		1.0f / 9.0f, 1.0f / 9.0f,  1.0f / 9.0f
 	};
 
-
+	avg.x = 0.0f;
+	avg.y = 0.0f;
+	avg.z = 0.0f;
 	for (int y = 1; y < height - 1; y++)
 	{
 		for (int x = 1; x < width - 1; x++)
 		{
+
 			image[y * width + x].position.y =
 				image[(y - 1) * width + (x - 1)].position.y * kernel[0] +
 				image[(y - 1) * width + (x + 0)].position.y * kernel[1] +
@@ -165,11 +179,63 @@ void Terrain::Smooth(vertex_t *image, int width, int height)
 				image[(y + 1) * width + (x - 1)].position.y * kernel[6] +
 				image[(y + 1) * width + (x + 0)].position.y * kernel[7] +
 				image[(y + 1) * width + (x + 1)].position.y * kernel[8];
+			avg += image[y* width + x + 0].position;
 		}
 	}
+
+	avg *= 1.0f / ((width - 2) * (height - 2));
 }
 
-int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
+int Terrain::CreateWater(float scale_width, float scale_height, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
+{
+	float half_length = scale_width * (num_row >> 1);
+
+	vertex = new vertex_t[4];
+
+	vertex[0].position.x = offset.x - half_length;
+	vertex[0].position.y = avg.y;
+	vertex[0].position.z = offset.z - half_length;
+	vertex[0].texCoord0 = vec2(0.0f, 0.0f);
+	vertex[0].color = ~0;
+	vertex[0].normal = vec3(0.0f, 1.0f, 0.0f);
+
+	vertex[1].position.x = offset.x + half_length;
+	vertex[1].position.y = avg.y;
+	vertex[1].position.z = offset.z - half_length;
+	vertex[1].texCoord0 = vec2(1.0f, 0.0f);
+	vertex[1].color = ~0;
+	vertex[1].normal = vec3(0.0f, 1.0f, 0.0f);
+
+	vertex[2].position.x = offset.x - half_length;
+	vertex[2].position.y = avg.y;
+	vertex[2].position.z = offset.z + half_length;
+	vertex[2].texCoord0 = vec2(0.0f, 1.0f);
+	vertex[2].color = ~0;
+	vertex[2].normal = vec3(0.0f, 1.0f, 0.0f);
+
+	vertex[3].position.x = offset.x + half_length;
+	vertex[3].position.y = avg.y;
+	vertex[3].position.z = offset.z + half_length;
+	vertex[3].texCoord0 = vec2(1.0f, 1.0f);
+	vertex[3].color = ~0;
+	vertex[3].normal = vec3(0.0f, 1.0f, 0.0f);
+
+	num_vertex = 4;
+
+	index = new unsigned int[6];
+
+	index[0] = 0;
+	index[1] = 1;
+	index[2] = 2;
+
+	index[3] = 3;
+	index[4] = 2;
+	index[5] = 1;
+	num_index = 6;
+	return 0;
+}
+
+int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, vec3 &offset, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
 {
 	int width;
 	int height;
@@ -181,16 +247,15 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 	num_vertex = width * height;
-	vertex = new vertex_t[width * height];
+	vertex = new vertex_t[width * height + 4];
 
 	num_index = width * height * 3 * 2;
 	index = new unsigned int[num_index];
 
 
 	Terrain::size = (float)(width * scale_width);
-	offset = vec3(0.0f, -50000.0f, 0.0f);
 	num_col = height;
-	num_row = width;;
+	num_row = width;
 	trilength = (float)size / num_row;
 
 
@@ -201,9 +266,9 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 		for (int x = 0; x < width; x++)
 		{
 			int index = y * width + x;
-			vertex[index].position.x = scale_width * x - half_length;
-			vertex[index].position.y = scale_height * image[index * sizeof(int)] - 50000.0f;
-			vertex[index].position.z = scale_width * y - half_length;
+			vertex[index].position.x = scale_width * x - half_length + offset.x;
+			vertex[index].position.y = scale_height * image[index * sizeof(int)] + offset.y;
+			vertex[index].position.z = scale_width * y - half_length + offset.z;
 
 			vertex[index].texCoord0.x = (float)x / (width - 1);
 			vertex[index].texCoord0.y = (float)y / (height - 1);
@@ -213,8 +278,7 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 		}
 	}
 
-	Smooth(vertex, width, height);
-
+	Smooth(vertex, width, height, avg);
 
 	// pulled from tessellate bezier curve -- glad I dont have to write this twice ;)
 	unsigned int num_row = width;
@@ -268,6 +332,12 @@ void Terrain::render(Graphics &gfx)
 	gfx.SelectVertexBuffer(vbo);
 	gfx.SelectTexture(0, terrain_tex);
 	gfx.DrawArrayTri(0, 0, num_index, num_vertex);
+
+	gfx.SelectIndexBuffer(water_ibo);
+	gfx.SelectVertexBuffer(water_vbo);
+	gfx.SelectTexture(0, water_tex);
+	gfx.DrawArrayTri(0, 0, water_nindex, water_nvertex);
+
 }
 
 bool Terrain::collision_detect(RigidBody &body)

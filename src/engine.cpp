@@ -798,8 +798,10 @@ void Engine::load(char *level)
 	// render portals at least once
 	render_portalcamera();
 
-
-	terrain.load(gfx, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", false, 0, 500.0f);
+	vec3 offset(0.0f, -100000.0f, 0.0f);
+	terrain.load(gfx, 500.0f, offset, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png",
+		"media/terrain/terrain_big.png", false, 0);
+		
 #if 0
 	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
 	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);
