@@ -8,15 +8,13 @@ typedef struct
 	vec3 pos;
 	vec3 vel;
 	vec3 acc;
-	float mass;
+	//	float mass;
 	float pres;
 	float dens;
-	float gclv; //gradient of smoothed color field
-	float gcl; //absolute of gradient of smoothed color field
-	float lcl; //Laplacian of smoothed color field
 	float color; //smoothed color field
 	int nbCount;
 	int nbList[32];
+	unsigned int hash;
 } particle_t;
 
 typedef struct
@@ -45,6 +43,9 @@ private:
 
 	particle_t *part;
 	int num_particle;
+
+	unsigned int last_rendered;
+	unsigned int last_calculated;
 
 	// define fluid bounds
 	vec3 bound_max;

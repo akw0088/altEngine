@@ -1,7 +1,7 @@
 #include "sph.h"
 #include <math.h>
 
-#define SCALE	3
+#define SCALE	0.04f
 #define EPSILON 0.000001f
 #define PMASS	0.010543f //kg 0.020543
 #define I_STIFF (2.0f / 1000.0f)
@@ -15,8 +15,8 @@
 
 #define DT		0.004f
 
-#define kH		0.03f
-#define kH2		(0.03f * 0.03f)
+#define kH		0.3f
+#define kH2		(kH * kH)
 #define PDIST (pow(PMASS / REST_DENS, 1 / 3.0)) //m
 #define D (PDIST * 0.9f / SCALE) // 0.87?
 
@@ -26,22 +26,34 @@
 #define SPIKY_KERN		(-45.0f / (MY_PI * (float)pow(kH, 6)))
 #define VISCOSITY_KERN	(45.0f / (MY_PI * (float)pow(kH, 6)))
 
+#define MAX_NEIGHBOR 32
+
+#define MAX(x,y) (x) > (y) ? (x) : (y)
+#define MIN(x,y) (x) < (y) ? (x) : (y)
+
+
+unsigned int hash3d(int i, int j, int k, unsigned int n)
+{
+	return i * 73856093 ^ j * 19349663 ^ k * 83492791 % n;
+}
 
 Sph::Sph()
 {
-	num_particle = 10000;
+	num_particle = 3000;
+	last_calculated = 0;
+	last_rendered = 0;
 }
 
 void Sph::init()
 {
 	part = new particle_t[num_particle];
 
-	vec3 max_bound(10.0f, 10.0f, 10.0f);
+	vec3 max_bound(10.0f, 100.0f, 10.0f);
 	vec3 min_bound(-10.0f, -10.0f, -10.0f);
 
-	xd = (int)((max_bound.x - min_bound.x) * SCALE);
-	yd = (int)((max_bound.y - min_bound.y) * SCALE);
-	zd = (int)((max_bound.z - min_bound.z) * SCALE);
+	xd = (int)((max_bound.x - min_bound.x));
+	yd = (int)((max_bound.y - min_bound.y));
+	zd = (int)((max_bound.z - min_bound.z));
 
 
 	float px = (int)(2000.0f / D) + 1.0f;
@@ -60,9 +72,11 @@ void Sph::init()
 	for (int i = 0; i < num_particle; i++)
 	{
 		memset(&part[i], 0, sizeof(particle_t));
-		part[i].pos.x = rand_float(0, 10);
-		part[i].pos.y = rand_float(0, 10);
-		part[i].pos.z = rand_float(0, 10);
+		part[i].pos.x = rand_float(0.0f, 0.9f);
+		part[i].pos.y = rand_float(5.0f, 10.0f);
+		part[i].pos.z = rand_float(0.0f, 0.9f);
+
+		part[i].hash = hash3d(part[i].pos.x, part[i].pos.y, part[i].pos.z, 60);
 	}
 
 	update_neighbors();
@@ -73,12 +87,14 @@ void Sph::update_neighbors()
 {
 	double dr2 = 0;
 	double lh2 = 4 * kH2;
+	int max_neighbor = 0;
+
 
 	// Initialize to zero
 	for (int i = 0; i < num_particle; i++)
 	{
 		part[i].nbCount = 0;
-		for (int j = 0; j < 32; j++)
+		for (int j = 0; j < MAX_NEIGHBOR; j++)
 		{
 			part[i].nbList[j] = 0;
 		}
@@ -87,28 +103,39 @@ void Sph::update_neighbors()
 	// If distance squared less than radius, add neighbors
 	for (int i = 0; i < num_particle; i++)
 	{
-		for (int j = 0; j < part[i].nbCount; j++)
+		for (int j = 0; j < num_particle; j++)
 		{
 			if (i >= j)
 				continue;
 
-			if (part[i].nbCount < 32)
+			if (part[i].nbCount >= MAX_NEIGHBOR)
 			{
-				//calculate distance
-				dr2 = 0;
-				dr2 += (part[i].pos - part[j].pos) * (part[i].pos - part[j].pos);
-				dr2 *= SCALE * SCALE;
+				break;
+			}
 
-				//list neighborhood particle
-				if (dr2 < lh2)
+			if (part[i].hash != part[i].hash)
+				continue;
+
+			if (part[i].nbCount > max_neighbor)
+			{
+				max_neighbor = part[i].nbCount;
+				//printf("max neighbor: %d\r\n", max_neighbor);
+			}
+			//calculate distance
+			dr2 = 0;
+
+			vec3 dist = (part[i].pos - part[j].pos);
+			dr2 += dist * dist;
+
+			//list neighborhood particle
+			if (dr2 < lh2)
+			{
+				part[i].nbList[part[i].nbCount] = j;
+				part[i].nbCount++;
+				if (part[j].nbCount < 32)
 				{
-					part[i].nbList[part[i].nbCount] = j;
-					part[i].nbCount++;
-					if (part[j].nbCount < 32 && i != j)
-					{
-						part[j].nbList[part[j].nbCount] = i;
-						part[j].nbCount++;
-					}
+					part[j].nbList[part[j].nbCount] = i;
+					part[j].nbCount++;
 				}
 			}
 		}
@@ -117,10 +144,10 @@ void Sph::update_neighbors()
 
 void Sph::step(int frame)
 {
-	if (frame % 5 == 0)
-	{
+	if (last_calculated == last_rendered)
 		update_neighbors();
-	}
+
+	last_calculated = frame;
 	calc_density_pressure();
 	calc_force();
 	calc_pos();
@@ -198,7 +225,7 @@ void Sph::calc_force()
 
 			if (i != num)
 			{
-				r = sqrt(norm2(part[i].pos, part[num].pos)) * SCALE;
+				r = newtonSqrt(norm2(part[i].pos, part[num].pos)) * SCALE;
 
 				if (r < kH)
 				{
@@ -231,7 +258,6 @@ void Sph::calc_force()
 		}
 	}
 
-	printf("color max: %f min: %f", max, min);
 }
 
 //calculate position from forces and accelerations
@@ -267,6 +293,7 @@ void Sph::calc_pos()
 
 		part[i].vel += part[i].acc * DT;
 		part[i].pos += part[i].vel * DT / SCALE;
+		part[i].hash = hash3d(part[i].pos.x, part[i].pos.y, part[i].pos.z, 60);
 	}
 }
 
@@ -308,8 +335,11 @@ void Sph::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
+	last_rendered = last_calculated;
+
 	// Draw Fluid Particles
-	glPointSize(2.0f);
+	glPointSize(10.0f);
+	glBegin(GL_POINTS);
 	for (int i = 0; i < num_particle; ++i)
 	{
 		float c = 0.1f * part[i].pres;
@@ -317,8 +347,8 @@ void Sph::render()
 		float y = 20 * fabs(part[i].vel.y);
 
 		glColor3f(0.3f + x, 0.3f + y, 0.3f + c);
-		glBegin(GL_POINTS);
+		vec3 color(0.3f + x, 0.3f + y, 0.3f + c);
 		glVertex3f(part[i].pos.x, part[i].pos.y, part[i].pos.z);
-		glEnd();
 	}
+	glEnd();
 }

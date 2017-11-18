@@ -9,6 +9,8 @@
 #define MAX_SPEED 3.0f
 #define MAX_AIR_SPEED 5.5f
 
+#define DECELERATION_RATE 0.95f
+
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
 {
@@ -166,7 +168,7 @@ void RigidBody::integrate(float time)
 
 	// This is a really large cap for hopefully impossible situations
 	if (velocity.magnitude() > MAX_VELOCITY)
-		velocity = velocity.normalize() * MAX_VELOCITY;
+		velocity *= DECELERATION_RATE;// velocity.normalize() * MAX_VELOCITY;
 
 	/*
 	if (entity->player)
@@ -1127,7 +1129,7 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 	
 	if (projectile->rigid->velocity.magnitude() > max_velocity)
 	{
-		projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
+		projectile->rigid->velocity *= DECELERATION_RATE;
 	}
 }
 
@@ -1159,7 +1161,7 @@ int RigidBody::train_follow_path(vec3 *target, float max_velocity, float distanc
 		pid_controller(*path.target, 0.16f, projectile->position, projectile->rigid->velocity, 0);
 		if (projectile->rigid->velocity.magnitude() > max_velocity)
 		{
-			projectile->rigid->velocity = projectile->rigid->velocity.normalize() * max_velocity;
+			projectile->rigid->velocity *= DECELERATION_RATE;
 		}
 	}
 	return -1;
