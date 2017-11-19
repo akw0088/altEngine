@@ -21,9 +21,16 @@
 #define kH		0.03f
 #define kH2		(kH * kH)
 
+
+/*
+W(r-rb,h) = 315 / 64pi h^9(h^2 - |r-rb|^2)^3
+gradW(r-rb,h) = -45 / pi h^6 (h - |r-rb|)^2 [r-rb]/[r-rb]
+lapW(r-rb,h)= 45 / pi h^6 [ h - |r-rb|)
+*/
+
 #define POLY6_KERN		(315.0f / (64.0f * MY_PI * (float)pow(kH, 9)))
-#define GRAD_POLY6_KERN 945.0f / (32.0f * MY_PI * (float)pow(h, 9));
-#define LAP_POLY6_KERN  945.0f / (32.0f * MY_PI * (float)pow(h, 9));
+#define GRAD_POLY6_KERN 945.0f / (32.0f * MY_PI * (float)pow(kH, 9));
+#define LAP_POLY6_KERN  945.0f / (32.0f * MY_PI * (float)pow(kH, 9));
 #define SPIKY_KERN		(-45.0f / (MY_PI * (float)pow(kH, 6)))
 #define VISCOSITY_KERN	(45.0f / (MY_PI * (float)pow(kH, 6)))
 
@@ -34,16 +41,14 @@ typedef struct
 	vec3 pos;
 	vec3 vel;
 	vec3 acc;
-//	float mass;
 	float pres;
 	float dens;
-	float color; //smoothed color field
 	int nbCount;
 	int nbList[MAX_NEIGHBOR];
 	unsigned int hash;
 } particle_t;
 
-#define GRID_SIZE 1
+#define GRID_SIZE 6
 
 #define MAX_GRID_PARTICLE 4000
 typedef struct
@@ -58,7 +63,7 @@ class Sph
 {
 public:
 	Sph();
-	void init();
+	void init(int num_particle);
 	void step(int frame);
 	void render();
 
@@ -73,10 +78,11 @@ private:
 
 
 	particle_t *part;
-	int num_particle;
-
+	bool initialized;
 	unsigned int last_rendered;
 	unsigned int last_calculated;
+	int num_particle;
+
 
 	// define fluid bounds
 	vec3 max_bound;
@@ -84,7 +90,16 @@ private:
 	int grid_width;
 	int grid_height;
 	int grid_depth;
-	voxel_t grid[GRID_SIZE][5][GRID_SIZE];
+	voxel_t grid[GRID_SIZE][GRID_SIZE][GRID_SIZE];
+
+
+
+	// constant kernel factors
+	float poly6_kern;
+	float grad_poly6_kern;
+	float lap_poly6_kern;
+	float spiky_kern;
+	float viscosity_kern;
 };
 
 #endif

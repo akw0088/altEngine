@@ -5,26 +5,39 @@ Sph::Sph()
 	num_particle = 500;
 	last_calculated = 0;
 	last_rendered = 0;
+	initialized = false;
+
+
+	poly6_kern = POLY6_KERN;
+	grad_poly6_kern = GRAD_POLY6_KERN;
+	lap_poly6_kern = LAP_POLY6_KERN;
+	spiky_kern = SPIKY_KERN;
+	viscosity_kern = VISCOSITY_KERN;
 
 
 
 	// small scale works better, scale up when displaying results
-	max_bound = vec3(6.0f, 18.0f, 6.0f);
+	max_bound = vec3(36.0f, 36.0f, 36.0f);
 	min_bound = vec3(0.0f, 0.0f, 0.0f);
-	part = new particle_t[num_particle];
 
 	float smoothing_length = 6.0;
 	grid_width = (max_bound.x - min_bound.x) / smoothing_length;
 	grid_height = (max_bound.y - min_bound.y) / smoothing_length;
 	grid_depth = (max_bound.z - min_bound.z) / smoothing_length;
 
-	init();
-	update_grid();
-	update_neighbors();
+	part = NULL;
+	init(500);
+	initialized = true;
 }
 
-void Sph::init()
+void Sph::init(int num_particle)
 {
+	Sph::num_particle = num_particle;
+	if (part != NULL)
+		delete[] part;
+
+	printf("Allocating %d particles\n", num_particle);
+	part = new particle_t[num_particle];
 	for (int i = 0; i < num_particle; i++)
 	{
 		memset(&part[i], 0, sizeof(particle_t));
@@ -32,6 +45,8 @@ void Sph::init()
 		part[i].pos.y = rand_float(min_bound.y, max_bound.y);
 		part[i].pos.z = rand_float(min_bound.z, max_bound.z);
 	}
+	update_grid();
+	update_neighbors();
 }
 
 // place all particles in bounds into grid
@@ -62,7 +77,7 @@ void Sph::update_grid()
 		float zf = part[i].pos.z / (max_bound.z - min_bound.z);
 		zf = clamp(zf, 0.0f, 1.0f);
 		int z = zf * grid_width;
-		
+
 		if (x < 0 || y < 0 || z < 0)
 			continue;
 
@@ -121,7 +136,7 @@ void Sph::update_neighbors()
 						if (part[i].nbCount > max_neighbor)
 						{
 							max_neighbor = part[i].nbCount;
-//							printf("max neighbor: %d\r\n", max_neighbor);
+							//							printf("max neighbor: %d\r\n", max_neighbor);
 						}
 						//calculate distance
 						dr2 = 0;
@@ -198,11 +213,11 @@ void Sph::calc_density_pressure()
 
 		sum += kH2 * kH2 * kH2;
 
-		part[i].dens = PMASS * POLY6_KERN * sum;
+		part[i].dens = PMASS * poly6_kern * sum;
 		if (part[i].dens > max_dens)
 		{
 			max_dens = part[i].dens;
-//			printf("Max density: %f\n", max_dens);
+			//			printf("Max density: %f\n", max_dens);
 		}
 
 		// PRESSURE
@@ -212,7 +227,7 @@ void Sph::calc_density_pressure()
 		if (part[i].pres > max_pressure)
 		{
 			max_pressure = part[i].pres;
-//			printf("Max pressure: %f\n", max_pressure);
+			//			printf("Max pressure: %f\n", max_pressure);
 		}
 	}
 
@@ -263,20 +278,8 @@ void Sph::calc_force()
 			}
 		}
 
-		part[i].color = PMASS * POLY6_KERN * color;
-		part[i].acc = (pacc  * -0.5 * SPIKY_KERN
-			+ vacc * VISCOSITY_KERN * VISC) * PMASS / part[i].dens;
-
-		//debug
-		if (i == 0)
-		{
-			min = max = part[i].color;
-		}
-		else
-		{
-			temp = part[i].color;
-			temp = clamp(temp, min, max);
-		}
+		part[i].acc = (pacc  * -0.5 * spiky_kern
+			+ vacc * viscosity_kern * VISC) * PMASS / part[i].dens;
 	}
 
 }
