@@ -24,7 +24,7 @@ Sph::Sph()
 	grid_width = (max_bound.x - min_bound.x) / smoothing_length;
 	grid_height = (max_bound.y - min_bound.y) / smoothing_length;
 	grid_depth = (max_bound.z - min_bound.z) / smoothing_length;
-
+	
 	part = NULL;
 	init(500);
 	initialized = true;
@@ -35,6 +35,9 @@ void Sph::init(int num_particle)
 	Sph::num_particle = num_particle;
 	if (part != NULL)
 		delete[] part;
+
+	// make points circles
+	glEnable(GL_POINT_SMOOTH);
 
 	printf("Allocating %d particles\n", num_particle);
 	part = new particle_t[num_particle];
@@ -66,6 +69,8 @@ void Sph::update_grid()
 
 	for (int i = 0; i < num_particle; i++)
 	{
+		part[i].nbCount = 0;
+
 		float xf = part[i].pos.x / (max_bound.x - min_bound.x);
 		xf = clamp(xf, 0.0f, 1.0f);
 		int x = xf * grid_width;
@@ -77,7 +82,7 @@ void Sph::update_grid()
 		float zf = part[i].pos.z / (max_bound.z - min_bound.z);
 		zf = clamp(zf, 0.0f, 1.0f);
 		int z = zf * grid_width;
-
+		
 		if (x < 0 || y < 0 || z < 0)
 			continue;
 
@@ -98,18 +103,8 @@ void Sph::update_neighbors()
 	float lh2 = 4 * kH2;
 	int max_neighbor = 0;
 
-
-	// Initialize to zero
-	for (int i = 0; i < num_particle; i++)
-	{
-		part[i].nbCount = 0;
-		for (int j = 0; j < MAX_NEIGHBOR; j++)
-		{
-			part[i].nbList[j] = 0;
-		}
-	}
-
 	// Update neighbors on a grid by grid basis (ignoring particles outside of same grid)
+	// note: moved clearing of part[i].nbCount to update grid to cut out extra loop
 	for (int x = 0; x < grid_width; x++)
 	{
 		for (int y = 0; y < grid_height; y++)
@@ -136,7 +131,7 @@ void Sph::update_neighbors()
 						if (part[i].nbCount > max_neighbor)
 						{
 							max_neighbor = part[i].nbCount;
-							//							printf("max neighbor: %d\r\n", max_neighbor);
+//							printf("max neighbor: %d\r\n", max_neighbor);
 						}
 						//calculate distance
 						dr2 = 0;
@@ -195,6 +190,8 @@ void Sph::calc_density_pressure()
 	for (int i = 0; i < num_particle; i++)
 	{
 		sum = 0;
+
+		// add density for all neighbors within smoothing radius kH (using sqaures of both to avoid sqrt)
 		for (int j = 0; j < part[i].nbCount; j++)
 		{
 			if (i >= j)
@@ -217,7 +214,7 @@ void Sph::calc_density_pressure()
 		if (part[i].dens > max_dens)
 		{
 			max_dens = part[i].dens;
-			//			printf("Max density: %f\n", max_dens);
+//			printf("Max density: %f\n", max_dens);
 		}
 
 		// PRESSURE
@@ -227,7 +224,7 @@ void Sph::calc_density_pressure()
 		if (part[i].pres > max_pressure)
 		{
 			max_pressure = part[i].pres;
-			//			printf("Max pressure: %f\n", max_pressure);
+//			printf("Max pressure: %f\n", max_pressure);
 		}
 	}
 
@@ -278,6 +275,7 @@ void Sph::calc_force()
 			}
 		}
 
+		//part[i].color = PMASS * POLY6_KERN * color;
 		part[i].acc = (pacc  * -0.5 * spiky_kern
 			+ vacc * viscosity_kern * VISC) * PMASS / part[i].dens;
 	}
@@ -318,6 +316,7 @@ void Sph::calc_pos()
 		part[i].vel += part[i].acc * DT;
 		part[i].pos += part[i].vel * DT / SCALE;
 
+		// probably not so efficient, but noticed some particles escaping bounds
 		if (part[i].pos.x > max_bound.x && part[i].vel.x > 0)
 		{
 			part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
