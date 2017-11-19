@@ -1,44 +1,22 @@
 #include "sph.h"
-#include <math.h>
-
-#define SCALE	0.04f
-#define EPSILON 0.000001f
-#define PMASS	0.010543f //kg 0.020543
-#define I_STIFF (2.0f / 1000.0f)
-#define E_STIFF 10000
-#define E_DAMP	256
-#define REST_DENS	1000 //kg.m-3
-
-#define ACCEL_LIMIT	200 //m.s-2
-#define VISC	0.05f
-#define RAD		0.004f //m
-
-#define DT		0.004f
-
-#define kH		0.3f
-#define kH2		(kH * kH)
-
-#define POLY6_KERN		(315.0f / (64.0f * MY_PI * (float)pow(kH, 9)))
-#define GRAD_POLY6_KERN 945.0f / (32.0f * MY_PI * (float)pow(h, 9));
-#define LAP_POLY6_KERN  945.0f / (32.0f * MY_PI * (float)pow(h, 9));
-#define SPIKY_KERN		(-45.0f / (MY_PI * (float)pow(kH, 6)))
-#define VISCOSITY_KERN	(45.0f / (MY_PI * (float)pow(kH, 6)))
-
-#define MAX_NEIGHBOR 32
 
 Sph::Sph()
 {
-	num_particle = 3000;
+	num_particle = 500;
 	last_calculated = 0;
 	last_rendered = 0;
 
-	max_bound = vec3(500.0f, 1000.0f, -500.0f);
-	min_bound = vec3(-500.0f, -500.0f, 0.0f);
+
+
+	// small scale works better, scale up when displaying results
+	max_bound = vec3(6.0f, 18.0f, 6.0f);
+	min_bound = vec3(0.0f, 0.0f, 0.0f);
 	part = new particle_t[num_particle];
 
-	grid_width = 4;
-	grid_height = 4;
-	grid_depth = 4;
+	float smoothing_length = 6.0;
+	grid_width = (max_bound.x - min_bound.x) / smoothing_length;
+	grid_height = (max_bound.y - min_bound.y) / smoothing_length;
+	grid_depth = (max_bound.z - min_bound.z) / smoothing_length;
 
 	init();
 	update_grid();
@@ -73,29 +51,27 @@ void Sph::update_grid()
 
 	for (int i = 0; i < num_particle; i++)
 	{
-		float xf = part[i].pos.x / (max_bound.x - min_bound.x) + 0.5f;
+		float xf = part[i].pos.x / (max_bound.x - min_bound.x);
+		xf = clamp(xf, 0.0f, 1.0f);
 		int x = xf * grid_width;
 
-		float yf = part[i].pos.y / (max_bound.y - min_bound.y) + 0.5f;
+		float yf = part[i].pos.y / (max_bound.y - min_bound.y);
+		yf = clamp(yf, 0.0f, 1.0f);
 		int y = yf * grid_height;
 
-		float zf = part[i].pos.z / (max_bound.z - min_bound.z) + 0.5f;
+		float zf = part[i].pos.z / (max_bound.z - min_bound.z);
+		zf = clamp(zf, 0.0f, 1.0f);
 		int z = zf * grid_width;
+		
+		if (x < 0 || y < 0 || z < 0)
+			continue;
 
-
+		x = y = z = 0;
 		int num = grid[x][y][z].num_part;
 		if (num < MAX_GRID_PARTICLE)
 		{
-			grid[x][y][z].part[num] = &part[i];
+			grid[x][y][z].part[num] = part[i];
 			grid[x][y][z].num_part++;
-		}
-		else
-		{
-			printf("Filled grid %d %d %d with max particles\r\n", x, y, z);
-			part[i].pos.x = rand_float(min_bound.x, max_bound.x);
-			part[i].pos.y = rand_float(min_bound.y, max_bound.y);
-			part[i].pos.z = rand_float(min_bound.z, max_bound.z);
-			i--;
 		}
 	}
 }
@@ -132,7 +108,7 @@ void Sph::update_neighbors()
 						if (i >= j)
 							continue;
 
-						if (grid[x][y][z].part[i]->nbCount >= MAX_NEIGHBOR)
+						if (grid[x][y][z].part[i].nbCount >= MAX_NEIGHBOR)
 						{
 							break;
 						}
@@ -145,7 +121,7 @@ void Sph::update_neighbors()
 						if (part[i].nbCount > max_neighbor)
 						{
 							max_neighbor = part[i].nbCount;
-							printf("max neighbor: %d\r\n", max_neighbor);
+//							printf("max neighbor: %d\r\n", max_neighbor);
 						}
 						//calculate distance
 						dr2 = 0;
@@ -198,13 +174,15 @@ void Sph::calc_density_pressure()
 {
 	float r2, sum, dist;
 	int num = 0;
+	float max_dens = 0.0f;
+	float max_pressure = 0.0f;
 
 	for (int i = 0; i < num_particle; i++)
 	{
 		sum = 0;
 		for (int j = 0; j < part[i].nbCount; j++)
 		{
-			if (i <= j)
+			if (i >= j)
 				continue;
 
 			num = part[i].nbList[j];
@@ -221,11 +199,21 @@ void Sph::calc_density_pressure()
 		sum += kH2 * kH2 * kH2;
 
 		part[i].dens = PMASS * POLY6_KERN * sum;
+		if (part[i].dens > max_dens)
+		{
+			max_dens = part[i].dens;
+//			printf("Max density: %f\n", max_dens);
+		}
 
 		// PRESSURE
 		//
 		// Make the simple pressure calculation from the equation of state.
 		part[i].pres = I_STIFF * (part[i].dens - REST_DENS);
+		if (part[i].pres > max_pressure)
+		{
+			max_pressure = part[i].pres;
+//			printf("Max pressure: %f\n", max_pressure);
+		}
 	}
 
 }
@@ -326,6 +314,40 @@ void Sph::calc_pos()
 
 		part[i].vel += part[i].acc * DT;
 		part[i].pos += part[i].vel * DT / SCALE;
+
+		if (part[i].pos.x > max_bound.x && part[i].vel.x > 0)
+		{
+			part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
+			part[i].vel.x *= -1;
+		}
+		else if (part[i].pos.x < min_bound.x && part[i].vel.x < 0)
+		{
+			part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
+			part[i].vel.x *= -1;
+		}
+
+		if (part[i].pos.z > max_bound.x && part[i].vel.z > 0)
+		{
+			part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
+			part[i].vel.z *= -1;
+		}
+		else if (part[i].pos.z < min_bound.z && part[i].vel.z < 0)
+		{
+			part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
+			part[i].vel.z *= -1;
+		}
+
+		if (part[i].pos.y > max_bound.y && part[i].vel.y > 0)
+		{
+			part[i].pos.y = clamp(part[i].pos.y, min_bound.y, max_bound.y);
+			part[i].vel.y *= -1;
+		}
+		else if (part[i].pos.y < min_bound.y && part[i].vel.y < 0)
+		{
+			part[i].pos.y = clamp(part[i].pos.y, min_bound.y, max_bound.y);
+			part[i].vel.y *= -1;
+		}
+
 	}
 }
 
@@ -336,62 +358,20 @@ inline float Sph::norm2(vec3 &a, vec3 &b)
 	return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
 }
 
-
-// Sum up densities
-double Sph::update_sum(int *x, vec3 &xp)
-{
-	double sum = 0;
-	double dr2, temp;
-	int num;
-
-	for (int x = 0; x < grid_width; x++)
-	{
-		for (int y = 0; y < grid_height; y++)
-		{
-			for (int z = 0; z < grid_depth; z++)
-			{
-				dr2 = 0;
-				num = grid[x][y][z].num_part;
-
-				dr2 += (xp / SCALE - grid[x][y][z].part[num]->pos) * (xp / SCALE - grid[x][y][z].part[num]->pos);
-				dr2 *= SCALE * SCALE;
-
-				if (dr2 < kH2)
-				{
-					temp = kH2 - dr2;
-					sum += temp * temp * temp;
-				}
-			}
-		}
-	}
-
-
-	return sum * 100000;
-}
-
 void Sph::render()
 {
 	last_rendered = last_calculated;
 	// Draw Fluid Particles
 	glPointSize(10.0f);
+	glBegin(GL_POINTS);
 	for (int i = 0; i < num_particle; ++i)
 	{
 		float c = 0.1f * part[i].pres;
-		float x = 20 * fabs(part[i].nbCount);
-		float y = 20 * fabs(part[i].dens);
+		float x = 0.1f * fabs(part[i].nbCount);
+		float y = 0.5f * fabs(part[i].dens);
 
-		if (i % 4 == 0)
-			glColor3f(1.0f, 0.0f, 0.0f);
-		else if (i % 4 == 1)
-			glColor3f(1.0f, 1.0f, 0.0f);
-		else if (i % 4 == 2)
-			glColor3f(1.0f, 1.0f, 1.0f);
-		else if (i % 4 == 3)
-			glColor3f(0.0f, 0.0f, 1.0f);
-
-
-		glBegin(GL_POINTS);
+		glColor3f(0.0f, x, 0.3f + x);
 		glVertex3f(part[i].pos.x, part[i].pos.y, part[i].pos.z);
-		glEnd();
 	}
+	glEnd();
 }
