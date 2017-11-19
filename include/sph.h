@@ -8,7 +8,7 @@ typedef struct
 	vec3 pos;
 	vec3 vel;
 	vec3 acc;
-	//	float mass;
+//	float mass;
 	float pres;
 	float dens;
 	float color; //smoothed color field
@@ -17,12 +17,15 @@ typedef struct
 	unsigned int hash;
 } particle_t;
 
+
+#define MAX_GRID_PARTICLE 1024
 typedef struct
 {
-	int r[100][100][100];
-	int member[100];
-	int num;
-} grid_t;
+	particle_t *part[MAX_GRID_PARTICLE];
+	int num_part;
+} voxel_t;
+
+
 
 class Sph
 {
@@ -37,6 +40,7 @@ private:
 	void calc_force();
 	void calc_pos();
 	double update_sum(int *x, vec3 &xp);
+	void update_grid();
 	void update_neighbors();
 	float norm2(vec3 &x, vec3 &y);
 
@@ -48,12 +52,12 @@ private:
 	unsigned int last_calculated;
 
 	// define fluid bounds
-	vec3 bound_max;
-	vec3 bound_min;
-	int xd;
-	int yd;
-	int zd;
-	grid_t grid;
+	vec3 max_bound;
+	vec3 min_bound;
+	int grid_width;
+	int grid_height;
+	int grid_depth;
+	voxel_t grid[4][4][4];
 };
 
 #endif
