@@ -55,6 +55,7 @@ void Sph::init(int num_particle)
 // place all particles in bounds into grid
 void Sph::update_grid()
 {
+	// reset grid to empty
 	for (int i = 0; i < grid_width; i++)
 	{
 		for (int j = 0; j < grid_height; j++)
@@ -165,73 +166,58 @@ void Sph::step(int frame)
 	{
 		update_grid();
 		update_neighbors();
-		calc_density_pressure();
-		calc_force();
-		calc_pos();
+
+		// Lot's of particles, combine into single loop when possible
+		for (int i = 0; i < num_particle; i++)
+		{
+			calc_density_pressure(i);
+			calc_force(i);
+			calc_pos(i);
+		}
 		last_calculated = frame;
 	}
 }
 
-
-
-
-
 // DENSITY 
 //
-// Calculate the density by basically making a weighted sum
-// of the distances of neighboring particles within the radius of support (r)
-void Sph::calc_density_pressure()
+//  Calculate the density by making a weighted sum of the distances of neighboring particles
+// within the radius of support (r)
+void Sph::calc_density_pressure(int i)
 {
-	float r2, sum, dist;
+	float r2, dist;
 	int num = 0;
-	float max_dens = 0.0f;
-	float max_pressure = 0.0f;
 
-	for (int i = 0; i < num_particle; i++)
+	float sum = 0.0f;
+
+	// add density for all neighbors within smoothing radius kH (using sqaures of both to avoid sqrt)
+	for (int j = 0; j < part[i].nbCount; j++)
 	{
-		sum = 0;
+		if (i >= j)
+			continue;
 
-		// add density for all neighbors within smoothing radius kH (using sqaures of both to avoid sqrt)
-		for (int j = 0; j < part[i].nbCount; j++)
+		num = part[i].nbList[j];
+		r2 = norm2(part[i].pos, part[j].pos) * SCALE * SCALE;
+
+		if (kH2 < r2)
 		{
-			if (i >= j)
-				continue;
-
-			num = part[i].nbList[j];
-			r2 = norm2(part[i].pos, part[j].pos) * SCALE * SCALE;
-
-			if (kH2 < r2)
-			{
-				dist = kH2 - r2;
-				// density
-				sum += dist * dist * dist;
-			}
-		}
-
-		sum += kH2 * kH2 * kH2;
-
-		part[i].dens = PMASS * poly6_kern * sum;
-		if (part[i].dens > max_dens)
-		{
-			max_dens = part[i].dens;
-//			printf("Max density: %f\n", max_dens);
-		}
-
-		// PRESSURE
-		//
-		// Make the simple pressure calculation from the equation of state.
-		part[i].pres = I_STIFF * (part[i].dens - REST_DENS);
-		if (part[i].pres > max_pressure)
-		{
-			max_pressure = part[i].pres;
-//			printf("Max pressure: %f\n", max_pressure);
+			dist = kH2 - r2;
+			// density
+			sum += dist * dist * dist;
 		}
 	}
 
+	sum += kH2 * kH2 * kH2;
+
+	part[i].dens = PMASS * poly6_kern * sum;
+
+	// PRESSURE
+	//
+	// Make the pressure is fudge factor times difference from resting density
+	part[i].pres = I_STIFF * (part[i].dens - REST_DENS);
 }
 
 //calculate acceleration and color field
-void Sph::calc_force()
+void Sph::calc_force(int i)
 {
 	float pterm, vterm, r, color, temp, temp2;
 	vec3 pacc;
@@ -242,114 +228,101 @@ void Sph::calc_force()
 	float min = 0;
 	float max = 0;
 
-	// PRESSURE FORCE
-	//
-	// We will force particles in or out from their neighbors
-	// based on their difference from the rest density.
-	for (int i = 0; i < num_particle; i++)
+	pacc = vec3(0.0f, 0.0f, 0.0f);
+	vacc = vec3(0.0f, 0.0f, 0.0f);
+	color = 1.0f;
+
+	for (int j = 0; j < part[i].nbCount; j++)
 	{
-		pacc = vec3(0.0f, 0.0f, 0.0f);
-		vacc = vec3(0.0f, 0.0f, 0.0f);
-		color = 1.0f;
+		num = part[i].nbList[j];
 
-		for (int j = 0; j < part[i].nbCount; j++)
+		if (i != num)
 		{
-			num = part[i].nbList[j];
+			r = newtonSqrt(norm2(part[i].pos, part[num].pos)) * SCALE;
 
-			if (i != num)
+			if (r < kH)
 			{
-				r = newtonSqrt(norm2(part[i].pos, part[num].pos)) * SCALE;
+				// Compute force due to pressure and viscosity
+				temp = kH - r;
+				pterm = temp * temp * (part[i].pres + part[num].pres) / (r * part[num].dens);
+				vterm = temp / part[num].dens;
+				temp2 = kH2 - r * r;
+				color += 1.0f / part[num].dens * temp2 * temp2 * temp2;
 
-				if (r < kH)
-				{
-					// Compute force due to pressure and viscosity
-					temp = kH - r;
-					pterm = temp * temp * (part[i].pres + part[num].pres) / (r * part[num].dens);
-					vterm = temp / part[num].dens;
-					temp2 = kH2 - r * r;
-					color += 1.0f / part[num].dens * temp2 * temp2 * temp2;
-
-					pacc += (part[i].pos - part[num].pos) * pterm;
-					vacc += (part[num].vel - part[i].vel) * vterm;
-				}
+				pacc += (part[i].pos - part[num].pos) * pterm;
+				vacc += (part[num].vel - part[i].vel) * vterm;
 			}
 		}
-
-		//part[i].color = PMASS * POLY6_KERN * color;
-		part[i].acc = (pacc  * -0.5 * spiky_kern
-			+ vacc * viscosity_kern * VISC) * PMASS / part[i].dens;
 	}
 
+	part[i].acc = (pacc  * -0.5 * spiky_kern
+		+ vacc * viscosity_kern * VISC) * PMASS / part[i].dens;
 }
 
 //calculate position from forces and accelerations
-void Sph::calc_pos()
+void Sph::calc_pos(int i)
 {
-	float temp;
+	float temp = 0.0f;
 
-	for (int i = 0; i < num_particle; i++)
+	vec3 zero(0.0f, 0.0f, 0.0f);
+	//acceleration limit
+	temp = norm2(part[i].acc, zero);
+	if (ACCEL_LIMIT * ACCEL_LIMIT < temp)
 	{
-		vec3 zero(0.0f, 0.0f, 0.0f);
-		//acceleration limit
-		temp = norm2(part[i].acc, zero);
-		if (ACCEL_LIMIT * ACCEL_LIMIT < temp)
-		{
-			part[i].acc *= ACCEL_LIMIT / sqrt(temp);
-		}
+		part[i].acc *= ACCEL_LIMIT / sqrt(temp);
+	}
 
-		//lower boundary condition
-		temp = 2 * RAD - (part[i].pos.y - min_bound.y) * SCALE;
-		if (temp > EPSILON)
-		{
-			part[i].acc.y += E_STIFF * temp - E_DAMP * part[i].vel.y;
-		}
+	//lower boundary condition
+	temp = 2 * RAD - (part[i].pos.y - min_bound.y) * SCALE;
+	if (temp > EPSILON)
+	{
+		part[i].acc.y += E_STIFF * temp - E_DAMP * part[i].vel.y;
+	}
 
-		//upper boundary condition
-		temp = 2 * RAD - (max_bound.y - part[i].pos.y) * SCALE;
-		if (temp > EPSILON)
-		{
-			part[i].acc.y += -E_STIFF * temp - E_DAMP * part[i].vel.y;
-		}
+	//upper boundary condition
+	temp = 2 * RAD - (max_bound.y - part[i].pos.y) * SCALE;
+	if (temp > EPSILON)
+	{
+		part[i].acc.y += -E_STIFF * temp - E_DAMP * part[i].vel.y;
+	}
 
-		part[i].acc.y += -9.8f;
+	part[i].acc.y += GRAVITY;
 
-		part[i].vel += part[i].acc * DT;
-		part[i].pos += part[i].vel * DT / SCALE;
+	part[i].vel += part[i].acc * DT;
+	part[i].pos += part[i].vel * DT / SCALE;
 
-		// probably not so efficient, but noticed some particles escaping bounds
-		if (part[i].pos.x > max_bound.x && part[i].vel.x > 0)
-		{
-			part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
-			part[i].vel.x *= -1;
-		}
-		else if (part[i].pos.x < min_bound.x && part[i].vel.x < 0)
-		{
-			part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
-			part[i].vel.x *= -1;
-		}
+	// probably not so efficient, but noticed some particles escaping bounds
+	if (part[i].pos.x > max_bound.x && part[i].vel.x > 0)
+	{
+		part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
+		part[i].vel.x *= -1;
+	}
+	else if (part[i].pos.x < min_bound.x && part[i].vel.x < 0)
+	{
+		part[i].pos.x = clamp(part[i].pos.x, min_bound.x, max_bound.x);
+		part[i].vel.x *= -1;
+	}
 
-		if (part[i].pos.z > max_bound.x && part[i].vel.z > 0)
-		{
-			part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
-			part[i].vel.z *= -1;
-		}
-		else if (part[i].pos.z < min_bound.z && part[i].vel.z < 0)
-		{
-			part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
-			part[i].vel.z *= -1;
-		}
+	if (part[i].pos.z > max_bound.x && part[i].vel.z > 0)
+	{
+		part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
+		part[i].vel.z *= -1;
+	}
+	else if (part[i].pos.z < min_bound.z && part[i].vel.z < 0)
+	{
+		part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
+		part[i].vel.z *= -1;
+	}
 
-		if (part[i].pos.y > max_bound.y && part[i].vel.y > 0)
-		{
-			part[i].pos.y = clamp(part[i].pos.y, min_bound.y, max_bound.y);
-			part[i].vel.y *= -1;
-		}
-		else if (part[i].pos.y < min_bound.y && part[i].vel.y < 0)
-		{
-			part[i].pos.y = clamp(part[i].pos.y, min_bound.y, max_bound.y);
-			part[i].vel.y *= -1;
-		}
-
+	if (part[i].pos.y > max_bound.y && part[i].vel.y > 0)
+	{
+		part[i].pos.y = clamp(part[i].pos.y, min_bound.y, max_bound.y);
+		part[i].vel.y *= -1;
+	}
+	else if (part[i].pos.y < min_bound.y && part[i].vel.y < 0)
+	{
+		part[i].pos.y = clamp(part[i].pos.y, min_bound.y, max_bound.y);
+		part[i].vel.y *= -1;
 	}
 }
 

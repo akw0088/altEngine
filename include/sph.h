@@ -14,13 +14,13 @@
 
 #define ACCEL_LIMIT	200 //m.s-2
 #define VISC	0.05f
-#define RAD		0.004f //m
+#define RAD		0.04f //m
 
 #define DT		0.004f
 
 #define kH		0.03f
 #define kH2		(kH * kH)
-
+#define GRAVITY -9.8f
 
 /*
 W(r-rb,h) = 315 / 64pi h^9(h^2 - |r-rb|^2)^3
@@ -34,15 +34,17 @@ lapW(r-rb,h)= 45 / pi h^6 [ h - |r-rb|)
 #define SPIKY_KERN		(-45.0f / (MY_PI * (float)pow(kH, 6)))
 #define VISCOSITY_KERN	(45.0f / (MY_PI * (float)pow(kH, 6)))
 
-#define MAX_NEIGHBOR 32
+#define MAX_NEIGHBOR 64
 
 typedef struct
 {
 	vec3 pos;
 	vec3 vel;
 	vec3 acc;
+//	float mass;
 	float pres;
 	float dens;
+	float color; //smoothed color field
 	int nbCount;
 	int nbList[MAX_NEIGHBOR];
 	unsigned int hash;
@@ -68,10 +70,9 @@ public:
 	void render();
 
 private:
-	void calc_density_pressure();
-	void calc_force();
-	void calc_pos();
-	double update_sum(int *x, vec3 &xp);
+	void calc_density_pressure(int i);
+	void calc_force(int i);
+	void calc_pos(int i);
 	void update_grid();
 	void update_neighbors();
 	float norm2(vec3 &x, vec3 &y);
