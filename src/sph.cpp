@@ -20,10 +20,10 @@ Sph::Sph()
 	max_bound = vec3(36.0f, 36.0f, 36.0f);
 	min_bound = vec3(0.0f, 0.0f, 0.0f);
 
-	float smoothing_length = 6.0;
-	grid_width = (max_bound.x - min_bound.x) / smoothing_length;
-	grid_height = (max_bound.y - min_bound.y) / smoothing_length;
-	grid_depth = (max_bound.z - min_bound.z) / smoothing_length;
+	float smoothing_length = 6.0f;
+	grid_width = (int)((max_bound.x - min_bound.x) / smoothing_length);
+	grid_height = (int)((max_bound.y - min_bound.y) / smoothing_length);
+	grid_depth = (int)((max_bound.z - min_bound.z) / smoothing_length);
 	
 	part = NULL;
 	init(500);
@@ -74,15 +74,15 @@ void Sph::update_grid()
 
 		float xf = part[i].pos.x / (max_bound.x - min_bound.x);
 		xf = clamp(xf, 0.0f, 1.0f);
-		int x = xf * grid_width;
+		int x = (int)(xf * grid_width);
 
 		float yf = part[i].pos.y / (max_bound.y - min_bound.y);
 		yf = clamp(yf, 0.0f, 1.0f);
-		int y = yf * grid_height;
+		int y = (int)(yf * grid_height);
 
 		float zf = part[i].pos.z / (max_bound.z - min_bound.z);
 		zf = clamp(zf, 0.0f, 1.0f);
-		int z = zf * grid_width;
+		int z = (int)(zf * grid_width);
 		
 		if (x < 0 || y < 0 || z < 0)
 			continue;
