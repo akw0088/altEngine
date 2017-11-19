@@ -185,18 +185,18 @@ void Sph::step(int frame)
 void Sph::calc_density_pressure(int i)
 {
 	float r2, dist;
-	int num = 0;
-
 	float sum = 0.0f;
 
 	// add density for all neighbors within smoothing radius kH (using sqaures of both to avoid sqrt)
 	for (int j = 0; j < part[i].nbCount; j++)
 	{
+		int num;
+
 		if (i >= j)
 			continue;
 
 		num = part[i].nbList[j];
-		r2 = norm2(part[i].pos, part[j].pos) * SCALE * SCALE;
+		r2 = norm2(part[i].pos, part[num].pos) * SCALE * SCALE;
 
 		if (kH2 < r2)
 		{
@@ -224,9 +224,6 @@ void Sph::calc_force(int i)
 	vec3 vacc;
 	int num = 0;
 
-	//debug variable
-	float min = 0;
-	float max = 0;
 
 	pacc = vec3(0.0f, 0.0f, 0.0f);
 	vacc = vec3(0.0f, 0.0f, 0.0f);
@@ -286,7 +283,7 @@ void Sph::calc_pos(int i)
 		part[i].acc.y += -E_STIFF * temp - E_DAMP * part[i].vel.y;
 	}
 
-	part[i].acc.y += GRAVITY;
+	part[i].acc.y += -GRAVITY;
 
 	part[i].vel += part[i].acc * DT;
 	part[i].pos += part[i].vel * DT / SCALE;
@@ -341,9 +338,9 @@ void Sph::render()
 	glBegin(GL_POINTS);
 	for (int i = 0; i < num_particle; ++i)
 	{
-		float c = 0.1f * part[i].pres;
-		float x = 0.1f * fabs(part[i].nbCount);
-		float y = 0.5f * fabs(part[i].dens);
+		//float c = 0.1f * part[i].pres;
+		float x = 0.1f * part[i].nbCount;
+		//float y = 0.5f * fabs(part[i].dens);
 
 		glColor3f(0.0f, x, 0.3f + x);
 		glVertex3f(part[i].pos.x, part[i].pos.y, part[i].pos.z);

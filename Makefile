@@ -39,6 +39,7 @@ SOURCES_CPP := 	xmain.cpp \
 		shadow_volume.cpp \
 		sin_table.cpp \
 		speaker.cpp \
+		sph.cpp \
 		terrain.cpp \
 		trigger.cpp \
 		vector.cpp \

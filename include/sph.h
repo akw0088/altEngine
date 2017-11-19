@@ -20,7 +20,6 @@
 
 #define kH		0.03f
 #define kH2		(kH * kH)
-#define GRAVITY -9.8f
 
 /*
 W(r-rb,h) = 315 / 64pi h^9(h^2 - |r-rb|^2)^3

@@ -9625,7 +9625,7 @@ void Quake3::handle_func_bobbing(Entity *entity)
 
 void Quake3::handle_func_train(Entity *entity)
 {
-	bool escort = true;
+	//bool escort = true;
 	//Entity *ref = entity;
 
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
