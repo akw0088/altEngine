@@ -8,10 +8,10 @@ class IsoSphere
 {
 public:
 	IsoSphere();
-	int load(Graphics &gfx, char *texture_str, int depth, float scale);
-	void drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, float scale);
-	void subdivide(const vec3 &v1, const vec3 &v2, const vec3 &v3, int depth, float scale);
-	void generate(int depth, float scale);
+	int load(Graphics &gfx, char *texture_str, char *heightmap, int depth, float scale);
+	void drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, float scale, unsigned char *image, int width, int height);
+	void subdivide(const vec3 &v1, const vec3 &v2, const vec3 &v3, int depth, float scale, unsigned char *image, int width, int height);
+	void generate(int depth, float scale, unsigned char *image, int width, int height);
 	void render(Graphics &gfx);
 	void destroy(Graphics &gfx);
 

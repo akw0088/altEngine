@@ -799,9 +799,11 @@ void Engine::load(char *level)
 	render_portalcamera();
 
 	vec3 offset(0.0f, -100000.0f, 0.0f);
-	terrain.load(gfx, 500.0f, offset, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png",
-		"media/terrain/terrain_big.png", false, 0);
-		
+//	terrain.load(gfx, 500.0f, offset, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png",
+		//"media/terrain/terrain_big.png", false, 0);
+
+//	isosphere[0].load(gfx, "media/terrain/earth_tex_2k.png", "media/terrain/earth_height_2k.png", 9, 100000.0f);
+	isosphere[0].load(gfx, "media/terrain/moon_tex.png", "media/terrain/moon_height.png", 9, 100000.0f);
 #if 0
 	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
 	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);
@@ -1974,7 +1976,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
-		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_PATH_CORNER || entity->ent_type == ENT_FUNC_TERRAIN)
+		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_PATH_CORNER || entity->ent_type == ENT_FUNC_TERRAIN || entity->ent_type == ENT_WEAPON_LIGHTNING)
 		{
 			entity->visible = true;
 			entity->bsp_visible = true;
@@ -2056,7 +2058,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 			int lod = clamp(current_light, 0, 10);
 
-			isosphere[lod].render(gfx);
+			isosphere[0].render(gfx);
 		}
 		else
 		{
