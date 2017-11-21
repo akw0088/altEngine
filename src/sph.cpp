@@ -47,6 +47,7 @@ void Sph::init(int num_particle)
 		part[i].pos.x = rand_float(min_bound.x, max_bound.x);
 		part[i].pos.y = rand_float(min_bound.y, max_bound.y);
 		part[i].pos.z = rand_float(min_bound.z, max_bound.z);
+		part[i].mass = kMass;
 	}
 	update_grid();
 	update_neighbors();
@@ -178,14 +179,10 @@ void Sph::step(int frame)
 	}
 }
 
-// DENSITY 
-//
-//  Calculate the density by making a weighted sum of the distances of neighboring particles
-// within the radius of support (r)
 void Sph::calc_density_pressure(int i)
 {
 	float r2, dist;
-	float sum = 0.0f;
+	float density = 0.0f;
 
 	// add density for all neighbors within smoothing radius kH (using sqaures of both to avoid sqrt)
 	for (int j = 0; j < part[i].nbCount; j++)
@@ -202,18 +199,18 @@ void Sph::calc_density_pressure(int i)
 		{
 			dist = kH2 - r2;
 			// density
-			sum += dist * dist * dist;
+			density += dist * dist * dist;
 		}
 	}
 
-	sum += kH2 * kH2 * kH2;
+	density += kH2 * kH2 * kH2;
 
-	part[i].dens = kMass * poly6_kern * sum;
+	part[i].density = part[i].mass * poly6_kern * density;
 
 	// PRESSURE
 	//
 	// Make the pressure is fudge factor times difference from resting density
-	part[i].pres = kStiffness * (part[i].dens - kRestDensity);
+	part[i].pressure = kStiffness * (part[i].density - kRestDensity);
 }
 
 //calculate acceleration and color field
@@ -240,8 +237,8 @@ void Sph::calc_force(int i)
 			{
 				// Compute force due to pressure and viscosity
 				temp = kH - r;
-				pterm = temp * temp * (part[i].pres + part[num].pres) / (r * part[num].dens);
-				vterm = temp / part[num].dens;
+				pterm = temp * temp * (part[i].pressure + part[num].pressure) / (r * part[num].density);
+				vterm = temp / part[num].density;
 				temp2 = kH2 - r * r;
 
 				pacc += (part[i].pos - part[num].pos) * pterm;
@@ -251,7 +248,7 @@ void Sph::calc_force(int i)
 	}
 
 	part[i].acc = (pacc  * -0.5f * spiky_kern
-		+ vacc * viscosity_kern * kLinearViscocity) * kMass / part[i].dens;
+		+ vacc * viscosity_kern * kLinearViscocity) * part[i].mass / part[i].density;
 }
 
 //calculate position from forces and accelerations

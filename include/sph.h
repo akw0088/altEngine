@@ -40,10 +40,11 @@ typedef struct
 	vec3 pos;
 	vec3 vel;
 	vec3 acc;
-	float pres;
-	float near_pres;
-	float dens;
-	float near_dens;
+	float pressure;
+	float density;
+	//	float near_pressure;
+	//	float near_density;
+	float mass;
 	int nbCount;
 	int nbList[MAX_NEIGHBOR];
 } particle_t;
