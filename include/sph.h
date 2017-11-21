@@ -9,7 +9,7 @@
 #define kH2		(0.0009f) //m^2 (kH * kH) -- radius of interaction squared
 #define kStiffness 0.08f
 #define kRestDensity	82.0f //kg.m^3
-#define kLinearViscocity 0.05f
+#define kLinearViscocity 0.02f
 
 
 
