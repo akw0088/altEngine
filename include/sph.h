@@ -3,23 +3,23 @@
 #ifndef SPH_H
 #define SPH_H
 
-#define kScale	0.04f
-#define kEpsilon 0.000001f
-#define PMASS	0.010543f //kg 0.020543
+#define kMass	0.010543f //kg uniform particle mass
+#define kRadius		0.005f //m -- physical particle radius (for collision detection against mainly)
+#define kH (0.03f) //m 6 * kRadius -- radius particles will interact with neighbors
+#define kH2		(0.0009f) //m^2 (kH * kH) -- radius of interaction squared
 #define kStiffness 0.08f
+#define kRestDensity	82.0f //kg.m^3
+#define kLinearViscocity 0.05f
+
+
+
+#define kGravity 9.8f
 #define kWallStiff 10000
 #define kWallDamp	256
-#define kRestDensity	82.0f //kg.m-3
-
-#define kMaxAccel	200 //m.s-2
-#define kLinearViscocity 0.05f
-#define kRadius		0.04f //m
-
 #define kDeltaTime	0.004f
-
-#define kH		0.03f
-#define kH2		(kH * kH)
-#define kGravity 9.8f
+#define kMaxAccel	200 //m.s^2
+#define kScale	0.04f
+#define kEpsilon 0.000001f
 
 /*
 W(r-rb,h) = 315 / 64pi h^9(h^2 - |r-rb|^2)^3
@@ -46,7 +46,6 @@ typedef struct
 	float near_dens;
 	int nbCount;
 	int nbList[MAX_NEIGHBOR];
-	unsigned int hash;
 } particle_t;
 
 #define GRID_SIZE 6

@@ -208,7 +208,7 @@ void Sph::calc_density_pressure(int i)
 
 	sum += kH2 * kH2 * kH2;
 
-	part[i].dens = PMASS * poly6_kern * sum;
+	part[i].dens = kMass * poly6_kern * sum;
 
 	// PRESSURE
 	//
@@ -251,7 +251,7 @@ void Sph::calc_force(int i)
 	}
 
 	part[i].acc = (pacc  * -0.5f * spiky_kern
-		+ vacc * viscosity_kern * kLinearViscocity) * PMASS / part[i].dens;
+		+ vacc * viscosity_kern * kLinearViscocity) * kMass / part[i].dens;
 }
 
 //calculate position from forces and accelerations
