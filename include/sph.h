@@ -1,25 +1,25 @@
 #include "include.h"
-#include <math.h>
 
 #ifndef SPH_H
 #define SPH_H
 
-#define SCALE	0.04f
-#define EPSILON 0.000001f
+#define kScale	0.04f
+#define kEpsilon 0.000001f
 #define PMASS	0.010543f //kg 0.020543
-#define I_STIFF 1
-#define E_STIFF 10000
-#define E_DAMP	256
-#define REST_DENS	0.001f //kg.m-3
+#define kStiffness 0.08f
+#define kWallStiff 10000
+#define kWallDamp	256
+#define kRestDensity	82.0f //kg.m-3
 
-#define ACCEL_LIMIT	200 //m.s-2
-#define VISC	0.05f
-#define RAD		0.04f //m
+#define kMaxAccel	200 //m.s-2
+#define kLinearViscocity 0.05f
+#define kRadius		0.04f //m
 
-#define DT		0.004f
+#define kDeltaTime	0.004f
 
 #define kH		0.03f
 #define kH2		(kH * kH)
+#define kGravity 9.8f
 
 /*
 W(r-rb,h) = 315 / 64pi h^9(h^2 - |r-rb|^2)^3
@@ -40,10 +40,10 @@ typedef struct
 	vec3 pos;
 	vec3 vel;
 	vec3 acc;
-//	float mass;
 	float pres;
+	float near_pres;
 	float dens;
-	float color; //smoothed color field
+	float near_dens;
 	int nbCount;
 	int nbList[MAX_NEIGHBOR];
 	unsigned int hash;

@@ -24,7 +24,7 @@ Sph::Sph()
 	grid_width = (int)((max_bound.x - min_bound.x) / smoothing_length);
 	grid_height = (int)((max_bound.y - min_bound.y) / smoothing_length);
 	grid_depth = (int)((max_bound.z - min_bound.z) / smoothing_length);
-	
+
 	part = NULL;
 	init(500);
 	initialized = true;
@@ -83,7 +83,7 @@ void Sph::update_grid()
 		float zf = part[i].pos.z / (max_bound.z - min_bound.z);
 		zf = clamp(zf, 0.0f, 1.0f);
 		int z = (int)(zf * grid_width);
-		
+
 		if (x < 0 || y < 0 || z < 0)
 			continue;
 
@@ -132,13 +132,13 @@ void Sph::update_neighbors()
 						if (part[i].nbCount > max_neighbor)
 						{
 							max_neighbor = part[i].nbCount;
-//							printf("max neighbor: %d\r\n", max_neighbor);
+							//							printf("max neighbor: %d\r\n", max_neighbor);
 						}
 						//calculate distance
 						dr2 = 0;
 
 						vec3 dist = (part[i].pos - part[j].pos);
-						dr2 += dist * dist * SCALE * SCALE;
+						dr2 += dist * dist * kScale * kScale;
 
 						//list neighborhood particle
 						if (dr2 < lh2)
@@ -196,7 +196,7 @@ void Sph::calc_density_pressure(int i)
 			continue;
 
 		num = part[i].nbList[j];
-		r2 = norm2(part[i].pos, part[num].pos) * SCALE * SCALE;
+		r2 = norm2(part[i].pos, part[num].pos) * kScale * kScale;
 
 		if (kH2 < r2)
 		{
@@ -213,13 +213,13 @@ void Sph::calc_density_pressure(int i)
 	// PRESSURE
 	//
 	// Make the pressure is fudge factor times difference from resting density
-	part[i].pres = I_STIFF * (part[i].dens - REST_DENS);
+	part[i].pres = kStiffness * (part[i].dens - kRestDensity);
 }
 
 //calculate acceleration and color field
 void Sph::calc_force(int i)
 {
-	float pterm, vterm, r, color, temp, temp2;
+	float pterm, vterm, r, temp, temp2;
 	vec3 pacc;
 	vec3 vacc;
 	int num = 0;
@@ -227,7 +227,6 @@ void Sph::calc_force(int i)
 
 	pacc = vec3(0.0f, 0.0f, 0.0f);
 	vacc = vec3(0.0f, 0.0f, 0.0f);
-	color = 1.0f;
 
 	for (int j = 0; j < part[i].nbCount; j++)
 	{
@@ -235,7 +234,7 @@ void Sph::calc_force(int i)
 
 		if (i != num)
 		{
-			r = newtonSqrt(norm2(part[i].pos, part[num].pos)) * SCALE;
+			r = newtonSqrt(norm2(part[i].pos, part[num].pos)) * kScale;
 
 			if (r < kH)
 			{
@@ -244,7 +243,6 @@ void Sph::calc_force(int i)
 				pterm = temp * temp * (part[i].pres + part[num].pres) / (r * part[num].dens);
 				vterm = temp / part[num].dens;
 				temp2 = kH2 - r * r;
-				color += 1.0f / part[num].dens * temp2 * temp2 * temp2;
 
 				pacc += (part[i].pos - part[num].pos) * pterm;
 				vacc += (part[num].vel - part[i].vel) * vterm;
@@ -252,8 +250,8 @@ void Sph::calc_force(int i)
 		}
 	}
 
-	part[i].acc = (pacc  * -0.5 * spiky_kern
-		+ vacc * viscosity_kern * VISC) * PMASS / part[i].dens;
+	part[i].acc = (pacc  * -0.5f * spiky_kern
+		+ vacc * viscosity_kern * kLinearViscocity) * PMASS / part[i].dens;
 }
 
 //calculate position from forces and accelerations
@@ -264,29 +262,29 @@ void Sph::calc_pos(int i)
 	vec3 zero(0.0f, 0.0f, 0.0f);
 	//acceleration limit
 	temp = norm2(part[i].acc, zero);
-	if (ACCEL_LIMIT * ACCEL_LIMIT < temp)
+	if (kMaxAccel * kMaxAccel < temp)
 	{
-		part[i].acc *= ACCEL_LIMIT / sqrt(temp);
+		part[i].acc *= kMaxAccel / newtonSqrt(temp);
 	}
 
 	//lower boundary condition
-	temp = 2 * RAD - (part[i].pos.y - min_bound.y) * SCALE;
-	if (temp > EPSILON)
+	temp = 2 * kRadius - (part[i].pos.y - min_bound.y) * kScale;
+	if (temp > kEpsilon)
 	{
-		part[i].acc.y += E_STIFF * temp - E_DAMP * part[i].vel.y;
+		part[i].acc.y += kWallStiff * temp - kWallDamp * part[i].vel.y;
 	}
 
 	//upper boundary condition
-	temp = 2 * RAD - (max_bound.y - part[i].pos.y) * SCALE;
-	if (temp > EPSILON)
+	temp = 2 * kRadius - (max_bound.y - part[i].pos.y) * kScale;
+	if (temp > kEpsilon)
 	{
-		part[i].acc.y += -E_STIFF * temp - E_DAMP * part[i].vel.y;
+		part[i].acc.y += -kWallStiff * temp - kWallDamp * part[i].vel.y;
 	}
 
-	part[i].acc.y += -GRAVITY;
+	part[i].acc.y += -kGravity;
 
-	part[i].vel += part[i].acc * DT;
-	part[i].pos += part[i].vel * DT / SCALE;
+	part[i].vel += part[i].acc * kDeltaTime;
+	part[i].pos += part[i].vel * kDeltaTime / kScale;
 
 	// probably not so efficient, but noticed some particles escaping bounds
 	if (part[i].pos.x > max_bound.x && part[i].vel.x > 0)
@@ -326,8 +324,11 @@ void Sph::calc_pos(int i)
 
 inline float Sph::norm2(vec3 &a, vec3 &b)
 {
-	//	return (a - b) * (a - b);
-	return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z);
+	float dx = a.x - b.x;
+	float dy = a.y - b.y;
+	float dz = a.z - b.z;
+
+	return dx*dx + dy*dy + dz*dz;
 }
 
 void Sph::render()
