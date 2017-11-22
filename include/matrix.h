@@ -13,6 +13,7 @@ public:
 	matrix3 operator*(const float scalar);
 	vec3 operator*(const vec3 &vec);
 	matrix3 operator*(const matrix3 &q);
+	float det();
 
 	void star(vec3 &vector);
 	void normalize();
@@ -54,6 +55,7 @@ public:
 	static void mat_left(matrix4 &mvp, vec3 &position);
 	static void mat_top(matrix4 &mvp, vec3 &position);
 	static void mat_bottom(matrix4 &mvp, vec3 &position);
+	float det();
 
 
 	float m[16];
