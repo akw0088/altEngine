@@ -216,7 +216,11 @@ void Sph::calc_density_pressure(int i)
 //calculate acceleration and color field
 void Sph::calc_force(int i)
 {
-	float pterm, vterm, r, temp, temp2;
+	float pterm
+	float vterm;
+	float r;
+	float temp;
+//	float temp2;
 	vec3 pacc;
 	vec3 vacc;
 	int num = 0;
@@ -239,7 +243,7 @@ void Sph::calc_force(int i)
 				temp = kH - r;
 				pterm = temp * temp * (part[i].pressure + part[num].pressure) / (r * part[num].density);
 				vterm = temp / part[num].density;
-				temp2 = kH2 - r * r;
+				//temp2 = kH2 - r * r;
 
 				pacc += (part[i].pos - part[num].pos) * pterm;
 				vacc += (part[num].vel - part[i].vel) * vterm;
