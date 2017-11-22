@@ -1,6 +1,8 @@
 #define MY_PI		3.14159265358979323846
 #define MY_HALF_PI		1.57079632679489661923
 
+#include <stdlib.h>
+
 // the sin table below works for most things, artifacts are rotations are not smooth
 // kind of notchy as it uses the same output for multiple inputs
 //  eg: looked bad on rotating textures
@@ -968,3 +970,15 @@ float sqrtSSE(float x)
 	return x;
 }
 #endif
+
+
+int fceil(int num, int denom)
+{
+	div_t value = div(num, denom);
+
+	if (value.rem == 0)
+		return value.quot;
+	else
+		return value.quot + 1;
+}
+

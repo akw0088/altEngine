@@ -36,7 +36,6 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth
 	int width;
 	int height;
 	int components;
-	unsigned int i;
 
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
@@ -140,8 +139,6 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 void IsoSphere::subdivide(const vec3 &v1, const vec3 &v2, const vec3 &v3, int depth, float scale, unsigned char *image, int width, int height)
 {
 	vec3 v12, v23, v31;
-	static int x = 0;
-	static int y = 0;
 
 	if (depth == 0)
 	{

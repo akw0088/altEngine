@@ -10,7 +10,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <stdarg.h> // for vargs
-#include <math.h> // for ceil
 #ifdef __linux__
 #define stricmp strcasecmp
 #endif
@@ -20,6 +19,7 @@ extern char dmesg[DMESG_SIZE][1024];
 extern int dmesg_index;
 
 float newtonSqrt(float x);
+int fceil(int num, int denom);
 
 extern "C" {
 	void md5sum(char *data, int size, char *hash);
@@ -316,10 +316,9 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 
 
 // Seems to work, should probably be <= num_row though on loops
-void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level)
+void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, int level)
 {
-	int num_row = (int)ceil(1.0 / level);
-
+	int num_row = fceil(1, level);
 	int x = 0;
 	int y = 0;
 	int i = 0;
