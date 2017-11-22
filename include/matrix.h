@@ -59,6 +59,9 @@ public:
 	static void mat_top(matrix4 &mvp, vec3 &position);
 	static void mat_bottom(matrix4 &mvp, vec3 &position);
 	float det();
+	matrix4 cofactor();
+	matrix4 adjoint();
+	matrix4 inverse();
 
 
 	float m[16];

@@ -240,6 +240,27 @@ matrix3 matrix3::inverse()
 	return adjoint() * (1.0f /  det());
 }
 
+
+matrix4 matrix4::cofactor()
+{
+	// TBD
+	return *this;
+}
+
+matrix4 matrix4::adjoint()
+{
+	matrix4 result;
+
+	result = cofactor();
+	return result.transpose();
+}
+
+
+matrix4 matrix4::inverse()
+{
+	return adjoint() * (1.0f / det());
+}
+
 matrix4::matrix4()
 {
 
