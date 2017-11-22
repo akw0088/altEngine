@@ -14,6 +14,7 @@ SOURCES_CPP := 	xmain.cpp \
 		graphics_vulkan.cpp \
 		hashtable.cpp \
 		heap.cpp \
+		isocube.cpp \
 		isosphere.cpp \
 		junzip.cpp \
 		light.cpp \
