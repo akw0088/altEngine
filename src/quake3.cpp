@@ -2273,7 +2273,7 @@ void Quake3::handle_player(int self, input_t &input)
 				float speed_scale = 1.0f;
 
 				if (entity->player->haste_timer > 0)
-					speed_scale = 2.0f;
+					speed_scale = entity->player->haste_factor;
 
 
 				if (engine->menu.console == false)
@@ -3099,7 +3099,7 @@ void Quake3::step(int frame_step)
 		float speed_scale = 1.0f;
 
 		if (bot->player->haste_timer > 0)
-			speed_scale = 2.0f;
+			speed_scale = bot->player->haste_factor;
 
 		switch (bot->player->bot_state)
 		{
@@ -7297,6 +7297,20 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		}
 		return;
 	}
+
+	ret = sscanf(cmd, "haste_factor %s", data);
+	if (ret == 1)
+	{
+		if (self != -1)
+		{
+			snprintf(msg, LINE_SIZE, "haste_factor %s\n", data);
+			menu.print(msg);
+			float haste_factor = atof(data);
+			entity_list[self]->player->haste_factor = haste_factor;
+		}
+		return;
+	}
+
 
 	ret = strcmp(cmd, "quaddamage");
 	if (ret == 0)

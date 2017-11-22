@@ -164,6 +164,7 @@ public:
 	float max_speed;
 	float max_air_speed;
 	float air_control;
+	float haste_factor;
 
 
 	int weapon_source;

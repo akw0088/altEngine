@@ -39,6 +39,12 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth
 
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
+	if (data == NULL)
+	{
+		printf("Unable to open %s\n", heightmap);
+		return -1;
+	}
+
 	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 

@@ -762,7 +762,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	}
 	else
 	{
-		entity->player->max_air_speed = MAX_AIR_SPEED;
+		entity->player->max_air_speed = MAX_AIR_SPEED * speed_scale;
 	}
 
 	if (water || flight || noclip)
@@ -880,12 +880,12 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	if ((hopped || wishdir.magnitude() > 1.0f) && on_ground == false)
 	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed);
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
 		hopped = true;
 	}
 	else
 	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
 	}
 
 	if (entity->player && entity->player->jumppad_timer > 0)

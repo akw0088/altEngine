@@ -3091,7 +3091,7 @@ bool Engine::map_collision(RigidBody &body)
 							float speed_scale = 1.2f;
 
 							if (body.entity->player->haste_timer > 0)
-								speed_scale = 2.0f;
+								speed_scale = body.entity->player->haste_factor;
 							#define MAX_SPEED 3.0f
 
 							if (speed > MAX_SPEED * speed_scale)

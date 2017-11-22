@@ -216,7 +216,7 @@ void Sph::calc_density_pressure(int i)
 //calculate acceleration and color field
 void Sph::calc_force(int i)
 {
-	float pterm
+	float pterm;
 	float vterm;
 	float r;
 	float temp;

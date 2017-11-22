@@ -58,6 +58,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	Player::team = team;
 
+	haste_factor = 2.0f;
+
 	telefragged = NULL;
 
 	if (ent_type == ENT_SERVER)
@@ -552,7 +554,7 @@ void Player::avoid_walls(Bsp &map)
 	content_flag_t flag;;
 
 	if (haste_timer > 0)
-		speed_scale = 2.0f;
+		speed_scale = entity->player->haste_factor;
 
 
 	map.collision_detect(forward, entity->position, &plane, &depth, water_depth, surface_list, false, clip, vel, model_trigger, model_platform, flag);
