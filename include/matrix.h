@@ -16,6 +16,7 @@ public:
 	float det();
 	matrix3 cofactor();
 	matrix3 adjoint();
+	matrix3 inverse();
 
 	void star(vec3 &vector);
 	void normalize();

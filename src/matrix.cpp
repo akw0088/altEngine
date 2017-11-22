@@ -234,6 +234,12 @@ matrix3 matrix3::adjoint()
 	return result.transpose();
 }
 
+
+matrix3 matrix3::inverse()
+{
+	return adjoint() * (1.0f /  det());
+}
+
 matrix4::matrix4()
 {
 
