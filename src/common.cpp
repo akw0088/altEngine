@@ -318,7 +318,9 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 // Seems to work, should probably be <= num_row though on loops
 void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, int level)
 {
-	int num_row = fceil(1, level);
+	//x/y + (x % y != 0);
+	//int num_row = fceil(1, level); // Doesnt this mean num_row always equals one?
+	int num_row = level + 1;
 	int x = 0;
 	int y = 0;
 	int i = 0;
