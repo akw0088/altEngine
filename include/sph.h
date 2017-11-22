@@ -27,11 +27,14 @@ gradW(r-rb,h) = -45 / pi h^6 (h - |r-rb|)^2 [r-rb]/[r-rb]
 lapW(r-rb,h)= 45 / pi h^6 [ h - |r-rb|)
 */
 
-#define POLY6_KERN		(315.0f / (64.0f * MY_PI * (float)pow(kH, 9)))
-#define GRAD_POLY6_KERN 945.0f / (32.0f * MY_PI * (float)pow(kH, 9));
-#define LAP_POLY6_KERN  945.0f / (32.0f * MY_PI * (float)pow(kH, 9));
-#define SPIKY_KERN		(-45.0f / (MY_PI * (float)pow(kH, 6)))
-#define VISCOSITY_KERN	(45.0f / (MY_PI * (float)pow(kH, 6)))
+#define kH9 (kH * kH * kH * kH * kH * kH * kH * kH * kH)
+#define kH6 (kH * kH * kH * kH * kH * kH)
+
+#define POLY6_KERN		(315.0f / (64.0f * MY_PI * kH9))
+#define GRAD_POLY6_KERN 945.0f / (32.0f * MY_PI * kH9);
+#define LAP_POLY6_KERN  945.0f / (32.0f * MY_PI * kH9);
+#define SPIKY_KERN		(-45.0f / (MY_PI * kH6))
+#define VISCOSITY_KERN	(45.0f / (MY_PI * kH6))
 
 #define MAX_NEIGHBOR 64
 

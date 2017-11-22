@@ -226,6 +226,7 @@ char *get_pakfile(char *pakfile, char *file)
 	ret = fread(entries, 1, header.dir_length, pak);
 	if (ret != header.dir_length)
 	{
+		delete [] entries;
 		fclose(pak);
 		return NULL;
 	}
@@ -249,6 +250,7 @@ char *get_pakfile(char *pakfile, char *file)
 			ret = fread(data, 1, entry->length, pak);
 			if (ret != entry->length)
 			{
+				delete [] data;
 				delete [] entries;
 				fclose(pak);
 				return NULL;
