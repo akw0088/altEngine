@@ -14,6 +14,8 @@ public:
 	vec3 operator*(const vec3 &vec);
 	matrix3 operator*(const matrix3 &q);
 	float det();
+	matrix3 cofactor();
+	matrix3 adjoint();
 
 	void star(vec3 &vector);
 	void normalize();

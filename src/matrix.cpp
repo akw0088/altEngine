@@ -206,6 +206,34 @@ float matrix3::det()
 		 m[2] * ((m[3] * m[7]) - (m[4]*m[6]));
 }
 
+matrix3 matrix3::cofactor()
+{
+	matrix3 result;
+	
+	result.m[0] = (m[4] * m[8]) - (m[5] * m[7]);
+	result.m[1] = (m[3] * m[8]) - (m[5] * m[6]);
+	result.m[2] = (m[3] * m[7]) - (m[4] * m[6]);
+	
+	result.m[3] = (m[1] * m[8]) - (m[2] * m[7]);
+	result.m[4] = (m[0] * m[8]) - (m[2] * m[6]);
+	result.m[5] = (m[0] * m[7]) - (m[1] * m[6]);
+	
+	result.m[6] = (m[1] * m[5]) - (m[4] * m[2]);
+	result.m[7] = (m[0] * m[5]) - (m[2] * m[3]);
+	result.m[8] = (m[0] * m[4]) - (m[1] * m[3]);
+	
+	return result;
+}
+
+
+matrix3 matrix3::adjoint()
+{
+	matrix3 result;
+	
+	result = cofactor();
+	return result.transpose();
+}
+
 matrix4::matrix4()
 {
 
