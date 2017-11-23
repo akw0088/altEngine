@@ -5,6 +5,8 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 #include <signal.h>
+#include <linux/input.h>
+#include <linux/joystick.h>
 
 int EventProc(Display *display, Window window, GLXContext context);
 
@@ -541,4 +543,72 @@ int request_clipboard(Display *dpy, Window target_window)
     return 0;
 }
 
+int joystick_open()
+{
+	int fd = open ("/dev/input/js0", O_RDONLY | O_NONBLOCK);
+	if (fd < 0)
+	{
+		printf("Failed to open /dev/input/js0\n");
+		return -1;
+	}
+
+	char num;
+	int ver;
+	char name[128];
+
+	ioctl (fd, JSIOCGAXES, &num);
+	printf("Number of axis: %d\n", num);
+	ioctl (fd, JSIOCGBUTTONS, &num);
+	printf("Number of buttons: %d\n", num);
+	ioctl (fd, JSIOCGBUTTONS, &ver);
+	printf("version: %X\n", ver);
+
+	if (ioctl(fd, JSIOCGNAME(sizeof(name)), name) < 0)
+	{
+		strncpy(name, "Unknown", sizeof(name));
+	}
+	printf("Name: %s\n", name);
+
+	return fd;
+}
+
+
+int joystick_read(int fd)
+{
+	int ret = -1;
+
+	struct js_event e;
+	ret = read (fd, &e, sizeof(e));
+	if (ret == -1)
+	{
+		if (errno == EAGAIN)
+		{
+			return 0;
+		}
+		else
+		{
+			perror("read failed");
+			return -1;
+		}
+	}
+	switch(e.type)
+	{
+	case JS_EVENT_BUTTON:
+		printf("Axis %d\n", e.number);
+		printf("value %d\n", e.value);
+		printf("time %d\n", e.time);
+		break;
+	case JS_EVENT_AXIS:
+		printf("Axis %d\n", e.number);
+		printf("value %d\n", e.value);
+		printf("time %d\n", e.time);
+		break;
+	case JS_EVENT_INIT:
+		printf("Axis %d\n", e.number);
+		printf("value %d\n", e.value);
+		printf("time %d\n", e.time);
+		break;
+	}
+	return 0;
+}	
 #endif
