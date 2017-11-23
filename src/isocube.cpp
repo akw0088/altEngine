@@ -142,7 +142,18 @@ int IsoCube::load(Graphics &gfx, char *texture_str, char *heightmap, int depth, 
 
 	int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
+	if (data == NULL)
+	{
+		printf("Unable to open %s\n", heightmap);
+		return -1;
+	}
+
 	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	if (image == NULL)
+	{
+		printf("Unable to process %s\n", heightmap);
+		return -1;
+	}
 
 	switch (depth)
 	{
@@ -200,29 +211,66 @@ void IsoCube::drawTriangle(const vertex_t &v1, const vertex_t &v2, const vertex_
 {
 	unsigned int x, y;
 	float heightmap_scale = 0.1f;
+	vec2 t1 = v1.texCoord0;
+	vec2 t2 = v2.texCoord0;
+	vec2 t3 = v3.texCoord0;
+
+	if (t1.x < 0)
+	{
+		t1.x += 1.0f;
+	}
+	if (t2.x < 0)
+	{
+		t2.x += 1.0f;
+	}
+	if (t3.x < 0)
+	{
+		t3.x += 1.0f;
+	}
+	if (t1.y < 0)
+	{
+		t1.y += 1.0f;
+	}
+	if (t2.y < 0)
+	{
+		t2.y += 1.0f;
+	}
+	if (t3.y < 0)
+	{
+		t3.y += 1.0f;
+	}
+
+
+
 
 	vertex_array[num_vert].color = ~0;
 	vertex_array[num_vert].normal = v1.position;
 	vertex_array[num_vert].texCoord0 = v1.texCoord0;
 	vertex_array[num_vert].texCoord1 = v1.texCoord1;
-	vertex_array[num_vert].position = v1.position * scale; /*
-		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f)*/;
+	x = t1.x * (width - 1);
+	y = t1.y * (height - 1);
+	vertex_array[num_vert].position = v1.position * scale *
+		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
 
 	vertex_array[num_vert].color = ~0;
 	vertex_array[num_vert].normal = v2.position;
 	vertex_array[num_vert].texCoord0 = v2.texCoord0;
 	vertex_array[num_vert].texCoord1 = v2.texCoord1;
-	vertex_array[num_vert].position = v2.position * scale; /*
-		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f)*/;
+	x = t2.x * (width - 1);
+	y = t2.y * (height - 1);
+	vertex_array[num_vert].position = v2.position * scale *
+		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
 
 	vertex_array[num_vert].color = ~0;
 	vertex_array[num_vert].normal = v3.position;
 	vertex_array[num_vert].texCoord0 = v3.texCoord0;
 	vertex_array[num_vert].texCoord1 = v3.texCoord1;
-	vertex_array[num_vert].position = v3.position * scale;/*
-		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f)*/;
+	x = t3.x * (width - 1);
+	y = t3.y * (height - 1);
+	vertex_array[num_vert].position = v3.position * scale *
+		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
 
 	num_index += 3;
@@ -251,9 +299,9 @@ void IsoCube::subdivide(const vertex_t &v1, const vertex_t &v2, const vertex_t &
 	v31.texCoord1 = (v3.texCoord1 + v1.texCoord1) / 2.0f;
 
 
-//	v12.position = v12.position.normalize();
-//	v23.position = v23.position.normalize();
-//	v31.position = v31.position.normalize();
+	v12.position = v12.position.normalize();
+	v23.position = v23.position.normalize();
+	v31.position = v31.position.normalize();
 
 	subdivide(v1, v12, v31, depth - 1, scale, image, width, height);
 	subdivide(v2, v23, v12, depth - 1, scale, image, width, height);
