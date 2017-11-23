@@ -134,7 +134,41 @@ int IsoCube::load(Graphics &gfx, char *texture_str, char *heightmap, int depth, 
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
 	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
-	vertex_array = new vertex_t[5242880 * 3];
+	switch (depth)
+	{
+	case 0:
+		vertex_array = new vertex_t[12 * 3];
+		break;
+	case 1:
+		vertex_array = new vertex_t[48 * 3];
+		break;
+	case 2:
+		vertex_array = new vertex_t[192 * 3];
+		break;
+	case 3:
+		vertex_array = new vertex_t[768 * 3];
+		break;
+	case 4:
+		vertex_array = new vertex_t[3072 * 3];
+		break;
+	case 5:
+		vertex_array = new vertex_t[12288 * 3];
+		break;
+	case 6:
+		vertex_array = new vertex_t[49152 * 3];
+		break;
+	case 7:
+		vertex_array = new vertex_t[196608 * 3];
+		break;
+	case 8:
+		vertex_array = new vertex_t[786432 * 3];
+		break;
+	case 9:
+		vertex_array = new vertex_t[3145728 * 3];
+		break;
+	default:
+		return -1;
+	}
 
 	generate(depth, scale, (unsigned char *)image, width, height);
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vert, false);
