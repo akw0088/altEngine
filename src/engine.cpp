@@ -211,7 +211,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	randomize_points = true;
 	enable_map = true;
 	enable_terrain = false;
-	enable_planet = false;
+	enable_planet = true;
 
 	enum_resolutions();
 #ifdef WIN32
@@ -794,20 +794,20 @@ void Engine::load(char *level)
 	{
 		vec3 offset(0.0f, 0.0f, 0.0f);
 
-		isocube[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5);
+		isocube[0].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png", 1, 1e5);
 		//isosphere[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5.0f, offset);
 	}
 #if 0
-	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
-	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);
-	isosphere[2].load(gfx, "media/terrain/earth.png", 2, 100.0f);
-	isosphere[3].load(gfx, "media/terrain/earth.png", 3, 100.0f);
-	isosphere[4].load(gfx, "media/terrain/earth.png", 4, 100.0f);
-	isosphere[5].load(gfx, "media/terrain/earth.png", 5, 100.0f);
-	isosphere[6].load(gfx, "media/terrain/earth.png", 6, 100.0f);
-	isosphere[7].load(gfx, "media/terrain/earth.png", 7, 100.0f);
-	isosphere[8].load(gfx, "media/terrain/earth.png", 8, 100.0f);
-	isosphere[9].load(gfx, "media/terrain/earth.png", 9, 100.0f);
+	isocube[0].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",0, 100.0f);
+	isocube[1].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",1, 100.0f);
+	isocube[2].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",2, 100.0f);
+	isocube[3].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",3, 100.0f);
+	isocube[4].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",4, 100.0f);
+	isocube[5].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",5, 100.0f);
+	isocube[6].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",6, 100.0f);
+	isocube[7].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",7, 100.0f);
+	isocube[8].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",8, 100.0f);
+	isocube[9].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",9, 100.0f);
 #endif
 }
 
