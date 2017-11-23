@@ -18,8 +18,9 @@ Terrain::Terrain()
 	loaded = false;
 }
 
-int Terrain::load(Graphics &gfx, float scale, vec3 &offset, char *heightmap, char *texture_str, bool sphere, int anisotropic)
+int Terrain::load(Graphics &gfx, float scale, vec3 &offset, char *heightmap, char *texture_str, int anisotropic)
 {
+#if 0
 	if (sphere)
 	{
 		CreateSphere(heightmap, scale, offset, vertex_array, index_array, num_vertex, num_index);
@@ -29,6 +30,10 @@ int Terrain::load(Graphics &gfx, float scale, vec3 &offset, char *heightmap, cha
 		CreateMesh(heightmap, scale, scale, offset, vertex_array, index_array, num_vertex, num_index);
 		CreateWater(scale, scale, water_array, water_index, water_nvertex, water_nindex);
 	}
+#endif
+
+	CreateMesh(heightmap, scale, scale, offset, vertex_array, index_array, num_vertex, num_index);
+	CreateWater(scale, scale, water_array, water_index, water_nvertex, water_nindex);
 
 	water_vbo = gfx.CreateVertexBuffer(water_array, water_nvertex, false);
 	water_ibo = gfx.CreateIndexBuffer(water_index, water_nindex);
@@ -44,7 +49,7 @@ int Terrain::load(Graphics &gfx, float scale, vec3 &offset, char *heightmap, cha
 	return 0;
 }
 
-
+#if 0
 void Terrain::CreateSphere(char *heightmap, float radius, vec3 &offset, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index)
 {
 	float theta1 = 0, theta2 = 0, theta3 = 0;
@@ -149,6 +154,7 @@ void Terrain::CreateSphere(char *heightmap, float radius, vec3 &offset, vertex_t
 	}
 	num_index = j;
 }
+#endif
 
 
 void Terrain::Smooth(vertex_t *image, int width, int height, vec3 &avg)

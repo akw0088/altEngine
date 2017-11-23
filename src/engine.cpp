@@ -211,6 +211,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	randomize_points = true;
 	enable_map = true;
 	enable_terrain = false;
+	enable_planet = false;
 
 	enum_resolutions();
 #ifdef WIN32
@@ -688,22 +689,7 @@ void Engine::load(char *level)
 
 
 		sprintf(filename, "media/%s.ent", q3map.map_name);
-		bool enable_terrain = true;
-
-		if (enable_terrain)
-		{
-			char *terrain_str = "{\"classname\" \"func_terrain\"}\")";
-			char *ndata = new char[strlen(data) + strlen(terrain_str) + 16];
-
-			strcpy(ndata, data);
-			strcat(ndata, terrain_str);
-			parse_entity(this, ndata, entity_list, gfx, audio);
-			delete[] ndata;
-		}
-		else
-		{
-			parse_entity(this, data, entity_list, gfx, audio);
-		}
+		parse_entity(this, data, entity_list, gfx, audio);
 		write_file(filename, data, strlen(data));
 	}
 
@@ -799,11 +785,15 @@ void Engine::load(char *level)
 	render_portalcamera();
 
 	vec3 offset(0.0f, 0.0f, 0.0f);
-//	terrain.load(gfx, 500.0f, offset, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png",
-		//"media/terrain/terrain_big.png", false, 0);
-
-//	isosphere[0].load(gfx, "media/terrain/earth_tex_2k.png", "media/terrain/earth_height_2k.png", 9, 100000.0f);
-	isosphere[0].load(gfx, "media/terrain/moon_tex.png", "media/terrain/moon_height.png", 9, 100000.0f, offset);
+	if (enable_terrain)
+	{
+		terrain.load(gfx, 500.0f, offset, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", 0);
+	}
+	if (enable_planet)
+	{
+		isocube[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5, offset);
+		//isosphere[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5.0f, offset);
+	}
 #if 0
 	isosphere[0].load(gfx, "media/terrain/earth.png", 0, 100.0f);
 	isosphere[1].load(gfx, "media/terrain/earth.png", 1, 100.0f);
@@ -1976,7 +1966,11 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->rigid->blend != blend)
 			continue;
 
-		if (entity->ent_type == ENT_FUNC_DOOR || entity->ent_type == ENT_FUNC_BOBBING || entity->ent_type == ENT_PATH_CORNER || entity->ent_type == ENT_FUNC_TERRAIN || entity->ent_type == ENT_WEAPON_LIGHTNING)
+		if (entity->ent_type == ENT_FUNC_DOOR ||
+			entity->ent_type == ENT_FUNC_BOBBING ||
+			entity->ent_type == ENT_PATH_CORNER ||
+			entity->ent_type == ENT_FUNC_TERRAIN ||
+			(entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet))
 		{
 			entity->visible = true;
 			entity->bsp_visible = true;
@@ -2047,7 +2041,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 
 		//render entity
-		if (entity->ent_type == ENT_WEAPON_LIGHTNING)
+		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)
 		{
 			int player = find_type(ENT_PLAYER, 0);
 			int current_light = 0;
@@ -2058,7 +2052,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 			int lod = clamp(current_light, 0, 10);
 
-			isosphere[0].render(gfx);
+			isocube[0].render(gfx);
 		}
 		else
 		{
@@ -4542,9 +4536,9 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 	}
 
 	if (menu.data.invert)
-		camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity);
+		camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity, enable_planet == false);
 	else
-		camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity);
+		camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity, enable_planet == false);
 
 	return true;
 }
@@ -6851,6 +6845,22 @@ void Engine::console(char *cmd)
 		else
 		{
 			snprintf(msg, LINE_SIZE, "render terrain off");
+			menu.print(msg);
+		}
+		return;
+	}
+
+	if (strstr(cmd, "r_planet"))
+	{
+		enable_planet = !enable_planet;
+		if (enable_planet)
+		{
+			snprintf(msg, LINE_SIZE, "render planet on");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "render planet off");
 			menu.print(msg);
 		}
 		return;

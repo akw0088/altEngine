@@ -2699,7 +2699,7 @@ void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index
 		int index_array[36];
 		for (int i = 0; i < 36; i++)
 		{
-			vertex_array[i].position = verts[i] * 1000000.0f;
+			vertex_array[i].position = verts[i] * 1e10;
 			vertex_array[i].texCoord0 = texcoords[i];
 			vertex_array[i].normal = vec3();
 			index_array[i] = i;

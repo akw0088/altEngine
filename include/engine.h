@@ -142,6 +142,7 @@ public:
 	unsigned int ingame_menu_timer;
 	Terrain terrain;
 	IsoSphere isosphere[10];
+	IsoSphere isocube[10];
 
 	unsigned int audio_source[32];
 	unsigned int global_source[32];
@@ -199,6 +200,7 @@ public:
 	bool enable_entities;
 	bool enable_map;
 	bool enable_terrain;
+	bool enable_planet;
 
 
 	char resbuf[MAX_RES][80];

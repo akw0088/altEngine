@@ -96,7 +96,7 @@ void Frame::update(input_t &input)
 		pos.y -= SPEED;
 }
 
-void Frame::update(const vec2 &delta, float scale)
+void Frame::update(const vec2 &delta, float scale, bool lock)
 {
 	const vec3		vup(0.0f, 1.0f, 0.0f);
 	vec3		right;
@@ -120,7 +120,7 @@ void Frame::update(const vec2 &delta, float scale)
 	forward.normalize();
 	up.normalize();
 
-	if (up * vup < 0.004f)
+	if (up * vup < 0.004f && lock)
 	{
 		forward = old_forward;
 		up = old_up;
