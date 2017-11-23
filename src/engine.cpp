@@ -784,13 +784,16 @@ void Engine::load(char *level)
 	// render portals at least once
 	render_portalcamera();
 
-	vec3 offset(0.0f, 0.0f, 0.0f);
 	if (enable_terrain)
 	{
+		vec3 offset(0.0f, -1e5, 0.0f);
+
 		terrain.load(gfx, 500.0f, offset, "media/terrain/mt-ruapehu-and-mt-ngauruhoe.png", "media/terrain/terrain_big.png", 0);
 	}
 	if (enable_planet)
 	{
+		vec3 offset(0.0f, 0.0f, 0.0f);
+
 		isocube[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5, offset);
 		//isosphere[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5.0f, offset);
 	}
