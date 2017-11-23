@@ -2082,6 +2082,11 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 			control[0].position * (b2 * b2) +
 			control[3].position * (2 * b2 * a2) +
 			control[6].position * (a2 * a2);
+
+		(*vertex_array)[i].texCoord0 =
+			control[0].texCoord0 * (b2 * b2) +
+			control[3].texCoord0 * (2 * b2 * a2) +
+			control[6].texCoord0 * (a2 * a2);
 	}
 
 	// calculate rest of verts
@@ -2091,6 +2096,7 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 		float b2 = 1.0f - a2;
 
 		vec3 temp[3];
+		vec2 tex_temp[3];
 
 		temp[0] = 
 			control[0].position * (b2 * b2) + 
@@ -2105,6 +2111,23 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 			control[7].position * (2 * b2 * a2) + 
 			control[8].position * (a2 * a2);
 
+		tex_temp[0] =
+			control[0].texCoord0 * (b2 * b2) +
+			control[1].texCoord0 * (2 * b2 * a2) +
+			control[2].texCoord0 * (a2 * a2);
+		tex_temp[1] =
+			control[3].texCoord0 * (b2 * b2) +
+			control[4].texCoord0 * (2 * b2 * a2) +
+			control[5].texCoord0 * (a2 * a2);
+		tex_temp[2] =
+			control[6].texCoord0 * (b2 * b2) +
+			control[7].texCoord0 * (2 * b2 * a2) +
+			control[8].texCoord0 * (a2 * a2);
+
+
+
+
+
 		for(j = 0; j <= level; j++)
 		{
 			float a3 = (float) j / level;
@@ -2114,6 +2137,12 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 				temp[0] * (b3 * b3) +
 				temp[1] * (2 * b3 * a3) +
 				temp[2] * (a3 * a3);
+
+			(*vertex_array)[i * num_verts + j].texCoord0 =
+				tex_temp[0] * (b3 * b3) +
+				tex_temp[1] * (2 * b3 * a3) +
+				tex_temp[2] * (a3 * a3);
+
 		}
 	}
 	
@@ -2145,13 +2174,15 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 				b = (*vertex_array)[i * num_verts + j].position - (*vertex_array)[(i - 1) * num_verts + j].position;
 
 			(*vertex_array)[i * num_verts + j].color = -1;
-			(*vertex_array)[i * num_verts + j].texCoord0.x = i * (1.0f / level) + texcoord.x;
-			(*vertex_array)[i * num_verts + j].texCoord0.y = -(j * (1.0f / level) + texcoord.y);
+//			(*vertex_array)[i * num_verts + j].texCoord0.x = i * (1.0f / level) + texcoord.x;
+//			(*vertex_array)[i * num_verts + j].texCoord0.y = -(j * (1.0f / level) + texcoord.y);
 
-			if (texcoord.x < 0.0f)
+/*
+		if (texcoord.x < 0.0f)
 				(*vertex_array)[i * num_verts + j].texCoord0.x *= -1;
 			if (texcoord.y < 0.0f)
 				(*vertex_array)[i * num_verts + j].texCoord0.y *= -1;
+*/
 
 
 			(*vertex_array)[i * num_verts + j].texCoord1.x = size.x * i * (1.0f / level) + lightcoord.x;
