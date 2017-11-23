@@ -120,7 +120,7 @@ void Frame::update(const vec2 &delta, float scale)
 	forward.normalize();
 	up.normalize();
 
-	if (up * vup < 0.003f)
+	if (up * vup < 0.004f)
 	{
 		forward = old_forward;
 		up = old_up;
