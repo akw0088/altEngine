@@ -146,7 +146,7 @@ float vec3::operator*(const vec3 &vector) const
 	return (x * vector.x + y * vector.y + z * vector.z);
 }
 
-float vec3::operator/(const vec3 &vector)
+float vec3::operator/(const vec3 &vector) const
 {
 	return (x / vector.x + y / vector.y + z / vector.z);
 }
@@ -236,7 +236,17 @@ vec2 &vec2::operator=(const vec2 &vector)
 	return *this;
 }
 
-vec2 vec2::operator+(const vec2 &vector)
+vec2 vec2::operator/(const float scalar)
+{
+	return vec2(x / scalar, y / scalar);
+}
+
+float vec2::operator/(const vec2 &vector) const
+{
+	return (x / vector.x + y / vector.y);
+}
+
+vec2 vec2::operator+(const vec2 &vector) const
 {
 	vec2 temp(x, y);
 
@@ -246,7 +256,7 @@ vec2 vec2::operator+(const vec2 &vector)
 	return temp;
 }
 
-vec2 vec2::operator-(const vec2 &vector)
+vec2 vec2::operator-(const vec2 &vector) const
 {
 	vec2 temp(x, y);
 

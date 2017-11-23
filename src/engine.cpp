@@ -794,7 +794,7 @@ void Engine::load(char *level)
 	{
 		vec3 offset(0.0f, 0.0f, 0.0f);
 
-		isocube[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5, offset);
+		isocube[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5);
 		//isosphere[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5.0f, offset);
 	}
 #if 0

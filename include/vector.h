@@ -35,7 +35,7 @@ public:
 	vec3 operator-(const vec3 &vector) const;
 	vec3 operator-() const;
 	float operator*(const vec3 &vector) const;
-	float operator/(const vec3 &vector);
+	float operator/(const vec3 &vector) const;
 	vec3 operator*(const float scalar) const;
 	vec3 operator/(const float scalar);
 	vec3 &operator+=(const vec3 &vec);
@@ -56,10 +56,12 @@ public:
 	vec2();
 	vec2(float x, float y);
 	vec2 &operator=(const vec2 &vector);
-	vec2 operator+(const vec2 &vector);
-	vec2 operator-(const vec2 &vector);
+	vec2 operator+(const vec2 &vector) const;
+	vec2 operator-(const vec2 &vector) const;
 	vec2 &operator*=(const float scalar);
 	vec2 operator*(const float scalar) const;
+	vec2 operator/(const float scalar);
+	float operator/(const vec2 &vector) const;
 
 
 	vec2 &normalize();

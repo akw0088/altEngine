@@ -142,7 +142,7 @@ public:
 	unsigned int ingame_menu_timer;
 	Terrain terrain;
 	IsoSphere isosphere[10];
-	IsoSphere isocube[10];
+	IsoCube isocube[10];
 
 	unsigned int audio_source[32];
 	unsigned int global_source[32];
