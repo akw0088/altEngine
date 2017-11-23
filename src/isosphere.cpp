@@ -31,7 +31,7 @@ IsoSphere::IsoSphere()
 	loaded = false;
 }
 
-int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth, float scale)
+int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth, float scale, const vec3 &offset)
 {
 	int width;
 	int height;
@@ -46,6 +46,11 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth
 	}
 
 	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	if (image == NULL)
+	{
+		printf("Unable to process %s\n", heightmap);
+		return -1;
+	}
 
 
 	// Have repeated vertices it seems
@@ -87,7 +92,7 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth
 	}
 
 
-	generate(depth, scale, (unsigned char *)image, width, height);
+	generate(depth, scale, (unsigned char *)image, width, height, offset);
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vert, false);
 
 	index_array = new unsigned int[num_index];
@@ -103,7 +108,7 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth
 }
 
 // Not really drawing, more adding to vertex array, would be immediate mode draw here though
-void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, float scale, unsigned char *image, int width, int height)
+void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, float scale, unsigned char *image, int width, int height, const vec3 &offset)
 {
 	vec2 texcoord1(v1.x / 2.0f + 0.5f, v1.y / 2.0f + 0.5f);
 	vec2 texcoord2(v2.x / 2.0f + 0.5f, v2.y / 2.0f + 0.5f);
@@ -117,7 +122,7 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 	vertex_array[num_vert].texCoord0 = texcoord1;
 	x = texcoord1.x * width;
 	y = texcoord1.y * height;
-	vertex_array[num_vert].position = v1 * scale *
+	vertex_array[num_vert].position = offset + v1 * scale *
 		(((image[(y * width + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
 
@@ -126,7 +131,7 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 	vertex_array[num_vert].texCoord0 = texcoord2;
 	x = texcoord2.x * width;
 	y = texcoord2.y * height;
-	vertex_array[num_vert].position = v2 * scale *
+	vertex_array[num_vert].position = offset + v2 * scale *
 		(((image[(y * width + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
 
@@ -135,20 +140,20 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 	vertex_array[num_vert].texCoord0 = texcoord3;
 	x = texcoord3.x * width;
 	y = texcoord3.y * height;
-	vertex_array[num_vert].position = v3 * scale *
+	vertex_array[num_vert].position = offset + v3 * scale *
 		(((image[(y * width + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
 
 	num_index += 3;
 }
 
-void IsoSphere::subdivide(const vec3 &v1, const vec3 &v2, const vec3 &v3, int depth, float scale, unsigned char *image, int width, int height)
+void IsoSphere::subdivide(const vec3 &v1, const vec3 &v2, const vec3 &v3, int depth, float scale, unsigned char *image, int width, int height, const vec3 &offset)
 {
 	vec3 v12, v23, v31;
 
 	if (depth == 0)
 	{
-		drawTriangle(v1, v2, v3, scale, image, width, height);
+		drawTriangle(v1, v2, v3, scale, image, width, height, offset);
 		return;
 	}
 
@@ -160,20 +165,20 @@ void IsoSphere::subdivide(const vec3 &v1, const vec3 &v2, const vec3 &v3, int de
 	v23 = v23.normalize();
 	v31 = v31.normalize();
 
-	subdivide(v1, v12, v31, depth - 1, scale, image, width, height);
-	subdivide(v2, v23, v12, depth - 1, scale, image, width, height);
-	subdivide(v3, v31, v23, depth - 1, scale, image, width, height);
-	subdivide(v12, v23, v31, depth - 1, scale, image, width, height);
+	subdivide(v1, v12, v31, depth - 1, scale, image, width, height, offset);
+	subdivide(v2, v23, v12, depth - 1, scale, image, width, height, offset);
+	subdivide(v3, v31, v23, depth - 1, scale, image, width, height, offset);
+	subdivide(v12, v23, v31, depth - 1, scale, image, width, height, offset);
 }
 
-void IsoSphere::generate(int depth, float scale, unsigned char *image, int width, int height)
+void IsoSphere::generate(int depth, float scale, unsigned char *image, int width, int height, const vec3 &offset)
 {
 	for (int i = 0; i < 60;)
 	{
 		subdivide(vdata[vindex[i]],
 			vdata[vindex[i + 1]],
 			vdata[vindex[i + 2]],
-			depth, scale, image, width, height);
+			depth, scale, image, width, height, offset);
 
 		i += 3;
 	}
