@@ -744,137 +744,6 @@ void RigidBody::get_frame(Frame &frame)
 	frame.pos += vec3(0.0f, (float)y_offset, 0.0f);
 }
 
-
-bool RigidBody::noclip_move(input_t &input, float speed_scale)
-{
-	static int two_frames = 0;
-	float air_control = 1.0f;
-	float jump_scale = 0.65f;
-	Frame camera;
-	Frame yaw;
-
-	wishdir = vec3();
-
-	get_frame(camera);
-	vec3	forward = camera.forward;
-	vec3	right = vec3::crossproduct(camera.up, camera.forward);
-	bool	moved = false;
-	bool	jumped = false;
-	bool	jumppad = false;
-	bool	ret = false;
-
-
-	vec3 yaw_right;
-	yaw.up = vec3(0.0f, 1.0f, 0.0f);
-	yaw.forward = camera.forward;
-	yaw.forward.y = 0.0f;
-	yaw.forward.normalize();
-
-	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
-	yaw_right.normalize();
-	yaw.up = vec3::crossproduct(right, yaw.forward);
-	yaw.up.normalize();
-
-	if (y_offset != 0 || input.walk)
-	{
-		speed_scale *= 0.5f;
-	}
-
-	speed_scale *= 1.5f;
-
-	if (jump_timer > 0)
-		jump_timer--;
-
-	sleep = false;
-
-	if (input.moveup)
-	{
-		wishdir += -forward;
-		moved = true;
-	}
-
-	if (input.movedown)
-	{
-		wishdir += forward;
-		moved = true;
-	}
-
-	if (input.moveleft)
-	{
-		wishdir += -right;
-		moved = true;
-	}
-
-	if (input.moveright)
-	{
-		wishdir += right;
-		moved = true;
-	}
-
-	if (input.jump)
-	{
-		velocity.y += entity->player->accel * speed_scale;
-		moved = true;
-	}
-
-	if (input.duck)
-	{
-		wishdir += vec3(0.0f, -1.0f, 0.0f);
-		velocity.y += -entity->player->accel * speed_scale;
-		moved = true;
-	}
-
-	if (moved)
-	{
-		velocity += wishdir * entity->player->accel * speed_scale;
-	}
-	float speed = 0.0f;
-	static bool hopped = false;
-
-	if (hopped || wishdir.magnitude() > 1.0f)
-	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
-		hopped = true;
-	}
-	else
-	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
-	}
-
-	if (entity->player && entity->player->jumppad_timer > 0)
-	{
-		jumppad = true;
-	}
-
-
-	two_frames = 0;
-
-	if (speed > entity->player->max_air_speed * speed_scale)
-	{
-		//		printf("MAX_AIR_SPEEDED\n");
-		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
-		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
-		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
-	}
-
-
-	if (moved == false)
-	{
-		// deceleration
-		//		printf("FRICTIONED\n");
-		velocity.x *= 0.5f;
-		velocity.z *= 0.5f;
-	}
-
-	// Speed up water movement due to additional deceleration friction
-	velocity.x *= (1.25f * speed_scale / speed);
-	velocity.y *= (1.25f * speed_scale / speed);
-	velocity.z *= (1.25f * speed_scale / speed);
-
-
-	return ret;
-}
-
 bool RigidBody::flight_move(input_t &input, float speed_scale)
 {
 	static int two_frames = 0;
@@ -1370,28 +1239,22 @@ bool RigidBody::move(input_t &input, float speed_scale)
 {
 	if (noclip)
 	{
-//		printf("noclip_move\n");
-		// causes NaN in position somehow with water_move or noclip_move
-		return flight_move(input, speed_scale);
+		return flight_move(input, 5.0);
 	}
 	else if (flight)
 	{
-//		printf("flight_move\n");
 		return flight_move(input, speed_scale);
 	}
 	else if (water && water_depth < 2048.0f)
 	{
-//		printf("water_move\n");
 		return water_move(input, speed_scale);
 	}
 	else if (on_ground == false)
 	{
-//		printf("air_move\n");
 		return air_move(input, speed_scale);
 	}
 	else
 	{
-//		printf("ground_move\n");
 		return ground_move(input, speed_scale);
 	}
 }
