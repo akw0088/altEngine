@@ -1067,44 +1067,32 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 
 	if (input.jump)
 	{
-		wishdir += vec3(0.0f, 1.0f, 0.0f);
+//		wishdir += vec3(0.0f, 1.0f, 0.0f);
 		velocity.y += entity->player->accel * speed_scale;
 		moved = true;
 	}
 	if (input.duck)
 	{
-		wishdir += vec3(0.0f, -1.0f, 0.0f);
+//		wishdir += vec3(0.0f, -1.0f, 0.0f);
 		velocity.y += -entity->player->accel * speed_scale;
 		moved = true;
 	}
 
 	if (moved)
 	{
-		velocity += wishdir * entity->player->accel * speed_scale;
+		velocity += wishdir * entity->player->accel * speed_scale * 0.5f;
 	}
 	float speed = 0.0f;
-	static bool hopped = false;
-
-	if ((hopped || wishdir.magnitude() > 1.0f))
-	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
-		hopped = true;
-	}
-
-	if (entity->player && entity->player->jumppad_timer > 0)
-	{
-		jumppad = true;
-	}
 
 	two_frames = 0;
 
 
-	if (speed > entity->player->max_air_speed * speed_scale)
+	if (speed > entity->player->max_air_speed * 0.5f * speed_scale)
 	{
 		//		printf("MAX_AIR_SPEEDED\n");
-		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
-		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
-		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.x *= (entity->player->max_air_speed * 0.5f * speed_scale / speed);
+//		velocity.y *= (entity->player->max_air_speed * 0.5f * speed_scale / speed);
+		velocity.z *= (entity->player->max_air_speed * 0.5f * speed_scale / speed);
 	}
 
 
@@ -1113,15 +1101,8 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 		// deceleration
 		//		printf("FRICTIONED\n");
 		velocity.x *= 0.5f;
+		velocity.y *= 0.5f;
 		velocity.z *= 0.5f;
-	}
-
-	// Speed up water movement due to additional deceleration friction
-	if ((water_depth >= 2.0f && water) || noclip)
-	{
-		velocity.x *= (1.25f * speed_scale / speed);
-		velocity.y *= (1.25f * speed_scale / speed);
-		velocity.z *= (1.25f * speed_scale / speed);
 	}
 
 
@@ -1398,7 +1379,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 //		printf("flight_move\n");
 		return flight_move(input, speed_scale);
 	}
-	else if (water_depth < -64.0)
+	else if (water && water_depth < 2048.0f)
 	{
 //		printf("water_move\n");
 		return water_move(input, speed_scale);

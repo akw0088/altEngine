@@ -1546,10 +1546,14 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.cleardepth();
 	}
 
-	if (player != -1 && entity_list[player]->rigid->water)
+	if (player != -1 && entity_list[player]->rigid->water && entity_list[player]->rigid->water_depth < 2048.0f)
 	{
 		render_wave(debug_bloom);
 		gfx.cleardepth();
+	}
+	else if (player != -1)
+	{
+		entity_list[player]->rigid->water = false;
 	}
 
 	//render menu

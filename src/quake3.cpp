@@ -2437,7 +2437,7 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 
 	if (input.walk == false && entity->rigid->on_ground && entity->rigid->gravity == true &&
-		entity->rigid->water == false &&
+		(entity->rigid->water == false && entity->rigid->water_depth > 2047.0f) &&
 		entity->player->state != PLAYER_DEAD &&
 		entity->rigid->noclip == false &&
 		entity->rigid->flight == false)
@@ -2584,7 +2584,7 @@ void Quake3::handle_player(int self, input_t &input)
 			entity->rigid->last_water = entity->rigid->water;
 		}
 	}
-	else if (entity->rigid->water == false)
+	else if (entity->rigid->water_depth > 2047.0f)
 	{
 		if (entity->rigid->water != entity->rigid->last_water)
 		{
