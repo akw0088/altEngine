@@ -211,7 +211,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	randomize_points = true;
 	enable_map = true;
 	enable_terrain = false;
-	enable_planet = true;
+	enable_planet = false;
 
 	enum_resolutions();
 #ifdef WIN32

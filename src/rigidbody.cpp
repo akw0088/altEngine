@@ -745,7 +745,677 @@ void RigidBody::get_frame(Frame &frame)
 }
 
 
-// This is becoming a rats nest
+bool RigidBody::noclip_move(input_t &input, float speed_scale)
+{
+	static int two_frames = 0;
+	float air_control = 1.0f;
+	float jump_scale = 0.65f;
+	Frame camera;
+	Frame yaw;
+
+	wishdir = vec3();
+
+	get_frame(camera);
+	vec3	forward = camera.forward;
+	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+	bool	moved = false;
+	bool	jumped = false;
+	bool	jumppad = false;
+	bool	ret = false;
+
+
+	vec3 yaw_right;
+	yaw.up = vec3(0.0f, 1.0f, 0.0f);
+	yaw.forward = camera.forward;
+	yaw.forward.y = 0.0f;
+	yaw.forward.normalize();
+
+	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
+	yaw_right.normalize();
+	yaw.up = vec3::crossproduct(right, yaw.forward);
+	yaw.up.normalize();
+
+	if (y_offset != 0 || input.walk)
+	{
+		speed_scale *= 0.5f;
+	}
+
+	speed_scale *= 1.5f;
+
+	if (jump_timer > 0)
+		jump_timer--;
+
+	sleep = false;
+
+	if (input.moveup)
+	{
+		wishdir += -forward;
+		moved = true;
+	}
+
+	if (input.movedown)
+	{
+		wishdir += forward;
+		moved = true;
+	}
+
+	if (input.moveleft)
+	{
+		wishdir += -right;
+		moved = true;
+	}
+
+	if (input.moveright)
+	{
+		wishdir += right;
+		moved = true;
+	}
+
+	if (input.jump)
+	{
+		velocity.y += entity->player->accel * speed_scale;
+		moved = true;
+	}
+
+	if (input.duck)
+	{
+		wishdir += vec3(0.0f, -1.0f, 0.0f);
+		velocity.y += -entity->player->accel * speed_scale;
+		moved = true;
+	}
+
+	if (moved)
+	{
+		velocity += wishdir * entity->player->accel * speed_scale;
+	}
+	float speed = 0.0f;
+	static bool hopped = false;
+
+	if (hopped || wishdir.magnitude() > 1.0f)
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
+		hopped = true;
+	}
+	else
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
+	}
+
+	if (entity->player && entity->player->jumppad_timer > 0)
+	{
+		jumppad = true;
+	}
+
+
+	two_frames = 0;
+
+	if (speed > entity->player->max_air_speed * speed_scale)
+	{
+		//		printf("MAX_AIR_SPEEDED\n");
+		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+	}
+
+
+	if (moved == false)
+	{
+		// deceleration
+		//		printf("FRICTIONED\n");
+		velocity.x *= 0.5f;
+		velocity.z *= 0.5f;
+	}
+
+	// Speed up water movement due to additional deceleration friction
+	velocity.x *= (1.25f * speed_scale / speed);
+	velocity.y *= (1.25f * speed_scale / speed);
+	velocity.z *= (1.25f * speed_scale / speed);
+
+
+	return ret;
+}
+
+bool RigidBody::flight_move(input_t &input, float speed_scale)
+{
+	static int two_frames = 0;
+	float air_control = 1.0f;
+	float jump_scale = 0.65f;
+	Frame camera;
+	Frame yaw;
+
+	wishdir = vec3();
+
+	get_frame(camera);
+	vec3	forward = camera.forward;
+	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+	bool	moved = false;
+	bool	jumped = false;
+	bool	jumppad = false;
+	bool	ret = false;
+
+
+	vec3 yaw_right;
+	yaw.up = vec3(0.0f, 1.0f, 0.0f);
+	yaw.forward = camera.forward;
+	yaw.forward.y = 0.0f;
+	yaw.forward.normalize();
+
+	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
+	yaw_right.normalize();
+	yaw.up = vec3::crossproduct(right, yaw.forward);
+	yaw.up.normalize();
+
+	if (y_offset != 0 || input.walk)
+	{
+		speed_scale *= 0.5f;
+	}
+
+	if (jump_timer > 0)
+		jump_timer--;
+
+	sleep = false;
+
+	if (input.moveup)
+	{
+		wishdir += -forward;
+		moved = true;
+	}
+
+	if (input.movedown)
+	{
+		wishdir += forward;
+		moved = true;
+	}
+
+	if (input.moveleft)
+	{
+		wishdir += -right;
+		moved = true;
+	}
+
+	if (input.moveright)
+	{
+		wishdir += right;
+		moved = true;
+	}
+
+	if (input.jump)
+	{
+		wishdir += vec3(0.0f, 1.0f, 0.0f);
+		velocity.y += entity->player->accel * speed_scale;
+		moved = true;
+	}
+
+	if (input.duck)
+	{
+		wishdir += vec3(0.0f, -1.0f, 0.0f);
+		velocity.y += -entity->player->accel * speed_scale;
+		moved = true;
+	}
+
+	//	wishdir = wishdir.normalize();
+
+
+	if (moved)
+	{
+		velocity += wishdir * entity->player->accel * speed_scale;
+	}
+	float speed = 0.0f;
+	static bool hopped = false;
+
+	if ((hopped || wishdir.magnitude() > 1.0f))
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
+		hopped = true;
+	}
+	else
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
+	}
+
+	if (entity->player && entity->player->jumppad_timer > 0)
+	{
+		jumppad = true;
+	}
+
+
+	two_frames = 0;
+
+	if (speed > entity->player->max_air_speed * speed_scale)
+	{
+		//		printf("MAX_AIR_SPEEDED\n");
+		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+	}
+
+
+	if (moved == false)
+	{
+		// deceleration
+		//		printf("FRICTIONED\n");
+		velocity.x *= 0.5f;
+		velocity.z *= 0.5f;
+	}
+
+	return ret;
+}
+
+bool RigidBody::water_move(input_t &input, float speed_scale)
+{
+	static int two_frames = 0;
+	float air_control = 1.0f;
+	float jump_scale = 0.65f;
+	Frame camera;
+	Frame yaw;
+
+	wishdir = vec3();
+
+	get_frame(camera);
+	vec3	forward = camera.forward;
+	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+	bool	moved = false;
+	bool	jumped = false;
+	bool	jumppad = false;
+	bool	ret = false;
+
+
+	vec3 yaw_right;
+	yaw.up = vec3(0.0f, 1.0f, 0.0f);
+	yaw.forward = camera.forward;
+	yaw.forward.y = 0.0f;
+	yaw.forward.normalize();
+
+	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
+	yaw_right.normalize();
+	yaw.up = vec3::crossproduct(right, yaw.forward);
+	yaw.up.normalize();
+
+	if (y_offset != 0 || input.walk)
+	{
+		speed_scale *= 0.5f;
+	}
+
+	if (jump_timer > 0)
+		jump_timer--;
+
+	sleep = false;
+
+	if (input.moveup)
+	{
+		wishdir += -forward;
+		moved = true;
+	}
+
+	if (input.movedown)
+	{
+		wishdir += forward;
+		moved = true;
+	}
+
+	if (input.moveleft)
+	{
+		wishdir += -right;
+		moved = true;
+	}
+
+	if (input.moveright)
+	{
+		wishdir += right;
+		moved = true;
+	}
+
+	if (input.jump)
+	{
+		wishdir += vec3(0.0f, 1.0f, 0.0f);
+		velocity.y += entity->player->accel * speed_scale;
+		moved = true;
+	}
+	if (input.duck)
+	{
+		wishdir += vec3(0.0f, -1.0f, 0.0f);
+		velocity.y += -entity->player->accel * speed_scale;
+		moved = true;
+	}
+
+	if (moved)
+	{
+		velocity += wishdir * entity->player->accel * speed_scale;
+	}
+	float speed = 0.0f;
+	static bool hopped = false;
+
+	if ((hopped || wishdir.magnitude() > 1.0f))
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
+		hopped = true;
+	}
+
+	if (entity->player && entity->player->jumppad_timer > 0)
+	{
+		jumppad = true;
+	}
+
+	two_frames = 0;
+
+
+	if (speed > entity->player->max_air_speed * speed_scale)
+	{
+		//		printf("MAX_AIR_SPEEDED\n");
+		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+	}
+
+
+	if (moved == false)
+	{
+		// deceleration
+		//		printf("FRICTIONED\n");
+		velocity.x *= 0.5f;
+		velocity.z *= 0.5f;
+	}
+
+	// Speed up water movement due to additional deceleration friction
+	if ((water_depth >= 2.0f && water) || noclip)
+	{
+		velocity.x *= (1.25f * speed_scale / speed);
+		velocity.y *= (1.25f * speed_scale / speed);
+		velocity.z *= (1.25f * speed_scale / speed);
+	}
+
+
+	return ret;
+}
+
+bool RigidBody::air_move(input_t &input, float speed_scale)
+{
+	static int two_frames = 0;
+	float air_control = 1.0f;
+	float jump_scale = 0.65f;
+	Frame camera;
+	Frame yaw;
+
+	wishdir = vec3();
+
+	air_control = entity->player->air_control;
+
+	get_frame(camera);
+	vec3	forward = camera.forward;
+	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+	bool	moved = false;
+	bool	jumped = false;
+	bool	jumppad = false;
+	bool	ret = false;
+
+
+	vec3 yaw_right;
+	yaw.up = vec3(0.0f, 1.0f, 0.0f);
+	yaw.forward = camera.forward;
+	yaw.forward.y = 0.0f;
+	yaw.forward.normalize();
+
+	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
+	yaw_right.normalize();
+	yaw.up = vec3::crossproduct(right, yaw.forward);
+	yaw.up.normalize();
+
+	//prevent walking upward
+	forward.y = 0.0f;
+	right.y = 0.0f;
+
+	if (jump_timer > 0)
+		jump_timer--;
+
+	sleep = false;
+
+	if (input.moveup)
+	{
+		wishdir += -forward;
+		moved = true;
+	}
+
+	if (input.movedown)
+	{
+		wishdir += forward;
+		moved = true;
+	}
+
+	if (input.moveleft)
+	{
+		wishdir += -right;
+		moved = true;
+	}
+
+	if (input.moveright)
+	{
+		wishdir += right;
+		moved = true;
+	}
+
+	if (input.duck)
+	{
+		wishdir += vec3(0.0f, -1.0f, 0.0f);
+		moved = true;
+	}
+
+	if (moved)
+	{
+		velocity += wishdir * entity->player->air_accel * air_control * speed_scale;
+	}
+	float speed = 0.0f;
+	static bool hopped = false;
+
+	if (hopped || wishdir.magnitude() > 1.0f)
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
+		hopped = true;
+	}
+	else
+	{
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
+	}
+
+	if (entity->player && entity->player->jumppad_timer > 0)
+	{
+		jumppad = true;
+	}
+
+	two_frames = 0;
+
+	if (speed > entity->player->max_air_speed * speed_scale)
+	{
+		//		printf("MAX_AIR_SPEEDED\n");
+		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+	}
+
+
+	if (moved == false)
+	{
+		// deceleration
+		//		printf("FRICTIONED\n");
+		velocity.x *= 0.5f;
+		velocity.z *= 0.5f;
+	}
+
+	return ret;
+}
+
+bool RigidBody::ground_move(input_t &input, float speed_scale)
+{
+	static int two_frames = 0;
+	float jump_scale = 0.65f;
+	Frame camera;
+	Frame yaw;
+
+	wishdir = vec3();
+
+	entity->player->max_air_speed = MAX_AIR_SPEED * speed_scale;
+
+	get_frame(camera);
+	vec3	forward = camera.forward;
+	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+	bool	moved = false;
+	bool	jumped = false;
+	bool	jumppad = false;
+	bool	ret = false;
+
+
+	vec3 yaw_right;
+	yaw.up = vec3(0.0f, 1.0f, 0.0f);
+	yaw.forward = camera.forward;
+	yaw.forward.y = 0.0f;
+	yaw.forward.normalize();
+
+	yaw_right = vec3::crossproduct(yaw.up, yaw.forward);
+	yaw_right.normalize();
+	yaw.up = vec3::crossproduct(right, yaw.forward);
+	yaw.up.normalize();
+
+	if (y_offset != 0 || input.walk)
+	{
+		speed_scale *= 0.5f;
+	}
+
+	//prevent walking upward
+	forward.y = 0.0f;
+	right.y = 0.0f;
+
+	if (jump_timer > 0)
+		jump_timer--;
+
+	sleep = false;
+
+	if (input.moveup)
+	{
+		wishdir += -forward;
+		moved = true;
+	}
+
+	if (input.movedown)
+	{
+		wishdir += forward;
+		moved = true;
+	}
+
+	if (input.moveleft)
+	{
+		wishdir += -right;
+		moved = true;
+	}
+
+	if (input.moveright)
+	{
+		wishdir += right;
+		moved = true;
+	}
+
+	if (input.jump)
+	{
+		jumped = true;
+		moved = true;
+	}
+	if (input.duck)
+	{
+		wishdir += vec3(0.0f, -1.0f, 0.0f);
+		moved = true;
+	}
+
+	//	wishdir = wishdir.normalize();
+
+
+	if (moved)
+	{
+		velocity += wishdir * entity->player->accel * speed_scale;
+	}
+	float speed = 0.0f;
+	static bool hopped = false;
+
+	speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
+
+	if (entity->player && entity->player->jumppad_timer > 0)
+	{
+		jumppad = true;
+	}
+
+
+	if (on_ground && (speed > entity->player->max_speed * speed_scale))
+	{
+		if (jumppad == false && two_frames > 8)
+		{
+			//			printf("MAX_SPEEDED\n");
+			two_frames = 0;
+			velocity.x *= (entity->player->max_speed * speed_scale / speed);
+			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
+			velocity.z *= (entity->player->max_speed * speed_scale / speed);
+			hopped = false;
+		}
+		two_frames++;
+	}
+
+	if (jumppad == true && (speed > entity->player->max_air_speed * speed_scale))
+	{
+		//		printf("MAX_AIR_SPEEDED\n");
+		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+	}
+
+
+	if (moved)
+	{
+		if (jumped && jump_timer == 0)
+		{
+			velocity.y += 3.0f * jump_scale * GRAVITY_SCALE;
+			velocity += wishdir * 1.25f;
+			jump_timer = (int)(TICK_RATE * 0.3f);
+			ret = true;
+		}
+	}
+	else
+	{
+		// deceleration
+		//		printf("FRICTIONED\n");
+		velocity.x *= 0.5f;
+		velocity.z *= 0.5f;
+	}
+
+	return ret;
+}
+
+
+bool RigidBody::move(input_t &input, float speed_scale)
+{
+	if (noclip)
+	{
+//		printf("noclip_move\n");
+		// causes NaN in position somehow with water_move or noclip_move
+		return flight_move(input, speed_scale);
+	}
+	else if (flight)
+	{
+//		printf("flight_move\n");
+		return flight_move(input, speed_scale);
+	}
+	else if (water_depth < -64.0)
+	{
+//		printf("water_move\n");
+		return water_move(input, speed_scale);
+	}
+	else if (on_ground == false)
+	{
+//		printf("air_move\n");
+		return air_move(input, speed_scale);
+	}
+	else
+	{
+//		printf("ground_move\n");
+		return ground_move(input, speed_scale);
+	}
+}
+
+#if 0
 bool RigidBody::move(input_t &input, float speed_scale)
 {
 	static int two_frames = 0;
@@ -858,7 +1528,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		moved = true;
 	}
 
-//	wishdir = wishdir.normalize();
+	//	wishdir = wishdir.normalize();
 
 
 	if (moved)
@@ -893,13 +1563,13 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		jumppad = true;
 	}
 
-	
+
 	if (on_ground && (speed > entity->player->max_speed * speed_scale))
 	{
 
 		if (jumppad == false && two_frames > 8)
 		{
-//			printf("MAX_SPEEDED\n");
+			//			printf("MAX_SPEEDED\n");
 			two_frames = 0;
 			velocity.x *= (entity->player->max_speed * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
@@ -908,21 +1578,21 @@ bool RigidBody::move(input_t &input, float speed_scale)
 		}
 		two_frames++;
 	}
-	
+
 	if (on_ground == false)
 	{
 		two_frames = 0;
 	}
 
-	
-	if ((on_ground == false || jumppad == true) && (speed > entity->player->max_air_speed * speed_scale) )
+
+	if ((on_ground == false || jumppad == true) && (speed > entity->player->max_air_speed * speed_scale))
 	{
-//		printf("MAX_AIR_SPEEDED\n");
+		//		printf("MAX_AIR_SPEEDED\n");
 		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
-//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
+		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
 		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
 	}
-	
+
 
 	if (moved)
 	{
@@ -937,7 +1607,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 	else
 	{
 		// deceleration
-//		printf("FRICTIONED\n");
+		//		printf("FRICTIONED\n");
 		velocity.x *= 0.5f;
 		velocity.z *= 0.5f;
 	}
@@ -953,6 +1623,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 
 	return ret;
 }
+#endif
 
 
 void RigidBody::move_forward(float speed_scale)

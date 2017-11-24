@@ -45,6 +45,12 @@ public:
 
 
 	bool move(input_t &input, float speed_scale);
+	bool ground_move(input_t &input, float speed_scale);
+	bool air_move(input_t &input, float speed_scale);
+	bool water_move(input_t &input, float speed_scale);
+	bool flight_move(input_t &input, float speed_scale);
+	bool noclip_move(input_t &input, float speed_scale);
+
 	void move_forward(float speed_scale);
 	void move_backward(float speed_scale);
 	void move_left(float speed_scale);
