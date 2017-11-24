@@ -10,6 +10,8 @@ class Oculus
 public:
 	int init(Graphics &gfx);
 	void get_pos(matrix3 &head, vec3 &position, matrix3 &lefthand, vec3 &left_pos, matrix3 &righthand, vec3 &right_pos);
+	void start_frame();
+	void end_frame();
 	void submit_frame();
 	int destroy();
 
@@ -33,6 +35,8 @@ private:
 	double display_time;
 
 	unsigned int ovr_time;
+
+	unsigned int frame_num;
 
 	// OpenGL specific
 	unsigned int ovr_fbo;
