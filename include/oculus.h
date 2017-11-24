@@ -1,3 +1,4 @@
+#ifdef OCULUS
 #include "include.h"
 #include "Extras/OVR_Math.h"
 #include "OVR_CAPI.h"
@@ -45,4 +46,5 @@ private:
 	unsigned int eye_tex[2];
 };
 
+#endif
 #endif

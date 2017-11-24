@@ -1,5 +1,6 @@
 #include "oculus.h"
 
+#ifdef OCULUS
 
 
 int Oculus::init(Graphics &gfx)
@@ -206,3 +207,4 @@ int Oculus::destroy()
 }
 
 
+#endif
