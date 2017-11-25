@@ -265,12 +265,14 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	game = new Commando();
 #endif
 
+#ifdef OCULUS
 	ovr.init(gfx);
 	matrix3 head, lf, rh, lh;
 	vec3 hpos, lp, rp;
 	ovrtouch_t touch;
 	ovr.get_pos(head, hpos, lh, lp, rh, rp, touch);
 	ovr.submit_frame();
+#endif
 
 
 	debugf("altEngine2 built %s\n", __DATE__);
