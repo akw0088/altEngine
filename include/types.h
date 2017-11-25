@@ -961,4 +961,29 @@ typedef struct
 } terrain_t;
 
 
+typedef struct
+{
+	//left
+	bool a;
+	bool b;
+	bool rthumb;
+	bool rthumb_rest;
+	bool rindex_trigger;
+	bool rindex_pointing;
+	bool rthumb_up;
+	float rtrigger;
+	vec2 rthumbstick;
+
+	//right
+	bool x;
+	bool y;
+	bool lthumb;
+	bool lthumb_rest;
+	bool lindex_trigger;
+	bool lindex_pointing;
+	bool lthumb_up;
+	float ltrigger;
+	vec2 lthumbstick;
+} ovrtouch_t;
+
 #endif

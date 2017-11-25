@@ -121,7 +121,6 @@ public:
 	int get_loop_source();
 	int get_global_source();
 	int get_global_loop_source();
-	bool terrain_collision(RigidBody &body);
 
 
 	unsigned int xres, yres;
@@ -162,6 +161,10 @@ public:
 
 	unsigned int controller;
 
+
+#ifdef OCULUS
+	Oculus ovr;
+#endif
 
 
 	char *cmd_list[1024];

@@ -467,6 +467,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "terrain.h"
 #include "isocube.h"
 #include "isosphere.h"
+#include "oculus.h"
 #include "engine.h"
 
 

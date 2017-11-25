@@ -44,8 +44,12 @@ int Oculus::init(Graphics &gfx)
 	return 0;
 }
 
-void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &left_pos, matrix3 &righthand, vec3 &right_pos)
+void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &left_pos, matrix3 &righthand, vec3 &right_pos, ovrtouch_t &input)
 {
+	quaternion q;
+	ovrInputState    ovrinput;
+	ovrResult ret;
+
 	display_time = ovr_GetPredictedDisplayTime(session, 0);
 	track = ovr_GetTrackingState(session, ovr_time, ovrTrue);
 
@@ -60,6 +64,112 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 	right_pos.x = track.HandPoses[1].ThePose.Position.x;
 	right_pos.y = track.HandPoses[1].ThePose.Position.y;
 	right_pos.z = track.HandPoses[1].ThePose.Position.z;
+
+	q.x = track.HeadPose.ThePose.Orientation.x;
+	q.y = track.HeadPose.ThePose.Orientation.y;
+	q.z = track.HeadPose.ThePose.Orientation.z;
+	q.s = track.HeadPose.ThePose.Orientation.w;
+	head = q.to_matrix();
+
+	q.x = track.HandPoses[0].ThePose.Orientation.x;
+	q.y = track.HandPoses[0].ThePose.Orientation.y;
+	q.z = track.HandPoses[0].ThePose.Orientation.z;
+	q.s = track.HandPoses[0].ThePose.Orientation.w;
+	lefthand = q.to_matrix();
+
+	q.x = track.HandPoses[1].ThePose.Orientation.x;
+	q.y = track.HandPoses[1].ThePose.Orientation.y;
+	q.z = track.HandPoses[1].ThePose.Orientation.z;
+	q.s = track.HandPoses[1].ThePose.Orientation.w;
+	righthand = q.to_matrix();
+
+	if ( ovr_GetInputState(session, ovrControllerType_Touch, &ovrinput) >= 0)
+	{
+		if (ovrinput.ControllerType == ovrControllerType_Touch)
+		{
+			if (ovrinput.Buttons & ovrTouch_A)
+				input.a = true;
+			else
+				input.a = false;
+
+			if (ovrinput.Buttons & ovrTouch_B)
+				input.b = true;
+			else
+				input.b = false;
+
+			if (ovrinput.Buttons & ovrTouch_X)
+				input.x = true;
+			else
+				input.x = false;
+
+			if (ovrinput.Buttons & ovrTouch_Y)
+				input.y = true;
+			else
+				input.y = false;
+
+			if (ovrinput.Buttons & ovrTouch_LThumb)
+				input.lthumb = true;
+			else
+				input.lthumb = false;
+
+			if (ovrinput.Buttons & ovrTouch_RThumb)
+				input.rthumb = true;
+			else
+				input.rthumb = false;
+
+			if (ovrinput.Buttons & ovrTouch_LThumbRest)
+				input.lthumb_rest = true;
+			else
+				input.lthumb_rest = false;
+
+			if (ovrinput.Buttons & ovrTouch_RThumbRest)
+				input.rthumb_rest = true;
+			else
+				input.rthumb_rest = false;
+
+			if (ovrinput.Buttons & ovrTouch_RIndexTrigger)
+				input.rindex_trigger = true;
+			else
+				input.rindex_trigger = false;
+
+			if (ovrinput.Buttons & ovrTouch_LIndexTrigger)
+				input.lindex_trigger = true;
+			else
+				input.lindex_trigger = false;
+
+			if (ovrinput.Buttons & ovrTouch_RIndexPointing)
+				input.rindex_pointing = true;
+			else
+				input.rindex_pointing = false;
+
+			if (ovrinput.Buttons & ovrTouch_LIndexPointing)
+				input.lindex_pointing = true;
+			else
+				input.lindex_pointing = false;
+
+			if (ovrinput.Buttons & ovrTouch_RThumbUp)
+				input.rthumb_up = true;
+			else
+				input.rthumb_up = false;
+
+			if (ovrinput.Buttons & ovrTouch_LThumbUp)
+				input.lthumb_up = true;
+			else
+				input.lthumb_up = false;
+
+
+			input.lthumbstick.x = ovrinput.Thumbstick[ovrHand_Left].x;
+			input.lthumbstick.y = ovrinput.Thumbstick[ovrHand_Left].y;
+			input.rthumbstick.x = ovrinput.Thumbstick[ovrHand_Right].x;
+			input.rthumbstick.y = ovrinput.Thumbstick[ovrHand_Right].y;
+
+			input.ltrigger = ovrinput.HandTrigger[ovrHand_Left];
+			input.rtrigger = ovrinput.HandTrigger[ovrHand_Right];
+		}
+	}
+
+
+	
 
 	/*
 	track.CalibratedOrigin;
