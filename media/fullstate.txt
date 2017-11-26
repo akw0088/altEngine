@@ -621,11 +621,18 @@ state 618 down		619 "null"
 state 618 enter		618 "toggle in_invert"
 state 618 next		7 "null"
 
-state 619 up		610 "null"
-state 619 down		601 "null"
-state 619 enter		619 "toggle sensitivity up"
-state 619 select	619 "toggle sensitivity down"
+state 619 up		618 "null"
+state 619 down		620 "null"
+state 619 enter		619 "toggle in_mouse up"
+state 619 select	619 "toggle in_mouse down"
 state 619 next		7 "null"
+
+state 620 up		619 "null"
+state 620 down		620 "null"
+state 620 enter		619 "toggle sensitivity up"
+state 620 select	619 "toggle sensitivity down"
+state 620 next		7 "null"
+
 
 
 state 700 up		700 "null"

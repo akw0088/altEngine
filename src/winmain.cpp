@@ -1023,7 +1023,10 @@ void register_raw_mouse(HWND hwnd)
 	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
 	Rid[0].dwFlags = RIDEV_INPUTSINK;
 	Rid[0].hwndTarget = hwnd;
-	RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
+	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE)
+	{
+		debugf("RegisterRawInputDevices() failed\n");
+	}
 }
 
 void unregister_raw_mouse(HWND hwnd)

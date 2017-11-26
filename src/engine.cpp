@@ -267,12 +267,14 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	game = new Commando();
 #endif
 
+#ifdef OCULUS
 	ovr.init(gfx);
 	matrix3 head, lf, rh, lh;
 	vec3 hpos, lp, rp;
 	ovrtouch_t touch;
 	ovr.get_pos(head, hpos, lh, lp, rh, rp, touch);
 	ovr.submit_frame();
+#endif
 
 
 	debugf("altEngine2 built %s\n", __DATE__);
@@ -5462,6 +5464,8 @@ void Engine::destroy()
 	}
 
 	delete thug22;
+	gfx.DeleteIndexBuffer(q3map.skybox_ibo);
+	gfx.DeleteVertexBuffer(q3map.skybox_vbo);
 
 	if (wad)
 		delete[] wad;
@@ -5720,6 +5724,30 @@ void Engine::console(char *cmd)
 				menu.data.crosshair = -1;
 
 			sprintf(cmd, "cg_crosshair %d", menu.data.crosshair);
+			console(cmd);
+			return;
+		}
+		else if (strcmp(data, "in_mouse") == 0 && strstr(cmd, "up"))
+		{
+			char cmd[128];
+
+			menu.data.mousemode++;
+			if (menu.data.mousemode > 1)
+				menu.data.mousemode = 1;
+
+			sprintf(cmd, "in_mouse %d", menu.data.mousemode);
+			console(cmd);
+			return;
+		}
+		else if (strcmp(data, "in_mouse") == 0 && strstr(cmd, "down"))
+		{
+			char cmd[128];
+
+			menu.data.mousemode--;
+			if (menu.data.mousemode < 0)
+				menu.data.mousemode = 0;
+
+			sprintf(cmd, "in_mouse %d", menu.data.mousemode);
 			console(cmd);
 			return;
 		}

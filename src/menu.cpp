@@ -61,6 +61,7 @@ Menu::Menu()
 	data.fov = 0.1f;
 	data.bloom = true;
 	data.invert = false;
+	data.mousemode = 0;
 
 }
 
@@ -479,6 +480,27 @@ void Menu::sub_value(const char *str, char *out)
 				sprintf(value, " %3.1f", 2.5 * data.sensitivity);
 				strcat(out, value);
 				j += strlen(value);
+				i += 1 + strlen(key);
+				continue;
+			}
+			else if (strcmp(key, "d_mousemode") == 0)
+			{
+				if (data.mousemode == -1)
+				{
+					strcat(out, "Default");
+					j += 7;
+				}
+				else if (data.mousemode == 0)
+				{
+					strcat(out, "WM_MOUSEMOVE");
+					j += 12;
+				}
+				else if (data.mousemode == 1)
+				{
+					strcat(out, "WM_INPUT (raw)");
+					j += 14;
+				}
+				i += 1 + strlen(key);
 				continue;
 			}
 			else if (strcmp(key, "d_crosshair") == 0)

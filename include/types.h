@@ -886,6 +886,7 @@ typedef struct
 	int antialias;
 	int anisotropic;
 	int crosshair;
+	int mousemode;
 
 	char apply[64];
 
