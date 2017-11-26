@@ -37,7 +37,9 @@ void Sph::init(int num_particle)
 		delete[] part;
 
 	// make points circles
+#ifdef OPENGL
 	glEnable(GL_POINT_SMOOTH);
+#endif
 
 	printf("Allocating %d particles\n", num_particle);
 	part = new particle_t[num_particle];
@@ -335,6 +337,7 @@ inline float Sph::norm2(vec3 &a, vec3 &b)
 void Sph::render()
 {
 	last_rendered = last_calculated;
+#ifdef OPENGL
 	// Draw Fluid Particles
 	glPointSize(10.0f);
 	glBegin(GL_POINTS);
@@ -348,4 +351,5 @@ void Sph::render()
 		glVertex3f(part[i].pos.x, part[i].pos.y, part[i].pos.z);
 	}
 	glEnd();
+#endif
 }
