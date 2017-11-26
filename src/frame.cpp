@@ -9,8 +9,8 @@ void rotate_vector(float rad, vec3 &vec, const vec3 &axis)
 	matrix3	m;
 	float	sinVal, cosVal, minusVal;
 
-	sinVal = (float)fsin(rad);
-	cosVal = (float)fcos(rad);
+	sinVal = (float)sinf(rad);
+	cosVal = (float)cosf(rad);
 	minusVal = 1.0f - cosVal;
 
 	m.m[0] = cosVal + minusVal * axis.x * axis.x;
@@ -103,8 +103,8 @@ void Frame::update(const vec2 &delta, float scale, bool lock)
 
 //"camera"
 	// Left / Right
-	rotate_vector(scale * (delta.x / 50.0f), forward, vup );
-	rotate_vector(scale * (delta.x / 50.0f), up, vup);
+	rotate_vector(scale * (delta.x / 100.0f), forward, vup );
+	rotate_vector(scale * (delta.x / 100.0f), up, vup);
 	forward.normalize();
 	up.normalize();
 
@@ -115,8 +115,8 @@ void Frame::update(const vec2 &delta, float scale, bool lock)
 	vec3 old_forward = forward;
 	vec3 old_up = up;
 
-	rotate_vector(scale * (delta.y / 50.0f), forward, right);
-	rotate_vector(scale * (delta.y / 50.0f), up, right);
+	rotate_vector(scale * (delta.y / 100.0f), forward, right);
+	rotate_vector(scale * (delta.y / 100.0f), up, right);
 	forward.normalize();
 	up.normalize();
 

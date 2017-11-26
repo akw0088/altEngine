@@ -278,8 +278,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				return 0;
 
 
-			if (tick_count == last_tick)
-				return 0;
+//			if (tick_count == last_tick)
+//				return 0;
 
 			last_tick = tick_count;
 
