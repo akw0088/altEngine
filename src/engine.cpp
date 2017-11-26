@@ -806,8 +806,8 @@ void Engine::load(char *level)
 	{
 		vec3 offset(0.0f, 0.0f, 0.0f);
 
-		isocube[0].load(gfx, "media/planet/earth_tex_10k.png", "media/planet/earth_height_10k.png", 9, 1e5);
-		//isosphere[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5.0f, offset);
+		//isocube[0].load(gfx, "media/planet/earth_tex_10k.png", "media/planet/earth_height_10k.png", 9, 1e5);
+		isosphere[0].load(gfx, "media/planet/moon_tex.png", "media/planet/moon_height.png", 9, 1e5, offset);
 	}
 #if 0
 	isocube[0].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",0, 100.0f);
@@ -2071,7 +2071,8 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 			int lod = clamp(current_light, 0, 10);
 
-			isocube[0].render(gfx);
+			//isocube[0].render(gfx);
+			isosphere[0].render(gfx);
 		}
 		else
 		{
