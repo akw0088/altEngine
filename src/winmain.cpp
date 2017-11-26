@@ -13,6 +13,14 @@
 #include <xutility>
 #include <Xinput.h>
 
+// Raw mouse input
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
+#endif
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
+#endif
+
 
 
 double freq = 0.0;
@@ -252,21 +260,45 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 		return 0;
-
-	case WM_MOUSEWHEEL:
-	{
-		short int zDelta = (short)HIWORD(wParam);
-
-		if (zDelta > 0)
+	case WM_INPUT:
 		{
-			altEngine.keypress("mousewheelup", true);
+			UINT dwSize = 40;
+			static BYTE lpb[40];
+
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT,
+				lpb, &dwSize, sizeof(RAWINPUTHEADER));
+
+			RAWINPUT* raw = (RAWINPUT*)lpb;
+
+			if (raw->header.dwType == RIM_TYPEMOUSE)
+			{
+				int x = raw->data.mouse.lLastX;
+				int y = raw->data.mouse.lLastY;
+
+
+				if (altEngine.mousepos_raw(center.x, center.y, x, y))
+				{
+					POINT screen = center;
+					ClientToScreen(hwnd, &screen);
+					SetCursorPos(screen.x, screen.y);
+					if (show_cursor == true)
+					{
+						show_cursor = false;
+						ShowCursor(FALSE);
+					}
+				}
+				else
+				{
+					if (show_cursor == false)
+					{
+						show_cursor = true;
+						ShowCursor(TRUE);
+					}
+				}
+
+			}
 		}
-		else
-		{
-			altEngine.keypress("mousewheeldown", true);
-		}
-		return 0;
-	}
+		break;
 	case WM_MOUSEMOVE:
 		{
 			int	x, y;
@@ -276,7 +308,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if ((x == center.x) && (y == center.y))
 				return 0;
-
 
 //			if (tick_count == last_tick)
 //				return 0;
@@ -304,6 +335,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return 0;
+	case WM_MOUSEWHEEL:
+	{
+		short int zDelta = (short)HIWORD(wParam);
+
+		if (zDelta > 0)
+		{
+			altEngine.keypress("mousewheelup", true);
+		}
+		else
+		{
+			altEngine.keypress("mousewheeldown", true);
+		}
+		return 0;
+	}
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONUP:
 		{
@@ -967,6 +1012,28 @@ BOOL CALLBACK SettingsProc(HWND hdlg, UINT message, WPARAM wParam, LPARAM lParam
 		break;
 	}
 	return FALSE;
+}
+
+
+
+void register_raw_mouse(HWND hwnd)
+{
+	RAWINPUTDEVICE Rid[1];
+	Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+	Rid[0].dwFlags = RIDEV_INPUTSINK;
+	Rid[0].hwndTarget = hwnd;
+	RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
+}
+
+void unregister_raw_mouse(HWND hwnd)
+{
+	RAWINPUTDEVICE Rid[1];
+	Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+	Rid[0].dwFlags = RIDEV_REMOVE;
+	Rid[0].hwndTarget = hwnd;
+	RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 }
 
 #ifndef DEDICATED

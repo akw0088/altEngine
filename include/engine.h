@@ -44,6 +44,7 @@ public:
 	void set_rolloff_factor(float value);
 
 	bool mousepos(int x, int y, int deltax, int deltay);
+	bool mousepos_raw(int x, int y, int deltax, int deltay);
 	void keypress(char *key, bool pressed);
 	void keystroke(char key, char *keystr);
 
@@ -148,6 +149,7 @@ public:
 	unsigned int audio_loop_source[32];
 	unsigned int global_loop_source[32];
 	int max_sources;
+	bool raw_mouse;
 
 	rendermode_t render_mode;
 	bool dynamic_resolution;

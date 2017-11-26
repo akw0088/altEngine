@@ -202,6 +202,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
+
+	raw_mouse = false;
 	ssao_level = 1.0f;
 	object_level = 1.0f;
 //	ssao_radius = 5.0;
@@ -265,14 +267,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	game = new Commando();
 #endif
 
-#ifdef OCULUS
 	ovr.init(gfx);
 	matrix3 head, lf, rh, lh;
 	vec3 hpos, lp, rp;
 	ovrtouch_t touch;
 	ovr.get_pos(head, hpos, lh, lp, rh, rp, touch);
 	ovr.submit_frame();
-#endif
 
 
 	debugf("altEngine2 built %s\n", __DATE__);
@@ -4517,6 +4517,33 @@ input_t Engine::GetKeyState(int keystate)
 	return input;
 }
 
+bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
+{
+	static bool once = false;
+
+	if (q3map.loaded == false || menu.ingame == true || menu.console == true || menu.chatmode == true)
+	{
+		return false;
+	}
+
+	if (once)
+	{
+		//recenter on game load so view doesnt spin too much
+		once = false;
+		return true;
+	}
+
+	if (raw_mouse == true)
+	{
+		if (menu.data.invert)
+			camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity, enable_planet == false);
+		else
+			camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity, enable_planet == false);
+	}
+
+	return true;
+}
+
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
@@ -4552,10 +4579,13 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 		return true;
 	}
 
-	if (menu.data.invert)
-		camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity, enable_planet == false);
-	else
-		camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity, enable_planet == false);
+	if (raw_mouse == false)
+	{
+		if (menu.data.invert)
+			camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity, enable_planet == false);
+		else
+			camera_frame.update(vec2((float)deltax, (float)deltay), sensitivity, enable_planet == false);
+	}
 
 	return true;
 }
@@ -7233,6 +7263,11 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strcmp(cmd, "sensitivity") == 0)
+	{
+		debugf("Mouse sensitivity is %f\n", sensitivity);
+		return;
+	}
 
 	if (sscanf(cmd, "sensitivity %s", data) == 1)
 	{
@@ -7241,6 +7276,39 @@ void Engine::console(char *cmd)
 		sensitivity = (float)atof(data);
 		return;
 	}
+
+#ifdef WIN32
+	if (strcmp(cmd, "in_mouse") == 0)
+	{
+		if (raw_mouse == false)
+			debugf("Mouse mode is WM_MOUSEMOVE\n");
+		else
+			debugf("Mouse mode is WM_INPUT (raw mouse input)\n");
+		return;
+	}
+
+	if (sscanf(cmd, "in_mouse %s", data) == 1)
+	{
+		int mode = atoi(data);
+
+		if (mode == 0)
+		{
+			snprintf(msg, LINE_SIZE, "Setting mouse input to WM_MOUSEMOVE\n");
+			menu.print(msg);
+			raw_mouse = false;
+			unregister_raw_mouse(NULL);
+		}
+		else if (mode == 1)
+		{
+			snprintf(msg, LINE_SIZE, "Setting mouse input to WM_INPUT (raw mouse input)\n");
+			menu.print(msg);
+			raw_mouse = true;
+			register_raw_mouse(*((HWND *)param1));
+		}
+		return;
+	}
+#endif
+
 
 	if (sscanf(cmd, "res_scale %s", data) == 1)
 	{

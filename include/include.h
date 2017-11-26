@@ -479,6 +479,8 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 void GetScreenShot(HWND hwnd, unsigned int &luminance, bool luminance_only);
 void get_resolution(int &width, int &height, int &bpp, int &refresh_rate);
 void set_resolution(int width, int height, int bpp);
+void register_raw_mouse(HWND hwnd);
+void unregister_raw_mouse(HWND hwnd);
 #endif
 
 #define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
