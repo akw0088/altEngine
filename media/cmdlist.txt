@@ -47,6 +47,7 @@ holdable_teleporter
 hurt
 in_controller
 in_invert
+in_mouse
 invisibility
 kick
 kill
