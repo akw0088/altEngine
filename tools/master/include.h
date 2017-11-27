@@ -26,8 +26,6 @@
 
 #ifdef _WIN32
 #define M_PI 3.141592653589793238462643
-#define _CRTDBG_MAP_ALLOC
-#define _USE_MATH_DEFINES
 #define WIN32_EXTRA_LEAN
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -35,23 +33,15 @@
 #define VC_EXTRALEAN
 #include <windows.h>
 #include <winsock2.h>
-//#include <Ws2tcpip.h>
-#include <omp.h>
-#include <mmsystem.h>
 
 
 #pragma comment(lib, "wsock32.lib")
 
 #include "net.h"
-
 typedef int socklen_t;
 typedef unsigned char byte;
-
 #endif
 
-#define MAX_CELLS 16
-#define MAX_ARC 32768
-#define MASTER_PORT 6534
 
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
