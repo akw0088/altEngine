@@ -42,7 +42,7 @@ void handle_list_request(dbh_t *header, char *client_ip, sockaddr *client, int c
 
 	memset(msg, 0, sizeof(msg));
 	printf("Got master list request from client %s\n", client_ip);
-	struct sockaddr_in *info = (sockaddr_in *)&client;
+	//struct sockaddr_in *info = (sockaddr_in *)&client;
 	for (int i = 0; i < header->num_server; i++)
 	{
 		char ip[80];
@@ -62,10 +62,7 @@ int main(int argc, char *argv[])
 {
 	sockaddr_in	servaddr;
 	int	server_sock;
-	int	csock;	//client sock
-	char *data = NULL;
 	dbh_t *header;
-	int size_db = 0;
 
 	if (argc < 2)
 	{
@@ -73,8 +70,10 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+#ifdef WIN32
 	WSADATA	wsadata;
 	WSAStartup(MAKEWORD(2, 2), &wsadata);
+#endif
 
 
 	printf("Port %d\n", atoi(argv[1]));
@@ -98,7 +97,7 @@ int main(int argc, char *argv[])
 		int client_size = sizeof(client);
 		char client_ip[128];
 
-		recvfrom(server_sock, buffer, 80, 0, &client, &client_size);
+		recvfrom(server_sock, buffer, 80, 0, &client, (socklen_t *)&client_size);
 		struct sockaddr_in *sa = (struct sockaddr_in*)&client;
 		struct in_addr addr = sa->sin_addr;
 		inet_ntop(AF_INET, &addr, client_ip, 127);
