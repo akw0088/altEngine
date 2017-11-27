@@ -7500,8 +7500,12 @@ int Engine::bind(int port)
 
 	if (net.bind(NULL, port) == 0)
 	{
+		char master[80];
+
+		sprintf(master, "master %d", qport);
 		client_flag = false;
 		server_flag = true;
+		net.sendto(master, strlen(master) + 1, "54.244.103.210:65535");
 		return 0;
 	}
 	else
