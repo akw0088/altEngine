@@ -6196,6 +6196,12 @@ void Engine::console(char *cmd)
 		return;
 	}
 
+	if (strstr(cmd, "serverlist"))
+	{
+		query_master();
+		return;
+	}
+
 	ret = sscanf(cmd, "sv_motd \"%[^\"]s", data);
 	if (ret == 1)
 	{
@@ -6422,7 +6428,7 @@ void Engine::console(char *cmd)
 	}
 
 
-	if (strstr(cmd, "list") != 0)
+	if (strstr(cmd, "maps") != 0)
 	{
 #define LIST_SIZE 1024 * 512
 		char *filelist = new char[LIST_SIZE];
@@ -7500,12 +7506,13 @@ int Engine::bind(int port)
 
 	if (net.bind(NULL, port) == 0)
 	{
-		char master[80];
+		char msg[80];
 
-		sprintf(master, "master %d", qport);
+		sprintf(msg, "master %d", qport);
 		client_flag = false;
 		server_flag = true;
-		net.sendto(master, strlen(master) + 1, "54.244.103.210:65535");
+//		net.sendto(msg, strlen(msg) + 1, "54.244.103.210:65535");
+		net.sendto(msg, strlen(msg) + 1, "127.0.0.1:65534");
 		return 0;
 	}
 	else
@@ -7513,6 +7520,23 @@ int Engine::bind(int port)
 		q3map.unload(gfx);
 		return -1;
 	}
+}
+
+void Engine::query_master()
+{
+	char master[128] = "127.0.0.1:65534";
+	char msg[2048];
+	char response[2048];
+	char from[1204];
+
+	sprintf(from, "127.0.0.1:65535");
+	sprintf(msg, "serverlist");
+	net.sendto(msg, strlen(msg) + 1, master);
+	debugf("Sending request to master server %s", master);
+	Sleep(500);
+	net.recvfrom(response, 2047, from, 1023);
+
+	debugf("Serverlist: %s\n", response);
 }
 
 void Engine::connect(char *serverip)

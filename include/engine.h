@@ -122,7 +122,7 @@ public:
 	int get_loop_source();
 	int get_global_source();
 	int get_global_loop_source();
-
+	void query_master();
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -150,6 +150,7 @@ public:
 	unsigned int global_loop_source[32];
 	int max_sources;
 	bool raw_mouse;
+	
 
 	rendermode_t render_mode;
 	bool dynamic_resolution;
