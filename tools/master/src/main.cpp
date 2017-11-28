@@ -3,7 +3,7 @@
 
 void handle_report(dbh_t *header, char *buffer, char *client_ip, report_t *report)
 {
-	unsigned int qport = 0;
+	//unsigned int qport = 0;
 
 	if (header->num_server < 32)
 	{
@@ -148,6 +148,8 @@ int main(int argc, char *argv[])
 			{
 				handle_list(header, client_ip, &client, client_size);
 			}
+			break;
+		case MASTER_RESPONSE:
 			break;
 		}
 		printf("connection complete\n");
