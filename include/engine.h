@@ -123,6 +123,8 @@ public:
 	int get_global_source();
 	int get_global_loop_source();
 	void query_master();
+	void report_master();
+	void query_servers();
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -130,6 +132,8 @@ public:
 	unsigned int lum_table[125];
 	unsigned int lum_index;
 	unsigned int lum_avg;
+
+	vector<char *> serverlist;
 
 
 

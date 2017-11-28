@@ -987,4 +987,26 @@ typedef struct
 	vec2 lthumbstick;
 } ovrtouch_t;
 
+
+typedef enum {
+	MASTER_REPORT,
+	MASTER_LIST,
+	MASTER_RESPONSE
+} master_cmd_t;
+
+typedef struct
+{
+	int cmd;
+	char ip[32];
+	int qport;
+	char sv_hostname[32];
+	char map[32];
+	int num_player;
+	int max_player;
+	int gametype;
+	int fraglimit;
+	int timelimit;
+	int capturelimit;
+} report_t;
+
 #endif

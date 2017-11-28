@@ -1,61 +1,89 @@
 #include "include.h"
 
 
-void handle_master_request(dbh_t *header, char *buffer, char *client_ip)
+void handle_report(dbh_t *header, char *buffer, char *client_ip, report_t *report)
 {
 	unsigned int qport = 0;
-	printf("<- master\n");
-	if (1 == sscanf(buffer, "master %d", &qport))
-	{
-		if (header->num_server < 32)
-		{
-			int found = 0;
-			for (int i = 0; i < header->num_server; i++)
-			{
-				if (strcmp(client_ip, header->server[i].ip) == 0)
-				{
-					printf("server already exists\n");
-					found = 1;
-					break;
-				}
-			}
 
-			if (found == 0)
+	if (header->num_server < 32)
+	{
+		int found = 0;
+		for (int i = 0; i < header->num_server; i++)
+		{
+			if (strcmp(client_ip, header->server[i].ip) == 0)
 			{
-				strncpy(header->server[header->num_server].ip, client_ip, 31);
-				header->server[header->num_server].last_time = (int)time(0);
-				header->num_server++;
-				printf("adding server %s to master\n", client_ip);
+				int index = i;
+
+				printf("server already exists, updating info\n");
+				printf("\t%s\n", report->sv_hostname);
+				printf("\t%s\n", report->map);
+				strncpy(header->server[index].ip, client_ip, 31);
+				header->server[index].last_time = (int)time(0);
+				sprintf(header->server[index].sv_hostname, "%s", report->sv_hostname);
+				sprintf(header->server[index].map, "%s", report->map);
+				header->server[index].capturelimit = report->capturelimit;
+				header->server[index].fraglimit = report->fraglimit;
+				header->server[index].gametype = report->gametype;
+				header->server[index].gametype = report->timelimit;
+				header->server[index].num_player = report->num_player;
+				header->server[index].max_player = report->max_player;
+				header->server[index].qport = report->qport;
+				found = 1;
+				break;
 			}
 		}
-		else
+
+		if (found == 0)
 		{
-			printf("master server is full\n");
+			int index = header->num_server;
+			strncpy(header->server[index].ip, client_ip, 31);
+			header->server[index].last_time = (int)time(0);
+			sprintf(header->server[index].sv_hostname, "%s", report->sv_hostname);
+			sprintf(header->server[index].map, "%s", report->map);
+			header->server[index].capturelimit = report->capturelimit;
+			header->server[index].fraglimit = report->fraglimit;
+			header->server[index].gametype = report->gametype;
+			header->server[index].gametype = report->timelimit;
+			header->server[index].num_player = report->num_player;
+			header->server[index].max_player = report->max_player;
+			header->server[index].qport = report->qport;
+			header->num_server++;
+			
+			printf("adding server %s to master\n", client_ip);
+			printf("\t%s\n", report->sv_hostname);
+			printf("\t%s\n", report->map);
 		}
+	}
+	else
+	{
+		printf("master server is full\n");
 	}
 }
 
-void handle_list_request(dbh_t *header, char *client_ip, sockaddr *client, int client_size)
+void handle_list(dbh_t *header, char *client_ip, sockaddr *client, int client_size)
 {
 	unsigned int client_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	char msg[2048];
+	report_t report[512];
 
-	memset(msg, 0, sizeof(msg));
+	memset(report, 0, sizeof(report));
 	printf("Got master list request from client %s\n", client_ip);
 	//struct sockaddr_in *info = (sockaddr_in *)&client;
 	for (int i = 0; i < header->num_server; i++)
 	{
-		char ip[80];
-
-
-		if (header->server[i].last_time < time(0) + 3600)
-		{
-			sprintf(ip, "%s:%d ", header->server[i].ip, header->server[i].port);
-			strcat(msg, ip);
-		}
+		sprintf(report[i].ip, "%s", header->server[i].ip);
+		sprintf(report[i].sv_hostname, "%s", header->server[i].sv_hostname);
+		sprintf(report[i].map, "%s", header->server[i].map);
+		report[i].capturelimit = header->server[i].capturelimit;
+		report[i].timelimit = header->server[i].timelimit;
+		report[i].fraglimit = header->server[i].fraglimit;
+		report[i].gametype = header->server[i].gametype;
+		report[i].num_player = header->server[i].num_player;
+		report[i].max_player = header->server[i].max_player;
+		report[i].qport = header->server[i].qport;
+		report[i].cmd = MASTER_RESPONSE;
 	}
-	printf("Sending serverlist: %s\n", msg);
-	sendto(client_sock, msg, strlen(msg) + 1, 0, client, client_size);
+	printf("Sending serverlist (%d servers)\n", header->num_server);
+	sendto(client_sock, (char *)report, header->num_server * sizeof(report_t), 0, client, client_size);
 }
 
 int main(int argc, char *argv[])
@@ -92,26 +120,35 @@ int main(int argc, char *argv[])
 
 	while (1)
 	{
-		char buffer[81] = { 0 };
+		char buffer[4096] = { 0 };
 		sockaddr client;
 		int client_size = sizeof(client);
 		char client_ip[128];
+		master_cmd_t *cmd;
+		int num_read = 0;
 
-		recvfrom(server_sock, buffer, 80, 0, &client, (socklen_t *)&client_size);
+		num_read = recvfrom(server_sock, buffer, 4096, 0, &client, (socklen_t *)&client_size);
 		struct sockaddr_in *sa = (struct sockaddr_in*)&client;
 		struct in_addr addr = sa->sin_addr;
 		inet_ntop(AF_INET, &addr, client_ip, 127);
 
 		printf("accepted connection from %s\n", client_ip);
-		printf("<- [%s]\n", buffer);
+		cmd = (master_cmd_t *)&buffer[0];
 
-		if (strstr(buffer, "master"))
+		switch (*cmd)
 		{
-			handle_master_request(header, buffer, client_ip);
-		}
-		else if (strstr(buffer, "list"))
-		{
-			handle_list_request(header, client_ip, &client, client_size);
+		case MASTER_REPORT:
+			if (num_read == sizeof(report_t))
+			{
+				handle_report(header, buffer, client_ip, (report_t *)buffer);
+			}
+			break;
+		case MASTER_LIST:
+			if (num_read == sizeof(int))
+			{
+				handle_list(header, client_ip, &client, client_size);
+			}
+			break;
 		}
 		printf("connection complete\n");
 	}

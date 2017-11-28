@@ -54,6 +54,15 @@ typedef struct
 	char ip[32];
 	unsigned short port;
 	int last_time;
+	int qport;
+	char sv_hostname[32];
+	char map[32];
+	int num_player;
+	int max_player;
+	int gametype;
+	int fraglimit;
+	int timelimit;
+	int capturelimit;
 } ref_t;
 
 
@@ -99,5 +108,27 @@ typedef struct
 #define CLIENT_HEADER 45
 #define SERVER_HEADER 14
 
+
+typedef enum {
+	MASTER_REPORT,
+	MASTER_LIST,
+	MASTER_RESPONSE
+} master_cmd_t;
+
+
+typedef struct
+{
+	int cmd;
+	char ip[32];
+	int qport;
+	char sv_hostname[32];
+	char map[32];
+	int num_player;
+	int max_player;
+	int gametype;
+	int fraglimit;
+	int timelimit;
+	int capturelimit;
+} report_t;
 
 #endif

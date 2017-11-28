@@ -134,7 +134,7 @@ Engine::Engine()
 	num_hash = 0;
 	net_port = 65535;
 
-	sprintf(sv_hostname, "servername");
+	sprintf(sv_hostname, "altEngine2 Server");
 	sprintf(sv_motd, "Write engines, not games");
 	sprintf(password, "iddqd");
 	memset(&netinfo, 0, sizeof(netinfo));
@@ -601,6 +601,22 @@ void Engine::find_path(int *&path, int &path_length, int start_path, int end_pat
 //	print_path(path, path_length, node);
 }
 
+void Engine::report_master()
+{
+	report_t report;
+
+	report.cmd = MASTER_REPORT;
+	report.qport = qport;
+	sprintf(report.sv_hostname, "%s", sv_hostname);
+	sprintf(report.map, "%s", q3map.map_name);
+	report.num_player = 1;
+	report.max_player = 8;
+	report.fraglimit = game->fraglimit;
+	report.timelimit = game->timelimit;
+	report.capturelimit = game->capturelimit;
+	net.sendto((char *)&report, sizeof(report_t), "127.0.0.1:65534");
+}
+
 void Engine::load(char *level)
 {
 	matrix4 transformation;
@@ -821,6 +837,11 @@ void Engine::load(char *level)
 	isocube[8].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",8, 100.0f);
 	isocube[9].load(gfx, "media/terrain/earth.png", "media/planet/moon_height.png",9, 100.0f);
 #endif
+
+	if (server_flag)
+	{
+		report_master();
+	}
 }
 
 void Engine::load_md5()
@@ -7506,13 +7527,8 @@ int Engine::bind(int port)
 
 	if (net.bind(NULL, port) == 0)
 	{
-		char msg[80];
-
-		sprintf(msg, "master %d", qport);
 		client_flag = false;
 		server_flag = true;
-//		net.sendto(msg, strlen(msg) + 1, "54.244.103.210:65535");
-		net.sendto(msg, strlen(msg) + 1, "127.0.0.1:65534");
 		return 0;
 	}
 	else
@@ -7525,18 +7541,44 @@ int Engine::bind(int port)
 void Engine::query_master()
 {
 	char master[128] = "127.0.0.1:65534";
-	char msg[2048];
+	unsigned int msg = MASTER_LIST;
 	char response[2048];
-	char from[1204];
+	char from[1024];
+	report_t *report;
 
 	sprintf(from, "127.0.0.1:65535");
-	sprintf(msg, "serverlist");
-	net.sendto(msg, strlen(msg) + 1, master);
+	net.sendto((char *)&msg, sizeof(int), master);
 	debugf("Sending request to master server %s", master);
 	Sleep(500);
-	net.recvfrom(response, 2047, from, 1023);
+	int num_read = net.recvfrom(response, 512 * sizeof(report_t), from, 1023);
 
-	debugf("Serverlist: %s\n", response);
+	report = (report_t *)response;
+	int num_report = num_read / sizeof(report_t);
+	if (num_read % sizeof(report_t) == 0)
+	{
+		for (int i = 0; i < num_report; i++)
+		{
+			if (report[i].cmd != MASTER_RESPONSE)
+			{
+				debugf("Invalid response\n");
+				break;
+			}
+
+			debugf("IP: %s Hostname: %s Map: %s Players: %d/%d Gametype: %d Fraglimit: %d Timelimit: %d Capturelimit: %d\n\n",
+				report[i].ip,
+				report[i].sv_hostname,
+				report[i].map,
+				report[i].num_player,
+				report[i].max_player,
+				report[i].gametype,
+				report[i].fraglimit,
+				report[i].timelimit,
+				report[i].capturelimit
+			);
+		}
+	}
+
+
 }
 
 void Engine::connect(char *serverip)
