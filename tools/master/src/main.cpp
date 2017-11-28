@@ -70,6 +70,15 @@ void handle_list(dbh_t *header, char *client_ip, sockaddr *client, int client_si
 	//struct sockaddr_in *info = (sockaddr_in *)&client;
 	for (int i = 0; i < header->num_server; i++)
 	{
+		if (time(0) - header->server[i].last_time > 15 * 60)
+		{
+			printf("Removing host %s at index %d (not updated in 15 minutes)\n", header->server[i].ip, i);
+			memcpy(&header->server[i], &header->server[i+1], sizeof(report_t));
+			header->num_server--;
+			i--;
+			continue;
+		}
+
 		sprintf(report[i].ip, "%s", header->server[i].ip);
 		sprintf(report[i].sv_hostname, "%s", header->server[i].sv_hostname);
 		sprintf(report[i].map, "%s", header->server[i].map);

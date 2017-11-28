@@ -51,7 +51,7 @@ typedef unsigned char byte;
 
 typedef struct
 {
-	char ip[32];
+	char ip[32]; // Could probably convert to int format
 	unsigned short port;
 	int last_time;
 	int qport;
