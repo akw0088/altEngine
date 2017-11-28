@@ -73,7 +73,8 @@ void handle_list(dbh_t *header, char *client_ip, sockaddr *client, int client_si
 		if (time(0) - header->server[i].last_time > 15 * 60)
 		{
 			printf("Removing host %s at index %d (not updated in 15 minutes)\n", header->server[i].ip, i);
-			memcpy(&header->server[i], &header->server[i+1], sizeof(report_t));
+			// should probably just use a linked list
+			memmove(&header->server[i], &header->server[i+1], (header->num_server - i + 1) * sizeof(report_t));
 			header->num_server--;
 			i--;
 			continue;
