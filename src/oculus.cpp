@@ -2,6 +2,11 @@
 
 #ifdef OCULUS
 
+Oculus::Oculus()
+{
+	initialized = false;
+	frame_num = 0;
+}
 
 int Oculus::init(Graphics &gfx)
 {
@@ -39,7 +44,7 @@ int Oculus::init(Graphics &gfx)
 	buffer(gfx, 0);
 	buffer(gfx, 1);
 
-	frame_num = 0;
+	initialized = true;
 
 	return 0;
 }
@@ -50,7 +55,10 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 	ovrInputState    ovrinput;
 	ovrResult ret;
 
-	display_time = ovr_GetPredictedDisplayTime(session, 0);
+	if (initialized == false)
+		return;
+
+	display_time = ovr_GetPredictedDisplayTime(session, frame_num);
 	track = ovr_GetTrackingState(session, ovr_time, ovrTrue);
 
 	head_pos.x = track.HeadPose.ThePose.Position.x;
@@ -182,8 +190,6 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 
 
 	// Initialize VR structures, filling out description.
-	ovrEyeRenderDesc eyeRenderDesc[2];
-	ovrPosef      hmdToEyeViewPose[2];
 	ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
 	eyeRenderDesc[0] = ovr_GetRenderDesc(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0]);
 	eyeRenderDesc[1] = ovr_GetRenderDesc(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1]);
@@ -191,7 +197,6 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 	hmdToEyeViewPose[1] = eyeRenderDesc[1].HmdToEyePose;
 
 	// Initialize our single full screen Fov layer.
-	ovrLayerEyeFov layer;
 	ovrRecti left;
 	ovrRecti right;
 
@@ -207,8 +212,8 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 
 	layer.Header.Type = ovrLayerType_EyeFov;
 	layer.Header.Flags = 0;
-	layer.ColorTexture[0] = swap_chain;
-	layer.ColorTexture[1] = swap_chain;
+	layer.ColorTexture[0] = swap_chain[0];
+	layer.ColorTexture[1] = swap_chain[1];
 	layer.Fov[0] = eyeRenderDesc[0].Fov;
 	layer.Fov[1] = eyeRenderDesc[1].Fov;
 	layer.Viewport[0] = left;
@@ -216,6 +221,7 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 
 	ovr_CalcEyePoses(track.HeadPose.ThePose, hmdToEyeViewPose, layer.RenderPose);
 }
+
 
 
 
@@ -235,19 +241,18 @@ int Oculus::buffer(Graphics &gfx, int index)
 	desc.SampleCount = 1;
 	desc.StaticImage = ovrFalse;
 
-	ovrResult result = ovr_CreateTextureSwapChainGL(session, &desc, &swap_chain);
+	ovrResult result = ovr_CreateTextureSwapChainGL(session, &desc, &swap_chain[index]);
 	if (result < 0)
 	{
 		printf("ovr_CreateTextureSwapChainGL failed\n");
 		return -1;
 	}
 
-	ovr_GetTextureSwapChainLength(session, swap_chain, &num_tex);
+	ovr_GetTextureSwapChainLength(session, swap_chain[index], &num_tex);
 	for (int i = 0; i < num_tex; i++)
 	{
-		unsigned int texId;
-		ovr_GetTextureSwapChainBufferGL(session, swap_chain, i, &texId);
-		glBindTexture(GL_TEXTURE_2D, texId);
+		ovr_GetTextureSwapChainBufferGL(session, swap_chain[index], i, &texId[index][i]);
+		glBindTexture(GL_TEXTURE_2D, texId[index][i]);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -256,36 +261,44 @@ int Oculus::buffer(Graphics &gfx, int index)
 
 	}
 
-	glGenFramebuffers(1, &ovr_fbo);
-	glGenTextures(1, &ovr_depth);
-	glBindTexture(GL_TEXTURE_2D, depth_tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, eye_size[index].w, eye_size[index].h, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
-
+	unsigned int normal_depth = 0;
+	gfx.CreateFramebuffer(eye_size[index].w, eye_size[index].h, ovr_fbo[index], ovr_tex[index], ovr_depth[index], normal_depth, 0, false);
 	return 0;
+}
+
+int Oculus::get_index(int eye)
+{
+	int index;
+	ovr_GetTextureSwapChainCurrentIndex(session, swap_chain[eye], &index);
+	return index;
+}
+
+
+int Oculus::get_tex(int eye)
+{
+	unsigned int index;
+	int i = get_index(eye);
+
+	ovr_GetTextureSwapChainBufferGL(session, swap_chain[eye], i, &index);
+	return index;
 }
 
 void Oculus::start_frame()
 {
-	ovr_WaitToBeginFrame(session, frame_num);
-	ovr_BeginFrame(session, frame_num);
-
-
 }
 
 void Oculus::end_frame()
 {
-	//ovr_EndFrame(session, frame_num, viewScaleDesc, layer_header, layer_count);
+//	ovr_EndFrame(session, frame_num, viewScaleDesc, layer_header, layer_count);
 }
 
 void Oculus::submit_frame()
 {
 	ovrViewScaleDesc viewScaleDesc;
 	viewScaleDesc.HmdSpaceToWorldScaleInMeters = 1.0f;
+	viewScaleDesc.HmdToEyePose[0] = hmdToEyeViewPose[0];
+	viewScaleDesc.HmdToEyePose[1] = hmdToEyeViewPose[1];
+
 
 	ovrLayerEyeFov eyeLayer;
 	eyeLayer.Header.Type = ovrLayerType_EyeFov;
@@ -293,24 +306,33 @@ void Oculus::submit_frame()
 
 	for (int i = 0; i < ovrEye_Count; i++)
 	{
-		eyeLayer.ColorTexture[i] = swap_chain;
+		eyeLayer.ColorTexture[i] = swap_chain[i];
 		eyeLayer.Viewport[i] = OVR::Recti(0, 0, eye_size[i].w, eye_size[i].h);
 		eyeLayer.Fov[i] = hmd_desc.DefaultEyeFov[i];
-		eyeLayer.RenderPose[i] = eye_pose[i];
+		eyeLayer.RenderPose[i] = hmdToEyeViewPose[i];
 		eyeLayer.SensorSampleTime = ovr_time;
 	}
 
 	// append all the layers to global list
 	ovrLayerHeader* layerList = &eyeLayer.Header;
 
-	ovrResult result = ovr_SubmitFrame(session, ovr_time, NULL, &layerList, 1);
+
+
+//	ovr_WaitToBeginFrame(session, frame_num);
+//	ovr_BeginFrame(session, frame_num);
+//	ovr_EndFrame(session, frame_num, &viewScaleDesc, &layerList, 1);
+
+	ovrResult result = ovr_SubmitFrame(session, frame_num, &viewScaleDesc, &layerList, 1);
 	frame_num++;
+
+
 }
 
 
 int Oculus::destroy()
 {
-	ovr_DestroyTextureSwapChain(session, swap_chain);
+	ovr_DestroyTextureSwapChain(session, swap_chain[0]);
+	ovr_DestroyTextureSwapChain(session, swap_chain[1]);
 	ovr_Destroy(session);
 	ovr_Shutdown();
 	return 0;

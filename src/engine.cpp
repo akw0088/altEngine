@@ -269,11 +269,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 #ifdef OCULUS
 	ovr.init(gfx);
-	matrix3 head, lf, rh, lh;
-	vec3 hpos, lp, rp;
-	ovrtouch_t touch;
-	ovr.get_pos(head, hpos, lh, lp, rh, rp, touch);
-	ovr.submit_frame();
 #endif
 
 
@@ -1013,6 +1008,23 @@ void Engine::render(double last_frametime)
 
 		//render's fbo
 		render_to_framebuffer(last_frametime);
+#ifdef OCULUS
+		gfx.bindFramebuffer(ovr.ovr_fbo[0]);
+		gfx.fbAttachTexture(ovr.get_tex(0));
+		gfx.resize(ovr.eye_size[0].w, ovr.eye_size[0].h);
+		gfx.clear_color(vec3(0.0f, 1.0f, 0.0f));
+		gfx.clear();
+		render_texture(render_quad, false);
+		ovr_CommitTextureSwapChain(ovr.session, ovr.swap_chain[0]);
+
+		gfx.bindFramebuffer(ovr.ovr_fbo[1]);
+		gfx.fbAttachTexture(ovr.get_tex(1));
+		gfx.resize(ovr.eye_size[1].w, ovr.eye_size[1].h);
+		gfx.clear_color(vec3(0.0f, 1.0f, 0.0f));
+		gfx.clear();
+		render_texture(render_quad, false);
+		ovr_CommitTextureSwapChain(ovr.session, ovr.swap_chain[1]);
+#endif
 		gfx.bindFramebuffer(0);
 
 		// clear real backbuffer
@@ -1260,6 +1272,16 @@ void Engine::render(double last_frametime)
 
 #ifdef DIRECTX
 	gfx.cleardepth();
+#endif
+
+#ifdef OCULUS
+	ovr.start_frame();
+	matrix3 head, lf, rh, lh;
+	vec3 hpos, lp, rp;
+	ovrtouch_t touch;
+	ovr.get_pos(head, hpos, lh, lp, rh, rp, touch);
+	ovr.submit_frame();
+	//ovr_WaitToBeginFrame, ovr_BeginFrame, and ovr_EndFrame.
 #endif
 
 	gfx.swap();
@@ -5484,6 +5506,10 @@ void Engine::destroy()
 	{
 		console("stop");
 	}
+
+#ifdef OCULUS
+	ovr.destroy();
+#endif
 
 	delete thug22;
 	gfx.DeleteIndexBuffer(q3map.skybox_ibo);
