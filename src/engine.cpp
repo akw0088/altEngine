@@ -1006,9 +1006,16 @@ void Engine::render(double last_frametime)
 			render_portalcamera();
 		}
 
+#ifdef OCULUS
+		ovr.get_pos(head, hpos, lh, lp, rh, rp, re, rep, le, lep, touch);
+		vec3 old_pos = camera_frame.pos;
+		camera_frame.pos = old_pos + rep;
+		projection.perspective(110.0f, (4.0f / 5.0f), 1.0, 2001.0f, true);
+		
 		//render's fbo
 		render_to_framebuffer(last_frametime);
-#ifdef OCULUS
+
+
 		gfx.bindFramebuffer(ovr.ovr_fbo[0]);
 		gfx.fbAttachTexture(ovr.get_tex(0));
 		gfx.resize(ovr.eye_size[0].w, ovr.eye_size[0].h);
@@ -1017,6 +1024,9 @@ void Engine::render(double last_frametime)
 		render_texture(render_quad, false);
 		ovr_CommitTextureSwapChain(ovr.session, ovr.swap_chain[0]);
 
+		camera_frame.pos = old_pos + lep;
+		//render's fbo
+		render_to_framebuffer(last_frametime);
 		gfx.bindFramebuffer(ovr.ovr_fbo[1]);
 		gfx.fbAttachTexture(ovr.get_tex(1));
 		gfx.resize(ovr.eye_size[1].w, ovr.eye_size[1].h);
@@ -1024,6 +1034,17 @@ void Engine::render(double last_frametime)
 		gfx.clear();
 		render_texture(render_quad, false);
 		ovr_CommitTextureSwapChain(ovr.session, ovr.swap_chain[1]);
+		camera_frame.pos = old_pos;
+
+		//x.bindFramebuffer(render_fbo);
+		//signed int texId;
+		//ovr_GetMirrorTextureBufferGL(ovr.session, ovr.mirror_texture, &texId);
+		//gfx.fbAttachTexture(texId);
+	//	gfx.resize(gfx.width, gfx.height);
+//		render_texture(render_quad, false);
+#else
+		//render's fbo
+		render_to_framebuffer(last_frametime);
 #endif
 		gfx.bindFramebuffer(0);
 
@@ -1276,10 +1297,7 @@ void Engine::render(double last_frametime)
 
 #ifdef OCULUS
 	ovr.start_frame();
-	matrix3 head, lf, rh, lh;
-	vec3 hpos, lp, rp;
-	ovrtouch_t touch;
-	ovr.get_pos(head, hpos, lh, lp, rh, rp, touch);
+
 	ovr.submit_frame();
 	//ovr_WaitToBeginFrame, ovr_BeginFrame, and ovr_EndFrame.
 #endif
@@ -4608,9 +4626,42 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 		bool updated = menu.delta(devicex, devicey);
 		if (menu.ingame == false && updated)
 		{
+#ifdef OCULUS
+			//render's fbo
+			gfx.bindFramebuffer(render_fbo);
+			gfx.clear();
+			menu.render(global);
+
+
+			ovr.get_pos(head, hpos, lh, lp, rh, rp, re, rep, le, lep, touch);
+			vec3 old_pos = camera_frame.pos;
+			camera_frame.pos = old_pos + rep;
+			projection.perspective(55.0f, (4.0f / 5.0f), 1.0, 2001.0f, true);
+
+			gfx.bindFramebuffer(ovr.ovr_fbo[0]);
+			gfx.fbAttachTexture(ovr.get_tex(0));
+			gfx.resize(ovr.eye_size[0].w, ovr.eye_size[0].h);
+			gfx.clear_color(vec3(0.0f, 1.0f, 0.0f));
+			gfx.clear();
+			render_texture(render_quad, false);
+			ovr_CommitTextureSwapChain(ovr.session, ovr.swap_chain[0]);
+
+			camera_frame.pos = old_pos + lep;
+
+
+			gfx.bindFramebuffer(ovr.ovr_fbo[1]);
+			gfx.fbAttachTexture(ovr.get_tex(1));
+			gfx.resize(ovr.eye_size[1].w, ovr.eye_size[1].h);
+			gfx.clear_color(vec3(0.0f, 1.0f, 0.0f));
+			gfx.clear();
+			render_texture(render_quad, false);
+			ovr_CommitTextureSwapChain(ovr.session, ovr.swap_chain[1]);
+			camera_frame.pos = old_pos;
+#else
 			gfx.clear();
 			menu.render(global);
 			gfx.swap();
+#endif
 		}
 
 		once = true;

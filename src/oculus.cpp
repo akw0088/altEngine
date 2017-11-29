@@ -44,12 +44,29 @@ int Oculus::init(Graphics &gfx)
 	buffer(gfx, 0);
 	buffer(gfx, 1);
 
+	memset(&mirror_desc, 0, sizeof(mirror_desc));
+	mirror_desc.Width = gfx.width;
+	mirror_desc.Height = gfx.height;
+	mirror_desc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
+
+	ovr_CreateMirrorTextureGL(session, &mirror_desc, &mirror_texture);
+
+	// Configure the mirror read buffer
+	GLuint texId;
+	ovr_GetMirrorTextureBufferGL(session, mirror_texture, &texId);
+
+
 	initialized = true;
 
 	return 0;
 }
 
-void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &left_pos, matrix3 &righthand, vec3 &right_pos, ovrtouch_t &input)
+void Oculus::get_pos(matrix3 &head, vec3 &head_pos,
+	matrix3 &lefthand, vec3 &left_pos,
+	matrix3 &righthand, vec3 &right_pos,
+	matrix3 &righteye, vec3 &reye_pos,
+	matrix3 &lefteye, vec3 &leye_pos,
+	ovrtouch_t &input)
 {
 	quaternion q;
 	ovrInputState    ovrinput;
@@ -190,36 +207,25 @@ void Oculus::get_pos(matrix3 &head, vec3 &head_pos, matrix3 &lefthand, vec3 &lef
 
 
 	// Initialize VR structures, filling out description.
-	ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
-	eyeRenderDesc[0] = ovr_GetRenderDesc(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0]);
-	eyeRenderDesc[1] = ovr_GetRenderDesc(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1]);
+	eyeRenderDesc[0] = ovr_GetRenderDesc(session, ovrEye_Left, hmd_desc.DefaultEyeFov[0]);
+	eyeRenderDesc[1] = ovr_GetRenderDesc(session, ovrEye_Right, hmd_desc.DefaultEyeFov[1]);
 	hmdToEyeViewPose[0] = eyeRenderDesc[0].HmdToEyePose;
 	hmdToEyeViewPose[1] = eyeRenderDesc[1].HmdToEyePose;
 
-	// Initialize our single full screen Fov layer.
-	ovrRecti left;
-	ovrRecti right;
-
-	left.Pos.x = 0;
-	left.Pos.y = 0;
-	left.Size.w = eye_size[0].w / 2;
-	left.Size.h = eye_size[0].h;
-
-	right.Pos.x = eye_size[1].w / 2;
-	right.Pos.y = 0;
-	right.Size.w = eye_size[1].w / 2;
-	right.Size.h = eye_size[1].h;
-
-	layer.Header.Type = ovrLayerType_EyeFov;
-	layer.Header.Flags = 0;
-	layer.ColorTexture[0] = swap_chain[0];
-	layer.ColorTexture[1] = swap_chain[1];
-	layer.Fov[0] = eyeRenderDesc[0].Fov;
-	layer.Fov[1] = eyeRenderDesc[1].Fov;
-	layer.Viewport[0] = left;
-	layer.Viewport[1] = right;
 
 	ovr_CalcEyePoses(track.HeadPose.ThePose, hmdToEyeViewPose, layer.RenderPose);
+
+	for (int i = 0; i < ovrEye_Count; i++)
+	{
+		layer.Header.Type = ovrLayerType_EyeFov;
+		layer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
+		layer.ColorTexture[i] = swap_chain[i];
+		layer.Viewport[i] = OVR::Recti(0, 0, eye_size[i].w, eye_size[i].h);
+		layer.Fov[i] = hmd_desc.DefaultEyeFov[i];
+//		layer.RenderPose[i] = hmdToEyeViewPose[i];
+		layer.SensorSampleTime = ovr_time;
+	}
+
 }
 
 
@@ -230,7 +236,7 @@ int Oculus::buffer(Graphics &gfx, int index)
 	ovrTextureSwapChainDesc desc = {};
 	int num_tex = 0;
 
-	eye_size[index] = ovr_GetFovTextureSize(session, (ovrEyeType)0, hmd_desc.DefaultEyeFov[index], 1.0f);
+	eye_size[index] = ovr_GetFovTextureSize(session, (ovrEyeType)index, hmd_desc.DefaultEyeFov[index], 1.0f);
 
 	desc.Type = ovrTexture_2D;
 	desc.ArraySize = 1;
@@ -262,7 +268,7 @@ int Oculus::buffer(Graphics &gfx, int index)
 	}
 
 	unsigned int normal_depth = 0;
-	gfx.CreateFramebuffer(eye_size[index].w, eye_size[index].h, ovr_fbo[index], ovr_tex[index], ovr_depth[index], normal_depth, 0, false);
+	gfx.CreateFramebuffer(1.5 * eye_size[index].w, 1.5 *eye_size[index].h, ovr_fbo[index], ovr_tex[index], ovr_depth[index], normal_depth, 0, false);
 	return 0;
 }
 
@@ -299,22 +305,8 @@ void Oculus::submit_frame()
 	viewScaleDesc.HmdToEyePose[0] = hmdToEyeViewPose[0];
 	viewScaleDesc.HmdToEyePose[1] = hmdToEyeViewPose[1];
 
-
-	ovrLayerEyeFov eyeLayer;
-	eyeLayer.Header.Type = ovrLayerType_EyeFov;
-	eyeLayer.Header.Flags = ovrLayerFlag_TextureOriginAtBottomLeft;
-
-	for (int i = 0; i < ovrEye_Count; i++)
-	{
-		eyeLayer.ColorTexture[i] = swap_chain[i];
-		eyeLayer.Viewport[i] = OVR::Recti(0, 0, eye_size[i].w, eye_size[i].h);
-		eyeLayer.Fov[i] = hmd_desc.DefaultEyeFov[i];
-		eyeLayer.RenderPose[i] = hmdToEyeViewPose[i];
-		eyeLayer.SensorSampleTime = ovr_time;
-	}
-
 	// append all the layers to global list
-	ovrLayerHeader* layerList = &eyeLayer.Header;
+	ovrLayerHeader* layerList = &layer.Header;
 
 
 
@@ -322,7 +314,7 @@ void Oculus::submit_frame()
 //	ovr_BeginFrame(session, frame_num);
 //	ovr_EndFrame(session, frame_num, &viewScaleDesc, &layerList, 1);
 
-	ovrResult result = ovr_SubmitFrame(session, frame_num, &viewScaleDesc, &layerList, 1);
+	ovrResult result = ovr_SubmitFrame(session, frame_num, NULL, &layerList, 1);
 	frame_num++;
 
 

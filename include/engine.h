@@ -171,6 +171,9 @@ public:
 
 #ifdef OCULUS
 	Oculus ovr;
+	matrix3 head, lf, rh, lh, le, re;
+	vec3 hpos, lp, rp, rep, lep;
+	ovrtouch_t touch;
 #endif
 
 

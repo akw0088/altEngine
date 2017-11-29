@@ -12,7 +12,12 @@ class Oculus
 public:
 	Oculus();
 	int init(Graphics &gfx);
-	void get_pos(matrix3 &head, vec3 &position, matrix3 &lefthand, vec3 &left_pos, matrix3 &righthand, vec3 &right_pos, ovrtouch_t &input);
+	void Oculus::get_pos(matrix3 &head, vec3 &head_pos,
+		matrix3 &lefthand, vec3 &left_pos,
+		matrix3 &righthand, vec3 &right_pos,
+		matrix3 &righteye, vec3 &reye_pos,
+		matrix3 &lefteye, vec3 &leye_pos,
+		ovrtouch_t &input);
 	void start_frame();
 	void end_frame();
 	void submit_frame();
@@ -40,8 +45,7 @@ public:
 	ovrEyeRenderDesc eyeRenderDesc[2];
 	ovrPosef      hmdToEyeViewPose[2];
 
-
-	ovrMirrorTexture		mirror;
+	ovrMirrorTexture		mirror_texture;
 	ovrMirrorTextureDesc	mirror_desc;
 	ovrTextureSwapChain		swap_chain[2];
 
