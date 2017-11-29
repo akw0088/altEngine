@@ -2649,7 +2649,7 @@ void Quake3::player_died(int index)
 			engine->play_wave_global(SND_GIBBED);
 		else
 			engine->play_wave(entity->position, SND_GIBBED);
-//		handle_gibs(*(entity->player));
+		handle_gibs(*(entity->player));
 	}
 	else
 	{
