@@ -291,6 +291,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	newlinelist("media/cmdlist.txt", cmd_list, num_cmd, &cmdlist);
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3, &pk3list);
 	newlinelist("media/pk3hash.txt", hash_list, num_hash, &hashlist);
+	newlinelist("media/sv_master.txt", master_list, num_master, &masterlist);
 
 	if (num_pk3 != num_hash)
 	{
@@ -609,7 +610,10 @@ void Engine::report_master()
 	report.fraglimit = game->fraglimit;
 	report.timelimit = game->timelimit;
 	report.capturelimit = game->capturelimit;
-	net.sendto((char *)&report, sizeof(report_t), "127.0.0.1:65534");
+	for (int i = 0; i < num_master; i++)
+	{
+		net.sendto((char *)&report, sizeof(report_t), master_list[i]);
+	}
 }
 
 void Engine::load(char *level)
@@ -7617,15 +7621,17 @@ int Engine::bind(int port)
 
 void Engine::query_master()
 {
-	char master[128] = "127.0.0.1:65534";
 	unsigned int msg = MASTER_LIST;
 	char response[2048];
 	char from[1024];
 	report_t *report;
 
 	sprintf(from, "127.0.0.1:65535");
-	net.sendto((char *)&msg, sizeof(int), master);
-	debugf("Sending request to master server %s", master);
+	for (int i = 0; i < num_master; i++)
+	{
+		net.sendto((char *)&msg, sizeof(int), master_list[i]);
+		debugf("Sending request to master server %s\n", master_list[i]);
+	}
 	Sleep(500);
 	int num_read = net.recvfrom(response, 512 * sizeof(report_t), from, 1023);
 

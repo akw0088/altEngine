@@ -124,7 +124,6 @@ public:
 	int get_global_loop_source();
 	void query_master();
 	void report_master();
-	void query_servers();
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -165,6 +164,10 @@ public:
 	char hash_result[64][32];
 	unsigned int num_hash;
 
+	char *master_list[32];
+	unsigned int num_master;
+
+
 
 	unsigned int controller;
 
@@ -187,6 +190,7 @@ public:
 	char *cmdlist;
 	char *hashlist;
 	char *hacklist;
+	char *masterlist;
 	char *wad;
 
 	Entity *thug22;
@@ -224,7 +228,6 @@ public:
 	int num_model;
 	int current_team;
 	int num_team;
-
 
 //Game logic
 	BaseGame *game;
