@@ -7632,7 +7632,9 @@ void Engine::query_master()
 		net.sendto((char *)&msg, sizeof(int), master_list[i]);
 		debugf("Sending request to master server %s\n", master_list[i]);
 	}
+#ifdef WIN32
 	Sleep(500);
+#endif
 	int num_read = net.recvfrom(response, 512 * sizeof(report_t), from, 1023);
 
 	report = (report_t *)response;
