@@ -612,7 +612,15 @@ void Engine::report_master()
 	report.capturelimit = game->capturelimit;
 	for (int i = 0; i < num_master; i++)
 	{
-		net.sendto((char *)&report, sizeof(report_t), master_list[i]);
+		int ret = net.sendto((char *)&report, sizeof(report_t), master_list[i]);
+		if (ret != sizeof(report_t))
+		{
+			debugf("Failed to send master report to %s\n", master_list[i]);
+		}
+		else
+		{
+			debugf("sent master report to %s\n", master_list[i]);
+		}
 	}
 }
 
