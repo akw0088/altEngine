@@ -38,16 +38,90 @@ void Global::prelink()
 
 }
 
-void Global::Params(matrix4 &mvp)
+void mLight2::set_num_shadowmap(int value)
 {
 
 }
+
+void mLight2::set_shadowmap(float value)
+{
+}
+
+void mLight2::set_tone(int tone)
+{
+
+}
+
+void Post::BloomParams(int dir, float amount, float strength, float scale, int xres, int yres)
+{
+}
+
+void mLight2::set_shadow_matrix(int index, matrix4 &proj)
+{
+}
+
+
+
+void mLight2::set_normalmap(int value)
+{
+}
+
+void mLight2::set_brightness(float value)
+{
+}
+
+void mLight2::alphatest(int value, int p)
+{
+}
+
+void mLight2::set_alpha(float value)
+{
+}
+
+void mLight2::set_exposure(float value)
+{
+
+}
+
+void mLight2::set_fog(float fog, float start, float end, vec3 &color)
+{
+
+}
+
+
+void mLight2::set_matrix(matrix4 &matrix)
+{
+	return;
+}
+
+
+
+void mLight2::portal(int value)
+{
+}
+
+
+void Global::Params(matrix4 &mvp, int)
+{
+
+}
+
+Global::~Global()
+{
+
+}
+
 
 int mLight2::init(Graphics *gfx)
 {
-
 	return 0;
 }
+
+void mLight2::Select()
+{
+	return;
+}
+
 
 void mLight2::set_max(int max)
 {
@@ -243,7 +317,7 @@ void ParticleRender::prelink(void)
 
 }
 
-void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y)
+void ParticleRender::Params(matrix4 &mvp, vec3 &quad1, vec3 &quad2, float x, float y, float z)
 {
 
 }
@@ -253,5 +327,21 @@ void ParticleRender::render(Graphics &gfx, int start, int vbo, int num)
 
 }
 
+
+int ScreenSpace::init(Graphics *gfx)
+{
+	return 0;
+}
+
+
+void ScreenSpace::prelink(void)
+{
+
+}
+
+void ScreenSpace::Params(float radius, float objectlevel, float ssaolevel, bool randomize_points, int point_count, int width, int height)
+{
+
+}
 
 #endif

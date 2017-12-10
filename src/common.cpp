@@ -821,7 +821,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 #ifdef VULKAN
 	format = -1;
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
-	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
+	tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp, anisotropic);
 #endif
 
 

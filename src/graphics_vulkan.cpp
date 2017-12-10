@@ -1221,7 +1221,7 @@ void Graphics::init(void *param1, void *param2)
 
 	CreateSampler();
 	// load texture, will call gfx loadtexture, which will call CreateTexture below
-	load_texture(*this, "media/menu.tga", false, false);
+	load_texture(*this, "media/menu.tga", false, false, 0);
 	//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
 	CreateDescriptors();
 	CreatePipelineStateObject();
@@ -1263,11 +1263,6 @@ void Graphics::Depth(bool flag)
 }
 
 void Graphics::Blend(bool flag)
-{
-}
-
-
-void Graphics::BlendFunc(char *src, char *dst)
 {
 }
 
@@ -1399,7 +1394,7 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 {
 }
 
-int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex)
+int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
 {
 	return 1;
 }
@@ -1437,7 +1432,7 @@ int Graphics::CreateCubeMap()
 	return 0;
 }
 
-int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp)
+int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotrophy)
 {
 	static bool once = true;
 
@@ -1469,15 +1464,15 @@ void Graphics::Stencil(bool flag)
 {
 }
 
-void Graphics::StencilFunc(char *op, int ref, int mask)
+void Graphics::StencilFunc(int op, int ref, unsigned int mask)
 {
 }
 
-void Graphics::DepthFunc(char *op)
+void Graphics::DepthFunc(int op)
 {
 }
 
-void Graphics::StencilOp(char *stencil_fail, char *zfail, char *zpass)
+void Graphics::StencilOp(int stencil_fail, int zfail, int zpass)
 {
 }
 
@@ -1513,21 +1508,35 @@ void Graphics::fbAttachDepth(int texObj)
 {
 }
 
-void Graphics::bindFramebuffer(int fbo)
+void Graphics::bindFramebuffer(int fbo, int num_attach)
 {
 }
+
+void Graphics::TwoSidedStencilOp(int face, int stencil_fail, int zfail, int zpass)
+{
+
+}
+
+void Graphics::clear_color(vec3 &color)
+{
+}
+
+void mLight2::set_contrast(float value)
+{
+}
+
 
 int Graphics::checkFramebuffer()
 {
 	return 0;
 }
 
-int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex)
+int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsigned int &quad_tex, unsigned int &depth_tex, unsigned int &normal_depth, int multisample, bool twoattach)
 {
 	return 0;
 }
 
-void Graphics::DeleteFrameBuffer(unsigned int fbo)
+void Graphics::DeleteFrameBuffer(int fbo, int quad, int depth)
 {
 }
 
