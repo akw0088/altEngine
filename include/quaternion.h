@@ -8,6 +8,7 @@ class quaternion
 {
 public:
 	matrix3 to_matrix();
+	void to_quat(matrix3 &mat);
 
 	quaternion();
 	quaternion(float s, vec3 v);

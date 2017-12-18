@@ -759,11 +759,11 @@ void Engine::load(char *level)
 
 	int player = find_type(ENT_INFO_PLAYER_DEATHMATCH, 0);
 	if (player != -1)
+	{
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
-
-
-	camera_frame.set(transformation);
-	camera_frame.pos = entity_list[player]->position;
+		camera_frame.set(transformation);
+		camera_frame.pos = entity_list[player]->position;
+	}
 
 	spatial_testing();
 	gfx.clear();
@@ -774,10 +774,11 @@ void Engine::load(char *level)
 
 
 	if (player != -1)
+	{
 		entity_list[player]->rigid->frame2ent(&camera_frame, input);
-
-	camera_frame.set(transformation);
-	camera_frame.pos = entity_list[player]->position;
+		camera_frame.set(transformation);
+		camera_frame.pos = entity_list[player]->position;
+	}
 
 	gfx.SelectTexture(0, no_tex);
 	gfx.SelectTexture(1, no_tex);
@@ -7735,9 +7736,11 @@ void Engine::chat(char *name, char *msg)
 	if (name == NULL)
 	{
 		int index = find_type(ENT_PLAYER, 0);
-
-		//chatmode chat
-		sprintf(data, "%s: %s", entity_list[index]->player->name, msg);
+		if (index != -1)
+		{
+			//chatmode chat
+			sprintf(data, "%s: %s", entity_list[index]->player->name, msg);
+		}
 	}
 	else
 	{

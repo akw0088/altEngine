@@ -1203,6 +1203,7 @@ void Graphics::init(void *param1, void *param2)
 
 	setupCommandBuffer_ = commandBuffers[QUEUE_SLOT_COUNT];
 
+
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
 		VkFenceCreateInfo fenceCreateInfo = {};
@@ -1371,6 +1372,85 @@ void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int nu
 
 int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 {
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
+	commandBufferAllocateInfo.commandPool = commandPool_;
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	VkCommandBuffer i_setupCommandBuffer_;
+
+	VkCommandBuffer i_commandBuffers[QUEUE_SLOT_COUNT + 1];
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, i_commandBuffers);
+
+	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
+	{
+		i_commandBuffers_[i] = i_commandBuffers[i];
+	}
+
+	i_setupCommandBuffer_ = i_commandBuffers[QUEUE_SLOT_COUNT];
+
+
+
+	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+
+	AllocateBuffer(vk_device, sizeof(int) * num_index, VK_BUFFER_USAGE_TRANSFER_DST_BIT, indexBuffer_);
+
+	VkMemoryRequirements indexBufferMemoryRequirements = {};
+	vkGetBufferMemoryRequirements(vk_device, indexBuffer_, &indexBufferMemoryRequirements);
+
+	VkDeviceSize bufferSize = indexBufferMemoryRequirements.size;
+
+	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
+
+	vkBindBufferMemory(vk_device, indexBuffer_, deviceMemory_, 0);
+
+	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
+	VkMemoryRequirements uploadBufferMemoryRequirements = {};
+	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_, &uploadBufferMemoryRequirements);
+
+	bool memoryIsHostCoherent = false;
+	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), indexBufferMemoryRequirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
+
+	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
+
+	void* mapping = NULL;
+	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
+	memcpy(mapping, index_buffer, sizeof(int) * num_index);
+
+	if (!memoryIsHostCoherent)
+	{
+		VkMappedMemoryRange mappedMemoryRange = {};
+		mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+		mappedMemoryRange.memory = uploadMemory_;
+		mappedMemoryRange.offset = 0;
+		mappedMemoryRange.size = VK_WHOLE_SIZE;
+
+		vkFlushMappedMemoryRanges(vk_device, 1, &mappedMemoryRange);
+	}
+
+	vkUnmapMemory(vk_device, uploadMemory_);
+
+	VkBufferCopy indexCopy = {};
+	indexCopy.size = sizeof(int) * num_index;
+
+	vkCmdCopyBuffer(i_setupCommandBuffer_, uploadBuffer_, indexBuffer_, 1, &indexCopy);
+
+	VkBufferMemoryBarrier uploadBarriers[1] = {};
+	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	uploadBarriers[0].buffer = vertexBuffer_;
+	uploadBarriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	uploadBarriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	uploadBarriers[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	uploadBarriers[0].dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+	uploadBarriers[0].size = VK_WHOLE_SIZE;
+
+	vkCmdPipelineBarrier(i_setupCommandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 1, uploadBarriers, 0, NULL);
+	vkEndCommandBuffer(i_setupCommandBuffer_);
 	return 1;
 }
 
@@ -1396,6 +1476,82 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
 {
+	return 0;
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
+	commandBufferAllocateInfo.commandPool = commandPool_;
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
+
+	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];
+	VkCommandBuffer v_setupCommandBuffer_;
+
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);
+
+	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];
+
+	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
+
+	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+
+	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, VK_BUFFER_USAGE_TRANSFER_DST_BIT, vertexBuffer_);
+
+	VkMemoryRequirements vertexBufferMemoryRequirements = {};
+	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
+
+	VkDeviceSize bufferSize = vertexBufferMemoryRequirements.size;
+
+	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
+
+	vkBindBufferMemory(vk_device, vertexBuffer_, deviceMemory_, 0);
+
+	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
+	VkMemoryRequirements uploadBufferMemoryRequirements = {};
+	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_, &uploadBufferMemoryRequirements);
+
+	bool memoryIsHostCoherent = false;
+	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
+
+	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
+
+	void* mapping = NULL;
+	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
+	memcpy(mapping, vertex_buffer, sizeof(vertex_t) * num_vertex);
+
+	if (!memoryIsHostCoherent)
+	{
+		VkMappedMemoryRange mappedMemoryRange = {};
+		mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+		mappedMemoryRange.memory = uploadMemory_;
+		mappedMemoryRange.offset = 0;
+		mappedMemoryRange.size = VK_WHOLE_SIZE;
+
+		vkFlushMappedMemoryRanges(vk_device, 1, &mappedMemoryRange);
+	}
+
+	vkUnmapMemory(vk_device, uploadMemory_);
+
+	VkBufferCopy vertexCopy = {};
+	vertexCopy.size = sizeof(vertex_t) * num_vertex;
+
+	vkCmdCopyBuffer(v_uploadCommandBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
+
+	VkBufferMemoryBarrier uploadBarriers[1] = {};
+	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	uploadBarriers[0].buffer = vertexBuffer_;
+	uploadBarriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	uploadBarriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	uploadBarriers[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	uploadBarriers[0].dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+	uploadBarriers[0].size = VK_WHOLE_SIZE;
+
+	vkCmdPipelineBarrier(v_uploadCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 1, uploadBarriers, 0, NULL);
+	vkEndCommandBuffer(v_uploadCommandBuffer);
 	return 1;
 }
 

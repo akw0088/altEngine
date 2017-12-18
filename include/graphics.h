@@ -150,6 +150,8 @@ private:
 	void CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp);
 	void SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp);
 
+	VkCommandBuffer v_uploadCommandBuffer;
+	VkCommandBuffer i_uploadCommandBuffer;
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
 public:
 	void render();
@@ -263,6 +265,8 @@ public:
 
 	VkCommandPool commandPool_;
 	VkCommandBuffer commandBuffers_[QUEUE_SLOT_COUNT];
+	VkCommandBuffer i_commandBuffers_[QUEUE_SLOT_COUNT];
+	VkCommandBuffer v_commandBuffers_[QUEUE_SLOT_COUNT];
 	VkCommandBuffer setupCommandBuffer_;
 	uint32_t currentBackBuffer_ = 0;
 #endif
