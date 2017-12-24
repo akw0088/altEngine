@@ -51,8 +51,6 @@ SOURCES_CC :=	huffman.c \
 
 OBJDIR_CPP  := $(SOURCES_CPP:%.cpp=obj/%.o)
 OBJDIR_C  := $(SOURCES_CC:%.c=obj/%.o)
--include $(SOURCES_CPP:%.cpp=obj/%.d)
--include $(SOURCES_CC:%.c=obj/%.d)
 
 
 obj/%.o: src/%.cpp
@@ -91,7 +89,6 @@ LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
 
 .PHONY: clean
 
-.DEFAULT_GOAL := altEngine
 
 all: altEngine
 
@@ -108,3 +105,6 @@ clean:
 	rm -f ./obj/*.o
 	rm -f ./obj/*.d
 	rm -f ./altEngine
+
+-include $(SOURCES_CPP:%.cpp=obj/%.d)
+-include $(SOURCES_CC:%.c=obj/%.d)
