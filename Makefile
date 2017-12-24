@@ -48,11 +48,14 @@ SOURCES_CPP := 	xmain.cpp \
 SOURCES_CC :=	huffman.c \
 		md5sum.c \
 
-
 OBJS_CPP  := $(SOURCES_CPP:%.cpp=%.o)
 OBJDIR_CPP := $(SOURCES_CPP:%.cpp=obj/%.o)
 OBJS_C  := $(SOURCES_CC:%.c=%.o)
 OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
+
+-include $(SOURCES_CPP:%.cpp=obj/%.d)
+-include $(SOURCES_CC:%.c=obj%.d)
+
 
 %.o: src/%.cpp
 	$(CPP) $(CFLAGS) -c $(INCLUDES) -o obj/$@ $<
@@ -80,13 +83,15 @@ CC := clang
 #-fsanitize-memory-use-after-dtor
 #-fsanitize=safe-stack
 
-altEngine: CFLAGS := -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native -fno-exceptions -fno-rtti #-fsanitize=address -fno-omit-frame-pointer
+altEngine: CFLAGS := -MMD -MP -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings -Wall -O3 -march=native -fno-exceptions -fno-rtti #-fsanitize=address -fno-omit-frame-pointer
 altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native -fno-exceptions -fno-rtti
 altEngine_vulkan: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DVULKAN -Wno-write-strings -Wall -march=native -fno-exceptions -fno-rtti
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
 LFLAGS := -lX11 -lGL -lopenal -lrt -lpthread 
 LFLAGS_VULKAN := -lX11 -lGL -lvulkan -lrt -lpthread
 LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
+
+.PHONY: clean
 
 all: altEngine
 
@@ -101,5 +106,8 @@ altEngine_dedicated: $(OBJS_CPP) $(OBJS_C)
 
 clean:
 	rm -f ./obj/*.o
+	rm -f ./obj/*.d
 	rm -f ./altEngine
 
+-include $(DEP_CPP)
+-include $(DEP_CC)
