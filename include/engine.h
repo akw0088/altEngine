@@ -195,6 +195,10 @@ public:
 
 	Entity *thug22;
 
+	Entity *sentry;
+	Entity *sentry_base;
+
+
 //console flags
 	bool show_names;
 	bool show_lines;
@@ -233,7 +237,7 @@ public:
 	BaseGame *game;
 
 	MD5Model	zcc;
-	MD5Model	sentry;
+//	MD5Model	sentry;
 	MD5Model	zsec_shotgun;
 	vector<surface_t *> surface_list;
 

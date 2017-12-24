@@ -430,6 +430,31 @@ void Quake3::load_models(Graphics &gfx)
 	model = new Model;
 	model->load(gfx, "media/terrain/terrain_big");
 	model_table.push_back(model);
+
+	/*
+#define MODEL_SENTRY1 51
+	model = new Model;
+	model->load(gfx, "media/models/sentry/sentry1");
+	model_table.push_back(model);
+
+#define MODEL_SENTRY2 52
+	model = new Model;
+	model->load(gfx, "media/models/sentry/sentry2");
+	model_table.push_back(model);
+	*/
+
+
+#define MODEL_SENTRY3 53
+	model = new Model;
+	model->load(gfx, "media/models/sentry/sentry3");
+	model_table.push_back(model);
+
+
+#define MODEL_SENTRY_BASE 54
+	model = new Model;
+	model->load(gfx, "media/models/sentry/sentry_base");
+	model_table.push_back(model);
+
 }
 
 void Quake3::load_q1_models(Graphics &gfx)
@@ -2697,7 +2722,8 @@ void Quake3::player_died(int index)
 	}
 
 	entity->player->kill();
-	entity->model->clone(*(model_table[MODEL_BOX]));
+	if (entity->player->immobile == false)
+		entity->model->clone(*(model_table[MODEL_BOX]));
 }
 
 void Quake3::drop_weapon(int index)
@@ -2959,6 +2985,20 @@ void Quake3::step(int frame_step)
 			add_player(engine->entity_list, BOT, bot_index, bot_name);
 			engine->num_bot++;
 		}
+
+		char bot_name[32];
+		int bot_index = -1;
+
+		sprintf(bot_name, "Autosentry");
+		add_player(engine->entity_list, BOT, bot_index, bot_name);
+		engine->num_bot++;
+
+		engine->sentry_base->position = engine->entity_list[bot_index]->position;
+		engine->entity_list[bot_index]->rigid->clone(*engine->sentry->model);
+		engine->entity_list[bot_index]->model = engine->entity_list[bot_index]->rigid;
+		engine->entity_list[bot_index]->player->immobile = true;
+		engine->entity_list[bot_index]->player->render_md5 = false;
+
 	}
 
 	if (spectator == true && engine->menu.console == false)
@@ -3105,7 +3145,8 @@ void Quake3::step(int frame_step)
 		{
 		case BOT_ATTACK:
 			engine->zcc.select_animation(0);
-			bot->rigid->move_forward(speed_scale);
+			if (bot->player->immobile == false)
+				bot->rigid->move_forward(speed_scale);
 			break;
 		case BOT_DEAD:
 			engine->zcc.select_animation(1);
@@ -3126,6 +3167,10 @@ void Quake3::step(int frame_step)
 		{
 			static int nav_array[64] = { 0 };
 			int ret = 0;
+
+			if (bot->player->immobile)
+				break;
+
 
 			bot->player->ammo_bullets = 100; // bots cheat on reloading :)
 			engine->zcc.select_animation(1);
@@ -3203,7 +3248,9 @@ void Quake3::step(int frame_step)
 		}
 		case BOT_ALERT:
 			engine->zcc.select_animation(0);
-			bot->rigid->move_forward(speed_scale);
+
+			if (bot->player->immobile == false)
+				bot->rigid->move_forward(speed_scale);
 			break;
 		case BOT_EXPLORE:
 			engine->zcc.select_animation(1);
@@ -7114,7 +7161,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[self]->player->respawn();
-					entity_list[self]->rigid->clone(*(engine->thug22->model));
+					if (entity_list[self]->player->render_md5)
+						entity_list[self]->rigid->clone(*(engine->thug22->model));
 					if (entity_list[self]->player->local)
 					{
 						engine->mlight2.set_contrast(old_contrast);
@@ -7599,8 +7647,6 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 		switch (ent->ent_type)
 		{
-
-
 		case ENT_TRIGGER_PUSH:
 			sprintf(ent->trigger->action, "push %s", ent->target);
 			break;
@@ -8156,7 +8202,8 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 
 		if (target->trigger)
 		{
-			if (target->ent_type == ENT_TRIGGER_TELEPORT)
+			if (target->ent_type == ENT_TRIGGER_TELEPORT ||
+				strcmp(target->trigger->action, "teleport") == 0)
 			{
 				// bots will teleport player
 				return;
@@ -8766,7 +8813,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 			{
 				if (projectile->explode_type == 1)
 				{
-					ent->rigid->velocity = vec3();
+					ent->rigid->velocity *= 0.5f;
 					int sprite_index = MIN(7, projectile->explode_timer);
 					if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
 					{

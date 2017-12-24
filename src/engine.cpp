@@ -360,6 +360,28 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->model = thug22->rigid;
 	thug22->model->load(gfx, "media/models/thug22/thug22");
 
+	sentry = new Entity();
+	sentry->rigid = new RigidBody(sentry);
+	sentry->model = sentry->rigid;
+	sentry->model->load(gfx, "media/models/sentry/sentry3");
+
+
+
+	sentry_base = new Entity();
+	sentry_base->rigid = new RigidBody(sentry_base);
+	sentry_base->model = sentry_base->rigid;
+	sentry_base->model->load(gfx, "media/models/sentry/sentry_base");
+
+
+	sentry->model->aabb[0] = thug22->model->aabb[0];
+	sentry->model->aabb[1] = thug22->model->aabb[1];
+	sentry->model->aabb[2] = thug22->model->aabb[2];
+	sentry->model->aabb[3] = thug22->model->aabb[3];
+	sentry->model->aabb[4] = thug22->model->aabb[4];
+	sentry->model->aabb[5] = thug22->model->aabb[5];
+	sentry->model->aabb[6] = thug22->model->aabb[6];
+	sentry->model->aabb[7] = thug22->model->aabb[7];
+
 
 	// Scale down so player closer match to q3 model size
 	thug22->model->aabb[0] *= 0.7f;
@@ -370,6 +392,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->model->aabb[5] *= 0.7f;
 	thug22->model->aabb[6] *= 0.7f;
 	thug22->model->aabb[7] *= 0.7f;
+
+
 
 	global.init(&gfx);
 	audio.init();
@@ -727,6 +751,8 @@ void Engine::load(char *level)
 		parse_entity(this, data, entity_list, gfx, audio);
 		write_file(filename, data, strlen(data));
 	}
+
+	entity_list.push_back(sentry_base);
 
 	debugf("Loaded %d entities\n", entity_list.size());
 
@@ -2250,6 +2276,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				mvp = (mvp * trans) * proj;
 				vec3 offset = entity->position;
 
+
 				if (lights)
 				{
 					mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
@@ -2258,7 +2285,14 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				{
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 				}
-				zcc.render(gfx, tick_num >> 1);
+
+				if (entity->player->render_md5)
+					zcc.render(gfx, tick_num >> 1);
+				else
+				{
+					entity->model->render(gfx);
+					sentry_base->position = entity->position + vec3 (0.0f, -30.0f, 0.0f);
+				}
 			}
 		}
 	}
@@ -2599,7 +2633,7 @@ void Engine::render_ssao(bool debug)
 void Engine::destroy_buffers()
 {
 	zcc.destroy_buffers(gfx);
-	sentry.destroy_buffers(gfx);
+//	sentry.destroy_buffers(gfx);
 	zsec_shotgun.destroy_buffers(gfx);
 
 	gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);

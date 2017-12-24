@@ -55,6 +55,8 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	godmode = false;
 	local = false;
 	falling = false;
+	render_md5 = true;
+	immobile = false;
 
 	Player::team = team;
 
