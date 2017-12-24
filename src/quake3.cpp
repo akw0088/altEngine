@@ -431,7 +431,7 @@ void Quake3::load_models(Graphics &gfx)
 	model->load(gfx, "media/terrain/terrain_big");
 	model_table.push_back(model);
 
-	/*
+
 #define MODEL_SENTRY1 51
 	model = new Model;
 	model->load(gfx, "media/models/sentry/sentry1");
@@ -441,8 +441,6 @@ void Quake3::load_models(Graphics &gfx)
 	model = new Model;
 	model->load(gfx, "media/models/sentry/sentry2");
 	model_table.push_back(model);
-	*/
-
 
 #define MODEL_SENTRY3 53
 	model = new Model;
@@ -3094,6 +3092,22 @@ void Quake3::step(int frame_step)
 		//bot->player->avoid_walls(engine->q3map);
 
 		bot->player->handle_bot(engine->entity_list, i);
+		static int temp = 0;
+		if (bot->player->immobile && bot->player->health >= 75 && temp != 3)
+		{
+			entity->model->clone(*model_table[MODEL_SENTRY3]);
+			temp = 3;
+		}
+		else if (bot->player->immobile && bot->player->health < 75 && bot->player->health > 50 && temp != 2)
+		{
+			entity->model->clone(*model_table[MODEL_SENTRY2]);
+			temp = 2;
+		}
+		else if (bot->player->immobile && bot->player->health < 50 && temp != 1)
+		{
+			entity->model->clone(*model_table[MODEL_SENTRY1]);
+			temp = 1;
+		}
 
 		if (bot->player->bot_state == BOT_ALERT || bot->player->bot_state == BOT_ATTACK)
 		{
