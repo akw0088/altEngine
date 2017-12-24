@@ -7,6 +7,7 @@ SOURCES_CPP := 	xmain.cpp \
 		basegame.cpp \
 		bsp.cpp \
 		common.cpp \
+		constructable.cpp \
 		edge.cpp \
 		engine.cpp \
 		entity.cpp \
@@ -50,8 +51,6 @@ SOURCES_CPP := 	xmain.cpp \
 SOURCES_CC :=	huffman.c \
 		md5sum.c \
 
-OBJ_CPP  := $(SOURCES_CPP:%.cpp=%.o)
-OBJ_C  := $(SOURCES_CC:%.c=%.o)
 OBJDIR_CPP  := $(SOURCES_CPP:%.cpp=obj/%.o)
 OBJDIR_C  := $(SOURCES_CC:%.c=obj/%.o)
 -include $(SOURCES_CPP:%.cpp=obj/%.d)
@@ -101,16 +100,13 @@ all: altEngine
 altEngine: $(OBJDIR_CPP) $(OBJDIR_C)
 	$(CPP) $(CFLAGS) -o altEngine $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
 
-altEngine_vulkan: $(OBJ_CPP) $(OBJ_C)
+altEngine_vulkan: $(OBJDIR_CPP) $(OBJDIR_C)
 	$(CPP) $(CFLAGS) -o altEngine_vulkan $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS_VULKAN)
 
-altEngine_dedicated: $(OBJ_CPP) $(OBJ_C)
+altEngine_dedicated: $(OBJDIR_CPP) $(OBJDIR_C)
 	$(CPP) $(CFLAGS) -o altEngine_dedicated $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
 
 clean:
 	rm -f ./obj/*.o
 	rm -f ./obj/*.d
 	rm -f ./altEngine
-
--include $(DEP_CPP)
--include $(DEP_CC)
