@@ -22,6 +22,7 @@ Entity::Entity()
 	trigger = NULL;
 	projectile = NULL;
 	player = NULL;
+	construct = NULL;
 	portal_camera = NULL;
 	model_lerp = 0.0f;
 	model_offset = vec3();

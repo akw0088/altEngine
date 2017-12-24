@@ -55,7 +55,6 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	godmode = false;
 	local = false;
 	falling = false;
-	render_md5 = true;
 	immobile = false;
 
 	Player::team = team;
@@ -595,13 +594,13 @@ void Player::avoid_walls(Bsp &map)
 
 void Player::handle_bot(vector<Entity *> &entity_list, int self)
 {
-
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (i == (unsigned int)self)
 			continue;
 
 		Player *player = entity_list[i]->player;
+
 
 		if (player && player->type == PLAYER)
 		{
