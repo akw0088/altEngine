@@ -3000,23 +3000,25 @@ void Quake3::step(int frame_step)
 //		engine->console("spectate");
 
 		char bot_name[32];
-		int bot_index = -1;
 
 		sprintf(bot_name, "Autosentry");
-		add_player(engine->entity_list, BOT, bot_index, bot_name);
-		engine->num_bot++;
+		int spawn = engine->get_player();
+		Entity *ent = engine->entity_list[spawn];
+		ent->construct = new Constructable(ent, engine->gfx, engine->audio);
+		ent->construct->owner = engine->find_type(ENT_PLAYER, 0);
+		ent->rigid = new RigidBody(ent);
 
-		engine->entity_list[bot_index]->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
-		engine->entity_list[bot_index]->rigid->clone(*model_table[MODEL_SENTRY3]);
-		engine->entity_list[bot_index]->model = engine->entity_list[bot_index]->rigid;
-		engine->entity_list[bot_index]->player->immobile = true;
-		engine->entity_list[bot_index]->player->render_md5 = false;
+		ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
+		ent->rigid->clone(*model_table[MODEL_SENTRY3]);
+		ent->model = ent->rigid;
+		ent->construct->immobile = true;
+		ent->construct->render_md5 = false;
 
 
 		Entity *sentry_base = engine->entity_list[engine->get_entity()];
 		sentry_base->model = new Model(sentry_base);
 		sentry_base->model->clone(*model_table[MODEL_SENTRY_BASE]);
-		sentry_base->position = engine->entity_list[bot_index]->position;
+		sentry_base->position = engine->entity_list[spawn]->position;
 		sentry_base->visible = true;
 
 	}
@@ -3055,7 +3057,6 @@ void Quake3::step(int frame_step)
 		bool isclient = (entity->player && entity->player->type == CLIENT);
 		bool isserver = (entity->player && entity->player->type == SERVER);
 
-
 		if (isplayer || isbot || isserver)
 		{
 			if (((isplayer || isserver) &&
@@ -3080,11 +3081,16 @@ void Quake3::step(int frame_step)
 			}
 		}
 
+		if (entity->construct)
+			entity->construct->handle_bot(engine->entity_list, i);
+
+
 		if (entity->player == NULL)
 			continue;
 
 		if (entity->player->type != BOT)
 			continue;
+
 
 #ifdef BOT_ENABLE
 
@@ -3101,7 +3107,6 @@ void Quake3::step(int frame_step)
 		}
 
 		//bot->player->avoid_walls(engine->q3map);
-
 		bot->player->handle_bot(engine->entity_list, i);
 		static int temp = 0;
 		if (bot->player->immobile && bot->player->health >= 75 && temp != 3)
@@ -3290,10 +3295,16 @@ void Quake3::step(int frame_step)
 	}
 
 	// handles triggers and the projectile as trigger stuff
+	engine->num_light = 0;
+
 	#pragma omp parallel for num_threads(8)
-	for (unsigned int i = 0; i < engine->max_player; i++)
+	for (unsigned int j = engine->max_player; j < engine->entity_list.size(); j++)
 	{
-		Player *player = engine->entity_list[i]->player;
+		Entity *ent = engine->entity_list[j];
+
+		if (ent->light)
+			engine->num_light++;
+
 #ifdef OPENMP
 		int thread_num = omp_get_thread_num();
 		int num_thread = omp_get_num_threads();
@@ -3303,13 +3314,10 @@ void Quake3::step(int frame_step)
 
 //		printf("bsp leaf %d Handled by thread %d of %d\n", engine->entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
-		engine->num_light = 0;
-		for (unsigned int j = engine->max_player; j < engine->entity_list.size(); j++)
+		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
-			Entity *ent = engine->entity_list[j];
+			Player *player = engine->entity_list[i]->player;
 
-			if (engine->entity_list[j]->light)
-				engine->num_light++;
 
 			Entity *owner = NULL;
 
@@ -3322,6 +3330,11 @@ void Quake3::step(int frame_step)
 				check_func(player, ent, i, engine->entity_list);
 				check_projectiles(player, ent, owner, i, j, engine->entity_list);
 			}
+		}
+		if (ent->projectile)
+		{
+			ent->projectile->active = ent->projectile->will_be_active;
+			ent->projectile->will_be_active = false;
 		}
 	}
 
@@ -7186,8 +7199,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
 					entity_list[self]->player->respawn();
-					if (entity_list[self]->player->render_md5)
-						entity_list[self]->rigid->clone(*(engine->thug22->model));
+					entity_list[self]->rigid->clone(*(engine->thug22->model));
 					if (entity_list[self]->player->local)
 					{
 						engine->mlight2.set_contrast(old_contrast);
@@ -8831,7 +8843,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 				console(self, projectile->action, engine->menu, entity_list);
 			}
 
-			projectile->active = true;
+			projectile->will_be_active = true;
 			projectile->client_active = true;
 
 			if (projectile)

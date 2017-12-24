@@ -183,7 +183,6 @@ public:
 	char name[128];
 	stats_t stats;
 	bool spawned;
-	bool render_md5;
 	bool immobile;
 
 	bot_state_t bot_state;

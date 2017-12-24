@@ -23,6 +23,7 @@ public:
 	Trigger			*trigger;
 	Projectile		*projectile;
 	Player			*player;
+	Constructable	*construct;
 	PortalCamera	*portal_camera;
 
 

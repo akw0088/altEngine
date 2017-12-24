@@ -2261,12 +2261,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 				}
 
-				if (entity->player->render_md5)
-					zcc.render(gfx, tick_num >> 1);
-				else
-				{
-					entity->model->render(gfx);
-				}
+				zcc.render(gfx, tick_num >> 1);
 			}
 		}
 	}
@@ -4240,7 +4235,6 @@ int Engine::deserialize_net_projectile(net_projectile_t *net, int index, int ety
 			entity_list[index]->projectile->active = true;
 		else
 			entity_list[index]->projectile->active = false;
-
 		entity_list[index]->projectile->owner = net->owner;
 		//		printf("Got trigger data index %d\n", index);
 	}

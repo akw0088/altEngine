@@ -454,6 +454,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "md5model.h"
 #include "rigidbody.h"
 #include "player.h"
+#include "constructable.h"
 
 #include "sin_table.h"
 #include "common.h"
