@@ -1,5 +1,7 @@
 NUMJOBS := 8
 
+vpath = obo:./obj
+
 SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
 		basegame.cpp \
@@ -48,20 +50,19 @@ SOURCES_CPP := 	xmain.cpp \
 SOURCES_CC :=	huffman.c \
 		md5sum.c \
 
-OBJS_CPP  := $(SOURCES_CPP:%.cpp=%.o)
-OBJDIR_CPP := $(SOURCES_CPP:%.cpp=obj/%.o)
-OBJS_C  := $(SOURCES_CC:%.c=%.o)
-OBJDIR_C := $(SOURCES_CC:%.c=obj/%.o)
-
+OBJ_CPP  := $(SOURCES_CPP:%.cpp=%.o)
+OBJ_C  := $(SOURCES_CC:%.c=%.o)
+OBJDIR_CPP  := $(SOURCES_CPP:%.cpp=obj/%.o)
+OBJDIR_C  := $(SOURCES_CC:%.c=obj/%.o)
 -include $(SOURCES_CPP:%.cpp=obj/%.d)
--include $(SOURCES_CC:%.c=obj%.d)
+-include $(SOURCES_CC:%.c=obj/%.d)
 
 
-%.o: src/%.cpp
-	$(CPP) $(CFLAGS) -c $(INCLUDES) -o obj/$@ $<
+obj/%.o: src/%.cpp
+	$(CPP) $(CFLAGS) -c $(INCLUDES) -o $@ $<
 
-%.o: src/%.c
-	$(CC) $(CFLAGS) -c $(INCLUDES) -o obj/$@ $<
+obj/%.o: src/%.c
+	$(CC) $(CFLAGS) -c $(INCLUDES) -o $@ $<
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
@@ -93,15 +94,17 @@ LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
 
 .PHONY: clean
 
+.DEFAULT_GOAL := altEngine
+
 all: altEngine
 
-altEngine: $(OBJS_CPP) $(OBJS_C)
+altEngine: $(OBJDIR_CPP) $(OBJDIR_C)
 	$(CPP) $(CFLAGS) -o altEngine $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
 
-altEngine_vulkan: $(OBJS_CPP) $(OBJS_C)
+altEngine_vulkan: $(OBJ_CPP) $(OBJ_C)
 	$(CPP) $(CFLAGS) -o altEngine_vulkan $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS_VULKAN)
 
-altEngine_dedicated: $(OBJS_CPP) $(OBJS_C)
+altEngine_dedicated: $(OBJ_CPP) $(OBJ_C)
 	$(CPP) $(CFLAGS) -o altEngine_dedicated $(OBJDIR_CPP) $(OBJDIR_C) $(LIBS) $(LFLAGS)
 
 clean:
