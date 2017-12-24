@@ -1,7 +1,5 @@
 NUMJOBS := 8
 
-vpath = obo:./obj
-
 SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
 		basegame.cpp \
