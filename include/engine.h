@@ -158,9 +158,9 @@ public:
 	rendermode_t render_mode;
 	bool dynamic_resolution;
 
-	char *pk3_list[32];
+	char *pk3_list[64];
 	unsigned int num_pk3;
-	char *hash_list[32];
+	char *hash_list[64];
 	char hash_result[64][32];
 	unsigned int num_hash;
 
@@ -195,8 +195,6 @@ public:
 
 	Entity *thug22;
 
-	Entity *sentry;
-	Entity *sentry_base;
 
 
 //console flags

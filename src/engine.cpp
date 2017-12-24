@@ -360,29 +360,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	thug22->model = thug22->rigid;
 	thug22->model->load(gfx, "media/models/thug22/thug22");
 
-	sentry = new Entity();
-	sentry->rigid = new RigidBody(sentry);
-	sentry->model = sentry->rigid;
-	sentry->model->load(gfx, "media/models/sentry/sentry3");
-
-
-
-	sentry_base = new Entity();
-	sentry_base->rigid = new RigidBody(sentry_base);
-	sentry_base->model = sentry_base->rigid;
-	sentry_base->model->load(gfx, "media/models/sentry/sentry_base");
-
-
-	sentry->model->aabb[0] = thug22->model->aabb[0];
-	sentry->model->aabb[1] = thug22->model->aabb[1];
-	sentry->model->aabb[2] = thug22->model->aabb[2];
-	sentry->model->aabb[3] = thug22->model->aabb[3];
-	sentry->model->aabb[4] = thug22->model->aabb[4];
-	sentry->model->aabb[5] = thug22->model->aabb[5];
-	sentry->model->aabb[6] = thug22->model->aabb[6];
-	sentry->model->aabb[7] = thug22->model->aabb[7];
-
-
 	// Scale down so player closer match to q3 model size
 	thug22->model->aabb[0] *= 0.7f;
 	thug22->model->aabb[1] *= 0.7f;
@@ -751,8 +728,6 @@ void Engine::load(char *level)
 		parse_entity(this, data, entity_list, gfx, audio);
 		write_file(filename, data, strlen(data));
 	}
-
-	entity_list.push_back(sentry_base);
 
 	debugf("Loaded %d entities\n", entity_list.size());
 
@@ -2291,7 +2266,6 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				else
 				{
 					entity->model->render(gfx);
-					sentry_base->position = entity->position + vec3 (0.0f, -30.0f, 0.0f);
 				}
 			}
 		}
@@ -2714,7 +2688,7 @@ void Engine::spatial_testing()
 			bool visible = false;
 
 			camera_frame.set(trans);
-			entity_list[i]->rigid->get_matrix(mvp.m);
+			entity_list[i]->model->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
 
 			Model *model = entity_list[i]->model;

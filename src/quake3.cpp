@@ -1925,10 +1925,13 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 				matrix4::mat_left(matrix, spawn_ent->position);
 				break;
 			}
-			engine->camera_frame.forward.x = matrix.m[8];
-			engine->camera_frame.forward.y = matrix.m[9];
-			engine->camera_frame.forward.z = matrix.m[10];
-			engine->camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+			if (local)
+			{
+				engine->camera_frame.forward.x = matrix.m[8];
+				engine->camera_frame.forward.y = matrix.m[9];
+				engine->camera_frame.forward.z = matrix.m[10];
+				engine->camera_frame.up = vec3(0.0f, 1.0f, 0.0f);
+			}
 			last_spawn = i + 1;
 			break;
 		}
@@ -1984,6 +1987,7 @@ void Quake3::handle_player(int self, input_t &input)
 			}
 		}
 	}
+
 
 	if (input.duck && entity->rigid->y_offset != -25)
 	{
@@ -2983,20 +2987,6 @@ void Quake3::step(int frame_step)
 			add_player(engine->entity_list, BOT, bot_index, bot_name);
 			engine->num_bot++;
 		}
-
-		char bot_name[32];
-		int bot_index = -1;
-
-		sprintf(bot_name, "Autosentry");
-		add_player(engine->entity_list, BOT, bot_index, bot_name);
-		engine->num_bot++;
-
-		engine->sentry_base->position = engine->entity_list[bot_index]->position;
-		engine->entity_list[bot_index]->rigid->clone(*engine->sentry->model);
-		engine->entity_list[bot_index]->model = engine->entity_list[bot_index]->rigid;
-		engine->entity_list[bot_index]->player->immobile = true;
-		engine->entity_list[bot_index]->player->render_md5 = false;
-
 	}
 
 	if (spectator == true && engine->menu.console == false)
@@ -3007,7 +2997,28 @@ void Quake3::step(int frame_step)
 	if (engine->input.control && spectator_timer <= 0)
 	{
 		spectator_timer = TICK_RATE >> 1;
-		engine->console("spectate");
+//		engine->console("spectate");
+
+		char bot_name[32];
+		int bot_index = -1;
+
+		sprintf(bot_name, "Autosentry");
+		add_player(engine->entity_list, BOT, bot_index, bot_name);
+		engine->num_bot++;
+
+		engine->entity_list[bot_index]->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
+		engine->entity_list[bot_index]->rigid->clone(*model_table[MODEL_SENTRY3]);
+		engine->entity_list[bot_index]->model = engine->entity_list[bot_index]->rigid;
+		engine->entity_list[bot_index]->player->immobile = true;
+		engine->entity_list[bot_index]->player->render_md5 = false;
+
+
+		Entity *sentry_base = engine->entity_list[engine->get_entity()];
+		sentry_base->model = new Model(sentry_base);
+		sentry_base->model->clone(*model_table[MODEL_SENTRY_BASE]);
+		sentry_base->position = engine->entity_list[bot_index]->position;
+		sentry_base->visible = true;
+
 	}
 	else
 	{
