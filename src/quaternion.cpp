@@ -98,9 +98,6 @@ matrix3 quaternion::to_matrix()
 void quaternion::to_quat(matrix3 &mat)
 {
 	float		trace;
-	int     	i;
-	int		j;
-	int		k;
 
 	static int 	next[3] = { 1, 2, 0 };
 

@@ -3,6 +3,7 @@
 
 float InvSqrt(float x);
 float newtonSqrt(float x);
+double facos(double x);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -197,9 +198,9 @@ bool vec3::operator==(const vec3 &vector)
 		return false;
 }
 
-vec3 vec3::project(const vec3 &a)
+vec3 vec3::project(const vec3 &a) const
 {
-	vec3 *b = this;
+	const vec3 *b = this;
 	vec3 result;
 	// dot product yield a float, so really scaling B by length of A
 	// [a dot b / (b dot b)] times B
@@ -215,6 +216,22 @@ vec3 &vec3::operator*=(const float scalar)
 	return *this;
 }
 
+float vec3::angle(const vec3 &r) const
+{
+	float m = newtonSqrt( (x * x + y * y + z * z) * (r.x * r.x + r.y * r.y + r.z * r.z));
+	float angle = facos((*this) * r / m);
+	return angle;
+}
+
+
+// reflect = vec - 2 (vec dot norm) * norm
+vec3 vec3::reflect(const vec3& normal) const
+{
+	const vec3 *vec = this;
+
+	float d = ((*vec) * normal) * 2.0f;
+	return (*vec) - normal * d;
+}
 
 vec2::vec2()
 {
@@ -292,4 +309,37 @@ float vec2::magnitude()
 vec2 vec2::operator*(const float scalar) const
 {
 	return vec2(x * scalar, y * scalar);
+}
+
+float vec2::operator*(const vec2 &vector) const
+{
+	return (x * vector.x + y * vector.y);
+}
+
+
+float vec2::angle(const vec2 &r) const
+{
+	float m = newtonSqrt( (x * x + y * y) * (r.x * r.x + r.y * r.y) );
+	float angle = facos((*this) * r / m);
+	return angle;
+}
+
+// reflect = vec - 2 (vec dot norm) * norm
+vec2 vec2::reflect(const vec2& normal) const
+{
+	const vec2 *vec = this;
+
+	float d = ((*vec) * normal) * 2.0f;
+	return (*vec) - normal * d;
+}
+
+
+vec2 vec2::project(const vec2 &a) const
+{
+	const vec2 *b = this;
+	vec2 result;
+	// dot product yield a float, so really scaling B by length of A
+	// [a dot b / (b dot b)] times B
+	result = (*b) * (a * (*b)) / ((*b) * (*b));
+	return result;
 }

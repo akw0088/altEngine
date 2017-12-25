@@ -41,7 +41,13 @@ public:
 	vec3 &operator+=(const vec3 &vec);
 	vec3 &operator-=(const vec3 &vec);
 	vec3 &operator*=(const float scalar);
-	vec3 project(const vec3 &a);
+	vec3 project(const vec3 &a) const;
+	vec3 reflect(const vec3& normal) const;
+	float angle(const vec3& r) const;
+	
+
+	
+
 
 	static vec3 crossproduct(const vec3 &VecA, const vec3 &VecB);
 
@@ -60,12 +66,15 @@ public:
 	vec2 operator-(const vec2 &vector) const;
 	vec2 &operator*=(const float scalar);
 	vec2 operator*(const float scalar) const;
+	float operator*(const vec2 &vector) const;
 	vec2 operator/(const float scalar);
 	float operator/(const vec2 &vector) const;
-
+	vec2 project(const vec2 &a) const;
+	vec2 reflect(const vec2& normal) const;
 
 	vec2 &normalize();
 	float magnitude();
+	float angle(const vec2 &r) const;
 
 	float x, y;
 };
