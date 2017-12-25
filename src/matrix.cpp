@@ -854,7 +854,7 @@ float matrix4::det()
 }
 
 
-void lookat(const vec3 &position, vec3 &center, vec3 &up)
+void matrix4::lookat(const vec3 &position, vec3 &center, vec3 &up)
 {
 	vec3 forward = center - position;
 	forward = forward.normalize();

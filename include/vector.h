@@ -28,9 +28,10 @@ public:
 	vec3(vec4 vector);
 	vec3 &normalize();
 	float magnitude();
+	float magnitudeSq();
 
 	vec3 &operator=(const vec3 &vector);
-	bool operator==(const vec3 &vector);
+	bool operator==(const vec3 &vector) const;
 	vec3 operator+(const vec3 &vector) const;
 	vec3 operator-(const vec3 &vector) const;
 	vec3 operator-() const;
@@ -74,6 +75,7 @@ public:
 
 	vec2 &normalize();
 	float magnitude();
+	float magnitudeSq();
 	float angle(const vec2 &r) const;
 
 	float x, y;

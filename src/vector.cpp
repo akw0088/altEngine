@@ -93,6 +93,11 @@ float vec3::magnitude()
 	return newtonSqrt(x * x + y * y + z * z);
 }
 
+float vec3::magnitudeSq()
+{
+	return x * x + y * y + z * z;
+}
+
 vec3 &vec3::normalize()
 {
 	float invmag = InvSqrt(x * x + y * y + z * z);
@@ -190,7 +195,7 @@ vec3 vec3::crossproduct(const vec3 &VecA, const vec3 &VecB)
 
 float abs32(float);
 
-bool vec3::operator==(const vec3 &vector)
+bool vec3::operator==(const vec3 &vector) const
 {
 	if ((abs32(x - vector.x) < 0.0001f && (abs32(y - vector.y) < 0.0001f) && (abs32(z - vector.z) < 0.0001f)))
 		return true;
@@ -304,6 +309,11 @@ vec2 &vec2::normalize()
 float vec2::magnitude()
 {
 	return newtonSqrt(x * x + y * y);
+}
+
+float vec2::magnitudeSq()
+{
+	return x * x + y * y;
 }
 
 vec2 vec2::operator*(const float scalar) const
