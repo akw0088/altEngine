@@ -67,5 +67,15 @@ typedef struct
 	vec3 dir;
 } ray_t;
 
+typedef struct
+{
+	vec3 a, b, c;
+} triangle_t;
+
+typedef struct
+{
+	float min;
+	float max;
+} interval_t;
 
 #endif
