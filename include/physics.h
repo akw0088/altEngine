@@ -86,4 +86,29 @@ typedef struct
 	float max;
 } interval_t;
 
+
+
+
+typedef struct bvh_node_s
+{
+	aabb_t bounds;
+	struct bvh_node_s *children;
+	int numTriangles;
+	int *triangles;
+} bvh_node_t;
+
+typedef struct
+{
+	int numTriangles;
+	union
+	{
+		triangle_t *triangles;//size = numTriangles
+		vec3 *vertices; //size = numTriangles * 3
+		float *values; //size = numTriangles * 3 * 3
+	};
+	bvh_node_t *accelerator;
+} mesh_t;
+
+
+
 #endif

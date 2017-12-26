@@ -1,12 +1,19 @@
 #include "physics.h"
+#include <list>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+// Floating point comparison function (epsilon issues)
+//#define CMP(x, y) (abs32((x)–(y)) <= FLT_EPSILON * MAX(1.0f, MAX(abs32(x), abs32(y))) )
 #define CMP(x, y) (abs32((x)-(y)) <= FLT_EPSILON * MAX(1.0f, MAX(fabsf(x), fabsf(y))) )
 
 
+//=============================================================================
+//	2D point tests (need to complete)
+//=============================================================================
 
 bool PointOnLine(const vec3 &p, const line2_t &line)
 {
@@ -63,6 +70,10 @@ bool PointInOrientedRectangle(const vec2 &point, const box2_t &rectangle)
 	return false;
 }
 
+
+//=============================================================================
+//	3D Point Tests
+//=============================================================================
 bool PointInSphere( vec3 &point, sphere_t &sphere)
 {
 	vec3 dist = point - sphere.origin;
@@ -144,7 +155,7 @@ bool PointInOBB(const vec3 &point, const obb_t &obb)
 	return true;
 }
 
-vec3 ClosestPoint(const vec3 &point, const obb_t &obb)
+vec3 ClosestPoint(const obb_t &obb, const vec3 &point)
 {
 	vec3 result = obb.origin;
 	vec3 dir = point - obb.origin;
@@ -204,11 +215,11 @@ bool PointOnPlane(const vec3 &point, vec3 &normal, float d)
 	return dot - d == 0.0f;
 }
 
-vec3 ClosestPoint(const vec3 &point, vec3 &normal, float d)
+vec3 ClosestPoint(const vec3 &point, const plane_t &p)
 {
-	float dot = point * normal;
-	float distance = dot - d;
-	return point - normal * d;
+	float dot = point * p.normal;
+	float distance = dot - p.d;
+	return point - p.normal * p.d;
 }
 
 
@@ -217,12 +228,21 @@ vec3 ClosestPoint(const line3_t &line, const vec3 &point)
 	vec3 lVec = line.b - line.a;
 	vec3 dist = point - line.a;
 
-	float t = dist * lVec  / (lVec * lVec);
+	float t = dist * lVec / (lVec * lVec);
 	t = MAX(t, 0.0f);
-	t = MIN(t, 1.0f); 
-	return line.a + lVec * t; 
+	t = MIN(t, 1.0f);
+	return line.a + lVec * t;
 }
 
+
+bool PointOnLine(const vec3 &point, const line3_t &line)
+{
+	vec3 closest = ClosestPoint(line, point);
+	float distanceSq = (closest - point).magnitudeSq();
+	// Consider using an epsilon test here!
+	// CMP(distanceSq, 0.0f);
+	return distanceSq == 0.0f;
+}
 
 bool PointOnRay(const vec3 &point, const ray_t &ray)
 {
@@ -252,6 +272,265 @@ vec3 ClosestPoint(const ray_t &ray, const vec3 &point)
 	return vec3(ray.origin + ray.dir * t);
 }
 
+//=============================================================================
+//	3D shape intersections
+//=============================================================================
+
+bool SphereSphere(const sphere_t &s1, const sphere_t &s2)
+{
+	float radiiSum = s1.radius + s2.radius;
+
+	float sqDistance = (s1.origin - s2.origin).magnitudeSq();
+
+	return sqDistance < radiiSum * radiiSum;
+}
+
+bool SphereOBB(const sphere_t &sphere, const obb_t &obb)
+{
+	vec3 closestPoint = ClosestPoint(obb, sphere.origin);
+	vec3 dist = sphere.origin - closestPoint;
+	float distSq = dist.magnitudeSq();
+	float radiusSq = sphere.radius * sphere.radius;
+	return distSq<radiusSq;
+}
+
+#define PlaneSphere(plane, sphere) SpherePlane(sphere, plane)
+
+
+bool SpherePlane(const sphere_t &s, const plane_t &plane)
+{
+	vec3 closestPoint = ClosestPoint(s.origin, plane);
+	float distSq = (s.origin - closestPoint).magnitudeSq();
+	float radiusSq = s.radius * s.radius;
+	return distSq < radiusSq;
+}
+
+bool AABB_AABB(const aabb_t &aabb1, const aabb_t &aabb2)
+{
+	vec3 aMin = aabb1.min;
+	vec3 aMax = aabb2.max;
+	vec3 bMin = aabb2.min;
+	vec3 bMax = aabb2.max;
+
+	return (aMin.x <= bMax.x && aMax.x >= bMin.x) &&
+		(aMin.y <= bMax.y && aMax.y >= bMin.y) &&
+		(aMin.z <= bMax.z && aMax.z >= bMin.z);
+}
+
+interval_t GetInterval(const aabb_t &aabb, const vec3& axis)
+{
+	vec3 i = aabb.min;
+	vec3 a = aabb.max;
+
+	vec3 vertex[8] = {
+		vec3(i.x, a.y, a.z),
+		vec3(i.x, a.y, i.z),
+		vec3(i.x, i.y, a.z),
+		vec3(i.x, i.y, i.z),
+		vec3(a.x, a.y, a.z),
+		vec3(a.x, a.y, i.z),
+		vec3(a.x, i.y, a.z),
+		vec3(a.x, i.y, i.z)
+	};
+
+	interval_t result;
+	result.min = result.max = axis * vertex[0];
+
+	for (int i = 1; i < 8; ++i)
+	{
+		float projection = axis * vertex[i];
+		result.min = (projection < result.min) ? projection : result.min;
+		result.max = (projection > result.max) ? projection : result.max;
+	}
+	return result;
+}
+
+#define AABBTriangle(a, t) TriangleAABB(t, a) 
+
+interval_t GetInterval(const triangle_t & triangle, const vec3& axis)
+{
+	interval_t result;
+
+	result.min = axis * triangle.a;
+	result.max = result.min;
+
+	float value = axis * triangle.b;
+	result.min = MIN(result.min, value);
+	result.max = MAX(result.max, value);
+
+	value = axis * triangle.c;
+	result.min = MIN(result.min, value);
+	result.max = MAX(result.max, value);
+
+	return result;
+}
+
+interval_t GetInterval(const obb_t &obb, const vec3& axis)
+{
+	vec3 vertex[8];
+
+	vec3 C = obb.origin;    // OBB Center        
+	vec3 E = obb.size;    // OBB Extents    
+	const float *o = obb.orientation.m;
+	vec3 A[] = {              // OBB Axis        
+		vec3(o[0], o[1], o[2]),
+		vec3(o[3], o[4], o[5]),
+		vec3(o[6], o[7], o[8]),
+	};
+
+	vertex[0] = C + A[0] * E.x + A[1] * E.y + A[2] * E.z;
+	vertex[1] = C - A[0] * E.x + A[1] * E.y + A[2] * E.z;
+	vertex[2] = C + A[0] * E.x - A[1] * E.y + A[2] * E.z;
+	vertex[3] = C + A[0] * E.x + A[1] * E.y - A[2] * E.z;
+	vertex[4] = C - A[0] * E.x - A[1] * E.y - A[2] * E.z;
+	vertex[5] = C + A[0] * E.x - A[1] * E.y - A[2] * E.z;
+	vertex[6] = C - A[0] * E.x + A[1] * E.y - A[2] * E.z;
+	vertex[7] = C - A[0] * E.x - A[1] * E.y + A[2] * E.z;
+
+	interval_t result;
+	result.min = result.max = axis * vertex[0];
+	for (int i = 1; i < 8; ++i)
+	{
+		float projection = axis * vertex[i];
+		result.min = (projection < result.min) ? projection : result.min;
+		result.max = (projection > result.max) ? projection : result.max;
+	}
+	return result;
+}
+
+
+bool OverlapOnAxis(const aabb_t &aabb, const obb_t &obb, const vec3& axis)
+{
+	interval_t a = GetInterval(aabb, axis);
+	interval_t b = GetInterval(obb, axis);
+	return ((b.min <= a.max) && (a.min <= b.max));
+}
+
+bool AABB_OBB(const aabb_t &aabb, const obb_t &obb)
+{
+	const float* o = obb.orientation.m;
+
+	vec3 test[15] = {
+		vec3(1, 0, 0), // AABB axis 1
+		vec3(0, 1, 0), // AABB axis 2
+		vec3(0, 0, 1), // AABB axis 3
+		vec3(o[0], o[1], o[2]), // OBB axis 1
+		vec3(o[3], o[4], o[5]), // OBB axis 2
+		vec3(o[6], o[7], o[8]) // OBB axis 3
+							   // We will fill out the remaining axis in the next step
+	};
+
+	for (int i = 0; i < 3; ++i) { // Fill out rest of axis
+		test[6 + i * 3 + 0] = vec3::crossproduct(test[i], test[0]);
+		test[6 + i * 3 + 1] = vec3::crossproduct(test[i], test[1]);
+		test[6 + i * 3 + 2] = vec3::crossproduct(test[i], test[2]);
+	}
+
+	for (int i = 0; i < 15; ++i)
+	{
+		if (!OverlapOnAxis(aabb, obb, test[i]))
+		{
+			return false; // Seperating axis found
+		}
+	}
+	return true; // Seperating axis not found
+}
+
+#define PlaneAABB(plane, aabb) AABBPlane(aabb, plane)
+
+bool AABBPlane(const aabb_t &aabb, const plane_t &plane)
+{
+	vec3 position = vec3(
+		(aabb.max.x - aabb.min.x) / 2.0f,
+		(aabb.max.y - aabb.min.y) / 2.0f,
+		(aabb.max.z - aabb.min.z) / 2.0f);
+
+	float pLen = 
+		(aabb.max.x - aabb.min.x) * abs32(plane.normal.x) +
+		(aabb.max.y - aabb.min.y) * abs32(plane.normal.y) +
+		(aabb.max.z - aabb.min.z) * abs32(plane.normal.z);
+
+	float dot = plane.normal * position;
+	float dist = dot - plane.d;
+
+	return abs32(dist) <= pLen;
+}
+
+bool OverlapOnAxis(const obb_t &obb1, const obb_t &obb2, const vec3& axis)
+{
+	interval_t a = GetInterval(obb1, axis);
+	interval_t b = GetInterval(obb1, axis);
+	return ((b.min <= a.max) && (a.min <= b.max));
+}
+
+bool OBB_OBB(const obb_t &obb1, const obb_t &obb2)
+{
+	const float* o1 = obb1.orientation.m;
+	const float* o2 = obb2.orientation.m;
+	vec3 test[15] = {
+		vec3(o1[0], o1[1], o1[2]),
+		vec3(o1[3], o1[4], o1[5]),
+		vec3(o1[6], o1[7], o1[8]),
+		vec3(o2[0], o2[1], o2[2]),
+		vec3(o2[3], o2[4], o2[5]),
+		vec3(o2[6], o2[7], o2[8])
+	};
+
+	for (int i = 0; i < 3; ++i)
+	{
+		// Fill out rest of axis
+		test[6 + i * 3 + 0] = vec3::crossproduct(test[i], test[0]);
+		test[6 + i * 3 + 1] = vec3::crossproduct(test[i], test[1]);
+		test[6 + i * 3 + 2] = vec3::crossproduct(test[i], test[2]);
+	}
+
+
+	for (int i = 0; i < 15; ++i)
+	{
+		if (!OverlapOnAxis(obb1, obb2, test[i]))
+		{
+			return false; // Seperating axis found
+		}
+	}
+	return true; // Seperating axis not found
+}
+
+#define PlaneOBB(plane, obb) OBBPlane(obb, plane)
+
+bool OBBPlane(const obb_t &obb, const plane_t &plane)
+{
+	// Local variables for readability only
+	const float* o = obb.orientation.m;
+	vec3 rot[] = {
+		// rotation / orientation
+		vec3(o[0], o[1], o[2]),
+		vec3(o[3], o[4], o[5]),
+		vec3(o[6], o[7], o[8]),
+	};
+	vec3 normal = plane.normal;
+
+	float pLen = 
+		obb.size.x * abs32(normal * rot[0]) +
+		obb.size.y * abs32(normal * rot[1]) +
+		obb.size.z * abs32(normal * rot[2]);
+
+	float dot = plane.normal * obb.origin;
+	float dist = dot - plane.d;
+
+	return abs32(dist) <= pLen;
+}
+
+bool PlanePlane(const plane_t &plane1, const plane_t &plane2)
+{
+	vec3 d = vec3::crossproduct(plane1.normal, plane2.normal);
+
+	return (d * d) != 0; // Consider using an epsilon!
+}
+
+
+//=============================================================================
+//	3D Line Intersections
+//=============================================================================
 void RaycastClear(raycast_result_t* outResult)
 {
 	if (outResult != 0)
@@ -471,10 +750,10 @@ bool Raycast(const obb_t &obb, const ray_t &ray, raycast_result_t *result)
 	return true;
 }
 
-float Raycast(const vec3 &normal, float d, const ray_t &ray)
+float Raycast(const plane_t plane, const ray_t &ray)
 {
-	float nd = ray.dir * normal;
-	float pn = ray.origin * normal;
+	float nd = ray.dir * plane.normal;
+	float pn = ray.origin * plane.normal;
 
 
 	if (nd >= 0.0f)
@@ -482,7 +761,7 @@ float Raycast(const vec3 &normal, float d, const ray_t &ray)
 		return -1;
 	}
 
-	float t = (d - pn) / nd;
+	float t = (plane.d - pn) / nd;
 
 	if (t >= 0.0f)
 	{
@@ -492,6 +771,8 @@ float Raycast(const vec3 &normal, float d, const ray_t &ray)
 	return -1;
 }
 
+
+// LineTests are really just a boolean hit tests
 
 bool Linetest(const sphere_t &sphere, const line3_t &line)
 {
@@ -534,20 +815,23 @@ bool Linetest(const obb_t &obb, const line3_t &line)
 	return t >= 0 && t * t <= (length * length);
 }
 
-bool Linetest(const vec3 &normal, float d, const line3_t &line)
+bool Linetest(const plane_t p, const line3_t &line)
 {
 	vec3 ab = line.b - line.a;
-	float nA = normal * line.a;
-	float nAB = normal * ab;
+	float nA = p.normal * line.a;
+	float nAB = p.normal * ab;
 
 	// If the line and plane are parallel, nAB will be 0
 	// This will cause a divide by 0 exception below
 	// If you plan on testing parallel lines and planes
 	// it is sage to early out when nAB is 0. 
-	float t = (d - nA) / nAB;
+	float t = (p.d - nA) / nAB;
 	return t >= 0.0f && t <= 1.0f;
 }
 
+//=============================================================================
+//	Triangles and Meshes
+//=============================================================================
 
 bool PointInTriangle(const vec3 &p, const triangle_t &t)
 {
@@ -576,48 +860,18 @@ bool PointInTriangle(const vec3 &p, const triangle_t &t)
 	return true;
 }
 
-void FromTriangle(const triangle_t &t, vec3 &normal, float &d)
+void FromTriangle(const triangle_t &t, plane_t p)
 {
-	normal = vec3::crossproduct (t.b - t.a, t.c - t.a).normalize();
-	d = normal * t.a;
-}
-
-
-interval_t GetInterval(const aabb_t &aabb, const vec3& axis)
-{
-	vec3 i = aabb.min;
-	vec3 a = aabb.max;
-
-	vec3 vertex[8] = {
-		vec3(i.x, a.y, a.z),
-		vec3(i.x, a.y, i.z),
-		vec3(i.x, i.y, a.z),
-		vec3(i.x, i.y, i.z),
-		vec3(a.x, a.y, a.z),
-		vec3(a.x, a.y, i.z),
-		vec3(a.x, i.y, a.z),
-		vec3(a.x, i.y, i.z)
-	};
-
-	interval_t result;
-	result.min = result.max = axis * vertex[0];
-
-	for (int i = 1; i < 8; ++i)
-	{
-		float projection = axis * vertex[i];
-		result.min = (projection < result.min) ? projection : result.min;
-		result.max = (projection > result.max) ? projection : result.max;
-	}
-	return result;
+	p.normal = vec3::crossproduct (t.b - t.a, t.c - t.a).normalize();
+	p.d = p.normal * t.a;
 }
 
 vec3 ClosestPoint(const triangle_t &t, const vec3 &p)
 {
-	vec3 normal;
-	float d;
-	FromTriangle(t, normal, d);
+	plane_t plane;
+	FromTriangle(t, plane);
 
-	vec3 closest = ClosestPoint(p, normal, d);
+	vec3 closest = ClosestPoint(p, plane);
 
 	if (PointInTriangle(closest, t))
 	{
@@ -652,59 +906,6 @@ vec3 ClosestPoint(const triangle_t &t, const vec3 &p)
 		return c2;
 	}
 	return c3;
-}
-
-#define AABBTriangle(a, t) TriangleAABB(t, a) 
-
-interval_t GetInterval(const triangle_t & triangle, const vec3& axis)
-{
-	interval_t result;
-
-	result.min = axis * triangle.a;
-	result.max = result.min;
-
-	float value = axis * triangle.b;
-	result.min = MIN(result.min, value);
-	result.max = MAX(result.max, value);
-
-	value = axis * triangle.c;
-	result.min = MIN(result.min, value);
-	result.max = MAX(result.max, value);
-
-	return result;
-}
-
-interval_t GetInterval(const obb_t &obb, const vec3& axis)
-{
-	vec3 vertex[8];
-
-	vec3 C = obb.origin;    // OBB Center        
-	vec3 E = obb.size;    // OBB Extents    
-	const float *o = obb.orientation.m;    
-	vec3 A[] = {              // OBB Axis        
-		vec3(o[0], o[1], o[2]),        
-		vec3(o[3], o[4], o[5]),        
-		vec3(o[6], o[7], o[8]),    
-	};
-
-	vertex[0] = C + A[0] * E.x + A[1] * E.y + A[2] * E.z;
-	vertex[1] = C - A[0] * E.x + A[1] * E.y + A[2] * E.z;
-	vertex[2] = C + A[0] * E.x - A[1] * E.y + A[2] * E.z;
-	vertex[3] = C + A[0] * E.x + A[1] * E.y - A[2] * E.z;
-	vertex[4] = C - A[0] * E.x - A[1] * E.y - A[2] * E.z;
-	vertex[5] = C + A[0] * E.x - A[1] * E.y - A[2] * E.z;
-	vertex[6] = C - A[0] * E.x + A[1] * E.y - A[2] * E.z;
-	vertex[7] = C - A[0] * E.x - A[1] * E.y + A[2] * E.z;
-
-	interval_t result;
-	result.min = result.max = axis * vertex[0];
-	for (int i = 1; i < 8; ++i)
-	{
-		float projection = axis * vertex[i];
-		result.min = (projection < result.min) ? projection : result.min;
-		result.max = (projection > result.max) ? projection : result.max;
-	}
-	return result;
 }
 
 bool OverlapOnAxis(const aabb_t &aabb, const triangle_t &triangle, const vec3& axis)
@@ -832,7 +1033,8 @@ bool OverlapOnAxis(const triangle_t &t1, const triangle_t &t2, const vec3 &axis)
 	interval_t b = GetInterval(t2, axis);
 	return ((b.min <= a.max) && (a.min <= b.max));
 }
-
+/*
+// Using "robust"version
 bool TriangleTriangle(const triangle_t &t1, const triangle_t &t2)
 {
 	vec3 t1_f0 = t1.b - t1.a; // Triangle 1, Edge 0   
@@ -865,6 +1067,7 @@ bool TriangleTriangle(const triangle_t &t1, const triangle_t &t2)
 		}
 	}
 }
+*/
 
 vec3 SatCrossEdge(const vec3& a, const vec3& b, const vec3& c, const vec3& d)
 {
@@ -889,7 +1092,7 @@ vec3 SatCrossEdge(const vec3& a, const vec3& b, const vec3& c, const vec3& d)
 	return vec3();
 }
 
-bool TriangleTriangleRobust(const triangle_t &t1, const triangle_t &t2)
+bool TriangleTriangle(const triangle_t &t1, const triangle_t &t2)
 {
 	vec3 axisToTest[] = {
 		// Triangle 1, Normal       
@@ -947,10 +1150,9 @@ vec3 Barycentric(const vec3 &p, const triangle_t &t)
 
 float Raycast(const triangle_t &triangle, const ray_t &ray)
 {
-	vec3 normal;
-	float d;
-	FromTriangle(triangle, normal, d);
-	float t = Raycast(normal, d, ray);
+	plane_t plane;
+	FromTriangle(triangle, plane);
+	float t = Raycast(plane, ray);
 	if (t < 0.0f)
 	{
 		return t;
@@ -980,6 +1182,294 @@ bool Linetest(const triangle_t &triangle, const line3_t &line)
 	return t >= 0 && t * t <= (length * length);
 }
 
+//=============================================================================
+//	3D Mesh tests with spatial optimizations (bvh nodes)
+//=============================================================================
+
+aabb_t AABB(vec3 max, vec3 min)
+{
+	aabb_t result;
+
+	result.max = max;
+	result.min = min;
+
+	return result;
+}
+
+
+vec3 aabb_center_word(aabb_t &aabb)
+{
+	return vec3(
+		(aabb.max.x - aabb.min.x) * 0.5f + aabb.min.x,
+		(aabb.max.y - aabb.min.y) * 0.5f + aabb.min.y,
+		(aabb.max.z - aabb.min.z) * 0.5f + aabb.min.z
+	);
+}
+
+vec3 aabb_center_model(aabb_t &aabb)
+{
+	return vec3(
+		(aabb.max.x - aabb.min.x) * 0.5f,
+		(aabb.max.y - aabb.min.y) * 0.5f,
+		(aabb.max.z - aabb.min.z) * 0.5f
+	);
+}
+
+void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
+{
+	if (depth-- == 0) { // Decrements depth
+		return;
+	}
+
+	if (node->children == 0) // Only split if it's a leaf
+	{
+		if (node->numTriangles > 0) // Only split if this node contains triangles
+		{
+			node->children = new bvh_node_t[8];
+
+			vec3 c = aabb_center_word(node->bounds);
+			vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
+
+			node->children[0].bounds =
+				AABB(c + vec3(-e.x, +e.y, -e.z), e);
+			node->children[1].bounds =
+				AABB(c + vec3(+e.x, +e.y, -e.z), e);
+			node->children[2].bounds =
+				AABB(c + vec3(-e.x, +e.y, +e.z), e);
+			node->children[3].bounds =
+				AABB(c + vec3(+e.x, +e.y, +e.z), e);
+			node->children[4].bounds =
+				AABB(c + vec3(-e.x, -e.y, -e.z), e);
+			node->children[5].bounds =
+				AABB(c + vec3(+e.x, -e.y, -e.z), e);
+			node->children[6].bounds =
+				AABB(c + vec3(-e.x, -e.y, +e.z), e);
+			node->children[7].bounds =
+				AABB(c + vec3(+e.x, -e.y, +e.z), e);
+		}
+	}
+
+	// If this node was just split
+	if (node->children != 0 && node->numTriangles > 0)
+	{
+		for (int i = 0; i < 8; ++i)  // For each child
+		{
+			node->children[i].numTriangles = 0;
+			for (int j = 0; j < node->numTriangles; ++j)
+			{
+				triangle_t t = model.triangles[node->triangles[j]];
+
+				if (TriangleAABB(t, node->children[i].bounds))
+				{
+					node->children[i].numTriangles += 1;
+				}
+			}
+
+			if (node->children[i].numTriangles == 0)
+			{
+				continue;
+			}
+
+			node->children[i].triangles = new int[node->children[i].numTriangles];
+			int index = 0;
+
+			for (int j = 0; j < node->numTriangles; ++j)
+			{
+				triangle_t t = model.triangles[node->triangles[j]];
+				if (TriangleAABB(t, node->children[i].bounds))
+				{
+					node->children[i].triangles[index++] = node->triangles[j];
+				}
+			}
+		}
+		node->numTriangles = 0;
+		delete[] node->triangles;
+		node->triangles = 0;
+
+		for (int i = 0; i < 8; ++i)
+		{
+			SplitBVHNode(&node->children[i], model, depth);
+		}
+	}
+}
+
+void FreeBVHNode(bvh_node_t* node)
+{
+	if (node->children != 0)
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			FreeBVHNode(&node->children[i]);
+		}
+		delete[] node->children;
+		node->children = 0;
+	}
+
+	if (node->numTriangles != 0 || node->triangles != 0)
+	{
+		delete[] node->triangles;
+		node->triangles = 0;
+		node->numTriangles = 0;
+	}
+}
+
+void AccelerateMesh(mesh_t &mesh)
+{
+	if (mesh.accelerator != 0)
+	{
+		return;
+	}
+
+	vec3 min = mesh.vertices[0];
+	vec3 max = mesh.vertices[0];
+	for (int i = 1; i < mesh.numTriangles * 3; ++i)
+	{
+		min.x = fminf(mesh.vertices[i].x, min.x);
+		min.y = fminf(mesh.vertices[i].y, min.y);
+		min.z = fminf(mesh.vertices[i].z, min.z);
+		max.x = fmaxf(mesh.vertices[i].x, max.x);
+		max.y = fmaxf(mesh.vertices[i].y, max.y);
+		max.z = fmaxf(mesh.vertices[i].z, max.z);
+	}
+
+	mesh.accelerator = new bvh_node_t;
+	mesh.accelerator->bounds.min = min;
+	mesh.accelerator->bounds.max = max;
+	mesh.accelerator->numTriangles = mesh.numTriangles;
+
+	mesh.accelerator->triangles =
+		new int[mesh.numTriangles];
+
+	for (int i = 0; i < mesh.numTriangles; ++i)
+	{
+		mesh.accelerator->triangles[i] = i;
+	}
+
+	// Recursively split BVH tree
+	SplitBVHNode(mesh.accelerator, mesh, 3);
+}
+
+float MeshRay(const mesh_t &mesh, const ray_t &ray)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			float result = Raycast(mesh.triangles[i], ray);
+			if (result >= 0)
+			{
+				return result;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t *> toProcess;
+		toProcess.push_front(mesh.accelerator);
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty())
+		{
+			bvh_node_s* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0)
+			{
+				for (int i = 0; i< iterator->numTriangles; ++i)
+				{
+					// Do a raycast against the triangle
+					float r = Raycast(mesh.triangles[iterator->triangles[i]], ray);
+					if (r >= 0)
+					{
+						return r;
+					}
+				}
+			}
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					raycast_result_t result;
+					Raycast(iterator->children[i].bounds, ray, &result);
+
+					if (result.t >= 0)
+					{
+						toProcess.push_front(
+							&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}
+
+bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			// The TirangleAABB test here would change
+			// if we where testing a shape other than AABB
+			if (TriangleAABB(mesh.triangles[i], aabb))
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_s*> toProcess;
+		toProcess.push_front(mesh.accelerator);
+		while (!toProcess.empty())
+		{
+			bvh_node_s* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+			if (iterator->numTriangles >= 0)
+			{
+				for (int i = 0; i<iterator->numTriangles; ++i)
+				{
+					// The TirangleAABB test here would change
+					// if we where testing a shape other than AABB
+					if (TriangleAABB(mesh.triangles[iterator->triangles[i]], aabb))
+					{
+						return true;
+					}
+				}
+			}
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// The AABBAABB test here would change
+					// if we where testing a shape other than AABB
+					if (AABB_AABB(iterator->children[i].bounds,aabb))
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+//=============================================================================
+//	Models and Scenes
+//=============================================================================
+
+//=============================================================================
+//	Camera and Frustum
+//=============================================================================
+
+//=============================================================================
+//	Models and Scenes
+//=============================================================================
+
+
+//=============================================================================
+//	Constraint Solving
+//=============================================================================
 
 class Particle
 {
@@ -1011,7 +1501,7 @@ public:
 			{
 				vec3 direction = velocity.normalize();
 				ray_t ray;
-				
+
 				ray.origin = oldPosition;
 				ray.dir = direction;
 
@@ -1092,6 +1582,15 @@ public:
 	float friction;
 	float bounce;
 };
+
+
+//=============================================================================
+//	Manifolds and Impulse
+//=============================================================================
+
+//=============================================================================
+//	Springs and Joints
+//=============================================================================
 
 class Spring
 {
