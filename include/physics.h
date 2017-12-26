@@ -69,6 +69,14 @@ typedef struct
 
 typedef struct
 {
+	vec3 point;
+	vec3 normal;
+	float t;
+	bool hit;
+} raycast_result_t;
+
+typedef struct
+{
 	vec3 a, b, c;
 } triangle_t;
 

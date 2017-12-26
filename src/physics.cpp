@@ -252,10 +252,22 @@ vec3 ClosestPoint(const ray_t &ray, const vec3 &point)
 	return vec3(ray.origin + ray.dir * t);
 }
 
-float Raycast(const sphere_t &sphere, const ray_t &ray)
+void RaycastClear(raycast_result_t* outResult)
+{
+	if (outResult != 0)
+	{
+		outResult->t = -1;
+		outResult->hit = false;
+		outResult->normal = vec3(0, 0, 1);
+		outResult->point = vec3(0, 0, 0);
+	}
+}
+
+bool Raycast(const sphere_t &sphere, const ray_t &ray, raycast_result_t *result)
 {
 	vec3 e = sphere.origin - ray.origin;
 
+	RaycastClear(result);
 	float rSq = sphere.radius * sphere.radius;
 	float eSq = e.magnitudeSq();
 
@@ -265,57 +277,103 @@ float Raycast(const sphere_t &sphere, const ray_t &ray)
 	float bSq = eSq - (a * a);
 	float f = sqrt(rSq - bSq);
 
+	float t = a - f; // Assume normal intersection!
+
 	// No collision has happened
 	if (rSq - (eSq - (a * a)) < 0.0f)
 	{
-		return -1; // -1 is invalid.   
+		return false; // -1 is invalid.   
 	}
 	// Ray starts inside the sphere  
 	else if (eSq<rSq) 
 	{
-		return a + f; 
+		t = a + f; 
 		// Just reverse direction   
 	}   // else Normal intersection   
-	return a - f;
+
+	if (result != 0)
+	{
+		result->t = t;
+		result->hit = true;
+		result->point = ray.origin + ray.dir * t;
+		result->normal = result->point.normalize() - sphere.origin;
+	}
+
+	return true;
 }
 
 // really just rayboxslab in common.cpp I think
-float Raycast(const aabb_t &aabb, const ray_t &ray)
+bool Raycast(const aabb_t &aabb, const ray_t &ray, raycast_result_t *result)
 {
-	float t1 = (aabb.min.x - ray.origin.x) / ray.dir.x;
-	float t2 = (aabb.max.x - ray.origin.x) / ray.dir.x;
-	float t3 = (aabb.min.y - ray.origin.y) / ray.dir.y;
-	float t4 = (aabb.max.y - ray.origin.y) / ray.dir.y;
-	float t5 = (aabb.min.z - ray.origin.z) / ray.dir.z;
-	float t6 = (aabb.max.z - ray.origin.z) / ray.dir.z;
+	float t[6];
+
+
+	t[0] = (aabb.min.x - ray.origin.x) / ray.dir.x;
+	t[1] = (aabb.max.x - ray.origin.x) / ray.dir.x;
+	t[2] = (aabb.min.y - ray.origin.y) / ray.dir.y;
+	t[3] = (aabb.max.y - ray.origin.y) / ray.dir.y;
+	t[4] = (aabb.min.z - ray.origin.z) / ray.dir.z;
+	t[5] = (aabb.max.z - ray.origin.z) / ray.dir.z;
+	float t_result;
 
 	//Find the largest minimum value
-	float tmin = MAX(MAX(MIN(t1, t2), MIN(t3, t4)), MIN(t5, t6));
+	float tmin = MAX(MAX(MIN(t[0], t[1]), MIN(t[2], t[3])), MIN(t[4], t[5]));
 
 	//Find the smallest maximum value
-	float tmax = MIN(MIN(MAX(t1, t2), MAX(t3, t4)), MAX(t5, t6));
+	float tmax = MIN(MIN(MAX(t[0], t[1]), MAX(t[2], t[3])), MAX(t[4], t[5]));
+
+	RaycastClear(result);
 
 	if (tmax < 0)
 	{
-		return -1;
+		return false;
 	}
 
 	if (tmin > tmax)
 	{
-		return -1;
+		return false;
 	}
 
 	if (tmin < 0.0f)
 	{
-		return tmax;
+		t_result = tmax;
 	}
 
-	return tmin;
+	t_result = tmin;
+
+	if (t_result < 0.0f)
+	{
+		t_result = tmax;
+	}
+
+	if (result != 0)
+	{
+		result->t = t_result;
+		result->hit = true;
+		result->point = ray.origin + ray.dir * t_result;
+
+		vec3 normals[] = {
+			vec3(-1, 0, 0), vec3(1, 0, 0),
+			vec3(0, -1, 0), vec3(0, 1, 0),
+			vec3(0, 0, -1), vec3(0, 0, 1)
+		};
+
+		for (int i = 0; i < 6; ++i)
+		{
+			if (CMP(t_result, t[i]))
+			{
+				result->normal = normals[i];
+			}
+		}
+	}
+	return true;
 }
 
-float Raycast(const obb_t &obb, const ray_t &ray)
+bool Raycast(const obb_t &obb, const ray_t &ray, raycast_result_t *result)
 {
 	const float *o = obb.orientation.m;
+	float t_result;
+
 	// X, Y and Z axis of OBB
 	vec3 X(o[0], o[1], o[2]);
 	vec3 Y(o[3], o[4], o[5]);
@@ -327,6 +385,7 @@ float Raycast(const obb_t &obb, const ray_t &ray)
 	vec3 f(X * ray.dir, Y * ray.dir, Z * ray.dir);
 	vec3 e(X * p, Y * p, Z * p);
 
+	RaycastClear(result);
 
 	float t[6] = { 0, 0, 0, 0, 0, 0 };
 
@@ -334,7 +393,7 @@ float Raycast(const obb_t &obb, const ray_t &ray)
 	{
 		if (-e.x - obb.size.x > 0 || -e.x + obb.size.x < 0)
 		{
-			return -1;
+			return false;
 		}
 		f.x = 0.00001f;
 		// Avoid div by 0!
@@ -347,7 +406,7 @@ float Raycast(const obb_t &obb, const ray_t &ray)
 	{
 		if (-e.y - obb.size.y > 0 || -e.y + obb.size.y < 0)
 		{
-			return -1;
+			return false;
 		}
 		f.y = 0.00001f;
 		// Avoid div by 0!
@@ -361,7 +420,7 @@ float Raycast(const obb_t &obb, const ray_t &ray)
 	{
 		if (-e.z - obb.size.z > 0 || -e.z + obb.size.z < 0)
 		{
-			return -1;
+			return false;
 		}
 		f.z = 0.00001f;
 		// Avoid div by 0!
@@ -375,20 +434,41 @@ float Raycast(const obb_t &obb, const ray_t &ray)
 
 	if (tmax < 0)
 	{
-		return -1.0f;
+		return false;
 	}
 
 	if (tmin > tmax)
 	{
-		return -1.0f;
+		return false;
 	}
 
 	if (tmin < 0.0f)
 	{
-		return tmax;
+		t_result = tmax;
 	}
 
-	return tmin;
+	t_result = tmin;
+
+	if (result != 0)
+	{
+		result->hit = true;
+		result->t = t_result;
+		result->point = ray.origin + ray.dir * t_result;
+		vec3 normals[] = {
+			X, X * -1.0f,
+			Y, Y * -1.0f,
+			Z, Z * -1.0f
+		};
+		for (int i = 0; i < 6; ++i)
+		{
+			if (CMP(t_result, t[i]))
+			{
+				result->normal = normals[i].normalize();
+			}
+		}
+	}
+
+	return true;
 }
 
 float Raycast(const vec3 &normal, float d, const ray_t &ray)
@@ -422,10 +502,18 @@ bool Linetest(const sphere_t &sphere, const line3_t &line)
 
 bool Linetest(const aabb_t &aabb, const line3_t & line)
 {
-	ray_t ray;   ray.origin = line.a;
+	ray_t ray;
 	vec3 length = line.b - line.a;
+	raycast_result_t result;
+
+	ray.origin = line.a;
 	ray.dir = length.normalize();
-	float t = Raycast(aabb, ray);
+	if (Raycast(aabb, ray, &result) == false)
+	{
+		return false;
+	}
+
+	float t = result.t;
 	return t >= 0 && t * t <= (length * length);
 }
 
@@ -433,9 +521,16 @@ bool Linetest(const obb_t &obb, const line3_t &line)
 {
 	ray_t ray;
 	vec3 length = line.b - line.a;
+	raycast_result_t result;
+
 	ray.origin = line.a;
 	ray.dir = length.normalize();
-	float t = Raycast(obb, ray);
+	if (Raycast(obb, ray, &result) == false)
+	{
+		return false;
+	}
+
+	float t = result.t;
 	return t >= 0 && t * t <= (length * length);
 }
 
@@ -560,24 +655,6 @@ vec3 ClosestPoint(const triangle_t &t, const vec3 &p)
 }
 
 #define AABBTriangle(a, t) TriangleAABB(t, a) 
-
-interval_t GetInterval(const triangle_t &triangle, vec3 &axis)
-{
-	interval_t result;
-
-	result.min = axis * triangle.a;
-	result.max = result.min;
-
-	float value = axis * triangle.b;
-	result.min = MIN(result.min, value);
-	result.max = MAX(result.max, value);
-
-	value = axis * triangle.c;
-	result.min = MIN(result.min, value);
-	result.max = MAX(result.max, value);
-
-	return result;
-}
 
 interval_t GetInterval(const triangle_t & triangle, const vec3& axis)
 {
@@ -930,7 +1007,7 @@ public:
 			traveled.a = oldPosition;
 			traveled.b = position;
 
-//			if (Linetest(constraints[i], traveled))
+			if (Linetest(constraints[i], traveled))
 			{
 				vec3 direction = velocity.normalize();
 				ray_t ray;
@@ -938,15 +1015,15 @@ public:
 				ray.origin = oldPosition;
 				ray.dir = direction;
 
-//				RaycastResult result;
-	//			if (Raycast(constraints[i], ray, &result))
+				raycast_result_t result;
+				if (Raycast(constraints[i], ray, &result))
 				{
-//					position = result.point + result.normal * 0.002f;
-//					vec3 vn = result.normal * (result.normal * velocity);
-//					vec3 vt = velocity - vn;
+					position = result.point + result.normal * 0.002f;
+					vec3 vn = result.normal * (result.normal * velocity);
+					vec3 vt = velocity - vn;
 
 					oldPosition = position;
-//					velocity = vt - vn * bounce;
+					velocity = vt - vn * bounce;
 					break;
 				}
 			}
