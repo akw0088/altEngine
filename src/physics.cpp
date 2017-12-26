@@ -1,14 +1,13 @@
 #include "physics.h"
 #include <list>
-
+#include "sin_table.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 // Floating point comparison function (epsilon issues)
-//#define CMP(x, y) (abs32((x)–(y)) <= FLT_EPSILON * MAX(1.0f, MAX(abs32(x), abs32(y))) )
-#define CMP(x, y) (abs32((x)-(y)) <= FLT_EPSILON * MAX(1.0f, MAX(fabsf(x), fabsf(y))) )
+#define CMP(x, y) (abs32((x)-(y)) <= 0.00001f * MAX(1.0f, MAX(abs32(x), abs32(y))) )
 
 
 //=============================================================================
@@ -22,7 +21,7 @@ bool PointOnLine(const vec3 &p, const line2_t &line)
 	float m = dy / dx; 
 	float B = line.a.y - m * line.a.x;
 
-	return CMP(p.y, m * p.x + B);
+	return CMP(p.y, (m * p.x + B));
 }
 
 bool PointInCircle(const vec2 &point, const circle_t &c)
@@ -33,7 +32,7 @@ bool PointInCircle(const vec2 &point, const circle_t &c)
 	line.b = c.origin;
 	vec2 length = line.a - line.b;
 
-	if (length * length < c.radius * c.radius)
+	if ((length * length) < (c.radius * c.radius))
 	{
 		return true;
 	}
@@ -48,14 +47,14 @@ bool PointInRectangle(const vec2 &point, const rect2_t  &rectangle)
 	return min.x <= point.x && min.y <= point.y && point.x <= max.x && point.y <= max.y;
 }
 
-
+/*
 bool PointInOrientedRectangle(const vec2 &point, const box2_t &rectangle)
 {
 	vec2 rotVector = point - rectangle.origin;
 	float theta = -(rectangle.angle);
 	float zRotation2x2[] = {
-		cosf(theta), sinf(theta),
-		-sinf(theta), cosf(theta)
+		fcos(theta), fsin(theta),
+		-fsin(theta), fcos(theta)
 	};
 
 	//Multiply(rotVector.asArray, vec2(rotVector.x, rotVector.y).asArray, 1, 2, zRotation2x2, 2, 2);
@@ -69,7 +68,7 @@ bool PointInOrientedRectangle(const vec2 &point, const box2_t &rectangle)
 	//return PointInRectangle(localPoint, local);
 	return false;
 }
-
+*/
 
 //=============================================================================
 //	3D Point Tests
@@ -212,14 +211,14 @@ bool PointOnPlane(const vec3 &point, vec3 &normal, float d)
 {
 	float dot = point * normal;
 	CMP(dot - d, 0.0f);
-	return dot - d == 0.0f;
+	return dot - d == 0.0f; // TODO: use epsilon
 }
 
 vec3 ClosestPoint(const vec3 &point, const plane_t &p)
 {
 	float dot = point * p.normal;
 	float distance = dot - p.d;
-	return point - p.normal * p.d;
+	return point - p.normal * distance;
 }
 
 
@@ -239,9 +238,7 @@ bool PointOnLine(const vec3 &point, const line3_t &line)
 {
 	vec3 closest = ClosestPoint(line, point);
 	float distanceSq = (closest - point).magnitudeSq();
-	// Consider using an epsilon test here!
-	// CMP(distanceSq, 0.0f);
-	return distanceSq == 0.0f;
+	return CMP(distanceSq, 0.0f);
 }
 
 bool PointOnRay(const vec3 &point, const ray_t &ray)
@@ -257,7 +254,7 @@ bool PointOnRay(const vec3 &point, const ray_t &ray)
 
 	// If BOTH vectors point in the same direction,
 	// their dot product (diff) should be 1
-	return diff == 1.0f;
+	return diff == 1.0f; // TODO: epsilon
 }
 
 vec3 ClosestPoint(const ray_t &ray, const vec3 &point)
@@ -524,7 +521,7 @@ bool PlanePlane(const plane_t &plane1, const plane_t &plane2)
 {
 	vec3 d = vec3::crossproduct(plane1.normal, plane2.normal);
 
-	return (d * d) != 0; // Consider using an epsilon!
+	return abs32(d * d) >= 0.00001f; // Consider using an epsilon!
 }
 
 
@@ -554,7 +551,7 @@ bool Raycast(const sphere_t &sphere, const ray_t &ray, raycast_result_t *result)
 	float a = e * ray.dir;
 
 	float bSq = eSq - (a * a);
-	float f = sqrt(rSq - bSq);
+	float f = newtonSqrt(rSq - bSq);
 
 	float t = a - f; // Assume normal intersection!
 
@@ -993,6 +990,8 @@ bool TriangleOBB(const triangle_t &t, const obb_t &o)
 			return false; // Separating axis found 
 		}
 	}
+
+	return true;
 }
 
 float PlaneEquation(const vec3 &pt, const vec3 &normal, const float d)
@@ -1009,7 +1008,9 @@ bool TrianglePlane(const triangle_t &t, const vec3 &normal, float d)
 	float side2 = PlaneEquation(t.b, normal, d);
 	float side3 = PlaneEquation(t.c, normal, d);
 
-	if (CMP(side1, 0) && CMP(side2, 0) && CMP(side3, 0))
+	if (	CMP(side1, 0) &&
+		CMP(side2, 0) &&
+		CMP(side3, 0))
 	{
 		return true;
 	}
@@ -1324,12 +1325,12 @@ void AccelerateMesh(mesh_t &mesh)
 	vec3 max = mesh.vertices[0];
 	for (int i = 1; i < mesh.numTriangles * 3; ++i)
 	{
-		min.x = fminf(mesh.vertices[i].x, min.x);
-		min.y = fminf(mesh.vertices[i].y, min.y);
-		min.z = fminf(mesh.vertices[i].z, min.z);
-		max.x = fmaxf(mesh.vertices[i].x, max.x);
-		max.y = fmaxf(mesh.vertices[i].y, max.y);
-		max.z = fmaxf(mesh.vertices[i].z, max.z);
+		min.x = MIN(mesh.vertices[i].x, min.x);
+		min.y = MIN(mesh.vertices[i].y, min.y);
+		min.z = MIN(mesh.vertices[i].z, min.z);
+		max.x = MAX(mesh.vertices[i].x, max.x);
+		max.y = MAX(mesh.vertices[i].y, max.y);
+		max.z = MAX(mesh.vertices[i].z, max.z);
 	}
 
 	mesh.accelerator = new bvh_node_t;
@@ -1474,14 +1475,14 @@ bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 class Particle
 {
 public:
-	void Particle::AddImpulse(const vec3& impulse)
+	void AddImpulse(const vec3& impulse)
 	{
 		velocity = velocity + impulse;
 	}
 
-	float Particle::InvMass()
+	float InvMass()
 	{
-		if (mass == 0.0f)
+		if (mass < 0.0f)
 		{
 			return 0.0f;
 		}
@@ -1520,40 +1521,7 @@ public:
 		}
 	}
 
-	void Particle::SetMass(float m)
-	{
-		if (m < 0)
-		{
-			m = 0;
-		}
-		mass = m;
-	}
-
-	void Particle::SetFriction(float f)
-	{
-		if (f < 0)
-		{
-			f = 0;
-		}
-		friction = f;
-	}
-
-	vec3 Particle::GetVelocity()
-	{
-		return velocity;
-	}
-
-	vec3 Particle::GetPosition()
-	{
-		return position;
-	}
-
-	void Particle::SetPosition(vec3 &p)
-	{
-		position = p;
-	}
-
-	void Particle::Update(float dt)
+	void Update(float dt)
 	{
 		oldPosition = position;
 		/* OLD: vec3 acceleration = forces * (1.0f / mass); */
@@ -1563,14 +1531,9 @@ public:
 		position = position + velocity * dt;
 	}
 
-	void Particle::ApplyForces()
+	void ApplyForces()
 	{
 		forces = vec3(0.0f, -9.8f * mass, 0.0f);
-	}
-
-	void Particle::SetBounce(float bounce)
-	{
-		bounce = bounce;
 	}
 
 public:
@@ -1607,29 +1570,29 @@ public:
 	{
 	}
 
-	void Spring::SetParticles(Particle* _p1, Particle* _p2)
+	void SetParticles(Particle* _p1, Particle* _p2)
 	{
 		p1 = _p1;
 		p2 = _p2; 
 	}
 
-	Particle* Spring::GetP1()
+	Particle* GetP1()
 	{
 		return p1;
 	}
 
-	Particle* Spring::GetP2()
+	Particle* GetP2()
 	{
 		return p2;
 	}
 
-	void Spring::SetConstants(float _k, float _b)
+	void SetConstants(float _k, float _b)
 	{
 		k = _k;
 		b = _b;
 	}
 
-	void Spring::ApplyForce(float dt)
+	void ApplyForce(float dt)
 	{
 		vec3 relPos = p2->position - p1->position;
 		vec3 relVel = p2->velocity - p1->velocity;
@@ -1701,9 +1664,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			float z_pos = ((float)z + position.z - hs) * distance;
 
 			verts[i].position =vec3(x_pos, position.y, z_pos);
-			verts[i].SetMass(1.0f);
-			verts[i].SetBounce(0.0f);
-			verts[i].SetFriction(0.9f);
+			verts[i].mass = 1.0f;
+			verts[i].bounce = 0.0f;
+			verts[i].friction = 0.9f;
 		}
 	}
 
@@ -1714,8 +1677,8 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			int i = z * gridSize + x;
 			int j = (z + 1) * gridSize + x;
 
-			vec3 iPos = verts[i].GetPosition();
-			vec3 jPos = verts[j].GetPosition();
+			vec3 iPos = verts[i].position;
+			vec3 jPos = verts[j].position;
 			vec3 dist = (iPos - jPos);
 			float rest = dist.magnitude();
 
@@ -1732,8 +1695,8 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			int i = z * gridSize + x;
 			int j = z * gridSize + (x + 1);
 
-			vec3 iPos = verts[i].GetPosition();
-			vec3 jPos = verts[j].GetPosition();
+			vec3 iPos = verts[i].position;
+			vec3 jPos = verts[j].position;
 			vec3 dist = (iPos - jPos);
 			float rest = dist.magnitude();
 
@@ -1750,8 +1713,8 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			int i = z * gridSize + x;
 			int j = (z + 1) * gridSize + (x + 1);
 
-			vec3 iPos = verts[i].GetPosition();
-			vec3 jPos = verts[j].GetPosition();
+			vec3 iPos = verts[i].position;
+			vec3 jPos = verts[j].position;
 			vec3 dist = (iPos - jPos);
 			float rest = dist.magnitude();
 
@@ -1768,8 +1731,8 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			int i = z * gridSize + x;
 			int j = (z + 1) * gridSize + (x - 1);
 
-			vec3 iPos = verts[i].GetPosition();
-			vec3 jPos = verts[j].GetPosition();
+			vec3 iPos = verts[i].position;
+			vec3 jPos = verts[j].position;
 			vec3 dist = (iPos - jPos);
 			float rest = dist.magnitude();
 
@@ -1786,8 +1749,8 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			int i = z * gridSize + x;
 			int j = (z + 2) * gridSize + x;
 
-			vec3 iPos = verts[i].GetPosition();
-			vec3 jPos = verts[j].GetPosition();
+			vec3 iPos = verts[i].position;
+			vec3 jPos = verts[j].position;
 			vec3 dist = (iPos - jPos);
 			float rest = dist.magnitude();
 
@@ -1804,8 +1767,8 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 			int i = z * gridSize + x; 
 			int j = z * gridSize + (x + 2);
 
-			vec3 iPos = verts[i].GetPosition();
-			vec3 jPos = verts[j].GetPosition(); 
+			vec3 iPos = verts[i].position;
+			vec3 jPos = verts[j].position;
 			vec3 dist = (iPos - jPos);
 			float rest = dist.magnitude();
 
@@ -1818,7 +1781,7 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 
 void Cloth::SetStructuralSprings(float k, float b)
 {
-	for (int i = 0; i < structural.size(); ++i)
+	for (unsigned int i = 0; i < structural.size(); ++i)
 	{
 		structural[i].SetConstants(k, b);
 	}
@@ -1844,7 +1807,7 @@ void Cloth::SetParticleMass(float mass)
 {
 	for (int i = 0, size = verts.size(); i< size; ++i)
 	{
-		verts[i].SetMass(mass);
+		verts[i].mass = mass;
 	}
 }
 
@@ -1866,17 +1829,17 @@ void Cloth::Update(float dt)
 
 void Cloth::ApplySpringForces(float dt)
 {
-	for (int i = 0; i < structural.size(); ++i)
+	for (unsigned int i = 0; i < structural.size(); ++i)
 	{
 		structural[i].ApplyForce(dt);
 	}
 	
-	for (int i = 0, size = shear.size(); i < size; ++i)
+	for (unsigned int i = 0, size = shear.size(); i < size; ++i)
 	{
 		shear[i].ApplyForce(dt);
 	}
 	
-	for (int i = 0, size = bend.size(); i < size; ++i)
+	for (unsigned int i = 0, size = bend.size(); i < size; ++i)
 	{
 		bend[i].ApplyForce(dt);
 	}
@@ -1902,14 +1865,13 @@ void Cloth::Render()
 			int br = (z + 1) * clothSize + (x + 1);
 
 			glBegin(GL_TRIANGLES);
-			glVertex3f(verts[tl].GetPosition().x, verts[tl].GetPosition().y, verts[tl].GetPosition().z);
-			glVertex3f(verts[br].GetPosition().x, verts[br].GetPosition().y, verts[br].GetPosition().z);
-			glVertex3f(verts[bl].GetPosition().x, verts[bl].GetPosition().y, verts[bl].GetPosition().z);
+			glVertex3f(verts[tl].position.x, verts[tl].position.y, verts[tl].position.z);
+			glVertex3f(verts[br].position.x, verts[br].position.y, verts[br].position.z);
+			glVertex3f(verts[bl].position.x, verts[bl].position.y, verts[bl].position.z);
 
-
-			glVertex3f(verts[tl].GetPosition().x, verts[tl].GetPosition().y, verts[tl].GetPosition().z);
-			glVertex3f(verts[tr].GetPosition().x, verts[tr].GetPosition().y, verts[tr].GetPosition().z);
-			glVertex3f(verts[br].GetPosition().x, verts[br].GetPosition().y, verts[br].GetPosition().z);
+			glVertex3f(verts[tl].position.x, verts[tl].position.y, verts[tl].position.z);
+			glVertex3f(verts[tr].position.x, verts[tr].position.y, verts[tr].position.z);
+			glVertex3f(verts[br].position.x, verts[br].position.y, verts[br].position.z);
 			glEnd();
 		}
 	}
@@ -1937,8 +1899,8 @@ void DistanceJoint::Initialize(Particle* _p1, Particle* _p2, float len)
 
 void DistanceJoint::Render()
 {
-	vec3 pos1 = p1->GetPosition();
-	vec3 pos2 = p2->GetPosition();
+	vec3 pos1 = p1->position;
+	vec3 pos2 = p2->position;
 	line3_t l;
 	l.a = pos1;
 	l.b = pos2;
@@ -1952,15 +1914,13 @@ void DistanceJoint::Render()
 
 void DistanceJoint::SolveConstraints(const std::vector<obb_t>& constraints)
 {
-	vec3 delta = p2->GetPosition() - p1->GetPosition();
+	vec3 delta = p2->position - p1->position;
 	float distance = delta.magnitude();
 
 	float correction = (distance - length) / distance;
 
-	p1->SetPosition(p1->GetPosition() + delta
-		* 0.5f * correction);
-	p2->SetPosition(p2->GetPosition() - delta
-		* 0.5f * correction);
+	p1->position = p1->position + delta * 0.5f * correction;
+	p2->position = p2->position + delta * 0.5f * correction;
 
 	p1->SolveConstraints(constraints);
 	p2->SolveConstraints(constraints);

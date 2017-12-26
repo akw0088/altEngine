@@ -1,4 +1,4 @@
-NUMJOBS := 8
+NUMJOBS=$(shell nproc)
 
 SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
@@ -27,6 +27,7 @@ SOURCES_CPP := 	xmain.cpp \
 		net.cpp \
 		parse.cpp \
 		pak.cpp \
+		physics.cpp \
 		plane.cpp \
 		player.cpp \
 		portal_camera.cpp \
@@ -61,10 +62,10 @@ obj/%.o: src/%.c
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
-#CC := gcc -fuse-linker-plugin -Wfloat-equal
-CPP := clang++ -std=c++11
-CC := clang
+CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
+CC := gcc -fuse-linker-plugin -Wfloat-equal
+#CPP := clang++ -std=c++11
+#CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]

@@ -1,6 +1,6 @@
 #include "include.h"
 
-#ifndef WIN32
+#ifdef __linux
 #include <X11/XKBlib.h>
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>

@@ -611,7 +611,7 @@ void Engine::report_master()
 	report.fraglimit = game->fraglimit;
 	report.timelimit = game->timelimit;
 	report.capturelimit = game->capturelimit;
-	for (int i = 0; i < num_master; i++)
+	for (unsigned int i = 0; i < num_master; i++)
 	{
 		int ret = net.sendto((char *)&report, sizeof(report_t), master_list[i]);
 		if (ret != sizeof(report_t))
@@ -2144,7 +2144,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				current_light = entity_list[player]->player->current_light;
 			}
 
-			int lod = clamp(current_light, 0, 10);
+			//int lod = clamp(current_light, 0, 10);
 
 			//isocube[0].render(gfx);
 			isosphere[0].render(gfx);
@@ -7638,7 +7638,7 @@ void Engine::query_master()
 	report_t *report;
 
 	sprintf(from, "127.0.0.1:65535");
-	for (int i = 0; i < num_master; i++)
+	for (unsigned int i = 0; i < num_master; i++)
 	{
 		net.sendto((char *)&msg, sizeof(int), master_list[i]);
 		debugf("Sending request to master server %s\n", master_list[i]);

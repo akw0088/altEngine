@@ -746,9 +746,6 @@ void RigidBody::get_frame(Frame &frame)
 
 bool RigidBody::flight_move(input_t &input, float speed_scale)
 {
-	static int two_frames = 0;
-	float air_control = 1.0f;
-	float jump_scale = 0.65f;
 	Frame camera;
 	Frame yaw;
 
@@ -758,8 +755,6 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
-	bool	jumped = false;
-	bool	jumppad = false;
 	bool	ret = false;
 
 
@@ -842,13 +837,6 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
 	}
 
-	if (entity->player && entity->player->jumppad_timer > 0)
-	{
-		jumppad = true;
-	}
-
-
-	two_frames = 0;
 
 	if (speed > entity->player->max_air_speed * speed_scale)
 	{
@@ -872,9 +860,6 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 
 bool RigidBody::water_move(input_t &input, float speed_scale)
 {
-	static int two_frames = 0;
-	float air_control = 1.0f;
-	float jump_scale = 0.65f;
 	Frame camera;
 	Frame yaw;
 
@@ -884,8 +869,6 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
-	bool	jumped = false;
-	bool	jumppad = false;
 	bool	ret = false;
 
 
@@ -953,7 +936,6 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	}
 	float speed = 0.0f;
 
-	two_frames = 0;
 
 
 	if (speed > entity->player->max_air_speed * 0.5f * speed_scale)
@@ -980,9 +962,7 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 
 bool RigidBody::air_move(input_t &input, float speed_scale)
 {
-	static int two_frames = 0;
 	float air_control = 1.0f;
-	float jump_scale = 0.65f;
 	Frame camera;
 	Frame yaw;
 
@@ -994,8 +974,6 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 	vec3	forward = camera.forward;
 	vec3	right = vec3::crossproduct(camera.up, camera.forward);
 	bool	moved = false;
-	bool	jumped = false;
-	bool	jumppad = false;
 	bool	ret = false;
 
 
@@ -1065,13 +1043,6 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 	{
 		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
 	}
-
-	if (entity->player && entity->player->jumppad_timer > 0)
-	{
-		jumppad = true;
-	}
-
-	two_frames = 0;
 
 	if (speed > entity->player->max_air_speed * speed_scale)
 	{
@@ -1181,7 +1152,6 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 		velocity += wishdir * entity->player->accel * speed_scale;
 	}
 	float speed = 0.0f;
-	static bool hopped = false;
 
 	speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
 
@@ -1200,7 +1170,6 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 			velocity.x *= (entity->player->max_speed * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
 			velocity.z *= (entity->player->max_speed * speed_scale / speed);
-			hopped = false;
 		}
 		two_frames++;
 	}

@@ -99,8 +99,6 @@ void quaternion::to_quat(matrix3 &mat)
 {
 	float		trace;
 
-	static int 	next[3] = { 1, 2, 0 };
-
 	trace = mat.m[0] + mat.m[4] + mat.m[8];
 	if (trace > 0.0f)
 	{

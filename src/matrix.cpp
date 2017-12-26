@@ -862,21 +862,21 @@ void matrix4::lookat(const vec3 &position, vec3 &center, vec3 &up)
 	vec3 newup = vec3::crossproduct(forward, right);
 
 	m[0] = right.x;
-	m[1] = up.x;
+	m[1] = newup.x;
 	m[2] = forward.x;
 	m[3] = 0.0f;
 
 	m[4] = right.y;
-	m[5] = up.y;
+	m[5] = newup.y;
 	m[6] = forward.y;
 	m[7] = 0.0f;
 
 	m[8] = right.z;
-	m[9] = up.z;
+	m[9] = newup.z;
 	m[10] = forward.z;
 	m[11] = 0.0f;
 
 	m[12] = -(right * position);
-	m[12] = -(up * position);
+	m[12] = -(newup * position);
 	m[12] = -(forward * position);
 }
