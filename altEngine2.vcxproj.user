@@ -12,6 +12,10 @@
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release D3D9|Win32'">
+    <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Direct3d11|Win32'">
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>

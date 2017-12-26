@@ -17,6 +17,8 @@ Global
 		Debug Vulkan|x86 = Debug Vulkan|x86
 		Dedicated Server|x64 = Dedicated Server|x64
 		Dedicated Server|x86 = Dedicated Server|x86
+		Release D3D9|x64 = Release D3D9|x64
+		Release D3D9|x86 = Release D3D9|x86
 		Release Dedicated Server|x64 = Release Dedicated Server|x64
 		Release Dedicated Server|x86 = Release Dedicated Server|x86
 		Release OpenGL|x64 = Release OpenGL|x64
@@ -43,6 +45,10 @@ Global
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x64.Build.0 = Dedicated Server|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x86.ActiveCfg = Dedicated Server|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Dedicated Server|x86.Build.0 = Dedicated Server|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release D3D9|x64.ActiveCfg = Release D3D9|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release D3D9|x64.Build.0 = Release D3D9|x64
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release D3D9|x86.ActiveCfg = Release D3D9|Win32
+		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release D3D9|x86.Build.0 = Release D3D9|Win32
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x64.ActiveCfg = Release Dedicated Server|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x64.Build.0 = Release Dedicated Server|x64
 		{EB3CCBB0-80AB-41C5-89E1-FCC254A58E65}.Release Dedicated Server|x86.ActiveCfg = Release Dedicated Server|Win32
