@@ -2077,13 +2077,368 @@ public:
 
 };
 
+//=============================================================================
+//	Scene
+//=============================================================================
+
+struct OctreeNode;
+
+class Scene
+{
+protected:
+	std::vector<CModel*> objects;
+public:
+	void AddModel(CModel* model);
+	void RemoveModel(CModel* model);
+	void UpdateModel(CModel* model);
+	std::vector<CModel*> FindChildren(const CModel* model);
+
+	CModel* Raycast(const ray_t &ray);
+	std::vector<CModel*> Query(const sphere_t &sphere);
+	std::vector<CModel*> Query(const aabb_t &aabb);
+
+	void Insert(OctreeNode* node, CModel* model);
+	void Remove(OctreeNode* node, CModel* model);
+	void Update(OctreeNode* node, CModel* model);
+
+	CModel* FindClosest(const std::vector<CModel*>& set, const ray_t &ray);
+	CModel* Raycast(OctreeNode* node, const ray_t &ray);
+	std::vector<CModel*> Query(OctreeNode* node, const sphere_t &sphere);
+	std::vector<CModel*> Query(OctreeNode* node, const aabb_t &aabb);
+
+};
+
+void Scene::AddModel(CModel* model)
+{
+	if (std::find(objects.begin(), objects.end(), model) != objects.end())
+	{
+		// Duplicate object, don't add
+		return;
+	}
+
+	objects.push_back(model);
+}
+
+void Scene::RemoveModel(CModel* model)
+{
+//	objects.erase(std::remove(objects.begin(), objects.end(), model), objects.end());
+}
+
+void Scene::UpdateModel(CModel* model)
+{
+	// Placeholder
+}
+
+std::vector<CModel*> Scene::FindChildren(const CModel* model)
+{
+	std::vector<CModel*> result;
+	for (int i = 0, size = objects.size(); i < size; ++i)
+	{
+		if (objects[i] == 0 || objects[i] == model)
+		{
+			continue;
+		}
+
+		CModel* iterator = objects[i]->parent;
+		if (iterator != 0)
+		{
+			if (iterator == model)
+			{
+				result.push_back(objects[i]);
+				continue;
+			}
+			iterator = iterator->parent;
+		}
+	}
+
+	return result;
+}
+
+CModel* Scene::Raycast(const ray_t &ray)
+{
+	CModel* result = 0;
+	float result_t = -1;
+
+	for (int i = 0, size = objects.size(); i < size; ++i)
+	{
+		raycast_result_t r;
+		float t;
+		//		float t = ModelRay(*objects[i], ray, &r);
+		if (result == 0 && t >= 0)
+		{
+			result = objects[i];
+			result_t = t;
+		}
+		else if (result != 0 && t < result_t)
+		{
+			result = objects[i];
+			result_t = t;
+		}
+	}
+	return result;
+}
+
+std::vector<CModel*> Scene::Query(const sphere_t &sphere)
+{
+	std::vector<CModel*> result;
+
+	for (int i = 0, size = objects.size(); i < size; ++i)
+	{
+		obb_t bounds;// = GetOBB(*objects[i]);
+
+		if (SphereOBB(sphere, bounds))
+		{
+			result.push_back(objects[i]);
+		}
+	}
+
+	return result;
+}
+
+std::vector<CModel*> Scene::Query(const aabb_t &aabb)
+{
+	std::vector<CModel*> result;
+
+	for (int i = 0, size = objects.size(); i < size; ++i)
+	{
+		obb_t bounds;// = GetOBB(*objects[i]);
+
+		if (AABB_OBB(aabb, bounds))
+		{
+			result.push_back(objects[i]);
+		}
+	}
+
+	return result;
+}
+
+void Scene::Insert(OctreeNode* node, CModel* model)
+{
+	obb_t bounds;// = GetOBB(*model);
+	if (AABB_OBB(node->bounds, bounds))
+	{
+		if (node->children == 0)
+		{
+			node->models.push_back(model);
+		}
+		else
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				Insert(&(node->children[i]), model);
+			}
+		}
+	}
+}
+
+void Scene::Remove(OctreeNode* node, CModel* model)
+{
+	if (node->children == 0)
+	{
+		std::vector<CModel*>::iterator it =
+			std::find(node->models.begin(), node->models.end(), model);
+
+		if (it != node->models.end())
+		{
+			node->models.erase(it);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			Remove(&(node->children[i]), model);
+		}
+	}
+}
+
+void Scene::Update(OctreeNode* node, CModel* model)
+{
+	Remove(node, model);
+	Insert(node, model);
+}
+
+CModel *Scene::FindClosest(const std::vector<CModel*>& set, const ray_t &ray)
+{
+	if (set.size() == 0)
+	{
+		return 0;
+	}
+
+	CModel* closest = 0;
+	float closest_t = -1;
+
+	for (int i = 0, size = set.size(); i < size; ++i)
+	{
+		float this_t;// = ModelRay(*set[i], ray);
+
+		if (this_t < 0)
+		{
+			continue;
+		}
+
+		if (closest_t < 0 || this_t < closest_t) {
+			closest_t = this_t;
+			closest = set[i];
+		}
+	}
+	return closest;
+}
+
+CModel* Scene::Raycast(OctreeNode* node, const ray_t &ray)
+{
+	float t;// = Raycast(node->bounds, ray);
+
+	if (t >= 0)
+	{
+		if (node->children == 0)
+		{
+			return FindClosest(node->models, ray);
+		}
+		else
+		{
+			std::vector<CModel*> results;
+			for (int i = 0; i < 8; ++i)
+			{
+				CModel* result =
+					Raycast(&(node->children[i]), ray);
+				if (result != 0)
+				{
+					results.push_back(result);
+				}
+			}
+			return FindClosest(results, ray);
+		}
+	}
+	return 0;
+}
+
+std::vector<CModel*> Scene::Query(OctreeNode* node, const sphere_t &sphere)
+{
+	std::vector<CModel*> result;
+
+	if (SphereAABB(sphere, node->bounds))
+	{
+		if (node->children == 0)
+		{
+			for (int i = 0, size = node->models.size();	i < size; ++i)
+			{
+				obb_t bounds;// = GetOBB(*(node->models[i]));
+				if (SphereOBB(sphere, bounds))
+				{
+					result.push_back(node->models[i]);
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				std::vector<CModel*> child = Query(&(node->children[i]), sphere);
+				if (child.size() > 0)
+				{
+					result.insert(result.end(), child.begin(), child.end());
+				}
+			}
+		}
+	}
+	return result;
+}
+
+std::vector<CModel*> Scene::Query(OctreeNode* node, const aabb_t &aabb)
+{
+	std::vector<CModel*> result;
+
+	if (AABB_AABB(aabb, node->bounds))
+	{
+		if (node->children == 0)
+		{
+			for (int i = 0, size = node->models.size(); i < size; ++i)
+			{
+				obb_t bounds;// = GetOBB(*(node->models[i]));
+				if (AABB_OBB(aabb, bounds))
+				{
+					result.push_back(node->models[i]);
+				}
+			}
+		}
+		else
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				std::vector<CModel*> child = Query(&(node->children[i]), aabb);
+				if (child.size() > 0)
+				{
+					result.insert(result.end(), child.begin(), child.end());
+				}
+			}
+		}
+	}
+	return result;
+}
+
+
+
+//=============================================================================
+//	Oct tree
+//=============================================================================
+
+void SplitTree(OctreeNode* node, int depth)
+{
+	if (depth-- <= 0)  // Decrements depth
+	{
+		return;
+	}
+
+	if (node->children == 0)
+	{
+		node->children = new OctreeNode[8];
+		vec3 c = aabb_center_model(node->bounds);
+		vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
+
+		node->children[0].bounds =
+			AABB(c + vec3(-e.x, +e.y, -e.z), e);
+		node->children[1].bounds =
+			AABB(c + vec3(+e.x, +e.y, -e.z), e);
+		node->children[2].bounds =
+			AABB(c + vec3(-e.x, +e.y, +e.z), e);
+		node->children[3].bounds =
+			AABB(c + vec3(+e.x, +e.y, +e.z), e);
+		node->children[4].bounds =
+			AABB(c + vec3(-e.x, -e.y, -e.z), e);
+		node->children[5].bounds =
+			AABB(c + vec3(+e.x, -e.y, -e.z), e);
+		node->children[6].bounds =
+			AABB(c + vec3(-e.x, -e.y, +e.z), e);
+		node->children[7].bounds =
+			AABB(c + vec3(+e.x, -e.y, +e.z), e);
+	}
+
+	if (node->children != 0 && node->models.size() > 0)
+	{
+		for (int i = 0; i < 8; ++i) // For each child
+		{
+			for (int j = 0, size = node->models.size(); j < size; ++j)
+			{
+				obb_t bounds;// = GetOBB(*node->models[j]);
+				if (AABB_OBB(node->children[i].bounds, bounds))
+				{
+					node->children[i].models.push_back(
+						node->models[j]
+					);
+				}
+			}
+		}
+		node->models.clear();
+		for (int i = 0; i < 8; ++i)  // Recurse
+		{
+			SplitTree(&(node->children[i]), depth);
+		}
+	}
+}
 
 //=============================================================================
 //	Camera and Frustum
-//=============================================================================
-
-//=============================================================================
-//	Models and Scenes
 //=============================================================================
 
 

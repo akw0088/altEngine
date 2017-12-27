@@ -109,6 +109,27 @@ typedef struct
 	bvh_node_t *accelerator;
 } mesh_t;
 
+class CModel;
+
+typedef struct OctreeNode
+{
+	aabb_t bounds;
+	OctreeNode* children;
+	std::vector<CModel*> models;
+
+	inline OctreeNode()
+	{
+		children = NULL;
+	}
+
+	inline ~OctreeNode()
+	{
+		if (children != 0)
+		{
+			delete[] children;
+		}
+	}
+} OctreeNode;
 
 
 #endif
