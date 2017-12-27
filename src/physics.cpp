@@ -282,6 +282,14 @@ bool SphereSphere(const sphere_t &s1, const sphere_t &s2)
 	return sqDistance < radiiSum * radiiSum;
 }
 
+bool SphereAABB(const sphere_t& sphere, const aabb_t &aabb)
+{
+	vec3 closestPoint = ClosestPoint(aabb, sphere.origin);
+	float distSq = (sphere.origin - closestPoint).magnitudeSq();
+	float radiusSq = sphere.radius * sphere.radius;
+	return distSq < radiusSq;
+}
+
 bool SphereOBB(const sphere_t &sphere, const obb_t &obb)
 {
 	vec3 closestPoint = ClosestPoint(obb, sphere.origin);
@@ -747,25 +755,33 @@ bool Raycast(const obb_t &obb, const ray_t &ray, raycast_result_t *result)
 	return true;
 }
 
-float Raycast(const plane_t plane, const ray_t &ray)
+bool Raycast(const plane_t &plane, const ray_t &ray, raycast_result_t *result)
 {
 	float nd = ray.dir * plane.normal;
 	float pn = ray.origin * plane.normal;
 
-
+	RaycastClear(result);
 	if (nd >= 0.0f)
 	{
-		return -1;
+		return false;
 	}
 
 	float t = (plane.d - pn) / nd;
 
 	if (t >= 0.0f)
 	{
-		return t;
+		if (result != 0)
+		{
+			vec3 norm = plane.normal;
+			result->t = t;
+			result->hit = true;
+			result->point = ray.origin + ray.dir * t;
+			result->normal = norm.normalize();
+		}
+		return true;
 	}
 
-	return -1;
+	return false;
 }
 
 
@@ -911,6 +927,14 @@ bool OverlapOnAxis(const aabb_t &aabb, const triangle_t &triangle, const vec3& a
 	interval_t b = GetInterval(triangle, axis);
 	return ((b.min <= a.max) && (a.min <= b.max));
 }
+
+bool TriangleSphere(const triangle_t &t, const sphere_t &s)
+{
+	vec3 closest = ClosestPoint(t, s.origin);
+	float magSq = (closest - s.origin).magnitudeSq();
+	return magSq <= s.radius * s.radius;
+}
+
 bool TriangleAABB(const triangle_t &t, const aabb_t &a)
 {
 	vec3 f0 = t.b - t.a;
@@ -999,14 +1023,13 @@ float PlaneEquation(const vec3 &pt, const vec3 &normal, const float d)
 	return pt * normal - d;
 }
 
-
 #define PlaneTriangle(p, t)    TrianglePlane(t, p
 
-bool TrianglePlane(const triangle_t &t, const vec3 &normal, float d)
+bool TrianglePlane(const triangle_t &t, const plane_t &p)
 {
-	float side1 = PlaneEquation(t.a, normal, d);
-	float side2 = PlaneEquation(t.b, normal, d);
-	float side3 = PlaneEquation(t.c, normal, d);
+	float side1 = PlaneEquation(t.a, p.normal, p.d);
+	float side2 = PlaneEquation(t.b, p.normal, p.d);
+	float side3 = PlaneEquation(t.c, p.normal, p.d);
 
 	if (	CMP(side1, 0) &&
 		CMP(side2, 0) &&
@@ -1149,27 +1172,36 @@ vec3 Barycentric(const vec3 &p, const triangle_t &t)
 	return vec3(a, b, c);
 }
 
-float Raycast(const triangle_t &triangle, const ray_t &ray)
+float Raycast(const triangle_t &triangle, const ray_t &ray, raycast_result_t *result)
 {
 	plane_t plane;
+
+	RaycastClear(result);
 	FromTriangle(triangle, plane);
-	float t = Raycast(plane, ray);
-	if (t < 0.0f)
+	Raycast(plane, ray, result);
+	if (result->t < 0.0f)
 	{
-		return t;
+		//missed plane
+		return false;
 	}
 
-	vec3 result = ray.origin + ray.dir * t;
+	float t = result->t;
 
-	vec3 barycentric = Barycentric(result, triangle);
+	vec3 r = ray.origin + ray.dir * result->t;
+
+	RaycastClear(result);
+	vec3 barycentric = Barycentric(r, triangle);
 	if (barycentric.x >= 0.0f && barycentric.x <= 1.0f &&
 		barycentric.y >= 0.0f && barycentric.y <= 1.0f &&
 		barycentric.z >= 0.0f && barycentric.z <= 1.0f)
 	{
-		return t;
+		result->t = t;
+		result->hit = true;
+		result->point = ray.origin + ray.dir * t;
+		result->normal = plane.normal;
 	}
 
-	return -1;
+	return false;
 }
 
 bool Linetest(const triangle_t &triangle, const line3_t &line)
@@ -1178,9 +1210,332 @@ bool Linetest(const triangle_t &triangle, const line3_t &line)
 	ray.origin = line.a;
 	vec3 length = line.b - line.a;
 	ray.dir = length.normalize();
+	
+	raycast_result_t result;
+	Raycast(triangle, ray, &result);
 
-	float t = Raycast(triangle, ray);
-	return t >= 0 && t * t <= (length * length);
+	return result.t >= 0 && result.t * result.t <= (length * length);
+}
+
+// Missing from book?
+bool Linetest(const mesh_t &mesh, const line3_t &line)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			if (Linetest(mesh.triangles[i], line))
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t *> toProcess;
+		toProcess.push_front(mesh.accelerator);
+
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty()) {
+			bvh_node_t *iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0) {
+				// Iterate trough all triangles of the node
+				for (int i = 0; i < iterator->numTriangles; ++i) {
+					// Triangle indices in BVHNode index the mesh
+					if (Linetest(mesh.triangles[iterator->triangles[i]], line)) {
+						return true;
+					}
+				}
+			}
+
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// Only push children whos bounds intersect the test geometry
+					if (Linetest(iterator->children[i].bounds, line))
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			if (TriangleSphere(mesh.triangles[i], sphere))
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t*> toProcess;
+		toProcess.push_front(mesh.accelerator);
+
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty()) {
+			bvh_node_t* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0)
+			{
+				// Iterate trough all triangles of the node
+				for (int i = 0; i < iterator->numTriangles; ++i)
+				{
+					// Triangle indices in BVHNode index the mesh
+					if (TriangleSphere(mesh.triangles[iterator->triangles[i]], sphere))
+					{
+						return true;
+					}
+				}
+			}
+
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// Only push children whos bounds intersect the test geometry
+					if (SphereAABB(sphere, iterator->children[i].bounds))
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			if (TriangleOBB(mesh.triangles[i], obb))
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t *> toProcess;
+		toProcess.push_front(mesh.accelerator);
+
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty())
+		{
+			bvh_node_t* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0)
+			{
+				// Iterate trough all triangles of the node
+				for (int i = 0; i < iterator->numTriangles; ++i)
+				{
+					// Triangle indices in BVHNode index the mesh
+					if (TriangleOBB(mesh.triangles[iterator->triangles[i]], obb))
+					{
+						return true;
+					}
+				}
+			}
+
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// Only push children whos bounds intersect the test geometry
+					if (AABB_OBB(iterator->children[i].bounds, obb))
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			if (TrianglePlane(mesh.triangles[i], plane))
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t*> toProcess;
+		toProcess.push_front(mesh.accelerator);
+
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty())
+		{
+			bvh_node_t* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0)
+			{
+				// Iterate trough all triangles of the node
+				for (int i = 0; i < iterator->numTriangles; ++i)
+				{
+					// Triangle indices in BVHNode index the mesh
+					if (TrianglePlane(mesh.triangles[iterator->triangles[i]], plane))
+					{
+						return true;
+					}
+				}
+			}
+
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// Only push children whos bounds intersect the test geometry
+					if (AABBPlane(iterator->children[i].bounds, plane))
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			if (TriangleTriangle(mesh.triangles[i], triangle))
+			{
+				return true;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t *> toProcess;
+		toProcess.push_front(mesh.accelerator);
+
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty())
+		{
+			bvh_node_t* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0)
+			{
+				// Iterate trough all triangles of the node
+				for (int i = 0; i < iterator->numTriangles; ++i)
+				{
+					// Triangle indices in BVHNode index the mesh
+					if (TriangleTriangle(mesh.triangles[iterator->triangles[i]], triangle))
+					{
+						return true;
+					}
+				}
+			}
+
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// Only push children whos bounds intersect the test geometry
+					if (TriangleAABB(triangle, iterator->children[i].bounds))
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+float MeshRay(const mesh_t & mesh, const ray_t &ray)
+{
+	if (mesh.accelerator == 0)
+	{
+		for (int i = 0; i < mesh.numTriangles; ++i)
+		{
+			raycast_result_t raycast;
+			Raycast(mesh.triangles[i], ray, &raycast);
+			float result = raycast.t;
+			if (result >= 0)
+			{
+				return result;
+			}
+		}
+	}
+	else
+	{
+		std::list<bvh_node_t*> toProcess;
+		toProcess.push_front(mesh.accelerator);
+
+		// Recursivley walk the BVH tree
+		while (!toProcess.empty())
+		{
+			bvh_node_t* iterator = *(toProcess.begin());
+			toProcess.erase(toProcess.begin());
+
+			if (iterator->numTriangles >= 0)
+			{
+				// Iterate trough all triangles of the node
+				for (int i = 0; i < iterator->numTriangles; ++i)
+				{
+					// Triangle indices in BVHNode index the mesh
+					raycast_result_t raycast;
+					Raycast(mesh.triangles[iterator->triangles[i]], ray, &raycast);
+					float r = raycast.t;
+					if (r >= 0)
+					{
+						return r;
+					}
+				}
+			}
+
+			if (iterator->children != 0)
+			{
+				for (int i = 8 - 1; i >= 0; --i)
+				{
+					// Only push children whos bounds intersect the test geometry
+					raycast_result_t raycast;
+					Raycast(iterator->children[i].bounds, ray, &raycast);
+					if (raycast.t >= 0)
+					{
+						toProcess.push_front(&iterator->children[i]);
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}
+
+float Raycast(const mesh_t &mesh, const ray_t &ray)
+{
+	return MeshRay(mesh, ray);
 }
 
 //=============================================================================
@@ -1198,7 +1553,7 @@ aabb_t AABB(vec3 max, vec3 min)
 }
 
 
-vec3 aabb_center_word(aabb_t &aabb)
+vec3 aabb_center_word(const aabb_t &aabb)
 {
 	return vec3(
 		(aabb.max.x - aabb.min.x) * 0.5f + aabb.min.x,
@@ -1207,7 +1562,7 @@ vec3 aabb_center_word(aabb_t &aabb)
 	);
 }
 
-vec3 aabb_center_model(aabb_t &aabb)
+vec3 aabb_center_model(const aabb_t &aabb)
 {
 	return vec3(
 		(aabb.max.x - aabb.min.x) * 0.5f,
@@ -1350,16 +1705,18 @@ void AccelerateMesh(mesh_t &mesh)
 	SplitBVHNode(mesh.accelerator, mesh, 3);
 }
 
+/*
 float MeshRay(const mesh_t &mesh, const ray_t &ray)
 {
 	if (mesh.accelerator == 0)
 	{
 		for (int i = 0; i < mesh.numTriangles; ++i)
 		{
-			float result = Raycast(mesh.triangles[i], ray);
-			if (result >= 0)
+			raycast_result_t result;
+			Raycast(mesh.triangles[i], ray, &result);
+			if (result.t >= 0)
 			{
-				return result;
+				return result.t;
 			}
 		}
 	}
@@ -1377,14 +1734,17 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 			{
 				for (int i = 0; i< iterator->numTriangles; ++i)
 				{
+					raycast_result_t result;
+
 					// Do a raycast against the triangle
-					float r = Raycast(mesh.triangles[iterator->triangles[i]], ray);
-					if (r >= 0)
+					Raycast(mesh.triangles[iterator->triangles[i]], ray, &result);
+					if (result.t >= 0)
 					{
-						return r;
+						return result.t;
 					}
 				}
 			}
+
 			if (iterator->children != 0)
 			{
 				for (int i = 8 - 1; i >= 0; --i)
@@ -1403,6 +1763,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 	}
 	return -1;
 }
+*/
 
 bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 {
@@ -1455,9 +1816,267 @@ bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 	return false;
 }
 
+matrix4 Translation(vec3 pos)
+{
+	matrix4 result;
+	float fm[] = {
+			1.0, 0.0, 0.0, 0.0,
+			0.0, 1.0, 0.0, 0.0,
+			0.0, 0.0, 1.0, 0.0,
+			pos.x, pos.y, pos.z, 1.0,
+	};
+	
+	for (int i = 0; i < 16; i++)
+	{
+		result.m[i] = fm[i];
+	}
+
+	return result;
+}
+
+#define RAD2DEG(x) ((x) * 57.295754f)
+#define DEG2RAD(x) ((x) * 0.0174533f)
+
+matrix4 ZRotation(float angle)
+{
+	angle = DEG2RAD(angle);
+	return matrix4(
+		cosf(angle), sinf(angle), 0.0f, 0.0f,
+		-sinf(angle), cosf(angle), 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
+}
+
+matrix4 YRotation(float angle)
+{
+	angle = DEG2RAD(angle);
+	return matrix4(
+		cosf(angle), 0.0f, -sinf(angle), 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		sinf(angle), 0.0f, cosf(angle), 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
+}
+
+matrix4 XRotation(float angle)
+{
+	angle = DEG2RAD(angle);
+	return matrix4(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, cosf(angle), sinf(angle), 0.0f,
+		0.0f, -sinf(angle), cos(angle), 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f
+	);
+}
+
+
+// this is pretty inefficent
+matrix4 Rotation(float pitch, float yaw, float roll)
+{
+	return ZRotation(roll) * XRotation(pitch) * YRotation(yaw);
+}
+
 //=============================================================================
 //	Models and Scenes
 //=============================================================================
+class CModel
+{
+protected:
+	mesh_t *content;
+	aabb_t bounds;
+public:
+	vec3 position;
+	vec3 rotation;
+	CModel *parent;
+
+	inline CModel()
+	{
+		parent = NULL;
+		content = NULL;
+	}
+
+	inline mesh_t *GetMesh() const
+	{
+		return content;
+	}
+
+	inline aabb_t GetBounds() const
+	{
+		return bounds;
+	}
+
+	void SetContent(mesh_t* mesh)
+	{
+		content = mesh;
+		if (content != 0)
+		{
+			vec3 min = mesh->vertices[0];
+			vec3 max = mesh->vertices[0];
+			for (int i = 1; i< mesh->numTriangles * 3; ++i)
+			{
+				min.x = MIN(mesh->vertices[i].x, min.x);
+				min.y = MIN(mesh->vertices[i].y, min.y);
+				min.z = MIN(mesh->vertices[i].z, min.z);
+				max.x = MAX(mesh->vertices[i].x, max.x);
+				max.y = MAX(mesh->vertices[i].y, max.y);
+				max.z = MAX(mesh->vertices[i].z, max.z);
+			}
+			bounds.max = max;
+			bounds.min = min;			
+		}
+	}
+
+	matrix4 GetWorldMatrix(const CModel& model) const
+	{
+		matrix4 translation = Translation(model.position);
+		matrix4 rotation = Rotation(
+			model.rotation.x,
+			model.rotation.y,
+			model.rotation.z
+		);
+		matrix4 localMat = rotation * translation;
+
+		matrix4 parentMat;
+		if (model.parent != 0)
+		{
+			parentMat = GetWorldMatrix(*model.parent);
+		}
+	}
+
+	obb_t GetOBB(const CModel& model)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix3 world3;
+
+		world3.matrix4to3(world);
+		aabb_t aabb = model.GetBounds();
+		obb_t obb;
+
+		obb.size = aabb.max - aabb.min;
+		obb.origin = world3 * aabb_center_model(aabb);
+		obb.orientation = world3;
+		return obb;
+	}
+
+	float ModelRay(const CModel& model, const ray_t &ray)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		ray_t local;
+		local.origin = inv * vec4(ray.origin.x, ray.origin.y, ray.origin.z, 1.0f);
+		local.dir = inv * vec4(ray.origin.x, ray.origin.y, ray.origin.z, 1.0f);
+		local.dir.normalize();
+
+		if (model.GetMesh() != 0)
+		{
+			return MeshRay(*(model.GetMesh()), local);
+		}
+		return -1;
+	}
+
+
+	bool Linetest(const CModel& model, const line3_t &line)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		line3_t local;
+		local.a = inv * vec4(line.a.x, line.a.y, line.a.z, 1.0f);
+		local.b = inv * vec4(line.b.x, line.b.y, line.b.z, 1.0f);
+
+		if (model.GetMesh() != 0)
+		{
+			return ::Linetest(*(model.GetMesh()), local);
+		}
+		return false;
+	}
+
+	bool ModelSphere(const CModel& model, const sphere_t &sphere)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		sphere_t local;
+		local.origin = inv * vec4(sphere.origin.x, sphere.origin.y, sphere.origin.z, 1.0f);
+
+		if (model.GetMesh() != 0)
+		{
+			return MeshSphere(*(model.GetMesh()), local);
+		}
+		return false;
+	}
+
+	bool ModelAABB(const CModel &model, const aabb_t &aabb)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		obb_t local;
+		local.size = aabb.max - aabb.min;
+		vec3 p = aabb_center_model(aabb);
+		local.origin = inv * vec4(p.x, p.y, p.z, 1.0f);
+		local.orientation.matrix4to3(inv);
+
+		if (model.GetMesh() != 0)
+		{
+			return MeshOBB(*(model.GetMesh()), local);
+		}
+		return false;
+	}
+
+	bool ModelOBB(const CModel& model, const obb_t &obb)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		obb_t local;
+		local.size = obb.size;
+		local.origin = inv * vec4(obb.origin.x, obb.origin.y, obb.origin.z, 1.0f);
+		local.orientation.matrix4to3(inv);
+
+		if (model.GetMesh() != 0)
+		{
+			return MeshOBB(*(model.GetMesh()), local);
+		}
+		return false;
+	}
+
+	bool ModelPlane(const CModel& model, const Plane& plane)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		plane_t local;
+		local.normal = inv * vec4(plane.normal.x, plane.normal.y, plane.normal.z, 1.0f);
+		local.d = plane.d;
+		if (model.GetMesh() != 0)
+		{
+			return MeshPlane(*(model.GetMesh()), local);
+		}
+		return false;
+	}
+
+	bool ModelTriangle(const CModel& model, const triangle_t &triangle)
+	{
+		matrix4 world = GetWorldMatrix(model);
+		matrix4 inv = world.inverse();
+
+		triangle_t local;
+		local.a = inv * vec4(triangle.a.x, triangle.a.y, triangle.a.z, 1.0f);
+		local.b = inv * vec4(triangle.b.x, triangle.b.y, triangle.b.z, 1.0f);
+		local.c = inv * vec4(triangle.c.x, triangle.c.y, triangle.c.z, 1.0f);
+
+		if (model.GetMesh() != 0)
+		{
+			return MeshTriangle(*(model.GetMesh()), local);
+		}
+		return false;
+	}
+
+};
+
 
 //=============================================================================
 //	Camera and Frustum
@@ -1925,3 +2544,6 @@ void DistanceJoint::SolveConstraints(const std::vector<obb_t>& constraints)
 	p1->SolveConstraints(constraints);
 	p2->SolveConstraints(constraints);
 }
+
+
+

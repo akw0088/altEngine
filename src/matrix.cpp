@@ -7,6 +7,23 @@
 #define new DEBUG_NEW
 #endif
 
+
+void matrix3::matrix4to3(matrix4 &mat)
+{
+	m[0] = mat.m[0];
+	m[1] = mat.m[1];
+	m[2] = mat.m[2];
+
+	m[3] = mat.m[4];
+	m[4] = mat.m[5];
+	m[5] = mat.m[6];
+
+	m[6] = mat.m[8];
+	m[7] = mat.m[9];
+	m[8] = mat.m[10];
+
+}
+
 void matrix3::normalize()
 {
 	vec3 x,y,z;

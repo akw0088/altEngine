@@ -4,9 +4,12 @@
 double fsin(double rad);
 double fcos(double rad);
 
+class matrix4;
+
 class matrix3
 {
 public:
+	void matrix3::matrix4to3(matrix4 &mat);
 	matrix3 &operator=(const matrix3 &q);
 	matrix3 operator+(const matrix3 &q);
 	matrix3 operator-(const matrix3 &q);
