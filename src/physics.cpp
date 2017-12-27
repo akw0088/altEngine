@@ -1870,6 +1870,36 @@ matrix4 XRotation(float angle)
 	);
 }
 
+matrix3 ZRotation3(float angle)
+{
+	angle = DEG2RAD(angle);
+	return matrix3(
+		fcos(angle), fsin(angle), 0.0f,
+		-fsin(angle), fcos(angle), 0.0f,
+		0.0f, 0.0f, 1.0f
+	);
+}
+
+matrix3 YRotation3(float angle)
+{
+	angle = DEG2RAD(angle);
+	return matrix3(
+		fcos(angle), 0.0f, -fsin(angle),
+		0.0f, 1.0f, 0.0f,
+		fsin(angle), 0.0f, fcos(angle)
+	);
+}
+
+matrix3 XRotation3(float angle)
+{
+	angle = DEG2RAD(angle);
+	return matrix3(
+		1.0f, 0.0f, 0.0f,
+		0.0f, fcos(angle), fsin(angle),
+		0.0f, -fsin(angle), fcos(angle)
+	);
+}
+
 
 // this is pretty inefficent
 matrix4 Rotation(float pitch, float yaw, float roll)
@@ -1880,6 +1910,11 @@ matrix4 Rotation(float pitch, float yaw, float roll)
 //=============================================================================
 //	Models and Scenes
 //=============================================================================
+matrix3 Rotation3x3(float pitch, float yaw, float roll)
+{
+	return ZRotation3(roll) * XRotation3(pitch) * YRotation3(yaw);
+}
+
 class CModel
 {
 protected:
@@ -1927,26 +1962,28 @@ public:
 		}
 	}
 
-	matrix4 GetWorldMatrix(const CModel& model) const
+	matrix4 CModel::GetWorldMatrix() const
 	{
-		matrix4 translation = Translation(model.position);
-		matrix4 rotation = Rotation(
-			model.rotation.x,
-			model.rotation.y,
-			model.rotation.z
+		matrix4 translation = Translation(position);
+		matrix4 rot = Rotation(
+			rotation.x,
+			rotation.y,
+			rotation.z
 		);
-		matrix4 localMat = rotation * translation;
+		matrix4 localMat = rot * translation;
 
 		matrix4 parentMat;
-		if (model.parent != 0)
+		if (parent != 0)
 		{
-			parentMat = GetWorldMatrix(*model.parent);
+			parentMat = parent->GetWorldMatrix();
 		}
+
+		return localMat * parentMat;
 	}
 
 	obb_t GetOBB(const CModel& model)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix3 world3;
 
 		world3.matrix4to3(world);
@@ -1961,7 +1998,7 @@ public:
 
 	float ModelRay(const CModel& model, const ray_t &ray)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		ray_t local;
@@ -1979,7 +2016,7 @@ public:
 
 	bool Linetest(const CModel& model, const line3_t &line)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		line3_t local;
@@ -1995,7 +2032,7 @@ public:
 
 	bool ModelSphere(const CModel& model, const sphere_t &sphere)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		sphere_t local;
@@ -2010,7 +2047,7 @@ public:
 
 	bool ModelAABB(const CModel &model, const aabb_t &aabb)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		obb_t local;
@@ -2028,7 +2065,7 @@ public:
 
 	bool ModelOBB(const CModel& model, const obb_t &obb)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		obb_t local;
@@ -2045,7 +2082,7 @@ public:
 
 	bool ModelPlane(const CModel& model, const Plane& plane)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		plane_t local;
@@ -2060,7 +2097,7 @@ public:
 
 	bool ModelTriangle(const CModel& model, const triangle_t &triangle)
 	{
-		matrix4 world = GetWorldMatrix(model);
+		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();
 
 		triangle_t local;
@@ -2078,6 +2115,64 @@ public:
 };
 
 //=============================================================================
+//	Oct tree
+//=============================================================================
+
+void SplitTree(OctreeNode* node, int depth)
+{
+	if (depth-- <= 0)  // Decrements depth
+	{
+		return;
+	}
+
+	if (node->children == 0)
+	{
+		node->children = new OctreeNode[8];
+		vec3 c = aabb_center_model(node->bounds);
+		vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
+
+		node->children[0].bounds =
+			AABB(c + vec3(-e.x, +e.y, -e.z), e);
+		node->children[1].bounds =
+			AABB(c + vec3(+e.x, +e.y, -e.z), e);
+		node->children[2].bounds =
+			AABB(c + vec3(-e.x, +e.y, +e.z), e);
+		node->children[3].bounds =
+			AABB(c + vec3(+e.x, +e.y, +e.z), e);
+		node->children[4].bounds =
+			AABB(c + vec3(-e.x, -e.y, -e.z), e);
+		node->children[5].bounds =
+			AABB(c + vec3(+e.x, -e.y, -e.z), e);
+		node->children[6].bounds =
+			AABB(c + vec3(-e.x, -e.y, +e.z), e);
+		node->children[7].bounds =
+			AABB(c + vec3(+e.x, -e.y, +e.z), e);
+	}
+
+	if (node->children != 0 && node->models.size() > 0)
+	{
+		for (int i = 0; i < 8; ++i) // For each child
+		{
+			for (int j = 0, size = node->models.size(); j < size; ++j)
+			{
+				obb_t bounds;// = GetOBB(*node->models[j]);
+				if (AABB_OBB(node->children[i].bounds, bounds))
+				{
+					node->children[i].models.push_back(
+						node->models[j]
+					);
+				}
+			}
+		}
+		node->models.clear();
+		for (int i = 0; i < 8; ++i)  // Recurse
+		{
+			SplitTree(&(node->children[i]), depth);
+		}
+	}
+}
+
+//=============================================================================
 //	Scene
 //=============================================================================
 
@@ -2087,6 +2182,7 @@ class Scene
 {
 protected:
 	std::vector<CModel*> objects;
+	OctreeNode *octree;
 public:
 	void AddModel(CModel* model);
 	void RemoveModel(CModel* model);
@@ -2096,6 +2192,7 @@ public:
 	CModel* Raycast(const ray_t &ray);
 	std::vector<CModel*> Query(const sphere_t &sphere);
 	std::vector<CModel*> Query(const aabb_t &aabb);
+	bool Accelerate(const vec3& position, float size);
 
 	void Insert(OctreeNode* node, CModel* model);
 	void Remove(OctreeNode* node, CModel* model);
@@ -2106,7 +2203,124 @@ public:
 	std::vector<CModel*> Query(OctreeNode* node, const sphere_t &sphere);
 	std::vector<CModel*> Query(OctreeNode* node, const aabb_t &aabb);
 
+	inline Scene()
+	{
+		octree = NULL;
+	}
+	inline ~Scene()
+	{
+		if (octree != NULL)
+		{
+			delete octree;
+		}
+	}
+private:
+	Scene(const Scene&);
+	Scene& operator=(const Scene&);
 };
+
+bool Scene::Accelerate(const vec3& position, float size)
+{
+	if (octree != 0)
+	{
+		return false;
+	}
+
+	vec3 min(position.x - size,
+		position.y - size,
+		position.z - size);
+	vec3 max(position.x + size,
+		position.y + size,
+		position.z + size);
+
+	// Construct tree root
+	octree = new OctreeNode();
+	octree->bounds;// = FromMinMax(min, max);
+	octree->children = 0;
+	for (int i = 0, size = objects.size(); i< size; ++i)
+	{
+		octree->models.push_back(objects[i]);
+	}
+
+	SplitTree(octree, 5);
+	return true;
+}
+
+float ModelRay(const CModel& model, const ray_t& ray)
+{
+	matrix4 world = model.GetWorldMatrix();
+	matrix4 inv = world.inverse();
+	ray_t local;
+	local.origin = inv * vec4(ray.origin.x, ray.origin.y, ray.origin.z, 1.0f);
+	local.dir = inv * vec4(ray.dir.x, ray.dir.y, ray.dir.z, 1.0f);
+	local.dir.normalize();
+	if (model.GetMesh() != 0)
+	{
+		return MeshRay(*(model.GetMesh()), local);
+	}
+	return -1;
+}
+/*
+CModel* Scene::Raycast(const ray_t& ray)
+{
+	if (octree != 0)
+	{
+//		return ::Raycast(octree, ray);
+	}
+
+	CModel* result = 0;
+	float result_t = -1;
+	for (int i = 0, size = objects.size(); i< size; ++i) {
+		float t = ModelRay(*objects[i], ray);
+		if (result == 0 && t >= 0) {
+			result = objects[i];
+			result_t = t;
+		}
+		else if (result != 0 && t <result_t) {
+			result = objects[i];
+			result_t = t;
+		}
+	}
+	return result;
+}
+*/
+std::vector<CModel*> Scene::Query(const sphere_t &sphere)
+{
+	if (octree != 0)
+	{
+//		return ::Query(octree, sphere);
+	}
+
+	std::vector<CModel*> result;
+	for (int i = 0, size = objects.size(); i< size; ++i)
+	{
+		obb_t bounds;// = GetOBB(*objects[i]);
+		if (SphereOBB(sphere, bounds))
+		{
+			result.push_back(objects[i]);
+		}
+	}
+	return result;
+}
+
+std::vector<CModel*> Scene::Query(const aabb_t &aabb)
+{
+	if (octree != 0)
+	{
+//		return ::Query(octree, aabb);
+	}
+
+	std::vector<CModel*> result;
+	for (int i = 0, size = objects.size(); i< size; ++i)
+	{
+		obb_t bounds;// = GetOBB(*objects[i]);
+		if (AABB_OBB(aabb, bounds))
+		{
+			result.push_back(objects[i]);
+		}
+	}
+	return result;
+}
 
 void Scene::AddModel(CModel* model)
 {
@@ -2178,6 +2392,7 @@ CModel* Scene::Raycast(const ray_t &ray)
 	return result;
 }
 
+/*
 std::vector<CModel*> Scene::Query(const sphere_t &sphere)
 {
 	std::vector<CModel*> result;
@@ -2193,8 +2408,8 @@ std::vector<CModel*> Scene::Query(const sphere_t &sphere)
 	}
 
 	return result;
-}
-
+}*/
+/*
 std::vector<CModel*> Scene::Query(const aabb_t &aabb)
 {
 	std::vector<CModel*> result;
@@ -2211,6 +2426,7 @@ std::vector<CModel*> Scene::Query(const aabb_t &aabb)
 
 	return result;
 }
+*/
 
 void Scene::Insert(OctreeNode* node, CModel* model)
 {
@@ -2379,67 +2595,507 @@ std::vector<CModel*> Scene::Query(OctreeNode* node, const aabb_t &aabb)
 
 
 
-//=============================================================================
-//	Oct tree
-//=============================================================================
 
-void SplitTree(OctreeNode* node, int depth)
-{
-	if (depth-- <= 0)  // Decrements depth
-	{
-		return;
-	}
-
-	if (node->children == 0)
-	{
-		node->children = new OctreeNode[8];
-		vec3 c = aabb_center_model(node->bounds);
-		vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
-
-		node->children[0].bounds =
-			AABB(c + vec3(-e.x, +e.y, -e.z), e);
-		node->children[1].bounds =
-			AABB(c + vec3(+e.x, +e.y, -e.z), e);
-		node->children[2].bounds =
-			AABB(c + vec3(-e.x, +e.y, +e.z), e);
-		node->children[3].bounds =
-			AABB(c + vec3(+e.x, +e.y, +e.z), e);
-		node->children[4].bounds =
-			AABB(c + vec3(-e.x, -e.y, -e.z), e);
-		node->children[5].bounds =
-			AABB(c + vec3(+e.x, -e.y, -e.z), e);
-		node->children[6].bounds =
-			AABB(c + vec3(-e.x, -e.y, +e.z), e);
-		node->children[7].bounds =
-			AABB(c + vec3(+e.x, -e.y, +e.z), e);
-	}
-
-	if (node->children != 0 && node->models.size() > 0)
-	{
-		for (int i = 0; i < 8; ++i) // For each child
-		{
-			for (int j = 0, size = node->models.size(); j < size; ++j)
-			{
-				obb_t bounds;// = GetOBB(*node->models[j]);
-				if (AABB_OBB(node->children[i].bounds, bounds))
-				{
-					node->children[i].models.push_back(
-						node->models[j]
-					);
-				}
-			}
-		}
-		node->models.clear();
-		for (int i = 0; i < 8; ++i)  // Recurse
-		{
-			SplitTree(&(node->children[i]), depth);
-		}
-	}
-}
 
 //=============================================================================
 //	Camera and Frustum
 //=============================================================================
+class Camera
+{
+protected:
+	float m_nFov;
+	float m_nAspect;
+	float m_nNear;
+	float m_nFar;
+	float m_nWidth;
+	float m_nHeight;
+
+	matrix4 m_matWorld; // World Transform
+					 // View Transform = Inverse(World Transform)
+	matrix4 m_matProj;
+	int m_nProjectionMode;
+	// ^ 0 - Perspective, 1 - Ortho, 2 - User
+public:
+	Camera();
+	inline virtual ~Camera()
+	{
+	}
+	matrix4 GetWorldMatrix();
+	matrix4 GetViewMatrix(); // Inverse of world!
+	matrix4 GetProjectionMatrix();
+	void SetProjection(const matrix4& projection);
+	void SetWorld(const matrix4& view);
+
+	float GetAspect();
+	bool IsOrthographic();
+	bool IsPerspective();
+	bool IsOrthoNormal();
+	void OrthoNormalize();
+
+	void Resize(int width, int height);
+	matrix4 Perspective(float fov, float aspect, float zNear, float zFar);
+	matrix4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
+	Frustum GetFrustum();
+
+};
+
+matrix4 Camera::Perspective(float fov, float aspect, float zNear, float zFar)
+{
+	float tanHalfFov = tanf(DEG2RAD((fov * 0.5f)));
+	float fovY = 1.0f / tanHalfFov; // cot(fov/2)
+	float fovX = fovY / aspect; // cot(fov/2) / aspect
+
+	matrix4 result;
+
+	result.m[0] = fovX;
+	result.m[5] = fovY;
+	result.m[10] = zFar / (zFar - zNear); // far / range
+	result.m[11] = 1.0f;
+	result.m[14] = -zNear * result.m[10]; // - near * (far / range)
+	result.m[15] = 0.0f;
+
+	return result;
+}
+
+matrix4 Camera::Ortho(float left, float right, float bottom, float top, float zNear, float zFar)
+{
+	float _11 = 2.0f / (right - left);
+	float _22 = 2.0f / (top - bottom);
+	float _33 = 1.0f / (zFar - zNear);
+	float _41 = (left + right) / (left - right);
+	float _42 = (top + bottom) / (bottom - top);
+	float _43 = (zNear) / (zNear - zFar);
+
+	return matrix4(
+		_11, 0.0f, 0.0f, 0.0f,
+		0.0f, _22, 0.0f, 0.0f,
+		0.0f, 0.0f, _33, 0.0f,
+		_41, _42, _43, 1.0f
+	);
+}
+
+Camera::Camera()
+{
+	m_nFov = 60.0f;
+	m_nAspect = 1.3f;
+	m_nNear = 0.01f;
+	m_nFar = 1000.0f;
+	m_nWidth = 1.0;
+	m_nHeight = 1.0f;
+	m_matWorld = matrix4();
+	m_matProj = Perspective(m_nFov, m_nAspect, m_nNear, m_nFar);
+	m_nProjectionMode = 0;
+}
+
+matrix4 Camera::GetWorldMatrix()
+{
+	return m_matWorld;
+}
+
+matrix4 Camera::GetViewMatrix()
+{
+	if (!IsOrthoNormal())
+	{
+		OrthoNormalize();
+	}
+
+	matrix4 inverse = m_matWorld.transpose();
+	inverse.m[41] = inverse.m[14] = 0.0f;
+	inverse.m[42] = inverse.m[24] = 0.0f;
+	inverse.m[43] = inverse.m[34] = 0.0f;
+
+	vec3 right		= vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]);
+	vec3 up			= vec3(m_matWorld.m[4], m_matWorld.m[5], m_matWorld.m[6]);
+	vec3 forward	= vec3(m_matWorld.m[8], m_matWorld.m[9], m_matWorld.m[10]);
+	vec3 position	= vec3(m_matWorld.m[12], m_matWorld.m[13], m_matWorld.m[14]);
+
+	inverse.m[41] = -right * position;
+	inverse.m[42] = -up * position;
+	inverse.m[43] = -forward * position;
+	return inverse;
+}
+
+matrix4 Camera::GetProjectionMatrix()
+{
+	return m_matProj;
+}
+
+float Camera::GetAspect()
+{
+	return m_nAspect;
+}
+
+bool Camera::IsOrthographic()
+{
+	return m_nProjectionMode == 1;
+}
+
+bool Camera::IsPerspective()
+{
+	return m_nProjectionMode == 0;
+}
+
+bool Camera::IsOrthoNormal()
+{
+	vec3 right = vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]); 
+	vec3 up = vec3(m_matWorld.m[5], m_matWorld.m[6], m_matWorld.m[7]);
+	vec3 forward = vec3(m_matWorld.m[9], m_matWorld.m[10], m_matWorld.m[11]);
+
+	if (!CMP(right * right, 1.0f) ||
+		!CMP(up * up, 1.0f) ||
+		!CMP(forward * forward, 1.0f))
+	{
+		return false; // Axis are not normal length
+	}
+
+	if (!CMP(forward * up, 0.0f) ||
+		!CMP(forward * right, 0.0f) ||
+		!CMP(right * up, 0.0f))
+	{
+		return false; // Axis are not perpendicular
+	}
+	return true;
+}
+
+void Camera::OrthoNormalize()
+{
+	vec3 right = vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]);
+	vec3 up = vec3(m_matWorld.m[5], m_matWorld.m[6], m_matWorld.m[7]);
+	vec3 forward = vec3(m_matWorld.m[9], m_matWorld.m[10], m_matWorld.m[11]);
+
+	vec3 f = forward.normalize();
+	vec3 r = vec3::crossproduct(up, f).normalize();
+	vec3 u = vec3::crossproduct(f, r);
+
+	m_matWorld = matrix4(
+		r.x, r.y, r.z, 0.0f,
+		u.x, u.y, u.z, 0.0f,
+		f.x, f.y, f.z, 0.0f,
+		m_matWorld.m[12], m_matWorld.m[13], m_matWorld.m[14], 1.0f 
+	);
+}
+
+void Camera::Resize(int width, int height)
+{
+	m_nAspect = (float)width / (float)height;
+
+	if (m_nProjectionMode == 0)  // Perspective
+	{
+		m_matProj = Perspective(m_nFov, m_nAspect, m_nNear, m_nFar);
+	}
+	else if (m_nProjectionMode == 1) // Ortho
+	{
+		m_nWidth = (float)width;
+		m_nHeight = (float)height;
+		float halfW = m_nWidth * 0.5f;
+		float halfH = m_nHeight * 0.5f;
+		m_matProj = Ortho(-halfW, halfW,
+			halfH, -halfH, m_nNear, m_nFar);
+	}
+	// m_nProjectionMode == 2
+	// User defined
+}
+
+void Camera::SetProjection(const matrix4& projection)
+{
+	m_matProj = projection;
+	m_nProjectionMode = 2;
+}
+
+void Camera::SetWorld(const matrix4& view)
+{
+	m_matWorld = view;
+}
+
+
+Frustum Camera::GetFrustum()
+{
+	Frustum result;
+
+	matrix4 vp = GetViewMatrix() * GetProjectionMatrix();
+
+	vec3 col1(vp.m[0], vp.m[4], vp.m[8]);//, vp._41
+	vec3 col2(vp.m[1], vp.m[5], vp.m[9]);//, vp._42
+	vec3 col3(vp.m[2], vp.m[6], vp.m[10]);//, vp._43
+	vec3 col4(vp.m[3], vp.m[7], vp.m[11]);//, vp._44
+
+	result.left.normal		= col4 + col1;
+	result.right.normal		= col4 - col1;
+	result.bottom.normal	= col4 + col2;
+	result.top.normal		= col4 - col2;
+//	result.znear.normal = col3; //directx
+	result.znear.normal		= col4 + col3; //opengl
+	result.zfar.normal		= col4 - col3;
+
+	result.left.d	= vp.m[15] + vp.m[12];
+	result.right.d	= vp.m[15] - vp.m[12];
+	result.bottom.d = vp.m[15] + vp.m[13];
+	result.top.d	= vp.m[15] - vp.m[13];
+	//result.znear.d	= vp._43;			//directx style [0,1]
+	result.znear.d	= vp.m[15] + vp.m[14];			//opengl style [-1,1]
+	result.zfar.d	= vp.m[15] - vp.m[14];
+
+	for (int i = 0; i < 6; ++i)
+	{
+		float mag = 1.0f / result.planes[i].normal.magnitude();
+		result.planes[i].normal = result.planes[i].normal*mag;
+		result.planes[i].d *= mag;
+	}
+	return result;
+}
+
+class OrbitCamera : public Camera
+{
+protected:
+	vec3 target;
+	vec2 panSpeed;
+
+	float zoomDistance;
+	vec2 zoomDistanceLimit; // x = min, y = max;
+	float zoomSpeed;
+
+	vec2 rotationSpeed;
+	vec2 yRotationLimit; // x = min, y = max
+	vec2 currentRotation;
+
+	float ClampAngle(float angle, float min, float max);
+public:
+	OrbitCamera();
+	inline virtual ~OrbitCamera() { }
+	void Rotate(const vec2& deltaRot, float deltaTime);
+	void Zoom(float deltaZoom, float deltaTime);
+	void Pan(const vec2& delataPan, float deltaTime);
+	void Update(float dt);
+};
+
+OrbitCamera::OrbitCamera()
+{
+	target = vec3(0, 0, 0);
+	zoomDistance = 10.0f;
+	zoomSpeed = 200.0f;
+	rotationSpeed = vec2(250.0f, 120.0f);
+	yRotationLimit = vec2(-20.0f, 80.0f);
+	zoomDistanceLimit = vec2(3.0f, 15.0f);
+	currentRotation = vec2(0, 0);
+	panSpeed = vec2(180.0f, 180.0f);
+}
+
+void OrbitCamera::Rotate(const vec2& deltaRot, float deltaTime)
+{
+	currentRotation.x += deltaRot.x * rotationSpeed.x * zoomDistance* deltaTime;
+	currentRotation.y += deltaRot.y * rotationSpeed.y * zoomDistance * deltaTime;
+
+	currentRotation.x = ClampAngle(currentRotation.x, -360, 360);
+	currentRotation.y = ClampAngle(currentRotation.y, yRotationLimit.x, yRotationLimit.y);
+}
+
+void OrbitCamera::Zoom(float deltaZoom, float deltaTime)
+{
+	zoomDistance = zoomDistance + deltaZoom * zoomSpeed * deltaTime;
+
+	if (zoomDistance<zoomDistanceLimit.x)
+	{
+		zoomDistance = zoomDistanceLimit.x;
+	}
+	if (zoomDistance>zoomDistanceLimit.y)
+	{
+		zoomDistance = zoomDistanceLimit.y;
+	}
+}
+
+void OrbitCamera::Pan(const vec2& delataPan, float deltaTime)
+{
+	vec3 right = vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]);
+
+	float xPanMag = delataPan.x * panSpeed.x * deltaTime;
+	target = target - (right * xPanMag);
+
+	float yPanMag = delataPan.y * panSpeed.y * deltaTime;
+	target = target + (vec3(0, 1, 0) * yPanMag);
+}
+
+void OrbitCamera::Update(float dt)
+{
+	vec3 rotation = vec3(currentRotation.y, currentRotation.x, 0);
+	matrix3 orient = Rotation3x3(rotation.x, rotation.y, rotation.z);
+	vec3 direction = orient * vec3(0.0, 0.0, -zoomDistance);
+	vec3 position = direction + target;
+
+	matrix4 view;
+
+	view.lookat(position, target, vec3(0, 1, 0));
+	m_matWorld = view.inverse();
+}
+
+float OrbitCamera::ClampAngle(float angle, float min, float max)
+{
+	while (angle < -360)
+	{
+		angle += 360;
+	}
+	while (angle > 360)
+	{
+		angle -= 360;
+	}
+	if (angle < min)
+	{
+		angle = min;
+	}
+	if (angle > max)
+	{
+		angle = max;
+	}
+	return angle;
+}
+
+
+
+// Cramer's Rule
+//http://www.purplemath.com/modules/cramers.htm
+vec3 Intersection(plane_t p1, plane_t p2, plane_t p3)
+{
+	matrix3 D(
+		p1.normal.x, p2.normal.x, p3.normal.x,
+		p1.normal.y, p2.normal.y, p3.normal.y,
+		p1.normal.z, p2.normal.z, p3.normal.z
+	);
+
+	vec3 A(-p1.d, -p2.d, -p3.d);
+
+	matrix3 Dx = D;
+	matrix3 Dy = D;
+	matrix3 Dz = D;
+	Dx.m[0] = A.x; Dx.m[1] = A.y; Dx.m[2] = A.z;
+	Dy.m[3] = A.x; Dy.m[4] = A.y; Dy.m[5] = A.z;
+	Dz.m[6] = A.x; Dz.m[7] = A.y; Dz.m[8] = A.z;
+
+	float detD = D.det();
+	if (CMP(detD, 0))
+	{
+		return vec3();
+	}
+
+	float detDx = Dx.det();
+	float detDy = Dy.det();
+	float detDz = Dz.det();
+
+	return vec3(detDx / detD, detDy / detD, detDz / detD);
+}
+
+void GetCorners(const Frustum& f, vec3* outCorners)
+{
+	outCorners[0] = Intersection(f.znear, f.top, f.left);
+	outCorners[1] = Intersection(f.znear, f.top, f.right);
+	outCorners[2] = Intersection(f.znear, f.bottom, f.left);
+	outCorners[3] = Intersection(f.znear, f.bottom, f.right);
+	outCorners[4] = Intersection(f.zfar, f.top, f.left);
+	outCorners[5] = Intersection(f.zfar, f.top, f.right);
+	outCorners[6] = Intersection(f.zfar, f.bottom, f.left);
+	outCorners[7] = Intersection(f.zfar, f.bottom, f.right);
+}
+
+
+bool Intersects(const Frustum& f, const vec3 &p)
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		vec3 normal = f.planes[i].normal;
+		float dist = f.planes[i].d;
+		float side = p * normal + dist;
+
+		if (side < 0.0f)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool Intersects(const Frustum& f, const sphere_t& s)
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		vec3 normal = f.planes[i].normal;
+		float dist = f.planes[i].d;
+		float side = s.origin * normal + dist;
+		if (side < -s.radius)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+float Classify(const aabb_t &aabb, const plane_t &plane)
+{
+	vec3 size;
+
+	size = aabb.max - aabb.min;
+
+	float r = abs32(size.x * plane.normal.x)
+			+ abs32(size.y * plane.normal.y)
+			+ abs32(size.z * plane.normal.z);
+
+	float d = plane.normal * aabb_center_word(aabb) + plane.d;
+
+	if (fabsf(d) < r)
+	{
+		return 0.0f;
+	}
+	else if (d < 0.0f)
+	{
+		return d + r;
+	}
+	return d - r;
+}
+
+float Classify(const obb_t &obb, const plane_t &plane)
+{
+	vec3 normal = obb.orientation * plane.normal;
+
+	// maximum extent in direction of plane normal
+	float r = fabsf(obb.size.x * normal.x)
+		+ fabsf(obb.size.y * normal.y)
+		+ fabsf(obb.size.z * normal.z);
+	// signed distance between box center and plane
+	float d = plane.normal * obb.origin + plane.d;
+	// return signed distance
+	if (fabsf(d) < r)
+	{
+		return 0.0f;
+	}
+	else if (d < 0.0f)
+	{
+		return d + r;
+	}
+	return d - r;
+}
+
+bool Intersects(const Frustum& f, const aabb_t &aabb)
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Classify(aabb, f.planes[i]) < 0)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool Intersects(const Frustum& f, const obb_t &obb)
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Classify(obb, f.planes[i]) < 0)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 
 
 //=============================================================================

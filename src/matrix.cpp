@@ -8,6 +8,28 @@
 #endif
 
 
+matrix3::matrix3()
+{
+
+}
+
+matrix3::matrix3(float m0, float m1, float m2,
+	float m3, float m4, float m5,
+	float m6, float m7, float m8)
+{
+	m[0] = m0;
+	m[1] = m1;
+	m[2] = m2;
+
+	m[3] = m3;
+	m[4] = m4;
+	m[5] = m5;
+
+	m[6] = m6;
+	m[7] = m7;
+	m[8] = m8;
+}
+
 void matrix3::matrix4to3(matrix4 &mat)
 {
 	m[0] = mat.m[0];
@@ -188,7 +210,7 @@ matrix3 matrix3::operator*(const float scalar)
 }
 
 
-vec3 matrix3::operator*(const vec3 &vec)
+vec3 matrix3::operator*(const vec3 &vec) const
 {
 	vec3 result;
 

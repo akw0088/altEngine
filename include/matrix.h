@@ -9,12 +9,17 @@ class matrix4;
 class matrix3
 {
 public:
+	matrix3();
+	matrix3(float m0, float m1, float m2,
+		float m3, float m4, float m5,
+		float m6, float m7, float m8);
+
 	void matrix3::matrix4to3(matrix4 &mat);
 	matrix3 &operator=(const matrix3 &q);
 	matrix3 operator+(const matrix3 &q);
 	matrix3 operator-(const matrix3 &q);
 	matrix3 operator*(const float scalar);
-	vec3 operator*(const vec3 &vec);
+	vec3 operator*(const vec3 &vec) const;
 	matrix3 operator*(const matrix3 &q);
 	float det();
 	matrix3 cofactor();

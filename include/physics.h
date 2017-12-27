@@ -131,5 +131,23 @@ typedef struct OctreeNode
 	}
 } OctreeNode;
 
+typedef struct Frustum
+{
+	union {
+		struct {
+			plane_t top;
+			plane_t bottom;
+			plane_t left;
+			plane_t right;
+			plane_t znear;
+			plane_t zfar;
+		};
+		plane_t planes[6];
+	};
+	inline Frustum()
+	{
+	}
+} Frustum;
+
 
 #endif
