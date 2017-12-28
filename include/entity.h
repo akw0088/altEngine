@@ -21,6 +21,7 @@ public:
 	Constructable	*construct;
 	PortalCamera	*portal_camera;
 	brushinfo_t		*brushinfo; // doors, platforms, etc
+	ent_string_t	*entstring;
 
 
 
@@ -40,10 +41,5 @@ public:
 		pad : 3;
 	} flags;
 
-
-
-	char			type[64];
-	char			target[64];
-	char			target_name[64];
 };
 #endif

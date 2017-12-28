@@ -1020,4 +1020,11 @@ typedef struct
 } brushinfo_t;
 
 
+typedef struct
+{
+	char			type[64];
+	char			target[64];
+	char			target_name[64];
+} ent_string_t;
+
 #endif

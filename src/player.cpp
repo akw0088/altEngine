@@ -63,17 +63,23 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	telefragged = NULL;
 
+	if (entity->entstring == NULL)
+	{
+		entity->entstring = new ent_string_t;
+	}
+
+
 	if (ent_type == ENT_SERVER)
 	{
 		type = SERVER;
 		entity->ent_type = ENT_SERVER;
-		sprintf(entity->type, "server");
+		sprintf(entity->entstring->type, "server");
 	}
 	else if (ent_type == ENT_PLAYER)
 	{
 		type = PLAYER;
 		entity->ent_type = ENT_PLAYER;
-		sprintf(entity->type, "player");
+		sprintf(entity->entstring->type, "player");
 	}
 
 	zoom_level = 4.0;
@@ -685,7 +691,7 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 
 		if (ignore_length >= 1)
 		{
-			if (strstr(ignore, entity_list[i]->type) != NULL)
+			if (strstr(ignore, entity_list[i]->entstring->type) != NULL)
 				continue;
 		}
 

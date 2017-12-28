@@ -980,11 +980,11 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 
 	for (unsigned int i = start; i < entity_list.size(); i++)
 	{
-		if (strcmp(entity_list[i]->type, "navpoint") == 0)
+		if (strcmp(entity_list[i]->entstring->type, "navpoint") == 0)
 		{
 			Entity *ent = entity_list[i];
 			int k = 0;
-			int targetname = atoi(entity_list[i]->target_name + 3);
+			int targetname = atoi(entity_list[i]->entstring->target_name + 3);
 			node[j].num_arcs = 0;
 
 			// Manhattan distance table
@@ -992,7 +992,7 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 			ref[k].y = (int)ent->position.y;
 			ref[k].z = (int)ent->position.z;
 
-			strcpy(data, ent->target);
+			strcpy(data, ent->entstring->target);
 
 
 			char *target = strtok(data, " ");

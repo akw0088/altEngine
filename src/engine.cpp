@@ -647,7 +647,6 @@ void Engine::load(char *level)
 	for (unsigned int i = 0; i < max_dynamic; i++)
 	{
 		Entity *entity = new Entity();
-		memcpy(entity->type, "free", 5);
 		entity_list.push_back(entity);
 	}
 
@@ -1337,7 +1336,7 @@ void Engine::render_portalcamera()
 			continue;
 
 		// Portal surface with target use misc_portal_camera, else it's a mirror
-		if (entity_list[i]->target[0] != '\0' && entity_list[i]->ent_type == ENT_MISC_PORTAL_SURFACE)
+		if (entity_list[i]->entstring->target[0] != '\0' && entity_list[i]->ent_type == ENT_MISC_PORTAL_SURFACE)
 			continue;
 
 		if (entity_list[i]->ent_type == ENT_MISC_PORTAL_CAMERA)
@@ -3520,7 +3519,7 @@ void Engine::parse_spawn_string(char *msg)
 
 				active_clients[count] = true;
 				clean_entity(index);
-				sprintf(ent->type, "player");
+				sprintf(ent->entstring->type, "player");
 				ent->rigid = new RigidBody(ent);
 				ent->model = ent->rigid;
 				ent->rigid->clone(*(thug22->model));
@@ -3539,7 +3538,7 @@ void Engine::parse_spawn_string(char *msg)
 					active_clients[count] = true;
 					Entity *ent = entity_list[index];
 					clean_entity(index);
-					sprintf(ent->type, "server");
+					sprintf(ent->entstring->type, "server");
 					ent->rigid = new RigidBody(ent);
 					ent->model = ent->rigid;
 					ent->rigid->clone(*(thug22->model));
@@ -5399,7 +5398,7 @@ int Engine::get_player()
 			}
 		}
 
-		if (strcmp(entity_list[index]->type, "free") == 0)
+		if (entity_list[index]->entstring == NULL)
 		{
 			clean_entity(index);
 			entity_list[index]->~Entity();

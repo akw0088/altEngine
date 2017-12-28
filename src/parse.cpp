@@ -23,7 +23,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		entity.position.y = (float)z;
 		entity.position.z = (float)-y;
 
-		if (strstr(entity.type, "navpoint") != NULL)
+		if (entity.entstring && strstr(entity.entstring->type, "navpoint") != NULL)
 		{
 			entity.position.x = (float)x;
 			entity.position.y = (float)y;
@@ -48,7 +48,12 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "classname") == 0)
 	{
 		size_t size = strlen(value) + 1;
-		memcpy(entity.type, value, size);
+		if (entity.entstring == NULL)
+		{
+			entity.entstring = new ent_string_t;
+		}
+
+		memcpy(entity.entstring->type, value, size);
 
 		if (strcmp(value, "item_armor_shard") == 0)
 		{
@@ -510,10 +515,16 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.flags.nodraw = true;
 			}
 
-			sprintf(entity.type, "trigger_teleport");
+			if (entity.entstring == NULL)
+			{
+				entity.entstring = new ent_string_t;
+			}
+
+
+			sprintf(entity.entstring->type, "trigger_teleport");
 			entity.trigger->timeout = 1.0f;
 			entity.trigger->timeout_value = 1.0f;
-			sprintf(entity.trigger->action, "teleport %s %d", entity.target, entity_num);
+			sprintf(entity.trigger->action, "teleport %s %d", entity.entstring->target, entity_num);
 		}
 		else if (strcmp(value, "target_teleporter") == 0)
 		{
@@ -542,7 +553,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.flags.nodraw = true;
 			}
 
-			sprintf(entity.trigger->action, "push %s", entity.target);
+			if (entity.entstring == NULL)
+			{
+				entity.entstring = new ent_string_t;
+			}
+
+
+			sprintf(entity.trigger->action, "push %s", entity.entstring->target);
 			entity.trigger->timeout = 1.0f;
 			entity.trigger->timeout_value = 1.0f;
 		}
@@ -1621,7 +1638,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			else
 			{
-				if (strlen(entity.target_name) > 1)
+				if (entity.entstring == NULL)
+				{
+					entity.entstring = new ent_string_t;
+				}
+
+
+				if (strlen(entity.entstring->target_name) > 1)
 				{
 					// suppose to be triggered
 					entity.trigger->noise = false;
@@ -1645,7 +1668,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	}
 	else if (strcmp(key, "target") == 0)
 	{
-		strcpy(entity.target, value);
+		if (entity.entstring == NULL)
+		{
+			entity.entstring = new ent_string_t;
+		}
+
+
+		strcpy(entity.entstring->target, value);
 	}
 	else if (strcmp(key, "angle") == 0)
 	{
@@ -1656,7 +1685,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	}
 	else if (strcmp(key, "targetname") == 0)
 	{
-		strcpy(entity.target_name, value);
+		if (entity.entstring == NULL)
+		{
+			entity.entstring = new ent_string_t;
+		}
+
+
+		strcpy(entity.entstring->target_name, value);
 	}
 	else if (strcmp(key, "dmg") == 0)
 	{

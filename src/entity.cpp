@@ -20,6 +20,7 @@ Entity::Entity()
 	construct = NULL;
 	portal_camera = NULL;
 	brushinfo = NULL;
+	entstring = NULL;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NET_NONE;
@@ -32,16 +33,10 @@ Entity::Entity()
 	flags.bsp_visible = false;
 	flags.nodraw = false;
 	flags.particle_on = false;
-
-	sprintf(type, "free");
-	target[0] = '\0';
-	target_name[0] = '\0';
 }
 
 Entity::~Entity()
 {
-	sprintf(type, "free");
-
 	if (light)
 		delete light;
 	if (rigid)
@@ -70,12 +65,10 @@ Entity::~Entity()
 	projectile = NULL;
 	player = NULL;
 	brushinfo = NULL;
+	entstring = NULL;
 	nettype = NET_NONE;
 	model_ref = -1;
 	flags.visible = false;
 	flags.particle_on = false;
-	target[0] = '\0';
-	target_name[0] = '\0';
-
 }
 

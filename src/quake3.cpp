@@ -1864,14 +1864,14 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 				entity_list[spawn]->ent_type = ENT_CLIENT;
 				break;
 			case BOT:
-				sprintf(entity_list[spawn]->type, "NPC");
+				sprintf(entity_list[spawn]->entstring->type, "NPC");
 				entity_list[spawn]->ent_type = ENT_NPC;
 				break;
 			case SPECTATOR:
 				engine->entity_list[spawn]->ent_type = ENT_SPECTATOR;
 				break;
 			case UNKNOWN:
-				strcpy(entity_list[spawn]->type, "unknown");
+				strcpy(entity_list[spawn]->entstring->type, "unknown");
 				break;
 			}
 			Entity *spawn_ent = entity_list[spawn];
@@ -3223,7 +3223,7 @@ void Quake3::step(int frame_step)
 				if (bot->player->path.length == -1)
 				{
 					// Path doesnt exist, give up
-					strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, 1023);
+					strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->entstring->type, 1023);
 					strncat(bot->player->ignore, " ", 1023);
 
 					if (strlen(bot->player->ignore) >= 1000)
@@ -5591,7 +5591,7 @@ void Quake3::render_hud(double last_frametime)
 //			if (engine->entity_list[i]->nodraw == true)
 //				continue;
 
-			if ( strlen(engine->entity_list[i]->target_name) <= 1 )
+			if ( strlen(engine->entity_list[i]->entstring->target_name) <= 1 )
 				continue;
 
 			for (unsigned int j = 0; j < engine->entity_list.size(); j++)
@@ -5599,10 +5599,10 @@ void Quake3::render_hud(double last_frametime)
 //				if (engine->entity_list[j]->nodraw == true)
 	//				continue;
 
-				if (strlen(engine->entity_list[j]->target) <= 1)
+				if (strlen(engine->entity_list[j]->entstring->target) <= 1)
 					continue;
 
-				if (strstr(engine->entity_list[i]->target_name, engine->entity_list[j]->target) != NULL)
+				if (strstr(engine->entity_list[i]->entstring->target_name, engine->entity_list[j]->entstring->target) != NULL)
 				{
 					draw_line(engine->entity_list[i], engine->entity_list[j], engine->menu, color);
 				}
@@ -5862,13 +5862,13 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 		if (engine->show_names)
 		{
-			sprintf(data, "%s", entity->type);
-			menu.draw_text(entity->type, pos.x, pos.y - 0.0625f, 0.02f, color, false, false);
+			sprintf(data, "%s", entity->entstring->type);
+			menu.draw_text(entity->entstring->type, pos.x, pos.y - 0.0625f, 0.02f, color, false, false);
 			sprintf(data, "bsp_leaf: %d", entity->bsp_leaf);
 			menu.draw_text(data, pos.x, pos.y, 0.02f, color, false, false);
 		}
 
-		if (strcmp(entity->type, "free") == 0)
+		if (strcmp(entity->entstring->type, "free") == 0)
 		{
 			int line = 1;
 
@@ -5903,9 +5903,9 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 			vec3 green(0.0f, 1.0f, 0.0f);
 			int line = 1;
 
-			sprintf(data, "targetname %s", entity->target_name);
+			sprintf(data, "targetname %s", entity->entstring->target_name);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, blue, false, false);
-			sprintf(data, "target %s", entity->target);
+			sprintf(data, "target %s", entity->entstring->target);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.025f, green, false, false);
 		}
 
@@ -5942,7 +5942,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 				if (entity->player->bot_state == BOT_GET_ITEM)
 				{
-					sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->type);
+					sprintf(data, "Item: %s", engine->entity_list[entity->player->get_item]->entstring->type);
 					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, white, false, false);
 				}
 			}
@@ -5955,9 +5955,9 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 			if (entity->light != NULL)
 			{
-				sprintf(data, "target %s", entity->target);
+				sprintf(data, "target %s", entity->entstring->target);
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
-				sprintf(data, "target_name %s", entity->target_name);
+				sprintf(data, "target_name %s", entity->entstring->target_name);
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			}
 		}
@@ -6203,8 +6203,8 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 	}
 
 
-	int start_path = atoi(engine->entity_list[self_index]->target_name + 3);
-	int end_path = atoi(engine->entity_list[target_index]->target_name + 3);
+	int start_path = atoi(engine->entity_list[self_index]->entstring->target_name + 3);
+	int end_path = atoi(engine->entity_list[target_index]->entstring->target_name + 3);
 
 	if (start_path == end_path)
 		return -1;
@@ -6996,7 +6996,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				   entity_list[i]->ent_type == ENT_Q1_INFO_TELEPORT_DESTINATION))
 				continue;
 
-			if (!strcmp(entity_list[i]->target_name, data))
+			if (!strcmp(entity_list[i]->entstring->target_name, data))
 			{
 				matrix4 matrix;
 				unsigned int index = atoi(data2);
@@ -7238,9 +7238,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "push %s\n", data);
 		menu.print(msg);
 
-		for (unsigned int i = 0; i < entity_list.size(); i++)
+		for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 		{
-			if (!strcmp(entity_list[i]->target_name, data))
+			if (entity_list[i]->entstring == NULL)
+				continue;
+
+			if (!strcmp(entity_list[i]->entstring->target_name, data))
 			{
 				//target - origin
 				vec3 dir = entity_list[i]->position - entity_list[self]->position;
@@ -7688,7 +7691,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		switch (ent->ent_type)
 		{
 		case ENT_TRIGGER_PUSH:
-			sprintf(ent->trigger->action, "push %s", ent->target);
+			sprintf(ent->trigger->action, "push %s", ent->entstring->target);
 			break;
 		case ENT_FUNC_PENDULUM:
 			// PENDULUM start at origin, need to offset
@@ -7764,7 +7767,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
 			break;
 		case ENT_MISC_PORTAL_SURFACE:
-			if (entity_list[i]->target[0] != '\0')
+			if (entity_list[i]->entstring->target[0] != '\0')
 			{
 				// If we have a target, then use corresponding portal camera
 				delete entity_list[i]->portal_camera;
@@ -7778,7 +7781,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			break;
 		case ENT_TRIGGER_TELEPORT:
 			// Reset action because of ordering issues
-			sprintf(entity_list[i]->trigger->action, "teleport %s %d", entity_list[i]->target, i);
+			sprintf(entity_list[i]->trigger->action, "teleport %s %d", entity_list[i]->entstring->target, i);
 			break;
 		case ENT_FUNC_DOOR:
 			if (entity_list[i]->trigger)
@@ -8235,10 +8238,10 @@ void Quake3::endgame(char *winner)
 void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self)
 {
 
-	if (strcmp(ent->target, target->target_name) == 0)
+	if (ent->entstring && target->entstring && strcmp(ent->entstring->target, target->entstring->target_name) == 0)
 	{
 		printf("%s bsp volume triggered %s with targetname %s\n",
-			ent->type, target->type, ent->target);
+			ent->entstring->type, target->entstring->type, ent->entstring->target);
 
 		if (target->trigger)
 		{
@@ -8295,7 +8298,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			break;
 		case ENT_TARGET_RELAY:
 			// search again, great
-			if (strlen(ent->target) > 1)
+			if (strlen(ent->entstring->target) > 1)
 			{
 				for (unsigned int k = 0; k < entity_list.size(); k++)
 				{
@@ -8330,12 +8333,12 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 		{
 			continue;
 		}
-				entity_list[j]->rigid->bsp_trigger_volume = 0;
+		entity_list[j]->rigid->bsp_trigger_volume = 0;
 
 
 		if (ent->trigger && ent->trigger->active == false)
 		{
-			printf("Triggered bsp volume %d type %s\n", ent->model_ref, ent->type);
+			printf("Triggered bsp volume %d type %s\n", ent->model_ref, ent->entstring->type);
 			ent->trigger->active = true;
 			console(self, ent->trigger->action, engine->menu, entity_list);
 		}
@@ -8344,7 +8347,7 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 			printf("bsp volume %d trigger already hit\n", ent->model_ref);
 		}
 
-		if (strlen(ent->target) > 1)
+		if (ent->entstring != NULL)
 		{
 			for (unsigned int j = 0; j < entity_list.size(); j++)
 			{
@@ -8539,9 +8542,9 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 					if (ent == entity_list[j])
 						continue;
 
-					if (strcmp(ent->target, entity_list[j]->target_name) == 0)
+					if (strcmp(ent->entstring->target, entity_list[j]->entstring->target_name) == 0)
 					{
-						printf("trigger_multiple triggered target %s of type %s\n", ent->target, entity_list[j]->type);
+						printf("trigger_multiple triggered target %s of type %s\n", ent->entstring->target, entity_list[j]->entstring->type);
 						if (entity_list[j]->trigger)
 							console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
 					}
@@ -8628,9 +8631,9 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 						if (ent == entity_list[j])
 							continue;
 
-						if (strcmp(ent->target, entity_list[j]->target_name) == 0)
+						if (strcmp(ent->entstring->target, entity_list[j]->entstring->target_name) == 0)
 						{
-							printf("func_button triggered target %s of type %s\n", ent->target, entity_list[j]->type);
+							printf("func_button triggered target %s of type %s\n", ent->entstring->target, entity_list[j]->entstring->type);
 						}
 					}
 				}
@@ -9716,7 +9719,7 @@ void Quake3::handle_func_bobbing(Entity *entity)
 	//Entity *ref = entity;
 	int wait = 10;
 
-	sprintf(entity->target, " ");
+	sprintf(entity->entstring->target, " ");
 	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->brushinfo->origin;
 	entity->rigid->path.loop = 1;
 
@@ -9774,16 +9777,16 @@ void Quake3::handle_func_train(Entity *entity)
 
 int Quake3::add_train_path(Entity *original, Entity *ref, Entity *target)
 {
-	if (strlen((ref)->target) <= 1)
+	if (strlen((ref)->entstring->target) <= 1)
 		return 0;
 
 	if (original->rigid->path.num_path == 8)
 		return 0;
 
-	if (strcmp(ref->target, target->target_name) == 0)
+	if (strcmp(ref->entstring->target, target->entstring->target_name) == 0)
 	{
 		// Loop detected
-		if ((strcmp(ref->target, original->target) == 0) && original->rigid->path.num_path != 0)
+		if ((strcmp(ref->entstring->target, original->entstring->target) == 0) && original->rigid->path.num_path != 0)
 		{
 			return 2;
 		}
