@@ -131,7 +131,6 @@ Engine::Engine()
 
 
 
-	num_hash = 0;
 	net_port = 65535;
 
 	sprintf(sv_hostname, "altEngine2 Server");
@@ -290,18 +289,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	// hash check data files
 	newlinelist("media/cmdlist.txt", cmd_list, num_cmd, &cmdlist);
 	newlinelist("media/pk3list.txt", pk3_list, num_pk3, &pk3list);
-	newlinelist("media/pk3hash.txt", hash_list, num_hash, &hashlist);
 	newlinelist("media/sv_master.txt", master_list, num_master, &masterlist);
 
-	if (num_pk3 != num_hash)
-	{
-		printf("Error: num_pk3 %d num_hash %d, should match\n", num_pk3, num_hash);
-		exit(0);
-	}
-
-
-
-	std::thread pool[32];
+	std::thread pool[64];
 	/*
 	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
 	{
@@ -310,20 +300,20 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	}*/
 
 
-	for (unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
+	for (unsigned int i = 0; i < num_pk3; i++)
 	{
 		hash_result[i][0] = '\0';
 		strcpy(hash_result[i], "Missing file");
 		pool[i] = std::thread(calc_hash, pk3_list[i], hash_result[i]);
 	}
 
-	for(unsigned int i = 0; i < num_pk3 && i < num_hash; i++)
+	for(unsigned int i = 0; i < num_pk3; i++)
 	{
 		pool[i].join();
 		debugf("Checking hash for %s...", pk3_list[i]);
-		if (strcmp(hash_list[i], hash_result[i]) != 0)
+		if (strstr(pk3_list[i], hash_result[i]) != 0)
 		{
-			if (strcmp(pk3_list[i], "media/pak0.pk3") == 0)
+			if (strstr(pk3_list[i], "media/pak0.pk3"))
 			{
 				if (strcmp(hash_result[i], "0613b3d4ef05e613a2b470571498690f") == 0)
 				{
@@ -332,12 +322,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				}
 				else
 				{
-					debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], hash_list[i]);
+					debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], pk3_list[i]);
 				}
 			}
 			else
 			{
-				debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], hash_list[i]);
+				debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], pk3_list[i]);
 			}
 		}
 		else

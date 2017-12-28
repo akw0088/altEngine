@@ -2486,7 +2486,7 @@ CModel *Scene::FindClosest(const std::vector<CModel*>& set, const ray_t &ray)
 
 	for (int i = 0, size = set.size(); i < size; ++i)
 	{
-		float this_t;// = ModelRay(*set[i], ray);
+		float this_t = ModelRay(*set[i], ray);
 
 		if (this_t < 0)
 		{
@@ -2503,7 +2503,9 @@ CModel *Scene::FindClosest(const std::vector<CModel*>& set, const ray_t &ray)
 
 CModel* Scene::Raycast(OctreeNode* node, const ray_t &ray)
 {
-	float t;// = Raycast(node->bounds, ray);
+	raycast_result_t result;
+//	Raycast(node->bounds, ray, &result);
+	float t = result.t;
 
 	if (t >= 0)
 	{

@@ -1,26 +1,26 @@
-media/pak8.pk3
-media/pak7.pk3
-media/pak6.pk3
-media/pak5.pk3
-media/pak4.pk3
-media/pak3.pk3
-media/pak2.pk3
-media/pak1.pk3
-media/pak0.pk3
-media/QRP_map_textures_v.1.00.pk3
-media/quake1.pk3
-media/obiq1dm3.pk3
-media/ztn3dm1.pk3
-media/q3f2_pak0.pk3
-media/zpak000_assets.pk3
-media/teamarenafull.pk3
-media/teamarenademo.pk3
-media/rtcwdemo.pk3
-media/rtcwfull.pk3
-media/q3wpak0.pk3
-media/pak1-maps.pk3
-media/openarena.pk3
-media/q3wpak4.pk3
-media/map-13vast.pk3
-media/maps-q3wctf.pk3
-
+d8b96d429ca4a9c289071cb7e77e14d2  media/pak8.pk3
+8fd38c53ed814b64f6ab03b5290965e4  media/pak7.pk3
+873888a73055c023f6c38b8ca3f2ce05  media/pak6.pk3
+734dcd06d2cbc7a16432ff6697f1c5ba  media/pak5.pk3
+24bb1f4fcabd95f6e320c0e2f62f19ca  media/pak4.pk3
+968dfd0f30dad67056115c8e92344ddc  media/pak3.pk3
+d550ce896130c47166ca44b53f8a670a  media/pak2.pk3
+48911719d91be25adb957f2d325db4a0  media/pak1.pk3
+1197ca3df1e65f3c380f8abc10ca43bf  media/pak0.pk3
+39c6eb8ff3467009d71b68e37f1859c9  media/QRP_map_textures_v.1.00.pk3
+5315d2fb6b98c584411acc6e5a9408b6  media/quake1hd.pk3
+26f5af74b9754e73bddeccb68bcfcc31  media/quake1.pk3
+8c056fd1330413fefa2c999219beb045  media/q3f_beta_001h_update_svr_fix.pk3
+09ebb23dd3c94685e34d1cfd94eb4c4a  media/q3f_beta_001h_update.pk3
+d164d1a931081ace1e73951f91fad245  media/q3f_beta_001g_update.pk3
+8cac1c58b5334b43a84808bac66fd8b8  media/q3f_beta_001f_update.pk3
+ce13dc37afd7c10540e963ef6a8a0212  media/q3f_beta_001e_update.pk3
+869e3758aa7c852505815ff3d57d7433  media/q3f_beta_001d_update.pk3
+68f45847304aedd79241b333d6ee2c31  media/q3f_beta_001c_update.pk3
+e074db356bb2e114680aab3185cd7662  media/q3f_beta_001b_update.pk3
+21aa2bbb14db9b51fac9d4c5bd6cbccf  media/q3f_beta_001.pk3
+53c80208008e6698a94f1f1b1c0f290e  media/lun3dm5.pk3
+ee5f1b62ff22129024e8aee746e52b43  media/ns_dam.pk3
+1b2daecc2c44766b033702f185418e6b  media/nv15.pk3
+abcba24e3b8256ff5e95bb8767a5d340  media/obiq1dm3.pk3
+180d4b682cb62af3d405ee4ca29304f4  media/ztn3dm1.pk3
