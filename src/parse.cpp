@@ -42,7 +42,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.model_ref = num;
 
 			if (entity.rigid)
-				entity.rigid->gravity = false;
+				entity.rigid->flags.gravity = false;
 		}
 	}
 	else if (strcmp(key, "classname") == 0)
@@ -107,9 +107,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 		}
 		else if (strcmp(value, "item_quad") == 0)
@@ -374,8 +374,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_FUNC_TERRAIN;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 			}
 		}
 		else if (strcmp(value, "func_bobbing") == 0)
@@ -389,8 +389,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			*/
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 			}
 		}
 		else if (strcmp(value, "func_button") == 0)
@@ -407,8 +407,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 //				entity.flags.nodraw = true;
 			}
 		}
@@ -428,8 +428,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 			}
 
 		}
@@ -445,8 +445,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 			}
 
 		}
@@ -462,8 +462,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 				entity.rigid->angular_velocity.x = 10.0f;
 			}
 
@@ -479,8 +479,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			if (entity.rigid)
 			{
 				entity.rigid->angular_velocity.y = 1.0f;
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 			}
 
 		}
@@ -495,8 +495,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			*/
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 			}
 
 		}
@@ -509,9 +509,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 
@@ -532,9 +532,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -547,9 +547,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 
@@ -575,8 +575,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 
@@ -594,8 +594,8 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -605,9 +605,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_MISC_MODEL;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -616,9 +616,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_INFO_SPECTATOR_START;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -627,9 +627,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_ITEM_BOT_ROAM;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -638,9 +638,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_INFO_FIRSTPLACE;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -649,9 +649,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_INFO_SECONDPLACE;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -660,9 +660,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_INFO_THIRDPLACE;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -671,9 +671,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_SHOOTER_GRENADE;
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -683,9 +683,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 //			entity.flags.nodraw = true;
 		}
@@ -695,9 +695,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -707,9 +707,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -719,9 +719,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -731,9 +731,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -743,9 +743,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -755,9 +755,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 
 			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
@@ -769,9 +769,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 
 			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
@@ -783,9 +783,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -795,9 +795,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -807,9 +807,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -819,9 +819,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -831,9 +831,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 
@@ -844,9 +844,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 //				entity.flags.nodraw = true;
 			}
 		}
@@ -856,9 +856,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -868,9 +868,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -904,9 +904,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -916,9 +916,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 			}
 		}
@@ -928,9 +928,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 				entity.flags.nodraw = true;
 
 				if (entity.trigger)
@@ -955,9 +955,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 //				entity.flags.nodraw = true;
 			}
 		}
@@ -967,9 +967,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 
@@ -981,9 +981,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -993,9 +993,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1005,9 +1005,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1017,9 +1017,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1029,9 +1029,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1041,9 +1041,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1053,9 +1053,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1065,9 +1065,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1077,9 +1077,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1089,9 +1089,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1101,9 +1101,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1113,9 +1113,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1125,9 +1125,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1137,9 +1137,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1149,9 +1149,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1161,9 +1161,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1173,9 +1173,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1185,9 +1185,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1197,9 +1197,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1209,9 +1209,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1221,9 +1221,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1233,9 +1233,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1245,9 +1245,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1257,9 +1257,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-//				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+//				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = false;
 		}
@@ -1269,9 +1269,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1281,9 +1281,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1293,9 +1293,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1305,9 +1305,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1317,9 +1317,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = false;
 
@@ -1337,9 +1337,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = false;
 
@@ -1358,9 +1358,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = false;
 
@@ -1378,9 +1378,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1390,9 +1390,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1402,9 +1402,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1414,9 +1414,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1426,9 +1426,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1438,9 +1438,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1450,9 +1450,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1462,9 +1462,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1474,9 +1474,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1486,9 +1486,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1498,9 +1498,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}
@@ -1510,9 +1510,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 
@@ -1529,9 +1529,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 
@@ -1549,9 +1549,9 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 			if (entity.rigid)
 			{
-				entity.rigid->gravity = false;
-				entity.rigid->noclip = true;
-				entity.rigid->flight = true;
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.noclip = true;
+				entity.rigid->flags.flight = true;
 			}
 			entity.flags.nodraw = true;
 		}

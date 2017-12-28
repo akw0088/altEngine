@@ -1633,14 +1633,14 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.cleardepth();
 	}
 
-	if (player != -1 && entity_list[player]->rigid->water && entity_list[player]->rigid->water_depth < 2048.0f)
+	if (player != -1 && entity_list[player]->rigid->flags.water && entity_list[player]->rigid->water_depth < 2048.0f)
 	{
 		render_wave(debug_bloom);
 		gfx.cleardepth();
 	}
 	else if (player != -1)
 	{
-		entity_list[player]->rigid->water = false;
+		entity_list[player]->rigid->flags.water = false;
 	}
 
 	//render menu
@@ -2664,7 +2664,7 @@ void Engine::spatial_testing()
 		{
 			if (rigid->target)
 			{
-				if (rigid->pursue_flag == true)
+				if (rigid->flags.pursue_flag == true)
 				{
 //					rigid->wander(20.0f, 1.0f, 5.0f);
 					rigid->pursue();
@@ -2870,7 +2870,7 @@ void Engine::dynamics()
 		float current_time = 0.0f;
 		int divisions = 0;
 
-		if (body->water)
+		if (body->flags.water)
 		{
 			float submerged_percent = 1.0f;
 			//float volume = body->get_volume();
@@ -2920,7 +2920,7 @@ void Engine::dynamics()
 				if (divisions > 10)
 				{
 //					printf("Entity %d is sleeping\n", i);
-					body->sleep = true;
+					body->flags.sleep = true;
 					break;
 				}
 				continue;
@@ -2931,7 +2931,7 @@ void Engine::dynamics()
 		if (abs32(body->velocity.y) > 1.0f)
 		{
 			// either jumping or falling
-			body->on_ground = false;
+			body->flags.on_ground = false;
 		}
 
 		body->net_force = vec3(0.0f, 0.0f, 0.0f);
@@ -3084,7 +3084,7 @@ bool Engine::map_collision(RigidBody &body)
 
 
 
-	if (body.noclip)
+	if (body.flags.noclip)
 		return false;
 
 	if (body.entity->player)
@@ -3137,13 +3137,13 @@ bool Engine::map_collision(RigidBody &body)
 
 
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water_depth,
-			surface_list, body.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag))
+			surface_list, body.flags.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag))
 		{
-			body.lava = flag.lava;
-			body.slime = flag.slime;
-			body.water = flag.water;
+			body.flags.lava = flag.lava;
+			body.flags.slime = flag.slime;
+			body.flags.water = flag.water;
 
-			if (body.step_flag)
+			if (body.flags.step_flag)
 			{
 				if (flag.surf_flags & SURF_METALSTEPS)
 				{
@@ -3173,11 +3173,11 @@ bool Engine::map_collision(RigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water_depth,
-						surface_list, body.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag) == false)
+						surface_list, body.flags.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
-						body.on_ground = true;
+						body.flags.on_ground = true;
 
 						if (body.entity->player)
 						{
@@ -3248,10 +3248,10 @@ bool Engine::map_collision(RigidBody &body)
 
 	if (collision)
 	{
-		body.on_ground = true;
+		body.flags.on_ground = true;
 		if (body.velocity.y <= -RIGID_IMPACT)
 		{
-			body.hard_impact = true;
+			body.flags.hard_impact = true;
 			body.impact_velocity = body.velocity.y;
 		}
 
@@ -3523,7 +3523,7 @@ void Engine::parse_spawn_string(char *msg)
 				ent->rigid = new RigidBody(ent);
 				ent->model = ent->rigid;
 				ent->rigid->clone(*(thug22->model));
-				ent->rigid->step_flag = true;
+				ent->rigid->flags.step_flag = true;
 				ent->position += ent->rigid->center;
 				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
 				ent->player->type = PLAYER;
@@ -3542,7 +3542,7 @@ void Engine::parse_spawn_string(char *msg)
 					ent->rigid = new RigidBody(ent);
 					ent->model = ent->rigid;
 					ent->rigid->clone(*(thug22->model));
-					ent->rigid->step_flag = true;
+					ent->rigid->flags.step_flag = true;
 					ent->position += ent->rigid->center;
 					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
 					ent->player->local = false;
@@ -5270,7 +5270,7 @@ void Engine::load_entities()
 	for(unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light)
-			entity_list[i]->rigid->gravity = false;
+			entity_list[i]->rigid->flags.gravity = false;
 	}
 }
 
@@ -5418,7 +5418,7 @@ void Engine::create_sources()
 		Speaker *speaker = entity_list[i]->speaker;
 		if (speaker != NULL)
 		{
-			entity_list[i]->rigid->gravity = false;
+			entity_list[i]->rigid->flags.gravity = false;
 			if (speaker->index  != -1)
 			{
 				audio.select_buffer(speaker->loop_source, snd_wave[entity_list[i]->speaker->index].buffer);
@@ -5427,7 +5427,7 @@ void Engine::create_sources()
 		}
 		else if (entity_list[i]->trigger != NULL)
 		{
-			entity_list[i]->rigid->gravity = false;
+			entity_list[i]->rigid->flags.gravity = false;
 		}
 	}
 

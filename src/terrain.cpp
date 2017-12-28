@@ -371,7 +371,7 @@ bool Terrain::collision_detect(RigidBody &body)
 			}
 
 			body.bounce++;
-			body.on_ground = true;
+			body.flags.on_ground = true;
 			ClipVelocity(body.entity->rigid->velocity, normal);
 			body.velocity.y = 0.1f;
 			return true;

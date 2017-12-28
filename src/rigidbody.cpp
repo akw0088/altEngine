@@ -14,23 +14,27 @@
 RigidBody::RigidBody(Entity *entity)
 : Model(entity)
 {
-	sleep = false;
-	gravity = true;
-	noclip = false;
-	pursue_flag = true;
-	step_flag = false;
-	water = false;
-	flight = false;
-	last_water = false;
+	flags.sleep = false;
+	flags.gravity = true;
+	flags.noclip = false;
+	flags.pursue_flag = true;
+	flags.step_flag = false;
+	flags.water = false;
+	flags.flight = false;
+	flags.last_water = false;
+	flags.hard_impact = false;
+	flags.lava = false;
+	flags.slime = false;
+	flags.rotational_friction_flag = false;
+	flags.translational_friction_flag = false;
+	flags.ground_friction_flag = false;
+	flags.on_ground = false;
 	y_offset = 0;
-	hard_impact = false;
 	target = NULL;
 	mass = 10.0f;
 	sphere_target = vec3(0.0f, 0.0f, 0.0f);
 	jump_timer = 0; // move this to Player
 	bounce = 0; // number of impacts
-	lava = false;
-	slime = false;
 	step_type = 0;
 	impact_velocity = 0.0f;
 	water_depth = 0.0f;
@@ -42,12 +46,8 @@ RigidBody::RigidBody(Entity *entity)
 	float width = 10.0f / UNITS_TO_METERS;
 	float depth = 10.0f / UNITS_TO_METERS;
 
-	rotational_friction_flag = false;
 	rotational_friction = 0.99f;
-	translational_friction_flag = false;
 	translational_friction = 0.99f;
-	ground_friction_flag = false;
-	on_ground = false;
 
 
 	train.escort = true;
@@ -152,14 +152,14 @@ void RigidBody::integrate(float time)
 	matrix3 rotation;
 	vec3 acceleration, angular_acceleration;
 
-	if (sleep)
+	if (flags.sleep)
 		return;
 
 	//translational
 
 
 	acceleration = net_force / mass;
-	if (gravity == true && noclip == false && flight == false)
+	if (flags.gravity == true && flags.noclip == false && flags.flight == false)
 	{
 		acceleration.y -= GRAVITY * GRAVITY_SCALE;
 	}
@@ -201,17 +201,17 @@ void RigidBody::integrate(float time)
 	angular_acceleration = world_tensor * net_torque;
 	angular_velocity = angular_velocity + angular_acceleration * time;
 
-	if (translational_friction_flag || noclip == true || flight == true)
+	if (flags.translational_friction_flag || flags.noclip == true || flags.flight == true)
 	{
 		velocity *= translational_friction; // added translational "friction"
 	}
 
-	if (ground_friction_flag && on_ground)
+	if (flags.ground_friction_flag && flags.on_ground)
 	{
 		velocity *= translational_friction; // added translational "friction"
 	}
 
-	if (rotational_friction_flag || water == true || noclip == true)
+	if (flags.rotational_friction_flag || flags.water == true || flags.noclip == true)
 	{
 		angular_velocity *= rotational_friction; // added rotational "friction"
 	}
@@ -330,9 +330,9 @@ void RigidBody::impulse(RigidBody &rigid, vec3 &point)
     angular_velocity = world_tensor * vec3::crossproduct(local_point, -impulse_force);
 	rigid.velocity -= impulse_force * (1.0f / rigid.mass);
 	rigid.angular_velocity = rigid.world_tensor * vec3::crossproduct(local_point, impulse_force);
-	sleep = false;
-	rigid.sleep = false;
-	gravity = true;
+	flags.sleep = false;
+	rigid.flags.sleep = false;
+	flags.gravity = true;
 }
 
 void RigidBody::impulse(RigidBody &rigid, vec3 &point, Plane &plane)
@@ -361,9 +361,9 @@ void RigidBody::impulse(RigidBody &rigid, vec3 &point, Plane &plane)
 	angular_velocity = world_tensor * vec3::crossproduct(local_point, -impulse_force);
 	rigid.velocity -= impulse_force * (1.0f / rigid.mass);
 	rigid.angular_velocity = rigid.world_tensor * vec3::crossproduct(local_point, impulse_force);
-	sleep = false;
-	rigid.sleep = false;
-	gravity = true;
+	flags.sleep = false;
+	rigid.flags.sleep = false;
+	flags.gravity = true;
 }
 
 
@@ -524,7 +524,7 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 	if (entity->rigid)
 	{
 		//		entity->rigid->sleep = false;
-		entity->rigid->gravity = true;
+		entity->rigid->flags.gravity = true;
 
 		camera->pos = entity->position + vec3(0.0f, (float)y_offset, 0.0f);
 
@@ -563,7 +563,7 @@ void RigidBody::frame2ent_yaw(Frame *camera, input_t &input)
 	right.normalize();
 
 	//entity->rigid->sleep = false;
-	entity->rigid->gravity = true;
+	entity->rigid->flags.gravity = true;
 	camera->pos = entity->position;
 
 	morientation.m[0] = right.x;
@@ -777,7 +777,7 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 	if (jump_timer > 0)
 		jump_timer--;
 
-	sleep = false;
+	flags.sleep = false;
 
 	if (input.moveup)
 	{
@@ -891,7 +891,7 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	if (jump_timer > 0)
 		jump_timer--;
 
-	sleep = false;
+	flags.sleep = false;
 
 	if (input.moveup)
 	{
@@ -995,7 +995,7 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 	if (jump_timer > 0)
 		jump_timer--;
 
-	sleep = false;
+	flags.sleep = false;
 
 	if (input.moveup)
 	{
@@ -1107,7 +1107,7 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 	if (jump_timer > 0)
 		jump_timer--;
 
-	sleep = false;
+	flags.sleep = false;
 
 	if (input.moveup)
 	{
@@ -1161,7 +1161,7 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 	}
 
 
-	if (on_ground && (speed > entity->player->max_speed * speed_scale))
+	if (flags.on_ground && (speed > entity->player->max_speed * speed_scale))
 	{
 		if (jumppad == false && two_frames > 8)
 		{
@@ -1206,19 +1206,19 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 
 bool RigidBody::move(input_t &input, float speed_scale)
 {
-	if (noclip)
+	if (flags.noclip)
 	{
 		return flight_move(input, 5.0);
 	}
-	else if (flight)
+	else if (flags.flight)
 	{
 		return flight_move(input, speed_scale);
 	}
-	else if (water && water_depth < 2048.0f)
+	else if (flags.water && water_depth < 2048.0f)
 	{
 		return water_move(input, speed_scale);
 	}
-	else if (on_ground == false)
+	else if (flags.on_ground == false)
 	{
 		return air_move(input, speed_scale);
 	}

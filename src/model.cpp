@@ -153,7 +153,7 @@ void Model::clone(Model &model)
 	{
 		if (model.entity)
 		{
-			entity->rigid->gravity = model.entity->rigid->gravity;
+			entity->rigid->flags.gravity = model.entity->rigid->flags.gravity;
 			entity->rigid->angular_velocity = model.entity->rigid->angular_velocity;
 		}
 	}

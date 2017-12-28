@@ -200,8 +200,8 @@ void Player::respawn()
 	entity->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 	entity->rigid->net_force = vec3(0.0f, 0.0f, 0.0f);
 	entity->rigid->bsp_trigger_volume = 0;
-	entity->rigid->lava = false;
-	entity->rigid->slime = false;
+	entity->rigid->flags.lava = false;
+	entity->rigid->flags.slime = false;
 
 
 	state = PLAYER_IDLE;

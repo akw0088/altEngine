@@ -1880,7 +1880,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			spawn_ent->rigid = new RigidBody(entity_list[spawn]);
 			spawn_ent->model = entity_list[spawn]->rigid;
 			spawn_ent->rigid->clone(*(engine->thug22->model));
-			spawn_ent->rigid->step_flag = true;
+			spawn_ent->rigid->flags.step_flag = true;
 			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team, ENT_PLAYER, model_table);
 			spawn_ent->position += entity_list[spawn]->rigid->center;
 			spawn_ent->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
@@ -2029,7 +2029,7 @@ void Quake3::handle_player(int self, input_t &input)
 	
 	if (entity->player->pain_timer == 0)
 	{
-		if (entity->rigid->lava)
+		if (entity->rigid->flags.lava)
 		{
 			console(self, "damage 20", engine->menu, engine->entity_list);
 
@@ -2040,7 +2040,7 @@ void Quake3::handle_player(int self, input_t &input)
 
 
 			entity->player->pain_timer = (TICK_RATE >> 1);
-			entity->rigid->lava = false;
+			entity->rigid->flags.lava = false;
 
 			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 			{
@@ -2058,11 +2058,11 @@ void Quake3::handle_player(int self, input_t &input)
 				notif_timer = 3 * TICK_RATE;
 			}
 		}
-		else if (entity->rigid->slime)
+		else if (entity->rigid->flags.slime)
 		{
 			console(self, "damage 10", engine->menu, engine->entity_list);
 			entity->player->pain_timer = (TICK_RATE >> 1);
-			entity->rigid->slime = false;
+			entity->rigid->flags.slime = false;
 
 			if (entity->player->health <= 0 && entity->player->state != PLAYER_DEAD)
 			{
@@ -2109,11 +2109,11 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player->pain_timer > 0)
 		entity->player->pain_timer--;
 
-	if (entity->rigid->hard_impact)
+	if (entity->rigid->flags.hard_impact)
 	{
 		if (entity->rigid->impact_velocity < -FALL_DAMAGE_VELOCITY)
 		{
-			entity->rigid->hard_impact = false;
+			entity->rigid->flags.hard_impact = false;
 
 			if (entity->player->fall_timer == 0)
 			{
@@ -2138,7 +2138,7 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 		else if (entity->rigid->impact_velocity < -IMPACT_VELOCITY)
 		{
-			entity->rigid->hard_impact = false;
+			entity->rigid->flags.hard_impact = false;
 
 
 			if (entity->player->fall_timer == 0)
@@ -2419,12 +2419,12 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player->flight_timer > 0)
 	{
 		entity->player->flight_timer--;
-		entity->rigid->flight = true;
+		entity->rigid->flags.flight = true;
 		entity->rigid->translational_friction = 0.9f;
 	}
 	else
 	{
-		entity->rigid->flight = false;
+		entity->rigid->flags.flight = false;
 		entity->rigid->translational_friction = 0.0f;
 	}
 
@@ -2463,11 +2463,11 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
-	if (input.walk == false && entity->rigid->on_ground && entity->rigid->gravity == true &&
-		(entity->rigid->water == false && entity->rigid->water_depth > 2047.0f) &&
+	if (input.walk == false && entity->rigid->flags.on_ground && entity->rigid->flags.gravity == true &&
+		(entity->rigid->flags.water == false && entity->rigid->water_depth > 2047.0f) &&
 		entity->player->state != PLAYER_DEAD &&
-		entity->rigid->noclip == false &&
-		entity->rigid->flight == false)
+		entity->rigid->flags.noclip == false &&
+		entity->rigid->flags.flight == false)
 	{
 		// Footstep sounds
 		if ((entity->position - entity->rigid->old_position).magnitude() > 0.8f && engine->tick_num % 20 == 0)
@@ -2475,7 +2475,7 @@ void Quake3::handle_player(int self, input_t &input)
 			switch (footstep_num++ % 4)
 			{
 			case 0:
-				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				if (entity->rigid->flags.water && entity->rigid->water_depth < 10.0f)
 				{
 					if (entity->player->local)
 						engine->play_wave_global(SND_SPLASH_STEP1);
@@ -2505,7 +2505,7 @@ void Quake3::handle_player(int self, input_t &input)
 				}
 				break;
 			case 1:
-				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				if (entity->rigid->flags.water && entity->rigid->water_depth < 10.0f)
 				{
 					if (entity->player->local)
 						engine->play_wave_global(SND_SPLASH_STEP2);
@@ -2535,7 +2535,7 @@ void Quake3::handle_player(int self, input_t &input)
 				}
 				break;
 			case 2:
-				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				if (entity->rigid->flags.water && entity->rigid->water_depth < 10.0f)
 				{
 					if (entity->player->local)
 						engine->play_wave_global(SND_SPLASH_STEP3);
@@ -2565,7 +2565,7 @@ void Quake3::handle_player(int self, input_t &input)
 				}
 				break;
 			case 3:
-				if (entity->rigid->water && entity->rigid->water_depth < 10.0f)
+				if (entity->rigid->flags.water && entity->rigid->water_depth < 10.0f)
 				{
 					if (entity->player->local)
 						engine->play_wave_global(SND_SPLASH_STEP4);
@@ -2599,27 +2599,27 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 
 	//Water sounds
-	if (entity->rigid->water && entity->rigid->water_depth < entity->rigid->get_height())
+	if (entity->rigid->flags.water && entity->rigid->water_depth < entity->rigid->get_height())
 	{
-		if (entity->rigid->water != entity->rigid->last_water)
+		if (entity->rigid->flags.water != entity->rigid->flags.last_water)
 		{
 			if (entity->player->local)
 				engine->play_wave_global(SND_WATER_IN);
 			else
 				engine->play_wave(entity->position, SND_WATER_IN);
 
-			entity->rigid->last_water = entity->rigid->water;
+			entity->rigid->flags.last_water = entity->rigid->flags.water;
 		}
 	}
 	else if (entity->rigid->water_depth > 2047.0f)
 	{
-		if (entity->rigid->water != entity->rigid->last_water)
+		if (entity->rigid->flags.water != entity->rigid->flags.last_water)
 		{
 			if (entity->player->local)
 				engine->play_wave_global(SND_WATER_OUT);
 			else
 				engine->play_wave(entity->position, SND_WATER_OUT);
-			entity->rigid->last_water = entity->rigid->water;
+			entity->rigid->flags.last_water = entity->rigid->flags.water;
 			entity->player->drown_timer = 0;
 		}
 	}
@@ -2797,8 +2797,8 @@ void Quake3::drop_weapon(int index)
 
 
 	drop_weapon->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-	drop_weapon->rigid->translational_friction_flag = true;
-	drop_weapon->rigid->rotational_friction_flag = true;
+	drop_weapon->rigid->flags.translational_friction_flag = true;
+	drop_weapon->rigid->flags.rotational_friction_flag = true;
 
 
 
@@ -3375,7 +3375,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->rigid->net_force = frame.forward * -10.0f;
 
 		projectile->rigid->angular_velocity = vec3();
-		projectile->rigid->gravity = false;
+		projectile->rigid->flags.gravity = false;
 		projectile->projectile = new Projectile(projectile, engine->audio);
 //		projectile->trigger->projectile = true;
 
@@ -3478,7 +3478,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid->velocity = frame.forward * -6.25f;
 		projectile->rigid->net_force = frame.forward * -10.0f;
 		projectile->rigid->angular_velocity = vec3();
-		projectile->rigid->gravity = false;
+		projectile->rigid->flags.gravity = false;
 		projectile->rigid->impact_index = SND_EXPLODE;
 
 
@@ -3524,9 +3524,9 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->rigid->clone(*(model_table[MODEL_GRENADE]));
 		projectile->rigid->velocity = frame.forward * -25.0f;
 		projectile->rigid->angular_velocity = vec3(1.1f, 0.1f, 1.1f);
-		projectile->rigid->gravity = true;
-		projectile->rigid->ground_friction_flag = true;
-		projectile->rigid->rotational_friction_flag = true;
+		projectile->rigid->flags.gravity = true;
+		projectile->rigid->flags.ground_friction_flag = true;
+		projectile->rigid->flags.rotational_friction_flag = true;
 		//entity->rigid->set_target(*(entity_list[spawn]));
 
 		projectile->flags.particle_on = true;
@@ -3583,7 +3583,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	player.entity->rigid->get_frame(frame);
 
 
-	if (player.entity->rigid->water && player.entity->rigid->water_depth >= 25.0f)
+	if (player.entity->rigid->flags.water && player.entity->rigid->water_depth >= 25.0f)
 	{
 		player.health -= player.ammo_lightning * LIGHTNING_DAMAGE;
 		if (player.health < 0)
@@ -3645,7 +3645,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->rigid->clone(*(model_table[MODEL_BOX]));
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
-		projectile->rigid->gravity = false;
+		projectile->rigid->flags.gravity = false;
 		projectile->rigid->bounce = 2;
 	//	projectile->rigid->rotational_friction_flag = true;
 		projectile->rigid->lightning_trail = true;
@@ -3653,7 +3653,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		frame.set(projectile->model->morientation);
 		projectile->flags.visible = true; // accomodate for low spatial testing rate
-		projectile->rigid->noclip = true;
+		projectile->rigid->flags.noclip = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->flags.bsp_visible = true;
 
@@ -3761,11 +3761,11 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->rigid->clone(*(model_table[MODEL_BALL]));
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
-		projectile->rigid->gravity = false;
+		projectile->rigid->flags.gravity = false;
 		projectile->rigid->bounce = 5;
 		projectile->model = projectile->rigid;
 		projectile->model->rail_trail = true;
-		projectile->rigid->noclip = true;
+		projectile->rigid->flags.noclip = true;
 
 		frame.set(projectile->model->morientation);
 		projectile->flags.visible = true; // accomodate for low spatial testing rate
@@ -4037,11 +4037,11 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	bullet->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
 	bullet->rigid->velocity += right * random() + frame.up * random();
 	bullet->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f * random());
-	bullet->rigid->gravity = true;
+	bullet->rigid->flags.gravity = true;
 	bullet->model = bullet->rigid;
 	bullet->rigid->impact_index = SND_BULLET;
-	bullet->rigid->rotational_friction_flag = true;
-	bullet->rigid->translational_friction_flag = true;
+	bullet->rigid->flags.rotational_friction_flag = true;
+	bullet->rigid->flags.translational_friction_flag = true;
 	bullet->rigid->translational_friction = 0.9f;
 	frame.set(bullet->model->morientation);
 	bullet->flags.visible = true; // accomodate for low spatial testing rate
@@ -4170,9 +4170,9 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	frame.set(shell->rigid->morientation);
 	shell->rigid->velocity += right * random() + frame.up * random();
 	shell->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f  * random());
-	shell->rigid->gravity = true;
-	shell->rigid->rotational_friction_flag = true;
-	shell->rigid->translational_friction_flag = true;
+	shell->rigid->flags.gravity = true;
+	shell->rigid->flags.rotational_friction_flag = true;
+	shell->rigid->flags.translational_friction_flag = true;
 	shell->rigid->translational_friction = 0.9f;
 	shell->rigid->impact_index = SND_SHELL;
 
@@ -4194,11 +4194,11 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	shell2->position += frame.forward * 2.0f;
 	shell2->rigid->velocity += right * 1.25f * random() + frame.up * random();
-	shell2->rigid->rotational_friction_flag = true;
-	shell2->rigid->translational_friction_flag = true;
+	shell2->rigid->flags.rotational_friction_flag = true;
+	shell2->rigid->flags.translational_friction_flag = true;
 	shell2->rigid->translational_friction = 0.9f;
 	shell2->rigid->angular_velocity = vec3(-1.0f * random(), 2.0f * random(), -3.0f * random());
-	shell2->rigid->gravity = true;
+	shell2->rigid->flags.gravity = true;
 	shell2->rigid->impact_index = SND_SHELL;
 	shell2->model = shell2->rigid;
 	frame.set(shell2->model->morientation);
@@ -4312,9 +4312,9 @@ void Quake3::handle_gibs(Player &player)
 		entity0->rigid->clone(*(model_table[MODEL_GIB0]));
 		entity0->rigid->velocity = vec3(2.0f, 1.2f, 1.6f);
 		entity0->rigid->angular_velocity = vec3(3.0f, 1.0f, 2.2f);
-		entity0->rigid->gravity = true;
-		entity0->rigid->translational_friction_flag = true;
-		entity0->rigid->rotational_friction_flag = true;
+		entity0->rigid->flags.gravity = true;
+		entity0->rigid->flags.translational_friction_flag = true;
+		entity0->rigid->flags.rotational_friction_flag = true;
 		entity0->rigid->impact_index = SND_GIB1;
 	}
 
@@ -4328,9 +4328,9 @@ void Quake3::handle_gibs(Player &player)
 		entity1->rigid->clone(*(model_table[MODEL_GIB1]));
 		entity1->rigid->velocity = vec3(0.8f, 1.2f, -1.2f);
 		entity1->rigid->angular_velocity = vec3(1.0f, 1.6f, 2.0f);
-		entity1->rigid->gravity = true;
-		entity1->rigid->translational_friction_flag = true;
-		entity1->rigid->rotational_friction_flag = true;
+		entity1->rigid->flags.gravity = true;
+		entity1->rigid->flags.translational_friction_flag = true;
+		entity1->rigid->flags.rotational_friction_flag = true;
 		entity1->rigid->impact_index = SND_GIB2;
 	}
 
@@ -4345,9 +4345,9 @@ void Quake3::handle_gibs(Player &player)
 		entity2->rigid->clone(*(model_table[MODEL_GIB2]));
 		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
 		entity2->rigid->angular_velocity = vec3(-2.0f, 1.0f, 6.0f);
-		entity2->rigid->gravity = true;
-		entity2->rigid->translational_friction_flag = true;
-		entity2->rigid->rotational_friction_flag = true;
+		entity2->rigid->flags.gravity = true;
+		entity2->rigid->flags.translational_friction_flag = true;
+		entity2->rigid->flags.rotational_friction_flag = true;
 		entity2->rigid->impact_index = SND_GIB3;
 	}
 
@@ -4362,9 +4362,9 @@ void Quake3::handle_gibs(Player &player)
 		entity3->rigid->clone(*(model_table[MODEL_GIB3]));
 		entity3->rigid->velocity = vec3(-2.0f, 3.2f, 1.2f);
 		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity3->rigid->gravity = true;
-		entity3->rigid->rotational_friction_flag = true;
-		entity3->rigid->translational_friction_flag = true;
+		entity3->rigid->flags.gravity = true;
+		entity3->rigid->flags.rotational_friction_flag = true;
+		entity3->rigid->flags.translational_friction_flag = true;
 		entity3->rigid->impact_index = SND_GIB1;
 	}
 
@@ -4379,9 +4379,9 @@ void Quake3::handle_gibs(Player &player)
 		entity4->rigid->clone(*(model_table[MODEL_GIB4]));
 		entity4->rigid->velocity = vec3(-1.25f, 1.7f, 1.27f);
 		entity4->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity4->rigid->gravity = true;
-		entity4->rigid->rotational_friction_flag = true;
-		entity4->rigid->translational_friction_flag = true;
+		entity4->rigid->flags.gravity = true;
+		entity4->rigid->flags.rotational_friction_flag = true;
+		entity4->rigid->flags.translational_friction_flag = true;
 		entity4->rigid->impact_index = SND_GIB2;
 	}
 
@@ -4396,9 +4396,9 @@ void Quake3::handle_gibs(Player &player)
 		entity5->rigid->clone(*(model_table[MODEL_GIB5]));
 		entity5->rigid->velocity = vec3(-1.45f, 3.7f, 1.72f);
 		entity5->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity5->rigid->gravity = true;
-		entity5->rigid->rotational_friction_flag = true;
-		entity5->rigid->translational_friction_flag = true;
+		entity5->rigid->flags.gravity = true;
+		entity5->rigid->flags.rotational_friction_flag = true;
+		entity5->rigid->flags.translational_friction_flag = true;
 		entity5->rigid->impact_index = SND_GIB1;
 	}
 
@@ -4413,9 +4413,9 @@ void Quake3::handle_gibs(Player &player)
 		entity6->rigid->clone(*(model_table[MODEL_GIB6]));
 		entity6->rigid->velocity = vec3(-1.15f, 1.7f, 1.37f);
 		entity6->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity6->rigid->gravity = true;
-		entity6->rigid->translational_friction_flag = true;
-		entity6->rigid->rotational_friction_flag = true;
+		entity6->rigid->flags.gravity = true;
+		entity6->rigid->flags.translational_friction_flag = true;
+		entity6->rigid->flags.rotational_friction_flag = true;
 		entity6->rigid->impact_index = SND_GIB2;
 	}
 
@@ -4430,9 +4430,9 @@ void Quake3::handle_gibs(Player &player)
 		entity7->rigid->clone(*(model_table[MODEL_GIB7]));
 		entity7->rigid->velocity = vec3(-1.45f, 2.34f, 1.27f);
 		entity7->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity7->rigid->gravity = true;
-		entity7->rigid->translational_friction_flag = true;
-		entity7->rigid->rotational_friction_flag = true;
+		entity7->rigid->flags.gravity = true;
+		entity7->rigid->flags.translational_friction_flag = true;
+		entity7->rigid->flags.rotational_friction_flag = true;
 		entity7->rigid->impact_index = SND_GIB3;
 	}
 
@@ -4447,9 +4447,9 @@ void Quake3::handle_gibs(Player &player)
 		entity8->rigid->clone(*(model_table[MODEL_GIB8]));
 		entity8->rigid->velocity = vec3(-1.85f, 1.73f, 2.32f);
 		entity8->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity8->rigid->gravity = true;
-		entity8->rigid->translational_friction_flag = true;
-		entity8->rigid->rotational_friction_flag = true;
+		entity8->rigid->flags.gravity = true;
+		entity8->rigid->flags.translational_friction_flag = true;
+		entity8->rigid->flags.rotational_friction_flag = true;
 		entity8->rigid->impact_index = SND_GIB1;
 	}
 
@@ -4464,9 +4464,9 @@ void Quake3::handle_gibs(Player &player)
 		entity9->rigid->clone(*(model_table[MODEL_GIB9]));
 		entity9->rigid->velocity = vec3(1.45f, 1.27f, -1.2f);
 		entity9->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
-		entity9->rigid->gravity = true;
-		entity9->rigid->translational_friction_flag = true;
-		entity9->rigid->rotational_friction_flag = true;
+		entity9->rigid->flags.gravity = true;
+		entity9->rigid->flags.translational_friction_flag = true;
+		entity9->rigid->flags.rotational_friction_flag = true;
 		entity9->rigid->impact_index = SND_GIB2;
 	}
 
@@ -5496,7 +5496,7 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "Speed: %3.3f", entity->rigid->velocity.magnitude());
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
-			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity->rigid->water, entity->rigid->water_depth);
+			snprintf(msg, LINE_SIZE, "Water: %d depth %lf", entity->rigid->flags.water, entity->rigid->water_depth);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "drawcalls: %d triangles %d", engine->gfx.gpustat.drawcall, engine->gfx.gpustat.triangle);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
@@ -5517,7 +5517,7 @@ void Quake3::render_hud(double last_frametime)
 			);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
-			snprintf(msg, LINE_SIZE, "bsp_platform %d on_ground %d impact velocity %f", entity->rigid->bsp_model_platform, entity->rigid->on_ground, entity->rigid->impact_velocity );
+			snprintf(msg, LINE_SIZE, "bsp_platform %d on_ground %d impact velocity %f", entity->rigid->bsp_model_platform, entity->rigid->flags.on_ground, entity->rigid->impact_velocity );
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 			snprintf(msg, LINE_SIZE, "terrain height %f x: %d y: %d top %d", engine->terrain.height, engine->terrain.x_index, engine->terrain.y_index, engine->terrain.top);
@@ -5876,7 +5876,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			sprintf(data, "Vel %.3f %.3f %.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
-			sprintf(data, "State %d", entity->rigid->sleep);
+			sprintf(data, "State %d", entity->rigid->flags.sleep);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 		}
 
@@ -7351,7 +7351,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			snprintf(msg, LINE_SIZE, "noclip\n");
 			menu.print(msg);
 
-			rigid->noclip = !rigid->noclip;
+			rigid->flags.noclip = !rigid->flags.noclip;
 //			rigid->velocity.y = 0.0f; // stop initial sinking into floor from gravity
 			//rigid->translational_friction = 0.9f;
 		}
@@ -7761,7 +7761,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		case ENT_PATH_CORNER:
 			entity_list[i]->flags.visible = true;
 			entity_list[i]->flags.bsp_visible = true;
-			entity_list[i]->rigid->gravity = false;
+			entity_list[i]->rigid->flags.gravity = false;
 			break;
 		case ENT_MISC_PORTAL_CAMERA:
 			engine->q3map.portal_tex = entity_list[i]->portal_camera->quad_tex;
@@ -7801,7 +7801,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			entity_list[i]->ent_type == ENT_INFO_NOTNULL ||
 			entity_list[i]->ent_type == ENT_TRIGGER_PUSH)
 		{
-			entity_list[i]->rigid->gravity = false;
+			entity_list[i]->rigid->flags.gravity = false;
 		}
 
 	}
@@ -7828,10 +7828,10 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->nettype = NET_BULLET_HIT;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BULLET_HIT]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
-		ent->rigid->noclip = true;
+		ent->rigid->flags.noclip = true;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->blend = true;
@@ -7847,10 +7847,10 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->nettype = NET_PLASMA_HIT;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_PLASMA_HIT]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
-		ent->rigid->noclip = true;
+		ent->rigid->flags.noclip = true;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->blend = true;
@@ -7866,10 +7866,10 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->nettype = NET_BULLET;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BULLET]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
-		ent->rigid->noclip = false;
+		ent->rigid->flags.noclip = false;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->impact_index = SND_BULLET;
@@ -7878,10 +7878,10 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->nettype = NET_SHELL;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_SHELL]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
-		ent->rigid->noclip = false;
+		ent->rigid->flags.noclip = false;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->impact_index = SND_SHELL;
@@ -7890,10 +7890,10 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->nettype = NET_BOOM;
 		ent->rigid = new RigidBody(ent);
 		ent->rigid->clone(*(model_table[MODEL_BOOM]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
-		ent->rigid->noclip = true;
+		ent->rigid->flags.noclip = true;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->blend = true;
@@ -7933,15 +7933,15 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->rigid->clone(*(model_table[MODEL_ROCKET]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		break;
 	case NET_ROCKET_LAUNCHER:
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/rocketl/rocketl");
 		ent->nettype = NET_ROCKET_LAUNCHER;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 
@@ -7955,9 +7955,9 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 		ent->rigid->clone(*(model_table[MODEL_GRENADE]));
-		ent->rigid->gravity = true;
-		ent->rigid->rotational_friction_flag = true;
-		ent->rigid->translational_friction_flag = true;
+		ent->rigid->flags.gravity = true;
+		ent->rigid->flags.rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->translational_friction = 0.9f;
 		ent->num_particle = 5000;
 		ent->flags.particle_on = true;
@@ -7981,8 +7981,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/grenadel/grenade");
 		ent->nettype = NET_GRENADE_LAUNCHER;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -7995,11 +7995,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->clone(*(model_table[MODEL_BOX]));
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->lightning_trail = true;
 		ent->rigid->bounce = 5;
 		ent->model = ent->rigid;
-		ent->rigid->noclip = true;
+		ent->rigid->flags.noclip = true;
 
 
 		ent->projectile = new Projectile(ent, engine->audio);
@@ -8017,8 +8017,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/lightning/lightning");
 		ent->nettype = NET_LIGHTNINGGUN;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8031,11 +8031,11 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->clone(*(model_table[MODEL_BALL]));
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 5;
 		ent->model = ent->rigid;
 		ent->model->rail_trail = true;
-		ent->rigid->noclip = true;
+		ent->rigid->flags.noclip = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
 		sprintf(ent->projectile->action, " ");
@@ -8051,8 +8051,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/railgun/railgun");
 		ent->nettype = NET_RAILGUN;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8065,7 +8065,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 
 		ent->rigid->clone(*(model_table[MODEL_BALL]));
-		ent->rigid->gravity = false;
+		ent->rigid->flags.gravity = false;
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->explode_index = engine->get_load_wave("sound/weapons/plasma/plasmx1a.wav");
 		ent->projectile->idle_index = engine->get_load_wave("sound/weapons/plasma/lasfly.wav");
@@ -8092,8 +8092,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/plasmagun/plasmagun");
 		ent->nettype = NET_PLASMAGUN;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8105,8 +8105,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/shotgun/shotgun");
 		ent->nettype = NET_SHOTGUN;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8118,8 +8118,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/machinegun/machinegun");
 		ent->nettype = NET_MACHINEGUN;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8131,8 +8131,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/quad");
 		ent->nettype = NET_QUAD;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8144,8 +8144,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/regen");
 		ent->nettype = NET_REGEN;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8157,8 +8157,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/invis");
 		ent->nettype = NET_INVIS;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8170,8 +8170,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/flight");
 		ent->nettype = NET_FLIGHT;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8183,8 +8183,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/haste");
 		ent->nettype = NET_HASTE;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8196,8 +8196,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/b_flag");
 		ent->nettype = NET_BLUE_FLAG;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8209,8 +8209,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/r_flag");
 		ent->nettype = NET_RED_FLAG;
-		ent->rigid->translational_friction_flag = true;
-		ent->rigid->rotational_friction_flag = true;
+		ent->rigid->flags.translational_friction_flag = true;
+		ent->rigid->flags.rotational_friction_flag = true;
 
 		ent->trigger = new Trigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -8363,11 +8363,11 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 	bool inside = false;
 	RigidBody *rigid = ent->rigid;
 
-	if (rigid && rigid->hard_impact)
+	if (rigid && rigid->flags.hard_impact)
 	{
 		if (rigid->impact_velocity <= -RIGID_IMPACT)
 		{
-			rigid->hard_impact = false;
+			rigid->flags.hard_impact = false;
 
 			engine->play_wave(ent->position, rigid->impact_index);
 		}
@@ -8947,7 +8947,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 						}
 
 						// allow rocket jumping to pass max air speed
-						if (player->entity->rigid->on_ground == false)
+						if (player->entity->rigid->flags.on_ground == false)
 							player->max_air_speed *= 2.0f;
 						debugf(msg);
 						engine->menu.print_notif(msg);
@@ -9106,10 +9106,10 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 		decal->rigid = new RigidBody(decal);
 		decal->position = pos + plane.normal * offset;
 		decal->rigid->clone(decal_model);
-		decal->rigid->gravity = false;
+		decal->rigid->flags.gravity = false;
 		decal->rigid->bounce = 2;
 		decal->model = decal->rigid;
-		decal->rigid->noclip = true;
+		decal->rigid->flags.noclip = true;
 		decal->flags.visible = true; // accomodate for low spatial testing rate
 		decal->bsp_leaf = true;
 		decal->rigid->blend = true;
@@ -9195,70 +9195,70 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_armor_shard\n");
 		ent.model->clone(*model_table[MODEL_ARMOR_SHARD]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_ROCKETLAUNCHER)
 	{
 		debugf("Loading weapon_rocketlauncher\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_ROCKET]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_SHELLS)
 	{
 		debugf("Loading ammo_shells\n");
 		ent.model->clone(*model_table[MODEL_AMMO_SHELLS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_ROCKETS)
 	{
 		debugf("Loading ammo_rockets\n");
 		ent.model->clone(*model_table[MODEL_AMMO_ROCKETS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_CELLS)
 	{
 		debugf("Loading ammo_cells\n");
 		ent.model->clone(*model_table[MODEL_AMMO_PLASMA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_BFG)
 	{
 		debugf("Loading ammo_bfg\n");
 		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_GRENADES)
 	{
 		debugf("Loading ammo_bfg\n");
 		ent.model->clone(*model_table[MODEL_AMMO_GRENADES]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_LIGHTNING)
 	{
 		debugf("Loading ammo_lightning\n");
 		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_SLUGS)
 	{
 		debugf("Loading ammo_slugs\n");
 		ent.model->clone(*model_table[MODEL_AMMO_SLUGS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_BULLETS)
 	{
 		debugf("Loading ammo_bullets\n");
 		ent.model->clone(*model_table[MODEL_AMMO_BULLETS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_ARMOR_COMBAT)
 	{
@@ -9266,7 +9266,7 @@ void Quake3::map_model(Entity &ent)
 		ent.model->clone(*model_table[MODEL_ARMOR_COMBAT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_ARMOR_BODY)
 	{
@@ -9274,7 +9274,7 @@ void Quake3::map_model(Entity &ent)
 		ent.model->clone(*model_table[MODEL_ARMOR_BODY]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEFLAG)
 	{
@@ -9282,7 +9282,7 @@ void Quake3::map_model(Entity &ent)
 		ent.model->clone(*model_table[MODEL_BLUE_FLAG]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position += vec3(0.0f, 50.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDFLAG)
 	{
@@ -9290,14 +9290,14 @@ void Quake3::map_model(Entity &ent)
 		ent.model->clone(*model_table[MODEL_RED_FLAG]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position += vec3(0.0f, 50.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_QUAD)
 	{
 		debugf("Loading item_quad\n");
 		ent.model->clone(*model_table[MODEL_QUAD]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_ITEM_REGEN)
@@ -9305,7 +9305,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_regen\n");
 		ent.model->clone(*model_table[MODEL_REGEN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_ITEM_INVIS)
@@ -9313,7 +9313,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_invis\n");
 		ent.model->clone(*model_table[MODEL_INVIS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_ITEM_FLIGHT)
@@ -9321,7 +9321,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_flight\n");
 		ent.model->clone(*model_table[MODEL_FLIGHT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_ITEM_HASTE)
@@ -9329,7 +9329,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_haste\n");
 		ent.model->clone(*model_table[MODEL_HASTE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_HOLDABLE_MEDKIT)
@@ -9337,7 +9337,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading holdable_medkit\n");
 		ent.model->clone(*model_table[MODEL_MEDKIT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_HOLDABLE_TELEPORTER)
@@ -9345,7 +9345,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading holdable_teleporter\n");
 		ent.model->clone(*model_table[MODEL_TELEPORTER]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
 	}
 	else if (ent.ent_type == ENT_FUNC_TERRAIN)
@@ -9353,111 +9353,111 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading func_terrain\n");
 		ent.model->clone(*model_table[MODEL_TERRAIN]);
 		ent.position += vec3(0.0f, -5000.0f, 0.0f);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_LIGHTNING)
 	{
 		debugf("Loading weapon_lightning\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_BFG)
 	{
 		debugf("Loading weapon_bfg\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_SHOTGUN)
 	{
 		debugf("Loading weapon_shotgun\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_SHOTGUN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_RAILGUN)
 	{
 		debugf("Loading weapon_railgun\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_RAILGUN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_GRENADELAUNCHER)
 	{
 		debugf("Loading weapon_grenadelauncher\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_GRENADE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_PLASMA)
 	{
 		debugf("Loading weapon_plasmagun\n");
 		ent.model->clone(*model_table[MODEL_WEAPON_PLASMA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH)
 	{
 		debugf("Loading item_health\n");
 		ent.model->clone(*model_table[MODEL_HEALTH]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_LARGE)
 	{
 		debugf("Loading item_health_large\n");
 		ent.model->clone(*model_table[MODEL_HEALTH_LARGE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_SMALL)
 	{
 		debugf("Loading item_health_large\n");
 		ent.model->clone(*model_table[MODEL_HEALTH_SMALL]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_MEGA)
 	{
 		debugf("Loading item_health_mega\n");
 		ent.model->clone(*model_table[MODEL_HEALTH_MEGA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_INFO_PLAYER_DEATHMATCH)
 	{
 		debugf("Loading info_player_deathmatch\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUESPAWN)
 	{
 		debugf("Loading team_CTF_bluespawn\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDSPAWN)
 	{
 		debugf("Loading team_CTF_redspawn\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEPLAYER)
 	{
 		debugf("Loading team_CTF_blueplayer\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDPLAYER)
 	{
 		debugf("Loading team_CTF_redplayer\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type > ENT_FUNC_START && ent.ent_type < ENT_FUNC_END)
@@ -9467,7 +9467,7 @@ void Quake3::map_model(Entity &ent)
 		{
 			debugf("Loading func item\n");
 			ent.model->clone(*model_table[MODEL_BOX]);
-			ent.rigid->gravity = false;
+			ent.rigid->flags.gravity = false;
 			ent.flags.nodraw = false;
 		}
 	}
@@ -9475,84 +9475,84 @@ void Quake3::map_model(Entity &ent)
 	{
 			debugf("Loading path_corner\n");
 			ent.model->clone(*model_table[MODEL_BOX]);
-			ent.rigid->gravity = false;
+			ent.rigid->flags.gravity = false;
 			ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DEMON1)
 	{
 		debugf("Loading monster_demon1\n");
 		ent.model->clone(*model_table[MODEL_DEMON]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_SHAMBLER)
 	{
 		debugf("Loading monster_shambler\n");
 		ent.model->clone(*model_table[MODEL_SHAMBLER]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DOG)
 	{
 		debugf("Loading monster_dog\n");
 		ent.model->clone(*model_table[MODEL_DOG]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_ARMY)
 	{
 		debugf("Loading monster_army\n");
 		ent.model->clone(*model_table[MODEL_SOLDIER]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_WIZARD)
 	{
 		debugf("Loading monster_wizard\n");
 		ent.model->clone(*model_table[MODEL_WIZARD]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_OGRE)
 	{
 		debugf("Loading monster_ogre\n");
 		ent.model->clone(*model_table[MODEL_OGRE]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_KNIGHT)
 	{
 		debugf("Loading monster_knight\n");
 		ent.model->clone(*model_table[MODEL_KNIGHT]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_ZOMBIE)
 	{
 		debugf("Loading monster_knight\n");
 		ent.model->clone(*model_table[MODEL_ZOMBIE]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLUORO)
 	{
 		debugf("Loading light_fluoro\n");
 		ent.model->clone(*model_table[MODEL_V_LIGHT]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLUOROSPARK)
 	{
 		debugf("Loading light_fluorospark\n");
 		ent.model->clone(*model_table[MODEL_V_LIGHT]);
-		ent.rigid->gravity = true;
+		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE)
 	{
 		debugf("Loading item_artifact_super_damage\n");
 		ent.model->clone(*model_table[MODEL_QUADDAMA]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9561,7 +9561,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading item_artifact_invulnerability\n");
 		ent.model->clone(*model_table[MODEL_INVULNER]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9570,7 +9570,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading item_artifact_envirosuit\n");
 		ent.model->clone(*model_table[MODEL_SUIT]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9579,7 +9579,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading weapon_nailgun\n");
 		ent.model->clone(*model_table[MODEL_G_NAIL]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9588,7 +9588,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading weapon_supernailgun\n");
 		ent.model->clone(*model_table[MODEL_G_NAIL2]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9597,7 +9597,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading weapon_supershotgun\n");
 		ent.model->clone(*model_table[MODEL_G_SHOT]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9615,28 +9615,28 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading light_torch_small_walltorch\n");
 		ent.model->clone(*model_table[MODEL_FLAME]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_YELLOW)
 	{
 		debugf("Loading light_flame_small_yellow\n");
 		ent.model->clone(*model_table[MODEL_FLAME2]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_WHITE)
 	{
 		debugf("Loading light_flame_small_yellow\n");
 		ent.model->clone(*model_table[MODEL_FLAME2]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_ITEM_KEY1)
 	{
 		debugf("Loading item_key1\n");
 		ent.model->clone(*model_table[MODEL_M_G_KEY]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9645,7 +9645,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading item_key2\n");
 		ent.model->clone(*model_table[MODEL_M_S_KEY]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9654,7 +9654,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading item_armor1\n");
 		ent.model->clone(*model_table[MODEL_YELLOWARMOR]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9663,7 +9663,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading item_armor2\n");
 		ent.model->clone(*model_table[MODEL_REDARMOR]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
@@ -9672,7 +9672,7 @@ void Quake3::map_model(Entity &ent)
 	{
 		debugf("Loading item_sigil\n");
 		ent.model->clone(*model_table[MODEL_END1]);
-		ent.rigid->gravity = false;
+		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;

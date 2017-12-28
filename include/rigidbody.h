@@ -19,7 +19,7 @@ class RigidBody : public Model
 public:
 	RigidBody(Entity *entity);
 	void recalc();
-	virtual void integrate(float time);
+	void integrate(float time);
 	bool collision_detect(vec3 &v);
 	bool collision_detect(Plane &p);
 	bool collision_detect_simple(RigidBody &body);
@@ -68,33 +68,40 @@ public:
 
 	unsigned int impact_index;
 
-	bool			on_ground;
-	bool			hard_impact;
+
 	float			impact_velocity;
-	bool			pursue_flag;
-	bool			step_flag;
 	Entity			*target;
 	vec3			sphere_target;
 	int			jump_timer;
 	unsigned int	bounce;
 
 
+	struct flag
+	{
+		unsigned short int on_ground : 1,
+			hard_impact : 1,
+			sleep : 1,
+			gravity : 1,
+			noclip : 1,
+			flight : 1,
+			water : 1,
+			last_water : 1,
+			lava : 1,
+			slime : 1,
+			rotational_friction_flag : 1,
+			translational_friction_flag : 1,
+			ground_friction_flag : 1,
+			pursue_flag : 1,
+			step_flag : 1,
+			pad : 1;
+	} flags;
+
+
 	float			restitution;
-	bool			sleep;
 	int				y_offset;
-	bool			gravity;
-	bool			noclip;
-	bool			flight;
-	bool			water;
-	bool			last_water;
-	bool			lava;
-	bool			slime;
 	int				step_type;
 	int				bsp_trigger_volume;
 	int				bsp_model_platform;
-	bool			rotational_friction_flag;
-	bool			translational_friction_flag;
-	bool			ground_friction_flag;
 	float			rotational_friction;
 	float			translational_friction;
 	float			water_depth;
