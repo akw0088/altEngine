@@ -1009,4 +1009,15 @@ typedef struct
 	int capturelimit;
 } report_t;
 
+typedef struct
+{
+	int				angle;
+	vec3			model_offset;	// bsp model offset
+	float			model_lerp;		// bsp lerp between 0.0-1.0
+	bool			opening;		// flag for door opening
+	float			func_height;			// How far a func_ item will move in map units, defaults to half width
+	vec3			origin; // used on movers to store original position when spawned
+} brushinfo_t;
+
+
 #endif

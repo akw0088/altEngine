@@ -1347,27 +1347,35 @@ void Engine::render_portalcamera()
 
 		// generate matrices for each light face
 
-		switch (entity_list[i]->angle)
+		if (entity_list[i]->brushinfo == NULL)
 		{
-		case 0:
-		case 360:
-			matrix4::mat_forward(matrix, entity_list[i]->position);
-			break;
-		case 45:
-		case 90:
-			matrix4::mat_right(matrix, entity_list[i]->position);
-			break;
-		case 135:
-		case 180:
 			matrix4::mat_backward(matrix, entity_list[i]->position);
 			break;
-		case 245:
-		case 270:
-			matrix4::mat_left(matrix, entity_list[i]->position);
-			break;
-		default:
-			matrix4::mat_backward(matrix, entity_list[i]->position);
-			break;
+		}
+		else
+		{
+			switch (entity_list[i]->brushinfo->angle)
+			{
+			case 0:
+			case 360:
+				matrix4::mat_forward(matrix, entity_list[i]->position);
+				break;
+			case 45:
+			case 90:
+				matrix4::mat_right(matrix, entity_list[i]->position);
+				break;
+			case 135:
+			case 180:
+				matrix4::mat_backward(matrix, entity_list[i]->position);
+				break;
+			case 245:
+			case 270:
+				matrix4::mat_left(matrix, entity_list[i]->position);
+				break;
+			default:
+				matrix4::mat_backward(matrix, entity_list[i]->position);
+				break;
+			}
 		}
 
 		matrix4 mvp = matrix * portal->portal_projection;
@@ -1796,7 +1804,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		if (light == NULL)
 			continue;
 
-		if (entity_list[i]->bsp_visible == false)
+		if (entity_list[i]->flags.bsp_visible == false)
 			continue;
 
 		if (i == 100)
@@ -2059,23 +2067,23 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			entity->ent_type == ENT_FUNC_TERRAIN ||
 			(entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet))
 		{
-			entity->visible = true;
-			entity->bsp_visible = true;
+			entity->flags.visible = true;
+			entity->flags.bsp_visible = true;
 			//printf("break\n");
 		}
 
 		if (vis)
 		{
-			if (entity->visible == false)
+			if (entity->flags.visible == false)
 				continue;
 		}
 		else
 		{
-			if (entity->bsp_visible == false || (entity->trigger && entity->trigger->active))
+			if (entity->flags.bsp_visible == false || (entity->trigger && entity->trigger->active))
 				continue;
 		}
 
-		if (entity->nodraw == true)
+		if (entity->flags.nodraw == true)
 			continue;
 
 		if (entity->model != NULL)
@@ -2161,7 +2169,10 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			Frame frame;
 
 			vec3 old = entity->position;
-			entity->position = entity->model_offset + (entity->position - entity->origin);
+			if (entity->brushinfo)
+			{
+				entity->position = entity->brushinfo->model_offset + (entity->position - entity->brushinfo->origin);
+			}
 			entity->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
@@ -2172,7 +2183,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 
 		//  update emitter position if this entity has particles
-		if (entity->particle_on)
+		if (entity->flags.particle_on)
 		{
 			emitter.enabled = true;
 			emitter.num = entity->num_particle;
@@ -2196,7 +2207,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 		if (entity == NULL)
 			continue;
 
-		if (entity->visible == false && entity->player && entity->player->type != SPECTATOR)
+		if (entity->flags.visible == false && entity->player && entity->player->type != SPECTATOR)
 			continue;
 
 		if (	(entity->player && entity->player->type == BOT) ||
@@ -2687,11 +2698,11 @@ void Engine::spatial_testing()
 
 			if (model->rail_trail)
 			{
-				entity_list[i]->frustum_visible = true; // trail extends past aabb
+				entity_list[i]->flags.frustum_visible = true; // trail extends past aabb
 			}
 			else
 			{
-				entity_list[i]->frustum_visible = aabb_visible(min, max, mvp);
+				entity_list[i]->flags.frustum_visible = aabb_visible(min, max, mvp);
 			}
 
 
@@ -2707,7 +2718,7 @@ void Engine::spatial_testing()
 				}
 			}
 
-			entity_list[i]->bsp_visible = bsp_visible;
+			entity_list[i]->flags.bsp_visible = bsp_visible;
 
 			int player = find_type(ENT_PLAYER, 0);
 
@@ -2715,7 +2726,7 @@ void Engine::spatial_testing()
 				entity_list[player]->bsp_leaf = leaf_a;
 			entity_list[i]->bsp_leaf = leaf_b;
 
-			if ((bsp_visible && entity_list[i]->frustum_visible) || i == (unsigned int)player)
+			if ((bsp_visible && entity_list[i]->flags.frustum_visible) || i == (unsigned int)player)
 			{
 				visible = true;
 			}
@@ -2728,17 +2739,17 @@ void Engine::spatial_testing()
 				if (trigger->hide == false)
 				{
 					//Always show with hide flag false
-					entity_list[i]->visible = visible;
+					entity_list[i]->flags.visible = visible;
 				}
 				else if (trigger->active == false)
 				{
 					//Only show when not triggered
-					entity_list[i]->visible = visible;
+					entity_list[i]->flags.visible = visible;
 				}
 			}
 			else
 			{
-				entity_list[i]->visible = visible;
+				entity_list[i]->flags.visible = visible;
 			}
 		}
 		else
@@ -2748,14 +2759,14 @@ void Engine::spatial_testing()
 			int player = find_type(ENT_PLAYER, 0);
 
 	
-			entity_list[i]->visible = q3map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
+			entity_list[i]->flags.visible = q3map.vis_test(camera_frame.pos, entity_list[i]->position, leaf_a, leaf_b);
 			entity_list[i]->bsp_leaf = leaf_b;
 			if (player != -1)
 				entity_list[player]->bsp_leaf = leaf_a;
 
 		}
 
-		if (entity_list[i]->visible == false)
+		if (entity_list[i]->flags.visible == false)
 			continue;
 
 		Light *light = entity_list[i]->light;
@@ -2786,7 +2797,7 @@ void Engine::activate_light(float distance, Light *light)
 {
 //	float min_distance = FLT_MAX;
 
-	if (distance < 9 * 800.0f * 800.0f && light->entity->visible)
+	if (distance < 9 * 800.0f * 800.0f && light->entity->flags.visible)
 	{
 		if (light->active == false)
 		{
@@ -2847,7 +2858,7 @@ void Engine::dynamics()
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (entity_list[i]->nodraw)
+		if (entity_list[i]->flags.nodraw)
 			continue;
 
 		if (collision_detect_enable == false && i >= max_player)
@@ -5306,7 +5317,7 @@ void Engine::clean_entity(int index)
 		entity_list[index]->speaker->destroy(audio);
 	entity_list[index]->nettype = NET_NONE;
 
-	entity_list[index]->particle_on = false;
+	entity_list[index]->flags.particle_on = false;
 
 
 	// Light list wont be updated until the next step, so manually delete

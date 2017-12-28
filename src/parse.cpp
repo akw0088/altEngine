@@ -404,7 +404,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			{
 				entity.rigid->gravity = false;
 				entity.rigid->flight = true;
-//				entity.nodraw = true;
+//				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "func_door") == 0)
@@ -507,7 +507,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 
 			sprintf(entity.type, "trigger_teleport");
@@ -524,7 +524,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "trigger_push") == 0)
@@ -539,7 +539,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 
 			sprintf(entity.trigger->action, "push %s", entity.target);
@@ -560,7 +560,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			{
 				entity.rigid->gravity = false;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 
 			snprintf(entity.trigger->action, LINE_SIZE, "damage 666");
@@ -579,7 +579,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			{
 				entity.rigid->gravity = false;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		//trigger_setskill
@@ -592,7 +592,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_spectator_start") == 0)
 		{
@@ -603,7 +603,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_botroam") == 0)
 		{
@@ -614,7 +614,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_firstplace") == 0)
 		{
@@ -625,7 +625,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_secondplace") == 0)
 		{
@@ -636,7 +636,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_thirdplace") == 0)
 		{
@@ -647,7 +647,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "shooter_grenade") == 0)
 		{
@@ -658,7 +658,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "light") == 0)
 		{
@@ -670,7 +670,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-//			entity.nodraw = true;
+//			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "func_static") == 0)
 		{
@@ -682,7 +682,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "target_remove_powerups") == 0)
 		{
@@ -694,7 +694,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "func_timer") == 0)
 		{
@@ -705,7 +705,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "target_location") == 0)
@@ -718,7 +718,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_camp") == 0)
 		{
@@ -730,7 +730,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "misc_portal_camera") == 0)
 		{
@@ -744,7 +744,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 
 			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "misc_portal_surface") == 0)
 		{
@@ -758,7 +758,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 
 			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "worldspawn") == 0)
 		{
@@ -770,7 +770,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_notnull") == 0)
 		{
@@ -782,7 +782,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "target_position") == 0)
 		{
@@ -794,7 +794,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "target_give") == 0)
 		{
@@ -806,7 +806,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_null") == 0)
 		{
@@ -818,7 +818,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 
 		}
 		else if (strcmp(value, "target_relay") == 0)
@@ -830,7 +830,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-//				entity.nodraw = true;
+//				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "trigger_always") == 0)
@@ -842,7 +842,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "info_player_intermission") == 0)
@@ -854,7 +854,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "info_player_deathmatch") == 0)
@@ -890,7 +890,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "target_delay") == 0)
@@ -902,7 +902,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "target_speaker") == 0)
@@ -914,7 +914,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-				entity.nodraw = true;
+				entity.flags.nodraw = true;
 
 				if (entity.trigger)
 				{
@@ -941,7 +941,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->gravity = false;
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
-//				entity.nodraw = true;
+//				entity.flags.nodraw = true;
 			}
 		}
 		else if (strcmp(value, "navpoint") == 0)
@@ -954,7 +954,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 
 		}
 		//quake 1 ents
@@ -968,7 +968,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_dog") == 0)
 		{
@@ -980,7 +980,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_ogre") == 0)
 		{
@@ -992,7 +992,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_zombie") == 0)
 		{
@@ -1004,7 +1004,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_shambler") == 0)
 		{
@@ -1016,7 +1016,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_wizard") == 0)
 		{
@@ -1028,7 +1028,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_knight") == 0)
 		{
@@ -1040,7 +1040,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_demon1") == 0)
 		{
@@ -1052,7 +1052,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_enforcer") == 0)
 		{
@@ -1064,7 +1064,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_fish") == 0)
 		{
@@ -1076,7 +1076,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_hell_knight") == 0)
 		{
@@ -1088,7 +1088,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_shalrath") == 0)
 		{
@@ -1100,7 +1100,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "monster_tarbaby") == 0)
 		{
@@ -1112,7 +1112,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "light_fluoro") == 0)
 		{
@@ -1124,7 +1124,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "light_fluorospark") == 0)
 		{
@@ -1136,7 +1136,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "func_door_secret") == 0)
 		{
@@ -1148,7 +1148,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "func_train") == 0)
 		{
@@ -1160,7 +1160,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_teleport_destination") == 0)
 		{
@@ -1172,7 +1172,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_intermission") == 0)
 		{
@@ -1184,7 +1184,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "info_player_coop") == 0)
 		{
@@ -1196,7 +1196,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "trigger_once") == 0)
 		{
@@ -1208,7 +1208,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "trigger_counter") == 0)
 		{
@@ -1220,7 +1220,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "trigger_secret") == 0)
 		{
@@ -1232,7 +1232,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "path_corner") == 0)
 		{
@@ -1244,7 +1244,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 //				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = false;
+			entity.flags.nodraw = false;
 		}
 		else if (strcmp(value, "item_spikes") == 0)
 		{
@@ -1256,7 +1256,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_artifact_super_damage") == 0)
 		{
@@ -1268,7 +1268,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_artifact_invulnerability") == 0)
 		{
@@ -1280,7 +1280,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_artifact_envirosuit") == 0)
 		{
@@ -1292,7 +1292,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "weapon_nailgun") == 0)
 		{
@@ -1304,7 +1304,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = false;
+			entity.flags.nodraw = false;
 
 			entity.trigger = new Trigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
@@ -1324,7 +1324,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = false;
+			entity.flags.nodraw = false;
 
 
 			entity.trigger = new Trigger(&entity, audio);
@@ -1345,7 +1345,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = false;
+			entity.flags.nodraw = false;
 
 
 			entity.trigger = new Trigger(&entity, audio);
@@ -1365,7 +1365,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "ambient_comp_hum") == 0)
 		{
@@ -1377,7 +1377,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "ambient_drone") == 0)
 		{
@@ -1389,7 +1389,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "ambient_drip") == 0)
 		{
@@ -1401,7 +1401,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "ambient_swamp1") == 0)
 		{
@@ -1413,7 +1413,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "ambient_swamp2") == 0)
 		{
@@ -1425,7 +1425,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "func_wall") == 0)
 		{
@@ -1437,7 +1437,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "light_torch_small_walltorch") == 0)
 		{
@@ -1449,7 +1449,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "light_flame_small_yellow") == 0)
 		{
@@ -1461,7 +1461,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_key1") == 0)
 		{
@@ -1473,7 +1473,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_key2") == 0)
 		{
@@ -1485,7 +1485,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "item_armor1") == 0)
 		{
@@ -1497,7 +1497,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 
 			entity.trigger = new Trigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
@@ -1516,7 +1516,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 
 			entity.trigger = new Trigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
@@ -1536,7 +1536,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->noclip = true;
 				entity.rigid->flight = true;
 			}
-			entity.nodraw = true;
+			entity.flags.nodraw = true;
 		}
 	}
 	else if (strcmp(key, "light") == 0)
@@ -1558,7 +1558,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			intensity /= 2.0f;
 
 		// uncomment to draw light positions
-//		entity.nodraw = true;
+//		entity.flags.nodraw = true;
 
 		if (entity.light)
 			entity.light->intensity = intensity;
@@ -1649,7 +1649,10 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	}
 	else if (strcmp(key, "angle") == 0)
 	{
-		entity.angle = atoi(value);
+		if (entity.brushinfo == NULL)
+			entity.brushinfo = new brushinfo_t;
+
+		entity.brushinfo->angle = atoi(value);
 	}
 	else if (strcmp(key, "targetname") == 0)
 	{
@@ -1667,10 +1670,13 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	}
 	else if (strcmp(key, "height") == 0)
 	{
+		if (entity.brushinfo == NULL)
+			entity.brushinfo = new brushinfo_t;
+
 		if (atoi(value) != 0)
-			entity.func_height = (float)atoi(value);
+			entity.brushinfo->func_height = (float)atoi(value);
 		else
-			entity.func_height = 0.0f;
+			entity.brushinfo->func_height = 0.0f;
 //		entity.rigid->velocity = vec3(0.0f, atoi(value), 0.0f);
 	}
 

@@ -96,7 +96,7 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 		if (entity_list[i]->model == NULL)
 			continue;
 
-		if (entity_list[i]->visible == false)
+		if (entity_list[i]->flags.visible == false)
 			continue;
 
 		vec3 dist = entity_list[i]->position - entity->position;

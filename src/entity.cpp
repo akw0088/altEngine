@@ -10,11 +10,6 @@
 Entity::Entity()
 {
 	position = vec3(0.0f, 0.0f, 0.0f);
-	visible = false;
-	frustum_visible = false;
-	bsp_visible = false;
-	bsp_leaf = 0;
-	nodraw = false;
 	rigid = NULL;
 	model = NULL;
 	light = NULL;
@@ -24,18 +19,19 @@ Entity::Entity()
 	player = NULL;
 	construct = NULL;
 	portal_camera = NULL;
-	model_lerp = 0.0f;
-	model_offset = vec3();
-	opening = false;
+	brushinfo = NULL;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NET_NONE;
-	angle = -1;
 	model_ref = -1;
-	func_height = 0.0f;
-
-	particle_on = false;
+	
+	bsp_leaf = 0;
 	num_particle = 0;
+	flags.visible = false;
+	flags.frustum_visible = false;
+	flags.bsp_visible = false;
+	flags.nodraw = false;
+	flags.particle_on = false;
 
 	sprintf(type, "free");
 	target[0] = '\0';
@@ -60,14 +56,12 @@ Entity::~Entity()
 		delete projectile;
 	if (player)
 		delete player;
+	if (brushinfo)
+	{
+		delete brushinfo;
+	}
 
 	position = vec3(0.0f, 0.0f, 0.0f);
-	visible = false;
-	particle_on = false;
-	target[0] = '\0';
-	target_name[0] = '\0';
-	angle = 0;
-	model_ref = -1;
 	rigid = NULL;
 	model = NULL;
 	light = NULL;
@@ -75,6 +69,13 @@ Entity::~Entity()
 	trigger = NULL;
 	projectile = NULL;
 	player = NULL;
+	brushinfo = NULL;
 	nettype = NET_NONE;
+	model_ref = -1;
+	flags.visible = false;
+	flags.particle_on = false;
+	target[0] = '\0';
+	target_name[0] = '\0';
+
 }
 

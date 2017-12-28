@@ -1902,7 +1902,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			matrix4 matrix;
 
 			//set spawn angle
-			switch (entity_list[i]->angle)
+			switch (entity_list[i]->brushinfo->angle)
 			{
 			case 0:
 			case 45:
@@ -3019,7 +3019,7 @@ void Quake3::step(int frame_step)
 		sentry_base->model = new Model(sentry_base);
 		sentry_base->model->clone(*model_table[MODEL_SENTRY_BASE]);
 		sentry_base->position = engine->entity_list[spawn]->position;
-		sentry_base->visible = true;
+		sentry_base->flags.visible = true;
 
 	}
 	else
@@ -3365,9 +3365,9 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
 		frame.set(projectile->model->morientation);
-		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_visible = player.entity->bsp_visible = true;
+		projectile->flags.bsp_visible = true;
 		projectile->rigid->blend = true;
 
 		projectile->rigid->clone(*(model_table[MODEL_BALL]));
@@ -3414,9 +3414,9 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 }
 
 void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
@@ -3438,9 +3438,9 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NET_ROCKET;
 		projectile->position = frame.pos;
-		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->flags.visible = true; // accomodate for low spatial testing rate
+		projectile->flags.bsp_visible = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_visible = player.entity->bsp_visible = true;
 
 		projectile->projectile = new Projectile(projectile, engine->audio);
 		projectile->projectile->explode_index = SND_EXPLODE;
@@ -3464,7 +3464,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->projectile->owner = self;
 
 
-		projectile->particle_on = true;
+		projectile->flags.particle_on = true;
 		projectile->num_particle = 5000;
 
 		projectile->light = new Light(projectile, engine->gfx, 999, engine->res_scale);
@@ -3495,9 +3495,9 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 }
 
 void Quake3::handle_grenade(Player &player, int self, bool client)
@@ -3517,9 +3517,9 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
 		frame.set(projectile->model->morientation);
-		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_visible = player.entity->bsp_visible = true;
+		projectile->flags.bsp_visible = true;
 
 		projectile->rigid->clone(*(model_table[MODEL_GRENADE]));
 		projectile->rigid->velocity = frame.forward * -25.0f;
@@ -3529,7 +3529,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->rigid->rotational_friction_flag = true;
 		//entity->rigid->set_target(*(entity_list[spawn]));
 
-		projectile->particle_on = true;
+		projectile->flags.particle_on = true;
 		projectile->num_particle = 5000;
 
 
@@ -3568,9 +3568,9 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 
 }
 
@@ -3652,10 +3652,10 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->model = projectile->rigid;
 	//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		frame.set(projectile->model->morientation);
-		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->rigid->noclip = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_visible = player.entity->bsp_visible = true;
+		projectile->flags.bsp_visible = true;
 
 		/*
 		projectile->light = new Light(projectile, engine->gfx, 999);
@@ -3733,9 +3733,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 
 
 }
@@ -3768,9 +3768,9 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->rigid->noclip = true;
 
 		frame.set(projectile->model->morientation);
-		projectile->visible = true; // accomodate for low spatial testing rate
+		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
-		projectile->bsp_visible = player.entity->bsp_visible = true;
+		projectile->flags.bsp_visible = true;
 
 		projectile->projectile = new Projectile(projectile, engine->audio);
 		sprintf(projectile->projectile->action, " ");
@@ -3870,9 +3870,9 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 
 }
 
@@ -3903,9 +3903,9 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 
 
 
@@ -4021,9 +4021,9 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.0625f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 
 
 
@@ -4044,9 +4044,9 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	bullet->rigid->translational_friction_flag = true;
 	bullet->rigid->translational_friction = 0.9f;
 	frame.set(bullet->model->morientation);
-	bullet->visible = true; // accomodate for low spatial testing rate
+	bullet->flags.visible = true; // accomodate for low spatial testing rate
 	bullet->bsp_leaf = player.entity->bsp_leaf;
-	bullet->bsp_visible = player.entity->bsp_visible = true;
+	bullet->flags.bsp_visible = true;
 
 
 	if (client == false)
@@ -4155,9 +4155,9 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	muzzleflash->light->attenuation = 0.125f;
 	muzzleflash->light->timer_flag = true;
 	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->visible = true; // accomodate for low spatial testing rate
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
 	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->bsp_visible = player.entity->bsp_visible = true;
+	muzzleflash->flags.bsp_visible = true;
 
 	vec3 right = vec3::crossproduct(frame.forward, frame.up);
 
@@ -4179,9 +4179,9 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	shell->model = shell->rigid;
 	frame.set(shell->model->morientation);
-	shell->visible = true; // accomodate for low spatial testing rate
+	shell->flags.visible = true; // accomodate for low spatial testing rate
 	shell->bsp_leaf = player.entity->bsp_leaf;
-	shell->bsp_visible = player.entity->bsp_visible = true;
+	shell->flags.bsp_visible = true;
 
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
@@ -4202,9 +4202,9 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->rigid->impact_index = SND_SHELL;
 	shell2->model = shell2->rigid;
 	frame.set(shell2->model->morientation);
-	shell2->visible = true; // accomodate for low spatial testing rate
+	shell2->flags.visible = true; // accomodate for low spatial testing rate
 	shell2->bsp_leaf = player.entity->bsp_leaf;
-	shell2->bsp_visible = player.entity->bsp_visible = true;
+	shell2->flags.bsp_visible = true;
 
 
 	for (int i = 0; i < 10; i++)
@@ -5558,7 +5558,7 @@ void Quake3::render_hud(double last_frametime)
 			if (ent->rigid == NULL)
 				continue;
 
-			if (ent->visible && ent->nodraw == false)
+			if (ent->flags.visible && ent->flags.nodraw == false)
 			{
 				draw_name(ent, engine->menu, real_projection, i);
 			}
@@ -5575,7 +5575,7 @@ void Quake3::render_hud(double last_frametime)
 		if (ent->player->type != BOT)
 			continue;
 
-		if (ent->visible && ent->nodraw == false)
+		if (ent->flags.visible && ent->flags.nodraw == false)
 		{
 			draw_name(ent, engine->menu, real_projection, i);
 		}
@@ -6851,7 +6851,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				// Set position and orientation
 				ent->position = ent->position + vec3(0.0f, 50.0f, 0.0f);
 
-				switch (ent->angle)
+				switch (ent->brushinfo->angle)
 				{
 				case 0:
 					matrix4::mat_left(matrix, ent->position);
@@ -7019,7 +7019,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				else
 					engine->play_wave(entity_list[self]->position, SND_TELEIN);
 
-				switch (entity_list[i]->angle)
+				switch (entity_list[i]->brushinfo->angle)
 				{
 				case 0:
 				case 45:
@@ -7099,7 +7099,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 			entity_list[self]->rigid->bsp_trigger_volume = 0;
 
-			switch (entity_list[i]->angle)
+			switch (entity_list[i]->brushinfo->angle)
 			{
 			case 0:
 				matrix4::mat_left(matrix, entity_list[self]->position);
@@ -7154,7 +7154,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					//					camera_frame.set(matrix);
 					ent->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
-					switch (entity_list[i]->angle)
+					switch (entity_list[i]->brushinfo->angle)
 					{
 					case 0:
 						matrix4::mat_left(matrix, ent->position);
@@ -7679,7 +7679,10 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			ent->position = q3map.model_origin(ent->model_ref);
 		}
 
-		ent->origin = ent->position;
+		if (ent->brushinfo)
+		{
+			ent->brushinfo->origin = ent->position;
+		}
 
 
 		switch (ent->ent_type)
@@ -7693,36 +7696,36 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			ent->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
 			break;
 		case ENT_FUNC_BOBBING:
-			switch (ent->angle)
+			switch (ent->brushinfo->angle)
 			{
 			case 0:
 			case 360:
-				ent->rigid->path.path_list[0] = ent->position + vec3(-ent->func_height, 0.0f, 0.0f);
-				ent->rigid->path.path_list[1] = ent->position + vec3(ent->func_height, 0.0f, 0.0f);
+				ent->rigid->path.path_list[0] = ent->position + vec3(-ent->brushinfo->func_height, 0.0f, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(ent->brushinfo->func_height, 0.0f, 0.0f);
 				break;
 			case 90:
-				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, 0.0f, -ent->func_height);
-				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, 0.0f, ent->func_height);
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, 0.0f, -ent->brushinfo->func_height);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, 0.0f, ent->brushinfo->func_height);
 				break;
 			case 180:
-				ent->rigid->path.path_list[0] = ent->position + vec3(ent->func_height, 0.0f, 0.0f);
-				ent->rigid->path.path_list[1] = ent->position + vec3(-ent->func_height, 0.0f, 0.0f);
+				ent->rigid->path.path_list[0] = ent->position + vec3(ent->brushinfo->func_height, 0.0f, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(-ent->brushinfo->func_height, 0.0f, 0.0f);
 				break;
 			case 270:
-				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, 0.0f, ent->func_height);
-				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, 0.0f, -ent->func_height);
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, 0.0f, ent->brushinfo->func_height);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, 0.0f, -ent->brushinfo->func_height);
 				break;
 			case -1:
-				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, ent->func_height, 0.0f);
-				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, -ent->func_height, 0.0f);
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, ent->brushinfo->func_height, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, -ent->brushinfo->func_height, 0.0f);
 				break;
 			case -2:
-				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, -ent->func_height, 0.0f);
-				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, ent->func_height, 0.0f);
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, -ent->brushinfo->func_height, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, ent->brushinfo->func_height, 0.0f);
 				break;
 			default:
-				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, ent->func_height, 0.0f);
-				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, -ent->func_height, 0.0f);
+				ent->rigid->path.path_list[0] = ent->position + vec3(0.0f, ent->brushinfo->func_height, 0.0f);
+				ent->rigid->path.path_list[1] = ent->position + vec3(0.0f, -ent->brushinfo->func_height, 0.0f);
 				break;
 			}
 			ent->rigid->path.num_path = 2;
@@ -7753,8 +7756,8 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 			break;
 		case ENT_PATH_CORNER:
-			entity_list[i]->visible = true;
-			entity_list[i]->bsp_visible = true;
+			entity_list[i]->flags.visible = true;
+			entity_list[i]->flags.bsp_visible = true;
 			entity_list[i]->rigid->gravity = false;
 			break;
 		case ENT_MISC_PORTAL_CAMERA:
@@ -7826,7 +7829,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
 		ent->rigid->noclip = true;
-		ent->visible = true; // accomodate for low spatial testing rate
+		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->blend = true;
 		ent->rigid->cull_none = true;
@@ -7845,7 +7848,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
 		ent->rigid->noclip = true;
-		ent->visible = true; // accomodate for low spatial testing rate
+		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->blend = true;
 		ent->rigid->cull_none = true;
@@ -7864,7 +7867,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
 		ent->rigid->noclip = false;
-		ent->visible = true; // accomodate for low spatial testing rate
+		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->impact_index = SND_BULLET;
 		break;
@@ -7876,7 +7879,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
 		ent->rigid->noclip = false;
-		ent->visible = true; // accomodate for low spatial testing rate
+		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->impact_index = SND_SHELL;
 		break;
@@ -7888,7 +7891,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
 		ent->rigid->noclip = true;
-		ent->visible = true; // accomodate for low spatial testing rate
+		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
 		ent->rigid->blend = true;
 		ent->rigid->cull_none = true;
@@ -7917,7 +7920,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->knockback = 250.0f;
 		ent->projectile->splash_damage = 0;
 		ent->num_particle = 5000;
-		ent->particle_on = true;
+		ent->flags.particle_on = true;
 
 
 		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
@@ -7954,7 +7957,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->translational_friction_flag = true;
 		ent->rigid->translational_friction = 0.9f;
 		ent->num_particle = 5000;
-		ent->particle_on = true;
+		ent->flags.particle_on = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->explode_index = SND_EXPLODE;
@@ -8474,7 +8477,7 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 			trigger->active = true;
 			trigger->client_active = true;
 
-			ent->visible = false;
+			ent->flags.visible = false;
 			trigger->timeout = ent->trigger->timeout_value;
 
 			if (player->local)
@@ -8521,46 +8524,6 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 	{
 		float distance = (player->entity->position - ent->position).magnitude();
 
-
-		// start closing a distance further than we started opening
-		if (distance > 300.0f && ent->opening == true)
-		{
-			ent->opening = false;
-			if (ent->model_lerp > 0.99f)
-			{
-				engine->play_wave(ent->position, SND_DOOR_END);
-			}
-		}
-
-		if (ent->opening == false && ent->model_lerp > 0.0)
-		{
-
-			if (ent->ent_type == ENT_FUNC_PLAT)
-			{
-				ent->model_offset = ent->model_offset * (1.0f - ent->model_lerp);
-			}
-			else
-			{
-				ent->model_offset = ent->model_offset * ent->model_lerp;
-			}
-			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
-
-
-			if (ent->model_lerp > 0.0f)
-				ent->model_lerp -= 0.0001f;
-			else
-				ent->model_lerp = 0.0f;
-		}
-
-
-		// only open if very close
-		if (distance > 100.0f && ent->opening == false)
-		{
-			return;
-		}
-
-		ent->opening = true;
-
 		if (ent->ent_type == ENT_FUNC_STATIC)
 			return;
 
@@ -8584,7 +8547,51 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 					}
 				}
 			}
+			return;
 		}
+
+
+		if (ent->brushinfo == NULL)
+			return;
+
+		// start closing a distance further than we started opening
+		if (ent->brushinfo && distance > 300.0f && ent->brushinfo->opening == true)
+		{
+			ent->brushinfo->opening = false;
+			if (ent->brushinfo->model_lerp > 0.99f)
+			{
+				engine->play_wave(ent->position, SND_DOOR_END);
+			}
+		}
+
+		if (ent->brushinfo->opening == false && ent->brushinfo->model_lerp > 0.0)
+		{
+
+			if (ent->ent_type == ENT_FUNC_PLAT)
+			{
+				ent->brushinfo->model_offset = ent->brushinfo->model_offset * (1.0f - ent->brushinfo->model_lerp);
+			}
+			else
+			{
+				ent->brushinfo->model_offset = ent->brushinfo->model_offset * ent->brushinfo->model_lerp;
+			}
+			engine->q3map.model_offset[ent->model_ref] = ent->brushinfo->model_offset;
+
+
+			if (ent->brushinfo->model_lerp > 0.0f)
+				ent->brushinfo->model_lerp -= 0.0001f;
+			else
+				ent->brushinfo->model_lerp = 0.0f;
+		}
+
+
+		// only open if very close
+		if (distance > 100.0f && ent->brushinfo->opening == false)
+		{
+			return;
+		}
+
+		ent->brushinfo->opening = true;
 
 
 		if (ent->ent_type == ENT_FUNC_DOOR || ent->ent_type == ENT_FUNC_BUTTON || ent->ent_type == ENT_FUNC_PLAT)
@@ -8611,7 +8618,7 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 
 
 
-			if (ent->model_lerp < 0.01f)
+			if (ent->brushinfo->model_lerp < 0.01f)
 			{
 				if (ent->ent_type == ENT_FUNC_BUTTON)
 				{
@@ -8633,8 +8640,8 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 				}
 			}
 
-			if (ent->model_lerp < 1.0f)
-				ent->model_lerp += 0.01f;
+			if (ent->brushinfo->model_lerp < 1.0f)
+				ent->brushinfo->model_lerp += 0.01f;
 
 			if (abs32(amount) < 0.001f)
 			{
@@ -8658,41 +8665,41 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 			}
 
 
-			amount = amount * ent->model_lerp;
+			amount = amount * ent->brushinfo->model_lerp;
 
 			// platforms start up (so lightmaps are generated)
 			// so invert lerp value
 			if (ent->ent_type == ENT_FUNC_PLAT)
-				amount = amount * (1.0f - ent->model_lerp);
+				amount = amount * (1.0f - ent->brushinfo->model_lerp);
 
 
 
 			vec3 end;
-			switch (ent->angle)
+			switch (ent->brushinfo->angle)
 			{
 			case 0:
 			case 360:
-				ent->model_offset = vec3(amount, 0.0f, 0.0f);
+				ent->brushinfo->model_offset = vec3(amount, 0.0f, 0.0f);
 				break;
 			case 90:
-				ent->model_offset = vec3(0.0f, 0.0f, amount);
+				ent->brushinfo->model_offset = vec3(0.0f, 0.0f, amount);
 				break;
 			case 180:
-				ent->model_offset = vec3(-amount, 0.0f, 0.0f);
+				ent->brushinfo->model_offset = vec3(-amount, 0.0f, 0.0f);
 				break;
 			case 270:
-				ent->model_offset = vec3(0.0f, 0.0f, -amount);
+				ent->brushinfo->model_offset = vec3(0.0f, 0.0f, -amount);
 				break;
 			case -1://up
-				ent->model_offset = vec3(0.0f, amount, 0.0f);
+				ent->brushinfo->model_offset = vec3(0.0f, amount, 0.0f);
 				break;
 			case -2://down
-				ent->model_offset = vec3(0.0f, -amount, 0.0f);
+				ent->brushinfo->model_offset = vec3(0.0f, -amount, 0.0f);
 				break;
 			}
 
 
-			engine->q3map.model_offset[ent->model_ref] = ent->model_offset;
+			engine->q3map.model_offset[ent->model_ref] = ent->brushinfo->model_offset;
 
 
 		}
@@ -8723,7 +8730,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 		{
 			if (ent->rigid->bounce > projectile->num_bounce || ent->rigid->velocity.magnitude() < 0.0001f)
 			{
-				ent->particle_on = false;
+				ent->flags.particle_on = false;
 				if (projectile->explode == false)
 				{
 					if (projectile->explode_timer <= 0)
@@ -8948,7 +8955,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 				}
 			}
 
-			ent->visible = false;
+			ent->flags.visible = false;
 			projectile->timeout = ent->projectile->timeout_value;
 
 			if (projectile->explode_timer)
@@ -9100,7 +9107,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 		decal->rigid->bounce = 2;
 		decal->model = decal->rigid;
 		decal->rigid->noclip = true;
-		decal->visible = true; // accomodate for low spatial testing rate
+		decal->flags.visible = true; // accomodate for low spatial testing rate
 		decal->bsp_leaf = true;
 		decal->rigid->blend = true;
 		decal->rigid->cull_none = true;
@@ -9420,35 +9427,35 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading info_player_deathmatch\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
-		ent.nodraw = true;
+		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUESPAWN)
 	{
 		debugf("Loading team_CTF_bluespawn\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
-		ent.nodraw = true;
+		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDSPAWN)
 	{
 		debugf("Loading team_CTF_redspawn\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
-		ent.nodraw = true;
+		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEPLAYER)
 	{
 		debugf("Loading team_CTF_blueplayer\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
-		ent.nodraw = true;
+		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDPLAYER)
 	{
 		debugf("Loading team_CTF_redplayer\n");
 		ent.model->clone(*model_table[MODEL_BALL]);
 		ent.rigid->gravity = false;
-		ent.nodraw = true;
+		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type > ENT_FUNC_START && ent.ent_type < ENT_FUNC_END)
 	{
@@ -9458,7 +9465,7 @@ void Quake3::map_model(Entity &ent)
 			debugf("Loading func item\n");
 			ent.model->clone(*model_table[MODEL_BOX]);
 			ent.rigid->gravity = false;
-			ent.nodraw = false;
+			ent.flags.nodraw = false;
 		}
 	}
 	else if (ent.ent_type == ENT_PATH_CORNER)
@@ -9466,84 +9473,84 @@ void Quake3::map_model(Entity &ent)
 			debugf("Loading path_corner\n");
 			ent.model->clone(*model_table[MODEL_BOX]);
 			ent.rigid->gravity = false;
-			ent.nodraw = false;
+			ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DEMON1)
 	{
 		debugf("Loading monster_demon1\n");
 		ent.model->clone(*model_table[MODEL_DEMON]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_SHAMBLER)
 	{
 		debugf("Loading monster_shambler\n");
 		ent.model->clone(*model_table[MODEL_SHAMBLER]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DOG)
 	{
 		debugf("Loading monster_dog\n");
 		ent.model->clone(*model_table[MODEL_DOG]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_ARMY)
 	{
 		debugf("Loading monster_army\n");
 		ent.model->clone(*model_table[MODEL_SOLDIER]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_WIZARD)
 	{
 		debugf("Loading monster_wizard\n");
 		ent.model->clone(*model_table[MODEL_WIZARD]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_OGRE)
 	{
 		debugf("Loading monster_ogre\n");
 		ent.model->clone(*model_table[MODEL_OGRE]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_KNIGHT)
 	{
 		debugf("Loading monster_knight\n");
 		ent.model->clone(*model_table[MODEL_KNIGHT]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_ZOMBIE)
 	{
 		debugf("Loading monster_knight\n");
 		ent.model->clone(*model_table[MODEL_ZOMBIE]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLUORO)
 	{
 		debugf("Loading light_fluoro\n");
 		ent.model->clone(*model_table[MODEL_V_LIGHT]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLUOROSPARK)
 	{
 		debugf("Loading light_fluorospark\n");
 		ent.model->clone(*model_table[MODEL_V_LIGHT]);
 		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE)
 	{
 		debugf("Loading item_artifact_super_damage\n");
 		ent.model->clone(*model_table[MODEL_QUADDAMA]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9552,7 +9559,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_artifact_invulnerability\n");
 		ent.model->clone(*model_table[MODEL_INVULNER]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9561,7 +9568,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_artifact_envirosuit\n");
 		ent.model->clone(*model_table[MODEL_SUIT]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9570,7 +9577,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading weapon_nailgun\n");
 		ent.model->clone(*model_table[MODEL_G_NAIL]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9579,7 +9586,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading weapon_supernailgun\n");
 		ent.model->clone(*model_table[MODEL_G_NAIL2]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9588,7 +9595,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading weapon_supershotgun\n");
 		ent.model->clone(*model_table[MODEL_G_SHOT]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9606,28 +9613,28 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading light_torch_small_walltorch\n");
 		ent.model->clone(*model_table[MODEL_FLAME]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_YELLOW)
 	{
 		debugf("Loading light_flame_small_yellow\n");
 		ent.model->clone(*model_table[MODEL_FLAME2]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_WHITE)
 	{
 		debugf("Loading light_flame_small_yellow\n");
 		ent.model->clone(*model_table[MODEL_FLAME2]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_ITEM_KEY1)
 	{
 		debugf("Loading item_key1\n");
 		ent.model->clone(*model_table[MODEL_M_G_KEY]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9636,7 +9643,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_key2\n");
 		ent.model->clone(*model_table[MODEL_M_S_KEY]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9645,7 +9652,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_armor1\n");
 		ent.model->clone(*model_table[MODEL_YELLOWARMOR]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9654,7 +9661,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_armor2\n");
 		ent.model->clone(*model_table[MODEL_REDARMOR]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9663,7 +9670,7 @@ void Quake3::map_model(Entity &ent)
 		debugf("Loading item_sigil\n");
 		ent.model->clone(*model_table[MODEL_END1]);
 		ent.rigid->gravity = false;
-		ent.nodraw = false;
+		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 	}
@@ -9710,7 +9717,7 @@ void Quake3::handle_func_bobbing(Entity *entity)
 	int wait = 10;
 
 	sprintf(entity->target, " ");
-	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
+	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->brushinfo->origin;
 	entity->rigid->path.loop = 1;
 
 	if (entity->trigger)
@@ -9726,7 +9733,7 @@ void Quake3::handle_func_train(Entity *entity)
 	//bool escort = true;
 	//Entity *ref = entity;
 
-	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->origin;
+	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->brushinfo->origin;
 
 
 	if (entity->rigid->train.escort)
