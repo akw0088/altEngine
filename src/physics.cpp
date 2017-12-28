@@ -3609,8 +3609,191 @@ CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
 
 class RigidbodyVolume
 {
+public:
+	inline RigidbodyVolume()
+	{
+		type = RIGIDBODY_TYPE_BASE;
+		e = 0.5f;
+		mass = 1.0f;
+		friction = 0.6f;
+	}
+
+	inline RigidbodyVolume(int bodyType)
+	{
+		e = 0.5f;
+		mass = 1.0f;
+		friction = 0.6f;
+		type = bodyType;
+	}
+
+	void Render();
+	void Update(float dt);
+	void ApplyForces();
+
+	void SynchCollisionVolumes();
+	float InvMass();
+	void AddLinearImpulse(const vec3& impulse);
+
+
+public:
+	int type;
+	vec3 position;
+	vec3 velocity;
+	vec3 forces; // Sum of all forces
+	float mass; // Coefficient of restitution
+	float e;
+	float friction;
+	obb_t box;
+	sphere_t sphere;
 };
 
+void RigidbodyVolume::ApplyForces()
+{
+	forces = vec3(0.0f, -9.8f * mass, 0.0f);
+}
+
+void RigidbodyVolume::AddLinearImpulse(const vec3& impulse)
+{
+	velocity = velocity + impulse;
+}
+
+float RigidbodyVolume::InvMass()
+{ 
+	if (mass == 0.0f)
+	{
+		return 0.0f;
+	}
+	return 1.0f / mass;
+}
+
+
+void RigidbodyVolume::SynchCollisionVolumes()
+{
+	sphere.origin = position;
+	box.origin = position;
+}
+
+void RigidbodyVolume::Render()
+{
+	SynchCollisionVolumes();
+	if (type == RIGIDBODY_TYPE_SPHERE)
+	{
+		//::Render(sphere);
+	}
+	else if (type == RIGIDBODY_TYPE_BOX)
+	{
+		//::Render(box);
+	}
+}
+
+void RigidbodyVolume::Update(float dt)
+{
+	const float damping = 0.98f;
+	vec3 acceleration = forces * InvMass();
+	velocity += acceleration * dt;
+	velocity *= damping;
+
+	position += velocity * dt;
+	SynchCollisionVolumes();
+}
+
+CollisionManifold FindCollisionFeatures(RigidbodyVolume& ra, RigidbodyVolume& rb)
+{
+	CollisionManifold result;
+	ResetCollisionManifold(&result);
+	if (ra.type == RIGIDBODY_TYPE_SPHERE)
+	{
+		if (rb.type == RIGIDBODY_TYPE_SPHERE)
+		{
+			result = FindCollisionFeatures(ra.sphere, rb.sphere);
+		}
+		else if (rb.type == RIGIDBODY_TYPE_BOX)
+		{
+			result = FindCollisionFeatures(rb.box, ra.sphere);
+			result.normal = result.normal * -1.0f;
+		}
+	}
+	else if (ra.type == RIGIDBODY_TYPE_BOX)
+	{
+		if (rb.type == RIGIDBODY_TYPE_BOX)
+		{
+			result = FindCollisionFeatures(ra.box, rb.box);
+		}
+		else if (rb.type == RIGIDBODY_TYPE_SPHERE)
+		{
+			result = FindCollisionFeatures(ra.box, rb.sphere);
+		}
+	}
+	return result;
+}
+
+void ApplyImpulse(RigidbodyVolume& A, RigidbodyVolume& B, const CollisionManifold& M, int c)
+{
+	// Linear Velocity
+	float invMass1 = A.InvMass();
+	float invMass2 = B.InvMass();
+	float invMassSum = invMass1 + invMass2;
+	if (invMassSum == 0.0f)
+	{
+		return;
+	}
+
+	// Relative velocity
+	vec3 relativeVel = B.velocity - A.velocity;
+	// Relative collision normal
+	vec3 relativeNorm = M.normal;
+	relativeNorm.normalize();
+	// Moving away from each other? Do nothing!
+	if (relativeVel * relativeNorm > 0.0f)
+	{
+		return;
+	} 
+
+	float e = fminf(A.e, B.e);
+	float numerator = (relativeVel * relativeNorm) * -(1.0f + e);
+	float j = numerator / invMassSum;
+	if (M.contacts.size() > 0.0f && j != 0.0f)
+	{
+		j /= (float)M.contacts.size();
+	}
+
+	vec3 impulse = relativeNorm * j;
+	A.velocity = A.velocity - impulse *invMass1;
+	B.velocity = B.velocity + impulse *invMass2;
+
+	// Friction   
+	vec3 t = relativeVel - relativeNorm * (relativeVel * relativeNorm);
+	if (CMP(t.magnitudeSq(), 0.0f))
+	{
+		return;
+	}
+	t.normalize();
+
+	numerator = -(relativeVel * t);
+	float jt = numerator / invMassSum;
+	if (M.contacts.size() > 0.0f &&jt != 0.0f)
+	{
+		jt /= (float)M.contacts.size();
+	}
+	if (CMP(jt, 0.0f))
+	{
+		return;
+	}
+
+	float friction = sqrtf(A.friction * B.friction);
+	if (jt > j * friction)
+	{
+		jt = j * friction;
+	}
+	else if (jt < -j * friction)
+	{
+		jt = -j * friction;
+	}
+
+	vec3 tangentImpuse = t * jt;
+	A.velocity = A.velocity - tangentImpuse *  invMass1;
+	B.velocity = B.velocity + tangentImpuse *  invMass2;
+}
 
 //=============================================================================
 //	Springs and Joints
