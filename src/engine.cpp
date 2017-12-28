@@ -7990,7 +7990,7 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 	memset(filelist, 0, LIST_SIZE);
 	for (unsigned int i = 0; i < num_pk3; i++)
 	{
-		list_zipfile(pk3_list[i], &filelist[0]);
+		list_zipfile(pk3_list[i] + 34, &filelist[0]);
 
 		line = strtok(filelist, "\n");
 		while (line)
