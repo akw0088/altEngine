@@ -1473,26 +1473,24 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 	return false;
 }
 
-float MeshRay(const mesh_t & mesh, const ray_t &ray)
+float MeshRay(const mesh_t &mesh, const ray_t &ray)
 {
 	if (mesh.accelerator == 0)
 	{
 		for (int i = 0; i < mesh.numTriangles; ++i)
 		{
-			raycast_result_t raycast;
-			Raycast(mesh.triangles[i], ray, &raycast);
-			float result = raycast.t;
-			if (result >= 0)
+			raycast_result_t result;
+			Raycast(mesh.triangles[i], ray, &result);
+			if (result.t >= 0)
 			{
-				return result;
+				return result.t;
 			}
 		}
 	}
 	else
 	{
-		std::list<bvh_node_t*> toProcess;
+		std::list<bvh_node_t *> toProcess;
 		toProcess.push_front(mesh.accelerator);
-
 		// Recursivley walk the BVH tree
 		while (!toProcess.empty())
 		{
@@ -1501,16 +1499,15 @@ float MeshRay(const mesh_t & mesh, const ray_t &ray)
 
 			if (iterator->numTriangles >= 0)
 			{
-				// Iterate trough all triangles of the node
-				for (int i = 0; i < iterator->numTriangles; ++i)
+				for (int i = 0; i< iterator->numTriangles; ++i)
 				{
-					// Triangle indices in BVHNode index the mesh
-					raycast_result_t raycast;
-					Raycast(mesh.triangles[iterator->triangles[i]], ray, &raycast);
-					float r = raycast.t;
-					if (r >= 0)
+					raycast_result_t result;
+
+					// Do a raycast against the triangle
+					Raycast(mesh.triangles[iterator->triangles[i]], ray, &result);
+					if (result.t >= 0)
 					{
-						return r;
+						return result.t;
 					}
 				}
 			}
@@ -1519,10 +1516,10 @@ float MeshRay(const mesh_t & mesh, const ray_t &ray)
 			{
 				for (int i = 8 - 1; i >= 0; --i)
 				{
-					// Only push children whos bounds intersect the test geometry
-					raycast_result_t raycast;
-					Raycast(iterator->children[i].bounds, ray, &raycast);
-					if (raycast.t >= 0)
+					raycast_result_t result;
+					Raycast(iterator->children[i].bounds, ray, &result);
+
+					if (result.t >= 0)
 					{
 						toProcess.push_front(&iterator->children[i]);
 					}
@@ -1704,66 +1701,6 @@ void AccelerateMesh(mesh_t &mesh)
 	// Recursively split BVH tree
 	SplitBVHNode(mesh.accelerator, mesh, 3);
 }
-
-/*
-float MeshRay(const mesh_t &mesh, const ray_t &ray)
-{
-	if (mesh.accelerator == 0)
-	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
-		{
-			raycast_result_t result;
-			Raycast(mesh.triangles[i], ray, &result);
-			if (result.t >= 0)
-			{
-				return result.t;
-			}
-		}
-	}
-	else
-	{
-		std::list<bvh_node_t *> toProcess;
-		toProcess.push_front(mesh.accelerator);
-		// Recursivley walk the BVH tree
-		while (!toProcess.empty())
-		{
-			bvh_node_s* iterator = *(toProcess.begin());
-			toProcess.erase(toProcess.begin());
-
-			if (iterator->numTriangles >= 0)
-			{
-				for (int i = 0; i< iterator->numTriangles; ++i)
-				{
-					raycast_result_t result;
-
-					// Do a raycast against the triangle
-					Raycast(mesh.triangles[iterator->triangles[i]], ray, &result);
-					if (result.t >= 0)
-					{
-						return result.t;
-					}
-				}
-			}
-
-			if (iterator->children != 0)
-			{
-				for (int i = 8 - 1; i >= 0; --i)
-				{
-					raycast_result_t result;
-					Raycast(iterator->children[i].bounds, ray, &result);
-
-					if (result.t >= 0)
-					{
-						toProcess.push_front(
-							&iterator->children[i]);
-					}
-				}
-			}
-		}
-	}
-	return -1;
-}
-*/
 
 bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 {
@@ -2375,9 +2312,7 @@ CModel* Scene::Raycast(const ray_t &ray)
 
 	for (int i = 0, size = objects.size(); i < size; ++i)
 	{
-		raycast_result_t r;
-		float t;
-		//		float t = ModelRay(*objects[i], ray, &r);
+		float t = ModelRay(*objects[i], ray);
 		if (result == 0 && t >= 0)
 		{
 			result = objects[i];
@@ -3099,17 +3034,158 @@ bool Intersects(const Frustum& f, const obb_t &obb)
 }
 
 
+class CRigidbody
+{
+public:
+	CRigidbody()
+	{
+	}
+
+	void Update(float deltaTime)
+	{
+	}
+	void Render()
+	{
+	}
+	void ApplyForces()
+	{
+	}
+	void SolveConstraints(const std::vector<obb_t>& constraints)
+	{
+	}
+};
+
 
 //=============================================================================
 //	Constraint Solving
 //=============================================================================
 
+
+#define RIGIDBODY_TYPE_BASE  0
+#define RIGIDBODY_TYPE_PARTICLE 1
+#define RIGIDBODY_TYPE_SPHERE 2
+#define RIGIDBODY_TYPE_BOX  3
+
+class PhysicsSystem
+{
+protected:
+	std::vector<CRigidbody*> bodies;
+	std::vector<obb_t> constraints;
+public:    
+	void Update(float deltaTime);
+	void Render();
+	void AddRigidbody(CRigidbody* body);
+	void AddConstraint(const obb_t &constraint);
+	void ClearRigidbodys();
+	void ClearConstraints();
+};
+
+void PhysicsSystem::AddRigidbody(CRigidbody* body)
+{
+	bodies.push_back(body);
+}
+
+void PhysicsSystem::AddConstraint(const obb_t& obb)
+{
+	constraints.push_back(obb); 
+}
+
+void PhysicsSystem::ClearRigidbodys()
+{
+	bodies.clear();
+}
+
+void PhysicsSystem::ClearConstraints()
+{
+	constraints.clear(); 
+}
+
+void PhysicsSystem::Render()
+{
+	static const float rigidbodyDiffuse[] = {
+		200.0f / 255.0f, 0.0f, 0.0f, 0.0f
+	};
+	static const float rigidbodyAmbient[] = {
+		200.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f, 0.0f
+	};
+	static const float constraintDiffuse[] = {
+		0.0f, 200.0f / 255.0f, 0.0f, 0.0f
+	};
+	static const float constraintAmbient[] = {
+		50.0f / 255.0f, 200.0f / 255.0f, 50.0f / 255.0f, 0.0f
+	};
+	static const float zero[] = {
+		0.0f, 0.0f, 0.0f, 0.0f
+	};
+
+	glColor3f(rigidbodyDiffuse[0], rigidbodyDiffuse[1], rigidbodyDiffuse[2]);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, rigidbodyAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, rigidbodyDiffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+
+	for (int i = 0, size = bodies.size(); i < size; ++i)
+	{
+		bodies[i]->Render();
+	}
+
+	glColor3f(constraintDiffuse[0], constraintDiffuse[1], constraintDiffuse[2]);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, constraintAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, constraintDiffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+
+
+	for (int i = 0; i < constraints.size(); ++i)
+	{
+//		::Render(constraints[i]);
+	}
+}
+
+void PhysicsSystem::Update(float deltaTime)
+{
+	for (int i = 0, size = bodies.size(); i < size; ++i)
+	{
+		bodies[i]->ApplyForces();
+	}
+
+	for (int i = 0, size = bodies.size(); i < size; ++i)
+	{
+		bodies[i]->Update(deltaTime);
+	}
+
+	for (int i = 0, size = bodies.size(); i < size; ++i)
+	{
+		bodies[i]->SolveConstraints(constraints);
+	}
+}
+
+
 class Particle
 {
 public:
+	Particle()
+	{
+		type = RIGIDBODY_TYPE_PARTICLE;
+		friction = 0.95f;
+		mass = 1.0f;
+		bounce = 0.7f;
+	}
+
+	void Render()
+	{
+		sphere_t visual;
+		visual.origin = position;
+		visual.radius = 0.1f;
+//		::Render(visual);
+	}
+
 	void AddImpulse(const vec3& impulse)
 	{
 		velocity = velocity + impulse;
+	}
+
+	inline bool HasVolume()
+	{
+		return type == RIGIDBODY_TYPE_SPHERE || type == RIGIDBODY_TYPE_BOX;
 	}
 
 	float InvMass()
@@ -3156,11 +3232,19 @@ public:
 	void Update(float dt)
 	{
 		oldPosition = position;
-		/* OLD: vec3 acceleration = forces * (1.0f / mass); */
-		/* NEW: */
 		vec3 acceleration = forces * InvMass();
+		vec3 oldVelocity = velocity;
 		velocity = velocity * friction + acceleration * dt;
-		position = position + velocity * dt;
+		position = position + (oldVelocity + velocity) * 0.5f * dt;
+
+		/*
+		//verlet, eliminates velocity state and derives it from position - oldposition
+		vec3 velocity = position - oldPosition;
+		oldPosition = position;
+		float deltaSquare = deltaTime * deltaTime;
+		position = position + (velocity * friction + forces * deltaSquare);
+		*/
+
 	}
 
 	void ApplyForces()
@@ -3169,6 +3253,7 @@ public:
 	}
 
 public:
+	int type;
 	float mass;
 	vec3 forces;
 	vec3 velocity;
@@ -3182,6 +3267,350 @@ public:
 //=============================================================================
 //	Manifolds and Impulse
 //=============================================================================
+typedef struct 
+{
+	bool colliding;
+	vec3 normal;
+	float depth;
+	std::vector<vec3> contacts;
+} CollisionManifold;
+
+void ResetCollisionManifold(CollisionManifold* result)
+{
+	if (result != 0)
+	{
+		result->colliding = false;
+		result->normal = vec3(0, 0, 1);
+		result->depth = FLT_MAX;
+		result->contacts.clear();
+	}
+}
+
+CollisionManifold FindCollisionFeatures(const sphere_t& A, const sphere_t& B)
+{
+	CollisionManifold result;
+	ResetCollisionManifold(&result);
+
+	float r = A.radius + B.radius;
+	vec3 d = B.origin - A.origin;
+
+	if (d.magnitudeSq() - r * r > 0 || d.magnitudeSq() == 0.0f)
+	{
+		return result;
+	}
+
+	d.normalize();
+	result.colliding = true;
+	result.normal = d;
+	result.depth = fabsf(d.magnitudeSq() - r) * 0.5f;
+
+	// dtp - Distance to intersection point
+
+	float dtp = A.radius - result.depth;
+	vec3 contact = A.origin + d * dtp;
+	result.contacts.push_back(contact);
+
+	return result;
+}
+
+CollisionManifold FindCollisionFeatures(const obb_t &A, const sphere_t &B)
+{
+	CollisionManifold result;
+	ResetCollisionManifold(&result);
+
+	vec3 closestPoint = ClosestPoint(A, B.origin);
+
+	float distanceSq = (closestPoint - B.origin).magnitudeSq();
+	if (distanceSq > B.radius * B.radius)
+	{
+		return result;
+	}
+
+	vec3 normal;
+	if (CMP(distanceSq, 0.0f))
+	{
+		float mSq = (closestPoint - A.origin).magnitudeSq();
+		if (CMP(mSq, 0.0f)) { return result;
+		}
+		// Closest point is at the center of the sphere
+		normal = (closestPoint - A.origin).normalize();
+	}
+	else
+	{
+		normal = (B.origin - closestPoint).normalize();
+	}
+
+	vec3 outsidePoint = B.origin - normal * B.radius;
+	float distance = (closestPoint - outsidePoint).magnitude();
+	result.colliding = true;
+	result.contacts.push_back(closestPoint + (outsidePoint - closestPoint) * 0.5f);
+	result.normal = normal;
+	result.depth = distance * 0.5f;
+	return result;
+}
+
+
+std::vector<vec3> GetVertices(const obb_t &obb)
+{
+	std::vector<vec3> v;
+	v.resize(8);
+
+	vec3 C = obb.origin;
+	// OBB Center    
+	vec3 E = obb.size;
+	// OBB Extents
+	const float* o = obb.orientation.m;
+	vec3 A[] = {
+		// OBB Axis
+		vec3(o[0], o[1], o[2]),
+		vec3(o[3], o[4], o[5]),
+		vec3(o[6], o[7], o[8])
+	};
+
+	v[0] = C + A[0] * E.x + A[1] * E.y + A[2] * E.z;
+	v[1] = C - A[0] * E.x + A[1] * E.y + A[2] * E.z;
+	v[2] = C + A[0] * E.x - A[1] * E.y + A[2] * E.z;
+	v[3] = C + A[0] * E.x + A[1] * E.y - A[2] * E.z;
+	v[4] = C - A[0] * E.x - A[1] * E.y - A[2] * E.z;
+	v[5] = C + A[0] * E.x - A[1] * E.y - A[2] * E.z;
+	v[6] = C - A[0] * E.x + A[1] * E.y - A[2] * E.z;
+	v[7] = C - A[0] * E.x - A[1] * E.y + A[2] * E.z;
+
+	return v;
+}
+
+std::vector<line3_t> GetEdges(const obb_t &obb)
+{
+	std::vector<line3_t> result;
+	result.reserve(12);
+
+	std::vector<vec3> v = GetVertices(obb);
+
+	int index[][2] = {
+		// Indices of edge-vertices
+		{6,1},{6,3},{6,4},{2,7},{2,5},{2,0},
+		{0,1},{0,3},{7,1},{7,4},{4,5},{5,3}
+	};
+
+
+	for (int j = 0; j < 12; ++j)
+	{
+		line3_t line;
+		line.a = v[index[j][0]];
+		line.b = v[index[j][1]];
+		result.push_back(line);
+	}
+
+	return result;
+}
+
+
+std::vector<plane_t> GetPlanes(const obb_t &obb)
+{
+	vec3 c = obb.origin;
+	// OBB Center    
+	vec3 e = obb.size;
+	// OBB Extents
+	const float *o = obb.orientation.m;
+
+	vec3 a[] = {
+		// OBB Axis
+		vec3(o[0], o[1], o[2]),
+		vec3(o[3], o[4], o[5]),
+		vec3(o[6], o[7], o[8])
+	};
+
+
+	std::vector<plane_t> result;
+	result.resize(6);
+
+	result[0].normal = a[0];
+	result[0].d = a[0] * (c + a[0] * e.x);
+	result[1].normal = -a[0];
+	result[1].d = -(a[0] * (c - a[0] * e.x));
+
+	result[2].normal = a[1];
+	result[2].d = a[1] * (c + a[1] * e.y);
+	result[3].normal = -a[1];
+	result[3].d = -(a[1] * (c - a[1] * e.y));
+
+	result[4].normal = a[2];
+	result[4].d = a[2] * (c + a[2] * e.z);
+	result[5].normal = -a[2];
+	result[5].d = -(a[2] * (c - a[2] * e.z));
+
+	return result;
+}
+
+bool ClipToPlane(const plane_t& plane, const line3_t& line, vec3* outPoint)
+{
+	vec3 ab = line.b - line.a;
+	float nAB = plane.normal * ab;
+	if (CMP(nAB, 0))
+	{
+		return false;
+	}
+
+	float nA = plane.normal * line.a;
+	float t = (plane.d - nA) / nAB;
+
+	if (t >= 0.0f && t <= 1.0f)
+	{
+		if (outPoint != 0)
+		{
+			*outPoint = line.a + ab * t;
+		}
+		return true;
+	}
+	return false;
+}
+
+std::vector<vec3> ClipEdgesToOBB(const std::vector<line3_t>& edges, const obb_t &obb)
+{
+	std::vector<vec3> result;
+	result.reserve(edges.size());
+	vec3 intersection;
+
+	std::vector<plane_t>& planes = GetPlanes(obb);
+
+	for (int i = 0; i < planes.size(); ++i)
+	{
+		for (int j = 0; j < edges.size(); ++j)
+		{
+			if (ClipToPlane(planes[i], edges[j], &intersection))
+			{
+				if (PointInOBB(intersection, obb))
+				{
+					result.push_back(intersection);
+				}
+			}
+		}
+	}
+	return result;
+}
+
+float PenetrationDepth(const obb_t &o1, const obb_t &o2, const vec3& axis, bool* outShouldFlip)
+{
+	vec3 temp = axis;
+	temp.normalize();
+
+	interval_t i1 = GetInterval(o1, temp);
+	interval_t i2 = GetInterval(o2, temp);
+
+	if (!((i2.min <= i1.max) && (i1.min <= i2.max)))
+	{
+		return 0.0f; // No penerattion
+	} 
+
+	float len1 = i1.max - i1.min;
+	float len2 = i2.max - i2.min;
+
+	float min = MIN(i1.min, i2.min);
+	float max = MAX(i1.max, i2.max);
+
+	float length = max - min;
+
+	if (outShouldFlip != 0)
+	{
+		*outShouldFlip = (i2.min < i1.min);
+	}
+
+	return (len1 + len2) - length;
+}
+
+CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
+{
+	CollisionManifold result;
+	ResetCollisionManifold(&result);
+
+	const float* o1 = A.orientation.m;
+	const float* o2 = B.orientation.m;
+
+	vec3 test[15] = {
+		// Face axis        
+		vec3(o1[0], o1[1], o1[2]),
+		vec3(o1[3], o1[4], o1[5]),
+		vec3(o1[6], o1[7], o1[8]),
+		vec3(o2[0], o2[1], o2[2]),
+		vec3(o2[3], o2[4], o2[5]),
+		vec3(o2[6], o2[7], o2[8])
+	};
+	
+	for (int i = 0; i < 3; ++i)
+	{
+		// Fill out rest of axis
+		test[6 + i * 3 + 0] = vec3::crossproduct(test[i], test[0]);
+		test[6 + i * 3 + 1] = vec3::crossproduct(test[i], test[1]);
+		test[6 + i * 3 + 2] = vec3::crossproduct(test[i], test[2]);
+	}
+
+	vec3* hitNormal = 0;
+	bool shouldFlip;
+
+	for (int i = 0; i < 15; ++i)
+	{
+		if (test[i].magnitudeSq() < 0.001f)
+		{
+			continue;
+		}
+
+		float depth = PenetrationDepth(A, B, test[i], &shouldFlip);
+		if (depth <= 0.0f)
+		{
+			return result;
+		}
+		else if (depth <result.depth)
+		{
+			if (shouldFlip)
+			{
+				test[i] = test[i] * -1.0f;
+			}
+
+			result.depth = depth;
+			hitNormal = &test[i];
+		}
+	}
+	if (hitNormal == 0)
+	{
+		return result;
+	}
+	vec3 axis = (*hitNormal).normalize();
+
+	std::vector<vec3> c1 = ClipEdgesToOBB(GetEdges(B), A);
+	std::vector<vec3> c2 = ClipEdgesToOBB(GetEdges(A), B);
+	result.contacts.reserve(c1.size() + c2.size());
+	result.contacts.insert(result.contacts.end(), c1.begin(), c1.end());
+	result.contacts.insert(result.contacts.end(), c2.begin(), c2.end());
+
+	interval_t i = GetInterval(A, axis);
+	float distance = (i.max - i.min)* 0.5f - result.depth * 0.5f;
+	vec3 pointOnPlane = A.origin + axis * distance;
+	for (int i = result.contacts.size() - 1; i >= 0; --i)
+	{
+		vec3 contact = result.contacts[i];
+		vec3 temp = (pointOnPlane - contact);
+		result.contacts[i] = contact + (axis * (axis * temp));
+
+		for (int j = result.contacts.size() - 1; j >i; --j)
+		{
+			if ((result.contacts[j] - result.contacts[i]).magnitudeSq() < 0.0001f)
+			{
+				result.contacts.erase(result.contacts.begin() + j);
+				break;
+			}
+		}
+
+
+	}
+	result.colliding = true;
+	result.normal = axis;
+	return result;
+}
+
+class RigidbodyVolume
+{
+};
+
 
 //=============================================================================
 //	Springs and Joints

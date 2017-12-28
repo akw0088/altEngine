@@ -4,9 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-
-
-
 Entity::Entity()
 {
 	position = vec3(0.0f, 0.0f, 0.0f);
@@ -52,9 +49,9 @@ Entity::~Entity()
 	if (player)
 		delete player;
 	if (brushinfo)
-	{
 		delete brushinfo;
-	}
+	if (entstring)
+		delete entstring;
 
 	position = vec3(0.0f, 0.0f, 0.0f);
 	rigid = NULL;
