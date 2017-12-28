@@ -94,7 +94,7 @@ void Global::Params(matrix4 &mvp, int depth)
 	glUniform1i(u_depth, depth);
 }
 
-int mLight2::init(Graphics *gfx)
+int mLight2::init(Graphics *gfx, bool pixel)
 {
 
 	m_num_shadowmap = 18;
@@ -112,12 +112,21 @@ int mLight2::init(Graphics *gfx)
 	}
 #else
 //	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", "media/glsl/ver440/mlighting3.gs", "media/glsl/ver440/mlighting3.fs"))
-	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs"))
+	if (pixel && Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3.fs"))
 //	if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3_nothing.fs"))
-		{
+	{
 		program_handle = -1;
 		return -1;
 	}
+	else if (pixel == false)
+	{
+		if (Shader::init(gfx, "media/glsl/ver440/mlighting3.vs", NULL, "media/glsl/ver440/mlighting3_nothing.fs"))
+		{
+			program_handle = -1;
+			return -1;
+		}
+	}
+
 #endif
 
 	m_alpha = -1.0f;

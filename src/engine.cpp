@@ -592,6 +592,9 @@ void Engine::report_master()
 {
 	report_t report;
 
+	if (server_flag == false)
+		return;
+
 	report.cmd = MASTER_REPORT;
 	report.qport = qport;
 	sprintf(report.sv_hostname, "%s", sv_hostname);
@@ -4803,10 +4806,6 @@ void Engine::bind_keys()
 	/*
 	seta sv_strictAuth "1"
 	seta sv_lanForceRate "1"
-	seta sv_master5 ""
-	seta sv_master4 ""
-	seta sv_master3 ""
-	seta sv_master2 ""
 	seta sv_floodProtect "1"
 	seta sv_maxPing "0"
 	seta sv_minPing "0"
@@ -7252,6 +7251,17 @@ void Engine::console(char *cmd)
 		reload_shaders();
 		return;
 	}
+
+	if (strcmp(cmd, "r_no_pixel_shader") == 0)
+	{
+		sprintf(msg, "disabling pixel shader");
+		menu.print(msg);
+
+		mlight2.destroy();
+		mlight2.init(&gfx, false);
+		return;
+	}
+
 
 	if (sscanf(cmd, "r_shader %s", data) == 1)
 	{
