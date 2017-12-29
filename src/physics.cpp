@@ -2637,18 +2637,18 @@ matrix4 Camera::GetViewMatrix()
 	}
 
 	matrix4 inverse = m_matWorld.transpose();
-	inverse.m[41] = inverse.m[14] = 0.0f;
-	inverse.m[42] = inverse.m[24] = 0.0f;
-	inverse.m[43] = inverse.m[34] = 0.0f;
+	inverse.m[12] = inverse.m[3] = 0.0f;
+	inverse.m[13] = inverse.m[7] = 0.0f;
+	inverse.m[14] = inverse.m[11] = 0.0f;
 
 	vec3 right		= vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]);
 	vec3 up			= vec3(m_matWorld.m[4], m_matWorld.m[5], m_matWorld.m[6]);
 	vec3 forward	= vec3(m_matWorld.m[8], m_matWorld.m[9], m_matWorld.m[10]);
 	vec3 position	= vec3(m_matWorld.m[12], m_matWorld.m[13], m_matWorld.m[14]);
 
-	inverse.m[41] = -right * position;
-	inverse.m[42] = -up * position;
-	inverse.m[43] = -forward * position;
+	inverse.m[12] = -right * position;
+	inverse.m[13] = -up * position;
+	inverse.m[14] = -forward * position;
 	return inverse;
 }
 
