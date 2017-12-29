@@ -13,23 +13,22 @@ public:
 	vec3			position;
 	RigidBody		*rigid;
 	Model			*model;
-	Light			*light;
-	Speaker			*speaker;
-	Trigger			*trigger;
 	Projectile		*projectile;
 	Player			*player;
+	ent_string_t	*entstring;
+	Trigger			*trigger;
+	Light			*light;
+	Speaker			*speaker;
+	brushinfo_t		*brushinfo; // doors, platforms, etc
 	Constructable	*construct;
 	PortalCamera	*portal_camera;
-	brushinfo_t		*brushinfo; // doors, platforms, etc
-	ent_string_t	*entstring;
-
 
 
 	int				ent_type; // will replace string type eventually
-	net_ent_t		nettype;
 	int				model_ref;		// bsp model index
 	int				bsp_leaf;
 	int				num_particle;
+	net_ent_t		nettype;
 
 	struct flag
 	{
