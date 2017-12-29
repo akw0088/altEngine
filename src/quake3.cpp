@@ -121,921 +121,573 @@ void Quake3::unload()
 
 void Quake3::destroy()
 {
+#if 0
 	bool dump_obj = false;
 
 	for (unsigned int i = 0; i < model_table.size(); i++)
 	{
-#if 0
 		if (dump_obj)
 		{
 			strcat(model_table[i]->name, ".obj");
 			WriteObj(model_table[i]->name, model_table[i]->model_vertex_array, model_table[i]->num_vertex, model_table[i]->model_index_array, model_table[i]->num_index);
 		}
-#endif
-		delete model_table[i];
 		model_table[i] = NULL;
 	}
+#endif
+	delete [] model_table;
 }
 
 
 void Quake3::load_models(Graphics &gfx)
 {
-	Model *model;
-
-
-	#define MODEL_ROCKET 0
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/rocketl/rocket");
-        model_table.push_back(model);
+	model_table = new Model[512];
+	num_model = 0;
+	#define MODEL_ROCKET 0	
+	model_table[num_model++].load(gfx, "media/models/weapons2/rocketl/rocket");
 
 	#define MODEL_GRENADE 1
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/grenadel/pineapple");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weapons2/grenadel/pineapple");
 
 	#define MODEL_SHELL 2
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/shells/s_shell");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weapons2/shells/s_shell");
 
 
 	#define MODEL_BULLET 3
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/shells/M_shell");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weapons2/shells/M_shell");
 
 
 	#define MODEL_BULLET_HIT 4
-	model = new Model;
-	model->load(gfx, "media/models/weaphits/bullet_hit");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weaphits/bullet_hit");
 
 	#define MODEL_PLASMA_HIT 5
-	model = new Model;
-	model->load(gfx, "media/models/weaphits/plasma_hit");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weaphits/plasma_hit");
 
 	#define MODEL_BOOM 6
-	model = new Model;
-	model->load(gfx, "media/models/weaphits/rlboom");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weaphits/rlboom");
 
 
 	#define MODEL_GIB0 7
-	model = new Model;
-	model->load(gfx, "media/models/gibs/abdomen");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/abdomen");
 
 	#define MODEL_GIB1 8
-	model = new Model;
-	model->load(gfx, "media/models/gibs/arm");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/arm");
 
 	#define MODEL_GIB2 9
-	model = new Model;
-	model->load(gfx, "media/models/gibs/brain");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/brain");
 
 	#define MODEL_GIB3 10
-	model = new Model;
-	model->load(gfx, "media/models/gibs/chest");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/chest");
 
 	#define MODEL_GIB4 11
-	model = new Model;
-	model->load(gfx, "media/models/gibs/fist");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/fist");
 
 	#define MODEL_GIB5 12
-	model = new Model;
-	model->load(gfx, "media/models/gibs/foot");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/foot");
 
 	#define MODEL_GIB6 13
-	model = new Model;
-	model->load(gfx, "media/models/gibs/forearm");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/forearm");
 
 	#define MODEL_GIB7 14
-	model = new Model;
-	model->load(gfx, "media/models/gibs/intestine");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/intestine");
 
 	#define MODEL_GIB8 15
-	model = new Model;
-	model->load(gfx, "media/models/gibs/leg");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/leg");
 
 	#define MODEL_GIB9 16
-	model = new Model;
-	model->load(gfx, "media/models/gibs/skull");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/skull");
 
 	#define MODEL_BOX 17
-	model = new Model;
-	model->load(gfx, "media/models/box");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/box");
 
 	#define MODEL_BALL 18
-	model = new Model;
-	model->load(gfx, "media/models/ball");
-        model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/ball");
 
-		bool qc_weapons = false;
+	bool qc_weapons = false;
 
 //	#define MODEL_WEAPON_GAUNTLET 19
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_gauntlet_fixed");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_gauntlet_fixed");
 	else
-		model->load(gfx, "media/models/weapons2/gauntlet/gauntlet");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/gauntlet/gauntlet");
 
 //	#define MODEL_WEAPON_MACHINEGUN 20
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_machinegun_small");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_machinegun_small");
 	else
-		model->load(gfx, "media/models/weapons2/machinegun/machinegun");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/machinegun/machinegun");
 
 //	#define MODEL_WEAPON_SHOTGUN 21
-	model = new Model;
 	
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_shotgun_small");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_shotgun_small");
 	else
-		model->load(gfx, "media/models/weapons2/shotgun/shotgun");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/shotgun/shotgun");
 
 //	#define MODEL_WEAPON_GRENADE 22
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_tribolt_small");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_tribolt_small");
 	else
-		model->load(gfx, "media/models/weapons2/grenadel/grenade");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/grenadel/grenade");
 
 //	#define MODEL_WEAPON_ROCKET 23
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_rocketl_small");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_rocketl_small");
 	else
-		model->load(gfx, "media/models/weapons2/rocketl/rocketl");
-	model_table.push_back(model);
-
-	
-
+		model_table[num_model++].load(gfx, "media/models/weapons2/rocketl/rocketl");
 
 //	#define MODEL_WEAPON_LIGHTNING 24
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_lightning_small");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_lightning_small");
 	else
-		model->load(gfx, "media/models/weapons2/lightning/lightning");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/lightning/lightning");
 
 
 //	#define MODEL_WEAPON_RAILGUN 25
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_railgun_small_long");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_railgun_small_long");
 	else
-		model->load(gfx, "media/models/weapons2/railgun/railgun");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/railgun/railgun");
 
 //	#define MODEL_WEAPON_PLASMA 26
-	model = new Model;
 	if (qc_weapons)
-		model->load(gfx, "media/models/weapons_qc/qc_nailgun_small");
+		model_table[num_model++].load(gfx, "media/models/weapons_qc/qc_nailgun_small");
 	else
-		model->load(gfx, "media/models/weapons2/plasma/plasma");
-	model_table.push_back(model);
+		model_table[num_model++].load(gfx, "media/models/weapons2/plasma/plasma");
 
 	#define MODEL_ARMOR_SHARD 27
-	model = new Model;
-	model->load(gfx, "media/models/powerups/armor/shard");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/armor/shard");
 
 	#define MODEL_AMMO_SHELLS 28
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_shells");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_shells");
 
 	#define MODEL_AMMO_ROCKETS 29
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_rockets");
 
 	#define MODEL_AMMO_LIGHTNING 30
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_lightning");
 
 	#define MODEL_AMMO_GRENADES 31
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_grenades");
 
 	#define MODEL_AMMO_SLUGS 32
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_slugs");
 
 	#define MODEL_AMMO_BULLETS 33
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_bullets");
 
 	#define MODEL_ARMOR_COMBAT 34
-	model = new Model;
-	model->load(gfx, "media/models/powerups/armor/item_armor_combat");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/armor/item_armor_combat");
 
 	#define MODEL_ARMOR_BODY 35
-	model = new Model;
-	model->load(gfx, "media/models/powerups/armor/item_armor_body");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/armor/item_armor_body");
 
 	#define MODEL_BLUE_FLAG 36
-	model = new Model;
-	model->load(gfx, "media/models/flags/b_flag");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/flags/b_flag");
 
 	#define MODEL_RED_FLAG 37
-	model = new Model;
-	model->load(gfx, "media/models/flags/r_flag");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/flags/r_flag");
 
 	#define MODEL_QUAD 38
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/quad");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/quad");
 
 	#define MODEL_REGEN 39
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/regen");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/regen");
 
 	#define MODEL_INVIS 40
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/invis");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/invis");
 
 	#define MODEL_FLIGHT 41
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/flight");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/flight");
 
 	#define MODEL_HASTE 42
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/haste");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/haste");
 
 	#define MODEL_MEDKIT 43
-	model = new Model;
-	model->load(gfx, "media/models/powerups/holdable/medkit");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/holdable/medkit");
 
 	#define MODEL_TELEPORTER 44
-	model = new Model;
-	model->load(gfx, "media/models/powerups/holdable/teleporter");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/holdable/teleporter");
 
 	#define MODEL_HEALTH 45
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health");
 
 	#define MODEL_HEALTH_LARGE 46
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health_large");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health_large");
 
 	#define MODEL_HEALTH_SMALL 47
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health_small");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health_small");
 
 	#define MODEL_HEALTH_MEGA 48
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health_mega");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health_mega");
 
 	#define MODEL_AMMO_PLASMA 49
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_plasma");
-	model_table.push_back(model);
-
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_plasma");
 
 	#define MODEL_TERRAIN 50
-	model = new Model;
-	model->load(gfx, "media/terrain/terrain_big");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/terrain/terrain_big");
 
+	#define MODEL_SENTRY1 51
+	model_table[num_model++].load(gfx, "media/models/sentry/sentry1");
 
-#define MODEL_SENTRY1 51
-	model = new Model;
-	model->load(gfx, "media/models/sentry/sentry1");
-	model_table.push_back(model);
+	#define MODEL_SENTRY2 52
+	model_table[num_model++].load(gfx, "media/models/sentry/sentry2");
 
-#define MODEL_SENTRY2 52
-	model = new Model;
-	model->load(gfx, "media/models/sentry/sentry2");
-	model_table.push_back(model);
+	#define MODEL_SENTRY3 53
+	model_table[num_model++].load(gfx, "media/models/sentry/sentry3");
 
-#define MODEL_SENTRY3 53
-	model = new Model;
-	model->load(gfx, "media/models/sentry/sentry3");
-	model_table.push_back(model);
-
-
-#define MODEL_SENTRY_BASE 54
-	model = new Model;
-	model->load(gfx, "media/models/sentry/sentry_base");
-	model_table.push_back(model);
+	#define MODEL_SENTRY_BASE 54
+	model_table[num_model++].load(gfx, "media/models/sentry/sentry_base");
 
 }
 
 void Quake3::load_q1_models(Graphics &gfx)
 {
-	Model *model;
+	model_table = new Model[512];
+	num_model = 0;
 
-#define MODEL_ROCKET 0
-	model = new Model;
-	model->load(gfx, "media/models/quake1/rock/rock");
-	model_table.push_back(model);
+	#define MODEL_ROCKET 0
+	model_table[num_model++].load(gfx, "media/models/quake1/rock/rock");
 
-#define MODEL_GRENADE 1
-	model = new Model;
-	model->load(gfx, "media/models/quake1/grenade/grenade");
-	model_table.push_back(model);
+	#define MODEL_GRENADE 1
+	model_table[num_model++].load(gfx, "media/models/quake1/grenade/grenade");
 
 #define MODEL_SHELL 2
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/shells/s_shell");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weapons2/shells/s_shell");
 
 
 #define MODEL_BULLET 3
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/shells/M_shell");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weapons2/shells/M_shell");
 
 
 #define MODEL_BULLET_HIT 4
-	model = new Model;
-	model->load(gfx, "media/models/weaphits/bullet_hit");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weaphits/bullet_hit");
 
 #define MODEL_PLASMA_HIT 5
-	model = new Model;
-	model->load(gfx, "media/models/weaphits/plasma_hit");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weaphits/plasma_hit");
 
 #define MODEL_BOOM 6
-	model = new Model;
-	model->load(gfx, "media/models/weaphits/rlboom");
-	model_table.push_back(model);
-
+	model_table[num_model++].load(gfx, "media/models/weaphits/rlboom");
 
 #define MODEL_GIB0 7
-	model = new Model;
-	model->load(gfx, "media/models/gibs/abdomen");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/abdomen");
 
 #define MODEL_GIB1 8
-	model = new Model;
-	model->load(gfx, "media/models/gibs/arm");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/arm");
 
 #define MODEL_GIB2 9
-	model = new Model;
-	model->load(gfx, "media/models/gibs/brain");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/brain");
 
 #define MODEL_GIB3 10
-	model = new Model;
-	model->load(gfx, "media/models/gibs/chest");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/chest");
 
 #define MODEL_GIB4 11
-	model = new Model;
-	model->load(gfx, "media/models/gibs/fist");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/fist");
 
 #define MODEL_GIB5 12
-	model = new Model;
-	model->load(gfx, "media/models/gibs/foot");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/foot");
 
 #define MODEL_GIB6 13
-	model = new Model;
-	model->load(gfx, "media/models/gibs/forearm");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/forearm");
 
 #define MODEL_GIB7 14
-	model = new Model;
-	model->load(gfx, "media/models/gibs/intestine");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/intestine");
 
 #define MODEL_GIB8 15
-	model = new Model;
-	model->load(gfx, "media/models/gibs/leg");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/leg");
 
 #define MODEL_GIB9 16
-	model = new Model;
-	model->load(gfx, "media/models/gibs/skull");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/gibs/skull");
 
 #define MODEL_BOX 17
-	model = new Model;
-	model->load(gfx, "media/models/box");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/box");
 
 #define MODEL_BALL 18
-	model = new Model;
-	model->load(gfx, "media/models/ball");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/ball");
 
 	//	#define MODEL_WEAPON_GAUNTLET 19
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_axe/v_axe");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_axe/v_axe");
 
 	//	#define MODEL_WEAPON_MACHINEGUN 20
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_nail/g_nail");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_nail/g_nail");
 
 	//	#define MODEL_WEAPON_SHOTGUN 21
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_shot/g_shot");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_shot/g_shot");
 
 	//	#define MODEL_WEAPON_GRENADE 22
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_rock/g_rock");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_rock/g_rock");
 
 	//	#define MODEL_WEAPON_ROCKET 23
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_rock2/g_rock2");
-	model_table.push_back(model);
-
+	model_table[num_model++].load(gfx, "media/models/quake1/g_rock2/g_rock2");
 
 	//	#define MODEL_WEAPON_LIGHTNING 24
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_light/g_light");
-	model_table.push_back(model);
-
+	model_table[num_model++].load(gfx, "media/models/quake1/g_light/g_light");
 
 	//	#define MODEL_WEAPON_RAILGUN 25
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_light/g_light");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_light/g_light");
 
 	//	#define MODEL_WEAPON_PLASMA 26
-	model = new Model;
-	model->load(gfx, "media/models/weapons2/plasma/plasma");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/weapons2/plasma/plasma");
 
 #define MODEL_ARMOR_SHARD 27
-	model = new Model;
-	model->load(gfx, "media/models/powerups/armor/shard");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/armor/shard");
 
 #define MODEL_AMMO_SHELLS 28
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_shells");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_shells");
 
 #define MODEL_AMMO_ROCKETS 29
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_rockets");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_rockets");
 
 #define MODEL_AMMO_LIGHTNING 30
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_lightning");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_lightning");
 
 #define MODEL_AMMO_GRENADES 31
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_grenades");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_grenades");
 
 #define MODEL_AMMO_SLUGS 32
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_slugs");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_slugs");
 
 #define MODEL_AMMO_BULLETS 33
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_bullets");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_bullets");
 
 #define MODEL_ARMOR_COMBAT 34
-	model = new Model;
-	model->load(gfx, "media/models/quake1/armor/yellowarmor");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/armor/yellowarmor");
 
 #define MODEL_ARMOR_BODY 35
-	model = new Model;
-	model->load(gfx, "media/models/quake1/armor/redarmor");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/armor/redarmor");
 
 #define MODEL_BLUE_FLAG 36
-	model = new Model;
-	model->load(gfx, "media/models/flags/b_flag");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/flags/b_flag");
 
 #define MODEL_RED_FLAG 37
-	model = new Model;
-	model->load(gfx, "media/models/flags/r_flag");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/flags/r_flag");
 
 #define MODEL_QUAD 38
-	model = new Model;
-	model->load(gfx, "media/models/quake1/quaddama/quaddama");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/quaddama/quaddama");
 
 #define MODEL_REGEN 39
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/regen");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/regen");
 
 #define MODEL_INVIS 40
-	model = new Model;
-	model->load(gfx, "media/models/quake1/invisibl/invisibl");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/invisibl/invisibl");
 
 #define MODEL_FLIGHT 41
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/flight");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/flight");
 
 #define MODEL_HASTE 42
-	model = new Model;
-	model->load(gfx, "media/models/powerups/instant/haste");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/instant/haste");
 
 #define MODEL_MEDKIT 43
-	model = new Model;
-	model->load(gfx, "media/models/powerups/holdable/medkit");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/holdable/medkit");
 
 #define MODEL_TELEPORTER 44
-	model = new Model;
-	model->load(gfx, "media/models/powerups/holdable/teleporter");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/holdable/teleporter");
 
 #define MODEL_HEALTH 45
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health");
 
 #define MODEL_HEALTH_LARGE 46
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health_large");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health_large");
 
 #define MODEL_HEALTH_SMALL 47
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health_small");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health_small");
 
 #define MODEL_HEALTH_MEGA 48
-	model = new Model;
-	model->load(gfx, "media/models/powerups/health/item_health_mega");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/powerups/health/item_health_mega");
 
 #define MODEL_AMMO_PLASMA 49
-	model = new Model;
-	model->load(gfx, "media/models/powerups/ammo/ammo_plasma");
-	model_table.push_back(model);
-
+	model_table[num_model++].load(gfx, "media/models/powerups/ammo/ammo_plasma");
 
 #define MODEL_SHAMBLER 50
-	model = new Model;
-	model->load(gfx, "media/models/quake1/shambler/shambler");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/shambler/shambler");
 
 #define MODEL_WIZARD 51
-	model = new Model;
-	model->load(gfx, "media/models/quake1/wizard/wizard");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/wizard/wizard");
 
 #define MODEL_OGRE 52
-	model = new Model;
-	model->load(gfx, "media/models/quake1/ogre/ogre");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/ogre/ogre");
 
 #define MODEL_DOG 53
-	model = new Model;
-	model->load(gfx, "media/models/quake1/dog/dog");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/dog/dog");
 
 #define MODEL_ZOMBIE 54
-	model = new Model;
-	model->load(gfx, "media/models/quake1/zombie/zombie");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/zombie/zombie");
 
 #define MODEL_PLAYER 55
-	model = new Model;
-	model->load(gfx, "media/models/quake1/player/player");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/player/player");
 
 #define MODEL_DEMON 56
-	model = new Model;
-	model->load(gfx, "media/models/quake1/demon/demon");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/demon/demon");
 
 #define MODEL_SOLDIER 57
-	model = new Model;
-	model->load(gfx, "media/models/quake1/soldier/soldier");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/soldier/soldier");
 
 #define MODEL_KNIGHT 58
-	model = new Model;
-	model->load(gfx, "media/models/quake1/knight/knight");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/knight/knight");
 
 #define MODEL_REDARMOR 59
-	model = new Model;
-	model->load(gfx, "media/models/quake1/armor/redarmor");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/armor/redarmor");
 
 #define MODEL_YELLOWARMOR 60
-	model = new Model;
-	model->load(gfx, "media/models/quake1/armor/yellowarmor");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/armor/yellowarmor");
 
 #define MODEL_GREENARMOR 61
-	model = new Model;
-	model->load(gfx, "media/models/quake1/armor/greenarmor");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/armor/greenarmor");
 
 #define MODEL_BACKPACK 62
-	model = new Model;
-	model->load(gfx, "media/models/quake1/backpack/backpack");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/backpack/backpack");
 
 #define MODEL_BOLT 63
-	model = new Model;
-	model->load(gfx, "media/models/quake1/bolt/bolt");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/bolt/bolt");
 
 #define MODEL_BOLT2 64
-	model = new Model;
-	model->load(gfx, "media/models/quake1/bolt2/bolt2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/bolt2/bolt2");
 
 #define MODEL_BOLT3 65
-	model = new Model;
-	model->load(gfx, "media/models/quake1/bolt3/bolt3");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/bolt3/bolt3");
 
 #define MODEL_BOSS 66
-	model = new Model;
-	model->load(gfx, "media/models/quake1/boss/boss");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/boss/boss");
 
 #define MODEL_END1 67
-	model = new Model;
-	model->load(gfx, "media/models/quake1/end1/end1");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/end1/end1");
 
 #define MODEL_EYES 68
-	model = new Model;
-	model->load(gfx, "media/models/quake1/eyes/eyes");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/eyes/eyes");
 
 #define MODEL_FLAME 69
-	model = new Model;
-	model->load(gfx, "media/models/quake1/flame/flame");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/flame/flame");
 
 #define MODEL_FLAME2 70
-	model = new Model;
-	model->load(gfx, "media/models/quake1/flame2/flame2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/flame2/flame2");
 
 #define MODEL_G_LIGHT 71
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_light/g_light");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_light/g_light");
 
 #define MODEL_G_NAIL 72
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_nail/g_nail");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_nail/g_nail");
 
 #define MODEL_G_NAIL2 73
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_nail2/g_nail2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_nail2/g_nail2");
 
 #define MODEL_G_ROCK 74
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_rock/g_rock");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_rock/g_rock");
 
 #define MODEL_G_ROCK2 75
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_rock2/g_rock2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_rock2/g_rock2");
 
 #define MODEL_G_SHOT 76
-	model = new Model;
-	model->load(gfx, "media/models/quake1/g_shot/g_shot");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/g_shot/g_shot");
 
 #define MODEL_Q1_GIB1 77
-	model = new Model;
-	model->load(gfx, "media/models/quake1/gib1/gib1");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/gib1/gib1");
 
 #define MODEL_Q1_GIB2 78
-	model = new Model;
-	model->load(gfx, "media/models/quake1/gib2/gib2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/gib2/gib2");
 
 #define MODEL_Q1_GIB3 79
-	model = new Model;
-	model->load(gfx, "media/models/quake1/gib3/gib3");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/gib3/gib3");
 
 #define MODEL_Q1_GRENADE 80
-	model = new Model;
-	model->load(gfx, "media/models/quake1/grenade/grenade");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/grenade/grenade");
 
 #define MODEL_H_DEMON 81
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_demon/h_demon");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_demon/h_demon");
 
 #define MODEL_H_DOG 82
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_dog/h_dog");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_dog/h_dog");
 
 #define MODEL_H_GUARD 83
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_guard/h_guard");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_guard/h_guard");
 
 #define MODEL_H_KNIGHT 84
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_knight/h_knight");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_knight/h_knight");
 
 #define MODEL_H_OGRE 85
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_ogre/h_ogre");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_ogre/h_ogre");
 
 #define MODEL_H_PLAYER 86
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_player/h_player");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_player/h_player");
 
 #define MODEL_H_SHAMS 87
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_shams/h_shams");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_shams/h_shams");
 
 #define MODEL_H_WIZARD 88
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_wizard/h_wizard");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_wizard/h_wizard");
 
 #define MODEL_H_ZOMBIE 89
-	model = new Model;
-	model->load(gfx, "media/models/quake1/h_zombie/h_zombie");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/h_zombie/h_zombie");
 
 #define MODEL_INVISIBL 90
-	model = new Model;
-	model->load(gfx, "media/models/quake1/invisibl/invisibl");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/invisibl/invisibl");
 
 #define MODEL_INVULNER 91
-	model = new Model;
-	model->load(gfx, "media/models/quake1/invulner/invulner");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/invulner/invulner");
 
 #define MODEL_LAVABALL 92
-	model = new Model;
-	model->load(gfx, "media/models/quake1/lavaball/lavaball");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/lavaball/lavaball");
 	
 #define MODEL_M_G_KEY 93
-	model = new Model;
-	model->load(gfx, "media/models/quake1/m_g_key/m_g_key");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/m_g_key/m_g_key");
 
 #define MODEL_M_S_KEY 94
-	model = new Model;
-	model->load(gfx, "media/models/quake1/m_s_key/m_s_key");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/m_s_key/m_s_key");
 
 #define MODEL_MISSLE 95
-	model = new Model;
-	model->load(gfx, "media/models/quake1/missle/missle");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/missle/missle");
 
 #define MODEL_Q1_PLAYER 96
-	model = new Model;
-	model->load(gfx, "media/models/quake1/player/player");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/player/player");
 
 #define MODEL_QUADDAMA 97
-	model = new Model;
-	model->load(gfx, "media/models/quake1/quaddama/quaddama");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/quaddama/quaddama");
 
 #define MODEL_S_LIGHT 98
-	model = new Model;
-	model->load(gfx, "media/models/quake1/s_light/s_light");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/s_light/s_light");
 
 #define MODEL_S_SPIKE 99
-	model = new Model;
-	model->load(gfx, "media/models/quake1/s_spike/s_spike");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/s_spike/s_spike");
 
 #define MODEL_SPIKE 100
-	model = new Model;
-	model->load(gfx, "media/models/quake1/spike/spike");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/spike/spike");
 
 #define MODEL_SUIT 101
-	model = new Model;
-	model->load(gfx, "media/models/quake1/suit/suit");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/suit/suit");
 
 #define MODEL_V_AXE 102
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_axe/v_axe");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_axe/v_axe");
 
 #define MODEL_V_LIGHT 103
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_light/v_light");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_light/v_light");
 
 #define MODEL_V_NAIL 104
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_nail/v_nail");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_nail/v_nail");
 
 #define MODEL_V_NAIL2 105
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_nail2/v_nail2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_nail2/v_nail2");
 
 #define MODEL_V_ROCK 106
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_rock/v_rock");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_rock/v_rock");
 
 #define MODEL_V_ROCK2 107
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_rock2/v_rock2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_rock2/v_rock2");
 
 #define MODEL_V_SHOT 108
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_shot/v_shot");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_shot/v_shot");
 
 #define MODEL_V_SHOT2 109
-	model = new Model;
-	model->load(gfx, "media/models/quake1/v_shot2/v_shot2");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/v_shot2/v_shot2");
 
 #define MODEL_W_G_KEY 110
-	model = new Model;
-	model->load(gfx, "media/models/quake1/w_g_key/w_g_key");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/w_g_key/w_g_key");
 
 #define MODEL_W_S_KEY 111
-	model = new Model;
-	model->load(gfx, "media/models/quake1/w_s_key/w_s_key");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/w_s_key/w_s_key");
 
 #define MODEL_W_SPIKE 112
-	model = new Model;
-	model->load(gfx, "media/models/quake1/w_spike/w_spike");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/w_spike/w_spike");
 
 #define MODEL_W_ZOM_GIB 113
-	model = new Model;
-	model->load(gfx, "media/models/quake1/zom_gib/zom_gib");
-	model_table.push_back(model);
+	model_table[num_model++].load(gfx, "media/models/quake1/zom_gib/zom_gib");
 }
 
 
@@ -2735,7 +2387,7 @@ void Quake3::player_died(int index)
 
 	entity->player->kill();
 	if (entity->player->immobile == false)
-		entity->model->clone(*(model_table[MODEL_BOX]));
+		entity->model->clone(model_table[MODEL_BOX]);
 }
 
 void Quake3::drop_weapon(int index)
@@ -3019,7 +2671,7 @@ void Quake3::step(int frame_step)
 		ent->rigid = new RigidBody(ent);
 
 		ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
-		ent->rigid->clone(*model_table[MODEL_SENTRY3]);
+		ent->rigid->clone(model_table[MODEL_SENTRY3]);
 		ent->model = ent->rigid;
 		ent->construct->immobile = true;
 		ent->construct->render_md5 = false;
@@ -3027,7 +2679,7 @@ void Quake3::step(int frame_step)
 
 		Entity *sentry_base = engine->entity_list[engine->get_entity()];
 		sentry_base->model = new Model(sentry_base);
-		sentry_base->model->clone(*model_table[MODEL_SENTRY_BASE]);
+		sentry_base->model->clone(model_table[MODEL_SENTRY_BASE]);
 		sentry_base->position = engine->entity_list[spawn]->position;
 		sentry_base->flags.visible = true;
 
@@ -3121,17 +2773,17 @@ void Quake3::step(int frame_step)
 		static int temp = 0;
 		if (bot->player->immobile && bot->player->health >= 75 && temp != 3)
 		{
-			entity->model->clone(*model_table[MODEL_SENTRY3]);
+			entity->model->clone(model_table[MODEL_SENTRY3]);
 			temp = 3;
 		}
 		else if (bot->player->immobile && bot->player->health < 75 && bot->player->health > 50 && temp != 2)
 		{
-			entity->model->clone(*model_table[MODEL_SENTRY2]);
+			entity->model->clone(model_table[MODEL_SENTRY2]);
 			temp = 2;
 		}
 		else if (bot->player->immobile && bot->player->health < 50 && temp != 1)
 		{
-			entity->model->clone(*model_table[MODEL_SENTRY1]);
+			entity->model->clone(model_table[MODEL_SENTRY1]);
 			temp = 1;
 		}
 
@@ -3190,7 +2842,7 @@ void Quake3::step(int frame_step)
 			break;
 		case BOT_DEAD:
 			engine->zcc.select_animation(1);
-			bot->model->clone(*(model_table[MODEL_BOX]));
+			bot->model->clone(model_table[MODEL_BOX]);
 			engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
 			if (bot->player->dead_timer > 0)
@@ -3380,7 +3032,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->flags.bsp_visible = true;
 		projectile->model->flags.blend = true;
 
-		projectile->rigid->clone(*(model_table[MODEL_BALL]));
+		projectile->rigid->clone(model_table[MODEL_BALL]);
 		projectile->rigid->velocity = frame.forward * -10.0f;
 		projectile->rigid->net_force = frame.forward * -10.0f;
 
@@ -3414,7 +3066,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 	}
 
-	add_decal(frame.pos, frame, NET_PLASMA_HIT, *(model_table[MODEL_PLASMA_HIT]), -40.0f, true, 10);
+	add_decal(frame.pos, frame, NET_PLASMA_HIT, model_table[MODEL_PLASMA_HIT], -40.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + frame.forward * -75.0f;
@@ -3484,7 +3136,7 @@ void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
 		frame.set(projectile->rigid->morientation);
-		projectile->rigid->clone(*(model_table[MODEL_ROCKET]));
+		projectile->rigid->clone(model_table[MODEL_ROCKET]);
 		projectile->rigid->velocity = frame.forward * -6.25f;
 		projectile->rigid->net_force = frame.forward * -10.0f;
 		projectile->rigid->angular_velocity = vec3();
@@ -3531,7 +3183,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->flags.bsp_visible = true;
 
-		projectile->rigid->clone(*(model_table[MODEL_GRENADE]));
+		projectile->rigid->clone(model_table[MODEL_GRENADE]);
 		projectile->rigid->velocity = frame.forward * -25.0f;
 		projectile->rigid->angular_velocity = vec3(1.1f, 0.1f, 1.1f);
 		projectile->rigid->flags.gravity = true;
@@ -3653,7 +3305,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->rigid = new RigidBody(projectile);
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
-		projectile->rigid->clone(*(model_table[MODEL_BOX]));
+		projectile->rigid->clone(model_table[MODEL_BOX]);
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->flags.gravity = false;
@@ -3769,7 +3421,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->nettype = NET_RAIL;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->position = frame.pos;
-		projectile->rigid->clone(*(model_table[MODEL_BALL]));
+		projectile->rigid->clone(model_table[MODEL_BALL]);
 		projectile->rigid->velocity = vec3();
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->flags.gravity = false;
@@ -4022,7 +3674,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 
 
 
-	add_decal(frame.pos, frame, NET_BULLET_HIT, * (model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+	add_decal(frame.pos, frame, NET_BULLET_HIT, model_table[MODEL_BULLET_HIT], 10.0f, true, 10);
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * 75.0f;
@@ -4042,7 +3694,7 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	bullet->nettype = NET_BULLET;
 	bullet->rigid = new RigidBody(bullet);
 	bullet->position = frame.pos;
-	bullet->rigid->clone(*(model_table[MODEL_BULLET]));
+	bullet->rigid->clone(model_table[MODEL_BULLET]);
 	frame.set(bullet->rigid->morientation);
 	vec3 right = vec3::crossproduct(frame.forward, frame.up);
 	bullet->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
@@ -4177,7 +3829,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell->rigid = new RigidBody(shell);
 	shell->position = frame.pos;
 	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
-	shell->rigid->clone(*(model_table[MODEL_SHELL]));
+	shell->rigid->clone(model_table[MODEL_SHELL]);
 	frame.set(shell->rigid->morientation);
 	shell->rigid->velocity += right * random() + frame.up * random();
 	shell->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f  * random());
@@ -4200,7 +3852,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	shell2->nettype = NET_SHELL;
 	shell2->position = frame.pos;
 	shell2->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
-	shell2->rigid->clone(*(model_table[MODEL_SHELL]));
+	shell2->rigid->clone(model_table[MODEL_SHELL]);
 	frame.set(shell->rigid->morientation);
 
 	shell2->position += frame.forward * 2.0f;
@@ -4239,7 +3891,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 		frame.forward = dir;
 
 
-		add_decal(frame.pos, frame, NET_BULLET_HIT, *(model_table[MODEL_BULLET_HIT]), 10.0f, true, 10);
+		add_decal(frame.pos, frame, NET_BULLET_HIT, model_table[MODEL_BULLET_HIT], 10.0f, true, 10);
 
 
 		if (client == false)
@@ -4320,7 +3972,7 @@ void Quake3::handle_gibs(Player &player)
 		entity0->position = camera_frame.pos;
 		camera_frame.set(entity0->model->morientation);
 
-		entity0->rigid->clone(*(model_table[MODEL_GIB0]));
+		entity0->rigid->clone(model_table[MODEL_GIB0]);
 		entity0->rigid->velocity = vec3(2.0f, 1.2f, 1.6f);
 		entity0->rigid->angular_velocity = vec3(3.0f, 1.0f, 2.2f);
 		entity0->rigid->flags.gravity = true;
@@ -4336,7 +3988,7 @@ void Quake3::handle_gibs(Player &player)
 		entity1->position = camera_frame.pos;
 		camera_frame.set(entity1->model->morientation);
 
-		entity1->rigid->clone(*(model_table[MODEL_GIB1]));
+		entity1->rigid->clone(model_table[MODEL_GIB1]);
 		entity1->rigid->velocity = vec3(0.8f, 1.2f, -1.2f);
 		entity1->rigid->angular_velocity = vec3(1.0f, 1.6f, 2.0f);
 		entity1->rigid->flags.gravity = true;
@@ -4353,7 +4005,7 @@ void Quake3::handle_gibs(Player &player)
 		entity2->position = camera_frame.pos;
 		camera_frame.set(entity2->model->morientation);
 
-		entity2->rigid->clone(*(model_table[MODEL_GIB2]));
+		entity2->rigid->clone(model_table[MODEL_GIB2]);
 		entity2->rigid->velocity = vec3(0.5f, 2.0f, 0.2f);
 		entity2->rigid->angular_velocity = vec3(-2.0f, 1.0f, 6.0f);
 		entity2->rigid->flags.gravity = true;
@@ -4370,7 +4022,7 @@ void Quake3::handle_gibs(Player &player)
 		entity3->position = camera_frame.pos;
 		camera_frame.set(entity3->model->morientation);
 
-		entity3->rigid->clone(*(model_table[MODEL_GIB3]));
+		entity3->rigid->clone(model_table[MODEL_GIB3]);
 		entity3->rigid->velocity = vec3(-2.0f, 3.2f, 1.2f);
 		entity3->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity3->rigid->flags.gravity = true;
@@ -4387,7 +4039,7 @@ void Quake3::handle_gibs(Player &player)
 		entity4->position = camera_frame.pos;
 		camera_frame.set(entity4->model->morientation);
 
-		entity4->rigid->clone(*(model_table[MODEL_GIB4]));
+		entity4->rigid->clone(model_table[MODEL_GIB4]);
 		entity4->rigid->velocity = vec3(-1.25f, 1.7f, 1.27f);
 		entity4->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity4->rigid->flags.gravity = true;
@@ -4404,7 +4056,7 @@ void Quake3::handle_gibs(Player &player)
 		entity5->position = camera_frame.pos;
 		camera_frame.set(entity5->model->morientation);
 
-		entity5->rigid->clone(*(model_table[MODEL_GIB5]));
+		entity5->rigid->clone(model_table[MODEL_GIB5]);
 		entity5->rigid->velocity = vec3(-1.45f, 3.7f, 1.72f);
 		entity5->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity5->rigid->flags.gravity = true;
@@ -4421,7 +4073,7 @@ void Quake3::handle_gibs(Player &player)
 		entity6->position = camera_frame.pos;
 		camera_frame.set(entity6->model->morientation);
 
-		entity6->rigid->clone(*(model_table[MODEL_GIB6]));
+		entity6->rigid->clone(model_table[MODEL_GIB6]);
 		entity6->rigid->velocity = vec3(-1.15f, 1.7f, 1.37f);
 		entity6->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity6->rigid->flags.gravity = true;
@@ -4438,7 +4090,7 @@ void Quake3::handle_gibs(Player &player)
 		entity7->position = camera_frame.pos;
 		camera_frame.set(entity7->model->morientation);
 
-		entity7->rigid->clone(*(model_table[MODEL_GIB7]));
+		entity7->rigid->clone(model_table[MODEL_GIB7]);
 		entity7->rigid->velocity = vec3(-1.45f, 2.34f, 1.27f);
 		entity7->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity7->rigid->flags.gravity = true;
@@ -4455,7 +4107,7 @@ void Quake3::handle_gibs(Player &player)
 		entity8->position = camera_frame.pos;
 		camera_frame.set(entity8->model->morientation);
 
-		entity8->rigid->clone(*(model_table[MODEL_GIB8]));
+		entity8->rigid->clone(model_table[MODEL_GIB8]);
 		entity8->rigid->velocity = vec3(-1.85f, 1.73f, 2.32f);
 		entity8->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity8->rigid->flags.gravity = true;
@@ -4472,7 +4124,7 @@ void Quake3::handle_gibs(Player &player)
 		entity9->position = camera_frame.pos;
 		camera_frame.set(entity9->model->morientation);
 
-		entity9->rigid->clone(*(model_table[MODEL_GIB9]));
+		entity9->rigid->clone(model_table[MODEL_GIB9]);
 		entity9->rigid->velocity = vec3(1.45f, 1.27f, -1.2f);
 		entity9->rigid->angular_velocity = vec3(3.0f, -4.0f, 2.0f);
 		entity9->rigid->flags.gravity = true;
@@ -7851,7 +7503,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_BULLET_HIT:
 		ent->nettype = NET_BULLET_HIT;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_BULLET_HIT]));
+		ent->rigid->clone(model_table[MODEL_BULLET_HIT]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
@@ -7870,7 +7522,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_PLASMA_HIT:
 		ent->nettype = NET_PLASMA_HIT;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_PLASMA_HIT]));
+		ent->rigid->clone(model_table[MODEL_PLASMA_HIT]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
@@ -7889,7 +7541,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_BULLET:
 		ent->nettype = NET_BULLET;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_BULLET]));
+		ent->rigid->clone(model_table[MODEL_BULLET]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
@@ -7901,7 +7553,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_SHELL:
 		ent->nettype = NET_SHELL;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_SHELL]));
+		ent->rigid->clone(model_table[MODEL_SHELL]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
@@ -7913,7 +7565,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_BOOM:
 		ent->nettype = NET_BOOM;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_BOOM]));
+		ent->rigid->clone(model_table[MODEL_BOOM]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
 		ent->model = ent->rigid;
@@ -7956,7 +7608,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
-		ent->rigid->clone(*(model_table[MODEL_ROCKET]));
+		ent->rigid->clone(model_table[MODEL_ROCKET]);
 		ent->rigid->flags.gravity = false;
 		break;
 	case NET_ROCKET_LAUNCHER:
@@ -7978,7 +7630,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
-		ent->rigid->clone(*(model_table[MODEL_GRENADE]));
+		ent->rigid->clone(model_table[MODEL_GRENADE]);
 		ent->rigid->flags.gravity = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 		ent->rigid->flags.translational_friction_flag = true;
@@ -8016,7 +7668,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_LIGHTNING:
 		ent->nettype = NET_LIGHTNING;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_BOX]));
+		ent->rigid->clone(model_table[MODEL_BOX]);
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
 		ent->rigid->flags.gravity = false;
@@ -8052,7 +7704,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_RAIL:
 		ent->nettype = NET_RAIL;
 		ent->rigid = new RigidBody(ent);
-		ent->rigid->clone(*(model_table[MODEL_BALL]));
+		ent->rigid->clone(model_table[MODEL_BALL]);
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
 		ent->rigid->flags.gravity = false;
@@ -8088,7 +7740,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid = new RigidBody(ent);
 		ent->model = ent->rigid;
 
-		ent->rigid->clone(*(model_table[MODEL_BALL]));
+		ent->rigid->clone(model_table[MODEL_BALL]);
 		ent->rigid->flags.gravity = false;
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->explode_index = engine->get_load_wave("sound/weapons/plasma/plasmx1a.wav");
@@ -8772,20 +8424,20 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 						if (projectile->explode_type == 1)
 						{
 							int sprite_index = MIN(7, projectile->explode_timer);
-							if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
+							if (ent->model->model_index != model_table[MODEL_BOOM].model_index)
 							{
 								ent->nettype = NET_BOOM;
-								ent->model->clone(*model_table[MODEL_BOOM]);
+								ent->model->clone(model_table[MODEL_BOOM]);
 								ent->model->flags.blend = true;
 							}
 							ent->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
 						}
 						else if (projectile->explode_type == 2)
 						{
-							if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+							if (ent->model->model_index != model_table[MODEL_PLASMA_HIT].model_index)
 							{
 								ent->nettype = NET_PLASMA_HIT;
-								ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
+								ent->model->clone(model_table[MODEL_PLASMA_HIT]);
 								ent->model->flags.blend = true;
 							}
 						}
@@ -8886,9 +8538,9 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 				{
 					ent->rigid->velocity *= 0.5f;
 					int sprite_index = MIN(7, projectile->explode_timer);
-					if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
+					if (ent->model->model_index != model_table[MODEL_BOOM].model_index)
 					{
-						ent->model->clone(*model_table[MODEL_BOOM]);
+						ent->model->clone(model_table[MODEL_BOOM]);
 						ent->model->flags.blend = true;
 					}
 					ent->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
@@ -8896,9 +8548,9 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 				else if (projectile->explode_type == 2)
 				{
 					ent->rigid->velocity = vec3();
-					if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
+					if (ent->model->model_index != model_table[MODEL_PLASMA_HIT].model_index)
 					{
-						ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
+						ent->model->clone(model_table[MODEL_PLASMA_HIT]);
 						ent->model->flags.blend = true;
 					}
 				}
@@ -9217,77 +8869,77 @@ void Quake3::map_model(Entity &ent)
 	if (ent.ent_type == ENT_ITEM_ARMOR_SHARD)
 	{
 		debugf("Loading item_armor_shard\n");
-		ent.model->clone(*model_table[MODEL_ARMOR_SHARD]);
+		ent.model->clone(model_table[MODEL_ARMOR_SHARD]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_ROCKETLAUNCHER)
 	{
 		debugf("Loading weapon_rocketlauncher\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_ROCKET]);
+		ent.model->clone(model_table[MODEL_WEAPON_ROCKET]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_SHELLS)
 	{
 		debugf("Loading ammo_shells\n");
-		ent.model->clone(*model_table[MODEL_AMMO_SHELLS]);
+		ent.model->clone(model_table[MODEL_AMMO_SHELLS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_ROCKETS)
 	{
 		debugf("Loading ammo_rockets\n");
-		ent.model->clone(*model_table[MODEL_AMMO_ROCKETS]);
+		ent.model->clone(model_table[MODEL_AMMO_ROCKETS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_CELLS)
 	{
 		debugf("Loading ammo_cells\n");
-		ent.model->clone(*model_table[MODEL_AMMO_PLASMA]);
+		ent.model->clone(model_table[MODEL_AMMO_PLASMA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_BFG)
 	{
 		debugf("Loading ammo_bfg\n");
-		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
+		ent.model->clone(model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_GRENADES)
 	{
 		debugf("Loading ammo_bfg\n");
-		ent.model->clone(*model_table[MODEL_AMMO_GRENADES]);
+		ent.model->clone(model_table[MODEL_AMMO_GRENADES]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_LIGHTNING)
 	{
 		debugf("Loading ammo_lightning\n");
-		ent.model->clone(*model_table[MODEL_AMMO_LIGHTNING]);
+		ent.model->clone(model_table[MODEL_AMMO_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_SLUGS)
 	{
 		debugf("Loading ammo_slugs\n");
-		ent.model->clone(*model_table[MODEL_AMMO_SLUGS]);
+		ent.model->clone(model_table[MODEL_AMMO_SLUGS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_AMMO_BULLETS)
 	{
 		debugf("Loading ammo_bullets\n");
-		ent.model->clone(*model_table[MODEL_AMMO_BULLETS]);
+		ent.model->clone(model_table[MODEL_AMMO_BULLETS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_ARMOR_COMBAT)
 	{
 		debugf("Loading item_armor_combat\n");
-		ent.model->clone(*model_table[MODEL_ARMOR_COMBAT]);
+		ent.model->clone(model_table[MODEL_ARMOR_COMBAT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 		ent.rigid->flags.gravity = false;
@@ -9295,7 +8947,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_ARMOR_BODY)
 	{
 		debugf("Loading item_armor_body\n");
-		ent.model->clone(*model_table[MODEL_ARMOR_BODY]);
+		ent.model->clone(model_table[MODEL_ARMOR_BODY]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position.y += 15.0f;
 		ent.rigid->flags.gravity = false;
@@ -9303,7 +8955,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEFLAG)
 	{
 		debugf("Loading team_CTF_blueflag\n");
-		ent.model->clone(*model_table[MODEL_BLUE_FLAG]);
+		ent.model->clone(model_table[MODEL_BLUE_FLAG]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position += vec3(0.0f, 50.0f, 0.0);
 		ent.rigid->flags.gravity = false;
@@ -9311,7 +8963,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_TEAM_CTF_REDFLAG)
 	{
 		debugf("Loading team_CTF_redflag\n");
-		ent.model->clone(*model_table[MODEL_RED_FLAG]);
+		ent.model->clone(model_table[MODEL_RED_FLAG]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.position += vec3(0.0f, 50.0f, 0.0);
 		ent.rigid->flags.gravity = false;
@@ -9319,7 +8971,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_QUAD)
 	{
 		debugf("Loading item_quad\n");
-		ent.model->clone(*model_table[MODEL_QUAD]);
+		ent.model->clone(model_table[MODEL_QUAD]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9327,7 +8979,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_REGEN)
 	{
 		debugf("Loading item_regen\n");
-		ent.model->clone(*model_table[MODEL_REGEN]);
+		ent.model->clone(model_table[MODEL_REGEN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9335,7 +8987,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_INVIS)
 	{
 		debugf("Loading item_invis\n");
-		ent.model->clone(*model_table[MODEL_INVIS]);
+		ent.model->clone(model_table[MODEL_INVIS]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9343,7 +8995,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_FLIGHT)
 	{
 		debugf("Loading item_flight\n");
-		ent.model->clone(*model_table[MODEL_FLIGHT]);
+		ent.model->clone(model_table[MODEL_FLIGHT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9351,7 +9003,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_ITEM_HASTE)
 	{
 		debugf("Loading item_haste\n");
-		ent.model->clone(*model_table[MODEL_HASTE]);
+		ent.model->clone(model_table[MODEL_HASTE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9359,7 +9011,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_HOLDABLE_MEDKIT)
 	{
 		debugf("Loading holdable_medkit\n");
-		ent.model->clone(*model_table[MODEL_MEDKIT]);
+		ent.model->clone(model_table[MODEL_MEDKIT]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9367,7 +9019,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_HOLDABLE_TELEPORTER)
 	{
 		debugf("Loading holdable_teleporter\n");
-		ent.model->clone(*model_table[MODEL_TELEPORTER]);
+		ent.model->clone(model_table[MODEL_TELEPORTER]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 		ent.position.y += 15.0f;
@@ -9375,112 +9027,112 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_FUNC_TERRAIN)
 	{
 		debugf("Loading func_terrain\n");
-		ent.model->clone(*model_table[MODEL_TERRAIN]);
+		ent.model->clone(model_table[MODEL_TERRAIN]);
 		ent.position += vec3(0.0f, -5000.0f, 0.0f);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_LIGHTNING)
 	{
 		debugf("Loading weapon_lightning\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_LIGHTNING]);
+		ent.model->clone(model_table[MODEL_WEAPON_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_BFG)
 	{
 		debugf("Loading weapon_bfg\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_LIGHTNING]);
+		ent.model->clone(model_table[MODEL_WEAPON_LIGHTNING]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_SHOTGUN)
 	{
 		debugf("Loading weapon_shotgun\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_SHOTGUN]);
+		ent.model->clone(model_table[MODEL_WEAPON_SHOTGUN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_RAILGUN)
 	{
 		debugf("Loading weapon_railgun\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_RAILGUN]);
+		ent.model->clone(model_table[MODEL_WEAPON_RAILGUN]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_GRENADELAUNCHER)
 	{
 		debugf("Loading weapon_grenadelauncher\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_GRENADE]);
+		ent.model->clone(model_table[MODEL_WEAPON_GRENADE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_WEAPON_PLASMA)
 	{
 		debugf("Loading weapon_plasmagun\n");
-		ent.model->clone(*model_table[MODEL_WEAPON_PLASMA]);
+		ent.model->clone(model_table[MODEL_WEAPON_PLASMA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH)
 	{
 		debugf("Loading item_health\n");
-		ent.model->clone(*model_table[MODEL_HEALTH]);
+		ent.model->clone(model_table[MODEL_HEALTH]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_LARGE)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->clone(*model_table[MODEL_HEALTH_LARGE]);
+		ent.model->clone(model_table[MODEL_HEALTH_LARGE]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_SMALL)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->clone(*model_table[MODEL_HEALTH_SMALL]);
+		ent.model->clone(model_table[MODEL_HEALTH_SMALL]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_ITEM_HEALTH_MEGA)
 	{
 		debugf("Loading item_health_mega\n");
-		ent.model->clone(*model_table[MODEL_HEALTH_MEGA]);
+		ent.model->clone(model_table[MODEL_HEALTH_MEGA]);
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
 		ent.rigid->flags.gravity = false;
 	}
 	else if (ent.ent_type == ENT_INFO_PLAYER_DEATHMATCH)
 	{
 		debugf("Loading info_player_deathmatch\n");
-		ent.model->clone(*model_table[MODEL_BALL]);
+		ent.model->clone(model_table[MODEL_BALL]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUESPAWN)
 	{
 		debugf("Loading team_CTF_bluespawn\n");
-		ent.model->clone(*model_table[MODEL_BALL]);
+		ent.model->clone(model_table[MODEL_BALL]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDSPAWN)
 	{
 		debugf("Loading team_CTF_redspawn\n");
-		ent.model->clone(*model_table[MODEL_BALL]);
+		ent.model->clone(model_table[MODEL_BALL]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_BLUEPLAYER)
 	{
 		debugf("Loading team_CTF_blueplayer\n");
-		ent.model->clone(*model_table[MODEL_BALL]);
+		ent.model->clone(model_table[MODEL_BALL]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
 	else if (ent.ent_type == ENT_TEAM_CTF_REDPLAYER)
 	{
 		debugf("Loading team_CTF_redplayer\n");
-		ent.model->clone(*model_table[MODEL_BALL]);
+		ent.model->clone(model_table[MODEL_BALL]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = true;
 	}
@@ -9490,7 +9142,7 @@ void Quake3::map_model(Entity &ent)
 		if (!(ent.ent_type == ENT_FUNC_DOOR || ent.ent_type == ENT_FUNC_BUTTON || ent.ent_type == ENT_FUNC_PLAT))
 		{
 			debugf("Loading func item\n");
-			ent.model->clone(*model_table[MODEL_BOX]);
+			ent.model->clone(model_table[MODEL_BOX]);
 			ent.rigid->flags.gravity = false;
 			ent.flags.nodraw = false;
 		}
@@ -9498,84 +9150,84 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_PATH_CORNER)
 	{
 			debugf("Loading path_corner\n");
-			ent.model->clone(*model_table[MODEL_BOX]);
+			ent.model->clone(model_table[MODEL_BOX]);
 			ent.rigid->flags.gravity = false;
 			ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DEMON1)
 	{
 		debugf("Loading monster_demon1\n");
-		ent.model->clone(*model_table[MODEL_DEMON]);
+		ent.model->clone(model_table[MODEL_DEMON]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_SHAMBLER)
 	{
 		debugf("Loading monster_shambler\n");
-		ent.model->clone(*model_table[MODEL_SHAMBLER]);
+		ent.model->clone(model_table[MODEL_SHAMBLER]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_DOG)
 	{
 		debugf("Loading monster_dog\n");
-		ent.model->clone(*model_table[MODEL_DOG]);
+		ent.model->clone(model_table[MODEL_DOG]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_ARMY)
 	{
 		debugf("Loading monster_army\n");
-		ent.model->clone(*model_table[MODEL_SOLDIER]);
+		ent.model->clone(model_table[MODEL_SOLDIER]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_WIZARD)
 	{
 		debugf("Loading monster_wizard\n");
-		ent.model->clone(*model_table[MODEL_WIZARD]);
+		ent.model->clone(model_table[MODEL_WIZARD]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_OGRE)
 	{
 		debugf("Loading monster_ogre\n");
-		ent.model->clone(*model_table[MODEL_OGRE]);
+		ent.model->clone(model_table[MODEL_OGRE]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_KNIGHT)
 	{
 		debugf("Loading monster_knight\n");
-		ent.model->clone(*model_table[MODEL_KNIGHT]);
+		ent.model->clone(model_table[MODEL_KNIGHT]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_MONSTER_ZOMBIE)
 	{
 		debugf("Loading monster_knight\n");
-		ent.model->clone(*model_table[MODEL_ZOMBIE]);
+		ent.model->clone(model_table[MODEL_ZOMBIE]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLUORO)
 	{
 		debugf("Loading light_fluoro\n");
-		ent.model->clone(*model_table[MODEL_V_LIGHT]);
+		ent.model->clone(model_table[MODEL_V_LIGHT]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLUOROSPARK)
 	{
 		debugf("Loading light_fluorospark\n");
-		ent.model->clone(*model_table[MODEL_V_LIGHT]);
+		ent.model->clone(model_table[MODEL_V_LIGHT]);
 		ent.rigid->flags.gravity = true;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE)
 	{
 		debugf("Loading item_artifact_super_damage\n");
-		ent.model->clone(*model_table[MODEL_QUADDAMA]);
+		ent.model->clone(model_table[MODEL_QUADDAMA]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9584,7 +9236,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_INVULNERABILITY)
 	{
 		debugf("Loading item_artifact_invulnerability\n");
-		ent.model->clone(*model_table[MODEL_INVULNER]);
+		ent.model->clone(model_table[MODEL_INVULNER]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9593,7 +9245,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_ENVIROSUIT)
 	{
 		debugf("Loading item_artifact_envirosuit\n");
-		ent.model->clone(*model_table[MODEL_SUIT]);
+		ent.model->clone(model_table[MODEL_SUIT]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9602,7 +9254,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_WEAPON_NAILGUN)
 	{
 		debugf("Loading weapon_nailgun\n");
-		ent.model->clone(*model_table[MODEL_G_NAIL]);
+		ent.model->clone(model_table[MODEL_G_NAIL]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9611,7 +9263,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_WEAPON_SUPERNAILGUN)
 	{
 		debugf("Loading weapon_supernailgun\n");
-		ent.model->clone(*model_table[MODEL_G_NAIL2]);
+		ent.model->clone(model_table[MODEL_G_NAIL2]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9620,7 +9272,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_WEAPON_SUPERSHOTGUN)
 	{
 		debugf("Loading weapon_supershotgun\n");
-		ent.model->clone(*model_table[MODEL_G_SHOT]);
+		ent.model->clone(model_table[MODEL_G_SHOT]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9638,28 +9290,28 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_LIGHT_TORCH_SMALL_WALLTORCH)
 	{
 		debugf("Loading light_torch_small_walltorch\n");
-		ent.model->clone(*model_table[MODEL_FLAME]);
+		ent.model->clone(model_table[MODEL_FLAME]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_YELLOW)
 	{
 		debugf("Loading light_flame_small_yellow\n");
-		ent.model->clone(*model_table[MODEL_FLAME2]);
+		ent.model->clone(model_table[MODEL_FLAME2]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_WHITE)
 	{
 		debugf("Loading light_flame_small_yellow\n");
-		ent.model->clone(*model_table[MODEL_FLAME2]);
+		ent.model->clone(model_table[MODEL_FLAME2]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 	}
 	else if (ent.ent_type == ENT_Q1_ITEM_KEY1)
 	{
 		debugf("Loading item_key1\n");
-		ent.model->clone(*model_table[MODEL_M_G_KEY]);
+		ent.model->clone(model_table[MODEL_M_G_KEY]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9668,7 +9320,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_ITEM_KEY2)
 	{
 		debugf("Loading item_key2\n");
-		ent.model->clone(*model_table[MODEL_M_S_KEY]);
+		ent.model->clone(model_table[MODEL_M_S_KEY]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9677,7 +9329,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_ITEM_ARMOR1)
 	{
 		debugf("Loading item_armor1\n");
-		ent.model->clone(*model_table[MODEL_YELLOWARMOR]);
+		ent.model->clone(model_table[MODEL_YELLOWARMOR]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9686,7 +9338,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_ITEM_ARMOR2)
 	{
 		debugf("Loading item_armor2\n");
-		ent.model->clone(*model_table[MODEL_REDARMOR]);
+		ent.model->clone(model_table[MODEL_REDARMOR]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
@@ -9695,7 +9347,7 @@ void Quake3::map_model(Entity &ent)
 	else if (ent.ent_type == ENT_Q1_ITEM_SIGIL)
 	{
 		debugf("Loading item_sigil\n");
-		ent.model->clone(*model_table[MODEL_END1]);
+		ent.model->clone(model_table[MODEL_END1]);
 		ent.rigid->flags.gravity = false;
 		ent.flags.nodraw = false;
 		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);

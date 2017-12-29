@@ -44,7 +44,9 @@ public:
 	int chat_timer;
 	bool spectator;
 	Engine *engine;
-	vector<Model *> model_table;
+	//vector<Model *> model_table;
+	Model *model_table;
+	int num_model;
 	vector <icon_t> icon_list;
 };
 

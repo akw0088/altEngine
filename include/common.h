@@ -88,6 +88,7 @@ void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3
 int auto_complete(const char *a, const char *b);
 
 int separating_axis_theorem(const vec3 *box_a, const vec3 *box_b);
+void dns_query(Net &net);
 
 struct cpuinfo
 {

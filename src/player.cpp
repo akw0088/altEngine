@@ -45,7 +45,7 @@ const char *models[23] = {
 
 #define NUM_PATH 64 // Should equal map navpoint count
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, vector<Model *> &model_table)
+Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, Model *model_table)
 : weapon_gauntlet(entity), weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {
@@ -159,14 +159,14 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	memset(&stats, 0, sizeof(stats_t));
 
 //	weapon_machinegun.load(gfx, "media/models/weapons2/m4/m4s");
-	weapon_gauntlet.clone(*model_table[MODEL_WEAPON_GAUNTLET]);
-	weapon_machinegun.clone(*model_table[MODEL_WEAPON_MACHINEGUN]);
-	weapon_shotgun.clone(*model_table[MODEL_WEAPON_SHOTGUN]);
-	weapon_grenade.clone(*model_table[MODEL_WEAPON_GRENADE]);
-	weapon_rocket.clone(*model_table[MODEL_WEAPON_ROCKET]);
-	weapon_lightning.clone(*model_table[MODEL_WEAPON_LIGHTNING]);
-	weapon_railgun.clone(*model_table[MODEL_WEAPON_RAILGUN]);
-	weapon_plasma.clone(*model_table[MODEL_WEAPON_PLASMA]);
+	weapon_gauntlet.clone(model_table[MODEL_WEAPON_GAUNTLET]);
+	weapon_machinegun.clone(model_table[MODEL_WEAPON_MACHINEGUN]);
+	weapon_shotgun.clone(model_table[MODEL_WEAPON_SHOTGUN]);
+	weapon_grenade.clone(model_table[MODEL_WEAPON_GRENADE]);
+	weapon_rocket.clone(model_table[MODEL_WEAPON_ROCKET]);
+	weapon_lightning.clone(model_table[MODEL_WEAPON_LIGHTNING]);
+	weapon_railgun.clone(model_table[MODEL_WEAPON_RAILGUN]);
+	weapon_plasma.clone(model_table[MODEL_WEAPON_PLASMA]);
 
 
 	//	weapon_model.center = entity->rigid->center;

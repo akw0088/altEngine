@@ -2788,3 +2788,70 @@ void print_entity_meminfo(vector<Entity *> &entity_list)
 		debugf("   entstring\t = %X\n\n\n", (void *)entity_list[i]->entstring);
 	}
 }
+
+void dns_query(Net &net)
+{
+	unsigned char buffer[LINE_SIZE];
+
+	typedef struct
+	{
+		unsigned short id;	// arbitrary echoed back
+		unsigned char flag;	// bits 0001NNNN
+		unsigned short qd_count; //1
+		unsigned short an_count; //0
+		unsigned short ns_count; //0
+		unsigned short ar_count; //0
+	} dns_header_t;
+
+	typedef struct
+	{
+		//	unsigned char qname[128];	//pascal string, variable length
+		unsigned short qtype;  // 1 - A Record
+		unsigned short qclass; // 1 - IN class
+	} question_t;
+
+	typedef struct
+	{
+		unsigned short offset;	//pascal string, variable length
+		unsigned short qtype;  // 1 - A Record
+		unsigned short qclass; // 1 - IN class
+		unsigned short ttl;
+		unsigned short rdlength;
+		unsigned char data[128];
+	} dns_answer_t;
+
+
+	unsigned char data[] = {
+		0xAA, 0xAA,			// id
+		0x01, 0x00,			// flag
+		0x00, 0x01,			// qd count
+		0x00, 0x00,			// an count
+		0x00, 0x00,			// ns count
+		0x00, 0x00,			// ar count
+		0x07,				// string length
+		0x64, 0x65, 0x73, 0x6b, 0x74, 0x6f, 0x70, //desktop
+		0x0b,				// string length
+		0x61, 0x77, 0x72, 0x69, 0x67, 0x68, 0x74, 0x32, 0x30, 0x30, 0x39, //awright2009
+		0x03,				// string length
+		0x63, 0x6f, 0x6d,	//com
+		0x0,				// null string terminator
+		0x00, 0x01,			// qtype
+		0x00, 0x01			// qclass
+	};
+
+	char ip[] = "8.8.8.8:53";
+	int ret = net.sendto((char *)data, sizeof(data), ip);
+
+	Sleep(100);
+	memset(buffer, 0, sizeof(buffer));
+	net.recvfrom((char *)buffer, sizeof(buffer), ip, strlen(ip));
+
+	dns_header_t *header = (dns_header_t *)&buffer[0];
+	dns_answer_t *answer = (dns_answer_t *)&buffer[sizeof(dns_header_t)];
+
+
+	if (header->id == 0xAAAA)
+	{
+		printf("%s\n", answer->data + 1);
+	}
+}
