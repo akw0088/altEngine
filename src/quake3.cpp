@@ -2409,11 +2409,11 @@ void Quake3::handle_player(int self, input_t &input)
 	if (entity->player->invisibility_timer > 0)
 	{
 		entity->player->invisibility_timer--;
-		entity->rigid->blend = true;
+		entity->model->flags.blend = true;
 	}
 	else
 	{
-		entity->rigid->blend = false;
+		entity->model->flags.blend = false;
 	}
 
 	if (entity->player->flight_timer > 0)
@@ -3368,7 +3368,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->flags.bsp_visible = true;
-		projectile->rigid->blend = true;
+		projectile->model->flags.blend = true;
 
 		projectile->rigid->clone(*(model_table[MODEL_BALL]));
 		projectile->rigid->velocity = frame.forward * -10.0f;
@@ -3648,7 +3648,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->rigid->flags.gravity = false;
 		projectile->rigid->bounce = 2;
 	//	projectile->rigid->rotational_friction_flag = true;
-		projectile->rigid->lightning_trail = true;
+		projectile->model->flags.lightning_trail = true;
 		projectile->model = projectile->rigid;
 	//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		frame.set(projectile->model->morientation);
@@ -3764,7 +3764,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->rigid->flags.gravity = false;
 		projectile->rigid->bounce = 5;
 		projectile->model = projectile->rigid;
-		projectile->model->rail_trail = true;
+		projectile->model->flags.rail_trail = true;
 		projectile->rigid->flags.noclip = true;
 
 		frame.set(projectile->model->morientation);
@@ -7834,8 +7834,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->flags.noclip = true;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
-		ent->rigid->blend = true;
-		ent->rigid->cull_none = true;
+		ent->model->flags.blend = true;
+		ent->model->flags.cull_none = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->idle = true;
@@ -7853,8 +7853,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->flags.noclip = true;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
-		ent->rigid->blend = true;
-		ent->rigid->cull_none = true;
+		ent->model->flags.blend = true;
+		ent->model->flags.cull_none = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->idle = true;
@@ -7896,8 +7896,8 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->flags.noclip = true;
 		ent->flags.visible = true; // accomodate for low spatial testing rate
 		ent->bsp_leaf = true;
-		ent->rigid->blend = true;
-		ent->rigid->cull_none = true;
+		ent->model->flags.blend = true;
+		ent->model->flags.cull_none = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
 		ent->projectile->idle = true;
@@ -7996,7 +7996,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
 		ent->rigid->flags.gravity = false;
-		ent->rigid->lightning_trail = true;
+		ent->model->flags.lightning_trail = true;
 		ent->rigid->bounce = 5;
 		ent->model = ent->rigid;
 		ent->rigid->flags.noclip = true;
@@ -8034,7 +8034,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 5;
 		ent->model = ent->rigid;
-		ent->model->rail_trail = true;
+		ent->model->flags.rail_trail = true;
 		ent->rigid->flags.noclip = true;
 
 		ent->projectile = new Projectile(ent, engine->audio);
@@ -8752,7 +8752,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 							{
 								ent->nettype = NET_BOOM;
 								ent->model->clone(*model_table[MODEL_BOOM]);
-								ent->model->blend = true;
+								ent->model->flags.blend = true;
 							}
 							ent->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
 						}
@@ -8762,7 +8762,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 							{
 								ent->nettype = NET_PLASMA_HIT;
 								ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
-								ent->model->blend = true;
+								ent->model->flags.blend = true;
 							}
 						}
 						projectile->explode_timer--;
@@ -8865,7 +8865,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 					if (ent->model->model_index != model_table[MODEL_BOOM]->model_index)
 					{
 						ent->model->clone(*model_table[MODEL_BOOM]);
-						ent->model->blend = true;
+						ent->model->flags.blend = true;
 					}
 					ent->model->model_tex = icon_list[ICON_RLBOOM8 - sprite_index].tex;
 				}
@@ -8875,7 +8875,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 					if (ent->model->model_index != model_table[MODEL_PLASMA_HIT]->model_index)
 					{
 						ent->model->clone(*model_table[MODEL_PLASMA_HIT]);
-						ent->model->blend = true;
+						ent->model->flags.blend = true;
 					}
 				}
 
@@ -9112,8 +9112,8 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 		decal->rigid->flags.noclip = true;
 		decal->flags.visible = true; // accomodate for low spatial testing rate
 		decal->bsp_leaf = true;
-		decal->rigid->blend = true;
-		decal->rigid->cull_none = true;
+		decal->model->flags.blend = true;
+		decal->model->flags.cull_none = true;
 		decal->nettype = nettype;
 
 		decal->projectile = new Projectile(decal, engine->audio);

@@ -21,10 +21,10 @@ public:
 	matrix3 operator*(const float scalar);
 	vec3 operator*(const vec3 &vec) const;
 	matrix3 operator*(const matrix3 &q);
-	float det();
-	matrix3 cofactor();
-	matrix3 adjoint();
-	matrix3 inverse();
+	float det() const;
+	matrix3 cofactor() const;
+	matrix3 adjoint() const;
+	matrix3 inverse() const;
 
 	void star(vec3 &vector);
 	void normalize();
@@ -66,10 +66,10 @@ public:
 	static void mat_left(matrix4 &mvp, vec3 &position);
 	static void mat_top(matrix4 &mvp, vec3 &position);
 	static void mat_bottom(matrix4 &mvp, vec3 &position);
-	float det();
-	matrix4 cofactor();
-	matrix4 adjoint();
-	matrix4 inverse();
+	float det() const;
+	matrix4 cofactor() const;
+	matrix4 adjoint() const;
+	matrix4 inverse() const;
 
 
 	float m[16];

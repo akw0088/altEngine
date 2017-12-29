@@ -238,14 +238,14 @@ matrix3 matrix3::operator*(const matrix3 &mat)
 	return result;
 }
 
-float matrix3::det()
+float matrix3::det() const
 {
 	return	 m[0] * ((m[4] * m[8]) - (m[5]*m[7])) +
 		-m[1] * ((m[3] * m[8]) - (m[5]*m[6])) +
 		 m[2] * ((m[3] * m[7]) - (m[4]*m[6]));
 }
 
-matrix3 matrix3::cofactor()
+matrix3 matrix3::cofactor() const
 {
 	matrix3 result;
 	
@@ -265,7 +265,7 @@ matrix3 matrix3::cofactor()
 }
 
 
-matrix3 matrix3::adjoint()
+matrix3 matrix3::adjoint() const
 {
 	matrix3 result;
 	
@@ -274,13 +274,13 @@ matrix3 matrix3::adjoint()
 }
 
 
-matrix3 matrix3::inverse()
+matrix3 matrix3::inverse() const
 {
 	return adjoint() * (1.0f /  det());
 }
 
 
-matrix4 matrix4::cofactor()
+matrix4 matrix4::cofactor() const
 {
 	matrix4 result;
 
@@ -352,7 +352,7 @@ matrix4 matrix4::cofactor()
 	return result;
 }
 
-matrix4 matrix4::adjoint()
+matrix4 matrix4::adjoint() const
 {
 	matrix4 result;
 
@@ -361,7 +361,7 @@ matrix4 matrix4::adjoint()
 }
 
 
-matrix4 matrix4::inverse()
+matrix4 matrix4::inverse() const
 {
 	return adjoint() * (1.0f / det());
 }
@@ -867,7 +867,7 @@ void matrix4::mat_bottom(matrix4 &mvp, vec3 &position)
 	mvp.m[15] = 1.0f;
 }
 
-float matrix4::det()
+float matrix4::det() const
 {
 	return		 m[0] * 
 				(

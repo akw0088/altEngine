@@ -45,18 +45,19 @@ public:
 	static			int quad_vertex;
 	static			int quad_index;
 
-	static			int cube_vertex;
-	static			int cube_index;
-
-	static			int skybox_vertex;
-	static			int skybox_index;
-
 	char name[128];
 
-	bool			blend;
-	bool			cull_none;
-	bool			rail_trail;
-	bool			lightning_trail;
+
+
+	struct flag
+	{
+		unsigned char blend : 1,
+			cull_none : 1,
+			rail_trail : 1,
+			lightning_trail : 1,
+			pad : 4;
+	} flags;
+
 };
 
 #endif

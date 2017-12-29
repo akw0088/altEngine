@@ -2769,3 +2769,22 @@ void WriteObj(char *filename, vertex_t *vertex_array, unsigned int num_vertex, u
 
 
 
+void print_entity_meminfo(vector<Entity *> &entity_list)
+{
+
+	for (int i = 0; i < entity_list.size(); i++)
+	{
+		debugf("entity_list[%d] = %X\n", i, entity_list[i]);
+		debugf("   rigid\t = %X\n", (void *)entity_list[i]->rigid);
+		debugf("   model\t = %X\n", (void *)entity_list[i]->model);
+		debugf("   light\t = %X\n", (void *)entity_list[i]->light);
+		debugf("   speaker\t = %X\n", (void *)entity_list[i]->speaker);
+		debugf("   trigger\t = %X\n", (void *)entity_list[i]->trigger);
+		debugf("   projectile\t = %X\n", (void *)entity_list[i]->projectile);
+		debugf("   player\t = %X\n", (void *)entity_list[i]->player);
+		debugf("   construct\t = %X\n", (void *)entity_list[i]->construct);
+		debugf("   portal_camera = %X\n", (void *)entity_list[i]->portal_camera);
+		debugf("   brushinfo\t = %X\n", (void *)entity_list[i]->brushinfo);
+		debugf("   entstring\t = %X\n\n\n", (void *)entity_list[i]->entstring);
+	}
+}

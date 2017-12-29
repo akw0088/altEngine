@@ -642,14 +642,6 @@ void Engine::load(char *level)
 	camera_frame.reset();
 
 
-
-	//First n Entities for dynamic items (Dont allocate any at runtime)
-	for (unsigned int i = 0; i < max_dynamic; i++)
-	{
-		Entity *entity = new Entity();
-		entity_list.push_back(entity);
-	}
-
 	if (post.init(&gfx))
 		menu.print("Failed to load post shader");
 	if (mlight2.init(&gfx))
@@ -705,6 +697,14 @@ void Engine::load(char *level)
 	char entfile[128] = { 0 };
 	sprintf(entfile, "media/%s.ent", q3map.map_name);
 	char *entdata = get_file(entfile, NULL);
+
+	//First n Entities for dynamic items (Dont allocate any at runtime)
+	for (unsigned int i = 0; i < max_dynamic; i++)
+	{
+		Entity *entity = new Entity();
+		entity_list.push_back(entity);
+	}
+
 	if (entdata != NULL)
 	{
 		parse_entity(this, entdata, entity_list, gfx, audio);
@@ -1994,7 +1994,7 @@ void Engine::render_trails(matrix4 &trans)
 
 
 
-		if (once == false && (model->rail_trail || model->lightning_trail))
+		if (once == false && (model->flags.rail_trail || model->flags.lightning_trail))
 		{
 			//			vec3 offset = entity_list[i]->position;
 
@@ -2009,7 +2009,7 @@ void Engine::render_trails(matrix4 &trans)
 
 
 		//render rail trail
-		if (entity_list[i]->model->rail_trail)
+		if (entity_list[i]->model->flags.rail_trail)
 		{
 			entity_list[i]->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
@@ -2020,7 +2020,7 @@ void Engine::render_trails(matrix4 &trans)
 		}
 
 		//render lightning trail
-		if (entity_list[i]->model->lightning_trail)
+		if (entity_list[i]->model->flags.lightning_trail)
 		{
 			entity_list[i]->rigid->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
@@ -2054,10 +2054,10 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 	{
 		Entity *entity = entity_list[i];
 
-		if (entity->rigid == NULL)
+		if (entity->model == NULL)
 			continue;
 
-		if (entity->rigid->blend != blend)
+		if (entity->model->flags.blend != blend)
 			continue;
 
 		if (entity->ent_type == ENT_FUNC_DOOR ||
@@ -2087,7 +2087,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 		if (entity->model != NULL)
 		{
-			if (entity->model->rail_trail || entity->model->lightning_trail)
+			if (entity->model->flags.rail_trail || entity->model->flags.lightning_trail)
 				continue;
 		}
 
@@ -2129,7 +2129,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			mlight2.Params(mvp, light_list, 0, offset, tick_num);
 		}
 
-		if (entity->rigid->cull_none)
+		if (entity->model->flags.cull_none)
 		{
 			gfx.CullFace(2);
 		}
@@ -2156,7 +2156,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 
 
-		if (entity->rigid->cull_none)
+		if (entity->model->flags.cull_none)
 		{
 			gfx.CullFace(3);
 		}
@@ -2695,7 +2695,7 @@ void Engine::spatial_testing()
 			vec3 min = model->aabb[0];
 			vec3 max = model->aabb[7];
 
-			if (model->rail_trail)
+			if (model->flags.rail_trail)
 			{
 				entity_list[i]->flags.frustum_visible = true; // trail extends past aabb
 			}
@@ -5510,6 +5510,8 @@ void Engine::kick(unsigned int i)
 
 void Engine::unload()
 {
+	print_entity_meminfo(entity_list);
+
 	if (q3map.loaded == false)
 		return;
 

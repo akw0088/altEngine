@@ -9,10 +9,6 @@
 int Model::quad_index = 0;
 int Model::quad_vertex = 0;
 
-int Model::cube_index = 0;
-int Model::cube_vertex = 0;
-
-
 void Model::load(Graphics &gfx, char *file)
 {
 	char vbo_file[LINE_SIZE];
@@ -112,10 +108,10 @@ Model::Model(Entity *entity)
 	model_index_array = NULL;
 	model_vertex_array = NULL;
 	center = vec3();
-	rail_trail = false;
-	lightning_trail = false;
-	blend = false;
-	cull_none = false;
+	flags.rail_trail = false;
+	flags.lightning_trail = false;
+	flags.blend = false;
+	flags.cull_none = false;
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;
@@ -197,7 +193,7 @@ void Model::render(Graphics &gfx)
 {
 	gfx.SelectIndexBuffer(model_index);
 	gfx.SelectVertexBuffer(model_vertex);
-	if (blend)
+	if (flags.blend)
 	{
 		gfx.Blend(true);
 		gfx.BlendFuncOneOne();
@@ -206,9 +202,7 @@ void Model::render(Graphics &gfx)
 	gfx.SelectTexture(0, model_tex);
 //	gfx.SelectTexture(2, normal_tex);
 	gfx.DrawArrayTri(0, 0, num_index, num_vertex);
-//	gfx.DeselectTexture(2);
-//	gfx.DeselectTexture(0);
-	if (blend)
+	if (flags.blend)
 	{
 		gfx.Blend(false);
 	}
@@ -221,7 +215,6 @@ void Model::render_box(Graphics &gfx)
 	gfx.SelectVertexBuffer(box_vertex);
 	gfx.SelectTexture(0, model_tex);
 	gfx.DrawArrayTri(0, 0, 24, 24);
-//	gfx.DeselectTexture(0);
 }
 
 float *Model::get_matrix(float *matrix)
@@ -561,9 +554,9 @@ Model::Model()
 	model_vertex_array = NULL;
 	model_index_array = NULL;
 	center = vec3();
-	rail_trail = false;
-	lightning_trail = false;
-	blend = false;
+	flags.rail_trail = false;
+	flags.lightning_trail = false;
+	flags.blend = false;
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;
