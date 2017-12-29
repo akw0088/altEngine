@@ -1903,30 +1903,38 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 
 			matrix4 matrix;
 
-			//set spawn angle
-			switch (entity_list[i]->brushinfo->angle)
+			if (entity_list[i]->brushinfo)
 			{
-			case 0:
-			case 45:
-			case 360:
-			case 325:
-				matrix4::mat_left(matrix, spawn_ent->position);
-				break;
-			case 90:
-			case 135:
-				matrix4::mat_forward(matrix, spawn_ent->position);
-				break;
-			case 180:
-			case 225:
-				matrix4::mat_right(matrix, spawn_ent->position);
-				break;
-			case 270:
-				matrix4::mat_backward(matrix, spawn_ent->position);
-				break;
-			default:
-				matrix4::mat_left(matrix, spawn_ent->position);
-				break;
+				//set spawn angle
+				switch (entity_list[i]->brushinfo->angle)
+				{
+				case 0:
+				case 45:
+				case 360:
+				case 325:
+					matrix4::mat_left(matrix, spawn_ent->position);
+					break;
+				case 90:
+				case 135:
+					matrix4::mat_forward(matrix, spawn_ent->position);
+					break;
+				case 180:
+				case 225:
+					matrix4::mat_right(matrix, spawn_ent->position);
+					break;
+				case 270:
+					matrix4::mat_backward(matrix, spawn_ent->position);
+					break;
+				default:
+					matrix4::mat_left(matrix, spawn_ent->position);
+					break;
+				}
 			}
+			else
+			{
+				matrix4::mat_left(matrix, spawn_ent->position);
+			}
+
 			if (local)
 			{
 				engine->camera_frame.forward.x = matrix.m[8];
@@ -3643,6 +3651,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NET_LIGHTNING;
 		projectile->rigid = new RigidBody(projectile);
+		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
 		projectile->rigid->clone(*(model_table[MODEL_BOX]));
 		projectile->rigid->velocity = vec3();
@@ -6852,24 +6861,30 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				Entity *ent = entity_list[self];
 				// Set position and orientation
 				ent->position = ent->position + vec3(0.0f, 50.0f, 0.0f);
-
-				switch (ent->brushinfo->angle)
+				if (ent->brushinfo)
 				{
-				case 0:
-					matrix4::mat_left(matrix, ent->position);
-					break;
-				case 90:
+					switch (ent->brushinfo->angle)
+					{
+					case 0:
+						matrix4::mat_left(matrix, ent->position);
+						break;
+					case 90:
+						matrix4::mat_forward(matrix, ent->position);
+						break;
+					case 180:
+						matrix4::mat_right(matrix, ent->position);
+						break;
+					case 270:
+						matrix4::mat_backward(matrix, ent->position);
+						break;
+					default:
+						matrix4::mat_forward(matrix, ent->position);
+						break;
+					}
+				}
+				else
+				{
 					matrix4::mat_forward(matrix, ent->position);
-					break;
-				case 180:
-					matrix4::mat_right(matrix, ent->position);
-					break;
-				case 270:
-					matrix4::mat_backward(matrix, ent->position);
-					break;
-				default:
-					matrix4::mat_forward(matrix, ent->position);
-					break;
 				}
 
 				ent->model->morientation.m[0] = matrix.m[0];
@@ -7156,23 +7171,30 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					//					camera_frame.set(matrix);
 					ent->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
-					switch (entity_list[i]->brushinfo->angle)
+					if (entity_list[i]->brushinfo)
 					{
-					case 0:
-						matrix4::mat_left(matrix, ent->position);
-						break;
-					case 90:
+						switch (entity_list[i]->brushinfo->angle)
+						{
+						case 0:
+							matrix4::mat_left(matrix, ent->position);
+							break;
+						case 90:
+							matrix4::mat_forward(matrix, ent->position);
+							break;
+						case 180:
+							matrix4::mat_right(matrix, ent->position);
+							break;
+						case 270:
+							matrix4::mat_backward(matrix, ent->position);
+							break;
+						default:
+							matrix4::mat_forward(matrix, ent->position);
+							break;
+						}
+					}
+					else
+					{
 						matrix4::mat_forward(matrix, ent->position);
-						break;
-					case 180:
-						matrix4::mat_right(matrix, ent->position);
-						break;
-					case 270:
-						matrix4::mat_backward(matrix, ent->position);
-						break;
-					default:
-						matrix4::mat_forward(matrix, ent->position);
-						break;
 					}
 					Model *model = entity_list[self]->model;
 
@@ -8687,13 +8709,13 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 				ent->brushinfo->model_offset = vec3(amount, 0.0f, 0.0f);
 				break;
 			case 90:
-				ent->brushinfo->model_offset = vec3(0.0f, 0.0f, amount);
+				ent->brushinfo->model_offset = vec3(0.0f, 0.0f, -amount);
 				break;
 			case 180:
 				ent->brushinfo->model_offset = vec3(-amount, 0.0f, 0.0f);
 				break;
 			case 270:
-				ent->brushinfo->model_offset = vec3(0.0f, 0.0f, -amount);
+				ent->brushinfo->model_offset = vec3(0.0f, 0.0f, amount);
 				break;
 			case -1://up
 				ent->brushinfo->model_offset = vec3(0.0f, amount, 0.0f);
