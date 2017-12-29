@@ -117,6 +117,7 @@ public:
 	void zoom(float level);
 	void reload_shaders();
 	void enum_resolutions();
+	void CreateObjects();
 
 	int get_source();
 	int get_loop_source();
@@ -134,7 +135,8 @@ public:
 
 	vector<char *> serverlist;
 
-
+	int quad_index;
+	int quad_vertex;
 
 
 //temp

@@ -6,8 +6,6 @@
 
 #include <float.h> // for FLT_MAX
 
-int Model::quad_index = 0;
-int Model::quad_vertex = 0;
 
 void Model::load(Graphics &gfx, char *file)
 {
@@ -21,6 +19,7 @@ void Model::load(Graphics &gfx, char *file)
 	snprintf(tga_file, LINE_SIZE, "%s.tga", file);
 	snprintf(normal_file, LINE_SIZE, "%s_normal.tga", file);
 
+#if 0
 	int j = 0;
 	for (unsigned int i = 0; i < strlen(file); i++)
 	{
@@ -32,6 +31,7 @@ void Model::load(Graphics &gfx, char *file)
 		}
 		name[j++] = file[i];
 	}
+#endif
 
 	model_file = get_file(vbo_file, NULL);
 	if (model_file == NULL)
@@ -101,8 +101,6 @@ Model::Model(Entity *entity)
 	model_vertex = 0;
 	model_index = 0;
 	model_tex = 0;
-	box_vertex = 0;
-	box_index = 0;
 	model_file = NULL;
 	index_file = NULL;
 	model_index_array = NULL;
@@ -134,8 +132,6 @@ void Model::clone(Model &model)
 		aabb[i] = model.aabb[i];
 	}
 	center = model.center;
-	box_index = model.box_index;
-	box_vertex = model.box_vertex;
 	model_index_array = model.model_index_array;
 	model_vertex_array = model.model_vertex_array;
 	model_index = model.model_index;
@@ -209,6 +205,7 @@ void Model::render(Graphics &gfx)
 
 }
 
+#if 0
 void Model::render_box(Graphics &gfx)
 {
 	gfx.SelectIndexBuffer(box_index);
@@ -216,6 +213,7 @@ void Model::render_box(Graphics &gfx)
 	gfx.SelectTexture(0, model_tex);
 	gfx.DrawArrayTri(0, 0, 24, 24);
 }
+#endif
 
 float *Model::get_matrix(float *matrix)
 {
@@ -245,138 +243,6 @@ float *Model::get_matrix(float *matrix)
 	return matrix;
 }
 
-void Model::CreateObjects(Graphics &gfx)
-{
-	int qindex[] = {0,1,3,0,3,2};
-	vertex_t quad[4];
-
-	memset(&quad, 0, 4 * sizeof(vertex_t));
-	quad[0].position = vec3(-1.0f, -1.0f, 0.0f);
-	quad[0].texCoord0 = vec2(0.0f, 0.0f);
-	quad[0].color = ~0;
-	quad[1].position = vec3(-1.0f, 1.0f, 0.0f);
-	quad[1].texCoord0 = vec2(0.0f, 1.0f);
-	quad[1].color = ~0;
-	quad[2].position = vec3(1.0f, -1.0f, 0.0f);
-	quad[2].texCoord0 = vec2(1.0f, 0.0f);
-	quad[2].color = ~0;
-	quad[3].position = vec3(1.0f, 1.0f, 0.0f);
-	quad[3].texCoord0 = vec2(1.0f, 1.0f);
-	quad[3].color = ~0;
-
-	quad_index = gfx.CreateIndexBuffer(qindex, 6);
-	quad_vertex = gfx.CreateVertexBuffer(quad, 4);
-
-	/*
-	int cube_idx[36];
-	vertex_t cube[36];
-	vec2 tex[4];
-
-	tex[0] = vec2(0.0f, 0.0f);
-	tex[1] = vec2(0.0f, 1.0f);
-	tex[2] = vec2(1.0f, 0.0f);
-	tex[3] = vec2(1.0f, 1.0f);
-
-	memset(&cube, 0, 36 * sizeof(vertex_t));
-	cube[0].position = vec3(-0.5f, -0.5f, -0.5f); //1
-	cube[0].texCoord0 = tex[0];
-	cube[1].position = vec3(-0.5f, -0.5f, 0.5f);  //2
-	cube[1].texCoord0 = tex[1];
-	cube[2].position = vec3(-0.5f, 0.5f, -0.5f);  //3
-	cube[2].texCoord0 = tex[2];
-
-	cube[3].position = vec3(-0.5f, -0.5f, 0.5f);  //2
-	cube[3].texCoord0 = tex[1];
-	cube[4].position = vec3(-0.5f, 0.5f, 0.5f);   //4
-	cube[4].texCoord0 = tex[3];
-	cube[5].position = vec3(-0.5f, 0.5f, -0.5f);  //3
-	cube[5].texCoord0 = tex[2];
-
-	cube[6].position = vec3(0.5f, 0.5f, 0.5f);    //8
-	cube[6].texCoord0 = tex[3];
-	cube[7].position = vec3(-0.5f, -0.5f, 0.5f);  //2
-	cube[7].texCoord0 = tex[1];
-	cube[8].position = vec3(0.5f, -0.5f, 0.5f);   //6
-	cube[8].texCoord0 = tex[1];
-
-	cube[9].position = vec3(0.5f, 0.5f, 0.5f);    //8
-	cube[9].texCoord0 = tex[3];
-	cube[10].position = vec3(-0.5f, 0.5f, 0.5f);   //4
-	cube[10].texCoord0 = tex[3];
-	cube[11].position = vec3(-0.5f, -0.5f, 0.5f);  //2
-	cube[11].texCoord0 = tex[1];
-
-	cube[12].position = vec3(0.5f, -0.5f, 0.5f);   //6
-	cube[12].texCoord0 = tex[1];
-	cube[13].position = vec3(0.5f, 0.5f, -0.5f);   //7
-	cube[13].texCoord0 = tex[2];
-	cube[14].position = vec3(0.5f, 0.5f, 0.5f);    //8
-	cube[14].texCoord0 = tex[3];
-
-
-	cube[15].position = vec3(0.5f, -0.5f, 0.5f);   //6
-	cube[15].texCoord0 = tex[1];
-	cube[16].position = vec3(0.5f, -0.5f, -0.5f);  //5
-	cube[16].texCoord0 = tex[0];
-	cube[17].position = vec3(0.5f, 0.5f, -0.5f);   //7
-	cube[17].texCoord0 = tex[2];
-
-	cube[18].position = vec3(-0.5f, -0.5f, -0.5f); //1
-	cube[18].texCoord0 = tex[0];
-	cube[19].position = vec3(-0.5f, 0.5f, -0.5f);  //3
-	cube[19].texCoord0 = tex[2];
-	cube[20].position = vec3(0.5f, 0.5f, -0.5f);   //7
-	cube[20].texCoord0 = tex[2];
-
-
-	cube[21].position = vec3(-0.5f, -0.5f, -0.5f); //1
-	cube[21].texCoord0 = tex[0];
-	cube[22].position = vec3(0.5f, 0.5f, -0.5f);   //7
-	cube[22].texCoord0 = tex[2];
-	cube[23].position = vec3(0.5f, -0.5f, -0.5f);  //5
-	cube[23].texCoord0 = tex[0];
-
-	cube[24].position = vec3(-0.5f, -0.5f, -0.5f); //1
-	cube[24].texCoord0 = tex[0];
-	cube[25].position = vec3(0.5f, -0.5f, -0.5f);  //5
-	cube[25].texCoord0 = tex[0];
-	cube[26].position = vec3(-0.5f, -0.5f, 0.5f);  //2
-	cube[26].texCoord0 = tex[1];
-
-	cube[27].position = vec3(-0.5f, -0.5f, 0.5f);  //2
-	cube[27].texCoord0 = tex[1];
-	cube[28].position = vec3(0.5f, -0.5f, -0.5f);  //5
-	cube[28].texCoord0 = tex[0];
-	cube[29].position = vec3(0.5f, -0.5f, 0.5f);   //6
-	cube[29].texCoord0 = tex[1];
-
-	cube[30].position = vec3(-0.5f, 0.5f, -0.5f);  //3
-	cube[30].texCoord0 = tex[2];
-	cube[31].position = vec3(-0.5f, 0.5f, 0.5f);   //4
-	cube[31].texCoord0 = tex[3];
-	cube[32].position = vec3(0.5f, 0.5f, -0.5f);   //7
-	cube[32].texCoord0 = tex[2];
-
-	cube[33].position = vec3(-0.5f, 0.5f, 0.5f);   //4
-	cube[33].texCoord0 = tex[3];
-	cube[34].position = vec3(0.5f, 0.5f, 0.5f);    //8
-	cube[34].texCoord0 = tex[3];
-	cube[35].position = vec3(0.5f, 0.5f, -0.5f);   //7
-	cube[35].texCoord0 = tex[2];
-
-
-	for (int i = 0; i < 36; i++)
-	{
-		cube_idx[i] = i;
-		cube[i].color = ~0;
-		cube[i].position *= 500.0f;
-	}
-
-
-	Model::cube_index = gfx.CreateIndexBuffer(cube_idx, 36);
-	Model::cube_vertex = gfx.CreateVertexBuffer(cube, 36);
-	*/
-}
 
 Model::~Model()
 {
@@ -391,6 +257,7 @@ Model::~Model()
 }
 
 
+#if 0
 void Model::calc_frustum(matrix4 &clip)
 {
 //	matrix4	clip;
@@ -439,7 +306,7 @@ void Model::calc_frustum(matrix4 &clip)
 	frustum[5].w = clip.m[15] + clip.m[14];
 	frustum[5].normalize();
 }
-
+#endif
 /*
 bool Model::in_frustum(Global &global, vec3 &position, matrix4 &transformation, matrix4 &projection)
 {
@@ -496,6 +363,7 @@ bool Model::in_frustum(Global &global, vec3 &position, matrix4 &transformation, 
 }
 */
 
+#if 0
 void Model::create_box(Graphics &gfx, vec3 *box)
 {
 	vertex_t	vert[8];
@@ -519,6 +387,7 @@ void Model::create_box(Graphics &gfx, vec3 *box)
 	box_vertex = gfx.CreateVertexBuffer(vert, 8);
 	box_index = gfx.CreateIndexBuffer(index, 24);
 }
+#endif
 
 
 void Model::getForwardVector(vec3 &forward)
@@ -548,8 +417,6 @@ Model::Model()
 	model_vertex = 0;
 	model_index = 0;
 	model_tex = 0;
-	box_vertex = 0;
-	box_index = 0;
 	model_file = NULL;
 	model_vertex_array = NULL;
 	model_index_array = NULL;

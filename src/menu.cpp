@@ -736,8 +736,8 @@ void Menu::sub_value(const char *str, char *out)
 void Menu::render(Global &global, bool ingame)
 {
 	gfx->SelectTexture(0, menu_object);
-	gfx->SelectVertexBuffer(Model::quad_vertex);
-	gfx->SelectIndexBuffer(Model::quad_index);
+	gfx->SelectIndexBuffer(quad_index);
+	gfx->SelectVertexBuffer(quad_vertex);
 	for(unsigned int i = 0; i < menu_list.size(); i++)
 	{
 		menu_t *item = menu_list[i];
@@ -967,8 +967,8 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 		gfx->Depth(false);
 		gfx->BlendFuncSrcAlphaOneMinusSrcAlpha();
 		gfx->SelectTexture(0, font_object);
-		gfx->SelectIndexBuffer(Model::quad_index);
-		gfx->SelectVertexBuffer(Model::quad_vertex);
+		gfx->SelectIndexBuffer(quad_index);
+		gfx->SelectVertexBuffer(quad_vertex);
 		font.Select();
 	}
 
@@ -997,8 +997,8 @@ void Menu::render_console(Global &global)
 	vec3 color(1.0f, 1.0f, 1.0f);
 
 	gfx->SelectTexture(0, console_object);
-	gfx->SelectIndexBuffer(Model::quad_index);
-	gfx->SelectVertexBuffer(Model::quad_vertex);
+	gfx->SelectIndexBuffer(quad_index);
+	gfx->SelectVertexBuffer(quad_vertex);
 	global.Select();
 	matrix.m[13] = 1.0f;
 	global.Params(matrix);

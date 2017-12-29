@@ -283,8 +283,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 
-	gen_spiral(gfx, spiral_ibo, spiral_vbo);
-	gen_lightning(gfx, lightning_ibo, lightning_vbo);
+	CreateObjects();
 
 	// hash check data files
 	newlinelist("media/cmdlist.txt", cmd_list, num_cmd, &cmdlist);
@@ -342,7 +341,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	palette1 = load_texture(gfx, "media/palette.png", false, false, 0);
 	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
 
-	Model::CreateObjects(gfx);
 	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, true);
 
 	thug22 = new Entity();
@@ -1664,11 +1662,154 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.resize(xres, yres);
 }
 
+void Engine::CreateObjects()
+{
+	int qindex[] = { 0,1,3,0,3,2 };
+	vertex_t quad[4];
+
+	memset(&quad, 0, 4 * sizeof(vertex_t));
+	quad[0].position = vec3(-1.0f, -1.0f, 0.0f);
+	quad[0].texCoord0 = vec2(0.0f, 0.0f);
+	quad[0].color = ~0;
+	quad[1].position = vec3(-1.0f, 1.0f, 0.0f);
+	quad[1].texCoord0 = vec2(0.0f, 1.0f);
+	quad[1].color = ~0;
+	quad[2].position = vec3(1.0f, -1.0f, 0.0f);
+	quad[2].texCoord0 = vec2(1.0f, 0.0f);
+	quad[2].color = ~0;
+	quad[3].position = vec3(1.0f, 1.0f, 0.0f);
+	quad[3].texCoord0 = vec2(1.0f, 1.0f);
+	quad[3].color = ~0;
+
+	quad_index = gfx.CreateIndexBuffer(qindex, 6);
+	quad_vertex = gfx.CreateVertexBuffer(quad, 4);
+
+	q3map.quad_index = quad_index;
+	q3map.quad_vertex = quad_vertex;
+	menu.quad_index = quad_index;
+	menu.quad_vertex = quad_vertex;
+
+
+	gen_spiral(gfx, spiral_ibo, spiral_vbo);
+	gen_lightning(gfx, lightning_ibo, lightning_vbo);
+
+
+	/*
+	int cube_idx[36];
+	vertex_t cube[36];
+	vec2 tex[4];
+
+	tex[0] = vec2(0.0f, 0.0f);
+	tex[1] = vec2(0.0f, 1.0f);
+	tex[2] = vec2(1.0f, 0.0f);
+	tex[3] = vec2(1.0f, 1.0f);
+
+	memset(&cube, 0, 36 * sizeof(vertex_t));
+	cube[0].position = vec3(-0.5f, -0.5f, -0.5f); //1
+	cube[0].texCoord0 = tex[0];
+	cube[1].position = vec3(-0.5f, -0.5f, 0.5f);  //2
+	cube[1].texCoord0 = tex[1];
+	cube[2].position = vec3(-0.5f, 0.5f, -0.5f);  //3
+	cube[2].texCoord0 = tex[2];
+
+	cube[3].position = vec3(-0.5f, -0.5f, 0.5f);  //2
+	cube[3].texCoord0 = tex[1];
+	cube[4].position = vec3(-0.5f, 0.5f, 0.5f);   //4
+	cube[4].texCoord0 = tex[3];
+	cube[5].position = vec3(-0.5f, 0.5f, -0.5f);  //3
+	cube[5].texCoord0 = tex[2];
+
+	cube[6].position = vec3(0.5f, 0.5f, 0.5f);    //8
+	cube[6].texCoord0 = tex[3];
+	cube[7].position = vec3(-0.5f, -0.5f, 0.5f);  //2
+	cube[7].texCoord0 = tex[1];
+	cube[8].position = vec3(0.5f, -0.5f, 0.5f);   //6
+	cube[8].texCoord0 = tex[1];
+
+	cube[9].position = vec3(0.5f, 0.5f, 0.5f);    //8
+	cube[9].texCoord0 = tex[3];
+	cube[10].position = vec3(-0.5f, 0.5f, 0.5f);   //4
+	cube[10].texCoord0 = tex[3];
+	cube[11].position = vec3(-0.5f, -0.5f, 0.5f);  //2
+	cube[11].texCoord0 = tex[1];
+
+	cube[12].position = vec3(0.5f, -0.5f, 0.5f);   //6
+	cube[12].texCoord0 = tex[1];
+	cube[13].position = vec3(0.5f, 0.5f, -0.5f);   //7
+	cube[13].texCoord0 = tex[2];
+	cube[14].position = vec3(0.5f, 0.5f, 0.5f);    //8
+	cube[14].texCoord0 = tex[3];
+
+
+	cube[15].position = vec3(0.5f, -0.5f, 0.5f);   //6
+	cube[15].texCoord0 = tex[1];
+	cube[16].position = vec3(0.5f, -0.5f, -0.5f);  //5
+	cube[16].texCoord0 = tex[0];
+	cube[17].position = vec3(0.5f, 0.5f, -0.5f);   //7
+	cube[17].texCoord0 = tex[2];
+
+	cube[18].position = vec3(-0.5f, -0.5f, -0.5f); //1
+	cube[18].texCoord0 = tex[0];
+	cube[19].position = vec3(-0.5f, 0.5f, -0.5f);  //3
+	cube[19].texCoord0 = tex[2];
+	cube[20].position = vec3(0.5f, 0.5f, -0.5f);   //7
+	cube[20].texCoord0 = tex[2];
+
+
+	cube[21].position = vec3(-0.5f, -0.5f, -0.5f); //1
+	cube[21].texCoord0 = tex[0];
+	cube[22].position = vec3(0.5f, 0.5f, -0.5f);   //7
+	cube[22].texCoord0 = tex[2];
+	cube[23].position = vec3(0.5f, -0.5f, -0.5f);  //5
+	cube[23].texCoord0 = tex[0];
+
+	cube[24].position = vec3(-0.5f, -0.5f, -0.5f); //1
+	cube[24].texCoord0 = tex[0];
+	cube[25].position = vec3(0.5f, -0.5f, -0.5f);  //5
+	cube[25].texCoord0 = tex[0];
+	cube[26].position = vec3(-0.5f, -0.5f, 0.5f);  //2
+	cube[26].texCoord0 = tex[1];
+
+	cube[27].position = vec3(-0.5f, -0.5f, 0.5f);  //2
+	cube[27].texCoord0 = tex[1];
+	cube[28].position = vec3(0.5f, -0.5f, -0.5f);  //5
+	cube[28].texCoord0 = tex[0];
+	cube[29].position = vec3(0.5f, -0.5f, 0.5f);   //6
+	cube[29].texCoord0 = tex[1];
+
+	cube[30].position = vec3(-0.5f, 0.5f, -0.5f);  //3
+	cube[30].texCoord0 = tex[2];
+	cube[31].position = vec3(-0.5f, 0.5f, 0.5f);   //4
+	cube[31].texCoord0 = tex[3];
+	cube[32].position = vec3(0.5f, 0.5f, -0.5f);   //7
+	cube[32].texCoord0 = tex[2];
+
+	cube[33].position = vec3(-0.5f, 0.5f, 0.5f);   //4
+	cube[33].texCoord0 = tex[3];
+	cube[34].position = vec3(0.5f, 0.5f, 0.5f);    //8
+	cube[34].texCoord0 = tex[3];
+	cube[35].position = vec3(0.5f, 0.5f, -0.5f);   //7
+	cube[35].texCoord0 = tex[2];
+
+
+	for (int i = 0; i < 36; i++)
+	{
+	cube_idx[i] = i;
+	cube[i].color = ~0;
+	cube[i].position *= 500.0f;
+	}
+
+
+	Model::cube_index = gfx.CreateIndexBuffer(cube_idx, 36);
+	Model::cube_vertex = gfx.CreateVertexBuffer(cube, 36);
+	*/
+}
+
 void Engine::render_texture(int texObj, bool depth_view)
 {
 	gfx.SelectTexture(0, texObj);
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	global.Select();
 	global.Params(identity, depth_view);
 	gfx.DrawArrayTri(0, 0, 6, 4);
@@ -2410,8 +2551,8 @@ void Engine::post_process(int num_passes, int type)
 		post.Params(type, tick_num);
 		post.BloomParams(0, 20, bloom_strength, bloom_threshold, fb_width, fb_height);
 		gfx.clear();
-		gfx.SelectIndexBuffer(Model::quad_index);
-		gfx.SelectVertexBuffer(Model::quad_vertex);
+		gfx.SelectIndexBuffer(quad_index);
+		gfx.SelectVertexBuffer(quad_vertex);
 		gfx.DrawArrayTri(0, 0, 6, 4);
 //		gfx.SelectShader(0);
 //		gfx.DeselectTexture(1);
@@ -2437,8 +2578,8 @@ void Engine::render_bloom(bool debug)
 	//	post.Params(POST_DOF, tick_num);
 //	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
 	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4); // bright pass filter
 	gfx.bindFramebuffer(0);
 
@@ -2452,8 +2593,8 @@ void Engine::render_bloom(bool debug)
 	post.Params(POST_BLOOM, tick_num);
 	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
 	gfx.bindFramebuffer(0);
 
@@ -2463,8 +2604,8 @@ void Engine::render_bloom(bool debug)
 	gfx.fbAttachTexture(blur2_quad);
 	gfx.fbAttachDepth(blur2_depth);
 	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.SelectTexture(0, blur1_quad);
 	post.Select();
 	post.Params(POST_BLOOM, tick_num);
@@ -2474,8 +2615,8 @@ void Engine::render_bloom(bool debug)
 	gfx.bindFramebuffer(render_fbo, 2);
 	gfx.resize(fb_width, fb_height);
 //	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	if (debug)
 	{
 		gfx.SelectTexture(0, mask_quad);
@@ -2509,8 +2650,8 @@ void Engine::render_skyray(bool debug)
 	//	post.Params(POST_DOF, tick_num);
 	//	post.BloomParams(0, dof_near, dof_far, bloom_threshold);
 	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4); // bright pass filter
 	gfx.bindFramebuffer(0);
 
@@ -2524,16 +2665,16 @@ void Engine::render_skyray(bool debug)
 	post.Params(POST_RADIAL, tick_num);
 	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4); // first blur pass
 	gfx.bindFramebuffer(0);
 
 	gfx.bindFramebuffer(render_fbo, 2);
 	gfx.resize(fb_width, fb_height);
 	//	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	if (debug)
 	{
 		gfx.SelectTexture(0, mask_quad);
@@ -2566,16 +2707,16 @@ void Engine::render_wave(bool debug)
 	post.BloomParams(0, bloom_amount, bloom_strength, bloom_threshold, fb_width, fb_height);
 
 	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4); // bright pass filter
 	gfx.bindFramebuffer(0);
 	gfx.bindFramebuffer(render_fbo, 2);
 
 	gfx.resize(fb_width, fb_height);
 	//	gfx.clear();
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.SelectTexture(0, mask_quad);
 	gfx.SelectTexture(1, mask_quad);
 	gfx.SelectTexture(2, mask_quad);
@@ -2596,8 +2737,8 @@ void Engine::render_ssao(bool debug)
 
 	gfx.SelectTexture(0, render_quad);
 	gfx.SelectTexture(1, render_ndepth);
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 //	glDisable(GL_DEPTH_TEST);
 	gfx.DrawArrayTri(0, 0, 6, 4);
 }

@@ -60,6 +60,9 @@ public:
 	static vector<char *> string_buffer;
 	static vector<char *> notif_buffer;
 
+	int quad_index;
+	int quad_vertex;
+
 	char *string_target;
 	char string_cmd[128];
 

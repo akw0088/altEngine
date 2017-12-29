@@ -125,11 +125,13 @@ void Quake3::destroy()
 
 	for (unsigned int i = 0; i < model_table.size(); i++)
 	{
+#if 0
 		if (dump_obj)
 		{
 			strcat(model_table[i]->name, ".obj");
 			WriteObj(model_table[i]->name, model_table[i]->model_vertex_array, model_table[i]->num_vertex, model_table[i]->model_index_array, model_table[i]->num_index);
 		}
+#endif
 		delete model_table[i];
 		model_table[i] = NULL;
 	}
