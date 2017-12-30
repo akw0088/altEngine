@@ -3,6 +3,15 @@
 #ifndef CONSTRUCTABLE_H
 #define CONSTRUCTABLE_H
 
+#define SENTRY_HEALTH_LVL1 150
+#define SENTRY_HEALTH_LVL2 180
+#define SENTRY_HEALTH_LVL3 220
+
+
+// sentry guns,
+// enemy terrirotry constructable bridges / brushes (change opacity on % complete)
+// Other things?
+
 class Constructable
 {
 public:
@@ -11,14 +20,13 @@ public:
 	Entity	*entity;
 
 	void reset();
-	void handle_bot(vector<Entity *> &entity_list, int self);
-
-	char model_name[128];
-	int model_index;
+	int step(input_t &input, vector<Entity *> &entity_list, int self);
 
 	playertype_t type;
 
 	int health;
+	int level;
+
 
 	unsigned short int armor;
 	unsigned char weapon_flags;
@@ -42,6 +50,8 @@ public:
 	unsigned short int idle_timer;
 	unsigned short int dead_timer;
 	unsigned short int alive_timer;
+	unsigned short int build_timer;
+
 
 	unsigned int current_light; // debugging light sources, selected same as weapon
 	unsigned int current_face; // debugging light sources, selected same as weapon
@@ -70,15 +80,8 @@ public:
 
 	team_t team;
 	int owner;
+	int base_index; // index of sentry base for deletion
 
-	Model weapon_gauntlet;
-	Model weapon_machinegun;
-	Model weapon_shotgun;
-	Model weapon_grenade;
-	Model weapon_rocket;
-	Model weapon_lightning;
-	Model weapon_railgun;
-	Model weapon_plasma;
 private:
 };
 

@@ -25,7 +25,7 @@ public:
 
 
 	int				ent_type; // will replace string type eventually
-	int				model_ref;		// bsp model index
+	int				brush_ref;		// bsp brush associated with entity
 	int				bsp_leaf;
 	int				num_particle;
 	net_ent_t		nettype;

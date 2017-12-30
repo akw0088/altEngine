@@ -21,7 +21,7 @@ Entity::Entity()
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NET_NONE;
-	model_ref = -1;
+	brush_ref = -1;
 	
 	bsp_leaf = 0;
 	num_particle = 0;
@@ -64,7 +64,7 @@ Entity::~Entity()
 	brushinfo = NULL;
 	entstring = NULL;
 	nettype = NET_NONE;
-	model_ref = -1;
+	brush_ref = -1;
 	flags.visible = false;
 	flags.particle_on = false;
 }

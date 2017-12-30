@@ -143,6 +143,7 @@ public:
 	unsigned short int idle_timer;
 	unsigned short int dead_timer;
 	unsigned short int alive_timer;
+	unsigned short int build_timer;
 
 
 
@@ -157,6 +158,9 @@ public:
 	unsigned short int flash_railgun;
 	unsigned short int flash_lightning;
 	unsigned short int flash_plasma;
+
+
+	int num_sentry;
 
 
 	float accel;

@@ -10,17 +10,14 @@
 Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio)
 {
 	Constructable::entity = entity;
+	Constructable::team = team;
 
 	spawned = false;
 	render_md5 = true;
 	immobile = false;
 
-	Constructable::team = team;
 	owner = -1;
-
-
 	telefragged = NULL;
-
 
 	weapon_source = -1;
 	weapon_loop_source = -1;
@@ -28,15 +25,17 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio)
 	last_state = BOT_IDLE;
 	state = PLAYER_IDLE;
 
-	strcpy(model_name, "Autosentry");
-
-	health = 125;
+	health = SENTRY_HEALTH_LVL1;
 	armor = 0;
 	alert_timer = 0;
 	idle_timer = (20 + rand() % 10) * TICK_RATE;
 	reload_timer = 0;
 	click_timer = 0;
 	pain_timer = 0;
+	dead_timer = 0;
+	alive_timer = 0;
+
+	build_timer = 3 * TICK_RATE;
 
 	flash_gauntlet = 0;
 	flash_machinegun = 0;
@@ -46,16 +45,14 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio)
 	flash_railgun = 0;
 	flash_lightning = 0;
 	flash_plasma = 0;
-	dead_timer = 0;
-	alive_timer = 0;
 
-	weapon_flags = WEAPON_MACHINEGUN | WEAPON_GAUNTLET;
+	weapon_flags = WEAPON_MACHINEGUN;
 	current_weapon = wp_machinegun;
 	ammo_rockets = 0;
 	ammo_grenades = 0;
 	ammo_slugs = 0;
 	ammo_shells = 0;
-	ammo_bullets = 50;
+	ammo_bullets = 100;
 	ammo_lightning = 0;
 	ammo_plasma = 0;
 	ammo_bfg = 0;
@@ -81,8 +78,20 @@ Constructable::~Constructable()
 
 
 
-void Constructable::handle_bot(vector<Entity *> &entity_list, int self)
+int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self)
 {
+	if (build_timer > 0)
+	{
+		if (input.control == false)
+		{
+			//building cancelled, delete stuff
+			return 1;
+		}
+
+		build_timer--;
+		return 0;
+	}
+
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (i == (unsigned int)self)
@@ -138,4 +147,6 @@ void Constructable::handle_bot(vector<Entity *> &entity_list, int self)
 			continue;
 		}
 	}
+
+	return 0;
 }

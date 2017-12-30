@@ -83,6 +83,8 @@ public:
 	void handle_func_train(Entity *ent);
 	int add_train_path(Entity *original, Entity *ref, Entity *target);
 
+	void build_sentry();
+
 	unsigned int weapon_switch_timer;
 
 	~Quake3();

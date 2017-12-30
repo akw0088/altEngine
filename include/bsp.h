@@ -32,7 +32,7 @@ public:
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
 	void render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
-	void render_model(unsigned int index, Graphics &gfx);
+	void render_brush_entity(unsigned int index, Graphics &gfx);
 	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> surface_list);
 	vec3 model_origin(unsigned int index);
 

@@ -416,7 +416,7 @@ void Audio::load_doom(wave_t &wave, int *buffer)
 	alBufferData(*buffer, AL_FORMAT_MONO8, wave.pcmData, wave.dataSize, wave.format->sampleRate);
 }
 
-void Audio::load(wave_t &wave)
+void Audio::load(wave_t &wave, char **pk3_list, int num_pk3)
 {
 	char	*end;
 
@@ -426,7 +426,14 @@ void Audio::load(wave_t &wave)
 	}
 	else
 	{
-		get_zipfile("media/pak0.pk3", wave.file, (unsigned char **)&wave.data, NULL);
+		for (int i = 0; i < num_pk3; i++)
+		{
+			get_zipfile(pk3_list[i] + 34, wave.file, (unsigned char **)&wave.data, NULL);
+			if (wave.data != NULL)
+			{
+				break;
+			}
+		}
 	}
 
 	if (wave.data == NULL)

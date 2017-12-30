@@ -712,42 +712,42 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 	for (unsigned int i = 0; i < 23; i++)
 	{
 		sprintf(wave.file, "sound/player/%s/death1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11] = snd_wave.size() - 1;
 
 
 		sprintf(wave.file, "sound/player/%s/death2.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 1] = snd_wave.size() - 1;
 
 
 		sprintf(wave.file, "sound/player/%s/death3.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 2] = snd_wave.size() - 1;
 
 
 		sprintf(wave.file, "sound/player/%s/pain25_1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 3] = snd_wave.size() - 1;
 
 
 		sprintf(wave.file, "sound/player/%s/pain50_1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 4] = snd_wave.size() - 1;
 
 		sprintf(wave.file, "sound/player/%s/pain75_1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 5] = snd_wave.size() - 1;
 
 
 		sprintf(wave.file, "sound/player/%s/pain100_1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 6] = snd_wave.size() - 1;
 
@@ -795,51 +795,51 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 //		sprintf(wave.file, "sound/player/%s/jump1.wav", models[i]);
 		sprintf(wave.file, "sound/player/plyrjmp8.wav");
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 7] = snd_wave.size() - 1;
 
 
 		sprintf(wave.file, "sound/player/%s/fall1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 8] = snd_wave.size() - 1;
 
 		sprintf(wave.file, "sound/player/%s/falling1.wav", models[i]);
-		audio.load(wave);
+		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 9] = snd_wave.size() - 1;
 	}
 
 
 	strcpy(wave.file, "sound/weapons/railgun/rg_hum.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_RG_HUM 230
 	snd_table[SND_RG_HUM] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/lightning/lg_hum.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_LG_HUM 231
 	snd_table[SND_LG_HUM] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/shotgun/sshotf1b.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SHOTGUN 232
 	snd_table[SND_SHOTGUN] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/railgun/railgf1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_RAILGUN 233
 	snd_table[SND_RAILGUN] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/lightning/lg_fire.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_LIGHTNING 234
 	snd_table[SND_LIGHTNING] = snd_wave.size() - 1;
@@ -853,365 +853,365 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 
 	strcpy(wave.file, "sound/weapons/rocket/rocklf1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_ROCKET 235
 	snd_table[SND_ROCKET] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/grenade/grenlf1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GRENADE 236
 	snd_table[SND_ROCKET] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/plasma/hyprbf1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_PLASMA 237
 	snd_table[SND_PLASMA] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/machinegun/machgf1b.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_MACHINEGUN 238
 	snd_table[SND_MACHINEGUN] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/world/telein.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TELEIN 239
 	snd_table[SND_TELEIN] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/world/teleout.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TELEOUT 240
 	snd_table[SND_TELEOUT] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/teamplay/flagcap_blu.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 	#define SND_FLAGCAP 241
 	snd_table[SND_FLAGCAP] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/teamplay/flagtk_blu.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 	#define SND_FLAGTAKE 242
 	snd_table[SND_FLAGTAKE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/teamplay/flagret_blu.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 	#define SND_FLAGRET 243
 	snd_table[SND_FLAGRET] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/grenade/hgrenb1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 	#define SND_GRENADE_IMPACT 244
 	snd_table[SND_GRENADE_IMPACT] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/rocket/rocklx1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_EXPLODE 245
 	snd_table[SND_EXPLODE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/rocket/rockfly.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_ROCKETFLY 246
 	snd_table[SND_ROCKETFLY] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/plasma/lasfly.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_PLASMAFLY 247
 	snd_table[SND_PLASMAFLY] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/plasma/plasmx1a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_PLASMA_EXPLODE 248
 	snd_table[SND_PLASMA_EXPLODE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/change.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SWAPWEAP 249
 	snd_table[SND_SWAPWEAP] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/items/use_medkit.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_USE_MED 250
 	snd_table[SND_USE_MED] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/items/use_nothing.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_USE_EMPTY 251
 	snd_table[SND_USE_EMPTY] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/items/regen.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_REGEN 252
 	snd_table[SND_REGEN] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/step1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_STEP1 253
 	snd_table[SND_STEP1] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/step2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_STEP2 254
 	snd_table[SND_STEP2] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/step3.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_STEP3 255
 	snd_table[SND_STEP3] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/step4.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_STEP4 256
 	snd_table[SND_STEP4] = snd_wave.size() - 1;
 
 
 	sprintf(wave.file, "sound/player/land1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_LAND 257
 	snd_table[SND_LAND] = snd_wave.size() - 1;
 
 
 	sprintf(wave.file, "sound/world/jumppad.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_JUMPPAD 258
 	snd_table[SND_JUMPPAD] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/weapons/noammo.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_NOAMMO 259
 	snd_table[SND_NOAMMO] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/watr_in.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_WATER_IN 260
 	snd_table[SND_WATER_IN] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/watr_out.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_WATER_OUT 261
 	snd_table[SND_WATER_OUT] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/gurp1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GURP1 262
 	snd_table[SND_GURP1] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/gurp2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GURP2 263
 	snd_table[SND_GURP2] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/gibsplt1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GIBBED 264
 	snd_table[SND_GIBBED] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/gibimp1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GIB1 265
 	snd_table[SND_GIB1] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/gibimp2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GIB2 266
 	snd_table[SND_GIB2] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/gibimp3.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GIB3 267
 	snd_table[SND_GIB3] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/talk.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 	#define SND_TALK 268
 	snd_table[SND_TALK] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/blueleads.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_BLUE_LEAD 269
 	snd_table[SND_BLUE_LEAD] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/redleads.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_RED_LEAD 270
 	snd_table[SND_RED_LEAD] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/tiedlead.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TIED_LEAD 271
 	snd_table[SND_TIED_LEAD] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/lostlead.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_LOST_LEAD 272
 	snd_table[SND_LOST_LEAD] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/takenlead.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TAKEN_LEAD 273
 	snd_table[SND_TAKEN_LEAD] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/teamstied.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TEAMS_TIED 274
 	snd_table[SND_TEAMS_TIED] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/excellent.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_EXCELLENT 275
 	snd_table[SND_EXCELLENT] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/gauntlet.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GAUNTLET_MEDAL 276
 	snd_table[SND_GAUNTLET_MEDAL] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/humiliation.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_HUMILIATION 277
 	snd_table[SND_HUMILIATION] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/impressive_a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_IMPRESSIVEA 278
 	snd_table[SND_IMPRESSIVEA] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/accuracy.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_ACCURACY 279
 	snd_table[SND_ACCURACY] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/excellent_a.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_EXCELLENTA 280
 	snd_table[SND_EXCELLENTA] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/frags.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FRAGS 281
 	snd_table[SND_FRAGS] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/impressive.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_IMPRESSIVE 282
 	snd_table[SND_IMPRESSIVE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/perfect.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_PERFECT 283
 	snd_table[SND_PERFECT] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/hit.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_HIT 284
 	snd_table[SND_HIT] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/hit_teammate.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_HITTEAM 285
 	snd_table[SND_HITTEAM] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/sudden_death.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SUDDEN 286
 	snd_table[SND_SUDDEN] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/one.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_ONE 287
 	snd_table[SND_ONE] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/two.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TWO 288
 	snd_table[SND_TWO] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/three.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_THREE 289
 	snd_table[SND_THREE] = snd_wave.size() - 1;
@@ -1219,206 +1219,232 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 
 	strcpy(wave.file, "sound/feedback/denied.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_DENIED 290
 	snd_table[SND_DENIED] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/fight.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FIGHT 291
 	snd_table[SND_FIGHT] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/prepare.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_PREPARE 292
 	snd_table[SND_PREPARE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/1_minute.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_ONE_MINUTE 293
 	snd_table[SND_ONE_MINUTE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/feedback/5_minute.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FIVE_MINUTE 294
 	snd_table[SND_FIVE_MINUTE] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/1_frag.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_ONE_FRAG 295
 	snd_table[SND_ONE_FRAG] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/2_frags.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_TWO_FRAG 296
 	snd_table[SND_TWO_FRAG] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/feedback/3_frags.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_THREE_FRAG 297
 	snd_table[SND_THREE_FRAG] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "media/sound/shell_quiet.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SHELL 298
 	snd_table[SND_SHELL] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "media/sound/bullet_quiet.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_BULLET 299
 	snd_table[SND_BULLET] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "media/sound/dropgun_quiet.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_DROPGUN 300
 	snd_table[SND_DROPGUN] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/soldier/sight1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SOLDIER_SIGHT 301
 	snd_table[SND_SOLDIER_SIGHT] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/soldier/idle.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SOLDIER_IDLE 302
 	snd_table[SND_SOLDIER_IDLE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/melee/fstrun.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GAUNTLET 303
 	snd_table[SND_GAUNTLET] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/melee/fsthum.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GAUNTLET_IDLE 304
 	snd_table[SND_GAUNTLET_IDLE] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/weapons/melee/fstatck.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_GAUNTLET_HIT 305
 	snd_table[SND_GAUNTLET_HIT] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/movers/doors/dr1_strt.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_DOOR_START 306
 	snd_table[SND_DOOR_START] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/movers/doors/dr1_end.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_DOOR_END 307
 	snd_table[SND_DOOR_END] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/movers/switches/butn2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_BUTTON 308
 	snd_table[SND_BUTTON] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/clank1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_METAL_STEP1 309
 	snd_table[SND_METAL_STEP1] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/clank2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_METAL_STEP2 310
 	snd_table[SND_METAL_STEP2] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/clank3.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_METAL_STEP3 311
 	snd_table[SND_METAL_STEP3] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/clank4.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_METAL_STEP4 312
 	snd_table[SND_METAL_STEP4] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/flesh1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FLESH_STEP1 313
 	snd_table[SND_FLESH_STEP1] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/flesh2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FLESH_STEP2 314
 	snd_table[SND_FLESH_STEP2] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/flesh3.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FLESH_STEP3 315
 	snd_table[SND_FLESH_STEP3] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/flesh4.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FLESH_STEP4 316
 	snd_table[SND_FLESH_STEP4] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/splash1.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SPLASH_STEP1 317
 	snd_table[SND_SPLASH_STEP1] = snd_wave.size() - 1;
 
 
 	strcpy(wave.file, "sound/player/footsteps/splash2.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SPLASH_STEP2 318
 	snd_table[SND_SPLASH_STEP2] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/splash3.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SPLASH_STEP3 319
 	snd_table[SND_SPLASH_STEP3] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/footsteps/splash4.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_SPLASH_STEP4 320
 	snd_table[SND_SPLASH_STEP4] = snd_wave.size() - 1;
 
 	strcpy(wave.file, "sound/player/fry.wav");
-	audio.load(wave);
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_FRY 321
 	snd_table[SND_FRY] = snd_wave.size() - 1;
+
+
+	strcpy(wave.file, "sound/weapons/q3f_sentry_build.wav");
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
+	snd_wave.push_back(wave);
+#define SND_SENTRY_BUILD 322
+	snd_table[SND_SENTRY_BUILD] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/weapons/q3f_sentry_upgrade.wav");
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
+	snd_wave.push_back(wave);
+#define SND_SENTRY_UPGRADE 323
+	snd_table[SND_SENTRY_UPGRADE] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/weapons/q3f_sentry_prepstart.wav");
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
+	snd_wave.push_back(wave);
+#define SND_SENTRY_PREPSTART 324
+	snd_table[SND_SENTRY_PREPSTART] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "sound/weapons/q3f_sentry_prepend.wav");
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
+	snd_wave.push_back(wave);
+#define SND_SENTRY_PREPEND 325
+	snd_table[SND_SENTRY_PREPEND] = snd_wave.size() - 1;
+
 
 }
 
@@ -1518,14 +1544,13 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 				entity_list[spawn]->ent_type = ENT_CLIENT;
 				break;
 			case BOT:
-				sprintf(entity_list[spawn]->entstring->type, "NPC");
 				entity_list[spawn]->ent_type = ENT_NPC;
 				break;
 			case SPECTATOR:
-				engine->entity_list[spawn]->ent_type = ENT_SPECTATOR;
+				entity_list[spawn]->ent_type = ENT_SPECTATOR;
 				break;
 			case UNKNOWN:
-				strcpy(entity_list[spawn]->entstring->type, "unknown");
+				entity_list[spawn]->ent_type = ENT_UNKNOWN;
 				break;
 			}
 			Entity *spawn_ent = entity_list[spawn];
@@ -1740,7 +1765,7 @@ void Quake3::handle_player(int self, input_t &input)
 	}
 	
 
-	if (entity->player->telefragged)
+	if (entity->player->telefragged && 0)
 	{
 		char msg[512];
 		Entity *entity2 = entity->player->telefragged;
@@ -1751,13 +1776,22 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			entity->player->health = -100;
 			entity->player->stats.deaths++;
-			entity2->player->stats.kills++;
 
-			sprintf(msg, "%s telefragged %s\n", entity2->player->name, entity->player->name);
+			if (entity2->player)
+			{
+				entity2->player->stats.kills++;
+				sprintf(msg, "%s telefragged %s\n", entity2->player->name, entity->player->name);
+				handle_frags_left(*(entity2->player));
+			}
+			else
+			{
+				sprintf(msg, "%s was in the wrong place at the wrong time\n", entity->player->name);
+				entity->player->telefragged = NULL;
+			}
+
 			debugf(msg);
 			engine->menu.print_notif(msg);
 			notif_timer = 3 * TICK_RATE;
-			handle_frags_left(*(entity2->player));
 		}
 		else
 		{
@@ -2661,28 +2695,7 @@ void Quake3::step(int frame_step)
 		spectator_timer = TICK_RATE >> 1;
 //		engine->console("spectate");
 
-		char bot_name[32];
-
-		sprintf(bot_name, "Autosentry");
-		int spawn = engine->get_player();
-		Entity *ent = engine->entity_list[spawn];
-		ent->construct = new Constructable(ent, engine->gfx, engine->audio);
-		ent->construct->owner = engine->find_type(ENT_PLAYER, 0);
-		ent->rigid = new RigidBody(ent);
-
-		ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
-		ent->rigid->clone(model_table[MODEL_SENTRY3]);
-		ent->model = ent->rigid;
-		ent->construct->immobile = true;
-		ent->construct->render_md5 = false;
-
-
-		Entity *sentry_base = engine->entity_list[engine->get_entity()];
-		sentry_base->model = new Model(sentry_base);
-		sentry_base->model->clone(model_table[MODEL_SENTRY_BASE]);
-		sentry_base->position = engine->entity_list[spawn]->position;
-		sentry_base->flags.visible = true;
-
+		build_sentry();
 	}
 	else
 	{
@@ -2730,7 +2743,16 @@ void Quake3::step(int frame_step)
 			}
 			else
 			{
-				handle_player(i, engine->input);
+				if (entity->player->build_timer == 0)
+					handle_player(i, engine->input);
+				else
+					entity->player->build_timer--;
+
+				if (entity->player->build_timer == 1)
+				{
+					engine->play_wave(entity->position, SND_SENTRY_UPGRADE);
+				}
+
 			}
 		}
 
@@ -2744,7 +2766,15 @@ void Quake3::step(int frame_step)
 		}
 
 		if (entity->construct)
-			entity->construct->handle_bot(engine->entity_list, i);
+		{
+			if (entity->construct->step(engine->input, engine->entity_list, i))
+			{
+				// building cancelled, delete entity
+				printf("building cancelled\n");
+				engine->clean_entity(entity->construct->base_index);
+				engine->clean_entity(i);
+			}
+		}
 
 
 		if (entity->player == NULL)
@@ -3003,6 +3033,58 @@ void Quake3::step(int frame_step)
 #ifdef WIN32
 //	_controlfp(fpOld, MCW_EM);
 #endif
+}
+
+
+void Quake3::build_sentry()
+{
+	int owner = engine->find_type(ENT_PLAYER, 0);
+
+	if (owner == -1)
+	{
+		return;
+	}
+
+	if (engine->entity_list[owner]->player->build_timer > 0)
+	{
+		return;
+	}
+
+	if (engine->entity_list[owner]->player->num_sentry > 10)
+	{
+		debugf("Sentry already constructed\n");
+		return;
+	}
+
+
+	engine->entity_list[owner]->player->num_sentry++;
+	engine->entity_list[owner]->player->build_timer = 3 * TICK_RATE;
+
+
+	int spawn = engine->get_entity();
+	Entity *ent = engine->entity_list[spawn];
+	ent->construct = new Constructable(ent, engine->gfx, engine->audio);
+	ent->construct->owner = owner;
+	ent->rigid = new RigidBody(ent);
+
+	ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
+	ent->rigid->clone(model_table[MODEL_SENTRY1]);
+	ent->model = ent->rigid;
+	ent->construct->immobile = true;
+	ent->construct->render_md5 = false;
+//	ent->rigid->y_offset = 20.0f;
+
+	int base_index = engine->get_entity();
+	Entity *sentry_base = engine->entity_list[base_index];
+	sentry_base->rigid = new RigidBody(sentry_base);
+	sentry_base->model = sentry_base->rigid;
+	sentry_base->model->clone(model_table[MODEL_SENTRY_BASE]);
+	sentry_base->position = engine->entity_list[spawn]->position + vec3(0.0f, 0.0f, -5.0f);
+	sentry_base->flags.visible = true;
+
+	ent->construct->base_index = base_index;
+
+	engine->play_wave(engine->entity_list[owner]->position, SND_SENTRY_BUILD);
 }
 
 void Quake3::handle_plasma(Player &player, int self, bool client)
@@ -7352,10 +7434,10 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 		Entity *ent = entity_list[i];
 		Entity *ref = ent;
 
-		if (ent->model_ref != -1)
+		if (ent->brush_ref != -1)
 		{
-			q3map.model_type[ent->model_ref] = ent->ent_type;
-			ent->position = q3map.model_origin(ent->model_ref);
+			q3map.model_type[ent->brush_ref] = ent->ent_type;
+			ent->position = q3map.model_origin(ent->brush_ref);
 		}
 
 		if (ent->brushinfo)
@@ -7410,7 +7492,7 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			ent->rigid->path.num_path = 2;
 			break;
 		case ENT_FUNC_TRAIN:
-			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
+			q3map.model_offset[entity_list[i]->brush_ref] = entity_list[i]->position;
 			for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
 			{
 				int ret = add_train_path(ent, ref, engine->entity_list[i]);
@@ -7989,7 +8071,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 
 void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, int self)
 {
-	int model_index = ent->model_ref;
+	int model_index = ent->brush_ref;
 
 	for (unsigned int j = 0; j < engine->max_player; j++)
 	{
@@ -8014,13 +8096,13 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 
 		if (ent->trigger && ent->trigger->active == false)
 		{
-			printf("Triggered bsp volume %d type %s\n", ent->model_ref, ent->entstring->type);
+			printf("Triggered bsp volume %d type %s\n", ent->brush_ref, ent->entstring->type);
 			ent->trigger->active = true;
 			console(self, ent->trigger->action, engine->menu, entity_list);
 		}
 		else
 		{
-			printf("bsp volume %d trigger already hit\n", ent->model_ref);
+			printf("bsp volume %d trigger already hit\n", ent->brush_ref);
 		}
 
 		if (ent->entstring != NULL)
@@ -8254,7 +8336,7 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 			{
 				ent->brushinfo->model_offset = ent->brushinfo->model_offset * ent->brushinfo->model_lerp;
 			}
-			engine->q3map.model_offset[ent->model_ref] = ent->brushinfo->model_offset;
+			engine->q3map.model_offset[ent->brush_ref] = ent->brushinfo->model_offset;
 
 
 			if (ent->brushinfo->model_lerp > 0.0f)
@@ -8287,8 +8369,8 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 			}
 			else if (ent->ent_type == ENT_FUNC_PLAT)
 			{
-				amount = (engine->q3map.data.Model[ent->model_ref].max[1]
-					- engine->q3map.data.Model[ent->model_ref].min[1]);
+				amount = (engine->q3map.data.Model[ent->brush_ref].max[1]
+					- engine->q3map.data.Model[ent->brush_ref].min[1]);
 
 				amount *= 0.9f;
 				if (amount < 0)
@@ -8324,20 +8406,20 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 
 			if (abs32(amount) < 0.001f)
 			{
-				half_x = (engine->q3map.data.Model[ent->model_ref].max[0]
-					- engine->q3map.data.Model[ent->model_ref].min[0]);
+				half_x = (engine->q3map.data.Model[ent->brush_ref].max[0]
+					- engine->q3map.data.Model[ent->brush_ref].min[0]);
 
 				if (half_x < 0)
 					half_x *= -1;
 
-				half_y = (engine->q3map.data.Model[ent->model_ref].max[1]
-					- engine->q3map.data.Model[ent->model_ref].min[1]);
+				half_y = (engine->q3map.data.Model[ent->brush_ref].max[1]
+					- engine->q3map.data.Model[ent->brush_ref].min[1]);
 
 				if (half_y < 0)
 					half_y *= -1;
 
-				half_z = (engine->q3map.data.Model[ent->model_ref].max[2]
-					- engine->q3map.data.Model[ent->model_ref].min[2]);
+				half_z = (engine->q3map.data.Model[ent->brush_ref].max[2]
+					- engine->q3map.data.Model[ent->brush_ref].min[2]);
 
 				if (half_z < 0)
 					half_z *= -1;
@@ -8378,13 +8460,13 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 			}
 
 
-			engine->q3map.model_offset[ent->model_ref] = ent->brushinfo->model_offset;
+			engine->q3map.model_offset[ent->brush_ref] = ent->brushinfo->model_offset;
 
 
 		}
 	}
 
-	if (ent->model_ref > 0 && (unsigned int)ent->model_ref < engine->q3map.data.num_model)
+	if (ent->brush_ref > 0 && (unsigned int)ent->brush_ref < engine->q3map.data.num_model)
 	{
 		handle_model_trigger(entity_list, ent, self);
 	}
@@ -9396,7 +9478,7 @@ void Quake3::handle_func_bobbing(Entity *entity)
 	int wait = 10;
 
 	sprintf(entity->entstring->target, " ");
-	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->brushinfo->origin;
+	engine->q3map.model_offset[entity->brush_ref] = entity->position - entity->brushinfo->origin;
 	entity->rigid->path.loop = 1;
 
 	if (entity->trigger)
@@ -9412,7 +9494,7 @@ void Quake3::handle_func_train(Entity *entity)
 	//bool escort = true;
 	//Entity *ref = entity;
 
-	engine->q3map.model_offset[entity->model_ref] = entity->position - entity->brushinfo->origin;
+	engine->q3map.model_offset[entity->brush_ref] = entity->position - entity->brushinfo->origin;
 
 
 	if (entity->rigid->train.escort)
@@ -9435,7 +9517,7 @@ void Quake3::handle_func_train(Entity *entity)
 		entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, entity->rigid->train.speed,
 			entity->rigid->train.path_min_dist, entity->rigid->train.wait);
 	}
-	engine->q3map.model_vel[entity->model_ref] = entity->rigid->velocity;
+	engine->q3map.model_vel[entity->brush_ref] = entity->rigid->velocity;
 
 	for (unsigned int i = 0; i < engine->max_player; i++)
 	{
@@ -9443,7 +9525,7 @@ void Quake3::handle_func_train(Entity *entity)
 			continue;
 
 		// Right now players dont move when on top of train objects, need to find nice way to match velocity
-		if (engine->entity_list[i]->rigid->bsp_model_platform == entity->model_ref)
+		if (engine->entity_list[i]->rigid->bsp_model_platform == entity->brush_ref)
 		{
 			//engine->entity_list[i]->rigid->net_force = entity->rigid->net_force;
 		}

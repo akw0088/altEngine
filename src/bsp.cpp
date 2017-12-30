@@ -1740,7 +1740,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 	for (unsigned int i = 1; i < data.num_model; i++)
 	{
 		if (abs32(model_offset[i].x) + abs32(model_offset[i].y) + abs32(model_offset[i].z) < 0.001f)
-			render_model(i, gfx);
+			render_brush_entity(i, gfx);
 	}
 	gfx.SelectTexture(0, 0);
 	gfx.SelectTexture(8, 0);
@@ -1776,7 +1776,7 @@ vec3 Bsp::model_origin(unsigned int index)
 	return origin;
 }
 
-void Bsp::render_model(unsigned int index, Graphics &gfx)
+void Bsp::render_brush_entity(unsigned int index, Graphics &gfx)
 {
 	if (index >= data.num_model)
 	{

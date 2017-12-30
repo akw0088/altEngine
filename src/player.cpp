@@ -59,6 +59,9 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	Player::team = team;
 
+	num_sentry = 0;
+	build_timer = 0;
+
 	haste_factor = 2.0f;
 
 	telefragged = NULL;
@@ -202,6 +205,7 @@ void Player::respawn()
 	entity->rigid->bsp_trigger_volume = 0;
 	entity->rigid->flags.lava = false;
 	entity->rigid->flags.slime = false;
+	telefragged = NULL;
 
 
 	state = PLAYER_IDLE;

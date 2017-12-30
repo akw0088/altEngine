@@ -7,7 +7,7 @@ class Audio
 {
 public:
 	void init();
-	void load(wave_t &wave);
+	void load(wave_t &wave, char **pk3_list, int num_pk3);
 	int load_ogg(char *filename, wave_t &wave);
 	void load_doom(wave_t &wave, int *buffer);
 	void play(int hSource);

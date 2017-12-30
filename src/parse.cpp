@@ -39,7 +39,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		{
 			int ret = sscanf(value + 1, "%d", &num);
 			if (ret == 1)
-				entity.model_ref = num;
+				entity.brush_ref = num;
 
 			if (entity.rigid)
 				entity.rigid->flags.gravity = false;

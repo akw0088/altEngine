@@ -414,17 +414,16 @@ bool RigidBody::collision_distance(RigidBody &body)
 {
 	vec3 distance = body.entity->position - entity->position;
 
-	// Should only be for player/player collisions
-	if (body.entity->player == NULL)
+	// Dead players wont collide
+	if (body.entity->player && body.entity->player->health < 0)
 		return false;
 
-	if (body.entity->player->health < 0)
+	if (entity->player && entity->player->health < 0)
 		return false;
 
-	if (entity->player->health < 0)
-		return false;
 
-	if (body.entity->player->type == BOT && entity->player->type == BOT)
+	// two bots wont collide
+	if (body.entity->player && entity->player)
 		return false;
 
 	if (distance.magnitude() < 40.0)
@@ -432,7 +431,14 @@ bool RigidBody::collision_distance(RigidBody &body)
 		if (distance.magnitude() < 10.0f)
 		{
 			//telefrag
-			body.entity->player->telefragged = entity;
+			if (body.entity->player && body.entity->player->health > 0)
+			{
+				body.entity->player->telefragged = entity;
+			}
+			else if (entity->player && entity->player->health > 0)
+			{
+				entity->player->telefragged = body.entity;
+			}
 		}
 		// add some seperating force
 		velocity += -distance.normalize() * (40.0f / distance.magnitude());

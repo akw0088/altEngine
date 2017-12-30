@@ -198,6 +198,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	Engine::param2 = p2;
 	initialized = true;
 
+
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
@@ -570,6 +571,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 
 //	shadowmap.init(&gfx);
+	dns_query(net);
 
 }
 
@@ -2259,7 +2261,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 		vec3 offset = entity->position;
 
-		entity->rigid->get_matrix(mvp.m);
+		entity->model->get_matrix(mvp.m);
 		mvp = (mvp * trans) * proj;
 		if (lights)
 		{
@@ -2304,7 +2306,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 
 
-		if (entity->model_ref > 0 && (unsigned int)entity->model_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 0.5)
+		if (entity->brush_ref > 0 && (unsigned int)entity->brush_ref < q3map.data.num_model && q3map.enable_textures && tick_num > TICK_RATE * 0.5)
 		{
 			Frame frame;
 
@@ -2317,7 +2319,9 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			mvp = (mvp * trans) * proj;
 			mlight2.set_matrix(mvp);
 			if (enable_map)
-				q3map.render_model(entity->model_ref, gfx);
+			{
+				q3map.render_brush_entity(entity->brush_ref, gfx);
+			}
 
 			entity->position = old;
 		}
@@ -3046,7 +3050,7 @@ void Engine::dynamics()
 			body->save_config(config);
 			body->integrate(target_time - current_time);
 
-			if (entity_list[i]->model_ref != -1)
+			if (entity_list[i]->brush_ref != -1)
 				break;
 
 			if ( collision_detect(*body) )
@@ -3204,7 +3208,7 @@ bool Engine::collision_detect(RigidBody &body)
 	}
 
 
-	if (body.entity->player)
+	if (body.entity->player || body.entity->construct)
 	{
 		if (body_collision(body))
 			return true;
@@ -3410,14 +3414,14 @@ bool Engine::map_collision(RigidBody &body)
 //O(N^2)
 bool Engine::body_collision(RigidBody &body)
 {
-	for(unsigned int i = 0; i < max_player; i++)
+	for(unsigned int i = 0; i < max_dynamic; i++)
 	{
 		if (entity_list[i] == body.entity)
 			continue;
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (i == 0 || body.entity->player->local)
+		if (entity_list[i]->ent_type == ENT_PLAYER)
 		{
 			int result = 0;
 			vec3 shape1[8];
@@ -3431,11 +3435,11 @@ bool Engine::body_collision(RigidBody &body)
 			}
 
 
-			result = separating_axis_theorem(shape1, shape2);
-//			result = gjk(shape1, shape2, 10, 8, 8);
+//			result = separating_axis_theorem(shape1, shape2);
+			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
-				printf("collision between %s and %s\n", entity_list[i]->player->name, body.entity->player->name);
+				printf("collision between %s and entity type %d\n", entity_list[i]->player->name, body.entity->ent_type);
 				return true;
 			}
 		}
@@ -5375,7 +5379,7 @@ int Engine::get_load_wave(const char *file)
 	strcpy(wave.file, file);
 
 	debugf("Loading wave file %s\n", file);
-	audio.load(wave);
+	audio.load(wave, pk3_list, num_pk3);
 	snd_wave.push_back(wave);
 
 	return snd_wave.size() - 1;
