@@ -141,7 +141,7 @@ typedef struct Frustum
 			plane_t right;
 			plane_t znear;
 			plane_t zfar;
-		};
+		} p;
 		plane_t planes[6];
 	};
 	inline Frustum()

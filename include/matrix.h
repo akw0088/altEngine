@@ -14,7 +14,7 @@ public:
 		float m3, float m4, float m5,
 		float m6, float m7, float m8);
 
-	void matrix3::matrix4to3(matrix4 &mat);
+	void matrix4to3(matrix4 &mat);
 	matrix3 &operator=(const matrix3 &q);
 	matrix3 operator+(const matrix3 &q);
 	matrix3 operator-(const matrix3 &q);

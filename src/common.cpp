@@ -2842,7 +2842,7 @@ void dns_query(Net &net)
 	char ip[] = "8.8.8.8:53";
 	int ret = net.sendto((char *)data, sizeof(data), ip);
 
-	Sleep(100);
+	//Sleep(100);
 	memset(buffer, 0, sizeof(buffer));
 	net.recvfrom((char *)buffer, sizeof(buffer), ip, strlen(ip));
 

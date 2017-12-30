@@ -1,5 +1,6 @@
 #include "physics.h"
 #include <list>
+#include <algorithm>
 #include "sin_table.h"
 
 #ifdef _DEBUG
@@ -341,7 +342,7 @@ interval_t GetInterval(const aabb_t &aabb, const vec3& axis)
 	interval_t result;
 	result.min = result.max = axis * vertex[0];
 
-	for (int i = 1; i < 8; ++i)
+	for (unsigned int i = 1; i < 8; ++i)
 	{
 		float projection = axis * vertex[i];
 		result.min = (projection < result.min) ? projection : result.min;
@@ -394,7 +395,7 @@ interval_t GetInterval(const obb_t &obb, const vec3& axis)
 
 	interval_t result;
 	result.min = result.max = axis * vertex[0];
-	for (int i = 1; i < 8; ++i)
+	for (unsigned int i = 1; i < 8; ++i)
 	{
 		float projection = axis * vertex[i];
 		result.min = (projection < result.min) ? projection : result.min;
@@ -425,13 +426,13 @@ bool AABB_OBB(const aabb_t &aabb, const obb_t &obb)
 							   // We will fill out the remaining axis in the next step
 	};
 
-	for (int i = 0; i < 3; ++i) { // Fill out rest of axis
+	for (unsigned int i = 0; i < 3; ++i) { // Fill out rest of axis
 		test[6 + i * 3 + 0] = vec3::crossproduct(test[i], test[0]);
 		test[6 + i * 3 + 1] = vec3::crossproduct(test[i], test[1]);
 		test[6 + i * 3 + 2] = vec3::crossproduct(test[i], test[2]);
 	}
 
-	for (int i = 0; i < 15; ++i)
+	for (unsigned int i = 0; i < 15; ++i)
 	{
 		if (!OverlapOnAxis(aabb, obb, test[i]))
 		{
@@ -481,7 +482,7 @@ bool OBB_OBB(const obb_t &obb1, const obb_t &obb2)
 		vec3(o2[6], o2[7], o2[8])
 	};
 
-	for (int i = 0; i < 3; ++i)
+	for (unsigned int i = 0; i < 3; ++i)
 	{
 		// Fill out rest of axis
 		test[6 + i * 3 + 0] = vec3::crossproduct(test[i], test[0]);
@@ -490,7 +491,7 @@ bool OBB_OBB(const obb_t &obb1, const obb_t &obb2)
 	}
 
 
-	for (int i = 0; i < 15; ++i)
+	for (unsigned int i = 0; i < 15; ++i)
 	{
 		if (!OverlapOnAxis(obb1, obb2, test[i]))
 		{
@@ -642,7 +643,7 @@ bool Raycast(const aabb_t &aabb, const ray_t &ray, raycast_result_t *result)
 			vec3(0, 0, -1), vec3(0, 0, 1)
 		};
 
-		for (int i = 0; i < 6; ++i)
+		for (unsigned int i = 0; i < 6; ++i)
 		{
 			if (CMP(t_result, t[i]))
 			{
@@ -743,7 +744,7 @@ bool Raycast(const obb_t &obb, const ray_t &ray, raycast_result_t *result)
 			Y, Y * -1.0f,
 			Z, Z * -1.0f
 		};
-		for (int i = 0; i < 6; ++i)
+		for (unsigned int i = 0; i < 6; ++i)
 		{
 			if (CMP(t_result, t[i]))
 			{
@@ -960,7 +961,7 @@ bool TriangleAABB(const triangle_t &t, const aabb_t &a)
 		vec3::crossproduct(u2, f1),
 		vec3::crossproduct(u2, f2)
 	};
-	for (int i = 0; i < 13; ++i)
+	for (unsigned int i = 0; i < 13; ++i)
 	{
 		if (!OverlapOnAxis(a, t, test[i]))
 		{
@@ -1007,7 +1008,7 @@ bool TriangleOBB(const triangle_t &t, const obb_t &o)
 		vec3::crossproduct(u2, f2)
 	};
 
-	for (int i = 0; i < 13; ++i)
+	for (unsigned int i = 0; i < 13; ++i)
 	{
 		if (!OverlapOnAxis(o, t, test[i]))
 		{
@@ -1083,7 +1084,7 @@ bool TriangleTriangle(const triangle_t &t1, const triangle_t &t2)
 		vec3::crossproduct(t2_f2, t1_f2),
 	};
 
-	for (int i = 0; i < 11; ++i)
+	for (unsigned int i = 0; i < 11; ++i)
 	{
 		if (!OverlapOnAxis(t1, t2, axisToTest[i]))
 		{
@@ -1135,7 +1136,7 @@ bool TriangleTriangle(const triangle_t &t1, const triangle_t &t2)
 		SatCrossEdge(t2.c, t2.a, t1.c, t1.a)
 	};
 
-	for (int i = 0; i < 11; ++i) 
+	for (unsigned int i = 0; i < 11; ++i) 
 	{
 		if (!OverlapOnAxis(t1, t2, axisToTest[i])) 
 		{
@@ -1222,7 +1223,7 @@ bool Linetest(const mesh_t &mesh, const line3_t &line)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			if (Linetest(mesh.triangles[i], line))
 			{
@@ -1236,15 +1237,19 @@ bool Linetest(const mesh_t &mesh, const line3_t &line)
 		toProcess.push_front(mesh.accelerator);
 
 		// Recursivley walk the BVH tree
-		while (!toProcess.empty()) {
+		while (!toProcess.empty())
+		{
 			bvh_node_t *iterator = *(toProcess.begin());
 			toProcess.erase(toProcess.begin());
 
-			if (iterator->numTriangles >= 0) {
+			if (iterator->numTriangles >= 0)
+			{
 				// Iterate trough all triangles of the node
-				for (int i = 0; i < iterator->numTriangles; ++i) {
+				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
+				{
 					// Triangle indices in BVHNode index the mesh
-					if (Linetest(mesh.triangles[iterator->triangles[i]], line)) {
+					if (Linetest(mesh.triangles[iterator->triangles[i]], line))
+					{
 						return true;
 					}
 				}
@@ -1252,7 +1257,7 @@ bool Linetest(const mesh_t &mesh, const line3_t &line)
 
 			if (iterator->children != 0)
 			{
-				for (int i = 8 - 1; i >= 0; --i)
+				for (unsigned int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (Linetest(iterator->children[i].bounds, line))
@@ -1270,7 +1275,7 @@ bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			if (TriangleSphere(mesh.triangles[i], sphere))
 			{
@@ -1291,7 +1296,7 @@ bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TriangleSphere(mesh.triangles[iterator->triangles[i]], sphere))
@@ -1303,7 +1308,7 @@ bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
 
 			if (iterator->children != 0)
 			{
-				for (int i = 8 - 1; i >= 0; --i)
+				for (unsigned int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (SphereAABB(sphere, iterator->children[i].bounds))
@@ -1321,7 +1326,7 @@ bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			if (TriangleOBB(mesh.triangles[i], obb))
 			{
@@ -1343,7 +1348,7 @@ bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TriangleOBB(mesh.triangles[iterator->triangles[i]], obb))
@@ -1355,7 +1360,7 @@ bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
 
 			if (iterator->children != 0)
 			{
-				for (int i = 8 - 1; i >= 0; --i)
+				for (unsigned int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (AABB_OBB(iterator->children[i].bounds, obb))
@@ -1373,7 +1378,7 @@ bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			if (TrianglePlane(mesh.triangles[i], plane))
 			{
@@ -1395,7 +1400,7 @@ bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TrianglePlane(mesh.triangles[iterator->triangles[i]], plane))
@@ -1407,7 +1412,7 @@ bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
 
 			if (iterator->children != 0)
 			{
-				for (int i = 8 - 1; i >= 0; --i)
+				for (unsigned int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (AABBPlane(iterator->children[i].bounds, plane))
@@ -1425,7 +1430,7 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			if (TriangleTriangle(mesh.triangles[i], triangle))
 			{
@@ -1447,7 +1452,7 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TriangleTriangle(mesh.triangles[iterator->triangles[i]], triangle))
@@ -1459,7 +1464,7 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 
 			if (iterator->children != 0)
 			{
-				for (int i = 8 - 1; i >= 0; --i)
+				for (unsigned int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (TriangleAABB(triangle, iterator->children[i].bounds))
@@ -1477,7 +1482,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			raycast_result_t result;
 			Raycast(mesh.triangles[i], ray, &result);
@@ -1499,7 +1504,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 
 			if (iterator->numTriangles >= 0)
 			{
-				for (int i = 0; i< iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i< iterator->numTriangles; ++i)
 				{
 					raycast_result_t result;
 
@@ -1514,7 +1519,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 
 			if (iterator->children != 0)
 			{
-				for (int i = 8 - 1; i >= 0; --i)
+				for (unsigned int i = 8 - 1; i >= 0; --i)
 				{
 					raycast_result_t result;
 					Raycast(iterator->children[i].bounds, ray, &result);
@@ -1605,10 +1610,10 @@ void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
 	// If this node was just split
 	if (node->children != 0 && node->numTriangles > 0)
 	{
-		for (int i = 0; i < 8; ++i)  // For each child
+		for (unsigned int i = 0; i < 8; ++i)  // For each child
 		{
 			node->children[i].numTriangles = 0;
-			for (int j = 0; j < node->numTriangles; ++j)
+			for (unsigned int j = 0; j < node->numTriangles; ++j)
 			{
 				triangle_t t = model.triangles[node->triangles[j]];
 
@@ -1626,7 +1631,7 @@ void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
 			node->children[i].triangles = new int[node->children[i].numTriangles];
 			int index = 0;
 
-			for (int j = 0; j < node->numTriangles; ++j)
+			for (unsigned int j = 0; j < node->numTriangles; ++j)
 			{
 				triangle_t t = model.triangles[node->triangles[j]];
 				if (TriangleAABB(t, node->children[i].bounds))
@@ -1639,7 +1644,7 @@ void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
 		delete[] node->triangles;
 		node->triangles = 0;
 
-		for (int i = 0; i < 8; ++i)
+		for (unsigned int i = 0; i < 8; ++i)
 		{
 			SplitBVHNode(&node->children[i], model, depth);
 		}
@@ -1650,7 +1655,7 @@ void FreeBVHNode(bvh_node_t* node)
 {
 	if (node->children != 0)
 	{
-		for (int i = 0; i < 8; ++i)
+		for (unsigned int i = 0; i < 8; ++i)
 		{
 			FreeBVHNode(&node->children[i]);
 		}
@@ -1675,7 +1680,7 @@ void AccelerateMesh(mesh_t &mesh)
 
 	vec3 min = mesh.vertices[0];
 	vec3 max = mesh.vertices[0];
-	for (int i = 1; i < mesh.numTriangles * 3; ++i)
+	for (unsigned int i = 1; i < mesh.numTriangles * 3; ++i)
 	{
 		min.x = MIN(mesh.vertices[i].x, min.x);
 		min.y = MIN(mesh.vertices[i].y, min.y);
@@ -1778,8 +1783,8 @@ matrix4 ZRotation(float angle)
 {
 	angle = DEG2RAD(angle);
 	return matrix4(
-		cosf(angle), sinf(angle), 0.0f, 0.0f,
-		-sinf(angle), cosf(angle), 0.0f, 0.0f,
+		fcos(angle), fsin(angle), 0.0f, 0.0f,
+		-fsin(angle), fcos(angle), 0.0f, 0.0f,
 		0.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
@@ -1789,9 +1794,9 @@ matrix4 YRotation(float angle)
 {
 	angle = DEG2RAD(angle);
 	return matrix4(
-		cosf(angle), 0.0f, -sinf(angle), 0.0f,
+		fcos(angle), 0.0f, -fsin(angle), 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
-		sinf(angle), 0.0f, cosf(angle), 0.0f,
+		fsin(angle), 0.0f, fcos(angle), 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
 }
@@ -1801,8 +1806,8 @@ matrix4 XRotation(float angle)
 	angle = DEG2RAD(angle);
 	return matrix4(
 		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, cosf(angle), sinf(angle), 0.0f,
-		0.0f, -sinf(angle), cos(angle), 0.0f,
+		0.0f, fcos(angle), fsin(angle), 0.0f,
+		0.0f, -fsin(angle), fcos(angle), 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f
 	);
 }
@@ -1899,7 +1904,7 @@ public:
 		}
 	}
 
-	matrix4 CModel::GetWorldMatrix() const
+	matrix4 GetWorldMatrix() const
 	{
 		matrix4 translation = Translation(position);
 		matrix4 rot = Rotation(
@@ -2756,21 +2761,21 @@ Frustum Camera::GetFrustum()
 	vec3 col3(vp.m[2], vp.m[6], vp.m[10]);//, vp._43
 	vec3 col4(vp.m[3], vp.m[7], vp.m[11]);//, vp._44
 
-	result.left.normal		= col4 + col1;
-	result.right.normal		= col4 - col1;
-	result.bottom.normal	= col4 + col2;
-	result.top.normal		= col4 - col2;
-//	result.znear.normal = col3; //directx
-	result.znear.normal		= col4 + col3; //opengl
-	result.zfar.normal		= col4 - col3;
+	result.p.left.normal		= col4 + col1;
+	result.p.right.normal		= col4 - col1;
+	result.p.bottom.normal		= col4 + col2;
+	result.p.top.normal		= col4 - col2;
+//	result.znear.normal		= col3; 	//directx
+	result.p.znear.normal		= col4 + col3; //opengl
+	result.p.zfar.normal		= col4 - col3;
 
-	result.left.d	= vp.m[15] + vp.m[12];
-	result.right.d	= vp.m[15] - vp.m[12];
-	result.bottom.d = vp.m[15] + vp.m[13];
-	result.top.d	= vp.m[15] - vp.m[13];
+	result.p.left.d		= vp.m[15] + vp.m[12];
+	result.p.right.d	= vp.m[15] - vp.m[12];
+	result.p.bottom.d	= vp.m[15] + vp.m[13];
+	result.p.top.d		= vp.m[15] - vp.m[13];
 	//result.znear.d	= vp._43;			//directx style [0,1]
-	result.znear.d	= vp.m[15] + vp.m[14];			//opengl style [-1,1]
-	result.zfar.d	= vp.m[15] - vp.m[14];
+	result.p.znear.d	= vp.m[15] + vp.m[14];		//opengl style [-1,1]
+	result.p.zfar.d	= vp.m[15] - vp.m[14];
 
 	for (int i = 0; i < 6; ++i)
 	{
@@ -2860,7 +2865,8 @@ void OrbitCamera::Update(float dt)
 
 	matrix4 view;
 
-	view.lookat(position, target, vec3(0, 1, 0));
+	vec3 up(0.0f, 1.0f, 0.0f);
+	view.lookat(position, target, up);
 	m_matWorld = view.inverse();
 }
 
@@ -2921,14 +2927,14 @@ vec3 Intersection(plane_t p1, plane_t p2, plane_t p3)
 
 void GetCorners(const Frustum& f, vec3* outCorners)
 {
-	outCorners[0] = Intersection(f.znear, f.top, f.left);
-	outCorners[1] = Intersection(f.znear, f.top, f.right);
-	outCorners[2] = Intersection(f.znear, f.bottom, f.left);
-	outCorners[3] = Intersection(f.znear, f.bottom, f.right);
-	outCorners[4] = Intersection(f.zfar, f.top, f.left);
-	outCorners[5] = Intersection(f.zfar, f.top, f.right);
-	outCorners[6] = Intersection(f.zfar, f.bottom, f.left);
-	outCorners[7] = Intersection(f.zfar, f.bottom, f.right);
+	outCorners[0] = Intersection(f.p.znear, f.p.top,    f.p.left);
+	outCorners[1] = Intersection(f.p.znear, f.p.top,    f.p.right);
+	outCorners[2] = Intersection(f.p.znear, f.p.bottom, f.p.left);
+	outCorners[3] = Intersection(f.p.znear, f.p.bottom, f.p.right);
+	outCorners[4] = Intersection(f.p.zfar,  f.p.top,    f.p.left);
+	outCorners[5] = Intersection(f.p.zfar,  f.p.top,    f.p.right);
+	outCorners[6] = Intersection(f.p.zfar,  f.p.bottom, f.p.left);
+	outCorners[7] = Intersection(f.p.zfar,  f.p.bottom, f.p.right);
 }
 
 
@@ -2975,7 +2981,7 @@ float Classify(const aabb_t &aabb, const plane_t &plane)
 
 	float d = plane.normal * aabb_center_word(aabb) + plane.d;
 
-	if (fabsf(d) < r)
+	if (abs32(d) < r)
 	{
 		return 0.0f;
 	}
@@ -2991,13 +2997,13 @@ float Classify(const obb_t &obb, const plane_t &plane)
 	vec3 normal = obb.orientation * plane.normal;
 
 	// maximum extent in direction of plane normal
-	float r = fabsf(obb.size.x * normal.x)
-		+ fabsf(obb.size.y * normal.y)
-		+ fabsf(obb.size.z * normal.z);
+	float r = abs32(obb.size.x * normal.x)
+		+ abs32(obb.size.y * normal.y)
+		+ abs32(obb.size.z * normal.z);
 	// signed distance between box center and plane
 	float d = plane.normal * obb.origin + plane.d;
 	// return signed distance
-	if (fabsf(d) < r)
+	if (abs32(d) < r)
 	{
 		return 0.0f;
 	}
@@ -3302,7 +3308,7 @@ CollisionManifold FindCollisionFeatures(const sphere_t& A, const sphere_t& B)
 	d.normalize();
 	result.colliding = true;
 	result.normal = d;
-	result.depth = fabsf(d.magnitudeSq() - r) * 0.5f;
+	result.depth = abs32(d.magnitudeSq() - r) * 0.5f;
 
 	// dtp - Distance to intersection point
 
@@ -3471,11 +3477,11 @@ std::vector<vec3> ClipEdgesToOBB(const std::vector<line3_t>& edges, const obb_t 
 	result.reserve(edges.size());
 	vec3 intersection;
 
-	std::vector<plane_t>& planes = GetPlanes(obb);
+	std::vector<plane_t> planes = GetPlanes(obb);
 
-	for (int i = 0; i < planes.size(); ++i)
+	for (unsigned int i = 0; i < planes.size(); ++i)
 	{
-		for (int j = 0; j < edges.size(); ++j)
+		for (unsigned int j = 0; j < edges.size(); ++j)
 		{
 			if (ClipToPlane(planes[i], edges[j], &intersection))
 			{
@@ -3536,7 +3542,7 @@ CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
 		vec3(o2[6], o2[7], o2[8])
 	};
 	
-	for (int i = 0; i < 3; ++i)
+	for (unsigned int i = 0; i < 3; ++i)
 	{
 		// Fill out rest of axis
 		test[6 + i * 3 + 0] = vec3::crossproduct(test[i], test[0]);
@@ -3547,7 +3553,7 @@ CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
 	vec3* hitNormal = 0;
 	bool shouldFlip;
 
-	for (int i = 0; i < 15; ++i)
+	for (unsigned int i = 0; i < 15; ++i)
 	{
 		if (test[i].magnitudeSq() < 0.001f)
 		{
@@ -3585,13 +3591,13 @@ CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
 	interval_t i = GetInterval(A, axis);
 	float distance = (i.max - i.min)* 0.5f - result.depth * 0.5f;
 	vec3 pointOnPlane = A.origin + axis * distance;
-	for (int i = result.contacts.size() - 1; i >= 0; --i)
+	for (unsigned int i = result.contacts.size() - 1; i >= 0; --i)
 	{
 		vec3 contact = result.contacts[i];
 		vec3 temp = (pointOnPlane - contact);
 		result.contacts[i] = contact + (axis * (axis * temp));
 
-		for (int j = result.contacts.size() - 1; j >i; --j)
+		for (unsigned int j = result.contacts.size() - 1; j >i; --j)
 		{
 			if ((result.contacts[j] - result.contacts[i]).magnitudeSq() < 0.0001f)
 			{
@@ -3749,7 +3755,7 @@ void ApplyImpulse(RigidbodyVolume& A, RigidbodyVolume& B, const CollisionManifol
 		return;
 	} 
 
-	float e = fminf(A.e, B.e);
+	float e = MIN(A.e, B.e);
 	float numerator = (relativeVel * relativeNorm) * -(1.0f + e);
 	float j = numerator / invMassSum;
 	if (M.contacts.size() > 0.0f && j != 0.0f)
@@ -3780,7 +3786,7 @@ void ApplyImpulse(RigidbodyVolume& A, RigidbodyVolume& B, const CollisionManifol
 		return;
 	}
 
-	float friction = sqrtf(A.friction * B.friction);
+	float friction = newtonSqrt(A.friction * B.friction);
 	if (jt > j * friction)
 	{
 		jt = j * friction;
@@ -3858,7 +3864,7 @@ public:
 class Cloth
 {
 public:
-	void Initialize(int gridSize, float distance, const vec3& position);
+	void Initialize(unsigned int gridSize, float distance, const vec3& position);
 	void SetStructuralSprings(float k, float b);
 	void SetShearSprings(float k, float b);
 	void SetBendSprings(float k, float b);
@@ -3879,7 +3885,7 @@ protected:
 	float clothSize;
 };
 
-void Cloth::Initialize(int gridSize, float distance, const vec3& position)
+void Cloth::Initialize(unsigned int gridSize, float distance, const vec3& position)
 {
 	float k = -1.0f;
 	float b = 0.0f;
@@ -3899,9 +3905,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		gridSize = 3;
 	}
 
-	for (int x = 0; x < gridSize; ++x)
+	for (unsigned int x = 0; x < gridSize; ++x)
 	{
-		for (int z = 0; z < gridSize; ++z)
+		for (unsigned int z = 0; z < gridSize; ++z)
 		{
 			int i = z * gridSize + x;
 			float x_pos = ((float)x + position.x - hs) * distance;
@@ -3914,9 +3920,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		}
 	}
 
-	for (int x = 0; x < gridSize; ++x)
+	for (unsigned int x = 0; x < gridSize; ++x)
 	{
-		for (int z = 0; z < gridSize - 1; ++z)
+		for (unsigned int z = 0; z < gridSize - 1; ++z)
 		{
 			int i = z * gridSize + x;
 			int j = (z + 1) * gridSize + x;
@@ -3932,9 +3938,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		}
 	}
 
-	for (int x = 0; x < gridSize - 1; ++x)
+	for (unsigned int x = 0; x < gridSize - 1; ++x)
 	{
-		for (int z = 0; z < gridSize; ++z)
+		for (unsigned int z = 0; z < gridSize; ++z)
 		{
 			int i = z * gridSize + x;
 			int j = z * gridSize + (x + 1);
@@ -3950,9 +3956,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		}
 	}
 
-	for (int x = 0; x < gridSize - 1; ++x)
+	for (unsigned int x = 0; x < gridSize - 1; ++x)
 	{
-		for (int z = 0; z < gridSize - 1; ++z)
+		for (unsigned int z = 0; z < gridSize - 1; ++z)
 		{
 			int i = z * gridSize + x;
 			int j = (z + 1) * gridSize + (x + 1);
@@ -3968,9 +3974,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		}
 	}
 
-	for (int x = 1; x < gridSize; ++x)
+	for (unsigned int x = 1; x < gridSize; ++x)
 	{
-		for (int z = 0; z < gridSize - 1; ++z)
+		for (unsigned int z = 0; z < gridSize - 1; ++z)
 		{
 			int i = z * gridSize + x;
 			int j = (z + 1) * gridSize + (x - 1);
@@ -3986,9 +3992,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		}
 	}
 
-	for (int x = 0; x < gridSize; ++x)
+	for (unsigned int x = 0; x < gridSize; ++x)
 	{
-		for (int z = 0; z < gridSize - 2; ++z)
+		for (unsigned int z = 0; z < gridSize - 2; ++z)
 		{
 			int i = z * gridSize + x;
 			int j = (z + 2) * gridSize + x;
@@ -4004,9 +4010,9 @@ void Cloth::Initialize(int gridSize, float distance, const vec3& position)
 		}
 	}
 
-	for (int x = 0; x < gridSize - 2; ++x)
+	for (unsigned int x = 0; x < gridSize - 2; ++x)
 	{
-		for (int z = 0; z < gridSize; ++z)
+		for (unsigned int z = 0; z < gridSize; ++z)
 		{
 			int i = z * gridSize + x; 
 			int j = z * gridSize + (x + 2);
@@ -4033,7 +4039,7 @@ void Cloth::SetStructuralSprings(float k, float b)
 
 void Cloth::SetShearSprings(float k, float b)
 {
-	for (int i = 0, size = shear.size(); i < size; ++i)
+	for (unsigned int i = 0, size = shear.size(); i < size; ++i)
 	{
 		shear[i].SetConstants(k, b);
 	}
@@ -4041,7 +4047,7 @@ void Cloth::SetShearSprings(float k, float b)
 
 void Cloth::SetBendSprings(float k, float b)
 {
-	for (int i = 0, size = bend.size(); i < size; ++i)
+	for (unsigned int i = 0, size = bend.size(); i < size; ++i)
 	{
 		bend[i].SetConstants(k, b);
 	}
@@ -4049,7 +4055,7 @@ void Cloth::SetBendSprings(float k, float b)
 
 void Cloth::SetParticleMass(float mass)
 {
-	for (int i = 0, size = verts.size(); i< size; ++i)
+	for (unsigned int i = 0, size = verts.size(); i< size; ++i)
 	{
 		verts[i].mass = mass;
 	}
@@ -4057,7 +4063,7 @@ void Cloth::SetParticleMass(float mass)
 
 void Cloth::ApplyForces()
 {
-	for (int i = 0, size = verts.size(); i< size; ++i)
+	for (unsigned int i = 0, size = verts.size(); i< size; ++i)
 	{
 		verts[i].ApplyForces();
 	}
@@ -4065,7 +4071,7 @@ void Cloth::ApplyForces()
 
 void Cloth::Update(float dt)
 {
-	for (int i = 0, size = verts.size(); i< size; ++i)
+	for (unsigned int i = 0, size = verts.size(); i< size; ++i)
 	{
 		verts[i].Update(dt);
 	}
@@ -4091,7 +4097,7 @@ void Cloth::ApplySpringForces(float dt)
 
 void Cloth::SolveConstraints(const std::vector<obb_t> &constraints)
 {
-	for (int i = 0, size = verts.size(); i< size; ++i)
+	for (unsigned int i = 0, size = verts.size(); i< size; ++i)
 	{
 		verts[i].SolveConstraints(constraints);
 	}
@@ -4099,9 +4105,9 @@ void Cloth::SolveConstraints(const std::vector<obb_t> &constraints)
 
 void Cloth::Render()
 {
-	for (int x = 0; x < clothSize - 1; ++x)
+	for (unsigned int x = 0; x < clothSize - 1; ++x)
 	{
-		for (int z = 0; z < clothSize - 1; ++z)
+		for (unsigned int z = 0; z < clothSize - 1; ++z)
 		{
 			int tl = z * clothSize + x;
 			int bl = (z + 1) * clothSize + x;
