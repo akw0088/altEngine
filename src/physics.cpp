@@ -1257,7 +1257,7 @@ bool Linetest(const mesh_t &mesh, const line3_t &line)
 
 			if (iterator->children != 0)
 			{
-				for (unsigned int i = 8 - 1; i >= 0; --i)
+				for (int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (Linetest(iterator->children[i].bounds, line))
@@ -1308,7 +1308,7 @@ bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
 
 			if (iterator->children != 0)
 			{
-				for (unsigned int i = 8 - 1; i >= 0; --i)
+				for (int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (SphereAABB(sphere, iterator->children[i].bounds))
@@ -1360,7 +1360,7 @@ bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
 
 			if (iterator->children != 0)
 			{
-				for (unsigned int i = 8 - 1; i >= 0; --i)
+				for (int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (AABB_OBB(iterator->children[i].bounds, obb))
@@ -1412,7 +1412,7 @@ bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
 
 			if (iterator->children != 0)
 			{
-				for (unsigned int i = 8 - 1; i >= 0; --i)
+				for (int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (AABBPlane(iterator->children[i].bounds, plane))
@@ -1464,7 +1464,7 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 
 			if (iterator->children != 0)
 			{
-				for (unsigned int i = 8 - 1; i >= 0; --i)
+				for (int i = 8 - 1; i >= 0; --i)
 				{
 					// Only push children whos bounds intersect the test geometry
 					if (TriangleAABB(triangle, iterator->children[i].bounds))
@@ -1519,7 +1519,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 
 			if (iterator->children != 0)
 			{
-				for (unsigned int i = 8 - 1; i >= 0; --i)
+				for (int i = 8 - 1; i >= 0; --i)
 				{
 					raycast_result_t result;
 					Raycast(iterator->children[i].bounds, ray, &result);
@@ -2701,7 +2701,7 @@ bool Camera::IsOrthoNormal()
 
 void Camera::OrthoNormalize()
 {
-	vec3 right = vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]);
+	//vec3 right = vec3(m_matWorld.m[0], m_matWorld.m[1], m_matWorld.m[2]);
 	vec3 up = vec3(m_matWorld.m[5], m_matWorld.m[6], m_matWorld.m[7]);
 	vec3 forward = vec3(m_matWorld.m[9], m_matWorld.m[10], m_matWorld.m[11]);
 
@@ -3591,7 +3591,7 @@ CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
 	interval_t i = GetInterval(A, axis);
 	float distance = (i.max - i.min)* 0.5f - result.depth * 0.5f;
 	vec3 pointOnPlane = A.origin + axis * distance;
-	for (unsigned int i = result.contacts.size() - 1; i >= 0; --i)
+	for (int i = result.contacts.size() - 1; i >= 0; --i)
 	{
 		vec3 contact = result.contacts[i];
 		vec3 temp = (pointOnPlane - contact);
