@@ -8,7 +8,7 @@
 #endif
 
 // Floating point comparison function (epsilon issues)
-#define CMP(x, y) (abs32((x)-(y)) <= 0.00001f * MAX(1.0f, MAX(abs32(x), abs32(y))) )
+#define CMP(x, y) (abs32((x)-(y)) <= (0.00001f * MAX(1.0f, MAX(abs32(x), abs32(y))) ))
 
 
 //=============================================================================
@@ -3067,102 +3067,8 @@ public:
 //=============================================================================
 
 
-#define RIGIDBODY_TYPE_BASE  0
-#define RIGIDBODY_TYPE_PARTICLE 1
-#define RIGIDBODY_TYPE_SPHERE 2
-#define RIGIDBODY_TYPE_BOX  3
+//physics system moved to bottom of file
 
-class PhysicsSystem
-{
-protected:
-	std::vector<CRigidbody*> bodies;
-	std::vector<obb_t> constraints;
-public:    
-	void Update(float deltaTime);
-	void Render();
-	void AddRigidbody(CRigidbody* body);
-	void AddConstraint(const obb_t &constraint);
-	void ClearRigidbodys();
-	void ClearConstraints();
-};
-
-void PhysicsSystem::AddRigidbody(CRigidbody* body)
-{
-	bodies.push_back(body);
-}
-
-void PhysicsSystem::AddConstraint(const obb_t& obb)
-{
-	constraints.push_back(obb); 
-}
-
-void PhysicsSystem::ClearRigidbodys()
-{
-	bodies.clear();
-}
-
-void PhysicsSystem::ClearConstraints()
-{
-	constraints.clear(); 
-}
-
-void PhysicsSystem::Render()
-{
-	static const float rigidbodyDiffuse[] = {
-		200.0f / 255.0f, 0.0f, 0.0f, 0.0f
-	};
-	static const float rigidbodyAmbient[] = {
-		200.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f, 0.0f
-	};
-	static const float constraintDiffuse[] = {
-		0.0f, 200.0f / 255.0f, 0.0f, 0.0f
-	};
-	static const float constraintAmbient[] = {
-		50.0f / 255.0f, 200.0f / 255.0f, 50.0f / 255.0f, 0.0f
-	};
-	static const float zero[] = {
-		0.0f, 0.0f, 0.0f, 0.0f
-	};
-
-	glColor3f(rigidbodyDiffuse[0], rigidbodyDiffuse[1], rigidbodyDiffuse[2]);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, rigidbodyAmbient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, rigidbodyDiffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-
-	for (int i = 0, size = bodies.size(); i < size; ++i)
-	{
-		bodies[i]->Render();
-	}
-
-	glColor3f(constraintDiffuse[0], constraintDiffuse[1], constraintDiffuse[2]);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, constraintAmbient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, constraintDiffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-
-
-	for (int i = 0; i < constraints.size(); ++i)
-	{
-//		::Render(constraints[i]);
-	}
-}
-
-void PhysicsSystem::Update(float deltaTime)
-{
-	for (int i = 0, size = bodies.size(); i < size; ++i)
-	{
-		bodies[i]->ApplyForces();
-	}
-
-	for (int i = 0, size = bodies.size(); i < size; ++i)
-	{
-		bodies[i]->Update(deltaTime);
-	}
-
-	for (int i = 0, size = bodies.size(); i < size; ++i)
-	{
-		bodies[i]->SolveConstraints(constraints);
-	}
-}
 
 
 class Particle
@@ -3640,6 +3546,9 @@ public:
 	float InvMass();
 	void AddLinearImpulse(const vec3& impulse);
 
+	matrix4 InvTensor();
+	virtual void AddRotationalImpulse(const vec3& point, const vec3& impulse);
+
 
 public:
 	int type;
@@ -3651,6 +3560,10 @@ public:
 	float friction;
 	obb_t box;
 	sphere_t sphere;
+
+	vec3 orientation;
+	vec3 angVel;
+	vec3 torques; // Sum torques
 };
 
 void RigidbodyVolume::ApplyForces()
@@ -3672,11 +3585,61 @@ float RigidbodyVolume::InvMass()
 	return 1.0f / mass;
 }
 
+matrix4 RigidbodyVolume::InvTensor()
+{
+	float ix = 0.0f;
+	float iy = 0.0f;
+	float iz = 0.0f;
+	float iw = 0.0f;
+
+	if (mass != 0 && type == RIGIDBODY_TYPE_SPHERE)
+	{
+		float r2 = sphere.radius * sphere.radius;
+		float fraction = (2.0f / 5.0f);
+		ix = r2 * mass * fraction;
+		iy = r2 * mass * fraction;
+		iz = r2 * mass * fraction;
+		iw = 1.0f;
+	}
+	else if (mass != 0 && type == RIGIDBODY_TYPE_BOX)
+	{
+		vec3 size = box.size * 2.0f;
+		float fraction = (1.0f / 12.0f);
+		float x2 = size.x * size.x;
+		float y2 = size.y * size.y;
+		float z2 = size.z * size.z;
+		ix = (y2 + z2) * mass * fraction;
+		iy = (x2 + z2) * mass * fraction;
+		iz = (x2 + y2) * mass * fraction;
+		iw = 1.0f;
+	}
+
+	return matrix4(
+		ix, 0, 0, 0,
+		0, iy, 0, 0,
+		0, 0, iz, 0,
+		0, 0, 0, iw).inverse();
+}
+
+void RigidbodyVolume::AddRotationalImpulse(const vec3& point, const vec3& impulse)
+{
+	vec3 centerOfMass = position;
+	vec3 torque = vec3::crossproduct(point - centerOfMass, impulse);
+
+	vec3 angAccel = vec3(InvTensor() * vec4(torque.x, torque.y, torque.z, 1.0f));
+	angVel = angVel + angAccel;
+}
 
 void RigidbodyVolume::SynchCollisionVolumes()
 {
 	sphere.origin = position;
 	box.origin = position;
+
+	box.orientation = Rotation3x3(
+		RAD2DEG(orientation.x),
+		RAD2DEG(orientation.y),
+		RAD2DEG(orientation.z)
+	);
 }
 
 void RigidbodyVolume::Render()
@@ -3701,6 +3664,123 @@ void RigidbodyVolume::Update(float dt)
 
 	position += velocity * dt;
 	SynchCollisionVolumes();
+
+	if (type == RIGIDBODY_TYPE_BOX)
+	{
+		vec3 angAccel = vec3(InvTensor() * vec4(torques.x, torques.y, torques.z, 1.0f));
+		angVel = angVel + angAccel * dt;
+		angVel = angVel * damping;
+		orientation = orientation + angVel * dt;
+	}
+}
+
+void ApplyImpulse(RigidbodyVolume& A, RigidbodyVolume& B, const CollisionManifold& M, int c)
+{
+	float invMass1 = A.InvMass();
+	float invMass2 = B.InvMass();
+	float invMassSum = invMass1 + invMass2;
+	if (invMassSum == 0.0f)
+	{
+		return; // Both objects have infinate mass!
+	}
+
+	vec3 r1 = M.contacts[c] - A.position;
+	vec3 r2 = M.contacts[c] - B.position;
+
+	matrix4 i1 = A.InvTensor();
+	matrix4 i2 = B.InvTensor();
+
+	// Relative velocity
+	vec3 relativeVel = (B.velocity + vec3::crossproduct(B.angVel, r2)) - (A.velocity + vec3::crossproduct(A.angVel, r1));
+	// Relative collision normal
+	vec3 relativeNorm = M.normal;
+	relativeNorm.normalize();
+
+	if (relativeVel * relativeNorm > 0.0f)
+	{
+		return;
+	}
+
+	float e = MIN(A.e, B.e);
+	float numerator = (relativeVel * relativeNorm) * -(1.0f + e);
+	float d1 = invMassSum;
+	vec3 temp1 = vec3::crossproduct(r1, relativeNorm);
+	vec3 d2 = vec3::crossproduct(vec3(i1 * vec4(temp1.x, temp1.y, temp1.z, 1.0f)), r1);
+	vec3 temp2 = vec3::crossproduct(r2, relativeNorm);
+	vec3 d3 = vec3::crossproduct(vec3(i2 * vec4(temp2.x, temp2.y, temp2.z, 1.0f)), r2);
+
+	float denominator = d1 + relativeNorm * (d2 + d3);
+	float j = (denominator == 0.0f) ? 0.0f : numerator / denominator;
+	if (M.contacts.size() > 0.0f && j != 0.0f)
+	{
+		j /= (float)M.contacts.size();
+	}
+
+	vec3 impulse = relativeNorm * j;
+	A.velocity = A.velocity - impulse * invMass1;
+	B.velocity = B.velocity + impulse * invMass2;
+
+	temp1 = vec3::crossproduct(r1, impulse);
+	temp2 = vec3::crossproduct(r2, impulse);
+	A.angVel = A.angVel - i1 * vec4(temp1.x, temp1.y, temp1.z, 1.0f);
+	B.angVel = B.angVel + i2 * vec4(temp2.x, temp2.y, temp2.z, 1.0f);
+
+	vec3 t = relativeVel - (relativeNorm * (relativeVel * relativeNorm));
+
+	if (CMP(t.magnitudeSq(), 0.0f))
+	{
+		return;
+	}
+	t.normalize();
+
+	numerator = -(relativeVel * t);
+	d1 = invMassSum;
+
+	temp1 = vec3::crossproduct(r1, t);
+	temp2 = vec3::crossproduct(r2, t);
+
+	d2 = vec3::crossproduct(vec3(i1 * vec4(temp1.x, temp1.y, temp1.z, 1.0f)), r1);
+	d3 = vec3::crossproduct(vec3(i2 * vec4(temp2.x, temp2.y, temp2.z, 1.0f)), r2);
+	denominator = d1 + t * (d2 + d3);
+
+	if (denominator == 0.0f)
+	{
+		return;
+	}
+
+	float jt = numerator / denominator;
+	if (M.contacts.size() > 0.0f &&jt != 0.0f)
+	{
+		jt /= (float)M.contacts.size();
+	}
+
+	if (CMP(jt, 0.0f))
+	{
+		return;
+	}
+
+	float friction = newtonSqrt(A.friction * B.friction);
+	if (jt > j * friction)
+	{
+		jt = j * friction;
+	}
+	else if (jt < -j * friction)
+	{
+		jt = -j * friction;
+	}
+
+	vec3 tangentImpuse = t * jt;
+	A.velocity = A.velocity - tangentImpuse * invMass1;
+	B.velocity = B.velocity + tangentImpuse * invMass2;
+
+	temp1 = vec3::crossproduct(r1, tangentImpuse);
+	temp2 = vec3::crossproduct(r2, tangentImpuse);
+
+
+	A.angVel = A.angVel - i1 * vec4(temp1.x, temp1.y, temp1.z, 1.0f);
+	B.angVel = B.angVel + i2 * vec4(temp2.x, temp2.y, temp2.z, 1.0f);
+
+
 }
 
 CollisionManifold FindCollisionFeatures(RigidbodyVolume& ra, RigidbodyVolume& rb)
@@ -3733,73 +3813,6 @@ CollisionManifold FindCollisionFeatures(RigidbodyVolume& ra, RigidbodyVolume& rb
 	return result;
 }
 
-void ApplyImpulse(RigidbodyVolume& A, RigidbodyVolume& B, const CollisionManifold& M, int c)
-{
-	// Linear Velocity
-	float invMass1 = A.InvMass();
-	float invMass2 = B.InvMass();
-	float invMassSum = invMass1 + invMass2;
-	if (invMassSum == 0.0f)
-	{
-		return;
-	}
-
-	// Relative velocity
-	vec3 relativeVel = B.velocity - A.velocity;
-	// Relative collision normal
-	vec3 relativeNorm = M.normal;
-	relativeNorm.normalize();
-	// Moving away from each other? Do nothing!
-	if (relativeVel * relativeNorm > 0.0f)
-	{
-		return;
-	} 
-
-	float e = MIN(A.e, B.e);
-	float numerator = (relativeVel * relativeNorm) * -(1.0f + e);
-	float j = numerator / invMassSum;
-	if (M.contacts.size() > 0.0f && j != 0.0f)
-	{
-		j /= (float)M.contacts.size();
-	}
-
-	vec3 impulse = relativeNorm * j;
-	A.velocity = A.velocity - impulse *invMass1;
-	B.velocity = B.velocity + impulse *invMass2;
-
-	// Friction   
-	vec3 t = relativeVel - relativeNorm * (relativeVel * relativeNorm);
-	if (CMP(t.magnitudeSq(), 0.0f))
-	{
-		return;
-	}
-	t.normalize();
-
-	numerator = -(relativeVel * t);
-	float jt = numerator / invMassSum;
-	if (M.contacts.size() > 0.0f &&jt != 0.0f)
-	{
-		jt /= (float)M.contacts.size();
-	}
-	if (CMP(jt, 0.0f))
-	{
-		return;
-	}
-
-	float friction = newtonSqrt(A.friction * B.friction);
-	if (jt > j * friction)
-	{
-		jt = j * friction;
-	}
-	else if (jt < -j * friction)
-	{
-		jt = -j * friction;
-	}
-
-	vec3 tangentImpuse = t * jt;
-	A.velocity = A.velocity - tangentImpuse *  invMass1;
-	B.velocity = B.velocity + tangentImpuse *  invMass2;
-}
 
 //=============================================================================
 //	Springs and Joints
@@ -4178,3 +4191,183 @@ void DistanceJoint::SolveConstraints(const std::vector<obb_t>& constraints)
 
 
 
+
+class PhysicsSystem
+{
+protected:
+	std::vector<CRigidbody*> bodies;
+	std::vector<obb_t> constraints;
+	std::vector<CRigidbody*> colliders1;
+	std::vector<CRigidbody*> colliders2;
+	std::vector<CollisionManifold> results;
+
+	float LinearProjectionPercent;
+	float PenetrationSlack;
+	// [1 to 20], Larger = more accurate
+	int ImpulseIteration;
+public:
+	PhysicsSystem();
+	void Update(float deltaTime);
+	void Render();
+	void AddRigidbody(CRigidbody* body);
+	void AddConstraint(const obb_t &constraint);
+	void ClearRigidbodys();
+	void ClearConstraints();
+};
+
+
+
+PhysicsSystem::PhysicsSystem()
+{
+	LinearProjectionPercent = 0.45f;
+	PenetrationSlack = 0.01f;
+	ImpulseIteration = 5;
+	colliders1.reserve(100);
+	colliders2.reserve(100);
+	results.reserve(100);
+}
+
+void PhysicsSystem::AddRigidbody(CRigidbody* body)
+{
+	bodies.push_back(body);
+}
+
+void PhysicsSystem::AddConstraint(const obb_t& obb)
+{
+	constraints.push_back(obb);
+}
+
+void PhysicsSystem::ClearRigidbodys()
+{
+	bodies.clear();
+}
+
+void PhysicsSystem::ClearConstraints()
+{
+	constraints.clear();
+}
+
+void PhysicsSystem::Render()
+{
+	static const float rigidbodyDiffuse[] = {
+		200.0f / 255.0f, 0.0f, 0.0f, 0.0f
+	};
+	static const float rigidbodyAmbient[] = {
+		200.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f, 0.0f
+	};
+	static const float constraintDiffuse[] = {
+		0.0f, 200.0f / 255.0f, 0.0f, 0.0f
+	};
+	static const float constraintAmbient[] = {
+		50.0f / 255.0f, 200.0f / 255.0f, 50.0f / 255.0f, 0.0f
+	};
+	static const float zero[] = {
+		0.0f, 0.0f, 0.0f, 0.0f
+	};
+
+	glColor3f(rigidbodyDiffuse[0], rigidbodyDiffuse[1], rigidbodyDiffuse[2]);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, rigidbodyAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, rigidbodyDiffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+
+	for (int i = 0, size = bodies.size(); i < size; ++i)
+	{
+		bodies[i]->Render();
+	}
+
+	glColor3f(constraintDiffuse[0], constraintDiffuse[1], constraintDiffuse[2]);
+	glLightfv(GL_LIGHT0, GL_AMBIENT, constraintAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, constraintDiffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+
+
+	for (int i = 0; i < constraints.size(); ++i)
+	{
+		//		::Render(constraints[i]);
+	}
+}
+
+void PhysicsSystem::Update(float deltaTime)
+{
+	colliders1.clear();
+	colliders2.clear();
+	results.clear();
+
+	for (int i = 0, size = bodies.size(); i < size; ++i)
+	{
+		for (int j = i; j < size; ++j)
+		{
+			if (i == j)
+			{
+				continue;
+			}
+			CollisionManifold result;
+			ResetCollisionManifold(&result);
+
+			if (1 /*bodies[i]->HasVolume() && bodies[j]->HasVolume()*/)
+			{
+				RigidbodyVolume* m1 = (RigidbodyVolume*)bodies[i];
+				RigidbodyVolume* m2 = (RigidbodyVolume*)bodies[j];
+				result = FindCollisionFeatures(*m1, *m2);
+			}
+
+			if (result.colliding)
+			{
+				colliders1.push_back(bodies[i]);
+				colliders2.push_back(bodies[j]);
+				results.push_back(result);
+			}
+		}
+
+		for (int i = 0, size = bodies.size(); i < size; ++i)
+		{
+			bodies[i]->ApplyForces();
+		}
+
+		for (int k = 0; k < ImpulseIteration; ++k)
+		{
+			for (int i = 0; i < results.size(); ++i)
+			{
+				int jSize = results[i].contacts.size();
+				for (int j = 0; j < jSize; ++j)
+				{
+					RigidbodyVolume* m1 = (RigidbodyVolume*)colliders1[i];
+					RigidbodyVolume* m2 = (RigidbodyVolume*)colliders2[i];
+					ApplyImpulse(*m1, *m2, results[i], j);
+				}
+			}
+		}
+
+		for (int i = 0, size = bodies.size(); i < size; ++i)
+		{
+			bodies[i]->Update(deltaTime);
+		}
+
+		for (int i = 0, size = results.size(); i < size; ++i)
+		{
+			RigidbodyVolume* m1 = (RigidbodyVolume*)colliders1[i];
+			RigidbodyVolume* m2 = (RigidbodyVolume*)colliders2[i];
+			float totalMass = m1->InvMass() + m2->InvMass();
+
+			if (totalMass == 0.0f)
+			{
+				continue;
+			}
+
+			float depth = MAX(results[i].depth - PenetrationSlack, 0.0f);
+			float scalar = depth / totalMass;
+			vec3 correction = results[i].normal * scalar * LinearProjectionPercent;
+
+			m1->position = m1->position - correction * m1->InvMass();
+			m2->position = m2->position + correction * m2->InvMass();
+
+			m1->SynchCollisionVolumes();
+			m2->SynchCollisionVolumes();
+		}
+
+		for (int i = 0, size = bodies.size(); i < size; ++i)
+		{
+			bodies[i]->SolveConstraints(constraints);
+		}
+	}
+}

@@ -2,6 +2,12 @@
 #define RAY_H
 #include "include.h"
 
+#define RIGIDBODY_TYPE_BASE  0
+#define RIGIDBODY_TYPE_PARTICLE 1
+#define RIGIDBODY_TYPE_SPHERE 2
+#define RIGIDBODY_TYPE_BOX  3
+
+
 typedef struct
 {
 	vec2 a;
