@@ -1698,7 +1698,7 @@ void AccelerateMesh(mesh_t &mesh)
 	mesh.accelerator->triangles =
 		new int[mesh.numTriangles];
 
-	for (int i = 0; i < mesh.numTriangles; ++i)
+	for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 	{
 		mesh.accelerator->triangles[i] = i;
 	}
@@ -1711,7 +1711,7 @@ bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
 		{
 			// The TirangleAABB test here would change
 			// if we where testing a shape other than AABB
@@ -1731,7 +1731,7 @@ bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 			toProcess.erase(toProcess.begin());
 			if (iterator->numTriangles >= 0)
 			{
-				for (int i = 0; i<iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i<iterator->numTriangles; ++i)
 				{
 					// The TirangleAABB test here would change
 					// if we where testing a shape other than AABB
@@ -1890,7 +1890,7 @@ public:
 		{
 			vec3 min = mesh->vertices[0];
 			vec3 max = mesh->vertices[0];
-			for (int i = 1; i< mesh->numTriangles * 3; ++i)
+			for (unsigned int i = 1; i< mesh->numTriangles * 3; ++i)
 			{
 				min.x = MIN(mesh->vertices[i].x, min.x);
 				min.y = MIN(mesh->vertices[i].y, min.y);
@@ -3503,7 +3503,7 @@ CollisionManifold FindCollisionFeatures(const obb_t &A, const obb_t &B)
 		vec3 temp = (pointOnPlane - contact);
 		result.contacts[i] = contact + (axis * (axis * temp));
 
-		for (unsigned int j = result.contacts.size() - 1; j >i; --j)
+		for (int j = result.contacts.size() - 1; j >i; --j)
 		{
 			if ((result.contacts[j] - result.contacts[i]).magnitudeSq() < 0.0001f)
 			{
@@ -4281,7 +4281,7 @@ void PhysicsSystem::Render()
 	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
 
 
-	for (int i = 0; i < constraints.size(); ++i)
+	for (unsigned int i = 0; i < constraints.size(); ++i)
 	{
 		//		::Render(constraints[i]);
 	}
@@ -4326,7 +4326,7 @@ void PhysicsSystem::Update(float deltaTime)
 
 		for (int k = 0; k < ImpulseIteration; ++k)
 		{
-			for (int i = 0; i < results.size(); ++i)
+			for (unsigned int i = 0; i < results.size(); ++i)
 			{
 				int jSize = results[i].contacts.size();
 				for (int j = 0; j < jSize; ++j)
