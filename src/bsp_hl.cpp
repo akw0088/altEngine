@@ -48,8 +48,15 @@ int HLBsp::load(Graphics &gfx, char *map)
 	data.SurfEdge = (int *)&pBsp[tBsp->lumps[LMP_SURFEDGES].offset];
 	data.Model = (dmodel_t *)&pBsp[tBsp->lumps[LMP_MODELS].offset];
 	//lump 15 missing LMP_WORLDLIGHTS
-	data.LeafFace = (unsigned short int*)&pBsp[tBsp->lumps[LMP_LEAFFACES].offset];
+	data.LeafFace = (unsigned short int *)&pBsp[tBsp->lumps[LMP_LEAFFACES].offset];
+	data.LeafBrush = (unsigned short int *)&pBsp[tBsp->lumps[LMP_LEAFBRUSHES].offset];
+	data.Brush = (dbrush_t *)&pBsp[tBsp->lumps[LMP_BRUSHES].offset];
+	data.BrushSide = (dbrushside_t *)&pBsp[tBsp->lumps[LMP_BRUSHSIDES].offset];
 	// huge gap
+	//LMP_VERTNORMALS Face plane normals 
+	//LMP_VERTNORMALINDICES Face plane normal index array 
+	//LUMP_PAKFILE Embedded uncompressed Zip-format file 
+
 	data.Game = (dgamelump_t *)&pBsp[tBsp->lumps[LMP_GAME_LUMP].offset];
 	
 
@@ -67,6 +74,9 @@ int HLBsp::load(Graphics &gfx, char *map)
 	data.num_surfedges = tBsp->lumps[LMP_SURFEDGES].length / sizeof(int);
 	data.num_model = tBsp->lumps[LMP_MODELS].length / sizeof(dmodel_t);
 	data.num_LeafFaces = tBsp->lumps[LMP_LEAFFACES].length / sizeof(unsigned short int);
+	data.num_LeafBrush = tBsp->lumps[LMP_LEAFBRUSHES].length / sizeof(unsigned short int);
+	data.num_Brush = tBsp->lumps[LMP_BRUSHES].length / sizeof(dbrush_t);
+	data.num_BrushSide = tBsp->lumps[LMP_BRUSHSIDES].length / sizeof(dbrushside_t);
 	data.num_game = tBsp->lumps[LMP_GAME_LUMP].length / sizeof(dgamelump_t);
 
 	vertex_t *map_vertex = new vertex_t[data.num_verts];

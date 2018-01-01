@@ -405,6 +405,9 @@ typedef struct
 	ColorRGBExp32		*Lightmap;
 	char				*Entity;
 	dgamelump_t			*Game;
+	unsigned short *LeafBrush;
+	dbrush_t *Brush;
+	dbrushside_t *BrushSide;
 
 	unsigned int	num_nodes;
 	unsigned int	num_vis;
@@ -421,6 +424,9 @@ typedef struct
 	unsigned int	num_lightmap;
 	unsigned int	num_entity;
 	unsigned int	num_game;
+	unsigned int 	num_LeafBrush;
+	unsigned int 	num_Brush;
+	unsigned int 	num_BrushSide;
 } hl_bsp_t;
 
 #define HL_CONTENTS_EMPTY 	0 	//No contents
