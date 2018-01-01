@@ -1,5 +1,10 @@
 #include "include.h"
 
+HLBsp::HLBsp()
+{
+	loaded = false;
+}
+
 int HLBsp::load(Graphics &gfx, char *file)
 {
 	int size;
@@ -47,13 +52,16 @@ int HLBsp::load(Graphics &gfx, char *file)
 
 	vertex_t *map_vertex = new vertex_t[data.num_verts];
 
+
+	change_axis();
+
 	// generate index array, isnt using PVS
 	render(vec3());
 
 
 	for (int i = 0; i < data.num_verts; i++)
 	{
-		map_vertex[i].position = data.Vert[i];
+		map_vertex[i].position = data.Vert[i];// +vec3(-11584, -5088, 2050); //offset for dust2
 		map_vertex[i].texCoord0 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
 		map_vertex[i].texCoord1 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
 		map_vertex[i].tangent = vec4();
@@ -91,6 +99,8 @@ int HLBsp::load(Graphics &gfx, char *file)
 	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_verts);
 	map_index_vbo = gfx.CreateIndexBuffer(index.data(), index.size());
 
+	loaded = true;
+
 	return 0;
 }
 
@@ -98,7 +108,7 @@ void HLBsp::temp_render(Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
-	gfx.DrawArrayTriStrip(0, 0, index.size(), data.num_verts);
+	gfx.DrawArrayLine(0, 0, index.size(), data.num_verts);
 
 }
 
@@ -154,23 +164,24 @@ void HLBsp::render_leaf(int leaf)
 
 void HLBsp::render_face(int face)
 {
-	int edge0, edge1, edge2;
+	int edge0;
+	int edge1;
+	int edge2;
+	int edge3;
 
+	// usual case is four edges making a quad
 	for (int i = 0; i < data.Face[face].numedges; i++)
 	{
 		int edge_index = abs32(data.SurfEdge[data.Face[face].firstedge + i]);
 
-		if (i == 0)
+		if (data.Face[face].numedges != 4)
 		{
-			edge0 = data.Edge[edge_index].v[0];
+			debugf("face has %d edges!", data.Face[face].numedges);
 		}
-
-		edge1 = data.Edge[edge_index].v[0];
-		edge2 = data.Edge[edge_index].v[1];
-
+		edge0 = data.Edge[edge_index].v[0];
+		edge1 = data.Edge[edge_index].v[1];
 		index.push_back(edge0);
 		index.push_back(edge1);
-		index.push_back(edge2);
 	}
 }
 
@@ -204,5 +215,58 @@ bool HLBsp::point_AABB(vec3 pos, short min[3], short max[3])
 	else
 	{
 		return false;
+	}
+}
+
+
+/*
+Converts axis from quake3 to opengl format
+*/
+void HLBsp::change_axis()
+{
+	for (unsigned int i = 0; i < data.num_verts; i++)
+	{
+		vec3 *vert = &data.Vert[i];
+		float temp;
+
+		temp = vert->y;
+		vert->y = vert->z;
+		vert->z = -temp;
+	}
+
+
+	//	data.Plane[plane_index].normal
+	for (unsigned int i = 0; i < data.num_planes; i++)
+	{
+		dplane_t *plane = &data.Plane[i];
+		float	temp;
+
+		temp = plane->normal.y;
+		plane->normal.y = plane->normal.z;
+		plane->normal.z = -temp;
+
+		//		plane->d *= (1.0f / UNITS_TO_METERS);
+	}
+
+	for (unsigned int i = 0; i < data.num_leafs; i++)
+	{
+		int temp = data.Leaf[i].mins[1];
+		data.Leaf[i].mins[1] = data.Leaf[i].mins[2];
+		data.Leaf[i].mins[2] = -temp;
+
+		temp = data.Leaf[i].maxs[1];
+		data.Leaf[i].maxs[1] = data.Leaf[i].maxs[2];
+		data.Leaf[i].maxs[2] = -temp;
+	}
+
+	for (unsigned int i = 0; i < data.num_nodes; i++)
+	{
+		int temp = data.Node[i].mins[1];
+		data.Node[i].mins[1] = data.Node[i].mins[2];
+		data.Node[i].mins[2] = -temp;
+
+		temp = data.Node[i].maxs[1];
+		data.Node[i].maxs[1] = data.Node[i].maxs[2];
+		data.Node[i].maxs[2] = -temp;
 	}
 }
