@@ -5,15 +5,15 @@ HLBsp::HLBsp()
 	loaded = false;
 }
 
-int HLBsp::load(Graphics &gfx, char *file)
+int HLBsp::load(Graphics &gfx, char *map)
 {
 	int size;
-	dheader_t *tBsp = (dheader_t *)get_file(file, &size);
+	dheader_t *tBsp = (dheader_t *)get_file(map, &size);
 	char *pBsp = (char *)tBsp;
 
 	if (pBsp == NULL)
 	{
-		debugf("Failed to open %s", file);
+		debugf("Failed to open %s", map);
 		return -1;
 	}
 
@@ -32,26 +32,57 @@ int HLBsp::load(Graphics &gfx, char *file)
 
 	
 	data.header = (dheader_t *)tBsp;
+	data.Entity = (char *)&pBsp[tBsp->lumps[LMP_ENTITIES].offset];
+	data.Plane = (dplane_t *)&pBsp[tBsp->lumps[LMP_PLANES].offset];
+	data.TexData = (dtexdata_t *)&pBsp[tBsp->lumps[LMP_TEXDATA].offset];
+	data.Vert = (vec3 *)&pBsp[tBsp->lumps[LMP_VERTICES].offset];
+	data.Vis = (dvis_t *)&pBsp[tBsp->lumps[LMP_VISIBILITY].offset];
 	data.Node = (dnode_t *)&pBsp[tBsp->lumps[LMP_NODES].offset];
-	data.Leaf = (dleaf_t *)&pBsp[tBsp->lumps[LMP_LEAFS].offset];
+	data.TexInfo = (dtexinfo_t *)&pBsp[tBsp->lumps[LMP_TEXINFO].offset];
 	data.Face = (dface_t *)&pBsp[tBsp->lumps[LMP_FACES].offset];
+	data.Lightmap = (ColorRGBExp32 *)&pBsp[tBsp->lumps[LMP_LIGHTING].offset];
+	// lump 9 missing LMP_OCCLUSION
+	data.Leaf = (dleaf_t *)&pBsp[tBsp->lumps[LMP_LEAFS].offset];
+	//lump 11 missing LMP_FACEIDS
 	data.Edge = (dedge_t *)&pBsp[tBsp->lumps[LMP_EDGES].offset];
 	data.SurfEdge = (int *)&pBsp[tBsp->lumps[LMP_SURFEDGES].offset];
+	data.Model = (dmodel_t *)&pBsp[tBsp->lumps[LMP_MODELS].offset];
+	//lump 15 missing LMP_WORLDLIGHTS
 	data.LeafFace = (unsigned short int*)&pBsp[tBsp->lumps[LMP_LEAFFACES].offset];
-	data.Vert = (vec3 *)&pBsp[tBsp->lumps[LMP_VERTICES].offset];
-	data.Plane = (dplane_t *)&pBsp[tBsp->lumps[LMP_PLANES].offset];
+	// huge gap
+	data.Game = (dgamelump_t *)&pBsp[tBsp->lumps[LMP_GAME_LUMP].offset];
+	
 
+	data.num_entity = tBsp->lumps[LMP_ENTITIES].length;;
+	data.num_planes = tBsp->lumps[LMP_PLANES].length / sizeof(dplane_t);
+	data.num_texdata = tBsp->lumps[LMP_TEXDATA].length / sizeof(dtexdata_t);
+	data.num_verts = tBsp->lumps[LMP_VERTICES].length / sizeof(vec3);
+	data.num_vis = tBsp->lumps[LMP_VERTICES].length / sizeof(dvis_t);
 	data.num_nodes = tBsp->lumps[LMP_NODES].length / sizeof(dnode_t);
-	data.num_leafs = tBsp->lumps[LMP_LEAFS].offset / sizeof(dleaf_t);
+	data.num_texinfo = tBsp->lumps[LMP_TEXINFO].length / sizeof(dtexinfo_t);
 	data.num_faces = tBsp->lumps[LMP_FACES].length / sizeof(dface_t);
+	data.num_lightmap = tBsp->lumps[LMP_MODELS].length / sizeof(ColorRGBExp32);
+	data.num_leafs = tBsp->lumps[LMP_LEAFS].offset / sizeof(dleaf_t);
 	data.num_edges = tBsp->lumps[LMP_EDGES].length / sizeof(dedge_t);
 	data.num_surfedges = tBsp->lumps[LMP_SURFEDGES].length / sizeof(int);
+	data.num_model = tBsp->lumps[LMP_MODELS].length / sizeof(dmodel_t);
 	data.num_LeafFaces = tBsp->lumps[LMP_LEAFFACES].length / sizeof(unsigned short int);
-	data.num_verts = tBsp->lumps[LMP_VERTICES].length / sizeof(vec3);
-	data.num_planes = tBsp->lumps[LMP_PLANES].length / sizeof(dplane_t);
+	data.num_game = tBsp->lumps[LMP_GAME_LUMP].length / sizeof(dgamelump_t);
 
 	vertex_t *map_vertex = new vertex_t[data.num_verts];
 
+	// write entity string to file
+	char name[80];
+	sprintf(name, "%s", map);
+	strcat(name, ".ent");
+	write_file(name, data.Entity, data.num_entity);
+	name[strlen(name) - 4] = '\0';
+	char *pname = strstr(name, "maps/");
+
+	if (pname)
+	{
+		sprintf(map_name, "%s", pname + 5);
+	}
 
 	change_axis();
 

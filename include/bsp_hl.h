@@ -13,6 +13,7 @@ public:
 
 
 	bool loaded;
+	char map_name[128];
 
 private:
 	void render_leaf (int leaf);

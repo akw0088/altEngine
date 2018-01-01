@@ -186,6 +186,21 @@ typedef struct
 
 typedef struct
 {
+	vec3	mins, maxs;		// bounding box
+	vec3	origin;			// for sounds or lights
+	int	headnode;		// index into node array
+	int	firstface, numfaces;	// index into face array
+} dmodel_t;
+
+typedef struct 
+{
+	byte r, g, b;
+	signed char exponent;
+} ColorRGBExp32;
+
+
+typedef struct
+{
 	vec3 reflectivity;		// RGB reflectivity
 	int	nameStringTableID;	// index into TexdataStringTable
 	int	width, height;		// source image
@@ -216,7 +231,8 @@ typedef struct
 } dgamelump_t;
 
 
-typedef struct {
+typedef struct
+{
 	int lumpCount;
 	dgamelump_t gamelump[10];
 } dgamelumpheader_t;
@@ -228,11 +244,11 @@ typedef struct
 	char	name[128];	// model name
 }StaticPropDictLump_t;
 
-struct StaticPropLeafLump_t
+typedef struct
 {
 	int leafEntries;
 	unsigned short	leaf[10];
-};
+} StaticPropLeafLump_t;
 
 typedef struct
 {
@@ -315,12 +331,6 @@ struct doverlay_t
 	vec3		BasisNormal;
 };
 
-struct ColorRGBExp32
-{
-	byte r, g, b;
-	signed char exponent;
-};
-
 struct dleafambientlighting_t
 {
 //	CompressedLightCube	cube;
@@ -381,6 +391,7 @@ typedef struct
 {
 	dheader_t			*header;
 	dnode_t				*Node;
+	dvis_t				*Vis;
 	dleaf_t				*Leaf;
 	dface_t				*Face;
 	dedge_t				*Edge;
@@ -388,8 +399,15 @@ typedef struct
 	unsigned short int	*LeafFace;
 	vec3				*Vert;
 	dplane_t			*Plane;
+	dmodel_t			*Model;
+	dtexinfo_t			*TexInfo;
+	dtexdata_t			*TexData;
+	ColorRGBExp32		*Lightmap;
+	char				*Entity;
+	dgamelump_t			*Game;
 
 	unsigned int	num_nodes;
+	unsigned int	num_vis;
 	unsigned int	num_leafs;
 	unsigned int	num_faces;
 	unsigned int	num_edges;
@@ -397,6 +415,12 @@ typedef struct
 	unsigned int	num_LeafFaces;
 	unsigned int	num_verts;
 	unsigned int	num_planes;
+	unsigned int	num_model;
+	unsigned int	num_texinfo;
+	unsigned int	num_texdata;
+	unsigned int	num_lightmap;
+	unsigned int	num_entity;
+	unsigned int	num_game;
 } hl_bsp_t;
 
 #define HL_CONTENTS_EMPTY 	0 	//No contents
