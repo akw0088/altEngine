@@ -108,7 +108,7 @@ void HLBsp::temp_render(Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
-	gfx.DrawArrayLine(0, 0, index.size(), data.num_verts);
+	gfx.DrawArrayTri(0, 0, index.size(), data.num_verts);
 
 }
 
@@ -164,6 +164,7 @@ void HLBsp::render_leaf(int leaf)
 
 void HLBsp::render_face(int face)
 {
+	int shared;
 	int edge0;
 	int edge1;
 	int edge2;
@@ -172,25 +173,32 @@ void HLBsp::render_face(int face)
 	// usual case is four edges making a quad
 	for (int i = 0; i < data.Face[face].numedges; i++)
 	{
-		int edge_index = abs32(data.SurfEdge[data.Face[face].firstedge + i]);
+		int edge_index = data.SurfEdge[data.Face[face].firstedge + i];
+		dedge_t edge = data.Edge[abs32(edge_index)];
+		bool reverse = (edge_index >= 0);
 
-		if (data.Face[face].numedges != 4)
+		if (i == 0)
 		{
-			debugf("face has %d edges!", data.Face[face].numedges);
-		}
-
-		edge0 = data.Edge[edge_index].v[0];
-		edge1 = data.Edge[edge_index].v[1];
-
-		if (data.SurfEdge[data.Face[face].firstedge + i] > 0)
-		{
-			index.push_back(edge0);
-			index.push_back(edge1);
+			edge0 = edge.v[reverse ? 0 : 1];
+			shared = edge.v[reverse ? 1 : 0];
 		}
 		else
 		{
-			index.push_back(edge1);
+			shared = edge.v[reverse ? 0 : 1];
+			if (shared == edge0)
+				continue;
+			else
+				edge1 = shared;
+
+			shared = edge.v[reverse ? 1 : 0];
+			if (shared == edge0)
+				continue;
+			else
+				edge2 = shared;
+
 			index.push_back(edge0);
+			index.push_back(edge1);
+			index.push_back(edge2);
 		}
 	}
 }

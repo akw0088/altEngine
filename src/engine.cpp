@@ -691,10 +691,6 @@ void Engine::load(char *level)
 		global.Select();
 		global.Params(mvp, 0);
 		gfx.clear_color(vec3(0.5f, 0.5f, 0.5f));
-		gfx.SelectTexture(0, no_tex);
-		gfx.SelectTexture(1, no_tex);
-		gfx.SelectTexture(2, no_tex);
-		gfx.SelectTexture(3, no_tex);
 		if (hlmap.load(gfx, "media/maps/de_dust2.bsp") != 0)
 		{
 			//de_dust2.bsp
@@ -1021,6 +1017,10 @@ void Engine::render(double last_frametime)
 	{
 		matrix4 transformation;
 
+		gfx.SelectTexture(0, no_tex);
+		gfx.SelectTexture(1, no_tex);
+		gfx.SelectTexture(2, no_tex);
+		gfx.SelectTexture(3, no_tex);
 		camera_frame.set(transformation);
 		matrix4 mvp = transformation * projection;
 		global.Select();
