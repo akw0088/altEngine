@@ -79,7 +79,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 	data.num_BrushSide = tBsp->lumps[LMP_BRUSHSIDES].length / sizeof(dbrushside_t);
 	data.num_game = tBsp->lumps[LMP_GAME_LUMP].length / sizeof(dgamelump_t);
 
-	vertex_t *map_vertex = new vertex_t[data.num_verts];
+	map_vertex = new vertex_t[data.num_verts];
+	lightmap_object = new int[8192];
 
 	// write entity string to file
 	char name[80];
@@ -96,6 +97,9 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 	change_axis();
 
+	load_lightmap(gfx);
+
+
 	// generate index array, isnt using PVS
 	render(vec3());
 
@@ -103,8 +107,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 	for (int i = 0; i < data.num_verts; i++)
 	{
 		map_vertex[i].position = data.Vert[i];// +vec3(-11584, -5088, 2050); //offset for dust2
-		map_vertex[i].texCoord0 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
-		map_vertex[i].texCoord1 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
+//		map_vertex[i].texCoord0 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
+//		map_vertex[i].texCoord1 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
 		map_vertex[i].tangent = vec4();
 	}
 
@@ -149,6 +153,7 @@ void HLBsp::temp_render(Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
+	gfx.SelectTexture(0, lightmap_object[0]);
 	gfx.DrawArrayTri(0, 0, index.size(), data.num_verts);
 
 }
@@ -327,5 +332,106 @@ void HLBsp::change_axis()
 		temp = data.Node[i].maxs[1];
 		data.Node[i].maxs[1] = data.Node[i].maxs[2];
 		data.Node[i].maxs[2] = -temp;
+	}
+}
+
+
+
+void HLBsp::load_lightmap(Graphics &gfx)
+{
+	for (int i = 0; i < data.num_faces; i++)
+	{
+		vec2 min(8192, 8192);
+		vec2 max(-8192, -8192);
+
+		if (data.Face[i].styles[0] != 0 || (signed)data.Face[i].lightofs == -1)
+		{
+			continue;
+		}
+
+		dtexinfo_t *info = &data.TexInfo[data.Face[i].texinfo];
+
+
+		int w = data.Face[i].LightmapTextureSizeInLuxels[0] + 1;
+		int h = data.Face[i].LightmapTextureSizeInLuxels[1] + 1;
+		lightmap_object[i] = gfx.LoadTexture(w, h, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
+
+
+// calculate texture coordinates: https://www.gamedev.net/forums/topic/538713-bspv38-quake-2-bsp-loader-lightmap-problem/
+#if 1
+		//go through every vertex of the face, and calculate their UV co-ordinates 
+		for (int j = 0; j < data.Face[i].numedges; j++)
+		{
+			vec3 v;
+			int edge_index = data.SurfEdge[data.Face[i].firstedge + j];
+
+			if (edge_index >= 0)
+				v = data.Vert[data.Edge[edge_index].v[0]];
+			else
+				v = data.Vert[data.Edge[-edge_index].v[1]];
+
+			float x = info->lightmapVecs[0][0] * v.x + info->lightmapVecs[0][1] * v.y + info->lightmapVecs[0][2] * v.z + info->lightmapVecs[0][3];
+			float y = info->lightmapVecs[1][0] * v.x + info->lightmapVecs[1][1] * v.y + info->lightmapVecs[1][2] * v.z + info->lightmapVecs[1][3];
+
+			if (x < min.x)
+				min.x = x;
+			if (x > max.x)
+				max.x = x;
+
+			if (y < min.y)
+				min.y = y;
+			if (y > max.y)
+				max.y = y;
+		}
+
+		int width = (int)(ceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
+		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
+
+
+		//generate a texture coordinate that's in the range 0.0 to 1.0
+		vec2 mid_poly(  (min.x + max.x) * 0.5f,
+						(min.y + max.y) * 0.5f );
+
+		vec2 mid_tex(   width * 0.5f,
+						height * 0.5f );
+
+		for (int j = 0; j < data.Face[i].numedges; ++j)
+		{
+			vec3 v;
+			int edge_index = data.SurfEdge[data.Face[i].firstedge + j];
+
+			if (edge_index >= 0)
+				v = data.Vert[data.Edge[edge_index].v[0]];
+			else
+				v = data.Vert[data.Edge[-edge_index].v[1]];
+
+			float x = info->lightmapVecs[0][0] * v.x +
+				info->lightmapVecs[0][1] * v.y +
+				info->lightmapVecs[0][2] * v.z +
+				info->lightmapVecs[0][3];
+
+			float y = info->lightmapVecs[1][0] * v.x +
+				info->lightmapVecs[1][1] * v.y +
+				info->lightmapVecs[1][2] * v.z +
+				info->lightmapVecs[1][3];
+
+			vec2 lightmap( mid_tex.x + (x - mid_poly.x) / 16.0f, 
+			                mid_tex.y + (y - mid_poly.y) / 16.0f );
+
+			vec2 coord(lightmap.x / (float)width, lightmap.y / (float)height);
+
+			if (edge_index >= 0)
+			{
+				map_vertex[data.Edge[edge_index].v[0]].texCoord0 = coord;
+				map_vertex[data.Edge[edge_index].v[0]].texCoord1 = coord;
+			}
+			else
+			{
+				map_vertex[data.Edge[-edge_index].v[1]].texCoord0 = coord;
+				map_vertex[data.Edge[-edge_index].v[1]].texCoord1 = coord;
+			}
+		}
+#endif
+
 	}
 }
