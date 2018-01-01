@@ -941,7 +941,7 @@ void Menu::handle(char key, Engine *altEngine)
 		console = !console;
 		break;
 	case 27:
-		if (altEngine->q3map.loaded == false)
+		if (altEngine->q3map.loaded == false && altEngine->hlmap.loaded == false)
 			delta("unload", *altEngine);
 
 		if (ingame && altEngine->ingame_menu_timer == 0)

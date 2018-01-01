@@ -1,7 +1,7 @@
 #include "include.h"
 
-#ifndef BSP_H
-#define BSP_H
+#ifndef Q3BSP_H
+#define Q3BSP_H
 
 class mLight2;
 
@@ -69,10 +69,11 @@ public:
 
 	unsigned int skybox_index;
 	unsigned int skybox_vertex;
+	unsigned int quad_index;
+	unsigned int quad_vertex;
 	int skybox_ibo;
 	int skybox_vbo;
-	int quad_index;
-	int quad_vertex;
+
 
 	vector<faceinfo_t> face_list;	// sorted front to back
 	vector<faceinfo_t> blend_list; // sorted back to front

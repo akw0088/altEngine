@@ -242,7 +242,8 @@ public:
 	unsigned int num_bot;
 	unsigned int shadow_light;
 
-	Bsp			q3map;
+	Bsp				q3map;
+	HLBsp			hlmap;
 	float			res_scale;
 
 	//ssao temp

@@ -683,70 +683,99 @@ void Engine::load(char *level)
 		rand_float(-100.0, 200.0f),
 		rand_float(-100.0, 200.0f));
 
+	bool hl = true;
+	if (hl)
+	{
+		matrix4 mvp = projection;
 
-	if ( q3map.load(level, pk3_list, num_pk3) == false)
-		return;
+		global.Select();
+		global.Params(mvp, 0);
+		gfx.clear_color(vec3(0.5f, 0.5f, 0.5f));
+		gfx.SelectTexture(0, no_tex);
+		gfx.SelectTexture(1, no_tex);
+		gfx.SelectTexture(2, no_tex);
+		gfx.SelectTexture(3, no_tex);
+		if (hlmap.load(gfx, "media/maps/de_dust2.bsp") != 0)
+		{
+			//de_dust2.bsp
+			//de_inferno.bsp
+			//de_nuke.bsp
+			exit(0);
+		}
+	}
+	else
+	{
+		if (q3map.load(level, pk3_list, num_pk3) == false)
+			return;
+	}
 
-	q3map.generate_meshes(gfx);
+	if (hl == false)
+	{
+		q3map.generate_meshes(gfx);
+	}
 
 	menu.delta("entities", *this);
 	gfx.clear();
 	menu.render(global);
 	gfx.swap();
 
-	char entfile[128] = { 0 };
-	sprintf(entfile, "media/%s.ent", q3map.map_name);
-	char *entdata = get_file(entfile, NULL);
 
-	//First n Entities for dynamic items (Dont allocate any at runtime)
-	for (unsigned int i = 0; i < max_dynamic; i++)
+	if (hl == false)
 	{
-		Entity *entity = new Entity();
-		entity_list.push_back(entity);
+		char entfile[128] = { 0 };
+		sprintf(entfile, "media/%s.ent", q3map.map_name);
+		char *entdata = get_file(entfile, NULL);
+
+		//First n Entities for dynamic items (Dont allocate any at runtime)
+		for (unsigned int i = 0; i < max_dynamic; i++)
+		{
+			Entity *entity = new Entity();
+			entity_list.push_back(entity);
+		}
+
+		if (entdata != NULL)
+		{
+			parse_entity(this, entdata, entity_list, gfx, audio);
+			delete[] entdata;
+		}
+		else
+		{
+			char filename[128];
+			const char *data = q3map.get_entities();
+
+
+			sprintf(filename, "media/%s.ent", q3map.map_name);
+			parse_entity(this, data, entity_list, gfx, audio);
+			write_file(filename, data, strlen(data));
+		}
+
+		debugf("Loaded %d entities\n", entity_list.size());
+
+
+		int start = entity_list.size();
+
+		char navfile[128] = { 0 };
+		sprintf(navfile, "media/%s.nav", q3map.map_name);
+		char *navdata = get_file(navfile, NULL);
+		if (navdata != NULL)
+		{
+			parse_entity(this, navdata, entity_list, gfx, audio);
+			delete[] navdata;
+		}
+
+		int num_node = entity_list.size() - start;
+
+		navdata_to_graph(ref, node, entity_list, start);
+		print_graph(node, num_node);
+
+		graph.load(node, num_node);
+		delete[] ref;
+
+
+		game->setup_func(entity_list, q3map);
+
+		load_entities();
 	}
-
-	if (entdata != NULL)
-	{
-		parse_entity(this, entdata, entity_list, gfx, audio);
-		delete [] entdata;
-	}
-	else
-	{
-		char filename[128];
-		const char *data = q3map.get_entities();
-
-
-		sprintf(filename, "media/%s.ent", q3map.map_name);
-		parse_entity(this, data, entity_list, gfx, audio);
-		write_file(filename, data, strlen(data));
-	}
-
-	debugf("Loaded %d entities\n", entity_list.size());
-
-
-	int start = entity_list.size();
-
-	char navfile[128] = { 0 };
-	sprintf(navfile, "media/%s.nav", q3map.map_name);
-	char *navdata = get_file(navfile, NULL);
-	if (navdata != NULL)
-	{
-		parse_entity(this, navdata, entity_list, gfx, audio);
-		delete [] navdata;
-	}
-
-	int num_node = entity_list.size() - start;
-
-	navdata_to_graph(ref, node, entity_list, start);
-	print_graph(node, num_node);
-
-	graph.load(node, num_node);
-	delete [] ref;
-
-
-	game->setup_func(entity_list, q3map);
-
-	load_entities();
 
 	// This renders map before loading textures
 
@@ -757,8 +786,8 @@ void Engine::load(char *level)
 		camera_frame.set(transformation);
 		camera_frame.pos = entity_list[player]->position;
 	}
-
-	spatial_testing();
+	if (hl == false)
+		spatial_testing();
 	gfx.clear();
 	matrix4 mvp = transformation * projection;
 
@@ -782,9 +811,12 @@ void Engine::load(char *level)
 	global.Select();
 	global.Params(mvp);
 
-	q3map.enable_textures = false;
-	q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
-	q3map.lastIndex = -2; // force generation of new face lists
+	if (hl == false)
+	{
+		q3map.enable_textures = false;
+		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+		q3map.lastIndex = -2; // force generation of new face lists
+	}
 	camera_frame.set(transformation);
 
 //	render_entities(transformation, projection, true, true);
@@ -793,25 +825,30 @@ void Engine::load(char *level)
 	menu.render(global);
 	gfx.swap();
 
-	q3map.load_textures(gfx, surface_list, pk3_list, num_pk3, menu.data.anisotropic);
+	if (hl == false)
+		q3map.load_textures(gfx, surface_list, pk3_list, num_pk3, menu.data.anisotropic);
 	menu.delta("loaded", *this);
 	menu.stop();
 	menu.ingame = false;
 	menu.console = false;
-	menu.chat = true;
+//	menu.chat = true;
+	menu.chat = false;
 
 
 	//Setup render to texture
 
-	// Generate depth cubemaps for each light
-	if (render_mode == MODE_INDIRECT)
+	if (hl == false)
 	{
-		render_shadowmaps(true);
-		gfx.bindFramebuffer(0);
-	}
+		// Generate depth cubemaps for each light
+		if (render_mode == MODE_INDIRECT)
+		{
+			render_shadowmaps(true);
+			gfx.bindFramebuffer(0);
+		}
 
-	// render portals at least once
-	render_portalcamera();
+		// render portals at least once
+		render_portalcamera();
+	}
 
 	if (enable_terrain)
 	{
@@ -977,8 +1014,22 @@ void Engine::render(double last_frametime)
 	gfx.swap();
 #endif
 
-	if (q3map.loaded == false)
+	if (q3map.loaded == false && hlmap.loaded == false)
 		return;
+
+	if (hlmap.loaded)
+	{
+		matrix4 transformation;
+
+		camera_frame.set(transformation);
+		matrix4 mvp = transformation * projection;
+		global.Select();
+		global.Params(mvp, 0);
+		gfx.clear();
+		hlmap.temp_render(gfx);
+		gfx.swap();
+		return;
+	}
 
 #ifdef DEDICATED
 	server_recv();
@@ -4748,7 +4799,7 @@ bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if (q3map.loaded == false || menu.ingame == true || menu.console == true || menu.chatmode == true)
+	if ((q3map.loaded == false && hlmap.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
 	{
 		return false;
 	}
@@ -4775,7 +4826,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if (q3map.loaded == false || menu.ingame == true || menu.console == true || menu.chatmode == true)
+	if ((q3map.loaded == false && hlmap.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
 	{
 		float devicex = (float)x / gfx.width;
 		float devicey = (float)y / gfx.height;
@@ -4992,6 +5043,12 @@ void Engine::keypress(char *key, bool pressed)
 		input.moveup = pressed;
 		if (*key != 'w' && *key != 'W')
 			k = 3;
+
+		if (hlmap.loaded)
+		{
+			camera_frame.pos += -camera_frame.forward * 0.1f;
+		}
+
 	}
 	else if (strcmp("moveleft", cmd) == 0)
 	{
@@ -4999,6 +5056,11 @@ void Engine::keypress(char *key, bool pressed)
 		input.moveleft = pressed;
 		if (*key != 'a' && *key != 'A')
 			k = 4;
+
+		if (hlmap.loaded)
+		{
+			camera_frame.pos -= vec3::crossproduct(camera_frame.up, camera_frame.forward) * 0.1f;
+		}
 	}
 	else if (strcmp("moveright", cmd) == 0)
 	{
@@ -5006,6 +5068,11 @@ void Engine::keypress(char *key, bool pressed)
 		input.moveright = pressed;
 		if (*key != 'd' && *key != 'D')
 			k = 6;
+
+		if (hlmap.loaded)
+		{
+			camera_frame.pos +=  vec3::crossproduct(camera_frame.up, camera_frame.forward) * 0.1f;
+		}
 	}
 	else if (strcmp("movedown", cmd) == 0)
 	{
@@ -5013,6 +5080,11 @@ void Engine::keypress(char *key, bool pressed)
 		input.movedown = pressed;
 		if (*key != 's' && *key != 'S')
 			k = 5;
+
+		if (hlmap.loaded)
+		{
+			camera_frame.pos -= camera_frame.forward * -0.1f;
+		}
 	}
 	else if (strcmp("jump", cmd) == 0)
 	{
@@ -5107,7 +5179,7 @@ void Engine::keypress(char *key, bool pressed)
 
 void Engine::keystroke(char key, char *keystr)
 {
-	if (q3map.loaded == false)
+	if (q3map.loaded == false && hlmap.loaded == false)
 	{
 		menu.ingame = false;
 
