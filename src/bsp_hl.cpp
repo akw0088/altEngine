@@ -354,7 +354,7 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 		int w = data.Face[i].LightmapTextureSizeInLuxels[0] + 1;
 		int h = data.Face[i].LightmapTextureSizeInLuxels[1] + 1;
-		lightmap_object[i] = gfx.LoadTexture(w, h, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
+
 
 
 // calculate texture coordinates: https://www.gamedev.net/forums/topic/538713-bspv38-quake-2-bsp-loader-lightmap-problem/
@@ -386,6 +386,7 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 		int width = (int)(ceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
 		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
+		lightmap_object[i] = gfx.LoadTexture(width, height, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
 
 
 		//generate a texture coordinate that's in the range 0.0 to 1.0
