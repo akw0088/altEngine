@@ -5046,7 +5046,7 @@ void Engine::keypress(char *key, bool pressed)
 
 		if (hlmap.loaded)
 		{
-			camera_frame.pos += -camera_frame.forward * 0.1f;
+			camera_frame.pos += -camera_frame.forward * 10.0f;
 		}
 
 	}
@@ -5059,7 +5059,7 @@ void Engine::keypress(char *key, bool pressed)
 
 		if (hlmap.loaded)
 		{
-			camera_frame.pos -= vec3::crossproduct(camera_frame.up, camera_frame.forward) * 0.1f;
+			camera_frame.pos -= vec3::crossproduct(camera_frame.up, camera_frame.forward) * 1.0f;
 		}
 	}
 	else if (strcmp("moveright", cmd) == 0)
@@ -5071,7 +5071,7 @@ void Engine::keypress(char *key, bool pressed)
 
 		if (hlmap.loaded)
 		{
-			camera_frame.pos +=  vec3::crossproduct(camera_frame.up, camera_frame.forward) * 0.1f;
+			camera_frame.pos +=  vec3::crossproduct(camera_frame.up, camera_frame.forward) * 1.0f;
 		}
 	}
 	else if (strcmp("movedown", cmd) == 0)
@@ -5083,7 +5083,7 @@ void Engine::keypress(char *key, bool pressed)
 
 		if (hlmap.loaded)
 		{
-			camera_frame.pos -= camera_frame.forward * -0.1f;
+			camera_frame.pos -= camera_frame.forward * -1.0f;
 		}
 	}
 	else if (strcmp("jump", cmd) == 0)

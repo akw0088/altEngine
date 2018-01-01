@@ -178,10 +178,20 @@ void HLBsp::render_face(int face)
 		{
 			debugf("face has %d edges!", data.Face[face].numedges);
 		}
+
 		edge0 = data.Edge[edge_index].v[0];
 		edge1 = data.Edge[edge_index].v[1];
-		index.push_back(edge0);
-		index.push_back(edge1);
+
+		if (data.SurfEdge[data.Face[face].firstedge + i] > 0)
+		{
+			index.push_back(edge0);
+			index.push_back(edge1);
+		}
+		else
+		{
+			index.push_back(edge1);
+			index.push_back(edge0);
+		}
 	}
 }
 

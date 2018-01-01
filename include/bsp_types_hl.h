@@ -398,3 +398,62 @@ typedef struct
 	unsigned int	num_verts;
 	unsigned int	num_planes;
 } hl_bsp_t;
+
+#define HL_CONTENTS_EMPTY 	0 	//No contents
+#define HL_CONTENTS_SOLID 	0x1 	//an eye is never valid in a solid
+#define HL_CONTENTS_WINDOW 0x2 	//translucent, but not watery (glass)
+#define HL_CONTENTS_AUX 	0x4
+#define HL_CONTENTS_GRATE 	0x8 	//alpha-tested "grate" textures. Bullets/sight pass through, but solids don't
+#define HL_CONTENTS_SLIME 	0x10
+#define HL_CONTENTS_WATER 	0x20
+#define HL_CONTENTS_MIST 	0x40
+#define HL_CONTENTS_OPAQUE 	0x80 	//block AI line of sight
+#define HL_CONTENTS_TESTFOGVOLUME 	0x100 	//things that cannot be seen through (may be non-solid though)
+#define HL_CONTENTS_UNUSED 	0x200 	//unused
+#define HL_CONTENTS_UNUSED6 	0x400 	//unused
+#define HL_CONTENTS_TEAM1 	0x800 	//per team contents used to differentiate collisions between players and objects on different teams
+#define HL_CONTENTS_TEAM2 	0x1000
+#define HL_CONTENTS_IGNORE_NODRAW_OPAQUE 	0x2000 	//ignore CONTENTS_OPAQUE on surfaces that have SURF_NODRAW
+#define HL_CONTENTS_MOVEABLE 	0x4000 	//hits entities which are MOVETYPE_PUSH (doors, plats, etc.)
+#define HL_CONTENTS_AREAPORTAL 	0x8000 	//remaining contents are non-visible, and don't eat brushes
+#define HL_CONTENTS_PLAYERCLIP 	0x10000
+#define HL_CONTENTS_MONSTERCLIP 	0x20000
+#define HL_CONTENTS_CURRENT_0 	0x40000 	//currents can be added to any other contents, and may be mixed
+#define HL_CONTENTS_CURRENT_90 	0x80000
+#define HL_CONTENTS_CURRENT_180 	0x100000
+#define HL_CONTENTS_CURRENT_270 	0x200000
+#define HL_CONTENTS_CURRENT_UP 	0x400000
+#define HL_CONTENTS_CURRENT_DOWN 	0x800000
+#define HL_CONTENTS_ORIGIN 	0x1000000 	//removed before bsping an entity
+#define HL_CONTENTS_MONSTER 	0x2000000 	//should never be on a brush, only in game
+#define HL_CONTENTS_DEBRIS 	0x4000000
+#define HL_CONTENTS_DETAIL 	0x8000000 	//brushes to be added after vis leafs
+#define HL_CONTENTS_TRANSLUCENT 	0x10000000 	//auto set if any surface has trans
+#define HL_CONTENTS_LADDER 	0x20000000
+#define HL_CONTENTS_HITBOX 	0x40000000
+
+
+#define HL_SURF_LIGHT 	0x1 	//value will hold the light strength
+#define HL_SURF_SKY2D 	0x2 	//don't draw, indicates we should skylight + draw 2d sky but not draw the 3D skybox
+#define HL_SURF_SKY 	0x4 	//don't draw, but add to skybox
+#define HL_SURF_WARP 	0x8 	//turbulent water warp
+#define HL_SURF_TRANS 	0x10 	//texture is translucent
+#define HL_SURF_NOPORTAL 	0x20 	//the surface can not have a portal placed on it
+#define HL_SURF_TRIGGER 	0x40 	//This is an xbox hack to work around elimination of trigger surfaces, which breaks occluders
+#define HL_SURF_NODRAW 	0x80 	//don't bother referencing the texture
+#define HL_SURF_HINT 	0x100 	//make a primary bsp splitter
+#define HL_SURF_SKIP 	0x200 	//completely ignore, allowing non - closed brushes
+#define HL_SURF_NOLIGHT 	0x400 	//Don't calculate light
+#define HL_SURF_BUMPLIGHT 	0x800 	//calculate three lightmaps for the surface for bumpmapping
+#define HL_SURF_NOSHADOWS 	0x1000 	//Don't receive shadows
+#define HL_SURF_NODECALS 	0x2000 	//Don't receive decals
+#define HL_SURF_NOCHOP 	0x4000 	//Don't subdivide patches on this surface
+#define HL_SURF_HITBOX 	0x8000 	//surface is part of a hitbox
+
+
+
+#define DISPTRI_TAG_SURFACE 	0x1
+#define DISPTRI_TAG_WALKABLE 	0x2
+#define DISPTRI_TAG_BUILDABLE 	0x4
+#define DISPTRI_FLAG_SURFPROP1 	0x8
+#define DISPTRI_FLAG_SURFPROP2 	0x10
