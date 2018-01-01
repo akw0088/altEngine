@@ -8,7 +8,8 @@
 #endif
 
 // Floating point comparison function (epsilon issues)
-#define CMP(x, y) (abs32((x)-(y)) <= 0.00001f * MAX(1.0f, MAX(abs32(x), abs32(y))) )
+#define CMP(x, y) \
+	(fabsf(x - y) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
 
 
 //=============================================================================

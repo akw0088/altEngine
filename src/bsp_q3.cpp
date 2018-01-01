@@ -950,8 +950,8 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 		gfx.SelectTexture(9, normal_object[face->material]);
 	}
 	selected_map = false;
-	gfx.SelectIndexBuffer(Model::quad_index);
-	gfx.SelectVertexBuffer(Model::quad_vertex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
 	gfx.DrawArrayTri(0, 0, 6, 4);
 	if (enable_textures)
 	{

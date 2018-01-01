@@ -69,8 +69,11 @@ public:
 
 	unsigned int skybox_index;
 	unsigned int skybox_vertex;
+	unsigned int quad_index;
+	unsigned int quad_vertex;
 	int skybox_ibo;
 	int skybox_vbo;
+
 
 	vector<faceinfo_t> face_list;	// sorted front to back
 	vector<faceinfo_t> blend_list; // sorted back to front

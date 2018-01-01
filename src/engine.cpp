@@ -682,8 +682,36 @@ void Engine::load(char *level)
 		rand_float(-100.0, 200.0f));
 
 
-	if ( q3map.load(level, pk3_list, num_pk3) == false)
-		return;
+	if (0)
+	{
+
+		matrix4 mvp = identity;
+
+		global.Select();
+		global.Params(mvp, 0);
+		gfx.clear_color(vec3(0.5f, 0.5f, 0.5f));
+		gfx.SelectTexture(0, no_tex);
+		gfx.SelectTexture(1, no_tex);
+		gfx.SelectTexture(2, no_tex);
+		gfx.SelectTexture(3, no_tex);
+		if (hlmap.load(gfx, "media/maps/de_nuke.bsp") != 0)
+		{
+			//de_inferno.bsp
+			//de_nuke.bsp
+			exit(0);
+		}
+		while (1)
+		{
+			gfx.clear();
+			hlmap.temp_render(gfx);
+			gfx.swap();
+		}
+	}
+	else
+	{
+		if (q3map.load(level, pk3_list, num_pk3) == false)
+			return;
+	}
 
 	q3map.generate_meshes(gfx);
 
