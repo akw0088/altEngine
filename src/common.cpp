@@ -2855,3 +2855,27 @@ void dns_query(Net &net)
 		printf("%s\n", answer->data + 1);
 	}
 }
+
+void convolve(const float *signal, unsigned int signal_len,
+              const float *kernel, unsigned int kernel_len,
+              float *result)
+{
+   unsigned int n;
+
+   for (n = 0; n < signal_len + kernel_len - 1; n++)
+   {
+       unsigned int kmin = 0;
+       unsigned int kmax = 0;
+       unsigned int k = 0;
+
+       result[n] = 0;
+
+       kmin = (n >= kernel_len - 1) ? n - (kernel_len - 1) : 0;
+       kmax = (n < signal_len - 1) ? n : signal_len - 1;
+
+       for (k = kmin; k <= kmax; k++)
+       {
+          result[n] += signal[k] * kernel[n - k];
+       }
+   }
+}

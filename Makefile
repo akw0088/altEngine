@@ -7,7 +7,6 @@ SOURCES_CPP := 	xmain.cpp \
 		bsp_hl.cpp \
 		common.cpp \
 		constructable.cpp \
-		edge.cpp \
 		engine.cpp \
 		entity.cpp \
 		frame.cpp \
