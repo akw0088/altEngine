@@ -31,14 +31,9 @@ enum dlumps
 	LMP_AREAS,
 	LMP_AREAPORTALS,
 	LMP_PORTALS,
-	LMP_UNUSED0,
-	LMP_PROPCOLLISION,
 	LMP_CLUSTERS,
-	LMP_UNUSED1,
-	LMP_PROPHULLS,
 	LMP_PORTALVERTS,
-	LMP_UNUSED2,
-	LMP_PROPTRIS,
+	LMP_CLUSTERPORTALS,
 	LMP_DISPINFO,
 	LMP_ORIGINALFACES,
 	LMP_PHYSDISP,
@@ -63,12 +58,9 @@ enum dlumps
 	LMP_FACE_MACRO_TEXTURE_INFO,
 	LMP_DISP_TRIS,
 	LMP_PHYSCOLLIDESURFACE,
-	LMP_PROP_BLOB,
 	LMP_WATEROVERLAYS,
 	LMP_LIGHTMAPPAGES,
-	LMP_LEAF_AMBIENT_INDEX_HDR,
 	LMP_LIGHTMAPPAGEINFOS,
-	LMP_LEAF_AMBIENT_INDEX,
 	LMP_LIGHTING_HDR,
 	LMP_WORLDLIGHTS_HDR,
 	LMP_LEAF_AMBIENT_LIGHTING_HDR,
@@ -405,6 +397,8 @@ typedef struct
 	ColorRGBExp32		*Lightmap;
 	char				*Entity;
 	dgamelump_t			*Game;
+	int				*StringTable;
+	char			*StringData;
 	unsigned short *LeafBrush;
 	dbrush_t *Brush;
 	dbrushside_t *BrushSide;
@@ -427,6 +421,8 @@ typedef struct
 	unsigned int 	num_LeafBrush;
 	unsigned int 	num_Brush;
 	unsigned int 	num_BrushSide;
+	unsigned int	num_StringTable;
+	unsigned int	num_StringData;
 } hl_bsp_t;
 
 #define HL_CONTENTS_EMPTY 	0 	//No contents

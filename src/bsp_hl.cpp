@@ -58,6 +58,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 	//LUMP_PAKFILE Embedded uncompressed Zip-format file 
 
 	data.Game = (dgamelump_t *)&pBsp[tBsp->lumps[LMP_GAME_LUMP].offset];
+	data.StringTable = (int *)&pBsp[tBsp->lumps[LMP_TEXDATA_STRING_TABLE].offset];
+	data.StringData = (char *)&pBsp[tBsp->lumps[LMP_TEXDATA_STRING_DATA].offset];
 	
 
 	data.num_entity = tBsp->lumps[LMP_ENTITIES].length;;
@@ -78,6 +80,9 @@ int HLBsp::load(Graphics &gfx, char *map)
 	data.num_Brush = tBsp->lumps[LMP_BRUSHES].length / sizeof(dbrush_t);
 	data.num_BrushSide = tBsp->lumps[LMP_BRUSHSIDES].length / sizeof(dbrushside_t);
 	data.num_game = tBsp->lumps[LMP_GAME_LUMP].length / sizeof(dgamelump_t);
+	data.num_StringTable = tBsp->lumps[LMP_TEXDATA_STRING_TABLE].length / sizeof(int);
+	data.num_StringData = tBsp->lumps[LMP_TEXDATA_STRING_DATA].length;
+
 
 	map_vertex = new vertex_t[data.num_verts];
 	lightmap_object = new int[8192];
@@ -98,6 +103,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 	change_axis();
 
 	load_lightmap(gfx);
+	load_textures(gfx);
 
 
 	// generate index array, isnt using PVS
@@ -337,6 +343,22 @@ void HLBsp::change_axis()
 
 
 
+void HLBsp::load_textures(Graphics &gfx)
+{
+	for (int i = 0; i < data.num_faces; i++)
+	{
+		dtexinfo_t *texinfo = &data.TexInfo[data.Face[i].texinfo];
+		dtexdata_t *texdata = &data.TexData[texinfo->texdata];
+		int string_offset = data.StringTable[texdata->nameStringTableID];
+		char *texture = &data.StringData[string_offset];
+
+		printf("Loading textures %s width %d height %d\n", texture, texdata->width, texdata->height);
+		//texinfo->textureVecs[0] -- need to set texcoords too
+	}
+
+	// Could just loop through string table to avoid duplicates, but this gives height/width info
+}
+
 void HLBsp::load_lightmap(Graphics &gfx)
 {
 	for (int i = 0; i < data.num_faces; i++)
@@ -350,7 +372,6 @@ void HLBsp::load_lightmap(Graphics &gfx)
 		}
 
 		dtexinfo_t *info = &data.TexInfo[data.Face[i].texinfo];
-
 
 		int w = data.Face[i].LightmapTextureSizeInLuxels[0] + 1;
 		int h = data.Face[i].LightmapTextureSizeInLuxels[1] + 1;

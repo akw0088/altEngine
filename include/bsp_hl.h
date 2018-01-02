@@ -24,6 +24,7 @@ private:
 	bool point_AABB(vec3 pos, short min[3], short max[3]);
 	void change_axis();
 	void load_lightmap(Graphics &gfx);
+	void load_textures(Graphics &gfx);
 
 	vector <unsigned int> index;
 	hl_bsp_t data;
