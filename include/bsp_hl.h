@@ -32,6 +32,7 @@ private:
 	int map_vertex_vbo;
 	int map_index_vbo;
 	int *lightmap_object;
+	int *tex_object;
 	vertex_t *map_vertex;
 };
 

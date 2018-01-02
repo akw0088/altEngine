@@ -30,7 +30,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 		return -1;
 	}
 
-	
+
 	data.header = (dheader_t *)tBsp;
 	data.Entity = (char *)&pBsp[tBsp->lumps[LMP_ENTITIES].offset];
 	data.Plane = (dplane_t *)&pBsp[tBsp->lumps[LMP_PLANES].offset];
@@ -60,7 +60,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 	data.Game = (dgamelump_t *)&pBsp[tBsp->lumps[LMP_GAME_LUMP].offset];
 	data.StringTable = (int *)&pBsp[tBsp->lumps[LMP_TEXDATA_STRING_TABLE].offset];
 	data.StringData = (char *)&pBsp[tBsp->lumps[LMP_TEXDATA_STRING_DATA].offset];
-	
+
 
 	data.num_entity = tBsp->lumps[LMP_ENTITIES].length;;
 	data.num_planes = tBsp->lumps[LMP_PLANES].length / sizeof(dplane_t);
@@ -86,6 +86,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 	map_vertex = new vertex_t[data.num_verts];
 	lightmap_object = new int[8192];
+	tex_object = new int[8192];
 
 	// write entity string to file
 	char name[80];
@@ -113,8 +114,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 	for (int i = 0; i < data.num_verts; i++)
 	{
 		map_vertex[i].position = data.Vert[i];// +vec3(-11584, -5088, 2050); //offset for dust2
-//		map_vertex[i].texCoord0 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
-//		map_vertex[i].texCoord1 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
+											  //		map_vertex[i].texCoord0 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
+											  //		map_vertex[i].texCoord1 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
 		map_vertex[i].tangent = vec4();
 	}
 
@@ -159,7 +160,8 @@ void HLBsp::temp_render(Graphics &gfx)
 {
 	gfx.SelectVertexBuffer(map_vertex_vbo);
 	gfx.SelectIndexBuffer(map_index_vbo);
-	gfx.SelectTexture(0, lightmap_object[0]);
+	gfx.SelectTexture(0, tex_object[0]); // need face index
+	gfx.SelectTexture(1, lightmap_object[0]);
 	gfx.DrawArrayTri(0, 0, index.size(), data.num_verts);
 
 }
@@ -177,7 +179,7 @@ void HLBsp::bsp_render_node(int node_index, int leaf, vec3 pos)
 		if (node_index == -1)
 			return;
 
-		render_leaf (~node_index);
+		render_leaf(~node_index);
 		return;
 	}
 
@@ -257,7 +259,7 @@ void HLBsp::render_face(int face)
 
 int HLBsp::find_leaf(vec3 pos, int node)
 {
-	for (int x = 0; x < 2; x++) 
+	for (int x = 0; x < 2; x++)
 	{
 		if (data.Node[node].children[x] >= 0)
 		{
@@ -277,8 +279,8 @@ int HLBsp::find_leaf(vec3 pos, int node)
 
 bool HLBsp::point_AABB(vec3 pos, short min[3], short max[3])
 {
-	if ((min[0] <= pos.x && pos.x <= max[0] && 	min[1] <= pos.y && pos.y <= max[1] && min[2] <= pos.z && pos.z <= max[2]) ||
-		(min[0] >= pos.x && pos.x >= max[0] && 	min[1] >= pos.y && pos.y >= max[1] && min[2] >= pos.z && pos.z >= max[2]))
+	if ((min[0] <= pos.x && pos.x <= max[0] && min[1] <= pos.y && pos.y <= max[1] && min[2] <= pos.z && pos.z <= max[2]) ||
+		(min[0] >= pos.x && pos.x >= max[0] && min[1] >= pos.y && pos.y >= max[1] && min[2] >= pos.z && pos.z >= max[2]))
 	{
 		return true;
 	}
@@ -345,18 +347,67 @@ void HLBsp::change_axis()
 
 void HLBsp::load_textures(Graphics &gfx)
 {
+	int loaded = 0;
+	int attempted = 0;
+	vector<char *> texture_list;
+
+
 	for (int i = 0; i < data.num_faces; i++)
 	{
+		bool duplicate = false;
+		char filename[128];
 		dtexinfo_t *texinfo = &data.TexInfo[data.Face[i].texinfo];
 		dtexdata_t *texdata = &data.TexData[texinfo->texdata];
 		int string_offset = data.StringTable[texdata->nameStringTableID];
 		char *texture = &data.StringData[string_offset];
 
-		printf("Loading textures %s width %d height %d\n", texture, texdata->width, texdata->height);
+		sprintf(filename, "media/materials/%s.tga", texture);
+
+		for (int i = 0; i < texture_list.size(); i++)
+		{
+			if (strcmp(filename, texture_list[i]) == 0)
+			{
+				duplicate = true;
+				break;
+			}
+		}
+
+		if (duplicate)
+		{
+			continue;
+		}
+
+		tex_object[i] = load_texture(gfx, filename, false, false, 0);
+		if (tex_object[i] != 0)
+		{
+			printf("loaded %s", filename);
+			loaded++;
+			attempted++;
+		}
+		else
+		{
+			printf("failed to load %s", filename);
+			attempted++;
+		}
+		char *file = new char[80];
+		sprintf(file, "%s", filename);
+		texture_list.push_back(file);
+
+
+
 		//texinfo->textureVecs[0] -- need to set texcoords too
+	}
+	printf("loaded %d of %d textures\n", loaded, attempted);
+
+	for (int i = 0; i < texture_list.size(); i++)
+	{
+		delete[] texture_list[i];
 	}
 
 	// Could just loop through string table to avoid duplicates, but this gives height/width info
+
+	// So a GCF file is packet and a VTF texture is inside along with text data vmt data
+	// Could use devil 
 }
 
 void HLBsp::load_lightmap(Graphics &gfx)
@@ -378,7 +429,7 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 
 
-// calculate texture coordinates: https://www.gamedev.net/forums/topic/538713-bspv38-quake-2-bsp-loader-lightmap-problem/
+		// calculate texture coordinates: https://www.gamedev.net/forums/topic/538713-bspv38-quake-2-bsp-loader-lightmap-problem/
 #if 1
 		//go through every vertex of the face, and calculate their UV co-ordinates 
 		for (int j = 0; j < data.Face[i].numedges; j++)
@@ -411,11 +462,11 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 
 		//generate a texture coordinate that's in the range 0.0 to 1.0
-		vec2 mid_poly(  (min.x + max.x) * 0.5f,
-						(min.y + max.y) * 0.5f );
+		vec2 mid_poly((min.x + max.x) * 0.5f,
+			(min.y + max.y) * 0.5f);
 
-		vec2 mid_tex(   width * 0.5f,
-						height * 0.5f );
+		vec2 mid_tex(width * 0.5f,
+			height * 0.5f);
 
 		for (int j = 0; j < data.Face[i].numedges; ++j)
 		{
@@ -437,8 +488,8 @@ void HLBsp::load_lightmap(Graphics &gfx)
 				info->lightmapVecs[1][2] * v.z +
 				info->lightmapVecs[1][3];
 
-			vec2 lightmap( mid_tex.x + (x - mid_poly.x) / 16.0f, 
-			                mid_tex.y + (y - mid_poly.y) / 16.0f );
+			vec2 lightmap(mid_tex.x + (x - mid_poly.x) / 16.0f,
+				mid_tex.y + (y - mid_poly.y) / 16.0f);
 
 			vec2 coord(lightmap.x / (float)width, lightmap.y / (float)height);
 
