@@ -1,4 +1,5 @@
 #include "include.h"
+#include <math.h> //for ceil
 
 HLBsp::HLBsp()
 {
@@ -108,7 +109,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 
 	// generate index array, isnt using PVS
-	render(vec3());
+	vec3 pos;
+	render(pos);
 
 
 	for (int i = 0; i < data.num_verts; i++)

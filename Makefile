@@ -3,7 +3,8 @@ NUMJOBS=$(shell nproc)
 SOURCES_CPP := 	xmain.cpp \
 		audio.cpp \
 		basegame.cpp \
-		bsp.cpp \
+		bsp_q3.cpp \
+		bsp_hl.cpp \
 		common.cpp \
 		constructable.cpp \
 		edge.cpp \

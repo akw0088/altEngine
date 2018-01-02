@@ -686,11 +686,12 @@ void Engine::load(char *level)
 	bool hl = true;
 	if (hl)
 	{
+		vec3 color(0.5f, 0.5f, 0.5f);
 		matrix4 mvp = projection;
 
 		global.Select();
 		global.Params(mvp, 0);
-		gfx.clear_color(vec3(0.5f, 0.5f, 0.5f));
+		gfx.clear_color(color);
 		if (hlmap.load(gfx, "media/maps/de_dust2.bsp") != 0)
 		{
 			//de_dust2.bsp
