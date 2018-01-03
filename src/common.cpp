@@ -2856,26 +2856,49 @@ void dns_query(Net &net)
 	}
 }
 
+//================================================================================================
+// Matlab 'conv'
+// given input of length signal_len, and kernel_len, will output (signal_len + kernel_len - 1) values
+//================================================================================================
 void convolve(const float *signal, unsigned int signal_len,
               const float *kernel, unsigned int kernel_len,
-              float *result)
+              float *result, int *result_len)
 {
-   unsigned int n;
+  unsigned int n;
 
-   for (n = 0; n < signal_len + kernel_len - 1; n++)
-   {
-       unsigned int kmin = 0;
-       unsigned int kmax = 0;
-       unsigned int k = 0;
+  *result_len = signal_len + kernel_len - 1;
 
-       result[n] = 0;
+  for (n = 0; n < signal_len + kernel_len - 1; n++)
+  {
+    unsigned int kmin = 0, kmax = 0, k = 0;
 
-       kmin = (n >= kernel_len - 1) ? n - (kernel_len - 1) : 0;
-       kmax = (n < signal_len - 1) ? n : signal_len - 1;
+    result[n] = 0;
 
-       for (k = kmin; k <= kmax; k++)
-       {
-          result[n] += signal[k] * kernel[n - k];
-       }
-   }
+    kmin = (n >= kernel_len - 1) ? n - (kernel_len - 1) : 0;
+    kmax = (n < signal_len - 1) ? n : signal_len - 1;
+
+    for (k = kmin; k <= kmax; k++)
+    {
+      result[n] += signal[k] * kernel[n - k];
+    }
+  }
 }
+
+
+//================================================================================================
+// Matlab conv with 'same' parameter
+// does convolution, but keeps same length as input signal_len (throwing away values at begining and end)
+//================================================================================================
+void convolve_same(const float *signal, unsigned int signal_len,
+              const float *kernel, unsigned int kernel_len,
+              float *result, int *result_len)
+{
+        convolve(signal, signal_len, kernel,kernel_len, result, result_len);
+
+        for(unsigned int i = 0; i < signal_len; i++)
+        {
+                result[i] = result[kernel_len / 2 + i];
+        }
+        *result_len = signal_len;
+}
+
