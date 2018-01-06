@@ -773,7 +773,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		printf("Unknown component: %s %d\n", file_name, components);
 #endif
 		stbi_image_free(bytes);
-		free((void *)data);
+		delete [] data;
 		return 0;
 	}
 #endif

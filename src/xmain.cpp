@@ -214,10 +214,10 @@ int EventProc(Display *display, Window window, GLXContext context)
         //unsigned char *data;
 	XSelectionRequestEvent *req;
 
-        XSelectInput(display, window, StructureNotifyMask);
-        XSelectInput(display, window, StructureNotifyMask + ExposureMask);
-        XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
-        XFlush(display);
+        //XSelectInput(display, window, StructureNotifyMask);
+        //XSelectInput(display, window, StructureNotifyMask + ExposureMask);
+        //XSetSelectionOwner(display, XA_PRIMARY, window, CurrentTime);
+        //XFlush(display);
 
 
 	if (display == NULL)

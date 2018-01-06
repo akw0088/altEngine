@@ -51,6 +51,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (entity.entstring == NULL)
 		{
 			entity.entstring = new ent_string_t;
+			memset(entity.entstring, 0, sizeof(ent_string_t));
 		}
 
 		memcpy(entity.entstring->type, value, size);
@@ -518,6 +519,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			if (entity.entstring == NULL)
 			{
 				entity.entstring = new ent_string_t;
+				memset(entity.entstring, 0, sizeof(ent_string_t));
 			}
 
 
@@ -556,10 +558,12 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			if (entity.entstring == NULL)
 			{
 				entity.entstring = new ent_string_t;
+				memset(entity.entstring, 0, sizeof(ent_string_t));
 			}
-
-
-			sprintf(entity.trigger->action, "push %s", entity.entstring->target);
+			else
+			{
+				snprintf(entity.trigger->action, LINE_SIZE - 1, "push %s", entity.entstring->target);
+			}
 			entity.trigger->timeout = 1.0f;
 			entity.trigger->timeout_value = 1.0f;
 		}
@@ -1641,6 +1645,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				if (entity.entstring == NULL)
 				{
 					entity.entstring = new ent_string_t;
+					memset(entity.entstring, 0, sizeof(ent_string_t));
 				}
 
 
@@ -1671,6 +1676,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (entity.entstring == NULL)
 		{
 			entity.entstring = new ent_string_t;
+			memset(entity.entstring, 0, sizeof(ent_string_t));
 		}
 
 
@@ -1688,6 +1694,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (entity.entstring == NULL)
 		{
 			entity.entstring = new ent_string_t;
+			memset(entity.entstring, 0, sizeof(ent_string_t));
 		}
 
 

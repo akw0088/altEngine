@@ -371,7 +371,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	int lump_size = 0;
 	//DSSHOTGN
 	//DSDMPAIN
-	char *sound_lump = get_wadfile("media/DOOM1.WAD", "DSTELEPT", &lump_size, &wad);
+	char *sound_lump = get_wadfile("media/doom1.wad", "DSTELEPT", &lump_size, &wad);
 	if (sound_lump != NULL)
 	{
 		lump_to_wave(sound_lump, lump_size, &wave);
@@ -683,7 +683,7 @@ void Engine::load(char *level)
 		rand_float(-100.0, 200.0f),
 		rand_float(-100.0, 200.0f));
 
-	bool hl = true;
+	bool hl = false;
 	if (hl)
 	{
 		vec3 color(0.5f, 0.5f, 0.5f);
