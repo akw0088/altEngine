@@ -223,7 +223,13 @@ int EventProc(Display *display, Window window, GLXContext context)
 	if (display == NULL)
 	{
 #ifndef DEDICATED
-		altEngine.render(TICK_MS);
+		struct timeval start;
+		struct timeval end;
+
+		float value = end.tv_usec - start.tv_usec;
+		gettimeofday(&start, NULL);
+		altEngine.render(value / 1000.0f);
+		gettimeofday(&end, NULL);
 #else
 		usleep(1);
 #endif
