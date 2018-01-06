@@ -109,6 +109,8 @@
 	#ifdef __linux__
 		#include <GL/gl.h>
 		#include <GL/glx.h>
+
+		void fullscreen(Display *display, Window w);
 	#else
 	   	#define GLX_GLXEXT_PROTOTYPES
 		#ifdef __OBJC__

@@ -3249,6 +3249,11 @@ bool Engine::collision_detect(RigidBody &body)
 		return false;
 	}
 
+	if (body.entity->nettype == NET_BULLET)
+	{
+		return false;
+	}
+
 	if (map_collision(body))
 	{
 		return true;
@@ -3262,8 +3267,8 @@ bool Engine::collision_detect(RigidBody &body)
 
 	if (body.entity->player || body.entity->construct)
 	{
-		if (body_collision(body))
-			return true;
+//		if (body_collision(body))
+//			return true;
 	}
 
 	return false;
@@ -5516,8 +5521,11 @@ void Engine::fullscreen()
 		old_style = SetWindowLongPtr(hwnd, GWL_STYLE, new_style);
 		new_style = old_style;
 		SetWindowPos(hwnd, HWND_TOP, 0, 0, xr, yr, 0);
-		fullscreen_timer = TICK_RATE;
 #endif
+#ifdef __linux__
+		::fullscreen((Display *)param1, *((Window *)param2));
+#endif
+		fullscreen_timer = TICK_RATE;
 	}
 }
 

@@ -315,6 +315,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 			//resize fixes opengl context rendering for some reason
 #ifndef DEDICATED
 			XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
+//			fullscreen(display, window);
 #endif
 		}
 
@@ -617,4 +618,22 @@ int joystick_read(int fd)
 	}
 	return 0;
 }	
+
+void fullscreen(Display* display, Window window)
+{
+	XEvent e;
+	e.xclient.type         = ClientMessage;
+	e.xclient.window       = window;
+	e.xclient.message_type = XInternAtom(display,"_NET_WM_STATE",False);
+	e.xclient.format = 32;
+	e.xclient.data.l[0] = 2;    // _NET_WM_STATE_TOGGLE
+	e.xclient.data.l[1] = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", True);
+	e.xclient.data.l[2] = 0;    // no second property to toggle
+	e.xclient.data.l[3] = 1;
+	e.xclient.data.l[4] = 0;
+
+	XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &e);
+	XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
+}
+
 #endif
