@@ -2,6 +2,7 @@
 #include <list>
 #include <algorithm>
 #include "sin_table.h"
+#include <math.h> // for tanf
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -9,7 +10,7 @@
 
 // Floating point comparison function (epsilon issues)
 #define CMP(x, y) \
-	(fabsf(x - y) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
+	(abs32(x - y) <= FLT_EPSILON * MAX(1.0f, MAX(abs32(x), abs32(y))))
 
 
 //=============================================================================
