@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 	window = XCreateWindow(display, DefaultRootWindow(display), 0, 0, 640, 480, 0, vinfo->depth, InputOutput, vinfo->visual,
 		CWBorderPixel | CWColormap | CWEventMask, &winattrs);
 
-	XSetStandardProperties(display, window, "altEngine", "opengl", None, argv, argc, NULL );
+	XSetStandardProperties(display, window, "altEngine2", "altEngine2", None, argv, argc, NULL );
 
 	if ( glXMakeCurrent(display, window, context) )
 	{
