@@ -1653,6 +1653,45 @@ void Quake3::handle_player(int self, input_t &input)
 		return;
 
 
+	if (entity->player->local && 0)
+	{
+		quaternion q;
+		vec3 temp;
+
+		q.to_quat(entity->rigid->morientation);
+		if (q.s < 0)
+		{
+			temp.x = -q.x;
+			temp.y = -q.y;
+			temp.z = -q.z;
+		}
+		else
+		{
+			temp.x = q.x;
+			temp.y = q.y;
+			temp.z = q.z;
+		}
+
+
+		q.x = temp.x;
+		q.y = temp.y;
+		q.z = temp.z;
+		q.compute_w();
+		q.s = -q.s;
+
+		matrix3 compare = q.to_matrix();
+
+		float error = 0.0f;
+		for (int i = 0; i < 9; i++)
+		{
+			error += compare.m[i] - entity->rigid->morientation.m[i];
+		}
+
+		debugf("Error: %f\n", error);
+
+	}
+
+
 	// make all plasma balls from plasma gun follow path around the player position
 	if (0)
 	{
@@ -7754,9 +7793,9 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
 		ent->rigid->flags.gravity = false;
+		ent->model = ent->rigid;
 		ent->model->flags.lightning_trail = true;
 		ent->rigid->bounce = 5;
-		ent->model = ent->rigid;
 		ent->rigid->flags.noclip = true;
 
 

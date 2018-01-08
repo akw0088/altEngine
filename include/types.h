@@ -810,9 +810,9 @@ typedef struct
 {
 	uint8_t			active;
 	short int		owner;
-//	vec3			forward;
-//	vec3			right;
-	vec3			quat;
+	vec3			forward;
+	vec3			right;
+//	vec3			quat;
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
@@ -822,9 +822,9 @@ typedef struct
 
 typedef struct
 {
-//	vec3			forward;
-//	vec3			right;
-	vec3			quat;
+	vec3			forward;
+	vec3			right;
+//	vec3			quat;
 	vec3			velocity;
 	vec3			angular_velocity;
 	vec3			position;
