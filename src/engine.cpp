@@ -4543,9 +4543,10 @@ void Engine::server_send()
 		if (time(NULL) - client_list[i]->last_time > 90)
 		{
 			debugf("client %s timed out\n", client_list[i]->socketname);
-			delete entity_list[client_list[i]->ent_id]->rigid;
-			entity_list[client_list[i]->ent_id]->rigid = NULL;
-			entity_list[client_list[i]->ent_id]->model = NULL;
+			clean_entity(client_list[i]->ent_id);
+//			delete entity_list[client_list[i]->ent_id]->rigid;
+//			entity_list[client_list[i]->ent_id]->rigid = NULL;
+//			entity_list[client_list[i]->ent_id]->model = NULL;
 			client_list.erase(client_list.begin() + i);
 			i--;
 			continue;
