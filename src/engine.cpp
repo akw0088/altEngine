@@ -280,7 +280,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	//visual
 	gfx.init(param1, param2);
-
+	gfx.clear();
+	gfx.swap();
 	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 

@@ -66,23 +66,16 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	telefragged = NULL;
 
-	if (entity->entstring == NULL)
-	{
-		entity->entstring = new ent_string_t;
-	}
-
 
 	if (ent_type == ENT_SERVER)
 	{
 		type = SERVER;
 		entity->ent_type = ENT_SERVER;
-		sprintf(entity->entstring->type, "server");
 	}
 	else if (ent_type == ENT_PLAYER)
 	{
 		type = PLAYER;
 		entity->ent_type = ENT_PLAYER;
-		sprintf(entity->entstring->type, "player");
 	}
 
 	zoom_level = 4.0;

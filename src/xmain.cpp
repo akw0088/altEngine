@@ -250,7 +250,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 		target_property = XInternAtom(display, "PENGUIN", False);
 		break;
 	case ConfigureNotify:
-		printf("ConfigureNotify\n");
 		xcenter = event.xconfigure.width / 2;
 		ycenter = event.xconfigure.height / 2;
 		altEngine.resize(event.xconfigure.width, event.xconfigure.height);
