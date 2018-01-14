@@ -3744,7 +3744,7 @@ void Engine::parse_player_string(char *msg)
 				ent->position += ent->rigid->center;
 				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
 				ent->player->type = PLAYER;
-				sprintf(ent->player->name, name);
+				sprintf(ent->player->name,"%s", name);
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
 				printf("Adding client player at index %d\n", index);
@@ -3764,7 +3764,7 @@ void Engine::parse_player_string(char *msg)
 					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
 					ent->player->local = false;
 					ent->player->type = SERVER;
-					sprintf(ent->player->name, name);
+					sprintf(ent->player->name, "%s", name);
 					printf("Adding server player at index %d\n", index);
 				}
 			}
