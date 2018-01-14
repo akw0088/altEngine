@@ -510,6 +510,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				}
 				else if (value == -2)
 				{
+					delete surface_list[j];
 					surface_list.erase(surface_list.begin() + j);
 				}
 				break;
