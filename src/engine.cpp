@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+#pragma warning(4:4928) // intellisense bug from my if (1 == sscanf()) line
+
 #define MAX_DEPTH 6
 
 // Height above desired position we allow a step to occur
@@ -3747,7 +3749,7 @@ void Engine::parse_player_string(char *msg)
 				sprintf(ent->player->name, name);
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
-				printf("Adding client player at index %d\n", index);
+				printf("Adding client player \"%s\" at index %d\n", name, index);
 			}
 			else
 			{
@@ -3765,7 +3767,7 @@ void Engine::parse_player_string(char *msg)
 					ent->player->local = false;
 					ent->player->type = SERVER;
 					sprintf(ent->player->name, name);
-					printf("Adding server player at index %d\n", index);
+					printf("Adding server player \"%s\" at index %d\n", name, index);
 				}
 			}
 			line = strtok(NULL, ",");
@@ -3777,7 +3779,7 @@ void Engine::parse_player_string(char *msg)
 
 void Engine::send_player_string(servermsg_t &servermsg)
 {
-	char player_str[1024];
+	static char player_str[4096];
 
 	// Notify other clients of new player
 	for (unsigned int i = 0; i < client_list.size() - 1; i++)
@@ -3807,6 +3809,8 @@ void Engine::server_recv()
 	char socketname[LINE_SIZE];
 	bool connected = false;
 	int index = -1;
+	int ret = -1;
+	char name[LINE_SIZE] = { 0 };
 
 	// get client packet
 	int size = net.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
@@ -3899,7 +3903,6 @@ void Engine::server_recv()
 
 			if (client_list[index]->client_sequence <= reliablemsg->sequence)
 			{
-				char name[LINE_SIZE] = { 0 };
 				char msg[LINE_SIZE] = { 0 };
 
 				debugf("client to server: %s\n", reliablemsg->msg);
@@ -3972,7 +3975,7 @@ void Engine::server_recv()
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
 	}
-	else if ( strcmp(reliablemsg->msg, "<player/>") == 0 )
+	else if ( 1 == sscanf(reliablemsg->msg, "<player \"%[^\"]/>", name))
 	{
 		bool found = false;
 		unsigned int i = 0;
@@ -3984,6 +3987,15 @@ void Engine::server_recv()
 				if (client_list[i]->qport == clientmsg.qport)
 				{
 					found = true;
+					
+					if (strcmp(name, entity_list[client_list[i]->ent_id]->player->name) != 0)
+					{
+						char msg[256];
+
+						sprintf(msg, "say \"%s renamed to %s\"", entity_list[client_list[i]->ent_id]->player->name, name);
+						chat("Server", msg);
+						sprintf(entity_list[client_list[i]->ent_id]->player->name, "%s", name);
+					}
 					client_list[i]->client_sequence = clientmsg.sequence;
 					client_list[i]->server_sequence = sequence + 1;
 					client_list[i]->last_time = (unsigned int)time(NULL);
@@ -4019,11 +4031,8 @@ void Engine::server_recv()
 		//set to zero if we run out of info_player_deathmatches
 
 		index = (int)client_list.size() - 1;
-		char client_name[64];
-
-		sprintf(client_name, "client %d", index);
-		game->add_player(entity_list, CLIENT, client->ent_id, client_name);
-		printf("client %s qport %d got entity %d\n", socketname, client->qport, client->ent_id);
+		game->add_player(entity_list, CLIENT, client->ent_id, name);
+		printf("client %s \"%s\" qport %d got entity %d\n", socketname, name, client->qport, client->ent_id);
 
 
 		servermsg.sequence = sequence;
@@ -8078,9 +8087,7 @@ void Engine::connect(char *serverip)
 			*end = '\0';
 			debugf("Loading %s\n", level);
 			load((char *)level);
-			strcpy(client_reliable.msg, "<player/>");
-			client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
-			client_reliable.sequence = sequence;
+			client_rename();
 			last_server_sequence = servermsg.sequence;
 		}
 		else
@@ -8093,6 +8100,23 @@ void Engine::connect(char *serverip)
 		debugf("Connection timed out\n");
 	}
 }
+
+void Engine::client_rename()
+{
+	sprintf(client_reliable.msg, "<player \"%s\"/>", menu.data.name);
+	client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
+	client_reliable.sequence = sequence;
+}
+
+void Engine::server_rename(char *oldname, char *newname, int self)
+{
+	char msg[128];
+
+	sprintf(msg, "say \"%s renamed to %s\"", oldname, newname);
+	chat("Server", msg);
+	snprintf(entity_list[self]->player->name, 127, "%s", newname);
+}
+
 
 void Engine::disconnect()
 {

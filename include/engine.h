@@ -80,6 +80,8 @@ public:
 	void set_player_string(char *msg, client_t *client);
 	void parse_player_string(char *msg);
 	void send_player_string(servermsg_t &servermsg);
+	void client_rename();
+	void server_rename(char *oldname, char *newname, int self);
 	void client_recv();
 	void client_send();
 	int handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg);

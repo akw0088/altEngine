@@ -141,7 +141,7 @@ typedef struct
 {
 	unsigned short int	sequence;
 	unsigned short int	size; // size of entire header + data
-	char			msg[2048];
+	char			msg[8192];
 } reliablemsg_t;
 
 typedef struct

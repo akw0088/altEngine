@@ -7088,9 +7088,19 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		}
 		if (valid)
 		{
+			if (engine->server_flag)
+			{
+				engine->server_rename(entity_list[self]->player->name, data, self);
+			}
+
 			snprintf(entity_list[self]->player->name, 127, "%s", data);
 			debugf("Player name: %s\n", data);
 			sprintf(menu.data.name, "%s", data);
+
+			if (engine->client_flag)
+			{
+				engine->client_rename();
+			}
 		}
 		else
 		{
