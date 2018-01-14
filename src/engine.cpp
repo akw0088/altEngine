@@ -2405,14 +2405,17 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 		if (entity == NULL)
 			continue;
 
+		if (entity->player == NULL || entity->rigid == NULL)
+			continue; 
+
 		if (entity->flags.visible == false && entity->player && entity->player->type != SPECTATOR)
 			continue;
 
-		if (	(entity->player && entity->player->type == BOT) ||
-			(entity->player && entity->player->type == SPECTATOR) ||
-			(entity->player && entity->player->type == SERVER) ||
-			(entity->player && entity->player->type == PLAYER) ||
-			(entity->player && entity->player->type == CLIENT && server_flag))
+		if (	(entity->player->type == BOT) ||
+			(entity->player->type == SPECTATOR) ||
+			(entity->player->type == SERVER) ||
+			(entity->player->type == PLAYER) ||
+			(entity->player->type == CLIENT && server_flag))
 		{
 			if (entity->player->local && render_self == false)
 				continue;
