@@ -420,6 +420,7 @@ void Audio::load(wave_t &wave, char **pk3_list, int num_pk3)
 {
 	char	*end;
 
+	wave.data = NULL;
 	if (strstr(wave.file, "media/"))
 	{
 		wave.data = get_file(wave.file, NULL);
