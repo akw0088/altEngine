@@ -5646,13 +5646,16 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 		if (engine->show_names)
 		{
-			sprintf(data, "%s", entity->entstring->type);
-			menu.draw_text(entity->entstring->type, pos.x, pos.y - 0.0625f, 0.02f, color, false, false);
+			if (entity->entstring)
+			{
+				sprintf(data, "%s", entity->entstring->type);
+				menu.draw_text(entity->entstring->type, pos.x, pos.y - 0.0625f, 0.02f, color, false, false);
+			}
 			sprintf(data, "bsp_leaf: %d", entity->bsp_leaf);
 			menu.draw_text(data, pos.x, pos.y, 0.02f, color, false, false);
 		}
 
-		if (strcmp(entity->entstring->type, "free") == 0)
+		if (entity->ent_type == ENT_UNKNOWN)
 		{
 			int line = 1;
 
