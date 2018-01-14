@@ -6872,6 +6872,10 @@ void Engine::console(char *cmd)
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
 	{
+		if (q3map.loaded)
+		{
+			unload();
+		}
 		snprintf(msg, LINE_SIZE, "Connecting to %s\n", data);
 		menu.print(msg);
 		connect(data);

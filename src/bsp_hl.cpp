@@ -391,7 +391,7 @@ void HLBsp::load_textures(Graphics &gfx)
 			printf("failed to load %s", filename);
 			attempted++;
 		}
-		char *file = new char[80];
+		char *file = new char[128];
 		sprintf(file, "%s", filename);
 		texture_list.push_back(file);
 
