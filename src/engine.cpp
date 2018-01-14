@@ -4413,7 +4413,7 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		if (client_reliable.size == 0)
 		{
 			sprintf(client_reliable.msg, "<getspawn/>");
-			client_reliable.size = 4 + strlen(client_reliable.msg);
+			client_reliable.size = 4 + strlen(client_reliable.msg) + 1;
 			client_reliable.sequence = sequence;
 		}
 		return -1;
