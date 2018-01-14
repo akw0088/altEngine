@@ -6,7 +6,6 @@
 
 #include <float.h> // for FLT_MAX
 
-
 void Model::load(Graphics &gfx, char *file)
 {
 	char vbo_file[LINE_SIZE];
@@ -418,12 +417,14 @@ Model::Model()
 	model_index = 0;
 	model_tex = 0;
 	model_file = NULL;
+	index_file = NULL;
 	model_vertex_array = NULL;
 	model_index_array = NULL;
 	center = vec3();
 	flags.rail_trail = false;
 	flags.lightning_trail = false;
 	flags.blend = false;
+
 
 	morientation.m[0] = 1.0f;
 	morientation.m[1] = 0.0f;
