@@ -3760,6 +3760,32 @@ void Engine::parse_spawn_string(char *msg)
 	}
 }
 
+
+void Engine::send_spawn_string(servermsg_t &servermsg)
+{
+	char spawn_str[256];
+
+	// Notify other clients of new player
+	for (unsigned int i = 0; i < client_list.size() - 1; i++)
+	{
+
+		set_spawn_string(spawn_str, client_list[i]);
+		strcat(reliable[i].msg, spawn_str);
+
+		reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
+		reliable[i].sequence = sequence;
+
+		memset(&servermsg, 0, sizeof(servermsg));
+		servermsg.client_sequence = client_list[i]->client_sequence;
+		servermsg.sequence = sequence;
+		servermsg.num_ents = 0;
+		servermsg.compressed_size = 0;
+		servermsg.length = SERVER_HEADER + reliable[i].size;
+		memcpy(&servermsg.data[servermsg.data_size], &reliable[i], reliable[i].size);
+		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+	}
+}
+
 void Engine::server_recv()
 {
 	static servermsg_t	servermsg;
@@ -3880,6 +3906,12 @@ void Engine::server_recv()
 						//  Echoes chat back to all clients
 						chat(name, msg);
 					}
+				}
+
+				start = strstr(reliablemsg->msg, "<getspawn/>");
+				if (start)
+				{
+					send_spawn_string(servermsg);
 				}
 			}
 		}
@@ -4007,24 +4039,7 @@ void Engine::server_recv()
 		debugf("Client is now entity %d\n", client->ent_id);
 
 
-		// Notify other clients of new player
-		for (i = 0; i < client_list.size() - 1; i++)
-		{
-			set_spawn_string(spawn_str, client_list[i]);
-			strcat(reliable[i].msg, spawn_str);
-
-			reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
-			reliable[i].sequence = sequence;
-
-			memset(&servermsg, 0, sizeof(servermsg));
-			servermsg.client_sequence = client_list[i]->client_sequence;
-			servermsg.sequence = sequence;
-			servermsg.num_ents = 0;
-			servermsg.compressed_size = 0;
-			servermsg.length = SERVER_HEADER + reliable[i].size;
-			memcpy(&servermsg.data[servermsg.data_size], &reliable[i], reliable[i].size);
-			net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
-		}
+		send_spawn_string(servermsg);
 
 	}
 	else if (strcmp(reliablemsg->msg, "getstatus") == 0)
@@ -4281,6 +4296,14 @@ int Engine::deserialize_ents(unsigned char *data, unsigned short int num_ents, u
 	for (int i = 0; i < num_ents; i++)
 	{
 		net_entity_t *ent = (net_entity_t *)data;
+
+		if (ent->index < 0 || ent->index >= entity_list.size())
+		{
+			disconnect();
+			unload();
+			return -1;
+		}
+
 		switch (ent->ctype)
 		{
 		case NET_PLAYER:
@@ -4387,7 +4410,13 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 	else
 	{
 		debugf("deserialize_net_player() failed to find player at index %d\n", index);
-		unload();
+		if (client_reliable.size == 0)
+		{
+			sprintf(client_reliable.msg, "<getspawn/>");
+			client_reliable.size = 4 + strlen(client_reliable.msg);
+			client_reliable.sequence = sequence;
+		}
+		return -1;
 	}
 
 	return 0;
@@ -4424,7 +4453,7 @@ int Engine::deserialize_net_rigid(net_rigid_t *net, int index, int etype)
 	else
 	{
 		printf("deserialize_net_rigid() failed to find rigid at index %d\n", index);
-		entity_list[index]->position = net->position;
+		return -1;
 	}
 
 	return 0;
@@ -4450,6 +4479,7 @@ int Engine::deserialize_net_trigger(net_trigger_t *net, int index, int etype)
 	else
 	{
 		printf("deserialize_net_trigger() failed to find trigger at index %d\n", index);
+		return -1;
 	}
 
 	return 0;
@@ -4507,6 +4537,7 @@ int Engine::deserialize_net_projectile(net_projectile_t *net, int index, int ety
 	else
 	{
 		printf("deserialize_net_projectile() failed to find projectile at index %d\n", index);
+		return -1;
 	}
 
 	return 0;
