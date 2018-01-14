@@ -8766,7 +8766,10 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 				if (abs32(mag) > 0.0001f)
 				{
 					//add knockback to explosions
-					player->entity->rigid->velocity += (distance.normalize() * projectile->knockback) / mag;
+					if (player->entity->rigid)
+					{
+						player->entity->rigid->velocity += (distance.normalize() * projectile->knockback) / mag;
+					}
 				}
 			}
 
