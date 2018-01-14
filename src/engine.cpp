@@ -3683,25 +3683,28 @@ void Engine::server_send_state(int client)
 }
 
 
-void Engine::set_spawn_string(char *msg, client_t *client)
+void Engine::set_player_string(char *msg, client_t *client)
 {
-	sprintf(msg, "<spawn> %d %d ", client->ent_id, find_type(ENT_PLAYER, 0));
+	int serverid = find_type(ENT_PLAYER, 0);
+
+	sprintf(msg, "<player> %d \"%s\", %d \"%s\", ", client->ent_id, entity_list[client->ent_id]->player->name,
+														serverid, entity_list[serverid]->player->name );
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
 		char client_index[8];
 		if (client_list[i] == client)
 			continue;
 
-		sprintf(client_index, "%d ", client_list[i]->ent_id);
+		sprintf(client_index, "%d \"%s\", ", client_list[i]->ent_id, entity_list[client_list[i]->ent_id]->player->name);
 		strcat(msg, client_index);
 	}
-	strcat(msg, "</spawn> ");
+	strcat(msg, "</player> ");
 }
 
-void Engine::parse_spawn_string(char *msg)
+void Engine::parse_player_string(char *msg)
 {
-	char *start = strstr(msg, "<spawn>");
-	char *end = strstr(msg, "</spawn>");
+	char *start = strstr(msg, "<player>");
+	char *end = strstr(msg, "</player>");
 	int count = 0;
 	int index;
 
@@ -3714,11 +3717,19 @@ void Engine::parse_spawn_string(char *msg)
 
 		memset(temp, 0, sizeof(temp));
 		memcpy(temp, start, length);
-		char *line = strtok(temp, " ");
+		char *line = strtok(temp, ",");
 		while (line)
 		{
-			index = atoi(line);
-			line = strtok(NULL, " ");
+			char name[128] = { 0 };
+			int ret = -1;
+			
+			ret = sscanf(line, "%d \"%[^\"]s", &index, name);
+			if (ret != 2)
+			{
+				printf("Failed to parse player [%s]\n", line);
+				line = strtok(NULL, ",");
+				continue;
+			}
 
 			if (count == 0 && active_clients[count] == false)
 			{
@@ -3733,6 +3744,7 @@ void Engine::parse_spawn_string(char *msg)
 				ent->position += ent->rigid->center;
 				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
 				ent->player->type = PLAYER;
+				sprintf(ent->player->name, name);
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
 				printf("Adding client player at index %d\n", index);
@@ -3752,25 +3764,27 @@ void Engine::parse_spawn_string(char *msg)
 					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
 					ent->player->local = false;
 					ent->player->type = SERVER;
+					sprintf(ent->player->name, name);
 					printf("Adding server player at index %d\n", index);
 				}
 			}
+			line = strtok(NULL, ",");
 			count++;
 		}
 	}
 }
 
 
-void Engine::send_spawn_string(servermsg_t &servermsg)
+void Engine::send_player_string(servermsg_t &servermsg)
 {
-	char spawn_str[256];
+	char player_str[1024];
 
 	// Notify other clients of new player
 	for (unsigned int i = 0; i < client_list.size() - 1; i++)
 	{
 
-		set_spawn_string(spawn_str, client_list[i]);
-		strcat(reliable[i].msg, spawn_str);
+		set_player_string(player_str, client_list[i]);
+		strcat(reliable[i].msg, player_str);
 
 		reliable[i].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[i].msg) + 1);
 		reliable[i].sequence = sequence;
@@ -3908,10 +3922,10 @@ void Engine::server_recv()
 					}
 				}
 
-				start = strstr(reliablemsg->msg, "<getspawn/>");
+				start = strstr(reliablemsg->msg, "<getplayer/>");
 				if (start)
 				{
-					send_spawn_string(servermsg);
+					send_player_string(servermsg);
 				}
 			}
 		}
@@ -3958,7 +3972,7 @@ void Engine::server_recv()
 		net.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
 	}
-	else if ( strcmp(reliablemsg->msg, "<spawn/>") == 0 )
+	else if ( strcmp(reliablemsg->msg, "<player/>") == 0 )
 	{
 		bool found = false;
 		unsigned int i = 0;
@@ -4021,9 +4035,9 @@ void Engine::server_recv()
 
 
 		// let new client know how many players exist
-		char spawn_str[256];
-		set_spawn_string(spawn_str, client);
-		strcat(reliable[index].msg, spawn_str);
+		char player_str[1024];
+		set_player_string(player_str, client);
+		strcat(reliable[index].msg, player_str);
 
 		char motd[256];
 		sprintf(motd, "<chat>Welcome to %s: %s</chat>", sv_hostname, sv_motd);
@@ -4039,7 +4053,7 @@ void Engine::server_recv()
 		debugf("Client is now entity %d\n", client->ent_id);
 
 
-		send_spawn_string(servermsg);
+		send_player_string(servermsg);
 
 	}
 	else if (strcmp(reliablemsg->msg, "getstatus") == 0)
@@ -4409,10 +4423,10 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 	}
 	else
 	{
-		debugf("deserialize_net_player() failed to find player at index %d\n", index);
+//		debugf("deserialize_net_player() failed to find player at index %d\n", index);
 		if (client_reliable.size == 0)
 		{
-			sprintf(client_reliable.msg, "<getspawn/>");
+			sprintf(client_reliable.msg, "<getplayer/>");
 			client_reliable.size = 4 + strlen(client_reliable.msg) + 1;
 			client_reliable.sequence = sequence;
 		}
@@ -4804,7 +4818,7 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 				unload();
 			}
 
-			parse_spawn_string(reliablemsg->msg);
+			parse_player_string(reliablemsg->msg);
 
 		}
 	}
@@ -8064,7 +8078,7 @@ void Engine::connect(char *serverip)
 			*end = '\0';
 			debugf("Loading %s\n", level);
 			load((char *)level);
-			strcpy(client_reliable.msg, "<spawn/>");
+			strcpy(client_reliable.msg, "<player/>");
 			client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
 			client_reliable.sequence = sequence;
 			last_server_sequence = servermsg.sequence;

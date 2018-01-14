@@ -77,9 +77,9 @@ public:
 	void server_recv();
 	void server_send();
 	void server_send_state(int client);
-	void set_spawn_string(char *msg, client_t *client);
-	void parse_spawn_string(char *msg);
-	void send_spawn_string(servermsg_t &servermsg);
+	void set_player_string(char *msg, client_t *client);
+	void parse_player_string(char *msg);
+	void send_player_string(servermsg_t &servermsg);
 	void client_recv();
 	void client_send();
 	int handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg);
