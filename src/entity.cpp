@@ -52,6 +52,8 @@ Entity::~Entity()
 		delete brushinfo;
 	if (entstring)
 		delete entstring;
+	if (portal_camera)
+		delete portal_camera;
 
 	position = vec3(0.0f, 0.0f, 0.0f);
 	rigid = NULL;
