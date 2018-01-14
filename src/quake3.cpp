@@ -1649,7 +1649,7 @@ void Quake3::handle_player(int self, input_t &input)
 	static int last_tick = 0;
 #endif
 
-	if (entity->player == NULL)
+	if (entity->player == NULL || entity->rigid == NULL)
 		return;
 
 
