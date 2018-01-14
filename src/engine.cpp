@@ -4311,6 +4311,7 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 {
 	Player *player = entity_list[index]->player;
 	RigidBody *rigid = entity_list[index]->rigid;
+
 	if (player != NULL)
 	{
 		player->health = net->health;
@@ -4385,7 +4386,8 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 	}
 	else
 	{
-		printf("deserialize_net_player() failed to find player at index %d\n", index);
+		debugf("deserialize_net_player() failed to find player at index %d\n", index);
+		unload();
 	}
 
 	return 0;
@@ -4773,6 +4775,13 @@ int Engine::handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliab
 			parse_spawn_string(reliablemsg->msg);
 
 		}
+	}
+
+	if (entity_list.size() == 0)
+	{
+		debugf("Client failed load map correctly\n");
+		unload();
+		return 0;
 	}
 
 	deserialize_ents(data, servermsg.num_ents, servermsg.data_size);
@@ -5845,6 +5854,13 @@ void Engine::unload()
 		}
 		client_list.clear();
 		net.closesock();
+		server_flag = false;
+	}
+
+	if (client_flag)
+	{
+		disconnect();
+		client_flag = false;
 	}
 
 	menu.console = false;
@@ -8031,6 +8047,29 @@ void Engine::connect(char *serverip)
 		debugf("Connection timed out\n");
 	}
 }
+
+void Engine::disconnect()
+{
+	static clientmsg_t	clientmsg;
+	static servermsg_t servermsg;
+
+	client_flag = false;
+
+	memset(&clientmsg, 0, sizeof(clientmsg_t));
+
+	clientmsg.sequence = sequence;
+	clientmsg.server_sequence = 0;
+	clientmsg.num_cmds = 0;
+	clientmsg.qport = qport;
+	strcpy(client_reliable.msg, "<disconnect/>");
+	client_reliable.size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(client_reliable.msg) + 1);
+	client_reliable.sequence = sequence;
+	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &client_reliable, client_reliable.size);
+	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
+	debugf("disconnecting\n");
+	net.send((char *)&clientmsg, clientmsg.length);
+}
+
 
 void Engine::chat(char *name, char *msg)
 {

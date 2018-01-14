@@ -68,6 +68,7 @@ public:
 
 	int bind(int port);
 	void connect(char *server);
+	void disconnect();
 	void chat(char *name, char *msg);
 	void kick(unsigned int i);
 	int GetKeyState(input_t &keyboard);
