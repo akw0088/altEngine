@@ -3746,7 +3746,7 @@ void Engine::parse_player_string(char *msg)
 				ent->position += ent->rigid->center;
 				ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_PLAYER, game->model_table);
 				ent->player->type = PLAYER;
-				sprintf(ent->player->name, name);
+				sprintf(ent->player->name,"%s", name);
 				ent->player->local = true;
 				camera_frame.pos = ent->position;
 				printf("Adding client player \"%s\" at index %d\n", name, index);
