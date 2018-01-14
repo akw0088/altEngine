@@ -4182,7 +4182,7 @@ int Engine::serialize_ents(unsigned char *data, unsigned short int &num_ents, un
 		}
 
 		Player *player = entity_list[i]->player;
-		if (player != NULL)
+		if (player != NULL && rigid != NULL)
 		{
 			net_player->health = player->health;
 			net_player->armor = player->armor;
