@@ -3809,7 +3809,7 @@ void Engine::server_recv()
 	char socketname[LINE_SIZE];
 	bool connected = false;
 	int index = -1;
-	int ret = -1;
+	//int ret = -1;
 	char name[LINE_SIZE] = { 0 };
 
 	// get client packet
@@ -8121,7 +8121,6 @@ void Engine::server_rename(char *oldname, char *newname, int self)
 void Engine::disconnect()
 {
 	static clientmsg_t	clientmsg;
-	static servermsg_t servermsg;
 
 	client_flag = false;
 
