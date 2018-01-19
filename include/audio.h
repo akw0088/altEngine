@@ -25,6 +25,7 @@ public:
 	void effects(int source);
 
 	void set_audio_model(int model);
+	void capture(unsigned short *pcm, int &size);
 
 private:
 	int checkFormat(char *data, char *format);

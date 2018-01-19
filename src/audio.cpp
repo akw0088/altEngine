@@ -761,5 +761,18 @@ void Audio::load_doom(wave_t &wave, int *buffer)
 {
 }
 
+void Audio::capture(unsigned short *pcm, int &size)
+{
+	ALCDevice *microphone = alcCaptureOpenDevice(NULL, 44100, AL_FORMAT_MONO, 960);
+	alcCaptureStart(microphone);
+	while (1)
+	{
+		alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, (ALCSizei)sizeof(int), &sample);
+		alcCaptureSamples(microphone, buffer, sample);
+	}
+	alcCaptureStop(microphone);
+	alcCaptureCloseDevice(microphone);
+	
+}
 
 #endif
