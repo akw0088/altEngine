@@ -65,6 +65,7 @@ public:
 	bool body_collision(RigidBody &body);
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
+	int opus_test();
 
 	int bind(int port);
 	void connect(char *server);
@@ -364,6 +365,9 @@ protected:
 
 	
 	int		server_spawn;	// entity index of hosting player
+
+
+	Opus voip;
 
 	// pathfinding stuff
 	Graph		graph;

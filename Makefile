@@ -25,6 +25,7 @@ SOURCES_CPP := 	xmain.cpp \
 		model.cpp \
 		menu.cpp \
 		net.cpp \
+		opus.cpp \
 		parse.cpp \
 		pak.cpp \
 		physics.cpp \
@@ -84,7 +85,7 @@ altEngine: CFLAGS := -MMD -MP -DGL_GLEXT_PROTOTYPES -DOPENGL -Wno-write-strings 
 altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native -fno-exceptions -fno-rtti
 altEngine_vulkan: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DVULKAN -Wno-write-strings -Wall -march=native -fno-exceptions -fno-rtti
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL
-LFLAGS := -lX11 -lGL -lopenal -lrt -lpthread 
+LFLAGS := -lX11 -lGL -lopenal -lrt -lpthread -lopus
 LFLAGS_VULKAN := -lX11 -lGL -lvulkan -lrt -lpthread
 LIBS := -L/usr/X11R6/lib/ -L/usr/local/lib
 

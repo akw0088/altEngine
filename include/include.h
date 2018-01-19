@@ -180,6 +180,7 @@
 #include <vector>
 #include <functional>
 #include <thread>
+#include <opus/opus.h>
 #include <float.h>
 #ifdef WIN32
 	#include <crtdbg.h>
@@ -473,6 +474,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "isocube.h"
 #include "isosphere.h"
 #include "oculus.h"
+#include "opus.h"
 #include "engine.h"
 
 

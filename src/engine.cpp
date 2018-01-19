@@ -8524,3 +8524,34 @@ void Engine::enum_resolutions()
 	}
 #endif
 }
+
+
+ 
+int Engine::opus_test(void)
+{
+	unsigned short data[960];
+	unsigned short data_out[960];
+	unsigned int size = 960;
+
+	for(int i = 0; i < size; i++)
+	{
+		data[i] = sin(i * 0.01f);
+	}
+
+	voip.init();
+	voip.encode(data, size);
+	voip.decode(data, size);
+	if (size != 960)
+	{
+		printf("Encoded / Decoded mismatch %d != %d\n", size, 960);
+	}
+
+	if ( memcmp(data, data_out, 960 * sizeof(short)) != 0)
+	{
+		printf("Encoding doesnt match decoding (lossy)\n");
+	}
+
+
+	voip.destroy();
+	return 0;
+}
