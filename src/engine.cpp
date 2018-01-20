@@ -366,9 +366,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	global.init(&gfx);
 	audio.init();
 
-	alGenSources(1, &mic_source);
-	alGenBuffers(1, (unsigned int *)&mic_buffer);
-	audio.select_buffer(mic_source, mic_buffer);
+	alGenSources(2, mic_source);
+	alSourcei(mic_source[0], AL_SOURCE_RELATIVE, AL_TRUE);
+	alSourcei(mic_source[1], AL_SOURCE_RELATIVE, AL_TRUE);
+	alGenBuffers(2, (unsigned int *)&mic_buffer);
+	audio.select_buffer(mic_source[0], mic_buffer[0]);
+	audio.select_buffer(mic_source[1], mic_buffer[1]);
 	voip.init();
 	audio.capture_start();
 
@@ -5795,7 +5798,7 @@ void Engine::create_sources()
 
 void Engine::update_audio()
 {
-	audio.listener_position((float *)&(camera_frame.pos));
+	audio.listener_position((float *)&(camera_frame.pos.x));
 
 	/*
 	for(unsigned int i = 0; i < entity_list.size(); i++)
@@ -8542,11 +8545,22 @@ int Engine::voice_send(Audio &audio)
 {
 	static unsigned char encode[48000];
 	int size;
+	static int pong = 0;
 
 
 	audio.capture_sample(mic_pcm, size);
-	alBufferData(mic_buffer, AL_FORMAT_MONO16, mic_pcm, size, 48000);
-	audio.play(mic_source);
+	audio.select_buffer(mic_source[pong], 0);
+	alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, 48000);
+	int al_err = alGetError();
+	if (al_err != AL_NO_ERROR)
+	{
+		debugf("Error alBufferData\n");
+	}
+	audio.select_buffer(mic_source[pong], mic_buffer[pong]);
+	audio.play(mic_source[pong]);
+	pong++;
+	if (pong == 2)
+		pong = 0;
 
 	int i = 0;
 	while (1)
@@ -8573,10 +8587,19 @@ int Engine::voice_recv(Audio &audio)
 	static unsigned char decode[MAX_PACKET_SIZE];
 	unsigned int size;
 	char ip[128] = "127.0.0.1:65530";
+	int ret;
+	static int pong = 0;
 
-	net.recvfrom((char *)decode, 2048, ip, sizeof(struct sockaddr));
-	voip.decode(decode, mic_pcm, size);
-	alBufferData(mic_buffer, AL_FORMAT_MONO16, mic_pcm, size, 48000);
-	audio.play(mic_source);
+	ret = net.recvfrom((char *)decode, MAX_PACKET_SIZE, ip, strlen(ip));
+	if (ret > 0)
+	{
+		voip.decode(decode, mic_pcm, size);
+		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, 48000);
+		audio.play(mic_source[pong]);
+
+		pong++;
+		if (pong == 2)
+			pong = 0;
+	}
 	return 0;
 }

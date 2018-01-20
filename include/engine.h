@@ -139,9 +139,9 @@ public:
 	unsigned int lum_index;
 	unsigned int lum_avg;
 
-	unsigned int mic_buffer;
-	unsigned int mic_source;
-	unsigned short mic_pcm[48000];
+	unsigned int mic_buffer[2];
+	unsigned int mic_source[2];
+	unsigned short mic_pcm[48000 * 10];
 
 	vector<char *> serverlist;
 

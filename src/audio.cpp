@@ -232,7 +232,7 @@ void Audio::init()
 		return;
 	}
 
-	microphone = alcCaptureOpenDevice(NULL, 48000, AL_FORMAT_MONO16, 48000);
+	microphone = alcCaptureOpenDevice(NULL, 48000, AL_FORMAT_MONO16, 48000 * 10);
 	if (microphone == NULL)
 	{
 		debugf("No microphone has been found.\n");
