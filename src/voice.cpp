@@ -4,19 +4,24 @@ int Voice::init()
 { 
 	int ret; 
 
-	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &ret);
+	//OPUS_APPLICATION_AUDIO -- music
+	//OPUS_APPLICATION_VOIP -- voice
+	//OPUS_APPLICATION_RESTRICTED_LOWDELAY -- low delay voice
+	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_AUDIO, &ret);
 	if (ret < 0) 
 	{ 
 		printf("failed to create an encoder: %s\n", opus_strerror(ret)); 
 		return -1; 
 	} 
 
+	/*
 	ret = opus_encoder_ctl(encoder, OPUS_SET_BITRATE(BITRATE)); 
 	if (ret < 0) 
 	{ 
 		printf("failed to set bitrate: %s\n", opus_strerror(ret)); 
 		return -1; 
 	} 
+	*/
 
 	decoder = opus_decoder_create(VOICE_SAMPLE_RATE, 1, &ret);
 	if (ret < 0) 

@@ -141,10 +141,12 @@ public:
 	unsigned int lum_index;
 	unsigned int lum_avg;
 
-	unsigned int mic_buffer[2];
-	unsigned int mic_source[2];
-	unsigned short mic_pcm[VOICE_SAMPLE_RATE * 10];
-	unsigned short decode_pcm[VOICE_SAMPLE_RATE * 10];
+
+#define NUM_PONG 2
+	unsigned int mic_buffer[NUM_PONG];
+	unsigned int mic_source;
+	unsigned short mic_pcm[NUM_PONG][VOICE_SAMPLE_RATE * 10];
+	unsigned short decode_pcm[NUM_PONG][VOICE_SAMPLE_RATE * 10];
 
 	vector<char *> serverlist;
 

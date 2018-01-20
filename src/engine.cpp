@@ -191,10 +191,10 @@ return 0;
 
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
-	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
+	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
 						0.0f, 1.0f, 0.0f, 0.0f,
 						0.0f, 0.0f, 1.0f, 0.0f,
-						0.0f, 0.0f, 0.0f, 1.0f};
+						0.0f, 0.0f, 0.0f, 1.0f };
 
 	Engine::param1 = p1;
 	Engine::param2 = p2;
@@ -207,7 +207,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	raw_mouse = false;
 	ssao_level = 1.0f;
 	object_level = 1.0f;
-//	ssao_radius = 5.0;
+	//	ssao_radius = 5.0;
 	ssao_radius = 0.01f;
 	weight_by_angle = true;
 	point_count = 8;
@@ -238,7 +238,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 #endif
 #else
-//	glXSwapInterval(0);
+	//	glXSwapInterval(0);
 #endif
 
 
@@ -309,7 +309,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		pool[i] = std::thread(calc_hash, pk3_list[i], hash_result[i]);
 	}
 
-	for(unsigned int i = 0; i < num_pk3; i++)
+	for (unsigned int i = 0; i < num_pk3; i++)
 	{
 		pool[i].join();
 		debugf("Checking hash for %s...", pk3_list[i]);
@@ -366,12 +366,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	global.init(&gfx);
 	audio.init();
 
-	alGenSources(2, mic_source);
-	alSourcei(mic_source[0], AL_SOURCE_RELATIVE, AL_TRUE);
-	alSourcei(mic_source[1], AL_SOURCE_RELATIVE, AL_TRUE);
-	alGenBuffers(2, (unsigned int *)&mic_buffer);
-	audio.select_buffer(mic_source[0], mic_buffer[0]);
-	audio.select_buffer(mic_source[1], mic_buffer[1]);
+	alGenSources(1, &mic_source);
+	alGenBuffers(NUM_PONG, (unsigned int *)&mic_buffer[0]);
+	alSourcei(mic_source, AL_SOURCE_RELATIVE, AL_TRUE);
+
 	voip.init();
 	audio.capture_start();
 
@@ -8548,28 +8546,71 @@ int Engine::voice_send(Audio &audio)
 	unsigned int size;
 	int isize;
 	static int pong = 0;
+	static bool looped = false;
+	unsigned int uiBuffer;
+	int buffersProcessed = 0;
 
 
-	audio.capture_sample(mic_pcm, isize);
-	size = isize;
-
-#if 0
-	audio.select_buffer(mic_source[pong], 0);
-	alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, VOICE_SAMPLE_RATE);
-	int al_err = alGetError();
-	if (al_err != AL_NO_ERROR)
+	if (looped)
 	{
-		debugf("Error alBufferData\n");
+		alGetSourcei(mic_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
+		if (buffersProcessed == 0)
+		{
+			ALenum state;
+
+			alGetSourcei(mic_source, AL_SOURCE_STATE, &state);
+
+			if (state == AL_STOPPED)
+			{
+				audio.play(mic_source);
+			}
+			return 0;
+		}
+
+		alSourceUnqueueBuffers(mic_source, 1, &uiBuffer);
+		int al_err = alGetError();
+		if (al_err != AL_NO_ERROR)
+		{
+			return 0;
+		}
+		audio.capture_sample(mic_pcm[pong], isize);
+		size = isize;
+
+		alBufferData(uiBuffer, AL_FORMAT_MONO16, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+		alSourceQueueBuffers(mic_source, 1, &uiBuffer);
+
 	}
-	audio.select_buffer(mic_source[pong], mic_buffer[pong]);
-	audio.play(mic_source[pong]);
-	pong++;
-	if (pong == 2)
-		pong = 0;
-#endif
+	else
+	{
+		audio.capture_sample(mic_pcm[pong], isize);
+		size = isize;
+
+		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+		int al_err = alGetError();
+		if (al_err != AL_NO_ERROR)
+		{
+			debugf("Error alBufferData\n");
+		}
+		alSourceQueueBuffers(mic_source, 1, &mic_buffer[pong]);
+
+	}
+
 	unsigned int num_bytes = 0;
-	voip.encode(mic_pcm, size, encode, num_bytes);
+	voip.encode(mic_pcm[pong], size, encode, num_bytes);
 	net_voice.sendto((char *)encode, num_bytes, "127.0.0.1:65530");
+
+	pong++;
+	if (pong >= NUM_PONG)
+	{
+		pong = 0;
+
+		if (looped == false)
+		{
+			looped = true;
+			audio.play(mic_source);
+		}
+	}
+
 	return 0;
 }
 
@@ -8585,8 +8626,8 @@ int Engine::voice_recv(Audio &audio)
 	if (ret > 0)
 	{
 		size = ret;
-		voip.decode(decode, decode_pcm, size);
-#if 1
+#if 0
+		voip.decode(decode, decode_pcm[pong], size);
 		audio.select_buffer(mic_source[pong], 0);
 		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, decode_pcm, size, VOICE_SAMPLE_RATE);
 		int al_err = alGetError();
@@ -8597,7 +8638,7 @@ int Engine::voice_recv(Audio &audio)
 		audio.select_buffer(mic_source[pong], mic_buffer[pong]);
 		audio.play(mic_source[pong]);
 		pong++;
-		if (pong == 2)
+		if (pong >= NUM_PONG)
 			pong = 0;
 #endif
 

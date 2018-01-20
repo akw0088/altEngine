@@ -232,7 +232,7 @@ void Audio::init()
 		return;
 	}
 
-#define SEGMENT_SIZE 480 
+#define SEGMENT_SIZE 480000
 	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, AL_FORMAT_MONO16, SEGMENT_SIZE);
 	if (microphone == NULL)
 	{
