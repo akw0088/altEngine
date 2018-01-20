@@ -1,14 +1,9 @@
-#ifndef __OPUS_H
-#define __OPUS_H
+#include "include.h"
 
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <string.h> 
-#include <errno.h> 
-#include <math.h>
+#ifndef VOICE_H
+#define VOICE_H
 
-#include <opus/opus.h> 
- 
+
 #define SEGMENT_SIZE		960
 #define BITRATE			64000
  
@@ -16,7 +11,7 @@
 #define MAX_PACKET_SIZE		(3 * 1276)
 
 
-class Opus
+class Voice
 {
 public:
 	int init();

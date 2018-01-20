@@ -1,6 +1,6 @@
-#include "opus.h"
+#include "voice.h"
  
-int Opus::init() 
+int Voice::init() 
 { 
 	int ret; 
 
@@ -18,7 +18,6 @@ int Opus::init()
 		return -1; 
 	} 
 
-	/* Create a new decoder state. */ 
 	decoder = opus_decoder_create(48000, 1, &ret); 
 	if (ret < 0) 
 	{ 
@@ -30,7 +29,7 @@ int Opus::init()
 
 
 
-int Opus::encode(unsigned short *pcm, unsigned int size)
+int Voice::encode(unsigned short *pcm, unsigned int size)
 {
 	unsigned char data[MAX_PACKET_SIZE]; 
 	opus_int16 in[SEGMENT_SIZE]; 
@@ -59,13 +58,13 @@ int Opus::encode(unsigned short *pcm, unsigned int size)
 }
 
 
-int Opus::decode(unsigned short *pcm, unsigned int &size)
+int Voice::decode(unsigned short *pcm, unsigned int &size)
 { 
 	unsigned char data[MAX_PACKET_SIZE]; 
 	opus_int16 out[MAX_SEGMENT_SIZE]; 
 	int frame_size;
 
-	frame_size = opus_decode(decoder, data, size * sizeof(short), out, MAX_SEGMENT_SIZE, 0); 
+	frame_size = opus_decode(decoder, data, size, out, MAX_SEGMENT_SIZE, 0); 
 	if (frame_size < 0)
 	{ 
 		printf("decoder failed: %s\n", opus_strerror(frame_size)); 
@@ -84,7 +83,7 @@ int Opus::decode(unsigned short *pcm, unsigned int &size)
 }
 
 
-void Opus::destroy()
+void Voice::destroy()
 {
 	 opus_encoder_destroy(encoder); 
 	 opus_decoder_destroy(decoder); 

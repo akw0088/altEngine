@@ -109,6 +109,7 @@
 	#ifdef __linux__
 		#include <GL/gl.h>
 		#include <GL/glx.h>
+		#include <opus/opus.h>
 
 		void fullscreen(Display *display, Window w);
 	#else
@@ -170,6 +171,7 @@
 	#include <efx.h>
 	#include <EFX-Util.h>
 	#include <efx-creative.h>
+	#include <opus.h>
 #endif
 
 //std
@@ -180,7 +182,6 @@
 #include <vector>
 #include <functional>
 #include <thread>
-#include <opus/opus.h>
 #include <float.h>
 #ifdef WIN32
 	#include <crtdbg.h>
@@ -474,7 +475,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "isocube.h"
 #include "isosphere.h"
 #include "oculus.h"
-#include "opus.h"
+#include "voice.h"
 #include "engine.h"
 
 

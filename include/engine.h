@@ -367,7 +367,7 @@ protected:
 	int		server_spawn;	// entity index of hosting player
 
 
-	Opus voip;
+	Voice voip;
 
 	// pathfinding stuff
 	Graph		graph;

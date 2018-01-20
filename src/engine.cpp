@@ -205,6 +205,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	qport = rand();
 
 
+	opus_test();
+
 	raw_mouse = false;
 	ssao_level = 1.0f;
 	object_level = 1.0f;
