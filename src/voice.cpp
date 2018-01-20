@@ -4,7 +4,7 @@ int Voice::init()
 { 
 	int ret; 
 
-	encoder = opus_encoder_create(48000, 1, OPUS_APPLICATION_AUDIO, &ret); 
+	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_RESTRICTED_LOWDELAY, &ret);
 	if (ret < 0) 
 	{ 
 		printf("failed to create an encoder: %s\n", opus_strerror(ret)); 
@@ -18,7 +18,7 @@ int Voice::init()
 		return -1; 
 	} 
 
-	decoder = opus_decoder_create(48000, 1, &ret); 
+	decoder = opus_decoder_create(VOICE_SAMPLE_RATE, 1, &ret);
 	if (ret < 0) 
 	{ 
 		 printf("failed to create decoder: %s\n", opus_strerror(ret)); 
@@ -31,22 +31,13 @@ int Voice::init()
 
 int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, unsigned int &num_bytes)
 {
-	static opus_int16 in[SEGMENT_SIZE]; 
-
 	if (size > SEGMENT_SIZE)
 	{
-		printf("Must encode %d bytes samples at a time\n", SEGMENT_SIZE);
-		return -1;
-	}
-
-	// byte swap to big endian
-	for (int i = 0; i < SEGMENT_SIZE; i++)
-	{ 
-		 in[i] = pcm[2 * i + 1] << 8 | pcm[2 * i]; 
+		size = SEGMENT_SIZE;
 	}
 
 	// Encode the frame.
-	num_bytes = opus_encode(encoder, in, SEGMENT_SIZE, data, MAX_PACKET_SIZE); 
+	num_bytes = opus_encode(encoder, (opus_int16 *)pcm, SEGMENT_SIZE, data, MAX_PACKET_SIZE);
 	if (num_bytes < 0)
 	{ 
 		printf("encode failed: %s\n", opus_strerror(num_bytes)); 
@@ -61,19 +52,12 @@ int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 	static opus_int16 out[MAX_SEGMENT_SIZE]; 
 	int frame_size;
 
-	frame_size = opus_decode(decoder, data, size, out, MAX_SEGMENT_SIZE, 0); 
+	frame_size = opus_decode(decoder, data, size, (opus_int16 *)pcm, MAX_SEGMENT_SIZE, 0);
 	if (frame_size < 0)
 	{ 
 		printf("decoder failed: %s\n", opus_strerror(frame_size)); 
 		return -1; 
 	} 
-
-	// byte swap to littler endian
-	for(int i = 0; i < frame_size; i++) 
-	{ 
-		pcm[2 * i] = out[i] & 0xFF; 
-		pcm[2 * i + 1] = (out[i] >> 8) & 0xFF; 
-	}
 
 	size = frame_size;
 	return 0;

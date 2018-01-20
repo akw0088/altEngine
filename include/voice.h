@@ -4,11 +4,11 @@
 #define VOICE_H
 
 
-#define SEGMENT_SIZE		4800
+#define SEGMENT_SIZE		480
 #define BITRATE			64000
  
-#define MAX_SEGMENT_SIZE 	(6 * 4800)
-#define MAX_PACKET_SIZE		(3 * 4800)
+#define MAX_SEGMENT_SIZE 	(6 * 480)
+#define MAX_PACKET_SIZE		(3 * 480)
 
 
 class Voice

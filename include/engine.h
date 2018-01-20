@@ -1,5 +1,7 @@
 #include "include.h"
 
+#define VOICE_SAMPLE_RATE 48000
+
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -141,8 +143,8 @@ public:
 
 	unsigned int mic_buffer[2];
 	unsigned int mic_source[2];
-	unsigned short mic_pcm[48000 * 10];
-	unsigned short decode_pcm[48000 * 10];
+	unsigned short mic_pcm[VOICE_SAMPLE_RATE * 10];
+	unsigned short decode_pcm[VOICE_SAMPLE_RATE * 10];
 
 	vector<char *> serverlist;
 

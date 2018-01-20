@@ -8544,7 +8544,7 @@ void Engine::enum_resolutions()
  
 int Engine::voice_send(Audio &audio)
 {
-	static unsigned char encode[48000];
+	static unsigned char encode[VOICE_SAMPLE_RATE];
 	unsigned int size;
 	int isize;
 	static int pong = 0;
@@ -8555,7 +8555,7 @@ int Engine::voice_send(Audio &audio)
 
 #if 0
 	audio.select_buffer(mic_source[pong], 0);
-	alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, 48000);
+	alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, VOICE_SAMPLE_RATE);
 	int al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
@@ -8575,20 +8575,20 @@ int Engine::voice_send(Audio &audio)
 
 int Engine::voice_recv(Audio &audio)
 {
-	static unsigned char decode[MAX_PACKET_SIZE];
+	static unsigned char decode[SEGMENT_SIZE];
 	unsigned int size;
 	char ip[128] = "127.0.0.1:65530";
 	int ret;
 	static int pong = 0;
 
-	ret = net_voice.recvfrom((char *)decode, MAX_PACKET_SIZE, ip, strlen(ip));
+	ret = net_voice.recvfrom((char *)decode, SEGMENT_SIZE, ip, strlen(ip));
 	if (ret > 0)
 	{
 		size = ret;
 		voip.decode(decode, decode_pcm, size);
 #if 1
 		audio.select_buffer(mic_source[pong], 0);
-		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, decode_pcm, size, 48000);
+		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, decode_pcm, size, VOICE_SAMPLE_RATE);
 		int al_err = alGetError();
 		if (al_err != AL_NO_ERROR)
 		{
