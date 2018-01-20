@@ -232,8 +232,8 @@ void Audio::init()
 		return;
 	}
 
-#define SEGMENT_SIZE 480000
-	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, AL_FORMAT_MONO16, SEGMENT_SIZE);
+#define SEGMENT_SIZE 800
+	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, AL_FORMAT_MONO8, SEGMENT_SIZE);
 	if (microphone == NULL)
 	{
 		debugf("No microphone has been found.\n");

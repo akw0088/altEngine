@@ -8576,7 +8576,7 @@ int Engine::voice_send(Audio &audio)
 		audio.capture_sample(mic_pcm[pong], isize);
 		size = isize;
 
-		alBufferData(uiBuffer, AL_FORMAT_MONO16, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+		alBufferData(uiBuffer, AL_FORMAT_MONO8, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
 		alSourceQueueBuffers(mic_source, 1, &uiBuffer);
 
 	}
@@ -8585,7 +8585,7 @@ int Engine::voice_send(Audio &audio)
 		audio.capture_sample(mic_pcm[pong], isize);
 		size = isize;
 
-		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+		alBufferData(mic_buffer[pong], AL_FORMAT_MONO8, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
 		int al_err = alGetError();
 		if (al_err != AL_NO_ERROR)
 		{
@@ -8629,7 +8629,7 @@ int Engine::voice_recv(Audio &audio)
 #if 0
 		voip.decode(decode, decode_pcm[pong], size);
 		audio.select_buffer(mic_source[pong], 0);
-		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, decode_pcm, size, VOICE_SAMPLE_RATE);
+		alBufferData(mic_buffer[pong], AL_FORMAT_MONO8, decode_pcm, size, VOICE_SAMPLE_RATE);
 		int al_err = alGetError();
 		if (al_err != AL_NO_ERROR)
 		{
