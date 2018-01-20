@@ -25,7 +25,9 @@ public:
 	void effects(int source);
 
 	void set_audio_model(int model);
-	void capture(unsigned short *pcm, int &size);
+	void capture_start();
+	void capture_sample(unsigned short *pcm, int &size);
+	void capture_stop();
 
 private:
 	int checkFormat(char *data, char *format);
@@ -34,6 +36,7 @@ private:
     ALenum alFormat(wave_t *wave);
 
 	ALCdevice		*device;
+	ALCdevice		*microphone;
 	ALCcontext		*context;
 
 #ifdef WIN32

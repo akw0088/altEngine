@@ -65,7 +65,7 @@ public:
 	bool body_collision(RigidBody &body);
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
-	int opus_test();
+	int opus_test(Audio &audio);
 
 	int bind(int port);
 	void connect(char *server);
@@ -137,6 +137,9 @@ public:
 	unsigned int lum_table[125];
 	unsigned int lum_index;
 	unsigned int lum_avg;
+
+	unsigned int mic_buffer;
+	unsigned int mic_source;
 
 	vector<char *> serverlist;
 

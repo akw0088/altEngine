@@ -78,7 +78,7 @@ int Voice::decode(unsigned short *pcm, unsigned int &size)
 		pcm[2 * i + 1] = (out[i] >> 8) & 0xFF; 
 	}
 
-	size = frame_size * sizeof(short);
+	size = frame_size;
 	return 0;
 }
 

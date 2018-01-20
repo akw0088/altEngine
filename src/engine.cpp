@@ -204,9 +204,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
-
-	opus_test();
-
 	raw_mouse = false;
 	ssao_level = 1.0f;
 	object_level = 1.0f;
@@ -368,6 +365,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	global.init(&gfx);
 	audio.init();
+
+	opus_test(audio);
 
 	wave_t wave;
 	waveFormat_t format;
@@ -8529,31 +8528,42 @@ void Engine::enum_resolutions()
 
 
  
-int Engine::opus_test(void)
+int Engine::opus_test(Audio &audio)
 {
-	unsigned short data[960];
-	unsigned short data_out[960];
-	unsigned int size = 960;
+	static unsigned short data[48000];
+	static unsigned short data_out[48000];
+	int size;
+	unsigned int decode_size;
 
-	for(int i = 0; i < size; i++)
-	{
-		data[i] = sin(i * 0.01f);
-	}
+
+	audio.capture_start();
+	printf("Capture test\n");
+	Sleep(1500);
+	audio.capture_sample(data, size);
+	audio.capture_stop();
+	printf("Capture stop\n");
+
+	alGenSources(1, &mic_source);
+	alGenBuffers(1, (unsigned int *)&mic_buffer);
+	alBufferData(mic_buffer, AL_FORMAT_MONO16, data, size, 48000);
+
+	audio.select_buffer(mic_source, mic_buffer);
+	audio.play(mic_source);
+	Sleep(1500);
 
 	voip.init();
-	voip.encode(data, size);
-	voip.decode(data, size);
-	if (size != 960)
+	voip.encode(data, size / 2);
+	voip.decode(data_out, decode_size);
+	if (size / 2 != decode_size)
 	{
-		printf("Encoded / Decoded mismatch %d != %d\n", size, 960);
+		printf("Encoded / Decoded mismatch %d != %d\n", size, decode_size);
 	}
 
-	if ( memcmp(data, data_out, 960 * sizeof(short)) != 0)
-	{
-		printf("Encoding doesnt match decoding (lossy)\n");
-	}
+	alBufferData(mic_buffer, AL_FORMAT_MONO16, data_out, decode_size, 48000);
+	audio.select_buffer(mic_source, mic_buffer);
+	audio.play(mic_source);
 
-
+	Sleep(1500);
 	voip.destroy();
 	return 0;
 }

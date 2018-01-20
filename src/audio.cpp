@@ -232,6 +232,14 @@ void Audio::init()
 		return;
 	}
 
+	microphone = alcCaptureOpenDevice(NULL, 48000, AL_FORMAT_MONO16, 48000);
+	if (microphone == NULL)
+	{
+		debugf("No microphone has been found.\n");
+		return;
+	}
+
+
 #ifdef WIN32
     context = alcCreateContext(device, attrib);
 #else
@@ -621,8 +629,10 @@ void Audio::destroy()
 	alcMakeContextCurrent(NULL);
 	alcDestroyContext(context);
 	alcCloseDevice(device);
+	alcCaptureCloseDevice(microphone);
 	context = NULL;
 	device = NULL;
+	microphone = NULL;
 }
 
 int Audio::checkFormat(char *data, char *format)
@@ -660,6 +670,23 @@ ALenum Audio::alFormat(wave_t *wave)
 		else
 			return AL_FORMAT_MONO8;
 	}
+}
+
+void Audio::capture_start()
+{
+	alcCaptureStart(microphone);
+}
+
+void Audio::capture_sample(unsigned short *pcm, int &size)
+{
+	alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, sizeof(int), (int *)&size);
+	alcCaptureSamples(microphone, pcm, size);
+}
+
+
+void Audio::capture_stop()
+{
+	alcCaptureStop(microphone);
 }
 #endif
 
@@ -759,20 +786,6 @@ void Audio::set_audio_model(int model)
 
 void Audio::load_doom(wave_t &wave, int *buffer)
 {
-}
-
-void Audio::capture(unsigned short *pcm, int &size)
-{
-	ALCDevice *microphone = alcCaptureOpenDevice(NULL, 44100, AL_FORMAT_MONO, 960);
-	alcCaptureStart(microphone);
-	while (1)
-	{
-		alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, (ALCSizei)sizeof(int), &sample);
-		alcCaptureSamples(microphone, buffer, sample);
-	}
-	alcCaptureStop(microphone);
-	alcCaptureCloseDevice(microphone);
-	
 }
 
 #endif
