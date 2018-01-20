@@ -29,13 +29,12 @@ int Voice::init()
 
 
 
-int Voice::encode(unsigned short *pcm, unsigned int size)
+int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data)
 {
-	unsigned char data[MAX_PACKET_SIZE]; 
 	opus_int16 in[SEGMENT_SIZE]; 
 	int num_bytes; 
 
-	if (size != SEGMENT_SIZE)
+	if (size > SEGMENT_SIZE)
 	{
 		printf("Must encode %d bytes samples at a time\n", SEGMENT_SIZE);
 		return -1;
@@ -58,9 +57,8 @@ int Voice::encode(unsigned short *pcm, unsigned int size)
 }
 
 
-int Voice::decode(unsigned short *pcm, unsigned int &size)
+int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 { 
-	unsigned char data[MAX_PACKET_SIZE]; 
 	opus_int16 out[MAX_SEGMENT_SIZE]; 
 	int frame_size;
 

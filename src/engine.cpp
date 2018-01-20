@@ -366,7 +366,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	global.init(&gfx);
 	audio.init();
 
-	opus_test(audio);
+	alGenSources(1, &mic_source);
+	alGenBuffers(1, (unsigned int *)&mic_buffer);
+	audio.select_buffer(mic_source, mic_buffer);
+	voip.init();
+	audio.capture_start();
 
 	wave_t wave;
 	waveFormat_t format;
@@ -3562,11 +3566,15 @@ void Engine::step(int tick)
 	{
 		server_recv();
 		server_send();
+		voice_recv(audio);
+		voice_send(audio);
 	}
 	else if (client_flag && sequence)
 	{
 		client_recv();
 		client_send();
+		voice_recv(audio);
+		voice_send(audio);
 	}
 
 
@@ -5969,7 +5977,9 @@ void Engine::destroy()
 	printf("Destroying gfx\n");
 	gfx.destroy();
 	printf("Destroying audio\n");
+	audio.capture_stop();
 	audio.destroy();
+	voip.destroy();
 	printf("quit\n\n");
 	quit();
 }
@@ -8528,42 +8538,45 @@ void Engine::enum_resolutions()
 
 
  
-int Engine::opus_test(Audio &audio)
+int Engine::voice_send(Audio &audio)
 {
-	static unsigned short data[48000];
-	static unsigned short data_out[48000];
+	static unsigned char encode[48000];
 	int size;
-	unsigned int decode_size;
 
 
-	audio.capture_start();
-	printf("Capture test\n");
-	Sleep(1500);
-	audio.capture_sample(data, size);
-	audio.capture_stop();
-	printf("Capture stop\n");
-
-	alGenSources(1, &mic_source);
-	alGenBuffers(1, (unsigned int *)&mic_buffer);
-	alBufferData(mic_buffer, AL_FORMAT_MONO16, data, size, 48000);
-
-	audio.select_buffer(mic_source, mic_buffer);
+	audio.capture_sample(mic_pcm, size);
+	alBufferData(mic_buffer, AL_FORMAT_MONO16, mic_pcm, size, 48000);
 	audio.play(mic_source);
-	Sleep(1500);
 
-	voip.init();
-	voip.encode(data, size / 2);
-	voip.decode(data_out, decode_size);
-	if (size / 2 != decode_size)
+	int i = 0;
+	while (1)
 	{
-		printf("Encoded / Decoded mismatch %d != %d\n", size, decode_size);
+		if (size >= SEGMENT_SIZE)
+		{
+			voip.encode(&mic_pcm[i], SEGMENT_SIZE, encode);
+			net.sendto((char *)encode, SEGMENT_SIZE, "127.0.0.1:65530");
+			i += SEGMENT_SIZE;
+			size -= SEGMENT_SIZE;
+		}
+		else
+		{
+			voip.encode(&mic_pcm[i], size, encode);
+			net.sendto((char *)encode, size, "127.0.0.1:65530");
+			break;
+		}
 	}
+	return 0;
+}
 
-	alBufferData(mic_buffer, AL_FORMAT_MONO16, data_out, decode_size, 48000);
-	audio.select_buffer(mic_source, mic_buffer);
+int Engine::voice_recv(Audio &audio)
+{
+	static unsigned char decode[MAX_PACKET_SIZE];
+	unsigned int size;
+	char ip[128] = "127.0.0.1:65530";
+
+	net.recvfrom((char *)decode, 2048, ip, sizeof(struct sockaddr));
+	voip.decode(decode, mic_pcm, size);
+	alBufferData(mic_buffer, AL_FORMAT_MONO16, mic_pcm, size, 48000);
 	audio.play(mic_source);
-
-	Sleep(1500);
-	voip.destroy();
 	return 0;
 }

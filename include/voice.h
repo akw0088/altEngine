@@ -16,8 +16,8 @@ class Voice
 public:
 	int init();
 	void destroy();
-	int encode(unsigned short *pcm, unsigned int size);
-	int decode(unsigned short *pcm, unsigned int &size);
+	int encode(unsigned short *pcm, unsigned int size, unsigned char *data);
+	int decode(unsigned char *data, unsigned short *pcm, unsigned int &size);
 
 private:
 	OpusEncoder *encoder; 
