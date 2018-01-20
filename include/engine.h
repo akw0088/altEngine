@@ -142,6 +142,7 @@ public:
 	unsigned int mic_buffer[2];
 	unsigned int mic_source[2];
 	unsigned short mic_pcm[48000 * 10];
+	unsigned short decode_pcm[48000 * 10];
 
 	vector<char *> serverlist;
 
@@ -352,6 +353,7 @@ protected:
 	//net stuff
 	int		sequence;
 	Net		net;
+	Net		net_voice;
 	reliablemsg_t	reliable[8];
 	reliablemsg_t	client_reliable;
 	int cl_skip;

@@ -8002,6 +8002,7 @@ int Engine::bind(int port)
 	}
 #endif
 
+	net_voice.bind(NULL, 65530);
 
 	if (net.bind(NULL, port) == 0)
 	{
@@ -8544,11 +8545,15 @@ void Engine::enum_resolutions()
 int Engine::voice_send(Audio &audio)
 {
 	static unsigned char encode[48000];
-	int size;
+	unsigned int size;
+	int isize;
 	static int pong = 0;
 
 
-	audio.capture_sample(mic_pcm, size);
+	audio.capture_sample(mic_pcm, isize);
+	size = isize;
+
+#if 0
 	audio.select_buffer(mic_source[pong], 0);
 	alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, 48000);
 	int al_err = alGetError();
@@ -8561,24 +8566,10 @@ int Engine::voice_send(Audio &audio)
 	pong++;
 	if (pong == 2)
 		pong = 0;
-
-	int i = 0;
-	while (1)
-	{
-		if (size >= SEGMENT_SIZE)
-		{
-			voip.encode(&mic_pcm[i], SEGMENT_SIZE, encode);
-			net.sendto((char *)encode, SEGMENT_SIZE, "127.0.0.1:65530");
-			i += SEGMENT_SIZE;
-			size -= SEGMENT_SIZE;
-		}
-		else
-		{
-			voip.encode(&mic_pcm[i], size, encode);
-			net.sendto((char *)encode, size, "127.0.0.1:65530");
-			break;
-		}
-	}
+#endif
+	unsigned int num_bytes = 0;
+	voip.encode(mic_pcm, size, encode, num_bytes);
+	net_voice.sendto((char *)encode, num_bytes, "127.0.0.1:65530");
 	return 0;
 }
 
@@ -8590,16 +8581,27 @@ int Engine::voice_recv(Audio &audio)
 	int ret;
 	static int pong = 0;
 
-	ret = net.recvfrom((char *)decode, MAX_PACKET_SIZE, ip, strlen(ip));
+	ret = net_voice.recvfrom((char *)decode, MAX_PACKET_SIZE, ip, strlen(ip));
 	if (ret > 0)
 	{
-		voip.decode(decode, mic_pcm, size);
-		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm, size, 48000);
+		size = ret;
+		voip.decode(decode, decode_pcm, size);
+#if 1
+		audio.select_buffer(mic_source[pong], 0);
+		alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, decode_pcm, size, 48000);
+		int al_err = alGetError();
+		if (al_err != AL_NO_ERROR)
+		{
+			debugf("Error alBufferData\n");
+		}
+		audio.select_buffer(mic_source[pong], mic_buffer[pong]);
 		audio.play(mic_source[pong]);
-
 		pong++;
 		if (pong == 2)
 			pong = 0;
+#endif
+
+
 	}
 	return 0;
 }

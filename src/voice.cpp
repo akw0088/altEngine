@@ -29,10 +29,9 @@ int Voice::init()
 
 
 
-int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data)
+int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, unsigned int &num_bytes)
 {
-	opus_int16 in[SEGMENT_SIZE]; 
-	int num_bytes; 
+	static opus_int16 in[SEGMENT_SIZE]; 
 
 	if (size > SEGMENT_SIZE)
 	{
@@ -59,7 +58,7 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data)
 
 int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 { 
-	opus_int16 out[MAX_SEGMENT_SIZE]; 
+	static opus_int16 out[MAX_SEGMENT_SIZE]; 
 	int frame_size;
 
 	frame_size = opus_decode(decoder, data, size, out, MAX_SEGMENT_SIZE, 0); 
