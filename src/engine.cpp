@@ -8557,7 +8557,6 @@ void Engine::enum_resolutions()
  
 int Engine::voice_send(Audio &audio)
 {
-	static unsigned char encode[VOICE_SAMPLE_RATE];
 	unsigned int size;
 	int isize;
 	static int pong = 0;
@@ -8565,6 +8564,7 @@ int Engine::voice_send(Audio &audio)
 	unsigned int uiBuffer;
 	int buffersProcessed = 0;
 	bool local_echo = false;
+	static voicemsg_t msg;
 
 
 	if (looped)
@@ -8636,8 +8636,12 @@ int Engine::voice_send(Audio &audio)
 			}
 
 			int num_bytes = 0;
-			voip.encode(mic_pcm[pong], size, encode, num_bytes);
-			int ret = net_voice.sendto((char *)encode, num_bytes, voice_server);
+			voip.encode(mic_pcm[pong], size, msg.data, num_bytes);
+
+
+			msg.sequence = sequence;
+			msg.qport = qport;
+			int ret = net_voice.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
 			if (ret < 0)
 			{
 				int ret = WSAGetLastError();
@@ -8649,8 +8653,11 @@ int Engine::voice_send(Audio &audio)
 	else if (client_flag)
 	{
 		int num_bytes = 0;
-		voip.encode(mic_pcm[pong], size, encode, num_bytes);
-		int ret = net_voice.sendto((char *)encode, num_bytes, voice_server);
+
+		msg.sequence = sequence;
+		msg.qport = qport;
+		voip.encode(mic_pcm[pong], size, msg.data, num_bytes);
+		int ret = net_voice.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
 		if (ret < 0)
 		{
 			int ret = WSAGetLastError();
@@ -8682,7 +8689,6 @@ int Engine::voice_send(Audio &audio)
 
 int Engine::voice_recv(Audio &audio)
 {
-	static unsigned char decode[SEGMENT_SIZE];
 	unsigned int size;
 	int ret;
 	static int pong = 0;
@@ -8690,6 +8696,9 @@ int Engine::voice_recv(Audio &audio)
 	int buffersProcessed = 0;
 	unsigned int uiBuffer;
 	bool remote_echo = true;
+	static int last_sequence = 0;
+
+	static voicemsg_t msg;
 
 	if (remote_echo)
 	{
@@ -8713,13 +8722,29 @@ int Engine::voice_recv(Audio &audio)
 	}
 
 	char client[128] = "";
-	ret = net_voice.recvfrom((char *)decode, SEGMENT_SIZE, client, 128);
+	ret = net_voice.recvfrom((char *)&msg, SEGMENT_SIZE, client, 128);
 	if (ret > 0)
 	{
 		size = ret;
+
+		if (sequence == 65535)
+			sequence = 0;
+
+		if (sequence > msg.sequence)
+		{
+			// old packet
+			printf("voice chat got old packet %d older than %d\n", msg.sequence, sequence);
+			return 0;
+		}
+		else
+		{
+			sequence = msg.sequence;
+		}
+
+
 		if (remote_echo)
 		{
-			voip.decode(decode, decode_pcm[pong], size);
+			voip.decode(msg.data, decode_pcm[pong], size);
 
 			if (looped)
 			{

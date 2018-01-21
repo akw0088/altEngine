@@ -146,6 +146,14 @@ typedef struct
 
 typedef struct
 {
+	short int sequence;
+	short int qport;
+	unsigned char data[8192];
+} voicemsg_t;
+#define VOICE_HEADER 4
+
+typedef struct
+{
 	bool attack;
 	bool use;
 	bool zoom;
