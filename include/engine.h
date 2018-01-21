@@ -154,6 +154,8 @@ public:
 
 	vector<char *> serverlist;
 
+	char voice_server[128];
+
 	int quad_index;
 	int quad_vertex;
 

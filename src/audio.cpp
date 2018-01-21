@@ -684,7 +684,16 @@ void Audio::capture_sample(unsigned short *pcm, int &size)
 
 	alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, sizeof(int), (int *)&size);
 	if (size > SEGMENT_SIZE)
+	{
+		// we have more than a segment, only get one segment out
 		size = SEGMENT_SIZE;
+	}
+	else if (size < SEGMENT_SIZE)
+	{
+		// if we have less than one packet, leave it in the buffer
+		size = 0;
+		return;
+	}
 
 	alcCaptureSamples(microphone, pcm, size);
 

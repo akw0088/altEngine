@@ -201,6 +201,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	initialized = true;
 
 
+	sprintf(voice_server, "%s", "127.0.0.1:65530");
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
@@ -8103,6 +8104,7 @@ void Engine::connect(char *serverip)
 		client_flag = true;
 		server_flag = false;
 		debugf("Connected\n");
+		sprintf(voice_server, "%s:65530", serverip);
 		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
 		if (sscanf(reliablemsg->msg, "<map>%s</map>", level) == 1)
 		{
@@ -8619,7 +8621,7 @@ int Engine::voice_send(Audio &audio)
 
 	int num_bytes = 0;
 	voip.encode(mic_pcm[pong], size, encode, num_bytes);
-	net_voice.sendto((char *)encode, num_bytes, "127.0.0.1:65530");
+	net_voice.sendto((char *)encode, num_bytes, voice_server);
 
 	pong++;
 	if (pong >= NUM_PONG)
@@ -8645,7 +8647,6 @@ int Engine::voice_recv(Audio &audio)
 {
 	static unsigned char decode[SEGMENT_SIZE];
 	unsigned int size;
-	char ip[128] = "127.0.0.1:65530";
 	int ret;
 	static int pong = 0;
 	static bool looped = false;
@@ -8673,7 +8674,7 @@ int Engine::voice_recv(Audio &audio)
 
 		}
 	}
-	ret = net_voice.recvfrom((char *)decode, SEGMENT_SIZE, ip, strlen(ip));
+	ret = net_voice.recvfrom((char *)decode, SEGMENT_SIZE, voice_server, strlen(voice_server) + 1);
 	if (ret > 0)
 	{
 		size = ret;
