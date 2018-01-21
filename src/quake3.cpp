@@ -3108,6 +3108,11 @@ void Quake3::build_sentry()
 
 	ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
 	ent->rigid->clone(model_table[MODEL_SENTRY1]);
+
+	for (int i = 0; i < 8; i++)
+	{
+		ent->rigid->aabb[i].y += -20.0f; //hack to get height right
+	}
 	ent->model = ent->rigid;
 	ent->construct->immobile = true;
 	ent->construct->render_md5 = false;
@@ -3391,7 +3396,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				Player *enemy = ent->player;
 
 				if (enemy->godmode == false)
+				{
 					enemy->health -= enemy->ammo_lightning * LIGHTNING_DAMAGE;
+				}
 				if (enemy->health < 0)
 				{
 					char msg[256];
@@ -3468,7 +3475,56 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 			Player *target = engine->entity_list[index[i]]->player;
 
 			if (target == NULL)
+			{
+
+				if (engine->entity_list[index[i]]->construct)
+				{
+					int health = engine->entity_list[index[i]]->construct->health;
+					engine->entity_list[index[i]]->construct->health += (int)(LIGHTNING_DAMAGE * quad_factor);
+
+					if (health <= 150)
+					{
+						if (engine->entity_list[index[i]]->construct->level != 1)
+						{
+							engine->entity_list[index[i]]->construct->level = 1;
+							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY1]);
+							for (int i = 0; i < 8; i++)
+							{
+								engine->entity_list[index[i]]->rigid->aabb[i].y += -20.0f; //hack to get height right
+							}
+
+						}
+					}
+					if (health > 150 && health < 180)
+					{
+						if (engine->entity_list[index[i]]->construct->level != 2)
+						{
+							engine->entity_list[index[i]]->construct->level = 2;
+							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY2]);
+							for (int i = 0; i < 8; i++)
+							{
+								engine->entity_list[index[i]]->rigid->aabb[i].y += -20.0f; //hack to get height right
+							}
+
+						}
+					}
+					else if (health >= 180 && health < 220)
+					{
+						if (engine->entity_list[index[i]]->construct->level != 3)
+						{
+							engine->entity_list[index[i]]->construct->level = 3;
+							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY3]);
+							for (int i = 0; i < 8; i++)
+							{
+								engine->entity_list[index[i]]->rigid->aabb[i].y += -20.0f; //hack to get height right
+								engine->entity_list[index[i]]->rigid->aabb[i].z -= 5.0f; //hack to get height right
+							}
+
+						}
+					}
+				}
 				continue;
+			}
 
 			if (target->health <= 0)
 				continue;
@@ -3478,8 +3534,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 			debugf("Player %s hit %s with the lightning gun for %d damage\n", player.name,
 				target->name, (int)(LIGHTNING_DAMAGE * quad_factor));
-
 			sprintf(cmd, "hurt %d %d", index[i], (int)(LIGHTNING_DAMAGE * quad_factor));
+
+
 			console(self, cmd, engine->menu, engine->entity_list);
 
 			debugf("%s has %d health\n", target->name,
@@ -3726,8 +3783,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 				target->name, (int)(GAUNTLET_DAMAGE * quad_factor));
 			sprintf(cmd, "hurt %d %d", index[i], (int)(GAUNTLET_DAMAGE * quad_factor));
 			console(self, cmd, engine->menu, engine->entity_list);
-			debugf("%s has %d health\n", target->name,
-				target->health);
+			debugf("%s has %d health\n", target->name, target->health);
 			player.stats.hits++;
 
 			if (target->health <= 0 && target->state != PLAYER_DEAD)

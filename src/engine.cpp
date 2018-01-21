@@ -8370,7 +8370,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 		if (i == (unsigned int)self)
 			continue;
 
-		if (entity_list[i]->player && rigid != NULL)
+		if ((entity_list[i]->player || entity_list[i]->construct) && rigid != NULL)
 		{
 			float distance = FLT_MAX;
 			vec3 min = rigid->aabb[0] + entity_list[i]->position - rigid->center;
