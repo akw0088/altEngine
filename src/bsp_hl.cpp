@@ -224,7 +224,7 @@ void HLBsp::render_face(int face)
 	int edge0;
 	int edge1;
 	int edge2;
-	int edge3;
+//	int edge3;
 
 	// usual case is four edges making a quad
 	for (int i = 0; i < data.Face[face].numedges; i++)

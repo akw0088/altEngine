@@ -514,7 +514,5 @@ int debugf(const char *format, ...);
 //quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)
 #define UNITS_TO_METERS (8.0f * 8.0f * 3.3f)
 
-#define VOICE_SAMPLE_RATE 48000
-
 
 #endif

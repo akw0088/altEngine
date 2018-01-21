@@ -7,12 +7,22 @@ int Voice::init()
 	//OPUS_APPLICATION_AUDIO -- music
 	//OPUS_APPLICATION_VOIP -- voice
 	//OPUS_APPLICATION_RESTRICTED_LOWDELAY -- low delay voice
-	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_AUDIO, &ret);
+	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_VOIP, &ret);
 	if (ret < 0) 
 	{ 
 		printf("failed to create an encoder: %s\n", opus_strerror(ret)); 
 		return -1; 
 	} 
+
+
+	int complexity = 0;
+
+	ret = opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(complexity));
+	if (ret < 0)
+	{
+		printf("failed to set complexity: %s\n", opus_strerror(ret));
+		return -1;
+	}
 
 	/*
 	ret = opus_encoder_ctl(encoder, OPUS_SET_BITRATE(BITRATE)); 
@@ -34,15 +44,28 @@ int Voice::init()
 
 
 
-int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, unsigned int &num_bytes)
+int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, int &num_bytes)
 {
+	static short extend_buffer[SEGMENT_SIZE];
 	if (size > SEGMENT_SIZE)
 	{
+		printf("warning dropping samples\n");
 		size = SEGMENT_SIZE;
 	}
 
+	// opus only works with 16 bit samples, and I get garbled audio without using 8bit for some reason
+	unsigned char *pdata = (unsigned char *)pcm;
+	for (int i = 0; i < SEGMENT_SIZE; i++)
+	{
+		extend_buffer[i] = 0;
+		if (i < size)
+		{
+			extend_buffer[i] = (INT16)(pdata[i] - 0x80) << 8;;
+		}
+	}
+
 	// Encode the frame.
-	num_bytes = opus_encode(encoder, (opus_int16 *)pcm, SEGMENT_SIZE, data, MAX_PACKET_SIZE);
+	num_bytes = opus_encode(encoder, (opus_int16 *)extend_buffer, SEGMENT_SIZE, data, MAX_PACKET_SIZE);
 	if (num_bytes < 0)
 	{ 
 		printf("encode failed: %s\n", opus_strerror(num_bytes)); 

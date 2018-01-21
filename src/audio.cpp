@@ -232,8 +232,8 @@ void Audio::init()
 		return;
 	}
 
-#define SEGMENT_SIZE 800
-	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, AL_FORMAT_MONO8, SEGMENT_SIZE);
+	// step is every 8 ms, 48khz per second, or 48 samples per ms, which is 384 samples per step give or take
+	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, VOICE_FORMAT, 2 * SEGMENT_SIZE);
 	if (microphone == NULL)
 	{
 		debugf("No microphone has been found.\n");
@@ -680,8 +680,16 @@ void Audio::capture_start()
 
 void Audio::capture_sample(unsigned short *pcm, int &size)
 {
+	static int max_recv = 0;
+
 	alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, sizeof(int), (int *)&size);
+	if (size > SEGMENT_SIZE)
+		size = SEGMENT_SIZE;
+
 	alcCaptureSamples(microphone, pcm, size);
+
+	if (size > max_recv)
+		max_recv = size;
 }
 
 

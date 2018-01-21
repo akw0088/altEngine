@@ -1,6 +1,7 @@
 #include "include.h"
 
 #define VOICE_SAMPLE_RATE 48000
+#define VOICE_FORMAT	AL_FORMAT_MONO8
 
 #ifndef ENGINE_H
 #define ENGINE_H
@@ -145,8 +146,11 @@ public:
 #define NUM_PONG 2
 	unsigned int mic_buffer[NUM_PONG];
 	unsigned int mic_source;
-	unsigned short mic_pcm[NUM_PONG][VOICE_SAMPLE_RATE * 10];
-	unsigned short decode_pcm[NUM_PONG][VOICE_SAMPLE_RATE * 10];
+	unsigned short mic_pcm[NUM_PONG][SEGMENT_SIZE];
+	
+	unsigned int decode_buffer[NUM_PONG];
+	unsigned short decode_pcm[NUM_PONG][SEGMENT_SIZE];
+	unsigned int decode_source;
 
 	vector<char *> serverlist;
 
