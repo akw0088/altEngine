@@ -8092,6 +8092,9 @@ void Engine::connect(char *serverip)
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &client_reliable, client_reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 
+
+	net_voice.bind(NULL, 65530);
+
 	net.connect(serverip, net_port);
 	debugf("Sending map request\n");
 	net.send((char *)&clientmsg, clientmsg.length);
@@ -8620,8 +8623,14 @@ int Engine::voice_send(Audio &audio)
 	}
 
 	int num_bytes = 0;
-//	voip.encode(mic_pcm[pong], size, encode, num_bytes);
-//	net_voice.sendto((char *)encode, num_bytes, voice_server);
+	voip.encode(mic_pcm[pong], size, encode, num_bytes);
+	int ret = net_voice.sendto((char *)encode, num_bytes, voice_server);
+	if (ret < 0)
+	{
+		int ret = WSAGetLastError();
+
+		printf("Failed to send voice data %d\n", ret);
+	}
 
 	pong++;
 	if (pong >= NUM_PONG)
@@ -8687,7 +8696,7 @@ int Engine::voice_recv(Audio &audio)
 			colon = '\0';
 		}
 	}
-
+	
 	char client[128] = "";
 	ret = net_voice.recvfrom((char *)decode, SEGMENT_SIZE, client, 128);
 	if (ret > 0)
