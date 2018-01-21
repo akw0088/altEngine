@@ -73,6 +73,9 @@ Engine::Engine()
 	lightning_vbo = 0;
 	lightning_ibo = 0;
 	last_server_sequence = 0;
+	sequence = 0;
+	voice_send_sequence = 0;
+	voice_recv_sequence = 0;
 	client_flag = false;
 	global_vao = 0;
 	render_fbo = 0;
@@ -86,7 +89,6 @@ Engine::Engine()
 	ref = NULL;
 	thug22 = NULL;
 	sensitivity = 1.0f;
-	sequence = 0;
 	server_flag = false;
 	server_spawn = -1;
 	spiral_vbo = 0;
@@ -8640,7 +8642,7 @@ int Engine::voice_send(Audio &audio)
 			voip.encode(mic_pcm[pong], size, msg.data, num_bytes);
 
 
-			msg.sequence = sequence;
+			msg.sequence = voice_send_sequence++;
 			msg.qport = qport;
 			int ret = net_voice.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
 			if (ret < 0)
@@ -8655,7 +8657,7 @@ int Engine::voice_send(Audio &audio)
 	{
 		int num_bytes = 0;
 
-		msg.sequence = sequence;
+		msg.sequence = voice_send_sequence++;
 		msg.qport = qport;
 		voip.encode(mic_pcm[pong], size, msg.data, num_bytes);
 		int ret = net_voice.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
@@ -8728,18 +8730,15 @@ int Engine::voice_recv(Audio &audio)
 	{
 		size = ret;
 
-		if (sequence == 65535)
-			sequence = 0;
-
-		if (sequence > msg.sequence)
+		if (voice_recv_sequence > msg.sequence)
 		{
 			// old packet
-			printf("voice chat got old packet %d older than %d\n", msg.sequence, sequence);
+			printf("voice chat got old packet %d older than %d\n", msg.sequence, voice_recv_sequence);
 			return 0;
 		}
 		else
 		{
-			sequence = msg.sequence;
+			voice_recv_sequence = msg.sequence + 1;
 		}
 
 

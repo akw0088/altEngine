@@ -362,6 +362,8 @@ protected:
 
 	//net stuff
 	int		sequence;
+	unsigned short int		voice_send_sequence;
+	unsigned short int		voice_recv_sequence;
 	Net		net;
 	Net		net_voice;
 	reliablemsg_t	reliable[8];
