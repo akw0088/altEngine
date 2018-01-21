@@ -8622,15 +8622,43 @@ int Engine::voice_send(Audio &audio)
 		return 0;
 	}
 
-	int num_bytes = 0;
-	voip.encode(mic_pcm[pong], size, encode, num_bytes);
-	int ret = net_voice.sendto((char *)encode, num_bytes, voice_server);
-	if (ret < 0)
-	{
-		int ret = WSAGetLastError();
 
-		printf("Failed to send voice data %d\n", ret);
+	if (server_flag)
+	{
+		for (int i = 0; i < client_list.size(); i++)
+		{
+			sprintf(voice_server, "%s", client_list[i]->socketname);
+
+			char *colon = strstr(voice_server, ":");
+			if (colon)
+			{
+				colon = '\0';
+			}
+
+			int num_bytes = 0;
+			voip.encode(mic_pcm[pong], size, encode, num_bytes);
+			int ret = net_voice.sendto((char *)encode, num_bytes, voice_server);
+			if (ret < 0)
+			{
+				int ret = WSAGetLastError();
+
+				printf("Failed to send voice data %d\n", ret);
+			}
+		}
 	}
+	else if (client_flag)
+	{
+		int num_bytes = 0;
+		voip.encode(mic_pcm[pong], size, encode, num_bytes);
+		int ret = net_voice.sendto((char *)encode, num_bytes, voice_server);
+		if (ret < 0)
+		{
+			int ret = WSAGetLastError();
+
+			printf("Failed to send voice data %d\n", ret);
+		}
+	}
+
 
 	pong++;
 	if (pong >= NUM_PONG)
@@ -8684,19 +8712,6 @@ int Engine::voice_recv(Audio &audio)
 		}
 	}
 
-	if (server_flag)
-	{
-		if (client_list.size())
-		{
-			sprintf(voice_server, "%s", client_list[0]->socketname);
-		}
-		char *colon = strstr(voice_server, ":");
-		if (colon)
-		{
-			colon = '\0';
-		}
-	}
-	
 	char client[128] = "";
 	ret = net_voice.recvfrom((char *)decode, SEGMENT_SIZE, client, 128);
 	if (ret > 0)
