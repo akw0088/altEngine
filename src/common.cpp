@@ -2771,7 +2771,7 @@ void WriteObj(char *filename, vertex_t *vertex_array, unsigned int num_vertex, u
 
 void print_entity_meminfo(vector<Entity *> &entity_list)
 {
-
+#if 0
 	for (int i = 0; i < entity_list.size(); i++)
 	{
 		debugf("entity_list[%d] = %X\n", i, entity_list[i]);
@@ -2787,6 +2787,7 @@ void print_entity_meminfo(vector<Entity *> &entity_list)
 		debugf("   brushinfo\t = %X\n", (void *)entity_list[i]->brushinfo);
 		debugf("   entstring\t = %X\n\n\n", (void *)entity_list[i]->entstring);
 	}
+#endif
 }
 
 void dns_query(Net &net)
