@@ -8632,8 +8632,9 @@ int Engine::voice_send(Audio &audio)
 			char *colon = strstr(voice_server, ":");
 			if (colon)
 			{
-				colon = '\0';
+				*colon = '\0';
 			}
+			sprintf(colon, ":65530");
 
 			int num_bytes = 0;
 			voip.encode(mic_pcm[pong], size, msg.data, num_bytes);
