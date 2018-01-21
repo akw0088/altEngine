@@ -60,7 +60,7 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, i
 		extend_buffer[i] = 0;
 		if (i < size)
 		{
-			extend_buffer[i] = (INT16)(pdata[i] - 0x80) << 8;;
+			extend_buffer[i] = (unsigned short)(pdata[i] - 0x80) << 8;;
 		}
 	}
 

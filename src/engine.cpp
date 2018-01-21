@@ -3789,7 +3789,7 @@ void Engine::parse_player_string(char *msg)
 					ent->player = new Player(ent, gfx, audio, 21, TEAM_NONE, ENT_SERVER, game->model_table);
 					ent->player->local = false;
 					ent->player->type = SERVER;
-					sprintf(ent->player->name, name);
+					sprintf(ent->player->name, "%s", name);
 					printf("Adding server player \"%s\" at index %d\n", name, index);
 				}
 			}
@@ -8647,7 +8647,11 @@ int Engine::voice_send(Audio &audio)
 			int ret = net_voice.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
 			if (ret < 0)
 			{
+				#ifdef WIN32
 				int ret = WSAGetLastError();
+				#else
+				int ret = errno;
+				#endif
 
 				printf("Failed to send voice data %d\n", ret);
 			}
@@ -8663,7 +8667,11 @@ int Engine::voice_send(Audio &audio)
 		int ret = net_voice.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
 		if (ret < 0)
 		{
+			#ifdef WIN32
 			int ret = WSAGetLastError();
+			#else
+			int ret = errno;
+			#endif
 
 			printf("Failed to send voice data %d\n", ret);
 		}
@@ -8699,7 +8707,6 @@ int Engine::voice_recv(Audio &audio)
 	int buffersProcessed = 0;
 	unsigned int uiBuffer;
 	bool remote_echo = true;
-	static int last_sequence = 0;
 
 	static voicemsg_t msg;
 
