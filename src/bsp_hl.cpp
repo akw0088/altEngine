@@ -426,8 +426,8 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 		dtexinfo_t *info = &data.TexInfo[data.Face[i].texinfo];
 
-		int w = data.Face[i].LightmapTextureSizeInLuxels[0] + 1;
-		int h = data.Face[i].LightmapTextureSizeInLuxels[1] + 1;
+		//int w = data.Face[i].LightmapTextureSizeInLuxels[0] + 1;
+		//int h = data.Face[i].LightmapTextureSizeInLuxels[1] + 1;
 
 
 

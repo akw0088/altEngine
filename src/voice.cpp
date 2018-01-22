@@ -77,7 +77,6 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, i
 
 int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 { 
-	static opus_int16 out[MAX_SEGMENT_SIZE]; 
 	int frame_size;
 
 	frame_size = opus_decode(decoder, data, size, (opus_int16 *)pcm, MAX_SEGMENT_SIZE, 0);
