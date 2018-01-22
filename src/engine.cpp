@@ -2354,12 +2354,12 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		//render entity
 		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)
 		{
-			int player = find_type(ENT_PLAYER, 0);
-			int current_light = 0;
-			if (player != -1)
-			{
-				current_light = entity_list[player]->player->current_light;
-			}
+//			int player = find_type(ENT_PLAYER, 0);
+//			int current_light = 0;
+//			if (player != -1)
+//			{
+//				current_light = entity_list[player]->player->current_light;
+//			}
 
 			//int lod = clamp(current_light, 0, 10);
 
@@ -2508,12 +2508,12 @@ void Engine::render_shadow_volumes()
 	}
 	*/
 
-	int player = find_type(ENT_PLAYER, 0);
-	int current_light = 0;
-	if (player != -1)
-	{
-		current_light = entity_list[player]->player->current_light;
-	}
+//	int player = find_type(ENT_PLAYER, 0);
+//	int current_light = 0;
+//	if (player != -1)
+//	{
+//		current_light = entity_list[player]->player->current_light;
+//	}
 
 
 	global.Select();
