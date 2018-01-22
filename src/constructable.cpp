@@ -105,7 +105,7 @@ int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self)
 			if (team != TEAM_NONE && player->team == team)
 				continue;
 
-			if (team == TEAM_NONE || owner == i)
+			if (team == TEAM_NONE || (unsigned int)owner == i)
 			{
 				continue;
 			}
