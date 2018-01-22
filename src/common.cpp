@@ -2842,6 +2842,11 @@ void dns_query(Net &net)
 
 	char ip[] = "8.8.8.8:53";
 	int ret = net.sendto((char *)data, sizeof(data), ip);
+	if (ret < 0)
+	{
+		printf("dns request send failed\n");
+		return;
+	}
 
 	//Sleep(100);
 	memset(buffer, 0, sizeof(buffer));

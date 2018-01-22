@@ -2179,7 +2179,7 @@ bool Scene::Accelerate(const vec3& position, float size)
 
 	// Construct tree root
 	octree = new OctreeNode();
-	octree->bounds;// = FromMinMax(min, max);
+	//octree->bounds;// = FromMinMax(min, max);
 	octree->children = 0;
 	for (int i = 0, size = objects.size(); i< size; ++i)
 	{

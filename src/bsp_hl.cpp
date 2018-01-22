@@ -113,7 +113,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 	render(pos);
 
 
-	for (int i = 0; i < data.num_verts; i++)
+	for (unsigned int i = 0; i < data.num_verts; i++)
 	{
 		map_vertex[i].position = data.Vert[i];// +vec3(-11584, -5088, 2050); //offset for dust2
 											  //		map_vertex[i].texCoord0 = vec2(data.Vert[i].x, data.Vert[i].y); //just to have something
@@ -122,7 +122,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 	}
 
 	// generate normals
-	for (int i = 0; i < index.size();)
+	for (unsigned int i = 0; i < index.size();)
 	{
 		if (i == 0)
 		{
@@ -354,7 +354,7 @@ void HLBsp::load_textures(Graphics &gfx)
 	vector<char *> texture_list;
 
 
-	for (int i = 0; i < data.num_faces; i++)
+	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		bool duplicate = false;
 		char filename[128];
@@ -365,7 +365,7 @@ void HLBsp::load_textures(Graphics &gfx)
 
 		sprintf(filename, "media/materials/%s.tga", texture);
 
-		for (int i = 0; i < texture_list.size(); i++)
+		for (unsigned int i = 0; i < texture_list.size(); i++)
 		{
 			if (strcmp(filename, texture_list[i]) == 0)
 			{
@@ -401,7 +401,7 @@ void HLBsp::load_textures(Graphics &gfx)
 	}
 	printf("loaded %d of %d textures\n", loaded, attempted);
 
-	for (int i = 0; i < texture_list.size(); i++)
+	for (unsigned int i = 0; i < texture_list.size(); i++)
 	{
 		delete[] texture_list[i];
 	}
@@ -414,7 +414,7 @@ void HLBsp::load_textures(Graphics &gfx)
 
 void HLBsp::load_lightmap(Graphics &gfx)
 {
-	for (int i = 0; i < data.num_faces; i++)
+	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		vec2 min(8192, 8192);
 		vec2 max(-8192, -8192);

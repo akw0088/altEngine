@@ -55,7 +55,7 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, i
 
 	// opus only works with 16 bit samples, and I get garbled audio without using 8bit for some reason
 	unsigned char *pdata = (unsigned char *)pcm;
-	for (int i = 0; i < SEGMENT_SIZE; i++)
+	for (unsigned int i = 0; i < SEGMENT_SIZE; i++)
 	{
 		extend_buffer[i] = 0;
 		if (i < size)

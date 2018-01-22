@@ -99,13 +99,13 @@ typedef struct bvh_node_s
 {
 	aabb_t bounds;
 	struct bvh_node_s *children;
-	unsigned int numTriangles;
+	int numTriangles;
 	int *triangles;
 } bvh_node_t;
 
 typedef struct
 {
-	unsigned int numTriangles;
+	int numTriangles;
 	union
 	{
 		triangle_t *triangles;//size = numTriangles

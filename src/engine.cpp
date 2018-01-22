@@ -8627,7 +8627,7 @@ int Engine::voice_send(Audio &audio)
 
 	if (server_flag)
 	{
-		for (int i = 0; i < client_list.size(); i++)
+		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
 			sprintf(voice_server, "%s", client_list[i]->socketname);
 
