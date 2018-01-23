@@ -60,7 +60,7 @@ int Voice::init(unsigned short qport)
 
 void Voice::bind(char *ip, unsigned short port)
 {
-	net.bind(ip, port);
+	sock.bind(ip, port);
 }
 
 
@@ -182,9 +182,9 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	{
 		for (unsigned int i = 0; i < client_list.size(); i++)
 		{
-			sprintf(voice_server, "%s", client_list[i]->socketname);
+			sprintf(server, "%s", client_list[i]->socketname);
 
-			char *colon = strstr(voice_server, ":");
+			char *colon = strstr(server, ":");
 			if (colon)
 			{
 				*colon = '\0';
@@ -197,7 +197,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 
 			msg.sequence = voice_send_sequence++;
 			msg.qport = qport;
-			int ret = net.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
+			int ret = sock.sendto((char *)&msg, VOICE_HEADER + num_bytes, server);
 			if (ret < 0)
 			{
 #ifdef WIN32
@@ -217,7 +217,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 		msg.sequence = voice_send_sequence++;
 		msg.qport = qport;
 		encode(mic_pcm[pong], size, msg.data, num_bytes);
-		int ret = net.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
+		int ret = sock.sendto((char *)&msg, VOICE_HEADER + num_bytes, server);
 		if (ret < 0)
 		{
 #ifdef WIN32
@@ -285,7 +285,7 @@ int Voice::voice_recv(Audio &audio)
 	}
 
 	char client[128] = "";
-	ret = net.recvfrom((char *)&msg, SEGMENT_SIZE, client, 128);
+	ret = sock.recvfrom((char *)&msg, SEGMENT_SIZE, client, 128);
 	if (ret > 0)
 	{
 		size = ret;

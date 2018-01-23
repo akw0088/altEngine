@@ -201,7 +201,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	initialized = true;
 
 
-	sprintf(voice_server, "%s", "127.0.0.1:65530");
+	sprintf(voice.server, "%s", "127.0.0.1:65530");
 	srand((unsigned int)time(NULL));
 	qport = rand();
 
@@ -581,7 +581,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 
 //	shadowmap.init(&gfx);
-	dns_query(net);
+	dns_query(sock);
 
 }
 
@@ -616,7 +616,7 @@ void Engine::report_master()
 	report.capturelimit = game->capturelimit;
 	for (unsigned int i = 0; i < num_master; i++)
 	{
-		int ret = net.sendto((char *)&report, sizeof(report_t), master_list[i]);
+		int ret = sock.sendto((char *)&report, sizeof(report_t), master_list[i]);
 		if (ret != sizeof(report_t))
 		{
 			debugf("Failed to send master report to %s\n", master_list[i]);
@@ -3569,7 +3569,7 @@ void Engine::step(int tick)
 	sequence++;
 	if (server_flag && sequence)
 	{
-		server_recv();
+		while (server_recv());
 		server_send();
 
 		while (voice.voice_send(audio, client_list, client_flag, server_flag));
@@ -3577,7 +3577,7 @@ void Engine::step(int tick)
 	}
 	else if (client_flag && sequence)
 	{
-		client_recv();
+		while (client_recv());
 		client_send();
 		while (voice.voice_send(audio, client_list, client_flag, server_flag));
 		while (voice.voice_recv(audio));
@@ -3813,11 +3813,11 @@ void Engine::send_player_string(servermsg_t &servermsg)
 		servermsg.compressed_size = 0;
 		servermsg.length = SERVER_HEADER + reliable[i].size;
 		memcpy(&servermsg.data[servermsg.data_size], &reliable[i], reliable[i].size);
-		net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 	}
 }
 
-void Engine::server_recv()
+int Engine::server_recv()
 {
 	static servermsg_t	servermsg;
 	static clientmsg_t clientmsg;
@@ -3828,11 +3828,11 @@ void Engine::server_recv()
 	char name[LINE_SIZE] = { 0 };
 
 	// get client packet
-	int size = net.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
+	int size = sock.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
 	if (size <= 0)
 	{
 		netinfo.recv_empty = true;
-		return;
+		return 0;
 	}
 	netinfo.recv_empty = false;
 
@@ -3840,7 +3840,7 @@ void Engine::server_recv()
 	if (clientmsg.length != size)
 	{
 		printf("Packet size mismatch\n");
-		return;
+		return 1;
 	}
 
 	// see if this ip/port combo already connected to server
@@ -3868,7 +3868,7 @@ void Engine::server_recv()
 		{
 			printf("Got old client packet\n");
 			client_list[index]->netinfo.dropped++;
-			return;
+			return 1;
 		}
 
 		client_list[index]->server_sequence = clientmsg.server_sequence; //  Client is ACK'ing our sequence
@@ -3883,7 +3883,7 @@ void Engine::server_recv()
 		if ((unsigned int)client_list[index]->ent_id > entity_list.size())
 		{
 			printf("Invalid Entity\n");
-			return;
+			return 1;
 		}
 
 		client_list[index]->last_time = (unsigned int)time(NULL);
@@ -3974,8 +3974,8 @@ void Engine::server_recv()
 
 			memcpy(&servermsg.data[0], &reliable, reliable[index].size);
 			servermsg.length = SERVER_HEADER + reliable[index].size;
-			net.sendto((char *)&servermsg, servermsg.length, socketname);
-			return;
+			sock.sendto((char *)&servermsg, servermsg.length, socketname);
+			return 1;
 		}
 
 		servermsg.sequence = sequence;
@@ -3987,7 +3987,7 @@ void Engine::server_recv()
 
 		memcpy(&servermsg.data[0], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + reliable[index].size;
-		net.sendto((char *)&servermsg, servermsg.length, socketname);
+		sock.sendto((char *)&servermsg, servermsg.length, socketname);
 		debugf("sent client map data\n");
 	}
 	else if ( 1 == sscanf(reliablemsg->msg, "<player \"%[^\"]/>", name))
@@ -4022,13 +4022,13 @@ void Engine::server_recv()
 		if (found)
 		{
 			//printf("Client already spawned, ignoring\n");
-			return;
+			return 1;
 		}
 		client_t *client = (client_t *)malloc(sizeof(client_t));
 		if (client == NULL)
 		{
 			debugf("malloc failed allocating client");
-			return;
+			return 1;
 		}
 
 		memset(client, 0, sizeof(client_t));
@@ -4073,7 +4073,7 @@ void Engine::server_recv()
 		
 		memcpy(&servermsg.data[servermsg.data_size], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + reliable[index].size;
-		net.sendto((char *)&servermsg, servermsg.length, client->socketname);
+		sock.sendto((char *)&servermsg, servermsg.length, client->socketname);
 		debugf("Client is now entity %d\n", client->ent_id);
 
 
@@ -4106,7 +4106,7 @@ void Engine::server_recv()
 
 		memcpy(&servermsg.data[servermsg.data_size], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + servermsg.data_size + reliable[index].size;
-		net.sendto((char *)&servermsg, servermsg.length, socketname);
+		sock.sendto((char *)&servermsg, servermsg.length, socketname);
 	}
 	else if (strcmp(reliablemsg->msg, "getchallenge") == 0)
 	{
@@ -4135,6 +4135,7 @@ void Engine::server_recv()
 		containing the protocol version of the client, the qport, the challenge string (obtained via getchallenge), and the userinfo.
 		*/
 
+	return 1;
 }
 
 
@@ -4632,7 +4633,7 @@ void Engine::server_send()
 		netinfo.num_ents = servermsg.num_ents;
 		netinfo.size = servermsg.length;
 
-		int num_sent = net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		int num_sent = sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 		if (num_sent <= 0)
 		{
 			netinfo.send_full = true;
@@ -4675,7 +4676,7 @@ void Engine::server_send()
 	}
 }
 
-void Engine::client_recv()
+int Engine::client_recv()
 {
 	static unsigned char data[16384];
 	static servermsg_t	servermsg;
@@ -4685,23 +4686,23 @@ void Engine::client_recv()
 
 	// get entity information
 #ifdef WIN32
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(net.servaddr), (int *)&socksize);
+	int size = ::recvfrom(sock.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(sock.servaddr), (int *)&socksize);
 #else
-	int size = ::recvfrom(net.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(net.servaddr), (unsigned int *)&socksize);
+	int size = ::recvfrom(sock.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(sock.servaddr), (unsigned int *)&socksize);
 #endif
 	if ( size > 0)
 	{
 		if (size != servermsg.length)
 		{
 			printf("Packet size mismatch: %d %d\n", size, servermsg.length);
-			return;
+			return 1;
 		}
 
 		if (servermsg.sequence < last_server_sequence)
 		{
 			printf("Got old server packet\n");
 			netinfo.dropped++;
-			return;
+			return 1;
 		}
 
 		double delay = ping_time_end(servermsg.client_sequence);
@@ -4729,7 +4730,7 @@ void Engine::client_recv()
 			if (dsize != servermsg.data_size)
 			{
 				printf("Decompressed size mismatch: %d %d\n", dsize, (int)(servermsg.data_size));
-				return;
+				return 1;
 			}
 			netinfo.uncompressed_size = dsize + SERVER_HEADER;
 		}
@@ -4741,6 +4742,10 @@ void Engine::client_recv()
 
 		handle_servermsg(servermsg, data, rmsg);
 		last_server_sequence = servermsg.sequence;
+	}
+	else
+	{
+		return 0;
 	}
 }
 
@@ -4778,7 +4783,7 @@ void Engine::client_send()
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 
 	ping_time_start(sequence);
-	int num_sent = ::sendto(net.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(net.servaddr), socksize);
+	int num_sent = ::sendto(sock.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(sock.servaddr), socksize);
 
 	if (server_flag == false)
 	{
@@ -5866,7 +5871,7 @@ void Engine::kick(unsigned int i)
 	reliable[i].sequence = sequence;
 	servermsg.length = SERVER_HEADER + reliable[i].size;
 	memcpy(servermsg.data, &reliable, reliable[i].size);
-	net.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+	sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 	debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
 	free((void *)client_list[i]);
 	client_list.erase(client_list.begin() + i);
@@ -5923,7 +5928,7 @@ void Engine::unload()
 			kick(0);
 		}
 		client_list.clear();
-		net.closesock();
+		sock.closesock();
 		server_flag = false;
 	}
 
@@ -8007,7 +8012,7 @@ int Engine::bind(int port)
 
 	voice.bind(NULL, 65530);
 
-	if (net.bind(NULL, port) == 0)
+	if (sock.bind(NULL, port) == 0)
 	{
 		client_flag = false;
 		server_flag = true;
@@ -8030,13 +8035,13 @@ void Engine::query_master()
 	sprintf(from, "127.0.0.1:65535");
 	for (unsigned int i = 0; i < num_master; i++)
 	{
-		net.sendto((char *)&msg, sizeof(int), master_list[i]);
+		sock.sendto((char *)&msg, sizeof(int), master_list[i]);
 		debugf("Sending request to master server %s\n", master_list[i]);
 	}
 #ifdef WIN32
 	Sleep(500);
 #endif
-	int num_read = net.recvfrom(response, 512 * sizeof(report_t), from, 1023);
+	int num_read = sock.recvfrom(response, 512 * sizeof(report_t), from, 1023);
 
 	report = (report_t *)response;
 	int num_report = num_read / sizeof(report_t);
@@ -8089,19 +8094,19 @@ void Engine::connect(char *serverip)
 
 	voice.bind(NULL, 65530);
 
-	net.connect(serverip, net_port);
+	sock.connect(serverip, net_port);
 	debugf("Sending map request\n");
-	net.send((char *)&clientmsg, clientmsg.length);
+	sock.send((char *)&clientmsg, clientmsg.length);
 	debugf("Waiting for server info\n");
 
-	if ( net.recv((char *)&servermsg, 8192, 5) )
+	if (sock.recv((char *)&servermsg, 8192, 5) )
 	{
 		char level[LINE_SIZE];
 
 		client_flag = true;
 		server_flag = false;
 		debugf("Connected\n");
-		sprintf(voice_server, "%s:65530", serverip);
+		sprintf(voice.server, "%s:65530", serverip);
 		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
 		if (sscanf(reliablemsg->msg, "<map>%s</map>", level) == 1)
 		{
@@ -8158,7 +8163,7 @@ void Engine::disconnect()
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &client_reliable, client_reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 	debugf("disconnecting\n");
-	net.send((char *)&clientmsg, clientmsg.length);
+	sock.send((char *)&clientmsg, clientmsg.length);
 }
 
 

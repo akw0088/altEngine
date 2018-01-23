@@ -2790,7 +2790,7 @@ void print_entity_meminfo(vector<Entity *> &entity_list)
 #endif
 }
 
-void dns_query(Net &net)
+void dns_query(Socket &sock)
 {
 	unsigned char buffer[LINE_SIZE];
 
@@ -2841,7 +2841,7 @@ void dns_query(Net &net)
 	};
 
 	char ip[] = "8.8.8.8:53";
-	int ret = net.sendto((char *)data, sizeof(data), ip);
+	int ret = sock.sendto((char *)data, sizeof(data), ip);
 	if (ret < 0)
 	{
 		printf("dns request send failed\n");
@@ -2850,7 +2850,7 @@ void dns_query(Net &net)
 
 	//Sleep(100);
 	memset(buffer, 0, sizeof(buffer));
-	net.recvfrom((char *)buffer, sizeof(buffer), ip, strlen(ip));
+	sock.recvfrom((char *)buffer, sizeof(buffer), ip, strlen(ip));
 
 	dns_header_t *header = (dns_header_t *)&buffer[0];
 	dns_answer_t *answer = (dns_answer_t *)&buffer[sizeof(dns_header_t)];

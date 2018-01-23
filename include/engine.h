@@ -77,7 +77,7 @@ public:
 	int GetKeyState(input_t &keyboard);
 	input_t GetKeyState(int keystate);
 	void bind_keys();
-	void server_recv();
+	int server_recv();
 	void server_send();
 	void server_send_state(int client);
 	void set_player_string(char *msg, client_t *client);
@@ -85,7 +85,7 @@ public:
 	void send_player_string(servermsg_t &servermsg);
 	void client_rename();
 	void server_rename(char *oldname, char *newname, int self);
-	void client_recv();
+	int client_recv();
 	void client_send();
 	int handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
@@ -142,8 +142,6 @@ public:
 
 
 	vector<char *> serverlist;
-
-	char voice_server[128];
 
 	int quad_index;
 	int quad_vertex;
@@ -351,7 +349,7 @@ protected:
 
 	//net stuff
 	int		sequence;
-	Net		net;
+	Socket		sock;
 	reliablemsg_t	reliable[8];
 	reliablemsg_t	client_reliable;
 	int cl_skip;

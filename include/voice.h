@@ -22,12 +22,13 @@ public:
 	int voice_send(Audio &audio, vector<client_t *> &client_list, bool client_flag, bool server_flag);
 	int voice_recv(Audio &audio);
 
+	char server[128];
 private:
 	OpusEncoder *encoder;
 	OpusDecoder *decoder;
 
-	char voice_server[128];
-	Net		net;
+	
+	Socket		sock;
 	unsigned short qport;
 	unsigned short int		voice_send_sequence;
 	unsigned short int		voice_recv_sequence;
