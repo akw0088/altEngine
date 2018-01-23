@@ -224,7 +224,7 @@ vec3 &vec3::operator*=(const float scalar)
 float vec3::angle(const vec3 &r) const
 {
 	float m = newtonSqrt( (x * x + y * y + z * z) * (r.x * r.x + r.y * r.y + r.z * r.z));
-	float angle = facos((*this) * r / m);
+	float angle = (float)facos((*this) * r / m);
 	return angle;
 }
 
@@ -330,7 +330,7 @@ float vec2::operator*(const vec2 &vector) const
 float vec2::angle(const vec2 &r) const
 {
 	float m = newtonSqrt( (x * x + y * y) * (r.x * r.x + r.y * r.y) );
-	float angle = facos((*this) * r / m);
+	float angle = (float)facos((*this) * r / m);
 	return angle;
 }
 

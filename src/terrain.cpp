@@ -401,8 +401,8 @@ float Terrain::GetHeight(const vec3 &position, vec3 &normal)
 	// normalized 0-1 range for terrain
 	xf = (position.x / size + 0.5f);
 	yf = (position.z / size + 0.5f);
-	x = num_row * xf;
-	y = num_row * yf;
+	x = (int)(num_row * xf);
+	y = (int)(num_row * yf);
 
 	clamp(x, 0, num_row);
 	clamp(y, 0, num_row);

@@ -330,7 +330,7 @@ void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *
 	{
 		for (x = 0; x < num_row; x++)
 		{
-			quadratic_bezier_surface(control, x * level, y * level, vertex[i++].position);
+			quadratic_bezier_surface(control, (float)(x * level), (float)(y * level), vertex[i++].position);
 		}
 	}
 	num_vertex = i;
@@ -2467,9 +2467,9 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 		{
 			theta3 = i * (2 * MY_PI) / sides;
 
-			ey = fcos(theta1) * fcos(theta3);
-			ex = fsin(theta1);
-			ez = fcos(theta1) * fsin(theta3);
+			ey = (float)(fcos(theta1) * fcos(theta3));
+			ex = (float)(fsin(theta1));
+			ez = (float)(fcos(theta1) * fsin(theta3));
 			px = cx + r * ex;
 			py = cy + r * ey;
 			pz = cz + r * ez;
@@ -2480,9 +2480,9 @@ void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&ind
 			vertex[k].position = vec3(px, py, pz) + offset;
 			k++;
 
-			ey = fcos(theta2) * fcos(theta3);
-			ex = fsin(theta2);
-			ez = fcos(theta2) * fsin(theta3);
+			ey = (float)(fcos(theta2) * fcos(theta3));
+			ex = (float)(fsin(theta2));
+			ez = (float)(fcos(theta2) * fsin(theta3));
 			px = cx + r * ex;
 			py = cy + r * ey;
 			pz = cz + r * ez;

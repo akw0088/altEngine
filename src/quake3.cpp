@@ -7259,7 +7259,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			snprintf(msg, LINE_SIZE, "haste_factor %s\n", data);
 			menu.print(msg);
-			float haste_factor = atof(data);
+			float haste_factor = (float)atof(data);
 			entity_list[self]->player->haste_factor = haste_factor;
 		}
 		return;

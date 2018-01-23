@@ -4459,7 +4459,7 @@ int Engine::deserialize_net_player(net_player_t *net, int index, int etype)
 		if (client_reliable.size == 0)
 		{
 			sprintf(client_reliable.msg, "<getplayer/>");
-			client_reliable.size = 4 + strlen(client_reliable.msg) + 1;
+			client_reliable.size = (unsigned short)(4 + strlen(client_reliable.msg) + 1);
 			client_reliable.sequence = sequence;
 		}
 		return -1;
@@ -7121,8 +7121,8 @@ void Engine::console(char *cmd)
 
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
 	{
-		float value = atof(data);
-		mlight2.set_normalmap(value);
+		float value = (float)atof(data);
+		mlight2.set_normalmap((int)value);
 		snprintf(msg, LINE_SIZE, "Setting normalmap to %f", value);
 		if (value > 0.0f)
 		{

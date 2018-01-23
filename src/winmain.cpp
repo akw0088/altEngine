@@ -928,8 +928,8 @@ void GetScreenShot(HWND hwnd, unsigned int &luminance, bool luminance_only)
 //		average += data[i+3];
 		i += 4;
 	}
-	average =  (float)average / (bitmap.bmWidth * bitmap.bmHeight * 4);
-	luminance = average;
+	average =  (uint64_t)((float)average / (bitmap.bmWidth * bitmap.bmHeight * 4));
+	luminance = (int)average;
 
 	if (luminance_only == false)
 	{

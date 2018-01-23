@@ -120,8 +120,8 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 	vertex_array[num_vert].color = ~0;
 	vertex_array[num_vert].normal = v1;
 	vertex_array[num_vert].texCoord0 = texcoord1;
-	x = texcoord1.x * width;
-	y = texcoord1.y * height;
+	x = (unsigned int)(texcoord1.x * width);
+	y = (unsigned int)(texcoord1.y * height);
 	vertex_array[num_vert].position = offset + v1 * scale *
 		(((image[(y * width + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
@@ -129,8 +129,8 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 	vertex_array[num_vert].color = ~0;
 	vertex_array[num_vert].normal = v2;
 	vertex_array[num_vert].texCoord0 = texcoord2;
-	x = texcoord2.x * width;
-	y = texcoord2.y * height;
+	x = (unsigned int)(texcoord2.x * width);
+	y = (unsigned int)(texcoord2.y * height);
 	vertex_array[num_vert].position = offset + v2 * scale *
 		(((image[(y * width + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
@@ -138,8 +138,8 @@ void IsoSphere::drawTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, flo
 	vertex_array[num_vert].color = ~0;
 	vertex_array[num_vert].normal = v3;
 	vertex_array[num_vert].texCoord0 = texcoord3;
-	x = texcoord3.x * width;
-	y = texcoord3.y * height;
+	x = (unsigned int)(texcoord3.x * width);
+	y = (unsigned int)(texcoord3.y * height);
 	vertex_array[num_vert].position = offset + v3 * scale *
 		(((image[(y * width + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;

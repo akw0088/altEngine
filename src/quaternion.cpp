@@ -110,9 +110,9 @@ void quaternion::to_quat(matrix3 &mat)
 	}
 	else if ((mat.m[0] > mat.m[4]) & (mat.m[0] > mat.m[8]))
 	{
-		float root = newtonSqrt(1.0 + mat.m[0] - mat.m[4] - mat.m[8]) * 2; // S=4*qx 
+		float root = newtonSqrt(1.0f + mat.m[0] - mat.m[4] - mat.m[8]) * 2; // S=4*qx 
 		s = (mat.m[7] - mat.m[5]) / root;
-		x = 0.25 * root;
+		x = 0.25f * root;
 		y = (mat.m[1] + mat.m[3]) / root;
 		z = (mat.m[2] + mat.m[6]) / root;
 	}
@@ -121,16 +121,16 @@ void quaternion::to_quat(matrix3 &mat)
 		float root = newtonSqrt(1.0f + mat.m[4] - mat.m[0] - mat.m[8]) * 2; // S=4*qy
 		s = (mat.m[2] - mat.m[6]) / root;
 		x = (mat.m[1] + mat.m[3]) / root;
-		y = 0.25 * root;
+		y = 0.25f * root;
 		z = (mat.m[5] + mat.m[7]) / root;
 	}
 	else
 	{
-		float root = newtonSqrt(1.0 + mat.m[8] - mat.m[0] - mat.m[4]) * 2; // S=4*qz
+		float root = newtonSqrt(1.0f + mat.m[8] - mat.m[0] - mat.m[4]) * 2; // S=4*qz
 		s = (mat.m[3] - mat.m[1]) / root;
 		x = (mat.m[2] + mat.m[6]) / root;
 		y = (mat.m[5] + mat.m[7]) / root;
-		z = 0.25 * root;
+		z = 0.25f * root;
 	}
 }
 

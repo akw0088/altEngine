@@ -561,7 +561,7 @@ void mLight2::portal(int portal)
 void mLight2::set_normalmap(int value)
 {
 	glUniform1i(u_normalmap, value);
-	m_normalmap = value;
+	m_normalmap = (float)value;
 }
 
 void mLight2::set_tone(int value)

@@ -247,8 +247,8 @@ void IsoCube::drawTriangle(const vertex_t &v1, const vertex_t &v2, const vertex_
 	vertex_array[num_vert].normal = v1.position;
 	vertex_array[num_vert].texCoord0 = v1.texCoord0;
 	vertex_array[num_vert].texCoord1 = v1.texCoord1;
-	x = t1.x * (width - 1);
-	y = t1.y * (height - 1);
+	x = (unsigned int)(t1.x * (width - 1));
+	y = (unsigned int)(t1.y * (height - 1));
 	vertex_array[num_vert].position = v1.position * scale *
 		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
@@ -257,8 +257,8 @@ void IsoCube::drawTriangle(const vertex_t &v1, const vertex_t &v2, const vertex_
 	vertex_array[num_vert].normal = v2.position;
 	vertex_array[num_vert].texCoord0 = v2.texCoord0;
 	vertex_array[num_vert].texCoord1 = v2.texCoord1;
-	x = t2.x * (width - 1);
-	y = t2.y * (height - 1);
+	x = (unsigned int)(t2.x * (width - 1));
+	y = (unsigned int)(t2.y * (height - 1));
 	vertex_array[num_vert].position = v2.position * scale *
 		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
@@ -267,8 +267,8 @@ void IsoCube::drawTriangle(const vertex_t &v1, const vertex_t &v2, const vertex_
 	vertex_array[num_vert].normal = v3.position;
 	vertex_array[num_vert].texCoord0 = v3.texCoord0;
 	vertex_array[num_vert].texCoord1 = v3.texCoord1;
-	x = t3.x * (width - 1);
-	y = t3.y * (height - 1);
+	x = (unsigned int)(t3.x * (width - 1));
+	y = (unsigned int)(t3.y * (height - 1));
 	vertex_array[num_vert].position = v3.position * scale *
 		(((image[(y * (width - 1) + x) * sizeof(int)]) / 255.0f) * heightmap_scale + 1.0f);
 	num_vert++;
