@@ -6552,7 +6552,7 @@ void Engine::console(char *cmd)
 		port = netcode.net_port;
 		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
 		menu.print(msg);
-		bind(port);
+		netcode.bind(port);
 		return;
 	}
 
