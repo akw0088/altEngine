@@ -24,7 +24,7 @@ SOURCES_CPP := 	xmain.cpp \
 		md5model.cpp \
 		model.cpp \
 		menu.cpp \
-		net.cpp \
+		netcode.cpp \
 		parse.cpp \
 		pak.cpp \
 		physics.cpp \
@@ -41,6 +41,7 @@ SOURCES_CPP := 	xmain.cpp \
 		shader_vulkan.cpp \
 		shadow_volume.cpp \
 		sin_table.cpp \
+		sock.cpp \
 		speaker.cpp \
 		sph.cpp \
 		terrain.cpp \
@@ -63,10 +64,10 @@ obj/%.o: src/%.c
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
-#CC := gcc -fuse-linker-plugin -Wfloat-equal
-CPP := clang++ -std=c++11
-CC := clang
+CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
+CC := gcc -fuse-linker-plugin -Wfloat-equal
+#CPP := clang++ -std=c++11
+#CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]

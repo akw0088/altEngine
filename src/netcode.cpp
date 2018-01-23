@@ -213,6 +213,7 @@ int Netcode::client_recv()
 	{
 		return 0;
 	}
+	return 0;
 }
 
 void Netcode::client_send(input_t input, Frame &camera_frame)
