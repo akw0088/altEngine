@@ -10,6 +10,7 @@ class Engine
 {
 	friend class Quake3;
 	friend class Commando;
+	friend class Netcode;
 
 public:
 	Engine();
@@ -24,15 +25,16 @@ public:
 	void render_scene_using_shadowmap(bool lights);
 	void render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend, bool vis = true);
 	void render_shadow_volumes();
-
-
+	void render_weapon(const matrix4 &trans, bool lights, int i);
+	void render_trails(matrix4 &trans);
+	void render_players(matrix4 &trans, matrix4 &projection, bool lights, bool self);
 	void render_shadowmaps(bool everything);
 	void render_portalcamera();
 	void render_texture(int texObj, bool depth_view);
-	void post_process(int num_passes, int type);
 	void render_bloom(bool debug);
 	void render_skyray(bool debug);
 	void render_wave(bool debug);
+	void post_process(int num_passes, int type);
 	void resize(int width, int height);
 	void fullscreen();
 
@@ -69,36 +71,9 @@ public:
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
 
-	int bind(int port);
-	void connect(char *server);
-	void disconnect();
-	void chat(char *name, char *msg);
-	void kick(unsigned int i);
-	int GetKeyState(input_t &keyboard);
-	input_t GetKeyState(int keystate);
 	void bind_keys();
-	int server_recv();
-	void server_send();
-	void server_send_state(int client);
-	void set_player_string(char *msg, client_t *client);
-	void parse_player_string(char *msg);
-	void send_player_string(servermsg_t &servermsg);
-	void client_rename();
-	void server_rename(char *oldname, char *newname, int self);
-	int client_recv();
-	void client_send();
-	int handle_servermsg(servermsg_t &servermsg, unsigned char *data, reliablemsg_t *reliablemsg);
-	void render_weapon(const matrix4 &trans, bool lights, int i);
-	void render_trails(matrix4 &trans);
-	void render_players(matrix4 &trans, matrix4 &projection, bool lights, bool self);
 
 
-	int serialize_ents(unsigned char *data, unsigned short int &num_ents, unsigned int &data_size);
-	int deserialize_ents(unsigned char *data, unsigned short int num_ents, unsigned int data_size);
-	int deserialize_net_player(net_player_t *player, int index, int etype);
-	int deserialize_net_rigid(net_rigid_t *rigid, int index, int etype);
-	int deserialize_net_trigger(net_trigger_t *net, int index, int etype);
-	int deserialize_net_projectile(net_projectile_t *net, int index, int etype);
 
 	bool select_wave(int source, char *file);
 
@@ -130,16 +105,9 @@ public:
 	int get_loop_source();
 	int get_global_source();
 	int get_global_loop_source();
-	void query_master();
-	void report_master();
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
-
-	unsigned int lum_table[125];
-	unsigned int lum_index;
-	unsigned int lum_avg;
-
 
 	vector<char *> serverlist;
 
@@ -171,11 +139,6 @@ public:
 	char *pk3_list[64];
 	unsigned int num_pk3;
 	char hash_result[64][32];
-
-	char *master_list[32];
-	unsigned int num_master;
-
-
 
 	unsigned int controller;
 
@@ -241,6 +204,7 @@ public:
 
 //Game logic
 	BaseGame *game;
+	Netcode netcode;
 
 	MD5Model	zcc;
 //	MD5Model	sentry;
@@ -347,28 +311,6 @@ protected:
 	vector<wave_t>		snd_wave;
 
 
-	//net stuff
-	int		sequence;
-	Socket		sock;
-	reliablemsg_t	reliable[8];
-	reliablemsg_t	client_reliable;
-	int cl_skip;
-	char sv_hostname[512];
-	char sv_motd[512];
-	char password[512];
-	unsigned int sv_maxclients;
-	unsigned short int net_port;
-
-	bool recording_demo;
-	bool playing_demo;
-	FILE *demofile;
-
-
-	net_entity_t delta_list[512];
-
-	
-	int		server_spawn;	// entity index of hosting player
-
 
 	Voice voice;
 
@@ -378,17 +320,6 @@ protected:
 	ref_t		*ref;
 
 
-	//server
-	bool	server_flag;
-	vector <client_t *> client_list;
-	
-	//client
-	bool	client_flag;
-	unsigned int	last_server_sequence;
-	unsigned int	qport;
-	bool active_clients[8];
-
-	netinfo_t netinfo;
 
 	//Shaders
 	Global				global; // basic shader for menu's etc

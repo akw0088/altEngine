@@ -2030,7 +2030,7 @@ void Quake3::handle_player(int self, input_t &input)
 				entity->player->state = PLAYER_DUCKED;
 			}
 
-			if ((entity->player && entity->player->type == PLAYER) || (engine->server_flag && (entity->player && entity->player->type == CLIENT)))
+			if ((entity->player && entity->player->type == PLAYER) || (engine->netcode.server_flag && (entity->player && entity->player->type == CLIENT)))
 			{
 				float speed_scale = 1.0f;
 
@@ -2084,7 +2084,7 @@ void Quake3::handle_player(int self, input_t &input)
 			{
 				char cmd[128] = { 0 };
 
-				if (engine->client_flag == false)
+				if (engine->netcode.client_flag == false)
 				{
 					sprintf(cmd, "respawn %d %d", -1, self);
 					console(self, cmd, engine->menu, engine->entity_list);
@@ -2398,7 +2398,7 @@ void Quake3::handle_player(int self, input_t &input)
 		}
 	}
 
-	handle_weapons(*(entity->player), input, self, engine->client_flag);
+	handle_weapons(*(entity->player), input, self, engine->netcode.client_flag);
 }
 
 void Quake3::player_died(int index)
@@ -2711,7 +2711,7 @@ void Quake3::step(int frame_step)
 	}
 
 
-	if (engine->server_flag == false && engine->client_flag == false && engine->num_bot < num_bot)
+	if (engine->netcode.server_flag == false && engine->netcode.client_flag == false && engine->num_bot < num_bot)
 	{
 		for (unsigned int i = 0; i < num_bot; i++)
 		{
@@ -2797,10 +2797,10 @@ void Quake3::step(int frame_step)
 
 		if (isclient)
 		{
-			for(unsigned int j = 0; j < engine->client_list.size(); j++)
+			for(unsigned int j = 0; j < engine->netcode.client_list.size(); j++)
 			{
-				if ((unsigned int)engine->client_list[j]->ent_id == i)
-					handle_player(i, engine->client_list[j]->input);
+				if ((unsigned int)engine->netcode.client_list[j]->ent_id == i)
+					handle_player(i, engine->netcode.client_list[j]->input);
 			}
 		}
 
@@ -5343,17 +5343,17 @@ void Quake3::render_hud(double last_frametime)
 			snprintf(msg, LINE_SIZE, "buffer mb: %d texture mb %d", engine->gfx.gpustat.buffer_size / (1024 * 1024), engine->gfx.gpustat.texture_size / (1024 * 1024));
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d/%d num_ents %d dropped %d",
-				engine->netinfo.ping,
-				engine->netinfo.sequence_delta,
-				engine->netinfo.size,
-				engine->netinfo.uncompressed_size,
-				engine->netinfo.num_ents,
-				engine->netinfo.dropped);
+				engine->netcode.netinfo.ping,
+				engine->netcode.netinfo.sequence_delta,
+				engine->netcode.netinfo.size,
+				engine->netcode.netinfo.uncompressed_size,
+				engine->netcode.netinfo.num_ents,
+				engine->netcode.netinfo.dropped);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "send_full %d send_partial %d recv_empty %d",
-				engine->netinfo.send_full,
-				engine->netinfo.send_partial,
-				engine->netinfo.recv_empty
+				engine->netcode.netinfo.send_full,
+				engine->netcode.netinfo.send_partial,
+				engine->netcode.netinfo.recv_empty
 			);
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
@@ -5364,11 +5364,11 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
 
-			if (engine->server_flag)
+			if (engine->netcode.server_flag)
 			{
-				for (unsigned int i = 0; i < engine->client_list.size(); i++)
+				for (unsigned int i = 0; i < engine->netcode.client_list.size(); i++)
 				{
-					client_t *client = engine->client_list[i];
+					client_t *client = engine->netcode.client_list[i];
 					snprintf(msg, LINE_SIZE, "[client %d]", i );
 					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 
@@ -6678,7 +6678,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 	ret = strcmp(cmd, "teleport");
-	if (ret == 0 && engine->client_flag == false)
+	if (ret == 0 && engine->netcode.client_flag == false)
 	{
 		bool local = entity_list[self]->player->local;
 
@@ -6832,7 +6832,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 	ret = sscanf(cmd, "teleport %s %s", data, data2);
-	if (ret == 2 && engine->client_flag == false)
+	if (ret == 2 && engine->netcode.client_flag == false)
 	{
 		snprintf(msg, LINE_SIZE, "target %s\n", data);
 		menu.print(msg);
@@ -6905,7 +6905,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	char *pret = NULL; // linux didnt like pointer to int cast
 	pret = strstr(cmd, "respawn");
-	if (pret && engine->client_flag == false)
+	if (pret && engine->netcode.client_flag == false)
 	{
 		unsigned int i = last_spawn;
 		bool spawned = false;
@@ -7144,18 +7144,18 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		}
 		if (valid)
 		{
-			if (engine->server_flag)
+			if (engine->netcode.server_flag)
 			{
-				engine->server_rename(entity_list[self]->player->name, data, self);
+				engine->netcode.server_rename(entity_list[self]->player->name, data, self);
 			}
 
 			snprintf(entity_list[self]->player->name, 127, "%s", data);
 			debugf("Player name: %s\n", data);
 			sprintf(menu.data.name, "%s", data);
 
-			if (engine->client_flag)
+			if (engine->netcode.client_flag)
 			{
-				engine->client_rename();
+				engine->netcode.client_rename();
 			}
 		}
 		else
@@ -7168,7 +7168,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "say \"%[^\"]s", data);
 	if (ret == 1)
 	{
-		engine->chat(entity_list[self]->player->name, cmd);
+		engine->netcode.chat(entity_list[self]->player->name, cmd);
 		return;
 	}
 
@@ -7188,14 +7188,14 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		menu.print(msg);
 
 
-		for (unsigned int i = 0; i < engine->client_list.size(); i++)
+		for (unsigned int i = 0; i < engine->netcode.client_list.size(); i++)
 		{
-			Player *player = entity_list[engine->client_list[i]->ent_id]->player;
+			Player *player = entity_list[engine->netcode.client_list[i]->ent_id]->player;
 			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, player->name,
 				player->stats.kills,
 				player->stats.deaths,
-				engine->client_list[i]->socketname,
-				current - engine->client_list[i]->last_time);
+				engine->netcode.client_list[i]->socketname,
+				current - engine->netcode.client_list[i]->last_time);
 			menu.print(msg);
 		}
 		return;
@@ -7204,12 +7204,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "kick %s", data);
 	if (ret == 1)
 	{
-		engine->kick(atoi(data));
+		engine->netcode.kick(atoi(data));
 		return;
 	}
 
 	ret = strcmp(cmd, "noclip");
-	if (ret == 0 && engine->client_flag == false)
+	if (ret == 0 && engine->netcode.client_flag == false)
 	{
 		if (self != -1)
 		{

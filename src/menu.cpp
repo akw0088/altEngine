@@ -1302,7 +1302,7 @@ void Menu::handle_chatmode(char key, Engine *altEngine)
 		break;
 	case '\r':
 	{
-		altEngine->chat(NULL, key_buffer);
+		altEngine->netcode.chat(NULL, key_buffer);
 		key_buffer[0] = '\0';
 		chatmode = false;
 		break;
