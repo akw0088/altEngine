@@ -1,8 +1,24 @@
 #include "voice.h"
  
-int Voice::init() 
+Voice::Voice()
+{
+	voice_send_sequence = 0;
+	voice_recv_sequence = 0;
+}
+
+int Voice::init(unsigned short qport)
 { 
 	int ret; 
+
+	Voice::qport = qport;
+
+	alGenSources(1, &mic_source);
+	alGenBuffers(NUM_PONG, (unsigned int *)&mic_buffer[0]);
+	alSourcei(mic_source, AL_SOURCE_RELATIVE, AL_TRUE);
+
+	alGenSources(1, &decode_source);
+	alGenBuffers(NUM_PONG, (unsigned int *)&decode_buffer[0]);
+	alSourcei(decode_source, AL_SOURCE_RELATIVE, AL_TRUE);
 
 	//OPUS_APPLICATION_AUDIO -- music
 	//OPUS_APPLICATION_VOIP -- voice
@@ -42,6 +58,10 @@ int Voice::init()
 	return 0;
 }
 
+void Voice::bind(char *ip, unsigned short port)
+{
+	net.bind(ip, port);
+}
 
 
 int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, int &num_bytes)
@@ -89,6 +109,239 @@ int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 	size = frame_size;
 	return 0;
 }
+
+int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client_flag, bool server_flag)
+{
+	unsigned int size;
+	int isize;
+	static int pong = 0;
+	static bool looped = false;
+	unsigned int uiBuffer;
+	int buffersProcessed = 0;
+	bool local_echo = true;
+	static voicemsg_t msg;
+
+
+	if (looped)
+	{
+		if (local_echo)
+		{
+			alGetSourcei(mic_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
+			if (buffersProcessed == 0)
+			{
+				ALenum state;
+
+				alGetSourcei(mic_source, AL_SOURCE_STATE, &state);
+
+				if (state == AL_STOPPED)
+				{
+					audio.play(mic_source);
+				}
+				return 0;
+			}
+
+			alSourceUnqueueBuffers(mic_source, 1, &uiBuffer);
+			int al_err = alGetError();
+			if (al_err != AL_NO_ERROR)
+			{
+				return 0;
+			}
+		}
+		audio.capture_sample(mic_pcm[pong], isize);
+		size = isize;
+		if (local_echo)
+		{
+			alBufferData(uiBuffer, VOICE_FORMAT, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+			alSourceQueueBuffers(mic_source, 1, &uiBuffer);
+		}
+
+	}
+	else
+	{
+		audio.capture_sample(mic_pcm[pong], isize);
+		size = isize;
+		if (local_echo)
+		{
+			alBufferData(mic_buffer[pong], VOICE_FORMAT, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+			int al_err = alGetError();
+			if (al_err != AL_NO_ERROR)
+			{
+				debugf("Error alBufferData\n");
+			}
+			alSourceQueueBuffers(mic_source, 1, &mic_buffer[pong]);
+		}
+	}
+
+	if (size == 0)
+	{
+		return 0;
+	}
+
+
+	if (server_flag)
+	{
+		for (unsigned int i = 0; i < client_list.size(); i++)
+		{
+			sprintf(voice_server, "%s", client_list[i]->socketname);
+
+			char *colon = strstr(voice_server, ":");
+			if (colon)
+			{
+				*colon = '\0';
+			}
+			sprintf(colon, ":65530");
+
+			int num_bytes = 0;
+			encode(mic_pcm[pong], size, msg.data, num_bytes);
+
+
+			msg.sequence = voice_send_sequence++;
+			msg.qport = qport;
+			int ret = net.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
+			if (ret < 0)
+			{
+#ifdef WIN32
+				int ret = WSAGetLastError();
+#else
+				int ret = errno;
+#endif
+
+				printf("Failed to send voice data %d\n", ret);
+			}
+		}
+	}
+	else if (client_flag)
+	{
+		int num_bytes = 0;
+
+		msg.sequence = voice_send_sequence++;
+		msg.qport = qport;
+		encode(mic_pcm[pong], size, msg.data, num_bytes);
+		int ret = net.sendto((char *)&msg, VOICE_HEADER + num_bytes, voice_server);
+		if (ret < 0)
+		{
+#ifdef WIN32
+			int ret = WSAGetLastError();
+#else
+			int ret = errno;
+#endif
+
+			printf("Failed to send voice data %d\n", ret);
+		}
+	}
+
+
+	pong++;
+	if (pong >= NUM_PONG)
+	{
+		pong = 0;
+		if (local_echo)
+		{
+			if (looped == false)
+			{
+				looped = true;
+				audio.play(mic_source);
+			}
+		}
+	}
+
+	if (size)
+		return 1;
+	else
+		return 0;
+}
+
+int Voice::voice_recv(Audio &audio)
+{
+	unsigned int size;
+	int ret;
+	static int pong = 0;
+	static bool looped = false;
+	int buffersProcessed = 0;
+	unsigned int uiBuffer;
+	bool remote_echo = true;
+
+	static voicemsg_t msg;
+
+	if (remote_echo)
+	{
+		if (looped)
+		{
+			alGetSourcei(decode_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
+			if (buffersProcessed == 0)
+			{
+				ALenum state;
+
+				alGetSourcei(decode_source, AL_SOURCE_STATE, &state);
+
+				if (state == AL_STOPPED)
+				{
+					audio.play(decode_source);
+				}
+				return 0;
+			}
+
+		}
+	}
+
+	char client[128] = "";
+	ret = net.recvfrom((char *)&msg, SEGMENT_SIZE, client, 128);
+	if (ret > 0)
+	{
+		size = ret;
+
+		if (voice_recv_sequence > msg.sequence)
+		{
+			// old packet
+			printf("voice chat got old packet %d older than %d\n", msg.sequence, voice_recv_sequence);
+			return 0;
+		}
+		else
+		{
+			voice_recv_sequence = msg.sequence + 1;
+		}
+
+
+		if (remote_echo)
+		{
+			decode(msg.data, decode_pcm[pong], size);
+
+			if (looped)
+			{
+				alSourceUnqueueBuffers(decode_source, 1, &uiBuffer);
+				alBufferData(uiBuffer, AL_FORMAT_MONO16, decode_pcm[pong], size, VOICE_SAMPLE_RATE);
+				alSourceQueueBuffers(decode_source, 1, &uiBuffer);
+
+			}
+			else
+			{
+				alBufferData(decode_buffer[pong], AL_FORMAT_MONO16, decode_pcm[pong], size, VOICE_SAMPLE_RATE);
+				alSourceQueueBuffers(decode_source, 1, &decode_buffer[pong]);
+			}
+
+
+			pong++;
+			if (pong >= NUM_PONG)
+			{
+				pong = 0;
+
+				if (looped == false)
+				{
+					looped = true;
+					audio.play(decode_source);
+				}
+			}
+		}
+
+
+	}
+
+	if (ret > 0)
+		return 1;
+	else
+		return 0;
+}
+
 
 
 void Voice::destroy()

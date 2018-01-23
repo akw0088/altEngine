@@ -68,8 +68,6 @@ public:
 	bool body_collision(RigidBody &body);
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
-	int voice_send(Audio &audio);
-	int voice_recv(Audio &audio);
 
 	int bind(int port);
 	void connect(char *server);
@@ -142,15 +140,6 @@ public:
 	unsigned int lum_index;
 	unsigned int lum_avg;
 
-
-#define NUM_PONG 2
-	unsigned int mic_buffer[NUM_PONG];
-	unsigned int mic_source;
-	unsigned short mic_pcm[NUM_PONG][SEGMENT_SIZE];
-	
-	unsigned int decode_buffer[NUM_PONG];
-	unsigned short decode_pcm[NUM_PONG][SEGMENT_SIZE];
-	unsigned int decode_source;
 
 	vector<char *> serverlist;
 
@@ -362,10 +351,7 @@ protected:
 
 	//net stuff
 	int		sequence;
-	unsigned short int		voice_send_sequence;
-	unsigned short int		voice_recv_sequence;
 	Net		net;
-	Net		net_voice;
 	reliablemsg_t	reliable[8];
 	reliablemsg_t	client_reliable;
 	int cl_skip;
@@ -386,7 +372,7 @@ protected:
 	int		server_spawn;	// entity index of hosting player
 
 
-	Voice voip;
+	Voice voice;
 
 	// pathfinding stuff
 	Graph		graph;
