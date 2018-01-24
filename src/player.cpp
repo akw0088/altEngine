@@ -688,8 +688,11 @@ int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
 
 		if (ignore_length >= 1)
 		{
-			if (strstr(ignore, entity_list[i]->entstring->type) != NULL)
-				continue;
+			if (entity_list[i]->entstring)
+			{
+				if (strstr(ignore, entity_list[i]->entstring->type) != NULL)
+					continue;
+			}
 		}
 
 		last_state = bot_state;
