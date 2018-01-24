@@ -38,7 +38,7 @@ Engine::Engine() :
 {
 	initialized = false;
 	max_dynamic = 100; // 300 is causing network issues
-	max_player = 8;
+	max_player = 16;
 	max_sources = 32;
 	current_res = 0;
 	current_model = 21;

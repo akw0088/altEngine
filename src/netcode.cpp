@@ -14,7 +14,7 @@ Netcode::Netcode(Engine *engine)
 	Netcode::engine = engine;
 
 	cl_skip = 0;
-	sv_maxclients = 8;
+	sv_maxclients = 16;
 	recording_demo = false;
 	playing_demo = false;
 
@@ -432,7 +432,7 @@ void Netcode::set_player_string(char *msg, client_t *client)
 		serverid, engine->entity_list[serverid]->player->name);
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
-		char client_index[8];
+		char client_index[128];
 		if (client_list[i] == client)
 			continue;
 
@@ -1526,7 +1526,7 @@ void Netcode::report_master()
 	sprintf(report.sv_hostname, "%s", sv_hostname);
 	sprintf(report.map, "%s", engine->q3map.map_name);
 	report.num_player = 1;
-	report.max_player = 8;
+	report.max_player = 16;
 	report.fraglimit = engine->game->fraglimit;
 	report.timelimit = engine->game->timelimit;
 	report.capturelimit = engine->game->capturelimit;
