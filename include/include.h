@@ -510,6 +510,7 @@ int debugf(const char *format, ...);
 #define MAXLINE 4096
 #define FBO_RESOLUTION 1024
 #define SHADOWMAP_DEFAULT_RES FBO_RESOLUTION
+#define FILE_OFFSET 34
 
 
 //quake3 game units, 8 units = 1 foot, ~3.3ft per meter (each unit is 8 values large)

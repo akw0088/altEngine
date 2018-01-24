@@ -286,37 +286,37 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	for (unsigned int i = 0; i < num_pk3; i++)
 	{
 		hash_result[i][0] = '\0';
-		strcpy(hash_result[i], "Missing file");
-		pool[i] = std::thread(calc_hash, pk3_list[i], hash_result[i]);
+		pool[i] = std::thread(calc_hash, pk3_list[i] + FILE_OFFSET, hash_result[i]);
 	}
 
 	for (unsigned int i = 0; i < num_pk3; i++)
 	{
 		pool[i].join();
-		debugf("Checking hash for %s...", pk3_list[i]);
-		if (strstr(pk3_list[i], hash_result[i]) != 0)
+		debugf("Checking hash for %s...", pk3_list[i] + FILE_OFFSET);
+		if (strncmp(pk3_list[i], hash_result[i], 32) == 0)
+		{
+			debugf("Good!\n");
+		}
+		else
 		{
 			if (strstr(pk3_list[i], "media/pak0.pk3"))
 			{
-				if (strcmp(hash_result[i], "0613b3d4ef05e613a2b470571498690f") == 0)
+				if (strstr(hash_result[i], "0613b3d4ef05e613a2b470571498690f"))
 				{
 					debugf("pak0.pk3 is from Q3A Demo\n");
 					demo = true;
 				}
 				else
 				{
-					debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], pk3_list[i]);
+					debugf("\n%s failed hash check:\n\t[%s] expected [%.32s]\n", pk3_list[i] + FILE_OFFSET, hash_result[i], pk3_list[i]);
 				}
 			}
 			else
 			{
-				debugf("\n%s failed hash check:\n\t[%s] expected [%s]\n", pk3_list[i], hash_result[i], pk3_list[i]);
+				debugf("\n%s failed hash check:\n\t[%s] expected [%.32s]\n", pk3_list[i] + FILE_OFFSET, hash_result[i], pk3_list[i]);
 			}
 		}
-		else
-		{
-			debugf("Good!\n");
-		}
+
 	}
 
 	no_tex = load_texture(gfx, "media/notexture.tga", false, false, 0);
@@ -6848,7 +6848,7 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 	memset(filelist, 0, LIST_SIZE);
 	for (unsigned int i = 0; i < num_pk3; i++)
 	{
-		list_zipfile(pk3_list[i] + 34, &filelist[0]);
+		list_zipfile(pk3_list[i] + FILE_OFFSET, &filelist[0]);
 
 		line = strtok(filelist, "\n");
 		while (line)

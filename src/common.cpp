@@ -681,7 +681,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 	for (int i = 0; i < num_pk3; i++)
 	{
-		get_zipfile(pk3_list[i] + 34, pk3_name, &data, &size);
+		get_zipfile(pk3_list[i] + FILE_OFFSET, pk3_name, &data, &size);
 		if (data != NULL)
 			break;
 	}
@@ -704,7 +704,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 				for (int i = 0; i < num_pk3; i++)
 				{
-					get_zipfile(pk3_list[i] + 34, pk3_name, &data, &size);
+					get_zipfile(pk3_list[i] + FILE_OFFSET, pk3_name, &data, &size);
 					if (data != NULL)
 						break;
 				}

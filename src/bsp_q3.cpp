@@ -44,7 +44,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	selected_map = false;
 	for (int i = 0; i < num_pk3; i++)
 	{
-		get_zipfile(pk3list[i] + 34, map, (unsigned char **)&tBsp, NULL);
+		get_zipfile(pk3list[i] + FILE_OFFSET, map, (unsigned char **)&tBsp, NULL);
 		if (tBsp != NULL)
 			break;
 	}

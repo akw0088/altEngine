@@ -438,7 +438,7 @@ void Audio::load(wave_t &wave, char **pk3_list, int num_pk3)
 	{
 		for (int i = 0; i < num_pk3; i++)
 		{
-			get_zipfile(pk3_list[i] + 34, wave.file, (unsigned char **)&wave.data, NULL);
+			get_zipfile(pk3_list[i] + FILE_OFFSET, wave.file, (unsigned char **)&wave.data, NULL);
 			if (wave.data != NULL)
 			{
 				break;
