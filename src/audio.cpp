@@ -728,7 +728,7 @@ int Audio::load_ogg(char *filename, wave_t &wave)
 }
 
 
-void Audio::load(wave_t &wave)
+void Audio::load(wave_t &wave, char **pk3_list, int num_pk3)
 {
 }
 
@@ -803,6 +803,19 @@ void Audio::set_audio_model(int model)
 }
 
 void Audio::load_doom(wave_t &wave, int *buffer)
+{
+}
+
+void Audio::capture_start()
+{
+}
+
+void Audio::capture_sample(unsigned short *pcm, int &size)
+{
+}
+
+
+void Audio::capture_stop()
 {
 }
 

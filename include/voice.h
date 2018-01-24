@@ -14,7 +14,7 @@ class Voice
 {
 public:
 	Voice();
-	int init(unsigned short qport);
+	int init(Audio &audio, unsigned short qport);
 	void destroy();
 	void bind(char *ip, unsigned short port);
 	int encode(unsigned short *pcm, unsigned int size, unsigned char *data, int &num_bytes);

@@ -6,12 +6,13 @@ Voice::Voice()
 	voice_recv_sequence = 0;
 }
 
-int Voice::init(unsigned short qport)
+int Voice::init(Audio &audio, unsigned short qport)
 { 
 	int ret; 
 
 	Voice::qport = qport;
 
+#ifndef DEDICATED
 	alGenSources(1, &mic_source);
 	alGenBuffers(NUM_PONG, (unsigned int *)&mic_buffer[0]);
 	alSourcei(mic_source, AL_SOURCE_RELATIVE, AL_TRUE);
@@ -19,6 +20,7 @@ int Voice::init(unsigned short qport)
 	alGenSources(1, &decode_source);
 	alGenBuffers(NUM_PONG, (unsigned int *)&decode_buffer[0]);
 	alSourcei(decode_source, AL_SOURCE_RELATIVE, AL_TRUE);
+#endif
 
 	//OPUS_APPLICATION_AUDIO -- music
 	//OPUS_APPLICATION_VOIP -- voice
@@ -121,6 +123,9 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	bool local_echo = false;
 	static voicemsg_t msg;
 
+#ifdef DEDICATED
+	return 0;
+#endif
 
 	if (looped)
 	{
@@ -262,6 +267,10 @@ int Voice::voice_recv(Audio &audio)
 	bool remote_echo = true;
 
 	static voicemsg_t msg;
+
+#ifdef DEDICATED
+	return 0;
+#endif
 
 	if (remote_echo)
 	{

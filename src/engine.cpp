@@ -350,7 +350,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
-	voice.init(netcode.qport);
+	voice.init(audio, netcode.qport);
 	audio.capture_start();
 
 	wave_t wave;
@@ -982,7 +982,7 @@ void Engine::render(double last_frametime)
 	}
 
 #ifdef DEDICATED
-	server_recv();
+	netcode.server_recv();
 	return;
 #endif
 	if (netcode.server_flag)

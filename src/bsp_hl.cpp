@@ -460,7 +460,9 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 		int width = (int)(ceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
 		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
+#ifndef DEDICATED
 		lightmap_object[i] = gfx.LoadTexture(width, height, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
+#endif
 
 
 		//generate a texture coordinate that's in the range 0.0 to 1.0
