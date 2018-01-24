@@ -118,7 +118,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	static bool looped = false;
 	unsigned int uiBuffer;
 	int buffersProcessed = 0;
-	bool local_echo = true;
+	bool local_echo = false;
 	static voicemsg_t msg;
 
 
@@ -294,6 +294,7 @@ int Voice::voice_recv(Audio &audio)
 		{
 			// old packet
 			printf("voice chat got old packet %d older than %d\n", msg.sequence, voice_recv_sequence);
+			voice_recv_sequence = msg.sequence + 1;
 			return 0;
 		}
 		else
