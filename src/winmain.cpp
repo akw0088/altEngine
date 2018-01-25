@@ -691,7 +691,7 @@ unsigned int getTimeStamp(void)
 
 void RedirectIOToConsole()
 {
-#ifndef _WIN64
+#ifdef DEDICATED
 	int	hConHandle;
 	long	lStdHandle;
 	FILE	*fp;
