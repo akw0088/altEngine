@@ -8115,6 +8115,9 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 
 	if (ent->entstring && target->entstring && strcmp(ent->entstring->target, target->entstring->target_name) == 0)
 	{
+		if (strlen(ent->entstring->target) < 2 || strlen(target->entstring->target_name) < 2)
+			return;
+
 		printf("%s bsp volume triggered %s with targetname %s\n",
 			ent->entstring->type, target->entstring->type, ent->entstring->target);
 
@@ -8175,7 +8178,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			// search again, great
 			if (strlen(ent->entstring->target) > 1)
 			{
-				for (unsigned int k = 0; k < entity_list.size(); k++)
+				for (unsigned int k = engine->max_dynamic; k < entity_list.size(); k++)
 				{
 					check_target(entity_list, target, entity_list[k], self);
 				}
@@ -8215,7 +8218,7 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 		{
 			printf("Triggered bsp volume %d type %s\n", ent->brush_ref, ent->entstring->type);
 			ent->trigger->active = true;
-			console(self, ent->trigger->action, engine->menu, entity_list);
+			console(j, ent->trigger->action, engine->menu, entity_list);
 		}
 		else
 		{

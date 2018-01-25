@@ -284,19 +284,22 @@ int Netcode::handle_servermsg(servermsg_t &servermsg, unsigned char *data, relia
 
 			if (strstr(reliablemsg->msg, "<chat>"))
 			{
-				char msg[256];
+				static char msg[256];
 
-				memset(msg, 0, sizeof(msg));
 				char *start = strstr(reliablemsg->msg, "<chat>");
 				start += 6;
 				char *end = strstr(reliablemsg->msg, "</chat>");
 
-				memcpy(msg, start, end - start);
-				engine->menu.print_chat(msg);
-				engine->game->chat_timer = 3 * TICK_RATE;
+				// prevent duplicate chats
+				if (strncmp(msg, start, end - start) != 0)
+				{
+					memcpy(msg, start, end - start);
+					engine->menu.print_chat(msg);
+					engine->game->chat_timer = 3 * TICK_RATE;
 
-#define SND_TALK 268
-				engine->play_wave_global(SND_TALK);
+					#define SND_TALK 268
+					engine->play_wave_global(SND_TALK);
+				}
 			}
 
 			char *pstate = strstr(reliablemsg->msg, "<data>");
