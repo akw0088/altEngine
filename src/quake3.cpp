@@ -8757,11 +8757,12 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 					}
 				}
 
-				if (player->health <= 0)
+				if (player->health <= 0 && player->state != PLAYER_DEAD)
 				{
 					char word[32] = { 0 };
 					char weapon[32];
 
+					player->state = PLAYER_DEAD;
 					player->stats.deaths++;
 					if (owner != NULL)
 					{
