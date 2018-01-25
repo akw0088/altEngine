@@ -1751,8 +1751,6 @@ void Quake3::handle_player(int self, input_t &input)
 		return;
 
 
-	entity->player->alive_timer++;
-	
 	if (entity->player->pain_timer == 0)
 	{
 		if (entity->rigid->flags.lava)
@@ -2017,6 +2015,15 @@ void Quake3::handle_player(int self, input_t &input)
 
 	if (entity->player->health > 0)
 	{
+		entity->player->alive_timer++;
+
+		if (entity->player->state == PLAYER_DEAD)
+		{
+			// network clients can get stuck as walking body
+			entity->player->state = PLAYER_IDLE;
+			entity->rigid->clone(*(engine->thug22->model));
+		}
+
 		if (spectator == false || engine->menu.console == false)
 		{
 			// True if jumped
@@ -2460,7 +2467,9 @@ void Quake3::player_died(int index)
 
 	entity->player->kill();
 	if (entity->player->immobile == false)
+	{
 		entity->model->clone(model_table[MODEL_BOX]);
+	}
 }
 
 void Quake3::drop_weapon(int index)

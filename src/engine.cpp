@@ -2373,10 +2373,21 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 
 			if (entity->player->health > 0)
 			{
+				float oldval = entity->rigid->y_offset;
+				if (netcode.client_flag)
+				{
+					entity->rigid->y_offset = 115.0f;
+				}
 
 				//md5 faces right, need to flip right and forward orientation
 				// also forcing to yaw only (no up / down rotation)
 				entity->rigid->get_matrix(mvp.m);
+
+				if (netcode.client_flag)
+				{
+					entity->rigid->y_offset = oldval;
+				}
+
 
 				vec3 forward(mvp.m[8], mvp.m[9], mvp.m[10]);
 				vec3 up(0.0f, 1.0f, 0.0f);
