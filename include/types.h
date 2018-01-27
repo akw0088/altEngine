@@ -747,6 +747,8 @@ typedef enum
 	ENT_Q1_TRAP_SPIKESHOOTER,
 	ENT_Q1_ITEM_SIGIL,
 	ENT_Q1_END,
+	ENT_CONSTRUCT,
+	ENT_SENTRY,
 	ENT_FUNC_TERRAIN // giant OBJ file with texture, need to figure out collision
 } entity_type_t;
 

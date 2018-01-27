@@ -2373,10 +2373,10 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 
 			if (entity->player->health > 0)
 			{
-				float oldval = entity->rigid->y_offset;
+				int oldval = entity->rigid->y_offset;
 				if (netcode.client_flag)
 				{
-					entity->rigid->y_offset = 115.0f;
+					entity->rigid->y_offset = 115;
 				}
 
 				//md5 faces right, need to flip right and forward orientation
@@ -3234,8 +3234,8 @@ bool Engine::collision_detect(RigidBody &body)
 
 	if (body.entity->player || body.entity->construct)
 	{
-//		if (body_collision(body))
-//			return true;
+		if (body_collision(body))
+			return true;
 	}
 
 	return false;
@@ -3445,7 +3445,27 @@ bool Engine::body_collision(RigidBody &body)
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
-		if (entity_list[i]->ent_type == ENT_PLAYER)
+		if (body.entity->ent_type == ENT_CONSTRUCT && entity_list[i]->ent_type == ENT_SENTRY)
+			return false;
+
+		if (body.entity->ent_type == ENT_SENTRY && entity_list[i]->ent_type == ENT_CONSTRUCT)
+			return false;
+
+
+		if (body.entity->ent_type == ENT_UNKNOWN || entity_list[i]->ent_type == ENT_UNKNOWN)
+			return false;
+
+		if (body.entity->ent_type == ENT_NPC && entity_list[i]->ent_type == ENT_NPC)
+		{
+			return false;
+		}
+
+
+
+#if 1
+		if (entity_list[i]->ent_type == ENT_PLAYER ||
+			(entity_list[i]->ent_type == ENT_CONSTRUCT && entity_list[i]->construct &&
+				entity_list[i]->construct->build_timer == 0))
 		{
 			int result = 0;
 			vec3 shape1[8];
@@ -3463,15 +3483,15 @@ bool Engine::body_collision(RigidBody &body)
 			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
-				printf("collision between %s and entity type %d\n", entity_list[i]->player->name, body.entity->ent_type);
+//				printf("collision between %s and entity type %d\n", entity_list[i]->player->name, body.entity->ent_type);
 				return true;
 			}
 		}
+#endif
 
 
 //		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)
-		if (body.collision_distance(*entity_list[i]->rigid))
-			return true;
+
 
 
 	}
@@ -4359,9 +4379,31 @@ void Engine::clean_entity(int index)
 
 	if (entity_list[index]->speaker)
 		entity_list[index]->speaker->destroy(audio);
+
 	entity_list[index]->nettype = NET_NONE;
 
 	entity_list[index]->flags.particle_on = false;
+
+	if (entity_list[index]->construct)
+	{
+		entity_list[index]->construct->destroy();
+		delete entity_list[index]->construct;
+		entity_list[index]->construct = NULL;
+	}
+
+	if (entity_list[index]->rigid)
+	{
+		delete entity_list[index]->rigid;
+		entity_list[index]->rigid = NULL;
+		entity_list[index]->model = NULL;
+	}
+
+	if (entity_list[index]->model)
+	{
+		delete entity_list[index]->model;
+		entity_list[index]->model = NULL;
+	}
+
 
 
 	// Light list wont be updated until the next step, so manually delete
@@ -4397,13 +4439,13 @@ int Engine::get_entity()
 			}
 		}
 
-//		if (strcmp(entity_list[index]->type, "free") == 0)
+		if (entity_list[index]->ent_type == ENT_UNKNOWN)
 		{
 			clean_entity(index);
 			entity_list[index]->~Entity();
 			return index++;
 		}
-	//	index++;
+		index++;
 	}
 
 	return max_dynamic - 1;

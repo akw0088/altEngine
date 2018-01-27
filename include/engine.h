@@ -165,6 +165,8 @@ public:
 	char *wad;
 
 	Entity *thug22;
+	vector<Entity *>	entity_list;
+
 
 
 
@@ -248,6 +250,7 @@ public:
 	bool inf;
 	float fov; // y fov
 
+
 protected:
 	matrix4		projection;
 	matrix4		identity;
@@ -303,7 +306,7 @@ protected:
 	unsigned int	vote_yes;
 	unsigned int	vote_no;
 
-	vector<Entity *>	entity_list;
+	
 	unsigned int	max_dynamic;
 	unsigned int	max_player;
 

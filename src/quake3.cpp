@@ -2772,7 +2772,7 @@ void Quake3::step(int frame_step)
 	}
 
 
-	for (unsigned int i = 0; i < engine->max_player; i++)
+	for (unsigned int i = 0; i < engine->max_dynamic; i++)
 	{
 		Entity *entity = engine->entity_list[i];
 		bool isplayer = (entity->player && entity->player->type == PLAYER);
@@ -2791,9 +2791,10 @@ void Quake3::step(int frame_step)
 			}
 			else
 			{
-				if (entity->player->build_timer == 0)
+				if (entity->player->build_timer < TICK_RATE >> 2)
 					handle_player(i, engine->input);
-				else
+
+				if (entity->player->build_timer > 0)
 					entity->player->build_timer--;
 
 				if (entity->player->build_timer == 1)
@@ -2815,13 +2816,38 @@ void Quake3::step(int frame_step)
 
 		if (entity->construct)
 		{
-			if (entity->construct->step(engine->input, engine->entity_list, i))
+			if (entity->construct->step(engine->input, engine->entity_list, i, *engine))
 			{
 				// building cancelled, delete entity
-				printf("building cancelled\n");
-				engine->clean_entity(entity->construct->base_index);
-				engine->clean_entity(i);
+				debugf("building cancelled\n");
+				if (entity->construct->owner != -1 && engine->entity_list[entity->construct->owner]->player)
+				{
+					engine->entity_list[entity->construct->owner]->player->build_timer = 0;
+					engine->clean_entity(entity->construct->base_index);
+					engine->clean_entity(i);
+				}
 			}
+			else
+			{
+				if (entity->construct->bot_state == BOT_ATTACK)
+				{
+					if (entity->construct->reload_timer == 0)
+						handle_machinegun(*engine->entity_list[entity->construct->owner]->player, entity->construct, i, engine->netcode.client_flag);
+					if (entity->construct->level == 3 && entity->construct->reload_timer2 == 0)
+					{
+						handle_rocketlauncher(*engine->entity_list[entity->construct->owner]->player, entity->construct, entity->construct->owner, engine->netcode.client_flag);
+					}
+
+					Frame frame;
+
+					// now that we shot, change to yaw only for rendering
+					entity->rigid->get_frame(frame);
+					frame.forward.y = 0.0f;
+					frame.forward.normalize();
+					frame.set(entity->rigid->morientation);
+				}
+			}
+
 		}
 
 
@@ -3111,21 +3137,23 @@ void Quake3::build_sentry()
 
 	int spawn = engine->get_entity();
 	Entity *ent = engine->entity_list[spawn];
+	ent->ent_type = ENT_SENTRY;
 	ent->construct = new Constructable(ent, engine->gfx, engine->audio);
 	ent->construct->owner = owner;
 	ent->rigid = new RigidBody(ent);
 
 	ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
 	ent->rigid->clone(model_table[MODEL_SENTRY1]);
-
 	for (int i = 0; i < 8; i++)
 	{
 		ent->rigid->aabb[i].y += -20.0f; //hack to get height right
 	}
+
+
 	ent->model = ent->rigid;
 	ent->construct->immobile = true;
 	ent->construct->render_md5 = false;
-//	ent->rigid->y_offset = 20.0f;
+
 
 	int base_index = engine->get_entity();
 	Entity *sentry_base = engine->entity_list[base_index];
@@ -3134,6 +3162,7 @@ void Quake3::build_sentry()
 	sentry_base->model->clone(model_table[MODEL_SENTRY_BASE]);
 	sentry_base->position = engine->entity_list[spawn]->position + vec3(0.0f, 0.0f, -5.0f);
 	sentry_base->flags.visible = true;
+	sentry_base->ent_type = ENT_CONSTRUCT;
 
 	ent->construct->base_index = base_index;
 
@@ -3216,13 +3245,22 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 	muzzleflash->flags.bsp_visible = true;
 }
 
-void Quake3::handle_rocketlauncher(Player &player, int self, bool client)
+void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int self, bool client)
 {
 	Frame frame;
 
-	player.entity->rigid->get_frame(frame);
-	player.reload_timer = ROCKET_RELOAD;
-	player.ammo_rockets--;
+	if (sentry)
+	{
+		sentry->entity->rigid->get_frame(frame);
+		sentry->reload_timer2 = ROCKET_RELOAD;
+		sentry->ammo_rockets--;
+	}
+	else
+	{
+		player.entity->rigid->get_frame(frame);
+		player.reload_timer = ROCKET_RELOAD;
+		player.ammo_rockets--;
+	}
 
 	float quad_factor = 1.0f;
 
@@ -3497,11 +3535,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 						{
 							engine->entity_list[index[i]]->construct->level = 1;
 							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY1]);
-							for (int i = 0; i < 8; i++)
-							{
-								engine->entity_list[index[i]]->rigid->aabb[i].y += -20.0f; //hack to get height right
-							}
-
 						}
 					}
 					if (health > 150 && health < 180)
@@ -3510,11 +3543,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 						{
 							engine->entity_list[index[i]]->construct->level = 2;
 							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY2]);
-							for (int i = 0; i < 8; i++)
-							{
-								engine->entity_list[index[i]]->rigid->aabb[i].y += -20.0f; //hack to get height right
-							}
-
 						}
 					}
 					else if (health >= 180 && health < 220)
@@ -3523,11 +3551,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 						{
 							engine->entity_list[index[i]]->construct->level = 3;
 							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY3]);
-							for (int i = 0; i < 8; i++)
-							{
-								engine->entity_list[index[i]]->rigid->aabb[i].y += -20.0f; //hack to get height right
-								engine->entity_list[index[i]]->rigid->aabb[i].z -= 5.0f; //hack to get height right
-							}
 
 						}
 					}
@@ -3825,7 +3848,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 
 }
 
-void Quake3::handle_machinegun(Player &player, int self, bool client)
+void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, bool client)
 {
 	char cmd[64] = { 0 };
 	int index[16] = { -1 };
@@ -3835,11 +3858,20 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 	vec3 dir;
 	vec3 end;
 
-
-	player.entity->rigid->get_frame(frame);
-	frame.forward *= -1;
-	player.reload_timer = MACHINEGUN_RELOAD;
-	player.ammo_bullets--;
+	if (sentry)
+	{
+		sentry->entity->rigid->get_frame(frame);
+		frame.forward *= -1;
+		sentry->reload_timer = MACHINEGUN_RELOAD;
+		sentry->ammo_bullets--;
+	}
+	else
+	{
+		player.entity->rigid->get_frame(frame);
+		frame.forward *= -1;
+		player.reload_timer = MACHINEGUN_RELOAD;
+		player.ammo_bullets--;
+	}
 
 
 	// Added to end vector
@@ -3922,13 +3954,23 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 			if (player.team == target->team && gametype != GAMETYPE_DEATHMATCH)
 				continue;
 
-			debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
-				target->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
-			sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
-			console(self, cmd, engine->menu, engine->entity_list);
-			debugf("%s has %d health\n", target->name,
-				target->health);
-			player.stats.hits++;
+			if (sentry)
+			{
+				debugf("%s's autosentry hit %s with the machinegun for %d damage\n", player.name,
+					target->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
+				sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
+				console(self, cmd, engine->menu, engine->entity_list);
+				debugf("%s has %d health\n", target->name, target->health);
+			}
+			else
+			{
+				debugf("Player %s hit %s with the machinegun for %d damage\n", player.name,
+					target->name, (int)(MACHINEGUN_DAMAGE * quad_factor));
+				sprintf(cmd, "hurt %d %d", index[i], (int)(MACHINEGUN_DAMAGE * quad_factor));
+				console(self, cmd, engine->menu, engine->entity_list);
+				debugf("%s has %d health\n", target->name, target->health);
+				player.stats.hits++;
+			}
 	
 			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
@@ -3943,11 +3985,20 @@ void Quake3::handle_machinegun(Player &player, int self, bool client)
 				else
 					sprintf(word, "%s", "killed");
 
-				sprintf(msg, "%s killed %s with a machinegun\n", player.name,
-					target->name);
-				debugf(msg);
-				engine->menu.print_notif(msg);
-				notif_timer = 3 * TICK_RATE;
+				if (sentry)
+				{
+					sprintf(msg, "%s's autosentry killed %s with a machinegun\n", player.name, target->name);
+					debugf(msg);
+					engine->menu.print_notif(msg);
+					notif_timer = 3 * TICK_RATE;
+				}
+				else
+				{
+					sprintf(msg, "%s killed %s with a machinegun\n", player.name, target->name);
+					debugf(msg);
+					engine->menu.print_notif(msg);
+					notif_timer = 3 * TICK_RATE;
+				}
 
 				handle_frags_left(player);
 			}
@@ -4904,7 +4955,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_rockets > 0)
 			{
 				fired = true;
-				handle_rocketlauncher(player, self, client);
+				handle_rocketlauncher(player, NULL, self, client);
 			}
 			else
 			{
@@ -4991,7 +5042,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 			if (player.ammo_bullets > 0)
 			{
 				fired = true;
-				handle_machinegun(player, self, client);
+				handle_machinegun(player, NULL, self, client);
 			}
 			else
 			{

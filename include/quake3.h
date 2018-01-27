@@ -36,11 +36,11 @@ public:
 
 	void handle_gauntlet(Player &player, int self, bool client);
 	void handle_plasma(Player &player, int self, bool client);
-	void handle_rocketlauncher(Player &player, int self, bool client);
+	void handle_rocketlauncher(Player &player, Constructable *sentry, int self, bool client);
 	void handle_grenade(Player &player, int self, bool client);
 	void handle_lightning(Player &player, int self, bool client);
 	void handle_railgun(Player &player, int self, bool client);
-	void handle_machinegun(Player &player, int self, bool client);
+	void handle_machinegun(Player &player, Constructable *sentry, int self, bool client);
 	void handle_shotgun(Player &player, int self, bool client);
 	void handle_gibs(Player &player);
 	void create_crosshair();

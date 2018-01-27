@@ -10,7 +10,10 @@
 
 // sentry guns,
 // enemy terrirotry constructable bridges / brushes (change opacity on % complete)
+// fixed mounted guns enemy territory style
 // Other things?
+
+class Engine;
 
 class Constructable
 {
@@ -20,7 +23,8 @@ public:
 	Entity	*entity;
 
 	void reset();
-	int step(input_t &input, vector<Entity *> &entity_list, int self);
+	int step(input_t &input, vector<Entity *> &entity_list, int self, Engine &engine);
+	void destroy();
 
 	playertype_t type;
 
@@ -44,6 +48,7 @@ public:
 	Entity *telefragged;
 
 	unsigned short int reload_timer;
+	unsigned short int reload_timer2;
 	unsigned short int click_timer;
 	unsigned short int pain_timer;
 	unsigned short int alert_timer;
