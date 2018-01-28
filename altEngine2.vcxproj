@@ -210,7 +210,7 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-    <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Oculus Debug|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Oculus Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Direct3d|x64'" Label="PropertySheets">
@@ -234,8 +234,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>C:\glew-2.0.0\include;$(IncludePath)c:\altEngine2\include;</IncludePath>
+    <LibraryPath>C:\opus-1.2.1\win32\VS2015\Win32\Release;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\opus-1.2.1\include;C:\glew-2.0.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -244,8 +244,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Oculus Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;G:\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
-    <IncludePath>G:\glew-2.0.0\include;$(IncludePath)g:\altEngine2\include;</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\glew-2.0.0\include;$(IncludePath)g:\altEngine2\include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Direct3d|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -289,12 +289,12 @@
     <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\altEngine2\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.1.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64;C:\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\opus-1.2.1\include;C:\altEngine2\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.1.0\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opus-1.2.1\win32\VS2015\x64\Release;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64;C:\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dedicated Server|x64'">
-    <IncludePath>C:\glew-2.1.0\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\opus-1.2.1\include;C:\glew-2.1.0\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\opus-1.2.1\win32\VS2015\x64\Release;C:\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -309,14 +309,14 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <ExceptionHandling>false</ExceptionHandling>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>winmm.lib;xinput.lib;opengl32.lib;openal32.lib;EFX-Util.lib;glew32.lib;d3d9.lib;d3dx9d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opus.lib;winmm.lib;xinput.lib;opengl32.lib;openal32.lib;EFX-Util.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -342,7 +342,7 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
-    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Oculus Debug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Oculus Debug|Win32'">
     <ClCompile>
       <PreprocessorDefinitions>EFXUTIL;OPENGL;OPENGL32;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -360,7 +360,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>winmm.lib;xinput.lib;opengl32.lib;openal32.lib;EFX-Util.lib;glew32.lib;d3d9.lib;d3dx9d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;xinput.lib;opengl32.lib;openal32.lib;EFX-Util.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -528,7 +528,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;xinput.lib;efx-util.lib;glew32.lib;opengl32.lib;openal32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opus.lib;winmm.lib;xinput.lib;efx-util.lib;glew32.lib;opengl32.lib;openal32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Dedicated Server|x64'">
@@ -536,12 +536,12 @@
       <PreprocessorDefinitions>DEDICATED</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>xinput.lib;winmm.lib;glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opus.lib;xinput.lib;winmm.lib;glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\basegame.cpp" />
-     <ClCompile Include="src\bsp_hl.cpp" />
+    <ClCompile Include="src\bsp_hl.cpp" />
     <ClCompile Include="src\bsp_q3.cpp" />
     <ClCompile Include="src\commando.cpp" />
     <ClCompile Include="src\common.cpp" />
@@ -568,7 +568,7 @@
     <ClCompile Include="src\md5sum.c" />
     <ClCompile Include="src\menu.cpp" />
     <ClCompile Include="src\model.cpp" />
-    <ClCompile Include="src\net.cpp" />
+    <ClCompile Include="src\netcode.cpp" />
     <ClCompile Include="src\oculus.cpp" />
     <ClCompile Include="src\pak.cpp" />
     <ClCompile Include="src\parse.cpp" />
@@ -588,11 +588,13 @@
     <ClCompile Include="src\shadow_volume.cpp" />
     <ClCompile Include="src\sin_table.cpp" />
     <ClCompile Include="src\audio.cpp" />
+    <ClCompile Include="src\sock.cpp" />
     <ClCompile Include="src\speaker.cpp" />
     <ClCompile Include="src\sph.cpp" />
     <ClCompile Include="src\terrain.cpp" />
     <ClCompile Include="src\trigger.cpp" />
     <ClCompile Include="src\vector.cpp" />
+    <ClCompile Include="src\voice.cpp" />
     <ClCompile Include="src\winmain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -623,7 +625,7 @@
     <ClInclude Include="include\md5_types.h" />
     <ClInclude Include="include\menu.h" />
     <ClInclude Include="include\model.h" />
-    <ClInclude Include="include\net.h" />
+    <ClInclude Include="include\netcode.h" />
     <ClInclude Include="include\oculus.h" />
     <ClInclude Include="include\parse.h" />
     <ClInclude Include="include\physics.h" />
@@ -637,6 +639,7 @@
     <ClInclude Include="include\shadow_volume.h" />
     <ClInclude Include="include\sin_table.h" />
     <ClInclude Include="include\audio.h" />
+    <ClInclude Include="include\sock.h" />
     <ClInclude Include="include\speaker.h" />
     <ClInclude Include="include\sph.h" />
     <ClInclude Include="include\stb_image.h" />
@@ -645,6 +648,7 @@
     <ClInclude Include="include\trigger.h" />
     <ClInclude Include="include\types.h" />
     <ClInclude Include="include\vector.h" />
+    <ClInclude Include="include\voice.h" />
     <ClInclude Include="portal_camera.h" />
   </ItemGroup>
   <ItemGroup>
