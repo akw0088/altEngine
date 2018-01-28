@@ -2832,10 +2832,22 @@ void Quake3::step(int frame_step)
 				if (entity->construct->bot_state == BOT_ATTACK)
 				{
 					if (entity->construct->reload_timer == 0)
+					{
 						handle_machinegun(*engine->entity_list[entity->construct->owner]->player, entity->construct, i, engine->netcode.client_flag);
+						if (entity->construct->ammo_bullets > 0)
+						{
+							engine->play_wave(entity->position, SND_MACHINEGUN);
+						}
+
+					}
 					if (entity->construct->level == 3 && entity->construct->reload_timer2 == 0)
 					{
 						handle_rocketlauncher(*engine->entity_list[entity->construct->owner]->player, entity->construct, entity->construct->owner, engine->netcode.client_flag);
+						if (entity->construct->ammo_rockets > 0)
+						{
+							engine->play_wave(entity->position, SND_ROCKET);
+						}
+
 					}
 
 					Frame frame;
@@ -3862,7 +3874,11 @@ void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, 
 	{
 		sentry->entity->rigid->get_frame(frame);
 		frame.forward *= -1;
-		sentry->reload_timer = MACHINEGUN_RELOAD;
+
+		if (sentry->level > 1)
+			sentry->reload_timer = (int)(MACHINEGUN_RELOAD * 0.8f);
+		else
+			sentry->reload_timer = (int)(MACHINEGUN_RELOAD * 1.4f);
 		sentry->ammo_bullets--;
 	}
 	else
