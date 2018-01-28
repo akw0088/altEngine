@@ -129,6 +129,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 
 	if (looped)
 	{
+#ifndef DEDICATED
 		if (local_echo)
 		{
 			alGetSourcei(mic_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
@@ -152,12 +153,16 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 				return 0;
 			}
 		}
+#endif
+
 		audio.capture_sample(mic_pcm[pong], isize);
 		size = isize;
 		if (local_echo)
 		{
+#ifndef DEDICATED
 			alBufferData(uiBuffer, VOICE_FORMAT, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
 			alSourceQueueBuffers(mic_source, 1, &uiBuffer);
+#endif
 		}
 
 	}
@@ -167,6 +172,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 		size = isize;
 		if (local_echo)
 		{
+#ifndef DEDICATED
 			alBufferData(mic_buffer[pong], VOICE_FORMAT, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
 			int al_err = alGetError();
 			if (al_err != AL_NO_ERROR)
@@ -174,6 +180,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 				debugf("Error alBufferData\n");
 			}
 			alSourceQueueBuffers(mic_source, 1, &mic_buffer[pong]);
+#endif
 		}
 	}
 
@@ -274,6 +281,8 @@ int Voice::voice_recv(Audio &audio)
 
 	if (remote_echo)
 	{
+
+#ifndef DEDICATED
 		if (looped)
 		{
 			alGetSourcei(decode_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
@@ -291,6 +300,7 @@ int Voice::voice_recv(Audio &audio)
 			}
 
 		}
+#endif
 	}
 
 	char client[128] = "";
@@ -318,15 +328,18 @@ int Voice::voice_recv(Audio &audio)
 
 			if (looped)
 			{
+#ifndef DEDICATED
 				alSourceUnqueueBuffers(decode_source, 1, &uiBuffer);
 				alBufferData(uiBuffer, AL_FORMAT_MONO16, decode_pcm[pong], size, VOICE_SAMPLE_RATE);
 				alSourceQueueBuffers(decode_source, 1, &uiBuffer);
-
+#endif
 			}
 			else
 			{
+#ifndef DEDICATED
 				alBufferData(decode_buffer[pong], AL_FORMAT_MONO16, decode_pcm[pong], size, VOICE_SAMPLE_RATE);
 				alSourceQueueBuffers(decode_source, 1, &decode_buffer[pong]);
+#endif
 			}
 
 

@@ -4129,6 +4129,7 @@ void Cloth::Render()
 			int tr = z * clothSize + (x + 1);
 			int br = (z + 1) * clothSize + (x + 1);
 
+#ifdef OPENGL
 			glBegin(GL_TRIANGLES);
 			glVertex3f(verts[tl].position.x, verts[tl].position.y, verts[tl].position.z);
 			glVertex3f(verts[br].position.x, verts[br].position.y, verts[br].position.z);
@@ -4138,6 +4139,7 @@ void Cloth::Render()
 			glVertex3f(verts[tr].position.x, verts[tr].position.y, verts[tr].position.z);
 			glVertex3f(verts[br].position.x, verts[br].position.y, verts[br].position.z);
 			glEnd();
+#endif
 		}
 	}
 }
@@ -4171,10 +4173,12 @@ void DistanceJoint::Render()
 	l.b = pos2;
 
 	//render line
+#ifdef OPENGL
 	glBegin(GL_LINES);
 	glVertex3f(l.a.x, l.a.y, l.a.z);
 	glVertex3f(l.b.x, l.b.y, l.b.z);
 	glEnd();
+#endif
 }
 
 void DistanceJoint::SolveConstraints(const std::vector<obb_t>& constraints)
@@ -4267,20 +4271,24 @@ void PhysicsSystem::Render()
 		0.0f, 0.0f, 0.0f, 0.0f
 	};
 
+#ifdef OPENGL
 	glColor3f(rigidbodyDiffuse[0], rigidbodyDiffuse[1], rigidbodyDiffuse[2]);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, rigidbodyAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, rigidbodyDiffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+#endif
 
 	for (int i = 0, size = bodies.size(); i < size; ++i)
 	{
 		bodies[i]->Render();
 	}
 
+#ifdef OPENGL
 	glColor3f(constraintDiffuse[0], constraintDiffuse[1], constraintDiffuse[2]);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, constraintAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, constraintDiffuse);
 	glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
+#endif
 
 
 	for (unsigned int i = 0; i < constraints.size(); ++i)
