@@ -3440,21 +3440,27 @@ bool Engine::body_collision(RigidBody &body)
 {
 	for(unsigned int i = 0; i < max_dynamic; i++)
 	{
+		// Dont collide with yourself
 		if (entity_list[i] == body.entity)
 			continue;
+
+		// dont collide if missing rigid class
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
+		// keep sentry base from colliding from sentry gun
 		if (body.entity->ent_type == ENT_CONSTRUCT && entity_list[i]->ent_type == ENT_SENTRY)
 			return false;
 
+		// same thing, but order reversed
 		if (body.entity->ent_type == ENT_SENTRY && entity_list[i]->ent_type == ENT_CONSTRUCT)
 			return false;
 
-
+		// keep things like machinegun bullets from colliding with players
 		if (body.entity->ent_type == ENT_UNKNOWN || entity_list[i]->ent_type == ENT_UNKNOWN)
 			return false;
 
+		// keep bots from colliding with eachother
 		if (body.entity->ent_type == ENT_NPC && entity_list[i]->ent_type == ENT_NPC)
 		{
 			return false;
@@ -3464,8 +3470,9 @@ bool Engine::body_collision(RigidBody &body)
 
 #if 1
 		if (entity_list[i]->ent_type == ENT_PLAYER ||
-			(entity_list[i]->ent_type == ENT_CONSTRUCT && entity_list[i]->construct &&
-				entity_list[i]->construct->build_timer == 0))
+			entity_list[i]->ent_type == ENT_CONSTRUCT || 
+			(entity_list[i]->ent_type == ENT_SENTRY && entity_list[i]->construct &&
+				entity_list[i]->construct->build_timer == 0) )
 		{
 			int result = 0;
 			vec3 shape1[8];
@@ -3483,11 +3490,14 @@ bool Engine::body_collision(RigidBody &body)
 			result = gjk(shape1, shape2, 10, 8, 8);
 			if (result)
 			{
-//				printf("collision between %s and entity type %d\n", entity_list[i]->player->name, body.entity->ent_type);
+//				printf("collision between %d and entity type %d\n", entity_list[i]->ent_type, body.entity->ent_type);
 				return true;
 			}
 		}
 #endif
+
+		if (body.collision_distance(*entity_list[i]->rigid))
+			return true;
 
 
 //		if (body.entity->bsp_leaf == entity_list[i]->bsp_leaf)

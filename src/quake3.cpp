@@ -3539,7 +3539,9 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 				if (engine->entity_list[index[i]]->construct)
 				{
 					int health = engine->entity_list[index[i]]->construct->health;
-					engine->entity_list[index[i]]->construct->health += (int)(LIGHTNING_DAMAGE * quad_factor);
+
+					if ( health < 220)
+						engine->entity_list[index[i]]->construct->health += (int)(LIGHTNING_DAMAGE * quad_factor);
 
 					if (health <= 150)
 					{
@@ -5812,6 +5814,19 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 			sprintf(data, "path_index %d", entity->rigid->path.index);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			sprintf(data, "num_path %d", entity->rigid->path.num_path);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+
+		}
+
+		if (entity->ent_type == ENT_SENTRY)
+		{
+			int line = 1;
+
+			sprintf(data, "Health %d", entity->construct->health);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+			sprintf(data, "Bullets %d", entity->construct->ammo_bullets);
+			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+			sprintf(data, "Rockets %d", entity->construct->ammo_rockets);
 			menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 
 		}
