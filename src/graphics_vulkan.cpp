@@ -583,9 +583,13 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	};
 
 	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+	VkBufferUsageFlagBits index_flag;
+	index_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	VkBufferUsageFlagBits vertex_flag;
+	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-	AllocateBuffer(vk_device, sizeof(indices), VK_BUFFER_USAGE_TRANSFER_DST_BIT, indexBuffer_);
-	AllocateBuffer(vk_device, sizeof(vertices),	VK_BUFFER_USAGE_TRANSFER_DST_BIT, vertexBuffer_);
+	AllocateBuffer(vk_device, sizeof(indices), index_flag, indexBuffer_);
+	AllocateBuffer(vk_device, sizeof(vertices), vertex_flag, vertexBuffer_);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
 	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
