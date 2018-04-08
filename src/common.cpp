@@ -827,8 +827,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 
 #ifndef DEDICATED
+#ifndef VULKAN
 	stbi_image_free(bytes);
 	delete [] data;
+#endif
 #endif
 
 #ifdef OPENGL

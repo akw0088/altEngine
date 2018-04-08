@@ -120,7 +120,8 @@ void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsa
 	bufferCreateInfo.size = static_cast<uint32_t> (size);
 	bufferCreateInfo.usage = bits;
 
-	vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer);
+	VkResult err = vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer);
+	assert(!err);
 }
 
 
@@ -273,7 +274,8 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	bufferCreateInfo.size = requiredSizeForImage;
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-	vkCreateBuffer(vk_device, &bufferCreateInfo, NULL, &uploadImageBuffer_);
+	VkResult err = vkCreateBuffer(vk_device, &bufferCreateInfo, NULL, &uploadImageBuffer_);
+	assert(!err);
 
 	vkGetBufferMemoryRequirements(vk_device, uploadImageBuffer_, &requirements);
 
@@ -656,7 +658,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	uploadBarriers[1].dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
 	uploadBarriers[1].size = VK_WHOLE_SIZE;
 
-	vkCmdPipelineBarrier(uploadCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 2, uploadBarriers, 0, NULL);
+	vkCmdPipelineBarrier(uploadCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 1, uploadBarriers, 0, NULL);
 }
 
 
@@ -962,7 +964,7 @@ std::vector<const char*> GetDebugDeviceLayerNames(VkPhysicalDevice device)
 	{
 		if (strcmp(p.layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
 		{
-			result.push_back("VK_LAYER_LUNARG_standard_validation");
+//			result.push_back("VK_LAYER_LUNARG_standard_validation");
 		}
 	}
 
@@ -1372,6 +1374,7 @@ void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int nu
 
 int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 {
+	return 0;
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
@@ -1398,7 +1401,10 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 
 	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
 
-	AllocateBuffer(vk_device, sizeof(int) * num_index, VK_BUFFER_USAGE_TRANSFER_DST_BIT, indexBuffer_);
+	VkBufferUsageFlagBits bflag;
+	bflag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+
+	AllocateBuffer(vk_device, sizeof(int) * num_index, bflag, indexBuffer_);
 
 	VkMemoryRequirements indexBufferMemoryRequirements = {};
 	vkGetBufferMemoryRequirements(vk_device, indexBuffer_, &indexBufferMemoryRequirements);

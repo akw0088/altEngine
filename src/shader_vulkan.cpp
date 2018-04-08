@@ -112,7 +112,7 @@ Global::~Global()
 }
 
 
-int mLight2::init(Graphics *gfx)
+int mLight2::init(Graphics *gfx, bool pixel)
 {
 	return 0;
 }
