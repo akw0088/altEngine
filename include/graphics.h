@@ -146,7 +146,7 @@ private:
 
 	void CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline);
 	void CreatePipelineStateObject();
-	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer);
+	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index);
 	void CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp);
 	void SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp);
 

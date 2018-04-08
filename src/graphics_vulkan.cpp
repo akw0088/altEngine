@@ -437,7 +437,7 @@ void Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipeli
 	VkVertexInputBindingDescription vertexInputBindingDescription;
 	vertexInputBindingDescription.binding = 0;
 	vertexInputBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-	vertexInputBindingDescription.stride = sizeof(float) * 5;
+	vertexInputBindingDescription.stride = sizeof(vertex_t);
 
 	VkVertexInputAttributeDescription vertexInputAttributeDescription[2] = {};
 	vertexInputAttributeDescription[0].binding = vertexInputBindingDescription.binding;
@@ -557,39 +557,16 @@ void Graphics::CreatePipelineStateObject()
 /*
 Full screen quad vertex / index buffers, single upload is kind of interesting
 */
-void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
+void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index)
 {
-	struct Vertex
-	{
-		float position[3];
-		float uv[2];
-	};
-
-	static const Vertex vertices[4] =
-	{
-		// Upper Left
-		{ { -1.0f,  1.0f, 0 },{ 0, 1 } },
-		// Upper Right
-		{ { 1.0f,  1.0f, 0 },{ 1, 1 } },
-		// Bottom right
-		{ { 1.0f, -1.0f, 0 },{ 1, 0 } },
-		// Bottom left
-		{ { -1.0f, -1.0f, 0 },{ 0, 0 } }
-	};
-
-	static const int indices[6] =
-	{
-		0, 1, 2, 2, 3, 0
-	};
-
 	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
 	VkBufferUsageFlagBits index_flag;
 	index_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	VkBufferUsageFlagBits vertex_flag;
 	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-	AllocateBuffer(vk_device, sizeof(indices), index_flag, indexBuffer_);
-	AllocateBuffer(vk_device, sizeof(vertices), vertex_flag, vertexBuffer_);
+	AllocateBuffer(vk_device, sizeof(unsigned int) * num_index, index_flag, indexBuffer_);
+	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, vertex_flag, vertexBuffer_);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
 	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
@@ -618,9 +595,9 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 
 	void* mapping = NULL;
 	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
-	memcpy(mapping, vertices, sizeof(vertices));
+	memcpy(mapping, vertices, sizeof(vertex_t) * num_vertex);
 
-	memcpy(static_cast<uint8_t*> (mapping) + indexBufferOffset, indices, sizeof(indices));
+	memcpy(static_cast<uint8_t*> (mapping) + indexBufferOffset, indices, sizeof(unsigned int) * num_index);
 
 	if (!memoryIsHostCoherent)
 	{
@@ -636,10 +613,10 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer)
 	vkUnmapMemory(vk_device, uploadMemory_);
 
 	VkBufferCopy vertexCopy = {};
-	vertexCopy.size = sizeof(vertices);
+	vertexCopy.size = sizeof(vertex_t) * num_vertex;
 
 	VkBufferCopy indexCopy = {};
-	indexCopy.size = sizeof(indices);
+	indexCopy.size = sizeof(unsigned int) * num_index;
 	indexCopy.srcOffset = indexBufferOffset;
 
 	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
@@ -1226,13 +1203,47 @@ void Graphics::init(void *param1, void *param2)
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
 
+
+	unsigned int index_array[6] =
+	{
+		0, 1, 2, 2, 3, 0
+	};
+
+
+	vertex_t vertex_array[4];
+
+	memset(vertex_array, 0, sizeof(vertex_t) * 4);
+	vertex_array[0].position.x = -1.0f;
+	vertex_array[0].position.y = 1.0f;
+	vertex_array[0].position.z = 0.0f;
+	vertex_array[0].texCoord0.x = 0.0f;
+	vertex_array[0].texCoord0.y = 1.0f;
+
+	vertex_array[1].position.x = 1.0f;
+	vertex_array[1].position.y = 1.0f;
+	vertex_array[1].position.z = 0.0f;
+	vertex_array[1].texCoord0.x = 1.0f;
+	vertex_array[1].texCoord0.y = 1.0f;
+
+	vertex_array[2].position.x = 1.0f;
+	vertex_array[2].position.y = -1.0f;
+	vertex_array[2].position.z = 0.0f;
+	vertex_array[2].texCoord0.x = 1.0f;
+	vertex_array[2].texCoord0.y = 0.0f;
+
+	vertex_array[3].position.x = -1.0f;
+	vertex_array[3].position.y = -1.0f;
+	vertex_array[3].position.z = 0.0f;
+	vertex_array[3].texCoord0.x = 0.0f;
+	vertex_array[3].texCoord0.y = 0.0f;
+
 	CreateSampler();
 	// load texture, will call gfx loadtexture, which will call CreateTexture below
 	load_texture(*this, "media/menu.tga", false, false, 0);
 	//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
 	CreateDescriptors();
 	CreatePipelineStateObject();
-	CreateMeshBuffers(setupCommandBuffer_);
+	CreateMeshBuffers(setupCommandBuffer_, vertex_array, 4, index_array, 6);
 
 	vkEndCommandBuffer(setupCommandBuffer_);
 
