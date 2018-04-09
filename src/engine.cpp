@@ -500,7 +500,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 #ifndef DIRECTX
 	//render menu again for linux
+#ifndef VULKAN
 	gfx.resize(xres,yres);
+#endif
 
 #ifdef WIN32
 	int x, y, bpp, refresh_rate;
