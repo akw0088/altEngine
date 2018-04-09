@@ -16,6 +16,12 @@ void Graphics::resize(int width, int height)
 {
 	Graphics::width = width;
 	Graphics::height = height;
+
+	if (initialized && initialized_once)
+	{
+//		destroy();
+	//	init(&hwnd, &hdc);
+	}
 }
 
 Graphics::Graphics()
@@ -59,7 +65,7 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice,
 		surface, &surfaceCapabilities);
 
-	uint32_t presentModeCount;
+	unsigned int presentModeCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
 		surface, &presentModeCount, NULL);
 
@@ -71,7 +77,7 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	VkExtent2D swapChainSize = {};
 	swapChainSize = surfaceCapabilities.currentExtent;
 
-	uint32_t swapChainImageCount = backbufferCount;
+	unsigned int swapChainImageCount = backbufferCount;
 
 
 	VkSurfaceTransformFlagBitsKHR surfaceTransformFlags;
@@ -117,7 +123,7 @@ void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsa
 {
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferCreateInfo.size = static_cast<uint32_t> (size);
+	bufferCreateInfo.size = (unsigned int)size;
 	bufferCreateInfo.usage = bits;
 
 	VkResult err = vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer);
@@ -129,7 +135,7 @@ void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsa
 /*
 Wrapper function, loops multiple gpu memory allocations
 */
-int Graphics::AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const uint32_t memoryBits, unsigned int memoryProperties, bool* isHostCoherent)
+int Graphics::AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const unsigned int memoryBits, unsigned int memoryProperties, bool* isHostCoherent)
 {
 	for (auto& memoryInfo : memoryInfos)
 	{
@@ -177,7 +183,7 @@ vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
 
 	vector<MemoryTypeInfo::Heap> heaps;
 
-	for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; ++i)
+	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; ++i)
 	{
 		MemoryTypeInfo::Heap info;
 		info.size = memoryProperties.memoryHeaps[i].size;
@@ -188,7 +194,7 @@ vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
 
 	vector<MemoryTypeInfo> result;
 
-	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; ++i)
 	{
 		MemoryTypeInfo typeInfo;
 
@@ -240,7 +246,7 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	imageCreateInfo.pNext = NULL;
 	imageCreateInfo.queueFamilyIndexCount = 1;
 
-	uint32_t queueFamilyIndex = static_cast<uint32_t> (queueFamilyIndex_);
+	unsigned int queueFamilyIndex = (unsigned int) (queueFamilyIndex_);
 	imageCreateInfo.pQueueFamilyIndices = &queueFamilyIndex;
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -418,12 +424,12 @@ void Graphics::CreateDescriptors()
 /*
 Copies shader to GPU
 */
-void Graphics::LoadShader(VkDevice device, const void* shaderContents, const size_t size, VkShaderModule &shader)
+void Graphics::LoadShader(VkDevice device, const void* shaderContents, const unsigned int size, VkShaderModule &shader)
 {
 	VkShaderModuleCreateInfo shaderModuleCreateInfo = {};
 	shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 
-	shaderModuleCreateInfo.pCode = static_cast<const uint32_t*> (shaderContents);
+	shaderModuleCreateInfo.pCode = (unsigned int *) (shaderContents);
 	shaderModuleCreateInfo.codeSize = size;
 
 	vkCreateShaderModule(device, &shaderModuleCreateInfo, NULL, &shader);
@@ -639,15 +645,15 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *
 	uploadBarriers[1].dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
 	uploadBarriers[1].size = VK_WHOLE_SIZE;
 
-	vkCmdPipelineBarrier(uploadCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 1, uploadBarriers, 0, NULL);
+	vkCmdPipelineBarrier(uploadCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 2, uploadBarriers, 0, NULL);
 }
 
 
 void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height)
 {
 	VkViewport viewports[1] = {};
-	viewports[0].width = static_cast<float> (width);
-	viewports[0].height = static_cast<float> (height);
+	viewports[0].width  = (float) width;
+	viewports[0].height = (float) height;
 	viewports[0].minDepth = 0;
 	viewports[0].maxDepth = 1;
 
@@ -658,8 +664,7 @@ void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int he
 	scissors[0].extent.height = height;
 	vkCmdSetScissor(commandBuffer, 0, 1, scissors);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipeline_);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
 	VkDeviceSize offsets[] = { 0 };
 	vkCmdBindIndexBuffer(commandBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
@@ -672,6 +677,9 @@ void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int he
 
 void Graphics::render()
 {
+	if (initialized == false)
+		return;
+
 	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
 
 	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
@@ -795,6 +803,8 @@ void Graphics::destroy()
 
 	vkDestroyDevice(vk_device, NULL);
 	vkDestroyInstance(vk_instance, NULL);
+
+	initialized = false;
 }
 
 void Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp)
@@ -876,7 +886,7 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 
 void Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, SwapchainFormatColorSpace &result)
 {
-	uint32_t surfaceFormatCount = 0;
+	unsigned int surfaceFormatCount = 0;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
 		surface, &surfaceFormatCount, NULL);
 
@@ -900,7 +910,7 @@ void Graphics::FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice
 {
 	for (auto physicalDevice : physicalDevices)
 	{
-		uint32_t queueFamilyPropertyCount = 0;
+		unsigned int queueFamilyPropertyCount = 0;
 
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
 			&queueFamilyPropertyCount, NULL);
@@ -934,7 +944,7 @@ void Graphics::FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice
 
 std::vector<const char*> GetDebugDeviceLayerNames(VkPhysicalDevice device)
 {
-	uint32_t layerCount = 0;
+	unsigned int layerCount = 0;
 	vkEnumerateDeviceLayerProperties(device, &layerCount, NULL);
 
 	std::vector<VkLayerProperties> deviceLayers{ layerCount };
@@ -955,7 +965,7 @@ std::vector<const char*> GetDebugDeviceLayerNames(VkPhysicalDevice device)
 
 void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice)
 {
-	uint32_t physicalDeviceCount = 0;
+	unsigned int physicalDeviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, NULL);
 
 	std::vector<VkPhysicalDevice> devices{ physicalDeviceCount };
@@ -995,7 +1005,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 
 
 	deviceCreateInfo.ppEnabledLayerNames = deviceLayers.data();
-	deviceCreateInfo.enabledLayerCount = static_cast<uint32_t> (deviceLayers.size());
+	deviceCreateInfo.enabledLayerCount = (unsigned int) (deviceLayers.size());
 
 
 	std::vector<const char*> deviceExtensions =
@@ -1004,7 +1014,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	};
 
 	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
-	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (deviceExtensions.size());
+	deviceCreateInfo.enabledExtensionCount = (unsigned int) (deviceExtensions.size());
 
 	VkDevice device = NULL;
 	vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device);
@@ -1035,7 +1045,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 
 std::vector<const char*> GetDebugInstanceExtensionNames()
 {
-	uint32_t extensionCount = 0;
+	unsigned int extensionCount = 0;
 	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
 
 	std::vector<VkExtensionProperties> instanceExtensions{ extensionCount };
@@ -1055,7 +1065,7 @@ std::vector<const char*> GetDebugInstanceExtensionNames()
 
 std::vector<const char*> GetDebugInstanceLayerNames()
 {
-	uint32_t layerCount = 0;
+	unsigned int layerCount = 0;
 	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
 	std::vector<VkLayerProperties> instanceLayers{ layerCount };
@@ -1087,7 +1097,7 @@ VkInstance Graphics::CreateInstance()
 	instanceExtensions.insert(instanceExtensions.end(), debugInstanceExtensionNames.begin(), debugInstanceExtensionNames.end());
 
 	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-	instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t> (instanceExtensions.size());
+	instanceCreateInfo.enabledExtensionCount = (unsigned int) (instanceExtensions.size());
 
 	std::vector<const char*> instanceLayers;
 
@@ -1095,7 +1105,7 @@ VkInstance Graphics::CreateInstance()
 	instanceLayers.insert(instanceLayers.end(), debugInstanceLayerNames.begin(), debugInstanceLayerNames.end());
 
 	instanceCreateInfo.ppEnabledLayerNames = instanceLayers.data();
-	instanceCreateInfo.enabledLayerCount = static_cast<uint32_t> (instanceLayers.size());
+	instanceCreateInfo.enabledLayerCount = (unsigned int) (instanceLayers.size());
 
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -1152,7 +1162,7 @@ void Graphics::init(void *param1, void *param2)
 	CreateSwapchain(physicalDevice, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, &swapchainFormat, swapchain_);
 
 
-	uint32_t swapchainImageCount = 0;
+	unsigned int swapchainImageCount = 0;
 	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
 
 	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
@@ -1260,6 +1270,10 @@ void Graphics::init(void *param1, void *param2)
 
 	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &imageAcquiredSemaphore);
 	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &renderingCompleteSemaphore);
+
+
+	initialized = true;
+	initialized_once = true;
 }
 
 void Graphics::swap()
@@ -1498,29 +1512,15 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
 {
 	return 0;
-	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
-	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
-	commandBufferAllocateInfo.commandPool = commandPool_;
-	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
-
-	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];
-	VkCommandBuffer v_setupCommandBuffer_;
-
-	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);
-
-	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];
-
-	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
-
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;	commandBufferAllocateInfo.commandPool = commandPool_;	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
+	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];	VkCommandBuffer v_setupCommandBuffer_;
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
 	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+	VkBufferUsageFlagBits vertex_flag;
+	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, VK_BUFFER_USAGE_TRANSFER_DST_BIT, vertexBuffer_);
+	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, vertex_flag, vertexBuffer_);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
 	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
@@ -1559,8 +1559,7 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
 
 	VkBufferCopy vertexCopy = {};
 	vertexCopy.size = sizeof(vertex_t) * num_vertex;
-
-	vkCmdCopyBuffer(v_uploadCommandBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
+	vkCmdCopyBuffer(v_setupCommandBuffer_, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
 
 	VkBufferMemoryBarrier uploadBarriers[1] = {};
 	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -1571,8 +1570,7 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
 	uploadBarriers[0].dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 	uploadBarriers[0].size = VK_WHOLE_SIZE;
 
-	vkCmdPipelineBarrier(v_uploadCommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 1, uploadBarriers, 0, NULL);
-	vkEndCommandBuffer(v_uploadCommandBuffer);
+	vkCmdPipelineBarrier(v_setupCommandBuffer_, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 1, uploadBarriers, 0, NULL);
 	return 1;
 }
 
