@@ -21,15 +21,14 @@
 #define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
 #endif
 
-
-
+bool debug = false;
 double freq = 0.0;
 double com_maxfps = 1000.0f / 250;
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void clipboard_paste(HWND hwnd, char *value, int size); 
 BOOL setupPixelFormat(HDC);
-void RedirectIOToConsole();
+void RedirectIOToConsole(bool debug);
 unsigned int getTimeStamp(void);
 double GetCounter(double freq);
 void GetFreq(double &freq);
@@ -69,6 +68,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 
 	GetFreq(freq);
+
+	if (strstr(szCmdLine, "debug"))
+	{
+		debug = true;
+	}
 
 
 	if (!RegisterClass(&wndclass))
@@ -168,7 +172,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	{
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
-		RedirectIOToConsole();
+#ifndef NDEBUG
+		debug = true;
+#endif
+
+
+		RedirectIOToConsole(debug);
 
 		hCursor = LoadCursorFromFile("media/mouse.cur");
 		if (hCursor)
@@ -689,56 +698,59 @@ unsigned int getTimeStamp(void)
 	return timestamp;
 }
 
-void RedirectIOToConsole()
+void RedirectIOToConsole(bool debug)
 {
-#ifdef DEDICATED
-	int	hConHandle;
-	long	lStdHandle;
-	FILE	*fp;
-	CONSOLE_SCREEN_BUFFER_INFO	coninfo;
+	if (debug)
+	{
+		int	hConHandle;
+		long	lStdHandle;
+		FILE	*fp;
+		CONSOLE_SCREEN_BUFFER_INFO	coninfo;
 
-	AllocConsole();
-	HWND hwndConsole = GetConsoleWindow();
+		AllocConsole();
+		HWND hwndConsole = GetConsoleWindow();
 
-	ShowWindow(hwndConsole, SW_MAXIMIZE);
-	// set the screen buffer to be big enough to let us scroll text
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
+		ShowWindow(hwndConsole, SW_MAXIMIZE);
+		// set the screen buffer to be big enough to let us scroll text
+		GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
-	coninfo.dwSize.Y = 512;
-	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+		coninfo.dwSize.Y = 512;
+		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
-	// redirect unbuffered STDOUT to the console
-	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		// redirect unbuffered STDOUT to the console
+		lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
-	fp = _fdopen( hConHandle, "w" );
-	*stdout = *fp;
-	setvbuf( stdout, NULL, _IONBF, 0 );
+		fp = _fdopen(hConHandle, "w");
+		*stdout = *fp;
+		setvbuf(stdout, NULL, _IONBF, 0);
 
-	// redirect unbuffered STDIN to the console
-	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		// redirect unbuffered STDIN to the console
+		lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
-	fp = _fdopen( hConHandle, "r" );
-	*stdin = *fp;
-	setvbuf( stdin, NULL, _IONBF, 0 );
+		fp = _fdopen(hConHandle, "r");
+		*stdin = *fp;
+		setvbuf(stdin, NULL, _IONBF, 0);
 
-	// redirect unbuffered STDERR to the console
-	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-	fp = _fdopen( hConHandle, "w" );
-	*stderr = *fp;
-	setvbuf( stderr, NULL, _IONBF, 0 );
+		// redirect unbuffered STDERR to the console
+		lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		fp = _fdopen(hConHandle, "w");
+		*stderr = *fp;
+		setvbuf(stderr, NULL, _IONBF, 0);
 
-	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well
-	//ios::sync_with_stdio();
+		// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to console as well
+		//ios::sync_with_stdio();
 
-	//Fix issue on windows 10
-	FILE *fp2 = freopen("CONOUT$", "w", stdout);
-#else
-	freopen("altEngine.log", "a", stdout);
-	freopen("altEngine.log", "a", stderr);
-#endif
+		//Fix issue on windows 10
+		FILE *fp2 = freopen("CONOUT$", "w", stdout);
+	}
+	else
+	{
+		freopen("altEngine.log", "a", stdout);
+		freopen("altEngine.log", "a", stderr);
+	}
 }
 
 
