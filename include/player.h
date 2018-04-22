@@ -162,12 +162,19 @@ public:
 
 	int num_sentry;
 
+	float pm_friction;
+	float pm_waterfriction;
+	float pm_flightfriction;
+	float pm_spectatorfriction;
 
-	float accel;
-	float air_accel;
-	float max_speed;
-	float max_air_speed;
-	float air_control;
+	float pm_accel;
+	float pm_airaccel;
+	float pm_wateraccel;
+	float pm_flyaccel;
+
+	float pm_max_speed;
+	float pm_max_air_speed;
+	float pm_air_control;
 	float haste_factor;
 
 

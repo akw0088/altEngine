@@ -93,12 +93,20 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	excellent_award_timer = 0;
 	gauntlet_award_timer = 0;
 
+		
+	pm_accel = 10.0f;
+	pm_airaccel = 1.0f;
+	pm_wateraccel = 4.0f;
+	pm_flyaccel = 8.0f;
 
-	accel = 0.25f;
-	air_accel = 0.5f;
-	max_speed = 3.0f;
-	max_air_speed = 5.5f;
-	air_control = 0.25f;
+	pm_max_speed = 30.0f;
+	pm_max_air_speed = 55.0f;
+	pm_air_control = 2.5f;
+
+	pm_friction = 6.0f;
+	pm_waterfriction = 1.0f;
+	pm_flightfriction = 3.0f;
+	pm_spectatorfriction = 5.0f;
 
 
 	model_index = model; // default to visor -- ranger isnt in demo files :'( 

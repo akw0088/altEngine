@@ -8909,7 +8909,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 
 						// allow rocket jumping to pass max air speed
 						if (player->entity->rigid->flags.on_ground == false)
-							player->max_air_speed *= 2.0f;
+							player->pm_max_air_speed *= 2.0f;
 						debugf(msg);
 						engine->menu.print_notif(msg);
 						notif_timer = 3 * TICK_RATE;

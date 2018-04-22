@@ -159,7 +159,7 @@ void RigidBody::integrate(float time)
 
 
 	acceleration = net_force / mass;
-	if (flags.gravity == true && flags.noclip == false && flags.flight == false)
+	if (flags.gravity == true && flags.noclip == false && flags.flight == false && flags.water == false)
 	{
 		acceleration.y -= GRAVITY * GRAVITY_SCALE;
 	}
@@ -812,14 +812,14 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 	if (input.jump)
 	{
 		wishdir += vec3(0.0f, 1.0f, 0.0f);
-		velocity.y += entity->player->accel * speed_scale;
+		velocity.y += entity->player->pm_flyaccel * speed_scale * 0.016f;
 		moved = true;
 	}
 
 	if (input.duck)
 	{
 		wishdir += vec3(0.0f, -1.0f, 0.0f);
-		velocity.y += -entity->player->accel * speed_scale;
+		velocity.y += -entity->player->pm_flyaccel * speed_scale * 0.016f;
 		moved = true;
 	}
 
@@ -828,14 +828,14 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 
 	if (moved)
 	{
-		velocity += wishdir * entity->player->accel * speed_scale;
+		velocity += wishdir * entity->player->pm_flyaccel * speed_scale * 0.016f;
 	}
 	float speed = 0.0f;
 	static bool hopped = false;
 
 	if ((hopped || wishdir.magnitude() > 1.0f))
 	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->pm_max_speed * speed_scale);
 		hopped = true;
 	}
 	else
@@ -844,12 +844,12 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 	}
 
 
-	if (speed > entity->player->max_air_speed * speed_scale)
+	if (speed > entity->player->pm_max_air_speed * speed_scale)
 	{
 		//		printf("MAX_AIR_SPEEDED\n");
-		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.x *= (entity->player->pm_max_air_speed * speed_scale / speed);
 		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
-		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->pm_max_air_speed * speed_scale / speed);
 	}
 
 
@@ -857,8 +857,8 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 	{
 		// deceleration
 		//		printf("FRICTIONED\n");
-		velocity.x *= 0.5f;
-		velocity.z *= 0.5f;
+		velocity.x *= entity->player->pm_flightfriction * 0.016f;
+		velocity.z *= entity->player->pm_flightfriction * 0.016f;
 	}
 
 	return ret;
@@ -926,30 +926,30 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	if (input.jump)
 	{
 //		wishdir += vec3(0.0f, 1.0f, 0.0f);
-		velocity.y += entity->player->accel * speed_scale;
+		velocity.y += entity->player->pm_wateraccel * speed_scale * 0.016;
 		moved = true;
 	}
 	if (input.duck)
 	{
 //		wishdir += vec3(0.0f, -1.0f, 0.0f);
-		velocity.y += -entity->player->accel * speed_scale;
+		velocity.y += -entity->player->pm_wateraccel * speed_scale * 0.016;
 		moved = true;
 	}
 
 	if (moved)
 	{
-		velocity += wishdir * entity->player->accel * speed_scale * 0.5f;
+		velocity += wishdir * entity->player->pm_wateraccel * speed_scale * 0.016;
 	}
 	float speed = 0.0f;
 
 
 
-	if (speed > entity->player->max_air_speed * 0.5f * speed_scale)
+	if (speed > entity->player->pm_max_air_speed * 0.5f * speed_scale)
 	{
 		//		printf("MAX_AIR_SPEEDED\n");
-		velocity.x *= (entity->player->max_air_speed * 0.5f * speed_scale / speed);
+		velocity.x *= (entity->player->pm_max_air_speed * 0.5f * speed_scale / speed);
 //		velocity.y *= (entity->player->max_air_speed * 0.5f * speed_scale / speed);
-		velocity.z *= (entity->player->max_air_speed * 0.5f * speed_scale / speed);
+		velocity.z *= (entity->player->pm_max_air_speed * 0.5f * speed_scale / speed);
 	}
 
 
@@ -957,9 +957,9 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	{
 		// deceleration
 		//		printf("FRICTIONED\n");
-		velocity.x *= 0.5f;
-		velocity.y *= 0.5f;
-		velocity.z *= 0.5f;
+		velocity.x *= entity->player->pm_waterfriction * 0.016f;
+		velocity.y *= entity->player->pm_waterfriction * 0.016f;
+		velocity.z *= entity->player->pm_waterfriction * 0.016f;
 	}
 
 
@@ -974,7 +974,7 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 
 	wishdir = vec3();
 
-	air_control = entity->player->air_control;
+	air_control = entity->player->pm_air_control;
 
 	get_frame(camera);
 	vec3	forward = camera.forward;
@@ -1035,14 +1035,14 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 
 	if (moved)
 	{
-		velocity += wishdir * entity->player->air_accel * air_control * speed_scale;
+		velocity += wishdir * entity->player->pm_airaccel * air_control * speed_scale * 0.016f;
 	}
 	float speed = 0.0f;
 	static bool hopped = false;
 
 	if (hopped || wishdir.magnitude() > 1.0f)
 	{
-		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->max_speed * speed_scale);
+		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) - (0.2f * entity->player->pm_max_speed * speed_scale);
 		hopped = true;
 	}
 	else
@@ -1050,12 +1050,12 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 		speed = newtonSqrt(velocity.x * velocity.x + velocity.z * velocity.z) * speed_scale;
 	}
 
-	if (speed > entity->player->max_air_speed * speed_scale)
+	if (speed > entity->player->pm_max_air_speed * speed_scale)
 	{
 		//		printf("MAX_AIR_SPEEDED\n");
-		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.x *= (entity->player->pm_max_air_speed * speed_scale / speed);
 		//		velocity.y *= (entity->player->max_air_speed * speed_scale / speed);
-		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->pm_max_air_speed * speed_scale / speed);
 	}
 
 
@@ -1079,7 +1079,7 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 
 	wishdir = vec3();
 
-	entity->player->max_air_speed = MAX_AIR_SPEED * speed_scale;
+	entity->player->pm_max_air_speed = MAX_AIR_SPEED * speed_scale;
 
 	get_frame(camera);
 	vec3	forward = camera.forward;
@@ -1155,7 +1155,7 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 
 	if (moved)
 	{
-		velocity += wishdir * entity->player->accel * speed_scale;
+		velocity += wishdir * entity->player->pm_accel * speed_scale * (0.016f);
 	}
 	float speed = 0.0f;
 
@@ -1167,24 +1167,24 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 	}
 
 
-	if (flags.on_ground && (speed > entity->player->max_speed * speed_scale))
+	if (flags.on_ground && (speed > entity->player->pm_max_speed * speed_scale))
 	{
 		if (jumppad == false && two_frames > 8)
 		{
 			//			printf("MAX_SPEEDED\n");
 			two_frames = 0;
-			velocity.x *= (entity->player->max_speed * speed_scale / speed);
+			velocity.x *= (entity->player->pm_max_speed * speed_scale / speed);
 			//			velocity.y *= (MAX_SPEED * speed_scale / speed);
-			velocity.z *= (entity->player->max_speed * speed_scale / speed);
+			velocity.z *= (entity->player->pm_max_speed * speed_scale / speed);
 		}
 		two_frames++;
 	}
 
-	if (jumppad == true && (speed > entity->player->max_air_speed * speed_scale))
+	if (jumppad == true && (speed > entity->player->pm_max_air_speed * speed_scale))
 	{
 		//		printf("MAX_AIR_SPEEDED\n");
-		velocity.x *= (entity->player->max_air_speed * speed_scale / speed);
-		velocity.z *= (entity->player->max_air_speed * speed_scale / speed);
+		velocity.x *= (entity->player->pm_max_air_speed * speed_scale / speed);
+		velocity.z *= (entity->player->pm_max_air_speed * speed_scale / speed);
 	}
 
 
@@ -1202,8 +1202,8 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 	{
 		// deceleration
 		//		printf("FRICTIONED\n");
-		velocity.x *= 0.5f;
-		velocity.z *= 0.5f;
+		velocity.x *= entity->player->pm_friction * 0.016f;
+		velocity.z *= entity->player->pm_friction * 0.016f;;
 	}
 
 	return ret;
