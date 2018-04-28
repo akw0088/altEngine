@@ -751,7 +751,7 @@ int Netcode::server_recv()
 			//printf("Client already spawned, ignoring\n");
 			return 1;
 		}
-		client_t *client = (client_t *)malloc(sizeof(client_t));
+		client_t *client = new client_t;
 		if (client == NULL)
 		{
 			debugf("malloc failed allocating client");

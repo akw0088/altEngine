@@ -45,7 +45,7 @@ float *Graph::dijkstra(int start)
 	float		*distance_table;
 	int		i;
 
-	distance_table = (float *)malloc(num_nodes * sizeof(float));
+	distance_table = new float[num_nodes];
 	if (distance_table == NULL)
 	{
 		perror("malloc() failed in dijkstra()");
@@ -108,7 +108,7 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 	int		*path_table;
 	int		i, j;
 
-	distance_table = (float *)malloc(num_nodes * sizeof(float));
+	distance_table = new float[num_nodes];
 	if (distance_table == NULL)
 	{
 		perror("malloc() failed in dijkstra()");
@@ -209,7 +209,7 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 	int		*predecessor_table = NULL;
 	int		i, j;
 
-	distance_table = (float *)malloc(num_nodes * sizeof(float));
+	distance_table = new float[num_nodes];
 	if (distance_table == NULL)
 	{
 		perror("malloc() failed in dijkstra()");
