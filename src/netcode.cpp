@@ -1371,7 +1371,7 @@ void Netcode::kick(unsigned int i)
 	memcpy(servermsg.data, &reliable, reliable[i].size);
 	sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
 	debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
-	free((void *)client_list[i]);
+	delete client_list[i];
 	client_list.erase(client_list.begin() + i);
 }
 

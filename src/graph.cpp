@@ -66,7 +66,7 @@ float *Graph::dijkstra(int start)
 		// Heap used to quickly sort by minimum weight
 		if ( heap.insert(&key) )
 		{
-			free((void *)distance_table);
+			delete [] distance_table;
 			return NULL;
 		}
 	}
@@ -115,20 +115,20 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 		return NULL;
 	}
 
-	predecessor_table = (int *)calloc(num_nodes, sizeof(int));
+	predecessor_table = new int[num_nodes];
 	if (predecessor_table == NULL)
 	{
 		perror("calloc() failed in dijkstra()");
-		free((void *)distance_table);
+		delete[] distance_table;
 		return NULL;
 	}
 
-	path_table = (int *)calloc(num_nodes, sizeof(int));
+	path_table = new int[num_nodes];
 	if (path_table == NULL)
 	{
 		perror("calloc() failed in dijkstra()");
-		free((void *)distance_table);
-		free((void *)predecessor_table);
+		delete[] distance_table;
+		delete[] predecessor_table;
 		return NULL;
 	}
 
@@ -146,9 +146,9 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 		// Heap used to quickly sort by minimum weight
 		if ( heap.insert(&key) )
 		{
-			free((void *)distance_table);
-			free((void *)path_table);
-			free((void *)predecessor_table);
+			delete[] distance_table;
+			delete[] path_table;
+			delete[] predecessor_table;
 			return NULL;
 		}
 	}
@@ -196,8 +196,8 @@ int *Graph::dijkstra_path(int start, int end, int *path_length)
 		path_table[*path_length - 1 - i] = temp;
 	}
 
-	free((void *)distance_table);
-	free((void *)predecessor_table);
+	delete[] distance_table;
+	delete[] predecessor_table;
 	return path_table;
 }
 
@@ -216,13 +216,14 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 		return NULL;
 	}
 
-	predecessor_table = (int *)calloc(num_nodes, sizeof(int));
+	predecessor_table = new int[num_nodes];
 	if (predecessor_table == NULL)
 	{
 		perror("malloc() failed in dijkstra()");
-		free((void *)distance_table);
+		delete[] distance_table;
 		return NULL;
 	}
+	memset(predecessor_table, 0, sizeof(int) * num_nodes);
 
 	// 1. Assign to every node a distance value. Set it to zero for our initial node and to infinity for all other nodes.
 	for (i = 0; i < num_nodes; i++)
@@ -238,8 +239,8 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 		// Heap used to quickly sort by minimum weight
 		if ( heap.insert(&key) )
 		{
-			free((void *)distance_table);
-			free((void *)predecessor_table);
+			delete[] distance_table;
+			delete[] predecessor_table;
 			return NULL;
 		}
 	}
@@ -283,8 +284,8 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 		{
 //			printf("Fatal error: Path longer than available nodes\n");
 			*path_length = -1;
-			free((void *)distance_table);
-			free((void *)predecessor_table);
+			delete[] distance_table;
+			delete[] predecessor_table;
 			return NULL;
 		}
 
@@ -302,8 +303,8 @@ int *Graph::astar_path(int *path_table, ref_t *ref, int start, int end, int *pat
 		path_table[*path_length - 1 - i] = temp;
 	}
 
-	free((void *)distance_table);
-	free((void *)predecessor_table);
+	delete[] distance_table;
+	delete[] predecessor_table;
 	return path_table;
 }
 
