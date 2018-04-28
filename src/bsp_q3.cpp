@@ -714,17 +714,17 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 
 				stage_t *stage = &surface_list[surface_index]->stage[i];
 
-				if (stage->tcmod_rotate)
+				if (stage->flags.tcmod_rotate)
 				{
 					mlight2.tcmod_rotate(stage->tcmod_rotate_value * time, i);
 				}
-				if (stage->tcmod_scroll)
+				if (stage->flags.tcmod_scroll)
 				{
 					scroll.x += stage->tcmod_scroll_value.x * time * 0.001f;
 					scroll.y += stage->tcmod_scroll_value.y * time * 0.001f;
 					mlight2.tcmod_scroll(scroll, i);
 				}
-				if (stage->tcmod_scale)
+				if (stage->flags.tcmod_scale)
 				{
 					mlight2.tcmod_scale(stage->tcmod_scale_value, i);
 				}
@@ -1006,28 +1006,28 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 			render.envmap = false;
 			render.turb = false;
 
-			if (surface->surfaceparm_sky)
+			if (surface->flags.surfaceparm_sky)
 			{
 				render.sky = true;
 				sky_face = face_index;
 			}
 
-			if (surface->surfaceparm_lava || surface->surfaceparm_slime || surface->surfaceparm_water)
+			if (surface->flags.surfaceparm_lava || surface->flags.surfaceparm_slime || surface->flags.surfaceparm_water)
 			{
 				render.turb = true;
 			}
 
-			if (surface->portal)
+			if (surface->flags.portal)
 			{
 				render.portal = true;
 			}
 
-			if (surface->cull_none || surface->cull_twosided || surface->cull_disable)
+			if (surface->flags.cull_none || surface->flags.cull_twosided || surface->flags.cull_disable)
 			{
 				render.cull_none = true;
 			}
 
-			if (surface->fog)
+			if (surface->flags.fog)
 			{
 				render.fog = true;
 				render.fog_color = surface->fog_color;
@@ -1042,133 +1042,133 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 			for (unsigned int k = 0; k < surface->num_stage && k < max_stage; k++)
 			{
-				render.tcmod_rotate[k] = surface->stage[k].tcmod_rotate;
+				render.tcmod_rotate[k] = surface->stage[k].flags.tcmod_rotate;
 				render.deg[k] = surface->stage[k].tcmod_rotate_value;
-				render.tcmod_scroll[k] = surface->stage[k].tcmod_scroll;
+				render.tcmod_scroll[k] = surface->stage[k].flags.tcmod_scroll;
 				render.scroll[k] = surface->stage[k].tcmod_scroll_value;
-				render.tcmod_scale[k] = surface->stage[k].tcmod_scale;
+				render.tcmod_scale[k] = surface->stage[k].flags.tcmod_scale;
 				render.scale[k] = surface->stage[k].tcmod_scale_value;
-				render.tcmod_stretch_sin[k] = surface->stage[k].tcmod_stretch_sin;
-				render.tcmod_stretch_square[k] = surface->stage[k].tcmod_stretch_square;
-				render.tcmod_stretch_triangle[k] = surface->stage[k].tcmod_stretch_triangle;
-				render.tcmod_stretch_sawtooth[k] = surface->stage[k].tcmod_stretch_sawtooth;
-				render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].tcmod_stretch_inverse_sawtooth;
+				render.tcmod_stretch_sin[k] = surface->stage[k].flags.tcmod_stretch_sin;
+				render.tcmod_stretch_square[k] = surface->stage[k].flags.tcmod_stretch_square;
+				render.tcmod_stretch_triangle[k] = surface->stage[k].flags.tcmod_stretch_triangle;
+				render.tcmod_stretch_sawtooth[k] = surface->stage[k].flags.tcmod_stretch_sawtooth;
+				render.tcmod_stretch_inverse_sawtooth[k] = surface->stage[k].flags.tcmod_stretch_inverse_sawtooth;
 				render.stretch_value[k] = surface->stage[k].tcmod_stretch_value;
 				render.stage = k;
 				render.name = surface->stage[k].map_tex;
-				render.lightmap[k] = surface->stage[k].lightmap;
-				render.alpha_ge128 = surface->stage[k].alpha_ge128;
-				render.alpha_lt128 = surface->stage[k].alpha_lt128;
-				render.alpha_gt0 = surface->stage[k].alpha_gt0;
-				render.envmap = surface->stage[k].tcgen_env;
+				render.lightmap[k] = surface->stage[k].flags.lightmap;
+				render.alpha_ge128 = surface->stage[k].flags.alpha_ge128;
+				render.alpha_lt128 = surface->stage[k].flags.alpha_lt128;
+				render.alpha_gt0 = surface->stage[k].flags.alpha_gt0;
+				render.envmap = surface->stage[k].flags.tcgen_env;
 
-				render.rgbgen_identity = surface->stage[k].rgbgen_identity;
-				render.rgbgen_wave_sin[k] = surface->stage[k].rgbgen_wave_sin;
-				render.rgbgen_wave_square[k] = surface->stage[k].rgbgen_wave_square;
-				render.rgbgen_wave_triangle[k] = surface->stage[k].rgbgen_wave_triangle;
-				render.rgbgen_wave_sawtooth[k] = surface->stage[k].rgbgen_wave_sawtooth;
-				render.rgbgen_wave_inverse_sawtooth[k] = surface->stage[k].rgbgen_wave_inverse_sawtooth;
+				render.rgbgen_identity = surface->stage[k].flags.rgbgen_identity;
+				render.rgbgen_wave_sin[k] = surface->stage[k].flags.rgbgen_wave_sin;
+				render.rgbgen_wave_square[k] = surface->stage[k].flags.rgbgen_wave_square;
+				render.rgbgen_wave_triangle[k] = surface->stage[k].flags.rgbgen_wave_triangle;
+				render.rgbgen_wave_sawtooth[k] = surface->stage[k].flags.rgbgen_wave_sawtooth;
+				render.rgbgen_wave_inverse_sawtooth[k] = surface->stage[k].flags.rgbgen_wave_inverse_sawtooth;
 				render.rgbgen_wave_value[k] = surface->stage[k].rgbgen_wave_value;
 
 
 
 				render.blend = false;
 
-				if (surface->stage[k].alpha /*|| (surface->stage[0].lightmap && k > 0)*/)
+				if (surface->stage[k].flags.alpha /*|| (surface->stage[0].lightmap && k > 0)*/)
 				{
 					render.alpha = true;
 				}
 
-				if (surface->stage[k].alpha_gt0)
+				if (surface->stage[k].flags.alpha_gt0)
 				{
 					render.alpha_gt0 = true;
 				}
-				else if (surface->stage[k].alpha_ge128)
+				else if (surface->stage[k].flags.alpha_ge128)
 				{
 					render.alpha_ge128 = true;
 				}
-				else if (surface->stage[k].alpha_lt128)
+				else if (surface->stage[k].flags.alpha_lt128)
 				{
 					render.alpha_lt128 = true;
 				}
-				else if (surface->stage[k].blendfunc_add ||
-					surface->stage[k].blend_one_one)
+				else if (surface->stage[k].flags.blendfunc_add ||
+					surface->stage[k].flags.blend_one_one)
 				{
 					// Doing multiple passes to get the quake3 blending right
 					render.blend = true;
 					render.blend_one_one = true;
 				}
-				else if (surface->stage[k].blend_one_zero)
+				else if (surface->stage[k].flags.blend_one_zero)
 				{
 					render.blend = true;
 					render.blend_one_zero = true;
 				}
-				else if (surface->stage[k].blendfunc_blend)
+				else if (surface->stage[k].flags.blendfunc_blend)
 				{
 					render.blend = true;
 					render.blend_default = true;
 				}
-				else if (surface->stage[k].blendfunc_filter)
+				else if (surface->stage[k].flags.blendfunc_filter)
 				{
 					render.blend = true;
 					render.blend_filter = true;
 				}
-				else if (surface->stage[k].blend_dst_color_one)
+				else if (surface->stage[k].flags.blend_dst_color_one)
 				{
 					render.blend = true;
 					render.blend_dstcolor_one = true;
 				}
-				else if (surface->stage[k].blend_dst_color_zero)
+				else if (surface->stage[k].flags.blend_dst_color_zero)
 				{
 					render.blend = true;
 					render.blend_dstcolor_zero = true;
 				}
-				else if (surface->stage[k].blend_dst_color_src_alpha)
+				else if (surface->stage[k].flags.blend_dst_color_src_alpha)
 				{
 					render.blend = true;
 					render.blend_dst_color_src_alpha = true;
 				}
-				else if (surface->stage[k].blend_dst_color_one_minus_dst_alpha)
+				else if (surface->stage[k].flags.blend_dst_color_one_minus_dst_alpha)
 				{
 					render.blend = true;
 					render.blend_dst_color_one_minus_dst_alpha = true;
 				}
-				else if (surface->stage[k].one_minus_src_alpha_src_alpha)
+				else if (surface->stage[k].flags.one_minus_src_alpha_src_alpha)
 				{
 					render.blend = true;
 					render.one_minus_src_alpha_src_alpha = true;
 				}
-				else if (surface->stage[k].blend_one_minus_src_alpha_src_alpha)
+				else if (surface->stage[k].flags.blend_one_minus_src_alpha_src_alpha)
 				{
 					render.blend = true;
 					render.blend_one_minus_src_alpha_src_alpha = true;
 				}
-				else if (surface->stage[k].blend_src_alpha_one_minus_src_alpha)
+				else if (surface->stage[k].flags.blend_src_alpha_one_minus_src_alpha)
 				{
 					render.blend = true;
 					render.blend_src_alpha_one_minus_src_alpha = true;
 				}
-				else if (surface->stage[k].blend_one_minus_dst_color_zero)
+				else if (surface->stage[k].flags.blend_one_minus_dst_color_zero)
 				{
 					render.blend = true;
 					render.blend_one_minus_dst_color_zero = true;
 				}
-				else if (surface->stage[k].blend_one_src_alpha)
+				else if (surface->stage[k].flags.blend_one_src_alpha)
 				{
 					render.blend = true;
 					render.blend_one_src_alpha = true;
 				}
-				else if (surface->stage[k].blend_zero_src_color)
+				else if (surface->stage[k].flags.blend_zero_src_color)
 				{
 					render.blend = true;
 					render.blend_zero_src_color = true;
 				}
-				else if (surface->stage[k].blend_dst_color_src_color)
+				else if (surface->stage[k].flags.blend_dst_color_src_color)
 				{
 					render.blend = true;
 					render.blend_dst_color_src_color = true;
 				}
-				else if (surface->stage[k].blend_zero_src_alpha)
+				else if (surface->stage[k].flags.blend_zero_src_alpha)
 				{
 					render.blend = true;
 					render.blend_zero_src_alpha = true;
@@ -1885,7 +1885,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		return;
 	}
 
-	if (surface_list[j]->portal)
+	if (surface_list[j]->flags.portal)
 		texObj->portal = true;
 	else
 		texObj->portal = false;
@@ -1896,24 +1896,24 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		stage_t *stage = &surface_list[j]->stage[k];
 		//printf("Raw stage %d is [%s]\n", j, surface_list[i]->stage.stage[j]);
 
-		if (stage->lightmap)
+		if (stage->flags.lightmap)
 		{
 			continue;
 		}
 
-		if (stage->map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
+		if (stage->flags.map /*&& surface_list[j]->stage[k].tcgen_env == false*/)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", stage->map_tex);
 
 			//printf("Trying texture [%s]\n", texture_name);
 			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, true, anisotropic);
 		}
-		else if (stage->clampmap)
+		else if (stage->flags.clampmap)
 		{
 			snprintf(texture_name, LINE_SIZE, "media/%s", stage->clampmap_tex);
 			tex_object = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, true, true, anisotropic);
 		}
-		else if (stage->anim_map)
+		else if (stage->flags.anim_map)
 		{
 			char *tex = strtok(stage->anim_map_tex, " ");
 			anim_list.push_back(texObj);
@@ -1939,7 +1939,7 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 		}
 
 
-		if (tex_object != 0 && tex_object != -1 && stage->anim_map == false)
+		if (tex_object != 0 && tex_object != -1 && stage->flags.anim_map == false)
 		{
 			//printf("Loaded texture stage %d into unit %d for shader with texture %s\n", k, texObj->num_tex, texture_name);
 			//texObj->stage = k;

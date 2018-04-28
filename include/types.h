@@ -71,7 +71,7 @@ typedef struct
 	float color[3];
 	int flag;
 	int mouse_state;
-	char msg[LINE_SIZE];
+	char msg[128];
 } menu_t;
 
 /*
@@ -80,9 +80,9 @@ typedef struct
 typedef struct
 {
 	int start;
-	char delta[LINE_SIZE];
+	char delta[128];
 	int end;
-	char cmd[LINE_SIZE];
+	char cmd[128];
 } state_t;
 
 
@@ -227,62 +227,65 @@ typedef struct
 {
 	//	char *stage; //raw parser output
 
-	bool map;
 	char map_tex[128];
-	bool clampmap;
 	char clampmap_tex[128];
-	bool anim_map;
 	char anim_map_tex[512];
 	float anim_map_freq;
-	bool lightmap;
 
-	bool alpha;
-	bool blendfunc_add;
-	bool blendfunc_filter;
-	bool blendfunc_blend;	//source * srccoef + dest * destcoef
-	bool blend_zero_one;
-	bool blend_one_zero;
-	bool blend_one_one;
-	bool blend_one_src_color;
-	bool blend_dst_color_one;
-	bool blend_dst_color_zero;
-	bool blend_dst_color_one_minus_dst_alpha;
-	bool one_minus_src_alpha_src_alpha;
-	bool blend_dst_color_src_alpha;
-	bool blend_one_minus_src_alpha_src_alpha;
-	bool blend_src_alpha_one_minus_src_alpha;
-	bool blend_one_src_alpha;
-	bool blend_one_minus_dst_color_zero;
-	bool blend_zero_src_color;
-	bool blend_dst_color_src_color;
-	bool blend_zero_src_alpha;
-	bool alpha_gt0;
-	bool alpha_ge128;
-	bool alpha_lt128;
-	bool depth_write;
-	bool depthfunc_equal;
-	bool rgbgen_identity;
-	bool tcmod_rotate;
+	struct flag
+	{
+		uint64_t map : 1,
+			clampmap : 1,
+			anim_map : 1,
+			lightmap : 1,
+			alpha : 1,
+			blendfunc_add : 1,
+			blendfunc_filter : 1,
+			blendfunc_blend : 1,	//source * srccoef + dest * destcoef
+			blend_zero_one : 1,
+			blend_one_zero : 1,
+			blend_one_one : 1,
+			blend_one_src_color : 1,
+			blend_dst_color_one : 1,
+			blend_dst_color_zero : 1,
+			blend_dst_color_one_minus_dst_alpha : 1,
+			one_minus_src_alpha_src_alpha : 1,
+			blend_dst_color_src_alpha : 1,
+			blend_one_minus_src_alpha_src_alpha : 1,
+			blend_src_alpha_one_minus_src_alpha : 1,
+			blend_one_src_alpha : 1,
+			blend_one_minus_dst_color_zero : 1,
+			blend_zero_src_color : 1,
+			blend_dst_color_src_color : 1,
+			blend_zero_src_alpha : 1,
+			alpha_gt0 : 1,
+			alpha_ge128 : 1,
+			alpha_lt128 : 1,
+			depth_write : 1,
+			depthfunc_equal : 1,
+			rgbgen_identity : 1,
+			tcmod_rotate : 1,
+			tcmod_scale : 1,
+			tcmod_stretch_sin : 1,
+			tcmod_stretch_sawtooth : 1,
+			tcmod_stretch_inverse_sawtooth : 1,
+			tcmod_stretch_square : 1,
+			tcmod_stretch_triangle : 1,
+			tcmod_scroll : 1,
+			tcmod_turb : 1,
+			tcgen_env : 1,
+			rgbgen_wave_sin : 1,
+			rgbgen_wave_sawtooth : 1,
+			rgbgen_wave_inverse_sawtooth : 1,
+			rgbgen_wave_square : 1,
+			rgbgen_wave_triangle : 1;
+	} flags;
+
 	float tcmod_rotate_value; // deg/sec
-	bool tcmod_scale;
 	vec2 tcmod_scale_value;
-	bool tcmod_stretch_sin;
-	bool tcmod_stretch_sawtooth;
-	bool tcmod_stretch_inverse_sawtooth;
-	bool tcmod_stretch_square;
-	bool tcmod_stretch_triangle;
 	vec4 tcmod_stretch_value;
-	bool tcmod_scroll;
 	vec2 tcmod_scroll_value;
-	bool tcmod_turb;
 	vec4 tcmod_turb_value;
-	bool tcgen_env;
-
-	bool rgbgen_wave_sin;
-	bool rgbgen_wave_sawtooth;
-	bool rgbgen_wave_inverse_sawtooth;
-	bool rgbgen_wave_square;
-	bool rgbgen_wave_triangle;
 	vec4 rgbgen_wave_value;
 
 } stage_t;
@@ -297,46 +300,50 @@ struct surface_t
 	stage_t stage[8]; //looks like it quake3 maxes out at 4, but doing 8
 	unsigned int num_stage;
 
-	bool nomipmaps;
-	bool nopicmip;
-	bool polygon_offset;
-	bool portal;
-	//sort value 1:portal,2:sky,3:opaque,6:banner,8:underwater,9:additive,16:nearest
-	bool surfaceparm_trans;
-	bool surfaceparm_nonsolid;
-	bool surfaceparm_noclip;
-	bool surfaceparm_nodraw;
-	bool surfaceparm_nodrop;
-	bool surfaceparm_nodlight;
-	bool surfaceparm_areaportal;
-	bool surfaceparm_clusterportal;
-	bool surfaceparm_donotenter;
-	bool surfaceparm_origin;
-	bool surfaceparm_detail;
-	bool surfaceparm_playerclip;
-	bool surfaceparm_water;
-	bool surfaceparm_slime;
-	bool surfaceparm_lava;
-	bool surfaceparm_slick;
-	bool surfaceparm_structural;
-	bool surfaceparm_fog;
-	bool surfaceparm_sky;
-	bool surfaceparm_nolightmap;
-	bool surfaceparm_nodamage;
-	bool surfaceparm_noimpact;
-	bool surfaceparm_nomarks;
-	bool surfaceparm_metalsteps;
-	bool surfaceparm_alphashadow;
-	bool q3map_surfacelight;
+
+	struct flag
+	{
+		uint64_t nomipmaps : 1,
+			nopicmip : 1,
+			polygon_offset : 1,
+			portal : 1, //sort value 1:portal,2:sky,3:opaque,6:banner,8:underwater,9:additive,16:nearest
+			surfaceparm_trans : 1,
+			surfaceparm_nonsolid : 1,
+			surfaceparm_noclip : 1,
+			surfaceparm_nodraw : 1,
+			surfaceparm_nodrop : 1,
+			surfaceparm_nodlight : 1,
+			surfaceparm_areaportal : 1,
+			surfaceparm_clusterportal : 1,
+			surfaceparm_donotenter : 1,
+			surfaceparm_origin : 1,
+			surfaceparm_detail : 1,
+			surfaceparm_playerclip : 1,
+			surfaceparm_water : 1,
+			surfaceparm_slime : 1,
+			surfaceparm_lava : 1,
+			surfaceparm_slick : 1,
+			surfaceparm_structural : 1,
+			surfaceparm_fog : 1,
+			surfaceparm_sky : 1,
+			surfaceparm_nolightmap : 1,
+			surfaceparm_nodamage : 1,
+			surfaceparm_noimpact : 1,
+			surfaceparm_nomarks : 1,
+			surfaceparm_metalsteps : 1,
+			surfaceparm_alphashadow : 1,
+			q3map_surfacelight : 1,
+			q3map_sun : 1,
+			cull_disable : 1,
+			cull_none : 1,
+			cull_backside : 1,
+			cull_twosided : 1,
+			deformVertexes : 1,
+			fog : 1;
+	} flags;
+
 	int q3map_surfacelight_value;
-	bool q3map_sun;
 	vec3 q3map_sun_value[2]; //rgb + intensity degrees elevation
-	bool cull_disable;
-	bool cull_none;
-	bool cull_backside;
-	bool cull_twosided;
-	bool deformVertexes;
-	bool fog;
 	vec3 fog_color;
 	int fog_density;
 	deform_t deform;

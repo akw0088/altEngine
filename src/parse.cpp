@@ -2008,19 +2008,19 @@ void handle_command(char *basecmd, surface_t *surface)
 
 	if (strstr(basecmd, "nomipmaps"))
 	{
-		surface->nomipmaps = true;
+		surface->flags.nomipmaps = true;
 	}
 	else if (strstr(basecmd, "nopicmip"))
 	{
-		surface->nopicmip = true;
+		surface->flags.nopicmip = true;
 	}
 	else if (strstr(basecmd, "polygonOffset"))
 	{
-		surface->polygon_offset = true;
+		surface->flags.polygon_offset = true;
 	}
 	else if (strstr(basecmd, "portal"))
 	{
-		surface->portal = true;
+		surface->flags.portal = true;
 	}
 	else if (strstr(basecmd, "fogparms"))
 	{
@@ -2028,66 +2028,66 @@ void handle_command(char *basecmd, surface_t *surface)
 		int density;
 
 		sscanf(basecmd, "fogparms ( %f %f %f ) %d", &color.x, &color.y, &color.z, &density);
-		surface->fog = true;
+		surface->flags.fog = true;
 		surface->fog_color = color;
 		surface->fog_density = density;
 	}
 	else if (strstr(basecmd, "surfaceparm"))
 	{
 		if (strstr(basecmd, "trans"))
-			surface->surfaceparm_trans = true;
+			surface->flags.surfaceparm_trans = true;
 		else if (strstr(basecmd, "nonsolid"))
-			surface->surfaceparm_nonsolid = true;
+			surface->flags.surfaceparm_nonsolid = true;
 		else if (strstr(basecmd, "water"))
-			surface->surfaceparm_water = true;
+			surface->flags.surfaceparm_water = true;
 		else if (strstr(basecmd, "slime"))
-			surface->surfaceparm_slime = true;
+			surface->flags.surfaceparm_slime = true;
 		else if (strstr(basecmd, "lava"))
-			surface->surfaceparm_lava = true;
+			surface->flags.surfaceparm_lava = true;
 		else if (strstr(basecmd, "slick"))
-			surface->surfaceparm_slick = true;
+			surface->flags.surfaceparm_slick = true;
 		else if (strstr(basecmd, "structural"))
-			surface->surfaceparm_structural = true;
+			surface->flags.surfaceparm_structural = true;
 		else if (strstr(basecmd, "fog"))
-			surface->surfaceparm_fog = true;
+			surface->flags.surfaceparm_fog = true;
 		else if (strstr(basecmd, "sky"))
-			surface->surfaceparm_sky = true;
+			surface->flags.surfaceparm_sky = true;
 		else if (strstr(basecmd, "nolightmap"))
-			surface->surfaceparm_nolightmap = true;
+			surface->flags.surfaceparm_nolightmap = true;
 		else if (strstr(basecmd, "nodamage"))
-			surface->surfaceparm_nodamage = true;
+			surface->flags.surfaceparm_nodamage = true;
 		else if (strstr(basecmd, "noimpact"))
-			surface->surfaceparm_noimpact = true;
+			surface->flags.surfaceparm_noimpact = true;
 		else if (strstr(basecmd, "nomarks"))
-			surface->surfaceparm_nomarks = true;
+			surface->flags.surfaceparm_nomarks = true;
 		else if (strstr(basecmd, "nodraw"))
-			surface->surfaceparm_nodraw = true;
+			surface->flags.surfaceparm_nodraw = true;
 		else if (strstr(basecmd, "nodrop"))
-			surface->surfaceparm_nodrop = true;
+			surface->flags.surfaceparm_nodrop = true;
 		else if (strstr(basecmd, "nodlight"))
-			surface->surfaceparm_nodlight = true;
+			surface->flags.surfaceparm_nodlight = true;
 		else if (strstr(basecmd, "clusterportal"))
-			surface->surfaceparm_clusterportal = true;
+			surface->flags.surfaceparm_clusterportal = true;
 		else if (strstr(basecmd, "donotenter"))
-			surface->surfaceparm_donotenter = true;
+			surface->flags.surfaceparm_donotenter = true;
 		else if (strstr(basecmd, "origin"))
-			surface->surfaceparm_clusterportal = true;
+			surface->flags.surfaceparm_clusterportal = true;
 		else if (strstr(basecmd, "areaportal"))
-			surface->surfaceparm_areaportal = true;
+			surface->flags.surfaceparm_areaportal = true;
 		else if (strstr(basecmd, "detail"))
-			surface->surfaceparm_detail = true;
+			surface->flags.surfaceparm_detail = true;
 		else if (strstr(basecmd, "playerclip"))
-			surface->surfaceparm_playerclip = true;
+			surface->flags.surfaceparm_playerclip = true;
 		else if (strstr(basecmd, "metalsteps"))
-			surface->surfaceparm_metalsteps = true;
+			surface->flags.surfaceparm_metalsteps = true;
 		else if (strstr(basecmd, "alphashadow"))
-			surface->surfaceparm_alphashadow = true;
+			surface->flags.surfaceparm_alphashadow = true;
 		else
 			printf("Unknown surfaceparm [%s]\n", basecmd);
 	}
 	else if ( (ret = strstr(basecmd, "q3map_surfacelight")) )
 	{
-		surface->q3map_surfacelight = true;
+		surface->flags.q3map_surfacelight = true;
 		surface->q3map_surfacelight_value = atoi(ret + 18);
 	}
 	else if ((ret = strstr(basecmd, "q3map_sun")))
@@ -2104,7 +2104,7 @@ void handle_command(char *basecmd, surface_t *surface)
 
 		if (match == 6)
 		{
-			surface->q3map_sun = true;
+			surface->flags.q3map_sun = true;
 			surface->q3map_sun_value[0].x = r;
 			surface->q3map_sun_value[0].y = g;
 			surface->q3map_sun_value[0].z = b;
@@ -2116,13 +2116,13 @@ void handle_command(char *basecmd, surface_t *surface)
 	else if (strstr(basecmd, "cull"))
 	{
 		if (strstr(basecmd, "disable"))
-			surface->cull_disable = true;
+			surface->flags.cull_disable = true;
 		else if (strstr(basecmd, "none"))
-			surface->cull_none = true;
+			surface->flags.cull_none = true;
 		else if (strstr(basecmd, "backside"))
-			surface->cull_backside = true;
+			surface->flags.cull_backside = true;
 		else if (strstr(basecmd, "twosided"))
-			surface->cull_twosided = true;
+			surface->flags.cull_twosided = true;
 	}
 	else if ( (ret = strstr(basecmd, "deformVertexes") ))
 	{
@@ -2135,7 +2135,7 @@ void handle_command(char *basecmd, surface_t *surface)
 			&wave[0], &div, &func, &base, &amplitude, &phase, &freq);
 		if (match == 7)
 		{
-			surface->deformVertexes = true;
+			surface->flags.deformVertexes = true;
 			strcpy(surface->deform.wave, wave);
 			surface->deform.div = div;
 			surface->deform.func = func;
@@ -2156,12 +2156,9 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 {
 	char *ret = NULL;
 
-
-	
-
 	if (strstr(stagecmd, "$lightmap"))
 	{
-		stage->lightmap = true;
+		stage->flags.lightmap = true;
 //		if (stage_num - 1 > 0)
 //			stage->blendfunc_filter = true;
 	}
@@ -2175,98 +2172,98 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 
 		if (match == 2)
 		{
-			stage->anim_map = true;
+			stage->flags.anim_map = true;
 			stage->anim_map_freq = freq;
 			strcpy(stage->anim_map_tex, ret + 8);
 		}
 	}
 	else if ((ret = strstr(stagecmd, "clampmap ")))
 	{
-		stage->clampmap = true;
+		stage->flags.clampmap = true;
 		strcpy(stage->clampmap_tex, ret + 9);
 	}
 	else if ( (ret = strstr(stagecmd, "map ")) )
 	{
-		stage->map = true;
+		stage->flags.map = true;
 		strcpy(stage->map_tex, ret + 4);
 	}
 	else if ((ret = strstr(stagecmd, "blendfunc")))
 	{
 		if (strstr(ret, "add"))
 		{
-			stage->blendfunc_add = true;
+			stage->flags.blendfunc_add = true;
 		}
 		else if (strstr(ret, "filter"))
 		{
-			stage->blendfunc_filter = true;
+			stage->flags.blendfunc_filter = true;
 		}
 		else if (strstr(ret, "blendfunc blend"))
 		{
-			stage->blendfunc_blend = true;
+			stage->flags.blendfunc_blend = true;
 		}
 		else if (strstr(ret, "blendfunc gl_src_alpha gl_one_minus_src_alpha"))
 		{
-			stage->blendfunc_blend = true;
+			stage->flags.blendfunc_blend = true;
 		}
 		else if (strstr(ret, "gl_zero gl_one"))
 		{
-			stage->blend_zero_one = true;
+			stage->flags.blend_zero_one = true;
 		}
 		else if (strstr(ret, "gl_one gl_zero"))
 		{
-			stage->blend_one_zero = true;
+			stage->flags.blend_one_zero = true;
 		}
 		else if (strstr(ret, "gl_one gl_one"))
 		{
-			stage->blend_one_one = true;
+			stage->flags.blend_one_one = true;
 		}
 		else if (strstr(ret, "gl_one gl_src_color"))
 		{
-			stage->blend_one_src_color = true;
+			stage->flags.blend_one_src_color = true;
 		}
 		else if (strstr(ret, "gl_dst_color gl_zero"))
 		{
-			stage->blend_dst_color_zero = true;
+			stage->flags.blend_dst_color_zero = true;
 		}
 		else if (strstr(ret, "gl_dst_color gl_one_minus_dst_alpha"))
 		{
-			stage->blend_dst_color_one_minus_dst_alpha = true;
+			stage->flags.blend_dst_color_one_minus_dst_alpha = true;
 		}
 		else if (strstr(ret, "gl_dst_color gl_one"))
 		{
-			stage->blend_dst_color_one = true;
+			stage->flags.blend_dst_color_one = true;
 		}
 		else if (strstr(ret, "gl_dst_color gl_src_alpha"))
 		{
-			stage->blend_dst_color_src_alpha = true;
+			stage->flags.blend_dst_color_src_alpha = true;
 		}
 		else if (strstr(ret, "gl_one_minus_src_alpha gl_src_alpha"))
 		{
-			stage->blend_one_minus_src_alpha_src_alpha = true;
+			stage->flags.blend_one_minus_src_alpha_src_alpha = true;
 		}
 		else if (strstr(ret, "gl_src_alpha gl_one_minus_src_alpha"))
 		{
-			stage->blend_src_alpha_one_minus_src_alpha = true;
+			stage->flags.blend_src_alpha_one_minus_src_alpha = true;
 		}
 		else if (strstr(ret, "gl_one gl_src_alpha"))
 		{
-			stage->blend_one_src_alpha = true;
+			stage->flags.blend_one_src_alpha = true;
 		}
 		else if (strstr(ret, "gl_one_minus_dst_color gl_zero"))
 		{
-			stage->blend_one_minus_dst_color_zero = true;
+			stage->flags.blend_one_minus_dst_color_zero = true;
 		}
 		else if (strstr(ret, "gl_zero gl_src_color"))
 		{
-			stage->blend_zero_src_color = true;
+			stage->flags.blend_zero_src_color = true;
 		}
 		else if (strstr(ret, "gl_dst_color gl_src_color"))
 		{
-			stage->blend_dst_color_src_color = true;
+			stage->flags.blend_dst_color_src_color = true;
 		}
 		else if (strstr(ret, "gl_zero gl_src_alpha"))
 		{
-			stage->blend_zero_src_alpha = true;
+			stage->flags.blend_zero_src_alpha = true;
 		}
 		else
 		{
@@ -2277,11 +2274,11 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 	{
 		//alphaFunc GE128
 		if (strstr(stagecmd, "gt0") != NULL)
-			stage->alpha_gt0 = true;
+			stage->flags.alpha_gt0 = true;
 		else if (strstr(stagecmd, "ge128") != NULL)
-			stage->alpha_ge128 = true;
+			stage->flags.alpha_ge128 = true;
 		else if (strstr(stagecmd, "lt128") != NULL)
-			stage->alpha_lt128 = true;
+			stage->flags.alpha_lt128 = true;
 		else
 			printf("Unsupported alpha func %s\n", stagecmd);
 
@@ -2295,7 +2292,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 	}
 	else if (strstr(stagecmd, "depthwrite"))
 	{
-		stage->depth_write = true;
+		stage->flags.depth_write = true;
 	}
 	else if ( (ret = strstr(stagecmd, "tcmod")) )
 	{
@@ -2307,7 +2304,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod rotate %f", &value);
 		if (match == 1)
 		{
-			stage->tcmod_rotate = true;
+			stage->flags.tcmod_rotate = true;
 			stage->tcmod_rotate_value = value;
 			return;
 		}
@@ -2315,7 +2312,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod scale %f %f", &x, &y);
 		if (match == 2)
 		{
-			stage->tcmod_scale = true;
+			stage->flags.tcmod_scale = true;
 			stage->tcmod_scale_value.x = x;
 			stage->tcmod_scale_value.y = y;
 			return;
@@ -2324,7 +2321,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod scroll %f %f", &x, &y);
 		if (match == 2)
 		{
-			stage->tcmod_scroll = true;
+			stage->flags.tcmod_scroll = true;
 			stage->tcmod_scroll_value.x = x;
 			stage->tcmod_scroll_value.y = y;
 			return;
@@ -2333,7 +2330,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod turb %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_turb = true;
+			stage->flags.tcmod_turb = true;
 			stage->tcmod_turb_value.x = base;
 			stage->tcmod_turb_value.y = amplitude;
 			stage->tcmod_turb_value.z = phase;
@@ -2344,7 +2341,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod stretch sin %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_stretch_sin = true;
+			stage->flags.tcmod_stretch_sin = true;
 			stage->tcmod_stretch_value.x = base;
 			stage->tcmod_stretch_value.y = amplitude;
 			stage->tcmod_stretch_value.z = phase;
@@ -2355,7 +2352,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod stretch square  %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_stretch_square = true;
+			stage->flags.tcmod_stretch_square = true;
 			stage->tcmod_stretch_value.x = base;
 			stage->tcmod_stretch_value.y = amplitude;
 			stage->tcmod_stretch_value.z = phase;
@@ -2366,7 +2363,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod stretch triangle %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_stretch_triangle = true;
+			stage->flags.tcmod_stretch_triangle = true;
 			stage->tcmod_stretch_value.x = base;
 			stage->tcmod_stretch_value.y = amplitude;
 			stage->tcmod_stretch_value.z = phase;
@@ -2377,7 +2374,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod stretch sawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_stretch_sawtooth = true;
+			stage->flags.tcmod_stretch_sawtooth = true;
 			stage->tcmod_stretch_value.x = base;
 			stage->tcmod_stretch_value.y = amplitude;
 			stage->tcmod_stretch_value.z = phase;
@@ -2388,7 +2385,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "tcmod stretch inversesawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->tcmod_stretch_inverse_sawtooth = true;
+			stage->flags.tcmod_stretch_inverse_sawtooth = true;
 			stage->tcmod_stretch_value.x = base;
 			stage->tcmod_stretch_value.y = amplitude;
 			stage->tcmod_stretch_value.z = phase;
@@ -2399,7 +2396,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 	}
 	else if (strstr(stagecmd, "tcgen environment"))
 	{
-		stage->tcgen_env = true;
+		stage->flags.tcgen_env = true;
 	}
 	else if ((ret = strstr(stagecmd, "rgbgen")))
 	{
@@ -2408,14 +2405,14 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 
 		if (strstr(stagecmd, "identity"))
 		{
-			stage->rgbgen_identity = true;
+			stage->flags.rgbgen_identity = true;
 			return;
 		}
 
 		match = sscanf(ret, "rgbgen wave sin %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->rgbgen_wave_sin = true;
+			stage->flags.rgbgen_wave_sin = true;
 			stage->rgbgen_wave_value.x = base;
 			stage->rgbgen_wave_value.y = amplitude;
 			stage->rgbgen_wave_value.z = phase;
@@ -2426,7 +2423,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "rgbgen wave square  %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->rgbgen_wave_square = true;
+			stage->flags.rgbgen_wave_square = true;
 			stage->rgbgen_wave_value.x = base;
 			stage->rgbgen_wave_value.y = amplitude;
 			stage->rgbgen_wave_value.z = phase;
@@ -2437,7 +2434,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "rgbgen wave triangle %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->rgbgen_wave_triangle = true;
+			stage->flags.rgbgen_wave_triangle = true;
 			stage->rgbgen_wave_value.x = base;
 			stage->rgbgen_wave_value.y = amplitude;
 			stage->rgbgen_wave_value.z = phase;
@@ -2448,7 +2445,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "rgbgen wave sawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->rgbgen_wave_sawtooth = true;
+			stage->flags.rgbgen_wave_sawtooth = true;
 			stage->rgbgen_wave_value.x = base;
 			stage->rgbgen_wave_value.y = amplitude;
 			stage->rgbgen_wave_value.z = phase;
@@ -2459,7 +2456,7 @@ void handle_stage(char *stagecmd, stage_t *stage, int &stage_num)
 		match = sscanf(ret, "rgbgen wave inversesawtooth %f %f %f %f", &base, &amplitude, &phase, &freq);
 		if (match == 4)
 		{
-			stage->rgbgen_wave_inverse_sawtooth = true;
+			stage->flags.rgbgen_wave_inverse_sawtooth = true;
 			stage->rgbgen_wave_value.x = base;
 			stage->rgbgen_wave_value.y = amplitude;
 			stage->rgbgen_wave_value.z = phase;

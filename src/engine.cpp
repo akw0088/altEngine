@@ -463,26 +463,26 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 					{
 						stage_t *stage = &surface_list[j]->stage[k];
 
-						stage->lightmap = false;
-						stage->blendfunc_add = false;
-						stage->blendfunc_blend = false;
-						stage->blendfunc_filter = false;
-						stage->blend_dst_color_one = false;
-						stage->blend_dst_color_one_minus_dst_alpha = false;
-						stage->blend_dst_color_src_alpha = false;
-						stage->blend_dst_color_src_color = false;
-						stage->blend_dst_color_zero = false;
-						stage->blend_one_minus_dst_color_zero = false;
-						stage->blend_one_minus_src_alpha_src_alpha = false;
-						stage->blend_one_one = false;
-						stage->blend_one_src_alpha = false;
-						stage->blend_one_src_color = false;
-						stage->blend_one_zero = false;
-						stage->blend_src_alpha_one_minus_src_alpha = false;
-						stage->blend_zero_one = false;
-						stage->blend_zero_src_alpha = false;
-						stage->blend_zero_src_color = false;
-						stage->alpha = true;
+						stage->flags.lightmap = false;
+						stage->flags.blendfunc_add = false;
+						stage->flags.blendfunc_blend = false;
+						stage->flags.blendfunc_filter = false;
+						stage->flags.blend_dst_color_one = false;
+						stage->flags.blend_dst_color_one_minus_dst_alpha = false;
+						stage->flags.blend_dst_color_src_alpha = false;
+						stage->flags.blend_dst_color_src_color = false;
+						stage->flags.blend_dst_color_zero = false;
+						stage->flags.blend_one_minus_dst_color_zero = false;
+						stage->flags.blend_one_minus_src_alpha_src_alpha = false;
+						stage->flags.blend_one_one = false;
+						stage->flags.blend_one_src_alpha = false;
+						stage->flags.blend_one_src_color = false;
+						stage->flags.blend_one_zero = false;
+						stage->flags.blend_src_alpha_one_minus_src_alpha = false;
+						stage->flags.blend_zero_one = false;
+						stage->flags.blend_zero_src_alpha = false;
+						stage->flags.blend_zero_src_color = false;
+						stage->flags.alpha = true;
 					}
 //					surface_list.erase(surface_list.begin() + j);
 				}
