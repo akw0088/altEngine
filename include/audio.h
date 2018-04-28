@@ -29,6 +29,8 @@ public:
 	void capture_sample(unsigned short *pcm, int &size);
 	void capture_stop();
 
+	ALCdevice		*microphone;
+
 private:
 	int checkFormat(char *data, char *format);
 	char *findChunk(char *chunk, char *id, int *size, char *end);
@@ -36,7 +38,6 @@ private:
     ALenum alFormat(wave_t *wave);
 
 	ALCdevice		*device;
-	ALCdevice		*microphone;
 	ALCcontext		*context;
 
 #ifdef WIN32

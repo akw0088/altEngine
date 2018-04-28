@@ -298,7 +298,11 @@ void Audio::init()
 	// 1 unit = 0.3 / 8 meters
 	alListenerf(AL_METERS_PER_UNIT, 0.375f);
 
-	ALFWIsEFXSupported();
+	if (ALFWIsEFXSupported() == false)
+	{
+		printf("Environmental Audio Effects not supported\n");
+	}
+
 	alGenAuxiliaryEffectSlots(1, &slot);
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
@@ -675,11 +679,17 @@ ALenum Audio::alFormat(wave_t *wave)
 
 void Audio::capture_start()
 {
+	if (microphone == NULL)
+		return;
+
 	alcCaptureStart(microphone);
 }
 
 void Audio::capture_sample(unsigned short *pcm, int &size)
 {
+	if (microphone == NULL)
+		return;
+
 	static int max_recv = 0;
 
 	alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, sizeof(int), (int *)&size);
@@ -704,6 +714,9 @@ void Audio::capture_sample(unsigned short *pcm, int &size)
 
 void Audio::capture_stop()
 {
+	if (microphone == NULL)
+		return;
+
 	alcCaptureStop(microphone);
 }
 #endif

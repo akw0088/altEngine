@@ -12,6 +12,11 @@ int Voice::init(Audio &audio, unsigned short qport)
 
 	Voice::qport = qport;
 
+	if (audio.microphone == NULL)
+	{
+		return -1;
+	}
+
 #ifndef DEDICATED
 	alGenSources(1, &mic_source);
 	alGenBuffers(NUM_PONG, (unsigned int *)&mic_buffer[0]);
@@ -122,6 +127,11 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	int buffersProcessed = 0;
 	bool local_echo = false;
 	static voicemsg_t msg;
+
+	if (audio.microphone == NULL)
+	{
+		return 0;
+	}
 
 #ifdef DEDICATED
 	return 0;

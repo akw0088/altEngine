@@ -1,6 +1,6 @@
 #include "include.h"
 
-#if 1
+#if 0
 
 char *alloc_buffer = (char *)calloc(0x40000000, sizeof(char)); // 1GB of memory;
 unsigned int alloc_index = 0;
@@ -674,7 +674,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 
 
-		write_file("memdump.bin", alloc_buffer, alloc_index);
+		//write_file("memdump.bin", alloc_buffer, alloc_index);
 		WSACleanup();
 		PostQuitMessage(0);
 		return 0;
