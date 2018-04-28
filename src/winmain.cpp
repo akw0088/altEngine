@@ -43,7 +43,7 @@ int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
 
-
+#if 1
 char *alloc_buffer = (char *)malloc(0x40000000); // 1GB of memory;
 
 void * operator new(size_t n) throw(std::bad_alloc)
@@ -51,13 +51,15 @@ void * operator new(size_t n) throw(std::bad_alloc)
 	static int index = 0;
 	void *pointer = &alloc_buffer[index];
 	index += n;
+	//printf("Allocate %d bytes address %X [%X of %X used]\r\n", n, pointer, index, 0x40000000);
 	return pointer;
 }
 
 void operator delete(void * p) throw()
 {
-	printf("delete %X\r\n", p);
+//	printf("Delete %X\r\n", p);
 }
+#endif
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, INT iCmdShow)

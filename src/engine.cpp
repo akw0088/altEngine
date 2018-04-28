@@ -196,6 +196,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	enable_map = true;
 	enable_terrain = false;
 	enable_planet = false;
+	light_list.reserve(128);
 
 	enum_resolutions();
 #ifdef WIN32
@@ -520,7 +521,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		gfx.bindFramebuffer(render_fbo, 2);
 		gfx.resize(fb_width, fb_height);
 		gfx.bindFramebuffer(0);
-
 	}
 
 #ifdef DEDICATED
