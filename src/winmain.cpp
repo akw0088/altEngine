@@ -43,6 +43,23 @@ int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
 
+
+char *alloc_buffer = (char *)malloc(0x40000000); // 1GB of memory;
+
+void * operator new(size_t n) throw(std::bad_alloc)
+{
+	static int index = 0;
+	void *pointer = &alloc_buffer[index];
+	index += n;
+	return pointer;
+}
+
+void operator delete(void * p) throw()
+{
+	printf("delete %X\r\n", p);
+}
+
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, INT iCmdShow)
 {
 	HWND		hwnd;
@@ -65,7 +82,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
-
 
 	GetFreq(freq);
 
