@@ -18,7 +18,6 @@
 //#define TICK_RATE 30
 
 
-
 #define GRAVITY 9.8f
 
 #define GRAVITY_SCALE 1.4f
@@ -194,6 +193,8 @@
 //#define OPENMP
 
 using namespace std;
+
+void * operator new(size_t n, char *filename, UINT line) throw(std::bad_alloc);
 
 
 #ifdef VULKAN
@@ -446,7 +447,9 @@ void unregister_raw_mouse(HWND hwnd);
 #endif
 
 //#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
-#define DEBUG_NEW new
+//#define DEBUG_NEW new ( __FILE__, __LINE__)
+#define new new(__FILE__, __LINE__)
+
 
 
 byte *tga_24to32(int width, int height, byte *pBits, bool bgr);

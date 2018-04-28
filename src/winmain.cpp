@@ -1,5 +1,29 @@
 #include "include.h"
 
+#if 1
+
+char *alloc_buffer = (char *)calloc(0x40000000, sizeof(char)); // 1GB of memory;
+unsigned int alloc_index = 0;
+#undef new
+void * operator new(size_t n, char *filename, UINT line) throw(std::bad_alloc)
+{
+	alloc_index += sprintf(&alloc_buffer[alloc_index], "[%s", filename);
+	alloc_index += sprintf(&alloc_buffer[alloc_index], ",line %d]", line);
+	alloc_index += alloc_index % 4; // align to 4 byte boundary
+	void *pointer = &alloc_buffer[alloc_index];
+	alloc_index += n;
+
+	//printf("Allocate %d bytes address %X [%X of %X used]\r\n", n, pointer, index, 0x40000000);
+	return pointer;
+}
+#define new new(__FILE__, __LINE__)
+
+void operator delete(void * p) throw()
+{
+	//	printf("Delete %X\r\n", p);
+}
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -43,23 +67,7 @@ int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
 
-#if 1
-char *alloc_buffer = (char *)malloc(0x40000000); // 1GB of memory;
 
-void * operator new(size_t n) throw(std::bad_alloc)
-{
-	static int index = 0;
-	void *pointer = &alloc_buffer[index];
-	index += n;
-	//printf("Allocate %d bytes address %X [%X of %X used]\r\n", n, pointer, index, 0x40000000);
-	return pointer;
-}
-
-void operator delete(void * p) throw()
-{
-//	printf("Delete %X\r\n", p);
-}
-#endif
 
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, INT iCmdShow)
@@ -664,6 +672,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			ReleaseDC(hwnd, hdc);
 		}
 #endif
+
+
+		write_file("memdump.bin", alloc_buffer, alloc_index);
 		WSACleanup();
 		PostQuitMessage(0);
 		return 0;
