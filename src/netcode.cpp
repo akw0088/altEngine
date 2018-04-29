@@ -1066,8 +1066,8 @@ int Netcode::deserialize_ents(unsigned char *data, unsigned short int num_ents, 
 
 		if (ent->index < 0 || ent->index >= engine->entity_list.size())
 		{
-			disconnect();
-			engine->unload();
+//			disconnect();
+//			engine->unload();
 			return -1;
 		}
 

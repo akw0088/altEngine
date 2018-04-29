@@ -13,7 +13,7 @@ Speaker::Speaker(Entity *entity, Audio &audio)
 
 	index = -1;
 
-	audio.effects(loop_source);
+	//audio.effects(loop_source);
 
 	audio.play(loop_source);
 }

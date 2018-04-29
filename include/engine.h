@@ -106,6 +106,10 @@ public:
 	int get_global_source();
 	int get_global_loop_source();
 
+	void savegame(char *file);
+	void loadgame(char *file);
+
+
 	unsigned int xres, yres;
 	unsigned int tick_num;
 
@@ -113,7 +117,6 @@ public:
 
 	int quad_index;
 	int quad_vertex;
-
 
 //temp
 	unsigned int testObj;

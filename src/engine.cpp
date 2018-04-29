@@ -170,6 +170,7 @@ return 0;
 }
 */
 
+
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
@@ -3652,6 +3653,35 @@ void Engine::step(int tick)
 #endif
 }
 
+
+void Engine::savegame(char *file)
+{
+	static unsigned char buffer[16584];
+	unsigned int size = 0;
+	unsigned short num_ents = entity_list.size();
+
+	netcode.serialize_ents(buffer, num_ents, size);
+
+	char num[80];
+
+	sprintf(num, "-%d", num_ents);
+	strcat(file, num);
+
+	write_file(file, (char *)buffer, size);
+
+	debugf("Saved %s", file);
+}
+
+void Engine::loadgame(char *file)
+{
+	int size = 0;
+	unsigned char *data = (unsigned char *)get_file(file, &size);
+	int num_ents = atoi(strstr(file, "-") + 1);
+
+	netcode.deserialize_ents(data, num_ents, size);
+
+}
+
 bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
@@ -5519,6 +5549,22 @@ void Engine::console(char *cmd)
 		}
 		return;
 	}
+
+
+	ret = sscanf(cmd, "save %s", data);
+	if (ret == 1)
+	{
+		savegame(data);
+		return;
+	}
+
+	ret = sscanf(cmd, "load %s", data);
+	if (ret == 1)
+	{
+		loadgame(data);
+		return;
+	}
+
 
 
 	if (strstr(cmd, "stop"))
