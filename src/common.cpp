@@ -2910,3 +2910,186 @@ void convolve_same(const float *signal, unsigned int signal_len,
         *result_len = signal_len;
 }
 
+
+int get_url(char *host, char *path, char *response, int size)
+{
+	const char request[1024] = "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n";
+	struct sockaddr_in	servaddr;
+	SOCKET sock;
+	char buffer[1024];
+	char *pdata;
+	int ret;
+	int i = 0;
+
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	
+	struct hostent *hp = gethostbyname(host);
+
+	if (hp == NULL)
+	{
+		printf("gethostbyname() failed\n");
+		return -1;
+	}
+
+	memset(&servaddr, 0, sizeof(struct sockaddr_in));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = inet_addr( inet_ntoa(*(struct in_addr*)(hp->h_addr_list[0])) );
+	servaddr.sin_port = htons(80);
+
+	// 3 way handshake
+	printf("Attempting to connect to %s\n", host);
+	ret = connect(sock, (struct sockaddr *)&servaddr, sizeof(struct sockaddr_in));
+	if (ret == SOCKET_ERROR)
+	{
+		ret = WSAGetLastError();
+
+		switch (ret)
+		{
+		case WSAETIMEDOUT:
+			printf("Fatal Error: Connection timed out.\n");
+			break;
+		case WSAECONNREFUSED:
+			printf("Fatal Error: Connection refused\n");
+			break;
+		case WSAEHOSTUNREACH:
+			printf("Fatal Error: Router sent ICMP packet (destination unreachable)\n");
+			break;
+		default:
+			printf("Fatal Error: %d\n", ret);
+			break;
+		}
+		return -1;
+	}
+	printf("TCP handshake completed\n");
+
+	memset(buffer, 0, 1024);
+	sprintf(buffer, request, path, host);
+	send(sock, buffer, strlen(buffer), 0);
+
+	memset(response, 0, size);
+	recv(sock, response, size, 0);
+	closesocket(sock);
+	return 0;
+}
+
+int file_download(char *ip_str, unsigned short int port, char *response, int size, int *download_size, char *file_name)
+{
+	struct sockaddr_in	servaddr;
+	SOCKET sock;
+	char buffer[1024];
+	char *pdata;
+	int ret;
+	int i = 0;
+
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	memset(&servaddr, 0, sizeof(struct sockaddr_in));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = inet_addr(ip_str);
+	servaddr.sin_port = htons(port);
+
+	// 3 way handshake
+	printf("Attempting to connect to %s\n", ip_str);
+	ret = connect(sock, (struct sockaddr *)&servaddr, sizeof(struct sockaddr_in));
+	if (ret == SOCKET_ERROR)
+	{
+		ret = WSAGetLastError();
+
+		switch (ret)
+		{
+		case WSAETIMEDOUT:
+			printf("Fatal Error: Connection timed out.\n");
+			break;
+		case WSAECONNREFUSED:
+			printf("Fatal Error: Connection refused\n");
+			break;
+		case WSAEHOSTUNREACH:
+			printf("Fatal Error: Router sent ICMP packet (destination unreachable)\n");
+			break;
+		default:
+			printf("Fatal Error: %d\n", ret);
+			break;
+		}
+		return -1;
+	}
+	printf("TCP handshake completed\n");
+
+	memset(response, 0, size);
+
+	int expected_size = 0;
+	recv(sock, (char *)&expected_size, 4, 0);
+	recv(sock, (char *)file_name, 128, 0);
+
+	while (*download_size < expected_size)
+	{
+		*download_size += recv(sock, &response[*download_size], expected_size - *download_size, 0);
+	}
+	closesocket(sock);
+	return 0;
+}
+
+int file_upload(char *file, unsigned short port)
+{
+	int			connfd;
+	unsigned int		size = sizeof(struct sockaddr_in);
+	struct sockaddr_in	servaddr, client;
+	time_t			ticks;
+	int listenfd;
+
+#ifdef _WIN32
+	WSADATA		WSAData;
+
+	WSAStartup(MAKEWORD(2, 0), &WSAData);
+#endif
+
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (listenfd == -1)
+	{
+		perror("socket error");
+		return 0;
+	}
+
+	memset(&servaddr, 0, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(port);
+
+	if ((::bind(listenfd, (struct sockaddr *)&servaddr, sizeof(servaddr))) == -1)
+	{
+		perror("bind error");
+		return 0;
+	}
+
+	printf("Server listening on: %s:%d\n", inet_ntoa(servaddr.sin_addr), htons(servaddr.sin_port));
+
+	if (listen(listenfd, 3) == -1)
+	{
+		perror("listen error");
+		return 0;
+	}
+
+	for (;;)
+	{
+		char response[1024] = { 0 };
+
+		printf("listening for connections...\n");
+		connfd = accept(listenfd, (struct sockaddr *)&client, (int *)&size);
+		if (connfd == INVALID_SOCKET)
+			continue;
+
+		ticks = time(NULL);
+		snprintf(response, sizeof(response), "%.24s\r\n", ctime(&ticks));
+		printf("Client: %s - %s", inet_ntoa(client.sin_addr), response);
+
+		int file_size = 0;
+		char *data = get_file(file, &file_size);
+		char file_name[128] = { 0 };
+
+		memcpy(file_name, file, MIN(127, strlen(file)));
+		send(connfd, (char *)&file_size, sizeof(int), 0);
+		send(connfd, (char *)&file_name, 128, 0);
+		send(connfd, data, file_size, 0);
+		closesocket(connfd);
+	}
+	return 0;
+}
