@@ -3115,7 +3115,7 @@ int file_upload(char *file, unsigned short port)
 		char response[1024] = { 0 };
 
 		printf("listening for connections...\n");
-		connfd = accept(listenfd, (struct sockaddr *)&client, (unsigned int *)&size);
+		connfd = accept(listenfd, (struct sockaddr *)&client, (socklen_t *)&size);
 		if (connfd == INVALID_SOCKET)
 			continue;
 
