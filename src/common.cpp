@@ -12,6 +12,7 @@
 #include <stdarg.h> // for vargs
 #ifdef __linux__
 #define stricmp strcasecmp
+#include <netdb.h>
 #endif
 
 #define DMESG_SIZE 2048
@@ -2917,9 +2918,7 @@ int get_url(char *host, char *path, char *response, int size)
 	struct sockaddr_in	servaddr;
 	SOCKET sock;
 	char buffer[1024];
-	char *pdata;
 	int ret;
-	int i = 0;
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	
@@ -2941,6 +2940,7 @@ int get_url(char *host, char *path, char *response, int size)
 	ret = connect(sock, (struct sockaddr *)&servaddr, sizeof(struct sockaddr_in));
 	if (ret == SOCKET_ERROR)
 	{
+#ifdef _WIN32
 		ret = WSAGetLastError();
 
 		switch (ret)
@@ -2958,6 +2958,28 @@ int get_url(char *host, char *path, char *response, int size)
 			printf("Fatal Error: %d\n", ret);
 			break;
 		}
+#else
+		ret = errno;
+
+                switch(ret)
+                {
+		case ENETUNREACH:
+			printf("Fatal Error: The network is unreachable from this host at this time.\n(Bad IP address)\n");
+			break;
+                case ETIMEDOUT:
+                        printf("Fatal Error: Connecting timed out.\n");
+                        break;
+                case ECONNREFUSED:
+                        printf("Fatal Error: Connection refused\n");
+                        break;
+                case EHOSTUNREACH:
+                        printf("Fatal Error: router sent ICMP packet (destination unreachable)\n");
+                        break;
+                default:
+                        printf("Fatal Error: %d\n", ret);
+                        break;
+                }
+#endif
 		return -1;
 	}
 	printf("TCP handshake completed\n");
@@ -2976,10 +2998,7 @@ int file_download(char *ip_str, unsigned short int port, char *response, int siz
 {
 	struct sockaddr_in	servaddr;
 	SOCKET sock;
-	char buffer[1024];
-	char *pdata;
 	int ret;
-	int i = 0;
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -2993,6 +3012,7 @@ int file_download(char *ip_str, unsigned short int port, char *response, int siz
 	ret = connect(sock, (struct sockaddr *)&servaddr, sizeof(struct sockaddr_in));
 	if (ret == SOCKET_ERROR)
 	{
+#ifdef _WIN32
 		ret = WSAGetLastError();
 
 		switch (ret)
@@ -3010,6 +3030,28 @@ int file_download(char *ip_str, unsigned short int port, char *response, int siz
 			printf("Fatal Error: %d\n", ret);
 			break;
 		}
+#else
+		ret = errno;
+
+                switch(ret)
+                {
+		case ENETUNREACH:
+			printf("Fatal Error: The network is unreachable from this host at this time.\n(Bad IP address)\n");
+			break;
+                case ETIMEDOUT:
+                        printf("Fatal Error: Connecting timed out.\n");
+                        break;
+                case ECONNREFUSED:
+                        printf("Fatal Error: Connection refused\n");
+                        break;
+                case EHOSTUNREACH:
+                        printf("Fatal Error: router sent ICMP packet (destination unreachable)\n");
+                        break;
+                default:
+                        printf("Fatal Error: %d\n", ret);
+                        break;
+                }
+#endif
 		return -1;
 	}
 	printf("TCP handshake completed\n");
@@ -3073,7 +3115,7 @@ int file_upload(char *file, unsigned short port)
 		char response[1024] = { 0 };
 
 		printf("listening for connections...\n");
-		connfd = accept(listenfd, (struct sockaddr *)&client, (int *)&size);
+		connfd = accept(listenfd, (struct sockaddr *)&client, (unsigned int *)&size);
 		if (connfd == INVALID_SOCKET)
 			continue;
 
