@@ -6740,6 +6740,8 @@ int Engine::console_sound(char *cmd)
 		audio.set_audio_model(atoi(data));
 		return 0;
 	}
+
+	return -1;
 }
 
 void Engine::console(char *cmd)
