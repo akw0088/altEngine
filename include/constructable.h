@@ -18,7 +18,7 @@ class Engine;
 class Constructable
 {
 public:
-	Constructable(Entity *entity, Graphics &gfx, Audio &audio);
+	Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team);
 	~Constructable();
 	Entity	*entity;
 

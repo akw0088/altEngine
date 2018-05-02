@@ -3125,36 +3125,37 @@ void Quake3::step(int frame_step)
 void Quake3::build_sentry()
 {
 	int owner = engine->find_type(ENT_PLAYER, 0);
+	Player *powner = engine->entity_list[owner]->player;
 
 	if (owner == -1)
 	{
 		return;
 	}
 
-	if (engine->entity_list[owner]->player->build_timer > 0)
+	if (powner->build_timer > 0)
 	{
 		return;
 	}
 
-	if (engine->entity_list[owner]->player->num_sentry > 10)
+	if (powner->num_sentry > 10)
 	{
 		debugf("Sentry already constructed\n");
 		return;
 	}
 
 
-	engine->entity_list[owner]->player->num_sentry++;
-	engine->entity_list[owner]->player->build_timer = 3 * TICK_RATE;
+	powner->num_sentry++;
+	powner->build_timer = 3 * TICK_RATE;
 
 
 	int spawn = engine->get_entity();
 	Entity *ent = engine->entity_list[spawn];
 	ent->ent_type = ENT_SENTRY;
-	ent->construct = new Constructable(ent, engine->gfx, engine->audio);
+	ent->construct = new Constructable(ent, engine->gfx, engine->audio, powner->team);
 	ent->construct->owner = owner;
 	ent->rigid = new RigidBody(ent);
 
-	ent->position = engine->entity_list[engine->find_type(ENT_PLAYER, 0)]->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
+	ent->position = powner->entity->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
 	ent->rigid->clone(model_table[MODEL_SENTRY1]);
 	for (int i = 0; i < 8; i++)
 	{
@@ -8483,7 +8484,7 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 	//bool inside = false;
 	//RigidBody *rigid = ent->rigid;
 
-	if (ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END)
+	if ((ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END) || ent->ent_type == ENT_TRIGGER_MULTIPLE)
 	{
 		float distance = (player->entity->position - ent->position).magnitude();
 

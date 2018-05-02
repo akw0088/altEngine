@@ -7,7 +7,7 @@
 #include "quake3.h"
 
 
-Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio)
+Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team)
 {
 	Constructable::entity = entity;
 	Constructable::team = team;

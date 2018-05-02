@@ -1100,7 +1100,8 @@ void Engine::render(double last_frametime)
 
 				if (entity_list[i]->light)
 				{
-					if (entity_list[i]->light->light_num == player->current_light)
+					Light *light = entity_list[i]->light;
+					if (light->light_num == player->current_light)
 					{
 						if (input.scores)
 						{
@@ -1111,12 +1112,12 @@ void Engine::render(double last_frametime)
 						if (input.duck == false)
 						{
 							depth_view = true;
-							testObj = entity_list[i]->light->depth_tex[player->current_face];
+							testObj = light->depth_tex[player->current_face];
 						}
 						else
 						{
-							printf("light %d %d\n", i, entity_list[i]->light->light_num);
-							testObj = entity_list[i]->light->quad_tex[player->current_face];
+							printf("light %d %d\n", i, light->light_num);
+							testObj = light->quad_tex[player->current_face];
 						}
 						break;
 					}
@@ -1641,14 +1642,19 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.cleardepth();
 	}
 
-	if (player != -1 && entity_list[player]->rigid->flags.water && entity_list[player]->rigid->water_depth < 2048.0f)
+	if (player != -1)
 	{
-		render_wave(debug_bloom);
-		gfx.cleardepth();
-	}
-	else if (player != -1)
-	{
-		entity_list[player]->rigid->flags.water = false;
+		RigidBody *rigid = entity_list[player]->rigid;
+		
+		if (rigid->flags.water && rigid->water_depth < 2048.0f)
+		{
+			render_wave(debug_bloom);
+			gfx.cleardepth();
+		}
+		else
+		{
+			rigid->flags.water = false;
+		}
 	}
 
 	//render menu
@@ -4739,72 +4745,62 @@ void Engine::quit()
 #endif
 }
 
-void Engine::console(char *cmd)
+int Engine::console_general(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
 	int port;
 	int ret;
 
-	if (cmd == NULL)
-		return;
-
-/*
-	static int last_cmd = 0;
-	if (last_cmd >= tick_num)
-		return;
-	last_cmd = tick_num;
-	*/
-
 
 	if (strcmp(cmd, "console") == 0)
 	{
 		menu.console = !menu.console;
-		return;
+		return 0;
 	}
 
-	
+
 	if (sscanf(cmd, "toggle %s", &data[0]))
 	{
 		if (strcmp(data, "r_stencil") == 0)
 		{
 			enable_stencil = !enable_stencil;
 			menu.data.shadowvol = enable_stencil;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_ssao") == 0)
 		{
 			console("r_ssao");
 			menu.data.ssao = enable_ssao;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_skyray") == 0)
 		{
 			menu.data.skyray = !menu.data.skyray;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_bloom") == 0)
 		{
 			enable_bloom = !enable_bloom;
 			menu.data.bloom = enable_bloom;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_portal") == 0)
 		{
 			enable_portal = !enable_portal;
 			menu.data.portal = enable_portal;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_shadowmaps") == 0)
 		{
 			console("r_shadowmaps");
 			menu.data.shadowmaps = !menu.data.shadowmaps;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_fullscreen") == 0)
 		{
 			fullscreen();
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "up"))
 		{
@@ -4820,7 +4816,7 @@ void Engine::console(char *cmd)
 
 			sprintf(cmd, "r_multisample %d", menu.data.antialias);
 			console(cmd);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_antialias") == 0 && strstr(cmd, "down"))
 		{
@@ -4836,7 +4832,7 @@ void Engine::console(char *cmd)
 
 			sprintf(cmd, "r_multisample %d", menu.data.antialias);
 			console(cmd);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_anisotropic") == 0 && strstr(cmd, "up"))
 		{
@@ -4850,7 +4846,7 @@ void Engine::console(char *cmd)
 			if (menu.data.anisotropic == 1)
 				menu.data.anisotropic = 0;
 
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_anisotropic") == 0 && strstr(cmd, "down"))
 		{
@@ -4858,7 +4854,7 @@ void Engine::console(char *cmd)
 				menu.data.anisotropic = 16;
 			else
 				menu.data.anisotropic = menu.data.anisotropic >> 1;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "up"))
 		{
@@ -4866,7 +4862,7 @@ void Engine::console(char *cmd)
 			if (menu.data.brightness > 1.001f)
 				menu.data.brightness = 0.0f;
 			mlight2.set_exposure(2.0f * menu.data.brightness);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_brightness") == 0 && strstr(cmd, "down"))
 		{
@@ -4874,7 +4870,7 @@ void Engine::console(char *cmd)
 			if (menu.data.brightness < 0.0f)
 				menu.data.brightness = 1.0f;
 			mlight2.set_exposure(2.0f * menu.data.brightness);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "up"))
 		{
@@ -4882,7 +4878,7 @@ void Engine::console(char *cmd)
 			if (menu.data.contrast > 1.001f)
 				menu.data.contrast = 0.0f;
 			mlight2.set_contrast(2.0f * menu.data.contrast + 1.0f);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_contrast") == 0 && strstr(cmd, "down"))
 		{
@@ -4890,7 +4886,7 @@ void Engine::console(char *cmd)
 			if (menu.data.contrast < 0.0f)
 				menu.data.contrast = 1.0f;
 			mlight2.set_contrast(2.0f * menu.data.contrast + 1.0f);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "up"))
 		{
@@ -4899,7 +4895,7 @@ void Engine::console(char *cmd)
 				menu.data.rscale = 0.1f;
 			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
 			console(data);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_rscale") == 0 && strstr(cmd, "down"))
 		{
@@ -4908,7 +4904,7 @@ void Engine::console(char *cmd)
 				menu.data.rscale = 1.0f;
 			sprintf(data, "res_scale %f", 2.0f * menu.data.rscale);
 			console(data);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_res") == 0 && strstr(cmd, "up"))
 		{
@@ -4918,7 +4914,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_res") == 0 && strstr(cmd, "down"))
 		{
@@ -4928,7 +4924,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.resolution, "%s", resbuf[current_res + 1]);
 
 			sprintf(menu.data.apply, "Apply");
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_crosshair") == 0 && strstr(cmd, "up"))
 		{
@@ -4940,7 +4936,7 @@ void Engine::console(char *cmd)
 
 			sprintf(cmd, "cg_crosshair %d", menu.data.crosshair);
 			console(cmd);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_crosshair") == 0 && strstr(cmd, "down"))
 		{
@@ -4952,7 +4948,7 @@ void Engine::console(char *cmd)
 
 			sprintf(cmd, "cg_crosshair %d", menu.data.crosshair);
 			console(cmd);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "in_mouse") == 0 && strstr(cmd, "up"))
 		{
@@ -4964,7 +4960,7 @@ void Engine::console(char *cmd)
 
 			sprintf(cmd, "in_mouse %d", menu.data.mousemode);
 			console(cmd);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "in_mouse") == 0 && strstr(cmd, "down"))
 		{
@@ -4976,7 +4972,7 @@ void Engine::console(char *cmd)
 
 			sprintf(cmd, "in_mouse %d", menu.data.mousemode);
 			console(cmd);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_vsync") == 0 && strstr(cmd, "up"))
 		{
@@ -4996,14 +4992,14 @@ void Engine::console(char *cmd)
 #endif
 #endif
 #ifdef __linux
-//			if (menu.data.vsync == 0)
-			//	glXSwapIntervalExt(0); //adaptive vsync (disables stupid divide crap)
-//			else if (menu.data.vsync == 1)
-			//	glXSwapIntervalExt(1);
-//			else if (menu.data.vsync == 2)
-			//	glXSwapIntervalExt(-1);
+										//			if (menu.data.vsync == 0)
+										//	glXSwapIntervalExt(0); //adaptive vsync (disables stupid divide crap)
+										//			else if (menu.data.vsync == 1)
+										//	glXSwapIntervalExt(1);
+										//			else if (menu.data.vsync == 2)
+										//	glXSwapIntervalExt(-1);
 #endif
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "r_vsync") == 0 && strstr(cmd, "down"))
 		{
@@ -5023,19 +5019,19 @@ void Engine::console(char *cmd)
 #endif
 #endif
 #ifdef __linux
-//			if (menu.data.vsync == 0)
-				//glXSwapIntervalExt(0); //adaptive vsync (disables stupid divide crap)
-//			else if (menu.data.vsync == 1)
-				//glXSwapIntervalExt(1);
-//			else if (menu.data.vsync == 2)
-				//glXSwapIntervalExt(-1);
+										//			if (menu.data.vsync == 0)
+										//glXSwapIntervalExt(0); //adaptive vsync (disables stupid divide crap)
+										//			else if (menu.data.vsync == 1)
+										//glXSwapIntervalExt(1);
+										//			else if (menu.data.vsync == 2)
+										//glXSwapIntervalExt(-1);
 #endif
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "in_invert") == 0)
 		{
 			menu.data.invert = !menu.data.invert;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "up"))
 		{
@@ -5048,7 +5044,7 @@ void Engine::console(char *cmd)
 			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
 #endif
 #endif
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "s_volume") == 0 && strstr(cmd, "down"))
 		{
@@ -5061,35 +5057,35 @@ void Engine::console(char *cmd)
 			waveOutSetVolume(hWaveOut, (int)(menu.data.volume * 65535));
 #endif
 #endif
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "s_musicvol") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.musicvol += 0.1f;
 			if (menu.data.musicvol > 1.01f)
 				menu.data.musicvol = 0.0f;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "s_musicvol") == 0 && strstr(cmd, "down"))
 		{
 			menu.data.musicvol -= 0.1f;
 			if (menu.data.musicvol < 0.00f)
 				menu.data.musicvol = 1.0f;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "s_sfxvol") == 0 && strstr(cmd, "up"))
 		{
 			menu.data.sfxvol += 0.1f;
 			if (menu.data.sfxvol > 1.01f)
 				menu.data.sfxvol = 0.0f;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "s_sfxvol") == 0 && strstr(cmd, "down"))
 		{
 			menu.data.sfxvol -= 0.1f;
 			if (menu.data.sfxvol < 0.00f)
 				menu.data.sfxvol = 1.0f;
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "up"))
 		{
@@ -5099,7 +5095,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.model, "%s", models[current_model]);
 
 			sprintf(menu.data.apply, "Apply");
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_model") == 0 && strstr(cmd, "down"))
 		{
@@ -5107,7 +5103,7 @@ void Engine::console(char *cmd)
 			if (current_model < 0)
 				current_model = num_model - 1;
 			sprintf(menu.data.model, "%s", models[current_model]);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "up"))
 		{
@@ -5117,7 +5113,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.data.team, "%s", teams[current_team]);
 
 			sprintf(menu.data.apply, "Apply");
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "down"))
 		{
@@ -5125,7 +5121,7 @@ void Engine::console(char *cmd)
 			if (current_team < 0)
 				current_team = num_team - 1;
 			sprintf(menu.data.team, "%s", teams[current_team]);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_fov") == 0 && strstr(cmd, "up"))
 		{
@@ -5135,7 +5131,7 @@ void Engine::console(char *cmd)
 
 			sprintf(data, "cg_fov %d", (int)(100 * menu.data.fov + 90));
 			console(data);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "cg_fov") == 0 && strstr(cmd, "down"))
 		{
@@ -5145,7 +5141,7 @@ void Engine::console(char *cmd)
 
 			sprintf(data, "cg_fov %d", (int)(100 * menu.data.fov + 90));
 			console(data);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "sensitivity") == 0 && strstr(cmd, "up"))
 		{
@@ -5155,7 +5151,7 @@ void Engine::console(char *cmd)
 
 			sprintf(data, "sensitivity %lf", 2.5 * menu.data.sensitivity);
 			console(data);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "sensitivity") == 0 && strstr(cmd, "down"))
 		{
@@ -5165,14 +5161,14 @@ void Engine::console(char *cmd)
 
 			sprintf(data, "sensitivity %lf", 2.5 * menu.data.sensitivity);
 			console(data);
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "name") == 0 && strstr(cmd, "string"))
 		{
 			menu.stringmode = true;
 			menu.string_target = &(menu.data.name[0]);
 			strcpy(menu.string_cmd, "name");
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "attack"))
 		{
@@ -5180,7 +5176,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "attack");
 			sprintf(menu.data.attack, "???");
 			menu.bindstr = &menu.data.attack[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "zoom"))
 		{
@@ -5188,7 +5184,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "zoom");
 			sprintf(menu.data.zoom, "???");
 			menu.bindstr = &menu.data.zoom[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "jump"))
 		{
@@ -5196,7 +5192,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "jump");
 			sprintf(menu.data.jump, "???");
 			menu.bindstr = &menu.data.jump[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "duck"))
 		{
@@ -5204,7 +5200,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "duck");
 			sprintf(menu.data.duck, "???");
 			menu.bindstr = &menu.data.duck[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "use"))
 		{
@@ -5212,7 +5208,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "use");
 			sprintf(menu.data.use, "???");
 			menu.bindstr = &menu.data.use[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveleft"))
 		{
@@ -5220,7 +5216,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "moveleft");
 			sprintf(menu.data.moveleft, "???");
 			menu.bindstr = &menu.data.moveleft[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveright"))
 		{
@@ -5228,7 +5224,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "moveright");
 			sprintf(menu.data.moveright, "???");
 			menu.bindstr = &menu.data.moveright[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveforward"))
 		{
@@ -5236,7 +5232,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "moveforward");
 			sprintf(menu.data.moveforward, "???");
 			menu.bindstr = &menu.data.moveforward[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "moveback"))
 		{
@@ -5244,7 +5240,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "moveback");
 			sprintf(menu.data.moveback, "???");
 			menu.bindstr = &menu.data.moveback[0];
-			return;
+			return 0;
 		}
 
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "weapnext"))
@@ -5253,7 +5249,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "weapnext");
 			sprintf(menu.data.weapnext, "???");
 			menu.bindstr = &menu.data.weapnext[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "weapprev"))
 		{
@@ -5261,7 +5257,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "weapprev");
 			sprintf(menu.data.weapprev, "???");
 			menu.bindstr = &menu.data.weapprev[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "walk"))
 		{
@@ -5269,7 +5265,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "walk");
 			sprintf(menu.data.walk, "???");
 			menu.bindstr = &menu.data.walk[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "spectate"))
 		{
@@ -5277,7 +5273,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "spectate");
 			sprintf(menu.data.spectate, "???");
 			menu.bindstr = &menu.data.spectate[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "console"))
 		{
@@ -5285,7 +5281,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "console");
 			sprintf(menu.data.console, "???");
 			menu.bindstr = &menu.data.console[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "menu"))
 		{
@@ -5293,7 +5289,7 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "togglemenu");
 			sprintf(menu.data.menu, "???");
 			menu.bindstr = &menu.data.menu[0];
-			return;
+			return 0;
 		}
 		else if (strcmp(data, "bind") == 0 && strstr(cmd, "scores"))
 		{
@@ -5301,16 +5297,8 @@ void Engine::console(char *cmd)
 			sprintf(menu.bindcmd, "scores");
 			sprintf(menu.data.scores, "???");
 			menu.bindstr = &menu.data.scores[0];
-			return;
+			return 0;
 		}
-
-
-
-
-
-
-
-
 	}
 
 
@@ -5319,19 +5307,19 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "centerview");
 		menu.print(msg);
 		camera_frame.reset();
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "talk"))
 	{
 		menu.chatmode = true;
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "talkteam"))
 	{
 		menu.chatmode = true;
-		return;
+		return 0;
 	}
 
 	if (strcmp(cmd, "togglemenu") == 0)
@@ -5339,7 +5327,7 @@ void Engine::console(char *cmd)
 		if (ingame_menu_timer == 0)
 			menu.ingame = !menu.ingame;
 		ingame_menu_timer = TICK_RATE >> 4;
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "voteyes"))
@@ -5351,7 +5339,7 @@ void Engine::console(char *cmd)
 			vote_yes++;
 			voted = true;
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "voteno"))
@@ -5363,7 +5351,7 @@ void Engine::console(char *cmd)
 			vote_no++;
 			voted = true;
 		}
-		return;
+		return 0;
 	}
 
 	if (strcmp(cmd, "screenshot") == 0)
@@ -5372,8 +5360,378 @@ void Engine::console(char *cmd)
 		screenshot(luminance, false);
 		snprintf(msg, LINE_SIZE, "screenshot taken with luminance average %d", luminance);
 		menu.print(msg);
-		return;
+		return 0;
 	}
+
+	ret = sscanf(cmd, "echo %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "%s\n", data);
+		menu.print(msg);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "map %s", data);
+	if (ret == 1)
+	{
+		unload();
+		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
+		menu.print(msg);
+		load(data);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "record %s", data);
+	if (ret == 1)
+	{
+
+		if (q3map.loaded)
+		{
+			snprintf(msg, LINE_SIZE, "recording");
+			menu.print(msg);
+			demo_fileheader_t header;
+			menu.print(msg);
+			netcode.demofile = fopen(data, "wb");
+
+			memcpy(header.magic, "demo", 5);
+			memcpy(header.map, q3map.map_name, 64);
+			fwrite(&header, sizeof(demo_fileheader_t), 1, netcode.demofile);
+			netcode.recording_demo = true;
+		}
+		else
+		{
+			menu.print("Load map first");
+		}
+		return 0;
+	}
+
+	ret = sscanf(cmd, "play %s", data);
+	if (ret == 1)
+	{
+
+		if (q3map.loaded)
+		{
+			menu.print("unload map first");
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "playing");
+			menu.print(msg);
+			demo_fileheader_t header;
+
+			netcode.demofile = fopen(data, "rb");
+			if (netcode.demofile == NULL)
+			{
+				menu.print("Unable to open demofile");
+				return 0;
+			}
+
+			int ret = fread(&header, sizeof(demo_fileheader_t), 1, netcode.demofile);
+			if (ret != sizeof(demo_fileheader_t))
+			{
+				menu.print("Unable to open demofile");
+				return 0;
+			}
+			netcode.playing_demo = true;
+			load(header.map);
+		}
+		return 0;
+	}
+
+
+	ret = sscanf(cmd, "save %s", data);
+	if (ret == 1)
+	{
+		savegame(data);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "load %s", data);
+	if (ret == 1)
+	{
+		loadgame(data);
+		return 0;
+	}
+
+	if (strstr(cmd, "stop"))
+	{
+		if (netcode.recording_demo)
+		{
+			snprintf(msg, LINE_SIZE, "stopping playeback");
+			menu.print(msg);
+			fclose(netcode.demofile);
+			netcode.recording_demo = false;
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "not recording");
+			menu.print(msg);
+		}
+		return 0;
+	}
+
+	if (strstr(cmd, "maps") != 0)
+	{
+#define LIST_SIZE 1024 * 512
+		char *filelist = new char[LIST_SIZE];
+		char *line = NULL;
+
+		memset(filelist, 0, LIST_SIZE);
+		for (unsigned int i = 0; i < num_pk3; i++)
+		{
+			list_zipfile(pk3_list[i], &filelist[0]);
+
+			line = strtok(filelist, "\n");
+			while (line)
+			{
+				if (strstr(line, ".bsp") != NULL)
+				{
+					debugf("map %s", line);
+				}
+				line = strtok(NULL, "\n");
+			}
+			memset(filelist, 0, LIST_SIZE);
+		}
+
+		delete[] filelist;
+		return 0;
+	}
+
+	if (strcmp(cmd, "clear") == 0)
+	{
+		menu.clear_console();
+		return 0;
+	}
+
+	if (strcmp(cmd, "fullscreen") == 0)
+	{
+		snprintf(msg, LINE_SIZE, "fullscreen");
+		menu.print(msg);
+		fullscreen();
+		return 0;
+	}
+
+	ret = sscanf(cmd, "in_controller %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num < 4 && num >= 0)
+		{
+			debugf("setting controller index to %d", num);
+			controller = num;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
+		return 0;
+	}
+
+	if (strstr(cmd, "lookforward"))
+	{
+		vec3 right(-1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, 1.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookforward");
+		menu.print(msg);
+		return 0;
+	}
+
+	if (strstr(cmd, "lookdown"))
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, 1.0f);
+		vec3 forward(0.0f, 1.0f, 0.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookdown");
+		menu.print(msg);
+		return 0;
+	}
+
+	if (strstr(cmd, "lookright"))
+	{
+		vec3 right(0.0f, 0.0f, 1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(1.0f, 0.0f, 0.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookright");
+		menu.print(msg);
+		return 0;
+	}
+
+
+	if (strstr(cmd, "lookleft"))
+	{
+		vec3 right(0.0f, 0.0f, -1.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(-1.0f, 0.0f, 0.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookleft");
+		menu.print(msg);
+		return 0;
+	}
+
+	if (strstr(cmd, "lookback"))
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 1.0f, 0.0f);
+		vec3 forward(0.0f, 0.0f, -1.0f);
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookback");
+		menu.print(msg);
+		return 0;
+	}
+
+	if (strstr(cmd, "lookup"))
+	{
+		vec3 right(1.0f, 0.0f, 0.0f);
+		vec3 up(0.0f, 0.0f, -1.0f);
+		vec3 forward(0.0f, -1.0f, 0.0f);
+
+
+		camera_frame.forward = forward;
+		camera_frame.up = up;
+		snprintf(msg, LINE_SIZE, "lookup");
+		menu.print(msg);
+		return 0;
+	}
+
+
+	if (strstr(cmd, "movelight"))
+	{
+		if (shadowmaps)
+		{
+			Entity *entity = entity_list[shadow_light];
+			Entity *player = entity_list[find_type(ENT_PLAYER, 0)];
+
+			debugf("Moving shadow light to player position %3.3f %3.3f %3.3f\n",
+				entity->position.x,
+				entity->position.y,
+				entity->position.z);
+			entity->position = player->position;
+		}
+		return 0;
+	}
+
+	if (sscanf(cmd, "g_collision %s", data) == 1)
+	{
+		if (atoi(data))
+		{
+			collision_detect_enable = true;
+			snprintf(msg, LINE_SIZE, "Enabling rigid body dynamics");
+			menu.print(msg);
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "Disabling rigid body dynamics");
+			menu.print(msg);
+			collision_detect_enable = false;
+		}
+		return 0;
+	}
+
+
+
+	if (strcmp(cmd, "sensitivity") == 0)
+	{
+		debugf("Mouse sensitivity is %f\n", sensitivity);
+		return 0;
+	}
+
+	if (sscanf(cmd, "sensitivity %s", data) == 1)
+	{
+		snprintf(msg, LINE_SIZE, "Setting mouse sensitivity to %3.3f\n", atof(data));
+		menu.print(msg);
+		sensitivity = (float)atof(data);
+		return 0;
+	}
+
+#ifdef WIN32
+	if (strcmp(cmd, "in_mouse") == 0)
+	{
+		if (raw_mouse == false)
+			debugf("Mouse mode is WM_MOUSEMOVE\n");
+		else
+			debugf("Mouse mode is WM_INPUT (raw mouse input)\n");
+		return 0;
+	}
+
+	if (sscanf(cmd, "in_mouse %s", data) == 1)
+	{
+		int mode = atoi(data);
+
+		if (mode == 0)
+		{
+			snprintf(msg, LINE_SIZE, "Setting mouse input to WM_MOUSEMOVE\n");
+			menu.print(msg);
+			raw_mouse = false;
+			unregister_raw_mouse(NULL);
+		}
+		else if (mode == 1)
+		{
+			snprintf(msg, LINE_SIZE, "Setting mouse input to WM_INPUT (raw mouse input)\n");
+			menu.print(msg);
+			raw_mouse = true;
+			register_raw_mouse(*((HWND *)param1));
+		}
+		return 0;
+	}
+#endif
+
+	ret = sscanf(cmd, "bind %s %s", data, msg);
+	if (ret == 2)
+	{
+		if (key_bind.update(data, strstr(cmd, msg)))
+		{
+			snprintf(msg, LINE_SIZE, "binding key");
+			menu.print(msg);
+			return 0;
+		}
+		key_bind.insert(data, strstr(cmd, msg));
+		snprintf(msg, LINE_SIZE, "binding key");
+		menu.print(msg);
+		return 0;
+	}
+
+	ret = strcmp(cmd, "quit");
+	if (ret == 0)
+	{
+		if (q3map.loaded)
+		{
+			unload();
+		}
+		destroy();
+		return 0;
+	}
+
+	ret = strcmp(cmd, "exit");
+	if (ret == 0)
+	{
+		exit(0);
+	}
+
+	return -1;
+}
+
+int Engine::console_network(char *cmd)
+{
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
+	int port;
+	int ret;
+
 
 	ret = sscanf(cmd, "sv_hostname \"%[^\"]s", data);
 	if (ret == 1)
@@ -5403,29 +5761,13 @@ void Engine::console(char *cmd)
 		{
 			debugf("Invalid name, must be alphanumeric + space\n");
 		}
-		return;
-    }
-
-	ret = sscanf(cmd, "r_num_shadowmap %s", data);
-	if (ret == 1)
-	{
-		int value = atoi(data);
-		mlight2.set_num_shadowmap(value);
-		return;
-	}
-
-	ret = sscanf(cmd, "r_shadowmap_res_scale %s", data);
-	if (ret == 1)
-	{
-//		int value = atoi(data);
-//		mlight2.set_num_shadowmap(value);
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "serverlist"))
 	{
 		netcode.query_master();
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "sv_motd \"%[^\"]s", data);
@@ -5456,167 +5798,10 @@ void Engine::console(char *cmd)
 		{
 			debugf("Invalid name, must be alphanumeric + space\n");
 		}
-		return;
+		return 0;
 	}
 
 
-	ret = sscanf(cmd, "echo %s", data);
-	if (ret == 1)
-	{
-		snprintf(msg, LINE_SIZE, "%s\n", data);
-		menu.print(msg);
-		return;
-	}
-
-	ret = sscanf(cmd, "map %s", data);
-	if (ret == 1)
-	{
-		unload();
-		snprintf(msg, LINE_SIZE, "Loading %s\n", data);
-		menu.print(msg);
-		load(data);
-		return;
-	}
-
-	ret = sscanf(cmd, "bind %s %s", data, msg);
-	if (ret == 2)
-	{
-		if (key_bind.update(data, strstr(cmd, msg)))
-		{
-			snprintf(msg, LINE_SIZE, "binding key");
-			menu.print(msg);
-			return;
-		}
-		key_bind.insert(data, strstr(cmd, msg));
-		snprintf(msg, LINE_SIZE, "binding key");
-		menu.print(msg);
-		return;
-	}
-
-	ret = sscanf(cmd, "record %s", data);
-	if (ret == 1)
-	{
-
-		if (q3map.loaded)
-		{
-			snprintf(msg, LINE_SIZE, "recording");
-			menu.print(msg);
-			demo_fileheader_t header;
-			menu.print(msg);
-			netcode.demofile = fopen(data, "wb");
-
-			memcpy(header.magic, "demo", 5);
-			memcpy(header.map, q3map.map_name, 64);
-			fwrite(&header, sizeof(demo_fileheader_t), 1, netcode.demofile);
-			netcode.recording_demo = true;
-		}
-		else
-		{
-			menu.print("Load map first");
-		}
-		return;
-	}
-
-	ret = sscanf(cmd, "play %s", data);
-	if (ret == 1)
-	{
-
-		if (q3map.loaded)
-		{
-			menu.print("unload map first");
-		}
-		else
-		{
-			snprintf(msg, LINE_SIZE, "playing");
-			menu.print(msg);
-			demo_fileheader_t header;
-
-			netcode.demofile = fopen(data, "rb");
-			if (netcode.demofile == NULL)
-			{
-				menu.print("Unable to open demofile");
-				return;
-			}
-
-			int ret = fread(&header, sizeof(demo_fileheader_t), 1, netcode.demofile);
-			if (ret != sizeof(demo_fileheader_t))
-			{
-				menu.print("Unable to open demofile");
-				return;
-			} 
-			netcode.playing_demo = true;
-			load(header.map);
-		}
-		return;
-	}
-
-
-	ret = sscanf(cmd, "save %s", data);
-	if (ret == 1)
-	{
-		savegame(data);
-		return;
-	}
-
-	ret = sscanf(cmd, "load %s", data);
-	if (ret == 1)
-	{
-		loadgame(data);
-		return;
-	}
-
-
-
-	if (strstr(cmd, "stop"))
-	{
-		if (netcode.recording_demo)
-		{
-			snprintf(msg, LINE_SIZE, "stopping playeback");
-			menu.print(msg);
-			fclose(netcode.demofile);
-			netcode.recording_demo = false;
-		}
-		else
-		{
-			snprintf(msg, LINE_SIZE, "not recording");
-			menu.print(msg);
-		}
-		return;
-	}
-
-	float value = 1.0f;
-
-	ret = sscanf(cmd, "al_reference_dist %f", &value);
-	if (ret == 1)
-	{
-		debugf("Setting audio reference distance to %f\n", value);
-		set_reference_distance(value);
-		return;
-	}
-
-	ret = sscanf(cmd, "al_max_dist %f", &value);
-	if (ret == 1)
-	{
-		debugf("Setting audio max distance to %f\n", value);
-		set_max_distance(value);
-		return;
-	}
-
-	ret = sscanf(cmd, "al_rolloff %f", &value);
-	if (ret == 1)
-	{
-		debugf("Setting audio rolloff factor to %f\n", value);
-		set_rolloff_factor(value);
-		return;
-	}
-
-	ret = sscanf(cmd, "al_model %s", (char *)data);
-	if (ret == 1)
-	{
-		debugf("Setting audio model to %d\n", atoi(data));
-		audio.set_audio_model(atoi(data));
-		return;
-	}
 
 	ret = sscanf(cmd, "sv_maxclients %s", (char *)data);
 	if (ret == 1)
@@ -5632,24 +5817,7 @@ void Engine::console(char *cmd)
 		{
 			debugf("Invalid input");
 		}
-		return;
-	}
-
-	ret = sscanf(cmd, "in_controller %s", (char *)data);
-	if (ret == 1)
-	{
-		int num = atoi(data);
-
-		if (num < 4 && num >= 0)
-		{
-			debugf("setting controller index to %d", num);
-			controller = num;
-		}
-		else
-		{
-			debugf("Invalid input");
-		}
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "net_port %s", (char *)data);
@@ -5666,51 +5834,8 @@ void Engine::console(char *cmd)
 		{
 			debugf("Invalid input");
 		}
-		return;
+		return 0;
 	}
-
-
-	if (strstr(cmd, "maps") != 0)
-	{
-#define LIST_SIZE 1024 * 512
-		char *filelist = new char[LIST_SIZE];
-		char *line = NULL;
-
-		memset(filelist, 0, LIST_SIZE);
-		for (unsigned int i = 0; i < num_pk3; i++)
-		{
-			list_zipfile(pk3_list[i], &filelist[0]);
-
-			line = strtok(filelist, "\n");
-			while (line)
-			{
-				if (strstr(line, ".bsp") != NULL)
-				{
-					debugf("map %s", line);
-				}
-				line = strtok(NULL, "\n");
-			}
-			memset(filelist, 0, LIST_SIZE);
-		}
-
-		delete[] filelist;
-		return;
-	}
-
-	if (strcmp(cmd, "clear") == 0)
-	{
-		menu.clear_console();
-		return;
-	}
-
-	if (strcmp(cmd, "fullscreen") == 0)
-	{
-		snprintf(msg, LINE_SIZE, "fullscreen");
-		menu.print(msg);
-		fullscreen();
-		return;
-	}
-
 
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
@@ -5722,7 +5847,60 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Connecting to %s\n", data);
 		menu.print(msg);
 		netcode.connect(data);
-		return;
+		return 0;
+	}
+
+	ret = sscanf(cmd, "cl_skip %s", data);
+	if (ret == 1)
+	{
+		debugf("Setting cl_skip to %s\n", data);
+		netcode.cl_skip = atoi(data);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "bind %d", &port);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
+		menu.print(msg);
+		netcode.bind(port);
+		return 0;
+	}
+
+	ret = strcmp(cmd, "bind default");
+	if (ret == 0)
+	{
+		port = netcode.net_port;
+		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
+		menu.print(msg);
+		netcode.bind(port);
+		return 0;
+	}
+
+	return -1;
+}
+
+int Engine::console_render(char *cmd)
+{
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
+	int port;
+	int ret;
+
+	ret = sscanf(cmd, "r_num_shadowmap %s", data);
+	if (ret == 1)
+	{
+		int value = atoi(data);
+		mlight2.set_num_shadowmap(value);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "r_shadowmap_res_scale %s", data);
+	if (ret == 1)
+	{
+		//		int value = atoi(data);
+		//		mlight2.set_num_shadowmap(value);
+		return 0;
 	}
 
 	if (strcmp(cmd, "r_apply") == 0)
@@ -5736,14 +5914,14 @@ void Engine::console(char *cmd)
 		set_resolution(x_res, y_res, 32);
 #endif
 		menu.data.apply[0] = '\0';
-		return;
+		return 0;
 	}
 
 	if (strcmp(cmd, "r_res") == 0)
 	{
 		snprintf(msg, LINE_SIZE, "Resolution: %dx%d\n", gfx.width, gfx.height);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_texture %s", data) == 1)
@@ -5760,7 +5938,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			q3map.enable_textures = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_stencil %s", data) == 1)
@@ -5779,7 +5957,7 @@ void Engine::console(char *cmd)
 			enable_stencil = false;
 			menu.data.shadowvol = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_fog %s", data) == 1)
@@ -5796,7 +5974,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			q3map.enable_fog = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_patch %s", data) == 1)
@@ -5813,7 +5991,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			q3map.enable_patch = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_maxlight %s", data) == 1)
@@ -5824,17 +6002,17 @@ void Engine::console(char *cmd)
 		mlight2.set_max(max);
 		snprintf(msg, LINE_SIZE, "Setting max lights to %d", max);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_ambient %s", data) == 1)
 	{
 		float ambient = (float)atof(data);
 		mlight2.set_ambient(ambient);
-		
+
 		snprintf(msg, LINE_SIZE, "Setting ambient light to %f", ambient);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	vec3 color;
@@ -5844,7 +6022,7 @@ void Engine::console(char *cmd)
 		gfx.clear_color(color);
 		snprintf(msg, LINE_SIZE, "Setting clear color to %f %f %f", color.x, color.y, color.z);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_brightness %s", data) == 1)
@@ -5854,7 +6032,7 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Setting brightness to %f", value);
 		menu.print(msg);
 		menu.data.brightness = value / 2.0f;
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_tone %s", data) == 1)
@@ -5863,7 +6041,7 @@ void Engine::console(char *cmd)
 		mlight2.set_tone(value);
 		snprintf(msg, LINE_SIZE, "Setting tone to %d", value);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
@@ -5880,16 +6058,14 @@ void Engine::console(char *cmd)
 			q3map.enable_normalmap = false;
 		}
 		menu.print(msg);
-		return;
+		return 0;
 	}
-
-
-
+	
 	if (strstr(cmd, "r_brightness"))
 	{
 		snprintf(msg, LINE_SIZE, "brightness %f", mlight2.m_brightness + 1.0f);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_exposure %s", data) == 1)
@@ -5898,28 +6074,28 @@ void Engine::console(char *cmd)
 		mlight2.set_exposure(value);
 		snprintf(msg, LINE_SIZE, "Setting exposure to %f", value);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_exposure"))
 	{
 		snprintf(msg, LINE_SIZE, "exposure %f", mlight2.m_exposure);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "ssao_radius %s", data) == 1)
 	{
 		float ambient = (float)atof(data);
 		ssao_radius = ambient;
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "ssao_radius"))
 	{
 		snprintf(msg, LINE_SIZE, "ssao_radius %f", ssao_radius);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_contrast %s", data) == 1)
@@ -5929,35 +6105,15 @@ void Engine::console(char *cmd)
 		snprintf(msg, LINE_SIZE, "Setting contrast to %f", value);
 		menu.print(msg);
 		menu.data.contrast = value;
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_contrast"))
 	{
 		snprintf(msg, LINE_SIZE, "contrast %f", mlight2.m_contrast);
 		menu.print(msg);
-		return;
+		return 0;
 	}
-
-
-	if (sscanf(cmd, "com_maxfps %s", data) == 1)
-	{
-		if (atoi(data) > 0)
-		{
-			snprintf(msg, LINE_SIZE, "Setting com_maxfps to %d", atoi(data));
-			menu.print(msg);
-			com_maxfps = 1000.0 / atoi(data);
-		}
-		return;
-	}
-
-	if (strstr(cmd, "com_maxfps"))
-	{
-		snprintf(msg, LINE_SIZE, "com_maxfps %f", com_maxfps / 1000.0f);
-		menu.print(msg);
-		return;
-	}
-
 
 	if (sscanf(cmd, "r_lightmap %s", data) == 1)
 	{
@@ -5966,7 +6122,7 @@ void Engine::console(char *cmd)
 
 		snprintf(msg, LINE_SIZE, "Setting lightmap to %f", lightmap);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	ret = strcmp(cmd, "r_shadowmaps");
@@ -5996,7 +6152,7 @@ void Engine::console(char *cmd)
 			menu.data.shadowmaps = false;
 			mlight2.set_shadowmap(0.0f);
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "postprocess"))
@@ -6012,7 +6168,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "postprocessing off");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "bloom_threshold %s", data);
@@ -6020,7 +6176,7 @@ void Engine::console(char *cmd)
 	{
 		debugf("Setting bloom_threshold to %s\n", data);
 		bloom_threshold = (float)atof(data);
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "bloom_strength %s", data);
@@ -6028,7 +6184,7 @@ void Engine::console(char *cmd)
 	{
 		debugf("Setting bloom_strength to %s\n", data);
 		bloom_strength = (float)atof(data);
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "bloom_amount %s", data);
@@ -6036,16 +6192,15 @@ void Engine::console(char *cmd)
 	{
 		debugf("Setting bloom_amount to %s\n", data);
 		bloom_amount = (float)atof(data);
-		return;
+		return 0;
 	}
-
-
+	
 	ret = sscanf(cmd, "dof_near %s", data);
 	if (ret == 1)
 	{
 		debugf("Setting dof_near to %s\n", data);
 		dof_near = (float)atof(data);
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "dof_far %s", data);
@@ -6053,7 +6208,7 @@ void Engine::console(char *cmd)
 	{
 		debugf("Setting dof_far to %s\n", data);
 		dof_far = (float)atof(data);
-		return;
+		return 0;
 	}
 
 
@@ -6072,7 +6227,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 		}
 
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_bloom"))
@@ -6090,7 +6245,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			menu.data.bloom = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_ssao"))
@@ -6099,18 +6254,18 @@ void Engine::console(char *cmd)
 		if (enable_ssao)
 		{
 			snprintf(msg, LINE_SIZE, "ssao on");
-//			mlight2.set_brightness(0.5f - 1.0f);
+			//			mlight2.set_brightness(0.5f - 1.0f);
 			menu.print(msg);
 			menu.data.ssao = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "ssao off");
-//			mlight2.set_brightness(1.0f - 1.0f);
+			//			mlight2.set_brightness(1.0f - 1.0f);
 			menu.print(msg);
 			menu.data.ssao = false;
 		}
-		return;
+		return 0;
 	}
 
 
@@ -6127,7 +6282,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "blur off");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "emboss"))
@@ -6143,7 +6298,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "emboss off");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_map"))
@@ -6159,7 +6314,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "render map off");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_terrain"))
@@ -6175,7 +6330,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "render terrain off");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	if (strstr(cmd, "r_planet"))
@@ -6191,106 +6346,8 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "render planet off");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
-
-	if (strstr(cmd, "lookforward"))
-	{
-		vec3 right(-1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(0.0f, 0.0f, 1.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-		snprintf(msg, LINE_SIZE, "lookforward");
-		menu.print(msg);
-		return;
-	}
-
-	if (strstr(cmd, "lookdown"))
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 0.0f, 1.0f);
-		vec3 forward(0.0f, 1.0f, 0.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-		snprintf(msg, LINE_SIZE, "lookdown");
-		menu.print(msg);
-		return;
-	}
-
-	if (strstr(cmd, "lookright"))
-	{
-		vec3 right(0.0f, 0.0f, 1.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(1.0f, 0.0f, 0.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-		snprintf(msg, LINE_SIZE, "lookright");
-		menu.print(msg);
-		return;
-	}
-
-
-	if (strstr(cmd, "lookleft"))
-	{
-		vec3 right(0.0f, 0.0f, -1.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(-1.0f, 0.0f, 0.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-		snprintf(msg, LINE_SIZE, "lookleft");
-		menu.print(msg);
-		return;
-	}
-
-	if (strstr(cmd, "lookback"))
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 1.0f, 0.0f);
-		vec3 forward(0.0f, 0.0f, -1.0f);
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-		snprintf(msg, LINE_SIZE, "lookback");
-		menu.print(msg);
-		return;
-	}
-
-	if (strstr(cmd, "lookup"))
-	{
-		vec3 right(1.0f, 0.0f, 0.0f);
-		vec3 up(0.0f, 0.0f, -1.0f);
-		vec3 forward(0.0f, -1.0f, 0.0f);
-
-
-		camera_frame.forward = forward;
-		camera_frame.up = up;
-		snprintf(msg, LINE_SIZE, "lookup");
-		menu.print(msg);
-		return;
-	}
-
-
-	if (strstr(cmd, "movelight"))
-	{
-		if (shadowmaps)
-		{
-			Entity *entity = entity_list[shadow_light];
-			Entity *player = entity_list[find_type(ENT_PLAYER, 0)];
-
-			debugf("Moving shadow light to player position %3.3f %3.3f %3.3f\n",
-				entity->position.x,
-				entity->position.y,
-				entity->position.z);
-			entity->position = player->position;
-		}
-		return;
-	}
-
 
 	if (sscanf(cmd, "r_light %s", data) == 1)
 	{
@@ -6323,37 +6380,29 @@ void Engine::console(char *cmd)
 		default:
 			snprintf(msg, LINE_SIZE, "Invalid light mode [0-3]");
 			menu.print(msg);
-			return;
+			return 0;
 		}
 		snprintf(msg, LINE_SIZE, "setting lightmode to %d", mode);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
-	ret = sscanf(cmd, "cl_skip %s", data);
-	if (ret == 1)
+	if (sscanf(cmd, "com_maxfps %s", data) == 1)
 	{
-		debugf("Setting cl_skip to %s\n", data);
-		netcode.cl_skip = atoi(data);
-		return;
+		if (atoi(data) > 0)
+		{
+			snprintf(msg, LINE_SIZE, "Setting com_maxfps to %d", atoi(data));
+			menu.print(msg);
+			com_maxfps = 1000.0 / atoi(data);
+		}
+		return 0;
 	}
 
-
-	if (sscanf(cmd, "g_collision %s", data) == 1)
+	if (strstr(cmd, "com_maxfps"))
 	{
-		if (atoi(data))
-		{
-			collision_detect_enable = true;
-			snprintf(msg, LINE_SIZE, "Enabling rigid body dynamics");
-			menu.print(msg);
-		}
-		else
-		{
-			snprintf(msg, LINE_SIZE, "Disabling rigid body dynamics");
-			menu.print(msg);
-			collision_detect_enable = false;
-		}
-		return;
+		snprintf(msg, LINE_SIZE, "com_maxfps %f", com_maxfps / 1000.0f);
+		menu.print(msg);
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_sky %s", data) == 1)
@@ -6370,21 +6419,21 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "Disabling skybox");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	if (strcmp(cmd, "r_max_particles") == 0)
 	{
 		sprintf(data, "max particles is: %d\n", ParticleUpdate::max_particles);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_max_particles %s", data) == 1)
 	{
 		menu.print(cmd);
 		ParticleUpdate::max_particles = atoi(data);
-		return;
+		return 0;
 	}
 
 	if (strcmp(cmd, "r_reload_shaders") == 0)
@@ -6393,7 +6442,7 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 
 		reload_shaders();
-		return;
+		return 0;
 	}
 
 	if (strcmp(cmd, "r_no_pixel_shader") == 0)
@@ -6403,9 +6452,8 @@ void Engine::console(char *cmd)
 
 		mlight2.destroy();
 		mlight2.init(&gfx, false);
-		return;
+		return 0;
 	}
-
 
 	if (sscanf(cmd, "r_shader %s", data) == 1)
 	{
@@ -6421,7 +6469,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			q3map.enable_shader = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_entities %s", data) == 1)
@@ -6438,7 +6486,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			enable_entities = false;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_blend %s", data) == 1)
@@ -6455,7 +6503,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "Disabling blends");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_maxstage %s", data) == 1)
@@ -6463,7 +6511,7 @@ void Engine::console(char *cmd)
 		q3map.max_stage = atoi(data);
 		snprintf(msg, LINE_SIZE, "Setting q3 shader max stage to %d", q3map.max_stage);
 		menu.print(msg);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_portal %s", data) == 1)
@@ -6482,7 +6530,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			menu.data.portal = false;
 		}
-		return;
+		return 0;
 	}
 
 
@@ -6502,7 +6550,7 @@ void Engine::console(char *cmd)
 			snprintf(msg, LINE_SIZE, "Disabling normalmaps");
 			menu.print(msg);
 		}
-		return;
+		return 0;
 	}
 
 
@@ -6512,7 +6560,7 @@ void Engine::console(char *cmd)
 		menu.print(msg);
 		fov = atoi(data) * 0.5f;
 		projection.perspective(fov, (float)xres / yres, zNear, zFar, inf);
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_rendermode %s", data) == 1)
@@ -6529,7 +6577,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			render_mode = MODE_FORWARD;
 		}
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "r_multisample %s", data) == 1)
@@ -6550,57 +6598,10 @@ void Engine::console(char *cmd)
 			glDisable(GL_MULTISAMPLE);
 		}
 #endif
-//		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
-//		gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
-		return;
+		//		gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
+		//		gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+		return 0;
 	}
-
-	if (strcmp(cmd, "sensitivity") == 0)
-	{
-		debugf("Mouse sensitivity is %f\n", sensitivity);
-		return;
-	}
-
-	if (sscanf(cmd, "sensitivity %s", data) == 1)
-	{
-		snprintf(msg, LINE_SIZE, "Setting mouse sensitivity to %3.3f\n", atof(data));
-		menu.print(msg);
-		sensitivity = (float)atof(data);
-		return;
-	}
-
-#ifdef WIN32
-	if (strcmp(cmd, "in_mouse") == 0)
-	{
-		if (raw_mouse == false)
-			debugf("Mouse mode is WM_MOUSEMOVE\n");
-		else
-			debugf("Mouse mode is WM_INPUT (raw mouse input)\n");
-		return;
-	}
-
-	if (sscanf(cmd, "in_mouse %s", data) == 1)
-	{
-		int mode = atoi(data);
-
-		if (mode == 0)
-		{
-			snprintf(msg, LINE_SIZE, "Setting mouse input to WM_MOUSEMOVE\n");
-			menu.print(msg);
-			raw_mouse = false;
-			unregister_raw_mouse(NULL);
-		}
-		else if (mode == 1)
-		{
-			snprintf(msg, LINE_SIZE, "Setting mouse input to WM_INPUT (raw mouse input)\n");
-			menu.print(msg);
-			raw_mouse = true;
-			register_raw_mouse(*((HWND *)param1));
-		}
-		return;
-	}
-#endif
-
 
 	if (sscanf(cmd, "res_scale %s", data) == 1)
 	{
@@ -6628,7 +6629,7 @@ void Engine::console(char *cmd)
 
 
 		menu.data.rscale = res_scale / 2.0f;
-		return;
+		return 0;
 	}
 
 	if (sscanf(cmd, "dynamic_res %s", data) == 1)
@@ -6645,43 +6646,7 @@ void Engine::console(char *cmd)
 			menu.print(msg);
 			dynamic_resolution = false;
 		}
-		return;
-	}
-
-	ret = sscanf(cmd, "bind %d", &port);
-	if (ret == 1)
-	{
-		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
-		menu.print(msg);
-		netcode.bind(port);
-		return;
-	}
-
-	ret = strcmp(cmd, "bind default");
-	if (ret == 0)
-	{
-		port = netcode.net_port;
-		snprintf(msg, LINE_SIZE, "binding to port %d\n", port);
-		menu.print(msg);
-		netcode.bind(port);
-		return;
-	}
-
-	ret = strcmp(cmd, "quit");
-	if (ret == 0)
-	{
-		if (q3map.loaded)
-		{
-			unload();
-		}
-		destroy();
-		return;
-	}
-
-	ret = strcmp(cmd, "exit");
-	if (ret == 0)
-	{
-		exit(0);
+		return 0;
 	}
 
 	ret = sscanf(cmd, "r_polygonmode %s", data);
@@ -6707,7 +6672,7 @@ void Engine::console(char *cmd)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 #endif
-		return;
+		return 0;
 	}
 
 	ret = sscanf(cmd, "r_frontface %s", data);
@@ -6727,8 +6692,83 @@ void Engine::console(char *cmd)
 			glFrontFace(GL_CW);
 		}
 #endif
+		return 0;
 	}
 
+	return -1;
+}
+
+int Engine::console_sound(char *cmd)
+{
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
+	int port;
+	int ret;
+	float value = 1.0f;
+
+	if (cmd == NULL)
+		return 0;
+
+	ret = sscanf(cmd, "al_reference_dist %f", &value);
+	if (ret == 1)
+	{
+		debugf("Setting audio reference distance to %f\n", value);
+		set_reference_distance(value);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "al_max_dist %f", &value);
+	if (ret == 1)
+	{
+		debugf("Setting audio max distance to %f\n", value);
+		set_max_distance(value);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "al_rolloff %f", &value);
+	if (ret == 1)
+	{
+		debugf("Setting audio rolloff factor to %f\n", value);
+		set_rolloff_factor(value);
+		return 0;
+	}
+
+	ret = sscanf(cmd, "al_model %s", (char *)data);
+	if (ret == 1)
+	{
+		debugf("Setting audio model to %d\n", atoi(data));
+		audio.set_audio_model(atoi(data));
+		return 0;
+	}
+}
+
+void Engine::console(char *cmd)
+{
+	char msg[LINE_SIZE] = { 0 };
+	char data[LINE_SIZE] = { 0 };
+	int port;
+	int ret;
+
+	if (cmd == NULL)
+		return;
+
+/*
+	static int last_cmd = 0;
+	if (last_cmd >= tick_num)
+		return;
+	last_cmd = tick_num;
+	*/
+
+	if (console_general(cmd) == 0)
+		return;
+	if (console_network(cmd) == 0)
+		return;
+	if (console_render(cmd) == 0)
+		return;
+	if (console_sound(cmd) == 0)
+		return;
+
+	
 	if (q3map.loaded)
 	{
 		int player = find_type(ENT_PLAYER, 0);

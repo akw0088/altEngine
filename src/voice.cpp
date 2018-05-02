@@ -206,7 +206,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 		{
 			sprintf(server, "%s", client_list[i]->socketname);
 
-			char *colon = strstr(server, ":");
+			char *colon = strchr(server, ':');
 			if (colon)
 			{
 				*colon = '\0';

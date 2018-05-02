@@ -973,7 +973,7 @@ bool TriangleAABB(const triangle_t &t, const aabb_t &a)
 	return true; // Separating axis not found
 }
 
-#define OBBTriangle(o, t) \    TriangleOBB(t, o)
+#define OBBTriangle(o, t) TriangleOBB(t, o)
 
 bool OverlapOnAxis(const obb_t &obb, const triangle_t &triangle, const vec3& axis)
 {

@@ -62,6 +62,12 @@ public:
 	void create_sources();
 
 	void console(char *cmd);
+	int console_general(char *cmd);
+	int console_network(char *cmd);
+	int console_render(char *cmd);
+	int console_sound(char *cmd);
+
+
 	void handle_game(char key);
 
 	bool collision_detect(RigidBody &body);

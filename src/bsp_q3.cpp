@@ -824,7 +824,7 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 	// Find pre-generated vertex data for patch O(n)
 
 //	mesh_index = face_to_patch[face->vertex];
-	if (mesh_index == -1)
+//	if (mesh_index == -1)
 	{
 		for (int i = 0; i < num_meshes; i++)
 		{

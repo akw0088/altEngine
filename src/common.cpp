@@ -3033,24 +3033,24 @@ int file_download(char *ip_str, unsigned short int port, char *response, int siz
 #else
 		ret = errno;
 
-                switch(ret)
-                {
+        switch(ret)
+        {
 		case ENETUNREACH:
 			printf("Fatal Error: The network is unreachable from this host at this time.\n(Bad IP address)\n");
 			break;
-                case ETIMEDOUT:
-                        printf("Fatal Error: Connecting timed out.\n");
-                        break;
-                case ECONNREFUSED:
-                        printf("Fatal Error: Connection refused\n");
-                        break;
-                case EHOSTUNREACH:
-                        printf("Fatal Error: router sent ICMP packet (destination unreachable)\n");
-                        break;
-                default:
-                        printf("Fatal Error: %d\n", ret);
-                        break;
-                }
+        case ETIMEDOUT:
+                printf("Fatal Error: Connecting timed out.\n");
+                break;
+        case ECONNREFUSED:
+                printf("Fatal Error: Connection refused\n");
+                break;
+        case EHOSTUNREACH:
+                printf("Fatal Error: router sent ICMP packet (destination unreachable)\n");
+                break;
+        default:
+                printf("Fatal Error: %d\n", ret);
+                break;
+        }
 #endif
 		return -1;
 	}
