@@ -5472,7 +5472,7 @@ int Engine::console_general(char *cmd)
 
 	if (strstr(cmd, "maps") != 0)
 	{
-#define LIST_SIZE 1024 * 512
+#define LIST_SIZE (1024 * 512)
 		char *filelist = new char[LIST_SIZE];
 		char *line = NULL;
 
@@ -6994,7 +6994,6 @@ void Engine::reload_shaders()
 
 void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 {
-#define LIST_SIZE 1024 * 512
 	char *filelist = new char[LIST_SIZE];
 	char *line = NULL;
 

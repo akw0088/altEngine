@@ -1191,16 +1191,18 @@ int Netcode::deserialize_net_player(net_player_t *net, int index, int etype)
 
 int Netcode::deserialize_net_rigid(net_rigid_t *net, int index, int etype)
 {
+	Entity *ent = engine->entity_list[index];
+
 	// Check if an entity is a projectile that needs to be loaded
-	if (etype != engine->entity_list[index]->nettype)
+	if (etype != ent->nettype)
 	{
 		engine->game->make_dynamic_ent((net_ent_t)etype, index);
 	}
 
-	if (engine->entity_list[index]->rigid)
+	if (ent->rigid)
 	{
-		RigidBody *rigid = engine->entity_list[index]->rigid;
-		engine->entity_list[index]->position = net->position;
+		RigidBody *rigid = ent->rigid;
+		ent->position = net->position;
 		rigid->velocity = net->velocity;
 		rigid->angular_velocity = net->angular_velocity;
 		//		rigid->morientation = net->morientation;
@@ -1228,18 +1230,20 @@ int Netcode::deserialize_net_rigid(net_rigid_t *net, int index, int etype)
 
 int Netcode::deserialize_net_trigger(net_trigger_t *net, int index, int etype)
 {
+	Entity *ent = engine->entity_list[index];
+
 	// Check if an entity is a projectile that needs to be loaded
-	if (etype != engine->entity_list[index]->nettype)
+	if (etype != ent->nettype)
 	{
 		engine->game->make_dynamic_ent((net_ent_t)etype, index);
 	}
 
-	if (engine->entity_list[index]->trigger)
+	if (ent->trigger)
 	{
 		if (net->active)
-			engine->entity_list[index]->trigger->active = true;
+			ent->trigger->active = true;
 		else
-			engine->entity_list[index]->trigger->active = false;
+			ent->trigger->active = false;
 
 		//		printf("Got trigger data index %d\n", index);
 	}
@@ -1254,17 +1258,18 @@ int Netcode::deserialize_net_trigger(net_trigger_t *net, int index, int etype)
 
 int Netcode::deserialize_net_projectile(net_projectile_t *net, int index, int etype)
 {
+	Entity *ent = engine->entity_list[index];
 	// Check if an entity is a projectile that needs to be loaded
-	if (etype != engine->entity_list[index]->nettype)
+	if (etype != ent->nettype)
 	{
 		engine->game->make_dynamic_ent((net_ent_t)etype, index);
 	}
 
-	RigidBody *rigid = engine->entity_list[index]->rigid;
+	RigidBody *rigid = ent->rigid;
 
 	if (rigid)
 	{
-		engine->entity_list[index]->position = net->position;
+		ent->position = net->position;
 		rigid->velocity = net->velocity;
 		rigid->angular_velocity = net->angular_velocity;
 
@@ -1292,13 +1297,13 @@ int Netcode::deserialize_net_projectile(net_projectile_t *net, int index, int et
 		*/
 	}
 
-	if (engine->entity_list[index]->projectile)
+	if (ent->projectile)
 	{
 		if (net->active)
-			engine->entity_list[index]->projectile->active = true;
+			ent->projectile->active = true;
 		else
-			engine->entity_list[index]->projectile->active = false;
-		engine->entity_list[index]->projectile->owner = net->owner;
+			ent->projectile->active = false;
+		ent->projectile->owner = net->owner;
 		//		printf("Got trigger data index %d\n", index);
 	}
 	else

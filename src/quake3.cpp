@@ -2089,10 +2089,10 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			if (entity->player->reload_timer <= 0)
 			{
-				char cmd[128] = { 0 };
-
 				if (engine->netcode.client_flag == false)
 				{
+					char cmd[128];
+
 					sprintf(cmd, "respawn %d %d", -1, self);
 					console(self, cmd, engine->menu, engine->entity_list);
 				}
@@ -3536,37 +3536,36 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 			if (target == NULL)
 			{
-
-				if (engine->entity_list[index[i]]->construct)
+				Constructable *construct = engine->entity_list[index[i]]->construct;
+				if (construct)
 				{
-					int health = engine->entity_list[index[i]]->construct->health;
+					int health = construct->health;
 
 					if ( health < 220)
-						engine->entity_list[index[i]]->construct->health += (int)(LIGHTNING_DAMAGE * quad_factor);
+						construct->health += (int)(LIGHTNING_DAMAGE * quad_factor);
 
 					if (health <= 150)
 					{
-						if (engine->entity_list[index[i]]->construct->level != 1)
+						if (construct->level != 1)
 						{
-							engine->entity_list[index[i]]->construct->level = 1;
-							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY1]);
+							construct->level = 1;
+							construct->entity->rigid->clone(model_table[MODEL_SENTRY1]);
 						}
 					}
 					if (health > 150 && health < 180)
 					{
-						if (engine->entity_list[index[i]]->construct->level != 2)
+						if (construct->level != 2)
 						{
-							engine->entity_list[index[i]]->construct->level = 2;
-							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY2]);
+							construct->level = 2;
+							construct->entity->rigid->clone(model_table[MODEL_SENTRY2]);
 						}
 					}
 					else if (health >= 180 && health < 220)
 					{
-						if (engine->entity_list[index[i]]->construct->level != 3)
+						if (construct->level != 3)
 						{
-							engine->entity_list[index[i]]->construct->level = 3;
-							engine->entity_list[index[i]]->rigid->clone(model_table[MODEL_SENTRY3]);
-
+							construct->level = 3;
+							construct->entity->rigid->clone(model_table[MODEL_SENTRY3]);
 						}
 					}
 				}
@@ -3630,9 +3629,6 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 void Quake3::handle_railgun(Player &player, int self, bool client)
 {
-	int index[16] = { -1 };
-	int num_index = 0;
-
 	Frame frame;
 
 	player.entity->rigid->get_frame(frame);
@@ -3643,6 +3639,9 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 	if (client == false)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
+		int index[16] = { -1 };
+		int num_index = 0;
+
 		projectile->nettype = NET_RAIL;
 		projectile->rigid = new RigidBody(projectile);
 		projectile->position = frame.pos;
@@ -4054,8 +4053,6 @@ void Quake3::handle_frags_left(Player &player)
 void Quake3::handle_shotgun(Player &player, int self, bool client)
 {
 	Frame frame;
-	int index[16] = { -1 };
-	int num_index = 0;
 
 	player.entity->rigid->get_frame(frame);
 
@@ -4152,6 +4149,8 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 		if (client == false)
 		{
+			int index[16] = { -1 };
+			int num_index = 0;
 			float quad_factor = 1.0f;
 
 			if (player.quad_timer > 0)
@@ -4212,14 +4211,10 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 void Quake3::handle_gibs(Player &player)
 {
-
 	Frame camera_frame;
 
 	player.entity->rigid->get_frame(camera_frame);
-
-
 	player.entity->rigid->velocity += vec3(0.5f, 3.0f, 1.2f);
-
 
 	{
 		Entity *entity0 = engine->entity_list[engine->get_entity()];
@@ -6736,11 +6731,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "redflag");
 	if (ret == 0)
 	{
-		if (entity_list[self]->player->team == TEAM_BLUE && entity_list[self]->player->holdable_flag == false)
+		Player *player = entity_list[self]->player;
+		if (player->team == TEAM_BLUE && player->holdable_flag == false)
 		{
 			snprintf(msg, LINE_SIZE, "redflag taken\n");
 			menu.print(msg);
-			entity_list[self]->player->holdable_flag = true;
+			player->holdable_flag = true;
 		}
 		return;
 	}
@@ -8235,13 +8231,14 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			//hack we know it's *falling
 				if (target->trigger)
 				{
-					if (entity_list[self]->player->falling == false)
+					Player *player = entity_list[self]->player;
+					if (player->falling == false)
 					{
 						if (strstr(target->trigger->noise_str, "*falling"))
 						{
 							printf("Ahhhh...\n");
-							engine->play_wave(entity_list[self]->position, entity_list[self]->player->model_index * SND_PLAYER + SND_FALLING);
-							entity_list[self]->player->falling = true;
+							engine->play_wave(entity_list[self]->position, player->model_index * SND_PLAYER + SND_FALLING);
+							player->falling = true;
 						}
 					}
 
