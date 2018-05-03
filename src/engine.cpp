@@ -4418,6 +4418,8 @@ void Engine::fullscreen()
 
 void Engine::clean_entity(int index)
 {
+	unsigned int i = 0;
+
 	//free audio sources
 	if (entity_list[index]->trigger)
 		entity_list[index]->trigger->destroy(audio);
@@ -4457,13 +4459,21 @@ void Engine::clean_entity(int index)
 	// Light list wont be updated until the next step, so manually delete
 	if (entity_list[index]->light)
 	{
-		for (unsigned int i = 0; i < light_list.size(); i++)
+		for (i = 0; i < light_list.size(); i++)
 		{
 			if (light_list[i]->entity == entity_list[index])
 			{
 				light_list.erase(light_list.begin() + i);
 			}
 		}
+
+		// light wasnt in light list
+		if (i == light_list.size())
+		{
+			delete entity_list[index]->light;
+			entity_list[index]->light = NULL;
+		}
+
 	}
 }
 
