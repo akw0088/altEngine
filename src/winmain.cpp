@@ -1,6 +1,8 @@
 #include "include.h"
+#include <tlhelp32.h>
 
-#if 0
+
+#if 1
 
 char *alloc_buffer = (char *)calloc(0x40000000, sizeof(char)); // 1GB of memory;
 unsigned int alloc_index = 0;
@@ -13,14 +15,14 @@ void * operator new(size_t n, char *filename, UINT line) throw(std::bad_alloc)
 	void *pointer = &alloc_buffer[alloc_index];
 	alloc_index += n;
 
-	//printf("Allocate %d bytes address %X [%X of %X used]\r\n", n, pointer, index, 0x40000000);
+	printf("Allocate address %X [File %s Line %d] %d bytes\r\n", pointer, filename, line, n);
 	return pointer;
 }
 #define new new(__FILE__, __LINE__)
 
 void operator delete(void * p) throw()
 {
-	//	printf("Delete %X\r\n", p);
+	printf("Delete address %X [File  Line ] bytes\r\n", p);
 }
 #endif
 
@@ -1081,6 +1083,31 @@ void unregister_raw_mouse(HWND hwnd)
 }
 
 #ifndef DEDICATED
+BOOL GetProcessList()
+{
+	HANDLE hProcessSnap;
+	HANDLE hProcess;
+	PROCESSENTRY32 pe32;
+	DWORD dwPriorityClass;
+
+	hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (hProcessSnap == INVALID_HANDLE_VALUE)
+	{
+		return -1;
+	}
+
+	pe32.dwSize = sizeof(PROCESSENTRY32);
+	Process32First(hProcessSnap, &pe32);
+	do
+	{
+		printf("%d\t%s\n", pe32.th32ProcessID, pe32.szExeFile);
+	} while (Process32Next(hProcessSnap, &pe32));
+
+	CloseHandle(hProcessSnap);
+	return 0;
+}
+
+
 void xbox_vibration(int index, bool left, bool right)
 {
 	_XINPUT_VIBRATION vib;
