@@ -447,11 +447,11 @@ void unregister_raw_mouse(HWND hwnd);
 #endif
 
 
-void * operator new(size_t n, char *filename, UINT line) throw(std::bad_alloc);
-void operator delete(void * p) throw();
+//void * operator new(size_t n, char *filename, UINT line) throw(std::bad_alloc);
+//void operator delete(void * p) throw();
 
-//#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
-#define new new(__FILE__, __LINE__)
+#define DEBUG_NEW new (_NORMAL_BLOCK, __FILE__, __LINE__)
+//#define new new(__FILE__, __LINE__)
 
 
 

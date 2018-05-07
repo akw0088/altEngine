@@ -7625,7 +7625,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 {
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 	{
 		Entity *ent = entity_list[i];
 		Entity *ref = ent;
@@ -7648,10 +7648,10 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 			sprintf(ent->trigger->action, "push %s", ent->entstring->target);
 			break;
 		case ENT_FUNC_PENDULUM:
-			// PENDULUM start at origin, need to offset
-			//			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
-			ent->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
-			break;
+// PENDULUM start at origin, need to offset
+//			q3map.model_offset[entity_list[i]->model_ref] = entity_list[i]->position;
+ent->rigid->angular_velocity = vec3(10.0f, 10.0f, 10.0f);
+break;
 		case ENT_FUNC_BOBBING:
 			switch (ent->brushinfo->angle)
 			{
@@ -7744,6 +7744,12 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 				{
 					entity_list[i]->trigger->action[0] = '\0';
 				}
+			}
+			break;
+		case ENT_TARGET_SPEAKER:
+			if (entity_list[i]->entstring && strlen(entity_list[i]->entstring->target_name) > 2)
+			{
+				entity_list[i]->trigger->noise = false;
 			}
 			break;
 
@@ -8246,6 +8252,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 					{
 						engine->play_wave(target->position, target->trigger->respawn_index);
 						target->trigger->played = true;
+						printf("trigger played %s\n", target->trigger->noise_str);
 					}
 				}
 
@@ -8307,7 +8314,7 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 
 		if (ent->entstring != NULL)
 		{
-			for (unsigned int j = 0; j < entity_list.size(); j++)
+			for (unsigned int j = engine->max_dynamic; j < entity_list.size(); j++)
 			{
 				check_target(entity_list, ent, entity_list[j], self);
 			}
@@ -8504,7 +8511,32 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 					{
 						printf("trigger_multiple triggered target %s of type %s\n", ent->entstring->target, entity_list[j]->entstring->type);
 						if (entity_list[j]->trigger)
+						{
 							console(self, entity_list[j]->trigger->action, engine->menu, engine->entity_list);
+
+							if (entity_list[j]->ent_type == ENT_TARGET_DELAY ||
+								entity_list[j]->ent_type == ENT_FUNC_TIMER ||
+								entity_list[j]->ent_type == ENT_TARGET_GIVE )
+							{
+								for (unsigned int k = engine->max_dynamic; k < entity_list.size(); k++)
+								{
+									check_target(entity_list, entity_list[j], entity_list[k], self);
+								}
+							}
+
+							if (entity_list[j]->ent_type == ENT_TARGET_SPEAKER)
+							{
+								if (entity_list[j]->trigger->played == false)
+								{
+									if (player->local)
+										engine->play_wave_global(entity_list[j]->trigger->respawn_index);
+									else
+										engine->play_wave(ent->position, entity_list[j]->trigger->respawn_index);
+
+									entity_list[j]->trigger->played = true;
+								}
+							}
+						}
 					}
 				}
 			}

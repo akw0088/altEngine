@@ -2,7 +2,7 @@
 #include <tlhelp32.h>
 
 
-#if 1
+#if 0
 
 char *alloc_buffer = (char *)calloc(0x40000000, sizeof(char)); // 1GB of memory;
 unsigned int alloc_index = 0;
