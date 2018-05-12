@@ -1847,7 +1847,7 @@ void Engine::render_scene(bool lights)
 
 	// Rendering entities before map for blends
 	render_entities(transformation, projection, lights, false);
-	render_players(transformation, projection, lights, game->spectator);
+	render_players(transformation, projection, lights, game->get_spectator());
 
 
 	if (lights == false)
@@ -2030,7 +2030,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	// Rendering entities before map for blends
 	render_entities(transformation, projection, lights, false);
-	render_players(transformation, projection, lights, game->spectator);
+	render_players(transformation, projection, lights, game->get_spectator());
 	mvp = transformation * projection;
 	if (lights)
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);

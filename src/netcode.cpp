@@ -295,7 +295,7 @@ int Netcode::handle_servermsg(servermsg_t &servermsg, unsigned char *data, relia
 				{
 					memcpy(msg, start, end - start);
 					engine->menu.print_chat(msg);
-					engine->game->chat_timer = 3 * TICK_RATE;
+					engine->game->set_chat_timer(3 * TICK_RATE);
 
 					#define SND_TALK 268
 					engine->play_wave_global(SND_TALK);
@@ -486,7 +486,7 @@ void Netcode::parse_player_string(char *msg)
 				ent->rigid->clone(*(engine->thug22->model));
 				ent->rigid->flags.step_flag = true;
 				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_PLAYER, engine->game->model_table);
+				ent->player = new Player(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_PLAYER, engine->game->get_model_table());
 				ent->player->type = PLAYER;
 				sprintf(ent->player->name, "%s", name);
 				ent->player->local = true;
@@ -505,7 +505,7 @@ void Netcode::parse_player_string(char *msg)
 					ent->rigid->clone(*(engine->thug22->model));
 					ent->rigid->flags.step_flag = true;
 					ent->position += ent->rigid->center;
-					ent->player = new Player(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_SERVER, engine->game->model_table);
+					ent->player = new Player(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_SERVER, engine->game->get_model_table());
 					ent->player->local = false;
 					ent->player->type = SERVER;
 					sprintf(ent->player->name, "%s", name);
@@ -827,8 +827,8 @@ int Netcode::server_recv()
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
 		sprintf(reliable[index].msg, "/sv_hostname %s/map %s/players %d/maxplayers %d/gametype %d/fraglimit %d/timelimit %d/capturelimit %d/",
-			sv_hostname, engine->q3map.map_name, (int)client_list.size(), engine->max_player, engine->game->gametype,
-			engine->game->fraglimit, engine->game->timelimit, engine->game->capturelimit);
+			sv_hostname, engine->q3map.map_name, (int)client_list.size(), engine->max_player, engine->game->get_gametype(),
+			engine->game->get_fraglimit(), engine->game->get_timelimit(), engine->game->get_capturelimit());
 		reliable[index].size = (unsigned short)(2 * sizeof(unsigned short int) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
 
@@ -1512,7 +1512,7 @@ void Netcode::chat(char *name, char *msg)
 	if (client_flag == false)
 	{
 		engine->menu.print_chat(data);
-		engine->game->chat_timer = 3 * TICK_RATE;
+		engine->game->set_chat_timer(3 * TICK_RATE);
 
 		int self = engine->find_type(ENT_PLAYER, 0);
 		if (self != -1)
@@ -1535,9 +1535,9 @@ void Netcode::report_master()
 	sprintf(report.map, "%s", engine->q3map.map_name);
 	report.num_player = 1;
 	report.max_player = 16;
-	report.fraglimit = engine->game->fraglimit;
-	report.timelimit = engine->game->timelimit;
-	report.capturelimit = engine->game->capturelimit;
+	report.fraglimit = engine->game->get_fraglimit();
+	report.timelimit = engine->game->get_timelimit();
+	report.capturelimit = engine->game->get_capturelimit();
 	for (unsigned int i = 0; i < num_master; i++)
 	{
 		int ret = sock.sendto((char *)&report, sizeof(report_t), master_list[i]);

@@ -85,6 +85,25 @@ public:
 
 	void build_sentry();
 
+	//base game items
+	gametype_t get_gametype();
+	int get_fraglimit();
+	int get_timelimit();
+	int get_capturelimit();
+	int get_blue_flag_caps();
+	int get_red_flag_caps();
+	int get_notif_timer();
+	bool get_spectator();
+	Model *get_model_table();
+	int get_num_model();
+	vector<icon_t> get_icon_list();
+
+	void set_gametype(gametype_t &gametype);
+	void set_fraglimit(unsigned int limit);
+	void set_timelimit(unsigned int limit);
+	void set_capturelimit(unsigned int limit);
+	void set_chat_timer(unsigned int limit);
+
 	unsigned int weapon_switch_timer;
 
 	~Quake3();
@@ -128,6 +147,22 @@ private:
 	bool played_three_frag;
 	bool played_prepare;
 	bool played_sudden;
+
+
+	// previous in basegame
+	gametype_t gametype;
+	int fraglimit;
+	int timelimit;
+	int capturelimit;
+	int blue_flag_caps;
+	int red_flag_caps;
+	int notif_timer;
+	int chat_timer;
+	bool spectator;
+	//vector<Model *> model_table;
+	Model *model_table;
+	int num_model;
+	vector <icon_t> icon_list;
 };
 
 #endif

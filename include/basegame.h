@@ -6,7 +6,6 @@
 /*
 	Virtual class to keep game specific items out of Engine
 */
-
 class BaseGame
 {
 public:
@@ -33,21 +32,24 @@ public:
 
 public:
 
-	// Need to move these references out of Engine
-	gametype_t gametype;
-	int fraglimit;
-	int timelimit;
-	int capturelimit;
-	int blue_flag_caps;
-	int red_flag_caps;
-	int notif_timer;
-	int chat_timer;
-	bool spectator;
-	Engine *engine;
-	//vector<Model *> model_table;
-	Model *model_table;
-	int num_model;
-	vector <icon_t> icon_list;
+	virtual gametype_t get_gametype() = 0;
+	virtual int get_fraglimit() = 0;
+	virtual int get_timelimit() = 0;
+	virtual int get_capturelimit() = 0;
+	virtual int get_blue_flag_caps() = 0;
+	virtual int get_red_flag_caps() = 0;
+	virtual int get_notif_timer() = 0;
+	virtual bool get_spectator() = 0;
+	virtual Model *get_model_table() = 0;
+	virtual int get_num_model() = 0;
+	virtual vector<icon_t> get_icon_list() = 0;
+
+
+	virtual void set_gametype(gametype_t &gametype) = 0;
+	virtual void set_fraglimit(unsigned int limit) = 0;
+	virtual void set_timelimit(unsigned int limit) = 0;
+	virtual void set_capturelimit(unsigned int limit) = 0;
+	virtual void set_chat_timer(unsigned int limit) = 0;
 };
 
 #endif

@@ -3135,3 +3135,38 @@ int file_upload(char *file, unsigned short port)
 	}
 	return 0;
 }
+
+void *open_lib(char *file, char *function, unsigned int **fpointer)
+{
+#ifdef WIN32
+	HMODULE hModule = LoadLibrary(file);
+	*fpointer = (unsigned int *)GetProcAddress(hModule, function);
+
+	return hModule;
+#else
+	void *handle = dlopen(file, RTLD_LAZY);
+	if (!handle)
+	{
+		printf("dlopen failed %s\r\n", dlerror());
+		return NULL;
+	}
+
+	*fpointer = (unsigned int *)dlsym(handle, function);
+	char *error = dlerror();
+	if (error != NULL)
+	{
+		printf("dlsym failed %s", error);
+		return NULL;
+	}
+	return handle;
+#endif
+}
+
+void close_lib(void *handle)
+{
+#ifdef WIN32
+	FreeLibrary((HMODULE)handle);
+#else
+	dlclose(handle);
+#endif
+}

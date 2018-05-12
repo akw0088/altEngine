@@ -41,8 +41,31 @@
 extern char bot_state_name[16][32];
 extern const char *models[23];
 
+#ifdef WIN32
+extern "C" __declspec(dllexport) BaseGame* __cdecl create_class()
+{
+	return new Quake3;
+}
+#else
+extern "C" BaseGame* create_class()
+{
+	return new Quake3;
+}
+#endif
+
 Quake3::Quake3()
 {
+	gametype = GAMETYPE_DEATHMATCH;
+	fraglimit = 8;
+	timelimit = 10;
+	capturelimit = 8;
+	blue_flag_caps = 0;
+	red_flag_caps = 0;
+	notif_timer = 0;
+	chat_timer = 0;
+	engine = NULL;
+	spectator = false;
+
 	engine = NULL;
 	blink = false;
 	spectator = false;
@@ -135,6 +158,9 @@ void Quake3::destroy()
 	}
 #endif
 	delete [] model_table;
+
+	// uncomment when created from dll / shared library
+	//delete this;
 }
 
 
@@ -9789,4 +9815,84 @@ int Quake3::add_train_path(Entity *original, Entity *ref, Entity *target)
 		return 1;
 	}
 	return 0;
+}
+
+gametype_t Quake3::get_gametype()
+{
+	return gametype;
+}
+
+int Quake3::get_fraglimit()
+{
+	return fraglimit;
+}
+
+int Quake3::get_timelimit()
+{
+	return timelimit;
+}
+
+int Quake3::get_capturelimit()
+{
+	return capturelimit;
+}
+
+int Quake3::get_blue_flag_caps()
+{
+	return blue_flag_caps;
+}
+
+int Quake3::get_red_flag_caps()
+{
+	return red_flag_caps;
+}
+
+int Quake3::get_notif_timer()
+{
+	return notif_timer;
+}
+
+bool Quake3::get_spectator()
+{
+	return spectator;
+}
+
+Model *Quake3::get_model_table()
+{
+	return model_table;
+}
+
+int Quake3::get_num_model()
+{
+	return num_model;
+}
+
+vector<icon_t> Quake3::get_icon_list()
+{
+	return icon_list;
+}
+
+void Quake3::set_gametype(gametype_t &gt)
+{
+	gametype = gt;
+}
+
+void Quake3::set_fraglimit(unsigned int limit)
+{
+	chat_timer = limit;
+}
+
+void Quake3::set_timelimit(unsigned int limit)
+{
+	chat_timer = limit;
+}
+
+void Quake3::set_capturelimit(unsigned int limit)
+{
+	chat_timer = limit;
+}
+
+void Quake3::set_chat_timer(unsigned int limit)
+{
+	chat_timer = limit;
 }
