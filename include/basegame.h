@@ -9,7 +9,10 @@
 class BaseGame
 {
 public:
-	BaseGame();
+	BaseGame()
+	{
+	}
+
 	virtual void init(Engine *altEngine) = 0;
 	virtual void step(int frame_step) = 0;
 	virtual void load(gametype_t gametype) = 0;

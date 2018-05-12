@@ -2,9 +2,8 @@
 #define TYPES_H
 typedef unsigned int uint;
 
-
-#ifndef WIN32
-#endif 
+#define MAX_TEXTURES 4 // multi texture limits (quake 3 shader stages)
+#define LINE_SIZE 512
 
 typedef enum
 {
