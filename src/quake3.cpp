@@ -5198,25 +5198,25 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 
 }
 
-void Quake3::draw_flash(Player &player)
+void Quake3::draw_flash(Player *player)
 {
 	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
-	if (player.flash_gauntlet)
+	if (player->flash_gauntlet)
 		draw_icon(15.0, ICON_F_GAUNTLET, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_machinegun)
+	else if (player->flash_machinegun)
 		draw_icon(15.0, ICON_F_MACHINEGUN, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_shotgun)
+	else if (player->flash_shotgun)
 		draw_icon(15.0, ICON_F_SHOTGUN, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_grenade)
+	else if (player->flash_grenade)
 		draw_icon(15.0, ICON_F_GRENADE, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_rocket)
+	else if (player->flash_rocket)
 		draw_icon(15.0, ICON_F_ROCKET, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_lightning)
+	else if (player->flash_lightning)
 		draw_icon(15.0, ICON_F_LIGHTNING, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_railgun)
+	else if (player->flash_railgun)
 		draw_icon(15.0, ICON_F_RAILGUN, 0.0f, -0.1f, -0.5f);
-	else if (player.flash_plasma)
+	else if (player->flash_plasma)
 		draw_icon(15.0, ICON_F_PLASMA, 0.0f, -0.1f, -0.5f);
 	engine->gfx.Blend(false);
 }
@@ -7649,7 +7649,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 }
 
 
-void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
+void Quake3::setup_func(vector<Entity *> &entity_list, Bsp *q3map)
 {
 	for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
 	{
@@ -7658,8 +7658,8 @@ void Quake3::setup_func(vector<Entity *> &entity_list, Bsp &q3map)
 
 		if (ent->brush_ref != -1)
 		{
-			q3map.model_type[ent->brush_ref] = ent->ent_type;
-			ent->position = q3map.model_origin(ent->brush_ref);
+			q3map->model_type[ent->brush_ref] = ent->ent_type;
+			ent->position = q3map->model_origin(ent->brush_ref);
 		}
 
 		if (ent->brushinfo)
@@ -7714,7 +7714,7 @@ break;
 			ent->rigid->path.num_path = 2;
 			break;
 		case ENT_FUNC_TRAIN:
-			q3map.model_offset[entity_list[i]->brush_ref] = entity_list[i]->position;
+			q3map->model_offset[entity_list[i]->brush_ref] = entity_list[i]->position;
 			for (unsigned int i = engine->max_dynamic; i < engine->entity_list.size(); i++)
 			{
 				int ret = add_train_path(ent, ref, engine->entity_list[i]);
@@ -9208,518 +9208,518 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 	}
 }
 
-void Quake3::map_model(Entity &ent)
+void Quake3::map_model(Entity *ent)
 {
-	if (ent.ent_type == ENT_ITEM_ARMOR_SHARD)
+	if (ent->ent_type == ENT_ITEM_ARMOR_SHARD)
 	{
 		debugf("Loading item_armor_shard\n");
-		ent.model->clone(model_table[MODEL_ARMOR_SHARD]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_ARMOR_SHARD]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_ROCKETLAUNCHER)
+	else if (ent->ent_type == ENT_WEAPON_ROCKETLAUNCHER)
 	{
 		debugf("Loading weapon_rocketlauncher\n");
-		ent.model->clone(model_table[MODEL_WEAPON_ROCKET]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_ROCKET]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_SHELLS)
+	else if (ent->ent_type == ENT_AMMO_SHELLS)
 	{
 		debugf("Loading ammo_shells\n");
-		ent.model->clone(model_table[MODEL_AMMO_SHELLS]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_SHELLS]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_ROCKETS)
+	else if (ent->ent_type == ENT_AMMO_ROCKETS)
 	{
 		debugf("Loading ammo_rockets\n");
-		ent.model->clone(model_table[MODEL_AMMO_ROCKETS]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_ROCKETS]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_CELLS)
+	else if (ent->ent_type == ENT_AMMO_CELLS)
 	{
 		debugf("Loading ammo_cells\n");
-		ent.model->clone(model_table[MODEL_AMMO_PLASMA]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_PLASMA]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_BFG)
+	else if (ent->ent_type == ENT_AMMO_BFG)
 	{
 		debugf("Loading ammo_bfg\n");
-		ent.model->clone(model_table[MODEL_AMMO_LIGHTNING]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_LIGHTNING]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_GRENADES)
+	else if (ent->ent_type == ENT_AMMO_GRENADES)
 	{
 		debugf("Loading ammo_bfg\n");
-		ent.model->clone(model_table[MODEL_AMMO_GRENADES]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_GRENADES]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_LIGHTNING)
+	else if (ent->ent_type == ENT_AMMO_LIGHTNING)
 	{
 		debugf("Loading ammo_lightning\n");
-		ent.model->clone(model_table[MODEL_AMMO_LIGHTNING]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_LIGHTNING]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_SLUGS)
+	else if (ent->ent_type == ENT_AMMO_SLUGS)
 	{
 		debugf("Loading ammo_slugs\n");
-		ent.model->clone(model_table[MODEL_AMMO_SLUGS]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_SLUGS]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_AMMO_BULLETS)
+	else if (ent->ent_type == ENT_AMMO_BULLETS)
 	{
 		debugf("Loading ammo_bullets\n");
-		ent.model->clone(model_table[MODEL_AMMO_BULLETS]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_AMMO_BULLETS]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_ARMOR_COMBAT)
+	else if (ent->ent_type == ENT_ITEM_ARMOR_COMBAT)
 	{
 		debugf("Loading item_armor_combat\n");
-		ent.model->clone(model_table[MODEL_ARMOR_COMBAT]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_ARMOR_COMBAT]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_ARMOR_BODY)
+	else if (ent->ent_type == ENT_ITEM_ARMOR_BODY)
 	{
 		debugf("Loading item_armor_body\n");
-		ent.model->clone(model_table[MODEL_ARMOR_BODY]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_ARMOR_BODY]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_TEAM_CTF_BLUEFLAG)
+	else if (ent->ent_type == ENT_TEAM_CTF_BLUEFLAG)
 	{
 		debugf("Loading team_CTF_blueflag\n");
-		ent.model->clone(model_table[MODEL_BLUE_FLAG]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position += vec3(0.0f, 50.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_BLUE_FLAG]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position += vec3(0.0f, 50.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_TEAM_CTF_REDFLAG)
+	else if (ent->ent_type == ENT_TEAM_CTF_REDFLAG)
 	{
 		debugf("Loading team_CTF_redflag\n");
-		ent.model->clone(model_table[MODEL_RED_FLAG]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position += vec3(0.0f, 50.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_RED_FLAG]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position += vec3(0.0f, 50.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_QUAD)
+	else if (ent->ent_type == ENT_ITEM_QUAD)
 	{
 		debugf("Loading item_quad\n");
-		ent.model->clone(model_table[MODEL_QUAD]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_QUAD]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_ITEM_REGEN)
+	else if (ent->ent_type == ENT_ITEM_REGEN)
 	{
 		debugf("Loading item_regen\n");
-		ent.model->clone(model_table[MODEL_REGEN]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_REGEN]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_ITEM_INVIS)
+	else if (ent->ent_type == ENT_ITEM_INVIS)
 	{
 		debugf("Loading item_invis\n");
-		ent.model->clone(model_table[MODEL_INVIS]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_INVIS]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_ITEM_FLIGHT)
+	else if (ent->ent_type == ENT_ITEM_FLIGHT)
 	{
 		debugf("Loading item_flight\n");
-		ent.model->clone(model_table[MODEL_FLIGHT]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_FLIGHT]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_ITEM_HASTE)
+	else if (ent->ent_type == ENT_ITEM_HASTE)
 	{
 		debugf("Loading item_haste\n");
-		ent.model->clone(model_table[MODEL_HASTE]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_HASTE]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_HOLDABLE_MEDKIT)
+	else if (ent->ent_type == ENT_HOLDABLE_MEDKIT)
 	{
 		debugf("Loading holdable_medkit\n");
-		ent.model->clone(model_table[MODEL_MEDKIT]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_MEDKIT]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_HOLDABLE_TELEPORTER)
+	else if (ent->ent_type == ENT_HOLDABLE_TELEPORTER)
 	{
 		debugf("Loading holdable_teleporter\n");
-		ent.model->clone(model_table[MODEL_TELEPORTER]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_TELEPORTER]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_FUNC_TERRAIN)
+	else if (ent->ent_type == ENT_FUNC_TERRAIN)
 	{
 		debugf("Loading func_terrain\n");
-		ent.model->clone(model_table[MODEL_TERRAIN]);
-		ent.position += vec3(0.0f, -5000.0f, 0.0f);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_TERRAIN]);
+		ent->position += vec3(0.0f, -5000.0f, 0.0f);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_LIGHTNING)
+	else if (ent->ent_type == ENT_WEAPON_LIGHTNING)
 	{
 		debugf("Loading weapon_lightning\n");
-		ent.model->clone(model_table[MODEL_WEAPON_LIGHTNING]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_LIGHTNING]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_BFG)
+	else if (ent->ent_type == ENT_WEAPON_BFG)
 	{
 		debugf("Loading weapon_bfg\n");
-		ent.model->clone(model_table[MODEL_WEAPON_LIGHTNING]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_LIGHTNING]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_SHOTGUN)
+	else if (ent->ent_type == ENT_WEAPON_SHOTGUN)
 	{
 		debugf("Loading weapon_shotgun\n");
-		ent.model->clone(model_table[MODEL_WEAPON_SHOTGUN]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_SHOTGUN]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_RAILGUN)
+	else if (ent->ent_type == ENT_WEAPON_RAILGUN)
 	{
 		debugf("Loading weapon_railgun\n");
-		ent.model->clone(model_table[MODEL_WEAPON_RAILGUN]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_RAILGUN]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_GRENADELAUNCHER)
+	else if (ent->ent_type == ENT_WEAPON_GRENADELAUNCHER)
 	{
 		debugf("Loading weapon_grenadelauncher\n");
-		ent.model->clone(model_table[MODEL_WEAPON_GRENADE]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_GRENADE]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_WEAPON_PLASMA)
+	else if (ent->ent_type == ENT_WEAPON_PLASMA)
 	{
 		debugf("Loading weapon_plasmagun\n");
-		ent.model->clone(model_table[MODEL_WEAPON_PLASMA]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_WEAPON_PLASMA]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_HEALTH)
+	else if (ent->ent_type == ENT_ITEM_HEALTH)
 	{
 		debugf("Loading item_health\n");
-		ent.model->clone(model_table[MODEL_HEALTH]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_HEALTH]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_HEALTH_LARGE)
+	else if (ent->ent_type == ENT_ITEM_HEALTH_LARGE)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->clone(model_table[MODEL_HEALTH_LARGE]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_HEALTH_LARGE]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_HEALTH_SMALL)
+	else if (ent->ent_type == ENT_ITEM_HEALTH_SMALL)
 	{
 		debugf("Loading item_health_large\n");
-		ent.model->clone(model_table[MODEL_HEALTH_SMALL]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_HEALTH_SMALL]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_ITEM_HEALTH_MEGA)
+	else if (ent->ent_type == ENT_ITEM_HEALTH_MEGA)
 	{
 		debugf("Loading item_health_mega\n");
-		ent.model->clone(model_table[MODEL_HEALTH_MEGA]);
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.rigid->flags.gravity = false;
+		ent->model->clone(model_table[MODEL_HEALTH_MEGA]);
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->rigid->flags.gravity = false;
 	}
-	else if (ent.ent_type == ENT_INFO_PLAYER_DEATHMATCH)
+	else if (ent->ent_type == ENT_INFO_PLAYER_DEATHMATCH)
 	{
 		debugf("Loading info_player_deathmatch\n");
-		ent.model->clone(model_table[MODEL_BALL]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = true;
+		ent->model->clone(model_table[MODEL_BALL]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = true;
 	}
-	else if (ent.ent_type == ENT_TEAM_CTF_BLUESPAWN)
+	else if (ent->ent_type == ENT_TEAM_CTF_BLUESPAWN)
 	{
 		debugf("Loading team_CTF_bluespawn\n");
-		ent.model->clone(model_table[MODEL_BALL]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = true;
+		ent->model->clone(model_table[MODEL_BALL]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = true;
 	}
-	else if (ent.ent_type == ENT_TEAM_CTF_REDSPAWN)
+	else if (ent->ent_type == ENT_TEAM_CTF_REDSPAWN)
 	{
 		debugf("Loading team_CTF_redspawn\n");
-		ent.model->clone(model_table[MODEL_BALL]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = true;
+		ent->model->clone(model_table[MODEL_BALL]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = true;
 	}
-	else if (ent.ent_type == ENT_TEAM_CTF_BLUEPLAYER)
+	else if (ent->ent_type == ENT_TEAM_CTF_BLUEPLAYER)
 	{
 		debugf("Loading team_CTF_blueplayer\n");
-		ent.model->clone(model_table[MODEL_BALL]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = true;
+		ent->model->clone(model_table[MODEL_BALL]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = true;
 	}
-	else if (ent.ent_type == ENT_TEAM_CTF_REDPLAYER)
+	else if (ent->ent_type == ENT_TEAM_CTF_REDPLAYER)
 	{
 		debugf("Loading team_CTF_redplayer\n");
-		ent.model->clone(model_table[MODEL_BALL]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = true;
+		ent->model->clone(model_table[MODEL_BALL]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = true;
 	}
-	else if (ent.ent_type > ENT_FUNC_START && ent.ent_type < ENT_FUNC_END)
+	else if (ent->ent_type > ENT_FUNC_START && ent->ent_type < ENT_FUNC_END)
 	{
 
-		if (!(ent.ent_type == ENT_FUNC_DOOR || ent.ent_type == ENT_FUNC_BUTTON || ent.ent_type == ENT_FUNC_PLAT))
+		if (!(ent->ent_type == ENT_FUNC_DOOR || ent->ent_type == ENT_FUNC_BUTTON || ent->ent_type == ENT_FUNC_PLAT))
 		{
 			debugf("Loading func item\n");
-			ent.model->clone(model_table[MODEL_BOX]);
-			ent.rigid->flags.gravity = false;
-			ent.flags.nodraw = false;
+			ent->model->clone(model_table[MODEL_BOX]);
+			ent->rigid->flags.gravity = false;
+			ent->flags.nodraw = false;
 		}
 	}
-	else if (ent.ent_type == ENT_PATH_CORNER)
+	else if (ent->ent_type == ENT_PATH_CORNER)
 	{
-			debugf("Loading path_corner\n");
-			ent.model->clone(model_table[MODEL_BOX]);
-			ent.rigid->flags.gravity = false;
-			ent.flags.nodraw = false;
+		debugf("Loading path_corner\n");
+		ent->model->clone(model_table[MODEL_BOX]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_DEMON1)
+	else if (ent->ent_type == ENT_Q1_MONSTER_DEMON1)
 	{
 		debugf("Loading monster_demon1\n");
-		ent.model->clone(model_table[MODEL_DEMON]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_DEMON]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_SHAMBLER)
+	else if (ent->ent_type == ENT_Q1_MONSTER_SHAMBLER)
 	{
 		debugf("Loading monster_shambler\n");
-		ent.model->clone(model_table[MODEL_SHAMBLER]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_SHAMBLER]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_DOG)
+	else if (ent->ent_type == ENT_Q1_MONSTER_DOG)
 	{
 		debugf("Loading monster_dog\n");
-		ent.model->clone(model_table[MODEL_DOG]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_DOG]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_ARMY)
+	else if (ent->ent_type == ENT_Q1_MONSTER_ARMY)
 	{
 		debugf("Loading monster_army\n");
-		ent.model->clone(model_table[MODEL_SOLDIER]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_SOLDIER]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_WIZARD)
+	else if (ent->ent_type == ENT_Q1_MONSTER_WIZARD)
 	{
 		debugf("Loading monster_wizard\n");
-		ent.model->clone(model_table[MODEL_WIZARD]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_WIZARD]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_OGRE)
+	else if (ent->ent_type == ENT_Q1_MONSTER_OGRE)
 	{
 		debugf("Loading monster_ogre\n");
-		ent.model->clone(model_table[MODEL_OGRE]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_OGRE]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_KNIGHT)
+	else if (ent->ent_type == ENT_Q1_MONSTER_KNIGHT)
 	{
 		debugf("Loading monster_knight\n");
-		ent.model->clone(model_table[MODEL_KNIGHT]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_KNIGHT]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_MONSTER_ZOMBIE)
+	else if (ent->ent_type == ENT_Q1_MONSTER_ZOMBIE)
 	{
 		debugf("Loading monster_knight\n");
-		ent.model->clone(model_table[MODEL_ZOMBIE]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_ZOMBIE]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_LIGHT_FLUORO)
+	else if (ent->ent_type == ENT_Q1_LIGHT_FLUORO)
 	{
 		debugf("Loading light_fluoro\n");
-		ent.model->clone(model_table[MODEL_V_LIGHT]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_V_LIGHT]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_LIGHT_FLUOROSPARK)
+	else if (ent->ent_type == ENT_Q1_LIGHT_FLUOROSPARK)
 	{
 		debugf("Loading light_fluorospark\n");
-		ent.model->clone(model_table[MODEL_V_LIGHT]);
-		ent.rigid->flags.gravity = true;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_V_LIGHT]);
+		ent->rigid->flags.gravity = true;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE)
+	else if (ent->ent_type == ENT_Q1_ITEM_ARTIFACT_SUPER_DAMAGE)
 	{
 		debugf("Loading item_artifact_super_damage\n");
-		ent.model->clone(model_table[MODEL_QUADDAMA]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_QUADDAMA]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_INVULNERABILITY)
+	else if (ent->ent_type == ENT_Q1_ITEM_ARTIFACT_INVULNERABILITY)
 	{
 		debugf("Loading item_artifact_invulnerability\n");
-		ent.model->clone(model_table[MODEL_INVULNER]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_INVULNER]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_ARTIFACT_ENVIROSUIT)
+	else if (ent->ent_type == ENT_Q1_ITEM_ARTIFACT_ENVIROSUIT)
 	{
 		debugf("Loading item_artifact_envirosuit\n");
-		ent.model->clone(model_table[MODEL_SUIT]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_SUIT]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_WEAPON_NAILGUN)
+	else if (ent->ent_type == ENT_Q1_WEAPON_NAILGUN)
 	{
 		debugf("Loading weapon_nailgun\n");
-		ent.model->clone(model_table[MODEL_G_NAIL]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_G_NAIL]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_WEAPON_SUPERNAILGUN)
+	else if (ent->ent_type == ENT_Q1_WEAPON_SUPERNAILGUN)
 	{
 		debugf("Loading weapon_supernailgun\n");
-		ent.model->clone(model_table[MODEL_G_NAIL2]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_G_NAIL2]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_WEAPON_SUPERSHOTGUN)
+	else if (ent->ent_type == ENT_Q1_WEAPON_SUPERSHOTGUN)
 	{
 		debugf("Loading weapon_supershotgun\n");
-		ent.model->clone(model_table[MODEL_G_SHOT]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_G_SHOT]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_MISC_EXPLOBOX)
+	else if (ent->ent_type == ENT_Q1_MISC_EXPLOBOX)
 	{
 		/*
 		debugf("Loading misc_explobox\n");
-		ent.model->clone(*model_table[MODEL_EXPLOBOX]);
-		ent.rigid->gravity = true;
-		ent.nodraw = false;
+		ent->model->clone(*model_table[MODEL_EXPLOBOX]);
+		ent->rigid->gravity = true;
+		ent->nodraw = false;
 		*/
 	}
-	else if (ent.ent_type == ENT_Q1_LIGHT_TORCH_SMALL_WALLTORCH)
+	else if (ent->ent_type == ENT_Q1_LIGHT_TORCH_SMALL_WALLTORCH)
 	{
 		debugf("Loading light_torch_small_walltorch\n");
-		ent.model->clone(model_table[MODEL_FLAME]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_FLAME]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_YELLOW)
+	else if (ent->ent_type == ENT_Q1_LIGHT_FLAME_SMALL_YELLOW)
 	{
 		debugf("Loading light_flame_small_yellow\n");
-		ent.model->clone(model_table[MODEL_FLAME2]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_FLAME2]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_LIGHT_FLAME_SMALL_WHITE)
+	else if (ent->ent_type == ENT_Q1_LIGHT_FLAME_SMALL_WHITE)
 	{
 		debugf("Loading light_flame_small_yellow\n");
-		ent.model->clone(model_table[MODEL_FLAME2]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
+		ent->model->clone(model_table[MODEL_FLAME2]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_KEY1)
+	else if (ent->ent_type == ENT_Q1_ITEM_KEY1)
 	{
 		debugf("Loading item_key1\n");
-		ent.model->clone(model_table[MODEL_M_G_KEY]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_M_G_KEY]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_KEY2)
+	else if (ent->ent_type == ENT_Q1_ITEM_KEY2)
 	{
 		debugf("Loading item_key2\n");
-		ent.model->clone(model_table[MODEL_M_S_KEY]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_M_S_KEY]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_ARMOR1)
+	else if (ent->ent_type == ENT_Q1_ITEM_ARMOR1)
 	{
 		debugf("Loading item_armor1\n");
-		ent.model->clone(model_table[MODEL_YELLOWARMOR]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_YELLOWARMOR]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_ARMOR2)
+	else if (ent->ent_type == ENT_Q1_ITEM_ARMOR2)
 	{
 		debugf("Loading item_armor2\n");
-		ent.model->clone(model_table[MODEL_REDARMOR]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_REDARMOR]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	else if (ent.ent_type == ENT_Q1_ITEM_SIGIL)
+	else if (ent->ent_type == ENT_Q1_ITEM_SIGIL)
 	{
 		debugf("Loading item_sigil\n");
-		ent.model->clone(model_table[MODEL_END1]);
-		ent.rigid->flags.gravity = false;
-		ent.flags.nodraw = false;
-		ent.rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-		ent.position.y += 15.0f;
+		ent->model->clone(model_table[MODEL_END1]);
+		ent->rigid->flags.gravity = false;
+		ent->flags.nodraw = false;
+		ent->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
+		ent->position.y += 15.0f;
 	}
-	
-/*
-		else if (strcmp(value, "ambient_comp_hum") == 0)
-		else if (strcmp(value, "ambient_drone") == 0)
-		else if (strcmp(value, "ambient_drip") == 0)
-		else if (strcmp(value, "ambient_swamp1") == 0)
-		else if (strcmp(value, "ambient_swamp2") == 0)
-		else if (strcmp(value, "trap_spikeshooter") == 0)
+
+	/*
+	else if (strcmp(value, "ambient_comp_hum") == 0)
+	else if (strcmp(value, "ambient_drone") == 0)
+	else if (strcmp(value, "ambient_drip") == 0)
+	else if (strcmp(value, "ambient_swamp1") == 0)
+	else if (strcmp(value, "ambient_swamp2") == 0)
+	else if (strcmp(value, "trap_spikeshooter") == 0)
 
 
-		0 - normal
-		1 - flicker (first variety)
-		2 - slow strong pulse
-		3 - candle (first variety)
-		4 - fast strobe
-		5 - gentle pulse
-		6 - flicker (second variety)
-		7 - candle (second variety)
-		8 - candle (third variety)
-		9 - slow strobe
-		10 - flourescent flicker
-		11 - slow pulse, not fading to black
-*/
+	0 - normal
+	1 - flicker (first variety)
+	2 - slow strong pulse
+	3 - candle (first variety)
+	4 - fast strobe
+	5 - gentle pulse
+	6 - flicker (second variety)
+	7 - candle (second variety)
+	8 - candle (third variety)
+	9 - slow strobe
+	10 - flourescent flicker
+	11 - slow pulse, not fading to black
+	*/
 }
 
 

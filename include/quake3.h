@@ -45,13 +45,13 @@ public:
 	void handle_gibs(Player &player);
 	void create_crosshair();
 	void draw_crosshair();
-	void draw_flash(Player &player);
+	void draw_flash(Player *player);
 	void add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Model &decal_model, float offset, bool explode, int explode_timer);
 
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f, float z = 0.0f);
 	void load_icon();
-	void map_model(Entity &ent);
+	void map_model(Entity *ent);
 	void load_sounds(Audio &audio, vector<wave_t> &snd_wave);
 	void handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, int self);
 	void check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self);
@@ -70,7 +70,7 @@ public:
 	void load(gametype_t gametype);
 	void load_models(Graphics &gfx);
 	void load_q1_models(Graphics &gfx);
-	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
+	void setup_func(vector<Entity *> &entity_list, Bsp *q3map);
 	void unload();
 	void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);

@@ -721,7 +721,7 @@ void Engine::load(char *level)
 		delete[] ref;
 
 
-		game->setup_func(entity_list, q3map);
+		game->setup_func(entity_list, &q3map);
 
 		load_entities();
 	}
@@ -2129,7 +2129,7 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 	entity_list[i]->rigid->get_matrix(mvp.m);
 	mvp = (mvp * trans) * projection;
 
-	game->draw_flash(*(entity_list[i]->player));
+	game->draw_flash((entity_list[i]->player));
 
 }
 
@@ -4361,7 +4361,7 @@ void Engine::load_models()
 		if (entity_list[i]->model == NULL)
 			continue;
 
-		game->map_model(*entity_list[i]);
+		game->map_model(entity_list[i]);
 	}
 }
 
