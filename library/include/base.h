@@ -1,11 +1,21 @@
-#include "include.h"
+#pragma once
 
-#ifndef BASEGAME_H
-#define BASEGAME_H
+#include <stdio.h>
+#include <vector>
 
-/*
-	Virtual class to keep game specific items out of Engine
-*/
+#include "vector.h"
+#include "matrix.h"
+#include "types.h"
+
+using namespace std;
+
+class Engine;
+class Entity;
+class Player;
+class Menu;
+class Bsp;
+class Model;
+
 class BaseGame
 {
 public:
@@ -21,9 +31,9 @@ public:
 	virtual void destroy() = 0;
 	virtual void add_player(vector<Entity *> &entity_list, playertype_t type, int &ent_id, char *player_name) = 0;
 	virtual void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list) = 0;
-	virtual void setup_func(vector<Entity *> &entity_list, Bsp *q3map) = 0;
+	virtual void setup_func(vector<Entity *> &entity_list, Bsp &q3map) = 0;
 	virtual void render_hud(double last_frametime) = 0;
-	virtual void draw_flash(Player *player) = 0;
+	virtual void draw_flash(Player &player) = 0;
 	virtual void draw_icon(float scale, int index, float x, float y, float z) = 0;
 	virtual void make_dynamic_ent(net_ent_t item, int ent_id) = 0;
 	virtual void endgame(char *winner) = 0;
@@ -33,7 +43,6 @@ public:
 	{
 	};
 
-public:
 
 	virtual gametype_t get_gametype() = 0;
 	virtual int get_fraglimit() = 0;
@@ -52,8 +61,5 @@ public:
 	virtual void set_fraglimit(unsigned int limit) = 0;
 	virtual void set_timelimit(unsigned int limit) = 0;
 	virtual void set_capturelimit(unsigned int limit) = 0;
-	virtual void set_chat_timer(unsigned int limit) = 0;
+
 };
-
-#endif
-

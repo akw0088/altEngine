@@ -1,5 +1,6 @@
-#include "generic_interface.h"
 #include <iostream>
+
+#include "base.h"
 
 using namespace std;
 
