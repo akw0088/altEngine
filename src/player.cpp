@@ -6,7 +6,7 @@
 #include <float.h>
 #include "quake3.h"
 
-char bot_state_name[16][32] = {
+const char Player::bot_state_name[16][32] = {
 	"BOT_IDLE",
 	"BOT_ALERT",
 	"BOT_ATTACK",
@@ -15,7 +15,7 @@ char bot_state_name[16][32] = {
 	"BOT_DEAD",
 };
 
-const char *models[23] = {
+const char *Player::models[23] = {
 	"anarki",			//0
 	"biker",			//1
 	"bitterman",		//2

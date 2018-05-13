@@ -4,43 +4,6 @@
 #define new DEBUG_NEW
 #endif
 
-#define BOT_ENABLE
-
-#define MACHINEGUN_DAMAGE 7
-#define MACHINEGUN_RELOAD 8
-
-#define GAUNTLET_DAMAGE 50
-#define GAUNTLET_RELOAD 40
-
-#define SHOTGUN_DAMAGE 10
-#define SHOTGUN_RELOAD 60
-
-#define GRENADE_DAMAGE 100
-#define GRENADE_SPLASH_DAMAGE 50
-#define GRENADE_RELOAD 100
-
-#define ROCKET_DAMAGE 100
-#define ROCKET_SPLASH_DAMAGE 50
-#define ROCKET_RELOAD 100
-
-#define PLASMA_DAMAGE 20
-#define PLASMA_SPLASH_DAMAGE 15
-#define PLASMA_RELOAD 8
-
-#define LIGHTNING_DAMAGE 8
-#define LIGHTNING_RELOAD 6
-
-#define RAILGUN_DAMAGE 100
-#define RAILGUN_RELOAD 188
-
-#define QUAD_FACTOR 3.0f
-
-#define GIB_HEALTH -40
-
-
-extern char bot_state_name[16][32];
-extern const char *models[23];
-
 #ifdef WIN32
 extern "C" __declspec(dllexport) BaseGame* __cdecl create_class()
 {
@@ -737,42 +700,42 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 	for (unsigned int i = 0; i < 23; i++)
 	{
-		sprintf(wave.file, "sound/player/%s/death1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/death1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/death2.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/death2.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 1] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/death3.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/death3.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 2] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/pain25_1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/pain25_1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 3] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/pain50_1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/pain50_1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 4] = snd_wave.size() - 1;
 
-		sprintf(wave.file, "sound/player/%s/pain75_1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/pain75_1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 5] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/pain100_1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/pain100_1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 6] = snd_wave.size() - 1;
@@ -826,12 +789,12 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 		snd_table[SND_PLAYER + i * 11 + 7] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/fall1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/fall1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 8] = snd_wave.size() - 1;
 
-		sprintf(wave.file, "sound/player/%s/falling1.wav", models[i]);
+		sprintf(wave.file, "sound/player/%s/falling1.wav", Player::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 9] = snd_wave.size() - 1;
@@ -5893,7 +5856,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 			if (engine->show_names)
 			{
-				sprintf(data, "Bot State %s", bot_state_name[entity->player->bot_state]);
+				sprintf(data, "Bot State %s", Player::bot_state_name[entity->player->bot_state]);
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red, false, false);
 
 				if (entity->player->bot_state == BOT_GET_ITEM)

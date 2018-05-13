@@ -143,6 +143,11 @@ public:
 	Model weapon_lightning;
 	Model weapon_railgun;
 	Model weapon_plasma;
+
+
+	static const char Player::bot_state_name[16][32];
+	static const char *Player::models[23];
+
 private:
 };
 

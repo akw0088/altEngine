@@ -5102,7 +5102,7 @@ int Engine::console_general(char *cmd)
 			current_model++;
 			if (current_model >= num_model)
 				current_model = 0;
-			sprintf(menu.data.model, "%s", models[current_model]);
+			sprintf(menu.data.model, "%s", Player::models[current_model]);
 
 			sprintf(menu.data.apply, "Apply");
 			return 0;
@@ -5112,7 +5112,7 @@ int Engine::console_general(char *cmd)
 			current_model--;
 			if (current_model < 0)
 				current_model = num_model - 1;
-			sprintf(menu.data.model, "%s", models[current_model]);
+			sprintf(menu.data.model, "%s", Player::models[current_model]);
 			return 0;
 		}
 		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "up"))
