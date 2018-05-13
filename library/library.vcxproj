@@ -84,6 +84,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ExceptionHandling>Sync</ExceptionHandling>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,13 +114,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Desktop\altEngine\library\include\base.h" />
-    <ClInclude Include="..\..\..\..\..\Desktop\altEngine\library\include\types.h" />
+    <ClCompile Include="..\src\sin_table.cpp" />
+    <ClCompile Include="..\src\vector.cpp" />
+    <ClCompile Include="src\quake3.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Desktop\altEngine\library\src\quake3.cpp" />
-    <ClCompile Include="..\..\..\..\..\Desktop\altEngine\src\sin_table.cpp" />
-    <ClCompile Include="..\..\..\..\..\Desktop\altEngine\src\vector.cpp" />
+    <ClInclude Include="include\base.h" />
+    <ClInclude Include="include\types.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

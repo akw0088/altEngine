@@ -63,3 +63,5 @@ public:
 	virtual void set_capturelimit(unsigned int limit) = 0;
 
 };
+
+
