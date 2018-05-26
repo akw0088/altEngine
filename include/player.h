@@ -145,8 +145,8 @@ public:
 	Model weapon_plasma;
 
 
-	static const char Player::bot_state_name[16][32];
-	static const char *Player::models[23];
+	static const char bot_state_name[16][32];
+	static const char *models[23];
 
 private:
 };
