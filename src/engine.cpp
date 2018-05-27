@@ -2953,6 +2953,7 @@ void Engine::spatial_testing()
 				else
 				{
 					clean_entity(i);
+					continue;
 				}
 			}
 			vec3 dist_vec = entity_list[i]->position - camera_frame.pos;
