@@ -2464,6 +2464,10 @@ void Quake3::player_died(int index)
 void Quake3::drop_weapon(int index)
 {
 	Entity *entity = engine->entity_list[index];
+
+	if (entity->player->current_weapon == wp_gauntlet)
+		return;
+
 	Entity *drop_weapon = engine->entity_list[engine->get_entity()];
 	char *weapon_str = NULL;
 
@@ -2509,6 +2513,11 @@ void Quake3::drop_weapon(int index)
 		weapon_str = "weapon_railgun";
 		drop_weapon->model->clone(entity->player->weapon_railgun);
 		drop_weapon->nettype = NET_RAILGUN;
+		break;
+	default:
+		weapon_str = "weapon_machinegun";
+		drop_weapon->model->clone(entity->player->weapon_machinegun);
+		drop_weapon->nettype = NET_MACHINEGUN;
 		break;
 	}
 
