@@ -167,7 +167,7 @@
 		28AC9A9A20BC9E5E00A19505 /* graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graph.cpp; path = ../src/graph.cpp; sourceTree = "<group>"; };
 		28AC9A9B20BC9E5E00A19505 /* junzip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = junzip.cpp; path = ../src/junzip.cpp; sourceTree = "<group>"; };
 		2D39CE331D8F595A00F8CBE6 /* EngineInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EngineInterface.h; sourceTree = "<group>"; };
-		2D752F3B1D8F476000AD1C5F /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = /Users/cpf596/temp/altEngine/src; sourceTree = "<absolute>"; };
+		2D752F3B1D8F476000AD1C5F /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = /Users/awright/altEngine/src; sourceTree = "<absolute>"; };
 		2D752F3F1D8F49AF00AD1C5F /* EngineInterface.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EngineInterface.mm; sourceTree = "<group>"; };
 		2D752F431D8F521500AD1C5F /* audio.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = audio.cpp; path = ../src/audio.cpp; sourceTree = "<group>"; };
 		2D752F491D8F521500AD1C5F /* engine.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = engine.cpp; path = ../src/engine.cpp; sourceTree = "<group>"; };
