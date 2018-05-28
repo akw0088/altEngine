@@ -183,8 +183,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	initialized = true;
 
 
+#ifndef __OBJC__
 	sprintf(voice.server, "%s", "127.0.0.1:65530");
-	srand((unsigned int)time(NULL));
+#endif
+    srand((unsigned int)time(NULL));
 
 	raw_mouse = false;
 	ssao_level = 1.0f;
@@ -352,9 +354,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 
 
+#ifndef __OBJC__
 	voice.init(audio, netcode.qport);
 	audio.capture_start();
-
+#endif
 	wave_t wave;
 	waveFormat_t format;
 	wave.format = &format;
@@ -3556,23 +3559,26 @@ void Engine::step(int tick)
 #endif
 
 	//network
-	netcode.sequence++;
+    netcode.sequence++;
 	if (netcode.server_flag && netcode.sequence)
 	{
 		while (netcode.server_recv());
 		netcode.server_send();
 
+#ifndef __OBJC__
 		while (voice.voice_send(audio, netcode.client_list, netcode.client_flag, netcode.server_flag));
 		while (voice.voice_recv(audio));
+#endif
 	}
 	else if (netcode.client_flag && netcode.sequence)
 	{
 		while (netcode.client_recv());
 		netcode.client_send(input, camera_frame);
+#ifndef __OBJC__
 		while (voice.voice_send(audio, netcode.client_list, netcode.client_flag, netcode.server_flag));
 		while (voice.voice_recv(audio));
+#endif
 	}
-
 
 	if (netcode.playing_demo)
 	{
@@ -4741,8 +4747,10 @@ void Engine::destroy()
 	printf("Destroying audio\n");
 	audio.capture_stop();
 	audio.destroy();
+#ifndef __OBJC__
 	voice.destroy();
-	printf("quit\n\n");
+#endif
+    printf("quit\n\n");
 	quit();
 }
 

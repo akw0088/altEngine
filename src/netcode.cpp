@@ -1396,8 +1396,9 @@ int Netcode::bind(int port)
 	}
 #endif
 
+#ifndef __OBJC__
 	engine->voice.bind(NULL, 65530);
-
+#endif
 	if (sock.bind(NULL, port) == 0)
 	{
 		client_flag = false;
@@ -1431,8 +1432,9 @@ void Netcode::connect(char *serverip)
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 
 
+#ifndef __OBJC__
 	engine->voice.bind(NULL, 65530);
-
+#endif
 	sock.connect(serverip, net_port);
 	debugf("Sending map request\n");
 	sock.send((char *)&clientmsg, clientmsg.length);
@@ -1445,8 +1447,10 @@ void Netcode::connect(char *serverip)
 		client_flag = true;
 		server_flag = false;
 		debugf("Connected\n");
+#ifndef __OBJC__
 		sprintf(engine->voice.server, "%s:65530", serverip);
-		reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
+#endif
+        reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
 		if (sscanf(reliablemsg->msg, "<map>%s</map>", level) == 1)
 		{
 			char *end = strstr(level, "</map>");

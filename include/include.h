@@ -5,7 +5,7 @@
 #define D3D_DEBUG_INFO
 
 #define SHADOWVOL
-
+#define OPENGL
 
 #define TICK_MS		8		// 125hz
 #define TICK_RATE	125

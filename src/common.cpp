@@ -10,7 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <stdarg.h> // for vargs
-#ifdef __linux__
+#ifndef WIN32
 #define stricmp strcasecmp
 #include <netdb.h>
 #endif
@@ -530,6 +530,7 @@ int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, v
 	long offset;
 	userdata_t *user = (userdata_t *)user_data;
 
+    
 	if (stricmp(filename, user->file) != 0)
 	{
 		return 1;

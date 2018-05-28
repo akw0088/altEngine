@@ -1,6 +1,8 @@
 #import <Foundation/Foundation.h>
 #import "EngineInterface.h"
 
+unsigned int com_maxfps;
+
 @implementation EngineInterface
 - (id)init
 {
@@ -18,12 +20,13 @@
 
 - (void)engine_init
 {
-    altEngine->init(NULL, NULL);
+    altEngine->init(NULL, NULL, NULL);
 }
 
 - (void)step
 {
-    altEngine->step();
+    static int tick_num;
+    altEngine->step(tick_num++);
 }
 
 - (void)resize:(int)x height:(int)y
@@ -44,7 +47,7 @@
 
 - (void)keystroke:(char)key
 {
-    altEngine->keystroke(key);
+    altEngine->keystroke(key, NULL);
 }
 
 - (void)mousepos:(int)xpos y:(bool)ypos deltax:(int)xd deltay:(int)yd;

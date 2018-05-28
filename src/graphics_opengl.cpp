@@ -28,7 +28,8 @@ Graphics::Graphics()
 #ifdef _WIN32
 	hwnd = 0;
 	hdc = 0;
-#else
+#endif
+#ifdef __linux__
 	display = NULL;
 	font = NULL;
 #endif
@@ -1016,13 +1017,17 @@ int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsign
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	if (multisample > 0)
 	{
+#ifndef __OBJC__
 		glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB16F, width, height, GL_TRUE);
-//		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB16F, width, height, GL_FALSE);
+#endif
+        //		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB16F, width, height, GL_FALSE);
 	}
 	else
 	{
+#ifndef __OBJC__
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB16F, width, height);
-		//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+#endif
+        //	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	}
 	glFramebufferTexture(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, quad_tex, 0);
 
@@ -1033,12 +1038,17 @@ int Graphics::CreateFramebuffer(int width, int height, unsigned int &fbo, unsign
 
 		if (multisample > 0)
 		{
+#ifndef __OBJC__
 			glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, multisample, GL_RGB32F, width, height, GL_TRUE);
-		}
+#endif
+        }
 		else
 		{
+#ifndef __OBJC__
 			glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, width, height);
-		}
+#endif
+            
+        }
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 

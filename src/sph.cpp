@@ -37,7 +37,7 @@ void Sph::init(int num_particle)
 		delete[] part;
 
 	// make points circles
-#ifdef OPENGL
+#ifdef OLDOPENGL
 	glEnable(GL_POINT_SMOOTH);
 #endif
 
@@ -337,7 +337,7 @@ inline float Sph::norm2(vec3 &a, vec3 &b)
 void Sph::render()
 {
 	last_rendered = last_calculated;
-#ifdef OPENGL
+#ifdef OLDOPENGL
 	// Draw Fluid Particles
 	glPointSize(10.0f);
 	glBegin(GL_POINTS);

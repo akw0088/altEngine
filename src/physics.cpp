@@ -4129,7 +4129,7 @@ void Cloth::Render()
 			int tr = z * clothSize + (x + 1);
 			int br = (z + 1) * clothSize + (x + 1);
 
-#ifdef OPENGL
+#ifdef OLDOPENGL
 			glBegin(GL_TRIANGLES);
 			glVertex3f(verts[tl].position.x, verts[tl].position.y, verts[tl].position.z);
 			glVertex3f(verts[br].position.x, verts[br].position.y, verts[br].position.z);
@@ -4173,7 +4173,7 @@ void DistanceJoint::Render()
 	l.b = pos2;
 
 	//render line
-#ifdef OPENGL
+#ifdef OLDOPENGL
 	glBegin(GL_LINES);
 	glVertex3f(l.a.x, l.a.y, l.a.z);
 	glVertex3f(l.b.x, l.b.y, l.b.z);
@@ -4271,7 +4271,7 @@ void PhysicsSystem::Render()
 		0.0f, 0.0f, 0.0f, 0.0f
 	};
 
-#ifdef OPENGL
+#ifdef OLDOPENGL
 	glColor3f(rigidbodyDiffuse[0], rigidbodyDiffuse[1], rigidbodyDiffuse[2]);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, rigidbodyAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, rigidbodyDiffuse);
@@ -4283,7 +4283,7 @@ void PhysicsSystem::Render()
 		bodies[i]->Render();
 	}
 
-#ifdef OPENGL
+#ifdef OLDOPENGL
 	glColor3f(constraintDiffuse[0], constraintDiffuse[1], constraintDiffuse[2]);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, constraintAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, constraintDiffuse);

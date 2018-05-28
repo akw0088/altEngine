@@ -323,9 +323,9 @@ protected:
 	vector<wave_t>		snd_wave;
 
 
-
+#ifndef __OBJC__
 	Voice voice;
-
+#endif
 	// pathfinding stuff
 	Graph		graph;
 	graph_node_t	*node;

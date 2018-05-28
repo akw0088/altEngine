@@ -24,9 +24,10 @@ public:
 
 	char server[128];
 private:
+#ifndef __OBJC__
 	OpusEncoder *encoder;
 	OpusDecoder *decoder;
-
+#endif
 	
 	Socket		sock;
 	unsigned short qport;
