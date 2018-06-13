@@ -530,7 +530,6 @@ int recordCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, v
 	long offset;
 	userdata_t *user = (userdata_t *)user_data;
 
-    
 	if (stricmp(filename, user->file) != 0)
 	{
 		return 1;
@@ -3170,4 +3169,57 @@ void close_lib(void *handle)
 #else
 	dlclose(handle);
 #endif
+}
+
+
+float CosineInterpolate(float y1, float y2, float mu)
+{
+	float mu2;
+
+	mu2 = (1 - cos(mu*M_PI)) / 2;
+	return(y1*(1 - mu2) + y2*mu2);
+}
+
+float CubicInterpolate(float y0, float y1, float y2, float y3, float mu)
+{
+	float a0, a1, a2, a3, mu2;
+
+	mu2 = mu*mu;
+	a0 = -0.5f * y0 + 1.5f * y1 - 1.5f * y2 + 0.5f * y3;
+	a1 = y0 - 2.5f * y1 + 2 * y2 - 0.5f * y3;
+	a2 = -0.5f * y0 + 0.5f * y2;
+	a3 = y1;
+
+	return(a0*mu*mu2 + a1*mu2 + a2*mu + a3);
+}
+
+float HermiteInterpolate(float y0, float y1, float y2, float y3,
+	float mu, float tension, float bias)
+{
+	float m0, m1, mu2, mu3;
+	float a0, a1, a2, a3;
+
+	mu2 = mu * mu;
+	mu3 = mu2 * mu;
+	m0 = (y1 - y0)*(1 + bias)*(1 - tension) / 2;
+	m0 += (y2 - y1)*(1 - bias)*(1 - tension) / 2;
+	m1 = (y2 - y1)*(1 + bias)*(1 - tension) / 2;
+	m1 += (y3 - y2)*(1 - bias)*(1 - tension) / 2;
+	a0 = 2 * mu3 - 3 * mu2 + 1;
+	a1 = mu3 - 2 * mu2 + mu;
+	a2 = mu3 - mu2;
+	a3 = -2 * mu3 + 3 * mu2;
+
+	return(a0*y1 + a1*m0 + a2*m1 + a3*y2);
+}
+
+
+vec3 HermiteInterp(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float t)
+{
+	vec3 result;
+
+	result.x = HermiteInterpolate(a.x, b.x, c.x, d.x, t, 0.0f, 0.0f);
+	result.y = HermiteInterpolate(a.y, b.y, c.y, d.y, t, 0.0f, 0.0f);
+	result.z = HermiteInterpolate(a.z, b.z, c.z, d.z, t, 0.0f, 0.0f);
+	return result;
 }
