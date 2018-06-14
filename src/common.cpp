@@ -3265,6 +3265,8 @@ vec3 para_spline(vec3 *output, vec3 *control, int num_control, int num_interp, f
 	int seg = t * num_control;
 	float nt = (t * num_control) - ((int)t % num_control);
 
+	t = clamp(t, 0.0f 1.0f);
+
 	if (seg == 0)
 	{
 		return HermiteInterp(control[0], control[0], control[1], control[2], nt);
