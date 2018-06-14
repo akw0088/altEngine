@@ -3225,51 +3225,36 @@ vec3 HermiteInterp(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float t)
 }
 
 
-#define NUM_CONTROL    6
-#define NUM_INTERP    100
-#define NUM_POINT (NUM_CONTROL - 1) * NUM_INTERP
 
-int generate_spline(vec3 *output, vec3 *control)
+int generate_spline(vec3 *output, vec3 *control, int num_control, int num_interp)
 {
 	unsigned int k = 0;
 
 	// plot beginning
-	for (int i = 0; i < NUM_INTERP; i++)
+	for (int i = 0; i < num_interp; i++)
 	{
-		float t = (float)i / NUM_INTERP;
-		vec3 r;
+		float t = (float)i / num_interp;
 
-		r = HermiteInterp(control[0], control[0], control[1], control[2], t);
-
-		output[k] = r;
-		k++;
+		output[k++] = HermiteInterp(control[0], control[0], control[1], control[2], t);
 	}
 
 	// plot middle
-	for (int j = 0; j < NUM_CONTROL - 3; j++)
+	for (int j = 0; j < num_control - 3; j++)
 	{
-		for (int i = 0; i < NUM_INTERP; i++)
+		for (int i = 0; i < num_interp; i++)
 		{
-			float t = (float)i / NUM_INTERP;
-			vec3 r;
+			float t = (float)i / num_interp;
 
-			r = HermiteInterp(control[j], control[j + 1], control[j + 2], control[j + 3], t);
-
-			output[k] = r;
-			k++;
+			output[k++] = HermiteInterp(control[j], control[j + 1], control[j + 2], control[j + 3], t);
 		}
 	}
 
 	//plot end
-	for (int i = 0; i < NUM_INTERP; i++)
+	for (int i = 0; i < num_interp; i++)
 	{
-		float t = (float)i / NUM_INTERP;
-		vec3 r;
+		float t = (float)i / num_interp;
 
-		r = HermiteInterp(control[NUM_CONTROL - 3], control[NUM_CONTROL - 2], control[NUM_CONTROL - 1], control[NUM_CONTROL - 1], t);
-
-		output[k] = r;
-		k++;
+		output[k++] = HermiteInterp(control[num_control - 3], control[num_control - 2], control[num_control - 1], control[num_control - 1], t);
 	}
 
 	return k;

@@ -4768,7 +4768,6 @@ int Engine::console_general(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
-	int port;
 	int ret;
 
 
@@ -5903,7 +5902,6 @@ int Engine::console_render(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
-	int port;
 	int ret;
 
 	ret = sscanf(cmd, "r_num_shadowmap %s", data);
@@ -6719,9 +6717,7 @@ int Engine::console_render(char *cmd)
 
 int Engine::console_sound(char *cmd)
 {
-	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
-	int port;
 	int ret;
 	float value = 1.0f;
 
@@ -6765,10 +6761,6 @@ int Engine::console_sound(char *cmd)
 
 void Engine::console(char *cmd)
 {
-	char msg[LINE_SIZE] = { 0 };
-	char data[LINE_SIZE] = { 0 };
-	int port;
-	int ret;
 
 	if (cmd == NULL)
 		return;
