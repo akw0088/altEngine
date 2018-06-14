@@ -3259,3 +3259,20 @@ int generate_spline(vec3 *output, vec3 *control, int num_control, int num_interp
 
 	return k;
 }
+
+vec3 para_spline(vec3 *output, vec3 *control, int num_control, int num_interp, float t)
+{
+	int seg = t * num_control;
+	float nt = (t * num_control) - ((int)t % num_control);
+
+	if (seg == 0)
+	{
+		return HermiteInterp(control[0], control[0], control[1], control[2], nt);
+	}
+	else if (seg < num_control - 1)
+	{
+		return HermiteInterp(control[seg - 1], control[seg], control[seg + 1], control[seg + 2], nt);
+	}
+
+	return HermiteInterp(control[num_control - 3], control[num_control - 2], control[num_control - 1], control[num_control - 1], nt);
+}
