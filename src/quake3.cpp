@@ -2607,7 +2607,21 @@ void Quake3::step(int frame_step)
 		}
 
 		int self = engine->find_type(ENT_PLAYER, 0);
-		engine->entity_list[self]->position = para_spline(control, num_control, 100, t);
+		engine->entity_list[self]->position = para_spline(control, num_control, t);
+		quaternion result;
+
+		int seg = t * (num_control - 1);
+		float nt = (t * (num_control - 1)) - ((int)(t * (num_control - 1)) % (num_control - 1));
+		quaternion::slerp(controlq[seg], controlq[seg + 1], nt, result);
+		engine->entity_list[self]->model->morientation = result.to_matrix();
+
+		engine->camera_frame.up.x = engine->entity_list[self]->model->morientation.m[3];
+		engine->camera_frame.up.y = engine->entity_list[self]->model->morientation.m[4];
+		engine->camera_frame.up.z = engine->entity_list[self]->model->morientation.m[5];
+		engine->camera_frame.forward.x = engine->entity_list[self]->model->morientation.m[6];
+		engine->camera_frame.forward.y = engine->entity_list[self]->model->morientation.m[7];
+		engine->camera_frame.forward.z = engine->entity_list[self]->model->morientation.m[8];
+
 		return;
 	}
 
@@ -6439,9 +6453,30 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		num_control = 5;
 		control[0] = engine->entity_list[self]->position;
 		control[1] = engine->entity_list[self]->position + vec3(0.0f, 150.0f, 200.0f);
-		control[2] = engine->entity_list[self]->position + vec3(100.0f, 300.0f, 400.0f);
-		control[3] = engine->entity_list[self]->position + vec3(300.0f, 500.0f, 600.0f);
+		control[2] = engine->entity_list[self]->position + vec3(-200.0f, 300.0f, 400.0f);
+		control[3] = engine->entity_list[self]->position + vec3(100.0f, 500.0f, 600.0f);
 		control[4] = engine->entity_list[self]->position + vec3(200.0f, 150.0f, 800.0f);
+
+		matrix4 matf;
+		matrix4::mat_backward(matf, vec3());
+		matrix3 mf;
+		mf.matrix4to3(matf);
+
+		matrix4 matl;
+		matrix4::mat_left(matl, vec3());
+		matrix3 ml;
+		ml.matrix4to3(matl);
+
+		matrix4 matr;
+		matrix4::mat_right(matr, vec3());
+		matrix3 mr;
+		mr.matrix4to3(matr);
+
+		controlq[0].to_quat(mf);
+		controlq[1].to_quat(ml);
+		controlq[2].to_quat(mf);
+		controlq[3].to_quat(mr);
+		controlq[4].to_quat(mf);
 	}
 
 

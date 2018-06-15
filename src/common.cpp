@@ -3260,7 +3260,7 @@ int generate_spline(vec3 *output, vec3 *control, int num_control, int num_interp
 	return k;
 }
 
-vec3 para_spline(vec3 *control, int num_control, int num_interp, float t)
+vec3 para_spline(vec3 *control, int num_control, float t)
 {
 	int seg = t * (num_control - 1);
 

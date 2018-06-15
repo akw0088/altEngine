@@ -159,6 +159,7 @@ private:
 	bool faceicon;
 	bool flyby;
 	vec3 control[5];
+	quaternion controlq[5];
 	int num_control;
 
 //	unsigned int		timelimit;
