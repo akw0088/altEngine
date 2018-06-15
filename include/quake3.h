@@ -157,7 +157,9 @@ private:
 	bool warmup;
 	bool hold_fire;
 	bool faceicon;
-
+	bool flyby;
+	vec3 control[5];
+	int num_control;
 
 //	unsigned int		timelimit;
 	unsigned int		round_time;

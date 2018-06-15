@@ -40,8 +40,6 @@ void quadratic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, float time, vec3 &out);
 void cubic_bezier_curve(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float time, vec3 &out);
 void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
-void tessellate_quadratic_bezier_surface(vec3 *control, vertex_t *&vertex, int *&index, int &num_vertex, int &num_index, float level);
-void CreateSphere(int sides, float radius, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index, bool invert);
 void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index, int &skybox_vertex, int &skybox_index, bool sphere);
 void print_entity_meminfo(vector<Entity *> &entity_list);
 
@@ -84,6 +82,7 @@ void pid_controller(const vec3 &target, const float timestep, const vec3 &pos, v
 
 void init_pid(pid_state_t *pid);
 void update_pid(pid_state_t *pid, const vec3 &target, const vec3 &position, vec3 &output);
+vec3 para_spline(vec3 *control, int num_control, int num_interp, float t);
 
 int auto_complete(const char *a, const char *b);
 

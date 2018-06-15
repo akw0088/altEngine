@@ -28,6 +28,7 @@ Quake3::Quake3()
 	chat_timer = 0;
 	engine = NULL;
 	spectator = false;
+	flyby = false;
 
 	engine = NULL;
 	blink = false;
@@ -2465,11 +2466,11 @@ void Quake3::drop_weapon(int index)
 {
 	Entity *entity = engine->entity_list[index];
 
-	if (entity->player->current_weapon == wp_gauntlet)
-		return;
+	if (entity->player->current_weapon == wp_gauntlet)		return;
 
 	Entity *drop_weapon = engine->entity_list[engine->get_entity()];
 	char *weapon_str = NULL;
+
 
 
 	drop_weapon->rigid = new RigidBody(drop_weapon);
@@ -2515,10 +2516,7 @@ void Quake3::drop_weapon(int index)
 		drop_weapon->nettype = NET_RAILGUN;
 		break;
 	default:
-		weapon_str = "weapon_machinegun";
-		drop_weapon->model->clone(entity->player->weapon_machinegun);
-		drop_weapon->nettype = NET_MACHINEGUN;
-		break;
+		weapon_str = "weapon_machinegun";		drop_weapon->model->clone(entity->player->weapon_machinegun);		drop_weapon->nettype = NET_MACHINEGUN;		break;
 	}
 
 	// it will have the players view direction, resetting
@@ -2595,6 +2593,23 @@ void Quake3::step(int frame_step)
 
 	if (engine->entity_list.size() == 0)
 		return;
+
+	if (flyby)
+	{
+		static float t = 0.0f;
+
+		t += 0.001f;
+
+		if (t >= 1.0f)
+		{
+			t = 0.0f;
+			flyby = false;
+		}
+
+		int self = engine->find_type(ENT_PLAYER, 0);
+		engine->entity_list[self]->position = para_spline(control, num_control, 100, t);
+		return;
+	}
 
 	if (frame_step % TICK_RATE == 0)
 	{
@@ -6416,6 +6431,19 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		return;
 	}
+
+	if (strstr(cmd, "flyby"))
+	{
+		flyby = true;
+
+		num_control = 5;
+		control[0] = engine->entity_list[self]->position;
+		control[1] = engine->entity_list[self]->position + vec3(0.0f, 150.0f, 200.0f);
+		control[2] = engine->entity_list[self]->position + vec3(100.0f, 300.0f, 400.0f);
+		control[3] = engine->entity_list[self]->position + vec3(300.0f, 500.0f, 600.0f);
+		control[4] = engine->entity_list[self]->position + vec3(200.0f, 150.0f, 800.0f);
+	}
+
 
 	ret = sscanf(cmd, "armor %s", data);
 	if (ret == 1)
