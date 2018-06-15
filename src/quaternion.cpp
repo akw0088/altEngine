@@ -287,6 +287,14 @@ void quaternion::slerp(const quaternion &p, const quaternion &q, float time, qua
 		return;
 	}
 
+	float dot = p.x * q.x + p.y * q.y + p.z * q.z + p.s * q.s;
+	if (dot < 0.0f)
+	{
+		// prevent taking long way around
+		slerp(p * -1.0f, q, time, result);
+		return;
+	}
+
 	float cos_omega = p.s * q.s + p.x * q.x + p.y * q.y + p.z * q.z;
 	quaternion temp = q;
 	
