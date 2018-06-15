@@ -2604,23 +2604,25 @@ void Quake3::step(int frame_step)
 		{
 			t = 0.0f;
 			flyby = false;
+			if (spectator)
+				engine->console("spectate");
 		}
 
-		int self = engine->find_type(ENT_PLAYER, 0);
-		engine->entity_list[self]->position = para_spline(control, num_control, t);
+		vec3 pos = para_spline(control, num_control, t);
 		quaternion result;
 
 		int seg = t * (num_control - 1);
 		float nt = (t * (num_control - 1)) - ((int)(t * (num_control - 1)) % (num_control - 1));
 		quaternion::slerp(controlq[seg], controlq[seg + 1], nt, result);
-		engine->entity_list[self]->model->morientation = result.to_matrix();
+		matrix3 orientation = result.to_matrix();
 
-		engine->camera_frame.up.x = engine->entity_list[self]->model->morientation.m[3];
-		engine->camera_frame.up.y = engine->entity_list[self]->model->morientation.m[4];
-		engine->camera_frame.up.z = engine->entity_list[self]->model->morientation.m[5];
-		engine->camera_frame.forward.x = engine->entity_list[self]->model->morientation.m[6];
-		engine->camera_frame.forward.y = engine->entity_list[self]->model->morientation.m[7];
-		engine->camera_frame.forward.z = engine->entity_list[self]->model->morientation.m[8];
+		engine->camera_frame.up.x = orientation.m[3];
+		engine->camera_frame.up.y = orientation.m[4];
+		engine->camera_frame.up.z = orientation.m[5];
+		engine->camera_frame.forward.x = orientation.m[6];
+		engine->camera_frame.forward.y = orientation.m[7];
+		engine->camera_frame.forward.z = orientation.m[8];
+		engine->camera_frame.pos = pos;
 
 		return;
 	}
@@ -6450,15 +6452,22 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		flyby = true;
 
-		num_control = 5;
-		control[0] = engine->entity_list[self]->position;
-		control[1] = engine->entity_list[self]->position + vec3(0.0f, 150.0f, 200.0f);
-		control[2] = engine->entity_list[self]->position + vec3(-200.0f, 300.0f, 400.0f);
-		control[3] = engine->entity_list[self]->position + vec3(100.0f, 500.0f, 600.0f);
-		control[4] = engine->entity_list[self]->position + vec3(200.0f, 150.0f, 800.0f);
+		if (spectator == false)
+			engine->console("spectate");
 
+
+		num_control = 5;
+
+		if (self != -1)
+		{
+			control[0] = engine->camera_frame.pos;
+			control[1] = engine->camera_frame.pos + vec3(0.0f, 50.0f, 200.0f);
+			control[2] = engine->camera_frame.pos + vec3(-200.0f, 30.0f, 400.0f);
+			control[3] = engine->camera_frame.pos + vec3(100.0f, 50.0f, 600.0f);
+			control[4] = engine->camera_frame.pos + vec3(200.0f, 15.0f, 800.0f);
+		}
 		matrix4 matf;
-		matrix4::mat_backward(matf, vec3());
+		matrix4::mat_forward(matf, vec3());
 		matrix3 mf;
 		mf.matrix4to3(matf);
 
