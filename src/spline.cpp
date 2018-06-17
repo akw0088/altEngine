@@ -55,12 +55,17 @@ void Spline::step(Frame &camera_frame, float t)
 	quaternion::slerp(controlq[seg], controlq[seg + 1], nt, result);
 	matrix3 orientation = result.to_matrix();
 
-	camera_frame.up.x = orientation.m[3];
-	camera_frame.up.y = orientation.m[4];
-	camera_frame.up.z = orientation.m[5];
-	camera_frame.forward.x = orientation.m[6];
-	camera_frame.forward.y = orientation.m[7];
-	camera_frame.forward.z = orientation.m[8];
+	if (isnan(orientation.m[0] * orientation.m[1] * orientation.m[2] *
+		orientation.m[3] * orientation.m[4] * orientation.m[5] *
+		orientation.m[6] * orientation.m[7] * orientation.m[8]) == false)
+	{
+		camera_frame.up.x = orientation.m[3];
+		camera_frame.up.y = orientation.m[4];
+		camera_frame.up.z = orientation.m[5];
+		camera_frame.forward.x = orientation.m[6];
+		camera_frame.forward.y = orientation.m[7];
+		camera_frame.forward.z = orientation.m[8];
+	}
 	camera_frame.pos = pos;
 }
 

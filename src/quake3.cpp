@@ -2598,7 +2598,7 @@ void Quake3::step(int frame_step)
 	{
 		static float t = 0.0f;
 
-		t += 0.001f;
+		t += 0.0005f;
 
 		if (t >= 1.0f)
 		{
