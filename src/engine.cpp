@@ -832,6 +832,8 @@ void Engine::load(char *level)
 	{
 		netcode.report_master();
 	}
+
+	console("flyby");
 }
 
 void Engine::load_md5()

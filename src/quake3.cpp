@@ -2598,6 +2598,13 @@ void Quake3::step(int frame_step)
 	{
 		static float t = 0.0f;
 
+		if (engine->input.attack)
+		{
+			flyby = false;
+			if (spectator == true)
+				engine->console("spectate");
+
+		}
 		t += 0.0005f;
 
 		if (t >= 1.0f)
