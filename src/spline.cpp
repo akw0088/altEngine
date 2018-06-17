@@ -18,19 +18,19 @@ void Spline::load(char *file)
 	newlinelist(file, list, num_spline, &fp);
 
 	unsigned int j = 0;
-	for (int i = 0; i < num_spline; i++)
+	for (unsigned int i = 0; i < num_spline; i++)
 	{
 		quaternion q;
 		vec3 pos;
 
-		if (7 != sscanf(list[i], "pos [%X, %X, %X] quat [%X, i %X, j %X, k %X]",
-			(unsigned int *)&pos.x,
-			(unsigned int *)&pos.y,
-			(unsigned int *)&pos.z,
-			(unsigned int *)&q.s,
-			(unsigned int *)&q.x,
-			(unsigned int *)&q.y,
-			(unsigned int *)&q.z))
+		if (7 != sscanf(list[i], "pos [%f, %f, %f] quat [%f, i %f, j %f, k %f]",
+			&pos.x,
+			&pos.y,
+			&pos.z,
+			&q.s,
+			&q.x,
+			&q.y,
+			&q.z))
 		{
 			debugf("parse spline failed\r\n");
 			break;
@@ -50,7 +50,7 @@ void Spline::step(Frame &camera_frame, float t)
 	vec3 pos = para_spline(control, num_control, t);
 	quaternion result;
 
-	int seg = t * (num_control - 1);
+	int seg = (int)(t * (num_control - 1));
 	float nt = (t * (num_control - 1)) - ((int)(t * (num_control - 1)) % (num_control - 1));
 	quaternion::slerp(controlq[seg], controlq[seg + 1], nt, result);
 	matrix3 orientation = result.to_matrix();
@@ -98,7 +98,7 @@ vec3 Spline::HermiteInterp(vec3 &a, vec3 &b, vec3 &c, vec3 &d, float t)
 
 vec3 Spline::para_spline(vec3 *control, int num_control, float t)
 {
-	int seg = t * (num_control - 1);
+	int seg = (int)(t * (num_control - 1));
 
 	t = clamp(t, 0.0f, 1.0f);
 	float nt = (t * (num_control - 1)) - ((int)(t * (num_control - 1)) % (num_control - 1));

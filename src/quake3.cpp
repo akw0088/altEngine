@@ -96,13 +96,6 @@ void Quake3::load(gametype_t type)
 
 	sprintf(cmd, "name \"%s\"", engine->menu.data.name);
 	engine->console(cmd);
-
-
-
-	char file[128];
-
-	sprintf(file, "%s.spline", "q3tourney2.bsp");
-	spline.load(file);
 }
 
 void Quake3::unload()
@@ -2611,6 +2604,9 @@ void Quake3::step(int frame_step)
 		{
 			t = 0.0f;
 			flyby = false;
+
+			if (spectator == true)
+				engine->console("spectate");
 		}
 
 		spline.step(engine->camera_frame, t);
@@ -6441,6 +6437,13 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (strstr(cmd, "flyby"))
 	{
 		flyby = true;
+		char file[128];
+
+		if (spectator == false)
+			engine->console("spectate");
+
+		sprintf(file, "media/%s.spline", engine->q3map.map_name);
+		spline.load(file);
 		return;
 	}
 

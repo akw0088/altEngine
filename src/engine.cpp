@@ -5331,32 +5331,33 @@ int Engine::console_general(char *cmd)
 	if (strcmp(cmd, "quat") == 0)
 	{
 		matrix3 mat;
-		vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
+		vec3 right = vec3::crossproduct(camera_frame.up, camera_frame.forward);
 
 		mat.m[0] = right.x;
 		mat.m[1] = right.y;
 		mat.m[2] = right.z;
 
-		mat.m[3] = camera_frame.forward.x;
-		mat.m[4] = camera_frame.forward.y;
-		mat.m[5] = camera_frame.forward.z;
+		mat.m[3] = camera_frame.up.x;
+		mat.m[4] = camera_frame.up.y;
+		mat.m[5] = camera_frame.up.z;
 
-		mat.m[6] = camera_frame.up.x;
-		mat.m[7] = camera_frame.up.y;
-		mat.m[8] = camera_frame.up.z;
+		mat.m[6] = camera_frame.forward.x;
+		mat.m[7] = camera_frame.forward.y;
+		mat.m[8] = camera_frame.forward.z;
+
 
 		quaternion q;
 
 		q.to_quat(mat);
 
-		snprintf(msg, LINE_SIZE, "pos [%08X, %08X, %08X] quat [%X08, i %08X, j %08X, k %08X]\n",
-			(unsigned int)q.s,
-			(unsigned int)q.x,
-			(unsigned int)q.y,
-			(unsigned int)q.z,
-			(unsigned int)camera_frame.pos.x,
-			(unsigned int)camera_frame.pos.y,
-			(unsigned int)camera_frame.pos.z
+		snprintf(msg, LINE_SIZE, "pos [%f, %f, %f] quat [%f, i %f, j %f, k %f]\n",
+			camera_frame.pos.x,
+			camera_frame.pos.y,
+			camera_frame.pos.z,
+			q.s,
+			q.x,
+			q.y,
+			q.z
 		);
 		debugf(msg);
 		return 0;
