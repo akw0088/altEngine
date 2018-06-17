@@ -158,9 +158,7 @@ private:
 	bool hold_fire;
 	bool faceicon;
 	bool flyby;
-	vec3 control[5];
-	quaternion controlq[5];
-	int num_control;
+	Spline spline;
 
 //	unsigned int		timelimit;
 	unsigned int		round_time;

@@ -6,6 +6,7 @@
 
 #define SHADOWVOL
 
+
 #define TICK_MS		8		// 125hz
 #define TICK_RATE	125
 //#define TICK_MS 16		// 62.5hz
@@ -407,6 +408,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "light.h"
 #include "portal_camera.h"
 #include "speaker.h"
+#include "spline.h"
 #include "model.h"
 #include "md5model.h"
 #include "rigidbody.h"

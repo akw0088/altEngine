@@ -96,6 +96,13 @@ void Quake3::load(gametype_t type)
 
 	sprintf(cmd, "name \"%s\"", engine->menu.data.name);
 	engine->console(cmd);
+
+
+
+	char file[128];
+
+	sprintf(file, "%s.spline", "q3tourney2.bsp");
+	spline.load(file);
 }
 
 void Quake3::unload()
@@ -2604,26 +2611,9 @@ void Quake3::step(int frame_step)
 		{
 			t = 0.0f;
 			flyby = false;
-			if (spectator)
-				engine->console("spectate");
 		}
 
-		vec3 pos = para_spline(control, num_control, t);
-		quaternion result;
-
-		int seg = t * (num_control - 1);
-		float nt = (t * (num_control - 1)) - ((int)(t * (num_control - 1)) % (num_control - 1));
-		quaternion::slerp(controlq[seg], controlq[seg + 1], nt, result);
-		matrix3 orientation = result.to_matrix();
-
-		engine->camera_frame.up.x = orientation.m[3];
-		engine->camera_frame.up.y = orientation.m[4];
-		engine->camera_frame.up.z = orientation.m[5];
-		engine->camera_frame.forward.x = orientation.m[6];
-		engine->camera_frame.forward.y = orientation.m[7];
-		engine->camera_frame.forward.z = orientation.m[8];
-		engine->camera_frame.pos = pos;
-
+		spline.step(engine->camera_frame, t);
 		return;
 	}
 
@@ -6451,41 +6441,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (strstr(cmd, "flyby"))
 	{
 		flyby = true;
-
-		if (spectator == false)
-			engine->console("spectate");
-
-
-		num_control = 5;
-
-		if (self != -1)
-		{
-			control[0] = engine->camera_frame.pos;
-			control[1] = engine->camera_frame.pos + vec3(0.0f, 50.0f, 200.0f);
-			control[2] = engine->camera_frame.pos + vec3(-200.0f, 30.0f, 400.0f);
-			control[3] = engine->camera_frame.pos + vec3(100.0f, 50.0f, 600.0f);
-			control[4] = engine->camera_frame.pos + vec3(200.0f, 15.0f, 800.0f);
-		}
-		matrix4 matf;
-		matrix4::mat_forward(matf, vec3());
-		matrix3 mf;
-		mf.matrix4to3(matf);
-
-		matrix4 matl;
-		matrix4::mat_left(matl, vec3());
-		matrix3 ml;
-		ml.matrix4to3(matl);
-
-		matrix4 matr;
-		matrix4::mat_right(matr, vec3());
-		matrix3 mr;
-		mr.matrix4to3(matr);
-
-		controlq[0].to_quat(mf);
-		controlq[1].to_quat(ml);
-		controlq[2].to_quat(mf);
-		controlq[3].to_quat(mr);
-		controlq[4].to_quat(mf);
+		return;
 	}
 
 

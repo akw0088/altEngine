@@ -5328,6 +5328,41 @@ int Engine::console_general(char *cmd)
 		return 0;
 	}
 
+	if (strcmp(cmd, "quat") == 0)
+	{
+		matrix3 mat;
+		vec3 right = vec3::crossproduct(camera_frame.forward, camera_frame.up);
+
+		mat.m[0] = right.x;
+		mat.m[1] = right.y;
+		mat.m[2] = right.z;
+
+		mat.m[3] = camera_frame.forward.x;
+		mat.m[4] = camera_frame.forward.y;
+		mat.m[5] = camera_frame.forward.z;
+
+		mat.m[6] = camera_frame.up.x;
+		mat.m[7] = camera_frame.up.y;
+		mat.m[8] = camera_frame.up.z;
+
+		quaternion q;
+
+		q.to_quat(mat);
+
+		snprintf(msg, LINE_SIZE, "pos [%08X, %08X, %08X] quat [%X08, i %08X, j %08X, k %08X]\n",
+			(unsigned int)q.s,
+			(unsigned int)q.x,
+			(unsigned int)q.y,
+			(unsigned int)q.z,
+			(unsigned int)camera_frame.pos.x,
+			(unsigned int)camera_frame.pos.y,
+			(unsigned int)camera_frame.pos.z
+		);
+		debugf(msg);
+		return 0;
+	}
+
+
 	if (strstr(cmd, "talk"))
 	{
 		menu.chatmode = true;
