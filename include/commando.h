@@ -118,7 +118,7 @@ public:
 	void handle_gibs(Player &player);
 	void create_crosshair();
 	void draw_crosshair();
-	void draw_flash(Player &player);
+	void draw_flash(Player *player);
 
 
 	void create_icon();
@@ -137,7 +137,7 @@ public:
 	int bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale);
 
 	void load(gametype_t gametype);
-	void setup_func(vector<Entity *> &entity_list, Bsp &q3map);
+	void setup_func(vector<Entity *> &entity_list, Bsp *q3map);
 	void unload();
 	void init_camera(vector<Entity *> &entity_list);
 	void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list);
