@@ -171,6 +171,14 @@ public:
 	XFontStruct	*font;
 #endif
 #endif
+#ifdef SOFTWARE
+	HDC	hdcMem;
+	POINT	center;
+	HBITMAP	hBitmap;
+	HGDIOBJ hObject;
+	BITMAP	bitmap;
+	int	*data;
+#endif
 
 #ifdef DIRECTX
 #ifdef D3D11

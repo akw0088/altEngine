@@ -462,7 +462,9 @@ void HLBsp::load_lightmap(Graphics &gfx)
 		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
 #ifndef DEDICATED
 #ifndef VULKAN //GL_RGBA not defined
+#ifndef SOFTWARE
 		lightmap_object[i] = gfx.LoadTexture(width, height, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
+#endif
 #endif
 #endif
 
