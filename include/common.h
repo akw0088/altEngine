@@ -110,4 +110,6 @@ inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
 	out = a * (1 - time) + b * time;
 }
 
+void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float scale, vertex_t *vertex, unsigned int &num_vertex, int *index, unsigned int &num_index, bool invert, int &vbo, int &ibo);
+
 #endif

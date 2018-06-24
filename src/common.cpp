@@ -3281,3 +3281,103 @@ vec3 para_spline(vec3 *control, int num_control, float t)
 		return HermiteInterp(control[num_control - 3], control[num_control - 2], control[num_control - 1], control[num_control - 1], nt);
 	}
 }
+
+void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float scale, vertex_t *vertex, unsigned int &num_vertex, int *index, unsigned int &num_index, bool invert, int &vbo, int &ibo)
+{
+	float s, t, x, y, z;
+	float twopi = 2 * M_PI;
+
+	for (int i = 0; i < numc; i++)
+	{
+		for (int j = 0; j <= numt; j++)
+		{
+			for (int k = 1; k >= 0; k--)
+			{
+				s = (i + k) % numc + 0.5f;
+				t = j % numt;
+
+
+				x = (r1 + r2 * cos(s  * twopi / numc)) * cos(t * twopi / numt);
+				y = (r1 + r2 * cos(s * twopi / numc)) * sin(t * twopi / numt);
+				z = r2 * sin(s * twopi / numc);
+
+				float u = (i + k) / (float)numc;
+				float v = t / (float)numt;
+				vertex[num_vertex].position = vec3(x * scale, y * scale, z * scale);
+				vertex[num_vertex].texCoord0 = vec2(u, v);
+				vertex[num_vertex].texCoord1 = vec2(u, v);
+				num_vertex++;
+			}
+		}
+	}
+
+
+	unsigned int j = 0;
+	for (unsigned int i = 0; i < num_vertex; i += 2)
+	{
+		// read quad strip, generate two triangles
+		if (i == 0)
+		{
+			if (invert == false)
+			{
+				index[j + 0] = i + 2;
+				index[j + 1] = i + 1;
+				index[j + 2] = i + 0;
+
+				index[j + 3] = i + 1;
+				index[j + 4] = i + 2;
+				index[j + 5] = i + 3;
+			}
+			else
+			{
+				index[j + 2] = i + 2;
+				index[j + 1] = i + 1;
+				index[j + 0] = i + 0;
+
+				index[j + 5] = i + 1;
+				index[j + 4] = i + 2;
+				index[j + 3] = i + 3;
+			}
+			j += 6;
+			i += 2;
+		}
+		else
+		{
+			if (invert == false)
+			{
+				index[j + 0] = i + 0;
+				index[j + 1] = i - 1;
+				index[j + 2] = i - 2;
+
+				index[j + 3] = i - 1;
+				index[j + 4] = i + 0;
+				index[j + 5] = i + 1;
+			}
+			else
+			{
+				index[j + 2] = i + 0;
+				index[j + 1] = i - 1;
+				index[j + 0] = i - 2;
+
+				index[j + 5] = i - 1;
+				index[j + 4] = i + 0;
+				index[j + 3] = i + 1;
+			}
+			j += 6;
+		}
+	}
+	num_index = j;
+
+	// calc normals
+	for (int i = 0; i < num_index; i+=3)
+	{
+		vec3 a = vertex[index[i+1]].position - vertex[index[i]].position;
+		vec3 b = vertex[index[i+2]].position - vertex[index[i]].position;
+		vertex[index[i]].normal = vec3::crossproduct(a, b);
+		vertex[index[i+1]].normal = vec3::crossproduct(a, b);
+		vertex[index[i+2]].normal = vec3::crossproduct(a, b);
+	}
+
+	ibo = gfx.CreateIndexBuffer(index, num_index);
+	vbo = gfx.CreateVertexBuffer(vertex, num_vertex);
+}
