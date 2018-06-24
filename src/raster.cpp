@@ -6,16 +6,18 @@
 
 void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, int start_index, int start_vertex, int num_index, int num_verts)
 {
-	for (int i = start_index; i < num_index; i++)
+	for (int i = start_index; i < num_index; i += 3)
 	{
 		vec3 v1 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
-		vec3 v2 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
-		vec3 v3 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
+		vec3 v2 = mvp * vec4(vertex_array[index_array[i+1]].position, 1.0f);
+		vec3 v3 = mvp * vec4(vertex_array[index_array[i+2]].position, 1.0f);
 
 		if (width == 1 || height == 1)
 			break;
 
-		if (v1.x < 0 || v1.y < 0 || v1.z < 0 || v2.x < 0 || v2.y < 0 || v2.z < 0 || v3.x < 0 || v3.y < 0 || v3.z < 0 )
+		if (v1.x < 0 || v1.y < 0 || v2.x < 0 || v2.y < 0 || v3.x < 0 || v3.y < 0)
+			continue;
+		if (v1.x > width || v1.y > height || v2.x > width || v2.y > height || v3.x > height || v3.y > width)
 			continue;
 		barycentric_triangle(pixels, width, height, v1.x, v1.y, v1.z, RGB(255, 0, 0), v2.x, v2.y, v2.z, RGB(255, 0, 0), v3.x, v3.y, v3.z, RGB(255, 0, 0));
 	}
@@ -26,7 +28,7 @@ inline void draw_pixel(int *pixels, int width, int height, int x, int y, int z, 
 {
 	//	if (zbuffer[x + y * width] < -z)
 	{
-		pixels[x + y * width] = color;
+		pixels[x + ((height - 1 - y) * width)] = color;
 		//		zbuffer[x + y * width] = -z;
 	}
 }
