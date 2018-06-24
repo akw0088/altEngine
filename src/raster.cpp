@@ -315,3 +315,82 @@ void barycentric_triangle(int *pixels, int width, int height, int x1, int y1, in
 	}
 }
 
+void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, long &xint, long &yint)
+{
+	int num = (x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4);
+	int den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+	xint = num / den;
+	num = (x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4);
+	yint = num / den;
+}
+
+void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
+{
+	POINT new_points[512];
+	int new_num_point = 0;
+
+	for (int i = 0; i < num_point; i++)
+	{
+		// get a line from two points (a,b)
+		int k = (i + 1);
+		if (k == num_point)
+			k = 0;
+
+		int ax = points[i].x;
+		int ay = points[i].y;
+		int bx = points[k].x;
+		int by = points[k].y;
+
+		// test points against clip line
+		int a_pos = (x2 - x1) * (ay - y1) - (y2 - y1) * (ax - x1);
+		int b_pos = (x2 - x1) * (by - y1) - (y2 - y1) * (bx - x1);
+
+		// both points are inside
+		if (a_pos < 0 && b_pos < 0)
+		{
+			// add b
+			new_points[new_num_point].x = bx;
+			new_points[new_num_point].y = by;
+			new_num_point++;
+		}
+
+		// a is outside
+		else if (a_pos >= 0 && b_pos < 0)
+		{
+			// add intersection with edge and b
+			line_intersect(x1, y1, x2, y2, ax, ay, bx, by, new_points[new_num_point].x, new_points[new_num_point].y);
+			new_num_point++;
+
+			new_points[new_num_point].x = bx;
+			new_points[new_num_point].y = by;
+			new_num_point++;
+		}
+
+		// b is outside
+		else if (a_pos < 0 && b_pos >= 0)
+		{
+			// add intersection with edge
+			line_intersect(x1, y1, x2, y2, ax, ay, bx, by, new_points[new_num_point].x, new_points[new_num_point].y);
+			new_num_point++;
+		}
+
+		// both points outside, clipped
+	}
+
+	// Copy new points into array
+	num_point = new_num_point;
+	for (int i = 0; i < num_point; i++)
+	{
+		points[i].x = new_points[i].x;
+		points[i].y = new_points[i].y;
+	}
+}
+
+int clip2d_sutherland_hodgman(int width, int height, POINT *points, int &num_point)
+{
+	clip_line(points, num_point, 0, 0, 0, height);
+	clip_line(points, num_point, 0, height, width, height);
+	clip_line(points, num_point, width, height, width, 0);
+	clip_line(points, num_point, width, 0, 0, 0);
+	return 0;
+}
