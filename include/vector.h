@@ -13,7 +13,10 @@ public:
 	float magnitude();
 	vec4 &normalize();
 
+
+	vec4 &operator*=(const vec4 &vec);
 	vec4 &operator*=(const float scalar);
+	vec4 &operator/=(const float scalar);
 	vec4 &operator+=(const vec4 &vec);
 	vec4 &operator+=(const float scalar);
 

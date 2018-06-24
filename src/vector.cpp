@@ -56,6 +56,27 @@ vec4 &vec4::operator*=(const float scalar)
 	return *this;
 }
 
+vec4 &vec4::operator/=(const float scalar)
+{
+	if (scalar == 0)
+		return *this;
+
+	x /= scalar;
+	y /= scalar;
+	z /= scalar;
+	w /= scalar;
+	return *this;
+}
+
+vec4 &vec4::operator*=(const vec4 &vec)
+{
+	x *= vec.x;
+	y *= vec.y;
+	z *= vec.z;
+	w *= vec.w;
+	return *this;
+}
+
 vec4 &vec4::operator+=(const vec4 &vec)
 {
 	x += vec.x;

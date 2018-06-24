@@ -8,28 +8,69 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 {
 	for (int i = start_index; i < num_index; i += 3)
 	{
-		vec3 v1 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
-		vec3 v2 = mvp * vec4(vertex_array[index_array[i+1]].position, 1.0f);
-		vec3 v3 = mvp * vec4(vertex_array[index_array[i+2]].position, 1.0f);
+		vec4 v1 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
+		vec4 v2 = mvp * vec4(vertex_array[index_array[i+1]].position, 1.0f);
+		vec4 v3 = mvp * vec4(vertex_array[index_array[i+2]].position, 1.0f);
 
 		if (width == 1 || height == 1)
 			break;
 
+		// backface cull
+		vec3 a = vec3(v2) - vec3(v1);
+		vec3 b = vec3(v3) - vec3(v1);
+		if (vec3::crossproduct(a,b) * vec3(0, 0, -1) > 0)
+			continue;
+
+		// perspective divide
+		v1 /= v1.w;
+		v2 /= v2.w;
+		v3 /= v3.w;
+
+		// [-1,1] -> [0,1]
+		v1 *= 0.5f;
+		v2 *= 0.5f;
+		v3 *= 0.5f;
+
+		v1 += 0.5f;
+		v2 += 0.5f;
+		v3 += 0.5f;
+
+		//[0,1] -> [0,width]
+		v1 *= vec4(width, height, 1, 1);
+		v2 *= vec4(width, height, 1, 1);
+		v3 *= vec4(width, height, 1, 1);
+
 		if (v1.x < 0 || v1.y < 0 || v2.x < 0 || v2.y < 0 || v3.x < 0 || v3.y < 0)
 			continue;
-		if (v1.x > width || v1.y > height || v2.x > width || v2.y > height || v3.x > height || v3.y > width)
+		if ((int)v1.x >= width || (int)v1.y >= height || (int)v2.x >= width || (int)v2.y >= height || (int)v3.x >= height || (int)v3.y >= width)
 			continue;
-		barycentric_triangle(pixels, width, height, v1.x, v1.y, v1.z, RGB(255, 0, 0), v2.x, v2.y, v2.z, RGB(255, 0, 0), v3.x, v3.y, v3.z, RGB(255, 0, 0));
+
+		span_triangle(pixels, zbuffer, width, height,
+			v1.x, v1.y, v1.z, RGB(255, 0, 0),
+			v2.x, v2.y, v2.z, RGB(255, 0, 0),
+			v3.x, v3.y, v3.z, RGB(255, 0, 0));
+
+
+/*		barycentric_triangle(pixels, zbuffer, width, height,
+			v1.x, v1.y, v1.z, RGB(255, 0, 0),
+			v2.x, v2.y, v2.z, RGB(255, 0, 0),
+			v3.x, v3.y, v3.z, RGB(255, 0, 0));*/
 	}
 
 }
 
-inline void draw_pixel(int *pixels, int width, int height, int x, int y, int z, unsigned int color)
+inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, int y, int z, unsigned int color)
 {
-	//	if (zbuffer[x + y * width] < -z)
+	if (width < 0 || height < 0)
+		return;
+	if (x >= width || y >= height)
+		return;
+
+	if (zbuffer[x + y * width] < z)
 	{
-		pixels[x + ((height - 1 - y) * width)] = color;
-		//		zbuffer[x + y * width] = -z;
+//		pixels[x + ((height - 1 - y) * width)] = color;
+		pixels[x + (y * width)] = color;
+		zbuffer[x + y * width] = z;
 	}
 }
 
@@ -167,27 +208,30 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 
 
 
-inline void draw_xspan(int *pixels, int width, int height, int x1, int y1, int z1, int x2, int color)
+inline void draw_xspan(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int color)
 {
 	if (x1 > x2)
 	{
 		for (int x = x2; x < x1; x++)
 		{
-			draw_pixel(pixels, width, height, x, y1, z1, color);
+			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, color);
 		}
 	}
 	else
 	{
 		for (int x = x1; x < x2; x++)
 		{
-			draw_pixel(pixels, width, height, x, y1, z1, color);
+			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, color);
 		}
 	}
 }
 
 
-inline void fill_bottom_triangle(int *pixels, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+inline void fill_bottom_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
 {
+	if (y2 - y1 == 0 || y3 - y1 == 0)
+		return;
+
 	float invslope1 = (float)(x2 - x1) / (y2 - y1);
 	float invslope2 = (float)(x3 - x1) / (y3 - y1);
 
@@ -196,13 +240,13 @@ inline void fill_bottom_triangle(int *pixels, int width, int height, int x1, int
 
 	for (int y = y1; y <= y2; y++)
 	{
-		draw_xspan(pixels, width, height, (int)curx1, y, z1, (int)curx2, color);
+		draw_xspan(pixels, zbuffer, width, height, (int)curx1, y, z1, (int)curx2, color);
 		curx1 += invslope1;
 		curx2 += invslope2;
 	}
 }
 
-inline void fill_top_triangle(int *pixels, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+inline void fill_top_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
 {
 	float invslope1 = (float)(x3 - x1) / (y3 - y1);
 	float invslope2 = (float)(x3 - x2) / (y3 - y2);
@@ -212,13 +256,13 @@ inline void fill_top_triangle(int *pixels, int width, int height, int x1, int y1
 
 	for (int y = y3; y > y1; y--)
 	{
-		draw_xspan(pixels, width, height, (int)curx1, y, z1, (int)curx2, color);
+		draw_xspan(pixels, zbuffer, width, height, (int)curx1, y, z1, (int)curx2, color);
 		curx1 -= invslope1;
 		curx2 -= invslope2;
 	}
 }
 
-void span_triangle(int *pixels, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+void span_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3)
 {
 	// sort y
 	if (y1 > y2)
@@ -257,20 +301,20 @@ void span_triangle(int *pixels, int width, int height, int x1, int y1, int z1, i
 	if (y2 == y3)
 	{
 		// bottom triangle
-		fill_bottom_triangle(pixels, width, height, x1, y1, z1, x2, y2, z2, x3, y3, z3, color);
+		fill_bottom_triangle(pixels, zbuffer, width, height, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1);
 	}
 	else if (y1 == y2)
 	{
 		// top triangle
-		fill_top_triangle(pixels, width, height, x1, y1, z1, x2, y2, z2, x3, y3, z3, color);
+		fill_top_triangle(pixels, zbuffer, width, height, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1);
 	}
 	else
 	{
 		// split triangle
 		int x4 = (int)(x1 + ((float)(y2 - y1) / (float)(y3 - y1)) * (x3 - x1));
 		int y4 = y2;
-		fill_bottom_triangle(pixels, width, height, x1, y1, z1, x2, y2, z3, x4, y4, z3, color);
-		fill_top_triangle(pixels, width, height, x2, y2, z2, x4, y4, z2, x3, y3, z3, color);
+		fill_bottom_triangle(pixels, zbuffer, width, height, x1, y1, z1, x2, y2, z3, x4, y4, z3, c1);
+		fill_top_triangle(pixels, zbuffer, width, height, x2, y2, z2, x4, y4, z2, x3, y3, z3, c1);
 	}
 }
 
@@ -279,7 +323,7 @@ inline int det(int ax, int ay, int bx, int by)
 	return ax * by - bx *  ay;
 }
 
-void barycentric_triangle(int *pixels, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3)
+void barycentric_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3)
 {
 	int max_x = MAX(x1, MAX(x2, x3));
 	int min_x = MIN(x1, MIN(x2, x3));
@@ -320,7 +364,7 @@ void barycentric_triangle(int *pixels, int width, int height, int x1, int y1, in
 				int r = (s*c1);
 				int g = (t*c2);
 				int b = ((1 - s - t)*c3);
-				draw_pixel(pixels, width, height, x, y, z, c1);
+				draw_pixel(pixels, zbuffer, width, height, x, y, z, c1);
 			}
 		}
 	}
