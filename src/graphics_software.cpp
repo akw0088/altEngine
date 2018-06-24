@@ -11,14 +11,18 @@ void Graphics::resize(int width, int height)
 	DeleteObject(hBitmap);
 	DeleteDC(hdcMem);
 
-	delete [] data;
-	data = (int *)malloc(width * height * sizeof(int));
+	if (data)
+		delete [] data;
+	data = new int[width * height * sizeof(int)];
+	clear();
 	center.x = width / 2;
 	center.y = height / 2;
 
 	hdcMem = CreateCompatibleDC(hdc);
 	hBitmap = CreateCompatibleBitmap(hdc, width, height);
 	hObject = SelectObject(hdcMem, hBitmap);
+	Graphics::width = width;
+	Graphics::height = height;
 }
 
 Graphics::Graphics()
@@ -32,10 +36,16 @@ Graphics::~Graphics()
 
 void Graphics::init(void *param1, void *param2)
 {
-	hdc = GetDC(hwnd);
+	hwnd = *((HWND *)param1);
+	hdc = *((HDC *)param2);
+	width = 1;
+	height = 1;
+
 	hdcMem = CreateCompatibleDC(hdc);
 	hBitmap = CreateCompatibleBitmap(hdc, width, height);
 	hObject = SelectObject(hdcMem, hBitmap);
+	clear();
+
 }
 
 void Graphics::swap()
@@ -50,7 +60,10 @@ void Graphics::swap()
 
 void Graphics::clear()
 {
-	memset(data, 0, width * height * sizeof(int));
+	if (data)
+	{
+		memset(data, 0xAAAAAAAA, width * height * sizeof(int));
+	}
 }
 
 void Graphics::cleardepth()
