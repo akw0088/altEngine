@@ -182,10 +182,13 @@ public:
 
 	vertex_t *vertex_array[4096];
 	int *index_array[4096];
+	int *texture_array[4096];
 	int num_index_array;
 	int num_vertex_array;
+	int num_texture_array;
 	int current_vbo;
 	int current_ibo;
+	int current_tex;
 	static matrix4 current_mvp;
 
 #endif

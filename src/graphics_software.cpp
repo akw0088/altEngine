@@ -173,7 +173,9 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	raster_triangles(pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], start_index, start_vertex, num_index, num_verts);
+	if (current_tex == -1)
+		current_tex = 0;
+	raster_triangles(pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 }
@@ -250,6 +252,7 @@ void Graphics::SelectCubemap(int texObject)
 
 void Graphics::SelectTexture(int level, int texObject)
 {
+	current_tex = texObject;
 }
 
 void Graphics::DeselectTexture(int level)
@@ -270,7 +273,9 @@ int Graphics::CreateCubeMap()
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
-	return 1;
+	texture_array[num_texture_array] = new int[width * height];
+	memcpy(texture_array[num_texture_array++], bytes, sizeof(int) * width * height);
+	return num_texture_array - 1;
 }
 
 void Graphics::DeleteTexture(int handle)

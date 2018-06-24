@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, int start_index, int start_vertex, int num_index, int num_verts)
+void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, int *texture_array, int start_index, int start_vertex, int num_index, int num_verts)
 {
 	for (int i = start_index; i < num_index; i += 3)
 	{
@@ -46,9 +46,9 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 			continue;
 
 		span_triangle(pixels, zbuffer, width, height,
-			v1.x, v1.y, v1.z, RGB(255, 0, 0),
-			v2.x, v2.y, v2.z, RGB(255, 0, 0),
-			v3.x, v3.y, v3.z, RGB(255, 0, 0));
+			ceil(v1.x), ceil(v1.y), ceil(v1.z), texture_array[0],
+			ceil(v2.x), ceil(v2.y), ceil(v2.z), texture_array[0],
+			ceil(v3.x), ceil(v3.y), ceil(v3.z), texture_array[0]);
 
 
 /*		barycentric_triangle(pixels, zbuffer, width, height,
@@ -248,6 +248,9 @@ inline void fill_bottom_triangle(int *pixels, int *zbuffer, int width, int heigh
 
 inline void fill_top_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
 {
+	if (y3 - y1 == 0 || y3 - y2 == 0)
+		return;
+
 	float invslope1 = (float)(x3 - x1) / (y3 - y1);
 	float invslope2 = (float)(x3 - x2) / (y3 - y2);
 
