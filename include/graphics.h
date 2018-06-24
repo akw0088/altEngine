@@ -177,7 +177,15 @@ public:
 	HBITMAP	hBitmap;
 	HGDIOBJ hObject;
 	BITMAP	bitmap;
-	int	*data;
+	int	*pixels;
+	int *zbuffer;
+
+	vertex_t **vertex_array;
+	int **index_array;
+	int current_vbo;
+	int current_ibo;
+	matrix4 current_mvp;
+
 #endif
 
 #ifdef DIRECTX

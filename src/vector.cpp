@@ -25,6 +25,14 @@ vec4::vec4(float x, float y, float z, float w)
 	vec4::w = w;
 }
 
+vec4::vec4(const vec3 &v, float w)
+{
+	vec4::x = v.x;
+	vec4::y = v.y;
+	vec4::z = v.z;
+	vec4::w = w;
+}
+
 float vec4::magnitude()
 {
 	return newtonSqrt(x * x + y * y + z * z);

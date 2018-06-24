@@ -1,4 +1,5 @@
 #include "include.h"
+#include "raster.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -11,9 +12,12 @@ void Graphics::resize(int width, int height)
 	DeleteObject(hBitmap);
 	DeleteDC(hdcMem);
 
-	if (data)
-		delete [] data;
-	data = new int[width * height * sizeof(int)];
+	if (pixels)
+		delete[] pixels;
+	pixels = new int[width * height * sizeof(int)];
+	if (zbuffer)
+		delete[] zbuffer;
+	zbuffer = new int[width * height * sizeof(int)];
 	clear();
 	center.x = width / 2;
 	center.y = height / 2;
@@ -50,8 +54,7 @@ void Graphics::init(void *param1, void *param2)
 
 void Graphics::swap()
 {
-//	raster(data, width, height, time);
-	SetBitmapBits(hBitmap, width * height * sizeof(int), data);
+	SetBitmapBits(hBitmap, width * height * sizeof(int), pixels);
 	BitBlt(hdc, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
 
 	gpustat.drawcall = 0;
@@ -60,9 +63,13 @@ void Graphics::swap()
 
 void Graphics::clear()
 {
-	if (data)
+	if (pixels)
 	{
-		memset(data, 0xAAAAAAAA, width * height * sizeof(int));
+		memset(pixels, 0xAAAAAAAA, width * height * sizeof(int));
+	}
+	if (zbuffer)
+	{
+		memset(zbuffer, 0x0, width * height * sizeof(int));
 	}
 }
 
@@ -160,6 +167,7 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	raster_triangles(pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], start_index, start_vertex, num_index, num_verts);
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 }
