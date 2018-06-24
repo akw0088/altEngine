@@ -180,11 +180,13 @@ public:
 	int	*pixels;
 	int *zbuffer;
 
-	vertex_t **vertex_array;
-	int **index_array;
+	vertex_t *vertex_array[4096];
+	int *index_array[4096];
+	int num_index_array;
+	int num_vertex_array;
 	int current_vbo;
 	int current_ibo;
-	matrix4 current_mvp;
+	static matrix4 current_mvp;
 
 #endif
 

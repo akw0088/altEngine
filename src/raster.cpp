@@ -12,6 +12,11 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		vec3 v2 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
 		vec3 v3 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
 
+		if (width == 1 || height == 1)
+			break;
+
+		if (v1.x < 0 || v1.y < 0 || v1.z < 0 || v2.x < 0 || v2.y < 0 || v2.z < 0 || v3.x < 0 || v3.y < 0 || v3.z < 0 )
+			continue;
 		barycentric_triangle(pixels, width, height, v1.x, v1.y, v1.z, RGB(255, 0, 0), v2.x, v2.y, v2.z, RGB(255, 0, 0), v3.x, v3.y, v3.z, RGB(255, 0, 0));
 	}
 
@@ -296,6 +301,10 @@ void barycentric_triangle(int *pixels, int width, int height, int x1, int y1, in
 
 			// area of parallelogram formed by spanning vectors
 			int area_denom = det(vspan1x, vspan1y, vspan2x, vspan2y);
+
+			// zero area triangle
+			if (area_denom == 0)
+				return;
 
 			// barycentric coords (s,t,1-s-t)
 			float s = (float)det(qx, qy, vspan2x, vspan2y) / area_denom;

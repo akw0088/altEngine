@@ -40,7 +40,7 @@ void Global::prelink()
 
 void Global::Params(matrix4 &mvp, int depth)
 {
-
+	Graphics::current_mvp = mvp;
 }
 
 Global::~Global()
@@ -147,7 +147,7 @@ void mLight2::set_alpha(float value)
 
 void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time)
 {
-
+	Graphics::current_mvp = mvp;
 }
 
 void mLight2::set_light(float ambient, float lightmap, int num_light)

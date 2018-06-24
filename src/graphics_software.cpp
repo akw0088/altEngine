@@ -6,6 +6,9 @@
 #endif
 
 #ifdef SOFTWARE
+
+matrix4 Graphics::current_mvp;
+
 void Graphics::resize(int width, int height)
 {
 	SelectObject(hdcMem, hObject);
@@ -31,6 +34,11 @@ void Graphics::resize(int width, int height)
 
 Graphics::Graphics()
 {
+	width = 1;
+	height = 1;
+
+	num_index_array = 0;
+	num_vertex_array = 0;
 }
 
 
@@ -42,12 +50,10 @@ void Graphics::init(void *param1, void *param2)
 {
 	hwnd = *((HWND *)param1);
 	hdc = *((HDC *)param2);
-	width = 1;
-	height = 1;
-
 	hdcMem = CreateCompatibleDC(hdc);
 	hBitmap = CreateCompatibleBitmap(hdc, width, height);
 	hObject = SelectObject(hdcMem, hBitmap);
+	zbuffer = new int[width*height * sizeof(int)];
 	clear();
 
 }
@@ -195,11 +201,14 @@ void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int nu
 
 int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 {
-	return 1;
+	index_array[num_index_array] = new int[num_index];
+	memcpy(index_array[num_index_array++], index_buffer, num_index * sizeof(int));
+	return num_index_array - 1;
 }
 
 void Graphics::SelectIndexBuffer(int handle)
 {
+	current_ibo = handle;
 }
 
 void Graphics::DeleteIndexBuffer(int handle)
@@ -220,11 +229,14 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
-	return 1;
+	vertex_array[num_vertex_array] = new vertex_t[num_vertex];
+	memcpy(vertex_array[num_vertex_array++], vertex_buffer, num_vertex * sizeof(vertex_t));
+	return num_vertex_array - 1;
 }
 
 void Graphics::SelectVertexBuffer(int handle)
 {
+	current_vbo = handle;
 }
 
 void Graphics::DeleteVertexBuffer(int handle)
