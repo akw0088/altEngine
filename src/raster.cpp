@@ -452,3 +452,35 @@ int clip2d_sutherland_hodgman(int width, int height, POINT *points, int &num_poi
 	clip_line(points, num_point, width, 0, 0, 0);
 	return 0;
 }
+
+void halfspace_triangle(int *pixels, int *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+{
+	float y1 = v1.y;
+	float y2 = v2.y;
+	float y3 = v3.y;
+	float x1 = v1.x;
+	float x2 = v2.x;
+	float x3 = v3.x;
+
+	// Bounding rectangle
+	int maxx = MAX(x1, MAX(x2, x3));
+	int minx = MIN(x1, MIN(x2, x3));
+	int maxy = MAX(y1, MAX(y2, y3));
+	int miny = MIN(y1, MIN(y2, y3));
+
+
+	// Scan through bounding rectangle
+	for (int y = miny; y < maxy; y++)
+	{
+		for (int x = minx; x < maxx; x++)
+		{
+			// When all half-space functions positive, pixel is in triangle
+			if ((x1 - x2) * (y - y1) - (y1 - y2) * (x - x1) > 0 &&
+				(x2 - x3) * (y - y2) - (y2 - y3) * (x - x2) > 0 &&
+				(x3 - x1) * (y - y3) - (y3 - y1) * (x - x3) > 0)
+			{
+				draw_pixel(pixels, width, height, x, y, 4, RGB(255,0,0));
+			}
+		}
+	}
+}
