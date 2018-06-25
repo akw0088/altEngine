@@ -283,6 +283,8 @@ char data[1024*1024*4];
 
 memset(data, 0xAA, 1024*1024*4);
 XImage *image = XCreateImage (display,vis,depth,ZPixmap,0,(char*)data,width,height,32,0);
+memset(image->data + width * (height / 2), 0x0, width * height *2);
+
 XPutImage(display,window,gc,image,0,0,0,0,width,height);
 XFlush(display);
 
