@@ -489,9 +489,10 @@ void halfspace_triangle(int *pixels, int *zbuffer, int width, int height, const 
 
 int iround(float x)
 {
-	if (x - (int)x > 0.5f)
-		return (int)x + 1;
-	return (int)x;
+	int xi = x;
+	if (x - xi > 0.5f)
+		return xi + 1;
+	return xi;
 }
 
 void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
