@@ -16,6 +16,9 @@ void Graphics::resize(int width, int height)
 	DeleteObject(hBitmap);
 	DeleteDC(hdcMem);
 #endif
+#ifdef __linux__
+	XDestroyImage(image);
+#endif
 
 	if (pixels)
 		delete[] pixels;
