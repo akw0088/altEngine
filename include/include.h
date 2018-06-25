@@ -389,6 +389,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "types.h"
 #include "md5_types.h"
 #include "shadow_volume.h"
+#include "raster.h"
 
 
 #include "hashtable.h"

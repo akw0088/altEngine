@@ -11,9 +11,11 @@ matrix4 Graphics::current_mvp;
 
 void Graphics::resize(int width, int height)
 {
+#ifdef WIN32
 	SelectObject(hdcMem, hObject);
 	DeleteObject(hBitmap);
 	DeleteDC(hdcMem);
+#endif
 
 	if (pixels)
 		delete[] pixels;
@@ -25,9 +27,14 @@ void Graphics::resize(int width, int height)
 	center.x = width / 2;
 	center.y = height / 2;
 
+#ifdef WIN32
 	hdcMem = CreateCompatibleDC(hdc);
 	hBitmap = CreateCompatibleBitmap(hdc, width, height);
 	hObject = SelectObject(hdcMem, hBitmap);
+#endif
+#ifdef __linux__
+	image = XCreateImage(display, vis, depth, ZPixmap, 0, (char*)pixels, width, height, 32, 0);
+#endif
 	Graphics::width = width;
 	Graphics::height = height;
 }
@@ -48,11 +55,23 @@ Graphics::~Graphics()
 
 void Graphics::init(void *param1, void *param2)
 {
+#ifdef WIN32
 	hwnd = *((HWND *)param1);
 	hdc = *((HDC *)param2);
 	hdcMem = CreateCompatibleDC(hdc);
 	hBitmap = CreateCompatibleBitmap(hdc, width, height);
 	hObject = SelectObject(hdcMem, hBitmap);
+#endif
+#ifdef __linux__
+	display = (Display *)param1;
+	window = *((Window *)param2);
+#ifdef SOFTWARE
+	screen = DefaultScreen(display);
+	vis = DefaultVisual(display,screen);
+	depth  = DefaultDepth(display,screen);
+	gc = DefaultGC(display,screen);
+#endif
+#endif
 	zbuffer = new int[width*height * sizeof(int)];
 	clear();
 
@@ -60,8 +79,14 @@ void Graphics::init(void *param1, void *param2)
 
 void Graphics::swap()
 {
+#ifdef WIN32
 	SetBitmapBits(hBitmap, width * height * sizeof(int), pixels);
 	BitBlt(hdc, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
+#endif
+#ifdef __linux__
+	XPutImage(display,window,gc,image,0,0,0,0,width,height);
+	XFlush(display);
+#endif
 
 	gpustat.drawcall = 0;
 	gpustat.triangle = 0;

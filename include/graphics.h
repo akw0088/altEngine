@@ -172,11 +172,21 @@ public:
 #endif
 #endif
 #ifdef SOFTWARE
+	#ifdef WIN32
 	HDC	hdcMem;
-	POINT	center;
 	HBITMAP	hBitmap;
 	HGDIOBJ hObject;
 	BITMAP	bitmap;
+	#endif
+	#ifdef __linux__
+        int screen;
+        Visual *vis;
+        int depth;
+        GC gc;
+	XImage *image;
+
+	#endif
+	POINT	center;
 	int	*pixels;
 	int *zbuffer;
 
