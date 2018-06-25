@@ -81,7 +81,6 @@ void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y
 {
 	int i;
 	int	x, y;
-	int flip_axis = 0;
 	float slope;
 	int deltax;
 	int deltay;

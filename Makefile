@@ -11,6 +11,7 @@ SOURCES_CPP := 	xmain.cpp \
 		frame.cpp \
 		graph.cpp \
 		graphics_opengl.cpp \
+		graphics_software.cpp \
 		graphics_vulkan.cpp \
 		hashtable.cpp \
 		heap.cpp \
@@ -33,10 +34,12 @@ SOURCES_CPP := 	xmain.cpp \
 		projectile.cpp \
 		quake3.cpp \
 		quaternion.cpp \
+		raster.cpp \
 		rigidbody.cpp \
-		shader_opengl.cpp \
 		shader_d3d9.cpp \
 		shader_d3d11.cpp \
+		shader_opengl.cpp \
+		shader_software.cpp \
 		shader_vulkan.cpp \
 		shadow_volume.cpp \
 		sin_table.cpp \
