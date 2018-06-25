@@ -9,8 +9,8 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 	for (int i = start_index; i < num_index; i += 3)
 	{
 		vec4 v1 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
-		vec4 v2 = mvp * vec4(vertex_array[index_array[i+1]].position, 1.0f);
-		vec4 v3 = mvp * vec4(vertex_array[index_array[i+2]].position, 1.0f);
+		vec4 v2 = mvp * vec4(vertex_array[index_array[i + 1]].position, 1.0f);
+		vec4 v3 = mvp * vec4(vertex_array[index_array[i + 2]].position, 1.0f);
 
 		if (width == 1 || height == 1)
 			break;
@@ -18,7 +18,7 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		// backface cull
 		vec3 a = vec3(v2) - vec3(v1);
 		vec3 b = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(a,b) * vec3(0, 0, -1) > 0)
+		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) > 0)
 			continue;
 
 		// perspective divide
@@ -51,10 +51,10 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 			ceil(v3.x), ceil(v3.y), ceil(v3.z), texture_array[0]);
 
 
-/*		barycentric_triangle(pixels, zbuffer, width, height,
-			v1.x, v1.y, v1.z, RGB(255, 0, 0),
-			v2.x, v2.y, v2.z, RGB(255, 0, 0),
-			v3.x, v3.y, v3.z, RGB(255, 0, 0));*/
+		/*		barycentric_triangle(pixels, zbuffer, width, height,
+		v1.x, v1.y, v1.z, RGB(255, 0, 0),
+		v2.x, v2.y, v2.z, RGB(255, 0, 0),
+		v3.x, v3.y, v3.z, RGB(255, 0, 0));*/
 	}
 
 }
@@ -68,7 +68,7 @@ inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, 
 
 	if (zbuffer[x + y * width] < z)
 	{
-//		pixels[x + ((height - 1 - y) * width)] = color;
+		//		pixels[x + ((height - 1 - y) * width)] = color;
 		pixels[x + (y * width)] = color;
 		zbuffer[x + y * width] = z;
 	}
@@ -444,13 +444,12 @@ void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
 	}
 }
 
-int clip2d_sutherland_hodgman(int width, int height, POINT *points, int &num_point)
+void clip2d_sutherland_hodgman(int width, int height, POINT *points, int &num_point)
 {
 	clip_line(points, num_point, 0, 0, 0, height);
 	clip_line(points, num_point, 0, height, width, height);
 	clip_line(points, num_point, width, height, width, 0);
 	clip_line(points, num_point, width, 0, 0, 0);
-	return 0;
 }
 
 void halfspace_triangle(int *pixels, int *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
@@ -479,7 +478,152 @@ void halfspace_triangle(int *pixels, int *zbuffer, int width, int height, const 
 				(x2 - x3) * (y - y2) - (y2 - y3) * (x - x2) > 0 &&
 				(x3 - x1) * (y - y3) - (y3 - y1) * (x - x3) > 0)
 			{
-				draw_pixel(pixels, width, height, x, y, 4, RGB(255,0,0));
+				draw_pixel(pixels, zbuffer, width, height, x, y, 4, RGB(255, 0, 0));
+			}
+		}
+	}
+}
+
+int iround(float x)
+{
+	if (x - (int)x > 0.5f)
+		return (int)x + 1;
+	return (int)x;
+}
+
+void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+{
+	// 28.4 fixed-point coordinates
+	const int Y1 = iround(16.0f * v1.y);
+	const int Y2 = iround(16.0f * v2.y);
+	const int Y3 = iround(16.0f * v3.y);
+	const int X1 = iround(16.0f * v1.x);
+	const int X2 = iround(16.0f * v2.x);
+	const int X3 = iround(16.0f * v3.x);
+
+	// Deltas
+	const int DX12 = X1 - X2;
+	const int DX23 = X2 - X3;
+	const int DX31 = X3 - X1;
+	const int DY12 = Y1 - Y2;
+	const int DY23 = Y2 - Y3;
+	const int DY31 = Y3 - Y1;
+
+	// Fixed-point deltas
+	const int FDX12 = DX12 << 4;
+	const int FDX23 = DX23 << 4;
+	const int FDX31 = DX31 << 4;
+	const int FDY12 = DY12 << 4;
+	const int FDY23 = DY23 << 4;
+	const int FDY31 = DY31 << 4;
+
+
+	// Bounding rectangle
+	int maxx = MAX(X1, MAX(X2, X3));
+	int minx = MIN(X1, MIN(X2, X3));
+	int maxy = MAX(Y1, MAX(Y2, Y3));
+	int miny = MIN(Y1, MIN(Y2, Y3));
+
+
+	minx = (minx + 0xF) >> 4;
+	maxx = (maxx + 0xF) >> 4;
+	miny = (miny + 0xF) >> 4;
+	maxy = (maxy + 0xF) >> 4;
+
+
+	// Block size, standard 8x8 (must be power of two)
+	const int q = 8;
+
+
+	// Start in corner of 8x8 block
+	minx &= ~(q - 1);
+	miny &= ~(q - 1);
+
+
+	// Half-edge constants
+	int C1 = DY12 * X1 - DX12 * Y1;
+	int C2 = DY23 * X2 - DX23 * Y2;
+	int C3 = DY31 * X3 - DX31 * Y3;
+
+	// Correct for fill convention
+	if (DY12 < 0 || (DY12 == 0 && DX12 > 0)) C1++;
+	if (DY23 < 0 || (DY23 == 0 && DX23 > 0)) C2++;
+	if (DY31 < 0 || (DY31 == 0 && DX31 > 0)) C3++;
+
+	// Loop through blocks
+	for (int y = miny; y < maxy; y += q)
+	{
+		for (int x = minx; x < maxx; x += q)
+		{
+			// Corners of block
+			int x0 = x << 4;
+			int x1 = (x + q - 1) << 4;
+			int y0 = y << 4;
+			int y1 = (y + q - 1) << 4;
+
+			// Evaluate half-space functions
+			bool a00 = C1 + DX12 * y0 - DY12 * x0 > 0;
+			bool a10 = C1 + DX12 * y0 - DY12 * x1 > 0;
+			bool a01 = C1 + DX12 * y1 - DY12 * x0 > 0;
+			bool a11 = C1 + DX12 * y1 - DY12 * x1 > 0;
+			int a = (a00 << 0) | (a10 << 1) | (a01 << 2) | (a11 << 3);
+
+
+			bool b00 = C2 + DX23 * y0 - DY23 * x0 > 0;
+			bool b10 = C2 + DX23 * y0 - DY23 * x1 > 0;
+			bool b01 = C2 + DX23 * y1 - DY23 * x0 > 0;
+			bool b11 = C2 + DX23 * y1 - DY23 * x1 > 0;
+			int b = (b00 << 0) | (b10 << 1) | (b01 << 2) | (b11 << 3);
+
+			bool c00 = C3 + DX31 * y0 - DY31 * x0 > 0;
+			bool c10 = C3 + DX31 * y0 - DY31 * x1 > 0;
+			bool c01 = C3 + DX31 * y1 - DY31 * x0 > 0;
+			bool c11 = C3 + DX31 * y1 - DY31 * x1 > 0;
+			int c = (c00 << 0) | (c10 << 1) | (c01 << 2) | (c11 << 3);
+
+
+			// Skip block when outside an edge
+			if (a == 0x0 || b == 0x0 || c == 0x0)
+				continue;
+
+			// Accept whole block when totally covered
+			if (a == 0xF && b == 0xF && c == 0xF)
+			{
+				for (int iy = 0; iy < q; iy++)
+				{
+					for (int ix = x; ix < x + q; ix++)
+					{
+						draw_pixel(pixels, zbuffer, width, height, ix, y + iy, 4, RGB(0, 255, 0));
+					}
+				}
+			}
+			else // Partially covered block
+			{
+				int CY1 = C1 + DX12 * y0 - DY12 * x0;
+				int CY2 = C2 + DX23 * y0 - DY23 * x0;
+				int CY3 = C3 + DX31 * y0 - DY31 * x0;
+
+
+				for (int iy = y; iy < y + q; iy++)
+				{
+					int CX1 = CY1;
+					int CX2 = CY2;
+					int CX3 = CY3;
+
+					for (int ix = x; ix < x + q; ix++)
+					{
+						if (CX1 > 0 && CX2 > 0 && CX3 > 0)
+						{
+							draw_pixel(pixels, zbuffer, width, height, ix, iy, 4, RGB(255, 0, 0));
+						}
+						CX1 -= FDY12;
+						CX2 -= FDY23;
+						CX3 -= FDY31;
+					}
+					CY1 += FDX12;
+					CY2 += FDX23;
+					CY3 += FDX31;
+				}
 			}
 		}
 	}
