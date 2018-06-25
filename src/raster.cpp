@@ -18,7 +18,7 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		// backface cull
 		vec3 a = vec3(v2) - vec3(v1);
 		vec3 b = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) > 0)
+		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
 			continue;
 
 		// perspective divide
@@ -45,11 +45,14 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		if ((int)v1.x >= width || (int)v1.y >= height || (int)v2.x >= width || (int)v2.y >= height || (int)v3.x >= height || (int)v3.y >= width)
 			continue;
 
-		span_triangle(pixels, zbuffer, width, height,
+		/*
+		halfspace_triangle_fast(pixels, zbuffer, width, height,
 			ceil(v1.x), ceil(v1.y), ceil(v1.z), texture_array[0],
 			ceil(v2.x), ceil(v2.y), ceil(v2.z), texture_array[0],
 			ceil(v3.x), ceil(v3.y), ceil(v3.z), texture_array[0]);
+			*/
 
+		halfspace_triangle_fast(pixels, zbuffer, width, height, vec2(v1.x, v1.y), vec2(v2.x, v2.y), vec2(v3.x, v3.y));
 
 		/*		barycentric_triangle(pixels, zbuffer, width, height,
 		v1.x, v1.y, v1.z, RGB(255, 0, 0),
