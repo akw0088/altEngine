@@ -6,13 +6,13 @@
 
 void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, int *texture_array, int start_index, int start_vertex, int num_index, int num_verts)
 {
-	for (int i = start_index; i < num_index; i += 3)
+	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
 		vec4 v1 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
 		vec4 v2 = mvp * vec4(vertex_array[index_array[i + 1]].position, 1.0f);
 		vec4 v3 = mvp * vec4(vertex_array[index_array[i + 2]].position, 1.0f);
 
-		if (width == 1 || height == 1)
+		if (width <= 1 || height <= 1)
 			break;
 
 		// backface cull
@@ -36,13 +36,15 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		v3 += 0.5f;
 
 		//[0,1] -> [0,width]
-		v1 *= vec4(width, height, 1, 1);
-		v2 *= vec4(width, height, 1, 1);
-		v3 *= vec4(width, height, 1, 1);
+		v1 *= vec4(width-1, height-1, 1, 1);
+		v2 *= vec4(width-1, height-1, 1, 1);
+		v3 *= vec4(width-1, height-1, 1, 1);
 
-		if (v1.x < 0 || v1.y < 0 || v2.x < 0 || v2.y < 0 || v3.x < 0 || v3.y < 0)
+		if (v1.x < 0 || v1.y < 0 || v1.z < 0 || v2.x < 0 || v2.y < 0 || v2.z < 0 || v3.x < 0 || v3.y < 0 || v3.z < 0)
 			continue;
-		if ((int)v1.x >= width || (int)v1.y >= height || (int)v2.x >= width || (int)v2.y >= height || (int)v3.x >= height || (int)v3.y >= width)
+		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
+			continue;
+		if (v1.z > 1.0f || v2.z >= 1.0f || v3.z >= 1.0f)
 			continue;
 
 		/*
@@ -71,8 +73,8 @@ inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, 
 
 	if (zbuffer[x + y * width] < z)
 	{
-		//		pixels[x + ((height - 1 - y) * width)] = color;
-		pixels[x + (y * width)] = color;
+		pixels[x + ((height - 1 - y) * width)] = color;
+		//pixels[x + (y * width)] = color;
 		zbuffer[x + y * width] = z;
 	}
 }
