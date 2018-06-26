@@ -17,7 +17,8 @@ void Graphics::resize(int width, int height)
 	DeleteDC(hdcMem);
 #endif
 #ifdef __linux__
-	XDestroyImage(image);
+	if (image)
+		XDestroyImage(image);
 #endif
 
 	if (pixels)
@@ -49,6 +50,7 @@ Graphics::Graphics()
 
 	num_index_array = 0;
 	num_vertex_array = 0;
+	image = NULL;
 }
 
 
@@ -87,8 +89,11 @@ void Graphics::swap()
 	BitBlt(hdc, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
 #endif
 #ifdef __linux__
-	XPutImage(display,window,gc,image,0,0,0,0,width,height);
-	XFlush(display);
+	if (image)
+	{
+		XPutImage(display,window,gc,image,0,0,0,0,width,height);
+		XFlush(display);
+	}
 #endif
 
 	gpustat.drawcall = 0;
