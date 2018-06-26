@@ -8,9 +8,9 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 {
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
-		vec4 v1 = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
-		vec4 v2 = mvp * vec4(vertex_array[index_array[i + 1]].position, 1.0f);
-		vec4 v3 = mvp * vec4(vertex_array[index_array[i + 2]].position, 1.0f);
+		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
+		vec4 v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
+		vec4 v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
 
 		if (width <= 1 || height <= 1)
 			break;
@@ -44,7 +44,7 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 			continue;
 		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
 			continue;
-		if (v1.z > 1.0f || v2.z >= 1.0f || v3.z >= 1.0f)
+		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
 
 		/*
@@ -71,7 +71,7 @@ inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, 
 	if (x >= width || y >= height)
 		return;
 
-	if (zbuffer[x + y * width] < z)
+//	if (zbuffer[x + y * width] < z)
 	{
 		pixels[x + ((height - 1 - y) * width)] = color;
 		//pixels[x + (y * width)] = color;
