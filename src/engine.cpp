@@ -721,7 +721,7 @@ void Engine::load(char *level)
 		print_graph(node, num_node);
 
 		graph.load(node, num_node);
-		delete[] ref;
+		//delete[] ref;
 
 
 		game->setup_func(entity_list, &q3map);
