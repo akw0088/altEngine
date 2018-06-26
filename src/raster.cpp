@@ -40,26 +40,31 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		v2 *= vec4(width-1, height-1, 1, 1);
 		v3 *= vec4(width-1, height-1, 1, 1);
 
-		if (v1.x < 0 || v1.y < 0 || v1.z < 0 || v2.x < 0 || v2.y < 0 || v2.z < 0 || v3.x < 0 || v3.y < 0 || v3.z < 0)
-			continue;
-		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
+		int num_point = 3;
+		POINT tri[512];
+
+		tri[0].x = v1.x;
+		tri[0].y = v1.y;
+		tri[1].x = v2.x;
+		tri[1].y = v2.y;
+		tri[2].x = v3.x;
+		tri[2].y = v3.y;
+		clip2d_sutherland_hodgman(width, height, tri, num_point);
+
+		triangulate(tri, num_point);
+
+		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
 			continue;
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
 
-		/*
-		halfspace_triangle_fast(pixels, zbuffer, width, height,
-			ceil(v1.x), ceil(v1.y), ceil(v1.z), texture_array[0],
-			ceil(v2.x), ceil(v2.y), ceil(v2.z), texture_array[0],
-			ceil(v3.x), ceil(v3.y), ceil(v3.z), texture_array[0]);
-			*/
+		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
+			continue;
 
-		halfspace_triangle_fast(pixels, zbuffer, width, height, vec2(v1.x, v1.y), vec2(v2.x, v2.y), vec2(v3.x, v3.y));
-
-		/*		barycentric_triangle(pixels, zbuffer, width, height,
-		v1.x, v1.y, v1.z, RGB(255, 0, 0),
-		v2.x, v2.y, v2.z, RGB(255, 0, 0),
-		v3.x, v3.y, v3.z, RGB(255, 0, 0));*/
+		for (int j = 0; j < num_point; j += 3)
+		{
+			halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j+0], tri[j+1], tri[j+2]);
+		}
 	}
 
 }
@@ -70,6 +75,10 @@ inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, 
 		return;
 	if (x >= width || y >= height)
 		return;
+
+	if (x < 0 || y < 0)
+		return;
+
 
 //	if (zbuffer[x + y * width] < z)
 	{
@@ -388,8 +397,8 @@ void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int 
 
 void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
 {
-	POINT new_points[512];
-	int new_num_point = 0;
+	POINT out[32];
+	int out_num = 0;
 
 	for (int i = 0; i < num_point; i++)
 	{
@@ -398,53 +407,48 @@ void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
 		if (k == num_point)
 			k = 0;
 
-		int ax = points[i].x;
-		int ay = points[i].y;
-		int bx = points[k].x;
-		int by = points[k].y;
+		POINT a = points[i];
+		POINT b = points[k];
 
 		// test points against clip line
-		int a_pos = (x2 - x1) * (ay - y1) - (y2 - y1) * (ax - x1);
-		int b_pos = (x2 - x1) * (by - y1) - (y2 - y1) * (bx - x1);
+		int a_pos = (x2 - x1) * (a.y - y1) - (y2 - y1) * (a.x - x1);
+		int b_pos = (x2 - x1) * (b.y - y1) - (y2 - y1) * (b.x - x1);
 
 		// both points are inside
 		if (a_pos < 0 && b_pos < 0)
 		{
 			// add b
-			new_points[new_num_point].x = bx;
-			new_points[new_num_point].y = by;
-			new_num_point++;
+			out[out_num] = b;
+			out_num++;
 		}
 
 		// a is outside
 		else if (a_pos >= 0 && b_pos < 0)
 		{
 			// add intersection with edge and b
-			line_intersect(x1, y1, x2, y2, ax, ay, bx, by, new_points[new_num_point].x, new_points[new_num_point].y);
-			new_num_point++;
+			line_intersect(x1, y1, x2, y2, a.x, a.y, b.x, b.y, out[out_num].x, out[out_num].y);
+			out_num++;
 
-			new_points[new_num_point].x = bx;
-			new_points[new_num_point].y = by;
-			new_num_point++;
+			out[out_num] = b;
+			out_num++;
 		}
 
 		// b is outside
 		else if (a_pos < 0 && b_pos >= 0)
 		{
 			// add intersection with edge
-			line_intersect(x1, y1, x2, y2, ax, ay, bx, by, new_points[new_num_point].x, new_points[new_num_point].y);
-			new_num_point++;
+			line_intersect(x1, y1, x2, y2, a.x, a.y, b.x, b.y, out[out_num].x, out[out_num].y);
+			out_num++;
 		}
 
 		// both points outside, clipped
 	}
 
 	// Copy new points into array
-	num_point = new_num_point;
+	num_point = out_num;
 	for (int i = 0; i < num_point; i++)
 	{
-		points[i].x = new_points[i].x;
-		points[i].y = new_points[i].y;
+		points[i] = out[i];
 	}
 }
 
@@ -496,7 +500,7 @@ int iround(float x)
 	return xi;
 }
 
-void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const POINT &v1, const POINT &v2, const POINT &v3)
 {
 	// 28.4 fixed-point coordinates
 	const int Y1 = iround(16.0f * v1.y);
@@ -537,7 +541,7 @@ void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, c
 
 
 	// Block size, standard 8x8 (must be power of two)
-	const int q = 8;
+	const int q = 4;
 
 
 	// Start in corner of 8x8 block
@@ -631,5 +635,35 @@ void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, c
 				}
 			}
 		}
+	}
+}
+
+
+
+void triangulate(POINT *point, int &num_point)
+{
+	POINT out[256];
+	POINT *p0;
+	POINT *phelper;
+	int j = 0;
+
+
+	p0 = &point[0];
+	phelper = &point[1];
+
+	for (int i = 2; i < num_point; i++)
+	{
+		out[j + 0] = *p0;
+		out[j + 1] = *phelper;
+		out[j + 2] = point[i];
+		phelper = &point[i];
+		j += 3;
+	}
+
+	// Copy new points into array
+	num_point = j;
+	for (int i = 0; i < num_point; i++)
+	{
+		point[i] = out[i];
 	}
 }
