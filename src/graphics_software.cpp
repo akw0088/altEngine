@@ -25,10 +25,10 @@ void Graphics::resize(int width, int height)
 
 	if (pixels)
 		delete[] pixels;
-	pixels = new int[width * height * sizeof(int)];
+	pixels = new int[width * height * sizeof(int) + 512];
 	if (zbuffer)
 		delete[] zbuffer;
-	zbuffer = new int[width * height * sizeof(int)];
+	zbuffer = new int[width * height * sizeof(int) + 512];
 	clear();
 	center.x = width / 2;
 	center.y = height / 2;
@@ -212,7 +212,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 {
 	if (current_tex == -1)
 		current_tex = 0;
-	raster_triangles(pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles(HALFSPACE, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
 	//	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 
 	gpustat.drawcall++;

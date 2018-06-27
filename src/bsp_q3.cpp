@@ -12,7 +12,9 @@ Bsp::Bsp()
 	trace_result = 0.0f;
 	enable_textures = false;
 	enable_patch = true;
+#ifndef SOFTWARE
 	enable_sky = true;
+#endif
 	enable_shader = true;
 	enable_blend = true;
 	portal_tex = 0;
@@ -193,6 +195,13 @@ void Bsp::generate_meshes(Graphics &gfx)
 	num_meshes = 0;
 	mesh_level = 8;
 
+	map_vertex = new vertex_t[data.num_verts];
+	CreateTangentArray(map_vertex, data.Vert, data.num_verts, tangent);
+
+	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_verts);
+	map_index_vbo = gfx.CreateIndexBuffer(data.IndexArray, data.num_index);
+
+
 	// Find number  of 3x3 patches
 	printf("quadratic_bezier_surface dimensions for %s: ", map_name);
 	for (unsigned int i = 0; i < data.num_faces; i++)
@@ -246,11 +255,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 		}
 	}
 
-	map_vertex = new vertex_t [data.num_verts];
-	CreateTangentArray(map_vertex, data.Vert, data.num_verts, tangent);
-
-	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_verts);
-	map_index_vbo = gfx.CreateIndexBuffer(data.IndexArray, data.num_index);
 }
 
 /*

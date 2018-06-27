@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
+void raster_triangles(raster_t type, int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
 {
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
@@ -82,12 +82,26 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 
 		for (int j = 0; j < num_point; j += 3)
 		{
-			halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
-/*			barycentric_triangle(pixels, zbuffer, width, height, texture,
-				tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
-				tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
-				tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255),
-				s1,t1,s2,t2,s3,t3);*/
+			if (type == SPAN)
+			{
+				span_triangle(pixels, zbuffer, width, height,
+					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255));
+			}
+			else if (type == BARYCENTRIC)
+			{
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3);
+
+			}
+			else if (type == HALFSPACE)
+			{
+				halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
+			}
 		}
 	}
 
@@ -385,6 +399,7 @@ void barycentric_triangle(int *pixels, int *zbuffer, int width, int height, texi
 //	c1.x /= z2, c1.y /= z2, c1.z /= z2;
 //	c2.x /= z3, c2.y /= z3, c2.z /= z3;
 
+	/*
 	if (z1 > 0)
 	{
 		u1 /= z1, v1 /= z1;
@@ -394,7 +409,7 @@ void barycentric_triangle(int *pixels, int *zbuffer, int width, int height, texi
 		// pre-compute 1 over z
 		z1 = 1 / z1, z2 = 1 / z2, z3 = 1 / z3;
 	}
-
+	*/
 	for (int y = min_y; y <= max_y; y++)
 	{
 		for (int x = min_x; x <= max_x; x++)
@@ -417,23 +432,23 @@ void barycentric_triangle(int *pixels, int *zbuffer, int width, int height, texi
 			// if inside triangle
 			if ((s >= 0) && (t >= 0) && (s + t <= 1))
 			{
-				float u = s * u1 + t * u2 + (1 - s - t) * u3;
-				float v = s * v1 + t * v2 + (1 - s - t) * v3;
-				int c = s * c1 + t * c2 + (1 - s - t) * c3;
+//				float u = s * u1 + t * u2 + (1 - s - t) * u3;
+	//			float v = s * v1 + t * v2 + (1 - s - t) * v3;
+//				int c = s * c1 + t * c2 + (1 - s - t) * c3;
 //				float z = 1 / (s * z1 + t * z2 + (1 - s - t) * z3);
 				// if we use perspective correct interpolation we need to
 				// multiply the result of this interpolation by z, the depth
 				// of the point on the 3D triangle that the pixel overlaps.
 	//			u *= z, v *= z;
 
-				int ux = texture->width * u;
-				int vy = texture->height * v;
-				int index = ux + vy * texture->width;
+	//			int ux = texture->width * u;
+	//			int vy = texture->height * v;
+	//			int index = ux + vy * texture->width;
 
 //				if (index <  0 || index >= texture->width * texture->height)
-					index = 0;
+//					index = 0;
 				//(int)(ux + vy * texture->width)
-				draw_pixel(pixels, zbuffer, width, height, x, y, 4, texture->data[index]);
+				draw_pixel(pixels, zbuffer, width, height, x, y, 4, texture->data[0]);
 			}
 		}
 	}
