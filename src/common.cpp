@@ -3387,3 +3387,26 @@ void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float sca
 	vbo = gfx.CreateVertexBuffer(vertex, num_vertex);
 }
 
+
+
+vec3 get_point(float lam1, float lam2, float lam3, vec3 &a,  vec3 &b, vec3 &c)
+{
+	vec3 v;
+
+	v.x = lam1 * a.x + lam2 * b.x + lam3 * c.x;
+	v.y = lam1 * a.y + lam2 * b.y + lam3 * c.y;
+	v.z = lam1 * a.z + lam2 * b.z + lam3 * c.z;
+
+	return v;
+}
+
+void get_barycentric(float x, float y,
+    const vec2 &a, const vec2 &b, const vec2 &c,
+    float &lam1, float &lam2, float &lam3)
+{
+	lam1 = (b.y - c.y)*(x - c.x) + (c.x - b.x)*(y - c.y) /
+		 (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
+	lam2 = (c.y - a.y)*(x - c.x) + (a.x - c.x)*(y - c.y) /
+		 (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
+	lam3 = 1.0f - lam1 - lam2;
+}
