@@ -28,6 +28,7 @@
 #define DECR_WRAP	0x8508
 
 
+
 /*
 	You could make this a pure virtual class and switch between OpenGL and Direct3D at runtime...
 	But then you would need to link to both d3d9 dll's and opengl32 dll's at the same time
@@ -192,7 +193,7 @@ public:
 
 	vertex_t *vertex_array[4096];
 	int *index_array[4096];
-	int *texture_array[4096];
+	texinfo_t texture_array[4096];
 	int num_index_array;
 	int num_vertex_array;
 	int num_texture_array;

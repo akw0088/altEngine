@@ -18,7 +18,9 @@ void Graphics::resize(int width, int height)
 #endif
 #ifdef __linux__
 	if (image)
+	{
 		XDestroyImage(image);
+	}
 #endif
 
 	if (pixels)
@@ -50,7 +52,9 @@ Graphics::Graphics()
 
 	num_index_array = 0;
 	num_vertex_array = 0;
+#ifdef __linux__
 	image = NULL;
+#endif
 }
 
 
@@ -91,7 +95,7 @@ void Graphics::swap()
 #ifdef __linux__
 	if (image)
 	{
-		XPutImage(display,window,gc,image,0,0,0,0,width,height);
+		XPutImage(display, window, gc, image, 0, 0, 0, 0, width, height);
 		XFlush(display);
 	}
 #endif
@@ -208,7 +212,9 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 {
 	if (current_tex == -1)
 		current_tex = 0;
-	raster_triangles(pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles(pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+	//	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
+
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 }
@@ -306,8 +312,10 @@ int Graphics::CreateCubeMap()
 
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
-	texture_array[num_texture_array] = new int[width * height];
-	memcpy(texture_array[num_texture_array++], bytes, sizeof(int) * width * height);
+	texture_array[num_texture_array].data = new int[width * height];
+	texture_array[num_texture_array].width = width;
+	texture_array[num_texture_array].height = width;
+	memcpy(texture_array[num_texture_array++].data, bytes, sizeof(int) * width * height);
 	return num_texture_array - 1;
 }
 

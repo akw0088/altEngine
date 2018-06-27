@@ -897,7 +897,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 		return 0;
 	}
 #endif
-#ifdef DIRECTX
+#ifndef OPENGL
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	format = 4;
 //	components = 4;
@@ -907,16 +907,13 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 #ifndef DEDICATED
-#ifndef SOFTWARE
 	byte *pBits = NULL;
 	if (components == 3)
 	{
 		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
 	}
 #endif
-#endif
 #ifndef DEDICATED
-#ifndef SOFTWARE
 	if (components == 3)
 	{
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
@@ -927,7 +924,6 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	}
 	stbi_image_free(bytes);
 	delete [] data;
-#endif
 #endif
 #ifdef OPENGL
 	if (format != GL_RGBA)

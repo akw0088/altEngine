@@ -1111,4 +1111,12 @@ typedef enum
 	SPECTATOR
 } playertype_t;
 
+typedef struct
+{
+	int *data;
+	int width;
+	int height;
+} texinfo_t;
+
+
 #endif
