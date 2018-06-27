@@ -187,7 +187,7 @@ public:
 	XImage *image;
 
 	#endif
-	POINT	center;
+	vec2	center;
 	int	*pixels;
 	float *zbuffer;
 
