@@ -48,17 +48,29 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 		v3 *= vec4(width-1, height-1, 1, 1);
 
 		int num_point = 3;
-		POINT tri[512];
+		vec3 tri[512];
 
 		tri[0].x = v1.x;
 		tri[0].y = v1.y;
+		tri[0].z = v1.z;
 		tri[1].x = v2.x;
 		tri[1].y = v2.y;
+		tri[1].z = v2.z;
 		tri[2].x = v3.x;
 		tri[2].y = v3.y;
-		clip2d_sutherland_hodgman(width, height, tri, num_point);
+		tri[2].z = v3.z;
 
-		triangulate(tri, num_point);
+		if ((tri[0].x > 0 && tri[0].x < width - 1 &&
+			tri[0].y > 0 && tri[0].y < height - 1 &&
+			tri[1].x > 0 && tri[1].x < width - 1 &&
+			tri[1].y > 0 && tri[1].y < height - 1 &&
+			tri[2].x > 0 && tri[2].x < width - 1 &&
+			tri[2].y > 0 && tri[2].y < height - 1) == false
+			)
+		{
+			clip2d_sutherland_hodgman(width, height, tri, num_point);
+			triangulate(tri, num_point);
+		}
 
 		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
 			continue;
@@ -70,12 +82,12 @@ void raster_triangles(int *pixels, int *zbuffer, int width, int height, matrix4 
 
 		for (int j = 0; j < num_point; j += 3)
 		{
-//			halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
-			barycentric_triangle(pixels, zbuffer, width, height, texture,
+			halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
+/*			barycentric_triangle(pixels, zbuffer, width, height, texture,
 				tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
 				tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
 				tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255),
-				s1,t1,s2,t2,s3,t3);
+				s1,t1,s2,t2,s3,t3);*/
 		}
 	}
 
@@ -416,26 +428,29 @@ void barycentric_triangle(int *pixels, int *zbuffer, int width, int height, texi
 
 				int ux = texture->width * u;
 				int vy = texture->height * v;
+				int index = ux + vy * texture->width;
 
+//				if (index <  0 || index >= texture->width * texture->height)
+					index = 0;
 				//(int)(ux + vy * texture->width)
-				draw_pixel(pixels, zbuffer, width, height, x, y, 4, texture->data[x + y* texture->width]);
+				draw_pixel(pixels, zbuffer, width, height, x, y, 4, texture->data[index]);
 			}
 		}
 	}
 }
 
-void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, long &xint, long &yint)
+void line_intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float &xint, float &yint)
 {
-	int num = (x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4);
-	int den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+	float num = (x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4);
+	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
 	xint = num / den;
 	num = (x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4);
 	yint = num / den;
 }
 
-void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
+void clip_line(vec3 *points, int &num_point, float x1, float y1, float x2, float y2)
 {
-	POINT out[32];
+	vec3 out[32];
 	int out_num = 0;
 
 	for (int i = 0; i < num_point; i++)
@@ -445,12 +460,12 @@ void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
 		if (k == num_point)
 			k = 0;
 
-		POINT a = points[i];
-		POINT b = points[k];
+		vec3 a = points[i];
+		vec3 b = points[k];
 
 		// test points against clip line
-		int a_pos = (x2 - x1) * (a.y - y1) - (y2 - y1) * (a.x - x1);
-		int b_pos = (x2 - x1) * (b.y - y1) - (y2 - y1) * (b.x - x1);
+		int a_pos = (int)(x2 - x1) * (int)(a.y - y1) - (int)(y2 - y1) * (int)(a.x - x1);
+		int b_pos = (int)(x2 - x1) * (int)(b.y - y1) - (int)(y2 - y1) * (int)(b.x - x1);
 
 		// both points are inside
 		if (a_pos < 0 && b_pos < 0)
@@ -490,7 +505,7 @@ void clip_line(POINT *points, int &num_point, int x1, int y1, int x2, int y2)
 	}
 }
 
-void clip2d_sutherland_hodgman(int width, int height, POINT *points, int &num_point)
+void clip2d_sutherland_hodgman(int width, int height, vec3 *points, int &num_point)
 {
 	clip_line(points, num_point, 0, 0, 0, height);
 	clip_line(points, num_point, 0, height, width, height);
@@ -538,7 +553,7 @@ int iround(float x)
 	return xi;
 }
 
-void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const POINT &v1, const POINT &v2, const POINT &v3)
+void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	// 28.4 fixed-point coordinates
 	const int Y1 = iround(16.0f * v1.y);
@@ -678,11 +693,11 @@ void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, c
 
 
 
-void triangulate(POINT *point, int &num_point)
+void triangulate(vec3 *point, int &num_point)
 {
-	POINT out[256];
-	POINT *p0;
-	POINT *phelper;
+	vec3 out[256];
+	vec3 *p0;
+	vec3 *phelper;
 	int j = 0;
 
 

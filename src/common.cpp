@@ -898,9 +898,9 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	}
 #endif
 #ifndef OPENGL
+	components = 4;
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	format = 4;
-//	components = 4;
 #endif
 #ifdef VULKAN
 	format = -1;
@@ -911,6 +911,9 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	if (components == 3)
 	{
 		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
+		components = 4;
+		stbi_image_free(bytes);
+		bytes = pBits;
 	}
 #endif
 #ifndef DEDICATED
