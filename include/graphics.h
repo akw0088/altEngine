@@ -189,7 +189,7 @@ public:
 	#endif
 	POINT	center;
 	int	*pixels;
-	int *zbuffer;
+	float *zbuffer;
 
 	vertex_t *vertex_array[4096];
 	int *index_array[4096];

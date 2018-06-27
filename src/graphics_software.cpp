@@ -28,7 +28,7 @@ void Graphics::resize(int width, int height)
 	pixels = new int[width * height * sizeof(int) + 512];
 	if (zbuffer)
 		delete[] zbuffer;
-	zbuffer = new int[width * height * sizeof(int) + 512];
+	zbuffer = new float[width * height * sizeof(float)];
 	clear();
 	center.x = width / 2;
 	center.y = height / 2;
@@ -81,7 +81,7 @@ void Graphics::init(void *param1, void *param2)
 	gc = DefaultGC(display,screen);
 #endif
 #endif
-	zbuffer = new int[width*height * sizeof(int)];
+	zbuffer = new float[width*height * sizeof(float)];
 	clear();
 
 }
@@ -112,7 +112,10 @@ void Graphics::clear()
 	}
 	if (zbuffer)
 	{
-		memset(zbuffer, 0x0, width * height * sizeof(int));
+		for (int i = 0; i < width * height; i++)
+		{
+			zbuffer[i] = 1.0f;
+		}
 	}
 }
 

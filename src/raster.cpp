@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void raster_triangles(raster_t type, int *pixels, int *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
+void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
 {
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
@@ -107,7 +107,7 @@ void raster_triangles(raster_t type, int *pixels, int *zbuffer, int width, int h
 
 }
 
-inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, int y, int z, unsigned int color)
+inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x, int y, int z, unsigned int color)
 {
 	if (width < 0 || height < 0)
 		return;
@@ -118,7 +118,7 @@ inline void draw_pixel(int *pixels, int *zbuffer, int width, int height, int x, 
 		return;
 
 
-//	if (zbuffer[x + y * width] < z)
+	if (zbuffer[x + y * width] > z)
 	{
 		pixels[x + ((height - 1 - y) * width)] = color;
 		//pixels[x + (y * width)] = color;
@@ -259,7 +259,7 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 
 
 
-inline void draw_xspan(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int color)
+inline void draw_xspan(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int color)
 {
 	if (x1 > x2)
 	{
@@ -278,7 +278,7 @@ inline void draw_xspan(int *pixels, int *zbuffer, int width, int height, int x1,
 }
 
 
-inline void fill_bottom_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+inline void fill_bottom_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
 {
 	if (y2 - y1 == 0 || y3 - y1 == 0)
 		return;
@@ -297,7 +297,7 @@ inline void fill_bottom_triangle(int *pixels, int *zbuffer, int width, int heigh
 	}
 }
 
-inline void fill_top_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+inline void fill_top_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
 {
 	if (y3 - y1 == 0 || y3 - y2 == 0)
 		return;
@@ -316,7 +316,7 @@ inline void fill_top_triangle(int *pixels, int *zbuffer, int width, int height, 
 	}
 }
 
-void span_triangle(int *pixels, int *zbuffer, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3)
+void span_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3)
 {
 	// sort y
 	if (y1 > y2)
@@ -377,7 +377,7 @@ inline int det(int ax, int ay, int bx, int by)
 	return ax * by - bx *  ay;
 }
 
-void barycentric_triangle(int *pixels, int *zbuffer, int width, int height, texinfo_t *texture, int x1, int y1, float z1, int c1, int x2, int y2, float z2, int c2, int x3, int y3, float z3, int c3,
+void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, texinfo_t *texture, int x1, int y1, float z1, int c1, int x2, int y2, float z2, int c2, int x3, int y3, float z3, int c3,
 	float u1, float v1, float u2, float v2, float u3, float v3 )
 {
 	int max_x = MAX(x1, MAX(x2, x3));
@@ -528,7 +528,7 @@ void clip2d_sutherland_hodgman(int width, int height, vec3 *points, int &num_poi
 	clip_line(points, num_point, width, 0, 0, 0);
 }
 
-void halfspace_triangle(int *pixels, int *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
 {
 	float y1 = v1.y;
 	float y2 = v2.y;
@@ -568,7 +568,7 @@ int iround(float x)
 	return xi;
 }
 
-void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
+void halfspace_triangle_fast(int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	// 28.4 fixed-point coordinates
 	const int Y1 = iround(16.0f * v1.y);
@@ -670,7 +670,7 @@ void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, c
 				{
 					for (int ix = x; ix < x + q; ix++)
 					{
-						draw_pixel(pixels, zbuffer, width, height, ix, y + iy, 4, RGB(0, 255, 0));
+						draw_pixel(pixels, zbuffer, width, height, ix, y + iy, v1.z, RGB(0, 255, 0));
 					}
 				}
 			}
@@ -691,7 +691,7 @@ void halfspace_triangle_fast(int *pixels, int *zbuffer, int width, int height, c
 					{
 						if (CX1 > 0 && CX2 > 0 && CX3 > 0)
 						{
-							draw_pixel(pixels, zbuffer, width, height, ix, iy, 4, RGB(255, 0, 0));
+							draw_pixel(pixels, zbuffer, width, height, ix, iy, v1.z, RGB(255, 0, 0));
 						}
 						CX1 -= FDY12;
 						CX2 -= FDY23;
