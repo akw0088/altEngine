@@ -14,10 +14,10 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 
 		float s1 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
 		float t1 = vertex_array[start_vertex + index_array[i]].texCoord0.y;
-		float s2 = vertex_array[start_vertex + index_array[i+1]].texCoord0.x;
-		float t2 = vertex_array[start_vertex + index_array[i+1]].texCoord0.y;
-		float s3 = vertex_array[start_vertex + index_array[i+2]].texCoord0.x;
-		float t3 = vertex_array[start_vertex + index_array[i+2]].texCoord0.y;
+		float s2 = vertex_array[start_vertex + index_array[i + 1]].texCoord0.x;
+		float t2 = vertex_array[start_vertex + index_array[i + 1]].texCoord0.y;
+		float s3 = vertex_array[start_vertex + index_array[i + 2]].texCoord0.x;
+		float t3 = vertex_array[start_vertex + index_array[i + 2]].texCoord0.y;
 
 		if (width <= 1 || height <= 1)
 			break;
@@ -43,9 +43,148 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		v3 += 0.5f;
 
 		//[0,1] -> [0,width]
-		v1 *= vec4(width-1, height-1, 1, 1);
-		v2 *= vec4(width-1, height-1, 1, 1);
-		v3 *= vec4(width-1, height-1, 1, 1);
+		v1 *= vec4(width - 1, height - 1, 1, 1);
+		v2 *= vec4(width - 1, height - 1, 1, 1);
+		v3 *= vec4(width - 1, height - 1, 1, 1);
+
+		int num_point = 3;
+		vec3 tri[512];
+
+		tri[0].x = v1.x;
+		tri[0].y = v1.y;
+		tri[0].z = v1.z;
+		tri[1].x = v2.x;
+		tri[1].y = v2.y;
+		tri[1].z = v2.z;
+		tri[2].x = v3.x;
+		tri[2].y = v3.y;
+		tri[2].z = v3.z;
+
+		if ((tri[0].x > 0 && tri[0].x < width - 1 &&
+			tri[0].y > 0 && tri[0].y < height - 1 &&
+			tri[1].x > 0 && tri[1].x < width - 1 &&
+			tri[1].y > 0 && tri[1].y < height - 1 &&
+			tri[2].x > 0 && tri[2].x < width - 1 &&
+			tri[2].y > 0 && tri[2].y < height - 1) == false
+			)
+		{
+			clip2d_sutherland_hodgman(width, height, tri, num_point);
+			triangulate(tri, num_point);
+		}
+
+		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
+			continue;
+		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
+			continue;
+
+		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
+			continue;
+
+		for (int j = 0; j < num_point; j += 3)
+		{
+			if (type == SPAN)
+			{
+				span_triangle(pixels, zbuffer, width, height,
+					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255));
+			}
+			else if (type == BARYCENTRIC)
+			{
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3);
+
+			}
+			else if (type == HALFSPACE)
+			{
+				halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
+			}
+		}
+	}
+
+}
+
+void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
+{
+	vec4 v1, v2, v3;
+	float s1, s2, s3, t1, t2, t3;
+	static bool even = false;
+	for (int i = start_index; i < start_index + num_index;)
+	{
+		if (i == start_index)
+		{
+			v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
+			v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
+			v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
+
+			s1 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
+			t1 = vertex_array[start_vertex + index_array[i]].texCoord0.y;
+			s2 = vertex_array[start_vertex + index_array[i + 1]].texCoord0.x;
+			t2 = vertex_array[start_vertex + index_array[i + 1]].texCoord0.y;
+			s3 = vertex_array[start_vertex + index_array[i + 2]].texCoord0.x;
+			t3 = vertex_array[start_vertex + index_array[i + 2]].texCoord0.y;
+			i += 3;
+		}
+		else if (i == start_index + 3 || even)
+		{
+			v2 = mvp * vec4(vertex_array[start_vertex + index_array[i-2]].position, 1.0f);
+			v1 = mvp * vec4(vertex_array[start_vertex + index_array[i-1]].position, 1.0f);
+			v3 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
+
+			s2 = vertex_array[start_vertex + index_array[i-2]].texCoord0.x;
+			t2 = vertex_array[start_vertex + index_array[i-2]].texCoord0.y;
+			s1 = vertex_array[start_vertex + index_array[i-1]].texCoord0.x;
+			t1 = vertex_array[start_vertex + index_array[i-1]].texCoord0.y;
+			s3 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
+			t3 = vertex_array[start_vertex + index_array[i]].texCoord0.y;
+			i++;
+			even = false;
+		}
+		else
+		{
+			v1 = mvp * vec4(vertex_array[start_vertex + index_array[i - 2]].position, 1.0f);
+			v2 = mvp * vec4(vertex_array[start_vertex + index_array[i - 1]].position, 1.0f);
+			v3 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
+
+			s1 = vertex_array[start_vertex + index_array[i - 2]].texCoord0.x;
+			t1 = vertex_array[start_vertex + index_array[i - 2]].texCoord0.y;
+			s2 = vertex_array[start_vertex + index_array[i - 1]].texCoord0.x;
+			t2 = vertex_array[start_vertex + index_array[i - 1]].texCoord0.y;
+			s3 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
+			t3 = vertex_array[start_vertex + index_array[i]].texCoord0.y;
+			i++;
+			even = true;
+		}
+		if (width <= 1 || height <= 1)
+			break;
+
+		// backface cull
+		vec3 a = vec3(v2) - vec3(v1);
+		vec3 b = vec3(v3) - vec3(v1);
+		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
+			continue;
+
+		// perspective divide
+		v1 /= v1.w;
+		v2 /= v2.w;
+		v3 /= v3.w;
+
+		// [-1,1] -> [0,1]
+		v1 *= 0.5f;
+		v2 *= 0.5f;
+		v3 *= 0.5f;
+
+		v1 += 0.5f;
+		v2 += 0.5f;
+		v3 += 0.5f;
+
+		//[0,1] -> [0,width]
+		v1 *= vec4(width - 1, height - 1, 1, 1);
+		v2 *= vec4(width - 1, height - 1, 1, 1);
+		v3 *= vec4(width - 1, height - 1, 1, 1);
 
 		int num_point = 3;
 		vec3 tri[512];
@@ -432,8 +571,8 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 			// if inside triangle
 			if ((s >= 0) && (t >= 0) && (s + t <= 1))
 			{
-//				float u = s * u1 + t * u2 + (1 - s - t) * u3;
-	//			float v = s * v1 + t * v2 + (1 - s - t) * v3;
+				float u = s * u1 + t * u2 + (1 - s - t) * u3;
+				float v = s * v1 + t * v2 + (1 - s - t) * v3;
 //				int c = s * c1 + t * c2 + (1 - s - t) * c3;
 //				float z = 1 / (s * z1 + t * z2 + (1 - s - t) * z3);
 				// if we use perspective correct interpolation we need to
@@ -441,14 +580,16 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 				// of the point on the 3D triangle that the pixel overlaps.
 	//			u *= z, v *= z;
 
-	//			int ux = texture->width * u;
-	//			int vy = texture->height * v;
-	//			int index = ux + vy * texture->width;
+				clamp(u, 0.0f, 1.0f);
+				clamp(v, 0.0f, 1.0f);
+				int ux = (texture->width - 1) * u;
+				int vy = (texture->height - 1) * v;
+				int index = ux + vy * texture->width;
 
-//				if (index <  0 || index >= texture->width * texture->height)
-//					index = 0;
+				if (index <  0 || index >= texture->width * texture->height)
+					index = 0;
 				//(int)(ux + vy * texture->width)
-				draw_pixel(pixels, zbuffer, width, height, x, y, 4, texture->data[0]);
+				draw_pixel(pixels, zbuffer, width, height, x, y, 0.5, texture->data[index]);
 			}
 		}
 	}
@@ -479,8 +620,8 @@ void clip_line(vec3 *points, int &num_point, float x1, float y1, float x2, float
 		vec3 b = points[k];
 
 		// test points against clip line
-		int a_pos = (int)(x2 - x1) * (int)(a.y - y1) - (int)(y2 - y1) * (int)(a.x - x1);
-		int b_pos = (int)(x2 - x1) * (int)(b.y - y1) - (int)(y2 - y1) * (int)(b.x - x1);
+		int a_pos = ((int)x2 - (int)x1) * ((int)a.y - (int)y1) - ((int)y2 - (int)y1) * ((int)a.x - (int)x1);
+		int b_pos = ((int)x2 - (int)x1) * ((int)b.y - (int)y1) - ((int)y2 - (int)y1) * ((int)b.x - (int)x1);
 
 		// both points are inside
 		if (a_pos < 0 && b_pos < 0)

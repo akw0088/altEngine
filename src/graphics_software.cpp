@@ -26,8 +26,8 @@ void Graphics::resize(int width, int height)
 	if (pixels)
 		delete[] pixels;
 	pixels = new int[width * height * sizeof(int) + 512];
-	if (zbuffer)
-		delete[] zbuffer;
+//	if (zbuffer)
+//		delete[] zbuffer;
 	zbuffer = new float[width * height * sizeof(float)];
 	clear();
 	center.x = width / 2;
@@ -52,6 +52,7 @@ Graphics::Graphics()
 
 	num_index_array = 0;
 	num_vertex_array = 0;
+	zbuffer = NULL;
 #ifdef __linux__
 	image = NULL;
 #endif
@@ -215,7 +216,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 {
 	if (current_tex == -1)
 		current_tex = 0;
-	raster_triangles(HALFSPACE, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles(BARYCENTRIC, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
 	//	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 
 	gpustat.drawcall++;
@@ -224,6 +225,9 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 
 void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
+	if (current_tex == -1)
+		current_tex = 0;
+	raster_triangles_strip(BARYCENTRIC, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;
 }
@@ -317,7 +321,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 {
 	texture_array[num_texture_array].data = new int[width * height];
 	texture_array[num_texture_array].width = width;
-	texture_array[num_texture_array].height = width;
+	texture_array[num_texture_array].height = height;
 	memcpy(texture_array[num_texture_array++].data, bytes, sizeof(int) * width * height);
 	return num_texture_array - 1;
 }

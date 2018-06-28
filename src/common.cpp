@@ -3400,13 +3400,18 @@ vec3 get_point(float lam1, float lam2, float lam3, vec3 &a,  vec3 &b, vec3 &c)
 	return v;
 }
 
-void get_barycentric(float x, float y,
-    const vec2 &a, const vec2 &b, const vec2 &c,
+bool get_barycentric(float x, float y,
+    const vec3 &a, const vec3 &b, const vec3 &c,
     float &lam1, float &lam2, float &lam3)
 {
-	lam1 = (b.y - c.y)*(x - c.x) + (c.x - b.x)*(y - c.y) /
-		 (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
-	lam2 = (c.y - a.y)*(x - c.x) + (a.x - c.x)*(y - c.y) /
-		 (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
+	float den = (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
+
+	if (den <= 0)
+		return false;
+
+	lam1 = (b.y - c.y)*(x - c.x) + (c.x - b.x)*(y - c.y) / den;
+	lam2 = (c.y - a.y)*(x - c.x) + (a.x - c.x)*(y - c.y) / den;
 	lam3 = 1.0f - lam1 - lam2;
+
+	return true;
 }

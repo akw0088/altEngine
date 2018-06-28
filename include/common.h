@@ -111,5 +111,8 @@ inline void lerp(vec3 &a, vec3 &b, float time, vec3 &out)
 }
 
 void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float scale, vertex_t *vertex, unsigned int &num_vertex, int *index, unsigned int &num_index, bool invert, int &vbo, int &ibo);
+bool get_barycentric(float x, float y,
+	const vec3 &a, const vec3 &b, const vec3 &c,
+	float &lam1, float &lam2, float &lam3);
 
 #endif
