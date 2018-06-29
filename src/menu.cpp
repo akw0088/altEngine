@@ -981,7 +981,9 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 			continue;
 
 		font.Params(str[i], x + xpos, y + ypos, scale, color);
+#ifndef SOFTWARE
 		gfx->DrawArrayTri(0, 0, 6, 4);
+#endif
 		movepos(str[i], xpos, ypos, scale);
 	}
 

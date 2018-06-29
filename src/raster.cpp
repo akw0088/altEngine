@@ -571,9 +571,10 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 			// if inside triangle
 			if ((s >= 0) && (t >= 0) && (s + t <= 1))
 			{
-				float u = s * u1 + t * u2 + (1 - s - t) * u3;
-				float v = s * v1 + t * v2 + (1 - s - t) * v3;
-//				int c = s * c1 + t * c2 + (1 - s - t) * c3;
+				float u = s * u2 + t * u3 + (1 - s - t) * u1;
+				float v = s * v2 + t * v3 + (1 - s - t) * v1;
+				float z = s * z2 + t * z3 + (1 - s - t) * z1;
+				//				int c = s * c1 + t * c2 + (1 - s - t) * c3;
 //				float z = 1 / (s * z1 + t * z2 + (1 - s - t) * z3);
 				// if we use perspective correct interpolation we need to
 				// multiply the result of this interpolation by z, the depth
@@ -589,7 +590,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 				if (index <  0 || index >= texture->width * texture->height)
 					index = 0;
 				//(int)(ux + vy * texture->width)
-				draw_pixel(pixels, zbuffer, width, height, x, y, 0.5, texture->data[index]);
+				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[index]);
 			}
 		}
 	}
