@@ -581,10 +581,32 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 				// of the point on the 3D triangle that the pixel overlaps.
 	//			u *= z, v *= z;
 
-				clamp(u, 0.0f, 1.0f);
-				clamp(v, 0.0f, 1.0f);
-				int ux = (texture->width - 1) * u;
-				int vy = (texture->height - 1) * v;
+				int ux;
+				int vy;
+				if (u > 0)
+				{
+					ux = ((texture->width - 1) * u);
+					ux = ux % (texture->width - 1);
+				}
+				else
+				{
+					ux = ((texture->width - 1) * -u);
+					ux = ux % (texture->width - 1);
+					ux = texture->width - 1 - ux;
+				}
+
+				if (v > 0)
+				{
+					vy = ((texture->height - 1) * v);
+					vy = vy % (texture->height - 1);
+				}
+				else
+				{
+					vy = ((texture->height - 1) * -v);
+					vy = vy % (texture->height - 1);
+					vy = texture->height - 1 - vy;
+				}
+
 				int index = ux + vy * texture->width;
 
 				if (index <  0 || index >= texture->width * texture->height)

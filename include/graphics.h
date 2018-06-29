@@ -193,7 +193,7 @@ public:
 
 	vertex_t *vertex_array[4096];
 	int *index_array[4096];
-	texinfo_t texture_array[8192];
+	vector <texinfo_t> texture_array;
 	int num_index_array;
 	int num_vertex_array;
 	int num_texture_array;

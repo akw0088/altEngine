@@ -778,7 +778,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		return 0;
 	}
 #endif
-#ifdef DIRECTX
+#ifdef SOFTWARE
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	if (bytes == NULL)
 	{
@@ -810,7 +810,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	}
 #endif
-#ifdef DIRECTX
+#ifdef SOFTWARE
 	if (components == 3)
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
 	else
@@ -829,10 +829,8 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 #ifndef DEDICATED
 #ifndef VULKAN
-#ifndef SOFTWARE
 	stbi_image_free(bytes);
 	delete [] data;
-#endif
 #endif
 #endif
 
