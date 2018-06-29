@@ -778,6 +778,18 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		if (is_shader && stage > 0)
 			gfx.SelectTexture(0, 0);
 
+		// surfaces that arent lit with lightmaps eg: skies
+		if (face->lightmap != -1 && shader == false)
+		{
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			lightmap_selected = true;
+		}
+		else
+		{
+			gfx.SelectTexture(8, 0);
+		}
+
+
 		if (lightmap && face->lightmap != -1)
 		{
 			// Pretty much shader stage with lightmap
@@ -791,22 +803,13 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		{
 			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 		}
-		// surfaces that arent lit with lightmaps eg: skies
-		if (face->lightmap != -1 && shader == false)
-		{
-			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-			lightmap_selected = true;
-		}
-		else
-		{
-			gfx.SelectTexture(8, 0);
-		}
 
 	}
 	if (enable_textures && enable_normalmap)
 	{
 		gfx.SelectTexture(9, normal_object[face->material]);
 	}
+
 	gfx.DrawArrayTri(face->index, face->vertex, face->num_index, face->num_verts);
 
 	if (enable_textures)
@@ -852,6 +855,17 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 		if (is_shader && stage > 0)
 			gfx.SelectTexture(0, 0);
 
+		if (face->lightmap != -1 && shader == false)
+		{
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			lightmap_selected = true;
+		}
+		else
+		{
+			gfx.SelectTexture(8, 0);
+		}
+
+
 		// surfaces that arent lit with lightmaps eg: skies
 		if (lightmap && face->lightmap != -1)
 		{
@@ -864,15 +878,6 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 		}
 
-		if (face->lightmap != -1 && shader == false)
-		{
-			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-			lightmap_selected = true;
-		}
-		else
-		{
-			gfx.SelectTexture(8, 0);
-		}
 	}
 
 
@@ -926,6 +931,18 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 		if (is_shader && stage > 0)
 			gfx.SelectTexture(0, 0);
 
+		// surfaces that arent lit with lightmaps eg: skies
+		if (face->lightmap != -1 && shader == false)
+		{
+			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
+			lightmap_selected = true;
+		}
+		else
+		{
+			gfx.SelectTexture(8, 0);
+		}
+
+
 		if (lightmap && face->lightmap != -1)
 		{
 			shader = true;
@@ -937,16 +954,6 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
 		}
 
-		// surfaces that arent lit with lightmaps eg: skies
-		if (face->lightmap != -1 && shader == false)
-		{
-			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-			lightmap_selected = true;
-		}
-		else
-		{
-			gfx.SelectTexture(8, 0);
-		}
 	}
 
 	if (enable_textures && enable_normalmap)
@@ -1993,7 +2000,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 			lightmap_object[i] = gfx.LoadTexture(128, 128, GL_RGB, GL_RGB, (void *)&(data.LightMaps[i].image), false, anisotropic);
 		}
 #endif
-#ifdef DIRECTX
+#ifdef SOFTWARE
 		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image, false);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false, anisotropic);
 		delete [] pBits;
