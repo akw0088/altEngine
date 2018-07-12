@@ -1414,6 +1414,36 @@ void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int wid
 	}
 }
 
+void read_bitmap(char *filename, int &width, int &height, int **data)
+{
+	FILE *file;
+	bitmap_t	bitmap;
+
+	memset(&bitmap, 0, sizeof(bitmap_t));
+
+	file = fopen(filename, "rb");
+	if (file == NULL)
+	{
+		perror("Unable to write file");
+		*data = NULL;
+		return;
+	}
+
+	fread(&bitmap, 1, sizeof(bitmap_t), file);
+	width = bitmap.dib.width;
+	height = bitmap.dib.height;
+	*data = new int[width * height];
+	fread((void *)*data, 1, width * height * 4, file);
+	fclose(file);
+
+	if (bitmap.dib.bpp == 24)
+	{
+		int *old = *data;
+		*data = (int *)tga_24to32(width, height, (byte *)*data, false);
+		delete[] old;
+	}
+}
+
 
 void write_bitmap(char *filename, int width, int height, int *data)
 {

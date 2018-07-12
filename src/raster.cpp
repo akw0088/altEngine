@@ -48,7 +48,7 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		v3 *= vec4(width - 1, height - 1, 1, 1);
 
 		int num_point = 3;
-		vec3 tri[512];
+		vec4 tri[512];
 
 		tri[0].x = v1.x;
 		tri[0].y = v1.y;
@@ -92,11 +92,10 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 			else if (type == BARYCENTRIC)
 			{
 				barycentric_triangle(pixels, zbuffer, width, height, texture,
-					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255),
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 					s1, t1, s2, t2, s3, t3);
-
 			}
 			else if (type == HALFSPACE)
 			{
@@ -187,7 +186,7 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 		v3 *= vec4(width - 1, height - 1, 1, 1);
 
 		int num_point = 3;
-		vec3 tri[512];
+		vec4 tri[512];
 
 		tri[0].x = v1.x;
 		tri[0].y = v1.y;
@@ -231,9 +230,9 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 			else if (type == BARYCENTRIC)
 			{
 				barycentric_triangle(pixels, zbuffer, width, height, texture,
-					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255),
+					tri[j + 0].x, tri[j + 0].y, 0, 1, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, 0, 1, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, 0, 1, RGB(0, 0, 255),
 					s1, t1, s2, t2, s3, t3);
 
 			}
@@ -516,8 +515,8 @@ inline int det(int ax, int ay, int bx, int by)
 	return ax * by - bx *  ay;
 }
 
-void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, texinfo_t *texture, int x1, int y1, float z1, int c1, int x2, int y2, float z2, int c2, int x3, int y3, float z3, int c3,
-	float u1, float v1, float u2, float v2, float u3, float v3 )
+void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, texinfo_t *texture, int x1, int y1, float z1, float w1, int c1, int x2, int y2, float z2, float w2, int c2, int x3, int y3, float z3, float w3, int c3,
+	float u1, float v1, float u2, float v2, float u3, float v3)
 {
 	int max_x = MAX(x1, MAX(x2, x3));
 	int min_x = MIN(x1, MIN(x2, x3));
@@ -532,23 +531,36 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 	int vspan2y = (y3 - y1);
 
 
+	float iz1 = 0.0f;
+	float iz2 = 0.0f;
+	float iz3 = 0.0f;
+	float uiz1 = 0.0f;
+	float viz1 = 0.0f;
+	float uiz2 = 0.0f;
+	float viz2 = 0.0f;
+	float uiz3 = 0.0f;
+	float viz3 = 0.0f;
 
-	// divide vertex-attribute by the vertex z-coordinate
-//	c0.x /= z1, c0.y /= z1, c0.z /= z1;
-//	c1.x /= z2, c1.y /= z2, c1.z /= z2;
-//	c2.x /= z3, c2.y /= z3, c2.z /= z3;
 
-	/*
-	if (z1 > 0)
+	// find 1/z, u/z, v/z per vertex
+	if (z1 && z2 && z3)
 	{
-		u1 /= z1, v1 /= z1;
-		u2 /= z2, v2 /= z2;
-		u3 /= z3, v2 /= z3;
+		iz1 = 1.0f / z1;
+		iz2 = 1.0f / z2;
+		iz3 = 1.0f / z3;
 
-		// pre-compute 1 over z
-		z1 = 1 / z1, z2 = 1 / z2, z3 = 1 / z3;
+		uiz1 = u1 * iz1;
+		viz1 = v1 * iz1;
+		uiz2 = u2 * iz2;
+		viz2 = v2 * iz2;
+		uiz3 = u3 * iz3;
+		viz3 = v3 * iz3;
 	}
-	*/
+	else
+	{
+		return;
+	}
+
 	for (int y = min_y; y <= max_y; y++)
 	{
 		for (int x = min_x; x <= max_x; x++)
@@ -571,52 +583,67 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 			// if inside triangle
 			if ((s >= 0) && (t >= 0) && (s + t <= 1))
 			{
-				float u = s * u2 + t * u3 + (1 - s - t) * u1;
-				float v = s * v2 + t * v3 + (1 - s - t) * v1;
-				float z = s * z2 + t * z3 + (1 - s - t) * z1;
-				//				int c = s * c1 + t * c2 + (1 - s - t) * c3;
-//				float z = 1 / (s * z1 + t * z2 + (1 - s - t) * z3);
-				// if we use perspective correct interpolation we need to
-				// multiply the result of this interpolation by z, the depth
-				// of the point on the 3D triangle that the pixel overlaps.
-	//			u *= z, v *= z;
+				float u;
+				float v;
+				float z;
+
+				// interpolate 1/z, u/z, v/z which are linear equations
+				float iu = s * uiz2 + t * uiz3 + (1 - s - t) * uiz1;
+				float iv = s * viz2 + t * viz3 + (1 - s - t) * viz1;
+				float iz = s * iz2 + t *  iz3 + (1 - s - t) * iz1;
+
+				if (iz)
+				{
+					// find inverse / multiply to get perspective correct z, u, v
+					z = 1.0f / iz;
+					u = iu * z;
+					v = iv * z;
+				}
+				else
+				{
+					continue;
+				}
 
 				int ux;
 				int vy;
-				if (u > 0)
+				if (u >= 0)
 				{
-					ux = ((texture->width - 1) * u);
+					ux = (int)((texture->width - 1) * u);
 					ux = ux % (texture->width - 1);
 				}
 				else
 				{
-					ux = ((texture->width - 1) * -u);
+					ux = (int)((texture->width - 1) * -u);
 					ux = ux % (texture->width - 1);
 					ux = texture->width - 1 - ux;
 				}
 
 				if (v > 0)
 				{
-					vy = ((texture->height - 1) * v);
+					vy = (int)((texture->height - 1) * v);
 					vy = vy % (texture->height - 1);
 				}
 				else
 				{
-					vy = ((texture->height - 1) * -v);
+					vy = (int)((texture->height - 1) * -v);
 					vy = vy % (texture->height - 1);
 					vy = texture->height - 1 - vy;
 				}
 
-				int index = ux + vy * texture->width;
+				int index = ux + vy * (texture->width);
 
 				if (index <  0 || index >= texture->width * texture->height)
 					index = 0;
-				//(int)(ux + vy * texture->width)
-				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[index]);
+
+				if (iz)
+				{
+					draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[index]);
+				}
 			}
 		}
 	}
 }
+
 
 void line_intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float &xint, float &yint)
 {
@@ -627,9 +654,9 @@ void line_intersect(float x1, float y1, float x2, float y2, float x3, float y3, 
 	yint = num / den;
 }
 
-void clip_line(vec3 *points, int &num_point, float x1, float y1, float x2, float y2)
+void clip_line(vec4 *points, int &num_point, float x1, float y1, float x2, float y2)
 {
-	vec3 out[32];
+	vec4 out[32];
 	int out_num = 0;
 
 	for (int i = 0; i < num_point; i++)
@@ -639,8 +666,8 @@ void clip_line(vec3 *points, int &num_point, float x1, float y1, float x2, float
 		if (k == num_point)
 			k = 0;
 
-		vec3 a = points[i];
-		vec3 b = points[k];
+		vec4 a = points[i];
+		vec4 b = points[k];
 
 		// test points against clip line
 		int a_pos = ((int)x2 - (int)x1) * ((int)a.y - (int)y1) - ((int)y2 - (int)y1) * ((int)a.x - (int)x1);
@@ -684,7 +711,7 @@ void clip_line(vec3 *points, int &num_point, float x1, float y1, float x2, float
 	}
 }
 
-void clip2d_sutherland_hodgman(int width, int height, vec3 *points, int &num_point)
+void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point)
 {
 	clip_line(points, num_point, 0, 0, 0, height);
 	clip_line(points, num_point, 0, height, width, height);
@@ -872,11 +899,11 @@ void halfspace_triangle_fast(int *pixels, float *zbuffer, int width, int height,
 
 
 
-void triangulate(vec3 *point, int &num_point)
+void triangulate(vec4 *point, int &num_point)
 {
-	vec3 out[256];
-	vec3 *p0;
-	vec3 *phelper;
+	vec4 out[256];
+	vec4 *p0;
+	vec4 *phelper;
 	int j = 0;
 
 
