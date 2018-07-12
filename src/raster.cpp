@@ -28,10 +28,20 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
 			continue;
 
+		if (v1.w == 0.0f || v2.w == 0.0f || v3.w == 0.0f)
+			continue;
+
 		// perspective divide
-		v1 /= v1.w;
-		v2 /= v2.w;
-		v3 /= v3.w;
+		v1.x /= v1.w;
+		v1.y /= v1.w;
+		v1.z /= v1.w;
+		v2.x /= v2.w;
+		v2.y /= v2.w;
+		v2.z /= v2.w;
+		v3.x /= v3.w;
+		v3.y /= v3.w;
+		v3.z /= v3.w;
+
 
 		// [-1,1] -> [0,1]
 		v1 *= 0.5f;
@@ -53,12 +63,15 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		tri[0].x = v1.x;
 		tri[0].y = v1.y;
 		tri[0].z = v1.z;
+		tri[0].w = v1.w;
 		tri[1].x = v2.x;
 		tri[1].y = v2.y;
 		tri[1].z = v2.z;
+		tri[1].w = v2.w;
 		tri[2].x = v3.x;
 		tri[2].y = v3.y;
 		tri[2].z = v3.z;
+		tri[2].w = v3.w;
 
 		if ((tri[0].x > 0 && tri[0].x < width - 1 &&
 			tri[0].y > 0 && tri[0].y < height - 1 &&
@@ -68,8 +81,8 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 			tri[2].y > 0 && tri[2].y < height - 1) == false
 			)
 		{
-			clip2d_sutherland_hodgman(width, height, tri, num_point);
-			triangulate(tri, num_point);
+//			clip2d_sutherland_hodgman(width, height, tri, num_point);
+//			triangulate(tri, num_point);
 		}
 
 		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
@@ -166,10 +179,19 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
 			continue;
 
+		if (v1.w == 0.0f || v2.w == 0.0f || v3.w == 0.0f)
+			continue;
+
 		// perspective divide
-		v1 /= v1.w;
-		v2 /= v2.w;
-		v3 /= v3.w;
+		v1.x /= v1.w;
+		v1.y /= v1.w;
+		v1.z /= v1.w;
+		v2.x /= v2.w;
+		v2.y /= v2.w;
+		v2.z /= v2.w;
+		v3.x /= v3.w;
+		v3.y /= v3.w;
+		v3.z /= v3.w;
 
 		// [-1,1] -> [0,1]
 		v1 *= 0.5f;
@@ -191,12 +213,15 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 		tri[0].x = v1.x;
 		tri[0].y = v1.y;
 		tri[0].z = v1.z;
+		tri[0].w = v1.w;
 		tri[1].x = v2.x;
 		tri[1].y = v2.y;
 		tri[1].z = v2.z;
+		tri[1].w = v2.w;
 		tri[2].x = v3.x;
 		tri[2].y = v3.y;
 		tri[2].z = v3.z;
+		tri[2].w = v3.w;
 
 		if ((tri[0].x > 0 && tri[0].x < width - 1 &&
 			tri[0].y > 0 && tri[0].y < height - 1 &&
@@ -230,9 +255,9 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 			else if (type == BARYCENTRIC)
 			{
 				barycentric_triangle(pixels, zbuffer, width, height, texture,
-					tri[j + 0].x, tri[j + 0].y, 0, 1, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, 0, 1, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, 0, 1, RGB(0, 0, 255),
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 					s1, t1, s2, t2, s3, t3);
 
 			}
@@ -523,6 +548,11 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 	int max_y = MAX(y1, MAX(y2, y3));
 	int min_y = MIN(y1, MIN(y2, y3));
 
+	if (min_x < 0 || max_x < 0)
+		return;
+	if (min_y < 0 || max_y < 0)
+		return;
+
 	// triangle spanning vectors
 	int vspan1x = (x2 - x1);
 	int vspan1y = (y2 - y1);
@@ -543,11 +573,11 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 
 
 	// find 1/z, u/z, v/z per vertex
-	if (z1 && z2 && z3)
+	if (w1 && w2 && w3)
 	{
-		iz1 = 1.0f / z1;
-		iz2 = 1.0f / z2;
-		iz3 = 1.0f / z3;
+		iz1 = 1.0f / w1;
+		iz2 = 1.0f / w2;
+		iz3 = 1.0f / w3;
 
 		uiz1 = u1 * iz1;
 		viz1 = v1 * iz1;
@@ -585,19 +615,19 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 			{
 				float u;
 				float v;
-				float z;
 
 				// interpolate 1/z, u/z, v/z which are linear equations
 				float iu = s * uiz2 + t * uiz3 + (1 - s - t) * uiz1;
 				float iv = s * viz2 + t * viz3 + (1 - s - t) * viz1;
 				float iz = s * iz2 + t *  iz3 + (1 - s - t) * iz1;
+				float z = s * z2 + t *  z3 + (1 - s - t) * z1;
 
 				if (iz)
 				{
 					// find inverse / multiply to get perspective correct z, u, v
-					z = 1.0f / iz;
-					u = iu * z;
-					v = iv * z;
+					float zi = 1.0f / iz;
+					u = iu * zi;
+					v = iv * zi;
 				}
 				else
 				{
