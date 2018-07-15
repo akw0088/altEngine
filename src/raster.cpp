@@ -85,7 +85,7 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 //			triangulate(tri, num_point);
 		}
 
-		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
+		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
 			continue;
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
@@ -233,7 +233,7 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 //			triangulate(tri, num_point);
 		}
 
-		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
+		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
 			continue;
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
