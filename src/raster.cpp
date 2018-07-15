@@ -90,8 +90,6 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
 
-		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
-			continue;
 
 		for (int j = 0; j < num_point; j += 3)
 		{
@@ -231,8 +229,8 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 			tri[2].y > 0 && tri[2].y < height - 1) == false
 			)
 		{
-			clip2d_sutherland_hodgman(width, height, tri, num_point);
-			triangulate(tri, num_point);
+//			clip2d_sutherland_hodgman(width, height, tri, num_point);
+//			triangulate(tri, num_point);
 		}
 
 		if (v1.z < 0 || v2.z < 0 || v3.z < 0)
@@ -240,8 +238,8 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
 
-		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
-			continue;
+//		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
+//			continue;
 
 		for (int j = 0; j < num_point; j += 3)
 		{
@@ -548,10 +546,26 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 	int max_y = MAX(y1, MAX(y2, y3));
 	int min_y = MIN(y1, MIN(y2, y3));
 
-	if (min_x < 0 || max_x < 0)
-		return;
-	if (min_y < 0 || max_y < 0)
-		return;
+	if (min_x < 0)
+		min_x = 0;
+	if (max_x < 0)
+		max_x = 0;
+
+	if (min_y < 0)
+		min_y = 0;
+	if (max_y < 0)
+		max_y = 0;
+
+	if (min_x >= width)
+		min_x = width - 1;
+	if (max_x >= width)
+		max_x = width - 1;
+
+	if (min_y >= height)
+		min_y = height - 1;
+	if (max_y >= height)
+		max_y = height - 1;
+
 
 	// triangle spanning vectors
 	int vspan1x = (x2 - x1);

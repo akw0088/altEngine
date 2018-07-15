@@ -12,9 +12,7 @@ Bsp::Bsp()
 	trace_result = 0.0f;
 	enable_textures = false;
 	enable_patch = true;
-#ifndef SOFTWARE
 	enable_sky = true;
-#endif
 	enable_shader = true;
 	enable_blend = true;
 	portal_tex = 0;

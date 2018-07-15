@@ -329,7 +329,11 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	palette1 = load_texture(gfx, "media/palette.png", false, false, 0);
 	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
 
+#ifdef SOFTWARE
+	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, false);
+#else
 	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, true);
+#endif
 
 	thug22 = new Entity();
 	thug22->rigid = new RigidBody(thug22);
