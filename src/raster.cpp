@@ -52,6 +52,7 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		v2 += 0.5f;
 		v3 += 0.5f;
 
+
 		//[0,1] -> [0,width]
 		v1 *= vec4(width - 1, height - 1, 1, 1);
 		v2 *= vec4(width - 1, height - 1, 1, 1);
@@ -90,6 +91,8 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
 
+//		if (v1.x >= width || v1.y >= height || v2.x >= width || v2.y >= height || v3.x >= width || v3.y >= height)
+//			continue;
 
 		for (int j = 0; j < num_point; j += 3)
 		{
@@ -102,11 +105,31 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 			}
 			else if (type == BARYCENTRIC)
 			{
+
+				// thread me
 				barycentric_triangle(pixels, zbuffer, width, height, texture,
 					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-					s1, t1, s2, t2, s3, t3);
+					s1, t1, s2, t2, s3, t3, 0, width / 2, 0, height / 2);
+
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, 0, width / 2, height / 2, height);
+
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, width / 2, width, 0, height/2);
+
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, width / 2, width, height / 2, height);
 			}
 			else if (type == HALFSPACE)
 			{
@@ -252,11 +275,30 @@ void raster_triangles_strip(raster_t type, int *pixels, float *zbuffer, int widt
 			}
 			else if (type == BARYCENTRIC)
 			{
+				// thread me
 				barycentric_triangle(pixels, zbuffer, width, height, texture,
 					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-					s1, t1, s2, t2, s3, t3);
+					s1, t1, s2, t2, s3, t3, 0, width / 2, 0, height / 2);
+
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, 0, width / 2, height / 2, height);
+
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, width / 2, width, 0, height / 2);
+
+				barycentric_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, width / 2, width, height / 2, height);
 
 			}
 			else if (type == HALFSPACE)
@@ -539,32 +581,32 @@ inline int det(int ax, int ay, int bx, int by)
 }
 
 void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, texinfo_t *texture, int x1, int y1, float z1, float w1, int c1, int x2, int y2, float z2, float w2, int c2, int x3, int y3, float z3, float w3, int c3,
-	float u1, float v1, float u2, float v2, float u3, float v3)
+	float u1, float v1, float u2, float v2, float u3, float v3, int minx, int maxx, int miny, int maxy)
 {
 	int max_x = MAX(x1, MAX(x2, x3));
 	int min_x = MIN(x1, MIN(x2, x3));
 	int max_y = MAX(y1, MAX(y2, y3));
 	int min_y = MIN(y1, MIN(y2, y3));
 
-	if (min_x < 0)
-		min_x = 0;
-	if (max_x < 0)
-		max_x = 0;
+	if (min_x < minx)
+		min_x = minx;
+	if (min_y < miny)
+		min_y = miny;
 
-	if (min_y < 0)
-		min_y = 0;
-	if (max_y < 0)
-		max_y = 0;
+	if (max_x < minx)
+		max_x = minx;
+	if (max_y < miny)
+		max_y = miny;
 
-	if (min_x >= width)
-		min_x = width - 1;
-	if (max_x >= width)
-		max_x = width - 1;
+	if (min_x >= maxx)
+		min_x = maxx - 1;
+	if (min_y >= maxy)
+		min_y = maxy - 1;
 
-	if (min_y >= height)
-		min_y = height - 1;
-	if (max_y >= height)
-		max_y = height - 1;
+	if (max_x >= maxx)
+		max_x = maxx - 1;
+	if (max_y >= maxy)
+		max_y = maxy - 1;
 
 
 	// triangle spanning vectors
@@ -689,7 +731,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, int width, int height, te
 }
 
 
-void line_intersect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, float &xint, float &yint)
+void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, float &xint, float &yint)
 {
 	float num = (x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4);
 	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
@@ -698,7 +740,7 @@ void line_intersect(float x1, float y1, float x2, float y2, float x3, float y3, 
 	yint = num / den;
 }
 
-void clip_line(vec4 *points, int &num_point, float x1, float y1, float x2, float y2)
+void clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
 {
 	vec4 out[32];
 	int out_num = 0;
