@@ -4,7 +4,7 @@
 #define new DEBUG_NEW
 #endif
 
-void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
+void raster_triangles(raster_t type, int block, int *pixels, float *zbuffer, int width, int height, matrix4 &mvp, int *index_array, vertex_t *vertex_array, texinfo_t *texture, int start_index, int start_vertex, int num_index, int num_verts)
 {
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
@@ -106,31 +106,40 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 			else if (type == BARYCENTRIC)
 			{
 
-				#pragma omp parallel num_threads(16)
+				switch (block)
 				{
+				case 0:
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
+					break;
+				case 1:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
+					break;
+				case 2:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+					break;
+				case 3:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
+					break;
+				case 4:
 
 					// row 2
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
@@ -138,24 +147,32 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
+					break;
+				case 5:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+					break;
+				case 6:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+					break;
+				case 7:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
+					break;
+				case 8:
 
 					// row 3
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
@@ -163,24 +180,32 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 9:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 10:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 11:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+					break;
+				case 12:
 
 					// row 4
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
@@ -188,24 +213,31 @@ void raster_triangles(raster_t type, int *pixels, float *zbuffer, int width, int
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
+					break;
+				case 13:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
+					break;
+				case 14:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+					break;
+				case 15:
 
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
 						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
+					break;
 
 				}
 			}

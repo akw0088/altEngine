@@ -216,7 +216,12 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 {
 	if (current_tex == -1)
 		current_tex = 0;
-	raster_triangles(BARYCENTRIC, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+
+	#pragma omp parallel for num_threads(16)
+	for(int i = 0; i < 16; i++)
+	{
+		raster_triangles(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+	}
 	//	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 
 	gpustat.drawcall++;
