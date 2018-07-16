@@ -3097,7 +3097,7 @@ void Quake3::step(int frame_step)
 	// handles triggers and the projectile as trigger stuff
 	engine->num_light = 0;
 
-	#pragma omp parallel for num_threads(8)
+	//#pragma omp parallel for num_threads(8)
 	for (unsigned int j = engine->max_player; j < engine->entity_list.size(); j++)
 	{
 		Entity *ent = engine->entity_list[j];

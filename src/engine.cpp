@@ -2825,15 +2825,15 @@ void Engine::spatial_testing()
 		}
 	}
 
-	#pragma omp parallel for num_threads(8)
+//	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 #ifdef OPENMP
-		int thread_num = omp_get_thread_num();
-		int num_thread = omp_get_num_threads();
+//		int thread_num = omp_get_thread_num();
+	//	int num_thread = omp_get_num_threads();
 
-		if (entity_list[i]->bsp_leaf % num_thread != thread_num)
-			continue;
+		//if (entity_list[i]->bsp_leaf % num_thread != thread_num)
+			//continue;
 
 //		printf("bsp leaf %d Handled by thread %d of %d\n", entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
@@ -3024,7 +3024,7 @@ void Engine::dynamics()
 
 	//handle_springs();
 
-	#pragma omp parallel for num_threads(8)
+//	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 #ifdef OPENMP
