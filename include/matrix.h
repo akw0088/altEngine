@@ -50,7 +50,7 @@ public:
 	matrix4 operator*(const float scalar);
 	matrix4 operator*(const float *matrix);
 	matrix4 premultiply(const float *mat) const;
-	vec4 operator*(const vec4 &vec);
+	vec4 operator*(const vec4 &vec) const;
 	matrix4 operator*(const matrix4 &q) const;
 	void normalize();
 	matrix4 transpose();

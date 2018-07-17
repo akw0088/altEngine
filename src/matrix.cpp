@@ -525,7 +525,7 @@ matrix4 matrix4::operator*(const float scalar)
 	return result;
 }
 
-vec4 matrix4::operator*(const vec4 &vec)
+vec4 matrix4::operator*(const vec4 &vec) const
 {
 	vec4 result;
 
