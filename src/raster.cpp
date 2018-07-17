@@ -225,7 +225,7 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 {
 	vec4 v1, v2, v3;
 	float s1, s2, s3, t1, t2, t3;
-	static bool even = false;
+	bool even = false;
 	for (int i = start_index; i < start_index + num_index;)
 	{
 		if (i == start_index)
