@@ -40,12 +40,15 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 
 		// [-1,1] -> [0,1]
-		v1 *= 0.5f;
-		v1 += 0.5f;
-		v2 *= 0.5f;
-		v2 += 0.5f;
-		v3 *= 0.5f;
-		v3 += 0.5f;
+		v1.x = v1.x * 0.5f + 0.5f;
+		v1.y = v1.y * 0.5f + 0.5f;
+		v1.z = v1.z * 0.5f + 0.5f;
+		v2.x = v2.x * 0.5f + 0.5f;
+		v2.y = v2.y * 0.5f + 0.5f;
+		v2.z = v2.z * 0.5f + 0.5f;
+		v3.x = v3.x * 0.5f + 0.5f;
+		v3.y = v3.y * 0.5f + 0.5f;
+		v3.z = v3.z * 0.5f + 0.5f;
 
 		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
 			continue;
@@ -291,12 +294,15 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		v3.z /= v3.w;
 
 		// [-1,1] -> [0,1]
-		v1 *= 0.5f;
-		v1 += 0.5f;
-		v2 *= 0.5f;
-		v2 += 0.5f;
-		v3 *= 0.5f;
-		v3 += 0.5f;
+		v1.x = v1.x * 0.5f + 0.5f;
+		v1.y = v1.y * 0.5f + 0.5f;
+		v1.z = v1.z * 0.5f + 0.5f;
+		v2.x = v2.x * 0.5f + 0.5f;
+		v2.y = v2.y * 0.5f + 0.5f;
+		v2.z = v2.z * 0.5f + 0.5f;
+		v3.x = v3.x * 0.5f + 0.5f;
+		v3.y = v3.y * 0.5f + 0.5f;
+		v3.z = v3.z * 0.5f + 0.5f;
 
 		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
 			continue;
