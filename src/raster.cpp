@@ -28,15 +28,18 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			continue;
 
 		// perspective divide
-		v1.x /= v1.w;
-		v1.y /= v1.w;
-		v1.z /= v1.w;
-		v2.x /= v2.w;
-		v2.y /= v2.w;
-		v2.z /= v2.w;
-		v3.x /= v3.w;
-		v3.y /= v3.w;
-		v3.z /= v3.w;
+		float inv = 1 / v1.w;
+		v1.x *= inv;
+		v1.y *= inv;
+		v1.z *= inv;
+		inv = 1 / v2.w;
+		v2.x *= inv;
+		v2.y *= inv;
+		v2.z *= inv;
+		inv = 1 / v3.w;
+		v3.x *= inv;
+		v3.y *= inv;
+		v3.z *= inv;
 
 
 		// [-1,1] -> [0,1]
@@ -55,16 +58,19 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
 
-		//[0,1] -> [0,width]
-		v1 *= vec4(width - 1, height - 1, 1, 1);
-		v2 *= vec4(width - 1, height - 1, 1, 1);
-		v3 *= vec4(width - 1, height - 1, 1, 1);
-
 		// backface cull
 		vec3 a = vec3(v2) - vec3(v1);
 		vec3 b = vec3(v3) - vec3(v1);
 		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
 			continue;
+
+		//[0,1] -> [0,width]
+		v1.x *= width - 1;
+		v1.y *= height - 1;
+		v2.x *= width - 1;
+		v2.y *= height - 1;
+		v3.x *= width - 1;
+		v3.y *= height - 1;
 
 		int num_point = 3;
 		vec4 tri[3];
@@ -283,15 +289,18 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			continue;
 
 		// perspective divide
-		v1.x /= v1.w;
-		v1.y /= v1.w;
-		v1.z /= v1.w;
-		v2.x /= v2.w;
-		v2.y /= v2.w;
-		v2.z /= v2.w;
-		v3.x /= v3.w;
-		v3.y /= v3.w;
-		v3.z /= v3.w;
+		float inv = 1 / v1.w;
+		v1.x *= inv;
+		v1.y *= inv;
+		v1.z *= inv;
+		inv = 1 / v2.w;
+		v2.x *= inv;
+		v2.y *= inv;
+		v2.z *= inv;
+		inv = 1 / v3.w;
+		v3.x *= inv;
+		v3.y *= inv;
+		v3.z *= inv;
 
 		// [-1,1] -> [0,1]
 		v1.x = v1.x * 0.5f + 0.5f;
@@ -308,17 +317,20 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			continue;
 		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
 			continue;
-
-		//[0,1] -> [0,width]
-		v1 *= vec4(width - 1, height - 1, 1, 1);
-		v2 *= vec4(width - 1, height - 1, 1, 1);
-		v3 *= vec4(width - 1, height - 1, 1, 1);
-
+		
 		// backface cull
 		vec3 a = vec3(v2) - vec3(v1);
 		vec3 b = vec3(v3) - vec3(v1);
 		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
 			continue;
+
+		//[0,1] -> [0,width]
+		v1.x *= width - 1;
+		v1.y *= height - 1;
+		v2.x *= width - 1;
+		v2.y *= height - 1;
+		v3.x *= width - 1;
+		v3.y *= height - 1;
 
 		int num_point = 3;
 		vec4 tri[3];
