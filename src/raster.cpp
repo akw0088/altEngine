@@ -739,6 +739,11 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	const float u3, const float v3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
+	if (!(w1 && w2 && w3))
+	{
+		return;
+	}
+
 	int max_x = MAX(x1, MAX(x2, x3));
 	int min_x = MIN(x1, MIN(x2, x3));
 	int max_y = MAX(y1, MAX(y2, y3));
@@ -766,8 +771,6 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 
 	if (max_x == min_x || max_y == min_y)		return;
-
-
 	// triangle spanning vectors
 	int vspan1x = (x2 - x1);
 	int vspan1y = (y2 - y1);
@@ -793,24 +796,19 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	float viz3 = 0.0f;
 
 
-	// find 1/z, u/z, v/z per vertex
-	if (w1 && w2 && w3)
-	{
-		iz1 = 1.0f / w1;
-		iz2 = 1.0f / w2;
-		iz3 = 1.0f / w3;
 
-		uiz1 = u1 * iz1;
-		viz1 = v1 * iz1;
-		uiz2 = u2 * iz2;
-		viz2 = v2 * iz2;
-		uiz3 = u3 * iz3;
-		viz3 = v3 * iz3;
-	}
-	else
-	{
-		return;
-	}
+	// find 1/z, u/z, v/z per vertex
+	iz1 = 1.0f / w1;
+	iz2 = 1.0f / w2;
+	iz3 = 1.0f / w3;
+
+	uiz1 = u1 * iz1;
+	viz1 = v1 * iz1;
+	uiz2 = u2 * iz2;
+	viz2 = v2 * iz2;
+	uiz3 = u3 * iz3;
+	viz3 = v3 * iz3;
+
 
 	for (int y = min_y; y <= max_y; y++)
 	{
@@ -831,23 +829,22 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				float u;
 				float v;
 
-				// interpolate 1/z, u/z, v/z which are linear equations
-				float iu = s * uiz2 + t * uiz3 + (1 - s - t) * uiz1;
-				float iv = s * viz2 + t * viz3 + (1 - s - t) * viz1;
 				float iz = s * iz2 + t *  iz3 + (1 - s - t) * iz1;
-				float z = s * z2 + t *  z3 + (1 - s - t) * z1;
-
-				if (iz)
-				{
-					// find inverse / multiply to get perspective correct z, u, v
-					float zi = 1.0f / iz;
-					u = iu * zi;
-					v = iv * zi;
-				}
-				else
+				if (!iz)
 				{
 					continue;
 				}
+
+				// interpolate 1/z, u/z, v/z which are linear equations
+				float iu = s * uiz2 + t * uiz3 + (1 - s - t) * uiz1;
+				float iv = s * viz2 + t * viz3 + (1 - s - t) * viz1;
+				float z = s * z2 + t *  z3 + (1 - s - t) * z1;
+
+				// find inverse / multiply to get perspective correct z, u, v
+				float zi = 1.0f / iz;
+				u = iu * zi;
+				v = iv * zi;
+
 
 				int ux;
 				int vy;
