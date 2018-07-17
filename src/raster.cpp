@@ -24,12 +24,6 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		if (width <= 1 || height <= 1)
 			break;
 
-		// backface cull
-		vec3 a = vec3(v2) - vec3(v1);
-		vec3 b = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
-			continue;
-
 		if (v1.w == 0.0f || v2.w == 0.0f || v3.w == 0.0f)
 			continue;
 
@@ -47,18 +41,27 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 		// [-1,1] -> [0,1]
 		v1 *= 0.5f;
-		v2 *= 0.5f;
-		v3 *= 0.5f;
-
 		v1 += 0.5f;
+		v2 *= 0.5f;
 		v2 += 0.5f;
+		v3 *= 0.5f;
 		v3 += 0.5f;
 
+		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
+			continue;
+		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
+			continue;
 
 		//[0,1] -> [0,width]
 		v1 *= vec4(width - 1, height - 1, 1, 1);
 		v2 *= vec4(width - 1, height - 1, 1, 1);
 		v3 *= vec4(width - 1, height - 1, 1, 1);
+
+		// backface cull
+		vec3 a = vec3(v2) - vec3(v1);
+		vec3 b = vec3(v3) - vec3(v1);
+		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
+			continue;
 
 		int num_point = 3;
 		vec4 tri[3];
@@ -75,12 +78,6 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[2].y = v3.y;
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
-
-
-		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
-			continue;
-		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
-			continue;
 
 		for (int j = 0; j < num_point; j += 3)
 		{
@@ -275,14 +272,9 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			i++;
 			even = true;
 		}
+
 		if (width <= 1 || height <= 1)
 			break;
-
-		// backface cull
-		vec3 a = vec3(v2) - vec3(v1);
-		vec3 b = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
-			continue;
 
 		if (v1.w == 0.0f || v2.w == 0.0f || v3.w == 0.0f)
 			continue;
@@ -300,17 +292,27 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 
 		// [-1,1] -> [0,1]
 		v1 *= 0.5f;
-		v2 *= 0.5f;
-		v3 *= 0.5f;
-
 		v1 += 0.5f;
+		v2 *= 0.5f;
 		v2 += 0.5f;
+		v3 *= 0.5f;
 		v3 += 0.5f;
+
+		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
+			continue;
+		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
+			continue;
 
 		//[0,1] -> [0,width]
 		v1 *= vec4(width - 1, height - 1, 1, 1);
 		v2 *= vec4(width - 1, height - 1, 1, 1);
 		v3 *= vec4(width - 1, height - 1, 1, 1);
+
+		// backface cull
+		vec3 a = vec3(v2) - vec3(v1);
+		vec3 b = vec3(v3) - vec3(v1);
+		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
+			continue;
 
 		int num_point = 3;
 		vec4 tri[3];
@@ -327,12 +329,6 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		tri[2].y = v3.y;
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
-
-
-		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
-			continue;
-		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
-			continue;
 
 		for (int j = 0; j < num_point; j += 3)
 		{
