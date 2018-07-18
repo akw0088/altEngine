@@ -92,10 +92,11 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		{
 			if (type == SPAN)
 			{
-				span_triangle(pixels, zbuffer, width, height,
-					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255));
+				span_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, 0, width, 0, height);
 			}
 			else if (type == BARYCENTRIC)
 			{
@@ -352,10 +353,11 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		{
 			if (type == SPAN)
 			{
-				span_triangle(pixels, zbuffer, width, height,
-					tri[j + 0].x, tri[j + 0].y, 0, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, 0, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, 0, RGB(0, 0, 255));
+				span_triangle(pixels, zbuffer, width, height, texture,
+					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+					s1, t1, s2, t2, s3, t3, 0, width, 0, height);
 			}
 			else if (type == BARYCENTRIC)
 			{
@@ -490,11 +492,8 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 
 inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x, int y, int z, unsigned int color)
 {
-	if (zbuffer[x + y * width] > z)
-	{
-		pixels[x + ((height - 1 - y) * width)] = color;
-		zbuffer[x + y * width] = z;
-	}
+	pixels[x + ((height - 1 - y) * width)] = color;
+	zbuffer[x + y * width] = z;
 }
 
 void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
@@ -630,26 +629,42 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 
 
 
-inline void draw_xspan(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int color)
+inline void draw_xspan(int *pixels, float *zbuffer, int width, int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int color, float u1, float v1, float u2, float v2)
 {
+	if (x1 < 0)
+		x1 = 0;
+	if (x1 > width)
+		x1 = width - 1;
+	if (x2 < 0)
+		x2 = 0;
+	if (x2 > width)
+		x2 = width - 1;
+
 	if (x1 > x2)
 	{
 		for (int x = x2; x < x1; x++)
 		{
-			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, color);
+			int index = 0;
+			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
 		}
 	}
 	else
 	{
 		for (int x = x1; x < x2; x++)
 		{
-			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, color);
+			int index = 0;
+
+			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
 		}
 	}
 }
 
 
-inline void fill_bottom_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+inline void fill_bottom_triangle(int *pixels, float *zbuffer, int width, int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+	float u1, float v1,
+	float u2, float v2,
+	float u3, float v3,
+	const int minx, const int maxx, const int miny, const int maxy)
 {
 	if (y2 - y1 == 0 || y3 - y1 == 0)
 		return;
@@ -660,15 +675,21 @@ inline void fill_bottom_triangle(int *pixels, float *zbuffer, int width, int hei
 	float curx1 = x1;
 	float curx2 = x1;
 
-	for (int y = y1; y <= y2; y++)
+
+
+	for (int y = y1; y < y2; y++)
 	{
-		draw_xspan(pixels, zbuffer, width, height, (int)curx1, y, z1, (int)curx2, color);
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, u1, v1, u2, v2);
 		curx1 += invslope1;
 		curx2 += invslope2;
 	}
 }
 
-inline void fill_top_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color)
+inline void fill_top_triangle(int *pixels, float *zbuffer, int width, int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+	float u1, float v1,
+	float u2, float v2,
+	float u3, float v3,
+	const int minx, const int maxx, const int miny, const int maxy)
 {
 	if (y3 - y1 == 0 || y3 - y2 == 0)
 		return;
@@ -679,15 +700,23 @@ inline void fill_top_triangle(int *pixels, float *zbuffer, int width, int height
 	float curx1 = x3;
 	float curx2 = x3;
 
+
 	for (int y = y3; y > y1; y--)
 	{
-		draw_xspan(pixels, zbuffer, width, height, (int)curx1, y, z1, (int)curx2, color);
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, u1, v1, u2, v2);
 		curx1 -= invslope1;
 		curx2 -= invslope2;
 	}
 }
 
-void span_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3)
+void span_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
+	int x1, int y1, float z1, float w1, int c1,
+	int x2, int y2, float z2, float w2, int c2,
+	int x3, int y3, float z3, float w3, int c3,
+	float u1, float v1,
+	float u2, float v2,
+	float u3, float v3,
+	const int minx, const int maxx, const int miny, const int maxy)
 {
 	// sort y
 	if (y1 > y2)
@@ -723,23 +752,41 @@ void span_triangle(int *pixels, float *zbuffer, int width, int height, int x1, i
 		y1 = temp;
 	}
 
+	if (y1 < 0)
+		y1 = 0;
+	if (y1 > height)
+		y1 = height - 1;
+	if (y2 < 0)
+		y2 = 0;
+	if (y2 > height)
+		y2 = height - 1;
+	if (y3 < 0)
+		y3 = 0;
+	if (y3 > height)
+		y3 = height - 1;
+
+
 	if (y2 == y3)
 	{
 		// bottom triangle
-		fill_bottom_triangle(pixels, zbuffer, width, height, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1);
+		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
 	}
 	else if (y1 == y2)
 	{
 		// top triangle
-		fill_top_triangle(pixels, zbuffer, width, height, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1);
+		fill_top_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
 	}
 	else
 	{
 		// split triangle
-		int x4 = (int)(x1 + ((float)(y2 - y1) / (float)(y3 - y1)) * (x3 - x1));
+		float den = (float)(y3 - y1) * (x3 - x1);
+		if (den == 0.0f)
+			return;
+
+		int x4 = (int)(x1 + ((float)(y2 - y1) / den));
 		int y4 = y2;
-		fill_bottom_triangle(pixels, zbuffer, width, height, x1, y1, z1, x2, y2, z3, x4, y4, z3, c1);
-		fill_top_triangle(pixels, zbuffer, width, height, x2, y2, z2, x4, y4, z2, x3, y3, z3, c1);
+		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z3, x4, y4, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
+		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, x4, y4, z2, x3, y3, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
 	}
 }
 
@@ -854,9 +901,15 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				}
 
 				// interpolate 1/z, u/z, v/z which are linear equations
+				float z = s * z2 + t *  z3 + (1 - s - t) * z1;
+				if (zbuffer[x + y * width] < z)
+				{
+					continue;
+				}
+
 				float iu = s * uiz2 + t * uiz3 + (1 - s - t) * uiz1;
 				float iv = s * viz2 + t * viz3 + (1 - s - t) * viz1;
-				float z = s * z2 + t *  z3 + (1 - s - t) * z1;
+
 
 				// find inverse / multiply to get perspective correct z, u, v
 				float zi = 1.0f / iz;

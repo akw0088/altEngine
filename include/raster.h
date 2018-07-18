@@ -35,7 +35,14 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	const float u3, const float v3,
 	const int minx, const int maxx, const int miny, const int maxy);
 
-	void span_triangle(int *pixels, float *zbuffer, int width, int height, int x1, int y1, int z1, int c1, int x2, int y2, int z2, int c2, int x3, int y3, int z3, int c3);
+void span_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
+	int x1, int y1, float z1, float w1, int c1,
+	int x2, int y2, float z2, float w2, int c2,
+	int x3, int y3, float z3, float w3, int c3,
+	float u1, float v1,
+	float u2, float v2,
+	float u3, float v3,
+	const int minx, const int maxx, const int miny, const int maxy);
 void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point);
 void triangulate(vec4 *point, int &num_point);
 void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3);
