@@ -913,12 +913,15 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		if (vi < 0)
 			vi = 1.0 - v1;
 
-		int index = (vi * (texture->height - 1)) * (texture->width - 1) + ui * (texture->width - 1);
+		int ux = ui * (texture->width - 1);
+		int vy = vi * (texture->height - 1);
+
+		int index = vy * (texture->width) + ux;
 		if (index < 0 || index >= texture->width * texture->height)
 			index = 0;
 
 		draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
-		ui += du;
+		ui += -du;
 		vi += dv;
 	}
 
@@ -988,7 +991,7 @@ inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, cons
 
 	float vinvslope1 = (float)(v3 - v1) / (y3 - y1); // dv / dy
 	float vinvslope2 = (float)(v3 - v2) / (y3 - y1); // dv / dy
-	float curv1 = v3;
+	float curv1 = v1;
 	float curv2 = v2;
 
 
@@ -1027,6 +1030,14 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		temp = y2;
 		y2 = y1;
 		y1 = temp;
+
+		temp = u2;
+		u2 = u1;
+		u1 = temp;
+
+		temp = v2;
+		v2 = v1;
+		v1 = temp;
 	}
 
 	if (y2 > y3)
@@ -1038,6 +1049,15 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		temp = y3;
 		y3 = y2;
 		y2 = temp;
+
+		temp = u3;
+		u3 = u2;
+		u2 = temp;
+
+		temp = v3;
+		v3 = v2;
+		v2 = temp;
+
 	}
 
 	if (y1 > y2)
@@ -1049,6 +1069,15 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		temp = y2;
 		y2 = y1;
 		y1 = temp;
+
+		temp = u2;
+		u2 = u1;
+		u1 = temp;
+
+		temp = v2;
+		v2 = v1;
+		v1 = temp;
+
 	}
 
 	if (y1 < miny)
