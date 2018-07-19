@@ -92,11 +92,125 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		{
 			if (type == SPAN)
 			{
-				span_triangle(pixels, zbuffer, width, height, texture,
-					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-					s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+				switch (block)
+				{
+				case 0:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+					break;
+				case 1:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
+					break;
+				case 2:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+					break;
+				case 3:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
+					break;
+				case 4:
+					// row 2
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
+					break;
+				case 5:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+					break;
+				case 6:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+					break;
+				case 7:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
+					break;
+				case 8:
+					// row 3
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 9:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 10:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 11:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+					break;
+				case 12:
+					// row 4
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
+					break;
+				case 13:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
+					break;
+				case 14:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+					break;
+				case 15:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
+					break;
+
+				}
 			}
 			else if (type == BARYCENTRIC)
 			{
@@ -353,11 +467,124 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		{
 			if (type == SPAN)
 			{
-				span_triangle(pixels, zbuffer, width, height, texture,
-					tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-					tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-					tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-					s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+				switch (block)
+				{
+				case 0:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
+					break;
+				case 1:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
+					break;
+				case 2:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+					break;
+				case 3:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
+					break;
+				case 4:
+					// row 2
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
+					break;
+				case 5:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+					break;
+				case 6:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+					break;
+				case 7:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
+					break;
+				case 8:
+					// row 3
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 9:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 10:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+					break;
+				case 11:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+					break;
+				case 12:
+					// row 4
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
+					break;
+				case 13:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
+					break;
+				case 14:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+					break;
+				case 15:
+					span_triangle(pixels, zbuffer, width, height, texture,
+						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
+					break;
+				}
 			}
 			else if (type == BARYCENTRIC)
 			{
@@ -629,83 +856,155 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 
 
 
-inline void draw_xspan(int *pixels, float *zbuffer, int width, int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int color, float u1, float v1, float u2, float v2)
+inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int color, float u1, float v1, float u2, float v2,
+	const int minx, const int maxx, const int miny, const int maxy)
 {
-	if (x1 < 0)
-		x1 = 0;
-	if (x1 > width)
-		x1 = width - 1;
-	if (x2 < 0)
-		x2 = 0;
-	if (x2 > width)
-		x2 = width - 1;
+	if (x1 < minx)
+		x1 = minx;
+	if (x1 >= maxx)
+		x1 = maxx;
+	if (x2 < minx)
+		x2 = minx;
+	if (x2 >= maxx)
+		x2 = maxx;
+
+	if (x1 == x2)
+		return;
+
+	int dx;
+	int xs;
+	int xe;
+
+	float du;
+	float dv;
+
+	float ui;
+	float vi;
 
 	if (x1 > x2)
 	{
-		for (int x = x2; x < x1; x++)
-		{
-			int index = 0;
-			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
-		}
+		dx = (x1 - x2);
+		xs = x2;
+		xe = x1;
+
+		du = (u2 - u1) / dx;
+		dv = (v2 - v1) / dx;
+
+		ui = u2 - (int)u2;
+		vi = v2 - (int)v2;
 	}
 	else
 	{
-		for (int x = x1; x < x2; x++)
-		{
-			int index = 0;
+		dx = (x2 - x1);
+		xs = x1;
+		xe = x2;
 
-			draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
-		}
+		du = (u1 - u2) / dx;
+		dv = (v1 - v2) / dx;
+
+		ui = u1 - (int)u1;
+		vi = v1 - (int)v1;
 	}
+
+	for (int x = xs; x < xe; x++)
+	{
+		if (ui < 0)
+			ui = 1.0 - u1;
+		if (vi < 0)
+			vi = 1.0 - v1;
+
+		int index = (vi * (texture->height - 1)) * (texture->width - 1) + ui * (texture->width - 1);
+		if (index < 0 || index >= texture->width * texture->height)
+			index = 0;
+
+		draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
+		ui += du;
+		vi += dv;
+	}
+
 }
 
 
-inline void fill_bottom_triangle(int *pixels, float *zbuffer, int width, int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
 	float u3, float v3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
-	if (y2 - y1 == 0 || y3 - y1 == 0)
+	if (y3 - y1 == 0)
 		return;
 
-	float invslope1 = (float)(x2 - x1) / (y2 - y1);
-	float invslope2 = (float)(x3 - x1) / (y3 - y1);
+	// flat bottom y2 - y1 == y3 - y1
 
+	float invslope1 = (float)(x2 - x1) / (y3 - y1); // dx / dy
+	float invslope2 = (float)(x3 - x1) / (y3 - y1); // dx / dy
 	float curx1 = x1;
 	float curx2 = x1;
 
+	float uinvslope1 = (float)(u2 - u1) / (y3 - y1); // du / dy
+	float uinvslope2 = (float)(u3 - u1) / (y3 - y1); // du / dy
+	float curu1 = u1;
+	float curu2 = u1;
+	float vinvslope1 = (float)(v2 - v1) / (y3 - y1); // dv / dy
+	float vinvslope2 = (float)(v3 - v1) / (y3 - y1); // dv / dy
+	float curv1 = v1;
+	float curv2 = v1;
 
 
-	for (int y = y1; y < y2; y++)
+
+	for (int y = y1; y < y3; y++)
 	{
-		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, u1, v1, u2, v2);
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
 		curx1 += invslope1;
 		curx2 += invslope2;
+		curu1 += uinvslope1;
+		curu2 += uinvslope2;
+		curv1 += vinvslope1;
+		curv2 += vinvslope2;
 	}
 }
 
-inline void fill_top_triangle(int *pixels, float *zbuffer, int width, int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+
+inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
 	float u3, float v3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
-	if (y3 - y1 == 0 || y3 - y2 == 0)
+	if (y3 - y1 == 0)
 		return;
 
+	// y3 - y1 == y2 - y1
 	float invslope1 = (float)(x3 - x1) / (y3 - y1);
-	float invslope2 = (float)(x3 - x2) / (y3 - y2);
+	float invslope2 = (float)(x3 - x2) / (y3 - y1);
+	float curx1 = x1;
+	float curx2 = x2;
 
-	float curx1 = x3;
-	float curx2 = x3;
+
+	float uinvslope1 = (float)(u3 - u1) / (y3 - y1); // du / dy
+	float uinvslope2 = (float)(u3 - u2) / (y3 - y1); // du / dy
+	float curu1 = u1;
+	float curu2 = u2;
+
+	float vinvslope1 = (float)(v3 - v1) / (y3 - y1); // dv / dy
+	float vinvslope2 = (float)(v3 - v2) / (y3 - y1); // dv / dy
+	float curv1 = v3;
+	float curv2 = v2;
 
 
-	for (int y = y3; y > y1; y--)
+	// 3
+	//12
+
+	for (int y = y1; y < y3; y++)
 	{
-		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, u1, v1, u2, v2);
-		curx1 -= invslope1;
-		curx2 -= invslope2;
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
+		curx1 += invslope1;
+		curx2 += invslope2;
+		curu1 += uinvslope1;
+		curu2 += uinvslope2;
+		curv1 += vinvslope1;
+		curv2 += vinvslope2;
+
 	}
 }
 
@@ -718,7 +1017,7 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	float u3, float v3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
-	// sort y
+	// sort y bottom to top
 	if (y1 > y2)
 	{
 		int temp = x2;
@@ -752,18 +1051,18 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		y1 = temp;
 	}
 
-	if (y1 < 0)
-		y1 = 0;
-	if (y1 > height)
-		y1 = height - 1;
-	if (y2 < 0)
-		y2 = 0;
-	if (y2 > height)
-		y2 = height - 1;
-	if (y3 < 0)
-		y3 = 0;
-	if (y3 > height)
-		y3 = height - 1;
+	if (y1 < miny)
+		y1 = miny;
+	if (y1 > maxy)
+		y1 = maxy;
+	if (y2 < miny)
+		y2 = miny;
+	if (y2 > maxy)
+		y2 = maxy;
+	if (y3 < miny)
+		y3 = miny;
+	if (y3 > maxy)
+		y3 = maxy;
 
 
 	if (y2 == y3)
@@ -786,7 +1085,7 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		int x4 = (int)(x1 + ((float)(y2 - y1) / den));
 		int y4 = y2;
 		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z3, x4, y4, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
-		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, x4, y4, z2, x3, y3, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
+		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, x4, y4, z2, x3, y3, z3, c1, u2, v2, u2, v2, u3, v3, minx, maxx, miny, maxy);
 	}
 }
 
