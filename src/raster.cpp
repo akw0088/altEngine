@@ -1021,64 +1021,37 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	const int minx, const int maxx, const int miny, const int maxy)
 {
 	// sort y bottom to top
+	// sort y bottom to top
 	if (y1 > y2)
 	{
-		int temp = x2;
-		x2 = x1;
-		x1 = temp;
-
-		temp = y2;
-		y2 = y1;
-		y1 = temp;
-
-		temp = u2;
-		u2 = u1;
-		u1 = temp;
-
-		temp = v2;
-		v2 = v1;
-		v1 = temp;
+		SWAP(x1, x2, int);
+		SWAP(y1, y2, int);
+		SWAP(z1, z2, int);
+		SWAP(w1, w2, int);
+		SWAP(u1, u2, float);
+		SWAP(v1, v2, float);
 	}
 
 	if (y2 > y3)
 	{
-		int temp = x3;
-		x3 = x2;
-		x2 = temp;
-
-		temp = y3;
-		y3 = y2;
-		y2 = temp;
-
-		temp = u3;
-		u3 = u2;
-		u2 = temp;
-
-		temp = v3;
-		v3 = v2;
-		v2 = temp;
-
+		SWAP(x3, x2, int);
+		SWAP(y3, y2, int);
+		SWAP(z3, z2, int);
+		SWAP(w3, w2, int);
+		SWAP(u3, u2, float);
+		SWAP(v3, v2, float);
 	}
 
 	if (y1 > y2)
 	{
-		int temp = x2;
-		x2 = x1;
-		x1 = temp;
-
-		temp = y2;
-		y2 = y1;
-		y1 = temp;
-
-		temp = u2;
-		u2 = u1;
-		u1 = temp;
-
-		temp = v2;
-		v2 = v1;
-		v1 = temp;
-
+		SWAP(x1, x2, int);
+		SWAP(y1, y2, int);
+		SWAP(z1, z2, int);
+		SWAP(w1, w2, int);
+		SWAP(u1, u2, float);
+		SWAP(v1, v2, float);
 	}
+
 
 	if (y1 < miny)
 		y1 = miny;
@@ -1106,15 +1079,18 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	}
 	else
 	{
-		// split triangle
-		float den = (float)(y3 - y1) * (x3 - x1);
-		if (den == 0.0f)
-			return;
+		float t = (float)(y2 - y1) / (y3 - y1);
+		int new_x = (int)((x3 - x1) * t + x1);
+		int new_y = y2;
 
-		int x4 = (int)(x1 + ((float)(y2 - y1) / den));
-		int y4 = y2;
-		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z3, x4, y4, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
-		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, x4, y4, z2, x3, y3, z3, c1, u2, v2, u2, v2, u3, v3, minx, maxx, miny, maxy);
+
+		float new_u = (u3 - u1) * t + u1;
+		float new_v = (v3 - v1) * t + v1;
+
+
+
+		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z3, new_x, new_y, z3, c1, u1, v1, u2, v2, new_u, new_v, minx, maxx, miny, maxy);
+		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, new_x, new_y, z2, x3, y3, z3, c1, u2, v2, new_u, new_v, u3, v3, minx, maxx, miny, maxy);
 	}
 }
 
