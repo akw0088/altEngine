@@ -99,7 +99,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+						s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
 					break;
 				case 1:
 					span_triangle(pixels, zbuffer, width, height, texture,
@@ -221,7 +221,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
+						s1, t1, s2, t2, s3, t3, 0, width, 0, height);
 					break;
 				case 1:
 					barycentric_triangle(pixels, zbuffer, width, height, texture,
@@ -859,15 +859,6 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
-	if (x1 < minx)
-		x1 = minx;
-	if (x1 >= maxx)
-		x1 = maxx;
-	if (x2 < minx)
-		x2 = minx;
-	if (x2 >= maxx)
-		x2 = maxx;
-
 	if (x1 == x2)
 		return;
 
@@ -908,10 +899,19 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 
 	for (int x = xs; x < xe; x++)
 	{
+		if (x < minx || x >= maxx)
+		{
+			ui += -du;
+			vi += dv;
+			continue;
+		}
 		if (ui < 0)
 			ui = 1.0 - u1;
 		if (vi < 0)
 			vi = 1.0 - v1;
+
+		ui = ui - (int)ui;
+		vi = vi - (int)vi;
 
 		int ux = ui * (texture->width - 1);
 		int vy = vi * (texture->height - 1);
@@ -920,9 +920,10 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		if (index < 0 || index >= texture->width * texture->height)
 			index = 0;
 
+
 		draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
 		ui += -du;
-		vi += dv;
+		vi += -dv;
 	}
 
 }
@@ -957,6 +958,17 @@ inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, c
 
 	for (int y = y1; y < y3; y++)
 	{
+		if (y < miny || y >= maxy)
+		{
+			curx1 += invslope1;
+			curx2 += invslope2;
+			curu1 += uinvslope1;
+			curu2 += uinvslope2;
+			curv1 += vinvslope1;
+			curv2 += vinvslope2;
+			continue;
+		}
+
 		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
 		curx1 += invslope1;
 		curx2 += invslope2;
@@ -1000,6 +1012,17 @@ inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, cons
 
 	for (int y = y1; y < y3; y++)
 	{
+		if (y < miny || y >= maxy)
+		{
+			curx1 += invslope1;
+			curx2 += invslope2;
+			curu1 += uinvslope1;
+			curu2 += uinvslope2;
+			curv1 += vinvslope1;
+			curv2 += vinvslope2;
+			continue;
+		}
+
 		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
 		curx1 += invslope1;
 		curx2 += invslope2;
@@ -1020,6 +1043,14 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	float u3, float v3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
+
+	if (x1 > maxx && x1 < minx && y1 > maxy && y1 < miny &&
+		x2 > maxx && x2 < minx && y2 > maxy && y2 < miny &&
+		x3 > maxx && x3 < minx && y3 > maxy && y3 < miny)
+	{
+		return;
+	}
+
 	// sort y bottom to top
 	// sort y bottom to top
 	if (y1 > y2)
@@ -1051,20 +1082,6 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		SWAP(u1, u2, float);
 		SWAP(v1, v2, float);
 	}
-
-
-	if (y1 < miny)
-		y1 = miny;
-	if (y1 > maxy)
-		y1 = maxy;
-	if (y2 < miny)
-		y2 = miny;
-	if (y2 > maxy)
-		y2 = maxy;
-	if (y3 < miny)
-		y3 = miny;
-	if (y3 > maxy)
-		y3 = maxy;
 
 
 	if (y2 == y3)
