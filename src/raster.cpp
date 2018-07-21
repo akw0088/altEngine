@@ -856,7 +856,7 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 
 
 
-inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int color, float u1, float v1, float u2, float v2,
+inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
 	if (x1 == x2)
@@ -868,9 +868,11 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 
 	float du;
 	float dv;
+	float dz;
 
 	float ui;
 	float vi;
+	float zi;
 
 	if (x1 > x2)
 	{
@@ -878,11 +880,13 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		xs = x2;
 		xe = x1;
 
+		dz = (z2 - z1) / dx;
 		du = (u2 - u1) / dx;
 		dv = (v2 - v1) / dx;
 
 		ui = u2 - (int)u2;
 		vi = v2 - (int)v2;
+		zi = z2;
 	}
 	else
 	{
@@ -890,11 +894,13 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		xs = x1;
 		xe = x2;
 
+		dz = (z2 - z1) / dx;
 		du = (u1 - u2) / dx;
 		dv = (v1 - v2) / dx;
 
 		ui = u1 - (int)u1;
 		vi = v1 - (int)v1;
+		zi = z1;
 	}
 
 	for (int x = xs; x < xe; x++)
@@ -902,13 +908,26 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		if (x < minx || x >= maxx)
 		{
 			ui += -du;
-			vi += dv;
+			vi += -dv;
+			zi += -dz;
 			continue;
 		}
+
+
+		if (zbuffer[x + y1 * width] < zi)
+		{
+			ui += -du;
+			vi += -dv;
+			zi += -dz;
+
+			continue;
+		}
+
+
 		if (ui < 0)
-			ui = 1.0 - u1;
+			ui = 1.0f - ui;
 		if (vi < 0)
-			vi = 1.0 - v1;
+			vi = 1.0f - vi;
 
 		ui = ui - (int)ui;
 		vi = vi - (int)vi;
@@ -921,9 +940,10 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 			index = 0;
 
 
-		draw_pixel(pixels, zbuffer, width, height, x, y1, z1, texture->data[index]);
+		draw_pixel(pixels, zbuffer, width, height, x, y1, zi, texture->data[index]);
 		ui += -du;
 		vi += -dv;
+		zi += -dz;
 	}
 
 }
@@ -945,8 +965,8 @@ inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, c
 	float curx1 = x1;
 	float curx2 = x1;
 
-	float uinvslope1 = (float)(u2 - u1) / (y3 - y1); // du / dy
-	float uinvslope2 = (float)(u3 - u1) / (y3 - y1); // du / dy
+	float uinvslope1 = (float)((u2 - u1)) / (y3 - y1); // du / dy
+	float uinvslope2 = (float)((u3 - u1)) / (y3 - y1); // du / dy
 	float curu1 = u1;
 	float curu2 = u1;
 	float vinvslope1 = (float)(v2 - v1) / (y3 - y1); // dv / dy
@@ -969,7 +989,7 @@ inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, c
 			continue;
 		}
 
-		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, z2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
 		curx1 += invslope1;
 		curx2 += invslope2;
 		curu1 += uinvslope1;
@@ -1023,7 +1043,7 @@ inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, cons
 			continue;
 		}
 
-		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
+		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, z2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
 		curx1 += invslope1;
 		curx2 += invslope2;
 		curu1 += uinvslope1;
@@ -1102,7 +1122,7 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 
 
 		float new_u = (u3 - u1) * t + u1;
-		float new_v = (v3 - v1) * t + v1;
+		float new_v = -((v3 - v1) * t + v1);
 
 
 
