@@ -200,6 +200,7 @@ public:
 	int current_vbo;
 	int current_ibo;
 	int current_tex;
+	int lightmap_tex;
 	static matrix4 current_mvp;
 
 #endif

@@ -20,19 +20,22 @@ typedef enum {
 } raster_t;
 
 void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
-	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture,
+	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts);
 
 void raster_triangles_strip(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
-	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture,
+	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts);
-void barycentric_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
+void barycentric_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int x1, const int y1, const float z1, const float w1, const int c1,
 	const int x2, const int y2, const float z2, const float w2, const int c2,
 	const int x3, const int y3, const float z3, const float w3, const int c3,
 	const float u1, const float v1,
 	const float u2, const float v2,
 	const float u3, const float v3,
+	const float lu1, const float lv1,
+	const float lu2, const float lv2,
+	const float lu3, const float lv3,
 	const int minx, const int maxx, const int miny, const int maxy);
 
 void span_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,

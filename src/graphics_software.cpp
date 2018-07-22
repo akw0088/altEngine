@@ -223,11 +223,14 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 {
 	if (current_tex == -1)
 		current_tex = 0;
+	if (lightmap_tex == -1)
+		lightmap_tex = 0;
+
 
 	#pragma omp parallel for num_threads(16)
 	for(int i = 0; i < 16; i++)
 	{
-		raster_triangles(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+		raster_triangles(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
 	}
 	//	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
 
@@ -242,7 +245,7 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 #pragma omp parallel for num_threads(16)
 	for (int i = 0; i < 16; i++)
 	{
-		raster_triangles_strip(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], start_index, start_vertex, num_index, num_verts);
+		raster_triangles_strip(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
 	}
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;
@@ -314,7 +317,15 @@ void Graphics::SelectCubemap(int texObject)
 
 void Graphics::SelectTexture(int level, int texObject)
 {
-	current_tex = texObject;
+	switch (level)
+	{
+	case 0:
+		current_tex = texObject;
+		break;
+	default:
+		lightmap_tex = texObject;
+		break;
+	}
 }
 
 void Graphics::DeselectTexture(int level)
