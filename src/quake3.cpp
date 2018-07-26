@@ -6973,13 +6973,14 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			{
 				matrix4 matrix;
 				unsigned int index = atoi(data2);
+				Entity *ent = entity_list[self];
 
-				if (entity_list[self]->player->teleport_timer > 0)
+				if (ent->player->teleport_timer > 0)
 					return;
 
-				entity_list[self]->player->teleport_timer = TICK_RATE >> 1;
-				entity_list[self]->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
-				entity_list[self]->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+				ent->player->teleport_timer = TICK_RATE >> 1;
+				ent->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
+				ent->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
 
 
 				if (index < entity_list.size())
@@ -6987,10 +6988,10 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					engine->play_wave(entity_list[index]->position, SND_TELEOUT);
 				}
 
-				if (entity_list[self]->player->local)
+				if (ent->player->local)
 					engine->play_wave_global(SND_TELEIN);
 				else
-					engine->play_wave(entity_list[self]->position, SND_TELEIN);
+					engine->play_wave(ent->position, SND_TELEIN);
 
 				switch (entity_list[i]->brushinfo->angle)
 				{
@@ -6998,22 +6999,22 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				case 45:
 				case 360:
 				case 315:
-					matrix4::mat_left(matrix, entity_list[self]->position);
+					matrix4::mat_left(matrix, ent->position);
 					break;
 				case 90:
-					matrix4::mat_forward(matrix, entity_list[self]->position);
+					matrix4::mat_forward(matrix, ent->position);
 					break;
 				case 135:
 				case 180:
-					matrix4::mat_right(matrix, entity_list[self]->position);
+					matrix4::mat_right(matrix, ent->position);
 					break;
 				case 225:
 				case 270:
-					matrix4::mat_backward(matrix, entity_list[self]->position);
+					matrix4::mat_backward(matrix, ent->position);
 					break;
 				}
 
-				if (entity_list[self]->player->local && spectator == 0)
+				if (ent->player->local && spectator == 0)
 				{
 					engine->camera_frame.forward.x = matrix.m[8];
 					engine->camera_frame.forward.y = matrix.m[9];
@@ -8907,8 +8908,8 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 
 				if (player->health <= 0 && player->state != PLAYER_DEAD)
 				{
-					char word[32] = { 0 };
-					char weapon[32];
+					char word[32] = "";
+					char weapon[32] = "";
 
 					player->state = PLAYER_DEAD;
 					player->stats.deaths++;

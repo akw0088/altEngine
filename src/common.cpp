@@ -1967,12 +1967,12 @@ void pick_tetrahedron(vec3 &a, vec3 &b, vec3 &c,
 		support(shape2, shape1, v, a, num_vert_two, num_vert_one);
 	}
 
+	vec3 ad = d - a;
 	for( int i = 0; i < iteration_allowed; i++)
 	{
 		ab = b - a;
 		ao = -a;
 		ac = c - a;
-		vec3 ad = d - a;
 
 		abc = vec3::crossproduct(ab, ac);
 		if ( abc * ao > 0)

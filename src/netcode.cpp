@@ -729,14 +729,15 @@ int Netcode::server_recv()
 				if (client_list[i]->qport == clientmsg.qport)
 				{
 					found = true;
+					Player *player = engine->entity_list[client_list[i]->ent_id]->player;
 
-					if (strcmp(name, engine->entity_list[client_list[i]->ent_id]->player->name) != 0)
+					if (strcmp(name, player->name) != 0)
 					{
 						char msg[256];
 
-						sprintf(msg, "say \"%s renamed to %s\"", engine->entity_list[client_list[i]->ent_id]->player->name, name);
+						sprintf(msg, "say \"%s renamed to %s\"", player->name, name);
 						chat("Server", msg);
-						sprintf(engine->entity_list[client_list[i]->ent_id]->player->name, "%s", name);
+						sprintf(player->name, "%s", name);
 					}
 					client_list[i]->client_sequence = clientmsg.sequence;
 					client_list[i]->server_sequence = sequence + 1;
