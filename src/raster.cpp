@@ -96,256 +96,274 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
 
-		for (int j = 0; j < num_point; j += 3)
+		try {
+			for (int j = 0; j < num_point; j += 3)
+			{
+				if (type == SPAN)
+				{
+					switch (block)
+					{
+					case 0:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
+						break;
+					case 1:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
+						break;
+					case 2:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+						break;
+					case 3:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
+						break;
+					case 4:
+						// row 2
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
+						break;
+					case 5:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 6:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 7:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
+						break;
+					case 8:
+						// row 3
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 9:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 10:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 11:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+						break;
+					case 12:
+						// row 4
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
+						break;
+					case 13:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
+						break;
+					case 14:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+						break;
+					case 15:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
+						break;
+					default:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+						break;
+					}
+				}
+				else if (type == BARYCENTRIC)
+				{
+					switch (block)
+					{
+					case 0:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
+						break;
+					case 1:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 0, height / 4);
+						break;
+					case 2:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+						break;
+					case 3:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 0, height / 4);
+						break;
+					case 4:
+						// row 2
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, height / 4, 2 * height / 4);
+						break;
+					case 5:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 6:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 7:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, height / 4, 2 * height / 4);
+						break;
+					case 8:
+						// row 3
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 9:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 10:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 11:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+						break;
+					case 12:
+						// row 4
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 3 * height / 4, height);
+						break;
+					case 13:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 3 * height / 4, height);
+						break;
+					case 14:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+						break;
+					case 15:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 3 * height / 4, height);
+						break;
+					default:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
+						break;
+					}
+				}
+				else if (type == HALFSPACE)
+				{
+					halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
+				}
+			}
+		}
+		catch (...)
 		{
-			if (type == SPAN)
-			{
-				switch (block)
-				{
-				case 0:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
-					break;
-				case 1:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
-					break;
-				case 2:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
-					break;
-				case 3:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
-					break;
-				case 4:
-					// row 2
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
-					break;
-				case 5:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 6:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 7:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
-					break;
-				case 8:
-					// row 3
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 9:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 10:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 11:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
-					break;
-				case 12:
-					// row 4
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
-					break;
-				case 13:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
-					break;
-				case 14:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
-					break;
-				case 15:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
-					break;
 
-				}
-			}
-			else if (type == BARYCENTRIC)
-			{
-				switch (block)
-				{
-				case 0:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
-					break;
-				case 1:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 0, height / 4);
-					break;
-				case 2:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 0, height / 4);
-					break;
-				case 3:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 0, height / 4);
-					break;
-				case 4:
-					// row 2
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, height / 4, 2 * height / 4);
-					break;
-				case 5:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 6:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 7:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, height / 4, 2 * height / 4);
-					break;
-				case 8:
-					// row 3
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 9:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 10:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 11:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
-					break;
-				case 12:
-					// row 4
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 3 * height / 4, height);
-					break;
-				case 13:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 3 * height / 4, height);
-					break;
-				case 14:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
-					break;
-				case 15:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 3 * height / 4, height);
-					break;
-
-				}
-			}
-			else if (type == HALFSPACE)
-			{
-				halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
-			}
 		}
 	}
 
@@ -499,255 +517,275 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
 
-		for (int j = 0; j < num_point; j += 3)
-		{
-			if (type == SPAN)
-			{
-				switch (block)
-				{
-				case 0:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
-					break;
-				case 1:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
-					break;
-				case 2:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
-					break;
-				case 3:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
-					break;
-				case 4:
-					// row 2
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
-					break;
-				case 5:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 6:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 7:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
-					break;
-				case 8:
-					// row 3
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 9:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 10:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 11:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
-					break;
-				case 12:
-					// row 4
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
-					break;
-				case 13:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
-					break;
-				case 14:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
-					break;
-				case 15:
-					span_triangle(pixels, zbuffer, width, height, texture,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
-					break;
-				}
-			}
-			else if (type == BARYCENTRIC)
-			{
-				switch (block)
-				{
-				case 0:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 0, height / 4);
-					break;
-				case 1:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 0, height / 4);
-					break;
-				case 2:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 0, height / 4);
-					break;
-				case 3:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 0, height / 4);
-					break;
-				case 4:
-					// row 2
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, height / 4, 2 * height / 4);
-					break;
-				case 5:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 6:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
-					break;
-				case 7:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, height / 4, 2 * height / 4);
-					break;
-				case 8:
-					// row 3
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 9:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 10:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
-					break;
-				case 11:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
-					break;
-				case 12:
-					// row 4
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 3 * height / 4, height);
-					break;
-				case 13:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 3 * height / 4, height);
-					break;
-				case 14:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
-					break;
-				case 15:
-					barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
-						tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
-						tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
-						tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-						s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 3 * height / 4, height);
-					break;
 
+		try {
+			for (int j = 0; j < num_point; j += 3)
+			{
+				if (type == SPAN)
+				{
+					switch (block)
+					{
+					case 0:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
+						break;
+					case 1:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
+						break;
+					case 2:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+						break;
+					case 3:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
+						break;
+					case 4:
+						// row 2
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
+						break;
+					case 5:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 6:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 7:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
+						break;
+					case 8:
+						// row 3
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 9:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 10:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 11:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+						break;
+					case 12:
+						// row 4
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
+						break;
+					case 13:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
+						break;
+					case 14:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+						break;
+					case 15:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
+						break;
+					default:
+						span_triangle(pixels, zbuffer, width, height, texture,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+						break;
+					}
+				}
+				else if (type == BARYCENTRIC)
+				{
+					switch (block)
+					{
+					case 0:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 0, height / 4);
+						break;
+					case 1:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 0, height / 4);
+						break;
+					case 2:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+						break;
+					case 3:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 0, height / 4);
+						break;
+					case 4:
+						// row 2
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, height / 4, 2 * height / 4);
+						break;
+					case 5:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 6:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+						break;
+					case 7:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, height / 4, 2 * height / 4);
+						break;
+					case 8:
+						// row 3
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 9:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 10:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+						break;
+					case 11:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+						break;
+					case 12:
+						// row 4
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 3 * height / 4, height);
+						break;
+					case 13:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 3 * height / 4, height);
+						break;
+					case 14:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+						break;
+					case 15:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 3 * height / 4, height);
+						break;
+					default:
+						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
+						break;
+					}
+				}
+				else if (type == HALFSPACE)
+				{
+					halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
 				}
 			}
-			else if (type == HALFSPACE)
-			{
-				halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
-			}
+		}
+		catch (...)
+		{
+
 		}
 	}
 
@@ -916,9 +954,9 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		xs = x2;
 		xe = x1;
 
-		dz = (z2 - z1) / dx;
-		du = (u2 - u1) / dx;
-		dv = (v2 - v1) / dx;
+		dz = (float)(z2 - z1) / dx;
+		du = (float)(u2 - u1) / dx;
+		dv = (float)(v2 - v1) / dx;
 
 		ui = u2 - (int)u2;
 		vi = v2 - (int)v2;
@@ -930,9 +968,9 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		xs = x1;
 		xe = x2;
 
-		dz = (z2 - z1) / dx;
-		du = (u1 - u2) / dx;
-		dv = (v1 - v2) / dx;
+		dz = (float)(z2 - z1) / dx;
+		du = (float)(u1 - u2) / dx;
+		dv = (float)(v1 - v2) / dx;
 
 		ui = u1 - (int)u1;
 		vi = v1 - (int)v1;
@@ -1230,46 +1268,17 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	if (area_denom == 0)
 		return;
 
-	float iz1 = 0.0f;
-	float iz2 = 0.0f;
-	float iz3 = 0.0f;
-	float uiz1 = 0.0f;
-	float viz1 = 0.0f;
-	float uiz2 = 0.0f;
-	float viz2 = 0.0f;
-	float uiz3 = 0.0f;
-	float viz3 = 0.0f;
-
-	float luiz1 = 0.0f;
-	float lviz1 = 0.0f;
-	float luiz2 = 0.0f;
-	float lviz2 = 0.0f;
-	float luiz3 = 0.0f;
-	float lviz3 = 0.0f;
-
-
-
-
 	// find 1/z, u/z, v/z per vertex
-	iz1 = 1.0f / w1;
-	iz2 = 1.0f / w2;
-	iz3 = 1.0f / w3;
+	float iz1 = 1.0f / w1;
+	float iz2 = 1.0f / w2;
+	float iz3 = 1.0f / w3;
 
-	uiz1 = u1 * iz1;
-	viz1 = v1 * iz1;
-	uiz2 = u2 * iz2;
-	viz2 = v2 * iz2;
-	uiz3 = u3 * iz3;
-	viz3 = v3 * iz3;
-
-	luiz1 = lu1 * iz1;
-	lviz1 = lv1 * iz1;
-	luiz2 = lu2 * iz2;
-	lviz2 = lv2 * iz2;
-	luiz3 = lu3 * iz3;
-	lviz3 = lv3 * iz3;
-
-
+	float uiz1 = u1 * iz1;
+	float viz1 = v1 * iz1;
+	float uiz2 = u2 * iz2;
+	float viz2 = v2 * iz2;
+	float uiz3 = u3 * iz3;
+	float viz3 = v3 * iz3;
 
 	for (int y = min_y; y <= max_y; y++)
 	{
@@ -1283,41 +1292,35 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 			// barycentric coords (s,t,1-s-t)
 			float s = (float)det(qx, qy, vspan2x, vspan2y) / area_denom;
 			float t = (float)det(vspan1x, vspan1y, qx, qy) / area_denom;
+			float b = 1.0f - s - t;
 
 			// if inside triangle
-			if ((s >= 0) && (t >= 0) && (s + t <= 1))
+			if ((s >= 0) && (t >= 0) && (b >= 0))
 			{
 				float u, v;
 				float lu, lv;
 
-				float iz = s * iz2 + t *  iz3 + (1 - s - t) * iz1;
+				float iz = s * iz2 + t *  iz3 + b * iz1;
 				if (!iz)
 				{
 					continue;
 				}
 
 				// interpolate 1/z, u/z, v/z which are linear equations
-				float z = s * z2 + t *  z3 + (1 - s - t) * z1;
+				float z = s * z2 + t *  z3 + b * z1;
 				if (zbuffer[x + y * width] < z)
 				{
 					continue;
 				}
 
-				float iu = s * uiz2 + t * uiz3 + (1 - s - t) * uiz1;
-				float iv = s * viz2 + t * viz3 + (1 - s - t) * viz1;
-
-				float liu = s * luiz2 + t * luiz3 + (1 - s - t) * luiz1;
-				float liv = s * lviz2 + t * lviz3 + (1 - s - t) * lviz1;
-
+				float iu = s * uiz2 + t * uiz3 + b * uiz1;
+				float iv = s * viz2 + t * viz3 + b * viz1;
 
 
 				// find inverse / multiply to get perspective correct z, u, v
 				float zi = 1.0f / iz;
 				u = iu * zi;
 				v = iv * zi;
-				lu = liu * zi;
-				lv = liv * zi;
-
 
 				int ux, vy;
 				int lux, lvy;
@@ -1345,51 +1348,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					vy = texture->height - 1 - vy;
 				}
 
-				if (lu >= 0)
-				{
-					lux = (int)((lightmap->width - 1) * lu);
-					lux = lux % (lightmap->width - 1);
-				}
-				else
-				{
-					lux = (int)((lightmap->width - 1) * -lu);
-					lux = lux % (lightmap->width - 1);
-					lux = lightmap->width - 1 - lux;
-				}
-
-				if (lv > 0)
-				{
-					lvy = (int)((lightmap->height - 1) * lv);
-					lvy = lvy % (lightmap->height - 1);
-				}
-				else
-				{
-					lvy = (int)((lightmap->height - 1) * -lv);
-					lvy = lvy % (lightmap->height - 1);
-					lvy = lightmap->height - 1 - lvy;
-				}
-
-
-				int index = ux + vy * (texture->width);
-				int index2 = lux + lvy * (lightmap->width);
-
-				if (index < 0 || index >= texture->width * texture->height)
-					index = 0;
-
-				if (index2 < 0 || index2 >= lightmap->width * lightmap->height)
-					index2 = 0;
-
-				int tex = texture->data[index];
-				int color = lightmap->data[index2];
-				char *c = (char *)&color;
-				char *t = (char *)&tex;
-
-				if (lightmap->width == 128)
-				{
-		//			tex += color;
-				}
-				
-				draw_pixel(pixels, zbuffer, width, height, x, y, z, tex);
+				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[vy * texture->width + ux]);
 			}
 		}
 	}

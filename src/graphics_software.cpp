@@ -30,8 +30,8 @@ void Graphics::resize(int width, int height)
 //		delete[] zbuffer;
 	zbuffer = new float[width * height * sizeof(float)];
 	clear();
-	center.x = width / 2;
-	center.y = height / 2;
+	center.x = width >> 1;
+	center.y = height >> 1;
 
 #ifdef WIN32
 	hdcMem = CreateCompatibleDC(hdc);
@@ -109,7 +109,7 @@ void Graphics::clear()
 {
 	if (pixels)
 	{
-		memset(pixels, 0xAAAAAAAA, width * height * sizeof(int));
+		memset(pixels, 0xAA, width * height * sizeof(int));
 	}
 	if (zbuffer)
 	{
@@ -226,14 +226,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	if (lightmap_tex == -1)
 		lightmap_tex = 0;
 
-
-	#pragma omp parallel for num_threads(16)
-	for(int i = 0; i < 16; i++)
-	{
-		raster_triangles(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
-	}
-	//	glDrawElementsBaseVertex(GL_TRIANGLES, num_index, GL_UNSIGNED_INT, (void *)(start_index * sizeof(int)), start_vertex);
-
+	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 }
@@ -242,11 +235,7 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 {
 	if (current_tex == -1)
 		current_tex = 0;
-#pragma omp parallel for num_threads(16)
-	for (int i = 0; i < 16; i++)
-	{
-		raster_triangles_strip(BARYCENTRIC, i, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
-	}
+	raster_triangles_strip(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;
 }
