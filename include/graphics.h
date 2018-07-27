@@ -185,7 +185,7 @@ public:
         int depth;
         GC gc;
 	XImage *image;
-
+	pthread_t tid[16];
 	#endif
 	vec2	center;
 	int	*pixels;

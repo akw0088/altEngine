@@ -12,8 +12,12 @@ matrix4 Graphics::current_mvp;
 #ifdef THREAD
 #ifdef WIN32
 #include <process.h>
+#define RTYPE void
+#define RVAL
 #else
 #include <pthread.h>
+#define RTYPE void *
+#define RVAL 0;
 #endif
 
 typedef struct
@@ -45,7 +49,7 @@ typedef struct
 
 work_t work1[MAX_THREAD];
 
-void thread1(void *num)
+RTYPE thread1(void *num)
 {
 	int i = (int64_t)num;
 	int last_job = 0;
@@ -106,6 +110,8 @@ void thread1(void *num)
 		}
 		last_job = next;
 	}
+
+	return RVAL;
 }
 
 #endif
@@ -118,19 +124,13 @@ void Graphics::resize(int width, int height)
 	DeleteObject(hBitmap);
 	DeleteDC(hdcMem);
 #endif
-#ifdef __linux__
-	if (image)
-	{
-		XDestroyImage(image);
-	}
-#endif
 
 #ifdef THREAD
 
 	for (int i = 0; i < 16; i++)
 	{
-		if (pixel[i])
-			delete[] pixel[i];
+//		if (pixel[i])
+//			delete[] pixel[i];
 		pixel[i] = new int[(width * height) * sizeof(int) + 256];
 		zbuff[i] = new float[(width * height) * sizeof(float) + 256];
 	}
@@ -151,6 +151,10 @@ void Graphics::resize(int width, int height)
 	hObject = SelectObject(hdcMem, hBitmap);
 #endif
 #ifdef __linux__
+	if (image)
+	{
+		//XDestroyImage(image);
+	}
 	image = XCreateImage(display, vis, depth, ZPixmap, 0, (char*)pixels, width, height, 32, 0);
 #endif
 	Graphics::width = width;
@@ -164,7 +168,6 @@ void Graphics::resize(int width, int height)
 		_beginthread(thread1, 0, (void *)i);
 #else
 		pthread_create(&tid[i], NULL, thread1, (void *)i);
-		pthread_create(&tid[i], NULL, thread2, (void *)i);
 #endif
 	}
 #endif
@@ -223,9 +226,7 @@ void Graphics::init(void *param1, void *param2)
 
 void Graphics::swap()
 {
-#ifdef WIN32
 #ifdef THREAD
-
 	if (pixels == NULL)
 		return;
 
@@ -280,8 +281,8 @@ void Graphics::swap()
 				pixels[x + ((height - 1 - y) * width)] = pixel[15][x + y * width];
 		}
 	}
-	
 #endif
+#ifdef WIN32
 	SetBitmapBits(hBitmap, width * height * sizeof(int), pixels);
 	BitBlt(hdc, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
 #endif
@@ -677,10 +678,11 @@ int Graphics::CreateCubeMap()
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
 	texinfo_t tex;
-	tex.data = new int[width * height];
+	tex.data = (int *)new char[width * height * components];
 	tex.width = width;
 	tex.height = height;
-	memcpy(tex.data, bytes, sizeof(int) * width * height);
+	tex.components = components;
+	memcpy(&tex.data[0], bytes, width * height * components);
 	texture_array.push_back(tex);
 	return texture_array.size() - 1;
 }

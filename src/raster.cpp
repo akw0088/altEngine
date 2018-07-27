@@ -95,8 +95,9 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[2].y = v3.y;
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
-
+#ifdef WIN32
 		try {
+#endif
 			for (int j = 0; j < num_point; j += 3)
 			{
 				if (type == SPAN)
@@ -360,11 +361,13 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 					halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
 				}
 			}
+#ifdef WIN32
 		}
 		catch (...)
 		{
 
 		}
+#endif
 	}
 
 }
@@ -517,8 +520,9 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
 
-
+#ifdef WIN32
 		try {
+#endif
 			for (int j = 0; j < num_point; j += 3)
 			{
 				if (type == SPAN)
@@ -782,11 +786,13 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 					halfspace_triangle_fast(pixels, zbuffer, width, height, tri[j + 0], tri[j + 1], tri[j + 2]);
 				}
 			}
+#ifdef WIN32
 		}
 		catch (...)
 		{
 
 		}
+#endif
 	}
 
 }
@@ -1302,7 +1308,6 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 			if ((s >= 0.0f) && (t >= 0.0f) && (b >= 0.0f))
 			{
 				float u, v;
-				float lu, lv;
 
 				float iz = s * iz2 + t *  iz3 + b * iz1;
 				if (!iz)
@@ -1339,7 +1344,12 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				if (v < 0)
 					vy = (texture->height - 1) + vy;
 
-				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[vy * texture->width + ux]);
+				int index = vy * texture->width + ux;
+				if (index < 0 || index >= texture->width * texture->height)
+				{
+					index = 0;
+				}
+				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[index]);
 			}
 		}
 	}

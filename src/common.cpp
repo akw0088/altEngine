@@ -783,7 +783,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	if (bytes == NULL)
 	{
 		debugf("Unable to load texture %s from pk3\n", file_name);
-		free((void *)data);
+		delete [] data;
 		return load_texture(gfx, file_name, clamp, false, anisotropic);
 	}
 
@@ -909,15 +909,18 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	if (components == 3)
 	{
 		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
-		components = 4;
-		stbi_image_free(bytes);
-		bytes = pBits;
+		components = 5;
 	}
 #endif
 #ifndef DEDICATED
 	if (components == 3)
 	{
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
+	}
+	else if (components == 5)
+	{
+		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
+		delete [] pBits;
 	}
 	else
 	{

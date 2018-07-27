@@ -1116,6 +1116,7 @@ typedef struct
 	int *data;
 	int width;
 	int height;
+	int components;
 } texinfo_t;
 
 
