@@ -9,6 +9,108 @@
 
 matrix4 Graphics::current_mvp;
 
+#ifdef THREAD
+#ifdef WIN32
+#include <process.h>
+#else
+#include <pthread.h>
+#endif
+
+typedef struct
+{
+	raster_t type;
+	int *pixels;
+	float *zbuffer;
+	int width;
+	int height;
+	matrix4 mvp;
+	int *index_array;
+	vertex_t *vertex_array;
+	texinfo_t *texture;
+	texinfo_t *lightmap;
+	int start_index;
+	int start_vertex;
+	int num_index;
+	int num_vert;
+} param_t;
+
+#define MAX_JOB 8192
+#define MAX_THREAD 16
+typedef struct
+{
+	volatile int work;
+	volatile int idle;
+	param_t param[MAX_JOB];
+} work_t;
+
+work_t work1[MAX_THREAD];
+
+void thread1(void *num)
+{
+	int i = (int64_t)num;
+	int last_job = 0;
+
+	while (1)
+	{
+		while (work1[i].work == last_job || work1[i].work == 0)
+		{
+			work1[i].idle = 1;
+	#ifdef WIN32
+			Sleep(1);
+	#else
+			sleep(0);
+	#endif
+		}
+		int next = last_job + 1;
+		if (next >= MAX_JOB)
+			next = 1;
+		work1[i].idle = 0;
+
+		if (work1[i].param[next].type == BARYCENTRIC)
+		{
+			raster_triangles(
+				work1[i].param[next].type,
+				i,
+				work1[i].param[next].pixels,
+				work1[i].param[next].zbuffer,
+				work1[i].param[next].width,
+				work1[i].param[next].height,
+				work1[i].param[next].mvp,
+				work1[i].param[next].index_array,
+				work1[i].param[next].vertex_array,
+				work1[i].param[next].texture,
+				work1[i].param[next].lightmap,
+				work1[i].param[next].start_index,
+				work1[i].param[next].start_vertex,
+				work1[i].param[next].num_index,
+				work1[i].param[next].num_vert);
+		}
+		else if (work1[i].param[next].type == BARYCENTRIC_STRIP)
+		{
+			raster_triangles_strip(
+				work1[i].param[next].type,
+				i,
+				work1[i].param[next].pixels,
+				work1[i].param[next].zbuffer,
+				work1[i].param[next].width,
+				work1[i].param[next].height,
+				work1[i].param[next].mvp,
+				work1[i].param[next].index_array,
+				work1[i].param[next].vertex_array,
+				work1[i].param[next].texture,
+				work1[i].param[next].lightmap,
+				work1[i].param[next].start_index,
+				work1[i].param[next].start_vertex,
+				work1[i].param[next].num_index,
+				work1[i].param[next].num_vert);
+		}
+		last_job = next;
+	}
+}
+
+#endif
+
+
 void Graphics::resize(int width, int height)
 {
 #ifdef WIN32
@@ -23,9 +125,19 @@ void Graphics::resize(int width, int height)
 	}
 #endif
 
-	if (pixels)
-		delete[] pixels;
-	pixels = new int[width * height * sizeof(int) + 512];
+#ifdef THREAD
+
+	for (int i = 0; i < 16; i++)
+	{
+		if (pixel[i])
+			delete[] pixel[i];
+		pixel[i] = new int[(width * height) * sizeof(int) + 256];
+		zbuff[i] = new float[(width * height) * sizeof(float) + 256];
+	}
+#endif
+//	if (pixels)
+//		delete[] pixels;
+	pixels = new int[width * height * sizeof(int)];
 //	if (zbuffer)
 //		delete[] zbuffer;
 	zbuffer = new float[width * height * sizeof(float)];
@@ -43,6 +155,19 @@ void Graphics::resize(int width, int height)
 #endif
 	Graphics::width = width;
 	Graphics::height = height;
+
+#ifdef THREAD
+	for (int i = 0; i < 16; i++)
+	{
+		work1[i].work = 0;
+#ifdef WIN32
+		_beginthread(thread1, 0, (void *)i);
+#else
+		pthread_create(&tid[i], NULL, thread1, (void *)i);
+		pthread_create(&tid[i], NULL, thread2, (void *)i);
+#endif
+	}
+#endif
 }
 
 Graphics::Graphics()
@@ -53,6 +178,15 @@ Graphics::Graphics()
 	num_index_array = 0;
 	num_vertex_array = 0;
 	zbuffer = NULL;
+	pixels = NULL;
+
+#ifdef THREAD
+	for (int i = 0; i < 16; i++)
+	{
+		pixel[i] = NULL;
+		zbuff[i] = NULL;
+	}
+#endif
 #ifdef __linux__
 	image = NULL;
 #endif
@@ -90,6 +224,64 @@ void Graphics::init(void *param1, void *param2)
 void Graphics::swap()
 {
 #ifdef WIN32
+#ifdef THREAD
+
+	if (pixels == NULL)
+		return;
+
+	// ensure all threads are finished
+	for (int i = 0; i < 16; i++)
+	{
+		if (work1[i].idle != 1 )
+		{
+			i = 0;
+		}
+	}
+
+	// copy each thread tile into frame buffer
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			if (x < width / 4 && y < height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[0][x + y * width];
+			else if (x < 2 * width / 4 && y < height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[1][x + y * width];
+			else if (x < 3 * width / 4 && y < height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[2][x + y * width];
+			else if (x < width && y < height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[3][x + y * width];
+
+			else if (x < width / 4 && y <  2 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[4][x + y * width];
+			else if (x < 2 * width / 4 && y <  2 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[5][x + y * width];
+			else if (x < 3 * width / 4 && y <  2 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[6][x + y * width];
+			else if (x < width && y <  2 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[7][x + y * width];
+
+			else if (x < width / 4 && y <  3 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[8][x + y * width];
+			else if (x < 2 * width / 4 && y <  3 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[9][x + y * width];
+			else if (x < 3 * width / 4 && y <  3 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[10][x + y * width];
+			else if (x < width && y <  3 * height / 4)
+				pixels[x + ((height - 1 - y) * width)] = pixel[11][x + y * width];
+
+			else if (x < width / 4 && y <  height)
+				pixels[x + ((height - 1 - y) * width)] = pixel[12][x + y * width];
+			else if (x < 2 * width / 4 && y <  height)
+				pixels[x + ((height - 1 - y) * width)] = pixel[13][x + y * width];
+			else if (x < 3 * width / 4 && y <  height)
+				pixels[x + ((height - 1 - y) * width)] = pixel[14][x + y * width];
+			else if (x < width && y <  height)
+				pixels[x + ((height - 1 - y) * width)] = pixel[15][x + y * width];
+		}
+	}
+	
+#endif
 	SetBitmapBits(hBitmap, width * height * sizeof(int), pixels);
 	BitBlt(hdc, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
 #endif
@@ -107,6 +299,101 @@ void Graphics::swap()
 
 void Graphics::clear()
 {
+#ifdef THREAD
+
+	if (pixel[0])
+	{
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				if (x < width / 4 && y < height / 4)
+				{
+					pixel[0][x + y * width] = 0xAAAAAAAA;
+					zbuff[0][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < height / 4)
+				{
+					pixel[1][x + y * width] = 0xAAAAAAAA;
+					zbuff[1][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < height / 4)
+				{
+					pixel[2][x + y * width] = 0xAAAAAAAA;
+					zbuff[2][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < height / 4)
+				{
+					pixel[3][x + y * width] = 0xAAAAAAAA;
+					zbuff[3][x + y * width] = 1.0f;
+				}
+
+				else if (x < width / 4 && y < 2 * height / 4)
+				{
+					pixel[4][x + y * width] = 0xAAAAAAAA;
+					zbuff[4][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < 2 * height / 4)
+				{
+					pixel[5][x + y * width] = 0xAAAAAAAA;
+					zbuff[5][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < 2 * height / 4)
+				{
+					pixel[6][x + y * width] = 0xAAAAAAAA;
+					zbuff[6][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < 2 * height / 4)
+				{
+					pixel[7][x + y * width] = 0xAAAAAAAA;
+					zbuff[7][x + y * width] = 1.0f;
+				}
+
+				else if (x < width / 4 && y < 3 * height / 4)
+				{
+					pixel[8][x + y * width] = 0xAAAAAAAA;
+					zbuff[8][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < 3 * height / 4)
+				{
+					pixel[9][x + y * width] = 0xAAAAAAAA;
+					zbuff[9][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < 3 * height / 4)
+				{
+					pixel[10][x + y * width] = 0xAAAAAAAA;
+					zbuff[10][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < 3 * height / 4)
+				{
+					pixel[11][x + y * width] = 0xAAAAAAAA;
+					zbuff[11][x + y * width] = 1.0f;
+				}
+
+				else if (x < width / 4 && y < height)
+				{
+					pixel[12][x + y * width] = 0xAAAAAAAA;
+					zbuff[12][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < height)
+				{
+					pixel[13][x + y * width] = 0xAAAAAAAA;
+					zbuff[13][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < height)
+				{
+					pixel[14][x + y * width] = 0xAAAAAAAA;
+					zbuff[14][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < height)
+				{
+					pixel[15][x + y * width] = 0xAAAAAAAA;
+					zbuff[15][x + y * width] = 1.0f;
+				}
+			}
+		}
+	}
+#else
 	if (pixels)
 	{
 		memset(pixels, 0xAA, width * height * sizeof(int));
@@ -118,10 +405,12 @@ void Graphics::clear()
 			zbuffer[i] = 1.0f;
 		}
 	}
+#endif
 }
 
 void Graphics::cleardepth()
 {
+#ifndef THREAD
 	if (zbuffer)
 	{
 		for (int i = 0; i < width * height; i++)
@@ -129,6 +418,7 @@ void Graphics::cleardepth()
 			zbuffer[i] = 1.0f;
 		}
 	}
+#endif
 }
 
 void Graphics::Depth(bool flag)
@@ -226,7 +516,32 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	if (lightmap_tex == -1)
 		lightmap_tex = 0;
 
+#ifdef THREAD
+	for (int i = 0; i < MAX_THREAD; i++)
+	{
+		int next = work1[i].work + 1;
+		if (next >= MAX_JOB)
+			next = 1;
+
+		work1[i].param[next].type = BARYCENTRIC;
+		work1[i].param[next].pixels = pixel[i];
+		work1[i].param[next].zbuffer = zbuff[i];
+		work1[i].param[next].width = width;
+		work1[i].param[next].height = height;
+		work1[i].param[next].mvp = current_mvp;
+		work1[i].param[next].index_array = index_array[current_ibo];
+		work1[i].param[next].vertex_array = vertex_array[current_vbo];
+		work1[i].param[next].texture = &texture_array[current_tex];
+		work1[i].param[next].lightmap = &texture_array[lightmap_tex];
+		work1[i].param[next].start_index = start_index;
+		work1[i].param[next].start_vertex = start_vertex;
+		work1[i].param[next].num_index = num_index;
+		work1[i].param[next].num_vert = num_verts;
+		work1[i].work = next;
+	}
+#else
 	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
+#endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 }
@@ -235,7 +550,33 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 {
 	if (current_tex == -1)
 		current_tex = 0;
+
+#ifdef THREAD
+	for (int i = 0; i < MAX_THREAD; i++)
+	{
+		int next = work1[i].work + 1;
+		if (next >= MAX_JOB)
+			next = 1;
+
+		work1[i].param[next].type = BARYCENTRIC_STRIP;
+		work1[i].param[next].pixels = pixel[i];
+		work1[i].param[next].zbuffer = zbuff[i];
+		work1[i].param[next].width = width;
+		work1[i].param[next].height = height;
+		work1[i].param[next].mvp = current_mvp;
+		work1[i].param[next].index_array = index_array[current_ibo];
+		work1[i].param[next].vertex_array = vertex_array[current_vbo];
+		work1[i].param[next].texture = &texture_array[current_tex];
+		work1[i].param[next].lightmap = &texture_array[lightmap_tex];
+		work1[i].param[next].start_index = start_index;
+		work1[i].param[next].start_vertex = start_vertex;
+		work1[i].param[next].num_index = num_index;
+		work1[i].param[next].num_vert = num_verts;
+		work1[i].work = next;
+	}
+#else
 	raster_triangles_strip(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
+#endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;
 }

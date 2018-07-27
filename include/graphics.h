@@ -189,6 +189,10 @@ public:
 	#endif
 	vec2	center;
 	int	*pixels;
+#ifdef THREAD
+	int	*pixel[16];
+	float *zbuff[16];
+#endif
 	float *zbuffer;
 
 	vertex_t *vertex_array[4096];

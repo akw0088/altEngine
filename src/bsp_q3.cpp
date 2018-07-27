@@ -13,7 +13,11 @@ Bsp::Bsp()
 	enable_textures = false;
 	enable_patch = true;
 	enable_sky = true;
+#ifdef SOFTWARE
+	enable_shader = false;
+#else
 	enable_shader = true;
+#endif
 	enable_blend = true;
 	portal_tex = 0;
 	memset(map_name, 0, 64);

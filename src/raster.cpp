@@ -649,7 +649,7 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 						break;
 					}
 				}
-				else if (type == BARYCENTRIC)
+				else if (type == BARYCENTRIC_STRIP)
 				{
 					switch (block)
 					{
@@ -793,7 +793,11 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 
 inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x, int y, int z, unsigned int color)
 {
+#ifdef THREAD
+	pixels[x + y * width] = color;
+#else
 	pixels[x + ((height - 1 - y) * width)] = color;
+#endif
 	zbuffer[x + y * width] = z;
 }
 
@@ -1308,6 +1312,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 				// interpolate 1/z, u/z, v/z which are linear equations
 				float z = s * z2 + t *  z3 + b * z1;
+
 				if (zbuffer[x + y * width] < z)
 				{
 					continue;
@@ -1324,27 +1329,27 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 				int ux, vy;
 				int lux, lvy;
+
+				u = u - (int)u;
+				v = v - (int)v;
+
 				if (u >= 0)
 				{
 					ux = (int)((texture->width - 1) * u);
-					ux = ux % (texture->width - 1);
 				}
 				else
 				{
 					ux = (int)((texture->width - 1) * -u);
-					ux = ux % (texture->width - 1);
 					ux = texture->width - 1 - ux;
 				}
 
 				if (v > 0)
 				{
 					vy = (int)((texture->height - 1) * v);
-					vy = vy % (texture->height - 1);
 				}
 				else
 				{
 					vy = (int)((texture->height - 1) * -v);
-					vy = vy % (texture->height - 1);
 					vy = texture->height - 1 - vy;
 				}
 

@@ -16,6 +16,7 @@ typedef struct
 typedef enum {
 	SPAN,
 	BARYCENTRIC,
+	BARYCENTRIC_STRIP,
 	HALFSPACE
 } raster_t;
 
