@@ -1226,10 +1226,10 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	const float lu3, const float lv3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
-	if (!(w1 && w2 && w3))
-	{
-		return;
-	}
+//	if (!(w1 && w2 && w3))
+//	{
+//		return;
+//	}
 
 	int max_x = MAX(x1, MAX(x2, x3));
 	int min_x = MIN(x1, MIN(x2, x3));
@@ -1299,7 +1299,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 			float b = 1.0f - s - t;
 
 			// if inside triangle
-			if ((s >= 0) && (t >= 0) && (b >= 0))
+			if ((s >= 0.0f) && (t >= 0.0f) && (b >= 0.0f))
 			{
 				float u, v;
 				float lu, lv;
@@ -1327,31 +1327,17 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				u = iu * zi;
 				v = iv * zi;
 
-				int ux, vy;
-				int lux, lvy;
-
 				u = u - (int)u;
 				v = v - (int)v;
 
-				if (u >= 0)
-				{
-					ux = (int)((texture->width - 1) * u);
-				}
-				else
-				{
-					ux = (int)((texture->width - 1) * -u);
-					ux = texture->width - 1 - ux;
-				}
+				int ux = (int)((texture->width - 1) * u);
+				int vy = (int)((texture->height - 1) * v);
 
-				if (v > 0)
-				{
-					vy = (int)((texture->height - 1) * v);
-				}
-				else
-				{
-					vy = (int)((texture->height - 1) * -v);
-					vy = texture->height - 1 - vy;
-				}
+				if (u < 0)
+					ux = (texture->width - 1) + ux;
+
+				if (v < 0)
+					vy = (texture->height - 1) + vy;
 
 				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[vy * texture->width + ux]);
 			}

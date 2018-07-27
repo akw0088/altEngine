@@ -575,7 +575,7 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 		work1[i].work = next;
 	}
 #else
-	raster_triangles_strip(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles_strip(BARYCENTRIC_STRIP, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
 #endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;
