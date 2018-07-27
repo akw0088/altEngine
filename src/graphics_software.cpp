@@ -160,19 +160,6 @@ void Graphics::resize(int width, int height)
 	Graphics::width = width;
 	Graphics::height = height;
 
-#ifdef THREAD
-	for (int i = 0; i < 16; i++)
-	{
-		work1[i].work = 0;
-#ifdef WIN32
-//		_beginthread(thread1, 0, (void *)i);
-		thread_handle[i] = CreateThread(NULL, 0, thread1, (void *)i, 0, (LPDWORD)&tid[i]);
-		SetThreadPriority(thread_handle[i], THREAD_PRIORITY_ABOVE_NORMAL);
-#else
-		pthread_create(&tid[i], NULL, thread1, (void *)i);
-#endif
-	}
-#endif
 }
 
 Graphics::Graphics()
@@ -221,6 +208,22 @@ void Graphics::init(void *param1, void *param2)
 	gc = DefaultGC(display,screen);
 #endif
 #endif
+#ifdef THREAD
+        for (int i = 0; i < 16; i++)
+        {
+                work1[i].work = 0;
+#ifdef WIN32
+//              _beginthread(thread1, 0, (void *)i);
+                thread_handle[i] = CreateThread(NULL, 0, thread1, (void *)i, 0, (LPDWORD)&tid[i]);
+                SetThreadPriority(thread_handle[i], THREAD_PRIORITY_ABOVE_NORMAL);
+#else
+                pthread_create(&tid[i], NULL, thread1, (void *)i);
+#endif
+        }
+#endif
+
+
+
 	zbuffer = new float[width*height * sizeof(float)];
 	clear();
 
