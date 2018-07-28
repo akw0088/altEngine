@@ -478,11 +478,11 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 {
 	if (node_index < 0)
 	{
-		leaf_t *leaf = &data.Leaf[-(node_index + 1)];
+		leaf_t *leaf = &data.Leaf[~node_index];
 
 		if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				return;
-		leaf_list->push_back( -(node_index + 1) );
+		leaf_list->push_back(~node_index);
 		return;
 	}
 
