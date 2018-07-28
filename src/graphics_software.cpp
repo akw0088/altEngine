@@ -787,3 +787,26 @@ void Graphics::GetDebugLog()
 {
 }
 #endif
+
+
+/*
+if (block > 0)
+{
+	barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+		tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+		tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+		tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+		s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3,
+		(block % BLOCKDIV)* width / BLOCKDIV, (((block) % BLOCKDIV) + 1) * width / BLOCKDIV,
+		(block / BLOCKDIV) * height / BLOCKDIV, ((block + BLOCKDIV) / BLOCKDIV) * height / BLOCKDIV);
+}
+else
+{
+	barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
+		tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
+		tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
+		tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
+		s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
+}
+
+*/

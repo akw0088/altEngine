@@ -1300,8 +1300,9 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 
 			// barycentric coords (s,t,1-s-t)
-			float s = (float)det(qx, qy, vspan2x, vspan2y) / area_denom;
-			float t = (float)det(vspan1x, vspan1y, qx, qy) / area_denom;
+			float inv_den = 1.0f / area_denom;
+			float s = (float)det(qx, qy, vspan2x, vspan2y) * inv_den;
+			float t = (float)det(vspan1x, vspan1y, qx, qy) * inv_den;
 			float b = 1.0f - s - t;
 
 			// if inside triangle
