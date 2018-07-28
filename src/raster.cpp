@@ -237,7 +237,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
+							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 0, height / 4);
 						break;
 					case 1:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
