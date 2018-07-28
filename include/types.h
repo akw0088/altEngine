@@ -1120,4 +1120,16 @@ typedef struct
 } texinfo_t;
 
 
+typedef struct
+{
+	char r, g, b;
+} rgb_t;
+
+#pragma pack(1)
+typedef struct
+{
+	char r, g, b, a;
+} rgba_t;
+#pragma pack(8)
+
 #endif

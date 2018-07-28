@@ -10,6 +10,7 @@ d550ce896130c47166ca44b53f8a670a  media/pak2.pk3
 39c6eb8ff3467009d71b68e37f1859c9  media/QRP_map_textures_v.1.00.pk3
 5315d2fb6b98c584411acc6e5a9408b6  media/quake1hd.pk3
 26f5af74b9754e73bddeccb68bcfcc31  media/quake1.pk3
+26f5af74b9754e73bddeccb68bcfcc31  media/quake2.pk3
 8c056fd1330413fefa2c999219beb045  media/q3f_beta_001h_update_svr_fix.pk3
 09ebb23dd3c94685e34d1cfd94eb4c4a  media/q3f_beta_001h_update.pk3
 d164d1a931081ace1e73951f91fad245  media/q3f_beta_001g_update.pk3

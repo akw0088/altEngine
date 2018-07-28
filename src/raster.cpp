@@ -1344,12 +1344,24 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				if (v < 0)
 					vy = (texture->height - 1) + vy;
 
-				int index = vy * texture->width + ux;
-				if (index < 0 || index >= texture->width * texture->height)
+				if (texture->components == 1)
 				{
-					index = 0;
+					char *tex = (char *)texture->data;
+
+					char color = tex[vy * texture->width + ux];
+					draw_pixel(pixels, zbuffer, width, height, x, y, z, RGB(color, color, color));
 				}
-				draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[index]);
+				else if (texture->components == 3)
+				{
+					rgb_t *rgb = (rgb_t *)texture->data;
+
+					rgb_t color = rgb[vy * texture->width + ux];
+					draw_pixel(pixels, zbuffer, width, height, x, y, z, RGB(color.r, color.g, color.b));
+				}
+				else
+				{
+					draw_pixel(pixels, zbuffer, width, height, x, y, z, texture->data[vy * texture->width + ux]);
+				}
 			}
 		}
 	}

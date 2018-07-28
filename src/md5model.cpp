@@ -127,7 +127,7 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 		unsigned char *bytes;
 		int width = 0;
 		int height = 0;
-		int components = 0;
+		int components = 4;
 		int format = 0;
 
 		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
@@ -147,11 +147,10 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		tex_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false, anisotropic);
+		tex_object[i] = gfx.LoadTexture(width, height, 4, format, bytes, false, anisotropic);
 		free((void *)bytes);
 
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
-//		bytes = (char *)gltLoadTGA(file, &width, &height, &components, &format);
 		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
 #ifdef OPENGL
 		format = GL_RGBA;
