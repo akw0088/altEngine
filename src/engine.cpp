@@ -5325,6 +5325,12 @@ int Engine::console_general(char *cmd)
 		}
 	}
 
+	if (strstr(cmd, "oldschool"))
+	{
+		set_resolution(640, 480, 32);
+		fullscreen();
+		return 0;
+	}
 
 	if (strstr(cmd, "centerview"))
 	{
