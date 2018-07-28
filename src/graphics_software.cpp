@@ -12,8 +12,8 @@ matrix4 Graphics::current_mvp;
 #ifdef THREAD
 #ifdef WIN32
 #include <process.h>
-#define RTYPE void
-#define RVAL
+#define RTYPE DWORD
+#define RVAL 0
 #else
 #include <pthread.h>
 #define RTYPE void *
@@ -165,7 +165,9 @@ void Graphics::resize(int width, int height)
 	{
 		work1[i].work = 0;
 #ifdef WIN32
-		_beginthread(thread1, 0, (void *)i);
+//		_beginthread(thread1, 0, (void *)i);
+		thread_handle[i] = CreateThread(NULL, 0, thread1, (void *)i, 0, (LPDWORD)&tid[i]);
+		SetThreadPriority(thread_handle[i], THREAD_PRIORITY_ABOVE_NORMAL);
 #else
 		pthread_create(&tid[i], NULL, thread1, (void *)i);
 #endif

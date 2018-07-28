@@ -178,6 +178,8 @@ public:
 	HBITMAP	hBitmap;
 	HGDIOBJ hObject;
 	BITMAP	bitmap;
+	DWORD tid[16];
+	HANDLE thread_handle[16];
 	#endif
 	#ifdef __linux__
         int screen;
