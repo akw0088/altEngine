@@ -9,8 +9,6 @@ public:
 	HLBsp();
 	int load(Graphics &gfx, char *file);
 	void render(Graphics &gfx, vec3 &pos);
-	void temp_render(Graphics &gfx);
-
 
 	bool loaded;
 	char map_name[128];
@@ -30,8 +28,9 @@ private:
 	vector <unsigned int> index;
 	hl_bsp_t data;
 
+	int *face_start_index;
+	int *face_count;
 	int ic;
-	
 	int map_vertex_vbo;
 	int map_index_vbo;
 	int *lightmap_object;
