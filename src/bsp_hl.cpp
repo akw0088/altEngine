@@ -12,6 +12,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 	dheader_t *tBsp = (dheader_t *)get_file(map, &size);
 	char *pBsp = (char *)tBsp;
 
+	initialized = false;
+
 	if (pBsp == NULL)
 	{
 		debugf("Failed to open %s", map);
@@ -86,6 +88,13 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 
 	map_vertex = new vertex_t[data.num_verts];
+	texdata_to_obj = new int[data.num_texdata];
+
+	for (int i = 0; i < data.num_texdata; i++)
+	{
+		texdata_to_obj[i] = 0;
+	}
+
 	lightmap_object = new int[8192];
 	tex_object = new int[8192];
 
@@ -110,8 +119,8 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 	// generate index array, isnt using PVS
 	vec3 pos;
-	render(pos);
-
+	render(gfx, pos);
+	initialized = true;
 
 	for (unsigned int i = 0; i < data.num_verts; i++)
 	{
@@ -168,20 +177,21 @@ void HLBsp::temp_render(Graphics &gfx)
 
 }
 
-void HLBsp::render(vec3 &pos)
+void HLBsp::render(Graphics &gfx, vec3 &pos)
 {
 	int curLeaf = find_leaf(pos, 0);
-	bsp_render_node(0, curLeaf, pos);
+	ic = 0;
+	bsp_render_node(gfx, 0, curLeaf, pos);
 }
 
-void HLBsp::bsp_render_node(int node_index, int leaf, vec3 pos)
+void HLBsp::bsp_render_node(Graphics &gfx, int node_index, int leaf, vec3 pos)
 {
 	if (node_index < 0)
 	{
 		if (node_index == -1)
 			return;
 
-		render_leaf(~node_index);
+		render_leaf(gfx, ~node_index);
 		return;
 	}
 
@@ -198,33 +208,40 @@ void HLBsp::bsp_render_node(int node_index, int leaf, vec3 pos)
 
 	if (distance > 0)
 	{
-		bsp_render_node(data.Node[node_index].children[1], leaf, pos);
-		bsp_render_node(data.Node[node_index].children[0], leaf, pos);
+		bsp_render_node(gfx, data.Node[node_index].children[1], leaf, pos);
+		bsp_render_node(gfx, data.Node[node_index].children[0], leaf, pos);
 	}
 
 	else
 	{
-		bsp_render_node(data.Node[node_index].children[0], leaf, pos);
-		bsp_render_node(data.Node[node_index].children[1], leaf, pos);
+		bsp_render_node(gfx, data.Node[node_index].children[0], leaf, pos);
+		bsp_render_node(gfx, data.Node[node_index].children[1], leaf, pos);
 	}
 
 }
 
-void HLBsp::render_leaf(int leaf)
+void HLBsp::render_leaf(Graphics &gfx, int leaf)
 {
 	for (int i = 0; i < data.Leaf[leaf].numleaffaces; i++)
 	{
-		render_face(data.LeafFace[data.Leaf[leaf].firstleafface + i]);
+		if (initialized)
+		{
+			render_face(gfx, data.LeafFace[data.Leaf[leaf].firstleafface + i]);
+		}
+		else
+		{
+			build_face(data.LeafFace[data.Leaf[leaf].firstleafface + i]);
+		}
 	}
 }
 
-void HLBsp::render_face(int face)
+void HLBsp::render_face(Graphics &gfx, int face)
 {
 	int shared;
 	int edge0;
 	int edge1;
 	int edge2;
-//	int edge3;
+	//	int edge3;
 
 	// usual case is four edges making a quad
 	for (int i = 0; i < data.Face[face].numedges; i++)
@@ -251,6 +268,105 @@ void HLBsp::render_face(int face)
 				continue;
 			else
 				edge2 = shared;
+
+			int tex_index = data.Face[face].texinfo;
+			int tex_data = data.TexInfo[tex_index].texdata;
+
+			// rendering single triangle, using index array previously built
+			gfx.SelectTexture(0, texdata_to_obj[tex_data]);
+			gfx.SelectIndexBuffer(map_index_vbo);
+			gfx.SelectVertexBuffer(map_vertex_vbo);
+			gfx.DrawArrayTri(ic, 0, 3, 3);
+			ic += 3;
+		}
+	}
+}
+
+void HLBsp::build_face(int face)
+{
+	int shared;
+	int edge0;
+	int edge1;
+	int edge2;
+	//	int edge3;
+
+	// usual case is four edges making a quad
+	for (int i = 0; i < data.Face[face].numedges; i++)
+	{
+		int edge_index = data.SurfEdge[data.Face[face].firstedge + i];
+		dedge_t edge = data.Edge[abs32(edge_index)];
+		bool reverse = (edge_index >= 0);
+
+		if (i == 0)
+		{
+			edge0 = edge.v[reverse ? 0 : 1];
+			shared = edge.v[reverse ? 1 : 0];
+		}
+		else
+		{
+			shared = edge.v[reverse ? 0 : 1];
+			if (shared == edge0)
+				continue;
+			else
+				edge1 = shared;
+
+			shared = edge.v[reverse ? 1 : 0];
+			if (shared == edge0)
+				continue;
+			else
+				edge2 = shared;
+
+			texinfo_t texture;
+
+			int tex_index = data.Face[face].texinfo;
+			int tex_data = data.TexInfo[tex_index].texdata;
+			texture.width = data.TexData[tex_data].width;
+			texture.height = data.TexData[tex_data].height;
+			int tex_name = data.TexData[tex_data].nameStringTableID;
+
+
+			float u1 = data.TexInfo[tex_index].textureVecs[0].x * data.Vert[edge0].x + data.TexInfo[tex_index].textureVecs[0].y * data.Vert[edge0].y
+				+ data.TexInfo[tex_index].textureVecs[0].z * data.Vert[edge0].z + data.TexInfo[tex_index].textureVecs[0].w;
+			float v1 = data.TexInfo[tex_index].textureVecs[1].x * data.Vert[edge0].x + data.TexInfo[tex_index].textureVecs[1].y * data.Vert[edge0].y
+				+ data.TexInfo[tex_index].textureVecs[1].z * data.Vert[edge0].z + data.TexInfo[tex_index].textureVecs[1].w;
+			float u2 = data.TexInfo[tex_index].textureVecs[0].x * data.Vert[edge1].x + data.TexInfo[tex_index].textureVecs[0].y * data.Vert[edge1].y
+				+ data.TexInfo[tex_index].textureVecs[0].z * data.Vert[edge1].z + data.TexInfo[tex_index].textureVecs[0].w;
+			float v2 = data.TexInfo[tex_index].textureVecs[1].x * data.Vert[edge1].x + data.TexInfo[tex_index].textureVecs[1].y * data.Vert[edge1].y
+				+ data.TexInfo[tex_index].textureVecs[1].z * data.Vert[edge1].z + data.TexInfo[tex_index].textureVecs[1].w;
+			float u3 = data.TexInfo[tex_index].textureVecs[0].x * data.Vert[edge2].x + data.TexInfo[tex_index].textureVecs[0].y * data.Vert[edge2].y
+				+ data.TexInfo[tex_index].textureVecs[0].z * data.Vert[edge2].z + data.TexInfo[tex_index].textureVecs[0].w;
+			float v3 = data.TexInfo[tex_index].textureVecs[1].x * data.Vert[edge2].x + data.TexInfo[tex_index].textureVecs[1].y * data.Vert[edge2].y
+				+ data.TexInfo[tex_index].textureVecs[1].z * data.Vert[edge2].z + data.TexInfo[tex_index].textureVecs[1].w;
+
+			map_vertex[edge0].texCoord0.x = u1 / texture.width;
+			map_vertex[edge0].texCoord0.y = v1 / texture.height;
+			map_vertex[edge1].texCoord0.x = u2 / texture.width;
+			map_vertex[edge1].texCoord0.y = v2 / texture.height;
+			map_vertex[edge2].texCoord0.x = u3 / texture.width;
+			map_vertex[edge2].texCoord0.y = v3 / texture.height;
+
+
+			float lu1 = data.TexInfo[tex_index].lightmapVecs[0].x * data.Vert[edge0].x + data.TexInfo[tex_index].lightmapVecs[0].y * data.Vert[edge0].y
+				+ data.TexInfo[tex_index].lightmapVecs[0].z * data.Vert[edge0].z + data.TexInfo[tex_index].lightmapVecs[0].w;
+			float lv1 = data.TexInfo[tex_index].lightmapVecs[1].x * data.Vert[edge0].x + data.TexInfo[tex_index].lightmapVecs[1].y * data.Vert[edge0].y
+				+ data.TexInfo[tex_index].lightmapVecs[1].z * data.Vert[edge0].z + data.TexInfo[tex_index].lightmapVecs[1].w;
+			float lu2 = data.TexInfo[tex_index].lightmapVecs[0].x * data.Vert[edge1].x + data.TexInfo[tex_index].lightmapVecs[0].y * data.Vert[edge1].y
+				+ data.TexInfo[tex_index].lightmapVecs[0].z * data.Vert[edge1].z + data.TexInfo[tex_index].lightmapVecs[0].w;
+			float lv2 = data.TexInfo[tex_index].lightmapVecs[1].x * data.Vert[edge1].x + data.TexInfo[tex_index].lightmapVecs[1].y * data.Vert[edge1].y
+				+ data.TexInfo[tex_index].lightmapVecs[1].z * data.Vert[edge1].z + data.TexInfo[tex_index].lightmapVecs[1].w;
+			float lu3 = data.TexInfo[tex_index].lightmapVecs[0].x * data.Vert[edge2].x + data.TexInfo[tex_index].lightmapVecs[0].y * data.Vert[edge2].y
+				+ data.TexInfo[tex_index].lightmapVecs[0].z * data.Vert[edge2].z + data.TexInfo[tex_index].lightmapVecs[0].w;
+			float lv3 = data.TexInfo[tex_index].lightmapVecs[1].x * data.Vert[edge2].x + data.TexInfo[tex_index].lightmapVecs[1].y * data.Vert[edge2].y
+				+ data.TexInfo[tex_index].lightmapVecs[1].z * data.Vert[edge2].z + data.TexInfo[tex_index].lightmapVecs[1].w;
+
+			map_vertex[edge0].texCoord1.x = lu1 / texture.width;
+			map_vertex[edge0].texCoord1.y = lv1 / texture.height;
+			map_vertex[edge1].texCoord1.x = lu2 / texture.width;
+			map_vertex[edge1].texCoord1.y = lv2 / texture.height;
+			map_vertex[edge2].texCoord1.x = lu3 / texture.width;
+			map_vertex[edge2].texCoord1.y = lv3 / texture.height;
+
+
 
 			index.push_back(edge0);
 			index.push_back(edge1);
@@ -343,6 +459,19 @@ void HLBsp::change_axis()
 		data.Node[i].maxs[1] = data.Node[i].maxs[2];
 		data.Node[i].maxs[2] = -temp;
 	}
+
+
+	for (unsigned int i = 0; i < data.num_texinfo; i++)
+	{
+		float temp = data.TexInfo[i].textureVecs[0].y;
+		data.TexInfo[i].textureVecs[0].y = data.TexInfo[i].textureVecs[0].z;
+		data.TexInfo[i].textureVecs[0].z = -temp;
+
+		temp = data.TexInfo[i].textureVecs[1].y;
+		data.TexInfo[i].textureVecs[1].y = data.TexInfo[i].textureVecs[1].z;
+		data.TexInfo[i].textureVecs[1].z = -temp;
+	}
+
 }
 
 
@@ -382,13 +511,14 @@ void HLBsp::load_textures(Graphics &gfx)
 		tex_object[i] = load_texture(gfx, filename, false, false, 0);
 		if (tex_object[i] != 0)
 		{
-			printf("loaded %s", filename);
+			texdata_to_obj[texinfo->texdata] = tex_object[i];
+			printf("loaded %s\n", filename);
 			loaded++;
 			attempted++;
 		}
 		else
 		{
-			printf("failed to load %s", filename);
+			printf("failed to load %s\n", filename);
 			attempted++;
 		}
 		char *file = new char[128];
@@ -444,8 +574,8 @@ void HLBsp::load_lightmap(Graphics &gfx)
 			else
 				v = data.Vert[data.Edge[-edge_index].v[1]];
 
-			float x = info->lightmapVecs[0][0] * v.x + info->lightmapVecs[0][1] * v.y + info->lightmapVecs[0][2] * v.z + info->lightmapVecs[0][3];
-			float y = info->lightmapVecs[1][0] * v.x + info->lightmapVecs[1][1] * v.y + info->lightmapVecs[1][2] * v.z + info->lightmapVecs[1][3];
+			float x = info->lightmapVecs[0].x * v.x + info->lightmapVecs[0].y * v.y + info->lightmapVecs[0].z * v.z + info->lightmapVecs[0].w;
+			float y = info->lightmapVecs[1].x * v.x + info->lightmapVecs[1].y * v.y + info->lightmapVecs[1].z * v.z + info->lightmapVecs[1].w;
 
 			if (x < min.x)
 				min.x = x;
@@ -486,15 +616,15 @@ void HLBsp::load_lightmap(Graphics &gfx)
 			else
 				v = data.Vert[data.Edge[-edge_index].v[1]];
 
-			float x = info->lightmapVecs[0][0] * v.x +
-				info->lightmapVecs[0][1] * v.y +
-				info->lightmapVecs[0][2] * v.z +
-				info->lightmapVecs[0][3];
+			float x = info->lightmapVecs[0].x * v.x +
+				info->lightmapVecs[0].y * v.y +
+				info->lightmapVecs[0].z * v.z +
+				info->lightmapVecs[0].w;
 
-			float y = info->lightmapVecs[1][0] * v.x +
-				info->lightmapVecs[1][1] * v.y +
-				info->lightmapVecs[1][2] * v.z +
-				info->lightmapVecs[1][3];
+			float y = info->lightmapVecs[1].x * v.x +
+				info->lightmapVecs[1].y * v.y +
+				info->lightmapVecs[1].z * v.z +
+				info->lightmapVecs[1].w;
 
 			vec2 lightmap(mid_tex.x + (x - mid_poly.x) / 16.0f,
 				mid_tex.y + (y - mid_poly.y) / 16.0f);

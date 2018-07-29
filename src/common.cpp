@@ -3447,3 +3447,122 @@ bool get_barycentric(float x, float y,
 
 	return true;
 }
+
+typedef enum
+{
+	HC_OUT,
+	HC_IN,
+	HC_SPANNING,
+	HC_ON
+} hclass;
+
+int split(const vertex_t *poly, int num_vert, const unsigned int *index_array, int num_index,
+	const plane_t &plane, vertex_t *in, vertex_t *out, int &in_c, int &out_c)
+{
+	static vertex_t outpts[8192];
+	static vertex_t inpts[8192];
+	vertex_t		ptA, ptB;
+	float			sideA, sideB;
+	hclass			poly_class = HC_ON; //	assume plane and polygon coincident to start
+
+
+	out_c = 0;
+	in_c = 0;
+	//	start with the last point
+	ptA = poly[index_array[num_index - 1]];
+
+	// determine which side we are on
+	sideA = ptA.position * plane.normal + plane.d;
+
+	for (int i = 0; i < num_index; i++)
+	{
+		ptB = poly[index_array[i]];
+
+		sideB = ptB.position * plane.normal + plane.d;	// determine which side we are on
+
+		//	if the current point is on the positive side
+		if (sideB > 0.000001f)	
+		{
+			if (poly_class == HC_ON)
+			{
+				poly_class = HC_OUT;
+			}
+			else if (poly_class != HC_OUT)
+			{
+				poly_class = HC_SPANNING;
+			}
+
+			//	if the previous point was on the opposite side of the plane
+			if (sideA < -0.000001f)
+			{
+				vec3	v = ptB.position - ptA.position;
+
+				//	add the new point to the partitions
+				vec3 p = ptA.position + (v * (-(ptA.position  * plane.normal + plane.d) / (v  * plane.normal + plane.d)));
+				outpts[out_c] = ptA;
+				outpts[out_c++].position = p;
+				inpts[in_c] = ptA;
+				inpts[in_c++].position = p;
+				poly_class = HC_SPANNING;
+			}
+
+			//	add the current point to the positive partition
+			outpts[out_c++] = ptB;
+		}
+		else if (sideB < -0.000001f)
+		{
+			if (poly_class == HC_ON)
+				poly_class = HC_IN;
+			else if (poly_class != HC_IN)
+				poly_class = HC_SPANNING;
+
+
+			//	if the previous point was on the opposite side of the plane
+			if (sideA > 0.000001f)
+			{
+				vec3	v = ptB.position - ptA.position;
+
+
+				//	add the newly computed point_3d to the partitions
+				vec3 p = ptA.position + (v * (-(ptA.position  * plane.normal + plane.d) / (v  * plane.normal + plane.d)));
+				outpts[out_c] = ptA;
+				outpts[out_c++].position = p;
+				inpts[in_c] = ptA;
+				inpts[in_c++].position = p;
+				poly_class = HC_SPANNING;
+			}
+			//	add the current point_3d to the negative partition
+			inpts[in_c++] = ptB;
+		}
+		else
+		{
+			//	the current point is on the plane
+			outpts[out_c++] = ptB;
+			inpts[in_c++] = ptB;
+		}
+		ptA = ptB;
+		sideA = sideB;
+	}
+
+	switch (poly_class)
+	{
+	case HC_OUT:
+		//	if the polygon is entirely positive
+		for (int i = 0; i < num_index; i++)
+			out[index_array[i]] = poly[index_array[i]];
+		break;
+	case HC_IN:
+		//	if the polygon is entirely negative
+		for (int i = 0; i < num_index; i++)
+			in[index_array[i]] = poly[index_array[i]];
+		break;
+	case HC_SPANNING:
+		//	split polygon
+		for(int i = 0; i < out_c; i++)
+			out[i] = outpts[i];
+		for (int i = 0; i < in_c; i++)
+			in[i] = inpts[i];
+		break;
+	}
+	return poly_class;
+}

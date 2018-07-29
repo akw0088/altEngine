@@ -201,8 +201,8 @@ typedef struct
 
 typedef struct
 {
-	float	textureVecs[2][4];	// [s/t][xyz offset] 
-	float	lightmapVecs[2][4];	// [s/t][xyz offset] - length is in units of texels/area
+	vec4	textureVecs[2];	// [s/t][xyz offset] 
+	vec4	lightmapVecs[2];	// [s/t][xyz offset] - length is in units of texels/area
 	int     flags;              // miptex flags	overrides
 	int     texdata;            // Pointer to texture name, size, etc.
 } dtexinfo_t;
