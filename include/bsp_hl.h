@@ -24,13 +24,17 @@ private:
 	void change_axis();
 	void load_lightmap(Graphics &gfx);
 	void load_textures(Graphics &gfx);
+	void calculate_texcoords(int face, int edge0, int edge1, int edge2);
 
-	vector <unsigned int> index;
+	vector <unsigned int> index_array;
 	hl_bsp_t data;
 
 	int *face_start_index;
 	int *face_count;
-	int ic;
+	vec2 *face_lightmap;
+	int *face_lightmap_obj;
+
+	bool map_selected;
 	int map_vertex_vbo;
 	int map_index_vbo;
 	int *lightmap_object;

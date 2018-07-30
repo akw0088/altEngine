@@ -642,7 +642,7 @@ void Engine::load(char *level)
 		rand_float(-100.0, 200.0f),
 		rand_float(-100.0, 200.0f));
 
-	bool hl = false;
+	bool hl = true;
 	if (hl)
 	{
 		vec3 color(0.5f, 0.5f, 0.5f);
@@ -988,7 +988,7 @@ void Engine::render(double last_frametime)
 		global.Select();
 		global.Params(mvp, 0);
 		gfx.clear();
-		hlmap.temp_render(gfx);
+		hlmap.render(gfx, camera_frame.pos);
 		gfx.swap();
 		return;
 	}

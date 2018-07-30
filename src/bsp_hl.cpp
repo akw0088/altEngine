@@ -4,6 +4,7 @@
 HLBsp::HLBsp()
 {
 	loaded = false;
+	map_selected = false;
 }
 
 int HLBsp::load(Graphics &gfx, char *map)
@@ -95,10 +96,16 @@ int HLBsp::load(Graphics &gfx, char *map)
 	}
 	face_start_index = new int[data.num_faces];
 	face_count = new int[data.num_faces];
+	face_lightmap = new vec2[data.num_faces];
+	face_lightmap_obj = new int[data.num_faces];
+
 	for (int i = 0; i < data.num_faces; i++)
 	{
 		face_start_index[i] = 0;
 		face_count[i] = 0;
+		face_lightmap[i].x = 1.0f;
+		face_lightmap[i].y = 1.0f;
+		face_lightmap_obj[i] = 0;
 	}
 
 
@@ -140,36 +147,36 @@ int HLBsp::load(Graphics &gfx, char *map)
 	}
 
 	// generate normals
-	for (unsigned int i = 0; i < index.size();)
+	for (unsigned int i = 0; i < index_array.size();)
 	{
 		if (i == 0)
 		{
 			// Triangle fan, first set will have 3 points
 
-			vec3 a = data.Vert[index[i + 1]] - data.Vert[index[i + 0]];
-			vec3 b = data.Vert[index[i + 2]] - data.Vert[index[i + 0]];
+			vec3 a = data.Vert[index_array[i + 1]] - data.Vert[index_array[i + 0]];
+			vec3 b = data.Vert[index_array[i + 2]] - data.Vert[index_array[i + 0]];
 			vec3 normal = vec3::crossproduct(a, b);
 
-			map_vertex[index[i + 0]].normal = normal;
-			map_vertex[index[i + 1]].normal = normal;
-			map_vertex[index[i + 2]].normal = normal;
+			map_vertex[index_array[i + 0]].normal = normal;
+			map_vertex[index_array[i + 1]].normal = normal;
+			map_vertex[index_array[i + 2]].normal = normal;
 
 			i += 3;
 		}
 		else
 		{
 			// rest will be one new point and two previous
-			vec3 a = data.Vert[index[i - 1]] - data.Vert[index[i - 2]];
-			vec3 b = data.Vert[index[i + 0]] - data.Vert[index[i - 2]];
+			vec3 a = data.Vert[index_array[i - 1]] - data.Vert[index_array[i - 2]];
+			vec3 b = data.Vert[index_array[i + 0]] - data.Vert[index_array[i - 2]];
 			vec3 normal = vec3::crossproduct(a, b);
 
-			map_vertex[index[i + 0]].normal = normal;
+			map_vertex[index_array[i + 0]].normal = normal;
 			i++;
 		}
 	}
 
 	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_verts);
-	map_index_vbo = gfx.CreateIndexBuffer(index.data(), index.size());
+	map_index_vbo = gfx.CreateIndexBuffer(index_array.data(), index_array.size());
 
 	loaded = true;
 
@@ -178,9 +185,13 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 void HLBsp::render(Graphics &gfx, vec3 &pos)
 {
-	int curLeaf = find_leaf(pos, 0);
-	ic = 0;
-	bsp_render_node(gfx, 0, curLeaf, pos);
+	int current_leaf = find_leaf(pos, 0);
+	map_selected = false;
+
+	if (initialized == false)
+		current_leaf = -1;
+
+	bsp_render_node(gfx, 0, current_leaf, pos);
 }
 
 void HLBsp::bsp_render_node(Graphics &gfx, int node_index, int leaf, vec3 pos)
@@ -240,14 +251,72 @@ void HLBsp::render_face(Graphics &gfx, int face)
 	int tex_data = data.TexInfo[tex_index].texdata;
 
 	gfx.SelectTexture(0, texdata_to_obj[tex_data]);
-	gfx.SelectIndexBuffer(map_index_vbo);
-	gfx.SelectVertexBuffer(map_vertex_vbo);
+	gfx.SelectTexture(8, face_lightmap_obj[tex_data]);
+
+	if (map_selected == false)
+	{
+		gfx.SelectIndexBuffer(map_index_vbo);
+		gfx.SelectVertexBuffer(map_vertex_vbo);
+		map_selected = true;
+	}
 	gfx.DrawArrayTri(face_start_index[face], 0, face_count[face], face_count[face]);
+}
+
+void HLBsp::calculate_texcoords(int face, int edge0, int edge1, int edge2)
+{
+	texinfo_t texture;
+
+	int tex_index = data.Face[face].texinfo;
+	int tex_data = data.TexInfo[tex_index].texdata;
+	texture.width = data.TexData[tex_data].width;
+	texture.height = data.TexData[tex_data].height;
+	int tex_name = data.TexData[tex_data].nameStringTableID;
+
+	vec4 tu = data.TexInfo[tex_index].textureVecs[0];
+	vec4 tv = data.TexInfo[tex_index].textureVecs[1];
+	vec4 ltu = data.TexInfo[tex_index].lightmapVecs[0];
+	vec4 ltv = data.TexInfo[tex_index].lightmapVecs[1];
+
+
+	// Only calculate vertex 0 once
+	if (face_start_index[face] == 0)
+	{
+		float u1 = tu.x * data.Vert[edge0].x + tu.y * data.Vert[edge0].y + tu.z * data.Vert[edge0].z + tu.w;
+		float v1 = tv.x * data.Vert[edge0].x + tv.y * data.Vert[edge0].y + tv.z * data.Vert[edge0].z + tv.w;
+
+		map_vertex[edge0].texCoord0.x = u1 / texture.width;
+		map_vertex[edge0].texCoord0.y = v1 / texture.height;
+
+		float lu1 = ltu.x * data.Vert[edge0].x + ltu.y * data.Vert[edge0].y + ltu.z * data.Vert[edge0].z + ltu.w;
+		float lv1 = ltv.x * data.Vert[edge0].x + ltv.y * data.Vert[edge0].y + ltv.z * data.Vert[edge0].z + ltv.w;
+
+		map_vertex[edge0].texCoord1.x = lu1 / face_lightmap[face].x;
+		map_vertex[edge0].texCoord1.y = lv1 / face_lightmap[face].y;
+	}
+
+	float u2 = tu.x * data.Vert[edge1].x + tu.y * data.Vert[edge1].y + tu.z * data.Vert[edge1].z + tu.w;
+	float v2 = tv.x * data.Vert[edge1].x + tv.y * data.Vert[edge1].y + tv.z * data.Vert[edge1].z + tv.w;
+	float u3 = tu.x * data.Vert[edge2].x + tu.y * data.Vert[edge2].y + tu.z * data.Vert[edge2].z + tu.w;
+	float v3 = tv.x * data.Vert[edge2].x + tv.y * data.Vert[edge2].y + tv.z * data.Vert[edge2].z + tv.w;
+
+	map_vertex[edge1].texCoord0.x = u2 / texture.width;
+	map_vertex[edge1].texCoord0.y = v2 / texture.height;
+	map_vertex[edge2].texCoord0.x = u3 / texture.width;
+	map_vertex[edge2].texCoord0.y = v3 / texture.height;
+
+	float lu2 = ltu.x * data.Vert[edge1].x + ltu.y * data.Vert[edge1].y + ltu.z * data.Vert[edge1].z + ltu.w;
+	float lv2 = ltv.x * data.Vert[edge1].x + ltv.y * data.Vert[edge1].y + ltv.z * data.Vert[edge1].z + ltv.w;
+	float lu3 = ltu.x * data.Vert[edge2].x + ltu.y * data.Vert[edge2].y + ltu.z * data.Vert[edge2].z + ltu.w;
+	float lv3 = ltv.x * data.Vert[edge2].x + ltv.y * data.Vert[edge2].y + ltv.z * data.Vert[edge2].z + ltv.w;
+
+	map_vertex[edge1].texCoord1.x = lu2 / face_lightmap[face].x;
+	map_vertex[edge1].texCoord1.y = lv2 / face_lightmap[face].y;
+	map_vertex[edge2].texCoord1.x = lu3 / face_lightmap[face].x;
+	map_vertex[edge2].texCoord1.y = lv3 / face_lightmap[face].y;
 }
 
 void HLBsp::build_face(int face)
 {
-	int shared;
 	int edge0;
 	int edge1;
 	int edge2;
@@ -263,77 +332,31 @@ void HLBsp::build_face(int face)
 
 		if (i == 0)
 		{
-			edge0 = edge.v[reverse ? 1 : 0];	// first edge
-			shared = edge.v[reverse ? 0 : 1];	// second edge
+			edge0 = edge.v[reverse ? 1 : 0];	// first edge, used in all triangles
 		}
 		else
 		{
-			shared = edge.v[reverse ? 1 : 0];	// first edge
-			if (shared == edge0)
+			// if first edge equals old first edge, skip
+			if (edge.v[reverse ? 1 : 0] == edge0)
 				continue;
-			else
-				edge1 = shared;
 
-			shared = edge.v[reverse ? 0 : 1];	// second edge
-			if (shared == edge0)
+			// if second edge equals old first edge, skip
+			if (edge.v[reverse ? 0 : 1] == edge0)
 				continue;
-			else
-				edge2 = shared;
+			
+			edge1 = edge.v[reverse ? 1 : 0]; // first edge
+			edge2 = edge.v[reverse ? 0 : 1]; // second edge
 
-			texinfo_t texture;
-
-			int tex_index = data.Face[face].texinfo;
-			int tex_data = data.TexInfo[tex_index].texdata;
-			texture.width = data.TexData[tex_data].width;
-			texture.height = data.TexData[tex_data].height;
-			int tex_name = data.TexData[tex_data].nameStringTableID;
-
-			vec4 tu = data.TexInfo[tex_index].textureVecs[0];
-			vec4 tv = data.TexInfo[tex_index].textureVecs[1];
-
-
-			float u1 = tu.x * data.Vert[edge0].x + tu.y * data.Vert[edge0].y + tu.z * data.Vert[edge0].z + tu.w;
-			float v1 = tv.x * data.Vert[edge0].x + tv.y * data.Vert[edge0].y + tv.z * data.Vert[edge0].z + tv.w;
-			float u2 = tu.x * data.Vert[edge1].x + tu.y * data.Vert[edge1].y + tu.z * data.Vert[edge1].z + tu.w;
-			float v2 = tv.x * data.Vert[edge1].x + tv.y * data.Vert[edge1].y + tv.z * data.Vert[edge1].z + tv.w;
-			float u3 = tu.x * data.Vert[edge2].x + tu.y * data.Vert[edge2].y + tu.z * data.Vert[edge2].z + tu.w;
-			float v3 = tv.x * data.Vert[edge2].x + tv.y * data.Vert[edge2].y + tv.z * data.Vert[edge2].z + tv.w;
-
-			map_vertex[edge0].texCoord0.x = u1 / texture.width;
-			map_vertex[edge0].texCoord0.y = v1 / texture.height;
-			map_vertex[edge1].texCoord0.x = u2 / texture.width;
-			map_vertex[edge1].texCoord0.y = v2 / texture.height;
-			map_vertex[edge2].texCoord0.x = u3 / texture.width;
-			map_vertex[edge2].texCoord0.y = v3 / texture.height;
-
-			vec4 ltu = data.TexInfo[tex_index].lightmapVecs[0];
-			vec4 ltv = data.TexInfo[tex_index].lightmapVecs[1];
-
-
-			float lu1 = ltu.x * data.Vert[edge0].x + ltu.y * data.Vert[edge0].y + ltu.z * data.Vert[edge0].z + ltu.w;
-			float lv1 = ltv.x * data.Vert[edge0].x + ltv.y * data.Vert[edge0].y + ltv.z * data.Vert[edge0].z + ltv.w;
-			float lu2 = ltu.x * data.Vert[edge1].x + ltu.y * data.Vert[edge1].y + ltu.z * data.Vert[edge1].z + ltu.w;
-			float lv2 = ltv.x * data.Vert[edge1].x + ltv.y * data.Vert[edge1].y + ltv.z * data.Vert[edge1].z + ltv.w;
-			float lu3 = ltu.x * data.Vert[edge2].x + ltu.y * data.Vert[edge2].y + ltu.z * data.Vert[edge2].z + ltu.w;
-			float lv3 = ltv.x * data.Vert[edge2].x + ltv.y * data.Vert[edge2].y + ltv.z * data.Vert[edge2].z + ltv.w;
-
-			map_vertex[edge0].texCoord1.x = lu1 / texture.width;
-			map_vertex[edge0].texCoord1.y = lv1 / texture.height;
-			map_vertex[edge1].texCoord1.x = lu2 / texture.width;
-			map_vertex[edge1].texCoord1.y = lv2 / texture.height;
-			map_vertex[edge2].texCoord1.x = lu3 / texture.width;
-			map_vertex[edge2].texCoord1.y = lv3 / texture.height;
-
-
+			calculate_texcoords(face, edge0, edge1, edge2);
 			if (face_start_index[face] == 0)
 			{
-				face_start_index[face] = index.size();
+				face_start_index[face] = index_array.size();
 			}
+
+			index_array.push_back(edge0);
+			index_array.push_back(edge1);
+			index_array.push_back(edge2);
 			face_count[face] += 3;
-			index.push_back(edge0);
-			index.push_back(edge1);
-			index.push_back(edge2);
-			ic += 3;
 		}
 	}
 }
@@ -553,10 +576,16 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 		int width = (int)(ceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
 		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
+		face_lightmap[i].x = width;
+		face_lightmap[i].y = height;
+
+
+
 #ifndef DEDICATED
 #ifndef VULKAN //GL_RGBA not defined
 #ifndef SOFTWARE
 		lightmap_object[i] = gfx.LoadTexture(width, height, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
+		face_lightmap_obj[i] = lightmap_object[i];
 #endif
 #endif
 #endif
