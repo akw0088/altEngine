@@ -402,6 +402,8 @@ typedef struct
 	unsigned short *LeafBrush;
 	dbrush_t *Brush;
 	dbrushside_t *BrushSide;
+	vec3 *VertNormal;
+	int *VertNormalIndex;
 
 	unsigned int	num_nodes;
 	unsigned int	num_vis;
@@ -421,6 +423,8 @@ typedef struct
 	unsigned int 	num_LeafBrush;
 	unsigned int 	num_Brush;
 	unsigned int 	num_BrushSide;
+	unsigned int	num_VertexNormal;
+	unsigned int	num_VertexNormalIndex;
 	unsigned int	num_StringTable;
 	unsigned int	num_StringData;
 } hl_bsp_t;
