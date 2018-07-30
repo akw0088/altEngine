@@ -236,54 +236,13 @@ void HLBsp::render_leaf(Graphics &gfx, int leaf)
 
 void HLBsp::render_face(Graphics &gfx, int face)
 {
-	int shared;
-	int edge0;
-	int edge1;
-	int edge2;
-	//	int edge3;
-	bool once = true;
+	int tex_index = data.Face[face].texinfo;
+	int tex_data = data.TexInfo[tex_index].texdata;
 
-	// usual case is four edges making a quad
-	for (int i = 0; i < data.Face[face].numedges; i++)
-	{
-		int edge_index = data.SurfEdge[data.Face[face].firstedge + i];
-		dedge_t edge = data.Edge[abs32(edge_index)];
-		bool reverse = (edge_index >= 0);
-
-		if (i == 0)
-		{
-			edge0 = edge.v[reverse ? 0 : 1];
-			shared = edge.v[reverse ? 1 : 0];
-		}
-		else
-		{
-			shared = edge.v[reverse ? 0 : 1];
-			if (shared == edge0)
-				continue;
-			else
-				edge1 = shared;
-
-			shared = edge.v[reverse ? 1 : 0];
-			if (shared == edge0)
-				continue;
-			else
-				edge2 = shared;
-
-			int tex_index = data.Face[face].texinfo;
-			int tex_data = data.TexInfo[tex_index].texdata;
-
-			// rendering single triangle, using index array previously built
-			if (once)
-			{
-				gfx.SelectTexture(0, texdata_to_obj[tex_data]);
-				gfx.SelectIndexBuffer(map_index_vbo);
-				gfx.SelectVertexBuffer(map_vertex_vbo);
-				gfx.DrawArrayTri(face_start_index[face], 0, face_count[face], face_count[face]);
-				once = false;
-			}
-			ic += 3;
-		}
-	}
+	gfx.SelectTexture(0, texdata_to_obj[tex_data]);
+	gfx.SelectIndexBuffer(map_index_vbo);
+	gfx.SelectVertexBuffer(map_vertex_vbo);
+	gfx.DrawArrayTri(face_start_index[face], 0, face_count[face], face_count[face]);
 }
 
 void HLBsp::build_face(int face)
@@ -292,29 +251,30 @@ void HLBsp::build_face(int face)
 	int edge0;
 	int edge1;
 	int edge2;
-	//	int edge3;
 
-	// usual case is four edges making a quad
+	// usual case is four edges making a quad, can render as triangle strip
 	for (int i = 0; i < data.Face[face].numedges; i++)
 	{
 		int edge_index = data.SurfEdge[data.Face[face].firstedge + i];
 		dedge_t edge = data.Edge[abs32(edge_index)];
-		bool reverse = (edge_index >= 0);
+		
+		// if edge is negative, edges are reversed (first edge is index 1, like quake2)
+		bool reverse = (edge_index < 0);
 
 		if (i == 0)
 		{
-			edge0 = edge.v[reverse ? 0 : 1];
-			shared = edge.v[reverse ? 1 : 0];
+			edge0 = edge.v[reverse ? 1 : 0];	// first edge
+			shared = edge.v[reverse ? 0 : 1];	// second edge
 		}
 		else
 		{
-			shared = edge.v[reverse ? 0 : 1];
+			shared = edge.v[reverse ? 1 : 0];	// first edge
 			if (shared == edge0)
 				continue;
 			else
 				edge1 = shared;
 
-			shared = edge.v[reverse ? 1 : 0];
+			shared = edge.v[reverse ? 0 : 1];	// second edge
 			if (shared == edge0)
 				continue;
 			else
