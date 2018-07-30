@@ -5327,7 +5327,9 @@ int Engine::console_general(char *cmd)
 
 	if (strstr(cmd, "oldschool"))
 	{
+#ifdef WIN32
 		set_resolution(640, 480, 32);
+#endif
 		fullscreen();
 		return 0;
 	}
