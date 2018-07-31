@@ -1,28 +1,31 @@
+#ifndef BSP_TYPES_Q1
+#define BSP_TYPES_Q1
+
 #define BSPVERSION   29
 
-#define LUMP_ENTITIES		0
-#define LUMP_PLANES			1
-#define LUMP_TEXTURES		2
-#define LUMP_VERTEXES		3
-#define LUMP_VISIBILITY		4
-#define LUMP_NODES			5
-#define LUMP_TEXINFO		6
-#define LUMP_FACES			7
-#define LUMP_LIGHTING		8
-#define LUMP_CLIPNODES		9
-#define LUMP_LEAFS			10
-#define LUMP_MARKSURFACES	11
-#define LUMP_EDGES			12
-#define LUMP_SURFEDGES		13
-#define LUMP_MODELS			14
-#define HEADER_LUMPS		15
+#define Q1LUMP_ENTITIES		0
+#define Q1LUMP_PLANES		1
+#define Q1LUMP_TEXTURES		2
+#define Q1LUMP_VERTEXES		3
+#define Q1LUMP_VISIBILITY	4
+#define Q1LUMP_NODES		5
+#define Q1LUMP_TEXINFO		6
+#define Q1LUMP_FACES		7
+#define Q1LUMP_LIGHTING		8
+#define Q1LUMP_CLIPNODES	9
+#define Q1LUMP_LEAFS		10
+#define Q1LUMP_MARKSURFACES	11
+#define Q1LUMP_EDGES		12
+#define Q1LUMP_SURFEDGES	13
+#define Q1LUMP_MODELS		14
+#define Q1HEADER_LUMPS		15
 
-#define CONTENTS_EMPTY		-1
-#define CONTENTS_SOLID		-2
-#define CONTENTS_WATER		-3
-#define CONTENTS_SLIME		-4
-#define CONTENTS_LAVA		-5
-#define CONTENTS_SKY		-6
+#define Q1CONTENTS_EMPTY		-1
+#define Q1CONTENTS_SOLID		-2
+#define Q1CONTENTS_WATER		-3
+#define Q1CONTENTS_SLIME		-4
+#define Q1CONTENTS_LAVA		-5
+#define Q1CONTENTS_SKY		-6
 
 #define AMBIENT_WATER		0
 #define AMBIENT_SKY			1
@@ -67,26 +70,26 @@ typedef struct
 {
 	int offset;
 	int size;
-} lump_t;
+} q1lump_t;
 
 typedef struct
 {
 	int version;
-	lump_t entity;
-	lump_t plane;
-	lump_t tex;
-	lump_t vert;
-	lump_t vis;
-	lump_t node;
-	lump_t texinfo;
-	lump_t face;
-	lump_t lightmap;
-	lump_t clipnode;
-	lump_t leaf;
-	lump_t marksurf;
-	lump_t edge;
-	lump_t surface_edge;
-	lump_t model;
+	q1lump_t entity;
+	q1lump_t plane;
+	q1lump_t tex;
+	q1lump_t vert;
+	q1lump_t vis;
+	q1lump_t node;
+	q1lump_t texinfo;
+	q1lump_t face;
+	q1lump_t lightmap;
+	q1lump_t clipnode;
+	q1lump_t leaf;
+	q1lump_t marksurf;
+	q1lump_t edge;
+	q1lump_t surface_edge;
+	q1lump_t model;
 } qbsp_t;
 
 typedef struct
@@ -96,19 +99,19 @@ typedef struct
 	int         headnode[MAX_MAP_HULLS];
 	int         visleafs;      // not including the solid leaf 0
 	int         firstface, numfaces;
-} dmodel_t;
+} q1dmodel_t;
 
 typedef struct
 {
 	int         version;
 	lump_t      lumps[HEADER_LUMPS];
-} dheader_t;
+} q1dheader_t;
 
 typedef struct
 {
 	int         nummiptex;
 	int         dataofs[4];      // [nummiptex]
-} dmiptexlump_t;
+} q1dmiptexlump_t;
 
 #define   MIPLEVELS   4
 typedef struct miptex_s
@@ -122,7 +125,7 @@ typedef struct miptex_s
 typedef struct
 {
 	float   point[3];
-} dvertex_t;
+} q1dvertex_t;
 
 
 
@@ -131,7 +134,7 @@ typedef struct
 	float   normal[3];
 	float   dist;
 	int      type;      // PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
-} dplane_t;
+} q1dplane_t;
 
 // !!! if this is changed, it must be changed in asm_i386.h too !!!
 typedef struct
@@ -142,13 +145,13 @@ typedef struct
 	short      maxs[3];
 	unsigned short   firstface;
 	unsigned short   numfaces;   // counting both sides
-} dnode_t;
+} q1dnode_t;
 
 typedef struct
 {
 	int         planenum;
 	short      children[2];   // negative numbers are contents
-} dclipnode_t;
+} q1dclipnode_t;
 
 
 typedef struct texinfo_s
@@ -156,7 +159,7 @@ typedef struct texinfo_s
 	float      vecs[2][4];      // [s/t][xyz offset]
 	int         miptex;
 	int         flags;
-} texinfo_t;
+} q1texinfo_t;
 #define TEX_SPECIAL   1      // sky or slime, no lightmap or 256 subdivision
 
 // note that edge 0 is never used, because negative edge nums are used for
@@ -164,7 +167,7 @@ typedef struct texinfo_s
 typedef struct
 {
 	unsigned short   v[2];      // vertex numbers
-} dedge_t;
+} q1dedge_t;
 
 
 typedef unsigned char byte;
@@ -182,7 +185,7 @@ typedef struct
 	// lighting info
 	byte      styles[MAXLIGHTMAPS];
 	int         lightofs;      // start of [numstyles*surfsize] samples
-} dface_t;
+} q1dface_t;
 
 // leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas
 // all other leafs need visibility info
@@ -198,7 +201,7 @@ typedef struct
 	unsigned short      nummarksurfaces;
 
 	byte      ambient_level[NUM_AMBIENTS];
-} dleaf_t;
+} q1dleaf_t;
 
 typedef struct
 {
@@ -207,9 +210,10 @@ typedef struct
 
 typedef struct
 {
-	vector p;
+	vec3 p;
 	unsigned char  ccodes;
 	unsigned char  pad0, pad1, pad2;
 	fix    sx, sy;
 	float  u, v;
-} point_3d;   // 32 bytes
+} q1vertex_t;   // 32 bytes
+#endif

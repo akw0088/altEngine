@@ -1,5 +1,8 @@
 #include "include.h"
 
+#ifndef BSP_TYPES_HL
+#define BSP_TYPES_HL
+
 #define HL_HEADER_LUMPS 64
 #define HL_BSP_HEADER (('P'<<24) + ('S' << 16) + ('B' << 8) + 'V')
 
@@ -487,3 +490,4 @@ typedef struct
 #define DISPTRI_TAG_BUILDABLE 	0x4
 #define DISPTRI_FLAG_SURFPROP1 	0x8
 #define DISPTRI_FLAG_SURFPROP2 	0x10
+#endif

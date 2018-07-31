@@ -4,23 +4,24 @@
 #include <string.h>
 #include <math.h>
 
-#include "qbsp.h"
+#include "bsp_q1.h"
+
 
 char *get_file(char *filename, int *size);
+int abs32(int val);
 
-static vector cam_loc;
+static vec3 cam_loc;
 float main_matrix[3][3], view_matrix[3][3], translate[3];
-point_3d *clip_list1[40], *clip_list2[40];
-point_3d pts[32], *default_vlist[32];
+q1vertex_t *clip_list1[40], *clip_list2[40];
+q1vertex_t pts[32], *default_vlist[32];
 static fix clip_x_low, clip_x_high, clip_y_low, clip_y_high;
 
-#define VERTEX(x) ((dvertex_t *) ((char *) dvertexes + (x)*4 + (x)*8))
+#define VERTEX(x) ((q1dvertex_t *) ((char *) dvertexes + (x)*4 + (x)*8))
 #define fix_cint(x)       (((x)+65535) >> 16)
 
 double chop_temp;
 #define FLOAT_TO_INT(x)  ((chop_temp = (x) + BIG_NUM), *(int*)(&chop_temp))
-#define FLOAT_TO_FIX(x)  \
-             ((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
+#define FLOAT_TO_FIX(x)  ((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
 #define BIG_NUM     ((float) (1 << 26) * (1 << 26) * 1.5)
 fix scan[768][2];
 
@@ -104,37 +105,47 @@ int QBsp::load(char *filename)
 
 
 	dentdata = (char *)(data + qbsp->entity.offset);
-	dnodes = (dnode_t *)(data + qbsp->node.offset);
-	texinfo = (texinfo_t *)(data + qbsp->texinfo.offset);
-	dfaces = (dface_t *)(data + qbsp->face.offset);
-	dclipnodes = (dclipnode_t *)(data + qbsp->clipnode.offset);
-	dedges = (dedge_t *)(data + qbsp->edge.offset);
+	dnodes = (q1dnode_t *)(data + qbsp->node.offset);
+	texinfo = (q1texinfo_t *)(data + qbsp->texinfo.offset);
+	dfaces = (q1dface_t *)(data + qbsp->face.offset);
+	dclipnodes = (q1dclipnode_t *)(data + qbsp->clipnode.offset);
+	dedges = (q1dedge_t *)(data + qbsp->edge.offset);
 	dmarksurfaces = (unsigned short *)(data + qbsp->marksurf.offset);
 	dsurfedges = (int *)(data + qbsp->surface_edge.offset);
-	dplanes = (dplane_t *)(data + qbsp->plane.offset);
-	dmodels = (dmodel_t *)(data + qbsp->model.offset);
+	dplanes = (q1dplane_t *)(data + qbsp->plane.offset);
+	dmodels = (q1dmodel_t *)(data + qbsp->model.offset);
 	dtexdata = (byte *)(data + qbsp->tex.offset);
-	dvertexes = (dvertex_t *)(data + qbsp->vert.offset);
+	dvertexes = (q1dvertex_t *)(data + qbsp->vert.offset);
 	dvisdata = (byte *)(data + qbsp->vis.offset);
 	dlightdata = (byte *)(data + qbsp->lightmap.offset);
 
 
 
-	numnodes = qbsp->node.size / sizeof(dnode_t);
-	numtexinfo = qbsp->texinfo.size / sizeof(texinfo_t);
-	numfaces = qbsp->face.size / sizeof(dface_t);
-	numclipnodes = qbsp->clipnode.size / sizeof(dclipnode_t);
-	numedges = qbsp->edge.size / sizeof(dedge_t);
+	numnodes = qbsp->node.size / sizeof(q1dnode_t);
+	numtexinfo = qbsp->texinfo.size / sizeof(q1texinfo_t);
+	numfaces = qbsp->face.size / sizeof(q1dface_t);
+	numclipnodes = qbsp->clipnode.size / sizeof(q1dclipnode_t);
+	numedges = qbsp->edge.size / sizeof(q1dedge_t);
 	nummarksurfaces = qbsp->marksurf.size / sizeof(unsigned short);
 	numsurfedges = qbsp->surface_edge.size / sizeof(int);
-	numplanes = qbsp->plane.size / sizeof(dplane_t);
-	nummodels = qbsp->model.size / sizeof(dmodel_t);
-	numvertexes = qbsp->vert.size / sizeof(dvertex_t);
-	numleaf = qbsp->leaf.size / sizeof(dleaf_t);
+	numplanes = qbsp->plane.size / sizeof(q1dplane_t);
+	nummodels = qbsp->model.size / sizeof(q1dmodel_t);
+	numvertexes = qbsp->vert.size / sizeof(q1dvertex_t);
+	numleaf = qbsp->leaf.size / sizeof(q1dleaf_t);
 
 
 	vis_node = (char *)dvisdata;
 	vis_face = (char *)dfaces;
+
+
+	int *face_start_index = new int [numfaces];
+	int *face_count = new int[numfaces];
+
+	for (int i = 0; i < numfaces; i++)
+	{
+		face_start_index[i] = 0;
+		face_count[i] = 0;
+	}
 
 
 
@@ -151,39 +162,39 @@ int QBsp::load(char *filename)
 	return 0;
 }
 
-void QBsp::bsp_render_world(vector *cam_loc, dplane_t *pl)
+void QBsp::bsp_render_world(Graphics &gfx, vec3 *cam_loc, q1dplane_t *pl)
 {
 	planes = pl;
 	loc = cam_loc;
-	bsp_render_node((int)dmodels[0].headnode[0]);
+	bsp_render_node(gfx, (int)dmodels[0].headnode[0]);
 }
 
-void QBsp::bsp_render_node(int node)
+void QBsp::bsp_render_node(Graphics &gfx, int node)
 {
 	if (node >= 0 && vis_node[node])
 	{
 		if (point_plane_test(loc, &dplanes[dnodes[node].planenum]))
 		{
-			bsp_render_node(dnodes[node].children[0]);
-			render_node_faces(node, 1);
-			bsp_render_node(dnodes[node].children[1]);
+			bsp_render_node(gfx, dnodes[node].children[0]);
+			render_node_faces(gfx, node, 1);
+			bsp_render_node(gfx, dnodes[node].children[1]);
 		}
 		else
 		{
-			bsp_render_node(dnodes[node].children[1]);
-			render_node_faces(node, 0);
-			bsp_render_node(dnodes[node].children[0]);
+			bsp_render_node(gfx, dnodes[node].children[1]);
+			render_node_faces(gfx, node, 0);
+			bsp_render_node(gfx, dnodes[node].children[0]);
 		}
 	}
 }
 
-int QBsp::point_plane_test(vector *loc, dplane_t *plane)
+int QBsp::point_plane_test(vec3 *loc, q1dplane_t *plane)
 {
 	return plane->normal[0] * loc->x + plane->normal[1] * loc->y
 		+ plane->normal[2] * loc->z < plane->dist;
 }
 
-void QBsp::render_node_faces(int node, int side)
+void QBsp::render_node_faces(Graphics &gfx, int node, int side)
 {
 	int i, n, f;
 	n = dnodes[node].numfaces;
@@ -193,21 +204,21 @@ void QBsp::render_node_faces(int node, int side)
 		if (is_marked(f))
 		{
 			if (dfaces[f].side == side)
-				draw_face(f);
+				draw_face(gfx, f);
 			unmark_face(f);
 		}
 		++f;
 	}
 }
 
-float dot_vec_dbl(float *a, vector *b)
+float dot_vec_dbl(float *a, vec3 *b)
 {
 	return a[0] * b->x + a[1] * b->y + a[2] * b->z;
 }
 
-void transform_point_raw(vector *out, vector *in)
+void transform_point_raw(vec3 *out, vec3 *in)
 {
-	vector temp;
+	vec3 temp;
 	temp.x = in->x - translate[0];
 	temp.y = in->y - translate[1];
 	temp.z = in->z - translate[2];
@@ -222,7 +233,7 @@ float xcenter = 159.5f, ycenter = 99.5f;
 float near_clip = 0.01f, near_code = 16.0f;
 
 
-void project_point(point_3d *p)
+void project_point(q1vertex_t *p)
 {
 	if (p->p.z >= near_clip) {
 		double div = 1.0 / p->p.z;
@@ -239,7 +250,7 @@ void project_point(point_3d *p)
 
 double clip_scale_x, clip_scale_y;
 
-void code_point(point_3d *p)
+void code_point(q1vertex_t *p)
 {
 	if (p->p.z >= near_code) {
 		// if point is far enough away, code in 2d from fixedpoint (faster)
@@ -258,16 +269,16 @@ void code_point(point_3d *p)
 	}
 }
 
-void transform_point(point_3d *p, vector *v)
+void transform_point(q1vertex_t *p, vec3 *v)
 {
 	transform_point_raw(&p->p, v);
 	project_point(p);
 	code_point(p);
 }
 
-double dist2_from_viewer(vector *in, vector &cam_loc)
+double dist2_from_viewer(vec3 *in, vec3 &cam_loc)
 {
-	vector temp;
+	vec3 temp;
 	temp.x = in->x - cam_loc.x;
 	temp.y = in->y - cam_loc.y;
 	temp.z = in->z - cam_loc.z;
@@ -286,7 +297,7 @@ int QBsp::compute_mip_level(int face)
 	int e = dsurfedges[se];
 	double dist;
 	if (e < 0) e = -e;
-	dist = dist2_from_viewer((vector *)&dvertexes[dedges[e].v[0]], *loc) / DIST2;
+	dist = dist2_from_viewer((vec3 *)&dvertexes[dedges[e].v[0]], *loc) / DIST2;
 	if (dist < 1) return 0;
 	if (dist < 4) return 1;
 	if (dist < 16) return 2;
@@ -302,7 +313,7 @@ void QBsp::get_face_extent(int face, int *u0, int *v0, int *u1, int *v1)
 	int tex = dfaces[face].texinfo;
 	int i, n = dfaces[face].numedges;
 	int se = dfaces[face].firstedge;
-	vector *loc;
+	vec3 *loc;
 
 	memcpy(u, texinfo[tex].vecs[0], sizeof(u));
 	memcpy(v, texinfo[tex].vecs[1], sizeof(v));
@@ -310,9 +321,9 @@ void QBsp::get_face_extent(int face, int *u0, int *v0, int *u1, int *v1)
 	for (i = 0; i < n; ++i) {
 		int j = dsurfedges[se + i];
 		if (j < 0)
-			loc = (vector *)VERTEX(dedges[-j].v[1]);
+			loc = (vec3 *)VERTEX(dedges[-j].v[1]);
 		else
-			loc = (vector *)VERTEX(dedges[j].v[0]);
+			loc = (vec3 *)VERTEX(dedges[j].v[0]);
 		uv[i][0] = loc->x*u[0] + loc->y*u[1] + loc->z*u[2] + u[3];
 		uv[i][1] = loc->x*v[0] + loc->y*v[1] + loc->z*v[2] + v[3];
 	}
@@ -337,17 +348,17 @@ typedef struct
 	int valid;
 	bitmap *bm;
 	float u, v;
-} surface_t;
+} surf_t;
 
 #define MAX_CACHED_SURFACES  (1024)
-surface_t surface[MAX_CACHED_SURFACES];  // circular queue
+surf_t surface[MAX_CACHED_SURFACES];  // circular queue
 int surface_head, surface_tail;          // index into surfaces
 int cur_cache;                           // current storage in use
 
 
 void QBsp::get_raw_tmap(bitmap *bm, int tex, int ml)
 {
-	dmiptexlump_t *mtl = (dmiptexlump_t *)dtexdata;
+	q1dmiptexlump_t *mtl = (q1dmiptexlump_t *)dtexdata;
 	miptex_t *mip;
 	mip = (miptex_t *)(dtexdata + mtl->dataofs[tex]);
 	bm->bits = (char *)mip + mip->offsets[ml];
@@ -556,7 +567,7 @@ void qmap_set_output(char *where, int row)
 	}
 }
 
-void compute_texture_normal(vector *out, vector *u, vector *v)
+void compute_texture_normal(vec3 *out, vec3 *u, vec3 *v)
 {
 	out->x = u->y*v->z - u->z*v->y;
 	out->y = u->z*v->x - u->x*v->z;
@@ -564,22 +575,22 @@ void compute_texture_normal(vector *out, vector *u, vector *v)
 }
 
 
-void transform_vector(vector *out, vector *in)
+void transform_vector(vec3 *out, vec3 *in)
 {
-	vector temp = *in;
+	vec3 temp = *in;
 	out->x = dot_vec_dbl(view_matrix[0], &temp);
 	out->z = dot_vec_dbl(view_matrix[1], &temp);
 	out->y = dot_vec_dbl(view_matrix[2], &temp);
 }
 
 
-void setup_uv_vector(vector *out, vector *in, vector *norm, float *plane)
+void setup_uv_vector(vec3 *out, vec3 *in, vec3 *norm, float *plane)
 {
 	float dot = -(in->x*plane[0] + in->y*plane[1] + in->z*plane[2])
 		/ (norm->x*plane[0] + norm->y*plane[1] + norm->z*plane[2]);
 	if (dot != 0)
 	{
-		vector temp = *in;
+		vec3 temp = *in;
 		temp.x += norm->x*dot;
 		temp.y += norm->y*dot;
 		temp.z += norm->z*dot;
@@ -590,9 +601,9 @@ void setup_uv_vector(vector *out, vector *in, vector *norm, float *plane)
 }
 
 // compute location of origin of texture (should precompute)
-void setup_origin_vector(vector *out, dplane_t *plane, vector *norm)
+void setup_origin_vector(vec3 *out, q1dplane_t *plane, vec3 *norm)
 {
-	vector temp;
+	vec3 temp;
 	float d = plane->dist / (norm->x*plane->normal[0]
 		+ norm->y*plane->normal[1] + norm->z*plane->normal[2]);
 	temp.x = d * norm->x;
@@ -614,16 +625,15 @@ void qmap_set_texture_gradients(double *tmap_data)
 void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float v)
 {
 	double tmap_data[9];
-	vector P, M, N;
-	vector norm;
-	dplane_t *plane = &dplanes[dfaces[face].planenum];
+	vec3 P, M, N;
+	vec3 norm;
+	q1dplane_t *plane = &dplanes[dfaces[face].planenum];
 	float rescale = (8 >> mip) / 8.0f;
 
-	compute_texture_normal(&norm,
-		(vector *)texinfo[tex].vecs[0], (vector *)texinfo[tex].vecs[1]);
+	compute_texture_normal(&norm, (vec3 *)texinfo[tex].vecs[0], (vec3 *)texinfo[tex].vecs[1]);
 	// project vectors onto face's plane, and transform
-	setup_uv_vector(&M, (vector *)texinfo[tex].vecs[0], &norm, plane->normal);
-	setup_uv_vector(&N, (vector *)texinfo[tex].vecs[1], &norm, plane->normal);
+	setup_uv_vector(&M, (vec3 *)texinfo[tex].vecs[0], &norm, plane->normal);
+	setup_uv_vector(&N, (vec3 *)texinfo[tex].vecs[1], &norm, plane->normal);
 	setup_origin_vector(&P, plane, &norm);
 
 	u -= texinfo[tex].vecs[0][3];  // adjust according to face's info
@@ -661,7 +671,7 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 	qmap_set_texture_gradients(tmap_data);
 }
 
-void scan_convert(point_3d *a, point_3d *b)
+void scan_convert(q1vertex_t *a, q1vertex_t *b)
 {
 	void *temp;
 	int right;
@@ -677,7 +687,7 @@ void scan_convert(point_3d *a, point_3d *b)
 	else {
 		temp = a;
 		a = b;
-		b = (point_3d *)temp;
+		b = (q1vertex_t *)temp;
 		right = 1;
 	}
 
@@ -798,7 +808,7 @@ void qmap_draw_span(int y, int sx, int ex)
 	}
 }
 
-void draw_poly(int n, point_3d **vl)
+void draw_poly(int n, q1vertex_t **vl)
 {
 	int i, j, y, ey;
 	fix ymin, ymax;
@@ -806,9 +816,12 @@ void draw_poly(int n, point_3d **vl)
 	// find max and min y height
 
 	ymin = ymax = vl[0]->sy;
-	for (i = 1; i < n; ++i) {
-		if (vl[i]->sy < ymin) ymin = vl[i]->sy;
-		else if (vl[i]->sy > ymax) ymax = vl[i]->sy;
+	for (i = 1; i < n; ++i)
+	{
+		if (vl[i]->sy < ymin)
+			ymin = vl[i]->sy;
+		else if (vl[i]->sy > ymax)
+			ymax = vl[i]->sy;
 	}
 
 	// scan out each edge
@@ -833,14 +846,14 @@ void draw_poly(int n, point_3d **vl)
 
 }
 
-void transform_rotated_point(point_3d *p)
+void transform_rotated_point(q1vertex_t *p)
 {
 	project_point(p);
 	code_point(p);
 }
 
 
-static void intersect(point_3d *out, point_3d *a, point_3d *b, float where)
+static void intersect(q1vertex_t *out, q1vertex_t *a, q1vertex_t *b, float where)
 {
 	// intersection occurs 'where' % along the line from a to b
 
@@ -851,31 +864,31 @@ static void intersect(point_3d *out, point_3d *a, point_3d *b, float where)
 	transform_rotated_point(out);
 }
 
-static double left_loc(point_3d *a, point_3d *b)
+static double left_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return -(a->p.z + a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x + b->p.z - a->p.z);
 }
 
-static double right_loc(point_3d *a, point_3d *b)
+static double right_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return  (a->p.z - a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x - b->p.z + a->p.z);
 }
 
-static double top_loc(point_3d *a, point_3d *b)
+static double top_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return  (a->p.z - a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y - b->p.z + a->p.z);
 }
 
-static double bottom_loc(point_3d *a, point_3d *b)
+static double bottom_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return -(a->p.z + a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y + b->p.z - a->p.z);
 }
 
 // clip the polygon to each of the view frustrum planes
-int clip_poly(int n, point_3d **vl, int codes_or, point_3d ***out_vl)
+int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl)
 {
 	int i, j, k, p = 0; // p = index into temporary point pool
-	point_3d **cur;
+	q1vertex_t **cur;
 
 	if (codes_or & CC_OFF_LEFT) {
 		cur = clip_list1;
@@ -957,47 +970,69 @@ int clip_poly(int n, point_3d **vl, int codes_or, point_3d ***out_vl)
 }
 
 
-void QBsp::draw_face(int face)
+void QBsp::draw_face(Graphics &gfx, int face)
 {
-	int n = dfaces[face].numedges;
-	int se = dfaces[face].firstedge;
-	int i, codes_or = 0, codes_and = 0xff;
-	point_3d **vlist;
+//	int tex_index = data.Face[face].texinfo;
+//	int tex_data = data.TexInfo[tex_index].texdata;
 
-	for (i = 0; i < n; ++i)
+//	gfx.SelectTexture(0, texdata_to_obj[tex_data]);
+	//gfx.SelectTexture(8, face_lightmap_obj[tex_data]);
+
+//	if (map_selected == false)
 	{
-		int edge = dsurfedges[se + i];
-		if (edge < 0)
-			transform_point(&pts[i], (vector *)VERTEX(dedges[-edge].v[1]));
+		gfx.SelectIndexBuffer(map_index_vbo);
+		gfx.SelectVertexBuffer(map_vertex_vbo);
+//		map_selected = true;
+	}
+	gfx.DrawArrayTri(face_start_index[face], 0, face_count[face], face_count[face]);
+}
+
+
+void QBsp::build_face(int face)
+{
+	int edge0;
+	int edge1;
+	int edge2;
+
+
+	for (int i = 0; i < dfaces[face].numedges; ++i)
+	{
+		int edge_index = dsurfedges[dfaces[face].firstedge + i];
+
+		// if edge is negative, edges are reversed (first edge is index 1, like quake2)
+		bool reverse = (edge_index < 0);
+		q1dedge_t edge = dedges[abs32(edge_index)];
+
+		if (i == 0)
+		{
+			edge0 = edge.v[reverse ? 1 : 0];	// first edge, used in all triangles
+		}
 		else
-			transform_point(&pts[i], (vector *)VERTEX(dedges[edge].v[0]));
-		codes_or |= pts[i].ccodes;
-		//		codes_and &= pts[i].ccodes;
+		{
+			// if first edge equals edge0, skip
+			if (edge.v[reverse ? 1 : 0] == edge0)
+				continue;
+
+			// if second edge equals edge0 skip
+			if (edge.v[reverse ? 0 : 1] == edge0)
+				continue;
+
+			edge1 = edge.v[reverse ? 1 : 0]; // first edge
+			edge2 = edge.v[reverse ? 0 : 1]; // second edge
+
+//			calculate_texcoords(face, edge0, edge1, edge2);
+			if (face_start_index[face] == 0)
+			{
+				face_start_index[face] = index_array.size();
+			}
+
+			index_array.push_back(edge0);
+			index_array.push_back(edge1);
+			index_array.push_back(edge2);
+			face_count[face] += 3;
+		}
 	}
 
-	//	if (codes_and)
-	//		return;  // abort if poly outside frustrum
-	/*
-	if (codes_or)
-	{
-	// poly crosses frustrum, so clip it
-	n = clip_poly(n, default_vlist, codes_or, &vlist);
-	}
-	else
-	*/
-	vlist = default_vlist;
-
-	if (n)
-	{
-		bitmap bm;
-		float u, v;
-		int tex = dfaces[face].texinfo;
-		int mip = compute_mip_level(face);
-		get_tmap(&bm, face, texinfo[tex].miptex, mip, &u, &v);
-		qmap_set_texture(&bm);
-		compute_texture_gradients(face, tex, mip, u, v);
-		draw_poly(n, vlist);
-	}
 }
 
 void rot_x(float *v, fixang ang)
@@ -1043,7 +1078,7 @@ void rotate(float *x, angvec *ang)
 	rot_z(x, ang->tz);  // yaw
 }
 
-void set_view_info(vector *loc, angvec *ang)
+void set_view_info(vec3 *loc, angvec *ang)
 {
 	int i;
 	cam_loc = *loc;
@@ -1084,8 +1119,8 @@ void set_view_info(vector *loc, angvec *ang)
 void QBsp::SwapBSPFile(bool todisk)
 {
 	int            i, j, c;
-	dmodel_t      *d;
-	dmiptexlump_t   *mtl;
+	q1dmodel_t      *d;
+	q1dmiptexlump_t   *mtl;
 
 
 	// models   
@@ -1201,7 +1236,7 @@ void QBsp::SwapBSPFile(bool todisk)
 	//
 	if (texdatasize)
 	{
-		mtl = (dmiptexlump_t *)dtexdata;
+		mtl = (q1dmiptexlump_t *)dtexdata;
 		if (todisk)
 			c = mtl->nummiptex;
 		else
@@ -1235,7 +1270,7 @@ void QBsp::SwapBSPFile(bool todisk)
 
 
 
-void rotate_c2w(vector *dest, vector *src)
+void rotate_c2w(vec3 *dest, vec3 *src)
 {
 	dest->x = src->x * main_matrix[0][0]
 		+ src->y * main_matrix[1][0]
@@ -1248,9 +1283,9 @@ void rotate_c2w(vector *dest, vector *src)
 		+ src->z * main_matrix[2][2];
 }
 
-void compute_plane(dplane_t *plane, float x, float y, float z, vector &cam_loc)
+void compute_plane(q1dplane_t *plane, float x, float y, float z, vec3 &cam_loc)
 {
-	vector temp, temp2;
+	vec3 temp, temp2;
 	temp2.x = x; temp2.y = z; temp2.z = y;
 	rotate_c2w(&temp, &temp2);
 	plane->normal[0] = temp.x;
@@ -1259,7 +1294,7 @@ void compute_plane(dplane_t *plane, float x, float y, float z, vector &cam_loc)
 	plane->dist = temp.x*cam_loc.x + temp.y*cam_loc.y + temp.z*cam_loc.z;
 }
 
-void compute_view_frustrum(dplane_t *planes, vector &cam_loc)
+void compute_view_frustrum(q1dplane_t *planes, vec3 &cam_loc)
 {
 	compute_plane(planes + 0, -1, 0, 1, cam_loc);
 	compute_plane(planes + 1, 1, 0, 1, cam_loc);
@@ -1267,19 +1302,19 @@ void compute_view_frustrum(dplane_t *planes, vector &cam_loc)
 	compute_plane(planes + 3, 0, -1, 1, cam_loc);
 }
 
-int QBsp::find_leaf(vector *loc)
+int QBsp::find_leaf(vec3 *loc)
 {
 	int n = dmodels[0].headnode[0];
 	while (n >= 0)
 	{
-		dnode_t *node = &dnodes[n];
+		q1dnode_t *node = &dnodes[n];
 		n = node->children[point_plane_test(loc, &dplanes[node->planenum])];
 	}
 	return ~n;
 }
 
 
-int QBsp::visit_visible_leaves(vector *cam_loc)
+int QBsp::visit_visible_leaves(vec3 *cam_loc)
 {
 	int n, v, i;
 
@@ -1327,7 +1362,7 @@ int QBsp::bsp_find_visible_nodes(int node)
 
 #define FLOAT_POSITIVE(x)   (* (int *) (x) >= 0)
 
-int bbox_inside_plane(short *mins, short *maxs, dplane_t *plane)
+int bbox_inside_plane(short *mins, short *maxs, q1dplane_t *plane)
 {
 	int i;
 	short pt[3];
@@ -1345,7 +1380,7 @@ int bbox_inside_plane(short *mins, short *maxs, dplane_t *plane)
 }
 
 
-int QBsp::leaf_in_frustrum(dleaf_t *node, dplane_t *planes)
+int QBsp::leaf_in_frustrum(q1dleaf_t *node, q1dplane_t *planes)
 {
 	if (!bbox_inside_plane(node->mins, node->maxs, planes + 0)
 		|| !bbox_inside_plane(node->mins, node->maxs, planes + 1)
@@ -1371,7 +1406,7 @@ void QBsp::mark_leaf_faces(int leaf)
 	}
 }
 
-int node_in_frustrum(dnode_t *node, dplane_t *planes)
+int node_in_frustrum(q1dnode_t *node, q1dplane_t *planes)
 {
 	if (!bbox_inside_plane(node->mins, node->maxs, planes + 0)
 		|| !bbox_inside_plane(node->mins, node->maxs, planes + 1)
@@ -1404,7 +1439,7 @@ void QBsp::bsp_explore_node(int node)
 	}
 }
 
-void QBsp::bsp_visit_visible_leaves(vector *cam_loc, dplane_t *pl)
+void QBsp::bsp_visit_visible_leaves(vec3 *cam_loc, q1dplane_t *pl)
 {
 	planes = pl;
 	loc = cam_loc;
@@ -1413,9 +1448,9 @@ void QBsp::bsp_visit_visible_leaves(vector *cam_loc, dplane_t *pl)
 }
 
 
-void QBsp::render()
+void QBsp::render(Graphics &gfx)
 {
-	dplane_t planes[4];
+	q1dplane_t planes[4];
 	compute_view_frustrum(planes, cam_loc);
 
 	if (!visit_visible_leaves(loc))
@@ -1424,5 +1459,5 @@ void QBsp::render()
 	}
 
 	bsp_visit_visible_leaves(loc, planes);
-	bsp_render_world(loc, planes);
+	bsp_render_world(gfx, loc, planes);
 }
