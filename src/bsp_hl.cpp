@@ -330,7 +330,7 @@ void HLBsp::build_face(int face)
 	int edge1;
 	int edge2;
 
-	// usual case is four edges making a quad, can render as triangle strip
+	// usual case is four edges making a quad, can render as triangle fan
 	for (int i = 0; i < data.Face[face].numedges; i++)
 	{
 		int edge_index = data.SurfEdge[data.Face[face].firstedge + i];
