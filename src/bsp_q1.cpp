@@ -1,4 +1,5 @@
 #include "include.h"
+#include <math.h>
 
 
 char *get_file(char *filename, int *size);
@@ -132,7 +133,8 @@ int QBsp::load(Graphics &gfx, char *filename)
 
 	memset(&scan, 0, sizeof(scan));
 
-	render(gfx, vec3(0.0f, -1000.0f, 0.0f));
+	vec3 pos(0.0f, -1000.0f, 0.0f);
+	render(gfx, pos);
 	initialized = true;
 
 	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_vertexes);
@@ -853,9 +855,7 @@ void QBsp::build_face(Graphics &gfx, int face)
 
 void QBsp::change_axis()
 {
-	int            i, j, c;
-	q1dmodel_t      *d;
-	q1dmiptexlump_t   *mtl;
+	int            i;
 
 
 	for (i = 0; i < data.num_vertexes; i++)
