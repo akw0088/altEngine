@@ -3406,7 +3406,7 @@ void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float sca
 	num_index = j;
 
 	// calc normals
-	for (int i = 0; i < num_index; i+=3)
+	for (unsigned int i = 0; i < num_index; i+=3)
 	{
 		vec3 a = vertex[index[i+1]].position - vertex[index[i]].position;
 		vec3 b = vertex[index[i+2]].position - vertex[index[i]].position;
