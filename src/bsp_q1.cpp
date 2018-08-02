@@ -1,115 +1,69 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
 #include "include.h"
 
 
 char *get_file(char *filename, int *size);
 int abs32(int val);
 
-float main_matrix[3][3], view_matrix[3][3];
-vec3 translate;
-q1vertex_t *clip_list1[40], *clip_list2[40];
-q1vertex_t pts[32], *default_vlist[32];
+
+// globals
+float main_matrix[3][3];
+float view_matrix[3][3];
+
+q1vertex_t *clip_list1[40];
+q1vertex_t *clip_list2[40];
+q1vertex_t pts[32];
+q1vertex_t *default_vlist[32];
+
 static fix clip_x_low, clip_x_high, clip_y_low, clip_y_high;
 
-#define VERTEX(x) ((vec3 *) ((char *) dvertexes + (x)*4 + (x)*8))
-#define fix_cint(x)       (((x)+65535) >> 16)
+vec3 translate;
 
 double chop_temp;
-#define FLOAT_TO_INT(x)  ((chop_temp = (x) + BIG_NUM), *(int*)(&chop_temp))
-#define FLOAT_TO_FIX(x)  ((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
-#define BIG_NUM     ((float) (1 << 26) * (1 << 26) * 1.5)
 fix scan[768][2];
 
-#define fix_int(x)        ((x) >> 16)
-#define float_to_fix(x)   ((fix) ((x) * 65536))
-
-#define fix_cint(x)       (((x)+65535) >> 16)
-
-#define fix_floor(x)      ((x) & 0xffff0000)
-#define fix_ceil(x)       fix_floor((x)+0xffff)
-
-#define fix_make(a,b)     (((a) << 16) + (b))
-
-#define   MAX_MAP_FACES      65535
 int is_cached = 0;
 short surface_cache[MAX_MAP_FACES];      // cache entry for each face
 
+float proj_scale_x = 160.0f;
+float proj_scale_y = 160 * 200 / 240.0f;
+float xcenter = 159.5f;
+float ycenter = 99.5f;
+float near_clip = 0.01f;
+float near_code = 16.0f;
 
-short BigShort(short l)
-{
-	byte    b1, b2;
+double clip_scale_x;
+double clip_scale_y;
 
-	b1 = l & 255;
-	b2 = (l >> 8) & 255;
+surf_t surface[MAX_CACHED_SURFACES];  // circular queue
+int surface_head, surface_tail;          // index into surfaces
+int cur_cache;                           // current storage in use
 
-	return (b1 << 8) + b2;
-}
-
-short LittleShort(short l)
-{
-	return l;
-}
+int shift, global_step, global_row, lightmap_width;
+unsigned char *light_index;
+unsigned char blank_light[512];
 
 
-int BigLong(int l)
-{
-	byte    b1, b2, b3, b4;
-
-	b1 = l & 255;
-	b2 = (l >> 8) & 255;
-	b3 = (l >> 16) & 255;
-	b4 = (l >> 24) & 255;
-
-	return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
-}
-
-int LittleLong(int l)
-{
-	return l;
-}
-
-float BigFloat(float l)
-{
-	union { byte b[4]; float f; } in, out;
-
-	in.f = l;
-	out.b[0] = in.b[3];
-	out.b[1] = in.b[2];
-	out.b[2] = in.b[1];
-	out.b[3] = in.b[0];
-
-	return out.f;
-}
-
-float LittleFloat(float l)
-{
-	return l;
-}
 
 QBsp::QBsp()
 {
 	loaded = false;
 	initialized = false;
+	map_selected = false;
 }
 
 int QBsp::load(Graphics &gfx, char *filename)
 {
 	int size = 0;
-	char *data = NULL;
+	char *file = NULL;
 	
-	data = get_file(filename, &size);
-	if (data == NULL)
+	file = get_file(filename, &size);
+	if (file == NULL)
 	{
 		char *pak = "media/PAK0.PAK";
-		data = get_pakfile(pak, filename);
+		file = get_pakfile(pak, filename);
 	}
 
-	qbsp_t *qbsp = (qbsp_t *)data;
+	qbsp_t *qbsp = (qbsp_t *)file;
 
 	if (qbsp == NULL)
 	{
@@ -118,67 +72,58 @@ int QBsp::load(Graphics &gfx, char *filename)
 	}
 
 
-	dentdata = (char *)(data + qbsp->entity.offset);
-	dnodes = (q1dnode_t *)(data + qbsp->node.offset);
-	texinfo = (q1texinfo_t *)(data + qbsp->texinfo.offset);
-	dfaces = (q1dface_t *)(data + qbsp->face.offset);
-	dclipnodes = (q1dclipnode_t *)(data + qbsp->clipnode.offset);
-	dedges = (q1dedge_t *)(data + qbsp->edge.offset);
-	dmarksurfaces = (unsigned short *)(data + qbsp->marksurf.offset);
-	dsurfedges = (int *)(data + qbsp->surface_edge.offset);
-	dplanes = (q1dplane_t *)(data + qbsp->plane.offset);
-	dleafs = (q1dleaf_t *)(data + qbsp->leaf.offset);
-	dmodels = (q1dmodel_t *)(data + qbsp->model.offset);
-	dtexdata = (byte *)(data + qbsp->tex.offset);
-	dvertexes = (vec3 *)(data + qbsp->vert.offset);
-	dvisdata = (byte *)(data + qbsp->vis.offset);
-	dlightdata = (byte *)(data + qbsp->lightmap.offset);
+	data.dentdata = (char *)(file + qbsp->entity.offset);
+	data.dnodes = (q1dnode_t *)(file + qbsp->node.offset);
+	data.texinfo = (q1texinfo_t *)(file + qbsp->texinfo.offset);
+	data.dfaces = (q1dface_t *)(file + qbsp->face.offset);
+	data.dclipnodes = (q1dclipnode_t *)(file + qbsp->clipnode.offset);
+	data.dedges = (q1dedge_t *)(file + qbsp->edge.offset);
+	data.dmarksurfaces = (unsigned short *)(file + qbsp->marksurf.offset);
+	data.dsurfedges = (int *)(file + qbsp->surface_edge.offset);
+	data.dplanes = (q1dplane_t *)(file + qbsp->plane.offset);
+	data.dleafs = (q1dleaf_t *)(file + qbsp->leaf.offset);
+	data.dmodels = (q1dmodel_t *)(file + qbsp->model.offset);
+	data.dtexdata = (byte *)(file + qbsp->tex.offset);
+	data.dvertexes = (vec3 *)(file + qbsp->vert.offset);
+	data.dvisdata = (byte *)(file + qbsp->vis.offset);
+	data.dlightdata = (byte *)(file + qbsp->lightmap.offset);
 	
 
+	data.num_nodes = qbsp->node.size / sizeof(q1dnode_t);
+	data.num_texinfo = qbsp->texinfo.size / sizeof(q1texinfo_t);
+	data.num_faces = qbsp->face.size / sizeof(q1dface_t);
+	data.num_clipnodes = qbsp->clipnode.size / sizeof(q1dclipnode_t);
+	data.num_edges = qbsp->edge.size / sizeof(q1dedge_t);
+	data.num_marksurfaces = qbsp->marksurf.size / sizeof(unsigned short);
+	data.num_surfedges = qbsp->surface_edge.size / sizeof(int);
+	data.num_planes = qbsp->plane.size / sizeof(q1dplane_t);
+	data.num_leafs = qbsp->leaf.size / sizeof(q1dleaf_t);
+	data.num_models = qbsp->model.size / sizeof(q1dmodel_t);
+	data.num_vertexes = qbsp->vert.size / sizeof(vec3);
+	data.num_leaf = qbsp->leaf.size / sizeof(q1dleaf_t);
 
-
-	numnodes = qbsp->node.size / sizeof(q1dnode_t);
-	numtexinfo = qbsp->texinfo.size / sizeof(q1texinfo_t);
-	numfaces = qbsp->face.size / sizeof(q1dface_t);
-	numclipnodes = qbsp->clipnode.size / sizeof(q1dclipnode_t);
-	numedges = qbsp->edge.size / sizeof(q1dedge_t);
-	nummarksurfaces = qbsp->marksurf.size / sizeof(unsigned short);
-	numsurfedges = qbsp->surface_edge.size / sizeof(int);
-	numplanes = qbsp->plane.size / sizeof(q1dplane_t);
-	numleafs = qbsp->leaf.size / sizeof(q1dleaf_t);
-	nummodels = qbsp->model.size / sizeof(q1dmodel_t);
-	numvertexes = qbsp->vert.size / sizeof(vec3);
-	numleaf = qbsp->leaf.size / sizeof(q1dleaf_t);
-
-
-
-	vis_node = (char *)dvisdata;
-	vis_face = (char *)dfaces;
-
-
-
-
+	vis_node = (char *)data.dvisdata;
+	vis_face = (char *)data.dfaces;
 
 	change_axis();
 
-	map_vertex = new vertex_t[numvertexes];
-	for (unsigned int i = 0; i < numvertexes; i++)
+	map_vertex = new vertex_t[data.num_vertexes];
+	for (unsigned int i = 0; i < data.num_vertexes; i++)
 	{
-		map_vertex[i].position = dvertexes[i];
+		map_vertex[i].position = data.dvertexes[i];
 		map_vertex[i].tangent = vec4();
 	}
 
-	int *face_start_index = new int[numfaces];
-	int *face_count = new int[numfaces];
+	int *face_start_index = new int[data.num_faces];
+	int *face_count = new int[data.num_faces];
 
-	for (int i = 0; i < numfaces; i++)
+	for (int i = 0; i < data.num_faces; i++)
 	{
 		face_start_index[i] = 0;
 		face_count[i] = 0;
 	}
 
-
-
+	
 	for (int i = 0; i < MAX_MAP_FACES; ++i)
 		surface_cache[i] = -1;
 
@@ -190,7 +135,7 @@ int QBsp::load(Graphics &gfx, char *filename)
 	render(gfx, vec3(0.0f, -1000.0f, 0.0f));
 	initialized = true;
 
-	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, numvertexes);
+	map_vertex_vbo = gfx.CreateVertexBuffer(map_vertex, data.num_vertexes);
 	map_index_vbo = gfx.CreateIndexBuffer(index_array.data(), index_array.size());
 	loaded = true;
 
@@ -200,24 +145,24 @@ int QBsp::load(Graphics &gfx, char *filename)
 void QBsp::bsp_render_world(Graphics &gfx, vec3 &pos, q1dplane_t *pl)
 {
 	planes = pl;
-	bsp_render_node(gfx, (int)dmodels[0].headnode[0], pos);
+	bsp_render_node(gfx, (int)data.dmodels[0].headnode[0], pos);
 }
 
 void QBsp::bsp_render_node(Graphics &gfx, int node, vec3 &pos)
 {
 	if (node >= 0 && vis_node[node])
 	{
-		if (point_plane_test(pos, &dplanes[dnodes[node].planenum]))
+		if (point_plane_test(pos, &data.dplanes[data.dnodes[node].planenum]))
 		{
-			bsp_render_node(gfx, dnodes[node].children[0], pos);
+			bsp_render_node(gfx, data.dnodes[node].front, pos);
 			render_node_faces(gfx, node, 1);
-			bsp_render_node(gfx, dnodes[node].children[1], pos);
+			bsp_render_node(gfx, data.dnodes[node].back, pos);
 		}
 		else
 		{
-			bsp_render_node(gfx, dnodes[node].children[1], pos);
+			bsp_render_node(gfx, data.dnodes[node].back, pos);
 			render_node_faces(gfx, node, 0);
-			bsp_render_node(gfx, dnodes[node].children[0], pos);
+			bsp_render_node(gfx, data.dnodes[node].front, pos);
 		}
 	}
 }
@@ -230,13 +175,13 @@ int QBsp::point_plane_test(vec3 &loc, q1dplane_t *plane)
 void QBsp::render_node_faces(Graphics &gfx, int node, int side)
 {
 	int i, n, f;
-	n = dnodes[node].numfaces;
-	f = dnodes[node].firstface;
+	n = data.dnodes[node].numfaces;
+	f = data.dnodes[node].firstface;
 	for (i = 0; i < n; ++i)
 	{
 		if (is_marked(f))
 		{
-			if (dfaces[f].side == side)
+			if (data.dfaces[f].side == side)
 			{
 				if (initialized)
 					draw_face(gfx, f);
@@ -263,11 +208,6 @@ void transform_point_raw(vec3 &out, vec3 &in)
 	out.y = dot_vec_dbl(view_matrix[2], &temp);
 }
 
-float proj_scale_x = 160.0f, proj_scale_y = 160 * 200 / 240.0f;
-float xcenter = 159.5f, ycenter = 99.5f;
-float near_clip = 0.01f, near_code = 16.0f;
-
-
 void project_point(q1vertex_t &p)
 {
 	if (p.p.z >= near_clip)
@@ -277,14 +217,6 @@ void project_point(q1vertex_t &p)
 		p.sy = FLOAT_TO_FIX(-p.p.y * div + ycenter);
 	}
 }
-
-#define CC_OFF_LEFT 1
-#define CC_OFF_RIGHT 2
-#define CC_OFF_TOP 4
-#define CC_OFF_BOT 8
-#define CC_BEHIND 16
-
-double clip_scale_x, clip_scale_y;
 
 void code_point(q1vertex_t &p)
 {
@@ -333,21 +265,26 @@ double dist2_from_viewer(vec3 *in, vec3 &cam_loc)
 	return temp.x*temp.x + temp.y*temp.y + temp.z*temp.z;
 }
 
-#define DIST  256.0    // dist to switch first mip level
-#define DIST2 (DIST*DIST)
 
 int QBsp::compute_mip_level(int face, vec3 &loc)
 {
 	// dumb algorithm: grab 3d coordinate of some vertex,
 	// compute dist from viewer
-	int se = dfaces[face].firstedge;
-	int e = dsurfedges[se];
+	int se = data.dfaces[face].firstedge;
+	int e = data.dsurfedges[se];
 	double dist;
-	if (e < 0) e = -e;
-	dist = dist2_from_viewer((vec3 *)&dvertexes[dedges[e].v[0]], loc) / DIST2;
-	if (dist < 1) return 0;
-	if (dist < 4) return 1;
-	if (dist < 16) return 2;
+
+	if (e < 0)
+		e = -e;
+
+	dist = dist2_from_viewer((vec3 *)&data.dvertexes[data.dedges[e].v[0]], loc) / DIST2;
+
+	if (dist < 1)
+		return 0;
+	if (dist < 4)
+		return 1;
+	if (dist < 16)
+		return 2;
 	return 3;
 }
 
@@ -357,30 +294,36 @@ int QBsp::compute_mip_level(int face, vec3 &loc)
 void QBsp::get_face_extent(int face, int *u0, int *v0, int *u1, int *v1)
 {
 	float uv[32][2], u[4], v[4], umin, umax, vmin, vmax;
-	int tex = dfaces[face].texinfo;
-	int i, n = dfaces[face].numedges;
-	int se = dfaces[face].firstedge;
+	int tex = data.dfaces[face].texinfo;
+	int i, n = data.dfaces[face].numedges;
+	int se = data.dfaces[face].firstedge;
 	vec3 *loc;
 
-	memcpy(u, &texinfo[tex].vecs[0], sizeof(u));
-	memcpy(v, &texinfo[tex].vecs[1], sizeof(v));
+	memcpy(u, &data.texinfo[tex].vecs[0], sizeof(u));
+	memcpy(v, &data.texinfo[tex].vecs[1], sizeof(v));
 
-	for (i = 0; i < n; ++i) {
-		int j = dsurfedges[se + i];
+	for (i = 0; i < n; ++i)
+	{
+		int j = data.dsurfedges[se + i];
 		if (j < 0)
-			loc = (vec3 *)VERTEX(dedges[-j].v[1]);
+			loc = (vec3 *)VERTEX(data.dedges[-j].v[1]);
 		else
-			loc = (vec3 *)VERTEX(dedges[j].v[0]);
+			loc = (vec3 *)VERTEX(data.dedges[j].v[0]);
 		uv[i][0] = loc->x*u[0] + loc->y*u[1] + loc->z*u[2] + u[3];
 		uv[i][1] = loc->x*v[0] + loc->y*v[1] + loc->z*v[2] + v[3];
 	}
 	umin = umax = uv[0][0];
 	vmin = vmax = uv[0][1];
-	for (i = 1; i < n; ++i) {
-		if (uv[i][0] < umin) umin = uv[i][0];
-		else if (uv[i][0] > umax) umax = uv[i][0];
-		if (uv[i][1] < vmin) vmin = uv[i][1];
-		else if (uv[i][1] > vmax) vmax = uv[i][1];
+	for (i = 1; i < n; ++i)
+	{
+		if (uv[i][0] < umin)
+			umin = uv[i][0];
+		else if (uv[i][0] > umax)
+			umax = uv[i][0];
+		if (uv[i][1] < vmin)
+			vmin = uv[i][1];
+		else if (uv[i][1] > vmax)
+			vmax = uv[i][1];
 	}
 	*u0 = FLOAT_TO_INT(umin) & ~15;
 	*v0 = FLOAT_TO_INT(vmin) & ~15;
@@ -388,32 +331,15 @@ void QBsp::get_face_extent(int face, int *u0, int *v0, int *u1, int *v1)
 	*v1 = FLOAT_TO_INT(ceil(vmax / 16)) << 4;
 }
 
-typedef struct
-{
-	int face;
-	int mip_level;
-	int valid;
-	bitmap *bm;
-	float u, v;
-} surf_t;
-
-#define MAX_CACHED_SURFACES  (1024)
-surf_t surface[MAX_CACHED_SURFACES];  // circular queue
-int surface_head, surface_tail;          // index into surfaces
-int cur_cache;                           // current storage in use
-
-
 void QBsp::get_raw_tmap(bitmap *bm, int tex, int ml)
 {
-	q1dmiptexlump_t *mtl = (q1dmiptexlump_t *)dtexdata;
+	q1dmiptexlump_t *mtl = (q1dmiptexlump_t *)data.dtexdata;
 	miptex_t *mip;
-	mip = (miptex_t *)(dtexdata + mtl->dataofs[tex]);
+	mip = (miptex_t *)(data.dtexdata + mtl->dataofs[tex]);
 	bm->bits = (char *)mip + mip->offsets[ml];
 	bm->wid = mip->width >> ml;
 	bm->ht = mip->height >> ml;
 }
-
-#define ADJ_SURFACE(x)    ((x) & (MAX_CACHED_SURFACES-1))
 
 void free_surface(int surf)
 {
@@ -430,8 +356,6 @@ void free_next_surface(void)
 	free_surface(surface_tail);
 	surface_tail = ADJ_SURFACE(surface_tail + 1);
 }
-
-#define MAX_CACHE            (1024*1024)
 
 int allocate_cached_surface(int size)
 {
@@ -456,9 +380,6 @@ int allocate_cached_surface(int size)
 	return surf;
 }
 
-int shift, global_step, global_row, lightmap_width;
-unsigned char *light_index;
-unsigned char blank_light[512];
 
 // compute one lightmap square of surface
 void build_block(char *out, bitmap *raw, int x, int y)
@@ -558,10 +479,10 @@ void QBsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 
 	global_step = step;
 	global_row = bm->wid;
-	if (dfaces[face].lightofs == -1)
+	if (data.dfaces[face].lightofs == -1)
 		light_index = blank_light;
 	else
-		light_index = &dlightdata[dfaces[face].lightofs];
+		light_index = &data.dlightdata[data.dfaces[face].lightofs];
 
 	y = v0%raw.ht;  if (y < 0)  y += raw.ht;   // fixup for signed mod
 	x0 = u0%raw.wid; if (x0 < 0) x0 += raw.wid;  // fixup for signed mod
@@ -668,11 +589,11 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 	double tmap_data[9];
 	vec3 P, M, N;
 	vec3 norm;
-	q1dplane_t plane = dplanes[dfaces[face].planenum];
+	q1dplane_t plane = data.dplanes[data.dfaces[face].planenum];
 	float rescale = (8 >> mip) / 8.0f;
 
-	vec3 tu = vec3(texinfo[tex].vecs[0]);
-	vec3 tv = vec3(texinfo[tex].vecs[1]);
+	vec3 tu = vec3(data.texinfo[tex].vecs[0]);
+	vec3 tv = vec3(data.texinfo[tex].vecs[1]);
 
 	compute_texture_normal(norm, tu, tv);
 	// project vectors onto face's plane, and transform
@@ -680,8 +601,8 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 	setup_uv_vector(N, tv, norm, plane.normal);
 	setup_origin_vector(P, plane, norm);
 
-	u -= texinfo[tex].vecs[0].w;  // adjust according to face's info
-	v -= texinfo[tex].vecs[1].w;  // passed in values adjust for lightmap
+	u -= data.texinfo[tex].vecs[0].w;  // adjust according to face's info
+	v -= data.texinfo[tex].vecs[1].w;  // passed in values adjust for lightmap
 
 								   // we could just subtract (u,v) every time we compute a new (u,v);
 								   // instead we fold it into P:
@@ -713,181 +634,6 @@ void QBsp::compute_texture_gradients(int face, int tex, int mip, float u, float 
 	tmap_data[5] *= rescale;
 
 	qmap_set_texture_gradients(tmap_data);
-}
-
-void scan_convert(q1vertex_t *a, q1vertex_t *b)
-{
-	void *temp;
-	int right;
-	fix x, dx;
-	int y, ey;
-
-	if (a->sy == b->sy)
-		return;
-
-	if (a->sy < b->sy) {
-		right = 0;
-	}
-	else {
-		temp = a;
-		a = b;
-		b = (q1vertex_t *)temp;
-		right = 1;
-	}
-
-	// compute dxdy
-	dx = FLOAT_TO_INT(65536.0 * (b->sx - a->sx) / (b->sy - a->sy));
-	x = a->sx;
-	y = fix_cint(a->sy);
-	ey = fix_cint(b->sy);
-
-	// fixup x location to 'y' (subpixel correction in y)
-	x += FLOAT_TO_INT(((double)dx * ((y << 16) - a->sy)) / 65536.0);
-
-	while (y < ey) {
-		scan[y][right] = x;
-		x += dx;
-		++y;
-	}
-}
-
-#define SUBDIV_SHIFT  4
-#define SUBDIV        (1 << SUBDIV_SHIFT)
-
-void qmap_draw_affine(int n, char *dest, fix u, fix v, fix du, fix dv)
-{
-	if (is_cached) {
-		while (n--) {
-			int iu = fix_int(u);
-			int iv = fix_int(v);
-			*dest++ = qmap_tex[qmap_tex_row_table[iv + 1] + iu];
-			u += du;
-			v += dv;
-		}
-	}
-	else {
-		while (n--) {
-			int iu = (fix_int(u)) & qmap_wid;
-			int iv = (fix_int(v)) & qmap_ht;
-			*dest++ = qmap_tex[qmap_tex_row_table[iv + 1] + iu];
-			u += du;
-			v += dv;
-		}
-	}
-}
-
-// given a span (x0,y)..(x1,y), draw a perspective-correct span for it
-void qmap_draw_span(int y, int sx, int ex)
-{
-	double u0, v0, w0, u1, v1, w1, z;
-	int len, e, last = 0;
-	fix u, v, du, dv;
-
-	// compute (u,v) at left end
-
-	u0 = qmap_tmap[0] + sx * qmap_tmap[1] + y * qmap_tmap[2];
-	v0 = qmap_tmap[3] + sx * qmap_tmap[4] + y * qmap_tmap[5];
-	w0 = qmap_tmap[6] + sx * qmap_tmap[7] + y * qmap_tmap[8];
-
-	z = 1 / w0;
-	u0 = u0 * z;
-	v0 = v0 * z;
-
-#ifdef CLAMP
-	// if you turn on clamping, you have to change qmap_wid & qmap_ht
-	// back to being wid&ht, not wid-1 & ht-1 as they are right now
-	if (u0 < 0) u0 = 0; else if (u0 >= qmap_wid) u0 = qmap_wid - 0.01;
-	if (v0 < 0) v0 = 0; else if (v0 >= qmap_ht) v0 = qmap_ht - 0.01;
-#endif
-
-	for (;;) {
-		len = ex - sx;
-		if (len > SUBDIV)
-			len = SUBDIV;
-		else
-			last = 1;
-
-		u = FLOAT_TO_FIX(u0);
-		v = FLOAT_TO_FIX(v0);
-
-		if (len == 1) {
-			// shortcut out to avoid divide by 0 below
-			qmap_draw_affine(len, qmap_buf + qmap_row_table[y] + sx, u, v, 0, 0);
-			return;
-		}
-
-		e = sx + len - last;
-
-		u1 = qmap_tmap[0] + e * qmap_tmap[1] + y * qmap_tmap[2];
-		v1 = qmap_tmap[3] + e * qmap_tmap[4] + y * qmap_tmap[5];
-		w1 = qmap_tmap[6] + e * qmap_tmap[7] + y * qmap_tmap[8];
-
-		z = 1 / w1;
-		u1 = u1 * z;
-		v1 = v1 * z;
-
-#ifdef CLAMP
-		if (u1 < 0) u1 = 0; else if (u1 >= qmap_wid) u1 = qmap_wid - 0.01;
-		if (v1 < 0) v1 = 0; else if (v1 >= qmap_ht) v1 = qmap_ht - 0.01;
-#endif
-
-		if (len == SUBDIV) {
-			du = (FLOAT_TO_FIX(u1) - u) >> SUBDIV_SHIFT;
-			dv = (FLOAT_TO_FIX(v1) - v) >> SUBDIV_SHIFT;
-		}
-		else {
-			du = FLOAT_TO_FIX((u1 - u0) / (len - last));
-			dv = FLOAT_TO_FIX((v1 - v0) / (len - last));
-		}
-		if (du < 0) ++du;
-		if (dv < 0) ++dv;
-
-		qmap_draw_affine(len, qmap_buf + qmap_row_table[y] + sx, u, v, du, dv);
-		if (last)
-			break;
-
-		sx += len;
-		u0 = u1;
-		v0 = v1;
-	}
-}
-
-void draw_poly(int n, q1vertex_t **vl)
-{
-	int i, j, y, ey;
-	fix ymin, ymax;
-
-	// find max and min y height
-
-	ymin = ymax = vl[0]->sy;
-	for (i = 1; i < n; ++i)
-	{
-		if (vl[i]->sy < ymin)
-			ymin = vl[i]->sy;
-		else if (vl[i]->sy > ymax)
-			ymax = vl[i]->sy;
-	}
-
-	// scan out each edge
-	j = n - 1;
-	for (i = 0; i < n; ++i) {
-		scan_convert(vl[i], vl[j]);
-		j = i;
-	}
-
-	y = fix_cint(ymin);
-	ey = fix_cint(ymax);
-
-	// iterate over all spans and draw
-
-	while (y < ey)
-	{
-		int sx = fix_cint(scan[y][0]), ex = fix_cint(scan[y][1]);
-		if (sx < ex)
-			qmap_draw_span(y, sx, ex);
-		++y;
-	}
-
 }
 
 void transform_rotated_point(q1vertex_t &p)
@@ -1035,11 +781,11 @@ void QBsp::draw_face(Graphics &gfx, int face)
 //	gfx.SelectTexture(0, texdata_to_obj[tex_data]);
 	//gfx.SelectTexture(8, face_lightmap_obj[tex_data]);
 
-//	if (map_selected == false)
+	if (map_selected == false)
 	{
 		gfx.SelectIndexBuffer(map_index_vbo);
 		gfx.SelectVertexBuffer(map_vertex_vbo);
-//		map_selected = true;
+		map_selected = true;
 	}
 	gfx.DrawArrayTri(face_start_index[face], 0, face_count[face], face_count[face]);
 }
@@ -1052,13 +798,13 @@ void QBsp::build_face(Graphics &gfx, int face)
 	int edge2;
 
 
-	for (int i = 0; i < dfaces[face].numedges; ++i)
+	for (int i = 0; i < data.dfaces[face].numedges; ++i)
 	{
-		int edge_index = dsurfedges[dfaces[face].firstedge + i];
+		int edge_index = data.dsurfedges[data.dfaces[face].firstedge + i];
 
 		// if edge is negative, edges are reversed (first edge is index 1, like quake2)
 		bool reverse = (edge_index < 0);
-		q1dedge_t edge = dedges[abs32(edge_index)];
+		q1dedge_t edge = data.dedges[abs32(edge_index)];
 
 		if (i == 0)
 		{
@@ -1080,9 +826,9 @@ void QBsp::build_face(Graphics &gfx, int face)
 //			calculate_texcoords(face, edge0, edge1, edge2);
 			if (face_start_index == NULL)
 			{
-				face_start_index = new int[numfaces];
-				face_count = new int[numfaces];
-				for (int i = 0; i < numfaces; i++)
+				face_start_index = new int[data.num_faces];
+				face_count = new int[data.num_faces];
+				for (int i = 0; i < data.num_faces; i++)
 				{
 					face_start_index[i] = 0;
 					face_count[i] = 0;
@@ -1105,85 +851,6 @@ void QBsp::build_face(Graphics &gfx, int face)
 
 }
 
-void rot_x(float *v, fixang ang)
-{
-	float s = (float)sin(ang * 3.141592 / 0x8000);
-	float c = (float)cos(ang * 3.141592 / 0x8000);
-	float y, z;
-
-	y = c * v[1] + s * v[2];
-	z = -s * v[1] + c * v[2];
-	v[1] = y;
-	v[2] = z;
-}
-
-void rot_y(float *v, fixang ang)
-{
-	float s = (float)sin(ang * 3.141592 / 0x8000);
-	float c = (float)cos(ang * 3.141592 / 0x8000);
-	float x, z;
-
-	z = c * v[2] + s * v[0];
-	x = -s * v[2] + c * v[0];
-	v[0] = x;
-	v[2] = z;
-}
-
-void rot_z(float *v, fixang ang)
-{
-	float s = (float)sin(ang * 3.141592 / 0x8000);
-	float c = (float)cos(ang * 3.141592 / 0x8000);
-	float x, y;
-
-	x = c * v[0] + s * v[1];
-	y = -s * v[0] + c * v[1];
-	v[0] = x;
-	v[1] = y;
-}
-
-void rotate(float *x, angvec *ang)
-{
-	rot_y(x, ang->ty);  // bank
-	rot_x(x, ang->tx);  // pitch
-	rot_z(x, ang->tz);  // yaw
-}
-
-void set_view_info(vec3 &loc, angvec *ang)
-{
-	int i;
-
-	clip_x_low = -0x8000;
-	clip_x_high = fix_make(320, 0) - 0x8000;
-	clip_y_low = -0x8000;
-	clip_y_high = fix_make(200, 0) - 0x8000;
-
-	clip_scale_x = 1 / 160.0;
-	clip_scale_y = 1 / 100.0;
-
-	// compute rotation matrix
-	memset(view_matrix, 0, sizeof(view_matrix));
-	view_matrix[0][0] = view_matrix[1][1] = view_matrix[2][2] = 1;
-	rotate(view_matrix[0], ang);
-	rotate(view_matrix[1], ang);
-	rotate(view_matrix[2], ang);
-	memcpy(main_matrix, view_matrix, sizeof(view_matrix));
-
-	// so (1,0,0) in camera space maps to view_matrix[0] in world space.
-	// thus we multiply on the right by a worldspace vector to transform
-	// it to camera space.
-	// now, to account for translation, we just subtract the camera
-	// center before multiplying
-	translate = loc;
-
-	// roll projection math into transformation
-	for (i = 0; i < 3; ++i)
-	{
-		view_matrix[0][i] *= proj_scale_x;
-		view_matrix[2][i] *= proj_scale_y;
-	}
-}
-
-
 void QBsp::change_axis()
 {
 	int            i, j, c;
@@ -1191,159 +858,23 @@ void QBsp::change_axis()
 	q1dmiptexlump_t   *mtl;
 
 
-	// models   
-	for (i = 0; i<nummodels; i++)
+	for (i = 0; i < data.num_vertexes; i++)
 	{
-		d = &dmodels[i];
+		float temp = (data.dvertexes[i].y);
 
-		for (j = 0; j < MAX_MAP_HULLS; j++)
-			d->headnode[j] = LittleLong(d->headnode[j]);
-
-		d->visleafs = LittleLong(d->visleafs);
-		d->firstface = LittleLong(d->firstface);
-		d->numfaces = LittleLong(d->numfaces);
-
-		for (j = 0; j < 3; j++)
-		{
-			d->mins[j] = LittleFloat(d->mins[j]);
-			d->maxs[j] = LittleFloat(d->maxs[j]);
-			d->origin[j] = LittleFloat(d->origin[j]);
-		}
+		data.dvertexes[i].x = (data.dvertexes[i].x);
+		data.dvertexes[i].y = (data.dvertexes[i].z);
+		data.dvertexes[i].z = -temp;
 	}
 
-	//
-	// vertexes
-	//
-	for (i = 0; i < numvertexes; i++)
+	for (i = 0; i < data.num_planes; i++)
 	{
-		float temp = LittleFloat(dvertexes[i].y);
-
-		dvertexes[i].x = LittleFloat(dvertexes[i].x);
-		dvertexes[i].y = LittleFloat(dvertexes[i].z);
-		dvertexes[i].z = -temp;
+		float temp = (data.dplanes[i].normal.y);
+		data.dplanes[i].normal.x = (data.dplanes[i].normal.x);
+		data.dplanes[i].normal.y = (data.dplanes[i].normal.z);
+		data.dplanes[i].normal.z = -temp;
 	}
 
-	//
-	// planes
-	//   
-	for (i = 0; i < numplanes; i++)
-	{
-		float temp = LittleFloat(dplanes[i].normal.y);
-		dplanes[i].normal.x = LittleFloat(dplanes[i].normal.x);
-		dplanes[i].normal.y = LittleFloat(dplanes[i].normal.z);
-		dplanes[i].normal.z = -temp;
-
-		dplanes[i].dist = LittleFloat(dplanes[i].dist);
-		dplanes[i].type = LittleLong(dplanes[i].type);
-	}
-
-	//
-	// texinfos
-	//   
-	for (i = 0; i<numtexinfo; i++)
-	{
-		
-		texinfo[i].vecs[0].x = LittleFloat(texinfo[i].vecs[0].x);
-		texinfo[i].vecs[0].y = LittleFloat(texinfo[i].vecs[0].y);
-		texinfo[i].vecs[0].z = LittleFloat(texinfo[i].vecs[0].z);
-		texinfo[i].vecs[0].w = LittleFloat(texinfo[i].vecs[0].w);
-
-		texinfo[i].miptex = LittleLong(texinfo[i].miptex);
-		texinfo[i].flags = LittleLong(texinfo[i].flags);
-	}
-
-	//
-	// faces
-	//
-	for (i = 0; i < numfaces; i++)
-	{
-		dfaces[i].texinfo = LittleShort(dfaces[i].texinfo);
-		dfaces[i].planenum = LittleShort(dfaces[i].planenum);
-		dfaces[i].side = LittleShort(dfaces[i].side);
-		dfaces[i].lightofs = LittleLong(dfaces[i].lightofs);
-		dfaces[i].firstedge = LittleLong(dfaces[i].firstedge);
-		dfaces[i].numedges = LittleShort(dfaces[i].numedges);
-	}
-
-	//
-	// nodes
-	//
-	for (i = 0; i < numnodes; i++)
-	{
-		dnodes[i].planenum = LittleLong(dnodes[i].planenum);
-		for (j = 0; j < 3; j++)
-		{
-			dnodes[i].mins[j] = LittleShort(dnodes[i].mins[j]);
-			dnodes[i].maxs[j] = LittleShort(dnodes[i].maxs[j]);
-		}
-		dnodes[i].children[0] = LittleShort(dnodes[i].children[0]);
-		dnodes[i].children[1] = LittleShort(dnodes[i].children[1]);
-		dnodes[i].firstface = LittleShort(dnodes[i].firstface);
-		dnodes[i].numfaces = LittleShort(dnodes[i].numfaces);
-	}
-
-	//
-	// leafs
-	//
-	for (i = 0; i < numleafs; i++)
-	{
-		dleafs[i].contents = LittleLong(dleafs[i].contents);
-		for (j = 0; j < 3; j++)
-		{
-			dleafs[i].mins[j] = LittleShort(dleafs[i].mins[j]);
-			dleafs[i].maxs[j] = LittleShort(dleafs[i].maxs[j]);
-		}
-
-		dleafs[i].firstmarksurface = LittleShort(dleafs[i].firstmarksurface);
-		dleafs[i].nummarksurfaces = LittleShort(dleafs[i].nummarksurfaces);
-		dleafs[i].visofs = LittleLong(dleafs[i].visofs);
-	}
-
-	//
-	// clipnodes
-	//
-	for (i = 0; i < numclipnodes; i++)
-	{
-		dclipnodes[i].planenum = LittleLong(dclipnodes[i].planenum);
-		dclipnodes[i].children[0] = LittleShort(dclipnodes[i].children[0]);
-		dclipnodes[i].children[1] = LittleShort(dclipnodes[i].children[1]);
-	}
-
-	//
-	// miptex
-	//
-	if (texdatasize)
-	{
-		mtl = (q1dmiptexlump_t *)dtexdata;
-//		if (todisk)
-//			c = mtl->nummiptex;
-//		else
-			c = LittleLong(mtl->nummiptex);
-		mtl->nummiptex = LittleLong(mtl->nummiptex);
-		for (i = 0; i < c; i++)
-			mtl->dataofs[i] = LittleLong(mtl->dataofs[i]);
-	}
-
-	//
-	// marksurfaces
-	//
-	for (i = 0; i < nummarksurfaces; i++)
-		dmarksurfaces[i] = LittleShort(dmarksurfaces[i]);
-
-	//
-	// surfedges
-	//
-	for (i = 0; i < numsurfedges; i++)
-		dsurfedges[i] = LittleLong(dsurfedges[i]);
-
-	//
-	// edges
-	//
-	for (i = 0; i < numedges; i++)
-	{
-		dedges[i].v[0] = LittleShort(dedges[i].v[0]);
-		dedges[i].v[1] = LittleShort(dedges[i].v[1]);
-	}
 }
 
 
@@ -1374,11 +905,15 @@ void compute_view_frustrum(q1dplane_t *planes, vec3 &cam_loc)
 
 int QBsp::find_leaf(vec3 &loc)
 {
-	int n = dmodels[0].headnode[0];
+	int n = data.dmodels[0].headnode[0];
 	while (n >= 0)
 	{
-		q1dnode_t *node = &dnodes[n];
-		n = node->children[point_plane_test(loc, &dplanes[node->planenum])];
+		q1dnode_t *node = &data.dnodes[n];
+
+		if (point_plane_test(loc, &data.dplanes[node->planenum]))
+			n = node->back;
+		else
+			n = node->front;
 	}
 	return ~n;
 }
@@ -1392,22 +927,22 @@ int QBsp::visit_visible_leaves(vec3 &cam_loc)
 
 	n = find_leaf(cam_loc);
 
-	if (n == 0 || dleafs[n].visofs < 0)
+	if (n == 0 || data.dleafs[n].visofs < 0)
 		return 0;
 
-	v = dleafs[n].visofs;
-	for (i = 1; i < numleafs; )
+	v = data.dleafs[n].visofs;
+	for (i = 1; i < data.num_leafs; )
 	{
-		if (dvisdata[v] == 0)
+		if (data.dvisdata[v] == 0)
 		{
-			i += 8 * dvisdata[v + 1];    // skip some leaves
+			i += 8 * data.dvisdata[v + 1];    // skip some leaves
 			v += 2;
 		}
 		else
 		{
 			int j;
 			for (j = 0; j <8; j++, i++)
-				if (dvisdata[v] & (1 << j))
+				if (data.dvisdata[v] & (1 << j))
 					vis_leaf[i >> 3] |= (1 << (i & 7));
 			++v;
 		}
@@ -1419,8 +954,7 @@ int QBsp::bsp_find_visible_nodes(int node)
 {
 	if (node >= 0)
 	{
-		vis_node[node] = !!(bsp_find_visible_nodes(dnodes[node].children[0])
-			| bsp_find_visible_nodes(dnodes[node].children[1]));
+		vis_node[node] = !!(bsp_find_visible_nodes(data.dnodes[node].front) | bsp_find_visible_nodes(data.dnodes[node].back));
 		return vis_node[node];
 	}
 	else
@@ -1429,8 +963,6 @@ int QBsp::bsp_find_visible_nodes(int node)
 		return (vis_leaf[node >> 3] & (1 << (node & 7)));
 	}
 }
-
-#define FLOAT_POSITIVE(x)   (* (int *) (x) >= 0)
 
 int bbox_inside_plane(short *mins, short *maxs, q1dplane_t *plane)
 {
@@ -1470,13 +1002,13 @@ int QBsp::leaf_in_frustrum(q1dleaf_t *node, q1dplane_t *planes)
 
 void QBsp::mark_leaf_faces(int leaf)
 {
-	int n = dleafs[leaf].nummarksurfaces;
-	int ms = dleafs[leaf].firstmarksurface;
+	int n = data.dleafs[leaf].nummarksurfaces;
+	int ms = data.dleafs[leaf].firstmarksurface;
 	int i;
 
 	for (i = 0; i < n; ++i)
 	{
-		int s = dmarksurfaces[ms + i];
+		int s = data.dmarksurfaces[ms + i];
 		if (!is_marked(s))
 		{
 			mark_face(s);
@@ -1500,19 +1032,19 @@ void QBsp::bsp_explore_node(int node)
 	{
 		node = ~node;
 		if (vis_leaf[node >> 3] & (1 << (node & 7)))
-			if (leaf_in_frustrum(&dleafs[node], planes))
+			if (leaf_in_frustrum(&data.dleafs[node], planes))
 				mark_leaf_faces(node);
 		return;
 	}
 
 	if (vis_node[node])
 	{
-		if (!node_in_frustrum(&dnodes[node], planes))
+		if (!node_in_frustrum(&data.dnodes[node], planes))
 			vis_node[node] = 0;
 		else
 		{
-			bsp_explore_node(dnodes[node].children[0]);
-			bsp_explore_node(dnodes[node].children[1]);
+			bsp_explore_node(data.dnodes[node].front);
+			bsp_explore_node(data.dnodes[node].back);
 		}
 	}
 }
@@ -1520,8 +1052,8 @@ void QBsp::bsp_explore_node(int node)
 void QBsp::bsp_visit_visible_leaves(vec3 &cam_loc, q1dplane_t *pl)
 {
 	planes = pl;
-	bsp_find_visible_nodes((int)dmodels[0].headnode[0]);
-	bsp_explore_node((int)dmodels[0].headnode[0]);
+	bsp_find_visible_nodes((int)data.dmodels[0].headnode[0]);
+	bsp_explore_node((int)data.dmodels[0].headnode[0]);
 }
 
 

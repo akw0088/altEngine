@@ -132,10 +132,11 @@ typedef struct
 // !!! if this is changed, it must be changed in asm_i386.h too !!!
 typedef struct
 {
-	int         planenum;
-	short      children[2];   // negative numbers are -(leafs+1), not nodes
-	short      mins[3];      // for sphere culling
-	short      maxs[3];
+	int			planenum;
+	short		front;   // negative numbers are -(leafs+1), not nodes
+	short		back;
+	short		mins[3];      // for sphere culling
+	short		maxs[3];
 	unsigned short   firstface;
 	unsigned short   numfaces;   // counting both sides
 } q1dnode_t;
@@ -205,4 +206,47 @@ typedef struct
 	fix    sx, sy;
 	float  u, v;
 } q1vertex_t;   // 32 bytes
+
+
+typedef struct
+{
+	q1dnode_t			*dnodes;
+	q1texinfo_t		*texinfo;
+	q1dface_t			*dfaces;
+	q1dclipnode_t		*dclipnodes;
+	q1dedge_t			*dedges;
+	unsigned short	*dmarksurfaces;
+	int				*dsurfedges;
+	q1dplane_t		*dplanes;
+	q1dmodel_t		*dmodels;
+
+	byte        *dvisdata;
+	byte        *dlightdata;
+	byte        *dtexdata; // (dmiptexlump_t)
+	char        *dentdata;
+	q1dleaf_t      *dleafs;
+	vec3    *dvertexes;
+
+	int         num_nodes;
+	int         num_texinfo;
+	int         num_faces;
+	int         num_clipnodes;
+	int         num_edges;
+	int         num_marksurfaces;
+	int         num_surfedges;
+	int         num_planes;
+	int         num_models;
+	int			num_leafs;
+	int			num_vertexes;
+	int			num_leaf;
+} q1bsp_t;
+
+typedef struct
+{
+	int face;
+	int mip_level;
+	int valid;
+	bitmap *bm;
+	float u, v;
+} surf_t;
 #endif

@@ -1,5 +1,38 @@
 #include "include.h"
 
+#define VERTEX(x) ((vec3 *) ((char *) data.dvertexes + (x)*4 + (x)*8))
+#define fix_cint(x)			(((x)+65535) >> 16)
+#define FLOAT_TO_INT(x)		((chop_temp = (x) + BIG_NUM), *(int*)(&chop_temp))
+#define FLOAT_TO_FIX(x)		((chop_temp = (x) + BIG_NUM/65536.0), *(int*)(&chop_temp))
+#define BIG_NUM				((float) (1 << 26) * (1 << 26) * 1.5)
+#define fix_int(x)			((x) >> 16)
+#define float_to_fix(x)		((fix) ((x) * 65536))
+#define fix_cint(x)			(((x)+65535) >> 16)
+#define fix_floor(x)		((x) & 0xffff0000)
+#define fix_ceil(x)			fix_floor((x)+0xffff)
+#define fix_make(a,b)		(((a) << 16) + (b))
+#define MAX_MAP_FACES		65535
+#define MAX_MAP_LEAFS		10001
+
+#define CC_OFF_LEFT			1
+#define CC_OFF_RIGHT		2
+#define CC_OFF_TOP			4
+#define CC_OFF_BOT			8
+#define CC_BEHIND			16
+
+#define DIST				256.0    // dist to switch first mip level
+#define DIST2				(DIST*DIST)
+#define MAX_CACHED_SURFACES (1024)
+#define ADJ_SURFACE(x)    ((x) & (MAX_CACHED_SURFACES-1))
+#define MAX_CACHE            (1024*1024)
+
+#define SUBDIV_SHIFT  4
+#define SUBDIV        (1 << SUBDIV_SHIFT)
+#define FLOAT_POSITIVE(x)   (* (int *) (x) >= 0)
+
+
+
+
 
 
 class QBsp
@@ -33,61 +66,17 @@ public:
 private:
 
 	bool initialized;
+	bool map_selected;
+	q1bsp_t data;
 	std::vector<unsigned int> index_array;
 	int map_index_vbo;
 	int map_vertex_vbo;
 	int *face_start_index;
 	int *face_count;
+	vertex_t *map_vertex;
 
-
-	q1dnode_t			*dnodes;
-	q1texinfo_t		*texinfo;
-	q1dface_t			*dfaces;
-	q1dclipnode_t		*dclipnodes;
-	q1dedge_t			*dedges;
-	unsigned short	*dmarksurfaces;
-	int				*dsurfedges;
-	q1dplane_t		*dplanes;
-	q1dmodel_t		*dmodels;
-
-	byte        *dvisdata;
-	byte        *dlightdata;
-	byte        *dtexdata; // (dmiptexlump_t)
-	char        *dentdata;
-	q1dleaf_t      *dleafs;
-	vec3    *dvertexes;
-
-
-
-
-
-	int         numnodes;
-	int         numtexinfo;
-	int         numfaces;
-	int         numclipnodes;
-	int         numedges;
-	int         nummarksurfaces;
-	int         numsurfedges;
-	int         numplanes;
-	int         nummodels;
-
-	int			visdatasize;
-	int			lightdatasize;
-	int			texdatasize;
-	int			entdatasize;
-	int			numleafs;
-	int			numvertexes;
-	int			numleaf;
-
-	
-	#define   MAX_MAP_LEAFS      10001
 	char *vis_node;
 	char *vis_face;
 	char vis_leaf[MAX_MAP_LEAFS / 8 + 1];
-	
-
-	vertex_t *map_vertex;
-
 	q1dplane_t *planes;
-
 };
