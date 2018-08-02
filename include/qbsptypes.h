@@ -124,14 +124,7 @@ typedef struct miptex_s
 
 typedef struct
 {
-	float   point[3];
-} q1dvertex_t;
-
-
-
-typedef struct
-{
-	float   normal[3];
+	vec3 normal;
 	float   dist;
 	int      type;      // PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
 } q1dplane_t;
@@ -156,7 +149,7 @@ typedef struct
 
 typedef struct texinfo_s
 {
-	float      vecs[2][4];      // [s/t][xyz offset]
+	vec4      vecs[2];      // [s/t][xyz offset]
 	int         miptex;
 	int         flags;
 } q1texinfo_t;
@@ -203,10 +196,6 @@ typedef struct
 	byte      ambient_level[NUM_AMBIENTS];
 } q1dleaf_t;
 
-typedef struct
-{
-	float x, y, z;
-} vector;
 
 typedef struct
 {

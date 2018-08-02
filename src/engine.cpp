@@ -651,7 +651,8 @@ void Engine::load(char *level)
 		global.Select();
 		global.Params(mvp, 0);
 		gfx.clear_color(color);
-		if (hlmap.load(gfx, "media/maps/de_dust2.bsp") != 0)
+//		if (hlmap.load(gfx, "media/maps/de_dust2.bsp") != 0)
+		if (q1map.load(gfx, "maps/start.bsp") != 0)
 		{
 			//de_dust2.bsp
 			//de_inferno.bsp
@@ -972,8 +973,27 @@ void Engine::render(double last_frametime)
 	gfx.swap();
 #endif
 
-	if (q3map.loaded == false && hlmap.loaded == false)
+	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
 		return;
+
+	if (q1map.loaded)
+	{
+		matrix4 transformation;
+
+		gfx.SelectTexture(0, no_tex);
+		gfx.SelectTexture(1, no_tex);
+		gfx.SelectTexture(2, no_tex);
+		gfx.SelectTexture(3, no_tex);
+		camera_frame.set(transformation);
+		matrix4 mvp = transformation * projection;
+		global.Select();
+		global.Params(mvp, 0);
+		gfx.clear();
+		q1map.render(gfx, camera_frame.pos);
+		gfx.swap();
+		return;
+	}
+
 
 	if (hlmap.loaded)
 	{
@@ -3705,7 +3725,7 @@ bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if ((q3map.loaded == false && hlmap.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
+	if ((q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
 	{
 		return false;
 	}
@@ -3732,7 +3752,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if ((q3map.loaded == false && hlmap.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
+	if ((q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
 	{
 		float devicex = (float)x / gfx.width;
 		float devicey = (float)y / gfx.height;
@@ -3950,7 +3970,7 @@ void Engine::keypress(char *key, bool pressed)
 		if (*key != 'w' && *key != 'W')
 			k = 3;
 
-		if (hlmap.loaded)
+		if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos += -camera_frame.forward * 10.0f;
 		}
@@ -3963,7 +3983,7 @@ void Engine::keypress(char *key, bool pressed)
 		if (*key != 'a' && *key != 'A')
 			k = 4;
 
-		if (hlmap.loaded)
+		if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos -= vec3::crossproduct(camera_frame.up, camera_frame.forward) * 1.0f;
 		}
@@ -3975,7 +3995,7 @@ void Engine::keypress(char *key, bool pressed)
 		if (*key != 'd' && *key != 'D')
 			k = 6;
 
-		if (hlmap.loaded)
+		if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos +=  vec3::crossproduct(camera_frame.up, camera_frame.forward) * 1.0f;
 		}
@@ -3987,7 +4007,7 @@ void Engine::keypress(char *key, bool pressed)
 		if (*key != 's' && *key != 'S')
 			k = 5;
 
-		if (hlmap.loaded)
+		if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos -= camera_frame.forward * -1.0f;
 		}
@@ -4085,7 +4105,7 @@ void Engine::keypress(char *key, bool pressed)
 
 void Engine::keystroke(char key, char *keystr)
 {
-	if (q3map.loaded == false && hlmap.loaded == false)
+	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
 	{
 		menu.ingame = false;
 

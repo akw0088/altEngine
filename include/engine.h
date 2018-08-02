@@ -227,6 +227,7 @@ public:
 
 	Bsp				q3map;
 	HLBsp			hlmap;
+	QBsp			q1map;
 	float			res_scale;
 
 	//ssao temp
