@@ -52,6 +52,438 @@ int    qmap_tex_row_table[258];  // max height of texture + 2
 
 double qmap_tmap[9];
 
+int bbox_inside_plane(short *mins, short *maxs, q1dplane_t *plane)
+{
+	short pt[3];
+
+	// use quick test from graphics gems
+
+	if (FLOAT_POSITIVE(&plane->normal.x)) // fast test assuming IEEE
+		pt[0] = maxs[0];
+	else
+		pt[0] = mins[0];
+
+	if (FLOAT_POSITIVE(&plane->normal.y)) // fast test assuming IEEE
+		pt[1] = maxs[1];
+	else
+		pt[1] = mins[1];
+
+	if (FLOAT_POSITIVE(&plane->normal.z)) // fast test assuming IEEE
+		pt[2] = maxs[2];
+	else
+		pt[2] = mins[2];
+
+
+	return plane->normal.x * pt[0] + plane->normal.y * pt[1] + plane->normal.z * pt[2] >= plane->dist;
+}
+
+void rotate_c2w(vec3 *dest, vec3 *src)
+{
+	dest->x = src->x * main_matrix[0][0] + src->y * main_matrix[1][0] + src->z * main_matrix[2][0];
+	dest->y = src->x * main_matrix[0][1] + src->y * main_matrix[1][1] + src->z * main_matrix[2][1];
+	dest->z = src->x * main_matrix[0][2] + src->y * main_matrix[1][2] + src->z * main_matrix[2][2];
+}
+
+void compute_plane(q1dplane_t *plane, float x, float y, float z, vec3 &cam_loc)
+{
+	vec3 temp, temp2;
+	temp2.x = x; temp2.y = z; temp2.z = y;
+	rotate_c2w(&temp, &temp2);
+	plane->normal = temp;
+	plane->dist = temp.x*cam_loc.x + temp.y*cam_loc.y + temp.z*cam_loc.z;
+}
+
+void compute_view_frustrum(q1dplane_t *planes, vec3 &cam_loc)
+{
+	compute_plane(planes + 0, -1, 0, 1, cam_loc);
+	compute_plane(planes + 1, 1, 0, 1, cam_loc);
+	compute_plane(planes + 2, 0, 1, 1, cam_loc);
+	compute_plane(planes + 3, 0, -1, 1, cam_loc);
+}
+
+void project_point(q1vertex_t &p)
+{
+	if (p.p.z >= near_clip)
+	{
+		double div = 1.0 / p.p.z;
+		p.sx = FLOAT_TO_FIX(p.p.x * div + xcenter);
+		p.sy = FLOAT_TO_FIX(-p.p.y * div + ycenter);
+	}
+}
+
+void code_point(q1vertex_t &p)
+{
+	if (p.p.z >= near_code)
+	{
+		// if point is far enough away, code in 2d from fixedpoint (faster)
+		if (p.sx < clip_x_low)
+			p.ccodes = CC_OFF_LEFT;
+		else if (p.sx > clip_x_high)
+			p.ccodes = CC_OFF_RIGHT;
+		else
+			p.ccodes = 0;
+		if (p.sy < clip_y_low)
+			p.ccodes |= CC_OFF_TOP;
+		else if (p.sy > clip_y_high)
+			p.ccodes |= CC_OFF_BOT;
+	}
+	else
+	{
+		p.ccodes = (p.p.z > 0) ? 0 : CC_BEHIND;
+		if (p.p.x * clip_scale_x < -p.p.z)
+			p.ccodes |= CC_OFF_LEFT;
+		if (p.p.x * clip_scale_x >  p.p.z)
+			p.ccodes |= CC_OFF_RIGHT;
+		if (p.p.y * clip_scale_y >  p.p.z)
+			p.ccodes |= CC_OFF_TOP;
+		if (p.p.y * clip_scale_y < -p.p.z)
+			p.ccodes |= CC_OFF_BOT;
+	}
+}
+
+void transform_rotated_point(q1vertex_t &p)
+{
+	project_point(p);
+	code_point(p);
+}
+
+
+static void intersect(q1vertex_t &out, q1vertex_t *a, q1vertex_t *b, float where)
+{
+	// intersection occurs 'where' % along the line from a to b
+
+	out.p.x = a->p.x + (b->p.x - a->p.x) * where;
+	out.p.y = a->p.y + (b->p.y - a->p.y) * where;
+	out.p.z = a->p.z + (b->p.z - a->p.z) * where;
+
+	transform_rotated_point(out);
+}
+
+static double left_loc(q1vertex_t *a, q1vertex_t *b)
+{
+	return -(a->p.z + a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x + b->p.z - a->p.z);
+}
+
+static double right_loc(q1vertex_t *a, q1vertex_t *b)
+{
+	return  (a->p.z - a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x - b->p.z + a->p.z);
+}
+
+static double top_loc(q1vertex_t *a, q1vertex_t *b)
+{
+	return  (a->p.z - a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y - b->p.z + a->p.z);
+}
+
+static double bottom_loc(q1vertex_t *a, q1vertex_t *b)
+{
+	return -(a->p.z + a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y + b->p.z - a->p.z);
+}
+
+// clip the polygon to each of the view frustrum planes
+int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl)
+{
+	int i, j, k, p = 0; // p = index into temporary point pool
+	q1vertex_t **cur;
+
+	if (codes_or & CC_OFF_LEFT)
+	{
+		cur = clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i)
+		{
+			// process edge from j..i
+			// if j is inside, add it
+
+			if (!(vl[j]->ccodes & CC_OFF_LEFT))
+				cur[k++] = vl[j];
+
+			// if it crosses, add the intersection point
+
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_LEFT)
+			{
+				intersect(pts[p], vl[i], vl[j], left_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		// move output list to be input
+		n = k;
+		vl = cur;
+	}
+	if (codes_or & CC_OFF_RIGHT)
+	{
+		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i) {
+			if (!(vl[j]->ccodes & CC_OFF_RIGHT))
+				cur[k++] = vl[j];
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_RIGHT)
+			{
+				intersect(pts[p], vl[i], vl[j], right_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		n = k;
+		vl = cur;
+	}
+	if (codes_or & CC_OFF_TOP)
+	{
+		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i)
+		{
+			if (!(vl[j]->ccodes & CC_OFF_TOP))
+				cur[k++] = vl[j];
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_TOP)
+			{
+				intersect(pts[p], vl[i], vl[j], top_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		n = k;
+		vl = cur;
+	}
+	if (codes_or & CC_OFF_BOT)
+	{
+		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
+		k = 0;
+		j = n - 1;
+		for (i = 0; i < n; ++i)
+		{
+			if (!(vl[j]->ccodes & CC_OFF_BOT))
+				cur[k++] = vl[j];
+			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_BOT)
+			{
+				intersect(pts[p], vl[i], vl[j], bottom_loc(vl[i], vl[j]));
+				cur[k++] = &pts[p++];
+			}
+			j = i;
+		}
+		n = k;
+		vl = cur;
+	}
+	for (i = 0; i < n; ++i)
+	{
+		if (vl[i]->ccodes & CC_BEHIND)
+			return 0;
+	}
+
+	*out_vl = vl;
+	return n;
+}
+
+float dot_vec_dbl(float *a, vec3 *b)
+{
+	return a[0] * b->x + a[1] * b->y + a[2] * b->z;
+}
+
+void transform_point_raw(vec3 &out, vec3 &in)
+{
+	vec3 temp = in - translate;
+
+	out.x = dot_vec_dbl(view_matrix[0], &temp);
+	out.z = dot_vec_dbl(view_matrix[1], &temp);
+	out.y = dot_vec_dbl(view_matrix[2], &temp);
+}
+
+
+
+
+void transform_point(q1vertex_t &p, vec3 &v)
+{
+	transform_point_raw(p.p, v);
+	project_point(p);
+	code_point(p);
+}
+
+double dist2_from_viewer(vec3 *in, vec3 &cam_loc)
+{
+	vec3 temp;
+	temp.x = in->x - cam_loc.x;
+	temp.y = in->y - cam_loc.y;
+	temp.z = in->z - cam_loc.z;
+
+	return temp.x*temp.x + temp.y*temp.y + temp.z*temp.z;
+}
+
+void free_surface(int surf)
+{
+	if (surface[surf].valid)
+		surface_cache[surface[surf].face] = -1;
+
+	cur_cache -= surface[surf].bm->wid * surface[surf].bm->ht + sizeof(bitmap);
+	free(surface[surf].bm);
+}
+
+void free_next_surface(void)
+{
+	if (surface_head == surface_tail) return;
+	free_surface(surface_tail);
+	surface_tail = ADJ_SURFACE(surface_tail + 1);
+}
+
+int allocate_cached_surface(int size)
+{
+	int surf;
+
+	// make sure there's a free surface entry
+	if (ADJ_SURFACE(surface_head + 1) == surface_tail)
+		free_next_surface();
+
+	surf = surface_head;
+	surface_head = ADJ_SURFACE(surface_head + 1);
+
+	size += sizeof(bitmap);
+
+	// make sure there's enough storage
+	while (cur_cache + size > MAX_CACHE)
+		free_next_surface();
+
+	surface[surf].bm = (bitmap *)malloc(size);
+	cur_cache += size;
+
+	return surf;
+}
+
+
+// compute one lightmap square of surface
+void build_block(char *out, bitmap *raw, int x, int y)
+{
+	char colormap[512][256]; // akwright: set me to something
+	fix c, dc;
+	int a, b, h, c0, c1, c2, c3, step = global_step, row = global_row - step;
+	int y_max = raw->ht, x_max = raw->wid;
+	char *s = raw->bits + y*raw->wid;
+
+	c0 = (255 - light_index[0]) << 16;
+	c1 = (255 - light_index[1]) << 16;
+	c2 = (255 - light_index[lightmap_width]) << 16;
+	c3 = (255 - light_index[lightmap_width + 1]) << 16;
+
+	c2 = (c2 - c0) >> shift;
+	c3 = (c3 - c1) >> shift;
+
+	for (b = 0; b < step; ++b)
+	{
+		h = x;
+		c = c0;
+		dc = (c1 - c0) >> shift;
+		for (a = 0; a < step; ++a)
+		{
+			*out++ = colormap[c >> 18][s[h]];
+			c += dc;
+			if (++h == x_max)
+				h = 0;
+		}
+		out += row;
+		c0 += c2;
+		c1 += c3;
+
+		if (++y == y_max)
+		{
+			y = 0;
+			s = raw->bits;
+		}
+		else
+			s += raw->wid;
+	}
+}
+
+
+
+void qmap_set_texture(bitmap *bm)
+{
+	int row = bm->wid, ht = bm->ht;
+	qmap_tex = bm->bits;
+	qmap_wid = bm->wid - 1;
+
+	if (qmap_tex_row != row || qmap_ht != ht - 1)
+	{
+		int i;
+		qmap_tex_row = row;
+		qmap_ht = ht - 1;
+		for (i = 0; i < ht; ++i)
+			qmap_tex_row_table[i + 1] = row * i;
+		qmap_tex_row_table[0] = qmap_tex_row_table[1];
+		qmap_tex_row_table[ht + 1] = qmap_tex_row_table[ht];
+	}
+}
+
+void qmap_set_output(char *where, int row)
+{
+	qmap_buf = where;
+	if (qmap_buf_row != row) {
+		int i;
+		qmap_buf_row = row;
+		for (i = 0; i < 768; ++i)
+			qmap_row_table[i] = i * row;
+	}
+}
+
+void compute_texture_normal(vec3 &out, vec3 &u, vec3 &v)
+{
+	out.x = u.y * v.z - u.z * v.y;
+	out.y = u.z * v.x - u.x * v.z;
+	out.z = u.x * v.y - u.y * v.x;
+}
+
+
+void transform_vector(vec3 &out, vec3 &in)
+{
+	vec3 temp = in;
+	out.x = dot_vec_dbl(view_matrix[0], &temp);
+	out.z = dot_vec_dbl(view_matrix[1], &temp);
+	out.y = dot_vec_dbl(view_matrix[2], &temp);
+}
+
+
+void setup_uv_vector(vec3 &out, vec3 &in, vec3 &norm, vec3 &plane)
+{
+	float dot = -(in * plane) / (norm * plane);
+	if (dot != 0)
+	{
+		vec3 temp = in;
+		temp += norm * dot;
+		transform_vector(out, temp);
+	}
+	else
+		transform_vector(out, in);
+}
+
+// compute location of origin of texture (should precompute)
+void setup_origin_vector(vec3 &out, q1dplane_t &plane, vec3 &norm)
+{
+	vec3 temp;
+	float d = plane.dist / (norm * plane.normal);
+	temp = norm * d;
+
+	transform_point_raw(out, temp);
+}
+
+
+
+void qmap_set_texture_gradients(double *tmap_data)
+{
+	int i;
+	for (i = 0; i < 9; ++i)
+		qmap_tmap[i] = tmap_data[i];
+}
+
+int node_in_frustrum(q1dnode_t *node, q1dplane_t *planes)
+{
+	if (!bbox_inside_plane(node->mins, node->maxs, planes + 0)
+		|| !bbox_inside_plane(node->mins, node->maxs, planes + 1)
+		|| !bbox_inside_plane(node->mins, node->maxs, planes + 2)
+		|| !bbox_inside_plane(node->mins, node->maxs, planes + 3))
+		return 0;
+	return 1;
+}
+
 
 Q1Bsp::Q1Bsp()
 {
@@ -204,76 +636,6 @@ void Q1Bsp::render_node_faces(Graphics &gfx, int node, int side)
 	}
 }
 
-float dot_vec_dbl(float *a, vec3 *b)
-{
-	return a[0] * b->x + a[1] * b->y + a[2] * b->z;
-}
-
-void transform_point_raw(vec3 &out, vec3 &in)
-{
-	vec3 temp = in - translate;
-
-	out.x = dot_vec_dbl(view_matrix[0], &temp);
-	out.z = dot_vec_dbl(view_matrix[1], &temp);
-	out.y = dot_vec_dbl(view_matrix[2], &temp);
-}
-
-void project_point(q1vertex_t &p)
-{
-	if (p.p.z >= near_clip)
-	{
-		double div = 1.0 / p.p.z;
-		p.sx = FLOAT_TO_FIX(p.p.x * div + xcenter);
-		p.sy = FLOAT_TO_FIX(-p.p.y * div + ycenter);
-	}
-}
-
-void code_point(q1vertex_t &p)
-{
-	if (p.p.z >= near_code)
-	{
-		// if point is far enough away, code in 2d from fixedpoint (faster)
-		if (p.sx < clip_x_low)
-			p.ccodes = CC_OFF_LEFT;
-		else if (p.sx > clip_x_high)
-			p.ccodes = CC_OFF_RIGHT;
-		else
-			p.ccodes = 0;
-		if (p.sy < clip_y_low)
-			p.ccodes |= CC_OFF_TOP;
-		else if (p.sy > clip_y_high)
-			p.ccodes |= CC_OFF_BOT;
-	}
-	else
-	{
-		p.ccodes = (p.p.z > 0) ? 0 : CC_BEHIND;
-		if (p.p.x * clip_scale_x < -p.p.z)
-			p.ccodes |= CC_OFF_LEFT;
-		if (p.p.x * clip_scale_x >  p.p.z)
-			p.ccodes |= CC_OFF_RIGHT;
-		if (p.p.y * clip_scale_y >  p.p.z)
-			p.ccodes |= CC_OFF_TOP;
-		if (p.p.y * clip_scale_y < -p.p.z)
-			p.ccodes |= CC_OFF_BOT;
-	}
-}
-
-void transform_point(q1vertex_t &p, vec3 &v)
-{
-	transform_point_raw(p.p, v);
-	project_point(p);
-	code_point(p);
-}
-
-double dist2_from_viewer(vec3 *in, vec3 &cam_loc)
-{
-	vec3 temp;
-	temp.x = in->x - cam_loc.x;
-	temp.y = in->y - cam_loc.y;
-	temp.z = in->z - cam_loc.z;
-
-	return temp.x*temp.x + temp.y*temp.y + temp.z*temp.z;
-}
 
 
 int Q1Bsp::compute_mip_level(int face, vec3 &loc)
@@ -351,88 +713,8 @@ void Q1Bsp::get_raw_tmap(bitmap *bm, int tex, int ml)
 	bm->ht = mip->height >> ml;
 }
 
-void free_surface(int surf)
-{
-	if (surface[surf].valid)
-		surface_cache[surface[surf].face] = -1;
-
-	cur_cache -= surface[surf].bm->wid * surface[surf].bm->ht + sizeof(bitmap);
-	free(surface[surf].bm);
-}
-
-void free_next_surface(void)
-{
-	if (surface_head == surface_tail) return;
-	free_surface(surface_tail);
-	surface_tail = ADJ_SURFACE(surface_tail + 1);
-}
-
-int allocate_cached_surface(int size)
-{
-	int surf;
-
-	// make sure there's a free surface entry
-	if (ADJ_SURFACE(surface_head + 1) == surface_tail)
-		free_next_surface();
-
-	surf = surface_head;
-	surface_head = ADJ_SURFACE(surface_head + 1);
-
-	size += sizeof(bitmap);
-
-	// make sure there's enough storage
-	while (cur_cache + size > MAX_CACHE)
-		free_next_surface();
-
-	surface[surf].bm = (bitmap *)malloc(size);
-	cur_cache += size;
-
-	return surf;
-}
 
 
-// compute one lightmap square of surface
-void build_block(char *out, bitmap *raw, int x, int y)
-{
-	char colormap[512][256]; // akwright: set me to something
-	fix c, dc;
-	int a, b, h, c0, c1, c2, c3, step = global_step, row = global_row - step;
-	int y_max = raw->ht, x_max = raw->wid;
-	char *s = raw->bits + y*raw->wid;
-
-	c0 = (255 - light_index[0]) << 16;
-	c1 = (255 - light_index[1]) << 16;
-	c2 = (255 - light_index[lightmap_width]) << 16;
-	c3 = (255 - light_index[lightmap_width + 1]) << 16;
-
-	c2 = (c2 - c0) >> shift;
-	c3 = (c3 - c1) >> shift;
-
-	for (b = 0; b < step; ++b)
-	{
-		h = x;
-		c = c0;
-		dc = (c1 - c0) >> shift;
-		for (a = 0; a < step; ++a)
-		{
-			*out++ = colormap[c >> 18][s[h]];
-			c += dc;
-			if (++h == x_max)
-				h = 0;
-		}
-		out += row;
-		c0 += c2;
-		c1 += c3;
-
-		if (++y == y_max)
-		{
-			y = 0;
-			s = raw->bits;
-		}
-		else
-			s += raw->wid;
-	}
-}
 
 void Q1Bsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 {
@@ -511,83 +793,7 @@ void Q1Bsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 }
 
 
-void qmap_set_texture(bitmap *bm)
-{
-	int row = bm->wid, ht = bm->ht;
-	qmap_tex = bm->bits;
-	qmap_wid = bm->wid - 1;
 
-	if (qmap_tex_row != row || qmap_ht != ht - 1)
-	{
-		int i;
-		qmap_tex_row = row;
-		qmap_ht = ht - 1;
-		for (i = 0; i < ht; ++i)
-			qmap_tex_row_table[i + 1] = row * i;
-		qmap_tex_row_table[0] = qmap_tex_row_table[1];
-		qmap_tex_row_table[ht + 1] = qmap_tex_row_table[ht];
-	}
-}
-
-void qmap_set_output(char *where, int row)
-{
-	qmap_buf = where;
-	if (qmap_buf_row != row) {
-		int i;
-		qmap_buf_row = row;
-		for (i = 0; i < 768; ++i)
-			qmap_row_table[i] = i * row;
-	}
-}
-
-void compute_texture_normal(vec3 &out, vec3 &u, vec3 &v)
-{
-	out.x = u.y * v.z - u.z * v.y;
-	out.y = u.z * v.x - u.x * v.z;
-	out.z = u.x * v.y - u.y * v.x;
-}
-
-
-void transform_vector(vec3 &out, vec3 &in)
-{
-	vec3 temp = in;
-	out.x = dot_vec_dbl(view_matrix[0], &temp);
-	out.z = dot_vec_dbl(view_matrix[1], &temp);
-	out.y = dot_vec_dbl(view_matrix[2], &temp);
-}
-
-
-void setup_uv_vector(vec3 &out, vec3 &in, vec3 &norm, vec3 &plane)
-{
-	float dot = -(in * plane) / (norm * plane);
-	if (dot != 0)
-	{
-		vec3 temp = in;
-		temp += norm * dot;
-		transform_vector(out, temp);
-	}
-	else
-		transform_vector(out, in);
-}
-
-// compute location of origin of texture (should precompute)
-void setup_origin_vector(vec3 &out, q1dplane_t &plane, vec3 &norm)
-{
-	vec3 temp;
-	float d = plane.dist / (norm * plane.normal);
-	temp = norm * d;
-
-	transform_point_raw(out, temp);
-}
-
-
-
-void qmap_set_texture_gradients(double *tmap_data)
-{
-	int i;
-	for (i = 0; i < 9; ++i)
-		qmap_tmap[i] = tmap_data[i];
-}
 
 void Q1Bsp::compute_texture_gradients(int face, int tex, int mip, float u, float v)
 {
@@ -641,141 +847,6 @@ void Q1Bsp::compute_texture_gradients(int face, int tex, int mip, float u, float
 	qmap_set_texture_gradients(tmap_data);
 }
 
-void transform_rotated_point(q1vertex_t &p)
-{
-	project_point(p);
-	code_point(p);
-}
-
-
-static void intersect(q1vertex_t &out, q1vertex_t *a, q1vertex_t *b, float where)
-{
-	// intersection occurs 'where' % along the line from a to b
-
-	out.p.x = a->p.x + (b->p.x - a->p.x) * where;
-	out.p.y = a->p.y + (b->p.y - a->p.y) * where;
-	out.p.z = a->p.z + (b->p.z - a->p.z) * where;
-
-	transform_rotated_point(out);
-}
-
-static double left_loc(q1vertex_t *a, q1vertex_t *b)
-{
-	return -(a->p.z + a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x + b->p.z - a->p.z);
-}
-
-static double right_loc(q1vertex_t *a, q1vertex_t *b)
-{
-	return  (a->p.z - a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x - b->p.z + a->p.z);
-}
-
-static double top_loc(q1vertex_t *a, q1vertex_t *b)
-{
-	return  (a->p.z - a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y - b->p.z + a->p.z);
-}
-
-static double bottom_loc(q1vertex_t *a, q1vertex_t *b)
-{
-	return -(a->p.z + a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y + b->p.z - a->p.z);
-}
-
-// clip the polygon to each of the view frustrum planes
-int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl)
-{
-	int i, j, k, p = 0; // p = index into temporary point pool
-	q1vertex_t **cur;
-
-	if (codes_or & CC_OFF_LEFT)
-	{
-		cur = clip_list1;
-		k = 0;
-		j = n - 1;
-		for (i = 0; i < n; ++i)
-		{
-			// process edge from j..i
-			// if j is inside, add it
-
-			if (!(vl[j]->ccodes & CC_OFF_LEFT))
-				cur[k++] = vl[j];
-
-			// if it crosses, add the intersection point
-
-			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_LEFT)
-			{
-				intersect(pts[p], vl[i], vl[j], left_loc(vl[i], vl[j]));
-				cur[k++] = &pts[p++];
-			}
-			j = i;
-		}
-		// move output list to be input
-		n = k;
-		vl = cur;
-	}
-	if (codes_or & CC_OFF_RIGHT)
-	{
-		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
-		k = 0;
-		j = n - 1;
-		for (i = 0; i < n; ++i) {
-			if (!(vl[j]->ccodes & CC_OFF_RIGHT))
-				cur[k++] = vl[j];
-			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_RIGHT)
-			{
-				intersect(pts[p], vl[i], vl[j], right_loc(vl[i], vl[j]));
-				cur[k++] = &pts[p++];
-			}
-			j = i;
-		}
-		n = k;
-		vl = cur;
-	}
-	if (codes_or & CC_OFF_TOP)
-	{
-		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
-		k = 0;
-		j = n - 1;
-		for (i = 0; i < n; ++i)
-		{
-			if (!(vl[j]->ccodes & CC_OFF_TOP))
-				cur[k++] = vl[j];
-			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_TOP)
-			{
-				intersect(pts[p], vl[i], vl[j], top_loc(vl[i], vl[j]));
-				cur[k++] = &pts[p++];
-			}
-			j = i;
-		}
-		n = k;
-		vl = cur;
-	}
-	if (codes_or & CC_OFF_BOT)
-	{
-		cur = (vl == clip_list1) ? clip_list2 : clip_list1;
-		k = 0;
-		j = n - 1;
-		for (i = 0; i < n; ++i)
-		{
-			if (!(vl[j]->ccodes & CC_OFF_BOT))
-				cur[k++] = vl[j];
-			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_BOT)
-			{
-				intersect(pts[p], vl[i], vl[j], bottom_loc(vl[i], vl[j]));
-				cur[k++] = &pts[p++];
-			}
-			j = i;
-		}
-		n = k;
-		vl = cur;
-	}
-	for (i = 0; i < n; ++i)
-	{
-		if (vl[i]->ccodes & CC_BEHIND)
-			return 0;
-	}
-
-	*out_vl = vl;
-	return n;
-}
 
 
 void Q1Bsp::draw_face(Graphics &gfx, int face)
@@ -882,29 +953,6 @@ void Q1Bsp::change_axis()
 
 
 
-void rotate_c2w(vec3 *dest, vec3 *src)
-{
-	dest->x = src->x * main_matrix[0][0] + src->y * main_matrix[1][0] + src->z * main_matrix[2][0];
-	dest->y = src->x * main_matrix[0][1] + src->y * main_matrix[1][1] + src->z * main_matrix[2][1];
-	dest->z = src->x * main_matrix[0][2] + src->y * main_matrix[1][2] + src->z * main_matrix[2][2];
-}
-
-void compute_plane(q1dplane_t *plane, float x, float y, float z, vec3 &cam_loc)
-{
-	vec3 temp, temp2;
-	temp2.x = x; temp2.y = z; temp2.z = y;
-	rotate_c2w(&temp, &temp2);
-	plane->normal = temp;
-	plane->dist = temp.x*cam_loc.x + temp.y*cam_loc.y + temp.z*cam_loc.z;
-}
-
-void compute_view_frustrum(q1dplane_t *planes, vec3 &cam_loc)
-{
-	compute_plane(planes + 0, -1, 0, 1, cam_loc);
-	compute_plane(planes + 1, 1, 0, 1, cam_loc);
-	compute_plane(planes + 2, 0, 1, 1, cam_loc);
-	compute_plane(planes + 3, 0, -1, 1, cam_loc);
-}
 
 int Q1Bsp::find_leaf(vec3 &loc)
 {
@@ -967,30 +1015,7 @@ int Q1Bsp::bsp_find_visible_nodes(int node)
 	}
 }
 
-int bbox_inside_plane(short *mins, short *maxs, q1dplane_t *plane)
-{
-	short pt[3];
 
-	// use quick test from graphics gems
-
-	if (FLOAT_POSITIVE(&plane->normal.x)) // fast test assuming IEEE
-		pt[0] = maxs[0];
-	else
-		pt[0] = mins[0];
-
-	if (FLOAT_POSITIVE(&plane->normal.y)) // fast test assuming IEEE
-		pt[1] = maxs[1];
-	else
-		pt[1] = mins[1];
-
-	if (FLOAT_POSITIVE(&plane->normal.z)) // fast test assuming IEEE
-		pt[2] = maxs[2];
-	else
-		pt[2] = mins[2];
-
-
-	return plane->normal.x * pt[0] + plane->normal.y * pt[1] + plane->normal.z * pt[2] >= plane->dist;
-}
 
 
 int Q1Bsp::leaf_in_frustrum(q1dleaf_t *node, q1dplane_t *planes)
@@ -1019,15 +1044,7 @@ void Q1Bsp::mark_leaf_faces(int leaf)
 	}
 }
 
-int node_in_frustrum(q1dnode_t *node, q1dplane_t *planes)
-{
-	if (!bbox_inside_plane(node->mins, node->maxs, planes + 0)
-		|| !bbox_inside_plane(node->mins, node->maxs, planes + 1)
-		|| !bbox_inside_plane(node->mins, node->maxs, planes + 2)
-		|| !bbox_inside_plane(node->mins, node->maxs, planes + 3))
-		return 0;
-	return 1;
-}
+
 
 void Q1Bsp::bsp_explore_node(int node)
 {
@@ -1073,3 +1090,5 @@ void Q1Bsp::render(Graphics &gfx, vec3 &cam_loc)
 	bsp_visit_visible_leaves(cam_loc, planes);
 	bsp_render_world(gfx, cam_loc, planes);
 }
+
+
