@@ -5,22 +5,25 @@ namespace q1 {
 
 #define BSPVERSION   29
 
-#define Q1LUMP_ENTITIES		0
-#define Q1LUMP_PLANES		1
-#define Q1LUMP_TEXTURES		2
-#define Q1LUMP_VERTEXES		3
-#define Q1LUMP_VISIBILITY	4
-#define Q1LUMP_NODES		5
-#define Q1LUMP_TEXINFO		6
-#define Q1LUMP_FACES		7
-#define Q1LUMP_LIGHTING		8
-#define Q1LUMP_CLIPNODES	9
-#define Q1LUMP_LEAFS		10
-#define Q1LUMP_MARKSURFACES	11
-#define Q1LUMP_EDGES		12
-#define Q1LUMP_SURFEDGES	13
-#define Q1LUMP_MODELS		14
-#define Q1HEADER_LUMPS		15
+	typedef enum
+	{
+		LUMP_ENTITIES,
+		LUMP_PLANES,
+		LUMP_TEXTURES,
+		LUMP_VERTEXES,
+		LUMP_VISIBILITY,
+		LUMP_NODES,
+		LUMP_TEXINFO,
+		LUMP_FACES,
+		LUMP_LIGHTING,
+		LUMP_CLIPNODES,
+		LUMP_LEAFS,
+		LUMP_MARKSURFACES,
+		LUMP_EDGES,
+		LUMP_SURFEDGES,
+		LUMP_MODELS,
+		HEADER_LUMPS
+	} q1lump_t;
 
 #define Q1CONTENTS_EMPTY		-1
 #define Q1CONTENTS_SOLID		-2
@@ -51,9 +54,6 @@ namespace q1 {
 #define mark_face(x)     (vis_face[(x) >> 3] |=  (1 << ((x) & 7)))
 #define unmark_face(x)   (vis_face[(x) >> 3] &= ~(1 << ((x) & 7)))
 
-	typedef unsigned char byte;
-	typedef int fix;
-
 	typedef struct {
 		char *bits;
 		int wid;
@@ -72,26 +72,26 @@ namespace q1 {
 	{
 		int offset;
 		int size;
-	} q1lump_t;
+	} lump_t;
 
 	typedef struct
 	{
 		int version;
-		q1lump_t entity;
-		q1lump_t plane;
-		q1lump_t tex;
-		q1lump_t vert;
-		q1lump_t vis;
-		q1lump_t node;
-		q1lump_t texinfo;
-		q1lump_t face;
-		q1lump_t lightmap;
-		q1lump_t clipnode;
-		q1lump_t leaf;
-		q1lump_t marksurf;
-		q1lump_t edge;
-		q1lump_t surface_edge;
-		q1lump_t model;
+		lump_t entity;
+		lump_t plane;
+		lump_t tex;
+		lump_t vert;
+		lump_t vis;
+		lump_t node;
+		lump_t texinfo;
+		lump_t face;
+		lump_t lightmap;
+		lump_t clipnode;
+		lump_t leaf;
+		lump_t marksurf;
+		lump_t edge;
+		lump_t surface_edge;
+		lump_t model;
 	} qbsp_t;
 
 	typedef struct
@@ -101,25 +101,19 @@ namespace q1 {
 		int         headnode[MAX_MAP_HULLS];
 		int         visleafs;      // not including the solid leaf 0
 		int         firstface, numfaces;
-	} q1dmodel_t;
-
-	typedef struct
-	{
-		int	offset;		// Offset to start of lump, relative to beginning of file. 
-		int	length;		// Length of lump. Always a multiple of 4. 
-	} lump_t;
+	} dmodel_t;
 
 	typedef struct
 	{
 		int         version;
 		lump_t      lumps[HEADER_LUMPS];
-	} q1dheader_t;
+	} dheader_t;
 
 	typedef struct
 	{
 		int         nummiptex;
 		int         dataofs[4];      // [nummiptex]
-	} q1dmiptexlump_t;
+	} dmiptexlump_t;
 
 #define   MIPLEVELS   4
 	typedef struct miptex_s
@@ -135,7 +129,7 @@ namespace q1 {
 		vec3 normal;
 		float   dist;
 		int      type;      // PLANE_X - PLANE_ANYZ ?remove? trivial to regenerate
-	} q1dplane_t;
+	} dplane_t;
 
 	// !!! if this is changed, it must be changed in asm_i386.h too !!!
 	typedef struct
@@ -147,13 +141,13 @@ namespace q1 {
 		short		maxs[3];
 		unsigned short   firstface;
 		unsigned short   numfaces;   // counting both sides
-	} q1dnode_t;
+	} dnode_t;
 
 	typedef struct
 	{
 		int         planenum;
 		short      children[2];   // negative numbers are contents
-	} q1dclipnode_t;
+	} dclipnode_t;
 
 
 	typedef struct texinfo_s
@@ -161,7 +155,7 @@ namespace q1 {
 		vec4      vecs[2];      // [s/t][xyz offset]
 		int         miptex;
 		int         flags;
-	} q1texinfo_t;
+	} dtexinfo_t;
 #define TEX_SPECIAL   1      // sky or slime, no lightmap or 256 subdivision
 
 	// note that edge 0 is never used, because negative edge nums are used for
@@ -169,7 +163,7 @@ namespace q1 {
 	typedef struct
 	{
 		unsigned short   v[2];      // vertex numbers
-	} q1dedge_t;
+	} dedge_t;
 
 
 	typedef unsigned char byte;
@@ -187,7 +181,7 @@ namespace q1 {
 		// lighting info
 		byte      styles[MAXLIGHTMAPS];
 		int         lightofs;      // start of [numstyles*surfsize] samples
-	} q1dface_t;
+	} dface_t;
 
 	// leaf 0 is the generic CONTENTS_SOLID leaf, used for all solid areas
 	// all other leafs need visibility info
@@ -203,7 +197,7 @@ namespace q1 {
 		unsigned short      nummarksurfaces;
 
 		byte      ambient_level[NUM_AMBIENTS];
-	} q1dleaf_t;
+	} dleaf_t;
 
 
 	typedef struct
@@ -211,28 +205,28 @@ namespace q1 {
 		vec3 p;
 		unsigned char  ccodes;
 		unsigned char  pad0, pad1, pad2;
-		fix    sx, sy;
+		int    sx, sy;
 		float  u, v;
 	} q1vertex_t;   // 32 bytes
 
 
 	typedef struct
 	{
-		q1dnode_t			*dnodes;
-		q1texinfo_t		*texinfo;
-		q1dface_t			*dfaces;
-		q1dclipnode_t		*dclipnodes;
-		q1dedge_t			*dedges;
+		dnode_t			*dnodes;
+		dtexinfo_t		*texinfo;
+		dface_t			*dfaces;
+		dclipnode_t		*dclipnodes;
+		dedge_t			*dedges;
 		unsigned short	*dmarksurfaces;
 		int				*dsurfedges;
-		q1dplane_t		*dplanes;
-		q1dmodel_t		*dmodels;
+		dplane_t		*dplanes;
+		dmodel_t		*dmodels;
 
 		char        *dvisdata;
 		unsigned char        *dlightdata;
 		char        *dtexdata; // (dmiptexlump_t)
 		char        *dentdata;
-		q1dleaf_t      *dleafs;
+		dleaf_t      *dleafs;
 		vec3    *dvertexes;
 
 		int         num_nodes;

@@ -16,6 +16,8 @@ int Q2Bsp::load(Graphics &gfx, char *filename)
 	char *file = get_file(filename, &size);
 	if (file == NULL)
 	{
+		char *pak = "media/PAK0.PAK";
+		file = get_pakfile(pak, filename);
 		return -1;
 	}
 

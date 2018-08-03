@@ -1,6 +1,8 @@
 #include "include.h"
 #include <math.h> //for ceil
 
+using namespace hl;
+
 HLBsp::HLBsp()
 {
 	loaded = false;

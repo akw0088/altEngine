@@ -22,7 +22,7 @@ namespace q2 {
 		Pop,
 		Area,
 		AreaPortal
-	} qlump_t;
+	} q2lump_t;
 
 	typedef struct
 	{

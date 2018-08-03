@@ -27,7 +27,7 @@ private:
 	void calculate_texcoords(int face, int edge0, int edge1, int edge2);
 
 	std::vector <unsigned int> index_array;
-	hl_bsp_t data;
+	hl::hl_bsp_t data;
 
 	int *face_start_index;
 	int *face_count;
