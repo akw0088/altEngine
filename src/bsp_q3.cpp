@@ -4,6 +4,8 @@
 #define new DEBUG_NEW
 #endif
 
+using namespace q3;
+
 Bsp::Bsp()
 {
 	loaded = false;
@@ -63,12 +65,12 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 		return false;
 	}
 
-	byte *pBsp = (byte *)tBsp;
+	char *pBsp = (char *)tBsp;
 
 	// init data
 	data.header = (bsp_t *)tBsp;
 	data.Vert = (bspvertex_t *)	&pBsp[tBsp->directory[VertexArray].offset];
-	data.Ent = (byte *)			&pBsp[tBsp->directory[Entities].offset];
+	data.Ent = (char *)			&pBsp[tBsp->directory[Entities].offset];
 	data.Material = (material_t *)&pBsp[tBsp->directory[Materials].offset];
 	data.Plane = (plane_t *)	&pBsp[tBsp->directory[Planes].offset];
 	data.Node = (node_t *)		&pBsp[tBsp->directory[Nodes].offset];

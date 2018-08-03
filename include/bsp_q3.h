@@ -9,13 +9,13 @@ class Bsp
 {
 	void change_axis();
 	inline int find_leaf(const vec3 &position);
-	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order);
+	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, q3::leaf_t *frameLeaf, bool order);
 	inline int cluster_visible(int visCluster, int testCluster);
-	void tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
+	void tessellate(int level, q3::bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
 		int **index_array, int &numIndexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size);
-	inline void render_face(face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
-	inline void render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
-	inline void render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
+	inline void render_face(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
+	inline void render_patch(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
+	inline void render_billboard(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
 	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position);
 	void add_list(vector<surface_t *> &surface_list, bool blend_flag, int i);
 	void set_blend_mode(Graphics &gfx, faceinfo_t &face);
@@ -43,8 +43,8 @@ public:
 
 
 	void unload(Graphics &gfx);
-	void CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
-	void CreateTangentArray(vertex_t *vertex, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
+	void CalculateTangentArray(q3::bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent);
+	void CreateTangentArray(vertex_t *vertex, q3::bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
 
 	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, float &water_depth,
 		vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag);
@@ -52,7 +52,7 @@ public:
 
 	vec3 trace(vec3 &start, vec3 &end, vec3 &normal);
 	void check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end);
-	void check_brush(brush_t *brush, vec3 &start, vec3 &end);
+	void check_brush(q3::brush_t *brush, vec3 &start, vec3 &end);
 
 	bool on_ground;
 	bool collision;
@@ -62,7 +62,7 @@ public:
 
 	bool loaded;
 	bool quake1;
-	bspData_t	data;
+	q3::bspData_t	data;
 	char map_name[64];
 	vector<texture_t *> anim_list;
 	texture_t	*tex_object;
@@ -97,7 +97,7 @@ public:
 	bool enable_normalmap;
 	unsigned int max_stage;
 private:
-	bsp_t		*tBsp;
+	q3::bsp_t		*tBsp;
 	vec4		*tangent;
 
 	bool selected_map;

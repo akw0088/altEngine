@@ -399,7 +399,9 @@ const unsigned char TexturedFragmentShader[] = {
 #include "graphics.h"
 #include "bsp_types_q3.h"
 #include "bsp_types_hl.h"
-#include "qbsptypes.h"
+#include "bsp_types_q1.h"
+#include "bsp_types_q2.h"
+
 #include "audio.h"
 #include "frame.h"
 
@@ -407,6 +409,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "bsp_q3.h"
 #include "bsp_hl.h"
 #include "bsp_q1.h"
+#include "bsp_q2.h"
 #include "trigger.h"
 #include "projectile.h"
 #include "light.h"

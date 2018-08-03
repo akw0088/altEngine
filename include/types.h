@@ -26,6 +26,13 @@ typedef struct
 
 typedef struct
 {
+	vec3	normal;		// Plane normal. 
+	float	d;			// The plane distance from origin 
+} plane_t;
+
+
+typedef struct
+{
 	short	format;
 	short	channels;
 	int	sampleRate;
