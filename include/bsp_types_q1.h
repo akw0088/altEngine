@@ -54,10 +54,11 @@ namespace q1 {
 #define mark_face(x)     (vis_face[(x) >> 3] |=  (1 << ((x) & 7)))
 #define unmark_face(x)   (vis_face[(x) >> 3] &= ~(1 << ((x) & 7)))
 
-	typedef struct {
+	typedef struct
+	{
 		char *bits;
-		int wid;
-		int ht;
+		int width;
+		int height;
 	} bitmap;
 
 
@@ -114,6 +115,7 @@ namespace q1 {
 		int         nummiptex;
 		int         dataofs[4];      // [nummiptex]
 	} dmiptexlump_t;
+
 
 #define   MIPLEVELS   4
 	typedef struct miptex_s

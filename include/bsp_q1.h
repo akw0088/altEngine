@@ -51,21 +51,19 @@ public:
 	int bsp_find_visible_nodes(int node);
 	void bsp_explore_node(int node);
 	void mark_leaf_faces(int leaf);
-	int compute_mip_level(int face, vec3 &loc);
 	void get_tmap(q1::bitmap *bm, int face, int tex, int ml, float *u, float *v);
 	void get_face_extent(int face, int *u0, int *v0, int *u1, int *v1);
 	void get_raw_tmap(q1::bitmap *bm, int tex, int ml);
-	void compute_texture_gradients(int face, int tex, int mip, float u, float v, matrix4 &view, vec3 &position);
 
 	int point_plane_test(vec3 &loc, q1::dplane_t *plane);
 	void bsp_render_world(Graphics &gfx, vec3 &cam_loc, q1::dplane_t *pl);
 	void bsp_visit_visible_leaves(vec3 &cam_loc, q1::dplane_t *pl);
 	int aabb_in_frustrum(short *mins, short *maxs, q1::dplane_t *planes);
 
-
 	bool loaded;
 
 private:
+	void palette_to_rgb(q1::bitmap &bm);
 
 	bool initialized;
 	bool map_selected;
@@ -75,6 +73,7 @@ private:
 	int map_vertex_vbo;
 	int *face_start_index;
 	int *face_count;
+	int *face_to_tex;
 	vertex_t *map_vertex;
 
 	char *vis_node;

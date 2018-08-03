@@ -81,15 +81,15 @@ void rotate_c2w(vec3 *dest, vec3 *src, matrix4 &mvp)
 	dest->z = src->x * mvp.m[2] + src->y * mvp.m[6] + src->z * mvp.m[10];
 }
 
-void compute_plane(dplane_t *plane, float x, float y, float z, vec3 &cam_loc, matrix4 &mvp)
+void compute_plane(dplane_t *plane, float x, float y, float z, vec3 &pos, matrix4 &mvp)
 {
-	vec3 temp, temp2;
-	temp2.x = x;
-	temp2.y = z;
-	temp2.z = y;
-	rotate_c2w(&temp, &temp2, mvp);
+	vec3 temp, p;
+	p.x = x;
+	p.y = z;
+	p.z = y;
+	rotate_c2w(&temp, &p, mvp);
 	plane->normal = temp;
-	plane->dist = temp.x*cam_loc.x + temp.y*cam_loc.y + temp.z*cam_loc.z;
+	plane->dist = plane->normal * pos;
 }
 
 void compute_view_frustrum(dplane_t *planes, vec3 &cam_loc, matrix4 &mvp)
@@ -300,22 +300,12 @@ void transform_point(q1vertex_t &p, vec3 &v, matrix4 &view, vec3 &translate, int
 	code_point(p, clip_x_low, clip_x_high, clip_y_low, clip_y_high);
 }
 
-double dist2_from_viewer(vec3 *in, vec3 &cam_loc)
-{
-	vec3 temp;
-	temp.x = in->x - cam_loc.x;
-	temp.y = in->y - cam_loc.y;
-	temp.z = in->z - cam_loc.z;
-
-	return temp.x*temp.x + temp.y*temp.y + temp.z*temp.z;
-}
-
 void free_surface(int surf)
 {
 	if (surface[surf].valid)
 		surface_cache[surface[surf].face] = -1;
 
-	cur_cache -= surface[surf].bm->wid * surface[surf].bm->ht + sizeof(bitmap);
+	cur_cache -= surface[surf].bm->width * surface[surf].bm->height + sizeof(bitmap);
 	free(surface[surf].bm);
 }
 
@@ -356,8 +346,8 @@ void build_block(char *out, bitmap *raw, int x, int y)
 	char colormap[512][256]; // akwright: set me to something
 	int c, dc;
 	int a, b, h, c0, c1, c2, c3, step = global_step, row = global_row - step;
-	int y_max = raw->ht, x_max = raw->wid;
-	char *s = raw->bits + y*raw->wid;
+	int y_max = raw->height, x_max = raw->width;
+	char *s = raw->bits + y*raw->width;
 
 	c0 = (255 - light_index[0]) << 16;
 	c1 = (255 - light_index[1]) << 16;
@@ -389,7 +379,7 @@ void build_block(char *out, bitmap *raw, int x, int y)
 			s = raw->bits;
 		}
 		else
-			s += raw->wid;
+			s += raw->width;
 	}
 }
 
@@ -397,9 +387,9 @@ void build_block(char *out, bitmap *raw, int x, int y)
 
 void qmap_set_texture(bitmap *bm)
 {
-	int row = bm->wid, ht = bm->ht;
+	int row = bm->width, ht = bm->height;
 	qmap_tex = bm->bits;
-	qmap_wid = bm->wid - 1;
+	qmap_wid = bm->width - 1;
 
 	if (qmap_tex_row != row || qmap_ht != ht - 1)
 	{
@@ -410,17 +400,6 @@ void qmap_set_texture(bitmap *bm)
 			qmap_tex_row_table[i + 1] = row * i;
 		qmap_tex_row_table[0] = qmap_tex_row_table[1];
 		qmap_tex_row_table[ht + 1] = qmap_tex_row_table[ht];
-	}
-}
-
-void qmap_set_output(char *where, int row)
-{
-	qmap_buf = where;
-	if (qmap_buf_row != row) {
-		int i;
-		qmap_buf_row = row;
-		for (i = 0; i < 768; ++i)
-			qmap_row_table[i] = i * row;
 	}
 }
 
@@ -464,14 +443,6 @@ void setup_origin_vector(vec3 &out, dplane_t &plane, vec3 &norm, matrix4 &view, 
 	transform_point_raw(out, temp, view, translate);
 }
 
-
-
-void qmap_set_texture_gradients(double *tmap_data)
-{
-	int i;
-	for (i = 0; i < 9; ++i)
-		qmap_tmap[i] = tmap_data[i];
-}
 
 
 Q1Bsp::Q1Bsp()
@@ -541,16 +512,29 @@ int Q1Bsp::load(Graphics &gfx, char *filename)
 	for (unsigned int i = 0; i < data.num_vertexes; i++)
 	{
 		map_vertex[i].position = data.dvertexes[i];
+
+		if (i % 2 == 0)
+		{
+			map_vertex[i].texCoord0.x = 0.0f;
+			map_vertex[i].texCoord0.y = 0.0f;
+		}
+		else
+		{
+			map_vertex[i].texCoord0.x = 1.0f;
+			map_vertex[i].texCoord0.y = 1.0f;
+		}
 		map_vertex[i].tangent = vec4();
 	}
 
 	face_start_index = new int[data.num_faces];
 	face_count = new int[data.num_faces];
+	face_to_tex = new int[data.num_faces];
 
 	for (int i = 0; i < data.num_faces; i++)
 	{
 		face_start_index[i] = 0;
 		face_count[i] = 0;
+		face_to_tex[i] = 0;
 	}
 
 	
@@ -626,30 +610,6 @@ void Q1Bsp::render_node_faces(Graphics &gfx, int node, int side)
 
 
 
-int Q1Bsp::compute_mip_level(int face, vec3 &loc)
-{
-	// dumb algorithm: grab 3d coordinate of some vertex,
-	// compute dist from viewer
-	int se = data.dfaces[face].firstedge;
-	int e = data.dsurfedges[se];
-	double dist;
-
-	if (e < 0)
-		e = -e;
-
-	dist = dist2_from_viewer((vec3 *)&data.dvertexes[data.dedges[e].v[0]], loc) / DIST2;
-
-	if (dist < 1)
-		return 0;
-	if (dist < 4)
-		return 1;
-	if (dist < 16)
-		return 2;
-	return 3;
-}
-
-
-
 // iterate over vertices of face, compute u&v coords, compute min & max
 void Q1Bsp::get_face_extent(int face, int *u0, int *v0, int *u1, int *v1)
 {
@@ -697,8 +657,8 @@ void Q1Bsp::get_raw_tmap(bitmap *bm, int tex, int ml)
 	miptex_t *mip;
 	mip = (miptex_t *)(data.dtexdata + mtl->dataofs[tex]);
 	bm->bits = (char *)mip + mip->offsets[ml];
-	bm->wid = mip->width >> ml;
-	bm->ht = mip->height >> ml;
+	bm->width = mip->width >> ml;
+	bm->height = mip->height >> ml;
 }
 
 
@@ -727,10 +687,10 @@ void Q1Bsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 
 	get_face_extent(face, &u0, &v0, &u1, &v1);
 
-	bm->wid = (u1 - u0) >> ml;
-	bm->ht = (v1 - v0) >> ml;
+	bm->width = (u1 - u0) >> ml;
+	bm->height = (v1 - v0) >> ml;
 
-	if (bm->wid > 256 || bm->ht > 256)
+	if (bm->width > 256 || bm->height > 256)
 	{
 		is_cached = 0;
 		get_raw_tmap(bm, tex, ml);
@@ -738,7 +698,7 @@ void Q1Bsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 	}
 	get_raw_tmap(&raw, tex, ml);
 
-	surf = surface_cache[face] = allocate_cached_surface(bm->wid * bm->ht);
+	surf = surface_cache[face] = allocate_cached_surface(bm->width * bm->height);
 	bm->bits = (char *)&surface[surf].bm[1];
 	*surface[surf].bm = *bm;
 
@@ -758,91 +718,34 @@ void Q1Bsp::get_tmap(bitmap *bm, int face, int tex, int ml, float *u, float *v)
 	v0 >>= ml;
 
 	global_step = step;
-	global_row = bm->wid;
+	global_row = bm->width;
 	if (data.dfaces[face].lightofs == -1)
 		light_index = blank_light;
 	else
 		light_index = &data.dlightdata[data.dfaces[face].lightofs];
 
-	y = v0%raw.ht;  if (y < 0)  y += raw.ht;   // fixup for signed mod
-	x0 = u0%raw.wid; if (x0 < 0) x0 += raw.wid;  // fixup for signed mod
+	y = v0%raw.height;  if (y < 0)  y += raw.height;   // fixup for signed mod
+	x0 = u0%raw.width; if (x0 < 0) x0 += raw.width;  // fixup for signed mod
 
-	for (j = 0; j < bm->ht; j += step)
+	for (j = 0; j < bm->height; j += step)
 	{
 		x = x0;
-		for (i = 0; i < bm->wid; i += step, ++light_index)
+		for (i = 0; i < bm->width; i += step, ++light_index)
 		{
-			build_block(bm->bits + j*bm->wid + i, &raw, x, y);
-			x += step; if (x >= raw.wid) x -= raw.wid;
+			build_block(bm->bits + j*bm->width + i, &raw, x, y);
+			x += step; if (x >= raw.width) x -= raw.width;
 		}
 		++light_index;
-		y += step; if (y >= raw.ht) y -= raw.ht;
+		y += step; if (y >= raw.height) y -= raw.height;
 	}
 }
-
-
-
-
-void Q1Bsp::compute_texture_gradients(int face, int tex, int mip, float u, float v, matrix4 &view, vec3 &position)
-{
-	double tmap_data[9];
-	vec3 P, M, N;
-	vec3 norm;
-	dplane_t plane = data.dplanes[data.dfaces[face].planenum];
-	float rescale = (8 >> mip) / 8.0f;
-
-	vec3 tu = vec3(data.texinfo[tex].vecs[0]);
-	vec3 tv = vec3(data.texinfo[tex].vecs[1]);
-
-	compute_texture_normal(norm, tu, tv);
-	// project vectors onto face's plane, and transform
-	setup_uv_vector(M, tu, norm, plane.normal, view);
-	setup_uv_vector(N, tv, norm, plane.normal, view);
-	setup_origin_vector(P, plane, norm, view, position);
-
-	u -= data.texinfo[tex].vecs[0].w;  // adjust according to face's info
-	v -= data.texinfo[tex].vecs[1].w;  // passed in values adjust for lightmap
-
-								   // we could just subtract (u,v) every time we compute a new (u,v);
-								   // instead we fold it into P:
-	P.x += u * M.x + v * N.x;
-	P.y += u * M.y + v * N.y;
-	P.z += u * M.z + v * N.z;
-
-	tmap_data[0] = P.x*N.y - P.y*N.x;
-	tmap_data[1] = P.y*N.z - P.z*N.y;
-	tmap_data[2] = P.x*N.z - P.z*N.x;
-	tmap_data[3] = P.y*M.x - P.x*M.y;
-	tmap_data[4] = P.z*M.y - P.y*M.z;
-	tmap_data[5] = P.z*M.x - P.x*M.z;
-	tmap_data[6] = N.x*M.y - N.y*M.x;
-	tmap_data[7] = N.y*M.z - N.z*M.y;
-	tmap_data[8] = N.x*M.z - N.z*M.x;
-
-	// offset by center of screen--if this were folded into
-	// transform translation we could avoid it
-	tmap_data[0] -= tmap_data[1] * 159.5 + tmap_data[2] * 99.5;
-	tmap_data[3] -= tmap_data[4] * 159.5 + tmap_data[5] * 99.5;
-	tmap_data[6] -= tmap_data[7] * 159.5 + tmap_data[8] * 99.5;
-
-	tmap_data[0] *= rescale;
-	tmap_data[1] *= rescale;
-	tmap_data[2] *= rescale;
-	tmap_data[3] *= rescale;
-	tmap_data[4] *= rescale;
-	tmap_data[5] *= rescale;
-
-	qmap_set_texture_gradients(tmap_data);
-}
-
-
 
 void Q1Bsp::draw_face(Graphics &gfx, int face)
 {
 //	int tex_index = data.Face[face].texinfo;
 //	int tex_data = data.TexInfo[tex_index].texdata;
 
-//	gfx.SelectTexture(0, texdata_to_obj[tex_data]);
+	gfx.SelectTexture(0, face_to_tex[face]);
 	//gfx.SelectTexture(8, face_lightmap_obj[tex_data]);
 
 	if (map_selected == false)
@@ -902,6 +805,16 @@ void Q1Bsp::build_face(Graphics &gfx, int face)
 		}
 	}
 
+	if (data.dfaces[face].numedges)
+	{
+		bitmap bm;
+		float u, v;
+		int tex = data.dfaces[face].texinfo;
+		int mip = 0;
+		get_tmap(&bm, face, data.texinfo[tex].miptex, mip, &u, &v);
+		palette_to_rgb(bm);
+		face_to_tex[face] = gfx.LoadTexture(bm.width, bm.height, 3, GL_RGB, bm.bits, false, 0);
+	}
 }
 
 void Q1Bsp::change_axis()
@@ -1071,3 +984,24 @@ void Q1Bsp::render(Graphics &gfx, vec3 &cam_loc)
 }
 
 
+void Q1Bsp::palette_to_rgb(bitmap &bm)
+{
+	bitmap new_bm;
+
+	int size;
+	char *palette = get_file("media/palette.lmp", &size);
+
+	new_bm.width = bm.width;
+	new_bm.height = bm.height;
+	new_bm.bits = (char *)new char[bm.width * bm.height * 3];
+
+	for (int y = 0; y < bm.height; y++)
+	{
+		for (int x = 0; x < bm.width; x++)
+		{
+			new_bm.bits[y * bm.width + x] = palette[3 * bm.bits[y * bm.width + x]];
+		}
+	}
+
+	bm = new_bm;
+}
