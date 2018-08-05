@@ -421,6 +421,7 @@ const unsigned char TexturedFragmentShader[] = {
 #include "rigidbody.h"
 #include "player.h"
 #include "constructable.h"
+#include "vehicle.h"
 
 #include "sin_table.h"
 #include "common.h"

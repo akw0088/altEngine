@@ -18,6 +18,7 @@ Entity::Entity()
 	portal_camera = NULL;
 	brushinfo = NULL;
 	entstring = NULL;
+	vehicle = NULL;
 
 	ent_type = ENT_UNKNOWN;
 	nettype = NET_NONE;
@@ -65,6 +66,7 @@ Entity::~Entity()
 	player = NULL;
 	brushinfo = NULL;
 	entstring = NULL;
+	vehicle = NULL;
 	nettype = NET_NONE;
 	brush_ref = -1;
 	flags.visible = false;

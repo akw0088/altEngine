@@ -589,7 +589,7 @@ void Engine::load(char *level)
 	{
 		gametype = GAMETYPE_CTF;
 	}
-	
+
 	game->load(gametype);
 
 	q3map.anim_list.clear();
@@ -733,6 +733,23 @@ void Engine::load(char *level)
 
 		load_entities();
 	}
+
+	if (strstr(level, "section"))
+	{
+		int index = find_type(ENT_INFO_PLAYER_START, 0);
+		Entity *ent = entity_list[index];
+
+		ent->vehicle = new Vehicle(ent);
+		ent->rigid = ent->vehicle;
+		ent->model = ent->rigid;
+
+		q3map.enable_textures = false;
+		enable_bloom = false;
+
+		ent->vehicle->load(gfx, "media/models/vehicle/car/car4");
+		entity_list[index]->rigid->frame2ent(&camera_frame, input);
+	}
+
 
 	// This renders map before loading textures
 
@@ -3654,7 +3671,17 @@ void Engine::step(int tick)
 
 	game->step(tick);
 
+
 	int player = find_type(ENT_PLAYER, 0);
+	if (strstr(q3map.map_name, "section") && player != -1)
+	{
+		Frame car_frame = camera_frame;
+		int index = find_type(ENT_INFO_PLAYER_START, 0);
+
+		entity_list[player]->player->in_vehicle = index;
+		entity_list[player]->position = entity_list[index]->position;
+	}
+
 	int current_light = 0;
 	if (player != -1)
 	{

@@ -148,6 +148,8 @@ public:
 	static const char bot_state_name[16][32];
 	static const char *models[23];
 
+	int in_vehicle;
+
 private:
 };
 

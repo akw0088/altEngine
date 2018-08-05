@@ -2037,14 +2037,21 @@ void Quake3::handle_player(int self, input_t &input)
 
 				if (engine->menu.console == false)
 				{
-					if (entity->rigid->move(input, speed_scale))
+					if (entity->player->in_vehicle == 0)
 					{
-						entity->player->state = PLAYER_JUMPED;
-						if (entity->player->local)
-							engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_JUMP);
-						else
-							engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_JUMP);
+						if (entity->rigid->move(input, speed_scale))
+						{
+							entity->player->state = PLAYER_JUMPED;
+							if (entity->player->local)
+								engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_JUMP);
+							else
+								engine->play_wave(entity->position, entity->player->model_index * SND_PLAYER + SND_JUMP);
 
+						}
+					}
+					else
+					{
+						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale);
 					}
 				}
 			}
@@ -2788,7 +2795,7 @@ void Quake3::step(int frame_step)
 			handle_func_platform(ent);
 			break;
 		case ENT_FUNC_TRAIN:
-			handle_func_train(ent);
+//			handle_func_train(ent);
 			break;
 		}
 	}

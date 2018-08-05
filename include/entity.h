@@ -22,6 +22,7 @@ public:
 	brushinfo_t		*brushinfo; // doors, platforms, etc
 	Constructable	*construct;
 	PortalCamera	*portal_camera;
+	Vehicle			*vehicle;
 
 
 	int				ent_type; // will replace string type eventually

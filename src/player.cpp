@@ -56,6 +56,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	local = false;
 	falling = false;
 	immobile = false;
+	in_vehicle = 0;
 
 	Player::team = team;
 
