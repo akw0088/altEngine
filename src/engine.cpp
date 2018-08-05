@@ -642,7 +642,7 @@ void Engine::load(char *level)
 		rand_float(-100.0, 200.0f),
 		rand_float(-100.0, 200.0f));
 
-	bool hl = true;
+	bool hl = false;
 	if (hl)
 	{
 		vec3 color(0.5f, 0.5f, 0.5f);
@@ -1894,6 +1894,14 @@ void Engine::render_scene(bool lights)
 
 	if (enable_map)
 	{
+		if (q3map.enable_textures == false)
+		{
+			gfx.SelectTexture(0, no_tex);
+			gfx.SelectTexture(1, no_tex);
+			gfx.SelectTexture(2, no_tex);
+			gfx.SelectTexture(3, no_tex);
+		}
+
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
 	}
 
