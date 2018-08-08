@@ -51,6 +51,7 @@ SOURCES_CPP := 	xmain.cpp \
 		terrain.cpp \
 		trigger.cpp \
 		vector.cpp \
+		vehicle.cpp \
 		voice.cpp \
 
 SOURCES_CC :=	huffman.c \
