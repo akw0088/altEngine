@@ -157,7 +157,7 @@ namespace q3 {
 	{
 		int	num_vectors;	// This stores the number of bit-vectors
 		int	vector_size;		// The size of bit-vectors in bytes
-		byte	pVecs;		// This holds all of the cluster bits
+		char	pVecs;		// This holds all of the cluster bits
 	} visData_t;
 
 	typedef struct
@@ -185,9 +185,9 @@ namespace q3 {
 
 	typedef struct
 	{
-		byte	ambient[3];	// This is the ambient color in RGB
-		byte	directional[3];	// This is the directional color in RGB
-		byte	direction[2];	// The direction of the light: [phi,theta] 
+		char	ambient[3];	// This is the ambient color in RGB
+		char	directional[3];	// This is the directional color in RGB
+		char	direction[2];	// The direction of the light: [phi,theta] 
 	} lightgrid_t;
 
 	typedef struct
