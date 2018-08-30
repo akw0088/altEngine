@@ -188,6 +188,9 @@
 	#include <DxErr.h>
 #endif
 
+
+int vm_main(char *qvmfile);
+
 #define G_QUAKE3
 //#define OPENMP
 

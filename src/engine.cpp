@@ -21,6 +21,7 @@
 
 
 
+
 extern double com_maxfps;
 
 extern const char *models[23];
@@ -240,6 +241,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	sensitivity = 1.0f;
 
 	shadow_light = 107;
+
+	vm_main("media/vm/bytecode.qvm");
+
 
 #ifdef OPENMP
 	omp_set_num_threads(8);
