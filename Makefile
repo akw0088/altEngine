@@ -52,6 +52,8 @@ SOURCES_CPP := 	xmain.cpp \
 		trigger.cpp \
 		vector.cpp \
 		vehicle.cpp \
+		vm.cpp \
+		vmmain.cpp \
 		voice.cpp \
 
 SOURCES_CC :=	huffman.c \
