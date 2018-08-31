@@ -30,7 +30,7 @@ int vmMain(int command, int arg0, int arg1, int arg2, int arg3, int arg4,
 	case VM_DESTROY:
 		break;
 	default:
-		G_Printf("Unknown command %s\n");
+		VM_Printf("Unknown command %s\n");
 	}
 
 
