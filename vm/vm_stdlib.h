@@ -4,7 +4,14 @@
 #ifndef BG_LIB_H
 #define BG_LIB_H
 
-typedef int size_t;
+
+#ifdef _MSC_VER
+#include <stdio.h>
+#include <stdarg.h>
+#define trap_Printf printf
+#else
+
+typedef int gsize_t;
 
 typedef char* va_list;
 #define _INTSIZEOF(n) ((sizeof(n) + sizeof(int) - 1) & ~(sizeof(int) - 1))
@@ -29,12 +36,12 @@ typedef char* va_list;
 
 // Misc functions
 typedef int cmp_t(const void*, const void*);
-void qsort(void* a, size_t n, size_t es, cmp_t* cmp);
+void qsort(void* a, gsize_t n, gsize_t es, cmp_t* cmp);
 void srand(unsigned seed);
 int rand(void);
 
 // String functions
-size_t strlen(const char* string);
+gsize_t strlen(const char* string);
 char* strcat(char* strDestination, const char* strSource);
 char* strcpy(char* strDestination, const char* strSource);
 int strcmp(const char* string1, const char* string2);
@@ -52,12 +59,12 @@ int vsprintf(char* buffer, const char* fmt, va_list argptr);
 int sscanf(const char* buffer, const char* fmt, ...);
 
 // Memory functions
-void* memmove(void* dest, const void* src, size_t count);
-void* memset(void* dest, int c, size_t count);
-void* memcpy(void* dest, const void* src, size_t count);
+void* memmove(void* dest, const void* src, gsize_t count);
+void* memset(void* dest, int c, gsize_t count);
+void* memcpy(void* dest, const void* src, gsize_t count);
 
 // Math functions
 int abs(int n);
 double fabs(double x);
-
+#endif
 #endif

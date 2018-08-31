@@ -1,7 +1,7 @@
-// bg_lib,c -- standard C library replacement routines used by code compiled for the virtual machine
+#include "vm_stdlib.h"
 
-#include "bg_lib.h"
 
+#ifndef _MSC_VER
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f // matches value in gcc v2 math.h
@@ -17,6 +17,8 @@ static void  swapfunc(char*, char*, int, int);
 #ifndef min
 #define min(a, b) (a) < (b) ? a : b
 #endif
+
+
 
 /*
  * Qsort routine from Bentley & McIlroy's "Engineering a Sort Function".
@@ -68,7 +70,7 @@ cmp_t*       cmp;
 }
 
 void   qsort(a, n, es, cmp) void* a;
-size_t n, es;
+gsize_t n, es;
 cmp_t* cmp;
 {
     char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
@@ -155,7 +157,6 @@ loop:
     }
     /*      qsort(pn - r, r / es, es, cmp);*/
 }
-
 //==================================================================================
 
 // this file is excluded from release builds because of intrinsics
@@ -272,9 +273,9 @@ int toupper(int c)
 }
 
 #endif
-//#ifndef _MSC_VER
 
-void* memmove(void* dest, const void* src, size_t count)
+#ifndef _MSC_VER
+void* memmove(void* dest, const void* src, gsize_t count)
 {
     int i;
 
@@ -909,5 +910,8 @@ int sscanf(const char* buffer, const char* fmt, ...)
 
     return count;
 }
+
+#endif
+#endif
 
 #endif

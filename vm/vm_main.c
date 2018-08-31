@@ -1,17 +1,17 @@
-#include "bg_lib.h"
+#include "vm_stdlib.h"
 
-#define GAMEVERSION "1.0.0"
+#define VM_VERSION "1.0.0"
 
-void G_Printf(const char* fmt, ...);
+void VM_Printf(const char* fmt, ...);
 
-void G_InitGame();
-void G_StepGame();
+void VM_Init();
+void VM_Step();
 
 
 enum {
-	G_INIT,
-	G_STEP,
-	G_DESTROY
+	VM_INIT,
+	VM_STEP,
+	VM_DESTROY
 };
 
 
@@ -21,13 +21,13 @@ int vmMain(int command, int arg0, int arg1, int arg2, int arg3, int arg4,
 {
 	switch (command)
 	{
-	case G_STEP:
-		G_StepGame();
+	case VM_STEP:
+		VM_Step();
 		break;
-	case G_INIT:
-		G_InitGame();
+	case VM_INIT:
+		VM_Init();
 		break;
-	case G_DESTROY:
+	case VM_DESTROY:
 		break;
 	default:
 		G_Printf("Unknown command %s\n");
@@ -37,7 +37,7 @@ int vmMain(int command, int arg0, int arg1, int arg2, int arg3, int arg4,
     return 0;
 }
 
-void G_Printf(const char* fmt, ...)
+void VM_Printf(const char* fmt, ...)
 {
 	va_list argptr;
 	char    text[1024];
@@ -49,13 +49,13 @@ void G_Printf(const char* fmt, ...)
 	trap_Printf(text);
 }
 
-void G_InitGame()
+void VM_Init()
 {
-	G_Printf("------- Game Initialization -------\n");
-	G_Printf("gamename: %s\n", GAMEVERSION);
-	G_Printf("gamedate: %s\n", __DATE__);
+	VM_Printf("------- VM Initialization -------\n");
+	VM_Printf("Version: %s\n", VM_VERSION);
+	VM_Printf("Date: %s\n", __DATE__);
 }
 
-void G_StepGame()
+void VM_Step()
 {
 }
