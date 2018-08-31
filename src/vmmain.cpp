@@ -31,7 +31,7 @@ intptr_t systemCalls(vm_t* vm, intptr_t* args)
 }
 
 
-int vm_main(char *qvmfile)
+int vm_main(char *qvmfile, int caller)
 {
 	vm_t vm;
 	int retVal = -1;
@@ -45,7 +45,7 @@ int vm_main(char *qvmfile)
 
 	if (VM_Create(&vm, qvmfile, (uint8_t *)image, systemCalls) == 0)
 	{
-		retVal = VM_Call(&vm, 0);
+		retVal = VM_Call(&vm, caller);
 	}
 
 	VM_Free(&vm);

@@ -242,7 +242,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	shadow_light = 107;
 
-	vm_main("media/vm/bytecode.qvm");
+	vm_main("media/vm/game.qvm", 0);
 
 
 #ifdef OPENMP
