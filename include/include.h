@@ -189,7 +189,7 @@
 #endif
 
 
-int vm_main(char *qvmfile);
+int vm_main(char *qvmfile, int caller);
 
 #define G_QUAKE3
 //#define OPENMP
