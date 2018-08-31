@@ -2,27 +2,26 @@
 
 
 #ifndef _MSC_VER
-
 #ifndef NULL
 #define NULL ((void*)0)
 #endif
 
 
-size_t strlen(const char* string)
+size_t strlen(const char *str)
 {
-    const char* s;
+    const char *s;
 
-    s = string;
+    s = str;
     while (*s)
     {
         s++;
     }
-    return s - string;
+    return s - str;
 }
 
-char* strcat(char* strDestination, const char* strSource)
+char *strcat(char *strDestination, const char *strSource)
 {
-    char* s;
+    char *s;
 
     s = strDestination;
     while (*s)
@@ -37,9 +36,9 @@ char* strcat(char* strDestination, const char* strSource)
     return strDestination;
 }
 
-char* strcpy(char* strDestination, const char* strSource)
+char *strcpy(char *strDestination, const char *strSource)
 {
-    char* s;
+    char *s;
 
     s = strDestination;
     while (*strSource)
@@ -50,7 +49,7 @@ char* strcpy(char* strDestination, const char* strSource)
     return strDestination;
 }
 
-int strcmp(const char* string1, const char* string2)
+int strcmp(const char *string1, const char *string2)
 {
     while (*string1 == *string2 && *string1 && *string2)
     {
@@ -60,7 +59,7 @@ int strcmp(const char* string1, const char* string2)
     return *string1 - *string2;
 }
 
-char* strchr(const char* string, int c)
+char *strchr(const char *string, int c)
 {
     while (*string)
     {
@@ -73,7 +72,7 @@ char* strchr(const char* string, int c)
     return (char*)0;
 }
 
-char* strstr(const char* string, const char* strCharSet)
+char *strstr(const char *string, const char *strCharSet)
 {
     while (*string)
     {
@@ -113,7 +112,7 @@ int toupper(int c)
     return c;
 }
 
-void* memmove(void* dest, const void* src, size_t count)
+void *memmove(void *dest, const void *src, size_t count)
 {
     int i;
 
@@ -147,7 +146,7 @@ int rand(void)
     return randSeed & 0x7fff;
 }
 
-double atof(const char* string)
+double atof(const char *string)
 {
     float sign;
     float value;
@@ -224,7 +223,7 @@ double atof(const char* string)
     return value * sign;
 }
 
-double _atof(const char** stringPtr)
+double _atof(const char **stringPtr)
 {
     const char* string;
     float       sign;
@@ -301,31 +300,31 @@ double _atof(const char** stringPtr)
     return value * sign;
 }
 
-int atoi(const char* string)
+int atoi(const char *str)
 {
     int sign;
     int value;
     int c;
 
     // skip whitespace
-    while (*string <= ' ')
+    while (*str <= ' ')
     {
-        if (!*string)
+        if (!*str)
         {
             return 0;
         }
-        string++;
+		str++;
     }
 
     // check sign
-    switch (*string)
+    switch (*str)
     {
     case '+':
-        string++;
+		str++;
         sign = 1;
         break;
     case '-':
-        string++;
+		str++;
         sign = -1;
         break;
     default:
@@ -337,7 +336,7 @@ int atoi(const char* string)
     value = 0;
     do
     {
-        c = *string++;
+        c = *str++;
         if (c < '0' || c > '9')
         {
             break;
@@ -351,34 +350,34 @@ int atoi(const char* string)
     return value * sign;
 }
 
-int _atoi(const char** stringPtr)
+int _atoi(const char **stringPtr)
 {
     int         sign;
     int         value;
     int         c;
-    const char* string;
+    const char *str;
 
-    string = *stringPtr;
+	str = *stringPtr;
 
     // skip whitespace
-    while (*string <= ' ')
+    while (*str <= ' ')
     {
-        if (!*string)
+        if (!*str)
         {
             return 0;
         }
-        string++;
+        str++;
     }
 
     // check sign
-    switch (*string)
+    switch (*str)
     {
     case '+':
-        string++;
+		str++;
         sign = 1;
         break;
     case '-':
-        string++;
+		str++;
         sign = -1;
         break;
     default:
@@ -390,7 +389,7 @@ int _atoi(const char** stringPtr)
     value = 0;
     do
     {
-        c = *string++;
+        c = *str++;
         if (c < '0' || c > '9')
         {
             break;
@@ -401,7 +400,7 @@ int _atoi(const char** stringPtr)
 
     // not handling 10e10 notation...
 
-    *stringPtr = string;
+    *stringPtr = str;
 
     return value * sign;
 }
@@ -416,7 +415,6 @@ double fabs(double x)
     return x < 0 ? -x : x;
 }
 
-//=========================================================
 
 #define ALT 0x00000001       /* alternate form */
 #define HEXPREFIX 0x00000002 /* add 0x or 0X prefix */
@@ -484,7 +482,7 @@ void AddInt(char** buf_p, int val, int width, int flags)
     *buf_p = buf;
 }
 
-void AddFloat(char** buf_p, float fval, int width, int prec)
+void AddFloat(char **buf_p, float fval, int width, int prec)
 {
     char  text[32];
     int   digits;
@@ -552,10 +550,10 @@ void AddFloat(char** buf_p, float fval, int width, int prec)
     }
 }
 
-void AddString(char** buf_p, char* string, int width, int prec)
+void AddString(char **buf_p, char *string, int width, int prec)
 {
     int   size;
-    char* buf;
+    char *buf;
 
     buf = *buf_p;
 

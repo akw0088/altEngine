@@ -22,7 +22,7 @@
 #define VMF(x) _vmf(args[x])
 
 /** Define endianess of target platform */
-#define Q3VM_LITTLE_ENDIAN
+#define VM_LITTLE_ENDIAN
 
 #undef errno
 

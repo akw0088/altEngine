@@ -1,8 +1,5 @@
-// bg_lib.h -- standard C library replacement routines used by code
-// compiled for the virtual machine
-
-#ifndef BG_LIB_H
-#define BG_LIB_H
+#ifndef VM_STDLIB_H
+#define VM_STDLIB_H
 
 
 #ifdef _MSC_VER
@@ -11,7 +8,7 @@
 #define trap_Printf printf
 #else
 
-typedef int gsize_t;
+typedef int size_t;
 
 typedef char* va_list;
 #define _INTSIZEOF(n) ((sizeof(n) + sizeof(int) - 1) & ~(sizeof(int) - 1))
@@ -34,14 +31,8 @@ typedef char* va_list;
 #define LONG_MAX 2147483647L        /* maximum (signed) long value */
 #define ULONG_MAX 0xffffffffUL      /* maximum unsigned long value */
 
-// Misc functions
-typedef int cmp_t(const void*, const void*);
-void qsort(void* a, gsize_t n, gsize_t es, cmp_t* cmp);
-void srand(unsigned seed);
-int rand(void);
-
 // String functions
-gsize_t strlen(const char* string);
+size_t strlen(const char* string);
 char* strcat(char* strDestination, const char* strSource);
 char* strcpy(char* strDestination, const char* strSource);
 int strcmp(const char* string1, const char* string2);
@@ -59,9 +50,11 @@ int vsprintf(char* buffer, const char* fmt, va_list argptr);
 int sscanf(const char* buffer, const char* fmt, ...);
 
 // Memory functions
-void* memmove(void* dest, const void* src, gsize_t count);
-void* memset(void* dest, int c, gsize_t count);
-void* memcpy(void* dest, const void* src, gsize_t count);
+void* memmove(void* dest, const void* src, size_t count);
+
+// these are traps to real memcpy / memset
+void* memset(void* dest, int c, size_t count);
+void* memcpy(void* dest, const void* src, size_t count);
 
 // Math functions
 int abs(int n);

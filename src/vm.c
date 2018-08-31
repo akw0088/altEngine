@@ -21,9 +21,9 @@
 
 #define MAX_TOKEN_CHARS 1024 /**< max length of an individual token */
 
-#if defined(Q3VM_BIG_ENDIAN) && defined(Q3VM_LITTLE_ENDIAN)
+#if defined(VM_BIG_ENDIAN) && defined(VM_LITTLE_ENDIAN)
 #error "Endianness defined as both big and little"
-#elif defined(Q3VM_BIG_ENDIAN)
+#elif defined(VM_BIG_ENDIAN)
 /** Helper function to swap bytes for the big endian version.
  * @param[in] l Input value
  * @return swapped output value. */
@@ -39,7 +39,7 @@ static ID_INLINE int LongSwap(int l)
     return ((int)b1 << 24) + ((int)b2 << 16) + ((int)b3 << 8) + b4;
 }
 #define LittleLong(x) LongSwap(x)
-#elif defined(Q3VM_LITTLE_ENDIAN)
+#elif defined(VM_LITTLE_ENDIAN)
 #define LittleLong
 #else
 #error "Endianness not defined"
