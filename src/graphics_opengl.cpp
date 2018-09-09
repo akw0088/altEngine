@@ -76,6 +76,21 @@ void Graphics::init(void *param1, void *param2)
 	glBlendFunc(GL_ONE, GL_SRC_ALPHA);
 	glBlendEquation(GL_FUNC_ADD);
 
+	//glEnable(GL_STENCIL_TEST);
+	//glStencilMask(0x00); // disable writes to stencil
+	glClearStencil(0x00); // clear stencil to zero
+	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF
+	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // replace if 0xFF if passes
+
+
+	//disable vsync
+#ifdef OPENGL
+	wglSwapIntervalEXT(0);
+#else
+	glXSwapInterval(0);
+#endif
+
+
 //	float bias = -3.0f;
 	//glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, bias);
 

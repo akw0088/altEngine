@@ -17,6 +17,20 @@
 #define VOICE_SAMPLE_RATE 48000
 #define VOICE_FORMAT	AL_FORMAT_MONO8
 
+#define MAX_DEPTH 6
+
+// Height above desired position we allow a step to occur
+// (Fairly large as forward velocity can put you fairly deep forward)
+#define STAIR_HEIGHT 20.0f
+// Stair position and velocity added when we step up a stair
+// Too much causes bouncing when standing still
+// Too little and we dont walk up steps :)
+#define STAIR_POS	1.00f
+// Too little and we have lots of friction on flat planes
+// Too much causes jumping up stairs
+#define STAIR_VEL	0.25f
+
+
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -51,6 +65,9 @@ public:
 	void post_process(int num_passes, int type);
 	void resize(int width, int height);
 	void fullscreen();
+	void check_pk3_md5sum();
+	void load_q3_shaders();
+	void test_triangle();
 
 	void step(int tick_num);
 	void dynamics();

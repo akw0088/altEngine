@@ -20,26 +20,9 @@
 
 #pragma warning(4:4928) // intellisense bug from my if (1 == sscanf()) line
 
-#define MAX_DEPTH 6
-
-// Height above desired position we allow a step to occur
-// (Fairly large as forward velocity can put you fairly deep forward)
-#define STAIR_HEIGHT 20.0f
-// Stair position and velocity added when we step up a stair
-// Too much causes bouncing when standing still
-// Too little and we dont walk up steps :)
-#define STAIR_POS	1.00f
-// Too little and we have lots of friction on flat planes
-// Too much causes jumping up stairs
-#define STAIR_VEL	0.25f
-
-
-
 
 extern double com_maxfps;
-
 extern const char *models[23];
-
 const char *teams[3] = 
 {
 	"Red",
@@ -135,74 +118,6 @@ Engine::Engine() :
 
 
 
-
-	fov = 50.0f;
-	zNear = 1.0f;
-	zFar = 2001.0f; // zFar - zNear makes nice values
-	inf = true; // above ignored if true
-}
-
-/*
-void set_view_info(vector *loc, angvec *ang);
-void qmap_set_output(char *where, int row);
-
-int qbsp_init()
-{
-QBsp bsp;
-
-vector loc;
-dplane_t pl;
-
-loc.x = 500;
-loc.y = 240;
-loc.z = 100;
-
-pl.dist = 0.0f;
-pl.normal[0] = 0.0f;
-pl.normal[1] = 0.0f;
-pl.normal[2] = 1.0f;
-
-angvec ang;
-
-ang.tx = 0.0f;
-ang.ty = 0.0f;
-ang.tz = 0.0f;
-set_view_info(&loc, &ang);
-
-bsp.load("start.bsp");
-
-
-char *scr_buf = (char *)malloc(320 * 200);
-int scr_row = 320;
-qmap_set_output(scr_buf, scr_row);
-
-bsp.bsp_render_world(&loc, &pl);
-
-FILE *fp = fopen("out.bin", "w");
-fwrite(scr_buf, 320 * 240, 1, fp);
-fclose(fp);
-return 0;
-}
-*/
-
-
-void Engine::init(void *p1, void *p2, char *cmdline)
-{
-	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
-						0.0f, 1.0f, 0.0f, 0.0f,
-						0.0f, 0.0f, 1.0f, 0.0f,
-						0.0f, 0.0f, 0.0f, 1.0f };
-
-	Engine::param1 = p1;
-	Engine::param2 = p2;
-	initialized = true;
-
-
-#ifndef __OBJC__
-	sprintf(voice.server, "%s", "127.0.0.1:65530");
-#endif
-    srand((unsigned int)time(NULL));
-
 	raw_mouse = false;
 	ssao_level = 1.0f;
 	object_level = 1.0f;
@@ -215,8 +130,124 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	enable_terrain = false;
 	enable_planet = false;
 	light_list.reserve(128);
+	enable_stencil = false;
+	enable_map_shadows = false;
+	sensitivity = 1.0f;
+	shadow_light = 107;
+
+#ifndef __OBJC__
+	sprintf(voice.server, "%s", "127.0.0.1:65530");
+#endif
+	srand((unsigned int)time(NULL));
+
+	testObj = 0;
+
+	fov = 50.0f;
+	zNear = 1.0f;
+	zFar = 2001.0f;
+	inf = true;
+
+#ifdef OPENMP
+	omp_set_num_threads(16);
+#endif
+}
+
+void Engine::init(void *p1, void *p2, char *cmdline)
+{
+	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+						0.0f, 1.0f, 0.0f, 0.0f,
+						0.0f, 0.0f, 1.0f, 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f };
+
+	Engine::param1 = p1;
+	Engine::param2 = p2;
+	initialized = true;
+
+	debugf("altEngine2 built %s\n", __DATE__);
 
 	enum_resolutions();
+
+	// load VM code (interpreted C code) will eventually move game logic into it
+	// allows mods without releasing engine code and security as they have limited
+	// function call ability
+	vm_main("media/vm/game.qvm", VM_INIT);
+
+#ifdef G_QUAKE3
+	game = new Quake3();
+#endif
+
+#ifdef OCULUS
+	ovr.init(gfx);
+#endif
+
+	bind_keys();
+
+	identity = ident;
+	projection = ident;
+
+	//visual
+	gfx.init(param1, param2);
+	gfx.clear();
+	gfx.swap();
+	gfx.CreateVertexArrayObject(global_vao);
+	gfx.SelectVertexArrayObject(global_vao);
+
+	// create common vertex / index buffers
+	CreateObjects();
+
+
+	// pk3 file list with md5sum
+	newlinelist("media/pk3list.txt", pk3_list, num_pk3, &pk3list);
+	check_pk3_md5sum();
+
+	// console command list
+	newlinelist("media/cmdlist.txt", cmd_list, num_cmd, &cmdlist);
+
+	// master server ips
+	newlinelist("media/sv_master.txt", netcode.master_list, netcode.num_master, &masterlist);
+
+
+	// texture 0 used when we just need a texture
+	no_tex = load_texture(gfx, "media/notexture.tga", false, false, 0);
+	// particles texture (rockets/grenade smoke)
+	particle_tex = load_texture(gfx, "media/flare.png", false, false, 0);
+
+	// not really used, but for color grading
+	palette1 = load_texture(gfx, "media/palette.png", false, false, 0);
+	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
+
+	// skybox vertex / index buffers (cube or sphere)
+#ifdef SOFTWARE
+	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, false);
+#else
+	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, true);
+#endif
+
+	// player model uses this model for hitbox sizing, the model itself isnt actually shown (and is ugly)
+	thug22 = new Entity();
+	thug22->rigid = new RigidBody(thug22);
+	thug22->model = thug22->rigid;
+	thug22->model->load(gfx, "media/models/thug22/thug22");
+
+	// Scale down so player closer match to q3 model size
+	thug22->model->aabb[0] *= 0.7f;
+	thug22->model->aabb[1] *= 0.7f;
+	thug22->model->aabb[2] *= 0.7f;
+	thug22->model->aabb[3] *= 0.7f;
+	thug22->model->aabb[4] *= 0.7f;
+	thug22->model->aabb[5] *= 0.7f;
+	thug22->model->aabb[6] *= 0.7f;
+	thug22->model->aabb[7] *= 0.7f;
+
+
+	// global shader used for basic shading (menu, fonts, etc)
+	global.init(&gfx);
+	audio.init();
+
+
+
+
+#ifndef __OBJC__
 #ifdef WIN32
 #ifndef DEDICATED
 	WAVEFORMATEX wf;
@@ -230,80 +261,159 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	wf.wBitsPerSample = 16;
 	wf.cbSize = 0;
 
+	// winmm used for voice chat output
 	waveOutOpen((LPHWAVEOUT)&hWaveOut, WAVE_MAPPER, &wf, 0, 0, CALLBACK_NULL);
 	waveOutGetVolume(hWaveOut, &value);
 	menu.data.volume = value / 65535.0f;
-#ifdef OPENGL
-	wglSwapIntervalEXT(0);
 #endif
 #endif
-#else
-	//	glXSwapInterval(0);
-#endif
 
-
-#ifdef OPENGL
-	//glEnable(GL_STENCIL_TEST);
-	//glStencilMask(0x00); // disable writes to stencil
-	glClearStencil(0x00); // clear stencil to zero
-	glStencilFunc(GL_ALWAYS, 0xFF, 0xFF);; // always pass stencil, set to 0xFF
-	glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); // replace if 0xFF if passes
-#endif
-
-	enable_stencil = false;
-	enable_map_shadows = false;
-	sensitivity = 1.0f;
-
-	shadow_light = 107;
-
-	vm_main("media/vm/game.qvm", VM_INIT);
-
-
-#ifdef OPENMP
-	omp_set_num_threads(8);
-#endif
-
-#ifdef G_QUAKE3
-	game = new Quake3();
-#endif
-
-#ifdef G_COMMANDO
-	game = new Commando();
-#endif
-
-#ifdef OCULUS
-	ovr.init(gfx);
+	// voice chat "always on" style
+	voice.init(audio, netcode.qport);
+	audio.capture_start();
 #endif
 
 
-	debugf("altEngine2 built %s\n", __DATE__);
-	bind_keys();
 
-	identity = ident;
-	projection = ident;
+	// Loads doom 1 sounds from WAD file, played during long idle periods
+	// should probably move elsewhere
+	wave_t wave;
+	waveFormat_t format;
+	wave.format = &format;
 
-	//visual
-	gfx.init(param1, param2);
-	gfx.clear();
-	gfx.swap();
-	gfx.CreateVertexArrayObject(global_vao);
-	gfx.SelectVertexArrayObject(global_vao);
-
-	CreateObjects();
-
-	// hash check data files
-	newlinelist("media/cmdlist.txt", cmd_list, num_cmd, &cmdlist);
-	newlinelist("media/pk3list.txt", pk3_list, num_pk3, &pk3list);
-	newlinelist("media/sv_master.txt", netcode.master_list, netcode.num_master, &masterlist);
-
-	std::thread pool[64];
-	/*
-	if ( check_hash(APP_NAME, APP_HASH, hash) == false)
+	int lump_size = 0;
+	//DSSHOTGN
+	//DSDMPAIN
+	char *sound_lump = get_wadfile("media/doom1.wad", "DSTELEPT", &lump_size, &wad);
+	if (sound_lump != NULL)
 	{
-		printf("Program code failed hash check!\n");
-		exit(0);
-	}*/
+		lump_to_wave(sound_lump, lump_size, &wave);
+		audio.load_doom(wave, &doom_sound);
+	}
 
+	// main menu class / font rendering
+	menu.init(&gfx, &audio, pk3_list, num_pk3);
+
+
+	// creates audio sources (was originally per entity, but hit max source limit)
+	for (int i = 0; i < max_sources; i++)
+	{
+		audio_source[i] = audio.create_source(false, false);
+		global_source[i] = audio.create_source(false, true);
+		audio_loop_source[i] = audio.create_source(true, false);
+		global_loop_source[i] = audio.create_source(true, true);
+	}
+
+	// set audio fall off distances
+	set_reference_distance(100.0f);
+
+
+	// initialize game class
+	game->init(this);
+
+	// load menu state machines depending on if demo or full version of pak0.pk3
+	// really only difference is map names available 3 in demo vs 19 or so in full version
+	if (demo)
+	{
+		menu.load("media/newmenu.txt", "media/newstate.txt");
+	}
+	else
+	{
+		menu.load("media/fullmenu.txt", "media/fullstate.txt");
+	}
+
+	// load md5 model (really only loading that zombie soldier guy)
+	printf("Loading md5 models...\n");
+	load_md5();
+
+
+	// frame buffer width and height (renders to texture, which is then scaled to screen on full screen quad)
+	// dont always init with width and height set yet
+	fb_width = (unsigned int)(1024 * res_scale);
+	fb_height = (unsigned int)(1024 * res_scale);
+
+	unsigned int normal_depth;
+
+	// create initial frame buffer
+	gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
+
+	// create frame buffers used for bloom
+	gfx.CreateFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
+	gfx.CreateFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
+
+	// create frame buffers used for screen space ambient occlusion
+	gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
+
+
+	// parse quake 3 shader files .shader
+	load_q3_shaders();
+
+	printf("Done\n");
+
+#ifndef DIRECTX
+	//render menu again for linux
+#ifndef VULKAN
+	// resize again, fixes issue on xwindows
+	gfx.resize(xres,yres);
+#endif
+
+#ifdef WIN32
+	int x, y, bpp, refresh_rate;
+
+	// set resolution in options menu
+	// Note: win10 resolution scaling can downscale you, so tracking monitor res and window res
+	get_resolution(x, y, bpp, refresh_rate);
+	sprintf(menu.data.resolution, "%dx%d %dHz", x, y, refresh_rate);
+	sprintf(menu.data.window, "%dx%d", xres, yres);
+#endif
+	// draw menu
+	menu.render(global);
+	// swap once (cause rendering a menu screen at 200fps is stupid)
+	gfx.swap();
+#endif
+	
+	if (render_mode == MODE_INDIRECT)
+	{
+		// bind frame buffer texture
+		gfx.bindFramebuffer(render_fbo, 2);
+		gfx.resize(fb_width, fb_height);
+		gfx.bindFramebuffer(0);
+	}
+
+#ifdef DEDICATED
+	printf("Dedicated server mode\n");
+	printf("Sending cmdline to console\n");
+	printf("semicolon delimited example:\n;bind 65535;map media/maps/q3tourney2.bsp;\n");
+
+	if (strlen(cmdline) <= 1)
+	{
+		printf("No cmdline set, using default: ;bind 65535;map media/maps/q3tourney2.bsp;\n");
+		cmdline = ";bind 65535;map media/maps/q3tourney2.bsp;";
+	}
+
+	if (p2 != NULL)
+	{
+		char *name = strtok((char *)cmdline, ";");
+		char *cmd = strtok(NULL, ";");
+
+		printf("Binary path: %s\n", name);
+
+		while (cmd != NULL)
+		{
+			printf("Command string: %s\n", cmd);
+			console(cmd);
+			cmd = strtok(NULL, ";");
+		}
+		printf("Finished processing cmdline\n");
+	}
+#endif
+}
+
+
+void Engine::check_pk3_md5sum()
+{
+	std::thread pool[64];
 
 	for (unsigned int i = 0; i < num_pk3; i++)
 	{
@@ -338,114 +448,14 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 				debugf("\n%s failed hash check:\n\t[%s] expected [%.32s]\n", pk3_list[i] + FILE_OFFSET, hash_result[i], pk3_list[i]);
 			}
 		}
-
 	}
-
-	no_tex = load_texture(gfx, "media/notexture.tga", false, false, 0);
-	particle_tex = load_texture(gfx, "media/flare.png", false, false, 0);
-
-	palette1 = load_texture(gfx, "media/palette.png", false, false, 0);
-	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
-
-#ifdef SOFTWARE
-	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, false);
-#else
-	make_skybox(gfx, q3map.skybox_vertex, q3map.skybox_index, q3map.skybox_vbo, q3map.skybox_ibo, true);
-#endif
-
-	thug22 = new Entity();
-	thug22->rigid = new RigidBody(thug22);
-	thug22->model = thug22->rigid;
-	thug22->model->load(gfx, "media/models/thug22/thug22");
-
-	// Scale down so player closer match to q3 model size
-	thug22->model->aabb[0] *= 0.7f;
-	thug22->model->aabb[1] *= 0.7f;
-	thug22->model->aabb[2] *= 0.7f;
-	thug22->model->aabb[3] *= 0.7f;
-	thug22->model->aabb[4] *= 0.7f;
-	thug22->model->aabb[5] *= 0.7f;
-	thug22->model->aabb[6] *= 0.7f;
-	thug22->model->aabb[7] *= 0.7f;
+}
 
 
-
-	global.init(&gfx);
-	audio.init();
-
-
-
-
-#ifndef __OBJC__
-	voice.init(audio, netcode.qport);
-	audio.capture_start();
-#endif
-	wave_t wave;
-	waveFormat_t format;
-	wave.format = &format;
-
-	int lump_size = 0;
-	//DSSHOTGN
-	//DSDMPAIN
-	char *sound_lump = get_wadfile("media/doom1.wad", "DSTELEPT", &lump_size, &wad);
-	if (sound_lump != NULL)
-	{
-		lump_to_wave(sound_lump, lump_size, &wave);
-		audio.load_doom(wave, &doom_sound);
-	}
-
-
-	menu.init(&gfx, &audio, pk3_list, num_pk3);
-
-
-	for (int i = 0; i < max_sources; i++)
-	{
-		audio_source[i] = audio.create_source(false, false);
-		global_source[i] = audio.create_source(false, true);
-		audio_loop_source[i] = audio.create_source(true, false);
-		global_loop_source[i] = audio.create_source(true, true);
-	}
-
-
-	set_reference_distance(100.0f);
-
-
-	game->init(this);
-
-	if (demo)
-	{
-		menu.load("media/newmenu.txt", "media/newstate.txt");
-	}
-	else
-	{
-		menu.load("media/fullmenu.txt", "media/fullstate.txt");
-	}
-
-	testObj = 0;
-
-	printf("Loading md5 models...\n");
-	load_md5();
-
-
-
-	fb_width = (unsigned int)(1024 * res_scale);
-	fb_height = (unsigned int)(1024 * res_scale);
-
-	unsigned int normal_depth;
-
-
-	gfx.CreateFramebuffer(fb_width, fb_height, render_fbo, render_quad, render_depth, render_ndepth, multisample, true);
-
-	gfx.CreateFramebuffer(fb_width, fb_height, mask_fbo, mask_quad, mask_depth, normal_depth, 0, false);
-	gfx.CreateFramebuffer(fb_width, fb_height, blur1_fbo, blur1_quad, blur1_depth, normal_depth, 0, false);
-	gfx.CreateFramebuffer(fb_width, fb_height, blur2_fbo, blur2_quad, blur2_depth, normal_depth, 0, false);
-	gfx.CreateFramebuffer(fb_width, fb_height, ssao_fbo, ssao_quad, ssao_depth, normal_depth, 0, false);
-
-
-
+void Engine::load_q3_shaders()
+{
 	//parse shaders
 	printf("Loading Quake3 shaders...\n");
-//	newlinelist("media/shaderlist.txt", shader_list, num_shader);
 	get_shaderlist_pk3(shader_list, num_shader);
 
 	if (num_shader == 0)
@@ -463,7 +473,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		if (shader_file)
 		{
 			parse_shader(shader_file, surface_list, shader_list[i]);
-			delete [] shader_file;
+			delete[] shader_file;
 		}
 		delete[] shader_list[i];
 		shader_list[i] = NULL;
@@ -510,7 +520,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 						stage->flags.blend_zero_src_color = false;
 						stage->flags.alpha = true;
 					}
-//					surface_list.erase(surface_list.begin() + j);
+					//					surface_list.erase(surface_list.begin() + j);
 				}
 				else if (value == -2)
 				{
@@ -521,79 +531,9 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 			}
 		}
 	}
-
-
-	printf("Done\n");
-
-#ifndef DIRECTX
-	//render menu again for linux
-#ifndef VULKAN
-	gfx.resize(xres,yres);
-#endif
-
-#ifdef WIN32
-	int x, y, bpp, refresh_rate;
-	get_resolution(x, y, bpp, refresh_rate);
-	sprintf(menu.data.resolution, "%dx%d %dHz", x, y, refresh_rate);
-	sprintf(menu.data.window, "%dx%d", xres, yres);
-#endif
-	menu.render(global);
-	gfx.swap();
-#endif
-	
-	if (render_mode == MODE_INDIRECT)
-	{
-		//Setup render to texture
-		gfx.bindFramebuffer(render_fbo, 2);
-		gfx.resize(fb_width, fb_height);
-		gfx.bindFramebuffer(0);
-	}
-
-#ifdef DEDICATED
-	printf("Dedicated server mode\n");
-	printf("Sending cmdline to console\n");
-	printf("semicolon delimited example:\n;bind 65535;map media/maps/q3tourney2.bsp;\n");
-
-	if (strlen(cmdline) <= 1)
-	{
-		printf("No cmdline set, using default: ;bind 65535;map media/maps/q3tourney2.bsp;\n");
-		cmdline = ";bind 65535;map media/maps/q3tourney2.bsp;";
-	}
-
-	if (p2 != NULL)
-	{
-		char *name = strtok((char *)cmdline, ";");
-		char *cmd = strtok(NULL, ";");
-
-		printf("Binary path: %s\n", name);
-
-		while (cmd != NULL)
-		{
-			printf("Command string: %s\n", cmd);
-			console(cmd);
-			cmd = strtok(NULL, ";");
-		}
-		printf("Finished processing cmdline\n");
-	}
-#endif
-
-//	shadowmap.init(&gfx);
-	
-
 }
 
-void Engine::find_path(int *&path, int &path_length, int start_path, int end_path)
-{
-	if (graph.size() == 0)
-	{
-		path_length = 0;
-		return;
-	}
 
-//	printf("Searching for path from node%d to node%d\n", start_path, end_path);
-	graph.astar_path(path, ref, start_path, end_path, &path_length);
-//	print_path(path, path_length, node);
-}
 
 void Engine::load(char *level)
 {
@@ -648,9 +588,6 @@ void Engine::load(char *level)
 	emitter.size = 2.5f;
 	emitter.life_min = 0.5f;
 	emitter.life_range = 5.0f;
-	// max particle testing
-//	emitter.life_min = 50000000000.0f;
-//	emitter.life_range = 50000000000.0f;
 	emitter.gravity = vec3(0.0f, -GRAVITY, 0.0f);
 	emitter.delta_time = 0.008f;
 	emitter.num = 1;
@@ -819,7 +756,9 @@ void Engine::load(char *level)
 	gfx.swap();
 
 	if (hl == false)
+	{
 		q3map.load_textures(gfx, surface_list, pk3_list, num_pk3, menu.data.anisotropic);
+	}
 	menu.delta("loaded", *this);
 	menu.stop();
 	menu.ingame = false;
@@ -885,83 +824,6 @@ void Engine::load_md5()
 	animation[0] = "media/md5/chaingun_stand_fire.md5anim";
 	animation[1] = "media/md5/chaingun_idle.md5anim";
 	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx, 0);
-/*
-	animation[0] = "media/md5/sentry/initial.md5anim";
-	animation[1] = "media/md5/sentry/fold.md5anim";
-	animation[2] = "media/md5/sentry/folded.md5anim";
-	animation[3] = "media/md5/sentry/idle_stand1.md5anim";
-	animation[4] = "media/md5/sentry/range_attack1.md5anim";
-	animation[5] = "media/md5/sentry/range_attackend.md5anim";
-	animation[6] = "media/md5/sentry/range_attackstart.md5anim";
-	animation[7] = "media/md5/sentry/talk_primary.md5anim";
-	animation[8] = "media/md5/sentry/turn_left.md5anim";
-	animation[9] = "media/md5/sentry/turn_right.md5anim";
-	animation[10] = "media/md5/sentry/unfold.md5anim";
-	animation[11] = "media/md5/sentry/walk1.md5anim";
-	animation[12] = "media/md5/sentry/walk1_pain.md5anim";
-	sentry.load("media/md5/sentry/sentry.md5mesh", (char **)animation, 13, gfx);
-
-	animation[0] = "media/md5/sentry/initial.md5anim";
-	animation[1] = "media/md5/sentry/fold.md5anim";
-	animation[2] = "media/md5/sentry/folded.md5anim";
-	animation[3] = "media/md5/sentry/idle_stand1.md5anim";
-	animation[4] = "media/md5/sentry/range_attack1.md5anim";
-	animation[5] = "media/md5/sentry/range_attackend.md5anim";
-	animation[6] = "media/md5/sentry/range_attackstart.md5anim";
-	animation[7] = "media/md5/sentry/talk_primary.md5anim";
-	animation[8] = "media/md5/sentry/turn_left.md5anim";
-	animation[9] = "media/md5/sentry/turn_right.md5anim";
-	animation[10] = "media/md5/sentry/unfold.md5anim";
-	animation[11] = "media/md5/sentry/walk1.md5anim";
-	animation[12] = "media/md5/sentry/walk1_pain.md5anim";
-
-	int i = 0;
-	animation[i++] = "media/md5/zsec_shotgun/af_pose.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crate_up_A.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crate_up_B.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crate_up_C.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crate_up_D.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack_aim.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack_end.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/crouch_range_attack_loop.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/evade_left.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/evade_right.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/leftarmpain.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/lower.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/raise.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/rightarmpain.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/run.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/shotgun_activate_step_right.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/shotgun_crouch_left_pain.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/shotgun_crouch_right_pain.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/shotgun_step_left.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/shotgun_step_right.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/sight.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/stand.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/stand_aim.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/stand_fire.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/walk.md5anim";
-
-	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_A.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_B.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_C.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanleftshotgun_D.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_A.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_B.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_C.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallleanrightshotgun_D.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_A.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_B.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_C.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotleftshotgun_D.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_A.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_B.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_C.md5anim";
-	animation[i++] = "media/md5/zsec_shotgun/wallrotrightshotgun_D.md5anim";
-
-	zsec_shotgun.load("media/md5/zsec_shotgun/zsecshotgun.md5mesh", (char **)animation, i - 1, gfx);
-	*/
 	delete [] animation;
 }
 
@@ -979,39 +841,14 @@ void Engine::render(double last_frametime)
 	gfx.render();
 #else
 #if 0
-	//test triangle
-	vertex_t tVertices[3];
-
-	memset(&tVertices, 0, sizeof(vertex_t) * 3);
-	tVertices[0].position.x = 0.0f;
-	tVertices[0].position.y = 0.5f;
-	tVertices[0].position.z = 0.0f;
-
-
-	tVertices[1].position.x = 0.24f;
-	tVertices[1].position.y = -0.5f;
-	tVertices[1].position.z = 0.0f;
-
-	tVertices[2].position.x = -0.45f;
-	tVertices[2].position.y = -0.5f;
-	tVertices[2].position.z = 0.0f;
-
-	gfx.clear();
-
-	int index[3] = { 0,1,2 };
-	int index_buf = gfx.CreateIndexBuffer(index, 3);
-	int vert_buf = gfx.CreateVertexBuffer(tVertices, 3);
-
-	global.Select();
-	gfx.SelectIndexBuffer(index_buf);
-	gfx.SelectVertexBuffer(vert_buf);
-	gfx.DrawArrayTri(0, 0, 3, 3);
-	gfx.swap();
+	test_triangle();
 #endif
 
 	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
 		return;
 
+
+	// render a quake1 map (simple rendering compared to q3)
 	if (q1map.loaded)
 	{
 		matrix4 transformation;
@@ -1031,6 +868,7 @@ void Engine::render(double last_frametime)
 	}
 
 
+	// render a source engine map (simple rendering compared to q3)
 	if (hlmap.loaded)
 	{
 		matrix4 transformation;
@@ -1053,6 +891,8 @@ void Engine::render(double last_frametime)
 	netcode.server_recv();
 	return;
 #endif
+
+	// read packets from network every frame to prevent excessive buffering
 	if (netcode.server_flag)
 	{
 		netcode.server_recv();
@@ -1062,6 +902,7 @@ void Engine::render(double last_frametime)
 		netcode.client_recv();
 	}
 
+	// indirect render ie: render to texture, then render texture to quad
 	if (render_mode == MODE_INDIRECT)
 	{
 		bool depth_view = false;
@@ -1080,6 +921,7 @@ void Engine::render(double last_frametime)
 			gfx.bindFramebuffer(0);
 		}
 
+		// render see through portal or mirror textures
 		if (enable_portal)
 		{
 			render_portalcamera();
@@ -1122,7 +964,7 @@ void Engine::render(double last_frametime)
 	//	gfx.resize(gfx.width, gfx.height);
 //		render_texture(render_quad, false);
 #else
-		//render's fbo
+		//render to texture
 		render_to_framebuffer(last_frametime);
 #endif
 		gfx.bindFramebuffer(0);
@@ -1131,13 +973,19 @@ void Engine::render(double last_frametime)
 		gfx.clear();
 		gfx.resize(gfx.width, gfx.height);
 
+		// Post processing (bloom, ssao, etc)
 		if ( 1/*spawn == -1 || (player && player->current_light == 0)*/)
 		{
 			// render fbo to fullscreen quad
 			if (enable_ssao)
+			{
 				render_texture(ssao_quad, false);
+			}
 			else
-				render_texture(render_quad, false);
+			{
+				// final quad render
+				render_texture(render_quad, false); 
+			}
 
 			if (enable_postprocess)
 			{
@@ -1154,6 +1002,7 @@ void Engine::render(double last_frametime)
 		}
 		else
 		{
+			// this is for viewing shadowmap color and depth buffers (from light perspective)
 			for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 			{
 
@@ -1194,10 +1043,11 @@ void Engine::render(double last_frametime)
 			else
 				render_texture(testObj, depth_view);
 
-
-
 		}
 	}
+
+
+	// regular forward rendering (eg: directly to video memory, vs render to texture then render to quad)
 	if (render_mode == MODE_FORWARD)
 	{
 		if (enable_stencil == false)
@@ -1220,10 +1070,9 @@ void Engine::render(double last_frametime)
 					menu.render_stringmode(global);
 			}
 			if (menu.console)
+			{
 				menu.render_console(global);
-
-
-
+			}
 		}
 		else
 		{
@@ -1233,6 +1082,7 @@ void Engine::render(double last_frametime)
 			bool zfail = false;
 
 
+			// This is regular forward rendering, but with shadow volumes which require stencil tests
 			if (zpass && enable_stencil)
 			{
 				// Depth PASS Stencil Shadows
@@ -1351,7 +1201,7 @@ void Engine::render(double last_frametime)
 			}
 
 
-			//render menu
+			// render menu
 			if (menu.chatmode == false)
 				game->render_hud(last_frametime);
 			if (menu.ingame)
@@ -1942,7 +1792,7 @@ void Engine::render_scene(bool lights)
 		}
 
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
-		draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
+		//draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
 	}
 
 	if (enable_terrain)
@@ -7116,6 +6966,20 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 }
 
+// A* graph search for bots (only q3tourney2 has nav data currently)
+void Engine::find_path(int *&path, int &path_length, int start_path, int end_path)
+{
+	if (graph.size() == 0)
+	{
+		path_length = 0;
+		return;
+	}
+
+	//	printf("Searching for path from node%d to node%d\n", start_path, end_path);
+	graph.astar_path(path, ref, start_path, end_path, &path_length);
+	//	print_path(path, path_length, node);
+}
+
 void Engine::reload_shaders()
 {
 	mlight2.destroy();
@@ -7255,7 +7119,7 @@ void Engine::enum_resolutions()
 #endif
 }
 
-
+#if 0
 using namespace physics;
 
 void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
@@ -7322,4 +7186,38 @@ void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
 	gfx.DrawArrayTri(0, 0, 6, 4);
 
 
+}
+#endif
+
+
+void Engine::test_triangle()
+{
+	//test triangle for sanity check of renderer backend
+	vertex_t tVertices[3];
+
+	memset(&tVertices, 0, sizeof(vertex_t) * 3);
+	tVertices[0].position.x = 0.0f;
+	tVertices[0].position.y = 0.5f;
+	tVertices[0].position.z = 0.0f;
+
+
+	tVertices[1].position.x = 0.24f;
+	tVertices[1].position.y = -0.5f;
+	tVertices[1].position.z = 0.0f;
+
+	tVertices[2].position.x = -0.45f;
+	tVertices[2].position.y = -0.5f;
+	tVertices[2].position.z = 0.0f;
+
+	gfx.clear();
+
+	int index[3] = { 0,1,2 };
+	int index_buf = gfx.CreateIndexBuffer(index, 3);
+	int vert_buf = gfx.CreateVertexBuffer(tVertices, 3);
+
+	global.Select();
+	gfx.SelectIndexBuffer(index_buf);
+	gfx.SelectVertexBuffer(vert_buf);
+	gfx.DrawArrayTri(0, 0, 3, 3);
+	gfx.swap();
 }
