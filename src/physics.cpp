@@ -1,3 +1,20 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+// So this code is all from Game Physics Cookbook, not too sure if it is copyrighted as it
+// is a book intended for learning, mostly intersection code
+
 #include "physics.h"
 #include <list>
 #include <algorithm>
@@ -7,6 +24,8 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+using namespace physics;
 
 // Floating point comparison function (epsilon issues)
 #define CMP(x, y) \
@@ -1859,7 +1878,7 @@ matrix3 Rotation3x3(float pitch, float yaw, float roll)
 	return ZRotation3(roll) * XRotation3(pitch) * YRotation3(yaw);
 }
 
-class CModel
+class physics::CModel
 {
 protected:
 	mesh_t *content;
@@ -2062,7 +2081,7 @@ public:
 //	Oct tree
 //=============================================================================
 
-void SplitTree(OctreeNode* node, int depth)
+void SplitTree(COctreeNode* node, int depth)
 {
 	if (depth-- <= 0)  // Decrements depth
 	{
@@ -2071,7 +2090,7 @@ void SplitTree(OctreeNode* node, int depth)
 
 	if (node->children == 0)
 	{
-		node->children = new OctreeNode[8];
+		node->children = new COctreeNode[8];
 		vec3 c = aabb_center_model(node->bounds);
 		vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
 
@@ -2125,27 +2144,27 @@ struct OctreeNode;
 class Scene
 {
 protected:
-	std::vector<CModel*> objects;
-	OctreeNode *octree;
+	std::vector<physics::CModel*> objects;
+	COctreeNode *octree;
 public:
-	void AddModel(CModel* model);
-	void RemoveModel(CModel* model);
-	void UpdateModel(CModel* model);
-	std::vector<CModel*> FindChildren(const CModel* model);
+	void AddModel(physics::CModel* model);
+	void RemoveModel(physics::CModel* model);
+	void UpdateModel(physics::CModel* model);
+	std::vector<physics::CModel*> FindChildren(const physics::CModel* model);
 
-	CModel* Raycast(const ray_t &ray);
-	std::vector<CModel*> Query(const sphere_t &sphere);
-	std::vector<CModel*> Query(const aabb_t &aabb);
+	physics::CModel* Raycast(const ray_t &ray);
+	std::vector<physics::CModel*> Query(const sphere_t &sphere);
+	std::vector<physics::CModel*> Query(const aabb_t &aabb);
 	bool Accelerate(const vec3& position, float size);
 
-	void Insert(OctreeNode* node, CModel* model);
-	void Remove(OctreeNode* node, CModel* model);
-	void Update(OctreeNode* node, CModel* model);
+	void Insert(COctreeNode* node, physics::CModel* model);
+	void Remove(COctreeNode* node, physics::CModel* model);
+	void Update(COctreeNode* node, physics::CModel* model);
 
-	CModel* FindClosest(const std::vector<CModel*>& set, const ray_t &ray);
-	CModel* Raycast(OctreeNode* node, const ray_t &ray);
-	std::vector<CModel*> Query(OctreeNode* node, const sphere_t &sphere);
-	std::vector<CModel*> Query(OctreeNode* node, const aabb_t &aabb);
+	physics::CModel* FindClosest(const std::vector<physics::CModel*>& set, const ray_t &ray);
+	physics::CModel* Raycast(COctreeNode* node, const ray_t &ray);
+	std::vector<physics::CModel*> Query(COctreeNode* node, const sphere_t &sphere);
+	std::vector<physics::CModel*> Query(COctreeNode* node, const aabb_t &aabb);
 
 	inline Scene()
 	{
@@ -2178,7 +2197,7 @@ bool Scene::Accelerate(const vec3& position, float size)
 		position.z + size);
 
 	// Construct tree root
-	octree = new OctreeNode();
+	octree = new COctreeNode();
 	//octree->bounds;// = FromMinMax(min, max);
 	octree->children = 0;
 	for (int i = 0, size = objects.size(); i< size; ++i)
@@ -2247,14 +2266,14 @@ std::vector<CModel*> Scene::Query(const sphere_t &sphere)
 	return result;
 }
 
-std::vector<CModel*> Scene::Query(const aabb_t &aabb)
+std::vector<physics::CModel*> Scene::Query(const aabb_t &aabb)
 {
 	if (octree != 0)
 	{
 //		return ::Query(octree, aabb);
 	}
 
-	std::vector<CModel*> result;
+	std::vector<physics::CModel*> result;
 	for (int i = 0, size = objects.size(); i< size; ++i)
 	{
 		obb_t bounds;// = GetOBB(*objects[i]);
@@ -2266,7 +2285,7 @@ std::vector<CModel*> Scene::Query(const aabb_t &aabb)
 	return result;
 }
 
-void Scene::AddModel(CModel* model)
+void Scene::AddModel(physics::CModel* model)
 {
 	if (std::find(objects.begin(), objects.end(), model) != objects.end())
 	{
@@ -2277,19 +2296,19 @@ void Scene::AddModel(CModel* model)
 	objects.push_back(model);
 }
 
-void Scene::RemoveModel(CModel* model)
+void Scene::RemoveModel(physics::CModel* model)
 {
 //	objects.erase(std::remove(objects.begin(), objects.end(), model), objects.end());
 }
 
-void Scene::UpdateModel(CModel* model)
+void Scene::UpdateModel(physics::CModel* model)
 {
 	// Placeholder
 }
 
-std::vector<CModel*> Scene::FindChildren(const CModel* model)
+std::vector<physics::CModel*> Scene::FindChildren(const physics::CModel* model)
 {
-	std::vector<CModel*> result;
+	std::vector<physics::CModel*> result;
 	for (int i = 0, size = objects.size(); i < size; ++i)
 	{
 		if (objects[i] == 0 || objects[i] == model)
@@ -2297,7 +2316,7 @@ std::vector<CModel*> Scene::FindChildren(const CModel* model)
 			continue;
 		}
 
-		CModel* iterator = objects[i]->parent;
+		physics::CModel* iterator = objects[i]->parent;
 		if (iterator != 0)
 		{
 			if (iterator == model)
@@ -2312,9 +2331,9 @@ std::vector<CModel*> Scene::FindChildren(const CModel* model)
 	return result;
 }
 
-CModel* Scene::Raycast(const ray_t &ray)
+physics::CModel* Scene::Raycast(const ray_t &ray)
 {
-	CModel* result = 0;
+	physics::CModel* result = 0;
 	float result_t = -1;
 
 	for (int i = 0, size = objects.size(); i < size; ++i)
@@ -2370,7 +2389,7 @@ std::vector<CModel*> Scene::Query(const aabb_t &aabb)
 }
 */
 
-void Scene::Insert(OctreeNode* node, CModel* model)
+void Scene::Insert(COctreeNode* node, physics::CModel* model)
 {
 	obb_t bounds;// = GetOBB(*model);
 	if (AABB_OBB(node->bounds, bounds))
@@ -2389,11 +2408,11 @@ void Scene::Insert(OctreeNode* node, CModel* model)
 	}
 }
 
-void Scene::Remove(OctreeNode* node, CModel* model)
+void Scene::Remove(COctreeNode* node, physics::CModel* model)
 {
 	if (node->children == 0)
 	{
-		std::vector<CModel*>::iterator it =
+		std::vector<physics::CModel*>::iterator it =
 			std::find(node->models.begin(), node->models.end(), model);
 
 		if (it != node->models.end())
@@ -2410,7 +2429,7 @@ void Scene::Remove(OctreeNode* node, CModel* model)
 	}
 }
 
-void Scene::Update(OctreeNode* node, CModel* model)
+void Scene::Update(COctreeNode* node, CModel* model)
 {
 	Remove(node, model);
 	Insert(node, model);
@@ -2443,7 +2462,7 @@ CModel *Scene::FindClosest(const std::vector<CModel*>& set, const ray_t &ray)
 	return closest;
 }
 
-CModel* Scene::Raycast(OctreeNode* node, const ray_t &ray)
+physics::CModel* Scene::Raycast(COctreeNode* node, const ray_t &ray)
 {
 	raycast_result_t result;
 //	Raycast(node->bounds, ray, &result);
@@ -2457,10 +2476,10 @@ CModel* Scene::Raycast(OctreeNode* node, const ray_t &ray)
 		}
 		else
 		{
-			std::vector<CModel*> results;
+			std::vector<physics::CModel*> results;
 			for (int i = 0; i < 8; ++i)
 			{
-				CModel* result =
+				physics::CModel* result =
 					Raycast(&(node->children[i]), ray);
 				if (result != 0)
 				{
@@ -2473,9 +2492,9 @@ CModel* Scene::Raycast(OctreeNode* node, const ray_t &ray)
 	return 0;
 }
 
-std::vector<CModel*> Scene::Query(OctreeNode* node, const sphere_t &sphere)
+std::vector<physics::CModel*> Scene::Query(COctreeNode* node, const sphere_t &sphere)
 {
-	std::vector<CModel*> result;
+	std::vector<physics::CModel*> result;
 
 	if (SphereAABB(sphere, node->bounds))
 	{
@@ -2494,7 +2513,7 @@ std::vector<CModel*> Scene::Query(OctreeNode* node, const sphere_t &sphere)
 		{
 			for (int i = 0; i < 8; ++i)
 			{
-				std::vector<CModel*> child = Query(&(node->children[i]), sphere);
+				std::vector<physics::CModel*> child = Query(&(node->children[i]), sphere);
 				if (child.size() > 0)
 				{
 					result.insert(result.end(), child.begin(), child.end());
@@ -2505,9 +2524,9 @@ std::vector<CModel*> Scene::Query(OctreeNode* node, const sphere_t &sphere)
 	return result;
 }
 
-std::vector<CModel*> Scene::Query(OctreeNode* node, const aabb_t &aabb)
+std::vector<physics::CModel*> Scene::Query(COctreeNode* node, const aabb_t &aabb)
 {
-	std::vector<CModel*> result;
+	std::vector<physics::CModel*> result;
 
 	if (AABB_AABB(aabb, node->bounds))
 	{
@@ -2526,7 +2545,7 @@ std::vector<CModel*> Scene::Query(OctreeNode* node, const aabb_t &aabb)
 		{
 			for (int i = 0; i < 8; ++i)
 			{
-				std::vector<CModel*> child = Query(&(node->children[i]), aabb);
+				std::vector<physics::CModel*> child = Query(&(node->children[i]), aabb);
 				if (child.size() > 0)
 				{
 					result.insert(result.end(), child.begin(), child.end());

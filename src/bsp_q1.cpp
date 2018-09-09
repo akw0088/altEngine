@@ -1,3 +1,19 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+// originally based on https://nothings.org/ QBSP, heavily changed (his license is public domain)
+
 #include "include.h"
 #include <math.h>
 
@@ -813,7 +829,7 @@ void Q1Bsp::build_face(Graphics &gfx, int face)
 		int mip = 0;
 		get_tmap(&bm, face, data.texinfo[tex].miptex, mip, &u, &v);
 		palette_to_rgb(bm);
-		face_to_tex[face] = gfx.LoadTexture(bm.width, bm.height, 3, GL_RGB, bm.bits, false, 0);
+//		face_to_tex[face] = gfx.LoadTexture(bm.width, bm.height, 3, GL_RGB, bm.bits, false, 0);
 	}
 }
 

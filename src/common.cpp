@@ -1,3 +1,19 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+// This file is really a dumping ground of random C functions
+
 #include "include.h"
 
 #ifdef _DEBUG
@@ -787,10 +803,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		return load_texture(gfx, file_name, clamp, false, anisotropic);
 	}
 
-	char *pBits = NULL;
+	byte *pBits = NULL;
 	if (components == 3)
 	{
-		pBits = tga_24to32(width, height, (char *)bytes, bgr);
+		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
 		components = 5;
 	}
 
@@ -906,10 +922,10 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 #ifndef DEDICATED
-	char *pBits = NULL;
+	byte *pBits = NULL;
 	if (components == 3)
 	{
-		pBits = tga_24to32(width, height, (char *)bytes, bgr);
+		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
 		components = 5;
 	}
 #endif
@@ -955,10 +971,10 @@ void calc_hash(char *filename, char *hash)
 	delete [] data;
 }
 
-char *tga_24to32(int width, int height, char *pBits, bool bgr)
+byte *tga_24to32(int width, int height, byte *pBits, bool bgr)
 {
 	int lImageSize = width * height * 4;
-	char *pNewBits = new char[lImageSize * sizeof(char)];
+	byte *pNewBits = new byte[lImageSize * sizeof(byte)];
 
 	for (int i = 0, j = 0; i < lImageSize; i += 4)
 	{
@@ -1298,9 +1314,9 @@ pixel_t VectorToColor(vec3 &v)
 	memset(&color, 0, sizeof(pixel_t));
 
 	//byte a = 255;
-	char r = (char)(255.0f * v.x);
-	char g = (char)(255.0f * v.y);
-	char b = (char)(255.0f * v.z);
+	byte r = (byte)(255.0f * v.x);
+	byte g = (byte)(255.0f * v.y);
+	byte b = (byte)(255.0f * v.z);
 
 
 	color.r = r;
@@ -1443,7 +1459,7 @@ void read_bitmap(char *filename, int &width, int &height, int **data)
 	if (bitmap.dib.bpp == 24)
 	{
 		int *old = *data;
-		*data = (int *)tga_24to32(width, height, (char *)*data, false);
+		*data = (int *)tga_24to32(width, height, (byte *)*data, false);
 		delete[] old;
 	}
 }

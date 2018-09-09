@@ -1,3 +1,21 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+// Got this going from these two sources: (no copyright)
+//http://www.mralligator.com/q3/
+//http://graphics.cs.brown.edu/games/quake/quake3.html
+
 #include "include.h"
 
 #ifdef _DEBUG
@@ -2005,7 +2023,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 #endif
 #ifdef SOFTWARE
-		char *pBits = tga_24to32(128, 128, (char *)data.LightMaps[i].image, false);
+		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image, false);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false, anisotropic);
 		delete [] pBits;
 #endif

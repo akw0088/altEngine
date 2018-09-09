@@ -1,3 +1,17 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
@@ -189,6 +203,12 @@
 #endif
 
 
+enum {
+		VM_INIT,
+		VM_STEP,
+		VM_DESTROY
+};
+
 int vm_main(char *qvmfile, int caller);
 
 #define G_QUAKE3
@@ -239,6 +259,8 @@ T RoundToNextMultiple(const T a, const T multiple)
 	return ((a + multiple - 1) / multiple) * multiple;
 }
 
+
+// vulkan shaders
 const unsigned char BasicVertexShader[] = {
 	0x3 , 0x2 , 0x23, 0x7 , 0x0 , 0x0 , 0x1 , 0x0 , 0x1 , 0x0 , 0x8 , 0x0 , 0x21,
 	0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x0 , 0x11, 0x0 , 0x2 , 0x0 , 0x1 , 0x0 ,
@@ -405,6 +427,8 @@ const unsigned char TexturedFragmentShader[] = {
 #include "bsp_types_q1.h"
 #include "bsp_types_q2.h"
 
+#include "physics.h"
+
 #include "audio.h"
 #include "frame.h"
 
@@ -465,7 +489,7 @@ void unregister_raw_mouse(HWND hwnd);
 
 
 
-char *tga_24to32(int width, int height, char *pBits, bool bgr);
+byte *tga_24to32(int width, int height, byte *pBits, bool bgr);
 float abs32(float val);
 int abs32(int val);
 

@@ -1,3 +1,19 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+// note some of these defines are from quake 3 releases, but I think a number is not a "derivative work"
+
 namespace q3 {
 
 	// 'Unknown' surface flags pulled from q3map source
@@ -157,7 +173,7 @@ namespace q3 {
 	{
 		int	num_vectors;	// This stores the number of bit-vectors
 		int	vector_size;		// The size of bit-vectors in bytes
-		char	pVecs;		// This holds all of the cluster bits
+		byte	pVecs;		// This holds all of the cluster bits
 	} visData_t;
 
 	typedef struct
@@ -185,9 +201,9 @@ namespace q3 {
 
 	typedef struct
 	{
-		char	ambient[3];	// This is the ambient color in RGB
-		char	directional[3];	// This is the directional color in RGB
-		char	direction[2];	// The direction of the light: [phi,theta] 
+		byte	ambient[3];	// This is the ambient color in RGB
+		byte	directional[3];	// This is the directional color in RGB
+		byte	direction[2];	// The direction of the light: [phi,theta] 
 	} lightgrid_t;
 
 	typedef struct

@@ -1,3 +1,17 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
 #include "include.h"
 
 #ifdef _DEBUG
@@ -242,7 +256,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	shadow_light = 107;
 
-	vm_main("media/vm/game.qvm", 0);
+	vm_main("media/vm/game.qvm", VM_INIT);
 
 
 #ifdef OPENMP
@@ -674,6 +688,7 @@ void Engine::load(char *level)
 	{
 		q3map.generate_meshes(gfx);
 	}
+
 
 	menu.delta("entities", *this);
 	gfx.clear();
@@ -1448,9 +1463,12 @@ void Engine::render_portalcamera()
 		mlight2.Select();
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
 		q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num);
+	
 		render_entities(matrix, portal->portal_projection, false, false, false);
 		render_players(matrix, portal->portal_projection, false, true);
 		gfx.bindFramebuffer(0);
+
+
 		//gfx.SelectShader(0);
 		//gfx.Color(true);
 	}
@@ -1924,6 +1942,7 @@ void Engine::render_scene(bool lights)
 		}
 
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+		draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
 	}
 
 	if (enable_terrain)
@@ -7237,3 +7256,70 @@ void Engine::enum_resolutions()
 }
 
 
+using namespace physics;
+
+void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
+{
+	raycast_result_t result;
+	ray_t ray;
+	matrix4 mvp;
+
+	ray.origin = origin;
+	ray.dir = fwd;
+	vec3 pos;
+
+	Raycast(plane, ray, &result);
+
+	if (result.hit == false)
+		return;
+
+	pos = vec3(0.0f, 50.0f, 0.0f);
+
+	// make point axial to plane (change forward vector and normalze a bunch)
+	vec3 up = camera_frame.up;
+	vec3 forward = plane.normal;
+
+	vec3 right = vec3::crossproduct(forward, up);
+	right.normalize();
+	up = vec3::crossproduct(right, forward);
+	up.normalize();
+	right = vec3::crossproduct(up, forward);
+	right.normalize();
+
+	mvp.m[0] = right.x * 10.0f;
+	mvp.m[1] = up.x;
+	mvp.m[2] = forward.x;
+	mvp.m[3] = 0.0f;
+
+	mvp.m[4] = right.y;
+	mvp.m[5] = up.y * 10.0f;
+	mvp.m[6] = forward.y;
+	mvp.m[7] = 0.0f;
+
+	mvp.m[8] = right.z;
+	mvp.m[9] = up.z;
+	mvp.m[10] = forward.z * 10.0f;
+	mvp.m[11] = 0.0f;
+
+
+	mvp.m[12] = 0.0f;// -right * pos;
+	mvp.m[13] = 0.0f; //-up * pos;
+	mvp.m[14] = 0.0f; //-forward * pos;
+	mvp.m[15] = 1.0f;
+
+//	mvp = identity;
+
+
+
+	mvp = mvp * projection;
+
+
+	global.Select();
+	global.Params(mvp);
+	gfx.SelectTexture(0, no_tex);
+	gfx.SelectIndexBuffer(quad_index);
+	gfx.SelectVertexBuffer(quad_vertex);
+	gfx.DrawArrayTri(0, 0, 6, 4);
+
+
+}

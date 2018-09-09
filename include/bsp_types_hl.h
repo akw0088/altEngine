@@ -1,3 +1,20 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+// a lot of the types comes from here
+// https://developer.valvesoftware.com/wiki/Source_BSP_File_Format
+
 #include "include.h"
 
 #ifndef BSP_TYPES_HL
@@ -8,8 +25,7 @@ namespace hl {
 #define HL_HEADER_LUMPS 64
 #define HL_BSP_HEADER (('P'<<24) + ('S' << 16) + ('B' << 8) + 'V')
 
-	// Reference
-	// https://developer.valvesoftware.com/wiki/Source_BSP_File_Format
+
 
 	enum dlumps
 	{
@@ -157,14 +173,14 @@ namespace hl {
 	typedef struct
 	{
 		unsigned short	planenum;						// the plane number
-		char			side;							// faces opposite to the node's plane direction
-		char			onNode;							// 1 of on node, 0 if in leaf
+		byte			side;							// faces opposite to the node's plane direction
+		byte			onNode;							// 1 of on node, 0 if in leaf
 		int				firstedge;						// index into surfedges
 		short			numedges;						// number of surfedges
 		short			texinfo;						// texture info
 		short			dispinfo;						// displacement info
 		short			surfaceFogVolumeID;				// ?
-		char			styles[4];						// switchable lighting info
+		byte			styles[4];						// switchable lighting info
 		int				lightofs;						// offset into lightmap lump
 		float			area;							// face area in units^2
 		int				LightmapTextureMinsInLuxels[2];	// texture lighting info
@@ -191,7 +207,7 @@ namespace hl {
 
 	typedef struct
 	{
-		char r, g, b;
+		byte r, g, b;
 		signed char exponent;
 	} ColorRGBExp32;
 
@@ -331,10 +347,10 @@ namespace hl {
 	struct dleafambientlighting_t
 	{
 		//	CompressedLightCube	cube;
-		char x;		// fixed point fraction of leaf bounds
-		char y;		// fixed point fraction of leaf bounds
-		char z;		// fixed point fraction of leaf bounds
-		char pad;	// unused
+		byte x;		// fixed point fraction of leaf bounds
+		byte y;		// fixed point fraction of leaf bounds
+		byte z;		// fixed point fraction of leaf bounds
+		byte pad;	// unused
 	};
 
 	struct CompressedLightCube

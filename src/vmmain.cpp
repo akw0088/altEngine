@@ -1,3 +1,9 @@
+// So this is from q3vm, before it had a license added to it
+// Looks like new code based on original quake 3 code
+// Not putting any copyright claims / header on this, but it works pretty good
+//https://github.com/jnz/q3vm/
+
+
 #include "include.h"
 #include "vm.h"
 
