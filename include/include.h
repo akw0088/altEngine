@@ -75,7 +75,6 @@
 	#pragma comment(lib, "wsock32.lib")
 
 	typedef int socklen_t;
-	typedef unsigned char byte;
 
 //#define SHADOWMAPS
 
@@ -489,7 +488,7 @@ void unregister_raw_mouse(HWND hwnd);
 
 
 
-byte *tga_24to32(int width, int height, byte *pBits, bool bgr);
+char *tga_24to32(int width, int height, char *pBits, bool bgr);
 float abs32(float val);
 int abs32(int val);
 

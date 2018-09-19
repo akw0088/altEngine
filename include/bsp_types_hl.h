@@ -173,14 +173,14 @@ namespace hl {
 	typedef struct
 	{
 		unsigned short	planenum;						// the plane number
-		byte			side;							// faces opposite to the node's plane direction
-		byte			onNode;							// 1 of on node, 0 if in leaf
+		char			side;							// faces opposite to the node's plane direction
+		char			onNode;							// 1 of on node, 0 if in leaf
 		int				firstedge;						// index into surfedges
 		short			numedges;						// number of surfedges
 		short			texinfo;						// texture info
 		short			dispinfo;						// displacement info
 		short			surfaceFogVolumeID;				// ?
-		byte			styles[4];						// switchable lighting info
+		char			styles[4];						// switchable lighting info
 		int				lightofs;						// offset into lightmap lump
 		float			area;							// face area in units^2
 		int				LightmapTextureMinsInLuxels[2];	// texture lighting info
@@ -207,7 +207,7 @@ namespace hl {
 
 	typedef struct
 	{
-		byte r, g, b;
+		char r, g, b;
 		signed char exponent;
 	} ColorRGBExp32;
 
@@ -347,10 +347,10 @@ namespace hl {
 	struct dleafambientlighting_t
 	{
 		//	CompressedLightCube	cube;
-		byte x;		// fixed point fraction of leaf bounds
-		byte y;		// fixed point fraction of leaf bounds
-		byte z;		// fixed point fraction of leaf bounds
-		byte pad;	// unused
+		char x;		// fixed point fraction of leaf bounds
+		char y;		// fixed point fraction of leaf bounds
+		char z;		// fixed point fraction of leaf bounds
+		char pad;	// unused
 	};
 
 	struct CompressedLightCube

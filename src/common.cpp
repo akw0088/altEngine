@@ -803,10 +803,10 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		return load_texture(gfx, file_name, clamp, false, anisotropic);
 	}
 
-	byte *pBits = NULL;
+	char *pBits = NULL;
 	if (components == 3)
 	{
-		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
+		pBits = tga_24to32(width, height, (char *)bytes, bgr);
 		components = 5;
 	}
 
@@ -922,10 +922,10 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 #ifndef DEDICATED
-	byte *pBits = NULL;
+	char *pBits = NULL;
 	if (components == 3)
 	{
-		pBits = tga_24to32(width, height, (byte *)bytes, bgr);
+		pBits = tga_24to32(width, height, (char *)bytes, bgr);
 		components = 5;
 	}
 #endif
@@ -971,10 +971,10 @@ void calc_hash(char *filename, char *hash)
 	delete [] data;
 }
 
-byte *tga_24to32(int width, int height, byte *pBits, bool bgr)
+char *tga_24to32(int width, int height, char *pBits, bool bgr)
 {
 	int lImageSize = width * height * 4;
-	byte *pNewBits = new byte[lImageSize * sizeof(byte)];
+	char *pNewBits = new char[lImageSize * sizeof(char)];
 
 	for (int i = 0, j = 0; i < lImageSize; i += 4)
 	{
@@ -1314,9 +1314,9 @@ pixel_t VectorToColor(vec3 &v)
 	memset(&color, 0, sizeof(pixel_t));
 
 	//byte a = 255;
-	byte r = (byte)(255.0f * v.x);
-	byte g = (byte)(255.0f * v.y);
-	byte b = (byte)(255.0f * v.z);
+	char r = (char)(255.0f * v.x);
+	char g = (char)(255.0f * v.y);
+	char b = (char)(255.0f * v.z);
 
 
 	color.r = r;
@@ -1459,7 +1459,7 @@ void read_bitmap(char *filename, int &width, int &height, int **data)
 	if (bitmap.dib.bpp == 24)
 	{
 		int *old = *data;
-		*data = (int *)tga_24to32(width, height, (byte *)*data, false);
+		*data = (int *)tga_24to32(width, height, (char *)*data, false);
 		delete[] old;
 	}
 }

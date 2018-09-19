@@ -2023,7 +2023,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		}
 #endif
 #ifdef SOFTWARE
-		byte *pBits = tga_24to32(128, 128, (byte *)data.LightMaps[i].image, false);
+		char *pBits = tga_24to32(128, 128, (char *)data.LightMaps[i].image, false);
 		lightmap_object[i] = gfx.LoadTexture(128, 128, 4, 4, (void *)data.LightMaps[i].image, false, anisotropic);
 		delete [] pBits;
 #endif
