@@ -156,6 +156,30 @@ struct icmphdr
 #pragma pack(1)
 typedef struct
 {
+	unsigned char ip_v : 4,
+		ip_hl : 4;
+	unsigned char ip_tos;       //1 Byte
+	unsigned short int ip_len;  //2 Byte
+	unsigned short int ip_id;   //2 Byte
+	unsigned short int ip_off;  //2 Byte
+	unsigned char ip_ttl;       //1 Byte
+	unsigned char ip_p;         //1 Byte
+	unsigned short int ip_sum;  //2 Byte
+	unsigned int ip_src;        //4 Byte
+	unsigned int ip_dst;        //4 Byte
+} ipv4_header;
+#pragma pack(8)
+
+typedef struct
+{
+	ipv4_header ipv4;
+	icmphdr icmp;
+	char data[64];
+} icmp_response_t;
+
+#pragma pack(1)
+typedef struct
+{
 	struct icmphdr header;
 	char data[64];
 } echo_t;

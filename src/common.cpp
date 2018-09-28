@@ -3607,7 +3607,7 @@ unsigned short checksum(void *b, int len)
 int ping(char *ip_str)
 {
 	echo_t request;
-	echo_t *response = NULL;
+	icmp_response_t *response = NULL;
 	char buffer[4096];
 	int sock;
 	int attempt = 1;
@@ -3702,11 +3702,11 @@ int ping(char *ip_str)
 		if (FD_ISSET(sock, &read_set))
 		{
 			memset(buffer, 0, 4096);
-			response = (echo_t *)&buffer;
+			response = (icmp_response_t *)&buffer;
 			ret = recvfrom(sock, (char *)response, 4096, 0, (struct sockaddr*)&addr, (socklen_t *)&size);
 			if (ret > 0)
 			{
-				printf("Response received from echo: %c\r\n", response->data[20]);
+				printf("Response received from echo: %c\r\n", response->data[0]);
 				return 0;
 			}
 		}
