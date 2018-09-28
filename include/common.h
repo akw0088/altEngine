@@ -129,4 +129,36 @@ bool get_barycentric(float x, float y,
 	const vec3 &a, const vec3 &b, const vec3 &c,
 	float &lam1, float &lam2, float &lam3);
 
+
+#define ICMP_ECHO 8
+
+struct icmphdr
+{
+	unsigned char type;		/* message type */
+	unsigned char code;		/* type sub-code */
+	unsigned short checksum;
+	union
+	{
+		struct
+		{
+			unsigned short	id;
+			unsigned short	sequence;
+		} echo;			/* echo datagram */
+		unsigned int	gateway;	/* gateway address */
+		struct
+		{
+			unsigned short	__unused;
+			unsigned short	mtu;
+		} frag;			/* path mtu discovery */
+	} un;
+};
+
+#pragma pack(1)
+typedef struct
+{
+	struct icmphdr header;
+	char data[64];
+} echo_t;
+#pragma pack(8)
+
 #endif

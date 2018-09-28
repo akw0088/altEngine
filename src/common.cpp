@@ -3582,3 +3582,133 @@ int split(const vertex_t *poly, int num_vert, const unsigned int *index_array, i
 	}
 	return poly_class;
 }
+
+// 16 bit one's complement
+unsigned short checksum(void *b, int len)
+{
+	unsigned short *buf = (unsigned short *)b;
+	unsigned int sum = 0;
+	unsigned short result;
+
+	for (sum = 0; len > 1; len -= 2)
+	{
+		sum += *buf++;
+	}
+	if (len == 1)
+	{
+		sum += *(unsigned char*)buf;
+	}
+	sum = (sum >> 16) + (sum & 0xFFFF);
+	sum += (sum >> 16);
+	result = ~sum;
+	return result;
+}
+
+int ping(char *ip_str)
+{
+	echo_t request;
+	echo_t *response = NULL;
+	char buffer[4096];
+	int sock;
+	int attempt = 1;
+	struct sockaddr_in addr;
+	struct hostent *hname;
+
+	// convert host to ip
+	hname = gethostbyname(ip_str);
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = hname->h_addrtype;
+	addr.sin_port = 0;
+	addr.sin_addr.s_addr = *(long*)hname->h_addr;
+
+	// get raw socket
+	sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (sock < 0)
+	{
+		perror("socket failed");
+		return -1;
+	}
+
+	while (1)
+	{
+		unsigned int size = sizeof(addr);
+
+		if (attempt > 3)
+		{
+			return -1;
+		}
+
+		printf("Pinging ip %s\n", ip_str);
+
+		memset(&request, 0, sizeof(echo_t));
+		request.header.type = ICMP_ECHO;
+		request.header.un.echo.id = attempt;
+		request.header.un.echo.sequence = attempt;
+
+		for (int i = 0; i < 64; i++)
+		{
+			request.data[i] = attempt + '0';
+		}
+		attempt++;
+
+		request.header.checksum = checksum(&request, sizeof(echo_t));
+		if (sendto(sock, (char *)&request, sizeof(echo_t), 0, (struct sockaddr*)&addr, sizeof(addr)) <= 0)
+		{
+			perror("sendto failed");
+#ifdef WIN32
+			int ret = WSAGetLastError();
+
+			switch (ret)
+			{
+			case WSAETIMEDOUT:
+				printf("Fatal Error: Connection timed out.\n");
+				break;
+			case WSAECONNREFUSED:
+				printf("Fatal Error: Connection refused\n");
+				break;
+			case WSAEHOSTUNREACH:
+				printf("Fatal Error: Router sent ICMP packet (destination unreachable)\n");
+				break;
+			default:
+				printf("Fatal Error: %d\n", ret);
+				break;
+			}
+#endif
+
+			return -2;
+		}
+
+		struct timeval timeout;
+		fd_set read_set;
+
+		FD_ZERO(&read_set);
+		FD_SET(sock, &read_set);
+
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 200000;
+
+		int ret = select(sock + 1, &read_set, NULL, NULL, &timeout);
+		if (ret < 0)
+		{
+			perror("select() failed");
+			attempt--;
+			continue;
+		}
+		else if (ret == 0)
+		{
+			printf("timed out\r\n");
+		}
+
+		if (FD_ISSET(sock, &read_set))
+		{
+			memset(buffer, 0, 4096);
+			response = (echo_t *)&buffer;
+			ret = recvfrom(sock, (char *)response, 4096, 0, (struct sockaddr*)&addr, (socklen_t *)&size);
+			if (ret > 0)
+			{
+				printf("Response received from echo: %c\r\n", response->data[20]);
+				return 0;
+			}
+		}
+	}
+}
