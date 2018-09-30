@@ -2965,7 +2965,7 @@ void convolve_same(const float *signal, unsigned int signal_len,
 }
 
 
-int get_url(char *host, char *path, char *response, int size)
+unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 {
 	const char request[1024] = "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n";
 	struct sockaddr_in	servaddr;
@@ -3042,9 +3042,31 @@ int get_url(char *host, char *path, char *response, int size)
 	send(sock, buffer, strlen(buffer), 0);
 
 	memset(response, 0, size);
-	recv(sock, response, size, 0);
+
+	unsigned int num_read = 0;
+	printf("\n");
+	while (1)
+	{
+		int ret = recv(sock, &response[num_read], size - num_read, 0);
+		printf("Downloaded %d MB\r", num_read / (1024 * 1024));
+		if (ret > 0)
+		{
+			num_read += ret;
+		}
+		else if (ret == 0)
+		{
+			printf("\nDownload complete %d bytes\n", num_read);
+			break;
+		}
+		else
+		{
+			ret = WSAGetLastError();
+
+			break;
+		}
+	}
 	closesocket(sock);
-	return 0;
+	return num_read;
 }
 
 int file_download(char *ip_str, unsigned short int port, char *response, int size, int *download_size, char *file_name)
