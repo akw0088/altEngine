@@ -3044,12 +3044,26 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 	memset(response, 0, size);
 
 	unsigned int num_read = 0;
+#ifdef WIN32
 	unsigned int start = GetTickCount();
+#else
+	unsigned int start = 0;
+	struct timeval tv;
+        gettimeofday(&tv, NULL);
+	start = tv.tv_usec * 1000;
+#endif
 	printf("\n");
 	while (1)
 	{
 		int ret = recv(sock, &response[num_read], size - num_read, 0);
+#ifdef WIN32
 		unsigned int end = GetTickCount();
+#else
+		unsigned int end;
+		
+		gettimeofday(&tv, NULL);
+		end = tv.tv_usec * 1000;
+#endif
 		printf("Downloaded %d MB rate %f mb/s\r", num_read / (1024 * 1024), (num_read / (1024 * 1024)) / ((end - start) / 1000.0f));
 		if (ret > 0)
 		{
@@ -3057,13 +3071,23 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 		}
 		else if (ret == 0)
 		{
-			unsigned int end = GetTickCount();
+#ifdef WIN32
+		unsigned int end = GetTickCount();
+#else
+		unsigned int end;
+		gettimeofday(&tv, NULL);
+		end = tv.tv_usec * 1000;
+#endif
 			printf("\nDownload complete %d bytes %f total time %f average mb/s\n", num_read, (end - start) / 1000.0f, (num_read / (1024 * 1024)) / ((end - start) / 1000.0f));
 			break;
 		}
 		else
 		{
-			ret = WSAGetLastError();
+#ifdef WIN32
+				ret = WSAGetLastError();
+#else
+				perror("recv failed");
+#endif
 
 			break;
 		}
