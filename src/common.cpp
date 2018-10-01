@@ -3044,18 +3044,21 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 	memset(response, 0, size);
 
 	unsigned int num_read = 0;
+	unsigned int start = GetTickCount();
 	printf("\n");
 	while (1)
 	{
 		int ret = recv(sock, &response[num_read], size - num_read, 0);
-		printf("Downloaded %d MB\r", num_read / (1024 * 1024));
+		unsigned int end = GetTickCount();
+		printf("Downloaded %d MB rate %f mb/s\r", num_read / (1024 * 1024), (num_read / (1024 * 1024)) / ((end - start) / 1000.0f));
 		if (ret > 0)
 		{
 			num_read += ret;
 		}
 		else if (ret == 0)
 		{
-			printf("\nDownload complete %d bytes\n", num_read);
+			unsigned int end = GetTickCount();
+			printf("\nDownload complete %d bytes %f total time %f average mb/s\n", num_read, (end - start) / 1000.0f, (num_read / (1024 * 1024)) / ((end - start) / 1000.0f));
 			break;
 		}
 		else
