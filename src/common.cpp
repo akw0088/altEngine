@@ -3107,6 +3107,29 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 	return num_read;
 }
 
+int check_content_length(unsigned char *data, int size, char **filep)
+{
+	char *file = strstr((char *)data, "\r\n\r\n");
+	char *content_length = strstr((char *)data, "Content-Length:");
+	if (file)
+	{
+		file += 4;
+		*filep = file;
+
+		if (content_length)
+		{
+			int expected_size = atoi(content_length + strlen("Content-Length: "));
+			if (size - (file - (char *)data) != expected_size)
+			{
+				printf("content length mismatch got %d bytes, expected %d bytes\r\n", size, expected_size);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 int file_download(char *ip_str, unsigned short int port, char *response, int size, int *download_size, char *file_name)
 {
 	struct sockaddr_in	servaddr;
