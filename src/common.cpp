@@ -2974,6 +2974,15 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 	int ret;
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	// increase rcv buffer for large downloads
+	socklen_t arglen = sizeof(int);
+	unsigned int rcvbuf = 100 * 1024 * 1024; //default 8192
+	setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, sizeof(rcvbuf));
+	printf("Setting SO_RCVBUF to %d\n", rcvbuf);
+	getsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char *)&rcvbuf, &arglen);
+	printf("SO_RCVBUF = %d\n", rcvbuf);
+
 	
 	struct hostent *hp = gethostbyname(host);
 
@@ -3038,10 +3047,11 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 	printf("TCP handshake completed\n");
 
 	memset(buffer, 0, 1024);
+	memset(response, 0, size);
+
 	sprintf(buffer, request, path, host);
 	send(sock, buffer, strlen(buffer), 0);
 
-	memset(response, 0, size);
 
 	unsigned int num_read = 0;
 #ifdef WIN32
@@ -3049,7 +3059,7 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 #else
 	unsigned int start = 0;
 	struct timeval tv;
-        gettimeofday(&tv, NULL);
+	gettimeofday(&tv, NULL);
 	start = tv.tv_usec * 1000;
 #endif
 	printf("\n");
@@ -3064,7 +3074,8 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 		gettimeofday(&tv, NULL);
 		end = tv.tv_usec * 1000;
 #endif
-		printf("Downloaded %d MB rate %f mb/s\r", num_read / (1024 * 1024), (num_read / (1024 * 1024)) / ((end - start) / 1000.0f));
+		float mbs = (num_read / (1024 * 1024)) / ((end - start) / 1000.0f);
+		printf("Downloaded %d MB rate %f mb/s %f mbps\r", num_read / (1024 * 1024), mbs, mbs * 8);
 		if (ret > 0)
 		{
 			num_read += ret;
