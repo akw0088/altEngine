@@ -3795,3 +3795,24 @@ int ping(char *ip_str)
 		}
 	}
 }
+
+
+// old udp printf function
+int uprintf(const char *ip_str, const char *format, ...)
+{
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	struct sockaddr_in sa;
+	char buf[512];
+	va_list vlist;
+
+	va_start(vlist, format);
+	vsprintf(buf, format, vlist);
+	va_end(vlist);
+
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(1234);
+	sa.sin_addr.s_addr = inet_addr(ip_str);
+	sendto(fd, buf, strlen(buf) + 1, 0, (struct sockaddr*)&sa, sizeof(sa));
+
+	return 0;
+}
