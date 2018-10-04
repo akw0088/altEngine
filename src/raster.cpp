@@ -18,6 +18,16 @@
 #define new DEBUG_NEW
 #endif
 
+inline int imin(int x, int y)
+{
+	return y ^ ((x ^ y) & -(x < y));
+}
+
+inline int imax(int x, int y)
+{
+	return y ^ ((x ^ y) & -(x > y));
+}
+
 void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts)
@@ -1251,10 +1261,10 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 //		return;
 //	}
 
-	int max_x = MAX(x1, MAX(x2, x3));
-	int min_x = MIN(x1, MIN(x2, x3));
-	int max_y = MAX(y1, MAX(y2, y3));
-	int min_y = MIN(y1, MIN(y2, y3));
+	int max_x = imax(x1, imax(x2, x3));
+	int min_x = imin(x1, imin(x2, x3));
+	int max_y = imax(y1, imax(y2, y3));
+	int min_y = imin(y1, imin(y2, y3));
 
 	if (min_x < minx)
 		min_x = minx;
