@@ -723,6 +723,16 @@ inline float guessSqrt(float x)
 	return *(float*)&i;
 }
 
+int imin(int x, int y)
+{
+	return y ^ ((x ^ y) & -(x < y));
+}
+
+int imax(int x, int y)
+{
+	return y ^ ((x ^ y) & -(x > y));
+}
+
 #define NUM_ITERATIONS 2
 float newtonSqrt(float x)
 {
