@@ -3816,3 +3816,79 @@ int uprintf(const char *ip_str, const char *format, ...)
 
 	return 0;
 }
+
+void make_tetrahedron(Graphics &gfx, int &ibo, int &vbo)
+{
+	vec3 p1(0.0f, -1.0f, 2.0f);
+	vec3 p2(1.73205081f, -1.0f, -1.0f);
+	vec3 p3(-1.73205081f, -1.0f, -1.0f);
+	vec3 p4(0.0f, 2.0f, 0.0f);
+
+	vertex_t vertex_array[12];
+
+
+	memset(vertex_array, 0, sizeof(vec3) * 12);
+	vertex_array[0].position = p1;
+	vertex_array[1].position = p2;
+	vertex_array[2].position = p3;
+	vec3 normal = vec3::crossproduct(p2 - p1, p3 - p1);
+	vertex_array[0].normal = normal;
+	vertex_array[2].normal = normal;
+	vertex_array[3].normal = normal;
+
+	// need to verify texcoords
+	vertex_array[0].texCoord0 = vec2(0.0f, 0.0f);
+	vertex_array[1].texCoord0 = vec2(1.0f, 1.0f);
+	vertex_array[2].texCoord0 = vec2(1.0f, 0.0f);
+
+
+
+	vertex_array[3].position = p1;
+	vertex_array[4].position = p3;
+	vertex_array[5].position = p4;
+	normal = vec3::crossproduct(p3 - p1, p4 - p1);
+	vertex_array[3].normal = normal;
+	vertex_array[4].normal = normal;
+	vertex_array[5].normal = normal;
+
+	// need to verify texcoords
+	vertex_array[3].texCoord0 = vec2(0.0f, 0.0f);
+	vertex_array[4].texCoord0 = vec2(1.0f, 1.0f);
+	vertex_array[5].texCoord0 = vec2(1.0f, 0.0f);
+
+
+	vertex_array[6].position = p1;
+	vertex_array[7].position = p4;
+	vertex_array[8].position = p2;
+	normal = vec3::crossproduct(p4 - p1, p2 - p1);
+	vertex_array[6].normal = normal;
+	vertex_array[7].normal = normal;
+	vertex_array[8].normal = normal;
+
+	// need to verify texcoords
+	vertex_array[6].texCoord0 = vec2(0.0f, 0.0f);
+	vertex_array[7].texCoord0 = vec2(1.0f, 1.0f);
+	vertex_array[8].texCoord0 = vec2(1.0f, 0.0f);
+
+
+	vertex_array[9].position = p2;
+	vertex_array[10].position = p4;
+	vertex_array[11].position = p3;
+	normal = vec3::crossproduct(p4 - p2, p3 - p2);
+	vertex_array[9].normal = normal;
+	vertex_array[10].normal = normal;
+	vertex_array[11].normal = normal;
+
+	// need to verify texcoords
+	vertex_array[9].texCoord0 = vec2(0.0f, 0.0f);
+	vertex_array[10].texCoord0 = vec2(1.0f, 1.0f);
+	vertex_array[11].texCoord0 = vec2(1.0f, 0.0f);
+
+
+
+	int index_array[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+
+	vbo = gfx.CreateIndexBuffer(index_array, 12);
+	ibo = gfx.CreateVertexBuffer(vertex_array, 12);
+
+}
