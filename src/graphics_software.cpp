@@ -84,7 +84,7 @@ RTYPE thread1(void *num)
 			next = 1;
 		work1[i].idle = 0;
 
-		if (work1[i].param[next].type == BARYCENTRIC)
+		if (work1[i].param[next].type == BARYCENTRIC || work1[i].param[next].type == SPAN)
 		{
 			raster_triangles(
 				work1[i].param[next].type,
@@ -543,7 +543,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 		if (next >= MAX_JOB)
 			next = 1;
 
-		work1[i].param[next].type = BARYCENTRIC;
+		work1[i].param[next].type = SPAN;
 		work1[i].param[next].pixels = pixel[i];
 		work1[i].param[next].zbuffer = zbuff[i];
 		work1[i].param[next].width = width;
@@ -560,7 +560,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 		work1[i].work = next;
 	}
 #else
-	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles(SPAN, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
 #endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;

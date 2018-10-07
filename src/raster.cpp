@@ -982,15 +982,18 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 	float vi;
 	float zi;
 
+	dx = abs32(x2 - x1);
+	if (dx == 1)
+		return;
+
+	dz = (float)(z2 - z1) / dx;
+	du = (float)(u2 - u1) / dx;
+	dv = (float)(v2 - v1) / dx;
+
 	if (x1 > x2)
 	{
-		dx = (x1 - x2);
 		xs = x2;
 		xe = x1;
-
-		dz = (float)(z2 - z1) / dx;
-		du = (float)(u2 - u1) / dx;
-		dv = (float)(v2 - v1) / dx;
 
 		ui = u2 - (int)u2;
 		vi = v2 - (int)v2;
@@ -998,13 +1001,8 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 	}
 	else
 	{
-		dx = (x2 - x1);
 		xs = x1;
 		xe = x2;
-
-		dz = (float)(z2 - z1) / dx;
-		du = (float)(u1 - u2) / dx;
-		dv = (float)(v1 - v2) / dx;
 
 		ui = u1 - (int)u1;
 		vi = v1 - (int)v1;
@@ -1021,16 +1019,13 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 			continue;
 		}
 
-
 		if (zbuffer[x + y1 * width] < zi)
 		{
 			ui += -du;
 			vi += -dv;
 			zi += -dz;
-
 			continue;
 		}
-
 
 		if (ui < 0)
 			ui = 1.0f - ui;
@@ -1162,6 +1157,13 @@ inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, cons
 	}
 }
 
+inline void iswap(int &a, int &b)
+{
+	a ^= b;
+	b ^= a;
+	a ^= b;
+}
+
 void span_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
 	int x1, int y1, float z1, float w1, int c1,
 	int x2, int y2, float z2, float w2, int c2,
@@ -1183,30 +1185,30 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	// sort y bottom to top
 	if (y1 > y2)
 	{
-		SWAP(x1, x2, int);
-		SWAP(y1, y2, int);
-		SWAP(z1, z2, int);
-		SWAP(w1, w2, int);
+		iswap(x1, x2);
+		iswap(y1, y2);
+		SWAP(z1, z2, float);
+		SWAP(w1, w2, float);
 		SWAP(u1, u2, float);
 		SWAP(v1, v2, float);
 	}
 
 	if (y2 > y3)
 	{
-		SWAP(x3, x2, int);
-		SWAP(y3, y2, int);
-		SWAP(z3, z2, int);
-		SWAP(w3, w2, int);
+		iswap(x3, x2);
+		iswap(y3, y2);
+		SWAP(z3, z2, float);
+		SWAP(w3, w2, float);
 		SWAP(u3, u2, float);
 		SWAP(v3, v2, float);
 	}
 
 	if (y1 > y2)
 	{
-		SWAP(x1, x2, int);
-		SWAP(y1, y2, int);
-		SWAP(z1, z2, int);
-		SWAP(w1, w2, int);
+		iswap(x1, x2);
+		iswap(y1, y2);
+		SWAP(z1, z2, float);
+		SWAP(w1, w2, float);
 		SWAP(u1, u2, float);
 		SWAP(v1, v2, float);
 	}
@@ -1231,8 +1233,6 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 
 		float new_u = (u3 - u1) * t + u1;
 		float new_v = -((v3 - v1) * t + v1);
-
-
 
 		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z3, new_x, new_y, z3, c1, u1, v1, u2, v2, new_u, new_v, minx, maxx, miny, maxy);
 		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, new_x, new_y, z2, x3, y3, z3, c1, u2, v2, new_u, new_v, u3, v3, minx, maxx, miny, maxy);
