@@ -3893,7 +3893,7 @@ void make_tetrahedron(Graphics &gfx, int &ibo, int &vbo)
 
 }
 
-int intersect_two_points_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &result)
+int intersect_two_points_plane(plane_t &p, vec3 &a, vec3 &b, vec3 &result)
 {
 	// plane equation
 	// ax + by + cz + d = 0
@@ -3902,16 +3902,16 @@ int intersect_two_points_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &result)
 	// a*(x0 + vx * t) + b*(y0 + vy * t) + c*(z0 + vz * t) + d = 0
 
 	// solve for t
-	// t = a(a*x0 + b*y0 + c*z0 + d) / (a * vx + b * vy + c * vz)
+	// t = (d + a*origin + b*origin + c*origin) / (a*dir + b*dir + c*dir)
 
-	vec3 origin = vec3(a);
-	vec3 dir = vec3(b.x - a.x, b.y - a.y, b.z - a.z );
+	vec3 origin = a;
+	vec3 dir = b - a;
 
 	float denom = (p.normal * dir);
 	if (denom == 0.0f)
 		return -1;
 
-	float t = p.normal.x * (origin * p.normal + p.d) / denom;
+	float t = (origin * p.normal + p.d) / denom;
 
 	result = vec4(origin + dir * t, 1.0f);
 
@@ -3919,15 +3919,15 @@ int intersect_two_points_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &result)
 }
 
 
-// using vec4, but treating as vec3 (w should just b 1.0f)
-int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result)
+int intersect_triangle_plane(plane_t &p, vec3 &a, vec3 &b, vec3 &c, vec3 *result)
 {
 	// classify points that are out of plane
 	inside_t inside;
 	
-	inside.bit.a_in = (p.normal * a + p.d >= 0);
-	inside.bit.b_in = (p.normal * b + p.d >= 0);
-	inside.bit.c_in = (p.normal * b + p.d >= 0);
+	inside.dword = 0;
+	inside.bit.a_in = (p.normal * a - p.d < 0);
+	inside.bit.b_in = (p.normal * b - p.d < 0);
+	inside.bit.c_in = (p.normal * c - p.d < 0);
 
 	// all points inside plane, early exit
 	if (inside.dword == 3)
@@ -3942,7 +3942,7 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 		// easy case, one triangle, two points move in
 		if (inside.bit.a_in)
 		{
-			vec4 temp;
+			vec3 temp;
 
 			intersect_two_points_plane(p, a, b, temp);
 			b = temp;
@@ -3950,10 +3950,9 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 			intersect_two_points_plane(p, a, c, temp);
 			c = temp;
 		}
-
-		if (inside.bit.b_in)
+		else if (inside.bit.b_in)
 		{
-			vec4 temp;
+			vec3 temp;
 
 			intersect_two_points_plane(p, b, a, temp);
 			a = temp;
@@ -3961,10 +3960,9 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 			intersect_two_points_plane(p, b, c, temp);
 			c = temp;
 		}
-
-		if (inside.bit.c_in)
+		else if (inside.bit.c_in)
 		{
-			vec4 temp;
+			vec3 temp;
 
 			intersect_two_points_plane(p, c, a, temp);
 			a = temp;
@@ -3980,8 +3978,8 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 
 	if (inside.bit.a_in == 0)
 	{
-		vec4 ba;
-		vec4 ca;
+		vec3 ba;
+		vec3 ca;
 
 		//  A
 		//   /\
@@ -3998,12 +3996,11 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 		result[3] = c;
 		result[4] = ba;
 		result[5] = ca;
-	}
-
-	if (inside.bit.b_in == 0)
+	} 
+	else if (inside.bit.b_in == 0)
 	{
-		vec4 ab;
-		vec4 cb;
+		vec3 ab;
+		vec3 cb;
 
 		//  B
 		//   /\
@@ -4022,11 +4019,10 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 		result[4] = ab;
 		result[5] = cb;
 	}
-
-	if (inside.bit.c_in == 0)
+	else if (inside.bit.c_in == 0)
 	{
-		vec4 ac;
-		vec4 bc;
+		vec3 ac;
+		vec3 bc;
 
 		//  C
 		//   /\
@@ -4046,4 +4042,54 @@ int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result
 	}
 
 	return CLIPPED_HARD;
+}
+
+
+
+int test_triangle_clip()
+{
+	plane_t p;
+	vec3 a, b, c;
+	vec3 result[6];
+
+
+	a = vec3(0.0f, 0.0f, 0.0f);
+	b = vec3(0.0f, 1.0f, 0.0f);
+	c = vec3(1.0f, 1.0f, 0.0f);
+
+	p.normal = vec3(0.0f, 1.0f, 0.0f);
+	p.d = 0.5;
+
+
+	int ret = intersect_triangle_plane(p, a, b, c, result);
+
+	switch (ret)
+	{
+	case ALL_IN:
+		printf("all in\r\n");
+		break;
+	case ALL_OUT:
+		printf("all out\r\n");
+		break;
+	case CLIPPED_EASY:
+		printf("clipped easy\r\n");
+		printf("a[%f %f %f]\r\n", a.x, a.y, a.z);
+		printf("b[%f %f %f]\r\n", b.x, b.y, b.z);
+		printf("c[%f %f %f]\r\n", c.x, c.y, c.z);
+		break;
+	case CLIPPED_HARD:
+		printf("clipped hard\r\n");
+		printf("a[%f %f %f]\r\n", result[0].x, result[0].y, result[0].z);
+		printf("b[%f %f %f]\r\n", result[1].x, result[1].y, result[1].z);
+		printf("c[%f %f %f]\r\n", result[2].x, result[2].y, result[2].z);
+		printf("d[%f %f %f]\r\n", result[3].x, result[3].y, result[3].z);
+		printf("e[%f %f %f]\r\n", result[4].x, result[4].y, result[4].z);
+		printf("f[%f %f %f]\r\n", result[5].x, result[5].y, result[5].z);
+
+		break;
+	}
+
+
+
+	return 0;
 }

@@ -209,6 +209,6 @@ typedef union
 	unsigned int dword;
 } inside_t;
 
-int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result);
+int intersect_triangle_plane(plane_t &p, vec3 &a, vec3 &b, vec3 &c, vec3 *result);
 
 #endif
