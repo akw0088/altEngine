@@ -211,6 +211,7 @@ void Graphics::init(void *param1, void *param2)
 	hdcMem = CreateCompatibleDC(hdc);
 	hBitmap = CreateCompatibleBitmap(hdc, width, height);
 	hObject = SelectObject(hdcMem, hBitmap);
+	clip_enabled = true;
 #endif
 #ifdef __linux__
 	display = (Display *)param1;
@@ -241,6 +242,11 @@ void Graphics::init(void *param1, void *param2)
 	zbuffer = new float[width*height * sizeof(float)];
 	clear();
 
+}
+
+void Graphics::clip(int value)
+{
+	clip_enabled = value;
 }
 
 void Graphics::swap()
@@ -543,7 +549,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 		if (next >= MAX_JOB)
 			next = 1;
 
-		work1[i].param[next].type = SPAN;
+		work1[i].param[next].type = BARYCENTRIC;
 		work1[i].param[next].pixels = pixel[i];
 		work1[i].param[next].zbuffer = zbuff[i];
 		work1[i].param[next].width = width;
@@ -560,7 +566,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 		work1[i].work = next;
 	}
 #else
-	raster_triangles(SPAN, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
 #endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;

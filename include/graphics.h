@@ -134,6 +134,10 @@ public:
 	void bindFramebuffer(int fbo, int num_attach = 1);
 	void GetDebugLog();
 
+#ifdef SOFTWARE
+	void clip(int value);
+#endif
+
 
 
 	~Graphics();
@@ -205,6 +209,7 @@ public:
 	#endif
 	vec2	center;
 	int	*pixels;
+	bool clip_enabled;
 #ifdef THREAD
 	int	*pixel[16];
 	float *zbuff[16];

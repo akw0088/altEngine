@@ -36,7 +36,7 @@ typedef enum {
 
 void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
-	const int start_index, const int start_vertex, const int num_index, const int num_verts);
+	const int start_index, const int start_vertex, const int num_index, const int num_verts, bool clip);
 
 void raster_triangles_strip(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,

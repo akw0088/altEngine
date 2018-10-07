@@ -3892,3 +3892,158 @@ void make_tetrahedron(Graphics &gfx, int &ibo, int &vbo)
 	ibo = gfx.CreateVertexBuffer(vertex_array, 12);
 
 }
+
+int intersect_two_points_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &result)
+{
+	// plane equation
+	// ax + by + cz + d = 0
+
+	// plug in parametric line
+	// a*(x0 + vx * t) + b*(y0 + vy * t) + c*(z0 + vz * t) + d = 0
+
+	// solve for t
+	// t = a(a*x0 + b*y0 + c*z0 + d) / (a * vx + b * vy + c * vz)
+
+	vec3 origin = vec3(a);
+	vec3 dir = vec3(b.x - a.x, b.y - a.y, b.z - a.z );
+
+	float denom = (p.normal * dir);
+	if (denom == 0.0f)
+		return -1;
+
+	float t = p.normal.x * (origin * p.normal + p.d) / denom;
+
+	result = vec4(origin + dir * t, 1.0f);
+
+	return 0;
+}
+
+
+// using vec4, but treating as vec3 (w should just b 1.0f)
+int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result)
+{
+	// classify points that are out of plane
+	inside_t inside;
+	
+	inside.bit.a_in = (p.normal * a + p.d >= 0);
+	inside.bit.b_in = (p.normal * b + p.d >= 0);
+	inside.bit.c_in = (p.normal * b + p.d >= 0);
+
+	// all points inside plane, early exit
+	if (inside.dword == 3)
+		return ALL_IN;
+
+	// all points outside plane, early exit
+	if (inside.dword == 0)
+		return ALL_OUT;
+
+	if (inside.dword == 1)
+	{
+		// easy case, one triangle, two points move in
+		if (inside.bit.a_in)
+		{
+			vec4 temp;
+
+			intersect_two_points_plane(p, a, b, temp);
+			b = temp;
+
+			intersect_two_points_plane(p, a, c, temp);
+			c = temp;
+		}
+
+		if (inside.bit.b_in)
+		{
+			vec4 temp;
+
+			intersect_two_points_plane(p, b, a, temp);
+			a = temp;
+
+			intersect_two_points_plane(p, b, c, temp);
+			c = temp;
+		}
+
+		if (inside.bit.c_in)
+		{
+			vec4 temp;
+
+			intersect_two_points_plane(p, c, a, temp);
+			a = temp;
+
+			intersect_two_points_plane(p, c, b, temp);
+			b = temp;
+		}
+
+		return CLIPPED_EASY;
+	}
+
+	// hard case, tip chopped off, two triangles
+
+	if (inside.bit.a_in == 0)
+	{
+		vec4 ba;
+		vec4 ca;
+
+		//  A
+		//   /\
+		//=========
+        //  /  \
+		//C/____\B
+
+		intersect_two_points_plane(p, b, a, ba);
+		result[0] = b;
+		result[1] = ba;
+		result[2] = c;
+
+		intersect_two_points_plane(p, c, a, ca);
+		result[3] = c;
+		result[4] = ba;
+		result[5] = ca;
+	}
+
+	if (inside.bit.b_in == 0)
+	{
+		vec4 ab;
+		vec4 cb;
+
+		//  B
+		//   /\
+		//=========
+		//  /  \
+		//A/____\C
+
+
+		intersect_two_points_plane(p, a, b, ab);
+		result[0] = a;
+		result[1] = ab;
+		result[2] = c;
+
+		intersect_two_points_plane(p, c, b, cb);
+		result[3] = c;
+		result[4] = ab;
+		result[5] = cb;
+	}
+
+	if (inside.bit.c_in == 0)
+	{
+		vec4 ac;
+		vec4 bc;
+
+		//  C
+		//   /\
+		//=========
+		//  /  \
+		//B/____\A
+
+		intersect_two_points_plane(p, a, c, ac);
+		result[0] = a;
+		result[1] = ac;
+		result[2] = b;
+
+		intersect_two_points_plane(p, b, c, bc);
+		result[3] = b;
+		result[4] = ac;
+		result[5] = bc;
+	}
+
+	return CLIPPED_HARD;
+}

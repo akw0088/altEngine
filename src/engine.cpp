@@ -152,6 +152,8 @@ Engine::Engine() :
 #endif
 }
 
+unsigned int get_url(char *host, char *path, char *response, unsigned int size);
+
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
@@ -171,6 +173,16 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	// allows mods without releasing engine code and security as they have limited
 	// function call ability
 	vm_main("media/vm/game.qvm", VM_INIT);
+
+
+//	char *http_response = (char *)malloc(1024 * 1024 * 800);
+	//http://releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
+	//unsigned int num_read = get_url("releases.ubuntu.com", "/18.04.1/ubuntu-18.04.1-desktop-amd64.iso", http_response, 1024 * 1024 * 800);
+	//char *data = strstr(http_response, "\r\n\r\n");
+	//if (data)
+	//{
+//		data += 4;
+//	}
 
 #ifdef G_QUAKE3
 	game = new Quake3();
@@ -4712,6 +4724,7 @@ int Engine::console_general(char *cmd)
 	}
 
 
+
 	if (sscanf(cmd, "toggle %s", &data[0]))
 	{
 		if (strcmp(data, "r_stencil") == 0)
@@ -5364,6 +5377,19 @@ int Engine::console_general(char *cmd)
 	{
 		snprintf(msg, LINE_SIZE, "%s\n", data);
 		menu.print(msg);
+		return 0;
+	}
+
+
+	ret = sscanf(cmd, "clip %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "%s\n", data);
+		menu.print(msg);
+		debugf(msg);
+#ifdef SOFTWARE
+		gfx.clip(atoi(data));
+#endif
 		return 0;
 	}
 

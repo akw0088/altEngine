@@ -185,4 +185,30 @@ typedef struct
 } echo_t;
 #pragma pack(8)
 
+
+typedef enum
+{
+	ALL_IN,
+	ALL_OUT,
+	CLIPPED_EASY,
+	CLIPPED_HARD
+} point_result_t;
+
+typedef struct
+{
+	unsigned int
+		a_in : 1,
+		b_in : 1,
+		c_in : 1,
+		reserved : 29;
+} inside_bit_t;
+
+typedef union
+{
+	inside_bit_t bit;
+	unsigned int dword;
+} inside_t;
+
+int intersect_triangle_plane(plane_t &p, vec4 &a, vec4 &b, vec4 &c, vec4 *result);
+
 #endif

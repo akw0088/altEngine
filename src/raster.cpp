@@ -30,13 +30,61 @@ inline int imax(int x, int y)
 
 void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
-	const int start_index, const int start_vertex, const int num_index, const int num_verts)
+	const int start_index, const int start_vertex, const int num_index, const int num_verts, bool clip)
 {
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
 		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
 		vec4 v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
 		vec4 v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
+
+
+		if (clip)
+		{
+			vec4 result[6];
+			plane_t p1;
+			plane_t p2;
+			plane_t p3;
+			plane_t p4;
+			plane_t p5;
+			plane_t p6;
+
+			p1.normal = vec3(0.0f, 1.0f, 0.0f);
+			p1.d = 1.0f;
+
+			p2.normal = vec3(0.0f, -1.0f, 0.0f);
+			p2.d = 1.0f;
+
+			p3.normal = vec3(1.0f, 0.0f, 0.0f);
+			p3.d = 1.0f;
+
+			p4.normal = vec3(-1.0f, 0.0f, 0.0f);
+			p4.d = 1.0f;
+
+			p5.normal = vec3(0.0f, 0.0f, 1.0f);
+			p5.d = 1.0f;
+
+			p6.normal = vec3(0.0f, 0.0f, -1.0f);
+			p6.d = 1.0f;
+
+			int ret1 = intersect_triangle_plane(p1, v1, v2, v3, result);
+			int ret2 = intersect_triangle_plane(p2, v1, v2, v3, result);
+			int ret3 = intersect_triangle_plane(p3, v1, v2, v3, result);
+			int ret4 = intersect_triangle_plane(p4, v1, v2, v3, result);
+			int ret5 = intersect_triangle_plane(p5, v1, v2, v3, result);
+			int ret6 = intersect_triangle_plane(p6, v1, v2, v3, result);
+
+			if (ret1 == ALL_OUT &&
+				ret2 == ALL_OUT &&
+				ret3 == ALL_OUT &&
+				ret4 == ALL_OUT &&
+				ret5 == ALL_OUT &&
+				ret6 == ALL_OUT)
+			{
+				continue;
+			}
+		}
+
 
 		float s1 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
 		float t1 = vertex_array[start_vertex + index_array[i]].texCoord0.y;
