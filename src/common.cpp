@@ -3893,7 +3893,7 @@ void make_tetrahedron(Graphics &gfx, int &ibo, int &vbo)
 
 }
 
-int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, vec3 &result)
+int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, float &t, vec3 &result)
 {
 	// plane equation
 	// ax + by + cz + d = 0
@@ -3917,12 +3917,8 @@ int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, v
 	if (denom == 0.0f)
 		return -1;
 
-	float t = -(origin * p.normal + p.d) / denom;
-	t = fabs(t);
-	if (t < 0.0f || t > 1.0f)
-		return -1;
-
-	result = origin + dir * fabs(t);
+	t = -(origin * p.normal + p.d) / denom;
+	result = origin + dir * t;
 	return 0;
 }
 
@@ -3931,12 +3927,10 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 {
 	// classify points that are out of plane
 	inside_t inside;
+	float t;
 
 	inside.dword = 0;
-	inside.bit.a_in = (p.normal * a - p.d >= 0);
-	inside.bit.b_in = (p.normal * b - p.d >= 0);
-	inside.bit.c_in = (p.normal * c - p.d >= 0);
-
+	inside.bit.a_in = (p.normal * a - p.d >= 0);	inside.bit.b_in = (p.normal * b - p.d >= 0);	inside.bit.c_in = (p.normal * c - p.d >= 0);
 	// all points inside plane, early exit
 	if (inside.dword == 3)
 		return ALL_IN;
@@ -3952,7 +3946,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		{
 			vec3 temp = a;
 
-			int ret = intersect_two_points_plane(p, a, b, temp);
+			int ret = intersect_two_points_plane(p, a, b, t, temp);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -3963,7 +3957,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 			result[1] = temp;
 
 
-			ret = intersect_two_points_plane(p, a, c, temp);
+			ret = intersect_two_points_plane(p, a, c, t, temp);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -3976,7 +3970,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		{
 			vec3 temp = b;
 
-			int ret = intersect_two_points_plane(p, b, a, temp);
+			int ret = intersect_two_points_plane(p, b, a, t, temp);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -3988,7 +3982,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 			result[1] = b;
 
 
-			ret = intersect_two_points_plane(p, b, c, temp);
+			ret = intersect_two_points_plane(p, b, c, t, temp);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4001,7 +3995,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		{
 			vec3 temp = c;
 
-			int ret = intersect_two_points_plane(p, c, a, temp);
+			int ret = intersect_two_points_plane(p, c, a, t, temp);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4011,7 +4005,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 
 			result[0] = temp;
 
-			ret = intersect_two_points_plane(p, c, b, temp);
+			ret = intersect_two_points_plane(p, c, b, t, temp);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4039,7 +4033,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		//  /  \
 		//C/____\B
 
-		int ret = intersect_two_points_plane(p, a, b, ba);
+		int ret = intersect_two_points_plane(p, a, b, t, ba);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4047,7 +4041,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 			return ALL_IN;
 		}
 
-		ret = intersect_two_points_plane(p, a, c, ca);
+		ret = intersect_two_points_plane(p, a, c, t, ca);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4074,7 +4068,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		//A/____\C
 
 
-		int ret = intersect_two_points_plane(p, a, b, ab);
+		int ret = intersect_two_points_plane(p, a, b, t, ab);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4082,7 +4076,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 			return ALL_IN;
 		}
 
-		ret = intersect_two_points_plane(p, c, b, cb);
+		ret = intersect_two_points_plane(p, c, b, t, cb);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4107,7 +4101,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		//  /  \
 		//B/____\A
 
-		int ret = intersect_two_points_plane(p, a, c, ac);
+		int ret = intersect_two_points_plane(p, a, c, t, ac);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4115,7 +4109,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 			return ALL_IN;
 		}
 
-		ret = intersect_two_points_plane(p, b, c, bc);
+		ret = intersect_two_points_plane(p, b, c, t, bc);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
