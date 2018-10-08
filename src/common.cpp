@@ -3935,7 +3935,7 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 	inside.bit.c_in = (p.normal * c - p.d >= 0);
 
 	// all points inside plane, early exit
-	if (inside.dword == 3)
+	if (inside.dword == 7)
 	{
 		result[0] = a;
 		result[1] = b;
