@@ -37,53 +37,77 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
 		vec4 v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
 		vec4 v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
+		int num_point = 3;
+		vec4 tri[6];
+		bool skip = false;
 
 
-		if (clip)
+		tri[0].x = v1.x;
+		tri[0].y = v1.y;
+		tri[0].z = v1.z;
+		tri[0].w = v1.w;
+		tri[1].x = v2.x;
+		tri[1].y = v2.y;
+		tri[1].z = v2.z;
+		tri[1].w = v2.w;
+		tri[2].x = v3.x;
+		tri[2].y = v3.y;
+		tri[2].z = v3.z;
+		tri[2].w = v3.w;
+
+		if (0)//clip)
 		{
-			vec4 result[6];
-			plane_t p1;
-			plane_t p2;
-			plane_t p3;
-			plane_t p4;
-			plane_t p5;
-			plane_t p6;
+			vec3 result[6];
+			plane_t pnear;
+			plane_t pfar;
 
-			p1.normal = vec3(0.0f, 1.0f, 0.0f);
-			p1.d = 1.0f;
 
-			p2.normal = vec3(0.0f, -1.0f, 0.0f);
-			p2.d = 1.0f;
+			pnear.normal = vec3(0.0f, 0.0f, 1.0f);
+			pnear.d = 1.0f;
 
-			p3.normal = vec3(1.0f, 0.0f, 0.0f);
-			p3.d = 1.0f;
+			pfar.normal = vec3(0.0f, 0.0f, 1.0f);
+			pfar.d = -1.0f;
 
-			p4.normal = vec3(-1.0f, 0.0f, 0.0f);
-			p4.d = 1.0f;
 
-			p5.normal = vec3(0.0f, 0.0f, 1.0f);
-			p5.d = 1.0f;
-
-			p6.normal = vec3(0.0f, 0.0f, -1.0f);
-			p6.d = 1.0f;
-
-			int ret1 = intersect_triangle_plane(p1, v1, v2, v3, result);
-			int ret2 = intersect_triangle_plane(p2, v1, v2, v3, result);
-			int ret3 = intersect_triangle_plane(p3, v1, v2, v3, result);
-			int ret4 = intersect_triangle_plane(p4, v1, v2, v3, result);
-			int ret5 = intersect_triangle_plane(p5, v1, v2, v3, result);
-			int ret6 = intersect_triangle_plane(p6, v1, v2, v3, result);
-
-			if (ret1 == ALL_OUT &&
-				ret2 == ALL_OUT &&
-				ret3 == ALL_OUT &&
-				ret4 == ALL_OUT &&
-				ret5 == ALL_OUT &&
-				ret6 == ALL_OUT)
+			int ret = intersect_triangle_plane(pnear, vec3(v1), vec3(v2), vec3(v3), result);
+			if (ret == ALL_OUT)
 			{
-				continue;
+				skip = true;
 			}
+			
+			tri[0].x = result[0].x;
+			tri[0].y = result[0].y;
+			tri[0].z = result[0].z;
+
+			tri[1].x = result[1].x;
+			tri[1].y = result[1].y;
+			tri[1].z = result[1].z;
+
+			tri[2].x = result[2].x;
+			tri[2].y = result[2].y;
+			tri[2].z = result[2].z;
+
+			if (ret == CLIPPED_HARD)
+			{
+				num_point = 6;
+				tri[3].x = result[3].x;
+				tri[3].y = result[3].y;
+				tri[3].z = result[3].z;
+				tri[3].w = 1.0f;
+				tri[4].x = result[4].x;
+				tri[4].y = result[4].y;
+				tri[4].z = result[4].z;
+				tri[4].w = 1.0f;
+				tri[5].x = result[5].x;
+				tri[5].y = result[5].y;
+				tri[5].z = result[5].z;
+				tri[5].w = 1.0f;
+			}
+
 		}
+
+		if (skip)
+			continue;
 
 
 		float s1 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
@@ -104,69 +128,76 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		if (width <= 1 || height <= 1)
 			break;
 
-		if (v1.w == 0.0f || v2.w == 0.0f || v3.w == 0.0f)
-			continue;
-
 		// perspective divide
-		float inv = 1 / v1.w;
-		v1.x *= inv;
-		v1.y *= inv;
-		v1.z *= inv;
-		inv = 1 / v2.w;
-		v2.x *= inv;
-		v2.y *= inv;
-		v2.z *= inv;
-		inv = 1 / v3.w;
-		v3.x *= inv;
-		v3.y *= inv;
-		v3.z *= inv;
+		for (int j = 0; j < num_point; j += 3)
+		{
+
+			if (tri[j].w == 0.0f || tri[j+1].w == 0.0f || tri[j+2].w == 0.0f)
+			{
+				skip = true;
+				break;
+			}
+
+			float inv = 1 / tri[j].w;
+			tri[j].x *= inv;
+			tri[j].y *= inv;
+			tri[j].z *= inv;
+
+			inv = 1 / tri[j + 1].w;
+			tri[j + 1].x *= inv;
+			tri[j + 1].y *= inv;
+			tri[j + 1].z *= inv;
+			
+			inv = 1 / tri[j + 2].w;
+			tri[j + 2].x *= inv;
+			tri[j + 2].y *= inv;
+			tri[j + 2].z *= inv;
 
 
-		// [-1,1] -> [0,1]
-		v1.x = v1.x * 0.5f + 0.5f;
-		v1.y = v1.y * 0.5f + 0.5f;
-		v1.z = v1.z * 0.5f + 0.5f;
-		v2.x = v2.x * 0.5f + 0.5f;
-		v2.y = v2.y * 0.5f + 0.5f;
-		v2.z = v2.z * 0.5f + 0.5f;
-		v3.x = v3.x * 0.5f + 0.5f;
-		v3.y = v3.y * 0.5f + 0.5f;
-		v3.z = v3.z * 0.5f + 0.5f;
+			// [-1,1] -> [0,1]
+			tri[j].x = tri[j].x * 0.5f + 0.5f;
+			tri[j].y = tri[j].y * 0.5f + 0.5f;
+			tri[j].z = tri[j].z * 0.5f + 0.5f;
+			tri[j + 1].x = tri[j + 1].x * 0.5f + 0.5f;
+			tri[j + 1].y = tri[j + 1].y * 0.5f + 0.5f;
+			tri[j + 1].z = tri[j + 1].z * 0.5f + 0.5f;
+			tri[j + 2].x = tri[j + 2].x * 0.5f + 0.5f;
+			tri[j + 2].y = tri[j + 2].y * 0.5f + 0.5f;
+			tri[j + 2].z = tri[j + 2].z * 0.5f + 0.5f;
 
-		if (v1.z < 0 && v2.z < 0 && v3.z < 0)
+
+			if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
+			{
+				skip = true;
+				break;
+			}
+			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
+			{
+				skip = true;
+				break;
+			}
+
+			// backface cull
+			vec3 a = vec3(tri[j + 1]) - vec3(tri[j]);
+			vec3 b = vec3(tri[j + 2]) - vec3(tri[j]);
+			if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
+			{
+				skip = true;
+				break;
+			}
+
+			//[0,1] -> [0,width]
+			tri[j].x *= width - 1;
+			tri[j].y *= height - 1;
+			tri[j + 1].x *= width - 1;
+			tri[j + 1].y *= height - 1;
+			tri[j + 2].x *= width - 1;
+			tri[j + 2].y *= height - 1;
+		}
+
+		if (skip)
 			continue;
-		if (v1.z > 1.0001f || v2.z > 1.0001f || v3.z > 1.0001f)
-			continue;
 
-		// backface cull
-		vec3 a = vec3(v2) - vec3(v1);
-		vec3 b = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
-			continue;
-
-		//[0,1] -> [0,width]
-		v1.x *= width - 1;
-		v1.y *= height - 1;
-		v2.x *= width - 1;
-		v2.y *= height - 1;
-		v3.x *= width - 1;
-		v3.y *= height - 1;
-
-		int num_point = 3;
-		vec4 tri[3];
-
-		tri[0].x = v1.x;
-		tri[0].y = v1.y;
-		tri[0].z = v1.z;
-		tri[0].w = v1.w;
-		tri[1].x = v2.x;
-		tri[1].y = v2.y;
-		tri[1].z = v2.z;
-		tri[1].w = v2.w;
-		tri[2].x = v3.x;
-		tri[2].y = v3.y;
-		tri[2].z = v3.z;
-		tri[2].w = v3.w;
 #ifdef WIN32
 		try {
 #endif

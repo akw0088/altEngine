@@ -3930,16 +3930,26 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 	float t;
 
 	inside.dword = 0;
-	inside.bit.a_in = (p.normal * a - p.d >= 0);	inside.bit.b_in = (p.normal * b - p.d >= 0);	inside.bit.c_in = (p.normal * c - p.d >= 0);
+	inside.bit.a_in = (p.normal * a - p.d >= 0);
+	inside.bit.b_in = (p.normal * b - p.d >= 0);
+	inside.bit.c_in = (p.normal * c - p.d >= 0);
+
 	// all points inside plane, early exit
 	if (inside.dword == 3)
+	{
+		result[0] = a;
+		result[1] = b;
+		result[2] = c;
 		return ALL_IN;
+	}
 
 	// all points outside plane, early exit
 	if (inside.dword == 0)
+	{
 		return ALL_OUT;
+	}
 
-	if (inside.dword == 1)
+	if (inside.dword == 1 || inside.dword == 2 || inside.dword == 4)
 	{
 		// easy case, one triangle, two points move in
 		if (inside.bit.a_in)
@@ -4027,11 +4037,11 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		vec3 ba = b;
 		vec3 ca = c;
 
-		//  A
-		//   /\
+//  A
+//   /\
 		//=========
-		//  /  \
-		//C/____\B
+//  /  \
+//C/____\B
 
 		int ret = intersect_two_points_plane(p, a, b, t, ba);
 		if (ret != 0)
@@ -4061,11 +4071,11 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		vec3 ab = a;
 		vec3 cb = c;
 
-		//  B
-		//   /\
-		//=========
-		//  /  \
-		//A/____\C
+//  B
+//   /\
+//=========
+//  /  \
+//A/____\C
 
 
 		int ret = intersect_two_points_plane(p, a, b, t, ab);
@@ -4095,11 +4105,11 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 		vec3 ac = a;
 		vec3 bc = b;
 
-		//  C
-		//   /\
-		//=========
-		//  /  \
-		//B/____\A
+//  C
+//   /\
+//=========
+//  /  \
+//B/____\A
 
 		int ret = intersect_two_points_plane(p, a, c, t, ac);
 		if (ret != 0)
