@@ -3930,9 +3930,10 @@ int intersect_triangle_plane(const plane_t &p, const vec3 &a, const vec3 &b, con
 	float t;
 
 	inside.dword = 0;
-	inside.bit.a_in = (p.normal * a - p.d >= 0);
-	inside.bit.b_in = (p.normal * b - p.d >= 0);
-	inside.bit.c_in = (p.normal * c - p.d >= 0);
+	inside.bit.a_in = (p.normal * a + p.d >= 0);
+	inside.bit.b_in = (p.normal * b + p.d >= 0);
+	inside.bit.c_in = (p.normal * c + p.d >= 0);
+
 
 	// all points inside plane, early exit
 	if (inside.dword == 7)
