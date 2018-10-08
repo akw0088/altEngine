@@ -55,24 +55,86 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
 
-		if (0)//clip)
+		if (clip)
 		{
 			vec3 result[6];
 			plane_t pnear;
 			plane_t pfar;
 
+			plane_t pleft;
+			plane_t pright;
+
+			plane_t ptop;
+			plane_t pbottom;
+			int ret = 0;
+
 
 			pnear.normal = vec3(0.0f, 0.0f, 1.0f);
-			pnear.d = 1.0f;
+			pnear.d = -1.0f;
 
 			pfar.normal = vec3(0.0f, 0.0f, 1.0f);
-			pfar.d = -1.0f;
+			pfar.d = 1.0f;
 
+			pleft.normal = vec3(1.0f, 0.0f, 0.0f);
+			pleft.d = 1.0f;
 
-			int ret = intersect_triangle_plane(pnear, vec3(v1), vec3(v2), vec3(v3), result);
+			pright.normal = vec3(1.0f, 0.0f, 0.0f);
+			pright.d = -2.0f;
+
+			ptop.normal = vec3(0.0f, 1.0f, 0.0f);
+			ptop.d = -2.0f;
+
+			pbottom.normal = vec3(0.0f, 1.0f, 0.0f);
+			pbottom.d = 2.0f;
+
+			/*
+			ret = intersect_triangle_plane(pleft, vec3(v1), vec3(v2), vec3(v3), result);
 			if (ret == ALL_OUT)
 			{
 				skip = true;
+			}
+			*/
+
+			/*
+			ret = intersect_triangle_plane(pright, vec3(v1), vec3(v2), vec3(v3), result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+			}
+			*/
+			/*
+			ret = intersect_triangle_plane(ptop, vec3(v1), vec3(v2), vec3(v3), result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+			}
+
+			ret = intersect_triangle_plane(pbottom, vec3(v1), vec3(v2), vec3(v3), result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+			}
+			*/
+
+			ret = intersect_triangle_plane(pfar, vec3(v1), vec3(v2), vec3(v3), result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			memset(&result, 0, sizeof(result));
+			ret = intersect_triangle_plane(pnear, vec3(v1), vec3(v2), vec3(v3), result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			if (ret == CLIPPED_EASY)
+			{
+				skip = true;
+				continue;
 			}
 			
 			tri[0].x = result[0].x;
@@ -166,11 +228,14 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			tri[j + 2].z = tri[j + 2].z * 0.5f + 0.5f;
 
 
+			// todo, these two clip near and far, need to eliminate when other clipping works nice
+			/*
 			if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
 			{
 				skip = true;
 				break;
 			}
+			*/
 			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
 			{
 				skip = true;
