@@ -108,7 +108,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 
 	map_vertex = new vertex_t[data.num_verts];
 	texdata_to_obj = new int[data.num_texdata];
-	for (int i = 0; i < data.num_texdata; i++)
+	for (unsigned int i = 0; i < data.num_texdata; i++)
 	{
 		texdata_to_obj[i] = 0;
 	}
@@ -117,7 +117,7 @@ int HLBsp::load(Graphics &gfx, char *map)
 	face_lightmap = new vec2[data.num_faces];
 	face_lightmap_obj = new int[data.num_faces];
 
-	for (int i = 0; i < data.num_faces; i++)
+	for (unsigned int i = 0; i < data.num_faces; i++)
 	{
 		face_start_index[i] = 0;
 		face_count[i] = 0;
@@ -611,8 +611,8 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 		int width = (int)(ceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
 		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
-		face_lightmap[i].x = width;
-		face_lightmap[i].y = height;
+		face_lightmap[i].x = (float)width;
+		face_lightmap[i].y = (float)height;
 
 
 

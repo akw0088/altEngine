@@ -209,7 +209,7 @@ public:
 	#endif
 	vec2	center;
 	int	*pixels;
-	bool clip_enabled;
+	int clip_enabled;
 #ifdef THREAD
 	int	*pixel[16];
 	float *zbuff[16];

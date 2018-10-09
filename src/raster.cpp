@@ -37,8 +37,19 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
 		vec4 v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
 		vec4 v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
+
+		vertex_t v1v = vertex_array[start_vertex + index_array[i]];;
+		vertex_t v2v = vertex_array[start_vertex + index_array[i + 1]];;
+		vertex_t v3v = vertex_array[start_vertex + index_array[i + 2]];;
+
+		v1v.position = v1;
+		v2v.position = v2;
+		v3v.position = v3;
+
 		int num_point = 3;
 		vec4 tri[6];
+		vec2 tri_uv[6];
+		vec2 tri_luv[6];
 		bool skip = false;
 
 
@@ -55,76 +66,50 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
 
+		tri_uv[0] = vertex_array[start_vertex + index_array[i]].texCoord0;
+		tri_uv[1] = vertex_array[start_vertex + index_array[i + 1]].texCoord0;
+		tri_uv[2] = vertex_array[start_vertex + index_array[i + 2]].texCoord0;
+
+		tri_luv[0] = vertex_array[start_vertex + index_array[i]].texCoord1;
+		tri_luv[1] = vertex_array[start_vertex + index_array[i + 1]].texCoord1;
+		tri_luv[2] = vertex_array[start_vertex + index_array[i + 2]].texCoord1;
+
 		if (clip)
 		{
-			vec3 result[6];
-			plane_t pnear;
-			plane_t pfar;
+			vertex_t result[6];
+			plane_t xp;
+			plane_t xn;
 
-			plane_t pleft;
-			plane_t pright;
+			plane_t yp;
+			plane_t yn;
 
-			plane_t ptop;
-			plane_t pbottom;
+			plane_t zp;
+			plane_t zn;
 			int ret = 0;
 
 
-			pnear.normal = vec3(0.0f, 0.0f, 1.0f);
-			pnear.d = -1.0f;
+			float plane_d = 1.0f;
 
-			pfar.normal = vec3(0.0f, 0.0f, 1.0f);
-			pfar.d = 1.0f;
+			xp.normal = vec3(1.0f, 0.0f, 0.0f);
+			xp.d = plane_d;
 
-			pleft.normal = vec3(1.0f, 0.0f, 0.0f);
-			pleft.d = 1.0f;
+			xn.normal = vec3(-1.0f, 0.0f, 0.0f);
+			xn.d = plane_d;
 
-			pright.normal = vec3(1.0f, 0.0f, 0.0f);
-			pright.d = -2.0f;
+			yp.normal = vec3(0.0f, 1.0f, 0.0f);
+			yp.d = plane_d;
 
-			ptop.normal = vec3(0.0f, 1.0f, 0.0f);
-			ptop.d = -2.0f;
+			yn.normal = vec3(0.0f, -1.0f, 0.0f);
+			yn.d = plane_d;
 
-			pbottom.normal = vec3(0.0f, 1.0f, 0.0f);
-			pbottom.d = 2.0f;
+			zp.normal = vec3(0.0f, 0.0f, 1.0f);
+			zp.d = plane_d;
 
-			/*
-			ret = intersect_triangle_plane(pleft, vec3(v1), vec3(v2), vec3(v3), result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-			}
-			*/
+			zn.normal = vec3(0.0f, 0.0f, -1.0f);
+			zn.d = plane_d;
 
-			/*
-			ret = intersect_triangle_plane(pright, vec3(v1), vec3(v2), vec3(v3), result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-			}
-			*/
-			/*
-			ret = intersect_triangle_plane(ptop, vec3(v1), vec3(v2), vec3(v3), result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-			}
 
-			ret = intersect_triangle_plane(pbottom, vec3(v1), vec3(v2), vec3(v3), result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-			}
-			*/
-
-			ret = intersect_triangle_plane(pfar, vec3(v1), vec3(v2), vec3(v3), result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			memset(&result, 0, sizeof(result));
-			ret = intersect_triangle_plane(pnear, vec3(v1), vec3(v2), vec3(v3), result);
+			ret = intersect_triangle_plane(xp, v1v, v2v, v3v, result);
 			if (ret == ALL_OUT)
 			{
 				skip = true;
@@ -133,59 +118,320 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 			if (ret == CLIPPED_EASY)
 			{
-				skip = true;
-				continue;
+				tri[0].x = result[0].position.x;
+				tri[0].y = result[0].position.y;
+				tri[0].z = result[0].position.z;
+				tri_uv[0] = result[0].texCoord0;
+				tri_luv[0] = result[0].texCoord1;
+
+				tri[1].x = result[1].position.x;
+				tri[1].y = result[1].position.y;
+				tri[1].z = result[1].position.z;
+				tri_uv[1] = result[1].texCoord0;
+				tri_luv[1] = result[1].texCoord1;
+
+				tri[2].x = result[2].position.x;
+				tri[2].y = result[2].position.y;
+				tri[2].z = result[2].position.z;
+				tri_uv[2] = result[2].texCoord0;
+				tri_luv[2] = result[2].texCoord1;
 			}
-			
-			tri[0].x = result[0].x;
-			tri[0].y = result[0].y;
-			tri[0].z = result[0].z;
-
-			tri[1].x = result[1].x;
-			tri[1].y = result[1].y;
-			tri[1].z = result[1].z;
-
-			tri[2].x = result[2].x;
-			tri[2].y = result[2].y;
-			tri[2].z = result[2].z;
 
 			if (ret == CLIPPED_HARD)
 			{
 				num_point = 6;
-				tri[3].x = result[3].x;
-				tri[3].y = result[3].y;
-				tri[3].z = result[3].z;
+				tri[3].x = result[3].position.x;
+				tri[3].y = result[3].position.y;
+				tri[3].z = result[3].position.z;
 				tri[3].w = 1.0f;
-				tri[4].x = result[4].x;
-				tri[4].y = result[4].y;
-				tri[4].z = result[4].z;
+				tri_uv[3] = result[3].texCoord0;
+				tri_luv[3] = result[3].texCoord1;
+
+				tri[4].x = result[4].position.x;
+				tri[4].y = result[4].position.y;
+				tri[4].z = result[4].position.z;
 				tri[4].w = 1.0f;
-				tri[5].x = result[5].x;
-				tri[5].y = result[5].y;
-				tri[5].z = result[5].z;
+				tri_uv[4] = result[4].texCoord0;
+				tri_luv[4] = result[4].texCoord1;
+
+				tri[5].x = result[5].position.x;
+				tri[5].y = result[5].position.y;
+				tri[5].z = result[5].position.z;
 				tri[5].w = 1.0f;
+				tri_uv[5] = result[5].texCoord0;
+				tri_luv[5] = result[5].texCoord1;
+			}
+
+			ret = intersect_triangle_plane(xn, v1v, v2v, v3v, result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			if (ret == CLIPPED_EASY)
+			{
+				tri[0].x = result[0].position.x;
+				tri[0].y = result[0].position.y;
+				tri[0].z = result[0].position.z;
+				tri_uv[0] = result[0].texCoord0;
+				tri_luv[0] = result[0].texCoord1;
+
+				tri[1].x = result[1].position.x;
+				tri[1].y = result[1].position.y;
+				tri[1].z = result[1].position.z;
+				tri_uv[1] = result[1].texCoord0;
+				tri_luv[1] = result[1].texCoord1;
+
+				tri[2].x = result[2].position.x;
+				tri[2].y = result[2].position.y;
+				tri[2].z = result[2].position.z;
+				tri_uv[2] = result[2].texCoord0;
+				tri_luv[2] = result[2].texCoord1;
+			}
+
+			if (ret == CLIPPED_HARD)
+			{
+				num_point = 6;
+				tri[3].x = result[3].position.x;
+				tri[3].y = result[3].position.y;
+				tri[3].z = result[3].position.z;
+				tri[3].w = 1.0f;
+				tri_uv[3] = result[3].texCoord0;
+				tri_luv[3] = result[3].texCoord1;
+
+				tri[4].x = result[4].position.x;
+				tri[4].y = result[4].position.y;
+				tri[4].z = result[4].position.z;
+				tri[4].w = 1.0f;
+				tri_uv[4] = result[4].texCoord0;
+				tri_luv[4] = result[4].texCoord1;
+
+				tri[5].x = result[5].position.x;
+				tri[5].y = result[5].position.y;
+				tri[5].z = result[5].position.z;
+				tri[5].w = 1.0f;
+				tri_uv[5] = result[5].texCoord0;
+				tri_luv[5] = result[5].texCoord1;
+			}
+
+			ret = intersect_triangle_plane(yp, v1v, v2v, v3v, result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			if (ret == CLIPPED_EASY)
+			{
+				tri[0].x = result[0].position.x;
+				tri[0].y = result[0].position.y;
+				tri[0].z = result[0].position.z;
+				tri_uv[0] = result[0].texCoord0;
+				tri_luv[0] = result[0].texCoord1;
+
+				tri[1].x = result[1].position.x;
+				tri[1].y = result[1].position.y;
+				tri[1].z = result[1].position.z;
+				tri_uv[1] = result[1].texCoord0;
+				tri_luv[1] = result[1].texCoord1;
+
+				tri[2].x = result[2].position.x;
+				tri[2].y = result[2].position.y;
+				tri[2].z = result[2].position.z;
+				tri_uv[2] = result[2].texCoord0;
+				tri_luv[2] = result[2].texCoord1;
+			}
+
+			if (ret == CLIPPED_HARD)
+			{
+				num_point = 6;
+				tri[3].x = result[3].position.x;
+				tri[3].y = result[3].position.y;
+				tri[3].z = result[3].position.z;
+				tri[3].w = 1.0f;
+				tri_uv[3] = result[3].texCoord0;
+				tri_luv[3] = result[3].texCoord1;
+
+				tri[4].x = result[4].position.x;
+				tri[4].y = result[4].position.y;
+				tri[4].z = result[4].position.z;
+				tri[4].w = 1.0f;
+				tri_uv[4] = result[4].texCoord0;
+				tri_luv[4] = result[4].texCoord1;
+
+				tri[5].x = result[5].position.x;
+				tri[5].y = result[5].position.y;
+				tri[5].z = result[5].position.z;
+				tri[5].w = 1.0f;
+				tri_uv[5] = result[5].texCoord0;
+				tri_luv[5] = result[5].texCoord1;
+			}
+
+			ret = intersect_triangle_plane(yn, v1v, v2v, v3v, result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			if (ret == CLIPPED_EASY)
+			{
+				tri[0].x = result[0].position.x;
+				tri[0].y = result[0].position.y;
+				tri[0].z = result[0].position.z;
+				tri_uv[0] = result[0].texCoord0;
+				tri_luv[0] = result[0].texCoord1;
+
+				tri[1].x = result[1].position.x;
+				tri[1].y = result[1].position.y;
+				tri[1].z = result[1].position.z;
+				tri_uv[1] = result[1].texCoord0;
+				tri_luv[1] = result[1].texCoord1;
+
+				tri[2].x = result[2].position.x;
+				tri[2].y = result[2].position.y;
+				tri[2].z = result[2].position.z;
+				tri_uv[2] = result[2].texCoord0;
+				tri_luv[2] = result[2].texCoord1;
+			}
+
+			if (ret == CLIPPED_HARD)
+			{
+				num_point = 6;
+				tri[3].x = result[3].position.x;
+				tri[3].y = result[3].position.y;
+				tri[3].z = result[3].position.z;
+				tri[3].w = 1.0f;
+				tri_uv[3] = result[3].texCoord0;
+				tri_luv[3] = result[3].texCoord1;
+
+				tri[4].x = result[4].position.x;
+				tri[4].y = result[4].position.y;
+				tri[4].z = result[4].position.z;
+				tri[4].w = 1.0f;
+				tri_uv[4] = result[4].texCoord0;
+				tri_luv[4] = result[4].texCoord1;
+
+				tri[5].x = result[5].position.x;
+				tri[5].y = result[5].position.y;
+				tri[5].z = result[5].position.z;
+				tri[5].w = 1.0f;
+				tri_uv[5] = result[5].texCoord0;
+				tri_luv[5] = result[5].texCoord1;
+			}
+
+			ret = intersect_triangle_plane(zn, v1v, v2v, v3v, result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			if (ret == CLIPPED_EASY)
+			{
+				tri[0].x = result[0].position.x;
+				tri[0].y = result[0].position.y;
+				tri[0].z = result[0].position.z;
+				tri_uv[0] = result[0].texCoord0;
+				tri_luv[0] = result[0].texCoord1;
+
+				tri[1].x = result[1].position.x;
+				tri[1].y = result[1].position.y;
+				tri[1].z = result[1].position.z;
+				tri_uv[1] = result[1].texCoord0;
+				tri_luv[1] = result[1].texCoord1;
+
+				tri[2].x = result[2].position.x;
+				tri[2].y = result[2].position.y;
+				tri[2].z = result[2].position.z;
+				tri_uv[2] = result[2].texCoord0;
+				tri_luv[2] = result[2].texCoord1;
+			}
+
+			if (ret == CLIPPED_HARD)
+			{
+				num_point = 6;
+				tri[3].x = result[3].position.x;
+				tri[3].y = result[3].position.y;
+				tri[3].z = result[3].position.z;
+				tri[3].w = 1.0f;
+				tri_uv[3] = result[3].texCoord0;
+				tri_luv[3] = result[3].texCoord1;
+
+				tri[4].x = result[4].position.x;
+				tri[4].y = result[4].position.y;
+				tri[4].z = result[4].position.z;
+				tri[4].w = 1.0f;
+				tri_uv[4] = result[4].texCoord0;
+				tri_luv[4] = result[4].texCoord1;
+
+				tri[5].x = result[5].position.x;
+				tri[5].y = result[5].position.y;
+				tri[5].z = result[5].position.z;
+				tri[5].w = 1.0f;
+				tri_uv[5] = result[5].texCoord0;
+				tri_luv[5] = result[5].texCoord1;
+			}
+
+			memset(&result, 0, sizeof(result));
+			ret = intersect_triangle_plane(zp, v1v, v2v, v3v, result);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				continue;
+			}
+
+			if (ret == CLIPPED_EASY)
+			{
+				tri[0].x = result[0].position.x;
+				tri[0].y = result[0].position.y;
+				tri[0].z = result[0].position.z;
+				tri_uv[0] = result[0].texCoord0;
+				tri_luv[0] = result[0].texCoord1;
+
+				tri[1].x = result[1].position.x;
+				tri[1].y = result[1].position.y;
+				tri[1].z = result[1].position.z;
+				tri_uv[1] = result[1].texCoord0;
+				tri_luv[1] = result[1].texCoord1;
+
+				tri[2].x = result[2].position.x;
+				tri[2].y = result[2].position.y;
+				tri[2].z = result[2].position.z;
+				tri_uv[2] = result[2].texCoord0;
+				tri_luv[2] = result[2].texCoord1;
+			}
+
+			if (ret == CLIPPED_HARD)
+			{
+				num_point = 6;
+				tri[3].x = result[3].position.x;
+				tri[3].y = result[3].position.y;
+				tri[3].z = result[3].position.z;
+				tri[3].w = 1.0f;
+				tri_uv[3] = result[3].texCoord0;
+				tri_luv[3] = result[3].texCoord1;
+
+				tri[4].x = result[4].position.x;
+				tri[4].y = result[4].position.y;
+				tri[4].z = result[4].position.z;
+				tri[4].w = 1.0f;
+				tri_uv[4] = result[4].texCoord0;
+				tri_luv[4] = result[4].texCoord1;
+
+				tri[5].x = result[5].position.x;
+				tri[5].y = result[5].position.y;
+				tri[5].z = result[5].position.z;
+				tri[5].w = 1.0f;
+				tri_uv[5] = result[5].texCoord0;
+				tri_luv[5] = result[5].texCoord1;
 			}
 
 		}
 
 		if (skip)
 			continue;
-
-
-		float s1 = vertex_array[start_vertex + index_array[i]].texCoord0.x;
-		float t1 = vertex_array[start_vertex + index_array[i]].texCoord0.y;
-		float s2 = vertex_array[start_vertex + index_array[i + 1]].texCoord0.x;
-		float t2 = vertex_array[start_vertex + index_array[i + 1]].texCoord0.y;
-		float s3 = vertex_array[start_vertex + index_array[i + 2]].texCoord0.x;
-		float t3 = vertex_array[start_vertex + index_array[i + 2]].texCoord0.y;
-
-		float ls1 = vertex_array[start_vertex + index_array[i]].texCoord1.x;
-		float lt1 = vertex_array[start_vertex + index_array[i]].texCoord1.y;
-		float ls2 = vertex_array[start_vertex + index_array[i + 1]].texCoord1.x;
-		float lt2 = vertex_array[start_vertex + index_array[i + 1]].texCoord1.y;
-		float ls3 = vertex_array[start_vertex + index_array[i + 2]].texCoord1.x;
-		float lt3 = vertex_array[start_vertex + index_array[i + 2]].texCoord1.y;
-
 
 		if (width <= 1 || height <= 1)
 			break;
@@ -277,28 +523,40 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 0, width / 4, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							0, width / 4, 0, height / 4);
 						break;
 					case 1:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							width / 4, 2 * width / 4, 0, height / 4);
 						break;
 					case 2:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							2 * width / 4, 3 * width / 4, 0, height / 4);
 						break;
 					case 3:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							3 * width / 4, width, 0, height / 4);
 						break;
 					case 4:
 						// row 2
@@ -306,28 +564,40 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 0, width / 4, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							0, width / 4, height / 4, 2 * height / 4);
 						break;
 					case 5:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							width / 4, 2 * width / 4, height / 4, 2 * height / 4);
 						break;
 					case 6:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
 						break;
 					case 7:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							3 * width / 4, width, height / 4, 2 * height / 4);
 						break;
 					case 8:
 						// row 3
@@ -335,28 +605,40 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							0, width / 4, 2 * height / 4, 3 * height / 4);
 						break;
 					case 9:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
 						break;
 					case 10:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
 						break;
 					case 11:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							3 * width / 4, width, 2 * height / 4, 3 * height / 4);
 						break;
 					case 12:
 						// row 4
@@ -364,35 +646,50 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 0, width / 4, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							0, width / 4, 3 * height / 4, height);
 						break;
 					case 13:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, width / 4, 2 * width / 4, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							width / 4, 2 * width / 4, 3 * height / 4, height);
 						break;
 					case 14:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							2 * width / 4, 3 * width / 4, 3 * height / 4, height);
 						break;
 					case 15:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 3 * width / 4, width, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							3 * width / 4, width, 3 * height / 4, height);
 						break;
 					default:
 						span_triangle(pixels, zbuffer, width, height, texture,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, 0, width, 0, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							0, width, 0, height);
 						break;
 					}
 				}
@@ -405,28 +702,52 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							0, width / 4, 0, height / 4);
 						break;
 					case 1:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							width / 4, 2 * width / 4, 0, height / 4);
 						break;
 					case 2:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							2 * width / 4, 3 * width / 4, 0, height / 4);
 						break;
 					case 3:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 0, height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							3 * width / 4, width, 0, height / 4);
 						break;
 					case 4:
 						// row 2
@@ -434,28 +755,52 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							0, width / 4, height / 4, 2 * height / 4);
 						break;
 					case 5:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							width / 4, 2 * width / 4, height / 4, 2 * height / 4);
 						break;
 					case 6:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							2 * width / 4, 3 * width / 4, height / 4, 2 * height / 4);
 						break;
 					case 7:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, height / 4, 2 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							3 * width / 4, width, height / 4, 2 * height / 4);
 						break;
 					case 8:
 						// row 3
@@ -463,28 +808,52 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							0, width / 4, 2 * height / 4, 3 * height / 4);
 						break;
 					case 9:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							width / 4, 2 * width / 4, 2 * height / 4, 3 * height / 4);
 						break;
 					case 10:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							2 * width / 4, 3 * width / 4, 2 * height / 4, 3 * height / 4);
 						break;
 					case 11:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 2 * height / 4, 3 * height / 4);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							3 * width / 4, width, 2 * height / 4, 3 * height / 4);
 						break;
 					case 12:
 						// row 4
@@ -492,35 +861,65 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width / 4, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							0, width / 4, 3 * height / 4, height);
 						break;
 					case 13:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, width / 4, 2 * width / 4, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							width / 4, 2 * width / 4, 3 * height / 4, height);
 						break;
 					case 14:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 2 * width / 4, 3 * width / 4, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							2 * width / 4, 3 * width / 4, 3 * height / 4, height);
 						break;
 					case 15:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 3 * width / 4, width, 3 * height / 4, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							3 * width / 4, width, 3 * height / 4, height);
 						break;
 					default:
 						barycentric_triangle(pixels, zbuffer, width, height, texture, lightmap,
 							tri[j + 0].x, tri[j + 0].y, tri[j + 0].z, tri[j + 0].w, RGB(255, 0, 0),
 							tri[j + 1].x, tri[j + 1].y, tri[j + 1].z, tri[j + 1].w, RGB(0, 255, 0),
 							tri[j + 2].x, tri[j + 2].y, tri[j + 2].z, tri[j + 2].w, RGB(0, 0, 255),
-							s1, t1, s2, t2, s3, t3, ls1, lt1, ls2, lt2, ls3, lt3, 0, width, 0, height);
+							tri_uv[j + 0].x, tri_uv[j + 0].y,
+							tri_uv[j + 1].x, tri_uv[j + 1].y,
+							tri_uv[j + 2].x, tri_uv[j + 2].y,
+							tri_luv[j + 0].x, tri_luv[j + 0].y,
+							tri_luv[j + 1].x, tri_luv[j + 1].y,
+							tri_luv[j + 2].x, tri_luv[j + 2].y,
+							0, width, 0, height);
 						break;
 					}
 				}
@@ -542,7 +941,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 void raster_triangles_strip(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
-	const int start_index, const int start_vertex, const int num_index, const int num_verts)
+	const int start_index, const int start_vertex, const int num_index, const int num_verts, bool clip)
 {
 	vec4 v1, v2, v3;
 	float s1, s2, s3, t1, t2, t3;

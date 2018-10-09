@@ -50,6 +50,7 @@ typedef struct
 	int start_vertex;
 	int num_index;
 	int num_vert;
+	int clip_enabled;
 } param_t;
 
 #define MAX_JOB 8192
@@ -101,7 +102,8 @@ RTYPE thread1(void *num)
 				work1[i].param[next].start_index,
 				work1[i].param[next].start_vertex,
 				work1[i].param[next].num_index,
-				work1[i].param[next].num_vert);
+				work1[i].param[next].num_vert,
+				work1[i].param[next].clip_enabled);
 		}
 		else if (work1[i].param[next].type == BARYCENTRIC_STRIP)
 		{
@@ -120,7 +122,8 @@ RTYPE thread1(void *num)
 				work1[i].param[next].start_index,
 				work1[i].param[next].start_vertex,
 				work1[i].param[next].num_index,
-				work1[i].param[next].num_vert);
+				work1[i].param[next].num_vert,
+				work1[i].param[next].clip_enabled);
 		}
 		last_job = next;
 	}
@@ -156,8 +159,8 @@ void Graphics::resize(int width, int height)
 //		delete[] zbuffer;
 	zbuffer = new float[width * height * sizeof(float)];
 	clear();
-	center.x = width >> 1;
-	center.y = height >> 1;
+	center.x = (float)(width >> 1);
+	center.y = (float)(height >> 1);
 
 #ifdef WIN32
 	hdcMem = CreateCompatibleDC(hdc);
@@ -563,6 +566,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 		work1[i].param[next].start_vertex = start_vertex;
 		work1[i].param[next].num_index = num_index;
 		work1[i].param[next].num_vert = num_verts;
+		work1[i].param[next].clip_enabled = clip_enabled;
 		work1[i].work = next;
 	}
 #else
@@ -598,10 +602,11 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 		work1[i].param[next].start_vertex = start_vertex;
 		work1[i].param[next].num_index = num_index;
 		work1[i].param[next].num_vert = num_verts;
+		work1[i].param[next].clip_enabled = clip_enabled;
 		work1[i].work = next;
 	}
 #else
-	raster_triangles_strip(BARYCENTRIC_STRIP, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts);
+	raster_triangles_strip(BARYCENTRIC_STRIP, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
 #endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;

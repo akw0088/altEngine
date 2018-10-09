@@ -942,19 +942,19 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	if (input.jump)
 	{
 //		wishdir += vec3(0.0f, 1.0f, 0.0f);
-		velocity.y += entity->player->pm_wateraccel * speed_scale * 0.016;
+		velocity.y += entity->player->pm_wateraccel * speed_scale * 0.016f;
 		moved = true;
 	}
 	if (input.duck)
 	{
 //		wishdir += vec3(0.0f, -1.0f, 0.0f);
-		velocity.y += -entity->player->pm_wateraccel * speed_scale * 0.016;
+		velocity.y += -entity->player->pm_wateraccel * speed_scale * 0.016f;
 		moved = true;
 	}
 
 	if (moved)
 	{
-		velocity += wishdir * entity->player->pm_wateraccel * speed_scale * 0.016;
+		velocity += wishdir * entity->player->pm_wateraccel * speed_scale * 0.016f;
 	}
 	float speed = 0.0f;
 
