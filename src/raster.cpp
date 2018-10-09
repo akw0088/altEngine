@@ -29,7 +29,7 @@ inline int imax(int x, int y)
 }
 
 
-int clip_triangle(vertex_t &a, vertex_t &b, vertex_t &c)
+int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 {
 	vertex_t result[6];
 	static int once = 0;
@@ -259,7 +259,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 			if (clip)
 			{
-				int ret = clip_triangle(v1v, v2v, v3v);
+				int ret = clip_planes(v1v, v2v, v3v);
 				if (ret == ALL_OUT)
 				{
 					skip = true;
@@ -284,19 +284,19 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 
 
-			// todo, these two clip near and far, need to eliminate when other clipping works nice
-			/*
-			if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
+			if (clip == false)
 			{
-				skip = true;
-				break;
+				if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
+				{
+					skip = true;
+					break;
+				}
+				if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
+				{
+					skip = true;
+					break;
+				}
 			}
-			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
-			{
-				skip = true;
-				break;
-			}
-			*/
 
 			// backface cull
 			vec3 a = vec3(tri[j + 1]) - vec3(tri[j]);
