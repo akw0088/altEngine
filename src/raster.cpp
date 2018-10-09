@@ -28,6 +28,156 @@ inline int imax(int x, int y)
 	return y ^ ((x ^ y) & -(x > y));
 }
 
+
+int clip_triangle(vertex_t &a, vertex_t &b, vertex_t &c)
+{
+	vertex_t result[6];
+	static int once = 0;
+	static plane_t xp, xn, yp, yn, zp, zn;
+	int ret = 0;
+
+	if (once == 0)
+	{
+		float plane_d = 1.0f;
+
+		xp.normal = vec3(1.0f, 0.0f, 0.0f);
+		xp.d = plane_d;
+
+		xn.normal = vec3(-1.0f, 0.0f, 0.0f);
+		xn.d = plane_d;
+
+		yp.normal = vec3(0.0f, 1.0f, 0.0f);
+		yp.d = plane_d;
+
+		yn.normal = vec3(0.0f, -1.0f, 0.0f);
+		yn.d = plane_d;
+
+		// near clip
+		zp.normal = vec3(0.0f, 0.0f, 1.0f);
+		zp.d = plane_d;
+
+		// far clip
+		zn.normal = vec3(0.0f, 0.0f, -1.0f);
+		zn.d = plane_d;
+		once = 1;
+	}
+
+	ret = intersect_triangle_plane(xp, a, b, c, result);
+	if (ret == ALL_OUT)
+	{
+		return ALL_OUT;
+	}
+
+	if (ret == CLIPPED_EASY)
+	{
+		a = result[0];
+		b = result[1];
+		c = result[2];
+	}
+
+	if (ret == CLIPPED_HARD)
+	{
+		return ALL_OUT;
+	}
+
+	ret = intersect_triangle_plane(xn, a, b, c, result);
+	if (ret == ALL_OUT)
+	{
+		return ALL_OUT;
+	}
+
+	if (ret == CLIPPED_EASY)
+	{
+		a = result[0];
+		b = result[1];
+		c = result[2];
+	}
+
+	if (ret == CLIPPED_HARD)
+	{
+		return ALL_OUT;
+	}
+
+
+	ret = intersect_triangle_plane(yp, a, b, c, result);
+	if (ret == ALL_OUT)
+	{
+		return ALL_OUT;
+	}
+
+	if (ret == CLIPPED_EASY)
+	{
+		a = result[0];
+		b = result[1];
+		c = result[2];
+	}
+
+	if (ret == CLIPPED_HARD)
+	{
+		return ALL_OUT;
+	}
+
+
+	ret = intersect_triangle_plane(yn, a, b, c, result);
+	if (ret == ALL_OUT)
+	{
+		return ALL_OUT;
+	}
+
+	if (ret == CLIPPED_EASY)
+	{
+		a = result[0];
+		b = result[1];
+		c = result[2];
+	}
+
+	if (ret == CLIPPED_HARD)
+	{
+		return ALL_OUT;
+	}
+
+
+	ret = intersect_triangle_plane(zn, a, b, c, result);
+	if (ret == ALL_OUT)
+	{
+		return ALL_OUT;
+	}
+
+	if (ret == CLIPPED_EASY)
+	{
+		a = result[0];
+		b = result[1];
+		c = result[2];
+	}
+
+	if (ret == CLIPPED_HARD)
+	{
+		return ALL_OUT;
+	}
+
+
+	ret = intersect_triangle_plane(zp, a, b, c, result);
+	if (ret == ALL_OUT)
+	{
+		return ALL_OUT;
+	}
+
+	if (ret == CLIPPED_EASY)
+	{
+		a = result[0];
+		b = result[1];
+		c = result[2];
+	}
+
+	if (ret == CLIPPED_HARD)
+	{
+		return ALL_OUT;
+	}
+
+
+	return -1;
+}
+
 void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, bool clip)
@@ -74,364 +224,6 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri_luv[1] = vertex_array[start_vertex + index_array[i + 1]].texCoord1;
 		tri_luv[2] = vertex_array[start_vertex + index_array[i + 2]].texCoord1;
 
-		if (clip)
-		{
-			vertex_t result[6];
-			plane_t xp;
-			plane_t xn;
-
-			plane_t yp;
-			plane_t yn;
-
-			plane_t zp;
-			plane_t zn;
-			int ret = 0;
-
-
-			float plane_d = 1.0f;
-
-			xp.normal = vec3(1.0f, 0.0f, 0.0f);
-			xp.d = plane_d;
-
-			xn.normal = vec3(-1.0f, 0.0f, 0.0f);
-			xn.d = plane_d;
-
-			yp.normal = vec3(0.0f, 1.0f, 0.0f);
-			yp.d = plane_d;
-
-			yn.normal = vec3(0.0f, -1.0f, 0.0f);
-			yn.d = plane_d;
-
-			zp.normal = vec3(0.0f, 0.0f, 1.0f);
-			zp.d = plane_d;
-
-			zn.normal = vec3(0.0f, 0.0f, -1.0f);
-			zn.d = plane_d;
-
-
-			ret = intersect_triangle_plane(xp, v1v, v2v, v3v, result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			if (ret == CLIPPED_EASY)
-			{
-				tri[0].x = result[0].position.x;
-				tri[0].y = result[0].position.y;
-				tri[0].z = result[0].position.z;
-				tri_uv[0] = result[0].texCoord0;
-				tri_luv[0] = result[0].texCoord1;
-
-				tri[1].x = result[1].position.x;
-				tri[1].y = result[1].position.y;
-				tri[1].z = result[1].position.z;
-				tri_uv[1] = result[1].texCoord0;
-				tri_luv[1] = result[1].texCoord1;
-
-				tri[2].x = result[2].position.x;
-				tri[2].y = result[2].position.y;
-				tri[2].z = result[2].position.z;
-				tri_uv[2] = result[2].texCoord0;
-				tri_luv[2] = result[2].texCoord1;
-			}
-
-			if (ret == CLIPPED_HARD)
-			{
-				num_point = 6;
-				tri[3].x = result[3].position.x;
-				tri[3].y = result[3].position.y;
-				tri[3].z = result[3].position.z;
-				tri[3].w = 1.0f;
-				tri_uv[3] = result[3].texCoord0;
-				tri_luv[3] = result[3].texCoord1;
-
-				tri[4].x = result[4].position.x;
-				tri[4].y = result[4].position.y;
-				tri[4].z = result[4].position.z;
-				tri[4].w = 1.0f;
-				tri_uv[4] = result[4].texCoord0;
-				tri_luv[4] = result[4].texCoord1;
-
-				tri[5].x = result[5].position.x;
-				tri[5].y = result[5].position.y;
-				tri[5].z = result[5].position.z;
-				tri[5].w = 1.0f;
-				tri_uv[5] = result[5].texCoord0;
-				tri_luv[5] = result[5].texCoord1;
-			}
-
-			ret = intersect_triangle_plane(xn, v1v, v2v, v3v, result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			if (ret == CLIPPED_EASY)
-			{
-				tri[0].x = result[0].position.x;
-				tri[0].y = result[0].position.y;
-				tri[0].z = result[0].position.z;
-				tri_uv[0] = result[0].texCoord0;
-				tri_luv[0] = result[0].texCoord1;
-
-				tri[1].x = result[1].position.x;
-				tri[1].y = result[1].position.y;
-				tri[1].z = result[1].position.z;
-				tri_uv[1] = result[1].texCoord0;
-				tri_luv[1] = result[1].texCoord1;
-
-				tri[2].x = result[2].position.x;
-				tri[2].y = result[2].position.y;
-				tri[2].z = result[2].position.z;
-				tri_uv[2] = result[2].texCoord0;
-				tri_luv[2] = result[2].texCoord1;
-			}
-
-			if (ret == CLIPPED_HARD)
-			{
-				num_point = 6;
-				tri[3].x = result[3].position.x;
-				tri[3].y = result[3].position.y;
-				tri[3].z = result[3].position.z;
-				tri[3].w = 1.0f;
-				tri_uv[3] = result[3].texCoord0;
-				tri_luv[3] = result[3].texCoord1;
-
-				tri[4].x = result[4].position.x;
-				tri[4].y = result[4].position.y;
-				tri[4].z = result[4].position.z;
-				tri[4].w = 1.0f;
-				tri_uv[4] = result[4].texCoord0;
-				tri_luv[4] = result[4].texCoord1;
-
-				tri[5].x = result[5].position.x;
-				tri[5].y = result[5].position.y;
-				tri[5].z = result[5].position.z;
-				tri[5].w = 1.0f;
-				tri_uv[5] = result[5].texCoord0;
-				tri_luv[5] = result[5].texCoord1;
-			}
-
-			ret = intersect_triangle_plane(yp, v1v, v2v, v3v, result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			if (ret == CLIPPED_EASY)
-			{
-				tri[0].x = result[0].position.x;
-				tri[0].y = result[0].position.y;
-				tri[0].z = result[0].position.z;
-				tri_uv[0] = result[0].texCoord0;
-				tri_luv[0] = result[0].texCoord1;
-
-				tri[1].x = result[1].position.x;
-				tri[1].y = result[1].position.y;
-				tri[1].z = result[1].position.z;
-				tri_uv[1] = result[1].texCoord0;
-				tri_luv[1] = result[1].texCoord1;
-
-				tri[2].x = result[2].position.x;
-				tri[2].y = result[2].position.y;
-				tri[2].z = result[2].position.z;
-				tri_uv[2] = result[2].texCoord0;
-				tri_luv[2] = result[2].texCoord1;
-			}
-
-			if (ret == CLIPPED_HARD)
-			{
-				num_point = 6;
-				tri[3].x = result[3].position.x;
-				tri[3].y = result[3].position.y;
-				tri[3].z = result[3].position.z;
-				tri[3].w = 1.0f;
-				tri_uv[3] = result[3].texCoord0;
-				tri_luv[3] = result[3].texCoord1;
-
-				tri[4].x = result[4].position.x;
-				tri[4].y = result[4].position.y;
-				tri[4].z = result[4].position.z;
-				tri[4].w = 1.0f;
-				tri_uv[4] = result[4].texCoord0;
-				tri_luv[4] = result[4].texCoord1;
-
-				tri[5].x = result[5].position.x;
-				tri[5].y = result[5].position.y;
-				tri[5].z = result[5].position.z;
-				tri[5].w = 1.0f;
-				tri_uv[5] = result[5].texCoord0;
-				tri_luv[5] = result[5].texCoord1;
-			}
-
-			ret = intersect_triangle_plane(yn, v1v, v2v, v3v, result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			if (ret == CLIPPED_EASY)
-			{
-				tri[0].x = result[0].position.x;
-				tri[0].y = result[0].position.y;
-				tri[0].z = result[0].position.z;
-				tri_uv[0] = result[0].texCoord0;
-				tri_luv[0] = result[0].texCoord1;
-
-				tri[1].x = result[1].position.x;
-				tri[1].y = result[1].position.y;
-				tri[1].z = result[1].position.z;
-				tri_uv[1] = result[1].texCoord0;
-				tri_luv[1] = result[1].texCoord1;
-
-				tri[2].x = result[2].position.x;
-				tri[2].y = result[2].position.y;
-				tri[2].z = result[2].position.z;
-				tri_uv[2] = result[2].texCoord0;
-				tri_luv[2] = result[2].texCoord1;
-			}
-
-			if (ret == CLIPPED_HARD)
-			{
-				num_point = 6;
-				tri[3].x = result[3].position.x;
-				tri[3].y = result[3].position.y;
-				tri[3].z = result[3].position.z;
-				tri[3].w = 1.0f;
-				tri_uv[3] = result[3].texCoord0;
-				tri_luv[3] = result[3].texCoord1;
-
-				tri[4].x = result[4].position.x;
-				tri[4].y = result[4].position.y;
-				tri[4].z = result[4].position.z;
-				tri[4].w = 1.0f;
-				tri_uv[4] = result[4].texCoord0;
-				tri_luv[4] = result[4].texCoord1;
-
-				tri[5].x = result[5].position.x;
-				tri[5].y = result[5].position.y;
-				tri[5].z = result[5].position.z;
-				tri[5].w = 1.0f;
-				tri_uv[5] = result[5].texCoord0;
-				tri_luv[5] = result[5].texCoord1;
-			}
-
-			ret = intersect_triangle_plane(zn, v1v, v2v, v3v, result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			if (ret == CLIPPED_EASY)
-			{
-				tri[0].x = result[0].position.x;
-				tri[0].y = result[0].position.y;
-				tri[0].z = result[0].position.z;
-				tri_uv[0] = result[0].texCoord0;
-				tri_luv[0] = result[0].texCoord1;
-
-				tri[1].x = result[1].position.x;
-				tri[1].y = result[1].position.y;
-				tri[1].z = result[1].position.z;
-				tri_uv[1] = result[1].texCoord0;
-				tri_luv[1] = result[1].texCoord1;
-
-				tri[2].x = result[2].position.x;
-				tri[2].y = result[2].position.y;
-				tri[2].z = result[2].position.z;
-				tri_uv[2] = result[2].texCoord0;
-				tri_luv[2] = result[2].texCoord1;
-			}
-
-			if (ret == CLIPPED_HARD)
-			{
-				num_point = 6;
-				tri[3].x = result[3].position.x;
-				tri[3].y = result[3].position.y;
-				tri[3].z = result[3].position.z;
-				tri[3].w = 1.0f;
-				tri_uv[3] = result[3].texCoord0;
-				tri_luv[3] = result[3].texCoord1;
-
-				tri[4].x = result[4].position.x;
-				tri[4].y = result[4].position.y;
-				tri[4].z = result[4].position.z;
-				tri[4].w = 1.0f;
-				tri_uv[4] = result[4].texCoord0;
-				tri_luv[4] = result[4].texCoord1;
-
-				tri[5].x = result[5].position.x;
-				tri[5].y = result[5].position.y;
-				tri[5].z = result[5].position.z;
-				tri[5].w = 1.0f;
-				tri_uv[5] = result[5].texCoord0;
-				tri_luv[5] = result[5].texCoord1;
-			}
-
-			memset(&result, 0, sizeof(result));
-			ret = intersect_triangle_plane(zp, v1v, v2v, v3v, result);
-			if (ret == ALL_OUT)
-			{
-				skip = true;
-				continue;
-			}
-
-			if (ret == CLIPPED_EASY)
-			{
-				tri[0].x = result[0].position.x;
-				tri[0].y = result[0].position.y;
-				tri[0].z = result[0].position.z;
-				tri_uv[0] = result[0].texCoord0;
-				tri_luv[0] = result[0].texCoord1;
-
-				tri[1].x = result[1].position.x;
-				tri[1].y = result[1].position.y;
-				tri[1].z = result[1].position.z;
-				tri_uv[1] = result[1].texCoord0;
-				tri_luv[1] = result[1].texCoord1;
-
-				tri[2].x = result[2].position.x;
-				tri[2].y = result[2].position.y;
-				tri[2].z = result[2].position.z;
-				tri_uv[2] = result[2].texCoord0;
-				tri_luv[2] = result[2].texCoord1;
-			}
-
-			if (ret == CLIPPED_HARD)
-			{
-				num_point = 6;
-				tri[3].x = result[3].position.x;
-				tri[3].y = result[3].position.y;
-				tri[3].z = result[3].position.z;
-				tri[3].w = 1.0f;
-				tri_uv[3] = result[3].texCoord0;
-				tri_luv[3] = result[3].texCoord1;
-
-				tri[4].x = result[4].position.x;
-				tri[4].y = result[4].position.y;
-				tri[4].z = result[4].position.z;
-				tri[4].w = 1.0f;
-				tri_uv[4] = result[4].texCoord0;
-				tri_luv[4] = result[4].texCoord1;
-
-				tri[5].x = result[5].position.x;
-				tri[5].y = result[5].position.y;
-				tri[5].z = result[5].position.z;
-				tri[5].w = 1.0f;
-				tri_uv[5] = result[5].texCoord0;
-				tri_luv[5] = result[5].texCoord1;
-			}
-
-		}
-
-		if (skip)
-			continue;
 
 		if (width <= 1 || height <= 1)
 			break;
@@ -461,6 +253,23 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			tri[j + 2].y *= inv;
 			tri[j + 2].z *= inv;
 
+			v1v.position = tri[j + 0];
+			v2v.position = tri[j + 1];
+			v3v.position = tri[j + 2];
+
+			if (clip)
+			{
+				int ret = clip_triangle(v1v, v2v, v3v);
+				if (ret == ALL_OUT)
+				{
+					skip = true;
+					break;
+				}
+
+				tri[j + 0] = vec4(v1v.position, tri[j+0].w);
+				tri[j + 1] = vec4(v2v.position, tri[j+1].w);
+				tri[j + 2] = vec4(v3v.position, tri[j+2].w);
+			}
 
 			// [-1,1] -> [0,1]
 			tri[j].x = tri[j].x * 0.5f + 0.5f;
@@ -474,6 +283,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			tri[j + 2].z = tri[j + 2].z * 0.5f + 0.5f;
 
 
+
 			// todo, these two clip near and far, need to eliminate when other clipping works nice
 			/*
 			if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
@@ -481,12 +291,12 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 				skip = true;
 				break;
 			}
-			*/
 			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
 			{
 				skip = true;
 				break;
 			}
+			*/
 
 			// backface cull
 			vec3 a = vec3(tri[j + 1]) - vec3(tri[j]);
