@@ -4175,3 +4175,78 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	return CLIPPED_HARD;
 }
 
+void get_frustum(matrix4 &projection, plane_t *frustum)
+{
+	float A, B, C, D;
+
+	//left = col1 + col4
+	A = projection.m[0] + projection.m[3];
+	B = projection.m[4] + projection.m[7];
+	C = projection.m[8] + projection.m[11];
+	D = projection.m[12] + projection.m[15];
+
+	frustum[0].normal.x = A;
+	frustum[0].normal.y = B;
+	frustum[0].normal.z = -C;
+	frustum[0].d = D;
+
+	//right = -col1 + col4
+	A = -projection.m[0] + projection.m[3];
+	B = -projection.m[4] + projection.m[7];
+	C = -projection.m[8] + projection.m[11];
+	D = -projection.m[12] + projection.m[15];
+
+	frustum[1].normal.x = A;
+	frustum[1].normal.y = B;
+	frustum[1].normal.z = -C;
+	frustum[1].d = D;
+
+
+
+	//bottom = col2 + col4
+	A = projection.m[1] + projection.m[3];
+	B = projection.m[5] + projection.m[7];
+	C = projection.m[9] + projection.m[11];
+	D = projection.m[13] + projection.m[15];
+
+	frustum[2].normal.x = A;
+	frustum[2].normal.y = B;
+	frustum[2].normal.z = -C;
+	frustum[2].d = D;
+
+
+	//top = -col2 + col4
+	A = -projection.m[1] + projection.m[3];
+	B = -projection.m[5] + projection.m[7];
+	C = -projection.m[9] + projection.m[11];
+	D = -projection.m[13] + projection.m[15];
+
+	frustum[3].normal.x = A;
+	frustum[3].normal.y = B;
+	frustum[3].normal.z = -C;
+	frustum[3].d = D;
+
+
+	//near = col3 + col4
+	A = projection.m[2] + projection.m[3];
+	B = projection.m[6] + projection.m[7];
+	C = projection.m[10] + projection.m[11];
+	D = projection.m[14] + projection.m[15];
+
+	frustum[4].normal.x = A;
+	frustum[4].normal.y = B;
+	frustum[4].normal.z = -C;
+	frustum[4].d = D;
+
+
+	//far = -col3 + col4
+	A = -projection.m[2] + projection.m[3];
+	B = -projection.m[6] + projection.m[7];
+	C = -projection.m[10] + projection.m[11];
+	D = -projection.m[14] + projection.m[15];
+
+	frustum[5].normal.x = A;
+	frustum[5].normal.y = B;
+	frustum[5].normal.z = -C;
+	frustum[5].d = D;
+}

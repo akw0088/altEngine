@@ -405,12 +405,12 @@ const unsigned char TexturedFragmentShader[] = {
 };
 #endif
 
+
 #include "huffman.h"
 #include "sock.h"
 #include "vector.h"
 #include "matrix.h"
 #include "quaternion.h"
-#include "plane.h"
 #include "types.h"
 #include "md5_types.h"
 #include "shadow_volume.h"

@@ -245,7 +245,7 @@ void RigidBody::integrate(float time)
 /*
 	Detects a collision with a plane and applies physical impulse response
 */
-bool RigidBody::collision_detect(Plane &p)
+bool RigidBody::collision_detect(plane_t &p)
 {
 	for( int i = 0;	i < 8; i++)
 	{
@@ -298,7 +298,7 @@ bool RigidBody::collision_detect(Plane &p)
 	Applys collision impulse to a vertex
 	radius must be in units of meters from CM
 */
-void RigidBody::impulse(Plane &plane, vec3 &radius)
+void RigidBody::impulse(plane_t &plane, vec3 &radius)
 {
 	float	impulse_numerator;
 	float	impulse_denominator;
@@ -351,7 +351,7 @@ void RigidBody::impulse(RigidBody &rigid, vec3 &point)
 	flags.gravity = true;
 }
 
-void RigidBody::impulse(RigidBody &rigid, vec3 &point, Plane &plane)
+void RigidBody::impulse(RigidBody &rigid, vec3 &point, plane_t &plane)
 {
 	float	impulse_numerator;
 	float	impulse_denominator;
@@ -469,16 +469,24 @@ bool RigidBody::collision_distance(RigidBody &body)
 
 bool RigidBody::collision_detect(RigidBody &body)
 {
-	Plane plane[6];
+	plane_t plane[6];
 	vec3 point;
 
 	// Bounding box planes
-	plane[0] = vec4(0.0f, 1.0f, 0.0f, -0.5f); // up
-	plane[1] = vec4(0.0f, -1.0f, 0.0f, 0.5f); // down
-	plane[2] = vec4(1.0f, 0.0f, 0.0f, -0.5f); // right
-	plane[3] = vec4(-1.0f, 0.0f, 0.0f, 0.5f); // left
-	plane[4] = vec4(0.0f, 0.0f, 1.0f, -0.5f); // far
-	plane[5] = vec4(0.0f, 0.0f, -1.0f, 0.5f); // near
+	plane[0].normal = vec3(0.0f, 1.0f, 0.0f);
+	plane[0].d = -0.5f; // up
+
+	plane[1].normal = vec3(0.0f, -1.0f, 0.0f);
+	plane[1].d = 0.5f; // down
+
+	plane[2].normal = vec3(1.0f, 0.0f, 0.0f);
+	plane[2].d = -0.5f; // right
+	plane[3].normal = vec3(-1.0f, 0.0f, 0.0f);
+	plane[3].d = 0.5f; // left
+	plane[4].normal = vec3(0.0f, 0.0f, 1.0f);
+	plane[4].d = -0.5f; // far
+	plane[5].normal = vec3(0.0f, 0.0f, -1.0f);
+	plane[5].d = 0.5f; // near
 
 
 	// Rotate and translate planes to world space

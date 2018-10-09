@@ -35,13 +35,13 @@ public:
 	void recalc();
 	void integrate(float time);
 	bool collision_detect(vec3 &v);
-	bool collision_detect(Plane &p);
+	bool collision_detect(plane_t &p);
 	bool collision_detect_simple(RigidBody &body);
 	bool collision_detect(RigidBody &body);
 	bool collision_distance(RigidBody &body);
-	void impulse(Plane &plane, vec3 &vertex);
+	void impulse(plane_t &plane, vec3 &vertex);
 	void impulse(RigidBody &rigid, vec3 &point);
-	void impulse(RigidBody &rigid, vec3 &point, Plane &plane);
+	void impulse(RigidBody &rigid, vec3 &point, plane_t &plane);
 	void frame2ent(Frame *camera_frame, input_t &input);
 	void frame2ent_yaw(Frame *camera_frame, input_t &input);
 	void save_config(cfg_t &config);

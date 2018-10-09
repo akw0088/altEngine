@@ -38,6 +38,9 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 
 	if (once == 0)
 	{
+		plane_t frustum[6];
+		matrix4 projection;
+
 		float plane_d = 1.0f;
 
 		xp.normal = vec3(1.0f, 0.0f, 0.0f);
@@ -59,6 +62,18 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		// far clip
 		zn.normal = vec3(0.0f, 0.0f, -1.0f);
 		zn.d = plane_d;
+
+
+		projection.perspective(110.0f, 16.0f / 9.0f, 1.0f, 2001.0f, false);
+
+		get_frustum(projection, frustum);
+
+		xp = frustum[0];
+		xn = frustum[1];
+		yp = frustum[2];
+		yn = frustum[3];
+		zp = frustum[4];
+		zn = frustum[5];
 		once = 1;
 	}
 
@@ -180,7 +195,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 
 void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
-	const int start_index, const int start_vertex, const int num_index, const int num_verts, bool clip)
+	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
@@ -188,13 +203,13 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		vec4 v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
 		vec4 v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
 
-		vertex_t v1v = vertex_array[start_vertex + index_array[i]];;
-		vertex_t v2v = vertex_array[start_vertex + index_array[i + 1]];;
-		vertex_t v3v = vertex_array[start_vertex + index_array[i + 2]];;
+		vertex_t a = vertex_array[start_vertex + index_array[i]];;
+		vertex_t b = vertex_array[start_vertex + index_array[i + 1]];;
+		vertex_t c = vertex_array[start_vertex + index_array[i + 2]];;
 
-		v1v.position = v1;
-		v2v.position = v2;
-		v3v.position = v3;
+		a.position = v1;
+		b.position = v2;
+		c.position = v3;
 
 		int num_point = 3;
 		vec4 tri[6];
@@ -228,6 +243,20 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		if (width <= 1 || height <= 1)
 			break;
 
+		if (clip)
+		{
+			int ret = clip_planes(a, b, c);
+			if (ret == ALL_OUT)
+			{
+				skip = true;
+				break;
+			}
+
+			tri[0] = vec4(a.position, tri[0].w);
+			tri[1] = vec4(b.position, tri[1].w);
+			tri[2] = vec4(c.position, tri[2].w);
+		}
+
 		// perspective divide
 		for (int j = 0; j < num_point; j += 3)
 		{
@@ -252,24 +281,6 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			tri[j + 2].x *= inv;
 			tri[j + 2].y *= inv;
 			tri[j + 2].z *= inv;
-
-			v1v.position = tri[j + 0];
-			v2v.position = tri[j + 1];
-			v3v.position = tri[j + 2];
-
-			if (clip)
-			{
-				int ret = clip_planes(v1v, v2v, v3v);
-				if (ret == ALL_OUT)
-				{
-					skip = true;
-					break;
-				}
-
-				tri[j + 0] = vec4(v1v.position, tri[j+0].w);
-				tri[j + 1] = vec4(v2v.position, tri[j+1].w);
-				tri[j + 2] = vec4(v3v.position, tri[j+2].w);
-			}
 
 			// [-1,1] -> [0,1]
 			tri[j].x = tri[j].x * 0.5f + 0.5f;
@@ -751,7 +762,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 void raster_triangles_strip(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
-	const int start_index, const int start_vertex, const int num_index, const int num_verts, bool clip)
+	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
 	vec4 v1, v2, v3;
 	float s1, s2, s3, t1, t2, t3;

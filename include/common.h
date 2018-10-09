@@ -212,5 +212,7 @@ typedef union
 int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const
 	vertex_t &c, vertex_t *result);
 
+void get_frustum(matrix4 &projection, plane_t *frustum);
+
 
 #endif

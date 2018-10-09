@@ -3192,7 +3192,7 @@ bool Engine::collision_detect(RigidBody &body)
 
 bool Engine::map_collision(RigidBody &body)
 {
-	Plane plane;
+	plane_t plane;
 	float depth;
 	vec3 staircheck(0.0f, STAIR_HEIGHT, 0.0f);
 	vec3 clip(0.0f, 0.0f, 0.0f);

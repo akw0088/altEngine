@@ -2043,7 +2043,7 @@ public:
 		return false;
 	}
 
-	bool ModelPlane(const CModel& model, const Plane& plane)
+	bool ModelPlane(const CModel& model, const plane_t& plane)
 	{
 		matrix4 world = model.GetWorldMatrix();
 		matrix4 inv = world.inverse();

@@ -17,6 +17,8 @@
 #ifndef TRIGGER_H
 #define TRIGGER_H
 
+class Entity;
+
 class Trigger
 {
 public:
