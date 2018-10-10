@@ -4341,3 +4341,108 @@ int in_frustum(frustum_t *frustum, vec3 &pos)
 	else
 		return 0;
 }
+
+
+
+void gl_rotatef(matrix4 &rmat, float angle, float x, float y, float z)
+{
+	float s = sin(angle);
+	float c = cos(angle);
+
+	rmat.m[0] = x*x*(1 - c) + c;
+	rmat.m[1] = x*y*(1 - c) - z * s;
+	rmat.m[2] = x*z*(1 - c) + y * s;
+	rmat.m[3] = 0.0f;
+
+	rmat.m[4] = y*x*(1 - c) + z*s;
+	rmat.m[5] = y*y*(1 - c) + c;
+	rmat.m[6] = y*z*(1 - c) - x*s;
+	rmat.m[7] = 0.0f;
+
+	rmat.m[8] = x*z*(1 - c) - y*s;
+	rmat.m[9] = y*z*(1 - c) + x*s;
+	rmat.m[10] = z*z*(1 - c) + c;
+	rmat.m[11] = 0.0f;
+
+	rmat.m[12] = 0.0f;
+	rmat.m[13] = 0.0f;
+	rmat.m[14] = 0.0f;
+	rmat.m[15] = 1.0f;
+}
+
+void gl_translatef(matrix4 &rmat, float x, float y, float z)
+{
+	rmat.m[0] = 1.0f;
+	rmat.m[1] = 0.0f;
+	rmat.m[2] = 0.0f;
+	rmat.m[3] = x;
+
+	rmat.m[4] = 0.0f;
+	rmat.m[5] = 1.0f;
+	rmat.m[6] = 0.0f;
+	rmat.m[7] = y;
+
+	rmat.m[8] = 0.0f;
+	rmat.m[9] = 0.0f;
+	rmat.m[10] = 1.0f;
+	rmat.m[11] = z;
+
+	rmat.m[12] = 0.0f;
+	rmat.m[13] = 0.0f;
+	rmat.m[14] = 0.0f;
+	rmat.m[15] = 1.0f;
+}
+
+void make_plane(Graphics &gfx, plane_t &plane, vec3 &point, float fExtent, float fStep, int &vbo, int &ibo)
+{
+	float iLine, angle;
+	vec3 vRot;
+	vec3 vUp(0.0f, 1.0f, 0.0f);
+	matrix4 rmat;
+	int num_vert = 0;
+
+	matrix4 mat;
+
+	angle = acos(plane.normal.y / plane.normal.magnitude() );
+	vRot = vec3::crossproduct(vUp, plane.normal);
+
+
+	vertex_t result[4096];
+	int index_array[4096];
+
+	
+	gl_rotatef(rmat, angle * 180.0f / M_PI, vRot.x, vRot.y, vRot.z);
+	mat = rmat;
+	gl_translatef(rmat, point.x, point.y, point.z);
+	mat = mat * rmat;
+
+	// lines / quads, not triangles
+	for (iLine = -fExtent; iLine <= fExtent; iLine += fStep)
+	{
+		result[num_vert].position.x = iLine;
+		result[num_vert].position.y = plane.d;
+		result[num_vert].position.z = fExtent;
+		num_vert++;
+		result[num_vert].position.x = iLine;
+		result[num_vert].position.y = plane.d;
+		result[num_vert].position.z = -fExtent;
+		num_vert++;
+		result[num_vert].position.x = fExtent;
+		result[num_vert].position.y = plane.d;
+		result[num_vert].position.z = iLine;
+		num_vert++;
+		result[num_vert].position.x = -fExtent;
+		result[num_vert].position.y = plane.d;
+		result[num_vert].position.z = iLine;
+		num_vert++;
+	}
+
+	for (int i = 0; i < num_vert; i++)
+	{
+		index_array[i] = i;
+		result[i].position = vec3(mat * vec4(result[i].position, 1.0f));
+	}
+
+	vbo = gfx.CreateVertexBuffer(result, num_vert);
+	ibo = gfx.CreateIndexBuffer(index_array, num_vert);
+}
