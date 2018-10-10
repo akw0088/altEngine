@@ -29,7 +29,6 @@ SOURCES_CPP := 	xmain.cpp \
 		parse.cpp \
 		pak.cpp \
 		physics.cpp \
-		plane.cpp \
 		player.cpp \
 		portal_camera.cpp \
 		projectile.cpp \
