@@ -225,6 +225,7 @@ typedef struct
 
 void get_frustum(matrix4 &projection, plane_t *frustum);
 void gen_frustum(Frame *camera, frustum_t *frustum);
+int in_frustum(frustum_t *frustum, vec3 &pos);
 
 
 #endif

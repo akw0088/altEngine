@@ -4321,3 +4321,23 @@ void gen_frustum(Frame *camera, frustum_t *frustum)
 	calc_plane(frustum->zNear, nearCoord[0], nearCoord[1], nearCoord[2]);
 	calc_plane(frustum->zFar, farCoord[0], farCoord[2], farCoord[1]);
 }
+
+
+int in_frustum(frustum_t *frustum, vec3 &pos)
+{
+	int left, right, top, bottom, zNear, zFar;
+
+	left = frustum->left.normal * pos + frustum->left.d;
+	right = frustum->right.normal * pos + frustum->right.d;
+	top = frustum->top.normal * pos + frustum->top.d;
+	bottom = frustum->bottom.normal * pos + frustum->bottom.d;
+	zNear = frustum->zNear.normal * pos + frustum->zNear.d;
+	zFar = frustum->zFar.normal * pos + frustum->zFar.d;
+
+//	printf("L%d R%d T%d B%d N%d F%d\r\n", left > 0, right > 0, top > 0, bottom > 0, zNear > 0, zFar > 0);
+
+	if (left > 0 && right > 0 && top > 0 && bottom > 0 && zNear > 0 && zFar > 0)
+		return 1;
+	else
+		return 0;
+}
