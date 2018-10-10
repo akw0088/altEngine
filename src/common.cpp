@@ -4250,3 +4250,74 @@ void get_frustum(matrix4 &projection, plane_t *frustum)
 	frustum[5].normal.z = -C;
 	frustum[5].d = D;
 }
+
+
+
+void calc_plane(plane_t &plane, const vec3 &point1, const vec3 &point2, const vec3 &point3)
+{
+	vec3	a, b;
+
+	a = point2 - point1;
+	b = point3 - point1;
+
+	plane.normal = vec3::crossproduct(a, b);
+	plane.normal.normalize();
+	plane.d = -(plane.normal * point1);
+}
+
+
+void gen_frustum(Frame *camera, frustum_t *frustum)
+{
+	float	hNear, wNear, hFar, wFar;
+	float	aspectRatio, zNear, zFar, fov;
+	vec3	farCoord[4], nearCoord[4], farCenter, nearCenter;
+	vec3	vRight;
+
+
+	vRight = vec3::crossproduct(camera->forward, camera->up);
+
+	aspectRatio = 1.6f;
+	zNear = -1.0f;
+	zFar = -2001.0f;
+	fov = 45.0f;
+
+	hNear = 2.0f * tan(fov / 2.0f) * zNear;
+	wNear = hNear * aspectRatio;
+
+	hFar = 2.0f * tan(fov / 2.0f) * zFar;
+	wFar = hFar * aspectRatio;
+
+	// far center
+	farCenter = camera->forward * zFar;
+
+	// near center
+	nearCenter = camera->forward * zNear;
+
+	// far coords
+	//upper right
+	farCoord[0] = farCenter + camera->up * hFar / 2.0f + vRight * wFar / 2.0f;
+	//upper left
+	farCoord[1] = farCenter + camera->up * hFar / 2.0f - vRight * wFar / 2.0f;
+	//lower right
+	farCoord[2] = farCenter - camera->up * hFar / 2.0f + vRight * wFar / 2.0f;
+	//lower left
+	farCoord[3] = farCenter - camera->up * hFar / 2.0f - vRight * wFar / 2.0f;
+
+	// near coords
+	//upper right
+	nearCoord[0] = nearCenter + camera->up * hNear / 2.0f + vRight * wNear / 2.0f;
+	//upper left
+	nearCoord[1] = nearCenter + camera->up * hNear / 2.0f - vRight * wNear / 2.0f;
+	//lower right
+	nearCoord[2] = nearCenter - camera->up * hNear / 2.0f + vRight * wNear / 2.0f;
+	//lower left
+	nearCoord[3] = nearCenter - camera->up * hNear / 2.0f - vRight * wNear / 2.0f;
+
+	// be sure normals point into frustum
+	calc_plane(frustum->left, farCoord[0], nearCoord[0], nearCoord[2]);
+	calc_plane(frustum->right, farCoord[1], nearCoord[3], nearCoord[1]);
+	calc_plane(frustum->bottom, farCoord[0], nearCoord[1], nearCoord[0]);
+	calc_plane(frustum->top, farCoord[2], nearCoord[2], nearCoord[3]);
+	calc_plane(frustum->zNear, nearCoord[0], nearCoord[1], nearCoord[2]);
+	calc_plane(frustum->zFar, farCoord[0], farCoord[2], farCoord[1]);
+}

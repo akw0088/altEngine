@@ -212,7 +212,19 @@ typedef union
 int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const
 	vertex_t &c, vertex_t *result);
 
+
+typedef struct
+{
+	plane_t left;
+	plane_t right;
+	plane_t bottom;
+	plane_t top;
+	plane_t zNear;
+	plane_t zFar;
+}  frustum_t;
+
 void get_frustum(matrix4 &projection, plane_t *frustum);
+void gen_frustum(Frame *camera, frustum_t *frustum);
 
 
 #endif

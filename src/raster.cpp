@@ -13,6 +13,7 @@
 //=============================================================================
 
 #include "raster.h"
+#include "common.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,10 +39,9 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 
 	if (once == 0)
 	{
-		plane_t frustum[6];
 		matrix4 projection;
 
-		float plane_d = 1.0f;
+		float plane_d = 500.0f;
 
 		xp.normal = vec3(1.0f, 0.0f, 0.0f);
 		xp.d = plane_d;
@@ -57,26 +57,32 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 
 		// near clip
 		zp.normal = vec3(0.0f, 0.0f, 1.0f);
-		zp.d = plane_d;
+		zp.d = 1.0f;
 
 		// far clip
 		zn.normal = vec3(0.0f, 0.0f, -1.0f);
-		zn.d = plane_d;
+		zn.d = 2001.0f;
 
 
-		projection.perspective(110.0f, 16.0f / 9.0f, 1.0f, 2001.0f, false);
+		//projection.perspective(110.0f, 16.0f / 9.0f, 1.0f, 2001.0f, false);
 
-		get_frustum(projection, frustum);
+		//get_frustum(projection, frustum);
+		frustum_t frustum;
 
-		xp = frustum[0];
-		xn = frustum[1];
-		yp = frustum[2];
-		yn = frustum[3];
-		zp = frustum[4];
-		zn = frustum[5];
+		Frame camera;
+		camera.up = vec3(0.0f, 1.0f, 0.0f);
+		camera.forward = vec3(0.0f, 0.0f, -1.0f);
+		gen_frustum(&camera, &frustum);
+
+		xp = frustum.left;
+		xn = frustum.right;
+		yp = frustum.bottom;
+		yn = frustum.top;
+		zp = frustum.zNear;
+		zn = frustum.zFar;
 		once = 1;
 	}
-
+#if 1
 	ret = intersect_triangle_plane(xp, a, b, c, result);
 	if (ret == ALL_OUT)
 	{
@@ -88,6 +94,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
+		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
@@ -106,6 +113,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
+		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
@@ -125,6 +133,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
+		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
@@ -144,6 +153,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
+		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
@@ -163,6 +173,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
+		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
@@ -170,6 +181,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		return ALL_OUT;
 	}
 
+#endif
 
 	ret = intersect_triangle_plane(zp, a, b, c, result);
 	if (ret == ALL_OUT)
@@ -182,6 +194,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
+		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
@@ -245,16 +258,30 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 		if (clip)
 		{
+			// setting w to texCoord1 so it gets interpolated when clipped
+			a.texCoord1.x = tri[0].w;
+			b.texCoord1.x = tri[1].w;
+			c.texCoord1.x = tri[2].w;
+
 			int ret = clip_planes(a, b, c);
 			if (ret == ALL_OUT)
 			{
 				skip = true;
 				break;
 			}
+			else if (ret == CLIPPED_HARD)
+			{
+				skip = true;
+				break;
+			}
+			else
+			{
+				// All in or clipped easy, just set position
+				tri[0] = vec4(a.position, a.texCoord1.x);
+				tri[1] = vec4(b.position, b.texCoord1.x);
+				tri[2] = vec4(c.position, c.texCoord1.x);
+			}
 
-			tri[0] = vec4(a.position, tri[0].w);
-			tri[1] = vec4(b.position, tri[1].w);
-			tri[2] = vec4(c.position, tri[2].w);
 		}
 
 		// perspective divide
