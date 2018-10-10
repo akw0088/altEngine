@@ -276,10 +276,15 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			}
 			else
 			{
-				// All in or clipped easy, just set position
+				// All in or clipped easy, just set new values
 				tri[0] = vec4(a.position, a.texCoord1.x);
 				tri[1] = vec4(b.position, b.texCoord1.x);
 				tri[2] = vec4(c.position, c.texCoord1.x);
+
+				// set new tex coords
+				tri_uv[0] = a.texCoord0;
+				tri_uv[1] = b.texCoord0;
+				tri_uv[2] = c.texCoord0;
 			}
 
 		}

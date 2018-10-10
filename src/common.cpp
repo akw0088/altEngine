@@ -4279,7 +4279,7 @@ void gen_frustum(Frame *camera, frustum_t *frustum)
 	aspectRatio = 1.6f;
 	zNear = -1.0f;
 	zFar = -2001.0f;
-	fov = 45.0f;
+	fov = 55.0f;
 
 	hNear = 2.0f * tan(fov / 2.0f) * zNear;
 	wNear = hNear * aspectRatio;
@@ -4288,10 +4288,10 @@ void gen_frustum(Frame *camera, frustum_t *frustum)
 	wFar = hFar * aspectRatio;
 
 	// far center
-	farCenter = camera->forward * zFar;
+	farCenter = camera->pos + camera->forward * zFar;
 
 	// near center
-	nearCenter = camera->forward * zNear;
+	nearCenter = camera->pos + camera->forward * zNear;
 
 	// far coords
 	//upper right
