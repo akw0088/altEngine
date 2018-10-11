@@ -3918,6 +3918,9 @@ int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, v
 		return -1;
 
 	float t = -(origin * p.normal + p.d) / denom;
+	if (t < 0.0 || t > 1.0)
+		return -1;
+
 	result = origin + dir * t;
 	return 0;
 }
@@ -3944,6 +3947,11 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	// classify points that are out of plane
 	inside_t inside;
 
+	// initialize result to given triangle
+	result[0] = a;
+	result[1] = b;
+	result[2] = c;
+
 	inside.dword = 0;
 	inside.bit.a_in = (p.normal * a.position + p.d >= 0);
 	inside.bit.b_in = (p.normal * b.position + p.d >= 0);
@@ -3962,89 +3970,89 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		// easy case, one triangle, two points move in
 		if (inside.bit.a_in)
 		{
-			vec3 temp;
+			vec3 ab, ac;
 
-			int ret = intersect_two_points_plane(p, a.position, b.position, temp);
+			int ret = intersect_two_points_plane(p, a.position, b.position, ab);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
 				// just render normal
-				return ALL_IN;
+				return ALL_OUT;
+			}
+
+			ret = intersect_two_points_plane(p, a.position, c.position, ac);
+			if (ret != 0)
+			{
+				//printf("Error: didnt intersect despite being classified as exiting\r\n");
+				// just render normal
+				return ALL_OUT;
 			}
 
 			result[0] = a;
-			result[1].position = temp;
-			calc_texcoord(a, b, temp, result[1]);
+			result[1].position = ab;
+			calc_texcoord(a, b, ab, result[1]);
+			result[2].position = ac;
+			calc_texcoord(a, c, ac, result[2]);
+			return CLIPPED_EASY;
 
-			ret = intersect_two_points_plane(p, a.position, c.position, temp);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_IN;
-			}
-
-			result[2].position = temp;
-			calc_texcoord(a, c, temp, result[2]);
 		}
 		else if (inside.bit.b_in)
 		{
-			vec3 temp;
+			vec3 ba, bc;
 
-			int ret = intersect_two_points_plane(p, b.position, a.position, temp);
+			int ret = intersect_two_points_plane(p, b.position, a.position, ba);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
 				// just render normal
-				return ALL_IN;
+				return ALL_OUT;
 			}
 
-			result[0].position = temp;
-			calc_texcoord(b, a, temp, result[0]);
+			ret = intersect_two_points_plane(p, b.position, c.position, bc);
+			if (ret != 0)
+			{
+				//printf("Error: didnt intersect despite being classified as exiting\r\n");
+				// just render normal
+				return ALL_OUT;
+			}
+
+			result[0].position = ba;
+			calc_texcoord(b, a, ba, result[0]);
 			result[1] = b;
+			result[2].position = bc;
+			calc_texcoord(b, c, bc, result[2]);
+			return CLIPPED_EASY;
 
-
-			ret = intersect_two_points_plane(p, b.position, c.position, temp);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_IN;
-			}
-
-			result[2].position = temp;
-			calc_texcoord(b, c, temp, result[2]);
 		}
 		else if (inside.bit.c_in)
 		{
-			vec3 temp;
+			vec3 ca, cb;
 
-			int ret = intersect_two_points_plane(p, c.position, a.position, temp);
+			int ret = intersect_two_points_plane(p, c.position, a.position, ca);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
 				// just render normal
-				return ALL_IN;
+				return ALL_OUT;
 			}
 
-
-			result[0].position = temp;
-			calc_texcoord(c, a, temp, result[0]);
-
-
-			ret = intersect_two_points_plane(p, c.position, b.position, temp);
+			ret = intersect_two_points_plane(p, c.position, b.position, cb);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
 				// just render normal
-				return ALL_IN;
+				return ALL_OUT;
 			}
 
+			result[0].position = ca;
+			calc_texcoord(c, a, ca, result[0]);
 
-			result[1].position = temp;
-			calc_texcoord(c, b, temp, result[1]);
+			result[1].position = cb;
+			calc_texcoord(c, b, cb, result[1]);
 
 			result[2] = c;
+			return CLIPPED_EASY;
+
 		}
 
 		return CLIPPED_EASY;
@@ -4068,7 +4076,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
 			// just render normal
-			return ALL_IN;
+			return ALL_OUT;
 		}
 
 		ret = intersect_two_points_plane(p, a.position, c.position, ca);
@@ -4076,7 +4084,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
 			// just render normal
-			return ALL_IN;
+			return ALL_OUT;
 		}
 
 		result[0].position = ab;
@@ -4090,7 +4098,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[4].texCoord0 = result[0].texCoord0;
 		result[4].texCoord1 = result[0].texCoord1;
 		result[5] = c;
-
+		return CLIPPED_HARD;
 	}
 	else if (inside.bit.b_in == 0)
 	{
@@ -4109,7 +4117,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
 			// just render normal
-			return ALL_IN;
+			return ALL_OUT;
 		}
 
 		ret = intersect_two_points_plane(p, c.position, b.position, cb);
@@ -4117,7 +4125,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
 			// just render normal
-			return ALL_IN;
+			return ALL_OUT;
 		}
 		result[0] = a;
 		result[1].position = ab;
@@ -4131,7 +4139,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[3].position = cb;
 		calc_texcoord(c, b, cb, result[3]);
 		result[5] = c;
-
+		return CLIPPED_HARD;
 	}
 	else if (inside.bit.c_in == 0)
 	{
@@ -4149,7 +4157,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
 			// just render normal
-			return ALL_IN;
+			return ALL_OUT;
 		}
 
 		ret = intersect_two_points_plane(p, b.position, c.position, bc);
@@ -4157,7 +4165,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
 			// just render normal
-			return ALL_IN;
+			return ALL_OUT;
 		}
 		result[0] = a;
 		result[1] = b;
@@ -4170,6 +4178,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[4].texCoord0 = result[1].texCoord0;
 		result[4].texCoord1 = result[1].texCoord1;
 		result[5] = b;
+		return CLIPPED_HARD;
 	}
 
 	return CLIPPED_HARD;

@@ -964,7 +964,7 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	{
 		velocity += wishdir * entity->player->pm_wateraccel * speed_scale * 0.016f;
 	}
-	float speed = 0.0f;
+	float speed = 1.0f;
 
 
 

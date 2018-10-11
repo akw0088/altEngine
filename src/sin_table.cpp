@@ -723,12 +723,12 @@ inline float guessSqrt(float x)
 	return *(float*)&i;
 }
 
-int imin(int x, int y)
+inline int imin(int x, int y)
 {
 	return y ^ ((x ^ y) & -(x < y));
 }
 
-int imax(int x, int y)
+inline int imax(int x, int y)
 {
 	return y ^ ((x ^ y) & -(x > y));
 }

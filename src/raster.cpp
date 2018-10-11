@@ -30,12 +30,15 @@ inline int imax(int x, int y)
 }
 
 
-int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
+int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
+	vertex_t &d, vertex_t &e, vertex_t &f)
 {
 	vertex_t result[6];
 	static int once = 0;
 	static plane_t xp, xn, yp, yn, zp, zn;
 	int ret = 0;
+	int hard = 0;
+	int easy = 0;
 
 	if (once == 0)
 	{
@@ -82,7 +85,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		zn = frustum.zFar;
 		once = 1;
 	}
-#if 1
+#if 0
 	ret = intersect_triangle_plane(xp, a, b, c, result);
 	if (ret == ALL_OUT)
 	{
@@ -94,12 +97,20 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
-		return CLIPPED_EASY;
+		easy = 1;
+//		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
 	{
-		return ALL_OUT;
+		a = result[0];
+		b = result[1];
+		c = result[2];
+		d = result[3];
+		e = result[4];
+		f = result[5];
+		hard = 1;
+//		return CLIPPED_HARD;
 	}
 
 	ret = intersect_triangle_plane(xn, a, b, c, result);
@@ -113,12 +124,20 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
-		return CLIPPED_EASY;
+		easy = 1;
+//		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
 	{
-		return ALL_OUT;
+		a = result[0];
+		b = result[1];
+		c = result[2];
+		d = result[3];
+		e = result[4];
+		f = result[5];
+		hard = 1;
+//		return CLIPPED_HARD;
 	}
 
 
@@ -133,12 +152,20 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
-		return CLIPPED_EASY;
+		easy = 1;
+//		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
 	{
-		return ALL_OUT;
+		a = result[0];
+		b = result[1];
+		c = result[2];
+		d = result[3];
+		e = result[4];
+		f = result[5];
+		hard = 1;
+//		return CLIPPED_HARD;
 	}
 
 
@@ -153,12 +180,20 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
-		return CLIPPED_EASY;
+		easy = 1;
+//		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
 	{
-		return ALL_OUT;
+		a = result[0];
+		b = result[1];
+		c = result[2];
+		d = result[3];
+		e = result[4];
+		f = result[5];
+		hard = 1;
+//		return CLIPPED_HARD;
 	}
 
 
@@ -173,12 +208,20 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
-		return CLIPPED_EASY;
+		easy = 1;
+//		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
 	{
-		return ALL_OUT;
+		a = result[0];
+		b = result[1];
+		c = result[2];
+		d = result[3];
+		e = result[4];
+		f = result[5];
+		hard = 1;
+//		return CLIPPED_HARD;
 	}
 
 #endif
@@ -194,14 +237,28 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c)
 		a = result[0];
 		b = result[1];
 		c = result[2];
-		return CLIPPED_EASY;
+		easy = 1;
+//		return CLIPPED_EASY;
 	}
 
 	if (ret == CLIPPED_HARD)
 	{
-		return ALL_OUT;
+		a = result[0];
+		b = result[1];
+		c = result[2];
+		d = result[3];
+		e = result[4];
+		f = result[5];
+		hard = 1;
+//		return CLIPPED_HARD;
 	}
 
+	if (hard)
+		return CLIPPED_HARD;
+	else if (easy)
+		return CLIPPED_EASY;
+	else
+		return ALL_IN;
 
 	return -1;
 }
@@ -210,16 +267,34 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
+	if (width <= 1 || height <= 1)
+		return;
+
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
+		// transform model space to clip space
 		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
 		vec4 v2 = mvp * vec4(vertex_array[start_vertex + index_array[i + 1]].position, 1.0f);
 		vec4 v3 = mvp * vec4(vertex_array[start_vertex + index_array[i + 2]].position, 1.0f);
 
-		vertex_t a = vertex_array[start_vertex + index_array[i]];;
-		vertex_t b = vertex_array[start_vertex + index_array[i + 1]];;
-		vertex_t c = vertex_array[start_vertex + index_array[i + 2]];;
+		// backface cull
+		vec3 av = vec3(v2) - vec3(v1);
+		vec3 bv = vec3(v3) - vec3(v1);
+		if (vec3::crossproduct(av, bv) * vec3(0, 0, -1) < 0)
+		{
+			continue;
+		}
 
+		// initialize vertex used for clipping
+		vertex_t a = vertex_array[start_vertex + index_array[i]];
+		vertex_t b = vertex_array[start_vertex + index_array[i + 1]];
+		vertex_t c = vertex_array[start_vertex + index_array[i + 2]];
+
+		vertex_t d;
+		vertex_t e;
+		vertex_t f;
+
+		// set position to transformed coordinate (clipping uses vec3)
 		a.position = v1;
 		b.position = v2;
 		c.position = v3;
@@ -230,7 +305,8 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		vec2 tri_luv[6];
 		bool skip = false;
 
-
+		// initialize triangle output array used for rendering
+		// (clipping can generate new triangles, so must be able to handle that)
 		tri[0].x = v1.x;
 		tri[0].y = v1.y;
 		tri[0].z = v1.z;
@@ -244,6 +320,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[2].z = v3.z;
 		tri[2].w = v3.w;
 
+		// initialize triangle array texcoords
 		tri_uv[0] = vertex_array[start_vertex + index_array[i]].texCoord0;
 		tri_uv[1] = vertex_array[start_vertex + index_array[i + 1]].texCoord0;
 		tri_uv[2] = vertex_array[start_vertex + index_array[i + 2]].texCoord0;
@@ -251,32 +328,52 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri_luv[0] = vertex_array[start_vertex + index_array[i]].texCoord1;
 		tri_luv[1] = vertex_array[start_vertex + index_array[i + 1]].texCoord1;
 		tri_luv[2] = vertex_array[start_vertex + index_array[i + 2]].texCoord1;
-
-
-		if (width <= 1 || height <= 1)
-			break;
-
+		
 		if (clip)
 		{
-			// setting w to texCoord1 so it gets interpolated when clipped
+			// setting w to texCoord1 so it gets linearly interpolated when clipped
 			a.texCoord1.x = tri[0].w;
 			b.texCoord1.x = tri[1].w;
 			c.texCoord1.x = tri[2].w;
 
-			int ret = clip_planes(a, b, c);
+			// clip against frustum planes
+			int ret = clip_planes(a, b, c, d, e, f);
 			if (ret == ALL_OUT)
 			{
-				skip = true;
-				break;
+				// triangle is outside frustum, skip it
+				continue;
 			}
 			else if (ret == CLIPPED_HARD)
 			{
-				skip = true;
-				break;
+				// clipping generated two triangles
+				num_point = 6;
+				tri[0] = vec4(a.position, a.texCoord1.x);
+				tri[1] = vec4(b.position, b.texCoord1.x);
+				tri[2] = vec4(c.position, c.texCoord1.x);
+				tri[3] = tri[0];
+				tri[4] = tri[1];
+				tri[5] = tri[2];
+				tri[3] = vec4(d.position, d.texCoord1.x);
+				tri[4] = vec4(e.position, e.texCoord1.x);
+				tri[5] = vec4(f.position, f.texCoord1.x);
+
+
+				// set new tex coords
+				tri_uv[0] = a.texCoord0;
+				tri_uv[1] = b.texCoord0;
+				tri_uv[2] = c.texCoord0;
+
+				tri_uv[3] = tri_uv[0];
+				tri_uv[4] = tri_uv[1];
+				tri_uv[5] = tri_uv[2];
+
+				tri_uv[3] = d.texCoord0;
+				tri_uv[4] = e.texCoord0;
+				tri_uv[5] = f.texCoord0;
 			}
-			else
+			else if (CLIPPED_EASY)
 			{
-				// All in or clipped easy, just set new values
+				// clipped easy, just set new values
 				tri[0] = vec4(a.position, a.texCoord1.x);
 				tri[1] = vec4(b.position, b.texCoord1.x);
 				tri[2] = vec4(c.position, c.texCoord1.x);
@@ -289,16 +386,18 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 		}
 
-		// perspective divide
+		// loop through triangle array
 		for (int j = 0; j < num_point; j += 3)
 		{
 
 			if (tri[j].w == 0.0f || tri[j+1].w == 0.0f || tri[j+2].w == 0.0f)
 			{
+				// cant divide by zero, ignore triangle
 				skip = true;
 				break;
 			}
 
+			// perspective divide
 			float inv = 1 / tri[j].w;
 			tri[j].x *= inv;
 			tri[j].y *= inv;
@@ -326,7 +425,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			tri[j + 2].z = tri[j + 2].z * 0.5f + 0.5f;
 
 
-
+			// old clipping style just threw away triangles that needed clipping
 			if (clip == false)
 			{
 				if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
@@ -334,23 +433,16 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 					skip = true;
 					break;
 				}
-				if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
-				{
-					skip = true;
-					break;
-				}
 			}
 
-			// backface cull
-			vec3 a = vec3(tri[j + 1]) - vec3(tri[j]);
-			vec3 b = vec3(tri[j + 2]) - vec3(tri[j]);
-			if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
+			// keep far plane clipping check
+			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
 			{
 				skip = true;
 				break;
 			}
 
-			//[0,1] -> [0,width]
+			//[0,1] -> [0,width] viewport transform
 			tri[j].x *= width - 1;
 			tri[j].y *= height - 1;
 			tri[j + 1].x *= width - 1;
