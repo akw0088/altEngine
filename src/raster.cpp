@@ -336,52 +336,75 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			b.texCoord1.x = tri[1].w;
 			c.texCoord1.x = tri[2].w;
 
-			// clip against frustum planes
-			int ret = clip_planes(a, b, c, d, e, f);
-			if (ret == ALL_OUT)
+			//simple w tests first
+			int good = 0;
+			for (int j = 0; j < 3; j++)
 			{
-				// triangle is outside frustum, skip it
+				if (
+						((tri[j].x < tri[j].w && tri[j].x > -tri[j].w) &&
+						 (tri[j].y < tri[j].w && tri[j].y > -tri[j].w) &&
+						 (tri[j].z < tri[j].w && tri[j].z > -tri[j].w))
+					)
+				{
+					good++;
+				}
+			}
+			if (good == 0)
+			{
+				// all points of triangle were outside clip range
 				continue;
 			}
-			else if (ret == CLIPPED_HARD)
+
+			// at least one point was outside clip box
+			if (good < 3)
 			{
-				// clipping generated two triangles
-				num_point = 6;
-				tri[0] = vec4(a.position, a.texCoord1.x);
-				tri[1] = vec4(b.position, b.texCoord1.x);
-				tri[2] = vec4(c.position, c.texCoord1.x);
-				tri[3] = tri[0];
-				tri[4] = tri[1];
-				tri[5] = tri[2];
-				tri[3] = vec4(d.position, d.texCoord1.x);
-				tri[4] = vec4(e.position, e.texCoord1.x);
-				tri[5] = vec4(f.position, f.texCoord1.x);
+				// clip against frustum planes
+				int ret = clip_planes(a, b, c, d, e, f);
+				if (ret == ALL_OUT)
+				{
+					// triangle is outside frustum, skip it
+					continue;
+				}
+				else if (ret == CLIPPED_HARD)
+				{
+					// clipping generated two triangles
+					num_point = 6;
+					tri[0] = vec4(a.position, a.texCoord1.x);
+					tri[1] = vec4(b.position, b.texCoord1.x);
+					tri[2] = vec4(c.position, c.texCoord1.x);
+					tri[3] = tri[0];
+					tri[4] = tri[1];
+					tri[5] = tri[2];
+					tri[3] = vec4(d.position, d.texCoord1.x);
+					tri[4] = vec4(e.position, e.texCoord1.x);
+					tri[5] = vec4(f.position, f.texCoord1.x);
 
 
-				// set new tex coords
-				tri_uv[0] = a.texCoord0;
-				tri_uv[1] = b.texCoord0;
-				tri_uv[2] = c.texCoord0;
+					// set new tex coords
+					tri_uv[0] = a.texCoord0;
+					tri_uv[1] = b.texCoord0;
+					tri_uv[2] = c.texCoord0;
 
-				tri_uv[3] = tri_uv[0];
-				tri_uv[4] = tri_uv[1];
-				tri_uv[5] = tri_uv[2];
+					tri_uv[3] = tri_uv[0];
+					tri_uv[4] = tri_uv[1];
+					tri_uv[5] = tri_uv[2];
 
-				tri_uv[3] = d.texCoord0;
-				tri_uv[4] = e.texCoord0;
-				tri_uv[5] = f.texCoord0;
-			}
-			else if (CLIPPED_EASY)
-			{
-				// clipped easy, just set new values
-				tri[0] = vec4(a.position, a.texCoord1.x);
-				tri[1] = vec4(b.position, b.texCoord1.x);
-				tri[2] = vec4(c.position, c.texCoord1.x);
+					tri_uv[3] = d.texCoord0;
+					tri_uv[4] = e.texCoord0;
+					tri_uv[5] = f.texCoord0;
+				}
+				else if (CLIPPED_EASY)
+				{
+					// clipped easy, just set new values
+					tri[0] = vec4(a.position, a.texCoord1.x);
+					tri[1] = vec4(b.position, b.texCoord1.x);
+					tri[2] = vec4(c.position, c.texCoord1.x);
 
-				// set new tex coords
-				tri_uv[0] = a.texCoord0;
-				tri_uv[1] = b.texCoord0;
-				tri_uv[2] = c.texCoord0;
+					// set new tex coords
+					tri_uv[0] = a.texCoord0;
+					tri_uv[1] = b.texCoord0;
+					tri_uv[2] = c.texCoord0;
+				}
 			}
 
 		}
