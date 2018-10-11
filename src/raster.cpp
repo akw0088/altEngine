@@ -1754,25 +1754,18 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	int max_y = imax(y1, imax(y2, y3));
 	int min_y = imin(y1, imin(y2, y3));
 
-	if (min_x < minx)
-		min_x = minx;
-	if (min_y < miny)
-		min_y = miny;
 
-	if (max_x < minx)
-		max_x = minx;
-	if (max_y < miny)
-		max_y = miny;
+	min_x = imax(min_x, minx);
+	min_y = imax(min_y, miny);
 
-	if (min_x >= maxx)
-		min_x = maxx - 1;
-	if (min_y >= maxy)
-		min_y = maxy - 1;
+	max_x = imax(max_x, minx);
+	max_y = imax(max_y, miny);
 
-	if (max_x >= maxx)
-		max_x = maxx - 1;
-	if (max_y >= maxy)
-		max_y = maxy - 1;
+	min_x = imin(min_x, maxx - 1);
+	min_y = imin(min_y, maxy - 1);
+
+	max_x = imin(max_x, maxx - 1);
+	max_y = imin(max_y, maxy - 1);
 
 
 	if (max_x == min_x || max_y == min_y)		return;
