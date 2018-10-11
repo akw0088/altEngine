@@ -64,7 +64,7 @@ typedef struct
 
 work_t work1[MAX_THREAD];
 
-RTYPE thread1(void *num)
+RTYPE WINAPI thread1(void *num)
 {
 	int i = (int64_t)num;
 	int last_job = 0;
@@ -330,6 +330,15 @@ void Graphics::clear()
 {
 #ifdef THREAD
 
+	for (int i = 0; i < 16; i++)
+	{
+		// make sure threads idle before clearing
+		if (work1[i].idle == false)
+		{
+			i = 0;
+		}
+	}
+
 	if (pixel[0])
 	{
 		for (int y = 0; y < height; y++)
@@ -445,6 +454,93 @@ void Graphics::cleardepth()
 		for (int i = 0; i < width * height; i++)
 		{
 			zbuffer[i] = 1.0f;
+		}
+	}
+#else
+
+	for (int i = 0; i < 16; i++)
+	{
+		// make sure threads idle before clearing
+		if (work1[i].idle == false)
+		{
+			i = 0;
+		}
+	}
+
+	if (pixel[0])
+	{
+		for (int y = 0; y < height; y++)
+		{
+			for (int x = 0; x < width; x++)
+			{
+				if (x < width / 4 && y < height / 4)
+				{
+					zbuff[0][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < height / 4)
+				{
+					zbuff[1][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < height / 4)
+				{
+					zbuff[2][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < height / 4)
+				{
+					zbuff[3][x + y * width] = 1.0f;
+				}
+
+				else if (x < width / 4 && y < 2 * height / 4)
+				{
+					zbuff[4][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < 2 * height / 4)
+				{
+					zbuff[5][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < 2 * height / 4)
+				{
+					zbuff[6][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < 2 * height / 4)
+				{
+					zbuff[7][x + y * width] = 1.0f;
+				}
+
+				else if (x < width / 4 && y < 3 * height / 4)
+				{
+					zbuff[8][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < 3 * height / 4)
+				{
+					zbuff[9][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < 3 * height / 4)
+				{
+					zbuff[10][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < 3 * height / 4)
+				{
+					zbuff[11][x + y * width] = 1.0f;
+				}
+
+				else if (x < width / 4 && y < height)
+				{
+					zbuff[12][x + y * width] = 1.0f;
+				}
+				else if (x < 2 * width / 4 && y < height)
+				{
+					zbuff[13][x + y * width] = 1.0f;
+				}
+				else if (x < 3 * width / 4 && y < height)
+				{
+					zbuff[14][x + y * width] = 1.0f;
+				}
+				else if (x < width && y < height)
+				{
+					zbuff[15][x + y * width] = 1.0f;
+				}
+			}
 		}
 	}
 #endif
