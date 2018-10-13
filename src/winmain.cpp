@@ -214,11 +214,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	{
 		WSAStartup(MAKEWORD(2, 2), &wsadata);
-#ifndef NDEBUG
-		debug = true;
-#endif
-
-
 		RedirectIOToConsole(debug);
 
 		hCursor = LoadCursorFromFile("media/mouse.cur");

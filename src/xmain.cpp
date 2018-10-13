@@ -364,10 +364,18 @@ int EventProc(Display *display, Window window, GLXContext context)
 
 			switch (keysym)
 			{
+			case XK_Pause:
+				altEngine.keypress("pause", pressed);
+				break;
+			case XK_Tab:
+				altEngine.keypress("tab", pressed);
+				break;
 			case XK_Return:
 			case XK_KP_Enter:
-			case XK_space:
 				altEngine.keypress("enter", pressed);
+				break;
+			case XK_space:
+				altEngine.keypress("space", pressed);
 				break;
 			case XK_Shift_L:
 			case XK_Shift_R:
@@ -377,32 +385,126 @@ int EventProc(Display *display, Window window, GLXContext context)
 			case XK_Control_R:
 				altEngine.keypress("control", pressed);
 				break;
+			case XK_Alt_L:
+			case XK_Alt_R:
+				altEngine.keypress("alt", pressed);
+				break;
 			case XK_Escape:
 				altEngine.keypress("escape", pressed);
 				break;
 			case XK_Up:
 				altEngine.keypress("up", pressed);
 				break;
-			case XK_w:
-				altEngine.keypress("w", pressed);
-				break;
 			case XK_Left:
 				altEngine.keypress("left", pressed);
-				break;
-			case XK_a:
-				altEngine.keypress("a", pressed);
 				break;
 			case XK_Down:
 				altEngine.keypress("down", pressed);
 				break;
-			case XK_s:
-				altEngine.keypress("s", pressed);
-				break;
 			case XK_Right:
 				altEngine.keypress("right", pressed);
 				break;
-			case XK_d:
-				altEngine.keypress("d", pressed);
+			case XK_KP_0:
+				altEngine.keypress("numpad0", pressed);
+				break;
+			case XK_KP_1:
+				altEngine.keypress("numpad1", pressed);
+				break;
+			case XK_KP_2:
+				altEngine.keypress("numpad2", pressed);
+				break;
+			case XK_KP_3:
+				altEngine.keypress("numpad3", pressed);
+				break;
+			case XK_KP_4:
+				altEngine.keypress("numpad4", pressed);
+				break;
+			case XK_KP_5:
+				altEngine.keypress("numpad5", pressed);
+				break;
+			case XK_KP_6:
+				altEngine.keypress("numpad6", pressed);
+				break;
+			case XK_KP_7:
+				altEngine.keypress("numpad7", pressed);
+				break;
+			case XK_KP_8:
+				altEngine.keypress("numpad8", pressed);
+				break;
+			case XK_KP_9:
+				altEngine.keypress("numpad9", pressed);
+				break;
+			case XK_F1:
+				altEngine.keypress("f1", pressed);
+				break;
+			case XK_F2:
+				altEngine.keypress("f2", pressed);
+				break;
+			case XK_F3:
+				altEngine.keypress("f3", pressed);
+				break;
+			case XK_F4:
+				altEngine.keypress("f4", pressed);
+				break;
+			case XK_F5:
+				altEngine.keypress("f5", pressed);
+				break;
+			case XK_F6:
+				altEngine.keypress("f6", pressed);
+				break;
+			case XK_F7:
+				altEngine.keypress("f7", pressed);
+				break;
+			case XK_F8:
+				altEngine.keypress("f8", pressed);
+				break;
+			case XK_F9:
+				altEngine.keypress("f9", pressed);
+				break;
+			case XK_F10:
+				altEngine.keypress("f10", pressed);
+				break;
+			case XK_F11:
+				altEngine.keypress("f11", pressed);
+				break;
+			case XK_F12:
+				altEngine.keypress("f12", pressed);
+				break;
+			case XK_Insert:
+				altEngine.keypress("insert", pressed);
+				break;
+			case XK_Delete:
+				altEngine.keypress("delete", pressed);
+				break;
+			case XK_Home:
+				altEngine.keypress("home", pressed);
+				break;
+			case XK_End:
+				altEngine.keypress("end", pressed);
+				break;
+			case XK_KP_Multiply:
+				altEngine.keypress("numpad*", pressed);
+				break;
+			case XK_KP_Add:
+				altEngine.keypress("numpad+", pressed);
+				break;
+			case XK_KP_Subtract:
+				altEngine.keypress("numpad-", pressed);
+				break;
+			case XK_KP_Divide:
+				altEngine.keypress("numpad/", pressed);
+				break;
+			case XK_KP_Decimal:
+				altEngine.keypress("numpad.", pressed);
+				break;
+			case XK_Caps_Lock:
+				altEngine.keypress("capslock", pressed);
+				break;
+			case XK_Prior:
+				altEngine.keypress("pgup", pressed);
+				break;
+			case XK_Next:
+				altEngine.keypress("pgdown", pressed);
 				break;
 			}
 		}
