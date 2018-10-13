@@ -25,7 +25,7 @@ HLBsp::HLBsp()
 
 int HLBsp::load(Graphics &gfx, char *map)
 {
-	int size;
+	unsigned int size;
 	dheader_t *tBsp = (dheader_t *)get_file(map, &size);
 	char *pBsp = (char *)tBsp;
 

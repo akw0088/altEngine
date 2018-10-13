@@ -261,7 +261,7 @@ int Terrain::CreateMesh(char *heightmap, float scale_width, float scale_height, 
 	int components;
 	unsigned int i;
 
-	int size = 0;
+	unsigned int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
 	unsigned char *image = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 

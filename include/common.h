@@ -57,7 +57,7 @@ void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &o
 void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index, int &skybox_vertex, int &skybox_index, bool sphere);
 void print_entity_meminfo(vector<Entity *> &entity_list);
 
-char *get_file(char *filename, int *size);
+char *get_file(char *filename, unsigned int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
 int list_zipfile(char *zipfile, char *filelist);
 int write_file(char *filename, const char *bytes, int size);
@@ -88,6 +88,11 @@ float clamp(float value, float min, float max);
 int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert_one, const int num_vert_two);
 void ClipVelocity(vec3 &in, vec3 &normal);
 
+
+extern "C" {
+	void md5sum(char *data, int size, char *hash);
+}
+int check_content_length(unsigned char *data, int size, char **filep);
 float random_float();
 
 double GetCounter(double freq);

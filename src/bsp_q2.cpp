@@ -19,7 +19,7 @@
 
 #include "bsp_types_q2.h"
 
-char *get_file(char *filename, int *size);
+char *get_file(char *filename, unsigned int *size);
 int abs32(int val);
 
 using namespace q2;
@@ -28,7 +28,7 @@ using namespace q2;
 int Q2Bsp::load(Graphics &gfx, char *filename)
 {
 	qheader_t *header = NULL;
-	int size = 0;
+	unsigned int size = 0;
 	char *file = get_file(filename, &size);
 	if (file == NULL)
 	{

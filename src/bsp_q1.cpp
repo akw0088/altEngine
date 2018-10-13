@@ -19,7 +19,7 @@
 
 using namespace q1;
 
-char *get_file(char *filename, int *size);
+char *get_file(char *filename, unsigned int *size);
 int abs32(int val);
 
 
@@ -470,7 +470,7 @@ Q1Bsp::Q1Bsp()
 
 int Q1Bsp::load(Graphics &gfx, char *filename)
 {
-	int size = 0;
+	unsigned int size = 0;
 	char *file = NULL;
 	
 	file = get_file(filename, &size);
@@ -1004,7 +1004,7 @@ void Q1Bsp::palette_to_rgb(bitmap &bm)
 {
 	bitmap new_bm;
 
-	int size;
+	unsigned int size;
 	char *palette = get_file("media/palette.lmp", &size);
 
 	new_bm.width = bm.width;

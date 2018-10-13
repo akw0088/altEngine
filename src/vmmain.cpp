@@ -41,7 +41,7 @@ int vm_main(char *qvmfile, int caller)
 {
 	vm_t vm;
 	int retVal = -1;
-	int size = 0;
+	unsigned int size = 0;
 
 	char *image = get_file(qvmfile, &size);
 	if (!image)

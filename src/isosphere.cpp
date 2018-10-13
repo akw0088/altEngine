@@ -53,7 +53,7 @@ int IsoSphere::load(Graphics &gfx, char *texture_str, char *heightmap, int depth
 	int height;
 	int components;
 
-	int size = 0;
+	unsigned int size = 0;
 	unsigned char *data = (unsigned char *)get_file(heightmap, &size);
 	if (data == NULL)
 	{

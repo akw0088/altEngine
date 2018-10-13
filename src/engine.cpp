@@ -175,15 +175,18 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	vm_main("media/vm/game.qvm", VM_INIT);
 
 
-//	char *http_response = (char *)malloc(1024 * 1024 * 800);
+	//char *http_response = (char *)malloc(1024 * 1024 * 800);
 	//http://releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
-	//unsigned int num_read = get_url("releases.ubuntu.com", "/18.04.1/ubuntu-18.04.1-desktop-amd64.iso", http_response, 1024 * 1024 * 800);
-	//char *data = strstr(http_response, "\r\n\r\n");
-	//if (data)
-	//{
-//		data += 4;
-//	}
+	//unsigned int num_read = get_url("127.0.0.1", "/18.04.1/ubuntu-18.04.1-desktop-amd64.iso", http_response, 1024 * 1024 * 800);
+	//char *data = NULL;
+	//int size = check_content_length((unsigned char *)http_response, num_read, &data);
 
+	//char hash[256] = { 0 };
+	//md5sum(data, size, hash);
+	//printf("File hash %s\r\n", hash);
+	//fd6ac870e4f54d2599a4f140f2687634
+	//fd6ac870e4f54d2599a4f140f2687634
+	//write_file("download.bin", data, size);
 #ifdef G_QUAKE3
 	game = new Quake3();
 #endif
@@ -3633,7 +3636,7 @@ void Engine::savegame(char *file)
 
 void Engine::loadgame(char *file)
 {
-	int size = 0;
+	unsigned int size = 0;
 	unsigned char *data = (unsigned char *)get_file(file, &size);
 	int num_ents = atoi(strstr(file, "-") + 1);
 

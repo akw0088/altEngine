@@ -129,7 +129,7 @@ Lump 218: name DSGETPOW size 7936
 char *get_wadfile(char *wadfile, char *lump, int *lump_size, char **pdata)
 {
 	char *lump_data = NULL;
-	int size = 0;
+	unsigned int size = 0;
 	wad_header_t *header = NULL;
 
 	char *data = get_file(wadfile, &size);

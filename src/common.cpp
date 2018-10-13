@@ -38,11 +38,6 @@ extern int dmesg_index;
 float newtonSqrt(float x);
 int fceil(int num, int denom);
 
-extern "C" {
-	void md5sum(char *data, int size, char *hash);
-}
-
-
 
 /*
 Transforms leaf aabb to clip space
@@ -437,7 +432,7 @@ int debugf(const char *format, ...)
 
 //vector<std::pair<char *, char *>> file_list;
 
-char *get_file(char *filename, int *size)
+char *get_file(char *filename, unsigned int *size)
 {
     FILE	*file;
     char	*buffer;
@@ -870,7 +865,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	int format = 0;
 	int tex_object = -1;
 
-	int size = 0;
+	unsigned int size = 0;
 	unsigned char *data = (unsigned char *)get_file(file_name, &size);
 
 	if (data == NULL)
@@ -958,7 +953,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 
 void calc_hash(char *filename, char *hash)
 {
-	int size = 0;
+	unsigned int size = 0;
 
 	char *data = get_file(filename, &size);
 	if (data == NULL)
@@ -3089,7 +3084,10 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 		gettimeofday(&tv, NULL);
 		end = tv.tv_usec * 1000;
 #endif
-			printf("\nDownload complete %d bytes %f total time %f average mb/s\n", num_read, (end - start) / 1000.0f, (num_read / (1024 * 1024)) / ((end - start) / 1000.0f));
+			printf("\nDownload complete %d bytes %f total time %f average mb/s %f mbit/s\n",
+				num_read, (end - start) / 1000.0f,
+				(num_read / (1024 * 1024)) / ((end - start) / 1000.0f),
+				((num_read * 8) / 1000000.0f) / ((end - start) / 1000.0f));
 			break;
 		}
 		else
@@ -3107,10 +3105,61 @@ unsigned int get_url(char *host, char *path, char *response, unsigned int size)
 	return num_read;
 }
 
+
+
+int http_upload(char *file)
+{
+	char buffer[4096];
+	int sock;
+	struct sockaddr_in servaddr;
+
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock < 0)
+	{
+		perror("socket failed");
+		return -1;
+	}
+
+
+	memset(&servaddr, 0, sizeof(struct sockaddr_in));
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(80);
+
+	bind(sock, (struct sockaddr *)&servaddr, sizeof(struct sockaddr_in));
+	listen(sock, 3);
+
+	unsigned int filesize = 0;
+	char *data = get_file(file, &filesize);
+	unsigned int num_sent = 0;
+
+	char header[] = "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type : text/html\r\nConnection : Closed\r\n\r\n";
+
+	printf("Listening for connections on port 80\r\n");
+	while (1)
+	{
+		int csock = accept(sock, NULL, NULL);
+		printf("Accepted connection\r\n");
+		memset(buffer, 0, 4096);
+		recv(csock, buffer, 4096, 0);
+		printf("Request:\r\n%s\r\n", buffer);
+
+		sprintf(buffer, header, strlen(header) + filesize - 2);
+		send(csock, buffer, strlen(buffer), 0);
+		while (num_sent < filesize)
+		{
+			num_sent += send(csock, &data[num_sent], filesize - num_sent, 0);
+		}
+		closesocket(csock);
+		num_sent = 0;
+	}
+}
+
 int check_content_length(unsigned char *data, int size, char **filep)
 {
 	char *file = strstr((char *)data, "\r\n\r\n");
 	char *content_length = strstr((char *)data, "Content-Length:");
+	int data_size = 0;
 	if (file)
 	{
 		file += 4;
@@ -3119,15 +3168,16 @@ int check_content_length(unsigned char *data, int size, char **filep)
 		if (content_length)
 		{
 			int expected_size = atoi(content_length + strlen("Content-Length: "));
-			if (size - (file - (char *)data) != expected_size)
+			data_size = size - (file - (char *)data);
+			if (data_size != expected_size)
 			{
-				printf("content length mismatch got %d bytes, expected %d bytes\r\n", size, expected_size);
-				return -1;
+				printf("content length mismatch got %d bytes, expected %d bytes\r\n", data_size, expected_size);
+				return data_size;
 			}
 		}
 	}
 
-	return 0;
+	return data_size;
 }
 
 int file_download(char *ip_str, unsigned short int port, char *response, int size, int *download_size, char *file_name)
@@ -3259,7 +3309,7 @@ int file_upload(char *file, unsigned short port)
 		snprintf(response, sizeof(response), "%.24s\r\n", ctime(&ticks));
 		printf("Client: %s - %s", inet_ntoa(client.sin_addr), response);
 
-		int file_size = 0;
+		unsigned int file_size = 0;
 		char *data = get_file(file, &file_size);
 		char file_name[128] = { 0 };
 
