@@ -1787,7 +1787,8 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	max_y = imin(max_y, maxy - 1);
 
 
-	if (max_x == min_x || max_y == min_y)		return;
+	if (max_x == min_x || max_y == min_y)
+		return;
 	// triangle spanning vectors
 	int vspan1x = (x2 - x1);
 	int vspan1y = (y2 - y1);
@@ -1818,26 +1819,25 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 	for (int y = min_y; y <= max_y; y++)
 	{
+		int det1;
+		int det2right;
 		static int det2;
 		int qy = (y - y1);
 
 		int det2left = vspan1x * qy;
 
+		det1 = det((min_x - x1), qy, vspan2x, vspan2y);
+		det2right = (min_x - x1) *  vspan1y;
+		det2 = det2left - det2right;
+
+
 		for (int x = min_x; x <= max_x; x++)
 		{
-			static int det1;
-			static int det2right;
 			// center xy over origin point
-			int qx = (x - x1);
+//			int qx = (x - x1);
 
 		
-			if (x == min_x)
-			{
-				det1 = det(qx, qy, vspan2x, vspan2y);
-				det2right = qx *  vspan1y;
-				det2 = det2left - det2right;
-			}
-			else
+			if (x != min_x)
 			{
 				det1 += vspan2y;
 				det2right += vspan1y;
