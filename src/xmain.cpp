@@ -349,16 +349,21 @@ int EventProc(Display *display, Window window, GLXContext context)
 			int count;
 			char buffer[128] = {0};
 
-			bool pressed = false;
+			bool pressed = (event.type == KeyPress);
 			KeySym keysym = XkbKeycodeToKeysym(display, event.xkey.keycode, 0, 0);
 
-			if (event.type == KeyPress)
+			count = XLookupString((XKeyEvent *)&event, buffer, 128, &keysym, &compose);
+			for(int i = 0; i < count; i++)
 			{
-				pressed = true;
-				count = XLookupString((XKeyEvent *)&event, buffer, 128, &keysym, &compose);
-				for(int i = 0; i < count; i++)
+				char character[2] = {0};
+
+				character[0] = buffer[i];
+				altEngine.keypress(character, pressed);
+
+				if (pressed)
 				{
-					altEngine.keystroke(buffer[i], buffer);
+					if (character[0] != '`')
+						altEngine.keystroke(character[0], character);
 				}
 			}
 

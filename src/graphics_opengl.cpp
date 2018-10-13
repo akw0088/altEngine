@@ -84,10 +84,10 @@ void Graphics::init(void *param1, void *param2)
 
 
 	//disable vsync
-#ifdef OPENGL
+#ifdef WIN32
 	wglSwapIntervalEXT(0);
 #else
-	glXSwapInterval(0);
+	//glXSwapInterval(0);
 #endif
 
 
