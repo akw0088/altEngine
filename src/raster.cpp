@@ -1768,11 +1768,6 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	const float lu3, const float lv3,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
-//	if (!(w1 && w2 && w3))
-//	{
-//		return;
-//	}
-
 	int max_x = imax(x1, imax(x2, x3));
 	int min_x = imin(x1, imin(x2, x3));
 	int max_y = imax(y1, imax(y2, y3));
@@ -1807,6 +1802,8 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	if (area_denom == 0)
 		return;
 
+	float inv_den = 1.0f / area_denom;
+
 	// find 1/z, u/z, v/z per vertex
 	float iz1 = 1.0f / w1;
 	float iz2 = 1.0f / w2;
@@ -1821,17 +1818,39 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 	for (int y = min_y; y <= max_y; y++)
 	{
+		static int det2;
+		int qy = (y - y1);
+
+		int det2left = vspan1x * qy;
+
 		for (int x = min_x; x <= max_x; x++)
 		{
+			static int det1;
+			static int det2right;
 			// center xy over origin point
 			int qx = (x - x1);
-			int qy = (y - y1);
 
+		
+			if (x == min_x)
+			{
+				det1 = det(qx, qy, vspan2x, vspan2y);
+				det2right = qx *  vspan1y;
+				det2 = det2left - det2right;
+			}
+			else
+			{
+				det1 += vspan2y;
+				det2right += vspan1y;
+				det2 = det2left - det2right;
+			}
+
+			// trading multiplies for det1 and det2 for adds
+			//det2 = det(vspan1x, vspan1y, qx, qy);
+			
 
 			// barycentric coords (s,t,1-s-t)
-			float inv_den = 1.0f / area_denom;
-			float s = (float)det(qx, qy, vspan2x, vspan2y) * inv_den;
-			float t = (float)det(vspan1x, vspan1y, qx, qy) * inv_den;
+			float s = (float)det1 * inv_den;
+			float t = (float)det2 * inv_den;
 			float b = 1.0f - s - t;
 
 			// if inside triangle
