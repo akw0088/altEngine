@@ -18,6 +18,8 @@
 
 #include "include.h"
 
+#include <algorithm> // for sort
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -997,6 +999,13 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 	}
 }
 
+
+bool face_sort(faceinfo_t a, faceinfo_t b)
+{
+	return strcmp(a.name, b.name);
+}
+
+
 void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position)
 {
 	leaf_t *frameLeaf = &data.Leaf[leaf];
@@ -1010,9 +1019,16 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 	// loop through visible sorted leaves, checking if leaf visible from current leaf
 	for (unsigned int i = 0; i < leaf_list.size(); i++)
 		add_list(surface_list, false, i);
+
+	// now have all faces, sort by texture
+	sort(face_list.begin(), face_list.end(), face_sort);
+
+	// add blend
 	for (unsigned int i = leaf_list.size() - 1; i < leaf_list.size(); i--)
 		add_list(surface_list, true, i);
 
+	// now have all faces, sort by texture
+	sort(blend_list.begin(), blend_list.end(), face_sort);
 }
 
 
