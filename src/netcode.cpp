@@ -445,8 +445,15 @@ void Netcode::set_player_string(char *msg, client_t *client)
 {
 	int serverid = engine->find_type(ENT_PLAYER, 0);
 
-	sprintf(msg, "<player> %d \"%s\", %d \"%s\", ", client->ent_id, engine->entity_list[client->ent_id]->player->name,
-		serverid, engine->entity_list[serverid]->player->name);
+	if (serverid != -1)
+	{
+		sprintf(msg, "<player> %d \"%s\", %d \"%s\", ", client->ent_id, engine->entity_list[client->ent_id]->player->name,
+			serverid, engine->entity_list[serverid]->player->name);
+	}
+	else
+	{
+		sprintf(msg, "<player> %d \"%s\", ", client->ent_id, engine->entity_list[client->ent_id]->player->name);
+	}
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
 		char client_index[128];

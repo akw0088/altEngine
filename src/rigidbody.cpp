@@ -776,21 +776,25 @@ void RigidBody::get_frame(Frame &frame)
 
 bool RigidBody::flight_move(input_t &input, float speed_scale)
 {
-	Frame camera;
 	Frame yaw;
 
 	wishdir = vec3();
 
-	get_frame(camera);
-	vec3	forward = camera.forward;
-	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+	//get_frame(camera); // Error: clients wont have a camera frame
+	matrix4 mat;
+
+	get_matrix(mat.m);
+	vec3	forward(mat.m[8], mat.m[9], mat.m[10]);
+	forward *= -1;
+	vec3	up(mat.m[4], mat.m[5], mat.m[6]);
+	vec3	right = vec3::crossproduct(up, forward);
 	bool	moved = false;
 	bool	ret = false;
 
 
 	vec3 yaw_right;
 	yaw.up = vec3(0.0f, 1.0f, 0.0f);
-	yaw.forward = camera.forward;
+	yaw.forward = forward;
 	yaw.forward.y = 0.0f;
 	yaw.forward.normalize();
 
@@ -890,21 +894,26 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 
 bool RigidBody::water_move(input_t &input, float speed_scale)
 {
-	Frame camera;
 	Frame yaw;
 
 	wishdir = vec3();
 
-	get_frame(camera);
-	vec3	forward = camera.forward;
-	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+
+	//get_frame(camera); // Error: clients wont have a camera frame
+	matrix4 mat;
+
+	get_matrix(mat.m);
+	vec3	forward(mat.m[8], mat.m[9], mat.m[10]);
+	forward *= -1;
+	vec3	up(mat.m[4], mat.m[5], mat.m[6]);
+	vec3	right = vec3::crossproduct(up, forward);
 	bool	moved = false;
 	bool	ret = false;
 
 
 	vec3 yaw_right;
 	yaw.up = vec3(0.0f, 1.0f, 0.0f);
-	yaw.forward = camera.forward;
+	yaw.forward = forward;
 	yaw.forward.y = 0.0f;
 	yaw.forward.normalize();
 
@@ -993,23 +1002,28 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 bool RigidBody::air_move(input_t &input, float speed_scale)
 {
 	float air_control = 1.0f;
-	Frame camera;
 	Frame yaw;
 
 	wishdir = vec3();
 
 	air_control = entity->player->pm_air_control;
 
-	get_frame(camera);
-	vec3	forward = camera.forward;
-	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+
+	//get_frame(camera); // Error: clients wont have a camera frame
+	matrix4 mat;
+
+	get_matrix(mat.m);
+	vec3	forward(mat.m[8], mat.m[9], mat.m[10]);
+	forward *= -1;
+	vec3	up(mat.m[4], mat.m[5], mat.m[6]);
+	vec3	right = vec3::crossproduct(up, forward);
 	bool	moved = false;
 	bool	ret = false;
 
 
 	vec3 yaw_right;
 	yaw.up = vec3(0.0f, 1.0f, 0.0f);
-	yaw.forward = camera.forward;
+	yaw.forward = forward;
 	yaw.forward.y = 0.0f;
 	yaw.forward.normalize();
 
@@ -1098,25 +1112,29 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 {
 	static int two_frames = 0;
 	float jump_scale = 0.65f;
-	Frame camera;
 	Frame yaw;
 
 	wishdir = vec3();
 
 	entity->player->pm_max_air_speed = MAX_AIR_SPEED * speed_scale;
 
-	get_frame(camera);
-	vec3	forward = camera.forward;
-	vec3	right = vec3::crossproduct(camera.up, camera.forward);
+
+	matrix4 mat;
+
+	get_matrix(mat.m);
+	vec3	forward(mat.m[8], mat.m[9], mat.m[10]);
+	forward *= -1;
+	vec3	up(mat.m[4], mat.m[5], mat.m[6]);
+	vec3	right = vec3::crossproduct(up, forward);
 	bool	moved = false;
+	bool	ret = false;
 	bool	jumped = false;
 	bool	jumppad = false;
-	bool	ret = false;
 
 
 	vec3 yaw_right;
 	yaw.up = vec3(0.0f, 1.0f, 0.0f);
-	yaw.forward = camera.forward;
+	yaw.forward = forward;
 	yaw.forward.y = 0.0f;
 	yaw.forward.normalize();
 

@@ -1534,6 +1534,7 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			}
 
 			int spawn = engine->get_player();
+			printf("player is entity %d\r\n", spawn);
 			ent_id = spawn;
 
 			switch (player_type)
@@ -1651,6 +1652,14 @@ void Quake3::handle_player(int self, input_t &input)
 	static bool zoomed = false;
 #if 0
 	static int last_tick = 0;
+#endif
+
+#if 0
+	// kills frames, yes clients get here ;)
+	if (self != 0)
+	{
+		printf("client movement: up %d down %d left %d right %d\r\n", input.moveup, input.movedown, input.moveleft, input.moveright);
+	}
 #endif
 
 	if (entity->player == NULL || entity->rigid == NULL)
@@ -2854,6 +2863,8 @@ void Quake3::step(int frame_step)
 			{
 				if ((unsigned int)engine->netcode.client_list[j]->ent_id == i)
 					handle_player(i, engine->netcode.client_list[j]->input);
+				else
+					printf("Error: mismatch between client and server entity id's\r\n");
 			}
 		}
 
