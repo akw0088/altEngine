@@ -164,6 +164,8 @@
 #define MAX(x,y) (x) > (y) ? (x) : (y)
 #define MIN(x,y) (x) < (y) ? (x) : (y)
 #define SWAP(x, y, T) {T temp = x; x = y; y = temp;}
+#define SET_BIT(word,bit_flag)  ((word)=((word) | (bit_flag)))
+#define RESET_BIT(word,bit_flag) ((word)=((word) & (~bit_flag)))
 
 #ifndef __OBJC__
 //audio

@@ -3975,6 +3975,21 @@ int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, v
 	return 0;
 }
 
+void intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
+{
+	float da = (a.position * plane.normal) - plane.d;   // distance plane -> point a
+	float db = (b.position * plane.normal) - plane.d;   // distance plane -> point b
+
+	float s = da / (da - db);   // intersection factor (between 0 and 1)
+
+	result.position = a.position + (b.position - a.position) * s;
+
+	// update tex coords
+	result.texCoord0 = a.texCoord0 + (b.texCoord0 - a.texCoord0) * s;
+	result.texCoord1 = a.texCoord1 + (b.texCoord1 - a.texCoord1) * s;
+}
+
+
 void calc_texcoord(const vertex_t &a, const vertex_t &b, const vec3 &mid, vertex_t &output)
 {
 	vec3 l1 = b.position - a.position;
@@ -4504,4 +4519,107 @@ void make_plane(Graphics &gfx, plane_t &plane, vec3 &point, float fExtent, float
 
 	vbo = gfx.CreateVertexBuffer(result, num_vert);
 	ibo = gfx.CreateIndexBuffer(index_array, num_vert);
+}
+
+// From http://www.cubic.org/docs/3dclip.htm -- nice little dos 3d renderer
+void setup_frustum(frustum_t *frustum, float project_scale, float width, float height)
+{
+	float angle_horizontal = atan2(width / 2, project_scale) - 0.0001f;
+	float angle_vertical = atan2(height / 2, project_scale) - 0.0001f;
+	float sh = sin(angle_horizontal);
+	float sv = sin(angle_vertical);
+	float ch = cos(angle_horizontal);
+	float cv = cos(angle_vertical);
+
+	// left
+	frustum->left.normal.x = ch;
+	frustum->left.normal.y = 0;
+	frustum->left.normal.z = sh;
+	frustum->left.d = 0;
+
+	// right
+	frustum->right.normal.x = -ch;
+	frustum->right.normal.y = 0;
+	frustum->right.normal.z = sh;
+	frustum->right.d = 0;
+
+	// top
+	frustum->top.normal.x = 0;
+	frustum->top.normal.y = cv;
+	frustum->top.normal.z = sv;
+	frustum->top.d = 0;
+
+	// bottom
+	frustum->bottom.normal.x = 0;
+	frustum->bottom.normal.y = -cv;
+	frustum->bottom.normal.z = sv;
+	frustum->bottom.d = 0;
+
+	// z-near clipping plane
+	frustum->zNear.normal.x = 0;
+	frustum->zNear.normal.y = 0;
+	frustum->zNear.normal.z = 1;
+	frustum->zNear.d = -1;
+
+	// z-near clipping plane
+	frustum->zFar.normal.x = 0;
+	frustum->zFar.normal.y = 0;
+	frustum->zFar.normal.z = -1;
+	frustum->zFar.d = -2001.0f;
+}
+
+int inline fsgn(float a)
+{
+	if (a < 0)
+		return -1;
+	return 1;
+}
+
+void cliptoplane(const vec3 plane, float distance, vertex_t *in, int nin, vertex_t *out, int &nout)
+{
+	int i;
+	float in_outside[4096];
+
+	// Calculate dot products
+	for (i = 0; i < nin; i++)
+	{
+		in_outside[i] = plane * in[i].position;
+	}
+	nout = 0;
+	// calculate to the second to last point:
+	for (i = 0; i < nin - 1; i++)
+	{
+		// Need no clipping
+		if (in_outside[i] >= distance)
+		{
+			out[nout++] = in[i];
+		}
+
+		if (fsgn(in_outside[i] - distance) != fsgn(in_outside[i + 1] - distance))
+		{
+			// need clipping
+			float scale = in_outside[i] / (in_outside[i] - in_outside[i + 1]);
+			vec3 a = in[i].position;
+			vec3 b = in[i + 1].position;
+			out[nout].position = a + (b - a) * scale;
+			nout++;
+		}
+	}
+
+	// check last point for clipping
+	if (in_outside[nin - 1] >= distance)
+	{
+		out[nout++] = in[nin - 1];
+	}
+
+	// check last line for clipping (warp around!)
+	if (fsgn(in_outside[0] - distance) != fsgn(in_outside[nin - 1] - distance))
+	{
+		// need clipping
+		float scale = in_outside[0] / (in_outside[0] - in_outside[nin - 1]);
+		vec3 a = in[0].position;
+		vec3 b = in[nin - 1].position;
+		out[nout].position = a + (b - a) * scale;
+		nout++;
+	}
 }

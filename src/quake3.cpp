@@ -2062,7 +2062,7 @@ void Quake3::handle_player(int self, input_t &input)
 				{
 					if (entity->player->in_vehicle == 0)
 					{
-						if (entity->rigid->move(input, speed_scale))
+						if (entity->rigid->move(input, speed_scale)) // player and client movement code
 						{
 							entity->player->state = PLAYER_JUMPED;
 							if (entity->player->local)
@@ -5511,6 +5511,20 @@ void Quake3::render_hud(double last_frametime)
 
 					snprintf(msg, LINE_SIZE, "position delta %3.3f", client->position_delta.magnitude());
 					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+					snprintf(msg, LINE_SIZE, "velocity %3.3f %3.3f %3.3f",
+						engine->entity_list[client->ent_id]->rigid->velocity.x,
+						engine->entity_list[client->ent_id]->rigid->velocity.y, 
+						engine->entity_list[client->ent_id]->rigid->velocity.z);
+					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+					snprintf(msg, LINE_SIZE, "position %3.3f %3.3f %3.3f",
+						engine->entity_list[client->ent_id]->position.x,
+						engine->entity_list[client->ent_id]->position.y,
+						engine->entity_list[client->ent_id]->position.z);
+					engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+
 				}
 
 			}
