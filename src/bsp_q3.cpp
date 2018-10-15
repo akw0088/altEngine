@@ -1022,14 +1022,13 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 		add_list(surface_list, false, i);
 
 	// now have all faces, sort by texture
+#ifndef SOFTWARE
 	sort(face_list.begin(), face_list.end(), face_sort);
+#endif
 
 	// add blend
 	for (unsigned int i = leaf_list.size() - 1; i < leaf_list.size(); i--)
 		add_list(surface_list, true, i);
-
-	// now have all faces, sort by texture
-	sort(blend_list.begin(), blend_list.end(), face_sort);
 }
 
 

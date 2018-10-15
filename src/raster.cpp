@@ -1340,7 +1340,7 @@ inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x
 #else
 	pixels[x + ((height - 1 - y) * width)] = color;
 #endif
-	zbuffer[x + y * width] = z;
+	zbuffer[x + y * width] = -z;
 }
 
 void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)

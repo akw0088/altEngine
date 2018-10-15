@@ -3943,7 +3943,7 @@ void make_tetrahedron(Graphics &gfx, int &ibo, int &vbo)
 
 }
 
-int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, vec3 &result)
+int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result)
 {
 	// plane equation
 	// ax + by + cz + d = 0
@@ -3960,8 +3960,8 @@ int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, v
 	// t = -(a*x0 + b*y0 + c*z0 + d) / (a*vx + b*vy + c*vz)
 
 
-	vec3 origin = a;
-	vec3 dir = b - a;
+	vec3 origin = a.position;
+	vec3 dir = b.position - a.position;
 
 	float denom = (p.normal * dir);
 	if (denom == 0.0f)
@@ -3971,14 +3971,17 @@ int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, v
 	if (t < 0.0 || t > 1.0)
 		return -1;
 
-	result = origin + dir * t;
+	result.position = origin + dir * t;
+	result.texCoord0 = a.texCoord0 * (1.0f - t) + b.texCoord0 * t;
+	result.texCoord1 = a.texCoord1 * (1.0f - t) + b.texCoord1 * t;
 	return 0;
 }
 
-void intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
+
+int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
 {
-	float da = (a.position * plane.normal) - plane.d;   // distance plane -> point a
-	float db = (b.position * plane.normal) - plane.d;   // distance plane -> point b
+	float da = (a.position * plane.normal) + plane.d;   // distance plane -> point a
+	float db = (b.position * plane.normal) + plane.d;   // distance plane -> point b
 
 	float s = da / (da - db);   // intersection factor (between 0 and 1)
 
@@ -3987,24 +3990,8 @@ void intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const 
 	// update tex coords
 	result.texCoord0 = a.texCoord0 + (b.texCoord0 - a.texCoord0) * s;
 	result.texCoord1 = a.texCoord1 + (b.texCoord1 - a.texCoord1) * s;
+	return 0;
 }
-
-
-void calc_texcoord(const vertex_t &a, const vertex_t &b, const vec3 &mid, vertex_t &output)
-{
-	vec3 l1 = b.position - a.position;
-	vec3 l2 = mid - a.position;
-	float total_length = l1.magnitude();
-	float partial_length = l2.magnitude();
-	float p = partial_length / total_length;
-
-	output.texCoord0.x = a.texCoord0.x * (1.0f - p) + b.texCoord0.x * p;
-	output.texCoord0.y = a.texCoord0.y * (1.0f - p) + b.texCoord0.y * p;
-
-	output.texCoord1.x = a.texCoord1.x * (1.0f - p) + b.texCoord1.x * p;
-	output.texCoord1.y = a.texCoord1.y * (1.0f - p) + b.texCoord1.y * p;
-}
-
 
 int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const
 	vertex_t &c, vertex_t *result)
@@ -4035,9 +4022,9 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		// easy case, one triangle, two points move in
 		if (inside.bit.a_in)
 		{
-			vec3 ab, ac;
+			vertex_t ab, ac;
 
-			int ret = intersect_two_points_plane(p, a.position, b.position, ab);
+			int ret = intersect_two_points_plane(p, a, b, ab);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4045,7 +4032,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 				return ALL_OUT;
 			}
 
-			ret = intersect_two_points_plane(p, a.position, c.position, ac);
+			ret = intersect_two_points_plane(p, a, c, ac);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4054,18 +4041,16 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			}
 
 			result[0] = a;
-			result[1].position = ab;
-			calc_texcoord(a, b, ab, result[1]);
-			result[2].position = ac;
-			calc_texcoord(a, c, ac, result[2]);
+			result[1] = ab;
+			result[2] = ac;
 			return CLIPPED_EASY;
 
 		}
 		else if (inside.bit.b_in)
 		{
-			vec3 ba, bc;
+			vertex_t ba, bc;
 
-			int ret = intersect_two_points_plane(p, b.position, a.position, ba);
+			int ret = intersect_two_points_plane(p, b, a, ba);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4073,7 +4058,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 				return ALL_OUT;
 			}
 
-			ret = intersect_two_points_plane(p, b.position, c.position, bc);
+			ret = intersect_two_points_plane(p, b, c, bc);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4081,19 +4066,17 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 				return ALL_OUT;
 			}
 
-			result[0].position = ba;
-			calc_texcoord(b, a, ba, result[0]);
+			result[0] = ba;
 			result[1] = b;
-			result[2].position = bc;
-			calc_texcoord(b, c, bc, result[2]);
+			result[2] = bc;
 			return CLIPPED_EASY;
 
 		}
 		else if (inside.bit.c_in)
 		{
-			vec3 ca, cb;
+			vertex_t ca, cb;
 
-			int ret = intersect_two_points_plane(p, c.position, a.position, ca);
+			int ret = intersect_two_points_plane(p, c, a, ca);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4101,7 +4084,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 				return ALL_OUT;
 			}
 
-			ret = intersect_two_points_plane(p, c.position, b.position, cb);
+			ret = intersect_two_points_plane(p, c, b, cb);
 			if (ret != 0)
 			{
 				//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4109,12 +4092,8 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 				return ALL_OUT;
 			}
 
-			result[0].position = ca;
-			calc_texcoord(c, a, ca, result[0]);
-
-			result[1].position = cb;
-			calc_texcoord(c, b, cb, result[1]);
-
+			result[0] = ca;
+			result[1] = cb;
 			result[2] = c;
 			return CLIPPED_EASY;
 
@@ -4127,8 +4106,8 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 
 	if (inside.bit.a_in == 0)
 	{
-		vec3 ab;
-		vec3 ca;
+		vertex_t ab;
+		vertex_t ca;
 
 //  A
 //   /\
@@ -4136,7 +4115,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 //  /  \
 //C/____\B
 
-		int ret = intersect_two_points_plane(p, a.position, b.position, ab);
+		int ret = intersect_two_points_plane(p, a, b, ab);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4144,7 +4123,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, a.position, c.position, ca);
+		ret = intersect_two_points_plane(p, a, c, ca);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4152,23 +4131,19 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return ALL_OUT;
 		}
 
-		result[0].position = ab;
-		calc_texcoord(a, b, ab, result[0]);
+		result[0] = ab;
 		result[1] = b;
 		result[2] = c;
 
-		result[3].position = ca;
-		calc_texcoord(a, c, ca, result[3]);
-		result[4].position = ab;
-		result[4].texCoord0 = result[0].texCoord0;
-		result[4].texCoord1 = result[0].texCoord1;
+		result[3] = ca;
+		result[4] = ab;
 		result[5] = c;
 		return CLIPPED_HARD;
 	}
 	else if (inside.bit.b_in == 0)
 	{
-		vec3 ab;
-		vec3 cb;
+		vertex_t ab;
+		vertex_t cb;
 
 //  B
 //   /\
@@ -4177,7 +4152,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 //A/____\C
 
 
-		int ret = intersect_two_points_plane(p, a.position, b.position, ab);
+		int ret = intersect_two_points_plane(p, a, b, ab);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4185,7 +4160,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, c.position, b.position, cb);
+		ret = intersect_two_points_plane(p, c, b, cb);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4193,23 +4168,18 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return ALL_OUT;
 		}
 		result[0] = a;
-		result[1].position = ab;
-		calc_texcoord(a, b, ab, result[1]);
+		result[1] = ab;
 		result[2] = c;
 
-		result[4].position = ab;
-		result[4].texCoord0 = result[1].texCoord0;
-		result[4].texCoord1 = result[1].texCoord1;
-
-		result[3].position = cb;
-		calc_texcoord(c, b, cb, result[3]);
+		result[4] = ab;
+		result[3] = cb;
 		result[5] = c;
 		return CLIPPED_HARD;
 	}
 	else if (inside.bit.c_in == 0)
 	{
-		vec3 ac;
-		vec3 bc;
+		vertex_t ac;
+		vertex_t bc;
 
 //  C
 //   /\
@@ -4217,7 +4187,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 //  /  \
 //B/____\A
 
-		int ret = intersect_two_points_plane(p, a.position, c.position, ac);
+		int ret = intersect_two_points_plane(p, a, c, ac);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4225,7 +4195,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, b.position, c.position, bc);
+		ret = intersect_two_points_plane(p, b, c, bc);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4234,14 +4204,10 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		}
 		result[0] = a;
 		result[1] = b;
-		result[2].position = ac;
-		calc_texcoord(a, c, ac, result[2]);
+		result[2] = ac;
 
-		result[3].position = bc;
-		calc_texcoord(b, c, bc, result[3]);
-		result[4].position = ac;
-		result[4].texCoord0 = result[1].texCoord0;
-		result[4].texCoord1 = result[1].texCoord1;
+		result[3] = bc;
+		result[4] = ac;
 		result[5] = b;
 		return CLIPPED_HARD;
 	}
