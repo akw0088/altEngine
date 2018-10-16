@@ -857,6 +857,7 @@ void Engine::render(double last_frametime)
 #else
 #if 0
 	test_triangle();
+	return;
 #endif
 
 	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
@@ -7247,6 +7248,7 @@ void Engine::test_triangle()
 	global.Select();
 	gfx.SelectIndexBuffer(index_buf);
 	gfx.SelectVertexBuffer(vert_buf);
+	gfx.SelectTexture(0, no_tex);
 	gfx.DrawArrayTri(0, 0, 3, 3);
 	gfx.swap();
 }

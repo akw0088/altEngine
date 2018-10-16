@@ -106,21 +106,26 @@ bool hitTriangle2(const ray_t &r, const triangle_t& p, float &t, int width, int 
 	// hit plane, check barycentric coordinates
 		t = 1.0f;
 
-	float l1, l2, l3;
+	float lam1, lam2, lam3;
 
-	if (get_barycentric(r.start.x / width, r.start.y / height, p.a, p.b, p.c, l1, l2, l3) == false)
+	if (get_barycentric(r.start.x / width, r.start.y / height, p.a, p.b, p.c, lam1, lam2, lam3) == false)
 		return false;
 
-	if (l1 > 0.0f && l1 < 1.0f && l2 > 0.0f && l2 < 1.0f && l3 > 0.0f && l3 < 1.0f)
-		return true;
+	if (lam1 > 0.0f && lam1 < 1.0f && lam2 > 0.0f && lam2 < 1.0f && lam3 > 0.0f && lam3 < 1.0f)
+		return false;
 	else
-		return false;
+		return true;
 }
 
-bool hitTriangle(const ray_t &r, triangle_t &tri, float &t)
+bool hitTriangle(const ray_t &ro, triangle_t &tri, float &t, int width, int height)
 {
 	vec3 v0v1 = tri.b - tri.a;
 	vec3 v0v2 = tri.c - tri.a;
+
+	ray_t r = ro;
+
+	r.start.x /= width;
+	r.start.y /= height;
 
 	vec3 n = vec3::crossproduct(v0v1, v0v2);
 	float area2 = n.magnitude();
@@ -134,6 +139,8 @@ bool hitTriangle(const ray_t &r, triangle_t &tri, float &t)
 	float d = n * tri.a;
 
 	t = ((n * r.start) + d) / NdotRayDirection;
+
+	t = 1.0f;
 
 	// check if the triangle is in behind the ray
 	if (t < 0)
@@ -177,7 +184,7 @@ bool hitTriangle(const ray_t &r, triangle_t &tri, float &t)
 }
 
 
-color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_vert, int num_index, light_t *light, int num_light)
+color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_vert, int num_index, light_t *light, int num_light, int width, int height)
 {
 	color_t output = { 0.0f, 0.0f, 0.0f };
 	float coef = 1.0f;
@@ -186,8 +193,6 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 	do
 	{
 		vec3 ptHitPoint;
-		int currentSphere = -1;
-		int currentPlane = -1;
 		int currentTriangle = -1;
 		float t = 2000.0f;
 
@@ -202,13 +207,13 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 			triangle.b = vertex_array[index_array[i + 1]].position;
 			triangle.c = vertex_array[index_array[i + 2]].position;
 
-			if (hitTriangle2(viewRay, triangle, t, 1024, 768))
+			if (hitTriangle2(viewRay, triangle, t, width, height))
 			{
 				currentTriangle = i;
 			}
 		}
 
-		if (currentSphere == -1 && currentPlane == -1 && currentTriangle == -1)
+		if (currentTriangle == -1)
 			break;
 
 		ptHitPoint = viewRay.start + viewRay.dir * t;
@@ -249,10 +254,11 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 			lightRay.dir = currentLight.pos - ptHitPoint;
 			float fLightProjection = lightRay.dir * vNormal;
 
-			if (fLightProjection <= 0.0f)
-				continue;
+//			if (fLightProjection <= 0.0f)
+//				continue;
 
 			float lightDist = lightRay.dir * lightRay.dir;
+			lightDist = vertex_array[index_array[currentTriangle]].position.z;
 
 			{
 				float temp = lightDist;
@@ -324,8 +330,6 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 	return output;
 }
 
-
-
 bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, light_t *light, int num_light)
 {
 #pragma omp parallel num_threads(64)
@@ -341,14 +345,14 @@ bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int
 				float fragmentx = x;
 
 				// Antialiasing loops
-				for (float fragmenty = y ; fragmenty < y + 1.0f; fragmenty += 0.5f )
-				for (float fragmentx = x ; fragmentx < x + 1.0f; fragmentx += 0.5f )
+//				for (float fragmenty = y ; fragmenty < y + 1.0f; fragmenty += 0.5f )
+//				for (float fragmentx = x ; fragmentx < x + 1.0f; fragmentx += 0.5f )
 				{
 					float sampleRatio = 1.0f;
 
-					ray_t viewRay = { { fragmentx, fragmenty, -1000.0f },
-					{ 0.0f, 0.0f, 1.0f } };
-					color_t temp = addRay(viewRay, vertex_array, index_array, num_vert, num_index, light, num_light);
+					ray_t viewRay = { { fragmentx, fragmenty, 1000.0f },
+					{ 0.0f, 0.0f, -1.0f } };
+					color_t temp = addRay(viewRay, vertex_array, index_array, num_vert, num_index, light, num_light, width, height);
 
 					// pseudo photo exposure
 					float exposure = -1.00f; // random exposure value. TODO : determine a good value automatically
