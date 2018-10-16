@@ -15,6 +15,7 @@
 #include "include.h"
 
 #ifndef RAYTRACE_H
+#define RAYTRACE_H
 
 #define invsqrtf(x) (1.0f / sqrtf(x))
 typedef vec3 color_t;
@@ -57,6 +58,7 @@ namespace raytrace
 	{
 		vec3 a, b, c;
 	} triangle_t;
+
 
 	typedef struct
 	{

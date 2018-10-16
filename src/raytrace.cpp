@@ -84,6 +84,39 @@ bool hitPlane(const ray_t &r, rplane_t &p, float &t)
 	return 1;
 }
 
+
+bool hitTriangle2(const ray_t &r, const triangle_t& p, float &t, int width, int height)
+{
+	vec3 origin = r.start;
+	vec3 dir = r.dir;
+
+	vec3 span1 = p.b - p.a;
+	vec3 span2 = p.c - p.a;
+	vec3 normal = vec3::crossproduct(span1, span2);
+	float d = -(normal.x * p.a.x + normal.y * p.a.y + normal.z * p.a.z);
+
+	float denom = (normal.x * dir.x + normal.y * dir.y + normal.z * dir.z);
+	if (denom == 0.0f)
+		return false;
+
+	t = -(origin * normal + d) / denom;
+	if (t < 0.0)
+		return false;
+
+	// hit plane, check barycentric coordinates
+		t = 1.0f;
+
+	float l1, l2, l3;
+
+	if (get_barycentric(r.start.x / width, r.start.y / height, p.a, p.b, p.c, l1, l2, l3) == false)
+		return false;
+
+	if (l1 > 0.0f && l1 < 1.0f && l2 > 0.0f && l2 < 1.0f && l3 > 0.0f && l3 < 1.0f)
+		return true;
+	else
+		return false;
+}
+
 bool hitTriangle(const ray_t &r, triangle_t &tri, float &t)
 {
 	vec3 v0v1 = tri.b - tri.a;
@@ -169,7 +202,7 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 			triangle.b = vertex_array[index_array[i + 1]].position;
 			triangle.c = vertex_array[index_array[i + 2]].position;
 
-			if (hitTriangle(viewRay, triangle, t))
+			if (hitTriangle2(viewRay, triangle, t, 1024, 768))
 			{
 				currentTriangle = i;
 			}
@@ -182,6 +215,10 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 
 		if (currentTriangle != -1)
 		{
+			int i = currentTriangle;
+			vec3 normal = vertex_array[index_array[i]].normal;
+			vNormal = ptHitPoint - normal;
+
 			vec3 norm = vec3(0.0f, 0.0f, -1.0f);
 
 			vNormal = norm * (norm * viewRay.dir);
@@ -228,6 +265,7 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 
 			bool inShadow = false;
 
+#if 0
 			// Shadow hit test
 			{
 				float t = lightDist;
@@ -246,7 +284,8 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 					}
 				}
 			}
-
+#endif
+			lightRay.dir = vec3(1.0f, 2.0f, -3.0f);
 			if (!inShadow)
 			{
 				float lambert = (lightRay.dir * vNormal) * coef;
@@ -268,7 +307,9 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 				{
 					float blinn = invsqrtf(temp) * MAX(fLightProjection - fViewProjection, 0.0f);
 					blinn = coef * powf(blinn, currentMat.power);
-//					output += blinn * currentMat.specular  * currentLight.intensity;
+					output.red += blinn;// * currentMat.specular  * currentLight.intensity;
+					output.green += blinn;
+					output.blue += blinn;
 				}
 			}
 		}
@@ -283,7 +324,9 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 	return output;
 }
 
-bool draw(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, light_t *light, int num_light)
+
+
+bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, light_t *light, int num_light)
 {
 #pragma omp parallel num_threads(64)
 	{

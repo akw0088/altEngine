@@ -14,6 +14,8 @@
 
 #include "include.h"
 
+#include "raytrace.h"
+
 #ifndef RASTER_H
 #define RASTER_H
 #ifdef __linux__
@@ -62,7 +64,10 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	float u3, float v3,
 	const int minx, const int maxx, const int miny, const int maxy);
 void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point);
-void triangulate(vec4 *point, int &num_point);
 void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3);
 void halfspace_triangle_fast(int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3);
+
+
+
+bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, raytrace::light_t *light, int num_light);
 #endif

@@ -634,6 +634,7 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 {
 }
 
+
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	if (current_tex == -1)
@@ -666,7 +667,12 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 		work1[i].work = next;
 	}
 #else
+
+#ifndef RAYTRACE
+	render_raytrace(vertex_array[current_vbo], index_array[current_ibo], num_verts, num_index, width, height, pixels, NULL, 0);
+#else
 	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
+#endif
 #endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
