@@ -4541,51 +4541,51 @@ int inline fsgn(float a)
 	return 1;
 }
 
-void cliptoplane(const vec3 plane, float distance, vertex_t *in, int nin, vertex_t *out, int &nout)
+void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, int &num_out)
 {
 	int i;
-	float in_outside[4096];
+	float in_dot[4096];
 
 	// Calculate dot products
-	for (i = 0; i < nin; i++)
+	for (i = 0; i < num_in; i++)
 	{
-		in_outside[i] = plane * in[i].position;
+		in_dot[i] = plane.normal * in[i].position;
 	}
-	nout = 0;
+	num_out = 0;
 	// calculate to the second to last point:
-	for (i = 0; i < nin - 1; i++)
+	for (i = 0; i < num_in - 1; i++)
 	{
 		// Need no clipping
-		if (in_outside[i] >= distance)
+		if (in_dot[i] >= plane.d)
 		{
-			out[nout++] = in[i];
+			out[num_out++] = in[i];
 		}
 
-		if (fsgn(in_outside[i] - distance) != fsgn(in_outside[i + 1] - distance))
+		if (fsgn(in_dot[i] - plane.d) != fsgn(in_dot[i + 1] - plane.d))
 		{
 			// need clipping
-			float scale = in_outside[i] / (in_outside[i] - in_outside[i + 1]);
+			float scale = in_dot[i] / (in_dot[i] - in_dot[i + 1]);
 			vec3 a = in[i].position;
 			vec3 b = in[i + 1].position;
-			out[nout].position = a + (b - a) * scale;
-			nout++;
+			out[num_out].position = a + (b - a) * scale;
+			num_out++;
 		}
 	}
 
 	// check last point for clipping
-	if (in_outside[nin - 1] >= distance)
+	if (in_dot[num_in - 1] >= plane.d)
 	{
-		out[nout++] = in[nin - 1];
+		out[num_out++] = in[num_in - 1];
 	}
 
 	// check last line for clipping (warp around!)
-	if (fsgn(in_outside[0] - distance) != fsgn(in_outside[nin - 1] - distance))
+	if (fsgn(in_dot[0] - plane.d) != fsgn(in_dot[num_in - 1] - plane.d))
 	{
 		// need clipping
-		float scale = in_outside[0] / (in_outside[0] - in_outside[nin - 1]);
+		float scale = in_dot[0] / (in_dot[0] - in_dot[num_in - 1]);
 		vec3 a = in[0].position;
-		vec3 b = in[nin - 1].position;
-		out[nout].position = a + (b - a) * scale;
-		nout++;
+		vec3 b = in[num_in - 1].position;
+		out[num_out].position = a + (b - a) * scale;
+		num_out++;
 	}
 }

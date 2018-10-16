@@ -231,6 +231,6 @@ typedef struct
 void get_frustum(matrix4 &projection, plane_t *frustum);
 void gen_frustum(Frame *camera, frustum_t *frustum);
 int in_frustum(frustum_t *frustum, vec3 &pos);
-
+void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, int &num_out);
 
 #endif
