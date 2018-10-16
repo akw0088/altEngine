@@ -112,9 +112,9 @@ bool hitTriangle2(const ray_t &r, const triangle_t& p, float &t, int width, int 
 		return false;
 
 	if (lam1 > 0.0f && lam1 < 1.0f && lam2 > 0.0f && lam2 < 1.0f && lam3 > 0.0f && lam3 < 1.0f)
-		return false;
-	else
 		return true;
+	else
+		return false;
 }
 
 bool hitTriangle(const ray_t &ro, triangle_t &tri, float &t, int width, int height)
@@ -184,7 +184,7 @@ bool hitTriangle(const ray_t &ro, triangle_t &tri, float &t, int width, int heig
 }
 
 
-color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_vert, int num_index, light_t *light, int num_light, int width, int height)
+color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_vert, int num_index, light_t *light, int num_light, int width, int height, matrix4 &mvp)
 {
 	color_t output = { 0.0f, 0.0f, 0.0f };
 	float coef = 1.0f;
@@ -199,13 +199,88 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 		material_t currentMat;
 		vec3 vNormal;
 
+		// note this is done *PER PIXEL*, should definitely do a smaller windowing
 		for (int i = 0; i < num_index; i += 3)
 		{
 			triangle_t triangle;
+			vec4 a, b, c;
 
-			triangle.a = vertex_array[index_array[i]].position;
-			triangle.b = vertex_array[index_array[i + 1]].position;
-			triangle.c = vertex_array[index_array[i + 2]].position;
+			// project to eye space
+			a = mvp * vec4(vertex_array[index_array[i]].position, 1.0f);
+			b = mvp * vec4(vertex_array[index_array[i+1]].position, 1.0f);
+			c = mvp * vec4(vertex_array[index_array[i+2]].position, 1.0f);
+
+
+			// perspective divide
+			float inv = 1 / a.w;
+			a.x = a.x * inv;
+			a.y = a.y * inv;
+			a.z = a.z * inv;
+			a.w = 1.0f;
+
+			inv = 1 / b.w;
+			b.x = b.x * inv;
+			b.y = b.y * inv;
+			b.z = b.z * inv;
+			b.w = 1.0f;
+
+
+			inv = 1 / c.w;
+			c.x = c.x * inv;
+			c.y = c.y * inv;
+			c.z = c.z * inv;
+			c.w = 1.0f;
+
+
+			// cull
+			if (a.x > 1.0f || a.x < -1.0f)
+				continue;
+			if (a.y > 1.0f || a.y < -1.0f)
+				continue;
+			if (a.z > 1.0f || a.z < -1.0f)
+				continue;
+
+			if (b.x > 1.0f || b.x < -1.0f)
+				continue;
+			if (b.y > 1.0f || b.y < -1.0f)
+				continue;
+			if (b.z > 1.0f || b.z < -1.0f)
+				continue;
+
+			if (c.x > 1.0f || c.x < -1.0f)
+				continue;
+			if (c.y > 1.0f || c.y < -1.0f)
+				continue;
+			if (c.z > 1.0f || c.z < -1.0f)
+				continue;
+
+
+			// viewport transform
+			a.x *= 0.5f;
+			a.y *= 0.5f;
+			a.z *= 0.5f;
+			a.x += 0.5f;
+			a.y += 0.5f;
+			a.z += 0.5f;
+
+			b.x *= 0.5f;
+			b.y *= 0.5f;
+			b.z *= 0.5f;
+			b.x += 0.5f;
+			b.y += 0.5f;
+			b.z += 0.5f;
+
+			c.x *= 0.5f;
+			c.y *= 0.5f;
+			c.z *= 0.5f;
+			c.x += 0.5f;
+			c.y += 0.5f;
+			c.z += 0.5f;
+
+
+			triangle.a = vec3(a);
+			triangle.b = vec3(b);
+			triangle.c = vec3(c);
 
 			if (hitTriangle2(viewRay, triangle, t, width, height))
 			{
@@ -258,7 +333,6 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 //				continue;
 
 			float lightDist = lightRay.dir * lightRay.dir;
-			lightDist = vertex_array[index_array[currentTriangle]].position.z;
 
 			{
 				float temp = lightDist;
@@ -330,7 +404,7 @@ color_t addRay(ray_t viewRay, vertex_t *vertex_array, int *index_array, int num_
 	return output;
 }
 
-bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, light_t *light, int num_light)
+bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, light_t *light, int num_light, matrix4 &mvp)
 {
 #pragma omp parallel num_threads(64)
 	{
@@ -352,7 +426,7 @@ bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int
 
 					ray_t viewRay = { { fragmentx, fragmenty, 1000.0f },
 					{ 0.0f, 0.0f, -1.0f } };
-					color_t temp = addRay(viewRay, vertex_array, index_array, num_vert, num_index, light, num_light, width, height);
+					color_t temp = addRay(viewRay, vertex_array, index_array, num_vert, num_index, light, num_light, width, height, mvp);
 
 					// pseudo photo exposure
 					float exposure = -1.00f; // random exposure value. TODO : determine a good value automatically

@@ -69,5 +69,5 @@ void halfspace_triangle_fast(int *pixels, float *zbuffer, int width, int height,
 
 
 
-bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, raytrace::light_t *light, int num_light);
+bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int num_index, int width, int height, int *pixel, raytrace::light_t *light, int num_light, matrix4 &mvp);
 #endif

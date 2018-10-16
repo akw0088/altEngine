@@ -3587,7 +3587,7 @@ bool get_barycentric(float x, float y,
 {
 	float den = (b.y - c.y)*(a.x - c.x) + (c.x - b.x)*(a.y - c.y);
 
-	if (den <= 0)
+	if (-den <= 0)
 		return false;
 
 	lam1 = (b.y - c.y)*(x - c.x) + (c.x - b.x)*(y - c.y) / den;
