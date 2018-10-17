@@ -2208,7 +2208,8 @@ inline char bilinear_filter_1d(const char *tex, const int width, const int heigh
 	int y = (int)mv;
 	float u_fraction = mu - x;
 	float v_fraction = mv - y;
-
+	float u_opp = 1.0 - u_fraction;
+	float v_opp = 1.0 - v_fraction;
 
 	if (u < 0)
 		x = width + x;
@@ -2234,14 +2235,16 @@ inline char bilinear_filter_1d(const char *tex, const int width, const int heigh
 
 	if (enable)
 	{
-		return (tex[x + y * width] * (1.0f - u_fraction) + tex[(x + 1) + (y * width)] * u_fraction) * (1.0f - v_fraction) +
-			(tex[x + (y + 1) * width] * (1.0f - u_fraction) + tex[(x + 1) + ((y + 1) *	width)] * u_fraction) * v_fraction;
+		return imin(imax((tex[x + y * width] * u_opp + tex[(x + 1) + (y * width)] * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width] * u_opp + tex[(x + 1) + ((y + 1) * width)] * u_fraction) * v_fraction, 0), 255);
+
 	}
 	else
 	{
 		return tex[x + y * width];
 	}
 }
+
 
 inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable)
 {
@@ -2254,6 +2257,8 @@ inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int hei
 	int y = (int)mv;
 	float u_fraction = mu - x;
 	float v_fraction = mv - y;
+	float u_opp = 1.0 - u_fraction;
+	float v_opp = 1.0 - v_fraction;
 	rgb_t result;
 
 	if (u < 0)
@@ -2280,14 +2285,14 @@ inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int hei
 
 	if (enable)
 	{
-		result.r = (tex[x + y * width].r * (1.0f - u_fraction) + tex[(x + 1) + (y * width)].r * u_fraction) * (1.0f - v_fraction) +
-			(tex[x + (y + 1) * width].r * (1.0f - u_fraction) + tex[(x + 1) + ((y + 1) * width)].r * u_fraction) * v_fraction;
+		result.r = imin(imax((tex[x + y * width].r * u_opp + tex[(x + 1) + (y * width)].r * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width].r * u_opp + tex[(x + 1) + ((y + 1) * width)].r * u_fraction) * v_fraction, 0), 255);
 
-		result.g = (tex[x + y * width].g * (1.0f - u_fraction) + tex[(x + 1) + (y * width)].g * u_fraction) * (1.0f - v_fraction) +
-			(tex[x + (y + 1) * width].g * (1.0f - u_fraction) + tex[(x + 1) + ((y + 1) * width)].g * u_fraction) * v_fraction;
+		result.g = imin(imax((tex[x + y * width].g * u_opp + tex[(x + 1) + (y * width)].g * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width].g * u_opp + tex[(x + 1) + ((y + 1) * width)].g * u_fraction) * v_fraction, 0), 255);
 
-		result.b = (tex[x + y * width].b * (1.0f - u_fraction) + tex[(x + 1) + (y * width)].b * u_fraction) * (1.0f - v_fraction) +
-			(tex[x + (y + 1) * width].b * (1.0f - u_fraction) + tex[(x + 1) + ((y + 1) * width)].b * u_fraction) * v_fraction;
+		result.b = imin(imax((tex[x + y * width].b * u_opp + tex[(x + 1) + (y * width)].b * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width].b * u_opp + tex[(x + 1) + ((y + 1) * width)].b * u_fraction) * v_fraction, 0), 255);
 	}
 	else
 	{
