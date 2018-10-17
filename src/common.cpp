@@ -4472,12 +4472,7 @@ int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min)
 {
 	int left, right, top, bottom, zNear, zFar;
 
-	// check max and min first
-	if (in_frustum(frustum, max))
-		return true;
 
-	if (in_frustum(frustum, min))
-		return true;
 
 	// try to clip the 12 edges of the bounding box against the frustum planes
 	vec3 result;
@@ -4491,6 +4486,34 @@ int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min)
 	aabb[5] = vec3(max.x, min.y, max.z);
 	aabb[6] = vec3(max.x, max.y, min.z);
 	aabb[7] = vec3(max.x, max.y, max.z);
+
+
+	// check points first
+	if (in_frustum(frustum, max))
+		return true;
+
+	if (in_frustum(frustum, min))
+		return true;
+
+
+	if (in_frustum(frustum, aabb[1]))
+		return true;
+
+	if (in_frustum(frustum, aabb[2]))
+		return true;
+
+	if (in_frustum(frustum, aabb[3]))
+		return true;
+
+	if (in_frustum(frustum, aabb[4]))
+		return true;
+
+	if (in_frustum(frustum, aabb[5]))
+		return true;
+
+	if (in_frustum(frustum, aabb[6]))
+		return true;
+
 
 	if (check_aabb_plane(frustum->left, aabb))
 		return true;

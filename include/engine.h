@@ -183,6 +183,8 @@ public:
 
 	unsigned int controller;
 
+	frustum_t frustum;
+
 
 #ifdef OCULUS
 	Oculus ovr;

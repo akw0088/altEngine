@@ -759,7 +759,8 @@ void Engine::load(char *level)
 	if (hl == false)
 	{
 		q3map.enable_textures = false;
-		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+
+		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, &frustum);
 		q3map.lastIndex = -2; // force generation of new face lists
 	}
 	camera_frame.set(transformation);
@@ -851,6 +852,8 @@ void Engine::render(double last_frametime)
 	fpNew = fpOld & ~(EM_ZERODIVIDE | EM_INVALID);
 	_controlfp(fpNew, MCW_EM);
 #endif
+
+	gen_frustum(&camera_frame, &frustum);
 
 #ifdef VULKAN
 	gfx.render();
@@ -1328,7 +1331,8 @@ void Engine::render_portalcamera()
 		vec3 offset(0.0f, 0.0f, 0.0f);
 		mlight2.Select();
 		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
-		q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num);
+
+		q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num, &frustum);
 	
 		render_entities(matrix, portal->portal_projection, false, false, false);
 		render_players(matrix, portal->portal_projection, false, true);
@@ -1439,7 +1443,8 @@ void Engine::render_shadowmaps(bool everything)
 
 			light->shadow_matrix[j] = (cube[j] * light->shadow_projection) * bias;
 
-			q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num);
+
+			q3map.render(entity_list[i]->position, gfx, surface_list, mlight2, tick_num, &frustum);
 			render_entities(cube[j], light->shadow_projection, false, false, false);
 			render_players(cube[j], light->shadow_projection, false, true);
 			gfx.bindFramebuffer(0);
@@ -1807,7 +1812,7 @@ void Engine::render_scene(bool lights)
 			gfx.SelectTexture(3, no_tex);
 		}
 
-		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, &frustum);
 		//draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
 	}
 
@@ -1981,7 +1986,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 	if (enable_map)
-		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num);
+		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, &frustum);
 
 #ifdef PARTICLES
 	gfx.Blend(true);

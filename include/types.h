@@ -442,7 +442,6 @@ typedef struct
 
 	bool lightmap[MAX_TEXTURES];
 	unsigned int stage;
-	int leaf;
 
 	bool fog;
 	vec3 fog_color;
