@@ -668,7 +668,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	}
 #else
 
-#ifndef RAYTRACE
+#ifdef RAYTRACE
 	raytrace::light_t light;
 
 	light.pos = vec3(0.0f, 0.0f, 1.0f);
