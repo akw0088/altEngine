@@ -53,7 +53,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	const float lu1, const float lv1,
 	const float lu2, const float lv2,
 	const float lu3, const float lv3,
-	const int minx, const int maxx, const int miny, const int maxy, bool filter = true);
+	const int minx, const int maxx, const int miny, const int maxy, bool filter = false);
 
 void span_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
 	int x1, int y1, float z1, float w1, int c1,

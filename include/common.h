@@ -218,19 +218,11 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	vertex_t &c, vertex_t *result);
 
 
-typedef struct
-{
-	plane_t left;
-	plane_t right;
-	plane_t bottom;
-	plane_t top;
-	plane_t zNear;
-	plane_t zFar;
-}  frustum_t;
-
 void get_frustum(matrix4 &projection, plane_t *frustum);
 void gen_frustum(Frame *camera, frustum_t *frustum);
 int in_frustum(frustum_t *frustum, vec3 &pos);
+int intersect_two_points_plane_vec3(const plane_t &p, const vec3 &a, const vec3 &b, vec3 &result);
+int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min);
 void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, int &num_out);
 
 #endif

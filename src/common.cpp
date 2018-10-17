@@ -3978,6 +3978,40 @@ int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex
 }
 
 
+int intersect_two_points_plane_vec3(const plane_t &p, const vec3 &a, const vec3 &b, vec3 &result)
+{
+	// plane equation
+	// ax + by + cz + d = 0
+
+	// plug in parametric line
+	// a*(x0 + vx * t) + b*(y0 + vy * t) + c*(z0 + vz * t) + d = 0
+
+	// solve for t
+
+	// a*x0 + a*vx*t + b*y0 + b*vy*t + c*z0 + c*vz*t + d = 0
+	// a*x0 + b*y0 + c*z0 + d + a*vx*t + b*vy*t + c*vz*t = 0
+	// a*x0 + b*y0 + c*z0 + d + t*(a*vx + b*vy + c*vz) = 0
+	// t*(a*vx + b*vy + c*vz) = -(a*x0 + b*y0 + c*z0 + d)
+	// t = -(a*x0 + b*y0 + c*z0 + d) / (a*vx + b*vy + c*vz)
+
+
+	vec3 origin = a;
+	vec3 dir = b - a;
+
+	float denom = (p.normal * dir);
+	if (denom == 0.0f)
+		return -1;
+
+	float t = -(origin * p.normal + p.d) / denom;
+	if (t < 0.0 || t > 1.0)
+		return -1;
+
+	result = origin + dir * t;
+	return 0;
+}
+
+
+
 int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
 {
 	float da = (a.position * plane.normal) + plane.d;   // distance plane -> point a
@@ -4374,13 +4408,105 @@ int in_frustum(frustum_t *frustum, vec3 &pos)
 	zNear = frustum->zNear.normal * pos + frustum->zNear.d;
 	zFar = frustum->zFar.normal * pos + frustum->zFar.d;
 
-	printf("L%d R%d T%d B%d N%d F%d\r\n", left > 0, right > 0, top > 0, bottom > 0, zNear > 0, zFar > 0);
+//	printf("L%d R%d T%d B%d N%d F%d\r\n", left > 0, right > 0, top > 0, bottom > 0, zNear > 0, zFar > 0);
 
 	if (left > 0 && right > 0 && top > 0 && bottom > 0 && zNear > 0 && zFar > 0)
 		return 1;
 	else
 		return 0;
 }
+
+
+
+bool check_aabb_plane(const plane_t &p, vec3 *aabb)
+{
+	vec3 result;
+
+	// checking plane against 12 edges of wireframe cube (binary order)
+
+	// three from origin point (min)
+	if (intersect_two_points_plane_vec3(p, aabb[0], aabb[1], result) == 0)
+		return true;
+	if (intersect_two_points_plane_vec3(p, aabb[0], aabb[2], result) == 0)
+		return true;
+	if (intersect_two_points_plane_vec3(p, aabb[0], aabb[4], result) == 0)
+		return true;
+
+	// three from origin point (max)
+	if (intersect_two_points_plane_vec3(p, aabb[7], aabb[6], result) == 0)
+		return true;
+	if (intersect_two_points_plane_vec3(p, aabb[7], aabb[5], result) == 0)
+		return true;
+	if (intersect_two_points_plane_vec3(p, aabb[7], aabb[3], result) == 0)
+		return true;
+
+	// missing two sticks XZ above origins and two pillars going up Y axis
+
+	//(0, 1, 0) -> (1, 1, 0)
+	//(0, 1, 0) -> (0, 1, 1)
+
+	if (intersect_two_points_plane_vec3(p, aabb[2], aabb[6], result) == 0)
+		return true;
+	if (intersect_two_points_plane_vec3(p, aabb[2], aabb[3], result) == 0)
+		return true;
+
+	if (intersect_two_points_plane_vec3(p, aabb[5], aabb[1], result) == 0)
+		return true;
+	if (intersect_two_points_plane_vec3(p, aabb[5], aabb[4], result) == 0)
+		return true;
+
+	// two pillars
+	//0,0,1 -> 0, 1, 1
+	//1,0,0 -> 1,1,0
+
+	if (intersect_two_points_plane_vec3(p, aabb[1], aabb[3], result) == 0)
+		return true;
+
+	if (intersect_two_points_plane_vec3(p, aabb[4], aabb[6], result) == 0)
+		return true;
+
+	return false;
+}
+
+int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min)
+{
+	int left, right, top, bottom, zNear, zFar;
+
+	// check max and min first
+	if (in_frustum(frustum, max))
+		return true;
+
+	if (in_frustum(frustum, min))
+		return true;
+
+	// try to clip the 12 edges of the bounding box against the frustum planes
+	vec3 result;
+
+	vec3 aabb[8];
+	aabb[0] = vec3(min.x, min.y, min.z);
+	aabb[1] = vec3(min.x, min.y, max.z);
+	aabb[2] = vec3(min.x, max.y, min.z);
+	aabb[3] = vec3(min.x, max.y, max.z); 
+	aabb[4] = vec3(max.x, min.y, min.z); 
+	aabb[5] = vec3(max.x, min.y, max.z);
+	aabb[6] = vec3(max.x, max.y, min.z);
+	aabb[7] = vec3(max.x, max.y, max.z);
+
+	if (check_aabb_plane(frustum->left, aabb))
+		return true;
+	if (check_aabb_plane(frustum->right, aabb))
+		return true;
+	if (check_aabb_plane(frustum->top, aabb))
+		return true;
+	if (check_aabb_plane(frustum->bottom, aabb))
+		return true;
+	if (check_aabb_plane(frustum->zNear, aabb))
+		return true;
+	
+	return false;
+}
+
+
 
 
 

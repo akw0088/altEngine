@@ -442,6 +442,7 @@ typedef struct
 
 	bool lightmap[MAX_TEXTURES];
 	unsigned int stage;
+	int leaf;
 
 	bool fog;
 	vec3 fog_color;
@@ -1152,5 +1153,15 @@ typedef struct
 	unsigned char r, g, b, a;
 } rgba_t;
 #pragma pack(8)
+
+typedef struct
+{
+	plane_t left;
+	plane_t right;
+	plane_t bottom;
+	plane_t top;
+	plane_t zNear;
+	plane_t zFar;
+}  frustum_t;
 
 #endif
