@@ -813,15 +813,22 @@ int Graphics::CreateCubeMap()
 
 
 
-int make_mipmap_1d(unsigned char *input, int width, int height, unsigned char **output)
+int make_mipmap_1d(unsigned char *input, int width, int height, unsigned char **output, bool bilinear)
 {
 	unsigned char *mip = new unsigned char[width / 2 * height / 2];
 	for (int y = 0; y < height - 1; y += 2)
 	{
 		for (int x = 0; x < width - 1; x += 2)
 		{
-			mip[(x >> 1) + (y >> 1) * (width >> 1)] = MIN(MAX((input[x + y * width] * 0.25f) + (input[(x + 1) + y * width] * 0.25f) +
-				(input[x + (y + 1) * width] * 0.25f) + (input[(x + 1) + (y + 1) * width] * 0.25f), 0), 255);
+			if (bilinear)
+			{
+				mip[(x >> 1) + (y >> 1) * (width >> 1)] = MIN(MAX((input[x + y * width] * 0.25f) + (input[(x + 1) + y * width] * 0.25f) +
+					(input[x + (y + 1) * width] * 0.25f) + (input[(x + 1) + (y + 1) * width] * 0.25f), 0), 255);
+			}
+			else
+			{
+				mip[(x >> 1) + (y >> 1) * (width >> 1)] = input[x + y * width];
+			}
 		}
 	}
 
@@ -829,21 +836,32 @@ int make_mipmap_1d(unsigned char *input, int width, int height, unsigned char **
 	return 0;
 }
 
-int make_mipmap_3d(rgb_t *input, int width, int height, rgb_t **output)
+int make_mipmap_3d(rgb_t *input, int width, int height, rgb_t **output, bool bilinear)
 {
 	rgb_t *mip = new rgb_t[width / 2 * height / 2];
 	for (int y = 0; y < height - 1; y += 2)
 	{
 		for (int x = 0; x < width - 1; x += 2)
 		{
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].r = MIN(MAX((input[x + y * width].r * 0.25f) + (input[(x + 1) + y * width].r * 0.25f) +
-				(input[x + (y + 1) * width].r * 0.25f) + (input[(x + 1) + (y + 1) * width].r * 0.25f), 0), 255);
+			if (bilinear)
+			{
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].r = MIN(MAX((input[x + y * width].r * 0.25f) + (input[(x + 1) + y * width].r * 0.25f) +
+					(input[x + (y + 1) * width].r * 0.25f) + (input[(x + 1) + (y + 1) * width].r * 0.25f), 0), 255);
 
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].g = MIN(MAX((input[x + y * width].g * 0.25f) + (input[(x + 1) + y * width].g * 0.25f) +
-				(input[x + (y + 1) * width].g * 0.25f) + (input[(x + 1) + (y + 1) * width].g * 0.25f), 0), 255);
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].g = MIN(MAX((input[x + y * width].g * 0.25f) + (input[(x + 1) + y * width].g * 0.25f) +
+					(input[x + (y + 1) * width].g * 0.25f) + (input[(x + 1) + (y + 1) * width].g * 0.25f), 0), 255);
 
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].b = MIN(MAX((input[x + y * width].b * 0.25f) + (input[(x + 1) + y * width].b * 0.25f) +
-				(input[x + (y + 1) * width].b * 0.25f) + (input[(x + 1) + (y + 1) * width].b * 0.25f), 0), 255);
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].b = MIN(MAX((input[x + y * width].b * 0.25f) + (input[(x + 1) + y * width].b * 0.25f) +
+					(input[x + (y + 1) * width].b * 0.25f) + (input[(x + 1) + (y + 1) * width].b * 0.25f), 0), 255);
+			}
+			else
+			{
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].r = input[x + y * width].r;
+
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].g = input[x + y * width].g;
+
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].b = input[x + y * width].b;
+			}
 		}
 	}
 
@@ -851,7 +869,7 @@ int make_mipmap_3d(rgb_t *input, int width, int height, rgb_t **output)
 	return 0;
 }
 
-int make_mipmap_4d(rgba_t *input, int width, int height, rgba_t **output)
+int make_mipmap_4d(rgba_t *input, int width, int height, rgba_t **output, bool bilinear)
 {
 	rgba_t *mip = new rgba_t[width / 2 * height / 2];
 	if (mip == NULL)
@@ -864,17 +882,30 @@ int make_mipmap_4d(rgba_t *input, int width, int height, rgba_t **output)
 	{
 		for (int x = 0; x < width - 1; x += 2)
 		{
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].r = MIN(MAX((input[x + y * width].r * 0.25f) + (input[(x + 1) + y * width].r * 0.25f) +
-														(input[x + (y+1) * width].r * 0.25f) + (input[(x + 1) + (y+1) * width].r * 0.25f), 0), 255);
+			if (bilinear)
+			{
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].r = MIN(MAX((input[x + y * width].r * 0.25f) + (input[(x + 1) + y * width].r * 0.25f) +
+					(input[x + (y + 1) * width].r * 0.25f) + (input[(x + 1) + (y + 1) * width].r * 0.25f), 0), 255);
 
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].g = MIN(MAX((input[x + y * width].g * 0.25f) + (input[(x + 1) + y * width].g * 0.25f) +
-														(input[x + (y + 1) * width].g * 0.25f) + (input[(x + 1) + (y + 1) * width].g * 0.25f), 0), 255);
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].g = MIN(MAX((input[x + y * width].g * 0.25f) + (input[(x + 1) + y * width].g * 0.25f) +
+					(input[x + (y + 1) * width].g * 0.25f) + (input[(x + 1) + (y + 1) * width].g * 0.25f), 0), 255);
 
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].b = MIN(MAX((input[x + y * width].b * 0.25f) + (input[(x + 1) + y * width].b * 0.25f) +
-														(input[x + (y + 1) * width].b * 0.25f) + (input[(x + 1) + (y + 1) * width].b * 0.25f), 0), 255);
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].b = MIN(MAX((input[x + y * width].b * 0.25f) + (input[(x + 1) + y * width].b * 0.25f) +
+					(input[x + (y + 1) * width].b * 0.25f) + (input[(x + 1) + (y + 1) * width].b * 0.25f), 0), 255);
 
-			mip[(x >> 1) + (y >> 1) * (width >> 1)].a = MIN(MAX((input[x + y * width].a * 0.25f) + (input[(x + 1) + y * width].a * 0.25f) +
-														(input[x + (y + 1) * width].a * 0.25f) + (input[(x + 1) + (y + 1) * width].a * 0.25f), 0), 255);
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].a = MIN(MAX((input[x + y * width].a * 0.25f) + (input[(x + 1) + y * width].a * 0.25f) +
+					(input[x + (y + 1) * width].a * 0.25f) + (input[(x + 1) + (y + 1) * width].a * 0.25f), 0), 255);
+			}
+			else
+			{
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].r = input[x + y * width].r;
+
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].g = input[x + y * width].g;
+
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].b = input[x + y * width].b;
+
+				mip[(x >> 1) + (y >> 1) * (width >> 1)].a = input[x + y * width].a;
+			}
 		}
 	}
 
@@ -908,7 +939,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 || height > 1)
 		{
-			make_mipmap_1d((unsigned char *)tex.data[tex.num_mip - 1], width, height, (unsigned char **)&tex.data[tex.num_mip]);
+			make_mipmap_1d((unsigned char *)tex.data[tex.num_mip - 1], width, height, (unsigned char **)&tex.data[tex.num_mip], false);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
@@ -927,7 +958,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 || height > 1)
 		{
-			make_mipmap_3d((rgb_t *)tex.data[tex.num_mip - 1], width, height, (rgb_t **)&tex.data[tex.num_mip]);
+			make_mipmap_3d((rgb_t *)tex.data[tex.num_mip - 1], width, height, (rgb_t **)&tex.data[tex.num_mip], false);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
@@ -946,7 +977,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 && height > 1)
 		{
-			make_mipmap_4d((rgba_t *)tex.data[tex.num_mip - 1], width, height, (rgba_t **)&tex.data[tex.num_mip]);
+			make_mipmap_4d((rgba_t *)tex.data[tex.num_mip - 1], width, height, (rgba_t **)&tex.data[tex.num_mip], false);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
