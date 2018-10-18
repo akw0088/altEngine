@@ -1134,10 +1134,11 @@ typedef enum
 
 typedef struct
 {
-	int *data;
-	int width;
-	int height;
+	int *data[32];
+	int width[32];
+	int height[32];
 	int components;
+	int num_mip;
 } texinfo_t;
 
 

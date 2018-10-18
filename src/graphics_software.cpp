@@ -811,14 +811,149 @@ int Graphics::CreateCubeMap()
 	return 0;
 }
 
+
+
+int make_mipmap_1d(unsigned char *input, int width, int height, unsigned char **output)
+{
+	unsigned char *mip = new unsigned char[width / 2 * height / 2];
+	for (int y = 0; y < height - 1; y += 2)
+	{
+		for (int x = 0; x < width - 1; x += 2)
+		{
+			mip[(x >> 1) + (y >> 1) * (width >> 1)] = MIN(MAX((input[x + y * width] * 0.25f) + (input[(x + 1) + y * width] * 0.25f) +
+				(input[x + (y + 1) * width] * 0.25f) + (input[(x + 1) + (y + 1) * width] * 0.25f), 0), 255);
+		}
+	}
+
+	*output = (unsigned char *)mip;
+	return 0;
+}
+
+int make_mipmap_3d(rgb_t *input, int width, int height, rgb_t **output)
+{
+	rgb_t *mip = new rgb_t[width / 2 * height / 2];
+	for (int y = 0; y < height - 1; y += 2)
+	{
+		for (int x = 0; x < width - 1; x += 2)
+		{
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].r = MIN(MAX((input[x + y * width].r * 0.25f) + (input[(x + 1) + y * width].r * 0.25f) +
+				(input[x + (y + 1) * width].r * 0.25f) + (input[(x + 1) + (y + 1) * width].r * 0.25f), 0), 255);
+
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].g = MIN(MAX((input[x + y * width].g * 0.25f) + (input[(x + 1) + y * width].g * 0.25f) +
+				(input[x + (y + 1) * width].g * 0.25f) + (input[(x + 1) + (y + 1) * width].g * 0.25f), 0), 255);
+
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].b = MIN(MAX((input[x + y * width].b * 0.25f) + (input[(x + 1) + y * width].b * 0.25f) +
+				(input[x + (y + 1) * width].b * 0.25f) + (input[(x + 1) + (y + 1) * width].b * 0.25f), 0), 255);
+		}
+	}
+
+	*output = (rgb_t *)mip;
+	return 0;
+}
+
+int make_mipmap_4d(rgba_t *input, int width, int height, rgba_t **output)
+{
+	rgba_t *mip = new rgba_t[width / 2 * height / 2];
+	if (mip == NULL)
+	{
+		printf("new failed\r\n");
+		return -1;
+	}
+
+	for (int y = 0; y < height - 1; y += 2)
+	{
+		for (int x = 0; x < width - 1; x += 2)
+		{
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].r = MIN(MAX((input[x + y * width].r * 0.25f) + (input[(x + 1) + y * width].r * 0.25f) +
+														(input[x + (y+1) * width].r * 0.25f) + (input[(x + 1) + (y+1) * width].r * 0.25f), 0), 255);
+
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].g = MIN(MAX((input[x + y * width].g * 0.25f) + (input[(x + 1) + y * width].g * 0.25f) +
+														(input[x + (y + 1) * width].g * 0.25f) + (input[(x + 1) + (y + 1) * width].g * 0.25f), 0), 255);
+
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].b = MIN(MAX((input[x + y * width].b * 0.25f) + (input[(x + 1) + y * width].b * 0.25f) +
+														(input[x + (y + 1) * width].b * 0.25f) + (input[(x + 1) + (y + 1) * width].b * 0.25f), 0), 255);
+
+			mip[(x >> 1) + (y >> 1) * (width >> 1)].a = MIN(MAX((input[x + y * width].a * 0.25f) + (input[(x + 1) + y * width].a * 0.25f) +
+														(input[x + (y + 1) * width].a * 0.25f) + (input[(x + 1) + (y + 1) * width].a * 0.25f), 0), 255);
+		}
+	}
+
+	*output = (rgba_t *)mip;
+	return 0;
+}
+
+
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
 	texinfo_t tex;
-	tex.data = (int *)new char[width * height * components];
-	tex.width = width;
-	tex.height = height;
+	tex.data[0] = (int *)new char[width * height * components];
+	tex.width[0] = width;
+	tex.height[0] = height;
 	tex.components = components;
-	memcpy(&tex.data[0], bytes, width * height * components);
+	tex.num_mip = 1;
+	memcpy(tex.data[0], bytes, width * height * components);
+
+	switch (tex.components)
+	{
+	case 1:
+	{
+		while (width > 1 || height > 1)
+		{
+			make_mipmap_1d((unsigned char *)bytes, width, height, (unsigned char **)&tex.data[tex.num_mip]);
+			width /= 2;
+			height /= 2;
+			tex.width[tex.num_mip] = width;
+			tex.height[tex.num_mip] = height;
+			tex.num_mip++;
+
+			if (tex.num_mip > 32)
+			{
+				printf("Exceeded max mip levels\r\n %dx%d texture\r\n", tex.width[0], tex.height[0]);
+				break;
+			}
+		}
+		break;
+	}
+	case 3:
+	{
+		while (width > 1 || height > 1)
+		{
+			make_mipmap_3d((rgb_t *)bytes, width, height, (rgb_t **)&tex.data[tex.num_mip]);
+			width /= 2;
+			height /= 2;
+			tex.width[tex.num_mip] = width;
+			tex.height[tex.num_mip] = height;
+			tex.num_mip++;
+
+			if (tex.num_mip > 32)
+			{
+				printf("Exceeded max mip levels\r\n %dx%d texture\r\n", tex.width[0], tex.height[0]);
+				break;
+			}
+		}
+		break;
+	}
+	case 4:
+	{
+		while (width > 1 && height > 1)
+		{
+			make_mipmap_4d((rgba_t *)bytes, width, height, (rgba_t **)&tex.data[tex.num_mip]);
+			width /= 2;
+			height /= 2;
+			tex.width[tex.num_mip] = width;
+			tex.height[tex.num_mip] = height;
+			tex.num_mip++;
+
+			if (tex.num_mip > 32)
+			{
+				printf("Exceeded max mip levels\r\n %dx%d texture\r\n", tex.width[0], tex.height[0]);
+				break;
+			}
+		}
+		break;
+	}
+	}
+
 	texture_array.push_back(tex);
 	return texture_array.size() - 1;
 }

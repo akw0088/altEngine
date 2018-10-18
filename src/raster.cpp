@@ -1551,15 +1551,15 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		ui = ui - (int)ui;
 		vi = vi - (int)vi;
 
-		int ux = ui * (texture->width - 1);
-		int vy = vi * (texture->height - 1);
+		int ux = ui * (texture->width[0] - 1);
+		int vy = vi * (texture->height[0] - 1);
 
-		int index = vy * (texture->width) + ux;
-		if (index < 0 || index >= texture->width * texture->height)
+		int index = vy * (texture->width[0]) + ux;
+		if (index < 0 || index >= texture->width[0] * texture->height[0])
 			index = 0;
 
 
-		draw_pixel(pixels, zbuffer, width, height, x, y1, zi, texture->data[index]);
+		draw_pixel(pixels, zbuffer, width, height, x, y1, zi, texture->data[index][0]);
 		ui += -du;
 		vi += -dv;
 		zi += -dz;
@@ -1885,27 +1885,62 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				u = iu * zi;
 				v = iv * zi;
 
+
+				zi /= 500.0f;
+
+				int mip_level = 0;
+				//unsigned int c = ~0;
+
+
+				// mip colors go from blue green red, aqua white -- near to far (note RGB is backwards, really BGR)
+				if (zi > 0.0f && z1 <= 0.25f)
+				{
+					mip_level = 0;
+					//c = ~0;
+				}
+				else if (z1 > 0.25f && zi <= 0.5f)
+				{
+					mip_level = MIN(0, texture->num_mip - 1);
+					//c = RGB(255, 0, 0);
+				}
+				else if (z1 > 0.5f && zi <= 0.75f)
+				{
+					mip_level = MIN(1, texture->num_mip - 1);
+					//c = RGB(0, 255, 0);
+				}
+				else if (z1 > 0.75 && zi <= 0.9f)
+				{
+					mip_level = MIN(2, texture->num_mip - 1);
+					//c = RGB(0, 0, 255);
+				}
+				else if (z1 > 0.9 && zi <= 1.0f)
+				{
+					mip_level = MIN(3, texture->num_mip - 1);
+					//c = RGB(255, 255, 0);
+				}
+
+
 				if (texture->components == 1)
 				{
-					char *tex = (char *)texture->data;
+					char *tex = (char *)texture->data[mip_level];
 
-					char color = bilinear_filter_1d(tex, texture->width, texture->height, u, v, filter);
+					char color = bilinear_filter_1d(tex, texture->width[mip_level], texture->height[mip_level], u, v, filter);
 
 					draw_pixel(pixels, zbuffer, width, height, x, y, z, RGB(color, color, color));
 				}
 				else if (texture->components == 3)
 				{
 				
-					rgb_t color = bilinear_filter_3d((rgb_t *)texture->data, texture->width, texture->height, u, v, filter);
+					rgb_t color = bilinear_filter_3d((rgb_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
 					draw_pixel(pixels, zbuffer, width, height, x, y, z, RGB(color.r, color.g, color.b));
 				}
 				else
 				{
-					rgba_t color = bilinear_filter_4d((rgba_t *)texture->data, texture->width, texture->height, u, v, filter);
+					rgba_t color = bilinear_filter_4d((rgba_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
 
-					int c = *((int *)(&color));
+					unsigned int c = *((unsigned int *)(&color));
 					
-					draw_pixel(pixels, zbuffer, width, height, x, y, z, (unsigned int)c);
+					draw_pixel(pixels, zbuffer, width, height, x, y, z, c);
 				}
 			}
 		}
@@ -2202,8 +2237,8 @@ inline char bilinear_filter_1d(const char *tex, const int width, const int heigh
 	float mu = u - (int)u;
 	float mv = v - (int)v;
 
-	mu = mu * width - 0.5f;
-	mv = mv * height - 0.5f;
+	mu = mu * width;
+	mv = mv * height;
 	int x = (int)mu;
 	int y = (int)mv;
 	float u_fraction = mu - x;
@@ -2251,8 +2286,8 @@ inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int hei
 	float mu = u - (int)u;
 	float mv = v - (int)v;
 
-	mu = mu * width - 0.5f;
-	mv = mv * height - 0.5f;
+	mu = mu * width;
+	mv = mv * height;
 	int x = (int)mu;
 	int y = (int)mv;
 	float u_fraction = mu - x;
@@ -2308,8 +2343,8 @@ inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int h
 	float mu = u - (int)u;
 	float mv = v - (int)v;
 
-	mu = mu * width - 0.5f;
-	mv = mv * height - 0.5f;
+	mu = mu * width;
+	mv = mv * height;
 	int x = (int)mu;
 	int y = (int)mv;
 	float u_fraction = mu - x;
@@ -2317,7 +2352,6 @@ inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int h
 	float u_opp = 1.0 - u_fraction;
 	float v_opp = 1.0 - v_fraction;
 	rgba_t result;
-
 
 	if (u < 0)
 		x = width + x;
@@ -2334,6 +2368,11 @@ inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int h
 		y = 0;
 	if (y >= height)
 		y = height - 1;
+
+	if (width < 4 || height < 4)
+	{
+		return tex[x + y * width];
+	}
 
 	if (enable)
 	{
