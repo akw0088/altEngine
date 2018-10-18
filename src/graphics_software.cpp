@@ -893,13 +893,22 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	tex.num_mip = 1;
 	memcpy(tex.data[0], bytes, width * height * components);
 
+	static int num_tex = 0;
+	num_tex++;
+#if 0
+	char buffer[80];
+	sprintf(buffer, "mip/bitmap%d_%d.bmp", num_tex, 0);
+
+	write_bitmap(buffer, width, height, tex.data[0]);
+#endif
+
 	switch (tex.components)
 	{
 	case 1:
 	{
 		while (width > 1 || height > 1)
 		{
-			make_mipmap_1d((unsigned char *)bytes, width, height, (unsigned char **)&tex.data[tex.num_mip]);
+			make_mipmap_1d((unsigned char *)tex.data[tex.num_mip - 1], width, height, (unsigned char **)&tex.data[tex.num_mip]);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
@@ -918,7 +927,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 || height > 1)
 		{
-			make_mipmap_3d((rgb_t *)bytes, width, height, (rgb_t **)&tex.data[tex.num_mip]);
+			make_mipmap_3d((rgb_t *)tex.data[tex.num_mip - 1], width, height, (rgb_t **)&tex.data[tex.num_mip]);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
@@ -937,12 +946,16 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 && height > 1)
 		{
-			make_mipmap_4d((rgba_t *)bytes, width, height, (rgba_t **)&tex.data[tex.num_mip]);
+			make_mipmap_4d((rgba_t *)tex.data[tex.num_mip - 1], width, height, (rgba_t **)&tex.data[tex.num_mip]);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
 			tex.height[tex.num_mip] = height;
 			tex.num_mip++;
+#if 0
+			sprintf(buffer, "mip/bitmap%d_%d.bmp", num_tex, tex.num_mip);
+			write_bitmap(buffer, width, height, tex.data[tex.num_mip - 1]);
+#endif
 
 			if (tex.num_mip > 32)
 			{
