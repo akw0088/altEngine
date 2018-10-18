@@ -939,7 +939,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 || height > 1)
 		{
-			make_mipmap_1d((unsigned char *)tex.data[tex.num_mip - 1], width, height, (unsigned char **)&tex.data[tex.num_mip], false);
+			make_mipmap_1d((unsigned char *)tex.data[tex.num_mip - 1], width, height, (unsigned char **)&tex.data[tex.num_mip], true);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
@@ -958,7 +958,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 || height > 1)
 		{
-			make_mipmap_3d((rgb_t *)tex.data[tex.num_mip - 1], width, height, (rgb_t **)&tex.data[tex.num_mip], false);
+			make_mipmap_3d((rgb_t *)tex.data[tex.num_mip - 1], width, height, (rgb_t **)&tex.data[tex.num_mip], true);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
@@ -977,7 +977,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	{
 		while (width > 1 && height > 1)
 		{
-			make_mipmap_4d((rgba_t *)tex.data[tex.num_mip - 1], width, height, (rgba_t **)&tex.data[tex.num_mip], false);
+			make_mipmap_4d((rgba_t *)tex.data[tex.num_mip - 1], width, height, (rgba_t **)&tex.data[tex.num_mip], true);
 			width /= 2;
 			height /= 2;
 			tex.width[tex.num_mip] = width;
