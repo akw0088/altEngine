@@ -1909,37 +1909,37 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					}
 					else if (zi > mip_range[1] && zi <= mip_range[2])
 					{
-						mip_level = MIN(mip_select[1], texture->num_mip - 1);
+						mip_level = imin(mip_select[1], texture->num_mip - 1);
 						//c = RGB(255, 0, 0);
 						blend = 1.0f - (zi - mip_range[1]) / (mip_range[2] - mip_range[1]);
 					}
 					else if (zi > mip_range[2] && zi <= mip_range[3])
 					{
-						mip_level = MIN(mip_select[2], texture->num_mip - 1);
+						mip_level = imin(mip_select[2], texture->num_mip - 1);
 						//c = RGB(0, 255, 0);
 						blend = 1.0f - (zi - mip_range[2]) / (mip_range[3] - mip_range[2]);
 					}
 					else if (zi > mip_range[3] && zi <= mip_range[4])
 					{
-						mip_level = MIN(mip_select[3], texture->num_mip - 1);
+						mip_level = imin(mip_select[3], texture->num_mip - 1);
 						//c = RGB(0, 0, 255);
 						blend = 1.0f - (zi - mip_range[3]) / (mip_range[4] - mip_range[3]);
 					}
 					else if (zi > mip_range[4] && zi <= mip_range[5])
 					{
-						mip_level = MIN(mip_select[4], texture->num_mip - 1);
+						mip_level = imin(mip_select[4], texture->num_mip - 1);
 						//c = RGB(255, 255, 0);
 						blend = 1.0f - (zi - mip_range[4]) / (mip_range[5] - mip_range[4]);
 					}
 					else if (zi > mip_range[5] && zi <= mip_range[6])
 					{
-						mip_level = MIN(mip_select[5], texture->num_mip - 1);
+						mip_level = imin(mip_select[5], texture->num_mip - 1);
 						//c = RGB(255, 0, 255);
 						blend = 1.0f - (zi - mip_range[5]) / (mip_range[6] - mip_range[5]);
 					}
 					else
 					{
-						mip_level = MIN(mip_select[6], texture->num_mip - 1);
+						mip_level = imin(mip_select[6], texture->num_mip - 1);
 						//c = RGB(255, 255, 255);
 					}
 				}
@@ -1954,7 +1954,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					{
 						unsigned char color2 = bilinear_filter_1d((unsigned char *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-						color = MIN(MAX(color * blend + color2 * (1.0f - blend), 0), 255);
+						color = imin(imax(color * blend + color2 * (1.0f - blend), 0), 255);
 					}
 
 					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color, color, color));
@@ -1968,9 +1968,9 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					{
 						rgb_t color2 = bilinear_filter_3d((rgb_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-						color.r = MIN(MAX(color.r * blend + color2.r * (1.0f - blend), 0), 255);
-						color.g = MIN(MAX(color.g * blend + color2.g * (1.0f - blend), 0), 255);
-						color.b = MIN(MAX(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+						color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
+						color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
+						color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
 					}
 
 					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color.r, color.g, color.b));
@@ -1983,10 +1983,10 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					{
 						rgba_t color2 = bilinear_filter_4d((rgba_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-						color.r = MIN(MAX(color.r * blend + color2.r * (1.0f - blend), 0), 255);
-						color.g = MIN(MAX(color.g * blend + color2.g * (1.0f - blend), 0), 255);
-						color.b = MIN(MAX(color.b * blend + color2.b * (1.0f - blend), 0), 255);
-						color.a = MIN(MAX(color.a * blend + color2.a * (1.0f - blend), 0), 255);
+						color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
+						color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
+						color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+						color.a = imin(imax(color.a * blend + color2.a * (1.0f - blend), 0), 255);
 					}
 					
 
@@ -2084,10 +2084,10 @@ void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, cons
 	float x3 = v3.x;
 
 	// Bounding rectangle
-	int maxx = MAX(x1, MAX(x2, x3));
-	int minx = MIN(x1, MIN(x2, x3));
-	int maxy = MAX(y1, MAX(y2, y3));
-	int miny = MIN(y1, MIN(y2, y3));
+	int maxx = imax(x1, imax(x2, x3));
+	int minx = imin(x1, imin(x2, x3));
+	int maxy = imax(y1, imax(y2, y3));
+	int miny = imin(y1, imin(y2, y3));
 
 
 	// Scan through bounding rectangle
@@ -2142,10 +2142,10 @@ void halfspace_triangle_fast(int *pixels, float *zbuffer, int width, int height,
 
 
 	// Bounding rectangle
-	int maxx = MAX(X1, MAX(X2, X3));
-	int minx = MIN(X1, MIN(X2, X3));
-	int maxy = MAX(Y1, MAX(Y2, Y3));
-	int miny = MIN(Y1, MIN(Y2, Y3));
+	int maxx = imax(X1, imax(X2, X3));
+	int minx = imin(X1, imin(X2, X3));
+	int maxy = imax(Y1, imax(Y2, Y3));
+	int miny = imin(Y1, imin(Y2, Y3));
 
 
 	minx = (minx + 0xF) >> 4;
