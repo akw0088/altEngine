@@ -1886,37 +1886,48 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				v = iv * zi;
 
 
-				zi /= 500.0f;
+				// zFar - zNear scaling
+				zi /= 2000.0f;
 
 				int mip_level = 0;
-				//unsigned int c = ~0;
+				unsigned int c = ~0;
 
 
 				// mip colors go from blue green red, aqua white -- near to far (note RGB is backwards, really BGR)
-				if (zi > 0.0f && z1 <= 0.25f)
+				if (zi <= 0.125f)
 				{
 					mip_level = 0;
-					//c = ~0;
+					c = ~0;
 				}
-				else if (z1 > 0.25f && zi <= 0.5f)
-				{
-					mip_level = MIN(0, texture->num_mip - 1);
-					//c = RGB(255, 0, 0);
-				}
-				else if (z1 > 0.5f && zi <= 0.75f)
+				else if (zi > 0.125f && zi <= 0.25f)
 				{
 					mip_level = MIN(1, texture->num_mip - 1);
-					//c = RGB(0, 255, 0);
+					c = RGB(255, 0, 0);
 				}
-				else if (z1 > 0.75 && zi <= 0.9f)
+				else if (zi > 0.25f && zi <= 0.5f)
+				{
+					mip_level = MIN(1, texture->num_mip - 1);
+					c = RGB(0, 255, 0);
+				}
+				else if (zi > 0.5f && zi <= 0.7f)
+				{
+					mip_level = MIN(1, texture->num_mip - 1);
+					c = RGB(0, 0, 255);
+				}
+				else if (zi > 0.7 && zi <= 0.8f)
 				{
 					mip_level = MIN(2, texture->num_mip - 1);
-					//c = RGB(0, 0, 255);
+					c = RGB(255, 255, 0);
 				}
-				else if (z1 > 0.9 && zi <= 1.0f)
+				else if (zi > 0.8 && zi <= 0.9f)
 				{
 					mip_level = MIN(3, texture->num_mip - 1);
-					//c = RGB(255, 255, 0);
+					c = RGB(255, 0, 255);
+				}
+				else
+				{
+					mip_level = MIN(3, texture->num_mip - 1);
+					c = RGB(255, 255, 255);
 				}
 
 
@@ -1926,21 +1937,21 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 					char color = bilinear_filter_1d(tex, texture->width[mip_level], texture->height[mip_level], u, v, filter);
 
-					draw_pixel(pixels, zbuffer, width, height, x, y, z, RGB(color, color, color));
+					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color, color, color));
 				}
 				else if (texture->components == 3)
 				{
 				
 					rgb_t color = bilinear_filter_3d((rgb_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
-					draw_pixel(pixels, zbuffer, width, height, x, y, z, RGB(color.r, color.g, color.b));
+					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color.r, color.g, color.b));
 				}
 				else
 				{
 					rgba_t color = bilinear_filter_4d((rgba_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
 
-					unsigned int c = *((unsigned int *)(&color));
+//					unsigned int c = *((unsigned int *)(&color));
 					
-					draw_pixel(pixels, zbuffer, width, height, x, y, z, c);
+					draw_pixel(pixels, zbuffer, width, height, x, y, zi, c);
 				}
 			}
 		}
