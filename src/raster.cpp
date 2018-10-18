@@ -19,7 +19,7 @@
 #define new DEBUG_NEW
 #endif
 
-inline char bilinear_filter_1d(const char *tex, const int width, const int height, const float u, const float v, bool enable);
+inline char bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable);
 inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable);
 inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable);
 
@@ -1770,7 +1770,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	const float lu1, const float lv1,
 	const float lu2, const float lv2,
 	const float lu3, const float lv3,
-	const int minx, const int maxx, const int miny, const int maxy, bool filter)
+	const int minx, const int maxx, const int miny, const int maxy, bool filter, bool trilinear)
 {
 	int max_x = imax(x1, imax(x2, x3));
 	int min_x = imin(x1, imin(x2, x3));
@@ -1890,52 +1890,69 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				zi /= 2000.0f;
 
 				int mip_level = 0;
-				unsigned int c = ~0;
+//				unsigned int c = ~0;
 
+				float mip_range[7] = { 0.0f, 0.125f, 0.25f, 0.5f, 0.7f, 0.8f, 0.9f};
+				int mip_select[7] = { 0, 1, 1, 1, 2, 3, 3};
+				float blend = 1.0f;
+				unsigned int mip_color[32];
 
 				// mip colors go from blue green red, aqua white -- near to far (note RGB is backwards, really BGR)
-				if (zi <= 0.125f)
+
+				if (zi > mip_range[0] && zi <= mip_range[1])
 				{
-					mip_level = 0;
-					c = ~0;
+					mip_level = mip_select[0];
+					//c = ~0;
+					blend = 1.0f - (zi - mip_range[0]) / (mip_range[1] - mip_range[0]);
 				}
-				else if (zi > 0.125f && zi <= 0.25f)
+				else if (zi > mip_range[1] && zi <= mip_range[2])
 				{
-					mip_level = MIN(1, texture->num_mip - 1);
-					c = RGB(255, 0, 0);
+					mip_level = MIN(mip_select[1], texture->num_mip - 1);
+					//c = RGB(255, 0, 0);
+					blend = 1.0f - (zi - mip_range[1]) / (mip_range[2] - mip_range[1]);
 				}
-				else if (zi > 0.25f && zi <= 0.5f)
+				else if (zi > mip_range[2] && zi <= mip_range[3])
 				{
-					mip_level = MIN(1, texture->num_mip - 1);
-					c = RGB(0, 255, 0);
+					mip_level = MIN(mip_select[2], texture->num_mip - 1);
+					//c = RGB(0, 255, 0);
+					blend = 1.0f - (zi - mip_range[2]) / (mip_range[3] - mip_range[2]);
 				}
-				else if (zi > 0.5f && zi <= 0.7f)
+				else if (zi > mip_range[3] && zi <= mip_range[4])
 				{
-					mip_level = MIN(1, texture->num_mip - 1);
-					c = RGB(0, 0, 255);
+					mip_level = MIN(mip_select[3], texture->num_mip - 1);
+					//c = RGB(0, 0, 255);
+					blend = 1.0f - (zi - mip_range[3]) / (mip_range[4] - mip_range[3]);
 				}
-				else if (zi > 0.7 && zi <= 0.8f)
+				else if (zi > mip_range[4] && zi <= mip_range[5])
 				{
-					mip_level = MIN(2, texture->num_mip - 1);
-					c = RGB(255, 255, 0);
+					mip_level = MIN(mip_select[4], texture->num_mip - 1);
+					//c = RGB(255, 255, 0);
+					blend = 1.0f - (zi - mip_range[4]) / (mip_range[5] - mip_range[4]);
 				}
-				else if (zi > 0.8 && zi <= 0.9f)
+				else if (zi > mip_range[5] && zi <= mip_range[6])
 				{
-					mip_level = MIN(3, texture->num_mip - 1);
-					c = RGB(255, 0, 255);
+					mip_level = MIN(mip_select[5], texture->num_mip - 1);
+					//c = RGB(255, 0, 255);
+					blend = 1.0f - (zi - mip_range[5]) / (mip_range[6] - mip_range[5]);
 				}
 				else
 				{
-					mip_level = MIN(3, texture->num_mip - 1);
-					c = RGB(255, 255, 255);
+					mip_level = MIN(mip_select[6], texture->num_mip - 1);
+					//c = RGB(255, 255, 255);
 				}
 
 
 				if (texture->components == 1)
 				{
-					char *tex = (char *)texture->data[mip_level];
+					unsigned char color = bilinear_filter_1d((unsigned char *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
 
-					char color = bilinear_filter_1d(tex, texture->width[mip_level], texture->height[mip_level], u, v, filter);
+
+					if (trilinear)
+					{
+						unsigned char color2 = bilinear_filter_1d((unsigned char *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
+
+						color = MIN(MAX(color * blend + color2 * (1.0f - blend), 0), 255);
+					}
 
 					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color, color, color));
 				}
@@ -1943,13 +1960,34 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				{
 				
 					rgb_t color = bilinear_filter_3d((rgb_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
+
+					if (trilinear)
+					{
+						rgb_t color2 = bilinear_filter_3d((rgb_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
+
+						color.r = MIN(MAX(color.r * blend + color2.r * (1.0f - blend), 0), 255);
+						color.g = MIN(MAX(color.g * blend + color2.g * (1.0f - blend), 0), 255);
+						color.b = MIN(MAX(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+					}
+
 					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color.r, color.g, color.b));
 				}
 				else
 				{
 					rgba_t color = bilinear_filter_4d((rgba_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
+					
+					if (trilinear)
+					{
+						rgba_t color2 = bilinear_filter_4d((rgba_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-//					unsigned int c = *((unsigned int *)(&color));
+						color.r = MIN(MAX(color.r * blend + color2.r * (1.0f - blend), 0), 255);
+						color.g = MIN(MAX(color.g * blend + color2.g * (1.0f - blend), 0), 255);
+						color.b = MIN(MAX(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+						color.a = MIN(MAX(color.a * blend + color2.a * (1.0f - blend), 0), 255);
+					}
+					
+
+					unsigned int c = *((unsigned int *)(&color));
 					
 					draw_pixel(pixels, zbuffer, width, height, x, y, zi, c);
 				}
@@ -2243,7 +2281,7 @@ void triangulate(vec4 *point, int &num_point)
 
 
 
-inline char bilinear_filter_1d(const char *tex, const int width, const int height, const float u, const float v, bool enable)
+inline char bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
 	float mv = v - (int)v;
@@ -2406,4 +2444,5 @@ inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int h
 
 	return result;
 }
+
 
