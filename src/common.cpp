@@ -4387,6 +4387,10 @@ void gen_frustum(Frame *camera, frustum_t *frustum)
 	//lower left
 	nearCoord[3] = nearCenter - camera->up * hNear / 2.0f - vRight * wNear / 2.0f;
 
+
+	frustum->pos = camera->pos;
+	frustum->forward = camera->forward;
+
 	// be sure normals point into frustum
 	calc_plane(frustum->left, farCoord[0], nearCoord[0], nearCoord[2]);
 	calc_plane(frustum->right, farCoord[1], nearCoord[3], nearCoord[1]);
@@ -4418,7 +4422,7 @@ int in_frustum(frustum_t *frustum, vec3 &pos)
 
 
 
-bool check_aabb_plane(const plane_t &p, vec3 *aabb)
+bool check_aabb_plane(const plane_t &p, vec3 *aabb, plane_t &zNear, bool near_plane)
 {
 	vec3 result;
 
@@ -4426,19 +4430,55 @@ bool check_aabb_plane(const plane_t &p, vec3 *aabb)
 
 	// three from origin point (min)
 	if (intersect_two_points_plane_vec3(p, aabb[0], aabb[1], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 	if (intersect_two_points_plane_vec3(p, aabb[0], aabb[2], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 	if (intersect_two_points_plane_vec3(p, aabb[0], aabb[4], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 
 	// three from origin point (max)
 	if (intersect_two_points_plane_vec3(p, aabb[7], aabb[6], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 	if (intersect_two_points_plane_vec3(p, aabb[7], aabb[5], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 	if (intersect_two_points_plane_vec3(p, aabb[7], aabb[3], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 
 	// missing two sticks XZ above origins and two pillars going up Y axis
 
@@ -4446,24 +4486,62 @@ bool check_aabb_plane(const plane_t &p, vec3 *aabb)
 	//(0, 1, 0) -> (0, 1, 1)
 
 	if (intersect_two_points_plane_vec3(p, aabb[2], aabb[6], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
+
 	if (intersect_two_points_plane_vec3(p, aabb[2], aabb[3], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 
 	if (intersect_two_points_plane_vec3(p, aabb[5], aabb[1], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
+
 	if (intersect_two_points_plane_vec3(p, aabb[5], aabb[4], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 
 	// two pillars
 	//0,0,1 -> 0, 1, 1
 	//1,0,0 -> 1,1,0
 
 	if (intersect_two_points_plane_vec3(p, aabb[1], aabb[3], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 
 	if (intersect_two_points_plane_vec3(p, aabb[4], aabb[6], result) == 0)
-		return true;
+	{
+		// check if point is infront of near plane (ie: not behind you)
+		if (near_plane || zNear.normal * result + zNear.d > 0)
+		{
+			return true;
+		}
+	}
 
 	return false;
 }
@@ -4486,7 +4564,6 @@ int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min)
 	aabb[5] = vec3(max.x, min.y, max.z);
 	aabb[6] = vec3(max.x, max.y, min.z);
 	aabb[7] = vec3(max.x, max.y, max.z);
-
 
 	// check points first
 	if (in_frustum(frustum, max))
@@ -4515,15 +4592,18 @@ int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min)
 		return true;
 
 
-	if (check_aabb_plane(frustum->left, aabb))
+
+	// Problem, frustum planes extend behind player, dont pass a point because it's inside someplace behind you
+
+	if (check_aabb_plane(frustum->left, aabb, frustum->zNear, false))
 		return true;
-	if (check_aabb_plane(frustum->right, aabb))
+	if (check_aabb_plane(frustum->right, aabb, frustum->zNear, false))
 		return true;
-	if (check_aabb_plane(frustum->top, aabb))
+	if (check_aabb_plane(frustum->top, aabb, frustum->zNear, false))
 		return true;
-	if (check_aabb_plane(frustum->bottom, aabb))
+	if (check_aabb_plane(frustum->bottom, aabb, frustum->zNear, false))
 		return true;
-	if (check_aabb_plane(frustum->zNear, aabb))
+	if (check_aabb_plane(frustum->zNear, aabb, frustum->zNear, true))
 		return true;
 	
 	return false;

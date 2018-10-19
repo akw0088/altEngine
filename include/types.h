@@ -1162,6 +1162,9 @@ typedef struct
 	plane_t top;
 	plane_t zNear;
 	plane_t zFar;
+
+	vec3 pos;
+	vec3 forward;
 }  frustum_t;
 
 #endif
