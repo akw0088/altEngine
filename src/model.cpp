@@ -200,16 +200,22 @@ void Model::make_aabb()
 
 void Model::render(Graphics &gfx)
 {
-	gfx.SelectIndexBuffer(model_index);
-	gfx.SelectVertexBuffer(model_vertex);
-	if (flags.blend)
-	{
-		gfx.Blend(true);
-		gfx.BlendFuncOneOne();
-	}
+	static int last_model = model_vertex;
 
-	gfx.SelectTexture(0, model_tex);
-//	gfx.SelectTexture(2, normal_tex);
+
+	if (last_model != model_vertex)
+	{
+		gfx.SelectIndexBuffer(model_index);
+		gfx.SelectVertexBuffer(model_vertex);
+		if (flags.blend)
+		{
+			gfx.Blend(true);
+			gfx.BlendFuncOneOne();
+		}
+
+		gfx.SelectTexture(0, model_tex);
+		//	gfx.SelectTexture(2, normal_tex);
+	}
 	gfx.DrawArrayTri(0, 0, num_index, num_vertex);
 	if (flags.blend)
 	{
