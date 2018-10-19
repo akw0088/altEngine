@@ -3747,6 +3747,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 
 	if (raw_mouse == false)
 	{
+		q3map.update = true;
 		if (menu.data.invert)
 			camera_frame.update(vec2((float)deltax, (float)-deltay), sensitivity, enable_planet == false);
 		else
@@ -3891,6 +3892,8 @@ void Engine::keypress(char *key, bool pressed)
 	char *cmd = (char *)key_bind.find(key);
 	if (cmd == NULL)
 		return;
+
+	q3map.update = true;
 
 	if (strcmp("moveup", cmd) == 0)
 	{

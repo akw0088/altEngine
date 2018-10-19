@@ -25,16 +25,14 @@ class Bsp
 {
 	void change_axis();
 	inline int find_leaf(const vec3 &position);
-//	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, q3::leaf_t *frameLeaf, bool order);
-	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, q3::leaf_t *frameLeaf, bool order, frustum_t *frustum);
+	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, q3::leaf_t *frameLeaf, bool order);
 	inline int cluster_visible(int visCluster, int testCluster);
 	void tessellate(int level, q3::bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
 		int **index_array, int &numIndexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size);
 	inline void render_face(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
 	inline void render_patch(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
 	inline void render_billboard(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
-	//void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position);
-	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position, frustum_t *frustum);
+	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position, frustum_t *frustum, int tick_num);
 	void add_list(vector<surface_t *> &surface_list, bool blend_flag, int i);
 	void set_blend_mode(Graphics &gfx, faceinfo_t &face);
 	void set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time);
@@ -50,7 +48,6 @@ public:
 	void generate_meshes(Graphics &gfx);
 	const char *get_entities();
 
-//	void render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num);
 	void render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num, frustum_t *frustum);
 	void render_brush_entity(unsigned int index, Graphics &gfx);
 	void render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> &surface_list);
@@ -79,6 +76,8 @@ public:
 	vec3 collision_normal;
 	float trace_result;
 
+	bool update;
+
 
 	bool loaded;
 	bool quake1;
@@ -98,6 +97,7 @@ public:
 	vector<faceinfo_t> face_list;	// sorted front to back
 	vector<faceinfo_t> blend_list; // sorted back to front
 	vector<int> leaf_list;
+	vector<int> frustum_list;
 	int *face_to_patch;
 	int lastIndex;
 

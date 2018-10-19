@@ -496,7 +496,7 @@ inline int Bsp::find_leaf(const vec3 &position)
 }
 
 // in order tree walk, keeping only visible nodes, front to back order
-void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order, frustum_t *frustum)
+void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order)
 {
 	if (node_index < 0)
 	{
@@ -504,17 +504,6 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 
 		if (cluster_visible(frameLeaf->cluster, leaf->cluster) == false)
 				return;
-
-		vec3 max = vec3(data.Leaf[~node_index].max[0], data.Leaf[~node_index].max[1], data.Leaf[~node_index].max[2]);
-		vec3 min = vec3(data.Leaf[~node_index].min[0], data.Leaf[~node_index].min[1], data.Leaf[~node_index].min[2]);
-
-
-		if (frustum && in_frustum_bbox(frustum, min, max) == false)
-		{
-//			printf("Dropping leaf %d due to frustum check\r\n", node_index);
-			return;
-		}
-
 
 		leaf_list->push_back(~node_index);
 		return;
@@ -528,26 +517,26 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	{
 		if (order)
 		{
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order, frustum);
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order, frustum);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
 		}
 		else
 		{
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order, frustum);
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order, frustum);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
 		}
 	}
 	else
 	{
 		if (order)
 		{
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order, frustum);
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order, frustum);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
 		}
 		else
 		{
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order, frustum);
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order, frustum);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
 		}
 	}
 }
@@ -1019,18 +1008,47 @@ bool face_sort(faceinfo_t a, faceinfo_t b)
 }
 
 
-void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position, frustum_t *frustum)
+void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position, frustum_t *frustum, int tick_num)
 {
 	leaf_t *frameLeaf = &data.Leaf[leaf];
 
 	face_list.resize(0);
 	blend_list.resize(0);
-	leaf_list.resize(0);
 
 	// sort leafs front to back
-	sort_leaf(&leaf_list, 0, position, frameLeaf, false, frustum);
+	if (lastIndex != leaf)
+	{
+		leaf_list.resize(0);
+		sort_leaf(&leaf_list, 0, position, frameLeaf, false);
+		lastIndex = leaf;
+	}
+
+
+	if (update || tick_num % 32 == 0)
+	{
+		frustum_list.resize(0);
+		for (unsigned int i = 0; i < leaf_list.size(); i++)
+		{
+			int node = leaf_list[i];
+			vec3 max(data.Leaf[node].max[0], data.Leaf[node].max[1], data.Leaf[node].max[2]);
+			vec3 min(data.Leaf[node].min[0], data.Leaf[node].min[1], data.Leaf[node].min[2]);
+
+
+			if (frustum && in_frustum_bbox(frustum, min, max) == false)
+			{
+				//			printf("Dropping leaf %d due to frustum check\r\n", node_index);
+				continue;;
+			}
+
+			frustum_list.push_back(leaf_list[i]);
+		}
+		update = false;
+	}
+
+	
+
 	// loop through visible sorted leaves, checking if leaf visible from current leaf
-	for (unsigned int i = 0; i < leaf_list.size(); i++)
+	for (unsigned int i = 0; i < frustum_list.size(); i++)
 	{
 		add_list(surface_list, false, i);
 	}
@@ -1041,14 +1059,14 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 #endif
 
 	// add blend
-	for (unsigned int i = leaf_list.size() - 1; i < leaf_list.size(); i--)
+	for (unsigned int i = frustum_list.size() - 1; i < frustum_list.size(); i--)
 		add_list(surface_list, true, i);
 }
 
 
 void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 {
-	leaf_t *leaf = &data.Leaf[leaf_list[i]];
+	leaf_t *leaf = &data.Leaf[frustum_list[i]];
 
 	// generate face lists
 	for (int j = 0; j < leaf->num_faces; j++)
@@ -1510,19 +1528,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 	float alpha_value = 1.0f;
 	bool cull_face = false;
 
-	if (frameIndex != lastIndex && frustum == NULL)
-	{
-		// only updates when Leaf node changes
-		gen_renderlists(frameIndex, surface_list, position, frustum);
-		lastIndex = frameIndex;
-	}
-	else
-	{
-		// since we have a frustum checking, we have to update every frame
-		gen_renderlists(frameIndex, surface_list, position, frustum);
-		lastIndex = frameIndex;
-	}
-
+	gen_renderlists(frameIndex, surface_list, position, frustum, tick_num);
 
 
 	gfx.Blend(false);
