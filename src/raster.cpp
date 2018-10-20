@@ -324,7 +324,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		// backface cull triangles that passed basic frustum check
 		vec3 av = vec3(v2) - vec3(v1);
 		vec3 bv = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(av, bv) * vec3(0, 0, -1) < 0)
+		if (vec3::crossproduct(av, bv) * v1 > 0)
 		{
 			continue;
 		}
