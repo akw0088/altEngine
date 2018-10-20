@@ -1917,16 +1917,16 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	float inv_den = 1.0f / area_denom;
 
 	// find 1/z, u/z, v/z per vertex
-	float iz1 = 1.0f / w1;
-	float iz2 = 1.0f / w2;
-	float iz3 = 1.0f / w3;
+	float inverse_w1 = 1.0f / w1;
+	float inverse_w2 = 1.0f / w2;
+	float inverse_w3 = 1.0f / w3;
 
-	float uiz1 = u1 * iz1;
-	float viz1 = v1 * iz1;
-	float uiz2 = u2 * iz2;
-	float viz2 = v2 * iz2;
-	float uiz3 = u3 * iz3;
-	float viz3 = v3 * iz3;
+	float u_over_w1 = u1 * inverse_w1;
+	float v_over_w1 = v1 * inverse_w1;
+	float u_over_w2 = u2 * inverse_w2;
+	float v_over_w2 = v2 * inverse_w2;
+	float u_over_w3 = u3 * inverse_w3;
+	float v_over_w3 = v3 * inverse_w3;
 
 
 	// Everything in these loops must be optimized as they are called per pixel
@@ -1964,13 +1964,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 			{
 				float u, v;
 
-				float iz = s * iz2 + t *  iz3 + b * iz1;
-#if 0
-				if (!iz)
-				{
-					continue;
-				}
-#endif
+				float inverse_w = s * inverse_w2 + t *  inverse_w3 + b * inverse_w1;
 
 				// interpolate 1/z, u/z, v/z which are linear equations
 				float z = s * z2 + t *  z3 + b * z1;
@@ -1981,28 +1975,28 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					continue;
 				}
 
-				float iu = s * uiz2 + t * uiz3 + b * uiz1;
-				float iv = s * viz2 + t * viz3 + b * viz1;
+				float u_over_w = s * u_over_w2 + t * u_over_w3 + b * u_over_w1;
+				float v_over_w = s * v_over_w2 + t * v_over_w3 + b * v_over_w1;
 
 
 				// find inverse / multiply to get perspective correct z, u, v
-				float zi = 1.0f / iz;
-				u = iu * zi;
-				v = iv * zi;
+				float w_interpolated = 1.0f / inverse_w;
+				u = u_over_w * w_interpolated;
+				v = v_over_w * w_interpolated;
 
 
 				// zFar - zNear scaling
-				zi /= 2000.0f;
+				w_interpolated /= 2000.0f;
 
 				int mip_level = 0;
 				float blend = 1.0f;
 
 				if (mipmap)
 				{
-					calculate_miplevel(texture, zi, mip_level, blend);
+					calculate_miplevel(texture, w_interpolated, mip_level, blend);
 				}
 
-				render_pixel(pixels, zbuffer, width, height, x, y, zi, texture, lightmap, mipmap, mip_level, u, v, blend, filter, trilinear);
+				render_pixel(pixels, zbuffer, width, height, x, y, 1.0f - w_interpolated, texture, lightmap, mipmap, mip_level, u, v, blend, filter, trilinear);
 			}
 		}
 	}
