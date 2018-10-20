@@ -311,6 +311,25 @@ void Graphics::swap()
 	}
 #endif
 #ifdef WIN32
+#ifdef DEBUG_ZBUFFER
+	for (int y = 0; y < height; y++)
+	{
+		if (pixels == NULL)
+			break;
+
+		for (int x = 0; x < width; x++)
+		{
+			rgba_t data;
+
+			data.r = zbuffer[x + y * (width - 1)] * 255;
+			data.g = zbuffer[x + y * (width - 1)] * 255;
+			data.b = zbuffer[x + y * (width - 1)] * 255;
+			data.a = 0;
+			pixels[x + y * (width - 1)] = *((int *)&data);
+		}
+	}
+#endif
+
 	SetBitmapBits(hBitmap, width * height * sizeof(int), pixels);
 	BitBlt(hdc, 0, 0, width, height, hdcMem, 0, 0, SRCCOPY);
 #endif
@@ -451,10 +470,10 @@ void Graphics::cleardepth()
 #ifndef THREAD
 	if (zbuffer)
 	{
-		for (int i = 0; i < width * height; i++)
-		{
-			zbuffer[i] = 1.0f;
-		}
+//		for (int i = 0; i < width * height; i++)
+//		{
+//			zbuffer[i] = 1.0f;
+//		}
 	}
 #else
 

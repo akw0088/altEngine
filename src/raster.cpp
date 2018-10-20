@@ -1337,14 +1337,16 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 
 }
 
-inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x, int y, int z, unsigned int color)
+inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color)
 {
 #ifdef THREAD
 	pixels[x + y * width] = color;
+	zbuffer[x + y * width] = z;
 #else
 	pixels[x + ((height - 1 - y) * width)] = color;
+	zbuffer[x + ((height - 1 - y) * width)] = z;
+	//zbuffer[x + y * width] = z;
 #endif
-	zbuffer[x + y * width] = -z;
 }
 
 void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
@@ -1921,6 +1923,12 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	float inverse_w2 = 1.0f / w2;
 	float inverse_w3 = 1.0f / w3;
 
+
+	float inverse_z1 = 1.0f / z1;
+	float inverse_z2 = 1.0f / z2;
+	float inverse_z3 = 1.0f / z3;
+
+
 	float u_over_w1 = u1 * inverse_w1;
 	float v_over_w1 = v1 * inverse_w1;
 	float u_over_w2 = u2 * inverse_w2;
@@ -1963,30 +1971,43 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 			if ((s >= 0.0f) && (t >= 0.0f) && (b >= 0.0f))
 			{
 				float u, v;
+				float depth;
+
+				// interpolate Z first to do Z test
+				float inverse_z_interpolated = s * inverse_z2 + t *  inverse_z3 + b * inverse_z1;
+				float z_interpolated = 1.0f / inverse_z_interpolated;
+
+
 
 				float inverse_w = s * inverse_w2 + t *  inverse_w3 + b * inverse_w1;
-
-				// interpolate 1/z, u/z, v/z which are linear equations
-				float z = s * z2 + t *  z3 + b * z1;
-
-				// check zbuffer
-				if (zbuffer[x + y * width] < z)
-				{
-					continue;
-				}
+				float w_interpolated = 1.0f / inverse_w;
 
 				float u_over_w = s * u_over_w2 + t * u_over_w3 + b * u_over_w1;
 				float v_over_w = s * v_over_w2 + t * v_over_w3 + b * v_over_w1;
 
 
 				// find inverse / multiply to get perspective correct z, u, v
-				float w_interpolated = 1.0f / inverse_w;
+				
 				u = u_over_w * w_interpolated;
 				v = v_over_w * w_interpolated;
 
 
 				// zFar - zNear scaling
 				w_interpolated /= 2000.0f;
+
+				// check zbuffer clears to 1.0 (near) to 0.0 far
+				depth = w_interpolated;
+#ifdef THREAD
+				if (zbuffer[x + y * width] <= depth)
+				{
+					continue;
+				}
+#else
+				if (zbuffer[x + ((height - 1 - y) * width)] <= depth)
+				{
+					continue;
+				}
+#endif
 
 				int mip_level = 0;
 				float blend = 1.0f;
@@ -1996,7 +2017,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 					calculate_miplevel(texture, w_interpolated, mip_level, blend);
 				}
 
-				render_pixel(pixels, zbuffer, width, height, x, y, 1.0f - w_interpolated, texture, lightmap, mipmap, mip_level, u, v, blend, filter, trilinear);
+				render_pixel(pixels, zbuffer, width, height, x, y, depth, texture, lightmap, mipmap, mip_level, u, v, blend, filter, trilinear);
 			}
 		}
 	}
