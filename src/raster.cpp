@@ -1031,9 +1031,9 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			continue;
 		
 		// backface cull
-		vec3 a = vec3(v2) - vec3(v1);
-		vec3 b = vec3(v3) - vec3(v1);
-		if (vec3::crossproduct(a, b) * vec3(0, 0, -1) < 0)
+		vec3 av = vec3(v2) - vec3(v1);
+		vec3 bv = vec3(v3) - vec3(v1);
+		if (vec3::crossproduct(av, bv) * v1 > 0)
 			continue;
 
 		//[0,1] -> [0,width]
@@ -1945,7 +1945,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 		det2right = (min_x - x1) *  vspan1y;
 		det2 = det2left - det2right;
 
-
+		// Could unroll loop and use SIMD
 		for (int x = min_x; x <= max_x; x++)
 		{
 			if (x != min_x)
@@ -1957,21 +1957,18 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 			}
 
 			// barycentric coords (s,t,1-s-t)
-			float s = (float)det1 * inv_den;
+			float s = (float)det1 * inv_den; // should probably eliminate floats and use fixed point
 			float t = (float)det2 * inv_den;
 			float b = 1.0f - s - t;
 
 			// if inside triangle
 			if ((s >= 0.0f) && (t >= 0.0f) && (b >= 0.0f))
 			{
-				float u, v;
-				float depth;
-
-				float inverse_w = s * inverse_w2 + t *  inverse_w3 + b * inverse_w1;
+				float inverse_w = s * inverse_w2 + t * inverse_w3 + b * inverse_w1;
 				float w_interpolated = 1.0f / inverse_w;
+				float depth = w_interpolated * 0.0005f; // (1 / 2000.0f) == 0.0005f
 
 				// check zbuffer clears to 1.0 (near) to 0.0 far
-				depth = w_interpolated / 2000.0f;
 #ifdef THREAD
 				if (zbuffer[x + y * width] <= depth)
 				{
@@ -1989,11 +1986,10 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 
 				// find inverse / multiply to get perspective correct z, u, v
-				
-				u = u_over_w * w_interpolated;
-				v = v_over_w * w_interpolated;
+				float u = u_over_w * w_interpolated;
+				float v = v_over_w * w_interpolated;
 
-				int mip_level = 0;
+				int mip_level;
 				float blend = 1.0f;
 
 				if (mipmap)

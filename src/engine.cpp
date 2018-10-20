@@ -5396,7 +5396,7 @@ int Engine::console_general(char *cmd)
 	ret = sscanf(cmd, "clip %s", data);
 	if (ret == 1)
 	{
-		snprintf(msg, LINE_SIZE, "%s\n", data);
+		snprintf(msg, LINE_SIZE, "clip %s\n", data);
 		menu.print(msg);
 		debugf(msg);
 #ifdef SOFTWARE
