@@ -1760,6 +1760,113 @@ inline int det(int ax, int ay, int bx, int by)
 	return ax * by - bx *  ay;
 }
 
+
+void calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level, float &blend)
+{
+	float mip_range[7] = { 0.0f, 0.125f, 0.25f, 0.5f, 0.7f, 0.8f, 0.9f };
+	int mip_select[7] = { 0, 1, 1, 1, 2, 3, 3 };
+	unsigned int mip_color[32];
+
+	// mip colors go from blue green red, aqua white -- near to far (note RGB is backwards, really BGR)
+
+	if (zi > mip_range[0] && zi <= mip_range[1])
+	{
+		mip_level = mip_select[0];
+		//c = ~0;
+		blend = 1.0f - (zi - mip_range[0]) / (mip_range[1] - mip_range[0]);
+	}
+	else if (zi > mip_range[1] && zi <= mip_range[2])
+	{
+		mip_level = imin(mip_select[1], texture->num_mip - 1);
+		//c = RGB(255, 0, 0);
+		blend = 1.0f - (zi - mip_range[1]) / (mip_range[2] - mip_range[1]);
+	}
+	else if (zi > mip_range[2] && zi <= mip_range[3])
+	{
+		mip_level = imin(mip_select[2], texture->num_mip - 1);
+		//c = RGB(0, 255, 0);
+		blend = 1.0f - (zi - mip_range[2]) / (mip_range[3] - mip_range[2]);
+	}
+	else if (zi > mip_range[3] && zi <= mip_range[4])
+	{
+		mip_level = imin(mip_select[3], texture->num_mip - 1);
+		//c = RGB(0, 0, 255);
+		blend = 1.0f - (zi - mip_range[3]) / (mip_range[4] - mip_range[3]);
+	}
+	else if (zi > mip_range[4] && zi <= mip_range[5])
+	{
+		mip_level = imin(mip_select[4], texture->num_mip - 1);
+		//c = RGB(255, 255, 0);
+		blend = 1.0f - (zi - mip_range[4]) / (mip_range[5] - mip_range[4]);
+	}
+	else if (zi > mip_range[5] && zi <= mip_range[6])
+	{
+		mip_level = imin(mip_select[5], texture->num_mip - 1);
+		//c = RGB(255, 0, 255);
+		blend = 1.0f - (zi - mip_range[5]) / (mip_range[6] - mip_range[5]);
+	}
+	else
+	{
+		mip_level = imin(mip_select[6], texture->num_mip - 1);
+		//c = RGB(255, 255, 255);
+	}
+}
+
+
+void render_pixel(int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear)
+{
+	if (texture->components == 1)
+	{
+		unsigned char color = bilinear_filter_1d((unsigned char *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
+
+
+		if (mipmap && trilinear)
+		{
+			unsigned char color2 = bilinear_filter_1d((unsigned char *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
+
+			color = imin(imax(color * blend + color2 * (1.0f - blend), 0), 255);
+		}
+
+		draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color, color, color));
+	}
+	else if (texture->components == 3)
+	{
+
+		rgb_t color = bilinear_filter_3d((rgb_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
+
+		if (mipmap && trilinear)
+		{
+			rgb_t color2 = bilinear_filter_3d((rgb_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
+
+			color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
+			color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
+			color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+		}
+
+		draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color.r, color.g, color.b));
+	}
+	else
+	{
+		rgba_t color = bilinear_filter_4d((rgba_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
+
+		if (mipmap && trilinear)
+		{
+			rgba_t color2 = bilinear_filter_4d((rgba_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
+
+			color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
+			color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
+			color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+			color.a = imin(imax(color.a * blend + color2.a * (1.0f - blend), 0), 255);
+		}
+
+
+		unsigned int c = *((unsigned int *)(&color));
+
+		draw_pixel(pixels, zbuffer, width, height, x, y, zi, c);
+	}
+
+}
+
 void barycentric_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int x1, const int y1, const float z1, const float w1, const int c1,
 	const int x2, const int y2, const float z2, const float w2, const int c2,
@@ -1821,6 +1928,8 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	float uiz3 = u3 * iz3;
 	float viz3 = v3 * iz3;
 
+
+	// Everything in these loops must be optimized as they are called per pixel
 	for (int y = min_y; y <= max_y; y++)
 	{
 		int det1;
@@ -1837,20 +1946,13 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 		for (int x = min_x; x <= max_x; x++)
 		{
-			// center xy over origin point
-//			int qx = (x - x1);
-
-		
 			if (x != min_x)
 			{
+				// should work at bottom of loop, but is giving weird buldge distortion
 				det1 += vspan2y;
 				det2right += vspan1y;
 				det2 = det2left - det2right;
 			}
-
-			// trading multiplies for det1 and det2 for adds
-			//det2 = det(vspan1x, vspan1y, qx, qy);
-			
 
 			// barycentric coords (s,t,1-s-t)
 			float s = (float)det1 * inv_den;
@@ -1863,14 +1965,17 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				float u, v;
 
 				float iz = s * iz2 + t *  iz3 + b * iz1;
+#if 0
 				if (!iz)
 				{
 					continue;
 				}
+#endif
 
 				// interpolate 1/z, u/z, v/z which are linear equations
 				float z = s * z2 + t *  z3 + b * z1;
 
+				// check zbuffer
 				if (zbuffer[x + y * width] < z)
 				{
 					continue;
@@ -1891,109 +1996,13 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 				int mip_level = 0;
 				float blend = 1.0f;
-				//				unsigned int c = ~0;
 
 				if (mipmap)
 				{
-					float mip_range[7] = { 0.0f, 0.125f, 0.25f, 0.5f, 0.7f, 0.8f, 0.9f };
-					int mip_select[7] = { 0, 1, 1, 1, 2, 3, 3 };
-					unsigned int mip_color[32];
-
-					// mip colors go from blue green red, aqua white -- near to far (note RGB is backwards, really BGR)
-
-					if (zi > mip_range[0] && zi <= mip_range[1])
-					{
-						mip_level = mip_select[0];
-						//c = ~0;
-						blend = 1.0f - (zi - mip_range[0]) / (mip_range[1] - mip_range[0]);
-					}
-					else if (zi > mip_range[1] && zi <= mip_range[2])
-					{
-						mip_level = imin(mip_select[1], texture->num_mip - 1);
-						//c = RGB(255, 0, 0);
-						blend = 1.0f - (zi - mip_range[1]) / (mip_range[2] - mip_range[1]);
-					}
-					else if (zi > mip_range[2] && zi <= mip_range[3])
-					{
-						mip_level = imin(mip_select[2], texture->num_mip - 1);
-						//c = RGB(0, 255, 0);
-						blend = 1.0f - (zi - mip_range[2]) / (mip_range[3] - mip_range[2]);
-					}
-					else if (zi > mip_range[3] && zi <= mip_range[4])
-					{
-						mip_level = imin(mip_select[3], texture->num_mip - 1);
-						//c = RGB(0, 0, 255);
-						blend = 1.0f - (zi - mip_range[3]) / (mip_range[4] - mip_range[3]);
-					}
-					else if (zi > mip_range[4] && zi <= mip_range[5])
-					{
-						mip_level = imin(mip_select[4], texture->num_mip - 1);
-						//c = RGB(255, 255, 0);
-						blend = 1.0f - (zi - mip_range[4]) / (mip_range[5] - mip_range[4]);
-					}
-					else if (zi > mip_range[5] && zi <= mip_range[6])
-					{
-						mip_level = imin(mip_select[5], texture->num_mip - 1);
-						//c = RGB(255, 0, 255);
-						blend = 1.0f - (zi - mip_range[5]) / (mip_range[6] - mip_range[5]);
-					}
-					else
-					{
-						mip_level = imin(mip_select[6], texture->num_mip - 1);
-						//c = RGB(255, 255, 255);
-					}
+					calculate_miplevel(texture, zi, mip_level, blend);
 				}
 
-
-				if (texture->components == 1)
-				{
-					unsigned char color = bilinear_filter_1d((unsigned char *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
-
-
-					if (mipmap && trilinear)
-					{
-						unsigned char color2 = bilinear_filter_1d((unsigned char *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
-
-						color = imin(imax(color * blend + color2 * (1.0f - blend), 0), 255);
-					}
-
-					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color, color, color));
-				}
-				else if (texture->components == 3)
-				{
-				
-					rgb_t color = bilinear_filter_3d((rgb_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
-
-					if (mipmap && trilinear)
-					{
-						rgb_t color2 = bilinear_filter_3d((rgb_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
-
-						color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
-						color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
-						color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
-					}
-
-					draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color.r, color.g, color.b));
-				}
-				else
-				{
-					rgba_t color = bilinear_filter_4d((rgba_t *)texture->data[mip_level], texture->width[mip_level], texture->height[mip_level], u, v, filter);
-					
-					if (mipmap && trilinear)
-					{
-						rgba_t color2 = bilinear_filter_4d((rgba_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
-
-						color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
-						color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
-						color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
-						color.a = imin(imax(color.a * blend + color2.a * (1.0f - blend), 0), 255);
-					}
-					
-
-					unsigned int c = *((unsigned int *)(&color));
-					
-					draw_pixel(pixels, zbuffer, width, height, x, y, zi, c);
-				}
+				render_pixel(pixels, zbuffer, width, height, x, y, zi, texture, lightmap, mipmap, mip_level, u, v, blend, filter, trilinear);
 			}
 		}
 	}

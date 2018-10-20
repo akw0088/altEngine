@@ -111,12 +111,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 
 	GetFreq(freq);
 
-	if (strstr(szCmdLine, "debug"))
-	{
-		debug = true;
-	}
-
-
 	if (!RegisterClass(&wndclass))
 	{
 		MessageBox(NULL, TEXT("Unable to register window class."), szAppName, MB_ICONERROR);
@@ -201,6 +195,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static double min_frametime = 0.0;
 	static double max_frametime = 0.0;
 	static HCURSOR hCursor;
+	static char *cmdline = NULL;
+	static int debug = false;
 	
 #ifdef VULKAN
 	static bool resized = false;
@@ -213,8 +209,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 	{
-		WSAStartup(MAKEWORD(2, 2), &wsadata);
+		cmdline = (char *)GetCommandLine();
+
+		if (strstr(cmdline, "debug"))
+		{
+			debug = true;
+		}
+
 		RedirectIOToConsole(debug);
+		WSAStartup(MAKEWORD(2, 2), &wsadata);
 
 		hCursor = LoadCursorFromFile("media/mouse.cur");
 		if (hCursor)
@@ -272,7 +275,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 #endif
 		shwnd = hwnd;
 #ifndef VULKAN
-		altEngine.init(&shwnd, &hdc, (char *)GetCommandLine());
+		altEngine.init(&shwnd, &hdc, cmdline);
 #endif
 	}
 	return 0;
