@@ -907,20 +907,20 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 		return 0;
 	}
 #endif
-#ifndef OPENGL
+#ifdef DIRECTX
 	components = 4;
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	unsigned char *data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	format = 4;
 #endif
 #ifdef VULKAN
 	format = -1;
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 #ifndef DEDICATED
 	char *pBits = NULL;
 	if (components == 3)
 	{
-		pBits = tga_24to32(width, height, (char *)bytes, bgr);
+		pBits = tga_24to32(width, height, (char *)data, bgr);
 		components = 5;
 	}
 #endif
@@ -932,14 +932,14 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	else if (components == 5)
 	{
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
-		delete [] pBits;
+//		delete [] pBits;
 	}
 	else
 	{
-		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp, anisotropic);
+		tex_object = gfx.LoadTexture(width, height, components, format, data, clamp, anisotropic);
 	}
-	stbi_image_free(bytes);
-	delete [] data;
+//	stbi_image_free(data);
+//	delete [] data;
 #endif
 #ifdef OPENGL
 	if (format != GL_RGBA)

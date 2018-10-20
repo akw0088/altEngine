@@ -1057,7 +1057,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	}
 }
 
-std::vector<const char*> GetDebugInstanceExtensionNames()
+void EnumDebugInstanceExtensionNames()
 {
 	unsigned int extensionCount = 0;
 	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
@@ -1068,16 +1068,11 @@ std::vector<const char*> GetDebugInstanceExtensionNames()
 	std::vector<const char*> result;
 	for (const auto& e : instanceExtensions)
 	{
-		if (strcmp(e.extensionName, "VK_EXT_debug_report") == 0)
-		{
-			result.push_back("VK_EXT_debug_report");
-		}
+		printf("%s\n", e.extensionName);
 	}
-
-	return result;
 }
 
-std::vector<const char*> GetDebugInstanceLayerNames()
+void EnumDebugInstanceLayerNames()
 {
 	unsigned int layerCount = 0;
 	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
@@ -1085,43 +1080,36 @@ std::vector<const char*> GetDebugInstanceLayerNames()
 	std::vector<VkLayerProperties> instanceLayers{ layerCount };
 	vkEnumerateInstanceLayerProperties(&layerCount, instanceLayers.data());
 
-	std::vector<const char*> result;
 	for (const auto& p : instanceLayers)
 	{
-		if (strcmp(p.layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
-		{
-			result.push_back("VK_LAYER_LUNARG_standard_validation");
-		}
+		printf("%s\r\n", p.layerName);
 	}
-
-	return result;
 }
 
 VkInstance Graphics::CreateInstance()
 {
-	VkInstanceCreateInfo instanceCreateInfo = {};
-	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	VkInstanceCreateInfo instanceCreateInfo;
+	VkApplicationInfo applicationInfo;
 
-	std::vector<const char*> instanceExtensions =
-	{
-		"VK_KHR_surface", "VK_KHR_win32_surface"
+	char *instanceExtensions[] = {
+		"VK_KHR_surface",
+		"VK_KHR_win32_surface",
+		"VK_EXT_debug_report"
+	};
+	char *instanceLayers[] = {
+		"VK_LAYER_LUNARG_standard_validation"
 	};
 
-	auto debugInstanceExtensionNames = GetDebugInstanceExtensionNames();
-	instanceExtensions.insert(instanceExtensions.end(), debugInstanceExtensionNames.begin(), debugInstanceExtensionNames.end());
+	memset(&instanceCreateInfo, 0, sizeof(VkInstanceCreateInfo));
+	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions;
+	instanceCreateInfo.enabledExtensionCount = 3;
+	instanceCreateInfo.ppEnabledLayerNames = instanceLayers;
+	instanceCreateInfo.enabledLayerCount = 1;
+	instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
-	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-	instanceCreateInfo.enabledExtensionCount = (unsigned int) (instanceExtensions.size());
 
-	std::vector<const char*> instanceLayers;
-
-	auto debugInstanceLayerNames = GetDebugInstanceLayerNames();
-	instanceLayers.insert(instanceLayers.end(), debugInstanceLayerNames.begin(), debugInstanceLayerNames.end());
-
-	instanceCreateInfo.ppEnabledLayerNames = instanceLayers.data();
-	instanceCreateInfo.enabledLayerCount = (unsigned int) (instanceLayers.size());
-
-	VkApplicationInfo applicationInfo = {};
+	memset(&applicationInfo, 0, sizeof(VkApplicationInfo));
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	applicationInfo.apiVersion = VK_API_VERSION_1_0;
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -1129,7 +1117,6 @@ VkInstance Graphics::CreateInstance()
 	applicationInfo.pApplicationName = "Vulkan";
 	applicationInfo.pEngineName = "Vulkan";
 
-	instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
 	VkInstance instance = VK_NULL_HANDLE;
 	vkCreateInstance(&instanceCreateInfo, NULL, &instance);
