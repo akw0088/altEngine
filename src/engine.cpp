@@ -3898,7 +3898,7 @@ void Engine::keypress(char *key, bool pressed)
 	char k = 0;
 	char *cmd = "";
 	
-
+#ifdef __linux__
 	if (menu.console == false)
 	{
 		cmd = (char *)key_bind.find(key);
@@ -3909,6 +3909,11 @@ void Engine::keypress(char *key, bool pressed)
 	{
 		k = key[0];
 	}
+#else
+	cmd = (char *)key_bind.find(key);
+	if (cmd == NULL)
+		return;
+#endif
 
 	q3map.update = true;
 
