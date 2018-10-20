@@ -1923,12 +1923,6 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 	float inverse_w2 = 1.0f / w2;
 	float inverse_w3 = 1.0f / w3;
 
-
-	float inverse_z1 = 1.0f / z1;
-	float inverse_z2 = 1.0f / z2;
-	float inverse_z3 = 1.0f / z3;
-
-
 	float u_over_w1 = u1 * inverse_w1;
 	float v_over_w1 = v1 * inverse_w1;
 	float u_over_w2 = u2 * inverse_w2;
@@ -1973,30 +1967,11 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				float u, v;
 				float depth;
 
-				// interpolate Z first to do Z test
-				float inverse_z_interpolated = s * inverse_z2 + t *  inverse_z3 + b * inverse_z1;
-				float z_interpolated = 1.0f / inverse_z_interpolated;
-
-
-
 				float inverse_w = s * inverse_w2 + t *  inverse_w3 + b * inverse_w1;
 				float w_interpolated = 1.0f / inverse_w;
 
-				float u_over_w = s * u_over_w2 + t * u_over_w3 + b * u_over_w1;
-				float v_over_w = s * v_over_w2 + t * v_over_w3 + b * v_over_w1;
-
-
-				// find inverse / multiply to get perspective correct z, u, v
-				
-				u = u_over_w * w_interpolated;
-				v = v_over_w * w_interpolated;
-
-
-				// zFar - zNear scaling
-				w_interpolated /= 2000.0f;
-
 				// check zbuffer clears to 1.0 (near) to 0.0 far
-				depth = w_interpolated;
+				depth = w_interpolated / 2000.0f;
 #ifdef THREAD
 				if (zbuffer[x + y * width] <= depth)
 				{
@@ -2009,12 +1984,21 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				}
 #endif
 
+				float u_over_w = s * u_over_w2 + t * u_over_w3 + b * u_over_w1;
+				float v_over_w = s * v_over_w2 + t * v_over_w3 + b * v_over_w1;
+
+
+				// find inverse / multiply to get perspective correct z, u, v
+				
+				u = u_over_w * w_interpolated;
+				v = v_over_w * w_interpolated;
+
 				int mip_level = 0;
 				float blend = 1.0f;
 
 				if (mipmap)
 				{
-					calculate_miplevel(texture, w_interpolated, mip_level, blend);
+					calculate_miplevel(texture, depth, mip_level, blend);
 				}
 
 				render_pixel(pixels, zbuffer, width, height, x, y, depth, texture, lightmap, mipmap, mip_level, u, v, blend, filter, trilinear);
