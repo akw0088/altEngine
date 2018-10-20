@@ -3794,6 +3794,10 @@ void Engine::bind_keys()
 		key_bind.insert("A", "moveleft");
 		key_bind.insert("S", "movedown");
 		key_bind.insert("D", "moveright");
+		key_bind.insert("w", "moveup");
+		key_bind.insert("a", "moveleft");
+		key_bind.insert("s", "movedown");
+		key_bind.insert("d", "moveright");
 		key_bind.insert("tab", "scores");
 		key_bind.insert("pgup", "pgup");
 		key_bind.insert("pgdown", "pgdown");
