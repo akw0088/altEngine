@@ -132,7 +132,6 @@ Engine::Engine() :
 	light_list.reserve(128);
 	enable_stencil = false;
 	enable_map_shadows = false;
-	sensitivity = 1.0f;
 	shadow_light = 107;
 
 #ifndef __OBJC__
@@ -146,6 +145,10 @@ Engine::Engine() :
 	zNear = 1.0f;
 	zFar = 2001.0f;
 	inf = true;
+
+#ifdef __linux__
+	sensitivity *= 0.1f;
+#endif
 
 #ifdef OPENMP
 	omp_set_num_threads(16);
@@ -4390,7 +4393,6 @@ void Engine::fullscreen()
 #endif
 #ifdef __linux__
 		::fullscreen((Display *)param1, *((Window *)param2));
-		sensitivity *= 0.1f;
 #endif
 		fullscreen_timer = TICK_RATE;
 	}
