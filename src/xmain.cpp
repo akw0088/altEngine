@@ -512,6 +512,17 @@ int EventProc(Display *display, Window window, GLXContext context)
 				altEngine.keypress("pgdown", pressed);
 				break;
 			}
+
+                        if ((keysym >= 'A' && keysym <= 'Z') || (keysym>= 'a' && keysym <= 'z') || (keysym >= '0' && keysym <= '9'))
+                        {
+                                char c[2];
+
+                                c[0] = keysym;
+                                c[1] = '\0';
+                                altEngine.keypress(c, pressed);
+                        }
+
+
 		}
 		break;
 	case UnmapNotify:

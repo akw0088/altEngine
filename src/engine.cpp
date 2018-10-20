@@ -3889,9 +3889,19 @@ void Engine::keypress(char *key, bool pressed)
 {
 	bool handled = false;
 	char k = 0;
-	char *cmd = (char *)key_bind.find(key);
-	if (cmd == NULL)
-		return;
+	char *cmd = "";
+	
+
+	if (menu.console == false)
+	{
+		cmd = (char *)key_bind.find(key);
+		if (cmd == NULL)
+			return;
+	}
+	else
+	{
+		k = key[0];
+	}
 
 	q3map.update = true;
 
@@ -4376,6 +4386,7 @@ void Engine::fullscreen()
 #endif
 #ifdef __linux__
 		::fullscreen((Display *)param1, *((Window *)param2));
+		sensitivity *= 0.1f;
 #endif
 		fullscreen_timer = TICK_RATE;
 	}
