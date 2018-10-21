@@ -42,6 +42,44 @@
 #define DECR_WRAP	0x8508
 
 
+#ifdef VULKAN
+struct MemoryTypeInfo
+{
+	bool deviceLocal = false;
+	bool hostVisible = false;
+	bool hostCoherent = false;
+	bool hostCached = false;
+	bool lazilyAllocated = false;
+
+	struct Heap
+	{
+		uint64_t size = 0;
+		bool deviceLocal = false;
+	};
+
+	Heap heap;
+	int index;
+};
+
+enum MemoryProperties
+{
+	MT_DeviceLocal = 1,
+	MT_HostVisible = 2
+};
+
+struct SwapchainFormatColorSpace
+{
+	VkFormat format;
+	VkColorSpaceKHR colorSpace;
+};
+
+template <typename T>
+T RoundToNextMultiple(const T a, const T multiple)
+{
+	return ((a + multiple - 1) / multiple) * multiple;
+}
+#endif
+
 
 /*
 	You could make this a pure virtual class and switch between OpenGL and Direct3D at runtime...

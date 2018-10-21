@@ -27,6 +27,7 @@ PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
 PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
 
 
+
 void Graphics::resize(int width, int height)
 {
 	Graphics::width = width;
@@ -63,7 +64,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback( VkDebugReportFlagsEXT flags,
 
 void Graphics::SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp)
 {
-	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo = {};
+	VkDebugReportCallbackCreateInfoEXT callbackCreateInfo;
+
+
+	memset(&callbackCreateInfo, 0, sizeof(VkDebugReportCallbackCreateInfoEXT));
 	callbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
 	callbackCreateInfo.flags =
 		VK_DEBUG_REPORT_ERROR_BIT_EXT |
@@ -221,6 +225,7 @@ vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
 
 	vector<MemoryTypeInfo::Heap> heaps;
 
+	// two heaps
 	for (unsigned int i = 0; i < memoryProperties.memoryHeapCount; ++i)
 	{
 		MemoryTypeInfo::Heap info;

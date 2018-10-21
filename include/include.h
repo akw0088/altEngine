@@ -220,48 +220,6 @@ using namespace std;
 //void * operator new(size_t n, char *filename, UINT line) throw(std::bad_alloc);
 
 
-#ifdef VULKAN
-// Garbage for vulkan that I'll delete eventually
-
-struct MemoryTypeInfo
-{
-	bool deviceLocal = false;
-	bool hostVisible = false;
-	bool hostCoherent = false;
-	bool hostCached = false;
-	bool lazilyAllocated = false;
-
-	struct Heap
-	{
-		uint64_t size = 0;
-		bool deviceLocal = false;
-	};
-
-	Heap heap;
-	int index;
-};
-
-struct SwapchainFormatColorSpace
-{
-	VkFormat format;
-	VkColorSpaceKHR colorSpace;
-};
-
-
-enum MemoryProperties
-{
-	MT_DeviceLocal = 1,
-	MT_HostVisible = 2
-};
-
-template <typename T>
-T RoundToNextMultiple(const T a, const T multiple)
-{
-	return ((a + multiple - 1) / multiple) * multiple;
-}
-#endif
-
-
 #include "huffman.h"
 #include "sock.h"
 #include "vector.h"
