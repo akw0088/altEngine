@@ -159,8 +159,6 @@ private:
 	void CreateDescriptors();
 	void LoadShader(VkDevice device, const void* shaderContents, const unsigned int size, VkShaderModule &shader);
 
-	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height, int start_index, int num_index, int start_vertex);
-
 	void CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline);
 	void CreatePipelineStateObject();
 	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index);

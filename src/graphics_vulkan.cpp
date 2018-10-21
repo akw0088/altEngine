@@ -793,33 +793,6 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *
 }
 
 
-void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height, int start_index, int num_index, int start_vertex)
-{
-	VkViewport viewports[1] = {};
-	viewports[0].width  = (float) width;
-	viewports[0].height = (float) height;
-	viewports[0].minDepth = 0;
-	viewports[0].maxDepth = 1;
-
-	vkCmdSetViewport(commandBuffer, 0, 1, viewports);
-
-	VkRect2D scissors[1] = {};
-	scissors[0].extent.width = width;
-	scissors[0].extent.height = height;
-	vkCmdSetScissor(commandBuffer, 0, 1, scissors);
-
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
-	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindIndexBuffer(commandBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
-
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-		pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
-
-	vkCmdDrawIndexed(commandBuffer, num_index, 1, start_index, start_vertex, 0);
-}
-
-
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	if (initialized == false)
@@ -828,10 +801,6 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 
-	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
-
-	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
-	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -857,39 +826,39 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 
 	vkCmdBeginRenderPass(commandBuffers_[currentBackBuffer_], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	render_cmdbuffer(commandBuffers_[currentBackBuffer_], 1920, 1080, start_index, num_index, start_vertex);
+	{
+		int width = 1920;
+		int height = 1080;
 
+		VkCommandBuffer commandBuffer = commandBuffers_[currentBackBuffer_];
 
+		VkViewport viewports[1] = {};
+		viewports[0].width = (float)width;
+		viewports[0].height = (float)height;
+		viewports[0].minDepth = 0;
+		viewports[0].maxDepth = 1;
+
+		vkCmdSetViewport(commandBuffer, 0, 1, viewports);
+
+		VkRect2D scissors[1] = {};
+		scissors[0].extent.width = width;
+		scissors[0].extent.height = height;
+		vkCmdSetScissor(commandBuffer, 0, 1, scissors);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindIndexBuffer(commandBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
+
+		vkCmdDrawIndexed(commandBuffer, num_index, 1, start_index, start_vertex, 0);
+	}
 
 	vkCmdEndRenderPass(commandBuffers_[currentBackBuffer_]);
 	vkEndCommandBuffer(commandBuffers_[currentBackBuffer_]);
 
-	// Submit rendering work to the graphics queue
-	const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &imageAcquiredSemaphore;
-	submitInfo.pWaitDstStageMask = &waitDstStageMask;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers_[currentBackBuffer_];
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &renderingCompleteSemaphore;
-	vkQueueSubmit(queue_, 1, &submitInfo, VK_NULL_HANDLE);
-
-	// Submit present operation to present queue
-	VkPresentInfoKHR presentInfo = {};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &renderingCompleteSemaphore;
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapchain_;
-	presentInfo.pImageIndices = &currentBackBuffer_;
-	vkQueuePresentKHR(queue_, &presentInfo);
-
-	vkQueueSubmit(queue_, 0, NULL, frameFences_[currentBackBuffer_]);
-	// Wait for all rendering to finish
-	vkWaitForFences(vk_device, 3, frameFences_, VK_TRUE, UINT64_MAX);
 }
 
 
@@ -1334,6 +1303,7 @@ void Graphics::init(void *param1, void *param2)
 
 	vkEndCommandBuffer(setupCommandBuffer_);
 
+	/**/
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
@@ -1352,13 +1322,60 @@ void Graphics::init(void *param1, void *param2)
 	initialized = true;
 	initialized_once = true;
 
+
+	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
+
+	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
+	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
+
+
 	DrawArrayTri(0, 0, 6, 6);
+	swap();
+
+
+
 }
 
 void Graphics::swap()
 {
 	gpustat.drawcall = 0;
 	gpustat.triangle = 0;
+
+
+	// Submit rendering work to the graphics queue
+	const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = &imageAcquiredSemaphore;
+	submitInfo.pWaitDstStageMask = &waitDstStageMask;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers_[currentBackBuffer_];
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &renderingCompleteSemaphore;
+	vkQueueSubmit(queue_, 1, &submitInfo, VK_NULL_HANDLE);
+
+	// Submit present operation to present queue
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = &renderingCompleteSemaphore;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &swapchain_;
+	presentInfo.pImageIndices = &currentBackBuffer_;
+	vkQueuePresentKHR(queue_, &presentInfo);
+
+	vkQueueSubmit(queue_, 0, NULL, frameFences_[currentBackBuffer_]);
+	// Wait for all rendering to finish
+	vkWaitForFences(vk_device, 3, frameFences_, VK_TRUE, UINT64_MAX);
+
+
+	/*
+	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
+
+	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
+	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
+*/
 }
 
 void Graphics::clear()
