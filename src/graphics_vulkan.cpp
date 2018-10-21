@@ -410,16 +410,16 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	imageBarrier.subresourceRange.layerCount = 1;
 	imageBarrier.subresourceRange.levelCount = 1;
 
-	vkCmdPipelineBarrier(setupCommandBuffer_, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
+	vkCmdPipelineBarrier(command_buffer_array[QUEUE_SLOT_COUNT], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
 
-	vkCmdCopyBufferToImage(setupCommandBuffer_, uploadImageBuffer_, Image_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopy);
+	vkCmdCopyBufferToImage(command_buffer_array[QUEUE_SLOT_COUNT], uploadImageBuffer_, Image_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopy);
 
 	imageBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	imageBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	imageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	vkCmdPipelineBarrier(setupCommandBuffer_, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
+	vkCmdPipelineBarrier(command_buffer_array[QUEUE_SLOT_COUNT], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -664,7 +664,7 @@ int Graphics::LoadShadersAndCreatePipelineStateObject(char *vertex_shader_file, 
 /*
 Full screen quad vertex / index buffers, single upload is kind of interesting
 */
-void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index)
+void Graphics::CreateMeshBuffers(VkCommandBuffer uploadBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index)
 {
 	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
 	VkBufferUsageFlagBits index_flag;
@@ -726,8 +726,8 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *
 	indexCopy.size = sizeof(unsigned int) * num_index;
 	indexCopy.srcOffset = indexBufferOffset;
 
-	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
-	vkCmdCopyBuffer(uploadCommandBuffer, uploadBuffer_, indexBuffer_, 1, &indexCopy);
+	vkCmdCopyBuffer(uploadBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
+	vkCmdCopyBuffer(uploadBuffer, uploadBuffer_, indexBuffer_, 1, &indexCopy);
 
 	VkBufferMemoryBarrier uploadBarriers[2] = {};
 	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -746,7 +746,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *
 	uploadBarriers[1].dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
 	uploadBarriers[1].size = VK_WHOLE_SIZE;
 
-	vkCmdPipelineBarrier(uploadCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 2, uploadBarriers, 0, NULL);
+	vkCmdPipelineBarrier(uploadBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 2, uploadBarriers, 0, NULL);
 }
 
 
@@ -1152,16 +1152,7 @@ void Graphics::init(void *param1, void *param2)
 	commandBufferAllocateInfo.commandPool = commandPool_;
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-	VkCommandBuffer commandBuffers[QUEUE_SLOT_COUNT + 1];
-
-	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, commandBuffers);
-
-	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
-	{
-		command_buffer_array[i] = commandBuffers[i];
-	}
-
-	setupCommandBuffer_ = commandBuffers[QUEUE_SLOT_COUNT];
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, command_buffer_array);
 
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
@@ -1177,7 +1168,7 @@ void Graphics::init(void *param1, void *param2)
 
 
 	// load texture, shaders, etc
-	LoadCommandBuffer();
+	LoadCommandBuffer(command_buffer_array[QUEUE_SLOT_COUNT]);
 
 
 	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
@@ -1205,12 +1196,12 @@ void Graphics::init(void *param1, void *param2)
 }
 
 
-void Graphics::LoadCommandBuffer()
+void Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
 {
 	vkResetFences(vk_device, 1, &frameFences_[0]);
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
+	vkBeginCommandBuffer(cmd_buffer, &beginInfo);
 
 
 	unsigned int index_array[6] =
@@ -1252,16 +1243,16 @@ void Graphics::LoadCommandBuffer()
 	//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
 	CreateDescriptors();
 	LoadShadersAndCreatePipelineStateObject("media/spirv/vulkan.vert.spv", "media/spirv/vulkan.frag.spv");
-	CreateMeshBuffers(setupCommandBuffer_, vertex_array, 4, index_array, 6);
+	CreateMeshBuffers(cmd_buffer, vertex_array, 4, index_array, 6);
 
-	vkEndCommandBuffer(setupCommandBuffer_);
+	vkEndCommandBuffer(cmd_buffer);
 
 
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &setupCommandBuffer_;
+	submitInfo.pCommandBuffers = &cmd_buffer;
 	vkQueueSubmit(queue_, 1, &submitInfo, frameFences_[0]);
 
 	vkWaitForFences(vk_device, 1, &frameFences_[0], VK_TRUE, UINT64_MAX);
@@ -1530,11 +1521,11 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 {
 }
 
-int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
+int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
 	return 0;
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;	commandBufferAllocateInfo.commandPool = commandPool_;	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
+	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(command_buffer_array[QUEUE_SLOT_COUNT], &beginInfo);
 	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];	VkCommandBuffer v_setupCommandBuffer_;
 	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
 	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
