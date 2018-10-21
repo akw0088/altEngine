@@ -198,7 +198,8 @@ private:
 	void LoadShader(VkDevice device, const void* shaderContents, const unsigned int size, VkShaderModule &shader);
 
 	void CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline);
-	void CreatePipelineStateObject();
+	void LoadCommandBuffer();
+	int LoadShadersAndCreatePipelineStateObject(char *vertex_shader_file, char *fragment_shader_file);
 	void CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index);
 	void CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp);
 	void SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp);

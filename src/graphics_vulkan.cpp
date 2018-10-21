@@ -601,29 +601,32 @@ void Graphics::CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipeli
 /*
 Takes two shaders and combines into "pipeline"
 */
-void Graphics::CreatePipelineStateObject()
+int Graphics::LoadShadersAndCreatePipelineStateObject(char *vertex_shader_file, char *fragment_shader_file)
 {
 	unsigned int vertex_size = 0;
 	unsigned int fragment_size = 0;
-	char *vertex_shader = get_file("media/spirv/vulkan.vert.spv", &vertex_size);
+	char *vertex_shader = get_file(vertex_shader_file, &vertex_size);
 	if (vertex_shader == NULL)
 	{
 		printf("unable to open vertex shader\r\n");
-		return;
+		return -1;
 	}
 
-	char *fragment_shader = get_file("media/spirv/vulkan.frag.spv", &fragment_size);
+	char *fragment_shader = get_file(fragment_shader_file, &fragment_size);
 	if (fragment_shader == NULL)
 	{
 		printf("unable to open fragment shader\r\n");
-		return;
+		return -1;
 	}
 
 
 	LoadShader(vk_device, vertex_shader, vertex_size, vertexShader_);
+	delete[] vertex_shader;
 	LoadShader(vk_device, fragment_shader, fragment_size, fragmentShader_);
+	delete[] fragment_shader;
 
 	CreatePipeline(vk_device, renderPass_, pipelineLayout_,	vertexShader_, fragmentShader_, pipeline_);
+	return 0;
 }
 
 /*
@@ -1019,34 +1022,6 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice &outputDevice,
 	outputPhysicalDevice = device_array[0];
 }
 
-void EnumDebugInstanceExtensionNames()
-{
-	unsigned int extensionCount = 0; // 12 extensions
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
-
-	VkExtensionProperties extension[32];;
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extension);
-
-	for(int i = 0; i < extensionCount; i++)
-	{
-		printf("%s\n", extension[i].extensionName);
-	}
-}
-
-void EnumDebugInstanceLayerNames()
-{
-	unsigned int layerCount = 0; // 4 layers
-	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
-
-	VkLayerProperties layers[4];
-	vkEnumerateInstanceLayerProperties(&layerCount, layers);
-
-	for(int i = 0; i < layerCount; i++)
-	{
-		printf("%s\r\n", layers[i].layerName);
-	}
-}
-
 VkInstance Graphics::CreateInstance()
 {
 	VkInstanceCreateInfo instanceCreateInfo;
@@ -1174,7 +1149,37 @@ void Graphics::init(void *param1, void *param2)
 
 
 
-	// this is essentially the draw command
+	// load texture, shaders, etc
+	LoadCommandBuffer();
+
+
+	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &imageAcquiredSemaphore);
+	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &renderingCompleteSemaphore);
+
+
+	initialized = true;
+	initialized_once = true;
+
+
+	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
+
+	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
+	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
+
+
+	DrawArrayTri(0, 0, 6, 6);
+	swap();
+
+
+
+}
+
+
+void Graphics::LoadCommandBuffer()
+{
 	vkResetFences(vk_device, 1, &frameFences_[0]);
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1219,12 +1224,13 @@ void Graphics::init(void *param1, void *param2)
 	load_texture(*this, "media/menu.tga", false, false, 0);
 	//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
 	CreateDescriptors();
-	CreatePipelineStateObject();
+	LoadShadersAndCreatePipelineStateObject("media/spirv/vulkan.vert.spv", "media/spirv/vulkan.frag.spv");
 	CreateMeshBuffers(setupCommandBuffer_, vertex_array, 4, index_array, 6);
 
 	vkEndCommandBuffer(setupCommandBuffer_);
 
-	/**/
+
+
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
@@ -1232,29 +1238,6 @@ void Graphics::init(void *param1, void *param2)
 	vkQueueSubmit(queue_, 1, &submitInfo, frameFences_[0]);
 
 	vkWaitForFences(vk_device, 1, &frameFences_[0], VK_TRUE, UINT64_MAX);
-
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &imageAcquiredSemaphore);
-	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &renderingCompleteSemaphore);
-
-
-	initialized = true;
-	initialized_once = true;
-
-
-	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
-
-	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
-	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
-
-
-	DrawArrayTri(0, 0, 6, 6);
-	swap();
-
-
-
 }
 
 void Graphics::swap()
@@ -1728,5 +1711,35 @@ void Graphics::DeleteFrameBuffer(int fbo, int quad, int depth)
 
 void Graphics::GetDebugLog()
 {
+}
+
+
+
+void EnumDebugInstanceExtensionNames()
+{
+	unsigned int extensionCount = 0; // 12 extensions
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
+
+	VkExtensionProperties extension[32];;
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extension);
+
+	for (int i = 0; i < extensionCount; i++)
+	{
+		printf("%s\n", extension[i].extensionName);
+	}
+}
+
+void EnumDebugInstanceLayerNames()
+{
+	unsigned int layerCount = 0; // 4 layers
+	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
+
+	VkLayerProperties layers[4];
+	vkEnumerateInstanceLayerProperties(&layerCount, layers);
+
+	for (int i = 0; i < layerCount; i++)
+	{
+		printf("%s\r\n", layers[i].layerName);
+	}
 }
 #endif
