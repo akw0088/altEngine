@@ -39,108 +39,6 @@ void Graphics::resize(int width, int height)
 	This means it's not necessary to rebuild the pipeline.
 	*/
 
-
-	// screw it, fixed width / height
-#if 0
-	if (initialized && initialized_once)
-	{
-		vkDeviceWaitIdle(vk_device);
-
-		VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
-		CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
-
-		unsigned int swapchainImageCount = 0;
-		vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
-
-		vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
-
-		CreateRenderPass(vk_device, swapchainFormat, renderPass_);
-
-		CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-		CreateFramebuffers(vk_device, renderPass_, 1024, 768, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
-
-
-		// this is essentially the draw command
-		vkResetFences(vk_device, 1, &frameFences_[0]);
-		VkCommandBufferBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
-
-
-		unsigned int index_array[6] =
-		{
-			0, 1, 2, 2, 3, 0
-		};
-
-
-		vertex_t vertex_array[4];
-
-		memset(vertex_array, 0, sizeof(vertex_t) * 4);
-		vertex_array[0].position.x = -1.0f;
-		vertex_array[0].position.y = 1.0f;
-		vertex_array[0].position.z = 0.0f;
-		vertex_array[0].texCoord0.x = 0.0f;
-		vertex_array[0].texCoord0.y = 1.0f;
-
-		vertex_array[1].position.x = 1.0f;
-		vertex_array[1].position.y = 1.0f;
-		vertex_array[1].position.z = 0.0f;
-		vertex_array[1].texCoord0.x = 1.0f;
-		vertex_array[1].texCoord0.y = 1.0f;
-
-		vertex_array[2].position.x = 1.0f;
-		vertex_array[2].position.y = -1.0f;
-		vertex_array[2].position.z = 0.0f;
-		vertex_array[2].texCoord0.x = 1.0f;
-		vertex_array[2].texCoord0.y = 0.0f;
-
-		vertex_array[3].position.x = -1.0f;
-		vertex_array[3].position.y = -1.0f;
-		vertex_array[3].position.z = 0.0f;
-		vertex_array[3].texCoord0.x = 0.0f;
-		vertex_array[3].texCoord0.y = 0.0f;
-
-		CreateSampler();
-		// load texture, will call gfx loadtexture, which will call CreateTexture below
-		load_texture(*this, "media/menu.tga", false, false, 0);
-		//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
-		CreateDescriptors();
-		CreatePipelineStateObject();
-		CreateMeshBuffers(setupCommandBuffer_, vertex_array, 4, index_array, 6);
-
-		vkEndCommandBuffer(setupCommandBuffer_);
-
-
-//		createCommandBuffers();
-		VkCommandPoolCreateInfo commandPoolCreateInfo;
-
-		memset(&commandPoolCreateInfo, 0, sizeof(VkCommandPoolCreateInfo));
-		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
-		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-		vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL, &commandPool_);
-
-		VkCommandBufferAllocateInfo commandBufferAllocateInfo;
-
-		memset(&commandBufferAllocateInfo, 0, sizeof(VkCommandBufferAllocateInfo));
-		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
-		commandBufferAllocateInfo.commandPool = commandPool_;
-		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-
-		VkCommandBuffer commandBuffers[QUEUE_SLOT_COUNT + 1];
-
-		vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, commandBuffers);
-
-		for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
-		{
-			commandBuffers_[i] = commandBuffers[i];
-		}
-
-		setupCommandBuffer_ = commandBuffers[QUEUE_SLOT_COUNT];
-	}
-#endif
 }
 
 Graphics::Graphics()
@@ -183,12 +81,13 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
 
-	unsigned int presentModeCount;
+	unsigned int presentModeCount; // 3 preset modes
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL);
 
-	vector<VkPresentModeKHR> presentModes{ presentModeCount };
 
-	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data());
+	VkPresentModeKHR presentModes[4];
+
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes);
 
 	VkExtent2D swapChainSize = {};
 	swapChainSize = surfaceCapabilities.currentExtent;
@@ -410,7 +309,7 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 
 	VkDeviceSize requiredSizeForImage = requirements.size;
 
-	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
 	AllocateMemory(deviceImageMemory_, memoryHeaps, vk_device, static_cast<int> (requiredSizeForImage), requirements.memoryTypeBits, MT_DeviceLocal);
 
 	vkBindImageMemory(vk_device, Image_, deviceImageMemory_, 0);
@@ -727,7 +626,7 @@ Full screen quad vertex / index buffers, single upload is kind of interesting
 */
 void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index)
 {
-	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
 	VkBufferUsageFlagBits index_flag;
 	index_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	VkBufferUsageFlagBits vertex_flag;
@@ -1035,16 +934,15 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 
 void EnumDebugDeviceLayerNames(VkPhysicalDevice device)
 {
-	unsigned int layerCount = 0;
-	vkEnumerateDeviceLayerProperties(device, &layerCount, NULL);
+	VkLayerProperties deviceLayers[4];
+	unsigned int layerCount = 0; // 2 layers
 
-	std::vector<VkLayerProperties> deviceLayers{ layerCount };
-	vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers.data());
+	vkEnumerateDeviceLayerProperties(device, &layerCount, NULL); // get count
+	vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers);
 
-	std::vector<const char*> result;
-	for (const auto& p : deviceLayers)
+	for (int i = 0; i < layerCount; i++)
 	{
-		printf("%s\r\n", p.layerName);
+		printf("%s\r\n", deviceLayers[i].layerName);
 	}
 
 }
@@ -1063,7 +961,6 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice &outputDevice,
 
 	vkGetPhysicalDeviceQueueFamilyProperties(device_array[0], &num_prop, NULL); // get count
 	vkGetPhysicalDeviceQueueFamilyProperties(device_array[0], &num_prop, prop);
-
 
 	VkDeviceQueueCreateInfo deviceQueueCreateInfo;
 	static const float queuePriorities[] = { 1.0f };
@@ -1119,30 +1016,29 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice &outputDevice,
 
 void EnumDebugInstanceExtensionNames()
 {
-	unsigned int extensionCount = 0;
+	unsigned int extensionCount = 0; // 12 extensions
 	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, NULL);
 
-	std::vector<VkExtensionProperties> instanceExtensions{ extensionCount };
-	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, instanceExtensions.data());
+	VkExtensionProperties extension[32];;
+	vkEnumerateInstanceExtensionProperties(NULL, &extensionCount, extension);
 
-	std::vector<const char*> result;
-	for (const auto& e : instanceExtensions)
+	for(int i = 0; i < extensionCount; i++)
 	{
-		printf("%s\n", e.extensionName);
+		printf("%s\n", extension[i].extensionName);
 	}
 }
 
 void EnumDebugInstanceLayerNames()
 {
-	unsigned int layerCount = 0;
+	unsigned int layerCount = 0; // 4 layers
 	vkEnumerateInstanceLayerProperties(&layerCount, NULL);
 
-	std::vector<VkLayerProperties> instanceLayers{ layerCount };
-	vkEnumerateInstanceLayerProperties(&layerCount, instanceLayers.data());
+	VkLayerProperties layers[4];
+	vkEnumerateInstanceLayerProperties(&layerCount, layers);
 
-	for (const auto& p : instanceLayers)
+	for(int i = 0; i < layerCount; i++)
 	{
-		printf("%s\r\n", p.layerName);
+		printf("%s\r\n", layers[i].layerName);
 	}
 }
 
@@ -1202,6 +1098,7 @@ void Graphics::init(void *param1, void *param2)
 		printf("Unable to create Vulkan instance\r\n");
 		return;
 	}
+
 
 	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkCreateDebugReportCallbackEXT");
 	DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT");
@@ -1537,7 +1434,7 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 
 
 
-	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
 
 	VkBufferUsageFlagBits bflag;
 	bflag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
@@ -1625,7 +1522,7 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool)
 	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
 	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];	VkCommandBuffer v_setupCommandBuffer_;
 	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
-	auto memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
 	VkBufferUsageFlagBits vertex_flag;
 	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
