@@ -73,20 +73,17 @@ void Graphics::SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT 
 }
 
 
-void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight, const int backbufferCount, VkFormat* swapchainFormat, VkSwapchainKHR &swapchain)
+void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, const int surfaceWidth, const int surfaceHeight, const int backbufferCount, VkFormat &swapchainFormat, VkSwapchainKHR &swapchain)
 {
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice,
-		surface, &surfaceCapabilities);
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
 
 	unsigned int presentModeCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
-		surface, &presentModeCount, NULL);
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, NULL);
 
 	vector<VkPresentModeKHR> presentModes{ presentModeCount };
 
-	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice,
-		surface, &presentModeCount, presentModes.data());
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, presentModes.data());
 
 	VkExtent2D swapChainSize = {};
 	swapChainSize = surfaceCapabilities.currentExtent;
@@ -106,9 +103,32 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	}
 
 	SwapchainFormatColorSpace swapchainFormatColorSpace;
-	GetSwapchainFormatAndColorspace(physicalDevice, surface, swapchainFormatColorSpace);
 
-	VkSwapchainCreateInfoKHR swapchainCreateInfo = {};
+	unsigned int surfaceFormatCount = 0;
+
+	// two formats
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, NULL);
+	if (surfaceFormatCount == 0)
+	{
+		printf("Error: No surface formats\r\n");
+		return;
+	}
+
+	VkSurfaceFormatKHR surfaceFormats[2];
+
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, surfaceFormats);
+
+	if (surfaceFormats[0].format == VK_FORMAT_UNDEFINED)
+	{
+		swapchainFormatColorSpace.format = VK_FORMAT_R8G8B8A8_UNORM;
+	}
+	swapchainFormatColorSpace.format = surfaceFormats[0].format;
+	swapchainFormatColorSpace.colorSpace = surfaceFormats[0].colorSpace;
+
+
+	VkSwapchainCreateInfoKHR swapchainCreateInfo;
+
+	memset(&swapchainCreateInfo, 0, sizeof(VkSwapchainCreateInfoKHR));
 	swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchainCreateInfo.surface = surface;
 	swapchainCreateInfo.minImageCount = swapChainImageCount;
@@ -127,10 +147,7 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 
 	vkCreateSwapchainKHR(device, &swapchainCreateInfo, NULL, &swapchain);
 
-	if (swapchainFormat)
-	{
-		*swapchainFormat = swapchainFormatColorSpace.format;
-	}
+	swapchainFormat = swapchainFormatColorSpace.format;
 }
 
 void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer)
@@ -890,34 +907,15 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 
  void Graphics::CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface)
 {
-	VkWin32SurfaceCreateInfoKHR win32surfaceCreateInfo = {};
+	VkWin32SurfaceCreateInfoKHR win32surfaceCreateInfo;
+
+	//TODO: windows specific, fix linux
+	memset(&win32surfaceCreateInfo, 0, sizeof(VkWin32SurfaceCreateInfoKHR));
 	win32surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	win32surfaceCreateInfo.hwnd = hwnd;
 	win32surfaceCreateInfo.hinstance = ::GetModuleHandle(NULL);
 
 	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, NULL, &surface);
-}
-
-void Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, SwapchainFormatColorSpace &result)
-{
-	unsigned int surfaceFormatCount = 0;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
-		surface, &surfaceFormatCount, NULL);
-
-	vector<VkSurfaceFormatKHR> surfaceFormats{ surfaceFormatCount };
-	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice,
-		surface, &surfaceFormatCount, surfaceFormats.data());
-
-	if (surfaceFormatCount == 1 && surfaceFormats.front().format == VK_FORMAT_UNDEFINED)
-	{
-		result.format = VK_FORMAT_R8G8B8A8_UNORM;
-	}
-	else
-	{
-		result.format = surfaceFormats.front().format;
-	}
-
-	result.colorSpace = surfaceFormats.front().colorSpace;
 }
 
 void EnumDebugDeviceLayerNames(VkPhysicalDevice device)
@@ -937,7 +935,7 @@ void EnumDebugDeviceLayerNames(VkPhysicalDevice device)
 }
 
 
-void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice)
+void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice &outputDevice, VkQueue &outputQueue, int &outputQueueIndex, VkPhysicalDevice &outputPhysicalDevice)
 {
 	VkPhysicalDevice device_array[4];
 	VkQueueFamilyProperties prop[4];
@@ -997,25 +995,11 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 	VkQueue queue = NULL;
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &queue);
 
-	if (outputQueue)
-	{
-		*outputQueue = queue;
-	}
-
-	if (outputDevice)
-	{
-		*outputDevice = device;
-	}
-
-	if (outputQueueIndex)
-	{
-		*outputQueueIndex = graphicsQueueIndex;
-	}
-
-	if (outputPhysicalDevice)
-	{
-		*outputPhysicalDevice = device_array[0];
-	}
+	// output parameters
+	outputQueue = queue;
+	outputDevice = device;
+	outputQueueIndex = graphicsQueueIndex;
+	outputPhysicalDevice = device_array[0];
 }
 
 void EnumDebugInstanceExtensionNames()
@@ -1110,18 +1094,16 @@ void Graphics::init(void *param1, void *param2)
 
 	SetupDebugCallback(vk_instance, callback);
 
-	VkPhysicalDevice physicalDevice;
-	CreateDeviceAndQueue(vk_instance, &vk_device, &queue_, &queueFamilyIndex_, &physicalDevice);
-	physicalDevice_ = physicalDevice;
+	CreateDeviceAndQueue(vk_instance, vk_device, queue_, queueFamilyIndex_, physicalDevice_);
 
-
+	// warning CreateSurface is windows specific
 	CreateSurface(vk_instance, hwnd, surface_);
 
 	VkBool32 presentSupported;
-	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, 0, surface_, &presentSupported);
+	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice_, 0, surface_, &presentSupported);
 
 	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
-	CreateSwapchain(physicalDevice, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, &swapchainFormat, swapchain_);
+	CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
 
 
 	unsigned int swapchainImageCount = 0;
