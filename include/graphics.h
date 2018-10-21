@@ -328,11 +328,14 @@ public:
 	VkDebugReportCallbackEXT vk_callback;
 
 	VkDeviceMemory vk_deviceMemory = VK_NULL_HANDLE;
+
 	VkBuffer vk_vertexBuffer = VK_NULL_HANDLE;
 	VkBuffer vk_indexBuffer = VK_NULL_HANDLE;
+	VkBuffer vk_uploadBuffer = VK_NULL_HANDLE; // for vertex buffer
+	VkBuffer vk_uploadImageBuffer = VK_NULL_HANDLE; // for images
 
 	VkDeviceMemory vk_uploadMemory = VK_NULL_HANDLE;
-	VkBuffer vk_uploadBuffer = VK_NULL_HANDLE;
+
 
 	VkShaderModule vk_vertexShader = VK_NULL_HANDLE;
 	VkShaderModule vk_fragmentShader = VK_NULL_HANDLE;
@@ -345,7 +348,6 @@ public:
 	VkImageView vk_ImageView = VK_NULL_HANDLE;
 
 	VkDeviceMemory vk_uploadImageMemory = VK_NULL_HANDLE;
-	VkBuffer vk_uploadImageBuffer = VK_NULL_HANDLE;
 
 	VkDescriptorPool vk_descriptorPool = VK_NULL_HANDLE;
 	VkDescriptorSet vk_descriptorSet = VK_NULL_HANDLE;

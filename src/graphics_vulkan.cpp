@@ -315,9 +315,6 @@ Sets up GPU texture buffer, copies data
 */
 void Graphics::CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp)
 {
-//	VkDeviceMemory vk_uploadImageMemory = VK_NULL_HANDLE;
-//	VkBuffer vk_uploadImageBuffer = VK_NULL_HANDLE;
-
 	int image_size = width * height * components * sizeof(char);
 
 
