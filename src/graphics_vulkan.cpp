@@ -1347,6 +1347,8 @@ void Graphics::init(void *param1, void *param2)
 
 	initialized = true;
 	initialized_once = true;
+
+	render();
 }
 
 void Graphics::swap()
