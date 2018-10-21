@@ -31,11 +31,115 @@ void Graphics::resize(int width, int height)
 	Graphics::width = width;
 	Graphics::height = height;
 
+
+	/*
+	The framebuffers need to be reconstructed after a resize event,
+	but the render pass doesn't have to be reconstructed.
+	This means it's not necessary to rebuild the pipeline.
+	*/
+
+
+	// screw it, fixed width / height
+#if 0
 	if (initialized && initialized_once)
 	{
-//		destroy();
-	//	init(&hwnd, &hdc);
+		vkDeviceWaitIdle(vk_device);
+
+		VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
+		CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
+
+		unsigned int swapchainImageCount = 0;
+		vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
+
+		vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
+
+		CreateRenderPass(vk_device, swapchainFormat, renderPass_);
+
+		CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
+		CreateFramebuffers(vk_device, renderPass_, 1024, 768, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+
+
+		// this is essentially the draw command
+		vkResetFences(vk_device, 1, &frameFences_[0]);
+		VkCommandBufferBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		vkBeginCommandBuffer(setupCommandBuffer_, &beginInfo);
+
+
+		unsigned int index_array[6] =
+		{
+			0, 1, 2, 2, 3, 0
+		};
+
+
+		vertex_t vertex_array[4];
+
+		memset(vertex_array, 0, sizeof(vertex_t) * 4);
+		vertex_array[0].position.x = -1.0f;
+		vertex_array[0].position.y = 1.0f;
+		vertex_array[0].position.z = 0.0f;
+		vertex_array[0].texCoord0.x = 0.0f;
+		vertex_array[0].texCoord0.y = 1.0f;
+
+		vertex_array[1].position.x = 1.0f;
+		vertex_array[1].position.y = 1.0f;
+		vertex_array[1].position.z = 0.0f;
+		vertex_array[1].texCoord0.x = 1.0f;
+		vertex_array[1].texCoord0.y = 1.0f;
+
+		vertex_array[2].position.x = 1.0f;
+		vertex_array[2].position.y = -1.0f;
+		vertex_array[2].position.z = 0.0f;
+		vertex_array[2].texCoord0.x = 1.0f;
+		vertex_array[2].texCoord0.y = 0.0f;
+
+		vertex_array[3].position.x = -1.0f;
+		vertex_array[3].position.y = -1.0f;
+		vertex_array[3].position.z = 0.0f;
+		vertex_array[3].texCoord0.x = 0.0f;
+		vertex_array[3].texCoord0.y = 0.0f;
+
+		CreateSampler();
+		// load texture, will call gfx loadtexture, which will call CreateTexture below
+		load_texture(*this, "media/menu.tga", false, false, 0);
+		//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
+		CreateDescriptors();
+		CreatePipelineStateObject();
+		CreateMeshBuffers(setupCommandBuffer_, vertex_array, 4, index_array, 6);
+
+		vkEndCommandBuffer(setupCommandBuffer_);
+
+
+//		createCommandBuffers();
+		VkCommandPoolCreateInfo commandPoolCreateInfo;
+
+		memset(&commandPoolCreateInfo, 0, sizeof(VkCommandPoolCreateInfo));
+		commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
+		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+		vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL, &commandPool_);
+
+		VkCommandBufferAllocateInfo commandBufferAllocateInfo;
+
+		memset(&commandBufferAllocateInfo, 0, sizeof(VkCommandBufferAllocateInfo));
+		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
+		commandBufferAllocateInfo.commandPool = commandPool_;
+		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+		VkCommandBuffer commandBuffers[QUEUE_SLOT_COUNT + 1];
+
+		vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, commandBuffers);
+
+		for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
+		{
+			commandBuffers_[i] = commandBuffers[i];
+		}
+
+		setupCommandBuffer_ = commandBuffers[QUEUE_SLOT_COUNT];
 	}
+#endif
 }
 
 Graphics::Graphics()
@@ -152,7 +256,10 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 
 void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer)
 {
-	VkBufferCreateInfo bufferCreateInfo = {};
+	VkBufferCreateInfo bufferCreateInfo;
+
+
+	memset(&bufferCreateInfo, 0, sizeof(VkBufferCreateInfo));
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	bufferCreateInfo.size = (unsigned int)size;
 	bufferCreateInfo.usage = bits;
@@ -225,6 +332,8 @@ vector<MemoryTypeInfo> Graphics::EnumerateHeaps(VkPhysicalDevice device)
 
 	vector<MemoryTypeInfo> result;
 
+
+	// 11 types
 	for (unsigned int i = 0; i < memoryProperties.memoryTypeCount; ++i)
 	{
 		MemoryTypeInfo typeInfo;
@@ -253,7 +362,9 @@ creates texture sampler (sets filtering, mipmaps?)
 */
 void Graphics::CreateSampler()
 {
-	VkSamplerCreateInfo samplerCreateInfo = {};
+	VkSamplerCreateInfo samplerCreateInfo;
+
+	memset(&samplerCreateInfo, 0, sizeof(VkSamplerCreateInfo));
 	samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 	samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
 	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
@@ -325,6 +436,8 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 
 	void* data = NULL;
 	vkMapMemory(vk_device, uploadImageMemory_, 0, VK_WHOLE_SIZE, 0, &data);
+
+	// actually copy texture to GPU
 	memcpy(data, image_data, image_size);
 
 	if (!memoryIsHostCoherent)
@@ -724,8 +837,8 @@ void Graphics::render()
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.framebuffer = framebuffer_[currentBackBuffer_];
-	renderPassBeginInfo.renderArea.extent.width = 1024;
-	renderPassBeginInfo.renderArea.extent.height = 768;
+	renderPassBeginInfo.renderArea.extent.width = 1920;
+	renderPassBeginInfo.renderArea.extent.height = 1080;
 	renderPassBeginInfo.renderPass = renderPass_;
 
 	VkClearValue clearValue = {};
@@ -738,10 +851,9 @@ void Graphics::render()
 	renderPassBeginInfo.pClearValues = &clearValue;
 	renderPassBeginInfo.clearValueCount = 1;
 
-	vkCmdBeginRenderPass(commandBuffers_[currentBackBuffer_],
-		&renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(commandBuffers_[currentBackBuffer_], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	render_cmdbuffer(commandBuffers_[currentBackBuffer_], 1024, 768);
+	render_cmdbuffer(commandBuffers_[currentBackBuffer_], 1920, 1080);
 
 
 
@@ -840,7 +952,9 @@ void Graphics::destroy()
 
 void Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp)
 {
-	VkAttachmentDescription attachmentDescription = {};
+	VkAttachmentDescription attachmentDescription;
+
+	memset(&attachmentDescription, 0, sizeof(VkAttachmentDescription));
 	attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
 	attachmentDescription.format = swapchainFormat;
 	attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -850,17 +964,23 @@ void Graphics::CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRen
 	attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 
-	VkAttachmentReference attachmentReference = {};
+	VkAttachmentReference attachmentReference;
+
+	memset(&attachmentReference, 0, sizeof(VkAttachmentReference));
 	attachmentReference.attachment = 0;
 	attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkSubpassDescription subpassDescription = {};
+	VkSubpassDescription subpassDescription;
+
+	memset(&subpassDescription, 0, sizeof(VkSubpassDescription));
 	subpassDescription.inputAttachmentCount = 0;
 	subpassDescription.pColorAttachments = &attachmentReference;
 	subpassDescription.colorAttachmentCount = 1;
 	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-	VkRenderPassCreateInfo renderPassCreateInfo = {};
+	VkRenderPassCreateInfo renderPassCreateInfo;
+
+	memset(&renderPassCreateInfo, 0, sizeof(VkRenderPassCreateInfo));
 	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassCreateInfo.attachmentCount = 1;
 	renderPassCreateInfo.subpassCount = 1;
@@ -874,7 +994,9 @@ void Graphics::CreateFramebuffers(VkDevice device, VkRenderPass renderPass, cons
 {
 	for (int i = 0; i < count; ++i)
 	{
-		VkFramebufferCreateInfo framebufferCreateInfo = {};
+		VkFramebufferCreateInfo framebufferCreateInfo;
+
+		memset(&framebufferCreateInfo, 0, sizeof(VkFramebufferCreateInfo));
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.attachmentCount = 1;
 		framebufferCreateInfo.pAttachments = &imageViews[i];
@@ -891,7 +1013,9 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 {
 	for (int i = 0; i < count; ++i)
 	{
-		VkImageViewCreateInfo imageViewCreateInfo = {};
+		VkImageViewCreateInfo imageViewCreateInfo;
+
+		memset(&imageViewCreateInfo, 0, sizeof(imageViewCreateInfo));
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		imageViewCreateInfo.image = images[i];
 		imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
@@ -900,8 +1024,7 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 		imageViewCreateInfo.subresourceRange.layerCount = 1;
 		imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-		vkCreateImageView(device, &imageViewCreateInfo, NULL,
-			&imageViews[i]);
+		vkCreateImageView(device, &imageViewCreateInfo, NULL, &imageViews[i]);
 	}
 }
 
@@ -1114,16 +1237,20 @@ void Graphics::init(void *param1, void *param2)
 	CreateRenderPass(vk_device, swapchainFormat, renderPass_);
 
 	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(vk_device, renderPass_, 1024, 768, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+	CreateFramebuffers(vk_device, renderPass_, 1920, 1080, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
 
-	VkCommandPoolCreateInfo commandPoolCreateInfo = {};
+	VkCommandPoolCreateInfo commandPoolCreateInfo;
+
+	memset(&commandPoolCreateInfo, 0, sizeof(VkCommandPoolCreateInfo));
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL, &commandPool_);
 
-	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo;
+
+	memset(&commandBufferAllocateInfo, 0, sizeof(VkCommandBufferAllocateInfo));
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
 	commandBufferAllocateInfo.commandPool = commandPool_;
@@ -1152,6 +1279,8 @@ void Graphics::init(void *param1, void *param2)
 	}
 
 
+
+	// this is essentially the draw command
 	vkResetFences(vk_device, 1, &frameFences_[0]);
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
