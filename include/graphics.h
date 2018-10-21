@@ -305,60 +305,54 @@ public:
 	VkInstance vk_instance = VK_NULL_HANDLE;
 	VkDevice vk_device = VK_NULL_HANDLE;
 
+	VkViewport vk_viewport;
+	VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+	VkPhysicalDevice vk_physical = VK_NULL_HANDLE;
+	VkQueue vk_queue = VK_NULL_HANDLE;
+	VkFramebuffer vk_framebuffer[QUEUE_SLOT_COUNT];
+	VkRenderPass vk_renderpass = VK_NULL_HANDLE;
+	VkSampler vk_sampler = VK_NULL_HANDLE;
+	VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+	int vk_queueFamilyIndex = -1;
 
-	VkSemaphore renderingCompleteSemaphore;
-	VkSemaphore imageAcquiredSemaphore;
-	VkDebugReportCallbackEXT callback;
+	VkFence vk_frameFences[QUEUE_SLOT_COUNT];
+	VkImage vk_swapchainImages[QUEUE_SLOT_COUNT];
+	VkImageView vk_swapChainImageViews[QUEUE_SLOT_COUNT];
+	VkCommandPool vk_commandPool;
+	VkCommandBuffer vk_cmd_buffer_array[QUEUE_SLOT_COUNT];
+	uint32_t vk_currentBackBuffer = 0;
 
 
-	VkDeviceMemory deviceMemory_ = VK_NULL_HANDLE;
-	VkBuffer vertexBuffer_ = VK_NULL_HANDLE;
-	VkBuffer indexBuffer_ = VK_NULL_HANDLE;
+	VkSemaphore vk_renderingCompleteSemaphore;
+	VkSemaphore vk_imageAcquiredSemaphore;
+	VkDebugReportCallbackEXT vk_callback;
 
-	VkDeviceMemory uploadMemory_ = VK_NULL_HANDLE;
-	VkBuffer uploadBuffer_ = VK_NULL_HANDLE;
+	VkDeviceMemory vk_deviceMemory = VK_NULL_HANDLE;
+	VkBuffer vk_vertexBuffer = VK_NULL_HANDLE;
+	VkBuffer vk_indexBuffer = VK_NULL_HANDLE;
 
-	VkShaderModule vertexShader_ = VK_NULL_HANDLE;
-	VkShaderModule fragmentShader_ = VK_NULL_HANDLE;
+	VkDeviceMemory vk_uploadMemory = VK_NULL_HANDLE;
+	VkBuffer vk_uploadBuffer = VK_NULL_HANDLE;
 
-	VkPipeline pipeline_ = VK_NULL_HANDLE;
-	VkPipelineLayout pipelineLayout_ = VK_NULL_HANDLE;
+	VkShaderModule vk_vertexShader = VK_NULL_HANDLE;
+	VkShaderModule vk_fragmentShader = VK_NULL_HANDLE;
 
-	VkDeviceMemory deviceImageMemory_ = VK_NULL_HANDLE;
-	VkImage Image_ = VK_NULL_HANDLE;
-	VkImageView ImageView_ = VK_NULL_HANDLE;
+	VkPipeline vk_pipeline = VK_NULL_HANDLE;
+	VkPipelineLayout vk_pipelineLayout = VK_NULL_HANDLE;
 
-	VkDeviceMemory uploadImageMemory_ = VK_NULL_HANDLE;
-	VkBuffer uploadImageBuffer_ = VK_NULL_HANDLE;
+	VkDeviceMemory vk_deviceImageMemory = VK_NULL_HANDLE;
+	VkImage vk_Image = VK_NULL_HANDLE;
+	VkImageView vk_ImageView = VK_NULL_HANDLE;
 
-	VkDescriptorPool descriptorPool_ = VK_NULL_HANDLE;
-	VkDescriptorSet descriptorSet_ = VK_NULL_HANDLE;
-	VkDescriptorSetLayout descriptorSetLayout_ = VK_NULL_HANDLE;
+	VkDeviceMemory vk_uploadImageMemory = VK_NULL_HANDLE;
+	VkBuffer vk_uploadImageBuffer = VK_NULL_HANDLE;
 
-	VkSampler sampler_ = VK_NULL_HANDLE;
+	VkDescriptorPool vk_descriptorPool = VK_NULL_HANDLE;
+	VkDescriptorSet vk_descriptorSet = VK_NULL_HANDLE;
+	VkDescriptorSetLayout vk_descriptorSetLayout = VK_NULL_HANDLE;
 
-	VkViewport viewport_;
 
-	VkSwapchainKHR swapchain_ = VK_NULL_HANDLE;
-	VkPhysicalDevice physicalDevice_ = VK_NULL_HANDLE;
-	VkQueue queue_ = VK_NULL_HANDLE;
 
-	VkSurfaceKHR surface_ = VK_NULL_HANDLE;
-
-	VkFence frameFences_[QUEUE_SLOT_COUNT];
-	VkImage swapchainImages_[QUEUE_SLOT_COUNT];
-	VkImageView swapChainImageViews_[QUEUE_SLOT_COUNT];
-	VkFramebuffer framebuffer_[QUEUE_SLOT_COUNT];
-
-	VkRenderPass renderPass_ = VK_NULL_HANDLE;
-
-	int queueFamilyIndex_ = -1;
-
-	VkCommandPool commandPool_;
-	VkCommandBuffer command_buffer_array[QUEUE_SLOT_COUNT];
-	VkCommandBuffer cmdBuffer;
-
-	uint32_t currentBackBuffer_ = 0;
 	bool initialized = false;
 	bool initialized_once = false;
 #endif

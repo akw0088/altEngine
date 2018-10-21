@@ -41,33 +41,33 @@ void Graphics::resize(int width, int height)
 	*/
 
 	// Wait for all rendering to finish
-	vkWaitForFences(vk_device, 3, frameFences_, VK_TRUE, UINT64_MAX);
+	vkWaitForFences(vk_device, 3, vk_frameFences, VK_TRUE, UINT64_MAX);
 
-	vkDestroySwapchainKHR(vk_device, swapchain_, NULL);
-	vkDestroySurfaceKHR(vk_instance, surface_, NULL);
+	vkDestroySwapchainKHR(vk_device, vk_swapchain, NULL);
+	vkDestroySurfaceKHR(vk_instance, vk_surface, NULL);
 
 
 #ifdef WIN32
-	CreateWin32Surface(vk_instance, hwnd, surface_);
+	CreateWin32Surface(vk_instance, hwnd, vk_surface);
 #endif
 
 
 	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
-	CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
+	CreateSwapchain(vk_physical, vk_device, vk_surface, width, height, QUEUE_SLOT_COUNT, swapchainFormat, vk_swapchain);
 
 	unsigned int swapchainImageCount = 0; // three swap buffers
-	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
+	vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &swapchainImageCount, NULL);
 
-	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
+	vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &swapchainImageCount, vk_swapchainImages);
 
-	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(vk_device, renderPass_, width, height, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, vk_swapchainImages, vk_swapChainImageViews);
+	CreateFramebuffers(vk_device, vk_renderpass, width, height, QUEUE_SLOT_COUNT, vk_swapChainImageViews, vk_framebuffer);
 
 
 	// partial swap to prepare back buffer
-	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
-	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
-	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
+	vkAcquireNextImageKHR(vk_device, vk_swapchain, UINT64_MAX, vk_imageAcquiredSemaphore, VK_NULL_HANDLE, &vk_currentBackBuffer);
+	vkWaitForFences(vk_device, 1, &vk_frameFences[vk_currentBackBuffer], VK_TRUE, UINT64_MAX);
+	vkResetFences(vk_device, 1, &vk_frameFences[vk_currentBackBuffer]);
 
 
 	DrawArrayTri(0, 0, 6, 6);
@@ -307,7 +307,7 @@ void Graphics::CreateSampler()
 	samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
 	samplerCreateInfo.maxAnisotropy = 1.0f;
 
-	vkCreateSampler(vk_device, &samplerCreateInfo, NULL, &sampler_);
+	vkCreateSampler(vk_device, &samplerCreateInfo, NULL, &vk_sampler);
 }
 
 /*
@@ -315,8 +315,9 @@ Sets up GPU texture buffer, copies data
 */
 void Graphics::CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp)
 {
-	VkDeviceMemory uploadImageMemory_ = VK_NULL_HANDLE;
-	VkBuffer uploadImageBuffer_ = VK_NULL_HANDLE;
+//	VkDeviceMemory vk_uploadImageMemory = VK_NULL_HANDLE;
+//	VkBuffer vk_uploadImageBuffer = VK_NULL_HANDLE;
+
 	int image_size = width * height * components * sizeof(char);
 
 
@@ -325,7 +326,7 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	imageCreateInfo.pNext = NULL;
 	imageCreateInfo.queueFamilyIndexCount = 1;
 
-	unsigned int queueFamilyIndex = (unsigned int) (queueFamilyIndex_);
+	unsigned int queueFamilyIndex = (unsigned int) (vk_queueFamilyIndex);
 	imageCreateInfo.pQueueFamilyIndices = &queueFamilyIndex;
 	imageCreateInfo.mipLevels = 1;
 	imageCreateInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -339,17 +340,17 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	vkCreateImage(vk_device, &imageCreateInfo, NULL, &Image_);
+	vkCreateImage(vk_device, &imageCreateInfo, NULL, &vk_Image);
 
 	VkMemoryRequirements requirements = {};
-	vkGetImageMemoryRequirements(vk_device, Image_, &requirements);
+	vkGetImageMemoryRequirements(vk_device, vk_Image, &requirements);
 
 	VkDeviceSize requiredSizeForImage = requirements.size;
 
-	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
-	AllocateMemory(deviceImageMemory_, memoryHeaps, vk_device, static_cast<int> (requiredSizeForImage), requirements.memoryTypeBits, MT_DeviceLocal);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
+	AllocateMemory(vk_deviceImageMemory, memoryHeaps, vk_device, static_cast<int> (requiredSizeForImage), requirements.memoryTypeBits, MT_DeviceLocal);
 
-	vkBindImageMemory(vk_device, Image_, deviceImageMemory_, 0);
+	vkBindImageMemory(vk_device, vk_Image, vk_deviceImageMemory, 0);
 
 	VkBufferCreateInfo bufferCreateInfo = {};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -359,20 +360,20 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	bufferCreateInfo.size = requiredSizeForImage;
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-	VkResult err = vkCreateBuffer(vk_device, &bufferCreateInfo, NULL, &uploadImageBuffer_);
+	VkResult err = vkCreateBuffer(vk_device, &bufferCreateInfo, NULL, &vk_uploadImageBuffer);
 	assert(!err);
 
-	vkGetBufferMemoryRequirements(vk_device, uploadImageBuffer_, &requirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_uploadImageBuffer, &requirements);
 
 	VkDeviceSize requiredSizeForBuffer = requirements.size;
 
 	bool memoryIsHostCoherent = false;
-	AllocateMemory(uploadImageMemory_, memoryHeaps, vk_device, static_cast<int> (requiredSizeForBuffer), requirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
+	AllocateMemory(vk_uploadImageMemory, memoryHeaps, vk_device, static_cast<int> (requiredSizeForBuffer), requirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
 
-	vkBindBufferMemory(vk_device, uploadImageBuffer_, uploadImageMemory_, 0);
+	vkBindBufferMemory(vk_device, vk_uploadImageBuffer, vk_uploadImageMemory, 0);
 
 	void* data = NULL;
-	vkMapMemory(vk_device, uploadImageMemory_, 0, VK_WHOLE_SIZE, 0, &data);
+	vkMapMemory(vk_device, vk_uploadImageMemory, 0, VK_WHOLE_SIZE, 0, &data);
 
 	// actually copy texture to GPU
 	memcpy(data, image_data, image_size);
@@ -381,14 +382,14 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	{
 		VkMappedMemoryRange mappedMemoryRange = {};
 		mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		mappedMemoryRange.memory = uploadImageMemory_;
+		mappedMemoryRange.memory = vk_uploadImageMemory;
 		mappedMemoryRange.offset = 0;
 		mappedMemoryRange.size = VK_WHOLE_SIZE;
 
 		vkFlushMappedMemoryRanges(vk_device, 1, &mappedMemoryRange);
 	}
 
-	vkUnmapMemory(vk_device, uploadImageMemory_);
+	vkUnmapMemory(vk_device, vk_uploadImageMemory);
 
 	VkBufferImageCopy bufferImageCopy = {};
 	bufferImageCopy.imageExtent.width = width;
@@ -405,32 +406,32 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	imageBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageBarrier.srcAccessMask = 0;
 	imageBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	imageBarrier.image = Image_;
+	imageBarrier.image = vk_Image;
 	imageBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageBarrier.subresourceRange.layerCount = 1;
 	imageBarrier.subresourceRange.levelCount = 1;
 
-	vkCmdPipelineBarrier(command_buffer_array[QUEUE_SLOT_COUNT], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
+	vkCmdPipelineBarrier(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
 
-	vkCmdCopyBufferToImage(command_buffer_array[QUEUE_SLOT_COUNT], uploadImageBuffer_, Image_, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopy);
+	vkCmdCopyBufferToImage(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], vk_uploadImageBuffer, vk_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferImageCopy);
 
 	imageBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 	imageBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 	imageBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 	imageBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	vkCmdPipelineBarrier(command_buffer_array[QUEUE_SLOT_COUNT], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
+	vkCmdPipelineBarrier(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &imageBarrier);
 
 	VkImageViewCreateInfo imageViewCreateInfo = {};
 	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	imageViewCreateInfo.format = imageCreateInfo.format;
-	imageViewCreateInfo.image = Image_;
+	imageViewCreateInfo.image = vk_Image;
 	imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	imageViewCreateInfo.subresourceRange.levelCount = 1;
 	imageViewCreateInfo.subresourceRange.layerCount = 1;
 	imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-	vkCreateImageView(vk_device, &imageViewCreateInfo, NULL, &ImageView_);
+	vkCreateImageView(vk_device, &imageViewCreateInfo, NULL, &vk_ImageView);
 }
 
 /*
@@ -447,21 +448,21 @@ void Graphics::CreateDescriptors()
 	descriptorSetLayoutBinding[1].descriptorCount = 1;
 	descriptorSetLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 	descriptorSetLayoutBinding[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	descriptorSetLayoutBinding[1].pImmutableSamplers = &sampler_;
+	descriptorSetLayoutBinding[1].pImmutableSamplers = &vk_sampler;
 
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo[1] = {};
 	descriptorSetLayoutCreateInfo[0].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	descriptorSetLayoutCreateInfo[0].bindingCount = 2;
 	descriptorSetLayoutCreateInfo[0].pBindings = descriptorSetLayoutBinding;
 
-	vkCreateDescriptorSetLayout(vk_device, descriptorSetLayoutCreateInfo, NULL, &descriptorSetLayout_);
+	vkCreateDescriptorSetLayout(vk_device, descriptorSetLayoutCreateInfo, NULL, &vk_descriptorSetLayout);
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout_;
+	pipelineLayoutCreateInfo.pSetLayouts = &vk_descriptorSetLayout;
 	pipelineLayoutCreateInfo.setLayoutCount = 1;
 
-	vkCreatePipelineLayout(vk_device, &pipelineLayoutCreateInfo, NULL, &pipelineLayout_);
+	vkCreatePipelineLayout(vk_device, &pipelineLayoutCreateInfo, NULL, &vk_pipelineLayout);
 
 	VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = {};
 	descriptorPoolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -476,26 +477,26 @@ void Graphics::CreateDescriptors()
 	descriptorPoolCreateInfo.poolSizeCount = 2;
 	descriptorPoolCreateInfo.pPoolSizes = descriptorPoolSize;
 
-	vkCreateDescriptorPool(vk_device, &descriptorPoolCreateInfo, NULL, &descriptorPool_);
+	vkCreateDescriptorPool(vk_device, &descriptorPoolCreateInfo, NULL, &vk_descriptorPool);
 
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = {};
 	descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout_;
+	descriptorSetAllocateInfo.pSetLayouts = &vk_descriptorSetLayout;
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
-	descriptorSetAllocateInfo.descriptorPool = descriptorPool_;
+	descriptorSetAllocateInfo.descriptorPool = vk_descriptorPool;
 
-	vkAllocateDescriptorSets(vk_device, &descriptorSetAllocateInfo, &descriptorSet_);
+	vkAllocateDescriptorSets(vk_device, &descriptorSetAllocateInfo, &vk_descriptorSet);
 
 	VkWriteDescriptorSet writeDescriptorSets[1] = {};
 	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[0].dstSet = descriptorSet_;
+	writeDescriptorSets[0].dstSet = vk_descriptorSet;
 	writeDescriptorSets[0].descriptorCount = 1;
 	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	writeDescriptorSets[0].dstBinding = 0;
 
 	VkDescriptorImageInfo descriptorImageInfo[1] = {};
 	descriptorImageInfo[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	descriptorImageInfo[0].imageView = ImageView_;
+	descriptorImageInfo[0].imageView = vk_ImageView;
 
 	writeDescriptorSets[0].pImageInfo = &descriptorImageInfo[0];
 
@@ -652,12 +653,12 @@ int Graphics::LoadShadersAndCreatePipelineStateObject(char *vertex_shader_file, 
 	}
 
 
-	LoadShader(vk_device, vertex_shader, vertex_size, vertexShader_);
+	LoadShader(vk_device, vertex_shader, vertex_size, vk_vertexShader);
 	delete[] vertex_shader;
-	LoadShader(vk_device, fragment_shader, fragment_size, fragmentShader_);
+	LoadShader(vk_device, fragment_shader, fragment_size, vk_fragmentShader);
 	delete[] fragment_shader;
 
-	CreatePipeline(vk_device, renderPass_, pipelineLayout_,	vertexShader_, fragmentShader_, pipeline_);
+	CreatePipeline(vk_device, vk_renderpass, vk_pipelineLayout, vk_vertexShader, vk_fragmentShader, vk_pipeline);
 	return 0;
 }
 
@@ -666,19 +667,19 @@ Full screen quad vertex / index buffers, single upload is kind of interesting
 */
 void Graphics::CreateMeshBuffers(VkCommandBuffer uploadBuffer, vertex_t *vertices, int num_vertex, unsigned int *indices, int num_index)
 {
-	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
 	VkBufferUsageFlagBits index_flag;
 	index_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 	VkBufferUsageFlagBits vertex_flag;
 	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-	AllocateBuffer(vk_device, sizeof(unsigned int) * num_index, index_flag, indexBuffer_);
-	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, vertex_flag, vertexBuffer_);
+	AllocateBuffer(vk_device, sizeof(unsigned int) * num_index, index_flag, vk_indexBuffer);
+	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, vertex_flag, vk_vertexBuffer);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_vertexBuffer, &vertexBufferMemoryRequirements);
 	VkMemoryRequirements indexBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, indexBuffer_, &indexBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_indexBuffer, &indexBufferMemoryRequirements);
 
 	VkDeviceSize bufferSize = vertexBufferMemoryRequirements.size;
 	// We want to place the index buffer behind the vertex buffer. Need to take
@@ -686,22 +687,22 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadBuffer, vertex_t *vertice
 	VkDeviceSize indexBufferOffset = RoundToNextMultiple(bufferSize, indexBufferMemoryRequirements.alignment);
 
 	bufferSize = indexBufferOffset + indexBufferMemoryRequirements.size;
-	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
+	AllocateMemory(vk_deviceMemory, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
 
-	vkBindBufferMemory(vk_device, vertexBuffer_, deviceMemory_, 0);
-	vkBindBufferMemory(vk_device, indexBuffer_, deviceMemory_, indexBufferOffset);
+	vkBindBufferMemory(vk_device, vk_vertexBuffer, vk_deviceMemory, 0);
+	vkBindBufferMemory(vk_device, vk_indexBuffer, vk_deviceMemory, indexBufferOffset);
 
-	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
+	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, vk_uploadBuffer);
 	VkMemoryRequirements uploadBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_, &uploadBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_uploadBuffer, &uploadBufferMemoryRequirements);
 
 	bool memoryIsHostCoherent = false;
-	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits,	MT_HostVisible, &memoryIsHostCoherent);
+	AllocateMemory(vk_uploadMemory, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits & indexBufferMemoryRequirements.memoryTypeBits,	MT_HostVisible, &memoryIsHostCoherent);
 
-	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
+	vkBindBufferMemory(vk_device, vk_uploadBuffer, vk_uploadMemory, 0);
 
 	void* mapping = NULL;
-	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
+	vkMapMemory(vk_device, vk_uploadMemory, 0, VK_WHOLE_SIZE, 0, &mapping);
 	memcpy(mapping, vertices, sizeof(vertex_t) * num_vertex);
 
 	memcpy(static_cast<uint8_t*> (mapping) + indexBufferOffset, indices, sizeof(unsigned int) * num_index);
@@ -710,14 +711,14 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadBuffer, vertex_t *vertice
 	{
 		VkMappedMemoryRange mappedMemoryRange = {};
 		mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		mappedMemoryRange.memory = uploadMemory_;
+		mappedMemoryRange.memory = vk_uploadMemory;
 		mappedMemoryRange.offset = 0;
 		mappedMemoryRange.size = VK_WHOLE_SIZE;
 
 		vkFlushMappedMemoryRanges(vk_device, 1, &mappedMemoryRange);
 	}
 
-	vkUnmapMemory(vk_device, uploadMemory_);
+	vkUnmapMemory(vk_device, vk_uploadMemory);
 
 	VkBufferCopy vertexCopy = {};
 	vertexCopy.size = sizeof(vertex_t) * num_vertex;
@@ -726,12 +727,12 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadBuffer, vertex_t *vertice
 	indexCopy.size = sizeof(unsigned int) * num_index;
 	indexCopy.srcOffset = indexBufferOffset;
 
-	vkCmdCopyBuffer(uploadBuffer, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
-	vkCmdCopyBuffer(uploadBuffer, uploadBuffer_, indexBuffer_, 1, &indexCopy);
+	vkCmdCopyBuffer(uploadBuffer, vk_uploadBuffer, vk_vertexBuffer, 1, &vertexCopy);
+	vkCmdCopyBuffer(uploadBuffer, vk_uploadBuffer, vk_indexBuffer, 1, &indexCopy);
 
 	VkBufferMemoryBarrier uploadBarriers[2] = {};
 	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-	uploadBarriers[0].buffer = vertexBuffer_;
+	uploadBarriers[0].buffer = vk_vertexBuffer;
 	uploadBarriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -739,7 +740,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadBuffer, vertex_t *vertice
 	uploadBarriers[0].size = VK_WHOLE_SIZE;
 
 	uploadBarriers[1].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-	uploadBarriers[1].buffer = indexBuffer_;
+	uploadBarriers[1].buffer = vk_indexBuffer;
 	uploadBarriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[1].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -760,7 +761,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	gpustat.triangle += num_index / 3;
 
 
-	cmdBuffer = command_buffer_array[currentBackBuffer_];
+	VkCommandBuffer cmdBuffer = vk_cmd_buffer_array[vk_currentBackBuffer];
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -769,10 +770,10 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.framebuffer = framebuffer_[currentBackBuffer_];
+	renderPassBeginInfo.framebuffer = vk_framebuffer[vk_currentBackBuffer];
 	renderPassBeginInfo.renderArea.extent.width = width;
 	renderPassBeginInfo.renderArea.extent.height = height;
-	renderPassBeginInfo.renderPass = renderPass_;
+	renderPassBeginInfo.renderPass = vk_renderpass;
 
 	VkClearValue clearValue = {};
 
@@ -801,13 +802,13 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	scissors[0].extent.height = height;
 	vkCmdSetScissor(cmdBuffer, 0, 1, scissors);
 
-	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline);
 
 	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindIndexBuffer(cmdBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
-	vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffer_, offsets);
+	vkCmdBindIndexBuffer(cmdBuffer, vk_indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vk_vertexBuffer, offsets);
 
-	vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
+	vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipelineLayout, 0, 1, &vk_descriptorSet, 0, NULL);
 
 	vkCmdDrawIndexed(cmdBuffer, num_index, 1, start_index, start_vertex, 0);
 
@@ -822,54 +823,54 @@ destroy the thousand handles to bullcrap
 */
 void Graphics::destroy()
 {
-	vkDestroySemaphore(vk_device, imageAcquiredSemaphore, NULL);
-	vkDestroySemaphore(vk_device, renderingCompleteSemaphore, NULL);
+	vkDestroySemaphore(vk_device, vk_imageAcquiredSemaphore, NULL);
+	vkDestroySemaphore(vk_device, vk_renderingCompleteSemaphore, NULL);
 
-	vkDestroyPipeline(vk_device, pipeline_, NULL);
-	vkDestroyPipelineLayout(vk_device, pipelineLayout_, NULL);
+	vkDestroyPipeline(vk_device, vk_pipeline, NULL);
+	vkDestroyPipelineLayout(vk_device, vk_pipelineLayout, NULL);
 
-	vkDestroyBuffer(vk_device, vertexBuffer_, NULL);
-	vkDestroyBuffer(vk_device, indexBuffer_, NULL);
-	vkFreeMemory(vk_device, deviceMemory_, NULL);
+	vkDestroyBuffer(vk_device, vk_vertexBuffer, NULL);
+	vkDestroyBuffer(vk_device, vk_indexBuffer, NULL);
+	vkFreeMemory(vk_device, vk_deviceMemory, NULL);
 
-	vkDestroyImageView(vk_device, ImageView_, NULL);
-	vkDestroyImage(vk_device, Image_, NULL);
-	vkFreeMemory(vk_device, deviceImageMemory_, NULL);
+	vkDestroyImageView(vk_device, vk_ImageView, NULL);
+	vkDestroyImage(vk_device, vk_Image, NULL);
+	vkFreeMemory(vk_device, vk_deviceImageMemory, NULL);
 
-	vkDestroyBuffer(vk_device, uploadImageBuffer_, NULL);
-	vkFreeMemory(vk_device, uploadImageMemory_, NULL);
+	vkDestroyBuffer(vk_device, vk_uploadImageBuffer, NULL);
+	vkFreeMemory(vk_device, vk_uploadImageMemory, NULL);
 
-	vkDestroyBuffer(vk_device, uploadBuffer_, NULL);
-	vkFreeMemory(vk_device, uploadMemory_, NULL);
+	vkDestroyBuffer(vk_device, vk_uploadBuffer, NULL);
+	vkFreeMemory(vk_device, vk_uploadMemory, NULL);
 
-	vkDestroyDescriptorSetLayout(vk_device, descriptorSetLayout_, NULL);
-	vkDestroyDescriptorPool(vk_device, descriptorPool_, NULL);
+	vkDestroyDescriptorSetLayout(vk_device, vk_descriptorSetLayout, NULL);
+	vkDestroyDescriptorPool(vk_device, vk_descriptorPool, NULL);
 
-	vkDestroySampler(vk_device, sampler_, NULL);
+	vkDestroySampler(vk_device, vk_sampler, NULL);
 
-	vkDestroyShaderModule(vk_device, vertexShader_, NULL);
-	vkDestroyShaderModule(vk_device, fragmentShader_, NULL);
-
-	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
-	{
-		vkDestroyFence(vk_device, frameFences_[i], NULL);
-	}
-
-	vkDestroyRenderPass(vk_device, renderPass_, NULL);
+	vkDestroyShaderModule(vk_device, vk_vertexShader, NULL);
+	vkDestroyShaderModule(vk_device, vk_fragmentShader, NULL);
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
-		vkDestroyFramebuffer(vk_device, framebuffer_[i], NULL);
-		vkDestroyImageView(vk_device, swapChainImageViews_[i], NULL);
+		vkDestroyFence(vk_device, vk_frameFences[i], NULL);
 	}
 
-	vkDestroyCommandPool(vk_device, commandPool_, NULL);
+	vkDestroyRenderPass(vk_device, vk_renderpass, NULL);
 
-	vkDestroySwapchainKHR(vk_device, swapchain_, NULL);
-	vkDestroySurfaceKHR(vk_instance, surface_, NULL);
+	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
+	{
+		vkDestroyFramebuffer(vk_device, vk_framebuffer[i], NULL);
+		vkDestroyImageView(vk_device, vk_swapChainImageViews[i], NULL);
+	}
+
+	vkDestroyCommandPool(vk_device, vk_commandPool, NULL);
+
+	vkDestroySwapchainKHR(vk_device, vk_swapchain, NULL);
+	vkDestroySurfaceKHR(vk_instance, vk_surface, NULL);
 
 
-	DestroyDebugReportCallback(vk_instance, callback, NULL);
+	DestroyDebugReportCallback(vk_instance, vk_callback, NULL);
 
 
 	vkDestroyDevice(vk_device, NULL);
@@ -1098,17 +1099,17 @@ void Graphics::init(void *param1, void *param2)
 	// set up some debug message box call backs
 	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkCreateDebugReportCallbackEXT");
 	DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT");
-	SetupDebugCallback(vk_instance, callback);
+	SetupDebugCallback(vk_instance, vk_callback);
 
 
 
 	// get GPU device and queue for command buffers. Queue types include: Graphics, Compute, Transfer, sparse
-	CreateDeviceAndQueue(vk_instance, vk_device, queue_, queueFamilyIndex_, physicalDevice_);
+	CreateDeviceAndQueue(vk_instance, vk_device, vk_queue, vk_queueFamilyIndex, vk_physical);
 
 	
-#ifdef WIN32
 	// Create platform specific buffers
-	CreateWin32Surface(vk_instance, hwnd, surface_);
+#ifdef WIN32
+	CreateWin32Surface(vk_instance, hwnd, vk_surface);
 #endif
 
 #ifdef __linux__
@@ -1119,63 +1120,65 @@ void Graphics::init(void *param1, void *param2)
 #endif
 
 	VkBool32 presentSupported;
-	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice_, 0, surface_, &presentSupported);
+	vkGetPhysicalDeviceSurfaceSupportKHR(vk_physical, 0, vk_surface, &presentSupported);
 
 	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
-	CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
+	CreateSwapchain(vk_physical, vk_device, vk_surface, width, height, QUEUE_SLOT_COUNT, swapchainFormat, vk_swapchain);
 
 
 	unsigned int swapchainImageCount = 0; // three swap buffers
-	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
+	vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &swapchainImageCount, NULL);
 
-	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
+	vkGetSwapchainImagesKHR(vk_device, vk_swapchain, &swapchainImageCount, vk_swapchainImages);
 
-	CreateRenderPass(vk_device, swapchainFormat, renderPass_);
+	CreateRenderPass(vk_device, swapchainFormat, vk_renderpass);
 
-	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(vk_device, renderPass_, width, height, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, vk_swapchainImages, vk_swapChainImageViews);
+	CreateFramebuffers(vk_device, vk_renderpass, width, height, QUEUE_SLOT_COUNT, vk_swapChainImageViews, vk_framebuffer);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo;
 
 	memset(&commandPoolCreateInfo, 0, sizeof(VkCommandPoolCreateInfo));
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex_;
+	commandPoolCreateInfo.queueFamilyIndex = vk_queueFamilyIndex;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL, &commandPool_);
+	vkCreateCommandPool(vk_device, &commandPoolCreateInfo, NULL, &vk_commandPool);
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo;
 
 	memset(&commandBufferAllocateInfo, 0, sizeof(VkCommandBufferAllocateInfo));
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
-	commandBufferAllocateInfo.commandPool = commandPool_;
+	commandBufferAllocateInfo.commandPool = vk_commandPool;
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, command_buffer_array);
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, vk_cmd_buffer_array);
 
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
-		VkFenceCreateInfo fenceCreateInfo = {};
-		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		// We need this so we can wait for them on the first try
-		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		VkFenceCreateInfo fenceCreateInfo;
 
-		vkCreateFence(vk_device, &fenceCreateInfo, NULL, &frameFences_[i]);
+
+		memset(&fenceCreateInfo, 0, sizeof(VkFenceCreateInfo));
+
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Wait on creation
+		vkCreateFence(vk_device, &fenceCreateInfo, NULL, &vk_frameFences[i]);
 	}
 
-
-
 	// load texture, shaders, etc
-	LoadCommandBuffer(command_buffer_array[QUEUE_SLOT_COUNT]);
+	LoadCommandBuffer(vk_cmd_buffer_array[QUEUE_SLOT_COUNT]);
 
 
-	VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+	VkSemaphoreCreateInfo semaphoreCreateInfo;
+
+	memset(&semaphoreCreateInfo, 0, sizeof(VkSemaphoreCreateInfo));
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &imageAcquiredSemaphore);
-	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &renderingCompleteSemaphore);
+	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &vk_imageAcquiredSemaphore);
+	vkCreateSemaphore(vk_device, &semaphoreCreateInfo, NULL, &vk_renderingCompleteSemaphore);
 
 
 	initialized = true;
@@ -1183,9 +1186,9 @@ void Graphics::init(void *param1, void *param2)
 
 
 	// partial swap to prepare back buffer
-	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
-	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
-	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
+	vkAcquireNextImageKHR(vk_device, vk_swapchain, UINT64_MAX, vk_imageAcquiredSemaphore, VK_NULL_HANDLE, &vk_currentBackBuffer);
+	vkWaitForFences(vk_device, 1, &vk_frameFences[vk_currentBackBuffer], VK_TRUE, UINT64_MAX);
+	vkResetFences(vk_device, 1, &vk_frameFences[vk_currentBackBuffer]);
 
 
 	DrawArrayTri(0, 0, 6, 6);
@@ -1198,7 +1201,7 @@ void Graphics::init(void *param1, void *param2)
 
 void Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
 {
-	vkResetFences(vk_device, 1, &frameFences_[0]);
+	vkResetFences(vk_device, 1, &vk_frameFences[0]);
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	vkBeginCommandBuffer(cmd_buffer, &beginInfo);
@@ -1253,9 +1256,9 @@ void Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &cmd_buffer;
-	vkQueueSubmit(queue_, 1, &submitInfo, frameFences_[0]);
+	vkQueueSubmit(vk_queue, 1, &submitInfo, vk_frameFences[0]);
 
-	vkWaitForFences(vk_device, 1, &frameFences_[0], VK_TRUE, UINT64_MAX);
+	vkWaitForFences(vk_device, 1, &vk_frameFences[0], VK_TRUE, UINT64_MAX);
 }
 
 void Graphics::swap()
@@ -1269,27 +1272,27 @@ void Graphics::swap()
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &imageAcquiredSemaphore;
+	submitInfo.pWaitSemaphores = &vk_imageAcquiredSemaphore;
 	submitInfo.pWaitDstStageMask = &waitDstStageMask;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &command_buffer_array[currentBackBuffer_];
+	submitInfo.pCommandBuffers = &vk_cmd_buffer_array[vk_currentBackBuffer];
 	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &renderingCompleteSemaphore;
-	vkQueueSubmit(queue_, 1, &submitInfo, VK_NULL_HANDLE);
+	submitInfo.pSignalSemaphores = &vk_renderingCompleteSemaphore;
+	vkQueueSubmit(vk_queue, 1, &submitInfo, VK_NULL_HANDLE);
 
 	// Submit present operation to present queue
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = &renderingCompleteSemaphore;
+	presentInfo.pWaitSemaphores = &vk_renderingCompleteSemaphore;
 	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &swapchain_;
-	presentInfo.pImageIndices = &currentBackBuffer_;
-	vkQueuePresentKHR(queue_, &presentInfo);
+	presentInfo.pSwapchains = &vk_swapchain;
+	presentInfo.pImageIndices = &vk_currentBackBuffer;
+	vkQueuePresentKHR(vk_queue, &presentInfo);
 
-	vkQueueSubmit(queue_, 0, NULL, frameFences_[currentBackBuffer_]);
+	vkQueueSubmit(vk_queue, 0, NULL, vk_frameFences[vk_currentBackBuffer]);
 	// Wait for all rendering to finish
-	vkWaitForFences(vk_device, 3, frameFences_, VK_TRUE, UINT64_MAX);
+	vkWaitForFences(vk_device, 3, vk_frameFences, VK_TRUE, UINT64_MAX);
 
 
 	/*
@@ -1419,7 +1422,7 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
-	commandBufferAllocateInfo.commandPool = commandPool_;
+	commandBufferAllocateInfo.commandPool = vk_commandPool;
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 
@@ -1440,56 +1443,56 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 
 
 
-	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
 
 	VkBufferUsageFlagBits bflag;
 	bflag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-	AllocateBuffer(vk_device, sizeof(int) * num_index, bflag, indexBuffer_);
+	AllocateBuffer(vk_device, sizeof(int) * num_index, bflag, vk_indexBuffer);
 
 	VkMemoryRequirements indexBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, indexBuffer_, &indexBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_indexBuffer, &indexBufferMemoryRequirements);
 
 	VkDeviceSize bufferSize = indexBufferMemoryRequirements.size;
 
-	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
+	AllocateMemory(vk_deviceMemory, memoryHeaps, vk_device, static_cast<int>(bufferSize), indexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
 
-	vkBindBufferMemory(vk_device, indexBuffer_, deviceMemory_, 0);
+	vkBindBufferMemory(vk_device, vk_indexBuffer, vk_deviceMemory, 0);
 
-	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
+	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, vk_uploadBuffer);
 	VkMemoryRequirements uploadBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_, &uploadBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_uploadBuffer, &uploadBufferMemoryRequirements);
 
 	bool memoryIsHostCoherent = false;
-	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), indexBufferMemoryRequirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
+	AllocateMemory(vk_uploadMemory, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), indexBufferMemoryRequirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
 
-	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
+	vkBindBufferMemory(vk_device, vk_uploadBuffer, vk_uploadMemory, 0);
 
 	void* mapping = NULL;
-	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
+	vkMapMemory(vk_device, vk_uploadMemory, 0, VK_WHOLE_SIZE, 0, &mapping);
 	memcpy(mapping, index_buffer, sizeof(int) * num_index);
 
 	if (!memoryIsHostCoherent)
 	{
 		VkMappedMemoryRange mappedMemoryRange = {};
 		mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		mappedMemoryRange.memory = uploadMemory_;
+		mappedMemoryRange.memory = vk_uploadMemory;
 		mappedMemoryRange.offset = 0;
 		mappedMemoryRange.size = VK_WHOLE_SIZE;
 
 		vkFlushMappedMemoryRanges(vk_device, 1, &mappedMemoryRange);
 	}
 
-	vkUnmapMemory(vk_device, uploadMemory_);
+	vkUnmapMemory(vk_device, vk_uploadMemory);
 
 	VkBufferCopy indexCopy = {};
 	indexCopy.size = sizeof(int) * num_index;
 
-	vkCmdCopyBuffer(i_setupCommandBuffer_, uploadBuffer_, indexBuffer_, 1, &indexCopy);
+	vkCmdCopyBuffer(i_setupCommandBuffer_, vk_uploadBuffer, vk_indexBuffer, 1, &indexCopy);
 
 	VkBufferMemoryBarrier uploadBarriers[1] = {};
 	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-	uploadBarriers[0].buffer = vertexBuffer_;
+	uploadBarriers[0].buffer = vk_vertexBuffer;
 	uploadBarriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -1524,58 +1527,58 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
 	return 0;
-	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;	commandBufferAllocateInfo.commandPool = commandPool_;	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(command_buffer_array[QUEUE_SLOT_COUNT], &beginInfo);
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;	commandBufferAllocateInfo.commandPool = vk_commandPool;	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], &beginInfo);
 	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];	VkCommandBuffer v_setupCommandBuffer_;
 	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
-	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(physicalDevice_);
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
 	VkBufferUsageFlagBits vertex_flag;
 	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, vertex_flag, vertexBuffer_);
+	AllocateBuffer(vk_device, sizeof(vertex_t) * num_vertex, vertex_flag, vk_vertexBuffer);
 
 	VkMemoryRequirements vertexBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, vertexBuffer_, &vertexBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_vertexBuffer, &vertexBufferMemoryRequirements);
 
 	VkDeviceSize bufferSize = vertexBufferMemoryRequirements.size;
 
-	AllocateMemory(deviceMemory_, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
+	AllocateMemory(vk_deviceMemory, memoryHeaps, vk_device, static_cast<int>(bufferSize), vertexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
 
-	vkBindBufferMemory(vk_device, vertexBuffer_, deviceMemory_, 0);
+	vkBindBufferMemory(vk_device, vk_vertexBuffer, vk_deviceMemory, 0);
 
-	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, uploadBuffer_);
+	AllocateBuffer(vk_device, static_cast<int> (bufferSize), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, vk_uploadBuffer);
 	VkMemoryRequirements uploadBufferMemoryRequirements = {};
-	vkGetBufferMemoryRequirements(vk_device, uploadBuffer_, &uploadBufferMemoryRequirements);
+	vkGetBufferMemoryRequirements(vk_device, vk_uploadBuffer, &uploadBufferMemoryRequirements);
 
 	bool memoryIsHostCoherent = false;
-	AllocateMemory(uploadMemory_, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
+	AllocateMemory(vk_uploadMemory, memoryHeaps, vk_device, static_cast<int>(uploadBufferMemoryRequirements.size), vertexBufferMemoryRequirements.memoryTypeBits, MT_HostVisible, &memoryIsHostCoherent);
 
-	vkBindBufferMemory(vk_device, uploadBuffer_, uploadMemory_, 0);
+	vkBindBufferMemory(vk_device, vk_uploadBuffer, vk_uploadMemory, 0);
 
 	void* mapping = NULL;
-	vkMapMemory(vk_device, uploadMemory_, 0, VK_WHOLE_SIZE, 0, &mapping);
+	vkMapMemory(vk_device, vk_uploadMemory, 0, VK_WHOLE_SIZE, 0, &mapping);
 	memcpy(mapping, vertex_buffer, sizeof(vertex_t) * num_vertex);
 
 	if (!memoryIsHostCoherent)
 	{
 		VkMappedMemoryRange mappedMemoryRange = {};
 		mappedMemoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		mappedMemoryRange.memory = uploadMemory_;
+		mappedMemoryRange.memory = vk_uploadMemory;
 		mappedMemoryRange.offset = 0;
 		mappedMemoryRange.size = VK_WHOLE_SIZE;
 
 		vkFlushMappedMemoryRanges(vk_device, 1, &mappedMemoryRange);
 	}
 
-	vkUnmapMemory(vk_device, uploadMemory_);
+	vkUnmapMemory(vk_device, vk_uploadMemory);
 
 	VkBufferCopy vertexCopy = {};
 	vertexCopy.size = sizeof(vertex_t) * num_vertex;
-	vkCmdCopyBuffer(v_setupCommandBuffer_, uploadBuffer_, vertexBuffer_, 1, &vertexCopy);
+	vkCmdCopyBuffer(v_setupCommandBuffer_, vk_uploadBuffer, vk_vertexBuffer, 1, &vertexCopy);
 
 	VkBufferMemoryBarrier uploadBarriers[1] = {};
 	uploadBarriers[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-	uploadBarriers[0].buffer = vertexBuffer_;
+	uploadBarriers[0].buffer = vk_vertexBuffer;
 	uploadBarriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	uploadBarriers[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
