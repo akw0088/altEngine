@@ -823,6 +823,8 @@ destroy the thousand handles to bullcrap
 */
 void Graphics::destroy()
 {
+	initialized = false;
+
 	vkDestroySemaphore(vk_device, vk_imageAcquiredSemaphore, NULL);
 	vkDestroySemaphore(vk_device, vk_renderingCompleteSemaphore, NULL);
 
@@ -1265,6 +1267,9 @@ void Graphics::swap()
 {
 	gpustat.drawcall = 0;
 	gpustat.triangle = 0;
+
+	if (initialized == false)
+		return;
 
 
 	// Submit rendering work to the graphics queue
