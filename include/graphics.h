@@ -191,7 +191,7 @@ private:
 	void AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer);
 	int AllocateMemory(VkDeviceMemory &deviceMemory, const vector<MemoryTypeInfo>& memoryInfos, VkDevice device, const int size, const unsigned int memoryBits, unsigned int memoryProperties, bool* isHostCoherent = nullptr);
 
-	void CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface);
+	void CreateWin32Surface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface);
 	void CreateTexture(int width, int height, int components, int format, unsigned char *image_data, bool clamp);
 	void CreateSampler();
 	void CreateDescriptors();

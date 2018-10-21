@@ -40,7 +40,6 @@ void Graphics::resize(int width, int height)
 	This means it's not necessary to rebuild the pipeline.
 	*/
 
-#if 1
 	// Wait for all rendering to finish
 	vkWaitForFences(vk_device, 3, frameFences_, VK_TRUE, UINT64_MAX);
 
@@ -49,7 +48,7 @@ void Graphics::resize(int width, int height)
 
 
 #ifdef WIN32
-	CreateSurface(vk_instance, hwnd, surface_);
+	CreateWin32Surface(vk_instance, hwnd, surface_);
 #endif
 
 
@@ -73,10 +72,6 @@ void Graphics::resize(int width, int height)
 
 	DrawArrayTri(0, 0, 6, 6);
 	swap();
-
-#endif
-
-
 }
 
 Graphics::Graphics()
@@ -961,11 +956,10 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 	}
 }
 
- void Graphics::CreateSurface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface)
+ void Graphics::CreateWin32Surface(VkInstance instance, HWND hwnd, VkSurfaceKHR &surface)
 {
 	VkWin32SurfaceCreateInfoKHR win32surfaceCreateInfo;
 
-	//TODO: windows specific, fix linux
 	memset(&win32surfaceCreateInfo, 0, sizeof(VkWin32SurfaceCreateInfoKHR));
 	win32surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	win32surfaceCreateInfo.hwnd = hwnd;
@@ -973,22 +967,6 @@ void Graphics::CreateSwapchainImageViews(VkDevice device, VkFormat format, const
 
 	vkCreateWin32SurfaceKHR(instance, &win32surfaceCreateInfo, NULL, &surface);
 }
-
-void EnumDebugDeviceLayerNames(VkPhysicalDevice device)
-{
-	VkLayerProperties deviceLayers[4];
-	unsigned int layerCount = 0; // 2 layers
-
-	vkEnumerateDeviceLayerProperties(device, &layerCount, NULL); // get count
-	vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers);
-
-	for (int i = 0; i < layerCount; i++)
-	{
-		printf("%s\r\n", deviceLayers[i].layerName);
-	}
-
-}
-
 
 void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice &outputDevice, VkQueue &outputQueue, int &outputQueueIndex, VkPhysicalDevice &outputPhysicalDevice)
 {
@@ -1127,9 +1105,17 @@ void Graphics::init(void *param1, void *param2)
 	// get GPU device and queue for command buffers. Queue types include: Graphics, Compute, Transfer, sparse
 	CreateDeviceAndQueue(vk_instance, vk_device, queue_, queueFamilyIndex_, physicalDevice_);
 
-	// warning CreateSurface is windows specific
+	
 #ifdef WIN32
-	CreateSurface(vk_instance, hwnd, surface_);
+	// Create platform specific buffers
+	CreateWin32Surface(vk_instance, hwnd, surface_);
+#endif
+
+#ifdef __linux__
+	// If you already got your X11 window you need to define VK_USE_PLATFORM_XLIB_KHR
+	// and create a Vulkan compatible surface from it using vkCreateXlibSurfaceKHR,
+	// Also note that you need to provide the proper surface extension at instance creation time.
+	// VK_KHR_XLIB_SURFACE_EXTENSION_NAME
 #endif
 
 	VkBool32 presentSupported;
@@ -1782,5 +1768,20 @@ void EnumDebugInstanceLayerNames()
 	{
 		printf("%s\r\n", layers[i].layerName);
 	}
+}
+
+void EnumDebugDeviceLayerNames(VkPhysicalDevice device)
+{
+	VkLayerProperties deviceLayers[4];
+	unsigned int layerCount = 0; // 2 layers
+
+	vkEnumerateDeviceLayerProperties(device, &layerCount, NULL); // get count
+	vkEnumerateDeviceLayerProperties(device, &layerCount, deviceLayers);
+
+	for (int i = 0; i < layerCount; i++)
+	{
+		printf("%s\r\n", deviceLayers[i].layerName);
+	}
+
 }
 #endif
