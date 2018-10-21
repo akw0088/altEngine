@@ -40,6 +40,43 @@ void Graphics::resize(int width, int height)
 	This means it's not necessary to rebuild the pipeline.
 	*/
 
+#if 1
+	// Wait for all rendering to finish
+	vkWaitForFences(vk_device, 3, frameFences_, VK_TRUE, UINT64_MAX);
+
+	vkDestroySwapchainKHR(vk_device, swapchain_, NULL);
+	vkDestroySurfaceKHR(vk_instance, surface_, NULL);
+
+
+#ifdef WIN32
+	CreateSurface(vk_instance, hwnd, surface_);
+#endif
+
+
+	VkFormat swapchainFormat = VK_FORMAT_UNDEFINED;
+	CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
+
+	unsigned int swapchainImageCount = 0; // three swap buffers
+	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
+
+	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
+
+	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
+	CreateFramebuffers(vk_device, renderPass_, width, height, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+
+
+	// partial swap to prepare back buffer
+	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
+	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
+	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
+
+
+	DrawArrayTri(0, 0, 6, 6);
+	swap();
+
+#endif
+
+
 }
 
 Graphics::Graphics()
@@ -741,8 +778,8 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.framebuffer = framebuffer_[currentBackBuffer_];
-	renderPassBeginInfo.renderArea.extent.width = 1920;
-	renderPassBeginInfo.renderArea.extent.height = 1080;
+	renderPassBeginInfo.renderArea.extent.width = width;
+	renderPassBeginInfo.renderArea.extent.height = height;
 	renderPassBeginInfo.renderPass = renderPass_;
 
 	VkClearValue clearValue = {};
@@ -1062,6 +1099,8 @@ VkInstance Graphics::CreateInstance()
 
 void Graphics::init(void *param1, void *param2)
 {
+	int width = 1920;
+	int height = 1080;
 
 #ifdef _WIN32
 	hwnd = *((HWND *)param1);
@@ -1110,7 +1149,7 @@ void Graphics::init(void *param1, void *param2)
 	CreateRenderPass(vk_device, swapchainFormat, renderPass_);
 
 	CreateSwapchainImageViews(vk_device, swapchainFormat, QUEUE_SLOT_COUNT, swapchainImages_, swapChainImageViews_);
-	CreateFramebuffers(vk_device, renderPass_, 1920, 1080, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
+	CreateFramebuffers(vk_device, renderPass_, width, height, QUEUE_SLOT_COUNT, swapChainImageViews_, framebuffer_);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo;
 
@@ -1168,8 +1207,8 @@ void Graphics::init(void *param1, void *param2)
 	initialized_once = true;
 
 
+	// partial swap to prepare back buffer
 	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
-
 	vkWaitForFences(vk_device, 1, &frameFences_[currentBackBuffer_], VK_TRUE, UINT64_MAX);
 	vkResetFences(vk_device, 1, &frameFences_[currentBackBuffer_]);
 

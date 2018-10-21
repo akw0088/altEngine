@@ -4303,6 +4303,7 @@ void Engine::resize(int width, int height)
 
 
 #ifdef WIN32
+#ifndef VULKAN
 	// This should probably be in render
 	if (initialized && q3map.loaded == false)
 	{
@@ -4312,6 +4313,7 @@ void Engine::resize(int width, int height)
 			menu.render_console(global);
 		gfx.swap();
 	}
+#endif
 #endif
 }
 
