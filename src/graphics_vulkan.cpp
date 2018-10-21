@@ -920,43 +920,7 @@ void Graphics::GetSwapchainFormatAndColorspace(VkPhysicalDevice physicalDevice, 
 	result.colorSpace = surfaceFormats.front().colorSpace;
 }
 
-void Graphics::FindPhysicalDeviceWithGraphicsQueue(const vector<VkPhysicalDevice>& physicalDevices, VkPhysicalDevice* outputDevice, int* outputGraphicsQueueIndex)
-{
-	for (auto physicalDevice : physicalDevices)
-	{
-		unsigned int queueFamilyPropertyCount = 0;
-
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
-			&queueFamilyPropertyCount, NULL);
-
-		vector<VkQueueFamilyProperties> queueFamilyProperties{ queueFamilyPropertyCount };
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
-			&queueFamilyPropertyCount, queueFamilyProperties.data());
-
-		int i = 0;
-		for (const auto& queueFamilyProperty : queueFamilyProperties)
-		{
-			if (queueFamilyProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			{
-				if (outputDevice)
-				{
-					*outputDevice = physicalDevice;
-				}
-
-				if (outputGraphicsQueueIndex)
-				{
-					*outputGraphicsQueueIndex = i;
-				}
-
-				return;
-			}
-
-			++i;
-		}
-	}
-}
-
-std::vector<const char*> GetDebugDeviceLayerNames(VkPhysicalDevice device)
+void EnumDebugDeviceLayerNames(VkPhysicalDevice device)
 {
 	unsigned int layerCount = 0;
 	vkEnumerateDeviceLayerProperties(device, &layerCount, NULL);
@@ -967,71 +931,68 @@ std::vector<const char*> GetDebugDeviceLayerNames(VkPhysicalDevice device)
 	std::vector<const char*> result;
 	for (const auto& p : deviceLayers)
 	{
-		if (strcmp(p.layerName, "VK_LAYER_LUNARG_standard_validation") == 0)
-		{
-//			result.push_back("VK_LAYER_LUNARG_standard_validation");
-		}
+		printf("%s\r\n", p.layerName);
 	}
 
-	return result;
 }
 
 
 void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice, VkQueue* outputQueue, int* outputQueueIndex, VkPhysicalDevice* outputPhysicalDevice)
 {
-	unsigned int physicalDeviceCount = 0;
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, NULL);
+	VkPhysicalDevice device_array[4];
+	VkQueueFamilyProperties prop[4];
+	unsigned int num_gpu = 0;
+	unsigned int num_prop = 0;
+	int graphicsQueueIndex = 0;
 
-	std::vector<VkPhysicalDevice> devices{ physicalDeviceCount };
-	vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, devices.data());
+	vkEnumeratePhysicalDevices(instance, &num_gpu, NULL); // get count
+	vkEnumeratePhysicalDevices(instance, &num_gpu, &device_array[0]);
 
-	VkPhysicalDevice physicalDevice = NULL;
-	int graphicsQueueIndex = -1;
+	vkGetPhysicalDeviceQueueFamilyProperties(device_array[0], &num_prop, NULL); // get count
+	vkGetPhysicalDeviceQueueFamilyProperties(device_array[0], &num_prop, prop);
 
-	FindPhysicalDeviceWithGraphicsQueue(devices, &physicalDevice, &graphicsQueueIndex);
 
-	assert(physicalDevice);
+	VkDeviceQueueCreateInfo deviceQueueCreateInfo;
+	static const float queuePriorities[] = { 1.0f };
 
-	VkDeviceQueueCreateInfo deviceQueueCreateInfo = {};
+
+	memset(&deviceQueueCreateInfo, 0, sizeof(VkDeviceQueueCreateInfo));
 	deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	deviceQueueCreateInfo.queueCount = 1;
 	deviceQueueCreateInfo.queueFamilyIndex = graphicsQueueIndex;
-
-	static const float queuePriorities[] = { 1.0f };
 	deviceQueueCreateInfo.pQueuePriorities = queuePriorities;
 
-	VkDeviceCreateInfo deviceCreateInfo = {};
+	VkDeviceCreateInfo deviceCreateInfo;
+
+	memset(&deviceCreateInfo, 0, sizeof(VkDeviceCreateInfo));
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	deviceCreateInfo.queueCreateInfoCount = 1;
 	deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
 
 	VkPhysicalDeviceFeatures features;
 
-	memset(&features, 0, sizeof(features));
+	memset(&features, 0, sizeof(VkPhysicalDeviceFeatures));
 	features.shaderClipDistance = true;
 
 	deviceCreateInfo.pEnabledFeatures = &features;
 
-	std::vector<const char*> deviceLayers;
+	char *debugDeviceLayerNames = {
+		"VK_LAYER_LUNARG_standard_validation"
+	};
 
-	auto debugDeviceLayerNames = GetDebugDeviceLayerNames(physicalDevice);
-	deviceLayers.insert(deviceLayers.end(), debugDeviceLayerNames.begin(), debugDeviceLayerNames.end());
+	deviceCreateInfo.ppEnabledLayerNames = &debugDeviceLayerNames;
+	deviceCreateInfo.enabledLayerCount = 1;
 
-
-	deviceCreateInfo.ppEnabledLayerNames = deviceLayers.data();
-	deviceCreateInfo.enabledLayerCount = (unsigned int) (deviceLayers.size());
-
-
-	std::vector<const char*> deviceExtensions =
-	{
+	char *deviceExtensions[] = {
 		"VK_KHR_swapchain"
 	};
 
-	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
-	deviceCreateInfo.enabledExtensionCount = (unsigned int) (deviceExtensions.size());
+	deviceCreateInfo.ppEnabledExtensionNames = (const char **)&deviceExtensions;
+	deviceCreateInfo.enabledExtensionCount = 1;
+
 
 	VkDevice device = NULL;
-	vkCreateDevice(physicalDevice, &deviceCreateInfo, NULL, &device);
+	vkCreateDevice(device_array[0], &deviceCreateInfo, NULL, &device);
 
 	VkQueue queue = NULL;
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &queue);
@@ -1053,7 +1014,7 @@ void Graphics::CreateDeviceAndQueue(VkInstance instance, VkDevice* outputDevice,
 
 	if (outputPhysicalDevice)
 	{
-		*outputPhysicalDevice = physicalDevice;
+		*outputPhysicalDevice = device_array[0];
 	}
 }
 
