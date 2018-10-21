@@ -159,7 +159,7 @@ private:
 	void CreateDescriptors();
 	void LoadShader(VkDevice device, const void* shaderContents, const unsigned int size, VkShaderModule &shader);
 
-	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height);
+	void render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height, int start_index, int num_index, int start_vertex);
 
 	void CreatePipeline(VkDevice device, VkRenderPass renderPass, VkPipelineLayout layout, VkShaderModule vertexShader, VkShaderModule fragmentShader, VkPipeline &pipeline);
 	void CreatePipelineStateObject();
@@ -170,8 +170,6 @@ private:
 	VkCommandBuffer v_uploadCommandBuffer;
 	VkCommandBuffer i_uploadCommandBuffer;
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
-public:
-	void render();
 #endif
 
 public:

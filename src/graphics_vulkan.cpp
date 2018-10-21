@@ -793,7 +793,7 @@ void Graphics::CreateMeshBuffers(VkCommandBuffer uploadCommandBuffer, vertex_t *
 }
 
 
-void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height)
+void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int height, int start_index, int num_index, int start_vertex)
 {
 	VkViewport viewports[1] = {};
 	viewports[0].width  = (float) width;
@@ -816,13 +816,17 @@ void Graphics::render_cmdbuffer(VkCommandBuffer commandBuffer, int width, int he
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 		pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
 
-	vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+	vkCmdDrawIndexed(commandBuffer, num_index, 1, start_index, start_vertex, 0);
 }
 
-void Graphics::render()
+
+void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	if (initialized == false)
 		return;
+
+	gpustat.drawcall++;
+	gpustat.triangle += num_index / 3;
 
 	vkAcquireNextImageKHR(vk_device, swapchain_, UINT64_MAX, imageAcquiredSemaphore, VK_NULL_HANDLE, &currentBackBuffer_);
 
@@ -853,7 +857,7 @@ void Graphics::render()
 
 	vkCmdBeginRenderPass(commandBuffers_[currentBackBuffer_], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	render_cmdbuffer(commandBuffers_[currentBackBuffer_], 1920, 1080);
+	render_cmdbuffer(commandBuffers_[currentBackBuffer_], 1920, 1080, start_index, num_index, start_vertex);
 
 
 
@@ -1348,7 +1352,7 @@ void Graphics::init(void *param1, void *param2)
 	initialized = true;
 	initialized_once = true;
 
-	render();
+	DrawArrayTri(0, 0, 6, 6);
 }
 
 void Graphics::swap()
@@ -1447,12 +1451,6 @@ void Graphics::BlendFuncOneZero()
 
 void Graphics::DrawArray(primitive_t primitive, int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-}
-
-void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
-{
-	gpustat.drawcall++;
-	gpustat.triangle += num_index / 3;
 }
 
 void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)

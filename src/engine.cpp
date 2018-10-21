@@ -859,7 +859,7 @@ void Engine::render(double last_frametime)
 	gen_frustum(&camera_frame, &frustum);
 
 #ifdef VULKAN
-	gfx.render();
+	gfx.DrawArrayTri(0, 0, 6, 6);
 #else
 #if 0
 	test_triangle();
