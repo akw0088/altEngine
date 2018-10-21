@@ -22,6 +22,7 @@
 
 #ifdef VULKAN
 
+
 PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
 PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallback = VK_NULL_HANDLE;
 
@@ -698,8 +699,25 @@ Takes two shaders and combines into "pipeline"
 */
 void Graphics::CreatePipelineStateObject()
 {
-	LoadShader(vk_device, BasicVertexShader, sizeof(BasicVertexShader), vertexShader_);
-	LoadShader(vk_device, TexturedFragmentShader, sizeof(TexturedFragmentShader), fragmentShader_);
+	unsigned int vertex_size = 0;
+	unsigned int fragment_size = 0;
+	char *vertex_shader = get_file("media/spirv/vulkan.vert.spv", &vertex_size);
+	if (vertex_shader == NULL)
+	{
+		printf("unable to open vertex shader\r\n");
+		return;
+	}
+
+	char *fragment_shader = get_file("media/spirv/vulkan.frag.spv", &fragment_size);
+	if (fragment_shader == NULL)
+	{
+		printf("unable to open fragment shader\r\n");
+		return;
+	}
+
+
+	LoadShader(vk_device, vertex_shader, vertex_size, vertexShader_);
+	LoadShader(vk_device, fragment_shader, fragment_size, fragmentShader_);
 
 	CreatePipeline(vk_device, renderPass_, pipelineLayout_,	vertexShader_, fragmentShader_, pipeline_);
 }
@@ -798,7 +816,6 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	if (initialized == false)
 		return;
 
-	VkCommandBuffer commandBuffer = commandBuffers_[currentBackBuffer_];
 	int width = 1920;
 	int height = 1080;
 
@@ -807,10 +824,12 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	gpustat.triangle += num_index / 3;
 
 
+	cmdBuffer = commandBuffers_[currentBackBuffer_];
+
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+	vkBeginCommandBuffer(cmdBuffer, &beginInfo);
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -829,7 +848,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	renderPassBeginInfo.pClearValues = &clearValue;
 	renderPassBeginInfo.clearValueCount = 1;
 
-	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(cmdBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 
 
@@ -839,24 +858,25 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	viewports[0].minDepth = 0;
 	viewports[0].maxDepth = 1;
 
-	vkCmdSetViewport(commandBuffer, 0, 1, viewports);
+	vkCmdSetViewport(cmdBuffer, 0, 1, viewports);
 
 	VkRect2D scissors[1] = {};
 	scissors[0].extent.width = width;
 	scissors[0].extent.height = height;
-	vkCmdSetScissor(commandBuffer, 0, 1, scissors);
+	vkCmdSetScissor(cmdBuffer, 0, 1, scissors);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+
 	VkDeviceSize offsets[] = { 0 };
-	vkCmdBindIndexBuffer(commandBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
+	vkCmdBindIndexBuffer(cmdBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffer_, offsets);
 
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
+	vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
 
-	vkCmdDrawIndexed(commandBuffer, num_index, 1, start_index, start_vertex, 0);
+	vkCmdDrawIndexed(cmdBuffer, num_index, 1, start_index, start_vertex, 0);
 
-	vkCmdEndRenderPass(commandBuffer);
-	vkEndCommandBuffer(commandBuffer);
+	vkCmdEndRenderPass(cmdBuffer);
+	vkEndCommandBuffer(cmdBuffer);
 
 }
 

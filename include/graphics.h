@@ -317,6 +317,7 @@ public:
 
 	VkCommandPool commandPool_;
 	VkCommandBuffer commandBuffers_[QUEUE_SLOT_COUNT];
+	VkCommandBuffer cmdBuffer;
 	VkCommandBuffer i_commandBuffers_[QUEUE_SLOT_COUNT];
 	VkCommandBuffer v_commandBuffers_[QUEUE_SLOT_COUNT];
 	VkCommandBuffer setupCommandBuffer_;
