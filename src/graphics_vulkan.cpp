@@ -798,6 +798,11 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	if (initialized == false)
 		return;
 
+	VkCommandBuffer commandBuffer = commandBuffers_[currentBackBuffer_];
+	int width = 1920;
+	int height = 1080;
+
+
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
 
@@ -805,7 +810,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	vkBeginCommandBuffer(commandBuffers_[currentBackBuffer_], &beginInfo);
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -824,40 +829,34 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	renderPassBeginInfo.pClearValues = &clearValue;
 	renderPassBeginInfo.clearValueCount = 1;
 
-	vkCmdBeginRenderPass(commandBuffers_[currentBackBuffer_], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	{
-		int width = 1920;
-		int height = 1080;
 
-		VkCommandBuffer commandBuffer = commandBuffers_[currentBackBuffer_];
 
-		VkViewport viewports[1] = {};
-		viewports[0].width = (float)width;
-		viewports[0].height = (float)height;
-		viewports[0].minDepth = 0;
-		viewports[0].maxDepth = 1;
+	VkViewport viewports[1] = {};
+	viewports[0].width = (float)width;
+	viewports[0].height = (float)height;
+	viewports[0].minDepth = 0;
+	viewports[0].maxDepth = 1;
 
-		vkCmdSetViewport(commandBuffer, 0, 1, viewports);
+	vkCmdSetViewport(commandBuffer, 0, 1, viewports);
 
-		VkRect2D scissors[1] = {};
-		scissors[0].extent.width = width;
-		scissors[0].extent.height = height;
-		vkCmdSetScissor(commandBuffer, 0, 1, scissors);
+	VkRect2D scissors[1] = {};
+	scissors[0].extent.width = width;
+	scissors[0].extent.height = height;
+	vkCmdSetScissor(commandBuffer, 0, 1, scissors);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindIndexBuffer(commandBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_);
+	VkDeviceSize offsets[] = { 0 };
+	vkCmdBindIndexBuffer(commandBuffer, indexBuffer_, 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer_, offsets);
 
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-			pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout_, 0, 1, &descriptorSet_, 0, NULL);
 
-		vkCmdDrawIndexed(commandBuffer, num_index, 1, start_index, start_vertex, 0);
-	}
+	vkCmdDrawIndexed(commandBuffer, num_index, 1, start_index, start_vertex, 0);
 
-	vkCmdEndRenderPass(commandBuffers_[currentBackBuffer_]);
-	vkEndCommandBuffer(commandBuffers_[currentBackBuffer_]);
+	vkCmdEndRenderPass(commandBuffer);
+	vkEndCommandBuffer(commandBuffer);
 
 }
 
