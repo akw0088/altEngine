@@ -760,9 +760,6 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	if (initialized == false)
 		return;
 
-	int width = 1920;
-	int height = 1080;
-
 
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;
@@ -1099,9 +1096,6 @@ VkInstance Graphics::CreateInstance()
 
 void Graphics::init(void *param1, void *param2)
 {
-	int width = 1920;
-	int height = 1080;
-
 #ifdef _WIN32
 	hwnd = *((HWND *)param1);
 	hdc = *((HDC *)param2);
@@ -1110,6 +1104,10 @@ void Graphics::init(void *param1, void *param2)
 	display = (Display *)param1;
 	window = *((Window *)param2);
 #endif
+
+	// sometimes we get in here with invalid dimensions
+	width = 1920;
+	height = 1080;
 
 	// get vulkan driver instance
 	vk_instance = CreateInstance();
