@@ -355,10 +355,8 @@ public:
 	int queueFamilyIndex_ = -1;
 
 	VkCommandPool commandPool_;
-	VkCommandBuffer commandBuffers_[QUEUE_SLOT_COUNT];
+	VkCommandBuffer command_buffer_array[QUEUE_SLOT_COUNT];
 	VkCommandBuffer cmdBuffer;
-	VkCommandBuffer i_commandBuffers_[QUEUE_SLOT_COUNT];
-	VkCommandBuffer v_commandBuffers_[QUEUE_SLOT_COUNT];
 	VkCommandBuffer setupCommandBuffer_;
 	uint32_t currentBackBuffer_ = 0;
 	bool initialized = false;

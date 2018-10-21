@@ -731,7 +731,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	gpustat.triangle += num_index / 3;
 
 
-	cmdBuffer = commandBuffers_[currentBackBuffer_];
+	cmdBuffer = command_buffer_array[currentBackBuffer_];
 
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1072,6 +1072,7 @@ void Graphics::init(void *param1, void *param2)
 	window = *((Window *)param2);
 #endif
 
+	// get vulkan driver instance
 	vk_instance = CreateInstance();
 	if (vk_instance == VK_NULL_HANDLE)
 	{
@@ -1079,17 +1080,20 @@ void Graphics::init(void *param1, void *param2)
 		return;
 	}
 
-
+	// set up some debug message box call backs
 	CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkCreateDebugReportCallbackEXT");
 	DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vk_instance, "vkDestroyDebugReportCallbackEXT");
-
-
 	SetupDebugCallback(vk_instance, callback);
 
+
+
+	// get GPU device and queue for command buffers. Queue types include: Graphics, Compute, Transfer, sparse
 	CreateDeviceAndQueue(vk_instance, vk_device, queue_, queueFamilyIndex_, physicalDevice_);
 
 	// warning CreateSurface is windows specific
+#ifdef WIN32
 	CreateSurface(vk_instance, hwnd, surface_);
+#endif
 
 	VkBool32 presentSupported;
 	vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice_, 0, surface_, &presentSupported);
@@ -1098,7 +1102,7 @@ void Graphics::init(void *param1, void *param2)
 	CreateSwapchain(physicalDevice_, vk_device, surface_, width, height, QUEUE_SLOT_COUNT, swapchainFormat, swapchain_);
 
 
-	unsigned int swapchainImageCount = 0;
+	unsigned int swapchainImageCount = 0; // three swap buffers
 	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, NULL);
 
 	vkGetSwapchainImagesKHR(vk_device, swapchain_, &swapchainImageCount, swapchainImages_);
@@ -1131,7 +1135,7 @@ void Graphics::init(void *param1, void *param2)
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
-		commandBuffers_[i] = commandBuffers[i];
+		command_buffer_array[i] = commandBuffers[i];
 	}
 
 	setupCommandBuffer_ = commandBuffers[QUEUE_SLOT_COUNT];
@@ -1254,7 +1258,7 @@ void Graphics::swap()
 	submitInfo.pWaitSemaphores = &imageAcquiredSemaphore;
 	submitInfo.pWaitDstStageMask = &waitDstStageMask;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers_[currentBackBuffer_];
+	submitInfo.pCommandBuffers = &command_buffer_array[currentBackBuffer_];
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &renderingCompleteSemaphore;
 	vkQueueSubmit(queue_, 1, &submitInfo, VK_NULL_HANDLE);
@@ -1415,7 +1419,7 @@ int Graphics::CreateIndexBuffer(void *index_buffer, int num_index)
 
 	for (int i = 0; i < QUEUE_SLOT_COUNT; ++i)
 	{
-		i_commandBuffers_[i] = i_commandBuffers[i];
+//		i_commandBuffers_[i] = i_commandBuffers[i];
 	}
 
 	i_setupCommandBuffer_ = i_commandBuffers[QUEUE_SLOT_COUNT];
