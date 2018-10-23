@@ -205,6 +205,7 @@ private:
 	void SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp);
 
 	void UniformSetup(matrix4 &mvp);
+	void CreateVertexBufferObject(vertex_t *vertex_array, int num_vert);
 
 	VkCommandBuffer v_uploadCommandBuffer;
 	VkCommandBuffer i_uploadCommandBuffer;

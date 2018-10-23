@@ -402,6 +402,71 @@ void Graphics::UniformSetup(matrix4 &mvp)
 	res = vkAllocateDescriptorSets(vk_device, &vk_alloc_info, &vk_desc_set);
 }
 
+
+
+void Graphics::CreateVertexBufferObject(vertex_t *vertex_array, int num_vert)
+{
+	VkBufferCreateInfo buf_info = {};
+	buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	buf_info.pNext = NULL;
+	buf_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	buf_info.size = num_vert * sizeof(vertex_t);
+	buf_info.queueFamilyIndexCount = 0;
+	buf_info.pQueueFamilyIndices = NULL;
+	buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	buf_info.flags = 0;
+
+	VkBuffer vk_vertex_buffer;
+	VkDeviceMemory vk_vertex_buffer_mem;
+
+	VkResult res = vkCreateBuffer(vk_device, &buf_info, NULL, &vk_vertex_buffer);
+
+
+	char *pData;
+	res = vkMapMemory(vk_device, vk_vertex_buffer_mem, 0, VK_WHOLE_SIZE, 0, (void **)&pData);
+
+	memcpy(pData, vertex_array, num_vert * sizeof(vertex_t));
+
+	vkUnmapMemory(vk_device, vk_vertex_buffer_mem);
+
+	res = vkBindBufferMemory(vk_device, vk_vertex_buffer, vk_vertex_buffer_mem, 0);
+
+
+	VkVertexInputBindingDescription vk_vertex_input_binding_desc;
+	vk_vertex_input_binding_desc.binding = 0;
+	vk_vertex_input_binding_desc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	vk_vertex_input_binding_desc.stride = sizeof(vertex_t);
+
+
+	VkVertexInputAttributeDescription vertexInputAttributeDescription[2] = {};
+
+	//    float posX, posY, posZ, posW; // Position data
+	
+	vertexInputAttributeDescription[0].binding = 0;
+	vertexInputAttributeDescription[0].location = 0;
+	vertexInputAttributeDescription[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	vertexInputAttributeDescription[0].offset = 0;
+
+	//float r, g, b, a;             // Color
+	vertexInputAttributeDescription[1].binding = 0;
+	vertexInputAttributeDescription[1].location = 1;
+	vertexInputAttributeDescription[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	vertexInputAttributeDescription[1].offset = 16;
+
+	VkCommandBuffer vk_cmdbuffer;
+	VkRenderPass vk_renderpass;
+	VkRenderPassBeginInfo vk_rp_begin_info;
+
+	vkCmdBeginRenderPass(vk_cmdbuffer, &vk_rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+
+	VkDeviceSize offsets[] = { 0 };
+
+	vkCmdBindVertexBuffers(vk_cmdbuffer, 0, 1, &vk_vertex_buffer, offsets);
+
+	vkCmdEndRenderPass(vk_cmdbuffer);
+}
+
 void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer)
 {
 	VkBufferCreateInfo bufferCreateInfo;
