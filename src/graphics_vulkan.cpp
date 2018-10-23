@@ -33,6 +33,8 @@ void Graphics::resize(int width, int height)
 	Graphics::width = width;
 	Graphics::height = height;
 
+	if (initialized == false)
+		return;
 
 	/*
 	The framebuffers need to be reconstructed after a resize event,
@@ -154,7 +156,7 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 		return;
 	}
 
-	VkSurfaceFormatKHR surfaceFormats[2];
+	VkSurfaceFormatKHR surfaceFormats[21]; // amd 21 formats, nvidia 2
 
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &surfaceFormatCount, surfaceFormats);
 
@@ -188,6 +190,110 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	vkCreateSwapchainKHR(device, &swapchainCreateInfo, NULL, &swapchain);
 
 	swapchainFormat = swapchainFormatColorSpace.format;
+
+
+
+
+	//depth buffer
+	VkImageCreateInfo image_info = {};
+	const VkFormat depth_format = VK_FORMAT_D16_UNORM;
+	VkFormatProperties props;
+	vkGetPhysicalDeviceFormatProperties(vk_physical, depth_format, &props);
+	if (props.linearTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+	{
+		image_info.tiling = VK_IMAGE_TILING_LINEAR;
+	}
+	else if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+	{
+		image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+	}
+	else
+	{
+		printf("VK_FORMAT_D16_UNORM Unsupported.\n");
+		return;
+	}
+
+	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	image_info.pNext = NULL;
+	image_info.imageType = VK_IMAGE_TYPE_2D;
+	image_info.format = depth_format;
+	image_info.extent.width = width;
+	image_info.extent.height = height;
+	image_info.extent.depth = 1;
+	image_info.mipLevels = 1;
+	image_info.arrayLayers = 1;
+	image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+	image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	image_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	image_info.queueFamilyIndexCount = 0;
+	image_info.pQueueFamilyIndices = NULL;
+	image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	image_info.flags = 0;
+
+	VkMemoryAllocateInfo mem_alloc = {};
+	mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	mem_alloc.pNext = NULL;
+	mem_alloc.allocationSize = 0;
+	mem_alloc.memoryTypeIndex = 0;
+
+	VkImageViewCreateInfo view_info = {};
+	view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	view_info.pNext = NULL;
+	view_info.image = VK_NULL_HANDLE;
+	view_info.format = depth_format;
+	view_info.components.r = VK_COMPONENT_SWIZZLE_R;
+	view_info.components.g = VK_COMPONENT_SWIZZLE_G;
+	view_info.components.b = VK_COMPONENT_SWIZZLE_B;
+	view_info.components.a = VK_COMPONENT_SWIZZLE_A;
+	view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	view_info.subresourceRange.baseMipLevel = 0;
+	view_info.subresourceRange.levelCount = 1;
+	view_info.subresourceRange.baseArrayLayer = 0;
+	view_info.subresourceRange.layerCount = 1;
+	view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	view_info.flags = 0;
+
+	VkMemoryRequirements mem_reqs;
+
+	VkImage vk_image;
+	// Create image 
+	VkResult res = vkCreateImage(vk_device, &image_info, NULL, &vk_image);
+	if (res != VK_SUCCESS)
+		return;
+
+	vkGetImageMemoryRequirements(vk_device, vk_image, &mem_reqs);
+
+	mem_alloc.allocationSize = mem_reqs.size;
+
+
+	// Use the memory properties to determine the type of memory required
+//	pass = memory_type_from_properties(info, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mem_alloc.memoryTypeIndex);
+	//assert(pass);
+
+	VkDeviceMemory vk_depth_mem;
+
+	// Allocate memory 
+	res = vkAllocateMemory(vk_device, &mem_alloc, NULL, &vk_depth_mem);
+	if (res != VK_SUCCESS)
+		return;
+
+	// Bind memory
+	res = vkBindImageMemory(vk_device, vk_image, vk_depth_mem, 0);
+	if (res != VK_SUCCESS)
+		return;
+
+	// Create image view
+	VkImageView vk_depth_view;
+
+	view_info.image = vk_image;
+	res = vkCreateImageView(vk_device, &view_info, NULL, &vk_depth_view);
+	if (res != VK_SUCCESS)
+		return;
+
+
+
+
+
 }
 
 void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer)
@@ -1084,8 +1190,8 @@ void Graphics::init(void *param1, void *param2)
 #endif
 
 	// sometimes we get in here with invalid dimensions
-	width = 1920;
-	height = 1080;
+	width = 1024;
+	height = 768;
 
 	// get vulkan driver instance
 	vk_instance = CreateInstance();
