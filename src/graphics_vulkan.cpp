@@ -403,7 +403,6 @@ void Graphics::UniformSetup(matrix4 &mvp)
 }
 
 
-
 void Graphics::CreateVertexBufferObject(vertex_t *vertex_array, int num_vert)
 {
 	VkBufferCreateInfo buf_info = {};
@@ -420,6 +419,29 @@ void Graphics::CreateVertexBufferObject(vertex_t *vertex_array, int num_vert)
 	VkDeviceMemory vk_vertex_buffer_mem;
 
 	VkResult res = vkCreateBuffer(vk_device, &buf_info, NULL, &vk_vertex_buffer);
+
+
+	VkMemoryRequirements memRqrmnt;
+	vkGetBufferMemoryRequirements(vk_device, vk_vertex_buffer, &memRqrmnt);
+
+	// Create memory allocation metadata information
+	VkMemoryAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.pNext = NULL;
+	allocInfo.memoryTypeIndex = 0;
+	allocInfo.allocationSize = memRqrmnt.size;
+
+
+	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
+
+	VkMemoryRequirements vertexBufferMemoryRequirements = {};
+	vkGetBufferMemoryRequirements(vk_device, vk_vertexBuffer, &vertexBufferMemoryRequirements);
+
+	
+
+	AllocateMemory(vk_vertex_buffer_mem, memoryHeaps, vk_device, static_cast<int>(vertexBufferMemoryRequirements.size),
+		vertexBufferMemoryRequirements.memoryTypeBits, MT_DeviceLocal);
+
 
 
 	char *pData;
@@ -456,6 +478,13 @@ void Graphics::CreateVertexBufferObject(vertex_t *vertex_array, int num_vert)
 	VkCommandBuffer vk_cmdbuffer;
 	VkRenderPass vk_renderpass;
 	VkRenderPassBeginInfo vk_rp_begin_info;
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	vk_cmdbuffer = vk_cmd_buffer_array[QUEUE_SLOT_COUNT];
+	vkBeginCommandBuffer(vk_cmdbuffer, &beginInfo);
+
 
 	vkCmdBeginRenderPass(vk_cmdbuffer, &vk_rp_begin_info, VK_SUBPASS_CONTENTS_INLINE);
 
