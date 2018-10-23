@@ -290,10 +290,116 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	if (res != VK_SUCCESS)
 		return;
 
+}
 
 
 
 
+void Graphics::UniformSetup(matrix4 &mvp)
+{
+	VkBufferCreateInfo buf_info = {};
+	buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	buf_info.pNext = NULL;
+	buf_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+	buf_info.size = 16 * sizeof(float);
+	buf_info.queueFamilyIndexCount = 0;
+	buf_info.pQueueFamilyIndices = NULL;
+	buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	buf_info.flags = 0;
+
+	VkBuffer vk_uniform_data;
+	VkDeviceMemory vk_uniform_mem;
+
+	VkResult res = vkCreateBuffer(vk_device, &buf_info, NULL, &vk_uniform_data);
+	if (res != VK_SUCCESS)
+		return;
+
+
+	VkMemoryRequirements mem_reqs;
+	vkGetBufferMemoryRequirements(vk_device, vk_uniform_data,
+		&mem_reqs);
+
+	VkMemoryAllocateInfo alloc_info = {};
+	alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	alloc_info.pNext = NULL;
+	alloc_info.memoryTypeIndex = 0;
+
+	alloc_info.allocationSize = mem_reqs.size;
+
+/*	pass = memory_type_from_properties(info, mem_reqs.memoryTypeBits,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		&alloc_info.memoryTypeIndex);*/
+
+	res = vkAllocateMemory(vk_device, &alloc_info, NULL, &(vk_uniform_mem));
+
+	char *pData;
+	res = vkMapMemory(vk_device, vk_uniform_mem, 0, mem_reqs.size, 0, (void **)&pData);
+
+	memcpy(pData, &mvp.m, 16 * sizeof(float));
+
+	vkUnmapMemory(vk_device, vk_uniform_mem);
+
+	res = vkBindBufferMemory(vk_device,vk_uniform_data, vk_uniform_mem, 0);
+
+
+
+	VkDescriptorSetLayoutBinding layout_binding = {};
+	layout_binding.binding = 0;
+	layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layout_binding.descriptorCount = 1;
+	layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layout_binding.pImmutableSamplers = NULL;
+
+
+    #define NUM_DESCRIPTOR_SETS 1
+	VkDescriptorSetLayoutCreateInfo descriptor_layout = {};
+	descriptor_layout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptor_layout.pNext = NULL;
+	descriptor_layout.bindingCount = 1;
+	descriptor_layout.pBindings = &layout_binding;
+
+	VkDescriptorSetLayout vk_desc_layout;
+	res = vkCreateDescriptorSetLayout(vk_device, &descriptor_layout, NULL, &vk_desc_layout);
+
+	VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {};
+	pPipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pPipelineLayoutCreateInfo.pNext = NULL;
+	pPipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+	pPipelineLayoutCreateInfo.pPushConstantRanges = NULL;
+	pPipelineLayoutCreateInfo.setLayoutCount = NUM_DESCRIPTOR_SETS;
+	pPipelineLayoutCreateInfo.pSetLayouts = &vk_desc_layout;
+
+	VkPipelineLayout vk_pipeline_layout;
+
+	res = vkCreatePipelineLayout(vk_device, &pPipelineLayoutCreateInfo, NULL, &vk_pipeline_layout);
+
+
+	VkDescriptorPoolSize type_count[1];
+	type_count[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	type_count[0].descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo descriptor_pool = {};
+	descriptor_pool.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptor_pool.pNext = NULL;
+	descriptor_pool.maxSets = 1;
+	descriptor_pool.poolSizeCount = 1;
+	descriptor_pool.pPoolSizes = type_count;
+
+	VkDescriptorPool vk_desc_pool;
+	res = vkCreateDescriptorPool(vk_device, &descriptor_pool, NULL, &vk_desc_pool);
+
+
+	VkDescriptorSetAllocateInfo vk_alloc_info;
+	vk_alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	vk_alloc_info.pNext = NULL;
+	vk_alloc_info.descriptorPool = vk_desc_pool;
+	vk_alloc_info.descriptorSetCount = NUM_DESCRIPTOR_SETS;
+	vk_alloc_info.pSetLayouts = &vk_desc_layout;
+
+	VkDescriptorSet vk_desc_set;
+	
+
+	res = vkAllocateDescriptorSets(vk_device, &vk_alloc_info, &vk_desc_set);
 }
 
 void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsageFlagBits bits, VkBuffer &buffer)
@@ -306,8 +412,9 @@ void Graphics::AllocateBuffer(VkDevice device, const int size, const VkBufferUsa
 	bufferCreateInfo.size = (unsigned int)size;
 	bufferCreateInfo.usage = bits;
 
-	VkResult err = vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer);
-	assert(!err);
+	VkResult res = vkCreateBuffer(device, &bufferCreateInfo, NULL, &buffer);
+	if (res != VK_SUCCESS)
+		return;
 }
 
 

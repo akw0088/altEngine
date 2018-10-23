@@ -204,6 +204,8 @@ private:
 	void CreateRenderPass(VkDevice device, VkFormat swapchainFormat, VkRenderPass &rp);
 	void SetupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT &fp);
 
+	void UniformSetup(matrix4 &mvp);
+
 	VkCommandBuffer v_uploadCommandBuffer;
 	VkCommandBuffer i_uploadCommandBuffer;
 	vector<MemoryTypeInfo> EnumerateHeaps(VkPhysicalDevice device);
