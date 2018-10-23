@@ -642,8 +642,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (resized == false)
 			{
 				RECT rect;
-				int image_width = 1920;
-				int image_height = 1080;
+				int image_width = 1024;
+				int image_height = 768;
 
 				rect.top = 160;
 				rect.left = 120;
@@ -655,7 +655,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowPos(hwnd, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, 0);
 			}
 
-			if (width == 1920 && initialized == false)
+			if (width == 1024 && initialized == false)
 			{
 				initialized = true;
 				altEngine.init(&shwnd, &hdc, (char *)GetCommandLine());
