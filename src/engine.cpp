@@ -155,6 +155,8 @@ Engine::Engine() :
 #endif
 }
 
+unsigned int dissolve_tex;
+
 unsigned int get_url(char *host, char *path, char *response, unsigned int size);
 
 void Engine::init(void *p1, void *p2, char *cmdline)
@@ -167,6 +169,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	Engine::param1 = p1;
 	Engine::param2 = p2;
 	initialized = true;
+
 
 	debugf("altEngine2 built %s\n", __DATE__);
 
@@ -210,6 +213,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	gfx.CreateVertexArrayObject(global_vao);
 	gfx.SelectVertexArrayObject(global_vao);
 
+	
+
 	// create common vertex / index buffers
 	CreateObjects();
 
@@ -227,6 +232,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	// texture 0 used when we just need a texture
 	no_tex = load_texture(gfx, "media/notexture.tga", false, false, 0);
+
+	dissolve_tex = load_texture(gfx, "media/textures/dissolve.jpg", false, false, 0);
 	// particles texture (rockets/grenade smoke)
 	particle_tex = load_texture(gfx, "media/flare.png", false, false, 0);
 
@@ -588,7 +595,7 @@ void Engine::load(char *level)
 	if (ssao.init(&gfx))
 		menu.print("Failed to load screen_space shader");
 
-	
+	mlight2.set_dissolve(0.5f);
 
 	vec3 green(0.0f, 1.0f, 0.0f);
 	mlight2.set_fog(0.0f, 100.0f, 500.0f, green);
@@ -6165,9 +6172,25 @@ int Engine::console_render(char *cmd)
 		return 0;
 	}
 
+	if (sscanf(cmd, "r_dissolve %s", data) == 1)
+	{
+		float value = (float)atof(data);
+		mlight2.set_dissolve(value);
+		snprintf(msg, LINE_SIZE, "Setting dissolve to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
 	if (strstr(cmd, "r_contrast"))
 	{
 		snprintf(msg, LINE_SIZE, "contrast %f", mlight2.m_contrast);
+		menu.print(msg);
+		return 0;
+	}
+
+	if (strstr(cmd, "r_dissolve"))
+	{
+		snprintf(msg, LINE_SIZE, "dissolve %f", mlight2.m_dissolve);
 		menu.print(msg);
 		return 0;
 	}

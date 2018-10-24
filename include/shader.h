@@ -66,6 +66,7 @@ public:
 	void set_brightness(float value);
 	void set_exposure(float value);
 	void set_contrast(float value);	
+	void set_dissolve(float value);
 	void set_ambient(float ambient);
 	void set_lightmap(float lightmap);
 	void set_shadowmap(float value);
@@ -111,6 +112,7 @@ public:
 
 	int m_num_light;
 	float m_ambient;
+	float m_dissolve;
 	float m_brightness;
 	float m_exposure;
 	float m_lightmap;
@@ -124,6 +126,7 @@ private:
 	int	texture[NUM_STAGE];
 	int texture_normalmap;
 	int texture_lightmap;
+	int texture_dissolve;
 
 	int u_tcmod_scroll[NUM_STAGE];
 	int u_tcmod_scale[NUM_STAGE];
@@ -144,6 +147,7 @@ private:
 
 	int u_time;
 	int u_ambient;
+	int u_dissolve;
 	int u_lightmap;
 	int u_brightness;
 	int u_exposure;

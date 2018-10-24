@@ -114,6 +114,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_num_shadowmap = 18;
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
+	m_dissolve = 0.0f;
 	m_contrast = 1.0f;
 	m_exposure = 1.0f;
 	m_normalmap = -1.0f;
@@ -190,6 +191,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	depth[17] = glGetUniformLocation(program_handle, "depth[17]");
 
 
+	texture_dissolve = glGetUniformLocation(program_handle, "texture_dissolve");
 	texture_lightmap = glGetUniformLocation(program_handle, "texture_lightmap");
 	texture_normalmap = glGetUniformLocation(program_handle, "texture_normalmap");
 
@@ -239,6 +241,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	u_normalmap = glGetUniformLocation(program_handle, "u_normalmap");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
+	u_dissolve = glGetUniformLocation(program_handle, "u_dissolve");
 	u_brightness = glGetUniformLocation(program_handle, "u_brightness");
 	u_exposure = glGetUniformLocation(program_handle, "u_exposure");
 	u_contrast = glGetUniformLocation(program_handle, "u_contrast");
@@ -340,6 +343,11 @@ void mLight2::set_contrast(float value)
 	m_contrast = value;
 }
 
+
+void mLight2::set_dissolve(float value)
+{
+	m_dissolve = value;
+}
 
 //=============================================================================
 // Used to scale between dynamic light and lightmaps
@@ -512,6 +520,7 @@ void mLight2::Select()
 
 
 	// Going to treat normals and lightmaps like normal textures
+	glUniform1i(texture_dissolve, 7);
 	glUniform1i(texture_lightmap, 8);
 	glUniform1i(texture_normalmap, 9);
 
@@ -557,6 +566,7 @@ void mLight2::Select()
 	glUniform1i(u_env[3], env);
 
 	glUniform1f(u_ambient, m_ambient);
+	glUniform1f(u_dissolve, m_dissolve);
 	glUniform1f(u_lightmap, m_lightmap);
 	glUniform1f(u_brightness, m_brightness);
 	glUniform1f(u_exposure, m_exposure);

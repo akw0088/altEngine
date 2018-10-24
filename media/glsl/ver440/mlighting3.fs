@@ -36,6 +36,7 @@ uniform int u_depth;
 uniform float u_brightness;
 uniform float u_contrast;
 uniform float u_exposure;
+uniform float u_dissolve;
 
 uniform int u_env[4];
 uniform float u_rgbgen_scale[4];
@@ -53,6 +54,7 @@ uniform vec3 u_fog_color;
 
 uniform sampler2D tex[4];// 4 possible textures
 
+layout(binding=7) uniform sampler2D texture_dissolve; //dissolve map
 layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
 layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
@@ -329,6 +331,14 @@ void main(void)
 	{
 		Fragment.xyz += Fragment_stage[i].xyz;
 	}
+
+	vec3 dval = texture(texture_lightmap, Vertex.vary_TexCoord).xyz;
+
+	if ( dval.r < u_dissolve)
+	{
+		discard;
+	}
+
 
 
 //	alpha 1 = opaque, 0 equals transparent
