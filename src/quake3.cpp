@@ -1459,7 +1459,7 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 #define SND_CONSTRUCT 326
 	snd_table[SND_CONSTRUCT] = snd_wave.size() - 1;
 
-	strcpy(wave.file, "media/sound/country1.wav");
+	strcpy(wave.file, "media/sound/country4.wav");
 	audio.load(wave, engine->pk3_list, engine->num_pk3);
 	snd_wave.push_back(wave);
 #define SND_CONSTRUCT_COMPLETE 327
@@ -3652,7 +3652,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 			if (target == NULL)
 			{
 				Constructable *construct = engine->entity_list[index[i]]->construct;
-				if (construct)
+				if (construct && construct->type == CT_AUTOSENTRY)
 				{
 					int health = construct->health;
 
