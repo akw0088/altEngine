@@ -88,6 +88,7 @@ public:
 	unsigned short int dead_timer;
 	unsigned short int alive_timer;
 	unsigned short int build_timer;
+	unsigned short int build_type;
 
 
 

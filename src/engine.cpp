@@ -2268,7 +2268,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 		else
 		{
-			if (entity->ent_type == ENT_CONSTRUCT || entity->ent_type == ENT_SENTRY)
+			if (entity->ent_type == ENT_SENTRY_BASE || entity->ent_type == ENT_SENTRY || entity->ent_type == ENT_CONSTRUCT)
 			{
 				if (entity->ent_type == ENT_SENTRY)
 				{
@@ -2276,6 +2276,14 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 					gfx.SelectTexture(7, -dissolve_tex);
 					entity->rigid->render(gfx);
 					entity_list[entity->construct->base_index]->rigid->render(gfx);
+					gfx.SelectTexture(7, 0);
+					mlight2.set_dissolve(-1.0f);
+				}
+				else
+				{
+					mlight2.set_dissolve(((float)entity->construct->build_timer / (3 * TICK_RATE)));
+					gfx.SelectTexture(7, -dissolve_tex);
+					entity->rigid->render(gfx);
 					gfx.SelectTexture(7, 0);
 					mlight2.set_dissolve(-1.0f);
 				}

@@ -21,7 +21,7 @@
 #include "quake3.h"
 
 
-Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team)
+Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t type)
 {
 	Constructable::entity = entity;
 	Constructable::team = team;
@@ -39,7 +39,6 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t
 	last_state = BOT_IDLE;
 	state = PLAYER_IDLE;
 
-	health = SENTRY_HEALTH_LVL1;
 	armor = 0;
 	alert_timer = 0;
 	idle_timer = (20 + rand() % 10) * TICK_RATE;
@@ -50,7 +49,6 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t
 	dead_timer = 0;
 	alive_timer = 0;
 
-	build_timer = 3 * TICK_RATE;
 
 	flash_gauntlet = 0;
 	flash_machinegun = 0;
@@ -61,17 +59,44 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t
 	flash_lightning = 0;
 	flash_plasma = 0;
 
-	weapon_flags = WEAPON_MACHINEGUN;
-	current_weapon = wp_machinegun;
-	ammo_rockets = 30;
-	ammo_grenades = 0;
-	ammo_slugs = 0;
-	ammo_shells = 0;
-	ammo_bullets = 1000;
-	ammo_lightning = 0;
-	ammo_plasma = 0;
-	ammo_bfg = 0;
-	sprintf(name, "Autosentry");
+	if (type == CT_AUTOSENTRY)
+	{
+		sprintf(name, "Autosentry");
+		health = SENTRY_HEALTH_LVL1;
+
+		weapon_flags = WEAPON_MACHINEGUN;
+		current_weapon = wp_machinegun;
+		ammo_rockets = 30;
+		ammo_grenades = 0;
+		ammo_slugs = 0;
+		ammo_shells = 0;
+		ammo_bullets = 1000;
+		ammo_lightning = 0;
+		ammo_plasma = 0;
+		ammo_bfg = 0;
+		build_timer = 3 * TICK_RATE;
+	}
+	else if (type == CT_STRUCTURE)
+	{
+		sprintf(name, "Structure");
+		health = SENTRY_HEALTH_LVL1;
+
+		weapon_flags = 0;
+		current_weapon = wp_none;
+		ammo_rockets = 0;
+		ammo_grenades = 0;
+		ammo_slugs = 0;
+		ammo_shells = 0;
+		ammo_bullets = 0;
+		ammo_lightning = 0;
+		ammo_plasma = 0;
+		ammo_bfg = 0;
+		build_timer = 3 * TICK_RATE;
+		owner = -1;
+		base_index = -1;
+	}
+
+
 	memset(&stats, 0, sizeof(stats_t));
 
 	//	weapon_model.center = entity->rigid->center;
@@ -108,11 +133,13 @@ void Constructable::destroy()
 }
 
 
-
 int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self, Engine &engine)
 {
-	if (level != 3)
-		engine.entity_list[base_index]->position = entity->position - vec3(0, 30.0, 5.0);
+	if (type == CT_AUTOSENTRY)
+	{
+		if (level != 3 && base_index != -1)
+			engine.entity_list[base_index]->position = entity->position - vec3(0, 30.0, 5.0);
+	}
 
 	if (build_timer > 0)
 	{
@@ -135,51 +162,29 @@ int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self,
 		reload_timer2--;
 
 
-	for (unsigned int i = 0; i < entity_list.size(); i++)
+	if (type == CT_AUTOSENTRY)
 	{
-		if (i == (unsigned int)self)
-			continue;
-
-		Player *player = entity_list[i]->player;
-
-
-		if (player)
+		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{
-			if (team != TEAM_NONE && player->team == team)
+			if (i == (unsigned int)self)
 				continue;
 
-			if ((unsigned int)owner == i)
-			{
-				continue;
-			}
+			Player *player = entity_list[i]->player;
 
-			float distance = (entity_list[i]->position - entity->position).magnitude();
 
-			if (distance < 1500.0f)
+			if (player)
 			{
-				int index[8] = { 0 };
-				int num_index = 0;
-				vec3 dir = (entity_list[i]->position - entity->position);
-				dir.normalize();
-				engine.hitscan(entity->position, dir, index, num_index, self, -1.0f);
-				if (num_index > 0)
+				if (team != TEAM_NONE && player->team == team)
+					continue;
+
+				if ((unsigned int)owner == i)
 				{
-					entity->rigid->lookat(entity_list[i]->position);
-					if (bot_state != BOT_ATTACK)
-						bot_state = BOT_ALERT;
+					continue;
 				}
-			}
-			else
-			{
-				if (bot_state == BOT_ALERT)
-				{
-					bot_state = BOT_IDLE;
-				}
-			}
 
-			if (distance < 1400.0f)
-			{
-				if (reload_timer <= 0 && player->state != PLAYER_DEAD)
+				float distance = (entity_list[i]->position - entity->position).magnitude();
+
+				if (distance < 1500.0f)
 				{
 					int index[8] = { 0 };
 					int num_index = 0;
@@ -189,26 +194,51 @@ int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self,
 					if (num_index > 0)
 					{
 						entity->rigid->lookat(entity_list[i]->position);
-						bot_state = BOT_ATTACK;
+						if (bot_state != BOT_ATTACK)
+							bot_state = BOT_ALERT;
+					}
+				}
+				else
+				{
+					if (bot_state == BOT_ALERT)
+					{
+						bot_state = BOT_IDLE;
 					}
 				}
 
-				if (player->state == PLAYER_DEAD)
+				if (distance < 1400.0f)
 				{
-					bot_state = BOT_IDLE;
+					if (reload_timer <= 0 && player->state != PLAYER_DEAD)
+					{
+						int index[8] = { 0 };
+						int num_index = 0;
+						vec3 dir = (entity_list[i]->position - entity->position);
+						dir.normalize();
+						engine.hitscan(entity->position, dir, index, num_index, self, -1.0f);
+						if (num_index > 0)
+						{
+							entity->rigid->lookat(entity_list[i]->position);
+							bot_state = BOT_ATTACK;
+						}
+					}
+
+					if (player->state == PLAYER_DEAD)
+					{
+						bot_state = BOT_IDLE;
+					}
 				}
-			}
-			else
-			{
+				else
+				{
+					if (bot_state == BOT_ATTACK)
+						bot_state = BOT_ALERT;
+				}
+
+				// already have a target
 				if (bot_state == BOT_ATTACK)
-					bot_state = BOT_ALERT;
+					break;
+
+				continue;
 			}
-
-			// already have a target
-			if (bot_state == BOT_ATTACK)
-				break;
-
-			continue;
 		}
 	}
 

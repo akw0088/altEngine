@@ -132,6 +132,7 @@ public:
 	int add_train_path(Entity *original, Entity *ref, Entity *target);
 
 	void build_sentry();
+	void build_structure(vec3 &position, int model_index);
 
 	//base game items
 	gametype_t get_gametype();

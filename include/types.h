@@ -776,6 +776,7 @@ typedef enum
 	ENT_Q1_END,
 	ENT_CONSTRUCT,
 	ENT_SENTRY,
+	ENT_SENTRY_BASE,
 	ENT_FUNC_TERRAIN // giant OBJ file with texture, need to figure out collision
 } entity_type_t;
 
@@ -1166,5 +1167,12 @@ typedef struct
 	vec3 pos;
 	vec3 forward;
 }  frustum_t;
+
+
+typedef enum
+{
+	CT_AUTOSENTRY = 1,
+	CT_STRUCTURE
+} construct_type_t;
 
 #endif

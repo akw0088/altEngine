@@ -342,6 +342,9 @@ void Quake3::load_models(Graphics &gfx)
 	#define MODEL_SENTRY_BASE 54
 	model_table[num_model++].load(gfx, "media/models/sentry/sentry_base");
 
+#define MODEL_LUCY 55
+	model_table[num_model++].load(gfx, "media/models/lucy2");
+
 }
 
 void Quake3::load_q1_models(Graphics &gfx)
@@ -1448,6 +1451,21 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 	snd_wave.push_back(wave);
 #define SND_SENTRY_PREPEND 325
 	snd_table[SND_SENTRY_PREPEND] = snd_wave.size() - 1;
+
+
+	strcpy(wave.file, "media/sound/constru2.wav");
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
+	snd_wave.push_back(wave);
+#define SND_CONSTRUCT 326
+	snd_table[SND_CONSTRUCT] = snd_wave.size() - 1;
+
+	strcpy(wave.file, "media/sound/country1.wav");
+	audio.load(wave, engine->pk3_list, engine->num_pk3);
+	snd_wave.push_back(wave);
+#define SND_CONSTRUCT_COMPLETE 327
+	snd_table[SND_CONSTRUCT_COMPLETE] = snd_wave.size() - 1;
+
+	
 
 
 }
@@ -2795,7 +2813,8 @@ void Quake3::step(int frame_step)
 		spectator_timer = TICK_RATE >> 1;
 //		engine->console("spectate");
 
-		build_sentry();
+		vec3 zero(0,50,0);
+		build_structure(zero, MODEL_LUCY);
 	}
 	else
 	{
@@ -2851,7 +2870,10 @@ void Quake3::step(int frame_step)
 
 				if (entity->player->build_timer == 1)
 				{
-					engine->play_wave(entity->position, SND_SENTRY_UPGRADE);
+					if (entity->player->build_type == CT_AUTOSENTRY)
+						engine->play_wave(entity->position, SND_SENTRY_UPGRADE);
+					else
+						engine->play_wave(entity->position, SND_CONSTRUCT_COMPLETE);
 				}
 
 			}
@@ -2877,7 +2899,9 @@ void Quake3::step(int frame_step)
 				if (entity->construct->owner != -1 && engine->entity_list[entity->construct->owner]->player)
 				{
 					engine->entity_list[entity->construct->owner]->player->build_timer = 0;
-					engine->clean_entity(entity->construct->base_index);
+
+					if (entity->construct->base_index != -1)
+						engine->clean_entity(entity->construct->base_index);
 					engine->clean_entity(i);
 				}
 			}
@@ -3205,7 +3229,7 @@ void Quake3::build_sentry()
 	int spawn = engine->get_entity();
 	Entity *ent = engine->entity_list[spawn];
 	ent->ent_type = ENT_SENTRY;
-	ent->construct = new Constructable(ent, engine->gfx, engine->audio, powner->team);
+	ent->construct = new Constructable(ent, engine->gfx, engine->audio, powner->team, CT_AUTOSENTRY);
 	ent->construct->owner = owner;
 	ent->rigid = new RigidBody(ent);
 
@@ -3234,6 +3258,43 @@ void Quake3::build_sentry()
 	ent->construct->base_index = base_index;
 
 	engine->play_wave(engine->entity_list[owner]->position, SND_SENTRY_BUILD);
+}
+
+
+
+void Quake3::build_structure(vec3 &position, int model_index)
+{
+	int owner = engine->find_type(ENT_PLAYER, 0);
+	Player *powner = engine->entity_list[owner]->player;
+
+	if (owner == -1)
+	{
+		return;
+	}
+
+	if (powner->build_timer > 0)
+	{
+		return;
+	}
+
+	powner->build_timer = 3 * TICK_RATE;
+	powner->build_type = CT_STRUCTURE;
+
+	int spawn = engine->get_entity();
+	Entity *ent = engine->entity_list[spawn];
+	ent->ent_type = ENT_CONSTRUCT;
+	ent->construct = new Constructable(ent, engine->gfx, engine->audio, powner->team, CT_STRUCTURE);
+	ent->construct->owner = owner;
+	ent->rigid = new RigidBody(ent);
+
+	ent->position = position;
+	ent->rigid->clone(model_table[model_index]);
+
+	ent->model = ent->rigid;
+	ent->construct->immobile = true;
+	ent->construct->render_md5 = false;
+
+	engine->play_wave(position, SND_CONSTRUCT);
 }
 
 void Quake3::handle_plasma(Player &player, int self, bool client)
