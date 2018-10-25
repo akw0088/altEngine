@@ -233,13 +233,15 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	// texture 0 used when we just need a texture
 	no_tex = load_texture(gfx, "media/notexture.tga", false, false, 0);
 
-	dissolve_tex = load_texture(gfx, "media/textures/dissolve.jpg", false, false, 0);
 	// particles texture (rockets/grenade smoke)
 	particle_tex = load_texture(gfx, "media/flare.png", false, false, 0);
 
 	// not really used, but for color grading
 	palette1 = load_texture(gfx, "media/palette.png", false, false, 0);
 	palette2 = load_texture(gfx, "media/palette2.png", false, false, 0);
+
+	dissolve_tex = load_texture(gfx, "media/textures/dissolve.jpg", false, false, 0);
+
 
 	// skybox vertex / index buffers (cube or sphere)
 #ifdef SOFTWARE
@@ -2266,7 +2268,22 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 		else
 		{
-			entity->rigid->render(gfx);
+			if (entity->ent_type == ENT_CONSTRUCT || entity->ent_type == ENT_SENTRY)
+			{
+				if (entity->ent_type == ENT_SENTRY)
+				{
+					mlight2.set_dissolve(((float)entity->construct->build_timer / (3 * TICK_RATE)));
+					gfx.SelectTexture(7, -dissolve_tex);
+					entity->rigid->render(gfx);
+					entity_list[entity->construct->base_index]->rigid->render(gfx);
+					gfx.SelectTexture(7, 0);
+					mlight2.set_dissolve(-1.0f);
+				}
+			}
+			else
+			{
+				entity->rigid->render(gfx);
+			}
 		}
 
 

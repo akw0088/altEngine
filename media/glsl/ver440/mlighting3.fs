@@ -33,10 +33,10 @@ uniform mat4		mvp;
 
 uniform int u_lightmap_stage;
 uniform int u_depth;
+uniform float u_dissolve;
 uniform float u_brightness;
 uniform float u_contrast;
 uniform float u_exposure;
-uniform float u_dissolve;
 
 uniform int u_env[4];
 uniform float u_rgbgen_scale[4];
@@ -54,7 +54,7 @@ uniform vec3 u_fog_color;
 
 uniform sampler2D tex[4];// 4 possible textures
 
-layout(binding=7) uniform sampler2D texture_dissolve; //dissolve map
+layout(binding=7) uniform sampler2D texture_dissolve;
 layout(binding=8) uniform sampler2D texture_lightmap; //lightmap
 layout(binding=9) uniform sampler2D texture_normalmap; //normalmap
 
@@ -325,20 +325,19 @@ void main(void)
 		Fragment_stage[i] *= min(u_rgbgen_scale[i], 3.0);
 	}
 
+	float pdrop = texture(texture_dissolve, Vertex.vary_newTexCoord[0]).r;
+
+	if ( pdrop < u_dissolve)
+	{
+		discard;
+	}
+
 	// Dont write to fragment until after discard's
 	Fragment = vec4(0.0, 0.0, 0.0, 0.0);
 	for(int i = 0; i < 4; i++)
 	{
 		Fragment.xyz += Fragment_stage[i].xyz;
 	}
-
-	vec3 dval = texture(texture_lightmap, Vertex.vary_TexCoord).xyz;
-
-	if ( dval.r < u_dissolve)
-	{
-		discard;
-	}
-
 
 
 //	alpha 1 = opaque, 0 equals transparent

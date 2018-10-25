@@ -859,6 +859,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 // Need asset manager class so things arent doubly loaded
 int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int anisotropic)
 {
+	unsigned char *img_data = NULL;
 	int width = 0;
 	int height = 0;
 	int components = 0;
@@ -880,7 +881,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 
 	//tex_object[face->material].texObj[0]
 #ifdef OPENGL
-	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	img_data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 
 	if (components == 4)
 	{
@@ -902,7 +903,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 #ifdef _DEBUG
 		printf("Unknown component: %s %d\n", file_name, components);
 #endif
-		stbi_image_free(bytes);
+		stbi_image_free(img_data);
 		delete [] data;
 		return 0;
 	}
@@ -916,27 +917,28 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	format = -1;
 	data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
-#ifndef DEDICATED
-	char *pBits = NULL;
+#ifdef DEDICATED
 	if (components == 3)
 	{
-		pBits = tga_24to32(width, height, (char *)data, bgr);
+		char *temp = tga_24to32(width, height, (char *)data, bgr);
+		delete[] img_data;
+		img_data = (unsigned char *)temp;
 		components = 5;
 	}
 #endif
 #ifndef DEDICATED
 	if (components == 3)
 	{
-		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
+		tex_object = gfx.LoadTexture(width, height, 4, format, img_data, clamp, anisotropic);
 	}
 	else if (components == 5)
 	{
-		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
+		tex_object = gfx.LoadTexture(width, height, 4, format, img_data, clamp, anisotropic);
 //		delete [] pBits;
 	}
 	else
 	{
-		tex_object = gfx.LoadTexture(width, height, components, format, data, clamp, anisotropic);
+		tex_object = gfx.LoadTexture(width, height, components, format, img_data, clamp, anisotropic);
 	}
 //	stbi_image_free(data);
 //	delete [] data;

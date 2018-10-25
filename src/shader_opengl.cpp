@@ -114,7 +114,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_num_shadowmap = 18;
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
-	m_dissolve = 0.0f;
+	m_dissolve = -1.0f;
 	m_contrast = 1.0f;
 	m_exposure = 1.0f;
 	m_normalmap = -1.0f;
@@ -347,6 +347,7 @@ void mLight2::set_contrast(float value)
 void mLight2::set_dissolve(float value)
 {
 	m_dissolve = value;
+	glUniform1f(u_dissolve, m_dissolve);
 }
 
 //=============================================================================

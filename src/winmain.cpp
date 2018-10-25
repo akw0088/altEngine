@@ -68,7 +68,7 @@ double com_maxfps = 1000.0f / 250;
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void clipboard_paste(HWND hwnd, char *value, int size); 
 BOOL setupPixelFormat(HDC);
-void RedirectIOToConsole(bool debug);
+void RedirectIOToConsole(int debug);
 unsigned int getTimeStamp(void);
 double GetCounter(double freq);
 void GetFreq(double &freq);
@@ -83,6 +83,8 @@ int (WINAPIV * __vsnprintf)(char *, size_t, const char*, va_list) = _vsnprintf;
 #define TICK_TIMER 1
 #define WMU_RENDER WM_USER + 1
 
+
+void RedirectIOToConsole(int debug);
 
 
 
@@ -741,7 +743,7 @@ unsigned int getTimeStamp(void)
 	return timestamp;
 }
 
-void RedirectIOToConsole(bool debug)
+void RedirectIOToConsole(int debug)
 {
 	if (debug)
 	{

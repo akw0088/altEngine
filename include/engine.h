@@ -340,7 +340,7 @@ protected:
 	unsigned int	fb_height;
 	unsigned int	multisample;
 	unsigned int	no_tex;
-	unsigned int dissolve_tex;
+	unsigned int	dissolve_tex;
 	unsigned int	particle_tex;
 
 	unsigned int	palette1;
