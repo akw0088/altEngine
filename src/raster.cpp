@@ -1627,6 +1627,48 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 	}
 }
 
+void draw_rect(int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color)
+{
+	float	corner[4][2];
+	float	corner_rotated[4][2];
+	float	sn, cs;
+	int		i;
+
+	sn = sinf(angle);
+	cs = cosf(angle);
+
+	corner[0][0] = (float)(-w / 2);
+	corner[0][1] = (float)(l / 2);
+
+	corner[1][0] = (float)(w / 2);
+	corner[1][1] = (float)(l / 2);
+
+	corner[2][0] = (float)(w / 2);
+	corner[2][1] = (float)(-l / 2);
+
+	corner[3][0] = (float)(-w / 2);
+	corner[3][1] = (float)(-l / 2);
+
+	for (i = 0; i <= 3; i++)
+	{
+		corner_rotated[i][0] = cs * corner[i][0] - sn * corner[i][1];
+		corner_rotated[i][1] = sn * corner[i][0] + cs * corner[i][1];
+		corner[i][0] = corner_rotated[i][0];
+		corner[i][1] = corner_rotated[i][1];
+	}
+
+	for (i = 0; i <= 3; i++)
+	{
+		corner[i][0] += x;
+		corner[i][1] += y;
+	}
+
+	draw_line(pixels, width, height, (int)corner[0][0], (int)corner[0][1], (int)corner[1][0], (int)corner[1][1], color);
+	draw_line(pixels, width, height, (int)corner[1][0], (int)corner[1][1], (int)corner[2][0], (int)corner[2][1], color);
+	draw_line(pixels, width, height, (int)corner[2][0], (int)corner[2][1], (int)corner[3][0], (int)corner[3][1], color);
+	draw_line(pixels, width, height, (int)corner[3][0], (int)corner[3][1], (int)corner[0][0], (int)corner[0][1], color);
+}
+
 
 
 inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,

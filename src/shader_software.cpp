@@ -123,6 +123,10 @@ void mLight2::set_brightness(float value)
 {
 }
 
+void mLight2::set_dissolve(float value)
+{
+}
+
 void mLight2::set_shadowmap(float value)
 {
 }
