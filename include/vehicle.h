@@ -66,18 +66,19 @@ public:
 	float	wheel_width;
 
 
-	/*
-	// old
+	// gearing
 	float	gear_ratio[7];
 	int		gear;
 	float	diff_ratio;
 	float	efficiency;
 	float	min_rpm;
 	float	max_rpm;
+	float	redline_rpm;
 	float	engine_wear;	// idea is to have this affect efficiency / blown engine
 	float	wheel_radius;
 	float	torque_curve[41];
-	*/
+	float	rpm;
+	int automatic;
 };
 
 

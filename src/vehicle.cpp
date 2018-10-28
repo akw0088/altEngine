@@ -212,8 +212,41 @@ void Vehicle::step(float delta_t)
 		dir = 1;
 	}
 
-	ftraction.x = 100 * (throttle - brake * dir);
+
+	float wheel_rotation = 2.2f * (velocity.magnitude() / wheel_radius);
+	rpm = wheel_rotation * gear_ratio[gear] * diff_ratio * 30.0f / M_PI;
+
+	if (rpm < min_rpm)
+		rpm = min_rpm;
+	if (rpm > max_rpm)
+		engine_wear += 0.001f;
+	if (rpm > redline_rpm)
+	{
+		rpm = redline_rpm;
+		velocity *= 0.99f;
+	}
+
+	if (automatic && gear >= 1)
+	{
+		if (rpm > 5800)
+			gear++;
+		if (gear >= 6)
+			gear = 6;
+
+		if (rpm < 4000)
+			gear--;
+		if (gear <= 1)
+			gear = 1;
+	}
+
+	int torque_index = (int)(rpm / 256.0f);
+
+	if (torque_index > 40)
+		torque_index = 40;
+
+	ftraction.x = 0.01 * (torque_curve[torque_index] * gear_ratio[gear] * diff_ratio * efficiency / wheel_radius) * (throttle - brake * dir);
 	ftraction.y = 0;
+
 	if (rear_slip)
 		ftraction.x *= 0.5f;
 
