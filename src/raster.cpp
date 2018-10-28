@@ -1705,6 +1705,59 @@ void draw_circle(int *pixels, int width, int height, int x0, int y0, int radius,
 	}
 }
 
+void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color)
+{
+	int gm, gd;
+	int x, y, p;
+
+	x = 0;
+	y = ry;
+	p = (ry * ry) - (rx * rx * ry) + ((rx * rx) / 4);
+
+	while ((2 * x * ry * ry) < (2 * y * rx * rx))
+	{
+
+		pixels[xc + x + (yc - y) * width] = color;
+		pixels[xc - x + (yc + y) * width] = color;
+		pixels[xc + x + (yc + y) * width] = color;
+		pixels[xc - x + (yc - y) * width] = color;
+
+		if (p < 0)
+		{
+			x = x + 1;
+			p = p + (2 * ry * ry * x) + (ry * ry);
+		}
+		else
+		{
+			x = x + 1;
+			y = y - 1;
+			p = p + (2 * ry * ry * x + ry * ry) - (2 * rx * rx * y);
+		}
+	}
+	p = ((float)x + 0.5f) * ((float)x + 0.5f) * ry * ry + (y - 1) * (y - 1) * rx * rx - rx * rx * ry * ry;
+
+	while (y >= 0)
+	{
+		pixels[xc + x + (yc - y) * width] = color;
+		pixels[xc - x + (yc + y) * width] = color;
+		pixels[xc + x + (yc + y) * width] = color;
+		pixels[xc - x + (yc - y) * width] = color;
+
+		if (p>0)
+		{
+			y = y - 1;
+			p = p - (2 * rx * rx * y) + (rx * rx);
+
+		}
+		else
+		{
+			y = y - 1;
+			x = x + 1;
+			p = p + (2 * ry * ry * x) - (2 * rx * rx * y) - (rx * rx);
+		}
+	}
+}
+
 
 inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
