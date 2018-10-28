@@ -1670,7 +1670,7 @@ void draw_rect(int *pixels, int width, int height, float angle, int w, int l, in
 }
 
 
-void draw_circle(int *pixels, int width, int height, int x0, int y0, int radius, int color)
+void draw_circle(int *pixels, int width, int height, invoid draw_circle(int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
 {
 	int x = radius - 1;
 	int y = 0;
@@ -1680,14 +1680,39 @@ void draw_circle(int *pixels, int width, int height, int x0, int y0, int radius,
 
 	while (x >= y)
 	{
-		pixels[x0 + x + (y0 + y) * width] = color;
-		pixels[x0 + y + (y0 + x) * width] = color;
-		pixels[x0 - y + (y0 + x) * width] = color;
-		pixels[x0 - x + (y0 + y) * width] = color;
-		pixels[x0 - x + (y0 - y) * width] = color;
-		pixels[x0 - y + (y0 - x) * width] = color;
-		pixels[x0 + y + (y0 - x) * width] = color;
-		pixels[x0 + x + (y0 - y) * width] = color;
+		if (filled == 0)
+		{
+			pixels[xc + x + (yc + y) * width] = color;
+			pixels[xc - x + (yc + y) * width] = color;
+			pixels[xc + y + (yc + x) * width] = color;
+			pixels[xc - y + (yc + x) * width] = color;
+
+			pixels[xc - x + (yc - y) * width] = color;
+			pixels[xc + x + (yc - y) * width] = color;
+			pixels[xc + y + (yc - x) * width] = color;
+			pixels[xc - y + (yc - x) * width] = color;
+		}
+		else
+		{
+			draw_line(pixels, width, height,
+				xc + x, yc + y,
+				xc - x, yc + y,
+				color);
+			draw_line(pixels, width, height,
+				xc + x, yc - y,
+				xc - x, yc - y,
+				color);
+
+
+			draw_line(pixels, width, height,
+				xc + y, yc + x,
+				xc - y, yc + x,
+				color);
+			draw_line(pixels, width, height,
+				xc + y, yc - x,
+				xc - y, yc - x,
+				color);
+		}
 
 		if (err <= 0)
 		{
@@ -1705,7 +1730,8 @@ void draw_circle(int *pixels, int width, int height, int x0, int y0, int radius,
 	}
 }
 
-void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color)
+
+void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
 {
 	int gm, gd;
 	int x, y, p;
@@ -1716,11 +1742,24 @@ void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, in
 
 	while ((2 * x * ry * ry) < (2 * y * rx * rx))
 	{
-
-		pixels[xc + x + (yc - y) * width] = color;
-		pixels[xc - x + (yc + y) * width] = color;
-		pixels[xc + x + (yc + y) * width] = color;
-		pixels[xc - x + (yc - y) * width] = color;
+		if (filled == 0)
+		{
+			pixels[xc + x + (yc - y) * width] = color;
+			pixels[xc - x + (yc + y) * width] = color;
+			pixels[xc + x + (yc + y) * width] = color;
+			pixels[xc - x + (yc - y) * width] = color;
+		}
+		else
+		{
+			draw_line(pixels, width, height,
+				xc + x, yc + y,
+				xc - x, yc + y,
+				color);
+			draw_line(pixels, width, height,
+				xc + x, yc - y,
+				xc - x, yc - y,
+				color);
+		}
 
 		if (p < 0)
 		{
@@ -1738,10 +1777,24 @@ void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, in
 
 	while (y >= 0)
 	{
-		pixels[xc + x + (yc - y) * width] = color;
-		pixels[xc - x + (yc + y) * width] = color;
-		pixels[xc + x + (yc + y) * width] = color;
-		pixels[xc - x + (yc - y) * width] = color;
+		if (filled == 0)
+		{
+			pixels[xc + x + (yc - y) * width] = color;
+			pixels[xc - x + (yc + y) * width] = color;
+			pixels[xc + x + (yc + y) * width] = color;
+			pixels[xc - x + (yc - y) * width] = color;
+		}
+		else
+		{
+			draw_line(pixels, width, height,
+				xc + x, yc + y,
+				xc - x, yc + y,
+				color);
+			draw_line(pixels, width, height,
+				xc + x, yc - y,
+				xc - x, yc - y,
+				color);
+		}
 
 		if (p>0)
 		{
