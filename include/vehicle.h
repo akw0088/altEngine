@@ -17,20 +17,57 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
-class Vehicle : public RigidBody
+class Vehicle : public Model
 {
 public:
 	Vehicle(Entity *entity);
-	void integrate2(float time);
+	void init();
+	void step(float delta_t);
 	bool move(input_t &input, float speed_scale);
 
 public:
-	float	throttle_position;
-private:
-	float	kAir;
-	float	kRoll;
-	float	kBrake;
-	float	brake_position;
+	vec3	force;
+	vec3	resistance;
+	vec3	ftraction;
+	vec3	flatf, flatr;
+
+	float	sideslip;
+	float	slipanglefront;
+	float	slipanglerear;
+	float	torque;
+	float	angular_acceleration;
+
+	int		rear_slip;
+	int		front_slip;
+
+
+	// car data
+	//vec3	position;
+	Entity *entity;
+	vec3	velocity;
+
+	float	angle;				// angle of car body orientation (in rads)
+	float	angularvelocity;
+
+	float	steerangle;			// angle of steering (input)
+	float	throttle;			// amount of throttle (input)
+	float	brake;				// amount of braking (input)
+
+								// car static data
+	float	wheel_base;		// wheel base in m
+	float	cg_to_front;	// in m, distance from CG to front axle
+	float	cg_to_rear;		// in m, idem to rear axle
+	float	cg_to_ground;	// in m, height of CM from ground
+	float	mass;			// in kg
+	float	inertia;		// in kg.m
+	float	length;
+	float	width;
+	float	wheel_length;
+	float	wheel_width;
+
+
+	/*
+	// old
 	float	gear_ratio[7];
 	int		gear;
 	float	diff_ratio;
@@ -40,9 +77,8 @@ private:
 	float	engine_wear;	// idea is to have this affect efficiency / blown engine
 	float	wheel_radius;
 	float	torque_curve[41];
-
-	//Need to model wheel positions
-	//using hardcoded constants for now
+	*/
 };
+
 
 #endif

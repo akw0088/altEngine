@@ -18,9 +18,17 @@
 #define new DEBUG_NEW
 #endif
 
+#define	DRAG		5.0f		 	// factor for air resistance (drag)
+#define	RESISTANCE	30.0f			// factor for rolling resistance
+#define CA_R		-5.20f			// cornering stiffness
+#define CA_F		-5.0f			// cornering stiffness
+#define MAX_GRIP	2.0f			// maximum (normalised) friction force, =diameter of friction circle
+
 Vehicle::Vehicle(Entity *entity)
-: RigidBody(entity)
 {
+	Vehicle::entity = entity;
+	init();
+#if 0
 	kAir = 0.5f * 0.3f * 2.2f * 1.29f;
 	kRoll = 30.0f * kAir;
 	kBrake = 150.0f;
@@ -89,8 +97,9 @@ Vehicle::Vehicle(Entity *entity)
 	torque_curve[38] = 120.123878f;
 	torque_curve[39] = 102.769638f;
 	torque_curve[40] = 85.415398f;
+#endif
 }
-
+#if 0
 void Vehicle::integrate2(float time)
 {
 	RigidBody::integrate(time);
@@ -119,44 +128,173 @@ void Vehicle::integrate2(float time)
 	// Apply net engine force
 	net_force += force_drive + drag_air + drag_roll + force_brake;
 }
+#endif
+
+void Vehicle::init()
+{
+	// static data
+	cg_to_front = 1.0f;					// meters
+	cg_to_rear = 1.0f;					// meters
+	cg_to_ground = 1.0f;				// meters
+	mass = 1500;						// kg	
+	inertia = 1500;						// kg.m			
+	width = 1.5f;						// meters
+	length = 3.0f;						// meters, must be > wheelbase
+	wheel_length = 0.7f;
+	wheel_width = 0.3f;
+	wheel_base = cg_to_front + cg_to_rear;
+
+	// dynamic data
+	entity->position.x = 0;
+	entity->position.y = 0;
+	entity->position.z = 0;
+	velocity.x = 0;
+	velocity.y = 0;
+	velocity.z = 0;
+
+	angle = 0;
+	angularvelocity = 0;
+	steerangle = 0;
+	throttle = 0;
+	brake = 0;
+}
+
+void Vehicle::step(float delta_t)
+{
+	vec3 accel;
+	vec3 accel_rotated;
+	vec3 vel;
+	float rot_angle;
+	float yawspeed;
+	float sn = sinf(angle);
+	float cs = cosf(angle);
+	float weight;
+
+	vel.x = cs * velocity.y + sn * velocity.x;
+	vel.y = -sn * velocity.y + cs * velocity.x;
+
+	yawspeed = wheel_base * 0.5f * angularvelocity;
+
+	if (vel.x == 0)
+		rot_angle = 0;
+	else
+		rot_angle = atan2f(yawspeed, vel.x);
+
+	if (vel.x == 0)
+		sideslip = 0;
+	else
+		sideslip = atan2f(vel.y, vel.x);
+
+	slipanglefront = sideslip + rot_angle - steerangle;
+	slipanglerear = sideslip - rot_angle;
+
+	weight = mass * 9.8f * 0.5f;
+
+	flatf.x = 0;
+	flatf.y = CA_F * slipanglefront;
+	flatf.y = MIN(MAX_GRIP, flatf.y);
+	flatf.y = MAX(-MAX_GRIP, flatf.y);
+	flatf.y *= weight;
+	if (front_slip)
+		flatf.y *= 0.5;
+
+	flatr.x = 0;
+	flatr.y = CA_R * slipanglerear;
+	flatr.y = MIN(MAX_GRIP, flatr.y);
+	flatr.y = MAX(-MAX_GRIP, flatr.y);
+	flatr.y *= weight;
+	if (rear_slip)
+		flatr.y *= 0.5f;
+
+	float dir = -1;
+	if (vel.x > 0)
+	{
+		dir = 1;
+	}
+
+	ftraction.x = 100 * (throttle - brake * dir);
+	ftraction.y = 0;
+	if (rear_slip)
+		ftraction.x *= 0.5f;
+
+	resistance.x = -(RESISTANCE * vel.x + DRAG * vel.x * fabsf(vel.x));
+	resistance.y = -(RESISTANCE * vel.y + DRAG * vel.y * fabsf(vel.y));
+
+	force.x = ftraction.x + sinf(steerangle) * flatf.x + flatr.x + resistance.x;
+	force.y = ftraction.y + cosf(steerangle) * flatf.y + flatr.y + resistance.y;
+
+	torque = cg_to_front * flatf.y - cg_to_rear * flatr.y;
+
+	accel.x = force.x / mass;
+	accel.y = force.y / mass;
+
+	angular_acceleration = torque / inertia;
+
+	accel_rotated.x = cs * accel.y + sn * accel.x;
+	accel_rotated.y = -sn * accel.y + cs * accel.x;
+
+	velocity.x += delta_t * accel_rotated.x;
+	velocity.y += delta_t * accel_rotated.y;
+
+	entity->position.x += delta_t * velocity.x;
+	entity->position.y += delta_t * velocity.y;
+
+	angularvelocity += delta_t * angular_acceleration;
+	angle += delta_t * angularvelocity;
+
+}
+
 
 
 bool Vehicle::move(input_t &input, float speed_scale)
 {
 	if (input.moveup)
 	{
-		vec3 vec;
-		getForwardVector(vec);
-		vec.y = 0;
-		entity->position += vec;
+		if (throttle < 100)
+			throttle += 10;
 	}
-
-	if (input.moveleft)
-	{
-		vec3 vec;
-		getForwardVector(vec);
-		vec.y = 0;
-		entity->position -= vec3::crossproduct(vec, vec3(0.0, 1.0f, 0.0f));
-	}
-
-	if (input.moveright)
-	{
-		vec3 vec;
-		getForwardVector(vec);
-		vec.y = 0;
-		entity->position += vec3::crossproduct(vec, vec3(0.0, 1.0f, 0.0f));
-	}
-
-
 	if (input.movedown)
 	{
-		vec3 vec;
-		getForwardVector(vec);
-		vec.y = 0;
-		entity->position -= vec;
+		if (throttle >= 10)
+			throttle -= 10;
+	}
+	if (input.moveleft)
+	{
+		if (steerangle > -M_PI / 4.0f)
+			steerangle -= M_PI / 32.0f;
+	}
+	else if (input.moveright)
+	{
+		if (steerangle <  M_PI / 4.0f)
+			steerangle += M_PI / 32.0f;
+	}
+
+	if (input.duck)
+	{
+		brake = 100;
+		throttle = 0;
+	}
+	else
+	{
+		brake = 0;
+	}
+
+	rear_slip = 0;
+	front_slip = 0;
+
+	if (input.jump)
+		rear_slip = 1;
+
+	if (input.control)
+		front_slip = 1;
+
+	if (input.control && input.jump)
+	{
+		front_slip = 1;
+		rear_slip = 1;
 	}
 
 
 
-	return true;
+	return 0;
 }

@@ -723,8 +723,7 @@ void Engine::load(char *level)
 		Entity *ent = entity_list[index];
 
 		ent->vehicle = new Vehicle(ent);
-		ent->rigid = ent->vehicle;
-		ent->model = ent->rigid;
+		ent->model = ent->vehicle;
 
 		q3map.enable_textures = false;
 		enable_bloom = false;
