@@ -1670,6 +1670,41 @@ void draw_rect(int *pixels, int width, int height, float angle, int w, int l, in
 }
 
 
+void draw_circle(int *pixels, int width, int height, int x0, int y0, int radius, int color)
+{
+	int x = radius - 1;
+	int y = 0;
+	int dx = 1;
+	int dy = 1;
+	int err = dx - (radius << 1);
+
+	while (x >= y)
+	{
+		pixels[x0 + x + (y0 + y) * width] = color;
+		pixels[x0 + y + (y0 + x) * width] = color;
+		pixels[x0 - y + (y0 + x) * width] = color;
+		pixels[x0 - x + (y0 + y) * width] = color;
+		pixels[x0 - x + (y0 - y) * width] = color;
+		pixels[x0 - y + (y0 - x) * width] = color;
+		pixels[x0 + y + (y0 - x) * width] = color;
+		pixels[x0 + x + (y0 - y) * width] = color;
+
+		if (err <= 0)
+		{
+			y++;
+			err += dy;
+			dy += 2;
+		}
+
+		if (err > 0)
+		{
+			x--;
+			dx += 2;
+			err += dx - (radius << 1);
+		}
+	}
+}
+
 
 inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
