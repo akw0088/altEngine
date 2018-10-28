@@ -70,12 +70,12 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	local = false;
 	falling = false;
 	immobile = false;
-	in_vehicle = 0;
+	in_vehicle = -1;
 
 	Player::team = team;
 
 	num_sentry = 0;
-	build_timer = 0;
+	build_timer = 1;
 
 	haste_factor = 2.0f;
 

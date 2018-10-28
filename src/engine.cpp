@@ -717,15 +717,17 @@ void Engine::load(char *level)
 		load_entities();
 	}
 
-	if (strstr(level, "section"))
+	if (strstr(level, "q3tourney2"))
 	{
-		int index = find_type(ENT_INFO_PLAYER_START, 0);
+		int index = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
 		Entity *ent = entity_list[index];
 
 		ent->vehicle = new Vehicle(ent);
-		ent->model = ent->vehicle;
+		ent->rigid = ent->vehicle;
+		ent->model = ent->rigid;
+		ent->trigger = NULL;
 
-		q3map.enable_textures = false;
+//		q3map.enable_textures = false;
 		enable_bloom = false;
 
 		ent->vehicle->load(gfx, "media/models/vehicle/car/car4");
@@ -3010,6 +3012,7 @@ void Engine::dynamics()
 		printf("bsp leaf %d Handled by thread %d of %d\n", entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
 
+
 		if (entity_list[i]->rigid == NULL)
 			continue;
 
@@ -3058,11 +3061,19 @@ void Engine::dynamics()
 		{
 			cfg_t	config;
 
+			if (entity_list[i]->vehicle)
+			{
+				entity_list[i]->vehicle->step(0.01f);
+				break;
+			}
+
 			body->save_config(config);
 			body->integrate(target_time - current_time);
 
 			if (entity_list[i]->brush_ref != -1)
 				break;
+
+
 
 			if ( collision_detect(*body) )
 			{

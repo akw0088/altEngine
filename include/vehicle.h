@@ -17,13 +17,14 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
-class Vehicle : public Model
+class Vehicle : public RigidBody
 {
 public:
 	Vehicle(Entity *entity);
 	void init();
 	void step(float delta_t);
 	bool move(input_t &input, float speed_scale);
+	void integrate(float time);
 
 public:
 	vec3	force;
@@ -42,9 +43,7 @@ public:
 
 
 	// car data
-	//vec3	position;
-	Entity *entity;
-	vec3	velocity;
+	//vec3	velocity;
 
 	float	angle;				// angle of car body orientation (in rads)
 	float	angularvelocity;
@@ -58,7 +57,7 @@ public:
 	float	cg_to_front;	// in m, distance from CG to front axle
 	float	cg_to_rear;		// in m, idem to rear axle
 	float	cg_to_ground;	// in m, height of CM from ground
-	float	mass;			// in kg
+//	float	mass;			// in kg
 	float	inertia;		// in kg.m
 	float	length;
 	float	width;

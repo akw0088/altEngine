@@ -1937,6 +1937,39 @@ void Quake3::handle_player(int self, input_t &input)
 			entity->player->holdable_teleporter = false;
 			click = false;
 		}
+
+		static int last_check = 0;
+
+
+		// Check for vehicles and enter them if near by
+		if (last_check + TICK_RATE < engine->tick_num)
+		{
+			if (entity->player->in_vehicle == -1)
+			{
+				for (int i = 0; i < engine->entity_list.size(); i++)
+				{
+					if (engine->entity_list[i]->vehicle)
+					{
+						vec3 dist = engine->entity_list[i]->position - entity->position;
+						if (dist.magnitude() < 200.0f)
+						{
+							engine->play_wave_global(SND_SENTRY_UPGRADE);
+							entity->player->in_vehicle = i;
+							click = false;
+							last_check = engine->tick_num;
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				engine->play_wave_global(entity->player->model_index * SND_PLAYER + SND_JUMP);
+				entity->player->in_vehicle = -1;
+			}
+		}
+
+
 		if (click)
 		{
 			//play click sound
@@ -2078,8 +2111,9 @@ void Quake3::handle_player(int self, input_t &input)
 
 				if (engine->menu.console == false)
 				{
-					if (entity->player->in_vehicle == 0)
+					if (entity->player->in_vehicle == -1)
 					{
+
 						if (entity->rigid->move(input, speed_scale)) // player and client movement code
 						{
 							entity->player->state = PLAYER_JUMPED;
@@ -2092,6 +2126,12 @@ void Quake3::handle_player(int self, input_t &input)
 					}
 					else
 					{
+						Vehicle *vehicle = engine->entity_list[entity->player->in_vehicle]->vehicle;
+
+						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent_yaw(&engine->camera_frame, input);
+						engine->entity_list[entity->player->in_vehicle]->position.y = 0.0f;
+//						entity->position = engine->entity_list[entity->player->in_vehicle]->position + vec3( 50.0f, 20.0f, 0.0f);
+//						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent(&engine->camera_frame, input);
 						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale);
 					}
 				}
@@ -5505,6 +5545,41 @@ void Quake3::render_hud(double last_frametime)
 				accuracy);
 			engine->menu.draw_text(msg, 0.05f, 0.025f * line++, 0.025f, color, false, false);
 		}
+
+	}
+
+
+	if (engine->entity_list[spawn]->player->in_vehicle != -1)
+	{
+		Vehicle *vehicle = engine->entity_list[engine->entity_list[spawn]->player->in_vehicle]->vehicle;
+
+		int line = 1;
+		line++;
+		snprintf(msg, LINE_SIZE, "position: %3.3f %3.3f %3.3f", entity->position.x, entity->position.y, entity->position.z);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+
+		line++;
+		snprintf(msg, LINE_SIZE, "velocity: %3.3f %3.3f %3.3f", entity->rigid->velocity.x, entity->rigid->velocity.y, entity->rigid->velocity.z);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+
+		line++;
+		snprintf(msg, LINE_SIZE, "RPM: %f", vehicle->rpm);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+		line++;
+		snprintf(msg, LINE_SIZE, "Gear: %d", vehicle->gear);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+		line++;
+		snprintf(msg, LINE_SIZE, "Steer angle: %f", vehicle->steerangle);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+		line++;
+		snprintf(msg, LINE_SIZE, "Throttle %f", vehicle->throttle);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+		line++;
+		snprintf(msg, LINE_SIZE, "Brake %f", vehicle->brake);
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+		line++;
+		snprintf(msg, LINE_SIZE, "Speed %f", vehicle->velocity.magnitude());
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
 
 	}
 
