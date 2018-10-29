@@ -22,8 +22,8 @@
 #define	RESISTANCE	30.0f			// factor for rolling resistance
 #define CA_R		-5.20f			// cornering stiffness
 #define CA_F		-5.0f			// cornering stiffness
-#define MAX_GRIP	2.0f			// maximum (normalised) friction force, =diameter of friction circle
-
+#define MAX_GRIP	4.0f			// maximum (normalised) friction force, =diameter of friction circle
+#define SCALE		40.0f
 
 
 Vehicle::Vehicle(Entity *entity, carinfo_t *info) : RigidBody(entity)
@@ -36,19 +36,16 @@ void Vehicle::init(carinfo_t *info)
 {
 	Vehicle::info = *info;
 
-	// static data
-	wheel_base = cg_to_front + cg_to_rear;
-
-	// dynamic data
 	velocity.x = 0;
 	velocity.y = 0;
 	velocity.z = 0;
 
-	angle = 0;
+	angle_rad = 0;
 	angularvelocity = 0;
 	steerangle = 0;
 	throttle = 0;
 	brake = 0;
+	gear = 1;
 }
 
 void Vehicle::step(float delta_t)
@@ -56,16 +53,15 @@ void Vehicle::step(float delta_t)
 	vec3 accel;
 	vec3 accel_rotated;
 	vec3 vel;
-	float rot_angle;
 	float yawspeed;
-	float sn = sinf(angle);
-	float cs = cosf(angle);
+	float sn = sin(angle_rad);
+	float cs = cos(angle_rad);
 	float weight;
 
 	vel.x = cs * velocity.z + sn * velocity.x;
 	vel.z = -sn * velocity.z + cs * velocity.x;
 
-	yawspeed = wheel_base * 0.5f * angularvelocity;
+	yawspeed = info.wheel_base * 0.5f * angularvelocity;
 
 	if (vel.x == 0)
 		rot_angle = 0;
@@ -110,8 +106,8 @@ void Vehicle::step(float delta_t)
 
 	if (rpm < info.min_rpm)
 		rpm = info.min_rpm;
-	if (rpm > info.max_rpm)
-		engine_wear += 0.001f;
+//	if (rpm > info.max_rpm)
+//		engine_wear += 0.001f;
 	if (rpm > info.redline_rpm)
 	{
 		rpm = info.redline_rpm;
@@ -136,7 +132,7 @@ void Vehicle::step(float delta_t)
 	if (torque_index > 40)
 		torque_index = 40;
 
-	ftraction.x = 100.0f * (info.torque_curve[torque_index] * info.gear_ratio[gear] * info.diff_ratio * info.efficiency / info.wheel_radius) * (throttle - brake * dir);
+	ftraction.x = 0.01 * (info.torque_curve[torque_index] * info.gear_ratio[gear] * info.diff_ratio * info.efficiency / info.wheel_radius) * (throttle - brake * dir);
 	ftraction.z = 0;
 
 	if (rear_slip)
@@ -145,29 +141,29 @@ void Vehicle::step(float delta_t)
 	resistance.x = -(RESISTANCE * vel.x + DRAG * vel.x * fabsf(vel.x));
 	resistance.z = -(RESISTANCE * vel.z + DRAG * vel.z * fabsf(vel.z));
 
-	force.x = ftraction.x + sinf(steerangle) * flatf.x + flatr.x + resistance.x;
-	force.z = ftraction.z + cosf(steerangle) * flatf.z + flatr.z + resistance.z;
+	force.x = ftraction.x + sin(steerangle) * flatf.x + flatr.x + resistance.x;
+	force.z = ftraction.z + cos(steerangle) * flatf.z + flatr.z + resistance.z;
 
-	torque = cg_to_front * flatf.z - cg_to_rear * flatr.z;
+	torque = info.cg_to_front * flatf.z - info.cg_to_rear * flatr.z;
 
 	accel.x = force.x / mass;
 	accel.z = force.z / mass;
 
-	angular_acceleration = torque / inertia;
+	angular_acceleration = torque / info.inertia;
 
 	accel_rotated.x = cs * accel.z + sn * accel.x;
 	accel_rotated.z = -sn * accel.z + cs * accel.x;
 
-	velocity.x += delta_t * accel_rotated.x;
+	velocity.x += delta_t * accel_rotated.x * SCALE;
 	velocity.y = 0.0f;
-	velocity.z += delta_t * accel_rotated.z;
+	velocity.z += delta_t * accel_rotated.z * SCALE;
 
-	entity->position.x += delta_t * velocity.x;
+	entity->position.x += delta_t * velocity.x * SCALE;
 	entity->position.y = 0.0f;
-	entity->position.z += delta_t * velocity.z;
+	entity->position.z += delta_t * velocity.z * SCALE;
 
 	angularvelocity += delta_t * angular_acceleration;
-	angle += delta_t * angularvelocity;
+	angle_rad += delta_t * angularvelocity;
 
 }
 
@@ -185,6 +181,39 @@ bool Vehicle::move(input_t &input, float speed_scale)
 		if (throttle >= 10)
 			throttle -= 10;
 	}
+	if (input.duck)
+	{
+		brake = 100;
+		throttle = 0;
+	}
+	else
+	{
+		brake = 0;
+	}
+
+
+	if (input.weapon_down)
+	{
+		gear--;
+		if (gear < 0)
+			gear = 0;
+	}
+	if (input.weapon_up)
+	{
+		static int last_tick = 0;
+		int current = GetTickCount();
+
+		if (last_tick + 1000 < current)
+		{
+			last_tick = GetTickCount();
+			gear++;
+			if (gear >= 6)
+				gear = 6;
+		}
+	}
+
+
+
 	if (input.moveleft)
 	{
 		if (steerangle > -M_PI / 4.0f)
@@ -194,16 +223,6 @@ bool Vehicle::move(input_t &input, float speed_scale)
 	{
 		if (steerangle <  M_PI / 4.0f)
 			steerangle += M_PI / 32.0f;
-	}
-
-	if (input.duck)
-	{
-		brake = 100;
-		throttle = 0;
-	}
-	else
-	{
-		brake = 0;
 	}
 
 	rear_slip = 0;
@@ -224,10 +243,4 @@ bool Vehicle::move(input_t &input, float speed_scale)
 
 
 	return 0;
-}
-
-
-void Vehicle::integrate(float time)
-{
-	step(time);
 }

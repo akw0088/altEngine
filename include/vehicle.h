@@ -24,7 +24,6 @@ public:
 	void init(carinfo_t *info);
 	void step(float delta_t);
 	bool move(input_t &input, float speed_scale);
-	void integrate(float time);
 
 public:
 	vec3	force;
@@ -43,24 +42,13 @@ public:
 
 
 	//vec3	velocity;
-	float	angle;				// angle of car body orientation (in rads)
+	float	rot_angle;
+	float	angle_rad;				// angle of car body orientation (in rads)
 	float	angularvelocity;
 
 	float	steerangle;			// angle of steering (input)
 	float	throttle;			// amount of throttle (input)
 	float	brake;				// amount of braking (input)
-
-								// car static data
-	float	wheel_base;		// wheel base in m
-	float	cg_to_front;	// in m, distance from CG to front axle
-	float	cg_to_rear;		// in m, idem to rear axle
-	float	cg_to_ground;	// in m, height of CM from ground
-	float	inertia;		// in kg.m
-	float	length;
-	float	width;
-	float	wheel_length;
-	float	wheel_width;
-
 
 	int		gear;
 	float	engine_wear;	// idea is to have this affect efficiency / blown engine

@@ -2129,21 +2129,22 @@ void Quake3::handle_player(int self, input_t &input)
 						Vehicle *vehicle = engine->entity_list[entity->player->in_vehicle]->vehicle;
 						Frame car_frame;
 
-						float x = cosf(vehicle->angle);
-						float y = sinf(vehicle->angle);
+						float x = cos(vehicle->angle_rad);
+						float y = sin(vehicle->angle_rad);
 
 						car_frame.forward.x = y;
 						car_frame.forward.y = 0;
 						car_frame.forward.z = -x;
+						car_frame.forward.normalize();
 
 						car_frame.up = vec3(0.0f, 1.0f, 0.0f);
 
-						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent_yaw(&car_frame, input);
+						matrix3 mat;
+						car_frame.set(mat);
+						engine->entity_list[entity->player->in_vehicle]->rigid->morientation = mat;
 						engine->entity_list[entity->player->in_vehicle]->position.y = 0.0f;
 
 						entity->position = vehicle->entity->position + vehicle->info.seat[0];
-//						entity->position = engine->entity_list[entity->player->in_vehicle]->position + vec3( 50.0f, 20.0f, 0.0f);
-//						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent(&engine->camera_frame, input);
 						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale);
 					}
 				}
@@ -5591,6 +5592,9 @@ void Quake3::render_hud(double last_frametime)
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
 		line++;
 		snprintf(msg, LINE_SIZE, "Speed %f", vehicle->velocity.magnitude());
+		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
+		line++;
+		snprintf(msg, LINE_SIZE, "Angle: %d", (int)(vehicle->angle_rad * 180.0f / M_PI) % 360);
 		engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, true, false);
 
 	}

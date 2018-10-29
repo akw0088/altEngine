@@ -171,6 +171,9 @@ void RigidBody::integrate(float time)
 	if (flags.sleep)
 		return;
 
+	if (entity->vehicle)
+		return;
+
 	//translational
 
 
@@ -247,6 +250,9 @@ void RigidBody::integrate(float time)
 */
 bool RigidBody::collision_detect(plane_t &p)
 {
+	if (entity->vehicle || (entity->player && entity->player->in_vehicle != -1))
+		return false;
+
 	for( int i = 0;	i < 8; i++)
 	{
 		// make center origin

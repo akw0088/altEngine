@@ -3014,6 +3014,12 @@ void Engine::dynamics()
 		printf("bsp leaf %d Handled by thread %d of %d\n", entity_list[i]->bsp_leaf, thread_num, num_thread);
 #endif
 
+		if (entity_list[i]->vehicle)
+		{
+			entity_list[i]->vehicle->step(0.01f);
+			continue;
+		}
+
 
 		if (entity_list[i]->rigid == NULL)
 			continue;
@@ -3062,12 +3068,6 @@ void Engine::dynamics()
 		while (current_time < delta_time)
 		{
 			cfg_t	config;
-
-			if (entity_list[i]->vehicle)
-			{
-				entity_list[i]->vehicle->step(0.01f);
-				break;
-			}
 
 			body->save_config(config);
 			body->integrate(target_time - current_time);
