@@ -4823,8 +4823,10 @@ void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, 
 
 void init_default_car(carinfo_t *info)
 {
-	info->seat[0] = vec3(50.0f, 20.0f, 0.0f);
-	info->seat[1] = vec3(-50.0f, 20.0f, 0.0f);
+
+	info->seat[0] = vec3(0.0f, 100.0f, -800.0f); // 3rd person
+	info->seat[1] = vec3(50.0f, 30.0f, 20.0f);	// driver
+	info->seat[2] = vec3(-50.0f, 20.0f, 0.0f);	// passenger
 	info->num_seat = 2;
 
 	// static data

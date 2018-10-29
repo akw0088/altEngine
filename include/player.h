@@ -164,6 +164,7 @@ public:
 	static const char *models[23];
 
 	int in_vehicle;
+	int seat;
 
 private:
 };

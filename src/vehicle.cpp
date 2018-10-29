@@ -214,15 +214,19 @@ bool Vehicle::move(input_t &input, float speed_scale)
 
 
 
-	if (input.moveleft)
+	if (input.moveright)
 	{
 		if (steerangle > -M_PI / 4.0f)
 			steerangle -= M_PI / 32.0f;
 	}
-	else if (input.moveright)
+	else if (input.moveleft)
 	{
 		if (steerangle <  M_PI / 4.0f)
 			steerangle += M_PI / 32.0f;
+	}
+	else
+	{
+		steerangle *= 0.9f;
 	}
 
 	rear_slip = 0;

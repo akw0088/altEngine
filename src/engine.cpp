@@ -717,7 +717,7 @@ void Engine::load(char *level)
 		load_entities();
 	}
 
-	if (strstr(level, "q3tourney2"))
+//	if (strstr(level, "q3tourney2"))
 	{
 		int index = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
 		Entity *ent = entity_list[index];
@@ -3614,14 +3614,6 @@ void Engine::step(int tick)
 
 
 	int player = find_type(ENT_PLAYER, 0);
-	if (strstr(q3map.map_name, "section") && player != -1)
-	{
-		Frame car_frame = camera_frame;
-		int index = find_type(ENT_INFO_PLAYER_START, 0);
-
-		entity_list[player]->player->in_vehicle = index;
-		entity_list[player]->position = entity_list[index]->position;
-	}
 
 	int current_light = 0;
 	if (player != -1)

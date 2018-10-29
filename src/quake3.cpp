@@ -2129,8 +2129,8 @@ void Quake3::handle_player(int self, input_t &input)
 						Vehicle *vehicle = engine->entity_list[entity->player->in_vehicle]->vehicle;
 						Frame car_frame;
 
-						float x = cos(vehicle->angle_rad);
-						float y = sin(vehicle->angle_rad);
+						float x = cos(-vehicle->angle_rad);
+						float y = sin(-vehicle->angle_rad);
 
 						car_frame.forward.x = y;
 						car_frame.forward.y = 0;
@@ -2142,9 +2142,14 @@ void Quake3::handle_player(int self, input_t &input)
 						matrix3 mat;
 						car_frame.set(mat);
 						engine->entity_list[entity->player->in_vehicle]->rigid->morientation = mat;
+						entity->rigid->morientation = mat;
+						engine->camera_frame = car_frame;
 						engine->entity_list[entity->player->in_vehicle]->position.y = 0.0f;
 
-						entity->position = vehicle->entity->position + vehicle->info.seat[0];
+
+						vec3 viewpos = mat * vehicle->info.seat[entity->player->seat];
+
+						entity->position = vehicle->entity->position + viewpos;
 						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale);
 					}
 				}
@@ -7109,6 +7114,13 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			debugf("Invalid team: [red, blue]");
 		}
+		return;
+	}
+
+	ret = sscanf(cmd, "seat %s", data);
+	if (ret == 1)
+	{
+		entity_list[self]->player->seat = atoi(data);
 		return;
 	}
 
