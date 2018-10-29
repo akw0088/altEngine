@@ -1175,4 +1175,41 @@ typedef enum
 	CT_STRUCTURE
 } construct_type_t;
 
+
+
+typedef struct
+{
+	float	wheel_base;		// wheel base in m
+	float	cg_to_front;	// in m, distance from CG to front axle
+	float	cg_to_rear;		// in m, idem to rear axle
+	float	cg_to_ground;	// in m, height of CM from ground
+							//	float	mass;			// in kg
+	float	inertia;		// in kg.m
+	float	length;
+	float	width;
+	float	wheel_length;
+	float	wheel_width;
+	float	mass;
+
+
+	vec3	seat[8];
+	int		num_seat;
+	float	gear_ratio[10];
+	int		num_gear;
+	float	diff_ratio;
+	float	efficiency;
+	float	min_rpm;
+	float	max_rpm;
+	float	redline_rpm;
+	float	wheel_radius;
+	float	torque_curve[41];
+	int		num_torque;
+	int		automatic;
+} carinfo_t;
+
+
+
+
+
+
 #endif

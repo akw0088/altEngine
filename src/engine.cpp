@@ -722,7 +722,9 @@ void Engine::load(char *level)
 		int index = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
 		Entity *ent = entity_list[index];
 
-		ent->vehicle = new Vehicle(ent);
+		carinfo_t info;
+		init_default_car(&info);
+		ent->vehicle = new Vehicle(ent, &info);
 		ent->rigid = ent->vehicle;
 		ent->model = ent->rigid;
 		ent->trigger = NULL;

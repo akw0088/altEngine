@@ -225,4 +225,7 @@ int intersect_two_points_plane_vec3(const plane_t &p, const vec3 &a, const vec3 
 int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min);
 void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, int &num_out);
 
+
+void init_default_car(carinfo_t *info);
+
 #endif

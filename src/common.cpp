@@ -4820,3 +4820,87 @@ void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, 
 		num_out++;
 	}
 }
+
+void init_default_car(carinfo_t *info)
+{
+	info->seat[0] = vec3(50.0f, 20.0f, 0.0f);
+	info->seat[1] = vec3(-50.0f, 20.0f, 0.0f);
+	info->num_seat = 2;
+
+	// static data
+	info->cg_to_front = 1.0f;					// meters
+	info->cg_to_rear = 1.0f;					// meters
+	info->cg_to_ground = 1.0f;				// meters
+	info->mass = 1500;						// kg	
+	info->inertia = 1500;						// kg.m			
+	info->width = 1.5f;						// meters
+	info->length = 3.0f;						// meters, must be > wheelbase
+	info->wheel_length = 0.7f;
+	info->wheel_width = 0.3f;
+	info->wheel_base = info->cg_to_front + info->cg_to_rear;
+	info->automatic = 1;
+
+
+	//gearing
+	//zeroth gear is reverse, corvette c5
+	info->gear_ratio[0] = -2.9f;
+	info->gear_ratio[1] = 2.66f;
+	info->gear_ratio[2] = 1.78f;
+	info->gear_ratio[3] = 1.3f;
+	info->gear_ratio[4] = 1.0f;
+	info->gear_ratio[5] = 0.74f;
+	info->gear_ratio[6] = 0.5f;
+	info->num_gear = 7;
+
+	info->diff_ratio = 3.42f;
+	info->efficiency = 1.0f;
+	info->wheel_radius = 0.34f;
+	info->min_rpm = 900.0f;
+	info->max_rpm = 6000.0f;
+	info->redline_rpm = 6500.0f;
+
+	//torque in 256rpm increments
+	//will be loaded from file in future.
+	info->torque_curve[0] = 190.00000f;
+	info->torque_curve[1] = 190.452438f;
+	info->torque_curve[2] = 195.723282f;
+	info->torque_curve[3] = 292.907043f;
+	info->torque_curve[4] = 381.565521f;
+	info->torque_curve[5] = 387.813019f;
+	info->torque_curve[6] = 394.548645f;
+	info->torque_curve[7] = 404.267029f;
+	info->torque_curve[8] = 412.944153f;
+	info->torque_curve[9] = 417.109161f;
+	info->torque_curve[10] = 422.738434f;
+	info->torque_curve[11] = 433.150970f;
+	info->torque_curve[12] = 442.587341f;
+	info->torque_curve[13] = 449.529053f;
+	info->torque_curve[14] = 457.609619f;
+	info->torque_curve[15] = 468.022156f;
+	info->torque_curve[16] = 474.529999f;
+	info->torque_curve[17] = 474.529999f;
+	info->torque_curve[18] = 467.208679f;
+	info->torque_curve[19] = 449.854431f;
+	info->torque_curve[20] = 432.500214f;
+	info->torque_curve[21] = 415.145966f;
+	info->torque_curve[22] = 397.791718f;
+	info->torque_curve[23] = 380.437469f;
+	info->torque_curve[24] = 363.083252f;
+	info->torque_curve[25] = 345.729004f;
+	info->torque_curve[26] = 328.374756f;
+	info->torque_curve[27] = 311.020508f;
+	info->torque_curve[28] = 293.666290f;
+	info->torque_curve[29] = 276.312042f;
+	info->torque_curve[30] = 258.957794f;
+	info->torque_curve[31] = 241.603561f;
+	info->torque_curve[32] = 224.249313f;
+	info->torque_curve[33] = 206.895081f;
+	info->torque_curve[34] = 189.540833f;
+	info->torque_curve[35] = 172.186600f;
+	info->torque_curve[36] = 154.832367f;
+	info->torque_curve[37] = 137.478119f;
+	info->torque_curve[38] = 120.123878f;
+	info->torque_curve[39] = 102.769638f;
+	info->torque_curve[40] = 85.415398f;
+	info->num_torque = 41;
+}

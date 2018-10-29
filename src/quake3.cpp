@@ -2127,9 +2127,21 @@ void Quake3::handle_player(int self, input_t &input)
 					else
 					{
 						Vehicle *vehicle = engine->entity_list[entity->player->in_vehicle]->vehicle;
+						Frame car_frame;
 
-						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent_yaw(&engine->camera_frame, input);
+						float x = cosf(vehicle->angle);
+						float y = sinf(vehicle->angle);
+
+						car_frame.forward.x = y;
+						car_frame.forward.y = 0;
+						car_frame.forward.z = -x;
+
+						car_frame.up = vec3(0.0f, 1.0f, 0.0f);
+
+						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent_yaw(&car_frame, input);
 						engine->entity_list[entity->player->in_vehicle]->position.y = 0.0f;
+
+						entity->position = vehicle->entity->position + vehicle->info.seat[0];
 //						entity->position = engine->entity_list[entity->player->in_vehicle]->position + vec3( 50.0f, 20.0f, 0.0f);
 //						engine->entity_list[entity->player->in_vehicle]->rigid->frame2ent(&engine->camera_frame, input);
 						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale);

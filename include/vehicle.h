@@ -20,8 +20,8 @@
 class Vehicle : public RigidBody
 {
 public:
-	Vehicle(Entity *entity);
-	void init();
+	Vehicle::Vehicle(Entity *entity, carinfo_t *info);
+	void init(carinfo_t *info);
 	void step(float delta_t);
 	bool move(input_t &input, float speed_scale);
 	void integrate(float time);
@@ -42,9 +42,7 @@ public:
 	int		front_slip;
 
 
-	// car data
 	//vec3	velocity;
-
 	float	angle;				// angle of car body orientation (in rads)
 	float	angularvelocity;
 
@@ -57,7 +55,6 @@ public:
 	float	cg_to_front;	// in m, distance from CG to front axle
 	float	cg_to_rear;		// in m, idem to rear axle
 	float	cg_to_ground;	// in m, height of CM from ground
-//	float	mass;			// in kg
 	float	inertia;		// in kg.m
 	float	length;
 	float	width;
@@ -65,19 +62,12 @@ public:
 	float	wheel_width;
 
 
-	// gearing
-	float	gear_ratio[7];
 	int		gear;
-	float	diff_ratio;
-	float	efficiency;
-	float	min_rpm;
-	float	max_rpm;
-	float	redline_rpm;
 	float	engine_wear;	// idea is to have this affect efficiency / blown engine
-	float	wheel_radius;
-	float	torque_curve[41];
 	float	rpm;
-	int automatic;
+
+
+	carinfo_t info;
 };
 
 
