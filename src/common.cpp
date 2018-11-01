@@ -4846,13 +4846,14 @@ void init_default_car(carinfo_t *info)
 	//gearing
 	//zeroth gear is reverse, corvette c5
 	info->gear_ratio[0] = -2.9f;
-	info->gear_ratio[1] = 2.66f;
-	info->gear_ratio[2] = 1.78f;
-	info->gear_ratio[3] = 1.3f;
-	info->gear_ratio[4] = 1.0f;
-	info->gear_ratio[5] = 0.74f;
-	info->gear_ratio[6] = 0.5f;
-	info->num_gear = 7;
+	info->gear_ratio[1] = 0;
+	info->gear_ratio[2] = 2.66f;
+	info->gear_ratio[3] = 1.78f;
+	info->gear_ratio[4] = 1.3f;
+	info->gear_ratio[5] = 1.0f;
+	info->gear_ratio[6] = 0.74f;
+	info->gear_ratio[7] = 0.5f;
+	info->num_gear = 8;
 
 	info->diff_ratio = 3.42f;
 	info->efficiency = 1.0f;

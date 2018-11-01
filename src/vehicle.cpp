@@ -45,7 +45,7 @@ void Vehicle::init(carinfo_t *info)
 	steerangle = 0;
 	throttle = 0;
 	brake = 0;
-	gear = 1;
+	gear = 2;
 }
 
 void Vehicle::step(float delta_t)
@@ -118,13 +118,13 @@ void Vehicle::step(float delta_t)
 	{
 		if (rpm > 5800)
 			gear++;
-		if (gear >= 6)
+		if (gear >= info.num_gear)
 			gear = 6;
 
 		if (rpm < 4000)
 			gear--;
-		if (gear <= 1)
-			gear = 1;
+		if (gear <= 2)
+			gear = 2;
 	}
 
 	int torque_index = (int)(rpm / 256.0f);
