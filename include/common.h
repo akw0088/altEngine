@@ -24,7 +24,7 @@
 
 // When colliding with a wall, velocity towards the wall is clipped
 // This is extra clipping past what is necessary, making you stay further away from walls
-#define BOUNCE		1.2f
+#define BOUNCE		1.5f
 
 
 #pragma pack(1)
@@ -227,5 +227,7 @@ void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, 
 
 
 void init_default_car(carinfo_t *info);
+
+inline void get_plane_slope(const vec3 &normal, float &angle);
 
 #endif

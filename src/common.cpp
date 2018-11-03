@@ -4901,13 +4901,20 @@ void init_default_car(carinfo_t *info)
 }
 
 
-// car is on a plane, need to determine force acting "downhill"
-void get_incline_accel(const vec3 &normal, const float mass, const float mu, float &accel)
+inline void get_plane_slope(const vec3 &normal, float &angle)
 {
 	vec3 up(0.0f, 1.0f, 0.0f);
 
 	// get plane angle of inclination
-	float theta = acos(normal * up);
+	angle = acos(normal * up);
+}
+
+// car is on a plane, need to determine force acting "downhill"
+void get_incline_accel(const vec3 &normal, const float mass, const float mu, float &accel)
+{
+	float theta;
+
+	get_plane_slope(normal, theta);
 
 	// calculate acceleration
 	// sin theta is x (sliding) component of gravity, cos theta is y (normal) component of gravity

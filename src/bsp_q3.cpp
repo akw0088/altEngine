@@ -621,12 +621,21 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 	{
 		if (debug)
 		{
-			printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f\n", brush_index,
+			float angle;
+
+			get_plane_slope(plane->normal, angle);
+
+			// convert to degrees
+			angle *= (180.0f / M_PI);
+
+			printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f, incline %3.1f degrees\n",
+				brush_index,
 				data.Material[brush->material].name,
 				data.Material[brush->material].contents,
 				data.Material[brush->material].surface,
 				*depth, count,
-				plane->normal.x, plane->normal.y, plane->normal.z);
+				plane->normal.x, plane->normal.y, plane->normal.z,
+				angle);
 		}
 
 		flag.surf_flags = data.Material[brush->material].surface;
