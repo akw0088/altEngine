@@ -4846,15 +4846,7 @@ void init_default_car(carinfo_t *info)
 	//gearing
 	//zeroth gear is reverse, corvette c5
 	info->gear_ratio[0] = -2.9f;
-	info->gear_ratio[1] = 0;
-	info->gear_ratio[2] = 2.66f;
-	info->gear_ratio[3] = 1.78f;
-	info->gear_ratio[4] = 1.3f;
-	info->gear_ratio[5] = 1.0f;
-	info->gear_ratio[6] = 0.74f;
-	info->gear_ratio[7] = 0.5f;
-	info->num_gear = 8;
-
+	info->gear_ratio[1] = 0;	info->gear_ratio[2] = 2.66f;	info->gear_ratio[3] = 1.78f;	info->gear_ratio[4] = 1.3f;	info->gear_ratio[5] = 1.0f;	info->gear_ratio[6] = 0.74f;	info->gear_ratio[7] = 0.5f;	info->num_gear = 8;
 	info->diff_ratio = 3.42f;
 	info->efficiency = 1.0f;
 	info->wheel_radius = 0.34f;
@@ -4906,4 +4898,44 @@ void init_default_car(carinfo_t *info)
 	info->torque_curve[39] = 102.769638f;
 	info->torque_curve[40] = 85.415398f;
 	info->num_torque = 41;
+}
+
+
+// car is on a plane, need to determine force acting "downhill"
+void get_incline_accel(const vec3 &normal, const float mass, const float mu, float &accel)
+{
+	vec3 up(0.0f, 1.0f, 0.0f);
+
+	// get plane angle of inclination
+	float theta = acos(normal * up);
+
+	// calculate acceleration
+	// sin theta is x (sliding) component of gravity, cos theta is y (normal) component of gravity
+	accel = -9.8f * (sin(theta) - cos(theta) * mu);
+}
+
+inline void project_vector_onto_plane(const vec3 &normal, const vec3 &dir, vec3 &result)
+{
+	result = dir - normal * (dir * normal);
+}
+
+vec3 get_plane_direction_gradient(const vec3 &normal)
+{
+	vec3 result;
+
+	vec3 up(0.0f, 1.0f, 0.0f);
+	vec3 sideways = vec3::crossproduct(normal, up);
+	sideways.normalize();
+
+	vec3 direction = vec3::crossproduct(sideways, up);
+	direction.normalize();
+
+	// project onto plane
+	project_vector_onto_plane(normal, direction, result);
+
+	// gradient goes uphill
+	if (result.y < 0)
+		return -result;
+
+	return result;
 }
