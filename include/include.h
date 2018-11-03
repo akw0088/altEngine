@@ -262,6 +262,7 @@ using namespace std;
 #include "player.h"
 #include "constructable.h"
 #include "vehicle.h"
+#include "cloth.h"
 
 #include "sin_table.h"
 #include "common.h"

@@ -570,6 +570,17 @@ void Engine::load(char *level)
 	if (q3map.loaded)
 		return;
 
+	cloth1.init(14, 10, 55, 45);
+
+	vec3 scale(1.0f, 1.0f, 1.0f);
+	vec3 offset(0.0f, 0.0f, 0.0f);
+
+	ball_pos = vec3(7, -5, 0);
+	ball_radius = 2.0f;
+	ball_time = 0.0f;
+	cloth1.create_buffers(gfx, cloth_vbo, cloth_num_vertex, cloth_ibo, cloth_num_index, scale, offset);
+
+
 	if (strstr(level, "ctf"))
 	{
 		gametype = GAMETYPE_CTF;
@@ -2255,7 +2266,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 
 		//render entity
-		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)
+		if (entity->ent_type == ENT_WEAPON_LIGHTNING)
 		{
 //			int player = find_type(ENT_PLAYER, 0);
 //			int current_light = 0;
@@ -2267,7 +2278,14 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			//int lod = clamp(current_light, 0, 10);
 
 			//isocube[0].render(gfx);
-			isosphere[0].render(gfx);
+			//isosphere[0].render(gfx);
+
+			entity->rigid->angular_velocity = vec3(0.0f, 0.0f, 0.0f);
+			glFrontFace(GL_CCW);
+			gfx.SelectIndexBuffer(cloth_ibo);
+			gfx.SelectVertexBuffer(cloth_vbo);
+			gfx.DrawArrayTri(0, 0, cloth_num_index, cloth_num_vertex);
+			glFrontFace(GL_CW);
 		}
 		else
 		{
@@ -2984,6 +3002,20 @@ void Engine::activate_light(float distance, Light *light)
 	}
 }
 
+
+
+void Engine::handle_cloth()
+{
+	// calculating positions
+	ball_time++;
+	ball_pos.z = cos(ball_time / 50.0) * 7;
+
+	cloth1.addForce(vec3(0, -0.2, 0)*TIME_STEPSIZE2); // add gravity each frame, pointing down
+	cloth1.windForce(vec3(0.5, 0, 0.2)*TIME_STEPSIZE2); // generate some wind each frame
+	cloth1.timeStep(); // calculate the particle positions of the next frame
+	//cloth1.ballCollision(ball_pos, ball_radius); // resolve collision with the ball
+}
+
 /*
 	This function can be threaded by:
 	1. Dividing particles by bsp leafs
@@ -3000,6 +3032,9 @@ void Engine::dynamics()
 {
 
 	//handle_springs();
+
+
+	handle_cloth();
 
 //	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -3524,6 +3559,12 @@ void Engine::step(int tick)
 
 	if (ingame_menu_timer > 0)
 		ingame_menu_timer--;
+
+	vec3 scale(5.0f, 20.0f, 20.0f);
+	vec3 offset(-40.0f, 200.0f, 200.0f);
+	gfx.DeleteVertexBuffer(cloth_vbo);
+	gfx.DeleteIndexBuffer(cloth_ibo);
+	cloth1.create_buffers(gfx, cloth_vbo, cloth_num_vertex, cloth_ibo, cloth_num_index, scale, offset);
 
 #ifndef DEDICATED
 	// Animate animated textures

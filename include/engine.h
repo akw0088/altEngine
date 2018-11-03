@@ -72,6 +72,7 @@ public:
 	void step(int tick_num);
 	void dynamics();
 	void handle_springs();
+	void handle_cloth();
 	void spatial_testing();
 	void activate_light(float distance, Light *light);
 	void update_audio();
@@ -157,6 +158,16 @@ public:
 	int quad_vertex;
 
 //temp
+	cloth::Cloth cloth1;
+	vec3 ball_pos;
+	float ball_radius;
+	float ball_time;
+	unsigned int cloth_vbo;
+	unsigned int cloth_ibo;
+	unsigned int cloth_num_index;
+	unsigned int cloth_num_vertex;
+
+
 	unsigned int testObj;
 	unsigned int num_light;
 	int doom_sound;
