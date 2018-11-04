@@ -30,6 +30,7 @@ class Bsp
 	void tessellate(int level, q3::bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
 		int **index_array, int &numIndexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size);
 	inline void render_face(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
+	inline void render_flag(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader);
 	inline void render_patch(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
 	inline void render_billboard(q3::face_t *face, Graphics &gfx, int stage, bool lightmap, bool shader);
 	void gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position, frustum_t *frustum, int tick_num);
@@ -107,6 +108,10 @@ public:
 	vec3 model_vel[128];
 
 	unsigned int portal_tex; // hack
+
+
+
+
 
 	bool enable_fog;
 	bool enable_textures;

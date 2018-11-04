@@ -8000,6 +8000,60 @@ break;
 			}
 			break;
 
+		case ENT_FUNC_CLOTH:
+		{
+			cloth::Cloth *cloth = new cloth::Cloth();
+			engine->cloth.push_back(cloth);
+
+
+			matrix4 matrix;
+			if (entity_list[i]->brushinfo)
+			{
+				//set spawn angle
+				switch (entity_list[i]->brushinfo->angle)
+				{
+				case 0:
+				case 45:
+				case 360:
+				case 325:
+					matrix4::mat_left(matrix, entity_list[i]->position);
+					break;
+				case 90:
+				case 135:
+					matrix4::mat_forward(matrix, entity_list[i]->position);
+					break;
+				case 180:
+				case 225:
+					matrix4::mat_right(matrix, entity_list[i]->position);
+					break;
+				case 270:
+					matrix4::mat_backward(matrix, entity_list[i]->position);
+					break;
+				default:
+					matrix4::mat_left(matrix, entity_list[i]->position);
+					break;
+				}
+			}
+
+			entity_list[i]->rigid->morientation.m[0] = matrix.m[0];
+			entity_list[i]->rigid->morientation.m[1] = matrix.m[1];
+			entity_list[i]->rigid->morientation.m[2] = matrix.m[2];
+
+			entity_list[i]->rigid->morientation.m[3] = matrix.m[4];
+			entity_list[i]->rigid->morientation.m[4] = matrix.m[5];
+			entity_list[i]->rigid->morientation.m[5] = matrix.m[6];
+
+			entity_list[i]->rigid->morientation.m[6] = matrix.m[7];
+			entity_list[i]->rigid->morientation.m[7] = matrix.m[8];
+			entity_list[i]->rigid->morientation.m[8] = matrix.m[10];
+
+
+			cloth->init(130, 220, 10, 20);
+			cloth->create_buffers(engine->gfx);
+
+			cloth->tex = load_texture_pk3(engine->gfx, entity_list[i]->entstring->target, engine->pk3_list, engine->num_pk3, false, false, 0);
+			break;
+		}
 		}
 
 		if ((entity_list[i]->ent_type > ENT_FUNC_START && entity_list[i]->ent_type < ENT_FUNC_END) ||

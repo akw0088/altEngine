@@ -3,12 +3,6 @@
 #include "vector.h"
 #include <vector>
 
-
-
-#define DAMPING 0.01f
-#define TIME_STEPSIZE2 0.125f
-#define CONSTRAINT_ITERATIONS 15
-
 namespace cloth
 {
 	class Particle
@@ -17,7 +11,7 @@ namespace cloth
 		Particle(vec3 pos);
 		Particle();
 		void addForce(vec3 f);
-		void timeStep();
+		void step();
 		vec3& getPos();
 		void resetAcceleration();
 		void offsetPos(const vec3 v);
@@ -51,15 +45,24 @@ namespace cloth
 	{
 	public:
 		void init(float width, float height, int num_particles_width, int num_particles_height);
-		void create_buffers(Graphics &gfx, unsigned int &vbo, unsigned int &num_vert, unsigned int &ibo, unsigned int &num_index, vec3 &scale, vec3 &offset);
-		void timeStep();
+		void create_buffers(Graphics &gfx);
+		void step();
 		void addForce(const vec3 direction);
 		void windForce(const vec3 direction);
 		void ballCollision(const vec3 center, const float radius);
 
+
+		unsigned int ibo;
+		unsigned int vbo;
+		unsigned int tex;
+		unsigned int num_index;
+		unsigned int num_vert;
+
 	private:
 		int num_particles_width;
 		int num_particles_height;
+		int width;
+		int height;
 
 		std::vector<Particle> particles;
 		std::vector<Constraint> constraints;
@@ -68,7 +71,7 @@ namespace cloth
 		void makeConstraint(Particle *p1, Particle *p2);
 		vec3 calcTriangleNormal(Particle *p1, Particle *p2, Particle *p3);
 		void addWindForcesForTriangle(Particle *p1, Particle *p2, Particle *p3, const vec3 direction);
-		void addTriangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color, vec3 &scale, vec3 &offset);
+		void addTriangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color);
 	};
 
 };

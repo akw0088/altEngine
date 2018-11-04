@@ -570,7 +570,6 @@ void Engine::load(char *level)
 	if (q3map.loaded)
 		return;
 
-	cloth1.init(14, 10, 55, 45);
 
 	vec3 scale(1.0f, 1.0f, 1.0f);
 	vec3 offset(0.0f, 0.0f, 0.0f);
@@ -578,7 +577,6 @@ void Engine::load(char *level)
 	ball_pos = vec3(7, -5, 0);
 	ball_radius = 2.0f;
 	ball_time = 0.0f;
-	cloth1.create_buffers(gfx, cloth_vbo, cloth_num_vertex, cloth_ibo, cloth_num_index, scale, offset);
 
 
 	if (strstr(level, "ctf"))
@@ -731,20 +729,24 @@ void Engine::load(char *level)
 //	if (strstr(level, "q3tourney2"))
 	{
 		int index = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
-		Entity *ent = entity_list[index];
 
-		carinfo_t info;
-		init_default_car(&info);
-		ent->vehicle = new Vehicle(ent, &info);
-		ent->rigid = ent->vehicle;
-		ent->model = ent->rigid;
-		ent->trigger = NULL;
+		if (index != -1)
+		{
+			Entity *ent = entity_list[index];
 
-//		q3map.enable_textures = false;
-		enable_bloom = false;
+			carinfo_t info;
+			init_default_car(&info);
+			ent->vehicle = new Vehicle(ent, &info);
+			ent->rigid = ent->vehicle;
+			ent->model = ent->rigid;
+			ent->trigger = NULL;
 
-		ent->vehicle->load(gfx, "media/models/vehicle/car/car4");
-		entity_list[index]->rigid->frame2ent(&camera_frame, input);
+			//		q3map.enable_textures = false;
+			enable_bloom = false;
+
+			ent->vehicle->load(gfx, "media/models/vehicle/car/car4");
+			entity_list[index]->rigid->frame2ent(&camera_frame, input);
+		}
 	}
 
 
@@ -2265,8 +2267,19 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			gfx.CullFace(2);
 		}
 
+		if (entity->ent_type == ENT_FUNC_CLOTH)
+		{
+			for (int i = 0; i < cloth.size(); i++)
+			{
+				gfx.SelectIndexBuffer(cloth[i]->ibo);
+				gfx.SelectVertexBuffer(cloth[i]->vbo);
+				gfx.SelectTexture(0, cloth[i]->tex);
+				gfx.DrawArrayTri(0, 0, cloth[i]->num_index, cloth[i]->num_vert);
+			}
+		}
+
 		//render entity
-		if (entity->ent_type == ENT_WEAPON_LIGHTNING)
+		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)
 		{
 //			int player = find_type(ENT_PLAYER, 0);
 //			int current_light = 0;
@@ -2279,13 +2292,6 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 			//isocube[0].render(gfx);
 			//isosphere[0].render(gfx);
-
-			entity->rigid->angular_velocity = vec3(0.0f, 0.0f, 0.0f);
-			glFrontFace(GL_CCW);
-			gfx.SelectIndexBuffer(cloth_ibo);
-			gfx.SelectVertexBuffer(cloth_vbo);
-			gfx.DrawArrayTri(0, 0, cloth_num_index, cloth_num_vertex);
-			glFrontFace(GL_CW);
 		}
 		else
 		{
@@ -3010,9 +3016,20 @@ void Engine::handle_cloth()
 	ball_time++;
 	ball_pos.z = cos(ball_time / 50.0) * 7;
 
-	cloth1.addForce(vec3(0, -0.2, 0)*TIME_STEPSIZE2); // add gravity each frame, pointing down
-	cloth1.windForce(vec3(0.5, 0, 0.2)*TIME_STEPSIZE2); // generate some wind each frame
-	cloth1.timeStep(); // calculate the particle positions of the next frame
+
+	for (int i = 0; i < cloth.size(); i++)
+	{
+		cloth[i]->addForce(vec3(0, -9.8, 0) * 0.125f);
+		cloth[i]->windForce(vec3(-0.004, 0, -0.004) * 0.125f);
+		cloth[i]->step();
+
+
+		gfx.DeleteIndexBuffer(cloth[i]->ibo);
+		gfx.DeleteVertexBuffer(cloth[i]->vbo);
+		cloth[i]->create_buffers(gfx);
+	}
+
+
 	//cloth1.ballCollision(ball_pos, ball_radius); // resolve collision with the ball
 }
 
@@ -3559,12 +3576,6 @@ void Engine::step(int tick)
 
 	if (ingame_menu_timer > 0)
 		ingame_menu_timer--;
-
-	vec3 scale(5.0f, 20.0f, 20.0f);
-	vec3 offset(-40.0f, 200.0f, 200.0f);
-	gfx.DeleteVertexBuffer(cloth_vbo);
-	gfx.DeleteIndexBuffer(cloth_ibo);
-	cloth1.create_buffers(gfx, cloth_vbo, cloth_num_vertex, cloth_ibo, cloth_num_index, scale, offset);
 
 #ifndef DEDICATED
 	// Animate animated textures

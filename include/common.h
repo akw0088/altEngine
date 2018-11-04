@@ -58,7 +58,7 @@ void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index
 void print_entity_meminfo(vector<Entity *> &entity_list);
 
 char *get_file(char *filename, unsigned int *size);
-int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size);
+int get_zipfile(char *zipfile, char *file, unsigned char **data, unsigned int *size);
 int list_zipfile(char *zipfile, char *filelist);
 int write_file(char *filename, const char *bytes, int size);
 float sign(float x);

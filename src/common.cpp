@@ -568,7 +568,7 @@ int listCallback(JZFile *zip, int idx, JZFileHeader *header, char *filename, voi
 	return 1; // continue
 }
 
-int get_zipfile(char *zipfile, char *file, unsigned char **data, int *size)
+int get_zipfile(char *zipfile, char *file, unsigned char **data, unsigned int *size)
 {
 	FILE *fp;
 	JZEndRecord endRecord;
@@ -684,7 +684,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	int width, height, components, format;
 	int tex_object = -1;
 
-	int size = 0;
+	unsigned int size = 0;
 	unsigned char *data = NULL;
 	char pk3_name[1024];
 
@@ -700,7 +700,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 
 
 	if (data == NULL)
-		data = (unsigned char *)get_file(file_name, NULL);
+		data = (unsigned char *)get_file(file_name, &size);
 
 	// tga failed tried jpg
 	if (data == NULL)

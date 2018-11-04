@@ -777,6 +777,7 @@ typedef enum
 	ENT_CONSTRUCT,
 	ENT_SENTRY,
 	ENT_SENTRY_BASE,
+	ENT_FUNC_CLOTH,
 	ENT_FUNC_TERRAIN // giant OBJ file with texture, need to figure out collision
 } entity_type_t;
 
@@ -1191,7 +1192,7 @@ typedef struct
 	float	wheel_width;
 	float	mass;
 
-
+	vec3	third_person;
 	vec3	seat[8];
 	int		num_seat;
 	float	gear_ratio[10];

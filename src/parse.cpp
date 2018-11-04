@@ -518,6 +518,17 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 
 		}
+		else if (strcmp(value, "func_cloth") == 0)
+		{
+			entity.ent_type = ENT_FUNC_CLOTH;
+
+			if (entity.rigid)
+			{
+				entity.rigid->flags.gravity = false;
+				entity.rigid->flags.flight = true;
+			}
+
+		}
 		else if (strcmp(value, "trigger_teleport") == 0)
 		{
 			entity.ent_type = ENT_TRIGGER_TELEPORT;
@@ -1687,6 +1698,16 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (entity.trigger == NULL)
 			entity.trigger = new Trigger(&entity, audio);
 		entity.trigger->timeout_value = (float)atoi(value);
+	}
+	else if (strcmp(key, "texture") == 0)
+	{
+		if (entity.entstring == NULL)
+		{
+			entity.entstring = new ent_string_t;
+			memset(entity.entstring, 0, sizeof(ent_string_t));
+		}
+
+		strcpy(entity.entstring->target, value);
 	}
 	else if (strcmp(key, "target") == 0)
 	{

@@ -1,6 +1,6 @@
 #include "include.h"
 
-#define DAMPING 0.01f
+#define DAMPING 0.001f
 #define TIME_STEPSIZE2 0.125f
 #define CONSTRAINT_ITERATIONS 15
 
@@ -26,12 +26,12 @@ void Particle::addForce(vec3 force)
 	acceleration += force / mass;
 }
 
-void Particle::timeStep()
+void Particle::step()
 {
 	if (movable)
 	{
 		vec3 temp = pos;
-		pos = pos + (pos - old_pos) * (1.0f - DAMPING) + acceleration*TIME_STEPSIZE2;
+		pos = pos + (pos - old_pos) * (1.0f - DAMPING) + acceleration * TIME_STEPSIZE2;
 		old_pos = temp;
 		acceleration = vec3(0, 0, 0);
 	}
@@ -95,6 +95,8 @@ void Cloth::init(float width, float height, int num_particles_width, int num_par
 {
 	Cloth::num_particles_width = num_particles_width;
 	Cloth::num_particles_height = num_particles_height;
+	Cloth::width = width;
+	Cloth::height = height;
 	particles.resize(num_particles_width * num_particles_height);
 
 	for (int x = 0; x < num_particles_width; x++)
@@ -167,7 +169,7 @@ void Cloth::init(float width, float height, int num_particles_width, int num_par
 	}
 }
 
-void Cloth::create_buffers(Graphics &gfx, unsigned int &vbo, unsigned int &num_vert, unsigned int &ibo, unsigned int &num_index, vec3 &scale, vec3 &offset)
+void Cloth::create_buffers(Graphics &gfx)
 {
 	std::vector<Particle>::iterator particle;
 	for (particle = particles.begin(); particle != particles.end(); particle++)
@@ -191,12 +193,12 @@ void Cloth::create_buffers(Graphics &gfx, unsigned int &vbo, unsigned int &num_v
 		}
 	}
 
-	static vertex_t vertex_array[2 * 8192];
+	static vertex_t vertex_array[4 * 8192];
 	num_vert = 0;
 	num_index = 0;
 
 
-	static int index_array[2 * 8192];
+	static int index_array[4 * 8192];
 
 	for (int x = 0; x < num_particles_width - 1; x++)
 	{
@@ -208,18 +210,31 @@ void Cloth::create_buffers(Graphics &gfx, unsigned int &vbo, unsigned int &num_v
 			else
 				color = vec3(1.0f, 1.0f, 1.0f);
 
-
-			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y), getParticle(x, y), getParticle(x, y + 1), color, scale, offset);
-
+			// add frontwards
+			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y), getParticle(x, y), getParticle(x, y + 1), color);
 			index_array[num_index] = num_index;
 			index_array[num_index+1] = num_index+1;
 			index_array[num_index+2] = num_index+2;
 			num_index += 3;
 			num_vert += 3;
 
-			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y + 1), getParticle(x + 1, y), getParticle(x, y + 1), color, scale, offset);
+			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y + 1), getParticle(x + 1, y), getParticle(x, y + 1), color);
+			index_array[num_index] = num_index;
+			index_array[num_index + 1] = num_index + 1;
+			index_array[num_index + 2] = num_index + 2;
+			num_vert += 3;
+			num_index += 3;
 
 
+			//make double sided
+			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y), getParticle(x, y + 1), getParticle(x, y), color);
+			index_array[num_index] = num_index;
+			index_array[num_index + 1] = num_index + 1;
+			index_array[num_index + 2] = num_index + 2;
+			num_index += 3;
+			num_vert += 3;
+
+			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y + 1), getParticle(x, y + 1), getParticle(x + 1, y), color);
 			index_array[num_index] = num_index;
 			index_array[num_index + 1] = num_index + 1;
 			index_array[num_index + 2] = num_index + 2;
@@ -233,7 +248,7 @@ void Cloth::create_buffers(Graphics &gfx, unsigned int &vbo, unsigned int &num_v
 	ibo = gfx.CreateVertexBuffer(index_array, num_index, true);
 }
 
-void Cloth::timeStep()
+void Cloth::step()
 {
 	std::vector<Constraint>::iterator constraint;
 	for (int i = 0; i < CONSTRAINT_ITERATIONS; i++)
@@ -247,7 +262,7 @@ void Cloth::timeStep()
 	std::vector<Particle>::iterator particle;
 	for (particle = particles.begin(); particle != particles.end(); particle++)
 	{
-		(*particle).timeStep();
+		(*particle).step();
 	}
 }
 
@@ -319,29 +334,23 @@ void Cloth::addWindForcesForTriangle(Particle *p1, Particle *p2, Particle *p3, c
 	p3->addForce(force);
 }
 
-void Cloth::addTriangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color, vec3 &scale, vec3 &offset)
+void Cloth::addTriangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color)
 {
 	vertex_array[0].normal = p1->getNormal().normalize();
 	vertex_array[0].position = p1->getPos();
-	vertex_array[0].position.x = vertex_array[0].position.x * scale.x;
-	vertex_array[0].position.y = vertex_array[0].position.y * scale.y;
-	vertex_array[0].position.z = vertex_array[0].position.z * scale.z;
-	vertex_array[0].position += offset;
+	vertex_array[0].texCoord0.x = vertex_array[0].position.x / width;
+	vertex_array[0].texCoord0.y = vertex_array[0].position.y / height;
 	vertex_array[0].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 
 	vertex_array[1].normal = p2->getNormal().normalize();
 	vertex_array[1].position = p2->getPos();
-	vertex_array[1].position.x = vertex_array[1].position.x * scale.x;
-	vertex_array[1].position.y = vertex_array[1].position.y * scale.y;
-	vertex_array[1].position.z = vertex_array[1].position.z * scale.z;
-	vertex_array[1].position += offset;
+	vertex_array[1].texCoord0.x = vertex_array[1].position.x / width;
+	vertex_array[1].texCoord0.y = vertex_array[1].position.y / height;
 	vertex_array[1].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 
 	vertex_array[2].normal = p3->getNormal().normalize();
 	vertex_array[2].position = p3->getPos();
-	vertex_array[2].position.x = vertex_array[2].position.x * scale.x;
-	vertex_array[2].position.y = vertex_array[2].position.y * scale.y;
-	vertex_array[2].position.z = vertex_array[2].position.z * scale.z;
-	vertex_array[2].position += offset;
+	vertex_array[2].texCoord0.x = vertex_array[2].position.x / width;
+	vertex_array[2].texCoord0.y = vertex_array[2].position.y / height;
 	vertex_array[2].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 }

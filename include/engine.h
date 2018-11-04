@@ -158,14 +158,10 @@ public:
 	int quad_vertex;
 
 //temp
-	cloth::Cloth cloth1;
+	vector<cloth::Cloth *> cloth;
 	vec3 ball_pos;
 	float ball_radius;
 	float ball_time;
-	unsigned int cloth_vbo;
-	unsigned int cloth_ibo;
-	unsigned int cloth_num_index;
-	unsigned int cloth_num_vertex;
 
 
 	unsigned int testObj;
