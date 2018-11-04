@@ -2267,6 +2267,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			gfx.CullFace(2);
 		}
 
+#ifndef SOFTWARE
 		if (entity->ent_type == ENT_FUNC_CLOTH)
 		{
 			for (int i = 0; i < cloth.size(); i++)
@@ -2277,6 +2278,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				gfx.DrawArrayTri(0, 0, cloth[i]->num_index, cloth[i]->num_vert);
 			}
 		}
+#endif
 
 		//render entity
 		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)

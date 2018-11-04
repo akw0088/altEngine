@@ -910,17 +910,20 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 #endif
 #ifdef DIRECTX
 	components = 4;
-	unsigned char *data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	img_data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 	format = 4;
+#endif
+#ifdef SOFTWARE
+	img_data = stbi_load_from_memory(data, size, &width, &height, &components, 4);
 #endif
 #ifdef VULKAN
 	format = -1;
-	data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	img_data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
 #endif
 #ifdef DEDICATED
 	if (components == 3)
 	{
-		char *temp = tga_24to32(width, height, (char *)data, bgr);
+		char *temp = tga_24to32(width, height, (char *)img_data, bgr);
 		delete[] img_data;
 		img_data = (unsigned char *)temp;
 		components = 5;
