@@ -1670,7 +1670,7 @@ void draw_rect(int *pixels, int width, int height, float angle, int w, int l, in
 }
 
 
-void draw_circle(int *pixels, int width, int height, invoid draw_circle(int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
+void draw_circle(int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
 {
 	int x = radius - 1;
 	int y = 0;
