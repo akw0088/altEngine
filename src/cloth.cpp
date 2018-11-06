@@ -90,6 +90,11 @@ void Constraint::satisfyConstraint()
 	p2->offsetPos(-correctionVectorHalf);
 }
 
+Cloth::Cloth()
+{
+	ibo = -1;
+	vbo = -1;
+}
 
 void Cloth::init(float width, float height, int num_particles_width, int num_particles_height)
 {
@@ -193,12 +198,19 @@ void Cloth::create_buffers(Graphics &gfx)
 		}
 	}
 
-	static vertex_t vertex_array[4 * 8192];
+	static vertex_t *vertex_array = NULL;
+	if (vertex_array == NULL)
+	{
+		vertex_array = new vertex_t[2 * 2052];
+	}
 	num_vert = 0;
 	num_index = 0;
 
-
-	static int index_array[4 * 8192];
+	static int *index_array = NULL;
+	if (index_array == NULL)
+	{
+		index_array = new int[2 * 2052];
+	}
 
 	for (int x = 0; x < num_particles_width - 1; x++)
 	{
@@ -243,9 +255,16 @@ void Cloth::create_buffers(Graphics &gfx)
 		}
 	}
 
-
+	if (ibo != -1)
+	{
+		gfx.DeleteIndexBuffer(ibo);
+	}
+	if (vbo != -1)
+	{
+		gfx.DeleteVertexBuffer(vbo);
+	}
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vert, true);
-	ibo = gfx.CreateVertexBuffer(index_array, num_index, true);
+	ibo = gfx.CreateIndexBuffer(index_array, num_index);
 }
 
 void Cloth::step()

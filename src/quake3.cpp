@@ -6116,6 +6116,17 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
 			}
 		}
+
+		if (entity->ent_type == ENT_FUNC_CLOTH)
+		{
+			int line = 1;
+
+			if (entity->light != NULL)
+			{
+				sprintf(data, "ent_num %d", ent_num);
+				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+			}
+		}
 	}
 	menu.draw_text("", pos.x, pos.y + 0.0625f, 0.02f, color, false, true);
 	engine->projection = real_projection;
@@ -6501,6 +6512,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	}
 
 	vec3 pos;
+	ret = sscanf(cmd, "setpos %f %f %f %d", &pos.x, &pos.y, &pos.z, &self);
+	if (ret == 3)
+	{
+		snprintf(msg, LINE_SIZE, "Setting position to %f %f %f for entity %d\n", pos.x, pos.y, pos.z);
+		if (self >= 0 && self < entity_list.size() - 1)
+			entity_list[self]->position = pos;
+		return;
+	}
+
 	ret = sscanf(cmd, "setpos %f %f %f", &pos.x, &pos.y, &pos.z);
 	if (ret == 3)
 	{
@@ -6511,6 +6531,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 			engine->camera_frame.pos = pos;
 		return;
 	}
+
+
 
 	ret = sscanf(cmd, "cg_crosshairsize %s", data);
 	if (ret == 1)

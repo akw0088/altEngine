@@ -2267,7 +2267,6 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			gfx.CullFace(2);
 		}
 
-#ifndef SOFTWARE
 		if (entity->ent_type == ENT_FUNC_CLOTH)
 		{
 			for (int i = 0; i < cloth.size(); i++)
@@ -2278,7 +2277,6 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				gfx.DrawArrayTri(0, 0, cloth[i]->num_index, cloth[i]->num_vert);
 			}
 		}
-#endif
 
 		//render entity
 		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)
@@ -4572,9 +4570,12 @@ int Engine::get_entity()
 			if (looped == 2)
 			{
 				debugf("Unable to find free dynamic entity\n");
-				break;
+				return -1;
 			}
 		}
+
+		if (index >= entity_list.size())
+			break;
 
 		if (entity_list[index]->ent_type == ENT_UNKNOWN)
 		{

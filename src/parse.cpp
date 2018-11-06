@@ -46,6 +46,12 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.position.y = (float)y;
 			entity.position.z = (float)z;
 		}
+		else if (entity.entstring && strstr(entity.entstring->type, "func_cloth") != NULL)
+		{
+			entity.position.x = (float)x;
+			entity.position.y = (float)y;
+			entity.position.z = (float)z;
+		}
 	}
 	else if (strcmp(key, "model") == 0)
 	{

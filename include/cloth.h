@@ -44,6 +44,7 @@ namespace cloth
 	class Cloth
 	{
 	public:
+		Cloth();
 		void init(float width, float height, int num_particles_width, int num_particles_height);
 		void create_buffers(Graphics &gfx);
 		void step();

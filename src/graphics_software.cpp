@@ -766,6 +766,7 @@ void Graphics::SelectIndexBuffer(int handle)
 
 void Graphics::DeleteIndexBuffer(int handle)
 {
+	delete[] index_array[handle];
 }
 
 void Graphics::CreateVertexArrayObject(unsigned int &vao)
@@ -794,6 +795,7 @@ void Graphics::SelectVertexBuffer(int handle)
 
 void Graphics::DeleteVertexBuffer(int handle)
 {
+	delete[] vertex_array[handle];
 }
 
 
