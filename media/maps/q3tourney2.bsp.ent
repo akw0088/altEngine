@@ -930,43 +930,43 @@
 }
 {
 "classname" "func_cloth"
-"origin" "360 530 -840"
+"origin" "360 530 -820"
 "angle" "180"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }
 {
 "classname" "func_cloth"
-"origin" "360 530 -1335"
+"origin" "360 530 -1325"
 "angle" "180"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }
 {
 "classname" "func_cloth"
-"origin" "-500 530 -1435"
+"origin" "-500 530 -1430"
 "angle" "0"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }
 {
 "classname" "func_cloth"
-"origin" "-500 530 -940"
+"origin" "-500 530 -925"
 "angle" "0"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }
 {
 "classname" "func_cloth"
-"origin" "0 530 -1700"`
-"angle" "180"
+"origin" "-10 530 -1720"
+"angle" "270"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }
 {
 "classname" "func_cloth"
-"origin" "0 530 -500"`
-"angle" "180"
+"origin" "-125 500 -460"
+"angle" "90"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }
 {
 "classname" "func_cloth"
-"origin" "-50 400 800"`
-"angle" "180"
+"origin" "-125 350 810"
+"angle" "90"
 "texture" "media/models/mapobjects/flag/banner_strgg.tga"
 }

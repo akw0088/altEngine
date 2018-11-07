@@ -51,8 +51,10 @@ void Constraint::satisfy_constraint()
 	vec3 correctionVector = p1_to_p2 * (1.0f - rest_distance / current_distance);
 	vec3 correctionVectorHalf = correctionVector * 0.5f;
 
-	p1->position += correctionVectorHalf;
-	p2->position += -correctionVectorHalf;
+	if (p1->movable)
+		p1->position += correctionVectorHalf;
+	if (p2->movable)
+		p2->position += -correctionVectorHalf;
 }
 
 Cloth::Cloth()
@@ -131,11 +133,18 @@ void Cloth::init(int width, int height, int num_particles_width, int num_particl
 
 	for (int i = 0; i < 3; i++)
 	{
-		get_particle(0 + i, 0)->position += vec3(0.5f, 0.0f, 0.0f);
-		get_particle(0 + i, 0)->movable = false;
+		Particle *p1 = get_particle(0 + i, 0);
+		Particle *p2 = get_particle(num_particles_width - 1 - i, 0);
+		if (p1->movable)
+		{
+			p1->position += vec3(0.5f, 0.0f, 0.0f);
+		}
+		p1->movable = false;
 
-		get_particle(0 + i, 0)->position += vec3(-0.5f, 0.0f, 0.0f);
-		get_particle(num_particles_width - 1 - i, 0)->movable = false;
+
+		if (p2->movable)
+			p2->position += vec3(-0.5f, 0.0f, 0.0f);
+		p2->movable = false;
 	}
 }
 
