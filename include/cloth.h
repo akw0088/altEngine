@@ -45,7 +45,7 @@ namespace cloth
 	{
 	public:
 		Cloth();
-		void init(float width, float height, int num_particles_width, int num_particles_height);
+		void init(int width, int height, int num_particles_width, int num_particles_height);
 		void create_buffers(Graphics &gfx);
 		void step();
 		void addForce(const vec3 direction);

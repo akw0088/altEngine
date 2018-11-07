@@ -1733,7 +1733,6 @@ void draw_circle(int *pixels, int width, int height, int xc, int yc, int radius,
 
 void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
 {
-	int gm, gd;
 	int x, y, p;
 
 	x = 0;
@@ -2097,7 +2096,7 @@ void calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level
 {
 	float mip_range[7] = { 0.0f, 0.125f, 0.25f, 0.5f, 0.7f, 0.8f, 0.9f };
 	int mip_select[7] = { 0, 1, 1, 1, 2, 3, 3 };
-	unsigned int mip_color[32];
+//	unsigned int mip_color[32];
 
 	// mip colors go from blue green red, aqua white -- near to far (note RGB is backwards, really BGR)
 

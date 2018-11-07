@@ -2269,7 +2269,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 		if (entity->ent_type == ENT_FUNC_CLOTH)
 		{
-			for (int i = 0; i < cloth.size(); i++)
+			for (unsigned int i = 0; i < cloth.size(); i++)
 			{
 				gfx.SelectIndexBuffer(cloth[i]->ibo);
 				gfx.SelectVertexBuffer(cloth[i]->vbo);
@@ -3014,7 +3014,7 @@ void Engine::handle_cloth()
 {
 	// calculating positions
 	ball_time++;
-	ball_pos.z = cos(ball_time / 50.0) * 7;
+	ball_pos.z = cos(ball_time / 50.0f) * 7;
 
 
 	for (int i = 0; i < cloth.size(); i++)

@@ -102,7 +102,7 @@ void Vehicle::step(float delta_t)
 
 
 	float wheel_rotation = 2.2f * (velocity.magnitude() / info.wheel_radius);
-	rpm = wheel_rotation * info.gear_ratio[gear] * info.diff_ratio * 30.0f / M_PI;
+	rpm = wheel_rotation * info.gear_ratio[gear] * info.diff_ratio * 30.0f / (float)M_PI;
 
 	if (rpm < info.min_rpm)
 		rpm = info.min_rpm;
@@ -132,7 +132,7 @@ void Vehicle::step(float delta_t)
 	if (torque_index > 40)
 		torque_index = 40;
 
-	ftraction.x = 0.01 * (info.torque_curve[torque_index] * info.gear_ratio[gear] * info.diff_ratio * info.efficiency / info.wheel_radius) * (throttle - brake * dir);
+	ftraction.x = 0.01f * (info.torque_curve[torque_index] * info.gear_ratio[gear] * info.diff_ratio * info.efficiency / info.wheel_radius) * (throttle - brake * dir);
 	ftraction.z = 0;
 
 	if (rear_slip)

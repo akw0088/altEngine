@@ -96,7 +96,7 @@ Cloth::Cloth()
 	vbo = -1;
 }
 
-void Cloth::init(float width, float height, int num_particles_width, int num_particles_height)
+void Cloth::init(int width, int height, int num_particles_width, int num_particles_height)
 {
 	Cloth::num_particles_width = num_particles_width;
 	Cloth::num_particles_height = num_particles_height;

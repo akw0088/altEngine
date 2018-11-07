@@ -1938,7 +1938,7 @@ void Quake3::handle_player(int self, input_t &input)
 			click = false;
 		}
 
-		static int last_check = 0;
+		static unsigned int last_check = 0;
 
 
 		// Check for vehicles and enter them if near by
@@ -1946,7 +1946,7 @@ void Quake3::handle_player(int self, input_t &input)
 		{
 			if (entity->player->in_vehicle == -1)
 			{
-				for (int i = 0; i < engine->entity_list.size(); i++)
+				for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 				{
 					if (engine->entity_list[i]->vehicle)
 					{
@@ -3323,12 +3323,10 @@ void Quake3::build_sentry()
 void Quake3::build_structure(vec3 &position, int model_index)
 {
 	int owner = engine->find_type(ENT_PLAYER, 0);
-	Player *powner = engine->entity_list[owner]->player;
-
 	if (owner == -1)
-	{
 		return;
-	}
+
+	Player *powner = engine->entity_list[owner]->player;
 
 	if (powner->build_timer > 0)
 	{
@@ -6442,7 +6440,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	char msg[LINE_SIZE] = { 0 };
 	char data[LINE_SIZE] = { 0 };
 	char data2[LINE_SIZE] = { 0 };
-	int ret;
+	unsigned int ret;
 
 	if (cmd[0] == '\0')
 		return;
@@ -6513,9 +6511,9 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	vec3 pos;
 	ret = sscanf(cmd, "setpos %f %f %f %d", &pos.x, &pos.y, &pos.z, &self);
-	if (ret == 3)
+	if (ret == 4)
 	{
-		snprintf(msg, LINE_SIZE, "Setting position to %f %f %f for entity %d\n", pos.x, pos.y, pos.z);
+		snprintf(msg, LINE_SIZE, "Setting position to %f %f %f for entity %d\n", pos.x, pos.y, pos.z, self);
 		if (self >= 0 && self < entity_list.size() - 1)
 			entity_list[self]->position = pos;
 		return;

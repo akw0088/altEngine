@@ -415,8 +415,8 @@ bool render_raytrace(vertex_t *vertex_array, int *index_array, int num_vert, int
 			{
 				color_t output = { 0.0f, 0.0f, 0.0f };
 
-				float fragmenty = y;
-				float fragmentx = x;
+				float fragmenty = (float)y;
+				float fragmentx = (float)x;
 
 				// Antialiasing loops
 //				for (float fragmenty = y ; fragmenty < y + 1.0f; fragmenty += 0.5f )

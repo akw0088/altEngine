@@ -3367,21 +3367,21 @@ float CosineInterpolate(float y1, float y2, float mu)
 {
 	float mu2;
 
-	mu2 = (1 - cos(mu*M_PI)) / 2;
-	return(y1*(1 - mu2) + y2*mu2);
+	mu2 = (1 - cosf(mu * (float)M_PI)) / 2;
+	return(y1 * (1 - mu2) + y2 * mu2);
 }
 
 float CubicInterpolate(float y0, float y1, float y2, float y3, float mu)
 {
 	float a0, a1, a2, a3, mu2;
 
-	mu2 = mu*mu;
+	mu2 = mu * mu;
 	a0 = -0.5f * y0 + 1.5f * y1 - 1.5f * y2 + 0.5f * y3;
 	a1 = y0 - 2.5f * y1 + 2 * y2 - 0.5f * y3;
 	a2 = -0.5f * y0 + 0.5f * y2;
 	a3 = y1;
 
-	return(a0*mu*mu2 + a1*mu2 + a2*mu + a3);
+	return(a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3);
 }
 
 float HermiteInterpolate(float y0, float y1, float y2, float y3,
@@ -3453,7 +3453,7 @@ int generate_spline(vec3 *output, vec3 *control, int num_control, int num_interp
 
 vec3 para_spline(vec3 *control, int num_control, float t)
 {
-	int seg = t * (num_control - 1);
+	int seg = (int)(t * (num_control - 1));
 
 	t = clamp(t, 0.0f, 1.0f);
 	float nt = (t * (num_control - 1)) - ((int)(t * (num_control - 1)) % (num_control - 1));
@@ -3485,7 +3485,7 @@ void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float sca
 			for (int k = 1; k >= 0; k--)
 			{
 				s = (i + k) % numc + 0.5f;
-				t = j % numt;
+				t = (float)(j % numt);
 
 
 				x = (r1 + r2 * cos(s  * twopi / numc)) * cos(t * twopi / numt);
@@ -4410,12 +4410,12 @@ int in_frustum(frustum_t *frustum, vec3 &pos)
 {
 	int left, right, top, bottom, zNear, zFar;
 
-	left = frustum->left.normal * pos + frustum->left.d;
-	right = frustum->right.normal * pos + frustum->right.d;
-	top = frustum->top.normal * pos + frustum->top.d;
-	bottom = frustum->bottom.normal * pos + frustum->bottom.d;
-	zNear = frustum->zNear.normal * pos + frustum->zNear.d;
-	zFar = frustum->zFar.normal * pos + frustum->zFar.d;
+	left = (int)(frustum->left.normal * pos + frustum->left.d);
+	right = (int)(frustum->right.normal * pos + frustum->right.d);
+	top = (int)(frustum->top.normal * pos + frustum->top.d);
+	bottom = (int)(frustum->bottom.normal * pos + frustum->bottom.d);
+	zNear = (int)(frustum->zNear.normal * pos + frustum->zNear.d);
+	zFar = (int)(frustum->zFar.normal * pos + frustum->zFar.d);
 
 //	printf("L%d R%d T%d B%d N%d F%d\r\n", left > 0, right > 0, top > 0, bottom > 0, zNear > 0, zFar > 0);
 
@@ -4553,7 +4553,7 @@ bool check_aabb_plane(const plane_t &p, vec3 *aabb, plane_t &zNear, bool near_pl
 
 int in_frustum_bbox(frustum_t *frustum, vec3 &max, vec3 &min)
 {
-	int left, right, top, bottom, zNear, zFar;
+//	int left, right, top, bottom, zNear, zFar;
 
 
 
@@ -4685,7 +4685,7 @@ void make_plane(Graphics &gfx, plane_t &plane, vec3 &point, float fExtent, float
 	int index_array[4096];
 
 	
-	gl_rotatef(rmat, angle * 180.0f / M_PI, vRot.x, vRot.y, vRot.z);
+	gl_rotatef(rmat, angle * 180.0f / (float)M_PI, vRot.x, vRot.y, vRot.z);
 	mat = rmat;
 	gl_translatef(rmat, point.x, point.y, point.z);
 	mat = mat * rmat;
