@@ -3015,13 +3015,13 @@ void Engine::handle_cloth()
 	// calculating positions
 	ball_time++;
 	ball_pos.z = cos(ball_time / 50.0f) * 7;
-
+	float time = 0.125f;
 
 	for (int i = 0; i < cloth.size(); i++)
 	{
-		cloth[i]->add_force(vec3(0, -9.8, 0) * 0.125f);
-		cloth[i]->wind_force(vec3(-0.004, 0, -0.004) * 0.125f);
-		cloth[i]->step();
+		cloth[i]->add_force(vec3(0, -9.8f, 0) * time);
+		cloth[i]->wind_force(vec3(-0.004f, 0, -0.004f) * time);
+		cloth[i]->step(time);
 
 
 		gfx.DeleteIndexBuffer(cloth[i]->ibo);

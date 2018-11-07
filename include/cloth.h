@@ -11,7 +11,7 @@ namespace cloth
 		Particle(vec3 pos);
 		Particle();
 		void add_force(vec3 f);
-		void step();
+		void step(float time);
 
 		bool movable;
 		vec3 position;
@@ -38,7 +38,7 @@ namespace cloth
 		Cloth();
 		void init(int width, int height, int num_particles_width, int num_particles_height);
 		void create_buffers(Graphics &gfx);
-		void step();
+		void step(float time);
 		void add_force(const vec3 direction);
 		void wind_force(const vec3 direction);
 		void ball_collision(const vec3 center, const float radius);
@@ -60,7 +60,7 @@ namespace cloth
 		std::vector<Constraint> constraints;
 
 		inline Particle* get_particle(int x, int y);
-		void make_constraint(Particle *p1, Particle *p2);
+		inline void make_constraint(Particle *p1, Particle *p2);
 		vec3 calc_normal(Particle *p1, Particle *p2, Particle *p3);
 		void add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 direction);
 		void add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color);

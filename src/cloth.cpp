@@ -1,7 +1,6 @@
 #include "include.h"
 
 #define DAMPING 0.001f
-#define TIME_STEPSIZE2 0.125f
 #define CONSTRAINT_ITERATIONS 5
 
 
@@ -27,12 +26,12 @@ void Particle::add_force(vec3 force)
 	acceleration += force / mass;
 }
 
-void Particle::step()
+void Particle::step(float time)
 {
 	if (movable)
 	{
 		vec3 temp = position;
-		position = position + (position - old_pos) * (1.0f - DAMPING) + acceleration * TIME_STEPSIZE2;
+		position = position + (position - old_pos) * (1.0f - DAMPING) + acceleration * time;
 		old_pos = temp;
 		acceleration = vec3(0, 0, 0);
 	}
@@ -148,9 +147,115 @@ void Cloth::init(int width, int height, int num_particles_width, int num_particl
 	}
 }
 
+
+
+void Cloth::step(float time)
+{
+	for (int i = 0; i < CONSTRAINT_ITERATIONS; i++)
+	{
+		for (int j = 0; j < constraints.size(); j++)
+		{
+			constraints[j].satisfy_constraint();
+		}
+	}
+
+	for (int i = 0; i < particles.size(); i++)
+	{
+		particles[i].step(time);
+	}
+}
+
+void Cloth::add_force(const vec3 direction)
+{
+	for (int i = 0; i < particles.size(); i++)
+	{
+		particles[i].add_force(direction);
+	}
+}
+
+void Cloth::wind_force(const vec3 direction)
+{
+	for (int x = 0; x < num_particles_width - 1; x++)
+	{
+		for (int y = 0; y < num_particles_height - 1; y++)
+		{
+			add_wind_forces(get_particle(x + 1, y), get_particle(x, y), get_particle(x, y + 1), direction);
+			add_wind_forces(get_particle(x + 1, y + 1), get_particle(x + 1, y), get_particle(x, y + 1), direction);
+		}
+	}
+}
+
+void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 direction)
+{
+	vec3 normal = calc_normal(p1, p2, p3);
+	vec3 d = normal;
+	d.normalize();
+	vec3 force = normal * (d * direction);
+	p1->add_force(force);
+	p2->add_force(force);
+	p3->add_force(force);
+}
+
+void Cloth::ball_collision(const vec3 center, const float radius)
+{
+	for (int i = 0; i < particles.size(); i++)
+	{
+		vec3 v = particles[i].position - center;
+		float l = v.magnitude();
+		if (v.magnitude() < radius)
+		{
+			particles[i].position += v.normalize() * (radius - l);
+		}
+	}
+}
+
+inline Particle* Cloth::get_particle(int x, int y)
+{
+	return &particles[y * num_particles_width + x];
+}
+
+inline void Cloth::make_constraint(Particle *p1, Particle *p2)
+{
+	constraints.push_back(Constraint(p1, p2));
+}
+
+vec3 Cloth::calc_normal(Particle *p1, Particle *p2, Particle *p3)
+{
+	vec3 pos1 = p1->position;
+	vec3 pos2 = p2->position;
+	vec3 pos3 = p3->position;
+
+	vec3 v1 = pos2 - pos1;
+	vec3 v2 = pos3 - pos1;
+
+	return vec3::crossproduct(v1, v2);
+}
+
+
+void Cloth::add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color)
+{
+	vertex_array[0].normal = p1->accumulated_normal.normalize();
+	vertex_array[0].position = p1->position;
+	vertex_array[0].texCoord0.x = vertex_array[0].position.x / width;
+	vertex_array[0].texCoord0.y = vertex_array[0].position.y / height;
+//	vertex_array[0].color = RGB(color.x * 255, color.y * 255, color.z * 255);
+
+	vertex_array[1].normal = p2->accumulated_normal.normalize();
+	vertex_array[1].position = p2->position;
+	vertex_array[1].texCoord0.x = vertex_array[1].position.x / width;
+	vertex_array[1].texCoord0.y = vertex_array[1].position.y / height;
+//	vertex_array[1].color = RGB(color.x * 255, color.y * 255, color.z * 255);
+
+	vertex_array[2].normal = p3->accumulated_normal.normalize();
+	vertex_array[2].position = p3->position;
+	vertex_array[2].texCoord0.x = vertex_array[2].position.x / width;
+	vertex_array[2].texCoord0.y = vertex_array[2].position.y / height;
+//	vertex_array[2].color = RGB(color.x * 255, color.y * 255, color.z * 255);
+}
+
 void Cloth::create_buffers(Graphics &gfx)
 {
-	
+
 	for (int i = 0; i < particles.size(); i++)
 	{
 		particles[i].accumulated_normal = vec3(0.0f, 0.0f, 0.0f);
@@ -199,8 +304,8 @@ void Cloth::create_buffers(Graphics &gfx)
 			// add frontwards
 			add_triangle(&vertex_array[num_vert], get_particle(x + 1, y), get_particle(x, y), get_particle(x, y + 1), color);
 			index_array[num_index] = num_index;
-			index_array[num_index+1] = num_index+1;
-			index_array[num_index+2] = num_index+2;
+			index_array[num_index + 1] = num_index + 1;
+			index_array[num_index + 2] = num_index + 2;
 			num_index += 3;
 			num_vert += 3;
 
@@ -239,108 +344,4 @@ void Cloth::create_buffers(Graphics &gfx)
 	}
 	vbo = gfx.CreateVertexBuffer(vertex_array, num_vert, true);
 	ibo = gfx.CreateIndexBuffer(index_array, num_index);
-}
-
-void Cloth::step()
-{
-	for (int i = 0; i < CONSTRAINT_ITERATIONS; i++)
-	{
-		for (int j = 0; j < constraints.size(); j++)
-		{
-			constraints[j].satisfy_constraint();
-		}
-	}
-
-	for (int i = 0; i < particles.size(); i++)
-	{
-		particles[i].step();
-	}
-}
-
-void Cloth::add_force(const vec3 direction)
-{
-	for (int i = 0; i < particles.size(); i++)
-	{
-		particles[i].add_force(direction);
-	}
-
-}
-
-void Cloth::wind_force(const vec3 direction)
-{
-	for (int x = 0; x < num_particles_width - 1; x++)
-	{
-		for (int y = 0; y < num_particles_height - 1; y++)
-		{
-			add_wind_forces(get_particle(x + 1, y), get_particle(x, y), get_particle(x, y + 1), direction);
-			add_wind_forces(get_particle(x + 1, y + 1), get_particle(x + 1, y), get_particle(x, y + 1), direction);
-		}
-	}
-}
-
-void Cloth::ball_collision(const vec3 center, const float radius)
-{
-	for (int i = 0; i < particles.size(); i++)
-	{
-		vec3 v = particles[i].position - center;
-		float l = v.magnitude();
-		if (v.magnitude() < radius)
-		{
-			particles[i].position += v.normalize() * (radius - l);
-		}
-	}
-}
-
-inline Particle* Cloth::get_particle(int x, int y)
-{
-	return &particles[y * num_particles_width + x];
-}
-
-void Cloth::make_constraint(Particle *p1, Particle *p2)
-{
-	constraints.push_back(Constraint(p1, p2));
-}
-
-vec3 Cloth::calc_normal(Particle *p1, Particle *p2, Particle *p3)
-{
-	vec3 pos1 = p1->position;
-	vec3 pos2 = p2->position;
-	vec3 pos3 = p3->position;
-
-	vec3 v1 = pos2 - pos1;
-	vec3 v2 = pos3 - pos1;
-
-	return vec3::crossproduct(v1, v2);
-}
-
-void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 direction)
-{
-	vec3 normal = calc_normal(p1, p2, p3);
-	vec3 d = normal;
-	d.normalize();
-	vec3 force = normal * (d * direction);
-	p1->add_force(force);
-	p2->add_force(force);
-	p3->add_force(force);
-}
-
-void Cloth::add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color)
-{
-	vertex_array[0].normal = p1->accumulated_normal.normalize();
-	vertex_array[0].position = p1->position;
-	vertex_array[0].texCoord0.x = vertex_array[0].position.x / width;
-	vertex_array[0].texCoord0.y = vertex_array[0].position.y / height;
-//	vertex_array[0].color = RGB(color.x * 255, color.y * 255, color.z * 255);
-
-	vertex_array[1].normal = p2->accumulated_normal.normalize();
-	vertex_array[1].position = p2->position;
-	vertex_array[1].texCoord0.x = vertex_array[1].position.x / width;
-	vertex_array[1].texCoord0.y = vertex_array[1].position.y / height;
-//	vertex_array[1].color = RGB(color.x * 255, color.y * 255, color.z * 255);
-
-	vertex_array[2].normal = p3->accumulated_normal.normalize();
-	vertex_array[2].position = p3->position;
-	vertex_array[2].texCoord0.x = vertex_array[2].position.x / width;
-	vertex_array[2].texCoord0.y = vertex_array[2].position.y / height;
-//	vertex_array[2].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 }
