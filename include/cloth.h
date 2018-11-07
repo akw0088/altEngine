@@ -49,6 +49,7 @@ namespace cloth
 		unsigned int tex;
 		unsigned int num_index;
 		unsigned int num_vert;
+		unsigned int ent_index;
 
 	private:
 		int num_particles_width;

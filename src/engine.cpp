@@ -2269,13 +2269,11 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 
 		if (entity->ent_type == ENT_FUNC_CLOTH)
 		{
-			for (unsigned int i = 0; i < cloth.size(); i++)
-			{
-				gfx.SelectIndexBuffer(cloth[i]->ibo);
-				gfx.SelectVertexBuffer(cloth[i]->vbo);
-				gfx.SelectTexture(0, cloth[i]->tex);
-				gfx.DrawArrayTri(0, 0, cloth[i]->num_index, cloth[i]->num_vert);
-			}
+			int index = entity->brushinfo->opening;
+			gfx.SelectIndexBuffer(cloth[index]->ibo);
+			gfx.SelectVertexBuffer(cloth[index]->vbo);
+			gfx.SelectTexture(0, cloth[index]->tex);
+			gfx.DrawArrayTri(0, 0, cloth[index]->num_index, cloth[i]->num_vert);
 		}
 
 		//render entity
@@ -3012,13 +3010,13 @@ void Engine::activate_light(float distance, Light *light)
 
 void Engine::handle_cloth()
 {
-	// calculating positions
-	ball_time++;
-	ball_pos.z = cos(ball_time / 50.0f) * 7;
 	float time = 0.125f;
 
 	for (int i = 0; i < cloth.size(); i++)
 	{
+		if (entity_list[cloth[i]->ent_index]->flags.bsp_visible == false)
+			continue;
+
 		cloth[i]->add_force(vec3(0, -9.8f, 0) * time);
 		cloth[i]->wind_force(vec3(-0.004f, 0, -0.004f) * time);
 		cloth[i]->step(time);
@@ -3029,8 +3027,9 @@ void Engine::handle_cloth()
 		cloth[i]->create_buffers(gfx);
 	}
 
-
-	//cloth1.ballCollision(ball_pos, ball_radius); // resolve collision with the ball
+	//	ball_time++;
+	//	ball_pos.z = cos(ball_time / 50.0f) * 7;
+	//cloth1.ballCollision(ball_pos, ball_radius);
 }
 
 /*

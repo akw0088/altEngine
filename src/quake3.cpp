@@ -8071,6 +8071,10 @@ break;
 			cloth->init(130, 220, 10, 20);
 			cloth->create_buffers(engine->gfx);
 
+			// just sticking cloth index someplace for reference by entity
+			entity_list[i]->brushinfo->opening = engine->cloth.size() - 1;
+			cloth->ent_index = i;
+
 			cloth->tex = load_texture_pk3(engine->gfx, entity_list[i]->entstring->target, engine->pk3_list, engine->num_pk3, false, false, 0);
 			break;
 		}
