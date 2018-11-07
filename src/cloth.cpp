@@ -2,15 +2,16 @@
 
 #define DAMPING 0.001f
 #define TIME_STEPSIZE2 0.125f
-#define CONSTRAINT_ITERATIONS 15
+#define CONSTRAINT_ITERATIONS 5
 
 
 using namespace cloth;
+using namespace std;
 
-Particle::Particle(vec3 pos)
+Particle::Particle(vec3 position)
 {
-	Particle::pos = pos;
-	old_pos = pos;
+	Particle::position = position;
+	old_pos = position;
 	acceleration = vec3(0, 0, 0);
 	mass = 1.0f;
 	movable = true;
@@ -21,7 +22,7 @@ Particle::Particle()
 {
 }
 
-void Particle::addForce(vec3 force)
+void Particle::add_force(vec3 force)
 {
 	acceleration += force / mass;
 }
@@ -30,64 +31,28 @@ void Particle::step()
 {
 	if (movable)
 	{
-		vec3 temp = pos;
-		pos = pos + (pos - old_pos) * (1.0f - DAMPING) + acceleration * TIME_STEPSIZE2;
+		vec3 temp = position;
+		position = position + (position - old_pos) * (1.0f - DAMPING) + acceleration * TIME_STEPSIZE2;
 		old_pos = temp;
 		acceleration = vec3(0, 0, 0);
 	}
 }
 
-vec3& Particle::getPos()
-{
-	return pos;
-}
-
-void Particle::resetAcceleration()
-{
-	acceleration = vec3(0, 0, 0);
-}
-
-void Particle::offsetPos(const vec3 v)
-{
-	if (movable) pos += v;
-}
-
-void Particle::makeUnmovable()
-{
-	movable = false;
-}
-
-void Particle::addToNormal(vec3 normal)
-{
-	accumulated_normal += normal.normalize();
-}
-
-vec3& Particle::getNormal()
-{
-	return accumulated_normal;
-}
-
-void Particle::resetNormal()
-{
-	accumulated_normal = vec3(0, 0, 0);
-}
-
-
 Constraint::Constraint(Particle *p1, Particle *p2) : p1(p1), p2(p2)
 {
-	vec3 vec = p1->getPos() - p2->getPos();
+	vec3 vec = p1->position - p2->position;
 	rest_distance = vec.magnitude();
 }
 
-void Constraint::satisfyConstraint()
+void Constraint::satisfy_constraint()
 {
-	vec3 p1_to_p2 = p2->getPos() - p1->getPos();
+	vec3 p1_to_p2 = p2->position - p1->position;
 	float current_distance = p1_to_p2.magnitude();
-	vec3 correctionVector = p1_to_p2*(1.0f - rest_distance / current_distance);
+	vec3 correctionVector = p1_to_p2 * (1.0f - rest_distance / current_distance);
 	vec3 correctionVectorHalf = correctionVector * 0.5f;
 
-	p1->offsetPos(correctionVectorHalf);
-	p2->offsetPos(-correctionVectorHalf);
+	p1->position += correctionVectorHalf;
+	p2->position += -correctionVectorHalf;
 }
 
 Cloth::Cloth()
@@ -121,19 +86,19 @@ void Cloth::init(int width, int height, int num_particles_width, int num_particl
 		{
 			if (x < num_particles_width - 1)
 			{
-				makeConstraint(getParticle(x, y), getParticle(x + 1, y));
+				make_constraint(get_particle(x, y), get_particle(x + 1, y));
 			}
 			if (y < num_particles_height - 1)
 			{
-				makeConstraint(getParticle(x, y), getParticle(x, y + 1));
+				make_constraint(get_particle(x, y), get_particle(x, y + 1));
 			}
 			if (x < num_particles_width - 1 && y < num_particles_height - 1)
 			{
-				makeConstraint(getParticle(x, y), getParticle(x + 1, y + 1));
+				make_constraint(get_particle(x, y), get_particle(x + 1, y + 1));
 			}
 			if (x < num_particles_width - 1 && y < num_particles_height - 1)
 			{
-				makeConstraint(getParticle(x + 1, y), getParticle(x, y + 1));
+				make_constraint(get_particle(x + 1, y), get_particle(x, y + 1));
 			}
 		}
 	}
@@ -146,19 +111,19 @@ void Cloth::init(int width, int height, int num_particles_width, int num_particl
 		{
 			if (x < num_particles_width - 2)
 			{
-				makeConstraint(getParticle(x, y), getParticle(x + 2, y));
+				make_constraint(get_particle(x, y), get_particle(x + 2, y));
 			}
 			if (y < num_particles_height - 2)
 			{
-				makeConstraint(getParticle(x, y), getParticle(x, y + 2));
+				make_constraint(get_particle(x, y), get_particle(x, y + 2));
 			}
 			if (x < num_particles_width - 2 && y < num_particles_height - 2)
 			{
-				makeConstraint(getParticle(x, y), getParticle(x + 2, y + 2));
+				make_constraint(get_particle(x, y), get_particle(x + 2, y + 2));
 			}
 			if (x < num_particles_width - 2 && y < num_particles_height - 2)
 			{
-				makeConstraint(getParticle(x + 2, y), getParticle(x, y + 2));
+				make_constraint(get_particle(x + 2, y), get_particle(x, y + 2));
 			}
 		}
 	}
@@ -166,35 +131,35 @@ void Cloth::init(int width, int height, int num_particles_width, int num_particl
 
 	for (int i = 0; i < 3; i++)
 	{
-		getParticle(0 + i, 0)->offsetPos(vec3(0.5f, 0.0f, 0.0f));
-		getParticle(0 + i, 0)->makeUnmovable();
+		get_particle(0 + i, 0)->position += vec3(0.5f, 0.0f, 0.0f);
+		get_particle(0 + i, 0)->movable = false;
 
-		getParticle(0 + i, 0)->offsetPos(vec3(-0.5f, 0.0f, 0.0f));
-		getParticle(num_particles_width - 1 - i, 0)->makeUnmovable();
+		get_particle(0 + i, 0)->position += vec3(-0.5f, 0.0f, 0.0f);
+		get_particle(num_particles_width - 1 - i, 0)->movable = false;
 	}
 }
 
 void Cloth::create_buffers(Graphics &gfx)
 {
-	std::vector<Particle>::iterator particle;
-	for (particle = particles.begin(); particle != particles.end(); particle++)
+	
+	for (int i = 0; i < particles.size(); i++)
 	{
-		(*particle).resetNormal();
+		particles[i].accumulated_normal = vec3(0.0f, 0.0f, 0.0f);
 	}
 
 	for (int x = 0; x < num_particles_width - 1; x++)
 	{
 		for (int y = 0; y < num_particles_height - 1; y++)
 		{
-			vec3 normal = calcTriangleNormal(getParticle(x + 1, y), getParticle(x, y), getParticle(x, y + 1));
-			getParticle(x + 1, y)->addToNormal(normal);
-			getParticle(x, y)->addToNormal(normal);
-			getParticle(x, y + 1)->addToNormal(normal);
+			vec3 normal = calc_normal(get_particle(x + 1, y), get_particle(x, y), get_particle(x, y + 1));
+			get_particle(x + 1, y)->accumulated_normal += normal;
+			get_particle(x, y)->accumulated_normal += normal;
+			get_particle(x, y + 1)->accumulated_normal += normal;
 
-			normal = calcTriangleNormal(getParticle(x + 1, y + 1), getParticle(x + 1, y), getParticle(x, y + 1));
-			getParticle(x + 1, y + 1)->addToNormal(normal);
-			getParticle(x + 1, y)->addToNormal(normal);
-			getParticle(x, y + 1)->addToNormal(normal);
+			normal = calc_normal(get_particle(x + 1, y + 1), get_particle(x + 1, y), get_particle(x, y + 1));
+			get_particle(x + 1, y + 1)->accumulated_normal += normal;
+			get_particle(x + 1, y)->accumulated_normal += normal;
+			get_particle(x, y + 1)->accumulated_normal += normal;
 		}
 	}
 
@@ -223,14 +188,14 @@ void Cloth::create_buffers(Graphics &gfx)
 				color = vec3(1.0f, 1.0f, 1.0f);
 
 			// add frontwards
-			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y), getParticle(x, y), getParticle(x, y + 1), color);
+			add_triangle(&vertex_array[num_vert], get_particle(x + 1, y), get_particle(x, y), get_particle(x, y + 1), color);
 			index_array[num_index] = num_index;
 			index_array[num_index+1] = num_index+1;
 			index_array[num_index+2] = num_index+2;
 			num_index += 3;
 			num_vert += 3;
 
-			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y + 1), getParticle(x + 1, y), getParticle(x, y + 1), color);
+			add_triangle(&vertex_array[num_vert], get_particle(x + 1, y + 1), get_particle(x + 1, y), get_particle(x, y + 1), color);
 			index_array[num_index] = num_index;
 			index_array[num_index + 1] = num_index + 1;
 			index_array[num_index + 2] = num_index + 2;
@@ -239,14 +204,14 @@ void Cloth::create_buffers(Graphics &gfx)
 
 
 			//make double sided
-			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y), getParticle(x, y + 1), getParticle(x, y), color);
+			add_triangle(&vertex_array[num_vert], get_particle(x + 1, y), get_particle(x, y + 1), get_particle(x, y), color);
 			index_array[num_index] = num_index;
 			index_array[num_index + 1] = num_index + 1;
 			index_array[num_index + 2] = num_index + 2;
 			num_index += 3;
 			num_vert += 3;
 
-			addTriangle(&vertex_array[num_vert], getParticle(x + 1, y + 1), getParticle(x, y + 1), getParticle(x + 1, y), color);
+			add_triangle(&vertex_array[num_vert], get_particle(x + 1, y + 1), get_particle(x, y + 1), get_particle(x + 1, y), color);
 			index_array[num_index] = num_index;
 			index_array[num_index + 1] = num_index + 1;
 			index_array[num_index + 2] = num_index + 2;
@@ -269,72 +234,69 @@ void Cloth::create_buffers(Graphics &gfx)
 
 void Cloth::step()
 {
-	std::vector<Constraint>::iterator constraint;
 	for (int i = 0; i < CONSTRAINT_ITERATIONS; i++)
 	{
-		for (constraint = constraints.begin(); constraint != constraints.end(); constraint++)
+		for (int j = 0; j < constraints.size(); j++)
 		{
-			(*constraint).satisfyConstraint();
+			constraints[j].satisfy_constraint();
 		}
 	}
 
-	std::vector<Particle>::iterator particle;
-	for (particle = particles.begin(); particle != particles.end(); particle++)
+	for (int i = 0; i < particles.size(); i++)
 	{
-		(*particle).step();
+		particles[i].step();
 	}
 }
 
-void Cloth::addForce(const vec3 direction)
+void Cloth::add_force(const vec3 direction)
 {
-	std::vector<Particle>::iterator particle;
-	for (particle = particles.begin(); particle != particles.end(); particle++)
+	for (int i = 0; i < particles.size(); i++)
 	{
-		(*particle).addForce(direction);
+		particles[i].add_force(direction);
 	}
 
 }
 
-void Cloth::windForce(const vec3 direction)
+void Cloth::wind_force(const vec3 direction)
 {
 	for (int x = 0; x < num_particles_width - 1; x++)
 	{
 		for (int y = 0; y < num_particles_height - 1; y++)
 		{
-			addWindForcesForTriangle(getParticle(x + 1, y), getParticle(x, y), getParticle(x, y + 1), direction);
-			addWindForcesForTriangle(getParticle(x + 1, y + 1), getParticle(x + 1, y), getParticle(x, y + 1), direction);
+			add_wind_forces(get_particle(x + 1, y), get_particle(x, y), get_particle(x, y + 1), direction);
+			add_wind_forces(get_particle(x + 1, y + 1), get_particle(x + 1, y), get_particle(x, y + 1), direction);
 		}
 	}
 }
 
-void Cloth::ballCollision(const vec3 center, const float radius)
+void Cloth::ball_collision(const vec3 center, const float radius)
 {
-	std::vector<Particle>::iterator particle;
-	for (particle = particles.begin(); particle != particles.end(); particle++)
+	for (int i = 0; i < particles.size(); i++)
 	{
-		vec3 v = (*particle).getPos() - center;
+		vec3 v = particles[i].position - center;
 		float l = v.magnitude();
 		if (v.magnitude() < radius)
 		{
-			(*particle).offsetPos(v.normalize() * (radius - l));
+			particles[i].position += v.normalize() * (radius - l);
 		}
 	}
 }
 
-Particle* Cloth::getParticle(int x, int y)
+inline Particle* Cloth::get_particle(int x, int y)
 {
 	return &particles[y * num_particles_width + x];
 }
-void Cloth::makeConstraint(Particle *p1, Particle *p2)
+
+void Cloth::make_constraint(Particle *p1, Particle *p2)
 {
 	constraints.push_back(Constraint(p1, p2));
 }
 
-vec3 Cloth::calcTriangleNormal(Particle *p1, Particle *p2, Particle *p3)
+vec3 Cloth::calc_normal(Particle *p1, Particle *p2, Particle *p3)
 {
-	vec3 pos1 = p1->getPos();
-	vec3 pos2 = p2->getPos();
-	vec3 pos3 = p3->getPos();
+	vec3 pos1 = p1->position;
+	vec3 pos2 = p2->position;
+	vec3 pos3 = p3->position;
 
 	vec3 v1 = pos2 - pos1;
 	vec3 v2 = pos3 - pos1;
@@ -342,34 +304,34 @@ vec3 Cloth::calcTriangleNormal(Particle *p1, Particle *p2, Particle *p3)
 	return vec3::crossproduct(v1, v2);
 }
 
-void Cloth::addWindForcesForTriangle(Particle *p1, Particle *p2, Particle *p3, const vec3 direction)
+void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 direction)
 {
-	vec3 normal = calcTriangleNormal(p1, p2, p3);
+	vec3 normal = calc_normal(p1, p2, p3);
 	vec3 d = normal;
 	d.normalize();
 	vec3 force = normal * (d * direction);
-	p1->addForce(force);
-	p2->addForce(force);
-	p3->addForce(force);
+	p1->add_force(force);
+	p2->add_force(force);
+	p3->add_force(force);
 }
 
-void Cloth::addTriangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color)
+void Cloth::add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color)
 {
-	vertex_array[0].normal = p1->getNormal().normalize();
-	vertex_array[0].position = p1->getPos();
+	vertex_array[0].normal = p1->accumulated_normal.normalize();
+	vertex_array[0].position = p1->position;
 	vertex_array[0].texCoord0.x = vertex_array[0].position.x / width;
 	vertex_array[0].texCoord0.y = vertex_array[0].position.y / height;
-	vertex_array[0].color = RGB(color.x * 255, color.y * 255, color.z * 255);
+//	vertex_array[0].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 
-	vertex_array[1].normal = p2->getNormal().normalize();
-	vertex_array[1].position = p2->getPos();
+	vertex_array[1].normal = p2->accumulated_normal.normalize();
+	vertex_array[1].position = p2->position;
 	vertex_array[1].texCoord0.x = vertex_array[1].position.x / width;
 	vertex_array[1].texCoord0.y = vertex_array[1].position.y / height;
-	vertex_array[1].color = RGB(color.x * 255, color.y * 255, color.z * 255);
+//	vertex_array[1].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 
-	vertex_array[2].normal = p3->getNormal().normalize();
-	vertex_array[2].position = p3->getPos();
+	vertex_array[2].normal = p3->accumulated_normal.normalize();
+	vertex_array[2].position = p3->position;
 	vertex_array[2].texCoord0.x = vertex_array[2].position.x / width;
 	vertex_array[2].texCoord0.y = vertex_array[2].position.y / height;
-	vertex_array[2].color = RGB(color.x * 255, color.y * 255, color.z * 255);
+//	vertex_array[2].color = RGB(color.x * 255, color.y * 255, color.z * 255);
 }

@@ -3019,8 +3019,8 @@ void Engine::handle_cloth()
 
 	for (int i = 0; i < cloth.size(); i++)
 	{
-		cloth[i]->addForce(vec3(0, -9.8, 0) * 0.125f);
-		cloth[i]->windForce(vec3(-0.004, 0, -0.004) * 0.125f);
+		cloth[i]->add_force(vec3(0, -9.8, 0) * 0.125f);
+		cloth[i]->wind_force(vec3(-0.004, 0, -0.004) * 0.125f);
 		cloth[i]->step();
 
 
