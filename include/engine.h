@@ -177,6 +177,8 @@ public:
 	unsigned int global_source[32];
 	unsigned int audio_loop_source[32];
 	unsigned int global_loop_source[32];
+	int filter;
+	int filter_index;
 	int max_sources;
 	bool raw_mouse;
 	

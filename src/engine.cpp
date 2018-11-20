@@ -79,6 +79,7 @@ Engine::Engine() :
 	all_lights = false;
 	ingame_menu_timer = 0;
 	fullscreen_timer = 0;
+	filter = 0;
 
 	bloom_threshold = 0.9f;
 	bloom_strength = 0.5f;
@@ -5531,14 +5532,55 @@ int Engine::console_general(char *cmd)
 
 		for (int i = 0; i < max_sources; i++)
 		{
-			audio.effects(audio_source[i]);
-			audio.effects(global_source[i]);
-			audio.effects(audio_loop_source[i]);
-			audio.effects(global_loop_source[i]);
+			audio.effects(audio_source[i], filter, filter_index);
+			audio.effects(global_source[i], filter, filter_index);
+			audio.effects(audio_loop_source[i], filter, filter_index);
+			audio.effects(global_loop_source[i], filter, filter_index);
 
 		}
 		return 0;
 	}
+
+	ret = sscanf(cmd, "s_filter_index %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "s_filter_index %s\n", data);
+		menu.print(msg);
+		debugf(msg);
+
+		filter_index = atoi(data);
+
+		for (int i = 0; i < max_sources; i++)
+		{
+			audio.effects(audio_source[i], filter, filter_index);
+			audio.effects(global_source[i], filter, filter_index);
+			audio.effects(audio_loop_source[i], filter, filter_index);
+			audio.effects(global_loop_source[i], filter, filter_index);
+		}
+		return 0;
+	}
+
+	ret = sscanf(cmd, "s_filter %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "s_filter %s\n", data);
+		menu.print(msg);
+		debugf(msg);
+
+		filter = atoi(data);
+
+		for (int i = 0; i < max_sources; i++)
+		{
+			audio.effects(audio_source[i], filter, filter_index);
+			audio.effects(global_source[i], filter, filter_index);
+			audio.effects(audio_loop_source[i], filter, filter_index);
+			audio.effects(global_loop_source[i], filter, filter_index);
+
+		}
+		return 0;
+	}
+
+
 
 	ret = sscanf(cmd, "map %s", data);
 	if (ret == 1)

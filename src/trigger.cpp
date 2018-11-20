@@ -71,8 +71,8 @@ void Trigger::create_sources(Audio &audio)
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
 
-	audio.effects(source);
-	audio.effects(loop_source);
+	audio.effects(source, false, 0);
+	audio.effects(loop_source, false, 0);
 
 }
 

@@ -36,7 +36,7 @@ public:
 	bool select_buffer(int hSource, int hBuffer);
 	void delete_buffer(int hBuffer);
 	void destroy();
-	void effects(int source);
+	void effects(int source, bool enable_filter, int filter_index);
 
 	void set_audio_model(int model);
 	void capture_start();
@@ -56,7 +56,9 @@ private:
 	ALCcontext		*context;
 
 #ifdef WIN32
-	unsigned int	slot, effect, filter;
+	unsigned int slot;
+	unsigned int effect;
+	unsigned int filter[8];
 #endif
 
 };

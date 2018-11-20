@@ -580,7 +580,7 @@ void Audio::init()
 //	alEffectf(effect, AL_REVERB_DECAY_TIME, 20.0f);
 //	alEffectf(effect, AL_REVERB_DENSITY, 0.25f);
 
-	alGenFilters(1, &filter);
+	alGenFilters(8, filter);
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
@@ -588,9 +588,41 @@ void Audio::init()
 		return;
 	}
 
-	alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
-	alFilterf(filter, AL_LOWPASS_GAIN, 0.5f);
-	alFilterf(filter, AL_LOWPASS_GAINHF, 0.5f);
+	alFilteri(filter[0], AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+	alFilterf(filter[0], AL_LOWPASS_GAIN, 0.5f);
+	alFilterf(filter[0], AL_LOWPASS_GAINHF, 0.5f);
+
+	alFilteri(filter[1], AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+	alFilterf(filter[1], AL_LOWPASS_GAIN, 0.25f);
+	alFilterf(filter[1], AL_LOWPASS_GAINHF, 0.25f);
+
+	alFilteri(filter[2], AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+	alFilterf(filter[2], AL_LOWPASS_GAIN, 0.75f);
+	alFilterf(filter[2], AL_LOWPASS_GAINHF, 0.75f);
+
+	alFilteri(filter[3], AL_FILTER_TYPE, AL_FILTER_BANDPASS);
+	alFilterf(filter[3], AL_BANDPASS_GAIN, 0.5f);
+	alFilterf(filter[3], AL_BANDPASS_GAINLF, 0.5f);
+	alFilterf(filter[3], AL_BANDPASS_GAINHF, 0.25f);
+
+	alFilteri(filter[4], AL_FILTER_TYPE, AL_FILTER_BANDPASS);
+	alFilterf(filter[4], AL_BANDPASS_GAIN, 0.5f);
+	alFilterf(filter[4], AL_BANDPASS_GAINLF, 0.25f);
+	alFilterf(filter[4], AL_BANDPASS_GAINHF, 0.5f);
+
+	alFilteri(filter[5], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
+	alFilterf(filter[5], AL_HIGHPASS_GAIN, 0.5f);
+	alFilterf(filter[5], AL_HIGHPASS_GAINLF, 0.5f);
+
+	alFilteri(filter[6], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
+	alFilterf(filter[6], AL_HIGHPASS_GAIN, 0.25f);
+	alFilterf(filter[6], AL_HIGHPASS_GAINLF, 0.25f);
+	
+	alFilteri(filter[7], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
+	alFilterf(filter[7], AL_HIGHPASS_GAIN, 0.75f);
+	alFilterf(filter[7], AL_HIGHPASS_GAINLF, 0.75f);
+
+
 #endif
 }
 
@@ -633,7 +665,7 @@ void Audio::set_audio_model(int model)
 }
 
 
-void Audio::effects(int source)
+void Audio::effects(int source, bool enable_filter, int filter_index)
 {
 #ifdef WIN32
 	ALenum al_err;
@@ -646,7 +678,11 @@ void Audio::effects(int source)
 		return;
 	}
 
-	alSource3i(source, AL_AUXILIARY_SEND_FILTER, slot, 0, AL_FILTER_NULL);
+
+	if (enable_filter)
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, slot, 0, filter[filter_index]);
+	else
+		alSource3i(source, AL_AUXILIARY_SEND_FILTER, slot, 0, AL_FILTER_NULL);
 	al_err = alGetError();
 	if (al_err != AL_NO_ERROR)
 	{
@@ -746,6 +782,7 @@ int Audio::create_source(bool loop, bool global)
 {
 	ALuint hSource = -1;
 	ALenum		al_err;
+	bool enable_filter = false;
 
 	alGenSources(1, &hSource);
 	al_err = alGetError();
@@ -765,7 +802,7 @@ int Audio::create_source(bool loop, bool global)
 	else
 		alSourcei(hSource, AL_SOURCE_RELATIVE, AL_FALSE);
 
-	effects(hSource);
+	effects(hSource, enable_filter, 0);
 
 	return hSource;
 }
