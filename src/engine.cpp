@@ -2270,10 +2270,12 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		if (entity->ent_type == ENT_FUNC_CLOTH)
 		{
 			int index = entity->brushinfo->opening;
+			gfx.Blend(true);
 			gfx.SelectIndexBuffer(cloth[index]->ibo);
 			gfx.SelectVertexBuffer(cloth[index]->vbo);
 			gfx.SelectTexture(0, cloth[index]->tex);
 			gfx.DrawArrayTri(0, 0, cloth[index]->num_index, cloth[i]->num_vert);
+			gfx.Blend(false);
 		}
 
 		//render entity
@@ -5516,6 +5518,25 @@ int Engine::console_general(char *cmd)
 #ifdef SOFTWARE
 		gfx.clip(atoi(data));
 #endif
+		return 0;
+	}
+
+	ret = sscanf(cmd, "s_effect %s", data);
+	if (ret == 1)
+	{
+		snprintf(msg, LINE_SIZE, "s_effect %s\n", data);
+		menu.print(msg);
+		debugf(msg);
+		audio.set_effect(atoi(data));
+
+		for (int i = 0; i < max_sources; i++)
+		{
+			audio.effects(audio_source[i]);
+			audio.effects(global_source[i]);
+			audio.effects(audio_loop_source[i]);
+			audio.effects(global_loop_source[i]);
+
+		}
 		return 0;
 	}
 

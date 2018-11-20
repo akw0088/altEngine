@@ -238,9 +238,6 @@ LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv = NULL;
 LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf = NULL;
 LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv = NULL;
 
-EAXREVERBPROPERTIES eaxBathroom = REVERB_PRESET_BATHROOM;
-EAXREVERBPROPERTIES eaxHangar = REVERB_PRESET_HANGAR;
-
 bool ALFWIsEFXSupported()
 {
 	ALCdevice *pDevice = NULL;
@@ -458,8 +455,9 @@ void Audio::init()
 		debugf("Unable to set effect: %s\n", GetALErrorString(al_err));
 		return;
 	}
-	ConvertReverbParameters(&eaxBathroom, &efxReverb);
-	SetEFXEAXReverbProperties(&efxReverb, effect);
+
+//	ConvertReverbParameters(&environment[selected_effect], &efxReverb);
+//	SetEFXEAXReverbProperties(&efxReverb, effect);
 
 //	alEffectf(effect, AL_REVERB_GAIN, 1.0f);
 //	alEffectf(effect, AL_REVERB_DECAY_TIME, 20.0f);
@@ -477,6 +475,17 @@ void Audio::init()
 	alFilterf(filter, AL_LOWPASS_GAIN, 0.5f);
 	alFilterf(filter, AL_LOWPASS_GAINHF, 0.5f);
 #endif
+}
+
+
+void Audio::set_effect(int selected_effect)
+{
+	EFXEAXREVERBPROPERTIES efxReverb;
+
+
+	ConvertReverbParameters(&environment[selected_effect], &efxReverb);
+	SetEFXEAXReverbProperties(&efxReverb, effect);
+
 }
 
 void Audio::set_audio_model(int model)
