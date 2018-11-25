@@ -546,7 +546,8 @@ void Graphics::DeleteVertexBuffer(int handle)
 
 void Graphics::SelectTexture(int level, int handle)
 {
-//	context->PSSetShaderResources(level, 1, &texture[handle]);
+	if (handle < texture.size())
+		context->PSSetShaderResources(level, 1, &texture[handle]);
 }
 
 void Graphics::DeselectTexture(int level)
@@ -596,8 +597,12 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	srvDesc.Texture2D.MostDetailedMip = desc.MipLevels - 1;
 
 	ID3D11ShaderResourceView *pSRView = NULL;
-	device->CreateShaderResourceView(tex, &srvDesc, &pSRView);
-
+	result = device->CreateShaderResourceView(tex, &srvDesc, &pSRView);
+	if (result != S_OK)
+	{
+		printf("CreateShaderResourceView failed\n");
+		return -1;
+	}
 
 	texture.push_back(pSRView);
 	return texture.size() - 1;
@@ -708,12 +713,12 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 
 	D3D11_INPUT_ELEMENT_DESC vertex_desc[] =
 	{
-		{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",    0, DXGI_FORMAT_R32G32B32_UINT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR",    0, DXGI_FORMAT_B8G8R8A8_UNORM, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	result = gfx->device->CreateInputLayout(vertex_desc, 6, vertex->GetBufferPointer(), vertex->GetBufferSize(), &layout);

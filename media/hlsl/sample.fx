@@ -1,10 +1,10 @@
 struct attr_t
 {
-	float3 position		: SV_POSITION;
+	float3 position		: POSITION;
 	float2 texCoord0	: TEXCOORD0;
 	float2 texCoord1	: TEXCOORD1;
 	float3 normal		: NORMAL;
-	uint4  color		: COLOR;
+	uint   color		: COLOR;
 	float4 tangent		: TANGENT;
 };
 
@@ -14,7 +14,7 @@ struct vary_t
 	float2 texCoord0		: TEXCOORD0;
 	float2 texCoord1		: TEXCOORD1;
 	float3 normal			: NORMAL;
-	uint4  color			: COLOR;
+	uint   color			: COLOR;
 	float4 tangent			: TANGENT;
 };
 uniform float4x4 mvp;
