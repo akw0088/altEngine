@@ -422,7 +422,7 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	context->Draw(num_index, start_index);
 }
 
@@ -514,7 +514,7 @@ int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts, bool dynamic
 	ID3D11Buffer *d3d11_buffer;
 	HRESULT ret;
 
-	vbd.Usage = D3D11_USAGE_IMMUTABLE;
+	vbd.Usage = D3D11_USAGE_DEFAULT;
 	vbd.ByteWidth = sizeof(vertex_t) * num_verts;
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbd.CPUAccessFlags = 0;
@@ -650,10 +650,11 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 //		result = D3DCompileFromFile(wfile, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 //			"main", "vs_4_0", 0, 0, &vertex, &infolog);
 
-		result = D3DX11CompileFromFile("media/hlsl/sample.fx", 0, 0, "VS", "vs_4_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, 0, &vertex, &infolog, 0);
+		result = D3DX11CompileFromFile("media/hlsl/sample.fx", 0, 0, "VS", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, 0, &vertex, &infolog, 0);
 
 		if (FAILED(result))
 		{
+			printf("Failed to compiled vertex shader\n");
 			if (infolog != 0)
 			{
 				fprintf(fLog, "%s\n", (char*)infolog->GetBufferPointer());
@@ -681,12 +682,13 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		mbstowcs(wfile, fragment_file, strlen(fragment_file));
 
 		//result = D3DX11CompileFromFile(fragment_file, 0, 0, "main", "ps_3_0", 0, 0, 0, &fragment, &infolog, 0);
-		result = D3DX11CompileFromFile("media/hlsl/sample.fx", 0, 0, "PS", "ps_4_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, 0, &fragment, &infolog, 0);
+		result = D3DX11CompileFromFile("media/hlsl/sample.fx", 0, 0, "PS", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, 0, &fragment, &infolog, 0);
 //		result = D3DCompileFromFile(wfile, 0, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 //			"main", "ps_4_0", 0, 0, &fragment, &infolog);
 
 		if (FAILED(result))
 		{
+			printf("Failed to compiled pixel shader\n");
 			if (infolog != 0)
 			{
 				fprintf(fLog, "%s\n", (char*)infolog->GetBufferPointer());

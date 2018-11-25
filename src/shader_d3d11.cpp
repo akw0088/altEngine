@@ -46,7 +46,7 @@ void mFont::Params(char c, float x, float y, float scale, vec3 &color)
 
 int Global::init(Graphics *gfx)
 {
-	Shader::init(gfx, "media/hlsl/basic.vsh", NULL, "media/hlsl/basic.psh");
+	Shader::init(gfx, "media/hlsl/sample.fx", NULL, "media/hlsl/sample.fx");
 	return 0;
 }
 
@@ -92,7 +92,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 {
 //	max_light = MAX_LIGHTS;
 	//"media/glsl/mlighting3.gs"
-	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
+	Shader::init(gfx, "media/hlsl/sample.fx", NULL, "media/hlsl/sample.fx");
 	return 0;
 }
 
@@ -212,6 +212,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		return;
 
 	// Set the buffer.
+
 	gfx->context->VSSetConstantBuffers(0, 1, &constant_buffer);
 }
 
@@ -374,6 +375,8 @@ void mLight2::portal(int value)
 
 void mLight2::Select()
 {
+	gfx->context->VSSetShader(vertex_shader, 0, 0);
+	gfx->context->PSSetShader(fragment_shader, 0, 0);
 }
 
 
