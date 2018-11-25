@@ -340,6 +340,21 @@ void Graphics::init(void *param1, void *param2)
 	ret = device->CreateRasterizerState(&rsDesc, &render_state);
 
 	context->RSSetState(render_state);
+
+
+	D3D11_SAMPLER_DESC sampDesc;
+
+	memset(&sampDesc, 0, sizeof(D3D11_SAMPLER_DESC));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	device->CreateSamplerState(&sampDesc, &sampler);
+
 }
 
 void Graphics::swap()
@@ -508,22 +523,23 @@ void Graphics::TwoSidedStencilOp(int face, int stencil_fail, int zfail, int zpas
 int Graphics::CreateVertexBuffer(void *vertex_array, int num_verts, bool dynamic)
 {
 	D3D11_BUFFER_DESC vbd;
-	D3D11_SUBRESOURCE_DATA vinitData;
+	D3D11_SUBRESOURCE_DATA InitData;
 	ID3D11Buffer *d3d11_buffer;
 	HRESULT ret;
 
+
+	memset(&vbd, 0, sizeof(vbd));
 	vbd.Usage = D3D11_USAGE_DEFAULT;
 	vbd.ByteWidth = sizeof(vertex_t) * num_verts;
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbd.CPUAccessFlags = 0;
-	vbd.MiscFlags = 0;
-	vbd.StructureByteStride = 0;
 
-	vinitData.pSysMem = vertex_array;
-	vinitData.SysMemPitch = 0;
-	vinitData.SysMemSlicePitch = 0;
+	memset(&InitData, 0, sizeof(InitData));
+	InitData.pSysMem = vertex_array;
+	ret = device->CreateBuffer(&vbd, &InitData, &d3d11_buffer);
+	if (FAILED(ret))
+		return 0;
 
-	ret = device->CreateBuffer(&vbd, &vinitData, &d3d11_buffer);
 	vertex_buffers.push_back(d3d11_buffer);
 	return vertex_buffers.size() - 1;
 }
@@ -548,6 +564,8 @@ void Graphics::SelectTexture(int level, int handle)
 {
 	if (handle < texture.size())
 		context->PSSetShaderResources(level, 1, &texture[handle]);
+
+	context->PSSetSamplers(0, 1, &sampler);
 }
 
 void Graphics::DeselectTexture(int level)
@@ -717,12 +735,13 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",    0, DXGI_FORMAT_B8G8R8A8_UNORM, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NOTCOLOR",    0, DXGI_FORMAT_B8G8R8A8_UNORM, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TANGENT",  0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	result = gfx->device->CreateInputLayout(vertex_desc, 6, vertex->GetBufferPointer(), vertex->GetBufferSize(), &layout);
 	gfx->context->IASetInputLayout(layout);
+
 
 	fclose(fLog);
 	return 0;

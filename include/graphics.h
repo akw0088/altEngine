@@ -275,6 +275,7 @@ public:
 	ID3D11Texture2D			*depth_buffer;
 	ID3D11RenderTargetView	*render_target;
 	ID3D11DepthStencilView	*depth_view;
+	ID3D11SamplerState *sampler;
 
 
 
