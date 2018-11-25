@@ -563,9 +563,10 @@ void Graphics::DeleteVertexBuffer(int handle)
 void Graphics::SelectTexture(int level, int handle)
 {
 	if (handle < texture.size())
+	{
 		context->PSSetShaderResources(level, 1, &texture[handle]);
-
-	context->PSSetSamplers(0, 1, &sampler);
+		context->PSSetSamplers(0, 1, &sampler);
+	}
 }
 
 void Graphics::DeselectTexture(int level)

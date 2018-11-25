@@ -842,7 +842,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	}
 #endif
-#ifdef SOFTWARE
+#ifdef DIRECTX || SOFTWARE
 	if (components == 5)
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
 	else
@@ -950,14 +950,18 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	}
 #endif
 #ifndef DEDICATED
+#ifdef DIRECTX
 	if (components == 3)
 	{
-#ifdef DIRECTX
 		char *temp = tga_24to32(width, height, (char *)img_data, bgr);
 		delete[] img_data;
 		img_data = (unsigned char *)temp;
 		components = 5;
+	}
 #endif
+
+	if (components == 3)
+	{
 		tex_object = gfx.LoadTexture(width, height, 4, format, img_data, clamp, anisotropic);
 	}
 	else if (components == 5)
