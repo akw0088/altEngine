@@ -430,31 +430,31 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 	else if (primitive == PRIM_POINTS)
 		context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	context->Draw(num_index, start_index);
+	context->DrawIndexed(num_index, start_index, start_vertex);
 }
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	context->Draw(num_index, start_index);
+	context->DrawIndexed(num_index, start_index, start_vertex);
 }
 
 void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	context->Draw(num_index, start_index);
+	context->DrawIndexed(num_index, start_index, start_vertex);
 }
 
 void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINESTRIP_ADJ);
-	context->Draw(num_index, start_index);
+	context->DrawIndexed(num_index, start_index, start_vertex);
 }
 
 void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-	context->Draw(num_index, start_index);
+	context->DrawIndexed(num_index, start_index, start_vertex);
 }
 
 
