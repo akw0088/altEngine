@@ -192,6 +192,7 @@ public:
 
 	unsigned int controller;
 
+	frustum_t *pfrustum;
 	frustum_t frustum;
 
 

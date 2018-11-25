@@ -336,7 +336,7 @@ void Graphics::init(void *param1, void *param2)
 	rsDesc.FillMode = D3D11_FILL_SOLID;
 	rsDesc.CullMode = D3D11_CULL_BACK;
 	rsDesc.FrontCounterClockwise = false;
-	rsDesc.DepthClipEnable = true;
+	rsDesc.DepthClipEnable = false;
 	ret = device->CreateRasterizerState(&rsDesc, &render_state);
 
 	context->RSSetState(render_state);
@@ -578,10 +578,12 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	ID3D11Texture2D *tex;
 	HRESULT result;
 
+
+
 	D3D11_SUBRESOURCE_DATA sub;
 	memset(&sub, 0, sizeof(D3D11_SUBRESOURCE_DATA));
 	sub.pSysMem = bytes;
-	sub.SysMemPitch = width;
+	sub.SysMemPitch = width * 4;
 	sub.SysMemSlicePitch = 0;
 
 	D3D11_TEXTURE2D_DESC desc;
@@ -596,10 +598,10 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
+	desc.MiscFlags = 0; //D3D11_RESOURCE_MISC_GENERATE_MIPS
 
 	ID3D11Texture2D *pTexture = NULL;
-	result = device->CreateTexture2D(&desc, &sub, &tex); // E_INVALID
+	result = device->CreateTexture2D(&desc, &sub, &tex); 
 	if (result != S_OK)
 	{
 		printf("CreateTexture failed\n");
