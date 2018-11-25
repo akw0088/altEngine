@@ -170,6 +170,12 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	Engine::param1 = p1;
 	Engine::param2 = p2;
 	initialized = true;
+#ifndef D3D11
+	enable_cloth = true;
+#else
+	enable_cloth = false;
+#endif
+
 
 
 	debugf("altEngine2 built %s\n", __DATE__);
@@ -883,7 +889,7 @@ void Engine::render(double last_frametime)
 #endif
 
 	gen_frustum(&camera_frame, &frustum);
-	pfrustum = NULL;
+	pfrustum = &frustum;
 
 #ifdef VULKAN
 	gfx.DrawArrayTri(0, 0, 6, 6);
@@ -3018,24 +3024,27 @@ void Engine::handle_cloth()
 {
 	float time = 0.125f;
 
-	for (int i = 0; i < cloth.size(); i++)
+	if (enable_cloth)
 	{
-		if (entity_list[cloth[i]->ent_index]->flags.bsp_visible == false)
-			continue;
+		for (int i = 0; i < cloth.size(); i++)
+		{
+			if (entity_list[cloth[i]->ent_index]->flags.bsp_visible == false)
+				continue;
 
-		cloth[i]->add_force(vec3(0, -9.8f, 0) * time);
-		cloth[i]->wind_force(vec3(-0.004f, 0, -0.004f) * time);
-		cloth[i]->step(time);
+			cloth[i]->add_force(vec3(0, -9.8f, 0) * time);
+			cloth[i]->wind_force(vec3(-0.004f, 0, -0.004f) * time);
+			cloth[i]->step(time);
 
 
-		gfx.DeleteIndexBuffer(cloth[i]->ibo);
-		gfx.DeleteVertexBuffer(cloth[i]->vbo);
-		cloth[i]->create_buffers(gfx);
+			gfx.DeleteIndexBuffer(cloth[i]->ibo);
+			gfx.DeleteVertexBuffer(cloth[i]->vbo);
+			cloth[i]->create_buffers(gfx);
+		}
+
+		//	ball_time++;
+		//	ball_pos.z = cos(ball_time / 50.0f) * 7;
+		//cloth1.ballCollision(ball_pos, ball_radius);
 	}
-
-	//	ball_time++;
-	//	ball_pos.z = cos(ball_time / 50.0f) * 7;
-	//cloth1.ballCollision(ball_pos, ball_radius);
 }
 
 /*

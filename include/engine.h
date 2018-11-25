@@ -246,6 +246,7 @@ public:
 	bool enable_map;
 	bool enable_terrain;
 	bool enable_planet;
+	bool enable_cloth;
 
 
 	char resbuf[MAX_RES][80];
