@@ -213,19 +213,47 @@ void Graphics::init(void *param1, void *param2)
 	scd.Windowed = TRUE;                                    // windowed/full-screen mode
 	*/
 
+	RECT rc;
+	GetClientRect(hwnd, &rc);
+	Graphics::width = rc.right - rc.left;
+	Graphics::height = rc.bottom - rc.top;
+
+
+	DXGI_SWAP_CHAIN_DESC sd;
+
+	memset(&sd, 0, sizeof(DXGI_SWAP_CHAIN_DESC));
+	sd.BufferCount = 1;
+	sd.BufferDesc.Width = width;
+	sd.BufferDesc.Height = height;
+	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	sd.OutputWindow = hwnd;
+	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Quality = 0;
+	sd.Windowed = TRUE;
+	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	sd.Flags = 0;
+
+
 	D3D_FEATURE_LEVEL feature_level_out;
 	D3D_FEATURE_LEVEL feature_level_in;
-
 	feature_level_in = D3D_FEATURE_LEVEL_11_0;
 
-	ret = D3D11CreateDevice(
-		0,                 // default adapter
+
+	ret = D3D11CreateDeviceAndSwapChain(
+		NULL,
 		D3D_DRIVER_TYPE_HARDWARE,
-		0,                 // no software device
-		D3D11_CREATE_DEVICE_SINGLETHREADED,
+		NULL,
+		D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_DEBUG,
 		&feature_level_in,
 		1,
 		D3D11_SDK_VERSION,
+		&sd,
+		&swapchain,
 		&device,
 		&feature_level_out,
 		&context);
@@ -242,24 +270,7 @@ void Graphics::init(void *param1, void *param2)
 		return;
 	}
 
-	DXGI_SWAP_CHAIN_DESC sd;
-	sd.BufferDesc.Width = 1024;
-	sd.BufferDesc.Height = 768;
-	sd.BufferDesc.RefreshRate.Numerator = 60;
-	sd.BufferDesc.RefreshRate.Denominator = 1;
-	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
-	sd.SampleDesc.Count = 1;
-	sd.SampleDesc.Quality = 0;
-
-	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = 1;
-	sd.OutputWindow = hwnd;
-	sd.Windowed = true;
-	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	sd.Flags = 0;
 
 
 	IDXGIDevice* dxgiDevice = 0;
@@ -271,7 +282,7 @@ void Graphics::init(void *param1, void *param2)
 	IDXGIFactory* dxgiFactory = 0;
 	dxgiAdapter->GetParent(__uuidof(IDXGIFactory), (void**)&dxgiFactory);
 
-	dxgiFactory->CreateSwapChain(device, &sd, &swapchain);
+//	dxgiFactory->CreateSwapChain(device, &sd, &swapchain);
 
 
 	ret = swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&back_buffer);
@@ -282,11 +293,24 @@ void Graphics::init(void *param1, void *param2)
 	// set the render target as the back buffer
 	context->OMSetRenderTargets(1, &render_target, NULL);
 
+
+	// Set the viewport
+	D3D11_VIEWPORT viewport;
+	memset(&viewport, 0, sizeof(D3D11_VIEWPORT));
+	viewport.Width = (float)width;
+	viewport.Height = (float)height;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+
+	context->RSSetViewports(1, &viewport);
+
 	// Create the depth/stencil buffer and view.
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
 
-	depthStencilDesc.Width = 1024;
-	depthStencilDesc.Height = 768;
+	depthStencilDesc.Width = width;
+	depthStencilDesc.Height = height;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -304,17 +328,7 @@ void Graphics::init(void *param1, void *param2)
 	// Bind the render target view and depth/stencil view to the pipeline.
 	context->OMSetRenderTargets(1, &render_target, depth_view);
 
-	// Set the viewport
-	D3D11_VIEWPORT viewport;
-	memset(&viewport, 0, sizeof(D3D11_VIEWPORT));
 
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = (float)1024;
-	viewport.Height = (float)768;
-	viewport.MaxDepth = 1.0f;
-
-	context->RSSetViewports(1, &viewport);
 
 
 	D3D11_RASTERIZER_DESC rsDesc;
