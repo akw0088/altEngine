@@ -178,11 +178,21 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 		}
 	}
 
-	ID3D11Buffer*   g_pConstantBuffer11 = NULL;
+	ID3D11Buffer*   constant_buffer = NULL;
 	HRESULT ret;
 
+
+	typedef struct
+	{
+		matrix4 mvp;
+	} vertex_constant_t;
+
+	vertex_constant_t data;
+
+	data.mvp = mvp;
+
 	D3D11_BUFFER_DESC cbDesc;
-	cbDesc.ByteWidth = sizeof(mvp);
+	cbDesc.ByteWidth = sizeof(vertex_constant_t);
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -191,19 +201,18 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 	// Fill in the subresource data.
 	D3D11_SUBRESOURCE_DATA InitData;
-	InitData.pSysMem = &(mvp.m);
+	InitData.pSysMem = &data;
 	InitData.SysMemPitch = 0;
 	InitData.SysMemSlicePitch = 0;
 
 	// Create the buffer.
-	ret = gfx->device->CreateBuffer(&cbDesc, &InitData,
-		&g_pConstantBuffer11);
+	ret = gfx->device->CreateBuffer(&cbDesc, &InitData,	&constant_buffer);
 
 	if (FAILED(ret))
 		return;
 
 	// Set the buffer.
-	gfx->context->VSSetConstantBuffers(0, 1, &g_pConstantBuffer11);
+	gfx->context->VSSetConstantBuffers(0, 1, &constant_buffer);
 }
 
 void mLight2::set_light(float ambient, float lightmap, int num_light)

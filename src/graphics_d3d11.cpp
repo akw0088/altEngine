@@ -202,7 +202,7 @@ void Graphics::init(void *param1, void *param2)
 	hwnd = *((HWND *)param1);
 	hdc = *((HDC *)param2);
 	HRESULT		ret;
-
+	/*
 	DXGI_SWAP_CHAIN_DESC scd;
 	memset(&scd, 0, sizeof(DXGI_SWAP_CHAIN_DESC));
 	scd.BufferCount = 1;                                    // one back buffer
@@ -211,7 +211,7 @@ void Graphics::init(void *param1, void *param2)
 	scd.OutputWindow = hwnd;                                // the window to be used
 	scd.SampleDesc.Count = 0;                               // how many multisamples
 	scd.Windowed = TRUE;                                    // windowed/full-screen mode
-
+	*/
 
 	D3D_FEATURE_LEVEL feature_level_out;
 	D3D_FEATURE_LEVEL feature_level_in;
@@ -325,7 +325,7 @@ void Graphics::init(void *param1, void *param2)
 	rsDesc.DepthClipEnable = true;
 	device->CreateRasterizerState(&rsDesc, &render_state);
 //	rsDesc.FillMode = D3D11_FILL_WIREFRAME;
-	ret = device->CreateRasterizerState(&rsDesc, &render_state_wireframe);
+	ret = device->CreateRasterizerState(&rsDesc, &render_state);
 
 	context->RSSetState(render_state);
 }
@@ -408,7 +408,7 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 	context->Draw(num_index, start_index);
 }
 
@@ -534,7 +534,7 @@ void Graphics::DeleteVertexBuffer(int handle)
 
 void Graphics::SelectTexture(int level, int handle)
 {
-	context->PSSetShaderResources(level, 1, &texture[handle]);
+//	context->PSSetShaderResources(level, 1, &texture[handle]);
 }
 
 void Graphics::DeselectTexture(int level)
@@ -547,25 +547,32 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	HRESULT result;
 
 	D3D11_SUBRESOURCE_DATA sub;
+	memset(&sub, 0, sizeof(D3D11_SUBRESOURCE_DATA));
 	sub.pSysMem = bytes;
 	sub.SysMemPitch = width;
 	sub.SysMemSlicePitch = 0;
 
 	D3D11_TEXTURE2D_DESC desc;
+	memset(&desc, 0, sizeof(D3D11_TEXTURE2D_DESC));
 	desc.Width = width;
 	desc.Height = height;
-	desc.MipLevels = desc.ArraySize = 1;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
-	desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.SampleDesc.Quality = 1;
+	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 
 	ID3D11Texture2D *pTexture = NULL;
 	result = device->CreateTexture2D(&desc, &sub, &tex); // E_INVALID
 	if (result != S_OK)
+	{
+		printf("CreateTexture failed\n");
 		return -1;
+	}
 
 
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;

@@ -36,7 +36,7 @@ vary_t VS(in attr_t attr)
 	pos.xyz =  attr.position;
 	pos.w = 1.0;
 
-	output.position = mul(pos, mvp);
+	output.position = mul(mvp, pos);
 	output.texCoord0 = attr.texCoord0;
 	output.texCoord1 = attr.texCoord1;
 	output.normal = attr.normal;
