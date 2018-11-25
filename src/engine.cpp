@@ -2269,6 +2269,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			gfx.CullFace(2);
 		}
 
+#ifndef D3D11
 		if (entity->ent_type == ENT_FUNC_CLOTH)
 		{
 			int index = entity->brushinfo->opening;
@@ -2279,6 +2280,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			gfx.DrawArrayTri(0, 0, cloth[index]->num_index, cloth[i]->num_vert);
 			gfx.Blend(false);
 		}
+#endif
 
 		//render entity
 		if (entity->ent_type == ENT_WEAPON_LIGHTNING && enable_planet)
