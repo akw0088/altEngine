@@ -74,11 +74,11 @@ line 31
 LABELV $3
 line 33
 ;32:	default:
-;33:		G_Printf("Unknown command %s\n");
+;33:		VM_Printf("Unknown command %s\n");
 ADDRGP4 $8
 ARGP4
-ADDRGP4 G_Printf
-CALLI4
+ADDRGP4 VM_Printf
+CALLV
 pop
 line 34
 ;34:	}
@@ -182,7 +182,6 @@ line 61
 LABELV $17
 endproc VM_Step 0 0
 import trap_Printf
-import G_Printf
 import fabs
 import abs
 import memcpy
@@ -202,17 +201,14 @@ import strcmp
 import strcpy
 import strcat
 import strlen
-import rand
-import srand
-import qsort
 lit
 align 1
 LABELV $16
-byte 1 65
-byte 1 117
-byte 1 103
+byte 1 83
+byte 1 101
+byte 1 112
 byte 1 32
-byte 1 51
+byte 1 48
 byte 1 49
 byte 1 32
 byte 1 50

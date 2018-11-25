@@ -617,11 +617,9 @@ void HLBsp::load_lightmap(Graphics &gfx)
 
 
 #ifndef DEDICATED
-#ifndef VULKAN //GL_RGBA not defined
-#ifndef SOFTWARE
+#ifdef OPENGL
 		lightmap_object[i] = gfx.LoadTexture(width, height, GL_RGBA, GL_RGBA, (void *)&data.Lightmap[data.Face[i].lightofs / sizeof(ColorRGBExp32)], false, 0);
 		face_lightmap_obj[i] = lightmap_object[i];
-#endif
 #endif
 #endif
 

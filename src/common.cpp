@@ -809,6 +809,26 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 	format = 4;
 //	components = 4;
 #endif
+#ifdef DIRECTX
+	unsigned char *bytes = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	if (bytes == NULL)
+	{
+		debugf("Unable to load texture %s from pk3\n", file_name);
+		delete[] data;
+		return load_texture(gfx, file_name, clamp, false, anisotropic);
+	}
+
+	char *pBits = NULL;
+	if (components == 3)
+	{
+		pBits = tga_24to32(width, height, (char *)bytes, bgr);
+		components = 5;
+	}
+
+
+	format = 4;
+	//	components = 4;
+#endif
 
 #if 0
 	if (format == GL_RGB)

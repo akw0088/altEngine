@@ -88,9 +88,9 @@ void Global::Params(matrix4 &mvp, int depth)
 	gfx->context->VSSetConstantBuffers(0, 1, &g_pConstantBuffer11);
 }
 
-int mLight2::init(Graphics *gfx)
+int mLight2::init(Graphics *gfx, bool pixel)
 {
-	max_light = MAX_LIGHTS;
+//	max_light = MAX_LIGHTS;
 	//"media/glsl/mlighting3.gs"
 	Shader::init(gfx, "media/hlsl/mlighting3.vsh", NULL, "media/hlsl/mlighting3.psh");
 	return 0;
@@ -108,6 +108,11 @@ void mLight2::set_shadow_matrix(int index, matrix4 &proj)
 void mLight2::set_brightness(float value)
 {
 }
+
+void mLight2::set_dissolve(float value)
+{
+}
+
 
 void mLight2::set_shadowmap(float value)
 {
