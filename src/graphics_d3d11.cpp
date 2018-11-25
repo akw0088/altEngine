@@ -337,8 +337,6 @@ void Graphics::init(void *param1, void *param2)
 	rsDesc.CullMode = D3D11_CULL_BACK;
 	rsDesc.FrontCounterClockwise = false;
 	rsDesc.DepthClipEnable = true;
-	device->CreateRasterizerState(&rsDesc, &render_state);
-//	rsDesc.FillMode = D3D11_FILL_WIREFRAME;
 	ret = device->CreateRasterizerState(&rsDesc, &render_state);
 
 	context->RSSetState(render_state);
@@ -574,7 +572,7 @@ int Graphics::LoadTexture(int width, int height, int components, int format, voi
 	desc.ArraySize = 1;
 	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 1;
+	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
@@ -710,7 +708,7 @@ int Shader::init(Graphics *gfx, char *vertex_file,  char *geometry_file, char *f
 
 	D3D11_INPUT_ELEMENT_DESC vertex_desc[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "SV_Position", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0 },
