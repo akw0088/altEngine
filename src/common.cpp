@@ -952,6 +952,12 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 #ifndef DEDICATED
 	if (components == 3)
 	{
+#ifdef DIRECTX
+		char *temp = tga_24to32(width, height, (char *)img_data, bgr);
+		delete[] img_data;
+		img_data = (unsigned char *)temp;
+		components = 5;
+#endif
 		tex_object = gfx.LoadTexture(width, height, 4, format, img_data, clamp, anisotropic);
 	}
 	else if (components == 5)
