@@ -35,7 +35,7 @@ Bsp::Bsp()
 	enable_textures = false;
 	enable_patch = true;
 	enable_sky = true;
-#if SOFTWARE || D3D11
+#if SOFTWARE || DIRECTX
 	enable_shader = false;
 #else
 	enable_shader = true;
