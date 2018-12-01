@@ -8,9 +8,9 @@ namespace cloth
 	class Particle
 	{
 	public:
-		Particle(vec3 pos);
+		Particle(vec3 &pos);
 		Particle();
-		void add_force(vec3 f);
+		void add_force(const vec3 &f);
 		void step(float time);
 
 		bool movable;
@@ -39,9 +39,9 @@ namespace cloth
 		void init(int width, int height, int num_particles_width, int num_particles_height);
 		void create_buffers(Graphics &gfx);
 		void step(float time);
-		void add_force(const vec3 direction);
-		void wind_force(const vec3 direction);
-		void ball_collision(const vec3 center, const float radius);
+		void add_force(const vec3 &direction);
+		void wind_force(const vec3 &direction);
+		void ball_collision(const vec3 &center, const float radius);
 
 
 		unsigned int ibo;
@@ -63,8 +63,8 @@ namespace cloth
 		inline Particle* get_particle(int x, int y);
 		inline void make_constraint(Particle *p1, Particle *p2);
 		vec3 calc_normal(Particle *p1, Particle *p2, Particle *p3);
-		void add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 direction);
-		void add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color);
+		void add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 &direction);
+		void add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 &color);
 	};
 
 };

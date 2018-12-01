@@ -7,7 +7,7 @@
 using namespace cloth;
 using namespace std;
 
-Particle::Particle(vec3 position)
+Particle::Particle(vec3 &position)
 {
 	Particle::position = position;
 	old_pos = position;
@@ -21,7 +21,7 @@ Particle::Particle()
 {
 }
 
-void Particle::add_force(vec3 force)
+void Particle::add_force(const vec3 &force)
 {
 	acceleration += force / mass;
 }
@@ -165,7 +165,7 @@ void Cloth::step(float time)
 	}
 }
 
-void Cloth::add_force(const vec3 direction)
+void Cloth::add_force(const vec3 &direction)
 {
 	for (int i = 0; i < particles.size(); i++)
 	{
@@ -173,7 +173,7 @@ void Cloth::add_force(const vec3 direction)
 	}
 }
 
-void Cloth::wind_force(const vec3 direction)
+void Cloth::wind_force(const vec3 &direction)
 {
 	for (int x = 0; x < num_particles_width - 1; x++)
 	{
@@ -185,7 +185,7 @@ void Cloth::wind_force(const vec3 direction)
 	}
 }
 
-void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 direction)
+void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3 &direction)
 {
 	vec3 normal = calc_normal(p1, p2, p3);
 	vec3 d = normal;
@@ -196,7 +196,7 @@ void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3
 	p3->add_force(force);
 }
 
-void Cloth::ball_collision(const vec3 center, const float radius)
+void Cloth::ball_collision(const vec3 &center, const float radius)
 {
 	for (int i = 0; i < particles.size(); i++)
 	{
@@ -232,7 +232,7 @@ vec3 Cloth::calc_normal(Particle *p1, Particle *p2, Particle *p3)
 }
 
 
-void Cloth::add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 color)
+void Cloth::add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Particle *p3, const vec3 &color)
 {
 	vertex_array[0].normal = p1->accumulated_normal.normalize();
 	vertex_array[0].position = p1->position;

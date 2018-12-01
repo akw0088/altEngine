@@ -205,7 +205,7 @@ vec3 vec3::operator*(const float scalar) const
 	return vec3(x * scalar, y * scalar, z * scalar);
 }
 
-vec3 vec3::operator/(const float scalar)
+vec3 vec3::operator/(const float scalar) const
 {
 	return vec3(x / scalar, y / scalar, z / scalar);
 }

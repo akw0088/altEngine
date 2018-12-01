@@ -850,7 +850,7 @@ bool Linetest(const obb_t &obb, const line3_t &line)
 	return t >= 0 && t * t <= (length * length);
 }
 
-bool Linetest(const plane_t p, const line3_t &line)
+bool Linetest(const plane_t &p, const line3_t &line)
 {
 	vec3 ab = line.b - line.a;
 	float nA = p.normal * line.a;
@@ -1565,7 +1565,7 @@ float Raycast(const mesh_t &mesh, const ray_t &ray)
 //	3D Mesh tests with spatial optimizations (bvh nodes)
 //=============================================================================
 
-aabb_t AABB(vec3 max, vec3 min)
+aabb_t AABB(vec3 &max, vec3 &min)
 {
 	aabb_t result;
 
@@ -2916,7 +2916,7 @@ float OrbitCamera::ClampAngle(float angle, float min, float max)
 
 // Cramer's Rule
 //http://www.purplemath.com/modules/cramers.htm
-vec3 Intersection(plane_t p1, plane_t p2, plane_t p3)
+vec3 Intersection(const plane_t &p1, const plane_t &p2, const plane_t &p3)
 {
 	matrix3 D(
 		p1.normal.x, p2.normal.x, p3.normal.x,

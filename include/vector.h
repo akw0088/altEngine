@@ -58,7 +58,7 @@ public:
 	float operator*(const vec3 &vector) const;
 	float operator/(const vec3 &vector) const;
 	vec3 operator*(const float scalar) const;
-	vec3 operator/(const float scalar);
+	vec3 operator/(const float scalar) const;
 	vec3 &operator+=(const vec3 &vec);
 	vec3 &operator-=(const vec3 &vec);
 	vec3 &operator*=(const float scalar);

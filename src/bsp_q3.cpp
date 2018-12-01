@@ -1053,7 +1053,7 @@ inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool l
 }
 
 
-bool face_sort(faceinfo_t a, faceinfo_t b)
+bool face_sort(faceinfo_t &a, faceinfo_t &b)
 {
 	int c = strcmp(a.name, b.name);
 	return  (c < 0);

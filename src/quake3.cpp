@@ -8060,17 +8060,19 @@ break;
 				}
 			}
 
-			entity_list[i]->rigid->morientation.m[0] = matrix.m[0];
-			entity_list[i]->rigid->morientation.m[1] = matrix.m[1];
-			entity_list[i]->rigid->morientation.m[2] = matrix.m[2];
+			float *m = &entity_list[i]->rigid->morientation.m[0];
 
-			entity_list[i]->rigid->morientation.m[3] = matrix.m[4];
-			entity_list[i]->rigid->morientation.m[4] = matrix.m[5];
-			entity_list[i]->rigid->morientation.m[5] = matrix.m[6];
+			m[0] = matrix.m[0];
+			m[1] = matrix.m[1];
+			m[2] = matrix.m[2];
 
-			entity_list[i]->rigid->morientation.m[6] = matrix.m[7];
-			entity_list[i]->rigid->morientation.m[7] = matrix.m[8];
-			entity_list[i]->rigid->morientation.m[8] = matrix.m[10];
+			m[3] = matrix.m[4];
+			m[4] = matrix.m[5];
+			m[5] = matrix.m[6];
+
+			m[6] = matrix.m[7];
+			m[7] = matrix.m[8];
+			m[8] = matrix.m[10];
 
 
 			cloth->init(130, 220, 10, 20);

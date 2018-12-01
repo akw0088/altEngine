@@ -32,9 +32,9 @@ private:
 	void build_face(int face);
 	void render_face(Graphics &gfx, int face);
 
-	int find_leaf(vec3 pos, int node);
-	void bsp_render_node(Graphics &gfx, int node_index, int leaf, vec3 pos);
-	bool point_AABB(vec3 pos, short min[3], short max[3]);
+	int find_leaf(vec3 &pos, int node);
+	void bsp_render_node(Graphics &gfx, int node_index, int leaf, vec3 &pos);
+	bool point_AABB(vec3 &pos, short *min, short *max);
 	void change_axis();
 	void load_lightmap(Graphics &gfx);
 	void load_textures(Graphics &gfx);

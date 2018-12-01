@@ -212,7 +212,7 @@ void HLBsp::render(Graphics &gfx, vec3 &pos)
 	bsp_render_node(gfx, 0, current_leaf, pos);
 }
 
-void HLBsp::bsp_render_node(Graphics &gfx, int node_index, int leaf, vec3 pos)
+void HLBsp::bsp_render_node(Graphics &gfx, int node_index, int leaf, vec3 &pos)
 {
 	if (node_index < 0)
 	{
@@ -386,7 +386,7 @@ void HLBsp::build_face(int face)
 	}
 }
 
-int HLBsp::find_leaf(vec3 pos, int node)
+int HLBsp::find_leaf(vec3 &pos, int node)
 {
 	for (int x = 0; x < 2; x++)
 	{
@@ -406,7 +406,7 @@ int HLBsp::find_leaf(vec3 pos, int node)
 	return -1;
 }
 
-bool HLBsp::point_AABB(vec3 pos, short min[3], short max[3])
+bool HLBsp::point_AABB(vec3 &pos, short *min, short *max)
 {
 	if ((min[0] <= pos.x && pos.x <= max[0] && min[1] <= pos.y && pos.y <= max[1] && min[2] <= pos.z && pos.z <= max[2]) ||
 		(min[0] >= pos.x && pos.x >= max[0] && min[1] >= pos.y && pos.y >= max[1] && min[2] >= pos.z && pos.z >= max[2]))
