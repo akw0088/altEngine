@@ -2998,213 +2998,8 @@ void Quake3::step(int frame_step)
 
 		}
 
-
-		if (entity->player == NULL)
+		if (handle_bot(entity, i) == -1)
 			continue;
-
-		if (entity->player->type != BOT)
-			continue;
-
-
-#ifdef BOT_ENABLE
-
-		Entity *bot = engine->entity_list[i];
-		input_t input;
-
-		memset(&input, 0, sizeof(input_t));
-		if (bot->player->health <= 0)
-		{
-			if (bot->player->bot_state != BOT_DEAD)
-				bot->player->dead_timer = (int)(random() * (TICK_RATE << 1));
-			bot->player->bot_state = BOT_DEAD;
-			continue;
-		}
-
-		//bot->player->avoid_walls(engine->q3map);
-		bot->player->handle_bot(engine->entity_list, i);
-		static int temp = 0;
-		if (bot->player->immobile && bot->player->health >= 75 && temp != 3)
-		{
-			entity->model->clone(model_table[MODEL_SENTRY3]);
-			temp = 3;
-		}
-		else if (bot->player->immobile && bot->player->health < 75 && bot->player->health > 50 && temp != 2)
-		{
-			entity->model->clone(model_table[MODEL_SENTRY2]);
-			temp = 2;
-		}
-		else if (bot->player->immobile && bot->player->health < 50 && temp != 1)
-		{
-			entity->model->clone(model_table[MODEL_SENTRY1]);
-			temp = 1;
-		}
-
-		if (bot->player->bot_state == BOT_ALERT || bot->player->bot_state == BOT_ATTACK)
-		{
-			//clear path
-			bot->player->path.step = 0;
-			bot->player->path.length = 0;
-
-			if (bot->player->alert_timer == 0)
-			{
-				engine->play_wave(bot->position, SND_SOLDIER_SIGHT);
-				bot->player->alert_timer = 20 * TICK_RATE;
-			}
-		}
-		else
-		{
-			if (bot->player->idle_timer > 0)
-				bot->player->idle_timer--;
-
-			if (bot->player->alert_timer > 0)
-				bot->player->alert_timer--;
-		}
-
-		if (bot->player->idle_timer == 0)
-		{
-			bot->player->idle_timer = (20 + rand() % 10) * TICK_RATE;
-			engine->play_wave(bot->position, SND_SOLDIER_IDLE);
-		}
-
-		if (bot->player->bot_state == BOT_IDLE || bot->player->bot_state == BOT_EXPLORE)
-		{
-			bot->player->get_item = bot->player->bot_search_for_items(engine->entity_list, i);
-
-			//clear path just in case
-			bot->player->path.step = 0;
-			bot->player->path.length = 0;
-		}
-		else
-		{
-			if (bot->player->bot_state != BOT_GET_ITEM)
-				bot->player->idle_timer = (20 + rand() % 10) * TICK_RATE;
-		}
-
-		float speed_scale = 1.0f;
-
-		if (bot->player->haste_timer > 0)
-			speed_scale = bot->player->haste_factor;
-
-		switch (bot->player->bot_state)
-		{
-		case BOT_ATTACK:
-			engine->zcc.select_animation(0);
-			if (bot->player->immobile == false)
-				bot->rigid->move_forward(speed_scale);
-			break;
-		case BOT_DEAD:
-			engine->zcc.select_animation(1);
-			bot->model->clone(model_table[MODEL_BOX]);
-			engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
-
-			if (bot->player->dead_timer > 0)
-				bot->player->dead_timer--;
-
-			if (bot->player->dead_timer == 0)
-				bot->player->respawn();
-
-			char cmd[64];
-			sprintf(cmd, "respawn -1 %d", i);
-			console(i, cmd, engine->menu, engine->entity_list);
-			break;
-		case BOT_GET_ITEM:
-		{
-			static int nav_array[64] = { 0 };
-			int ret = 0;
-
-			if (bot->player->immobile)
-				break;
-
-
-			bot->player->ammo_bullets = 100; // bots cheat on reloading :)
-			engine->zcc.select_animation(1);
-			if (engine->entity_list[bot->player->get_item]->trigger->active)
-			{
-				//some one got the item before we did, abort
-				bot->player->bot_state = BOT_IDLE;
-				bot->player->path.step = 0;
-				bot->player->path.length = 0;
-
-			}
-
-			// Need a path to item
-			if (bot->player->path.length == 0)
-			{
-				//probably need to pass Player reference instead of each path param, or make a struct
-				ret = bot_get_path(bot->player->get_item, i, nav_array,
-					bot->player->path);
-
-				if (bot->player->path.length == -1)
-				{
-					// Path doesnt exist, give up
-					strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->entstring->type, 1023);
-					strncat(bot->player->ignore, " ", 1023);
-
-					if (strlen(bot->player->ignore) >= 1000)
-						bot->player->ignore[0] = '\0';
-
-					bot->player->bot_state = BOT_IDLE;
-					bot->player->path.step = 0;
-					bot->player->path.length = 0;
-				}
-				else
-				{
-					bot->player->ignore[0] = '\0';
-				}
-			}
-
-			// We are already at the closest nav point to item, fake a empty path
-			if (ret == -1)
-			{
-				bot->player->path.step = 1;
-				bot->player->path.length = 1;
-			}
-
-			// At last step in path list, go directly to item
-			if (bot->player->path.step == bot->player->path.length)
-			{
-				vec3 delta;
-				bot->rigid->lookat_yaw(engine->entity_list[bot->player->get_item]->position);
-				bot->rigid->move_forward(speed_scale);
-
-				float distance = (engine->entity_list[i]->position - engine->entity_list[bot->player->get_item]->position).magnitude();
-
-				if (distance < 10.0f)
-				{
-					// Finally got where the item is, exit get state
-					bot->player->bot_state = BOT_IDLE;
-					bot->player->path.step = 0;
-					bot->player->path.length = 0;
-				}
-			}
-			else if (bot->player->path.length != 0)
-			{
-				// Go through path steps until we get to navpoint where item is
-				if (bot_follow(bot->player->path,
-					nav_array, bot, speed_scale) == 0)
-				{
-					(bot->player->path.step)++;
-					// momentum makes him miss pretty bad
-					bot->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
-				}
-			}
-			break;
-		}
-		case BOT_ALERT:
-			engine->zcc.select_animation(0);
-
-			if (bot->player->immobile == false)
-				bot->rigid->move_forward(speed_scale);
-			break;
-		case BOT_EXPLORE:
-			engine->zcc.select_animation(1);
-			bot->player->ignore[0] = '\0';
-			break;
-		case BOT_IDLE:
-			engine->zcc.select_animation(1);
-			break;
-		}
-#endif
 
 	}
 
@@ -3255,6 +3050,216 @@ void Quake3::step(int frame_step)
 #ifdef WIN32
 //	_controlfp(fpOld, MCW_EM);
 #endif
+}
+
+
+int Quake3::handle_bot(Entity *entity, int i)
+{
+	Entity *bot = engine->entity_list[i];
+	input_t input;
+
+
+	if (entity->player == NULL)
+		return -1;
+
+	if (entity->player->type != BOT)
+		return -1;
+
+	memset(&input, 0, sizeof(input_t));
+	if (bot->player->health <= 0)
+	{
+		if (bot->player->bot_state != BOT_DEAD)
+			bot->player->dead_timer = (int)(random() * (TICK_RATE << 1));
+		bot->player->bot_state = BOT_DEAD;
+		return -1;
+	}
+
+	//bot->player->avoid_walls(engine->q3map);
+	bot->player->handle_bot(engine->entity_list, i);
+	static int temp = 0;
+	if (bot->player->immobile && bot->player->health >= 75 && temp != 3)
+	{
+		entity->model->clone(model_table[MODEL_SENTRY3]);
+		temp = 3;
+	}
+	else if (bot->player->immobile && bot->player->health < 75 && bot->player->health > 50 && temp != 2)
+	{
+		entity->model->clone(model_table[MODEL_SENTRY2]);
+		temp = 2;
+	}
+	else if (bot->player->immobile && bot->player->health < 50 && temp != 1)
+	{
+		entity->model->clone(model_table[MODEL_SENTRY1]);
+		temp = 1;
+	}
+
+	if (bot->player->bot_state == BOT_ALERT || bot->player->bot_state == BOT_ATTACK)
+	{
+		//clear path
+		bot->player->path.step = 0;
+		bot->player->path.length = 0;
+
+		if (bot->player->alert_timer == 0)
+		{
+			engine->play_wave(bot->position, SND_SOLDIER_SIGHT);
+			bot->player->alert_timer = 20 * TICK_RATE;
+		}
+	}
+	else
+	{
+		if (bot->player->idle_timer > 0)
+			bot->player->idle_timer--;
+
+		if (bot->player->alert_timer > 0)
+			bot->player->alert_timer--;
+	}
+
+	if (bot->player->idle_timer == 0)
+	{
+		bot->player->idle_timer = (20 + rand() % 10) * TICK_RATE;
+		engine->play_wave(bot->position, SND_SOLDIER_IDLE);
+	}
+
+	if (bot->player->bot_state == BOT_IDLE || bot->player->bot_state == BOT_EXPLORE)
+	{
+		bot->player->get_item = bot->player->bot_search_for_items(engine->entity_list, i);
+
+		//clear path just in case
+		bot->player->path.step = 0;
+		bot->player->path.length = 0;
+	}
+	else
+	{
+		if (bot->player->bot_state != BOT_GET_ITEM)
+			bot->player->idle_timer = (20 + rand() % 10) * TICK_RATE;
+	}
+
+	float speed_scale = 1.0f;
+
+	if (bot->player->haste_timer > 0)
+		speed_scale = bot->player->haste_factor;
+
+	switch (bot->player->bot_state)
+	{
+	case BOT_ATTACK:
+		engine->zcc.select_animation(0);
+		if (bot->player->immobile == false)
+			bot->rigid->move_forward(speed_scale);
+		break;
+	case BOT_DEAD:
+		engine->zcc.select_animation(1);
+		bot->model->clone(model_table[MODEL_BOX]);
+		engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
+
+		if (bot->player->dead_timer > 0)
+			bot->player->dead_timer--;
+
+		if (bot->player->dead_timer == 0)
+			bot->player->respawn();
+
+		char cmd[64];
+		sprintf(cmd, "respawn -1 %d", i);
+		console(i, cmd, engine->menu, engine->entity_list);
+		break;
+	case BOT_GET_ITEM:
+	{
+		static int nav_array[64] = { 0 };
+		int ret = 0;
+
+		if (bot->player->immobile)
+			break;
+
+
+		bot->player->ammo_bullets = 100; // bots cheat on reloading :)
+		engine->zcc.select_animation(1);
+		if (engine->entity_list[bot->player->get_item]->trigger->active)
+		{
+			//some one got the item before we did, abort
+			bot->player->bot_state = BOT_IDLE;
+			bot->player->path.step = 0;
+			bot->player->path.length = 0;
+
+		}
+
+		// Need a path to item
+		if (bot->player->path.length == 0)
+		{
+			//probably need to pass Player reference instead of each path param, or make a struct
+			ret = bot_get_path(bot->player->get_item, i, nav_array,
+				bot->player->path);
+
+			if (bot->player->path.length == -1)
+			{
+				// Path doesnt exist, give up
+				strncat(bot->player->ignore, engine->entity_list[bot->player->get_item]->entstring->type, 1023);
+				strncat(bot->player->ignore, " ", 1023);
+
+				if (strlen(bot->player->ignore) >= 1000)
+					bot->player->ignore[0] = '\0';
+
+				bot->player->bot_state = BOT_IDLE;
+				bot->player->path.step = 0;
+				bot->player->path.length = 0;
+			}
+			else
+			{
+				bot->player->ignore[0] = '\0';
+			}
+		}
+
+		// We are already at the closest nav point to item, fake a empty path
+		if (ret == -1)
+		{
+			bot->player->path.step = 1;
+			bot->player->path.length = 1;
+		}
+
+		// At last step in path list, go directly to item
+		if (bot->player->path.step == bot->player->path.length)
+		{
+			vec3 delta;
+			bot->rigid->lookat_yaw(engine->entity_list[bot->player->get_item]->position);
+			bot->rigid->move_forward(speed_scale);
+
+			float distance = (engine->entity_list[i]->position - engine->entity_list[bot->player->get_item]->position).magnitude();
+
+			if (distance < 10.0f)
+			{
+				// Finally got where the item is, exit get state
+				bot->player->bot_state = BOT_IDLE;
+				bot->player->path.step = 0;
+				bot->player->path.length = 0;
+			}
+		}
+		else if (bot->player->path.length != 0)
+		{
+			// Go through path steps until we get to navpoint where item is
+			if (bot_follow(bot->player->path,
+				nav_array, bot, speed_scale) == 0)
+			{
+				(bot->player->path.step)++;
+				// momentum makes him miss pretty bad
+				bot->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+			}
+		}
+		break;
+	}
+	case BOT_ALERT:
+		engine->zcc.select_animation(0);
+
+		if (bot->player->immobile == false)
+			bot->rigid->move_forward(speed_scale);
+		break;
+	case BOT_EXPLORE:
+		engine->zcc.select_animation(1);
+		bot->player->ignore[0] = '\0';
+		break;
+	case BOT_IDLE:
+		engine->zcc.select_animation(1);
+		break;
+	}
+
+	return 0;
 }
 
 

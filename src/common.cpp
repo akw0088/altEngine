@@ -842,7 +842,7 @@ int load_texture_pk3(Graphics &gfx, char *file_name, char **pk3_list, int num_pk
 		tex_object = gfx.LoadTexture(width, height, components, format, bytes, clamp);
 	}
 #endif
-#ifdef DIRECTX || SOFTWARE
+#if DIRECTX || SOFTWARE
 	if (components == 5)
 		tex_object = gfx.LoadTexture(width, height, 4, format, pBits, clamp, anisotropic);
 	else

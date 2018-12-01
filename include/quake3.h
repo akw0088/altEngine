@@ -91,6 +91,7 @@ public:
 	void handle_machinegun(Player &player, Constructable *sentry, int self, bool client);
 	void handle_shotgun(Player &player, int self, bool client);
 	void handle_gibs(Player &player);
+	int  handle_bot(Entity *entity, int i);
 	void create_crosshair();
 	void draw_crosshair();
 	void draw_flash(Player *player);
