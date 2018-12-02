@@ -228,6 +228,13 @@ void cliptoplane(const plane_t &plane, vertex_t *in, int num_in, vertex_t *out, 
 
 void init_default_car(carinfo_t *info);
 
-inline void get_plane_slope(const vec3 &normal, float &angle);
+inline void get_plane_slope(const vec3 &normal, float &angle)
+{
+	vec3 up(0.0f, 1.0f, 0.0f);
+
+	// get plane angle of inclination
+	angle = acos(normal * up);
+}
+
 
 #endif
