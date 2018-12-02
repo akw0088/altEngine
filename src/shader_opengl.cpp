@@ -110,7 +110,7 @@ void Global::Params(matrix4 &mvp, int depth)
 
 int mLight2::init(Graphics *gfx, bool pixel)
 {
-
+	m_normalmap_scale = vec3(1.0f, 1.0f, 1.0f);
 	m_num_shadowmap = 18;
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
@@ -239,6 +239,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	u_time = glGetUniformLocation(program_handle, "u_time");
 	u_portal = glGetUniformLocation(program_handle, "u_portal");
 	u_normalmap = glGetUniformLocation(program_handle, "u_normalmap");
+	u_normalmap_scale = glGetUniformLocation(program_handle, "u_normalmap_scale");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_dissolve = glGetUniformLocation(program_handle, "u_dissolve");
@@ -429,6 +430,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform4fv(u_position, j, (float *)&position);
 	glUniform4fv(u_color, j, (float *)&color);
 
+	glUniform3f(u_normalmap_scale, m_normalmap_scale.x, m_normalmap_scale.y, m_normalmap_scale.z);
 
 	m_num_light = j;
 }
@@ -589,6 +591,13 @@ void mLight2::set_normalmap(float value)
 {
 	glUniform1f(u_normalmap, value);
 	m_normalmap = (float)value;
+}
+
+
+void mLight2::set_normalmap_scale(vec3 &value)
+{
+	glUniform3f(u_normalmap_scale, value.x, value.y, value.z);
+	m_normalmap_scale = value;
 }
 
 void mLight2::set_tone(int value)

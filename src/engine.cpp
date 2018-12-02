@@ -6270,24 +6270,6 @@ int Engine::console_render(char *cmd)
 		menu.print(msg);
 		return 0;
 	}
-	/*
-	if (sscanf(cmd, "r_normalmap %s", data) == 1)
-	{
-		float value = (float)atof(data);
-		mlight2.set_normalmap((int)value);
-		snprintf(msg, LINE_SIZE, "Setting normalmap to %f", value);
-		if (value > 0.0f)
-		{
-			q3map.enable_normalmap = true;
-		}
-		else
-		{
-			q3map.enable_normalmap = false;
-		}
-		menu.print(msg);
-		return 0;
-	}
-	*/
 	
 	if (strstr(cmd, "r_brightness"))
 	{
@@ -6777,6 +6759,15 @@ int Engine::console_render(char *cmd)
 		return 0;
 	}
 
+	vec3 scale;
+	if (sscanf(cmd, "r_normalmap_scale %f %f %f", &scale.x, &scale.y, &scale.z) == 3)
+	{
+		mlight2.set_normalmap_scale(scale);
+		snprintf(msg, LINE_SIZE, "Setting normalmap scale %f %f %f", scale.x, scale.y, scale.z);
+		menu.print(msg);
+		return 0;
+	}
+
 
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
 	{
@@ -6796,6 +6787,9 @@ int Engine::console_render(char *cmd)
 		}
 		return 0;
 	}
+
+
+
 
 
 	if (sscanf(cmd, "cg_fov %s", data) == 1)

@@ -49,6 +49,7 @@ uniform float u_fog;
 uniform float u_fog_start;
 uniform float u_fog_end;
 uniform vec3 u_fog_color;
+uniform vec3 u_normalmap_scale;
 
 
 
@@ -150,20 +151,21 @@ vec3 lighting( int lightIndex, vec4 pos )
 
 	vec3 v_light = normalize(vec3(lightDir.rgb));	
 	vec3 n_light;
+	vec3 v_light2;
 
 	if (u_normalmap > 0)
 	{
 		vec3 normal_map;
 
-		normal_map.x = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
-		normal_map.y = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
-		normal_map.z = (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
+		normal_map.x = u_normalmap_scale.x * (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).r - 1);
+		normal_map.y = u_normalmap_scale.y * (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
+		normal_map.z = u_normalmap_scale.z * (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
 
-		norm = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
+		norm = (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
 
 
 		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
-		vec3 v_light2 = normalize(vec3(lightpos.xyz));
+		v_light2 = normalize(vec3(lightpos.xyz));
 		n_light = tangent_space * v_light2; // light vector in tangent space
 	}
 
@@ -173,7 +175,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 	float atten = min( pos.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);		// light distance from fragment 1/(r^2) falloff
 	if (u_normalmap > 0)
 	{
-		v_reflect = reflect(n_light, norm);					// normal map reflection vector
+		v_reflect = reflect(v_light2, norm);					// normal map reflection vector
 	}
 	else
 	{
