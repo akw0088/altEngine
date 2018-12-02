@@ -73,7 +73,7 @@ public:
 	void set_light(float ambient, float lightmap, int num_light);
 	void set_lightmap_stage(int flag);
 	void set_depth(int flag);
-	void set_normalmap(int value);
+	void set_normalmap(float value);
 	void set_alpha(float value);
 	void set_tone(int value);
 

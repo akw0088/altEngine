@@ -42,7 +42,7 @@ uniform int u_env[4];
 uniform float u_rgbgen_scale[4];
 uniform int u_alphatest[4];
 uniform int u_portal;
-uniform int u_normalmap;
+uniform float u_normalmap;
 uniform int u_tone;
 
 uniform float u_fog;
@@ -149,7 +149,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 
 
 	vec3 v_light = normalize(vec3(lightDir.rgb));	
-//	vec3 n_light = tangent_space * v_light; // light vector in tangent space
+	vec3 n_light;
 
 	if (u_normalmap > 0)
 	{
@@ -164,13 +164,21 @@ vec3 lighting( int lightIndex, vec4 pos )
 
 		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
 		vec3 v_light2 = normalize(vec3(lightpos.xyz));
-		vec3 n_light = tangent_space * v_light2; // light vector in tangent space
+		n_light = tangent_space * v_light2; // light vector in tangent space
 	}
 
 
+	vec3 v_reflect;
 	float diffuse = max(dot(v_light, norm), 0.25);					// directional light factor for fragment
 	float atten = min( pos.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);		// light distance from fragment 1/(r^2) falloff
-	vec3 v_reflect = reflect(v_light, norm);					// normal map reflection vector
+	if (u_normalmap > 0)
+	{
+		v_reflect = reflect(n_light, norm);					// normal map reflection vector
+	}
+	else
+	{
+		v_reflect = reflect(v_light, norm);
+	}
 	float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);			// specular relection for fragment
 
 
@@ -367,13 +375,13 @@ void main(void)
 		unormal = 2 * (transpose(mvp) * vec4(normal_map, 1.0)).xyz;
 	}
 
-
-	for(int i = 0; i < u_num_lights; i++)
+	// u_num_lights is zero when rendering map for some reason, hardcoding max_lights
+	for(int i = 0; i < 64; i++)
 	{
 		light += lighting(i, u_position[i]);
 	}
 
-	if (u_lightmap > 0.0)
+	if (u_lightmap > 0.0 && u_normalmap <= 0.0)
 	{
 		vec3 lightmap = texture(texture_lightmap, Vertex.vary_LightCoord).xyz;
 

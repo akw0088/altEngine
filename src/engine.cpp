@@ -585,6 +585,9 @@ void Engine::load(char *level)
 	ball_radius = 2.0f;
 	ball_time = 0.0f;
 
+	q3map.enable_normalmap = true;
+	mlight2.set_normalmap(1.0f);
+
 
 	if (strstr(level, "ctf"))
 	{
@@ -1833,10 +1836,6 @@ void Engine::render_scene(bool lights)
 
 	mlight2.Select();
 	mvp = transformation * projection;
-	if (lights)
-		mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
-	else
-		mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 	if (enable_map)
 	{
@@ -1847,6 +1846,12 @@ void Engine::render_scene(bool lights)
 			gfx.SelectTexture(2, no_tex);
 			gfx.SelectTexture(3, no_tex);
 		}
+
+		if (lights)
+			mlight2.Params(mvp, light_list, light_list.size(), offset, tick_num);
+		else
+			mlight2.Params(mvp, light_list, 0, offset, tick_num);
+
 
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, pfrustum);
 		//draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
@@ -2283,7 +2288,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			gfx.SelectIndexBuffer(cloth[index]->ibo);
 			gfx.SelectVertexBuffer(cloth[index]->vbo);
 			gfx.SelectTexture(0, cloth[index]->tex);
-			gfx.DrawArrayTri(0, 0, cloth[index]->num_index, cloth[i]->num_vert);
+			gfx.DrawArrayTri(0, 0, cloth[index]->num_index, cloth[index]->num_vert);
 			gfx.Blend(false);
 		}
 #endif
@@ -6265,7 +6270,7 @@ int Engine::console_render(char *cmd)
 		menu.print(msg);
 		return 0;
 	}
-
+	/*
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
 	{
 		float value = (float)atof(data);
@@ -6282,6 +6287,7 @@ int Engine::console_render(char *cmd)
 		menu.print(msg);
 		return 0;
 	}
+	*/
 	
 	if (strstr(cmd, "r_brightness"))
 	{

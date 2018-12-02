@@ -45,7 +45,6 @@ Bsp::Bsp()
 	memset(map_name, 0, 64);
 	sky_face = -1;
 	lastIndex = -2;
-	normal_object = NULL;
 	lightmap_object = NULL;
 	num_meshes = 0;
 	normal_object = NULL;
@@ -133,7 +132,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 
 	tangent = new vec4 [data.num_verts];
 	memset(tangent, 0, sizeof(vec4) * data.num_verts);
-//	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
+	CalculateTangentArray(data.Vert, data.num_verts, data.IndexArray, data.num_index, tangent);
 
 	tex_object = new texture_t [data.num_materials];
 
@@ -2190,7 +2189,19 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 		{
 			char texture_name[128];
 			snprintf(texture_name, 127, "media/%s_normal.tga", material->name);
-			normal_object[i] = load_texture(gfx, texture_name, false, false, anisotropic);
+			normal_object[i] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, false, anisotropic);
+
+			if (normal_object[i] == 0)
+			{
+				char texture_name[128];
+				snprintf(texture_name, 127, "media/%s_normal.jpg", material->name);
+				normal_object[i] = load_texture_pk3(gfx, texture_name, pk3_list, num_pk3, false, false, anisotropic);
+			}
+
+			if (normal_object[i] == 0)
+			{
+				printf("Unable to load %s\r\n", texture_name);
+			}
 		}
 
 	}

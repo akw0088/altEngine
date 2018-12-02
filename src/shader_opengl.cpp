@@ -247,7 +247,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	u_contrast = glGetUniformLocation(program_handle, "u_contrast");
 	u_lightmap = glGetUniformLocation(program_handle, "u_lightmap");
 	u_shadowmap = glGetUniformLocation(program_handle, "u_shadowmap");
-	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
+	
 	u_num_shadowmap = glGetUniformLocation(program_handle, "u_num_shadowmap");
 	u_position = glGetUniformLocation(program_handle, "u_position");
 	u_color = glGetUniformLocation(program_handle, "u_color");
@@ -266,6 +266,8 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	u_clip1 = glGetUniformLocation(program_handle, "u_clip1");
 	u_clip2 = glGetUniformLocation(program_handle, "u_clip2");
 	u_clip3 = glGetUniformLocation(program_handle, "u_clip3");
+
+	u_num_lights = glGetUniformLocation(program_handle, "u_num_lights");
 
 	return 0;
 }
@@ -583,9 +585,9 @@ void mLight2::portal(int portal)
 	glUniform1i(u_portal, portal);
 }
 
-void mLight2::set_normalmap(int value)
+void mLight2::set_normalmap(float value)
 {
-	glUniform1i(u_normalmap, value);
+	glUniform1f(u_normalmap, value);
 	m_normalmap = (float)value;
 }
 
