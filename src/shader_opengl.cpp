@@ -110,7 +110,7 @@ void Global::Params(matrix4 &mvp, int depth)
 
 int mLight2::init(Graphics *gfx, bool pixel)
 {
-	m_normalmap_scale = vec3(2.0f, 2.0f, 1.0f);
+	m_normalmap_scale = vec3(5.0f, 5.0f, 1.0f);
 	m_num_shadowmap = 18;
 	max_light = MAX_LIGHTS;
 	m_brightness = 0.0f;
