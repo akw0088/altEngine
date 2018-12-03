@@ -169,7 +169,7 @@ void Vehicle::step(float delta_t)
 
 
 
-bool Vehicle::move(input_t &input, float speed_scale)
+bool Vehicle::move(input_t &input, float speed_scale, int tick_num)
 {
 	if (input.moveup)
 	{
@@ -201,11 +201,11 @@ bool Vehicle::move(input_t &input, float speed_scale)
 	if (input.weapon_up)
 	{
 		static int last_tick = 0;
-		int current = GetTickCount();
+		int current = tick_num;
 
 		if (last_tick + 1000 < current)
 		{
-			last_tick = GetTickCount();
+			last_tick = tick_num;
 			gear++;
 			if (gear >= 6)
 				gear = 6;

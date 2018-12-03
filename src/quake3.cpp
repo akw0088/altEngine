@@ -2150,7 +2150,7 @@ void Quake3::handle_player(int self, input_t &input)
 						vec3 viewpos = mat * vehicle->info.seat[entity->player->seat];
 
 						entity->position = vehicle->entity->position + viewpos;
-						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale);
+						engine->entity_list[entity->player->in_vehicle]->vehicle->move(input, speed_scale, engine->tick_num);
 					}
 				}
 			}
@@ -2572,7 +2572,7 @@ void Quake3::drop_weapon(int index)
 {
 	Entity *entity = engine->entity_list[index];
 
-	if (entity->player->current_weapon == wp_gauntlet)		return;
+	if (entity->player->current_weapon == wp_gauntlet)		return;
 
 	Entity *drop_weapon = engine->entity_list[engine->get_entity()];
 	char *weapon_str = NULL;
@@ -2622,7 +2622,7 @@ void Quake3::drop_weapon(int index)
 		drop_weapon->nettype = NET_RAILGUN;
 		break;
 	default:
-		weapon_str = "weapon_machinegun";		drop_weapon->model->clone(entity->player->weapon_machinegun);		drop_weapon->nettype = NET_MACHINEGUN;		break;
+		weapon_str = "weapon_machinegun";		drop_weapon->model->clone(entity->player->weapon_machinegun);		drop_weapon->nettype = NET_MACHINEGUN;		break;
 	}
 
 	// it will have the players view direction, resetting

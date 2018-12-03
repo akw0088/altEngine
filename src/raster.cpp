@@ -2318,7 +2318,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 				float u = u_over_w * w_interpolated;
 				float v = v_over_w * w_interpolated;
 
-				int mip_level;
+				int mip_level = 0;
 				float blend = 1.0f;
 
 				if (mipmap)

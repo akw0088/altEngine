@@ -1609,22 +1609,43 @@ void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
 			vec3 c = aabb_center_word(node->bounds);
 			vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
 
-			node->children[0].bounds =
-				AABB(c + vec3(-e.x, +e.y, -e.z), e);
-			node->children[1].bounds =
-				AABB(c + vec3(+e.x, +e.y, -e.z), e);
-			node->children[2].bounds =
-				AABB(c + vec3(-e.x, +e.y, +e.z), e);
-			node->children[3].bounds =
-				AABB(c + vec3(+e.x, +e.y, +e.z), e);
-			node->children[4].bounds =
-				AABB(c + vec3(-e.x, -e.y, -e.z), e);
-			node->children[5].bounds =
-				AABB(c + vec3(+e.x, -e.y, -e.z), e);
-			node->children[6].bounds =
-				AABB(c + vec3(-e.x, -e.y, +e.z), e);
-			node->children[7].bounds =
-				AABB(c + vec3(+e.x, -e.y, +e.z), e);
+			vec3 min;
+			vec3 max;
+
+			max = e;
+
+			min.x = c.x + -e.x;
+			min.y = c.y + +e.y;
+			min.z = c.z + -e.z;
+			node->children[0].bounds = AABB(min, max);
+			min.x = c.x + +e.x;
+			min.y = c.y + +e.y;
+			min.z = c.z + -e.z;
+			node->children[1].bounds = AABB(min, max);
+			min.x = c.x + -e.x;
+			min.y = c.y + +e.y;
+			min.z = c.z + +e.z;
+			node->children[2].bounds = AABB(min, max);
+			min.x = c.x + +e.x;
+			min.y = c.y + +e.y;
+			min.z = c.z + +e.z;
+			node->children[3].bounds = AABB(min, max);
+			min.x = c.x + -e.x;
+			min.y = c.y + -e.y;
+			min.z = c.z + -e.z;
+			node->children[4].bounds = AABB(min, max);
+			min.x = c.x + +e.x;
+			min.y = c.y + -e.y;
+			min.z = c.z + -e.z;
+			node->children[5].bounds = AABB(min, max);
+			min.x = c.x + -e.x;
+			min.y = c.y + -e.y;
+			min.z = c.z + +e.z;
+			node->children[6].bounds = AABB(min, max);
+			min.x = c.x + +e.x;
+			min.y = c.y + -e.y;
+			min.z = c.z + +e.z;
+			node->children[7].bounds = AABB(min, max);
 		}
 	}
 
@@ -2094,22 +2115,49 @@ void SplitTree(COctreeNode* node, int depth)
 		vec3 c = aabb_center_model(node->bounds);
 		vec3 e = (node->bounds.max - node->bounds.min) * 0.5f;
 
-		node->children[0].bounds =
-			AABB(c + vec3(-e.x, +e.y, -e.z), e);
-		node->children[1].bounds =
-			AABB(c + vec3(+e.x, +e.y, -e.z), e);
-		node->children[2].bounds =
-			AABB(c + vec3(-e.x, +e.y, +e.z), e);
-		node->children[3].bounds =
-			AABB(c + vec3(+e.x, +e.y, +e.z), e);
-		node->children[4].bounds =
-			AABB(c + vec3(-e.x, -e.y, -e.z), e);
-		node->children[5].bounds =
-			AABB(c + vec3(+e.x, -e.y, -e.z), e);
-		node->children[6].bounds =
-			AABB(c + vec3(-e.x, -e.y, +e.z), e);
-		node->children[7].bounds =
-			AABB(c + vec3(+e.x, -e.y, +e.z), e);
+		vec3 min;
+		vec3 max;
+
+		min.x = c.x + +e.x;
+		min.y = c.y + +e.y;
+		min.z = c.z + -e.z;
+		max = e;
+		node->children[0].bounds = AABB(min, max);
+		min.x = c.x + +e.x;
+		min.y = c.y + +e.y;
+		min.z = c.z + -e.z;
+		max = e;
+		node->children[1].bounds = AABB(min, max);
+		min.x = c.x + -e.x;
+		min.y = c.y + +e.y;
+		min.z = c.z + +e.z;
+		max = e;
+		node->children[2].bounds = AABB(min, max);
+		min.x = c.x + +e.x;
+		min.y = c.y + +e.y;
+		min.z = c.z + +e.z;
+		max = e;
+		node->children[3].bounds = AABB(min, max);
+		min.x = c.x + -e.x;
+		min.y = c.y + -e.y;
+		min.z = c.z + -e.z;
+		max = e;
+		node->children[4].bounds = AABB(min, max);
+		min.x = c.x + +e.x;
+		min.y = c.y + -e.y;
+		min.z = c.z + -e.z;
+		max = e;
+		node->children[5].bounds = AABB(min, max);
+		min.x = c.x + -e.x;
+		min.y = c.y + -e.y;
+		min.z = c.z + +e.z;
+		max = e;
+		node->children[6].bounds = AABB(min, max);
+		min.x = c.x + +e.x;
+		min.y = c.y + -e.y;
+		min.z = c.z + +e.z;
+		max = e;
+		node->children[7].bounds = AABB(min, max);
 	}
 
 	if (node->children != 0 && node->models.size() > 0)

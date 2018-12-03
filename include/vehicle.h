@@ -20,10 +20,10 @@
 class Vehicle : public RigidBody
 {
 public:
-	Vehicle::Vehicle(Entity *entity, carinfo_t *info);
+	Vehicle(Entity *entity, carinfo_t *info);
 	void init(carinfo_t *info);
 	void step(float delta_t);
-	bool move(input_t &input, float speed_scale);
+	bool move(input_t &input, float speed_scale, int tick_num);
 
 public:
 	vec3	force;

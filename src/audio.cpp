@@ -50,7 +50,7 @@ eg: (0,0,0.75) = sound coming from infront of you with 90 degree width
 	}
 */
 
-
+#ifdef EFXUTIL
 EAXREVERBPROPERTIES environment[] = {
 	REVERB_PRESET_GENERIC,
 	REVERB_PRESET_PADDEDCELL,
@@ -166,7 +166,7 @@ EAXREVERBPROPERTIES environment[] = {
 	REVERB_PRESET_CHAPEL,
 	REVERB_PRESET_SMALLWATERROOM
 };
-
+#endif
 
 char environment_names[][128] = {
 	"REVERB_PRESET_GENERIC",
@@ -629,6 +629,7 @@ void Audio::init()
 
 void Audio::set_effect(int selected_effect)
 {
+#ifdef EFXUTIL
 	EFXEAXREVERBPROPERTIES efxReverb;
 
 
@@ -636,7 +637,7 @@ void Audio::set_effect(int selected_effect)
 	SetEFXEAXReverbProperties(&efxReverb, effect);
 
 	printf("Setting effect %s\r\n", environment_names[selected_effect]);
-
+#endif
 }
 
 void Audio::set_audio_model(int model)
