@@ -137,21 +137,15 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 vec3 lighting( int lightIndex, vec4 pos )
 {
 	vec3 lightPosWorld = pos.xyz;
-	vec3 eye = -normalize(Vertex.vary_position.xyz); // for specular reflections
-
-	vec3 norm  = Vertex.vary_normal;
-	vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
-	vec3 bitangent = normalize(cross(norm, tangent));
-	mat3 tangent_space = mat3(tangent, bitangent, norm);
-
-
-	vec4 lightDir = mvp * vec4(Vertex.att_position - lightPosWorld, 1.0);
+	vec4 lightDir = mvp * vec4(lightPosWorld - Vertex.att_position, 1.0); // vector from light to pixel
+	vec3 eye = -normalize(Vertex.vary_position.xyz); // vector from pixel to eye (eye at origin)
 	lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
 
-	vec3 v_light = normalize(vec3(lightDir.rgb));	
+	vec3 v_light = normalize(vec3(lightDir.rgb));
 	vec3 n_light;
 	vec3 v_light2;
+	vec3 norm;
 
 	if (u_normalmap > 0)
 	{
@@ -161,12 +155,17 @@ vec3 lighting( int lightIndex, vec4 pos )
 		normal_map.y = u_normalmap_scale.y * (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).g - 1);
 		normal_map.z = u_normalmap_scale.z * (2 * texture(texture_normalmap, Vertex.vary_newTexCoord[0]).b - 1);
 
+		// normal in tangent space
 		norm = normal_map.xyz;
 
+		// make tangent space matrix
+		vec3 norm  = Vertex.vary_normal;
+		vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
+		vec3 bitangent = normalize(cross(norm, tangent));
+		mat3 tangent_space = mat3(tangent, bitangent, norm);
 
-		vec4 lightpos = mvp * vec4(lightPosWorld, 1.0);
-		v_light2 = normalize(vec3(lightpos.xyz));
-		n_light = tangent_space * v_light2; // light vector in tangent space
+
+		n_light = tangent_space * v_light; // move light vector from eye space to tangent space
 	}
 
 
@@ -176,7 +175,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 	float atten = min( pos.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);		// light distance from fragment 1/(r^2) falloff
 	if (u_normalmap > 0)
 	{
-		diffuse = max(dot(n_light, norm), 0.25);					// directional light factor for fragment
+		diffuse = max(dot(n_light, norm), 0.25);				// directional light factor for fragment
 		v_reflect = reflect(n_light, norm);					// normal map reflection vector
 	}
 	else
@@ -184,7 +183,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 		diffuse = max(dot(v_light, norm), 0.25);					// directional light factor for fragment
 		v_reflect = reflect(v_light, norm);
 	}
-	float specular = max(pow(dot(v_reflect, eye), 8.0), 0.25);			// specular relection for fragment
+	float specular = max(pow(dot(v_reflect, eye), 8.0), 0.125);			// specular relection for fragment
 
 
 	return ( vec3(u_color[lightIndex]) * u_color[lightIndex].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
@@ -370,9 +369,20 @@ void main(void)
 
 
 	// u_num_lights is zero when rendering map for some reason, hardcoding max_lights
-	for(int i = 0; i < 64; i++)
+
+	if (u_normalmap > 0.0)
 	{
-		light += lighting(i, u_position[i]);
+		for(int i = 0; i < 32; i++)
+		{
+			light += lighting(i, u_position[i]);
+		}
+	}
+	else
+	{
+		for(int i = 0; i < u_num_lights; i++)
+		{
+			light += lighting(i, u_position[i]);
+		}
 	}
 
 	if (u_lightmap > 0.0 && u_normalmap <= 0.0)
