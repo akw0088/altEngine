@@ -118,6 +118,9 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_contrast = 1.0f;
 	m_exposure = 1.0f;
 	m_normalmap = -1.0f;
+	m_specular_exponent = 2.0f;
+	m_specular_factor = 0.5f;
+	m_diffuse_factor = 0.5f;
 	//"media/glsl/mlighting3.gs"
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
@@ -240,6 +243,9 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	u_portal = glGetUniformLocation(program_handle, "u_portal");
 	u_normalmap = glGetUniformLocation(program_handle, "u_normalmap");
 	u_normalmap_scale = glGetUniformLocation(program_handle, "u_normalmap_scale");
+	u_specular_exponent = glGetUniformLocation(program_handle, "u_specular_exponent");
+	u_specular_factor = glGetUniformLocation(program_handle, "u_specular_factor");
+	u_diffuse_factor = glGetUniformLocation(program_handle, "u_diffuse_factor");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_dissolve = glGetUniformLocation(program_handle, "u_dissolve");
@@ -431,7 +437,9 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform4fv(u_color, j, (float *)&color);
 
 	glUniform3f(u_normalmap_scale, m_normalmap_scale.x, m_normalmap_scale.y, m_normalmap_scale.z);
-
+	set_specular_exponent(m_specular_exponent);
+	set_specular_factor(m_specular_factor);
+	set_diffuse_factor(m_diffuse_factor);
 	m_num_light = j;
 }
 
@@ -591,6 +599,24 @@ void mLight2::set_normalmap(float value)
 {
 	glUniform1f(u_normalmap, value);
 	m_normalmap = (float)value;
+}
+
+void mLight2::set_specular_exponent(float value)
+{
+	glUniform1f(u_specular_exponent, value);
+	m_specular_exponent = (float)value;
+}
+
+void mLight2::set_specular_factor(float value)
+{
+	glUniform1f(u_specular_factor, value);
+	m_specular_factor = (float)value;
+}
+
+void mLight2::set_diffuse_factor(float value)
+{
+	glUniform1f(u_diffuse_factor, value);
+	m_diffuse_factor = (float)value;
 }
 
 

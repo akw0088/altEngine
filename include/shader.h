@@ -74,6 +74,10 @@ public:
 	void set_lightmap_stage(int flag);
 	void set_depth(int flag);
 	void set_normalmap(float value);
+	void set_specular_exponent(float value);
+	void set_specular_factor(float value);
+	void set_diffuse_factor(float value);
+
 	void set_normalmap_scale(vec3 &value);
 	void set_alpha(float value);
 	void set_tone(int value);
@@ -139,6 +143,9 @@ private:
 	int u_alphatest[NUM_STAGE];
 	int u_portal;
 	int u_normalmap;
+	int u_specular_exponent;
+	int u_specular_factor;
+	int u_diffuse_factor;
 	int u_normalmap_scale;
 	int u_alpha;
 
@@ -185,6 +192,9 @@ private:
 
 
 	float m_normalmap;
+	float m_specular_exponent;
+	float m_specular_factor;
+	float m_diffuse_factor;
 	vec3 m_normalmap_scale;
 	int m_num_shadowmap;
 	unsigned int max_light;

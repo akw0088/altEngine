@@ -6789,6 +6789,37 @@ int Engine::console_render(char *cmd)
 	}
 
 
+	if (sscanf(cmd, "r_specular_factor %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_specular_factor(value);
+		snprintf(msg, LINE_SIZE, "Setting specular factor to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
+	if (sscanf(cmd, "r_diffuse_factor %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_diffuse_factor(value);
+		snprintf(msg, LINE_SIZE, "Setting diffuse factor to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
+
+	if (sscanf(cmd, "r_specular_exponent %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_specular_exponent(value);
+		snprintf(msg, LINE_SIZE, "Setting specular exponent to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
 
 
 

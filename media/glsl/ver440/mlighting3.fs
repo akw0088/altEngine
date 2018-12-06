@@ -50,7 +50,9 @@ uniform float u_fog_start;
 uniform float u_fog_end;
 uniform vec3 u_fog_color;
 uniform vec3 u_normalmap_scale;
-
+uniform float u_specular_exponent;
+uniform float u_specular_factor;
+uniform float u_diffuse_factor;
 
 
 uniform sampler2D tex[4];// 4 possible textures
@@ -176,17 +178,17 @@ vec3 lighting( int lightIndex, vec4 pos )
 	if (u_normalmap > 0)
 	{
 		diffuse = max(dot(n_light, norm), 0.25);				// directional light factor for fragment
-		v_reflect = reflect(n_light, norm);					// normal map reflection vector
+		v_reflect = reflect(-n_light, norm);					// normal map reflection vector
 	}
 	else
 	{
 		diffuse = max(dot(v_light, norm), 0.25);					// directional light factor for fragment
-		v_reflect = reflect(v_light, norm);
+		v_reflect = reflect(-v_light, norm);
 	}
-	float specular = max(pow(dot(v_reflect, eye), 8.0), 0.125);			// specular relection for fragment
+	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), 0.125);			// specular relection for fragment
 
 
-	return ( vec3(u_color[lightIndex]) * u_color[lightIndex].a )  * atten * (diffuse * 0.75 + specular * 0.0); // combine everything
+	return ( vec3(u_color[lightIndex]) * u_color[lightIndex].a )  * atten * (diffuse * u_diffuse_factor + specular * u_specular_factor); // combine everything
 }
 
 // was originally varying, but couldnt pass through geometry shader
