@@ -6771,20 +6771,12 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
 	{
-		if (atoi(data))
-		{
-			q3map.enable_normalmap = true;
-			mlight2.set_normalmap(1);
-			snprintf(msg, LINE_SIZE, "Enabling normalmaps");
-			menu.print(msg);
-		}
-		else
-		{
-			q3map.enable_normalmap = false;
-			mlight2.set_normalmap(0);
-			snprintf(msg, LINE_SIZE, "Disabling normalmaps");
-			menu.print(msg);
-		}
+		float value = atof(data);
+
+		q3map.enable_normalmap = true;
+		mlight2.set_normalmap(value);
+		snprintf(msg, LINE_SIZE, "Setting normalmap to %f", value);
+		menu.print(msg);
 		return 0;
 	}
 

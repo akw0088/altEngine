@@ -147,9 +147,9 @@ vec3 lighting( int lightIndex, vec4 pos )
 	vec3 v_light = normalize(vec3(lightDir.rgb));
 	vec3 n_light;
 	vec3 v_light2;
-	vec3 norm;
+	vec3 norm = Vertex.vary_normal;
 
-	if (u_normalmap > 0)
+	if (u_normalmap > 0.5)
 	{
 		vec3 normal_map;
 
@@ -175,7 +175,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 	float diffuse;
 
 	float atten = min( pos.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);		// light distance from fragment 1/(r^2) falloff
-	if (u_normalmap > 0)
+	if (u_normalmap > 0.5)
 	{
 		diffuse = max(dot(n_light, norm), 0.25);				// directional light factor for fragment
 		v_reflect = reflect(-n_light, norm);					// normal map reflection vector
@@ -183,7 +183,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 	else
 	{
 		diffuse = max(dot(v_light, norm), 0.25);					// directional light factor for fragment
-		v_reflect = reflect(-v_light, norm);
+		v_reflect = reflect(v_light, norm);
 	}
 	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), 0.125);			// specular relection for fragment
 
