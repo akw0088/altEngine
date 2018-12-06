@@ -4972,3 +4972,19 @@ vec3 get_plane_direction_gradient(const vec3 &normal)
 
 	return result;
 }
+
+void refract(vec3 &normal, vec3 &vec, float n, vec3 &refract)
+{
+	float dot = (normal * vec);
+	float k = 1 - n*n * (1 - dot * dot);
+
+	//n = index of refraction
+	if (k < 0.0)
+	{
+		refract = vec3(0.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		refract = (vec * n) - normal * (n * (dot)+sqrt(k));
+	}
+}
