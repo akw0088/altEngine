@@ -139,7 +139,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 vec3 lighting( int lightIndex, vec4 pos )
 {
 	vec3 lightPosWorld = pos.xyz;
-	vec4 lightDir = mvp * vec4(lightPosWorld - Vertex.att_position, 1.0); // vector from light to pixel
+	vec4 lightDir = vec4(lightPosWorld - Vertex.att_position, 1.0); // vector from light to pixel
 	vec3 eye = -normalize(Vertex.vary_position.xyz); // vector from pixel to eye (eye at origin)
 	lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
@@ -185,10 +185,11 @@ vec3 lighting( int lightIndex, vec4 pos )
 		diffuse = max(dot(v_light, norm), 0.25);					// directional light factor for fragment
 		v_reflect = reflect(v_light, norm);
 	}
-	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), 0.125);			// specular relection for fragment
+	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), 0.0);			// specular relection for fragment
 
 
 	return ( vec3(u_color[lightIndex]) * u_color[lightIndex].a )  * atten * (diffuse * u_diffuse_factor + specular * u_specular_factor); // combine everything
+//	return v_light;
 }
 
 // was originally varying, but couldnt pass through geometry shader

@@ -1735,7 +1735,7 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 
 	if (blend_list.size() > 0 && enable_textures)
 	{
-		mlight2.set_light(1.0f, 1.0f, 0);
+		//mlight2.set_light(1.0f, 1.0f, 0);
 		if (enable_blend)
 		{
 			gfx.DepthFunc(LEQUAL);
