@@ -153,13 +153,13 @@ void Cloth::step(float time)
 {
 	for (int i = 0; i < CONSTRAINT_ITERATIONS; i++)
 	{
-		for (int j = 0; j < constraints.size(); j++)
+		for (unsigned int j = 0; j < constraints.size(); j++)
 		{
 			constraints[j].satisfy_constraint();
 		}
 	}
 
-	for (int i = 0; i < particles.size(); i++)
+	for (unsigned int i = 0; i < particles.size(); i++)
 	{
 		particles[i].step(time);
 	}
@@ -167,7 +167,7 @@ void Cloth::step(float time)
 
 void Cloth::add_force(const vec3 &direction)
 {
-	for (int i = 0; i < particles.size(); i++)
+	for (unsigned int i = 0; i < particles.size(); i++)
 	{
 		particles[i].add_force(direction);
 	}
@@ -198,7 +198,7 @@ void Cloth::add_wind_forces(Particle *p1, Particle *p2, Particle *p3, const vec3
 
 void Cloth::ball_collision(const vec3 &center, const float radius)
 {
-	for (int i = 0; i < particles.size(); i++)
+	for (unsigned int i = 0; i < particles.size(); i++)
 	{
 		vec3 v = particles[i].position - center;
 		float l = v.magnitude();
@@ -256,7 +256,7 @@ void Cloth::add_triangle(vertex_t *vertex_array, Particle *p1, Particle *p2, Par
 void Cloth::create_buffers(Graphics &gfx)
 {
 
-	for (int i = 0; i < particles.size(); i++)
+	for (unsigned int i = 0; i < particles.size(); i++)
 	{
 		particles[i].accumulated_normal = vec3(0.0f, 0.0f, 0.0f);
 	}

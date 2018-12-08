@@ -666,7 +666,7 @@ void Audio::set_audio_model(int model)
 }
 
 
-void Audio::effects(int source, bool enable_filter, int filter_index)
+void Audio::effects(int source, int enable_filter, int filter_index)
 {
 #ifdef WIN32
 	ALenum al_err;

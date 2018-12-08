@@ -525,7 +525,7 @@ int Q1Bsp::load(Graphics &gfx, char *filename)
 	change_axis();
 
 	map_vertex = new vertex_t[data.num_vertexes];
-	for (unsigned int i = 0; i < data.num_vertexes; i++)
+	for (int i = 0; i < data.num_vertexes; i++)
 	{
 		map_vertex[i].position = data.dvertexes[i];
 

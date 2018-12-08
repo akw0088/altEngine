@@ -1081,8 +1081,8 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 		for (unsigned int i = 0; i < leaf_list.size(); i++)
 		{
 			int node = leaf_list[i];
-			vec3 max(data.Leaf[node].max[0], data.Leaf[node].max[1], data.Leaf[node].max[2]);
-			vec3 min(data.Leaf[node].min[0], data.Leaf[node].min[1], data.Leaf[node].min[2]);
+			vec3 max((float)data.Leaf[node].max[0], (float)data.Leaf[node].max[1], (float)data.Leaf[node].max[2]);
+			vec3 min((float)data.Leaf[node].min[0], (float)data.Leaf[node].min[1], (float)data.Leaf[node].min[2]);
 
 
 			if (frustum && in_frustum_bbox(frustum, min, max) == false)

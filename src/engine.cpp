@@ -3031,7 +3031,7 @@ void Engine::handle_cloth()
 
 	if (enable_cloth)
 	{
-		for (int i = 0; i < cloth.size(); i++)
+		for (unsigned int i = 0; i < cloth.size(); i++)
 		{
 			if (entity_list[cloth[i]->ent_index]->flags.bsp_visible == false)
 				continue;
@@ -3736,7 +3736,7 @@ void Engine::savegame(char *file)
 {
 	static unsigned char buffer[16584];
 	unsigned int size = 0;
-	unsigned short num_ents = entity_list.size();
+	unsigned short num_ents = (unsigned short)entity_list.size();
 
 	netcode.serialize_ents(buffer, num_ents, size);
 
@@ -6773,7 +6773,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_normalmap %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		q3map.enable_normalmap = true;
 		mlight2.set_normalmap(value);
@@ -6785,7 +6785,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_specular_factor %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_specular_factor(value);
 		snprintf(msg, LINE_SIZE, "Setting specular factor to %f", value);
@@ -6795,7 +6795,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_diffuse_factor %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_diffuse_factor(value);
 		snprintf(msg, LINE_SIZE, "Setting diffuse factor to %f", value);
@@ -6806,7 +6806,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_specular_exponent %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_specular_exponent(value);
 		snprintf(msg, LINE_SIZE, "Setting specular exponent to %f", value);
@@ -6816,7 +6816,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_atten_exponent %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_atten_exponent(value);
 		snprintf(msg, LINE_SIZE, "Setting atten exponent to %f", value);
@@ -6826,7 +6826,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_atten_scale %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_atten_scale(value);
 		snprintf(msg, LINE_SIZE, "Setting atten scale to %f", value);
@@ -6836,7 +6836,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_atten_min %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_atten_min(value);
 		snprintf(msg, LINE_SIZE, "Setting atten min to %f", value);
@@ -6846,7 +6846,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_specular_min %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_specular_min(value);
 		snprintf(msg, LINE_SIZE, "Setting specular min to %f", value);
@@ -6856,7 +6856,7 @@ int Engine::console_render(char *cmd)
 
 	if (sscanf(cmd, "r_diffuse_min %s", data) == 1)
 	{
-		float value = atof(data);
+		float value = (float)atof(data);
 
 		mlight2.set_diffuse_min(value);
 		snprintf(msg, LINE_SIZE, "Setting diffuse min to %f", value);

@@ -155,13 +155,6 @@ vec3 lighting( int lightIndex, vec4 pos )
 	vec3 v_light2;
 	vec3 norm = Vertex.vary_normal;
 
-		// make tangent space matrix
-		norm  = Vertex.vary_normal;
-		vec3 tangent = normalize(vec3(Vertex.vary_tangent));
-		vec3 bitangent = normalize(cross(norm, tangent));
-		mat3 tangent_space = mat3(tangent, bitangent, norm);
-
-
 	if (u_normalmap > 0.5)
 	{
 		vec3 normal_map;
@@ -173,7 +166,11 @@ vec3 lighting( int lightIndex, vec4 pos )
 		// normal in tangent space
 		norm = normal_map.xyz;
 
-
+		// make tangent space matrix
+		norm  = Vertex.vary_normal;
+		vec3 tangent = normalize(vec3(Vertex.vary_tangent));
+		vec3 bitangent = normalize(cross(norm, tangent));
+		mat3 tangent_space = mat3(tangent, bitangent, norm);
 
 		n_light = tangent_space * v_light; // move light vector from eye space to tangent space
 	}
@@ -197,9 +194,6 @@ vec3 lighting( int lightIndex, vec4 pos )
 
 
 	return ( vec3(u_color[lightIndex]) * u_color[lightIndex].a )  * atten * (diffuse * u_diffuse_factor + specular * u_specular_factor); // combine everything
-
-//	norm = transpose(tangent_space) * norm;
-//	return norm;
 }
 
 // was originally varying, but couldnt pass through geometry shader
