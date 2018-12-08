@@ -117,7 +117,7 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_dissolve = -1.0f;
 	m_contrast = 1.0f;
 	m_exposure = 1.0f;
-	m_normalmap = -1.0f;
+	m_normalmap = 0.4f;
 	m_specular_exponent = 2.0f;
 	m_specular_factor = 0.5f;
 	m_diffuse_factor = 1.0f;

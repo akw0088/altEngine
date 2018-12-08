@@ -375,21 +375,9 @@ void main(void)
 	}
 
 
-	// u_num_lights is zero when rendering map for some reason, hardcoding max_lights
-
-	if (u_normalmap > 0.0)
+	for(int i = 0; i < u_num_lights; i++)
 	{
-		for(int i = 0; i < 32; i++)
-		{
-			light += lighting(i, u_position[i]);
-		}
-	}
-	else
-	{
-		for(int i = 0; i < u_num_lights; i++)
-		{
-			light += lighting(i, u_position[i]);
-		}
+		light += lighting(i, u_position[i]);
 	}
 
 	if (u_lightmap > 0.0 && u_normalmap <= 0.0)
