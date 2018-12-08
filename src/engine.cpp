@@ -4740,6 +4740,8 @@ void Engine::unload()
 	if (node)
 		delete[] node;
 
+	cloth.clear();
+
 
 	menu.ingame = false;
 	for(unsigned int i = 0; i < entity_list.size(); i++)

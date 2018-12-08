@@ -120,12 +120,12 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_normalmap = -1.0f;
 	m_specular_exponent = 2.0f;
 	m_specular_factor = 0.5f;
-	m_diffuse_factor = 0.5f;
-	m_atten_exponent = 2.25f;
+	m_diffuse_factor = 1.0f;
+	m_atten_exponent = 2.5f;
 	m_atten_scale = 160000.0f;
 
 	m_atten_min = 0.25;
-	m_diffuse_min = 0.25;
+	m_diffuse_min = 0.0;
 	m_specular_min = 0.0;
 	//"media/glsl/mlighting3.gs"
 #ifdef __OBJC__
@@ -658,7 +658,7 @@ void mLight2::set_diffuse_min(float value)
 void mLight2::set_atten_min(float value)
 {
 	glUniform1f(u_atten_min, value);
-	u_atten_min = (float)value;
+	m_atten_min = (float)value;
 }
 
 void mLight2::set_diffuse_factor(float value)
