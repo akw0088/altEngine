@@ -6812,7 +6812,55 @@ int Engine::console_render(char *cmd)
 		return 0;
 	}
 
+	if (sscanf(cmd, "r_atten_exponent %s", data) == 1)
+	{
+		float value = atof(data);
 
+		mlight2.set_atten_exponent(value);
+		snprintf(msg, LINE_SIZE, "Setting atten exponent to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
+	if (sscanf(cmd, "r_atten_scale %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_atten_scale(value);
+		snprintf(msg, LINE_SIZE, "Setting atten scale to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
+	if (sscanf(cmd, "r_atten_min %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_atten_min(value);
+		snprintf(msg, LINE_SIZE, "Setting atten min to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
+	if (sscanf(cmd, "r_specular_min %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_specular_min(value);
+		snprintf(msg, LINE_SIZE, "Setting specular min to %f", value);
+		menu.print(msg);
+		return 0;
+	}
+
+	if (sscanf(cmd, "r_diffuse_min %s", data) == 1)
+	{
+		float value = atof(data);
+
+		mlight2.set_diffuse_min(value);
+		snprintf(msg, LINE_SIZE, "Setting diffuse min to %f", value);
+		menu.print(msg);
+		return 0;
+	}
 
 
 	if (sscanf(cmd, "cg_fov %s", data) == 1)

@@ -76,7 +76,12 @@ public:
 	void set_normalmap(float value);
 	void set_specular_exponent(float value);
 	void set_specular_factor(float value);
+	void set_specular_min(float value);
 	void set_diffuse_factor(float value);
+	void set_diffuse_min(float value);
+	void set_atten_exponent(float value);
+	void set_atten_scale(float value);
+	void set_atten_min(float value);
 
 	void set_normalmap_scale(vec3 &value);
 	void set_alpha(float value);
@@ -144,8 +149,13 @@ private:
 	int u_portal;
 	int u_normalmap;
 	int u_specular_exponent;
+	int u_atten_exponent;
+	int u_atten_scale;
+	int u_atten_min;
 	int u_specular_factor;
+	int u_specular_min;
 	int u_diffuse_factor;
+	int u_diffuse_min;
 	int u_normalmap_scale;
 	int u_alpha;
 
@@ -193,8 +203,13 @@ private:
 
 	float m_normalmap;
 	float m_specular_exponent;
+	float m_atten_exponent;
+	float m_atten_scale;
+	float m_atten_min;
 	float m_specular_factor;
+	float m_specular_min;
 	float m_diffuse_factor;
+	float m_diffuse_min;
 	vec3 m_normalmap_scale;
 	int m_num_shadowmap;
 	unsigned int max_light;

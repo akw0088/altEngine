@@ -53,6 +53,12 @@ uniform vec3 u_normalmap_scale;
 uniform float u_specular_exponent;
 uniform float u_specular_factor;
 uniform float u_diffuse_factor;
+uniform float u_atten_exponent;
+uniform float u_atten_scale;
+uniform float u_atten_min;
+uniform float u_diffuse_min;
+uniform float u_specular_min;
+
 
 
 uniform sampler2D tex[4];// 4 possible textures
@@ -149,6 +155,13 @@ vec3 lighting( int lightIndex, vec4 pos )
 	vec3 v_light2;
 	vec3 norm = Vertex.vary_normal;
 
+		// make tangent space matrix
+		norm  = Vertex.vary_normal;
+		vec3 tangent = normalize(vec3(Vertex.vary_tangent));
+		vec3 bitangent = normalize(cross(norm, tangent));
+		mat3 tangent_space = mat3(tangent, bitangent, norm);
+
+
 	if (u_normalmap > 0.5)
 	{
 		vec3 normal_map;
@@ -160,11 +173,6 @@ vec3 lighting( int lightIndex, vec4 pos )
 		// normal in tangent space
 		norm = normal_map.xyz;
 
-		// make tangent space matrix
-		vec3 norm  = Vertex.vary_normal;
-		vec3 tangent = normalize(vec3(mvp * Vertex.vary_tangent));
-		vec3 bitangent = normalize(cross(norm, tangent));
-		mat3 tangent_space = mat3(tangent, bitangent, norm);
 
 
 		n_light = tangent_space * v_light; // move light vector from eye space to tangent space
@@ -174,22 +182,24 @@ vec3 lighting( int lightIndex, vec4 pos )
 	vec3 v_reflect;
 	float diffuse;
 
-	float atten = min( pos.a * 160000.0 / pow(lightDir.a, 2.25), 0.25);		// light distance from fragment 1/(r^2) falloff
+	float atten = min( u_atten_scale / pow(lightDir.a, u_atten_exponent), u_atten_min);		// light distance from fragment 1/(r^2) falloff
 	if (u_normalmap > 0.5)
 	{
-		diffuse = max(dot(n_light, norm), 0.25);				// directional light factor for fragment
+		diffuse = max(dot(n_light, norm), u_diffuse_min);				// directional light factor for fragment
 		v_reflect = reflect(-n_light, norm);					// normal map reflection vector
 	}
 	else
 	{
-		diffuse = max(dot(v_light, norm), 0.25);					// directional light factor for fragment
+		diffuse = max(dot(v_light, norm), u_diffuse_min);					// directional light factor for fragment
 		v_reflect = reflect(v_light, norm);
 	}
-	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), 0.0);			// specular relection for fragment
+	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), u_specular_min);			// specular relection for fragment
 
 
 	return ( vec3(u_color[lightIndex]) * u_color[lightIndex].a )  * atten * (diffuse * u_diffuse_factor + specular * u_specular_factor); // combine everything
-//	return v_light;
+
+//	norm = transpose(tangent_space) * norm;
+//	return norm;
 }
 
 // was originally varying, but couldnt pass through geometry shader

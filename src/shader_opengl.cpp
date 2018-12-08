@@ -121,6 +121,12 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	m_specular_exponent = 2.0f;
 	m_specular_factor = 0.5f;
 	m_diffuse_factor = 0.5f;
+	m_atten_exponent = 2.25f;
+	m_atten_scale = 160000.0f;
+
+	m_atten_min = 0.25;
+	m_diffuse_min = 0.25;
+	m_specular_min = 0.0;
 	//"media/glsl/mlighting3.gs"
 #ifdef __OBJC__
 	if (Shader::init(gfx, "media/glsl/ver410/mlighting3.vs", "media/glsl/ver410/mlighting3.gs", "media/glsl/ver410/mlighting3.fs"))
@@ -244,8 +250,13 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	u_normalmap = glGetUniformLocation(program_handle, "u_normalmap");
 	u_normalmap_scale = glGetUniformLocation(program_handle, "u_normalmap_scale");
 	u_specular_exponent = glGetUniformLocation(program_handle, "u_specular_exponent");
+	u_atten_exponent = glGetUniformLocation(program_handle, "u_atten_exponent");
+	u_atten_scale = glGetUniformLocation(program_handle, "u_atten_scale");
+	u_atten_min = glGetUniformLocation(program_handle, "u_atten_min");
 	u_specular_factor = glGetUniformLocation(program_handle, "u_specular_factor");
+	u_specular_min = glGetUniformLocation(program_handle, "u_specular_min");
 	u_diffuse_factor = glGetUniformLocation(program_handle, "u_diffuse_factor");
+	u_diffuse_min = glGetUniformLocation(program_handle, "u_diffuse_min");
 
 	u_ambient = glGetUniformLocation(program_handle, "u_ambient");
 	u_dissolve = glGetUniformLocation(program_handle, "u_dissolve");
@@ -439,7 +450,14 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 	glUniform3f(u_normalmap_scale, m_normalmap_scale.x, m_normalmap_scale.y, m_normalmap_scale.z);
 	set_specular_exponent(m_specular_exponent);
 	set_specular_factor(m_specular_factor);
+	set_specular_min(m_specular_min);
+
 	set_diffuse_factor(m_diffuse_factor);
+	set_diffuse_min(m_diffuse_min);
+
+	set_atten_exponent(m_atten_exponent);
+	set_atten_scale(m_atten_scale);
+	set_atten_min(m_atten_min);
 	m_num_light = j;
 }
 
@@ -607,10 +625,40 @@ void mLight2::set_specular_exponent(float value)
 	m_specular_exponent = (float)value;
 }
 
+void mLight2::set_atten_exponent(float value)
+{
+	glUniform1f(u_atten_exponent, value);
+	m_atten_exponent = (float)value;
+}
+
+void mLight2::set_atten_scale(float value)
+{
+	glUniform1f(u_atten_scale, value);
+	m_atten_scale = (float)value;
+}
+
 void mLight2::set_specular_factor(float value)
 {
 	glUniform1f(u_specular_factor, value);
 	m_specular_factor = (float)value;
+}
+
+void mLight2::set_specular_min(float value)
+{
+	glUniform1f(u_specular_min, value);
+	m_specular_min = (float)value;
+}
+
+void mLight2::set_diffuse_min(float value)
+{
+	glUniform1f(u_diffuse_min, value);
+	m_diffuse_min = (float)value;
+}
+
+void mLight2::set_atten_min(float value)
+{
+	glUniform1f(u_atten_min, value);
+	u_atten_min = (float)value;
 }
 
 void mLight2::set_diffuse_factor(float value)
