@@ -36,7 +36,7 @@ public:
 	bool select_buffer(int hSource, int hBuffer);
 	void delete_buffer(int hBuffer);
 	void destroy();
-	void effects(int source, bool enable_filter, int filter_index);
+	void effects(int source, int enable_filter, int filter_index);
 
 	void set_audio_model(int model);
 	void capture_start();
