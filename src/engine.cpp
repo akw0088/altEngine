@@ -6067,6 +6067,64 @@ int Engine::console_network(char *cmd)
 		return 0;
 	}
 
+
+	ret = sscanf(cmd, "bsp_depth %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num <= 65535 && num >= 0)
+		{
+			debugf("setting depth");
+			q3map.max_depth = num;
+			q3map.lastIndex = -2;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
+		return 0;
+	}
+
+	ret = sscanf(cmd, "bsp_dec %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num >= 0)
+		{
+			menu.print_chat(cmd);
+			q3map.max_depth -= num;
+			q3map.lastIndex = -2;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
+		return 0;
+	}
+
+	ret = sscanf(cmd, "bsp_inc %s", (char *)data);
+	if (ret == 1)
+	{
+		int num = atoi(data);
+
+		if (num >= 0)
+		{
+			menu.print_chat(cmd);
+			q3map.max_depth += num;
+			q3map.lastIndex = -2;
+		}
+		else
+		{
+			debugf("Invalid input");
+		}
+		return 0;
+	}
+
+
+
+
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)
 	{

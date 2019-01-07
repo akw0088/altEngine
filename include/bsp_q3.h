@@ -25,7 +25,7 @@ class Bsp
 {
 	void change_axis();
 	inline int find_leaf(const vec3 &position);
-	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, q3::leaf_t *frameLeaf, bool order);
+	void sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, q3::leaf_t *frameLeaf, bool order, int depth);
 	inline int cluster_visible(int visCluster, int testCluster);
 	void tessellate(int level, q3::bspvertex_t control[], vertex_t **vertex_array, int &numVerts,
 		int **index_array, int &numIndexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size);
@@ -76,6 +76,7 @@ public:
 	bool collision;
 	vec3 collision_normal;
 	float trace_result;
+	int max_depth;
 
 	bool update;
 

@@ -35,6 +35,7 @@ Bsp::Bsp()
 	enable_textures = false;
 	enable_patch = true;
 	enable_sky = true;
+	max_depth = 4096;
 #if SOFTWARE || DIRECTX
 	enable_shader = false;
 #else
@@ -495,8 +496,19 @@ inline int Bsp::find_leaf(const vec3 &position)
 }
 
 // in order tree walk, keeping only visible nodes, front to back order
-void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order)
+void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order, int depth)
 {
+	static int d = 0;
+
+	if (depth == 0)
+		d = 0;
+
+
+	if (d > max_depth)
+		return;
+
+	d++;
+
 	if (node_index < 0)
 	{
 		leaf_t *leaf = &data.Leaf[~node_index];
@@ -516,26 +528,26 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	{
 		if (order)
 		{
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order, depth + 1);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order, depth + 1);
 		}
 		else
 		{
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order, depth + 1);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order, depth + 1);
 		}
 	}
 	else
 	{
 		if (order)
 		{
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order, depth + 1);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order, depth + 1);
 		}
 		else
 		{
-			sort_leaf(leaf_list, node->back, position, frameLeaf, order);
-			sort_leaf(leaf_list, node->front, position, frameLeaf, order);
+			sort_leaf(leaf_list, node->back, position, frameLeaf, order, depth + 1);
+			sort_leaf(leaf_list, node->front, position, frameLeaf, order, depth + 1);
 		}
 	}
 }
@@ -1070,7 +1082,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 	if (lastIndex != leaf)
 	{
 		leaf_list.resize(0);
-		sort_leaf(&leaf_list, 0, position, frameLeaf, false);
+		sort_leaf(&leaf_list, 0, position, frameLeaf, false, 0);
 		lastIndex = leaf;
 	}
 
