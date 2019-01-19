@@ -307,10 +307,6 @@ char *tga_24to32(int width, int height, char *pBits, bool bgr);
 float abs32(float val);
 int abs32(int val);
 
-
-double fsin(double rad);
-double fcos(double rad);
-
 int debugf(const char *format, ...);
 
 #define MY_PI 3.14159265359f

@@ -19,7 +19,6 @@
 #include <list>
 #include <algorithm>
 #include "sin_table.h"
-#include <math.h> // for tanf
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -4534,8 +4533,8 @@ float distance_segment_segment(line3_t &s1, line3_t &s2)
 		}
 	}
 	// finally do the division to get sc and tc
-	sc = (abs32(sN) < 0.001f ? 0.0 : sN / sD);
-	tc = (abs32(tN) < 0.001f ? 0.0 : tN / tD);
+	sc = (abs32(sN) < 0.001f ? 0.0f : sN / sD);
+	tc = (abs32(tN) < 0.001f ? 0.0f : tN / tD);
 
 	// get the difference of the two closest points
 	vec3 dP = w + (u * sc) - (v * tc);  // =  S1(sc) - S2(tc)

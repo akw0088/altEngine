@@ -15,8 +15,8 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-double fsin(double rad);
-double fcos(double rad);
+float fsin(float rad);
+float fcos(float rad);
 
 class matrix4;
 

@@ -12,6 +12,9 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-double fsin(double rad);
-double fcos(double rad);
+float fsin(float rad);
+float fcos(float rad);
+float ftan(float rad);
+float fasin(float x);
+float facos(float x);
 float newtonSqrt(float x);

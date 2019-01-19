@@ -17,7 +17,7 @@
 
 float InvSqrt(float x);
 float newtonSqrt(float x);
-double facos(double x);
+float facos(float x);
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

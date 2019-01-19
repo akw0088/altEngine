@@ -15,7 +15,6 @@
 // originally based on https://nothings.org/ QBSP, heavily changed (his license is public domain)
 
 #include "include.h"
-#include <math.h>
 
 using namespace q1;
 

@@ -15,7 +15,6 @@
 // based on the bsp_hl code
 
 #include "include.h"
-#include <math.h>
 
 #include "bsp_types_q2.h"
 

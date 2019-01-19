@@ -2677,8 +2677,8 @@ inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int hei
 	int y = (int)mv;
 	float u_fraction = mu - x;
 	float v_fraction = mv - y;
-	float u_opp = 1.0 - u_fraction;
-	float v_opp = 1.0 - v_fraction;
+	float u_opp = 1.0f - u_fraction;
+	float v_opp = 1.0f - v_fraction;
 	rgb_t result;
 
 	if (u < 0)
@@ -2734,8 +2734,8 @@ inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int h
 	int y = (int)mv;
 	float u_fraction = mu - x;
 	float v_fraction = mv - y;
-	float u_opp = 1.0 - u_fraction;
-	float v_opp = 1.0 - v_fraction;
+	float u_opp = 1.0f - u_fraction;
+	float v_opp = 1.0f - v_fraction;
 	rgba_t result;
 
 	if (u < 0)

@@ -12,8 +12,8 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#define MY_PI		3.14159265358979323846
-#define MY_HALF_PI		1.57079632679489661923
+#define MY_PI		3.14159265358979323846f
+#define MY_HALF_PI		1.57079632679489661923f
 
 #include <stdlib.h>
 
@@ -23,7 +23,7 @@
 // Making it too big would be a cache miss every operation (which is probably worse than math.h)
 
 // table of sines in 0.01 radian increments
-extern const double sin_table[629] = { 
+extern const float sin_table[629] = {
 	0.0000000e+000, 
 	9.9998333e-003, 
 	1.9998667e-002, 
@@ -655,7 +655,7 @@ extern const double sin_table[629] = {
 	-3.1853018e-003
 	};
 
-double fsin(double rad)
+float fsin(float rad)
 {
 	int index;
 
@@ -670,7 +670,7 @@ double fsin(double rad)
 	return sin_table[index];
 }
 
-double fcos(double rad)
+float fcos(float rad)
 {
 	int index;
 
@@ -687,9 +687,14 @@ double fcos(double rad)
 	return sin_table[index];
 }
 
+float ftan(float rad)
+{
+	return fsin(rad) / fcos(rad);
+}
+
 float InvSqrt(float x)
 {
-	if (x < 0.00001)
+	if (x < 0.00001f)
 		return 0;
 
     float xhalf = 0.5f * x;
@@ -739,7 +744,7 @@ float newtonSqrt(float x)
 	int i = 0;
 
 	float z = guessSqrt(x);
-	if (abs32(z) < 0.00001)
+	if (abs32(z) < 0.00001f)
 		return 0.0f;
 	
 	for (i = 0; i < NUM_ITERATIONS; i++)
@@ -752,13 +757,13 @@ float newtonSqrt(float x)
 float sign(float x)
 {
 	if (x > 0)
-		return 1.0;
+		return 1.0f;
 	else
-		return -1.0;
+		return -1.0f;
 }
 
 
-extern const double asin_table[200] = {
+extern const float asin_table[200] = {
 	-1.570796,
 	-1.429257,
 	-1.370461,
@@ -962,7 +967,7 @@ extern const double asin_table[200] = {
 };
 
 // Could reduce to 100 entries and just negate asin(-x) = -asin(x)
-double fasin(double x)
+float fasin(float x)
 {
 	int index;
 
@@ -976,7 +981,7 @@ double fasin(double x)
 	return asin_table[index];
 }
 
-double facos(double x)
+float facos(float x)
 {
 	return MY_HALF_PI - fasin(x);
 }

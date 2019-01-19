@@ -17,7 +17,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <math.h> // for acos in inline func below
+//#include <math.h> // for acos in inline func below
+
 
 //random in the range [0, 1]
 #define random()			((rand () & 0x7fff) / ((float)0x7fff))
@@ -235,7 +236,7 @@ inline void get_plane_slope(const vec3 &normal, float &angle)
 	vec3 up(0.0f, 1.0f, 0.0f);
 
 	// get plane angle of inclination
-	angle = acos(normal * up);
+	angle = facos(normal * up);
 }
 
 

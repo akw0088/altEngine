@@ -13,7 +13,13 @@
 //=============================================================================
 
 #include "include.h"
-#include <math.h> //for ceil
+
+
+int fceil(float num)
+{
+	int inum = (int)num;
+	return inum + (num == (float)inum);
+}
 
 using namespace hl;
 
@@ -609,8 +615,8 @@ void HLBsp::load_lightmap(Graphics &gfx)
 				max.y = y;
 		}
 
-		int width = (int)(ceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
-		int height = (int)(ceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
+		int width = (int)(fceil(max.x / 16.0f) - floor(min.x / 16.0f)) + 1;
+		int height = (int)(fceil(max.y / 16.0f) - floor(min.y / 16.0f)) + 1;
 		face_lightmap[i].x = (float)width;
 		face_lightmap[i].y = (float)height;
 
