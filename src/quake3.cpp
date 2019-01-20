@@ -5630,6 +5630,17 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "buffer mb: %d texture mb %d", engine->gfx.gpustat.buffer_size / (1024 * 1024), engine->gfx.gpustat.texture_size / (1024 * 1024));
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+#ifdef SERIAL
+			snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d/%d num_ents %d dropped %d qsize %d",
+				engine->netcode.netinfo.ping,
+				engine->netcode.netinfo.sequence_delta,
+				engine->netcode.netinfo.size,
+				engine->netcode.netinfo.uncompressed_size,
+				engine->netcode.netinfo.num_ents,
+				engine->netcode.netinfo.dropped,
+				engine->netcode.recv_queue.size);
+#else
 			snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d/%d num_ents %d dropped %d",
 				engine->netcode.netinfo.ping,
 				engine->netcode.netinfo.sequence_delta,
@@ -5637,6 +5648,7 @@ void Quake3::render_hud(double last_frametime)
 				engine->netcode.netinfo.uncompressed_size,
 				engine->netcode.netinfo.num_ents,
 				engine->netcode.netinfo.dropped);
+#endif
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "send_full %d send_partial %d recv_empty %d",
 				engine->netcode.netinfo.send_full,

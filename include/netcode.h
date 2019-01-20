@@ -100,6 +100,7 @@ protected:
 #ifdef SERIAL
 	bool init;
 	handle_t handle;
+	queue_t recv_queue;
 #endif
 
 };

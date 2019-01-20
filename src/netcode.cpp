@@ -23,10 +23,6 @@
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
 
-#ifdef SERIAL
-queue_t recv_queue;
-#endif
-
 Netcode::Netcode(Engine *engine)
 {
 	Netcode::engine = engine;
@@ -90,6 +86,9 @@ int Netcode::net_send(char *data, int size)
 int Netcode::net_recv(char *data, int size, int delay)
 {
 #ifdef SERIAL
+	if (recv_queue.size == SIZE_QUEUE)
+		memset(&recv_queue, 0, sizeof(recv_queue));
+
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
 	dequeue_peek(&recv_queue, (unsigned char *)data, size);
@@ -103,6 +102,9 @@ int Netcode::net_recv(char *data, int size, int delay)
 int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 {
 #ifdef SERIAL
+	if (recv_queue.size == SIZE_QUEUE)
+		memset(&recv_queue, 0, sizeof(recv_queue));
+
 	snprintf(client, client_size - 1, "COMPORT");
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
@@ -117,6 +119,9 @@ int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 int Netcode::net_rawrecvfrom(int socket, char *data, int size, sockaddr *addr, int *socksize)
 {
 #ifdef SERIAL
+	if (recv_queue.size == SIZE_QUEUE)
+		memset(&recv_queue, 0, sizeof(recv_queue));
+
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
 	dequeue_peek(&recv_queue, (unsigned char *)data, size);
