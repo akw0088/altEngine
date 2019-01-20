@@ -83,7 +83,6 @@ void Netcode::init(char *cmdline)
 	serial_init(engine->port, &handle);
 #endif
 #endif
-	serial_write(handle, "serial_init()\r\n", 15);
 }
 
 // wrappers intended to allow for other communication protocols eg: serial port
@@ -261,8 +260,7 @@ int Netcode::client_recv()
 	{
 		if (size != servermsg.length)
 		{
-			printf("Packet size mismatch: %d %d\n", size, servermsg.length);
-			return 1;
+			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
 		}
 
 		if (servermsg.sequence < last_server_sequence)
@@ -1518,7 +1516,7 @@ int Netcode::bind(int port)
 	}
 #endif
 
-#ifndef __OBJC__
+#ifdef VOICE
 	engine->voice.bind(NULL, 65530);
 #endif
 	if (sock.bind(NULL, port) == 0)
@@ -1554,7 +1552,7 @@ void Netcode::connect(char *serverip)
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 
 
-#ifndef __OBJC__
+#ifdef VOICE
 	engine->voice.bind(NULL, 65530);
 #endif
 	sock.connect(serverip, net_port);
@@ -1569,7 +1567,7 @@ void Netcode::connect(char *serverip)
 		client_flag = true;
 		server_flag = false;
 		debugf("Connected\n");
-#ifndef __OBJC__
+#ifdef VOICE
 		sprintf(engine->voice.server, "%s:65530", serverip);
 #endif
         reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];

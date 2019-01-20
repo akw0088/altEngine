@@ -229,8 +229,8 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 			if (colon)
 			{
 				*colon = '\0';
+				sprintf(colon, ":65530");
 			}
-			sprintf(colon, ":65530");
 
 			int num_bytes = 0;
 			encode(mic_pcm[pong], size, msg.data, num_bytes);

@@ -135,7 +135,7 @@ Engine::Engine() :
 	enable_map_shadows = false;
 	shadow_light = 107;
 
-#ifndef __OBJC__
+#ifdef VOICE
 	sprintf(voice.server, "%s", "127.0.0.1:65530");
 #endif
 	srand((unsigned int)time(NULL));
@@ -176,6 +176,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	enable_cloth = false;
 #endif
 
+	netcode.init(cmdline);
 
 
 	debugf("altEngine2 built %s\n", __DATE__);
@@ -303,8 +304,10 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 
 	// voice chat "always on" style
+#ifdef VOICE
 	voice.init(audio, netcode.qport);
 	audio.capture_start();
+#endif
 #endif
 
 
@@ -3628,7 +3631,7 @@ void Engine::step(int tick)
 		while (netcode.server_recv());
 		netcode.server_send();
 
-#ifndef __OBJC__
+#ifdef VOICE
 		while (voice.voice_send(audio, netcode.client_list, netcode.client_flag, netcode.server_flag));
 		while (voice.voice_recv(audio));
 #endif
@@ -3637,7 +3640,7 @@ void Engine::step(int tick)
 	{
 		while (netcode.client_recv());
 		netcode.client_send(input, camera_frame);
-#ifndef __OBJC__
+#ifdef VOICE
 		while (voice.voice_send(audio, netcode.client_list, netcode.client_flag, netcode.server_flag));
 		while (voice.voice_recv(audio));
 #endif
@@ -4090,8 +4093,10 @@ void Engine::keypress(char *key, bool pressed)
 		handled = true;
 
 		input.weapon_up = pressed;
-		if (netcode.client_flag)
+		if (netcode.client_flag && spawn != -1)
+		{
 			entity_list[spawn]->player->change_weapon_up();
+		}
 		k = 2;
 	}
 	else if (strcmp("weapon_down", cmd) == 0)
@@ -4100,8 +4105,10 @@ void Engine::keypress(char *key, bool pressed)
 		handled = true;
 
 		input.weapon_down = pressed;
-		if (netcode.client_flag)
+		if (netcode.client_flag && spawn != -1)
+		{
 			entity_list[spawn]->player->change_weapon_down();
+		}
 		k = 1;
 	}
 	else if (strcmp("use", cmd) == 0)
@@ -4841,7 +4848,7 @@ void Engine::destroy()
 	printf("Destroying audio\n");
 	audio.capture_stop();
 	audio.destroy();
-#ifndef __OBJC__
+#ifdef VOICE
 	voice.destroy();
 #endif
     printf("quit\n\n");
@@ -6067,6 +6074,14 @@ int Engine::console_network(char *cmd)
 		return 0;
 	}
 
+	ret = sscanf(cmd, "init_com %s", (char *)data);
+	if (ret == 1)
+	{
+		debugf("Setting com port to %s\r\n", data);
+		sprintf(this->port, "%s", data);
+
+		return 0;
+	}
 
 	ret = sscanf(cmd, "bsp_depth %s", (char *)data);
 	if (ret == 1)
@@ -6090,7 +6105,7 @@ int Engine::console_network(char *cmd)
 	if (ret == 1)
 	{
 		int num = atoi(data);
-
+		
 		if (num >= 0)
 		{
 			menu.print_chat(cmd);
@@ -6103,12 +6118,12 @@ int Engine::console_network(char *cmd)
 		}
 		return 0;
 	}
-
+	
 	ret = sscanf(cmd, "bsp_inc %s", (char *)data);
 	if (ret == 1)
 	{
 		int num = atoi(data);
-
+		
 		if (num >= 0)
 		{
 			menu.print_chat(cmd);
@@ -6121,9 +6136,6 @@ int Engine::console_network(char *cmd)
 		}
 		return 0;
 	}
-
-
-
 
 	ret = sscanf(cmd, "connect %s", data);
 	if (ret == 1)

@@ -15,6 +15,8 @@
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
+#define SERIAL
+
 #define _HAS_EXCEPTIONS 0
 #define D3D_DEBUG_INFO
 

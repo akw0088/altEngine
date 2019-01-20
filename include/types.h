@@ -109,9 +109,7 @@ typedef struct
 
 
 
-// size of fixed part of network packets
-// length + sequence + ack + num_cmds
-#define CLIENT_HEADER 45
+
 
 #ifdef LINUX
 typedef unsigned char byte;
@@ -123,19 +121,24 @@ typedef unsigned char byte;
 	after keystate list is a null terminated reliably
 	transmitted msg string that is retransmitted until acked.
 */
+#pragma pack(1)
 typedef struct
 {
 	unsigned short int	length;
 	unsigned short int	qport;
 	unsigned short int	sequence;
-	unsigned short int	server_sequence;
-	float			up[3];
-	float			forward[3];
-	float			pos[3];		// Sending position (not used, but interesting to calculate delta's on server)
+	unsigned short int	server_sequence; //8
+	float			up[3]; //12
+	float			forward[3]; //12
+	float			pos[3]; //12		// Sending position (not used, but interesting to calculate delta's on server)
 	char			num_cmds;
 	unsigned char		data[16834];
 } clientmsg_t;
+#pragma pack(8)
 
+// size of fixed part of network packets
+// length + sequence + ack + num_cmds
+#define CLIENT_HEADER 45
 
 #define SERVER_HEADER 14
 /*

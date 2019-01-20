@@ -372,7 +372,7 @@ protected:
 	vector<wave_t>		snd_wave;
 
 
-#ifndef __OBJC__
+#ifdef VOICE
 	Voice voice;
 #endif
 	// pathfinding stuff
