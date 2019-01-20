@@ -19,8 +19,6 @@
 #endif
 
 #ifdef WIN32
-typedef HANDLE handle_t;
-
 int serial_init(char *port, handle_t *handle)
 {
 	HANDLE hSerial;
@@ -83,15 +81,6 @@ void serial_close(handle_t handle)
 #endif
 
 #ifdef __linux__
-#include <unistd.h>
-#include <termios.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-typedef int handle_t;
-
-
 int serial_init(char *port, handle_t *handle)
 {
 	struct termios options;

@@ -45,7 +45,12 @@ public:
 	void query_master();
 	void report_master();
 
-
+	int net_sendto(char *data, int size, client_t *client);
+	int net_send(char *data, int size);
+	int net_recv(char *data, int size, int delay);
+	int net_recvfrom(char *data, int size, char *client, int client_size);
+	int net_rawrecvfrom(int socket, char *data, int size, sockaddr *addr, int *socksize);
+	int net_rawsendto(int socket, char *data, int size, sockaddr *addr, unsigned int socksize);
 
 	int serialize_ents(unsigned char *data, unsigned short int &num_ents, unsigned int &data_size);
 	int deserialize_ents(unsigned char *data, unsigned short int num_ents, unsigned int data_size);
@@ -91,7 +96,9 @@ protected:
 	bool playing_demo;
 	FILE *demofile;
 
-
+#ifdef SERIAL
+	handle_t handle;
+#endif
 
 };
 

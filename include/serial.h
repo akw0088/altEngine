@@ -17,5 +17,23 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
+#ifdef WIN32
+typedef HANDLE handle_t;
+#endif
+
+#ifdef __linux__
+#include <unistd.h>
+#include <termios.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+typedef int handle_t;
+#endif
+
+int serial_init(char *port, handle_t *handle);
+int serial_write(handle_t handle, char *data, int size);
+int serial_read(handle_t handle, char *data, int size);
+void serial_close(handle_t handle);
 
 #endif

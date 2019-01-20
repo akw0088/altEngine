@@ -270,6 +270,7 @@ using namespace std;
 #include "shader.h"
 #include "parse.h"
 #include "menu.h"
+#include "serial.h"
 #include "netcode.h"
 #include "basegame.h"
 #include "quake3.h"

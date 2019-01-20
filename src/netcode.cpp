@@ -61,7 +61,81 @@ Netcode::Netcode(Engine *engine)
 	last_server_sequence = 0;
 
 	dns_query(sock);
+
+#ifdef SERIAL
+#ifdef WIN32
+	serial_init("COM7", &handle);
+#else
+	serial_init("/dev/ttyS1", &handle);
+#endif
+#endif
 }
+
+// wrappers intended to allow for other communication protocols eg: serial port
+// Note: Does not include master server report/query code
+int Netcode::net_sendto(char *data, int size, client_t *client)
+{
+#ifdef SERIAL
+	int num_sent = serial_write(handle, data, size);
+#else
+	int num_sent = sock.sendto(data, size, client->socketname);
+#endif
+
+	return num_sent;
+}
+
+int Netcode::net_send(char *data, int size)
+{
+#ifdef SERIAL
+	return serial_write(handle, data, size);
+#else
+	return sock.send(data, size);
+#endif
+}
+
+int Netcode::net_recv(char *data, int size, int delay)
+{
+#ifdef SERIAL
+	return serial_read(handle, data, size);
+#else
+	return sock.recv(data, size, delay);
+#endif
+}
+
+int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
+{
+#ifdef SERIAL
+	return serial_read(handle, data, size);
+#else
+	return sock.recvfrom(data, size, client, client_size);
+#endif
+}
+
+int Netcode::net_rawrecvfrom(int socket, char *data, int size, sockaddr *addr, int *socksize)
+{
+#ifdef SERIAL
+	return serial_read(handle, data, size);
+#else
+#ifdef WIN32
+	return ::recvfrom(socket, data, size, 0, addr, socksize);
+#else
+	return ::recvfrom(socket, data, size, 0, addr, (unsigned int *)socksize);
+#endif
+#endif
+}
+
+
+int Netcode::net_rawsendto(int socket, char *data, int size, sockaddr *addr, unsigned int socksize)
+{
+#ifdef SERIAL
+	return serial_write(handle, data, size);
+#else
+	return ::sendto(socket, data, size, 0, addr, socksize);
+#endif
+}
+
+
+
 
 void Netcode::server_send()
 {
@@ -113,7 +187,7 @@ void Netcode::server_send()
 		netinfo.num_ents = servermsg.num_ents;
 		netinfo.size = servermsg.length;
 
-		int num_sent = sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+		int num_sent = net_sendto((char *)&servermsg, servermsg.length, client_list[i]);
 		if (num_sent <= 0)
 		{
 			netinfo.send_full = true;
@@ -165,11 +239,9 @@ int Netcode::client_recv()
 
 
 	// get entity information
-#ifdef WIN32
-	int size = ::recvfrom(sock.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(sock.servaddr), (int *)&socksize);
-#else
-	int size = ::recvfrom(sock.sockfd, (char *)&servermsg, sizeof(servermsg_t), 0, (sockaddr *)&(sock.servaddr), (unsigned int *)&socksize);
-#endif
+
+	int size = net_rawrecvfrom(sock.sockfd, (char *)&servermsg, sizeof(servermsg_t), (sockaddr *)&(sock.servaddr), (int *)&socksize);
+
 	if (size > 0)
 	{
 		if (size != servermsg.length)
@@ -264,7 +336,7 @@ void Netcode::client_send(input_t input, Frame &camera_frame)
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 
 	ping_time_start(sequence);
-	int num_sent = ::sendto(sock.sockfd, (char *)&clientmsg, clientmsg.length, 0, (sockaddr *)&(sock.servaddr), socksize);
+	int num_sent = net_rawsendto(sock.sockfd, (char *)&clientmsg, clientmsg.length, (sockaddr *)&(sock.servaddr), socksize);
 
 	if (server_flag == false)
 	{
@@ -561,7 +633,8 @@ void Netcode::send_player_string(servermsg_t &servermsg)
 		servermsg.compressed_size = 0;
 		servermsg.length = SERVER_HEADER + reliable[i].size;
 		memcpy(&servermsg.data[servermsg.data_size], &reliable[i], reliable[i].size);
-		sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+
+		net_sendto((char *)&servermsg, servermsg.length, client_list[i]);
 	}
 }
 
@@ -576,7 +649,8 @@ int Netcode::server_recv()
 	char name[LINE_SIZE] = { 0 };
 
 	// get client packet
-	int size = sock.recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
+	int size = net_recvfrom((char *)&clientmsg, 8192, socketname, LINE_SIZE);
+
 	if (size <= 0)
 	{
 		netinfo.recv_empty = true;
@@ -708,6 +782,9 @@ int Netcode::server_recv()
 	reliablemsg_t *reliablemsg = (reliablemsg_t *)&clientmsg.data[clientmsg.num_cmds * sizeof(int)];
 	if (strcmp(reliablemsg->msg, "<connect/>") == 0)
 	{
+		client_t temp_client;
+
+		strcpy(temp_client.socketname, socketname);
 		debugf("client %s qport %d connected\n", socketname, clientmsg.qport);
 
 		if (client_list.size() > sv_maxclients)
@@ -722,7 +799,7 @@ int Netcode::server_recv()
 
 			memcpy(&servermsg.data[0], &reliable, reliable[index].size);
 			servermsg.length = SERVER_HEADER + reliable[index].size;
-			sock.sendto((char *)&servermsg, servermsg.length, socketname);
+			net_sendto((char *)&servermsg, servermsg.length, &temp_client);
 			return 1;
 		}
 
@@ -735,7 +812,8 @@ int Netcode::server_recv()
 
 		memcpy(&servermsg.data[0], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + reliable[index].size;
-		sock.sendto((char *)&servermsg, servermsg.length, socketname);
+
+		net_sendto((char *)&servermsg, servermsg.length, &temp_client);
 		debugf("sent client map data\n");
 	}
 	else if (1 == sscanf(reliablemsg->msg, "<player \"%[^\"]/>", name))
@@ -822,7 +900,8 @@ int Netcode::server_recv()
 
 		memcpy(&servermsg.data[servermsg.data_size], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + reliable[index].size;
-		sock.sendto((char *)&servermsg, servermsg.length, client->socketname);
+
+		net_sendto((char *)&servermsg, servermsg.length, client);
 		debugf("Client is now entity %d\n", client->ent_id);
 
 
@@ -856,7 +935,11 @@ int Netcode::server_recv()
 
 		memcpy(&servermsg.data[servermsg.data_size], &reliable[index], reliable[index].size);
 		servermsg.length = SERVER_HEADER + servermsg.data_size + reliable[index].size;
-		sock.sendto((char *)&servermsg, servermsg.length, socketname);
+
+		client_t temp_client;
+
+		strcpy(temp_client.socketname, socketname);
+		net_sendto((char *)&servermsg, servermsg.length, &temp_client);
 	}
 	else if (strcmp(reliablemsg->msg, "getchallenge") == 0)
 	{
@@ -1371,7 +1454,8 @@ void Netcode::disconnect()
 	memcpy(&clientmsg.data[clientmsg.num_cmds * sizeof(int)], &client_reliable, client_reliable.size);
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 	debugf("disconnecting\n");
-	sock.send((char *)&clientmsg, clientmsg.length);
+
+	net_send((char *)&clientmsg, clientmsg.length);
 }
 
 void Netcode::kick(unsigned int i)
@@ -1396,7 +1480,8 @@ void Netcode::kick(unsigned int i)
 	reliable[i].sequence = sequence;
 	servermsg.length = SERVER_HEADER + reliable[i].size;
 	memcpy(servermsg.data, &reliable, reliable[i].size);
-	sock.sendto((char *)&servermsg, servermsg.length, client_list[i]->socketname);
+
+	net_sendto((char *)&servermsg, servermsg.length, client_list[i]);
 	debugf("sent disconnect to client %d [%s]\n", i, client_list[i]->socketname);
 	delete client_list[i];
 	client_list.erase(client_list.begin() + i);
@@ -1459,10 +1544,10 @@ void Netcode::connect(char *serverip)
 #endif
 	sock.connect(serverip, net_port);
 	debugf("Sending map request\n");
-	sock.send((char *)&clientmsg, clientmsg.length);
+	net_send((char *)&clientmsg, clientmsg.length);
 	debugf("Waiting for server info\n");
 
-	if (sock.recv((char *)&servermsg, 8192, 5))
+	if (net_recv((char *)&servermsg, 8192, 5))
 	{
 		char level[LINE_SIZE];
 
@@ -1594,7 +1679,7 @@ void Netcode::query_master()
 #ifdef WIN32
 	Sleep(500);
 #endif
-	int num_read = sock.recvfrom(response, 512 * sizeof(report_t), from, 1023);
+	int num_read = net_recvfrom(response, 512 * sizeof(report_t), from, 1023);
 
 	report = (report_t *)response;
 	int num_report = num_read / sizeof(report_t);
