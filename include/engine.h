@@ -195,7 +195,8 @@ public:
 	frustum_t *pfrustum;
 	frustum_t frustum;
 
-	char port[32];
+	char server_comport[32];
+	char client_comport[32];
 
 
 #ifdef OCULUS

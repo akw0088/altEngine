@@ -35,7 +35,7 @@ Bsp::Bsp()
 	enable_textures = false;
 	enable_patch = true;
 	enable_sky = true;
-	max_depth = 4096;
+	max_depth = INT_MAX;
 #if SOFTWARE || DIRECTX
 	enable_shader = false;
 #else
@@ -1100,7 +1100,7 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 			if (frustum && in_frustum_bbox(frustum, min, max) == false)
 			{
 				//			printf("Dropping leaf %d due to frustum check\r\n", node_index);
-				continue;;
+				continue;
 			}
 
 			frustum_list.push_back(leaf_list[i]);

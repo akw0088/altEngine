@@ -176,9 +176,6 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	enable_cloth = false;
 #endif
 
-	netcode.init(cmdline);
-
-
 	debugf("altEngine2 built %s\n", __DATE__);
 
 	enum_resolutions();
@@ -418,6 +415,27 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 		gfx.bindFramebuffer(0);
 	}
 
+#ifdef WIN32
+	sprintf(server_comport, "COM1");
+	sprintf(client_comport, "COM2");
+#else
+	sprintf(server_comport, "/dev/ttyS1");
+	sprintf(client_comport, "/dev/ttyS2");
+#endif
+	char *server_com = strstr(cmdline, "server_com");
+	if (server_com)
+	{
+		sprintf(server_comport, "%s", server_com + strlen("server_com "));
+	}
+
+	char *client_com = strstr(cmdline, "client_com");
+	if (client_com)
+	{
+		sprintf(client_comport, "%s", client_com + strlen("client_com "));
+	}
+
+
+
 #ifdef DEDICATED
 	printf("Dedicated server mode\n");
 	printf("Sending cmdline to console\n");
@@ -579,7 +597,6 @@ void Engine::load(char *level)
 
 	if (q3map.loaded)
 		return;
-
 
 	vec3 scale(1.0f, 1.0f, 1.0f);
 	vec3 offset(0.0f, 0.0f, 0.0f);
@@ -6071,15 +6088,6 @@ int Engine::console_network(char *cmd)
 		{
 			debugf("Invalid input");
 		}
-		return 0;
-	}
-
-	ret = sscanf(cmd, "init_com %s", (char *)data);
-	if (ret == 1)
-	{
-		debugf("Setting com port to %s\r\n", data);
-		sprintf(this->port, "%s", data);
-
 		return 0;
 	}
 

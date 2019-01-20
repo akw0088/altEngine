@@ -61,30 +61,6 @@ Netcode::Netcode(Engine *engine)
 	last_server_sequence = 0;
 }
 
-
-void Netcode::init(char *cmdline)
-{
-#ifdef WIN32
-	sprintf(engine->port, "COM1");
-#else
-	sprintf(engine->portport, "/dev/ttyS1");
-#endif
-	char *port = strstr(cmdline, "com_port");
-
-	if (port)
-	{
-		sprintf(engine->port, "%s", port + 9);
-	}
-
-#ifdef SERIAL
-#ifdef WIN32
-	serial_init(engine->port, &handle);
-#else
-	serial_init(engine->port, &handle);
-#endif
-#endif
-}
-
 // wrappers intended to allow for other communication protocols eg: serial port
 // Note: Does not include master server report/query code
 int Netcode::net_sendto(char *data, int size, client_t *client)
@@ -119,6 +95,7 @@ int Netcode::net_recv(char *data, int size, int delay)
 int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 {
 #ifdef SERIAL
+	snprintf(client, client_size - 1, "COMPORT");
 	return serial_read(handle, data, size);
 #else
 	return sock.recvfrom(data, size, client, client_size);
@@ -381,16 +358,17 @@ int Netcode::handle_servermsg(servermsg_t &servermsg, unsigned char *data, relia
 
 			debugf("server to client: %s\n", reliablemsg->msg);
 
-			if (strstr(reliablemsg->msg, "<chat>"))
+			char *start = strstr(reliablemsg->msg, "<chat>");
+
+			if (start)
 			{
 				static char msg[256];
 
-				char *start = strstr(reliablemsg->msg, "<chat>");
 				start += 6;
-				char *end = strstr(reliablemsg->msg, "</chat>");
+				char *end = strstr(start, "</chat>");
 
 				// prevent duplicate chats
-				if (strncmp(msg, start, end - start) != 0)
+				if (end && strncmp(msg, start, end - start) != 0)
 				{
 					memcpy(msg, start, end - start);
 					engine->menu.print_chat(msg);
@@ -674,8 +652,7 @@ int Netcode::server_recv()
 
 	if (clientmsg.length != size)
 	{
-		printf("Packet size mismatch\n");
-		return 1;
+		printf("Warning: Packet size mismatch\n");
 	}
 
 	// see if this ip/port combo already connected to server
@@ -1508,6 +1485,14 @@ int Netcode::bind(int port)
 		return -1;
 	}
 
+#ifdef SERIAL
+	if (init == false)
+	{
+		serial_init(engine->server_comport, &handle);
+		init = true;
+	}
+#endif
+
 #ifdef WIN32
 	if (!SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS))
 	{
@@ -1538,6 +1523,14 @@ void Netcode::connect(char *serverip)
 	static servermsg_t servermsg;
 
 	client_flag = false;
+
+#ifdef SERIAL
+	if (init == false)
+	{
+		serial_init(engine->client_comport, &handle);
+		init = true;
+	}
+#endif
 
 	memset(&clientmsg, 0, sizeof(clientmsg_t));
 
