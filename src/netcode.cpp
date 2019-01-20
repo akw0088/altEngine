@@ -259,14 +259,15 @@ int Netcode::client_recv()
 
 	if (size > 0)
 	{
-		if (size != servermsg.length)
+		if (size < servermsg.length)
 		{
 			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
+			return -1;
 		}
 
 #ifdef SERIAL
 		static unsigned char buff[4096];
-		dequeue(&recv_queue, buff, size);
+		dequeue(&recv_queue, buff, servermsg.length);
 #endif
 
 		if (servermsg.sequence < last_server_sequence)
@@ -679,15 +680,16 @@ int Netcode::server_recv()
 	netinfo.recv_empty = false;
 
 
-	if (clientmsg.length != size)
+	if (clientmsg.length < size)
 	{
 		printf("Warning: Packet size mismatch\n");
+		return -1;
 	}
 	else
 	{
 #ifdef SERIAL
 		static unsigned char buff[4096];
-		dequeue(&recv_queue, buff, size);
+		dequeue(&recv_queue, buff, clientmsg.length);
 #endif
 	}
 
