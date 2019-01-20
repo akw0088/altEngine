@@ -117,7 +117,11 @@ int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 int Netcode::net_rawrecvfrom(int socket, char *data, int size, sockaddr *addr, int *socksize)
 {
 #ifdef SERIAL
-	return serial_read(handle, data, size);
+	int num_read = serial_read(handle, data, size);
+	enqueue(&recv_queue, (unsigned char *)data, num_read);
+	dequeue_peek(&recv_queue, (unsigned char *)data, size);
+
+	return num_read;
 #else
 #ifdef WIN32
 	return ::recvfrom(socket, data, size, 0, addr, socksize);
@@ -167,6 +171,8 @@ void Netcode::server_send()
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
 		// idle client timeout
+
+#ifndef SERIAL
 		if (time(NULL) - client_list[i]->last_time > 90)
 		{
 			debugf("client %s timed out\n", client_list[i]->socketname);
@@ -178,6 +184,7 @@ void Netcode::server_send()
 			i--;
 			continue;
 		}
+#endif
 
 		if (reliable[i].size == 0)
 			reliable[i].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[i].msg) + 1);
@@ -251,6 +258,11 @@ int Netcode::client_recv()
 		{
 			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
 		}
+
+#ifdef SERIAL
+		static unsigned char buff[4096];
+		dequeue(&recv_queue, buff, size);
+#endif
 
 		if (servermsg.sequence < last_server_sequence)
 		{
