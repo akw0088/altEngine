@@ -59,16 +59,31 @@ Netcode::Netcode(Engine *engine)
 		reliable[i].sequence = -1;
 	}
 	last_server_sequence = 0;
+}
 
-	dns_query(sock);
+
+void Netcode::init(char *cmdline)
+{
+#ifdef WIN32
+	sprintf(engine->port, "COM1");
+#else
+	sprintf(engine->portport, "/dev/ttyS1");
+#endif
+	char *port = strstr(cmdline, "com_port");
+
+	if (port)
+	{
+		sprintf(engine->port, "%s", port + 9);
+	}
 
 #ifdef SERIAL
 #ifdef WIN32
-	serial_init("COM7", &handle);
+	serial_init(engine->port, &handle);
 #else
-	serial_init("/dev/ttyS1", &handle);
+	serial_init(engine->port, &handle);
 #endif
 #endif
+	serial_write(handle, "serial_init()\r\n", 15);
 }
 
 // wrappers intended to allow for other communication protocols eg: serial port

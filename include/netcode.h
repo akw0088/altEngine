@@ -24,6 +24,7 @@ class Netcode
 public:
 	Netcode(Engine *engine);
 
+	void init(char *cmdline);
 	int GetKeyState(input_t &keyboard);
 	input_t GetKeyState(int keystate);
 	int server_recv();

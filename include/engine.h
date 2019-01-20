@@ -195,6 +195,8 @@ public:
 	frustum_t *pfrustum;
 	frustum_t frustum;
 
+	char port[32];
+
 
 #ifdef OCULUS
 	Oculus ovr;

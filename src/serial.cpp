@@ -45,6 +45,21 @@ int serial_init(char *port, handle_t *handle)
 		return -1;
 	}
 
+
+	COMMTIMEOUTS timeouts;
+
+	// read timeout
+	timeouts.ReadIntervalTimeout = MAXDWORD;
+	timeouts.ReadTotalTimeoutMultiplier = 0;
+	timeouts.ReadTotalTimeoutConstant = 0;
+	timeouts.WriteTotalTimeoutMultiplier = 0;
+	timeouts.WriteTotalTimeoutConstant = 0;
+	if (!SetCommTimeouts(hSerial, &timeouts))
+	{
+		printf("Unable to set port params\n");
+		return -1;
+	}
+
 	*handle = hSerial;
 
 	return 0;
