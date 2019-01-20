@@ -23,6 +23,10 @@
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
 
+#ifdef SERIAL
+queue_t recv_queue;
+#endif
+
 Netcode::Netcode(Engine *engine)
 {
 	Netcode::engine = engine;
@@ -86,7 +90,11 @@ int Netcode::net_send(char *data, int size)
 int Netcode::net_recv(char *data, int size, int delay)
 {
 #ifdef SERIAL
-	return serial_read(handle, data, size);
+	int num_read = serial_read(handle, data, size);
+	enqueue(&recv_queue, (unsigned char *)data, num_read);
+	dequeue_peek(&recv_queue, (unsigned char *)data, size);
+
+	return num_read;
 #else
 	return sock.recv(data, size, delay);
 #endif
@@ -96,7 +104,11 @@ int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 {
 #ifdef SERIAL
 	snprintf(client, client_size - 1, "COMPORT");
-	return serial_read(handle, data, size);
+	int num_read = serial_read(handle, data, size);
+	enqueue(&recv_queue, (unsigned char *)data, num_read);
+	dequeue_peek(&recv_queue, (unsigned char *)data, size);
+
+	return num_read;
 #else
 	return sock.recvfrom(data, size, client, client_size);
 #endif
@@ -654,6 +666,13 @@ int Netcode::server_recv()
 	{
 		printf("Warning: Packet size mismatch\n");
 	}
+	else
+	{
+#ifdef SERIAL
+		static unsigned char buff[4096];
+		dequeue(&recv_queue, buff, size);
+#endif
+	}
 
 	// see if this ip/port combo already connected to server
 	for (unsigned int i = 0; i < client_list.size(); i++)
@@ -779,11 +798,11 @@ int Netcode::server_recv()
 
 		if (client_list.size() > sv_maxclients)
 		{
-			debugf("server full");
+			debugf("Client connection failed: server full");
 			servermsg.sequence = sequence;
 			servermsg.client_sequence = clientmsg.sequence;
 			servermsg.num_ents = 0;
-			sprintf(reliable[index].msg, "full");
+			sprintf(reliable[index].msg, "<serverfull/>");
 			reliable[index].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[index].msg) + 1);
 			reliable[index].sequence = sequence;
 
@@ -1549,13 +1568,20 @@ void Netcode::connect(char *serverip)
 	engine->voice.bind(NULL, 65530);
 #endif
 	sock.connect(serverip, net_port);
-	debugf("Sending map request\n");
+	debugf("Sending connect request\n");
 	net_send((char *)&clientmsg, clientmsg.length);
 	debugf("Waiting for server info\n");
 
-	if (net_recv((char *)&servermsg, 8192, 5))
+
+	int num_read = net_recv((char *)&servermsg, 8192, 5);
+	if (num_read > 0)
 	{
 		char level[LINE_SIZE];
+
+#ifdef SERIAL
+		static unsigned char buff[4096];
+		dequeue(&recv_queue, buff, num_read);
+#endif
 
 		client_flag = true;
 		server_flag = false;
@@ -1572,6 +1598,10 @@ void Netcode::connect(char *serverip)
 			engine->load((char *)level);
 			client_rename();
 			last_server_sequence = servermsg.sequence;
+		}
+		else if (strstr(reliablemsg->msg, "<serverfull/>") != 0)
+		{
+			debugf("Server is full\n");
 		}
 		else
 		{

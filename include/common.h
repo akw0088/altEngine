@@ -46,6 +46,18 @@ typedef struct
 } ping_t;
 
 
+#define SIZE_QUEUE 4096
+
+typedef struct
+{
+	int size;
+	int tail;
+	int head;
+	char buffer[SIZE_QUEUE];
+} queue_t;
+
+
+
 //float fabs(float val);
 void gen_normalmap(float scale, const pixel_t *pixel, pixel_t *pixelout, int width, int height);
 bool aabb_visible(vec3 &min, vec3 &max, matrix4 &mvp);
@@ -90,6 +102,11 @@ int clamp(int value, int min, int max);
 float clamp(float value, float min, float max);
 int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert_one, const int num_vert_two);
 void ClipVelocity(vec3 &in, vec3 &normal);
+
+int enqueue(queue_t *queue, unsigned char *buffer, int size);
+int enqueue_front(queue_t *queue, unsigned char *buffer, int size);
+int dequeue(queue_t *queue, unsigned char *buffer, int size);
+int dequeue_peek(queue_t *queue, unsigned char *buffer, int size);
 
 
 extern "C" {
@@ -219,6 +236,7 @@ typedef union
 
 int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const
 	vertex_t &c, vertex_t *result);
+
 
 
 void get_frustum(matrix4 &projection, plane_t *frustum);
