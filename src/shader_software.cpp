@@ -72,6 +72,47 @@ void mLight2::set_num_shadowmap(int value)
 
 }
 
+void mLight2::set_specular_factor(float value)
+{
+
+}
+
+void mLight2::set_diffuse_factor(float value)
+{
+
+}
+
+void mLight2::set_specular_exponent(float value)
+{
+
+}
+
+
+
+void mLight2::set_atten_exponent(float value)
+{
+
+}
+
+void mLight2::set_atten_scale(float value)
+{
+
+}
+
+void mLight2::set_atten_min(float value)
+{
+
+}
+
+void mLight2::set_specular_min(float value)
+{
+
+}
+
+void mLight2::set_diffuse_min(float value)
+{
+
+}
 
 void mLight2::set_max(int max)
 {

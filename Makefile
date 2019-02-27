@@ -5,6 +5,7 @@ SOURCES_CPP := 	xmain.cpp \
 		bsp_q3.cpp \
 		bsp_q1.cpp \
 		bsp_hl.cpp \
+		cloth.cpp \
 		common.cpp \
 		constructable.cpp \
 		engine.cpp \
@@ -36,6 +37,7 @@ SOURCES_CPP := 	xmain.cpp \
 		quaternion.cpp \
 		raster.cpp \
 		rigidbody.cpp \
+		serial.cpp \
 		shader_d3d9.cpp \
 		shader_d3d11.cpp \
 		shader_opengl.cpp \
@@ -70,10 +72,10 @@ obj/%.o: src/%.c
 
 
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
-#CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
-#CC := gcc -fuse-linker-plugin -Wfloat-equal
-CPP := clang++ -std=c++11
-CC := clang
+CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
+CC := gcc -fuse-linker-plugin -Wfloat-equal
+#CPP := clang++ -std=c++11
+#CC := clang
 
 #coverity stuff, OSX has g++ point to clang, so must use linux for coverity run
 #cov-configure --comptype gcc --compiler [path to compiler]
@@ -96,7 +98,7 @@ CC := clang
 # obvious n for step over, and s for step into
 # display to display a variable
 
-altEngine: CFLAGS := -MMD -MP -DGL_GLEXT_PROTOTYPES -DOPENGL  -Wno-write-strings -Wall -g -march=native -fno-exceptions -fno-rtti -ffast-math -ffunction-sections #-fsanitize=address -fno-omit-frame-pointer
+altEngine: CFLAGS := -MMD -MP -DGL_GLEXT_PROTOTYPES -DSOFTWARE  -Wno-write-strings -Wall -g -march=native -fno-exceptions -fno-rtti -ffast-math -ffunction-sections #-fsanitize=address -fno-omit-frame-pointer
 altEngine_dedicated: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DDEDICATED -DOPENGL -Wno-write-strings -Wall -march=native -fno-exceptions -fno-rtti
 altEngine_vulkan: CFLAGS := -flto -DGL_GLEXT_PROTOTYPES -DVULKAN -Wno-write-strings -Wall -march=native -fno-exceptions -fno-rtti
 LFLAGS_OSX := -lX11 -lGL -lc -framework OpenAL

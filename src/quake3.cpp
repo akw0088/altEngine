@@ -13,6 +13,7 @@
 //=============================================================================
 
 #include "include.h"
+#include <math.h> // for sin/cos
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

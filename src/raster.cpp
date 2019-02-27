@@ -14,6 +14,7 @@
 
 #include "raster.h"
 #include "common.h"
+#include <math.h> // for cos
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
