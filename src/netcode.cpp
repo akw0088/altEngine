@@ -20,6 +20,7 @@
 
 // Distance we ignore the server position before correcting (usually lags behind by ping)
 #define DELTA_GRACE 200.0f
+#define NET_PROTOCOL 0x1
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
 
@@ -834,7 +835,7 @@ int Netcode::server_recv()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
-		sprintf(reliable[index].msg, "<map>%s</map>", engine->q3map.map_name);
+		sprintf(reliable[index].msg, "<protocol>%X</protocol><map>%s</map>", NET_PROTOCOL, engine->q3map.map_name);
 		reliable[index].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
 
@@ -1596,6 +1597,7 @@ void Netcode::connect(char *serverip)
 	if (num_read > 0)
 	{
 		char level[LINE_SIZE];
+		unsigned int protocol;
 
 #ifdef SERIAL
 		static unsigned char buff[4096];
@@ -1609,13 +1611,22 @@ void Netcode::connect(char *serverip)
 		sprintf(engine->voice.server, "%s:65530", serverip);
 #endif
         reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
-		if (sscanf(reliablemsg->msg, "<map>%s</map>", level) == 1)
+		if (sscanf(reliablemsg->msg, "<protocol>%X</protocol><map>%s</map>", &protocol, level) == 2)
 		{
 			char *end = strstr(level, "</map>");
 			*end = '\0';
-			debugf("Loading %s\n", level);
-			engine->load((char *)level);
-			client_rename();
+
+			if (protocol == NET_PROTOCOL)
+			{
+				debugf("Loading %s\n", level);
+				engine->load((char *)level);
+				client_rename();
+				debugf("Connect using protocol %X\r\n", protocol);
+			}
+			else
+			{
+				debugf("Server/Client protocol mismatch %d != %d\n", protocol, NET_PROTOCOL);
+			}
 			last_server_sequence = servermsg.sequence;
 		}
 		else if (strstr(reliablemsg->msg, "<serverfull/>") != 0)
