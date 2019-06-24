@@ -1659,6 +1659,15 @@ void Rectangle(int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
 	draw_line((int *)vram, xres, yres, x2, y1, x2, y2, 0); // right line
 }
 
+void Triangle(int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
+{
+	int half_x = fabs(x2 - x1) / 2;
+
+	draw_line((int *)vram, xres, yres, x1, y2, x2, y2, color); // bottom line
+	draw_line((int *)vram, xres, yres, x1 + half_x, y1, x1, y2, color); // left line
+	draw_line((int *)vram, xres, yres, x2 - half_x, y1, x2, y2, color); // right line
+}
+
 void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres)
 {
 	int x_shift = 0;
