@@ -3192,8 +3192,8 @@ int Quake3::handle_bot(Entity *entity, int i)
 			if (bot->player->path.length == -1)
 			{
 				// Path doesnt exist, give up
-				strncat(bot->player->ignore, engine->entity_list[bot->player->get_item]->entstring->type, 1023);
-				strncat(bot->player->ignore, " ", 1023);
+				strncat(bot->player->ignore, engine->entity_list[bot->player->get_item]->entstring->type, sizeof(bot->player->ignore) - strlen(bot->player->ignore) - 1);
+				strncat(bot->player->ignore, " ", sizeof(bot->player->ignore) - strlen(bot->player->ignore) - 1);
 
 				if (strlen(bot->player->ignore) >= 1000)
 					bot->player->ignore[0] = '\0';

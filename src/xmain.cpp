@@ -126,8 +126,8 @@ int main(int argc, char *argv[])
 
 	for(int i = 0; i < argc; i++)
 	{
-		strncat(cmdline, argv[i], 1023);
-		strncat(cmdline, " ", 1023);
+		strncat(cmdline, argv[i], sizeof(cmdline) - strlen(cmdline) - 1);
+		strncat(cmdline, " ", sizeof(cmdline) - strlen(cmdline) - 1);
 	}
 	printf("commandline: %d %s\n", argc, cmdline);
 
