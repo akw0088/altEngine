@@ -86,24 +86,24 @@ Graphics::~Graphics()
 }
 
 bool memory_type_from_properties(VkPhysicalDeviceMemoryProperties &memory_properties, uint32_t typeBits,
-                                        VkFlags requirements_mask,
-                                        uint32_t *typeIndex)
+	VkFlags requirements_mask,
+	uint32_t *typeIndex)
 {
-    uint32_t i;
-    // Search memtypes to find first index with those properties
-    for (i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
-        if ((typeBits & 1) == 1) {
-            // Type is available, does it match user properties?
-            if ((memory_properties.memoryTypes[i].propertyFlags &
-                 requirements_mask) == requirements_mask) {
-                *typeIndex = i;
-                return true;
-            }
-        }
-        typeBits >>= 1;
-    }
-    // No memory types matched, return failure
-    return false;
+	uint32_t i;
+	// Search memtypes to find first index with those properties
+	for (i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
+		if ((typeBits & 1) == 1) {
+			// Type is available, does it match user properties?
+			if ((memory_properties.memoryTypes[i].propertyFlags &
+				requirements_mask) == requirements_mask) {
+				*typeIndex = i;
+				return true;
+			}
+		}
+		typeBits >>= 1;
+	}
+	// No memory types matched, return failure
+	return false;
 }
 
 
@@ -1875,10 +1875,25 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
 	return 0;
-	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;	commandBufferAllocateInfo.commandPool = vk_commandPool;	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], &beginInfo);
-	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];	VkCommandBuffer v_setupCommandBuffer_;
-	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
+
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;
+	commandBufferAllocateInfo.commandPool = vk_commandPool;
+	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	vkBeginCommandBuffer(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], &beginInfo);
+
+	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];
+	VkCommandBuffer v_setupCommandBuffer_;
+
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);
+	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];
+
+	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
+
 	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
 	VkBufferUsageFlagBits vertex_flag;
 	vertex_flag = (VkBufferUsageFlagBits)(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);

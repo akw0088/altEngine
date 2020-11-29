@@ -14,6 +14,10 @@
 
 #include "raster.h"
 #include "common.h"
+#include <math.h> // for cos
+
+
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,6 +35,11 @@ inline int imin(int x, int y)
 inline int imax(int x, int y)
 {
 	return y ^ ((x ^ y) & -(x > y));
+}
+
+inline void iclamp(int &a, int mi, int ma)
+{
+	a = imin(imax(a, mi), ma);
 }
 
 
@@ -1504,39 +1513,10 @@ void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y
 	int deltax;
 	int deltay;
 
-	if (x1 > width)
-	{
-		x1 = width;
-	}
-	if (x1 < 0)
-	{
-		x1 = 0;
-	}
-	if (y1 > height)
-	{
-		y1 = height;
-	}
-	if (y1 < 0)
-	{
-		y1 = 0;
-	}
-
-	if (x2 > width)
-	{
-		x2 = width;
-	}
-	if (x2 < 0)
-	{
-		x2 = 0;
-	}
-	if (y2 > height)
-	{
-		y2 = height;
-	}
-	if (y2 < 0)
-	{
-		y2 = 0;
-	}
+	iclamp(x1, 0, width - 1);
+	iclamp(y1, 0, height - 1);
+	iclamp(x2, 0, width - 1);
+	iclamp(y2, 0, height - 1);
 
 	deltax = abs32(x2 - x1);
 	deltay = abs32(y2 - y1);
@@ -1667,6 +1647,60 @@ void draw_rect(int *pixels, int width, int height, float angle, int w, int l, in
 	draw_line(pixels, width, height, (int)corner[1][0], (int)corner[1][1], (int)corner[2][0], (int)corner[2][1], color);
 	draw_line(pixels, width, height, (int)corner[2][0], (int)corner[2][1], (int)corner[3][0], (int)corner[3][1], color);
 	draw_line(pixels, width, height, (int)corner[3][0], (int)corner[3][1], (int)corner[0][0], (int)corner[0][1], color);
+}
+
+// Windows GDI like syntax
+void Rectangle(int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
+{
+	draw_line((int *)vram, xres, yres, x1, y1, x2, y1, 0); // top line
+	draw_line((int *)vram, xres, yres, x1, y2, x2, y2, 0); // bottom line
+
+	draw_line((int *)vram, xres, yres, x1, y1, x1, y2, 0); // left line
+	draw_line((int *)vram, xres, yres, x2, y1, x2, y2, 0); // right line
+}
+
+void Triangle(int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
+{
+	int half_x = fabs(x2 - x1) / 2;
+
+	draw_line((int *)vram, xres, yres, x1, y2, x2, y2, color); // bottom line
+	draw_line((int *)vram, xres, yres, x1 + half_x, y1, x1, y2, color); // left line
+	draw_line((int *)vram, xres, yres, x2 - half_x, y1, x2, y2, color); // right line
+}
+
+void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres)
+{
+	int x_shift = 0;
+
+	for (int c = 0; ; c++)
+	{
+		if (msg[c] == '\0')
+			break;
+
+		//256x256 font image, 16x16 fonts
+		int row = msg[c] / 16;
+		int col = msg[c] % 16;
+
+		// have a valid character, copy pixels into vram x,y pos (assuming 16 pixel fonts)
+		for (int j = 0; j < 16; j++)
+		{
+			int py = (row * 16 + j);
+
+			for (int i = 0; i < 16; i++)
+			{
+				int px = (col * 16 + i);
+
+				if ((x + i + x_shift) >= xres)
+					break;
+
+				// bitmap is upside down, so invert Y
+				vram[(x + i + x_shift) + (y + j) * xres] = tex[((255 - py) * 256) + px];
+			}
+		}
+
+		// move over to the right 16 pixels for next character
+		x_shift += 16;
+	}
 }
 
 

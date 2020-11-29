@@ -835,8 +835,8 @@ void Commando::step(int frame_step)
 					if (engine->entity_list[i]->player->path.length == -1)
 					{
 						// Path doesnt exist, give up
-						strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, 1023);
-						strncat(bot->player->ignore, " ", 1023);
+						strncat(bot->player->ignore,  engine->entity_list[bot->player->get_item]->type, sizeof(bot->player->ignore) - strlen(bot->player->ignore) - 1);
+						strncat(bot->player->ignore, " ", sizeof(bot->player->ignore) - strlen(bot->player->ignore) - 1);
 
 						if (strlen(bot->player->ignore) >= 1000)
 							bot->player->ignore[0] = '\0';

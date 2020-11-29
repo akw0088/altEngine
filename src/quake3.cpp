@@ -13,6 +13,7 @@
 //=============================================================================
 
 #include "include.h"
+#include <math.h> // for sin/cos
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -3191,8 +3192,8 @@ int Quake3::handle_bot(Entity *entity, int i)
 			if (bot->player->path.length == -1)
 			{
 				// Path doesnt exist, give up
-				strncat(bot->player->ignore, engine->entity_list[bot->player->get_item]->entstring->type, 1023);
-				strncat(bot->player->ignore, " ", 1023);
+				strncat(bot->player->ignore, engine->entity_list[bot->player->get_item]->entstring->type, sizeof(bot->player->ignore) - strlen(bot->player->ignore) - 1);
+				strncat(bot->player->ignore, " ", sizeof(bot->player->ignore) - strlen(bot->player->ignore) - 1);
 
 				if (strlen(bot->player->ignore) >= 1000)
 					bot->player->ignore[0] = '\0';
@@ -5630,6 +5631,17 @@ void Quake3::render_hud(double last_frametime)
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "buffer mb: %d texture mb %d", engine->gfx.gpustat.buffer_size / (1024 * 1024), engine->gfx.gpustat.texture_size / (1024 * 1024));
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
+
+#ifdef SERIAL
+			snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d/%d num_ents %d dropped %d qsize %d",
+				engine->netcode.netinfo.ping,
+				engine->netcode.netinfo.sequence_delta,
+				engine->netcode.netinfo.size,
+				engine->netcode.netinfo.uncompressed_size,
+				engine->netcode.netinfo.num_ents,
+				engine->netcode.netinfo.dropped,
+				engine->netcode.recv_queue.size);
+#else
 			snprintf(msg, LINE_SIZE, "ping: %d delta %d size %d/%d num_ents %d dropped %d",
 				engine->netcode.netinfo.ping,
 				engine->netcode.netinfo.sequence_delta,
@@ -5637,6 +5649,7 @@ void Quake3::render_hud(double last_frametime)
 				engine->netcode.netinfo.uncompressed_size,
 				engine->netcode.netinfo.num_ents,
 				engine->netcode.netinfo.dropped);
+#endif
 			engine->menu.draw_text(msg, 0.01f, 0.025f * line++, 0.025f, color, false, false);
 			snprintf(msg, LINE_SIZE, "send_full %d send_partial %d recv_empty %d",
 				engine->netcode.netinfo.send_full,
