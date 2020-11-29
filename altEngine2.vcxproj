@@ -285,8 +285,8 @@
     <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.0.0\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\VulkanSDK\1.2.154.1\Include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.0.0\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\VulkanSDK\1.2.154.1\Lib;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\opus-1.2.1\include;C:\altEngine2\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.1.0\include;$(IncludePath)</IncludePath>
@@ -511,10 +511,10 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>OPENGL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VULKAN</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>EFX-Util.lib;openal32.lib;glew32s.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;vulkan-1.lib;EFX-Util.lib;openal32.lib;glew32s.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -542,7 +542,10 @@
   <ItemGroup>
     <ClCompile Include="src\basegame.cpp" />
     <ClCompile Include="src\bsp_hl.cpp" />
+    <ClCompile Include="src\bsp_q1.cpp" />
+    <ClCompile Include="src\bsp_q2.cpp" />
     <ClCompile Include="src\bsp_q3.cpp" />
+    <ClCompile Include="src\cloth.cpp" />
     <ClCompile Include="src\commando.cpp" />
     <ClCompile Include="src\common.cpp" />
     <ClCompile Include="src\constructable.cpp" />
@@ -573,13 +576,13 @@
     <ClCompile Include="src\pak.cpp" />
     <ClCompile Include="src\parse.cpp" />
     <ClCompile Include="src\physics.cpp" />
-    <ClCompile Include="src\plane.cpp" />
     <ClCompile Include="src\player.cpp" />
     <ClCompile Include="src\portal_camera.cpp" />
     <ClCompile Include="src\projectile.cpp" />
     <ClCompile Include="src\quake3.cpp" />
     <ClCompile Include="src\quaternion.cpp" />
     <ClCompile Include="src\rigidbody.cpp" />
+    <ClCompile Include="src\serial.cpp" />
     <ClCompile Include="src\shader_d3d11.cpp" />
     <ClCompile Include="src\shader_d3d9.cpp" />
     <ClCompile Include="src\shader_null.cpp" />
@@ -591,9 +594,13 @@
     <ClCompile Include="src\sock.cpp" />
     <ClCompile Include="src\speaker.cpp" />
     <ClCompile Include="src\sph.cpp" />
+    <ClCompile Include="src\spline.cpp" />
     <ClCompile Include="src\terrain.cpp" />
     <ClCompile Include="src\trigger.cpp" />
     <ClCompile Include="src\vector.cpp" />
+    <ClCompile Include="src\vehicle.cpp" />
+    <ClCompile Include="src\vm.c" />
+    <ClCompile Include="src\vmmain.cpp" />
     <ClCompile Include="src\voice.cpp" />
     <ClCompile Include="src\winmain.cpp" />
   </ItemGroup>

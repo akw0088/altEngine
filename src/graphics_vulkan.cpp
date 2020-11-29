@@ -85,6 +85,27 @@ Graphics::~Graphics()
 {
 }
 
+bool memory_type_from_properties(VkPhysicalDeviceMemoryProperties &memory_properties, uint32_t typeBits,
+                                        VkFlags requirements_mask,
+                                        uint32_t *typeIndex)
+{
+    uint32_t i;
+    // Search memtypes to find first index with those properties
+    for (i = 0; i < VK_MAX_MEMORY_TYPES; i++) {
+        if ((typeBits & 1) == 1) {
+            // Type is available, does it match user properties?
+            if ((memory_properties.memoryTypes[i].propertyFlags &
+                 requirements_mask) == requirements_mask) {
+                *typeIndex = i;
+                return true;
+            }
+        }
+        typeBits >>= 1;
+    }
+    // No memory types matched, return failure
+    return false;
+}
+
 
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback( VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT  bjectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 {
@@ -266,8 +287,11 @@ void Graphics::CreateSwapchain(VkPhysicalDevice physicalDevice, VkDevice device,
 	mem_alloc.allocationSize = mem_reqs.size;
 
 
+	VkPhysicalDeviceMemoryProperties memoryProperties = {};
+	vkGetPhysicalDeviceMemoryProperties(vk_physical, &memoryProperties);
+
 	// Use the memory properties to determine the type of memory required
-//	pass = memory_type_from_properties(info, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mem_alloc.memoryTypeIndex);
+	memory_type_from_properties(memoryProperties, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &mem_alloc.memoryTypeIndex);
 	//assert(pass);
 
 	VkDeviceMemory vk_depth_mem;
@@ -650,6 +674,13 @@ void Graphics::CreateTexture(int width, int height, int components, int format, 
 	vkGetImageMemoryRequirements(vk_device, vk_Image, &requirements);
 
 	VkDeviceSize requiredSizeForImage = requirements.size;
+
+	if (requirements.size != image_size)
+	{
+		printf("size mismatch, halving image to avoid crash\r\n");
+		image_size /= 2;
+	}
+
 
 	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
 	AllocateMemory(vk_deviceImageMemory, memoryHeaps, vk_device, static_cast<int> (requiredSizeForImage), requirements.memoryTypeBits, MT_DeviceLocal);
@@ -1505,7 +1536,7 @@ void Graphics::init(void *param1, void *param2)
 }
 
 
-void Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
+int Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
 {
 	vkResetFences(vk_device, 1, &vk_frameFences[0]);
 	VkCommandBufferBeginInfo beginInfo = {};
@@ -1551,7 +1582,14 @@ void Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
 	load_texture(*this, "media/menu.tga", false, false, 0);
 	//	CreateTexture(setupCommandBuffer_, image_width, image_height, image_data, image_size);
 	CreateDescriptors();
-	LoadShadersAndCreatePipelineStateObject("media/spirv/vulkan.vert.spv", "media/spirv/vulkan.frag.spv");
+
+	if (LoadShadersAndCreatePipelineStateObject("media/spirv/vulkan.vert.spv", "media/spirv/vulkan.frag.spv") != 0)
+	{
+		printf("Failed to load vulkan shaders\r\n");
+		return -1;
+	}
+
+
 	CreateMeshBuffers(cmd_buffer, vertex_array, 4, index_array, 6);
 
 	vkEndCommandBuffer(cmd_buffer);
@@ -1565,6 +1603,7 @@ void Graphics::LoadCommandBuffer(VkCommandBuffer &cmd_buffer)
 	vkQueueSubmit(vk_queue, 1, &submitInfo, vk_frameFences[0]);
 
 	vkWaitForFences(vk_device, 1, &vk_frameFences[0], VK_TRUE, UINT64_MAX);
+	return 0;
 }
 
 void Graphics::swap()
