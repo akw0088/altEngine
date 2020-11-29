@@ -1875,6 +1875,7 @@ void Graphics::DeleteVertexArrayObject(unsigned int vao)
 int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynamic)
 {
 	return 0;
+<<<<<<< HEAD
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1893,6 +1894,15 @@ int Graphics::CreateVertexBuffer(void *vertex_buffer, int num_vertex, bool dynam
 	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];
 
 	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
+=======
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = {};	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;	commandBufferAllocateInfo.commandBufferCount = QUEUE_SLOT_COUNT + 1;	commandBufferAllocateInfo.commandPool = vk_commandPool;	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+	VkCommandBufferBeginInfo beginInfo = {};	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;	vkBeginCommandBuffer(vk_cmd_buffer_array[QUEUE_SLOT_COUNT], &beginInfo);
+
+	VkCommandBuffer v_commandBuffers[QUEUE_SLOT_COUNT + 1];	VkCommandBuffer v_setupCommandBuffer_;
+
+	vkAllocateCommandBuffers(vk_device, &commandBufferAllocateInfo, v_commandBuffers);	v_setupCommandBuffer_ = v_commandBuffers[QUEUE_SLOT_COUNT];	vkBeginCommandBuffer(v_setupCommandBuffer_, &beginInfo);
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 
 	vector<MemoryTypeInfo> memoryHeaps = EnumerateHeaps(vk_physical);
 	VkBufferUsageFlagBits vertex_flag;

@@ -20,13 +20,13 @@
 
 // Distance we ignore the server position before correcting (usually lags behind by ping)
 #define DELTA_GRACE 200.0f
+<<<<<<< HEAD
 #define NET_PROTOCOL 0x1
+=======
+#define NET_PROTOCOL 0x1
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
-
-#ifdef SERIAL
-queue_t recv_queue;
-#endif
 
 Netcode::Netcode(Engine *engine)
 {
@@ -91,9 +91,15 @@ int Netcode::net_send(char *data, int size)
 int Netcode::net_recv(char *data, int size, int delay)
 {
 #ifdef SERIAL
+<<<<<<< HEAD
 	if (recv_queue.size == SIZE_QUEUE)
 		memset(&recv_queue, 0, sizeof(recv_queue));
 
+=======
+	if (recv_queue.size == SIZE_QUEUE)
+		memset(&recv_queue, 0, sizeof(recv_queue));
+
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
 	dequeue_peek(&recv_queue, (unsigned char *)data, size);
@@ -107,9 +113,15 @@ int Netcode::net_recv(char *data, int size, int delay)
 int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 {
 #ifdef SERIAL
+<<<<<<< HEAD
 	if (recv_queue.size == SIZE_QUEUE)
 		memset(&recv_queue, 0, sizeof(recv_queue));
 
+=======
+	if (recv_queue.size == SIZE_QUEUE)
+		memset(&recv_queue, 0, sizeof(recv_queue));
+
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	snprintf(client, client_size - 1, "COMPORT");
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
@@ -124,9 +136,15 @@ int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 int Netcode::net_rawrecvfrom(int socket, char *data, int size, sockaddr *addr, int *socksize)
 {
 #ifdef SERIAL
+<<<<<<< HEAD
 	if (recv_queue.size == SIZE_QUEUE)
 		memset(&recv_queue, 0, sizeof(recv_queue));
 
+=======
+	if (recv_queue.size == SIZE_QUEUE)
+		memset(&recv_queue, 0, sizeof(recv_queue));
+
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
 	dequeue_peek(&recv_queue, (unsigned char *)data, size);
@@ -264,15 +282,26 @@ int Netcode::client_recv()
 
 	if (size > 0)
 	{
+<<<<<<< HEAD
 		if (size < servermsg.length)
 		{
 			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
 			return -1;
+=======
+		if (size < servermsg.length)
+		{
+			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
+			return -1;
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 		}
 
 #ifdef SERIAL
 		static unsigned char buff[4096];
+<<<<<<< HEAD
 		dequeue(&recv_queue, buff, servermsg.length);
+=======
+		dequeue(&recv_queue, buff, servermsg.length);
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 #endif
 
 		if (servermsg.sequence < last_server_sequence)
@@ -685,16 +714,27 @@ int Netcode::server_recv()
 	netinfo.recv_empty = false;
 
 
+<<<<<<< HEAD
 	if (clientmsg.length < size)
 	{
 		printf("Warning: Packet size mismatch\n");
 		return -1;
+=======
+	if (clientmsg.length < size)
+	{
+		printf("Warning: Packet size mismatch\n");
+		return -1;
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	}
 	else
 	{
 #ifdef SERIAL
 		static unsigned char buff[4096];
+<<<<<<< HEAD
 		dequeue(&recv_queue, buff, clientmsg.length);
+=======
+		dequeue(&recv_queue, buff, clientmsg.length);
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 #endif
 	}
 
@@ -839,7 +879,11 @@ int Netcode::server_recv()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
+<<<<<<< HEAD
 		sprintf(reliable[index].msg, "<protocol>%X</protocol><map>%s</map>", NET_PROTOCOL, engine->q3map.map_name);
+=======
+		sprintf(reliable[index].msg, "<protocol>%X</protocol><map>%s</map>", NET_PROTOCOL, engine->q3map.map_name);
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 		reliable[index].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
 
@@ -1601,7 +1645,11 @@ void Netcode::connect(char *serverip)
 	if (num_read > 0)
 	{
 		char level[LINE_SIZE];
+<<<<<<< HEAD
 		unsigned int protocol;
+=======
+		unsigned int protocol;
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 
 #ifdef SERIAL
 		static unsigned char buff[4096];
@@ -1615,6 +1663,7 @@ void Netcode::connect(char *serverip)
 		sprintf(engine->voice.server, "%s:65530", serverip);
 #endif
         reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
+<<<<<<< HEAD
 		if (sscanf(reliablemsg->msg, "<protocol>%X</protocol><map>%s</map>", &protocol, level) == 2)
 		{
 			char *end = strstr(level, "</map>");
@@ -1631,6 +1680,24 @@ void Netcode::connect(char *serverip)
 			{
 				debugf("Server/Client protocol mismatch %d != %d\n", protocol, NET_PROTOCOL);
 			}
+=======
+		if (sscanf(reliablemsg->msg, "<protocol>%X</protocol><map>%s</map>", &protocol, level) == 2)
+		{
+			char *end = strstr(level, "</map>");
+			*end = '\0';
+
+			if (protocol == NET_PROTOCOL)
+			{
+				debugf("Loading %s\n", level);
+				engine->load((char *)level);
+				client_rename();
+				debugf("Connect using protocol %X\r\n", protocol);
+			}
+			else
+			{
+				debugf("Server/Client protocol mismatch %d != %d\n", protocol, NET_PROTOCOL);
+			}
+>>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 			last_server_sequence = servermsg.sequence;
 		}
 		else if (strstr(reliablemsg->msg, "<serverfull/>") != 0)
