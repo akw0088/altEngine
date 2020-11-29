@@ -92,6 +92,7 @@ public:
 	bool spawned;
 	bool render_md5;
 	bool immobile;
+	construct_type_t construct_type;
 
 	bot_state_t bot_state;
 	bot_state_t last_state;

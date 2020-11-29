@@ -15,11 +15,7 @@
 // originally based on https://nothings.org/ QBSP, heavily changed (his license is public domain)
 
 #include "include.h"
-<<<<<<< HEAD
 #include <math.h> // for ceil
-=======
-#include <math.h> // for ceil
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 
 using namespace q1;
 

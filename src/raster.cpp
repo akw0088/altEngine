@@ -1678,15 +1678,9 @@ void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, i
 			break;
 
 		//256x256 font image, 16x16 fonts
-<<<<<<< HEAD
 		int row = msg[c] / 16;
 		int col = msg[c] % 16;
 
-=======
-		int row = msg[c] / 16;
-		int col = msg[c] % 16;
-
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 		// have a valid character, copy pixels into vram x,y pos (assuming 16 pixel fonts)
 		for (int j = 0; j < 16; j++)
 		{

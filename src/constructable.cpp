@@ -30,6 +30,8 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t
 	render_md5 = true;
 	immobile = false;
 
+
+	construct_type = type;
 	owner = -1;
 	telefragged = NULL;
 

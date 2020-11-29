@@ -2708,6 +2708,7 @@ void Quake3::step(int frame_step)
 		if (engine->input.attack)
 		{
 			flyby = false;
+			engine->camera_frame.reset();
 			if (spectator == true)
 				engine->console("spectate");
 
@@ -2873,7 +2874,8 @@ void Quake3::step(int frame_step)
 //		engine->console("spectate");
 
 		vec3 zero(0,50,0);
-		build_structure(zero, MODEL_LUCY);
+		//build_structure(zero, MODEL_LUCY);
+		build_sentry();
 	}
 	else
 	{
@@ -2929,6 +2931,8 @@ void Quake3::step(int frame_step)
 
 				if (entity->player->build_timer == 1)
 				{
+					entity->player->num_sentry++;
+
 					if (entity->player->build_type == CT_AUTOSENTRY)
 						engine->play_wave(entity->position, SND_SENTRY_UPGRADE);
 					else
@@ -3279,14 +3283,13 @@ void Quake3::build_sentry()
 		return;
 	}
 
-	if (powner->num_sentry > 10)
+	if (powner->num_sentry >= 1)
 	{
 		debugf("Sentry already constructed\n");
 		return;
 	}
 
 
-	powner->num_sentry++;
 	powner->build_timer = 3 * TICK_RATE;
 
 
@@ -3714,7 +3717,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 			if (target == NULL)
 			{
 				Constructable *construct = engine->entity_list[index[i]]->construct;
-				if (construct && construct->type == CT_AUTOSENTRY)
+				if (construct && construct->construct_type == CT_AUTOSENTRY)
 				{
 					int health = construct->health;
 
@@ -8893,7 +8896,7 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 			return;
 
 		// start closing a distance further than we started opening
-		if (ent->brushinfo && distance > 300.0f && ent->brushinfo->opening == true)
+		if (ent->brushinfo && distance > 300.0f && ent->brushinfo->opening > 0)
 		{
 			ent->brushinfo->opening = false;
 			if (ent->brushinfo->model_lerp > 0.99f)

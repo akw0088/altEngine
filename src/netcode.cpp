@@ -20,11 +20,7 @@
 
 // Distance we ignore the server position before correcting (usually lags behind by ping)
 #define DELTA_GRACE 200.0f
-<<<<<<< HEAD
 #define NET_PROTOCOL 0x1
-=======
-#define NET_PROTOCOL 0x1
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 
 static unsigned char huffbuf[HUFFHEAP_SIZE];
 
@@ -91,15 +87,9 @@ int Netcode::net_send(char *data, int size)
 int Netcode::net_recv(char *data, int size, int delay)
 {
 #ifdef SERIAL
-<<<<<<< HEAD
 	if (recv_queue.size == SIZE_QUEUE)
 		memset(&recv_queue, 0, sizeof(recv_queue));
 
-=======
-	if (recv_queue.size == SIZE_QUEUE)
-		memset(&recv_queue, 0, sizeof(recv_queue));
-
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
 	dequeue_peek(&recv_queue, (unsigned char *)data, size);
@@ -113,15 +103,9 @@ int Netcode::net_recv(char *data, int size, int delay)
 int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 {
 #ifdef SERIAL
-<<<<<<< HEAD
 	if (recv_queue.size == SIZE_QUEUE)
 		memset(&recv_queue, 0, sizeof(recv_queue));
 
-=======
-	if (recv_queue.size == SIZE_QUEUE)
-		memset(&recv_queue, 0, sizeof(recv_queue));
-
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	snprintf(client, client_size - 1, "COMPORT");
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
@@ -136,15 +120,9 @@ int Netcode::net_recvfrom(char *data, int size, char *client, int client_size)
 int Netcode::net_rawrecvfrom(int socket, char *data, int size, sockaddr *addr, int *socksize)
 {
 #ifdef SERIAL
-<<<<<<< HEAD
 	if (recv_queue.size == SIZE_QUEUE)
 		memset(&recv_queue, 0, sizeof(recv_queue));
 
-=======
-	if (recv_queue.size == SIZE_QUEUE)
-		memset(&recv_queue, 0, sizeof(recv_queue));
-
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	int num_read = serial_read(handle, data, size);
 	enqueue(&recv_queue, (unsigned char *)data, num_read);
 	dequeue_peek(&recv_queue, (unsigned char *)data, size);
@@ -282,26 +260,15 @@ int Netcode::client_recv()
 
 	if (size > 0)
 	{
-<<<<<<< HEAD
 		if (size < servermsg.length)
 		{
 			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
 			return -1;
-=======
-		if (size < servermsg.length)
-		{
-			printf("Warning packet size mismatch: %d %d\n", size, servermsg.length);
-			return -1;
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 		}
 
 #ifdef SERIAL
 		static unsigned char buff[4096];
-<<<<<<< HEAD
 		dequeue(&recv_queue, buff, servermsg.length);
-=======
-		dequeue(&recv_queue, buff, servermsg.length);
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 #endif
 
 		if (servermsg.sequence < last_server_sequence)
@@ -714,27 +681,16 @@ int Netcode::server_recv()
 	netinfo.recv_empty = false;
 
 
-<<<<<<< HEAD
 	if (clientmsg.length < size)
 	{
 		printf("Warning: Packet size mismatch\n");
 		return -1;
-=======
-	if (clientmsg.length < size)
-	{
-		printf("Warning: Packet size mismatch\n");
-		return -1;
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 	}
 	else
 	{
 #ifdef SERIAL
 		static unsigned char buff[4096];
-<<<<<<< HEAD
 		dequeue(&recv_queue, buff, clientmsg.length);
-=======
-		dequeue(&recv_queue, buff, clientmsg.length);
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 #endif
 	}
 
@@ -879,11 +835,7 @@ int Netcode::server_recv()
 		servermsg.sequence = sequence;
 		servermsg.client_sequence = clientmsg.sequence;
 		servermsg.num_ents = 0;
-<<<<<<< HEAD
 		sprintf(reliable[index].msg, "<protocol>%X</protocol><map>%s</map>", NET_PROTOCOL, engine->q3map.map_name);
-=======
-		sprintf(reliable[index].msg, "<protocol>%X</protocol><map>%s</map>", NET_PROTOCOL, engine->q3map.map_name);
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 		reliable[index].size = (unsigned short)(2 * sizeof(short) + strlen(reliable[index].msg) + 1);
 		reliable[index].sequence = sequence;
 
@@ -1052,27 +1004,35 @@ int Netcode::server_recv()
 int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, unsigned int &data_size)
 {
 	data_size = 0;
+
+	// loop through all entities on server
 	for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 	{
-		net_entity_t ent;
+		net_entity_t ent; // generic entitiy type has variable size that depends on type
+
+		// setup pointers we might use
 		net_rigid_t *net_rigid = (net_rigid_t *)&(ent.data[0]);
 		net_trigger_t *net_trigger = (net_trigger_t *)&(ent.data[0]);
 		net_player_t *net_player = (net_player_t *)&ent.data[0];
 		net_projectile_t *net_projectile = (net_projectile_t *)&(ent.data[0]);
+		// variable size is zero until we determine entity type
 		int size = 0;
 
 		RigidBody *rigid = engine->entity_list[i]->rigid;
 
-
+		// clear our generic entity struct
 		memset(&ent, 0, sizeof(net_entity_t));
+
+		// set the entity index and net type if it is set
 		ent.index = i;
 		ent.etype = (net_ent_t)engine->entity_list[i]->nettype;
 		ent.ctype = NET_UNKNOWN;
 
 
 		Projectile *projectile = engine->entity_list[i]->projectile;
-		if (projectile)
+		if (projectile != NULL)
 		{
+			// entity has a projectile pointer, serialize projectile data
 			net_projectile->active = 0;
 
 			if (engine->entity_list[i]->projectile->active)
@@ -1083,6 +1043,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 			ent.ctype = NET_PROJECTILE;
 			size = SIZE_NET_ENTITY_HEADER + sizeof(net_projectile_t);
 			/*
+			// Commented out for now, sends orientation as a quaternion instead of vectors to save network size
 			quaternion q;
 
 			q.to_quat(rigid->morientation);
@@ -1101,6 +1062,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 			}
 			*/
 
+			// send orientation matrix, cross product used to generate up vector (which is usually the up axis)
 			net_projectile->forward.x = rigid->morientation.m[6];
 			net_projectile->forward.y = rigid->morientation.m[7];
 			net_projectile->forward.z = rigid->morientation.m[8];
@@ -1113,9 +1075,10 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 			net_projectile->velocity = rigid->velocity;
 			net_projectile->position = engine->entity_list[i]->position;
 
-
+			// check if data changed from the last time we sent it
 			if (memcmp(&delta_list[i], &ent, size) != 0)
 			{
+				// it did change, memcpy the struct to the entity list
 				memcpy(&delta_list[i], &ent, size);
 				memcpy(&data[data_size], &ent, size);
 				data_size += size;
@@ -1126,7 +1089,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 		}
 
 		Trigger *trigger = engine->entity_list[i]->trigger;
-		if (trigger)
+		if (trigger != NULL)
 		{
 			net_trigger->active = 0;
 
@@ -1645,11 +1608,7 @@ void Netcode::connect(char *serverip)
 	if (num_read > 0)
 	{
 		char level[LINE_SIZE];
-<<<<<<< HEAD
 		unsigned int protocol;
-=======
-		unsigned int protocol;
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 
 #ifdef SERIAL
 		static unsigned char buff[4096];
@@ -1663,7 +1622,6 @@ void Netcode::connect(char *serverip)
 		sprintf(engine->voice.server, "%s:65530", serverip);
 #endif
         reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];
-<<<<<<< HEAD
 		if (sscanf(reliablemsg->msg, "<protocol>%X</protocol><map>%s</map>", &protocol, level) == 2)
 		{
 			char *end = strstr(level, "</map>");
@@ -1680,24 +1638,6 @@ void Netcode::connect(char *serverip)
 			{
 				debugf("Server/Client protocol mismatch %d != %d\n", protocol, NET_PROTOCOL);
 			}
-=======
-		if (sscanf(reliablemsg->msg, "<protocol>%X</protocol><map>%s</map>", &protocol, level) == 2)
-		{
-			char *end = strstr(level, "</map>");
-			*end = '\0';
-
-			if (protocol == NET_PROTOCOL)
-			{
-				debugf("Loading %s\n", level);
-				engine->load((char *)level);
-				client_rename();
-				debugf("Connect using protocol %X\r\n", protocol);
-			}
-			else
-			{
-				debugf("Server/Client protocol mismatch %d != %d\n", protocol, NET_PROTOCOL);
-			}
->>>>>>> 6943c9be26575871090f6961864cda8cacf67f8d
 			last_server_sequence = servermsg.sequence;
 		}
 		else if (strstr(reliablemsg->msg, "<serverfull/>") != 0)

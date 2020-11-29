@@ -636,7 +636,7 @@ void Engine::load(char *level)
 	if (ssao.init(&gfx))
 		menu.print("Failed to load screen_space shader");
 
-	mlight2.set_dissolve(0.5f);
+	mlight2.set_dissolve(-1.0f);
 
 	vec3 green(0.0f, 1.0f, 0.0f);
 	mlight2.set_fog(0.0f, 100.0f, 500.0f, green);
@@ -755,8 +755,8 @@ void Engine::load(char *level)
 
 		load_entities();
 	}
-
-//	if (strstr(level, "q3tourney2"))
+#if 0
+	if (strstr(level, "q3tourney2"))
 	{
 		int index = find_type(ENT_ITEM_ARMOR_COMBAT, 0);
 
@@ -778,7 +778,7 @@ void Engine::load(char *level)
 			entity_list[index]->rigid->frame2ent(&camera_frame, input);
 		}
 	}
-
+#endif
 
 	// This renders map before loading textures
 
@@ -2330,7 +2330,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 		}
 		else
 		{
-			if (entity->ent_type == ENT_SENTRY_BASE || entity->ent_type == ENT_SENTRY || entity->ent_type == ENT_CONSTRUCT)
+			if ((entity->ent_type == ENT_SENTRY_BASE || entity->ent_type == ENT_SENTRY || entity->ent_type == ENT_CONSTRUCT) && entity->construct)
 			{
 				if (entity->ent_type == ENT_SENTRY)
 				{
@@ -3641,6 +3641,10 @@ void Engine::step(int tick)
 	spatial_testing(); // mostly sets visible flag
 #endif
 
+	game->step(tick);
+	dynamics();
+
+
 	//network
     netcode.sequence++;
 	if (netcode.server_flag && netcode.sequence)
@@ -3701,7 +3705,6 @@ void Engine::step(int tick)
 		return;
 	}
 
-	game->step(tick);
 
 
 	int player = find_type(ENT_PLAYER, 0);
@@ -3730,7 +3733,6 @@ void Engine::step(int tick)
 		enable_map_shadows = false;
 	}
 
-	dynamics();
 
 	if (netcode.recording_demo)
 	{
@@ -4882,6 +4884,8 @@ void Engine::quit()
 #endif
 }
 
+// TODO: Make something like quake's add command, cmd + function pointer to execute with it
+// Also logically seperate Console variables (Cvars) from commands
 int Engine::console_general(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
