@@ -44,7 +44,7 @@ int Voice::init(Audio &audio, unsigned short qport)
 	//OPUS_APPLICATION_AUDIO -- music
 	//OPUS_APPLICATION_VOIP -- voice
 	//OPUS_APPLICATION_RESTRICTED_LOWDELAY -- low delay voice
-#ifndef __OBJC__
+#ifdef VOICE
 	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_VOIP, &ret);
 	if (ret < 0) 
 	{ 
@@ -107,7 +107,7 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, i
 		}
 	}
 
-#ifndef __OBJC__
+#ifdef VOICE
 	// Encode the frame.
 	num_bytes = opus_encode(encoder, (opus_int16 *)extend_buffer, SEGMENT_SIZE, data, MAX_PACKET_SIZE);
 	if (num_bytes < 0)
@@ -124,15 +124,15 @@ int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 { 
 	int frame_size;
 
-#ifndef __OBJC__
+#ifdef VOICE
 	frame_size = opus_decode(decoder, data, size, (opus_int16 *)pcm, MAX_SEGMENT_SIZE, 0);
 	if (frame_size < 0)
 	{ 
 		printf("decoder failed: %s\n", opus_strerror(frame_size)); 
 		return -1; 
 	} 
-#endif
 	size = frame_size;
+#endif
 	return 0;
 }
 
@@ -398,7 +398,7 @@ int Voice::voice_recv(Audio &audio)
 
 void Voice::destroy()
 {
-#ifndef __OBJC__
+#ifdef VOICE
 	 opus_encoder_destroy(encoder);
 	 opus_decoder_destroy(decoder); 
 #endif
