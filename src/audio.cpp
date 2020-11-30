@@ -355,6 +355,9 @@ LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv = NULL;
 LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf = NULL;
 LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv = NULL;
 
+EAXREVERBPROPERTIES eaxBathroom = REVERB_PRESET_BATHROOM;
+EAXREVERBPROPERTIES eaxHangar = REVERB_PRESET_HANGAR;
+
 bool ALFWIsEFXSupported()
 {
 	ALCdevice *pDevice = NULL;
@@ -470,6 +473,7 @@ void Audio::init()
 	int sends;
 	ALenum al_err;
 #endif
+	selected_effect = 0;
 
 	debugf("Using default audio device: %s\n", alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER));
 	device = alcOpenDevice(NULL);
@@ -573,8 +577,8 @@ void Audio::init()
 		return;
 	}
 
-//	ConvertReverbParameters(&environment[selected_effect], &efxReverb);
-//	SetEFXEAXReverbProperties(&efxReverb, effect);
+	ConvertReverbParameters(&environment[selected_effect], &efxReverb);
+	SetEFXEAXReverbProperties(&efxReverb, effect);
 
 //	alEffectf(effect, AL_REVERB_GAIN, 1.0f);
 //	alEffectf(effect, AL_REVERB_DECAY_TIME, 20.0f);

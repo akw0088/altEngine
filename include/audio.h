@@ -61,6 +61,8 @@ private:
 	unsigned int filter[8];
 #endif
 
+	int selected_effect;
+
 };
 
 #endif
