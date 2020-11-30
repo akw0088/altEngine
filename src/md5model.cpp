@@ -31,6 +31,7 @@ MD5Model::MD5Model()
 	current_buffer = NULL;
 	current_anim = NULL;
 	tex_object = NULL;
+	animation_frame = 0;
 }
 
 MD5Model::~MD5Model() 
@@ -79,7 +80,6 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 		}
 	}
 
-
 	num_buffer = 0;
 	for (;plist != NULL;)
 	{
@@ -96,6 +96,8 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 	current_buffer = buffer[num_buffer-1];
 	loaded = true;
 	printf("Done\n");
+
+	select_animation(ANIM_IDLE, true);
 }
 
 void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *buffer)
@@ -182,7 +184,7 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 	}
 }
 
-void MD5Model::select_animation(int index)
+void MD5Model::select_animation(int index, bool loop)
 {
 	anim_list_t *plist = &anim_list;
 
@@ -195,6 +197,14 @@ void MD5Model::select_animation(int index)
 		debugf("Invalid animation index\n");
 		return;
 	}
+
+	if (loop == false)
+	{
+		play_once = true;
+		animation_frame = 0;
+		done = false;
+	}
+	
 
 	for (int i = 0; i < index + 1; i++)
 	{
@@ -268,13 +278,33 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 {
 	if (loaded == false)
 		return;
-	frame_step = frame_step % current_anim->num_frame;
+
+	if (play_once == false)
+	{
+		animation_frame = frame_step % current_anim->num_frame;
+	}
+	else
+	{
+		if (animation_frame < current_anim->num_frame - 1)
+		{
+			animation_frame++;
+		}
+	}
+
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
 		gfx.SelectTexture(0, tex_object[i]);
-		gfx.SelectIndexBuffer(current_buffer->frame_index[frame_step][i]);
-		gfx.SelectVertexBuffer(current_buffer->frame_vertex[frame_step][i]);
-		gfx.DrawArrayTri(0, 0, current_buffer->count_index[frame_step][i], current_buffer->count_vertex[frame_step][i]);
+		gfx.SelectIndexBuffer(current_buffer->frame_index[animation_frame][i]);
+		gfx.SelectVertexBuffer(current_buffer->frame_vertex[animation_frame][i]);
+		gfx.DrawArrayTri(0, 0, current_buffer->count_index[animation_frame][i], current_buffer->count_vertex[animation_frame][i]);
 	}
+
+	if (animation_frame == current_anim->num_frame - 1)
+	{
+		done = true;
+		select_animation(ANIM_IDLE, true);
+		animation_frame = 0;
+	}
+
 }

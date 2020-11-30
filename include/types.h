@@ -1212,8 +1212,73 @@ typedef struct
 } carinfo_t;
 
 
+typedef enum {
+	ANIM_IDLE,
+	ANIM_ATTACK,
+	ANIM_WALK,
+	ANIM_RUN,
+	ANIM_ALERT,
+	ANIM_PAIN,
+	ANIM_EXPLORE = 0, // mapping undefined animation to idle for now
+	ANIM_DEAD = 0
+} animation_index;
 
+/*
+chaingun_af_pose.md5anim
+chaingun_crate_up_A.md5anim
+chaingun_crate_up_B.md5anim
+chaingun_crate_up_C.md5anim
+chaingun_crate_up_D.md5anim
+chaingun_crouch_left_pain.md5anim
+chaingun_crouch_range_attack.md5anim
+chaingun_crouch_range_attack_aim.md5anim
+chaingun_crouch_range_attack_end.md5anim
+chaingun_crouch_range_attack_loop.md5anim
+chaingun_crouch_right_pain.md5anim
+chaingun_evade_left.md5anim
+chaingun_evade_right.md5anim
+chaingun_idle.md5anim
+chaingun_lower.md5anim
+chaingun_on_activate.md5anim
+chaingun_pain_chest.md5anim
+chaingun_pain_head.md5anim
+chaingun_pain_left.md5anim
+chaingun_pain_right.md5anim
+chaingun_raise.md5anim
+chaingun_reload.md5anim
+chaingun_run.md5anim
+chaingun_sight.md5anim
+chaingun_stand_aim.md5anim
+chaingun_stand_fire.md5anim
+chaingun_step_left.md5anim
+chaingun_step_right.md5anim
+chaingun_walk.md5anim
+chaingun_wallleanleft_A.md5anim
+chaingun_wallleanleft_B.md5anim
+chaingun_wallleanleft_C.md5anim
+chaingun_wallleanleft_D.md5anim
+chaingun_wallleanright_A.md5anim
+chaingun_wallleanright_B.md5anim
+chaingun_wallleanright_C.md5anim
+chaingun_wallleanright_D.md5anim
+chaingun_wallrotleft_A.md5anim
+chaingun_wallrotleft_B.md5anim
+chaingun_wallrotleft_C.md5anim
+chaingun_wallrotleft_D.md5anim
+chaingun_wallrotright_A.md5anim
+chaingun_wallrotright_B.md5anim
+chaingun_wallrotright_C.md5anim
+chaingun_wallrotright_D.md5anim
+chaingun_wallstepleft_A.md5anim
+chaingun_wallstepleft_B.md5anim
+chaingun_wallstepleft_C.md5anim
+chaingun_wallstepleft_D.md5anim
+chaingun_wallstepright_A.md5anim
+chaingun_wallstepright_B.md5anim
+chaingun_wallstepright_C.md5anim
+chaingun_wallstepright_D.md5anim
 
+*/
 
 
 #endif

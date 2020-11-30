@@ -3147,12 +3147,12 @@ int Quake3::handle_bot(Entity *entity, int i)
 	switch (bot->player->bot_state)
 	{
 	case BOT_ATTACK:
-		engine->zcc.select_animation(0);
+		engine->zcc.select_animation(ANIM_ATTACK, true);
 		if (bot->player->immobile == false)
 			bot->rigid->move_forward(speed_scale);
 		break;
 	case BOT_DEAD:
-		engine->zcc.select_animation(1);
+		engine->zcc.select_animation(ANIM_DEAD, true); // RagDoll?
 		bot->model->clone(model_table[MODEL_BOX]);
 		engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
@@ -3176,7 +3176,7 @@ int Quake3::handle_bot(Entity *entity, int i)
 
 
 		bot->player->ammo_bullets = 100; // bots cheat on reloading :)
-		engine->zcc.select_animation(1);
+		engine->zcc.select_animation(1, true);
 		if (engine->entity_list[bot->player->get_item]->trigger->active)
 		{
 			//some one got the item before we did, abort
@@ -3250,17 +3250,17 @@ int Quake3::handle_bot(Entity *entity, int i)
 		break;
 	}
 	case BOT_ALERT:
-		engine->zcc.select_animation(0);
+		engine->zcc.select_animation(ANIM_ALERT, false);
 
 		if (bot->player->immobile == false)
 			bot->rigid->move_forward(speed_scale);
 		break;
 	case BOT_EXPLORE:
-		engine->zcc.select_animation(1);
+		engine->zcc.select_animation(ANIM_EXPLORE, false);
 		bot->player->ignore[0] = '\0';
 		break;
 	case BOT_IDLE:
-		engine->zcc.select_animation(1);
+		engine->zcc.select_animation(ANIM_IDLE, false);
 		break;
 	}
 
@@ -7752,7 +7752,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		menu.print(msg);
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
-		engine->zcc.select_animation(atoi(data));
+		engine->zcc.select_animation(atoi(data), false);
 		return;
 	}
 

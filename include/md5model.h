@@ -27,7 +27,7 @@ public:
 	void destroy_buffers(Graphics &gfx);
 	void load_textures(Graphics &gfx, int anisotropic);
 	void render(Graphics &gfx, int frame_step);
-	void select_animation(int index);
+	void select_animation(int index, bool once);
 
 private:
 	MD5			md5;
@@ -39,6 +39,10 @@ private:
 	int			*normal_object;
 	bool		loaded;
 	int			num_buffer;
+	bool		play_once;
+	bool		done;
+
+	int			animation_frame;
 };
 
 #endif

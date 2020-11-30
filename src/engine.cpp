@@ -895,9 +895,21 @@ void Engine::load_md5()
 	char **animation = NULL;
 
 	animation = new char *[50];
-	animation[0] = "media/md5/chaingun_stand_fire.md5anim";
-	animation[1] = "media/md5/chaingun_idle.md5anim";
-	zcc.load("media/md5/zcc.md5mesh", (char **)animation, 2, gfx, 0);
+
+	int num_anim = 0;
+	animation[ANIM_IDLE] = "media/md5/chaingun_idle.md5anim";
+	num_anim++;
+	animation[ANIM_ATTACK] = "media/md5/chaingun_stand_fire.md5anim";
+	num_anim++;
+	animation[ANIM_WALK] = "media/md5/chaingun_walk.md5anim";
+	num_anim++;
+	animation[ANIM_RUN] = "media/md5/chaingun_run.md5anim";
+	num_anim++;
+	animation[ANIM_PAIN] = "media/md5/chaingun_pain_chest.md5anim";
+	num_anim++;
+	animation[ANIM_ALERT] = "media/md5/chaingun_reload.md5anim";
+	num_anim++;
+	zcc.load("media/md5/zcc.md5mesh", (char **)animation, num_anim, gfx, 0);
 	delete [] animation;
 }
 
