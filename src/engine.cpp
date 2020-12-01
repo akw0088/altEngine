@@ -11,6 +11,25 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
+// File: engine.cpp
+//=============================================================================
+// Engine class, which interfaces with the OS windowing system, this engine is
+// single threaded and will always remain single threaded. We don't want to
+// introduce complicated synchronisation that ends up being more complex and
+// slower than a single thread with cooperative multitasking. Makes debugging
+// way easier.
+//
+// Debugging is twice as hard as writing the code in the first place. Therefore,
+// if you write the code as cleverly as possible, you are, by definition, not
+// smart enough to debug it.
+//
+// - Brian W.Kernighan and P.J.Plauger in The Elements of Programming Style.
+//
+// Accepts keyboard / mouse / network input / timer events
+// outputs rendered image, sound, etc
+//=============================================================================
+
+
 
 #include "include.h"
 
@@ -21,9 +40,10 @@
 #pragma warning(4:4928) // intellisense bug from my if (1 == sscanf()) line
 
 
-extern double com_maxfps;
-extern const char *models[23];
-const char *teams[3] = 
+extern double com_maxfps; // Max FPS limit
+extern const char *models[23]; // array of quake 3 model names
+unsigned int dissolve_tex;	// texture used for dissolve effect (should probably be moved into Engine class)
+const char *teams[3] =  // array of team options (red, blue, spectator/none)
 {
 	"Red",
 	"Blue",
@@ -31,135 +51,153 @@ const char *teams[3] =
 };
 
 
+// Prototypes
+unsigned int get_url(char *host, char *path, char *response, unsigned int size);
+
+
+//=============================================================================
+// Function: Engine
+//=============================================================================
+// Description: Constructs engine class
+//
+// Parameters: None
+//=============================================================================
 Engine::Engine() :
 	netcode(this)
 {
-	initialized = false;
-	max_dynamic = 100; // 300 is causing network issues
-	max_player = 16;
-	max_sources = 32;
-	current_res = 0;
-	current_model = 21;
-	current_team = 2;
-	num_team = 3;
-	num_model = 23;
-	controller = 0;
-	show_names = false;
-	show_lines = false;
-	show_debug = false;
-	show_hud = true;
-	collision_detect_enable = true;
-	num_bot = 0;
-	emitter.enabled = false;
-	emitter_count = 0;
-	demo = false;
-	voted = false;
-	shadowmaps = false;
-	node = NULL;
-	no_tex = 0;
-	render_quad = 0;
-	render_depth = 0;
-	render_ndepth = 0;
-	multisample = 0;
-	lightning_vbo = 0;
-	lightning_ibo = 0;
-	global_vao = 0;
-	render_fbo = 0;
-	game = NULL;
-	num_pk3 = 0;
-	num_shader = 0;
-	param1 = NULL;
-	param2 = NULL;
-	particle_tex = 0;
-	ref = NULL;
-	thug22 = NULL;
-	sensitivity = 1.0f;
-	spiral_vbo = 0;
-	spiral_ibo = 0;
-	all_lights = false;
-	ingame_menu_timer = 0;
-	fullscreen_timer = 0;
-	filter = 0;
+	initialized = false;		// initialized flag (prevent rendering before things are set up)
+	max_dynamic = 100;			// maximum dynamic entities (bullet casing, wall marks etc) 300 is causing network issues
+	max_player = 16;			// Max number of players for network games, arbitrarily set to 16
+	max_sources = 32;			// Maximum number of concurrent sound sources
+	current_res = 0;			// current resolution
+	current_model = 21;			// current model (Ranger)
+	current_team = 2;			// Current team (None)
+	num_team = 3;				// number of teams
+	num_model = 23;				// number of models
+	controller = 0;				// xbox controller index number (0-4)
+	show_names = false;			// flag whether to draw player names above 3d model
+	show_lines = false;			// flag whether to draw lines (usually for func_mover paths)
+	show_debug = false;			// flag whether to draw debug information
+	show_hud = true;			// flag whether to show the hud
+	collision_detect_enable = true; // collision detection enable flag for non-player objects
+	num_bot = 0;				// number of active bots
+	emitter.enabled = false;	// particle emitter enabled (currently only allows one source emitter of particle effects)
+	emitter_count = 0;			// emitter timer count (emitter active when above zero)
+	demo = false;				// demo flag (whether using demo quake3 pk3, used to distinguish available maps in menu)
+	voted = false;				// flag for callvote votes
+	shadowmaps = false;			// flag whether shadow maps are enabled (requires depth maps generated per light source, performance intensive flag)
+	node = NULL;				// graph node pointer, used for A* pathfinding
+	no_tex = 0;					// no texture texture object (texture used when no texture is loaded, eg: screen before map loads)
+	render_quad = 0;			// texture object for frame buffer object, essentially the rendered screen when using frame buffers (render resolution may differ from monitor resolution)
+	render_depth = 0;			// texture object for frame buffer object, the depth buffer for the rendered scene
+	render_ndepth = 0;			// texture object for frame buffer object, the normal vectors encoded in RGB for the rendered scene
+	multisample = 0;			// multisample level used by GPU (Anti-Aliasing)
+	lightning_vbo = 0;			// lightning vertex buffer object, used by lightning gun (composed of points rendered as particles)
+	lightning_ibo = 0;			// lightning index buffer object, used by lightning gun (composed of points rendered as particles)
+	global_vao = 0;				// global vertex array object, used to hold vertex attributes (which are uniform for everything rendered)
+	render_fbo = 0;				// render frame buffer object, used for render to texture
+	game = NULL;				// pointer to game base class, mostly quake3.cpp, but can theoretically plug in something else (see commando.cpp, which is probably outdated)
+	num_pk3 = 0;				// number of loaded pk3 files
+	num_shader = 0;				// number of q3 .shader clauses loaded
+	param1 = NULL;				// generic parameter from operating system (differs based on OS) Usually something like window handles needed for operations
+	param2 = NULL;				// generic parameter from operating system (differs based on OS) Usually something like window handles needed for operations
+	particle_tex = 0;			// particle texture used in particle system
+	ref = NULL;					// used for A* path finding
+	thug22 = NULL;				// thug22 wavefront obj model that was used for the player model, still kept around for player sizing, should delete eventually
+	sensitivity = 1.0f;			// mouse sensitivity
+	spiral_vbo = 0;				// spiral vertex buffer object used for rail gun particle effect
+	spiral_ibo = 0;				// spiral index buffer object used for rail gun particle effect
+	all_lights = false;			// all_lights flag, used to enable all lights (performance impact, usually lights are enabled by proximity and whether the are in the BSP PVS
+	ingame_menu_timer = 0;		// timer used for the menu system (prevent rapid enable / disable of menu on button presses)
+	fullscreen_timer = 0;		// timer used for entering / exiting full screen mode (prevent rapid enable / disable of full screen)
+	filter = 0;					// filter used by sound system (EAX effects, like cavern, bathroom, etc)
 
-	bloom_threshold = 0.9f;
-	bloom_strength = 0.5f;
-	bloom_amount = 20.0f;
+	bloom_threshold = 0.9f;		// bloom threshold (objects brighter than this are bloomed)
+	bloom_strength = 0.5f;		// bloom strength (blend percentage of bloom with image)
+	bloom_amount = 20.0f;		// bloom amount (amount of bloom)
 
 	// far = 0.1  near = 0.3
-	dof_near = 0.4f;
-	dof_far = 0.1f;
+	dof_near = 0.4f;			// depth of field near distance (outside of near / far are blurred)
+	dof_far = 0.1f;				// depth of field far distance (outside of near / far are blurred)
 
-	fb_width = FBO_RESOLUTION;
-	fb_height = FBO_RESOLUTION;
-	res_scale = 1.0f;
-	dynamic_resolution = false;
-	xres = 0;
-	yres = 0;
-	tick_num = 0;
-	testObj = 0;
-	num_light = 0;
-	doom_sound = 0;
-	enable_portal = false;
-	enable_blur = false;
-	enable_emboss = false;
-	enable_bloom = true;
-	enable_ssao = false;
-	debug_bloom = false;
-	enable_entities = true;
+	fb_width = FBO_RESOLUTION;	// frame buffer render resolution (independent of monitor resolution, defaults may be used for shadowmap depth image)
+	fb_height = FBO_RESOLUTION; // frame buffer render resolution (independent of monitor resolution, defaults may be used for shadowmap depth image)
+	res_scale = 1.0f;			// resolution scale value
+	dynamic_resolution = false;	// flag that enables dynamically changing resolution to hit certain fps targets, not really recommended to enable
+	xres = 0;					// xres, current resolution
+	yres = 0;					// yres, current resolution
+	tick_num = 0;				// tick count starting from zero incrementing each tick (roughly 16ms)
+	testObj = 0;				// testObj, used for rendering simple object for testing a graphics API (Vulkan, software renderer, raytracer, etc)
+	num_light = 0;				// number of active lights
+	doom_sound = 0;				// doom sound loaded from WAD file (teleport sound, randomly played when bots are inactive, could load anything though)
+	enable_portal = false;		// enable portals (eg: mirrors, portals, a render to texture from any vantage point later used as a wall texture)
+	enable_blur = false;		// enable blur post processing effect
+	enable_emboss = false;		// enable emboss post processing effect
+	enable_bloom = true;		// enable bloom post processing effect
+	enable_ssao = false;		// enable screen space ambient occulsion post processing effect
+	debug_bloom = false;		// debug bloom
+	enable_entities = true;		// enables shadow volume generation for entities (dynamic objects)
 
 
 	memset(shader_list, 0, sizeof(shader_list));
 	memset(hash_result, 0, sizeof(hash_result));
 	
 #ifdef OPENGL
-	render_mode = MODE_INDIRECT;
+	render_mode = MODE_INDIRECT; // Render to Frame Buffer Object (renders to texture)
 #else
-	render_mode = MODE_FORWARD;
+	render_mode = MODE_FORWARD;	// Render directly to video output buffer
 #endif
 
 
 
-	raw_mouse = false;
-	ssao_level = 1.0f;
-	object_level = 1.0f;
+	raw_mouse = false;			// Enable raw mouse input (USB Human Interface Device events versus WM_MOUSE messages)
+	ssao_level = 1.0f;			// level of screen space ambient occulsion (SSAO)
+	object_level = 1.0f;		// parameter to SSAO
 	//	ssao_radius = 5.0;
-	ssao_radius = 0.01f;
-	weight_by_angle = true;
-	point_count = 8;
-	randomize_points = true;
-	enable_map = true;
-	enable_terrain = false;
-	enable_planet = false;
-	light_list.reserve(128);
-	enable_stencil = false;
-	enable_map_shadows = false;
-	shadow_light = 107;
+	ssao_radius = 0.01f;		// parameter to SSAO
+	weight_by_angle = true;		// parameter to SSAO
+	point_count = 8;			// parameter to SSAO
+	randomize_points = true;	// parameter to SSAO
+	enable_map = true;			// flag to enable / disable BSP rendering
+	enable_terrain = false;		// flag to enable / disable terrain rendering
+	enable_planet = false;		// flag to enable / disable planet rendering (extremely large heightmapped sphere, and I mean extremely large)
+	light_list.reserve(128);	// pre-reserve light size to prevent hitching
+	enable_stencil = false;		// enable stencil shadow volumes
+	enable_map_shadows = false;	// enable shadow map (depth buffer) shadows (requires frame buffer rendering)
+	shadow_light = 107;			// index used to select a subset of shadow volumes generated by light entity number indicated (for debugging stencil shadow volumes)
 
 #ifdef VOICE
-	sprintf(voice.server, "%s", "127.0.0.1:65530");
+	sprintf(voice.server, "%s", "127.0.0.1:65530"); // server and port for voice chat
 #endif
 	srand((unsigned int)time(NULL));
 
-	testObj = 0;
 
-	fov = 50.0f;
-	zNear = 1.0f;
-	zFar = 2001.0f;
-	inf = true;
+	fov = 50.0f;				// Field of view (double for quake3 style FOV, ie: 100 FOV)
+	zNear = 1.0f;				// Near clipping plane
+	zFar = 2001.0f;				// far clipping plane (currently flag sets infinite far plane clipping, so not really used)
+	inf = true;					// use infinite far plane clipping
 
 #ifdef __linux__
-	sensitivity *= 0.1f;
+	sensitivity *= 0.1f;		// adjustment to make linux mouse sensitivity similar to windows sensitivity
 #endif
 
 #ifdef OPENMP
-	omp_set_num_threads(16);
+	omp_set_num_threads(16);	// Maximum number of threads used by OpenMP
 #endif
 }
 
-unsigned int dissolve_tex;
 
-unsigned int get_url(char *host, char *path, char *response, unsigned int size);
-
+//=============================================================================
+// Function: init
+//=============================================================================
+// Description: initializes Engine class with information from underlying
+// windowing system (Windows, Linux, Mac OSX, etc)
+//
+// Parameters:
+//		void *p1 - generic parameter that varies based on OS
+//		void *p2 - generic parameter that varies based on OS
+//		char *cmdline - command line arguments
+//=============================================================================
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
@@ -186,6 +224,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	vm_main("media/vm/game.qvm", VM_INIT);
 
 
+	// This is test code that just tests http downloads, it worked, should delete
 	//char *http_response = (char *)malloc(1024 * 1024 * 800);
 	//http://releases.ubuntu.com/18.04.1/ubuntu-18.04.1-desktop-amd64.iso
 	//unsigned int num_read = get_url("127.0.0.1", "/18.04.1/ubuntu-18.04.1-desktop-amd64.iso", http_response, 1024 * 1024 * 800);
@@ -198,15 +237,16 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	//fd6ac870e4f54d2599a4f140f2687634
 	//fd6ac870e4f54d2599a4f140f2687634
 	//write_file("download.bin", data, size);
+
 #ifdef G_QUAKE3
-	game = new Quake3();
+	game = new Quake3(); // set base game pointer
 #endif
 
 #ifdef OCULUS
-	ovr.init(gfx);
+	ovr.init(gfx);		// Oculus VR headset init, didn't like how it was specific to just oculus, will probably remove
 #endif
 
-	bind_keys();
+	bind_keys();		// set default key binds
 
 	identity = ident;
 	projection = ident;
@@ -465,7 +505,16 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 }
 
-
+//=============================================================================
+// Function: check_pk3_md5sum
+//=============================================================================
+// Description: so this checks loaded file checksums against checksums defined
+// in pk3list.txt, a pk3 file is just a zip file of game assets (levels, models,
+// sounds etc)
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::check_pk3_md5sum()
 {
 	std::thread pool[64];
@@ -506,7 +555,20 @@ void Engine::check_pk3_md5sum()
 	}
 }
 
-
+//=============================================================================
+// Function: load_q3_shaders
+//=============================================================================
+// Description: this loads q3 shaders listed in shaderlist.txt
+// a shader in quake3 is a path like string that defines surface textures and
+// effects for a surface. Eg: water should be transparent and non-solid,
+// this teleporter should have a electric wavy effect
+//
+// Maps will reference shader names, which are like file names, but without
+// an extension
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::load_q3_shaders()
 {
 	//parse shaders
@@ -590,6 +652,14 @@ void Engine::load_q3_shaders()
 
 
 
+//=============================================================================
+// Function: load
+//=============================================================================
+// Description: This will load a quake 3 bsp level and start the game loop
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::load(char *level)
 {
 	matrix4 transformation;
@@ -890,6 +960,17 @@ void Engine::load(char *level)
 	console("flyby");
 }
 
+
+//=============================================================================
+// Function: load_md5
+//=============================================================================
+// Description: This will load a Doom3 MD5 model file and animations, currently
+// only using zcc, which is the humanoid zombie guy with a chaingun, but can
+// load anything really
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::load_md5()
 {
 	char **animation = NULL;
@@ -913,6 +994,19 @@ void Engine::load_md5()
 	delete [] animation;
 }
 
+//=============================================================================
+// Function: render
+//=============================================================================
+// Description: This is the main rendering entry point, the engine essentially
+// renders in an infinite loop, only getting 16ms timer interrupts to advance
+// the game state (Note: things like mouse events occur 125hz to 1000hz)
+//
+// Function does not modify game state and should only read object positions
+// and orientations for drawing
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render(double last_frametime)
 {
 #ifdef WIN32
@@ -1329,11 +1423,31 @@ void Engine::render(double last_frametime)
 #endif
 }
 
+//=============================================================================
+// Function: zoom
+//=============================================================================
+// Description: This function is used to zoom in, does so by modifying the
+// projection matrix
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::zoom(float level)
 {
 	projection.perspective(fov / level, (float)xres / yres, zNear, zFar, inf);
 }
 
+
+//=============================================================================
+// Function: render_portalcamera
+//=============================================================================
+// Description: This function renders portals like mirrors or "see through"
+// teleporters, essentially just render to texture and then using that texture
+// on a surface
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_portalcamera()
 {
 	if (render_mode != MODE_INDIRECT)
@@ -1418,6 +1532,24 @@ void Engine::render_portalcamera()
 }
 
 
+//=============================================================================
+// Function: render_shadowmaps
+//=============================================================================
+// Description: This function is related to shadow map rendering, shadow map
+// rendering requires rendering from the perspective of every light, and using
+// the depth buffer and some magic math to transform light depth buffers to the
+// same coordinate system to determine whether a point is in shadow or not
+//
+// This is the function that renders from each light, currently does cube maps
+// at each light (up, down, forward, left right, back) which in retrospective 
+// is a bit too much, better to only focus on rendering views that *Matter*
+// to the final image, doing things like detecting whether the viewer is in
+// frame.
+//
+// Parameters:
+//		bool everything - whether to do all enabled lights or just the debug
+//	light
+//=============================================================================
 void Engine::render_shadowmaps(bool everything)
 {
 	int depth_used = 0;
@@ -1532,6 +1664,20 @@ void Engine::render_shadowmaps(bool everything)
 	q3map.enable_sky = true;
 }
 
+
+//=============================================================================
+// Function: set_dynamic_resolution
+//=============================================================================
+// Description: This sets the frame buffer object resolution dynamically based
+// on the frame time of the last frame, decresing resolution towards minimum
+// if below 60fps, increasing resolution if above 100 fps
+//
+// kind of a neat idea, but in practice your FPS may be low due to CPU or something
+// else not tied to resolution, should probably remove this feature
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::set_dynamic_resolution(double last_frametime)
 {
 	if (q3map.loaded)
@@ -1565,6 +1711,18 @@ void Engine::set_dynamic_resolution(double last_frametime)
 }
 
 
+//=============================================================================
+// Function: render_to_framebuffer
+//=============================================================================
+// Description: This handles the main rendering to a frame buffer object
+// essentially renders the scene to a texture, then renders a full screen quad
+// with that texture to present the final output. Doing rendering this ways
+// allows resolution to not be tied to physical monitor resolution, and also
+// makes post processing effects easier to perform
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_to_framebuffer(double last_frametime)
 {
 	if (dynamic_resolution)
@@ -1688,6 +1846,15 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.resize(xres, yres);
 }
 
+//=============================================================================
+// Function: CreateObjects
+//=============================================================================
+// Description: This creates static objects like the full screen quad, lightning
+// gun particles, rail gun particles, etc (looks like a cube is in there too)
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::CreateObjects()
 {
 	int qindex[] = { 0,1,3,0,3,2 };
@@ -1831,6 +1998,15 @@ void Engine::CreateObjects()
 	*/
 }
 
+//=============================================================================
+// Function: render_texture
+//=============================================================================
+// Description: This renders a texture to the full screen quad, can be used for
+// viewing depth textures also
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_texture(int texObj, bool depth_view)
 {
 	gfx.SelectTexture(0, texObj);
@@ -1841,6 +2017,18 @@ void Engine::render_texture(int texObj, bool depth_view)
 	gfx.DrawArrayTri(0, 0, 6, 4);
 }
 
+
+//=============================================================================
+// Function: render_scene
+//=============================================================================
+// Description: This is used to render the actual map and entities, since things
+// like shadow volumes need the scene rendered multiple times, (once lit, once with
+// darkness, each time with different stencil pass tests) a function was needed
+// to allow for that
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_scene(bool lights)
 {
 	matrix4 transformation = identity;
@@ -1955,9 +2143,29 @@ void Engine::render_scene(bool lights)
 }
 
 
-// Texture arrays let me pass all the depthmaps
-// Next problem is the transformed interpolated fragment per face, per light
-// Right now I can only get four shadow omni-lights with this limit
+
+//=============================================================================
+// Function: render_scene_using_shadowmap
+//=============================================================================
+// Description: This function renders a scene using the depthmaps generated from
+// each light for shadow map rendering. Since I'm doing a cube map for each light,
+// you quickly run into limitations regarding the max number of textures you can
+// pass into the shader ideally you would pass the cube map for each active light
+// and only update those cube maps as needed (ie: something moved in it's view)
+//
+// A long time ago you use to be only able to pass to the GPU a very small number
+// of uniforms/constants and per-vertex parameters, (Thinking FX5900 days) so wait
+// long enough and GPU limits are removed in time
+//
+// Old comments (probably no longer relevent)
+//		Texture arrays let me pass all the depthmaps
+//		Next problem is the transformed interpolated fragment per face, per light
+//		Right now I can only get four shadow omni-lights with this limit
+//
+// Parameters:
+//		None
+//=============================================================================
+
 void Engine::render_scene_using_shadowmap(bool lights)
 {
 	matrix4 transformation;
@@ -2115,6 +2323,17 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 }
 
+
+//=============================================================================
+// Function: render_weapon
+//=============================================================================
+// Description: This renders the weapon in first person (if one)
+// offsets the weapon matrix a little to give it a off center rotation effect
+// (should add weapon bobbing instead of doing that eventually though)
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 {
 	matrix4 mvp;
@@ -2154,6 +2373,16 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 
 }
 
+//=============================================================================
+// Function: render_trails
+//=============================================================================
+// Description: This is used to render effects like the railgun trail and the
+// lightning gun beam. These are particles rendered similarly to the smoke trails
+// from rockets / grenades, just without any movement
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_trails(matrix4 &trans)
 {
 	matrix4 mvp;
@@ -2210,6 +2439,15 @@ void Engine::render_trails(matrix4 &trans)
 	}
 }
 
+//=============================================================================
+// Function: render_entities
+//=============================================================================
+// Description: This is used to render any entities (essentially any object that
+// isn't the map itself and can move) eg: weapons, armor, players, health, etc)s
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend, bool vis)
 {
 	matrix4 mvp;
@@ -2410,6 +2648,17 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 	mlight2.set_lightmap(1.0f);
 }
 
+//=============================================================================
+// Function: render_players
+//=============================================================================
+// Description: This renders players, which are special in that they have a md5 model
+// that is associated with them (most other models are imported wavefront obj files,
+// which do not move/animate) The file format is essentially just index buffers and
+// vertex buffers for those
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool render_self)
 {
 	matrix4 mvp;
@@ -2510,6 +2759,24 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 }
 
 
+//=============================================================================
+// Function: render_shadow_volumes
+//=============================================================================
+// Description: This renders shadow volumes for the stencil buffer, currently
+// if enabled it will only make shadow volumes for entities and not the map
+// (some crazy coordinate transform issue or something makes the shadows from
+// the map itself look like garbage, not to mention a rather large performance
+// impact)
+//
+// The shadow volumes do some crazy stencil buffer addition and subtraction
+// on front faces and back faces to leave an even or odd result, which will
+// indicate whether a surface is in shadow or not. But these depend on 3d geometry
+// for the shadow volume that is "sealed", which are generated by extruding geometry
+// from the lights perspective on the CPU
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_shadow_volumes()
 {
 #ifdef SHADOWVOL
@@ -2588,6 +2855,14 @@ void Engine::render_shadow_volumes()
 #endif
 }
 
+//=============================================================================
+// Function: screenshot
+//=============================================================================
+// Description: This is used to take a screenshot and saves the image to a file
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::screenshot(unsigned int &luminance, bool luminance_only)
 {
 	static int num = 0;
@@ -2630,6 +2905,16 @@ void Engine::screenshot(unsigned int &luminance, bool luminance_only)
 #endif
 }
 
+//=============================================================================
+// Function: post_process
+//=============================================================================
+// Description: This is used to perform post processing on the final rendered image
+// before sending it to the monitor, can perform some interesting effects pretty
+// easily
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::post_process(int num_passes, int type)
 {
 	int temp;
@@ -2661,6 +2946,16 @@ void Engine::post_process(int num_passes, int type)
 //	gfx.DeselectTexture(0);
 }
 
+//=============================================================================
+// Function: render_bloom
+//=============================================================================
+// Description: Bloom is a lighting effect where bright objects bleed into
+// surrounding areas, which is done through blurring the "bright" part of an
+// image then blending that blurred image with the main scene
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_bloom(bool debug)
 {
 	gfx.bindFramebuffer(mask_fbo);
@@ -2733,6 +3028,15 @@ void Engine::render_bloom(bool debug)
 
 }
 
+//=============================================================================
+// Function: render_bloom
+//=============================================================================
+// Description: This is a cheap effect to emulate crepuscular rays with a radial
+// blur, doesn't look very great, but easy to add
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_skyray(bool debug)
 {
 	gfx.bindFramebuffer(mask_fbo);
@@ -2791,6 +3095,14 @@ void Engine::render_skyray(bool debug)
 
 }
 
+//=============================================================================
+// Function: render_wave
+//=============================================================================
+// Description: This adds an underwater effect (blue tint, some wavyness)
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_wave(bool debug)
 {
 	gfx.bindFramebuffer(mask_fbo);
@@ -2824,7 +3136,15 @@ void Engine::render_wave(bool debug)
 
 }
 
-
+//=============================================================================
+// Function: render_ssao
+//=============================================================================
+// Description: This adds ambient occulusion (shadowing) using screen space
+// techniques to add shadows to "cracks" using the depth buffer and normals
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::render_ssao(bool debug)
 {
 	gfx.bindFramebuffer(ssao_fbo);
@@ -2841,6 +3161,15 @@ void Engine::render_ssao(bool debug)
 	gfx.DrawArrayTri(0, 0, 6, 4);
 }
 
+
+//=============================================================================
+// Function: destroy_buffers
+//=============================================================================
+// Description: This is used to delete allocated buffers when unloading a map
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::destroy_buffers()
 {
 	zcc.destroy_buffers(gfx);
@@ -2861,6 +3190,16 @@ void Engine::destroy_buffers()
 	snd_wave.clear();
 }
 
+
+//=============================================================================
+// Function: spatial_testing
+//=============================================================================
+// Description: This is used to perform various checks based on distances between
+// objects (eg: enable lights close to the player, which also pass BSP PVS checks)
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::spatial_testing()
 {
 	int leaf_a = -1;
@@ -3032,6 +3371,14 @@ void Engine::spatial_testing()
 
 }
 
+//=============================================================================
+// Function: activate_light
+//=============================================================================
+// Description: This is used to active lights based on distance
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::activate_light(float distance, Light *light)
 {
 //	float min_distance = FLT_MAX;
@@ -3066,6 +3413,15 @@ void Engine::activate_light(float distance, Light *light)
 
 
 
+//=============================================================================
+// Function: handle_cloth
+//=============================================================================
+// Description: Handles physics simulation of cloth objects
+// cloths are essentially treated like a series of interconnected springs
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::handle_cloth()
 {
 	float time = 0.125f;
@@ -3093,18 +3449,32 @@ void Engine::handle_cloth()
 	}
 }
 
-/*
-	This function can be threaded by:
-	1. Dividing particles by bsp leafs
-	   call find leaf for each vertex in aabb
-	   if an objects aabb is in multiple leafs
-	   union objects in both leafs together
-	2. create a thread for each leaf batch.
-	3. compute naive O(n^2)
-	   each core should be able to handle 1000+ objects in 16ms, so no worrys
-	   write results
-	4. join threads
-*/
+
+
+
+//=============================================================================
+// Function: dynamics
+//=============================================================================
+// Description: Handles physics simulation of entities
+//
+//
+// Old comments for OpenMP multithreading this: (not really needed, but could be used if scaling up to thousands of objects)
+//
+//	This function can be threaded by:
+//	1. Dividing particles by bsp leafs
+//	   call find leaf for each vertex in aabb
+//	   if an objects aabb is in multiple leafs
+//	   union objects in both leafs together
+//	2. create a thread for each leaf batch.
+//	3. compute naive O(n^2)
+//	   each core should be able to handle 1000+ objects in 16ms, so no worrys
+//	   write results
+//	4. join threads
+//
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::dynamics()
 {
 
@@ -3219,6 +3589,16 @@ void Engine::dynamics()
 	}
 }
 
+
+//=============================================================================
+// Function: dynamics
+//=============================================================================
+// Description: Handles physics simulation of springs, not really used,
+//  but can attach two objects together (think below has armor and lightning gun)
+//
+// Parameters:
+//		None
+//=============================================================================
 void Engine::handle_springs()
 {
 	int num_body_spring = 0;
@@ -3318,11 +3698,18 @@ void Engine::handle_springs()
 	}
 }
 
-/*
-	Handles all collision detection
-	return true if simulated too far.
-	return false if collision handled.
-*/
+//=============================================================================
+// Function: collision_detect
+//=============================================================================
+// Description: This is used to check if the passed rigid body has collided with
+// the map or another solid rigid body. Function handles all collision detection
+//
+// Parameters:
+//		None
+// Returns:
+//		return true if simulated too far. (results in smaller time step)
+//		return false if collision handled.
+//=============================================================================
 bool Engine::collision_detect(RigidBody &body)
 {
 //	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);	
@@ -3358,6 +3745,21 @@ bool Engine::collision_detect(RigidBody &body)
 	return false;
 }
 
+
+
+//=============================================================================
+// Function: map_collision
+//=============================================================================
+// Description: This is used to check if the passed rigid body has collided with
+// the map
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		return true if simulated too far. (results in smaller time step)
+//		return false if collision handled.
+//=============================================================================
 bool Engine::map_collision(RigidBody &body)
 {
 	plane_t plane;
@@ -3552,7 +3954,21 @@ bool Engine::map_collision(RigidBody &body)
 	return collision;
 }
 
-//O(N^2)
+
+//=============================================================================
+// Function: body_collision
+//=============================================================================
+// Description: Handles body / body collision
+//
+// O(N^2) -- function is slow / doesnt scale well
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		return true if simulated too far. (results in smaller time step)
+//		return false if collision handled.
+//=============================================================================
 bool Engine::body_collision(RigidBody &body)
 {
 	for(unsigned int i = 0; i < max_dynamic; i++)
@@ -3625,6 +4041,22 @@ bool Engine::body_collision(RigidBody &body)
 	return false;
 }
 
+//=============================================================================
+// Function: step
+//=============================================================================
+// Description: Function handles a time step (occurs roughly every 16ms) based
+// on windows timer or linux timer, advances object position through time.
+//
+// Where rendering only draws objects (it does not modify game state)
+//
+// O(N^2) -- function is slow / doesnt scale well
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::step(int tick)
 {
 	tick_num = tick;
@@ -3775,6 +4207,20 @@ void Engine::step(int tick)
 }
 
 
+//=============================================================================
+// Function: savegame
+//=============================================================================
+// Description: used to save the game state, which is done by serializing all
+// entities and other gamestate info (map, score, etc) to disk
+//
+// Note: game state serialization is also used for net code
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::savegame(char *file)
 {
 	static unsigned char buffer[16584];
@@ -3793,6 +4239,20 @@ void Engine::savegame(char *file)
 	debugf("Saved %s", file);
 }
 
+//=============================================================================
+// Function: loadgame
+//=============================================================================
+// Description: used to load the game state, which is done by deserializing all
+// entities and other gamestate info (map, score, etc) to memory
+//
+// Note: game state serialization is also used for net code
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::loadgame(char *file)
 {
 	unsigned int size = 0;
@@ -3803,6 +4263,18 @@ void Engine::loadgame(char *file)
 
 }
 
+
+//=============================================================================
+// Function: mousepos_raw
+//=============================================================================
+// Description: mouse handler for "raw" USB HID input direct from mouse
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
@@ -3830,6 +4302,18 @@ bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 	return true;
 }
 
+//=============================================================================
+// Function: mousepos
+//=============================================================================
+// Description: mouse handler for normal mouse input (WM_MOUSEMOVE, or mouse events
+// from X11 system)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
@@ -3910,6 +4394,18 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 	return true;
 }
 
+//=============================================================================
+// Function: bind_keys
+//=============================================================================
+// Description: used to bind default keys (associate keyboard buttons to input
+// events)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::bind_keys()
 {
 	char *file = get_file("media/config.cfg", NULL);
