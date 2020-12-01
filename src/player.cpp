@@ -197,6 +197,11 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 	path.length = 0;
 	path.step = 0;
+
+
+	done_transform = false;
+	done_pos = vec3(0.0f, 0.0f, 0.0f);
+
 }
 
 

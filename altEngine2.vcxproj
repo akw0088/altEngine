@@ -540,7 +540,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\basegame.cpp" />
     <ClCompile Include="src\bsp_hl.cpp" />
     <ClCompile Include="src\bsp_q1.cpp" />
     <ClCompile Include="src\bsp_q2.cpp" />

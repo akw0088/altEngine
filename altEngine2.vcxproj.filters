@@ -96,9 +96,6 @@
     <ClCompile Include="src\commando.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\basegame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\huffman.c">
       <Filter>Source Files</Filter>
     </ClCompile>

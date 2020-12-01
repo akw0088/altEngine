@@ -7753,6 +7753,28 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		snprintf(msg, LINE_SIZE, "%s\n", cmd);
 		menu.print(msg);
 		engine->zcc.select_animation(atoi(data), false);
+
+		if (atoi(data) == ANIM_WALK ||
+			atoi(data) == ANIM_RUN)
+		{
+			int spawn = engine->find_type(ENT_PLAYER, 0);
+
+			if (spawn == -1)
+			{
+				spawn = engine->find_type(ENT_SPECTATOR, 0);
+			}
+
+			if (spawn != -1)
+			{
+				entity_list[spawn]->player->done_transform = true;
+
+				vec3 forward;
+
+				// note this completely ignores collision detection
+				entity_list[spawn]->rigid->getForwardVector(forward);
+				entity_list[spawn]->player->done_pos = forward * 120.0f;
+			}
+		}
 		return;
 	}
 

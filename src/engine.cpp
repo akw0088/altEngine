@@ -2495,6 +2495,15 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				}
 
 				zcc.render(gfx, tick_num >> 1);
+
+				if (zcc.done)
+				{
+					if (entity->player->done_transform)
+					{
+						entity->position += entity->player->done_pos;
+						entity->player->done_transform = false;
+					}
+				}
 			}
 		}
 	}

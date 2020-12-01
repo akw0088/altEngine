@@ -29,6 +29,7 @@ public:
 	void render(Graphics &gfx, int frame_step);
 	void select_animation(int index, bool once);
 
+	bool		done;
 private:
 	MD5			md5;
 	md5_buffer_t *buffer[32];
@@ -40,7 +41,6 @@ private:
 	bool		loaded;
 	int			num_buffer;
 	bool		play_once;
-	bool		done;
 
 	int			animation_frame;
 };
