@@ -163,6 +163,8 @@ public:
 	static const char bot_state_name[16][32];
 	static const char *models[23];
 
+	bool done_transform;
+	vec3 done_pos;
 	int in_vehicle;
 	int seat;
 
