@@ -4538,6 +4538,22 @@ void Engine::bind_keys()
 
 }
 
+//=============================================================================
+// Function: keypress
+//=============================================================================
+// Description: This function handles keyboard input, there are two types on input
+// real time up/down key events and higher level typing things for text input, this one
+// is the lower level events, passes in a string representation of the key to
+// avoid using to operating specific key enums. Can probably make enums eventually
+// when we nail down the input set, but performance for key presses isn't really
+// a bottleneck
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::keypress(char *key, bool pressed)
 {
 	bool handled = false;
@@ -4707,6 +4723,19 @@ void Engine::keypress(char *key, bool pressed)
 		console(cmd);
 }
 
+//=============================================================================
+// Function: keystroke
+//=============================================================================
+// Description: This function handles keyboard input, there are two types on input
+// real time up/down key events and higher level typing things for text input, this one
+// is the higher level events for things like console input, typing for chat, etc
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::keystroke(char key, char *keystr)
 {
 	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
@@ -4821,6 +4850,21 @@ void Engine::keystroke(char key, char *keystr)
 	}
 }
 
+
+//=============================================================================
+// Function: handle_game
+//=============================================================================
+// Description: So this function is similar to keystroke, but handles the events
+// when a map is loaded and running (different handlers for different states,
+// are used to make keyboard input less of a branching mess
+// eg: if (menu.open) if (map.loaded)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::handle_game(char key)
 {
 	int spawn = find_type(ENT_PLAYER, 0);
@@ -4919,6 +4963,19 @@ void Engine::handle_game(char key)
 	}
 }
 
+//=============================================================================
+// Function: resize
+//=============================================================================
+// Description: So this function handles resize events, when the window is resized
+// we have to reallocate frame buffers and set up our projection matrix again
+// and other legwork
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::resize(int width, int height)
 {
 	xres = width;
@@ -4968,6 +5025,18 @@ void Engine::resize(int width, int height)
 }
 
 
+//=============================================================================
+// Function: get_load_wave
+//=============================================================================
+// Description: Used to load wave files from disk and be sure it wasn't already
+// loaded before (should probably rename function as it seems oddly named)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_load_wave(const char *file)
 {
 	wave_t wave;
@@ -4989,6 +5058,19 @@ int Engine::get_load_wave(const char *file)
 	return snd_wave.size() - 1;
 }
 
+
+//=============================================================================
+// Function: load_models
+//=============================================================================
+// Description: Used to load models defined by the map, loops through map
+// entities and loads models as needed
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::load_models()
 {
 	if (entity_list.size() == 0)
@@ -5005,6 +5087,19 @@ void Engine::load_models()
 }
 
 // Loads media that may be shared with multiple entities
+
+//=============================================================================
+// Function: load_entities
+//=============================================================================
+// Description: Loops through map entities and loads whats needed (models,
+// sounds etc)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::load_entities()
 {
 #ifndef DEDICATED
@@ -5023,6 +5118,18 @@ void Engine::load_entities()
 	}
 }
 
+//=============================================================================
+// Function: fullscreen
+//=============================================================================
+// Description: makes the window fullscreen, which essentially just hides the widgets
+// and resizes the window to monitor resolution
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::fullscreen()
 {
 	if (fullscreen_timer == 0)
@@ -5055,6 +5162,19 @@ void Engine::fullscreen()
 	}
 }
 
+
+//=============================================================================
+// Function: clean_entity
+//=============================================================================
+// Description: Free's an entity for reuse, say it expired (eg: rocket exploded)
+// this will free that entry for later use as entity counts are finite
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::clean_entity(int index)
 {
 	unsigned int i = 0;
@@ -5116,6 +5236,18 @@ void Engine::clean_entity(int index)
 	}
 }
 
+
+//=============================================================================
+// Function: get_entity
+//=============================================================================
+// Description: Get's a free entity for use for something
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_entity()
 {
 	static unsigned int index = max_player;
@@ -5151,6 +5283,18 @@ int Engine::get_entity()
 	return max_dynamic - 1;
 }
 
+
+//=============================================================================
+// Function: find_type
+//=============================================================================
+// Description: Find an entity of a specific type
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::find_type(int ent_type, int skip)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -5165,6 +5309,18 @@ int Engine::find_type(int ent_type, int skip)
 	return -1;
 }
 
+
+//=============================================================================
+// Function: get_player
+//=============================================================================
+// Description: Find the player (should only be one, may be none if spectating)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_player()
 {
 	static unsigned int index = 0;
@@ -5197,6 +5353,18 @@ int Engine::get_player()
 	return max_player - 1;
 }
 
+
+//=============================================================================
+// Function: create_sources
+//=============================================================================
+// Description: creates audio sources and associates them with sound buffers
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::create_sources()
 {
 	// create and associate sources
@@ -5222,6 +5390,18 @@ void Engine::create_sources()
 	update_audio();
 }
 
+//=============================================================================
+// Function: update_audio
+//=============================================================================
+// Description: updates the listeners position, can also be used to set things
+// like velocity for doppler effects
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos.x));
@@ -5269,6 +5449,17 @@ void Engine::update_audio()
 
 
 
+//=============================================================================
+// Function: unload
+//=============================================================================
+// Description: unloads a map and any associated allocated data / objects
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::unload()
 {
 	print_entity_meminfo(entity_list);
@@ -5337,6 +5528,18 @@ void Engine::unload()
 	netcode.server_flag = 0;
 }
 
+
+//=============================================================================
+// Function: destroy
+//=============================================================================
+// Description: unloads anything else before closing application
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::destroy()
 {
 	if (netcode.recording_demo)
@@ -5391,6 +5594,19 @@ void Engine::destroy()
 	quit();
 }
 
+
+//=============================================================================
+// Function: quit
+//=============================================================================
+// Description: Posts quit message to cause application to exit any message
+// loops then end execution
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::quit()
 {
 #ifdef _WINDOWS_
@@ -5403,6 +5619,22 @@ void Engine::quit()
 
 // TODO: Make something like quake's add command, cmd + function pointer to execute with it
 // Also logically seperate Console variables (Cvars) from commands
+
+
+
+//=============================================================================
+// Function: console_general
+//=============================================================================
+// Description: Part of the command console (~ tilde) some console commands
+// require a player to exist, some don't, these are the commands that will
+// work without any player present
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::console_general(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
@@ -7693,6 +7925,17 @@ void Engine::console(char *cmd)
 
 
 
+//=============================================================================
+// Function: select_wave
+//=============================================================================
+// Description: associates a sound file to a sound source (emitter)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 bool Engine::select_wave(int source, char *file)
 {
 	if (file == NULL || file[0] == '\0')
@@ -7708,6 +7951,17 @@ bool Engine::select_wave(int source, char *file)
 	return false;
 }
 
+//=============================================================================
+// Function: get_source
+//=============================================================================
+// Description: gets a free sound source (of 32 total)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_source()
 {
 	int source;
@@ -7721,6 +7975,18 @@ int Engine::get_source()
 	return source;
 }
 
+
+//=============================================================================
+// Function: get_source
+//=============================================================================
+// Description: gets a free sound source that loops (of 32 total)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_loop_source()
 {
 	int source;
@@ -7734,6 +8000,17 @@ int Engine::get_loop_source()
 	return source;
 }
 
+//=============================================================================
+// Function: get_source
+//=============================================================================
+// Description: gets a free sound source that is not positional (of 32 total)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_global_source()
 {
 	int source;
@@ -7747,6 +8024,17 @@ int Engine::get_global_source()
 	return source;
 }
 
+//=============================================================================
+// Function: get_global_loop_source
+//=============================================================================
+// Description: gets a free sound source that is not positional and loops (of 32 total)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::get_global_loop_source()
 {
 	int source;
@@ -7761,6 +8049,17 @@ int Engine::get_global_loop_source()
 }
 
 
+//=============================================================================
+// Function: get_global_loop_source
+//=============================================================================
+// Description: Plays sound with index from passed source
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 bool Engine::play_wave_source(int source, int index)
 {
 	audio.select_buffer(source, snd_wave[index].buffer);
@@ -7768,6 +8067,17 @@ bool Engine::play_wave_source(int source, int index)
 	return true;
 }
 
+//=============================================================================
+// Function: play_wave
+//=============================================================================
+// Description: Plays sound at specific position
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::play_wave(vec3 &position, int index)
 {
 	if (index < 0)
@@ -7785,6 +8095,18 @@ int Engine::play_wave(vec3 &position, int index)
 	return source;
 }
 
+
+//=============================================================================
+// Function: play_wave_loop
+//=============================================================================
+// Description: Plays looping sound at specific position
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::play_wave_loop(vec3 &position, int index)
 {
 	if (index < 0)
@@ -7802,6 +8124,17 @@ int Engine::play_wave_loop(vec3 &position, int index)
 	return source;
 }
 
+//=============================================================================
+// Function: play_wave_global
+//=============================================================================
+// Description: Plays sound without position mixing (regular playback)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::play_wave_global(int index)
 {
 	if (index < 0)
@@ -7813,6 +8146,17 @@ int Engine::play_wave_global(int index)
 	return source;
 }
 
+//=============================================================================
+// Function: play_wave_global_loop
+//=============================================================================
+// Description: Plays looping sound without position mixing (regular playback)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 int Engine::play_wave_global_loop(int index)
 {
 	if (index < 0)
@@ -7825,6 +8169,18 @@ int Engine::play_wave_global_loop(int index)
 }
 
 
+//=============================================================================
+// Function: hitscan
+//=============================================================================
+// Description: casts a ray at origin in direction dir and tests for collisions
+// with rigid bodies. The map will block the hitscan
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range)
 {
 	int j = 0;
@@ -7881,7 +8237,18 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 }
 
-// A* graph search for bots (only q3tourney2 has nav data currently)
+
+//=============================================================================
+// Function: find_path
+//=============================================================================
+// Description: A* graph search for bots (only q3tourney2 has nav data currently)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::find_path(int *&path, int &path_length, int start_path, int end_path)
 {
 	if (graph.size() == 0)
@@ -7895,6 +8262,18 @@ void Engine::find_path(int *&path, int &path_length, int start_path, int end_pat
 	//	print_path(path, path_length, node);
 }
 
+//=============================================================================
+// Function: reload_shaders
+//=============================================================================
+// Description: Reloads shaders in place (useful for editing shader files
+// without restarting the entire program)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::reload_shaders()
 {
 	mlight2.destroy();
@@ -7910,6 +8289,18 @@ void Engine::reload_shaders()
 }
 
 
+//=============================================================================
+// Function: get_shaderlist_pk3
+//=============================================================================
+// Description: Reads shaderlist.txt from pk3 files (filename order takes
+// precedence as in last loaded wins)
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 {
 	char *filelist = new char[LIST_SIZE];
@@ -7949,6 +8340,19 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 	delete[] filelist;
 }
 
+//=============================================================================
+// Function: set_reference_distance
+//=============================================================================
+// Description: Sets positional audio fall off distance
+// Reference distance is where sound will sound "normal" without being louder
+// or quieter
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::set_reference_distance(float value)
 {
 #ifndef DEDICATED
@@ -7960,6 +8364,18 @@ void Engine::set_reference_distance(float value)
 #endif
 }
 
+//=============================================================================
+// Function: set_reference_distance
+//=============================================================================
+// Description: Sets positional audio fall off distance
+// max distance is where sound will fall below inaudiable
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::set_max_distance(float value)
 {
 #ifndef DEDICATED
@@ -7971,6 +8387,18 @@ void Engine::set_max_distance(float value)
 #endif
 }
 
+//=============================================================================
+// Function: set_rolloff_factor
+//=============================================================================
+// Description: Sets positional audio fall off distance rates
+//
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::set_rolloff_factor(float value)
 {
 #ifndef DEDICATED
@@ -7982,6 +8410,18 @@ void Engine::set_rolloff_factor(float value)
 #endif
 }
 
+//=============================================================================
+// Function: paste
+//=============================================================================
+// Description: Used to handle copy / paste for console commands
+//
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::paste(char *data, unsigned int size)
 {
 	if (menu.console || menu.chatmode || menu.stringmode)
@@ -7991,12 +8431,36 @@ void Engine::paste(char *data, unsigned int size)
 	}
 }
 
+//=============================================================================
+// Function: paste
+//=============================================================================
+// Description: Used to handle copy / paste for console commands
+//
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::copy(char *data, unsigned int size)
 {
 	menu.copy(data, size);
 }
 
 
+//=============================================================================
+// Function: enum_resolutions
+//=============================================================================
+// Description: Lists all available resolutions (for menu system)
+//
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::enum_resolutions()
 {
 #ifdef WIN32
@@ -8037,6 +8501,19 @@ void Engine::enum_resolutions()
 #if 0
 using namespace physics;
 
+//=============================================================================
+// Function: draw_plane
+//=============================================================================
+// Description: draws a 3d plane in space at origin with normal facing fwd 
+// useful for debugging
+//
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
 {
 	raycast_result_t result;
@@ -8105,6 +8582,19 @@ void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
 #endif
 
 
+//=============================================================================
+// Function: test_triangle
+//=============================================================================
+// Description: draws a basic triangle just for testing sanity of rendering
+// systems
+//
+//
+// Parameters:
+//		None
+//
+// Returns:
+//		None
+//=============================================================================
 void Engine::test_triangle()
 {
 	//test triangle for sanity check of renderer backend
