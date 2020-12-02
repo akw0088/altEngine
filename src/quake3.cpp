@@ -12,6 +12,27 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
+///=============================================================================
+/// File: quake3.cpp
+///=============================================================================
+/// Game class that has all the game logic, inherits from basegame, which provides
+/// the interface used by engine. Note, this class is a friend of engine, which
+/// kind of makes them the same class essentially, ideally the friend relationship
+/// will be removed and just access things through the basegame interface
+///
+/// Called quake3, because it essentially is a recreation of quake3 game logic,
+/// but could have assets swapped and become it's own thing pretty easily.
+/// Heavily tied to quake3 BSP's for levels and collision detection though
+/// (which isnt a bad thing)
+///
+/// You can make maps using qeradiant / gtk radiant same style as for quake3
+///
+/// Bunny hopping / movement sadly doesnt feel as good as quake3
+///
+/// Accepts keyboard / mouse / network input / timer events
+/// outputs rendered image, sound, etc
+///=============================================================================
+
 #include "include.h"
 #include <math.h> // for sin/cos
 
@@ -31,6 +52,18 @@ extern "C" BaseGame* create_class()
 }
 #endif
 
+///=============================================================================
+/// Function: Quake3
+///=============================================================================
+/// Description: Constructor for quake3 class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 Quake3::Quake3()
 {
 	gametype = GAMETYPE_DEATHMATCH;
@@ -83,6 +116,18 @@ Quake3::Quake3()
 
 }
 
+///=============================================================================
+/// Function: init
+///=============================================================================
+/// Description: initializes the quake3 class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::init(Engine *altEngine)
 {
 	engine = altEngine;
@@ -101,6 +146,18 @@ void Quake3::init(Engine *altEngine)
 //	load_q1_models(engine->gfx);
 }
 
+///=============================================================================
+/// Function: load
+///=============================================================================
+/// Description: load function called when a level is loaded
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::load(gametype_t type)
 {
 	char cmd[128];
@@ -113,6 +170,18 @@ void Quake3::load(gametype_t type)
 	engine->console(cmd);
 }
 
+///=============================================================================
+/// Function: unload
+///=============================================================================
+/// Description: unload function called when a level is unloaded
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::unload()
 {
 	last_spawn = 0;
@@ -121,6 +190,18 @@ void Quake3::unload()
 	round_time = 0;
 }
 
+///=============================================================================
+/// Function: destroy
+///=============================================================================
+/// Description: destroy function called when the program is about to terminate
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::destroy()
 {
 #if 0
@@ -143,6 +224,18 @@ void Quake3::destroy()
 }
 
 
+///=============================================================================
+/// Function: load_models
+///=============================================================================
+/// Description: loads models such as weapons
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::load_models(Graphics &gfx)
 {
 	model_table = new Model[512];
@@ -348,6 +441,18 @@ void Quake3::load_models(Graphics &gfx)
 
 }
 
+///=============================================================================
+/// Function: load_q1_models
+///=============================================================================
+/// Description: loads models from quake1, can serve as alternate set of items
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::load_q1_models(Graphics &gfx)
 {
 	model_table = new Model[512];
@@ -699,6 +804,18 @@ void Quake3::load_q1_models(Graphics &gfx)
 }
 
 
+///=============================================================================
+/// Function: load_sounds
+///=============================================================================
+/// Description: loads audio files for later use
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 {
 	wave_t wave;
@@ -1471,6 +1588,20 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 }
 
+
+///=============================================================================
+/// Function: get_team
+///=============================================================================
+/// Description: Selects a team for a new person joining a game based on existing
+/// team sizes
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 team_t Quake3::get_team()
 {
 	if (gametype == GAMETYPE_CTF)
@@ -1490,6 +1621,18 @@ team_t Quake3::get_team()
 	}
 }
 
+///=============================================================================
+/// Function: add_player
+///=============================================================================
+/// Description: Adds a player to the map
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type, int &ent_id, char *player_name)
 {
 	int spawn_type = -1;
@@ -1664,6 +1807,18 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 }
 
 
+///=============================================================================
+/// Function: handle_player
+///=============================================================================
+/// Description: Handles player input
+///
+///
+/// Parameters:
+///		self - entity index for self / player
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_player(int self, input_t &input)
 {
 	Entity *entity = engine->entity_list[self];
@@ -2569,6 +2724,17 @@ void Quake3::player_died(int index)
 	}
 }
 
+///=============================================================================
+/// Function: drop_weapon
+///=============================================================================
+/// Description: Drops players weapon to the ground (usually on death)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::drop_weapon(int index)
 {
 	Entity *entity = engine->entity_list[index];
@@ -2663,6 +2829,17 @@ void Quake3::drop_weapon(int index)
 	sprintf(drop_weapon->trigger->action, "%s", weapon_str);
 }
 
+///=============================================================================
+/// Function: drop_powerup
+///=============================================================================
+/// Description: Drops players powerup to the ground (usually on death)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 {
 	Entity *drop = engine->entity_list[engine->get_entity()];
@@ -2683,6 +2860,17 @@ void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 }
 
 
+///=============================================================================
+/// Function: step
+///=============================================================================
+/// Description: Called every 16ms or so to advance game state a single time step
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::step(int frame_step)
 {
 	unsigned int num_bot = 3;
@@ -3058,6 +3246,17 @@ void Quake3::step(int frame_step)
 }
 
 
+///=============================================================================
+/// Function: handle_bot
+///=============================================================================
+/// Description: Handles bot player logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::handle_bot(Entity *entity, int i)
 {
 	Entity *bot = engine->entity_list[i];
@@ -3268,6 +3467,17 @@ int Quake3::handle_bot(Entity *entity, int i)
 }
 
 
+///=============================================================================
+/// Function: build_sentry
+///=============================================================================
+/// Description: Builds a sentry gun
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::build_sentry()
 {
 	int owner = engine->find_type(ENT_PLAYER, 0);
@@ -3329,6 +3539,19 @@ void Quake3::build_sentry()
 
 
 
+///=============================================================================
+/// Function: build_structure
+///=============================================================================
+/// Description: Builds a structure (essentially model that fades in when constructed
+/// can be used to build bridges, guns, buildings, etc. Could be destroyed when taking
+/// damage also
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::build_structure(vec3 &position, int model_index)
 {
 	int owner = engine->find_type(ENT_PLAYER, 0);
@@ -3362,6 +3585,17 @@ void Quake3::build_structure(vec3 &position, int model_index)
 	engine->play_wave(position, SND_CONSTRUCT);
 }
 
+///=============================================================================
+/// Function: handle_plasma
+///=============================================================================
+/// Description: Handles plasma gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_plasma(Player &player, int self, bool client)
 {
 	Frame frame;
@@ -3438,6 +3672,17 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 	muzzleflash->flags.bsp_visible = true;
 }
 
+///=============================================================================
+/// Function: handle_rocketlauncher
+///=============================================================================
+/// Description: Handles rocket launcher gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int self, bool client)
 {
 	Frame frame;
@@ -3528,6 +3773,17 @@ void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int se
 	muzzleflash->flags.bsp_visible = true;
 }
 
+///=============================================================================
+/// Function: handle_grenade
+///=============================================================================
+/// Description: Handles grenade launcher gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_grenade(Player &player, int self, bool client)
 {
 	Frame frame;
@@ -3602,6 +3858,17 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 }
 
+///=============================================================================
+/// Function: handle_lightning
+///=============================================================================
+/// Description: Handles lightning gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_lightning(Player &player, int self, bool client)
 {
 	Frame frame;
@@ -3807,6 +4074,17 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 }
 
+///=============================================================================
+/// Function: handle_railgun
+///=============================================================================
+/// Description: Handles rail gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_railgun(Player &player, int self, bool client)
 {
 	Frame frame;
@@ -3943,6 +4221,17 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 }
 
+///=============================================================================
+/// Function: handle_gauntlet
+///=============================================================================
+/// Description: Handles gauntlet melee logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_gauntlet(Player &player, int self, bool client)
 {
 	char cmd[64] = { 0 };
@@ -4042,6 +4331,17 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 
 }
 
+///=============================================================================
+/// Function: handle_machinegun
+///=============================================================================
+/// Description: Handles machine gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, bool client)
 {
 	char cmd[64] = { 0 };
@@ -4206,6 +4506,17 @@ void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, 
 }
 
 
+///=============================================================================
+/// Function: handle_frags_left
+///=============================================================================
+/// Description: Handles frags left countdown logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_frags_left(Player &player)
 {
 	if (player.stats.kills >= fraglimit)
@@ -4230,6 +4541,17 @@ void Quake3::handle_frags_left(Player &player)
 	}
 }
 
+///=============================================================================
+/// Function: handle_shotgun
+///=============================================================================
+/// Description: Handles shot gun logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_shotgun(Player &player, int self, bool client)
 {
 	Frame frame;
@@ -4389,6 +4711,17 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 	}
 }
 
+///=============================================================================
+/// Function: handle_gibs
+///=============================================================================
+/// Description: Handles exploding player into piles of gibs/guts logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_gibs(Player &player)
 {
 	Frame camera_frame;
@@ -4566,6 +4899,17 @@ void Quake3::handle_gibs(Player &player)
 
 }
 
+///=============================================================================
+/// Function: load_icon
+///=============================================================================
+/// Description: Loads 2d hud icons
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::load_icon()
 {
 	icon_t icon;
@@ -4986,6 +5330,17 @@ void Quake3::load_icon()
 
 }
 
+///=============================================================================
+/// Function: handle_weapons
+///=============================================================================
+/// Description: Handles player weapon (calls into sub weapon functions)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_weapons(Player &player, input_t &input, int self, bool client)
 {
 	static bool once = false;
@@ -5352,6 +5707,17 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 
 }
 
+///=============================================================================
+/// Function: draw_flash
+///=============================================================================
+/// Description: Draws first person muzzle flash
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::draw_flash(Player *player)
 {
 	engine->gfx.Blend(true);
@@ -5375,6 +5741,17 @@ void Quake3::draw_flash(Player *player)
 	engine->gfx.Blend(false);
 }
 
+///=============================================================================
+/// Function: render_hud
+///=============================================================================
+/// Description: Draws first person heads up display
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::render_hud(double last_frametime)
 {
 	matrix4 real_projection = engine->projection;
@@ -5982,6 +6359,17 @@ void Quake3::render_hud(double last_frametime)
 
 }
 
+///=============================================================================
+/// Function: draw_name
+///=============================================================================
+/// Description: Draws player name / info near their 3d model in 3d space
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int ent_num)
 {
 	matrix4 trans2;
@@ -6152,6 +6540,17 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 }
 
 
+///=============================================================================
+/// Function: draw_line
+///=============================================================================
+/// Description: draws a line between two entities
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 {
 	static vertex_t vertex[512];
@@ -6201,6 +6600,18 @@ void Quake3::draw_line(Entity *ent_a, Entity *ent_b, Menu &menu, vec3 &color)
 	engine->gfx.DeleteVertexBuffer(line_vbo);
 }
 
+///=============================================================================
+/// Function: transform_3d_2d
+///=============================================================================
+/// Description: transforms 3d point (x,y,z) to equivalent 2d screen coordinate
+/// (x, y)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)
 {
 	matrix4 matrix;
@@ -6242,6 +6653,17 @@ void Quake3::transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection)
 	pos2d.y = 0.5f + (pos2d.y * 0.5f);
 }
 
+///=============================================================================
+/// Function: create_crosshair
+///=============================================================================
+/// Description: creates crosshairs (10 different styles)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::create_crosshair()
 {
 	vertex_t vert;
@@ -6269,6 +6691,17 @@ void Quake3::create_crosshair()
 
 
 
+///=============================================================================
+/// Function: draw_crosshair
+///=============================================================================
+/// Description: renders the crosshair on screen
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::draw_crosshair()
 {
 	matrix4 transformation;
@@ -6293,6 +6726,17 @@ void Quake3::draw_crosshair()
 }
 
 
+///=============================================================================
+/// Function: create_icon
+///=============================================================================
+/// Description: creates 2d icons
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::create_icon()
 {
 	static vertex_t vert[512];
@@ -6321,6 +6765,17 @@ void Quake3::create_icon()
 	icon_vbo = engine->gfx.CreateVertexBuffer(&vert, icon_list.size());
 }
 
+///=============================================================================
+/// Function: draw_icon
+///=============================================================================
+/// Description: draws 2d icons
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::draw_icon(float scale, int index, float x, float y, float z)
 {
 	matrix4 transformation;
@@ -6343,6 +6798,17 @@ void Quake3::draw_icon(float scale, int index, float x, float y, float z)
 
 
 
+///=============================================================================
+/// Function: bot_get_path
+///=============================================================================
+/// Description: Finds A* shortest path from bot to specific item on map
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 {
 	vec3 target_pos = engine->entity_list[item]->position;
@@ -6399,6 +6865,17 @@ int Quake3::bot_get_path(int item, int self, int *nav_array, path_t &path)
 	return 0;
 }
 
+///=============================================================================
+/// Function: bot_follow
+///=============================================================================
+/// Description: Has bot follow path to desired position in node order
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed_scale)
 {
 	static int timer = 0;
@@ -6456,6 +6933,18 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed
 	return 0;
 }
 
+///=============================================================================
+/// Function: console
+///=============================================================================
+/// Description: console command handler, these will contain console commands
+/// that require the game to be loaded and the player to exist
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list)
 {
 	char msg[LINE_SIZE] = { 0 };
@@ -7933,6 +8422,18 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 }
 
 
+///=============================================================================
+/// Function: setup_func
+///=============================================================================
+/// Description: setups func_mover entities (BSP brushes treated like entities)
+/// such as elevators, pendulums, func_bobbing, func_train, func_* type objects
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::setup_func(vector<Entity *> &entity_list, Bsp *q3map)
 {
 	for (unsigned int i = engine->max_dynamic; i < entity_list.size(); i++)
@@ -8138,12 +8639,27 @@ break;
 }
 
 
-/*
-	Used to create entities for network clients
-	Network clients are more interested in visual properties,
-	they get the position and orientation over the network
-	and let server handle damage etc
-*/
+///=============================================================================
+/// Function: make_dynamic_ent
+///=============================================================================
+/// Description: in a network game, when the player is a client, they repeatedly
+/// get entity position and orientation information from the server.
+/// This function will create a local only entity for items like ejection
+/// shells, rockets, plasma balls, etc so that they appear sooner than the
+/// round trip time of the network. They will be replaced with "real" server
+/// objects when they are received over the network
+///
+/// Old comments:
+///		Used to create entities for network clients
+///		Network clients are more interested in visual properties,
+///		they get the position and orientation over the network
+///		and let server handle damage etc
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 {
 	Entity *ent = engine->entity_list[ent_id];
@@ -8552,6 +9068,19 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 }
 
 
+///=============================================================================
+/// Function: endgame
+///=============================================================================
+/// Description: when someone hits the frag limit, time limit expires, etc
+/// display the winner's name and such for a period of time before next game
+/// starts
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::endgame(char *winner)
 {
 	engine->input.scores = true;
@@ -8565,6 +9094,20 @@ void Quake3::endgame(char *winner)
 }
 
 
+///=============================================================================
+/// Function: check_target
+///=============================================================================
+/// Description: Called to check for player entering various trigger volumes
+/// defined in the map (teleporters, damage volumes, jump pads etc)
+/// triggers can have targets, which are other triggers, and can have other targets
+/// etc causing a chaining of events
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *target, int self)
 {
 
@@ -8646,6 +9189,17 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 }
 
 
+///=============================================================================
+/// Function: handle_model_trigger
+///=============================================================================
+/// Description: Handles BSP trigger volume logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, int self)
 {
 	int model_index = ent->brush_ref;
@@ -8693,6 +9247,17 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 }
 
 
+///=============================================================================
+/// Function: check_triggers
+///=============================================================================
+/// Description: Checks BSP trigger volume logic
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
 {
 	bool inside = false;
@@ -8853,6 +9418,17 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 	}
 }
 
+///=============================================================================
+/// Function: check_func
+///=============================================================================
+/// Description: Checks func_* entities for various triggers/targets etc
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
 {
 	//bool inside = false;
@@ -9075,6 +9651,18 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 
 }
 
+///=============================================================================
+/// Function: check_projectiles
+///=============================================================================
+/// Description: Check something like a rocket / plasma ball if it needs to explode
+/// or richochet or something
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list)
 {
 	bool inside = false;
@@ -9373,6 +9961,17 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 	}
 }
 
+///=============================================================================
+/// Function: get_state
+///=============================================================================
+/// Description: Gets game state that exists outside of entities
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::get_state(serverdata_t *data)
 {
 	memset(data, 0, sizeof(serverdata_t));
@@ -9390,6 +9989,17 @@ void Quake3::get_state(serverdata_t *data)
 	data->round_time = round_time;
 }
 
+///=============================================================================
+/// Function: set_state
+///=============================================================================
+/// Description: Sets game state that exists outside of entities
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::set_state(serverdata_t *data)
 {
 	if (memcmp(data->header, "<data>", 6) == 0 && memcmp(data->footer, "</data>", 7) == 0)
@@ -9421,6 +10031,18 @@ void Quake3::set_state(serverdata_t *data)
 	}
 }
 
+///=============================================================================
+/// Function: add_decal
+///=============================================================================
+/// Description: Add's a decal (such as a rocket explosion burn mark) to the map
+/// and/or walls (called decals cause they are like stickers if that makes sense)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Model &decal_model, float offset, bool idle, int idle_timer)
 {
 	plane_t plane;
@@ -9552,6 +10174,19 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 	}
 }
 
+///=============================================================================
+/// Function: map_model
+///=============================================================================
+/// Description: So we have models loaded in memory, which may be used by multiple
+/// entities (say two piece of armor on a map of same type) We dont want to duplicate
+/// the vertex data, so we "clone" the data into each entity
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::map_model(Entity *ent)
 {
 	if (ent->ent_type == ENT_ITEM_ARMOR_SHARD)
@@ -10067,6 +10702,18 @@ void Quake3::map_model(Entity *ent)
 }
 
 
+///=============================================================================
+/// Function: ~Quake3
+///=============================================================================
+/// Description: Class destructor, only defined to satisfy base class virtual
+/// destructor
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 Quake3::~Quake3()
 {
 
@@ -10074,10 +10721,32 @@ Quake3::~Quake3()
 
 
 
+///=============================================================================
+/// Function: handle_func_platform
+///=============================================================================
+/// Description: Handles func platforms, which sway horizontally periodically
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_func_platform(Entity *ent)
 {
 }
 
+///=============================================================================
+/// Function: handle_func_bobbing
+///=============================================================================
+/// Description: Handles func bobbing, which sway vertically periodically
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_func_bobbing(Entity *entity)
 {
 	//Entity *ref = entity;
@@ -10095,6 +10764,18 @@ void Quake3::handle_func_bobbing(Entity *entity)
 	entity->rigid->pid_follow_path(entity->rigid->path.path_list, entity->rigid->path.num_path, 3.0f, 75.0f, wait);
 }
 
+///=============================================================================
+/// Function: handle_func_train
+///=============================================================================
+/// Description: Handles func train, which follow a path of nodes, may or may not
+/// be in a loop
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::handle_func_train(Entity *entity)
 {
 	//bool escort = true;
@@ -10139,6 +10820,17 @@ void Quake3::handle_func_train(Entity *entity)
 
 }
 
+///=============================================================================
+/// Function: add_train_path
+///=============================================================================
+/// Description: Add path node to func train
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::add_train_path(Entity *original, Entity *ref, Entity *target)
 {
 	if (strlen((ref)->entstring->target) <= 1)
@@ -10161,81 +10853,257 @@ int Quake3::add_train_path(Entity *original, Entity *ref, Entity *target)
 	return 0;
 }
 
+///=============================================================================
+/// Function: get_gametype
+///=============================================================================
+/// Description: Get current gametype (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 gametype_t Quake3::get_gametype()
 {
 	return gametype;
 }
 
+///=============================================================================
+/// Function: get_fraglimit
+///=============================================================================
+/// Description: Get current frag limit (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_fraglimit()
 {
 	return fraglimit;
 }
 
+///=============================================================================
+/// Function: get_timelimit
+///=============================================================================
+/// Description: Get current time limit (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_timelimit()
 {
 	return timelimit;
 }
 
+///=============================================================================
+/// Function: get_capturelimit
+///=============================================================================
+/// Description: Get current capture limit (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_capturelimit()
 {
 	return capturelimit;
 }
 
+///=============================================================================
+/// Function: get_blue_flag_caps
+///=============================================================================
+/// Description: Get current blue team capture score (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_blue_flag_caps()
 {
 	return blue_flag_caps;
 }
 
+///=============================================================================
+/// Function: get_red_flag_caps
+///=============================================================================
+/// Description: Get current red team capture score (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_red_flag_caps()
 {
 	return red_flag_caps;
 }
 
+///=============================================================================
+/// Function: get_notif_timer
+///=============================================================================
+/// Description: gets a notif timer (dont quite remember, but some counter value)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_notif_timer()
 {
 	return notif_timer;
 }
 
+///=============================================================================
+/// Function: get_spectator
+///=============================================================================
+/// Description: gets a current spectator count (for advertising on server browsers)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Quake3::get_spectator()
 {
 	return spectator;
 }
 
+///=============================================================================
+/// Function: get_model_table
+///=============================================================================
+/// Description: gets model table for rendering in Engine class
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 Model *Quake3::get_model_table()
 {
 	return model_table;
 }
 
+///=============================================================================
+/// Function: get_num_model
+///=============================================================================
+/// Description: gets model table size for rendering in Engine class
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 int Quake3::get_num_model()
 {
 	return num_model;
 }
 
+///=============================================================================
+/// Function: get_icon_list
+///=============================================================================
+/// Description: gets icon list for rendering in Engine class
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 vector<icon_t> Quake3::get_icon_list()
 {
 	return icon_list;
 }
 
+///=============================================================================
+/// Function: set_gametype
+///=============================================================================
+/// Description: Set the game type
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::set_gametype(gametype_t &gt)
 {
 	gametype = gt;
 }
 
+///=============================================================================
+/// Function: set_fraglimit
+///=============================================================================
+/// Description: Set the frag limit
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::set_fraglimit(unsigned int limit)
 {
 	chat_timer = limit;
 }
 
+///=============================================================================
+/// Function: set_timelimit
+///=============================================================================
+/// Description: Set the time limit
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::set_timelimit(unsigned int limit)
 {
 	chat_timer = limit;
 }
 
+///=============================================================================
+/// Function: set_capturelimit
+///=============================================================================
+/// Description: Set the capture limit
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::set_capturelimit(unsigned int limit)
 {
 	chat_timer = limit;
 }
 
+///=============================================================================
+/// Function: set_chat_timer
+///=============================================================================
+/// Description: Set the chat timer (minimum delay between chat messages)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
 void Quake3::set_chat_timer(unsigned int limit)
 {
 	chat_timer = limit;
