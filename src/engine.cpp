@@ -11,23 +11,25 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
-// File: engine.cpp
-//=============================================================================
-// Engine class, which interfaces with the OS windowing system, this engine is
-// single threaded and will always remain single threaded. We don't want to
-// introduce complicated synchronisation that ends up being more complex and
-// slower than a single thread with cooperative multitasking. Makes debugging
-// way easier.
-//
-// Debugging is twice as hard as writing the code in the first place. Therefore,
-// if you write the code as cleverly as possible, you are, by definition, not
-// smart enough to debug it.
-//
-// - Brian W.Kernighan and P.J.Plauger in The Elements of Programming Style.
-//
-// Accepts keyboard / mouse / network input / timer events
-// outputs rendered image, sound, etc
-//=============================================================================
+
+///=============================================================================
+/// File: engine.cpp
+///=============================================================================
+/// Engine class, which interfaces with the OS windowing system, this engine is
+/// single threaded and will always remain single threaded. We don't want to
+/// introduce complicated synchronisation that ends up being more complex and
+/// slower than a single thread with cooperative multitasking. Makes debugging
+/// way easier.
+///
+/// Debugging is twice as hard as writing the code in the first place. Therefore,
+/// if you write the code as cleverly as possible, you are, by definition, not
+/// smart enough to debug it.
+///
+/// - Brian W.Kernighan and P.J.Plauger in The Elements of Programming Style.
+///
+/// Accepts keyboard / mouse / network input / timer events
+/// outputs rendered image, sound, etc
+///=============================================================================
 
 
 
@@ -55,13 +57,13 @@ const char *teams[3] =  // array of team options (red, blue, spectator/none)
 unsigned int get_url(char *host, char *path, char *response, unsigned int size);
 
 
-//=============================================================================
-// Function: Engine
-//=============================================================================
-// Description: Constructs engine class
-//
-// Parameters: None
-//=============================================================================
+///=============================================================================
+/// Function: Engine
+///=============================================================================
+/// Description: Constructs engine class
+///
+/// Parameters: None
+///=============================================================================
 Engine::Engine() :
 	netcode(this)
 {
@@ -187,17 +189,17 @@ Engine::Engine() :
 }
 
 
-//=============================================================================
-// Function: init
-//=============================================================================
-// Description: initializes Engine class with information from underlying
-// windowing system (Windows, Linux, Mac OSX, etc)
-//
-// Parameters:
-//		void *p1 - generic parameter that varies based on OS
-//		void *p2 - generic parameter that varies based on OS
-//		char *cmdline - command line arguments
-//=============================================================================
+///=============================================================================
+/// Function: init
+///=============================================================================
+/// Description: initializes Engine class with information from underlying
+/// windowing system (Windows, Linux, Mac OSX, etc)
+///
+/// Parameters:
+///		void *p1 - generic parameter that varies based on OS
+///		void *p2 - generic parameter that varies based on OS
+///		char *cmdline - command line arguments
+///=============================================================================
 void Engine::init(void *p1, void *p2, char *cmdline)
 {
 	float ident[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
@@ -505,16 +507,16 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 #endif
 }
 
-//=============================================================================
-// Function: check_pk3_md5sum
-//=============================================================================
-// Description: so this checks loaded file checksums against checksums defined
-// in pk3list.txt, a pk3 file is just a zip file of game assets (levels, models,
-// sounds etc)
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: check_pk3_md5sum
+///=============================================================================
+/// Description: so this checks loaded file checksums against checksums defined
+/// in pk3list.txt, a pk3 file is just a zip file of game assets (levels, models,
+/// sounds etc)
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::check_pk3_md5sum()
 {
 	std::thread pool[64];
@@ -555,20 +557,20 @@ void Engine::check_pk3_md5sum()
 	}
 }
 
-//=============================================================================
-// Function: load_q3_shaders
-//=============================================================================
-// Description: this loads q3 shaders listed in shaderlist.txt
-// a shader in quake3 is a path like string that defines surface textures and
-// effects for a surface. Eg: water should be transparent and non-solid,
-// this teleporter should have a electric wavy effect
-//
-// Maps will reference shader names, which are like file names, but without
-// an extension
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: load_q3_shaders
+///=============================================================================
+/// Description: this loads q3 shaders listed in shaderlist.txt
+/// a shader in quake3 is a path like string that defines surface textures and
+/// effects for a surface. Eg: water should be transparent and non-solid,
+/// this teleporter should have a electric wavy effect
+///
+/// Maps will reference shader names, which are like file names, but without
+/// an extension
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::load_q3_shaders()
 {
 	//parse shaders
@@ -652,14 +654,14 @@ void Engine::load_q3_shaders()
 
 
 
-//=============================================================================
-// Function: load
-//=============================================================================
-// Description: This will load a quake 3 bsp level and start the game loop
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: load
+///=============================================================================
+/// Description: This will load a quake 3 bsp level and start the game loop
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::load(char *level)
 {
 	matrix4 transformation;
@@ -961,16 +963,16 @@ void Engine::load(char *level)
 }
 
 
-//=============================================================================
-// Function: load_md5
-//=============================================================================
-// Description: This will load a Doom3 MD5 model file and animations, currently
-// only using zcc, which is the humanoid zombie guy with a chaingun, but can
-// load anything really
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: load_md5
+///=============================================================================
+/// Description: This will load a Doom3 MD5 model file and animations, currently
+/// only using zcc, which is the humanoid zombie guy with a chaingun, but can
+/// load anything really
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::load_md5()
 {
 	char **animation = NULL;
@@ -994,19 +996,19 @@ void Engine::load_md5()
 	delete [] animation;
 }
 
-//=============================================================================
-// Function: render
-//=============================================================================
-// Description: This is the main rendering entry point, the engine essentially
-// renders in an infinite loop, only getting 16ms timer interrupts to advance
-// the game state (Note: things like mouse events occur 125hz to 1000hz)
-//
-// Function does not modify game state and should only read object positions
-// and orientations for drawing
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render
+///=============================================================================
+/// Description: This is the main rendering entry point, the engine essentially
+/// renders in an infinite loop, only getting 16ms timer interrupts to advance
+/// the game state (Note: things like mouse events occur 125hz to 1000hz)
+///
+/// Function does not modify game state and should only read object positions
+/// and orientations for drawing
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render(double last_frametime)
 {
 #ifdef WIN32
@@ -1423,31 +1425,31 @@ void Engine::render(double last_frametime)
 #endif
 }
 
-//=============================================================================
-// Function: zoom
-//=============================================================================
-// Description: This function is used to zoom in, does so by modifying the
-// projection matrix
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: zoom
+///=============================================================================
+/// Description: This function is used to zoom in, does so by modifying the
+/// projection matrix
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::zoom(float level)
 {
 	projection.perspective(fov / level, (float)xres / yres, zNear, zFar, inf);
 }
 
 
-//=============================================================================
-// Function: render_portalcamera
-//=============================================================================
-// Description: This function renders portals like mirrors or "see through"
-// teleporters, essentially just render to texture and then using that texture
-// on a surface
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_portalcamera
+///=============================================================================
+/// Description: This function renders portals like mirrors or "see through"
+/// teleporters, essentially just render to texture and then using that texture
+/// on a surface
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_portalcamera()
 {
 	if (render_mode != MODE_INDIRECT)
@@ -1532,24 +1534,24 @@ void Engine::render_portalcamera()
 }
 
 
-//=============================================================================
-// Function: render_shadowmaps
-//=============================================================================
-// Description: This function is related to shadow map rendering, shadow map
-// rendering requires rendering from the perspective of every light, and using
-// the depth buffer and some magic math to transform light depth buffers to the
-// same coordinate system to determine whether a point is in shadow or not
-//
-// This is the function that renders from each light, currently does cube maps
-// at each light (up, down, forward, left right, back) which in retrospective 
-// is a bit too much, better to only focus on rendering views that *Matter*
-// to the final image, doing things like detecting whether the viewer is in
-// frame.
-//
-// Parameters:
-//		bool everything - whether to do all enabled lights or just the debug
-//	light
-//=============================================================================
+///=============================================================================
+/// Function: render_shadowmaps
+///=============================================================================
+/// Description: This function is related to shadow map rendering, shadow map
+/// rendering requires rendering from the perspective of every light, and using
+/// the depth buffer and some magic math to transform light depth buffers to the
+/// same coordinate system to determine whether a point is in shadow or not
+///
+/// This is the function that renders from each light, currently does cube maps
+/// at each light (up, down, forward, left right, back) which in retrospective 
+/// is a bit too much, better to only focus on rendering views that *Matter*
+/// to the final image, doing things like detecting whether the viewer is in
+/// frame.
+///
+/// Parameters:
+///		bool everything - whether to do all enabled lights or just the debug
+///	light
+///=============================================================================
 void Engine::render_shadowmaps(bool everything)
 {
 	int depth_used = 0;
@@ -1665,19 +1667,19 @@ void Engine::render_shadowmaps(bool everything)
 }
 
 
-//=============================================================================
-// Function: set_dynamic_resolution
-//=============================================================================
-// Description: This sets the frame buffer object resolution dynamically based
-// on the frame time of the last frame, decresing resolution towards minimum
-// if below 60fps, increasing resolution if above 100 fps
-//
-// kind of a neat idea, but in practice your FPS may be low due to CPU or something
-// else not tied to resolution, should probably remove this feature
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: set_dynamic_resolution
+///=============================================================================
+/// Description: This sets the frame buffer object resolution dynamically based
+/// on the frame time of the last frame, decresing resolution towards minimum
+/// if below 60fps, increasing resolution if above 100 fps
+///
+/// kind of a neat idea, but in practice your FPS may be low due to CPU or something
+/// else not tied to resolution, should probably remove this feature
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::set_dynamic_resolution(double last_frametime)
 {
 	if (q3map.loaded)
@@ -1711,18 +1713,18 @@ void Engine::set_dynamic_resolution(double last_frametime)
 }
 
 
-//=============================================================================
-// Function: render_to_framebuffer
-//=============================================================================
-// Description: This handles the main rendering to a frame buffer object
-// essentially renders the scene to a texture, then renders a full screen quad
-// with that texture to present the final output. Doing rendering this ways
-// allows resolution to not be tied to physical monitor resolution, and also
-// makes post processing effects easier to perform
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_to_framebuffer
+///=============================================================================
+/// Description: This handles the main rendering to a frame buffer object
+/// essentially renders the scene to a texture, then renders a full screen quad
+/// with that texture to present the final output. Doing rendering this ways
+/// allows resolution to not be tied to physical monitor resolution, and also
+/// makes post processing effects easier to perform
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_to_framebuffer(double last_frametime)
 {
 	if (dynamic_resolution)
@@ -1846,15 +1848,15 @@ void Engine::render_to_framebuffer(double last_frametime)
 	gfx.resize(xres, yres);
 }
 
-//=============================================================================
-// Function: CreateObjects
-//=============================================================================
-// Description: This creates static objects like the full screen quad, lightning
-// gun particles, rail gun particles, etc (looks like a cube is in there too)
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: CreateObjects
+///=============================================================================
+/// Description: This creates static objects like the full screen quad, lightning
+/// gun particles, rail gun particles, etc (looks like a cube is in there too)
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::CreateObjects()
 {
 	int qindex[] = { 0,1,3,0,3,2 };
@@ -1998,15 +2000,15 @@ void Engine::CreateObjects()
 	*/
 }
 
-//=============================================================================
-// Function: render_texture
-//=============================================================================
-// Description: This renders a texture to the full screen quad, can be used for
-// viewing depth textures also
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_texture
+///=============================================================================
+/// Description: This renders a texture to the full screen quad, can be used for
+/// viewing depth textures also
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_texture(int texObj, bool depth_view)
 {
 	gfx.SelectTexture(0, texObj);
@@ -2018,17 +2020,17 @@ void Engine::render_texture(int texObj, bool depth_view)
 }
 
 
-//=============================================================================
-// Function: render_scene
-//=============================================================================
-// Description: This is used to render the actual map and entities, since things
-// like shadow volumes need the scene rendered multiple times, (once lit, once with
-// darkness, each time with different stencil pass tests) a function was needed
-// to allow for that
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_scene
+///=============================================================================
+/// Description: This is used to render the actual map and entities, since things
+/// like shadow volumes need the scene rendered multiple times, (once lit, once with
+/// darkness, each time with different stencil pass tests) a function was needed
+/// to allow for that
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_scene(bool lights)
 {
 	matrix4 transformation = identity;
@@ -2144,28 +2146,27 @@ void Engine::render_scene(bool lights)
 
 
 
-//=============================================================================
-// Function: render_scene_using_shadowmap
-//=============================================================================
-// Description: This function renders a scene using the depthmaps generated from
-// each light for shadow map rendering. Since I'm doing a cube map for each light,
-// you quickly run into limitations regarding the max number of textures you can
-// pass into the shader ideally you would pass the cube map for each active light
-// and only update those cube maps as needed (ie: something moved in it's view)
-//
-// A long time ago you use to be only able to pass to the GPU a very small number
-// of uniforms/constants and per-vertex parameters, (Thinking FX5900 days) so wait
-// long enough and GPU limits are removed in time
-//
-// Old comments (probably no longer relevent)
-//		Texture arrays let me pass all the depthmaps
-//		Next problem is the transformed interpolated fragment per face, per light
-//		Right now I can only get four shadow omni-lights with this limit
-//
-// Parameters:
-//		None
-//=============================================================================
-
+///=============================================================================
+/// Function: render_scene_using_shadowmap
+///=============================================================================
+/// Description: This function renders a scene using the depthmaps generated from
+/// each light for shadow map rendering. Since I'm doing a cube map for each light,
+/// you quickly run into limitations regarding the max number of textures you can
+/// pass into the shader ideally you would pass the cube map for each active light
+/// and only update those cube maps as needed (ie: something moved in it's view)
+///
+/// A long time ago you use to be only able to pass to the GPU a very small number
+/// of uniforms/constants and per-vertex parameters, (Thinking FX5900 days) so wait
+/// long enough and GPU limits are removed in time
+///
+/// Old comments (probably no longer relevent)
+///		Texture arrays let me pass all the depthmaps
+///		Next problem is the transformed interpolated fragment per face, per light
+///		Right now I can only get four shadow omni-lights with this limit
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_scene_using_shadowmap(bool lights)
 {
 	matrix4 transformation;
@@ -2324,16 +2325,16 @@ void Engine::render_scene_using_shadowmap(bool lights)
 }
 
 
-//=============================================================================
-// Function: render_weapon
-//=============================================================================
-// Description: This renders the weapon in first person (if one)
-// offsets the weapon matrix a little to give it a off center rotation effect
-// (should add weapon bobbing instead of doing that eventually though)
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_weapon
+///=============================================================================
+/// Description: This renders the weapon in first person (if one)
+/// offsets the weapon matrix a little to give it a off center rotation effect
+/// (should add weapon bobbing instead of doing that eventually though)
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 {
 	matrix4 mvp;
@@ -2373,16 +2374,16 @@ void Engine::render_weapon(const matrix4 &trans, bool lights, int i)
 
 }
 
-//=============================================================================
-// Function: render_trails
-//=============================================================================
-// Description: This is used to render effects like the railgun trail and the
-// lightning gun beam. These are particles rendered similarly to the smoke trails
-// from rockets / grenades, just without any movement
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_trails
+///=============================================================================
+/// Description: This is used to render effects like the railgun trail and the
+/// lightning gun beam. These are particles rendered similarly to the smoke trails
+/// from rockets / grenades, just without any movement
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_trails(matrix4 &trans)
 {
 	matrix4 mvp;
@@ -2439,15 +2440,15 @@ void Engine::render_trails(matrix4 &trans)
 	}
 }
 
-//=============================================================================
-// Function: render_entities
-//=============================================================================
-// Description: This is used to render any entities (essentially any object that
-// isn't the map itself and can move) eg: weapons, armor, players, health, etc)s
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_entities
+///=============================================================================
+/// Description: This is used to render any entities (essentially any object that
+/// isn't the map itself and can move) eg: weapons, armor, players, health, etc)s
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend, bool vis)
 {
 	matrix4 mvp;
@@ -2648,17 +2649,17 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 	mlight2.set_lightmap(1.0f);
 }
 
-//=============================================================================
-// Function: render_players
-//=============================================================================
-// Description: This renders players, which are special in that they have a md5 model
-// that is associated with them (most other models are imported wavefront obj files,
-// which do not move/animate) The file format is essentially just index buffers and
-// vertex buffers for those
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_players
+///=============================================================================
+/// Description: This renders players, which are special in that they have a md5 model
+/// that is associated with them (most other models are imported wavefront obj files,
+/// which do not move/animate) The file format is essentially just index buffers and
+/// vertex buffers for those
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool render_self)
 {
 	matrix4 mvp;
@@ -2759,24 +2760,24 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 }
 
 
-//=============================================================================
-// Function: render_shadow_volumes
-//=============================================================================
-// Description: This renders shadow volumes for the stencil buffer, currently
-// if enabled it will only make shadow volumes for entities and not the map
-// (some crazy coordinate transform issue or something makes the shadows from
-// the map itself look like garbage, not to mention a rather large performance
-// impact)
-//
-// The shadow volumes do some crazy stencil buffer addition and subtraction
-// on front faces and back faces to leave an even or odd result, which will
-// indicate whether a surface is in shadow or not. But these depend on 3d geometry
-// for the shadow volume that is "sealed", which are generated by extruding geometry
-// from the lights perspective on the CPU
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_shadow_volumes
+///=============================================================================
+/// Description: This renders shadow volumes for the stencil buffer, currently
+/// if enabled it will only make shadow volumes for entities and not the map
+/// (some crazy coordinate transform issue or something makes the shadows from
+/// the map itself look like garbage, not to mention a rather large performance
+/// impact)
+///
+/// The shadow volumes do some crazy stencil buffer addition and subtraction
+/// on front faces and back faces to leave an even or odd result, which will
+/// indicate whether a surface is in shadow or not. But these depend on 3d geometry
+/// for the shadow volume that is "sealed", which are generated by extruding geometry
+/// from the lights perspective on the CPU
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_shadow_volumes()
 {
 #ifdef SHADOWVOL
@@ -2855,14 +2856,14 @@ void Engine::render_shadow_volumes()
 #endif
 }
 
-//=============================================================================
-// Function: screenshot
-//=============================================================================
-// Description: This is used to take a screenshot and saves the image to a file
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: screenshot
+///=============================================================================
+/// Description: This is used to take a screenshot and saves the image to a file
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::screenshot(unsigned int &luminance, bool luminance_only)
 {
 	static int num = 0;
@@ -2905,16 +2906,16 @@ void Engine::screenshot(unsigned int &luminance, bool luminance_only)
 #endif
 }
 
-//=============================================================================
-// Function: post_process
-//=============================================================================
-// Description: This is used to perform post processing on the final rendered image
-// before sending it to the monitor, can perform some interesting effects pretty
-// easily
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: post_process
+///=============================================================================
+/// Description: This is used to perform post processing on the final rendered image
+/// before sending it to the monitor, can perform some interesting effects pretty
+/// easily
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::post_process(int num_passes, int type)
 {
 	int temp;
@@ -2946,16 +2947,16 @@ void Engine::post_process(int num_passes, int type)
 //	gfx.DeselectTexture(0);
 }
 
-//=============================================================================
-// Function: render_bloom
-//=============================================================================
-// Description: Bloom is a lighting effect where bright objects bleed into
-// surrounding areas, which is done through blurring the "bright" part of an
-// image then blending that blurred image with the main scene
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_bloom
+///=============================================================================
+/// Description: Bloom is a lighting effect where bright objects bleed into
+/// surrounding areas, which is done through blurring the "bright" part of an
+/// image then blending that blurred image with the main scene
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_bloom(bool debug)
 {
 	gfx.bindFramebuffer(mask_fbo);
@@ -3028,15 +3029,15 @@ void Engine::render_bloom(bool debug)
 
 }
 
-//=============================================================================
-// Function: render_bloom
-//=============================================================================
-// Description: This is a cheap effect to emulate crepuscular rays with a radial
-// blur, doesn't look very great, but easy to add
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_bloom
+///=============================================================================
+/// Description: This is a cheap effect to emulate crepuscular rays with a radial
+/// blur, doesn't look very great, but easy to add
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_skyray(bool debug)
 {
 	gfx.bindFramebuffer(mask_fbo);
@@ -3095,14 +3096,14 @@ void Engine::render_skyray(bool debug)
 
 }
 
-//=============================================================================
-// Function: render_wave
-//=============================================================================
-// Description: This adds an underwater effect (blue tint, some wavyness)
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_wave
+///=============================================================================
+/// Description: This adds an underwater effect (blue tint, some wavyness)
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_wave(bool debug)
 {
 	gfx.bindFramebuffer(mask_fbo);
@@ -3136,15 +3137,15 @@ void Engine::render_wave(bool debug)
 
 }
 
-//=============================================================================
-// Function: render_ssao
-//=============================================================================
-// Description: This adds ambient occulusion (shadowing) using screen space
-// techniques to add shadows to "cracks" using the depth buffer and normals
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: render_ssao
+///=============================================================================
+/// Description: This adds ambient occulusion (shadowing) using screen space
+/// techniques to add shadows to "cracks" using the depth buffer and normals
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::render_ssao(bool debug)
 {
 	gfx.bindFramebuffer(ssao_fbo);
@@ -3162,14 +3163,14 @@ void Engine::render_ssao(bool debug)
 }
 
 
-//=============================================================================
-// Function: destroy_buffers
-//=============================================================================
-// Description: This is used to delete allocated buffers when unloading a map
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: destroy_buffers
+///=============================================================================
+/// Description: This is used to delete allocated buffers when unloading a map
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::destroy_buffers()
 {
 	zcc.destroy_buffers(gfx);
@@ -3191,15 +3192,15 @@ void Engine::destroy_buffers()
 }
 
 
-//=============================================================================
-// Function: spatial_testing
-//=============================================================================
-// Description: This is used to perform various checks based on distances between
-// objects (eg: enable lights close to the player, which also pass BSP PVS checks)
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: spatial_testing
+///=============================================================================
+/// Description: This is used to perform various checks based on distances between
+/// objects (eg: enable lights close to the player, which also pass BSP PVS checks)
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::spatial_testing()
 {
 	int leaf_a = -1;
@@ -3371,14 +3372,14 @@ void Engine::spatial_testing()
 
 }
 
-//=============================================================================
-// Function: activate_light
-//=============================================================================
-// Description: This is used to active lights based on distance
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: activate_light
+///=============================================================================
+/// Description: This is used to active lights based on distance
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::activate_light(float distance, Light *light)
 {
 //	float min_distance = FLT_MAX;
@@ -3413,15 +3414,15 @@ void Engine::activate_light(float distance, Light *light)
 
 
 
-//=============================================================================
-// Function: handle_cloth
-//=============================================================================
-// Description: Handles physics simulation of cloth objects
-// cloths are essentially treated like a series of interconnected springs
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: handle_cloth
+///=============================================================================
+/// Description: Handles physics simulation of cloth objects
+/// cloths are essentially treated like a series of interconnected springs
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::handle_cloth()
 {
 	float time = 0.125f;
@@ -3452,29 +3453,29 @@ void Engine::handle_cloth()
 
 
 
-//=============================================================================
-// Function: dynamics
-//=============================================================================
-// Description: Handles physics simulation of entities
-//
-//
-// Old comments for OpenMP multithreading this: (not really needed, but could be used if scaling up to thousands of objects)
-//
-//	This function can be threaded by:
-//	1. Dividing particles by bsp leafs
-//	   call find leaf for each vertex in aabb
-//	   if an objects aabb is in multiple leafs
-//	   union objects in both leafs together
-//	2. create a thread for each leaf batch.
-//	3. compute naive O(n^2)
-//	   each core should be able to handle 1000+ objects in 16ms, so no worrys
-//	   write results
-//	4. join threads
-//
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: dynamics
+///=============================================================================
+/// Description: Handles physics simulation of entities
+///
+///
+/// Old comments for OpenMP multithreading this: (not really needed, but could be used if scaling up to thousands of objects)
+///
+///	This function can be threaded by:
+///	1. Dividing particles by bsp leafs
+///	   call find leaf for each vertex in aabb
+///	   if an objects aabb is in multiple leafs
+///	   union objects in both leafs together
+///	2. create a thread for each leaf batch.
+///	3. compute naive O(n^2)
+///	   each core should be able to handle 1000+ objects in 16ms, so no worrys
+///	   write results
+///	4. join threads
+///
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::dynamics()
 {
 
@@ -3590,15 +3591,15 @@ void Engine::dynamics()
 }
 
 
-//=============================================================================
-// Function: dynamics
-//=============================================================================
-// Description: Handles physics simulation of springs, not really used,
-//  but can attach two objects together (think below has armor and lightning gun)
-//
-// Parameters:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: dynamics
+///=============================================================================
+/// Description: Handles physics simulation of springs, not really used,
+///  but can attach two objects together (think below has armor and lightning gun)
+///
+/// Parameters:
+///		None
+///=============================================================================
 void Engine::handle_springs()
 {
 	int num_body_spring = 0;
@@ -3698,18 +3699,18 @@ void Engine::handle_springs()
 	}
 }
 
-//=============================================================================
-// Function: collision_detect
-//=============================================================================
-// Description: This is used to check if the passed rigid body has collided with
-// the map or another solid rigid body. Function handles all collision detection
-//
-// Parameters:
-//		None
-// Returns:
-//		return true if simulated too far. (results in smaller time step)
-//		return false if collision handled.
-//=============================================================================
+///=============================================================================
+/// Function: collision_detect
+///=============================================================================
+/// Description: This is used to check if the passed rigid body has collided with
+/// the map or another solid rigid body. Function handles all collision detection
+///
+/// Parameters:
+///		None
+/// Returns:
+///		return true if simulated too far. (results in smaller time step)
+///		return false if collision handled.
+///=============================================================================
 bool Engine::collision_detect(RigidBody &body)
 {
 //	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);	
@@ -3747,19 +3748,19 @@ bool Engine::collision_detect(RigidBody &body)
 
 
 
-//=============================================================================
-// Function: map_collision
-//=============================================================================
-// Description: This is used to check if the passed rigid body has collided with
-// the map
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		return true if simulated too far. (results in smaller time step)
-//		return false if collision handled.
-//=============================================================================
+///=============================================================================
+/// Function: map_collision
+///=============================================================================
+/// Description: This is used to check if the passed rigid body has collided with
+/// the map
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		return true if simulated too far. (results in smaller time step)
+///		return false if collision handled.
+///=============================================================================
 bool Engine::map_collision(RigidBody &body)
 {
 	plane_t plane;
@@ -3955,20 +3956,20 @@ bool Engine::map_collision(RigidBody &body)
 }
 
 
-//=============================================================================
-// Function: body_collision
-//=============================================================================
-// Description: Handles body / body collision
-//
-// O(N^2) -- function is slow / doesnt scale well
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		return true if simulated too far. (results in smaller time step)
-//		return false if collision handled.
-//=============================================================================
+///=============================================================================
+/// Function: body_collision
+///=============================================================================
+/// Description: Handles body / body collision
+///
+/// O(N^2) -- function is slow / doesnt scale well
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		return true if simulated too far. (results in smaller time step)
+///		return false if collision handled.
+///=============================================================================
 bool Engine::body_collision(RigidBody &body)
 {
 	for(unsigned int i = 0; i < max_dynamic; i++)
@@ -4041,22 +4042,22 @@ bool Engine::body_collision(RigidBody &body)
 	return false;
 }
 
-//=============================================================================
-// Function: step
-//=============================================================================
-// Description: Function handles a time step (occurs roughly every 16ms) based
-// on windows timer or linux timer, advances object position through time.
-//
-// Where rendering only draws objects (it does not modify game state)
-//
-// O(N^2) -- function is slow / doesnt scale well
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: step
+///=============================================================================
+/// Description: Function handles a time step (occurs roughly every 16ms) based
+/// on windows timer or linux timer, advances object position through time.
+///
+/// Where rendering only draws objects (it does not modify game state)
+///
+/// O(N^2) -- function is slow / doesnt scale well
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::step(int tick)
 {
 	tick_num = tick;
@@ -4207,20 +4208,20 @@ void Engine::step(int tick)
 }
 
 
-//=============================================================================
-// Function: savegame
-//=============================================================================
-// Description: used to save the game state, which is done by serializing all
-// entities and other gamestate info (map, score, etc) to disk
-//
-// Note: game state serialization is also used for net code
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: savegame
+///=============================================================================
+/// Description: used to save the game state, which is done by serializing all
+/// entities and other gamestate info (map, score, etc) to disk
+///
+/// Note: game state serialization is also used for net code
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::savegame(char *file)
 {
 	static unsigned char buffer[16584];
@@ -4239,20 +4240,20 @@ void Engine::savegame(char *file)
 	debugf("Saved %s", file);
 }
 
-//=============================================================================
-// Function: loadgame
-//=============================================================================
-// Description: used to load the game state, which is done by deserializing all
-// entities and other gamestate info (map, score, etc) to memory
-//
-// Note: game state serialization is also used for net code
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: loadgame
+///=============================================================================
+/// Description: used to load the game state, which is done by deserializing all
+/// entities and other gamestate info (map, score, etc) to memory
+///
+/// Note: game state serialization is also used for net code
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::loadgame(char *file)
 {
 	unsigned int size = 0;
@@ -4264,17 +4265,17 @@ void Engine::loadgame(char *file)
 }
 
 
-//=============================================================================
-// Function: mousepos_raw
-//=============================================================================
-// Description: mouse handler for "raw" USB HID input direct from mouse
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: mousepos_raw
+///=============================================================================
+/// Description: mouse handler for "raw" USB HID input direct from mouse
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
@@ -4302,18 +4303,18 @@ bool Engine::mousepos_raw(int x, int y, int deltax, int deltay)
 	return true;
 }
 
-//=============================================================================
-// Function: mousepos
-//=============================================================================
-// Description: mouse handler for normal mouse input (WM_MOUSEMOVE, or mouse events
-// from X11 system)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: mousepos
+///=============================================================================
+/// Description: mouse handler for normal mouse input (WM_MOUSEMOVE, or mouse events
+/// from X11 system)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
@@ -4394,18 +4395,18 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 	return true;
 }
 
-//=============================================================================
-// Function: bind_keys
-//=============================================================================
-// Description: used to bind default keys (associate keyboard buttons to input
-// events)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: bind_keys
+///=============================================================================
+/// Description: used to bind default keys (associate keyboard buttons to input
+/// events)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::bind_keys()
 {
 	char *file = get_file("media/config.cfg", NULL);
@@ -4538,22 +4539,22 @@ void Engine::bind_keys()
 
 }
 
-//=============================================================================
-// Function: keypress
-//=============================================================================
-// Description: This function handles keyboard input, there are two types on input
-// real time up/down key events and higher level typing things for text input, this one
-// is the lower level events, passes in a string representation of the key to
-// avoid using to operating specific key enums. Can probably make enums eventually
-// when we nail down the input set, but performance for key presses isn't really
-// a bottleneck
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: keypress
+///=============================================================================
+/// Description: This function handles keyboard input, there are two types on input
+/// real time up/down key events and higher level typing things for text input, this one
+/// is the lower level events, passes in a string representation of the key to
+/// avoid using to operating specific key enums. Can probably make enums eventually
+/// when we nail down the input set, but performance for key presses isn't really
+/// a bottleneck
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::keypress(char *key, bool pressed)
 {
 	bool handled = false;
@@ -4723,19 +4724,19 @@ void Engine::keypress(char *key, bool pressed)
 		console(cmd);
 }
 
-//=============================================================================
-// Function: keystroke
-//=============================================================================
-// Description: This function handles keyboard input, there are two types on input
-// real time up/down key events and higher level typing things for text input, this one
-// is the higher level events for things like console input, typing for chat, etc
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: keystroke
+///=============================================================================
+/// Description: This function handles keyboard input, there are two types on input
+/// real time up/down key events and higher level typing things for text input, this one
+/// is the higher level events for things like console input, typing for chat, etc
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::keystroke(char key, char *keystr)
 {
 	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
@@ -4851,20 +4852,20 @@ void Engine::keystroke(char key, char *keystr)
 }
 
 
-//=============================================================================
-// Function: handle_game
-//=============================================================================
-// Description: So this function is similar to keystroke, but handles the events
-// when a map is loaded and running (different handlers for different states,
-// are used to make keyboard input less of a branching mess
-// eg: if (menu.open) if (map.loaded)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: handle_game
+///=============================================================================
+/// Description: So this function is similar to keystroke, but handles the events
+/// when a map is loaded and running (different handlers for different states,
+/// are used to make keyboard input less of a branching mess
+/// eg: if (menu.open) if (map.loaded)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::handle_game(char key)
 {
 	int spawn = find_type(ENT_PLAYER, 0);
@@ -4963,19 +4964,19 @@ void Engine::handle_game(char key)
 	}
 }
 
-//=============================================================================
-// Function: resize
-//=============================================================================
-// Description: So this function handles resize events, when the window is resized
-// we have to reallocate frame buffers and set up our projection matrix again
-// and other legwork
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: resize
+///=============================================================================
+/// Description: So this function handles resize events, when the window is resized
+/// we have to reallocate frame buffers and set up our projection matrix again
+/// and other legwork
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::resize(int width, int height)
 {
 	xres = width;
@@ -5025,18 +5026,18 @@ void Engine::resize(int width, int height)
 }
 
 
-//=============================================================================
-// Function: get_load_wave
-//=============================================================================
-// Description: Used to load wave files from disk and be sure it wasn't already
-// loaded before (should probably rename function as it seems oddly named)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_load_wave
+///=============================================================================
+/// Description: Used to load wave files from disk and be sure it wasn't already
+/// loaded before (should probably rename function as it seems oddly named)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_load_wave(const char *file)
 {
 	wave_t wave;
@@ -5059,18 +5060,18 @@ int Engine::get_load_wave(const char *file)
 }
 
 
-//=============================================================================
-// Function: load_models
-//=============================================================================
-// Description: Used to load models defined by the map, loops through map
-// entities and loads models as needed
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: load_models
+///=============================================================================
+/// Description: Used to load models defined by the map, loops through map
+/// entities and loads models as needed
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::load_models()
 {
 	if (entity_list.size() == 0)
@@ -5086,20 +5087,21 @@ void Engine::load_models()
 	}
 }
 
-// Loads media that may be shared with multiple entities
 
-//=============================================================================
-// Function: load_entities
-//=============================================================================
-// Description: Loops through map entities and loads whats needed (models,
-// sounds etc)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: load_entities
+///=============================================================================
+/// Description: Loops through map entities and loads whats needed (models,
+/// sounds etc)
+///
+/// Loads media that may be shared with multiple entities
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::load_entities()
 {
 #ifndef DEDICATED
@@ -5118,18 +5120,18 @@ void Engine::load_entities()
 	}
 }
 
-//=============================================================================
-// Function: fullscreen
-//=============================================================================
-// Description: makes the window fullscreen, which essentially just hides the widgets
-// and resizes the window to monitor resolution
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: fullscreen
+///=============================================================================
+/// Description: makes the window fullscreen, which essentially just hides the widgets
+/// and resizes the window to monitor resolution
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::fullscreen()
 {
 	if (fullscreen_timer == 0)
@@ -5163,18 +5165,18 @@ void Engine::fullscreen()
 }
 
 
-//=============================================================================
-// Function: clean_entity
-//=============================================================================
-// Description: Free's an entity for reuse, say it expired (eg: rocket exploded)
-// this will free that entry for later use as entity counts are finite
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: clean_entity
+///=============================================================================
+/// Description: Free's an entity for reuse, say it expired (eg: rocket exploded)
+/// this will free that entry for later use as entity counts are finite
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::clean_entity(int index)
 {
 	unsigned int i = 0;
@@ -5237,17 +5239,17 @@ void Engine::clean_entity(int index)
 }
 
 
-//=============================================================================
-// Function: get_entity
-//=============================================================================
-// Description: Get's a free entity for use for something
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_entity
+///=============================================================================
+/// Description: Get's a free entity for use for something
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_entity()
 {
 	static unsigned int index = max_player;
@@ -5284,17 +5286,17 @@ int Engine::get_entity()
 }
 
 
-//=============================================================================
-// Function: find_type
-//=============================================================================
-// Description: Find an entity of a specific type
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: find_type
+///=============================================================================
+/// Description: Find an entity of a specific type
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::find_type(int ent_type, int skip)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
@@ -5310,17 +5312,17 @@ int Engine::find_type(int ent_type, int skip)
 }
 
 
-//=============================================================================
-// Function: get_player
-//=============================================================================
-// Description: Find the player (should only be one, may be none if spectating)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_player
+///=============================================================================
+/// Description: Find the player (should only be one, may be none if spectating)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_player()
 {
 	static unsigned int index = 0;
@@ -5354,17 +5356,17 @@ int Engine::get_player()
 }
 
 
-//=============================================================================
-// Function: create_sources
-//=============================================================================
-// Description: creates audio sources and associates them with sound buffers
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: create_sources
+///=============================================================================
+/// Description: creates audio sources and associates them with sound buffers
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::create_sources()
 {
 	// create and associate sources
@@ -5390,18 +5392,18 @@ void Engine::create_sources()
 	update_audio();
 }
 
-//=============================================================================
-// Function: update_audio
-//=============================================================================
-// Description: updates the listeners position, can also be used to set things
-// like velocity for doppler effects
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: update_audio
+///=============================================================================
+/// Description: updates the listeners position, can also be used to set things
+/// like velocity for doppler effects
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::update_audio()
 {
 	audio.listener_position((float *)&(camera_frame.pos.x));
@@ -5449,17 +5451,17 @@ void Engine::update_audio()
 
 
 
-//=============================================================================
-// Function: unload
-//=============================================================================
-// Description: unloads a map and any associated allocated data / objects
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: unload
+///=============================================================================
+/// Description: unloads a map and any associated allocated data / objects
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::unload()
 {
 	print_entity_meminfo(entity_list);
@@ -5529,17 +5531,17 @@ void Engine::unload()
 }
 
 
-//=============================================================================
-// Function: destroy
-//=============================================================================
-// Description: unloads anything else before closing application
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: destroy
+///=============================================================================
+/// Description: unloads anything else before closing application
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::destroy()
 {
 	if (netcode.recording_demo)
@@ -5595,18 +5597,18 @@ void Engine::destroy()
 }
 
 
-//=============================================================================
-// Function: quit
-//=============================================================================
-// Description: Posts quit message to cause application to exit any message
-// loops then end execution
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: quit
+///=============================================================================
+/// Description: Posts quit message to cause application to exit any message
+/// loops then end execution
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::quit()
 {
 #ifdef _WINDOWS_
@@ -5617,24 +5619,25 @@ void Engine::quit()
 #endif
 }
 
-// TODO: Make something like quake's add command, cmd + function pointer to execute with it
-// Also logically seperate Console variables (Cvars) from commands
 
 
 
-//=============================================================================
-// Function: console_general
-//=============================================================================
-// Description: Part of the command console (~ tilde) some console commands
-// require a player to exist, some don't, these are the commands that will
-// work without any player present
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: console_general
+///=============================================================================
+/// Description: Part of the command console (~ tilde) some console commands
+/// require a player to exist, some don't, these are the commands that will
+/// work without any player present
+///
+/// TODO: Make something like quake's add command, cmd + function pointer to execute with it
+/// Also logically seperate Console variables (Cvars) from commands
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::console_general(char *cmd)
 {
 	char msg[LINE_SIZE] = { 0 };
@@ -7840,6 +7843,17 @@ int Engine::console_render(char *cmd)
 	return -1;
 }
 
+///=============================================================================
+/// Function: console_sound
+///=============================================================================
+/// Description: Console command related to audio / sound
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::console_sound(char *cmd)
 {
 	char data[LINE_SIZE] = { 0 };
@@ -7884,6 +7898,18 @@ int Engine::console_sound(char *cmd)
 	return -1;
 }
 
+
+///=============================================================================
+/// Function: console
+///=============================================================================
+/// Description: Main command console entrypoint
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::console(char *cmd)
 {
 
@@ -7925,17 +7951,17 @@ void Engine::console(char *cmd)
 
 
 
-//=============================================================================
-// Function: select_wave
-//=============================================================================
-// Description: associates a sound file to a sound source (emitter)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: select_wave
+///=============================================================================
+/// Description: associates a sound file to a sound source (emitter)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Engine::select_wave(int source, char *file)
 {
 	if (file == NULL || file[0] == '\0')
@@ -7951,17 +7977,17 @@ bool Engine::select_wave(int source, char *file)
 	return false;
 }
 
-//=============================================================================
-// Function: get_source
-//=============================================================================
-// Description: gets a free sound source (of 32 total)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_source
+///=============================================================================
+/// Description: gets a free sound source (of 32 total)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_source()
 {
 	int source;
@@ -7976,17 +8002,17 @@ int Engine::get_source()
 }
 
 
-//=============================================================================
-// Function: get_source
-//=============================================================================
-// Description: gets a free sound source that loops (of 32 total)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_loop_source
+///=============================================================================
+/// Description: gets a free sound source that loops (of 32 total)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_loop_source()
 {
 	int source;
@@ -8000,17 +8026,17 @@ int Engine::get_loop_source()
 	return source;
 }
 
-//=============================================================================
-// Function: get_source
-//=============================================================================
-// Description: gets a free sound source that is not positional (of 32 total)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_global_source
+///=============================================================================
+/// Description: gets a free sound source that is not positional (of 32 total)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_global_source()
 {
 	int source;
@@ -8024,17 +8050,17 @@ int Engine::get_global_source()
 	return source;
 }
 
-//=============================================================================
-// Function: get_global_loop_source
-//=============================================================================
-// Description: gets a free sound source that is not positional and loops (of 32 total)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_global_loop_source
+///=============================================================================
+/// Description: gets a free sound source that is not positional and loops (of 32 total)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::get_global_loop_source()
 {
 	int source;
@@ -8049,17 +8075,17 @@ int Engine::get_global_loop_source()
 }
 
 
-//=============================================================================
-// Function: get_global_loop_source
-//=============================================================================
-// Description: Plays sound with index from passed source
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: play_wave_source
+///=============================================================================
+/// Description: Plays sound with index from passed source
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Engine::play_wave_source(int source, int index)
 {
 	audio.select_buffer(source, snd_wave[index].buffer);
@@ -8067,17 +8093,17 @@ bool Engine::play_wave_source(int source, int index)
 	return true;
 }
 
-//=============================================================================
-// Function: play_wave
-//=============================================================================
-// Description: Plays sound at specific position
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: play_wave
+///=============================================================================
+/// Description: Plays sound at specific position
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::play_wave(vec3 &position, int index)
 {
 	if (index < 0)
@@ -8096,17 +8122,17 @@ int Engine::play_wave(vec3 &position, int index)
 }
 
 
-//=============================================================================
-// Function: play_wave_loop
-//=============================================================================
-// Description: Plays looping sound at specific position
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: play_wave_loop
+///=============================================================================
+/// Description: Plays looping sound at specific position
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::play_wave_loop(vec3 &position, int index)
 {
 	if (index < 0)
@@ -8124,17 +8150,17 @@ int Engine::play_wave_loop(vec3 &position, int index)
 	return source;
 }
 
-//=============================================================================
-// Function: play_wave_global
-//=============================================================================
-// Description: Plays sound without position mixing (regular playback)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: play_wave_global
+///=============================================================================
+/// Description: Plays sound without position mixing (regular playback)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::play_wave_global(int index)
 {
 	if (index < 0)
@@ -8146,17 +8172,17 @@ int Engine::play_wave_global(int index)
 	return source;
 }
 
-//=============================================================================
-// Function: play_wave_global_loop
-//=============================================================================
-// Description: Plays looping sound without position mixing (regular playback)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: play_wave_global_loop
+///=============================================================================
+/// Description: Plays looping sound without position mixing (regular playback)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int Engine::play_wave_global_loop(int index)
 {
 	if (index < 0)
@@ -8169,18 +8195,18 @@ int Engine::play_wave_global_loop(int index)
 }
 
 
-//=============================================================================
-// Function: hitscan
-//=============================================================================
-// Description: casts a ray at origin in direction dir and tests for collisions
-// with rigid bodies. The map will block the hitscan
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: hitscan
+///=============================================================================
+/// Description: casts a ray at origin in direction dir and tests for collisions
+/// with rigid bodies. The map will block the hitscan
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range)
 {
 	int j = 0;
@@ -8238,17 +8264,17 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 }
 
 
-//=============================================================================
-// Function: find_path
-//=============================================================================
-// Description: A* graph search for bots (only q3tourney2 has nav data currently)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: find_path
+///=============================================================================
+/// Description: A* graph search for bots (only q3tourney2 has nav data currently)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::find_path(int *&path, int &path_length, int start_path, int end_path)
 {
 	if (graph.size() == 0)
@@ -8262,18 +8288,18 @@ void Engine::find_path(int *&path, int &path_length, int start_path, int end_pat
 	//	print_path(path, path_length, node);
 }
 
-//=============================================================================
-// Function: reload_shaders
-//=============================================================================
-// Description: Reloads shaders in place (useful for editing shader files
-// without restarting the entire program)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: reload_shaders
+///=============================================================================
+/// Description: Reloads GPU shaders in place (useful for editing shader files
+/// without restarting the entire program)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::reload_shaders()
 {
 	mlight2.destroy();
@@ -8289,18 +8315,18 @@ void Engine::reload_shaders()
 }
 
 
-//=============================================================================
-// Function: get_shaderlist_pk3
-//=============================================================================
-// Description: Reads shaderlist.txt from pk3 files (filename order takes
-// precedence as in last loaded wins)
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: get_shaderlist_pk3
+///=============================================================================
+/// Description: Reads shaderlist.txt from pk3 files (filename order takes
+/// precedence as in last loaded wins)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 {
 	char *filelist = new char[LIST_SIZE];
@@ -8340,19 +8366,19 @@ void Engine::get_shaderlist_pk3(char **shaderlist, int &num_shader)
 	delete[] filelist;
 }
 
-//=============================================================================
-// Function: set_reference_distance
-//=============================================================================
-// Description: Sets positional audio fall off distance
-// Reference distance is where sound will sound "normal" without being louder
-// or quieter
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: set_reference_distance
+///=============================================================================
+/// Description: Sets positional audio fall off distance
+/// Reference distance is where sound will sound "normal" without being louder
+/// or quieter
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::set_reference_distance(float value)
 {
 #ifndef DEDICATED
@@ -8364,18 +8390,18 @@ void Engine::set_reference_distance(float value)
 #endif
 }
 
-//=============================================================================
-// Function: set_reference_distance
-//=============================================================================
-// Description: Sets positional audio fall off distance
-// max distance is where sound will fall below inaudiable
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: set_max_distance
+///=============================================================================
+/// Description: Sets positional audio fall off distance
+/// max distance is where sound will fall below inaudiable
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::set_max_distance(float value)
 {
 #ifndef DEDICATED
@@ -8387,18 +8413,18 @@ void Engine::set_max_distance(float value)
 #endif
 }
 
-//=============================================================================
-// Function: set_rolloff_factor
-//=============================================================================
-// Description: Sets positional audio fall off distance rates
-//
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: set_rolloff_factor
+///=============================================================================
+/// Description: Sets positional audio fall off distance rates
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::set_rolloff_factor(float value)
 {
 #ifndef DEDICATED
@@ -8410,18 +8436,18 @@ void Engine::set_rolloff_factor(float value)
 #endif
 }
 
-//=============================================================================
-// Function: paste
-//=============================================================================
-// Description: Used to handle copy / paste for console commands
-//
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: paste
+///=============================================================================
+/// Description: Used to handle copy / paste for console commands
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::paste(char *data, unsigned int size)
 {
 	if (menu.console || menu.chatmode || menu.stringmode)
@@ -8431,36 +8457,36 @@ void Engine::paste(char *data, unsigned int size)
 	}
 }
 
-//=============================================================================
-// Function: paste
-//=============================================================================
-// Description: Used to handle copy / paste for console commands
-//
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: paste
+///=============================================================================
+/// Description: Used to handle copy / paste for console commands
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::copy(char *data, unsigned int size)
 {
 	menu.copy(data, size);
 }
 
 
-//=============================================================================
-// Function: enum_resolutions
-//=============================================================================
-// Description: Lists all available resolutions (for menu system)
-//
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: enum_resolutions
+///=============================================================================
+/// Description: Lists all available resolutions (for menu system)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::enum_resolutions()
 {
 #ifdef WIN32
@@ -8501,19 +8527,19 @@ void Engine::enum_resolutions()
 #if 0
 using namespace physics;
 
-//=============================================================================
-// Function: draw_plane
-//=============================================================================
-// Description: draws a 3d plane in space at origin with normal facing fwd 
-// useful for debugging
-//
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: draw_plane
+///=============================================================================
+/// Description: draws a 3d plane in space at origin with normal facing fwd 
+/// useful for debugging
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
 {
 	raycast_result_t result;
@@ -8582,19 +8608,19 @@ void Engine::draw_plane(Graphics &gfx, plane_t &plane, vec3 &fwd, vec3 &origin)
 #endif
 
 
-//=============================================================================
-// Function: test_triangle
-//=============================================================================
-// Description: draws a basic triangle just for testing sanity of rendering
-// systems
-//
-//
-// Parameters:
-//		None
-//
-// Returns:
-//		None
-//=============================================================================
+///=============================================================================
+/// Function: test_triangle
+///=============================================================================
+/// Description: draws a basic triangle just for testing sanity of rendering
+/// systems
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::test_triangle()
 {
 	//test triangle for sanity check of renderer backend
