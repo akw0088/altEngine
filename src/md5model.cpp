@@ -12,7 +12,17 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-// This just wraps class md5 for animation, essentially making a new vertex buffer for each frame
+
+///============================================================================
+/// File: md5model.cpp
+///============================================================================
+/// This class takes class MD5 and creates vertex and index buffers for each key
+/// frame and provides an interface for loading multiple animations and 
+/// selecting between them
+///
+/// See md5.cpp for lower level operations
+///============================================================================
+
 
 #include "include.h"
 #include <stack>
@@ -23,6 +33,18 @@
 
 #include "stb_image.h"
 
+///=============================================================================
+/// Function: MD5Model
+///=============================================================================
+/// Description: Constructor for md5model class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 MD5Model::MD5Model()
 {
 	loaded = false;
@@ -34,7 +56,19 @@ MD5Model::MD5Model()
 	animation_frame = 0;
 }
 
-MD5Model::~MD5Model() 
+///=============================================================================
+/// Function: MD5Model
+///=============================================================================
+/// Description: Desructor for md5model class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
+MD5Model::~MD5Model()
 {
 	if (loaded == false)
 		return;
@@ -54,6 +88,18 @@ MD5Model::~MD5Model()
 	}
 }
 
+///=============================================================================
+/// Function: load
+///=============================================================================
+/// Description: Loads md5 model and multiple animations from disk
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx, int anisotropic)
 {
 	anim_list_t *plist = &anim_list;
@@ -100,6 +146,18 @@ void MD5Model::load(char *md5file, char **animation, int num_anim, Graphics &gfx
 	select_animation(ANIM_IDLE, true);
 }
 
+///=============================================================================
+/// Function: generate_buffers
+///=============================================================================
+/// Description: Generate index and vertex buffers for each key frame in an animation
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *buffer)
 {
 	static int			temp_index[8192];
@@ -129,6 +187,18 @@ void MD5Model::generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *b
 	}
 }
 
+///=============================================================================
+/// Function: load_textures
+///=============================================================================
+/// Description: Load textures for the md5 model
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 {
 	tex_object = new int[md5.model->num_mesh];
@@ -184,6 +254,18 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 	}
 }
 
+///=============================================================================
+/// Function: select_animation
+///=============================================================================
+/// Description: Select a loaded animation (of multiple loaded animations)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5Model::select_animation(int index, bool loop)
 {
 	anim_list_t *plist = &anim_list;
@@ -214,6 +296,18 @@ void MD5Model::select_animation(int index, bool loop)
 	current_buffer = buffer[index];
 }
 
+///=============================================================================
+/// Function: destroy_buffers
+///=============================================================================
+/// Description: Deallocate memory for each animation and the model itself
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5Model::destroy_buffers(Graphics &gfx)
 {
 	anim_list_t *plist = &anim_list;
@@ -274,6 +368,19 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 }
 
 
+///=============================================================================
+/// Function: render
+///=============================================================================
+/// Description: Render the model at a specific key frame in the selected 
+/// animation
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5Model::render(Graphics &gfx, int frame_step)
 {
 	if (loaded == false)
