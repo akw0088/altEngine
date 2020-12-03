@@ -1710,7 +1710,7 @@ The assignment was to have a rocket with X/Y thrusters hit targets of two types
 	one type you had to wait 0.2 seconds a small distance away before going to next target
 	the other type you had to just get near it before going to next target
 
-This code (translated from matlab) performed phenomenology
+This code (translated from matlab) performed phenomenally
 My code was more time domain typical approach type stuff,
 but the performance of the PID approach my partner Noah Maze
 came up with blew me away

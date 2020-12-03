@@ -14,6 +14,9 @@
 
 // based on the bsp_hl code
 
+// flipcode archive of quake 2 bsp may also be relevent
+// https://www.flipcode.com/archives/Quake_2_BSP_File_Format.shtml
+
 #include "include.h"
 
 #include "bsp_types_q2.h"

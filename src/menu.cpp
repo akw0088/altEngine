@@ -12,6 +12,27 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
+///============================================================================
+/// File: menu.cpp
+///============================================================================
+/// This file implements the menu class, the menu system is essentially a 
+/// state machine, where each state is a set of items to draw on the screen for
+/// the menu (mostly text, but can be images or 3d models)
+///
+/// The menu is transitioned to different state with the keyboard / mouse
+/// the keyboard arrow keys and enter button for the most part transition states
+/// (eg: press down, new set of items will highlight text below previously highlighted
+/// text)
+///
+/// The mouse triggers transitions by proximity, each state will have an (X,Y)
+/// position, and the closest point to the mouse will be the winning state
+///
+/// All of the menu system is defined in text files, see fullmenu.txt fullstate.txt
+/// and newmenu.txt and newstate.txt -- two menu systems exist and are selected
+/// based on whether the game loaded a demo Pak0.pk3 file or a Pak0.pk3 file from
+/// the full registered version of the game
+///============================================================================
+
 #include "menu.h"
 
 #ifdef _DEBUG
@@ -37,6 +58,18 @@ char notifmsg[NOTIF_SIZE][1024];
 int notif_index = 0;
 
 
+///=============================================================================
+/// Function: Menu
+///=============================================================================
+/// Description: Menu Constructor
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 Menu::Menu()
 {
 	bindnextkey = false;
@@ -79,21 +112,75 @@ Menu::Menu()
 
 }
 
+///=============================================================================
+/// Function: clear_console
+///=============================================================================
+/// Description: clears console text (console is technically a menu, but doesn't
+/// have states / transitions like the real menu system
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::clear_console()
 {
 	console_buffer.clear();
 }
 
+///=============================================================================
+/// Function: Menu
+///=============================================================================
+/// Description: clears chat text (text chat is technically a menu, but doesn't
+/// have states / transitions like the real menu system
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::clear_chat()
 {
 	chat_buffer.clear();
 }
 
+///=============================================================================
+/// Function: clear_notif
+///=============================================================================
+/// Description: clears notifcation text (notification text is technically a menu,
+/// but doesn't  have states / transitions like the real menu system
+///
+/// Notification text is displayed for things like kills X killed Y with weapon
+/// that is displayed for a few moments before disappearing
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::clear_notif()
 {
 	notif_buffer.clear();
 }
 
+///=============================================================================
+/// Function: init
+///=============================================================================
+/// Description: initializes the menu system, loading textures, fonts, shaders etc
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 {
 	float ident[16] = {	1.0f, 0.0f, 0.0f, 0.0f,
@@ -147,6 +234,20 @@ void Menu::init(Graphics *gfx, Audio *audio, char **pk3_list, int num_pk3)
 	history_index = 0;
 }
 
+///=============================================================================
+/// Function: handle_slider
+///=============================================================================
+/// Description: This handles slider widgets (displayed as text)
+/// allows selecting a value between 0.0 and 1.0 (which can be scaled / biased)
+/// as needed
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::handle_slider(char *out, float value)
 {
 	if (value >= 0.0 && value < 0.01)
@@ -195,6 +296,19 @@ void Menu::handle_slider(char *out, float value)
 	}
 }
 
+///=============================================================================
+/// Function: sub_value
+///=============================================================================
+/// Description: Handles various option menu items like booleans (on/off)
+/// and direct floating value inputs
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::sub_value(const char *str, char *out)
 {
 	int length = strlen(str);
@@ -747,6 +861,20 @@ void Menu::sub_value(const char *str, char *out)
 	}
 }
 
+
+///=============================================================================
+/// Function: render
+///=============================================================================
+/// Description: This draws the menu when active, note there is a main menu
+/// and an in game menu, boolean indicates which to show
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::render(Global &global, bool ingame)
 {
 	gfx->SelectTexture(0, menu_object);
@@ -796,6 +924,19 @@ void Menu::render(Global &global, bool ingame)
 	}
 }
 
+///=============================================================================
+/// Function: load
+///=============================================================================
+/// Description: This loads a menu system (draw elements and state transitions)
+/// from disk (fullmenu.txt fullstate.txt or newmenu.txt newstate.txt)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::load(char *menu_file, char *state_file)
 {
 	FILE *menu = fopen(menu_file, "r");
@@ -856,16 +997,52 @@ void Menu::load(char *menu_file, char *state_file)
 	fclose(state);
 }
 
+///=============================================================================
+/// Function: play
+///=============================================================================
+/// Description: Plays menu music when application starts or when re-entering main menu
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::play()
 {
 	audio->play(menu_source);
 }
 
+///=============================================================================
+/// Function: stop
+///=============================================================================
+/// Description: Stops menu music when map loaded
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::stop()
 {
 	audio->stop(menu_source);
 }
 
+///=============================================================================
+/// Function: delta
+///=============================================================================
+/// Description: Processes a menu state change
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::delta(char *delta, Engine &altEngine)
 {
 	for(unsigned int i = 0; i < state_list.size(); i++)
@@ -890,6 +1067,18 @@ void Menu::delta(char *delta, Engine &altEngine)
 	}
 }
 
+///=============================================================================
+/// Function: delta
+///=============================================================================
+/// Description: Processes a menu state change (from mouse)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Menu::delta(float x, float y)
 {
 	float	min_dist = 2.0f;
@@ -919,6 +1108,18 @@ bool Menu::delta(float x, float y)
 	}
 }
 
+///=============================================================================
+/// Function: handle
+///=============================================================================
+/// Description: processes keyboard input for menus
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::handle(char key, Engine *altEngine)
 {
 	static unsigned int last_key = 0;
@@ -968,7 +1169,19 @@ void Menu::handle(char key, Engine *altEngine)
 }
 
 
-// This could use some speeding up, rendering one character at a time is slow
+///=============================================================================
+/// Function: handle
+///=============================================================================
+/// Description: draws menu text string at (x,y) position scaled by scale, in color
+/// color 
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool start, bool stop)
 {
 	float xpos = 0.0f;
@@ -1008,6 +1221,18 @@ void Menu::draw_text(char *str, float x, float y, float scale, vec3 &color, bool
 	}
 }
 
+///=============================================================================
+/// Function: render_console
+///=============================================================================
+/// Description: renders the command console when opened (~tilde)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::render_console(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -1037,6 +1262,18 @@ void Menu::render_console(Global &global)
 	draw_text("Console", 0.85f - 0.0125f, 0.5f - 0.025f, 0.025f, color, false, true);
 }
 
+///=============================================================================
+/// Function: render_chatmode
+///=============================================================================
+/// Description: Renders chat text when in chat mode (Press T to talk)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::render_chatmode(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -1048,6 +1285,19 @@ void Menu::render_chatmode(Global &global)
 	draw_text("Say:", 0.1f, 0.5f - 0.05f, 0.025f, color, false, true);
 }
 
+///=============================================================================
+/// Function: render_stringmode
+///=============================================================================
+/// Description: Used to handle text input for things like setting the player
+/// name from the menu
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::render_stringmode(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -1059,6 +1309,18 @@ void Menu::render_stringmode(Global &global)
 	draw_text("Enter value:", 0.1f, 0.8f - 0.05f, 0.025f, color, false, true);
 }
 
+///=============================================================================
+/// Function: render_chat
+///=============================================================================
+/// Description: Renders received chat messages for a moment before disappearing
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::render_chat(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -1083,6 +1345,18 @@ void Menu::render_chat(Global &global)
 	}
 }
 
+///=============================================================================
+/// Function: render_notif
+///=============================================================================
+/// Description: Renders notification messages for a moment before disappearing
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::render_notif(Global &global)
 {
 	vec3 color(1.0f, 1.0f, 1.0f);
@@ -1109,6 +1383,18 @@ void Menu::render_notif(Global &global)
 	}
 }
 
+///=============================================================================
+/// Function: print_chat
+///=============================================================================
+/// Description: Adds chat string to chat buffer
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::print_chat(const char *str)
 {
 	int size = strlen(str) + 1;
@@ -1121,6 +1407,18 @@ void Menu::print_chat(const char *str)
 	chat_buffer.push_back(line);
 }
 
+///=============================================================================
+/// Function: print_notif
+///=============================================================================
+/// Description: Adds notification string to notification buffer
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::print_notif(const char *str)
 {
 	int size = strlen(str) + 1;
@@ -1136,6 +1434,18 @@ void Menu::print_notif(const char *str)
 		notif_buffer.erase(notif_buffer.begin());
 }
 
+///=============================================================================
+/// Function: print_notif
+///=============================================================================
+/// Description: Adds string to console buffer
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::print(const char *str)
 {
 	int size = strlen(str) + 1;
@@ -1148,6 +1458,18 @@ void Menu::print(const char *str)
 	console_buffer.push_back(line);
 }
 
+///=============================================================================
+/// Function: movepos
+///=============================================================================
+/// Description: Used to advance text spacing for non-monospace font
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::movepos(char c, float &xpos, float &ypos, float scale)
 {
 	// fake proportional font spacing
@@ -1190,6 +1512,18 @@ void Menu::movepos(char c, float &xpos, float &ypos, float scale)
 	}
 }
 
+///=============================================================================
+/// Function: handle_console
+///=============================================================================
+/// Description: Handles keyboard input for the command console
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::handle_console(char key, Engine *altEngine)
 {
 	int length = strlen(key_buffer);
@@ -1293,6 +1627,18 @@ void Menu::handle_console(char key, Engine *altEngine)
 	}
 }
 
+///=============================================================================
+/// Function: handle_chatmode
+///=============================================================================
+/// Description: Handles keyboard input for chat message
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::handle_chatmode(char key, Engine *altEngine)
 {
 	int length = strlen(key_buffer);
@@ -1338,6 +1684,18 @@ void Menu::handle_chatmode(char key, Engine *altEngine)
 	}
 }
 
+///=============================================================================
+/// Function: handle_stringmode
+///=============================================================================
+/// Description: Handles keyboard input for text menu input
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::handle_stringmode(char key, Engine *altEngine)
 {
 	int length = strlen(key_buffer);
@@ -1384,6 +1742,18 @@ void Menu::handle_stringmode(char key, Engine *altEngine)
 	}
 }
 
+///=============================================================================
+/// Function: ~Menu
+///=============================================================================
+/// Description: Menu desctructor
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 Menu::~Menu()
 {
 	for(unsigned int i = 0; i < state_list.size(); i++)
@@ -1403,6 +1773,18 @@ Menu::~Menu()
 	state_list.clear();
 }
 
+///=============================================================================
+/// Function: copy
+///=============================================================================
+/// Description: copying text for copy / paste
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Menu::copy(char *data, unsigned int size)
 {
 	int length = MIN(size - 1, strlen(key_buffer));
