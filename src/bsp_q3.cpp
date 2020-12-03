@@ -1027,60 +1027,6 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 
 
 ///=============================================================================
-/// Function: render_flag
-///=============================================================================
-/// Description:	???
-///
-///
-/// Parameters:
-///		None
-///
-/// Returns:
-///		None
-///=============================================================================
-inline void Bsp::render_flag(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
-{
-	bool lightmap_selected = false;
-	bool shader = false;
-
-
-	selected_map = false;
-
-	if (enable_textures)
-	{
-		if (is_shader && stage > 0)
-			gfx.SelectTexture(0, 0);
-
-		// surfaces that arent lit with lightmaps eg: skies
-		if (face->lightmap != -1 && shader == false)
-		{
-			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-			lightmap_selected = true;
-		}
-		else
-		{
-			gfx.SelectTexture(8, 0);
-		}
-
-
-		if (lightmap && face->lightmap != -1)
-		{
-			// Pretty much shader stage with lightmap
-			// normal faces without shaders get set below
-			//			gfx.Blend(true);
-			//glBlendFunc(GL_SRC_COLOR, GL_DST_ALPHA);
-			gfx.SelectTexture(stage, lightmap_object[face->lightmap]);
-			shader = true;
-		}
-		else
-		{
-			gfx.SelectTexture(stage, tex_object[face->material].texObj[stage]);
-		}
-
-	}
-}
-
-///=============================================================================
 /// Function: render_patch
 ///=============================================================================
 /// Description:	bezeir patch (curved surface)
