@@ -7,8 +7,17 @@ SOURCES_CPP := 	xmain.cpp \
 		bsp_hl.cpp \
 		cloth.cpp \
 		common.cpp \
-		constructable.cpp \
 		engine.cpp \
+		ent_constructable.cpp \
+		ent_light.cpp \
+		ent_model.cpp \
+		ent_player.cpp \
+		ent_portal_camera.cpp \
+		ent_projectile.cpp \
+		ent_rigidbody.cpp \
+		ent_speaker.cpp \
+		ent_trigger.cpp \
+		ent_vehicle.cpp \
 		entity.cpp \
 		frame.cpp \
 		graph.cpp \
@@ -20,23 +29,17 @@ SOURCES_CPP := 	xmain.cpp \
 		isocube.cpp \
 		isosphere.cpp \
 		junzip.cpp \
-		light.cpp \
 		matrix.cpp \
 		md5.cpp \
 		md5model.cpp \
-		model.cpp \
 		menu.cpp \
 		netcode.cpp \
 		parse.cpp \
 		pak.cpp \
 		physics.cpp \
-		player.cpp \
-		portal_camera.cpp \
-		projectile.cpp \
 		quake3.cpp \
 		quaternion.cpp \
 		raster.cpp \
-		rigidbody.cpp \
 		serial.cpp \
 		shader_d3d9.cpp \
 		shader_d3d11.cpp \
@@ -46,13 +49,10 @@ SOURCES_CPP := 	xmain.cpp \
 		shadow_volume.cpp \
 		sin_table.cpp \
 		sock.cpp \
-		speaker.cpp \
 		sph.cpp \
 		spline.cpp \
 		terrain.cpp \
-		trigger.cpp \
 		vector.cpp \
-		vehicle.cpp \
 		vm.cpp \
 		vmmain.cpp \
 		voice.cpp \
