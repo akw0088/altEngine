@@ -12,9 +12,22 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-// Got this going from these two sources: (no copyright)
-//http://www.mralligator.com/q3/
-//http://graphics.cs.brown.edu/games/quake/quake3.html
+
+
+///============================================================================
+/// File: bsp_q3.cpp
+///============================================================================
+/// Class for loading / rendering / collision detection for quake3 bsps
+///
+/// Lot's of work to get this working nicely, rendering is one thing, rendering
+/// bezeir patches correctly another, then collision detection is a huge
+/// undertaking, started with the two file format specs below and lot's of
+/// time tinkering
+///
+/// Got this going from these two sources: (no copyright)
+/// http://www.mralligator.com/q3/
+/// http://graphics.cs.brown.edu/games/quake/quake3.html
+///============================================================================
 
 #include "include.h"
 
@@ -26,6 +39,18 @@
 
 using namespace q3;
 
+///=============================================================================
+/// Function: Bsp
+///=============================================================================
+/// Description: Constructor for quake3 bsp class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 Bsp::Bsp()
 {
 	loaded = false;
@@ -64,6 +89,18 @@ Bsp::Bsp()
 }
 
 
+///=============================================================================
+/// Function: load
+///=============================================================================
+/// Description: loads a bsp file from disk or pk3 file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 	max_stage = MAX_TEXTURES;
@@ -175,6 +212,18 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 	return true;
 }
 
+///=============================================================================
+/// Function: get_control_points
+///=============================================================================
+/// Description: Get bezeir patch control points (kind of oddly indexed)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void get_control_points(bspvertex_t *cp, const bspvertex_t *data, int set, int width, int height)
 {
 	int x = 0;
@@ -208,10 +257,20 @@ void get_control_points(bspvertex_t *cp, const bspvertex_t *data, int set, int w
 	}
 }
 
-/*
-	Loops through map data to find bezeir patches to tessellate into verticies
-	And now also creates vbos for map and meshes
-*/
+
+///=============================================================================
+/// Function: generate_meshes
+///=============================================================================
+/// Description: 	Loops through map data to find bezeir patches to tessellate
+///					into verticies and now also creates vbos for map and meshes
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::generate_meshes(Graphics &gfx)
 {
 	int mesh_index = 0;
@@ -281,9 +340,19 @@ void Bsp::generate_meshes(Graphics &gfx)
 
 }
 
-/*
-	We need to stick tangent vector into old bsp datatype
-*/
+///=============================================================================
+/// Function: CreateTangentArray
+///=============================================================================
+/// Description:	Creates tangent vector for surfaces in the map for normal
+///				mapping (also can generate in geometry shader)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent_in)
 {
 	for(int i = 0; i < num_vert; i++)
@@ -298,9 +367,20 @@ void Bsp::CreateTangentArray(vertex_t *vertex_out, bspvertex_t *bsp_vertex, int 
 	}
 }
 
-/*
-	Converts axis from quake3 to opengl format
-*/
+
+///=============================================================================
+/// Function: change_axis
+///=============================================================================
+/// Description:	Converts axis from quake3 to opengl format
+///					quake3 has z as up, opengl has z and forward
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::change_axis()
 {
 	quake1 = false;
@@ -393,9 +473,18 @@ const char *Bsp::get_entities()
 	return (const char *)data.Ent;
 }
 
-/*
-	Should cleanly unload a map
-*/
+///=============================================================================
+/// Function: unload
+///=============================================================================
+/// Description:		Should cleanly unload a map
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::unload(Graphics &gfx)
 {
 	//int mesh_index = 0;
@@ -472,9 +561,18 @@ void Bsp::unload(Graphics &gfx)
 	loaded = false;
 }
 
-/*
-	Given a position return the bsp leaf node containing that point
-*/
+///=============================================================================
+/// Function: find_leaf
+///=============================================================================
+/// Description:	Given a point return the bsp leaf node containing that point
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 inline int Bsp::find_leaf(const vec3 &position)
 {
 	float	distance;
@@ -495,7 +593,18 @@ inline int Bsp::find_leaf(const vec3 &position)
 	return -(i + 1);
 }
 
-// in order tree walk, keeping only visible nodes, front to back order
+///=============================================================================
+/// Function: find_leaf
+///=============================================================================
+/// Description:	in order tree walk, keeping only visible nodes, front to back order
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position, leaf_t *frameLeaf, bool order, int depth)
 {
 	static int d = 0;
@@ -552,6 +661,18 @@ void Bsp::sort_leaf(vector<int> *leaf_list, int node_index, const vec3 &position
 	}
 }
 
+///=============================================================================
+/// Function: is_point_in_brush
+///=============================================================================
+/// Description:	checks if point is inside a non-solid brush
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float *depth, plane_t *plane, content_flag_t &flag, float &water_depth, bool debug)
 {
 	brush_t	*brush = &data.Brushes[brush_index];
@@ -658,6 +779,18 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 }
 
 
+///=============================================================================
+/// Function: collision_detect
+///=============================================================================
+/// Description:	collision detection for brushes
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, float &water_depth,
 	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag)
 {
@@ -741,6 +874,19 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 	return false;
 }
 
+
+///=============================================================================
+/// Function: render_sky
+///=============================================================================
+/// Description:	Renders the sky (cube, or semi sphere options)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surface_t *> &surface_list)
 {
 	float time = (float)tick_num / TICK_RATE;
@@ -805,6 +951,18 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 }
 
 
+///=============================================================================
+/// Function: render_face
+///=============================================================================
+/// Description:	Renders a brush face
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	bool lightmap_selected = false;
@@ -868,6 +1026,18 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 }
 
 
+///=============================================================================
+/// Function: render_flag
+///=============================================================================
+/// Description:	???
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Bsp::render_flag(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	bool lightmap_selected = false;
@@ -910,6 +1080,18 @@ inline void Bsp::render_flag(face_t *face, Graphics &gfx, int stage, bool lightm
 	}
 }
 
+///=============================================================================
+/// Function: render_patch
+///=============================================================================
+/// Description:	bezeir patch (curved surface)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	int mesh_index = -1;
@@ -1008,6 +1190,18 @@ inline void Bsp::render_patch(face_t *face, Graphics &gfx, int stage, bool light
 	}
 }
 
+///=============================================================================
+/// Function: render_billboard
+///=============================================================================
+/// Description:	render billboard (surface that is always tangent to the viewer)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 inline void Bsp::render_billboard(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
 	bool lightmap_selected = false;
@@ -1071,6 +1265,18 @@ bool face_sort(const faceinfo_t &a, const faceinfo_t &b)
 }
 
 
+///=============================================================================
+/// Function: gen_renderlists
+///=============================================================================
+/// Description:	go through bsp tree and generate list of items to be rendered
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &position, frustum_t *frustum, int tick_num)
 {
 	leaf_t *frameLeaf = &data.Leaf[leaf];
@@ -1127,6 +1333,18 @@ void Bsp::gen_renderlists(int leaf, vector<surface_t *> &surface_list, vec3 &pos
 }
 
 
+///=============================================================================
+/// Function: add_list
+///=============================================================================
+/// Description:	adds to render list applying any q3 shader parameters
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 {
 	leaf_t *leaf = &data.Leaf[frustum_list[i]];
@@ -1365,6 +1583,18 @@ void Bsp::add_list(vector<surface_t *> &surface_list, bool blend_flag, int i)
 
 
 
+///=============================================================================
+/// Function: set_blend_mode
+///=============================================================================
+/// Description:	Set blending mode based on q3shader blendfuncs
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 {
 	static int last_mode;
@@ -1489,6 +1719,19 @@ void Bsp::set_blend_mode(Graphics &gfx, faceinfo_t &face)
 }
 
 
+///=============================================================================
+/// Function: set_tcmod
+///=============================================================================
+/// Description:	Set texture coordinate mod (scrolling textures,
+/// rotating textures, etc)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time)
 {
 	int j = face.stage;
@@ -1581,6 +1824,19 @@ void Bsp::set_tcmod(mLight2 &mlight2, faceinfo_t &face, int tick_num, float time
 
 }
 
+///=============================================================================
+/// Function: render
+///=============================================================================
+/// Description:	Main rendering entrypoint, gives player position and determines
+/// visible surfaces using BSP tree, may also do frustum culling of those surfaces
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_list, mLight2 &mlight2, int tick_num, frustum_t *frustum)
 {
 	int frameIndex = find_leaf(position);
@@ -1904,9 +2160,19 @@ void Bsp::render(vec3 &position, Graphics &gfx, vector<surface_t *> &surface_lis
 }
 
 
-/*
-	This fixes origin for func_door's, func_bobbing, trigger's etc
-*/
+
+///=============================================================================
+/// Function: model_origin
+///=============================================================================
+/// Description:	This fixes origin for func_door's, func_bobbing, trigger's etc
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 vec3 Bsp::model_origin(unsigned int index)
 {
 	if (index >= data.num_model)
@@ -1926,6 +2192,19 @@ vec3 Bsp::model_origin(unsigned int index)
 	return origin;
 }
 
+///=============================================================================
+/// Function: render_brush_entity
+///=============================================================================
+/// Description:	renders brushes associated with entities (doors, elevators,
+/// func_trains etc)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::render_brush_entity(unsigned int index, Graphics &gfx)
 {
 	if (index >= data.num_model)
@@ -1964,8 +2243,21 @@ void Bsp::render_brush_entity(unsigned int index, Graphics &gfx)
 }
 
 /*
-	Determines set of visible leafs from current leaf
 */
+
+
+///=============================================================================
+/// Function: cluster_visible
+///=============================================================================
+/// Description:	Determines set of visible leafs from current leaf
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 {
 	int byte_offset, bit_offset;
@@ -1988,6 +2280,18 @@ inline int Bsp::cluster_visible(int vis_cluster, int test_cluster)
 	return 	(&data.VisData->pVecs)[byte_offset] & test_byte;
 }
 
+///=============================================================================
+/// Function: load_from_file
+///=============================================================================
+/// Description:	loads texture from file (directly from disk, no shaders)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char **pk3_list, int num_pk3, int anisotropic)
 {
 	char	texture_name[LINE_SIZE] = { 0 };
@@ -2011,6 +2315,18 @@ void Bsp::load_from_file(char *filename, texture_t &texObj, Graphics &gfx, char 
 
 }
 
+///=============================================================================
+/// Function: load_from_shader
+///=============================================================================
+/// Description:	loads texture from shader description of texture
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, texture_t *texObj, Graphics &gfx, char **pk3_list, int num_pk3, int anisotropic)
 {
 	char			texture_name[LINE_SIZE + 1];
@@ -2123,6 +2439,18 @@ void Bsp::load_from_shader(char *name, vector<surface_t *> &surface_list, textur
 
 
 
+///=============================================================================
+/// Function: load_textures
+///=============================================================================
+/// Description:	loads texture for map
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char **pk3_list, int num_pk3, int anisotropic)
 {
 	enable_textures = true;
@@ -2219,12 +2547,24 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	}
 }
 
-/*
-	cylindrical patches are a 3x9 set of control points
-	U patches are a 3x5 set of control points
-	This function assumes it's given 3x3 set of control points
-	hacky fix for cylindrical patches and U patches in calling function
-*/
+///=============================================================================
+/// Function: tessellate
+///=============================================================================
+/// Description:	generates verticies / index arrays for bezeir surfaces
+///
+/// old comments: (not sure if still relevent)
+///		cylindrical patches are a 3x9 set of control points
+///		U patches are a 3x5 set of control points
+///		This function assumes it's given 3x3 set of control points
+///		hacky fix for cylindrical patches and U patches in calling function
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, int &num_verts,
 	int **index_array, int &num_indexes, vec2 &texcoord, vec2 &lightcoord, vec2 &size)
 {
@@ -2419,6 +2759,19 @@ void Bsp::tessellate(int level, bspvertex_t control[], vertex_t **vertex_array, 
 	num_verts = num_verts * num_verts;
 }
 
+///=============================================================================
+/// Function: vis_test
+///=============================================================================
+/// Description:	checks if point x is visible from point y
+///					will return leafs containing those points (if any)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Bsp::vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b)
 {
 		int a = find_leaf(x);
@@ -2442,6 +2795,19 @@ bool Bsp::vis_test(vec3 &x, vec3 &y, int &leaf_a, int &leaf_b)
 			return true;
 }
 
+///=============================================================================
+/// Function: leaf_test
+///=============================================================================
+/// Description:	checks if point x is visible from point y are in the same
+///				leaf
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Bsp::leaf_test(vec3 &x, vec3 &y)
 {
 		int a = find_leaf(x);
@@ -2453,9 +2819,18 @@ bool Bsp::leaf_test(vec3 &x, vec3 &y)
 			return false;
 }
 
-/*
-	Can be done in a geometry shader
-*/
+///=============================================================================
+/// Function: CalculateTangentArray
+///=============================================================================
+/// Description:	Calculates tangent vector for map surfaces
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
 {
 	vec3 *temp_tan = new vec3 [num_index];
@@ -2537,6 +2912,18 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 	delete[] temp_btan;
 }
 /*
+///=============================================================================
+/// Function: CalculateTangentArray
+///=============================================================================
+/// Description:	Calculates tangent vector for map surfaces (older code?)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, int num_index, vec4 *tangent)
 {
 	vec3 *temp_tan = new vec3 [num_vert];
@@ -2632,6 +3019,20 @@ void Bsp::CalculateTangentArray(bspvertex_t *vertex, int num_vert, int *index, i
 }
 */
 
+
+///=============================================================================
+/// Function: CreateShadowVolumes
+///=============================================================================
+/// Description:	Creates shadow volumes for map (not working correctly, think
+///				some sort of vertex indexing problem, need to investigate)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light, vertex_t *shadow_vertex, unsigned int *shadow_index, int &num_index)
 {
 	int leaf_index = find_leaf(light_pos);
@@ -2668,8 +3069,19 @@ void Bsp::CreateShadowVolumes(Graphics &gfx, vec3 &light_pos, int current_light,
 
 
 
-
-
+///=============================================================================
+/// Function: hitscan
+///=============================================================================
+/// Description:	Check for distance between ray at origin in direction dir
+///				before encountering first solid BSP Brush (if any)
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 {
 	// Really need to test brush planes not leaf aabbs
@@ -2685,25 +3097,34 @@ void Bsp::hitscan(vec3 &origin, vec3 &dir, float &distance)
 
 
 
-//=====================================================================================
-// Magic "trace" function for collision detection
-//=====================================================================================
-// Idea is you take these two points and walk them along the line towards each other
-// if they pass each other, no collision, if they dont you collided with something
-// For each collision plane you can move one point, (the one not inside the plane)
-// eg: dist = plane.normal dot position - plane.d
-// if dist > 0, then move point dist on the line
-// http://lineofsight.awright2009.com/BrushCollision.pdf
-//======================================================================================
-//
-// Inputs, start and desired end position
-// Outputs, either end position, or as far as you can go 
-// If a collision occurs, we set collision flag and collision normal
-// we also set an on_ground flag to indicate we are on the ground plane
-//
-// http://devmaster.net/articles/quake3collision/ (use wayback machine)
-//
-//======================================================================================
+
+///=============================================================================
+/// Function: trace
+///=============================================================================
+/// Description:	Magic "trace" function for collision detection
+///
+/// Idea is you take these two points and walk them along the line towards each other
+/// if they pass each other, no collision, if they dont you collided with something
+/// For each collision plane you can move one point, (the one not inside the plane)
+/// eg: dist = plane.normal dot position - plane.d
+/// if dist > 0, then move point dist on the line
+/// http://lineofsight.awright2009.com/BrushCollision.pdf
+///======================================================================================
+///
+/// Inputs, start and desired end position
+/// Outputs, either end position, or as far as you can go 
+/// If a collision occurs, we set collision flag and collision normal
+/// we also set an on_ground flag to indicate we are on the ground plane
+///
+/// http://devmaster.net/articles/quake3collision/ (use wayback machine)
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///
+///======================================================================================
 vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal)
 {
 	float trace_amount = 1.0f;
@@ -2739,7 +3160,21 @@ vec3 Bsp::trace(vec3 &start, vec3 &end, vec3 &normal)
 	}
 }
 
-// Walks BSP Tree and checks brush planes for collisions
+
+
+///=============================================================================
+/// Function: check_node
+///=============================================================================
+/// Description:	Walks BSP Tree and checks brush planes for collisions
+///				part of "trace" function
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::check_node(int node_index, float start_amount, float end_amount, vec3 &start, vec3 &end)
 {
 	// if leaf node, finish recursion
@@ -2829,6 +3264,19 @@ void Bsp::check_node(int node_index, float start_amount, float end_amount, vec3 
 }
 
 
+///=============================================================================
+/// Function: check_brush
+///=============================================================================
+/// Description:	Walks BSP Tree and checks brush planes for collisions
+///				part of "trace" function
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Bsp::check_brush(brush_t *brush, vec3 &start, vec3 &end)
 {
 	float start_amount = -1.0f;

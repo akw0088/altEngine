@@ -12,9 +12,9 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-///=============================================================================
+///============================================================================
 /// File: quake3.cpp
-///=============================================================================
+///============================================================================
 /// Game class that has all the game logic, inherits from basegame, which provides
 /// the interface used by engine. Note, this class is a friend of engine, which
 /// kind of makes them the same class essentially, ideally the friend relationship
@@ -29,9 +29,7 @@
 ///
 /// Bunny hopping / movement sadly doesnt feel as good as quake3
 ///
-/// Accepts keyboard / mouse / network input / timer events
-/// outputs rendered image, sound, etc
-///=============================================================================
+///============================================================================
 
 #include "include.h"
 #include <math.h> // for sin/cos
