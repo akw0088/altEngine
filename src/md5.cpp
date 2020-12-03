@@ -12,7 +12,21 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-// From http://tfc.duke.free.fr/ tutorials
+
+///============================================================================
+/// File: md5.cpp
+///============================================================================
+/// Class for loading / rendering / Doom 3 MD5 models
+/// MD5 models are a skeletal animation modeling system stored as a plain text file
+/// Quaternions are used for orientations in a tree structure
+/// And weights are used to blend meshes between orientations
+///
+/// Note: This file is nuts and bolts, see md5model.cpp for higher level operations
+/// using this file
+///
+/// Got this going from md5 tutorials here (which will have more information):
+///		http://tfc.duke.free.fr/ 
+///============================================================================
 
 #include "md5.h"
 
@@ -20,12 +34,36 @@
 #define new DEBUG_NEW
 #endif
 
+///=============================================================================
+/// Function: MD5
+///=============================================================================
+/// Description: Constructor for md5 class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 MD5::MD5()
 {
 	loaded = false;
 	model = NULL;
 }
 
+///=============================================================================
+/// Function: ~MD5
+///=============================================================================
+/// Description: Destructor for md5 class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 MD5::~MD5()
 {
 	if (loaded == false)
@@ -49,7 +87,19 @@ MD5::~MD5()
 	}
 }
 
-// Note: This function isnt used
+///=============================================================================
+/// Function: InterpolateSkeletons
+///=============================================================================
+/// Description: This function isnt used currently, but blends between two animations
+/// for seamless transitions between say a walk animation and a run animation
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skelB, int num_joints, float interp, md5_joint_t *out)
 {
 	int i;
@@ -67,6 +117,19 @@ void MD5::InterpolateSkeletons(const md5_joint_t *skelA, const md5_joint_t *skel
 	}
 }
 
+///=============================================================================
+/// Function: PrepareMesh
+///=============================================================================
+/// Description: This function generates index array, vertex array,
+///		and texture coordinates for the passed skeleton
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int *index_array, vertex_t *vertex_array, int &num_vertex)
 {
 	md5_mesh_t *mesh = &model->mesh[mesh_index];
@@ -138,6 +201,18 @@ void MD5::PrepareMesh(int mesh_index, md5_joint_t *skeleton, int &num_index, int
 }
 
 
+///=============================================================================
+/// Function: load_md5
+///=============================================================================
+/// Description: Loads a md5 from a file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::load_md5(char *file)
 {
 	char *data = get_file(file, NULL);
@@ -225,6 +300,18 @@ int MD5::load_md5(char *file)
 	return 0;
 }
 
+///=============================================================================
+/// Function: parse_joint
+///=============================================================================
+/// Description: Parses a joint from md5 file text
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 {
 	char *pdata;
@@ -266,6 +353,18 @@ int MD5::parse_joint(char *data, md5_joint_t *joint, int num_joint)
 	return 0;
 }
 
+///=============================================================================
+/// Function: parse_mesh
+///=============================================================================
+/// Description: Parses a mesh from md5 file text
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 {
 	char *pdata;
@@ -472,6 +571,18 @@ int MD5::parse_mesh(char *data, md5_mesh_t *mesh)
 	return 0;
 }
 
+///=============================================================================
+/// Function: load_md5_animation
+///=============================================================================
+/// Description: loads a md5 animation from .md5anim file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::load_md5_animation(char *file, anim_list_t *plist)
 {
 	char *data = get_file(file, NULL);
@@ -638,6 +749,18 @@ int MD5::load_md5_animation(char *file, anim_list_t *plist)
 	return 0;
 }
 
+///=============================================================================
+/// Function: parse_hierarchy
+///=============================================================================
+/// Description: parses hierarchy tree from .md5anim file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
 {
 	char name[64];
@@ -678,6 +801,18 @@ int MD5::parse_hierarchy(char *data, int num_joint, md5_hierarchy_t *hierarchy)
 	return 0;
 }
 
+///=============================================================================
+/// Function: parse_bounds
+///=============================================================================
+/// Description: parses md5 axis aligned bounding box from md5anim file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
 {
 	char *pdata;
@@ -716,6 +851,18 @@ int MD5::parse_bounds(char *data, int num_bound, md5_aabb_t *aabb)
 	return 0;
 }
 
+///=============================================================================
+/// Function: parse_base
+///=============================================================================
+/// Description: parses md5 base (position and orientation) from md5anim file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::parse_base(char *data, int num_base, md5_base_t *base)
 {
 	char *pdata;
@@ -748,6 +895,18 @@ int MD5::parse_base(char *data, int num_base, md5_base_t *base)
 	return 0;
 }
 
+///=============================================================================
+/// Function: parse_base
+///=============================================================================
+/// Description: parses md5 frame (key frame) from md5anim file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 int MD5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 {
 	char *pdata = data;
@@ -789,6 +948,18 @@ int MD5::parse_frame(char *data, int num_frame, int num_ani, float *frame)
 }
 
 
+///=============================================================================
+/// Function: build_frame
+///=============================================================================
+/// Description: builds md5 frame (key frame) from md5anim file and md5 file
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::build_frame(md5_joint_t *joint, float *frame, md5_anim_t *anim)
 {
 	int i;
@@ -852,6 +1023,19 @@ void MD5::build_frame(md5_joint_t *joint, float *frame, md5_anim_t *anim)
 	}
 }
 
+///=============================================================================
+/// Function: calc_tangent
+///=============================================================================
+/// Description: calculate tangent vectors for triangles in mesh for normal
+/// mapping
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c)
 {
 	vec3 p = b.position - a.position;
@@ -890,6 +1074,18 @@ void MD5::calc_tangent(vertex_t &a, vertex_t &b, vertex_t &c)
 	c.tangent += vec4(t.x, t.y, t.z, 0);
 }
 
+///=============================================================================
+/// Function: generate_tangent
+///=============================================================================
+/// Description: pack tangent vectors into vertex_t
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_array, int num_vertex)
 {
 	for(int i = 0; i < num_index; i++)
@@ -914,6 +1110,18 @@ void MD5::generate_tangent(int *index_array, int num_index, vertex_t *vertex_arr
 }
 
 
+///=============================================================================
+/// Function: generate_animation
+///=============================================================================
+/// Description: Generate animation key frames from md5 file and md5anim
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::generate_animation(md5_joint_t **&frame, md5_anim_t *anim)
 {
 	frame = new md5_joint_t *[anim->num_frame];
@@ -924,6 +1132,18 @@ void MD5::generate_animation(md5_joint_t **&frame, md5_anim_t *anim)
 	}
 }
 
+///=============================================================================
+/// Function: destroy_animation
+///=============================================================================
+/// Description: deallocate an animation generated previously
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void MD5::destroy_animation(md5_joint_t **&frame, md5_anim_t *anim)
 {
 	for(int i = 0; i < anim->num_frame; i++)
