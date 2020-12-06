@@ -548,7 +548,7 @@ void Audio::init()
 	// 8 units = 1 foot, 1 foot = 0.3 meters
 	// 1 unit = 0.3 / 8 meters
 	alListenerf(AL_METERS_PER_UNIT, 0.375f);
-
+#ifdef EFXUTIL
 	if (ALFWIsEFXSupported() == false)
 	{
 		printf("Environmental Audio Effects not supported\n");
@@ -625,7 +625,7 @@ void Audio::init()
 	alFilteri(filter[7], AL_FILTER_TYPE, AL_FILTER_HIGHPASS);
 	alFilterf(filter[7], AL_HIGHPASS_GAIN, 0.75f);
 	alFilterf(filter[7], AL_HIGHPASS_GAINLF, 0.75f);
-
+#endif
 
 #endif
 }
@@ -673,6 +673,7 @@ void Audio::set_audio_model(int model)
 void Audio::effects(int source, int enable_filter, int filter_index)
 {
 #ifdef WIN32
+#ifdef EFXUTIL
 	ALenum al_err;
 
 	alAuxiliaryEffectSloti(slot, AL_EFFECTSLOT_EFFECT, effect);
@@ -694,7 +695,7 @@ void Audio::effects(int source, int enable_filter, int filter_index)
 		debugf("Unable to associate slot: %s\n", GetALErrorString(al_err));
 	}
 #endif
-
+#endif
 }
 
 int Audio::load_ogg(char *filename, wave_t &wave)
