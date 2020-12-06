@@ -30,23 +30,23 @@ Windows:
 	oculus vr will render, but doesnt currently handle user input (from oculus touch or head movements)
 
 
-Dependency Download links:
+## Dependency Download links
 
-GLEW opengl wrangler (microsoft poorly supports opengl, so this is required)
-	http://glew.sourceforge.net/
+GLEW opengl wrangler (microsoft poorly supports opengl, so this is required)  
+	http://glew.sourceforge.net/  
 
-DirectX SDK June 2010
-	https://www.microsoft.com/en-us/download/details.aspx?id=6812
+DirectX SDK June 2010  
+	https://www.microsoft.com/en-us/download/details.aspx?id=6812  
 
-OpenAL Sound API
-	https://www.openal.org/downloads/
+OpenAL Sound API  
+	https://www.openal.org/downloads/  
 
-Opus Voice Codec
-	https://opus-codec.org/
+Opus Voice Codec  
+	https://opus-codec.org/  
 
-Vulkan SDK
-	https://vulkan.lunarg.com/
+Vulkan SDK  
+	https://vulkan.lunarg.com/  
 
-This isn't really a dependency, but almost added it. (Text to Speech)
-	http://www.speech.cs.cmu.edu/flite/index.html
+This isn't really a dependency, but almost added it. (Text to Speech)  
+	http://www.speech.cs.cmu.edu/flite/index.html  
 
