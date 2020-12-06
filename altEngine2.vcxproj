@@ -432,7 +432,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>winmm.lib;xinput.lib;openal32.lib;d3d11.lib;efx-util.lib;d3d11x.lib</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;xinput.lib;openal32.lib;d3d11.lib;efx-util.lib;kernel32.lib;user32.lib;gdi32.lib;D3DX11.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
