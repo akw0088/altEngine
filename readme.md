@@ -1,6 +1,6 @@
 ## Synopsis
 
-altEngine2 is my 3d engine, it loads quake3 BSP maps and renders them in OpenGL 4.4
+altEngine2 is my 3d engine, it loads quake3 BSP maps and renders them in OpenGL 4.4. It also supports D3D9, D3D11, and software rendering. Oculus should render, but not head tracking / touch tracking, Vulkan will only render the menu background and needs work (rendering only a single vertex buffer, once multiples work everything should render, havent messed with it in a while and back when I did the driver support was very spotty (works on one machine, not the other, changes to fix the other made the first stop working etc)
 
 ## Download
 
@@ -11,22 +11,24 @@ http://lineofsight.awright2009.com/downloads.html
 Linux:
 	Linux will need glx, opengl development headers, openal sdk (freealut should work)
 	Once you have prereq's just type make
+	Note: defaulting to Software renderering use -DOPENGL instead of -DSOFTWARE for opengl (left software as a default as it has less dependencies)
 
 Windows:
 	You will need glew:
 		http://glew.sourceforge.net/
 	OpenAL SDK
 		https://www.openal.org/downloads/
+	Opus SDK for voice chat (will check in to project directly here in a bit)
 
 	Open altEngine2.sln (currently using visual studio 2015)
 
-	Should compile after pointing VC++ Directories to both the include and lib directories of glew and openal sdk
+	Should compile after installing prereq's
 	(Sometimes I check in stuff that doesnt compile though, and I dont always update the project files diligently, but it should compile most of the time)
 
 
 ## Misc info
 
-	D3D9 will compile and render as well, but the shaders havent been updated in some time
-	D3D11 needs work, think it might render the menu currently
+	D3D9 will compile and render, but the shaders havent been updated in some time, menu might not render, but it's there (again shaders)
+	D3D11 will compile and render, but shaders havent been updated in some time, menu might not render, but it's there (again shaders)
 	vulkan needs work, it will only render the menu background
 	oculus vr will render, but doesnt currently handle user input (from oculus touch or head movements)
