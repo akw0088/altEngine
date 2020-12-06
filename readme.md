@@ -35,7 +35,7 @@ Windows:
 GLEW opengl wrangler (microsoft poorly supports opengl, so this is required)  
 	http://glew.sourceforge.net/  
 
-DirectX SDK June 2010  
+DirectX SDK June 2010 (DirectX9) 
 	https://www.microsoft.com/en-us/download/details.aspx?id=6812  
 
 Windows SDK (DirectX11)  
