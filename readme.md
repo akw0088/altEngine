@@ -32,3 +32,23 @@ Windows:
 	D3D11 will compile and render, but shaders havent been updated in some time, menu might not render, but it's there (again shaders)
 	vulkan needs work, it will only render the menu background
 	oculus vr will render, but doesnt currently handle user input (from oculus touch or head movements)
+
+
+Dependency Download links:
+
+GLEW opengl wrangler (microsoft poorly supports opengl, so this is required)
+	https://www.opengl.org/sdk/libs/GLEW/
+
+DirectX SDK June 2010
+	https://www.microsoft.com/en-us/download/details.aspx?id=6812
+
+OpenAL Sound API
+	https://www.openal.org/downloads/
+
+Opus Voice Codec
+	https://opus-codec.org/
+
+Vulkan SDK
+	https://vulkan.lunarg.com/
+
+
