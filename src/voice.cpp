@@ -22,7 +22,6 @@ Voice::Voice()
 
 int Voice::init(Audio &audio, unsigned short qport)
 { 
-	int ret; 
 
 	Voice::qport = qport;
 
@@ -32,6 +31,9 @@ int Voice::init(Audio &audio, unsigned short qport)
 	}
 
 #ifndef DEDICATED
+	int ret;
+
+
 	alGenSources(1, &mic_source);
 	alGenBuffers(NUM_PONG, (unsigned int *)&mic_buffer[0]);
 	alSourcei(mic_source, AL_SOURCE_RELATIVE, AL_TRUE);
@@ -122,9 +124,9 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, i
 
 int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
 { 
+#ifdef VOICECHAT
 	int frame_size;
 
-#ifdef VOICECHAT
 	frame_size = opus_decode(decoder, data, size, (opus_int16 *)pcm, MAX_SEGMENT_SIZE, 0);
 	if (frame_size < 0)
 	{ 
