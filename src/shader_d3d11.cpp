@@ -96,8 +96,49 @@ int mLight2::init(Graphics *gfx, bool pixel)
 	return 0;
 }
 
-void mLight2::set_normalmap(int value)
+void  mLight2::set_diffuse_min(float value)
 {
+}
+
+void  mLight2::set_normalmap_scale(vec3 &value)
+{
+}
+
+void  mLight2::set_specular_min(float value)
+{
+}
+
+
+void mLight2::set_normalmap(float value)
+{
+}
+
+void mLight2::set_atten_exponent(float value)
+{
+
+}
+
+void mLight2::set_atten_scale(float value)
+{
+
+}
+
+void mLight2::set_atten_min(float value)
+{
+
+}
+
+void  mLight2::set_specular_exponent(float value)
+{
+}
+
+void  mLight2::set_specular_factor(float value)
+{
+}
+
+void mLight2::set_diffuse_factor(float value)
+{
+
 }
 
 

@@ -432,7 +432,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>"C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86\D3DCompiler.lib";D3DX11.lib;d3d11.lib;openal32.lib;EFX-Util.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;xinput.lib;openal32.lib;d3d11.lib;efx-util.lib;d3d11x.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -553,6 +553,11 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>xinput.lib;openal32.lib;winmm.lib;DxErr.lib;d3dx9.lib;EFX-Util.lib;d3d9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Direct3d11|x64'">
+    <Link>
+      <AdditionalDependencies>winmm.lib;xinput.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
