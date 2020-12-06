@@ -48,4 +48,4 @@ Vulkan SDK
 	https://vulkan.lunarg.com/
 
 This isn't really a dependency, but almost added it. (Text to Speech)
-	https://www.speex.org/
+	http://www.speech.cs.cmu.edu/flite/index.html
