@@ -1,6 +1,6 @@
 ## Synopsis
 
-altEngine2 is my 3d engine, it loads quake3 BSP maps and renders them in OpenGL 4.4. It also supports D3D9, D3D11, and software rendering. Oculus should render, but will not have head tracking / touch tracking, Vulkan will only render the menu background and needs work (rendering only a single vertex buffer, once multiples work everything should render, havent messed with it in a while and back when I did the driver support was very spotty (works on one machine, not the other, changes to fix the other made the first stop working etc)
+altEngine2 is my 3d engine, it loads quake3 BSP maps and renders them in OpenGL 4.4. It also supports D3D9, D3D11, and software rendering. (but they will look noticably worse) Oculus should render, but will not have head tracking / touch tracking, Vulkan will only render the menu background and needs work (rendering only a single vertex buffer, once multiples work everything should render, havent messed with it in a while and back when I did the driver support was very spotty (works on one machine, not the other, changes to fix the other made the first stop working etc)
 
 ## Download
 
