@@ -264,9 +264,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			wglChoosePixelFormatARB(hdc, (int *)pixelformat, NULL, 1, &format, &num_formats);
 			hglrc = wglCreateContextAttribsARB(hdc, 0, context);
-			wglMakeCurrent(NULL, NULL);
-			wglDeleteContext(hglrc_legacy);
-			wglMakeCurrent(hdc, hglrc);
+			if (hglrc != NULL)
+			{
+				wglMakeCurrent(NULL, NULL);
+				wglDeleteContext(hglrc_legacy);
+				wglMakeCurrent(hdc, hglrc);
+			}
+			else
+			{
+				MessageBox(hwnd, "Graphics Driver does not support OpenGL 4.4, update driver and/or GPU", "Fatal Error", 0);
+			}
 		}
 		else
 		{

@@ -155,7 +155,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Direct3d11|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dedicated Server|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -281,15 +281,15 @@
     <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win32;C:\glew-2.0.0\lib\Release\Win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.0.0\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.1.0\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">
     <IncludePath>C:\VulkanSDK\1.2.154.1\Include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.0.0\include;C:\altEngine2\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\VulkanSDK\1.2.154.1\Lib;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\;C:\glew-2.0.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\opus-1.2.1\include;C:\Users\AW\Desktop\altEngine\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.1.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\opus-1.2.1\include;C:\altEngine2\include;C:\Program Files %28x86%29\OpenAL 1.1 SDK\include;C:\glew-2.1.0\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\opus-1.2.1\win32\VS2015\x64\Release;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64\EFX-Util_MT;C:\Program Files %28x86%29\OpenAL 1.1 SDK\libs\Win64;C:\glew-2.1.0\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dedicated Server|x64'">
@@ -525,10 +525,13 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Optimization>Full</Optimization>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;xinput.lib;efx-util.lib;glew32.lib;opengl32.lib;openal32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Dedicated Server|x64'">
