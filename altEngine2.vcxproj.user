@@ -25,6 +25,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Direct3d11|Win32'">
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dedicated Server|Win32'">
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
