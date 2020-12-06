@@ -16,12 +16,6 @@ Linux:
 	(left software as a default as it has less dependencies)
 
 Windows:
-	You will need glew:
-		http://glew.sourceforge.net/
-	OpenAL SDK
-		https://www.openal.org/downloads/
-	Opus SDK for voice chat (will check in to project directly here in a bit)
-
 	Open altEngine2.sln (currently using visual studio 2015)
 
 	Should compile after installing prereq's
@@ -39,7 +33,7 @@ Windows:
 Dependency Download links:
 
 GLEW opengl wrangler (microsoft poorly supports opengl, so this is required)
-	https://www.opengl.org/sdk/libs/GLEW/
+	http://glew.sourceforge.net/
 
 DirectX SDK June 2010
 	https://www.microsoft.com/en-us/download/details.aspx?id=6812
