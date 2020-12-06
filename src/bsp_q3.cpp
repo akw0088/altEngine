@@ -30,7 +30,7 @@
 ///============================================================================
 
 #include "include.h"
-
+#include <math.h> // for M_PI
 #include <algorithm> // for sort
 
 #ifdef _DEBUG

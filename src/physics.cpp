@@ -20,6 +20,8 @@
 #include <algorithm>
 #include "sin_table.h"
 
+#include <math.h> // for tanf
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

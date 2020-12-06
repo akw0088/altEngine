@@ -14,7 +14,6 @@
 
 #include "shader.h"
 #include <cmath> // for some sin/cos/tan funcs
-#include "..\include\shader.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
