@@ -22,14 +22,13 @@ Voice::Voice()
 
 int Voice::init(Audio &audio, unsigned short qport)
 { 
-
 	Voice::qport = qport;
 
 	if (audio.microphone == NULL)
 	{
 		return -1;
 	}
-
+#ifdef VOICECHAT
 #ifndef DEDICATED
 	int ret;
 
@@ -46,7 +45,6 @@ int Voice::init(Audio &audio, unsigned short qport)
 	//OPUS_APPLICATION_AUDIO -- music
 	//OPUS_APPLICATION_VOIP -- voice
 	//OPUS_APPLICATION_RESTRICTED_LOWDELAY -- low delay voice
-#ifdef VOICECHAT
 	encoder = opus_encoder_create(VOICE_SAMPLE_RATE, 1, OPUS_APPLICATION_VOIP, &ret);
 	if (ret < 0) 
 	{ 

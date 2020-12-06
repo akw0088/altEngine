@@ -1037,7 +1037,11 @@ void Audio::init()
 {
 }
 
-void Audio::effects(int source)
+void Audio::set_effect(int selected_effect)
+{
+}
+
+void Audio::effects(int source, int enable_filter, int filter_index)
 {
 }
 

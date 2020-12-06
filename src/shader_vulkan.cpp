@@ -78,7 +78,7 @@ void  mLight2::set_dissolve(float value)
 {
 }
 
-void  mLight2::set_normalmap(int value)
+void  mLight2::set_normalmap(float value)
 {
 }
 
