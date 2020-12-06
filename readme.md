@@ -11,7 +11,9 @@ http://lineofsight.awright2009.com/downloads.html
 Linux:
 	Linux will need glx, opengl development headers, openal sdk (freealut should work)
 	Once you have prereq's just type make
-	Note: defaulting to Software renderering use -DOPENGL instead of -DSOFTWARE for opengl (left software as a default as it has less dependencies)
+
+	Note: defaulting to Software rendering use -DOPENGL instead of -DSOFTWARE in the makefile for opengl
+	(left software as a default as it has less dependencies)
 
 Windows:
 	You will need glew:
