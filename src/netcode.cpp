@@ -1551,7 +1551,7 @@ int Netcode::bind(int port)
 	}
 #endif
 
-#ifdef VOICE
+#ifdef VOICECHAT
 	engine->voice.bind(NULL, 65530);
 #endif
 	if (sock.bind(NULL, port) == 0)
@@ -1595,7 +1595,7 @@ void Netcode::connect(char *serverip)
 	clientmsg.length = CLIENT_HEADER + clientmsg.num_cmds * sizeof(int) + client_reliable.size;
 
 
-#ifdef VOICE
+#ifdef VOICECHAT
 	engine->voice.bind(NULL, 65530);
 #endif
 	sock.connect(serverip, net_port);
@@ -1618,7 +1618,7 @@ void Netcode::connect(char *serverip)
 		client_flag = true;
 		server_flag = false;
 		debugf("Connected\n");
-#ifdef VOICE
+#ifdef VOICECHAT
 		sprintf(engine->voice.server, "%s:65530", serverip);
 #endif
         reliablemsg_t *reliablemsg = (reliablemsg_t *)&servermsg.data[0];

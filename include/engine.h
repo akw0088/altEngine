@@ -373,7 +373,7 @@ protected:
 	vector<wave_t>		snd_wave;
 
 
-#ifdef VOICE
+#ifdef VOICECHAT
 	Voice voice;
 #endif
 	// pathfinding stuff

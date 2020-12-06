@@ -185,7 +185,9 @@
 	#include <efx.h>
 	#include <EFX-Util.h>
 	#include <efx-creative.h>
+#ifdef VOICECHAT
 	#include <opus.h>
+#endif
 #endif
 
 //std

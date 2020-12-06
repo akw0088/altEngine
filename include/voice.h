@@ -38,7 +38,7 @@ public:
 
 	char server[128];
 private:
-#ifndef __OBJC__
+#ifdef VOICECHAT
 	OpusEncoder *encoder;
 	OpusDecoder *decoder;
 #endif
