@@ -186,7 +186,9 @@ void lump_to_wave(char *lump_data, int size, wave_t *wave)
 
 	wave->pcmData = &(header->data);
 	wave->format->channels = 1;
+#ifndef DEDICATED
 	wave->format->format = AL_FORMAT_MONO8;
+#endif
 	wave->format->sampleRate = header->sample_rate;
 	wave->format->sampleSize = 8;
 	wave->format->avgSampleRate = header->sample_rate;

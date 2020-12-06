@@ -284,7 +284,7 @@ char environment_names[][128] = {
 	"REVERB_PRESET_SMALLWATERROOM"
 };
 
-
+#ifndef DEDICATED
 char *GetALErrorString(ALenum err)
 {
     switch(err)
@@ -309,6 +309,7 @@ char *GetALErrorString(ALenum err)
     };
 	return "?";
 }
+#endif
 
 
 
@@ -1115,10 +1116,12 @@ char *Audio::findChunk(char *chunk, char *id, int *size, char *end)
 	return (char *)0xDEADBEEF;
 }
 
+#ifndef DEDICATED
 ALenum Audio::alFormat(wave_t *wave)
 {
 	return AL_FORMAT_STEREO16;
 }
+#endif
 
 void Audio::set_audio_model(int model)
 {

@@ -24,12 +24,14 @@ int Voice::init(Audio &audio, unsigned short qport)
 { 
 	Voice::qport = qport;
 
+#ifdef VOICECHAT
+#ifndef DEDICATED
 	if (audio.microphone == NULL)
 	{
 		return -1;
 	}
-#ifdef VOICECHAT
-#ifndef DEDICATED
+
+
 	int ret;
 
 
@@ -147,10 +149,12 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	bool local_echo = false;
 	static voicemsg_t msg;
 
+#ifndef DEDICATED
 	if (audio.microphone == NULL)
 	{
 		return 0;
 	}
+#endif
 
 #ifdef DEDICATED
 	return 0;

@@ -156,28 +156,10 @@
     <ClCompile Include="src\spline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\edge.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\graphics_software.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\raster.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shader_software.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\bsp_q1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\bsp_q2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\raytrace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\vm.c">
@@ -185,12 +167,6 @@
     </ClCompile>
     <ClCompile Include="src\vmmain.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="vm\vm_main.c">
-      <Filter>vm</Filter>
-    </ClCompile>
-    <ClCompile Include="vm\vm_stdlib.c">
-      <Filter>vm</Filter>
     </ClCompile>
     <ClCompile Include="src\cloth.cpp">
       <Filter>Source Files</Filter>
@@ -226,6 +202,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ent_vehicle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics_software.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shader_software.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\raster.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -383,52 +368,7 @@
     <ClInclude Include="include\sock.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\spline.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\raster.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\edge.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\isocube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\md5sum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\portal_camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\bsp_q1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\bsp_q2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\bsp_types_q2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\bsp_types_q1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\raytrace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vehicle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vm\vm_stdlib.h">
-      <Filter>vm</Filter>
-    </ClInclude>
-    <ClInclude Include="include\cloth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\serial.h">
+    <ClInclude Include="portal_camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

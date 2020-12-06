@@ -3,76 +3,88 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Oculus Debug|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Direct3d|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release D3D9|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Direct3d11|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release D3D11|Win32'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dedicated Server|Win32'">
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Dedicated Server|Win32'">
     <LocalDebuggerCommandArguments>;bind 65535;map media/maps/q3tourney2.bsp;</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Vulkan|x64'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Software|x64'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Direct3d11|x64'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release D3D11|x64'">
     <LocalDebuggerCommandArguments>debug</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-	<LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>c:\altEngine2\</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Direct3d|x64'">
+    <LocalDebuggerWorkingDirectory>c:\altEngine2</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release D3D9|x64'">
+    <LocalDebuggerWorkingDirectory>c:\altEngine2</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Software|Win32'">
+    <LocalDebuggerWorkingDirectory>c:\altEngine2</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
