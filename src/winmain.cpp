@@ -273,6 +273,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else
 			{
 				MessageBox(hwnd, "Graphics Driver does not support OpenGL 4.4, update driver and/or GPU", "Fatal Error", 0);
+				hglrc = hglrc_legacy;
 			}
 		}
 		else
