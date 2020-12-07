@@ -17,6 +17,8 @@
 #ifndef MD5MODEL_H
 #define MD5MODEL_H
 
+#define MAX_ANIMATIONS 128
+
 class MD5Model
 {
 public:
@@ -32,7 +34,7 @@ public:
 	bool		done;
 private:
 	MD5			md5;
-	md5_buffer_t *buffer[32];
+	md5_buffer_t *buffer[MAX_ANIMATIONS];
 	md5_buffer_t *current_buffer;
 	anim_list_t anim_list;
 	md5_anim_t *current_anim;
