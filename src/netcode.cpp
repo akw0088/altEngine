@@ -596,12 +596,12 @@ void Netcode::parse_player_string(char *msg)
 
 				active_clients[count] = true;
 				engine->clean_entity(index);
-				ent->rigid = new RigidBody(ent);
+				ent->rigid = new EntRigidBody(ent);
 				ent->model = ent->rigid;
 				ent->rigid->clone(*(engine->thug22->model));
 				ent->rigid->flags.step_flag = true;
 				ent->position += ent->rigid->center;
-				ent->player = new Player(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_PLAYER, engine->game->get_model_table());
+				ent->player = new EntPlayer(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_PLAYER, engine->game->get_model_table());
 				ent->player->type = PLAYER;
 				sprintf(ent->player->name, "%s", name);
 				ent->player->local = true;
@@ -615,12 +615,12 @@ void Netcode::parse_player_string(char *msg)
 					active_clients[count] = true;
 					Entity *ent = engine->entity_list[index];
 					engine->clean_entity(index);
-					ent->rigid = new RigidBody(ent);
+					ent->rigid = new EntRigidBody(ent);
 					ent->model = ent->rigid;
 					ent->rigid->clone(*(engine->thug22->model));
 					ent->rigid->flags.step_flag = true;
 					ent->position += ent->rigid->center;
-					ent->player = new Player(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_SERVER, engine->game->get_model_table());
+					ent->player = new EntPlayer(ent, engine->gfx, engine->audio, 21, TEAM_NONE, ENT_SERVER, engine->game->get_model_table());
 					ent->player->local = false;
 					ent->player->type = SERVER;
 					sprintf(ent->player->name, "%s", name);
@@ -857,7 +857,7 @@ int Netcode::server_recv()
 				if (client_list[i]->qport == clientmsg.qport)
 				{
 					found = true;
-					Player *player = engine->entity_list[client_list[i]->ent_id]->player;
+					EntPlayer *player = engine->entity_list[client_list[i]->ent_id]->player;
 
 					if (strcmp(name, player->name) != 0)
 					{
@@ -1018,7 +1018,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 		// variable size is zero until we determine entity type
 		int size = 0;
 
-		RigidBody *rigid = engine->entity_list[i]->rigid;
+		EntRigidBody *rigid = engine->entity_list[i]->rigid;
 
 		// clear our generic entity struct
 		memset(&ent, 0, sizeof(net_entity_t));
@@ -1029,7 +1029,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 		ent.ctype = NET_UNKNOWN;
 
 
-		Projectile *projectile = engine->entity_list[i]->projectile;
+		EntProjectile *projectile = engine->entity_list[i]->projectile;
 		if (projectile != NULL)
 		{
 			// entity has a projectile pointer, serialize projectile data
@@ -1088,7 +1088,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 			continue;
 		}
 
-		Trigger *trigger = engine->entity_list[i]->trigger;
+		EntTrigger *trigger = engine->entity_list[i]->trigger;
 		if (trigger != NULL)
 		{
 			net_trigger->active = 0;
@@ -1111,7 +1111,7 @@ int Netcode::serialize_ents(unsigned char *data, unsigned short int &num_ents, u
 			continue;
 		}
 
-		Player *player = engine->entity_list[i]->player;
+		EntPlayer *player = engine->entity_list[i]->player;
 		if (player != NULL && rigid != NULL)
 		{
 			net_player->health = player->health;
@@ -1244,8 +1244,8 @@ int Netcode::deserialize_ents(unsigned char *data, unsigned short int num_ents, 
 
 int Netcode::deserialize_net_player(net_player_t *net, int index, int etype)
 {
-	Player *player = engine->entity_list[index]->player;
-	RigidBody *rigid = engine->entity_list[index]->rigid;
+	EntPlayer *player = engine->entity_list[index]->player;
+	EntRigidBody *rigid = engine->entity_list[index]->rigid;
 
 	if (player != NULL)
 	{
@@ -1346,7 +1346,7 @@ int Netcode::deserialize_net_rigid(net_rigid_t *net, int index, int etype)
 
 	if (ent->rigid)
 	{
-		RigidBody *rigid = ent->rigid;
+		EntRigidBody *rigid = ent->rigid;
 		ent->position = net->position;
 		rigid->velocity = net->velocity;
 		rigid->angular_velocity = net->angular_velocity;
@@ -1410,7 +1410,7 @@ int Netcode::deserialize_net_projectile(net_projectile_t *net, int index, int et
 		engine->game->make_dynamic_ent((net_ent_t)etype, index);
 	}
 
-	RigidBody *rigid = ent->rigid;
+	EntRigidBody *rigid = ent->rigid;
 
 	if (rigid)
 	{

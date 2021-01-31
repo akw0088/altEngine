@@ -71,31 +71,31 @@ public:
 	void destroy();
 
 
-	void check_triggers(Player *player, Entity *ent, int self, vector<Entity *> &entity_list);
-	void check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list);
-	void check_func(Player *player, Entity *ent, int self, vector<Entity *> &entity_list);
+	void check_triggers(EntPlayer *player, Entity *ent, int self, vector<Entity *> &entity_list);
+	void check_projectiles(EntPlayer *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list);
+	void check_func(EntPlayer *player, Entity *ent, int self, vector<Entity *> &entity_list);
 
 	void render_hud(double last_frametime);
 	void draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int ent_num);
 	void draw_line(Entity *a, Entity *b, Menu &menu, vec3 &color);
 	void transform_3d_2d(vec3 &position, vec3 &pos2d, matrix4 &projection);
 
-	void handle_weapons(Player &player, input_t &input, int self, bool client);
+	void handle_weapons(EntPlayer &player, input_t &input, int self, bool client);
 
-	void handle_gauntlet(Player &player, int self, bool client);
-	void handle_plasma(Player &player, int self, bool client);
-	void handle_rocketlauncher(Player &player, Constructable *sentry, int self, bool client);
-	void handle_grenade(Player &player, int self, bool client);
-	void handle_lightning(Player &player, int self, bool client);
-	void handle_railgun(Player &player, int self, bool client);
-	void handle_machinegun(Player &player, Constructable *sentry, int self, bool client);
-	void handle_shotgun(Player &player, int self, bool client);
-	void handle_gibs(Player &player);
+	void handle_gauntlet(EntPlayer &player, int self, bool client);
+	void handle_plasma(EntPlayer &player, int self, bool client);
+	void handle_rocketlauncher(EntPlayer &player, EntConstructable *sentry, int self, bool client);
+	void handle_grenade(EntPlayer &player, int self, bool client);
+	void handle_lightning(EntPlayer &player, int self, bool client);
+	void handle_railgun(EntPlayer &player, int self, bool client);
+	void handle_machinegun(EntPlayer &player, EntConstructable *sentry, int self, bool client);
+	void handle_shotgun(EntPlayer &player, int self, bool client);
+	void handle_gibs(EntPlayer &player);
 	int  handle_bot(Entity *entity, int i);
 	void create_crosshair();
 	void draw_crosshair();
-	void draw_flash(Player *player);
-	void add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Model &decal_model, float offset, bool explode, int explode_timer);
+	void draw_flash(EntPlayer *player);
+	void add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, EntModel &decal_model, float offset, bool explode, int explode_timer);
 
 	void create_icon();
 	void draw_icon(float scale, int index, float x = 0.0f, float y = 0.0f, float z = 0.0f);
@@ -107,7 +107,7 @@ public:
 
 	void make_dynamic_ent(net_ent_t item, int ent_id);
 	void handle_player(int index, input_t &input);
-	void handle_frags_left(Player &player);
+	void handle_frags_left(EntPlayer &player);
 	void player_died(int index);
 	void drop_weapon(int index);
 	void drop_powerup(vec3 &position, char *model, char *action);
@@ -144,7 +144,7 @@ public:
 	int get_red_flag_caps();
 	int get_notif_timer();
 	bool get_spectator();
-	Model *get_model_table();
+	EntModel *get_model_table();
 	int get_num_model();
 	vector<icon_t> get_icon_list();
 
@@ -211,7 +211,7 @@ private:
 	int chat_timer;
 	bool spectator;
 	//vector<Model *> model_table;
-	Model *model_table;
+	EntModel *model_table;
 	int num_model;
 	vector <icon_t> icon_list;
 };

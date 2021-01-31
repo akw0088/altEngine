@@ -12,7 +12,7 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "player.h"
+#include "ent_player.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,7 +20,7 @@
 #include <float.h>
 #include "quake3.h"
 
-const char Player::bot_state_name[16][32] = {
+const char EntPlayer::bot_state_name[16][32] = {
 	"BOT_IDLE",
 	"BOT_ALERT",
 	"BOT_ATTACK",
@@ -29,7 +29,7 @@ const char Player::bot_state_name[16][32] = {
 	"BOT_DEAD",
 };
 
-const char *Player::models[23] = {
+const char *EntPlayer::models[23] = {
 	"anarki",			//0
 	"biker",			//1
 	"bitterman",		//2
@@ -59,11 +59,11 @@ const char *Player::models[23] = {
 
 #define NUM_PATH 64 // Should equal map navpoint count
 
-Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, Model *model_table)
+EntPlayer::EntPlayer(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, EntModel *model_table)
 : weapon_gauntlet(entity), weapon_machinegun(entity), weapon_shotgun(entity), weapon_grenade(entity), weapon_rocket(entity),
   weapon_lightning(entity), weapon_railgun(entity), weapon_plasma(entity)
 {
-	Player::entity = entity;
+	EntPlayer::entity = entity;
 
 	spawned = false;
 	godmode = false;
@@ -73,7 +73,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 	in_vehicle = -1;
 	seat = 1;
 
-	Player::team = team;
+	EntPlayer::team = team;
 
 	num_sentry = 0;
 	build_timer = 1;
@@ -207,7 +207,7 @@ Player::Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t te
 
 
 
-void Player::respawn()
+void EntPlayer::respawn()
 {
 	health = 100;
 	armor = 0;
@@ -250,13 +250,13 @@ void Player::respawn()
 //	entity->model->make_aabb();
 }
 
-void Player::reset()
+void EntPlayer::reset()
 {
 	respawn();
 	memset(&stats, 0, sizeof(stats_t));
 }
 
-void Player::kill()
+void EntPlayer::kill()
 {
 	weapon_flags = 0;
 	reload_timer = 120;
@@ -264,7 +264,7 @@ void Player::kill()
 	state = PLAYER_DEAD;
 }
 
-void Player::render_weapon(Graphics &gfx)
+void EntPlayer::render_weapon(Graphics &gfx)
 {
 	if (invisibility_timer > 0)
 	{
@@ -308,7 +308,7 @@ void Player::render_weapon(Graphics &gfx)
 	}
 }
 
-void Player::change_weapon_up()
+void EntPlayer::change_weapon_up()
 {
 	if (reload_timer != 0)
 		return;
@@ -408,7 +408,7 @@ void Player::change_weapon_up()
 	}
 }
 
-void Player::change_weapon_down()
+void EntPlayer::change_weapon_down()
 {
 	if (reload_timer != 0)
 		return;
@@ -503,7 +503,7 @@ void Player::change_weapon_down()
 }
 
 
-void Player::best_weapon()
+void EntPlayer::best_weapon()
 {
 	if ((weapon_flags & wp_railgun) && ammo_slugs > 0)
 		current_weapon = wp_railgun;
@@ -522,12 +522,12 @@ void Player::best_weapon()
 
 }
 
-float Player::DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point)
+float EntPlayer::DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point)
 {
 	return vec3::crossproduct(direction, point - origin).magnitude();
 }
 
-int Player::FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints)
+int EntPlayer::FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints)
 {
 	int index = -1;
 	float min = FLT_MAX;
@@ -546,13 +546,13 @@ int Player::FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int nu
 }
 
 
-Player::~Player()
+EntPlayer::~EntPlayer()
 {
 	delete[] path.path;
 }
 
 
-void Player::avoid_walls(Bsp &map)
+void EntPlayer::avoid_walls(Bsp &map)
 {
 	Frame frame;
 	vec3 rightv;
@@ -624,14 +624,14 @@ void Player::avoid_walls(Bsp &map)
 
 }
 
-void Player::handle_bot(vector<Entity *> &entity_list, int self)
+void EntPlayer::handle_bot(vector<Entity *> &entity_list, int self)
 {
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
 		if (i == (unsigned int)self)
 			continue;
 
-		Player *player = entity_list[i]->player;
+		EntPlayer *player = entity_list[i]->player;
 
 
 		if (player && player->type == PLAYER)
@@ -680,7 +680,7 @@ void Player::handle_bot(vector<Entity *> &entity_list, int self)
 
 
 //#define DEBUG_BOT
-int Player::bot_search_for_items(vector<Entity *> &entity_list, int self)
+int EntPlayer::bot_search_for_items(vector<Entity *> &entity_list, int self)
 {
 #ifdef DEBUG_BOT
 	printf("handle_bot() ignore %s\n", ignore);

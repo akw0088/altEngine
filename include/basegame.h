@@ -37,7 +37,7 @@ public:
 	virtual void console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list) = 0;
 	virtual void setup_func(vector<Entity *> &entity_list, Bsp *q3map) = 0;
 	virtual void render_hud(double last_frametime) = 0;
-	virtual void draw_flash(Player *player) = 0;
+	virtual void draw_flash(EntPlayer *player) = 0;
 	virtual void draw_icon(float scale, int index, float x, float y, float z) = 0;
 	virtual void make_dynamic_ent(net_ent_t item, int ent_id) = 0;
 	virtual void endgame(char *winner) = 0;
@@ -57,7 +57,7 @@ public:
 	virtual int get_red_flag_caps() = 0;
 	virtual int get_notif_timer() = 0;
 	virtual bool get_spectator() = 0;
-	virtual Model *get_model_table() = 0;
+	virtual EntModel *get_model_table() = 0;
 	virtual int get_num_model() = 0;
 	virtual vector<icon_t> get_icon_list() = 0;
 

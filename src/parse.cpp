@@ -82,7 +82,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (strcmp(value, "item_armor_shard") == 0)
 		{
 			entity.ent_type = ENT_ITEM_ARMOR_SHARD;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/s_health.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 
@@ -93,7 +93,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_health") == 0)
 		{
 			entity.ent_type = ENT_ITEM_HEALTH;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/n_health.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 25");
@@ -103,7 +103,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_health_large") == 0)
 		{
 			entity.ent_type = ENT_ITEM_HEALTH_LARGE;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/l_health.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 50");
@@ -113,7 +113,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_health_small") == 0)
 		{
 			entity.ent_type = ENT_ITEM_HEALTH_SMALL;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/n_health.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 5");
@@ -123,7 +123,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_health_mega") == 0)
 		{
 			entity.ent_type = ENT_ITEM_HEALTH_MEGA;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/m_health.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "health 100");
@@ -139,7 +139,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_quad") == 0)
 		{
 			entity.ent_type = ENT_ITEM_QUAD;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/quaddamage.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 
@@ -149,7 +149,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "holdable_medkit") == 0)
 		{
 			entity.ent_type = ENT_HOLDABLE_MEDKIT;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/holdable.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "holdable_medkit");
@@ -158,7 +158,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "holdable_teleporter") == 0)
 		{
 			entity.ent_type = ENT_HOLDABLE_TELEPORTER;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/holdable.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "holdable_teleporter");
@@ -167,7 +167,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_enviro") == 0)
 		{
 			entity.ent_type = ENT_ITEM_ENVIRO;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/protect.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "bodysuit");
@@ -176,7 +176,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_flight") == 0)
 		{
 			entity.ent_type = ENT_ITEM_FLIGHT;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/holdable.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "flight 30");
@@ -185,7 +185,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_haste") == 0)
 		{
 			entity.ent_type = ENT_ITEM_HASTE;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/haste.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "haste");
@@ -194,7 +194,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_invis") == 0)
 		{
 			entity.ent_type = ENT_ITEM_INVIS;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/invisibility.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "invisibility");
@@ -203,7 +203,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_regen") == 0)
 		{
 			entity.ent_type = ENT_ITEM_REGEN;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/items/regeneration.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "regeneration");
@@ -212,7 +212,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "team_CTF_blueflag") == 0)
 		{
 			entity.ent_type = ENT_TEAM_CTF_BLUEFLAG;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/teamplay/flagtk_blu.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 
@@ -222,7 +222,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "team_CTF_redflag") == 0)
 		{
 			entity.ent_type = ENT_TEAM_CTF_REDFLAG;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/teamplay/flagtk_red.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/poweruprespawn.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "redflag");
@@ -231,7 +231,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_bullets") == 0)
 		{
 			entity.ent_type = ENT_AMMO_BULLETS;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_bullets 25");
@@ -240,7 +240,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_rockets") == 0)
 		{
 			entity.ent_type = ENT_AMMO_ROCKETS;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_rockets 10");
@@ -249,7 +249,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_slugs") == 0)
 		{
 			entity.ent_type = ENT_AMMO_SLUGS;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_slugs 10");
@@ -258,7 +258,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_shells") == 0)
 		{
 			entity.ent_type = ENT_AMMO_SHELLS;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_shells 10");
@@ -267,7 +267,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_cells") == 0)
 		{
 			entity.ent_type = ENT_AMMO_CELLS;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_plasma 50");
@@ -276,7 +276,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_lightning") == 0)
 		{
 			entity.ent_type = ENT_AMMO_LIGHTNING;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
@@ -285,7 +285,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_bfg") == 0)
 		{
 			entity.ent_type = ENT_AMMO_BFG;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_lightning 50");
@@ -294,7 +294,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "ammo_grenades") == 0)
 		{
 			entity.ent_type = ENT_AMMO_GRENADES;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/am_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "ammo_grenades 10");
@@ -303,7 +303,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_rocketlauncher"))
 		{
 			entity.ent_type = ENT_WEAPON_ROCKETLAUNCHER;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			entity.trigger->timeout_value = WEAPON_TIMEOUT;
@@ -314,7 +314,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_lightning"))
 		{
 			entity.ent_type = ENT_WEAPON_LIGHTNING;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
@@ -323,7 +323,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_bfg"))
 		{
 			entity.ent_type = ENT_WEAPON_BFG;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_lightning");
@@ -332,7 +332,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_shotgun"))
 		{
 			entity.ent_type = ENT_WEAPON_SHOTGUN;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_shotgun");
@@ -341,7 +341,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_machinegun"))
 		{
 			entity.ent_type = ENT_WEAPON_MACHINEGUN;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_machinegun");
@@ -350,7 +350,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_railgun"))
 		{
 			entity.ent_type = ENT_WEAPON_RAILGUN;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_railgun");
@@ -359,7 +359,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_plasma"))
 		{
 			entity.ent_type = ENT_WEAPON_PLASMA;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_plasma");
@@ -368,7 +368,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strstr(value, "weapon_grenadelauncher"))
 		{
 			entity.ent_type = ENT_WEAPON_GRENADELAUNCHER;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "weapon_grenadelauncher");
@@ -377,7 +377,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_armor_combat") == 0)
 		{
 			entity.ent_type = ENT_ITEM_ARMOR_COMBAT;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 
@@ -387,7 +387,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		else if (strcmp(value, "item_armor_body") == 0)
 		{
 			entity.ent_type = ENT_ITEM_ARMOR_BODY;
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			snprintf(entity.trigger->action, LINE_SIZE, "armor 100");
@@ -540,7 +540,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_TRIGGER_TELEPORT;
 
 			if (entity.trigger == NULL)
-				entity.trigger = new Trigger(&entity, audio);
+				entity.trigger = new EntTrigger(&entity, audio);
 
 			if (entity.rigid)
 			{
@@ -579,7 +579,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_TRIGGER_PUSH;
 
 			if (entity.trigger == NULL)
-				entity.trigger = new Trigger(&entity, audio);
+				entity.trigger = new EntTrigger(&entity, audio);
 
 			if (entity.rigid)
 			{
@@ -606,7 +606,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_TRIGGER_HURT;
 
 			if (entity.trigger == NULL)
-				entity.trigger = new Trigger(&entity, audio);
+				entity.trigger = new EntTrigger(&entity, audio);
 
 			entity.trigger->timeout = 1.0f;
 			entity.trigger->timeout_value = 1.0f;
@@ -625,7 +625,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.ent_type = ENT_TRIGGER_CHANGELEVEL;
 
 			if (entity.trigger == NULL)
-				entity.trigger = new Trigger(&entity, audio);
+				entity.trigger = new EntTrigger(&entity, audio);
 
 			entity.trigger->timeout = 1.0f;
 			entity.trigger->timeout_value = 1.0f;
@@ -798,7 +798,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->flags.flight = true;
 			}
 
-			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
+			entity.portal_camera = new EntPortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
 			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "misc_portal_surface") == 0)
@@ -812,7 +812,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 				entity.rigid->flags.flight = true;
 			}
 
-			entity.portal_camera = new PortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
+			entity.portal_camera = new EntPortalCamera(&entity, gfx, engine->res_scale, engine->zNear, engine->zFar, engine->inf);
 			entity.flags.nodraw = true;
 		}
 		else if (strcmp(value, "worldspawn") == 0)
@@ -1361,7 +1361,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			entity.flags.nodraw = false;
 
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			entity.trigger->timeout_value = WEAPON_TIMEOUT;
@@ -1382,7 +1382,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.flags.nodraw = false;
 
 
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			entity.trigger->timeout_value = WEAPON_TIMEOUT;
@@ -1403,7 +1403,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			entity.flags.nodraw = false;
 
 
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 			entity.trigger->timeout_value = WEAPON_TIMEOUT;
@@ -1554,7 +1554,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			entity.flags.nodraw = true;
 
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 
@@ -1573,7 +1573,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 			}
 			entity.flags.nodraw = true;
 
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 			entity.trigger->pickup_index = engine->get_load_wave("sound/misc/ar2_pkup.wav");
 			entity.trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 
@@ -1601,7 +1601,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 
 		if (entity.light == NULL)
 		{
-			entity.light = new Light(&entity, gfx, light_num++, engine->res_scale);
+			entity.light = new EntLight(&entity, gfx, light_num++, engine->res_scale);
 		}
 		sscanf(value, "%d", &inten);
 		intensity = (float)inten;
@@ -1625,7 +1625,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 		if (entity.light == NULL)
 		{
 			// generates cubemaps for light, this sucks up memory on large maps
-			entity.light = new Light(&entity, gfx, light_num++, engine->res_scale);
+			entity.light = new EntLight(&entity, gfx, light_num++, engine->res_scale);
 		}
 		sscanf(value, "%f %f %f", &r, &g, &b);
 		if (entity.light)
@@ -1638,7 +1638,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	}
 	else if (strcmp(key, "music") == 0)
 	{
-		entity.speaker = new Speaker(&entity, audio);
+		entity.speaker = new EntSpeaker(&entity, audio);
 		entity.speaker->gain(0.3f);
 		entity.speaker->loop_gain(0.3f);
 		entity.speaker->index = engine->get_load_wave(value);
@@ -1646,7 +1646,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "map") == 0)
 	{
 		if (entity.trigger == NULL)
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 
 		// changel level, should only exist in trigger_changelevel
 		sprintf(entity.trigger->action, "map maps/%s.bsp", value);
@@ -1654,7 +1654,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "message") == 0)
 	{
 		if (entity.trigger == NULL)
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 
 		// print message when triggered, quake1 style
 		sprintf(entity.trigger->message, "%s", value);
@@ -1662,7 +1662,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "noise") == 0)
 	{
 		if (entity.trigger == NULL)
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 		entity.trigger->respawn_index = engine->get_load_wave(value);
 		entity.trigger->noise = true;
 
@@ -1702,7 +1702,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "wait") == 0)
 	{
 		if (entity.trigger == NULL)
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 		entity.trigger->timeout_value = (float)atoi(value);
 	}
 	else if (strcmp(key, "texture") == 0)
@@ -1747,7 +1747,7 @@ void add_key(Engine *engine, Entity &entity, char *key, char *value, Graphics &g
 	else if (strcmp(key, "dmg") == 0)
 	{
 		if (entity.trigger == NULL)
-			entity.trigger = new Trigger(&entity, audio);
+			entity.trigger = new EntTrigger(&entity, audio);
 		sprintf(entity.trigger->action, "damage %s", value);
 	}
 	else if (strcmp(key, "speed") == 0)
@@ -1805,7 +1805,7 @@ bool parse_entity(Engine *engine, const char *input, vector<Entity *> &entity_li
 			{
 				entity = NULL;
 				entity = new Entity();
-				entity->rigid = new RigidBody(entity);
+				entity->rigid = new EntRigidBody(entity);
 				entity->model = entity->rigid;
 
 				entity_list.push_back(entity);

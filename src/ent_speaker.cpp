@@ -12,15 +12,15 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "speaker.h"
+#include "ent_speaker.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-Speaker::Speaker(Entity *entity, Audio &audio)
+EntSpeaker::EntSpeaker(Entity *entity, Audio &audio)
 {
-	Speaker::entity = entity;
+	EntSpeaker::entity = entity;
 
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
@@ -32,21 +32,21 @@ Speaker::Speaker(Entity *entity, Audio &audio)
 	audio.play(loop_source);
 }
 
-void Speaker::gain(float value)
+void EntSpeaker::gain(float value)
 {
 #ifndef DEDICATED
 	alSourcef(source, AL_GAIN, value);
 #endif
 }
 
-void Speaker::loop_gain(float value)
+void EntSpeaker::loop_gain(float value)
 {
 #ifndef DEDICATED
 	alSourcef(loop_source, AL_GAIN, value);
 #endif
 }
 
-void Speaker::destroy(Audio &audio)
+void EntSpeaker::destroy(Audio &audio)
 {
 	if (source >= 0)
 		audio.delete_source(source);
@@ -56,7 +56,7 @@ void Speaker::destroy(Audio &audio)
 
 }
 
-Speaker::~Speaker()
+EntSpeaker::~EntSpeaker()
 {
 	source = -1;
 }

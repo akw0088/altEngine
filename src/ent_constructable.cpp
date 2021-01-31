@@ -12,7 +12,7 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "constructable.h"
+#include "ent_constructable.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,10 +21,10 @@
 #include "quake3.h"
 
 
-Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t type)
+EntConstructable::EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t type)
 {
-	Constructable::entity = entity;
-	Constructable::team = team;
+	EntConstructable::entity = entity;
+	EntConstructable::team = team;
 
 	spawned = false;
 	render_md5 = true;
@@ -108,17 +108,17 @@ Constructable::Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t
 	bot_state = BOT_IDLE;
 }
 
-void Constructable::reset()
+void EntConstructable::reset()
 {
 	memset(&stats, 0, sizeof(stats_t));
 }
 
 
-Constructable::~Constructable()
+EntConstructable::~EntConstructable()
 {
 }
 
-void Constructable::destroy()
+void EntConstructable::destroy()
 {
 	if (entity->rigid)
 	{
@@ -135,7 +135,7 @@ void Constructable::destroy()
 }
 
 
-int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self, Engine &engine)
+int EntConstructable::step(input_t &input, vector<Entity *> &entity_list, int self, Engine &engine)
 {
 	if (type == CT_AUTOSENTRY)
 	{
@@ -171,7 +171,7 @@ int Constructable::step(input_t &input, vector<Entity *> &entity_list, int self,
 			if (i == (unsigned int)self)
 				continue;
 
-			Player *player = entity_list[i]->player;
+			EntPlayer *player = entity_list[i]->player;
 
 
 			if (player)

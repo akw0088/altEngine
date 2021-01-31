@@ -24,7 +24,7 @@ public:
 	int load(Graphics &gfx, float scale, vec3 &offset, char *heightmap, char *texture_str, int anisotropic);
 	int CreateMesh(char *heightmap, float scale_width, float scale_height, vec3 &offset, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);
 	void render(Graphics &gfx);
-	bool collision_detect(RigidBody &body);
+	bool collision_detect(EntRigidBody &body);
 	float GetHeight(const vec3 &position, vec3 &normal);
 	void Smooth(vertex_t *image, int width, int height, vec3 &avg);
 	int CreateWater(float scale_width, float scale_height, vertex_t *&vertex, unsigned int *&index, unsigned int &num_vertex, unsigned int &num_index);

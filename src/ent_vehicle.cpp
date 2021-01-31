@@ -12,7 +12,7 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "vehicle.h"
+#include "ent_vehicle.h"
 
 #include <math.h> // for M_PI
 
@@ -28,15 +28,15 @@
 #define SCALE		40.0f
 
 
-Vehicle::Vehicle(Entity *entity, carinfo_t *info) : RigidBody(entity)
+EntVehicle::EntVehicle(Entity *entity, carinfo_t *info) : EntRigidBody(entity)
 {
-	RigidBody::entity = entity;
+	EntRigidBody::entity = entity;
 	init(info);
 }
 
-void Vehicle::init(carinfo_t *info)
+void EntVehicle::init(carinfo_t *info)
 {
-	Vehicle::info = *info;
+	EntVehicle::info = *info;
 
 	velocity.x = 0;
 	velocity.y = 0;
@@ -50,7 +50,7 @@ void Vehicle::init(carinfo_t *info)
 	gear = 2;
 }
 
-void Vehicle::step(float delta_t)
+void EntVehicle::step(float delta_t)
 {
 	vec3 accel;
 	vec3 accel_rotated;
@@ -171,7 +171,7 @@ void Vehicle::step(float delta_t)
 
 
 
-bool Vehicle::move(input_t &input, float speed_scale, int tick_num)
+bool EntVehicle::move(input_t &input, float speed_scale, int tick_num)
 {
 	if (input.moveup)
 	{

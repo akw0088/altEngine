@@ -359,7 +359,7 @@ void Terrain::render(Graphics &gfx)
 
 }
 
-bool Terrain::collision_detect(RigidBody &body)
+bool Terrain::collision_detect(EntRigidBody &body)
 {
 	vec3 normal;
 

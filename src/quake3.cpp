@@ -236,7 +236,7 @@ void Quake3::destroy()
 ///=============================================================================
 void Quake3::load_models(Graphics &gfx)
 {
-	model_table = new Model[512];
+	model_table = new EntModel[512];
 	num_model = 0;
 	#define MODEL_ROCKET 0	
 	model_table[num_model++].load(gfx, "media/models/weapons2/rocketl/rocket");
@@ -453,7 +453,7 @@ void Quake3::load_models(Graphics &gfx)
 ///=============================================================================
 void Quake3::load_q1_models(Graphics &gfx)
 {
-	model_table = new Model[512];
+	model_table = new EntModel[512];
 	num_model = 0;
 
 	#define MODEL_ROCKET 0
@@ -834,42 +834,42 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 
 	for (unsigned int i = 0; i < 23; i++)
 	{
-		sprintf(wave.file, "sound/player/%s/death1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/death1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/death2.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/death2.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 1] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/death3.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/death3.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 2] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/pain25_1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/pain25_1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 3] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/pain50_1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/pain50_1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 4] = snd_wave.size() - 1;
 
-		sprintf(wave.file, "sound/player/%s/pain75_1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/pain75_1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 5] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/pain100_1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/pain100_1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 6] = snd_wave.size() - 1;
@@ -923,12 +923,12 @@ void Quake3::load_sounds(Audio &audio, vector<wave_t> &snd_wave)
 		snd_table[SND_PLAYER + i * 11 + 7] = snd_wave.size() - 1;
 
 
-		sprintf(wave.file, "sound/player/%s/fall1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/fall1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 8] = snd_wave.size() - 1;
 
-		sprintf(wave.file, "sound/player/%s/falling1.wav", Player::models[i]);
+		sprintf(wave.file, "sound/player/%s/falling1.wav", EntPlayer::models[i]);
 		audio.load(wave, engine->pk3_list, engine->num_pk3);
 		snd_wave.push_back(wave);
 		snd_table[SND_PLAYER + i * 11 + 9] = snd_wave.size() - 1;
@@ -1721,11 +1721,11 @@ void Quake3::add_player(vector<Entity *> &entity_list, playertype_t player_type,
 			Entity *spawn_ent = entity_list[spawn];
 
 			spawn_ent->position = entity_list[i]->position;
-			spawn_ent->rigid = new RigidBody(entity_list[spawn]);
+			spawn_ent->rigid = new EntRigidBody(entity_list[spawn]);
 			spawn_ent->model = entity_list[spawn]->rigid;
 			spawn_ent->rigid->clone(*(engine->thug22->model));
 			spawn_ent->rigid->flags.step_flag = true;
-			spawn_ent->player = new Player(entity_list[spawn], engine->gfx, engine->audio, 21, team, (entity_type_t)entity_list[spawn]->ent_type, model_table);
+			spawn_ent->player = new EntPlayer(entity_list[spawn], engine->gfx, engine->audio, 21, team, (entity_type_t)entity_list[spawn]->ent_type, model_table);
 			spawn_ent->position += entity_list[spawn]->rigid->center;
 			spawn_ent->position += vec3(0.0f, 20.0f, 0.0f); //adding some height
 			spawn_ent->player->type = player_type;
@@ -2280,7 +2280,7 @@ void Quake3::handle_player(int self, input_t &input)
 					}
 					else
 					{
-						Vehicle *vehicle = engine->entity_list[entity->player->in_vehicle]->vehicle;
+						EntVehicle *vehicle = engine->entity_list[entity->player->in_vehicle]->vehicle;
 						Frame car_frame;
 
 						float x = cos(-vehicle->angle_rad);
@@ -2370,7 +2370,7 @@ void Quake3::handle_player(int self, input_t &input)
 		if (entity->light == NULL)
 		{
 			entity->player->quad_damage = true;
-			entity->light = new Light(entity, engine->gfx, 999, engine->res_scale);
+			entity->light = new EntLight(entity, engine->gfx, 999, engine->res_scale);
 			entity->light->color = vec3(0.0f, 0.0f, 1.0f);
 			entity->light->intensity = 4000.0f;
 			entity->light->attenuation = 0.125f;
@@ -2744,7 +2744,7 @@ void Quake3::drop_weapon(int index)
 
 
 
-	drop_weapon->rigid = new RigidBody(drop_weapon);
+	drop_weapon->rigid = new EntRigidBody(drop_weapon);
 	drop_weapon->position = entity->position;
 	drop_weapon->model = drop_weapon->rigid;
 	drop_weapon->rigid->impact_index = SND_DROPGUN;
@@ -2821,7 +2821,7 @@ void Quake3::drop_weapon(int index)
 	//  Prevent player from picking weapon back up
 	entity->player->state = PLAYER_DEAD;
 
-	drop_weapon->trigger = new Trigger(drop_weapon, engine->audio);
+	drop_weapon->trigger = new EntTrigger(drop_weapon, engine->audio);
 	drop_weapon->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 	drop_weapon->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 	sprintf(drop_weapon->trigger->action, "%s", weapon_str);
@@ -2845,13 +2845,13 @@ void Quake3::drop_powerup(vec3 &position, char *model, char *action)
 	drop->nettype = NET_QUAD;
 
 
-	drop->rigid = new RigidBody(drop);
+	drop->rigid = new EntRigidBody(drop);
 	drop->model = drop->rigid;
 	drop->model->load(engine->gfx, model);
 
 	drop->rigid->velocity = vec3(0.0f, 2.0f, 0.0);
 	drop->rigid->angular_velocity = vec3(0.0f, 2.0f, 0.0);
-	drop->trigger = new Trigger(drop, engine->audio);
+	drop->trigger = new EntTrigger(drop, engine->audio);
 	drop->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 	drop->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 	strcpy(drop->trigger->action, action);
@@ -2997,7 +2997,7 @@ void Quake3::step(int frame_step)
 					for (unsigned int i = 0; i < engine->entity_list.size(); i++)
 					{
 						int max_frags = 0;
-						Player *player = engine->entity_list[i]->player;
+						EntPlayer *player = engine->entity_list[i]->player;
 
 						if (player != NULL)
 						{
@@ -3216,7 +3216,7 @@ void Quake3::step(int frame_step)
 #endif
 		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
-			Player *player = engine->entity_list[i]->player;
+			EntPlayer *player = engine->entity_list[i]->player;
 
 
 			Entity *owner = NULL;
@@ -3479,7 +3479,7 @@ int Quake3::handle_bot(Entity *entity, int i)
 void Quake3::build_sentry()
 {
 	int owner = engine->find_type(ENT_PLAYER, 0);
-	Player *powner = engine->entity_list[owner]->player;
+	EntPlayer *powner = engine->entity_list[owner]->player;
 
 	if (owner == -1)
 	{
@@ -3504,9 +3504,9 @@ void Quake3::build_sentry()
 	int spawn = engine->get_entity();
 	Entity *ent = engine->entity_list[spawn];
 	ent->ent_type = ENT_SENTRY;
-	ent->construct = new Constructable(ent, engine->gfx, engine->audio, powner->team, CT_AUTOSENTRY);
+	ent->construct = new EntConstructable(ent, engine->gfx, engine->audio, powner->team, CT_AUTOSENTRY);
 	ent->construct->owner = owner;
-	ent->rigid = new RigidBody(ent);
+	ent->rigid = new EntRigidBody(ent);
 
 	ent->position = powner->entity->position + engine->camera_frame.forward * -100.0f + vec3(0.0f, 25.0f, 0.0);
 	ent->rigid->clone(model_table[MODEL_SENTRY1]);
@@ -3523,7 +3523,7 @@ void Quake3::build_sentry()
 
 	int base_index = engine->get_entity();
 	Entity *sentry_base = engine->entity_list[base_index];
-	sentry_base->rigid = new RigidBody(sentry_base);
+	sentry_base->rigid = new EntRigidBody(sentry_base);
 	sentry_base->model = sentry_base->rigid;
 	sentry_base->model->clone(model_table[MODEL_SENTRY_BASE]);
 	sentry_base->position = engine->entity_list[spawn]->position + vec3(0.0f, 0.0f, -5.0f);
@@ -3556,7 +3556,7 @@ void Quake3::build_structure(vec3 &position, int model_index)
 	if (owner == -1)
 		return;
 
-	Player *powner = engine->entity_list[owner]->player;
+	EntPlayer *powner = engine->entity_list[owner]->player;
 
 	if (powner->build_timer > 0)
 	{
@@ -3569,9 +3569,9 @@ void Quake3::build_structure(vec3 &position, int model_index)
 	int spawn = engine->get_entity();
 	Entity *ent = engine->entity_list[spawn];
 	ent->ent_type = ENT_CONSTRUCT;
-	ent->construct = new Constructable(ent, engine->gfx, engine->audio, powner->team, CT_STRUCTURE);
+	ent->construct = new EntConstructable(ent, engine->gfx, engine->audio, powner->team, CT_STRUCTURE);
 	ent->construct->owner = owner;
-	ent->rigid = new RigidBody(ent);
+	ent->rigid = new EntRigidBody(ent);
 
 	ent->position = position;
 	ent->rigid->clone(model_table[model_index]);
@@ -3594,7 +3594,7 @@ void Quake3::build_structure(vec3 &position, int model_index)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_plasma(Player &player, int self, bool client)
+void Quake3::handle_plasma(EntPlayer &player, int self, bool client)
 {
 	Frame frame;
 
@@ -3612,7 +3612,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 
 		projectile->nettype = NET_PLASMA;
-		projectile->rigid = new RigidBody(projectile);
+		projectile->rigid = new EntRigidBody(projectile);
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
 		frame.set(projectile->model->morientation);
@@ -3627,7 +3627,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->flags.gravity = false;
-		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile = new EntProjectile(projectile, engine->audio);
 //		projectile->trigger->projectile = true;
 
 		projectile->rigid->impact_index = SND_PLASMA_EXPLODE;
@@ -3650,7 +3650,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 		projectile->projectile->owner = self;
 
 
-		projectile->light = new Light(projectile, engine->gfx, 999, engine->res_scale);
+		projectile->light = new EntLight(projectile, engine->gfx, 999, engine->res_scale);
 		projectile->light->color = vec3(0.0f, 0.0f, 1.0f);
 		projectile->light->intensity = 1000.0f;
 	}
@@ -3659,7 +3659,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -3681,7 +3681,7 @@ void Quake3::handle_plasma(Player &player, int self, bool client)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int self, bool client)
+void Quake3::handle_rocketlauncher(EntPlayer &player, EntConstructable *sentry, int self, bool client)
 {
 	Frame frame;
 
@@ -3713,7 +3713,7 @@ void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int se
 		projectile->flags.bsp_visible = true;
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 
-		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile = new EntProjectile(projectile, engine->audio);
 		projectile->projectile->explode_index = SND_EXPLODE;
 		projectile->projectile->idle_index = SND_ROCKETFLY;
 
@@ -3738,11 +3738,11 @@ void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int se
 		projectile->flags.particle_on = true;
 		projectile->num_particle = 5000;
 
-		projectile->light = new Light(projectile, engine->gfx, 999, engine->res_scale);
+		projectile->light = new EntLight(projectile, engine->gfx, 999, engine->res_scale);
 		projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
 		projectile->light->intensity = 1000.0f;
 
-		projectile->rigid = new RigidBody(projectile);
+		projectile->rigid = new EntRigidBody(projectile);
 		projectile->model = projectile->rigid;
 		frame.set(projectile->rigid->morientation);
 		projectile->rigid->clone(model_table[MODEL_ROCKET]);
@@ -3760,7 +3760,7 @@ void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int se
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -3782,7 +3782,7 @@ void Quake3::handle_rocketlauncher(Player &player, Constructable *sentry, int se
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_grenade(Player &player, int self, bool client)
+void Quake3::handle_grenade(EntPlayer &player, int self, bool client)
 {
 	Frame frame;
 
@@ -3795,7 +3795,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NET_GRENADE;
 
-		projectile->rigid = new RigidBody(projectile);
+		projectile->rigid = new EntRigidBody(projectile);
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
 		frame.set(projectile->model->morientation);
@@ -3821,7 +3821,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 			quad_factor = QUAD_FACTOR;
 
 
-		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile = new EntProjectile(projectile, engine->audio);
 		projectile->projectile->num_bounce = 20;
 		projectile->projectile->explode_index = SND_EXPLODE;
 		sprintf(projectile->projectile->action, "damage %d", (int)(GRENADE_DAMAGE * quad_factor));
@@ -3844,7 +3844,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -3867,7 +3867,7 @@ void Quake3::handle_grenade(Player &player, int self, bool client)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_lightning(Player &player, int self, bool client)
+void Quake3::handle_lightning(EntPlayer &player, int self, bool client)
 {
 	Frame frame;
 	int index[16] = { -1 };
@@ -3898,7 +3898,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 			if (ent->player && ent->bsp_leaf == player.entity->bsp_leaf)
 			{
-				Player *enemy = ent->player;
+				EntPlayer *enemy = ent->player;
 
 				if (enemy->godmode == false)
 				{
@@ -3935,7 +3935,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 	{
 		Entity *projectile = engine->entity_list[engine->get_entity()];
 		projectile->nettype = NET_LIGHTNING;
-		projectile->rigid = new RigidBody(projectile);
+		projectile->rigid = new EntRigidBody(projectile);
 		projectile->model = projectile->rigid;
 		projectile->position = frame.pos;
 		projectile->rigid->clone(model_table[MODEL_BOX]);
@@ -3959,7 +3959,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		projectile->light->intensity = 1000.0f;
 		*/
 
-		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile = new EntProjectile(projectile, engine->audio);
 		projectile->projectile->action[0] = '\0';
 
 //		projectile->rigid->bounce = 5;
@@ -3977,11 +3977,11 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 		for (int i = 0; i < num_index; i++)
 		{
 			char cmd[512] = { 0 };
-			Player *target = engine->entity_list[index[i]]->player;
+			EntPlayer *target = engine->entity_list[index[i]]->player;
 
 			if (target == NULL)
 			{
-				Constructable *construct = engine->entity_list[index[i]]->construct;
+				EntConstructable *construct = engine->entity_list[index[i]]->construct;
 				if (construct && construct->construct_type == CT_AUTOSENTRY)
 				{
 					int health = construct->health;
@@ -4059,7 +4059,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -4083,7 +4083,7 @@ void Quake3::handle_lightning(Player &player, int self, bool client)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_railgun(Player &player, int self, bool client)
+void Quake3::handle_railgun(EntPlayer &player, int self, bool client)
 {
 	Frame frame;
 
@@ -4099,7 +4099,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		int num_index = 0;
 
 		projectile->nettype = NET_RAIL;
-		projectile->rigid = new RigidBody(projectile);
+		projectile->rigid = new EntRigidBody(projectile);
 		projectile->position = frame.pos;
 		projectile->rigid->clone(model_table[MODEL_BALL]);
 		projectile->rigid->velocity = vec3();
@@ -4115,7 +4115,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->flags.bsp_visible = true;
 
-		projectile->projectile = new Projectile(projectile, engine->audio);
+		projectile->projectile = new EntProjectile(projectile, engine->audio);
 		sprintf(projectile->projectile->action, " ");
 
 		projectile->projectile->hide = false;
@@ -4141,7 +4141,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 		for (int i = 0; i < num_index; i++)
 		{
-			Player *target = engine->entity_list[index[i]]->player;
+			EntPlayer *target = engine->entity_list[index[i]]->player;
 			char cmd[64] = { 0 };
 	
 			if (target == NULL)
@@ -4207,7 +4207,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -4230,7 +4230,7 @@ void Quake3::handle_railgun(Player &player, int self, bool client)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_gauntlet(Player &player, int self, bool client)
+void Quake3::handle_gauntlet(EntPlayer &player, int self, bool client)
 {
 	char cmd[64] = { 0 };
 	int index[16] = { -1 };
@@ -4251,7 +4251,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -4274,7 +4274,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 
 		for (int i = 0; i < num_index; i++)
 		{
-			Player *target = engine->entity_list[index[i]]->player;
+			EntPlayer *target = engine->entity_list[index[i]]->player;
 
 			if (target == NULL)
 				continue;
@@ -4340,7 +4340,7 @@ void Quake3::handle_gauntlet(Player &player, int self, bool client)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, bool client)
+void Quake3::handle_machinegun(EntPlayer &player, EntConstructable *sentry, int self, bool client)
 {
 	char cmd[64] = { 0 };
 	int index[16] = { -1 };
@@ -4392,7 +4392,7 @@ void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, 
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = frame.pos + frame.forward * 75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
 	muzzleflash->light->intensity = 2000.0f;
 	muzzleflash->light->attenuation = 0.0625f;
@@ -4406,7 +4406,7 @@ void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, 
 
 	Entity *bullet = engine->entity_list[engine->get_entity()];
 	bullet->nettype = NET_BULLET;
-	bullet->rigid = new RigidBody(bullet);
+	bullet->rigid = new EntRigidBody(bullet);
 	bullet->position = frame.pos;
 	bullet->rigid->clone(model_table[MODEL_BULLET]);
 	frame.set(bullet->rigid->morientation);
@@ -4437,7 +4437,7 @@ void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, 
 
 		for (int i = 0; i < num_index; i++)
 		{
-			Player *target = engine->entity_list[index[i]]->player;
+			EntPlayer *target = engine->entity_list[index[i]]->player;
 			if (target == NULL)
 				continue;
 
@@ -4515,7 +4515,7 @@ void Quake3::handle_machinegun(Player &player, Constructable *sentry, int self, 
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_frags_left(Player &player)
+void Quake3::handle_frags_left(EntPlayer &player)
 {
 	if (player.stats.kills >= fraglimit)
 	{
@@ -4550,7 +4550,7 @@ void Quake3::handle_frags_left(Player &player)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_shotgun(Player &player, int self, bool client)
+void Quake3::handle_shotgun(EntPlayer &player, int self, bool client)
 {
 	Frame frame;
 
@@ -4565,7 +4565,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
 	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
-	muzzleflash->light = new Light(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
 	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
 	muzzleflash->light->intensity = 3000.0f;
 	muzzleflash->light->attenuation = 0.125f;
@@ -4579,7 +4579,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 	Entity *shell = engine->entity_list[engine->get_entity()];
 	shell->nettype = NET_SHELL;
-	shell->rigid = new RigidBody(shell);
+	shell->rigid = new EntRigidBody(shell);
 	shell->position = frame.pos;
 	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
 	shell->rigid->clone(model_table[MODEL_SHELL]);
@@ -4601,7 +4601,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 
 
 	Entity *shell2 = engine->entity_list[engine->get_entity()];
-	shell2->rigid = new RigidBody(shell2);
+	shell2->rigid = new EntRigidBody(shell2);
 	shell2->nettype = NET_SHELL;
 	shell2->position = frame.pos;
 	shell2->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
@@ -4660,7 +4660,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 			engine->hitscan(frame.pos, frame.forward, index, num_index, self, -1.0f);
 			for (int i = 0; i < num_index; i++)
 			{
-				Player *target = engine->entity_list[index[i]]->player;
+				EntPlayer *target = engine->entity_list[index[i]]->player;
 				char cmd[64] = { 0 };
 
 				if (target == NULL)
@@ -4720,7 +4720,7 @@ void Quake3::handle_shotgun(Player &player, int self, bool client)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_gibs(Player &player)
+void Quake3::handle_gibs(EntPlayer &player)
 {
 	Frame camera_frame;
 
@@ -4729,7 +4729,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity0 = engine->entity_list[engine->get_entity()];
-		entity0->rigid = new RigidBody(entity0);
+		entity0->rigid = new EntRigidBody(entity0);
 		entity0->model = entity0->rigid;
 		entity0->position = camera_frame.pos;
 		camera_frame.set(entity0->model->morientation);
@@ -4745,7 +4745,7 @@ void Quake3::handle_gibs(Player &player)
 
 	{
 		Entity *entity1 = engine->entity_list[engine->get_entity()];
-		entity1->rigid = new RigidBody(entity1);
+		entity1->rigid = new EntRigidBody(entity1);
 		entity1->model = entity1->rigid;
 		entity1->position = camera_frame.pos;
 		camera_frame.set(entity1->model->morientation);
@@ -4762,7 +4762,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity2 = engine->entity_list[engine->get_entity()];
 
-		entity2->rigid = new RigidBody(entity2);
+		entity2->rigid = new EntRigidBody(entity2);
 		entity2->model = entity2->rigid;
 		entity2->position = camera_frame.pos;
 		camera_frame.set(entity2->model->morientation);
@@ -4779,7 +4779,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity3 = engine->entity_list[engine->get_entity()];
 
-		entity3->rigid = new RigidBody(entity3);
+		entity3->rigid = new EntRigidBody(entity3);
 		entity3->model = entity3->rigid;
 		entity3->position = camera_frame.pos;
 		camera_frame.set(entity3->model->morientation);
@@ -4796,7 +4796,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity4 = engine->entity_list[engine->get_entity()];
 
-		entity4->rigid = new RigidBody(entity4);
+		entity4->rigid = new EntRigidBody(entity4);
 		entity4->model = entity4->rigid;
 		entity4->position = camera_frame.pos;
 		camera_frame.set(entity4->model->morientation);
@@ -4813,7 +4813,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity5 = engine->entity_list[engine->get_entity()];
 
-		entity5->rigid = new RigidBody(entity5);
+		entity5->rigid = new EntRigidBody(entity5);
 		entity5->model = entity5->rigid;
 		entity5->position = camera_frame.pos;
 		camera_frame.set(entity5->model->morientation);
@@ -4830,7 +4830,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity6 = engine->entity_list[engine->get_entity()];
 
-		entity6->rigid = new RigidBody(entity6);
+		entity6->rigid = new EntRigidBody(entity6);
 		entity6->model = entity6->rigid;
 		entity6->position = camera_frame.pos;
 		camera_frame.set(entity6->model->morientation);
@@ -4847,7 +4847,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity7 = engine->entity_list[engine->get_entity()];
 
-		entity7->rigid = new RigidBody(entity7);
+		entity7->rigid = new EntRigidBody(entity7);
 		entity7->model = entity7->rigid;
 		entity7->position = camera_frame.pos;
 		camera_frame.set(entity7->model->morientation);
@@ -4864,7 +4864,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity8 = engine->entity_list[engine->get_entity()];
 
-		entity8->rigid = new RigidBody(entity8);
+		entity8->rigid = new EntRigidBody(entity8);
 		entity8->model = entity8->rigid;
 		entity8->position = camera_frame.pos;
 		camera_frame.set(entity8->model->morientation);
@@ -4881,7 +4881,7 @@ void Quake3::handle_gibs(Player &player)
 	{
 		Entity *entity9 = engine->entity_list[engine->get_entity()];
 
-		entity9->rigid = new RigidBody(entity9);
+		entity9->rigid = new EntRigidBody(entity9);
 		entity9->model = entity9->rigid;
 		entity9->position = camera_frame.pos;
 		camera_frame.set(entity9->model->morientation);
@@ -5339,7 +5339,7 @@ void Quake3::load_icon()
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::handle_weapons(Player &player, input_t &input, int self, bool client)
+void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool client)
 {
 	static bool once = false;
 	static bool playing = false;
@@ -5716,7 +5716,7 @@ void Quake3::handle_weapons(Player &player, input_t &input, int self, bool clien
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::draw_flash(Player *player)
+void Quake3::draw_flash(EntPlayer *player)
 {
 	engine->gfx.Blend(true);
 	engine->gfx.BlendFuncOneOne();
@@ -5926,7 +5926,7 @@ void Quake3::render_hud(double last_frametime)
 		for (unsigned int i = 0; i < engine->max_player; i++)
 		{
 			float accuracy = 0.0f;
-			Player *p = engine->entity_list[i]->player;
+			EntPlayer *p = engine->entity_list[i]->player;
 
 
 			bool player = (p && p->type == PLAYER);
@@ -5951,7 +5951,7 @@ void Quake3::render_hud(double last_frametime)
 
 	if (engine->entity_list[spawn]->player->in_vehicle != -1)
 	{
-		Vehicle *vehicle = engine->entity_list[engine->entity_list[spawn]->player->in_vehicle]->vehicle;
+		EntVehicle *vehicle = engine->entity_list[engine->entity_list[spawn]->player->in_vehicle]->vehicle;
 
 		int line = 1;
 		line++;
@@ -6497,7 +6497,7 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 			if (engine->show_names)
 			{
-				sprintf(data, "Bot State %s", Player::bot_state_name[entity->player->bot_state]);
+				sprintf(data, "Bot State %s", EntPlayer::bot_state_name[entity->player->bot_state]);
 				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, red, false, false);
 
 				if (entity->player->bot_state == BOT_GET_ITEM)
@@ -6981,7 +6981,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		unsigned int damage = abs32(atoi(data2));
 		unsigned int health_damage = damage / 3;
 		unsigned int armor_damage = 2 * health_damage;
-		Player *player = entity_list[index]->player;
+		EntPlayer *player = entity_list[index]->player;
 
 		if (player->godmode)
 			return;
@@ -7090,7 +7090,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 1)
 	{
 		bool local = entity_list[self]->player->local;
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "damage %s\n", data);
 		menu.print(msg);
@@ -7160,7 +7160,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "health %s", data);
 	if (ret == 1)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
 		player->health += atoi(data);
@@ -7204,7 +7204,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_grenadelauncher") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "weapon_grenadelauncher\n");
 		menu.print(msg);
 
@@ -7226,7 +7226,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_rocketlauncher") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "weapon_rocketlauncher\n");
 		menu.print(msg);
@@ -7249,7 +7249,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_shotgun") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "weapon_shotgun\n");
 		menu.print(msg);
@@ -7272,7 +7272,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_machinegun") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "weapon_machinegun\n");
 		menu.print(msg);
@@ -7343,7 +7343,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_lightning") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "weapon_lightning\n");
 		menu.print(msg);
@@ -7366,7 +7366,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_railgun") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		snprintf(msg, LINE_SIZE, "weapon_railgun\n");
 		menu.print(msg);
@@ -7389,7 +7389,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 	if (strcmp(cmd, "weapon_plasma") == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "weapon_plasma\n");
 		menu.print(msg);
 
@@ -7484,7 +7484,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "blueflag");
 	if (ret == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 
 		if (player->team == TEAM_RED && player->holdable_flag == false)
 		{
@@ -7498,7 +7498,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = strcmp(cmd, "redflag");
 	if (ret == 0)
 	{
-		Player *player = entity_list[self]->player;
+		EntPlayer *player = entity_list[self]->player;
 		if (player->team == TEAM_BLUE && player->holdable_flag == false)
 		{
 			snprintf(msg, LINE_SIZE, "redflag taken\n");
@@ -7891,7 +7891,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 					{
 						matrix4::mat_forward(matrix, ent->position);
 					}
-					Model *model = entity_list[self]->model;
+					EntModel *model = entity_list[self]->model;
 
 					model->morientation.m[0] = matrix.m[0];
 					model->morientation.m[1] = matrix.m[1];
@@ -8053,7 +8053,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		for (unsigned int i = 0; i < engine->netcode.client_list.size(); i++)
 		{
-			Player *player = entity_list[engine->netcode.client_list[i]->ent_id]->player;
+			EntPlayer *player = entity_list[engine->netcode.client_list[i]->ent_id]->player;
 			snprintf(msg, LINE_SIZE, "%d: %s %d kills %d deaths %s %d idle\n", i, player->name,
 				player->stats.kills,
 				player->stats.deaths,
@@ -8076,7 +8076,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		if (self != -1)
 		{
-			RigidBody *rigid = entity_list[self]->rigid;
+			EntRigidBody *rigid = entity_list[self]->rigid;
 			snprintf(msg, LINE_SIZE, "noclip\n");
 			menu.print(msg);
 
@@ -8670,7 +8670,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NET_BULLET_HIT:
 		ent->nettype = NET_BULLET_HIT;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_BULLET_HIT]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
@@ -8681,7 +8681,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model->flags.blend = true;
 		ent->model->flags.cull_none = true;
 
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		ent->projectile->idle = true;
 		ent->projectile->explode_timer = 10;
 		ent->projectile->idle_timer = 10;
@@ -8689,7 +8689,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NET_PLASMA_HIT:
 		ent->nettype = NET_PLASMA_HIT;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_PLASMA_HIT]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
@@ -8700,7 +8700,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model->flags.blend = true;
 		ent->model->flags.cull_none = true;
 
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		ent->projectile->idle = true;
 		ent->projectile->explode_timer = 10;
 		ent->projectile->idle_timer = 10;
@@ -8708,7 +8708,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NET_BULLET:
 		ent->nettype = NET_BULLET;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_BULLET]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
@@ -8720,7 +8720,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NET_SHELL:
 		ent->nettype = NET_SHELL;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_SHELL]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
@@ -8732,7 +8732,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NET_BOOM:
 		ent->nettype = NET_BOOM;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_BOOM]);
 		ent->rigid->flags.gravity = false;
 		ent->rigid->bounce = 2;
@@ -8743,7 +8743,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model->flags.blend = true;
 		ent->model->flags.cull_none = true;
 
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		ent->projectile->idle = true;
 		ent->projectile->explode_timer = 10;
 		ent->projectile->idle_timer = 10;
@@ -8751,7 +8751,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		break;
 	case NET_ROCKET:
 		ent->nettype = NET_ROCKET;
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		ent->projectile->explode_index = SND_EXPLODE;
 		ent->projectile->idle_index = SND_ROCKETFLY;
 
@@ -8770,24 +8770,24 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->flags.particle_on = true;
 
 
-		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
+		ent->light = new EntLight(ent, engine->gfx, 999, engine->res_scale);
 		ent->light->color = vec3(1.0f, 1.0f, 1.0f);
 		ent->light->intensity = 1000.0f;
 
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->rigid->clone(model_table[MODEL_ROCKET]);
 		ent->rigid->flags.gravity = false;
 		break;
 	case NET_ROCKET_LAUNCHER:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/rocketl/rocketl");
 		ent->nettype = NET_ROCKET_LAUNCHER;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
@@ -8796,7 +8796,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 	case NET_GRENADE:
 		ent->nettype = NET_GRENADE;
 
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->rigid->clone(model_table[MODEL_GRENADE]);
 		ent->rigid->flags.gravity = true;
@@ -8806,7 +8806,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->num_particle = 5000;
 		ent->flags.particle_on = true;
 
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		ent->projectile->explode_index = SND_EXPLODE;
 		ent->projectile->splash_damage = 0;
 		ent->projectile->hide = false;
@@ -8821,21 +8821,21 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->knockback = 250.0f;
 		break;
 	case NET_GRENADE_LAUNCHER:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/grenadel/grenade");
 		ent->nettype = NET_GRENADE_LAUNCHER;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_grenadelauncer");
 		break;
 	case NET_LIGHTNING:
 		ent->nettype = NET_LIGHTNING;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_BOX]);
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
@@ -8846,7 +8846,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->rigid->flags.noclip = true;
 
 
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		sprintf(ent->projectile->action, " ");
 		ent->projectile->splash_damage = 0;
 		ent->projectile->hide = false;
@@ -8857,21 +8857,21 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->explode_timer = 20;
 		break;
 	case NET_LIGHTNINGGUN:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/lightning/lightning");
 		ent->nettype = NET_LIGHTNINGGUN;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_lightninggun");
 		break;
 	case NET_RAIL:
 		ent->nettype = NET_RAIL;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->rigid->clone(model_table[MODEL_BALL]);
 		ent->rigid->velocity = vec3();
 		ent->rigid->angular_velocity = vec3();
@@ -8881,7 +8881,7 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->model->flags.rail_trail = true;
 		ent->rigid->flags.noclip = true;
 
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		sprintf(ent->projectile->action, " ");
 		ent->projectile->hide = false;
 		ent->projectile->radius = 25.0f;
@@ -8891,26 +8891,26 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->explode_timer = 10;
 		break;
 	case NET_RAILGUN:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/railgun/railgun");
 		ent->nettype = NET_RAILGUN;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_railgun");
 		break;
 	case NET_PLASMA:
 		ent->nettype = NET_PLASMA;
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 
 		ent->rigid->clone(model_table[MODEL_BALL]);
 		ent->rigid->flags.gravity = false;
-		ent->projectile = new Projectile(ent, engine->audio);
+		ent->projectile = new EntProjectile(ent, engine->audio);
 		ent->projectile->explode_index = engine->get_load_wave("sound/weapons/plasma/plasmx1a.wav");
 		ent->projectile->idle_index = engine->get_load_wave("sound/weapons/plasma/lasfly.wav");
 
@@ -8926,137 +8926,137 @@ void Quake3::make_dynamic_ent(net_ent_t item, int ent_id)
 		ent->projectile->knockback = 10.0f;
 
 
-		ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
+		ent->light = new EntLight(ent, engine->gfx, 999, engine->res_scale);
 		ent->light->color = vec3(0.0f, 0.0f, 1.0f);
 		ent->light->intensity = 1000.0f;
 
 		break;
 	case NET_PLASMAGUN:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/plasmagun/plasmagun");
 		ent->nettype = NET_PLASMAGUN;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_plasma");
 		break;
 	case NET_SHOTGUN:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/shotgun/shotgun");
 		ent->nettype = NET_SHOTGUN;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_shotgun");
 		break;
 	case NET_MACHINEGUN:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/weapons2/machinegun/machinegun");
 		ent->nettype = NET_MACHINEGUN;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "weapon_machinegun");
 		break;
 	case NET_QUAD:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/quad");
 		ent->nettype = NET_QUAD;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "quaddamage");
 		break;
 	case NET_REGEN:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/regen");
 		ent->nettype = NET_REGEN;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "regeneration");
 		break;
 	case NET_INVIS:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/invis");
 		ent->nettype = NET_INVIS;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "invisibility");
 		break;
 	case NET_FLIGHT:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/flight");
 		ent->nettype = NET_FLIGHT;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "flight");
 		break;
 	case NET_HASTE:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/powerups/instant/haste");
 		ent->nettype = NET_HASTE;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "haste");
 		break;
 	case NET_BLUE_FLAG:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/b_flag");
 		ent->nettype = NET_BLUE_FLAG;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 		sprintf(ent->trigger->action, "blue_flag");
 		break;
 	case NET_RED_FLAG:
-		ent->rigid = new RigidBody(ent);
+		ent->rigid = new EntRigidBody(ent);
 		ent->model = ent->rigid;
 		ent->model->load(engine->gfx, "media/models/flags/r_flag");
 		ent->nettype = NET_RED_FLAG;
 		ent->rigid->flags.translational_friction_flag = true;
 		ent->rigid->flags.rotational_friction_flag = true;
 
-		ent->trigger = new Trigger(ent, engine->audio);
+		ent->trigger = new EntTrigger(ent, engine->audio);
 		ent->trigger->pickup_index = engine->get_load_wave("sound/misc/w_pkup.wav");
 		ent->trigger->respawn_index = engine->get_load_wave("sound/items/s_health.wav");
 
@@ -9148,7 +9148,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			//hack we know it's *falling
 				if (target->trigger)
 				{
-					Player *player = entity_list[self]->player;
+					EntPlayer *player = entity_list[self]->player;
 					if (player->falling == false)
 					{
 						if (strstr(target->trigger->noise_str, "*falling"))
@@ -9256,10 +9256,10 @@ void Quake3::handle_model_trigger(vector<Entity *> &entity_list, Entity *ent, in
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
+void Quake3::check_triggers(EntPlayer *player, Entity *ent, int self, vector<Entity *> &entity_list)
 {
 	bool inside = false;
-	RigidBody *rigid = ent->rigid;
+	EntRigidBody *rigid = ent->rigid;
 
 	if (rigid && rigid->flags.hard_impact)
 	{
@@ -9272,7 +9272,7 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 	}
 
 	// Not a trigger
-	Trigger *trigger = ent->trigger;
+	EntTrigger *trigger = ent->trigger;
 
 	if (trigger == NULL)
 		return;
@@ -9427,7 +9427,7 @@ void Quake3::check_triggers(Player *player, Entity *ent, int self, vector<Entity
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> &entity_list)
+void Quake3::check_func(EntPlayer *player, Entity *ent, int self, vector<Entity *> &entity_list)
 {
 	//bool inside = false;
 	//RigidBody *rigid = ent->rigid;
@@ -9661,13 +9661,13 @@ void Quake3::check_func(Player *player, Entity *ent, int self, vector<Entity *> 
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list)
+void Quake3::check_projectiles(EntPlayer *player, Entity *ent, Entity *owner, int self, int proj_id, vector<Entity *> &entity_list)
 {
 	bool inside = false;
 	//RigidBody *rigid = ent->rigid;
 
 	// Not a trigger
-	Projectile *projectile = ent->projectile;
+	EntProjectile *projectile = ent->projectile;
 
 	if (projectile == NULL)
 		return;
@@ -9723,7 +9723,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 						sprintf(projectile->action, "damage %d", projectile->splash_damage);
 						if (ent->light == NULL)
 						{
-							ent->light = new Light(ent, engine->gfx, 999, engine->res_scale);
+							ent->light = new EntLight(ent, engine->gfx, 999, engine->res_scale);
 						}
 						ent->light->intensity = projectile->explode_intensity;
 						ent->light->color = projectile->explode_color;
@@ -9834,7 +9834,7 @@ void Quake3::check_projectiles(Player *player, Entity *ent, Entity *owner, int s
 					player->stats.deaths++;
 					if (owner != NULL)
 					{
-						Player *powner = owner->player;
+						EntPlayer *powner = owner->player;
 						powner->stats.kills++;
 						powner->stats.hits++;
 
@@ -10041,7 +10041,7 @@ void Quake3::set_state(serverdata_t *data)
 /// Returns:
 ///		None
 ///=============================================================================
-void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Model &decal_model, float offset, bool idle, int idle_timer)
+void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, EntModel &decal_model, float offset, bool idle, int idle_timer)
 {
 	plane_t plane;
 	float depth;
@@ -10087,7 +10087,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 	{
 //		printf("decal added at x %4.3f y %4.3f z %4.3f\n", pos.x, pos.y, pos.z);
 		Entity *decal = engine->entity_list[engine->get_entity()];
-		decal->rigid = new RigidBody(decal);
+		decal->rigid = new EntRigidBody(decal);
 		decal->position = pos + plane.normal * offset;
 		decal->rigid->clone(decal_model);
 		decal->rigid->flags.gravity = false;
@@ -10100,7 +10100,7 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, Mode
 		decal->model->flags.cull_none = true;
 		decal->nettype = nettype;
 
-		decal->projectile = new Projectile(decal, engine->audio);
+		decal->projectile = new EntProjectile(decal, engine->audio);
 		decal->projectile->idle = idle;
 		decal->projectile->explode_timer = idle_timer;
 		decal->projectile->idle_timer = idle_timer;
@@ -10990,7 +10990,7 @@ bool Quake3::get_spectator()
 /// Returns:
 ///		None
 ///=============================================================================
-Model *Quake3::get_model_table()
+EntModel *Quake3::get_model_table()
 {
 	return model_table;
 }

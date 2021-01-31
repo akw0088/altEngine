@@ -12,15 +12,15 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "light.h"
+#include "ent_light.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
+EntLight::EntLight(Entity *entity, Graphics &gfx, int num, float scale)
 {
-	Light::entity = entity;
+	EntLight::entity = entity;
 	color = vec3(1.0f, 1.0f, 1.0f);
 	intensity = 300.0f;
 	attenuation = 1.0f; // default
@@ -37,7 +37,7 @@ Light::Light(Entity *entity, Graphics &gfx, int num, float scale)
 #endif
 }
 
-void Light::generate_cubemaps(Graphics &gfx)
+void EntLight::generate_cubemaps(Graphics &gfx)
 {
 	unsigned int normal_depth;
 
@@ -54,7 +54,7 @@ void Light::generate_cubemaps(Graphics &gfx)
 #endif
 }
 
-void Light::destroy(Graphics &gfx)
+void EntLight::destroy(Graphics &gfx)
 {
 	for (int i = 0; i < NUM_CUBE_FACE; i++)
 	{
@@ -69,19 +69,19 @@ void Light::destroy(Graphics &gfx)
 #endif
 }
 
-void Light::render_shadow_volume(Graphics &gfx, int index)
+void EntLight::render_shadow_volume(Graphics &gfx, int index)
 {
 #ifdef SHADOWVOL
 	shadow[index].render(gfx);
 #endif
 }
 
-void Light::render_map_shadowvol(Graphics &gfx)
+void EntLight::render_map_shadowvol(Graphics &gfx)
 {
 	map_shadow.render(gfx);
 }
 
-void Light::generate_map_volumes(Graphics &gfx, Bsp &map, int current_light)
+void EntLight::generate_map_volumes(Graphics &gfx, Bsp &map, int current_light)
 {
 	static vertex_t shadow_vertex[50 * 4096];
 	static unsigned int		 shadow_index[50 * 4096];
@@ -100,7 +100,7 @@ void Light::generate_map_volumes(Graphics &gfx, Bsp &map, int current_light)
 }
 
 
-void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
+void EntLight::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 {
 #ifdef SHADOWVOL
 	//int j = 0;
@@ -129,7 +129,7 @@ void Light::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list)
 
 
 		matrix4 matrix;
-		Model *model = entity_list[i]->model;
+		EntModel *model = entity_list[i]->model;
 		model->get_matrix(matrix.m);
 		vec3 position = entity_list[i]->model->morientation.transpose() * entity->position;
 

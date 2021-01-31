@@ -14,7 +14,7 @@
 
 // This code is based on http://chrishecker.com/Rigid_body_dynamics
 
-#include "rigidbody.h"
+#include "ent_rigidbody.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,8 +27,8 @@
 
 #define DECELERATION_RATE 0.95f
 
-RigidBody::RigidBody(Entity *entity)
-: Model(entity)
+EntRigidBody::EntRigidBody(Entity *entity)
+: EntModel(entity)
 {
 	flags.sleep = false;
 	flags.gravity = true;
@@ -108,7 +108,7 @@ RigidBody::RigidBody(Entity *entity)
 	impact_index = SND_GRENADE_IMPACT;
 }
 
-void RigidBody::recalc()
+void EntRigidBody::recalc()
 {
 	float height = (aabb[7].y - aabb[0].y);
 	float width = (aabb[7].x - aabb[0].x);
@@ -163,7 +163,7 @@ void PM_Accelerate(const vec3 &wishdir, float wishspeed, float accel, Entity *en
 	Writes to acceleration, angular_acceleration, angular velocity, velocity, position,
 	and morientation
 */
-void RigidBody::integrate(float time)
+void EntRigidBody::integrate(float time)
 {
 	matrix3 rotation;
 	vec3 acceleration, angular_acceleration;
@@ -248,7 +248,7 @@ void RigidBody::integrate(float time)
 /*
 	Detects a collision with a plane and applies physical impulse response
 */
-bool RigidBody::collision_detect(plane_t &p)
+bool EntRigidBody::collision_detect(plane_t &p)
 {
 	if (entity->vehicle || (entity->player && entity->player->in_vehicle != -1))
 		return false;
@@ -304,7 +304,7 @@ bool RigidBody::collision_detect(plane_t &p)
 	Applys collision impulse to a vertex
 	radius must be in units of meters from CM
 */
-void RigidBody::impulse(plane_t &plane, vec3 &radius)
+void EntRigidBody::impulse(plane_t &plane, vec3 &radius)
 {
 	float	impulse_numerator;
 	float	impulse_denominator;
@@ -326,7 +326,7 @@ void RigidBody::impulse(plane_t &plane, vec3 &radius)
     angular_velocity = world_tensor * vec3::crossproduct(radius, -impulse_momentum);
 }
 
-void RigidBody::impulse(RigidBody &rigid, vec3 &point)
+void EntRigidBody::impulse(EntRigidBody &rigid, vec3 &point)
 {
 	float	impulse_numerator;
 	float	impulse_denominator;
@@ -357,7 +357,7 @@ void RigidBody::impulse(RigidBody &rigid, vec3 &point)
 	flags.gravity = true;
 }
 
-void RigidBody::impulse(RigidBody &rigid, vec3 &point, plane_t &plane)
+void EntRigidBody::impulse(EntRigidBody &rigid, vec3 &point, plane_t &plane)
 {
 	float	impulse_numerator;
 	float	impulse_denominator;
@@ -392,7 +392,7 @@ void RigidBody::impulse(RigidBody &rigid, vec3 &point, plane_t &plane)
 /*
 	Detects a collision between current entity and a point
 */
-bool RigidBody::collision_detect(vec3 &v)
+bool EntRigidBody::collision_detect(vec3 &v)
 {
 	vec3 a, b;
 
@@ -415,7 +415,7 @@ bool RigidBody::collision_detect(vec3 &v)
 /*
 	Detects a collision between current entity and another
 */
-bool RigidBody::collision_detect_simple(RigidBody &body)
+bool EntRigidBody::collision_detect_simple(EntRigidBody &body)
 {
 	for( int i = 0;	i < 8; i++)
 	{
@@ -432,7 +432,7 @@ bool RigidBody::collision_detect_simple(RigidBody &body)
 	return false;
 }
 
-bool RigidBody::collision_distance(RigidBody &body)
+bool EntRigidBody::collision_distance(EntRigidBody &body)
 {
 	vec3 distance = body.entity->position - entity->position;
 
@@ -473,7 +473,7 @@ bool RigidBody::collision_distance(RigidBody &body)
 	}
 }
 
-bool RigidBody::collision_detect(RigidBody &body)
+bool EntRigidBody::collision_detect(EntRigidBody &body)
 {
 	plane_t plane[6];
 	vec3 point;
@@ -546,7 +546,7 @@ bool RigidBody::collision_detect(RigidBody &body)
 	return false;
 }
 
-void RigidBody::frame2ent(Frame *camera, input_t &input)
+void EntRigidBody::frame2ent(Frame *camera, input_t &input)
 {
 	vec3		forward = camera->forward;
 	vec3		up(0.0f, 1.0f, 0.0f);
@@ -579,7 +579,7 @@ void RigidBody::frame2ent(Frame *camera, input_t &input)
 
 }
 
-void RigidBody::frame2ent_yaw(Frame *camera, input_t &input)
+void EntRigidBody::frame2ent_yaw(Frame *camera, input_t &input)
 {
 	vec3		forward = camera->forward;
 	vec3		up(0.0f, 1.0f, 0.0f);
@@ -615,7 +615,7 @@ void RigidBody::frame2ent_yaw(Frame *camera, input_t &input)
 	morientation.m[8] = -forward.z;
 }
 
-void RigidBody::save_config(cfg_t &config)
+void EntRigidBody::save_config(cfg_t &config)
 {
 	config.morientation = morientation;
 	config.world_tensor = world_tensor;
@@ -624,7 +624,7 @@ void RigidBody::save_config(cfg_t &config)
 	config.position = entity->position;
 }
 
-void RigidBody::load_config(cfg_t &config)
+void EntRigidBody::load_config(cfg_t &config)
 {
 	morientation = config.morientation;
 	world_tensor = config.world_tensor;
@@ -634,7 +634,7 @@ void RigidBody::load_config(cfg_t &config)
 }
 
 
-void RigidBody::seek(const vec3 &position)
+void EntRigidBody::seek(const vec3 &position)
 {
 	vec3 direction = position - entity->position;
 	direction.normalize();
@@ -642,7 +642,7 @@ void RigidBody::seek(const vec3 &position)
 	net_force += direction - velocity;
 }
 
-void RigidBody::flee(const vec3 &position)
+void EntRigidBody::flee(const vec3 &position)
 {
 	vec3 direction = entity->position - position;
 	direction.normalize();
@@ -651,7 +651,7 @@ void RigidBody::flee(const vec3 &position)
 }
 
 //not quite right yet
-void RigidBody::arrive(const vec3 &position)
+void EntRigidBody::arrive(const vec3 &position)
 {
 	vec3 direction = position - entity->position;
 	float distance = direction.magnitude();
@@ -676,7 +676,7 @@ void RigidBody::arrive(const vec3 &position)
 	morientation.m[8] = direction.z;
 }
 
-void RigidBody::pursue()
+void EntRigidBody::pursue()
 {
 	vec3 direction = target->position - entity->position;
 	float predict_time = direction.magnitude() / ( 8.0f + 8.0f );
@@ -685,7 +685,7 @@ void RigidBody::pursue()
 	seek(position);
 }
 
-void RigidBody::evade()
+void EntRigidBody::evade()
 {
 	vec3 direction = target->position - entity->position;
 	float predict_time = direction.magnitude() / (8.0f + 8.0f);
@@ -694,13 +694,13 @@ void RigidBody::evade()
 	flee(position);
 }
 
-void RigidBody::set_target(Entity &ent)
+void EntRigidBody::set_target(Entity &ent)
 {
 	target = &ent;
 }
 
 
-void RigidBody::wander(float radius, float distance, float jitter)
+void EntRigidBody::wander(float radius, float distance, float jitter)
 {
 	// make random point on sphere
 	float x = ((rand() % 1000) / 1000.0f) * jitter;
@@ -724,7 +724,7 @@ void RigidBody::wander(float radius, float distance, float jitter)
 	seek(sphere_target + entity->position);
 }
 
-float RigidBody::get_volume()
+float EntRigidBody::get_volume()
 {
 	//water_density = 1000.0f; // kg/m3
 	//Force_buoyant = volume * density of water * gravity // upward force of displaced water
@@ -735,13 +735,13 @@ float RigidBody::get_volume()
 	return width * length * height;
 }
 
-float RigidBody::get_height()
+float EntRigidBody::get_height()
 {
 	// max should always be bigger than min, but abs anyway
 	return abs32(aabb[7].z - aabb[0].z);
 }
 
-float *RigidBody::get_matrix(float *matrix)
+float *EntRigidBody::get_matrix(float *matrix)
 {
 	matrix[0] = morientation.m[0];
 	matrix[1] = morientation.m[1];
@@ -773,14 +773,14 @@ float *RigidBody::get_matrix(float *matrix)
 	return matrix;
 }
 
-void RigidBody::get_frame(Frame &frame)
+void EntRigidBody::get_frame(Frame &frame)
 {
-	Model::get_frame(frame);
+	EntModel::get_frame(frame);
 
 	frame.pos += vec3(0.0f, (float)y_offset, 0.0f);
 }
 
-bool RigidBody::flight_move(input_t &input, float speed_scale)
+bool EntRigidBody::flight_move(input_t &input, float speed_scale)
 {
 	Frame yaw;
 
@@ -898,7 +898,7 @@ bool RigidBody::flight_move(input_t &input, float speed_scale)
 	return ret;
 }
 
-bool RigidBody::water_move(input_t &input, float speed_scale)
+bool EntRigidBody::water_move(input_t &input, float speed_scale)
 {
 	Frame yaw;
 
@@ -1005,7 +1005,7 @@ bool RigidBody::water_move(input_t &input, float speed_scale)
 	return ret;
 }
 
-bool RigidBody::air_move(input_t &input, float speed_scale)
+bool EntRigidBody::air_move(input_t &input, float speed_scale)
 {
 	float air_control = 1.0f;
 	Frame yaw;
@@ -1114,7 +1114,7 @@ bool RigidBody::air_move(input_t &input, float speed_scale)
 	return ret;
 }
 
-bool RigidBody::ground_move(input_t &input, float speed_scale)
+bool EntRigidBody::ground_move(input_t &input, float speed_scale)
 {
 	static int two_frames = 0;
 	float jump_scale = 0.65f;
@@ -1258,7 +1258,7 @@ bool RigidBody::ground_move(input_t &input, float speed_scale)
 }
 
 
-bool RigidBody::move(input_t &input, float speed_scale)
+bool EntRigidBody::move(input_t &input, float speed_scale)
 {
 	if (flags.noclip)
 	{
@@ -1493,7 +1493,7 @@ bool RigidBody::move(input_t &input, float speed_scale)
 #endif
 
 
-void RigidBody::move_forward(float speed_scale)
+void EntRigidBody::move_forward(float speed_scale)
 {
 	input_t input;
 
@@ -1502,7 +1502,7 @@ void RigidBody::move_forward(float speed_scale)
 	move(input, speed_scale);
 }
 
-void RigidBody::move_backward(float speed_scale)
+void EntRigidBody::move_backward(float speed_scale)
 {
 	input_t input;
 
@@ -1511,7 +1511,7 @@ void RigidBody::move_backward(float speed_scale)
 	move(input, speed_scale);
 }
 
-void RigidBody::move_left(float speed_scale)
+void EntRigidBody::move_left(float speed_scale)
 {
 	input_t input;
 
@@ -1520,7 +1520,7 @@ void RigidBody::move_left(float speed_scale)
 	move(input, speed_scale);
 }
 
-void RigidBody::move_right(float speed_scale)
+void EntRigidBody::move_right(float speed_scale)
 {
 	input_t input;
 
@@ -1529,7 +1529,7 @@ void RigidBody::move_right(float speed_scale)
 	move(input, speed_scale);
 }
 
-void RigidBody::move_up(float speed_scale)
+void EntRigidBody::move_up(float speed_scale)
 {
 	input_t input;
 
@@ -1538,7 +1538,7 @@ void RigidBody::move_up(float speed_scale)
 	move(input, speed_scale);
 }
 
-void RigidBody::move_down(float speed_scale)
+void EntRigidBody::move_down(float speed_scale)
 {
 	input_t input;
 
@@ -1547,7 +1547,7 @@ void RigidBody::move_down(float speed_scale)
 	move(input, speed_scale);
 }
 
-void RigidBody::lookat(vec3 &target)
+void EntRigidBody::lookat(vec3 &target)
 {
 	Frame frame;
 	vec3 right;
@@ -1563,7 +1563,7 @@ void RigidBody::lookat(vec3 &target)
 	frame.set(entity->model->morientation);
 }
 
-void RigidBody::lookat_yaw(vec3 &target)
+void EntRigidBody::lookat_yaw(vec3 &target)
 {
 	Frame frame;
 	vec3 right;
@@ -1632,7 +1632,7 @@ void rk4_integrate(vec3 &pos, vec3 &vel, float t, float dt)
 }
 
 // This is just a basic follow the path setup for the pid controller, kills momentum to make it nicer for eventual func_train use
-void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait)
+void EntRigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocity, float distance, int wait)
 {
 	Entity *projectile = entity;
 
@@ -1672,7 +1672,7 @@ void RigidBody::pid_follow_path(vec3 *path_list, int num_path, float max_velocit
 }
 
 
-int RigidBody::train_follow_path(vec3 *target, float max_velocity, float distance, int wait)
+int EntRigidBody::train_follow_path(vec3 *target, float max_velocity, float distance, int wait)
 {
 	Entity *projectile = entity;
 

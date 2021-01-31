@@ -12,7 +12,7 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "model.h"
+#include "ent_model.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,7 +20,7 @@
 
 #include <float.h> // for FLT_MAX
 
-void Model::load(Graphics &gfx, char *file)
+void EntModel::load(Graphics &gfx, char *file)
 {
 	char vbo_file[LINE_SIZE];
 	char ibo_file[LINE_SIZE];
@@ -103,9 +103,9 @@ void Model::load(Graphics &gfx, char *file)
 	}
 }
 
-Model::Model(Entity *entity)
+EntModel::EntModel(Entity *entity)
 {
-	Model::entity = entity;
+	EntModel::entity = entity;
 
 
 	num_vertex = 0;
@@ -138,7 +138,7 @@ Model::Model(Entity *entity)
 }
 
 // copies visual data from model
-void Model::clone(Model &model)
+void EntModel::clone(EntModel &model)
 {
 	for(int i = 0; i < 8; i++)
 	{
@@ -164,7 +164,7 @@ void Model::clone(Model &model)
 	}
 }
 
-void Model::make_aabb()
+void EntModel::make_aabb()
 {
 	aabb[0] = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
 	aabb[7] = vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
@@ -198,7 +198,7 @@ void Model::make_aabb()
 }
 
 
-void Model::render(Graphics &gfx)
+void EntModel::render(Graphics &gfx)
 {
 	static int last_model = model_vertex;
 
@@ -234,7 +234,7 @@ void Model::render_box(Graphics &gfx)
 }
 #endif
 
-float *Model::get_matrix(float *matrix)
+float *EntModel::get_matrix(float *matrix)
 {
 	matrix[0] = morientation.m[0];
 	matrix[1] = morientation.m[1];
@@ -263,7 +263,7 @@ float *Model::get_matrix(float *matrix)
 }
 
 
-Model::~Model()
+EntModel::~EntModel()
 {
 	if (index_file != NULL)
 		delete[] index_file;
@@ -409,14 +409,14 @@ void Model::create_box(Graphics &gfx, vec3 *box)
 #endif
 
 
-void Model::getForwardVector(vec3 &forward)
+void EntModel::getForwardVector(vec3 &forward)
 {
 	forward.x = entity->model->morientation.m[6];
 	forward.y = entity->model->morientation.m[7];
 	forward.z = entity->model->morientation.m[8];
 }
 
-void Model::get_frame(Frame &frame)
+void EntModel::get_frame(Frame &frame)
 {
 	frame.up.x = morientation.m[3];
 	frame.up.y = morientation.m[4];
@@ -427,7 +427,7 @@ void Model::get_frame(Frame &frame)
 	frame.pos = entity->position;
 }
 
-Model::Model()
+EntModel::EntModel()
 {
 	entity = NULL;
 	num_vertex = 0;

@@ -25,18 +25,21 @@ public:
 	~Entity();
 
 	vec3			position;
-	RigidBody		*rigid;
-	Model			*model;
-	Projectile		*projectile;
-	Player			*player;
+
+	EntRigidBody		*rigid;
+	EntModel			*model;
+	EntProjectile		*projectile;
+	EntPlayer			*player;
+	EntTrigger			*trigger;
+	EntLight			*light;
+	EntSpeaker			*speaker;
+	EntConstructable	*construct;
+	EntPortalCamera		*portal_camera;
+	EntVehicle			*vehicle;
+
+
 	ent_string_t	*entstring;
-	Trigger			*trigger;
-	Light			*light;
-	Speaker			*speaker;
 	brushinfo_t		*brushinfo; // doors, platforms, etc
-	Constructable	*construct;
-	PortalCamera	*portal_camera;
-	Vehicle			*vehicle;
 
 
 	int				ent_type; // will replace string type eventually

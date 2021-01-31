@@ -299,7 +299,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 
 	// player model uses this model for hitbox sizing, the model itself isnt actually shown (and is ugly)
 	thug22 = new Entity();
-	thug22->rigid = new RigidBody(thug22);
+	thug22->rigid = new EntRigidBody(thug22);
 	thug22->model = thug22->rigid;
 	thug22->model->load(gfx, "media/models/thug22/thug22");
 
@@ -977,7 +977,7 @@ void Engine::load_md5()
 {
 	char **animation = NULL;
 
-	animation = new char *[50];
+	animation = new char *[128];
 
 	int num_anim = 0;
 	animation[ANIM_IDLE] = "media/md5/chaingun_idle.md5anim";
@@ -992,8 +992,134 @@ void Engine::load_md5()
 	num_anim++;
 	animation[ANIM_ALERT] = "media/md5/chaingun_reload.md5anim";
 	num_anim++;
-	zcc.load("media/md5/zcc.md5mesh", (char **)animation, num_anim, gfx, 0);
-	delete [] animation;
+//	zcc.load("media/md5/zcc.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	num_anim = 0;
+	animation[ANIM_IDLE] = "media/md5/quake4/idle.md5anim";
+	num_anim++;
+	animation[ANIM_ATTACK] = "media/md5/quake4/machinegun_aim.md5anim";
+	num_anim++;
+	animation[ANIM_WALK] = "media/md5/quake4/walk.md5anim";
+	num_anim++;
+	animation[ANIM_RUN] = "media/md5/quake4/run.md5anim";
+	num_anim++;
+	animation[ANIM_PAIN] = "media/md5/quake4/rocketlauncher_raise.md5anim";
+	num_anim++;
+	animation[ANIM_ALERT] = "media/md5/quake4/salute.md5anim";
+
+		animation[num_anim++] = "media/md5/quake4/af_pose.md5anim";
+		animation[num_anim++] = "media/md5/quake4/cheer.md5anim";
+		animation[num_anim++] = "media/md5/quake4/crouch.md5anim";
+		animation[num_anim++] = "media/md5/quake4/crouch_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/crouch_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/crouch_walk_backward.md5anim";
+		animation[num_anim++] = "media/md5/quake4/crouch_walk_forward.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/darkmattergun_reload.md5anim";
+		animation[num_anim++] = "media/md5/quake4/fall.md5anim";
+		animation[num_anim++] = "media/md5/quake4/gauntlet_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/gauntlet_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/gauntlet_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/gauntlet_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/gauntlet_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/gauntlet_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grab_a.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grab_b.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_lower.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_raise.md5anim";
+		animation[num_anim++] = "media/md5/quake4/grenadelauncher_reload.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/hyperblaster_reload.md5anim";
+		animation[num_anim++] = "media/md5/quake4/idle.md5anim";
+		animation[num_anim++] = "media/md5/quake4/idle_loadscreen.md5anim";
+		animation[num_anim++] = "media/md5/quake4/jump.md5anim";
+		animation[num_anim++] = "media/md5/quake4/lightninggun_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/lightninggun_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/lightninggun_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/lightninggun_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/lightninggun_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/lightninggun_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_lower.md5anim";
+		animation[num_anim++] = "media/md5/quake4/machinegun_raise.md5anim";
+		animation[num_anim++] = "media/md5/quake4/mp_crouch_walk.md5anim";
+		animation[num_anim++] = "media/md5/quake4/mp_crouch_walk_backward.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/nailgun_reload.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pain.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pistol_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pistol_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pistol_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pistol_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pistol_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/pistol_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/railgun_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/railgun_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/railgun_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/railgun_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/railgun_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/railgun_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_lower.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_raise.md5anim";
+		animation[num_anim++] = "media/md5/quake4/rocketlauncher_reload.md5anim";
+		animation[num_anim++] = "media/md5/quake4/run.md5anim";
+		animation[num_anim++] = "media/md5/quake4/run_backwards.md5anim";
+		animation[num_anim++] = "media/md5/quake4/salute.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_aim.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_aim_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_aim_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_fire.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_fire_down.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_fire_up.md5anim";
+		animation[num_anim++] = "media/md5/quake4/shotgun_reload.md5anim";
+		animation[num_anim++] = "media/md5/quake4/soft_land.md5anim";
+		animation[num_anim++] = "media/md5/quake4/strafe_jump_left.md5anim";
+		animation[num_anim++] = "media/md5/quake4/strafe_jump_right.md5anim";
+		animation[num_anim++] = "media/md5/quake4/strafe_left.md5anim";
+		animation[num_anim++] = "media/md5/quake4/strafe_right.md5anim";
+		animation[num_anim++] = "media/md5/quake4/taunt_1.md5anim";
+		animation[num_anim++] = "media/md5/quake4/walk.md5anim";
+		animation[num_anim++] = "media/md5/quake4/walk_backwards.md5anim";
+		animation[num_anim++] = "media/md5/quake4/walk_left.md5anim";
+		animation[num_anim++] = "media/md5/quake4/walk_right.md5anim";
+
+
+	zcc.load("media/md5/quake4/player.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+
+
 }
 
 ///=============================================================================
@@ -1093,7 +1219,7 @@ void Engine::render(double last_frametime)
 	{
 		bool depth_view = false;
 		int spawn = find_type(ENT_PLAYER, 0);
-		Player *player = NULL;
+		EntPlayer *player = NULL;
 
 		if (spawn != -1)
 			player = entity_list[spawn]->player;
@@ -1200,7 +1326,7 @@ void Engine::render(double last_frametime)
 
 				if (entity_list[i]->light)
 				{
-					Light *light = entity_list[i]->light;
+					EntLight *light = entity_list[i]->light;
 					if (light->light_num == player->current_light)
 					{
 						if (input.scores)
@@ -1461,7 +1587,7 @@ void Engine::render_portalcamera()
 
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
-		PortalCamera *portal = entity_list[i]->portal_camera;
+		EntPortalCamera *portal = entity_list[i]->portal_camera;
 		if (portal == NULL)
 			continue;
 
@@ -1574,7 +1700,7 @@ void Engine::render_shadowmaps(bool everything)
 
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
-		Light *light = entity_list[i]->light;
+		EntLight *light = entity_list[i]->light;
 		if (light == NULL)
 			continue;
 
@@ -1814,7 +1940,7 @@ void Engine::render_to_framebuffer(double last_frametime)
 
 	if (player != -1)
 	{
-		RigidBody *rigid = entity_list[player]->rigid;
+		EntRigidBody *rigid = entity_list[player]->rigid;
 		
 		if (rigid->flags.water && rigid->water_depth < 2048.0f)
 		{
@@ -2186,7 +2312,7 @@ void Engine::render_scene_using_shadowmap(bool lights)
 
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
-		Light *light = entity_list[i]->light;
+		EntLight *light = entity_list[i]->light;
 		if (light == NULL)
 			continue;
 
@@ -2395,7 +2521,7 @@ void Engine::render_trails(matrix4 &trans)
 	//render particle trails first
 	for (unsigned int i = max_player; i < max_dynamic; i++)
 	{
-		Model *model = entity_list[i]->model;
+		EntModel *model = entity_list[i]->model;
 
 		if (model == NULL)
 			continue;
@@ -3238,7 +3364,7 @@ void Engine::spatial_testing()
 
 		// set pursue / evade
 		// (really need to move elsewhere, but had an entity loop here)
-		RigidBody *rigid = entity_list[i]->rigid;
+		EntRigidBody *rigid = entity_list[i]->rigid;
 		if (rigid)
 		{
 			if (rigid->target)
@@ -3268,7 +3394,7 @@ void Engine::spatial_testing()
 			entity_list[i]->model->get_matrix(mvp.m);
 			mvp = (mvp * trans) * projection;
 
-			Model *model = entity_list[i]->model;
+			EntModel *model = entity_list[i]->model;
 
 
 			vec3 min = model->aabb[0];
@@ -3311,7 +3437,7 @@ void Engine::spatial_testing()
 
 
 			// make triggered entities disappear
-			Trigger *trigger = entity_list[i]->trigger;
+			EntTrigger *trigger = entity_list[i]->trigger;
 			if (trigger)
 			{
 				if (trigger->hide == false)
@@ -3347,7 +3473,7 @@ void Engine::spatial_testing()
 		if (entity_list[i]->flags.visible == false)
 			continue;
 
-		Light *light = entity_list[i]->light;
+		EntLight *light = entity_list[i]->light;
 		if (light)
 		{
 			if (light->timer_flag)
@@ -3380,7 +3506,7 @@ void Engine::spatial_testing()
 /// Parameters:
 ///		None
 ///=============================================================================
-void Engine::activate_light(float distance, Light *light)
+void Engine::activate_light(float distance, EntLight *light)
 {
 //	float min_distance = FLT_MAX;
 
@@ -3513,7 +3639,7 @@ void Engine::dynamics()
 		if (collision_detect_enable == false && i >= max_player)
 			continue;
 
-		RigidBody *body = entity_list[i]->rigid;
+		EntRigidBody *body = entity_list[i]->rigid;
 
 		float delta_time = TICK_MS / 1000.0f;
 		float target_time = delta_time;
@@ -3634,12 +3760,12 @@ void Engine::handle_springs()
 
 	for (int i = 0; i < num_body_spring; i++)
 	{
-		RigidBody *rigid0 = entity_list[body_spring.rigid0]->rigid;
+		EntRigidBody *rigid0 = entity_list[body_spring.rigid0]->rigid;
 		vec3 position0 = rigid0->entity->position + rigid0->model_vertex_array[body_spring.vertex0].position;
 		vec3 u0 = position0 + rigid0->center;
 		vec3 vu0 = rigid0->velocity + vec3::crossproduct(rigid0->angular_velocity, u0);
 
-		RigidBody *rigid1 = entity_list[body_spring.rigid1]->rigid;
+		EntRigidBody *rigid1 = entity_list[body_spring.rigid1]->rigid;
 		vec3 position1 = rigid1->entity->position + rigid1->model_vertex_array[body_spring.vertex1].position;
 		vec3 u1 = position1 + rigid1->center;
 		vec3 vu1 = rigid1->velocity + vec3::crossproduct(rigid1->angular_velocity, u1);
@@ -3675,7 +3801,7 @@ void Engine::handle_springs()
 
 	for (int i = 0; i < num_spring; i++)
 	{
-		RigidBody *rigid0 = entity_list[spring.rigid0]->rigid;
+		EntRigidBody *rigid0 = entity_list[spring.rigid0]->rigid;
 		vec3 position0 = rigid0->entity->position + rigid0->model_vertex_array[spring.vertex0].position;
 		vec3 u0 = position0 + rigid0->center;
 		vec3 vu0 = rigid0->velocity + vec3::crossproduct(rigid0->angular_velocity, u0);
@@ -3711,7 +3837,7 @@ void Engine::handle_springs()
 ///		return true if simulated too far. (results in smaller time step)
 ///		return false if collision handled.
 ///=============================================================================
-bool Engine::collision_detect(RigidBody &body)
+bool Engine::collision_detect(EntRigidBody &body)
 {
 //	Plane plane(vec3(0.0f, 1.0f, 0.0f).normalize(), 500.0f);	
 
@@ -3761,7 +3887,7 @@ bool Engine::collision_detect(RigidBody &body)
 ///		return true if simulated too far. (results in smaller time step)
 ///		return false if collision handled.
 ///=============================================================================
-bool Engine::map_collision(RigidBody &body)
+bool Engine::map_collision(EntRigidBody &body)
 {
 	plane_t plane;
 	float depth;
@@ -3970,7 +4096,7 @@ bool Engine::map_collision(RigidBody &body)
 ///		return true if simulated too far. (results in smaller time step)
 ///		return false if collision handled.
 ///=============================================================================
-bool Engine::body_collision(RigidBody &body)
+bool Engine::body_collision(EntRigidBody &body)
 {
 	for(unsigned int i = 0; i < max_dynamic; i++)
 	{
@@ -5372,7 +5498,7 @@ void Engine::create_sources()
 	// create and associate sources
 	for(unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
-		Speaker *speaker = entity_list[i]->speaker;
+		EntSpeaker *speaker = entity_list[i]->speaker;
 		if (speaker != NULL)
 		{
 			entity_list[i]->rigid->flags.gravity = false;
@@ -5985,7 +6111,7 @@ int Engine::console_general(char *cmd)
 			current_model++;
 			if (current_model >= num_model)
 				current_model = 0;
-			sprintf(menu.data.model, "%s", Player::models[current_model]);
+			sprintf(menu.data.model, "%s", EntPlayer::models[current_model]);
 
 			sprintf(menu.data.apply, "Apply");
 			return 0;
@@ -5995,7 +6121,7 @@ int Engine::console_general(char *cmd)
 			current_model--;
 			if (current_model < 0)
 				current_model = num_model - 1;
-			sprintf(menu.data.model, "%s", Player::models[current_model]);
+			sprintf(menu.data.model, "%s", EntPlayer::models[current_model]);
 			return 0;
 		}
 		else if (strcmp(data, "cg_team") == 0 && strstr(cmd, "up"))
@@ -8214,7 +8340,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 	for (unsigned int i = 0; i < entity_list.size(); i++)
 	{
-		RigidBody *rigid = entity_list[i]->rigid;
+		EntRigidBody *rigid = entity_list[i]->rigid;
 		if (i == (unsigned int)self)
 			continue;
 

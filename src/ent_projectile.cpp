@@ -12,15 +12,15 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "projectile.h"
+#include "ent_projectile.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-Projectile::Projectile(Entity *entity, Audio &audio)
+EntProjectile::EntProjectile(Entity *entity, Audio &audio)
 {
-	Projectile::entity = entity;
+	EntProjectile::entity = entity;
 	active = false;
 	client_active = false;
 	timeout = 0.0f;
@@ -65,7 +65,7 @@ Projectile::Projectile(Entity *entity, Audio &audio)
 
 }
 
-void Projectile::create_sources(Audio &audio)
+void EntProjectile::create_sources(Audio &audio)
 {
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
@@ -75,7 +75,7 @@ void Projectile::create_sources(Audio &audio)
 
 }
 
-void Projectile::destroy(Audio &audio)
+void EntProjectile::destroy(Audio &audio)
 {
 	if (source != -1)
 		audio.delete_source(source);
@@ -83,7 +83,7 @@ void Projectile::destroy(Audio &audio)
 		audio.delete_source(loop_source);
 }
 
-Projectile::~Projectile()
+EntProjectile::~EntProjectile()
 {
 
 }

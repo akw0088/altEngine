@@ -415,7 +415,7 @@ void mLight2::set_matrix(matrix4 &mvp)
 	glUniformMatrix4fv(matrix, 1, GL_FALSE, mvp.m);
 }
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int time)
+void mLight2::Params(matrix4 &mvp, vector<EntLight *> &light_list, size_t num_lights, vec3 &offset, int time)
 {
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];
@@ -423,7 +423,7 @@ void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_light
 
 	for(i = 0, j = 0; i < num_lights && j < MAX_LIGHTS; i++, j++)
 	{
-		Light *light = light_list[i];
+		EntLight *light = light_list[i];
 
 		if (light->active)
 		{

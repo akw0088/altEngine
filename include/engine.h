@@ -74,7 +74,7 @@ public:
 	void handle_springs();
 	void handle_cloth();
 	void spatial_testing();
-	void activate_light(float distance, Light *light);
+	void activate_light(float distance, EntLight *light);
 	void update_audio();
 	void set_reference_distance(float value);
 	void set_max_distance(float value);
@@ -102,10 +102,10 @@ public:
 
 	void handle_game(char key);
 
-	bool collision_detect(RigidBody &body);
-	bool map_collision(RigidBody &body);
+	bool collision_detect(EntRigidBody &body);
+	bool map_collision(EntRigidBody &body);
 
-	bool body_collision(RigidBody &body);
+	bool body_collision(EntRigidBody &body);
 
 	void get_shaderlist_pk3(char **shaderlist, int &num_shader);
 
@@ -369,7 +369,7 @@ protected:
 	unsigned int	max_dynamic;
 	unsigned int	max_player;
 
-	vector<Light *>		light_list;
+	vector<EntLight *>		light_list;
 	vector<wave_t>		snd_wave;
 
 

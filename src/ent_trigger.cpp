@@ -12,15 +12,15 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-#include "trigger.h"
+#include "ent_trigger.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-Trigger::Trigger(Entity *entity, Audio &audio)
+EntTrigger::EntTrigger(Entity *entity, Audio &audio)
 {
-	Trigger::entity = entity;
+	EntTrigger::entity = entity;
 	active = false;
 	client_active = false;
 	timeout = 0.0f;
@@ -66,7 +66,7 @@ Trigger::Trigger(Entity *entity, Audio &audio)
 
 }
 
-void Trigger::create_sources(Audio &audio)
+void EntTrigger::create_sources(Audio &audio)
 {
 	source = audio.create_source(false, false);
 	loop_source = audio.create_source(true, false);
@@ -76,7 +76,7 @@ void Trigger::create_sources(Audio &audio)
 
 }
 
-void Trigger::destroy(Audio &audio)
+void EntTrigger::destroy(Audio &audio)
 {
 	if (source != -1)
 		audio.delete_source(source);
@@ -84,7 +84,7 @@ void Trigger::destroy(Audio &audio)
 		audio.delete_source(loop_source);
 }
 
-Trigger::~Trigger()
+EntTrigger::~EntTrigger()
 {
 
 }
