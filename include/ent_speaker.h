@@ -14,20 +14,22 @@
 
 #include "include.h"
 
-#ifndef PORTAL_CAMERA_H
-#define PORTAL_CAMERA_H
+#ifndef SPEAKER_H
+#define SPEAKER_H
 
-class PortalCamera
+class EntSpeaker
 {
 public:
-	PortalCamera(Entity *entity, Graphics &gfx, float scale, float zNear, float zFar, bool inf);
-	void destroy(Graphics &gfx);
+	EntSpeaker(Entity *entity, Audio &audio);
+	~EntSpeaker();
+	void gain(float value);
+	void loop_gain(float value);
+	void destroy(Audio &audio);
+	Entity			*entity;
 
-	Entity	*entity;
-	unsigned int fbo;
-	unsigned int quad_tex;
-	unsigned int depth_tex;
-	matrix4 portal_projection;
+	int	source;
+	int	loop_source;
+	int index;
 };
 
 #endif

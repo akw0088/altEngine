@@ -21,7 +21,7 @@
 #include "quake3.h"
 
 
-EntConstructable::EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t type)
+EntConstructable::EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t ctype)
 {
 	EntConstructable::entity = entity;
 	EntConstructable::team = team;
@@ -31,7 +31,7 @@ EntConstructable::EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, 
 	immobile = false;
 
 
-	construct_type = type;
+	construct_type = ctype;
 	owner = -1;
 	telefragged = NULL;
 
@@ -61,7 +61,7 @@ EntConstructable::EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, 
 	flash_lightning = 0;
 	flash_plasma = 0;
 
-	if (type == CT_AUTOSENTRY)
+	if (construct_type == CT_AUTOSENTRY)
 	{
 		sprintf(name, "Autosentry");
 		health = SENTRY_HEALTH_LVL1;
@@ -78,7 +78,7 @@ EntConstructable::EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, 
 		ammo_bfg = 0;
 		build_timer = 3 * TICK_RATE;
 	}
-	else if (type == CT_STRUCTURE)
+	else if (construct_type == CT_STRUCTURE)
 	{
 		sprintf(name, "Structure");
 		health = SENTRY_HEALTH_LVL1;
@@ -137,7 +137,7 @@ void EntConstructable::destroy()
 
 int EntConstructable::step(input_t &input, vector<Entity *> &entity_list, int self, Engine &engine)
 {
-	if (type == CT_AUTOSENTRY)
+	if (construct_type == CT_AUTOSENTRY)
 	{
 		if (level != 3 && base_index != -1)
 			engine.entity_list[base_index]->position = entity->position - vec3(0, 30.0, 5.0);
@@ -164,7 +164,7 @@ int EntConstructable::step(input_t &input, vector<Entity *> &entity_list, int se
 		reload_timer2--;
 
 
-	if (type == CT_AUTOSENTRY)
+	if (construct_type == CT_AUTOSENTRY)
 	{
 		for (unsigned int i = 0; i < entity_list.size(); i++)
 		{

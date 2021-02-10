@@ -17,10 +17,10 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
-class Vehicle : public RigidBody
+class EntVehicle : public EntRigidBody
 {
 public:
-	Vehicle(Entity *entity, carinfo_t *info);
+	EntVehicle(Entity *entity, carinfo_t *info);
 	void init(carinfo_t *info);
 	void step(float delta_t);
 	bool move(input_t &input, float speed_scale, int tick_num);

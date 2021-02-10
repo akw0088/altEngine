@@ -17,11 +17,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-class Player
+class EntPlayer
 {
 public:
-	Player(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, Model *model_table);
-	~Player();
+	EntPlayer(Entity *entity, Graphics &gfx, Audio &audio, int model, team_t team, entity_type_t ent_type, EntModel *model_table);
+	~EntPlayer();
 	Entity	*entity;
 
 
@@ -150,14 +150,14 @@ public:
 	float zoom_level;
 	team_t team;
 
-	Model weapon_gauntlet;
-	Model weapon_machinegun;
-	Model weapon_shotgun;
-	Model weapon_grenade;
-	Model weapon_rocket;
-	Model weapon_lightning;
-	Model weapon_railgun;
-	Model weapon_plasma;
+	EntModel weapon_gauntlet;
+	EntModel weapon_machinegun;
+	EntModel weapon_shotgun;
+	EntModel weapon_grenade;
+	EntModel weapon_rocket;
+	EntModel weapon_lightning;
+	EntModel weapon_railgun;
+	EntModel weapon_plasma;
 
 
 	static const char bot_state_name[16][32];

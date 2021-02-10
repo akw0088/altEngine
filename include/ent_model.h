@@ -17,16 +17,16 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-class Model
+class EntModel
 {
 public:
-	Model(Entity *entity);
-	Model();
-	virtual ~Model();
+	EntModel(Entity *entity);
+	EntModel();
+	virtual ~EntModel();
 	void load(Graphics &gfx, char *file);
 	virtual float *get_matrix(float *matrix);
 	void render(Graphics &gfx);
-	void clone(Model &model);
+	void clone(EntModel &model);
 	void getForwardVector(vec3 &forward);
 	virtual void get_frame(Frame &frame);
 	void make_aabb();

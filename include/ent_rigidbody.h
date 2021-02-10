@@ -28,20 +28,20 @@ typedef struct
 	float path_min_dist;
 } train_t;
 
-class RigidBody : public Model
+class EntRigidBody : public EntModel
 {
 public:
-	RigidBody(Entity *entity);
+	EntRigidBody(Entity *entity);
 	void recalc();
 	void integrate(float time);
 	bool collision_detect(vec3 &v);
 	bool collision_detect(plane_t &p);
-	bool collision_detect_simple(RigidBody &body);
-	bool collision_detect(RigidBody &body);
-	bool collision_distance(RigidBody &body);
+	bool collision_detect_simple(EntRigidBody &body);
+	bool collision_detect(EntRigidBody &body);
+	bool collision_distance(EntRigidBody &body);
 	void impulse(plane_t &plane, vec3 &vertex);
-	void impulse(RigidBody &rigid, vec3 &point);
-	void impulse(RigidBody &rigid, vec3 &point, plane_t &plane);
+	void impulse(EntRigidBody &rigid, vec3 &point);
+	void impulse(EntRigidBody &rigid, vec3 &point, plane_t &plane);
 	void frame2ent(Frame *camera_frame, input_t &input);
 	void frame2ent_yaw(Frame *camera_frame, input_t &input);
 	void save_config(cfg_t &config);

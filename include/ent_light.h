@@ -22,10 +22,10 @@
 
 #define NUM_CUBE_FACE 6
 
-class Light
+class EntLight
 {
 public:
-	Light(Entity *entity, Graphics &gfx, int num, float scale);
+	EntLight(Entity *entity, Graphics &gfx, int num, float scale);
 	void render_shadow_volume(Graphics &gfx, int index);
 	void render_map_shadowvol(Graphics &gfx);
 	void generate_map_volumes(Graphics &gfx, Bsp &map, int current_light);

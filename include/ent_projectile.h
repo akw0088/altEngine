@@ -3,11 +3,11 @@
 #ifndef PROJECTILE_H
 #define PROJECTILE_H
 
-class Projectile
+class EntProjectile
 {
 public:
-	Projectile(Entity *entity, Audio &audio);
-	~Projectile();
+	EntProjectile(Entity *entity, Audio &audio);
+	~EntProjectile();
 	void create_sources(Audio &audio);
 	void destroy(Audio &audio);
 	Entity	*entity;

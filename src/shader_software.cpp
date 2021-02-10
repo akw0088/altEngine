@@ -209,7 +209,7 @@ void mLight2::set_alpha(float value)
 
 
 
-void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time)
+void mLight2::Params(matrix4 &mvp, vector<EntLight *> &light_list, size_t num_lights, vec3 &offset, int u_time)
 {
 	Graphics::current_mvp = mvp;
 }

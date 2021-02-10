@@ -4180,12 +4180,6 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		vertex_t ab;
 		vertex_t ca;
 
-//  A
-//   /\
-//=========
-//  /  \
-//C/____\B
-
 		int ret = intersect_two_points_plane(p, a, b, ab);
 		if (ret != 0)
 		{
@@ -4216,12 +4210,6 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		vertex_t ab;
 		vertex_t cb;
 
-//  B
-//   /\
-//=========
-//  /  \
-//A/____\C
-
 
 		int ret = intersect_two_points_plane(p, a, b, ab);
 		if (ret != 0)
@@ -4251,12 +4239,6 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	{
 		vertex_t ac;
 		vertex_t bc;
-
-//  C
-//   /\
-//=========
-//  /  \
-//B/____\A
 
 		int ret = intersect_two_points_plane(p, a, c, ac);
 		if (ret != 0)
@@ -4881,7 +4863,7 @@ void init_default_car(carinfo_t *info)
 	//gearing
 	//zeroth gear is reverse, corvette c5
 	info->gear_ratio[0] = -2.9f;
-	info->gear_ratio[1] = 0;	info->gear_ratio[2] = 2.66f;	info->gear_ratio[3] = 1.78f;	info->gear_ratio[4] = 1.3f;	info->gear_ratio[5] = 1.0f;	info->gear_ratio[6] = 0.74f;	info->gear_ratio[7] = 0.5f;	info->num_gear = 8;
+	info->gear_ratio[1] = 0;	info->gear_ratio[2] = 2.66f;	info->gear_ratio[3] = 1.78f;	info->gear_ratio[4] = 1.3f;	info->gear_ratio[5] = 1.0f;	info->gear_ratio[6] = 0.74f;	info->gear_ratio[7] = 0.5f;	info->num_gear = 8;
 	info->diff_ratio = 3.42f;
 	info->efficiency = 1.0f;
 	info->wheel_radius = 0.34f;

@@ -19,11 +19,11 @@
 
 class Entity;
 
-class Trigger
+class EntTrigger
 {
 public:
-	Trigger(Entity *entity, Audio &audio);
-	~Trigger();
+	EntTrigger(Entity *entity, Audio &audio);
+	~EntTrigger();
 	void create_sources(Audio &audio);
 	void destroy(Audio &audio);
 	Entity	*entity;

@@ -278,7 +278,6 @@ using namespace std;
 #include "netcode.h"
 #include "basegame.h"
 #include "quake3.h"
-#include "commando.h"
 #include "terrain.h"
 #include "isocube.h"
 #include "isosphere.h"

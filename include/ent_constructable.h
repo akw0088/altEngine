@@ -29,11 +29,11 @@
 
 class Engine;
 
-class Constructable
+class EntConstructable
 {
 public:
-	Constructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t type);
-	~Constructable();
+	EntConstructable(Entity *entity, Graphics &gfx, Audio &audio, team_t team, construct_type_t type);
+	~EntConstructable();
 	Entity	*entity;
 
 	void reset();
