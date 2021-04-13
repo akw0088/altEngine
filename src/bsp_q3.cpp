@@ -834,7 +834,7 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 
 		// ax+by+cz=d
 		float d = normal * a.position;
-		float dep = point * normal + d;
+		float dep = point * normal - d;
 
 		if ( dep >= 0 )
 		{
@@ -900,6 +900,7 @@ bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth)
 		}
 	}
 
+	return false;
 }
 
 ///=============================================================================
@@ -956,7 +957,10 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 	if (bezier_collision)
 	{
-		bezier_collision_detect(point, plane, depth);
+		if (bezier_collision_detect(point, plane, depth))
+		{
+			return true;
+		}
 	}
 
 
