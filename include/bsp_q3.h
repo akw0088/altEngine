@@ -121,8 +121,12 @@ public:
 	bool enable_patch;
 	bool enable_sky;
 	bool enable_normalmap;
+	bool bezier_collision;
 	unsigned int max_stage;
 private:
+	bool bezier_collision_detect(vec3 &point, plane_t *plane, float *depth);
+	void make_aabb(vertex_t *model_vertex_array, int num_vertex, vec3 *aabb, vec3 &center);
+
 	q3::bsp_t		*tBsp;
 	vec4		*tangent;
 

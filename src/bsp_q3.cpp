@@ -33,6 +33,9 @@
 #include <math.h> // for M_PI
 #include <algorithm> // for sort
 
+#include "physics.h" // need to rename as intersection tests or something
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -105,6 +108,8 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 	max_stage = MAX_TEXTURES;
 	selected_map = false;
+	bezier_collision = false;
+
 	for (int i = 0; i < num_pk3; i++)
 	{
 		get_zipfile(pk3list[i] + FILE_OFFSET, map, (unsigned char **)&tBsp, NULL);
@@ -331,8 +336,12 @@ void Bsp::generate_meshes(Graphics &gfx)
 					size);
 				patchdata[mesh_index].vbo = gfx.CreateVertexBuffer(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts);
 				patchdata[mesh_index].ibo = gfx.CreateIndexBuffer(patchdata[mesh_index].index_array, patchdata[mesh_index].num_indexes);
-				delete[] patchdata[mesh_index].vertex_array;
-				delete[] patchdata[mesh_index].index_array;
+
+				make_aabb(patchdata[mesh_index].vertex_array, patchdata[mesh_index].num_verts, patchdata[mesh_index].aabb, patchdata[mesh_index].center);
+
+// Keeping for collision detection (may want to regenerate entire patch set with lower LOD)				
+//				delete[] patchdata[mesh_index].vertex_array;
+//				delete[] patchdata[mesh_index].index_array;
 				mesh_index++;
 			}
 		}
@@ -779,6 +788,120 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 }
 
 
+
+
+
+bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_array, int start_index, int start_vertex, int num_index, int num_vertex,
+	float *depth, plane_t *plane)
+{
+	for (int i = start_index; i < start_index + num_index;)
+	{
+		int num_point = 3;
+		vertex_t a, b, c;
+		bool even = false;
+
+		if (i == start_index)
+		{
+			a = vertex_array[start_vertex + index_array[i]];
+			b = vertex_array[start_vertex + index_array[i + 1]];
+			c = vertex_array[start_vertex + index_array[i + 2]];
+
+			i += 3;
+		}
+		else if (i == start_index + 3 || even)
+		{
+			b = vertex_array[start_vertex + index_array[i - 2]];
+			a = vertex_array[start_vertex + index_array[i - 1]];
+			c = vertex_array[start_vertex + index_array[i]];
+
+			i++;
+			even = false;
+		}
+		else
+		{
+			a = vertex_array[start_vertex + index_array[i - 2]];
+			b = vertex_array[start_vertex + index_array[i - 1]];
+			c = vertex_array[start_vertex + index_array[i]];
+
+			i++;
+			even = true;
+		}
+
+		vec3 spana = b.position - a.position;
+		vec3 spanb = c.position - a.position;
+
+		vec3 normal = vec3::crossproduct(spana, spanb).normalize();
+
+		// ax+by+cz=d
+		float d = normal * a.position;
+		float dep = point * normal + d;
+
+		if ( dep >= 0 )
+		{
+			printf("bezier collision point (%3.3f, %3.3f, %3.3f) inside plane (%3.3f, %3.3f, %3.3f, %3.3f)\r\n"
+				"Triangle:\r\n\t(%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f)\r\n"
+				"Collision normal (%f, %f, %f)\r\n"
+				"Collision depth = %f\r\n",
+				point.x, point.y, point.z,
+				normal.x, normal.y, normal.z, d,
+				a.position.x, a.position.y, a.position.z,
+				b.position.x, b.position.y, b.position.z,
+				c.position.x, c.position.y, c.position.z,
+				normal.x, normal.y, normal.z,
+				dep
+			);
+
+			plane->d = d;
+			plane->normal = normal;
+			*depth = dep;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+
+bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth)
+{
+	for (int mesh_index = 0; mesh_index < num_meshes; mesh_index++)
+	{
+		physics::aabb_t aabb;
+
+		aabb.min = patchdata[mesh_index].aabb[0];
+		aabb.max = patchdata[mesh_index].aabb[7];
+
+		if (PointInAABB(point, aabb))
+		{
+			// player is inside patches AABB, check all triangles now
+			printf("near bezeir %d\r\n", mesh_index);
+			int index_per_row = 2 * (mesh_level + 1);
+
+			// similar to draw code, check each row of triangles, defined as a triangle strip
+			for (int i = 0; i < patchdata[mesh_index].num_mesh; i++)
+			{
+				for (int row = 0; row < mesh_level; row++)
+				{
+					int start_index = row * index_per_row;
+					int start_vertex = 0;
+					int num_index = index_per_row;
+					int num_vertex = patchdata[mesh_index + i].num_verts;
+
+					vertex_t *vertex_array = patchdata[mesh_index + i].vertex_array;
+					int *index_array = patchdata[mesh_index + i].index_array;
+
+					if (PointPlaneTestTriangleFan(point, vertex_array, index_array, start_index, start_vertex, num_index, num_vertex, depth, plane) == true)
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+}
+
 ///=============================================================================
 /// Function: collision_detect
 ///=============================================================================
@@ -825,6 +948,15 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 		if (is_point_in_brush(*brush_index, point, oldpoint, depth, plane, flag, water_depth, debug))
 			return true;
+	}
+
+
+
+	// we made AABB's for all patch data, not perfect, but better than nothing
+
+	if (bezier_collision)
+	{
+		bezier_collision_detect(point, plane, depth);
 	}
 
 
@@ -3293,4 +3425,38 @@ void Bsp::check_brush(brush_t *brush, vec3 &start, vec3 &end)
 			trace_result = start_amount;
 		}
 	}
+}
+
+
+void Bsp::make_aabb(vertex_t *model_vertex_array, int num_vertex, vec3 *aabb, vec3 &center)
+{
+	aabb[0] = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	aabb[7] = vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	vec3 sum = vec3();
+	for (int i = 0; i < num_vertex; i++)
+	{
+		sum += model_vertex_array[i].position;
+
+		if (model_vertex_array[i].position.x < aabb[0].x)
+			aabb[0].x = model_vertex_array[i].position.x;
+		else if (model_vertex_array[i].position.y < aabb[0].y)
+			aabb[0].y = model_vertex_array[i].position.y;
+		else if (model_vertex_array[i].position.z < aabb[0].z)
+			aabb[0].z = model_vertex_array[i].position.z;
+
+		if (model_vertex_array[i].position.x > aabb[7].x)
+			aabb[7].x = model_vertex_array[i].position.x;
+		else if (model_vertex_array[i].position.y > aabb[7].y)
+			aabb[7].y = model_vertex_array[i].position.y;
+		else if (model_vertex_array[i].position.z > aabb[7].z)
+			aabb[7].z = model_vertex_array[i].position.z;
+	}
+	center = sum / (float)num_vertex;
+	// binary order
+	aabb[1] = vec3(aabb[0].x, aabb[0].y, aabb[7].z);
+	aabb[2] = vec3(aabb[0].x, aabb[7].y, aabb[0].z);
+	aabb[3] = vec3(aabb[0].x, aabb[7].y, aabb[7].z);
+	aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
+	aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
+	aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
 }

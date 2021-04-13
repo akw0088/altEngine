@@ -463,6 +463,9 @@ typedef struct
 	unsigned int vbo;
 	unsigned int ibo;
 	int num_mesh;
+
+	vec3 center;
+	vec3 aabb[8];
 } patch_t;
 
 

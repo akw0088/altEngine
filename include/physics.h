@@ -15,8 +15,8 @@
 // So this code is all from Game Physics Cookbook, not too sure if it is copyrighted as it
 // is a book intended for learning, mostly intersection code
 
-#ifndef RAY_H
-#define RAY_H
+#ifndef PHYSICS_H
+#define PHYSICS_H
 #include "include.h"
 
 #define RIGIDBODY_TYPE_BASE  0
@@ -177,6 +177,7 @@ namespace physics {
 };
 
 bool Raycast(const plane_t &plane, const physics::ray_t &ray, physics::raycast_result_t *result);
-
+bool PointInAABB(const vec3 &point, const physics::aabb_t &aabb);
+bool PointOnPlane(const vec3 &point, vec3 &normal, float d);
 
 #endif
