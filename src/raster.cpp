@@ -407,7 +407,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 					tri_uv[4] = e.texCoord0;
 					tri_uv[5] = f.texCoord0;
 				}
-				else if (CLIPPED_EASY)
+				else if (ret == CLIPPED_EASY)
 				{
 					// clipped easy, just set new values
 					tri[0] = vec4(a.position, a.texCoord1.x);
@@ -1133,7 +1133,7 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 					tri_uv[4] = e.texCoord0;
 					tri_uv[5] = f.texCoord0;
 				}
-				else if (CLIPPED_EASY)
+				else if (ret == CLIPPED_EASY)
 				{
 					// clipped easy, just set new values
 					tri[0] = vec4(a.position, a.texCoord1.x);
