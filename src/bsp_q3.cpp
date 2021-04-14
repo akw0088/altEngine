@@ -697,7 +697,7 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 		brushSide_t *brushSide = &data.BrushSides[brush_side_index + j];
 		int plane_index = brushSide->plane;
 
-		float d = point * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+		float d = DistPointPlane(point, data.Plane[plane_index].normal, data.Plane[plane_index].d);
 
 		// outside of brush plane
 		if (d > 0.0f)
@@ -748,7 +748,7 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 
 		// Check old position against planes, if we werent colliding before
 		//then it is the collision plane we want to return
-		d = oldpoint * data.Plane[plane_index].normal - data.Plane[plane_index].d;
+		d = DistPointPlane(oldpoint, data.Plane[plane_index].normal, data.Plane[plane_index].d);
 		if (d > 0.0)
 		{
 			plane->normal = data.Plane[plane_index].normal;
@@ -827,24 +827,44 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 			even = true;
 		}
 
+
+
+		float area = Signed2DTriArea(a.position, b.position, c.position);
+		if (area > 0)
+		{
+			// negative means CW, positive is CCW, we using clockwise
+			vertex_t temp;
+
+			temp = b;
+			b = c;
+			c = temp;
+		}
+		area = Signed2DTriArea(a.position, b.position, c.position);
+
+
 		vec3 spana = b.position - a.position;
 		vec3 spanb = c.position - a.position;
-
 		vec3 normal = vec3::crossproduct(spanb, spana).normalize();
+
+
+		if (area > 0)
+		{
+			printf("Incorrect winding on triangle %d\r\n", i);
+		}
 
 		// ax+by+cz=d
 		float d = normal * a.position;
-		float dep = point * normal - d;
-
+		float dist = DistPointPlane(point, normal, d);
 
 		// bound so we must be close either way (normals arent consistently point correct direction, need to fiddle)
-		if ( dep <= 10 && dep >= -10 )
+		if (dist <= 10 && dist >= -10 )
 		{
 			vec3 center;
 
 			center = (a.position + b.position + c.position) / 3.0;
 
-			printf("bezier collision\r\ndebug_point (%3.3f, %3.3f, %3.3f) inside plane (%3.3f, %3.3f, %3.3f, %3.3f)\r\n"
+			printf("bezier collision\r\n"
+				"debug_point (%3.3f, %3.3f, %3.3f) inside plane (%3.3f, %3.3f, %3.3f, %3.3f)\r\n"
 				"debug_triangle (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f)\r\n"
 				"debug_vector (%f, %f, %f) (%f, %f, %f)\r\n"
 				"Collision depth = %f\r\n",
@@ -855,7 +875,7 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 				c.position.x, c.position.y, c.position.z,
 				center.x, center.y, center.z,
 				normal.x, normal.y, normal.z,
-				dep
+				dist
 			);
 
 			tri[0] = a.position;
@@ -863,7 +883,7 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 			tri[2] = c.position;
 			plane->d = d;
 			plane->normal = normal;
-			*depth = dep;
+			*depth = dist;
 			return true;
 		}
 	}

@@ -96,6 +96,59 @@ bool PointInOrientedRectangle(const vec2 &point, const box2_t &rectangle)
 //=============================================================================
 //	3D Point Tests
 //=============================================================================
+float DistPointPlane(vec3 &q, vec3 &normal, float d)
+{
+	return q * normal - d;
+}
+
+
+
+// Find closest point on line segment AB to arbitrary point C, return d point and parametric interpolation t value.
+// Clamps between AB 0 < t < 1
+void ClosestPtPointSegment(vec3 &c, vec3 &a, vec3 &b, float &t, vec3 &d)
+{
+	vec3 ab = b - a;
+	// Project c onto ab, computing parameterized position d(t)=a+ t*(b – a)
+	t = ((c - a) * ab) / (ab * ab);
+	// If outside segment, clamp t (and therefore d) to the closest endpoint
+	if (t < 0.0f)
+		t = 0.0f;
+	if (t > 1.0f)
+		t = 1.0f;
+	// Compute projected position from the clamped t
+	d = a + ab * t;
+}
+
+// Given point p, return the point q on or in AABB b that is closest to p
+void ClosestPtPointAABB(vec3 &p, aabb_t &b, vec3 &q)
+{
+	// For each coordinate axis, if the point coordinate value is
+	// outside box, clamp it to the box, else keep it as is
+	vec3 v = p;
+	if (v.x < b.min.x)
+		v.x = b.min.x;
+	if (v.x > b.max.x)
+		v.x = b.max.x;
+
+	if (v.y < b.min.y)
+		v.y = b.min.y;
+	if (v.y > b.max.y)
+		v.y = b.max.y;
+
+	if (v.z < b.min.z)
+		v.z = b.min.z;
+	if (v.z > b.max.z)
+		v.z = b.max.z;
+
+	q = v;
+}
+
+// returns positive if CCW negative if CW winding
+float Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c)
+{
+	return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
+}
+
 bool PointInSphere( vec3 &point, sphere_t &sphere)
 {
 	vec3 dist = point - sphere.origin;
