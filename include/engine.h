@@ -150,7 +150,7 @@ public:
 
 	int debug_triangle(vec3 *triangle);
 	int debug_vector(vec3 &pos, vec3 &dir);
-
+	int debug_point(vec3 &pos);
 
 	vector<vertex_t> debug_tri_list;
 	vector<int> debug_tri_list_index;

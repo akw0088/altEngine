@@ -108,7 +108,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 	max_stage = MAX_TEXTURES;
 	selected_map = false;
-	enable_bezier_collision = false;
+	enable_patch_collision = false;
 
 	for (int i = 0; i < num_pk3; i++)
 	{
@@ -830,23 +830,30 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 		vec3 spana = b.position - a.position;
 		vec3 spanb = c.position - a.position;
 
-		vec3 normal = vec3::crossproduct(spana, spanb).normalize();
+		vec3 normal = vec3::crossproduct(spanb, spana).normalize();
 
 		// ax+by+cz=d
 		float d = normal * a.position;
 		float dep = point * normal - d;
 
-		if ( dep >= 0 )
+
+		// bound so we must be close either way (normals arent consistently point correct direction, need to fiddle)
+		if ( dep <= 10 && dep >= -10 )
 		{
-			printf("bezier collision point (%3.3f, %3.3f, %3.3f) inside plane (%3.3f, %3.3f, %3.3f, %3.3f)\r\n"
+			vec3 center;
+
+			center = (a.position + b.position + c.position) / 3.0;
+
+			printf("bezier collision\r\ndebug_point (%3.3f, %3.3f, %3.3f) inside plane (%3.3f, %3.3f, %3.3f, %3.3f)\r\n"
 				"debug_triangle (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f)\r\n"
-				"debug_vector (%f, %f, %f)\r\n"
+				"debug_vector (%f, %f, %f) (%f, %f, %f)\r\n"
 				"Collision depth = %f\r\n",
 				point.x, point.y, point.z,
 				normal.x, normal.y, normal.z, d,
 				a.position.x, a.position.y, a.position.z,
 				b.position.x, b.position.y, b.position.z,
 				c.position.x, c.position.y, c.position.z,
+				center.x, center.y, center.z,
 				normal.x, normal.y, normal.z,
 				dep
 			);
@@ -878,7 +885,7 @@ bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth, vec
 		if (PointInAABB(point, aabb))
 		{
 			// player is inside patches AABB, check all triangles now
-			printf("near bezeir %d\r\n", mesh_index);
+//			printf("near bezeir %d\r\n", mesh_index);
 			int index_per_row = 2 * (mesh_level + 1);
 
 			// similar to draw code, check each row of triangles, defined as a triangle strip
@@ -958,7 +965,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 	// we made AABB's for all patch data, not perfect, but better than nothing
 
-	if (enable_bezier_collision)
+	if (enable_patch_collision)
 	{
 		if (bezier_collision_detect(point, plane, depth, tri))
 		{

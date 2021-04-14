@@ -7038,7 +7038,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		snprintf(msg, LINE_SIZE, "Debug triangle\n");
 
-		debugf("debug_triangle (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)",
+		debugf("debug_triangle (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)\n",
 			triangle[0].x, triangle[0].y, triangle[0].z,
 			triangle[1].x, triangle[1].y, triangle[1].z,
 			triangle[2].x, triangle[2].y, triangle[2].z);
@@ -7067,7 +7067,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	{
 		snprintf(msg, LINE_SIZE, "Debug vector\n");
 
-		debugf("debug_vector (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)",
+		debugf("debug_vector (%f, %f, %f) (%f, %f, %f)\n",
 			vec_pos.x, vec_pos.y, vec_pos.z,
 			vec_dir.x, vec_dir.y, vec_dir.z);
 
@@ -7083,6 +7083,32 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		}
 		return;
 	}
+	vec3 point_pos;
+	ret = sscanf(cmd, "debug_point (%f, %f, %f)",
+		&point_pos.x, &point_pos.y, &point_pos.z
+	);
+	if (ret == 3)
+	{
+		snprintf(msg, LINE_SIZE, "Debug point\n");
+
+		debugf("debug_point (%f, %f, %f)\n",
+			point_pos.x, point_pos.y, point_pos.z);
+
+		ret = engine->debug_point(point_pos);
+
+		if (ret == 0)
+		{
+			debugf("Success\n");
+		}
+		else
+		{
+			debugf("Failed to create GPU objects\n");
+		}
+		return;
+	}
+
+
+
 
 
 	ret = sscanf(cmd, "setpos %f %f %f", &pos.x, &pos.y, &pos.z);

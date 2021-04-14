@@ -25,6 +25,9 @@ com_maxfps
 connect
 console
 damage
+debug_triangle
+debug_point
+debug_vector
 disconnect
 dynamic_res
 echo
@@ -36,6 +39,7 @@ g_collision
 g_fov
 g_fraglimit
 g_gametype
+g_patch_collision
 g_timelimit
 g_warmup
 give all

@@ -3900,13 +3900,53 @@ bool Engine::collision_detect(EntRigidBody &body)
 }
 
 
+int Engine::debug_point(vec3 &pos)
+{
+	vertex_t vert[6];
+
+	memset(vert, 0, 6 * sizeof(vertex_t));
+	vert[0].position = pos + vec3(0.0, 1.0, 0.0) * -5.0f;
+	vert[1].position = pos + vec3(0.0, 1.0, 0.0) * 5.0f;
+
+	vert[2].position = pos + vec3(1.0, 0.0, 0.0) * -5.0f;
+	vert[3].position = pos + vec3(1.0, 0.0, 0.0) * 5.0f;
+
+	vert[4].position = pos + vec3(0.0, 0.0, 1.0) * -5.0f;
+	vert[5].position = pos + vec3(0.0, 0.0, 1.0) * 5.0f;
+
+
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[0]);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[1]);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[2]);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[3]);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[4]);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[5]);
+
+	debug_vec_vert = gfx.CreateVertexBuffer(debug_vec_list.data(), debug_vec_list.size(), false);
+	debug_vec_index = gfx.CreateIndexBuffer(debug_vec_list_index.data(), debug_vec_list_index.size());
+
+	if (debug_vec_vert != -1 && debug_vec_index != -1)
+	{
+		return 0;
+	}
+
+	return -1;
+}
+
+
 int Engine::debug_vector(vec3 &pos, vec3 &dir)
 {
 	vertex_t vert[2];
 
 	memset(vert, 0, 2 * sizeof(vertex_t));
 	vert[0].position = pos;
-	vert[1].position = dir;
+	vert[1].position = pos + dir * 10.0f;
 
 	debug_vec_list_index.push_back(debug_vec_list.size());
 	debug_vec_list.push_back(vert[0]);
@@ -3931,14 +3971,14 @@ int Engine::debug_triangle(vec3 *triangle)
 {
 	vertex_t vert[6];
 
-	memset(vert, 0, 6 * sizeof(vertex_t));
+	memset(vert, 0, 3 * sizeof(vertex_t));
 	vert[0].position = triangle[0];
 	vert[1].position = triangle[1];
 	vert[2].position = triangle[2];
 
-	vert[3].position = triangle[0];
-	vert[4].position = triangle[2];
-	vert[5].position = triangle[1];
+//	vert[3].position = triangle[0];
+//	vert[4].position = triangle[2];
+//	vert[5].position = triangle[1];
 
 
 	debug_tri_list_index.push_back(debug_tri_list.size());
@@ -3947,13 +3987,14 @@ int Engine::debug_triangle(vec3 *triangle)
 	debug_tri_list.push_back(vert[1]);
 	debug_tri_list_index.push_back(debug_tri_list.size());
 	debug_tri_list.push_back(vert[2]);
-	debug_tri_list_index.push_back(debug_tri_list.size());
+
+/*	debug_tri_list_index.push_back(debug_tri_list.size());
 	debug_tri_list.push_back(vert[3]);
 	debug_tri_list_index.push_back(debug_tri_list.size());
 	debug_tri_list.push_back(vert[4]);
 	debug_tri_list_index.push_back(debug_tri_list.size());
 	debug_tri_list.push_back(vert[5]);
-
+	*/
 	debug_tri_vert = gfx.CreateVertexBuffer(debug_tri_list.data(), debug_tri_list.size(), false);
 	debug_tri_index = gfx.CreateIndexBuffer(debug_tri_list_index.data(), debug_tri_list_index.size());
 
@@ -7289,19 +7330,19 @@ int Engine::console_render(char *cmd)
 	}
 
 
-	if (sscanf(cmd, "g_bezier_collision %s", data) == 1)
+	if (sscanf(cmd, "g_patch_collision %s", data) == 1)
 	{
 		if (atoi(data))
 		{
 			snprintf(msg, LINE_SIZE, "patch collision enabled");
 			menu.print(msg);
-			q3map.enable_bezier_collision = true;
+			q3map.enable_patch_collision = true;
 		}
 		else
 		{
 			snprintf(msg, LINE_SIZE, "patch collision disabled");
 			menu.print(msg);
-			q3map.enable_bezier_collision = false;
+			q3map.enable_patch_collision = false;
 		}
 		return 0;
 	}

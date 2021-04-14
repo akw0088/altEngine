@@ -121,7 +121,7 @@ public:
 	bool enable_patch;
 	bool enable_sky;
 	bool enable_normalmap;
-	bool enable_bezier_collision;
+	bool enable_patch_collision;
 	unsigned int max_stage;
 private:
 	bool bezier_collision_detect(vec3 &point, plane_t *plane, float *depth, vec3 *tri);
