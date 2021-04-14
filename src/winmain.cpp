@@ -430,6 +430,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_RBUTTONDOWN:
 	case WM_RBUTTONUP:
 		{
+		char data[512];
+		clipboard_paste(hwnd, data, 512);
+		altEngine.paste(data, strlen(data) + 1);
+
+
 			bool pressed = (message == WM_RBUTTONDOWN) ? true : false;
 			altEngine.keypress("rightbutton", pressed);
 			return 0;

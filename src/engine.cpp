@@ -2213,7 +2213,7 @@ void Engine::render_scene(bool lights)
 			gfx.SelectIndexBuffer(debug_tri_index);
 			gfx.SelectVertexBuffer(debug_tri_vert);
 			gfx.SelectTexture(0, no_tex);
-			gfx.DrawArrayTri(0, 0, 6, 6);
+			gfx.DrawArrayTri(0, 0, debug_tri_list.size(), debug_tri_list_index.size());
 		}
 
 		if (debug_vec_vert != -1)
@@ -2221,7 +2221,7 @@ void Engine::render_scene(bool lights)
 			gfx.SelectIndexBuffer(debug_vec_index);
 			gfx.SelectVertexBuffer(debug_vec_vert);
 			gfx.SelectTexture(0, no_tex);
-			gfx.DrawArrayLine(0, 0, 2, 2);
+			gfx.DrawArrayLine(0, 0, debug_vec_list.size(), debug_vec_list_index.size());
 		}
 
 
@@ -3907,10 +3907,15 @@ int Engine::debug_vector(vec3 &pos, vec3 &dir)
 	memset(vert, 0, 2 * sizeof(vertex_t));
 	vert[0].position = pos;
 	vert[1].position = dir;
-	unsigned int index[2] = { 0, 1 };
 
-	debug_vec_vert = gfx.CreateVertexBuffer(vert, 2, false);
-	debug_vec_index = gfx.CreateIndexBuffer(index, 2);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[0]);
+	debug_vec_list_index.push_back(debug_vec_list.size());
+	debug_vec_list.push_back(vert[1]);
+
+
+	debug_vec_vert = gfx.CreateVertexBuffer(debug_vec_list.data(), debug_vec_list.size(), false);
+	debug_vec_index = gfx.CreateIndexBuffer(debug_vec_list_index.data(), debug_vec_list_index.size());
 
 	if (debug_vec_vert != -1 && debug_vec_index != -1)
 	{
@@ -3935,10 +3940,22 @@ int Engine::debug_triangle(vec3 *triangle)
 	vert[4].position = triangle[2];
 	vert[5].position = triangle[1];
 
-	unsigned int index[6] = { 0, 1, 2, 3, 4, 5 };
 
-	debug_tri_vert = gfx.CreateVertexBuffer(vert, 6, false);
-	debug_tri_index = gfx.CreateIndexBuffer(index, 6);
+	debug_tri_list_index.push_back(debug_tri_list.size());
+	debug_tri_list.push_back(vert[0]);
+	debug_tri_list_index.push_back(debug_tri_list.size());
+	debug_tri_list.push_back(vert[1]);
+	debug_tri_list_index.push_back(debug_tri_list.size());
+	debug_tri_list.push_back(vert[2]);
+	debug_tri_list_index.push_back(debug_tri_list.size());
+	debug_tri_list.push_back(vert[3]);
+	debug_tri_list_index.push_back(debug_tri_list.size());
+	debug_tri_list.push_back(vert[4]);
+	debug_tri_list_index.push_back(debug_tri_list.size());
+	debug_tri_list.push_back(vert[5]);
+
+	debug_tri_vert = gfx.CreateVertexBuffer(debug_tri_list.data(), debug_tri_list.size(), false);
+	debug_tri_index = gfx.CreateIndexBuffer(debug_tri_list_index.data(), debug_tri_list_index.size());
 
 	if (debug_tri_vert != -1 && debug_tri_index != -1)
 	{

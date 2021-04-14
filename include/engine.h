@@ -151,6 +151,14 @@ public:
 	int debug_triangle(vec3 *triangle);
 	int debug_vector(vec3 &pos, vec3 &dir);
 
+
+	vector<vertex_t> debug_tri_list;
+	vector<int> debug_tri_list_index;
+
+	vector<vertex_t> debug_vec_list;
+	vector<int> debug_vec_list_index;
+
+
 	unsigned int xres, yres;
 	unsigned int tick_num;
 
