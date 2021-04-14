@@ -4038,8 +4038,8 @@ bool Engine::map_collision(EntRigidBody &body)
 
 			if (memcpy(tri, empty, sizeof(vec3) * 3))
 			{
-				debug_vector(tri[0], plane.normal);
-				debug_triangle(tri);
+//				debug_vector(tri[0], plane.normal);
+//				debug_triangle(tri);
 			}
 
 			body.flags.lava = flag.lava;
@@ -7267,6 +7267,24 @@ int Engine::console_render(char *cmd)
 			snprintf(msg, LINE_SIZE, "patches disabled");
 			menu.print(msg);
 			q3map.enable_patch = false;
+		}
+		return 0;
+	}
+
+
+	if (sscanf(cmd, "g_bezier_collision %s", data) == 1)
+	{
+		if (atoi(data))
+		{
+			snprintf(msg, LINE_SIZE, "patch collision enabled");
+			menu.print(msg);
+			q3map.enable_bezier_collision = true;
+		}
+		else
+		{
+			snprintf(msg, LINE_SIZE, "patch collision disabled");
+			menu.print(msg);
+			q3map.enable_bezier_collision = false;
 		}
 		return 0;
 	}

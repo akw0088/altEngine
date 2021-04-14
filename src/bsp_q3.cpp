@@ -108,7 +108,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 	max_stage = MAX_TEXTURES;
 	selected_map = false;
-	bezier_collision = true;
+	enable_bezier_collision = false;
 
 	for (int i = 0; i < num_pk3; i++)
 	{
@@ -958,7 +958,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 	// we made AABB's for all patch data, not perfect, but better than nothing
 
-	if (bezier_collision)
+	if (enable_bezier_collision)
 	{
 		if (bezier_collision_detect(point, plane, depth, tri))
 		{

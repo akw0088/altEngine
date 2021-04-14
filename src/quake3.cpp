@@ -7048,11 +7048,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		if (ret == 0)
 		{
-			debugf("Success\r\n");
+			debugf("Success\n");
 		}
 		else
 		{
-			debugf("Failed to create GPU objects\r\n");
+			debugf("Failed to create GPU objects\n");
 		}
 		return;
 	}
@@ -7075,11 +7075,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		if (ret == 0)
 		{
-			debugf("Success\r\n");
+			debugf("Success\n");
 		}
 		else
 		{
-			debugf("Failed to create GPU objects\r\n");
+			debugf("Failed to create GPU objects\n");
 		}
 		return;
 	}
@@ -9197,6 +9197,7 @@ void Quake3::check_target(vector<Entity *> &entity_list, Entity *ent, Entity *ta
 			else
 			{
 				printf("trigger has already been hit\n");
+				return;
 			}
 		}
 
@@ -9520,9 +9521,20 @@ void Quake3::check_func(EntPlayer *player, Entity *ent, int self, vector<Entity 
 								entity_list[j]->ent_type == ENT_FUNC_TIMER ||
 								entity_list[j]->ent_type == ENT_TARGET_GIVE )
 							{
-								for (unsigned int k = engine->max_dynamic; k < entity_list.size(); k++)
+
+								if (entity_list[j]->ent_type == ENT_TARGET_DELAY && entity_list[j]->trigger->timeout == 0)
 								{
-									check_target(entity_list, entity_list[j], entity_list[k], self);
+									for (unsigned int k = engine->max_dynamic; k < entity_list.size(); k++)
+									{
+										check_target(entity_list, entity_list[j], entity_list[k], self);
+									}
+								}
+								else if (entity_list[j]->ent_type != ENT_TARGET_DELAY)
+								{
+									for (unsigned int k = engine->max_dynamic; k < entity_list.size(); k++)
+									{
+										check_target(entity_list, entity_list[j], entity_list[k], self);
+									}
 								}
 							}
 
