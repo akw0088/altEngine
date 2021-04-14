@@ -7027,6 +7027,64 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+
+	vec3 triangle[3];
+	ret = sscanf(cmd, "debug_triangle (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)",
+		&triangle[0].x, &triangle[0].y, &triangle[0].z,
+		&triangle[1].x, &triangle[1].y, &triangle[1].z,
+		&triangle[2].x, &triangle[2].y, &triangle[2].z
+	);
+	if (ret == 9)
+	{
+		snprintf(msg, LINE_SIZE, "Debug triangle\n");
+
+		debugf("debug_triangle (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)",
+			triangle[0].x, triangle[0].y, triangle[0].z,
+			triangle[1].x, triangle[1].y, triangle[1].z,
+			triangle[2].x, triangle[2].y, triangle[2].z);
+
+
+		ret = engine->debug_triangle(triangle);
+
+		if (ret == 0)
+		{
+			debugf("Success\r\n");
+		}
+		else
+		{
+			debugf("Failed to create GPU objects\r\n");
+		}
+		return;
+	}
+
+	vec3 vec_pos;
+	vec3 vec_dir;
+	ret = sscanf(cmd, "debug_vector (%f, %f, %f) (%f, %f, %f)",
+		&vec_pos.x, &vec_pos.y, &vec_pos.z,
+		&vec_dir.x, &vec_dir.y, &vec_dir.z
+	);
+	if (ret == 6)
+	{
+		snprintf(msg, LINE_SIZE, "Debug vector\n");
+
+		debugf("debug_vector (%f, %f, %f) (%f, %f, %f) (%f, %f, %f)",
+			vec_pos.x, vec_pos.y, vec_pos.z,
+			vec_dir.x, vec_dir.y, vec_dir.z);
+
+		ret = engine->debug_vector(vec_pos, vec_dir);
+
+		if (ret == 0)
+		{
+			debugf("Success\r\n");
+		}
+		else
+		{
+			debugf("Failed to create GPU objects\r\n");
+		}
+		return;
+	}
+
+
 	ret = sscanf(cmd, "setpos %f %f %f", &pos.x, &pos.y, &pos.z);
 	if (ret == 3)
 	{
@@ -10063,9 +10121,11 @@ void Quake3::add_decal(vec3 &start, Frame &camera_frame, net_ent_t nettype, EntM
 //	pos = engine->q3map.trace(start, end, normal);
 //	engine->q3map.collision = false;
 
+	vec3 tri[3];
+
 	do
 	{
-		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water_depth, engine->surface_list, false, clip, velocity, model_trigger, model_platform, flag);
+		ret = engine->q3map.collision_detect(end, step, &plane, &depth, water_depth, engine->surface_list, false, clip, velocity, model_trigger, model_platform, flag, tri);
 		if (ret)
 		{
 			hit = true;

@@ -670,6 +670,12 @@ void Engine::load(char *level)
 	if (q3map.loaded)
 		return;
 
+
+	debug_tri_vert = -1;
+	debug_tri_index = -1;
+	debug_vec_vert = -1;
+	debug_vec_index = -1;
+
 	vec3 scale(1.0f, 1.0f, 1.0f);
 	vec3 offset(0.0f, 0.0f, 0.0f);
 
@@ -992,8 +998,9 @@ void Engine::load_md5()
 	num_anim++;
 	animation[ANIM_ALERT] = "media/md5/chaingun_reload.md5anim";
 	num_anim++;
-//	zcc.load("media/md5/zcc.md5mesh", (char **)animation, num_anim, gfx, 0);
+	zcc.load("media/md5/zcc.md5mesh", (char **)animation, num_anim, gfx, 0);
 
+#if 0
 	num_anim = 0;
 	animation[ANIM_IDLE] = "media/md5/quake4/idle.md5anim";
 	num_anim++;
@@ -1117,7 +1124,7 @@ void Engine::load_md5()
 
 
 	zcc.load("media/md5/quake4/player.md5mesh", (char **)animation, num_anim, gfx, 0);
-
+#endif
 
 
 }
@@ -2201,7 +2208,27 @@ void Engine::render_scene(bool lights)
 			mlight2.Params(mvp, light_list, 0, offset, tick_num);
 
 
+		if (debug_tri_vert != -1)
+		{
+			gfx.SelectIndexBuffer(debug_tri_index);
+			gfx.SelectVertexBuffer(debug_tri_vert);
+			gfx.SelectTexture(0, no_tex);
+			gfx.DrawArrayTri(0, 0, 6, 6);
+		}
+
+		if (debug_vec_vert != -1)
+		{
+			gfx.SelectIndexBuffer(debug_vec_index);
+			gfx.SelectVertexBuffer(debug_vec_vert);
+			gfx.SelectTexture(0, no_tex);
+			gfx.DrawArrayLine(0, 0, 2, 2);
+		}
+
+
+
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, pfrustum);
+
+
 		//draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
 	}
 
@@ -3873,6 +3900,54 @@ bool Engine::collision_detect(EntRigidBody &body)
 }
 
 
+int Engine::debug_vector(vec3 &pos, vec3 &dir)
+{
+	vertex_t vert[2];
+
+	memset(vert, 0, 2 * sizeof(vertex_t));
+	vert[0].position = pos;
+	vert[1].position = dir;
+	unsigned int index[2] = { 0, 1 };
+
+	debug_vec_vert = gfx.CreateVertexBuffer(vert, 2, false);
+	debug_vec_index = gfx.CreateIndexBuffer(index, 2);
+
+	if (debug_vec_vert != -1 && debug_vec_index != -1)
+	{
+		return 0;
+	}
+
+	return -1;
+}
+
+
+
+int Engine::debug_triangle(vec3 *triangle)
+{
+	vertex_t vert[6];
+
+	memset(vert, 0, 6 * sizeof(vertex_t));
+	vert[0].position = triangle[0];
+	vert[1].position = triangle[1];
+	vert[2].position = triangle[2];
+
+	vert[3].position = triangle[0];
+	vert[4].position = triangle[2];
+	vert[5].position = triangle[1];
+
+	unsigned int index[6] = { 0, 1, 2, 3, 4, 5 };
+
+	debug_tri_vert = gfx.CreateVertexBuffer(vert, 6, false);
+	debug_tri_index = gfx.CreateIndexBuffer(index, 6);
+
+	if (debug_tri_vert != -1 && debug_tri_index != -1)
+	{
+		return 0;
+	}
+
+	return -1;
+}
+
 
 ///=============================================================================
 /// Function: map_collision
@@ -3951,9 +4026,22 @@ bool Engine::map_collision(EntRigidBody &body)
 //		point -= vec3(0.0f, 100.0f, 0.0f); // subtract player height
 
 
+		vec3 tri[3];
+		vec3 empty[3];
+
+		memset(tri, 0, sizeof(vec3) * 3);
+		memset(empty, 0, sizeof(vec3) * 3);
+
 		if (q3map.collision_detect(point, oldpoint, (plane_t *)&plane, &depth, body.water_depth,
-			surface_list, body.flags.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag))
+			surface_list, body.flags.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag, tri))
 		{
+
+			if (memcpy(tri, empty, sizeof(vec3) * 3))
+			{
+				debug_vector(tri[0], plane.normal);
+				debug_triangle(tri);
+			}
+
 			body.flags.lava = flag.lava;
 			body.flags.slime = flag.slime;
 			body.flags.water = flag.water;
@@ -3988,7 +4076,7 @@ bool Engine::map_collision(EntRigidBody &body)
 					//vec3 old = oldpoint + staircheck;
 
 					if (q3map.collision_detect(p, oldpoint, (plane_t *)&plane, &depth, body.water_depth,
-						surface_list, body.flags.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag) == false)
+						surface_list, body.flags.step_flag && input.use, clip, body.velocity, body.bsp_trigger_volume, body.bsp_model_platform, flag, tri) == false)
 					{
 						body.entity->position += vec3(0.0f, STAIR_POS, 0.0f);
 						body.velocity += vec3(0.0f, STAIR_VEL, 0.0f);
@@ -4029,7 +4117,7 @@ bool Engine::map_collision(EntRigidBody &body)
 
 			body.entity->position = body.old_position;
 			body.morientation = body.old_orientation;
-//			body.impulse(plane, point);
+			//body.impulse(plane, point);
 			collision = true;
 		}
 	}

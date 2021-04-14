@@ -108,7 +108,7 @@ bool Bsp::load(char *map, char **pk3list, int num_pk3)
 {
 	max_stage = MAX_TEXTURES;
 	selected_map = false;
-	bezier_collision = false;
+	bezier_collision = true;
 
 	for (int i = 0; i < num_pk3; i++)
 	{
@@ -792,7 +792,7 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 
 
 bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_array, int start_index, int start_vertex, int num_index, int num_vertex,
-	float *depth, plane_t *plane)
+	float *depth, plane_t *plane, vec3 *tri)
 {
 	for (int i = start_index; i < start_index + num_index;)
 	{
@@ -839,8 +839,8 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 		if ( dep >= 0 )
 		{
 			printf("bezier collision point (%3.3f, %3.3f, %3.3f) inside plane (%3.3f, %3.3f, %3.3f, %3.3f)\r\n"
-				"Triangle:\r\n\t(%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f)\r\n"
-				"Collision normal (%f, %f, %f)\r\n"
+				"debug_triangle (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f) (%3.3f, %3.3f, %3.3f)\r\n"
+				"debug_vector (%f, %f, %f)\r\n"
 				"Collision depth = %f\r\n",
 				point.x, point.y, point.z,
 				normal.x, normal.y, normal.z, d,
@@ -851,6 +851,9 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 				dep
 			);
 
+			tri[0] = a.position;
+			tri[1] = b.position;
+			tri[2] = c.position;
 			plane->d = d;
 			plane->normal = normal;
 			*depth = dep;
@@ -863,7 +866,7 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 
 
 
-bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth)
+bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth, vec3 *tri)
 {
 	for (int mesh_index = 0; mesh_index < num_meshes; mesh_index++)
 	{
@@ -885,13 +888,13 @@ bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth)
 				{
 					int start_index = row * index_per_row;
 					int start_vertex = 0;
-					int num_index = index_per_row;
+					int num_index = index_per_row - 6; // ignore last row, as it's normal is backwards
 					int num_vertex = patchdata[mesh_index + i].num_verts;
 
 					vertex_t *vertex_array = patchdata[mesh_index + i].vertex_array;
 					int *index_array = patchdata[mesh_index + i].index_array;
 
-					if (PointPlaneTestTriangleFan(point, vertex_array, index_array, start_index, start_vertex, num_index, num_vertex, depth, plane) == true)
+					if (PointPlaneTestTriangleFan(point, vertex_array, index_array, start_index, start_vertex, num_index, num_vertex, depth, plane, tri) == true)
 					{
 						return true;
 					}
@@ -916,7 +919,7 @@ bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth)
 ///		None
 ///=============================================================================
 bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, float &water_depth,
-	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag)
+	vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag, vec3 *tri)
 {
 	int leaf_index = find_leaf(point);
 	leaf_t *leaf = &data.Leaf[leaf_index];
@@ -957,7 +960,7 @@ bool Bsp::collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *d
 
 	if (bezier_collision)
 	{
-		if (bezier_collision_detect(point, plane, depth))
+		if (bezier_collision_detect(point, plane, depth, tri))
 		{
 			return true;
 		}

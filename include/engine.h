@@ -148,6 +148,8 @@ public:
 	void savegame(char *file);
 	void loadgame(char *file);
 
+	int debug_triangle(vec3 *triangle);
+	int debug_vector(vec3 &pos, vec3 &dir);
 
 	unsigned int xres, yres;
 	unsigned int tick_num;
@@ -260,6 +262,12 @@ public:
 	int num_model;
 	int current_team;
 	int num_team;
+
+
+	int debug_tri_index;
+	int debug_tri_vert;
+	int debug_vec_index;
+	int debug_vec_vert;
 
 //Game logic
 	BaseGame *game;

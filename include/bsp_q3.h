@@ -65,7 +65,7 @@ public:
 	void CreateTangentArray(vertex_t *vertex, q3::bspvertex_t *bsp_vertex, int num_vert, vec4 *tangent);
 
 	bool collision_detect(vec3 &point, vec3 &oldpoint, plane_t *plane, float *depth, float &water_depth,
-		vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag);
+		vector<surface_t *> &surface_list, bool debug, vec3 &clip, const vec3 &velocity, int &model_trigger, int &model_platform, content_flag_t &flag, vec3 *tri);
 
 
 	vec3 trace(vec3 &start, vec3 &end, vec3 &normal);
@@ -124,7 +124,7 @@ public:
 	bool bezier_collision;
 	unsigned int max_stage;
 private:
-	bool bezier_collision_detect(vec3 &point, plane_t *plane, float *depth);
+	bool bezier_collision_detect(vec3 &point, plane_t *plane, float *depth, vec3 *tri);
 	void make_aabb(vertex_t *model_vertex_array, int num_vertex, vec3 *aabb, vec3 &center);
 
 	q3::bsp_t		*tBsp;
