@@ -4076,9 +4076,9 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	result[2] = c;
 
 	inside.dword = 0;
-	inside.bit.a_in = (p.normal * a.position + p.d >= 0);
-	inside.bit.b_in = (p.normal * b.position + p.d >= 0);
-	inside.bit.c_in = (p.normal * c.position + p.d >= 0);
+	inside.bit.a_in = DistPointPlane(a.position, p.normal, p.d) >= 0;
+	inside.bit.b_in = DistPointPlane(b.position, p.normal, p.d) >= 0;
+	inside.bit.c_in = DistPointPlane(c.position, p.normal, p.d) >= 0;
 
 	// all points inside plane, early exit
 	if (inside.dword == 7)
@@ -4091,7 +4091,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	if (inside.dword == 1 || inside.dword == 2 || inside.dword == 4)
 	{
 		// easy case, one triangle, two points move in
-		if (inside.bit.a_in)
+		if (inside.bit.a_in && inside.bit.b_in == 0 && inside.bit.c_in == 0)
 		{
 			vertex_t ab, ac;
 
@@ -4117,7 +4117,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return CLIPPED_EASY;
 
 		}
-		else if (inside.bit.b_in)
+		else if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
 		{
 			vertex_t ba, bc;
 
@@ -4143,7 +4143,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return CLIPPED_EASY;
 
 		}
-		else if (inside.bit.c_in)
+		else if (inside.bit.a_in == 0 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
 		{
 			vertex_t ca, cb;
 
@@ -4175,7 +4175,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 
 	// hard case, tip chopped off, two triangles
 
-	if (inside.bit.a_in == 0)
+	if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 1)
 	{
 		vertex_t ab;
 		vertex_t ca;
@@ -4205,7 +4205,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[5] = c;
 		return CLIPPED_HARD;
 	}
-	else if (inside.bit.b_in == 0)
+	else if (inside.bit.a_in == 1 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
 	{
 		vertex_t ab;
 		vertex_t cb;
@@ -4235,7 +4235,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[5] = c;
 		return CLIPPED_HARD;
 	}
-	else if (inside.bit.c_in == 0)
+	else if (inside.bit.a_in == 1 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
 	{
 		vertex_t ac;
 		vertex_t bc;

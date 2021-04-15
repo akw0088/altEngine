@@ -179,6 +179,6 @@ namespace physics {
 bool Raycast(const plane_t &plane, const physics::ray_t &ray, physics::raycast_result_t *result);
 bool PointInAABB(const vec3 &point, const physics::aabb_t &aabb);
 bool PointOnPlane(const vec3 &point, vec3 &normal, float d);
-float DistPointPlane(vec3 &q, vec3 &normal, float d);
+float DistPointPlane(const vec3 &q, const vec3 &normal, const float d);
 float Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c);
 #endif

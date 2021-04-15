@@ -259,9 +259,26 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 		a = result[0];
 		b = result[1];
 		c = result[2];
+
 		d = result[3];
 		e = result[4];
 		f = result[5];
+
+
+		if (Signed2DTriArea(a.position, b.position, c.position) < 0)
+		{
+			b = result[2];
+			c = result[1];
+		}
+
+
+		if (Signed2DTriArea(d.position, e.position, f.position) < 0)
+		{
+			e = result[5];
+			f = result[4];
+		}
+
+
 		hard = 1;
 //		return CLIPPED_HARD;
 	}
@@ -302,10 +319,12 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		tri[0].y = v1.y;
 		tri[0].z = v1.z;
 		tri[0].w = v1.w;
+
 		tri[1].x = v2.x;
 		tri[1].y = v2.y;
 		tri[1].z = v2.z;
 		tri[1].w = v2.w;
+
 		tri[2].x = v3.x;
 		tri[2].y = v3.y;
 		tri[2].z = v3.z;
@@ -316,14 +335,15 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		for (int j = 0; j < 3; j++)
 		{
 			if (
-				((tri[j].x < tri[j].w && tri[j].x > -tri[j].w) &&
-				(tri[j].y < tri[j].w && tri[j].y > -tri[j].w) &&
-					(tri[j].z < tri[j].w && tri[j].z > -tri[j].w))
+				((tri[j].x <= tri[j].w && tri[j].x >= -tri[j].w) &&
+				(tri[j].y <= tri[j].w && tri[j].y >= -tri[j].w) &&
+					(tri[j].z <= tri[j].w && tri[j].z >= -tri[j].w))
 				)
 			{
 				good++;
 			}
 		}
+
 		if (good == 0)
 		{
 			// all points of triangle were outside clip range
@@ -386,9 +406,9 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 					tri[0] = vec4(a.position, a.texCoord1.x);
 					tri[1] = vec4(b.position, b.texCoord1.x);
 					tri[2] = vec4(c.position, c.texCoord1.x);
-					tri[3] = tri[0];
-					tri[4] = tri[1];
-					tri[5] = tri[2];
+//					tri[3] = tri[0];
+//					tri[4] = tri[1];
+//					tri[5] = tri[2];
 					tri[3] = vec4(d.position, d.texCoord1.x);
 					tri[4] = vec4(e.position, e.texCoord1.x);
 					tri[5] = vec4(f.position, f.texCoord1.x);
@@ -399,9 +419,9 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 					tri_uv[1] = b.texCoord0;
 					tri_uv[2] = c.texCoord0;
 
-					tri_uv[3] = tri_uv[0];
-					tri_uv[4] = tri_uv[1];
-					tri_uv[5] = tri_uv[2];
+//					tri_uv[3] = tri_uv[0];
+//					tri_uv[4] = tri_uv[1];
+//					tri_uv[5] = tri_uv[2];
 
 					tri_uv[3] = d.texCoord0;
 					tri_uv[4] = e.texCoord0;

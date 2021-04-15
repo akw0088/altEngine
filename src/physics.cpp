@@ -96,7 +96,7 @@ bool PointInOrientedRectangle(const vec2 &point, const box2_t &rectangle)
 //=============================================================================
 //	3D Point Tests
 //=============================================================================
-float DistPointPlane(vec3 &q, vec3 &normal, float d)
+float DistPointPlane(const vec3 &q, const vec3 &normal, const float d)
 {
 	return q * normal - d;
 }
