@@ -319,7 +319,7 @@ void Sph::calc_pos(int i)
 		part[i].vel.x *= -1;
 	}
 
-	if (part[i].pos.z > max_bound.x && part[i].vel.z > 0)
+	if (part[i].pos.z > max_bound.z && part[i].vel.z > 0)
 	{
 		part[i].pos.z = clamp(part[i].pos.z, min_bound.z, max_bound.z);
 		part[i].vel.z *= -1;
