@@ -949,7 +949,7 @@ bool PointInTriangle(const vec3 &p, const triangle_t &t)
 	return true;
 }
 
-void FromTriangle(const triangle_t &t, plane_t p)
+void FromTriangle(const triangle_t &t, plane_t &p)
 {
 	p.normal = vec3::crossproduct (t.b - t.a, t.c - t.a).normalize();
 	p.d = p.normal * t.a;
