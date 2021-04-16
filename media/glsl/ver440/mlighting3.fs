@@ -145,7 +145,7 @@ void calc_shadow(out float shadowFlagCombined, in int light_num)
 vec3 lighting( int lightIndex, vec4 pos )
 {
 	vec3 lightPosWorld = pos.xyz;
-	vec4 lightDir = vec4(lightPosWorld - Vertex.att_position, 1.0); // vector from light to pixel
+	vec4 lightDir = vec4(lightPosWorld - Vertex.att_position, 1.0); // vector from pixel to light (terminal - origin)
 	vec3 eye = -normalize(Vertex.vary_position.xyz); // vector from pixel to eye (eye at origin)
 	lightDir.a = length(Vertex.att_position.rgb - lightPosWorld.rgb); // distance from light
 
@@ -188,7 +188,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 	else
 	{
 		diffuse = max(dot(v_light, norm), u_diffuse_min);					// directional light factor for fragment
-		v_reflect = reflect(v_light, norm);
+		v_reflect = reflect(-v_light, norm); // negate to get light vector towards surface
 	}
 	float specular = max(pow(dot(v_reflect, eye), u_specular_exponent), u_specular_min);			// specular relection for fragment
 
