@@ -4068,10 +4068,12 @@ int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const v
 	result.texCoord1 = a.texCoord1 + (b.texCoord1 - a.texCoord1) * s;
 	return 0;
 }
+
 int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result)
 {
 	// classify points that are out of plane
 	inside_t inside;
+	float epsilon = 0.0001f;
 
 	// initialize result to given triangle
 	result[0] = a;
@@ -4132,7 +4134,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 
 
 		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
-		if (fabs(output_area) > fabs(input_area))
+		if (fabs(output_area) > fabs(input_area) + epsilon)
 		{
 			// clipped triangles should be smaller?
 			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
@@ -4178,7 +4180,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		}
 
 		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
-		if (fabs(output_area) > fabs(input_area))
+		if (fabs(output_area) > fabs(input_area) + epsilon)
 		{
 			// clipped triangles should be smaller?
 			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
@@ -4227,7 +4229,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 
 
 		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
-		if (fabs(output_area) > fabs(input_area))
+		if (fabs(output_area) > fabs(input_area) + epsilon)
 		{
 			// clipped triangles should be smaller?
 			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
@@ -4292,7 +4294,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
 		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
 
-		if (fabs(output_area1 + output_area2) > fabs(input_area))
+		if (fabs(output_area1 + output_area2) > fabs(input_area) + epsilon)
 		{
 			// clipped triangles should be smaller?
 			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
@@ -4354,7 +4356,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
 
 
-		if (fabs(output_area1 + output_area2) > fabs(input_area))
+		if (fabs(output_area1 + output_area2) > fabs(input_area) + epsilon)
 		{
 			// clipped triangles should be smaller?
 			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
@@ -4414,7 +4416,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
 		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
 
-		if (fabs(output_area1 + output_area2) > fabs(input_area))
+		if (fabs(output_area1 + output_area2) > fabs(input_area) + epsilon)
 		{
 			// clipped triangles should be smaller?
 			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
