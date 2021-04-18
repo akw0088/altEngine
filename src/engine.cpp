@@ -2164,6 +2164,8 @@ void Engine::render_texture(int texObj, bool depth_view)
 /// Parameters:
 ///		None
 ///=============================================================================
+extern int tcount;
+
 void Engine::render_scene(bool lights)
 {
 	matrix4 transformation = identity;
@@ -2225,9 +2227,11 @@ void Engine::render_scene(bool lights)
 		}
 
 
+		tcount = 0;
 
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, pfrustum);
 
+		tcount = 0;
 
 		//draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
 	}
@@ -3603,7 +3607,7 @@ void Engine::handle_cloth()
 	}
 }
 
-
+extern int target;
 
 
 ///=============================================================================
@@ -4852,6 +4856,9 @@ void Engine::keypress(char *key, bool pressed)
 
 	q3map.update = true;
 
+
+
+
 	if (strcmp("moveup", cmd) == 0)
 	{
 		handled = true;
@@ -4943,6 +4950,8 @@ void Engine::keypress(char *key, bool pressed)
 	}
 	else if (strcmp("zoom", cmd) == 0)
 	{
+		target++;
+		debugf("set to %d\r\n", target);
 		handled = true;
 		input.zoom = pressed;
 		k = 15;

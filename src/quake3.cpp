@@ -12,6 +12,9 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
+int enabled = 0;
+int target = 0;
+
 ///============================================================================
 /// File: quake3.cpp
 ///============================================================================
@@ -7122,6 +7125,25 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	ret = sscanf(cmd, "raster_target %s", data);
+	if (ret == 1)
+	{
+		target = (int)atoi(data);
+		snprintf(msg, LINE_SIZE, "Set to %d\n", target);
+		menu.print(msg);
+		debugf(msg);
+		return;
+	}
+
+
+	ret = sscanf(cmd, "raster_enabled %s", data);
+	if (ret == 1)
+	{
+		enabled = (int)atoi(data);
+		snprintf(msg, LINE_SIZE, "Set to %d\n", enabled);
+		menu.print(msg);
+		return;
+	}
 
 
 	ret = sscanf(cmd, "cg_crosshairsize %s", data);

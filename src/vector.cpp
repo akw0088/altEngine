@@ -61,6 +61,29 @@ vec4 &vec4::normalize()
 	return *this;
 }
 
+vec4 vec4::operator+(const vec4 &vector) const
+{
+	vec4 temp(x, y, z, w);
+
+	temp.x += vector.x;
+	temp.y += vector.y;
+	temp.z += vector.z;
+	temp.w += vector.w;
+
+	return temp;
+}
+
+
+vec4 vec4::operator+(const float scalar) const
+{
+	return vec4(x + scalar, y + scalar, z + scalar, w + scalar);
+}
+
+vec4 vec4::operator*(const float scalar) const
+{
+	return vec4(x * scalar, y * scalar, z * scalar, w * scalar);
+}
+
 vec4 &vec4::operator*=(const float scalar)
 {
 	x *= scalar;

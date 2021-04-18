@@ -16,8 +16,9 @@
 #include "common.h"
 #include <math.h> // for cos
 
-
-
+extern int target;
+extern int enabled;
+int tcount = 0;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,15 +81,22 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 		zn.d = 2001.0f;
 
 
-		//projection.perspective(110.0f, 16.0f / 9.0f, 1.0f, 2001.0f, false);
+		projection.perspective(110.0f, 16.0f / 9.0f, 1.0f, 2001.0f, false);
 
-		//get_frustum(projection, frustum);
 		frustum_t frustum;
-
 		Frame camera;
-		camera.up = vec3(0.0f, 1.0f, 0.0f);
-		camera.forward = vec3(0.0f, 0.0f, -1.0f);
-		gen_frustum(&camera, &frustum);
+
+
+		if (1)
+		{
+			get_frustum(projection, &frustum.left);
+		}
+		else
+		{
+			camera.up = vec3(0.0f, 1.0f, 0.0f);
+			camera.forward = vec3(0.0f, 0.0f, -1.0f);
+			gen_frustum(&camera, &frustum);
+		}
 
 		xp = frustum.left;
 		xn = frustum.right;
@@ -97,6 +105,9 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 		zp = frustum.zNear;
 		zn = frustum.zFar;
 		once = 1;
+
+		zp.normal.normalize();
+		zp.d = 1;
 	}
 #if 0
 	ret = intersect_triangle_plane(xp, a, b, c, result);
@@ -251,6 +262,8 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 		b = result[1];
 		c = result[2];
 		easy = 1;
+
+
 //		return CLIPPED_EASY;
 	}
 
@@ -263,21 +276,6 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 		d = result[3];
 		e = result[4];
 		f = result[5];
-
-
-		if (Signed2DTriArea(a.position, b.position, c.position) < 0)
-		{
-			b = result[2];
-			c = result[1];
-		}
-
-
-		if (Signed2DTriArea(d.position, e.position, f.position) < 0)
-		{
-			e = result[5];
-			f = result[4];
-		}
-
 
 		hard = 1;
 //		return CLIPPED_HARD;
@@ -300,13 +298,23 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 	if (width <= 1 || height <= 1)
 		return;
 
+
+	
+
+	tcount++;
+
+	if (tcount != target && enabled)
+	{
+		return;
+	}
+
 	for (int i = start_index; i < start_index + num_index; i += 3)
 	{
 		int num_point = 3;
 		vec4 tri[6];
 		vec2 tri_uv[6];
 		vec2 tri_luv[6];
-		bool skip = false;
+		int start = 0;
 
 		// transform model space to clip space
 		vec4 v1 = mvp * vec4(vertex_array[start_vertex + index_array[i]].position, 1.0f);
@@ -386,10 +394,10 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			// at least one point was outside clip box
 			if (good < 3)
 			{
-				// setting w to texCoord1 so it gets linearly interpolated when clipped
-				a.texCoord1.x = tri[0].w;
-				b.texCoord1.x = tri[1].w;
-				c.texCoord1.x = tri[2].w;
+				// setting w to tangent.x so it gets linearly interpolated when clipped
+				a.tangent.x = tri[0].w;
+				b.tangent.x = tri[1].w;
+				c.tangent.x = tri[2].w;
 
 				// clip against frustum planes
 				int ret = clip_planes(a, b, c, d, e, f);
@@ -403,25 +411,17 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 				{
 					// clipping generated two triangles
 					num_point = 6;
-					tri[0] = vec4(a.position, a.texCoord1.x);
-					tri[1] = vec4(b.position, b.texCoord1.x);
-					tri[2] = vec4(c.position, c.texCoord1.x);
-//					tri[3] = tri[0];
-//					tri[4] = tri[1];
-//					tri[5] = tri[2];
-					tri[3] = vec4(d.position, d.texCoord1.x);
-					tri[4] = vec4(e.position, e.texCoord1.x);
-					tri[5] = vec4(f.position, f.texCoord1.x);
-
+					tri[0] = vec4(a.position, a.tangent.x);
+					tri[1] = vec4(b.position, b.tangent.x);
+					tri[2] = vec4(c.position, c.tangent.x);
+					tri[3] = vec4(d.position, d.tangent.x);
+					tri[4] = vec4(e.position, e.tangent.x);
+					tri[5] = vec4(f.position, f.tangent.x);
 
 					// set new tex coords
 					tri_uv[0] = a.texCoord0;
 					tri_uv[1] = b.texCoord0;
 					tri_uv[2] = c.texCoord0;
-
-//					tri_uv[3] = tri_uv[0];
-//					tri_uv[4] = tri_uv[1];
-//					tri_uv[5] = tri_uv[2];
 
 					tri_uv[3] = d.texCoord0;
 					tri_uv[4] = e.texCoord0;
@@ -430,9 +430,21 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 				else if (ret == CLIPPED_EASY)
 				{
 					// clipped easy, just set new values
-					tri[0] = vec4(a.position, a.texCoord1.x);
-					tri[1] = vec4(b.position, b.texCoord1.x);
-					tri[2] = vec4(c.position, c.texCoord1.x);
+					tri[0] = vec4(a.position, a.tangent.x);
+					tri[1] = vec4(b.position, b.tangent.x);
+					tri[2] = vec4(c.position, c.tangent.x);
+
+					// set new tex coords
+					tri_uv[0] = a.texCoord0;
+					tri_uv[1] = b.texCoord0;
+					tri_uv[2] = c.texCoord0;
+				}
+				else if (ret == ALL_IN)
+				{
+					// clipped easy, just set new values
+					tri[0] = vec4(a.position, a.tangent.x);
+					tri[1] = vec4(b.position, b.tangent.x);
+					tri[2] = vec4(c.position, c.tangent.x);
 
 					// set new tex coords
 					tri_uv[0] = a.texCoord0;
@@ -446,11 +458,12 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		// loop through triangle array
 		for (int j = 0; j < num_point; j += 3)
 		{
+
 			if (tri[j].w == 0.0f || tri[j+1].w == 0.0f || tri[j+2].w == 0.0f)
 			{
-				// cant divide by zero, ignore triangle
-				skip = true;
-				break;
+				// cant divide by zero, ignore triangle (keep second triangle in case of cliping)
+				start = j + 3;
+				continue;
 			}
 
 			// perspective divide
@@ -486,16 +499,16 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			{
 				if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
 				{
-					skip = true;
+					start = j + 3;
 					break;
 				}
 			}
 
 			// keep far plane clipping check (essentially identical to checking W against Z before division
-			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
+			if (tri[j].z > 1.000001f || tri[j + 1].z > 1.000001f || tri[j + 2].z > 1.000001f)
 			{
-				skip = true;
-				break;
+				start = j + 3;
+				continue;
 			}
 
 			//[0,1] -> [0,width] viewport transform
@@ -507,14 +520,12 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			tri[j + 2].y *= height - 1;
 		}
 
-		if (skip)
-			continue;
 
 #ifdef WIN32
 		try {
 #endif
 			// Actually draw the triangle (using 16 tiles and threads or single threaded single tile)
-			for (int j = 0; j < num_point; j += 3)
+			for (int j = start; j < num_point; j += 3)
 			{
 				if (type == SPAN)
 				{
@@ -934,7 +945,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 		}
 		catch (...)
 		{
-
+			printf("caught something\r\n");
 		}
 #endif
 	}
@@ -957,7 +968,7 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		vec4 tri[6];
 		vec2 tri_uv[6];
 		vec2 tri_luv[6];
-		bool skip = false;
+		int start = 0;
 		vertex_t a, b, c;
 
 
@@ -1065,9 +1076,9 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 		for (int j = 0; j < 3; j++)
 		{
 			if (
-				((tri[j].x < tri[j].w && tri[j].x > -tri[j].w) &&
-				(tri[j].y < tri[j].w && tri[j].y > -tri[j].w) &&
-					(tri[j].z < tri[j].w && tri[j].z > -tri[j].w))
+				((tri[j].x <= tri[j].w && tri[j].x >= -tri[j].w) &&
+				(tri[j].y <= tri[j].w && tri[j].y >= -tri[j].w) &&
+					(tri[j].z <= tri[j].w && tri[j].z >= -tri[j].w))
 				)
 			{
 				good++;
@@ -1175,8 +1186,8 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			if (tri[j].w == 0.0f || tri[j + 1].w == 0.0f || tri[j + 2].w == 0.0f)
 			{
 				// cant divide by zero, ignore triangle
-				skip = true;
-				break;
+				start = j + 3;
+				continue;
 			}
 
 			// perspective divide
@@ -1212,7 +1223,7 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			{
 				if (tri[j].z < 0 && tri[j + 1].z < 0 && tri[j + 2].z < 0)
 				{
-					skip = true;
+					start = j + 3;
 					break;
 				}
 			}
@@ -1220,8 +1231,8 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			// keep far plane clipping check (essentially identical to checking W against Z before division
 			if (tri[j].z > 1.0001f || tri[j + 1].z > 1.0001f || tri[j + 2].z > 1.0001f)
 			{
-				skip = true;
-				break;
+				start = j + 3;
+				continue;
 			}
 
 			//[0,1] -> [0,width] viewport transform
@@ -1233,13 +1244,11 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 			tri[j + 2].y *= height - 1;
 		}
 
-		if (skip)
-			continue;
 
 #ifdef WIN32
 		try {
 #endif
-			for (int j = 0; j < num_point; j += 3)
+			for (int j = start; j < num_point; j += 3)
 			{
 				if (type == SPAN)
 				{
@@ -2212,6 +2221,8 @@ void render_pixel(int *pixels, float *zbuffer, const int width, const int height
 			color = imin(imax(color * blend + color2 * (1.0f - blend), 0), 255);
 		}
 
+		color = 0x0;
+
 		draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color, color, color));
 	}
 	else if (texture->components == 3)
@@ -2228,6 +2239,7 @@ void render_pixel(int *pixels, float *zbuffer, const int width, const int height
 			color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
 		}
 
+	
 		draw_pixel(pixels, zbuffer, width, height, x, y, zi, RGB(color.r, color.g, color.b));
 	}
 	else
