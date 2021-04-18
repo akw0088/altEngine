@@ -47,7 +47,7 @@ public:
 	vec3(float x, float y, float z);
 	vec3(vec4 vector);
 	vec3 &normalize();
-	float magnitude();
+	float magnitude() const;
 	float magnitudeSq();
 
 	vec3 &operator=(const vec3 &vector);

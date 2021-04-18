@@ -131,7 +131,7 @@ vec3::vec3(vec4 vector)
 	z = vector.z;
 }
 
-float vec3::magnitude()
+float vec3::magnitude() const
 {
 	return newtonSqrt(x * x + y * y + z * z);
 }

@@ -4004,7 +4004,7 @@ int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex
 	if (denom == 0.0f)
 		return -1;
 
-	float t = -(origin * p.normal + p.d) / denom;
+	float t = -(origin * p.normal - p.d) / denom;
 	if (t < 0.0 || t > 1.0)
 		return -1;
 
@@ -4039,7 +4039,7 @@ int intersect_two_points_plane_vec3(const plane_t &p, const vec3 &a, const vec3 
 	if (denom == 0.0f)
 		return -1;
 
-	float t = -(origin * p.normal + p.d) / denom;
+	float t = -(origin * p.normal - p.d) / denom;
 	if (t < 0.0 || t > 1.0)
 		return -1;
 
@@ -4051,10 +4051,15 @@ int intersect_two_points_plane_vec3(const plane_t &p, const vec3 &a, const vec3 
 
 int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
 {
-	float da = (a.position * plane.normal) + plane.d;   // distance plane -> point a
-	float db = (b.position * plane.normal) + plane.d;   // distance plane -> point b
+	float da = ((a.position * plane.normal) - plane.d) / plane.normal.magnitude();   // distance plane -> point a
+	float db = ((b.position * plane.normal) - plane.d) / plane.normal.magnitude();   // distance plane -> point b
 
 	float s = da / (da - db);   // intersection factor (between 0 and 1)
+
+	if (s < 0 || s > 1)
+	{
+		return -1;
+	}
 
 	result.position = a.position + (b.position - a.position) * s;
 
@@ -4063,9 +4068,7 @@ int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const v
 	result.texCoord1 = a.texCoord1 + (b.texCoord1 - a.texCoord1) * s;
 	return 0;
 }
-
-int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const
-	vertex_t &c, vertex_t *result)
+int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result)
 {
 	// classify points that are out of plane
 	inside_t inside;
@@ -4075,112 +4078,37 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 	result[1] = b;
 	result[2] = c;
 
+
+	float input_area = Signed2DTriArea(a.position, b.position, c.position);
+
+
 	inside.dword = 0;
 	inside.bit.a_in = DistPointPlane(a.position, p.normal, p.d) >= 0;
 	inside.bit.b_in = DistPointPlane(b.position, p.normal, p.d) >= 0;
 	inside.bit.c_in = DistPointPlane(c.position, p.normal, p.d) >= 0;
 
-	// all points inside plane, early exit
-	if (inside.dword == 7)
-		return ALL_IN;
-
 	// all points outside plane, early exit
 	if (inside.dword == 0)
 		return ALL_OUT;
 
-	if (inside.dword == 1 || inside.dword == 2 || inside.dword == 4)
+	// all points inside plane, early exit
+	if (inside.dword == 7)
+		return ALL_IN;
+
+	// easy case, one triangle, two points move in
+	if (inside.bit.a_in == 1 && inside.bit.b_in == 0 && inside.bit.c_in == 0)
 	{
-		// easy case, one triangle, two points move in
-		if (inside.bit.a_in && inside.bit.b_in == 0 && inside.bit.c_in == 0)
-		{
-			vertex_t ab, ac;
-
-			int ret = intersect_two_points_plane(p, a, b, ab);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_OUT;
-			}
-
-			ret = intersect_two_points_plane(p, a, c, ac);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_OUT;
-			}
-
-			result[0] = a;
-			result[1] = ab;
-			result[2] = ac;
-			return CLIPPED_EASY;
-
-		}
-		else if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
-		{
-			vertex_t ba, bc;
-
-			int ret = intersect_two_points_plane(p, b, a, ba);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_OUT;
-			}
-
-			ret = intersect_two_points_plane(p, b, c, bc);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_OUT;
-			}
-
-			result[0] = ba;
-			result[1] = b;
-			result[2] = bc;
-			return CLIPPED_EASY;
-
-		}
-		else if (inside.bit.a_in == 0 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
-		{
-			vertex_t ca, cb;
-
-			int ret = intersect_two_points_plane(p, c, a, ca);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_OUT;
-			}
-
-			ret = intersect_two_points_plane(p, c, b, cb);
-			if (ret != 0)
-			{
-				//printf("Error: didnt intersect despite being classified as exiting\r\n");
-				// just render normal
-				return ALL_OUT;
-			}
-
-			result[0] = ca;
-			result[1] = cb;
-			result[2] = c;
-			return CLIPPED_EASY;
-
-		}
-
-		return CLIPPED_EASY;
-	}
-
-	// hard case, tip chopped off, two triangles
-
-	if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 1)
-	{
-		vertex_t ab;
-		vertex_t ca;
+		vertex_t ab, ac;
 
 		int ret = intersect_two_points_plane(p, a, b, ab);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, a, c, ac);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -4188,10 +4116,146 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 			return ALL_OUT;
 		}
 
+		result[0] = a;
+		result[1] = ab;
+		result[2] = ac;
+
+		float output_area = Signed2DTriArea(a.position, ab.position, ac.position);
+
+		if (!((input_area > 0 && output_area > 0) || (input_area <= 0 && output_area <= 0)))
+		{
+			result[0] = a;
+			result[2] = ab;
+			result[1] = ac;
+			return CLIPPED_EASY;
+		}
+
+
+		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		if (fabs(output_area) > fabs(input_area))
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
+			return ALL_OUT;
+		}
+
+		return CLIPPED_EASY;
+	}
+	else if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
+	{
+		vertex_t ba, bc;
+
+		int ret = intersect_two_points_plane(p, b, a, ba);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, b, c, bc);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		result[0] = ba;
+		result[1] = b;
+		result[2] = bc;
+
+
+		float output_area = Signed2DTriArea(ba.position, b.position, bc.position);
+
+
+		if (!((input_area > 0 && output_area > 0) || (input_area <= 0 && output_area <= 0)))
+		{
+			result[0] = ba;
+			result[2] = b;
+			result[1] = bc;
+			return CLIPPED_EASY;
+		}
+
+		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		if (fabs(output_area) > fabs(input_area))
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
+			return ALL_OUT;
+		}
+
+
+
+		return CLIPPED_EASY;
+
+	}
+	else if (inside.bit.a_in == 0 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
+	{
+		vertex_t ca, cb;
+
+		int ret = intersect_two_points_plane(p, c, a, ca);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, c, b, cb);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		result[0] = ca;
+		result[1] = cb;
+		result[2] = c;
+
+
+		float output_area = Signed2DTriArea(ca.position, cb.position, c.position);
+
+		if (!((input_area > 0 && output_area > 0) || (input_area <= 0 && output_area <= 0)))
+		{
+			result[0] = ca;
+			result[2] = cb;
+			result[1] = c;
+			return CLIPPED_EASY;
+		}
+
+
+		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		if (fabs(output_area) > fabs(input_area))
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
+			return ALL_OUT;
+		}
+
+
+		return CLIPPED_EASY;
+	}
+
+	// hard case, tip chopped off, two triangles
+	else if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 1)
+	{
+		vertex_t ab;
+		vertex_t ca;
+
+		int ret = intersect_two_points_plane(p, a, b, ab);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
 		ret = intersect_two_points_plane(p, a, c, ca);
 		if (ret != 0)
 		{
-			//printf("Error: didnt intersect despite being classified as exiting\r\n");
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
 			// just render normal
 			return ALL_OUT;
 		}
@@ -4203,6 +4267,39 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[3] = ca;
 		result[4] = ab;
 		result[5] = c;
+
+
+		float output_area1 = Signed2DTriArea(ab.position, b.position, c.position);
+		float output_area2 = Signed2DTriArea(ca.position, ab.position, c.position);
+
+
+
+		if (!((input_area > 0 && output_area1 > 0) || (input_area <= 0 && output_area1 <= 0)))
+		{
+			result[0] = ab;
+			result[2] = b;
+			result[1] = c;
+		}
+
+		if (!((input_area > 0 && output_area2 > 0) || (input_area <= 0 && output_area2 <= 0)))
+		{
+			result[3] = ca;
+			result[5] = ab;
+			result[4] = c;
+		}
+
+
+		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
+
+		if (fabs(output_area1 + output_area2) > fabs(input_area))
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
+			return ALL_OUT;
+		}
+
+
 		return CLIPPED_HARD;
 	}
 	else if (inside.bit.a_in == 1 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
@@ -4214,15 +4311,15 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		int ret = intersect_two_points_plane(p, a, b, ab);
 		if (ret != 0)
 		{
-			//printf("Error: didnt intersect despite being classified as exiting\r\n");
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
 			// just render normal
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, c, b, cb);
+		ret = intersect_two_points_plane(p, b, c, cb);
 		if (ret != 0)
 		{
-			//printf("Error: didnt intersect despite being classified as exiting\r\n");
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
 			// just render normal
 			return ALL_OUT;
 		}
@@ -4230,9 +4327,41 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[1] = ab;
 		result[2] = c;
 
-		result[4] = ab;
 		result[3] = cb;
+		result[4] = ab;
 		result[5] = c;
+
+
+		float output_area1 = Signed2DTriArea(a.position, ab.position, c.position);
+		float output_area2 = Signed2DTriArea(cb.position, ab.position, c.position);
+
+
+		if (!((input_area > 0 && output_area1 > 0) || (input_area <= 0 && output_area1 <= 0)))
+		{
+			result[0] = a;
+			result[2] = ab;
+			result[1] = c;
+		}
+
+		if (!((input_area > 0 && output_area2 > 0) || (input_area <= 0 && output_area2 <= 0)))
+		{
+			result[3] = cb;
+			result[5] = ab;
+			result[4] = c;
+		}
+
+		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
+
+
+		if (fabs(output_area1 + output_area2) > fabs(input_area))
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
+			return ALL_OUT;
+		}
+
+
 		return CLIPPED_HARD;
 	}
 	else if (inside.bit.a_in == 1 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
@@ -4243,7 +4372,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		int ret = intersect_two_points_plane(p, a, c, ac);
 		if (ret != 0)
 		{
-			//printf("Error: didnt intersect despite being classified as exiting\r\n");
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
 			// just render normal
 			return ALL_OUT;
 		}
@@ -4251,7 +4380,7 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		ret = intersect_two_points_plane(p, b, c, bc);
 		if (ret != 0)
 		{
-			//printf("Error: didnt intersect despite being classified as exiting\r\n");
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
 			// just render normal
 			return ALL_OUT;
 		}
@@ -4262,10 +4391,41 @@ int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t
 		result[3] = bc;
 		result[4] = ac;
 		result[5] = b;
+
+		float output_area1 = Signed2DTriArea(a.position, b.position, ac.position);
+		float output_area2 = Signed2DTriArea(bc.position, ac.position, b.position);
+
+
+
+		if (!((input_area > 0 && output_area1 > 0) || (input_area <= 0 && output_area1 <= 0)))
+		{
+			result[0] = a;
+			result[2] = b;
+			result[1] = ac;
+		}
+
+		if (!((input_area > 0 && output_area2 > 0) || (input_area <= 0 && output_area2 <= 0)))
+		{
+			result[3] = bc;
+			result[5] = ac;
+			result[4] = b;
+		}
+
+		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
+
+		if (fabs(output_area1 + output_area2) > fabs(input_area))
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
+			return ALL_OUT;
+		}
+
 		return CLIPPED_HARD;
 	}
 
-	return CLIPPED_HARD;
+	printf("Error: intersect_triangle_plane() shouldn't get here\r\n");
+	return ALL_OUT;
 }
 
 void get_frustum(matrix4 &projection, plane_t *frustum)
