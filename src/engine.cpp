@@ -3638,8 +3638,9 @@ void Engine::dynamics()
 
 	//handle_springs();
 
-
+#ifndef SOFTWARE
 	handle_cloth();
+#endif
 
 //	#pragma omp parallel for num_threads(8)
 	for (unsigned int i = 0; i < entity_list.size(); i++)
