@@ -22,6 +22,7 @@
 #ifdef SOFTWARE
 
 matrix4 Graphics::current_mvp;
+extern int raster_target;
 
 #ifdef THREAD
 #ifdef WIN32
@@ -653,7 +654,6 @@ void Graphics::DrawArray(primitive_t primitive, int start_index, int start_verte
 {
 }
 
-extern int target;
 
 void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
@@ -698,7 +698,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
 #endif
 #endif
-	if (target == 1337)	
+	if (raster_target == 1337)	
 		swap();
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 3;

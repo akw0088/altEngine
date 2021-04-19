@@ -53,6 +53,10 @@ const char *teams[3] =  // array of team options (red, blue, spectator/none)
 };
 
 
+extern int raster_tcount;
+extern int raster_target;
+
+
 // Prototypes
 unsigned int get_url(char *host, char *path, char *response, unsigned int size);
 
@@ -2164,8 +2168,6 @@ void Engine::render_texture(int texObj, bool depth_view)
 /// Parameters:
 ///		None
 ///=============================================================================
-extern int tcount;
-
 void Engine::render_scene(bool lights)
 {
 	matrix4 transformation = identity;
@@ -2227,11 +2229,11 @@ void Engine::render_scene(bool lights)
 		}
 
 
-		tcount = 0;
+		raster_tcount = 0;
 
 		q3map.render(camera_frame.pos, gfx, surface_list, mlight2, tick_num, pfrustum);
 
-		tcount = 0;
+		raster_tcount = 0;
 
 		//draw_plane(gfx, q3map.data.Plane[q3map.data.Node[0].plane], camera_frame.forward, camera_frame.pos);
 	}
@@ -3607,9 +3609,6 @@ void Engine::handle_cloth()
 	}
 }
 
-extern int target;
-
-
 ///=============================================================================
 /// Function: dynamics
 ///=============================================================================
@@ -4948,11 +4947,11 @@ void Engine::keypress(char *key, bool pressed)
 	{
 		handled = true;
 		input.use = pressed;
+		raster_target++;
+		debugf("set to %d\r\n", raster_target);
 	}
 	else if (strcmp("zoom", cmd) == 0)
 	{
-		target++;
-		debugf("set to %d\r\n", target);
 		handled = true;
 		input.zoom = pressed;
 		k = 15;

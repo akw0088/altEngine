@@ -12,8 +12,8 @@
 // DEALINGS IN THE SOFTWARE.
 //=============================================================================
 
-int enabled = 0;
-int target = 0;
+int raster_enabled = 0;
+int raster_target = 0;
 
 ///============================================================================
 /// File: quake3.cpp
@@ -2887,6 +2887,23 @@ void Quake3::step(int frame_step)
 #endif
 
 
+/*	if (enabled)
+	{
+		static int count = 0;
+
+		count++;
+
+		if (count % 40)
+		{
+			target++;
+		}
+
+		if (target > 2000)
+		{
+			target = 0;
+		}
+	}
+	*/
 	if (engine->entity_list.size() == 0)
 		return;
 
@@ -7128,8 +7145,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "raster_target %s", data);
 	if (ret == 1)
 	{
-		target = (int)atoi(data);
-		snprintf(msg, LINE_SIZE, "Set to %d\n", target);
+		raster_target = (int)atoi(data);
+		snprintf(msg, LINE_SIZE, "Set to %d\n", raster_target);
 		menu.print(msg);
 		debugf(msg);
 		return;
@@ -7139,8 +7156,8 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	ret = sscanf(cmd, "raster_enabled %s", data);
 	if (ret == 1)
 	{
-		enabled = (int)atoi(data);
-		snprintf(msg, LINE_SIZE, "Set to %d\n", enabled);
+		raster_enabled = (int)atoi(data);
+		snprintf(msg, LINE_SIZE, "Set to %d\n", raster_enabled);
 		menu.print(msg);
 		return;
 	}

@@ -16,9 +16,9 @@
 #include "common.h"
 #include <math.h> // for cos
 
-extern int target;
-extern int enabled;
-int tcount = 0;
+extern int raster_target;
+extern int raster_enabled;
+int raster_tcount = 0;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -301,9 +301,9 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 	
 
-	tcount++;
+	raster_tcount++;
 
-	if (tcount != target && enabled)
+	if (raster_tcount != raster_target && raster_enabled)
 	{
 		return;
 	}
@@ -382,9 +382,9 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			vertex_t b = vertex_array[start_vertex + index_array[i + 1]];
 			vertex_t c = vertex_array[start_vertex + index_array[i + 2]];
 
-			vertex_t d;
-			vertex_t e;
-			vertex_t f;
+			vertex_t d = a;
+			vertex_t e = b;
+			vertex_t f = c;
 
 			// set position to transformed coordinate (clipping uses vec3)
 			a.position = v1;
@@ -505,7 +505,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 			}
 
 			// keep far plane clipping check (essentially identical to checking W against Z before division
-			if (tri[j].z > 1.000001f || tri[j + 1].z > 1.000001f || tri[j + 2].z > 1.000001f)
+			if (tri[j].z > 1.1000001f || tri[j + 1].z > 1.1000001f || tri[j + 2].z > 1.1000001f)
 			{
 				start = j + 3;
 				continue;
@@ -2297,6 +2297,7 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 	if (max_x == min_x || max_y == min_y)
 		return;
+
 	// triangle spanning vectors
 	int vspan1x = (x2 - x1);
 	int vspan1y = (y2 - y1);
