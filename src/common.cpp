@@ -5210,3 +5210,20 @@ int dequeue_peek(queue_t *queue, unsigned char *buffer, int size)
 	return i;
 }
 
+vec2 WorldToScreen(const vec4 &pos, const matrix4 &mvp, const int width, const int height)
+{
+	vec4 clipCoords = mvp * pos;
+
+	vec3 NDC = vec3(clipCoords) / clipCoords.w;
+
+	vec2 screen;
+
+	screen.x = (NDC.x * 0.5f) + 0.5f;
+	screen.y = (NDC.y * 0.5f) + 0.5f;
+	screen.x *= width;
+	screen.y *= height;
+
+	return screen;
+}
+
+

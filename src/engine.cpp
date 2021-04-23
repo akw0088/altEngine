@@ -3878,11 +3878,6 @@ bool Engine::collision_detect(EntRigidBody &body)
 		return false;
 	}
 
-	if (body.entity->nettype == NET_BULLET)
-	{
-		return false;
-	}
-
 	if (map_collision(body))
 	{
 		return true;
@@ -8506,7 +8501,7 @@ int Engine::play_wave_global_loop(int index)
 /// Returns:
 ///		None
 ///=============================================================================
-void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range)
+void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light)
 {
 	int j = 0;
 	num_index = 0;
@@ -8516,6 +8511,48 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 		EntRigidBody *rigid = entity_list[i]->rigid;
 		if (i == (unsigned int)self)
 			continue;
+
+		if (light && entity_list[i]->light)
+		{
+			float distance = FLT_MAX;
+			vec3 min = rigid->aabb[0] + entity_list[i]->position;
+			vec3 max = rigid->aabb[7] + entity_list[i]->position;
+
+			if (RayBoxSlab(origin, dir, min, max, distance))
+			{
+				vec3 endpoint = entity_list[i]->position;
+				vec3 normal;
+
+				vec3 dist2 = entity_list[i]->position - origin;
+				float enemy_distance = dist2.magnitude();
+
+				if (range > 0.0f && enemy_distance > range)
+					continue;
+
+				// Hit someone, do BSP trace to check if a wall is in the way
+				q3map.trace(origin, endpoint, normal);
+				if (q3map.collision)
+				{
+					vec3 dist1 = endpoint - origin;
+
+					q3map.collision = false;
+					if (dist1.magnitude() > enemy_distance)
+					{
+						index_list[j++] = i;
+						num_index++;
+						break;
+					}
+				}
+				else
+				{
+					index_list[j++] = i;
+					num_index++;
+					break;
+				}
+			}
+
+			continue; // end light hit checks
+		}
 
 		if ((entity_list[i]->player || entity_list[i]->construct) && rigid != NULL)
 		{
@@ -8557,6 +8594,8 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 					break;
 				}
 			}
+
+			continue; // end player hit checks
 		}
 	}
 
@@ -8952,3 +8991,31 @@ void Engine::test_triangle()
 	gfx.DrawArrayTri(0, 0, 3, 3);
 	gfx.swap();
 }
+
+/*
+void Engine::Pick(int x, int y, int width, int height, Frame &frame)
+{
+	vec3 screen;
+
+	screen.x = x / width;
+	screen.y = y / height;
+
+
+	screen.x -= 0.5f;
+	screen.y -= 0.5f;
+
+	screen.x *= 2.0f;
+	screen.y *= 2.0f;
+	screen.z = frame.pos.z;
+
+
+
+	// raycast into scene, intersect with entities
+	int index[16] = { -1 };
+	int num_index = 0;
+
+	int self = find_type(ENT_PLAYER, 0);
+
+	hitscan(screen, frame.forward, index, num_index, self, -1.0f, ENT_LIGHT);
+}
+*/

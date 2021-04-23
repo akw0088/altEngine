@@ -3778,17 +3778,7 @@ void Quake3::handle_rocketlauncher(EntPlayer &player, EntConstructable *sentry, 
 		engine->play_wave_source(projectile->projectile->loop_source, projectile->projectile->idle_index);
 	}
 
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(1.0f, 0.75f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
+	add_muzzle_flash(frame, player, vec3(1.0f, 0.75f, 0.0f), 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -3861,19 +3851,7 @@ void Quake3::handle_grenade(EntPlayer &player, int self, bool client)
 		projectile->projectile->owner = self;
 	}
 
-
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(1.0f, 0.7f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
-
+	add_muzzle_flash(frame, player, vec3(1.0f, 0.7f, 0.0f), 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -4077,19 +4055,7 @@ void Quake3::handle_lightning(EntPlayer &player, int self, bool client)
 		}
 	}
 
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(0.6f, 0.6f, 1.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
-
-
+	add_muzzle_flash(frame, player, vec3(0.6f, 0.6f, 1.0f), 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -4225,18 +4191,7 @@ void Quake3::handle_railgun(EntPlayer &player, int self, bool client)
 	}
 
 
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = frame.pos + frame.forward * -75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(1.0f, 0.5f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
-
+	add_muzzle_flash(frame, player, vec3(1.0f, 0.5f, 0.0f), 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -4269,18 +4224,7 @@ void Quake3::handle_gauntlet(EntPlayer &player, int self, bool client)
 
 
 
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
-
+	add_muzzle_flash(frame, player, vec3(1.0f, 1.0f, 1.0f), 2000.0f, 0.0625f, 0.125f);
 
 
 	if (client == false)
@@ -4409,41 +4353,8 @@ void Quake3::handle_machinegun(EntPlayer &player, EntConstructable *sentry, int 
 
 
 	add_decal(frame.pos, frame, NET_BULLET_HIT, model_table[MODEL_BULLET_HIT], 10.0f, true, 10);
-
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = frame.pos + frame.forward * 75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.0f);
-	muzzleflash->light->intensity = 2000.0f;
-	muzzleflash->light->attenuation = 0.0625f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
-
-
-
-	Entity *bullet = engine->entity_list[engine->get_entity()];
-	bullet->nettype = NET_BULLET;
-	bullet->rigid = new EntRigidBody(bullet);
-	bullet->position = frame.pos;
-	bullet->rigid->clone(model_table[MODEL_BULLET]);
-	frame.set(bullet->rigid->morientation);
-	vec3 right = vec3::crossproduct(frame.forward, frame.up);
-	bullet->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
-	bullet->rigid->velocity += right * random() + frame.up * random();
-	bullet->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f * random());
-	bullet->rigid->flags.gravity = true;
-	bullet->model = bullet->rigid;
-	bullet->rigid->impact_index = SND_BULLET;
-	bullet->rigid->flags.rotational_friction_flag = true;
-	bullet->rigid->flags.translational_friction_flag = true;
-	bullet->rigid->translational_friction = 0.9f;
-	frame.set(bullet->model->morientation);
-	bullet->flags.visible = true; // accomodate for low spatial testing rate
-	bullet->bsp_leaf = player.entity->bsp_leaf;
-	bullet->flags.bsp_visible = true;
+	add_muzzle_flash(frame, player, vec3(1.0, 1.0, 1.0), 2000.0f, 0.0625f, 0.125f);
+	add_ejection_shell(frame, player, NET_BULLET, MODEL_BULLET, SND_BULLET);
 
 
 	if (client == false)
@@ -4559,6 +4470,75 @@ void Quake3::handle_frags_left(EntPlayer &player)
 	}
 }
 
+
+///=============================================================================
+/// Function: add_muzzle_flash
+///=============================================================================
+/// Description: Adds light to gun shots
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
+void Quake3::add_muzzle_flash(Frame  &frame, EntPlayer &player, vec3 &color, float intensity, float attenuation, float duration)
+{
+	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
+
+	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
+	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
+	muzzleflash->light->color = color;
+	muzzleflash->light->intensity = intensity;
+	muzzleflash->light->attenuation = attenuation;
+	muzzleflash->light->timer_flag = true;
+	muzzleflash->light->timer = (int)(duration * TICK_RATE);
+	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
+	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
+	muzzleflash->flags.bsp_visible = true;
+}
+
+
+///=============================================================================
+/// Function: add_ejection_shell
+///=============================================================================
+/// Description: Adds ejection shell to gun shots (shotgun / machinegun)
+///
+///
+/// Parameters:
+///
+/// Returns:
+///		None
+///=============================================================================
+void Quake3::add_ejection_shell(Frame  &frame, EntPlayer &player, net_ent_t type, int model_index, int sound_index)
+{
+	Entity *shell = engine->entity_list[engine->get_entity()];
+	vec3 right = vec3::crossproduct(frame.forward, frame.up);
+
+
+	shell->nettype = type;
+	shell->rigid = new EntRigidBody(shell);
+	shell->position = frame.pos;
+	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
+	shell->rigid->clone(model_table[model_index]);
+	frame.set(shell->rigid->morientation);
+	shell->rigid->velocity += right * random() + frame.up * random();
+	shell->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f  * random());
+	shell->rigid->flags.gravity = true;
+	shell->rigid->flags.rotational_friction_flag = true;
+	shell->rigid->flags.translational_friction_flag = true;
+	shell->rigid->translational_friction = 0.9f;
+	shell->rigid->impact_index = SND_SHELL;
+
+
+	shell->model = shell->rigid;
+	frame.set(shell->model->morientation);
+	shell->flags.visible = true; // accomodate for low spatial testing rate
+	shell->bsp_leaf = player.entity->bsp_leaf;
+	shell->flags.bsp_visible = true;
+
+}
+
 ///=============================================================================
 /// Function: handle_shotgun
 ///=============================================================================
@@ -4583,65 +4563,9 @@ void Quake3::handle_shotgun(EntPlayer &player, int self, bool client)
 
 	frame.forward *= -1;
 
-	Entity *muzzleflash = engine->entity_list[engine->get_entity()];
-	muzzleflash->position = player.entity->position + frame.forward * 75.0f;
-	muzzleflash->light = new EntLight(muzzleflash, engine->gfx, 999, engine->res_scale);
-	muzzleflash->light->color = vec3(1.0f, 1.0f, 0.75f);
-	muzzleflash->light->intensity = 3000.0f;
-	muzzleflash->light->attenuation = 0.125f;
-	muzzleflash->light->timer_flag = true;
-	muzzleflash->light->timer = (int)(0.125f * TICK_RATE);
-	muzzleflash->flags.visible = true; // accomodate for low spatial testing rate
-	muzzleflash->bsp_leaf = player.entity->bsp_leaf;
-	muzzleflash->flags.bsp_visible = true;
-
-	vec3 right = vec3::crossproduct(frame.forward, frame.up);
-
-	Entity *shell = engine->entity_list[engine->get_entity()];
-	shell->nettype = NET_SHELL;
-	shell->rigid = new EntRigidBody(shell);
-	shell->position = frame.pos;
-	shell->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
-	shell->rigid->clone(model_table[MODEL_SHELL]);
-	frame.set(shell->rigid->morientation);
-	shell->rigid->velocity += right * random() + frame.up * random();
-	shell->rigid->angular_velocity = vec3(1.0f * random(), 2.0f * random(), 3.0f  * random());
-	shell->rigid->flags.gravity = true;
-	shell->rigid->flags.rotational_friction_flag = true;
-	shell->rigid->flags.translational_friction_flag = true;
-	shell->rigid->translational_friction = 0.9f;
-	shell->rigid->impact_index = SND_SHELL;
-
-
-	shell->model = shell->rigid;
-	frame.set(shell->model->morientation);
-	shell->flags.visible = true; // accomodate for low spatial testing rate
-	shell->bsp_leaf = player.entity->bsp_leaf;
-	shell->flags.bsp_visible = true;
-
-
-	Entity *shell2 = engine->entity_list[engine->get_entity()];
-	shell2->rigid = new EntRigidBody(shell2);
-	shell2->nettype = NET_SHELL;
-	shell2->position = frame.pos;
-	shell2->position += frame.forward * 3.0f - frame.up * 4.0f + right * 5.0f;
-	shell2->rigid->clone(model_table[MODEL_SHELL]);
-	frame.set(shell->rigid->morientation);
-
-	shell2->position += frame.forward * 2.0f;
-	shell2->rigid->velocity += right * 1.25f * random() + frame.up * random();
-	shell2->rigid->flags.rotational_friction_flag = true;
-	shell2->rigid->flags.translational_friction_flag = true;
-	shell2->rigid->translational_friction = 0.9f;
-	shell2->rigid->angular_velocity = vec3(-1.0f * random(), 2.0f * random(), -3.0f * random());
-	shell2->rigid->flags.gravity = true;
-	shell2->rigid->impact_index = SND_SHELL;
-	shell2->model = shell2->rigid;
-	frame.set(shell2->model->morientation);
-	shell2->flags.visible = true; // accomodate for low spatial testing rate
-	shell2->bsp_leaf = player.entity->bsp_leaf;
-	shell2->flags.bsp_visible = true;
-
+	add_muzzle_flash(frame, player, vec3(1.0, 1.0, 1.0), 1000.0f, 0.125f, 0.125f);
+	add_ejection_shell(frame, player, NET_SHELL, MODEL_SHELL, SND_SHELL);
+	add_ejection_shell(frame, player, NET_SHELL, MODEL_SHELL, SND_SHELL);
 
 	for (int i = 0; i < 10; i++)
 	{

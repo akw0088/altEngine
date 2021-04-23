@@ -131,7 +131,7 @@ public:
 	void render_to_framebuffer(double last_frametime);
 	void set_dynamic_resolution(double last_frametime);
 
-	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range);
+	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light = false);
 	void load_md5();
 	void find_path(int *&path, int &path_length, int start_path, int end_path);
 	void zoom(float level);
@@ -151,6 +151,7 @@ public:
 	int debug_triangle(vec3 *triangle);
 	int debug_vector(vec3 &pos, vec3 &dir);
 	int debug_point(vec3 &pos);
+	vec3 Pick(int x, int y, int width, int height, Frame &frame);
 
 	vector<vertex_t> debug_tri_list;
 	vector<int> debug_tri_list_index;

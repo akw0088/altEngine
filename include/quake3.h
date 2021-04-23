@@ -92,6 +92,10 @@ public:
 	void handle_shotgun(EntPlayer &player, int self, bool client);
 	void handle_gibs(EntPlayer &player);
 	int  handle_bot(Entity *entity, int i);
+
+	void add_ejection_shell(Frame  &frame, EntPlayer &player, net_ent_t type, int model_index, int sound_index);
+	void add_muzzle_flash(Frame  &frame, EntPlayer &player, vec3 &color, float intensity, float attenuation, float duration);
+
 	void create_crosshair();
 	void draw_crosshair();
 	void draw_flash(EntPlayer *player);
