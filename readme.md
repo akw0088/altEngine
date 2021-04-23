@@ -6,6 +6,8 @@ altEngine2 is my 3d engine, it loads quake3 BSP maps and renders them in OpenGL 
 
 http://lineofsight.awright2009.com/downloads.html
 
+## Videos
+
 http://youtube.com/akw0088 (Has some videos related, not all though)
 
 ## Compiling
