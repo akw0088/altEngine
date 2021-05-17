@@ -167,6 +167,9 @@ int main(int argc, char *argv[])
 		printf("GL Version: %s\n", glGetString(GL_VERSION));
 	}
 
+	Atom wmDelete = XInternAtom(display, "WM_DELETE_WINDOW", True);
+	XSetWMProtocols(display, window, &wmDelete, 1);
+
 	XMapWindow(display, window);
 	make_timer("Timer", &time_id, 8);
 
@@ -584,7 +587,13 @@ int EventProc(Display *display, Window window, GLXContext context)
                     return 0;
                 }
                 break;
-
+	case ClientMessage:
+		printf("Window manager close event\r\n");
+		altEngine.destroy();
+		XFreeCursor(display, cursor);
+		XFreeCursor(display, invisibleCursor);
+		XFreePixmap(display, bitmapNoData);
+		return 1;
 	case DestroyNotify:
 		printf("DestroyNotify\n");
 		altEngine.destroy();
