@@ -227,7 +227,7 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	// load VM code (interpreted C code) will eventually move game logic into it
 	// allows mods without releasing engine code and security as they have limited
 	// function call ability
-	vm_main("media/vm/game.qvm", VM_INIT);
+	//vm_main("media/vm/game.qvm", VM_INIT);
 
 
 	// This is test code that just tests http downloads, it worked, should delete

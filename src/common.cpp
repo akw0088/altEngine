@@ -3749,6 +3749,8 @@ int split(const vertex_t *poly, int num_vert, const unsigned int *index_array, i
 		for (int i = 0; i < in_c; i++)
 			in[i] = inpts[i];
 		break;
+	case HC_ON:
+		break;
 	}
 	return poly_class;
 }

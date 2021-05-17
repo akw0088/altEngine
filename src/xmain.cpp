@@ -210,7 +210,7 @@ int EventProc(Display *display, Window window, GLXContext context)
 	//XEvent 			respond;
 	static Engine		altEngine;
 	static bool		init = false;
-	static bool		once = false;
+	static bool		mapped = false;
 	static int		xcenter, ycenter;
 	static int		frame_step;
 	static Cursor		invisibleCursor;
@@ -273,6 +273,23 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case MapNotify:
 		printf("MapNotify\n");
+		mapped = true;
+		XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
+		altEngine.resize(1920, 1080);
+		if (!init)
+		{
+			altEngine.init((void *)display, (void *)&window, cmdline);
+			// Hide the cursor
+			XColor black;
+			static char noData[] = { 0,0,0,0,0,0,0,0 };
+			black.red = black.green = black.blue = 0;
+
+			bitmapNoData = XCreateBitmapFromData(display, window, noData, 8, 8);
+			invisibleCursor = XCreatePixmapCursor(display, bitmapNoData, bitmapNoData, 
+                                     &black, &black, 0, 0);
+			cursor = XCreateFontCursor(display,XC_left_ptr);
+			init = true;
+		}
 #ifdef DEDICATED
 		XUnmapWindow(display, window);
 #endif
@@ -324,16 +341,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 	case MotionNotify:
 		if ((event.xmotion.x == xcenter) && (event.xmotion.y == ycenter))
 			break;
-
-		if (once == false)
-		{
-			once = true;
-			//resize fixes opengl context rendering for some reason
-#ifndef DEDICATED
-			XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
-//			fullscreen(display, window);
-#endif
-		}
 
 		if ( altEngine.mousepos(event.xmotion.x, event.xmotion.y, event.xmotion.x - xcenter, event.xmotion.y - ycenter) )
 		{
@@ -533,21 +540,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case Expose:
 		printf("Expose %d\n", event.xexpose.count);
-
-		if (!init)
-		{
-			altEngine.init((void *)display, (void *)&window, cmdline);
-			// Hide the cursor
-			XColor black;
-			static char noData[] = { 0,0,0,0,0,0,0,0 };
-			black.red = black.green = black.blue = 0;
-
-			bitmapNoData = XCreateBitmapFromData(display, window, noData, 8, 8);
-			invisibleCursor = XCreatePixmapCursor(display, bitmapNoData, bitmapNoData, 
-                                     &black, &black, 0, 0);
-			cursor = XCreateFontCursor(display,XC_left_ptr);
-			init = true;
-		}
 		break;
 	case SelectionRequest:
 		// Some window did a paste from something we have "selected/hightlighted" and wants the data
