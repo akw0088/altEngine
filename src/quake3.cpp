@@ -3778,7 +3778,8 @@ void Quake3::handle_rocketlauncher(EntPlayer &player, EntConstructable *sentry, 
 		engine->play_wave_source(projectile->projectile->loop_source, projectile->projectile->idle_index);
 	}
 
-	add_muzzle_flash(frame, player, vec3(1.0f, 0.75f, 0.0f), 2000.0f, 0.0625f, 0.125f);
+	vec3 color(1.0f, 0.75f, 0.0f);
+	add_muzzle_flash(frame, player, color, 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -3851,7 +3852,8 @@ void Quake3::handle_grenade(EntPlayer &player, int self, bool client)
 		projectile->projectile->owner = self;
 	}
 
-	add_muzzle_flash(frame, player, vec3(1.0f, 0.7f, 0.0f), 2000.0f, 0.0625f, 0.125f);
+	vec3 color(1.0f, 0.7f, 0.0f);
+	add_muzzle_flash(frame, player, color, 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -4055,7 +4057,8 @@ void Quake3::handle_lightning(EntPlayer &player, int self, bool client)
 		}
 	}
 
-	add_muzzle_flash(frame, player, vec3(0.6f, 0.6f, 1.0f), 2000.0f, 0.0625f, 0.125f);
+	vec3 color(0.6f, 0.6f, 1.0f);
+	add_muzzle_flash(frame, player, color, 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -4191,7 +4194,8 @@ void Quake3::handle_railgun(EntPlayer &player, int self, bool client)
 	}
 
 
-	add_muzzle_flash(frame, player, vec3(1.0f, 0.5f, 0.0f), 2000.0f, 0.0625f, 0.125f);
+	vec3 color(1.0f, 0.5f, 0.0f);
+	add_muzzle_flash(frame, player, color, 2000.0f, 0.0625f, 0.125f);
 }
 
 ///=============================================================================
@@ -4224,7 +4228,8 @@ void Quake3::handle_gauntlet(EntPlayer &player, int self, bool client)
 
 
 
-	add_muzzle_flash(frame, player, vec3(1.0f, 1.0f, 1.0f), 2000.0f, 0.0625f, 0.125f);
+	vec3 color(1.0f, 1.0f, 1.0f);
+	add_muzzle_flash(frame, player, color, 2000.0f, 0.0625f, 0.125f);
 
 
 	if (client == false)
@@ -4353,7 +4358,8 @@ void Quake3::handle_machinegun(EntPlayer &player, EntConstructable *sentry, int 
 
 
 	add_decal(frame.pos, frame, NET_BULLET_HIT, model_table[MODEL_BULLET_HIT], 10.0f, true, 10);
-	add_muzzle_flash(frame, player, vec3(1.0, 1.0, 1.0), 2000.0f, 0.0625f, 0.125f);
+	vec3 color(1.0f, 1.0f, 0.0f);
+	add_muzzle_flash(frame, player, color, 2000.0f, 0.0625f, 0.125f);
 	add_ejection_shell(frame, player, NET_BULLET, MODEL_BULLET, SND_BULLET);
 
 
@@ -4563,7 +4569,8 @@ void Quake3::handle_shotgun(EntPlayer &player, int self, bool client)
 
 	frame.forward *= -1;
 
-	add_muzzle_flash(frame, player, vec3(1.0, 1.0, 1.0), 1000.0f, 0.125f, 0.125f);
+	vec3 color(1.0f, 1.0f, 1.0f);
+	add_muzzle_flash(frame, player, color, 1000.0f, 0.125f, 0.125f);
 	add_ejection_shell(frame, player, NET_SHELL, MODEL_SHELL, SND_SHELL);
 	add_ejection_shell(frame, player, NET_SHELL, MODEL_SHELL, SND_SHELL);
 
