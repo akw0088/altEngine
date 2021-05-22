@@ -27,6 +27,7 @@ public:
 	void update(input_t &keyboard);
 	void update(const vec2 &mouse, float scale, bool lock);
 	void set(matrix4 &trans);
+	void set_inverse(matrix4 &trans);
 	void set(matrix3 &trans);
 	vec3 pos, up, forward;
 };

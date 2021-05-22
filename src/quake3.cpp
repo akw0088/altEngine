@@ -6044,7 +6044,10 @@ void Quake3::render_hud(double last_frametime)
 
 			if (ent->flags.visible && ent->flags.nodraw == false)
 			{
-				draw_name(ent, engine->menu, real_projection, i);
+				if (engine->picked_ent == -1 || engine->picked_ent == i)
+				{
+					draw_name(ent, engine->menu, real_projection, i);
+				}
 			}
 		}
 	}
@@ -8250,6 +8253,25 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		engine->show_box = !engine->show_box;
 		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_box);
 		menu.print(msg);
+		return;
+	}
+
+	ret = strcmp(cmd, "pickmode");
+	if (ret == 0)
+	{
+		snprintf(msg, LINE_SIZE, "pickmode\n");
+		menu.print(msg);
+		engine->pick_mode = !engine->pick_mode;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_box);
+		menu.print(msg);
+
+		if (engine->pick_mode == 0)
+		{
+			engine->picked_ent = -1;
+			engine->show_box = false;
+			engine->show_names = false;
+		}
+
 		return;
 	}
 

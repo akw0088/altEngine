@@ -72,6 +72,36 @@ void Frame::set(matrix4 &trans)
 	trans.m[15] = 1.0f;
 }
 
+void Frame::set_inverse(matrix4 &trans)
+{
+	vec3	right;
+
+	right = vec3::crossproduct(up, forward);
+	right.normalize();
+
+	// opengl - 12,13,14 are position
+	trans.m[0] = right.x;
+	trans.m[4] = up.x;
+	trans.m[8] = forward.x;
+	trans.m[3] = 0.0f;
+
+	trans.m[1] = right.y;
+	trans.m[5] = up.y;
+	trans.m[9] = forward.y;
+	trans.m[7] = 0.0f;
+
+	trans.m[2] = right.z;
+	trans.m[6] = up.z;
+	trans.m[10] = forward.z;
+	trans.m[11] = 0.0f;
+
+	trans.m[12] = (right * pos);
+	trans.m[13] = (up * pos);
+	trans.m[14] = (forward * pos);
+	trans.m[15] = 1.0f;
+}
+
+
 void Frame::set(matrix3 &trans)
 {
 	vec3	right;

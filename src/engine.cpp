@@ -85,6 +85,8 @@ Engine::Engine() :
 	show_lines = false;			// flag whether to draw lines (usually for func_mover paths)
 	show_debug = false;			// flag whether to draw debug information
 	show_hud = true;			// flag whether to show the hud
+	show_box = false;
+	pick_mode = false;
 	collision_detect_enable = true; // collision detection enable flag for non-player objects
 	num_bot = 0;				// number of active bots
 	emitter.enabled = false;	// particle emitter enabled (currently only allows one source emitter of particle effects)
@@ -121,6 +123,9 @@ Engine::Engine() :
 	bloom_threshold = 0.9f;		// bloom threshold (objects brighter than this are bloomed)
 	bloom_strength = 0.5f;		// bloom strength (blend percentage of bloom with image)
 	bloom_amount = 20.0f;		// bloom amount (amount of bloom)
+
+
+	picked_ent = -1;
 
 	// far = 0.1  near = 0.3
 	dof_near = 0.4f;			// depth of field near distance (outside of near / far are blurred)
@@ -4597,7 +4602,7 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 {
 	static bool once = false;
 
-	if ((q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true)
+	if ((q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false) || menu.ingame == true || menu.console == true || menu.chatmode == true || pick_mode == true)
 	{
 		float devicex = (float)x / gfx.width;
 		float devicey = (float)y / gfx.height;
@@ -4607,6 +4612,18 @@ bool Engine::mousepos(int x, int y, int deltax, int deltay)
 
 		if (menu.chatmode == true)
 			return false;
+
+		if (pick_mode)
+		{
+			show_box = true;
+			show_names = true;
+
+
+			Pick(x, y, gfx.width, gfx.height, camera_frame);
+
+
+			return false;
+		}
 
 		bool updated = menu.delta(devicex, devicey);
 		if (menu.ingame == false && updated)
@@ -8999,30 +9016,116 @@ void Engine::test_triangle()
 	gfx.swap();
 }
 
-/*
 void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 {
-	vec3 screen;
+	vec2 screen;
 
-	screen.x = x / width;
-	screen.y = y / height;
+	screen.x = (float)(width - x) / width;
+	screen.y = (float)(y) / height;
+
+//	printf("%f %f\r\n", screen.x, screen.y);
 
 
-	screen.x -= 0.5f;
-	screen.y -= 0.5f;
+	vec4 clip_near;
+	vec4 clip_far;
 
-	screen.x *= 2.0f;
-	screen.y *= 2.0f;
-	screen.z = frame.pos.z;
+	float scalex = -width / 4;
+	float scaley = height / 4;
+	clip_near.x = 2.0f * (screen.x - 0.5f) * scalex;
+	clip_near.y = 2.0f * (screen.y - 0.5f) * scaley;
+	clip_near.z = -1.0f;
+	clip_near.w = -1.0f;
+	clip_far = clip_near;
+	clip_far.w = 1.0f;
 
+	matrix4 transformation;
+	camera_frame.set(transformation);
+
+	matrix4 mvp = transformation * projection;
+
+	matrix4 imvp = mvp.inverse();
+	camera_frame.set_inverse(transformation);
+
+	vec4 world = transformation * clip_near;
+	vec3 origin = vec3(world.x, -world.y, world.z);
+
+//	world = transformation * clip_far;
+//	vec3 target = vec3(-world.x, world.y, -world.z);
+
+
+//	vec3 dir = target - origin;
+//	dir = dir.normalize();
+	printf("origin %f %f %f\r\n", origin.x, origin.y, origin.z);
+
+//	printf("target %f %f %f\r\n", target.x, target.y, target.z);
 
 
 	// raycast into scene, intersect with entities
-	int index[16] = { -1 };
+	int index_list[32];
 	int num_index = 0;
 
 	int self = find_type(ENT_PLAYER, 0);
 
-	hitscan(screen, frame.forward, index, num_index, self, -1.0f, ENT_LIGHT);
+	{
+//		Frame pickframe;
+
+//		vec3 right = vec3::crossproduct(frame.up, frame.forward);
+//		pickframe.pos = frame.pos;
+//		pickframe.forward = dir.normalize();
+//		pickframe.up = vec3::crossproduct(right, pickframe.forward).normalize();
+
+		Entity *projectile = entity_list[get_entity()];
+		projectile->nettype = NET_LIGHTNING;
+		projectile->rigid = new EntRigidBody(projectile);
+		projectile->model = projectile->rigid;
+		projectile->position = origin;
+		projectile->rigid->clone(game->get_model_table()[17]);
+		projectile->rigid->velocity = vec3();
+		projectile->rigid->angular_velocity = vec3();
+		projectile->rigid->flags.gravity = false;
+		projectile->rigid->bounce = 2;
+		//	projectile->rigid->rotational_friction_flag = true;
+		projectile->model->flags.lightning_trail = true;
+		projectile->model = projectile->rigid;
+		//	projectile->rigid->set_target(*(engine->entity_list[self]));
+		frame.set(projectile->model->morientation);
+		projectile->flags.visible = true; // accomodate for low spatial testing rate
+		projectile->rigid->flags.noclip = true;
+//		projectile->bsp_leaf = player.entity->bsp_leaf;
+		projectile->flags.bsp_visible = true;
+
+		/*
+		projectile->light = new Light(projectile, engine->gfx, 999);
+		projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
+		projectile->light->intensity = 1000.0f;
+		*/
+
+		projectile->projectile = new EntProjectile(projectile, audio);
+		projectile->projectile->action[0] = '\0';
+
+		//		projectile->rigid->bounce = 5;
+		projectile->projectile->hide = false;
+		projectile->projectile->radius = 25.0f;
+		projectile->projectile->idle = true;
+		projectile->projectile->idle_timer = (int)(0.025 * TICK_RATE);
+		projectile->projectile->explode = true;
+		projectile->projectile->explode_timer = 5;
+		projectile->projectile->owner = self;
+
+	}
+
+
+	hitscan(origin, frame.forward, index_list, num_index, self, 1000.0f, true);
+
+	if (num_index > 0)
+	{
+		printf("Picked entity %d %s\r\n", index_list[0], entity_list[index_list[0]]->entstring->type);
+		picked_ent = index_list[0];
+	}
+	else
+	{
+		picked_ent = -1;
+	}
+
 }
-*/
+

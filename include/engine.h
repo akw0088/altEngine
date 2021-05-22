@@ -151,7 +151,7 @@ public:
 	int debug_triangle(vec3 *triangle);
 	int debug_vector(vec3 &pos, vec3 &dir);
 	int debug_point(vec3 &pos);
-	vec3 Pick(int x, int y, int width, int height, Frame &frame);
+	void Pick(int x, int y, int width, int height, Frame &frame);
 
 	vector<vertex_t> debug_tri_list;
 	vector<int> debug_tri_list_index;
@@ -167,6 +167,8 @@ public:
 
 	int quad_index;
 	int quad_vertex;
+
+	int picked_ent;
 
 //temp
 	vector<cloth::Cloth *> cloth;
@@ -262,6 +264,7 @@ public:
 	bool enable_terrain;
 	bool enable_planet;
 	bool enable_cloth;
+	bool pick_mode;
 
 
 	char resbuf[MAX_RES][80];
