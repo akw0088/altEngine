@@ -2024,6 +2024,7 @@ void Engine::CreateObjects()
 
 	gen_spiral(gfx, spiral_ibo, spiral_vbo);
 	gen_lightning(gfx, lightning_ibo, lightning_vbo);
+	gen_unit_box(gfx, EntModel::unit_index, EntModel::unit_vertex);
 
 
 	/*
@@ -2762,6 +2763,12 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 			}
 			else
 			{
+				// draw bounding box around entities too
+				if (show_box)
+				{
+					entity->rigid->render_box(gfx);
+				}
+
 				entity->rigid->render(gfx);
 			}
 		}

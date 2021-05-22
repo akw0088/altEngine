@@ -1141,6 +1141,43 @@ int spiral(float distance, vec3 &scale, float step, vec3 *point)
 	return i;
 }
 
+
+void gen_unit_box(Graphics &gfx, int &unit_index, int &unit_vertex)
+{
+	vec3 aabb[8];
+	vertex_t vert[8];
+
+	// just make unit box
+	float scale = 10.0f;
+	aabb[0] = vec3(-scale, -scale, -scale);
+	aabb[1] = vec3(-scale, -scale, scale);
+	aabb[2] = vec3(-scale, scale, -scale);
+	aabb[3] = vec3(-scale, scale, scale);
+	aabb[4] = vec3(scale, -scale, -scale);
+	aabb[5] = vec3(scale, -scale, scale);
+	aabb[6] = vec3(scale, scale, -scale);
+	aabb[7] = vec3(scale, scale, scale);
+
+	for (int i = 0; i < 8; i++)
+		vert[i].position = aabb[i];
+
+	int	index[24] = { 0, 1,
+		0, 2,
+		1, 3,
+		2, 3,
+		4, 5,
+		4, 6,
+		5, 7,
+		6, 7,
+		0, 4,
+		1, 5,
+		2, 6,
+		3, 7 };
+
+	unit_vertex = gfx.CreateVertexBuffer(vert, 8);
+	unit_index = gfx.CreateIndexBuffer(index, 24);
+}
+
 int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo)
 {
 	static vertex_t vert[512];

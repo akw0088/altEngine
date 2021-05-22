@@ -20,6 +20,10 @@
 
 #include <float.h> // for FLT_MAX
 
+
+int EntModel::unit_index;
+int EntModel::unit_vertex;
+
 void EntModel::load(Graphics &gfx, char *file)
 {
 	char vbo_file[LINE_SIZE];
@@ -101,6 +105,10 @@ void EntModel::load(Graphics &gfx, char *file)
 	{
 		entity->rigid->recalc();
 	}
+
+
+
+	create_box(gfx, aabb);
 }
 
 EntModel::EntModel(Entity *entity)
@@ -135,6 +143,20 @@ EntModel::EntModel(Entity *entity)
 	morientation.m[6] = 0.0f;
 	morientation.m[7] = 0.0f;
 	morientation.m[8] = 1.0f;
+
+	// just make unit box
+	aabb[0] = vec3(-0.5f, -0.5f, -0.5f);
+	aabb[1] = vec3(-0.5f, -0.5f, 0.5f);
+	aabb[2] = vec3(-0.5f, 0.5f, -0.5f);
+	aabb[3] = vec3(-0.5f, 0.5f, 0.5f);
+	aabb[4] = vec3(0.5f, -0.5f, -0.5f);
+	aabb[5] = vec3(0.5f, -0.5f, 0.5f);
+	aabb[6] = vec3(0.5f, 0.5f, -0.5f);
+	aabb[7] = vec3(0.5f, 0.5f, 0.5f);
+
+
+	box_vertex = -1;
+	box_index = -1;
 }
 
 // copies visual data from model
@@ -152,6 +174,8 @@ void EntModel::clone(EntModel &model)
 	model_vertex = model.model_vertex;
 	num_index = model.num_index;
 	num_vertex = model.num_vertex;
+	box_vertex = model.box_vertex;
+	box_index = model.box_index;
 
 	//hacks
 	if (entity && entity->rigid)
@@ -195,6 +219,8 @@ void EntModel::make_aabb()
 	aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
 	aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
 	aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
+
+
 }
 
 
@@ -224,15 +250,21 @@ void EntModel::render(Graphics &gfx)
 
 }
 
-#if 0
-void Model::render_box(Graphics &gfx)
+void EntModel::render_box(Graphics &gfx)
 {
-	gfx.SelectIndexBuffer(box_index);
-	gfx.SelectVertexBuffer(box_vertex);
+	if (box_index != -1 && box_vertex != -1)
+	{
+		gfx.SelectIndexBuffer(box_index);
+		gfx.SelectVertexBuffer(box_vertex);
+	}
+	else
+	{
+		gfx.SelectIndexBuffer(EntModel::unit_index);
+		gfx.SelectVertexBuffer(EntModel::unit_vertex);
+	}
 	gfx.SelectTexture(0, model_tex);
-	gfx.DrawArrayTri(0, 0, 24, 24);
+	gfx.DrawArrayLine(0, 0, 24, 24);
 }
-#endif
 
 float *EntModel::get_matrix(float *matrix)
 {
@@ -382,8 +414,7 @@ bool Model::in_frustum(Global &global, vec3 &position, matrix4 &transformation, 
 }
 */
 
-#if 0
-void Model::create_box(Graphics &gfx, vec3 *box)
+void EntModel::create_box(Graphics &gfx, vec3 *box)
 {
 	vertex_t	vert[8];
 
@@ -406,7 +437,6 @@ void Model::create_box(Graphics &gfx, vec3 *box)
 	box_vertex = gfx.CreateVertexBuffer(vert, 8);
 	box_index = gfx.CreateIndexBuffer(index, 24);
 }
-#endif
 
 
 void EntModel::getForwardVector(vec3 &forward)

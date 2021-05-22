@@ -26,6 +26,8 @@ public:
 	void load(Graphics &gfx, char *file);
 	virtual float *get_matrix(float *matrix);
 	void render(Graphics &gfx);
+	void create_box(Graphics &gfx, vec3 *box);
+	void render_box(Graphics &gfx);
 	void clone(EntModel &model);
 	void getForwardVector(vec3 &forward);
 	virtual void get_frame(Frame &frame);
@@ -52,6 +54,14 @@ public:
 	matrix3			morientation;
 	vec3			aabb[8];
 	vec3			center;
+
+
+	int box_index;
+	int box_vertex;
+
+	static int unit_index;
+	static int unit_vertex;
+
 
 //	char name[128];
 

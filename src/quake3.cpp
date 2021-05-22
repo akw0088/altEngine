@@ -8242,6 +8242,17 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		return;
 	}
 
+	ret = strcmp(cmd, "showbox");
+	if (ret == 0)
+	{
+		snprintf(msg, LINE_SIZE, "showbox\n");
+		menu.print(msg);
+		engine->show_box = !engine->show_box;
+		snprintf(msg, LINE_SIZE, "%s %d\n", cmd, engine->show_box);
+		menu.print(msg);
+		return;
+	}
+
 	ret = strcmp(cmd, "showlines");
 	if (ret == 0)
 	{

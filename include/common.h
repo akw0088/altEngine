@@ -84,6 +84,7 @@ void navdata_to_graph(ref_t *&ref, graph_node_t *&node, vector<Entity *> &entity
 void print_graph(graph_node_t *node, int num_node);
 void print_path(int *path, int path_length, graph_node_t *node);
 float rand_float(float fMin, float fAdd);
+void gen_unit_box(Graphics &gfx, int &unit_index, int &unit_vertex);
 int gen_spiral(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
 int gen_lightning(Graphics &gfx, unsigned int &ibo, unsigned int &vbo);
 void WriteObj(char *filename, vertex_t *vertex_array, unsigned int num_vertex, unsigned int *index_array, unsigned int num_index);

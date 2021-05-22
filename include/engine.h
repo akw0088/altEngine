@@ -239,6 +239,7 @@ public:
 
 //console flags
 	bool show_names;
+	bool show_box;
 	bool show_lines;
 	bool show_debug;
 	bool show_hud;
@@ -342,6 +343,8 @@ protected:
 	unsigned int	spiral_ibo;
 	unsigned int	lightning_ibo;
 	unsigned int	lightning_vbo;
+	unsigned int	box_ibo;
+	unsigned int	box_vbo;
 	unsigned int	global_vao;
 
 	unsigned int	render_fbo;
