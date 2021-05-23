@@ -9031,24 +9031,11 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 	clip_near.x = 2.0f * (screen.x - 0.5f);
 	clip_near.y = 2.0f * (screen.y - 0.5f);
-	clip_near.z = -1.0f;
+	clip_near.z = 0.0f;
 	clip_near.w = -1.0f;
 	clip_far = clip_near;
 	clip_far.w = 1.0f;
 	printf("clip %f %f\r\n", clip_near.x, clip_near.y);
-
-
-	double radians = fov / 2 * (3.14159265358979323846) / 180;
-	double cotangent = fcos(radians) / fsin(radians);
-
-	float aspect = (float)width / height;
-	float scalex = (width / 8) * (aspect / cotangent);
-	float scaley = (height / 2) * (1.0f / cotangent);
-
-	clip_near.x *= scalex;
-	clip_near.y *= scaley;
-	clip_far.x *= scalex;
-	clip_far.y *= scaley;
 
 	matrix4 transformation;
 	camera_frame.set(transformation);
@@ -9059,14 +9046,13 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	vec4 world_near = imvp * clip_near;
 	vec4 world_far = imvp * clip_far;
 
-	vec3 origin = vec3(world_near.x, world_near.y, world_near.z);
-
-	origin += frame.pos;
-	vec3 end = vec3(world_far.x, world_far.y, world_far.z);
+	vec3 origin = vec3(world_near.x / world_near.w, world_near.y / world_near.w, world_near.z / world_near.w);
+	vec3 end = vec3(world_far.x / world_far.w, world_far.y / world_far.w, world_far.z / world_far.w);
 
 	vec3 dir = end - origin;
 	dir = dir.normalize();
 
+	origin = end;
 
 	printf("origin %f %f %f\r\n", origin.x, origin.y, origin.z);
 	printf("end %f %f %f\r\n", end.x, end.y, end.z);

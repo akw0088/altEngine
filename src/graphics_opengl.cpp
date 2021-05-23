@@ -65,8 +65,8 @@ void Graphics::init(void *param1, void *param2)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClearStencil(0);
 	glEnable(GL_PROGRAM_POINT_SIZE);
-	glPointSize(10.0f);
-	glLineWidth(10.0f);
+	glPointSize(5.0f);
+	glLineWidth(5.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
