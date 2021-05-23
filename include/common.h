@@ -30,14 +30,14 @@
 #define BOUNCE		1.5f
 
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	unsigned char b;
 	unsigned char g;
 	unsigned char r;
 } pixel_t;
-#pragma pack(8)
+#pragma pack(pop)
 
 typedef struct
 {
@@ -181,7 +181,7 @@ struct icmphdr
 	} un;
 };
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	unsigned char ip_v : 4,
@@ -196,7 +196,7 @@ typedef struct
 	unsigned int ip_src;        //4 Byte
 	unsigned int ip_dst;        //4 Byte
 } ipv4_header;
-#pragma pack(8)
+#pragma pack(pop)
 
 typedef struct
 {
@@ -205,13 +205,13 @@ typedef struct
 	char data[64];
 } icmp_response_t;
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	struct icmphdr header;
 	char data[64];
 } echo_t;
-#pragma pack(8)
+#pragma pack(pop)
 
 
 typedef enum

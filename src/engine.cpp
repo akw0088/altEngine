@@ -2772,7 +2772,7 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				// draw bounding box around entities too
 				if (show_box)
 				{
-					if (picked_ent == -1 || picked_ent == i)
+					if (picked_ent == -1 || (unsigned int)picked_ent == i)
 					{
 						entity->rigid->render_box(gfx);
 					}
@@ -5258,7 +5258,7 @@ void Engine::keystroke(char key, char *keystr)
 				menu.handle_stringmode(key, this);
 				if (menu.stringmode == false)
 				{
-					char cmd[128];
+					char cmd[256] = { 0 };
 
 					sprintf(cmd, "%s \"%s\"", menu.string_cmd, menu.string_target);
 					console(cmd);
@@ -8772,7 +8772,6 @@ void Engine::rayscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 		if (rigid)
 		{
-			float distance = FLT_MAX;
 			vec3 min = rigid->aabb[0] + entity_list[i]->position;
 			vec3 max = rigid->aabb[7] + entity_list[i]->position;
 
@@ -8787,7 +8786,6 @@ void Engine::rayscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 			if ( Raycast(aabb, ray, &res) )
 			{
-				vec3 endpoint = entity_list[i]->position;
 				vec3 normal;
 
 				vec3 dist2 = entity_list[i]->position - origin;
@@ -9325,7 +9323,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 				entity_list[index_list[i]]->flags.frustum_visible);
 
 			vec3 vec = frame.pos - entity_list[index_list[i]]->position;
-			if (fabs(vec.magnitude()) < dist)
+			if (abs32(vec.magnitude()) < dist)
 			{
 				dist = vec.magnitude();
 				min_dist = i;

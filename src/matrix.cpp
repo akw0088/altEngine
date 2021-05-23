@@ -17,6 +17,8 @@
 
 #include "include.h"
 
+#include <math.h> // fpr sin/cos
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif

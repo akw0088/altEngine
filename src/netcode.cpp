@@ -550,7 +550,7 @@ void Netcode::set_player_string(char *msg, client_t *client)
 	}
 	for (unsigned int i = 0; i < client_list.size(); i++)
 	{
-		char client_index[128];
+		char client_index[256] = { 0 };
 		if (client_list[i] == client)
 			continue;
 
@@ -919,7 +919,7 @@ int Netcode::server_recv()
 		set_player_string(player_str, client);
 		strcat(reliable[index].msg, player_str);
 
-		char motd[256];
+		char motd[2048] = { 0 };
 		sprintf(motd, "<chat>Welcome to %s: %s</chat>", sv_hostname, sv_motd);
 		strcat(reliable[index].msg, motd);
 

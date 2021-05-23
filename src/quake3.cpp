@@ -161,7 +161,7 @@ void Quake3::init(Engine *altEngine)
 ///=============================================================================
 void Quake3::load(gametype_t type)
 {
-	char cmd[128];
+	char cmd[256] = {0};
 	last_spawn = 0;
 	gametype = type;
 
@@ -3906,7 +3906,7 @@ void Quake3::handle_lightning(EntPlayer &player, int self, bool client)
 				}
 				if (enemy->health < 0)
 				{
-					char msg[256];
+					char msg[512] = {0};
 
 					sprintf(msg, "%s was caught up in %s discharge\n", enemy->name, player.name);
 					debugf(msg);
@@ -4155,7 +4155,7 @@ void Quake3::handle_railgun(EntPlayer &player, int self, bool client)
 			player.stats.hits++;
 			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
-				char msg[256];
+				char msg[512] = { 0 };
 				char word[32] = { 0 };
 				player.stats.kills++;
 				target->stats.deaths++;
@@ -4270,7 +4270,7 @@ void Quake3::handle_gauntlet(EntPlayer &player, int self, bool client)
 
 			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
-				char msg[256];
+				char msg[512] = { 0 };
 				char word[16] = { 0 };
 
 				player.stats.kills++;
@@ -4311,7 +4311,7 @@ void Quake3::handle_gauntlet(EntPlayer &player, int self, bool client)
 ///=============================================================================
 void Quake3::handle_machinegun(EntPlayer &player, EntConstructable *sentry, int self, bool client)
 {
-	char cmd[64] = { 0 };
+	char cmd[256] = { 0 };
 	int index[16] = { -1 };
 	int num_index = 0;
 
@@ -4407,7 +4407,7 @@ void Quake3::handle_machinegun(EntPlayer &player, EntConstructable *sentry, int 
 	
 			if (target->health <= 0 && target->state != PLAYER_DEAD)
 			{
-				char msg[256];
+				char msg[512] = { 0 };
 				char word[16] = { 0 };
 
 				player.stats.kills++;
@@ -4635,7 +4635,7 @@ void Quake3::handle_shotgun(EntPlayer &player, int self, bool client)
 				player.stats.hits++;
 				if (target->health <= 0 && target->state != PLAYER_DEAD)
 				{
-					char msg[64];
+					char msg[512] = { 0 };
 					char word[32] = { 0 };
 
 					player.stats.kills++;
@@ -10017,7 +10017,7 @@ void Quake3::check_projectiles(EntPlayer *player, Entity *ent, Entity *owner, in
 						else
 							sprintf(word, "%s", "killed");
 
-						char msg[256];
+						char msg[512];
 
 						if (powner == player)
 						{

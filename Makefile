@@ -26,6 +26,7 @@ SOURCES_CPP := 	xmain.cpp \
 		graphics_vulkan.cpp \
 		hashtable.cpp \
 		heap.cpp \
+		intersect.cpp \
 		isocube.cpp \
 		isosphere.cpp \
 		junzip.cpp \
@@ -36,7 +37,6 @@ SOURCES_CPP := 	xmain.cpp \
 		netcode.cpp \
 		parse.cpp \
 		pak.cpp \
-		physics.cpp \
 		quake3.cpp \
 		quaternion.cpp \
 		raster.cpp \
@@ -74,6 +74,7 @@ obj/%.o: src/%.c
 INCLUDES = -I./include/ -I/usr/local/opt/openal-soft/include -I/usr/X11R6/include -I/opt/X11/include 
 CPP := g++ -fuse-linker-plugin -std=c++11 -Wfloat-equal
 CC := gcc -fuse-linker-plugin -Wfloat-equal
+
 #CPP := clang++ -std=c++11
 #CC := clang
 

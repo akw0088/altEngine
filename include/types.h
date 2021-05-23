@@ -121,7 +121,7 @@ typedef unsigned char byte;
 	after keystate list is a null terminated reliably
 	transmitted msg string that is retransmitted until acked.
 */
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	unsigned short int	length;
@@ -134,7 +134,7 @@ typedef struct
 	char			num_cmds;
 	unsigned char		data[16834];
 } clientmsg_t;
-#pragma pack(8)
+#pragma pack(pop)
 
 // size of fixed part of network packets
 // length + sequence + ack + num_cmds
@@ -147,7 +147,7 @@ typedef struct
 	after entity state list is a null terminated reliably
 	transmitted msg string that is retransmitted until acked.
 */
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	unsigned short int	length;
@@ -158,7 +158,7 @@ typedef struct
 	unsigned int		data_size;
 	unsigned char		data[16384];
 } servermsg_t;
-#pragma pack(8)
+#pragma pack(pop)
 
 typedef struct
 {
@@ -600,7 +600,7 @@ typedef struct
 	int tick_num;
 } demo_frameheader_t;
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	char type[2];
@@ -608,9 +608,9 @@ typedef struct
 	int reserved;
 	int offset;
 } bmpheader_t;
-#pragma pack(8)
+#pragma pack(pop)
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	int size;
@@ -625,15 +625,15 @@ typedef struct
 	int clr_used;
 	int clr_important;
 } dib_t;
-#pragma pack(8)
+#pragma pack(pop)
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	bmpheader_t	header;
 	dib_t		dib;
 } bitmap_t;
-#pragma pack(8)
+#pragma pack(pop)
 
 typedef enum
 {
@@ -1155,12 +1155,12 @@ typedef struct
 	unsigned char r, g, b;
 } rgb_t;
 
-#pragma pack(1)
+#pragma pack(push, 1)
 typedef struct
 {
 	unsigned char r, g, b, a;
 } rgba_t;
-#pragma pack(8)
+#pragma pack(pop)
 
 typedef struct
 {

@@ -211,7 +211,7 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
-		char file[256];
+		char file[512] = { 0 };
 		unsigned char *bytes;
 		int width = 0;
 		int height = 0;
