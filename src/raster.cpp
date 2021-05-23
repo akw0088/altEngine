@@ -1583,7 +1583,7 @@ void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y
 		for (i = 0; i <= deltay; i++)
 		{
 			y = y1 + i;
-			x = x1 + slope * i;
+			x = x1 + (int)(slope * i);
 
 			pixels[x + y * width] = color;
 		}
@@ -1607,7 +1607,7 @@ void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y
 		for (i = 0; i <= deltay; i++)
 		{
 			y = y1 + i;
-			x = x1 + slope * i;
+			x = x1 + (int)(slope * i);
 
 			pixels[x + y * width] = color;
 		}
@@ -1617,7 +1617,7 @@ void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y
 		for (i = 0; i <= deltax; i++)
 		{
 			x = x1 + i;
-			y = y1 + slope * i;
+			y = y1 + (int)(slope * i);
 
 			pixels[x + y * width] = color;
 		}
@@ -1835,7 +1835,7 @@ void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, in
 			p = p + (2 * ry * ry * x + ry * ry) - (2 * rx * rx * y);
 		}
 	}
-	p = ((float)x + 0.5f) * ((float)x + 0.5f) * ry * ry + (y - 1) * (y - 1) * rx * rx - rx * rx * ry * ry;
+	p = (int)(((float)x + 0.5f) * ((float)x + 0.5f) * ry * ry + (y - 1) * (y - 1) * rx * rx - rx * rx * ry * ry);
 
 	while (y >= 0)
 	{
@@ -1907,7 +1907,7 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 
 		ui = u2 - (int)u2;
 		vi = v2 - (int)v2;
-		zi = z2;
+		zi = (float)z2;
 	}
 	else
 	{
@@ -1916,7 +1916,7 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 
 		ui = u1 - (int)u1;
 		vi = v1 - (int)v1;
-		zi = z1;
+		zi = (float)z1;
 	}
 
 	for (int x = xs; x < xe; x++)
@@ -1945,8 +1945,8 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		ui = ui - (int)ui;
 		vi = vi - (int)vi;
 
-		int ux = ui * (texture->width[0] - 1);
-		int vy = vi * (texture->height[0] - 1);
+		int ux = (int)(ui * (texture->width[0] - 1));
+		int vy = (int)(vi * (texture->height[0] - 1));
 
 		int index = vy * (texture->width[0]) + ux;
 		if (index < 0 || index >= texture->width[0] * texture->height[0])
@@ -1975,8 +1975,8 @@ inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, c
 
 	float invslope1 = (float)(x2 - x1) / (y3 - y1); // dx / dy
 	float invslope2 = (float)(x3 - x1) / (y3 - y1); // dx / dy
-	float curx1 = x1;
-	float curx2 = x1;
+	float curx1 = (float)x1;
+	float curx2 = (float)x1;
 
 	float uinvslope1 = (float)((u2 - u1)) / (y3 - y1); // du / dy
 	float uinvslope2 = (float)((u3 - u1)) / (y3 - y1); // du / dy
@@ -2025,8 +2025,8 @@ inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, cons
 	// y3 - y1 == y2 - y1
 	float invslope1 = (float)(x3 - x1) / (y3 - y1);
 	float invslope2 = (float)(x3 - x2) / (y3 - y1);
-	float curx1 = x1;
-	float curx2 = x2;
+	float curx1 = (float)x1;
+	float curx2 = (float)x2;
 
 
 	float uinvslope1 = (float)(u3 - u1) / (y3 - y1); // du / dy
@@ -2127,12 +2127,12 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 	if (y2 == y3)
 	{
 		// bottom triangle
-		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
+		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, (int)z1, x2, y2, (int)z2, x3, y3, (int)z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
 	}
 	else if (y1 == y2)
 	{
 		// top triangle
-		fill_top_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z2, x3, y3, z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
+		fill_top_triangle(pixels, zbuffer, width, height, texture, x1, y1, (int)z1, x2, y2, (int)z2, x3, y3, (int)z3, c1, u1, v1, u2, v2, u3, v3, minx, maxx, miny, maxy);
 	}
 	else
 	{
@@ -2144,8 +2144,8 @@ void span_triangle(int *pixels, float *zbuffer, const int width, const int heigh
 		float new_u = (u3 - u1) * t + u1;
 		float new_v = -((v3 - v1) * t + v1);
 
-		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, z1, x2, y2, z3, new_x, new_y, z3, c1, u1, v1, u2, v2, new_u, new_v, minx, maxx, miny, maxy);
-		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, z2, new_x, new_y, z2, x3, y3, z3, c1, u2, v2, new_u, new_v, u3, v3, minx, maxx, miny, maxy);
+		fill_bottom_triangle(pixels, zbuffer, width, height, texture, x1, y1, (int)z1, x2, y2, (int)z3, new_x, new_y, (int)z3, c1, u1, v1, u2, v2, new_u, new_v, minx, maxx, miny, maxy);
+		fill_top_triangle(pixels, zbuffer, width, height, texture, x2, y2, (int)z2, new_x, new_y, (int)z2, x3, y3, (int)z3, c1, u2, v2, new_u, new_v, u3, v3, minx, maxx, miny, maxy);
 	}
 }
 
@@ -2218,7 +2218,7 @@ void render_pixel(int *pixels, float *zbuffer, const int width, const int height
 		{
 			unsigned char color2 = bilinear_filter_1d((unsigned char *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-			color = imin(imax(color * blend + color2 * (1.0f - blend), 0), 255);
+			color = imin(imax((int)(color * blend + color2 * (1.0f - blend)), 0), 255);
 		}
 
 		color = 0x0;
@@ -2234,9 +2234,9 @@ void render_pixel(int *pixels, float *zbuffer, const int width, const int height
 		{
 			rgb_t color2 = bilinear_filter_3d((rgb_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-			color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
-			color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
-			color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
+			color.r = imin(imax((int)(color.r * blend + color2.r * (1.0f - blend)), 0), 255);
+			color.g = imin(imax((int)(color.g * blend + color2.g * (1.0f - blend)), 0), 255);
+			color.b = imin(imax((int)(color.b * blend + color2.b * (1.0f - blend)), 0), 255);
 		}
 
 	
@@ -2250,10 +2250,10 @@ void render_pixel(int *pixels, float *zbuffer, const int width, const int height
 		{
 			rgba_t color2 = bilinear_filter_4d((rgba_t *)texture->data[mip_level + 1], texture->width[mip_level + 1], texture->height[mip_level + 1], u, v, filter);
 
-			color.r = imin(imax(color.r * blend + color2.r * (1.0f - blend), 0), 255);
-			color.g = imin(imax(color.g * blend + color2.g * (1.0f - blend), 0), 255);
-			color.b = imin(imax(color.b * blend + color2.b * (1.0f - blend), 0), 255);
-			color.a = imin(imax(color.a * blend + color2.a * (1.0f - blend), 0), 255);
+			color.r = imin(imax((int)(color.r * blend + color2.r * (1.0f - blend)), 0), 255);
+			color.g = imin(imax((int)(color.g * blend + color2.g * (1.0f - blend)), 0), 255);
+			color.b = imin(imax((int)(color.b * blend + color2.b * (1.0f - blend)), 0), 255);
+			color.a = imin(imax((int)(color.a * blend + color2.a * (1.0f - blend)), 0), 255);
 		}
 
 
@@ -2402,10 +2402,10 @@ void barycentric_triangle(int *pixels, float *zbuffer, const int width, const in
 
 void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, float &xint, float &yint)
 {
-	float num = (x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4);
-	float den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+	float num = (float)((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4));
+	float den = (float)((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
 	xint = num / den;
-	num = (x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4);
+	num = (float)((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4));
 	yint = num / den;
 }
 
@@ -2440,7 +2440,7 @@ void clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
 		else if (a_pos >= 0 && b_pos < 0)
 		{
 			// add intersection with edge and b
-			line_intersect(x1, y1, x2, y2, a.x, a.y, b.x, b.y, out[out_num].x, out[out_num].y);
+			line_intersect(x1, y1, x2, y2, (int)a.x, (int)a.y, (int)b.x, (int)b.y, out[out_num].x, out[out_num].y);
 			out_num++;
 
 			out[out_num] = b;
@@ -2451,7 +2451,7 @@ void clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
 		else if (a_pos < 0 && b_pos >= 0)
 		{
 			// add intersection with edge
-			line_intersect(x1, y1, x2, y2, a.x, a.y, b.x, b.y, out[out_num].x, out[out_num].y);
+			line_intersect(x1, y1, x2, y2, (int)a.x, (int)a.y, (int)b.x, (int)b.y, out[out_num].x, out[out_num].y);
 			out_num++;
 		}
 
@@ -2484,10 +2484,10 @@ void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, cons
 	float x3 = v3.x;
 
 	// Bounding rectangle
-	int maxx = imax(x1, imax(x2, x3));
-	int minx = imin(x1, imin(x2, x3));
-	int maxy = imax(y1, imax(y2, y3));
-	int miny = imin(y1, imin(y2, y3));
+	int maxx = imax((int)x1, imax((int)x2, (int)x3));
+	int minx = imin((int)x1, imin((int)x2, (int)x3));
+	int maxy = imax((int)y1, imax((int)y2, (int)y3));
+	int miny = imin((int)y1, imin((int)y2, (int)y3));
 
 
 	// Scan through bounding rectangle
@@ -2508,7 +2508,7 @@ void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, cons
 
 int iround(float x)
 {
-	int xi = x;
+	int xi = (int)x;
 	if (x - xi > 0.5f)
 		return xi + 1;
 	return xi;
@@ -2695,8 +2695,8 @@ inline char bilinear_filter_1d(const unsigned char *tex, const int width, const 
 	int y = (int)mv;
 	float u_fraction = mu - x;
 	float v_fraction = mv - y;
-	float u_opp = 1.0 - u_fraction;
-	float v_opp = 1.0 - v_fraction;
+	float u_opp = 1.0f - u_fraction;
+	float v_opp = 1.0f - v_fraction;
 
 	if (u < 0)
 		x = width + x;
@@ -2722,8 +2722,8 @@ inline char bilinear_filter_1d(const unsigned char *tex, const int width, const 
 
 	if (enable)
 	{
-		return imin(imax((tex[x + y * width] * u_opp + tex[(x + 1) + (y * width)] * u_fraction) * v_opp +
-			(tex[x + (y + 1) * width] * u_opp + tex[(x + 1) + ((y + 1) * width)] * u_fraction) * v_fraction, 0), 255);
+		return imin(imax((int)((tex[x + y * width] * u_opp + tex[(x + 1) + (y * width)] * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width] * u_opp + tex[(x + 1) + ((y + 1) * width)] * u_fraction) * v_fraction), 0), 255);
 
 	}
 	else
@@ -2772,14 +2772,14 @@ inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int hei
 
 	if (enable)
 	{
-		result.r = imin(imax((tex[x + y * width].r * u_opp + tex[(x + 1) + (y * width)].r * u_fraction) * v_opp +
-			(tex[x + (y + 1) * width].r * u_opp + tex[(x + 1) + ((y + 1) * width)].r * u_fraction) * v_fraction, 0), 255);
+		result.r = imin(imax((int)((tex[x + y * width].r * u_opp + tex[(x + 1) + (y * width)].r * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width].r * u_opp + tex[(x + 1) + ((y + 1) * width)].r * u_fraction) * v_fraction), 0), 255);
 
-		result.g = imin(imax((tex[x + y * width].g * u_opp + tex[(x + 1) + (y * width)].g * u_fraction) * v_opp +
-			(tex[x + (y + 1) * width].g * u_opp + tex[(x + 1) + ((y + 1) * width)].g * u_fraction) * v_fraction, 0), 255);
+		result.g = imin(imax((int)((tex[x + y * width].g * u_opp + tex[(x + 1) + (y * width)].g * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width].g * u_opp + tex[(x + 1) + ((y + 1) * width)].g * u_fraction) * v_fraction), 0), 255);
 
-		result.b = imin(imax((tex[x + y * width].b * u_opp + tex[(x + 1) + (y * width)].b * u_fraction) * v_opp +
-			(tex[x + (y + 1) * width].b * u_opp + tex[(x + 1) + ((y + 1) * width)].b * u_fraction) * v_fraction, 0), 255);
+		result.b = imin(imax((int)((tex[x + y * width].b * u_opp + tex[(x + 1) + (y * width)].b * u_fraction) * v_opp +
+			(tex[x + (y + 1) * width].b * u_opp + tex[(x + 1) + ((y + 1) * width)].b * u_fraction) * v_fraction), 0), 255);
 	}
 	else
 	{
@@ -2828,17 +2828,17 @@ inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int h
 
 	if (enable)
 	{
-		result.r = imin(imax((tex[x + y * width].r * u_opp + tex[(x + 1) + (y * width)].r * u_fraction) * v_opp +
-			 (tex[x + (y + 1) * width].r * u_opp + tex[(x + 1) + ((y + 1) * width)].r * u_fraction) * v_fraction, 0),255);
+		result.r = imin(imax((int)((tex[x + y * width].r * u_opp + tex[(x + 1) + (y * width)].r * u_fraction) * v_opp +
+			 (tex[x + (y + 1) * width].r * u_opp + tex[(x + 1) + ((y + 1) * width)].r * u_fraction) * v_fraction), 0),255);
 
-		result.g = imin(imax((tex[x + y * width].g * u_opp + tex[(x + 1) + (y * width)].g * u_fraction) * v_opp +
-			 (tex[x + (y + 1) * width].g * u_opp + tex[(x + 1) + ((y + 1) * width)].g * u_fraction) * v_fraction, 0), 255);
+		result.g = imin(imax((int)((tex[x + y * width].g * u_opp + tex[(x + 1) + (y * width)].g * u_fraction) * v_opp +
+			 (tex[x + (y + 1) * width].g * u_opp + tex[(x + 1) + ((y + 1) * width)].g * u_fraction) * v_fraction), 0), 255);
 
-		result.b = imin(imax((tex[x + y * width].b * u_opp + tex[(x + 1) + (y * width)].b * u_fraction) * v_opp +
-			 (tex[x + (y + 1) * width].b * u_opp + tex[(x + 1) + ((y + 1) * width)].b * u_fraction) * v_fraction, 0), 255);
+		result.b = imin(imax((int)((tex[x + y * width].b * u_opp + tex[(x + 1) + (y * width)].b * u_fraction) * v_opp +
+			 (tex[x + (y + 1) * width].b * u_opp + tex[(x + 1) + ((y + 1) * width)].b * u_fraction) * v_fraction), 0), 255);
 
-		result.a = imin(imax((tex[x + y * width].a * u_opp + tex[(x + 1) + (y * width)].a * u_fraction) * v_opp +
-			 (tex[x + (y + 1) * width].a * u_opp + tex[(x + 1) + ((y + 1) * width)].a * u_fraction) * v_fraction, 0),255);
+		result.a = imin(imax((int)((tex[x + y * width].a * u_opp + tex[(x + 1) + (y * width)].a * u_fraction) * v_opp +
+			 (tex[x + (y + 1) * width].a * u_opp + tex[(x + 1) + ((y + 1) * width)].a * u_fraction) * v_fraction), 0),255);
 	}
 	else
 	{
