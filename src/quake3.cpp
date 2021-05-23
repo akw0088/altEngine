@@ -6327,7 +6327,10 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 	matrix4 trans2;
 	matrix4 mvp2;
 	matrix4 model;
-	vec3 color(1.0f, 1.0f, 1.0f);
+	vec3 idle_color(0.7f, 0.7f, 0.7f);
+	vec3 edit_color(1.0f, 3.0f, 0.0f);
+	vec3 title_color(1.0f, 1.0f, 1.0f);
+	vec3 color(0.4f, 0.4f, 0.4f);
 
 
 	menu.draw_text("", 0, 0, 0.02f, color, true, false);
@@ -6362,11 +6365,20 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 		{
 			if (entity->entstring)
 			{
-				sprintf(data, "%s", entity->entstring->type);
-				menu.draw_text(entity->entstring->type, pos.x, pos.y - 0.0625f, 0.02f, color, false, false);
+				sprintf(data, "[%s] - ent num %d", entity->entstring->type, ent_num);
 			}
-			sprintf(data, "ent num %d", ent_num);
-			menu.draw_text(data, pos.x, pos.y, 0.02f, color, false, false);
+			else
+			{
+				sprintf(data, "ent num %d", ent_num);
+			}
+			if (engine->edit_ent == ent_num)
+			{
+				menu.draw_text(data, pos.x, pos.y, 0.02f, title_color, false, false);
+			}
+			else
+			{
+				menu.draw_text(data, pos.x, pos.y, 0.02f, idle_color, false, false);
+			}
 		}
 
 		if (entity->ent_type == ENT_UNKNOWN)
@@ -6429,14 +6441,34 @@ void Quake3::draw_name(Entity *entity, Menu &menu, matrix4 &real_projection, int
 
 			if (entity->light != NULL)
 			{
-				sprintf(data, "ent num %d", ent_num);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+				sprintf(data, "Pos %.3f %.3f %.3f", entity->position.x, entity->position.y, entity->position.z);
+				if (engine->edit_ent == ent_num && engine->edit_prop == PROP_POSITION)
+				{
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, edit_color, false, false);
+				}
+				else
+				{
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+				}
 
 				sprintf(data, "intensity %f", entity->light->intensity);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
-
+				if (engine->edit_ent == ent_num && engine->edit_prop == PROP_INTENSITY)
+				{
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, edit_color, false, false);
+				}
+				else
+				{
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+				}
 				sprintf(data, "color %.3f %.3f %.3f", entity->light->color.x, entity->light->color.y, entity->light->color.z);
-				menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+				if  (engine->edit_ent == ent_num && engine->edit_prop == PROP_COLOR)
+				{
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, edit_color, false, false);
+				}
+				else
+				{
+					menu.draw_text(data, pos.x, pos.y + 0.0625f * line++, 0.02f, color, false, false);
+				}
 			}
 		}
 
@@ -8274,6 +8306,15 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		return;
 	}
+
+	ret = sscanf(cmd, "edit %s", data);
+	if (ret == 1)
+	{
+		engine->edit_entity(atoi(data));
+		return;
+	}
+
+
 
 	ret = strcmp(cmd, "showlines");
 	if (ret == 0)

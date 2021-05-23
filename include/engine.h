@@ -31,6 +31,13 @@
 #define STAIR_VEL	0.25f
 
 
+typedef enum {
+	PROP_POSITION,
+	PROP_COLOR,
+	PROP_INTENSITY,
+	MAX_PROP
+} property_t;
+
 #ifndef ENGINE_H
 #define ENGINE_H
 
@@ -152,6 +159,7 @@ public:
 	int debug_vector(vec3 &pos, vec3 &dir);
 	int debug_point(vec3 &pos);
 	void Pick(int x, int y, int width, int height, Frame &frame);
+	void edit_entity(int index);
 
 	vector<vertex_t> debug_tri_list;
 	vector<int> debug_tri_list_index;
@@ -169,6 +177,8 @@ public:
 	int quad_vertex;
 
 	int picked_ent;
+	int edit_ent;
+	int edit_prop;
 
 //temp
 	vector<cloth::Cloth *> cloth;

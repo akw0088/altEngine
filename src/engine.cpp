@@ -126,6 +126,7 @@ Engine::Engine() :
 
 
 	picked_ent = -1;
+	edit_ent = -1;
 
 	// far = 0.1  near = 0.3
 	dof_near = 0.4f;			// depth of field near distance (outside of near / far are blurred)
@@ -2771,7 +2772,10 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				// draw bounding box around entities too
 				if (show_box)
 				{
-					entity->rigid->render_box(gfx);
+					if (picked_ent == -1 || picked_ent == i)
+					{
+						entity->rigid->render_box(gfx);
+					}
 				}
 
 				entity->rigid->render(gfx);
@@ -4875,62 +4879,154 @@ void Engine::keypress(char *key, bool pressed)
 
 	q3map.update = true;
 
-
-
-
 	if (strcmp("moveup", cmd) == 0)
 	{
 		handled = true;
-		input.moveup = pressed;
 		if (*key != 'w' && *key != 'W')
 			k = 3;
 
-		if (hlmap.loaded || q1map.loaded)
+
+		if (edit_ent != -1)
+		{
+			switch (edit_prop)
+			{
+			case PROP_POSITION:
+				entity_list[edit_ent]->position.z += 10.0f;
+				break;
+			case PROP_COLOR:
+				entity_list[edit_ent]->light->color.z += 0.1f;
+				break;
+			case PROP_INTENSITY:
+				entity_list[edit_ent]->light->intensity += 10.0f;
+				break;
+			}
+
+		}
+		else if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos += -camera_frame.forward * 10.0f;
+		}
+		else
+		{
+			input.moveup = pressed;
 		}
 
 	}
 	else if (strcmp("moveleft", cmd) == 0)
 	{
 		handled = true;
-		input.moveleft = pressed;
 		if (*key != 'a' && *key != 'A')
 			k = 4;
 
-		if (hlmap.loaded || q1map.loaded)
+		if (edit_ent != -1)
+		{
+			switch (edit_prop)
+			{
+			case PROP_POSITION:
+				entity_list[edit_ent]->position.x -= 10.0f;
+				break;
+			case PROP_COLOR:
+				entity_list[edit_ent]->light->color.x -= 0.1f;
+				break;
+			case PROP_INTENSITY:
+				entity_list[edit_ent]->light->intensity -= 10.0f;
+				break;
+			}
+		}
+		else if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos -= vec3::crossproduct(camera_frame.up, camera_frame.forward) * 1.0f;
+		}
+		else
+		{
+			input.moveleft = pressed;
 		}
 	}
 	else if (strcmp("moveright", cmd) == 0)
 	{
 		handled = true;
-		input.moveright = pressed;
 		if (*key != 'd' && *key != 'D')
 			k = 6;
 
-		if (hlmap.loaded || q1map.loaded)
+		if (edit_ent != -1)
+		{
+			switch (edit_prop)
+			{
+			case PROP_POSITION:
+				entity_list[edit_ent]->position.x += 10.0f;
+				break;
+			case PROP_COLOR:
+				entity_list[edit_ent]->light->color.x += 0.1f;
+				break;
+			case PROP_INTENSITY:
+				entity_list[edit_ent]->light->intensity += 10.0f;
+				break;
+			}
+
+		}
+		else if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos +=  vec3::crossproduct(camera_frame.up, camera_frame.forward) * 1.0f;
+		}
+		else
+		{
+			input.moveright = pressed;
 		}
 	}
 	else if (strcmp("movedown", cmd) == 0)
 	{
 		handled = true;
-		input.movedown = pressed;
 		if (*key != 's' && *key != 'S')
 			k = 5;
 
-		if (hlmap.loaded || q1map.loaded)
+		if (edit_ent != -1)
+		{
+			switch (edit_prop)
+			{
+			case PROP_POSITION:
+				entity_list[edit_ent]->position.z -= 10.0f;
+				break;
+			case PROP_COLOR:
+				entity_list[edit_ent]->light->color.z -= 0.1f;
+				break;
+			case PROP_INTENSITY:
+				entity_list[edit_ent]->light->intensity -= 10.0f;
+				break;
+			}
+		}
+		else if (hlmap.loaded || q1map.loaded)
 		{
 			camera_frame.pos -= camera_frame.forward * -1.0f;
+		}
+		else
+		{
+			input.movedown = pressed;
 		}
 	}
 	else if (strcmp("jump", cmd) == 0)
 	{
 		handled = true;
-		input.jump = pressed;
+
+		if (edit_ent != -1)
+		{
+			switch (edit_prop)
+			{
+			case PROP_POSITION:
+				entity_list[edit_ent]->position.y += 10.0f;
+				break;
+			case PROP_COLOR:
+				entity_list[edit_ent]->light->color.y += 0.1f;
+				break;
+			case PROP_INTENSITY:
+				entity_list[edit_ent]->light->intensity += 10.0f;
+				break;
+			}
+			input.jump = false;
+		}
+		else
+		{
+			input.jump = pressed;
+		}
 	}
 	if (strcmp("attack", cmd) == 0)
 	{
@@ -4948,12 +5044,29 @@ void Engine::keypress(char *key, bool pressed)
 		{
 			entity_list[spawn]->player->change_weapon_up();
 		}
+
+		if (edit_ent != -1)
+		{
+			edit_prop++;
+			if (edit_prop >= MAX_PROP)
+				edit_prop = 0;
+		}
+
+
 		k = 2;
 	}
 	else if (strcmp("weapon_down", cmd) == 0)
 	{
 		int spawn = find_type(ENT_PLAYER, 0);
 		handled = true;
+
+		if (edit_ent != -1)
+		{
+			edit_prop--;
+			if (edit_prop < 0)
+				edit_prop = MAX_PROP - 1;
+		}
+
 
 		input.weapon_down = pressed;
 		if (netcode.client_flag && spawn != -1)
@@ -4973,12 +5086,32 @@ void Engine::keypress(char *key, bool pressed)
 	{
 		handled = true;
 		input.zoom = pressed;
+
 		k = 15;
 	}
 	else if (strcmp("duck", cmd) == 0)
 	{
 		handled = true;
-		input.duck = pressed;
+
+		if (edit_ent != -1)
+		{
+			switch (edit_prop)
+			{
+			case PROP_POSITION:
+				entity_list[edit_ent]->position.y -= 10.0f;
+				break;
+			case PROP_COLOR:
+				entity_list[edit_ent]->light->color.y -= 0.1f;
+				break;
+			case PROP_INTENSITY:
+				entity_list[edit_ent]->light->intensity -= 10.0f;
+				break;
+			}
+		}
+		else
+		{
+			input.duck = pressed;
+		}
 	}
 	else if (strcmp("pickup", cmd) == 0)
 	{
@@ -9066,7 +9199,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 	int self = find_type(ENT_PLAYER, 0);
 
-	bool debug_pick = true;
+	bool debug_pick = false;
 	if (debug_pick)
 	{
 		Entity *projectile = entity_list[get_entity()];
@@ -9079,26 +9212,18 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 		projectile->rigid->angular_velocity = vec3();
 		projectile->rigid->flags.gravity = false;
 		projectile->rigid->bounce = 2;
-		//	projectile->rigid->rotational_friction_flag = true;
 		projectile->model->flags.rail_trail = true;
 		projectile->model = projectile->rigid;
-		//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		frame.set(projectile->model->morientation);
 		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->rigid->flags.noclip = true;
-//		projectile->bsp_leaf = player.entity->bsp_leaf;
 		projectile->flags.bsp_visible = true;
 
-		/*
-		projectile->light = new Light(projectile, engine->gfx, 999);
-		projectile->light->color = vec3(1.0f, 1.0f, 1.0f);
-		projectile->light->intensity = 1000.0f;
-		*/
+
 
 		projectile->projectile = new EntProjectile(projectile, audio);
 		projectile->projectile->action[0] = '\0';
 
-		//		projectile->rigid->bounce = 5;
 		projectile->projectile->hide = false;
 		projectile->projectile->radius = 25.0f;
 		projectile->projectile->idle = true;
@@ -9126,3 +9251,21 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 }
 
+
+
+void Engine::edit_entity(int index)
+{
+	if (index < 0 || index >= entity_list.size())
+	{
+		edit_ent = -1;
+		picked_ent = -1;
+		show_names = false;
+		show_box = false;
+		return;
+	}
+
+	edit_ent = index;
+	picked_ent = index;
+	show_names = true;
+	show_box = true;
+}
