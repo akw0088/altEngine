@@ -163,7 +163,7 @@ void transform_rotated_point(q1vertex_t &p, int clip_x_low, int clip_x_high, int
 }
 
 
-static void intersect(q1vertex_t &out, q1vertex_t *a, q1vertex_t *b, float where, int clip_x_low, int clip_x_high, int clip_y_low, int clip_y_high)
+static void intersect_clip(q1vertex_t &out, q1vertex_t *a, q1vertex_t *b, float where, int clip_x_low, int clip_x_high, int clip_y_low, int clip_y_high)
 {
 	// intersection occurs 'where' % along the line from a to b
 
@@ -217,7 +217,7 @@ int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl, int cl
 
 			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_LEFT)
 			{
-				intersect(pts[p], vl[i], vl[j], left_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
+				intersect_clip(pts[p], vl[i], vl[j], left_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
 				cur[k++] = &pts[p++];
 			}
 			j = i;
@@ -236,7 +236,7 @@ int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl, int cl
 				cur[k++] = vl[j];
 			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_RIGHT)
 			{
-				intersect(pts[p], vl[i], vl[j], right_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
+				intersect_clip(pts[p], vl[i], vl[j], right_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
 				cur[k++] = &pts[p++];
 			}
 			j = i;
@@ -255,7 +255,7 @@ int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl, int cl
 				cur[k++] = vl[j];
 			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_TOP)
 			{
-				intersect(pts[p], vl[i], vl[j], top_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
+				intersect_clip(pts[p], vl[i], vl[j], top_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
 				cur[k++] = &pts[p++];
 			}
 			j = i;
@@ -274,7 +274,7 @@ int clip_poly(int n, q1vertex_t **vl, int codes_or, q1vertex_t ***out_vl, int cl
 				cur[k++] = vl[j];
 			if ((vl[j]->ccodes ^ vl[i]->ccodes) & CC_OFF_BOT)
 			{
-				intersect(pts[p], vl[i], vl[j], bottom_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
+				intersect_clip(pts[p], vl[i], vl[j], bottom_loc(vl[i], vl[j]), clip_x_low, clip_x_high, clip_y_low, clip_y_high);
 				cur[k++] = &pts[p++];
 			}
 			j = i;

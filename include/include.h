@@ -244,7 +244,7 @@ using namespace std;
 #include "bsp_types_q1.h"
 #include "bsp_types_q2.h"
 
-#include "physics.h"
+#include "intersect.h"
 
 #include "audio.h"
 #include "frame.h"

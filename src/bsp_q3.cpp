@@ -33,7 +33,7 @@
 #include <math.h> // for M_PI
 #include <algorithm> // for sort
 
-#include "physics.h" // need to rename as intersection tests or something
+#include "intersect.h"
 
 
 #ifdef _DEBUG
@@ -897,7 +897,7 @@ bool Bsp::bezier_collision_detect(vec3 &point, plane_t *plane, float *depth, vec
 {
 	for (int mesh_index = 0; mesh_index < num_meshes; mesh_index++)
 	{
-		physics::aabb_t aabb;
+		intersect::aabb_t aabb;
 
 		aabb.min = patchdata[mesh_index].aabb[0];
 		aabb.max = patchdata[mesh_index].aabb[7];
