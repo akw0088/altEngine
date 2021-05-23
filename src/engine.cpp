@@ -9029,11 +9029,12 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	vec4 clip_near;
 	vec4 clip_far;
 
-	clip_near.x = 2.0f * (screen.x - 0.5f);
-	clip_near.y = 2.0f * (screen.y - 0.5f);
-	clip_near.z = 0.0f;
+	clip_near.x = -2.0f * (screen.x - 0.5f);
+	clip_near.y = -2.0f * (screen.y - 0.5f);
+	clip_near.z = -0.99f;
 	clip_near.w = -1.0f;
 	clip_far = clip_near;
+	clip_far.z = 1.0f;
 	clip_far.w = 1.0f;
 	printf("clip %f %f\r\n", clip_near.x, clip_near.y);
 
@@ -9052,7 +9053,6 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	vec3 dir = end - origin;
 	dir = dir.normalize();
 
-	origin = end;
 
 	printf("origin %f %f %f\r\n", origin.x, origin.y, origin.z);
 	printf("end %f %f %f\r\n", end.x, end.y, end.z);
@@ -9080,7 +9080,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 		projectile->rigid->flags.gravity = false;
 		projectile->rigid->bounce = 2;
 		//	projectile->rigid->rotational_friction_flag = true;
-		projectile->model->flags.lightning_trail = true;
+		projectile->model->flags.rail_trail = true;
 		projectile->model = projectile->rigid;
 		//	projectile->rigid->set_target(*(engine->entity_list[self]));
 		frame.set(projectile->model->morientation);
@@ -9102,7 +9102,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 		projectile->projectile->hide = false;
 		projectile->projectile->radius = 25.0f;
 		projectile->projectile->idle = true;
-		projectile->projectile->idle_timer = (int)(0.025 * TICK_RATE);
+		projectile->projectile->idle_timer = (int)(0.075 * TICK_RATE);
 		projectile->projectile->explode = true;
 		projectile->projectile->explode_timer = 5;
 		projectile->projectile->owner = self;
