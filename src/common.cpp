@@ -5287,7 +5287,7 @@ bool gluUnProject(float x, float y, float z, matrix4 &model, matrix4 &proj, int 
 
 	clip.x = 2.0f * (screen.x - 0.5f);
 	clip.y = 2.0f * (screen.y - 0.5f);
-	clip.z = 2 * z - 1.0;
+	clip.z = 2.0f * z - 1.0f;
 	clip.w = 1.0f;
 
 	matrix4 mvp = model * proj;

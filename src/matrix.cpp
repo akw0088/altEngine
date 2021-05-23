@@ -663,7 +663,7 @@ matrix4 matrix4::transpose()
 void matrix4::perspective(float fovy, float aspect, float zNear, float zFar, bool infinite)
 {
     double radians = fovy / 2 * (3.14159265358979323846) / 180;
-    double cotangent = fcos(radians) / fsin(radians);
+    double cotangent = cos(radians) / sin(radians);
 	float deltaZ = zFar - zNear;
 	float epsilon = 0.001f;
 

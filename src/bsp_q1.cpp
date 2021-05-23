@@ -39,8 +39,8 @@ float ycenter = 99.5f;
 float near_clip = 0.01f;
 float near_code = 16.0f;
 
-double clip_scale_x;
-double clip_scale_y;
+float clip_scale_x;
+float clip_scale_y;
 
 surf_t surface[MAX_CACHED_SURFACES];  // circular queue
 int surface_head, surface_tail;          // index into surfaces
@@ -174,22 +174,22 @@ static void intersect_clip(q1vertex_t &out, q1vertex_t *a, q1vertex_t *b, float 
 	transform_rotated_point(out, clip_x_low, clip_x_high, clip_y_low, clip_y_high);
 }
 
-static double left_loc(q1vertex_t *a, q1vertex_t *b)
+static float left_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return -(a->p.z + a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x + b->p.z - a->p.z);
 }
 
-static double right_loc(q1vertex_t *a, q1vertex_t *b)
+static float right_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return  (a->p.z - a->p.x*clip_scale_x) / ((b->p.x - a->p.x)*clip_scale_x - b->p.z + a->p.z);
 }
 
-static double top_loc(q1vertex_t *a, q1vertex_t *b)
+static float top_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return  (a->p.z - a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y - b->p.z + a->p.z);
 }
 
-static double bottom_loc(q1vertex_t *a, q1vertex_t *b)
+static float bottom_loc(q1vertex_t *a, q1vertex_t *b)
 {
 	return -(a->p.z + a->p.y*clip_scale_y) / ((b->p.y - a->p.y)*clip_scale_y + b->p.z - a->p.z);
 }
