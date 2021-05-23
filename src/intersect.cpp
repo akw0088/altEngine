@@ -26,7 +26,6 @@
 #define new DEBUG_NEW
 #endif
 
-using namespace intersect;
 
 // Floating point comparison function (epsilon issues)
 #define CMP(x, y) \
@@ -1953,7 +1952,7 @@ matrix3 Rotation3x3(float pitch, float yaw, float roll)
 	return ZRotation3(roll) * XRotation3(pitch) * YRotation3(yaw);
 }
 
-class intersect::CModel
+class CModel
 {
 protected:
 	mesh_t *content;
@@ -2246,27 +2245,27 @@ struct OctreeNode;
 class Scene
 {
 protected:
-	std::vector<intersect::CModel*> objects;
+	std::vector<CModel*> objects;
 	COctreeNode *octree;
 public:
-	void AddModel(intersect::CModel* model);
-	void RemoveModel(intersect::CModel* model);
-	void UpdateModel(intersect::CModel* model);
-	std::vector<intersect::CModel*> FindChildren(const intersect::CModel* model);
+	void AddModel(CModel* model);
+	void RemoveModel(CModel* model);
+	void UpdateModel(CModel* model);
+	std::vector<CModel*> FindChildren(const CModel* model);
 
-	intersect::CModel* Raycast(const ray_t &ray);
-	std::vector<intersect::CModel*> Query(const sphere_t &sphere);
-	std::vector<intersect::CModel*> Query(const aabb_t &aabb);
+	CModel* Raycast(const ray_t &ray);
+	std::vector<CModel*> Query(const sphere_t &sphere);
+	std::vector<CModel*> Query(const aabb_t &aabb);
 	bool Accelerate(const vec3& position, float size);
 
-	void Insert(COctreeNode* node, intersect::CModel* model);
-	void Remove(COctreeNode* node, intersect::CModel* model);
-	void Update(COctreeNode* node, intersect::CModel* model);
+	void Insert(COctreeNode* node, CModel* model);
+	void Remove(COctreeNode* node, CModel* model);
+	void Update(COctreeNode* node, CModel* model);
 
-	intersect::CModel* FindClosest(const std::vector<intersect::CModel*>& set, const ray_t &ray);
-	intersect::CModel* Raycast(COctreeNode* node, const ray_t &ray);
-	std::vector<intersect::CModel*> Query(COctreeNode* node, const sphere_t &sphere);
-	std::vector<intersect::CModel*> Query(COctreeNode* node, const aabb_t &aabb);
+	CModel* FindClosest(const std::vector<CModel*>& set, const ray_t &ray);
+	CModel* Raycast(COctreeNode* node, const ray_t &ray);
+	std::vector<CModel*> Query(COctreeNode* node, const sphere_t &sphere);
+	std::vector<CModel*> Query(COctreeNode* node, const aabb_t &aabb);
 
 	inline Scene()
 	{
@@ -2368,14 +2367,14 @@ std::vector<CModel*> Scene::Query(const sphere_t &sphere)
 	return result;
 }
 
-std::vector<intersect::CModel*> Scene::Query(const aabb_t &aabb)
+std::vector<CModel*> Scene::Query(const aabb_t &aabb)
 {
 	if (octree != 0)
 	{
 //		return ::Query(octree, aabb);
 	}
 
-	std::vector<intersect::CModel*> result;
+	std::vector<CModel*> result;
 	for (int i = 0, size = objects.size(); i< size; ++i)
 	{
 		obb_t bounds;// = GetOBB(*objects[i]);
@@ -2387,7 +2386,7 @@ std::vector<intersect::CModel*> Scene::Query(const aabb_t &aabb)
 	return result;
 }
 
-void Scene::AddModel(intersect::CModel* model)
+void Scene::AddModel(CModel* model)
 {
 	if (std::find(objects.begin(), objects.end(), model) != objects.end())
 	{
@@ -2398,19 +2397,19 @@ void Scene::AddModel(intersect::CModel* model)
 	objects.push_back(model);
 }
 
-void Scene::RemoveModel(intersect::CModel* model)
+void Scene::RemoveModel(CModel* model)
 {
 //	objects.erase(std::remove(objects.begin(), objects.end(), model), objects.end());
 }
 
-void Scene::UpdateModel(intersect::CModel* model)
+void Scene::UpdateModel(CModel* model)
 {
 	// Placeholder
 }
 
-std::vector<intersect::CModel*> Scene::FindChildren(const intersect::CModel* model)
+std::vector<CModel*> Scene::FindChildren(const CModel* model)
 {
-	std::vector<intersect::CModel*> result;
+	std::vector<CModel*> result;
 	for (int i = 0, size = objects.size(); i < size; ++i)
 	{
 		if (objects[i] == 0 || objects[i] == model)
@@ -2418,7 +2417,7 @@ std::vector<intersect::CModel*> Scene::FindChildren(const intersect::CModel* mod
 			continue;
 		}
 
-		intersect::CModel* iterator = objects[i]->parent;
+		CModel* iterator = objects[i]->parent;
 		if (iterator != 0)
 		{
 			if (iterator == model)
@@ -2433,9 +2432,9 @@ std::vector<intersect::CModel*> Scene::FindChildren(const intersect::CModel* mod
 	return result;
 }
 
-intersect::CModel* Scene::Raycast(const ray_t &ray)
+CModel* Scene::Raycast(const ray_t &ray)
 {
-	intersect::CModel* result = 0;
+	CModel* result = 0;
 	float result_t = -1;
 
 	for (int i = 0, size = objects.size(); i < size; ++i)
@@ -2491,7 +2490,7 @@ std::vector<CModel*> Scene::Query(const aabb_t &aabb)
 }
 */
 
-void Scene::Insert(COctreeNode* node, intersect::CModel* model)
+void Scene::Insert(COctreeNode* node, CModel* model)
 {
 	obb_t bounds;// = GetOBB(*model);
 	if (AABB_OBB(node->bounds, bounds))
@@ -2510,11 +2509,11 @@ void Scene::Insert(COctreeNode* node, intersect::CModel* model)
 	}
 }
 
-void Scene::Remove(COctreeNode* node, intersect::CModel* model)
+void Scene::Remove(COctreeNode* node, CModel* model)
 {
 	if (node->children == 0)
 	{
-		std::vector<intersect::CModel*>::iterator it =
+		std::vector<CModel*>::iterator it =
 			std::find(node->models.begin(), node->models.end(), model);
 
 		if (it != node->models.end())
@@ -2564,7 +2563,7 @@ CModel *Scene::FindClosest(const std::vector<CModel*>& set, const ray_t &ray)
 	return closest;
 }
 
-intersect::CModel* Scene::Raycast(COctreeNode* node, const ray_t &ray)
+CModel* Scene::Raycast(COctreeNode* node, const ray_t &ray)
 {
 	raycast_result_t result;
 //	Raycast(node->bounds, ray, &result);
@@ -2578,10 +2577,10 @@ intersect::CModel* Scene::Raycast(COctreeNode* node, const ray_t &ray)
 		}
 		else
 		{
-			std::vector<intersect::CModel*> results;
+			std::vector<CModel*> results;
 			for (int i = 0; i < 8; ++i)
 			{
-				intersect::CModel* result =
+				CModel* result =
 					Raycast(&(node->children[i]), ray);
 				if (result != 0)
 				{
@@ -2594,9 +2593,9 @@ intersect::CModel* Scene::Raycast(COctreeNode* node, const ray_t &ray)
 	return 0;
 }
 
-std::vector<intersect::CModel*> Scene::Query(COctreeNode* node, const sphere_t &sphere)
+std::vector<CModel*> Scene::Query(COctreeNode* node, const sphere_t &sphere)
 {
-	std::vector<intersect::CModel*> result;
+	std::vector<CModel*> result;
 
 	if (SphereAABB(sphere, node->bounds))
 	{
@@ -2615,7 +2614,7 @@ std::vector<intersect::CModel*> Scene::Query(COctreeNode* node, const sphere_t &
 		{
 			for (int i = 0; i < 8; ++i)
 			{
-				std::vector<intersect::CModel*> child = Query(&(node->children[i]), sphere);
+				std::vector<CModel*> child = Query(&(node->children[i]), sphere);
 				if (child.size() > 0)
 				{
 					result.insert(result.end(), child.begin(), child.end());
@@ -2626,9 +2625,9 @@ std::vector<intersect::CModel*> Scene::Query(COctreeNode* node, const sphere_t &
 	return result;
 }
 
-std::vector<intersect::CModel*> Scene::Query(COctreeNode* node, const aabb_t &aabb)
+std::vector<CModel*> Scene::Query(COctreeNode* node, const aabb_t &aabb)
 {
-	std::vector<intersect::CModel*> result;
+	std::vector<CModel*> result;
 
 	if (AABB_AABB(aabb, node->bounds))
 	{
@@ -2647,7 +2646,7 @@ std::vector<intersect::CModel*> Scene::Query(COctreeNode* node, const aabb_t &aa
 		{
 			for (int i = 0; i < 8; ++i)
 			{
-				std::vector<intersect::CModel*> child = Query(&(node->children[i]), aabb);
+				std::vector<CModel*> child = Query(&(node->children[i]), aabb);
 				if (child.size() > 0)
 				{
 					result.insert(result.end(), child.begin(), child.end());

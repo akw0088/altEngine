@@ -25,8 +25,6 @@
 #define RIGIDBODY_TYPE_BOX  3
 
 
-namespace intersect {
-
 	typedef struct
 	{
 		vec2 a;
@@ -140,7 +138,7 @@ namespace intersect {
 	{
 		aabb_t bounds;
 		OctreeNode* children;
-		std::vector<intersect::CModel*> models;
+		std::vector<CModel*> models;
 
 		inline OctreeNode()
 		{
@@ -174,11 +172,10 @@ namespace intersect {
 		}
 	} Frustum;
 
-};
 
-bool Raycast(const plane_t &plane, const intersect::ray_t &ray, intersect::raycast_result_t *result);
-bool Raycast(const intersect::aabb_t &aabb, const intersect::ray_t &ray, intersect::raycast_result_t *result);
-bool PointInAABB(const vec3 &point, const intersect::aabb_t &aabb);
+bool Raycast(const plane_t &plane, const ray_t &ray, raycast_result_t *result);
+bool Raycast(const aabb_t &aabb, const ray_t &ray, raycast_result_t *result);
+bool PointInAABB(const vec3 &point, const aabb_t &aabb);
 bool PointOnPlane(const vec3 &point, vec3 &normal, float d);
 float DistPointPlane(const vec3 &q, const vec3 &normal, const float d);
 float Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c);

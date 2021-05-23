@@ -8776,9 +8776,9 @@ void Engine::rayscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 			vec3 min = rigid->aabb[0] + entity_list[i]->position;
 			vec3 max = rigid->aabb[7] + entity_list[i]->position;
 
-			intersect::ray_t ray;
-			intersect::raycast_result_t res;
-			intersect::aabb_t aabb;
+			ray_t ray;
+			raycast_result_t res;
+			aabb_t aabb;
 			ray.origin = origin;
 			ray.dir = dir;
 
