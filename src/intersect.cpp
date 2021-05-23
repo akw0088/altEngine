@@ -29,7 +29,7 @@
 
 // Floating point comparison function (epsilon issues)
 #define CMP(x, y) \
-	(abs32(x - y) <= FLT_EPSILON * MAX(1.0f, MAX(abs32(x), abs32(y))))
+	(abs32(x - y) <= FLT_EPSILON * (MAX(1.0f, MAX(abs32(x), abs32(y)))))
 
 
 //=============================================================================

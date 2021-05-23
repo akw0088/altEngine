@@ -776,7 +776,7 @@ void RedirectIOToConsole(int debug)
 		SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
 		// redirect unbuffered STDOUT to the console
-		lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+		lStdHandle = (intptr_t)GetStdHandle(STD_OUTPUT_HANDLE);
 		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
 		fp = _fdopen(hConHandle, "w");
@@ -784,7 +784,7 @@ void RedirectIOToConsole(int debug)
 		setvbuf(stdout, NULL, _IONBF, 0);
 
 		// redirect unbuffered STDIN to the console
-		lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+		lStdHandle = (intptr_t)GetStdHandle(STD_INPUT_HANDLE);
 		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 
 		fp = _fdopen(hConHandle, "r");
@@ -792,7 +792,7 @@ void RedirectIOToConsole(int debug)
 		setvbuf(stdin, NULL, _IONBF, 0);
 
 		// redirect unbuffered STDERR to the console
-		lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+		lStdHandle = (intptr_t)GetStdHandle(STD_ERROR_HANDLE);
 		hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
 		fp = _fdopen(hConHandle, "w");
 		*stderr = *fp;
