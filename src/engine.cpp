@@ -8536,7 +8536,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 		if (i == (unsigned int)self)
 			continue;
 
-		if (light && entity_list[i]->light)
+		if (light && rigid)
 		{
 			float distance = FLT_MAX;
 			vec3 min = rigid->aabb[0] + entity_list[i]->position;
@@ -9020,44 +9020,58 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 {
 	vec2 screen;
 
-	screen.x = (float)(width - x) / width;
-	screen.y = (float)(y) / height;
+	screen.x = (float)(x) / width;
+	screen.y = (float)(height - y) / height;
 
-//	printf("%f %f\r\n", screen.x, screen.y);
+	printf("screen %d %d, %f %f\r\n", x, y, screen.x, screen.y);
 
 
 	vec4 clip_near;
 	vec4 clip_far;
 
-	float scalex = -width / 4;
-	float scaley = height / 4;
-	clip_near.x = 2.0f * (screen.x - 0.5f) * scalex;
-	clip_near.y = 2.0f * (screen.y - 0.5f) * scaley;
+	clip_near.x = 2.0f * (screen.x - 0.5f);
+	clip_near.y = 2.0f * (screen.y - 0.5f);
 	clip_near.z = -1.0f;
 	clip_near.w = -1.0f;
 	clip_far = clip_near;
 	clip_far.w = 1.0f;
+	printf("clip %f %f\r\n", clip_near.x, clip_near.y);
+
+
+	double radians = fov / 2 * (3.14159265358979323846) / 180;
+	double cotangent = fcos(radians) / fsin(radians);
+
+	float aspect = (float)width / height;
+	float scalex = (width / 8) * (aspect / cotangent);
+	float scaley = (height / 2) * (1.0f / cotangent);
+
+	clip_near.x *= scalex;
+	clip_near.y *= scaley;
+	clip_far.x *= scalex;
+	clip_far.y *= scaley;
 
 	matrix4 transformation;
 	camera_frame.set(transformation);
 
 	matrix4 mvp = transformation * projection;
-
 	matrix4 imvp = mvp.inverse();
-	camera_frame.set_inverse(transformation);
 
-	vec4 world = transformation * clip_near;
-	vec3 origin = vec3(world.x, -world.y, world.z);
+	vec4 world_near = imvp * clip_near;
+	vec4 world_far = imvp * clip_far;
 
-//	world = transformation * clip_far;
-//	vec3 target = vec3(-world.x, world.y, -world.z);
+	vec3 origin = vec3(world_near.x, world_near.y, world_near.z);
+
+	origin += frame.pos;
+	vec3 end = vec3(world_far.x, world_far.y, world_far.z);
+
+	vec3 dir = end - origin;
+	dir = dir.normalize();
 
 
-//	vec3 dir = target - origin;
-//	dir = dir.normalize();
 	printf("origin %f %f %f\r\n", origin.x, origin.y, origin.z);
-
-//	printf("target %f %f %f\r\n", target.x, target.y, target.z);
+	printf("end %f %f %f\r\n", end.x, end.y, end.z);
+	printf("dir %f %f %f\r\n", dir.x, dir.y, dir.z);
+	printf("fwd %f %f %f\r\n", frame.forward.x, frame.forward.y, frame.forward.z);
 
 
 	// raycast into scene, intersect with entities
@@ -9066,14 +9080,9 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 	int self = find_type(ENT_PLAYER, 0);
 
+	bool debug_pick = true;
+	if (debug_pick)
 	{
-//		Frame pickframe;
-
-//		vec3 right = vec3::crossproduct(frame.up, frame.forward);
-//		pickframe.pos = frame.pos;
-//		pickframe.forward = dir.normalize();
-//		pickframe.up = vec3::crossproduct(right, pickframe.forward).normalize();
-
 		Entity *projectile = entity_list[get_entity()];
 		projectile->nettype = NET_LIGHTNING;
 		projectile->rigid = new EntRigidBody(projectile);
@@ -9117,14 +9126,16 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 	hitscan(origin, frame.forward, index_list, num_index, self, 1000.0f, true);
 
-	if (num_index > 0)
+	picked_ent = -1;
+
+	for (int i = 0; i < num_index; i++)
 	{
-		printf("Picked entity %d %s\r\n", index_list[0], entity_list[index_list[0]]->entstring->type);
-		picked_ent = index_list[0];
-	}
-	else
-	{
-		picked_ent = -1;
+		if (entity_list[index_list[i]]->flags.frustum_visible)
+		{
+			printf("%d: Picked entity %d type %s frustum visible %d\r\n", i, index_list[i], entity_list[index_list[i]]->entstring->type,
+				entity_list[index_list[i]]->flags.frustum_visible);
+			picked_ent = index_list[i];
+		}
 	}
 
 }
