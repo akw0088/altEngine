@@ -8688,7 +8688,7 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 				// Hit someone, do BSP trace to check if a wall is in the way
 				q3map.trace(origin, endpoint, normal);
-				if (q3map.collision)
+				if (false)
 				{
 					vec3 dist1 = endpoint - origin;
 
@@ -8758,6 +8758,53 @@ void Engine::hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, i
 
 }
 
+
+void Engine::rayscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light)
+{
+	int j = 0;
+	num_index = 0;
+
+	for (unsigned int i = 0; i < entity_list.size(); i++)
+	{
+		EntRigidBody *rigid = entity_list[i]->rigid;
+		if (i == (unsigned int)self)
+			continue;
+
+		if (rigid)
+		{
+			float distance = FLT_MAX;
+			vec3 min = rigid->aabb[0] + entity_list[i]->position;
+			vec3 max = rigid->aabb[7] + entity_list[i]->position;
+
+			physics::ray_t ray;
+			physics::raycast_result_t res;
+			physics::aabb_t aabb;
+			ray.origin = origin;
+			ray.dir = dir;
+
+			aabb.min = min;
+			aabb.max = max;
+
+			if ( Raycast(aabb, ray, &res) )
+			{
+				vec3 endpoint = entity_list[i]->position;
+				vec3 normal;
+
+				vec3 dist2 = entity_list[i]->position - origin;
+				float enemy_distance = dist2.magnitude();
+
+				if (range > 0.0f && enemy_distance > range)
+					continue;
+
+				index_list[j++] = i;
+				num_index++;
+				break;
+			}
+
+		}
+
+	}
+}
 
 ///=============================================================================
 /// Function: find_path
@@ -9167,7 +9214,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	clip_near.z = -0.99f;
 	clip_near.w = -1.0f;
 	clip_far = clip_near;
-	clip_far.z = 1.0f;
+	clip_far.z = 0.99f;
 	clip_far.w = 1.0f;
 	printf("clip %f %f\r\n", clip_near.x, clip_near.y);
 
@@ -9192,6 +9239,8 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	printf("dir %f %f %f\r\n", dir.x, dir.y, dir.z);
 	printf("fwd %f %f %f\r\n", frame.forward.x, frame.forward.y, frame.forward.z);
 
+	Frame pick_frame;
+	make_frame(dir, frame.up, pick_frame);
 
 	// raycast into scene, intersect with entities
 	int index_list[32];
@@ -9200,9 +9249,11 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	int self = find_type(ENT_PLAYER, 0);
 
 	bool debug_pick = false;
+	int debug_ent = -1;
 	if (debug_pick)
 	{
-		Entity *projectile = entity_list[get_entity()];
+		debug_ent = get_entity();
+		Entity *projectile = entity_list[debug_ent];
 		projectile->nettype = NET_LIGHTNING;
 		projectile->rigid = new EntRigidBody(projectile);
 		projectile->model = projectile->rigid;
@@ -9214,7 +9265,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 		projectile->rigid->bounce = 2;
 		projectile->model->flags.rail_trail = true;
 		projectile->model = projectile->rigid;
-		frame.set(projectile->model->morientation);
+		pick_frame.set(projectile->model->morientation);
 		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->rigid->flags.noclip = true;
 		projectile->flags.bsp_visible = true;
@@ -9235,19 +9286,42 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	}
 
 
-	hitscan(origin, frame.forward, index_list, num_index, self, 1000.0f, true);
+	rayscan(origin, frame.forward, index_list, num_index, self, 1000.0f, true);
 
 	picked_ent = -1;
-
+	int min_dist = -1;
+	float dist = 1000000.0f;
 	for (int i = 0; i < num_index; i++)
 	{
+		if (i == debug_ent)
+			continue;
+
 		if (entity_list[index_list[i]]->flags.frustum_visible)
 		{
-			printf("%d: Picked entity %d type %s frustum visible %d\r\n", i, index_list[i], entity_list[index_list[i]]->entstring->type,
+			printf("%d: Checked entity %d type %s frustum visible %d\r\n", i, index_list[i], entity_list[index_list[i]]->entstring->type,
 				entity_list[index_list[i]]->flags.frustum_visible);
-			picked_ent = index_list[i];
+
+			vec3 vec = frame.pos - entity_list[index_list[i]]->position;
+			if (fabs(vec.magnitude()) < dist)
+			{
+				dist = vec.magnitude();
+				min_dist = i;
+			}
 		}
 	}
+
+	if (min_dist != -1)
+	{
+		int i = min_dist;
+		printf("%d: Picked entity %d type %s frustum visible %d\r\n", i, index_list[i], entity_list[index_list[i]]->entstring->type,
+			entity_list[index_list[i]]->flags.frustum_visible);
+		picked_ent = index_list[i];
+	}
+	else
+	{
+		printf("No pick %d checked\r\n", num_index);
+	}
+
 
 }
 

@@ -103,6 +103,7 @@ int clamp(int value, int min, int max);
 float clamp(float value, float min, float max);
 int gjk(const vec3 *shape1, const vec3 *shape2, const int iterations, const int num_vert_one, const int num_vert_two);
 void ClipVelocity(vec3 &in, vec3 &normal);
+void make_frame(const vec3 &dir, const vec3 &almost_orthangonal, Frame &frame);
 
 int enqueue(queue_t *queue, unsigned char *buffer, int size);
 int enqueue_front(queue_t *queue, unsigned char *buffer, int size);

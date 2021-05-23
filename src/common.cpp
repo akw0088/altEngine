@@ -5266,3 +5266,12 @@ vec2 WorldToScreen(const vec4 &pos, const matrix4 &mvp, const int width, const i
 }
 
 
+void make_frame(const vec3 &dir, const vec3 &almost_orthangonal, Frame &frame)
+{
+	frame.forward = dir;
+	frame.up = almost_orthangonal;
+
+	vec3 right = vec3::crossproduct(frame.forward, frame.up);
+
+	frame.up = vec3::crossproduct(right, frame.forward);
+}
