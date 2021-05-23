@@ -5275,3 +5275,33 @@ void make_frame(const vec3 &dir, const vec3 &almost_orthangonal, Frame &frame)
 
 	frame.up = vec3::crossproduct(right, frame.forward);
 }
+
+bool gluUnProject(float x, float y, float z, matrix4 &model, matrix4 &proj, int width, int height, float &outx, float &outy, float &outz)
+{
+	vec2 screen;
+	vec4 clip;
+
+	screen.x = (float)(x) / width;
+	screen.y = (float)(height - y) / height;
+
+
+	clip.x = 2.0f * (screen.x - 0.5f);
+	clip.y = 2.0f * (screen.y - 0.5f);
+	clip.z = 2 * z - 1.0;
+	clip.w = 1.0f;
+
+	matrix4 mvp = model * proj;
+	matrix4 imvp;
+
+	imvp = mvp.inverse();
+
+	vec4 out = imvp * clip;
+	if (out.w == 0.0)
+		return false;
+
+	outx = out.x / out.w;
+	outy = out.y / out.w;
+	outz = out.z / out.w;
+
+	return true;
+}

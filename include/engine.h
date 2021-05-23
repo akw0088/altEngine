@@ -160,6 +160,7 @@ public:
 	int debug_vector(vec3 &pos, vec3 &dir);
 	int debug_point(vec3 &pos);
 	void Pick(int x, int y, int width, int height, Frame &frame);
+	void MousetoRay(int x, int y, matrix4 &model, matrix4 &proj, const Frame &frame, vec3 &start, vec3 &end, vec3 &dir, int width, int height);
 	void edit_entity(int index);
 
 	vector<vertex_t> debug_tri_list;

@@ -71,6 +71,7 @@ void bicubic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out
 void quadratic_bezier_surface(vec3 *control, float time_x, float time_y, vec3 &out);
 void make_skybox(Graphics &gfx, unsigned int num_vertex, unsigned int &num_index, int &skybox_vertex, int &skybox_index, bool sphere);
 void print_entity_meminfo(vector<Entity *> &entity_list);
+bool gluUnProject(float x, float y, float z, matrix4 &model, matrix4 &proj, int width, int height, float &outx, float &outy, float &outz);
 
 char *get_file(char *filename, unsigned int *size);
 int get_zipfile(char *zipfile, char *file, unsigned char **data, unsigned int *size);

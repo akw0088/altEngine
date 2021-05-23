@@ -9196,6 +9196,25 @@ void Engine::test_triangle()
 	gfx.swap();
 }
 
+
+void Engine::MousetoRay(int x, int y, matrix4 &model, matrix4 &proj, const Frame &frame, vec3 &start, vec3 &end, vec3 &dir, int width, int height)
+{
+	// Convert windows upper left coordinates to opengl lower left coorindates
+	float winx = (float)x;
+	float winy = height - (float)y;
+
+	// unproject the near plane
+	gluUnProject(winx, winy, 0.0, model, proj, width, height, start.x, start.y, start.z);
+
+	// unproject the far plane
+	gluUnProject(winx, winy, 1.0, model, proj, width, height, end.x, end.y, end.z);
+
+	dir = end - start;
+	end = start + dir * 1000.0f;
+	dir.normalize();
+}
+
+
 void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 {
 	vec2 screen;
@@ -9240,6 +9259,10 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 	printf("fwd %f %f %f\r\n", frame.forward.x, frame.forward.y, frame.forward.z);
 
 	Frame pick_frame;
+
+
+//	MousetoRay(x, y, transformation, projection, frame, origin, end, dir, width, height);
+
 	make_frame(dir, frame.up, pick_frame);
 
 	// raycast into scene, intersect with entities
@@ -9248,7 +9271,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 	int self = find_type(ENT_PLAYER, 0);
 
-	bool debug_pick = false;
+	bool debug_pick = true;
 	int debug_ent = -1;
 	if (debug_pick)
 	{
@@ -9265,7 +9288,7 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 		projectile->rigid->bounce = 2;
 		projectile->model->flags.rail_trail = true;
 		projectile->model = projectile->rigid;
-		pick_frame.set(projectile->model->morientation);
+		frame.set(projectile->model->morientation);
 		projectile->flags.visible = true; // accomodate for low spatial testing rate
 		projectile->rigid->flags.noclip = true;
 		projectile->flags.bsp_visible = true;
