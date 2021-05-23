@@ -7008,7 +7008,7 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 	if (ret == 4)
 	{
 		snprintf(msg, LINE_SIZE, "Setting position to %f %f %f for entity %d\n", pos.x, pos.y, pos.z, self);
-		if (self >= 0 && self < entity_list.size() - 1)
+		if (self >= 0 && (unsigned int)self < entity_list.size() - 1)
 			entity_list[self]->position = pos;
 		return;
 	}

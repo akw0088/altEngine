@@ -698,7 +698,7 @@ static int VM_PrepareInterpreter(vm_t* vm, const vmHeader_t* header)
         case OP_LEF:
         case OP_GTF:
         case OP_GEF:
-            if (codeBase[int_pc] < 0 || codeBase[int_pc] > vm->instructionCount)
+            if (codeBase[int_pc] < 0 || (unsigned int)codeBase[int_pc] > vm->instructionCount)
             {
                 vm->errno = VM_JUMP_TO_INVALID_INSTRUCTION;
                 Com_Error(vm->errno, "VM_PrepareInterpreter: Jump to invalid "

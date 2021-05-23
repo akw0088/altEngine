@@ -123,10 +123,10 @@ typedef struct vm_s
     int      compiled; /** Is a JIT active? Otherwise interpreted */
     uint8_t* codeBase; /** Bytecode code segment */
     int      entryOfs; /** unused */
-    int      codeLength;
+    unsigned int      codeLength;
 
     intptr_t* instructionPointers;
-    int       instructionCount;
+    unsigned int       instructionCount;
 
     uint8_t* dataBase;
     int      dataMask;

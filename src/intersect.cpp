@@ -1297,7 +1297,7 @@ bool Linetest(const mesh_t &mesh, const line3_t &line)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			if (Linetest(mesh.triangles[i], line))
 			{
@@ -1319,7 +1319,7 @@ bool Linetest(const mesh_t &mesh, const line3_t &line)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (Linetest(mesh.triangles[iterator->triangles[i]], line))
@@ -1349,7 +1349,7 @@ bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			if (TriangleSphere(mesh.triangles[i], sphere))
 			{
@@ -1370,7 +1370,7 @@ bool MeshSphere(const mesh_t &mesh, const sphere_t &sphere)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TriangleSphere(mesh.triangles[iterator->triangles[i]], sphere))
@@ -1400,7 +1400,7 @@ bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			if (TriangleOBB(mesh.triangles[i], obb))
 			{
@@ -1422,7 +1422,7 @@ bool MeshOBB(const mesh_t &mesh, const obb_t &obb)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TriangleOBB(mesh.triangles[iterator->triangles[i]], obb))
@@ -1452,7 +1452,7 @@ bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			if (TrianglePlane(mesh.triangles[i], plane))
 			{
@@ -1474,7 +1474,7 @@ bool MeshPlane(const mesh_t &mesh, const plane_t &plane)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TrianglePlane(mesh.triangles[iterator->triangles[i]], plane))
@@ -1504,7 +1504,7 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			if (TriangleTriangle(mesh.triangles[i], triangle))
 			{
@@ -1526,7 +1526,7 @@ bool MeshTriangle(const mesh_t &mesh, const triangle_t &triangle)
 			if (iterator->numTriangles >= 0)
 			{
 				// Iterate trough all triangles of the node
-				for (unsigned int i = 0; i < iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					// Triangle indices in BVHNode index the mesh
 					if (TriangleTriangle(mesh.triangles[iterator->triangles[i]], triangle))
@@ -1556,7 +1556,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			raycast_result_t result;
 			Raycast(mesh.triangles[i], ray, &result);
@@ -1578,7 +1578,7 @@ float MeshRay(const mesh_t &mesh, const ray_t &ray)
 
 			if (iterator->numTriangles >= 0)
 			{
-				for (unsigned int i = 0; i< iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					raycast_result_t result;
 
@@ -1708,7 +1708,7 @@ void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
 		for (unsigned int i = 0; i < 8; ++i)  // For each child
 		{
 			node->children[i].numTriangles = 0;
-			for (unsigned int j = 0; j < node->numTriangles; ++j)
+			for (unsigned int j = 0; j < (unsigned int)node->numTriangles; ++j)
 			{
 				triangle_t t = model.triangles[node->triangles[j]];
 
@@ -1726,7 +1726,7 @@ void SplitBVHNode(bvh_node_t* node, const mesh_t &model, int depth)
 			node->children[i].triangles = new int[node->children[i].numTriangles];
 			int index = 0;
 
-			for (unsigned int j = 0; j < node->numTriangles; ++j)
+			for (unsigned int j = 0; j < (unsigned int)node->numTriangles; ++j)
 			{
 				triangle_t t = model.triangles[node->triangles[j]];
 				if (TriangleAABB(t, node->children[i].bounds))
@@ -1775,7 +1775,7 @@ void AccelerateMesh(mesh_t &mesh)
 
 	vec3 min = mesh.vertices[0];
 	vec3 max = mesh.vertices[0];
-	for (unsigned int i = 1; i < mesh.numTriangles * 3; ++i)
+	for (unsigned int i = 1; i < (unsigned int)mesh.numTriangles * 3; ++i)
 	{
 		min.x = MIN(mesh.vertices[i].x, min.x);
 		min.y = MIN(mesh.vertices[i].y, min.y);
@@ -1793,7 +1793,7 @@ void AccelerateMesh(mesh_t &mesh)
 	mesh.accelerator->triangles =
 		new int[mesh.numTriangles];
 
-	for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+	for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 	{
 		mesh.accelerator->triangles[i] = i;
 	}
@@ -1806,7 +1806,7 @@ bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 {
 	if (mesh.accelerator == 0)
 	{
-		for (unsigned int i = 0; i < mesh.numTriangles; ++i)
+		for (unsigned int i = 0; i < (unsigned int)mesh.numTriangles; ++i)
 		{
 			// The TirangleAABB test here would change
 			// if we where testing a shape other than AABB
@@ -1826,7 +1826,7 @@ bool MeshAABB(const mesh_t &mesh, const aabb_t &aabb)
 			toProcess.erase(toProcess.begin());
 			if (iterator->numTriangles >= 0)
 			{
-				for (unsigned int i = 0; i<iterator->numTriangles; ++i)
+				for (unsigned int i = 0; i < (unsigned int)iterator->numTriangles; ++i)
 				{
 					// The TirangleAABB test here would change
 					// if we where testing a shape other than AABB
@@ -1985,7 +1985,7 @@ public:
 		{
 			vec3 min = mesh->vertices[0];
 			vec3 max = mesh->vertices[0];
-			for (unsigned int i = 1; i< mesh->numTriangles * 3; ++i)
+			for (unsigned int i = 1; i < (unsigned int)mesh->numTriangles * 3; ++i)
 			{
 				min.x = MIN(mesh->vertices[i].x, min.x);
 				min.y = MIN(mesh->vertices[i].y, min.y);
@@ -4024,7 +4024,7 @@ void Cloth::Initialize(unsigned int gridSize, float distance, const vec3& positi
 {
 	float k = -1.0f;
 	float b = 0.0f;
-	clothSize = gridSize;
+	clothSize = (float)gridSize;
 
 	verts.clear();
 	structural.clear();
@@ -4244,10 +4244,10 @@ void Cloth::Render()
 	{
 		for (unsigned int z = 0; z < clothSize - 1; ++z)
 		{
-			int tl = z * clothSize + x;
-			int bl = (z + 1) * clothSize + x;
-			int tr = z * clothSize + (x + 1);
-			int br = (z + 1) * clothSize + (x + 1);
+			int tl = (int)(z * clothSize + x);
+			int bl = (int)((z + 1) * clothSize + x);
+			int tr = (int)(z * clothSize + (x + 1));
+			int br = (int)((z + 1) * clothSize + (x + 1));
 
 #ifdef OLDOPENGL
 			glBegin(GL_TRIANGLES);

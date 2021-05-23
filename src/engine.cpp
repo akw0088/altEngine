@@ -9350,9 +9350,9 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 
 
-void Engine::edit_entity(int index)
+void Engine::edit_entity(unsigned int index)
 {
-	if (index < 0 || index >= entity_list.size())
+	if (index >= entity_list.size())
 	{
 		edit_ent = -1;
 		picked_ent = -1;
