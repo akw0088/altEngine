@@ -380,7 +380,7 @@ void build_block(char *out, bitmap *raw, int x, int y)
 		dc = (c1 - c0) >> shift;
 		for (a = 0; a < step; ++a)
 		{
-			*out++ = colormap[c >> 18][s[h]];
+			*out++ = colormap[c >> 18][(int)s[h]];
 			c += dc;
 			if (++h == x_max)
 				h = 0;
