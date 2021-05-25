@@ -26,7 +26,7 @@ typedef struct
 	long y;
 	long z;
 } ivec3;
-#define RGB(r,g,b)   ((unsigned int)(((char)(r)|((short)((char)(g))<<8))|(((int)(char)(b))<<16)))
+#define RGB(r,g,b)   ((unsigned int)(((unsigned char)(r)|((unsigned short)((unsigned char)(g))<<8))|(((unsigned int)(unsigned char)(b))<<16)))
 #endif
 
 typedef enum {
