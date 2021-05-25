@@ -6931,9 +6931,9 @@ int Quake3::bot_follow(path_t &path, int *nav_array, Entity *entity, float speed
 ///=============================================================================
 void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_list)
 {
-	char msg[LINE_SIZE] = { 0 };
-	char data[LINE_SIZE] = { 0 };
-	char data2[LINE_SIZE] = { 0 };
+	char msg[512] = { 0 };
+	char data[256] = { 0 };
+	char data2[256] = { 0 };
 	unsigned int ret;
 
 	if (cmd[0] == '\0')

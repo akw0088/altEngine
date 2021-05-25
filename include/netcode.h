@@ -84,7 +84,7 @@ protected:
 	reliablemsg_t	reliable[8];
 	reliablemsg_t	client_reliable;
 	int cl_skip;
-	char sv_hostname[512];
+	char sv_hostname[32];
 	char sv_motd[512];
 	char password[512];
 	unsigned int sv_maxclients;

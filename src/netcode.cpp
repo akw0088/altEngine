@@ -861,7 +861,7 @@ int Netcode::server_recv()
 
 					if (strcmp(name, player->name) != 0)
 					{
-						char msg[256];
+						char msg[768];
 
 						sprintf(msg, "say \"%s renamed to %s\"", player->name, name);
 						chat("Server", msg);

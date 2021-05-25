@@ -4244,12 +4244,12 @@ void Cloth::Render()
 	{
 		for (unsigned int z = 0; z < clothSize - 1; ++z)
 		{
+#ifdef OLDOPENGL
 			int tl = (int)(z * clothSize + x);
 			int bl = (int)((z + 1) * clothSize + x);
 			int tr = (int)(z * clothSize + (x + 1));
 			int br = (int)((z + 1) * clothSize + (x + 1));
 
-#ifdef OLDOPENGL
 			glBegin(GL_TRIANGLES);
 			glVertex3f(verts[tl].position.x, verts[tl].position.y, verts[tl].position.z);
 			glVertex3f(verts[br].position.x, verts[br].position.y, verts[br].position.z);
@@ -4375,6 +4375,7 @@ void PhysicsSystem::ClearConstraints()
 
 void PhysicsSystem::Render()
 {
+#ifdef OLDOPENGL
 	static const float rigidbodyDiffuse[] = {
 		200.0f / 255.0f, 0.0f, 0.0f, 0.0f
 	};
@@ -4391,7 +4392,6 @@ void PhysicsSystem::Render()
 		0.0f, 0.0f, 0.0f, 0.0f
 	};
 
-#ifdef OLDOPENGL
 	glColor3f(rigidbodyDiffuse[0], rigidbodyDiffuse[1], rigidbodyDiffuse[2]);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, rigidbodyAmbient);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, rigidbodyDiffuse);

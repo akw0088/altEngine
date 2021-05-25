@@ -210,7 +210,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 	//XEvent 			respond;
 	static Engine		altEngine;
 	static bool		init = false;
-	static bool		mapped = false;
 	static int		xcenter, ycenter;
 	static int		frame_step;
 	static Cursor		invisibleCursor;
@@ -273,7 +272,6 @@ int EventProc(Display *display, Window window, GLXContext context)
 		break;
 	case MapNotify:
 		printf("MapNotify\n");
-		mapped = true;
 		XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
 		altEngine.resize(1920, 1080);
 		if (!init)
@@ -652,14 +650,10 @@ int clipboard_paste(Display *display, Window window, char *value, int size)
 // Send request to X11 (convert function) we want clipboard data, will receive clipboard event
 int request_clipboard(Display *dpy, Window target_window)
 {
-    Window owner, root;
-    int screen;
+    Window owner;
     Atom sel, target_property, utf8;
     //XEvent ev;
     //XSelectionEvent *sev;
-
-    screen = DefaultScreen(dpy);
-    root = RootWindow(dpy, screen);
 
     sel = XInternAtom(dpy, "CLIPBOARD", False);
     utf8 = XInternAtom(dpy, "UTF8_STRING", False);

@@ -1044,7 +1044,7 @@ typedef struct
 	char ip[32];
 	int qport;
 	char sv_hostname[32];
-	char map[32];
+	char map[64];
 	int num_player;
 	int max_player;
 	int gametype;

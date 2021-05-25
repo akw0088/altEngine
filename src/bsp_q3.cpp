@@ -796,7 +796,6 @@ bool PointPlaneTestTriangleFan(vec3 point, vertex_t *vertex_array, int *index_ar
 {
 	for (int i = start_index; i < start_index + num_index;)
 	{
-		int num_point = 3;
 		vertex_t a, b, c;
 		bool even = false;
 
@@ -1131,7 +1130,7 @@ void Bsp::render_sky(Graphics &gfx, mLight2 &mlight2, int tick_num, vector<surfa
 ///=============================================================================
 inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightmap, bool is_shader)
 {
-	bool lightmap_selected = false;
+//	bool lightmap_selected = false;
 	bool shader = false;
 
 
@@ -1151,7 +1150,7 @@ inline void Bsp::render_face(face_t *face, Graphics &gfx, int stage, bool lightm
 		if (face->lightmap != -1 && shader == false)
 		{
 			gfx.SelectTexture(8, lightmap_object[face->lightmap]);
-			lightmap_selected = true;
+//			lightmap_selected = true;
 		}
 		else
 		{
@@ -2589,7 +2588,7 @@ void Bsp::load_textures(Graphics &gfx, vector<surface_t *> &surface_list, char *
 	// Wolfenstein Enemy territory has lightmap tgas outside of bsp
 	if (data.header->version == 0x2F)
 	{
-		char filename[128];
+		char filename[256];
 		char name[128];
 
 		//remove .bsp

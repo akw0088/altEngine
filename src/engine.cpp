@@ -6073,8 +6073,8 @@ void Engine::quit()
 ///=============================================================================
 int Engine::console_general(char *cmd)
 {
-	char msg[LINE_SIZE] = { 0 };
-	char data[LINE_SIZE] = { 0 };
+	char msg[512] = { 0 };
+	char data[256] = { 0 };
 	int ret;
 
 
@@ -7170,8 +7170,8 @@ int Engine::console_general(char *cmd)
 
 int Engine::console_network(char *cmd)
 {
-	char msg[LINE_SIZE] = { 0 };
-	char data[LINE_SIZE] = { 0 };
+	char msg[512] = { 0 };
+	char data[256] = { 0 };
 	int port;
 	int ret;
 
@@ -7197,7 +7197,7 @@ int Engine::console_network(char *cmd)
 		}
 		if (valid)
 		{
-			snprintf(netcode.sv_hostname, 127, "%s", data);
+			snprintf(netcode.sv_hostname, 511, "%s", data);
 			debugf("sv_hostname: %s\n", data);
 		}
 		else
@@ -7234,7 +7234,7 @@ int Engine::console_network(char *cmd)
 		}
 		if (valid)
 		{
-			snprintf(netcode.sv_motd, 127, "%s", data);
+			snprintf(netcode.sv_motd, 511, "%s", data);
 			debugf("sv_motd: %s\n", data);
 		}
 		else
