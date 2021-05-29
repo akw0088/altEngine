@@ -24,6 +24,7 @@ public:
 	EntModel();
 	virtual ~EntModel();
 	void load(Graphics &gfx, char *file);
+	void unload(Graphics &gfx);
 	virtual float *get_matrix(float *matrix);
 	void render(Graphics &gfx);
 	void create_box(Graphics &gfx, vec3 *box);

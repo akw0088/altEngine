@@ -124,6 +124,7 @@ Engine::Engine() :
 	bloom_strength = 0.5f;		// bloom strength (blend percentage of bloom with image)
 	bloom_amount = 20.0f;		// bloom amount (amount of bloom)
 
+	animation = NULL;
 
 	picked_ent = -1;
 	edit_ent = -1;
@@ -830,7 +831,7 @@ void Engine::load(char *level)
 			delete[] navdata;
 		}
 
-		int num_node = entity_list.size() - start;
+		num_node = entity_list.size() - start;
 
 		navdata_to_graph(ref, node, entity_list, start);
 		print_graph(node, num_node);
@@ -991,8 +992,6 @@ void Engine::load(char *level)
 ///=============================================================================
 void Engine::load_md5()
 {
-	char **animation = NULL;
-
 	animation = new char *[128];
 
 	int num_anim = 0;
@@ -5907,10 +5906,18 @@ void Engine::unload()
 	num_bot = 0;
 
 	if (node)
+	{
 		delete[] node;
+		node = NULL;
+	}
+
+	if (ref)
+	{
+		delete[] ref;
+		ref = NULL;
+	}
 
 	cloth.clear();
-
 
 	menu.ingame = false;
 	for(unsigned int i = 0; i < entity_list.size(); i++)
@@ -6001,6 +6008,10 @@ void Engine::destroy()
 		delete[] hashlist;
 	if (hacklist)
 		delete[] hacklist;
+	if (masterlist)
+		delete[] masterlist;
+
+	delete[] animation;
 
 	game->destroy();
 	delete game;
@@ -6025,6 +6036,11 @@ void Engine::destroy()
 #ifdef VOICECHAT
 	voice.destroy();
 #endif
+
+#ifdef DEBUG_FILELOAD
+	print_file();
+#endif
+
     printf("quit\n\n");
 	quit();
 }

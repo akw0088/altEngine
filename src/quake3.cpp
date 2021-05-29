@@ -218,6 +218,11 @@ void Quake3::destroy()
 		model_table[i] = NULL;
 	}
 #endif
+
+	for (int i = 0; i < num_model; i++)
+	{
+		model_table[i].unload(engine->gfx);
+	}
 	delete [] model_table;
 
 	// uncomment when created from dll / shared library

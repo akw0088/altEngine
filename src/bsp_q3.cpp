@@ -346,7 +346,6 @@ void Bsp::generate_meshes(Graphics &gfx)
 			}
 		}
 	}
-
 }
 
 ///=============================================================================
@@ -511,6 +510,12 @@ void Bsp::unload(Graphics &gfx)
 		map_vertex = NULL;
 	}
 
+
+	for (int i = 0; i < num_meshes; i++)
+	{
+		delete[] patchdata[i].index_array;
+		delete[] patchdata[i].vertex_array;
+	}
 
 	delete[] patchdata;
 

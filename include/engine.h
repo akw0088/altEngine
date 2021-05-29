@@ -416,6 +416,12 @@ protected:
 	graph_node_t	*node;
 	ref_t		*ref;
 
+	int num_node;
+	int num_ref;
+
+
+	char **animation;
+
 
 
 	//Shaders

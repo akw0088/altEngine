@@ -61,7 +61,6 @@ void EntModel::load(Graphics &gfx, char *file)
 	num_vertex = *((int *)model_file);
 	model_vertex_array = (vertex_t *)(model_file + 4);
 
-//	create_box(gfx, aabb);
 	make_aabb();
 
 	index_file = get_file(ibo_file, NULL);
@@ -78,10 +77,6 @@ void EntModel::load(Graphics &gfx, char *file)
 
 	model_vertex = gfx.CreateVertexBuffer(model_vertex_array, num_vertex);
 	model_index = gfx.CreateIndexBuffer(model_index_array, num_index);
-//	delete [] index_file;
-//	index_file = NULL;
-//	delete [] model_file;
-//	model_file = NULL;
 
 	model_tex = load_texture(gfx, tga_file, false, false, 0);
 	if (model_tex == 0)
@@ -110,6 +105,31 @@ void EntModel::load(Graphics &gfx, char *file)
 
 	create_box(gfx, aabb);
 }
+
+void EntModel::unload(Graphics &gfx)
+{
+	gfx.DeleteVertexBuffer(box_vertex);
+	gfx.DeleteIndexBuffer(box_index);
+	gfx.DeleteVertexBuffer(model_vertex);
+	gfx.DeleteIndexBuffer(model_index);
+
+	if (model_tex != 0)
+	{
+		gfx.DeleteTexture(model_tex);
+	}
+
+	if (normal_tex != 0)
+	{
+		gfx.DeleteTexture(normal_tex);
+	}
+
+
+	delete [] index_file;
+	index_file = NULL;
+	delete [] model_file;
+	model_file = NULL;
+}
+
 
 EntModel::EntModel(Entity *entity)
 {

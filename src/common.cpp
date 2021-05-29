@@ -430,7 +430,19 @@ int debugf(const char *format, ...)
     return 0;
 }
 
-//vector<std::pair<char *, char *>> file_list;
+typedef struct
+{
+	char *buffer;
+	int size;
+} fileinfo_t;
+
+
+#ifdef DEBUG_FILELOAD
+vector<std::pair<char *, fileinfo_t>> file_list;
+#include <thread>
+#include <mutex>
+std::mutex mtx;
+#endif
 
 char *get_file(char *filename, unsigned int *size)
 {
@@ -460,30 +472,44 @@ char *get_file(char *filename, unsigned int *size)
 		*size = file_size;
 	}
 
-	/*
-	std::pair<char *, char *> pair;
-
-	pair.first = new char[256];
+#ifdef DEBUG_FILELOAD
+	std::pair<char *, fileinfo_t> pair;
+	std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+	lck.lock();
+	pair.first = new char[512];
 	strcpy(pair.first, filename);
-	pair.second = buffer;
+	pair.second.buffer = buffer;
+	pair.second.size = file_size;
 	file_list.push_back(pair);
-	*/
-    return buffer;
+	lck.unlock();
+#endif
+
+	return buffer;
 }
 
-/*
+#ifdef DEBUG_FILELOAD
 void delete_file(char *fileptr)
 {
-	for (int i = 0; i < file_list.size(); i++)
+	for (unsigned int i = 0; i < file_list.size(); i++)
 	{
-		if (fileptr == file_list[i].second)
+		if (fileptr == file_list[i].second.buffer)
 		{
 			delete[] fileptr;
 			break;
 		}
 	}
 }
-*/
+
+void print_file()
+{
+	for (unsigned int i = 0; i < file_list.size(); i++)
+	{
+		printf("File %d size %d\t\t%s\r\n", i, file_list[i].second.size, file_list[i].first);
+		delete[] file_list[i].first;
+	}
+}
+#endif
+
 int write_file(char *filename, const char *bytes, int size)
 {
     FILE *fp = fopen(filename, "wb");
@@ -902,6 +928,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	//tex_object[face->material].texObj[0]
 #ifdef OPENGL
 	img_data = stbi_load_from_memory(data, size, &width, &height, &components, 0);
+	delete[] data;
 
 	if (components == 4)
 	{
@@ -924,7 +951,6 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 		printf("Unknown component: %s %d\n", file_name, components);
 #endif
 		stbi_image_free(img_data);
-		delete [] data;
 		return 0;
 	}
 #endif
@@ -973,8 +999,7 @@ int load_texture(Graphics &gfx, char *file_name, bool clamp, bool bgr, int aniso
 	{
 		tex_object = gfx.LoadTexture(width, height, components, format, img_data, clamp, anisotropic);
 	}
-//	stbi_image_free(data);
-//	delete [] data;
+	stbi_image_free(img_data);
 #endif
 #ifdef OPENGL
 	if (format != GL_RGBA)
@@ -1085,6 +1110,7 @@ void print_graph(graph_node_t *node, int num_node)
 		}
 	}
 }
+
 
 void print_path(int *path, int path_length, graph_node_t *node)
 {

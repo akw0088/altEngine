@@ -110,7 +110,7 @@ int enqueue(queue_t *queue, unsigned char *buffer, int size);
 int enqueue_front(queue_t *queue, unsigned char *buffer, int size);
 int dequeue(queue_t *queue, unsigned char *buffer, int size);
 int dequeue_peek(queue_t *queue, unsigned char *buffer, int size);
-
+void print_file();
 
 extern "C" {
 	void md5sum(char *data, int size, char *hash);
