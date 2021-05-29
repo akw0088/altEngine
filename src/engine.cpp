@@ -5901,7 +5901,10 @@ void Engine::unload()
 	if (q3map.loaded == false)
 		return;
 
-	game->unload();
+	if (game)
+	{
+		game->unload();
+	}
 
 	num_bot = 0;
 
@@ -5915,6 +5918,12 @@ void Engine::unload()
 	{
 		delete[] ref;
 		ref = NULL;
+	}
+
+
+	for(int i = 0; i < cloth.size(); i++)
+	{
+		delete cloth[i];
 	}
 
 	cloth.clear();
@@ -6015,6 +6024,7 @@ void Engine::destroy()
 
 	game->destroy();
 	delete game;
+	game = NULL;
 	debugf("Shutting down.\n");
 
 	for (unsigned int i = 0; i < surface_list.size(); i++)

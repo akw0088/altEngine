@@ -225,6 +225,7 @@ void Quake3::destroy()
 	}
 	delete [] model_table;
 
+
 	// uncomment when created from dll / shared library
 	//delete this;
 }
