@@ -366,12 +366,10 @@ int EventProc(Display *display, Window window, GLXContext context)
 				char character[2] = {0};
 
 				character[0] = buffer[i];
-				altEngine.keypress(character, pressed);
-
 				if (pressed)
 				{
-					if (character[0] != '`')
-						altEngine.keystroke(character[0], character);
+					//altEngine.keypress(character, pressed);
+					altEngine.keystroke(character[0], character);
 				}
 			}
 

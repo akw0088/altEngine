@@ -4858,22 +4858,16 @@ void Engine::keypress(char *key, bool pressed)
 	bool handled = false;
 	char k = 0;
 	char *cmd = "";
+
+	//printf("keypress %s pressed %d\r\n", key, pressed);
+
 	
-#ifdef __linux__
-	if (menu.console == false)
-	{
-		cmd = (char *)key_bind.find(key);
-		if (cmd == NULL)
-			return;
-	}
-	else
-	{
-		k = key[0];
-	}
-#else
 	cmd = (char *)key_bind.find(key);
 	if (cmd == NULL)
 		return;
+
+#ifdef __linux__
+	k = key[0];
 #endif
 
 	q3map.update = true;
@@ -5149,7 +5143,7 @@ void Engine::keypress(char *key, bool pressed)
 		k = 10;
 	}
 
-	if (pressed)
+	if ((pressed && menu.console == false) || (menu.console == true && pressed && k == '`'))
 		keystroke(k, key);
 
 	if (handled == false && menu.console == false && menu.ingame == false && menu.stringmode == false)
@@ -5171,6 +5165,8 @@ void Engine::keypress(char *key, bool pressed)
 ///=============================================================================
 void Engine::keystroke(char key, char *keystr)
 {
+	//printf("keystroke %c %s\r\n", key, keystr);
+
 	if (q3map.loaded == false && hlmap.loaded == false && q1map.loaded == false)
 	{
 		menu.ingame = false;
