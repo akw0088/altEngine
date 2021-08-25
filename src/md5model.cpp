@@ -212,45 +212,24 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 	for (int i = 0; i < md5.model->num_mesh; i++)
 	{
 		char file[512] = { 0 };
-		unsigned char *bytes;
-		int width = 0;
-		int height = 0;
-		int components = 4;
-		int format = 0;
 
 		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
 
-		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
+		tex_object[i] = load_texture(gfx, file, false, false, false);
 
-#ifdef OPENGL
-		format = GL_RGBA;
-		components = GL_RGBA8;
-#endif
-#ifdef DIRECTX
-		format = 4;
-		components = 4;
-#endif
-		if (bytes == NULL)
+		if (tex_object[i] == 0)
 		{
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		tex_object[i] = gfx.LoadTexture(width, height, 4, format, bytes, false, anisotropic);
-		free((void *)bytes);
-
 		sprintf(file, "media/%s_normal.tga", md5.model->mesh[i].shader);
-		bytes = (unsigned char *)stbi_load(file, &width, &height, &components, STBI_rgb_alpha);
-#ifdef OPENGL
-		format = GL_RGBA;
-		components = GL_RGBA8;
-#endif
-		if (bytes == NULL)
+		normal_object[i] = load_texture(gfx, file, false, false, false);
+		if (normal_object[i] == 0)
 		{
 			debugf("Unable to load texture %s\n", file);
 			continue;
 		}
-		normal_object[i] = gfx.LoadTexture(width, height, components, format, bytes, false, anisotropic);
-		free((void *)bytes);
+
 	}
 }
 
