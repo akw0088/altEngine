@@ -153,7 +153,7 @@ vec3 lighting( int lightIndex, vec4 pos )
 	vec3 v_light = normalize(vec3(lightDir.rgb));
 	vec3 n_light;
 	vec3 v_light2;
-	vec3 norm = Vertex.vary_normal;
+	vec3 norm = normalize(Vertex.vary_normal);
 
 	if (u_normalmap > 0.5)
 	{
