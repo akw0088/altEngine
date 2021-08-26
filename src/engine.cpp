@@ -1166,6 +1166,30 @@ void Engine::load_quake_md5()
 
 	animation[ANIM_IDLE] = "media/md5/quake/player.md5anim";
 	md5_model[RANGER].load("media/md5/quake/player.md5mesh", (char **)animation, num_anim, gfx, 0);
+	/*
+	Frame
+	0-5 run axe						5 frames
+	6-11 run gun					5 frames
+	12-16 idle gun					5 frames 12 13 14 15 16
+	17-28 idle axe					12 frames
+	29-34 axe pain					6 frames 29 30 31 32 33 34
+	35-40 gun paine					5 frames
+	41-49 axe death					8 frames
+	50-60 choke death gun			10 frames
+	61-69 sit death gun				8 frames
+	70-84 fall death gun			14 frames
+	85-93 fall face down death gun	8 frames
+	94-102 shot belly death gun		8 frames
+	103-106 shoot gun - no kick		3 frames
+	107-112 shoot gun big kickback	5 frames
+	113-118 shoot gun medium kick	5 frames
+	119-123 axe swing 1				4 frames
+	124-128 axe swing 2				4 frames		
+	129-136 axe swing 3				7 frames
+	137-144 axe swing 4				7 frames
+	*/
+
+
 
 	animation[ANIM_IDLE] = "media/md5/quake/soldier.md5anim";
 	md5_model[GRUNT].load("media/md5/quake/soldier.md5mesh", (char **)animation, num_anim, gfx, 0);
@@ -2939,6 +2963,9 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 					entity->rigid->y_offset = 115;
 				}
 
+				entity->rigid->y_offset = 24;
+
+
 				//md5 faces right, need to flip right and forward orientation
 				// also forcing to yaw only (no up / down rotation)
 				entity->rigid->get_matrix(mvp.m);
@@ -2989,7 +3016,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				}
 
 
-				md5_model[RANGER].render(gfx, tick_num >> 1);
+				md5_model[RANGER].render(gfx, tick_num >> 2);
 
 				if (md5_model[RANGER].done)
 				{
@@ -5108,6 +5135,8 @@ void Engine::keypress(char *key, bool pressed)
 		int spawn = find_type(ENT_PLAYER, 0);
 		handled = true;
 
+		netcode.sv_maxclients++;
+		printf("frame %d\r\n", netcode.sv_maxclients);
 		input.weapon_up = pressed;
 		if (netcode.client_flag && spawn != -1)
 		{
@@ -5129,6 +5158,8 @@ void Engine::keypress(char *key, bool pressed)
 		int spawn = find_type(ENT_PLAYER, 0);
 		handled = true;
 
+		netcode.sv_maxclients--;
+		printf("frame %d\r\n", netcode.sv_maxclients);
 		if (edit_ent != -1)
 		{
 			edit_prop--;
@@ -7349,14 +7380,10 @@ int Engine::console_network(char *cmd)
 	{
 		int num = atoi(data);
 
-		if (num <= 8 && num >= 0)
+//		if (num <= 8 && num >= 0)
 		{
 			debugf("setting max clients");
 			netcode.sv_maxclients = num;
-		}
-		else
-		{
-			debugf("Invalid input");
 		}
 		return 0;
 	}

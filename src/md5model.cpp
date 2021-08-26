@@ -367,7 +367,8 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 
 	if (play_once == false)
 	{
-		animation_frame = frame_step % current_anim->num_frame;
+//		animation_frame = frame_step % current_anim->num_frame;
+		animation_frame = frame_step % 4 + 12; // force ranger idle animation
 	}
 	else
 	{
