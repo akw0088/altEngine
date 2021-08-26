@@ -994,6 +994,7 @@ void Engine::load_md5()
 {
 	animation = new char *[128];
 
+#if 0
 	int num_anim = 0;
 	animation[ANIM_IDLE] = "media/md5/chaingun_idle.md5anim";
 	num_anim++;
@@ -1009,7 +1010,6 @@ void Engine::load_md5()
 	num_anim++;
 	zcc.load("media/md5/zcc.md5mesh", (char **)animation, num_anim, gfx, 0);
 
-#if 0
 	num_anim = 0;
 	animation[ANIM_IDLE] = "media/md5/quake4/idle.md5anim";
 	num_anim++;
@@ -1130,14 +1130,84 @@ void Engine::load_md5()
 		animation[num_anim++] = "media/md5/quake4/walk_backwards.md5anim";
 		animation[num_anim++] = "media/md5/quake4/walk_left.md5anim";
 		animation[num_anim++] = "media/md5/quake4/walk_right.md5anim";
-
-
-	zcc.load("media/md5/quake4/player.md5mesh", (char **)animation, num_anim, gfx, 0);
+		zcc.load("media/md5/quake4/player.md5mesh", (char **)animation, num_anim, gfx, 0);
 #endif
+
+	load_quake_md5();
+}
+
+
+
+typedef enum
+{
+	RANGER,
+	GRUNT,
+	DOG,
+	OGRE,
+	ZOMBIE,
+	WIZARD,
+	KNIGHT,
+	DEMON,
+	SHAMBLER,
+	DEATH_KNIGHT,
+	ENFORCER,
+	FISH,
+	SPAWN,
+	VORE,
+	MAX_MODEL
+} quake_model_t;
+
+void Engine::load_quake_md5()
+{
+
+	animation = new char *[128];
+
+	int num_anim = 1;
+
+	animation[ANIM_IDLE] = "media/md5/quake/player.md5anim";
+	md5_model[RANGER].load("media/md5/quake/player.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/soldier.md5anim";
+	md5_model[GRUNT].load("media/md5/quake/soldier.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/dog.md5anim";
+	md5_model[DOG].load("media/md5/quake/dog.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/ogre.md5anim";
+	md5_model[OGRE].load("media/md5/quake/ogre.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/zombie.md5anim";
+	md5_model[ZOMBIE].load("media/md5/quake/zombie.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/wizard.md5anim";
+	md5_model[WIZARD].load("media/md5/quake/wizard.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/knight.md5anim";
+	md5_model[KNIGHT].load("media/md5/quake/knight.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/demon.md5anim";
+	md5_model[DEMON].load("media/md5/quake/demon.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/shambler.md5anim";
+	md5_model[SHAMBLER].load("media/md5/quake/shambler.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/hknight.md5anim";
+	md5_model[DEATH_KNIGHT].load("media/md5/quake/hknight.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/enforcer.md5anim";
+	md5_model[ENFORCER].load("media/md5/quake/enforcer.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/fish.md5anim";
+	md5_model[FISH].load("media/md5/quake/fish.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/tarbaby.md5anim";
+	md5_model[SPAWN].load("media/md5/quake/tarbaby.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	animation[ANIM_IDLE] = "media/md5/quake/shalrath.md5anim";
+	md5_model[VORE].load("media/md5/quake/shalrath.md5mesh", (char **)animation, num_anim, gfx, 0);
 
 
 }
-
 ///=============================================================================
 /// Function: render
 ///=============================================================================
@@ -2918,9 +2988,10 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 					mlight2.Params(mvp, light_list, 0, offset, tick_num);
 				}
 
-				zcc.render(gfx, tick_num >> 1);
 
-				if (zcc.done)
+				md5_model[RANGER].render(gfx, tick_num >> 1);
+
+				if (md5_model[RANGER].done)
 				{
 					if (entity->player->done_transform)
 					{
@@ -3347,9 +3418,14 @@ void Engine::render_ssao(bool debug)
 ///=============================================================================
 void Engine::destroy_buffers()
 {
-	zcc.destroy_buffers(gfx);
+//	zcc.destroy_buffers(gfx);
 //	sentry.destroy_buffers(gfx);
-	zsec_shotgun.destroy_buffers(gfx);
+//	zsec_shotgun.destroy_buffers(gfx);
+
+	for (int i = 0; i < MAX_MODEL; i++)
+	{
+		md5_model[i].destroy_buffers(gfx);
+	}
 
 	gfx.DeleteFrameBuffer(render_fbo, render_quad, render_depth);
 	gfx.DeleteFrameBuffer(mask_fbo, mask_quad, mask_depth);

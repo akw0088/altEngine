@@ -141,6 +141,7 @@ public:
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light = false);
 	void rayscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light);
 	void load_md5();
+	void load_quake_md5();
 	void find_path(int *&path, int &path_length, int start_path, int end_path);
 	void zoom(float level);
 	void reload_shaders();
@@ -298,9 +299,8 @@ public:
 	BaseGame *game;
 	Netcode netcode;
 
-	MD5Model	zcc;
-//	MD5Model	sentry;
-	MD5Model	zsec_shotgun;
+
+	MD5Model md5_model[16];
 	vector<surface_t *> surface_list;
 
 	unsigned int num_bot;

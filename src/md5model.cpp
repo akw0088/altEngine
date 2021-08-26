@@ -213,7 +213,7 @@ void MD5Model::load_textures(Graphics &gfx, int anisotropic)
 	{
 		char file[512] = { 0 };
 
-		sprintf(file, "media/%s.tga", md5.model->mesh[i].shader);
+		sprintf(file, "media/md5/%s.tga", md5.model->mesh[i].shader);
 
 		tex_object[i] = load_texture(gfx, file, false, false, false);
 
