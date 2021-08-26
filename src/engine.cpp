@@ -2963,7 +2963,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 					entity->rigid->y_offset = 115;
 				}
 
-				entity->rigid->y_offset = 24;
+				entity->rigid->y_offset = 24 * 1.4f;
 
 
 				//md5 faces right, need to flip right and forward orientation
@@ -2989,17 +2989,17 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				right = vec3::crossproduct(forward, up);
 				right.normalize();
 
-				mvp.m[0] = forward.x;
+				mvp.m[0] = forward.x * 1.4f;
 				mvp.m[1] = forward.y;
 				mvp.m[2] = forward.z;
 
 				mvp.m[4] = up.x;
-				mvp.m[5] = up.y;
+				mvp.m[5] = up.y * 1.4f;
 				mvp.m[6] = up.z;
 
 				mvp.m[8]  = right.x;
 				mvp.m[9]  = right.y;
-				mvp.m[10] = right.z;
+				mvp.m[10] = right.z * 1.4f;
 
 
 				mvp = (mvp * trans) * proj;
