@@ -19,10 +19,88 @@
 
 #define MAX_DEPTH 6
 
+/*
+Frame
+0-5 run axe						5 frames
+6-11 run gun					5 frames
+12-16 idle gun					5 frames 12 13 14 15 16
+17-28 idle axe					12 frames
+29-34 axe pain					6 frames 29 30 31 32 33 34
+35-40 gun paine					5 frames
+41-49 axe death					8 frames
+50-60 choke death gun			10 frames
+61-69 sit death gun				8 frames
+70-84 fall death gun			14 frames
+85-93 fall face down death gun	8 frames
+94-102 shot belly death gun		8 frames
+103-106 shoot gun - no kick		3 frames
+107-112 shoot gun big kickback	5 frames
+113-118 shoot gun medium kick	5 frames
+119-123 axe swing 1				4 frames
+124-128 axe swing 2				4 frames
+129-136 axe swing 3				7 frames
+137-144 axe swing 4				7 frames
+*/
+
+
+//0-5 run axe						5 frames
+#define RUN_AXE 0
+#define LENGTH_RUN_AXE 5
+//6 - 11 run gun					5 frames
+#define RUN_GUN 6
+#define LENGTH_RUN_GUN 5
+//12 - 16 idle gun					5 frames 12 13 14 15 16
 #define IDLE_GUN 12
 #define LENGTH_IDLE_GUN 5
-#define FIRE_GUN 107
-#define LENGTH_FIRE_GUN 5
+//17 - 28 idle axe					12 frames
+#define IDLE_AXE 17
+#define LENGTH_IDLE_AXE 12
+//29 - 34 axe pain					6 frames 29 30 31 32 33 34
+#define PAIN_AXE 29
+#define LENGTH_PAIN_AXE 6
+//35 - 40 gun paine					5 frames
+#define PAIN_GUN 35
+#define LENGTH_PAIN_GUN 5
+//41 - 49 axe death					8 frames
+#define DEATH_AXE 35
+#define LENGTH_DEATH_AXE 5
+//50 - 60 choke death gun			10 frames
+#define DEATH0_GUN 50
+#define LENGTH_DEATH0_GUN 10
+//61 - 69 sit death gun				8 frames
+#define DEATH1_GUN 61
+#define LENGTH_DEATH1_GUN 8
+//70 - 84 fall death gun			14 frames
+#define DEATH2_GUN 70
+#define LENGTH_DEATH2_GUN 14
+//85 - 93 fall face down death gun	8 frames
+#define DEATH3_GUN 85
+#define LENGTH_DEATH3_GUN 8
+//94 - 102 shot belly death gun		8 frames
+#define DEATH4_GUN 94
+#define LENGTH_DEATH4_GUN 8
+//103 - 106 shoot gun - no kick		3 frames
+#define FIRE_GUN_SM 103
+#define LENGTH_FIRE_GUN_SM 3
+//107 - 112 shoot gun big kickback	5 frames
+#define FIRE_GUN_BIG 107
+#define LENGTH_FIRE_GUN_BIG 5
+//113 - 118 shoot gun medium kick	5 frames
+#define FIRE_GUN_MED 113
+#define LENGTH_FIRE_GUN_MED 5
+//119 - 123 axe swing 1				4 frames
+#define FIRE_AXE0 119
+#define LENGTH_FIRE_AXE0 4
+//124 - 128 axe swing 2				4 frames
+#define FIRE_AXE1 124
+#define LENGTH_FIRE_AXE1 4
+//129 - 136 axe swing 3				7 frames
+#define FIRE_AXE2 129
+#define LENGTH_FIRE_AXE2 7
+//137 - 144 axe swing 4				7 frames
+#define FIRE_AXE3 137
+#define LENGTH_FIRE_AXE3 6
+
 
 typedef enum
 {

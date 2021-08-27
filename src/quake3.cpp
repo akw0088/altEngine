@@ -2746,7 +2746,8 @@ void Quake3::drop_weapon(int index)
 {
 	Entity *entity = engine->entity_list[index];
 
-	if (entity->player->current_weapon == wp_gauntlet)		return;
+	if (entity->player->current_weapon == wp_gauntlet)
+		return;
 
 	Entity *drop_weapon = engine->entity_list[engine->get_entity()];
 	char *weapon_str = NULL;
@@ -5337,6 +5338,16 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			player.change_weapon_up();
 		}
 		input.weapon_up = false;
+
+		if (player.current_weapon == wp_gauntlet)
+		{
+			engine->md5_model[RANGER].frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE, true);
+		}
+		else
+		{
+			engine->md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+		}
+
 	}
 
 	if (input.weapon_down)
@@ -5346,6 +5357,16 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			player.change_weapon_down();
 		}
 		input.weapon_down = false;
+
+		if (player.current_weapon == wp_gauntlet)
+		{
+			engine->md5_model[RANGER].frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE, true);
+		}
+		else
+		{
+			engine->md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+		}
+
 	}
 
 	// Only reset flag when they stop clicking for lightning gun
@@ -5458,7 +5479,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			attack_sound = SND_ROCKET;
 			if (player.ammo_rockets > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_rocketlauncher(player, NULL, self, client);
 			}
@@ -5472,7 +5494,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			attack_sound = SND_PLASMA;
 			if (player.ammo_plasma > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_MED, LENGTH_FIRE_GUN_MED, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_plasma(player, self, client);
 			}
@@ -5487,7 +5510,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_grenades > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_MED, LENGTH_FIRE_GUN_MED, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_grenade(player, self, client);
 			}
@@ -5503,7 +5527,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_lightning > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_SM, LENGTH_FIRE_GUN_SM, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_lightning(player, self, client);
 			}
@@ -5519,7 +5544,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_slugs > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_railgun(player, self, client);
 			}
@@ -5535,7 +5561,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_shells > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_shotgun(player, self, client);
 			}
@@ -5551,7 +5578,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_bullets > 0)
 			{
-				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(FIRE_GUN_SM, LENGTH_FIRE_GUN_SM, IDLE_GUN, LENGTH_IDLE_GUN, true);
 				fired = true;
 				handle_machinegun(player, NULL, self, client);
 			}
@@ -5562,7 +5590,37 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 		}
 		else if (player.current_weapon == wp_gauntlet)
 		{
-			engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
+
+			if (engine->md5_model[RANGER].done)
+			{
+				int r = rand() % 4;
+				int start;
+				int length;
+
+				switch (r)
+				{
+				case 0:
+					start = FIRE_AXE0;
+					length = LENGTH_FIRE_AXE0;
+					break;
+				case 1:
+					start = FIRE_AXE1;
+					length = LENGTH_FIRE_AXE1;
+					break;
+				case 2:
+					start = FIRE_AXE2;
+					length = LENGTH_FIRE_AXE2;
+					break;
+				case 3:
+					start = FIRE_AXE3;
+					length = LENGTH_FIRE_AXE3;
+					break;
+				}
+
+
+				if (engine->md5_model[RANGER].done)
+					engine->md5_model[RANGER].frame_limit(start, length, IDLE_AXE, LENGTH_IDLE_AXE, true);
+			}
 			attack_sound = SND_GAUNTLET;
 			fired = true;
 			handle_gauntlet(player, self, client);
@@ -7441,6 +7499,17 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		default:
 			break;
 		}
+
+		if (entity_list[self]->player->current_weapon == wp_gauntlet)
+		{
+			engine->md5_model[RANGER].frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE, true);
+		}
+		else
+		{
+			engine->md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+		}
+
+
 		return;
 	}
 

@@ -1151,28 +1151,6 @@ void Engine::load_quake_md5()
 
 	md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
 
-	/*
-	Frame
-	0-5 run axe						5 frames
-	6-11 run gun					5 frames
-	12-16 idle gun					5 frames 12 13 14 15 16
-	17-28 idle axe					12 frames
-	29-34 axe pain					6 frames 29 30 31 32 33 34
-	35-40 gun paine					5 frames
-	41-49 axe death					8 frames
-	50-60 choke death gun			10 frames
-	61-69 sit death gun				8 frames
-	70-84 fall death gun			14 frames
-	85-93 fall face down death gun	8 frames
-	94-102 shot belly death gun		8 frames
-	103-106 shoot gun - no kick		3 frames
-	107-112 shoot gun big kickback	5 frames
-	113-118 shoot gun medium kick	5 frames
-	119-123 axe swing 1				4 frames
-	124-128 axe swing 2				4 frames		
-	129-136 axe swing 3				7 frames
-	137-144 axe swing 4				7 frames
-	*/
 
 
 
@@ -3001,7 +2979,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				}
 
 
-				md5_model[RANGER].render(gfx, tick_num >> 2);
+				md5_model[RANGER].render(gfx, tick_num);
 
 				if (md5_model[RANGER].done)
 				{

@@ -54,6 +54,7 @@ MD5Model::MD5Model()
 	current_anim = NULL;
 	tex_object = NULL;
 	animation_frame = 0;
+	done = true;
 }
 
 ///=============================================================================
@@ -357,9 +358,9 @@ void MD5Model::frame_limit(int start, int length, int end_start, int end_length,
 	if (loop == false)
 	{
 		play_once = true;
-		animation_frame = fl_start - 1;
-		done = false;
 	}
+	animation_frame = fl_start;
+	done = false;
 
 
 	if (end_start != -1 && end_length != -1)
@@ -389,31 +390,12 @@ void MD5Model::frame_limit(int start, int length, int end_start, int end_length,
 ///=============================================================================
 void MD5Model::render(Graphics &gfx, int frame_step)
 {
+	static int count = 0;
+
+	count++;
+
 	if (loaded == false)
 		return;
-
-
-	if (play_once == false)
-	{
-//			animation_frame = frame_step % current_anim->num_frame;
-			animation_frame = fl_start + (frame_step % fl_length); // force ranger idle animation
-	}
-	else
-	{
-		if (animation_frame < fl_start + fl_length - 1)
-		{
-			animation_frame++;
-		}
-		else
-		{
-			// reset to end limits
-			fl_start = fl_start_end;
-			fl_length = fl_length_end;
-			animation_frame = fl_start - 1;
-			play_once = false;
-		}
-	}
-
 
 	for (int i = 0; i < md5.model->num_mesh; ++i)
 	{
@@ -423,11 +405,27 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 		gfx.DrawArrayTri(0, 0, current_buffer->count_index[animation_frame][i], current_buffer->count_vertex[animation_frame][i]);
 	}
 
-	if (animation_frame == current_anim->num_frame - 1)
+
+	if (animation_frame < fl_start + fl_length - 1)
+	{
+		if (count % 8 == 0)
+			animation_frame++;
+	}
+	else
+	{
+		// reset to end limits
+		fl_start = fl_start_end;
+		fl_length = fl_length_end;
+		animation_frame = fl_start;
+		done = true;
+	}
+
+
+/*	if (animation_frame == current_anim->num_frame - 1)
 	{
 		done = true;
 		select_animation(ANIM_IDLE, true);
 		animation_frame = 0;
 	}
-
+	*/
 }
