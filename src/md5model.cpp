@@ -265,7 +265,9 @@ void MD5Model::select_animation(int index, bool loop)
 		animation_frame = 0;
 		done = false;
 	}
-	
+
+	fl_start = 0;
+	fl_length = plist->anim->num_frame;	
 
 	for (int i = 0; i < index + 1; i++)
 	{
@@ -346,6 +348,31 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	loaded = false;
 }
 
+void MD5Model::frame_limit(int start, int length, int end_start, int end_length, bool loop)
+{
+	fl_start = start;
+	fl_length = length;
+
+
+	if (loop == false)
+	{
+		play_once = true;
+		animation_frame = fl_start - 1;
+		done = false;
+	}
+
+
+	if (end_start != -1 && end_length != -1)
+	{
+		fl_start_end = end_start;
+		fl_length_end = end_length;
+	}
+	else
+	{
+		fl_start_end = 0;
+		fl_length_end = current_anim->num_frame;
+	}
+}
 
 ///=============================================================================
 /// Function: render
@@ -365,16 +392,25 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 	if (loaded == false)
 		return;
 
+
 	if (play_once == false)
 	{
-//		animation_frame = frame_step % current_anim->num_frame;
-		animation_frame = frame_step % 4 + 12; // force ranger idle animation
+//			animation_frame = frame_step % current_anim->num_frame;
+			animation_frame = fl_start + (frame_step % fl_length); // force ranger idle animation
 	}
 	else
 	{
-		if (animation_frame < current_anim->num_frame - 1)
+		if (animation_frame < fl_start + fl_length - 1)
 		{
 			animation_frame++;
+		}
+		else
+		{
+			// reset to end limits
+			fl_start = fl_start_end;
+			fl_length = fl_length_end;
+			animation_frame = fl_start - 1;
+			play_once = false;
 		}
 	}
 

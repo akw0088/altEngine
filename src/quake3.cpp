@@ -5458,6 +5458,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			attack_sound = SND_ROCKET;
 			if (player.ammo_rockets > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_rocketlauncher(player, NULL, self, client);
 			}
@@ -5471,6 +5472,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			attack_sound = SND_PLASMA;
 			if (player.ammo_plasma > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_plasma(player, self, client);
 			}
@@ -5485,6 +5487,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_grenades > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_grenade(player, self, client);
 			}
@@ -5500,6 +5503,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_lightning > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_lightning(player, self, client);
 			}
@@ -5515,6 +5519,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_slugs > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_railgun(player, self, client);
 			}
@@ -5530,6 +5535,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_shells > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_shotgun(player, self, client);
 			}
@@ -5545,6 +5551,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_bullets > 0)
 			{
+				engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 				fired = true;
 				handle_machinegun(player, NULL, self, client);
 			}
@@ -5555,6 +5562,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 		}
 		else if (player.current_weapon == wp_gauntlet)
 		{
+			engine->md5_model[RANGER].frame_limit(FIRE_GUN, LENGTH_FIRE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, false);
 			attack_sound = SND_GAUNTLET;
 			fired = true;
 			handle_gauntlet(player, self, client);

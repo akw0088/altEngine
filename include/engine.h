@@ -19,6 +19,31 @@
 
 #define MAX_DEPTH 6
 
+#define IDLE_GUN 12
+#define LENGTH_IDLE_GUN 5
+#define FIRE_GUN 107
+#define LENGTH_FIRE_GUN 5
+
+typedef enum
+{
+	RANGER,
+	GRUNT,
+	DOG,
+	OGRE,
+	ZOMBIE,
+	WIZARD,
+	KNIGHT,
+	DEMON,
+	SHAMBLER,
+	DEATH_KNIGHT,
+	ENFORCER,
+	FISH,
+	SPAWN,
+	VORE,
+	MAX_MODEL
+} quake_model_t;
+
+
 // Height above desired position we allow a step to occur
 // (Fairly large as forward velocity can put you fairly deep forward)
 #define STAIR_HEIGHT 20.0f

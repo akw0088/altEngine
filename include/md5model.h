@@ -30,6 +30,7 @@ public:
 	void load_textures(Graphics &gfx, int anisotropic);
 	void render(Graphics &gfx, int frame_step);
 	void select_animation(int index, bool once);
+	void frame_limit(int start, int length, int end_start, int end_length, bool loop);
 
 	bool		done;
 private:
@@ -45,6 +46,11 @@ private:
 	bool		play_once;
 
 	int			animation_frame;
+	int			fl_start_end;
+	int			fl_length_end;
+
+	int			fl_start;
+	int			fl_length;
 };
 
 #endif

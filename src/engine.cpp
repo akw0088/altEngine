@@ -1138,24 +1138,6 @@ void Engine::load_md5()
 
 
 
-typedef enum
-{
-	RANGER,
-	GRUNT,
-	DOG,
-	OGRE,
-	ZOMBIE,
-	WIZARD,
-	KNIGHT,
-	DEMON,
-	SHAMBLER,
-	DEATH_KNIGHT,
-	ENFORCER,
-	FISH,
-	SPAWN,
-	VORE,
-	MAX_MODEL
-} quake_model_t;
 
 void Engine::load_quake_md5()
 {
@@ -1166,6 +1148,9 @@ void Engine::load_quake_md5()
 
 	animation[ANIM_IDLE] = "media/md5/quake/player.md5anim";
 	md5_model[RANGER].load("media/md5/quake/player.md5mesh", (char **)animation, num_anim, gfx, 0);
+
+	md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+
 	/*
 	Frame
 	0-5 run axe						5 frames
