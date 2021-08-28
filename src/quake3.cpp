@@ -2725,7 +2725,7 @@ void Quake3::player_died(int index)
 	}
 
 	entity->player->kill();
-	if (entity->player->immobile == false)
+	if (entity->player->immobile == false && entity->player->type != BOT)
 	{
 		entity->model->clone(model_table[MODEL_BOX]);
 	}

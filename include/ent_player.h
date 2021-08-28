@@ -54,14 +54,14 @@ public:
 
 	unsigned short int current_weapon;
 	unsigned short int last_weapon;
-	unsigned short int ammo_rockets;
-	unsigned short int ammo_grenades;
-	unsigned short int ammo_slugs;
-	unsigned short int ammo_shells;
-	unsigned short int ammo_bullets;
-	unsigned short int ammo_lightning;
-	unsigned short int ammo_plasma;
-	unsigned short int ammo_bfg;
+	short int ammo_rockets;
+	short int ammo_grenades;
+	short int ammo_slugs;
+	short int ammo_shells;
+	short int ammo_bullets;
+	short int ammo_lightning;
+	short int ammo_plasma;
+	short int ammo_bfg;
 	bool holdable_teleporter;
 	bool holdable_medikit;
 	bool holdable_flag;
