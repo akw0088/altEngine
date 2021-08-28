@@ -1149,11 +1149,6 @@ void Engine::load_quake_md5()
 	animation[ANIM_IDLE] = "media/md5/quake/player.md5anim";
 	md5_model[RANGER].load("media/md5/quake/player.md5mesh", (char **)animation, num_anim, gfx, 0);
 
-	md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
-
-
-
-
 	animation[ANIM_IDLE] = "media/md5/quake/soldier.md5anim";
 	md5_model[GRUNT].load("media/md5/quake/soldier.md5mesh", (char **)animation, num_anim, gfx, 0);
 
@@ -2918,7 +2913,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 			if (entity->player->local && render_self == false)
 				continue;
 
-			if (entity->player->health > 0)
+			if (entity->player->health > -50)
 			{
 				int oldval = entity->rigid->y_offset;
 				if (netcode.client_flag)
@@ -2979,9 +2974,9 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 				}
 
 
-				md5_model[RANGER].render(gfx, tick_num);
+				md5_model[RANGER].render(gfx, tick_num, &entity->player->ani_state);
 
-				if (md5_model[RANGER].done)
+				if (entity->player->ani_state.done)
 				{
 					if (entity->player->done_transform)
 					{

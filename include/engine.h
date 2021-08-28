@@ -21,25 +21,23 @@
 
 /*
 Frame
+
 0-5 run axe						5 frames
 6-11 run gun					5 frames
-12-16 idle gun					5 frames 12 13 14 15 16
-17-28 idle axe					12 frames
+
 29-34 axe pain					6 frames 29 30 31 32 33 34
-35-40 gun paine					5 frames
+35-40 gun pain					5 frames
+
+
+
 41-49 axe death					8 frames
+
+
 50-60 choke death gun			10 frames
 61-69 sit death gun				8 frames
 70-84 fall death gun			14 frames
 85-93 fall face down death gun	8 frames
 94-102 shot belly death gun		8 frames
-103-106 shoot gun - no kick		3 frames
-107-112 shoot gun big kickback	5 frames
-113-118 shoot gun medium kick	5 frames
-119-123 axe swing 1				4 frames
-124-128 axe swing 2				4 frames
-129-136 axe swing 3				7 frames
-137-144 axe swing 4				7 frames
 */
 
 
@@ -49,13 +47,13 @@ Frame
 //6 - 11 run gun					5 frames
 #define RUN_GUN 6
 #define LENGTH_RUN_GUN 5
-//12 - 16 idle gun					5 frames 12 13 14 15 16
+//12 - 16 idle gun					5 frames
 #define IDLE_GUN 12
 #define LENGTH_IDLE_GUN 5
 //17 - 28 idle axe					12 frames
 #define IDLE_AXE 17
 #define LENGTH_IDLE_AXE 12
-//29 - 34 axe pain					6 frames 29 30 31 32 33 34
+//29 - 34 axe pain					6 frames
 #define PAIN_AXE 29
 #define LENGTH_PAIN_AXE 6
 //35 - 40 gun paine					5 frames

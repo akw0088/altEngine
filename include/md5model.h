@@ -28,11 +28,9 @@ public:
 	void generate_buffers(Graphics &gfx, md5_anim_t *anim, md5_buffer_t *buffer);
 	void destroy_buffers(Graphics &gfx);
 	void load_textures(Graphics &gfx, int anisotropic);
-	void render(Graphics &gfx, int frame_step);
+	void render(Graphics &gfx, int frame_step, animation_state_t *state);
 	void select_animation(int index, bool once);
-	void frame_limit(int start, int length, int end_start, int end_length, bool loop);
 
-	bool		done;
 private:
 	MD5			md5;
 	md5_buffer_t *buffer[MAX_ANIMATIONS];
@@ -45,12 +43,6 @@ private:
 	int			num_buffer;
 	bool		play_once;
 
-	int			animation_frame;
-	int			fl_start_end;
-	int			fl_length_end;
-
-	int			fl_start;
-	int			fl_length;
 };
 
 #endif

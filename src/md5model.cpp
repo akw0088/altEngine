@@ -53,8 +53,6 @@ MD5Model::MD5Model()
 	current_buffer = NULL;
 	current_anim = NULL;
 	tex_object = NULL;
-	animation_frame = 0;
-	done = true;
 }
 
 ///=============================================================================
@@ -263,12 +261,8 @@ void MD5Model::select_animation(int index, bool loop)
 	if (loop == false)
 	{
 		play_once = true;
-		animation_frame = 0;
-		done = false;
 	}
 
-	fl_start = 0;
-	fl_length = plist->anim->num_frame;	
 
 	for (int i = 0; i < index + 1; i++)
 	{
@@ -349,31 +343,6 @@ void MD5Model::destroy_buffers(Graphics &gfx)
 	loaded = false;
 }
 
-void MD5Model::frame_limit(int start, int length, int end_start, int end_length, bool loop)
-{
-	fl_start = start;
-	fl_length = length;
-
-
-	if (loop == false)
-	{
-		play_once = true;
-	}
-	animation_frame = fl_start;
-	done = false;
-
-
-	if (end_start != -1 && end_length != -1)
-	{
-		fl_start_end = end_start;
-		fl_length_end = end_length;
-	}
-	else
-	{
-		fl_start_end = 0;
-		fl_length_end = current_anim->num_frame;
-	}
-}
 
 ///=============================================================================
 /// Function: render
@@ -388,7 +357,7 @@ void MD5Model::frame_limit(int start, int length, int end_start, int end_length,
 /// Returns:
 ///		None
 ///=============================================================================
-void MD5Model::render(Graphics &gfx, int frame_step)
+void MD5Model::render(Graphics &gfx, int frame_step, animation_state_t *state)
 {
 	static int count = 0;
 
@@ -397,27 +366,36 @@ void MD5Model::render(Graphics &gfx, int frame_step)
 	if (loaded == false)
 		return;
 
-	for (int i = 0; i < md5.model->num_mesh; ++i)
+
+	if (state->animation_frame >= current_anim->num_frame)
 	{
-		gfx.SelectTexture(0, tex_object[i]);
-		gfx.SelectIndexBuffer(current_buffer->frame_index[animation_frame][i]);
-		gfx.SelectVertexBuffer(current_buffer->frame_vertex[animation_frame][i]);
-		gfx.DrawArrayTri(0, 0, current_buffer->count_index[animation_frame][i], current_buffer->count_vertex[animation_frame][i]);
+		state->animation_frame = current_anim->num_frame - 1;
+		state->flength_end = current_anim->num_frame - 1;
 	}
 
 
-	if (animation_frame < fl_start + fl_length - 1)
+	for (int i = 0; i < md5.model->num_mesh; ++i)
+	{
+		gfx.SelectTexture(0, tex_object[i]);
+		gfx.SelectIndexBuffer(current_buffer->frame_index[state->animation_frame][i]);
+		gfx.SelectVertexBuffer(current_buffer->frame_vertex[state->animation_frame][i]);
+		gfx.DrawArrayTri(0, 0, current_buffer->count_index[state->animation_frame][i],
+			current_buffer->count_vertex[state->animation_frame][i]);
+	}
+
+
+	if (state->animation_frame < state->fstart + state->flength - 1)
 	{
 		if (count % 8 == 0)
-			animation_frame++;
+			state->animation_frame++;
 	}
 	else
 	{
 		// reset to end limits
-		fl_start = fl_start_end;
-		fl_length = fl_length_end;
-		animation_frame = fl_start;
-		done = true;
+		state->fstart = state->fstart_end;
+		state->flength = state->flength_end;
+		state->animation_frame = state->fstart;
+		state->done = true;
 	}
 
 

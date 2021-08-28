@@ -37,6 +37,7 @@ public:
 	int bot_search_for_items(vector<Entity *> &entity_list, int self);
 	void avoid_walls(Bsp &map);
 
+	void frame_limit(int start, int length, int end_start, int end_length);
 
 	int FindLookAt(vec3 &cameraOrigin, vec3 &cameraDir, vec3 *points, int numPoints);
 	float DistanceToLine(vec3 &direction, vec3 &origin, vec3 &point);
@@ -167,6 +168,9 @@ public:
 	vec3 done_pos;
 	int in_vehicle;
 	int seat;
+
+
+	animation_state_t ani_state;
 
 private:
 };

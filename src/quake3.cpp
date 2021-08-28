@@ -2729,6 +2729,45 @@ void Quake3::player_died(int index)
 	{
 		entity->model->clone(model_table[MODEL_BOX]);
 	}
+
+
+
+	if (entity->player->current_weapon != wp_gauntlet)
+	{
+		int r = rand() % 5;
+		int start;
+		int length;
+
+		switch (r)
+		{
+		case 0:
+			start = DEATH0_GUN;
+			length = LENGTH_DEATH0_GUN;
+			break;
+		case 1:
+			start = DEATH1_GUN;
+			length = LENGTH_DEATH1_GUN;
+			break;
+		case 2:
+			start = DEATH2_GUN;
+			length = LENGTH_DEATH2_GUN;
+			break;
+		case 3:
+			start = DEATH3_GUN;
+			length = LENGTH_DEATH3_GUN;
+			break;
+		case 4:
+			start = DEATH4_GUN;
+			length = LENGTH_DEATH4_GUN;
+			break;
+		}
+
+		entity->player->frame_limit(start, length, start + length - 1, 1);
+	}
+	else
+	{
+		entity->player->frame_limit(DEATH_AXE, LENGTH_DEATH_AXE, DEATH0_GUN + LENGTH_DEATH0_GUN - 1, 1);
+	}
 }
 
 ///=============================================================================
@@ -3377,7 +3416,7 @@ int Quake3::handle_bot(Entity *entity, int i)
 		break;
 	case BOT_DEAD:
 //		engine->zcc.select_animation(ANIM_DEAD, true); // RagDoll?
-		bot->model->clone(model_table[MODEL_BOX]);
+//		bot->model->clone(model_table[MODEL_BOX]);
 		engine->play_wave(bot->position, bot->player->model_index * SND_PLAYER + SND_DEATH1);
 
 		if (bot->player->dead_timer > 0)
@@ -5341,11 +5380,11 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 		if (player.current_weapon == wp_gauntlet)
 		{
-			engine->md5_model[RANGER].frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE, true);
+			player.frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE);
 		}
 		else
 		{
-			engine->md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+			player.frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN);
 		}
 
 	}
@@ -5360,11 +5399,11 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 		if (player.current_weapon == wp_gauntlet)
 		{
-			engine->md5_model[RANGER].frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE, true);
+			player.frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE);
 		}
 		else
 		{
-			engine->md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+			player.frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN);
 		}
 
 	}
@@ -5479,8 +5518,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			attack_sound = SND_ROCKET;
 			if (player.ammo_rockets > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_rocketlauncher(player, NULL, self, client);
 			}
@@ -5494,8 +5533,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 			attack_sound = SND_PLASMA;
 			if (player.ammo_plasma > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_MED, LENGTH_FIRE_GUN_MED, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_MED, LENGTH_FIRE_GUN_MED, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_plasma(player, self, client);
 			}
@@ -5510,8 +5549,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_grenades > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_MED, LENGTH_FIRE_GUN_MED, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_MED, LENGTH_FIRE_GUN_MED, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_grenade(player, self, client);
 			}
@@ -5527,8 +5566,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_lightning > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_SM, LENGTH_FIRE_GUN_SM, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_SM, LENGTH_FIRE_GUN_SM, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_lightning(player, self, client);
 			}
@@ -5544,8 +5583,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_slugs > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_railgun(player, self, client);
 			}
@@ -5561,8 +5600,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_shells > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_BIG, LENGTH_FIRE_GUN_BIG, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_shotgun(player, self, client);
 			}
@@ -5578,8 +5617,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 
 			if (player.ammo_bullets > 0)
 			{
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(FIRE_GUN_SM, LENGTH_FIRE_GUN_SM, IDLE_GUN, LENGTH_IDLE_GUN, true);
+				if (player.ani_state.done)
+					player.frame_limit(FIRE_GUN_SM, LENGTH_FIRE_GUN_SM, IDLE_GUN, LENGTH_IDLE_GUN);
 				fired = true;
 				handle_machinegun(player, NULL, self, client);
 			}
@@ -5591,7 +5630,7 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 		else if (player.current_weapon == wp_gauntlet)
 		{
 
-			if (engine->md5_model[RANGER].done)
+			if (player.ani_state.done)
 			{
 				int r = rand() % 4;
 				int start;
@@ -5618,8 +5657,8 @@ void Quake3::handle_weapons(EntPlayer &player, input_t &input, int self, bool cl
 				}
 
 
-				if (engine->md5_model[RANGER].done)
-					engine->md5_model[RANGER].frame_limit(start, length, IDLE_AXE, LENGTH_IDLE_AXE, true);
+				if (player.ani_state.done)
+					player.frame_limit(start, length, IDLE_AXE, LENGTH_IDLE_AXE);
 			}
 			attack_sound = SND_GAUNTLET;
 			fired = true;
@@ -7070,6 +7109,17 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				engine->play_wave(entity_list[index]->position, player->model_index * SND_PLAYER + SND_PAIN4);
 
 			player->pain_timer = TICK_RATE >> 2;
+
+
+			if (entity_list[index]->player->current_weapon == wp_gauntlet)
+			{
+				entity_list[index]->player->frame_limit(PAIN_AXE, LENGTH_PAIN_AXE, IDLE_AXE, LENGTH_IDLE_AXE);
+			}
+			else
+			{
+				entity_list[index]->player->frame_limit(PAIN_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN);
+			}
+
 		}
 
 		return;
@@ -7502,11 +7552,11 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 		if (entity_list[self]->player->current_weapon == wp_gauntlet)
 		{
-			engine->md5_model[RANGER].frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE, true);
+			entity_list[self]->player->frame_limit(IDLE_AXE, LENGTH_IDLE_AXE, IDLE_AXE, LENGTH_IDLE_AXE);
 		}
 		else
 		{
-			engine->md5_model[RANGER].frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN, true);
+			entity_list[self]->player->frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN);
 		}
 
 
@@ -10055,6 +10105,10 @@ void Quake3::check_projectiles(EntPlayer *player, Entity *ent, Entity *owner, in
 
 					player->state = PLAYER_DEAD;
 					player->stats.deaths++;
+
+
+
+
 					if (owner != NULL)
 					{
 						EntPlayer *powner = owner->player;

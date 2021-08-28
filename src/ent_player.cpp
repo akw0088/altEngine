@@ -202,8 +202,32 @@ EntPlayer::EntPlayer(Entity *entity, Graphics &gfx, Audio &audio, int model, tea
 	done_transform = false;
 	done_pos = vec3(0.0f, 0.0f, 0.0f);
 
+
+	frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN);
 }
 
+
+void EntPlayer::frame_limit(int start, int length, int end_start, int end_length)
+{
+	ani_state.fstart = start;
+	ani_state.flength = length;
+
+
+	ani_state.animation_frame = ani_state.fstart;
+	ani_state.done = false;
+
+
+	if (end_start != -1 && end_length != -1)
+	{
+		ani_state.fstart_end = end_start;
+		ani_state.flength_end = end_length;
+	}
+	else
+	{
+		ani_state.fstart_end = 0;
+		ani_state.flength_end = INT_MAX;
+	}
+}
 
 
 
@@ -246,6 +270,8 @@ void EntPlayer::respawn()
 	alive_timer = 0;
 	falling = false;
 
+
+	frame_limit(IDLE_GUN, LENGTH_IDLE_GUN, IDLE_GUN, LENGTH_IDLE_GUN);
 
 //	entity->model->make_aabb();
 }

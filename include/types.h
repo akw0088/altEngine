@@ -30,6 +30,16 @@ typedef enum
 
 typedef struct
 {
+	int fstart;
+	int flength;
+	int fstart_end;
+	int flength_end;
+	int animation_frame;
+	bool done;
+} animation_state_t;
+
+typedef struct
+{
 	vec3	position;		// (x, y, z) position. 
 	vec2	texCoord0;	// (u, v) texture coordinate
 	vec2	texCoord1;	// (u, v) lightmap coordinate
