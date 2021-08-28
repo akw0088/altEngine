@@ -7374,7 +7374,16 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		EntPlayer *player = entity_list[self]->player;
 		snprintf(msg, LINE_SIZE, "health %s\n", data);
 		menu.print(msg);
-		player->health += atoi(data);
+
+		if (player->health < 100 && player->health + atoi(data) > 100)
+		{
+			player->health = 100;
+		}
+		else
+		{
+			player->health += atoi(data);
+		}
+
 		if (player->health > 200)
 		{
 			player->health = 200;
