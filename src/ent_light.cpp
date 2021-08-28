@@ -39,10 +39,9 @@ EntLight::EntLight(Entity *entity, Graphics &gfx, int num, float scale)
 
 void EntLight::generate_cubemaps(Graphics &gfx)
 {
-	unsigned int normal_depth;
-
 	shadow_projection.perspective(90.0, 1.0, 1.0, 2001.0, false);
 #ifdef OPENGL
+	unsigned int normal_depth;
 
 	if (light_num != 999)
 	{

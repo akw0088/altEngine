@@ -3571,7 +3571,7 @@ vec3 para_spline(vec3 *control, int num_control, float t)
 void make_torus(Graphics &gfx, int numc, int numt, float r1, float r2, float scale, vertex_t *vertex, unsigned int &num_vertex, int *index, unsigned int &num_index, bool invert, int &vbo, int &ibo)
 {
 	float s, t, x, y, z;
-	float twopi = 2 * M_PI;
+	float twopi = 2 * (float)M_PI;
 
 	for (int i = 0; i < numc; i++)
 	{

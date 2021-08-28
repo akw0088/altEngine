@@ -218,13 +218,13 @@ bool EntVehicle::move(input_t &input, float speed_scale, int tick_num)
 
 	if (input.moveright)
 	{
-		if (steerangle > -M_PI / 4.0f)
-			steerangle -= M_PI / 32.0f;
+		if (steerangle > (float)-M_PI / 4.0f)
+			steerangle -= (float)M_PI / 32.0f;
 	}
 	else if (input.moveleft)
 	{
-		if (steerangle <  M_PI / 4.0f)
-			steerangle += M_PI / 32.0f;
+		if (steerangle <  (float)M_PI / 4.0f)
+			steerangle += (float)M_PI / 32.0f;
 	}
 	else
 	{

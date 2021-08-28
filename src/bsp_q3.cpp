@@ -772,7 +772,7 @@ bool Bsp::is_point_in_brush(int brush_index, vec3 &point, vec3 &oldpoint, float 
 			get_plane_slope(plane->normal, angle);
 
 			// convert to degrees
-			angle *= (180.0f / M_PI);
+			angle *= (float)(180.0f / M_PI);
 
 			printf("Inside brush %d with texture %s and contents 0x%X surf 0x%X\nDepth is %3.3f count is %d\nnormal is %3.3f %3.3f %3.3f, incline %3.1f degrees\n",
 				brush_index,

@@ -2921,7 +2921,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 					entity->rigid->y_offset = 115;
 				}
 
-				entity->rigid->y_offset = 24 * 1.4f;
+				entity->rigid->y_offset = (int)(24 * 1.4f);
 
 
 				//md5 faces right, need to flip right and forward orientation
@@ -5982,7 +5982,7 @@ void Engine::unload()
 	}
 
 
-	for(int i = 0; i < cloth.size(); i++)
+	for(unsigned int i = 0; i < cloth.size(); i++)
 	{
 		delete cloth[i];
 	}
