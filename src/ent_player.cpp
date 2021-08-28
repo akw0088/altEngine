@@ -75,6 +75,9 @@ EntPlayer::EntPlayer(Entity *entity, Graphics &gfx, Audio &audio, int model, tea
 
 	EntPlayer::team = team;
 
+
+	body = false;
+
 	num_sentry = 0;
 	build_timer = 1;
 

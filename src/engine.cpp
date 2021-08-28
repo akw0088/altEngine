@@ -2725,6 +2725,13 @@ void Engine::render_entities(const matrix4 &trans, matrix4 &proj, bool lights, b
 				continue;
 		}
 
+
+		if (entity->player)
+		{
+			continue;
+		}
+
+
 		if (i < max_player && entity->player && entity->player->type == PLAYER)
 		{
 			continue;
@@ -2891,7 +2898,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 	matrix4 mvp;
 	//render player md5
 	mlight2.set_lightmap(1.0f);
-	for (unsigned int i = 0; i < max_player && i < entity_list.size(); i++)
+	for (unsigned int i = 0; /*i < max_player &&*/ i < entity_list.size(); i++)
 	{
 		Entity *entity = entity_list[i];
 
@@ -2976,6 +2983,7 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 
 				md5_model[RANGER].render(gfx, tick_num, &entity->player->ani_state);
 
+				// for debugging md5 animations, walks animation back some so walking forward doesnt move him
 				if (entity->player->ani_state.done)
 				{
 					if (entity->player->done_transform)

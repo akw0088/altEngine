@@ -2339,7 +2339,7 @@ void Quake3::handle_player(int self, input_t &input)
 
 		if (entity->player && entity->player->type == PLAYER)
 		{
-			if (input.attack && entity->player->reload_timer == 0)
+			if (input.attack && entity->player->reload_timer == 0 && entity->player->body == false)
 			{
 				console(self, "respawn", engine->menu, engine->entity_list);
 			}
@@ -8029,6 +8029,36 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 		{
 			matrix4 matrix;
 
+
+
+			if (entity_list[self]->player->state == PLAYER_DEAD && entity_list[self]->player->health > -50)
+			{
+				// make a new ent to keep the body laying on the floor
+				int body_ent = engine->get_entity();
+				Entity *body = entity_list[body_ent];
+
+				// make a new ent to keep the body laying on the floor
+				body->position = entity_list[self]->position;
+				body->rigid = new EntRigidBody(body);
+				body->rigid->clone(*(engine->thug22->model));
+				body->rigid->morientation = entity_list[self]->rigid->morientation;
+				body->rigid->flags.sleep = true;
+				body->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+				body->rigid->old_position = body->position;
+				body->model = body->rigid;
+
+
+				body->player = new EntPlayer(body, engine->gfx, engine->audio, 21, TEAM_NONE, (entity_type_t)body->ent_type, model_table);
+				body->player->type = entity_list[self]->player->type;
+				body->player->body = true;
+				body->player->ani_state = entity_list[self]->player->ani_state;
+				body->player->health = 0;
+				body->player->state = PLAYER_DEAD;
+				body->player->reload_timer = INT_MAX;
+			}
+
+
+
 			entity_list[self]->position = entity_list[index]->position + vec3(0.0f, 50.0f, 0.0f);
 
 			entity_list[self]->rigid->bsp_trigger_volume = 0;
@@ -8085,6 +8115,33 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 				{
 					matrix4 matrix;
 					Entity *ent = entity_list[self];
+
+					if (entity_list[self]->player->state == PLAYER_DEAD && entity_list[self]->player->health > -50)
+					{
+						int body_ent = engine->get_entity();
+						Entity *body = entity_list[body_ent];
+
+						// make a new ent to keep the body laying on the floor
+						body->position = entity_list[self]->position;
+
+						body->rigid = new EntRigidBody(body);
+						body->rigid->clone(*(engine->thug22->model));
+						body->rigid->morientation = ent->rigid->morientation;
+						body->rigid->flags.sleep = true;
+						body->rigid->velocity = vec3(0.0f, 0.0f, 0.0f);
+						body->rigid->old_position = body->position;
+						body->model = body->rigid;
+
+						body->player = new EntPlayer(body, engine->gfx, engine->audio, 21, TEAM_NONE, (entity_type_t)body->ent_type, model_table);
+						body->player->body = true;
+						body->player->type = entity_list[self]->player->type;
+						body->player->ani_state = entity_list[self]->player->ani_state;
+						body->player->health = 0;
+						body->player->state = PLAYER_DEAD;
+						body->player->reload_timer = INT_MAX;
+					}
+
+
 					//					camera_frame.set(matrix);
 					ent->position = entity_list[i]->position + vec3(0.0f, 50.0f, 0.0f);
 
@@ -8139,6 +8196,12 @@ void Quake3::console(int self, char *cmd, Menu &menu, vector<Entity *> &entity_l
 
 					last_spawn = i + 1;
 					debugf("Spawning on entity %d\n", i);
+
+
+
+
+
+
 					entity_list[self]->player->respawn();
 					entity_list[self]->rigid->clone(*(engine->thug22->model));
 					if (entity_list[self]->player->local)

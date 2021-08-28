@@ -160,6 +160,8 @@ public:
 	EntModel weapon_railgun;
 	EntModel weapon_plasma;
 
+	bool body;
+
 
 	static const char bot_state_name[16][32];
 	static const char *models[23];
