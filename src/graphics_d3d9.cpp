@@ -295,6 +295,11 @@ void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned in
 	device->DrawIndexedPrimitive(D3DPT_LINESTRIP, start_vertex, 0, num_verts, start_index, num_index - 1);
 }
 
+void Graphics::DrawArrayLine(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	device->DrawIndexedPrimitive(D3DPT_LINELIST, start_vertex, 0, num_verts, start_index, num_index - 1);
+}
+
 void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	device->DrawIndexedPrimitive(D3DPT_POINTLIST, start_vertex, 0, num_verts, start_index, num_index);

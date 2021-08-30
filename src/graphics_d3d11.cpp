@@ -451,6 +451,13 @@ void Graphics::DrawArrayLineStrip(int start_index, int start_vertex, unsigned in
 	context->DrawIndexed(num_index, start_index, start_vertex);
 }
 
+void Graphics::DrawArrayLine(int start_index, int start_vertex, unsigned int num_index, int num_verts)
+{
+	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);
+	context->DrawIndexed(num_index, start_index, start_vertex);
+}
+
+
 void Graphics::DrawArrayPoint(int start_index, int start_vertex, unsigned int num_index, int num_verts)
 {
 	context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
