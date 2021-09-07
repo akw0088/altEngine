@@ -55,7 +55,7 @@ int Voice::init(Audio &audio, unsigned short qport)
 	} 
 
 
-	int complexity = 0;
+	int complexity = 10;
 
 	ret = opus_encoder_ctl(encoder, OPUS_SET_COMPLEXITY(complexity));
 	if (ret < 0)
@@ -91,27 +91,9 @@ void Voice::bind(char *ip, unsigned short port)
 
 int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, int &num_bytes)
 {
-	static short extend_buffer[SEGMENT_SIZE];
-	if (size > SEGMENT_SIZE)
-	{
-		printf("warning dropping samples\n");
-		size = SEGMENT_SIZE;
-	}
-
-	// opus only works with 16 bit samples, and I get garbled audio without using 8bit for some reason
-	unsigned char *pdata = (unsigned char *)pcm;
-	for (unsigned int i = 0; i < SEGMENT_SIZE; i++)
-	{
-		extend_buffer[i] = 0;
-		if (i < size)
-		{
-			extend_buffer[i] = (unsigned short)(pdata[i] - 0x80) << 8;;
-		}
-	}
-
 #ifdef VOICECHAT
 	// Encode the frame.
-	num_bytes = opus_encode(encoder, (opus_int16 *)extend_buffer, SEGMENT_SIZE, data, MAX_PACKET_SIZE);
+	num_bytes = opus_encode(encoder, (opus_int16 *)pcm, (MIC_BUFFER_SIZE >> 1), data, MAX_PACKET_SIZE);
 	if (num_bytes < 0)
 	{ 
 		printf("encode failed: %s\n", opus_strerror(num_bytes)); 
@@ -122,33 +104,32 @@ int Voice::encode(unsigned short *pcm, unsigned int size, unsigned char *data, i
 }
 
 
-int Voice::decode(unsigned char *data, unsigned short *pcm, unsigned int &size)
+int Voice::decode(unsigned char *data, int compressed_size, unsigned short *pcm, unsigned int max_size)
 { 
 #ifdef VOICECHAT
 	int frame_size;
 
-	frame_size = opus_decode(decoder, data, size, (opus_int16 *)pcm, MAX_SEGMENT_SIZE, 0);
+	frame_size = opus_decode(decoder, data, compressed_size, (opus_int16 *)pcm, (max_size), 0);
 	if (frame_size < 0)
 	{ 
 		printf("decoder failed: %s\n", opus_strerror(frame_size)); 
 		return -1; 
 	} 
-	size = frame_size;
+
+	return frame_size * 2;
 #endif
 	return 0;
 }
 
 int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client_flag, bool server_flag)
 {
-	unsigned int size;
-	int isize;
 	static int pong = 0;
-	static bool looped = false;
-	unsigned int uiBuffer;
+	static bool buffers_full = false; // first time around buffers are empty, different logic required
 	int buffersProcessed = 0;
 	bool local_echo = false;
 	static voicemsg_t msg;
-
+	int pcm_size;
+	unsigned int uiBuffer;
 #ifndef DEDICATED
 	if (audio.microphone == NULL)
 	{
@@ -160,7 +141,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	return 0;
 #endif
 
-	if (looped)
+	if (buffers_full)
 	{
 #ifndef DEDICATED
 		if (local_echo)
@@ -187,13 +168,12 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 			}
 		}
 #endif
-
-		audio.capture_sample(mic_pcm[pong], isize);
-		size = isize;
+		pcm_size = MIC_BUFFER_SIZE;
+		audio.capture_sample(mic_pcm[pong], pcm_size);
 		if (local_echo)
 		{
 #ifndef DEDICATED
-			alBufferData(uiBuffer, VOICE_FORMAT, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+			alBufferData(uiBuffer, AL_FORMAT_MONO16, mic_pcm[pong], pcm_size, VOICE_SAMPLE_RATE);
 			alSourceQueueBuffers(mic_source, 1, &uiBuffer);
 #endif
 		}
@@ -201,12 +181,13 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 	}
 	else
 	{
-		audio.capture_sample(mic_pcm[pong], isize);
-		size = isize;
+		pcm_size = MIC_BUFFER_SIZE;
+		int ret = audio.capture_sample(mic_pcm[pong], pcm_size);
+
 		if (local_echo)
 		{
 #ifndef DEDICATED
-			alBufferData(mic_buffer[pong], VOICE_FORMAT, mic_pcm[pong], size, VOICE_SAMPLE_RATE);
+			alBufferData(mic_buffer[pong], AL_FORMAT_MONO16, mic_pcm[pong], pcm_size, VOICE_SAMPLE_RATE);
 			int al_err = alGetError();
 			if (al_err != AL_NO_ERROR)
 			{
@@ -217,7 +198,7 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 		}
 	}
 
-	if (size == 0)
+	if (pcm_size == 0)
 	{
 		return 0;
 	}
@@ -237,11 +218,12 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 			}
 
 			int num_bytes = 0;
-			encode(mic_pcm[pong], size, msg.data, num_bytes);
+			encode(mic_pcm[pong], pcm_size, msg.data, num_bytes);
 
 
 			msg.sequence = voice_send_sequence++;
 			msg.qport = qport;
+			msg.size = num_bytes;
 			int ret = sock.sendto((char *)&msg, VOICE_HEADER + num_bytes, server);
 			if (ret < 0)
 			{
@@ -261,7 +243,8 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 
 		msg.sequence = voice_send_sequence++;
 		msg.qport = qport;
-		encode(mic_pcm[pong], size, msg.data, num_bytes);
+		encode(mic_pcm[pong], pcm_size, msg.data, num_bytes);
+		msg.size = num_bytes;
 		int ret = sock.sendto((char *)&msg, VOICE_HEADER + num_bytes, server);
 		if (ret < 0)
 		{
@@ -282,15 +265,15 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 		pong = 0;
 		if (local_echo)
 		{
-			if (looped == false)
+			if (buffers_full == false)
 			{
-				looped = true;
+				buffers_full = true;
 				audio.play(mic_source);
 			}
 		}
 	}
 
-	if (size)
+	if (pcm_size)
 		return 1;
 	else
 		return 0;
@@ -298,10 +281,10 @@ int Voice::voice_send(Audio &audio, vector<client_t *> &client_list, bool client
 
 int Voice::voice_recv(Audio &audio)
 {
-	unsigned int size;
+	unsigned int pcm_size;
 	int ret;
 	static int pong = 0;
-	static bool looped = false;
+	static bool buffers_full = false;
 	int buffersProcessed = 0;
 	unsigned int uiBuffer;
 	bool remote_echo = true;
@@ -316,7 +299,7 @@ int Voice::voice_recv(Audio &audio)
 	{
 
 #ifndef DEDICATED
-		if (looped)
+		if (buffers_full)
 		{
 			alGetSourcei(decode_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
 			if (buffersProcessed == 0)
@@ -327,6 +310,7 @@ int Voice::voice_recv(Audio &audio)
 
 				if (state == AL_STOPPED)
 				{
+					// if we stopped due to a data hiccup, start playing again
 					audio.play(decode_source);
 				}
 				return 0;
@@ -337,10 +321,10 @@ int Voice::voice_recv(Audio &audio)
 	}
 
 	char client[128] = "";
-	ret = sock.recvfrom((char *)&msg, SEGMENT_SIZE, client, 128);
+	ret = sock.recvfrom((char *)&msg, MIC_BUFFER_SIZE, client, 128);
 	if (ret > 0)
 	{
-		size = ret;
+		pcm_size = ret;
 
 		if (voice_recv_sequence > msg.sequence)
 		{
@@ -357,20 +341,20 @@ int Voice::voice_recv(Audio &audio)
 
 		if (remote_echo)
 		{
-			decode(msg.data, decode_pcm[pong], size);
+			decode(msg.data, msg.size, decode_pcm[pong], pcm_size);
 
-			if (looped)
+			if (buffers_full)
 			{
 #ifndef DEDICATED
 				alSourceUnqueueBuffers(decode_source, 1, &uiBuffer);
-				alBufferData(uiBuffer, AL_FORMAT_MONO16, decode_pcm[pong], size, VOICE_SAMPLE_RATE);
+				alBufferData(uiBuffer, AL_FORMAT_MONO16, decode_pcm[pong], pcm_size, VOICE_SAMPLE_RATE);
 				alSourceQueueBuffers(decode_source, 1, &uiBuffer);
 #endif
 			}
 			else
 			{
 #ifndef DEDICATED
-				alBufferData(decode_buffer[pong], AL_FORMAT_MONO16, decode_pcm[pong], size, VOICE_SAMPLE_RATE);
+				alBufferData(decode_buffer[pong], AL_FORMAT_MONO16, decode_pcm[pong], pcm_size, VOICE_SAMPLE_RATE);
 				alSourceQueueBuffers(decode_source, 1, &decode_buffer[pong]);
 #endif
 			}
@@ -381,9 +365,9 @@ int Voice::voice_recv(Audio &audio)
 			{
 				pong = 0;
 
-				if (looped == false)
+				if (buffers_full == false)
 				{
-					looped = true;
+					buffers_full = true;
 					audio.play(decode_source);
 				}
 			}

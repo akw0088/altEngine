@@ -159,7 +159,7 @@ void mLight2::prelink()
 }
 
 
-void mLight2::Params(matrix4 &mvp, vector<EntLight *> &light_list, size_t num_lights, vec3 &offset, int u_time)
+void mLight2::Params(matrix4 &mvp, vector<Light *> &light_list, size_t num_lights, vec3 &offset, int u_time)
 {
 	vec4 position[MAX_LIGHTS];
 	vec4 color[MAX_LIGHTS];

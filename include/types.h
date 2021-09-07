@@ -181,9 +181,10 @@ typedef struct
 {
 	unsigned short int sequence;
 	unsigned short int qport;
-	unsigned char data[8192];
+	unsigned int size;
+	unsigned char data[2048];
 } voicemsg_t;
-#define VOICE_HEADER 4
+#define VOICE_HEADER 8
 
 typedef struct
 {

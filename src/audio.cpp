@@ -485,7 +485,7 @@ void Audio::init()
 	}
 
 	// step is every 8 ms, 48khz per second, or 48 samples per ms, which is 384 samples per step give or take
-	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, VOICE_FORMAT, 2 * SEGMENT_SIZE);
+	microphone = alcCaptureOpenDevice(NULL, VOICE_SAMPLE_RATE, AL_FORMAT_MONO16, MIC_BUFFER_SIZE);
 	if (microphone == NULL)
 	{
 		debugf("No microphone has been found.\n");
@@ -992,30 +992,38 @@ void Audio::capture_start()
 	alcCaptureStart(microphone);
 }
 
-void Audio::capture_sample(unsigned short *pcm, int &size)
+int Audio::capture_sample(unsigned short *pcm, int &size)
 {
+	// Samples are not bytes, 2 bytes per sample.
+	// Use bytes everywhere but where API's dictate samples
+	unsigned int samples = 0;
+
 	if (microphone == NULL)
-		return;
+		return -1;
 
 	static int max_recv = 0;
 
-	alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, sizeof(int), (int *)&size);
-	if (size > SEGMENT_SIZE)
+	alcGetIntegerv(microphone, ALC_CAPTURE_SAMPLES, sizeof(int), (int *)&samples);
+	if (samples * 2 > MIC_BUFFER_SIZE)
 	{
-		// we have more than a segment, only get one segment out
-		size = SEGMENT_SIZE;
+		// we have more than a buffer, only get one buffer out
+		size = MIC_BUFFER_SIZE;
 	}
-	else if (size < SEGMENT_SIZE)
+	else if (samples * 2 < MIC_BUFFER_SIZE)
 	{
-		// if we have less than one packet, leave it in the buffer
+		// if we have less than one buffer, leave it in the buffer
 		size = 0;
-		return;
+		return 0;
 	}
 
-	alcCaptureSamples(microphone, pcm, size);
+	// Get one buffer full of samples
+	alcCaptureSamples(microphone, pcm, (MIC_BUFFER_SIZE >> 1));
 
 	if (size > max_recv)
+	{
 		max_recv = size;
+	}
+	return size;
 }
 
 

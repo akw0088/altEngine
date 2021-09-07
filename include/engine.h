@@ -15,7 +15,6 @@
 #include "include.h"
 
 #define VOICE_SAMPLE_RATE 48000
-#define VOICE_FORMAT	AL_FORMAT_MONO8
 
 #define MAX_DEPTH 6
 

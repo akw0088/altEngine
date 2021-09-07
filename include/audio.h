@@ -40,7 +40,7 @@ public:
 
 	void set_audio_model(int model);
 	void capture_start();
-	void capture_sample(unsigned short *pcm, int &size);
+	int capture_sample(unsigned short *pcm, int &size);
 	void capture_stop();
 	void set_effect(int selected_effect);
 
