@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "RadiantMap.h"
+#include "radiantmap.h"
 
 #define MAX_LINE 2048
 
