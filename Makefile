@@ -40,6 +40,7 @@ SOURCES_CPP := 	xmain.cpp \
 		quake3.cpp \
 		quaternion.cpp \
 		raster.cpp \
+		radiantmap.cpp \
 		serial.cpp \
 		shader_d3d9.cpp \
 		shader_d3d11.cpp \
