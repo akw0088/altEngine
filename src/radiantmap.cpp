@@ -611,11 +611,6 @@ int RadiantMap::load(char *map, FILE *output)
 
 		line_num++;
 
-		if (line_num == 1898)
-		{
-			printf("break\r\n");
-		}
-
 		trim_edges(line, strlen(line));
 
 
