@@ -2,6 +2,10 @@
 #define RADIANTMAP_H
 
 #include <stdio.h>
+#include <stdint.h>
+#include "vector.h"
+#include "matrix.h"
+#include "types.h"
 
 class RadiantMap
 {
@@ -123,6 +127,68 @@ enum
 
 
 
+
+
+	// clip types
+	typedef struct
+	{
+		vec3	normal;		// Plane normal. 
+		float	d;			// The plane distance from origin 
+	} plane_t;
+
+	typedef enum
+	{
+		ALL_IN,
+		ALL_OUT,
+		CLIPPED_EASY,
+		CLIPPED_HARD
+	} point_result_t;
+
+	typedef struct
+	{
+		unsigned int
+			a_in : 1,
+			b_in : 1,
+			c_in : 1,
+			reserved : 29;
+	} inside_bit_t;
+
+	typedef union
+	{
+		inside_bit_t bit;
+		unsigned int dword;
+	} inside_t;
+
+	
+	// quad types
+	typedef struct
+	{
+		vec3 triangle1[3];
+		vec3 triangle2[3];
+		vec3 a, b, c, d;
+		plane_t plane;
+
+		// clipping will feed back to next clip
+		vec3 triangle_list[512];
+		int num_triangle;
+	} quadplane_t;
+
+	typedef struct
+	{
+		quadplane_t *quadplane;
+		int num_quadplane;
+
+		vec3 *vert;
+		int num_vert;
+	} quadbrush_t;
+
+	typedef struct
+	{
+		quadbrush_t *quadbrush;
+		int num_brush;
+	} quadent_t;
+
+
 public:
 	RadiantMap();
 	int load(char *map, FILE *output);
@@ -131,6 +197,17 @@ public:
 	radent_t *radent;
 	int num_ent;
 
+	quadent_t quadent;
+
+
+
+	void allocate_quads();
+	void generate_quads();
+	void clip_quads();
+	void intersect_quads();
+	bool get_intersection(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
+
+
 private:
 	int trim(char *data, int length);
 	int trim_copy(char *data, int length, char *out);
@@ -138,6 +215,12 @@ private:
 	int trim_edges_copy(char *data, int length, char *out);
 
 
+
+	float Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c);
+	float DistPointPlane(const vec3 &q, const vec3 &normal, const float d);
+	int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result);
+	int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result);
+	int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result);
 
 	void indent(int level, FILE *output);
 	int parse_patch(char *line);
@@ -152,6 +235,9 @@ private:
 	int parse_patch_control(char *line, patch_control_t *control);
 	int parse_patch_points(char *line, patch_control_t *control, patch_point_t *point);
 	int print_patch_points(patch_control_t *control, patch_point_t *point, FILE *output);
+
+
+
 };
 
 #endif

@@ -4,6 +4,11 @@
 #include <string.h>
 
 #include "radiantmap.h"
+#include "vector.h"
+#include <vector>
+
+
+using namespace std;
 
 #define MAX_LINE 2048
 
@@ -953,3 +958,793 @@ int RadiantMap::save(char *map, FILE *output)
 	return 0;
 }
 
+
+
+
+bool RadiantMap::get_intersection(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
+{
+	float denom = vec3::crossproduct(p2.normal, p3.normal) * p1.normal;
+
+	if (denom == 0)
+	{
+		return false;
+	}
+
+	point = vec3::crossproduct(p2.normal, p3.normal) * -p1.d + vec3::crossproduct(p3.normal, p1.normal) * -p2.d + vec3::crossproduct(p1.normal, p2.normal) * -p3.d;
+
+	return true;
+}
+
+
+
+float RadiantMap::DistPointPlane(const vec3 &q, const vec3 &normal, const float d)
+{
+	return q * normal - d;
+}
+
+int RadiantMap::intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
+{
+	float da = ((a.position * plane.normal) - plane.d) / plane.normal.magnitude();   // distance plane -> point a
+	float db = ((b.position * plane.normal) - plane.d) / plane.normal.magnitude();   // distance plane -> point b
+
+	float s = da / (da - db);   // intersection factor (between 0 and 1)
+
+	if (s < 0 || s > 1)
+	{
+		return -1;
+	}
+
+	result.position = a.position + (b.position - a.position) * s;
+
+	// update tex coords
+	result.texCoord0 = a.texCoord0 + (b.texCoord0 - a.texCoord0) * s;
+	result.texCoord1 = a.texCoord1 + (b.texCoord1 - a.texCoord1) * s;
+	return 0;
+}
+
+int RadiantMap::intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result)
+{
+	// plane equation
+	// ax + by + cz + d = 0
+
+	// plug in parametric line
+	// a*(x0 + vx * t) + b*(y0 + vy * t) + c*(z0 + vz * t) + d = 0
+
+	// solve for t
+
+	// a*x0 + a*vx*t + b*y0 + b*vy*t + c*z0 + c*vz*t + d = 0
+	// a*x0 + b*y0 + c*z0 + d + a*vx*t + b*vy*t + c*vz*t = 0
+	// a*x0 + b*y0 + c*z0 + d + t*(a*vx + b*vy + c*vz) = 0
+	// t*(a*vx + b*vy + c*vz) = -(a*x0 + b*y0 + c*z0 + d)
+	// t = -(a*x0 + b*y0 + c*z0 + d) / (a*vx + b*vy + c*vz)
+
+
+	vec3 origin = a.position;
+	vec3 dir = b.position - a.position;
+
+	float denom = (p.normal * dir);
+	if (denom == 0.0f)
+		return -1;
+
+	float t = -(origin * p.normal - p.d) / denom;
+	if (t < 0.0 || t > 1.0)
+		return -1;
+
+	result.position = origin + dir * t;
+	result.texCoord0 = a.texCoord0 * (1.0f - t) + b.texCoord0 * t;
+	result.texCoord1 = a.texCoord1 * (1.0f - t) + b.texCoord1 * t;
+	return 0;
+}
+
+
+
+// returns positive if CCW negative if CW winding
+float RadiantMap::Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c)
+{
+	return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
+}
+
+int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result)
+{
+	// classify points that are out of plane
+	inside_t inside;
+	float epsilon = 0.0001f;
+
+	// initialize result to given triangle
+	result[0] = a;
+	result[1] = b;
+	result[2] = c;
+
+
+	float input_area = Signed2DTriArea(a.position, b.position, c.position);
+
+
+	inside.dword = 0;
+	inside.bit.a_in = DistPointPlane(a.position, p.normal, p.d) >= 0;
+	inside.bit.b_in = DistPointPlane(b.position, p.normal, p.d) >= 0;
+	inside.bit.c_in = DistPointPlane(c.position, p.normal, p.d) >= 0;
+
+	// all points outside plane, early exit
+	if (inside.dword == 0)
+		return ALL_OUT;
+
+	// all points inside plane, early exit
+	if (inside.dword == 7)
+		return ALL_IN;
+
+	// easy case, one triangle, two points move in
+	if (inside.bit.a_in == 1 && inside.bit.b_in == 0 && inside.bit.c_in == 0)
+	{
+		vertex_t ab, ac;
+
+		int ret = intersect_two_points_plane(p, a, b, ab);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, a, c, ac);
+		if (ret != 0)
+		{
+			//printf("Error: didnt intersect despite being classified as exiting\r\n");
+			// just render normal
+			return ALL_OUT;
+		}
+
+		result[0] = a;
+		result[1] = ab;
+		result[2] = ac;
+
+		float output_area = Signed2DTriArea(a.position, ab.position, ac.position);
+
+		if (!((input_area > 0 && output_area > 0) || (input_area <= 0 && output_area <= 0)))
+		{
+			result[0] = a;
+			result[2] = ab;
+			result[1] = ac;
+			return CLIPPED_EASY;
+		}
+
+
+		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		if (fabs(output_area) > fabs(input_area) + epsilon)
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
+			return ALL_OUT;
+		}
+
+		return CLIPPED_EASY;
+	}
+	else if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
+	{
+		vertex_t ba, bc;
+
+		int ret = intersect_two_points_plane(p, b, a, ba);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, b, c, bc);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		result[0] = ba;
+		result[1] = b;
+		result[2] = bc;
+
+
+		float output_area = Signed2DTriArea(ba.position, b.position, bc.position);
+
+
+		if (!((input_area > 0 && output_area > 0) || (input_area <= 0 && output_area <= 0)))
+		{
+			result[0] = ba;
+			result[2] = b;
+			result[1] = bc;
+			return CLIPPED_EASY;
+		}
+
+		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		if (fabs(output_area) > fabs(input_area) + epsilon)
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
+			return ALL_OUT;
+		}
+
+
+
+		return CLIPPED_EASY;
+
+	}
+	else if (inside.bit.a_in == 0 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
+	{
+		vertex_t ca, cb;
+
+		int ret = intersect_two_points_plane(p, c, a, ca);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, c, b, cb);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		result[0] = ca;
+		result[1] = cb;
+		result[2] = c;
+
+
+		float output_area = Signed2DTriArea(ca.position, cb.position, c.position);
+
+		if (!((input_area > 0 && output_area > 0) || (input_area <= 0 && output_area <= 0)))
+		{
+			result[0] = ca;
+			result[2] = cb;
+			result[1] = c;
+			return CLIPPED_EASY;
+		}
+
+
+		output_area = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		if (fabs(output_area) > fabs(input_area) + epsilon)
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area, input_area);
+			return ALL_OUT;
+		}
+
+
+		return CLIPPED_EASY;
+	}
+
+	// hard case, tip chopped off, two triangles
+	else if (inside.bit.a_in == 0 && inside.bit.b_in == 1 && inside.bit.c_in == 1)
+	{
+		vertex_t ab;
+		vertex_t ca;
+
+		int ret = intersect_two_points_plane(p, a, b, ab);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, a, c, ca);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		result[0] = ab;
+		result[1] = b;
+		result[2] = c;
+
+		result[3] = ca;
+		result[4] = ab;
+		result[5] = c;
+
+
+		float output_area1 = Signed2DTriArea(ab.position, b.position, c.position);
+		float output_area2 = Signed2DTriArea(ca.position, ab.position, c.position);
+
+
+
+		if (!((input_area > 0 && output_area1 > 0) || (input_area <= 0 && output_area1 <= 0)))
+		{
+			result[0] = ab;
+			result[2] = b;
+			result[1] = c;
+		}
+
+		if (!((input_area > 0 && output_area2 > 0) || (input_area <= 0 && output_area2 <= 0)))
+		{
+			result[3] = ca;
+			result[5] = ab;
+			result[4] = c;
+		}
+
+
+		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
+
+		if (fabs(output_area1 + output_area2) > fabs(input_area) + epsilon)
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
+			return ALL_OUT;
+		}
+
+
+		return CLIPPED_HARD;
+	}
+	else if (inside.bit.a_in == 1 && inside.bit.b_in == 0 && inside.bit.c_in == 1)
+	{
+		vertex_t ab;
+		vertex_t cb;
+
+
+		int ret = intersect_two_points_plane(p, a, b, ab);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, b, c, cb);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+		result[0] = a;
+		result[1] = ab;
+		result[2] = c;
+
+		result[3] = cb;
+		result[4] = ab;
+		result[5] = c;
+
+
+		float output_area1 = Signed2DTriArea(a.position, ab.position, c.position);
+		float output_area2 = Signed2DTriArea(cb.position, ab.position, c.position);
+
+
+		if (!((input_area > 0 && output_area1 > 0) || (input_area <= 0 && output_area1 <= 0)))
+		{
+			result[0] = a;
+			result[2] = ab;
+			result[1] = c;
+		}
+
+		if (!((input_area > 0 && output_area2 > 0) || (input_area <= 0 && output_area2 <= 0)))
+		{
+			result[3] = cb;
+			result[5] = ab;
+			result[4] = c;
+		}
+
+		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
+
+
+		if (fabs(output_area1 + output_area2) > fabs(input_area) + epsilon)
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
+			return ALL_OUT;
+		}
+
+
+		return CLIPPED_HARD;
+	}
+	else if (inside.bit.a_in == 1 && inside.bit.b_in == 1 && inside.bit.c_in == 0)
+	{
+		vertex_t ac;
+		vertex_t bc;
+
+		int ret = intersect_two_points_plane(p, a, c, ac);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+
+		ret = intersect_two_points_plane(p, b, c, bc);
+		if (ret != 0)
+		{
+			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
+			// just render normal
+			return ALL_OUT;
+		}
+		result[0] = a;
+		result[1] = b;
+		result[2] = ac;
+
+		result[3] = bc;
+		result[4] = ac;
+		result[5] = b;
+
+		float output_area1 = Signed2DTriArea(a.position, b.position, ac.position);
+		float output_area2 = Signed2DTriArea(bc.position, ac.position, b.position);
+
+
+
+		if (!((input_area > 0 && output_area1 > 0) || (input_area <= 0 && output_area1 <= 0)))
+		{
+			result[0] = a;
+			result[2] = b;
+			result[1] = ac;
+		}
+
+		if (!((input_area > 0 && output_area2 > 0) || (input_area <= 0 && output_area2 <= 0)))
+		{
+			result[3] = bc;
+			result[5] = ac;
+			result[4] = b;
+		}
+
+		output_area1 = Signed2DTriArea(result[0].position, result[1].position, result[2].position);
+		output_area2 = Signed2DTriArea(result[3].position, result[4].position, result[5].position);
+
+		if (fabs(output_area1 + output_area2) > fabs(input_area) + epsilon)
+		{
+			// clipped triangles should be smaller?
+			printf("Clipping error, area increased, discarding triangle Line %d\r\n %f > %f\r\n", __LINE__, output_area1 + output_area2, input_area);
+			return ALL_OUT;
+		}
+
+		return CLIPPED_HARD;
+	}
+
+	printf("Error: intersect_triangle_plane() shouldn't get here\r\n");
+	return ALL_OUT;
+}
+
+
+void RadiantMap::allocate_quads()
+{
+	quadent.num_brush = radent[0].num_brush;
+	quadent.quadbrush = NULL;
+	quadent.quadbrush = (quadbrush_t *)realloc(quadent.quadbrush, quadent.num_brush * sizeof(quadbrush_t));
+
+	for (int i = 0; i < quadent.num_brush; i++)
+	{
+		quadent.quadbrush[i].num_quadplane = radent[0].brushes[i].num_plane;
+		quadent.quadbrush[i].quadplane = NULL;
+		quadent.quadbrush[i].num_vert = 0;
+		quadent.quadbrush[i].vert = NULL;
+		quadent.quadbrush[i].quadplane = (quadplane_t *)realloc(quadent.quadbrush[i].quadplane, quadent.quadbrush[i].num_quadplane * sizeof(quadplane_t));
+		memset(quadent.quadbrush[i].quadplane, 0, sizeof(quadplane_t));
+	}
+}
+
+
+void RadiantMap::generate_quads()
+{
+	// Only generate quads for entity 0 (worldspawn)
+	for (int i = 0; i < radent[0].num_brush; i++)
+	{
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			const vec3 a(radent[0].brushes[i].plane[j].v1[0], radent[0].brushes[i].plane[j].v1[1], radent[0].brushes[i].plane[j].v1[2]);
+			const vec3 b(radent[0].brushes[i].plane[j].v2[0], radent[0].brushes[i].plane[j].v2[1], radent[0].brushes[i].plane[j].v2[2]);
+			const vec3 c(radent[0].brushes[i].plane[j].v3[0], radent[0].brushes[i].plane[j].v3[1], radent[0].brushes[i].plane[j].v3[2]);
+
+
+			// get parallelogram vertex (draw on paper in 3d and use vector addition)
+			vec3 d = a + (c - b);
+
+			// find mid point for quad
+			vec3 mid = (a + b + c + d) / 4.0f;
+
+			float size = 100000;
+			vec3 big_triangle1[3];
+
+			// extend parallelogram to infinite plane by moving away from midpoint
+			big_triangle1[0] = a + ((a - mid) * size);
+			big_triangle1[1] = b + ((b - mid) * size);
+			big_triangle1[2] = c + ((c - mid) * size);
+
+			vec3 big_triangle2[3];
+
+			// two triangles
+			big_triangle2[0] = a + ((a - mid) * size);
+			big_triangle2[1] = c + ((c - mid) * size);
+			big_triangle2[2] = d + ((d - mid) * size);
+
+			// save original triangles
+			quadent.quadbrush[i].quadplane[j].triangle1[0] = a;
+			quadent.quadbrush[i].quadplane[j].triangle1[1] = b;
+			quadent.quadbrush[i].quadplane[j].triangle1[2] = c;
+
+			quadent.quadbrush[i].quadplane[j].triangle2[0] = a;
+			quadent.quadbrush[i].quadplane[j].triangle2[1] = c;
+			quadent.quadbrush[i].quadplane[j].triangle2[2] = d;
+
+			// save triangles used for clipping
+			int k = 0;
+			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[0];
+			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[1];
+			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[2];
+			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[0];
+			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[1];
+			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[2];
+			quadent.quadbrush[i].quadplane[j].num_triangle = 6;
+
+			// save original points of parallelogram
+			quadent.quadbrush[i].quadplane[j].a = a;
+			quadent.quadbrush[i].quadplane[j].b = b;
+			quadent.quadbrush[i].quadplane[j].c = c;
+			quadent.quadbrush[i].quadplane[j].d = d;
+
+
+			// save the plane (assuming CCW ordering)
+			vec3 ba = b - a;
+			vec3 ca = c - a;
+			vec3 normal = vec3::crossproduct(ba, ca).normalize();
+			quadent.quadbrush[i].quadplane[j].plane.normal = normal;
+			quadent.quadbrush[i].quadplane[j].plane.d = a * normal;
+
+		}
+	}
+}
+
+// TODO: Test / Fix this func
+void RadiantMap::clip_quads()
+{
+	for (int i = 0; i < radent[0].num_brush; i++)
+	{
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			for (int l = 0; l < quadent.quadbrush[i].quadplane[j].num_triangle; l += 3)
+			{
+				vertex_t result[6];
+				vertex_t a;
+				vertex_t b;
+				vertex_t c;
+
+				a.position = quadent.quadbrush[i].quadplane[j].triangle_list[l];
+				a.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
+				a.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
+
+				b.position = quadent.quadbrush[i].quadplane[j].triangle_list[l+1];
+				b.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
+				b.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
+
+
+				c.position = quadent.quadbrush[i].quadplane[j].triangle_list[l+2];
+				c.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
+				c.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
+
+				for (int k = 0; k < quadent.quadbrush[i].num_quadplane; k++)
+				{
+					// dont clip against yourself
+					if (k == j)
+					{
+						continue;
+					}
+
+					// dont clip against parallel planes
+					float dotprod = quadent.quadbrush[i].quadplane[k].plane.normal * quadent.quadbrush[i].quadplane[j].plane.normal;
+					if (fabs(dotprod) <= 0.00001f)
+					{
+						continue;
+					}
+
+					int ret = intersect_triangle_plane(quadent.quadbrush[i].quadplane[k].plane, a, b, c, result);
+
+					switch (ret)
+					{
+					case ALL_IN:
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 0] = a.position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 1] = b.position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 2] = c.position;
+						break;
+					case ALL_OUT:
+						break;
+					case CLIPPED_EASY:
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 0] = result[0].position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 1] = result[1].position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 2] = result[2].position;
+						break;
+					case CLIPPED_HARD:
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 0] = result[0].position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 1] = result[1].position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[l + 2] = result[2].position;
+
+
+						if (quadent.quadbrush[i].quadplane[j].num_triangle + 3 > 512)
+						{
+							printf("clipping: exceeded max triangles, triangle dropped\r\n");
+							break;
+						}
+						quadent.quadbrush[i].quadplane[j].triangle_list[quadent.quadbrush[i].quadplane[j].num_triangle + 0] = result[3].position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[quadent.quadbrush[i].quadplane[j].num_triangle + 1] = result[4].position;
+						quadent.quadbrush[i].quadplane[j].triangle_list[quadent.quadbrush[i].quadplane[j].num_triangle + 2] = result[5].position;
+						quadent.quadbrush[i].quadplane[j].num_triangle += 3; // add new triangle to the end
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+
+}
+
+
+void RadiantMap::intersect_quads()
+{
+	for (int i = 0; i < radent[0].num_brush; i++)
+	{
+//		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			vec3 point(0.0f, 0.0f, 0.0f);
+			plane_t A, B, C, D, E, F;
+
+			memset(&A, 0, sizeof(plane_t));
+			memset(&B, 0, sizeof(plane_t));
+			memset(&C, 0, sizeof(plane_t));
+			memset(&D, 0, sizeof(plane_t));
+			memset(&E, 0, sizeof(plane_t));
+			memset(&F, 0, sizeof(plane_t));
+
+			// Assuming we have 6 planes (which is most normal square brushes)
+			A = quadent.quadbrush[i].quadplane[0].plane;
+			B = quadent.quadbrush[i].quadplane[1].plane;
+			C = quadent.quadbrush[i].quadplane[2].plane;
+			D = quadent.quadbrush[i].quadplane[3].plane;
+			E = quadent.quadbrush[i].quadplane[4].plane;
+			F = quadent.quadbrush[i].quadplane[5].plane;
+
+			// Powerset of ABCDEF essentially
+			// ABC ABD ABE ABF ACD ACE ACF ADE ADF AEF BCD BCE BCF BDE BDF BEF CDE CDF CEF DEF 
+			if (get_intersection(A, B, C, point))
+			{
+				printf("\tintersection ABC %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, B, D, point))
+			{
+				printf("\tintersection ABD %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, B, E, point))
+			{
+				printf("\tintersection ABE %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, B, F, point))
+			{
+				printf("\tintersection ABF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, C, D, point))
+			{
+				printf("\tintersection ACD %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, C, E, point))
+			{
+				printf("\tintersection ACE %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, C, F, point))
+			{
+				printf("\tintersection ACF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, D, E, point))
+			{
+				printf("\tintersection ADE %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, D, F, point))
+			{
+				printf("\tintersection ADF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(A, E, F, point))
+			{
+				printf("\tintersection AEF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(B, C, D, point))
+			{
+				printf("\tintersection BCD %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(B, C, E, point))
+			{
+				printf("\tintersection BCE %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(B, C, F, point))
+			{
+				printf("\tintersection BCF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(B, D, E, point))
+			{
+				printf("\tintersection BDE %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(B, D, F, point))
+			{
+				printf("\tintersection BDF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(B, E, F, point))
+			{
+				printf("\tintersection BEF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(C, D, E, point))
+			{
+				printf("\tintersection CDE %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(C, D, F, point))
+			{
+				printf("\tintersection CDF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(C, E, F, point))
+			{
+				printf("\tintersection CEF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+			if (get_intersection(D, E, F, point))
+			{
+				printf("\tintersection DEF %f %f %f\r\n", point.x, point.y, point.z);
+				quadent.quadbrush[i].num_vert++;
+				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+			}
+		}
+	}
+}
