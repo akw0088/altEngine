@@ -178,8 +178,11 @@ enum
 		quadplane_t *quadplane;
 		int num_quadplane;
 
-		vec3 *vert;
+		vec3 *vert_array;
 		int num_vert;
+
+		int *index_array;
+		int num_index;
 	} quadbrush_t;
 
 	typedef struct
@@ -205,6 +208,7 @@ public:
 	void generate_quads();
 	void clip_quads();
 	void intersect_quads();
+	void intersect_bigbox();
 	bool get_intersection(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
 
 
@@ -219,7 +223,7 @@ private:
 	float Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c);
 	float DistPointPlane(const vec3 &q, const vec3 &normal, const float d);
 	int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result);
-	int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result);
+	int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result, float &t);
 	int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result);
 
 	void indent(int level, FILE *output);

@@ -11,7 +11,8 @@
 using namespace std;
 
 #define MAX_LINE 2048
-
+#define MAX(x,y) (x) > (y) ? (x) : (y)
+#define MIN(x,y) (x) < (y) ? (x) : (y)
 
 
 RadiantMap::RadiantMap()
@@ -307,7 +308,7 @@ int RadiantMap::parse_patch_points(char *line, patch_control_t *control, patch_p
 
 	char varpoint[MAX_LINE] = { 0 };
 	char match[2 * MAX_LINE] = { 0 };
-	
+
 
 
 	for (int i = 0; i < control->height; i++)
@@ -449,7 +450,7 @@ int RadiantMap::parse_patch_points(char *line, patch_control_t *control, patch_p
 			&point->p7[0], &point->p7[1], &point->p7[2], &point->uv7[0], &point->uv7[1],
 			&point->p8[0], &point->p8[1], &point->p8[2], &point->uv8[0], &point->uv8[1],
 			&point->p9[0], &point->p9[1], &point->p9[2], &point->uv9[0], &point->uv9[1]
-			);
+		);
 		if (ret == 9 * 5)
 		{
 			return 0;
@@ -616,6 +617,7 @@ int RadiantMap::load(char *map, FILE *output)
 
 		line_num++;
 
+
 		trim_edges(line, strlen(line));
 
 
@@ -663,7 +665,7 @@ int RadiantMap::load(char *map, FILE *output)
 			else if (parse_patch_points(line, &control, &point) == 0)
 			{
 				//( ( 2136 2176 360 0 0 ) ( 2160 2176 336 0 0.258900 ) ( 2184 2176 312 0 0.517799 ) )
-				
+
 				indent(level, output);
 
 
@@ -818,7 +820,7 @@ int RadiantMap::load(char *map, FILE *output)
 				if (strcmp(name.name, "entity") == 0)
 				{
 					state = P_ENTITY;
-					
+
 					num_ent++;
 					radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
 
@@ -1002,7 +1004,7 @@ int RadiantMap::intersect_two_points_plane2(const plane_t &plane, const vertex_t
 	return 0;
 }
 
-int RadiantMap::intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result)
+int RadiantMap::intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result, float &t)
 {
 	// plane equation
 	// ax + by + cz + d = 0
@@ -1026,8 +1028,8 @@ int RadiantMap::intersect_two_points_plane(const plane_t &p, const vertex_t &a, 
 	if (denom == 0.0f)
 		return -1;
 
-	float t = -(origin * p.normal - p.d) / denom;
-	if (t < 0.0 || t > 1.0)
+	t = -(origin * p.normal - p.d) / denom;
+	if (t <= 0.0 || t >= 1.0)
 		return -1;
 
 	result.position = origin + dir * t;
@@ -1072,12 +1074,14 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 	if (inside.dword == 7)
 		return ALL_IN;
 
+	float t = -1;
+
 	// easy case, one triangle, two points move in
 	if (inside.bit.a_in == 1 && inside.bit.b_in == 0 && inside.bit.c_in == 0)
 	{
 		vertex_t ab, ac;
 
-		int ret = intersect_two_points_plane(p, a, b, ab);
+		int ret = intersect_two_points_plane(p, a, b, ab, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1085,7 +1089,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, a, c, ac);
+		ret = intersect_two_points_plane(p, a, c, ac, t);
 		if (ret != 0)
 		{
 			//printf("Error: didnt intersect despite being classified as exiting\r\n");
@@ -1122,7 +1126,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 	{
 		vertex_t ba, bc;
 
-		int ret = intersect_two_points_plane(p, b, a, ba);
+		int ret = intersect_two_points_plane(p, b, a, ba, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1130,7 +1134,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, b, c, bc);
+		ret = intersect_two_points_plane(p, b, c, bc, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1171,7 +1175,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 	{
 		vertex_t ca, cb;
 
-		int ret = intersect_two_points_plane(p, c, a, ca);
+		int ret = intersect_two_points_plane(p, c, a, ca, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1179,7 +1183,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, c, b, cb);
+		ret = intersect_two_points_plane(p, c, b, cb, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1221,7 +1225,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 		vertex_t ab;
 		vertex_t ca;
 
-		int ret = intersect_two_points_plane(p, a, b, ab);
+		int ret = intersect_two_points_plane(p, a, b, ab, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1229,7 +1233,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, a, c, ca);
+		ret = intersect_two_points_plane(p, a, c, ca, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1285,7 +1289,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 		vertex_t cb;
 
 
-		int ret = intersect_two_points_plane(p, a, b, ab);
+		int ret = intersect_two_points_plane(p, a, b, ab, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1293,7 +1297,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, b, c, cb);
+		ret = intersect_two_points_plane(p, b, c, cb, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1346,7 +1350,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 		vertex_t ac;
 		vertex_t bc;
 
-		int ret = intersect_two_points_plane(p, a, c, ac);
+		int ret = intersect_two_points_plane(p, a, c, ac, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1354,7 +1358,7 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 			return ALL_OUT;
 		}
 
-		ret = intersect_two_points_plane(p, b, c, bc);
+		ret = intersect_two_points_plane(p, b, c, bc, t);
 		if (ret != 0)
 		{
 			printf("Error: didnt intersect despite being classified as exiting Line %d\r\n", __LINE__);
@@ -1417,7 +1421,9 @@ void RadiantMap::allocate_quads()
 		quadent.quadbrush[i].num_quadplane = radent[0].brushes[i].num_plane;
 		quadent.quadbrush[i].quadplane = NULL;
 		quadent.quadbrush[i].num_vert = 0;
-		quadent.quadbrush[i].vert = NULL;
+		quadent.quadbrush[i].vert_array = NULL;
+		quadent.quadbrush[i].num_index = 0;
+		quadent.quadbrush[i].index_array = NULL;
 		quadent.quadbrush[i].quadplane = (quadplane_t *)realloc(quadent.quadbrush[i].quadplane, quadent.quadbrush[i].num_quadplane * sizeof(quadplane_t));
 		memset(quadent.quadbrush[i].quadplane, 0, sizeof(quadplane_t));
 	}
@@ -1486,8 +1492,15 @@ void RadiantMap::generate_quads()
 			// save the plane (assuming CCW ordering)
 			vec3 ba = b - a;
 			vec3 ca = c - a;
-			vec3 normal = vec3::crossproduct(ba, ca).normalize();
-			quadent.quadbrush[i].quadplane[j].plane.normal = normal;
+
+			vec3 normal;
+
+
+			normal = vec3::crossproduct(ba, ca).normalize();
+
+
+			
+			quadent.quadbrush[i].quadplane[j].plane.normal = normal.normalize();
 			quadent.quadbrush[i].quadplane[j].plane.d = a * normal;
 
 		}
@@ -1609,142 +1622,487 @@ void RadiantMap::intersect_quads()
 			{
 				printf("\tintersection ABC %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, B, D, point))
 			{
 				printf("\tintersection ABD %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, B, E, point))
 			{
 				printf("\tintersection ABE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, B, F, point))
 			{
 				printf("\tintersection ABF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, C, D, point))
 			{
 				printf("\tintersection ACD %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, C, E, point))
 			{
 				printf("\tintersection ACE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, C, F, point))
 			{
 				printf("\tintersection ACF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, D, E, point))
 			{
 				printf("\tintersection ADE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, D, F, point))
 			{
 				printf("\tintersection ADF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(A, E, F, point))
 			{
 				printf("\tintersection AEF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(B, C, D, point))
 			{
 				printf("\tintersection BCD %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(B, C, E, point))
 			{
 				printf("\tintersection BCE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(B, C, F, point))
 			{
 				printf("\tintersection BCF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(B, D, E, point))
 			{
 				printf("\tintersection BDE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(B, D, F, point))
 			{
 				printf("\tintersection BDF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(B, E, F, point))
 			{
 				printf("\tintersection BEF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(C, D, E, point))
 			{
 				printf("\tintersection CDE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(C, D, F, point))
 			{
 				printf("\tintersection CDF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(C, E, F, point))
 			{
 				printf("\tintersection CEF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 			if (get_intersection(D, E, F, point))
 			{
 				printf("\tintersection DEF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert = (vec3 *)realloc(quadent.quadbrush[i].vert, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert[quadent.quadbrush[i].num_vert - 1] = point;
+				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
 			}
 		}
+	}
+}
+
+
+
+
+void RadiantMap::intersect_bigbox()
+{
+	for (int i = 0; i < radent[0].num_brush; i++)
+	{
+		// idea is you have a large box, then clip that down to the brush
+		vec3 aabb[8];
+		vec3 output[8];
+		vec3 original[8];
+
+
+		vec3 intermediate[6][8];
+
+
+		int intersection_count = 0;
+		int intersection_test_count = 0;
+
+
+		// Original copy so we can ignore diagonals
+		original[0] = vec3(-8192, -8192, -8192);
+		original[7] = vec3(8192, 8192, 8192);
+		original[1] = vec3(original[0].x, original[0].y, original[7].z);
+		original[2] = vec3(original[0].x, original[7].y, original[0].z);
+		original[3] = vec3(original[0].x, original[7].y, original[7].z);
+		original[4] = vec3(original[7].x, original[0].y, original[0].z);
+		original[5] = vec3(original[7].x, original[0].y, original[7].z);
+		original[6] = vec3(original[7].x, original[7].y, original[0].z);
+
+		// GL_TRAINGLES outward facing faces
+		int	index_array[36] = { 
+			2,1,0,
+			2,3,1,
+			5,1,7,
+			1,3,7,
+			7,6,5,
+			6,4,5,
+			6,2,0,
+			4,6,0,
+			1,4,0,
+			5,4,1,
+			6,3,2,
+			6,7,3
+		};
+			
+		vec2 texcoords[36] =
+		{
+			// Front face
+			vec2(0.0f, 0.0f),			//2
+			vec2(0.0f, -1.0f),			//1
+			vec2(-1.0f, -1.0f),			//3
+
+			vec2(0.0f, 0.0f),			//2
+			vec2(-1.0f, -1.0f),			//3
+			vec2(-1.0f, 0.0f),			//4
+
+
+			// Back face
+			vec2(0.0f, 0.0f),			//2
+			vec2(0.0f, 1.0f),			//1
+			vec2(1.0f, 1.0f),			//3
+
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 1.0f),			//3
+			vec2(1.0f, 0.0f),			//4
+
+			// Left face
+			vec2(0.0f, -1.0f),			//1
+			vec2(0.0f, 0.0f),			//2
+			vec2(-1.0f, -1.0f),			//3
+
+			vec2(0.0f, 0.0f),			//2
+			vec2(-1.0f, 0.0f),			//4
+			vec2(-1.0f, -1.0f),			//3
+
+			// Right face
+			vec2(0.0f, 1.0f),			//1
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 1.0f),			//3
+
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 0.0f),			//4
+			vec2(1.0f, 1.0f),			//3
+
+			// Top face
+			vec2(0.0f, 1.0f),			//1
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 1.0f),			//3
+
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 0.0f),			//4
+			vec2(1.0f, 1.0f),			//3
+
+			// Bottom face
+			vec2(0.0f, 1.0f),			//1
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 1.0f),			//3
+
+			vec2(0.0f, 0.0f),			//2
+			vec2(1.0f, 0.0f),			//4
+			vec2(1.0f, 1.0f),			//3
+		};
+
+
+		// Eight corners of a big box
+		output[0] = vec3(-8192, -8192, -8192);
+		output[7] = vec3(8192, 8192, 8192);
+		output[1] = vec3(output[0].x, output[0].y, output[7].z);
+		output[2] = vec3(output[0].x, output[7].y, output[0].z);
+		output[3] = vec3(output[0].x, output[7].y, output[7].z);
+		output[4] = vec3(output[7].x, output[0].y, output[0].z);
+		output[5] = vec3(output[7].x, output[0].y, output[7].z);
+		output[6] = vec3(output[7].x, output[7].y, output[0].z);
+
+		// for each plane
+		for (int j = 0; j < 6; j++)
+		{
+			// for each box point
+			for (int k = 0; k < 8; k++)
+			{
+				intermediate[j][k] = output[k];
+			}
+		}
+
+
+		// Good pairs should be (edges) (essentiall 3 axis from point)
+		// 0:1, 0:2, 0:4
+		// 1:0, 1:3, 1:5
+		// 2:0, 2:3, 2:6
+		// 3:1, 3:2, 3:7
+		// 4:0, 4:5, 4:6
+		// 5:1, 5:4, 5:7
+		// 6:2, 6:4, 6:7
+		// 7:3, 7:5, 7:6
+
+		// 24 edges
+		// 12 unique edges
+		int set_size = 8;
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			// Eight corners of a big box
+			aabb[0] = vec3(-8192, -8192, -8192);
+			aabb[7] = vec3(8192, 8192, 8192);
+			aabb[1] = vec3(aabb[0].x, aabb[0].y, aabb[7].z);
+			aabb[2] = vec3(aabb[0].x, aabb[7].y, aabb[0].z);
+			aabb[3] = vec3(aabb[0].x, aabb[7].y, aabb[7].z);
+			aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
+			aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
+			aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
+
+			printf("Plane %d normal %f %f %f d %f\r\n", j,
+				quadent.quadbrush[i].quadplane[j].plane.normal.x,
+				quadent.quadbrush[i].quadplane[j].plane.normal.y,
+				quadent.quadbrush[i].quadplane[j].plane.normal.z,
+				quadent.quadbrush[i].quadplane[j].plane.d);
+
+
+			// (n+r-1!) / (r! * (n-1)!) = 36
+			for (int k = 0; k < set_size * set_size; k++)
+			{
+				int x = k / set_size;
+				int y = k % set_size;
+
+
+
+				// avoid identical pairs
+				if (x == y)
+				{
+//					printf("%d:%d skipping identical point\r\n", x, y);
+					continue;
+				}
+
+				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
+				{
+					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
+					{
+//						printf("%d:%d both points are on front side of plane\r\n", x, y);
+						continue;
+					}
+				}
+
+
+				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
+				{
+					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
+					{
+//						printf("%d:%d both points are on back side of plane\r\n", x, y);
+						continue;
+					}
+				}
+
+				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
+				{
+					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
+					{
+//						printf("%d:%d crosses plane back:front\r\n", x, y);
+					}
+				}
+
+				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
+				{
+					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
+					{
+//						printf("%d:%d crosses plane front:back\r\n", x, y);
+					}
+				}
+
+
+				vec3 o = original[x] - original[y];
+				if (fabs(o.magnitude()) > 2 * 8192 * 1.2) // will be sqrt(2) bigger or more 1.4142
+				{
+					// avoid diagonal pairs
+//					printf("%d:%d vector magnitude greater than a side (edge is a diagonal) %f\r\n", x, y, o.magnitude());
+					continue;
+				}
+				else
+				{
+//					printf("%d:%d vector magnitude in range (edge not a diagnol) %f\r\n", x, y, o.magnitude());
+				}
+
+
+				vec3 v = aabb[x] - aabb[y];
+				if (fabs(v * quadent.quadbrush[i].quadplane[j].plane.normal) < 0.001f)
+				{
+					// avoid parallel checks
+//					printf("%d:%d vector is parallel to plane %d\r\n", x, y, j);
+					continue;
+				}
+
+				// move from a to b, result is new b
+				vertex_t a;
+				vertex_t b;
+				vertex_t result;
+				float t = -1.0f;
+
+				if (y > x)
+				{
+					a.position = aabb[x];
+					b.position = aabb[y];
+				}
+				else
+				{
+					a.position = aabb[y];
+					b.position = aabb[x];
+				}
+
+				intersection_test_count++;
+				if (intersect_two_points_plane(quadent.quadbrush[i].quadplane[j].plane, a, b, result, t) == 0)
+				{
+					intersection_count++;
+					printf("intersection %d:%d with plane %d at time %f\r\n", x, y, j, t);
+					b.position = result.position;
+
+					
+					v = a.position - b.position;
+					// grid is in increments of 8, so we should have moved some distance (avoid zero length sides)
+					if (v.magnitude() > 4.0)
+					{
+						//aabb[k % set_size] = a.position;
+						int save = -1;
+
+
+						// kind of a hack, seems both the top and bottom are saving to the same vertices
+						// so I just check the normal and flip the results if it should actually save to opposite side
+						if (quadent.quadbrush[i].quadplane[j].plane.normal.x > 0 ||
+							quadent.quadbrush[i].quadplane[j].plane.normal.y > 0 || 
+							quadent.quadbrush[i].quadplane[j].plane.normal.z > 0 )
+						{
+							save = y;
+						}
+						else
+						{
+							save = x;
+						}
+
+						aabb[save] = result.position;
+						printf("\tintersection found aabb[%d]=(%f %f %f)\r\n", save, b.position.x, b.position.y, b.position.z);
+
+
+						if (fabs(aabb[save].x) < fabs(intermediate[j][save].x))
+							intermediate[j][save].x = aabb[save].x;
+						if (fabs(aabb[save].y) < fabs(intermediate[j][save].y))
+							intermediate[j][save].y = aabb[save].y;
+						if (fabs(aabb[save].z) < fabs(intermediate[j][save].z))
+							intermediate[j][save].z = aabb[save].z;
+
+
+
+						if (fabs(aabb[save].x) < fabs(output[save].x))
+							output[save].x = aabb[save].x;
+						if (fabs(aabb[save].y) < fabs(output[save].y))
+							output[save].y = aabb[save].y;
+						if (fabs(aabb[save].z) < fabs(output[save].z))
+							output[save].z = aabb[save].z;
+					}
+					else
+					{
+						printf("Warning: Intersection left small delta\r\n");
+					}
+
+				}
+				else
+				{
+//					printf("\tdid not intersect\r\n");
+				}
+			}
+
+
+			printf("tested %d intersected %d\r\n", intersection_test_count, intersection_count);
+			printf("=============================================\r\n");
+			for (int k = 0; k < 8; k++)
+			{
+				//each aabb should now match brush
+				printf("aabb[%d]=(%f %f %f)\r\n", j, intermediate[j][k].x, intermediate[j][k].y, intermediate[j][k].z);
+			}
+			printf("=============================================\r\n");
+
+		}
+
+
+		quadent.quadbrush[i].num_vert = 8;
+		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+
+		for (int k = 0; k < quadent.quadbrush[i].num_vert; k++)
+		{
+			//each aabb should now match brush
+			printf("(%f %f %f)\r\n", output[k].x, output[k].y, output[k].z);
+
+			quadent.quadbrush[i].vert_array[k] = output[quadent.quadbrush[i].num_vert - k - 1];
+
+		}
+
+		quadent.quadbrush[i].num_index = 36;
+		quadent.quadbrush[i].index_array = (int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
+
+		for (int k = 0; k < quadent.quadbrush[i].num_index; k++)
+		{
+			quadent.quadbrush[i].index_array[k] = index_array[k];
+		}
+		printf("done with brush %d\r\n", i);
+
 	}
 }
