@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "radiantmap.h"
 #include "vector.h"
@@ -599,7 +600,6 @@ int RadiantMap::load(char *map, FILE *output)
 	int line_num = 0;
 
 	int state = P_NONE;
-	int num_plane = 0;
 
 
 	radent = NULL;
@@ -756,7 +756,6 @@ int RadiantMap::load(char *map, FILE *output)
 			{
 				indent(--level, output);
 				fprintf(output, "}\r\n");
-				num_plane = 0;
 				state = P_ENTITY;
 			}
 		}
