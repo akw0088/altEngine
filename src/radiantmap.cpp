@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #include "radiantmap.h"
 #include "vector.h"
@@ -600,6 +599,7 @@ int RadiantMap::load(char *map, FILE *output)
 	int line_num = 0;
 
 	int state = P_NONE;
+	int num_plane = 0;
 
 
 	radent = NULL;
@@ -756,6 +756,7 @@ int RadiantMap::load(char *map, FILE *output)
 			{
 				indent(--level, output);
 				fprintf(output, "}\r\n");
+				num_plane = 0;
 				state = P_ENTITY;
 			}
 		}
@@ -1772,6 +1773,7 @@ void RadiantMap::intersect_bigbox()
 		vec3 aabb[8];
 		vec3 output[8];
 		vec3 original[8];
+		int backfront = -1;
 
 
 		vec3 intermediate[6][8];
@@ -1930,7 +1932,7 @@ void RadiantMap::intersect_bigbox()
 				// avoid identical pairs
 				if (x == y)
 				{
-//					printf("%d:%d skipping identical point\r\n", x, y);
+					//					printf("%d:%d skipping identical point\r\n", x, y);
 					continue;
 				}
 
@@ -1938,7 +1940,7 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
 					{
-//						printf("%d:%d both points are on front side of plane\r\n", x, y);
+						//						printf("%d:%d both points are on front side of plane\r\n", x, y);
 						continue;
 					}
 				}
@@ -1948,7 +1950,7 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
 					{
-//						printf("%d:%d both points are on back side of plane\r\n", x, y);
+						//						printf("%d:%d both points are on back side of plane\r\n", x, y);
 						continue;
 					}
 				}
@@ -1957,7 +1959,8 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
 					{
-//						printf("%d:%d crosses plane back:front\r\n", x, y);
+						//						printf("%d:%d crosses plane back:front\r\n", x, y);
+						backfront = 1;
 					}
 				}
 
@@ -1965,7 +1968,8 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
 					{
-//						printf("%d:%d crosses plane front:back\r\n", x, y);
+						//						printf("%d:%d crosses plane front:back\r\n", x, y);
+						backfront = 0;
 					}
 				}
 
@@ -1979,7 +1983,7 @@ void RadiantMap::intersect_bigbox()
 				}
 				else
 				{
-//					printf("%d:%d vector magnitude in range (edge not a diagnol) %f\r\n", x, y, o.magnitude());
+					//					printf("%d:%d vector magnitude in range (edge not a diagnol) %f\r\n", x, y, o.magnitude());
 				}
 
 
@@ -1997,7 +2001,7 @@ void RadiantMap::intersect_bigbox()
 				vertex_t result;
 				float t = -1.0f;
 
-				if (y > x)
+				if (backfront)
 				{
 					a.position = aabb[x];
 					b.position = aabb[y];
@@ -2008,6 +2012,9 @@ void RadiantMap::intersect_bigbox()
 					b.position = aabb[x];
 				}
 
+
+
+
 				intersection_test_count++;
 				if (intersect_two_points_plane(quadent.quadbrush[i].quadplane[j].plane, a, b, result, t) == 0)
 				{
@@ -2015,7 +2022,7 @@ void RadiantMap::intersect_bigbox()
 					printf("intersection %d:%d with plane %d at time %f\r\n", x, y, j, t);
 					b.position = result.position;
 
-					
+
 					v = a.position - b.position;
 					// grid is in increments of 8, so we should have moved some distance (avoid zero length sides)
 					if (v.magnitude() > 4.0)
@@ -2024,11 +2031,7 @@ void RadiantMap::intersect_bigbox()
 						int save = -1;
 
 
-						// kind of a hack, seems both the top and bottom are saving to the same vertices
-						// so I just check the normal and flip the results if it should actually save to opposite side
-						if (quadent.quadbrush[i].quadplane[j].plane.normal.x > 0 ||
-							quadent.quadbrush[i].quadplane[j].plane.normal.y > 0 || 
-							quadent.quadbrush[i].quadplane[j].plane.normal.z > 0 )
+						if (backfront)
 						{
 							save = y;
 						}
@@ -2036,6 +2039,7 @@ void RadiantMap::intersect_bigbox()
 						{
 							save = x;
 						}
+
 
 						aabb[save] = result.position;
 						printf("\tintersection found aabb[%d]=(%f %f %f)\r\n", save, b.position.x, b.position.y, b.position.z);
@@ -2065,7 +2069,7 @@ void RadiantMap::intersect_bigbox()
 				}
 				else
 				{
-//					printf("\tdid not intersect\r\n");
+					//					printf("\tdid not intersect\r\n");
 				}
 			}
 
