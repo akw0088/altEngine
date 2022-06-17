@@ -1606,184 +1606,158 @@ void RadiantMap::intersect_quads()
 {
 	for (int i = 0; i < radent[0].num_brush; i++)
 	{
-//		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		vec3 point_array[512];
+		int num_point = 0;
+		vec3 triangle_array[512];
+		int num_triangle = 0;
+
+		vec3 plane_face_array[128][512];
+		int num_plane_face = 0;
+
+
+
+		vec3 point(0.0f, 0.0f, 0.0f);
+
+
+
+		int arr[128] = { 0 }; // max plane
+		int output[128] = { 0 };
+		int num_output = 0;
+
+		for (int x = 0; x < radent[0].brushes[i].num_plane; x++)
 		{
-			vec3 point(0.0f, 0.0f, 0.0f);
-			plane_t A, B, C, D, E, F;
+			arr[x] = x;
+		}
+		int n = radent[0].brushes[i].num_plane;
+		int r = 3;
 
-			memset(&A, 0, sizeof(plane_t));
-			memset(&B, 0, sizeof(plane_t));
-			memset(&C, 0, sizeof(plane_t));
-			memset(&D, 0, sizeof(plane_t));
-			memset(&E, 0, sizeof(plane_t));
-			memset(&F, 0, sizeof(plane_t));
+		// nCr
+		Combination(arr, n, r, output, num_output);
 
-			// Assuming we have 6 planes (which is most normal square brushes)
-			A = quadent.quadbrush[i].quadplane[0].plane; // X+
-			B = quadent.quadbrush[i].quadplane[1].plane; // Y-
-			C = quadent.quadbrush[i].quadplane[2].plane; // X-
-			D = quadent.quadbrush[i].quadplane[3].plane; // Y+
-			E = quadent.quadbrush[i].quadplane[4].plane; // Z+
-			F = quadent.quadbrush[i].quadplane[5].plane; // Z-
+		printf("Plane nCr combinations of 3 (%dC%d)\r\n", n, r);
+		for (int x = 0; x < num_output; x += r)
+		{
+			printf("\t");
+			for (int y = 0; y < r; y++)
+			{
+				printf("%C ", output[x + y] + 'A');
+			}
+			printf("\r\n");
+		}
 
-			// Powerset of ABCDEF essentially
+
+		for (int t = 0; t < num_output; t += 3)
+		{
+			// Unique Combinations nC3 of planes (ABCDEF for a box)
 			// ABC ABD ABE ABF ACD ACE ACF ADE ADF AEF BCD BCE BCF BDE BDF BEF CDE CDF CEF DEF 
-			if (get_intersection(A, B, C, point))
+			if (get_intersection(
+				quadent.quadbrush[i].quadplane[output[t + 0]].plane,
+				quadent.quadbrush[i].quadplane[output[t + 1]].plane,
+				quadent.quadbrush[i].quadplane[output[t + 2]].plane,
+				point))
 			{
-				// X+ Y- X- -- should fail for boxes
-				printf("\tintersection ABC %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
+				printf("\tintersection %C%C%C %f %f %f\r\n",
+					output[t + 0] + 'A',
+					output[t + 1] + 'A',
+					output[t + 2] + 'A',
+					point.x, point.y, point.z);
+				point_array[num_point++] = point;
 			}
-			if (get_intersection(A, B, D, point))
+		}
+
+
+		// We now have all the points, but no ordering, but we can match each point with it's corresponding plane
+		// and the points in the plane make up a convex polygon
+		// convex polygons can be rendered as triangle fans
+
+		// TBD point on plane test every point from above
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			int num_triangle_from_plane = 0;
+
+			for (int k = 0; k < num_point; k++)
 			{
-				// X+ Y- Y+ -- should fail for boxes
-				printf("\tintersection ABD %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
+				/*
+				if ( is_point_on_plane(point[k], quadent.quadbrush[i].quadplane[j]) )
+				{
+				plane_face_array[j][num_plane_face++] = point[k];
+				}
+
+				*/
 			}
-			if (get_intersection(A, B, E, point))
-			{
-				// X+ Y- Z+ -- 101
-				printf("\tintersection ABE %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, B, F, point))
-			{
-				// X+ Y- Z- -- 100
-				printf("\tintersection ABF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, C, D, point))
-			{
-				// X+ X- Y+ -- should fail for boxes
-				printf("\tintersection ACD %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, C, E, point))
-			{
-				// X+ X-  -- should fail for boxes
-				printf("\tintersection ACE %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, C, F, point))
-			{
-				// X+ X-  -- should fail for boxes
-				printf("\tintersection ACF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, D, E, point))
-			{
-				// X+ Y+ Z+ -- 111
-				printf("\tintersection ADE %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, D, F, point))
-			{
-				// X+ Y+ Z- -- 110
-				printf("\tintersection ADF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(A, E, F, point))
-			{
-				// X+ Z+ Z- -- should fail for boxes
-				printf("\tintersection AEF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(B, C, D, point))
-			{
-				// Y- X- Y+ -- should fail for boxes
-				printf("\tintersection BCD %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(B, C, E, point))
-			{
-				// Y- X- Z+ -- should fail for boxes
-				printf("\tintersection BCE %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(B, C, F, point))
-			{
-				printf("\tintersection BCF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(B, D, E, point))
-			{
-				printf("\tintersection BDE %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(B, D, F, point))
-			{
-				printf("\tintersection BDF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(B, E, F, point))
-			{
-				printf("\tintersection BEF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(C, D, E, point))
-			{
-				printf("\tintersection CDE %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(C, D, F, point))
-			{
-				printf("\tintersection CDF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(C, E, F, point))
-			{
-				printf("\tintersection CEF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
-			if (get_intersection(D, E, F, point))
-			{
-				printf("\tintersection DEF %f %f %f\r\n", point.x, point.y, point.z);
-				quadent.quadbrush[i].num_vert++;
-				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
-				quadent.quadbrush[i].vert_array[quadent.quadbrush[i].num_vert - 1] = point;
-			}
+
+			// So we can now convert point_array to a regular set of indexed triangles so we can render the whole thing at once
+			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
+			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face, &triangle_array[num_triangle], num_triangle_from_plane);
+			num_triangle += num_triangle_from_plane;
+
+			num_plane_face = 0;
 		}
 	}
 }
 
+
+void RadiantMap::combination_recurse(int arr[], int data[], int start, int end, int index, int r, int *output, int &num_out)
+{
+	if (index == r)
+	{
+		for (int j = 0; j < r; j++)
+		{
+			//            printf("%c ",  data[j] + 'A');
+			output[num_out++] = data[j];
+		}
+		//      printf("\r\n");
+		return;
+	}
+
+	for (int i = start; i <= end && end - i + 1 >= r - index; i++)
+	{
+		data[index] = arr[i];
+		combination_recurse(arr, data, i + 1, end, index + 1, r, output, num_out);
+	}
+}
+
+void RadiantMap::Combination(int *arr, int n, int r, int *output, int &num_out)
+{
+	int *data = (int *)malloc(r * sizeof(int));;
+
+	combination_recurse(arr, data, 0, n - 1, 0, r, output, num_out);
+	free((void *)data);
+}
+
+
+
+void RadiantMap::triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle)
+{
+	for (unsigned int i = 0; i < num_point;)
+	{
+		if (i == 0)
+		{
+			// Triangle fan, first set will have 3 points
+			vec3 a = point_array[i + 0];
+			vec3 b = point_array[i + 1];
+			vec3 c = point_array[i + 2];
+
+
+			triangle_array[num_triangle++] = a;
+			triangle_array[num_triangle++] = b;
+			triangle_array[num_triangle++] = c;
+			i += 3;
+		}
+		else
+		{
+			// rest will be one new point and two previous
+			vec3 a = point_array[i - 2];
+			vec3 b = point_array[i - 1];
+			vec3 c = point_array[i];
+
+			triangle_array[num_triangle++] = a;
+			triangle_array[num_triangle++] = b;
+			triangle_array[num_triangle++] = c;
+			i++;
+		}
+	}
+}
 
 
 
