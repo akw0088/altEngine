@@ -965,14 +965,24 @@ int RadiantMap::save(char *map, FILE *output)
 
 bool RadiantMap::get_intersection(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
 {
-	float denom = vec3::crossproduct(p2.normal, p3.normal) * p1.normal;
+	vec3 cross_p2p3 = vec3::crossproduct(p2.normal, p3.normal);
+	float denom = cross_p2p3 * p1.normal;
 
 	if (denom == 0)
 	{
+//		printf("line formed by p2 and p3 is parallel to plane p1\r\n");
 		return false;
 	}
 
-	point = vec3::crossproduct(p2.normal, p3.normal) * -p1.d + vec3::crossproduct(p3.normal, p1.normal) * -p2.d + vec3::crossproduct(p1.normal, p2.normal) * -p3.d;
+	vec3 cross_p3p1 = vec3::crossproduct(p3.normal, p1.normal);
+	vec3 cross_p1p2 = vec3::crossproduct(p1.normal, p2.normal);
+
+	point = 
+		(cross_p2p3 * p1.d) +
+		(cross_p3p1 * p2.d) +
+		(cross_p1p2 * p3.d);
+
+	point = point / denom;
 
 	return true;
 }
@@ -1609,17 +1619,18 @@ void RadiantMap::intersect_quads()
 			memset(&F, 0, sizeof(plane_t));
 
 			// Assuming we have 6 planes (which is most normal square brushes)
-			A = quadent.quadbrush[i].quadplane[0].plane;
-			B = quadent.quadbrush[i].quadplane[1].plane;
-			C = quadent.quadbrush[i].quadplane[2].plane;
-			D = quadent.quadbrush[i].quadplane[3].plane;
-			E = quadent.quadbrush[i].quadplane[4].plane;
-			F = quadent.quadbrush[i].quadplane[5].plane;
+			A = quadent.quadbrush[i].quadplane[0].plane; // X+
+			B = quadent.quadbrush[i].quadplane[1].plane; // Y-
+			C = quadent.quadbrush[i].quadplane[2].plane; // X-
+			D = quadent.quadbrush[i].quadplane[3].plane; // Y+
+			E = quadent.quadbrush[i].quadplane[4].plane; // Z+
+			F = quadent.quadbrush[i].quadplane[5].plane; // Z-
 
 			// Powerset of ABCDEF essentially
 			// ABC ABD ABE ABF ACD ACE ACF ADE ADF AEF BCD BCE BCF BDE BDF BEF CDE CDF CEF DEF 
 			if (get_intersection(A, B, C, point))
 			{
+				// X+ Y- X- -- should fail for boxes
 				printf("\tintersection ABC %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1627,6 +1638,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, B, D, point))
 			{
+				// X+ Y- Y+ -- should fail for boxes
 				printf("\tintersection ABD %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1634,6 +1646,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, B, E, point))
 			{
+				// X+ Y- Z+ -- 101
 				printf("\tintersection ABE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1641,6 +1654,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, B, F, point))
 			{
+				// X+ Y- Z- -- 100
 				printf("\tintersection ABF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1648,6 +1662,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, C, D, point))
 			{
+				// X+ X- Y+ -- should fail for boxes
 				printf("\tintersection ACD %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1655,6 +1670,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, C, E, point))
 			{
+				// X+ X-  -- should fail for boxes
 				printf("\tintersection ACE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1662,6 +1678,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, C, F, point))
 			{
+				// X+ X-  -- should fail for boxes
 				printf("\tintersection ACF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1669,6 +1686,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, D, E, point))
 			{
+				// X+ Y+ Z+ -- 111
 				printf("\tintersection ADE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1676,6 +1694,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, D, F, point))
 			{
+				// X+ Y+ Z- -- 110
 				printf("\tintersection ADF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1683,6 +1702,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(A, E, F, point))
 			{
+				// X+ Z+ Z- -- should fail for boxes
 				printf("\tintersection AEF %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1690,6 +1710,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(B, C, D, point))
 			{
+				// Y- X- Y+ -- should fail for boxes
 				printf("\tintersection BCD %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1697,6 +1718,7 @@ void RadiantMap::intersect_quads()
 			}
 			if (get_intersection(B, C, E, point))
 			{
+				// Y- X- Z+ -- should fail for boxes
 				printf("\tintersection BCE %f %f %f\r\n", point.x, point.y, point.z);
 				quadent.quadbrush[i].num_vert++;
 				quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
@@ -1765,6 +1787,7 @@ void RadiantMap::intersect_quads()
 
 
 
+// So this is good for axial 6 plane brushes, but not really for much else
 void RadiantMap::intersect_bigbox()
 {
 	for (int i = 0; i < radent[0].num_brush; i++)
