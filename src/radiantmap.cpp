@@ -1604,10 +1604,10 @@ void RadiantMap::clip_quads()
 
 
 
-#define MAX_OUTPUT 2048 // 24 choose 3 = 2024
-#define MAX_BRUSH_PLANE 24
+#define MAX_OUTPUT 14880 // 24 choose 3 = 2024
+#define MAX_BRUSH_PLANE 32
 #define MAX_POINT_PER_PLANE 1024
-#define MAX_POINT_PER_BRUSH 4096
+#define MAX_POINT_PER_BRUSH 8192
 
 // Works for more than just axial brushes, but not everything perfect yet
 void RadiantMap::intersect_quads()
@@ -1624,7 +1624,7 @@ void RadiantMap::intersect_quads()
 		int num_brush_point = 0;
 		vec3 plane_face_array[MAX_BRUSH_PLANE][MAX_POINT_PER_PLANE];
 		int num_plane_face[MAX_BRUSH_PLANE] = { 0 };
-		int arr[MAX_BRUSH_PLANE] = { 0 }; // max plane
+		int arr[MAX_OUTPUT] = { 0 }; // max plane
 		int output[MAX_OUTPUT] = { 0 };
 		int num_output = 0;
 		vec3 point(0.0f, 0.0f, 0.0f);
@@ -1633,9 +1633,11 @@ void RadiantMap::intersect_quads()
 
 
 
+
 		if (radent[0].brushes[i].num_plane > MAX_BRUSH_PLANE)
 		{
-			printf("Brush exceeded max planes\r\n");
+			printf("Brush %d exceeded max planes %d\r\n", i, radent[0].brushes[i].num_plane);
+			max_brush_planes = MAX(max_brush_planes, radent[0].brushes[i].num_plane);
 			continue;
 		}
 
@@ -1652,7 +1654,10 @@ void RadiantMap::intersect_quads()
 		Combination(arr, n, r, output, num_output);
 
 
+		max_output = MAX(max_output, num_output);
 
+
+#ifdef DEBUG
 		printf("Plane nCr combinations of 3 (%dC%d)\r\n", n, r);
 		for (int x = 0; x < num_output; x += r)
 		{
@@ -1663,7 +1668,7 @@ void RadiantMap::intersect_quads()
 			}
 			printf("\r\n");
 		}
-
+#endif
 
 		for (int t = 0; t < num_output; t += 3)
 		{
@@ -1686,14 +1691,22 @@ void RadiantMap::intersect_quads()
 				quadent.quadbrush[i].quadplane[index3].plane,
 				point))
 			{
+#ifdef DEBUG
 				printf("\tintersection %C%C%C %f %f %f\r\n",
 					index1 + 'A',
 					index2 + 'A',
 					index3 + 'A',
 					point.x, point.y, point.z);
-				point_array[num_point++] = point;
-
-
+#endif
+				if (num_point < MAX_POINT_PER_PLANE)
+				{
+					point_array[num_point++] = point;
+				}
+				else
+				{
+					printf("Max points per plane exceeded on brush %d num_plane %d\r\n", i, radent[0].brushes[saved_i].num_plane);
+					break;
+				}
 
 				// Add this vertex to each of the planes that contain it
 				// each array of points will be the points on that plane
@@ -1709,7 +1722,7 @@ void RadiantMap::intersect_quads()
 			}
 		}
 
-
+#ifdef DEBUG
 		// print out points for each plane for debugging, no duplicates this time
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
@@ -1719,11 +1732,12 @@ void RadiantMap::intersect_quads()
 				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
 			}
 		}
+#endif
 
 		// Seems we have duplicate points, so remove any that are beside each other
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
-			printf("\r\nremove duplicates from plane %d:\r\n", j);
+//			printf("\r\nremove duplicates from plane %d:\r\n", j);
 			for (int k = 0; k < num_plane_face[j]; k++)
 			{
 				for (int l = 0; l < num_plane_face[j]; l++)
@@ -1739,7 +1753,7 @@ void RadiantMap::intersect_quads()
 						(fabs(plane_face_array[j][k].z - plane_face_array[j][l].z) < 0.001)
 						)
 					{
-						printf("\t (%f, %f, %f) is duplicate\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
+//						printf("\t (%f, %f, %f) is duplicate\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
 
 						// replace point with last point in array
 						if (l != num_plane_face[j] - 1)
@@ -1758,6 +1772,7 @@ void RadiantMap::intersect_quads()
 		}
 
 
+#ifdef DEBUG
 		// print out points for each plane for debugging, no duplicates this time
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
@@ -1767,6 +1782,7 @@ void RadiantMap::intersect_quads()
 				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
 			}
 		}
+#endif
 
 
 		// We now have all the points, but no ordering, but we can match each point with it's corresponding plane
@@ -1817,6 +1833,7 @@ void RadiantMap::intersect_quads()
 	printf("Map had %d points maximum on brush plane\r\n", max_points_per_plane);
 	printf("Map had %d points maximum on brushes\r\n", max_points_per_brush);
 	printf("Map had %d triangles\r\n", num_triangles);
+	printf("Map had %d maximum nCr outputs\r\n", max_output);
 }
 
 
