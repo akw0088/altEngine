@@ -224,7 +224,7 @@ private:
 	int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result);
 	int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result, float &t);
 	int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result);
-	bool intersection_three_planes(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
+	bool intersect_three_planes(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
 
 
 

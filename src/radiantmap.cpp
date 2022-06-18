@@ -964,7 +964,7 @@ int RadiantMap::save(char *map, FILE *output)
 
 
 
-bool RadiantMap::intersection_three_planes(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
+bool RadiantMap::intersect_three_planes(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
 {
 	vec3 cross_p2p3 = vec3::crossproduct(p2.normal, p3.normal);
 	float denom = cross_p2p3 * p1.normal;
@@ -1615,7 +1615,9 @@ void RadiantMap::intersect_quads()
 	int max_brush_planes = 0;
 	int max_points_per_brush = 0;
 	int max_points_per_plane = 0;
+	int max_output = 0;
 	int num_triangles = 0;
+
 	for (int i = 0; i < radent[0].num_brush; i++)
 	{
 		vec3 point_array[MAX_POINT_PER_PLANE];
@@ -1628,7 +1630,6 @@ void RadiantMap::intersect_quads()
 		int output[MAX_OUTPUT] = { 0 };
 		int num_output = 0;
 		vec3 point(0.0f, 0.0f, 0.0f);
-
 
 
 
@@ -1685,12 +1686,13 @@ void RadiantMap::intersect_quads()
 
 			// Unique Combinations nC3 of planes (ABCDEF for a box)
 			// ABC ABD ABE ABF ACD ACE ACF ADE ADF AEF BCD BCE BCF BDE BDF BEF CDE CDF CEF DEF 
-			if (intersection_three_planes(
+			if (intersect_three_planes(
 				quadent.quadbrush[i].quadplane[index1].plane,
 				quadent.quadbrush[i].quadplane[index2].plane,
 				quadent.quadbrush[i].quadplane[index3].plane,
 				point))
 			{
+				bool inside = true;
 #ifdef DEBUG
 				printf("\tintersection %C%C%C %f %f %f\r\n",
 					index1 + 'A',
@@ -1698,25 +1700,57 @@ void RadiantMap::intersect_quads()
 					index3 + 'A',
 					point.x, point.y, point.z);
 #endif
-				if (num_point < MAX_POINT_PER_PLANE)
+
+				// sometimes we can have planes intersect outside the volume of the brush (pentagon)
+				// so test to be sure it's inside the volume
+				for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 				{
-					point_array[num_point++] = point;
-				}
-				else
-				{
-					printf("Max points per plane exceeded on brush %d num_plane %d\r\n", i, radent[0].brushes[saved_i].num_plane);
-					break;
+					float dist = DistPointPlane(point, quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d);
+
+					if (dist < -0.0001)
+					{
+#ifdef DEBUG
+						printf("\Dropping point %f %f %f as not inside the volume from plane %d %d %d dist %f\r\n",
+							point.x, point.y, point.z, 
+							index1,
+							index2,
+							index3,
+							dist
+							);
+#endif
+						inside = false;
+						break;
+					}
 				}
 
-				// Add this vertex to each of the planes that contain it
-				// each array of points will be the points on that plane
-				plane_face_array[index1][ num_plane_face[index1] ] = point;
-				plane_face_array[index2][ num_plane_face[index2] ] = point;
-				plane_face_array[index3][ num_plane_face[index3] ] = point;
 
-				num_plane_face[index1]++;
-				num_plane_face[index2]++;
-				num_plane_face[index3]++;
+
+
+
+
+
+				if (inside)
+				{
+					if (num_point < MAX_POINT_PER_PLANE)
+					{
+						point_array[num_point++] = point;
+					}
+					else
+					{
+						printf("Max points per plane exceeded on brush %d num_plane %d\r\n", i, radent[0].brushes[i].num_plane);
+						break;
+					}
+
+					// Add this vertex to each of the planes that contain it
+					// each array of points will be the points on that plane
+					plane_face_array[index1][num_plane_face[index1]] = point;
+					plane_face_array[index2][num_plane_face[index2]] = point;
+					plane_face_array[index3][num_plane_face[index3]] = point;
+
+					num_plane_face[index1]++;
+					num_plane_face[index2]++;
+					num_plane_face[index3]++;
+				}
 
 
 			}
@@ -1779,7 +1813,7 @@ void RadiantMap::intersect_quads()
 			printf("\r\nplane %d:\r\n", j);
 			for (int k = 0; k < num_plane_face[j]; k++)
 			{
-				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
+				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);
 			}
 		}
 #endif
@@ -1796,7 +1830,15 @@ void RadiantMap::intersect_quads()
 
 			// So we can now convert point_array to a regular set of indexed triangles so we can render the whole thing at once
 			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
+
+
 			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
+
+			printf("\r\ntriangulated plane %d:\r\n", j);
+			for (int k = 0; k < num_points_from_plane; k++)
+			{
+				printf("\tpoint %f %f %f\r\n", triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].x);
+			}
 			num_brush_point += num_points_from_plane;
 
 			max_points_per_plane = MAX(max_points_per_plane, num_points_from_plane);
