@@ -231,7 +231,7 @@ private:
 	void Combination(int *arr, int n, int r, int *output, int &num_out);
 	void combination_recurse(int arr[], int data[], int start, int end, int index, int r, int *output, int &num_out);
 
-	void triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle, vec3 &normal);
+	void triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
 
 	void indent(int level, FILE *output);
 	int parse_patch(char *line);

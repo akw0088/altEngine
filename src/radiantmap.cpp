@@ -1436,7 +1436,7 @@ void RadiantMap::allocate_quads()
 		quadent.quadbrush[i].num_index = 0;
 		quadent.quadbrush[i].index_array = NULL;
 		quadent.quadbrush[i].quadplane = (quadplane_t *)realloc(quadent.quadbrush[i].quadplane, quadent.quadbrush[i].num_quadplane * sizeof(quadplane_t));
-		memset(quadent.quadbrush[i].quadplane, 0, sizeof(quadplane_t));
+		memset(quadent.quadbrush[i].quadplane, 0, quadent.quadbrush[i].num_quadplane * sizeof(quadplane_t));
 	}
 }
 
@@ -1611,19 +1611,12 @@ void RadiantMap::intersect_quads()
 		int num_point = 0;
 		vec3 triangle_array[512];
 		int num_triangle = 0;
-
 		vec3 plane_face_array[128][512];
 		int num_plane_face[128] = { 0 };
-
-
-
-		vec3 point(0.0f, 0.0f, 0.0f);
-
-
-
 		int arr[128] = { 0 }; // max plane
-		int output[128] = { 0 };
+		int output[512] = { 0 };
 		int num_output = 0;
+		vec3 point(0.0f, 0.0f, 0.0f);
 
 		for (int x = 0; x < radent[0].brushes[i].num_plane; x++)
 		{
@@ -1685,6 +1678,65 @@ void RadiantMap::intersect_quads()
 		}
 
 
+		// print out points for each plane for debugging, no duplicates this time
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			printf("plane %d:\r\n", j);
+			for (int k = 0; k < num_plane_face[j]; k++)
+			{
+				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
+			}
+		}
+
+		// Seems we have duplicate points, so remove any that are beside each other
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			printf("\r\nremove duplicates from plane %d:\r\n", j);
+			for (int k = 0; k < num_plane_face[j]; k++)
+			{
+				for (int l = 0; l < num_plane_face[j]; l++)
+				{
+					if (k == l)
+					{
+						continue;
+					}
+
+					if (
+						(fabs(plane_face_array[j][k].x - plane_face_array[j][l].x) < 0.001) &&
+						(fabs(plane_face_array[j][k].y - plane_face_array[j][l].y) < 0.001) &&
+						(fabs(plane_face_array[j][k].z - plane_face_array[j][l].z) < 0.001)
+						)
+					{
+						printf("\t (%f, %f, %f) is duplicate\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
+
+						// replace point with last point in array
+						if (l != num_plane_face[j] - 1)
+						{
+							plane_face_array[j][l] = plane_face_array[j][num_plane_face[j] - 1];
+							num_plane_face[j]--;
+						}
+						else
+						{
+							// if it was the last one, just remove it
+							num_plane_face[j]--;
+						}
+					}
+				}
+			}
+		}
+
+
+		// print out points for each plane for debugging, no duplicates this time
+		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		{
+			printf("\r\nplane %d:\r\n", j);
+			for (int k = 0; k < num_plane_face[j]; k++)
+			{
+				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
+			}
+		}
+
+
 		// We now have all the points, but no ordering, but we can match each point with it's corresponding plane
 		// and the points in the plane make up a convex polygon
 		// convex polygons can be rendered as triangle fans
@@ -1692,7 +1744,7 @@ void RadiantMap::intersect_quads()
 		// Instead of testing each point with each plane, we just added them above based on which three planes intersected
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
-			int num_triangle_from_plane = 0;
+			unsigned int num_triangle_from_plane = 0;
 
 			// So we can now convert point_array to a regular set of indexed triangles so we can render the whole thing at once
 			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
@@ -1753,7 +1805,7 @@ void RadiantMap::Combination(int *arr, int n, int r, int *output, int &num_out)
 
 
 
-void RadiantMap::triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle, vec3 &normal)
+void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal)
 {
 	for (unsigned int i = 0; i < num_point;)
 	{
