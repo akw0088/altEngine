@@ -964,7 +964,7 @@ int RadiantMap::save(char *map, FILE *output)
 
 
 
-bool RadiantMap::get_intersection(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
+bool RadiantMap::intersection_three_planes(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
 {
 	vec3 cross_p2p3 = vec3::crossproduct(p2.normal, p3.normal);
 	float denom = cross_p2p3 * p1.normal;
@@ -1602,7 +1602,7 @@ void RadiantMap::clip_quads()
 
 }
 
-
+// this works for axial boxes now, might need some tweaking for all possible brushes
 void RadiantMap::intersect_quads()
 {
 	for (int i = 0; i < radent[0].num_brush; i++)
@@ -1613,7 +1613,7 @@ void RadiantMap::intersect_quads()
 		int num_triangle = 0;
 
 		vec3 plane_face_array[128][512];
-		int num_plane_face = 0;
+		int num_plane_face[128] = { 0 };
 
 
 
@@ -1649,20 +1649,38 @@ void RadiantMap::intersect_quads()
 
 		for (int t = 0; t < num_output; t += 3)
 		{
+			int index1 = output[t + 0];
+			int index2 = output[t + 1];
+			int index3 = output[t + 2];
+
 			// Unique Combinations nC3 of planes (ABCDEF for a box)
 			// ABC ABD ABE ABF ACD ACE ACF ADE ADF AEF BCD BCE BCF BDE BDF BEF CDE CDF CEF DEF 
-			if (get_intersection(
-				quadent.quadbrush[i].quadplane[output[t + 0]].plane,
-				quadent.quadbrush[i].quadplane[output[t + 1]].plane,
-				quadent.quadbrush[i].quadplane[output[t + 2]].plane,
+			if (intersection_three_planes(
+				quadent.quadbrush[i].quadplane[index1].plane,
+				quadent.quadbrush[i].quadplane[index2].plane,
+				quadent.quadbrush[i].quadplane[index3].plane,
 				point))
 			{
 				printf("\tintersection %C%C%C %f %f %f\r\n",
-					output[t + 0] + 'A',
-					output[t + 1] + 'A',
-					output[t + 2] + 'A',
+					index1 + 'A',
+					index2 + 'A',
+					index3 + 'A',
 					point.x, point.y, point.z);
 				point_array[num_point++] = point;
+
+
+
+				// Add this vertex to each of the planes that contain it
+				// each array of points will be the points on that plane
+				plane_face_array[index1][ num_plane_face[index1] ] = point;
+				plane_face_array[index2][ num_plane_face[index2] ] = point;
+				plane_face_array[index3][ num_plane_face[index3] ] = point;
+
+				num_plane_face[index1]++;
+				num_plane_face[index2]++;
+				num_plane_face[index3]++;
+
+
 			}
 		}
 
@@ -1671,29 +1689,36 @@ void RadiantMap::intersect_quads()
 		// and the points in the plane make up a convex polygon
 		// convex polygons can be rendered as triangle fans
 
-		// TBD point on plane test every point from above
+		// Instead of testing each point with each plane, we just added them above based on which three planes intersected
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
 			int num_triangle_from_plane = 0;
 
-			for (int k = 0; k < num_point; k++)
-			{
-				/*
-				if ( is_point_on_plane(point[k], quadent.quadbrush[i].quadplane[j]) )
-				{
-				plane_face_array[j][num_plane_face++] = point[k];
-				}
-
-				*/
-			}
-
 			// So we can now convert point_array to a regular set of indexed triangles so we can render the whole thing at once
 			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
-			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face, &triangle_array[num_triangle], num_triangle_from_plane);
+			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_triangle], num_triangle_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
 			num_triangle += num_triangle_from_plane;
-
-			num_plane_face = 0;
 		}
+
+
+		// Generate buffers 
+		quadent.quadbrush[i].num_vert = num_triangle;
+		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+
+		for (int k = 0; k < quadent.quadbrush[i].num_vert; k++)
+		{
+			quadent.quadbrush[i].vert_array[k] = triangle_array[k];
+		}
+
+		quadent.quadbrush[i].num_index = num_triangle;
+		quadent.quadbrush[i].index_array = (int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
+
+		for (int k = 0; k < quadent.quadbrush[i].num_index; k++)
+		{
+			quadent.quadbrush[i].index_array[k] = k;
+		}
+
+
 	}
 }
 
@@ -1728,7 +1753,7 @@ void RadiantMap::Combination(int *arr, int n, int r, int *output, int &num_out)
 
 
 
-void RadiantMap::triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle)
+void RadiantMap::triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle, vec3 &normal)
 {
 	for (unsigned int i = 0; i < num_point;)
 	{
@@ -1740,9 +1765,24 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *t
 			vec3 c = point_array[i + 2];
 
 
-			triangle_array[num_triangle++] = a;
-			triangle_array[num_triangle++] = b;
-			triangle_array[num_triangle++] = c;
+			vec3 ba = b - a;
+			vec3 ca = c - a;
+			vec3 norm = vec3::crossproduct(ba, ca);
+
+
+			// make sure all the triangle windings match the passed normal
+			if (norm * normal > 0)
+			{
+				triangle_array[num_triangle++] = a;
+				triangle_array[num_triangle++] = b;
+				triangle_array[num_triangle++] = c;
+			}
+			else
+			{
+				triangle_array[num_triangle++] = c;
+				triangle_array[num_triangle++] = b;
+				triangle_array[num_triangle++] = a;
+			}
 			i += 3;
 		}
 		else
@@ -1752,9 +1792,25 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *t
 			vec3 b = point_array[i - 1];
 			vec3 c = point_array[i];
 
-			triangle_array[num_triangle++] = a;
-			triangle_array[num_triangle++] = b;
-			triangle_array[num_triangle++] = c;
+
+			vec3 ba = b - a;
+			vec3 ca = c - a;
+			vec3 norm = vec3::crossproduct(ba, ca);
+
+
+			// make sure all the triangle windings match the passed normal
+			if (norm * normal > 0)
+			{
+				triangle_array[num_triangle++] = a;
+				triangle_array[num_triangle++] = b;
+				triangle_array[num_triangle++] = c;
+			}
+			else
+			{
+				triangle_array[num_triangle++] = c;
+				triangle_array[num_triangle++] = b;
+				triangle_array[num_triangle++] = a;
+			}
 			i++;
 		}
 	}

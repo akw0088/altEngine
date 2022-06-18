@@ -209,7 +209,6 @@ public:
 	void clip_quads();
 	void intersect_quads();
 	void intersect_bigbox();
-	bool get_intersection(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
 
 
 private:
@@ -225,13 +224,14 @@ private:
 	int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result);
 	int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result, float &t);
 	int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result);
+	bool intersection_three_planes(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
 
 
 
-	void Combination(int arr[], int n, int r, int *output, int &num_out);
+	void Combination(int *arr, int n, int r, int *output, int &num_out);
 	void combination_recurse(int arr[], int data[], int start, int end, int index, int r, int *output, int &num_out);
 
-	void triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle);
+	void triangle_fan_to_array(vec3 *point_array, int num_point, vec3 *triangle_array, int &num_triangle, vec3 &normal);
 
 	void indent(int level, FILE *output);
 	int parse_patch(char *line);
