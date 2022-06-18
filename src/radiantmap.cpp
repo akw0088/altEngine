@@ -1602,21 +1602,44 @@ void RadiantMap::clip_quads()
 
 }
 
-// this works for axial boxes now, might need some tweaking for all possible brushes
+
+
+#define MAX_OUTPUT 2048 // 24 choose 3 = 2024
+#define MAX_BRUSH_PLANE 24
+#define MAX_POINT_PER_PLANE 1024
+#define MAX_POINT_PER_BRUSH 4096
+
+// Works for more than just axial brushes, but not everything perfect yet
 void RadiantMap::intersect_quads()
 {
+	int max_brush_planes = 0;
+	int max_points_per_brush = 0;
+	int max_points_per_plane = 0;
+	int num_triangles = 0;
 	for (int i = 0; i < radent[0].num_brush; i++)
 	{
-		vec3 point_array[512];
+		vec3 point_array[MAX_POINT_PER_PLANE];
 		int num_point = 0;
-		vec3 triangle_array[512];
-		int num_triangle = 0;
-		vec3 plane_face_array[128][512];
-		int num_plane_face[128] = { 0 };
-		int arr[128] = { 0 }; // max plane
-		int output[512] = { 0 };
+		vec3 triangle_array[MAX_POINT_PER_BRUSH];
+		int num_brush_point = 0;
+		vec3 plane_face_array[MAX_BRUSH_PLANE][MAX_POINT_PER_PLANE];
+		int num_plane_face[MAX_BRUSH_PLANE] = { 0 };
+		int arr[MAX_BRUSH_PLANE] = { 0 }; // max plane
+		int output[MAX_OUTPUT] = { 0 };
 		int num_output = 0;
 		vec3 point(0.0f, 0.0f, 0.0f);
+
+
+
+
+
+		if (radent[0].brushes[i].num_plane > MAX_BRUSH_PLANE)
+		{
+			printf("Brush exceeded max planes\r\n");
+			continue;
+		}
+
+		max_brush_planes = MAX(max_brush_planes, radent[0].brushes[i].num_plane);
 
 		for (int x = 0; x < radent[0].brushes[i].num_plane; x++)
 		{
@@ -1627,6 +1650,8 @@ void RadiantMap::intersect_quads()
 
 		// nCr
 		Combination(arr, n, r, output, num_output);
+
+
 
 		printf("Plane nCr combinations of 3 (%dC%d)\r\n", n, r);
 		for (int x = 0; x < num_output; x += r)
@@ -1645,6 +1670,13 @@ void RadiantMap::intersect_quads()
 			int index1 = output[t + 0];
 			int index2 = output[t + 1];
 			int index3 = output[t + 2];
+
+			if (index1 > num_output ||
+				index2 > num_output ||
+				index3 > num_output)
+			{
+				break;
+			}
 
 			// Unique Combinations nC3 of planes (ABCDEF for a box)
 			// ABC ABD ABE ABF ACD ACE ACF ADE ADF AEF BCD BCE BCF BDE BDF BEF CDE CDF CEF DEF 
@@ -1744,17 +1776,25 @@ void RadiantMap::intersect_quads()
 		// Instead of testing each point with each plane, we just added them above based on which three planes intersected
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
-			unsigned int num_triangle_from_plane = 0;
+			unsigned int num_points_from_plane = 0;
 
 			// So we can now convert point_array to a regular set of indexed triangles so we can render the whole thing at once
 			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
-			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_triangle], num_triangle_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
-			num_triangle += num_triangle_from_plane;
+			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
+			num_brush_point += num_points_from_plane;
+
+			max_points_per_plane = MAX(max_points_per_plane, num_points_from_plane);
+
 		}
 
 
 		// Generate buffers 
-		quadent.quadbrush[i].num_vert = num_triangle;
+
+		max_points_per_brush = MAX(max_points_per_brush, num_brush_point);
+
+		num_triangles += max_points_per_brush / 3;
+
+		quadent.quadbrush[i].num_vert = num_brush_point;
 		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
 
 		for (int k = 0; k < quadent.quadbrush[i].num_vert; k++)
@@ -1762,7 +1802,7 @@ void RadiantMap::intersect_quads()
 			quadent.quadbrush[i].vert_array[k] = triangle_array[k];
 		}
 
-		quadent.quadbrush[i].num_index = num_triangle;
+		quadent.quadbrush[i].num_index = num_brush_point;
 		quadent.quadbrush[i].index_array = (int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
 
 		for (int k = 0; k < quadent.quadbrush[i].num_index; k++)
@@ -1772,6 +1812,11 @@ void RadiantMap::intersect_quads()
 
 
 	}
+
+	printf("Map had %d planes maximum on brushes\r\n", max_brush_planes);
+	printf("Map had %d points maximum on brush plane\r\n", max_points_per_plane);
+	printf("Map had %d points maximum on brushes\r\n", max_points_per_brush);
+	printf("Map had %d triangles\r\n", num_triangles);
 }
 
 
