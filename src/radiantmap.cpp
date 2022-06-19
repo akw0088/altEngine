@@ -282,11 +282,11 @@ int RadiantMap::parse_texture(char *line, char *texture)
 int RadiantMap::parse_patch_control(char *line, patch_control_t *control)
 {
 	int ret = sscanf(line, "( %d %d %d %d %d )",
-			&control->width,
-			&control->height,
-			&control->contents,
-			&control->flags,
-			&control->value
+		&control->width,
+		&control->height,
+		&control->contents,
+		&control->flags,
+		&control->value
 	);
 
 
@@ -887,25 +887,25 @@ int RadiantMap::save(char *map, FILE *output)
 	// save from binary representation
 
 
-	for (int i = 0; i < num_ent; i++)
+	for (unsigned int i = 0; i < num_ent; i++)
 	{
 		fprintf(output, "// %s %d\r\n", "entity", radent[i].ent_number);
 		fprintf(output, "{\r\n");
-		for (int j = 0; j < radent[i].num_keyval; j++)
+		for (unsigned int j = 0; j < radent[i].num_keyval; j++)
 		{
 			fprintf(output, "\"%s\" \"%s\"\r\n", radent[i].keyval[j].key, radent[i].keyval[j].value);
 		}
 
 
 		// for each brush
-		for (int j = 0; j < radent[i].num_brush; j++)
+		for (unsigned int j = 0; j < radent[i].num_brush; j++)
 		{
 			fprintf(output, "// brush %d\r\n", radent[i].brushes[j].brush_num);
 			fprintf(output, "{\r\n");
 
 
 			// for each plane 
-			for (int k = 0; k < radent[i].brushes[j].num_plane; k++)
+			for (unsigned int k = 0; k < radent[i].brushes[j].num_plane; k++)
 			{
 
 				brushplane_t *brushplane = &radent[i].brushes[j].plane[k];
@@ -925,7 +925,7 @@ int RadiantMap::save(char *map, FILE *output)
 			}
 
 			// for each patch (should only ever be one)
-			for (int k = 0; k < radent[i].brushes[j].num_patch; k++)
+			for (unsigned int k = 0; k < radent[i].brushes[j].num_patch; k++)
 			{
 				brushpatch_t *brushpatch = &radent[i].brushes[j].patch[k];
 
@@ -943,7 +943,7 @@ int RadiantMap::save(char *map, FILE *output)
 
 
 				fprintf(output, "(\r\n");
-				for (int l = 0; l < radent[i].brushes[j].patch[k].num_point; l++)
+				for (unsigned int l = 0; l < radent[i].brushes[j].patch[k].num_point; l++)
 				{
 					print_patch_points(&radent[i].brushes[j].patch[k].control, &radent[i].brushes[j].patch[k].points[l], output);
 				}
@@ -1444,13 +1444,13 @@ void RadiantMap::allocate_quads()
 void RadiantMap::generate_quads()
 {
 	// Only generate quads for entity 0 (worldspawn)
-	for (int i = 0; i < radent[0].num_brush; i++)
+	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
-			const vec3 a(radent[0].brushes[i].plane[j].v1[0], radent[0].brushes[i].plane[j].v1[1], radent[0].brushes[i].plane[j].v1[2]);
-			const vec3 b(radent[0].brushes[i].plane[j].v2[0], radent[0].brushes[i].plane[j].v2[1], radent[0].brushes[i].plane[j].v2[2]);
-			const vec3 c(radent[0].brushes[i].plane[j].v3[0], radent[0].brushes[i].plane[j].v3[1], radent[0].brushes[i].plane[j].v3[2]);
+			const vec3 a((float)radent[0].brushes[i].plane[j].v1[0], (float)radent[0].brushes[i].plane[j].v1[1], (float)radent[0].brushes[i].plane[j].v1[2]);
+			const vec3 b((float)radent[0].brushes[i].plane[j].v2[0], (float)radent[0].brushes[i].plane[j].v2[1], (float)radent[0].brushes[i].plane[j].v2[2]);
+			const vec3 c((float)radent[0].brushes[i].plane[j].v3[0], (float)radent[0].brushes[i].plane[j].v3[1], (float)radent[0].brushes[i].plane[j].v3[2]);
 
 
 			// get parallelogram vertex (draw on paper in 3d and use vector addition)
@@ -1521,11 +1521,11 @@ void RadiantMap::generate_quads()
 // TODO: Test / Fix this func
 void RadiantMap::clip_quads()
 {
-	for (int i = 0; i < radent[0].num_brush; i++)
+	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
-			for (int l = 0; l < quadent.quadbrush[i].quadplane[j].num_triangle; l += 3)
+			for (unsigned int l = 0; l < quadent.quadbrush[i].quadplane[j].num_triangle; l += 3)
 			{
 				vertex_t result[6];
 				vertex_t a;
@@ -1545,7 +1545,7 @@ void RadiantMap::clip_quads()
 				c.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
 				c.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
 
-				for (int k = 0; k < quadent.quadbrush[i].num_quadplane; k++)
+				for (unsigned int k = 0; k < quadent.quadbrush[i].num_quadplane; k++)
 				{
 					// dont clip against yourself
 					if (k == j)
@@ -1602,33 +1602,26 @@ void RadiantMap::clip_quads()
 
 }
 
-
-
-#define MAX_OUTPUT 14880 // 24 choose 3 = 2024
-#define MAX_BRUSH_PLANE 32
-#define MAX_POINT_PER_PLANE 1024
-#define MAX_POINT_PER_BRUSH 8192
-
-// Works for more than just axial brushes, but not everything perfect yet
+// this works for axial boxes now, might need some tweaking for all possible brushes
 void RadiantMap::intersect_quads()
 {
-	int max_brush_planes = 0;
-	int max_points_per_brush = 0;
-	int max_points_per_plane = 0;
-	int max_output = 0;
-	int num_triangles = 0;
+	unsigned int max_brush_planes = 0;
+	unsigned int max_points_per_brush = 0;
+	unsigned int max_points_per_plane = 0;
+	unsigned int max_output = 0;
+	unsigned int num_triangles = 0;
 
-	for (int i = 0; i < radent[0].num_brush; i++)
+	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
 		vec3 point_array[MAX_POINT_PER_PLANE];
-		int num_point = 0;
+		unsigned int num_point = 0;
 		vec3 triangle_array[MAX_POINT_PER_BRUSH];
-		int num_brush_point = 0;
+		unsigned int num_brush_point = 0;
 		vec3 plane_face_array[MAX_BRUSH_PLANE][MAX_POINT_PER_PLANE];
-		int num_plane_face[MAX_BRUSH_PLANE] = { 0 };
-		int arr[MAX_OUTPUT] = { 0 }; // max plane
-		int output[MAX_OUTPUT] = { 0 };
-		int num_output = 0;
+		unsigned int num_plane_face[MAX_BRUSH_PLANE] = { 0 };
+		unsigned int arr[MAX_OUTPUT] = { 0 }; // max plane
+		unsigned int output[MAX_OUTPUT] = { 0 };
+		unsigned int num_output = 0;
 		vec3 point(0.0f, 0.0f, 0.0f);
 
 
@@ -1644,7 +1637,7 @@ void RadiantMap::intersect_quads()
 
 		max_brush_planes = MAX(max_brush_planes, radent[0].brushes[i].num_plane);
 
-		for (int x = 0; x < radent[0].brushes[i].num_plane; x++)
+		for (unsigned int x = 0; x < radent[0].brushes[i].num_plane; x++)
 		{
 			arr[x] = x;
 		}
@@ -1671,11 +1664,11 @@ void RadiantMap::intersect_quads()
 		}
 #endif
 
-		for (int t = 0; t < num_output; t += 3)
+		for (unsigned int t = 0; t < num_output; t += 3)
 		{
-			int index1 = output[t + 0];
-			int index2 = output[t + 1];
-			int index3 = output[t + 2];
+			unsigned int index1 = output[t + 0];
+			unsigned int index2 = output[t + 1];
+			unsigned int index3 = output[t + 2];
 
 			if (index1 > num_output ||
 				index2 > num_output ||
@@ -1703,7 +1696,7 @@ void RadiantMap::intersect_quads()
 
 				// sometimes we can have planes intersect outside the volume of the brush (pentagon)
 				// so test to be sure it's inside the volume
-				for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+				for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
 				{
 					float dist = DistPointPlane(point, quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d);
 
@@ -1724,13 +1717,9 @@ void RadiantMap::intersect_quads()
 				}
 
 
-
-
-
-
-
 				if (inside)
 				{
+
 					if (num_point < MAX_POINT_PER_PLANE)
 					{
 						point_array[num_point++] = point;
@@ -1757,7 +1746,7 @@ void RadiantMap::intersect_quads()
 		}
 
 #ifdef DEBUG
-		// print out points for each plane for debugging, no duplicates this time
+		// print out points for each plane for debugging
 		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
 			printf("plane %d:\r\n", j);
@@ -1769,12 +1758,12 @@ void RadiantMap::intersect_quads()
 #endif
 
 		// Seems we have duplicate points, so remove any that are beside each other
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
 //			printf("\r\nremove duplicates from plane %d:\r\n", j);
-			for (int k = 0; k < num_plane_face[j]; k++)
+			for (unsigned int k = 0; k < num_plane_face[j]; k++)
 			{
-				for (int l = 0; l < num_plane_face[j]; l++)
+				for (unsigned int l = 0; l < num_plane_face[j]; l++)
 				{
 					if (k == l)
 					{
@@ -1824,7 +1813,7 @@ void RadiantMap::intersect_quads()
 		// convex polygons can be rendered as triangle fans
 
 		// Instead of testing each point with each plane, we just added them above based on which three planes intersected
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
 			unsigned int num_points_from_plane = 0;
 
@@ -1835,7 +1824,7 @@ void RadiantMap::intersect_quads()
 			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
 
 			printf("\r\ntriangulated plane %d:\r\n", j);
-			for (int k = 0; k < num_points_from_plane; k++)
+			for (unsigned int k = 0; k < num_points_from_plane; k++)
 			{
 				printf("\tpoint %f %f %f\r\n", triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].x);
 			}
@@ -1855,15 +1844,15 @@ void RadiantMap::intersect_quads()
 		quadent.quadbrush[i].num_vert = num_brush_point;
 		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
 
-		for (int k = 0; k < quadent.quadbrush[i].num_vert; k++)
+		for (unsigned int k = 0; k < quadent.quadbrush[i].num_vert; k++)
 		{
 			quadent.quadbrush[i].vert_array[k] = triangle_array[k];
 		}
 
 		quadent.quadbrush[i].num_index = num_brush_point;
-		quadent.quadbrush[i].index_array = (int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
+		quadent.quadbrush[i].index_array = (unsigned int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
 
-		for (int k = 0; k < quadent.quadbrush[i].num_index; k++)
+		for (unsigned int k = 0; k < quadent.quadbrush[i].num_index; k++)
 		{
 			quadent.quadbrush[i].index_array[k] = k;
 		}
@@ -1879,11 +1868,11 @@ void RadiantMap::intersect_quads()
 }
 
 
-void RadiantMap::combination_recurse(int arr[], int data[], int start, int end, int index, int r, int *output, int &num_out)
+void RadiantMap::combination_recurse(unsigned int arr[], unsigned int data[], unsigned int start, unsigned int end, unsigned int index, unsigned int r, unsigned int *output, unsigned int &num_out)
 {
 	if (index == r)
 	{
-		for (int j = 0; j < r; j++)
+		for (unsigned int j = 0; j < r; j++)
 		{
 			//            printf("%c ",  data[j] + 'A');
 			output[num_out++] = data[j];
@@ -1892,16 +1881,16 @@ void RadiantMap::combination_recurse(int arr[], int data[], int start, int end, 
 		return;
 	}
 
-	for (int i = start; i <= end && end - i + 1 >= r - index; i++)
+	for (unsigned int i = start; i <= end && end - i + 1 >= r - index; i++)
 	{
 		data[index] = arr[i];
 		combination_recurse(arr, data, i + 1, end, index + 1, r, output, num_out);
 	}
 }
 
-void RadiantMap::Combination(int *arr, int n, int r, int *output, int &num_out)
+void RadiantMap::Combination(unsigned int *arr, unsigned int n, unsigned int r, unsigned int *output, unsigned int &num_out)
 {
-	int *data = (int *)malloc(r * sizeof(int));;
+	unsigned int *data = (unsigned int *)malloc(r * sizeof(int));;
 
 	combination_recurse(arr, data, 0, n - 1, 0, r, output, num_out);
 	free((void *)data);
@@ -1977,7 +1966,7 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point
 // So this is good for axial 6 plane brushes, but not really for much else
 void RadiantMap::intersect_bigbox()
 {
-	for (int i = 0; i < radent[0].num_brush; i++)
+	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
 		// idea is you have a large box, then clip that down to the brush
 		vec3 aabb[8];
@@ -2112,7 +2101,7 @@ void RadiantMap::intersect_bigbox()
 		// 24 edges
 		// 12 unique edges
 		int set_size = 8;
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
 		{
 			// Eight corners of a big box
 			aabb[0] = vec3(-8192, -8192, -8192);
@@ -2142,7 +2131,7 @@ void RadiantMap::intersect_bigbox()
 				// avoid identical pairs
 				if (x == y)
 				{
-					//					printf("%d:%d skipping identical point\r\n", x, y);
+					//printf("%d:%d skipping identical point\r\n", x, y);
 					continue;
 				}
 
@@ -2150,7 +2139,7 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
 					{
-						//						printf("%d:%d both points are on front side of plane\r\n", x, y);
+						//printf("%d:%d both points are on front side of plane\r\n", x, y);
 						continue;
 					}
 				}
@@ -2160,7 +2149,7 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
 					{
-						//						printf("%d:%d both points are on back side of plane\r\n", x, y);
+						//printf("%d:%d both points are on back side of plane\r\n", x, y);
 						continue;
 					}
 				}
@@ -2169,7 +2158,7 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
 					{
-						//						printf("%d:%d crosses plane back:front\r\n", x, y);
+						//printf("%d:%d crosses plane back:front\r\n", x, y);
 						backfront = 1;
 					}
 				}
@@ -2178,7 +2167,7 @@ void RadiantMap::intersect_bigbox()
 				{
 					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
 					{
-						//						printf("%d:%d crosses plane front:back\r\n", x, y);
+						//printf("%d:%d crosses plane front:back\r\n", x, y);
 						backfront = 0;
 					}
 				}
@@ -2188,12 +2177,12 @@ void RadiantMap::intersect_bigbox()
 				if (fabs(o.magnitude()) > 2 * 8192 * 1.2) // will be sqrt(2) bigger or more 1.4142
 				{
 					// avoid diagonal pairs
-//					printf("%d:%d vector magnitude greater than a side (edge is a diagonal) %f\r\n", x, y, o.magnitude());
+					//printf("%d:%d vector magnitude greater than a side (edge is a diagonal) %f\r\n", x, y, o.magnitude());
 					continue;
 				}
 				else
 				{
-					//					printf("%d:%d vector magnitude in range (edge not a diagnol) %f\r\n", x, y, o.magnitude());
+					//printf("%d:%d vector magnitude in range (edge not a diagnol) %f\r\n", x, y, o.magnitude());
 				}
 
 
@@ -2201,7 +2190,7 @@ void RadiantMap::intersect_bigbox()
 				if (fabs(v * quadent.quadbrush[i].quadplane[j].plane.normal) < 0.001f)
 				{
 					// avoid parallel checks
-//					printf("%d:%d vector is parallel to plane %d\r\n", x, y, j);
+					//printf("%d:%d vector is parallel to plane %d\r\n", x, y, j);
 					continue;
 				}
 
@@ -2249,7 +2238,7 @@ void RadiantMap::intersect_bigbox()
 						{
 							save = x;
 						}
-
+							
 
 						aabb[save] = result.position;
 						printf("\tintersection found aabb[%d]=(%f %f %f)\r\n", save, b.position.x, b.position.y, b.position.z);
@@ -2279,7 +2268,7 @@ void RadiantMap::intersect_bigbox()
 				}
 				else
 				{
-					//					printf("\tdid not intersect\r\n");
+//					printf("\tdid not intersect\r\n");
 				}
 			}
 
@@ -2299,7 +2288,7 @@ void RadiantMap::intersect_bigbox()
 		quadent.quadbrush[i].num_vert = 8;
 		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
 
-		for (int k = 0; k < quadent.quadbrush[i].num_vert; k++)
+		for (unsigned int k = 0; k < quadent.quadbrush[i].num_vert; k++)
 		{
 			//each aabb should now match brush
 			printf("(%f %f %f)\r\n", output[k].x, output[k].y, output[k].z);
@@ -2309,9 +2298,9 @@ void RadiantMap::intersect_bigbox()
 		}
 
 		quadent.quadbrush[i].num_index = 36;
-		quadent.quadbrush[i].index_array = (int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
+		quadent.quadbrush[i].index_array = (unsigned int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
 
-		for (int k = 0; k < quadent.quadbrush[i].num_index; k++)
+		for (unsigned int k = 0; k < quadent.quadbrush[i].num_index; k++)
 		{
 			quadent.quadbrush[i].index_array[k] = index_array[k];
 		}

@@ -7,123 +7,128 @@
 #include "matrix.h"
 #include "types.h"
 
+
+#define MAX_OUTPUT 14880 // 32 choose 3 = 4960, multiply by three
+#define MAX_BRUSH_PLANE 32
+#define MAX_POINT_PER_PLANE 1024
+#define MAX_POINT_PER_BRUSH 8192
+
 class RadiantMap
 {
-//(1816 2080 72) (1744 2264 72) (1744 2080 72) q3f_military/tin -16 0 0 0.500000 0.500000 134217728 0 0
-typedef struct
-{
-	int v1[3];
-	int v2[3];
-	int v3[3];
+	//(1816 2080 72) (1744 2264 72) (1744 2080 72) q3f_military/tin -16 0 0 0.500000 0.500000 134217728 0 0
+	typedef struct
+	{
+		int v1[3];
+		int v2[3];
+		int v3[3];
 
-	char name[256];
+		char name[256];
 
-	int xoffset;
-	int yoffset;
-	int rotation;
+		int xoffset;
+		int yoffset;
+		int rotation;
 
-	float xscale;
-	float yscale;
+		float xscale;
+		float yscale;
 
-	int contents;
-	int flags;
-	int values;
-} brushplane_t;
-
-
-
-typedef struct
-{
-	char key[128];
-	char value[128];
-} keyval_t;
-
-
-typedef struct
-{
-	char name[128];
-	int number;
-} brush_name_t;
-
-
-typedef struct
-{
-	int width; 	// width = number of points
-	int height; // height = points per line
-	int contents;
-	int flags;
-	int value;
-} patch_control_t;
-
-
-typedef struct
-{
-	float p1[3];
-	float uv1[2];
-	float p2[3];
-	float uv2[2];
-	float p3[3];
-	float uv3[2];
-	float p4[3];
-	float uv4[2];
-	float p5[3];
-	float uv5[2];
-	float p6[3];
-	float uv6[2];
-	float p7[3];
-	float uv7[2];
-	float p8[3];
-	float uv8[2];
-	float p9[3];
-	float uv9[2];
-} patch_point_t;
-
-typedef struct
-{
-	char name[128];
-
-	patch_control_t control;
-	patch_point_t *points;
-	int num_point;
-} brushpatch_t;
-
-typedef struct
-{
-	brushplane_t *plane;
-	int num_plane;
-	int brush_num;
-
-
-	brushpatch_t *patch;
-	int num_patch;
-
-} brush_t;
+		int contents;
+		int flags;
+		int values;
+	} brushplane_t;
 
 
 
+	typedef struct
+	{
+		char key[128];
+		char value[128];
+	} keyval_t;
 
 
-typedef struct
-{
-	keyval_t *keyval;
-	int num_keyval;
-
-	brush_name_t name;
-	brush_t *brushes;
-	int num_brush;
-
-	int ent_number;
-
-} radent_t;
+	typedef struct
+	{
+		char name[128];
+		int number;
+	} brush_name_t;
 
 
-enum
-{
-	P_NONE,
-	P_ENTITY,
-	P_BRUSH,
-	P_PATCH
-};
+	typedef struct
+	{
+		int width; 	// width = number of points
+		int height; // height = points per line
+		int contents;
+		int flags;
+		int value;
+	} patch_control_t;
+
+
+	typedef struct
+	{
+		float p1[3];
+		float uv1[2];
+		float p2[3];
+		float uv2[2];
+		float p3[3];
+		float uv3[2];
+		float p4[3];
+		float uv4[2];
+		float p5[3];
+		float uv5[2];
+		float p6[3];
+		float uv6[2];
+		float p7[3];
+		float uv7[2];
+		float p8[3];
+		float uv8[2];
+		float p9[3];
+		float uv9[2];
+	} patch_point_t;
+
+	typedef struct
+	{
+		char name[128];
+
+		patch_control_t control;
+		patch_point_t *points;
+		unsigned int num_point;
+	} brushpatch_t;
+
+	typedef struct
+	{
+		brushplane_t *plane;
+		unsigned int num_plane;
+		unsigned int brush_num;
+
+
+		brushpatch_t *patch;
+		unsigned int num_patch;
+
+	} brush_t;
+
+
+
+
+
+	typedef struct
+	{
+		keyval_t *keyval;
+		unsigned int num_keyval;
+
+		brush_name_t name;
+		brush_t *brushes;
+		unsigned int num_brush;
+
+		unsigned int ent_number;
+
+	} radent_t;
+
+	enum
+	{
+		P_NONE,
+		P_ENTITY,
+		P_BRUSH,
+		P_PATCH
+	};
 
 
 
@@ -170,19 +175,19 @@ enum
 
 		// clipping will feed back to next clip
 		vec3 triangle_list[512];
-		int num_triangle;
+		unsigned int num_triangle;
 	} quadplane_t;
 
 	typedef struct
 	{
 		quadplane_t *quadplane;
-		int num_quadplane;
+		unsigned int num_quadplane;
 
 		vec3 *vert_array;
-		int num_vert;
+		unsigned int num_vert;
 
-		int *index_array;
-		int num_index;
+		unsigned int *index_array;
+		unsigned int num_index;
 	} quadbrush_t;
 
 	typedef struct
@@ -198,7 +203,7 @@ public:
 	int save(char *map, FILE *output);
 
 	radent_t *radent;
-	int num_ent;
+	unsigned int num_ent;
 
 	quadent_t quadent;
 
@@ -228,8 +233,8 @@ private:
 
 
 
-	void Combination(int *arr, int n, int r, int *output, int &num_out);
-	void combination_recurse(int arr[], int data[], int start, int end, int index, int r, int *output, int &num_out);
+	void Combination(unsigned int *arr, unsigned int n, unsigned int r, unsigned int *output, unsigned int &num_out);
+	void combination_recurse(unsigned int arr[], unsigned int data[], unsigned int start, unsigned int end, unsigned int index, unsigned int r, unsigned int *output, unsigned int &num_out);
 
 	void triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
 
