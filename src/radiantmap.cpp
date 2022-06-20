@@ -1808,6 +1808,7 @@ void RadiantMap::intersect_quads()
 #endif
 
 
+
 		// We now have all the points, but no ordering, but we can match each point with it's corresponding plane
 		// and the points in the plane make up a convex polygon
 		// convex polygons can be rendered as triangle fans
@@ -1820,8 +1821,10 @@ void RadiantMap::intersect_quads()
 			// So we can now convert point_array to a regular set of indexed triangles so we can render the whole thing at once
 			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
 
-
+			//sort_point(&plane_face_array[j][0], num_plane_face[j], quadent.quadbrush[i].quadplane[j].plane.normal);
 			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
+
+			//BowyerWatson(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane);
 
 			printf("\r\ntriangulated plane %d:\r\n", j);
 			for (unsigned int k = 0; k < num_points_from_plane; k++)
@@ -1897,9 +1900,142 @@ void RadiantMap::Combination(unsigned int *arr, unsigned int n, unsigned int r, 
 }
 
 
+bool RadiantMap::is_clockwise(const vec3 &a, const vec3 &b, const vec3 &center, const vec3 &normal)
+{
+	vec3 v1 = a - center;
+	vec3 v2 = b - center;
+
+	vec3 v = vec3::crossproduct(v1, v2);
+
+	float dot = normal * v;
+
+	if (dot < 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+
+void RadiantMap::sort_point(vec3 *point_array, unsigned int num_point, const vec3 &normal)
+{
+	vec3 center(0.0f, 0.0f, 0.0f);
+
+	if (num_point < 5)
+		return;
+
+	for (unsigned int i = 0; i < num_point; i++)
+	{
+		center += point_array[i];
+	}
+	center = center / (float)num_point;
+
+
+	vec3 a = point_array[0];
+
+	for (unsigned int i = 1; i < num_point; i++)
+	{
+		if ( !is_clockwise(a, point_array[i], center, normal) )
+		{
+			vec3 temp = point_array[i];
+			for (unsigned int k = i; k < num_point; k++)
+			{
+				point_array[k] = point_array[k + 1];
+			}
+			point_array[num_point - 1] = temp;
+		}
+	}
+}
 
 void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal)
 {
+	num_triangle = 0;
+
+	vec3 center(0.0f, 0.0f, 0.0f);
+
+	for (unsigned int i = 0; i < num_point; i++)
+	{
+		center += point_array[i];
+	}
+	center = center / (float)num_point;
+
+
+	vec3 a = point_array[0];
+	unsigned int i = 0;
+
+
+	i = 1;
+	if (i == 1)
+	{
+		// First point is kind of bad, so we treat is specially
+		int index1 = i % num_point;
+		int index2 = (i + 1) % num_point;
+		vec3 b = point_array[index1];
+		vec3 c = point_array[num_point - 1];
+
+
+		vec3 ba = b - a;
+		vec3 ca = c - a;
+		vec3 norm = vec3::crossproduct(ba, ca);
+
+		// make sure all the triangle windings match the passed normal
+		if (norm * normal > 0)
+		{
+			triangle_array[num_triangle++] = a;
+			triangle_array[num_triangle++] = b;
+			triangle_array[num_triangle++] = c;
+		}
+		else
+		{
+			triangle_array[num_triangle++] = c;
+			triangle_array[num_triangle++] = b;
+			triangle_array[num_triangle++] = a;
+		}
+		i++;
+	}
+
+
+
+	for (i = 2; i < num_point;)
+	{
+		// rest will be one new point and two previous
+
+		int index1 = i % num_point;
+		int index2 = (i + 1) % num_point;
+		vec3 b = point_array[index1];
+		vec3 c = point_array[index2];
+
+
+		vec3 ba = b - a;
+		vec3 ca = c - a;
+		vec3 norm = vec3::crossproduct(ba, ca);
+
+		// make sure all the triangle windings match the passed normal
+		if (norm * normal > 0)
+		{
+			triangle_array[num_triangle++] = a;
+			triangle_array[num_triangle++] = b;
+			triangle_array[num_triangle++] = c;
+		}
+		else
+		{
+			triangle_array[num_triangle++] = c;
+			triangle_array[num_triangle++] = b;
+			triangle_array[num_triangle++] = a;
+		}
+		i++;
+	}
+}
+
+void RadiantMap::triangle_strip_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal)
+{
+	num_triangle = 0;
+
+
 	for (unsigned int i = 0; i < num_point;)
 	{
 		if (i == 0)
@@ -1913,7 +2049,6 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point
 			vec3 ba = b - a;
 			vec3 ca = c - a;
 			vec3 norm = vec3::crossproduct(ba, ca);
-
 
 			// make sure all the triangle windings match the passed normal
 			if (norm * normal > 0)
@@ -1941,7 +2076,6 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point
 			vec3 ba = b - a;
 			vec3 ca = c - a;
 			vec3 norm = vec3::crossproduct(ba, ca);
-
 
 			// make sure all the triangle windings match the passed normal
 			if (norm * normal > 0)
@@ -2307,4 +2441,287 @@ void RadiantMap::intersect_bigbox()
 		printf("done with brush %d\r\n", i);
 
 	}
+}
+
+
+
+
+
+
+
+vec3 RadiantMap::midpoint_of_triangle(vec3 &a, vec3 &b, vec3 &c)
+{
+	vec3 v = (a + b + c);
+
+	return v / 3.0f;
+}
+
+
+float RadiantMap::longest_edge_of_triangle(vec3 &a, vec3 &b, vec3 &c)
+{
+	vec3 v = midpoint_of_triangle(a, b, c);
+
+	vec3 la = a - v;
+	vec3 lb = b - v;
+	vec3 lc = c - v;
+
+	float length = MAX(MAX(la.magnitude(), lb.magnitude()), lc.magnitude());
+
+	return length;
+}
+
+
+
+
+// 1:A 2:B 3:C 
+bool RadiantMap::compare_edges(vec3 edge1, vec3 edge2, vec3 edge3, vec3 edgeA, vec3 edgeB, vec3 edgeC)
+{
+	if (fabs(edge1 * edgeA) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge2 * edgeA) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge3 * edgeA) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge1 * edgeB) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge2 * edgeB) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge3 * edgeB) < 0.001)
+	{
+		return false;
+	}
+
+
+	if (fabs(edge1 * edgeC) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge2 * edgeC) < 0.001)
+	{
+		return false;
+	}
+
+	if (fabs(edge3 * edgeC) < 0.001)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool RadiantMap::point_in_sphere(vec3 &point, vec3 &origin, float radius)
+{
+	vec3 dist = point - origin;
+
+	if (dist.magnitudeSq() < radius * radius)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+/*
+BowyerWatson - triangulates a set of points on a plane
+
+	vec3 *point is a set of coordinates defining the points to be triangulated
+	add super-triangle to triangulation -- already passed in triangulation
+
+
+	TODO: Finish this function
+*/
+void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri)
+{
+	vec3 *polygon = NULL;
+	unsigned int num_poly = 0;
+
+	vec3 *badTriangles = NULL;
+	unsigned int num_bad = 0;
+
+	vec3 super_tri[3];
+
+	super_tri[0] = point[0];
+	super_tri[1] = point[1];
+	super_tri[2] = point[2];
+	unsigned int num_super_tri = 3;
+
+
+	vec3 mid = (super_tri[0] + super_tri[1] + super_tri[2]) / 3.0;
+
+	float size = 100000;
+
+	// extend triangle to infinite plane by moving away from midpoint
+	super_tri[0] = super_tri[0] + ((super_tri[0] - mid) * size);
+	super_tri[1] = super_tri[1] + ((super_tri[1] - mid) * size);
+	super_tri[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+
+	tri[0] = super_tri[0];
+	tri[1] = super_tri[1];
+	tri[2] = super_tri[2];
+	num_tri = 3;
+
+
+	// triangle is now a valid, add a point and re-triangulate
+
+	// for each point in pointList
+	// add all the points one at a time to the triangulation
+	for (unsigned int i = 0; i < num_point; i++)
+	{
+		// first find all the triangles that are no longer valid due to the insertion
+		for (unsigned int j = 0; j < num_tri; j += 3)
+		{
+			vec3 a = tri[j + 0];
+			vec3 b = tri[j + 1];
+			vec3 c = tri[j + 2];
+
+			vec3 circle_point = midpoint_of_triangle(a, b, c);
+
+			// longest edge of triagnle
+			float radius = longest_edge_of_triangle(a, b, c);
+
+			if (point_in_sphere(point[i], circle_point, radius))
+			{
+				// add triangle to badTriangles (super triangle is now bad)
+				
+				badTriangles = (vec3 *)realloc(badTriangles, (num_bad + 3) * sizeof(vec3));
+				badTriangles[num_bad++] = a;
+				badTriangles[num_bad++] = b;
+				badTriangles[num_bad++] = c;
+			}
+		}
+
+		// find the boundary of the polygonal hole
+		for (unsigned int j = 0; j < num_bad; j += 3)
+		{
+			vec3 bad_a = badTriangles[j + 0];
+			vec3 bad_b = badTriangles[j + 1];
+			vec3 bad_c = badTriangles[j + 2];
+
+			// first find all the triangles that are no longer valid due to the insertion
+			for (unsigned int k = 0; k < num_tri; k += 3)
+			{
+				vec3 a = tri[k + 0];
+				vec3 b = tri[k + 1];
+				vec3 c = tri[k + 2];
+
+				// each edge in triangle: ab ac bc
+				vec3 good_ba = b - a;
+				vec3 good_ca = c - a;
+				vec3 good_bc = c - b;
+
+				vec3 bad_ba = bad_b - bad_a;
+				vec3 bad_ca = bad_c - bad_a;
+				vec3 bad_bc = bad_c - bad_b;
+
+
+				// edge is not shared by any other triangles in badTriangles
+				if (compare_edges(good_ba, good_ca, good_bc, bad_ba, bad_ca, bad_bc))
+				{
+					// add edge to polygon
+					polygon[num_poly++] = good_ba;
+					polygon[num_poly++] = good_ca;
+					polygon[num_poly++] = good_bc;
+				}
+			}
+
+		}
+
+		// re-triangulate the polygonal hole
+		for (unsigned int j = 0; j < num_poly; j++)
+		{
+//			newTri: = form a triangle from edge to point
+//			add newTri to triangulation
+		}
+
+		// if triangle contains a vertex from original super-triangle
+		//   remove them from the data structure
+
+
+		// for each triangle in badTriangles
+		for (unsigned int j = 0; j < num_bad; j += 3)
+		{
+			for (unsigned int k = 0; k < num_tri; k += 3)
+			{
+				vec3 v = badTriangles[j] - tri[k];
+
+				// if triangle contains a vertex from bad triangles
+				if (v.magnitude() < 0.001f)
+				{
+					//remove triangle from triangulation
+					tri[j + 0] = tri[num_tri - 3];
+					tri[j + 1] = tri[num_tri - 2];
+					tri[j + 2] = tri[num_tri - 1];
+					num_tri -= 3;
+				}
+			}
+		}
+
+
+	}
+
+	// for each triangle in triangulation
+	for (unsigned int j = 0; j < num_tri; j += 3)
+	{
+		for (unsigned int k = 0; k < num_super_tri; k += 3)
+		{
+			vec3 v = tri[j] - super_tri[k];
+
+			// if triangle contains a vertex from original super-triangle
+			if ( v.magnitude() < 0.001f )
+			{
+				//remove triangle from triangulation
+				tri[j + 0] = tri[num_tri - 3];
+				tri[j + 1] = tri[num_tri - 2];
+				tri[j + 2] = tri[num_tri - 1];
+				num_tri -= 3;
+			}
+		}
+	}
+
+}
+
+
+
+
+bool RadiantMap::point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c )
+{
+	vec3 a = tri_a - p;
+	vec3 b = tri_b - p;
+	vec3 c = tri_c - p;
+
+	// The point should be moved too, so they are both
+	// relative, but because we don't use p in the
+	// equation anymore, we don't need it!
+	// p -= p; This would just equal the zero vector!
+
+	vec3 normal_bc = vec3::crossproduct(b, c); 	// Normal of PBC (u)    
+	vec3 normal_ca = vec3::crossproduct(c, a); 	// Normal of PCA (v)    
+	vec3 normal_ab = vec3::crossproduct(a, b); 	// Normal of PAB (w
+
+	if (normal_bc * normal_ca < 0.0f)
+	{
+		return false;
+	}
+	else if (normal_bc * normal_ab < 0.0f)
+	{
+		return false;
+	}
+
+	return true;
 }

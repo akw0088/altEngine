@@ -231,12 +231,28 @@ private:
 	int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result);
 	bool intersect_three_planes(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
 
+	bool point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c);
+
+	vec3 midpoint_of_triangle(vec3 &a, vec3 &b, vec3 &c);
+	float longest_edge_of_triangle(vec3 &a, vec3 &b, vec3 &c);
+	bool compare_edges(vec3 edge1, vec3 edge2, vec3 edge3, vec3 edgeA, vec3 edgeB, vec3 edgeC);
+	void BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri);
+
+	bool point_in_sphere(vec3 &point, vec3 &origin, float radius);
+
+
+
 
 
 	void Combination(unsigned int *arr, unsigned int n, unsigned int r, unsigned int *output, unsigned int &num_out);
 	void combination_recurse(unsigned int arr[], unsigned int data[], unsigned int start, unsigned int end, unsigned int index, unsigned int r, unsigned int *output, unsigned int &num_out);
 
+	void sort_point(vec3 *point_array, unsigned int num_point, const vec3 &normal);
+	bool is_clockwise(const vec3 &a, const vec3 &b, const vec3 &center, const vec3 &normal);
+
 	void triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
+	void triangle_strip_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
+
 
 	void indent(int level, FILE *output);
 	int parse_patch(char *line);
