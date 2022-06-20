@@ -1968,6 +1968,9 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point
 	unsigned int i = 0;
 
 
+	if (num_point == 0)
+		return;
+
 	i = 1;
 	if (i == 1)
 	{
