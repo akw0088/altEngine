@@ -233,13 +233,16 @@ private:
 
 	bool point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c);
 
-	vec3 midpoint_of_triangle(vec3 &a, vec3 &b, vec3 &c);
-	float longest_edge_of_triangle(vec3 &a, vec3 &b, vec3 &c);
+	void get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center);
+
 	bool compare_edges(vec3 edge1, vec3 edge2, vec3 edge3, vec3 edgeA, vec3 edgeB, vec3 edgeC);
+
 	void BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri);
 
 	bool point_in_sphere(vec3 &point, vec3 &origin, float radius);
 
+	int add_point_in_triangle(vec3 &point, vec3 *tri, unsigned int &num_triangle);
+	int add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle);
 
 
 

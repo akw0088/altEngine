@@ -2449,30 +2449,23 @@ void RadiantMap::intersect_bigbox()
 
 
 
-
-
-
-vec3 RadiantMap::midpoint_of_triangle(vec3 &a, vec3 &b, vec3 &c)
+void RadiantMap::get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center)
 {
-	vec3 v = (a + b + c);
+	vec3 ac = c - a;
+	vec3 ab = b - a;
+	vec3 v = vec3::crossproduct(ab, ac);
 
-	return v / 3.0f;
+	vec3 a_to_center = (
+		vec3::crossproduct(v, ab) * ac.magnitudeSq() + 
+		vec3::crossproduct(ac, v) * ab.magnitudeSq()
+		) / 
+		(2.f * v.magnitudeSq());
+
+	radius = a_to_center.magnitude();
+
+	center = a + a_to_center;
+
 }
-
-
-float RadiantMap::longest_edge_of_triangle(vec3 &a, vec3 &b, vec3 &c)
-{
-	vec3 v = midpoint_of_triangle(a, b, c);
-
-	vec3 la = a - v;
-	vec3 lb = b - v;
-	vec3 lc = c - v;
-
-	float length = MAX(MAX(la.magnitude(), lb.magnitude()), lc.magnitude());
-
-	return length;
-}
-
 
 
 
@@ -2541,17 +2534,75 @@ bool RadiantMap::point_in_sphere(vec3 &point, vec3 &origin, float radius)
 }
 
 /*
-BowyerWatson - triangulates a set of points on a plane
+
+	BowyerWatson - triangulates a set of points on a plane
+		(Delaunay triangulation algorithm)
+
+
+	Note: This function may need it's own test app, can be pretty complicated without
+	visualizations
 
 	vec3 *point is a set of coordinates defining the points to be triangulated
 	add super-triangle to triangulation -- already passed in triangulation
 
 
-	TODO: Finish this function
+	// background
+	https://www.youtube.com/watch?v=-XCVn73p3xs
+
+
+	circum-circle center is voronoi vertex only if no other vertex is inside it
+
+	So we want all of our triangles circum circles to have no other points
+
+	if a point is inside our circum circle, we insert the point making new triangles
+	
+	Function is essentially the pseudo code implemented from the wikipedia page on Bowyer Watson
+
+	start with super triangle which contains all points
+
+	add a point inside your super triangle, first point will always be good
+
+	We make three triangles using our new point
+
+	Add another point, this time we must check three circles against it
+
+	If the point is inside the circles
+	
+
+	when a point is inside, edges get deleted closest to the point
+
+	and the point is added to the verticies of what remains
+
+	https://web.archive.org/web/20070204043043/http://www.codeguru.com/cpp/data/mfc_database/misc/article.php/c8901/
+
+
+	add_vertex(vertex)
+	{
+		for (each triangle)
+		{
+			if (vertex is inside triangle's circumscribed circle)
+			{
+				store triangle's edges in edgebuffer
+				remove triangle
+			}
+		}
+
+		remove all double edges from edgebuffer,
+		keeping only unique ones
+
+		for (each edge in edgebuffer)
+		{
+			form a new triangle between edge and vertex
+		}
+	}
+
+
+
+
 */
 void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri)
 {
-	vec3 *polygon = NULL;
+	vec3 polygon[4096];
 	unsigned int num_poly = 0;
 
 	vec3 *badTriangles = NULL;
@@ -2586,6 +2637,8 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 	// add all the points one at a time to the triangulation
 	for (unsigned int i = 0; i < num_point; i++)
 	{
+		add_point_in_triangle(point[i], tri, num_tri);
+
 		// first find all the triangles that are no longer valid due to the insertion
 		for (unsigned int j = 0; j < num_tri; j += 3)
 		{
@@ -2593,15 +2646,15 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 			vec3 b = tri[j + 1];
 			vec3 c = tri[j + 2];
 
-			vec3 circle_point = midpoint_of_triangle(a, b, c);
+			float radius;
+			vec3 center;
 
-			// longest edge of triagnle
-			float radius = longest_edge_of_triangle(a, b, c);
 
-			if (point_in_sphere(point[i], circle_point, radius))
+			get_circum_circle(a, b, c, radius, center);
+
+			if (point_in_sphere(point[i], center, radius))
 			{
 				// add triangle to badTriangles (super triangle is now bad)
-				
 				badTriangles = (vec3 *)realloc(badTriangles, (num_bad + 3) * sizeof(vec3));
 				badTriangles[num_bad++] = a;
 				badTriangles[num_bad++] = b;
@@ -2610,6 +2663,8 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 		}
 
 		// find the boundary of the polygonal hole
+
+		// for each bad triangle
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
 			vec3 bad_a = badTriangles[j + 0];
@@ -2628,6 +2683,7 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 				vec3 good_ca = c - a;
 				vec3 good_bc = c - b;
 
+				// each edge in bad triange: ab ac bc
 				vec3 bad_ba = bad_b - bad_a;
 				vec3 bad_ca = bad_c - bad_a;
 				vec3 bad_bc = bad_c - bad_b;
@@ -2636,7 +2692,7 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 				// edge is not shared by any other triangles in badTriangles
 				if (compare_edges(good_ba, good_ca, good_bc, bad_ba, bad_ca, bad_bc))
 				{
-					// add edge to polygon
+					// store triangle's edges in polygon edgebuffer
 					polygon[num_poly++] = good_ba;
 					polygon[num_poly++] = good_ca;
 					polygon[num_poly++] = good_bc;
@@ -2645,16 +2701,14 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 
 		}
 
+		// polygon defines edges of the hole
+		// so we add new point to each edge of polygon
+
 		// re-triangulate the polygonal hole
-		for (unsigned int j = 0; j < num_poly; j++)
-		{
-//			newTri: = form a triangle from edge to point
-//			add newTri to triangulation
-		}
+		add_point_in_polygon(point[i], polygon, num_poly, tri, num_tri);
 
 		// if triangle contains a vertex from original super-triangle
 		//   remove them from the data structure
-
 
 		// for each triangle in badTriangles
 		for (unsigned int j = 0; j < num_bad; j += 3)
@@ -2664,7 +2718,7 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 				vec3 v = badTriangles[j] - tri[k];
 
 				// if triangle contains a vertex from bad triangles
-				if (v.magnitude() < 0.001f)
+				if (fabs(v.magnitude()) < 0.001f)
 				{
 					//remove triangle from triangulation
 					tri[j + 0] = tri[num_tri - 3];
@@ -2686,7 +2740,7 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 			vec3 v = tri[j] - super_tri[k];
 
 			// if triangle contains a vertex from original super-triangle
-			if ( v.magnitude() < 0.001f )
+			if ( fabs(v.magnitude()) < 0.001f )
 			{
 				//remove triangle from triangulation
 				tri[j + 0] = tri[num_tri - 3];
@@ -2700,6 +2754,104 @@ void RadiantMap::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, un
 }
 
 
+
+
+int RadiantMap::add_point_in_triangle(vec3 &point, vec3 *tri, unsigned int &num_triangle)
+{
+	int found = 0;
+	unsigned int i = 0;
+
+	// find triangle containing point
+	for (i = 0; i < num_triangle; i++)
+	{
+		if (point_in_triangle(point, tri[i + 0], tri[i + 1], tri[i + 2]))
+		{
+			found = true;
+			break;
+		}
+	}
+
+	if (found == 0)
+	{
+		printf("Error: point wasn't in super triangle\r\n");
+		return -1;
+	}
+
+
+	// now we need to add all edges inside this triangle
+	// each edge of old triangle becomes triangle with point
+	// old triangle is destroyed
+	vec3 a = tri[i + 0];
+	vec3 b = tri[i + 1];
+	vec3 c = tri[i + 2];
+
+
+	vec3 triA[3];
+	vec3 triB[3];
+	vec3 triC[3];
+
+
+	// Note: we fix windings later, so dont worry too much
+	// ab
+	triA[0] = a;
+	triA[1] = b;
+	triA[2] = point;
+
+	// ac
+	triB[0] = a;
+	triB[1] = c;
+	triB[2] = point;
+
+	// bc
+	triC[0] = b;
+	triC[1] = c;
+	triC[2] = point;
+
+
+	// replace original triangle with ab
+	tri[i + 0] = triA[0];
+	tri[i + 1] = triA[1];
+	tri[i + 2] = triA[2];
+
+	// add new triangles to end
+	tri[num_triangle + 0] = triB[0];
+	tri[num_triangle + 1] = triB[1];
+	tri[num_triangle + 2] = triB[2];
+
+	tri[num_triangle + 3] = triC[0];
+	tri[num_triangle + 4] = triC[1];
+	tri[num_triangle + 5] = triC[2];
+
+	num_triangle += 6;
+
+
+	return 0;
+}
+
+int RadiantMap::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
+{
+	int found = 0;
+	unsigned int i = 0;
+
+	// find triangle containing point
+	for (i = 0; i < num_poly; i++)
+	{
+		vec3 a = poly[i];
+		vec3 b = poly[i + 1];
+
+		vec3 tri[3];
+
+		tri[0] = a;
+		tri[1] = b;
+		tri[2] = point;
+
+		tri[num_triangle + 0] = tri[0];
+		tri[num_triangle + 1] = tri[1];
+		tri[num_triangle + 2] = tri[2];
+		num_triangle += 3;
+	}
+	return 0;
+}
 
 
 bool RadiantMap::point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c )
