@@ -51,9 +51,9 @@ public:
 	static void draw_line(HDC hdc, vec3 &a, vec3 &b, float scale, POINT offset);
 	static void draw_point(HDC hdc, vec3 &point, float scale, POINT offset);
 	static int draw_mode;
-	static int debug_point;
 	static char draw_names[10][80];
 #endif
+	static int debug_point;
 
 private:
 	void compare_edges(vec3 &T1_a, vec3 &T1_b, vec3 &T1_c, vec3 &T2_a, vec3 &T2_b, vec3 &T2_c, vec3 *polygon, unsigned int &num_poly, vec3 *shared, unsigned int &num_shared);

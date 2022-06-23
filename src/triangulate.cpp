@@ -1,8 +1,8 @@
 #include "triangulate.h"
 
 
+#ifdef WIN32
 int Triangulate::draw_mode;
-int Triangulate::debug_point;
 
 char Triangulate::draw_names[10][80] = {
 	"[Triangle and points]",
@@ -16,7 +16,8 @@ char Triangulate::draw_names[10][80] = {
 	"eight",
 	"nine",
 };
-
+#endif
+int Triangulate::debug_point;
 
 int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
 {
@@ -378,7 +379,6 @@ void Triangulate::delete_triangle(vec3 &a, vec3 &b, vec3 &c, vec3 *triangle, uns
 
 
 		if (
-			(num_triangle >= 3) &&
 			(fabs(v1.magnitude()) < 0.001f &&
 				fabs(v2.magnitude()) < 0.001f &&
 				fabs(v3.magnitude()) < 0.001f)
@@ -448,7 +448,6 @@ void Triangulate::delete_triangle_with_edge(vec3 &a, vec3 &b, vec3 *triangle, un
 
 
 		if (
-			(num_triangle >= 3) &&
 			(fabs(v1.magnitude()) < 0.001f &&
 				fabs(v2.magnitude()) < 0.001f)
 			||
@@ -510,7 +509,6 @@ void Triangulate::delete_triangle_with_vertex(vec3 &a, vec3 *triangle, unsigned 
 
 void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle)
 {
-
 	vec3 super_tri[3];
 
 	super_tri[0] = point[0];
@@ -696,6 +694,7 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 	}
 
 	// Draw final output
+	/*
 	for (unsigned int j = 0; j < num_triangle; j += 3)
 	{
 		vec3 a = triangle[j + 0];
@@ -704,9 +703,10 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 
 		if (draw_mode == 6)
 		{
-			//			draw_triangle(hdc, a, b, c, scale, offset);
+			draw_triangle(hdc, a, b, c, scale, offset);
 		}
 	}
+	*/
 }
 
 
