@@ -21,35 +21,6 @@ int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num
 	return 0;
 }
 
-
-
-#ifdef WIN32
-int Triangulate::debug_add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle, HDC hdc, float scale, POINT offset)
-{
-	int found = 0;
-	unsigned int i = 0;
-
-	// find triangle containing point
-	for (i = 0; i + 1 < num_poly; i += 2)
-	{
-		vec3 a = poly[i];
-		vec3 b = poly[i + 1];
-
-		if (num_triangle + 3 < MAX_TRIANGLE)
-		{
-			tri[num_triangle + 0] = a;
-			tri[num_triangle + 1] = b;
-			tri[num_triangle + 2] = point;
-			num_triangle += 3;
-		}
-	}
-	return 0;
-}
-
-
-#endif
-
-
 void Triangulate::get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center)
 {
 	vec3 ac = c - a;
@@ -1008,9 +979,9 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 				vec3 v15 = badA_b - triangle[k + 2];
 
 				//bac abc
-				vec3 v16 = badA_a - triangle[k + 0];
-				vec3 v17 = badA_c - triangle[k + 1];
-				vec3 v18 = badA_b - triangle[k + 2];
+				vec3 v16 = badA_b - triangle[k + 0];
+				vec3 v17 = badA_a - triangle[k + 1];
+				vec3 v18 = badA_c - triangle[k + 2];
 
 
 				if (
@@ -1165,9 +1136,9 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 				vec3 v15 = badA_b - triangle[k + 2];
 
 				//bac abc
-				vec3 v16 = badA_a - triangle[k + 0];
-				vec3 v17 = badA_c - triangle[k + 1];
-				vec3 v18 = badA_b - triangle[k + 2];
+				vec3 v16 = badA_b - triangle[k + 0];
+				vec3 v17 = badA_a - triangle[k + 1];
+				vec3 v18 = badA_c - triangle[k + 2];
 
 
 				if (
@@ -1265,9 +1236,9 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 				vec3 v15 = badA_b - triangle[k + 2];
 
 				//bac abc
-				vec3 v16 = badA_a - triangle[k + 0];
-				vec3 v17 = badA_c - triangle[k + 1];
-				vec3 v18 = badA_b - triangle[k + 2];
+				vec3 v16 = badA_b - triangle[k + 0];
+				vec3 v17 = badA_a - triangle[k + 1];
+				vec3 v18 = badA_c - triangle[k + 2];
 
 
 				if (

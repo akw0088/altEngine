@@ -50,8 +50,6 @@ private:
 
 #ifdef WIN32
 	void debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri, float scale, POINT offset);
-	int debug_add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle, HDC hdc, float scale, POINT offset);
-
 
 	void draw_triangle(HDC hdc, vec3 &a, vec3 &b, vec3 &c, float scale, POINT offset);
 	void draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT offset);
