@@ -409,6 +409,7 @@ void Triangulate::delete_triangle(vec3 &a, vec3 &b, vec3 &c, vec3 *triangle, uns
 			triangle[k + 1] = triangle[num_triangle - 2];
 			triangle[k + 2] = triangle[num_triangle - 1];
 			num_triangle -= 3;
+			k -= 3;
 		}
 	}
 }
@@ -473,6 +474,7 @@ void Triangulate::delete_triangle_with_edge(vec3 &a, vec3 &b, vec3 *triangle, un
 			triangle[k + 1] = triangle[num_triangle - 2];
 			triangle[k + 2] = triangle[num_triangle - 1];
 			num_triangle -= 3;
+			k -= 3;
 		}
 	}
 }
@@ -502,6 +504,7 @@ void Triangulate::delete_triangle_with_vertex(vec3 &a, vec3 *triangle, unsigned 
 			triangle[k + 1] = triangle[num_triangle - 2];
 			triangle[k + 2] = triangle[num_triangle - 1];
 			num_triangle -= 3;
+			k -= 3;
 		}
 	}
 }
@@ -561,18 +564,18 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 
 			get_circum_circle(a, b, c, radius, center);
 
+
+			// If a point is in the sphere, we broke the Delaunay triangle property
 			if (point_in_sphere(point[i], center, radius))
 			{
-				// add triangle to badTriangles
-				// we delete these triangles before finding polygon hole
+				// add triangle to badTriangles as it has a point in it's circle
 				badTriangles[num_bad++] = a;
 				badTriangles[num_bad++] = b;
 				badTriangles[num_bad++] = c;
 			}
 		}
 
-		// find the boundary of the polygonal hole
-		// for each bad triangle
+		// Now we want to find the boundary of the hole created by the bad Triangles
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
 			vec3 badA_a = badTriangles[j + 0];
@@ -589,17 +592,19 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 				vec3 badB_c = badTriangles[k + 2];
 
 				printf("Comparing %d %d %d triangles to %d %d %d [num_bad = %d]\r\n", j, j + 1, j + 2, k, k + 1, k + 2, num_bad);
+				// we compare each edge of the bad triangles and keep any edges shared by two bad triangles
 				compare_edges(badA_a, badA_b, badA_c, badB_a, badB_b, badB_c, &polygon[0], num_poly, shared, num_shared);
 			}
 		}
 
+		// If we have no polygon, as in the first step, we keep the super triangle
 		if (num_poly == 0)
 		{
 			for (unsigned int j = 0; j < num_bad; j += 3)
 			{
 				if (num_shared > 0)
 				{
-					printf("Had no polys, but some shared polys\r\n");
+					printf("Had no polys, but some shared polys?\r\n");
 				}
 
 				// if we have no polys, then add the bad triangles
@@ -614,17 +619,15 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 
 
 
-		// for each triangle in super triangle
-		// Delete the bad triangles
-		for (unsigned int j = 0; j < num_super_tri; j += 3)
-		{
-			vec3 a = super_tri[j + 0];
-			vec3 b = super_tri[j + 1];
-			vec3 c = super_tri[j + 2];
+		// Delete the super triangle
+		vec3 a = super_tri[0];
+		vec3 b = super_tri[1];
+		vec3 c = super_tri[2];
+
+		delete_triangle(a, b, c, triangle, num_triangle);
 
 
-			delete_triangle(a, b, c, triangle, num_triangle);
-		}
+
 
 
 
@@ -637,7 +640,6 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 			vec3 a = shared[j + 0];
 			vec3 b = shared[j + 1];
 
-
 			delete_triangle_with_edge(a, b, triangle, num_triangle);
 		}
 
@@ -647,11 +649,11 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 		add_point_in_polygon(point[i], polygon, num_poly, triangle, num_triangle);
 
 
-		// once we added the point, the polygon hole boundary isnt needed
+		// once we added the point, the polygon hole boundary isnt needed, so set it to zero
 		num_poly = 0;
 
 
-		// Delete the bad triangles
+		// Delete the bad triangles, as we should have fixed them with the added point
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
 			vec3 a = badTriangles[j + 0];
@@ -661,12 +663,15 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 			delete_triangle(a, b, c, triangle, num_triangle);
 		}
 
-		// if triangle contains a vertex from original super-triangle
-		//   remove them from the data structure
+		// Delete the shared edges, they should already be gone, but just in case
+		for (unsigned int j = 0; j < num_shared; j += 2)
+		{
+			vec3 a = shared[j + 0];
+			vec3 b = shared[j + 1];
 
+			delete_triangle_with_edge(a, b, triangle, num_triangle);
+		}
 
-
-		num_poly = 0;
 	}
 
 	// for each vertex in super triangle
@@ -681,17 +686,6 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 		delete_triangle_with_vertex(c, triangle, num_triangle);
 	}
 
-	// for each vertex in super triangle
-	for (unsigned int j = 0; j < num_super_tri; j += 3)
-	{
-		vec3 a = super_tri[j + 0];
-		vec3 b = super_tri[j + 1];
-		vec3 c = super_tri[j + 2];
-
-		delete_triangle_with_vertex(a, triangle, num_triangle);
-		delete_triangle_with_vertex(b, triangle, num_triangle);
-		delete_triangle_with_vertex(c, triangle, num_triangle);
-	}
 
 	// Draw final output
 	/*
@@ -816,6 +810,8 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		if (hPen == 0)
 			hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 
+
+		// draw selected point really big
 		SelectObject(hdc, hPen);
 		draw_point(hdc, point[i], scale * 20, offset);
 		SelectObject(hdc, GetStockObject(BLACK_PEN));
@@ -840,6 +836,8 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 
 			get_circum_circle(a, b, c, radius, center);
 
+
+			// If a point is in the sphere, we broke the Delaunay triangle property
 			if (point_in_sphere(point[i], center, radius))
 			{
 				static HPEN hPen;
@@ -847,18 +845,25 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 				if (hPen == 0)
 					hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 255));
 
+				static HPEN hPen2;
+
+				if (hPen2 == 0)
+					hPen2 = CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
+
 
 				if (draw_mode == 1 && debug_point == i)
 				{
 					SelectObject(hdc, hPen);
 					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 					draw_circle(hdc, center, radius, scale, offset);
-					SelectObject(hdc, GetStockObject(BLACK_PEN));
 
+					SelectObject(hdc, hPen2);
+					draw_triangle(hdc, a, b, c, scale, offset);
+
+					SelectObject(hdc, GetStockObject(BLACK_PEN));
 				}
 
-				// add triangle to badTriangles
-				// we delete these triangles before finding polygon hole
+				// add triangle to badTriangles as it has a point in it's circle
 				badTriangles[num_bad++] = a;
 				badTriangles[num_bad++] = b;
 				badTriangles[num_bad++] = c;
@@ -897,8 +902,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		}
 
 
-		// find the boundary of the polygonal hole
-		// for each bad triangle
+		// Now we want to find the boundary of the hole created by the bad Triangles
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
 			vec3 badA_a = badTriangles[j + 0];
@@ -915,17 +919,19 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 				vec3 badB_c = badTriangles[k + 2];
 
 				printf("Comparing %d %d %d triangles to %d %d %d [num_bad = %d]\r\n", j, j + 1, j + 2, k, k + 1, k + 2, num_bad);
+				// we compare each edge of the bad triangles and keep any edges shared by two bad triangles
 				compare_edges(badA_a, badA_b, badA_c, badB_a, badB_b, badB_c, &polygon[0], num_poly, shared, num_shared);
 			}
 		}
 
+		// If we have no polygon, as in the first step, we keep the super triangle
 		if (num_poly == 0)
 		{
 			for (unsigned int j = 0; j < num_bad; j += 3)
 			{
 				if (num_shared > 0)
 				{
-					printf("Had no polys, but some shared polys\r\n");
+					printf("Had no polys, but some shared polys?\r\n");
 				}
 
 				// if we have no polys, then add the bad triangles
@@ -940,16 +946,12 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 
 
 
-		// for each triangle in super triangle
-		// Delete the bad triangles
-		for (unsigned int j = 0; j < num_super_tri; j += 3)
-		{
-			vec3 a = super_tri[j + 0];
-			vec3 b = super_tri[j + 1];
-			vec3 c = super_tri[j + 2];
+		// Delete the super triangle
+		vec3 a = super_tri[0];
+		vec3 b = super_tri[1];
+		vec3 c = super_tri[2];
 
-			delete_triangle(a, b, c, triangle, num_triangle);			
-		}
+		delete_triangle(a, b, c, triangle, num_triangle);
 
 
 
@@ -979,6 +981,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		printf("point %d num_poly %d\r\n", i, num_poly);
 
 
+		// draw the polgonal hole
 		for (unsigned int j = 0; j < num_poly; j += 2)
 		{
 			vec3 a = polygon[j + 0];
@@ -998,6 +1001,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		}
 
 
+		// draw the shared edges between two bad triangles
 		for (unsigned int j = 0; j < num_shared; j += 2)
 		{
 			vec3 a = shared[j + 0];
@@ -1025,7 +1029,6 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 			vec3 a = shared[j + 0];
 			vec3 b = shared[j + 1];
 
-
 			delete_triangle_with_edge(a, b, triangle, num_triangle);
 		}
 
@@ -1035,20 +1038,29 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		add_point_in_polygon(point[i], polygon, num_poly, triangle, num_triangle);
 
 
-		// once we added the point, the polygon hole boundary isnt needed
+		// once we added the point, the polygon hole boundary isnt needed, so set it to zero
 		num_poly = 0;
 
 
-		// Delete the bad triangles
+		// Delete the bad triangles, as we should have fixed them with the added point
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
 			vec3 a = badTriangles[j + 0];
 			vec3 b = badTriangles[j + 1];
 			vec3 c = badTriangles[j + 2];
 
-
 			delete_triangle(a, b, c, triangle, num_triangle);
 		}
+
+		// Delete the shared edges, they should already be gone, but just in case
+		for (unsigned int j = 0; j < num_shared; j += 2)
+		{
+			vec3 a = shared[j + 0];
+			vec3 b = shared[j + 1];
+
+			delete_triangle_with_edge(a, b, triangle, num_triangle);
+		}
+
 
 		// draw after delete
 		for (unsigned int j = 0; j < num_triangle; j += 3)
@@ -1063,21 +1075,6 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 			}
 		}
 
-		// if triangle contains a vertex from original super-triangle
-		//   remove them from the data structure
-		num_poly = 0;
-	}
-
-	// for each vertex in super triangle
-	for (unsigned int j = 0; j < num_super_tri; j += 3)
-	{
-		vec3 a = super_tri[j + 0];
-		vec3 b = super_tri[j + 1];
-		vec3 c = super_tri[j + 2];
-
-		delete_triangle_with_vertex(a, triangle, num_triangle);
-		delete_triangle_with_vertex(b, triangle, num_triangle);
-		delete_triangle_with_vertex(c, triangle, num_triangle);
 	}
 
 	// for each vertex in super triangle
