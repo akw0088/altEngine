@@ -1,5 +1,10 @@
 #include "triangulate.h"
 
+
+unsigned int Triangulate::draw_mode;
+unsigned int Triangulate::debug_point;
+
+
 int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
 {
 	unsigned int i = 0;

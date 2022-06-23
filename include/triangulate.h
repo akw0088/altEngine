@@ -39,6 +39,17 @@ public:
 	// Warning, this is not fully functional yet, any shared edges cause issues
 	void BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri);
 
+
+#ifdef WIN32
+	void debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri, float scale, POINT offset);
+	static void draw_triangle(HDC hdc, vec3 &a, vec3 &b, vec3 &c, float scale, POINT offset);
+	static void draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT offset);
+	static void draw_line(HDC hdc, vec3 &a, vec3 &b, float scale, POINT offset);
+	static void draw_point(HDC hdc, vec3 &point, float scale, POINT offset);
+	static unsigned int draw_mode;
+	static unsigned int debug_point;
+#endif
+
 private:
 	void compare_edges(vec3 &T1_a, vec3 &T1_b, vec3 &T1_c, vec3 &T2_a, vec3 &T2_b, vec3 &T2_c, vec3 *polygon, unsigned int &num_poly, vec3 *shared, unsigned int &num_shared);
 	int add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle);
@@ -46,18 +57,5 @@ private:
 	bool point_in_sphere(vec3 &point, vec3 &origin, float radius);
 	bool add_poly(vec3 na, vec3 nb, vec3 *polygon, unsigned int &num_poly);
 
-
-
-#ifdef WIN32
-	void debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri, float scale, POINT offset);
-
-	void draw_triangle(HDC hdc, vec3 &a, vec3 &b, vec3 &c, float scale, POINT offset);
-	void draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT offset);
-	void draw_line(HDC hdc, vec3 &a, vec3 &b, float scale, POINT offset);
-	void draw_point(HDC hdc, vec3 &point, float scale, POINT offset);
-#endif
-
-	unsigned int draw_mode;
-	unsigned int debug_point;
 };
 #endif
