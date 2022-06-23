@@ -4,6 +4,19 @@
 int Triangulate::draw_mode;
 int Triangulate::debug_point;
 
+char Triangulate::draw_names[10][80] = {
+	"[Triangle and points]",
+	"[circles and current triangle]",
+	"[bad triangles]",
+	"[polygon edges and shared]",
+	"[polygon and remaining triangles]",
+	"[after delete]",
+	"[final]",
+	"seven",
+	"eight",
+	"nine",
+};
+
 
 int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
 {
@@ -62,7 +75,7 @@ bool Triangulate::point_in_sphere(vec3 &point, vec3 &origin, float radius)
 }
 
 
-bool Triangulate::add_poly(vec3 na, vec3 nb, vec3 *polygon, unsigned int &num_poly)
+bool Triangulate::add_poly(vec3 &na, vec3 &nb, vec3 *polygon, unsigned int &num_poly)
 {
 	for (unsigned int i = 0; i < num_poly; i += 2)
 	{
@@ -325,8 +338,174 @@ void Triangulate::compare_edges(
 }
 
 
+void Triangulate::delete_triangle(vec3 &a, vec3 &b, vec3 &c, vec3 *triangle, unsigned int &num_triangle)
+{
+	for (unsigned int k = 0; k < num_triangle; k += 3)
+	{
+		/*
+		{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
+		*/
+
+		// abc abc
+		vec3 v1 = a - triangle[k + 0];
+		vec3 v2 = b - triangle[k + 1];
+		vec3 v3 = c - triangle[k + 2];
+
+		//bca abc
+		vec3 v4 = b - triangle[k + 0];
+		vec3 v5 = c - triangle[k + 1];
+		vec3 v6 = a - triangle[k + 2];
+
+		//cab abc
+		vec3 v7 = c - triangle[k + 0];
+		vec3 v8 = a - triangle[k + 1];
+		vec3 v9 = b - triangle[k + 2];
+
+		//cba abc
+		vec3 v10 = c - triangle[k + 0];
+		vec3 v11 = b - triangle[k + 1];
+		vec3 v12 = a - triangle[k + 2];
+
+		//acb abc
+		vec3 v13 = a - triangle[k + 0];
+		vec3 v14 = c - triangle[k + 1];
+		vec3 v15 = b - triangle[k + 2];
+
+		//bac abc
+		vec3 v16 = b - triangle[k + 0];
+		vec3 v17 = a - triangle[k + 1];
+		vec3 v18 = c - triangle[k + 2];
 
 
+		if (
+			(num_triangle >= 3) &&
+			(fabs(v1.magnitude()) < 0.001f &&
+				fabs(v2.magnitude()) < 0.001f &&
+				fabs(v3.magnitude()) < 0.001f)
+			||
+			(fabs(v4.magnitude()) < 0.001f &&
+				fabs(v5.magnitude()) < 0.001f &&
+				fabs(v6.magnitude()) < 0.001f)
+			||
+			(fabs(v7.magnitude()) < 0.001f &&
+				fabs(v8.magnitude()) < 0.001f &&
+				fabs(v9.magnitude()) < 0.001f)
+			||
+			(fabs(v10.magnitude()) < 0.001f &&
+				fabs(v11.magnitude()) < 0.001f &&
+				fabs(v12.magnitude()) < 0.001f)
+			||
+			(fabs(v13.magnitude()) < 0.001f &&
+				fabs(v14.magnitude()) < 0.001f &&
+				fabs(v15.magnitude()) < 0.001f)
+			||
+			(fabs(v16.magnitude()) < 0.001f &&
+				fabs(v17.magnitude()) < 0.001f &&
+				fabs(v18.magnitude()) < 0.001f))
+
+		{
+			//remove triangle from triangulation
+			triangle[k + 0] = triangle[num_triangle - 3];
+			triangle[k + 1] = triangle[num_triangle - 2];
+			triangle[k + 2] = triangle[num_triangle - 1];
+			num_triangle -= 3;
+		}
+	}
+}
+
+
+void Triangulate::delete_triangle_with_edge(vec3 &a, vec3 &b, vec3 *triangle, unsigned int &num_triangle)
+{
+	for (unsigned int k = 0; k < num_triangle; k += 3)
+	{
+		/*
+		{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
+		*/
+
+		// abc abc
+		vec3 v1 = a - triangle[k + 0];
+		vec3 v2 = b - triangle[k + 1];
+
+		//bca abc
+		vec3 v4 = b - triangle[k + 0];
+		vec3 v6 = a - triangle[k + 2];
+
+		//cab abc
+		vec3 v8 = a - triangle[k + 1];
+		vec3 v9 = b - triangle[k + 2];
+
+		//cba abc
+		vec3 v11 = b - triangle[k + 1];
+		vec3 v12 = a - triangle[k + 2];
+
+		//acb abc
+		vec3 v13 = a - triangle[k + 0];
+		vec3 v15 = b - triangle[k + 2];
+
+		//bac abc
+		vec3 v16 = b - triangle[k + 0];
+		vec3 v17 = a - triangle[k + 1];
+
+
+		if (
+			(num_triangle >= 3) &&
+			(fabs(v1.magnitude()) < 0.001f &&
+				fabs(v2.magnitude()) < 0.001f)
+			||
+			(fabs(v4.magnitude()) < 0.001f &&
+				fabs(v6.magnitude()) < 0.001f)
+			||
+			(fabs(v8.magnitude()) < 0.001f &&
+				fabs(v9.magnitude()) < 0.001f)
+			||
+			(fabs(v11.magnitude()) < 0.001f &&
+				fabs(v12.magnitude()) < 0.001f)
+			||
+			(fabs(v13.magnitude()) < 0.001f &&
+				fabs(v15.magnitude()) < 0.001f)
+			||
+			(fabs(v16.magnitude()) < 0.001f &&
+				fabs(v17.magnitude()) < 0.001f)
+			)
+
+		{
+			//remove triangle from triangulation
+			triangle[k + 0] = triangle[num_triangle - 3];
+			triangle[k + 1] = triangle[num_triangle - 2];
+			triangle[k + 2] = triangle[num_triangle - 1];
+			num_triangle -= 3;
+		}
+	}
+}
+
+
+void Triangulate::delete_triangle_with_vertex(vec3 &a, vec3 *triangle, unsigned int &num_triangle)
+{
+	for (unsigned int k = 0; k < num_triangle; k += 3)
+	{
+		/*
+		{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
+		*/
+
+		// abc abc
+		vec3 v1 = a - triangle[k + 0];
+		vec3 v2 = a - triangle[k + 1];
+		vec3 v3 = a - triangle[k + 2];
+
+		if (
+			    v1.magnitude() < 0.001f ||
+				v2.magnitude() < 0.001f ||
+				v3.magnitude() < 0.001f
+			)
+		{
+			//remove triangle from triangulation
+			triangle[k + 0] = triangle[num_triangle - 3];
+			triangle[k + 1] = triangle[num_triangle - 2];
+			triangle[k + 2] = triangle[num_triangle - 1];
+			num_triangle -= 3;
+		}
+	}
+}
 
 
 void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle)
@@ -441,90 +620,30 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 		// Delete the bad triangles
 		for (unsigned int j = 0; j < num_super_tri; j += 3)
 		{
-			vec3 badA_a = super_tri[j + 0];
-			vec3 badA_b = super_tri[j + 1];
-			vec3 badA_c = super_tri[j + 2];
+			vec3 a = super_tri[j + 0];
+			vec3 b = super_tri[j + 1];
+			vec3 c = super_tri[j + 2];
 
 
-			for (unsigned int k = 0; k < num_triangle; k += 3)
-			{
-				/*
-				{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
-				*/
-
-				// abc abc
-				vec3 v1 = badA_a - triangle[k + 0];
-				vec3 v2 = badA_b - triangle[k + 1];
-				vec3 v3 = badA_c - triangle[k + 2];
-
-				//bca abc
-				vec3 v4 = badA_b - triangle[k + 0];
-				vec3 v5 = badA_c - triangle[k + 1];
-				vec3 v6 = badA_a - triangle[k + 2];
-
-				//cab abc
-				vec3 v7 = badA_c - triangle[k + 0];
-				vec3 v8 = badA_a - triangle[k + 1];
-				vec3 v9 = badA_b - triangle[k + 2];
-
-				//cba abc
-				vec3 v10 = badA_c - triangle[k + 0];
-				vec3 v11 = badA_b - triangle[k + 1];
-				vec3 v12 = badA_a - triangle[k + 2];
-
-				//acb abc
-				vec3 v13 = badA_a - triangle[k + 0];
-				vec3 v14 = badA_c - triangle[k + 1];
-				vec3 v15 = badA_b - triangle[k + 2];
-
-				//bac abc
-				vec3 v16 = badA_a - triangle[k + 0];
-				vec3 v17 = badA_c - triangle[k + 1];
-				vec3 v18 = badA_b - triangle[k + 2];
-
-
-				if (num_triangle >= 3)
-				{
-					if (
-						(fabs(v1.magnitude()) < 0.001f &&
-							fabs(v2.magnitude()) < 0.001f &&
-							fabs(v3.magnitude()) < 0.001f)
-						||
-						(fabs(v4.magnitude()) < 0.001f &&
-							fabs(v5.magnitude()) < 0.001f &&
-							fabs(v6.magnitude()) < 0.001f)
-						||
-						(fabs(v7.magnitude()) < 0.001f &&
-							fabs(v8.magnitude()) < 0.001f &&
-							fabs(v9.magnitude()) < 0.001f)
-						||
-						(fabs(v10.magnitude()) < 0.001f &&
-							fabs(v11.magnitude()) < 0.001f &&
-							fabs(v12.magnitude()) < 0.001f)
-						||
-						(fabs(v13.magnitude()) < 0.001f &&
-							fabs(v14.magnitude()) < 0.001f &&
-							fabs(v15.magnitude()) < 0.001f)
-						||
-						(fabs(v16.magnitude()) < 0.001f &&
-							fabs(v17.magnitude()) < 0.001f &&
-							fabs(v18.magnitude()) < 0.001f))
-
-					{
-						//remove triangle from triangulation
-						triangle[k + 0] = triangle[num_triangle - 3];
-						triangle[k + 1] = triangle[num_triangle - 2];
-						triangle[k + 2] = triangle[num_triangle - 1];
-						num_triangle -= 3;
-					}
-				}
-			}
+			delete_triangle(a, b, c, triangle, num_triangle);
 		}
 
 
 
 		// polygon defines edges of the hole
 		// so we add new point to each edge of polygon
+
+		// delete any triangles with shared edges
+		for (unsigned int j = 0; j < num_shared; j += 2)
+		{
+			vec3 a = shared[j + 0];
+			vec3 b = shared[j + 1];
+
+
+			delete_triangle_with_edge(a, b, triangle, num_triangle);
+		}
+
+
 
 		// re-triangulate the polygonal hole
 		add_point_in_polygon(point[i], polygon, num_poly, triangle, num_triangle);
@@ -537,178 +656,57 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 		// Delete the bad triangles
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
-			vec3 badA_a = badTriangles[j + 0];
-			vec3 badA_b = badTriangles[j + 1];
-			vec3 badA_c = badTriangles[j + 2];
+			vec3 a = badTriangles[j + 0];
+			vec3 b = badTriangles[j + 1];
+			vec3 c = badTriangles[j + 2];
 
-
-			for (unsigned int k = 0; k < num_triangle; k += 3)
-			{
-				/*
-				{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
-				*/
-
-				// abc abc
-				vec3 v1 = badA_a - triangle[k + 0];
-				vec3 v2 = badA_b - triangle[k + 1];
-				vec3 v3 = badA_c - triangle[k + 2];
-
-				//bca abc
-				vec3 v4 = badA_b - triangle[k + 0];
-				vec3 v5 = badA_c - triangle[k + 1];
-				vec3 v6 = badA_a - triangle[k + 2];
-
-				//cab abc
-				vec3 v7 = badA_c - triangle[k + 0];
-				vec3 v8 = badA_a - triangle[k + 1];
-				vec3 v9 = badA_b - triangle[k + 2];
-
-				//cba abc
-				vec3 v10 = badA_c - triangle[k + 0];
-				vec3 v11 = badA_b - triangle[k + 1];
-				vec3 v12 = badA_a - triangle[k + 2];
-
-				//acb abc
-				vec3 v13 = badA_a - triangle[k + 0];
-				vec3 v14 = badA_c - triangle[k + 1];
-				vec3 v15 = badA_b - triangle[k + 2];
-
-				//bac abc
-				vec3 v16 = badA_a - triangle[k + 0];
-				vec3 v17 = badA_c - triangle[k + 1];
-				vec3 v18 = badA_b - triangle[k + 2];
-
-
-				if (num_triangle >= 3)
-				{
-					if (
-						(fabs(v1.magnitude()) < 0.001f &&
-							fabs(v2.magnitude()) < 0.001f &&
-							fabs(v3.magnitude()) < 0.001f)
-						||
-						(fabs(v4.magnitude()) < 0.001f &&
-							fabs(v5.magnitude()) < 0.001f &&
-							fabs(v6.magnitude()) < 0.001f)
-						||
-						(fabs(v7.magnitude()) < 0.001f &&
-							fabs(v8.magnitude()) < 0.001f &&
-							fabs(v9.magnitude()) < 0.001f)
-						||
-						(fabs(v10.magnitude()) < 0.001f &&
-							fabs(v11.magnitude()) < 0.001f &&
-							fabs(v12.magnitude()) < 0.001f)
-						||
-						(fabs(v13.magnitude()) < 0.001f &&
-							fabs(v14.magnitude()) < 0.001f &&
-							fabs(v15.magnitude()) < 0.001f)
-						||
-						(fabs(v16.magnitude()) < 0.001f &&
-							fabs(v17.magnitude()) < 0.001f &&
-							fabs(v18.magnitude()) < 0.001f))
-
-					{
-						//remove triangle from triangulation
-						triangle[k + 0] = triangle[num_triangle - 3];
-						triangle[k + 1] = triangle[num_triangle - 2];
-						triangle[k + 2] = triangle[num_triangle - 1];
-						num_triangle -= 3;
-					}
-				}
-			}
+			delete_triangle(a, b, c, triangle, num_triangle);
 		}
 
 		// if triangle contains a vertex from original super-triangle
 		//   remove them from the data structure
 
-#if 1
-		// for each triangle in super triangle
-		// Delete the bad triangles
-		for (unsigned int j = 0; j < num_super_tri; j += 3)
-		{
-			vec3 badA_a = super_tri[j + 0];
-			vec3 badA_b = super_tri[j + 1];
-			vec3 badA_c = super_tri[j + 2];
 
-
-			for (unsigned int k = 0; k < num_triangle; k += 3)
-			{
-				/*
-				{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
-				*/
-
-				// abc abc
-				vec3 v1 = badA_a - triangle[k + 0];
-				vec3 v2 = badA_b - triangle[k + 1];
-				vec3 v3 = badA_c - triangle[k + 2];
-
-				//bca abc
-				vec3 v4 = badA_b - triangle[k + 0];
-				vec3 v5 = badA_c - triangle[k + 1];
-				vec3 v6 = badA_a - triangle[k + 2];
-
-				//cab abc
-				vec3 v7 = badA_c - triangle[k + 0];
-				vec3 v8 = badA_a - triangle[k + 1];
-				vec3 v9 = badA_b - triangle[k + 2];
-
-				//cba abc
-				vec3 v10 = badA_c - triangle[k + 0];
-				vec3 v11 = badA_b - triangle[k + 1];
-				vec3 v12 = badA_a - triangle[k + 2];
-
-				//acb abc
-				vec3 v13 = badA_a - triangle[k + 0];
-				vec3 v14 = badA_c - triangle[k + 1];
-				vec3 v15 = badA_b - triangle[k + 2];
-
-				//bac abc
-				vec3 v16 = badA_a - triangle[k + 0];
-				vec3 v17 = badA_c - triangle[k + 1];
-				vec3 v18 = badA_b - triangle[k + 2];
-
-
-				if (num_triangle >= 3)
-				{
-					if (
-						(fabs(v1.magnitude()) < 0.001f &&
-							fabs(v2.magnitude()) < 0.001f &&
-							fabs(v3.magnitude()) < 0.001f)
-						||
-						(fabs(v4.magnitude()) < 0.001f &&
-							fabs(v5.magnitude()) < 0.001f &&
-							fabs(v6.magnitude()) < 0.001f)
-						||
-						(fabs(v7.magnitude()) < 0.001f &&
-							fabs(v8.magnitude()) < 0.001f &&
-							fabs(v9.magnitude()) < 0.001f)
-						||
-						(fabs(v10.magnitude()) < 0.001f &&
-							fabs(v11.magnitude()) < 0.001f &&
-							fabs(v12.magnitude()) < 0.001f)
-						||
-						(fabs(v13.magnitude()) < 0.001f &&
-							fabs(v14.magnitude()) < 0.001f &&
-							fabs(v15.magnitude()) < 0.001f)
-						||
-						(fabs(v16.magnitude()) < 0.001f &&
-							fabs(v17.magnitude()) < 0.001f &&
-							fabs(v18.magnitude()) < 0.001f))
-
-					{
-						//remove triangle from triangulation
-						triangle[k + 0] = triangle[num_triangle - 3];
-						triangle[k + 1] = triangle[num_triangle - 2];
-						triangle[k + 2] = triangle[num_triangle - 1];
-						num_triangle -= 3;
-					}
-				}
-			}
-		}
-#endif
 
 		num_poly = 0;
 	}
 
+	// for each vertex in super triangle
+	for (unsigned int j = 0; j < num_super_tri; j += 3)
+	{
+		vec3 a = super_tri[j + 0];
+		vec3 b = super_tri[j + 1];
+		vec3 c = super_tri[j + 2];
+
+		delete_triangle_with_vertex(a, triangle, num_triangle);
+		delete_triangle_with_vertex(b, triangle, num_triangle);
+		delete_triangle_with_vertex(c, triangle, num_triangle);
+	}
+
+	// for each vertex in super triangle
+	for (unsigned int j = 0; j < num_super_tri; j += 3)
+	{
+		vec3 a = super_tri[j + 0];
+		vec3 b = super_tri[j + 1];
+		vec3 c = super_tri[j + 2];
+
+		delete_triangle_with_vertex(a, triangle, num_triangle);
+		delete_triangle_with_vertex(b, triangle, num_triangle);
+		delete_triangle_with_vertex(c, triangle, num_triangle);
+	}
+
+	// Draw final output
+	for (unsigned int j = 0; j < num_triangle; j += 3)
+	{
+		vec3 a = triangle[j + 0];
+		vec3 b = triangle[j + 1];
+		vec3 c = triangle[j + 2];
+
+		if (draw_mode == 6)
+		{
+			//			draw_triangle(hdc, a, b, c, scale, offset);
+		}
+	}
 }
 
 
@@ -767,7 +765,6 @@ void Triangulate::draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT
 
 void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle, float scale, POINT offset)
 {
-
 	vec3 super_tri[3];
 
 	super_tri[0] = point[0];
@@ -880,9 +877,9 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		// for each bad triangle draw it
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
-			vec3 bad_a = badTriangles[j + 0];
-			vec3 bad_b = badTriangles[j + 1];
-			vec3 bad_c = badTriangles[j + 2];
+			vec3 a = badTriangles[j + 0];
+			vec3 b = badTriangles[j + 1];
+			vec3 c = badTriangles[j + 2];
 
 
 			if (draw_mode == 2 && debug_point == i)
@@ -893,7 +890,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 					hPen = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 
 				SelectObject(hdc, hPen);
-				draw_triangle(hdc, bad_a, bad_b, bad_c, scale, offset);
+				draw_triangle(hdc, a, b, c, scale, offset);
 				SelectObject(hdc, GetStockObject(BLACK_PEN));
 
 			}
@@ -947,82 +944,11 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		// Delete the bad triangles
 		for (unsigned int j = 0; j < num_super_tri; j += 3)
 		{
-			vec3 badA_a = super_tri[j + 0];
-			vec3 badA_b = super_tri[j + 1];
-			vec3 badA_c = super_tri[j + 2];
+			vec3 a = super_tri[j + 0];
+			vec3 b = super_tri[j + 1];
+			vec3 c = super_tri[j + 2];
 
-
-			for (unsigned int k = 0; k < num_triangle; k += 3)
-			{
-				/*
-				{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
-				*/
-
-				// abc abc
-				vec3 v1 = badA_a - triangle[k + 0];
-				vec3 v2 = badA_b - triangle[k + 1];
-				vec3 v3 = badA_c - triangle[k + 2];
-
-				//bca abc
-				vec3 v4 = badA_b - triangle[k + 0];
-				vec3 v5 = badA_c - triangle[k + 1];
-				vec3 v6 = badA_a - triangle[k + 2];
-
-				//cab abc
-				vec3 v7 = badA_c - triangle[k + 0];
-				vec3 v8 = badA_a - triangle[k + 1];
-				vec3 v9 = badA_b - triangle[k + 2];
-
-				//cba abc
-				vec3 v10 = badA_c - triangle[k + 0];
-				vec3 v11 = badA_b - triangle[k + 1];
-				vec3 v12 = badA_a - triangle[k + 2];
-
-				//acb abc
-				vec3 v13 = badA_a - triangle[k + 0];
-				vec3 v14 = badA_c - triangle[k + 1];
-				vec3 v15 = badA_b - triangle[k + 2];
-
-				//bac abc
-				vec3 v16 = badA_b - triangle[k + 0];
-				vec3 v17 = badA_a - triangle[k + 1];
-				vec3 v18 = badA_c - triangle[k + 2];
-
-
-				if (
-					(num_triangle >= 3) &&
-					(fabs(v1.magnitude()) < 0.001f &&
-						fabs(v2.magnitude()) < 0.001f &&
-						fabs(v3.magnitude()) < 0.001f)
-					||
-					(fabs(v4.magnitude()) < 0.001f &&
-						fabs(v5.magnitude()) < 0.001f &&
-						fabs(v6.magnitude()) < 0.001f)
-					||
-					(fabs(v7.magnitude()) < 0.001f &&
-						fabs(v8.magnitude()) < 0.001f &&
-						fabs(v9.magnitude()) < 0.001f)
-					||
-					(fabs(v10.magnitude()) < 0.001f &&
-						fabs(v11.magnitude()) < 0.001f &&
-						fabs(v12.magnitude()) < 0.001f)
-					||
-					(fabs(v13.magnitude()) < 0.001f &&
-						fabs(v14.magnitude()) < 0.001f &&
-						fabs(v15.magnitude()) < 0.001f)
-					||
-					(fabs(v16.magnitude()) < 0.001f &&
-						fabs(v17.magnitude()) < 0.001f &&
-						fabs(v18.magnitude()) < 0.001f))
-
-				{
-					//remove triangle from triangulation
-					triangle[k + 0] = triangle[num_triangle - 3];
-					triangle[k + 1] = triangle[num_triangle - 2];
-					triangle[k + 2] = triangle[num_triangle - 1];
-					num_triangle -= 3;
-				}
-			}
+			delete_triangle(a, b, c, triangle, num_triangle);			
 		}
 
 
@@ -1093,6 +1019,18 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		// polygon defines edges of the hole
 		// so we add new point to each edge of polygon
 
+		// delete any triangles with shared edges
+		for (unsigned int j = 0; j < num_shared; j += 2)
+		{
+			vec3 a = shared[j + 0];
+			vec3 b = shared[j + 1];
+
+
+			delete_triangle_with_edge(a, b, triangle, num_triangle);
+		}
+
+
+
 		// re-triangulate the polygonal hole
 		add_point_in_polygon(point[i], polygon, num_poly, triangle, num_triangle);
 
@@ -1104,84 +1042,13 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 		// Delete the bad triangles
 		for (unsigned int j = 0; j < num_bad; j += 3)
 		{
-			vec3 badA_a = badTriangles[j + 0];
-			vec3 badA_b = badTriangles[j + 1];
-			vec3 badA_c = badTriangles[j + 2];
+			vec3 a = badTriangles[j + 0];
+			vec3 b = badTriangles[j + 1];
+			vec3 c = badTriangles[j + 2];
 
 
-			for (unsigned int k = 0; k < num_triangle; k += 3)
-			{
-				/*
-				{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
-				*/
-
-				// abc abc
-				vec3 v1 = badA_a - triangle[k + 0];
-				vec3 v2 = badA_b - triangle[k + 1];
-				vec3 v3 = badA_c - triangle[k + 2];
-
-				//bca abc
-				vec3 v4 = badA_b - triangle[k + 0];
-				vec3 v5 = badA_c - triangle[k + 1];
-				vec3 v6 = badA_a - triangle[k + 2];
-
-				//cab abc
-				vec3 v7 = badA_c - triangle[k + 0];
-				vec3 v8 = badA_a - triangle[k + 1];
-				vec3 v9 = badA_b - triangle[k + 2];
-
-				//cba abc
-				vec3 v10 = badA_c - triangle[k + 0];
-				vec3 v11 = badA_b - triangle[k + 1];
-				vec3 v12 = badA_a - triangle[k + 2];
-
-				//acb abc
-				vec3 v13 = badA_a - triangle[k + 0];
-				vec3 v14 = badA_c - triangle[k + 1];
-				vec3 v15 = badA_b - triangle[k + 2];
-
-				//bac abc
-				vec3 v16 = badA_b - triangle[k + 0];
-				vec3 v17 = badA_a - triangle[k + 1];
-				vec3 v18 = badA_c - triangle[k + 2];
-
-
-				if (
-					(num_triangle >= 3) &&
-					(fabs(v1.magnitude()) < 0.001f &&
-						fabs(v2.magnitude()) < 0.001f &&
-						fabs(v3.magnitude()) < 0.001f)
-					||
-					(fabs(v4.magnitude()) < 0.001f &&
-						fabs(v5.magnitude()) < 0.001f &&
-						fabs(v6.magnitude()) < 0.001f)
-					||
-					(fabs(v7.magnitude()) < 0.001f &&
-						fabs(v8.magnitude()) < 0.001f &&
-						fabs(v9.magnitude()) < 0.001f)
-					||
-					(fabs(v10.magnitude()) < 0.001f &&
-						fabs(v11.magnitude()) < 0.001f &&
-						fabs(v12.magnitude()) < 0.001f)
-					||
-					(fabs(v13.magnitude()) < 0.001f &&
-						fabs(v14.magnitude()) < 0.001f &&
-						fabs(v15.magnitude()) < 0.001f)
-					||
-					(fabs(v16.magnitude()) < 0.001f &&
-						fabs(v17.magnitude()) < 0.001f &&
-						fabs(v18.magnitude()) < 0.001f))
-
-				{
-					//remove triangle from triangulation
-					triangle[k + 0] = triangle[num_triangle - 3];
-					triangle[k + 1] = triangle[num_triangle - 2];
-					triangle[k + 2] = triangle[num_triangle - 1];
-					num_triangle -= 3;
-				}
-			}
+			delete_triangle(a, b, c, triangle, num_triangle);
 		}
-
 
 		// draw after delete
 		for (unsigned int j = 0; j < num_triangle; j += 3)
@@ -1198,105 +1065,46 @@ void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_poin
 
 		// if triangle contains a vertex from original super-triangle
 		//   remove them from the data structure
-
-#if 1
-		// for each triangle in super triangle
-		// Delete the bad triangles
-		for (unsigned int j = 0; j < num_super_tri; j += 3)
-		{
-			vec3 badA_a = super_tri[j + 0];
-			vec3 badA_b = super_tri[j + 1];
-			vec3 badA_c = super_tri[j + 2];
-
-
-			for (unsigned int k = 0; k < num_triangle; k += 3)
-			{
-				/*
-				{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
-				*/
-
-				// abc abc
-				vec3 v1 = badA_a - triangle[k + 0];
-				vec3 v2 = badA_b - triangle[k + 1];
-				vec3 v3 = badA_c - triangle[k + 2];
-
-				//bca abc
-				vec3 v4 = badA_b - triangle[k + 0];
-				vec3 v5 = badA_c - triangle[k + 1];
-				vec3 v6 = badA_a - triangle[k + 2];
-
-				//cab abc
-				vec3 v7 = badA_c - triangle[k + 0];
-				vec3 v8 = badA_a - triangle[k + 1];
-				vec3 v9 = badA_b - triangle[k + 2];
-
-				//cba abc
-				vec3 v10 = badA_c - triangle[k + 0];
-				vec3 v11 = badA_b - triangle[k + 1];
-				vec3 v12 = badA_a - triangle[k + 2];
-
-				//acb abc
-				vec3 v13 = badA_a - triangle[k + 0];
-				vec3 v14 = badA_c - triangle[k + 1];
-				vec3 v15 = badA_b - triangle[k + 2];
-
-				//bac abc
-				vec3 v16 = badA_b - triangle[k + 0];
-				vec3 v17 = badA_a - triangle[k + 1];
-				vec3 v18 = badA_c - triangle[k + 2];
-
-
-				if (
-					(num_triangle >= 3) &&
-					(fabs(v1.magnitude()) < 0.001f &&
-						fabs(v2.magnitude()) < 0.001f &&
-						fabs(v3.magnitude()) < 0.001f)
-					||
-					(fabs(v4.magnitude()) < 0.001f &&
-						fabs(v5.magnitude()) < 0.001f &&
-						fabs(v6.magnitude()) < 0.001f)
-					||
-					(fabs(v7.magnitude()) < 0.001f &&
-						fabs(v8.magnitude()) < 0.001f &&
-						fabs(v9.magnitude()) < 0.001f)
-					||
-					(fabs(v10.magnitude()) < 0.001f &&
-						fabs(v11.magnitude()) < 0.001f &&
-						fabs(v12.magnitude()) < 0.001f)
-					||
-					(fabs(v13.magnitude()) < 0.001f &&
-						fabs(v14.magnitude()) < 0.001f &&
-						fabs(v15.magnitude()) < 0.001f)
-					||
-					(fabs(v16.magnitude()) < 0.001f &&
-						fabs(v17.magnitude()) < 0.001f &&
-						fabs(v18.magnitude()) < 0.001f))
-
-				{
-					//remove triangle from triangulation
-					triangle[k + 0] = triangle[num_triangle - 3];
-					triangle[k + 1] = triangle[num_triangle - 2];
-					triangle[k + 2] = triangle[num_triangle - 1];
-					num_triangle -= 3;
-				}
-			}
-		}
-#endif
-		// Draw final output
-		for (unsigned int j = 0; j < num_triangle; j += 3)
-		{
-			vec3 a = triangle[j + 0];
-			vec3 b = triangle[j + 1];
-			vec3 c = triangle[j + 2];
-
-			if (draw_mode == 6 && debug_point == i)
-			{
-				draw_triangle(hdc, a, b, c, scale, offset);
-			}
-		}
-
 		num_poly = 0;
 	}
+
+	// for each vertex in super triangle
+	for (unsigned int j = 0; j < num_super_tri; j += 3)
+	{
+		vec3 a = super_tri[j + 0];
+		vec3 b = super_tri[j + 1];
+		vec3 c = super_tri[j + 2];
+
+		delete_triangle_with_vertex(a, triangle, num_triangle);
+		delete_triangle_with_vertex(b, triangle, num_triangle);
+		delete_triangle_with_vertex(c, triangle, num_triangle);
+	}
+
+	// for each vertex in super triangle
+	for (unsigned int j = 0; j < num_super_tri; j += 3)
+	{
+		vec3 a = super_tri[j + 0];
+		vec3 b = super_tri[j + 1];
+		vec3 c = super_tri[j + 2];
+
+		delete_triangle_with_vertex(a, triangle, num_triangle);
+		delete_triangle_with_vertex(b, triangle, num_triangle);
+		delete_triangle_with_vertex(c, triangle, num_triangle);
+	}
+
+	// Draw final output
+	for (unsigned int j = 0; j < num_triangle; j += 3)
+	{
+		vec3 a = triangle[j + 0];
+		vec3 b = triangle[j + 1];
+		vec3 c = triangle[j + 2];
+
+		if (draw_mode == 6)
+		{
+			draw_triangle(hdc, a, b, c, scale, offset);
+		}
+	}
+
 
 }
 

@@ -33,6 +33,10 @@ typedef struct
 } edge_list_t;
 
 
+#define MAX_MODE 10
+
+
+
 class Triangulate
 {
 public:
@@ -48,6 +52,7 @@ public:
 	static void draw_point(HDC hdc, vec3 &point, float scale, POINT offset);
 	static int draw_mode;
 	static int debug_point;
+	static char draw_names[10][80];
 #endif
 
 private:
@@ -55,7 +60,11 @@ private:
 	int add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle);
 	void get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center);
 	bool point_in_sphere(vec3 &point, vec3 &origin, float radius);
-	bool add_poly(vec3 na, vec3 nb, vec3 *polygon, unsigned int &num_poly);
+	bool add_poly(vec3 &na, vec3 &nb, vec3 *polygon, unsigned int &num_poly);
 
+	// These will modify num_triangles
+	void delete_triangle(vec3 &a, vec3 &b, vec3 &c, vec3 *triangles, unsigned int &num_triangles);
+	void delete_triangle_with_edge(vec3 &a, vec3 &b, vec3 *triangles, unsigned int &num_triangles);
+	void delete_triangle_with_vertex(vec3 &a, vec3 *triangle, unsigned int &num_triangle);
 };
 #endif
