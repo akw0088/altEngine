@@ -6,6 +6,7 @@
 #include "vector.h"
 #include "matrix.h"
 #include "types.h"
+#include "triangulate.h"
 
 
 #define MAX_OUTPUT 14880 // 32 choose 3 = 4960, multiply by three
@@ -267,6 +268,8 @@ private:
 	void triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
 	void triangle_strip_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
 
+	void fix_winding(vec3 *triangle_array, int num_triangle, vec3 &normal);
+
 
 	// File parsing code
 	void indent(int level, FILE *output);
@@ -290,7 +293,7 @@ private:
 
 
 
-
+	Triangulate triangulate;
 };
 
 #endif

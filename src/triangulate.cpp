@@ -510,7 +510,7 @@ void Triangulate::delete_triangle_with_vertex(const vec3 &a, vec3 *triangle, uns
 }
 
 
-void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle)
+void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int &num_triangle)
 {
 	vec3 super_tri[3];
 
@@ -521,7 +521,7 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 	vec3 mid = (super_tri[0] + super_tri[1] + super_tri[2]) / 3.0;
 
-	float size = 20;
+	float size = 20000;
 
 	// extend triangle to infinite plane by moving away from midpoint
 	super_tri[0] = super_tri[0] + ((super_tri[0] - mid) * size);
@@ -539,8 +539,6 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 	// add all the points one at a time to the triangulation
 	for (unsigned int i = 0; i < num_point; i++)
 	{
-		if (i > debug_point)
-			break;
 
 		static vec3 polygon[MAX_POLY];
 		unsigned int num_poly = 0;
@@ -550,6 +548,9 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 		vec3 shared[MAX_POLY];
 		unsigned int num_shared = 0;
+
+
+		printf("\tinput %d: %f %f %f\r\n", i, point[i].x, point[i].y, point[i].z);
 
 
 		// first find all the triangles that are no longer valid due to the insertion
@@ -687,20 +688,17 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 	}
 
 
-	// Draw final output
-	/*
+	// final output
 	for (unsigned int j = 0; j < num_triangle; j += 3)
 	{
 		vec3 a = triangle[j + 0];
 		vec3 b = triangle[j + 1];
 		vec3 c = triangle[j + 2];
 
-		if (draw_mode == 6)
-		{
-			draw_triangle(hdc, a, b, c, scale, offset);
-		}
+		printf("\toutput %d: %f %f %f\r\n", j + 0, a.x, a.y, a.z);
+		printf("\toutput %d: %f %f %f\r\n", j + 1, b.x, b.y, b.z);
+		printf("\toutput %d: %f %f %f\r\n", j + 2, c.x, c.y, c.z);
 	}
-	*/
 }
 
 
@@ -757,7 +755,7 @@ void Triangulate::draw_circle(HDC hdc, const vec3 &c, float radius, float scale,
 	Ellipse(hdc, left, top, right, bottom);
 }
 
-void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle, float scale, POINT offset)
+void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int &num_triangle, float scale, POINT offset)
 {
 	vec3 super_tri[3];
 

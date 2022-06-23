@@ -12,8 +12,6 @@
 using namespace std;
 
 #define MAX_LINE 2048
-#define MAX(x,y) (x) > (y) ? (x) : (y)
-#define MIN(x,y) (x) < (y) ? (x) : (y)
 
 
 RadiantMap::RadiantMap()
@@ -1822,14 +1820,17 @@ void RadiantMap::intersect_quads()
 			// Technically you could merge duplicate vertices, but I dont think the benefits outweigh the complexity there
 
 			//sort_point(&plane_face_array[j][0], num_plane_face[j], quadent.quadbrush[i].quadplane[j].plane.normal);
-			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
+//			triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
 
-			//BowyerWatson(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane);
+			triangulate.BowyerWatson(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane);
+			fix_winding(&triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
+
+
 
 			printf("\r\ntriangulated plane %d:\r\n", j);
 			for (unsigned int k = 0; k < num_points_from_plane; k++)
 			{
-				printf("\tpoint %f %f %f\r\n", triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].x);
+				printf("\tpoint %f %f %f\r\n", triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].y, triangle_array[num_brush_point + k].z);
 			}
 			num_brush_point += num_points_from_plane;
 
@@ -2448,3 +2449,31 @@ void RadiantMap::intersect_bigbox()
 
 
 
+void RadiantMap::fix_winding(vec3 *triangle_array, int num_triangle, vec3 &normal)
+{
+	for (int k = 0; k < num_triangle; k += 3)
+	{
+		vec3 a = triangle_array[k + 0];
+		vec3 b = triangle_array[k + 1];
+		vec3 c = triangle_array[k + 2];
+
+
+		vec3 ba = b - a;
+		vec3 ca = c - a;
+		vec3 norm = vec3::crossproduct(ba, ca);
+
+		// make sure all the triangle windings match the passed normal
+		if (norm * normal > 0)
+		{
+			triangle_array[k + 0] = a;
+			triangle_array[k + 1] = b;
+			triangle_array[k + 2] = c;
+		}
+		else
+		{
+			triangle_array[k + 0] = c;
+			triangle_array[k + 1] = b;
+			triangle_array[k + 2] = a;
+		}
+	}
+}

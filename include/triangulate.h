@@ -41,11 +41,11 @@ class Triangulate
 {
 public:
 	// Warning, this is not fully functional yet, any shared edges cause issues
-	void BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri);
+	void BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *tri, unsigned int &num_tri);
 
 
 #ifdef WIN32
-	void debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri, float scale, POINT offset);
+	void debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *tri, unsigned int &num_tri, float scale, POINT offset);
 	static void draw_triangle(HDC hdc, const vec3 &a, const vec3 &b, const vec3 &c, float scale, POINT offset);
 	static void draw_circle(HDC hdc, const vec3 &c, float radius, float scale, POINT offset);
 	static void draw_line(HDC hdc, const vec3 &a, const vec3 &b, float scale, POINT offset);
