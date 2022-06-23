@@ -19,7 +19,7 @@ char Triangulate::draw_names[10][80] = {
 #endif
 int Triangulate::debug_point;
 
-int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
+int Triangulate::add_point_in_polygon(const vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
 {
 	unsigned int i = 0;
 
@@ -40,7 +40,7 @@ int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num
 	return 0;
 }
 
-void Triangulate::get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center)
+void Triangulate::get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c, float &radius, vec3 &center)
 {
 	vec3 ac = c - a;
 	vec3 ab = b - a;
@@ -61,7 +61,7 @@ void Triangulate::get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, ve
 
 
 
-bool Triangulate::point_in_sphere(vec3 &point, vec3 &origin, float radius)
+bool Triangulate::point_in_sphere(const vec3 &point, vec3 &origin, float radius)
 {
 	vec3 dist = point - origin;
 
@@ -76,7 +76,7 @@ bool Triangulate::point_in_sphere(vec3 &point, vec3 &origin, float radius)
 }
 
 
-bool Triangulate::add_poly(vec3 &na, vec3 &nb, vec3 *polygon, unsigned int &num_poly)
+bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsigned int &num_poly)
 {
 	for (unsigned int i = 0; i < num_poly; i += 2)
 	{
@@ -109,8 +109,8 @@ bool Triangulate::add_poly(vec3 &na, vec3 &nb, vec3 *polygon, unsigned int &num_
 // But we are keeping the polygon boundary, so add all edges to polygon
 // except for those that occur twice
 void Triangulate::compare_edges(
-	vec3 &T1_a, vec3 &T1_b, vec3 &T1_c,
-	vec3 &T2_a, vec3 &T2_b, vec3 &T2_c,
+	const vec3 &T1_a, const vec3 &T1_b, const vec3 &T1_c,
+	const vec3 &T2_a, const vec3 &T2_b, const vec3 &T2_c,
 	vec3 *polygon, unsigned int &num_poly,
 	vec3 *shared, unsigned int &num_shared)
 {
@@ -339,7 +339,7 @@ void Triangulate::compare_edges(
 }
 
 
-void Triangulate::delete_triangle(vec3 &a, vec3 &b, vec3 &c, vec3 *triangle, unsigned int &num_triangle)
+void Triangulate::delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, vec3 *triangle, unsigned int &num_triangle)
 {
 	for (unsigned int k = 0; k < num_triangle; k += 3)
 	{
@@ -415,7 +415,7 @@ void Triangulate::delete_triangle(vec3 &a, vec3 &b, vec3 &c, vec3 *triangle, uns
 }
 
 
-void Triangulate::delete_triangle_with_edge(vec3 &a, vec3 &b, vec3 *triangle, unsigned int &num_triangle)
+void Triangulate::delete_triangle_with_edge(const vec3 &a, const vec3 &b, vec3 *triangle, unsigned int &num_triangle)
 {
 	for (unsigned int k = 0; k < num_triangle; k += 3)
 	{
@@ -480,7 +480,7 @@ void Triangulate::delete_triangle_with_edge(vec3 &a, vec3 &b, vec3 *triangle, un
 }
 
 
-void Triangulate::delete_triangle_with_vertex(vec3 &a, vec3 *triangle, unsigned int &num_triangle)
+void Triangulate::delete_triangle_with_vertex(const vec3 &a, vec3 *triangle, unsigned int &num_triangle)
 {
 	for (unsigned int k = 0; k < num_triangle; k += 3)
 	{
@@ -510,7 +510,7 @@ void Triangulate::delete_triangle_with_vertex(vec3 &a, vec3 *triangle, unsigned 
 }
 
 
-void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle)
+void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle)
 {
 	vec3 super_tri[3];
 
@@ -706,7 +706,7 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 
 
 #ifdef WIN32
-void Triangulate::draw_point(HDC hdc, vec3 &point, float scale, POINT offset)
+void Triangulate::draw_point(HDC hdc, const vec3 &point, float scale, POINT offset)
 {
 	Rectangle(hdc,
 		(int)((point.x * scale - 10.0f * scale) + offset.x * scale),
@@ -715,7 +715,7 @@ void Triangulate::draw_point(HDC hdc, vec3 &point, float scale, POINT offset)
 		(int)((point.y * scale + 10.0f * scale) + offset.y * scale));
 }
 
-void Triangulate::draw_triangle(HDC hdc, vec3 &a, vec3 &b, vec3 &c, float scale, POINT offset)
+void Triangulate::draw_triangle(HDC hdc, const vec3 &a, const vec3 &b, const vec3 &c, float scale, POINT offset)
 {
 	MoveToEx(hdc,
 		(int)(a.x * scale + offset.x * scale),
@@ -734,7 +734,7 @@ void Triangulate::draw_triangle(HDC hdc, vec3 &a, vec3 &b, vec3 &c, float scale,
 }
 
 
-void Triangulate::draw_line(HDC hdc, vec3 &a, vec3 &b, float scale, POINT offset)
+void Triangulate::draw_line(HDC hdc, const vec3 &a, const vec3 &b, float scale, POINT offset)
 {
 	MoveToEx(hdc,
 		(int)(a.x * scale + offset.x * scale),
@@ -746,7 +746,7 @@ void Triangulate::draw_line(HDC hdc, vec3 &a, vec3 &b, float scale, POINT offset
 }
 
 
-void Triangulate::draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT offset)
+void Triangulate::draw_circle(HDC hdc, const vec3 &c, float radius, float scale, POINT offset)
 {
 	int left, right, top, bottom;
 
@@ -757,7 +757,7 @@ void Triangulate::draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT
 	Ellipse(hdc, left, top, right, bottom);
 }
 
-void Triangulate::debug_BowyerWatson(HDC hdc, vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle, float scale, POINT offset)
+void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int num_triangle, float scale, POINT offset)
 {
 	vec3 super_tri[3];
 
