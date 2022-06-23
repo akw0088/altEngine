@@ -2,7 +2,6 @@
 
 int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
 {
-	int found = 0;
 	unsigned int i = 0;
 
 	// find triangle containing point
@@ -23,6 +22,8 @@ int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num
 }
 
 
+
+#ifdef WIN32
 int Triangulate::debug_add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle, HDC hdc, float scale, POINT offset)
 {
 	int found = 0;
@@ -46,6 +47,7 @@ int Triangulate::debug_add_point_in_polygon(vec3 &point, vec3 *poly, unsigned in
 }
 
 
+#endif
 
 
 void Triangulate::get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center)
@@ -122,14 +124,6 @@ void Triangulate::compare_edges(
 	vec3 *polygon, unsigned int &num_poly,
 	vec3 *shared, unsigned int &num_shared)
 {
-	vec3 T1_ba = T1_b - T1_a;
-	vec3 T1_ca = T1_c - T1_a;
-	vec3 T1_bc = T1_b - T1_c;
-
-	vec3 T2_ba = T2_b - T2_a;
-	vec3 T2_ca = T2_c - T2_a;
-	vec3 T2_bc = T2_b - T2_c;
-
 	float epsilon = 0.01f;
 
 	edge_list_t edge = { 0 };
@@ -513,38 +507,40 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 				vec3 v18 = badA_b - triangle[k + 2];
 
 
-				if (
-					(num_triangle >= 3) &&
-					(fabs(v1.magnitude()) < 0.001f &&
-						fabs(v2.magnitude()) < 0.001f &&
-						fabs(v3.magnitude()) < 0.001f)
-					||
-					(fabs(v4.magnitude()) < 0.001f &&
-						fabs(v5.magnitude()) < 0.001f &&
-						fabs(v6.magnitude()) < 0.001f)
-					||
-					(fabs(v7.magnitude()) < 0.001f &&
-						fabs(v8.magnitude()) < 0.001f &&
-						fabs(v9.magnitude()) < 0.001f)
-					||
-					(fabs(v10.magnitude()) < 0.001f &&
-						fabs(v11.magnitude()) < 0.001f &&
-						fabs(v12.magnitude()) < 0.001f)
-					||
-					(fabs(v13.magnitude()) < 0.001f &&
-						fabs(v14.magnitude()) < 0.001f &&
-						fabs(v15.magnitude()) < 0.001f)
-					||
-					(fabs(v16.magnitude()) < 0.001f &&
-						fabs(v17.magnitude()) < 0.001f &&
-						fabs(v18.magnitude()) < 0.001f))
-
+				if (num_triangle >= 3)
 				{
-					//remove triangle from triangulation
-					triangle[k + 0] = triangle[num_triangle - 3];
-					triangle[k + 1] = triangle[num_triangle - 2];
-					triangle[k + 2] = triangle[num_triangle - 1];
-					num_triangle -= 3;
+					if (
+						(fabs(v1.magnitude()) < 0.001f &&
+							fabs(v2.magnitude()) < 0.001f &&
+							fabs(v3.magnitude()) < 0.001f)
+						||
+						(fabs(v4.magnitude()) < 0.001f &&
+							fabs(v5.magnitude()) < 0.001f &&
+							fabs(v6.magnitude()) < 0.001f)
+						||
+						(fabs(v7.magnitude()) < 0.001f &&
+							fabs(v8.magnitude()) < 0.001f &&
+							fabs(v9.magnitude()) < 0.001f)
+						||
+						(fabs(v10.magnitude()) < 0.001f &&
+							fabs(v11.magnitude()) < 0.001f &&
+							fabs(v12.magnitude()) < 0.001f)
+						||
+						(fabs(v13.magnitude()) < 0.001f &&
+							fabs(v14.magnitude()) < 0.001f &&
+							fabs(v15.magnitude()) < 0.001f)
+						||
+						(fabs(v16.magnitude()) < 0.001f &&
+							fabs(v17.magnitude()) < 0.001f &&
+							fabs(v18.magnitude()) < 0.001f))
+
+					{
+						//remove triangle from triangulation
+						triangle[k + 0] = triangle[num_triangle - 3];
+						triangle[k + 1] = triangle[num_triangle - 2];
+						triangle[k + 2] = triangle[num_triangle - 1];
+						num_triangle -= 3;
+					}
 				}
 			}
 		}
@@ -607,38 +603,40 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 				vec3 v18 = badA_b - triangle[k + 2];
 
 
-				if (
-					(num_triangle >= 3) &&
-					(fabs(v1.magnitude()) < 0.001f &&
-						fabs(v2.magnitude()) < 0.001f &&
-						fabs(v3.magnitude()) < 0.001f)
-					||
-					(fabs(v4.magnitude()) < 0.001f &&
-						fabs(v5.magnitude()) < 0.001f &&
-						fabs(v6.magnitude()) < 0.001f)
-					||
-					(fabs(v7.magnitude()) < 0.001f &&
-						fabs(v8.magnitude()) < 0.001f &&
-						fabs(v9.magnitude()) < 0.001f)
-					||
-					(fabs(v10.magnitude()) < 0.001f &&
-						fabs(v11.magnitude()) < 0.001f &&
-						fabs(v12.magnitude()) < 0.001f)
-					||
-					(fabs(v13.magnitude()) < 0.001f &&
-						fabs(v14.magnitude()) < 0.001f &&
-						fabs(v15.magnitude()) < 0.001f)
-					||
-					(fabs(v16.magnitude()) < 0.001f &&
-						fabs(v17.magnitude()) < 0.001f &&
-						fabs(v18.magnitude()) < 0.001f))
-
+				if (num_triangle >= 3)
 				{
-					//remove triangle from triangulation
-					triangle[k + 0] = triangle[num_triangle - 3];
-					triangle[k + 1] = triangle[num_triangle - 2];
-					triangle[k + 2] = triangle[num_triangle - 1];
-					num_triangle -= 3;
+					if (
+						(fabs(v1.magnitude()) < 0.001f &&
+							fabs(v2.magnitude()) < 0.001f &&
+							fabs(v3.magnitude()) < 0.001f)
+						||
+						(fabs(v4.magnitude()) < 0.001f &&
+							fabs(v5.magnitude()) < 0.001f &&
+							fabs(v6.magnitude()) < 0.001f)
+						||
+						(fabs(v7.magnitude()) < 0.001f &&
+							fabs(v8.magnitude()) < 0.001f &&
+							fabs(v9.magnitude()) < 0.001f)
+						||
+						(fabs(v10.magnitude()) < 0.001f &&
+							fabs(v11.magnitude()) < 0.001f &&
+							fabs(v12.magnitude()) < 0.001f)
+						||
+						(fabs(v13.magnitude()) < 0.001f &&
+							fabs(v14.magnitude()) < 0.001f &&
+							fabs(v15.magnitude()) < 0.001f)
+						||
+						(fabs(v16.magnitude()) < 0.001f &&
+							fabs(v17.magnitude()) < 0.001f &&
+							fabs(v18.magnitude()) < 0.001f))
+
+					{
+						//remove triangle from triangulation
+						triangle[k + 0] = triangle[num_triangle - 3];
+						triangle[k + 1] = triangle[num_triangle - 2];
+						triangle[k + 2] = triangle[num_triangle - 1];
+						num_triangle -= 3;
+					}
 				}
 			}
 		}
@@ -693,38 +691,40 @@ void Triangulate::BowyerWatson(vec3 *point, unsigned int num_point, vec3 *triang
 				vec3 v18 = badA_b - triangle[k + 2];
 
 
-				if (
-					(num_triangle >= 3) &&
-					(fabs(v1.magnitude()) < 0.001f &&
-						fabs(v2.magnitude()) < 0.001f &&
-						fabs(v3.magnitude()) < 0.001f)
-					||
-					(fabs(v4.magnitude()) < 0.001f &&
-						fabs(v5.magnitude()) < 0.001f &&
-						fabs(v6.magnitude()) < 0.001f)
-					||
-					(fabs(v7.magnitude()) < 0.001f &&
-						fabs(v8.magnitude()) < 0.001f &&
-						fabs(v9.magnitude()) < 0.001f)
-					||
-					(fabs(v10.magnitude()) < 0.001f &&
-						fabs(v11.magnitude()) < 0.001f &&
-						fabs(v12.magnitude()) < 0.001f)
-					||
-					(fabs(v13.magnitude()) < 0.001f &&
-						fabs(v14.magnitude()) < 0.001f &&
-						fabs(v15.magnitude()) < 0.001f)
-					||
-					(fabs(v16.magnitude()) < 0.001f &&
-						fabs(v17.magnitude()) < 0.001f &&
-						fabs(v18.magnitude()) < 0.001f))
-
+				if (num_triangle >= 3)
 				{
-					//remove triangle from triangulation
-					triangle[k + 0] = triangle[num_triangle - 3];
-					triangle[k + 1] = triangle[num_triangle - 2];
-					triangle[k + 2] = triangle[num_triangle - 1];
-					num_triangle -= 3;
+					if (
+						(fabs(v1.magnitude()) < 0.001f &&
+							fabs(v2.magnitude()) < 0.001f &&
+							fabs(v3.magnitude()) < 0.001f)
+						||
+						(fabs(v4.magnitude()) < 0.001f &&
+							fabs(v5.magnitude()) < 0.001f &&
+							fabs(v6.magnitude()) < 0.001f)
+						||
+						(fabs(v7.magnitude()) < 0.001f &&
+							fabs(v8.magnitude()) < 0.001f &&
+							fabs(v9.magnitude()) < 0.001f)
+						||
+						(fabs(v10.magnitude()) < 0.001f &&
+							fabs(v11.magnitude()) < 0.001f &&
+							fabs(v12.magnitude()) < 0.001f)
+						||
+						(fabs(v13.magnitude()) < 0.001f &&
+							fabs(v14.magnitude()) < 0.001f &&
+							fabs(v15.magnitude()) < 0.001f)
+						||
+						(fabs(v16.magnitude()) < 0.001f &&
+							fabs(v17.magnitude()) < 0.001f &&
+							fabs(v18.magnitude()) < 0.001f))
+
+					{
+						//remove triangle from triangulation
+						triangle[k + 0] = triangle[num_triangle - 3];
+						triangle[k + 1] = triangle[num_triangle - 2];
+						triangle[k + 2] = triangle[num_triangle - 1];
+						num_triangle -= 3;
+					}
 				}
 			}
 		}

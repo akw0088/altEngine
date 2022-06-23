@@ -1,6 +1,12 @@
 #ifndef TRIANGULATE_H
 #define TRIANGULATE_H
+
+#ifdef WIN32
 #include <windows.h>
+#endif
+
+#include <stdio.h>
+#include <math.h>
 #include <vector>
 #include "vector.h"
 #include "matrix.h"
