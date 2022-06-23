@@ -1,8 +1,8 @@
 #include "triangulate.h"
 
 
-unsigned int Triangulate::draw_mode;
-unsigned int Triangulate::debug_point;
+int Triangulate::draw_mode;
+int Triangulate::debug_point;
 
 
 int Triangulate::add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
@@ -758,9 +758,9 @@ void Triangulate::draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT
 {
 	int left, right, top, bottom;
 
-	left = (int)((c.x - radius) * scale + offset.x * scale);
-	right = (int)((c.x + radius) * scale + offset.y * scale);
-	top = (int)((c.y - radius) * scale + offset.x * scale);
+	left   = (int)((c.x - radius) * scale + offset.x * scale);
+	right  = (int)((c.x + radius) * scale + offset.x * scale);
+	top    = (int)((c.y - radius) * scale + offset.y * scale);
 	bottom = (int)((c.y + radius)  * scale + offset.y * scale);
 	Ellipse(hdc, left, top, right, bottom);
 }

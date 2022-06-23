@@ -46,8 +46,8 @@ public:
 	static void draw_circle(HDC hdc, vec3 &c, float radius, float scale, POINT offset);
 	static void draw_line(HDC hdc, vec3 &a, vec3 &b, float scale, POINT offset);
 	static void draw_point(HDC hdc, vec3 &point, float scale, POINT offset);
-	static unsigned int draw_mode;
-	static unsigned int debug_point;
+	static int draw_mode;
+	static int debug_point;
 #endif
 
 private:
