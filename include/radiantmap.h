@@ -199,64 +199,76 @@ class RadiantMap
 
 public:
 	RadiantMap();
+
+
+	// loads a q3 .map file from disk and populates radent (note: probably not much more trouble to parse quake1 .map or doom3 .map)
 	int load(char *map, FILE *output);
+
+
+
+	// used to generate .map file from quadent binary representation (mainly to compare it was correct)
 	int save(char *map, FILE *output);
 
+
+
+	// raw data from file converted to binary
 	radent_t *radent;
 	unsigned int num_ent;
 
+
+	// memory processed data
 	quadent_t quadent;
 
 
 
+	// allocates data for conversion to triangles
 	void allocate_quads();
+
+	// uses parsed data to generate better data for manipulation
 	void generate_quads();
+
+
+	// needs work, although intersect may supersede this
+	// idea is you should be able to clip a box down to the correct brush triangles
 	void clip_quads();
+
+
+	// works for all planes, but triangulation is like 95% correct
 	void intersect_quads();
+
+	// works for axial planes
 	void intersect_bigbox();
 
 
 private:
-	int trim(char *data, int length);
-	int trim_copy(char *data, int length, char *out);
-	int trim_edges(char *data, int length);
-	int trim_edges_copy(char *data, int length, char *out);
-
-
-
+	// mainly for clipping
 	float Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c);
 	float DistPointPlane(const vec3 &q, const vec3 &normal, const float d);
 	int intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result);
 	int intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result, float &t);
 	int intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result);
+
+	// magic function that makes this all work
 	bool intersect_three_planes(plane_t &pl, plane_t &p2, plane_t &p3, vec3 &point);
 
-	bool point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c);
-
-	void get_circum_circle(vec3 &a, vec3 &b, vec3 &c, float &radius, vec3 &center);
-
-	bool compare_edges(vec3 edge1, vec3 edge2, vec3 edge3, vec3 edgeA, vec3 edgeB, vec3 edgeC);
-
-	void BowyerWatson(vec3 *point, unsigned int num_point, vec3 *tri, unsigned int num_tri);
-
-	bool point_in_sphere(vec3 &point, vec3 &origin, float radius);
-
-	int add_point_in_triangle(vec3 &point, vec3 *tri, unsigned int &num_triangle);
-	int add_point_in_polygon(vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle);
 
 
-
-
+	// Used to generate the index sets of three planes to intersect for each brush
 	void Combination(unsigned int *arr, unsigned int n, unsigned int r, unsigned int *output, unsigned int &num_out);
 	void combination_recurse(unsigned int arr[], unsigned int data[], unsigned int start, unsigned int end, unsigned int index, unsigned int r, unsigned int *output, unsigned int &num_out);
 
+
+	// feeble attempts to fix winding issues
 	void sort_point(vec3 *point_array, unsigned int num_point, const vec3 &normal);
 	bool is_clockwise(const vec3 &a, const vec3 &b, const vec3 &center, const vec3 &normal);
 
+
+	// generic triangle conversions
 	void triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
 	void triangle_strip_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal);
 
 
+	// File parsing code
 	void indent(int level, FILE *output);
 	int parse_patch(char *line);
 	int parse_left_brace(char *line);
@@ -270,6 +282,12 @@ private:
 	int parse_patch_control(char *line, patch_control_t *control);
 	int parse_patch_points(char *line, patch_control_t *control, patch_point_t *point);
 	int print_patch_points(patch_control_t *control, patch_point_t *point, FILE *output);
+
+	int trim(char *data, int length);
+	int trim_copy(char *data, int length, char *out);
+	int trim_edges(char *data, int length);
+	int trim_edges_copy(char *data, int length, char *out);
+
 
 
 
