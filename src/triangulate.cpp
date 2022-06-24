@@ -600,36 +600,47 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 	int size = 1;
 	int done = 0;
 
-	// make a triangle just big enough
-	while (!done)
-	{
-		int all_in = 1;
 
-		// extend triangle to infinite plane by moving away from midpoint
+	if (num_point >= 3)
+	{
+		// make a triangle just big enough
+		while (!done)
+		{
+			int all_in = 1;
+
+			// extend triangle to infinite plane by moving away from midpoint
+			triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
+			triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
+			triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+
+			for (unsigned int i = 0; i < num_point; i++)
+			{
+				if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
+				{
+					size += 5;
+					all_in = 0;
+					break;
+				}
+			}
+
+			if (all_in == 1)
+			{
+				done = 1;
+			}
+		}
+		super_tri[0] = triangle[0];
+		super_tri[1] = triangle[1];
+		super_tri[2] = triangle[2];
+	}
+	else
+	{
+		size = 20000;
 		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
 		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
 		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
-
-		for (unsigned int i = 0; i < num_point; i++)
-		{
-			if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
-			{
-				size += 5;
-				all_in = 0;
-				break;
-			}
-		}
-
-		if (all_in == 1)
-		{
-			done = 1;
-		}
 	}
 
 
-	super_tri[0] = triangle[0];
-	super_tri[1] = triangle[1];
-	super_tri[2] = triangle[2];
 	num_triangle = 3;
 
 	// triangle is now a valid, add a point and re-triangulate
