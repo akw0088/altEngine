@@ -14,6 +14,7 @@
 #define MAX_POLY (8192)
 #define MAX_BAD (8192)
 #define MAX_TRIANGLE (8192)
+#define MAX_MODE (10)
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
@@ -31,10 +32,6 @@ typedef struct
 	unsigned int bc_ac : 1;
 	unsigned int reserved : 23;
 } edge_list_t;
-
-
-#define MAX_MODE 10
-
 
 
 class Triangulate
@@ -63,6 +60,7 @@ private:
 	bool point_in_sphere(const vec3 &point, vec3 &origin, float radius);
 	bool add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsigned int &num_poly);
 	bool point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3 &tri_b, const vec3 &tri_c);
+	bool point_is_same(const vec3 &a, const vec3 &b);
 
 	// These will modify num_triangles
 	void delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, vec3 *triangles, unsigned int &num_triangles);

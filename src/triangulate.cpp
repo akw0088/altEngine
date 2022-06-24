@@ -43,7 +43,7 @@ int Triangulate::add_point_in_polygon(const vec3 &point, vec3 *poly, unsigned in
 {
 	unsigned int i = 0;
 
-	// find triangle containing point
+	// for each edge in polygon, make a triangle using it and our point
 	for (i = 0; i + 1 < num_poly; i += 2)
 	{
 		vec3 a = poly[i];
@@ -66,6 +66,8 @@ void Triangulate::get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c,
 	vec3 ab = b - a;
 	vec3 v = vec3::crossproduct(ab, ac);
 
+	// get circle containing all three triangles points
+	// center of this circle will be a voronoi vertex
 	vec3 a_to_center = (
 		vec3::crossproduct(v, ab) * ac.magnitudeSq() +
 		vec3::crossproduct(ac, v) * ab.magnitudeSq()
@@ -101,15 +103,12 @@ bool Triangulate::point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3
 	vec3 b = tri_b - p;
 	vec3 c = tri_c - p;
 
-	// The point should be moved too, so they are both
-	// relative, but because we don't use p in the
-	// equation anymore, we don't need it!
-	// p -= p; This would just equal the zero vector!
+	vec3 normal_bc = vec3::crossproduct(b, c);   
+	vec3 normal_ca = vec3::crossproduct(c, a);   
+	vec3 normal_ab = vec3::crossproduct(a, b);
 
-	vec3 normal_bc = vec3::crossproduct(b, c); 	// Normal of PBC (u)    
-	vec3 normal_ca = vec3::crossproduct(c, a); 	// Normal of PCA (v)    
-	vec3 normal_ab = vec3::crossproduct(a, b); 	// Normal of PAB (w
-
+	// check sign of the dot product of normals
+	// should all be positive if inside
 	if (normal_bc * normal_ca < 0.0f)
 	{
 		return false;
@@ -124,6 +123,19 @@ bool Triangulate::point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3
 
 
 
+bool Triangulate::point_is_same(const vec3 &a, const vec3 &b)
+{
+	float epsilon = 0.01f;
+
+	if ((a - b).magnitude() < epsilon)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
 bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsigned int &num_poly)
 {
 	for (unsigned int i = 0; i < num_poly; i += 2)
@@ -136,7 +148,8 @@ bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsign
 			((b - na).magnitude() < 0.001 && (a - nb).magnitude() < 0.001)
 			)
 		{
-			// duplicate edge
+			// ignore duplicate edges as polygon is bounded by perimeter
+			// not the internal diagnols
 #ifdef DEBUG
 			printf("edge %d %d already exists\r\n", i, i + 1);
 #endif
@@ -150,14 +163,12 @@ bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsign
 }
 
 
+// We have bad triangles that form a polygon hole, but they contain interior edges
 // We want to delete edges in bad triangles
-// if we have one triangle, we really dont delete anything
+// if we have one triangle, we really dont delete anything, entire triangle is the polygon
 // but if we have two adjacent triangles that share an edge
-// we delete the shared edge
-// So essentially we are looking for edges that are in bad triangles twice
-
-// But we are keeping the polygon boundary, so add all edges to polygon
-// except for those that occur twice
+// we delete the shared edge as it is not part of the polygon
+// So essentially we are looking for edges that are in bad triangles twice to find shared edges
 void Triangulate::compare_edges(
 	const vec3 &T1_a, const vec3 &T1_b, const vec3 &T1_c,
 	const vec3 &T2_a, const vec3 &T2_b, const vec3 &T2_c,
@@ -193,10 +204,8 @@ void Triangulate::compare_edges(
 #endif
 	// rotate 1 abc to abc
 	if (
-		((T1_a - T2_a).magnitude() < epsilon &&
-			(T1_b - T2_b).magnitude() < epsilon) ||
-			((T1_a - T2_b).magnitude() < epsilon &&
-				(T1_b - T2_a).magnitude() < epsilon)
+			(	point_is_same(T1_a, T2_a) && point_is_same(T1_b, T2_b) ) ||
+			(	point_is_same(T1_a, T2_b) && point_is_same(T1_b, T2_a) )
 		)
 	{
 #ifdef DEBUG
@@ -207,10 +216,8 @@ void Triangulate::compare_edges(
 	}
 
 	if (
-		((T1_c - T2_c).magnitude() < epsilon &&
-			(T1_a - T2_a).magnitude() < epsilon) ||
-			((T1_c - T2_a).magnitude() < epsilon &&
-				(T1_a - T2_c).magnitude() < epsilon)
+			(	point_is_same(T1_c, T2_c) && point_is_same(T1_a, T2_a) ) ||
+			(	point_is_same(T1_c, T2_a) && point_is_same(T1_a, T2_c) )
 		)
 	{
 #ifdef DEBUG
@@ -221,10 +228,8 @@ void Triangulate::compare_edges(
 	}
 
 	if (
-		((T1_b - T2_b).magnitude() < epsilon &&
-			(T1_c - T2_c).magnitude() < epsilon) ||
-			((T1_b - T2_c).magnitude() < epsilon &&
-				(T1_c - T2_b).magnitude() < epsilon)
+			(	point_is_same(T1_b, T2_b) && point_is_same(T1_c, T2_c) ) ||
+			(	point_is_same(T1_b, T2_c) && point_is_same(T1_c, T2_b) )
 		)
 	{
 #ifdef DEBUG
@@ -237,10 +242,8 @@ void Triangulate::compare_edges(
 
 	// rotate left -- ba ca bc -> ca bc ba  
 	if (
-		((T1_a - T2_c).magnitude() < epsilon &&
-			(T1_b - T2_a).magnitude() < epsilon) ||
-			((T1_a - T2_a).magnitude() < epsilon &&
-				(T1_b - T2_c).magnitude() < epsilon)
+			(	point_is_same(T1_a, T2_c) && point_is_same(T1_b, T2_a) ) ||
+			(	point_is_same(T1_a, T2_a) && point_is_same(T1_b, T2_c) )
 		)
 	{
 #ifdef DEBUG
@@ -252,10 +255,8 @@ void Triangulate::compare_edges(
 	}
 
 	if (
-		((T1_c - T2_b).magnitude() < epsilon &&
-			(T1_a - T2_c).magnitude() < epsilon) ||
-			((T1_c - T2_c).magnitude() < epsilon &&
-				(T1_a - T2_b).magnitude() < epsilon)
+			(	point_is_same(T1_c, T2_b) && point_is_same(T1_a, T2_c) ) ||
+			(	point_is_same(T1_c, T2_c) && point_is_same(T1_a, T2_b) )
 		)
 	{
 #ifdef DEBUG
@@ -267,10 +268,8 @@ void Triangulate::compare_edges(
 	}
 
 	if (
-		((T1_b - T2_b).magnitude() < epsilon &&
-			(T1_c - T2_a).magnitude() < epsilon) ||
-			((T1_b - T2_a).magnitude() < epsilon &&
-				(T1_c - T2_b).magnitude() < epsilon)
+			(	point_is_same(T1_b, T2_b) && point_is_same(T1_c, T2_a) ) ||
+			(	point_is_same(T1_b, T2_a) && point_is_same(T1_c, T2_b) )
 		)
 	{
 #ifdef DEBUG
@@ -283,10 +282,8 @@ void Triangulate::compare_edges(
 
 	// rotate left -- ba ca bc -> bc ba ca  
 	if (
-		((T1_a - T2_b).magnitude() < epsilon &&
-			(T1_b - T2_c).magnitude() < epsilon) ||
-			((T1_a - T2_c).magnitude() < epsilon &&
-				(T1_b - T2_b).magnitude() < epsilon)
+			(	point_is_same(T1_a, T2_b) && point_is_same(T1_b, T2_c) ) ||
+			(	point_is_same(T1_a, T2_c) && point_is_same(T1_b, T2_b) )
 		)
 	{
 #ifdef DEBUG
@@ -298,10 +295,8 @@ void Triangulate::compare_edges(
 	}
 
 	if (
-		((T1_c - T2_b).magnitude() < epsilon &&
-			(T1_a - T2_a).magnitude() < epsilon) ||
-			((T1_c - T2_a).magnitude() < epsilon &&
-				(T1_a - T2_b).magnitude() < epsilon)
+			(	point_is_same(T1_c, T2_b) && point_is_same(T1_a, T2_a) ) ||
+			(	point_is_same(T1_c, T2_a) && point_is_same(T1_a, T2_b) )
 		)
 	{
 #ifdef DEBUG
@@ -313,10 +308,8 @@ void Triangulate::compare_edges(
 	}
 
 	if (
-		((T1_b - T2_c).magnitude() < epsilon &&
-			(T1_c - T2_a).magnitude() < epsilon) ||
-			((T1_b - T2_a).magnitude() < epsilon &&
-				(T1_c - T2_c).magnitude() < epsilon)
+			(	point_is_same(T1_b, T2_c) && point_is_same(T1_c, T2_a) ) ||
+			(	point_is_same(T1_b, T2_a) && point_is_same(T1_c, T2_c) )
 		)
 	{
 #ifdef DEBUG
@@ -420,7 +413,10 @@ void Triangulate::delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, v
 	for (unsigned int k = 0; k < num_triangle; k += 3)
 	{
 		/*
-		{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
+			Delete triangle even if it's ordered differently
+
+			Ways to organized three points ABC and still have the same triangle
+			{a,b,c} {a,c,b} {b,a,c} {b,c,a} {c,a,b} {c,b,a}
 		*/
 
 		// abc abc
@@ -610,7 +606,7 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
 		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
 
-		for (int i = 0; i < num_point; i++)
+		for (unsigned int i = 0; i < num_point; i++)
 		{
 			if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
 			{
@@ -810,17 +806,17 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 void Triangulate::draw_point(HDC hdc, const vec3 &point, float size, float scale, POINT offset)
 {
 	Rectangle(hdc,
-		(int)((point.x * scale - size * scale) + offset.x * scale),
-		(int)((point.y * scale - size * scale) + offset.y * scale),
-		(int)((point.x * scale + size * scale) + offset.x * scale),
-		(int)((point.y * scale + size * scale) + offset.y * scale));
+		(int)((point.x * scale - size * scale) + offset.x),
+		(int)((point.y * scale - size * scale) + offset.y),
+		(int)((point.x * scale + size * scale) + offset.x),
+		(int)((point.y * scale + size * scale) + offset.y));
 }
 
 void Triangulate::draw_fill(HDC hdc, const vec3 &point, COLORREF color, float scale, POINT offset)
 {
 	int ret0 = ExtFloodFill(hdc,
-		(int)((point.x * scale * scale) + offset.x * scale),
-		(int)((point.y * scale * scale) + offset.y * scale),
+		(int)((point.x * scale) + offset.x),
+		(int)((point.y * scale) + offset.y),
 		color,
 		FLOODFILLBORDER);
 }
@@ -829,31 +825,31 @@ void Triangulate::draw_fill(HDC hdc, const vec3 &point, COLORREF color, float sc
 void Triangulate::draw_triangle(HDC hdc, const vec3 &a, const vec3 &b, const vec3 &c, float scale, POINT offset)
 {
 	MoveToEx(hdc,
-		(int)(a.x * scale + offset.x * scale),
-		(int)(a.y * scale + offset.y * scale),
+		(int)(a.x * scale + offset.x),
+		(int)(a.y * scale + offset.y),
 		NULL);
 
 	LineTo(hdc,
-		(int)(b.x * scale + offset.x * scale),
-		(int)(b.y * scale + offset.y * scale));
+		(int)(b.x * scale + offset.x),
+		(int)(b.y * scale + offset.y));
 	LineTo(hdc,
-		(int)(c.x * scale + offset.x * scale),
-		(int)(c.y * scale + offset.y * scale));
+		(int)(c.x * scale + offset.x),
+		(int)(c.y * scale + offset.y));
 	LineTo(hdc,
-		(int)(a.x * scale + offset.x * scale),
-		(int)(a.y * scale + offset.y * scale));
+		(int)(a.x * scale + offset.x),
+		(int)(a.y * scale + offset.y));
 }
 
 
 void Triangulate::draw_line(HDC hdc, const vec3 &a, const vec3 &b, float scale, POINT offset)
 {
 	MoveToEx(hdc,
-		(int)(a.x * scale + offset.x * scale),
-		(int)(a.y * scale + offset.y * scale),
+		(int)(a.x * scale + offset.x),
+		(int)(a.y * scale + offset.y),
 		NULL);
 	LineTo(hdc,
-		(int)(b.x * scale + offset.x * scale),
-		(int)(b.y * scale + offset.y * scale));
+		(int)(b.x * scale + offset.x),
+		(int)(b.y * scale + offset.y));
 }
 
 
@@ -861,10 +857,10 @@ void Triangulate::draw_circle(HDC hdc, const vec3 &c, float radius, float scale,
 {
 	int left, right, top, bottom;
 
-	left   = (int)((c.x - radius) * scale + offset.x * scale);
-	right  = (int)((c.x + radius) * scale + offset.x * scale);
-	top    = (int)((c.y - radius) * scale + offset.y * scale);
-	bottom = (int)((c.y + radius)  * scale + offset.y * scale);
+	left   = (int)((c.x - radius) * scale + offset.x);
+	right  = (int)((c.x + radius) * scale + offset.x);
+	top    = (int)((c.y - radius) * scale + offset.y);
+	bottom = (int)((c.y + radius)  * scale + offset.y);
 	Ellipse(hdc, left, top, right, bottom);
 }
 
@@ -882,36 +878,47 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	int size = 1;
 	int done = 0;
 
-	// make a triangle just big enough
-	while (!done)
-	{
-		int all_in = 1;
 
-		// extend triangle to infinite plane by moving away from midpoint
+	if (num_point >= 3)
+	{
+		// make a triangle just big enough
+		while (!done)
+		{
+			int all_in = 1;
+
+			// extend triangle to infinite plane by moving away from midpoint
+			triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
+			triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
+			triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+
+			for (unsigned int i = 0; i < num_point; i++)
+			{
+				if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
+				{
+					size += 5;
+					all_in = 0;
+					break;
+				}
+			}
+
+			if (all_in == 1)
+			{
+				done = 1;
+			}
+		}
+		super_tri[0] = triangle[0];
+		super_tri[1] = triangle[1];
+		super_tri[2] = triangle[2];
+	}
+	else
+	{
+		size = 20000;
 		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
 		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
 		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
-
-		for (int i = 0; i < num_point; i++)
-		{
-			if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
-			{
-				size += 5;
-				all_in = 0;
-				break;
-			}
-		}
-
-		if (all_in == 1)
-		{
-			done = 1;
-		}
 	}
 
 
-	super_tri[0] = triangle[0];
-	super_tri[1] = triangle[1];
-	super_tri[2] = triangle[2];
 	num_triangle = 3;
 
 	if (draw_mode == 0 || draw_mode == 2)
@@ -1241,7 +1248,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		vec3 b = triangle[j + 1];
 		vec3 c = triangle[j + 2];
 
-		if (draw_mode == 6)
+		if (draw_mode == 0 || draw_mode == 1 || draw_mode == 6)
 		{
 			draw_triangle(hdc, a, b, c, scale, offset);
 		}
