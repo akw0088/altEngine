@@ -89,7 +89,9 @@ bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsign
 			)
 		{
 			// duplicate edge
+#ifdef DEBUG
 			printf("edge %d %d already exists\r\n", i, i + 1);
+#endif
 			return false;
 		}
 	}
@@ -123,51 +125,63 @@ void Triangulate::compare_edges(
 
 	if (num_shared + 2 > MAX_POLY)
 	{
+#ifdef DEBUG
 		printf("Reached max shared\r\n");
+#endif
 		return;
 	}
 
 	if (num_poly + 2 >= MAX_TRIANGLE)
 	{
+#ifdef DEBUG
 		printf("Reached max poly\r\n");
+#endif
 		return;
 	}
 
 
+#ifdef DEBUG
 	printf("\r\n\r\ncompare edges()\r\n");
+#endif
 	// rotate 1 abc to abc
 	if (
-		(fabs((T1_a - T2_a).magnitude()) < epsilon &&
-			fabs((T1_b - T2_b).magnitude()) < epsilon) ||
-			(fabs((T1_a - T2_b).magnitude()) < epsilon &&
-				fabs((T1_b - T2_a).magnitude()) < epsilon)
+		((T1_a - T2_a).magnitude() < epsilon &&
+			(T1_b - T2_b).magnitude() < epsilon) ||
+			((T1_a - T2_b).magnitude() < epsilon &&
+				(T1_b - T2_a).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 ab equivalent to T2 ab\r\n");
+#endif
 		edge.ab_ab = 1;
 		add_poly(T1_a, T1_b, shared, num_shared);
 	}
 
 	if (
-		(fabs((T1_c - T2_c).magnitude()) < epsilon &&
-			fabs((T1_a - T2_a).magnitude()) < epsilon) ||
-			(fabs((T1_c - T2_a).magnitude()) < epsilon &&
-				fabs((T1_a - T2_c).magnitude()) < epsilon)
+		((T1_c - T2_c).magnitude() < epsilon &&
+			(T1_a - T2_a).magnitude() < epsilon) ||
+			((T1_c - T2_a).magnitude() < epsilon &&
+				(T1_a - T2_c).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 ac equivalent to T2 ac\r\n");
+#endif
 		edge.ac_ac = 1;
 		add_poly(T1_a, T1_c, shared, num_shared);
 	}
 
 	if (
-		(fabs((T1_b - T2_b).magnitude()) < epsilon &&
-			fabs((T1_c - T2_c).magnitude()) < epsilon) ||
-			(fabs((T1_b - T2_c).magnitude()) < epsilon &&
-				fabs((T1_c - T2_b).magnitude()) < epsilon)
+		((T1_b - T2_b).magnitude() < epsilon &&
+			(T1_c - T2_c).magnitude() < epsilon) ||
+			((T1_b - T2_c).magnitude() < epsilon &&
+				(T1_c - T2_b).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 bc equivalent to T2 bc\r\n");
+#endif
 		edge.bc_bc = 1;
 		add_poly(T1_b, T1_c, shared, num_shared);
 
@@ -175,39 +189,45 @@ void Triangulate::compare_edges(
 
 	// rotate left -- ba ca bc -> ca bc ba  
 	if (
-		(fabs((T1_a - T2_c).magnitude()) < epsilon &&
-			fabs((T1_b - T2_a).magnitude()) < epsilon) ||
-			(fabs((T1_a - T2_a).magnitude()) < epsilon &&
-				fabs((T1_b - T2_c).magnitude()) < epsilon)
+		((T1_a - T2_c).magnitude() < epsilon &&
+			(T1_b - T2_a).magnitude() < epsilon) ||
+			((T1_a - T2_a).magnitude() < epsilon &&
+				(T1_b - T2_c).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 ab equivalent to T2 ac\r\n");
+#endif
 		edge.ab_ac = 1;
 		add_poly(T1_a, T1_b, shared, num_shared);
 
 	}
 
 	if (
-		(fabs((T1_c - T2_b).magnitude()) < epsilon &&
-			fabs((T1_a - T2_c).magnitude()) < epsilon) ||
-			(fabs((T1_c - T2_c).magnitude()) < epsilon &&
-				fabs((T1_a - T2_b).magnitude()) < epsilon)
+		((T1_c - T2_b).magnitude() < epsilon &&
+			(T1_a - T2_c).magnitude() < epsilon) ||
+			((T1_c - T2_c).magnitude() < epsilon &&
+				(T1_a - T2_b).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 ac equivalent to T2 bc\r\n");
+#endif
 		edge.ac_bc = 1;
 		add_poly(T1_a, T1_c, shared, num_shared);
 
 	}
 
 	if (
-		(fabs((T1_b - T2_b).magnitude()) < epsilon &&
-			fabs((T1_c - T2_a).magnitude()) < epsilon) ||
-			(fabs((T1_b - T2_a).magnitude()) < epsilon &&
-				fabs((T1_c - T2_b).magnitude()) < epsilon)
+		((T1_b - T2_b).magnitude() < epsilon &&
+			(T1_c - T2_a).magnitude() < epsilon) ||
+			((T1_b - T2_a).magnitude() < epsilon &&
+				(T1_c - T2_b).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 bc equivalent to T2 ba\r\n");
+#endif
 		edge.bc_ab = 1;
 		add_poly(T1_b, T1_c, shared, num_shared);
 
@@ -215,39 +235,45 @@ void Triangulate::compare_edges(
 
 	// rotate left -- ba ca bc -> bc ba ca  
 	if (
-		(fabs((T1_a - T2_b).magnitude()) < epsilon &&
-			fabs((T1_b - T2_c).magnitude()) < epsilon) ||
-			(fabs((T1_a - T2_c).magnitude()) < epsilon &&
-				fabs((T1_b - T2_b).magnitude()) < epsilon)
+		((T1_a - T2_b).magnitude() < epsilon &&
+			(T1_b - T2_c).magnitude() < epsilon) ||
+			((T1_a - T2_c).magnitude() < epsilon &&
+				(T1_b - T2_b).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 ab equivalent to T2 bc\r\n");
+#endif
 		edge.ab_bc = 1;
 		add_poly(T1_a, T1_b, shared, num_shared);
 
 	}
 
 	if (
-		(fabs((T1_c - T2_b).magnitude()) < epsilon &&
-			fabs((T1_a - T2_a).magnitude()) < epsilon) ||
-			(fabs((T1_c - T2_a).magnitude()) < epsilon &&
-				fabs((T1_a - T2_b).magnitude()) < epsilon)
+		((T1_c - T2_b).magnitude() < epsilon &&
+			(T1_a - T2_a).magnitude() < epsilon) ||
+			((T1_c - T2_a).magnitude() < epsilon &&
+				(T1_a - T2_b).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 ac equivalent to T2 ba\r\n");
+#endif
 		edge.ac_ab = 1;
 
 		add_poly(T1_a, T1_c, shared, num_shared);
 	}
 
 	if (
-		(fabs((T1_b - T2_c).magnitude()) < epsilon &&
-			fabs((T1_c - T2_a).magnitude()) < epsilon) ||
-			(fabs((T1_b - T2_a).magnitude()) < epsilon &&
-				fabs((T1_c - T2_c).magnitude()) < epsilon)
+		((T1_b - T2_c).magnitude() < epsilon &&
+			(T1_c - T2_a).magnitude() < epsilon) ||
+			((T1_b - T2_a).magnitude() < epsilon &&
+				(T1_c - T2_c).magnitude() < epsilon)
 		)
 	{
+#ifdef DEBUG
 		printf("T1 bc equivalent to T2 ca\r\n");
+#endif
 		edge.bc_ac = 1;
 
 		add_poly(T1_b, T1_c, shared, num_shared);
@@ -335,7 +361,9 @@ void Triangulate::compare_edges(
 	}
 
 
+#ifdef DEBUG
 	printf("\tFound %d unique edges\r\n", num_edge);
+#endif
 }
 
 
@@ -379,29 +407,29 @@ void Triangulate::delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, v
 
 
 		if (
-			(fabs(v1.magnitude()) < 0.001f &&
-				fabs(v2.magnitude()) < 0.001f &&
-				fabs(v3.magnitude()) < 0.001f)
+			(v1.magnitude() < 0.001f &&
+				v2.magnitude() < 0.001f &&
+				v3.magnitude() < 0.001f)
 			||
-			(fabs(v4.magnitude()) < 0.001f &&
-				fabs(v5.magnitude()) < 0.001f &&
-				fabs(v6.magnitude()) < 0.001f)
+			(v4.magnitude() < 0.001f &&
+				v5.magnitude() < 0.001f &&
+				v6.magnitude() < 0.001f)
 			||
-			(fabs(v7.magnitude()) < 0.001f &&
-				fabs(v8.magnitude()) < 0.001f &&
-				fabs(v9.magnitude()) < 0.001f)
+			(v7.magnitude() < 0.001f &&
+				v8.magnitude() < 0.001f &&
+				v9.magnitude() < 0.001f)
 			||
-			(fabs(v10.magnitude()) < 0.001f &&
-				fabs(v11.magnitude()) < 0.001f &&
-				fabs(v12.magnitude()) < 0.001f)
+			(v10.magnitude() < 0.001f &&
+				v11.magnitude() < 0.001f &&
+				v12.magnitude() < 0.001f)
 			||
-			(fabs(v13.magnitude()) < 0.001f &&
-				fabs(v14.magnitude()) < 0.001f &&
-				fabs(v15.magnitude()) < 0.001f)
+			(v13.magnitude() < 0.001f &&
+				v14.magnitude() < 0.001f &&
+				v15.magnitude() < 0.001f)
 			||
-			(fabs(v16.magnitude()) < 0.001f &&
-				fabs(v17.magnitude()) < 0.001f &&
-				fabs(v18.magnitude()) < 0.001f))
+			(v16.magnitude() < 0.001f &&
+				v17.magnitude() < 0.001f &&
+				v18.magnitude() < 0.001f))
 
 		{
 			//remove triangle from triangulation
@@ -449,23 +477,23 @@ void Triangulate::delete_triangle_with_edge(const vec3 &a, const vec3 &b, vec3 *
 
 
 		if (
-			(fabs(v1.magnitude()) < 0.001f &&
-				fabs(v2.magnitude()) < 0.001f)
+			(v1.magnitude() < 0.001f &&
+				v2.magnitude() < 0.001f)
 			||
-			(fabs(v4.magnitude()) < 0.001f &&
-				fabs(v6.magnitude()) < 0.001f)
+			(v4.magnitude() < 0.001f &&
+				v6.magnitude() < 0.001f)
 			||
-			(fabs(v8.magnitude()) < 0.001f &&
-				fabs(v9.magnitude()) < 0.001f)
+			(v8.magnitude() < 0.001f &&
+				v9.magnitude() < 0.001f)
 			||
-			(fabs(v11.magnitude()) < 0.001f &&
-				fabs(v12.magnitude()) < 0.001f)
+			(v11.magnitude() < 0.001f &&
+				v12.magnitude() < 0.001f)
 			||
-			(fabs(v13.magnitude()) < 0.001f &&
-				fabs(v15.magnitude()) < 0.001f)
+			(v13.magnitude() < 0.001f &&
+				v15.magnitude() < 0.001f)
 			||
-			(fabs(v16.magnitude()) < 0.001f &&
-				fabs(v17.magnitude()) < 0.001f)
+			(v16.magnitude() < 0.001f &&
+				v17.magnitude() < 0.001f)
 			)
 
 		{
@@ -592,7 +620,9 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 				vec3 badB_b = badTriangles[k + 1];
 				vec3 badB_c = badTriangles[k + 2];
 
+#ifdef DEBUG
 				printf("Comparing %d %d %d triangles to %d %d %d [num_bad = %d]\r\n", j, j + 1, j + 2, k, k + 1, k + 2, num_bad);
+#endif
 				// we compare each edge of the bad triangles and keep any edges shared by two bad triangles
 				compare_edges(badA_a, badA_b, badA_c, badB_a, badB_b, badB_c, &polygon[0], num_poly, shared, num_shared);
 			}
@@ -603,10 +633,12 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 		{
 			for (unsigned int j = 0; j < num_bad; j += 3)
 			{
+#ifdef DEBUG
 				if (num_shared > 0)
 				{
 					printf("Had no polys, but some shared polys?\r\n");
 				}
+#endif
 
 				// if we have no polys, then add the bad triangles
 				polygon[num_poly++] = badTriangles[0];
