@@ -62,6 +62,9 @@ private:
 	bool point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3 &tri_b, const vec3 &tri_c);
 	bool point_is_same(const vec3 &a, const vec3 &b);
 
+
+	bool intersect_two_lines(vec2 &A, vec2 &B, vec2 &C, vec2 &D, vec2 &result);
+
 	// These will modify num_triangles
 	void delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, vec3 *triangles, unsigned int &num_triangles);
 	void delete_triangle_with_edge(const vec3 &a, const vec3 &b, vec3 *triangles, unsigned int &num_triangles);

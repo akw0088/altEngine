@@ -35,6 +35,7 @@ COLORREF color_table[COLOR_TABLE_SIZE] = {
 };
 
 HBRUSH brush_table[COLOR_TABLE_SIZE] = { 0 };
+HPEN pen_table[COLOR_TABLE_SIZE] = { 0 };
 
 #endif
 int Triangulate::debug_point;
@@ -581,7 +582,10 @@ void Triangulate::delete_triangle_with_vertex(const vec3 &a, vec3 *triangle, uns
 	}
 }
 
-
+//
+//	Good background video:
+//		https://www.youtube.com/watch?v=-XCVn73p3xs
+//
 void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int &num_triangle)
 {
 	vec3 super_tri[3];
@@ -867,6 +871,8 @@ void Triangulate::draw_circle(HDC hdc, const vec3 &c, float radius, float scale,
 void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int &num_triangle, float scale, POINT offset)
 {
 	vec3 super_tri[3];
+	vec3 voronoi_edge[256][32];
+	int num_edge[256] = { 0 };
 
 	super_tri[0] = point[0];
 	super_tri[1] = point[1];
@@ -1241,6 +1247,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		delete_triangle_with_vertex(c, triangle, num_triangle);
 	}
 
+
 	// Draw final output
 	for (unsigned int j = 0; j < num_triangle; j += 3)
 	{
@@ -1248,12 +1255,76 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		vec3 b = triangle[j + 1];
 		vec3 c = triangle[j + 2];
 
-		if (draw_mode == 0 || draw_mode == 1 || draw_mode == 6)
+		if (draw_mode == 0 || draw_mode == 1 || draw_mode == 6 || draw_mode == 7)
 		{
 			draw_triangle(hdc, a, b, c, scale, offset);
 		}
+	}
 
+
+	for (unsigned int j = 0; j < num_triangle; j += 3)
+	{
+		vec3 a = triangle[j + 0];
+		vec3 b = triangle[j + 1];
+		vec3 c = triangle[j + 2];
+
+		int ia = j + 0;
+		int ib = j + 1;
+		int ic = j + 2;
+
+		vec3 mid_ab = (a + b) / 2.0f;
+		vec3 mid_bc = (b + c) / 2.0f;
+		vec3 mid_ca = (c + a) / 2.0f;
+
+		// edges of the voronoi bisect with each point
+		// so take the midpoints of each edge in the output triangle, and that will give voronoi edge
+		// from each point
+
+		float radius;
+		vec3 center;
+		get_circum_circle(a, b, c, radius, center);
+		//draw_circle(hdc, center, radius, scale, offset);
+
+
+		vec3 inf_ab_pos = (mid_ab - center) * 100;
+		vec3 inf_bc_pos = (mid_bc - center) * 100;
+		vec3 inf_ca_pos = (mid_ca - center) * 100;
+
+		vec3 inf_ab_neg = (mid_ab - center) * -100;
+		vec3 inf_bc_neg = (mid_bc - center) * -100;
+		vec3 inf_ca_neg = (mid_ca - center) * -100;
+
+		// technically we want to color each side of these lines differently, maybe a flood fill or something
 		if (draw_mode == 7)
+		{
+			static HPEN hPen;
+
+			if (hPen == 0)
+				hPen = CreatePen(PS_SOLID, 5, RGB(128, 128, 128));
+
+			SelectObject(hdc, hPen);
+			draw_line(hdc, inf_ab_pos, center, scale, offset);
+			draw_line(hdc, inf_bc_pos, center, scale, offset);
+			draw_line(hdc, inf_ca_pos, center, scale, offset);
+
+			// each vertex is a voronoi vertex, so the midpoints belong to one of the three
+			SelectObject(hdc, brush_table[(j + 0) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, a, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, brush_table[(j + 1) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, b, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, brush_table[(j + 2) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, c, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+			SelectObject(hdc, GetStockObject(BLACK_PEN));
+			//draw_point(hdc, center, 50, scale, offset);
+
+			draw_point(hdc, a, 20, scale, offset);
+			draw_point(hdc, b, 20, scale, offset);
+			draw_point(hdc, c, 20, scale, offset);
+
+		}
+
+		if (draw_mode == 8)
 		{
 			vec3 mid_ab = (a + b) / 2.0f;
 			vec3 mid_bc = (b + c) / 2.0f;
@@ -1266,40 +1337,101 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			float radius;
 			vec3 center;
 			get_circum_circle(a, b, c, radius, center);
-
-			static HPEN hPen;
-
-			if (hPen == 0)
-				hPen = CreatePen(PS_SOLID, 5, RGB(128, 128, 128));
-
-			vec3 inf1 = (mid_ab - center) * 1000;
-			vec3 inf2 = (mid_bc - center) * 1000;
-			vec3 inf3 = (mid_ca - center) * 1000;
-
-			// technically we want to color each side of these lines differently, maybe a flood fill or something
-			SelectObject(hdc, hPen);
-			draw_line(hdc, inf1, center, scale, offset);
-			draw_line(hdc, inf2, center, scale, offset);
-			draw_line(hdc, inf3, center, scale, offset);
-
-			SelectObject(hdc, brush_table[(j + 0) % COLOR_TABLE_SIZE]);
-			draw_fill(hdc, a, RGB(128, 128, 128), scale, offset);
-			SelectObject(hdc, brush_table[(j + 1) % COLOR_TABLE_SIZE]);
-			draw_fill(hdc, b, RGB(128, 128, 128), scale, offset);
-			SelectObject(hdc, brush_table[(j + 2) % COLOR_TABLE_SIZE]);
-			draw_fill(hdc, c, RGB(128, 128, 128), scale, offset);
-			SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+			//draw_circle(hdc, center, radius, scale, offset);
 
 
-//			draw_point(hdc, center, 50, scale, offset);
-			SelectObject(hdc, GetStockObject(BLACK_PEN));
+			vec3 inf_ab_pos = (mid_ab - center) * 100;
+			vec3 inf_bc_pos = (mid_bc - center) * 100;
+			vec3 inf_ca_pos = (mid_ca - center) * 100;
+
+			vec3 inf_ab_neg = (mid_ab - center) * -100;
+			vec3 inf_bc_neg = (mid_bc - center) * -100;
+			vec3 inf_ca_neg = (mid_ca - center) * -100;
+
+			// so we are going to save the dividing lines and later draw the cells
+
+			// save edges for a and b
+			voronoi_edge[ia][num_edge[ia]++] = inf_ab_pos;
+			voronoi_edge[ia][num_edge[ia]++] = center;
+			voronoi_edge[ia][num_edge[ia]++] = inf_ab_neg;
+			voronoi_edge[ib][num_edge[ib]++] = inf_ab_pos;
+			voronoi_edge[ib][num_edge[ib]++] = center;
+			voronoi_edge[ib][num_edge[ib]++] = inf_ab_neg;
+
+			// save edges for b and c
+			voronoi_edge[ib][num_edge[ib]++] = inf_bc_pos;
+			voronoi_edge[ib][num_edge[ib]++] = center;
+			voronoi_edge[ib][num_edge[ib]++] = inf_bc_neg;
+			voronoi_edge[ic][num_edge[ic]++] = inf_bc_pos;
+			voronoi_edge[ic][num_edge[ic]++] = center;
+			voronoi_edge[ic][num_edge[ic]++] = inf_bc_neg;
+
+			// save edges for c and a
+			voronoi_edge[ic][num_edge[ic]++] = inf_ca_neg;
+			voronoi_edge[ic][num_edge[ic]++] = center;
+			voronoi_edge[ic][num_edge[ic]++] = inf_ca_pos;
+			voronoi_edge[ia][num_edge[ia]++] = inf_ca_pos;
+			voronoi_edge[ia][num_edge[ia]++] = center;
+			voronoi_edge[ia][num_edge[ia]++] = inf_ca_neg;
 
 		}
-
-
 	}
 
+	if (draw_mode == 8)
+	{
+		for (int j = 0; j < num_triangle; j++)
+		{
+			for (unsigned int k = 0; k < num_edge[j]; k += 3)
+			{
+				vec3 a = voronoi_edge[j][k + 0];
+				vec3 center = voronoi_edge[j][k + 1];
+				vec3 b = voronoi_edge[j][k + 2];
 
+
+
+				SelectObject(hdc, pen_table[j % COLOR_TABLE_SIZE]);
+				SelectObject(hdc, brush_table[j % COLOR_TABLE_SIZE]);
+				draw_line(hdc, a, center, scale, offset);
+				draw_line(hdc, b, center, scale, offset);
+
+				draw_point(hdc, triangle[j], 20, scale, offset);
+
+
+			}
+		}
+		SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+		SelectObject(hdc, GetStockObject(BLACK_PEN));
+	}
+
+}
+
+
+
+
+bool Triangulate::intersect_two_lines(vec2 &A, vec2 &B, vec2 &C, vec2 &D, vec2 &result)
+{
+	// Line AB represented as a1x + b1y = c1
+	float a1 = B.y - A.y;
+	float b1 = A.x - B.x;
+	float c1 = a1 * A.x + b1 * A.y;
+
+	// Line CD represented as a2x + b2y = c2
+	float a2 = D.y - C.y;
+	float b2 = C.x - D.x;
+	float c2 = a2 * C.x + b2 * C.y;
+
+	float det = a1 * b2 - a2 * b1;
+
+	if (det == 0)
+	{
+		return false;
+	}
+	else
+	{
+		result.x = (b2 * c1 - b1 * c2) / det;
+		result.y = (a1 * c2 - a2 * c1) / det;
+	}
+	return true;
 }
 
 #endif
