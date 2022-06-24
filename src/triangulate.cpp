@@ -81,9 +81,6 @@ void Triangulate::get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c,
 
 }
 
-
-
-
 bool Triangulate::point_in_sphere(const vec3 &point, vec3 &origin, float radius)
 {
 	vec3 dist = point - origin;
@@ -126,9 +123,7 @@ bool Triangulate::point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3
 
 bool Triangulate::point_is_same(const vec3 &a, const vec3 &b)
 {
-	float epsilon = 0.01f;
-
-	if ((a - b).magnitude() < epsilon)
+	if ((a - b).magnitude() < EPSILON)
 	{
 		return true;
 	}
@@ -145,8 +140,8 @@ bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsign
 		vec3 b = polygon[i + 1];
 
 		if (
-			((a - na).magnitude() < 0.001 && (b - nb).magnitude() < 0.001) ||
-			((b - na).magnitude() < 0.001 && (a - nb).magnitude() < 0.001)
+				(	point_is_same(a, na) && point_is_same(b, nb) ) ||
+				(	point_is_same(b, na) && point_is_same(a, nb) )
 			)
 		{
 			// ignore duplicate edges as polygon is bounded by perimeter
@@ -176,8 +171,6 @@ void Triangulate::compare_edges(
 	vec3 *polygon, unsigned int &num_poly,
 	vec3 *shared, unsigned int &num_shared)
 {
-	float epsilon = 0.01f;
-
 	edge_list_t edge = { 0 };
 
 	int num_edge = 0;
@@ -452,29 +445,29 @@ void Triangulate::delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, v
 
 
 		if (
-			(v1.magnitude() < 0.001f &&
-				v2.magnitude() < 0.001f &&
-				v3.magnitude() < 0.001f)
+			(	v1.magnitude() < EPSILON &&
+				v2.magnitude() < EPSILON &&
+				v3.magnitude() < EPSILON)
 			||
-			(v4.magnitude() < 0.001f &&
-				v5.magnitude() < 0.001f &&
-				v6.magnitude() < 0.001f)
+			(	v4.magnitude() < EPSILON &&
+				v5.magnitude() < EPSILON &&
+				v6.magnitude() < EPSILON)
 			||
-			(v7.magnitude() < 0.001f &&
-				v8.magnitude() < 0.001f &&
-				v9.magnitude() < 0.001f)
+			(	v7.magnitude() < EPSILON &&
+				v8.magnitude() < EPSILON &&
+				v9.magnitude() < EPSILON)
 			||
-			(v10.magnitude() < 0.001f &&
-				v11.magnitude() < 0.001f &&
-				v12.magnitude() < 0.001f)
+			(	v10.magnitude() < EPSILON &&
+				v11.magnitude() < EPSILON &&
+				v12.magnitude() < EPSILON)
 			||
-			(v13.magnitude() < 0.001f &&
-				v14.magnitude() < 0.001f &&
-				v15.magnitude() < 0.001f)
+			(	v13.magnitude() < EPSILON &&
+				v14.magnitude() < EPSILON &&
+				v15.magnitude() < EPSILON)
 			||
-			(v16.magnitude() < 0.001f &&
-				v17.magnitude() < 0.001f &&
-				v18.magnitude() < 0.001f))
+			(	v16.magnitude() < EPSILON &&
+				v17.magnitude() < EPSILON &&
+				v18.magnitude() < EPSILON))
 
 		{
 			//remove triangle from triangulation
@@ -522,23 +515,23 @@ void Triangulate::delete_triangle_with_edge(const vec3 &a, const vec3 &b, vec3 *
 
 
 		if (
-			(v1.magnitude() < 0.001f &&
-				v2.magnitude() < 0.001f)
+			(	v1.magnitude() < EPSILON &&
+				v2.magnitude() < EPSILON)
 			||
-			(v4.magnitude() < 0.001f &&
-				v6.magnitude() < 0.001f)
+			(	v4.magnitude() < EPSILON &&
+				v6.magnitude() < EPSILON)
 			||
-			(v8.magnitude() < 0.001f &&
-				v9.magnitude() < 0.001f)
+			(	v8.magnitude() < EPSILON &&
+				v9.magnitude() < EPSILON)
 			||
-			(v11.magnitude() < 0.001f &&
-				v12.magnitude() < 0.001f)
+			(	v11.magnitude() < EPSILON &&
+				v12.magnitude() < EPSILON)
 			||
-			(v13.magnitude() < 0.001f &&
-				v15.magnitude() < 0.001f)
+			(	v13.magnitude() < EPSILON &&
+				v15.magnitude() < EPSILON)
 			||
-			(v16.magnitude() < 0.001f &&
-				v17.magnitude() < 0.001f)
+			(	v16.magnitude() < EPSILON &&
+				v17.magnitude() < EPSILON)
 			)
 
 		{
@@ -567,9 +560,9 @@ void Triangulate::delete_triangle_with_vertex(const vec3 &a, vec3 *triangle, uns
 		vec3 v3 = a - triangle[k + 2];
 
 		if (
-			    v1.magnitude() < 0.001f ||
-				v2.magnitude() < 0.001f ||
-				v3.magnitude() < 0.001f
+			    v1.magnitude() < EPSILON ||
+				v2.magnitude() < EPSILON ||
+				v3.magnitude() < EPSILON
 			)
 		{
 			//remove triangle from triangulation
@@ -609,9 +602,9 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 			int all_in = 1;
 
 			// extend triangle to infinite plane by moving away from midpoint
-			triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
-			triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
-			triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+			triangle[0] = super_tri[0] + ((super_tri[0] - mid) * (float)size);
+			triangle[1] = super_tri[1] + ((super_tri[1] - mid) * (float)size);
+			triangle[2] = super_tri[2] + ((super_tri[2] - mid) * (float)size);
 
 			for (unsigned int i = 0; i < num_point; i++)
 			{
@@ -635,9 +628,9 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 	else
 	{
 		size = 20000;
-		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
-		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
-		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * (float)size);
+		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * (float)size);
+		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * (float)size);
 	}
 
 
@@ -883,7 +876,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 {
 	vec3 super_tri[3];
 	vec3 voronoi_edge[256][32];
-	int num_edge[256] = { 0 };
+	unsigned int num_edge[256] = { 0 };
 
 	super_tri[0] = point[0];
 	super_tri[1] = point[1];
@@ -904,9 +897,9 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			int all_in = 1;
 
 			// extend triangle to infinite plane by moving away from midpoint
-			triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
-			triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
-			triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+			triangle[0] = super_tri[0] + ((super_tri[0] - mid) * (float)size);
+			triangle[1] = super_tri[1] + ((super_tri[1] - mid) * (float)size);
+			triangle[2] = super_tri[2] + ((super_tri[2] - mid) * (float)size);
 
 			for (unsigned int i = 0; i < num_point; i++)
 			{
@@ -930,15 +923,15 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	else
 	{
 		size = 20000;
-		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
-		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
-		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * (float)size);
+		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * (float)size);
+		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * (float)size);
 	}
 
 
 	num_triangle = 3;
 
-	if (draw_mode == 0 || draw_mode == 2)
+	if (draw_mode == TRIANGULATE_TRI_POINT || draw_mode == TRIANGULATE_TRI_BAD)
 	{
 		draw_triangle(hdc, super_tri[0], super_tri[1], super_tri[2], scale, offset);
 	}
@@ -949,7 +942,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	// add all the points one at a time to the triangulation
 	for (unsigned int i = 0; i < num_point; i++)
 	{
-		if (i > debug_point)
+		if ((int)i > debug_point)
 			break;
 
 		static vec3 polygon[MAX_POLY];
@@ -970,7 +963,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 
 		// draw selected point really big
-		if (draw_mode < 7)
+		if (draw_mode < TRIANGULATE_VORONOI)
 		{
 			SelectObject(hdc, hPen);
 			draw_point(hdc, point[i], 50, scale, offset);
@@ -988,7 +981,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			float radius;
 			vec3 center;
 
-			if (draw_mode == 1 && debug_point == i)
+			if (draw_mode == TRIANGULATE_CIR_POINT && debug_point == i)
 			{
 				SelectObject(hdc, GetStockObject(BLACK_PEN));
 				draw_triangle(hdc, a, b, c, scale, offset);
@@ -1010,7 +1003,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 					hPen2 = CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
 
 
-				if (draw_mode == 1 && debug_point == i)
+				if (draw_mode == TRIANGULATE_TRI_POINT && debug_point == i)
 				{
 					SelectObject(hdc, hPen);
 					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
@@ -1031,14 +1024,14 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			}
 			else
 			{
-				if (draw_mode == 1 && debug_point == i)
+				if (draw_mode == TRIANGULATE_TRI_POINT && debug_point == i)
 				{
 					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 					draw_circle(hdc, center, radius, scale, offset);
 				}
-				if (draw_mode == 7)
+				if (draw_mode == TRIANGULATE_VORONOI)
 				{
-					// draw circumcircle vertex, which is also a voronoi vertex
+					// draw circumcircle vertex
 					SelectObject(hdc, GetStockObject(BLACK_PEN));
 					SelectObject(hdc, GetStockObject(BLACK_BRUSH));
 					draw_point(hdc, center, 15, scale, offset);
@@ -1059,7 +1052,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			vec3 c = badTriangles[j + 2];
 
 
-			if (draw_mode == 2 && debug_point == i)
+			if (draw_mode == TRIANGULATE_TRI_BAD && debug_point == i)
 			{
 				static HPEN hPen;
 
@@ -1134,7 +1127,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			vec3 c = triangle[j + 2];
 
 
-			if (draw_mode == 4 && debug_point == i)
+			if (draw_mode == TRIANGULATE_POLY_ALL && debug_point == i)
 			{
 				static HPEN hPen;
 
@@ -1157,7 +1150,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			vec3 b = polygon[j + 1];
 
 
-			if ((draw_mode == 3 || draw_mode == 4) && debug_point == i)
+			if ((draw_mode == TRIANGULATE_POLY_SHARED || draw_mode == TRIANGULATE_POLY_ALL) && debug_point == i)
 			{
 				static HPEN hPen;
 
@@ -1177,7 +1170,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			vec3 b = shared[j + 1];
 
 
-			if ((draw_mode == 3 || draw_mode == 4) && debug_point == i)
+			if ((draw_mode == TRIANGULATE_POLY_SHARED || draw_mode == TRIANGULATE_POLY_ALL) && debug_point == i)
 			{
 				static HPEN hPen;
 
@@ -1266,7 +1259,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		vec3 b = triangle[j + 1];
 		vec3 c = triangle[j + 2];
 
-		if (draw_mode == 0 || draw_mode == 1 || draw_mode == 6 || draw_mode == 7)
+		if (draw_mode == TRIANGULATE_TRI_POINT || draw_mode == TRIANGULATE_CIR_POINT || draw_mode == TRIANGULATE_OUTPUT || draw_mode == TRIANGULATE_VORONOI)
 		{
 			draw_triangle(hdc, a, b, c, scale, offset);
 		}
@@ -1306,7 +1299,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		vec3 inf_ca_neg = (mid_ca - center) * -100;
 
 		// technically we want to color each side of these lines differently, maybe a flood fill or something
-		if (draw_mode == 7)
+		if (draw_mode == TRIANGULATE_VORONOI)
 		{
 			static HPEN hPen;
 
@@ -1335,7 +1328,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 		}
 
-		if (draw_mode == 8)
+		if (draw_mode == TRIANGULATE_VORONOI2)
 		{
 			vec3 mid_ab = (a + b) / 2.0f;
 			vec3 mid_bc = (b + c) / 2.0f;
@@ -1388,9 +1381,9 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		}
 	}
 
-	if (draw_mode == 8)
+	if (draw_mode == TRIANGULATE_VORONOI2)
 	{
-		for (int j = 0; j < num_triangle; j++)
+		for (unsigned int j = 0; j < num_triangle; j++)
 		{
 			for (unsigned int k = 0; k < num_edge[j]; k += 3)
 			{
@@ -1405,6 +1398,8 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 				draw_line(hdc, a, center, scale, offset);
 				draw_line(hdc, b, center, scale, offset);
 
+				// really need to intersect each line here with neighboring triangle lines
+				// but kind of a PITA
 				draw_point(hdc, triangle[j], 20, scale, offset);
 
 

@@ -19,6 +19,8 @@
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
 
+#define EPSILON 0.001f
+
 typedef struct
 {
 	unsigned int ab_ab : 1;
@@ -32,6 +34,21 @@ typedef struct
 	unsigned int bc_ac : 1;
 	unsigned int reserved : 23;
 } edge_list_t;
+
+
+typedef enum
+{
+	TRIANGULATE_TRI_POINT,
+	TRIANGULATE_CIR_POINT,
+	TRIANGULATE_TRI_BAD,
+	TRIANGULATE_POLY_SHARED,
+	TRIANGULATE_POLY_ALL,
+	TRIANGULATE_POST_DELETE,
+	TRIANGULATE_OUTPUT,
+	TRIANGULATE_VORONOI,
+	TRIANGULATE_VORONOI2,
+	TRIANGULATE_MAX_ITEM
+} TriangulateDrawMode_t;
 
 
 class Triangulate
