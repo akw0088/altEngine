@@ -549,16 +549,39 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 	vec3 mid = (super_tri[0] + super_tri[1] + super_tri[2]) / 3.0;
 
-	float size = 20000;
+	int size = 1;
+	int done = 0;
 
-	// extend triangle to infinite plane by moving away from midpoint
-	super_tri[0] = super_tri[0] + ((super_tri[0] - mid) * size);
-	super_tri[1] = super_tri[1] + ((super_tri[1] - mid) * size);
-	super_tri[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+	// make a triangle just big enough
+	while (!done)
+	{
+		int all_in = 1;
 
-	triangle[0] = super_tri[0];
-	triangle[1] = super_tri[1];
-	triangle[2] = super_tri[2];
+		// extend triangle to infinite plane by moving away from midpoint
+		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
+		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
+		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+
+		for (int i = 0; i < num_point; i++)
+		{
+			if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
+			{
+				size += 5;
+				all_in = 0;
+				break;
+			}
+		}
+
+		if (all_in == 1)
+		{
+			done = 1;
+		}
+	}
+
+
+	super_tri[0] = triangle[0];
+	super_tri[1] = triangle[1];
+	super_tri[2] = triangle[2];
 	num_triangle = 3;
 
 	// triangle is now a valid, add a point and re-triangulate
@@ -798,16 +821,39 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 	vec3 mid = (super_tri[0] + super_tri[1] + super_tri[2]) / 3.0;
 
-	float size = 20;
+	int size = 1;
+	int done = 0;
 
-	// extend triangle to infinite plane by moving away from midpoint
-	super_tri[0] = super_tri[0] + ((super_tri[0] - mid) * size);
-	super_tri[1] = super_tri[1] + ((super_tri[1] - mid) * size);
-	super_tri[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+	// make a triangle just big enough
+	while (!done)
+	{
+		int all_in = 1;
 
-	triangle[0] = super_tri[0];
-	triangle[1] = super_tri[1];
-	triangle[2] = super_tri[2];
+		// extend triangle to infinite plane by moving away from midpoint
+		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * size);
+		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * size);
+		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * size);
+
+		for (int i = 0; i < num_point; i++)
+		{
+			if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
+			{
+				size += 5;
+				all_in = 0;
+				break;
+			}
+		}
+
+		if (all_in == 1)
+		{
+			done = 1;
+		}
+	}
+
+
+	super_tri[0] = triangle[0];
+	super_tri[1] = triangle[1];
+	super_tri[2] = triangle[2];
 	num_triangle = 3;
 
 	if (draw_mode == 0 || draw_mode == 2)
@@ -1133,6 +1179,34 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	}
 
 
+}
+
+
+bool Triangulate::point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c)
+{
+	vec3 a = tri_a - p;
+	vec3 b = tri_b - p;
+	vec3 c = tri_c - p;
+
+	// The point should be moved too, so they are both
+	// relative, but because we don't use p in the
+	// equation anymore, we don't need it!
+	// p -= p; This would just equal the zero vector!
+
+	vec3 normal_bc = vec3::crossproduct(b, c); 	// Normal of PBC (u)    
+	vec3 normal_ca = vec3::crossproduct(c, a); 	// Normal of PCA (v)    
+	vec3 normal_ab = vec3::crossproduct(a, b); 	// Normal of PAB (w
+
+	if (normal_bc * normal_ca < 0.0f)
+	{
+		return false;
+	}
+	else if (normal_bc * normal_ab < 0.0f)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 #endif
