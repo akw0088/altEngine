@@ -62,7 +62,7 @@ private:
 	void get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c, float &radius, vec3 &center);
 	bool point_in_sphere(const vec3 &point, vec3 &origin, float radius);
 	bool add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsigned int &num_poly);
-	bool point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c);;
+	bool point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3 &tri_b, const vec3 &tri_c);
 
 	// These will modify num_triangles
 	void delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, vec3 *triangles, unsigned int &num_triangles);

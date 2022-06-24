@@ -95,6 +95,34 @@ bool Triangulate::point_in_sphere(const vec3 &point, vec3 &origin, float radius)
 	return false;
 }
 
+bool Triangulate::point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3 &tri_b, const vec3 &tri_c)
+{
+	vec3 a = tri_a - p;
+	vec3 b = tri_b - p;
+	vec3 c = tri_c - p;
+
+	// The point should be moved too, so they are both
+	// relative, but because we don't use p in the
+	// equation anymore, we don't need it!
+	// p -= p; This would just equal the zero vector!
+
+	vec3 normal_bc = vec3::crossproduct(b, c); 	// Normal of PBC (u)    
+	vec3 normal_ca = vec3::crossproduct(c, a); 	// Normal of PCA (v)    
+	vec3 normal_ab = vec3::crossproduct(a, b); 	// Normal of PAB (w
+
+	if (normal_bc * normal_ca < 0.0f)
+	{
+		return false;
+	}
+	else if (normal_bc * normal_ab < 0.0f)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
 
 bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsigned int &num_poly)
 {
@@ -1265,34 +1293,6 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	}
 
 
-}
-
-
-bool Triangulate::point_in_triangle(const vec3 &p, vec3 &tri_a, vec3 &tri_b, vec3 &tri_c)
-{
-	vec3 a = tri_a - p;
-	vec3 b = tri_b - p;
-	vec3 c = tri_c - p;
-
-	// The point should be moved too, so they are both
-	// relative, but because we don't use p in the
-	// equation anymore, we don't need it!
-	// p -= p; This would just equal the zero vector!
-
-	vec3 normal_bc = vec3::crossproduct(b, c); 	// Normal of PBC (u)    
-	vec3 normal_ca = vec3::crossproduct(c, a); 	// Normal of PCA (v)    
-	vec3 normal_ab = vec3::crossproduct(a, b); 	// Normal of PAB (w
-
-	if (normal_bc * normal_ca < 0.0f)
-	{
-		return false;
-	}
-	else if (normal_bc * normal_ab < 0.0f)
-	{
-		return false;
-	}
-
-	return true;
 }
 
 #endif
