@@ -12,10 +12,30 @@ char Triangulate::draw_names[10][80] = {
 	"[polygon and remaining triangles]",
 	"[after delete]",
 	"[final]",
-	"seven",
+	"[voronoi]",
 	"eight",
 	"nine",
 };
+
+
+#define COLOR_TABLE_SIZE (12)
+COLORREF color_table[COLOR_TABLE_SIZE] = {
+	RGB(0,0,255),
+	RGB(0,255,0),
+	RGB(0,255,255),
+	RGB(255,0,0),
+	RGB(255,0,255),
+	RGB(255,255,0),
+	RGB(0,0,128),
+	RGB(0,128,0),
+	RGB(0,128,128),
+	RGB(128,0,0),
+	RGB(128,0,128),
+	RGB(128,128,0)
+};
+
+HBRUSH brush_table[COLOR_TABLE_SIZE] = { 0 };
+
 #endif
 int Triangulate::debug_point;
 
@@ -759,14 +779,24 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 
 #ifdef WIN32
-void Triangulate::draw_point(HDC hdc, const vec3 &point, float scale, POINT offset)
+void Triangulate::draw_point(HDC hdc, const vec3 &point, float size, float scale, POINT offset)
 {
 	Rectangle(hdc,
-		(int)((point.x * scale - 10.0f * scale) + offset.x * scale),
-		(int)((point.y * scale - 10.0f * scale) + offset.y * scale),
-		(int)((point.x * scale + 10.0f * scale) + offset.x * scale),
-		(int)((point.y * scale + 10.0f * scale) + offset.y * scale));
+		(int)((point.x * scale - size * scale) + offset.x * scale),
+		(int)((point.y * scale - size * scale) + offset.y * scale),
+		(int)((point.x * scale + size * scale) + offset.x * scale),
+		(int)((point.y * scale + size * scale) + offset.y * scale));
 }
+
+void Triangulate::draw_fill(HDC hdc, const vec3 &point, COLORREF color, float scale, POINT offset)
+{
+	int ret0 = ExtFloodFill(hdc,
+		(int)((point.x * scale * scale) + offset.x * scale),
+		(int)((point.y * scale * scale) + offset.y * scale),
+		color,
+		FLOODFILLBORDER);
+}
+
 
 void Triangulate::draw_triangle(HDC hdc, const vec3 &a, const vec3 &b, const vec3 &c, float scale, POINT offset)
 {
@@ -888,10 +918,12 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 
 		// draw selected point really big
-		SelectObject(hdc, hPen);
-		draw_point(hdc, point[i], scale * 20, offset);
-		SelectObject(hdc, GetStockObject(BLACK_PEN));
-
+		if (draw_mode < 7)
+		{
+			SelectObject(hdc, hPen);
+			draw_point(hdc, point[i], 50, scale, offset);
+			SelectObject(hdc, GetStockObject(BLACK_PEN));
+		}
 
 
 		// first find all the triangles that are no longer valid due to the insertion
@@ -911,7 +943,6 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			}
 
 			get_circum_circle(a, b, c, radius, center);
-
 
 			// If a point is in the sphere, we broke the Delaunay triangle property
 			if (point_in_sphere(point[i], center, radius))
@@ -939,6 +970,8 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 					SelectObject(hdc, GetStockObject(BLACK_PEN));
 				}
 
+
+
 				// add triangle to badTriangles as it has a point in it's circle
 				badTriangles[num_bad++] = a;
 				badTriangles[num_bad++] = b;
@@ -951,6 +984,17 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 					draw_circle(hdc, center, radius, scale, offset);
 				}
+				if (draw_mode == 7)
+				{
+					// draw circumcircle vertex, which is also a voronoi vertex
+					SelectObject(hdc, GetStockObject(BLACK_PEN));
+					SelectObject(hdc, GetStockObject(BLACK_BRUSH));
+					draw_point(hdc, center, 15, scale, offset);
+					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+
+				}
+
+
 			}
 		}
 
@@ -973,7 +1017,6 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 				SelectObject(hdc, hPen);
 				draw_triangle(hdc, a, b, c, scale, offset);
 				SelectObject(hdc, GetStockObject(BLACK_PEN));
-
 			}
 		}
 
@@ -1053,8 +1096,6 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			}
 		}
 
-
-		printf("point %d num_poly %d\r\n", i, num_poly);
 
 
 		// draw the polgonal hole
@@ -1176,6 +1217,51 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		{
 			draw_triangle(hdc, a, b, c, scale, offset);
 		}
+
+		if (draw_mode == 7)
+		{
+			vec3 mid_ab = (a + b) / 2.0f;
+			vec3 mid_bc = (b + c) / 2.0f;
+			vec3 mid_ca = (c + a) / 2.0f;
+
+			// edges of the voronoi bisect with each point
+			// so take the midpoints of each edge in the output triangle, and that will give voronoi edge
+			// from each point
+
+			float radius;
+			vec3 center;
+			get_circum_circle(a, b, c, radius, center);
+
+			static HPEN hPen;
+
+			if (hPen == 0)
+				hPen = CreatePen(PS_SOLID, 5, RGB(128, 128, 128));
+
+			vec3 inf1 = (mid_ab - center) * 1000;
+			vec3 inf2 = (mid_bc - center) * 1000;
+			vec3 inf3 = (mid_ca - center) * 1000;
+
+			// technically we want to color each side of these lines differently, maybe a flood fill or something
+			SelectObject(hdc, hPen);
+			draw_line(hdc, inf1, center, scale, offset);
+			draw_line(hdc, inf2, center, scale, offset);
+			draw_line(hdc, inf3, center, scale, offset);
+
+			SelectObject(hdc, brush_table[(j + 0) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, a, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, brush_table[(j + 1) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, b, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, brush_table[(j + 2) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, c, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+
+
+//			draw_point(hdc, center, 50, scale, offset);
+			SelectObject(hdc, GetStockObject(BLACK_PEN));
+
+		}
+
+
 	}
 
 
