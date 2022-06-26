@@ -2,6 +2,8 @@
 
 
 #ifdef WIN32
+
+extern int debug_voronoi;
 int Triangulate::draw_mode;
 
 char Triangulate::draw_names[10][80] = {
@@ -877,6 +879,8 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	vec3 super_tri[3];
 	vec3 voronoi_edge[256][32];
 	unsigned int num_edge[256] = { 0 };
+	vec3 center_array[4096];
+	unsigned int num_center = 0;
 
 	super_tri[0] = point[0];
 	super_tri[1] = point[1];
@@ -922,7 +926,15 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 	}
 	else
 	{
-		size = 20000;
+		size = 2000;
+		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * (float)size);
+		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * (float)size);
+		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * (float)size);
+	}
+
+	if (draw_mode == TRIANGULATE_VORONOI)
+	{
+		size = 200;
 		triangle[0] = super_tri[0] + ((super_tri[0] - mid) * (float)size);
 		triangle[1] = super_tri[1] + ((super_tri[1] - mid) * (float)size);
 		triangle[2] = super_tri[2] + ((super_tri[2] - mid) * (float)size);
@@ -963,7 +975,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 
 		// draw selected point really big
-		if (draw_mode < TRIANGULATE_VORONOI)
+		if (draw_mode < TRIANGULATE_VORONOI2)
 		{
 			SelectObject(hdc, hPen);
 			draw_point(hdc, point[i], 50, scale, offset);
@@ -1003,7 +1015,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 					hPen2 = CreatePen(PS_SOLID, 1, RGB(0, 255, 255));
 
 
-				if (draw_mode == TRIANGULATE_TRI_POINT && debug_point == i)
+				if (draw_mode == TRIANGULATE_CIR_POINT && debug_point == i)
 				{
 					SelectObject(hdc, hPen);
 					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
@@ -1024,12 +1036,12 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			}
 			else
 			{
-				if (draw_mode == TRIANGULATE_TRI_POINT && debug_point == i)
+				if (draw_mode == TRIANGULATE_CIR_POINT && debug_point == i)
 				{
 					SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
 					draw_circle(hdc, center, radius, scale, offset);
 				}
-				if (draw_mode == TRIANGULATE_VORONOI)
+				if (draw_mode == TRIANGULATE_VORONOI2)
 				{
 					// draw circumcircle vertex
 					SelectObject(hdc, GetStockObject(BLACK_PEN));
@@ -1239,6 +1251,101 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 	}
 
+
+
+	if (draw_mode == TRIANGULATE_VORONOI)
+	{
+		for (unsigned int j = 0; j < num_triangle; j += 3)
+		{
+			vec3 a1 = triangle[j + 0];
+			vec3 b1 = triangle[j + 1];
+			vec3 c1 = triangle[j + 2];
+
+			for (unsigned int k = 0; k < num_triangle; k += 3)
+			{
+				vec3 a2 = triangle[k + 0];
+				vec3 b2 = triangle[k + 1];
+				vec3 c2 = triangle[k + 2];
+
+
+
+				if (j == k)
+				{
+					continue;
+				}
+
+
+				unsigned int num_shared = 0;
+				vec3 shared[2];
+
+				if (is_triangle_neighbor(a1, b1, c1, a2, b2, c2, shared, num_shared))
+				{
+					vec3 center1;
+					float radius1;
+					vec3 center2;
+					float radius2;
+
+					get_circum_circle(a1, b1, c1, radius1, center1);
+					get_circum_circle(a2, b2, c2, radius2, center2);
+
+
+					static HPEN hPen;
+
+					if (hPen == 0)
+						hPen = CreatePen(PS_SOLID, 5, RGB(128, 128, 128));
+
+					SelectObject(hdc, hPen);
+					draw_line(hdc, center1, center2, scale, offset);
+
+					SelectObject(hdc, GetStockObject(BLACK_PEN));
+				}
+			}
+		}
+
+		for (unsigned int j = 0; j < num_triangle; j += 3)
+		{
+			vec3 a1 = triangle[j + 0];
+			vec3 b1 = triangle[j + 1];
+			vec3 c1 = triangle[j + 2];
+
+			SelectObject(hdc, brush_table[(j + 0) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, a1, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, brush_table[(j + 1) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, b1, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, brush_table[(j + 2) % COLOR_TABLE_SIZE]);
+			draw_fill(hdc, c1, RGB(128, 128, 128), scale, offset);
+			SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+
+		}
+
+		for (unsigned int j = 0; j < num_triangle; j += 3)
+		{
+			vec3 a1 = triangle[j + 0];
+			vec3 b1 = triangle[j + 1];
+			vec3 c1 = triangle[j + 2];
+
+			static HPEN hPen;
+
+			if (hPen == 0)
+				hPen = CreatePen(PS_SOLID, 5, RGB(128, 128, 128));
+
+			SelectObject(hdc, hPen);
+
+			draw_point(hdc, a1, 5, scale, offset);
+			draw_point(hdc, b1, 5, scale, offset);
+			draw_point(hdc, c1, 5, scale, offset);
+			SelectObject(hdc, GetStockObject(BLACK_PEN));
+
+		}
+
+	}
+
+
+
+
+
+
+
 	// for each vertex in super triangle
 	for (unsigned int j = 0; j < num_super_tri; j += 3)
 	{
@@ -1259,7 +1366,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		vec3 b = triangle[j + 1];
 		vec3 c = triangle[j + 2];
 
-		if (draw_mode == TRIANGULATE_TRI_POINT || draw_mode == TRIANGULATE_CIR_POINT || draw_mode == TRIANGULATE_OUTPUT || draw_mode == TRIANGULATE_VORONOI)
+		if (draw_mode == TRIANGULATE_TRI_POINT || draw_mode == TRIANGULATE_CIR_POINT || draw_mode == TRIANGULATE_OUTPUT || draw_mode == TRIANGULATE_VORONOI2)
 		{
 			draw_triangle(hdc, a, b, c, scale, offset);
 		}
@@ -1287,6 +1394,8 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		float radius;
 		vec3 center;
 		get_circum_circle(a, b, c, radius, center);
+
+		center_array[num_center++] = center;
 		//draw_circle(hdc, center, radius, scale, offset);
 
 
@@ -1299,7 +1408,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		vec3 inf_ca_neg = (mid_ca - center) * -100;
 
 		// technically we want to color each side of these lines differently, maybe a flood fill or something
-		if (draw_mode == TRIANGULATE_VORONOI)
+		if (draw_mode == TRIANGULATE_VORONOI2)
 		{
 			static HPEN hPen;
 
@@ -1328,7 +1437,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 		}
 
-		if (draw_mode == TRIANGULATE_VORONOI2)
+		if (draw_mode == 9999)
 		{
 			vec3 mid_ab = (a + b) / 2.0f;
 			vec3 mid_bc = (b + c) / 2.0f;
@@ -1381,63 +1490,30 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 		}
 	}
 
-	if (draw_mode == TRIANGULATE_VORONOI2)
-	{
-		for (unsigned int j = 0; j < num_triangle; j++)
-		{
-			for (unsigned int k = 0; k < num_edge[j]; k += 3)
-			{
-				vec3 a = voronoi_edge[j][k + 0];
-				vec3 center = voronoi_edge[j][k + 1];
-				vec3 b = voronoi_edge[j][k + 2];
-
-
-
-				SelectObject(hdc, pen_table[j % COLOR_TABLE_SIZE]);
-				SelectObject(hdc, brush_table[j % COLOR_TABLE_SIZE]);
-				draw_line(hdc, a, center, scale, offset);
-				draw_line(hdc, b, center, scale, offset);
-
-				// really need to intersect each line here with neighboring triangle lines
-				// but kind of a PITA
-				draw_point(hdc, triangle[j], 20, scale, offset);
-
-
-			}
-		}
-		SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
-		SelectObject(hdc, GetStockObject(BLACK_PEN));
-	}
-
 }
 
-
-
-
-bool Triangulate::intersect_two_lines(vec2 &A, vec2 &B, vec2 &C, vec2 &D, vec2 &result)
+bool Triangulate::is_triangle_neighbor(vec3 &a1, vec3 &b1, vec3 &c1, vec3 &a2, vec3 &b2, vec3 &c2, vec3 *shared_out, unsigned int &num_shared)
 {
-	// Line AB represented as a1x + b1y = c1
-	float a1 = B.y - A.y;
-	float b1 = A.x - B.x;
-	float c1 = a1 * A.x + b1 * A.y;
+	vec3 polygon[128];
+	unsigned int num_poly = 0;
+	vec3 shared[9];
 
-	// Line CD represented as a2x + b2y = c2
-	float a2 = D.y - C.y;
-	float b2 = C.x - D.x;
-	float c2 = a2 * C.x + b2 * C.y;
+	compare_edges(a1, b1, c1, a2, b2, c2, polygon, num_poly, shared, num_shared);
 
-	float det = a1 * b2 - a2 * b1;
-
-	if (det == 0)
+	if (num_shared == 2)
 	{
-		return false;
+		shared_out[0] = shared[0];
+		shared_out[1] = shared[1];
+		return true;
 	}
 	else
 	{
-		result.x = (b2 * c1 - b1 * c2) / det;
-		result.y = (a1 * c2 - a2 * c1) / det;
+		num_shared = 0;
+		return false;
 	}
-	return true;
+
+
 }
+
 
 #endif

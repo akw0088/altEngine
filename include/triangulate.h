@@ -14,7 +14,7 @@
 #define MAX_POLY (8192)
 #define MAX_BAD (8192)
 #define MAX_TRIANGLE (8192)
-#define MAX_MODE (10)
+#define MAX_MODE (7)
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
@@ -79,8 +79,7 @@ private:
 	bool point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3 &tri_b, const vec3 &tri_c);
 	bool point_is_same(const vec3 &a, const vec3 &b);
 
-
-	bool intersect_two_lines(vec2 &A, vec2 &B, vec2 &C, vec2 &D, vec2 &result);
+	bool is_triangle_neighbor(vec3 &a1, vec3 &b1, vec3 &c1, vec3 &a2, vec3 &b2, vec3 &c2, vec3 *shared_out, unsigned int &num_shared);
 
 	// These will modify num_triangles
 	void delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, vec3 *triangles, unsigned int &num_triangles);
