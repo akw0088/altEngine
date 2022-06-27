@@ -75,7 +75,7 @@ void Triangulate::get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c,
 		vec3::crossproduct(v, ab) * ac.magnitudeSq() +
 		vec3::crossproduct(ac, v) * ab.magnitudeSq()
 		) /
-		(2.f * v.magnitudeSq());
+		(2.0f * v.magnitudeSq());
 
 	radius = a_to_center.magnitude();
 
@@ -592,9 +592,10 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 	vec3 mid = (super_tri[0] + super_tri[1] + super_tri[2]) / 3.0;
 
-	int size = 1;
+	unsigned int size = 1;
 	int done = 0;
 
+	unsigned int attempts = 0;
 
 	if (num_point >= 3)
 	{
@@ -612,13 +613,14 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 			{
 				if (point_in_triangle(point[i], triangle[0], triangle[1], triangle[2]) == false)
 				{
-					size += 5;
+					size += 100;
 					all_in = 0;
+					attempts++;
 					break;
 				}
 			}
 
-			if (all_in == 1)
+			if (all_in == 1 || attempts > 2000)
 			{
 				done = 1;
 			}
@@ -655,7 +657,7 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 		unsigned int num_shared = 0;
 
 
-		printf("\tinput %d: %f %f %f\r\n", i, point[i].x, point[i].y, point[i].z);
+//		printf("\tinput %d: %f %f %f\r\n", i, point[i].x, point[i].y, point[i].z);
 
 
 		// first find all the triangles that are no longer valid due to the insertion
@@ -804,9 +806,9 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 		vec3 b = triangle[j + 1];
 		vec3 c = triangle[j + 2];
 
-		printf("\toutput %d: %f %f %f\r\n", j + 0, a.x, a.y, a.z);
-		printf("\toutput %d: %f %f %f\r\n", j + 1, b.x, b.y, b.z);
-		printf("\toutput %d: %f %f %f\r\n", j + 2, c.x, c.y, c.z);
+//		printf("\toutput %d: %f %f %f\r\n", j + 0, a.x, a.y, a.z);
+//		printf("\toutput %d: %f %f %f\r\n", j + 1, b.x, b.y, b.z);
+//		printf("\toutput %d: %f %f %f\r\n", j + 2, c.x, c.y, c.z);
 	}
 }
 
@@ -1255,7 +1257,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 	if (draw_mode == TRIANGULATE_VORONOI)
 	{
-		// draw voronoi cells by connecting circum circle centers of neighboring trianles
+		// draw voronoi cells by connecting circum circle centers of neighboring triangles
 		for (unsigned int j = 0; j < num_triangle; j += 3)
 		{
 			vec3 a1 = triangle[j + 0];
@@ -1491,6 +1493,34 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			voronoi_edge[ia][num_edge[ia]++] = inf_ca_neg;
 
 		}
+	}
+
+	if (draw_mode == TRIANGULATE_VORONOI2)
+	{
+		for (unsigned int j = 0; j < num_triangle; j++)
+		{
+			for (unsigned int k = 0; k < num_edge[j]; k += 3)
+			{
+				vec3 a = voronoi_edge[j][k + 0];
+				vec3 center = voronoi_edge[j][k + 1];
+				vec3 b = voronoi_edge[j][k + 2];
+
+
+
+				SelectObject(hdc, pen_table[j % COLOR_TABLE_SIZE]);
+				SelectObject(hdc, brush_table[j % COLOR_TABLE_SIZE]);
+				draw_line(hdc, a, center, scale, offset);
+				draw_line(hdc, b, center, scale, offset);
+
+				// really need to intersect each line here with neighboring triangle lines
+				// but kind of a PITA
+				draw_point(hdc, triangle[j], 20, scale, offset);
+
+
+			}
+		}
+		SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
+		SelectObject(hdc, GetStockObject(BLACK_PEN));
 	}
 
 }
