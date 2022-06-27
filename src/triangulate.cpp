@@ -1255,6 +1255,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 	if (draw_mode == TRIANGULATE_VORONOI)
 	{
+		// draw voronoi cells by connecting circum circle centers of neighboring trianles
 		for (unsigned int j = 0; j < num_triangle; j += 3)
 		{
 			vec3 a1 = triangle[j + 0];
@@ -1302,6 +1303,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			}
 		}
 
+		// fill the voronoi cells
 		for (unsigned int j = 0; j < num_triangle; j += 3)
 		{
 			vec3 a1 = triangle[j + 0];
@@ -1318,6 +1320,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 		}
 
+		// draw the voronoi sites
 		for (unsigned int j = 0; j < num_triangle; j += 3)
 		{
 			vec3 a1 = triangle[j + 0];
@@ -1327,7 +1330,7 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 			static HPEN hPen;
 
 			if (hPen == 0)
-				hPen = CreatePen(PS_SOLID, 5, RGB(128, 128, 128));
+				hPen = CreatePen(PS_SOLID, 5, RGB(0, 0, 0));
 
 			SelectObject(hdc, hPen);
 

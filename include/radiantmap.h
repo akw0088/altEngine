@@ -116,7 +116,7 @@ class RadiantMap
 		unsigned int num_keyval;
 
 		brush_name_t name;
-		brush_t *brushes;
+		brush_t *brush;
 		unsigned int num_brush;
 
 		unsigned int ent_number;

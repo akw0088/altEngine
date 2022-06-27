@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define MAX_LINE 2048
+#define MAX_LINE 4096
 
 
 RadiantMap::RadiantMap()
@@ -649,7 +649,7 @@ int RadiantMap::load(char *map, FILE *output)
 					control.value
 				);
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].control = control;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].control = control;
 			}
 			else if (parse_left_paren(line) == 0)
 			{
@@ -670,14 +670,14 @@ int RadiantMap::load(char *map, FILE *output)
 
 				print_patch_points(&control, &point, output);
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point++;
 
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].points = (patch_point_t *)
-					realloc(radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].points,
-						radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point * sizeof(patch_point_t));
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].points = (patch_point_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].points,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point * sizeof(patch_point_t));
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].points[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point - 1] = point;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].points[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point - 1] = point;
 			}
 			else if (parse_texture(line, texture) == 0)
 			{
@@ -686,7 +686,7 @@ int RadiantMap::load(char *map, FILE *output)
 
 
 
-				sprintf(radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1].name,
+				sprintf(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].name,
 					"%s", texture);
 			}
 
@@ -703,10 +703,10 @@ int RadiantMap::load(char *map, FILE *output)
 
 
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch++;
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch = (brushpatch_t *)
-					realloc(radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch,
-						radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch * sizeof(brushpatch_t));
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = (brushpatch_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch * sizeof(brushpatch_t));
 
 
 				brushpatch.name[0] = '\0';
@@ -718,7 +718,7 @@ int RadiantMap::load(char *map, FILE *output)
 				brushpatch.control.flags = 0;
 				brushpatch.control.value = 0;
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch - 1] = brushpatch;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1] = brushpatch;
 
 			}
 			else if (parse_plane(line, &brushplane) == 0)
@@ -737,12 +737,12 @@ int RadiantMap::load(char *map, FILE *output)
 					brushplane.values
 				);
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_plane++;
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].plane = (brushplane_t *)
-					realloc(radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].plane,
-						radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_plane * sizeof(brushplane_t));
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = (brushplane_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane * sizeof(brushplane_t));
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].plane[radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_plane - 1] = brushplane;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane - 1] = brushplane;
 
 
 			}
@@ -797,14 +797,14 @@ int RadiantMap::load(char *map, FILE *output)
 
 				radent[num_ent - 1].num_brush++;
 
-				radent[num_ent - 1].brushes = (brush_t *)realloc(radent[num_ent - 1].brushes, radent[num_ent - 1].num_brush * sizeof(brush_t));
+				radent[num_ent - 1].brush = (brush_t *)realloc(radent[num_ent - 1].brush, radent[num_ent - 1].num_brush * sizeof(brush_t));
 
 
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_plane = 0;
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].plane = NULL;
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].num_patch = 0;
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].patch = NULL;
-				radent[num_ent - 1].brushes[radent[num_ent - 1].num_brush - 1].brush_num = name.number;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].brush_num = name.number;
 			}
 		}
 		else
@@ -827,7 +827,7 @@ int RadiantMap::load(char *map, FILE *output)
 					radent[num_ent - 1].num_keyval = 0;
 					radent[num_ent - 1].ent_number = name.number;
 					radent[num_ent - 1].name = name;
-					radent[num_ent - 1].brushes = NULL;
+					radent[num_ent - 1].brush = NULL;
 					radent[num_ent - 1].keyval = NULL;
 				}
 
@@ -855,7 +855,7 @@ int RadiantMap::load(char *map, FILE *output)
 					radent[num_ent - 1].num_keyval = 0;
 					radent[num_ent - 1].ent_number = name.number;
 					radent[num_ent - 1].name = name;
-					radent[num_ent - 1].brushes = NULL;
+					radent[num_ent - 1].brush = NULL;
 					radent[num_ent - 1].keyval = NULL;
 				}
 
@@ -898,15 +898,15 @@ int RadiantMap::save(char *map, FILE *output)
 		// for each brush
 		for (unsigned int j = 0; j < radent[i].num_brush; j++)
 		{
-			fprintf(output, "// brush %d\r\n", radent[i].brushes[j].brush_num);
+			fprintf(output, "// brush %d\r\n", radent[i].brush[j].brush_num);
 			fprintf(output, "{\r\n");
 
 
 			// for each plane 
-			for (unsigned int k = 0; k < radent[i].brushes[j].num_plane; k++)
+			for (unsigned int k = 0; k < radent[i].brush[j].num_plane; k++)
 			{
 
-				brushplane_t *brushplane = &radent[i].brushes[j].plane[k];
+				brushplane_t *brushplane = &radent[i].brush[j].plane[k];
 
 				fprintf(output, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f %d %d %d\r\n",
 					brushplane->v1[0], brushplane->v1[1], brushplane->v1[2],
@@ -923,9 +923,9 @@ int RadiantMap::save(char *map, FILE *output)
 			}
 
 			// for each patch (should only ever be one)
-			for (unsigned int k = 0; k < radent[i].brushes[j].num_patch; k++)
+			for (unsigned int k = 0; k < radent[i].brush[j].num_patch; k++)
 			{
-				brushpatch_t *brushpatch = &radent[i].brushes[j].patch[k];
+				brushpatch_t *brushpatch = &radent[i].brush[j].patch[k];
 
 				fprintf(output, "patchDef2\r\n");
 				fprintf(output, "{\r\n");
@@ -941,9 +941,9 @@ int RadiantMap::save(char *map, FILE *output)
 
 
 				fprintf(output, "(\r\n");
-				for (unsigned int l = 0; l < radent[i].brushes[j].patch[k].num_point; l++)
+				for (unsigned int l = 0; l < radent[i].brush[j].patch[k].num_point; l++)
 				{
-					print_patch_points(&radent[i].brushes[j].patch[k].control, &radent[i].brushes[j].patch[k].points[l], output);
+					print_patch_points(&radent[i].brush[j].patch[k].control, &radent[i].brush[j].patch[k].points[l], output);
 				}
 				fprintf(output, ")\r\n");
 				fprintf(output, "}\r\n");
@@ -1427,7 +1427,7 @@ void RadiantMap::allocate_quads()
 
 	for (int i = 0; i < quadent.num_brush; i++)
 	{
-		quadent.quadbrush[i].num_quadplane = radent[0].brushes[i].num_plane;
+		quadent.quadbrush[i].num_quadplane = radent[0].brush[i].num_plane;
 		quadent.quadbrush[i].quadplane = NULL;
 		quadent.quadbrush[i].num_vert = 0;
 		quadent.quadbrush[i].vert_array = NULL;
@@ -1444,11 +1444,11 @@ void RadiantMap::generate_quads()
 	// Only generate quads for entity 0 (worldspawn)
 	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
-		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
-			const vec3 a((float)radent[0].brushes[i].plane[j].v1[0], (float)radent[0].brushes[i].plane[j].v1[1], (float)radent[0].brushes[i].plane[j].v1[2]);
-			const vec3 b((float)radent[0].brushes[i].plane[j].v2[0], (float)radent[0].brushes[i].plane[j].v2[1], (float)radent[0].brushes[i].plane[j].v2[2]);
-			const vec3 c((float)radent[0].brushes[i].plane[j].v3[0], (float)radent[0].brushes[i].plane[j].v3[1], (float)radent[0].brushes[i].plane[j].v3[2]);
+			const vec3 a((float)radent[0].brush[i].plane[j].v1[0], (float)radent[0].brush[i].plane[j].v1[1], (float)radent[0].brush[i].plane[j].v1[2]);
+			const vec3 b((float)radent[0].brush[i].plane[j].v2[0], (float)radent[0].brush[i].plane[j].v2[1], (float)radent[0].brush[i].plane[j].v2[2]);
+			const vec3 c((float)radent[0].brush[i].plane[j].v3[0], (float)radent[0].brush[i].plane[j].v3[1], (float)radent[0].brush[i].plane[j].v3[2]);
 
 
 			// get parallelogram vertex (draw on paper in 3d and use vector addition)
@@ -1521,7 +1521,7 @@ void RadiantMap::clip_quads()
 {
 	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
-		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
 			for (unsigned int l = 0; l < quadent.quadbrush[i].quadplane[j].num_triangle; l += 3)
 			{
@@ -1531,17 +1531,17 @@ void RadiantMap::clip_quads()
 				vertex_t c;
 
 				a.position = quadent.quadbrush[i].quadplane[j].triangle_list[l];
-				a.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
-				a.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
+				a.texCoord0.x = radent[0].brush[i].plane[j].xoffset / radent[0].brush[i].plane[j].xscale;
+				a.texCoord0.y = radent[0].brush[i].plane[j].yoffset / radent[0].brush[i].plane[j].yscale;
 
 				b.position = quadent.quadbrush[i].quadplane[j].triangle_list[l+1];
-				b.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
-				b.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
+				b.texCoord0.x = radent[0].brush[i].plane[j].xoffset / radent[0].brush[i].plane[j].xscale;
+				b.texCoord0.y = radent[0].brush[i].plane[j].yoffset / radent[0].brush[i].plane[j].yscale;
 
 
 				c.position = quadent.quadbrush[i].quadplane[j].triangle_list[l+2];
-				c.texCoord0.x = radent[0].brushes[i].plane[j].xoffset / radent[0].brushes[i].plane[j].xscale;
-				c.texCoord0.y = radent[0].brushes[i].plane[j].yoffset / radent[0].brushes[i].plane[j].yscale;
+				c.texCoord0.x = radent[0].brush[i].plane[j].xoffset / radent[0].brush[i].plane[j].xscale;
+				c.texCoord0.y = radent[0].brush[i].plane[j].yoffset / radent[0].brush[i].plane[j].yscale;
 
 				for (unsigned int k = 0; k < quadent.quadbrush[i].num_quadplane; k++)
 				{
@@ -1624,22 +1624,92 @@ void RadiantMap::intersect_quads()
 
 
 
-
-
-		if (radent[0].brushes[i].num_plane > MAX_BRUSH_PLANE)
+		if (radent[0].brush[i].num_plane > MAX_BRUSH_PLANE)
 		{
-			printf("Brush %d exceeded max planes %d\r\n", i, radent[0].brushes[i].num_plane);
-			max_brush_planes = MAX(max_brush_planes, radent[0].brushes[i].num_plane);
+			printf("Brush %d exceeded max planes %d\r\n", i, radent[0].brush[i].num_plane);
+			max_brush_planes = MAX(max_brush_planes, radent[0].brush[i].num_plane);
 			continue;
 		}
 
-		max_brush_planes = MAX(max_brush_planes, radent[0].brushes[i].num_plane);
+		max_brush_planes = MAX(max_brush_planes, radent[0].brush[i].num_plane);
 
-		for (unsigned int x = 0; x < radent[0].brushes[i].num_plane; x++)
+
+
+		bool skip = false;
+
+		for (unsigned int x = 0; x < radent[0].brush[i].num_plane; x++)
+		{
+			// skip brushes we dont want to turn into geometry
+			// things like clip brushes, triggers, etc
+			if (strcmp(radent[0].brush[i].plane[x].name, "common/clip") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/weapclip") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/clusterportal") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/cushion") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/donotenter") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/hint") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/missleclip") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/nodrawnonsolid") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/nodrop") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/origin") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/portal") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/trigger") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/botclip") == 0)
+			{
+				skip = true;
+			}
+			else if (strcmp(radent[0].brush[i].plane[x].name, "common/weapclip") == 0)
+			{
+				skip = true;
+			}
+
+		}
+
+		if (skip)
+		{
+			continue;
+		}
+
+		for (unsigned int x = 0; x < radent[0].brush[i].num_plane; x++)
 		{
 			arr[x] = x;
 		}
-		int n = radent[0].brushes[i].num_plane;
+		int n = radent[0].brush[i].num_plane;
 		int r = 3;
 
 		// nCr
@@ -1672,6 +1742,7 @@ void RadiantMap::intersect_quads()
 				index2 > num_output ||
 				index3 > num_output)
 			{
+				printf("index exceeded num_output\r\n");
 				break;
 			}
 
@@ -1694,11 +1765,11 @@ void RadiantMap::intersect_quads()
 
 				// sometimes we can have planes intersect outside the volume of the brush (pentagon)
 				// so test to be sure it's inside the volume
-				for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
+				for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 				{
 					float dist = DistPointPlane(point, quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d);
 
-					if (dist < -0.0001)
+					if (dist < -0.01)
 					{
 #ifdef DEBUG
 						printf("\Dropping point %f %f %f as not inside the volume from plane %d %d %d dist %f\r\n",
@@ -1724,7 +1795,7 @@ void RadiantMap::intersect_quads()
 					}
 					else
 					{
-						printf("Max points per plane exceeded on brush %d num_plane %d\r\n", i, radent[0].brushes[i].num_plane);
+						printf("Max points per plane exceeded on brush %d num_plane %d\r\n", i, radent[0].brush[i].num_plane);
 						break;
 					}
 
@@ -1745,9 +1816,9 @@ void RadiantMap::intersect_quads()
 
 #ifdef DEBUG
 		// print out points for each plane for debugging
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
-			printf("plane %d:\r\n", j);
+			printf("plane %d brush %d:\r\n", j, i);
 			for (int k = 0; k < num_plane_face[j]; k++)
 			{
 				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
@@ -1756,9 +1827,11 @@ void RadiantMap::intersect_quads()
 #endif
 
 		// Seems we have duplicate points, so remove any that are beside each other
-		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
-//			printf("\r\nremove duplicates from plane %d:\r\n", j);
+#ifdef DEBUG
+			printf("\r\nremove duplicates from plane %d:\r\n", j);
+#endif
 			for (unsigned int k = 0; k < num_plane_face[j]; k++)
 			{
 				for (unsigned int l = 0; l < num_plane_face[j]; l++)
@@ -1795,12 +1868,18 @@ void RadiantMap::intersect_quads()
 
 #ifdef DEBUG
 		// print out points for each plane for debugging, no duplicates this time
-		for (int j = 0; j < radent[0].brushes[i].num_plane; j++)
+
+		for (int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
-			printf("\r\nplane %d:\r\n", j);
-			for (int k = 0; k < num_plane_face[j]; k++)
+			if (num_plane_face[j] < 3)
 			{
-				printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);
+				printf("============= Plane with less than three points on brush %d ===============\r\n", i);
+
+				printf("\r\nplane %d:\r\n", j);
+				for (int k = 0; k < num_plane_face[j]; k++)
+				{
+					printf("\t (%f, %f, %f)\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);
+				}
 			}
 		}
 #endif
@@ -1812,7 +1891,7 @@ void RadiantMap::intersect_quads()
 		// convex polygons can be rendered as triangle fans
 
 		// Instead of testing each point with each plane, we just added them above based on which three planes intersected
-		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
 			unsigned int num_points_from_plane = 0;
 
@@ -1821,7 +1900,8 @@ void RadiantMap::intersect_quads()
 
 			//sort_point(&plane_face_array[j][0], num_plane_face[j], quadent.quadbrush[i].quadplane[j].plane.normal);
 
-			if (num_plane_face[j] <= 8)
+			// BowyerWatson can be slow, so dont use it on basic stuff
+			if (num_plane_face[j] <= 6)
 			{
 				triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
 			}
@@ -1832,12 +1912,13 @@ void RadiantMap::intersect_quads()
 			}
 
 
-
+#ifdef DEBUG
 			printf("\r\ntriangulated plane %d:\r\n", j);
 			for (unsigned int k = 0; k < num_points_from_plane; k++)
 			{
 				printf("\tpoint %f %f %f\r\n", triangle_array[num_brush_point + k].x, triangle_array[num_brush_point + k].y, triangle_array[num_brush_point + k].z);
 			}
+#endif
 			num_brush_point += num_points_from_plane;
 
 			max_points_per_plane = MAX(max_points_per_plane, num_points_from_plane);
@@ -2245,7 +2326,7 @@ void RadiantMap::intersect_bigbox()
 		// 24 edges
 		// 12 unique edges
 		int set_size = 8;
-		for (unsigned int j = 0; j < radent[0].brushes[i].num_plane; j++)
+		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
 			// Eight corners of a big box
 			aabb[0] = vec3(-8192, -8192, -8192);
