@@ -144,7 +144,19 @@ int RadiantMap::trim_edges(char *data, int length)
 
 
 
-int RadiantMap::parse_patch(char *line)
+int RadiantMap::parse_brushdef(char *line)
+{
+	if (strstr(line, "brushDef3"))
+	{
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int RadiantMap::parse_patch2(char *line)
 {
 	if (strcmp(line, "patchDef2\n") == 0)
 	{
@@ -155,6 +167,21 @@ int RadiantMap::parse_patch(char *line)
 		return -1;
 	}
 }
+
+int RadiantMap::parse_patch3(char *line)
+{
+	if (strcmp(line, "patchDef3\n") == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
+
 
 int RadiantMap::parse_left_brace(char *line)
 {
@@ -194,6 +221,21 @@ int RadiantMap::parse_right_paren(char *line)
 		return -1;
 	}
 }
+
+int RadiantMap::parse_version(char *line)
+{
+	if (strstr(line, "Version 2"))
+	{
+		map_type = 4;
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
 
 int RadiantMap::parse_right_brace(char *line)
 {
@@ -244,6 +286,7 @@ int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 	// planex planey planez texture xoff yoff rotatation scalex scaley 
 	//(1816 2080 72) (1744 2264 72) (1744 2080 72) q3f_military/tin -16 0 0 0.500000 0.500000 134217728 0 0
 
+	// quake 3 style
 	int ret = sscanf(line, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f %d %d %d",
 		&brush->v1[0], &brush->v1[1], &brush->v1[2],
 		&brush->v2[0], &brush->v2[1], &brush->v2[2],
@@ -261,6 +304,46 @@ int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 
 	if (ret == 18)
 	{
+		map_type = 3;
+		return 0;
+	}
+
+	// quake1 style
+	ret = sscanf(line, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f",
+		&brush->v1[0], &brush->v1[1], &brush->v1[2],
+		&brush->v2[0], &brush->v2[1], &brush->v2[2],
+		&brush->v3[0], &brush->v3[1], &brush->v3[2],
+		brush->name,
+		&brush->xoffset,
+		&brush->yoffset,
+		&brush->rotation,
+		&brush->xscale,
+		&brush->yscale
+	);
+
+	if (ret == 15)
+	{
+		map_type = 1;
+		return 0;
+	}
+
+	//  ( 0 0 -1 48 ) ( ( 0.0625 0 0 ) ( 0 0.0625 0 ) ) "textures/common/clip" 0 0 0
+	// doom3 style
+	// (plane equation) ( ( xxscale xyscale xoffset ) ( yxscale yyscale yoffset ) ) "material" ?
+
+	ret = sscanf(line, "( %f %f %f %f ) ( ( %f %f %f ) ( %f %f %f ) ) \"%[^\"]\" %d %d %d",
+		&brush->p.x, &brush->p.y, &brush->p.z, &brush->d,
+		&brush->xxscale, &brush->xyscale, &brush->xoffsetf,
+		&brush->yxscale, &brush->yyscale, &brush->yoffsetf,
+		brush->name,
+		&brush->contents,
+		&brush->flags,
+		&brush->values
+	);
+
+	if (ret == 14)
+	{
+		map_type = 4;
 		return 0;
 	}
 
@@ -279,18 +362,39 @@ int RadiantMap::parse_texture(char *line, char *texture)
 
 int RadiantMap::parse_patch_control(char *line, patch_control_t *control)
 {
-	int ret = sscanf(line, "( %d %d %d %d %d )",
-		&control->width,
-		&control->height,
-		&control->contents,
-		&control->flags,
-		&control->value
-	);
 
-
-	if (ret == 5)
+	if (patch_type == 2)
 	{
-		return 0;
+		int ret = sscanf(line, "( %d %d %d %d %d )",
+			&control->width,
+			&control->height,
+			&control->contents,
+			&control->flags,
+			&control->value
+		);
+
+		if (ret == 5)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+	//	( xoffset yoffset rotation xscale yscale )
+		int ret = sscanf(line, "( %d %d %d %d %d %d %d )",
+			&control->width,
+			&control->height,
+			&control->contents,
+			&control->flags,
+			&control->value,
+			&control->value,
+			&control->value
+		);
+
+		if (ret == 7)
+		{
+			return 0;
+		}
 	}
 
 	return -1;
@@ -302,7 +406,6 @@ int RadiantMap::parse_patch_points(char *line, patch_control_t *control, patch_p
 {
 	//( ( 2136 2176 360 0 0 ) ( 2160 2176 336 0 0.258900 ) ( 2184 2176 312 0 0.517799 ) )
 	//( ( 2888 1784 -256 0 0 ) ( 2888 1397.850464 -256 0 6.033587 ) ( 2888 1000 -256 0 12.250000 ) )
-
 
 
 	char varpoint[MAX_LINE] = { 0 };
@@ -582,7 +685,57 @@ void RadiantMap::indent(int level, FILE *output)
 	}
 }
 
+
 int RadiantMap::load(char *map, FILE *output)
+{
+	FILE *fp = NULL;
+
+
+	fp = fopen(map, "r");
+	if (fp == NULL)
+	{
+		printf("Unable to open %s\r\n", map);
+		return -1;
+	}
+
+	char line[MAX_LINE] = { 0 };
+
+	unsigned int line_num = 0;
+
+	while (fgets(line, MAX_LINE + 1, fp) != NULL)
+	{
+			if (parse_version(line) == 0)
+			{
+				fprintf(output, "Version 2\r\n");
+				map_type = 4;
+				break;
+			}
+
+			line_num++;
+
+			if (line_num > 5)
+			{
+				map_type = 3;
+				break;
+			}
+	}
+	fclose(fp);
+
+
+	if (map_type == 4)
+	{
+		load_v2(map, output);
+	}
+	else
+	{
+		load_v1(map, output);
+	}
+
+
+}
+
+
+int RadiantMap::load_v1(char *map, FILE *output)
 {
 	FILE *fp = NULL;
 
@@ -695,7 +848,7 @@ int RadiantMap::load(char *map, FILE *output)
 		}
 		else if (state == P_BRUSH)
 		{
-			if (parse_patch(line) == 0)
+			if (parse_patch2(line) == 0)
 			{
 				indent(level, output);
 				fprintf(output, "patchDef2\r\n");
@@ -777,6 +930,18 @@ int RadiantMap::load(char *map, FILE *output)
 			{
 				indent(level++, output);
 				fprintf(output, "{\r\n");
+				state = P_BRUSH;
+
+				radent[num_ent - 1].num_brush++;
+
+				radent[num_ent - 1].brush = (brush_t *)realloc(radent[num_ent - 1].brush, radent[num_ent - 1].num_brush * sizeof(brush_t));
+
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].brush_num = radent[num_ent - 1].num_brush;
 			}
 			else if (parse_right_brace(line) == 0)
 			{
@@ -816,20 +981,22 @@ int RadiantMap::load(char *map, FILE *output)
 
 
 				//technically this line is optional, some maps might no have commented lines
+				/*
 				if (strcmp(name.name, "entity") == 0)
 				{
-					state = P_ENTITY;
+				state = P_ENTITY;
 
-					num_ent++;
-					radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
+				num_ent++;
+				radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
 
-					radent[num_ent - 1].num_brush = 0;
-					radent[num_ent - 1].num_keyval = 0;
-					radent[num_ent - 1].ent_number = name.number;
-					radent[num_ent - 1].name = name;
-					radent[num_ent - 1].brush = NULL;
-					radent[num_ent - 1].keyval = NULL;
+				radent[num_ent - 1].num_brush = 0;
+				radent[num_ent - 1].num_keyval = 0;
+				radent[num_ent - 1].ent_number = name.number;
+				radent[num_ent - 1].name = name;
+				radent[num_ent - 1].brush = NULL;
+				radent[num_ent - 1].keyval = NULL;
 				}
+				*/
 
 			}
 			else if (parse_left_brace(line) == 0)
@@ -864,6 +1031,390 @@ int RadiantMap::load(char *map, FILE *output)
 			{
 				indent(--level, output);
 				fprintf(output, "}\r\n");
+			}
+			else
+			{
+				indent(level, output);
+				fprintf(output, "Warning: Unknown line [%s]\r\n", line);
+			}
+		}
+
+	}
+
+	fclose(fp);
+
+	return 0;
+}
+
+
+int RadiantMap::load_v2(char *map, FILE *output)
+{
+	FILE *fp = NULL;
+
+
+	fp = fopen(map, "r");
+	if (fp == NULL)
+	{
+		printf("Unable to open %s\r\n", map);
+		return -1;
+	}
+
+	int level = 0;
+	int line_num = 0;
+
+	int state = P_NONE;
+	int num_plane = 0;
+	int brushdef = 0;
+
+
+	radent = NULL;
+	num_ent = 0;
+
+	char line[MAX_LINE] = { 0 };
+	while (fgets(line, MAX_LINE + 1, fp) != NULL)
+	{
+		brushplane_t brushplane;
+		brushpatch_t brushpatch;
+		keyval_t keyval;
+		brush_name_t name;
+		patch_control_t control;
+		patch_point_t point;
+
+		line_num++;
+
+
+		trim_edges(line, strlen(line));
+
+
+
+		if (state == P_PATCH)
+		{
+			char texture[1024];
+
+
+			if (parse_left_brace(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "{\r\n");
+			}
+			else if (parse_right_brace(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, "}\r\n");
+				state = P_PRIMITIVE;
+			}
+			else if (parse_patch_control(line, &control) == 0)
+			{
+				indent(level, output);
+
+				if (patch_type == 2)
+				{
+					fprintf(output, "( %d %d %d %d %d )\r\n",
+						control.width,
+						control.height,
+						control.contents,
+						control.flags,
+						control.value
+					);
+				}
+				else
+				{
+					fprintf(output, "( %d %d %d %d %d %d %d )\r\n",
+						control.width,
+						control.height,
+						control.contents,
+						control.flags,
+						control.value,
+						control.value,
+						control.value
+					);
+				}
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].control = control;
+			}
+			else if (parse_left_paren(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "(\r\n");
+			}
+			else if (parse_right_paren(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, ")\r\n");
+			}
+			else if (parse_patch_points(line, &control, &point) == 0)
+			{
+				//( ( 2136 2176 360 0 0 ) ( 2160 2176 336 0 0.258900 ) ( 2184 2176 312 0 0.517799 ) )
+
+				indent(level, output);
+
+
+				print_patch_points(&control, &point, output);
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point++;
+
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].points = (patch_point_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].points,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point * sizeof(patch_point_t));
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].points[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].num_point - 1] = point;
+			}
+			else if (parse_texture(line, texture) == 0)
+			{
+				indent(level, output);
+				fprintf(output, "%s\r\n", texture);
+
+
+
+				sprintf(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1].name,
+					"%s", texture);
+			}
+
+
+
+		}
+		else if (state == P_BRUSH)
+		{
+			if (parse_plane(line, &brushplane) == 0)
+			{
+				indent(level, output);
+
+
+				fprintf(output, "( %g %g %g %g ) ( ( %g %g %g ) ( %g %g %g ) ) \"%s\" %d %d %d\r\n",
+					brushplane.p.x, brushplane.p.y, brushplane.p.z, brushplane.d,
+					brushplane.xxscale, brushplane.xyscale, brushplane.xoffsetf,
+					brushplane.yxscale, brushplane.yyscale, brushplane.yoffsetf,
+					brushplane.name,
+					brushplane.contents,
+					brushplane.flags,
+					brushplane.values
+				);
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = (brushplane_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane * sizeof(brushplane_t));
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane - 1] = brushplane;
+
+
+			}
+			else if (parse_left_brace(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "{\r\n");
+			}
+			else if (parse_right_brace(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, "}\r\n");
+				num_plane = 0;
+
+				state = P_PRIMITIVE;
+			}
+		}
+		else if (state == P_PRIMITIVE)
+		{
+			if (parse_patch2(line) == 0)
+			{
+				indent(level, output);
+
+				fprintf(output, "patchDef2\r\n");
+				state = P_PATCH;
+
+				patch_type = 2;
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = (brushpatch_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch * sizeof(brushpatch_t));
+
+
+				brushpatch.name[0] = '\0';
+				brushpatch.num_point = 0;
+				brushpatch.points = NULL;
+				brushpatch.control.width = 0;
+				brushpatch.control.height = 0;
+				brushpatch.control.contents = 0;
+				brushpatch.control.flags = 0;
+				brushpatch.control.value = 0;
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1] = brushpatch;
+
+			}
+			else if (parse_patch3(line) == 0)
+			{
+				indent(level, output);
+
+				fprintf(output, "patchDef3\r\n");
+				state = P_PATCH;
+
+				patch_type = 3;
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = (brushpatch_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch * sizeof(brushpatch_t));
+
+
+				brushpatch.name[0] = '\0';
+				brushpatch.num_point = 0;
+				brushpatch.points = NULL;
+				brushpatch.control.width = 0;
+				brushpatch.control.height = 0;
+				brushpatch.control.contents = 0;
+				brushpatch.control.flags = 0;
+				brushpatch.control.value = 0;
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch - 1] = brushpatch;
+
+			}
+			else if (parse_brushdef(line) == 0)
+			{
+				fprintf(output, "brushDef3\r\n");
+				state = P_BRUSH;
+
+				radent[num_ent - 1].num_brush++;
+
+				radent[num_ent - 1].brush = (brush_t *)realloc(radent[num_ent - 1].brush, radent[num_ent - 1].num_brush * sizeof(brush_t));
+
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].brush_num = radent[num_ent - 1].num_brush;
+				brushdef = 1;
+			}
+			else if (parse_left_brace(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "{\r\n");
+			}
+			else if (parse_right_brace(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, "}\r\n");
+
+				if (brushdef)
+				{
+					brushdef = 0;
+				}
+				else
+				{
+					state = P_ENTITY;
+				}
+			}
+		}
+		else if (state == P_ENTITY)
+		{
+			if (parse_keyval(line, &keyval) == 0)
+			{
+				indent(level, output);
+				fprintf(output, "\"%s\" \"%s\"\r\n", keyval.key, keyval.value);
+
+
+				radent[num_ent - 1].num_keyval++;
+
+				radent[num_ent - 1].keyval = (keyval_t *)realloc(radent[num_ent - 1].keyval, radent[num_ent - 1].num_keyval * sizeof(keyval_t));
+				sprintf(radent[num_ent - 1].keyval[radent[num_ent - 1].num_keyval - 1].key, "%s", keyval.key);
+				sprintf(radent[num_ent - 1].keyval[radent[num_ent - 1].num_keyval - 1].value, "%s", keyval.value);
+			}
+			else if (parse_left_brace(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "{\r\n");
+				state = P_PRIMITIVE;
+
+
+				radent[num_ent - 1].num_brush++;
+
+				radent[num_ent - 1].brush = (brush_t *)realloc(radent[num_ent - 1].brush, radent[num_ent - 1].num_brush * sizeof(brush_t));
+
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].brush_num = radent[num_ent - 1].num_brush;
+			}
+			else if (parse_right_brace(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, "}\r\n");
+				state = P_NONE;
+			}
+			else if (parse_name(line, &name) == 0)
+			{
+				indent(level, output);
+				fprintf(output, "// %s %d\r\n", name.name, name.number);
+			}
+		}
+		else
+		{
+			if (parse_name(line, &name) == 0)
+			{
+				indent(level, output);
+				fprintf(output, "// %s %d\r\n", name.name, name.number);
+
+
+				//technically this line is optional, some maps might no have commented lines
+				/*
+				if (strcmp(name.name, "entity") == 0)
+				{
+				state = P_ENTITY;
+
+				num_ent++;
+				radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
+
+				radent[num_ent - 1].num_brush = 0;
+				radent[num_ent - 1].num_keyval = 0;
+				radent[num_ent - 1].ent_number = name.number;
+				radent[num_ent - 1].name = name;
+				radent[num_ent - 1].brush = NULL;
+				radent[num_ent - 1].keyval = NULL;
+				}
+				*/
+
+			}
+			else if (parse_left_brace(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "{\r\n");
+
+				if (state == P_NONE)
+				{
+					state = P_ENTITY;
+
+					num_ent++;
+					radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
+
+
+
+					brush_name_t name;
+
+					sprintf(name.name, "entity");
+					name.number = num_ent - 1;
+
+					radent[num_ent - 1].num_brush = 0;
+					radent[num_ent - 1].num_keyval = 0;
+					radent[num_ent - 1].ent_number = name.number;
+					radent[num_ent - 1].name = name;
+					radent[num_ent - 1].brush = NULL;
+					radent[num_ent - 1].keyval = NULL;
+				}
+
+			}
+			else if (parse_right_brace(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, "}\r\n");
+			}
+			else if (parse_version(line) == 0)
+			{
+				fprintf(output, "Version 2\r\n");
+				map_type = 4;
 			}
 			else
 			{
@@ -969,14 +1520,14 @@ bool RadiantMap::intersect_three_planes(plane_t &p1, plane_t &p2, plane_t &p3, v
 
 	if (denom == 0)
 	{
-//		printf("line formed by p2 and p3 is parallel to plane p1\r\n");
+		//		printf("line formed by p2 and p3 is parallel to plane p1\r\n");
 		return false;
 	}
 
 	vec3 cross_p3p1 = vec3::crossproduct(p3.normal, p1.normal);
 	vec3 cross_p1p2 = vec3::crossproduct(p1.normal, p2.normal);
 
-	point = 
+	point =
 		(cross_p2p3 * p1.d) +
 		(cross_p3p1 * p2.d) +
 		(cross_p1p2 * p3.d);
@@ -1446,71 +1997,78 @@ void RadiantMap::generate_quads()
 	{
 		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
-			const vec3 a((float)radent[0].brush[i].plane[j].v1[0], (float)radent[0].brush[i].plane[j].v1[1], (float)radent[0].brush[i].plane[j].v1[2]);
-			const vec3 b((float)radent[0].brush[i].plane[j].v2[0], (float)radent[0].brush[i].plane[j].v2[1], (float)radent[0].brush[i].plane[j].v2[2]);
-			const vec3 c((float)radent[0].brush[i].plane[j].v3[0], (float)radent[0].brush[i].plane[j].v3[1], (float)radent[0].brush[i].plane[j].v3[2]);
+			if (map_type != 4)
+			{
+				const vec3 a((float)radent[0].brush[i].plane[j].v1[0], (float)radent[0].brush[i].plane[j].v1[1], (float)radent[0].brush[i].plane[j].v1[2]);
+				const vec3 b((float)radent[0].brush[i].plane[j].v2[0], (float)radent[0].brush[i].plane[j].v2[1], (float)radent[0].brush[i].plane[j].v2[2]);
+				const vec3 c((float)radent[0].brush[i].plane[j].v3[0], (float)radent[0].brush[i].plane[j].v3[1], (float)radent[0].brush[i].plane[j].v3[2]);
 
 
-			// get parallelogram vertex (draw on paper in 3d and use vector addition)
-			vec3 d = a + (c - b);
+				// get parallelogram vertex (draw on paper in 3d and use vector addition)
+				vec3 d = a + (c - b);
 
-			// find mid point for quad
-			vec3 mid = (a + b + c + d) / 4.0f;
+				// find mid point for quad
+				vec3 mid = (a + b + c + d) / 4.0f;
 
-			float size = 100000;
-			vec3 big_triangle1[3];
+				float size = 100000;
+				vec3 big_triangle1[3];
 
-			// extend parallelogram to infinite plane by moving away from midpoint
-			big_triangle1[0] = a + ((a - mid) * size);
-			big_triangle1[1] = b + ((b - mid) * size);
-			big_triangle1[2] = c + ((c - mid) * size);
+				// extend parallelogram to infinite plane by moving away from midpoint
+				big_triangle1[0] = a + ((a - mid) * size);
+				big_triangle1[1] = b + ((b - mid) * size);
+				big_triangle1[2] = c + ((c - mid) * size);
 
-			vec3 big_triangle2[3];
+				vec3 big_triangle2[3];
 
-			// two triangles
-			big_triangle2[0] = a + ((a - mid) * size);
-			big_triangle2[1] = c + ((c - mid) * size);
-			big_triangle2[2] = d + ((d - mid) * size);
+				// two triangles
+				big_triangle2[0] = a + ((a - mid) * size);
+				big_triangle2[1] = c + ((c - mid) * size);
+				big_triangle2[2] = d + ((d - mid) * size);
 
-			// save original triangles
-			quadent.quadbrush[i].quadplane[j].triangle1[0] = a;
-			quadent.quadbrush[i].quadplane[j].triangle1[1] = b;
-			quadent.quadbrush[i].quadplane[j].triangle1[2] = c;
+				// save original triangles
+				quadent.quadbrush[i].quadplane[j].triangle1[0] = a;
+				quadent.quadbrush[i].quadplane[j].triangle1[1] = b;
+				quadent.quadbrush[i].quadplane[j].triangle1[2] = c;
 
-			quadent.quadbrush[i].quadplane[j].triangle2[0] = a;
-			quadent.quadbrush[i].quadplane[j].triangle2[1] = c;
-			quadent.quadbrush[i].quadplane[j].triangle2[2] = d;
+				quadent.quadbrush[i].quadplane[j].triangle2[0] = a;
+				quadent.quadbrush[i].quadplane[j].triangle2[1] = c;
+				quadent.quadbrush[i].quadplane[j].triangle2[2] = d;
 
-			// save triangles used for clipping
-			int k = 0;
-			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[0];
-			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[1];
-			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[2];
-			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[0];
-			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[1];
-			quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[2];
-			quadent.quadbrush[i].quadplane[j].num_triangle = 6;
+				// save triangles used for clipping
+				int k = 0;
+				quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[0];
+				quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[1];
+				quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle1[2];
+				quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[0];
+				quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[1];
+				quadent.quadbrush[i].quadplane[j].triangle_list[k++] = big_triangle2[2];
+				quadent.quadbrush[i].quadplane[j].num_triangle = 6;
 
-			// save original points of parallelogram
-			quadent.quadbrush[i].quadplane[j].a = a;
-			quadent.quadbrush[i].quadplane[j].b = b;
-			quadent.quadbrush[i].quadplane[j].c = c;
-			quadent.quadbrush[i].quadplane[j].d = d;
-
-
-			// save the plane (assuming CCW ordering)
-			vec3 ba = b - a;
-			vec3 ca = c - a;
-
-			vec3 normal;
+				// save original points of parallelogram
+				quadent.quadbrush[i].quadplane[j].a = a;
+				quadent.quadbrush[i].quadplane[j].b = b;
+				quadent.quadbrush[i].quadplane[j].c = c;
+				quadent.quadbrush[i].quadplane[j].d = d;
 
 
-			normal = vec3::crossproduct(ba, ca).normalize();
+				// save the plane (assuming CCW ordering)
+				vec3 ba = b - a;
+				vec3 ca = c - a;
+
+				vec3 normal;
 
 
-			
-			quadent.quadbrush[i].quadplane[j].plane.normal = normal.normalize();
-			quadent.quadbrush[i].quadplane[j].plane.d = a * normal;
+				normal = vec3::crossproduct(ba, ca).normalize();
+
+
+				quadent.quadbrush[i].quadplane[j].plane.normal = normal.normalize();
+				quadent.quadbrush[i].quadplane[j].plane.d = a * normal;
+			}
+			else
+			{
+				quadent.quadbrush[i].quadplane[j].plane.normal = radent[0].brush[i].plane[j].p;
+				quadent.quadbrush[i].quadplane[j].plane.d = radent[0].brush[i].plane[j].d;
+			}
 
 		}
 	}
@@ -1534,12 +2092,12 @@ void RadiantMap::clip_quads()
 				a.texCoord0.x = radent[0].brush[i].plane[j].xoffset / radent[0].brush[i].plane[j].xscale;
 				a.texCoord0.y = radent[0].brush[i].plane[j].yoffset / radent[0].brush[i].plane[j].yscale;
 
-				b.position = quadent.quadbrush[i].quadplane[j].triangle_list[l+1];
+				b.position = quadent.quadbrush[i].quadplane[j].triangle_list[l + 1];
 				b.texCoord0.x = radent[0].brush[i].plane[j].xoffset / radent[0].brush[i].plane[j].xscale;
 				b.texCoord0.y = radent[0].brush[i].plane[j].yoffset / radent[0].brush[i].plane[j].yscale;
 
 
-				c.position = quadent.quadbrush[i].quadplane[j].triangle_list[l+2];
+				c.position = quadent.quadbrush[i].quadplane[j].triangle_list[l + 2];
 				c.texCoord0.x = radent[0].brush[i].plane[j].xoffset / radent[0].brush[i].plane[j].xscale;
 				c.texCoord0.y = radent[0].brush[i].plane[j].yoffset / radent[0].brush[i].plane[j].yscale;
 
@@ -1773,12 +2331,12 @@ void RadiantMap::intersect_quads()
 					{
 #ifdef DEBUG
 						printf("\Dropping point %f %f %f as not inside the volume from plane %d %d %d dist %f\r\n",
-							point.x, point.y, point.z, 
+							point.x, point.y, point.z,
 							index1,
 							index2,
 							index3,
 							dist
-							);
+						);
 #endif
 						inside = false;
 						break;
@@ -1847,7 +2405,7 @@ void RadiantMap::intersect_quads()
 						(fabs(plane_face_array[j][k].z - plane_face_array[j][l].z) < 0.001)
 						)
 					{
-//						printf("\t (%f, %f, %f) is duplicate\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
+						//						printf("\t (%f, %f, %f) is duplicate\r\n", plane_face_array[j][k].x, plane_face_array[j][k].y, plane_face_array[j][k].z);;
 
 						// replace point with last point in array
 						if (l != num_plane_face[j] - 1)
@@ -2027,7 +2585,7 @@ void RadiantMap::sort_point(vec3 *point_array, unsigned int num_point, const vec
 
 	for (unsigned int i = 1; i < num_point; i++)
 	{
-		if ( !is_clockwise(a, point_array[i], center, normal) )
+		if (!is_clockwise(a, point_array[i], center, normal))
 		{
 			vec3 temp = point_array[i];
 			for (unsigned int k = i; k < num_point; k++)
@@ -2218,7 +2776,7 @@ void RadiantMap::intersect_bigbox()
 		original[6] = vec3(original[7].x, original[7].y, original[0].z);
 
 		// GL_TRAINGLES outward facing faces
-		int	index_array[36] = { 
+		int	index_array[36] = {
 			2,1,0,
 			2,3,1,
 			5,1,7,
@@ -2232,7 +2790,7 @@ void RadiantMap::intersect_bigbox()
 			6,3,2,
 			6,7,3
 		};
-			
+
 		vec2 texcoords[36] =
 		{
 			// Front face
@@ -2463,7 +3021,7 @@ void RadiantMap::intersect_bigbox()
 						{
 							save = x;
 						}
-							
+
 
 						aabb[save] = result.position;
 						printf("\tintersection found aabb[%d]=(%f %f %f)\r\n", save, b.position.x, b.position.y, b.position.z);
@@ -2493,7 +3051,7 @@ void RadiantMap::intersect_bigbox()
 				}
 				else
 				{
-//					printf("\tdid not intersect\r\n");
+					//					printf("\tdid not intersect\r\n");
 				}
 			}
 

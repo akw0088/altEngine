@@ -35,14 +35,25 @@ class RadiantMap
 		int contents;
 		int flags;
 		int values;
+
+		//doom 3 style
+		vec3 p;
+		float d;
+
+		float xxscale;
+		float xyscale;
+		float xoffsetf;
+		float yxscale;
+		float yyscale;
+		float yoffsetf;
 	} brushplane_t;
 
 
 
 	typedef struct
 	{
-		char key[128];
-		char value[128];
+		char key[512];
+		char value[512];
 	} keyval_t;
 
 
@@ -128,7 +139,8 @@ class RadiantMap
 		P_NONE,
 		P_ENTITY,
 		P_BRUSH,
-		P_PATCH
+		P_PATCH,
+		P_PRIMITIVE
 	};
 
 
@@ -165,7 +177,7 @@ class RadiantMap
 		unsigned int dword;
 	} inside_t;
 
-	
+
 	// quad types
 	typedef struct
 	{
@@ -202,8 +214,13 @@ public:
 	RadiantMap();
 
 
-	// loads a q3 .map file from disk and populates radent (note: probably not much more trouble to parse quake1 .map or doom3 .map)
 	int load(char *map, FILE *output);
+
+	// Quake1, Quake2, Quake3 .map files
+	int load_v1(char *map, FILE *output);
+
+	// Doom3, Quake4, Rage .map files (Quake4 and Rage TBD)
+	int load_v2(char *map, FILE *output);
 
 
 
@@ -273,7 +290,8 @@ private:
 
 	// File parsing code
 	void indent(int level, FILE *output);
-	int parse_patch(char *line);
+	int parse_patch2(char *line);
+	int parse_patch3(char *line);
 	int parse_left_brace(char *line);
 	int parse_left_paren(char *line);
 	int parse_right_paren(char *line);
@@ -285,14 +303,16 @@ private:
 	int parse_patch_control(char *line, patch_control_t *control);
 	int parse_patch_points(char *line, patch_control_t *control, patch_point_t *point);
 	int print_patch_points(patch_control_t *control, patch_point_t *point, FILE *output);
+	int parse_brushdef(char *line);
+	int parse_version(char *line);
 
 	int trim(char *data, int length);
 	int trim_copy(char *data, int length, char *out);
 	int trim_edges(char *data, int length);
 	int trim_edges_copy(char *data, int length, char *out);
 
-
-
+	int patch_type;
+	unsigned int map_type; // 1 = quake1, 3 = quake 3, 4 = doom3, 5 = quake4, 6 = rage
 	Triangulate triangulate;
 };
 
