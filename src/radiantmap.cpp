@@ -229,6 +229,11 @@ int RadiantMap::parse_version(char *line)
 		map_type = 4;
 		return 0;
 	}
+	else if (strstr(line, "Version 3"))
+	{
+		map_type = 5;
+		return 0;
+	}
 	else
 	{
 		return -1;
@@ -346,6 +351,23 @@ int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 		map_type = 4;
 		return 0;
 	}
+
+
+	//quake4 style
+	//(0 1 0 - 4160) ((0.03125 0 0) (0 0.03125 0)) "textures/common/player_clip"
+	ret = sscanf(line, "( %f %f %f %f ) ( ( %f %f %f ) ( %f %f %f ) ) \"%[^\"]\"",
+		&brush->p.x, &brush->p.y, &brush->p.z, &brush->d,
+		&brush->xxscale, &brush->xyscale, &brush->xoffsetf,
+		&brush->yxscale, &brush->yyscale, &brush->yoffsetf,
+		brush->name
+	);
+
+	if (ret == 11)
+	{
+		map_type = 5;
+		return 0;
+	}
+
 
 	return -1;
 }
@@ -706,8 +728,6 @@ int RadiantMap::load(char *map, FILE *output)
 	{
 			if (parse_version(line) == 0)
 			{
-				fprintf(output, "Version 2\r\n");
-				map_type = 4;
 				break;
 			}
 
@@ -722,7 +742,7 @@ int RadiantMap::load(char *map, FILE *output)
 	fclose(fp);
 
 
-	if (map_type == 4)
+	if (map_type == 4 || map_type == 5)
 	{
 		load_v2(map, output);
 	}
@@ -732,6 +752,7 @@ int RadiantMap::load(char *map, FILE *output)
 	}
 
 
+	return 0;
 }
 
 
@@ -1287,6 +1308,11 @@ int RadiantMap::load_v2(char *map, FILE *output)
 				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].brush_num = radent[num_ent - 1].num_brush;
 				brushdef = 1;
 			}
+			else if (parse_name(line, &name) == 0)
+			{
+				indent(level, output);
+				fprintf(output, "// %s %d\r\n", name.name, name.number);
+			}
 			else if (parse_left_brace(line) == 0)
 			{
 				indent(level++, output);
@@ -1297,14 +1323,7 @@ int RadiantMap::load_v2(char *map, FILE *output)
 				indent(--level, output);
 				fprintf(output, "}\r\n");
 
-				if (brushdef)
-				{
-					brushdef = 0;
-				}
-				else
-				{
-					state = P_ENTITY;
-				}
+				state = P_ENTITY;
 			}
 		}
 		else if (state == P_ENTITY)
@@ -1413,8 +1432,14 @@ int RadiantMap::load_v2(char *map, FILE *output)
 			}
 			else if (parse_version(line) == 0)
 			{
-				fprintf(output, "Version 2\r\n");
-				map_type = 4;
+				if (map_type == 4)
+				{
+					fprintf(output, "Version 2\r\n");
+				}
+				else
+				{
+					fprintf(output, "Version 3\r\n");
+				}
 			}
 			else
 			{
@@ -1997,7 +2022,7 @@ void RadiantMap::generate_quads()
 	{
 		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
 		{
-			if (map_type != 4)
+			if (map_type < 4)
 			{
 				const vec3 a((float)radent[0].brush[i].plane[j].v1[0], (float)radent[0].brush[i].plane[j].v1[1], (float)radent[0].brush[i].plane[j].v1[2]);
 				const vec3 b((float)radent[0].brush[i].plane[j].v2[0], (float)radent[0].brush[i].plane[j].v2[1], (float)radent[0].brush[i].plane[j].v2[2]);
