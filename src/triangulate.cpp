@@ -800,11 +800,11 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 
 	// final output
-	for (unsigned int j = 0; j < num_triangle; j += 3)
+//	for (unsigned int j = 0; j < num_triangle; j += 3)
 	{
-		vec3 a = triangle[j + 0];
-		vec3 b = triangle[j + 1];
-		vec3 c = triangle[j + 2];
+		//vec3 a = triangle[j + 0];
+		//vec3 b = triangle[j + 1];
+		//vec3 c = triangle[j + 2];
 
 //		printf("\toutput %d: %f %f %f\r\n", j + 0, a.x, a.y, a.z);
 //		printf("\toutput %d: %f %f %f\r\n", j + 1, b.x, b.y, b.z);

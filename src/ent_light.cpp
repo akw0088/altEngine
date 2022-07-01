@@ -94,7 +94,7 @@ void EntLight::generate_map_volumes(Graphics &gfx, Bsp &map, int current_light)
 //	map_shadow.vbo = gfx.CreateVertexBuffer(shadow_vertex, num_index);
 	if (num_index > 0)
 	{
-		map_shadow.CreateVolume(gfx, &shadow_vertex[0], &shadow_index[0], 0, num_index / 3, entity->position);
+		map_shadow.CreateVolume(gfx, &shadow_vertex[0], &shadow_index[0], num_index / 3, entity->position);
 	}
 }
 
@@ -135,7 +135,6 @@ void EntLight::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list
 		// Probably need a test to see if either light or model moved, as static volumes dont need to be regenerated
 		shadow[num_shadowvol].CreateVolume(gfx, model->model_vertex_array,
 												model->model_index_array,
-												0,
 												model->num_index / 3,
 												position);
 
