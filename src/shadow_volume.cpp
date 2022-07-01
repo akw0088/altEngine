@@ -54,12 +54,12 @@ void ShadowVolume::AddEdge(int *pEdge, unsigned int &num_edge, int v0, int v1)
 	num_edge++;
 }
 
-int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *pIndex, unsigned int start_index, unsigned int num_face, vec3 &vLight)
+int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *pIndex, unsigned int num_face, vec3 &vLight)
 {
 	unsigned int num_edge = 0;
 	num_vert = 0;
 
-	if (num_face * 6 > alloc_vert)
+	if (num_face * 9 > alloc_vert)
 	{
 		if (vert_array != NULL)
 			delete[] vert_array;
@@ -71,13 +71,13 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 			delete[] pEdges;
 
 
-		vert_array = new vertex_t[num_face * 6];
-		index_array = new unsigned int [num_face * 6];
-		pEdges = new int[num_face * 6];
+		vert_array = new vertex_t[num_face * 9];
+		index_array = new unsigned int [num_face * 9];
+		pEdges = new int[num_face * 9];
 
-		alloc_vert = num_face * 6;
+		alloc_vert = num_face * 9;
 
-		for (unsigned int i = 0; i < num_face * 6; i++)
+		for (unsigned int i = 0; i < num_face * 9; i++)
 		{
 			index_array[i] = i;
 		}
@@ -87,9 +87,9 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 	// For each face
 	for (unsigned int i = 0; i < num_face; i++)
 	{
-		unsigned int wFace0 = pIndex[3 * i + 0 + start_index];
-		unsigned int wFace1 = pIndex[3 * i + 1 + start_index];
-		unsigned int wFace2 = pIndex[3 * i + 2 + start_index];
+		unsigned int wFace0 = pIndex[3 * i + 0];
+		unsigned int wFace1 = pIndex[3 * i + 1];
+		unsigned int wFace2 = pIndex[3 * i + 2];
 
 		vec3 v0 = pVertex[wFace0].position;
 		vec3 v1 = pVertex[wFace1].position;
@@ -108,12 +108,58 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 		}
 	}
 
-	for (unsigned int i = 0; i < num_edge; i++)
+
+
+	vec3 far_cap[16384];
+	unsigned int num_far_cap = 0;
+
+
+	vec3 near_cap[16384];
+	unsigned int num_near_cap = 0;
+
+
+	// For each face, keep the ones facing the light as the near cap
+	for (unsigned int i = 0; i < num_face; i++)
+	{
+		int wFace0 = pIndex[3 * i + 0];
+		int wFace1 = pIndex[3 * i + 1];
+		int wFace2 = pIndex[3 * i + 2];
+
+		vec3 v0 = pVertex[wFace0].position;
+		vec3 v1 = pVertex[wFace1].position;
+		vec3 v2 = pVertex[wFace2].position;
+
+		// Transform vertices
+		vec3 vCross1 = v2 - v1;
+		vec3 vCross2 = v1 - v0;
+		vec3 vNormal = vec3::crossproduct(vCross1, vCross2);
+
+		if (vNormal * vLight > 0.0f)
+		{
+			// reverse order to reverse faces
+			far_cap[num_far_cap++] = v2 - vLight * 2048;
+			far_cap[num_far_cap++] = v1 - vLight * 2048;
+			far_cap[num_far_cap++] = v0 - vLight * 2048;
+		}
+		else
+		{
+			// reverse order to reverse faces (using parts in shadow reversed to prevent z-fighting)
+			near_cap[num_near_cap++] = v2;
+			near_cap[num_near_cap++] = v1;
+			near_cap[num_near_cap++] = v0;
+		}
+
+
+
+
+	}
+
+	for (int i = 0; i < num_edge; i++)
 	{
 		vec3 v1 = pVertex[pEdges[2 * i + 0]].position;
 		vec3 v2 = pVertex[pEdges[2 * i + 1]].position;
-		vec3 v3 = v1 - vLight * 1024;
-		vec3 v4 = v2 - vLight * 1024;
+		vec3 v3 = v1 - vLight * 2048;
+		vec3 v4 = v2 - vLight * 2048;
 
 		// Add a quad (two triangles) to the vertex list
 		vert_array[num_vert++].position = v1;
@@ -125,23 +171,22 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 		vert_array[num_vert++].position = v3;
 	}
 
-	/*
-	// Attempted to use dynamic draw vs delete / recreate, no noticable improvement
-	if (vbo == -1)
+
+	for (unsigned int i = 0; i < num_near_cap; i += 3)
 	{
-		vbo = gfx.CreateVertexBuffer(vert_array, MAX_VERT, true);
-	}
-	else
-	{
-		gfx.SelectVertexBuffer(vbo);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, num_vert * sizeof(vertex_t), (void *)vert_array);
+		vert_array[num_vert++].position = near_cap[i + 0];
+		vert_array[num_vert++].position = near_cap[i + 1];
+		vert_array[num_vert++].position = near_cap[i + 2];
 	}
 
-	if (ibo == -1)
+	for (unsigned int i = 0; i < num_far_cap; i += 3)
 	{
-		ibo = gfx.CreateIndexBuffer(index_array, MAX_VERT);
+		vert_array[num_vert++].position = far_cap[i + 0];
+		vert_array[num_vert++].position = far_cap[i + 1];
+		vert_array[num_vert++].position = far_cap[i + 2];
 	}
-	*/
+
+
 
 	if (vbo != -1)
 	{

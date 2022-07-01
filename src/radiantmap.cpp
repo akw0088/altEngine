@@ -775,18 +775,20 @@ int RadiantMap::load_v1(char *map, FILE *output)
 	int num_plane = 0;
 
 
+	patch_type = 2;
+
 	radent = NULL;
 	num_ent = 0;
 
 	char line[MAX_LINE] = { 0 };
 	while (fgets(line, MAX_LINE + 1, fp) != NULL)
 	{
-		brushplane_t brushplane;
-		brushpatch_t brushpatch;
-		keyval_t keyval;
-		brush_name_t name;
-		patch_control_t control;
-		patch_point_t point;
+		brushplane_t brushplane = { 0 };
+		brushpatch_t brushpatch = { 0 };
+		keyval_t keyval = { 0 };
+		brush_name_t name = { 0 };
+		patch_control_t control = { 0 };
+		patch_point_t point = { 0 };
 
 		line_num++;
 
@@ -1094,12 +1096,12 @@ int RadiantMap::load_v2(char *map, FILE *output)
 	char line[MAX_LINE] = { 0 };
 	while (fgets(line, MAX_LINE + 1, fp) != NULL)
 	{
-		brushplane_t brushplane;
-		brushpatch_t brushpatch;
-		keyval_t keyval;
-		brush_name_t name;
-		patch_control_t control;
-		patch_point_t point;
+		brushplane_t brushplane = { 0 };
+		brushpatch_t brushpatch = { 0 };
+		keyval_t keyval = { 0 };
+		brush_name_t name = { 0 };
+		patch_control_t control = { 0 };
+		patch_point_t point = { 0 };
 
 		line_num++;
 

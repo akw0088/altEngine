@@ -17,6 +17,8 @@
 
 #include "include.h"
 
+#define MAX_VERT 128000
+
 typedef struct
 {
 	vec3 v1;
@@ -30,10 +32,11 @@ class ShadowVolume
 {
 public:
 	ShadowVolume();
-	int CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *pIndex, unsigned int start_index, unsigned int num_face, vec3 &vLight);
+	int CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *pIndex, unsigned int num_vert, vec3 &vLight);
 	void AddEdge(int *pEdge, unsigned int &num_edges, int v0, int v1);
 	int render(Graphics &gfx);
 	void destroy(Graphics &gfx);
+	void fix_winding(vec3 *triangle_array, int num_triangle, vec3 &normal);
 
 	matrix3 morientation;
 	vec3 position;
