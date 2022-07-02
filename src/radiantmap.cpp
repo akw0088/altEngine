@@ -292,7 +292,9 @@ int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 	//(1816 2080 72) (1744 2264 72) (1744 2080 72) q3f_military/tin -16 0 0 0.500000 0.500000 134217728 0 0
 
 	// quake 3 style
-	int ret = sscanf(line, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f %d %d %d",
+    // reall the points should be ints, but q3map2 convert makes them floats, opening and saving with radiant fixes it, but floats work too I guess
+	//		( -1024.000 784.000 136.000 ) ( -1024.000 784.000 128.000 ) ( -1024.000 800.000 128.000 ) gothic_trim/pitted_rust 0 0 0 0.5 0.5 0 0 0
+	int ret = sscanf(line, "( %f %f %f ) ( %f %f %f ) ( %f %f %f ) %s %d %d %d %f %f %d %d %d",
 		&brush->v1[0], &brush->v1[1], &brush->v1[2],
 		&brush->v2[0], &brush->v2[1], &brush->v2[2],
 		&brush->v3[0], &brush->v3[1], &brush->v3[2],
@@ -917,7 +919,7 @@ int RadiantMap::load_v1(char *map, FILE *output)
 			else if (parse_plane(line, &brushplane) == 0)
 			{
 				indent(level, output);
-				fprintf(output, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f %d %d %d\r\n",
+				fprintf(output, "( %g %g %g ) ( %g %g %g ) ( %g %g %g ) %s %d %d %d %f %f %d %d %d\r\n",
 					brushplane.v1[0], brushplane.v1[1], brushplane.v1[2],
 					brushplane.v2[0], brushplane.v2[1], brushplane.v2[2],
 					brushplane.v3[0], brushplane.v3[1], brushplane.v3[2],
@@ -2667,11 +2669,14 @@ void RadiantMap::intersect_quads()
 		num_triangles += max_points_per_brush / 3;
 
 		quadent.quadbrush[i].num_vert = num_brush_point;
-		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+		quadent.quadbrush[i].vert_array = (vertex_t *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vertex_t));
 
 		for (unsigned int k = 0; k < quadent.quadbrush[i].num_vert; k++)
 		{
-			quadent.quadbrush[i].vert_array[k] = triangle_array[k];
+			// swap from Z up to opengl Y up
+			quadent.quadbrush[i].vert_array[k].position.x = triangle_array[k].x;
+			quadent.quadbrush[i].vert_array[k].position.y = triangle_array[k].z;
+			quadent.quadbrush[i].vert_array[k].position.z = -triangle_array[k].y;
 		}
 
 		quadent.quadbrush[i].num_index = num_brush_point;
@@ -3245,14 +3250,14 @@ void RadiantMap::intersect_bigbox()
 
 
 		quadent.quadbrush[i].num_vert = 8;
-		quadent.quadbrush[i].vert_array = (vec3 *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vec3));
+		quadent.quadbrush[i].vert_array = (vertex_t *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vertex_t));
 
 		for (unsigned int k = 0; k < quadent.quadbrush[i].num_vert; k++)
 		{
 			//each aabb should now match brush
 			printf("(%f %f %f)\r\n", output[k].x, output[k].y, output[k].z);
 
-			quadent.quadbrush[i].vert_array[k] = output[quadent.quadbrush[i].num_vert - k - 1];
+			quadent.quadbrush[i].vert_array[k].position = output[quadent.quadbrush[i].num_vert - k - 1];
 
 		}
 

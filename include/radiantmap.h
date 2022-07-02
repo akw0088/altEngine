@@ -19,9 +19,9 @@ class RadiantMap
 	//(1816 2080 72) (1744 2264 72) (1744 2080 72) q3f_military/tin -16 0 0 0.500000 0.500000 134217728 0 0
 	typedef struct
 	{
-		int v1[3];
-		int v2[3];
-		int v3[3];
+		float v1[3];
+		float v2[3];
+		float v3[3];
 
 		char name[256];
 
@@ -222,7 +222,7 @@ public:
 	// Doom3, Quake4
 	int load_v2(char *map, FILE *output);
 
-	//Rage .map files (TBD)
+	//Rage .map files  (Brushes only)
 	int load_v3(char *map, FILE *output);
 
 
