@@ -107,7 +107,7 @@ int RadiantMap::trim_edges(char *data, int length)
 	{
 		char c = data[i];
 
-		if (leading && (c == '\r' || c == '\n' || c == ' '))
+		if (leading && (c == '\r' || c == '\n' || c == ' ' || c == '\t'))
 		{
 			continue;
 		}
@@ -170,7 +170,7 @@ int RadiantMap::parse_patch2(char *line)
 
 int RadiantMap::parse_patch3(char *line)
 {
-	if (strcmp(line, "patchDef3\n") == 0)
+	if (strstr(line, "patchDef3") != 0)
 	{
 		return 0;
 	}
@@ -724,30 +724,47 @@ int RadiantMap::load(char *map, FILE *output)
 
 	unsigned int line_num = 0;
 
+
+	// assume a quake1/quake2/quake3 map
+	map_type = 3;
+
+
 	while (fgets(line, MAX_LINE + 1, fp) != NULL)
 	{
-			if (parse_version(line) == 0)
-			{
-				break;
-			}
+		// version line will mean doom3/quake4 or rage
+		parse_version(line);
 
-			line_num++;
 
-			if (line_num > 5)
-			{
-				map_type = 3;
-				break;
-			}
+		// if we have inherit, definitely a rage map
+		if (strstr(line, "inherit"))
+		{
+			map_type = 6;
+			break;
+		}
+
+		line_num++;
+			
+		if (line_num > 10)
+		{
+			break;
+		}
 	}
 	fclose(fp);
 
 
 	if (map_type == 4 || map_type == 5)
 	{
+		// doom3 or quake4
 		load_v2(map, output);
+	}
+	else if (map_type == 6)
+	{
+		// rage map
+		load_v3(map, output);
 	}
 	else
 	{
+		// quake1/quake2/quake3
 		load_v1(map, output);
 	}
 
@@ -1450,6 +1467,138 @@ int RadiantMap::load_v2(char *map, FILE *output)
 			}
 		}
 
+	}
+
+	fclose(fp);
+
+	return 0;
+}
+
+int RadiantMap::load_v3(char *map, FILE *output)
+{
+	FILE *fp = NULL;
+
+
+	fp = fopen(map, "r");
+	if (fp == NULL)
+	{
+		printf("Unable to open %s\r\n", map);
+		return -1;
+	}
+
+	int level = 0;
+	int line_num = 0;
+
+	int state = P_NONE;
+	int num_plane = 0;
+	int brushdef = 0;
+
+
+	radent = NULL;
+	num_ent = 1;
+
+	char line[MAX_LINE] = { 0 };
+
+	state = P_PRIMITIVE;
+	radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
+
+
+
+	radent[num_ent - 1].num_brush = 0;
+	radent[num_ent - 1].num_keyval = 0;
+	radent[num_ent - 1].ent_number = 0;
+	radent[num_ent - 1].brush = NULL;
+	radent[num_ent - 1].keyval = NULL;
+
+	while (fgets(line, MAX_LINE + 1, fp) != NULL)
+	{
+		brushplane_t brushplane = { 0 };
+		brushpatch_t brushpatch = { 0 };
+		keyval_t keyval = { 0 };
+		brush_name_t name = { 0 };
+		patch_control_t control = { 0 };
+		patch_point_t point = { 0 };
+
+		line_num++;
+
+
+		trim_edges(line, strlen(line));
+
+
+		// since rage maps changed the format so much, we are just going to look for BrushDef3
+
+		// So just two states, brush, or not a brush
+		// P_PRIMITIVE or P_BRUSH
+
+
+
+
+
+
+		if (state == P_BRUSH)
+		{
+			if (parse_plane(line, &brushplane) == 0)
+			{
+				indent(level, output);
+
+
+				fprintf(output, "( %g %g %g %g ) ( ( %g %g %g ) ( %g %g %g ) ) \"%s\" %d %d %d\r\n",
+					brushplane.p.x, brushplane.p.y, brushplane.p.z, brushplane.d,
+					brushplane.xxscale, brushplane.xyscale, brushplane.xoffsetf,
+					brushplane.yxscale, brushplane.yyscale, brushplane.yoffsetf,
+					brushplane.name,
+					brushplane.contents,
+					brushplane.flags,
+					brushplane.values
+				);
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane++;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = (brushplane_t *)
+					realloc(radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane,
+						radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane * sizeof(brushplane_t));
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane[radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane - 1] = brushplane;
+
+
+			}
+			else if (parse_left_brace(line) == 0)
+			{
+				indent(level++, output);
+				fprintf(output, "{\r\n");
+			}
+			else if (parse_right_brace(line) == 0)
+			{
+				indent(--level, output);
+				fprintf(output, "}\r\n");
+				num_plane = 0;
+
+				state = P_PRIMITIVE;
+			}
+		}
+		else if (state == P_PRIMITIVE)
+		{
+			if (parse_brushdef(line) == 0)
+			{
+				fprintf(output, "brushDef3\r\n");
+				state = P_BRUSH;
+
+				radent[num_ent - 1].num_brush++;
+
+				radent[num_ent - 1].brush = (brush_t *)realloc(radent[num_ent - 1].brush, radent[num_ent - 1].num_brush * sizeof(brush_t));
+
+
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_plane = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].plane = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].num_patch = 0;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].patch = NULL;
+				radent[num_ent - 1].brush[radent[num_ent - 1].num_brush - 1].brush_num = radent[num_ent - 1].num_brush;
+				brushdef = 1;
+			}
+			else
+			{
+				fprintf(output, line);
+			}
+		}
 	}
 
 	fclose(fp);
@@ -2485,8 +2634,8 @@ void RadiantMap::intersect_quads()
 
 			//sort_point(&plane_face_array[j][0], num_plane_face[j], quadent.quadbrush[i].quadplane[j].plane.normal);
 
-			// BowyerWatson can be slow, so dont use it on basic stuff
-			if (num_plane_face[j] <= 6)
+			// BowyerWatson can be slow, so dont use it on basic stuff (using it on everything cause the first method just isn't always correct)
+			if (num_plane_face[j] <= 3)
 			{
 				triangle_fan_to_array(&plane_face_array[j][0], num_plane_face[j], &triangle_array[num_brush_point], num_points_from_plane, quadent.quadbrush[i].quadplane[j].plane.normal);
 			}

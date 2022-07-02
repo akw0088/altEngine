@@ -219,8 +219,11 @@ public:
 	// Quake1, Quake2, Quake3 .map files
 	int load_v1(char *map, FILE *output);
 
-	// Doom3, Quake4, Rage .map files (Quake4 and Rage TBD)
+	// Doom3, Quake4
 	int load_v2(char *map, FILE *output);
+
+	//Rage .map files (TBD)
+	int load_v3(char *map, FILE *output);
 
 
 
