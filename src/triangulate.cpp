@@ -1,3 +1,30 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+///=============================================================================
+/// File: triangulate.cpp
+///=============================================================================
+/// This class will triangulate a set of points on a plane using 
+/// BowyerWatson / Delanay Triangles
+///
+/// The points can be in any order
+///
+///
+/// Accepts set of points
+/// outputs triangulation
+///=============================================================================
+
 #include "triangulate.h"
 
 
@@ -46,6 +73,26 @@ HPEN pen_table[COLOR_TABLE_SIZE] = { 0 };
 #endif
 int Triangulate::debug_point;
 
+
+
+
+///=============================================================================
+/// Function: add_point_in_polygon
+///=============================================================================
+/// Description: 
+///
+/// Adds a point to a polygon and generates a triangulation by making a triangle out
+/// of each polygon edge
+///
+/// Parameters:
+///		point - the point to add
+///     poly - the polygon the point will be added to
+///     tri - the ouput triangulation of the polygon with the point added
+///     num_triangles - the number of output points (called triangles, but really 3 make one)
+///
+/// Returns:
+///		zero succes, non-zero failure
+///=============================================================================
 int Triangulate::add_point_in_polygon(const vec3 &point, vec3 *poly, unsigned int &num_poly, vec3 *tri, unsigned int &num_triangle)
 {
 	unsigned int i = 0;
@@ -67,6 +114,25 @@ int Triangulate::add_point_in_polygon(const vec3 &point, vec3 *poly, unsigned in
 	return 0;
 }
 
+
+///=============================================================================
+/// Function: get_circum_circle
+///=============================================================================
+/// Description: 
+///
+/// Gets the circum-circle of a triangle, which is a circle that passes through
+/// all of the triangles points
+///
+/// Parameters:
+///		a - triangle point
+///		b - triangle point
+///		c - triangle point
+///		radius - output circle radius
+///		center - output circle center
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c, float &radius, vec3 &center)
 {
 	vec3 ac = c - a;
@@ -87,6 +153,24 @@ void Triangulate::get_circum_circle(const vec3 &a, const vec3 &b, const vec3 &c,
 
 }
 
+
+///=============================================================================
+/// Function: point_in_sphere
+///=============================================================================
+/// Description: 
+///
+/// Determines if a point is in the passed radius, technically a sphere
+/// but since all points are on a plane, it is essentially a circle
+/// (Note our planes may be in any orientation, not strictly 2D)
+///
+/// Parameters:
+///		point - point to check
+///		origin - center of sphere
+///		radius - radius of sphere
+///
+/// Returns:
+///		None
+///=============================================================================
 bool Triangulate::point_in_sphere(const vec3 &point, vec3 &origin, float radius)
 {
 	vec3 dist = point - origin;
@@ -101,6 +185,22 @@ bool Triangulate::point_in_sphere(const vec3 &point, vec3 &origin, float radius)
 	return false;
 }
 
+///=============================================================================
+/// Function: point_in_triangle
+///=============================================================================
+/// Description: 
+///
+/// Determines if a point is in inside a triangle
+///
+/// Parameters:
+///		point - point to check
+///		a - triangle point
+///		b - triangle point
+///		c - triangle point
+///
+/// Returns:
+///		Boolean true if it inside, false if not
+///=============================================================================
 bool Triangulate::point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3 &tri_b, const vec3 &tri_c)
 {
 	vec3 a = tri_a - p;
@@ -126,7 +226,21 @@ bool Triangulate::point_in_triangle(const vec3 &p, const vec3 &tri_a, const vec3
 }
 
 
-
+///=============================================================================
+/// Function: point_is_same
+///=============================================================================
+/// Description: 
+///
+/// Checks if two points are the same, easier to read when this is in a function
+/// versus inline with a bunch of if statements
+///
+/// Parameters:
+///		a - point
+///		b - point
+///
+/// Returns:
+///		Boolean true if it is the same, false if not
+///=============================================================================
 bool Triangulate::point_is_same(const vec3 &a, const vec3 &b)
 {
 	if ((a - b).magnitude() < EPSILON)
@@ -137,7 +251,21 @@ bool Triangulate::point_is_same(const vec3 &a, const vec3 &b)
 	return false;
 }
 
-
+///=============================================================================
+/// Function: add_poly
+///=============================================================================
+/// Description: adds an edge to the polygon, will not add duplicate edges
+///
+///
+/// Parameters:
+///		na - edge point a
+///		nb - edge point b
+///     polygon - polygon to add edges to
+///     num_poly - number of points in the polygon
+///
+/// Returns:
+///		Boolean true if added, false if duplicate
+///=============================================================================
 bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsigned int &num_poly)
 {
 	for (unsigned int i = 0; i < num_poly; i += 2)
@@ -165,12 +293,38 @@ bool Triangulate::add_poly(const vec3 &na, const vec3 &nb, vec3 *polygon, unsign
 }
 
 
-// We have bad triangles that form a polygon hole, but they contain interior edges
-// We want to delete edges in bad triangles
-// if we have one triangle, we really dont delete anything, entire triangle is the polygon
-// but if we have two adjacent triangles that share an edge
-// we delete the shared edge as it is not part of the polygon
-// So essentially we are looking for edges that are in bad triangles twice to find shared edges
+
+///=============================================================================
+/// Function: compare_edges
+///=============================================================================
+/// Description: This compares edges of two triangles, used to find
+///  polygonal hole
+///
+/// Returns shared edges in shared array
+/// Returns non-shared edges in polygon array
+///
+///
+/// Parameters:
+///		T1 abc     - Triangle one points
+///		T2 abc     - Triangle two points
+///     polygon    - edges not shared between two triangles
+///     num_poly   - number of points not shared
+///     shared     - edges shared between two triangles
+///     num_shared - number of points shared
+///
+/// Old notes:
+///
+///		 We have bad triangles that form a polygon hole, but they contain interior edges
+///		 We want to delete edges in bad triangles
+///		 if we have one triangle, we really dont delete anything, entire triangle is the polygon
+///		 but if we have two adjacent triangles that share an edge
+///		 we delete the shared edge as it is not part of the polygon
+///		 So essentially we are looking for edges that are in bad triangles twice to find shared edges
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::compare_edges(
 	const vec3 &T1_a, const vec3 &T1_b, const vec3 &T1_c,
 	const vec3 &T2_a, const vec3 &T2_b, const vec3 &T2_c,
@@ -408,6 +562,21 @@ void Triangulate::compare_edges(
 }
 
 
+///=============================================================================
+/// Function: delete_triangle
+///=============================================================================
+/// Description: This deletes a triangle from a array of triangles
+///  also checks for reversed edge orderings to ensure any ordering will be deleted
+///
+/// Parameters:
+///		abc          - Triangle points
+///     triangle     - array of points forming triangles
+///     num_triangle - number of points in triangle array (bad name, 3 points = one triangle)
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, vec3 *triangle, unsigned int &num_triangle)
 {
 	for (unsigned int k = 0; k < num_triangle; k += 3)
@@ -487,6 +656,20 @@ void Triangulate::delete_triangle(const vec3 &a, const vec3 &b, const vec3 &c, v
 }
 
 
+///=============================================================================
+/// Function: delete_triangle_with_edge
+///=============================================================================
+/// Description: This deletes all triangles that contain the provided edge
+///
+/// Parameters:
+///		ab           - edge points
+///     triangle     - array of points forming triangles
+///     num_triangle - number of points in triangle array (bad name, 3 points = one triangle)
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::delete_triangle_with_edge(const vec3 &a, const vec3 &b, vec3 *triangle, unsigned int &num_triangle)
 {
 	for (unsigned int k = 0; k < num_triangle; k += 3)
@@ -552,6 +735,20 @@ void Triangulate::delete_triangle_with_edge(const vec3 &a, const vec3 &b, vec3 *
 }
 
 
+///=============================================================================
+/// Function: delete_triangle_with_vertex
+///=============================================================================
+/// Description: This deletes all triangles that contain the provided point
+///
+/// Parameters:
+///		a            - point
+///     triangle     - array of points forming triangles
+///     num_triangle - number of points in triangle array (bad name, 3 points = one triangle)
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::delete_triangle_with_vertex(const vec3 &a, vec3 *triangle, unsigned int &num_triangle)
 {
 	for (unsigned int k = 0; k < num_triangle; k += 3)
@@ -581,10 +778,27 @@ void Triangulate::delete_triangle_with_vertex(const vec3 &a, vec3 *triangle, uns
 	}
 }
 
-//
-//	Good background video:
-//		https://www.youtube.com/watch?v=-XCVn73p3xs
-//
+
+///=============================================================================
+/// Function: BowyerWatson
+///=============================================================================
+/// Description: Main function for BowyerWatson Triangulation
+///
+///
+/// Parameters:
+///		point		 - array of unordered points to triangulate (must be on same plane)			[in]
+///     num_point	 - number of points															[in]
+///     triangle     - array of points forming triangles										[out]
+///     num_triangle - number of points in triangle array (bad name, 3 points = one triangle)	[out]
+///
+///
+///	Good background video:
+///		https://www.youtube.com/watch?v=-XCVn73p3xs
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int &num_triangle)
 {
 	vec3 super_tri[3];
@@ -819,6 +1033,17 @@ void Triangulate::BowyerWatson(const vec3 *point, unsigned int num_point, vec3 *
 
 
 #ifdef WIN32
+///=============================================================================
+/// Function: draw_point
+///=============================================================================
+/// Description: Windows GDI draw wrappers -- draws a point
+///
+///
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::draw_point(HDC hdc, const vec3 &point, float size, float scale, POINT offset)
 {
 	Rectangle(hdc,
@@ -828,6 +1053,18 @@ void Triangulate::draw_point(HDC hdc, const vec3 &point, float size, float scale
 		(int)((point.y * scale + size * scale) + offset.y));
 }
 
+
+///=============================================================================
+/// Function: draw_fill
+///=============================================================================
+/// Description: Windows GDI draw wrappers -- flood fill a point
+///
+///
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::draw_fill(HDC hdc, const vec3 &point, COLORREF color, float scale, POINT offset)
 {
 	int ret0 = ExtFloodFill(hdc,
@@ -838,6 +1075,17 @@ void Triangulate::draw_fill(HDC hdc, const vec3 &point, COLORREF color, float sc
 }
 
 
+///=============================================================================
+/// Function: draw_triangle
+///=============================================================================
+/// Description: Windows GDI draw wrappers -- draws a triangle
+///
+///
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::draw_triangle(HDC hdc, const vec3 &a, const vec3 &b, const vec3 &c, float scale, POINT offset)
 {
 	MoveToEx(hdc,
@@ -857,6 +1105,18 @@ void Triangulate::draw_triangle(HDC hdc, const vec3 &a, const vec3 &b, const vec
 }
 
 
+
+///=============================================================================
+/// Function: draw_line
+///=============================================================================
+/// Description: Windows GDI draw wrappers -- draws a line
+///
+///
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::draw_line(HDC hdc, const vec3 &a, const vec3 &b, float scale, POINT offset)
 {
 	MoveToEx(hdc,
@@ -869,6 +1129,17 @@ void Triangulate::draw_line(HDC hdc, const vec3 &a, const vec3 &b, float scale, 
 }
 
 
+///=============================================================================
+/// Function: draw_circle
+///=============================================================================
+/// Description: Windows GDI draw wrappers -- draws a circle
+///
+///
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::draw_circle(HDC hdc, const vec3 &c, float radius, float scale, POINT offset)
 {
 	int left, right, top, bottom;
@@ -880,6 +1151,33 @@ void Triangulate::draw_circle(HDC hdc, const vec3 &c, float radius, float scale,
 	Ellipse(hdc, left, top, right, bottom);
 }
 
+
+///=============================================================================
+/// Function: debug_BowyerWatson
+///=============================================================================
+/// Description: Debug function for BowyerWatson Triangulation
+///
+/// So this is used with a seperate windows application to debug this code
+/// Everything works, you can see this application here:
+/// https://www.awright2009.com/BowyerWatson.zip
+/// https://server.awright2009.com/BowyerWatson.zip
+///
+/// Also draws the Voronoi diagram if the appropriate draw mode is selected
+///
+/// Parameters:
+///		point		 - array of unordered points to triangulate (must be on same plane)			[in]
+///     num_point	 - number of points															[in]
+///     triangle     - array of points forming triangles										[out]
+///     num_triangle - number of points in triangle array (bad name, 3 points = one triangle)	[out]
+///
+///
+///	Good background video:
+///		https://www.youtube.com/watch?v=-XCVn73p3xs
+///
+///
+/// Returns:
+///		None
+///=============================================================================
 void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int num_point, vec3 *triangle, unsigned int &num_triangle, float scale, POINT offset)
 {
 	vec3 super_tri[3];
@@ -1529,6 +1827,24 @@ void Triangulate::debug_BowyerWatson(HDC hdc, const vec3 *point, unsigned int nu
 
 }
 
+
+///=============================================================================
+/// Function: is_triangle_neighbor
+///=============================================================================
+/// Description: Determines if two triangles are adjacent
+///
+///
+/// Parameters:
+///		a1,b1,c1	 - triangle one
+///		a2,b2,c2	 - triangle two
+///     shared_out   - shared edges if any
+///     num_shared   - num shared edges if any
+///
+///
+///
+/// Returns:
+///		bool true if they are adjacent / neighboring triangles
+///=============================================================================
 bool Triangulate::is_triangle_neighbor(vec3 &a1, vec3 &b1, vec3 &c1, vec3 &a2, vec3 &b2, vec3 &c2, vec3 *shared_out, unsigned int &num_shared)
 {
 	vec3 polygon[128];
