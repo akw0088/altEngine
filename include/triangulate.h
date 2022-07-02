@@ -16,8 +16,6 @@
 #define MAX_TRIANGLE (8192)
 #define MAX_MODE (7)
 
-#define MAX(x,y) ((x) > (y) ? (x) : (y))
-#define MIN(x,y) ((x) < (y) ? (x) : (y))
 
 #define EPSILON 0.001f
 

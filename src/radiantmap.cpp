@@ -12,6 +12,9 @@
 using namespace std;
 
 #define MAX_LINE 4096
+#define MAX(x,y) ((x) > (y) ? (x) : (y))
+#define MIN(x,y) ((x) < (y) ? (x) : (y))
+
 
 
 RadiantMap::RadiantMap()
@@ -2347,11 +2350,14 @@ void RadiantMap::intersect_quads()
 
 	for (unsigned int i = 0; i < radent[0].num_brush; i++)
 	{
-		vec3 point_array[MAX_POINT_PER_PLANE];
+		static vec3 point_array[MAX_POINT_PER_PLANE];
 		unsigned int num_point = 0;
-		vec3 triangle_array[MAX_POINT_PER_BRUSH];
+		static vec3 triangle_array[MAX_POINT_PER_BRUSH];
 		unsigned int num_brush_point = 0;
-		vec3 plane_face_array[MAX_BRUSH_PLANE][MAX_POINT_PER_PLANE];
+		static vec3 plane_face_array[MAX_BRUSH_PLANE][MAX_POINT_PER_PLANE];
+		static vec2 plane_face_tex[MAX_BRUSH_PLANE][MAX_POINT_PER_PLANE];
+		static vec2 tex_array[MAX_POINT_PER_BRUSH];
+		unsigned int num_brush_tex = 0;
 		unsigned int num_plane_face[MAX_BRUSH_PLANE] = { 0 };
 		unsigned int arr[MAX_OUTPUT] = { 0 }; // max plane
 		unsigned int output[MAX_OUTPUT] = { 0 };
@@ -2636,6 +2642,41 @@ void RadiantMap::intersect_quads()
 
 			//sort_point(&plane_face_array[j][0], num_plane_face[j], quadent.quadbrush[i].quadplane[j].plane.normal);
 
+
+
+			vec3 x(1.0, 0.0, 0.0);
+			vec3 y(0.0, 1.0, 0.0);
+			vec3 z(0.0, 0.0, 1.0);
+
+			// just set some texture coordinates along the plane
+			for (int k = 0; k < num_plane_face[j]; k++)
+			{
+				float dotx = fabs(quadent.quadbrush[i].quadplane[j].plane.normal * x);
+				float doty = fabs(quadent.quadbrush[i].quadplane[j].plane.normal * y);
+				float dotz = fabs(quadent.quadbrush[i].quadplane[j].plane.normal * z);
+
+				if ( dotx >= 0.98)
+				{
+					plane_face_tex[j][k].x = point.x / 128;
+					plane_face_tex[j][k].y = point.y / 128;
+				}
+
+				if ( doty >= 0.98)
+				{
+					plane_face_tex[j][k].x = point.x / 128;
+					plane_face_tex[j][k].y = point.y / 128;
+				}
+
+				if ( dotz >= 0.98)
+				{
+					plane_face_tex[j][k].x = point.x / 128;
+					plane_face_tex[j][k].y = point.y / 128;
+				}
+
+				tex_array[num_brush_tex++] = plane_face_tex[j][k];
+
+			}
+
 			// BowyerWatson can be slow, so dont use it on basic stuff (using it on everything cause the first method just isn't always correct)
 			if (num_plane_face[j] <= 3)
 			{
@@ -2677,6 +2718,10 @@ void RadiantMap::intersect_quads()
 			quadent.quadbrush[i].vert_array[k].position.x = triangle_array[k].x;
 			quadent.quadbrush[i].vert_array[k].position.y = triangle_array[k].z;
 			quadent.quadbrush[i].vert_array[k].position.z = -triangle_array[k].y;
+
+			quadent.quadbrush[i].vert_array[k].texCoord0 = tex_array[k];
+			quadent.quadbrush[i].vert_array[k].texCoord1 = tex_array[k];
+
 		}
 
 		quadent.quadbrush[i].num_index = num_brush_point;

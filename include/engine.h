@@ -238,6 +238,10 @@ public:
 	void render_to_framebuffer(double last_frametime);
 	void set_dynamic_resolution(double last_frametime);
 
+
+
+	void render_brushes(bool lights);
+
 	void hitscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light = false);
 	void rayscan(vec3 &origin, vec3 &dir, int *index_list, int &num_index, int self, float range, bool light);
 	void load_md5();
@@ -350,6 +354,11 @@ public:
 	vector<Entity *>	entity_list;
 
 
+	// map shadow volumes
+	RadiantMap radmap;
+	ShadowVolume *shadow;
+	unsigned int num_shadow_volume;
+	bool enable_map_brush_shadow;
 
 
 //console flags

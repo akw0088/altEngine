@@ -36,7 +36,6 @@ public:
 	void AddEdge(int *pEdge, unsigned int &num_edges, int v0, int v1);
 	int render(Graphics &gfx);
 	void destroy(Graphics &gfx);
-	void fix_winding(vec3 *triangle_array, int num_triangle, vec3 &normal);
 
 	matrix3 morientation;
 	vec3 position;

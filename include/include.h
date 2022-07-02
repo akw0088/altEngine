@@ -267,6 +267,7 @@ using namespace std;
 #include "ent_constructable.h"
 #include "ent_vehicle.h"
 #include "cloth.h"
+#include "radiantmap.h"
 
 #include "sin_table.h"
 #include "common.h"

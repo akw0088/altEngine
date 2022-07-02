@@ -59,37 +59,41 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 	unsigned int num_edge = 0;
 	num_vert = 0;
 
-	if (num_face * 9 > alloc_vert)
+	if (num_face >= alloc_vert)
 	{
 		if (vert_array != NULL)
+		{
 			delete[] vert_array;
+			vert_array = NULL;
+		}
 
 		if (index_array != NULL)
+		{
 			delete[] index_array;
+			index_array = NULL;
+		}
 
 		if (pEdges != NULL)
-			delete[] pEdges;
-
-
-		vert_array = new vertex_t[num_face * 9];
-		index_array = new unsigned int [num_face * 9];
-		pEdges = new int[num_face * 9];
-
-		alloc_vert = num_face * 9;
-
-		for (unsigned int i = 0; i < num_face * 9; i++)
 		{
-			index_array[i] = i;
+			delete[] pEdges;
+			pEdges = NULL;
 		}
+
+
+		pEdges = new int[num_face * 2];
+
+		alloc_vert = num_face;
+
+
 
 	}
 
 	// For each face
-	for (unsigned int i = 0; i < num_face; i++)
+	for (unsigned int i = 0; i < num_face; i += 3)
 	{
-		unsigned int wFace0 = pIndex[3 * i + 0];
-		unsigned int wFace1 = pIndex[3 * i + 1];
-		unsigned int wFace2 = pIndex[3 * i + 2];
+		unsigned int wFace0 = pIndex[i + 0];
+		unsigned int wFace1 = pIndex[i + 1];
+		unsigned int wFace2 = pIndex[i + 2];
 
 		vec3 v0 = pVertex[wFace0].position;
 		vec3 v1 = pVertex[wFace1].position;
@@ -109,21 +113,30 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 	}
 
 
+	// two triangles added per edge
+	vert_array = new vertex_t[num_face + num_edge * 6];
+	index_array = new unsigned int[num_face + num_edge * 6];
 
-	vec3 far_cap[16384];
+	for (unsigned int i = 0; i < num_face + num_edge * 6; i++)
+	{
+		index_array[i] = i;
+	}
+
+
+	static vec3 far_cap[16384];
 	unsigned int num_far_cap = 0;
 
 
-	vec3 near_cap[16384];
+	static vec3 near_cap[16384];
 	unsigned int num_near_cap = 0;
 
 
 	// For each face, keep the ones facing the light as the near cap
-	for (unsigned int i = 0; i < num_face; i++)
+	for (unsigned int i = 0; i < num_face; i += 3)
 	{
-		int wFace0 = pIndex[3 * i + 0];
-		int wFace1 = pIndex[3 * i + 1];
-		int wFace2 = pIndex[3 * i + 2];
+		int wFace0 = pIndex[i + 0];
+		int wFace1 = pIndex[i + 1];
+		int wFace2 = pIndex[i + 2];
 
 		vec3 v0 = pVertex[wFace0].position;
 		vec3 v1 = pVertex[wFace1].position;
@@ -154,10 +167,10 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 
 	}
 
-	for (int i = 0; i < num_edge; i++)
+	for (unsigned int i = 0; i < num_edge; i += 2)
 	{
-		vec3 v1 = pVertex[pEdges[2 * i + 0]].position;
-		vec3 v2 = pVertex[pEdges[2 * i + 1]].position;
+		vec3 v1 = pVertex[pEdges[i + 0]].position;
+		vec3 v2 = pVertex[pEdges[i + 1]].position;
 		vec3 v3 = v1 - vLight * 2048;
 		vec3 v4 = v2 - vLight * 2048;
 
@@ -200,9 +213,19 @@ int ShadowVolume::CreateVolume(Graphics &gfx, vertex_t *pVertex, unsigned int *p
 		ibo = -1;
 	}
 
+
 	vbo = gfx.CreateVertexBuffer(vert_array, num_vert);
 	ibo = gfx.CreateIndexBuffer(index_array, num_vert);
 
+
+	/*
+	delete[] vert_array;
+	vert_array = NULL;
+	delete[] index_array;
+	index_array = NULL;
+	delete[] pEdges;
+	pEdges = NULL;
+*/
 
 	return 0;
 }

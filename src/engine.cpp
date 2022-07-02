@@ -154,6 +154,7 @@ Engine::Engine() :
 
 	memset(shader_list, 0, sizeof(shader_list));
 	memset(hash_result, 0, sizeof(hash_result));
+	enable_map_brush_shadow = true;
 	
 #ifdef OPENGL
 	render_mode = MODE_INDIRECT; // Render to Frame Buffer Object (renders to texture)
@@ -975,6 +976,43 @@ void Engine::load(char *level)
 	{
 		netcode.report_master();
 	}
+
+
+
+
+	// map shadow volumes
+	FILE *outfile = fopen("nul", "w");
+
+
+	if (strstr(q3map.map_name, "q3tourney2") != 0)
+	{
+		printf("Loading Brush Volumes...\r\n");
+		if (radmap.load("media/maps/q3tourney2_saved_no_sky.map", outfile) == 0)
+		{
+			radmap.allocate_quads();
+			radmap.generate_quads();
+			//radmap.clip_quads();
+			radmap.intersect_quads();
+			//radmap.intersect_bigbox();
+
+
+
+			printf("Creating Shadow Volumes...\r\n");
+			shadow = new ShadowVolume[radmap.radent[0].num_brush];
+			num_shadow_volume = radmap.radent[0].num_brush;
+
+			vec3 vLight(0.0, 1.0, 0.0);
+			//create gfx buffers per brush
+			for (unsigned int i = 0; i < radmap.radent[0].num_brush; i++)
+			{
+				radmap.quadent.quadbrush[i].vbo = gfx.CreateVertexBuffer(radmap.quadent.quadbrush[i].vert_array, radmap.quadent.quadbrush[i].num_vert);
+				radmap.quadent.quadbrush[i].ibo = gfx.CreateIndexBuffer(radmap.quadent.quadbrush[i].index_array, radmap.quadent.quadbrush[i].num_index);
+				shadow[i].CreateVolume(gfx, radmap.quadent.quadbrush[i].vert_array, radmap.quadent.quadbrush[i].index_array, radmap.quadent.quadbrush[i].num_index, vLight);
+			}
+		}
+
+	}
+
 
 	console("flyby");
 }
@@ -1907,6 +1945,42 @@ void Engine::set_dynamic_resolution(double last_frametime)
 }
 
 
+
+void Engine::render_brushes(bool lights)
+{
+	vec3 offset(0.0f, 0.0f, 0.0f);
+
+	matrix4 transformation;
+
+
+
+	int player = find_type(ENT_PLAYER, 0);
+	if (player != -1)
+	{
+		entity_list[player]->rigid->frame2ent(&camera_frame, input);
+		camera_frame.set(transformation);
+		camera_frame.pos = entity_list[player]->position;
+	}
+
+	camera_frame.set(transformation);
+	matrix4 mvp = transformation * projection;
+
+
+
+	global.Select();
+	global.Params(mvp);
+	gfx.SelectTexture(0, no_tex);
+
+
+	for (unsigned int i = 0; i < radmap.radent[0].num_brush; i++)
+	{
+		gfx.SelectIndexBuffer(radmap.quadent.quadbrush[i].ibo);
+		gfx.SelectVertexBuffer(radmap.quadent.quadbrush[i].vbo);
+		gfx.DrawArrayTri(0, 0, radmap.quadent.quadbrush[i].num_index, radmap.quadent.quadbrush[i].num_vert);
+	}
+}
+
+
 ///=============================================================================
 /// Function: render_to_framebuffer
 ///=============================================================================
@@ -1934,7 +2008,8 @@ void Engine::render_to_framebuffer(double last_frametime)
 		// Depth PASS Stencil Shadows -- using two sided stencil
 		//(allows single call to draw shadow volumes instead of two)
 		gfx.clear();
-		render_scene(false); // render without lights, fill stencil mask, render with lights
+		render_scene(false); // render without lights (also fill z-buffer), fill stencil mask, render with lights
+		//render_brushes(false);
 
 
 		gfx.Depth(false); // turn off depth writes
@@ -1942,6 +2017,10 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.CullFace(NONE);
 		gfx.Stencil(true);
 
+
+
+		// using two sided stencil, set different operations for front faces and back faces
+		// allows us to render shadow volumes just once instead of twice for z-fail
 		gfx.TwoSidedStencilOp(BACKFACE, KEEP, KEEP, DECR_WRAP);
 		gfx.TwoSidedStencilOp(FRONTFACE, KEEP, KEEP, INCR_WRAP);
 		gfx.StencilFunc(ALWAYS, 0, ~0);
@@ -1954,11 +2033,11 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.StencilOp(KEEP, KEEP, KEEP);
 
 		//all lit surfaces will correspond to a 0 in the stencil buffer
-		//all shadowed surfaces will be one
+		//all shadowed surfaces will be negative
 		gfx.StencilFunc(GEQUAL, 0, ~0);
 		// render with lights
-		//			gfx.cleardepth();
-		gfx.CullFace(3);
+		gfx.CullFace(3); // enable face culling
+		gfx.CullFace(BACKFACE);
 
 
 		if (shadowmaps)
@@ -2248,7 +2327,11 @@ void Engine::render_scene(bool lights)
 	if (lights == false)
 	{
 		temp = mlight2.m_brightness;
-		mlight2.set_brightness(0.75f - 1.0f);
+		mlight2.set_exposure(0.5);
+	}
+	else
+	{
+		mlight2.set_exposure(1.0);
 	}
 
 	mlight2.Select();
@@ -3044,11 +3127,49 @@ void Engine::render_shadow_volumes()
 
 	matrix4 mvp = transformation * projection;
 	global.Params(mvp);
+
+
+
+#if 0
 	for (unsigned int i = max_dynamic; i < entity_list.size(); i++)
 	{
 		if (entity_list[i]->light)
 			entity_list[i]->light->render_map_shadowvol(gfx);
 	}
+#endif
+
+
+	// map shadow volumes from brushes
+	bool update_shadow_volumes = false;
+
+
+	if (enable_map_brush_shadow)
+	{
+		for (unsigned int i = 0; i < radmap.radent[0].num_brush; i++)
+		{
+			//		if (i == debug_brush)
+			{
+				if (update_shadow_volumes/* && keyboard.control == false*/)
+				{
+					shadow[i].CreateVolume(gfx,
+						radmap.quadent.quadbrush[i].vert_array,
+						radmap.quadent.quadbrush[i].index_array,
+						radmap.quadent.quadbrush[i].num_index,
+						vec3(0.01, 1.0, 0.01));
+				}
+
+				gfx.Blend(true);
+				shadow[i].render(gfx);
+				gfx.Blend(false);
+
+
+
+				//			break;
+			}
+		}
+	}
+
+
 	
 //	q3map.RenderShadowVolumes(gfx, camera_frame.pos, current_light);
 
@@ -5489,6 +5610,7 @@ void Engine::resize(int width, int height)
 	sprintf(menu.data.window, "%dx%d", width, height);
 
 	projection.perspective(fov, (float)width / height, zNear, zFar, inf);
+//	projection.ortho(-width/2.0f, width/2.0f, -height/2.0f, height/2.0f, -2001.0f, 2001.0);
 
 
 	fb_width = (unsigned int)(width * res_scale);

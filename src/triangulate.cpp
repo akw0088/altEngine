@@ -1,6 +1,10 @@
 #include "triangulate.h"
 
 
+#define MAX(x,y) ((x) > (y) ? (x) : (y))
+#define MIN(x,y) ((x) < (y) ? (x) : (y))
+
+
 #ifdef WIN32
 
 extern int debug_voronoi;
