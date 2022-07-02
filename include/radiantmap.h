@@ -196,11 +196,13 @@ class RadiantMap
 		quadplane_t *quadplane;
 		unsigned int num_quadplane;
 
-		vec3 *vert_array;
+		vertex_t *vert_array;
 		unsigned int num_vert;
+		int vbo;
 
 		unsigned int *index_array;
 		unsigned int num_index;
+		int ibo;
 	} quadbrush_t;
 
 	typedef struct

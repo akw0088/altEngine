@@ -1638,9 +1638,9 @@ int RadiantMap::save(char *map, FILE *output)
 				brushplane_t *brushplane = &radent[i].brush[j].plane[k];
 
 				fprintf(output, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f %d %d %d\r\n",
-					brushplane->v1[0], brushplane->v1[1], brushplane->v1[2],
-					brushplane->v2[0], brushplane->v2[1], brushplane->v2[2],
-					brushplane->v3[0], brushplane->v3[1], brushplane->v3[2],
+					(int)brushplane->v1[0], (int)brushplane->v1[1], (int)brushplane->v1[2],
+					(int)brushplane->v2[0], (int)brushplane->v2[1], (int)brushplane->v2[2],
+					(int)brushplane->v3[0], (int)brushplane->v3[1], (int)brushplane->v3[2],
 					brushplane->name,
 					brushplane->xoffset, brushplane->yoffset,
 					brushplane->rotation,
