@@ -16,7 +16,7 @@
 /// File: triangulate.cpp
 ///=============================================================================
 /// This class will triangulate a set of points on a plane using 
-/// BowyerWatson / Delanay Triangles
+/// BowyerWatson / Delaunay Triangles
 ///
 /// The points can be in any order
 ///
