@@ -1,3 +1,50 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+
+///=============================================================================
+/// File: radiantmap.cpp
+///=============================================================================
+/// This class will load a .map file from gtkradiant qeradiant or similar
+/// Works with quake1, quake2, quake3 .map files function load_v1
+/// Works with doom3, quake4 .map files function load_v2
+/// Works with rage .map files load_v3
+///
+/// Note that this will only load brushes and triangulate brushes
+/// if you are interested in bezier surfaces (patchDef2/patchDef3)
+/// the q3bsp class will triangulate those, but from the BSP file
+/// 
+/// My intent for this was really to do the BSP / VIS process myself
+/// But having convex volumes for shadow volume generation is a nice side effect
+/// I could probably work with the brush definitions in the .bsp file though
+///
+/// But q3map2 can convert a .bsp file to a .map file pretty well
+/// saving again with gtkradiant helps as q3map2 does things a bit differently
+///
+/// radent contains binary data as read from the .map file
+///
+/// quadent contains triangulated output, I wanted to keep generated items
+/// separate from what was read in
+///
+/// quadbrush_t has an vbo and ibo index, but all GPU buffers should be
+/// generated *outside* of this class in order to keep it portable and
+/// not tied to a specific graphics library
+///
+/// Accepts .map file
+/// outputs triangulated brushes
+///=============================================================================
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,14 +63,37 @@ using namespace std;
 #define MIN(x,y) ((x) < (y) ? (x) : (y))
 
 
-
+///=============================================================================
+/// Function: RadiantMap
+///=============================================================================
+/// Description: Constructor for RadiantMap class
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 RadiantMap::RadiantMap()
 {
 	radent = NULL;
 	num_ent = 0;
 }
 
-
+///=============================================================================
+/// Function: trim
+///=============================================================================
+/// Description: trims whitespace for parsing lines in place
+///
+///
+/// Parameters:
+///		data	- string to trim
+///     length	-  length of string
+///
+/// Returns:
+///		None
+///=============================================================================
 int RadiantMap::trim(char *data, int length)
 {
 	int pos = 0;
@@ -41,6 +111,20 @@ int RadiantMap::trim(char *data, int length)
 }
 
 
+///=============================================================================
+/// Function: trim_copy
+///=============================================================================
+/// Description: trims whitespace for parsing lines makes copy
+///
+///
+/// Parameters:
+///		data	- string to trim
+///     length	- length of string
+///     output	- output string
+///
+/// Returns:
+///		None
+///=============================================================================
 int RadiantMap::trim_copy(char *data, int length, char *out)
 {
 	int pos = 0;
@@ -57,6 +141,22 @@ int RadiantMap::trim_copy(char *data, int length, char *out)
 	return pos;
 }
 
+///=============================================================================
+/// Function: trim_edges_copy
+///=============================================================================
+/// Description: trims whitespace for parsing lines
+///		this one will only trim from start and end of string
+///     generates a copy so original string is intact
+///
+///
+/// Parameters:
+///		data	- string to trim
+///     length	- length of string
+///     output	- output string
+///
+/// Returns:
+///		None
+///=============================================================================
 int RadiantMap::trim_edges_copy(char *data, int length, char *out)
 {
 	int pos = 0;
@@ -99,7 +199,20 @@ int RadiantMap::trim_edges_copy(char *data, int length, char *out)
 	return pos;
 }
 
-
+///=============================================================================
+/// Function: trim_edges
+///=============================================================================
+/// Description: trims whitespace for parsing lines
+///		this one will only trim from start and end of string
+///
+///
+/// Parameters:
+///		data	- string to trim
+///     length	- length of string
+///
+/// Returns:
+///		None
+///=============================================================================
 int RadiantMap::trim_edges(char *data, int length)
 {
 	int pos = 0;
@@ -146,7 +259,18 @@ int RadiantMap::trim_edges(char *data, int length)
 
 
 
-
+///=============================================================================
+/// Function: parse_brushdef
+///=============================================================================
+/// Description: this will match a brushDef3 token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_brushdef(char *line)
 {
 	if (strstr(line, "brushDef3"))
@@ -159,6 +283,18 @@ int RadiantMap::parse_brushdef(char *line)
 	}
 }
 
+///=============================================================================
+/// Function: parse_patch2
+///=============================================================================
+/// Description: this will match a patchDef2 token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_patch2(char *line)
 {
 	if (strcmp(line, "patchDef2\n") == 0)
@@ -171,6 +307,18 @@ int RadiantMap::parse_patch2(char *line)
 	}
 }
 
+///=============================================================================
+/// Function: parse_patch3
+///=============================================================================
+/// Description: this will match a patchDef3 token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_patch3(char *line)
 {
 	if (strstr(line, "patchDef3") != 0)
@@ -185,7 +333,18 @@ int RadiantMap::parse_patch3(char *line)
 
 
 
-
+///=============================================================================
+/// Function: parse_left_brace
+///=============================================================================
+/// Description: this will match a left brace token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_left_brace(char *line)
 {
 
@@ -199,6 +358,43 @@ int RadiantMap::parse_left_brace(char *line)
 	}
 }
 
+///=============================================================================
+/// Function: parse_right_brace
+///=============================================================================
+/// Description: this will match a right brace token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
+int RadiantMap::parse_right_brace(char *line)
+{
+
+	if (line[0] == '}')
+	{
+		return 0;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+///=============================================================================
+/// Function: parse_left_paren
+///=============================================================================
+/// Description: this will match a left paren token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_left_paren(char *line)
 {
 
@@ -212,6 +408,18 @@ int RadiantMap::parse_left_paren(char *line)
 	}
 }
 
+///=============================================================================
+/// Function: parse_right_paren
+///=============================================================================
+/// Description: this will match a right paren token
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_right_paren(char *line)
 {
 
@@ -225,6 +433,21 @@ int RadiantMap::parse_right_paren(char *line)
 	}
 }
 
+///=============================================================================
+/// Function: parse_version
+///=============================================================================
+/// Description: this will match a version line
+///
+/// Version2 - Doom3
+/// Version3 - Quake4 or Rage
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_version(char *line)
 {
 	if (strstr(line, "Version 2"))
@@ -245,19 +468,21 @@ int RadiantMap::parse_version(char *line)
 
 
 
-int RadiantMap::parse_right_brace(char *line)
-{
-
-	if (line[0] == '}')
-	{
-		return 0;
-	}
-	else
-	{
-		return -1;
-	}
-}
-
+///=============================================================================
+/// Function: parse_name
+///=============================================================================
+/// Description: this will match a "name" which is really a comment line
+///
+/// Usually indicates brush number or entity number as output by radiant .map
+/// really kept around for informational purposes, but not extremely necessary
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_name(char *line, brush_name_t *name)
 {
 	int ret = sscanf(line, "// %s %d",
@@ -273,6 +498,20 @@ int RadiantMap::parse_name(char *line, brush_name_t *name)
 	return -1;
 }
 
+///=============================================================================
+/// Function: parse_keyval
+///=============================================================================
+/// Description: this will match a keyvalue pair
+///
+/// So Entities will have keyvalue pairs which are used for a lot of purposes
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_keyval(char *line, keyval_t *keyval)
 {
 	//"classname" "worldspawn"
@@ -289,13 +528,37 @@ int RadiantMap::parse_keyval(char *line, keyval_t *keyval)
 	return -1;
 }
 
+///=============================================================================
+/// Function: parse_plane
+///=============================================================================
+/// Description: this will match a brush plane
+///
+/// Brush planes should have three points on the plane, a texture/shader name
+/// and texture scale/offset information
+/// contnets, flags, values are used for things like CONTENTS_NONSOLID or other
+/// items that are most likely populated by the map compiler
+///
+/// Note that the brush points may not actually be brush verticies
+/// brush points should be integers, but q3map2 converts bsp to floats
+///
+/// idea being we do not definte float/double if we use integer positions
+///
+/// Doom3/Quake4 changed from points to just giving us the plane equation directly
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 {
 	// planex planey planez texture xoff yoff rotatation scalex scaley 
 	//(1816 2080 72) (1744 2264 72) (1744 2080 72) q3f_military/tin -16 0 0 0.500000 0.500000 134217728 0 0
 
 	// quake 3 style
-    // reall the points should be ints, but q3map2 convert makes them floats, opening and saving with radiant fixes it, but floats work too I guess
+    // really the points should be ints, but q3map2 convert makes them floats, opening and saving with radiant fixes it, but floats work too I guess
 	//		( -1024.000 784.000 136.000 ) ( -1024.000 784.000 128.000 ) ( -1024.000 800.000 128.000 ) gothic_trim/pitted_rust 0 0 0 0.5 0.5 0 0 0
 	int ret = sscanf(line, "( %f %f %f ) ( %f %f %f ) ( %f %f %f ) %s %d %d %d %f %f %d %d %d",
 		&brush->v1[0], &brush->v1[1], &brush->v1[2],
@@ -319,7 +582,7 @@ int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 	}
 
 	// quake1 style
-	ret = sscanf(line, "( %d %d %d ) ( %d %d %d ) ( %d %d %d ) %s %d %d %d %f %f",
+	ret = sscanf(line, "( %f %f %f ) ( %f %f %f ) ( %f %f %f ) %s %d %d %d %f %f",
 		&brush->v1[0], &brush->v1[1], &brush->v1[2],
 		&brush->v2[0], &brush->v2[1], &brush->v2[2],
 		&brush->v3[0], &brush->v3[1], &brush->v3[2],
@@ -378,6 +641,20 @@ int RadiantMap::parse_plane(char *line, brushplane_t *brush)
 }
 
 
+///=============================================================================
+/// Function: parse_texture
+///=============================================================================
+/// Description: This will parse a texture for the bezier curves / patchDef
+///
+/// 
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_texture(char *line, char *texture)
 {
 	if (sscanf(line, "%s", texture) == 1)
@@ -386,7 +663,22 @@ int RadiantMap::parse_texture(char *line, char *texture)
 		return -1;
 }
 
-
+///=============================================================================
+/// Function: parse_patch_control
+///=============================================================================
+/// Description: This will parse data from a bezier curve
+///
+/// Should probably rename function as this just defines the width / height
+/// and not the control points themselves
+/// 
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_patch_control(char *line, patch_control_t *control)
 {
 
@@ -428,7 +720,29 @@ int RadiantMap::parse_patch_control(char *line, patch_control_t *control)
 }
 
 
-
+///=============================================================================
+/// Function: parse_patch_points
+///=============================================================================
+/// Description: This will parse data from a bezier curve
+///
+/// This function will read the patch control points
+///
+/// They will be x, y, z, u, v for each point
+/// 
+/// The number of points will be defined by the previously read width / height
+/// where height is the number of points per line
+/// and width is the number of lines
+///
+/// Note: for quake3 at least, all of these can be subdivided into multiple 3x3 patches
+/// sort of like a image kernel / convolution
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero match, non-zero no match
+///=============================================================================
 int RadiantMap::parse_patch_points(char *line, patch_control_t *control, patch_point_t *point)
 {
 	//( ( 2136 2176 360 0 0 ) ( 2160 2176 336 0 0.258900 ) ( 2184 2176 312 0 0.517799 ) )
@@ -597,7 +911,21 @@ int RadiantMap::parse_patch_points(char *line, patch_control_t *control, patch_p
 	return -1;
 }
 
-
+///=============================================================================
+/// Function: print_patch_points
+///=============================================================================
+/// Description: This will output the parsed patch points
+///
+/// We print out in save and while parsing, allows you to do a diff on the output
+/// to be sure that it matches the input
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		zero success, non-zero failure
+///=============================================================================
 int RadiantMap::print_patch_points(patch_control_t *control, patch_point_t *point, FILE *output)
 {
 
@@ -704,6 +1032,21 @@ int RadiantMap::print_patch_points(patch_control_t *control, patch_point_t *poin
 }
 
 
+///=============================================================================
+/// Function: indent
+///=============================================================================
+/// Description: outputs tabs based on level
+///
+/// So this just prints tabs based on the level, which was a count of brace
+/// nesting depth, not necessary, but makes reading the file a bit easier
+///
+///
+/// Parameters:
+///		line	- line from file
+///
+/// Returns:
+///		None
+///=============================================================================
 void RadiantMap::indent(int level, FILE *output)
 {
 	for (int i = 0; i < level; i++)
@@ -713,6 +1056,24 @@ void RadiantMap::indent(int level, FILE *output)
 }
 
 
+///=============================================================================
+/// Function: load
+///=============================================================================
+/// Description: loads a .map file
+///
+/// So this is the first stage of loading, originally this function did everything
+/// but not it sort of detects the map type and then hands it off to a map specific
+/// loader
+///
+///
+/// Parameters:
+///		map	- file to parse
+///     output - file to output what was read 
+///       (output should match input .map file when done)
+///
+/// Returns:
+///		zero success, non-zero failure
+///=============================================================================
 int RadiantMap::load(char *map, FILE *output)
 {
 	FILE *fp = NULL;
@@ -778,6 +1139,22 @@ int RadiantMap::load(char *map, FILE *output)
 }
 
 
+///=============================================================================
+/// Function: load_v1
+///=============================================================================
+/// Description: loads a .map file
+///
+/// This will load quake1, quake2, and quake3 .map files
+///
+///
+/// Parameters:
+///		map	- file to parse
+///     output - file to output what was read 
+///       (output should match input .map file when done)
+///
+/// Returns:
+///		zero success, non-zero failure
+///=============================================================================
 int RadiantMap::load_v1(char *map, FILE *output)
 {
 	FILE *fp = NULL;
@@ -1023,26 +1400,6 @@ int RadiantMap::load_v1(char *map, FILE *output)
 			{
 				indent(level, output);
 				fprintf(output, "// %s %d\r\n", name.name, name.number);
-
-
-				//technically this line is optional, some maps might no have commented lines
-				/*
-				if (strcmp(name.name, "entity") == 0)
-				{
-				state = P_ENTITY;
-
-				num_ent++;
-				radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
-
-				radent[num_ent - 1].num_brush = 0;
-				radent[num_ent - 1].num_keyval = 0;
-				radent[num_ent - 1].ent_number = name.number;
-				radent[num_ent - 1].name = name;
-				radent[num_ent - 1].brush = NULL;
-				radent[num_ent - 1].keyval = NULL;
-				}
-				*/
-
 			}
 			else if (parse_left_brace(line) == 0)
 			{
@@ -1091,7 +1448,22 @@ int RadiantMap::load_v1(char *map, FILE *output)
 	return 0;
 }
 
-
+///=============================================================================
+/// Function: load_v2
+///=============================================================================
+/// Description: loads a .map file
+///
+/// This will load doom3 or quake4 .map files
+///
+///
+/// Parameters:
+///		map	- file to parse
+///     output - file to output what was read 
+///       (output should match input .map file when done)
+///
+/// Returns:
+///		zero success, non-zero failure
+///=============================================================================
 int RadiantMap::load_v2(char *map, FILE *output)
 {
 	FILE *fp = NULL;
@@ -1400,26 +1772,6 @@ int RadiantMap::load_v2(char *map, FILE *output)
 			{
 				indent(level, output);
 				fprintf(output, "// %s %d\r\n", name.name, name.number);
-
-
-				//technically this line is optional, some maps might no have commented lines
-				/*
-				if (strcmp(name.name, "entity") == 0)
-				{
-				state = P_ENTITY;
-
-				num_ent++;
-				radent = (radent_t *)realloc(radent, num_ent * sizeof(radent_t));
-
-				radent[num_ent - 1].num_brush = 0;
-				radent[num_ent - 1].num_keyval = 0;
-				radent[num_ent - 1].ent_number = name.number;
-				radent[num_ent - 1].name = name;
-				radent[num_ent - 1].brush = NULL;
-				radent[num_ent - 1].keyval = NULL;
-				}
-				*/
-
 			}
 			else if (parse_left_brace(line) == 0)
 			{
@@ -1479,6 +1831,22 @@ int RadiantMap::load_v2(char *map, FILE *output)
 	return 0;
 }
 
+///=============================================================================
+/// Function: load_v3
+///=============================================================================
+/// Description: loads a .map file
+///
+/// This will load rage .map files (note this parser is pretty bare bones)
+///
+///
+/// Parameters:
+///		map	- file to parse
+///     output - file to output what was read 
+///       (output should match input .map file when done)
+///
+/// Returns:
+///		zero success, non-zero failure
+///=============================================================================
 int RadiantMap::load_v3(char *map, FILE *output)
 {
 	FILE *fp = NULL;
@@ -1612,6 +1980,21 @@ int RadiantMap::load_v3(char *map, FILE *output)
 }
 
 
+///=============================================================================
+/// Function: save
+///=============================================================================
+/// Description: saves a .map file
+///
+/// This will save a .map file from the binary radmap structure
+///
+///
+/// Parameters:
+///		map	- file name to save
+///     output - file pointer
+///
+/// Returns:
+///		zero success, non-zero failure
+///=============================================================================
 int RadiantMap::save(char *map, FILE *output)
 {
 	// save from binary representation
@@ -1693,7 +2076,21 @@ int RadiantMap::save(char *map, FILE *output)
 
 
 
-
+///=============================================================================
+/// Function: intersect_three_planes
+///=============================================================================
+/// Description: Finds the intersection of three planes
+///
+/// Assuming the three planes intersect, we return true and the point
+///
+///
+/// Parameters:
+///		p1, p2, p3 - the planes
+///     point - the output point
+///
+/// Returns:
+///		boolean true if a intersection was found, false if not
+///=============================================================================
 bool RadiantMap::intersect_three_planes(plane_t &p1, plane_t &p2, plane_t &p3, vec3 &point)
 {
 	vec3 cross_p2p3 = vec3::crossproduct(p2.normal, p3.normal);
@@ -1719,12 +2116,43 @@ bool RadiantMap::intersect_three_planes(plane_t &p1, plane_t &p2, plane_t &p3, v
 }
 
 
-
+///=============================================================================
+/// Function: DistPointPlane
+///=============================================================================
+/// Description: Finds the distance of a point to a plane
+///
+/// I used to inline this code, but it's nice to keep the sign consistent
+///
+///
+/// Parameters:
+///		q - the point to check
+///     normal - the plane normal
+///     d - the distance from the origin (plane equation d)
+///
+/// Returns:
+///		float distance of point from plane, negative if on the backside
+///=============================================================================
 float RadiantMap::DistPointPlane(const vec3 &q, const vec3 &normal, const float d)
 {
 	return q * normal - d;
 }
 
+///=============================================================================
+/// Function: intersect_two_points_plane2
+///=============================================================================
+/// Description: This intersects a plane with a line segment
+///
+///
+///
+/// Parameters:
+///		plane - the plane
+///		a - start of line segment
+///		b - end of line segment
+///     result - the point the line segment intersects the plane if it exists
+///
+/// Returns:
+///		zero success, non-zerp failure
+///=============================================================================
 int RadiantMap::intersect_two_points_plane2(const plane_t &plane, const vertex_t &a, const vertex_t &b, vertex_t &result)
 {
 	float da = ((a.position * plane.normal) - plane.d) / plane.normal.magnitude();   // distance plane -> point a
@@ -1745,6 +2173,24 @@ int RadiantMap::intersect_two_points_plane2(const plane_t &plane, const vertex_t
 	return 0;
 }
 
+
+///=============================================================================
+/// Function: intersect_two_points_plane
+///=============================================================================
+/// Description: This intersects a plane with a line segment
+///
+/// Same as above, just a different way of doing it, both work
+///
+///
+/// Parameters:
+///		plane - the plane
+///		a - start of line segment
+///		b - end of line segment
+///     result - the point the line segment intersects the plane if it exists
+///
+/// Returns:
+///		zero success, non-zerp failure
+///=============================================================================
 int RadiantMap::intersect_two_points_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, vertex_t &result, float &t)
 {
 	// plane equation
@@ -1781,12 +2227,48 @@ int RadiantMap::intersect_two_points_plane(const plane_t &p, const vertex_t &a, 
 
 
 
-// returns positive if CCW negative if CW winding
+
+
+///=============================================================================
+/// Function: intersect_two_points_plane
+///=============================================================================
+/// Description: finds the signed area of a triangle
+///
+/// Can be used to tell triangle winding if clock wise or counter clockwise
+///
+///
+/// Parameters:
+///		a - triangle point
+///		b - triangle point
+///		c - triangle point
+///
+/// Returns:
+///      returns positive if CCW negative if CW winding
+///=============================================================================
 float RadiantMap::Signed2DTriArea(const vec3 &a, const vec3 &b, const vec3 &c)
 {
 	return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
 }
 
+
+///=============================================================================
+/// Function: intersect_triangle_plane
+///=============================================================================
+/// Description: intersects a triangle with a plane
+///
+/// Used for clipping a mesh one triangle at a time
+///
+///
+/// Parameters:
+///		p - plane normal and d component
+///		a - triangle point
+///		b - triangle point
+///		c - triangle point
+///     result - The new triangle points, may result in two triangles, no triangles, or one triangle
+///
+/// Returns:
+///      zero success, non-zero failure
+///=============================================================================
 int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, const vertex_t &b, const 	vertex_t &c, vertex_t *result)
 {
 	// classify points that are out of plane
@@ -2151,6 +2633,18 @@ int RadiantMap::intersect_triangle_plane(const plane_t &p, const vertex_t &a, co
 }
 
 
+///=============================================================================
+/// Function: allocate_quads
+///=============================================================================
+/// Description: Allocates memory for quadbrush triangulation
+///
+/// After we read the map, we want to triangulate to quad brush
+/// This function will allocate memory for each brush prior to doing so
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::allocate_quads()
 {
 	quadent.num_brush = radent[0].num_brush;
@@ -2170,7 +2664,18 @@ void RadiantMap::allocate_quads()
 	}
 }
 
-
+///=============================================================================
+/// Function: generate_quads
+///=============================================================================
+/// Description:
+///
+/// So this will generate planes from the point definitions
+/// it also generates a quad that represents the plane and expands it in size
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::generate_quads()
 {
 	// Only generate quads for entity 0 (worldspawn)
@@ -2255,7 +2760,21 @@ void RadiantMap::generate_quads()
 	}
 }
 
-// TODO: Test / Fix this func
+
+#if 0
+///=============================================================================
+/// Function: clip_quads
+///=============================================================================
+/// Description:
+///
+/// So this was intentended to be the approach where you clip a large box into
+/// the final brush mesh, but the intersect method works pretty darn good I'm
+/// not sure if I will come back and finish this approach
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::clip_quads()
 {
 	for (unsigned int i = 0; i < radent[0].num_brush; i++)
@@ -2335,11 +2854,23 @@ void RadiantMap::clip_quads()
 		}
 
 	}
-
-
 }
+#endif
 
-// this works for axial boxes now, might need some tweaking for all possible brushes
+///=============================================================================
+/// Function: intersect_quads
+///=============================================================================
+/// Description:
+///
+/// So this will triangulate the brushes by intersecting all unique pairs of
+/// three brush planes. It then triangulates them with Bowyer Watson triangulation
+/// This works 100% perfect, the non-bowyer watson triangulation is faster, but not
+/// correct for all cases (like 95% correct though)
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::intersect_quads()
 {
 	unsigned int max_brush_planes = 0;
@@ -2743,6 +3274,18 @@ void RadiantMap::intersect_quads()
 }
 
 
+///=============================================================================
+/// Function: combination_recurse
+///=============================================================================
+/// Description:
+///
+/// To generate the unique combinations of three planes we use nCr
+/// this implements that using a recursive function, this being the recursive part
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::combination_recurse(unsigned int arr[], unsigned int data[], unsigned int start, unsigned int end, unsigned int index, unsigned int r, unsigned int *output, unsigned int &num_out)
 {
 	if (index == r)
@@ -2763,6 +3306,18 @@ void RadiantMap::combination_recurse(unsigned int arr[], unsigned int data[], un
 	}
 }
 
+///=============================================================================
+/// Function: Combination
+///=============================================================================
+/// Description:
+///
+/// To generate the unique combinations of three planes we use nCr
+/// this implements that using a recursive function
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::Combination(unsigned int *arr, unsigned int n, unsigned int r, unsigned int *output, unsigned int &num_out)
 {
 	unsigned int *data = (unsigned int *)malloc(r * sizeof(int));;
@@ -2772,57 +3327,22 @@ void RadiantMap::Combination(unsigned int *arr, unsigned int n, unsigned int r, 
 }
 
 
-bool RadiantMap::is_clockwise(const vec3 &a, const vec3 &b, const vec3 &center, const vec3 &normal)
-{
-	vec3 v1 = a - center;
-	vec3 v2 = b - center;
-
-	vec3 v = vec3::crossproduct(v1, v2);
-
-	float dot = normal * v;
-
-	if (dot < 0)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-
-
-void RadiantMap::sort_point(vec3 *point_array, unsigned int num_point, const vec3 &normal)
-{
-	vec3 center(0.0f, 0.0f, 0.0f);
-
-	if (num_point < 5)
-		return;
-
-	for (unsigned int i = 0; i < num_point; i++)
-	{
-		center += point_array[i];
-	}
-	center = center / (float)num_point;
-
-
-	vec3 a = point_array[0];
-
-	for (unsigned int i = 1; i < num_point; i++)
-	{
-		if (!is_clockwise(a, point_array[i], center, normal))
-		{
-			vec3 temp = point_array[i];
-			for (unsigned int k = i; k < num_point; k++)
-			{
-				point_array[k] = point_array[k + 1];
-			}
-			point_array[num_point - 1] = temp;
-		}
-	}
-}
-
+///=============================================================================
+/// Function: triangle_fan_to_array
+///=============================================================================
+/// Description:
+///
+/// This will convert a triangle fan to an array
+///
+/// Note that this function was a bit modified to better work with the vertex
+/// ordering we got from the intersection output. So change it back for a generic
+/// conversion of fan to triangle array
+///
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal)
 {
 	num_triangle = 0;
@@ -2906,6 +3426,22 @@ void RadiantMap::triangle_fan_to_array(vec3 *point_array, unsigned int num_point
 	}
 }
 
+
+///=============================================================================
+/// Function: triangle_strip_to_array
+///=============================================================================
+/// Description:
+///
+/// This will convert a triangle strip to an array
+///
+/// A triangle strip will reuse the previous two verticies in creation of the next
+/// vertex this undoes that and just generates 3 points defining a single triangle
+///
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::triangle_strip_to_array(vec3 *point_array, unsigned int num_point, vec3 *triangle_array, unsigned int &num_triangle, vec3 &normal)
 {
 	num_triangle = 0;
@@ -2971,355 +3507,21 @@ void RadiantMap::triangle_strip_to_array(vec3 *point_array, unsigned int num_poi
 }
 
 
-
-// So this is good for axial 6 plane brushes, but not really for much else
-void RadiantMap::intersect_bigbox()
-{
-	for (unsigned int i = 0; i < radent[0].num_brush; i++)
-	{
-		// idea is you have a large box, then clip that down to the brush
-		vec3 aabb[8];
-		vec3 output[8];
-		vec3 original[8];
-		int backfront = -1;
-
-
-		vec3 intermediate[6][8];
-
-
-		int intersection_count = 0;
-		int intersection_test_count = 0;
-
-
-		// Original copy so we can ignore diagonals
-		original[0] = vec3(-8192, -8192, -8192);
-		original[7] = vec3(8192, 8192, 8192);
-		original[1] = vec3(original[0].x, original[0].y, original[7].z);
-		original[2] = vec3(original[0].x, original[7].y, original[0].z);
-		original[3] = vec3(original[0].x, original[7].y, original[7].z);
-		original[4] = vec3(original[7].x, original[0].y, original[0].z);
-		original[5] = vec3(original[7].x, original[0].y, original[7].z);
-		original[6] = vec3(original[7].x, original[7].y, original[0].z);
-
-		// GL_TRAINGLES outward facing faces
-		int	index_array[36] = {
-			2,1,0,
-			2,3,1,
-			5,1,7,
-			1,3,7,
-			7,6,5,
-			6,4,5,
-			6,2,0,
-			4,6,0,
-			1,4,0,
-			5,4,1,
-			6,3,2,
-			6,7,3
-		};
-
-		vec2 texcoords[36] =
-		{
-			// Front face
-			vec2(0.0f, 0.0f),			//2
-			vec2(0.0f, -1.0f),			//1
-			vec2(-1.0f, -1.0f),			//3
-
-			vec2(0.0f, 0.0f),			//2
-			vec2(-1.0f, -1.0f),			//3
-			vec2(-1.0f, 0.0f),			//4
-
-
-			// Back face
-			vec2(0.0f, 0.0f),			//2
-			vec2(0.0f, 1.0f),			//1
-			vec2(1.0f, 1.0f),			//3
-
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 1.0f),			//3
-			vec2(1.0f, 0.0f),			//4
-
-			// Left face
-			vec2(0.0f, -1.0f),			//1
-			vec2(0.0f, 0.0f),			//2
-			vec2(-1.0f, -1.0f),			//3
-
-			vec2(0.0f, 0.0f),			//2
-			vec2(-1.0f, 0.0f),			//4
-			vec2(-1.0f, -1.0f),			//3
-
-			// Right face
-			vec2(0.0f, 1.0f),			//1
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 1.0f),			//3
-
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 0.0f),			//4
-			vec2(1.0f, 1.0f),			//3
-
-			// Top face
-			vec2(0.0f, 1.0f),			//1
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 1.0f),			//3
-
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 0.0f),			//4
-			vec2(1.0f, 1.0f),			//3
-
-			// Bottom face
-			vec2(0.0f, 1.0f),			//1
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 1.0f),			//3
-
-			vec2(0.0f, 0.0f),			//2
-			vec2(1.0f, 0.0f),			//4
-			vec2(1.0f, 1.0f),			//3
-		};
-
-
-		// Eight corners of a big box
-		output[0] = vec3(-8192, -8192, -8192);
-		output[7] = vec3(8192, 8192, 8192);
-		output[1] = vec3(output[0].x, output[0].y, output[7].z);
-		output[2] = vec3(output[0].x, output[7].y, output[0].z);
-		output[3] = vec3(output[0].x, output[7].y, output[7].z);
-		output[4] = vec3(output[7].x, output[0].y, output[0].z);
-		output[5] = vec3(output[7].x, output[0].y, output[7].z);
-		output[6] = vec3(output[7].x, output[7].y, output[0].z);
-
-		// for each plane
-		for (int j = 0; j < 6; j++)
-		{
-			// for each box point
-			for (int k = 0; k < 8; k++)
-			{
-				intermediate[j][k] = output[k];
-			}
-		}
-
-
-		// Good pairs should be (edges) (essentiall 3 axis from point)
-		// 0:1, 0:2, 0:4
-		// 1:0, 1:3, 1:5
-		// 2:0, 2:3, 2:6
-		// 3:1, 3:2, 3:7
-		// 4:0, 4:5, 4:6
-		// 5:1, 5:4, 5:7
-		// 6:2, 6:4, 6:7
-		// 7:3, 7:5, 7:6
-
-		// 24 edges
-		// 12 unique edges
-		int set_size = 8;
-		for (unsigned int j = 0; j < radent[0].brush[i].num_plane; j++)
-		{
-			// Eight corners of a big box
-			aabb[0] = vec3(-8192, -8192, -8192);
-			aabb[7] = vec3(8192, 8192, 8192);
-			aabb[1] = vec3(aabb[0].x, aabb[0].y, aabb[7].z);
-			aabb[2] = vec3(aabb[0].x, aabb[7].y, aabb[0].z);
-			aabb[3] = vec3(aabb[0].x, aabb[7].y, aabb[7].z);
-			aabb[4] = vec3(aabb[7].x, aabb[0].y, aabb[0].z);
-			aabb[5] = vec3(aabb[7].x, aabb[0].y, aabb[7].z);
-			aabb[6] = vec3(aabb[7].x, aabb[7].y, aabb[0].z);
-
-			printf("Plane %d normal %f %f %f d %f\r\n", j,
-				quadent.quadbrush[i].quadplane[j].plane.normal.x,
-				quadent.quadbrush[i].quadplane[j].plane.normal.y,
-				quadent.quadbrush[i].quadplane[j].plane.normal.z,
-				quadent.quadbrush[i].quadplane[j].plane.d);
-
-
-			// (n+r-1!) / (r! * (n-1)!) = 36
-			for (int k = 0; k < set_size * set_size; k++)
-			{
-				int x = k / set_size;
-				int y = k % set_size;
-
-
-
-				// avoid identical pairs
-				if (x == y)
-				{
-					//printf("%d:%d skipping identical point\r\n", x, y);
-					continue;
-				}
-
-				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
-				{
-					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
-					{
-						//printf("%d:%d both points are on front side of plane\r\n", x, y);
-						continue;
-					}
-				}
-
-
-				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
-				{
-					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
-					{
-						//printf("%d:%d both points are on back side of plane\r\n", x, y);
-						continue;
-					}
-				}
-
-				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
-				{
-					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
-					{
-						//printf("%d:%d crosses plane back:front\r\n", x, y);
-						backfront = 1;
-					}
-				}
-
-				if (DistPointPlane(original[x], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) > 0)
-				{
-					if (DistPointPlane(original[y], quadent.quadbrush[i].quadplane[j].plane.normal, quadent.quadbrush[i].quadplane[j].plane.d) < 0)
-					{
-						//printf("%d:%d crosses plane front:back\r\n", x, y);
-						backfront = 0;
-					}
-				}
-
-
-				vec3 o = original[x] - original[y];
-				if (fabs(o.magnitude()) > 2 * 8192 * 1.2) // will be sqrt(2) bigger or more 1.4142
-				{
-					// avoid diagonal pairs
-					//printf("%d:%d vector magnitude greater than a side (edge is a diagonal) %f\r\n", x, y, o.magnitude());
-					continue;
-				}
-				else
-				{
-					//printf("%d:%d vector magnitude in range (edge not a diagnol) %f\r\n", x, y, o.magnitude());
-				}
-
-
-				vec3 v = aabb[x] - aabb[y];
-				if (fabs(v * quadent.quadbrush[i].quadplane[j].plane.normal) < 0.001f)
-				{
-					// avoid parallel checks
-					//printf("%d:%d vector is parallel to plane %d\r\n", x, y, j);
-					continue;
-				}
-
-				// move from a to b, result is new b
-				vertex_t a;
-				vertex_t b;
-				vertex_t result;
-				float t = -1.0f;
-
-				if (backfront)
-				{
-					a.position = aabb[x];
-					b.position = aabb[y];
-				}
-				else
-				{
-					a.position = aabb[y];
-					b.position = aabb[x];
-				}
-
-
-
-
-				intersection_test_count++;
-				if (intersect_two_points_plane(quadent.quadbrush[i].quadplane[j].plane, a, b, result, t) == 0)
-				{
-					intersection_count++;
-					printf("intersection %d:%d with plane %d at time %f\r\n", x, y, j, t);
-					b.position = result.position;
-
-
-					v = a.position - b.position;
-					// grid is in increments of 8, so we should have moved some distance (avoid zero length sides)
-					if (v.magnitude() > 4.0)
-					{
-						//aabb[k % set_size] = a.position;
-						int save = -1;
-
-
-						if (backfront)
-						{
-							save = y;
-						}
-						else
-						{
-							save = x;
-						}
-
-
-						aabb[save] = result.position;
-						printf("\tintersection found aabb[%d]=(%f %f %f)\r\n", save, b.position.x, b.position.y, b.position.z);
-
-
-						if (fabs(aabb[save].x) < fabs(intermediate[j][save].x))
-							intermediate[j][save].x = aabb[save].x;
-						if (fabs(aabb[save].y) < fabs(intermediate[j][save].y))
-							intermediate[j][save].y = aabb[save].y;
-						if (fabs(aabb[save].z) < fabs(intermediate[j][save].z))
-							intermediate[j][save].z = aabb[save].z;
-
-
-
-						if (fabs(aabb[save].x) < fabs(output[save].x))
-							output[save].x = aabb[save].x;
-						if (fabs(aabb[save].y) < fabs(output[save].y))
-							output[save].y = aabb[save].y;
-						if (fabs(aabb[save].z) < fabs(output[save].z))
-							output[save].z = aabb[save].z;
-					}
-					else
-					{
-						printf("Warning: Intersection left small delta\r\n");
-					}
-
-				}
-				else
-				{
-					//					printf("\tdid not intersect\r\n");
-				}
-			}
-
-
-			printf("tested %d intersected %d\r\n", intersection_test_count, intersection_count);
-			printf("=============================================\r\n");
-			for (int k = 0; k < 8; k++)
-			{
-				//each aabb should now match brush
-				printf("aabb[%d]=(%f %f %f)\r\n", j, intermediate[j][k].x, intermediate[j][k].y, intermediate[j][k].z);
-			}
-			printf("=============================================\r\n");
-
-		}
-
-
-		quadent.quadbrush[i].num_vert = 8;
-		quadent.quadbrush[i].vert_array = (vertex_t *)realloc(quadent.quadbrush[i].vert_array, (quadent.quadbrush[i].num_vert) * sizeof(vertex_t));
-
-		for (unsigned int k = 0; k < quadent.quadbrush[i].num_vert; k++)
-		{
-			//each aabb should now match brush
-			printf("(%f %f %f)\r\n", output[k].x, output[k].y, output[k].z);
-
-			quadent.quadbrush[i].vert_array[k].position = output[quadent.quadbrush[i].num_vert - k - 1];
-
-		}
-
-		quadent.quadbrush[i].num_index = 36;
-		quadent.quadbrush[i].index_array = (unsigned int *)realloc(quadent.quadbrush[i].index_array, (quadent.quadbrush[i].num_index) * sizeof(int));
-
-		for (unsigned int k = 0; k < quadent.quadbrush[i].num_index; k++)
-		{
-			quadent.quadbrush[i].index_array[k] = index_array[k];
-		}
-		printf("done with brush %d\r\n", i);
-
-	}
-}
-
-
-
+///=============================================================================
+/// Function: fix_winding
+///=============================================================================
+/// Description:
+///
+/// This will ensure vertex windings match the passed normal
+///
+/// Done just in case, I'm not 100% sure if BowyerWatson's output tracks
+/// the windings as nicely as it probably should
+///
+///
+///
+/// Returns:
+///      None
+///=============================================================================
 void RadiantMap::fix_winding(vec3 *triangle_array, int num_triangle, vec3 &normal)
 {
 	for (int k = 0; k < num_triangle; k += 3)

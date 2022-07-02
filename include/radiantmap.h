@@ -1,3 +1,49 @@
+//=============================================================================
+// This file is part of the altEngine distribution
+// (https://github.com/akw0088/altEngine/)
+// Copyright (c) 2018 Alexander Wright All Rights Reserved.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON - INFRINGEMENT.IN NO EVENT
+// SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+// FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+// DEALINGS IN THE SOFTWARE.
+//=============================================================================
+
+///=============================================================================
+/// File: radiantmap.h
+///=============================================================================
+/// This class will load a .map file from gtkradiant qeradiant or similar
+/// Works with quake1, quake2, quake3 .map files function load_v1
+/// Works with doom3, quake4 .map files function load_v2
+/// Works with rage .map files load_v3
+///
+/// Note that this will only load brushes and triangulate brushes
+/// if you are interested in bezier surfaces (patchDef2/patchDef3)
+/// the q3bsp class will triangulate those, but from the BSP file
+/// 
+/// My intent for this was really to do the BSP / VIS process myself
+/// But having convex volumes for shadow volume generation is a nice side effect
+/// I could probably work with the brush definitions in the .bsp file though
+///
+/// But q3map2 can convert a .bsp file to a .map file pretty well
+/// saving again with gtkradiant helps as q3map2 does things a bit differently
+///
+/// radent contains binary data as read from the .map file
+///
+/// quadent contains triangulated output, I wanted to keep generated items
+/// separate from what was read in
+///
+/// quadbrush_t has an vbo and ibo index, but all GPU buffers should be
+/// generated *outside* of this class in order to keep it portable and
+/// not tied to a specific graphics library
+///
+/// Accepts .map file
+/// outputs triangulated brushes
+///=============================================================================
+
 #ifndef RADIANTMAP_H
 #define RADIANTMAP_H
 
@@ -250,17 +296,8 @@ public:
 	// uses parsed data to generate better data for manipulation
 	void generate_quads();
 
-
-	// needs work, although intersect may supersede this
-	// idea is you should be able to clip a box down to the correct brush triangles
-	void clip_quads();
-
-
-	// works for all planes, but triangulation is like 95% correct
+	// works for all brushes
 	void intersect_quads();
-
-	// works for axial planes
-	void intersect_bigbox();
 
 
 private:
@@ -279,11 +316,6 @@ private:
 	// Used to generate the index sets of three planes to intersect for each brush
 	void Combination(unsigned int *arr, unsigned int n, unsigned int r, unsigned int *output, unsigned int &num_out);
 	void combination_recurse(unsigned int arr[], unsigned int data[], unsigned int start, unsigned int end, unsigned int index, unsigned int r, unsigned int *output, unsigned int &num_out);
-
-
-	// feeble attempts to fix winding issues
-	void sort_point(vec3 *point_array, unsigned int num_point, const vec3 &normal);
-	bool is_clockwise(const vec3 &a, const vec3 &b, const vec3 &center, const vec3 &normal);
 
 
 	// generic triangle conversions
