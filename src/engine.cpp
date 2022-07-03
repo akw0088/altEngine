@@ -4104,6 +4104,18 @@ bool Engine::collision_detect(EntRigidBody &body)
 }
 
 
+///=============================================================================
+/// Function: debug_point
+///=============================================================================
+/// Description: This function is used to draw a point in space
+/// with fixed function OpenGL this was easy, little more trouble
+/// with modern opengl as even a single point needs a vertex buffer
+///
+/// Parameters:
+///		Point to add to debug point buffer
+/// Returns:
+/// zero success, non-zero failure
+///=============================================================================
 int Engine::debug_point(vec3 &pos)
 {
 	vertex_t vert[6];
@@ -4144,6 +4156,18 @@ int Engine::debug_point(vec3 &pos)
 }
 
 
+///=============================================================================
+/// Function: debug_vector
+///=============================================================================
+/// Description: This function is used to draw a vector in space
+/// with fixed function OpenGL this was easy, little more trouble
+/// with modern opengl as even a single point needs a vertex buffer
+///
+/// Parameters:
+///		Point to add to debug point buffer
+/// Returns:
+/// zero success, non-zero failure
+///=============================================================================
 int Engine::debug_vector(vec3 &pos, vec3 &dir)
 {
 	vertex_t vert[2];
@@ -4170,7 +4194,18 @@ int Engine::debug_vector(vec3 &pos, vec3 &dir)
 }
 
 
-
+///=============================================================================
+/// Function: debug_vector
+///=============================================================================
+/// Description: This function is used to draw a triangle in space
+/// with fixed function OpenGL this was easy, little more trouble
+/// with modern opengl as even a single point needs a vertex buffer
+///
+/// Parameters:
+///		Point to add to debug point buffer
+/// Returns:
+/// zero success, non-zero failure
+///=============================================================================
 int Engine::debug_triangle(vec3 *triangle)
 {
 	vertex_t vert[6];
@@ -9408,6 +9443,20 @@ void Engine::test_triangle()
 }
 
 
+///=============================================================================
+/// Function: MousetoRay
+///=============================================================================
+/// Description:Think this is suppose to be picking code that uses
+/// old style glu functions, I dont link with GLU so anything glu like is likely
+/// implemented manually
+///
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::MousetoRay(int x, int y, matrix4 &model, matrix4 &proj, const Frame &frame, vec3 &start, vec3 &end, vec3 &dir, int width, int height)
 {
 	// Convert windows upper left coordinates to opengl lower left coorindates
@@ -9426,6 +9475,23 @@ void Engine::MousetoRay(int x, int y, matrix4 &model, matrix4 &proj, const Frame
 }
 
 
+///=============================================================================
+/// Function: Pick
+///=============================================================================
+/// Description: This is the picking code when you enter "pick_mode" in the console
+/// It works fine for the near plane, but the ray to the far plane isn't quite right
+/// I think my mistake was attempting to find a point on the far plane
+/// Seems you can just get a vector at your near plane and follow the ray to the
+/// far plane
+///
+/// console command "pick_mode"
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 {
 	vec2 screen;
@@ -9561,6 +9627,26 @@ void Engine::Pick(int x, int y, int width, int height, Frame &frame)
 
 
 
+///=============================================================================
+/// Function: edit_entity
+///=============================================================================
+/// Description: So this code selects an entity to edit in entity edit mode
+/// allows you to change it's position, and some properties
+/// mainly for lighting you can change intensity, color, and position for
+/// prototyping lights
+///
+/// In console type "edit <entity number>" you can view entity names with 
+/// console command "shownames"
+/// 
+/// You can select the property with the mouse wheel and change with arrow keys
+/// as well as enter and shift
+///
+/// Parameters:
+///		None
+///
+/// Returns:
+///		None
+///=============================================================================
 void Engine::edit_entity(unsigned int index)
 {
 	if (index >= entity_list.size())
