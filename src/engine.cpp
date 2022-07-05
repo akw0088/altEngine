@@ -1001,7 +1001,7 @@ void Engine::load(char *level)
 			shadow = new ShadowVolume[radmap.radent[0].num_brush];
 			num_shadow_volume = radmap.radent[0].num_brush;
 
-			vec3 vLight(0.0, 1.0, 0.0);
+			vec3 vLight(0.0, 10000.0, 0.0);
 			//create gfx buffers per brush
 			for (unsigned int i = 0; i < radmap.radent[0].num_brush; i++)
 			{
@@ -1607,7 +1607,7 @@ void Engine::render(double last_frametime)
 				render_scene(true);
 
 				if (input.scores)
-					render_shadow_volumes();
+					render_shadow_volumes(true);
 
 				gfx.DepthFunc(LESS);
 				gfx.Stencil(false);
@@ -2008,7 +2008,10 @@ void Engine::render_to_framebuffer(double last_frametime)
 		// Depth PASS Stencil Shadows -- using two sided stencil
 		//(allows single call to draw shadow volumes instead of two)
 		gfx.clear();
-		render_scene(false); // render without lights (also fill z-buffer), fill stencil mask, render with lights
+		if (input.scores == false)
+		{
+			render_scene(false); // render without lights (also fill z-buffer), fill stencil mask, render with lights
+		}
 		//render_brushes(false);
 
 
@@ -2040,13 +2043,18 @@ void Engine::render_to_framebuffer(double last_frametime)
 		gfx.CullFace(BACKFACE);
 
 
-		if (shadowmaps)
-			render_scene_using_shadowmap(true);
-		else
-			render_scene(true);
-
 		if (input.scores)
-			render_shadow_volumes();
+		{
+			render_shadow_volumes(true);
+		}
+		else
+		{
+			if (shadowmaps)
+				render_scene_using_shadowmap(true);
+			else
+				render_scene(true);
+		}
+
 
 		gfx.DepthFunc(LESS);
 		gfx.Stencil(false);
@@ -2707,8 +2715,8 @@ void Engine::render_trails(matrix4 &trans)
 			//			vec3 offset = entity_list[i]->position;
 
 			// Undo model orientation
-			quad1 = model->morientation.transpose() * quad1;
-			quad2 = model->morientation.transpose() * quad2;
+			quad1 = model->morientation * quad1;
+			quad2 = model->morientation * quad2;
 
 			particle_render.Select();
 			gfx.SelectTexture(0, particle_tex);
@@ -3099,34 +3107,30 @@ void Engine::render_players(matrix4 &trans, matrix4 &proj, bool lights, bool ren
 /// Parameters:
 ///		None
 ///=============================================================================
-void Engine::render_shadow_volumes()
+void Engine::render_shadow_volumes(bool debug)
 {
 #ifdef SHADOWVOL
+
 	matrix4 transformation;
 	matrix4 matrix;
 
 
-	/*
-	int index = find_type(ENT_PLAYER, 0);
-	if (index != -1)
-	{
-		player = entity_list[index]->player;
-	}
-	*/
 
-//	int player = find_type(ENT_PLAYER, 0);
-//	int current_light = 0;
-//	if (player != -1)
-//	{
-//		current_light = entity_list[player]->player->current_light;
-//	}
+	int player = find_type(ENT_PLAYER, 0);
+	if (player != -1)
+	{
+		entity_list[player]->rigid->frame2ent(&camera_frame, input);
+		camera_frame.set(transformation);
+		camera_frame.pos = entity_list[player]->position;
+	}
+
+	matrix4 mvp = transformation * projection;
+
 
 
 	global.Select();
-	camera_frame.set(transformation);
-
-	matrix4 mvp = transformation * projection;
 	global.Params(mvp);
+	gfx.SelectTexture(0, no_tex);
 
 
 
@@ -3158,11 +3162,7 @@ void Engine::render_shadow_volumes()
 						vec3(0.01, 1.0, 0.01));
 				}
 
-				gfx.Blend(true);
-				shadow[i].render(gfx);
-				gfx.Blend(false);
-
-
+				shadow[i].render(gfx, debug);
 
 				//			break;
 			}
@@ -3198,15 +3198,15 @@ void Engine::render_shadow_volumes()
 						vec3 old_pos = ent->position;
 						matrix3 old_matrix = ent->model->morientation;
 
-						ent->position = ent->light->shadow[j].position;
-						ent->model->morientation = ent->light->shadow[j].morientation;
+//						ent->position = ent->light->shadow[j].position;
+//						ent->model->morientation = ent->light->shadow[j].morientation;
 						ent->model->get_matrix(matrix.m);
 						ent->position = old_pos;
 						ent->model->morientation = old_matrix;
 
 						matrix4 mvp = transformation.premultiply(matrix.m) * projection;
 						global.Params(mvp);
-						ent->light->render_shadow_volume(gfx, j);
+//						ent->light->render_shadow_volume(gfx, j);
 					}
 				}
 			}

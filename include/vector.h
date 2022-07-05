@@ -15,6 +15,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 class vec3;
+class matrix3;
 
 class vec4
 {
@@ -60,6 +61,7 @@ public:
 	vec3 operator-(const vec3 &vector) const;
 	vec3 operator-() const;
 	float operator*(const vec3 &vector) const;
+	vec3 operator*(const matrix3 &mat) const;
 	float operator/(const vec3 &vector) const;
 	vec3 operator*(const float scalar) const;
 	vec3 operator/(const float scalar) const;
@@ -74,6 +76,8 @@ public:
 	
 
 
+
+	static float dotproduct(const vec3 &VecA, const vec3 &VecB);
 	static vec3 crossproduct(const vec3 &VecA, const vec3 &VecB);
 
 	float x;
@@ -104,6 +108,13 @@ public:
 
 	float x, y;
 };
+
+
+
+// for scalar on left side must be outside class
+vec2 operator*(const float &scalar, vec2 const &vec);
+vec3 operator*(const float &scalar, vec3 const &vec);
+vec4 operator*(const float &scalar, vec4 const &vec);
 
 #endif
 

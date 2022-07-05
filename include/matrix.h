@@ -90,5 +90,10 @@ public:
 private:
 };
 
+
+// for scalar on left side must be outside class
+matrix3 operator*(const float scalar, const matrix3 &mat);
+matrix4 operator*(const float scalar, const matrix4 &mat);
+
 #endif
 

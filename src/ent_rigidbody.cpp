@@ -242,6 +242,37 @@ void EntRigidBody::integrate(float time)
 	world_tensor = morientation * inverse_tensor * morientation.transpose();
 }
 
+int EntRigidBody::intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, vec3 &result, float &t)
+{
+	// plane equation
+	// ax + by + cz + d = 0
+
+	// plug in parametric line
+	// a*(x0 + vx * t) + b*(y0 + vy * t) + c*(z0 + vz * t) + d = 0
+
+	// solve for t
+
+	// a*x0 + a*vx*t + b*y0 + b*vy*t + c*z0 + c*vz*t + d = 0
+	// a*x0 + b*y0 + c*z0 + d + a*vx*t + b*vy*t + c*vz*t = 0
+	// a*x0 + b*y0 + c*z0 + d + t*(a*vx + b*vy + c*vz) = 0
+	// t*(a*vx + b*vy + c*vz) = -(a*x0 + b*y0 + c*z0 + d)
+	// t = -(a*x0 + b*y0 + c*z0 + d) / (a*vx + b*vy + c*vz)
+
+
+	vec3 origin = a;
+	vec3 dir = b - a;
+
+	float denom = (p.normal * dir);
+	if (denom == 0.0f)
+		return -1;
+
+	t = -(origin * p.normal - p.d) / denom;
+	if (t <= 0.0 || t >= 1.0)
+		return -1;
+
+	result = origin + dir * t;
+	return 0;
+}
 
 
 
@@ -253,22 +284,23 @@ bool EntRigidBody::collision_detect(plane_t &p)
 	if (entity->vehicle || (entity->player && entity->player->in_vehicle != -1))
 		return false;
 
+	update_obb();
 	for( int i = 0;	i < 8; i++)
 	{
-		// make center origin
-		vec3 point = center + aabb[i];
+		// convert rotated point back to local coordinates
+		vec3 point = point - entity->position;
 
-		//rotate around origin
-		point = morientation * point;
+		// convert point back to radius from center
+		point = point + center;
 
-		// rotate center around about true origin
-		vec3 offset = morientation * center;
-
-		// translate back to local coordinate origin
-		point = point - offset;
-
-		// translate to world coordinates
-		point = point + entity->position;
+		impact = i + 1;
+		impact_point = point;
+		impact_center = center;
+		float t;
+		if (intersect_two_points_plane(p, center, point, impact_depth, t) == false)
+		{
+			impact_depth = center;
+		}
 
 		float d = point * p.normal + p.d;
 
@@ -286,15 +318,29 @@ bool EntRigidBody::collision_detect(plane_t &p)
 			point = point - entity->position;
 
 			// convert point back to radius from center
-			point = point + offset;
+			point = point + center;
+
+			impact = i + 1;
+			impact_point = point;
+			impact_center = center;
+			float t;
+			if (intersect_two_points_plane(p, center, point, impact_depth, t) == false)
+			{
+				impact_depth = center;
+			}
+
 
 			// convert to meters
 			point = point * (1.0f / UNITS_TO_METERS);
 
-			// apply impulse to plane and radius vector
-			impulse(p, point);
-			entity->position = old_position;
+			if (velocity * p.normal < 0)
+			{
+				// apply impulse to plane and radius vector
+				impulse(p, point);
+			}
+			entity->position = old_position + p.normal * 0.05f; // move the body slightly away from the plane so we dont stick
 			morientation = old_orientation;
+
 		}
 	}
 	return false;
@@ -420,7 +466,7 @@ bool EntRigidBody::collision_detect_simple(EntRigidBody &body)
 	for( int i = 0;	i < 8; i++)
 	{
 		vec3 point = body.aabb[i] + body.center;
-		point = (body.morientation * point) + body.entity->position + body.center;
+		point = (body.morientation.transpose() * point) + body.entity->position + body.center;
 		if ( collision_detect(point) )
 		{
 			impulse(body, point);
@@ -499,8 +545,8 @@ bool EntRigidBody::collision_detect(EntRigidBody &body)
 	for(int i = 0; i < 6; i++)
 	{
 		point = plane[i].normal * 0.5f;						// point on plane
-		point = morientation * point + entity->position;				// rotate point
-		plane[i].normal = morientation * plane[i].normal;	// rotate normal
+		point = morientation.transpose() * point + entity->position;				// rotate point
+		plane[i].normal = morientation.transpose() * plane[i].normal;	// rotate normal
 		plane[i].normal.normalize();
 		plane[i].d = -(plane[i].normal * point);			// recalculate D
 	}
@@ -514,7 +560,7 @@ bool EntRigidBody::collision_detect(EntRigidBody &body)
 		int closest = 0;
 
 		// oriented body point in world space
-		point = body.morientation * body.aabb[i] + body.entity->position;
+		point = body.morientation.transpose() * body.aabb[i] + body.entity->position;
 
 		for(int j = 0; j < 6; j++)
 		{
@@ -764,7 +810,7 @@ float *EntRigidBody::get_matrix(float *matrix)
 	vec3 offset;
 
 	vec3 temp = center + vec3(0.0f, (float)-y_offset, 0.0f);
-	offset = morientation * temp;
+	offset = temp * morientation;
 
 	matrix[12] = entity->position.x - offset.x;
 	matrix[13] = entity->position.y - offset.y;

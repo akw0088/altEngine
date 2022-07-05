@@ -40,7 +40,7 @@ void rotate_vector(float rad, vec3 &vec, const vec3 &axis)
 	m.m[7] = minusVal * axis.z * axis.y + sinVal * axis.x;
 	m.m[8] = cosVal + minusVal * axis.z * axis.z;
 
-	vec = m * vec;
+	vec = vec * m;
 }
 
 void Frame::set(matrix4 &trans)

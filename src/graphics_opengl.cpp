@@ -739,7 +739,7 @@ void Graphics::DepthFunc(int op)
 
 void Graphics::StencilOp(int stencil_fail, int zfail, int zpass)
 {
-	glStencilOp(GL_KEEP, zfail, zpass);
+	glStencilOp(stencil_fail, zfail, zpass);
 
 #ifdef ERROR_CHECK
 	error_check();

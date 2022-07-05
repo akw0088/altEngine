@@ -83,11 +83,19 @@ public:
 	unsigned int impact_index;
 
 
+	int intersect_two_points_plane(const plane_t &p, const vec3 &a, const vec3 &b, vec3 &result, float &t);
+
 	float			impact_velocity;
 	Entity			*target;
 	vec3			sphere_target;
 	int			jump_timer;
 	unsigned int	bounce;
+
+
+	int				impact;
+	vec3			impact_point;
+	vec3			impact_center;
+	vec3			impact_depth;
 
 
 	struct flag

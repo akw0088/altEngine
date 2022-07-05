@@ -14,6 +14,7 @@
 
 #include "vector.h"
 #include <float.h>
+#include "matrix.h"
 
 float InvSqrt(float x);
 float newtonSqrt(float x);
@@ -249,6 +250,11 @@ vec3 &vec3::operator-=(const vec3 &vec)
 	return *this;
 }
 
+float vec3::dotproduct(const vec3 &VecA, const vec3 &VecB)
+{
+	return ((double)VecA.x * VecB.x + (double)VecA.y * VecB.y + (double)VecA.z * VecB.z);
+}
+
 vec3 vec3::crossproduct(const vec3 &VecA, const vec3 &VecB)
 {
 	vec3	result;
@@ -303,6 +309,18 @@ vec3 vec3::reflect(const vec3& normal) const
 	float d = ((*vec) * normal) * 2.0f;
 	return (*vec) - normal * d;
 }
+
+
+vec3 vec3::operator*(const matrix3 &mat) const
+{
+	vec3 result;
+
+	result.x = x * mat.m[0] + y * mat.m[3] + z * mat.m[6];
+	result.y = x * mat.m[1] + y * mat.m[4] + z * mat.m[7];
+	result.z = x * mat.m[2] + y * mat.m[5] + z * mat.m[8];
+	return result;
+}
+
 
 vec2::vec2()
 {

@@ -34,6 +34,11 @@ public:
 	virtual void get_frame(Frame &frame);
 	void make_aabb();
 
+	void update_obb();
+
+
+
+
 	//	void calc_frustum(matrix4 &clip);
 	//	void create_box(Graphics &gfx, vec3 *aabb);
 	//	void render_box(Graphics &gfx);
@@ -54,6 +59,7 @@ public:
 	//quaternion		orientation;
 	matrix3			morientation;
 	vec3			aabb[8];
+	vec3			obb[8];
 	vec3			center;
 
 

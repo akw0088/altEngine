@@ -230,9 +230,9 @@ vec3 matrix3::operator*(const vec3 &vec) const
 {
 	vec3 result;
 
-	result.x = vec.x * m[0] + vec.y * m[3] + vec.z * m[6];
-	result.y = vec.x * m[1] + vec.y * m[4] + vec.z * m[7];
-	result.z = vec.x * m[2] + vec.y * m[5] + vec.z * m[8];
+	result.x = vec.x * m[0] + vec.y * m[1] + vec.z * m[2];
+	result.y = vec.x * m[3] + vec.y * m[4] + vec.z * m[5];
+	result.z = vec.x * m[6] + vec.y * m[7] + vec.z * m[8];
 	return result;
 }
 
@@ -934,4 +934,51 @@ void matrix4::lookat(const vec3 &position, vec3 &center, vec3 &up)
 	m[12] = -(right * position);
 	m[12] = -(newup * position);
 	m[12] = -(forward * position);
+}
+
+// for scalar on left side, must be outside class
+matrix3 operator*(const float scalar, const matrix3 &mat)
+{
+	matrix3 result;
+
+	result.m[0] = scalar * mat.m[0];
+	result.m[1] = scalar * mat.m[3];
+	result.m[2] = scalar * mat.m[6];
+
+	result.m[3] = scalar * mat.m[1];
+	result.m[4] = scalar * mat.m[4];
+	result.m[5] = scalar * mat.m[7];
+
+	result.m[6] = scalar * mat.m[2];
+	result.m[6] = scalar * mat.m[5];
+	result.m[7] = scalar * mat.m[8];
+
+	return result;
+}
+
+matrix4 operator*(const float scalar, const matrix4 &mat)
+{
+	matrix4 result;
+
+	result.m[0] = scalar * mat.m[0];
+	result.m[1] = scalar * mat.m[4];
+	result.m[2] = scalar * mat.m[8];
+	result.m[4] = scalar * mat.m[12];
+
+	result.m[4] = scalar * mat.m[1];
+	result.m[5] = scalar * mat.m[5];
+	result.m[6] = scalar * mat.m[9];
+	result.m[7] = scalar * mat.m[13];
+
+	result.m[8]  = scalar * mat.m[2];
+	result.m[9]  = scalar * mat.m[6];
+	result.m[10] = scalar * mat.m[10];
+	result.m[11] = scalar * mat.m[14];
+
+	result.m[10] = scalar * mat.m[3];
+	result.m[13] = scalar * mat.m[7];
+	result.m[14] = scalar * mat.m[11];
+	result.m[15] = scalar * mat.m[15];
+
+	return result;
 }

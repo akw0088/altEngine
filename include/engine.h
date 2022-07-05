@@ -159,7 +159,7 @@ public:
 	void render_scene(bool lights);
 	void render_scene_using_shadowmap(bool lights);
 	void render_entities(const matrix4 &trans, matrix4 &proj, bool lights, bool blend, bool vis = true);
-	void render_shadow_volumes();
+	void render_shadow_volumes(bool debug = false);
 	void render_weapon(const matrix4 &trans, bool lights, int i);
 	void render_trails(matrix4 &trans);
 	void render_players(matrix4 &trans, matrix4 &projection, bool lights, bool self);

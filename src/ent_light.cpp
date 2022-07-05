@@ -130,7 +130,7 @@ void EntLight::generate_ent_volumes(Graphics &gfx, vector<Entity *> &entity_list
 		matrix4 matrix;
 		EntModel *model = entity_list[i]->model;
 		model->get_matrix(matrix.m);
-		vec3 position = entity_list[i]->model->morientation.transpose() * entity->position;
+		vec3 position = entity->position * entity_list[i]->model->morientation;
 
 		// Probably need a test to see if either light or model moved, as static volumes dont need to be regenerated
 		shadow[num_shadowvol].CreateVolume(gfx, model->model_vertex_array,

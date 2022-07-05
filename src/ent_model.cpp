@@ -244,6 +244,35 @@ void EntModel::make_aabb()
 }
 
 
+void EntModel::update_obb()
+{
+
+	center = vec3(0.0f, 0.0f, 0.0f);
+
+	for (unsigned int i = 0; i < 8; i++)
+	{
+		// make center origin
+		vec3 point = center + aabb[i];
+
+		//rotate around origin
+		point = point * morientation;
+
+		// rotate center around about true origin
+		vec3 offset = center * morientation;
+
+		// translate back to local coordinate origin
+		point = point - offset;
+
+		// translate to world coordinates
+		obb[i] = point + entity->position;
+
+
+		center += obb[i];
+	}
+
+	center = center / 8;
+}
+
 void EntModel::render(Graphics &gfx)
 {
 	static int last_model = model_vertex;
@@ -305,7 +334,7 @@ float *EntModel::get_matrix(float *matrix)
 
 	/* matrix rotates around center, but position is arbitrary point
 	from which verts are defined */
-	vec3 offset = morientation * center;
+	vec3 offset = center * morientation.transpose();
 
 	matrix[12] = entity->position.x - offset.x;
 	matrix[13] = entity->position.y - offset.y;
