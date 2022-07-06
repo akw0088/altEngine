@@ -27,6 +27,7 @@ int raster_tcount = 0;
 inline char bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable);
 inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable);
 inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable);
+void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear);
 
 inline int imin(int x, int y)
 {
@@ -291,7 +292,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 	return -1;
 }
 
-void raster_triangles(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
+void raster_triangles(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
@@ -952,7 +953,7 @@ void raster_triangles(const raster_t type, const int block, int *pixels, float *
 
 }
 
-void raster_triangles_strip(const raster_t type, const int block, int *pixels, float *zbuffer, const int width, const int height,
+void raster_triangles_strip(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
@@ -1522,7 +1523,7 @@ void raster_triangles_strip(const raster_t type, const int block, int *pixels, f
 
 }
 
-inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color)
+inline void draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color)
 {
 #ifdef THREAD
 	pixels[x + y * width] = color;
@@ -1534,7 +1535,7 @@ inline void draw_pixel(int *pixels, float *zbuffer, int width, int height, int x
 #endif
 }
 
-void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
+void draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
 {
 	int i;
 	int	x, y;
@@ -1624,7 +1625,7 @@ void draw_line(int *pixels, int width, int height, int x1, int y1, int x2, int y
 	}
 }
 
-void flood_fill(int *pixels, int width, int height, int x, int y, int old_color, int new_color)
+void flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color)
 {
 	if (x < width && x >= 0 && y < height && y >= 0 && pixels[x + y * width] != new_color)
 	{
@@ -1636,7 +1637,7 @@ void flood_fill(int *pixels, int width, int height, int x, int y, int old_color,
 	}
 }
 
-void draw_rect(int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color)
+void draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color)
 {
 	float	corner[4][2];
 	float	corner_rotated[4][2];
@@ -1679,22 +1680,22 @@ void draw_rect(int *pixels, int width, int height, float angle, int w, int l, in
 }
 
 // Windows GDI like syntax
-void Rectangle(int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
+void Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
 {
-	draw_line((int *)vram, xres, yres, x1, y1, x2, y1, 0); // top line
-	draw_line((int *)vram, xres, yres, x1, y2, x2, y2, 0); // bottom line
+	draw_line((unsigned int *)vram, xres, yres, x1, y1, x2, y1, 0); // top line
+	draw_line((unsigned int *)vram, xres, yres, x1, y2, x2, y2, 0); // bottom line
 
-	draw_line((int *)vram, xres, yres, x1, y1, x1, y2, 0); // left line
-	draw_line((int *)vram, xres, yres, x2, y1, x2, y2, 0); // right line
+	draw_line((unsigned int *)vram, xres, yres, x1, y1, x1, y2, 0); // left line
+	draw_line((unsigned int *)vram, xres, yres, x2, y1, x2, y2, 0); // right line
 }
 
-void Triangle(int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
+void Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
 {
 	int half_x = abs(x2 - x1) / 2;
 
-	draw_line((int *)vram, xres, yres, x1, y2, x2, y2, color); // bottom line
-	draw_line((int *)vram, xres, yres, x1 + half_x, y1, x1, y2, color); // left line
-	draw_line((int *)vram, xres, yres, x2 - half_x, y1, x2, y2, color); // right line
+	draw_line((unsigned int *)vram, xres, yres, x1, y2, x2, y2, color); // bottom line
+	draw_line((unsigned int *)vram, xres, yres, x1 + half_x, y1, x1, y2, color); // left line
+	draw_line((unsigned int *)vram, xres, yres, x2 - half_x, y1, x2, y2, color); // right line
 }
 
 void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres)
@@ -1733,7 +1734,7 @@ void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, i
 }
 
 
-void draw_circle(int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
+void draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
 {
 	int x = radius - 1;
 	int y = 0;
@@ -1794,7 +1795,7 @@ void draw_circle(int *pixels, int width, int height, int xc, int yc, int radius,
 }
 
 
-void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
+void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
 {
 	int x, y, p;
 
@@ -1874,7 +1875,7 @@ void draw_ellipse(int *pixels, int width, int height, int xc, int yc, int rx, in
 }
 
 
-inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
+inline void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
 	if (x1 == x2)
@@ -1949,11 +1950,12 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 		int vy = (int)(vi * (texture->height[0] - 1));
 
 		int index = vy * (texture->width[0]) + ux;
-		if (index < 0 || index >= texture->width[0] * texture->height[0])
+		if (index < 0 || index >= (texture->width[0] * texture->height[0]))
 			index = 0;
 
+		render_pixel(pixels, zbuffer, width, height, x, y1, zi, texture, NULL, false, 0, ux, vy, 0, 0, 0);
 
-		draw_pixel(pixels, zbuffer, width, height, x, y1, zi, texture->data[index][0]);
+//		draw_pixel(pixels, zbuffer, width, height, x, y1, zi, texture->data[index][0]);
 		ui += -du;
 		vi += -dv;
 		zi += -dz;
@@ -1962,7 +1964,7 @@ inline void draw_xspan(int *pixels, float *zbuffer, const int width, const int h
 }
 
 
-inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+inline void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
 	float u3, float v3,
@@ -2013,7 +2015,7 @@ inline void fill_bottom_triangle(int *pixels, float *zbuffer, const int width, c
 }
 
 
-inline void fill_top_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+inline void fill_top_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
 	float u3, float v3,
@@ -2074,7 +2076,7 @@ inline void iswap(int &a, int &b)
 	a ^= b;
 }
 
-void span_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
+void span_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
 	int x1, int y1, float z1, float w1, int c1,
 	int x2, int y2, float z2, float w2, int c2,
 	int x3, int y3, float z3, float w3, int c3,
@@ -2207,7 +2209,7 @@ void calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level
 }
 
 
-void render_pixel(int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear)
+void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear)
 {
 	if (texture->components == 1)
 	{
@@ -2264,7 +2266,7 @@ void render_pixel(int *pixels, float *zbuffer, const int width, const int height
 
 }
 
-void barycentric_triangle(int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
+void barycentric_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int x1, const int y1, const float z1, const float w1, const int c1,
 	const int x2, const int y2, const float z2, const float w2, const int c2,
 	const int x3, const int y3, const float z3, const float w3, const int c3,
@@ -2474,7 +2476,7 @@ void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_poi
 	clip_line(points, num_point, width, 0, 0, 0);
 }
 
-void halfspace_triangle(int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+void halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
 {
 	float y1 = v1.y;
 	float y2 = v2.y;
@@ -2514,7 +2516,7 @@ int iround(float x)
 	return xi;
 }
 
-void halfspace_triangle_fast(int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
+void halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	// 28.4 fixed-point coordinates
 	const int Y1 = iround(16.0f * v1.y);

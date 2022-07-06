@@ -244,7 +244,7 @@ public:
 	pthread_t tid[16];
 	#endif
 	vec2	center;
-	int	*pixels;
+	unsigned int	*pixels;
 	int clip_enabled;
 #ifdef THREAD
 	int	*pixel[16];

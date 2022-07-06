@@ -155,7 +155,7 @@ void Graphics::resize(int width, int height)
 #endif
 //	if (pixels)
 //		delete[] pixels;
-	pixels = new int[width * height * sizeof(int)];
+	pixels = new unsigned int[width * height * sizeof(int)];
 //	if (zbuffer)
 //		delete[] zbuffer;
 	zbuffer = new float[width * height * sizeof(float)];
@@ -696,6 +696,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	render_raytrace(vertex_array[current_vbo], index_array[current_ibo], num_verts, num_index, width, height, pixels, &light, 1, current_mvp);
 #else
 	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
+
 #endif
 #endif
 	if (raster_target == 1337)	
@@ -941,11 +942,14 @@ int make_mipmap_4d(rgba_t *input, int width, int height, rgba_t **output, bool b
 int Graphics::LoadTexture(int width, int height, int components, int format, void *bytes, bool clamp, int anisotropic)
 {
 	texinfo_t tex;
+
 	tex.data[0] = (int *)new char[width * height * components];
 	tex.width[0] = width;
 	tex.height[0] = height;
 	tex.components = components;
 	tex.num_mip = 1;
+	
+	memset(tex.data[0], 0, width * height * components);
 	memcpy(tex.data[0], bytes, width * height * components);
 
 	static int num_tex = 0;

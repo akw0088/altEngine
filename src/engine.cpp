@@ -456,6 +456,8 @@ void Engine::init(void *p1, void *p2, char *cmdline)
 	sprintf(menu.data.window, "%dx%d", xres, yres);
 #endif
 	// draw menu
+	gfx.SelectTexture(0, no_tex);
+
 	menu.render(global);
 	// swap once (cause rendering a menu screen at 200fps is stupid)
 	gfx.swap();
@@ -983,7 +985,7 @@ void Engine::load(char *level)
 	// map shadow volumes
 	FILE *outfile = fopen("nul", "w");
 
-
+#ifndef SOFTWARE
 	if (strstr(q3map.map_name, "q3tourney2") != 0)
 	{
 		printf("Loading Brush Volumes...\r\n");
@@ -1012,6 +1014,7 @@ void Engine::load(char *level)
 		}
 
 	}
+#endif
 
 
 	console("flyby");
