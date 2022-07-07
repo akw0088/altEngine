@@ -1878,45 +1878,56 @@ void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, i
 inline void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
+	// zero pixels to draw
 	if (x1 == x2)
 		return;
 
-	int dx;
-	int xs;
-	int xe;
+	int dx; // delta x
+	int xs; // x start
+	int xe; // x end
 
+	// delta texture coordinate increments
 	float du;
 	float dv;
 	float dz;
 
+	// texture coordinate initial values
 	float ui;
 	float vi;
 	float zi;
 
+	// calculate delta x
 	dx = abs32(x2 - x1);
-	if (dx == 1)
-		return;
 
+
+//	if (dx == 1)
+//		return;
+
+	// calculate texture coordinate increment delta
 	dz = (float)(z2 - z1) / dx;
 	du = (float)(u2 - u1) / dx;
 	dv = (float)(v2 - v1) / dx;
 
 	if (x1 > x2)
 	{
+		// start with x2
 		xs = x2;
 		xe = x1;
 
-		ui = u2 - (int)u2;
-		vi = v2 - (int)v2;
+		// start textures at uvz2
+		ui = u2;
+		vi = v2;
 		zi = (float)z2;
 	}
 	else
 	{
+		// start with x1
 		xs = x1;
 		xe = x2;
 
-		ui = u1 - (int)u1;
-		vi = v1 - (int)v1;
+		// start textures at uvz1
+		ui = u1;
+		vi = v1;
 		zi = (float)z1;
 	}
 
@@ -1938,22 +1949,13 @@ inline void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, co
 			continue;
 		}
 
+		// ensure we always index into the texture with positive coordinates
 		if (ui < 0)
 			ui = 1.0f - ui;
 		if (vi < 0)
 			vi = 1.0f - vi;
 
-		ui = ui - (int)ui;
-		vi = vi - (int)vi;
-
-		int ux = (int)(ui * (texture->width[0] - 1));
-		int vy = (int)(vi * (texture->height[0] - 1));
-
-		int index = vy * (texture->width[0]) + ux;
-		if (index < 0 || index >= (texture->width[0] * texture->height[0]))
-			index = 0;
-
-		render_pixel(pixels, zbuffer, width, height, x, y1, zi, texture, NULL, false, 0, ux, vy, 0, 0, 0);
+		render_pixel(pixels, zbuffer, width, height, x, y1, zi, texture, NULL, false, 0, ui, vi, 0, 0, 0);
 
 //		draw_pixel(pixels, zbuffer, width, height, x, y1, zi, texture->data[index][0]);
 		ui += -du;
