@@ -84,6 +84,36 @@ public:
 	void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 		const int minx, const int maxx, const int miny, const int maxy);
 
+
+	// GDI functions to eventually make wrappers of
+/*
+	Rectangle(hdc,
+		(int)((point.x * scale - size * scale) + offset.x),
+		(int)((point.y * scale - size * scale) + offset.y),
+		(int)((point.x * scale + size * scale) + offset.x),
+		(int)((point.y * scale + size * scale) + offset.y));
+
+	Ellipse(hdc, left, top, right, bottom);
+
+	MoveToEx(hdc,
+		(int)(a.x * scale + offset.x),
+		(int)(a.y * scale + offset.y),
+		NULL);
+
+	LineTo(hdc,
+		(int)(b.x * scale + offset.x),
+		(int)(b.y * scale + offset.y));
+
+
+	int ret0 = ExtFloodFill(hdc,
+		(int)((point.x * scale) + offset.x),
+		(int)((point.y * scale) + offset.y),
+		color,
+		FLOODFILLBORDER);
+*/
+
+
+
 	void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 		float u1, float v1,
 		float u2, float v2,
