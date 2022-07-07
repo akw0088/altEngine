@@ -695,7 +695,7 @@ void Graphics::DrawArrayTri(int start_index, int start_vertex, unsigned int num_
 	light.intensity = vec3(1.0f, 1.0f, 1.0f);
 	render_raytrace(vertex_array[current_vbo], index_array[current_ibo], num_verts, num_index, width, height, pixels, &light, 1, current_mvp);
 #else
-	raster_triangles(BARYCENTRIC, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
+	raster.raster_triangles(SPAN, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
 
 #endif
 #endif
@@ -735,7 +735,7 @@ void Graphics::DrawArrayTriStrip(int start_index, int start_vertex, unsigned int
 		work1[i].work = next;
 	}
 #else
-	raster_triangles_strip(BARYCENTRIC_STRIP, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
+	raster.raster_triangles_strip(BARYCENTRIC_STRIP, -1, pixels, zbuffer, width, height, current_mvp, index_array[current_ibo], vertex_array[current_vbo], &texture_array[current_tex], &texture_array[lightmap_tex], start_index, start_vertex, num_index, num_verts, clip_enabled);
 #endif
 	gpustat.drawcall++;
 	gpustat.triangle += num_index / 2 - 1;

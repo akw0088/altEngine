@@ -24,28 +24,24 @@ int raster_tcount = 0;
 #define new DEBUG_NEW
 #endif
 
-inline char bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable);
-inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable);
-inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable);
-void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear);
 
-inline int imin(int x, int y)
+inline int Raster::imin(int x, int y)
 {
 	return y ^ ((x ^ y) & -(x < y));
 }
 
-inline int imax(int x, int y)
+inline int Raster::imax(int x, int y)
 {
 	return y ^ ((x ^ y) & -(x > y));
 }
 
-inline void iclamp(int &a, int mi, int ma)
+inline void Raster::iclamp(int &a, int mi, int ma)
 {
 	a = imin(imax(a, mi), ma);
 }
 
 
-int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
+int Raster::clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 	vertex_t &d, vertex_t &e, vertex_t &f)
 {
 	vertex_t result[6];
@@ -292,7 +288,7 @@ int clip_planes(vertex_t &a, vertex_t &b, vertex_t &c,
 	return -1;
 }
 
-void raster_triangles(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
+void Raster::raster_triangles(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
@@ -953,7 +949,7 @@ void raster_triangles(const raster_t type, const int block, unsigned int *pixels
 
 }
 
-void raster_triangles_strip(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
+void Raster::raster_triangles_strip(const raster_t type, const int block, unsigned int *pixels, float *zbuffer, const int width, const int height,
 	const matrix4 &mvp, const int *index_array, const vertex_t *vertex_array, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int start_index, const int start_vertex, const int num_index, const int num_verts, int clip)
 {
@@ -1523,7 +1519,7 @@ void raster_triangles_strip(const raster_t type, const int block, unsigned int *
 
 }
 
-inline void draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color)
+inline void Raster::draw_pixel(unsigned int *pixels, float *zbuffer, int width, int height, int x, int y, float z, unsigned int color)
 {
 #ifdef THREAD
 	pixels[x + y * width] = color;
@@ -1535,7 +1531,7 @@ inline void draw_pixel(unsigned int *pixels, float *zbuffer, int width, int heig
 #endif
 }
 
-void draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
+void Raster::draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int x2, int y2, int color)
 {
 	int i;
 	int	x, y;
@@ -1625,7 +1621,7 @@ void draw_line(unsigned int *pixels, int width, int height, int x1, int y1, int 
 	}
 }
 
-void flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color)
+void Raster::flood_fill(unsigned int *pixels, int width, int height, int x, int y, int old_color, int new_color)
 {
 	if (x < width && x >= 0 && y < height && y >= 0 && pixels[x + y * width] != new_color)
 	{
@@ -1637,7 +1633,7 @@ void flood_fill(unsigned int *pixels, int width, int height, int x, int y, int o
 	}
 }
 
-void draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color)
+void Raster::draw_rect(unsigned int *pixels, int width, int height, float angle, int w, int l, int x, int y, int color)
 {
 	float	corner[4][2];
 	float	corner_rotated[4][2];
@@ -1680,7 +1676,7 @@ void draw_rect(unsigned int *pixels, int width, int height, float angle, int w, 
 }
 
 // Windows GDI like syntax
-void Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
+void Raster::Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2)
 {
 	draw_line((unsigned int *)vram, xres, yres, x1, y1, x2, y1, 0); // top line
 	draw_line((unsigned int *)vram, xres, yres, x1, y2, x2, y2, 0); // bottom line
@@ -1689,7 +1685,7 @@ void Rectangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, i
 	draw_line((unsigned int *)vram, xres, yres, x2, y1, x2, y2, 0); // right line
 }
 
-void Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
+void Raster::Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, int y2, int color)
 {
 	int half_x = abs(x2 - x1) / 2;
 
@@ -1698,7 +1694,7 @@ void Triangle(unsigned int *vram, int xres, int yres, int x1, int y1, int x2, in
 	draw_line((unsigned int *)vram, xres, yres, x2 - half_x, y1, x2, y2, color); // right line
 }
 
-void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres)
+void Raster::draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, int xres, int yres)
 {
 	int x_shift = 0;
 
@@ -1734,7 +1730,7 @@ void draw_text(unsigned int *vram, unsigned int *tex, char *msg, int x, int y, i
 }
 
 
-void draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
+void Raster::draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, int radius, int color, int filled)
 {
 	int x = radius - 1;
 	int y = 0;
@@ -1795,7 +1791,7 @@ void draw_circle(unsigned int *pixels, int width, int height, int xc, int yc, in
 }
 
 
-void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
+void Raster::draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, int rx, int ry, int color, int filled)
 {
 	int x, y, p;
 
@@ -1875,7 +1871,7 @@ void draw_ellipse(unsigned int *pixels, int width, int height, int xc, int yc, i
 }
 
 
-inline void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
+inline void Raster::draw_xspan(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int z2, int color, float u1, float v1, float u2, float v2,
 	const int minx, const int maxx, const int miny, const int maxy)
 {
 	// zero pixels to draw
@@ -1925,6 +1921,7 @@ inline void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, co
 		xs = x1;
 		xe = x2;
 
+
 		// start textures at uvz1
 		ui = u1;
 		vi = v1;
@@ -1966,7 +1963,7 @@ inline void draw_xspan(unsigned int *pixels, float *zbuffer, const int width, co
 }
 
 
-inline void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+inline void Raster::fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
 	float u3, float v3,
@@ -1979,17 +1976,17 @@ inline void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int
 
 	float invslope1 = (float)(x2 - x1) / (y3 - y1); // dx / dy
 	float invslope2 = (float)(x3 - x1) / (y3 - y1); // dx / dy
-	float curx1 = (float)x1;
-	float curx2 = (float)x1;
+	float cur_x1 = (float)x1;
+	float cur_x2 = (float)x1;
 
 	float uinvslope1 = (float)((u2 - u1)) / (y3 - y1); // du / dy
 	float uinvslope2 = (float)((u3 - u1)) / (y3 - y1); // du / dy
-	float curu1 = u1;
-	float curu2 = u1;
+	float cur_u1 = u1;
+	float cur_u2 = u1;
 	float vinvslope1 = (float)(v2 - v1) / (y3 - y1); // dv / dy
 	float vinvslope2 = (float)(v3 - v1) / (y3 - y1); // dv / dy
-	float curv1 = v1;
-	float curv2 = v1;
+	float cur_v1 = v1;
+	float cur_v2 = v1;
 
 
 
@@ -1997,27 +1994,31 @@ inline void fill_bottom_triangle(unsigned int *pixels, float *zbuffer, const int
 	{
 		if (y < miny || y >= maxy)
 		{
-			curx1 += invslope1;
-			curx2 += invslope2;
-			curu1 += uinvslope1;
-			curu2 += uinvslope2;
-			curv1 += vinvslope1;
-			curv2 += vinvslope2;
+			cur_x1 += invslope1;
+			cur_x2 += invslope2;
+			cur_u1 += uinvslope1;
+			cur_u2 += uinvslope2;
+			cur_v1 += vinvslope1;
+			cur_v2 += vinvslope2;
 			continue;
 		}
 
-		draw_xspan(pixels, zbuffer, width, height, texture, (int)curx1, y, z1, (int)curx2, z2, color, curu1, curv1, curu2, curv2, minx, maxx, miny, maxy);
-		curx1 += invslope1;
-		curx2 += invslope2;
-		curu1 += uinvslope1;
-		curu2 += uinvslope2;
-		curv1 += vinvslope1;
-		curv2 += vinvslope2;
+		draw_xspan(pixels, zbuffer, width, height, texture,
+			(int)cur_x1, y, z1, (int)cur_x2, z2, color,
+			cur_u1, cur_v1, cur_u2, cur_v2,
+			minx, maxx, miny, maxy);
+
+		cur_x1 += invslope1;
+		cur_x2 += invslope2;
+		cur_u1 += uinvslope1;
+		cur_u2 += uinvslope2;
+		cur_v1 += vinvslope1;
+		cur_v2 += vinvslope2;
 	}
 }
 
 
-inline void fill_top_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
+inline void Raster::fill_top_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, int x1, int y1, int z1, int x2, int y2, int z2, int x3, int y3, int z3, int color,
 	float u1, float v1,
 	float u2, float v2,
 	float u3, float v3,
@@ -2071,14 +2072,14 @@ inline void fill_top_triangle(unsigned int *pixels, float *zbuffer, const int wi
 	}
 }
 
-inline void iswap(int &a, int &b)
+inline void Raster::iswap(int &a, int &b)
 {
 	a ^= b;
 	b ^= a;
 	a ^= b;
 }
 
-void span_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
+void Raster::span_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture,
 	int x1, int y1, float z1, float w1, int c1,
 	int x2, int y2, float z2, float w2, int c2,
 	int x3, int y3, float z3, float w3, int c3,
@@ -2153,13 +2154,13 @@ void span_triangle(unsigned int *pixels, float *zbuffer, const int width, const 
 	}
 }
 
-inline int det(int ax, int ay, int bx, int by)
+inline int Raster::det(int ax, int ay, int bx, int by)
 {
 	return ax * by - bx *  ay;
 }
 
 
-void calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level, float &blend)
+void Raster::calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level, float &blend)
 {
 	float mip_range[7] = { 0.0f, 0.125f, 0.25f, 0.5f, 0.7f, 0.8f, 0.9f };
 	int mip_select[7] = { 0, 1, 1, 1, 2, 3, 3 };
@@ -2211,7 +2212,7 @@ void calculate_miplevel(const texinfo_t *texture, const float zi, int &mip_level
 }
 
 
-void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear)
+void Raster::render_pixel(unsigned int *pixels, float *zbuffer, const int width, const int height, int x, int y, float zi, const texinfo_t *texture, const texinfo_t *lightmap, bool mipmap, int mip_level, float u, float v, float blend, bool filter, bool trilinear)
 {
 	if (texture->components == 1)
 	{
@@ -2268,7 +2269,7 @@ void render_pixel(unsigned int *pixels, float *zbuffer, const int width, const i
 
 }
 
-void barycentric_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
+void Raster::barycentric_triangle(unsigned int *pixels, float *zbuffer, const int width, const int height, const texinfo_t *texture, const texinfo_t *lightmap,
 	const int x1, const int y1, const float z1, const float w1, const int c1,
 	const int x2, const int y2, const float z2, const float w2, const int c2,
 	const int x3, const int y3, const float z3, const float w3, const int c3,
@@ -2404,7 +2405,7 @@ void barycentric_triangle(unsigned int *pixels, float *zbuffer, const int width,
 }
 
 
-void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, float &xint, float &yint)
+void Raster::line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, float &xint, float &yint)
 {
 	float num = (float)((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4));
 	float den = (float)((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
@@ -2413,7 +2414,7 @@ void line_intersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int 
 	yint = num / den;
 }
 
-void clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
+void Raster::clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
 {
 	vec4 out[32];
 	int out_num = 0;
@@ -2470,7 +2471,7 @@ void clip_line(vec4 *points, int &num_point, int x1, int y1, int x2, int y2)
 	}
 }
 
-void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point)
+void Raster::clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_point)
 {
 	clip_line(points, num_point, 0, 0, 0, height);
 	clip_line(points, num_point, 0, height, width, height);
@@ -2478,7 +2479,7 @@ void clip2d_sutherland_hodgman(int width, int height, vec4 *points, int &num_poi
 	clip_line(points, num_point, width, 0, 0, 0);
 }
 
-void halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
+void Raster::halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int height, const vec2 &v1, const vec2 &v2, const vec2 &v3)
 {
 	float y1 = v1.y;
 	float y2 = v2.y;
@@ -2510,7 +2511,7 @@ void halfspace_triangle(unsigned int *pixels, float *zbuffer, int width, int hei
 	}
 }
 
-int iround(float x)
+int Raster::iround(float x)
 {
 	int xi = (int)x;
 	if (x - xi > 0.5f)
@@ -2518,7 +2519,7 @@ int iround(float x)
 	return xi;
 }
 
-void halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
+void Raster::halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, int height, const vec3 &v1, const vec3 &v2, const vec3 &v3)
 {
 	// 28.4 fixed-point coordinates
 	const int Y1 = iround(16.0f * v1.y);
@@ -2658,7 +2659,7 @@ void halfspace_triangle_fast(unsigned int *pixels, float *zbuffer, int width, in
 
 
 
-void triangulate(vec4 *point, int &num_point)
+void Raster::triangulate(vec4 *point, int &num_point)
 {
 	vec4 out[256];
 	vec4 *p0;
@@ -2688,7 +2689,7 @@ void triangulate(vec4 *point, int &num_point)
 
 
 
-inline char bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable)
+char Raster::bilinear_filter_1d(const unsigned char *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
 	float mv = v - (int)v;
@@ -2737,7 +2738,7 @@ inline char bilinear_filter_1d(const unsigned char *tex, const int width, const 
 }
 
 
-inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable)
+rgb_t Raster::bilinear_filter_3d(const rgb_t *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
 	float mv = v - (int)v;
@@ -2794,7 +2795,7 @@ inline rgb_t bilinear_filter_3d(const rgb_t *tex, const int width, const int hei
 }
 
 
-inline rgba_t bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable)
+inline rgba_t Raster::bilinear_filter_4d(const rgba_t *tex, const int width, const int height, const float u, const float v, bool enable)
 {
 	float mu = u - (int)u;
 	float mv = v - (int)v;

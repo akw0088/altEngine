@@ -215,6 +215,7 @@ private:
 public:
 	int width, height;
 	gpustat_t gpustat;
+	Raster raster;
 #ifdef _WIN32
 	HWND	hwnd;
 	HDC	hdc;
